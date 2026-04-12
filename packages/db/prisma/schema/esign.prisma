@@ -8,7 +8,7 @@ model SigningEnvelope {
   externalEnvelopeId      String?
   contractId              String?
   documentId              String?
-  status                  SigningEnvelopeStatus  @default(CREATED)
+  status                  SigningEnvelopeStatus @default(CREATED)
   message                 String?
   expiresAt               DateTime?
   reminderIntervalDays    Int?
@@ -20,10 +20,10 @@ model SigningEnvelope {
   createdAt               DateTime              @default(now())
   updatedAt               DateTime              @updatedAt
 
-  organization            Organization          @relation(fields: [organizationId], references: [id])
-  sentBy                  User                  @relation("SigningEnvelopeSender", fields: [sentByUserId], references: [id])
-  recipients              SigningRecipient[]
-  events                  SigningEvent[]
+  organization Organization       @relation(fields: [organizationId], references: [id])
+  sentBy       User               @relation("SigningEnvelopeSender", fields: [sentByUserId], references: [id])
+  recipients   SigningRecipient[]
+  events       SigningEvent[]
 
   @@index([organizationId])
   @@index([organizationId, contractId])
@@ -39,19 +39,19 @@ model SigningRecipient {
   email               String
   role                SigningRecipientRole
   routingOrder        Int
-  status              SigningRecipientStatus  @default(PENDING)
+  status              SigningRecipientStatus @default(PENDING)
   signedAt            DateTime?
   declinedAt          DateTime?
   declineReason       String?
   viewedAt            DateTime?
 
-  signingEnvelope     SigningEnvelope         @relation(fields: [signingEnvelopeId], references: [id])
+  signingEnvelope SigningEnvelope @relation(fields: [signingEnvelopeId], references: [id])
 
   @@index([signingEnvelopeId])
 }
 
 model SigningEvent {
-  id                String            @id @default(cuid())
+  id                String           @id @default(cuid())
   organizationId    String
   signingEnvelopeId String
   eventType         SigningEventType
@@ -60,10 +60,10 @@ model SigningEvent {
   description       String
   providerEventId   String?
   occurredAt        DateTime
-  createdAt         DateTime          @default(now())
+  createdAt         DateTime         @default(now())
 
-  organization      Organization      @relation(fields: [organizationId], references: [id])
-  signingEnvelope   SigningEnvelope    @relation(fields: [signingEnvelopeId], references: [id])
+  organization    Organization    @relation(fields: [organizationId], references: [id])
+  signingEnvelope SigningEnvelope @relation(fields: [signingEnvelopeId], references: [id])
 
   @@index([organizationId, signingEnvelopeId, occurredAt])
 }

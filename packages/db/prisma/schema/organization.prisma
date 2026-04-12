@@ -2,12 +2,12 @@
 // Plus Team, Project, CostCenter
 
 model Organization {
-  id                   String             @id @default(cuid())
-  name                 String
-  slug                 String             @unique
-  logo                 String?
-  metadata             String?
-  createdAt            DateTime           @default(now())
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  logo      String?
+  metadata  String?
+  createdAt DateTime @default(now())
 
   // Custom fields from db-schema.md
   legalName            String?
@@ -26,73 +26,73 @@ model Organization {
   deletedAt            DateTime?
 
   // Relations
-  members              Member[]
-  invitations          Invitation[]
-  teams                Team[]
-  projects             Project[]
-  costCenters          CostCenter[]
-  contractors          Contractor[]
-  contractorContacts   ContractorContact[]
-  contractorBillingProfiles ContractorBillingProfile[]
-  contractorAssignments ContractorAssignment[]
-  contractorTags       ContractorTag[]
-  contracts            Contract[]
-  contractAmendments   ContractAmendment[]
-  contractRatePeriods  ContractRatePeriod[]
-  documents            Document[]
-  documentLinks        DocumentLink[]
-  complianceTemplates  ComplianceRequirementTemplate[]
-  complianceItems      ContractorComplianceItem[]
-  workflowTemplates    WorkflowTemplate[]
-  workflowTaskTemplates WorkflowTaskTemplate[]
-  workflowRuns         WorkflowRun[]
-  workflowTaskRuns     WorkflowTaskRun[]
-  workflowComments     WorkflowComment[]
-  workflowAttachments  WorkflowAttachment[]
-  invoices             Invoice[]
-  invoiceFiles         InvoiceFile[]
-  invoiceLines         InvoiceLine[]
-  invoiceMatchResults  InvoiceMatchResult[]
-  approvalChainConfigs ApprovalChainConfig[]
-  approvalFlows        ApprovalFlow[]
-  approvalSteps        ApprovalStep[]
-  approvalDecisions    ApprovalDecision[]
-  paymentRuns          PaymentRun[]
-  paymentRunItems      PaymentRunItem[]
-  paymentExports       PaymentExport[]
-  auditLogs            AuditLog[]
-  outboxEvents         OutboxEvent[]
-  integrationConnections IntegrationConnection[]
-  externalLinks        ExternalLink[]
-  integrationSyncLogs  IntegrationSyncLog[]
-  webhookDeliveries    WebhookDelivery[]
-  portalSessions       PortalSession[]
-  contractorChangeRequests       ContractorChangeRequest[]
-  contractorNotificationPrefs    ContractorNotificationPreference[]
-  notifications        Notification[]
-  notificationPrefs    UserNotificationPreference[]
-  comments             Comment[]
-  reminderRules        ReminderRule[]
-  reminderInstances    ReminderInstance[]
-  signingEnvelopes     SigningEnvelope[]
-  signingEvents        SigningEvent[]
-  ocrExtractions       OcrExtraction[]
-  timesheets           Timesheet[]
-  timeEntries          TimeEntry[]
-  subscription         Subscription?
-  ocrCreditLedger      OcrCreditLedger[]
-  equipment            Equipment[]
-  equipmentAssignments EquipmentAssignment[]
-  shipments            Shipment[]
-  shipmentEvents       ShipmentEvent[]
-  returnRequests       ReturnRequest[]
-  courierConfigs       CourierConfig[]
-  consentRecords       ConsentRecord[]
-  privacyNotices       PrivacyNotice[]
-  peppolParticipants   PeppolParticipant[]
-  peppolTransmissions  PeppolTransmission[]
-  govApiAuditLogs      GovApiAuditLog[]
-  zatcaChainEntries    ZatcaInvoiceChain[]
+  members                     Member[]
+  invitations                 Invitation[]
+  teams                       Team[]
+  projects                    Project[]
+  costCenters                 CostCenter[]
+  contractors                 Contractor[]
+  contractorContacts          ContractorContact[]
+  contractorBillingProfiles   ContractorBillingProfile[]
+  contractorAssignments       ContractorAssignment[]
+  contractorTags              ContractorTag[]
+  contracts                   Contract[]
+  contractAmendments          ContractAmendment[]
+  contractRatePeriods         ContractRatePeriod[]
+  documents                   Document[]
+  documentLinks               DocumentLink[]
+  complianceTemplates         ComplianceRequirementTemplate[]
+  complianceItems             ContractorComplianceItem[]
+  workflowTemplates           WorkflowTemplate[]
+  workflowTaskTemplates       WorkflowTaskTemplate[]
+  workflowRuns                WorkflowRun[]
+  workflowTaskRuns            WorkflowTaskRun[]
+  workflowComments            WorkflowComment[]
+  workflowAttachments         WorkflowAttachment[]
+  invoices                    Invoice[]
+  invoiceFiles                InvoiceFile[]
+  invoiceLines                InvoiceLine[]
+  invoiceMatchResults         InvoiceMatchResult[]
+  approvalChainConfigs        ApprovalChainConfig[]
+  approvalFlows               ApprovalFlow[]
+  approvalSteps               ApprovalStep[]
+  approvalDecisions           ApprovalDecision[]
+  paymentRuns                 PaymentRun[]
+  paymentRunItems             PaymentRunItem[]
+  paymentExports              PaymentExport[]
+  auditLogs                   AuditLog[]
+  outboxEvents                OutboxEvent[]
+  integrationConnections      IntegrationConnection[]
+  externalLinks               ExternalLink[]
+  integrationSyncLogs         IntegrationSyncLog[]
+  webhookDeliveries           WebhookDelivery[]
+  portalSessions              PortalSession[]
+  contractorChangeRequests    ContractorChangeRequest[]
+  contractorNotificationPrefs ContractorNotificationPreference[]
+  notifications               Notification[]
+  notificationPrefs           UserNotificationPreference[]
+  comments                    Comment[]
+  reminderRules               ReminderRule[]
+  reminderInstances           ReminderInstance[]
+  signingEnvelopes            SigningEnvelope[]
+  signingEvents               SigningEvent[]
+  ocrExtractions              OcrExtraction[]
+  timesheets                  Timesheet[]
+  timeEntries                 TimeEntry[]
+  subscription                Subscription?
+  ocrCreditLedger             OcrCreditLedger[]
+  equipment                   Equipment[]
+  equipmentAssignments        EquipmentAssignment[]
+  shipments                   Shipment[]
+  shipmentEvents              ShipmentEvent[]
+  returnRequests              ReturnRequest[]
+  courierConfigs              CourierConfig[]
+  consentRecords              ConsentRecord[]
+  privacyNotices              PrivacyNotice[]
+  peppolParticipants          PeppolParticipant[]
+  peppolTransmissions         PeppolTransmission[]
+  govApiAuditLogs             GovApiAuditLog[]
+  zatcaChainEntries           ZatcaInvoiceChain[]
 }
 
 model Member {
@@ -103,9 +103,9 @@ model Member {
   teamId         String?
   createdAt      DateTime @default(now())
 
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  team           Team?        @relation(fields: [teamId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  team         Team?        @relation(fields: [teamId], references: [id])
 
   @@index([organizationId])
   @@index([organizationId, userId])
@@ -121,10 +121,10 @@ model Invitation {
   expiresAt      DateTime
   inviterId      String
 
-  createdAt      DateTime @default(now())
+  createdAt DateTime @default(now())
 
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  inviter        User         @relation(fields: [inviterId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  inviter      User         @relation(fields: [inviterId], references: [id])
 
   @@index([organizationId])
 }
@@ -141,14 +141,14 @@ model Team {
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
-  organization   Organization @relation(fields: [organizationId], references: [id])
-  manager        User?        @relation("TeamManager", fields: [managerUserId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
+  manager      User?        @relation("TeamManager", fields: [managerUserId], references: [id])
 
-  members        Member[]
-  contractors    Contractor[]
-  projects       Project[]
+  members               Member[]
+  contractors           Contractor[]
+  projects              Project[]
   contractorAssignments ContractorAssignment[]
-  contracts      Contract[]
+  contracts             Contract[]
 
   @@index([organizationId])
   @@index([organizationId, status])
@@ -168,12 +168,12 @@ model Project {
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
-  organization   Organization @relation(fields: [organizationId], references: [id])
-  team           Team?        @relation(fields: [teamId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
+  team         Team?        @relation(fields: [teamId], references: [id])
 
-  contractors    Contractor[]
+  contractors           Contractor[]
   contractorAssignments ContractorAssignment[]
-  contracts      Contract[]
+  contracts             Contract[]
 
   @@index([organizationId])
   @@index([organizationId, status])
@@ -189,11 +189,11 @@ model CostCenter {
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
-  organization   Organization @relation(fields: [organizationId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
 
-  contractors    Contractor[]
+  contractors           Contractor[]
   contractorAssignments ContractorAssignment[]
-  contracts      Contract[]
+  contracts             Contract[]
 
   @@unique([organizationId, code])
 }

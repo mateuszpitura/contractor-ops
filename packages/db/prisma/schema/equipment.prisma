@@ -13,9 +13,9 @@ model Equipment {
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
 
-  organization   Organization          @relation(fields: [organizationId], references: [id])
-  assignments    EquipmentAssignment[]
-  shipments      Shipment[]
+  organization Organization          @relation(fields: [organizationId], references: [id])
+  assignments  EquipmentAssignment[]
+  shipments    Shipment[]
 
   @@unique([organizationId, serialNumber])
   @@index([organizationId])
@@ -34,9 +34,9 @@ model EquipmentAssignment {
   unassignedByUserId String?
   notes              String?
 
-  organization       Organization @relation(fields: [organizationId], references: [id])
-  equipment          Equipment    @relation(fields: [equipmentId], references: [id])
-  contractor         Contractor   @relation(fields: [contractorId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
+  equipment    Equipment    @relation(fields: [equipmentId], references: [id])
+  contractor   Contractor   @relation(fields: [contractorId], references: [id])
 
   @@index([organizationId])
   @@index([organizationId, equipmentId])
@@ -45,7 +45,7 @@ model EquipmentAssignment {
 }
 
 model Shipment {
-  id                 String          @id @default(cuid())
+  id                 String            @id @default(cuid())
   organizationId     String
   equipmentId        String
   assignmentId       String?
@@ -56,16 +56,16 @@ model Shipment {
   trackingNumber     String?
   externalId         String?
   labelUrl           String?
-  expectedDeliveryAt DateTime?       @db.Date
-  currentStatus      ShipmentStatus  @default(CREATED)
+  expectedDeliveryAt DateTime?         @db.Date
+  currentStatus      ShipmentStatus    @default(CREATED)
   createdByUserId    String
-  createdAt          DateTime        @default(now())
-  updatedAt          DateTime        @updatedAt
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
 
-  organization       Organization    @relation(fields: [organizationId], references: [id])
-  equipment          Equipment       @relation(fields: [equipmentId], references: [id])
-  events             ShipmentEvent[]
-  returnRequest      ReturnRequest?
+  organization  Organization    @relation(fields: [organizationId], references: [id])
+  equipment     Equipment       @relation(fields: [equipmentId], references: [id])
+  events        ShipmentEvent[]
+  returnRequest ReturnRequest?
 
   @@index([organizationId])
   @@index([organizationId, equipmentId])
@@ -84,8 +84,8 @@ model ShipmentEvent {
   createdByUserId String?
   createdAt       DateTime       @default(now())
 
-  organization    Organization   @relation(fields: [organizationId], references: [id])
-  shipment        Shipment       @relation(fields: [shipmentId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
+  shipment     Shipment     @relation(fields: [shipmentId], references: [id])
 
   @@index([organizationId])
   @@index([organizationId, shipmentId, occurredAt])
@@ -149,9 +149,9 @@ model ReturnRequest {
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt
 
-  organization       Organization        @relation(fields: [organizationId], references: [id])
-  contractor         Contractor          @relation(fields: [contractorId], references: [id])
-  shipment           Shipment?           @relation(fields: [shipmentId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
+  contractor   Contractor   @relation(fields: [contractorId], references: [id])
+  shipment     Shipment?    @relation(fields: [shipmentId], references: [id])
 
   @@index([organizationId])
   @@index([organizationId, contractorId])
@@ -169,14 +169,14 @@ enum ReturnRequestStatus {
 // --- Courier Config ---
 
 model CourierConfig {
-  id              String   @id @default(cuid())
-  organizationId  String
-  carrier         String
-  configJson      Json     @default("{}")
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id             String   @id @default(cuid())
+  organizationId String
+  carrier        String
+  configJson     Json     @default("{}")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
-  organization    Organization @relation(fields: [organizationId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
 
   @@unique([organizationId, carrier])
   @@index([organizationId])

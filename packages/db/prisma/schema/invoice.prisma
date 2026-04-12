@@ -1,63 +1,64 @@
 // Invoice, InvoiceFile, InvoiceLine, InvoiceMatchResult
 
 model Invoice {
-  id                  String             @id @default(cuid())
-  organizationId      String
-  contractorId        String?
-  contractId          String?
-  billingProfileId    String?
-  invoiceNumber       String
-  externalInvoiceId   String?
-  source              InvoiceSource
-  sourceReference     String?
-  issueDate           DateTime           @db.Date
-  servicePeriodStart  DateTime?          @db.Date
-  servicePeriodEnd    DateTime?          @db.Date
-  dueDate             DateTime           @db.Date
-  currency            String             @db.Char(3)
-  subtotalMinor       Int
-  vatRate             String?
-  vatAmountMinor      Int?
-  totalMinor          Int
-  withholdingMinor    Int?
-  isReverseCharge     Boolean            @default(false)
-  reverseChargeOverride Boolean?         // null = auto-detected, true/false = manually set
-  amountToPayMinor    Int
-  sellerTaxId         String?            @db.VarChar(50)
-  sellerName          String?            @db.VarChar(500)
-  sellerBankAccount   String?            @db.VarChar(34)
-  buyerTaxId          String?            @db.VarChar(50)
-  status              InvoiceStatus      @default(RECEIVED)
-  matchStatus         InvoiceMatchStatus @default(UNMATCHED)
-  approvalStatus      ApprovalStatus     @default(NOT_STARTED)
-  paymentStatus       PaymentStatus      @default(NOT_READY)
-  duplicateCheckHash  String?            @db.VarChar(64)
-  receivedAt          DateTime           @default(now())
-  reviewedAt          DateTime?
-  approvedAt          DateTime?
-  readyForPaymentAt   DateTime?
-  paidAt              DateTime?
-  rejectedAt          DateTime?
-  rejectionReason     String?
-  submittedByEmail    String?
-  notes               String?
-  flagsJson           Json?
-  qrCodeBase64        String?            @db.Text
-  createdAt           DateTime           @default(now())
-  updatedAt           DateTime           @updatedAt
-  deletedAt           DateTime?
+  id                    String             @id @default(cuid())
+  organizationId        String
+  contractorId          String?
+  contractId            String?
+  billingProfileId      String?
+  invoiceNumber         String
+  externalInvoiceId     String?
+  source                InvoiceSource
+  sourceReference       String?
+  issueDate             DateTime           @db.Date
+  servicePeriodStart    DateTime?          @db.Date
+  servicePeriodEnd      DateTime?          @db.Date
+  dueDate               DateTime           @db.Date
+  currency              String             @db.Char(3)
+  subtotalMinor         Int
+  vatRate               String?
+  vatAmountMinor        Int?
+  totalMinor            Int
+  withholdingMinor      Int?
+  isReverseCharge       Boolean            @default(false)
+  reverseChargeOverride Boolean? // null = auto-detected, true/false = manually set
+  amountToPayMinor      Int
+  sellerTaxId           String?            @db.VarChar(50)
+  sellerName            String?            @db.VarChar(500)
+  sellerBankAccount     String?            @db.VarChar(34)
+  buyerTaxId            String?            @db.VarChar(50)
+  status                InvoiceStatus      @default(RECEIVED)
+  matchStatus           InvoiceMatchStatus @default(UNMATCHED)
+  approvalStatus        ApprovalStatus     @default(NOT_STARTED)
+  paymentStatus         PaymentStatus      @default(NOT_READY)
+  duplicateCheckHash    String?            @db.VarChar(64)
+  receivedAt            DateTime           @default(now())
+  reviewedAt            DateTime?
+  approvedAt            DateTime?
+  readyForPaymentAt     DateTime?
+  paidAt                DateTime?
+  rejectedAt            DateTime?
+  rejectionReason       String?
+  submittedByEmail      String?
+  notes                 String?
+  flagsJson             Json?
+  qrCodeBase64          String?            @db.Text
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+  deletedAt             DateTime?
 
-  organization        Organization              @relation(fields: [organizationId], references: [id])
-  contractor          Contractor?               @relation(fields: [contractorId], references: [id])
-  contract            Contract?                 @relation(fields: [contractId], references: [id])
-  billingProfile      ContractorBillingProfile? @relation(fields: [billingProfileId], references: [id])
+  organization   Organization              @relation(fields: [organizationId], references: [id])
+  contractor     Contractor?               @relation(fields: [contractorId], references: [id])
+  contract       Contract?                 @relation(fields: [contractId], references: [id])
+  billingProfile ContractorBillingProfile? @relation(fields: [billingProfileId], references: [id])
 
-  files               InvoiceFile[]
-  lines               InvoiceLine[]
-  matchResults        InvoiceMatchResult[]
-  paymentRunItems     PaymentRunItem[]
-  zatcaChainEntry     ZatcaInvoiceChain?
+  files           InvoiceFile[]
+  lines           InvoiceLine[]
+  matchResults    InvoiceMatchResult[]
+  paymentRunItems PaymentRunItem[]
+  zatcaChainEntry ZatcaInvoiceChain?
 
+  @@unique([organizationId, duplicateCheckHash])
   @@index([organizationId])
   @@index([organizationId, status])
   @@index([organizationId, approvalStatus])
@@ -66,7 +67,6 @@ model Invoice {
   @@index([organizationId, contractorId])
   @@index([organizationId, contractId])
   @@index([organizationId, receivedAt])
-  @@unique([organizationId, duplicateCheckHash])
   @@index([organizationId, sellerTaxId])
   @@index([organizationId, matchStatus])
 }
@@ -79,55 +79,55 @@ model InvoiceFile {
   role           InvoiceFileRole
   createdAt      DateTime        @default(now())
 
-  organization   Organization @relation(fields: [organizationId], references: [id])
-  invoice        Invoice      @relation(fields: [invoiceId], references: [id])
-  document       Document     @relation(fields: [documentId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
+  invoice      Invoice      @relation(fields: [invoiceId], references: [id])
+  document     Document     @relation(fields: [documentId], references: [id])
 
   @@index([organizationId])
   @@index([organizationId, invoiceId])
 }
 
 model InvoiceLine {
-  id                String   @id @default(cuid())
-  organizationId    String
-  invoiceId         String
-  lineNumber        Int
-  description       String
-  quantity          Decimal? @db.Decimal(18, 4)
-  unit              String?
-  unitPriceMinor    Int?
-  netAmountMinor    Int?
-  vatRate           String?
-  vatAmountMinor    Int?
-  grossAmountMinor  Int?
-  createdAt         DateTime @default(now())
+  id               String   @id @default(cuid())
+  organizationId   String
+  invoiceId        String
+  lineNumber       Int
+  description      String
+  quantity         Decimal? @db.Decimal(18, 4)
+  unit             String?
+  unitPriceMinor   Int?
+  netAmountMinor   Int?
+  vatRate          String?
+  vatAmountMinor   Int?
+  grossAmountMinor Int?
+  createdAt        DateTime @default(now())
 
-  organization      Organization @relation(fields: [organizationId], references: [id])
-  invoice           Invoice      @relation(fields: [invoiceId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
+  invoice      Invoice      @relation(fields: [invoiceId], references: [id])
 
   @@index([organizationId])
   @@index([organizationId, invoiceId])
 }
 
 model InvoiceMatchResult {
-  id                   String             @id @default(cuid())
-  organizationId       String
-  invoiceId            String
-  matchedContractId    String?
-  matchedContractorId  String?
-  matchScore           Decimal?           @db.Decimal(5, 2)
-  expectedAmountMinor  Int?
-  expectedCurrency     String?            @db.Char(3)
-  amountDeltaMinor     Int?
-  amountDeltaPercent   Decimal?           @db.Decimal(8, 4)
-  matchedBy            MatchBy
-  status               InvoiceMatchStatus
-  explanationJson      Json?
-  createdAt            DateTime           @default(now())
-  createdByUserId      String?
+  id                  String             @id @default(cuid())
+  organizationId      String
+  invoiceId           String
+  matchedContractId   String?
+  matchedContractorId String?
+  matchScore          Decimal?           @db.Decimal(5, 2)
+  expectedAmountMinor Int?
+  expectedCurrency    String?            @db.Char(3)
+  amountDeltaMinor    Int?
+  amountDeltaPercent  Decimal?           @db.Decimal(8, 4)
+  matchedBy           MatchBy
+  status              InvoiceMatchStatus
+  explanationJson     Json?
+  createdAt           DateTime           @default(now())
+  createdByUserId     String?
 
-  organization         Organization @relation(fields: [organizationId], references: [id])
-  invoice              Invoice      @relation(fields: [invoiceId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
+  invoice      Invoice      @relation(fields: [invoiceId], references: [id])
 
   @@index([organizationId])
   @@index([organizationId, invoiceId])

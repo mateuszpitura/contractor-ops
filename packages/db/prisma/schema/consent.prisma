@@ -13,8 +13,8 @@ model ConsentRecord {
   userAgent      String?
   createdAt      DateTime       @default(now())
 
-  organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  user           User           @relation("UserConsentRecords", fields: [userId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation("UserConsentRecords", fields: [userId], references: [id], onDelete: Cascade)
 
   // Immutable — no updatedAt (per D-02, matches AuditLog pattern)
   @@index([organizationId])
@@ -31,10 +31,10 @@ model PrivacyNotice {
   effectiveFrom  DateTime
   createdAt      DateTime @default(now())
 
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
-  @@index([organizationId, jurisdiction])
   @@unique([organizationId, jurisdiction, version])
+  @@index([organizationId, jurisdiction])
 }
 
 enum ConsentPurpose {

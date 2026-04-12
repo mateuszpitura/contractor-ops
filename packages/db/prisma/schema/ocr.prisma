@@ -3,22 +3,22 @@
 // ---------------------------------------------------------------------------
 
 model OcrExtraction {
-  id               String              @id @default(cuid())
-  organizationId   String
-  invoiceId        String?
-  documentId       String
-  provider         OcrProvider         @default(CLAUDE)
-  status           OcrExtractionStatus @default(PENDING)
-  resultJson       Json?
-  overallConfidence Decimal?           @db.Decimal(5, 2)
-  pageCount        Int?
-  processingTimeMs Int?
-  errorMessage     String?
-  retryCount       Int                 @default(0)
-  createdAt        DateTime            @default(now())
-  completedAt      DateTime?
+  id                String              @id @default(cuid())
+  organizationId    String
+  invoiceId         String?
+  documentId        String
+  provider          OcrProvider         @default(CLAUDE)
+  status            OcrExtractionStatus @default(PENDING)
+  resultJson        Json?
+  overallConfidence Decimal?            @db.Decimal(5, 2)
+  pageCount         Int?
+  processingTimeMs  Int?
+  errorMessage      String?
+  retryCount        Int                 @default(0)
+  createdAt         DateTime            @default(now())
+  completedAt       DateTime?
 
-  organization     Organization        @relation(fields: [organizationId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
 
   @@index([organizationId])
   @@index([organizationId, documentId])

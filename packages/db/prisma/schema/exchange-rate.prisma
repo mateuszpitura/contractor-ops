@@ -3,8 +3,8 @@
 model ExchangeRate {
   id        String   @id @default(cuid())
   date      DateTime @db.Date
-  base      String   @db.Char(3)   // Always "EUR" for ECB source
-  target    String   @db.Char(3)   // e.g., "USD", "PLN", "AED", "SAR", "GBP"
+  base      String   @db.Char(3) // Always "EUR" for ECB source
+  target    String   @db.Char(3) // e.g., "USD", "PLN", "AED", "SAR", "GBP"
   rate      Decimal  @db.Decimal(18, 8)
   source    String   @default("ECB") // "ECB" or "DERIVED" (for AED/SAR cross-rates)
   createdAt DateTime @default(now())

@@ -39,24 +39,24 @@ model WithholdingTaxRate {
 }
 
 model WhtCertificate {
-  id                 String   @id @default(cuid())
-  organizationId     String
-  paymentRunItemId   String
-  certificateNumber  String   @db.VarChar(50)
-  documentId         String?
-  grossAmountMinor   Int
-  whtRate            Decimal  @db.Decimal(5, 2)
-  whtAmountMinor     Int
-  netAmountMinor     Int
-  currency           String   @db.Char(3)
-  contractorName     String
-  contractorTaxId    String?
-  contractorCountry  String   @db.Char(2)
-  treatyApplied      Boolean  @default(false)
-  treatyReference    String?  @db.VarChar(100)
-  paymentDate        DateTime @db.Date
-  generatedAt        DateTime @default(now())
-  generatedByUserId  String
+  id                String   @id @default(cuid())
+  organizationId    String
+  paymentRunItemId  String
+  certificateNumber String   @db.VarChar(50)
+  documentId        String?
+  grossAmountMinor  Int
+  whtRate           Decimal  @db.Decimal(5, 2)
+  whtAmountMinor    Int
+  netAmountMinor    Int
+  currency          String   @db.Char(3)
+  contractorName    String
+  contractorTaxId   String?
+  contractorCountry String   @db.Char(2)
+  treatyApplied     Boolean  @default(false)
+  treatyReference   String?  @db.VarChar(100)
+  paymentDate       DateTime @db.Date
+  generatedAt       DateTime @default(now())
+  generatedByUserId String
 
   @@unique([organizationId, certificateNumber])
   @@index([organizationId])

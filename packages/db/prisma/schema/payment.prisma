@@ -1,30 +1,30 @@
 // PaymentRun, PaymentRunItem, PaymentExport
 
 model PaymentRun {
-  id               String           @id @default(cuid())
+  id               String               @id @default(cuid())
   organizationId   String
   runNumber        String?
   name             String?
-  status           PaymentRunStatus @default(DRAFT)
-  currency         String?          @db.Char(3)
+  status           PaymentRunStatus     @default(DRAFT)
+  currency         String?              @db.Char(3)
   createdByUserId  String
   approvedByUserId String?
-  totalMinor       Int              @default(0)
-  invoiceCount     Int              @default(0)
+  totalMinor       Int                  @default(0)
+  invoiceCount     Int                  @default(0)
   exportFormat     PaymentExportFormat?
   exportedAt       DateTime?
   completedAt      DateTime?
   failedAt         DateTime?
   notes            String?
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
 
-  organization     Organization @relation(fields: [organizationId], references: [id])
-  createdBy        User         @relation("PaymentRunCreator", fields: [createdByUserId], references: [id])
-  approvedBy       User?        @relation("PaymentRunApprover", fields: [approvedByUserId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
+  createdBy    User         @relation("PaymentRunCreator", fields: [createdByUserId], references: [id])
+  approvedBy   User?        @relation("PaymentRunApprover", fields: [approvedByUserId], references: [id])
 
-  items            PaymentRunItem[]
-  exports          PaymentExport[]
+  items   PaymentRunItem[]
+  exports PaymentExport[]
 
   @@index([organizationId])
   @@index([organizationId, status])
@@ -32,32 +32,32 @@ model PaymentRun {
 }
 
 model PaymentRunItem {
-  id               String               @id @default(cuid())
-  organizationId   String
-  paymentRunId     String
-  invoiceId        String
-  contractorId     String
-  billingProfileId String?
-  amountMinor      Int
-  currency         String               @db.Char(3)
-  status           PaymentRunItemStatus  @default(PENDING)
-  paymentReference String?
-  markedPaidAt     DateTime?
-  failureReason    String?
-  whtAmountMinor       Int?
-  whtRate              Decimal?           @db.Decimal(5, 2)
-  whtTreatyApplied     Boolean?
-  whtTreatyReference   String?            @db.VarChar(100)
-  whtServiceType       String?            @db.VarChar(50)
-  grossAmountMinor     Int?               // Original amount before WHT deduction
-  createdAt        DateTime             @default(now())
-  updatedAt        DateTime             @updatedAt
+  id                 String               @id @default(cuid())
+  organizationId     String
+  paymentRunId       String
+  invoiceId          String
+  contractorId       String
+  billingProfileId   String?
+  amountMinor        Int
+  currency           String               @db.Char(3)
+  status             PaymentRunItemStatus @default(PENDING)
+  paymentReference   String?
+  markedPaidAt       DateTime?
+  failureReason      String?
+  whtAmountMinor     Int?
+  whtRate            Decimal?             @db.Decimal(5, 2)
+  whtTreatyApplied   Boolean?
+  whtTreatyReference String?              @db.VarChar(100)
+  whtServiceType     String?              @db.VarChar(50)
+  grossAmountMinor   Int? // Original amount before WHT deduction
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
 
-  organization     Organization              @relation(fields: [organizationId], references: [id])
-  paymentRun       PaymentRun                @relation(fields: [paymentRunId], references: [id])
-  invoice          Invoice                   @relation(fields: [invoiceId], references: [id])
-  contractor       Contractor                @relation(fields: [contractorId], references: [id])
-  billingProfile   ContractorBillingProfile? @relation(fields: [billingProfileId], references: [id])
+  organization   Organization              @relation(fields: [organizationId], references: [id])
+  paymentRun     PaymentRun                @relation(fields: [paymentRunId], references: [id])
+  invoice        Invoice                   @relation(fields: [invoiceId], references: [id])
+  contractor     Contractor                @relation(fields: [contractorId], references: [id])
+  billingProfile ContractorBillingProfile? @relation(fields: [billingProfileId], references: [id])
 
   @@unique([paymentRunId, invoiceId])
   @@index([organizationId])
@@ -76,10 +76,10 @@ model PaymentExport {
   generatedAt       DateTime            @default(now())
   downloadedAt      DateTime?
 
-  organization      Organization @relation(fields: [organizationId], references: [id])
-  paymentRun        PaymentRun   @relation(fields: [paymentRunId], references: [id])
-  document          Document?    @relation(fields: [documentId], references: [id])
-  generatedBy       User         @relation(fields: [generatedByUserId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
+  paymentRun   PaymentRun   @relation(fields: [paymentRunId], references: [id])
+  document     Document?    @relation(fields: [documentId], references: [id])
+  generatedBy  User         @relation(fields: [generatedByUserId], references: [id])
 
   @@index([organizationId])
   @@index([organizationId, paymentRunId])
