@@ -4,6 +4,7 @@ export type {
   ApprovalQueue,
 } from './approval.js';
 export {
+  approvalAuditSystemLabel,
   approvalChainCreateSchema,
   approvalChainUpdateSchema,
   approvalDecisionTypeEnum,
@@ -19,6 +20,8 @@ export {
   requestClarificationSchema,
   stepConfigSchema,
 } from './approval.js';
+export type { BillingCreditDenialReason } from './billing-credits.js';
+export { billingCreditDenialReason } from './billing-credits.js';
 export type {
   CalendarEventMetadata,
   CalendarTaskConfig,
@@ -130,6 +133,9 @@ export {
 export type { ClientEnv, ServerEnv } from './env.js';
 export {
   clientEnvSchema,
+  getServerEnv,
+  getServerEnvRecord,
+  resetServerEnvCacheForTesting,
   serverEnvSchema,
   validateClientEnv,
   validateServerEnv,
@@ -226,6 +232,7 @@ export {
   slackOAuthInitSchema,
   slackUserLinkSchema,
   slackUserUnlinkSchema,
+  webhookIngressReason,
 } from './integration.js';
 export type {
   InvoiceCreate,
@@ -392,6 +399,7 @@ export type {
   WhtCalculation,
   WhtServiceType,
 } from './tax.js';
+export { isValidUtr } from './uk-validators.js';
 export {
   taxRateCodeSchema,
   taxRateResponseSchema,
@@ -465,6 +473,7 @@ export {
   userRoleEnum,
   workflowRunListSchema,
   workflowRunStatusEnum,
+  workflowTaskSkipReason,
   workflowTaskStatusEnum,
   workflowTaskTypeEnum,
   workflowTemplateStatusEnum,
