@@ -46,6 +46,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Link } from "@/i18n/navigation";
 
+import { Bdi } from "@/components/ui/bdi";
 import { PaymentRunBadge, PaymentItemBadge } from "./payment-run-badge";
 import { WhtSummaryCard } from "@/components/payments/wht-summary-card";
 import { formatMinorUnits } from "@/lib/format-currency";
@@ -467,12 +468,12 @@ function PaymentRunItemRow({
               className="text-primary hover:underline text-xs font-medium truncate"
               onClick={(e) => e.stopPropagation()}
             >
-              {item.invoice.invoiceNumber}
+              <Bdi>{item.invoice.invoiceNumber}</Bdi>
             </Link>
             <PaymentItemBadge status={item.status} />
           </div>
           <p className="text-xs text-muted-foreground truncate">
-            {item.contractor.legalName}
+            <Bdi>{item.contractor.legalName}</Bdi>
           </p>
           {item.paymentReference && (
             <p className="text-[12px] text-muted-foreground">

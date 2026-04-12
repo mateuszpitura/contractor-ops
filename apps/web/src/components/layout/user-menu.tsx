@@ -44,6 +44,7 @@ import { useDensity } from "@/hooks/use-density";
 import { useRouter, usePathname } from "@/i18n/navigation";
 import { useLocale } from "next-intl";
 import type { Locale } from "@/i18n/routing";
+import { Bdi } from "@/components/ui/bdi";
 
 /**
  * User menu in the sidebar footer.
@@ -108,9 +109,13 @@ export function UserMenu() {
   };
 
   const handleLocaleSwitch = () => {
-    const nextLocale: Locale = locale === "pl" ? "en" : "pl";
+    const localeOrder: Locale[] = ["pl", "en", "ar"];
+    const currentIndex = localeOrder.indexOf(locale as Locale);
+    const nextLocale = localeOrder[(currentIndex + 1) % localeOrder.length];
     router.replace(pathname, { locale: nextLocale });
   };
+
+  const nextLocaleLabel: Record<string, string> = { pl: "EN", en: "\u0639\u0631\u0628\u064A", ar: "PL" };
 
   return (
     <>
@@ -131,10 +136,10 @@ export function UserMenu() {
         </Avatar>
         <div className="grid flex-1 text-start text-sm leading-tight">
           <span className="truncate font-semibold">
-            {user?.name ?? "User"}
+            <Bdi>{user?.name ?? "User"}</Bdi>
           </span>
           <span className="truncate text-xs text-muted-foreground">
-            {user?.email ?? ""}
+            <Bdi>{user?.email ?? ""}</Bdi>
           </span>
         </div>
         <ChevronsUpDown className="ms-auto size-4" />
@@ -158,10 +163,10 @@ export function UserMenu() {
             </Avatar>
             <div className="grid flex-1 text-start text-sm leading-tight">
               <span className="truncate font-semibold">
-                {user?.name ?? "User"}
+                <Bdi>{user?.name ?? "User"}</Bdi>
               </span>
               <span className="truncate text-xs text-muted-foreground">
-                {user?.email ?? ""}
+                <Bdi>{user?.email ?? ""}</Bdi>
               </span>
             </div>
           </div>
@@ -225,7 +230,7 @@ export function UserMenu() {
             onClick={handleLocaleSwitch}
             className="text-sm font-medium text-primary hover:underline"
           >
-            {locale === "pl" ? "EN" : "PL"}
+            {nextLocaleLabel[locale] ?? "EN"}
           </button>
         </div>
 

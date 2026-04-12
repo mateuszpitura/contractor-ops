@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Link } from "@/i18n/navigation";
+import { Bdi } from "@/components/ui/bdi";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -177,7 +178,7 @@ export function ActivityFeed() {
                         >
                           <p className="text-sm">
                             <span className="text-foreground">
-                              {item.actorName ?? t("activity.systemActor")}
+                              <Bdi>{item.actorName ?? t("activity.systemActor")}</Bdi>
                             </span>{" "}
                             <span className="font-semibold">
                               {t(`activity.actions.${item.action}` as Parameters<typeof t>[0])}
@@ -194,7 +195,7 @@ export function ActivityFeed() {
                               )}
                               className="min-w-0 truncate text-xs text-foreground hover:underline"
                             >
-                              {item.resourceName ?? item.resourceId}
+                              <Bdi>{item.resourceName ?? item.resourceId}</Bdi>
                             </Link>
                             <span className="shrink-0 text-xs tabular-nums text-muted-foreground/60">
                               {formatDistanceToNow(new Date(item.createdAt), {

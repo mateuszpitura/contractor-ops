@@ -10,6 +10,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Bdi } from "@/components/ui/bdi";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -168,7 +169,7 @@ export function NotificationItem({
       {/* Title + body */}
       <div className="flex min-w-0 flex-1 flex-col">
         <span className="truncate text-sm font-semibold">
-          {notification.title}
+          <Bdi>{notification.title}</Bdi>
         </span>
         <span className="truncate text-sm text-muted-foreground">
           {notification.body}
