@@ -8,7 +8,8 @@ const t = initTRPC.context<Context>().create({
 });
 
 export const router = t.router;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- handler shape matches at runtime; typed loosely to avoid circular import of tRPC internals
+export const mergeRouters = t.mergeRouters;
+// biome-ignore lint/suspicious/noExplicitAny: middleware is defined as a plain function to avoid circular imports; its shape matches at runtime but cannot satisfy tRPC's internal MiddlewareFunction generic without importing t from this file
 export const publicProcedure = t.procedure.use(t.middleware(observabilityMiddleware as any));
 export const createCallerFactory = t.createCallerFactory;
 export { t };
