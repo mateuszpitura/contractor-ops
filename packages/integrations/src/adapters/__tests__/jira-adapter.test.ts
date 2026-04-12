@@ -113,7 +113,7 @@ describe("JiraAdapter", () => {
   it("verifyWebhookSignature rejects bad HMAC", () => {
     const secret = "whsec";
     const body = "{}";
-    const sig = createHmac("sha256", secret).update(body).digest("hex");
+    const _sig = createHmac("sha256", secret).update(body).digest("hex");
     const r = adapter.verifyWebhookSignature(body, {
       "x-webhook-secret": secret,
       "x-hub-signature": "sha256=deadbeef",

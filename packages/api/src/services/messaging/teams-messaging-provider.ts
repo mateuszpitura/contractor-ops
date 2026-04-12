@@ -172,10 +172,6 @@ export class TeamsMessagingProvider implements MessagingProvider {
       return;
     }
 
-    console.log(
-      `[Teams] Sending channel alert to ${params.channelId} for org ${params.organizationId}`,
-    );
-
     const card = buildActivityAlertCard({
       title: params.title,
       details: params.details,

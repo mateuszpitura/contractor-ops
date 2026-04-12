@@ -13,39 +13,39 @@ describe("DPD Status Mapper", () => {
     });
 
     it("maps DEP_DELIVERED to DELIVERED", () => {
-      expect(DPD_STATUS_MAP["DEP_DELIVERED"]).toBe("DELIVERED");
+      expect(DPD_STATUS_MAP.DEP_DELIVERED).toBe("DELIVERED");
     });
 
     it("maps DEP_IN_DELIVERY to OUT_FOR_DELIVERY", () => {
-      expect(DPD_STATUS_MAP["DEP_IN_DELIVERY"]).toBe("OUT_FOR_DELIVERY");
+      expect(DPD_STATUS_MAP.DEP_IN_DELIVERY).toBe("OUT_FOR_DELIVERY");
     });
 
     it("maps DEP_IN_TRANSIT to IN_TRANSIT", () => {
-      expect(DPD_STATUS_MAP["DEP_IN_TRANSIT"]).toBe("IN_TRANSIT");
+      expect(DPD_STATUS_MAP.DEP_IN_TRANSIT).toBe("IN_TRANSIT");
     });
 
     it("maps DEP_COLLECTED to PICKED_UP", () => {
-      expect(DPD_STATUS_MAP["DEP_COLLECTED"]).toBe("PICKED_UP");
+      expect(DPD_STATUS_MAP.DEP_COLLECTED).toBe("PICKED_UP");
     });
 
     it("maps DEP_ACCEPTED to CREATED", () => {
-      expect(DPD_STATUS_MAP["DEP_ACCEPTED"]).toBe("CREATED");
+      expect(DPD_STATUS_MAP.DEP_ACCEPTED).toBe("CREATED");
     });
 
     it("maps DEP_RETURNED to RETURNED", () => {
-      expect(DPD_STATUS_MAP["DEP_RETURNED"]).toBe("RETURNED");
+      expect(DPD_STATUS_MAP.DEP_RETURNED).toBe("RETURNED");
     });
 
     it("maps DEP_REFUSED to FAILED", () => {
-      expect(DPD_STATUS_MAP["DEP_REFUSED"]).toBe("FAILED");
+      expect(DPD_STATUS_MAP.DEP_REFUSED).toBe("FAILED");
     });
 
     it("maps DEP_LOST to FAILED", () => {
-      expect(DPD_STATUS_MAP["DEP_LOST"]).toBe("FAILED");
+      expect(DPD_STATUS_MAP.DEP_LOST).toBe("FAILED");
     });
 
     it("maps DEP_PICKUP_ARRANGED to LABEL_GENERATED", () => {
-      expect(DPD_STATUS_MAP["DEP_PICKUP_ARRANGED"]).toBe("LABEL_GENERATED");
+      expect(DPD_STATUS_MAP.DEP_PICKUP_ARRANGED).toBe("LABEL_GENERATED");
     });
   });
 

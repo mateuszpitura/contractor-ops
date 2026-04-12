@@ -340,7 +340,7 @@ describe("organization.update", () => {
   it("omits metadata key when only name is provided", async () => {
     await caller.organization.update({ name: "Just Name" });
 
-    const call = vi.mocked(auth.api.updateOrganization).mock.calls[0]![0] as {
+    const call = vi.mocked(auth.api.updateOrganization).mock.calls[0]?.[0] as {
       body: { data: Record<string, unknown> };
     };
     expect(call.body.data.name).toBe("Just Name");
@@ -350,7 +350,7 @@ describe("organization.update", () => {
   it("omits name key when only metadata fields are provided", async () => {
     await caller.organization.update({ billingEmail: "billing@corp.com" });
 
-    const call = vi.mocked(auth.api.updateOrganization).mock.calls[0]![0] as {
+    const call = vi.mocked(auth.api.updateOrganization).mock.calls[0]?.[0] as {
       body: { data: Record<string, unknown> };
     };
     expect(call.body.data.name).toBeUndefined();

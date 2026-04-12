@@ -19,7 +19,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { trpc } from "@/trpc/init";
@@ -143,7 +142,7 @@ export function EquipmentDetailHeader({
             {t("detail.edit")}
           </Button>
 
-          {!isRetired && !isAssigned && (
+          {!(isRetired || isAssigned) && (
             <Button variant="outline" size="sm" onClick={onAssign}>
               <UserPlus className="me-1.5 size-3.5" />
               {t("detail.assignToContractor")}
@@ -176,7 +175,7 @@ export function EquipmentDetailHeader({
               )}
             />
             <DropdownMenuContent align="end">
-              {!isRetired && !isAssigned && (
+              {!(isRetired || isAssigned) && (
                 <DropdownMenuItem variant="destructive" onSelect={() => setRetireDialogOpen(true)}>
                   <Archive className="me-2 h-3.5 w-3.5" />
                   {t("detail.retire")}

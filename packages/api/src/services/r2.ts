@@ -88,7 +88,7 @@ function sanitizeExtension(raw: string): string {
     .replace(/[^a-zA-Z0-9]/g, "") // keep only alphanumeric
     .toLowerCase();
 
-  if (!cleaned || !ALLOWED_EXTENSIONS.has(cleaned)) {
+  if (!(cleaned && ALLOWED_EXTENSIONS.has(cleaned))) {
     return "";
   }
 

@@ -168,11 +168,12 @@ function isPublicRoute(pathname: string): boolean {
 function isDashboardRoute(pathname: string): boolean {
   const withoutLocale = pathname.replace(/^\/[a-z]{2}(?=\/)/, "");
   return (
-    !isAuthRoute(pathname) &&
-    !isPublicRoute(pathname) &&
-    !withoutLocale.startsWith("/portal") &&
-    !withoutLocale.startsWith("/invite") &&
-    withoutLocale !== "/" // root redirect handled separately
+    !(
+      isAuthRoute(pathname) ||
+      isPublicRoute(pathname) ||
+      withoutLocale.startsWith("/portal") ||
+      withoutLocale.startsWith("/invite")
+    ) && withoutLocale !== "/" // root redirect handled separately
   );
 }
 
@@ -213,13 +214,15 @@ export default async function middleware(request: NextRequest) {
     if (!shouldSkipTrpcRateLimitForLoadTest(request)) {
       // Per-IP rate limit
       const ipResult = await checkLimit(apiLimiter, ip, "api", 60);
-      if (!ipResult.allowed) return rateLimitResponse(ipResult.remaining, ipResult.limit, ipResult.reset);
+      if (!ipResult.allowed)
+        return rateLimitResponse(ipResult.remaining, ipResult.limit, ipResult.reset);
 
       // Per-org rate limit (extract from session cookie → org cookie if available)
       const orgId = request.cookies.get("better-auth.active_organization")?.value;
       if (orgId) {
         const orgResult = await checkLimit(orgLimiter, orgId, "org", 500);
-        if (!orgResult.allowed) return rateLimitResponse(orgResult.remaining, orgResult.limit, orgResult.reset);
+        if (!orgResult.allowed)
+          return rateLimitResponse(orgResult.remaining, orgResult.limit, orgResult.reset);
       }
     }
   }

@@ -4,7 +4,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -102,7 +101,7 @@ export function LinearTaskConfig({ taskTemplateId }: LinearTaskConfigProps) {
   });
 
   // Don't render if Linear is not connected
-  if (!connection || !isConnected) {
+  if (!(connection && isConnected)) {
     return null;
   }
 

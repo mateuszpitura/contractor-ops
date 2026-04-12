@@ -1,5 +1,3 @@
-import { prisma } from "@contractor-ops/db";
-import type { DbClient } from "./types.js";
 import { createLogger } from "@contractor-ops/logger";
 import { metrics } from "@contractor-ops/logger/metrics";
 import { Resend } from "resend";
@@ -11,9 +9,9 @@ import {
   TRIAL_CREDIT_ALLOWANCE,
 } from "./billing-constants.js";
 import { CacheKeys, invalidate } from "./cache.js";
-import { allocateTopUpCredits } from "./credit-service.js";
 import { dispatch } from "./notification-service.js";
 import { stripe } from "./stripe-client.js";
+import type { DbClient } from "./types.js";
 
 const log = createLogger({ service: "billing-webhook" });
 
@@ -183,7 +181,6 @@ export async function routeStripeEvent(event: Stripe.Event, tx: TxClient): Promi
     }
 
     default:
-      console.log(`[stripe-webhook] Unhandled event type: ${event.type}`);
   }
 }
 
@@ -266,7 +263,7 @@ async function handleTopUpCompleted(session: Stripe.Checkout.Session, tx: TxClie
   const organizationId = session.metadata?.organizationId;
   const priceId = session.metadata?.priceId;
 
-  if (!organizationId || !priceId) {
+  if (!(organizationId && priceId)) {
     log.error(
       { sessionId: session.id },
       "handleTopUpCompleted: missing organizationId or priceId in metadata",
@@ -514,9 +511,6 @@ async function handleInvoicePaid(invoice: Stripe.Invoice, tx: TxClient): Promise
   const subscriptionId = getSubscriptionIdFromInvoice(invoice);
 
   if (!subscriptionId || invoice.billing_reason === "subscription_create") {
-    console.log(
-      `[stripe-webhook] handleInvoicePaid: skipping invoice ${invoice.id} (reason: ${invoice.billing_reason ?? "no subscription"})`,
-    );
     return;
   }
 
@@ -527,9 +521,6 @@ async function handleInvoicePaid(invoice: Stripe.Invoice, tx: TxClient): Promise
   });
 
   if (existingAllocation) {
-    console.log(
-      `[stripe-webhook] handleInvoicePaid: credits already allocated for invoice ${invoice.id}, skipping`,
-    );
     return;
   }
 
@@ -553,10 +544,6 @@ async function handleInvoicePaid(invoice: Stripe.Invoice, tx: TxClient): Promise
   }
 
   const credits = TIER_CREDIT_ALLOWANCE[tier as keyof typeof TIER_CREDIT_ALLOWANCE];
-
-  console.log(
-    `[stripe-webhook] Allocating ${credits} credits for org ${sub.organizationId} (tier: ${tier}, invoice: ${invoice.id})`,
-  );
 
   await tx.ocrCreditLedger.create({
     data: {

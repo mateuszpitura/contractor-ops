@@ -1,8 +1,8 @@
 import { createTrpcLogger } from "@contractor-ops/logger";
 import { metrics } from "@contractor-ops/logger/metrics";
 import * as Sentry from "@sentry/nextjs";
-import type { Context } from "../context.js";
 import type { AnyMiddlewareFunction } from "@trpc/server";
+import type { Context } from "../context.js";
 
 /**
  * Raw observability middleware handler for tRPC procedures.

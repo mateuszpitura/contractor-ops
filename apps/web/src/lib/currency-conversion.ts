@@ -35,6 +35,6 @@ export function minorToDisplay(minor: number | null | undefined, currency = "PLN
 /** Convert display string to minor units integer (e.g. "100.50" -> 10050 for PLN) */
 export function displayToMinor(display: string, currency = "PLN"): number {
   const num = parseFloat(display);
-  if (isNaN(num)) return 0;
+  if (Number.isNaN(num)) return 0;
   return Math.round(num * getMinorUnitFactor(currency));
 }

@@ -80,7 +80,7 @@ export const invoiceCreateSchema = invoiceCreateBaseSchema
   })
   .refine(
     (d) => {
-      if (!d.servicePeriodStart || !d.servicePeriodEnd) return true;
+      if (!(d.servicePeriodStart && d.servicePeriodEnd)) return true;
       return new Date(d.servicePeriodEnd) >= new Date(d.servicePeriodStart);
     },
     {

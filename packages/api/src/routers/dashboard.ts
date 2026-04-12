@@ -120,9 +120,7 @@ async function fetchSpendTrend(organizationId: string, months: string) {
     startDate = new Date(now.getFullYear(), now.getMonth() - monthsBack, 1);
   }
 
-  const rows = await ctx.db.$queryRaw<
-    Array<{ month: Date; currency: string; totalMinor: number }>
-  >`
+  const rows = await ctx.db.$queryRaw<Array<{ month: Date; currency: string; totalMinor: number }>>`
     SELECT
       date_trunc('month', "paidAt") AS month,
       currency,

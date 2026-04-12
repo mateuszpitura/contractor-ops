@@ -24,7 +24,6 @@ import {
   generateSwiftXml,
   resolveTransferTitle,
 } from "../services/payment-export.js";
-import { groupItemsByFormat } from "../services/payment-format-detection.js";
 import { calculateWht } from "../services/tax-rate.service.js";
 
 // ---------------------------------------------------------------------------
@@ -210,7 +209,7 @@ export const paymentRouter = router({
             for (const inv of invoices) {
               const curr = inv.currency;
               if (!groups.has(curr)) groups.set(curr, []);
-              groups.get(curr)!.push(inv);
+              groups.get(curr)?.push(inv);
             }
           } else {
             // Validate all invoices share the same currency
@@ -257,7 +256,7 @@ export const paymentRouter = router({
                 name: input.name ?? null,
                 status: "DRAFT",
                 currency,
-                createdByUserId: ctx.user!.id,
+                createdByUserId: ctx.user?.id,
                 totalMinor,
                 invoiceCount: groupInvoices.length,
                 notes: input.notes ?? null,
@@ -499,8 +498,10 @@ export const paymentRouter = router({
 
         // Validate transition
         if (
-          !VALID_TRANSITIONS[run.status]?.includes("LOCKED") &&
-          !VALID_TRANSITIONS[run.status]?.includes("EXPORTED")
+          !(
+            VALID_TRANSITIONS[run.status]?.includes("LOCKED") ||
+            VALID_TRANSITIONS[run.status]?.includes("EXPORTED")
+          )
         ) {
           throw new TRPCError({
             code: "BAD_REQUEST",
@@ -619,7 +620,7 @@ export const paymentRouter = router({
             paymentRunId: run.id,
             format: input.exportFormat,
             status: "GENERATED",
-            generatedByUserId: ctx.user!.id,
+            generatedByUserId: ctx.user?.id,
           },
         });
 
@@ -813,7 +814,7 @@ export const paymentRouter = router({
           const member = await tx.member.findFirst({
             where: {
               organizationId: ctx.organizationId,
-              userId: ctx.user!.id,
+              userId: ctx.user?.id,
             },
             select: { role: true },
           });

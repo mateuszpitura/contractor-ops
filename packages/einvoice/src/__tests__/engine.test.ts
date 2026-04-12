@@ -52,7 +52,7 @@ function createMockProfile(): EInvoiceProfile {
     async validate(_xml: string): Promise<ValidationResult> {
       return { valid: true, errors: [], warnings: [], profileId: "mock" };
     },
-    async getComplianceStatus(orgId: string): Promise<ComplianceStatus> {
+    async getComplianceStatus(_orgId: string): Promise<ComplianceStatus> {
       return {
         profileId: "mock",
         state: "active",
@@ -109,7 +109,7 @@ describe("EInvoiceEngine", () => {
   it("returns compliance statuses for all registered profiles", async () => {
     const statuses = await engine.getComplianceStatuses("org-123");
     expect(statuses).toHaveLength(1);
-    expect(statuses[0]!.profileId).toBe("mock");
+    expect(statuses[0]?.profileId).toBe("mock");
   });
 
   it("throws for unknown profile", async () => {

@@ -161,7 +161,7 @@ describe("GoogleWorkspaceAdapter", () => {
 
     expect(out.accessToken).toBe("new-at");
     expect(out.refreshToken).toBe("rt-persist");
-    const body = JSON.parse((fetchMock.mock.calls[0]![1] as RequestInit).body as string);
+    const body = JSON.parse((fetchMock.mock.calls[0]?.[1] as RequestInit).body as string);
     expect(body.grant_type).toBe("refresh_token");
   });
 
@@ -233,10 +233,10 @@ describe("GoogleWorkspaceAdapter", () => {
     expect(users).toHaveLength(2);
     expect(users.map((u) => u.id)).toEqual(["1", "3"]);
     expect(fetchMock).toHaveBeenCalledTimes(2);
-    const firstUrl = fetchMock.mock.calls[0]![0] as string;
+    const firstUrl = fetchMock.mock.calls[0]?.[0] as string;
     expect(firstUrl).toContain("admin.googleapis.com/admin/directory/v1/users");
     expect(firstUrl).toContain("customer=my_customer");
-    const secondUrl = fetchMock.mock.calls[1]![0] as string;
+    const secondUrl = fetchMock.mock.calls[1]?.[0] as string;
     expect(secondUrl).toContain("pageToken=tok2");
   });
 
@@ -295,7 +295,7 @@ describe("GoogleWorkspaceAdapter", () => {
 
     expect(groups).toHaveLength(2);
     expect(fetchMock).toHaveBeenCalledTimes(2);
-    const firstUrl = fetchMock.mock.calls[0]![0] as string;
+    const firstUrl = fetchMock.mock.calls[0]?.[0] as string;
     expect(firstUrl).toContain("/admin/directory/v1/groups");
     expect(firstUrl).toContain("userKey=u%40x.com");
   });

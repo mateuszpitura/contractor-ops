@@ -98,7 +98,7 @@ function RunLinearChips({ runId }: { runId: string }) {
 
   const issues = (issuesQuery.data ?? []) as unknown as LinkedLinearIssueData[];
 
-  if (!connectionQuery.data || !issues.length) return null;
+  if (!(connectionQuery.data && issues.length)) return null;
 
   const visible = issues.slice(0, 3);
   const overflow = issues.length - 3;
@@ -144,7 +144,7 @@ function RunJiraChips({ runId }: { runId: string }) {
 
   const issues = (issuesQuery.data ?? []) as unknown as LinkedIssueData[];
 
-  if (!connectionQuery.data || !issues.length) return null;
+  if (!(connectionQuery.data && issues.length)) return null;
 
   const visible = issues.slice(0, 3);
   const overflow = issues.length - 3;

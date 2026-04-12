@@ -1,8 +1,7 @@
-import { TRPCError } from "@trpc/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const { tenantStoreRun } = vi.hoisted(() => ({
-  tenantStoreRun: vi.fn((ctx: { organizationId: string }, fn: () => unknown) => fn()),
+  tenantStoreRun: vi.fn((_ctx: { organizationId: string }, fn: () => unknown) => fn()),
 }));
 
 vi.mock("@sentry/nextjs", () => {

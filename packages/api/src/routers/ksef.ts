@@ -7,7 +7,6 @@ import * as E from "../errors.js";
 import { router } from "../init.js";
 import { requirePermission } from "../middleware/rbac.js";
 import { tenantProcedure } from "../middleware/tenant.js";
-import { processKsefSync } from "../services/ksef-sync-orchestrator.js";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -115,7 +114,7 @@ export const ksefRouter = router({
               environment: input.environment,
             },
             credentialsRef,
-            connectedByUserId: ctx.user!.id,
+            connectedByUserId: ctx.user?.id,
             connectedAt: new Date(),
           },
         });
@@ -130,7 +129,7 @@ export const ksefRouter = router({
               environment: input.environment,
             },
             credentialsRef,
-            connectedByUserId: ctx.user!.id,
+            connectedByUserId: ctx.user?.id,
           },
         });
       }

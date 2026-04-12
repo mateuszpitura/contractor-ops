@@ -49,7 +49,7 @@ export class ResendAdapter extends BaseAdapter {
     const webhookSecret = process.env.RESEND_WEBHOOK_SECRET;
     const apiKey = process.env.RESEND_API_KEY;
 
-    if (!webhookSecret || !apiKey) {
+    if (!(webhookSecret && apiKey)) {
       return { valid: false };
     }
 
@@ -57,7 +57,7 @@ export class ResendAdapter extends BaseAdapter {
     const svixTimestamp = headers["svix-timestamp"];
     const svixSignature = headers["svix-signature"];
 
-    if (!svixId || !svixTimestamp || !svixSignature) {
+    if (!(svixId && svixTimestamp && svixSignature)) {
       return { valid: false };
     }
 
@@ -115,13 +115,10 @@ export class ResendAdapter extends BaseAdapter {
    */
   async handleWebhook(
     payload: unknown,
-    organizationId: string,
+    _organizationId: string,
     _connectionId: string,
   ): Promise<void> {
-    const typedPayload = payload as { type?: string };
-    console.log(
-      `[resend-adapter] handleWebhook called for org=${organizationId} type=${typedPayload.type ?? "unknown"}`,
-    );
+    const _typedPayload = payload as { type?: string };
     // Plan 03 will wire the full email processing logic here
   }
 }

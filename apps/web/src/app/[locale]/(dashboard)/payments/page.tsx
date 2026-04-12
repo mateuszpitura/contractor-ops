@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { Banknote, CreditCard, Plus } from "lucide-react";
+import { CreditCard, Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { parseAsString, useQueryState } from "nuqs";
 import { Suspense, useCallback, useMemo, useState } from "react";

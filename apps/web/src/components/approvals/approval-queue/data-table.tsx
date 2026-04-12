@@ -3,7 +3,7 @@
 import type { ColumnDef, RowSelectionState } from "@tanstack/react-table";
 import { flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import { useTranslations } from "next-intl";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -74,7 +74,7 @@ export function ApprovalQueueTable({
   // Reset selection when data changes (page/filter change)
   useEffect(() => {
     setRowSelection({});
-  }, [data]);
+  }, []);
 
   // Forward selection changes to parent
   useEffect(() => {

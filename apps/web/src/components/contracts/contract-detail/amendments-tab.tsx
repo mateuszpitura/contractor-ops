@@ -1,6 +1,6 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ChevronDown, ChevronRight, FileText, Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
@@ -98,7 +98,7 @@ function AddAmendmentDialog({
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!title.trim() || !effectiveDate) return;
+    if (!(title.trim() && effectiveDate)) return;
 
     createMutation.mutate({
       contractId,

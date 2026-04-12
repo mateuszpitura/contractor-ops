@@ -43,7 +43,7 @@ function renderCell(columnId: string, row: ContractRow) {
     },
     getValue: () => (row as any)[columnId],
   });
-  const { container } = render(<>{result}</>);
+  const { container } = render(result);
   return container;
 }
 
@@ -56,13 +56,13 @@ describe("getColumns (contracts)", () => {
   });
 
   it("has select column as first", () => {
-    expect(columns[0]!.id).toBe("select");
+    expect(columns[0]?.id).toBe("select");
   });
 
   it("has title as non-hideable column", () => {
     const titleCol = columns.find((c) => (c as any).accessorKey === "title");
     expect(titleCol).toBeDefined();
-    expect(titleCol!.enableHiding).toBe(false);
+    expect(titleCol?.enableHiding).toBe(false);
   });
 
   it("has contractor column", () => {
@@ -110,21 +110,19 @@ describe("getColumns cell renderers (contracts)", () => {
   it("status cell renders badge with translated status", () => {
     for (const status of ["DRAFT", "ACTIVE", "EXPIRED", "TERMINATED"]) {
       const { unmount } = render(
-        <>
-          {(() => {
-            const t = (key: string) => key;
-            const cols = getColumns(t);
-            const col = cols.find((c) => (c as any).accessorKey === "status");
-            return (col!.cell as any)({
-              row: {
-                original: makeRow({ status }),
-                getIsSelected: () => false,
-                toggleSelected: vi.fn(),
-              },
-              getValue: () => status,
-            });
-          })()}
-        </>,
+        (() => {
+          const t = (key: string) => key;
+          const cols = getColumns(t);
+          const col = cols.find((c) => (c as any).accessorKey === "status");
+          return (col?.cell as any)({
+            row: {
+              original: makeRow({ status }),
+              getIsSelected: () => false,
+              toggleSelected: vi.fn(),
+            },
+            getValue: () => status,
+          });
+        })(),
       );
       expect(screen.getByText(`status.${status}`)).toBeInTheDocument();
       unmount();
@@ -185,21 +183,19 @@ describe("getColumns cell renderers (contracts)", () => {
   it("complianceRisk cell renders risk badge when present", () => {
     for (const risk of ["LOW", "MEDIUM", "HIGH"]) {
       const { unmount } = render(
-        <>
-          {(() => {
-            const t = (key: string) => key;
-            const cols = getColumns(t);
-            const col = cols.find((c) => (c as any).accessorKey === "complianceRiskLevel");
-            return (col!.cell as any)({
-              row: {
-                original: makeRow({ complianceRiskLevel: risk }),
-                getIsSelected: () => false,
-                toggleSelected: vi.fn(),
-              },
-              getValue: () => risk,
-            });
-          })()}
-        </>,
+        (() => {
+          const t = (key: string) => key;
+          const cols = getColumns(t);
+          const col = cols.find((c) => (c as any).accessorKey === "complianceRiskLevel");
+          return (col?.cell as any)({
+            row: {
+              original: makeRow({ complianceRiskLevel: risk }),
+              getIsSelected: () => false,
+              toggleSelected: vi.fn(),
+            },
+            getValue: () => risk,
+          });
+        })(),
       );
       expect(screen.getByText(`risk.${risk}`)).toBeInTheDocument();
       unmount();

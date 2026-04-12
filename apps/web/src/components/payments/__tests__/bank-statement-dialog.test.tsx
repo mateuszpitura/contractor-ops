@@ -211,7 +211,7 @@ describe("BankStatementDialog", () => {
 
   it("shows results step with matched and unmatched rows when import succeeds", async () => {
     // Override the useMutation mock to call onSuccess with match results
-    const matchResults = [
+    const _matchResults = [
       {
         transactionIndex: 0,
         amountMinor: 100000,
@@ -231,7 +231,7 @@ describe("BankStatementDialog", () => {
     // The mutation mock calls mockMutate which we can intercept
     // We simulate via fireEvent + waitFor since the component calls importMutation.mutate
     // and the onSuccess handler sets matches state
-    mockMutate.mockImplementation((input: Record<string, unknown>) => {
+    mockMutate.mockImplementation((_input: Record<string, unknown>) => {
       // Simulate onSuccess callback from the mutation
       // The useMutation mock passes opts through, so onSuccess is available
     });
@@ -300,7 +300,7 @@ describe("BankStatementDialog", () => {
   });
 
   it("shows results step with matched items when onSuccess fires", async () => {
-    const matchResults = [
+    const _matchResults = [
       {
         transactionIndex: 0,
         amountMinor: 100000,
@@ -515,7 +515,7 @@ describe("BankStatementDialog", () => {
   // ---------------------------------------------------------------------------
 
   it("renders results step with table when onSuccess fires with matches", async () => {
-    const matchResults = [
+    const _matchResults = [
       {
         transactionIndex: 0,
         amountMinor: 100000,

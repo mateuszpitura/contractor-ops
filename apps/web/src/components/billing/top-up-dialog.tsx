@@ -81,9 +81,7 @@ export function TopUpDialog({ open, onOpenChange }: TopUpDialogProps) {
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{t("title")}</DialogTitle>
-          <DialogDescription>
-            {t("description")}
-          </DialogDescription>
+          <DialogDescription>{t("description")}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-2">
@@ -100,9 +98,7 @@ export function TopUpDialog({ open, onOpenChange }: TopUpDialogProps) {
             </SelectContent>
           </Select>
 
-          <p className="text-xs text-muted-foreground">
-            {t("priceNote")}
-          </p>
+          <p className="text-xs text-muted-foreground">{t("priceNote")}</p>
         </div>
 
         <DialogFooter>

@@ -390,9 +390,9 @@ describe("LinearAdapter", () => {
       expect(result.organizationName).toBe("Acme Corp");
       expect(result.urlKey).toBe("acme");
       expect(result.teams).toHaveLength(1);
-      expect(result.teams[0]!.key).toBe("ENG");
-      expect(result.teams[0]!.states).toHaveLength(2);
-      expect(result.teams[0]!.states[0]!.type).toBe("unstarted");
+      expect(result.teams[0]?.key).toBe("ENG");
+      expect(result.teams[0]?.states).toHaveLength(2);
+      expect(result.teams[0]?.states[0]?.type).toBe("unstarted");
     });
 
     it("throws when GraphQL endpoint returns non-OK", async () => {

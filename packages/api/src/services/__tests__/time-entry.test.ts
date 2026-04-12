@@ -98,7 +98,7 @@ describe("time-entry", () => {
 
       await getOrCreateTimesheet(prisma, ORG_ID, CONTRACTOR_ID, MONDAY);
 
-      const upsertArg = (prisma.timesheet.upsert as ReturnType<typeof vi.fn>).mock.calls[0]![0];
+      const upsertArg = (prisma.timesheet.upsert as ReturnType<typeof vi.fn>).mock.calls[0]?.[0];
 
       // Composite key identifies the unique timesheet
       expect(upsertArg.where).toEqual({
@@ -180,7 +180,7 @@ describe("time-entry", () => {
         { ...BASE_ENTRY, entryDate: "2026-04-01" },
       ]);
 
-      const createCall = mockTx.timeEntry.create.mock.calls[0]![0];
+      const createCall = mockTx.timeEntry.create.mock.calls[0]?.[0];
       expect(createCall.data.entryDate).toBeInstanceOf(Date);
       expect(createCall.data.entryDate).toEqual(new Date("2026-04-01"));
     });
@@ -203,7 +203,7 @@ describe("time-entry", () => {
         { contractId: "c-1", entryDate: "2026-03-30", minutes: 60 },
       ]);
 
-      const createCall = mockTx.timeEntry.create.mock.calls[0]![0];
+      const createCall = mockTx.timeEntry.create.mock.calls[0]?.[0];
       expect(createCall.data.description).toBeNull();
     });
 
@@ -380,7 +380,7 @@ describe("time-entry", () => {
 
       // Verify the exact input value (90) is passed to Prisma without
       // any floating-point conversion (e.g., parseFloat, division, rounding)
-      const createCall = mockTx.timeEntry.create.mock.calls[0]![0];
+      const createCall = mockTx.timeEntry.create.mock.calls[0]?.[0];
       expect(createCall.data.minutes).toBe(90);
     });
 
@@ -445,7 +445,7 @@ describe("time-entry", () => {
 
       expect(result).toEqual(submitted);
 
-      const call = (prisma.timesheet.updateMany as ReturnType<typeof vi.fn>).mock.calls[0]![0];
+      const call = (prisma.timesheet.updateMany as ReturnType<typeof vi.fn>).mock.calls[0]?.[0];
 
       // Where clause allows both DRAFT and REJECTED
       expect(call.where).toEqual({
@@ -470,7 +470,7 @@ describe("time-entry", () => {
 
       // Verify the WHERE clause uses optimistic locking with status guard
       const whereClause = (prisma.timesheet.updateMany as ReturnType<typeof vi.fn>).mock
-        .calls[0]![0].where;
+        .calls[0]?.[0].where;
       expect(whereClause.status).toEqual({ in: ["DRAFT", "REJECTED"] });
       expect(whereClause.contractorId).toBe(CONTRACTOR_ID);
       expect(whereClause.organizationId).toBe(ORG_ID);
@@ -519,7 +519,7 @@ describe("time-entry", () => {
 
       // Verify the WHERE clause only allows SUBMITTED timesheets
       const whereClause = (prisma.timesheet.updateMany as ReturnType<typeof vi.fn>).mock
-        .calls[0]![0].where;
+        .calls[0]?.[0].where;
       expect(whereClause.status).toBe("SUBMITTED");
     });
   });
@@ -563,7 +563,7 @@ describe("time-entry", () => {
 
       // Verify the WHERE clause only allows SUBMITTED timesheets
       const whereClause = (prisma.timesheet.updateMany as ReturnType<typeof vi.fn>).mock
-        .calls[0]![0].where;
+        .calls[0]?.[0].where;
       expect(whereClause.status).toBe("SUBMITTED");
     });
   });

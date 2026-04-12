@@ -27,7 +27,7 @@ async function handler(request: NextRequest) {
     receiverParticipantId: string;
   };
 
-  if (!organizationId || !invoiceId || !receiverParticipantId) {
+  if (!(organizationId && invoiceId && receiverParticipantId)) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
 

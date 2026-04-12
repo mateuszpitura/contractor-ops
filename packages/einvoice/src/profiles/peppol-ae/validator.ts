@@ -48,7 +48,7 @@ export function validatePintAeXml(xml: string): ValidationResult {
   let inv: Record<string, unknown>;
   try {
     const parsed = parser.parse(xml) as Record<string, unknown>;
-    inv = (parsed.Invoice ?? parsed["Invoice"]) as Record<string, unknown>;
+    inv = (parsed.Invoice ?? parsed.Invoice) as Record<string, unknown>;
     if (!inv) {
       return {
         valid: false,
@@ -115,7 +115,7 @@ export function validatePintAeXml(xml: string): ValidationResult {
   const supplierParty = dig(inv, "cac:AccountingSupplierParty") as
     | Record<string, unknown>
     | undefined;
-  if (!supplierParty || !hasTrnIdentifier(supplierParty)) {
+  if (!(supplierParty && hasTrnIdentifier(supplierParty))) {
     errors.push({
       code: "MISSING_SUPPLIER_TRN",
       message: `Supplier must have PartyIdentification with schemeID="${UAE_SCHEME_ID}" (UAE TRN)`,

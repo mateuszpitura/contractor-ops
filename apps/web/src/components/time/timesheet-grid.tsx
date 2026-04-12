@@ -69,7 +69,7 @@ function minutesToHours(minutes: number): string {
 
 function hoursToMinutes(hours: string): number {
   const val = parseFloat(hours);
-  if (isNaN(val) || val < 0) return 0;
+  if (Number.isNaN(val) || val < 0) return 0;
   return Math.round(Math.min(val, 24) * 60);
 }
 
@@ -184,7 +184,7 @@ export function TimesheetGrid({
         return next;
       });
     },
-    [localValues, entryMap, weekStartDate, onSave],
+    [localValues, entryMap, weekStartDate, onSave, getCellKey],
   );
 
   // Handle tab/enter navigation

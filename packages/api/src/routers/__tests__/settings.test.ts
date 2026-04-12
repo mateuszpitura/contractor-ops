@@ -362,7 +362,7 @@ describe("settings.update", () => {
 
     await caller.settings.update({ name: "Only Name" });
 
-    const call = vi.mocked(auth.api.updateOrganization).mock.calls[0]![0] as {
+    const call = vi.mocked(auth.api.updateOrganization).mock.calls[0]?.[0] as {
       body: { data: Record<string, unknown> };
     };
     expect(call.body.data.name).toBe("Only Name");
@@ -574,8 +574,8 @@ describe("settings.listChangeRequests", () => {
         orderBy: { createdAt: "desc" },
       }),
     );
-    expect(result[0]!.contractorName).toBe("John");
-    expect(result[0]!.contractorEmail).toBe("john@example.com");
+    expect(result[0]?.contractorName).toBe("John");
+    expect(result[0]?.contractorEmail).toBe("john@example.com");
   });
 });
 

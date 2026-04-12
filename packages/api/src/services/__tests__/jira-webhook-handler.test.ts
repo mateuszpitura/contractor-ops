@@ -1,10 +1,5 @@
 import { afterAll, beforeEach, describe, expect, it, vi } from "vitest";
-import {
-  deregisterJiraWebhooks,
-  processJiraWebhook,
-  refreshJiraWebhooks,
-  registerJiraWebhooks,
-} from "../jira-webhook-handler.js";
+import { processJiraWebhook } from "../jira-webhook-handler.js";
 
 // ---------------------------------------------------------------------------
 // Mocks
@@ -270,7 +265,7 @@ describe("jira-webhook-handler", () => {
         (call: any) => call[0].data.syncType === "issue-status-change",
       );
       expect(statusChangeLog).toBeDefined();
-      expect(statusChangeLog![0].data).toMatchObject({
+      expect(statusChangeLog?.[0].data).toMatchObject({
         direction: "INBOUND",
         syncType: "issue-status-change",
         entityType: "WORKFLOW_TASK_RUN",

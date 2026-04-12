@@ -22,9 +22,9 @@ describe("parseMt940", () => {
   it("extracts transactions with PLN currency and minor-unit amount", () => {
     const rows = parseMt940(SAMPLE_MT940);
     expect(rows.length).toBe(1);
-    expect(rows[0]!.currency).toBe("PLN");
-    expect(rows[0]!.amount).toBe(1_000_000);
-    expect(rows[0]!.description).toBe("");
+    expect(rows[0]?.currency).toBe("PLN");
+    expect(rows[0]?.amount).toBe(1_000_000);
+    expect(rows[0]?.description).toBe("");
   });
 });
 
@@ -45,9 +45,9 @@ describe("parseCsvStatement", () => {
 `;
     const rows = parseCsvStatement(csv);
     expect(rows).toHaveLength(1);
-    expect(rows[0]!.amount).toBe(12345);
-    expect(rows[0]!.currency).toBe("PLN");
-    expect(rows[0]!.description).toBe("Wire from client");
+    expect(rows[0]?.amount).toBe(12345);
+    expect(rows[0]?.currency).toBe("PLN");
+    expect(rows[0]?.description).toBe("Wire from client");
   });
 
   it("parses comma-delimited CSV with quoted fields", () => {
@@ -56,8 +56,8 @@ describe("parseCsvStatement", () => {
 `;
     const rows = parseCsvStatement(csv);
     expect(rows).toHaveLength(1);
-    expect(rows[0]!.amount).toBe(10050);
-    expect(rows[0]!.iban).toBe("PL61109010140000071219812874");
+    expect(rows[0]?.amount).toBe(10050);
+    expect(rows[0]?.iban).toBe("PL61109010140000071219812874");
   });
 });
 
@@ -65,7 +65,7 @@ describe("parseBankStatement", () => {
   it("routes .mt940 through MT940 parser", () => {
     const rows = parseBankStatement(SAMPLE_MT940, "stmt.mt940");
     expect(rows.length).toBe(1);
-    expect(rows[0]!.currency).toBe("PLN");
+    expect(rows[0]?.currency).toBe("PLN");
   });
 
   it("routes .sta extension to MT940 parser", () => {
@@ -79,7 +79,7 @@ describe("parseBankStatement", () => {
 `;
     const rows = parseBankStatement(csv, "stmt.csv");
     expect(rows.length).toBeGreaterThan(0);
-    expect(rows[0]!.amount).toBe(500000);
+    expect(rows[0]?.amount).toBe(500000);
   });
 
   it("throws on unsupported extension", () => {
@@ -143,7 +143,7 @@ describe("matchStatementToRun", () => {
       },
     ];
     const results = matchStatementToRun(tx, [{ id: "only", amountMinor: 100, iban }]);
-    expect(results[0]!.confidence).not.toBe("unmatched");
-    expect(results[1]!.confidence).toBe("unmatched");
+    expect(results[0]?.confidence).not.toBe("unmatched");
+    expect(results[1]?.confidence).toBe("unmatched");
   });
 });

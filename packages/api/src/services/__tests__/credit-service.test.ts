@@ -420,7 +420,7 @@ describe("checkAndDeductCredit", () => {
       await checkAndDeductCredit(ORG_ID);
 
       expect(mockPrisma.ocrCreditLedger.create).toHaveBeenCalledOnce();
-      const data = mockPrisma.ocrCreditLedger.create.mock.calls[0]![0].data;
+      const data = mockPrisma.ocrCreditLedger.create.mock.calls[0]?.[0].data;
       expect(data.organizationId).toBe(ORG_ID);
       expect(data.credits).toBe(-1);
       expect(data.reason).toBe("OCR_EXTRACTION");
@@ -538,7 +538,7 @@ describe("allocateTopUpCredits", () => {
       credits: 10,
     });
 
-    const data = mockPrisma.ocrCreditLedger.create.mock.calls[0]![0].data;
+    const data = mockPrisma.ocrCreditLedger.create.mock.calls[0]?.[0].data;
     expect(data.stripeEventId).toBeNull();
   });
 

@@ -62,7 +62,7 @@ export const equipmentShipmentsRouter = router({
             trackingNumber: input.trackingNumber ?? null,
             expectedDeliveryAt: input.expectedDeliveryAt ?? null,
             currentStatus: "CREATED",
-            createdByUserId: ctx.user!.id,
+            createdByUserId: ctx.user?.id,
           },
         });
 
@@ -73,7 +73,7 @@ export const equipmentShipmentsRouter = router({
             shipmentId: created.id,
             status: "CREATED",
             notes: input.notes ?? null,
-            createdByUserId: ctx.user!.id,
+            createdByUserId: ctx.user?.id,
           },
         });
 
@@ -98,8 +98,8 @@ export const equipmentShipmentsRouter = router({
         data: {
           organizationId: ctx.organizationId,
           actorType: "USER",
-          actorId: ctx.user!.id,
-          actorName: ctx.user!.name,
+          actorId: ctx.user?.id,
+          actorName: ctx.user?.name,
           action: "shipment.create",
           resourceType: "SHIPMENT",
           resourceId: shipment.id,
@@ -149,7 +149,7 @@ export const equipmentShipmentsRouter = router({
             shipmentId: input.shipmentId,
             status: input.status,
             notes: input.notes ?? null,
-            createdByUserId: ctx.user!.id,
+            createdByUserId: ctx.user?.id,
           },
         });
 
@@ -185,8 +185,8 @@ export const equipmentShipmentsRouter = router({
         data: {
           organizationId: ctx.organizationId,
           actorType: "USER",
-          actorId: ctx.user!.id,
-          actorName: ctx.user!.name,
+          actorId: ctx.user?.id,
+          actorName: ctx.user?.name,
           action: "shipment.updateStatus",
           resourceType: "SHIPMENT",
           resourceId: shipment.id,

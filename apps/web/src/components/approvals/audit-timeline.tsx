@@ -174,7 +174,7 @@ function CommentText({ text, t }: { text: string; t: TranslateFn }) {
 function HumanEntry({ event, t }: { event: AuditEvent; t: TranslateFn }) {
   const config = DECISION_CONFIG[event.label];
 
-  if (!config || !event.actor) return null;
+  if (!(config && event.actor)) return null;
 
   const Icon = config.icon;
 

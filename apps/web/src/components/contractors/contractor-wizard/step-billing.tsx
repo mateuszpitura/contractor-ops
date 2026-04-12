@@ -37,7 +37,7 @@ export function StepBilling({ form }: StepBillingProps) {
     label: tb(v),
   }));
 
-  const currencyItems = CURRENCIES.map((c) => ({
+  const _currencyItems = CURRENCIES.map((c) => ({
     value: c,
     label: c,
   }));
@@ -67,7 +67,7 @@ export function StepBilling({ form }: StepBillingProps) {
 
   const handleRateBlur = () => {
     const value = parseFloat(rateLocal);
-    if (!isNaN(value) && value >= 0) {
+    if (!Number.isNaN(value) && value >= 0) {
       setValue("rateValueMinor", Math.round(value * 100), {
         shouldDirty: true,
         shouldValidate: true,
@@ -193,7 +193,7 @@ export function StepBilling({ form }: StepBillingProps) {
           {...register("paymentTermsDays", {
             setValueAs: (v: string) => {
               const n = parseInt(v, 10);
-              return isNaN(n) ? undefined : n;
+              return Number.isNaN(n) ? undefined : n;
             },
           })}
         />

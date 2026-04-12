@@ -1,4 +1,5 @@
 #!/usr/bin/env tsx
+
 /**
  * Multi-region Prisma schema push.
  *
@@ -11,10 +12,10 @@
  *   cd packages/db && npm run db:push:all
  */
 
-import { config } from "dotenv";
 import { execSync } from "node:child_process";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { config } from "dotenv";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = resolve(__dirname, "../../..");
@@ -33,10 +34,6 @@ interface RegionResult {
 }
 
 function main() {
-  console.log("Multi-region Prisma schema push");
-  console.log(`Schema path: ${SCHEMA_PATH}`);
-  console.log(`Regions: ${REGION_ENV_VARS.join(", ")}\n`);
-
   const results: RegionResult[] = [];
 
   for (const envVar of REGION_ENV_VARS) {
@@ -44,19 +41,15 @@ function main() {
     const region = envVar.replace("DATABASE_URL_", "");
 
     if (!url) {
-      console.log(`[${region}] ${envVar} not set — skipping`);
       results.push({ region, status: "skipped" });
       continue;
     }
-
-    console.log(`[${region}] Pushing schema to ${envVar}...`);
     try {
       execSync(`npx prisma db push --schema=${SCHEMA_PATH}`, {
         env: { ...process.env, DATABASE_URL: url },
         stdio: "inherit",
         cwd: resolve(__dirname, ".."),
       });
-      console.log(`[${region}] Schema push complete.\n`);
       results.push({ region, status: "ok" });
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
@@ -67,11 +60,8 @@ function main() {
       process.exit(1);
     }
   }
-
-  console.log("\n--- Summary ---");
   for (const r of results) {
-    const icon = r.status === "ok" ? "OK" : r.status === "skipped" ? "SKIP" : "FAIL";
-    console.log(`  [${icon}] ${r.region}${r.error ? ` — ${r.error}` : ""}`);
+    const _icon = r.status === "ok" ? "OK" : r.status === "skipped" ? "SKIP" : "FAIL";
   }
 
   const failed = results.filter((r) => r.status === "failed");
@@ -81,11 +71,8 @@ function main() {
 
   const pushed = results.filter((r) => r.status === "ok");
   if (pushed.length === 0) {
-    console.log("\nWarning: No regions were pushed. Set DATABASE_URL_EU and/or DATABASE_URL_ME.");
     process.exit(1);
   }
-
-  console.log(`\nAll ${pushed.length} region(s) pushed successfully.`);
 }
 
 main();

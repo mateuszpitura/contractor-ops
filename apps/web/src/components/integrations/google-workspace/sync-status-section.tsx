@@ -52,7 +52,7 @@ export function SyncStatusSection({ onImportClick }: SyncStatusSectionProps) {
   }
 
   // Not connected or no data
-  if (!syncStatus || !syncStatus.connected) return null;
+  if (!syncStatus?.connected) return null;
 
   const lastSyncLabel = syncStatus.lastSyncAt
     ? t("lastSynced", {

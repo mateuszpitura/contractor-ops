@@ -90,7 +90,7 @@ export class GoogleWorkspaceAdapter extends BaseAdapter {
     const clientId = process.env.GOOGLE_WORKSPACE_CLIENT_ID;
     const clientSecret = process.env.GOOGLE_WORKSPACE_CLIENT_SECRET;
 
-    if (!clientId || !clientSecret) {
+    if (!(clientId && clientSecret)) {
       throw new Error(
         "GOOGLE_WORKSPACE_CLIENT_ID and GOOGLE_WORKSPACE_CLIENT_SECRET environment variables are required",
       );
@@ -136,7 +136,7 @@ export class GoogleWorkspaceAdapter extends BaseAdapter {
     const clientId = process.env.GOOGLE_WORKSPACE_CLIENT_ID;
     const clientSecret = process.env.GOOGLE_WORKSPACE_CLIENT_SECRET;
 
-    if (!clientId || !clientSecret) {
+    if (!(clientId && clientSecret)) {
       throw new Error(
         "GOOGLE_WORKSPACE_CLIENT_ID and GOOGLE_WORKSPACE_CLIENT_SECRET environment variables are required",
       );

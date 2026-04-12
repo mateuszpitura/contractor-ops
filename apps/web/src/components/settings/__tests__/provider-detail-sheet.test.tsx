@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen, setup, waitFor } from "@/test/test-utils";
+import { render, screen, setup } from "@/test/test-utils";
 import { ProviderDetailSheet } from "../provider-detail-sheet";
 
 let mockHealthData: Record<string, unknown> | null = null;

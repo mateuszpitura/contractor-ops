@@ -201,7 +201,9 @@ export function JiraStatusMappingDialog({
         <DialogHeader>
           <DialogTitle>{t("title")}</DialogTitle>
           <DialogDescription>
-            {selectedProject ? t("description", { projectName: selectedProject.name }) : t("descriptionDefault")}
+            {selectedProject
+              ? t("description", { projectName: selectedProject.name })
+              : t("descriptionDefault")}
           </DialogDescription>
         </DialogHeader>
 
@@ -253,9 +255,7 @@ export function JiraStatusMappingDialog({
                                 <TooltipTrigger>
                                   <AlertTriangle className="size-3.5 text-warning" />
                                 </TooltipTrigger>
-                                <TooltipContent>
-                                  {t("unmappedTooltip")}
-                                </TooltipContent>
+                                <TooltipContent>{t("unmappedTooltip")}</TooltipContent>
                               </Tooltip>
                             </TooltipProvider>
                           )}

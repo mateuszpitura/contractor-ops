@@ -629,7 +629,7 @@ describe("PaymentRunSidePanel", () => {
     });
     // Confirm button should be disabled without text
     const confirmBtns = screen.getAllByText("Confirm");
-    const failedConfirm = confirmBtns[confirmBtns.length - 1]!.closest("button");
+    const failedConfirm = confirmBtns[confirmBtns.length - 1]?.closest("button");
     expect(failedConfirm).toBeDisabled();
   });
 

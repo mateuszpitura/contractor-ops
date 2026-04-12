@@ -32,7 +32,7 @@ function fromMinor(minorUnits: number): string {
 /**
  * Build a UBL party structure for PINT-AE.
  */
-function buildParty(party: EInvoice["supplier"], currencyCode: string) {
+function buildParty(party: EInvoice["supplier"], _currencyCode: string) {
   return {
     "cac:Party": {
       "cac:PartyIdentification": {

@@ -50,7 +50,7 @@ export function SendForSignatureButton({
     return null;
   }
 
-  const isDisabled = !hasDocument || !hasConnectedProvider;
+  const isDisabled = !(hasDocument && hasConnectedProvider);
   const tooltipMessage = !hasDocument
     ? "Upload a document first"
     : !hasConnectedProvider

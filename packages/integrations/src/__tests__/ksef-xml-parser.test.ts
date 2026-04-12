@@ -20,8 +20,8 @@ describe("parseFa3Xml", () => {
     expect(result.buyer.name).toBe("Test Buyer S.A.");
     expect(result.totals.grossMinor).toBe(3567000);
     expect(result.lines).toHaveLength(2);
-    expect(result.lines[0]!.description).toBe("Uslugi programistyczne");
-    expect(result.lines[0]!.netAmountMinor).toBe(2400000);
+    expect(result.lines[0]?.description).toBe("Uslugi programistyczne");
+    expect(result.lines[0]?.netAmountMinor).toBe(2400000);
     expect(result.ksefReferenceNumber).toBe("KSEF-REF-001");
     expect(result.upoNumber).toBe("UPO-001");
   });
@@ -31,7 +31,7 @@ describe("parseFa3Xml", () => {
 
     expect(result.totals.netMinor).toBe(2900000);
     expect(result.totals.vatMinor).toBe(667000);
-    expect(result.lines[1]!.unitPriceMinor).toBe(500000);
+    expect(result.lines[1]?.unitPriceMinor).toBe(500000);
   });
 
   it("handles missing optional payment fields", () => {
@@ -74,7 +74,7 @@ describe("mapKsefToInvoiceFields", () => {
     expect(invoice.issueDate).toBeInstanceOf(Date);
     expect(invoice.dueDate).toBeInstanceOf(Date);
     expect(lines).toHaveLength(2);
-    expect(lines[0]!.lineNumber).toBe(1);
-    expect(lines[0]!.description).toBe("Uslugi programistyczne");
+    expect(lines[0]?.lineNumber).toBe(1);
+    expect(lines[0]?.description).toBe("Uslugi programistyczne");
   });
 });

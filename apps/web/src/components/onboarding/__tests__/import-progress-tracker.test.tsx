@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { render, screen } from "@/test/test-utils";
 import { ImportProgressTracker } from "../import-progress-tracker";
 

@@ -1,4 +1,4 @@
-import { render, screen, setup } from "@/test/test-utils";
+import { render, screen } from "@/test/test-utils";
 import { DocumentCard } from "../document-card";
 
 vi.mock("../pdf-preview", () => ({

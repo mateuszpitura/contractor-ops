@@ -124,8 +124,8 @@ describe("decodeTLV", () => {
     const result = decodeTLV(buf);
 
     expect(result).toHaveLength(1);
-    expect(result[0]!.tag).toBe(1);
-    expect(result[0]!.value.toString("utf-8")).toBe("abc");
+    expect(result[0]?.tag).toBe(1);
+    expect(result[0]?.value.toString("utf-8")).toBe("abc");
   });
 
   it("parses multi-byte length values", () => {
@@ -136,8 +136,8 @@ describe("decodeTLV", () => {
     const result = decodeTLV(buf);
 
     expect(result).toHaveLength(1);
-    expect(result[0]!.tag).toBe(1);
-    expect(result[0]!.value.length).toBe(200);
+    expect(result[0]?.tag).toBe(1);
+    expect(result[0]?.value.length).toBe(200);
   });
 
   it("parses multiple fields sequentially", () => {
@@ -154,10 +154,10 @@ describe("decodeTLV", () => {
     const result = decodeTLV(buf);
 
     expect(result).toHaveLength(2);
-    expect(result[0]!.tag).toBe(1);
-    expect(result[0]!.value.toString("utf-8")).toBe("AB");
-    expect(result[1]!.tag).toBe(2);
-    expect(result[1]!.value.toString("utf-8")).toBe("CD");
+    expect(result[0]?.tag).toBe(1);
+    expect(result[0]?.value.toString("utf-8")).toBe("AB");
+    expect(result[1]?.tag).toBe(2);
+    expect(result[1]?.value.toString("utf-8")).toBe("CD");
   });
 });
 
@@ -180,8 +180,8 @@ describe("TLV roundtrip", () => {
 
     expect(decoded).toHaveLength(5);
     for (let i = 0; i < fields.length; i++) {
-      expect(decoded[i]!.tag).toBe(fields[i]!.tag);
-      expect(decoded[i]!.value.toString("utf-8")).toBe(fields[i]!.value);
+      expect(decoded[i]?.tag).toBe(fields[i]?.tag);
+      expect(decoded[i]?.value.toString("utf-8")).toBe(fields[i]?.value);
     }
   });
 
@@ -193,8 +193,8 @@ describe("TLV roundtrip", () => {
     const decoded = decodeTLV(encoded);
 
     expect(decoded).toHaveLength(1);
-    expect(decoded[0]!.tag).toBe(ZatcaTlvTag.INVOICE_HASH);
-    expect(Buffer.compare(decoded[0]!.value, hashBuf)).toBe(0);
+    expect(decoded[0]?.tag).toBe(ZatcaTlvTag.INVOICE_HASH);
+    expect(Buffer.compare(decoded[0]?.value, hashBuf)).toBe(0);
   });
 });
 

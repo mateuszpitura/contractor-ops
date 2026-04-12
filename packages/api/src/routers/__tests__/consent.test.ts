@@ -326,7 +326,7 @@ describe("consentRouter", () => {
       const result = await caller.consent.getCurrentConsent();
 
       expect(result).toHaveProperty("CONTRACTOR_DATA_PROCESSING");
-      expect(result["CONTRACTOR_DATA_PROCESSING"].granted).toBe(true);
+      expect(result.CONTRACTOR_DATA_PROCESSING.granted).toBe(true);
     });
   });
 

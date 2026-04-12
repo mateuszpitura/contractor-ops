@@ -13,7 +13,7 @@ vi.mock("next-intl", async (importOriginal) => {
 });
 
 vi.mock("@tanstack/react-query", () => ({
-  useMutation: (opts: any) => ({
+  useMutation: (_opts: any) => ({
     mutate: vi.fn(),
     isPending: false,
   }),

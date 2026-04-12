@@ -154,8 +154,8 @@ describe("PINT-AE Parser", () => {
     const parsed = parsePintAeXml(xml);
 
     expect(parsed.lines).toHaveLength(1);
-    expect(parsed.lines[0]!.description).toBe("Software Development Services");
-    expect(parsed.lines[0]!.netAmountMinor).toBe(2400000);
+    expect(parsed.lines[0]?.description).toBe("Software Development Services");
+    expect(parsed.lines[0]?.netAmountMinor).toBe(2400000);
   });
 
   it("preserves tax breakdown through roundtrip", () => {
@@ -164,9 +164,9 @@ describe("PINT-AE Parser", () => {
     const parsed = parsePintAeXml(xml);
 
     expect(parsed.taxBreakdown).toHaveLength(1);
-    expect(parsed.taxBreakdown[0]!.taxCategory).toBe("S");
-    expect(parsed.taxBreakdown[0]!.taxAmountMinor).toBe(120000);
-    expect(parsed.taxBreakdown[0]!.percent).toBe(5);
+    expect(parsed.taxBreakdown[0]?.taxCategory).toBe("S");
+    expect(parsed.taxBreakdown[0]?.taxAmountMinor).toBe(120000);
+    expect(parsed.taxBreakdown[0]?.percent).toBe(5);
   });
 
   it("extracts buyerReference into extensions", () => {
@@ -232,8 +232,7 @@ describe("PINT-AE Validator", () => {
     const parts = xml.split(UAE_SCHEME_ID);
     // First occurrence is supplier, second is customer
     if (parts.length >= 3) {
-      const xmlNoCustomerScheme =
-        parts[0] + UAE_SCHEME_ID + parts[1] + "0000" + parts.slice(2).join(UAE_SCHEME_ID);
+      const xmlNoCustomerScheme = `${parts[0] + UAE_SCHEME_ID + parts[1]}0000${parts.slice(2).join(UAE_SCHEME_ID)}`;
       const result = validatePintAeXml(xmlNoCustomerScheme);
       expect(result.warnings.some((w) => w.code === "MISSING_CUSTOMER_TRN")).toBe(true);
     }

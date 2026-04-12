@@ -7,7 +7,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "@/i18n/navigation";
 import { trpc } from "@/trpc/init";
 
@@ -120,7 +120,7 @@ function ExpiryRemindersEditor({
     const parsed = reminders
       .split(",")
       .map((s) => parseInt(s.trim(), 10))
-      .filter((n) => !isNaN(n) && n > 0);
+      .filter((n) => !Number.isNaN(n) && n > 0);
 
     if (parsed.length === 0) return;
 

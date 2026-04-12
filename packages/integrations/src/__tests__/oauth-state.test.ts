@@ -17,10 +17,10 @@ describe("oauth-state", () => {
 
       const payload = verifyOAuthState(state, "slack", TEST_SECRET);
       expect(payload).not.toBeNull();
-      expect(payload!.provider).toBe("slack");
-      expect(payload!.orgId).toBe("org-123");
-      expect(payload!.userId).toBe("user-456");
-      expect(typeof payload!.timestamp).toBe("number");
+      expect(payload?.provider).toBe("slack");
+      expect(payload?.orgId).toBe("org-123");
+      expect(payload?.userId).toBe("user-456");
+      expect(typeof payload?.timestamp).toBe("number");
     });
   });
 

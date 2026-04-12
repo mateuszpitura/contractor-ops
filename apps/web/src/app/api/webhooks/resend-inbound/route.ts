@@ -135,7 +135,7 @@ export async function POST(request: NextRequest) {
   const svixTimestamp = request.headers.get("svix-timestamp");
   const svixSignature = request.headers.get("svix-signature");
 
-  if (!svixId || !svixTimestamp || !svixSignature) {
+  if (!(svixId && svixTimestamp && svixSignature)) {
     return NextResponse.json({ error: "Missing webhook signature headers" }, { status: 401 });
   }
 
@@ -162,12 +162,6 @@ export async function POST(request: NextRequest) {
   }
 
   const emailData = event.data;
-
-  console.log(
-    "[resend-inbound] Processing email from %s, subject: %s",
-    emailData.from,
-    emailData.subject ?? "(no subject)",
-  );
 
   // ---------- Step 3: Parse org slug from recipient ----------
 
@@ -222,11 +216,6 @@ export async function POST(request: NextRequest) {
     .map((att) => att.id);
 
   if (pdfAttachmentIds.length === 0) {
-    console.log(
-      "[resend-inbound] No PDF attachments in email from %s (%d non-PDF attachments skipped)",
-      emailData.from,
-      webhookAttachments.length,
-    );
     return NextResponse.json({ received: true });
   }
 
@@ -417,14 +406,6 @@ export async function POST(request: NextRequest) {
   );
 
   const processed = results.filter(Boolean);
-
-  console.log(
-    "[resend-inbound] Processed %d/%d PDF attachments from %s for org %s",
-    processed.length,
-    pdfAttachmentIds.length,
-    emailData.from,
-    orgSlug,
-  );
 
   return NextResponse.json({
     processed: true,

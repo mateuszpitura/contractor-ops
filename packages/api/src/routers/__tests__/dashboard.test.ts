@@ -418,7 +418,7 @@ describe("dashboard router", () => {
       const result = await caller.dashboard.spendTrend({ months: "ytd" });
 
       expect(result).toHaveLength(1);
-      expect(result[0]!.totalMinor).toBe(300000);
+      expect(result[0]?.totalMinor).toBe(300000);
     });
 
     it("casts BigInt SUM to number to avoid serialization issues", async () => {
@@ -430,8 +430,8 @@ describe("dashboard router", () => {
       const result = await caller.dashboard.spendTrend({ months: "6" });
 
       // The router maps totalMinor with Number(), so it should be a regular number
-      expect(typeof result[0]!.totalMinor).toBe("number");
-      expect(result[0]!.totalMinor).toBe(999999);
+      expect(typeof result[0]?.totalMinor).toBe("number");
+      expect(result[0]?.totalMinor).toBe(999999);
     });
 
     it("filters only PAID invoices with deletedAt IS NULL", async () => {

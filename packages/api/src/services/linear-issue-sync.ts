@@ -14,7 +14,7 @@ type PrismaClient = DbClient;
 const LOOP_PREVENTION_WINDOW_MS = 30_000;
 
 /** Time window (ms) for deduplication of rapid-fire events */
-const DEDUP_WINDOW_MS = 5_000;
+const _DEDUP_WINDOW_MS = 5_000;
 
 /** Linear GraphQL API endpoint */
 const LINEAR_API_URL = "https://api.linear.app/graphql";

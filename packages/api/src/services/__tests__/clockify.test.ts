@@ -16,7 +16,6 @@ vi.mock("@contractor-ops/integrations/adapters/clockify-adapter", () => ({
   },
 }));
 
-import { decryptCredentials } from "@contractor-ops/integrations/services/credential-service";
 import { parseDurationToMinutes, syncClockifyEntries } from "../clockify-sync.js";
 
 // ---------------------------------------------------------------------------

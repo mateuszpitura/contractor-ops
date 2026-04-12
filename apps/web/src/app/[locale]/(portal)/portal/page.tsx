@@ -156,14 +156,12 @@ export default function PortalOverviewPage() {
         <h2 className="text-xl font-semibold">{t("dashboard.recentActivity")}</h2>
         <div className="mt-4 space-y-3">
           {isLoading ? (
-            <>
-              {Array.from({ length: 5 }).map((_, i) => (
-                <div key={`skel-${i}`} className="flex items-center justify-between">
-                  <Skeleton className="h-4 w-64" />
-                  <Skeleton className="h-3 w-16" />
-                </div>
-              ))}
-            </>
+            Array.from({ length: 5 }).map((_, i) => (
+              <div key={`skel-${i}`} className="flex items-center justify-between">
+                <Skeleton className="h-4 w-64" />
+                <Skeleton className="h-3 w-16" />
+              </div>
+            ))
           ) : overview?.recentActivity && overview.recentActivity.length > 0 ? (
             overview.recentActivity.map((entry, i) => (
               <div

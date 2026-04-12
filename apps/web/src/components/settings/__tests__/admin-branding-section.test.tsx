@@ -1,4 +1,4 @@
-import { act, render, screen, setup, waitFor } from "@/test/test-utils";
+import { render, screen, setup, waitFor } from "@/test/test-utils";
 import { AdminBrandingSection } from "../admin-branding-section";
 
 // ---------------------------------------------------------------------------

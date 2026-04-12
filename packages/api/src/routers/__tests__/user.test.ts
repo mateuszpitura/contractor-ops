@@ -8,7 +8,6 @@
  *  - Each test verifies real logic: member flattening, last-admin guard, approval reassignment.
  */
 
-import { TRPCError } from "@trpc/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // ---------------------------------------------------------------------------

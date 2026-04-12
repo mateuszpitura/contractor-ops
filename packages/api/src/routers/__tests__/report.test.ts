@@ -410,7 +410,7 @@ describe("report router", () => {
       });
 
       expect(result.items).toHaveLength(1);
-      expect(result.items[0]!.contractorId).toBe("c-specific");
+      expect(result.items[0]?.contractorId).toBe("c-specific");
     });
   });
 
@@ -453,7 +453,7 @@ describe("report router", () => {
         teamName: "Engineering",
       });
       // Null team stays null — frontend handles i18n display
-      expect(result.items[1]!.teamName).toBeNull();
+      expect(result.items[1]?.teamName).toBeNull();
     });
 
     it("groups by team with contractor count", async () => {
@@ -579,8 +579,8 @@ describe("report router", () => {
       });
 
       // daysRemaining should be approximately daysFromNow (ceil rounding)
-      expect(result.items[0]!.daysRemaining).toBeGreaterThanOrEqual(daysFromNow);
-      expect(result.items[0]!.daysRemaining).toBeLessThanOrEqual(daysFromNow + 1);
+      expect(result.items[0]?.daysRemaining).toBeGreaterThanOrEqual(daysFromNow);
+      expect(result.items[0]?.daysRemaining).toBeLessThanOrEqual(daysFromNow + 1);
     });
   });
 
@@ -650,8 +650,8 @@ describe("report router", () => {
         sortOrder: "desc",
       });
 
-      expect(result.items[0]!.daysOverdue).toBeGreaterThanOrEqual(daysOverdue);
-      expect(result.items[0]!.daysOverdue).toBeLessThanOrEqual(daysOverdue + 1);
+      expect(result.items[0]?.daysOverdue).toBeGreaterThanOrEqual(daysOverdue);
+      expect(result.items[0]?.daysOverdue).toBeLessThanOrEqual(daysOverdue + 1);
     });
 
     it("supports pagination and sorting", async () => {
@@ -775,7 +775,7 @@ describe("report router", () => {
       const result = await caller.report.spendByTeamChart(DATE_RANGE);
 
       expect(result).toHaveLength(2);
-      expect(result[1]!.teamName).toBeNull();
+      expect(result[1]?.teamName).toBeNull();
     });
 
     it("expiringContractsChart returns counts by 30-day buckets", async () => {

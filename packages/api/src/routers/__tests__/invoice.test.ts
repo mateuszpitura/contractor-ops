@@ -502,7 +502,7 @@ describe("invoice.list", () => {
 
     await caller.invoice.list({ page: 1, pageSize: 20, sortBy: "received_at", sortOrder: "desc" });
 
-    const findManyCall = mockPrisma.invoice.findMany.mock.calls[0]![0];
+    const findManyCall = mockPrisma.invoice.findMany.mock.calls[0]?.[0];
     expect(findManyCall.where).toMatchObject({
       organizationId: ORG_ID,
       deletedAt: null,
@@ -521,7 +521,7 @@ describe("invoice.list", () => {
       filters: { status: ["RECEIVED", "UNDER_REVIEW"] },
     });
 
-    const findManyCall = mockPrisma.invoice.findMany.mock.calls[0]![0];
+    const findManyCall = mockPrisma.invoice.findMany.mock.calls[0]?.[0];
     expect(findManyCall.where.status).toEqual({ in: ["RECEIVED", "UNDER_REVIEW"] });
   });
 
@@ -536,7 +536,7 @@ describe("invoice.list", () => {
       sortOrder: "asc",
     });
 
-    const findManyCall = mockPrisma.invoice.findMany.mock.calls[0]![0];
+    const findManyCall = mockPrisma.invoice.findMany.mock.calls[0]?.[0];
     expect(findManyCall.skip).toBe(20);
     expect(findManyCall.take).toBe(10);
     expect(findManyCall.orderBy).toEqual({ dueDate: "asc" });
@@ -763,11 +763,11 @@ describe("invoice.statusCounts", () => {
 
     // Verify both groupBy calls are scoped to org
     const calls = mockPrisma.invoice.groupBy.mock.calls;
-    expect(calls[0]![0].where).toMatchObject({
+    expect(calls[0]?.[0].where).toMatchObject({
       organizationId: ORG_ID,
       deletedAt: null,
     });
-    expect(calls[1]![0].where).toMatchObject({
+    expect(calls[1]?.[0].where).toMatchObject({
       organizationId: ORG_ID,
       deletedAt: null,
     });

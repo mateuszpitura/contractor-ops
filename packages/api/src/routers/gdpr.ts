@@ -1,6 +1,4 @@
-import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import * as E from "../errors.js";
 import { router } from "../init.js";
 import { requirePermission } from "../middleware/rbac.js";
 import { tenantProcedure } from "../middleware/tenant.js";
@@ -404,8 +402,8 @@ export const gdprRouter = router({
           organizationId: orgId,
           action: "organization.erasure_requested",
           actorType: "USER",
-          actorId: ctx.user!.id,
-          actorName: ctx.user!.name ?? ctx.user!.email,
+          actorId: ctx.user?.id,
+          actorName: ctx.user?.name ?? ctx.user?.email,
           resourceType: "ORGANIZATION",
           resourceId: orgId,
           resourceName: "Data Erasure Request",
@@ -535,12 +533,12 @@ export const gdprRouter = router({
       // Mask sensitive data for GDPR export
       const maskedContractors = contractors.map((c) => ({
         ...c,
-        taxId: c.taxId ? "****" + c.taxId.slice(-4) : c.taxId,
+        taxId: c.taxId ? `****${c.taxId.slice(-4)}` : c.taxId,
       }));
 
       const maskedAuditLogs = auditLogs.map((log) => ({
         ...log,
-        actorName: log.actorName ? log.actorName.charAt(0) + "***" : log.actorName,
+        actorName: log.actorName ? `${log.actorName.charAt(0)}***` : log.actorName,
       }));
 
       return {

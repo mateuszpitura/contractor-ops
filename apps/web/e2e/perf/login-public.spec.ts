@@ -12,7 +12,6 @@ test.describe("perf — public login page", () => {
     await page.locator("#email").waitFor({ state: "visible", timeout: 15_000 });
     await page.locator("#password").waitFor({ state: "visible" });
     const durationMs = Date.now() - t0;
-    console.log(JSON.stringify({ scenario: "login_public", path: "/en/login", durationMs }));
     expect(durationMs).toBeLessThan(60_000);
   });
 });

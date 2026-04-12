@@ -9,7 +9,6 @@
  *    then asserts the arguments passed to Prisma (WHERE clauses, data).
  */
 
-import { TRPCError } from "@trpc/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // ---------------------------------------------------------------------------
@@ -20,7 +19,7 @@ const ORG_ID = "clxxxxxxxxxxxxxxxxxxxxxxxxx";
 const USER_ID = "clyyyyyyyyyyyyyyyyyyyyyyyy";
 const CONTRACTOR_ID = "clcontractor000000000001";
 const CONTRACT_ID = "clcontract0000000000000001";
-const CONTRACT_ID_2 = "clcontract0000000000000002";
+const _CONTRACT_ID_2 = "clcontract0000000000000002";
 const AMENDMENT_ID = "clamendment000000000000001";
 
 // ---------------------------------------------------------------------------

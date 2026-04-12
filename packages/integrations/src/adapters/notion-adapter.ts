@@ -62,7 +62,7 @@ export class NotionAdapter extends BaseAdapter {
     const clientId = process.env.NOTION_CLIENT_ID;
     const clientSecret = process.env.NOTION_CLIENT_SECRET;
 
-    if (!clientId || !clientSecret) {
+    if (!(clientId && clientSecret)) {
       throw new Error(
         "NOTION_CLIENT_ID and NOTION_CLIENT_SECRET environment variables are required",
       );
@@ -117,7 +117,7 @@ export class NotionAdapter extends BaseAdapter {
     const clientId = process.env.NOTION_CLIENT_ID;
     const clientSecret = process.env.NOTION_CLIENT_SECRET;
 
-    if (!clientId || !clientSecret) {
+    if (!(clientId && clientSecret)) {
       throw new Error(
         "NOTION_CLIENT_ID and NOTION_CLIENT_SECRET environment variables are required",
       );

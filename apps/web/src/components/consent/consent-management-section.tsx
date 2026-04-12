@@ -1,11 +1,7 @@
 "use client";
 
 import type { ConsentPurpose } from "@contractor-ops/validators";
-import {
-  isPdplJurisdiction,
-  OPTIONAL_PURPOSES,
-  REQUIRED_PURPOSES,
-} from "@contractor-ops/validators";
+import { OPTIONAL_PURPOSES, REQUIRED_PURPOSES } from "@contractor-ops/validators";
 import { Download, FileText, Globe, History, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback } from "react";

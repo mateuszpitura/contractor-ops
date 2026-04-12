@@ -533,25 +533,25 @@
   *,
   *::before,
   *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
+    animation-duration: 0.01ms;
+    animation-iteration-count: 1;
+    transition-duration: 0.01ms;
+    scroll-behavior: auto;
   }
 
   .gradient-text {
-    animation: none !important;
-    -webkit-text-fill-color: var(--foreground) !important;
+    animation: none;
+    -webkit-text-fill-color: var(--foreground);
   }
 
   .orb {
-    animation: none !important;
+    animation: none;
   }
   .metric-glow {
-    text-shadow: none !important;
+    text-shadow: none;
   }
   .border-breathe {
-    animation: none !important;
+    animation: none;
   }
 }
 
@@ -559,9 +559,9 @@
   .glass-subtle,
   .glass-medium,
   .glass-heavy {
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    background: var(--surface-1) !important;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: var(--surface-1);
   }
 }
 

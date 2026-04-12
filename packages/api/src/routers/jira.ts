@@ -1,5 +1,4 @@
 import { decryptCredentials } from "@contractor-ops/integrations/services/credential-service";
-import type { JiraIssueMetadata } from "@contractor-ops/validators";
 import {
   jiraTaskConfigSchema,
   saveJiraStatusMappingInputSchema,

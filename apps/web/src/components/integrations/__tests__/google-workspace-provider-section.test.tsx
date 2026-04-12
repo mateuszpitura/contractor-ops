@@ -63,7 +63,7 @@ vi.mock("../google-workspace/directory-import-wizard", () => ({
 // Helpers
 // ---------------------------------------------------------------------------
 
-function mockUseQuery(queryKey: unknown[], data: unknown, isLoading = false) {
+function mockUseQuery(_queryKey: unknown[], data: unknown, isLoading = false) {
   return { data, isLoading, error: null, isError: false, isPending: isLoading };
 }
 

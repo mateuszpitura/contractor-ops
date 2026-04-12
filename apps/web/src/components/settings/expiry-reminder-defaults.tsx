@@ -58,7 +58,7 @@ export function ExpiryReminderDefaults() {
     const days = inputValue
       .split(",")
       .map((s) => parseInt(s.trim(), 10))
-      .filter((n) => !isNaN(n) && n > 0)
+      .filter((n) => !Number.isNaN(n) && n > 0)
       .sort((a, b) => a - b);
 
     if (days.length === 0) return;

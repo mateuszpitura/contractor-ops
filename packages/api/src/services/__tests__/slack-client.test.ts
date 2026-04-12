@@ -13,7 +13,7 @@ const { mockPostMessage, mockUpdate, mockUsersList, mockPrisma, mockGetCredentia
     const mockPostMessage = vi.fn(async () => ({ ok: true }));
     const mockUpdate = vi.fn(async () => ({ ok: true }));
     const mockUsersList = vi.fn(async () => ({
-      members: [] as Array<Record<string, unknown>>,
+      members: [] as Record<string, unknown>[],
     }));
 
     const mockPrisma = {

@@ -14,17 +14,8 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -84,7 +75,7 @@ const statusBadgeStyles: Record<string, string> = {
   SIGNATURE_EXPIRED: "bg-red-500/10 text-red-500",
 };
 
-const statusLabels: Record<string, string> = {
+const _statusLabels: Record<string, string> = {
   DRAFT: "Draft",
   PENDING_SIGNATURE: "Pending Signature",
   ACTIVE: "Active",

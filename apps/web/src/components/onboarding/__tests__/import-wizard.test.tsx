@@ -1,4 +1,4 @@
-import { render, screen, setup } from "@/test/test-utils";
+import { render, screen } from "@/test/test-utils";
 import { ImportWizard } from "../import-wizard";
 
 vi.mock("@/i18n/navigation", () => ({

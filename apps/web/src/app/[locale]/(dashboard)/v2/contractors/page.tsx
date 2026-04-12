@@ -9,11 +9,8 @@ import {
   CheckCircle,
   ChevronLeft,
   ChevronRight,
-  Clock,
   Filter,
   Hash,
-  LayoutGrid,
-  LayoutList,
   Mail,
   Plus,
   Search,
@@ -29,7 +26,6 @@ import { parseAsInteger, parseAsString, useQueryState } from "nuqs";
 import type { ReactNode, MouseEvent as RME } from "react";
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { WizardDialog } from "@/components/contractors/contractor-wizard/wizard-dialog";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "@/i18n/navigation";
@@ -163,7 +159,7 @@ function TiltCard({
 // SECTION LABEL
 // =============================================================================
 
-function SectionLabel({ children }: { children: ReactNode }) {
+function _SectionLabel({ children }: { children: ReactNode }) {
   return (
     <div className="flex items-center gap-2.5 ps-1">
       <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground/60">
@@ -483,9 +479,7 @@ function ContractorsV2Content() {
         <h2 className="mt-5 font-display text-[24px] font-bold tracking-tight">
           {tv("emptyState.heading")}
         </h2>
-        <p className="mt-2 max-w-sm text-sm text-muted-foreground">
-          {tv("emptyState.body")}
-        </p>
+        <p className="mt-2 max-w-sm text-sm text-muted-foreground">{tv("emptyState.body")}</p>
         <div className="mt-6 flex gap-3">
           <Button onClick={() => setWizardOpen(true)}>
             <Plus className="me-1.5 h-4 w-4" /> {tv("emptyState.addContractor")}
@@ -511,7 +505,9 @@ function ContractorsV2Content() {
               <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/10">
                 <Users className="h-4 w-4 text-primary" />
               </div>
-              <h1 className="font-display text-[28px] font-black tracking-tight">{t("pageTitle")}</h1>
+              <h1 className="font-display text-[28px] font-black tracking-tight">
+                {t("pageTitle")}
+              </h1>
             </div>
             <StatsStrip total={allTotal} byStage={byStage} />
           </div>
@@ -583,9 +579,7 @@ function ContractorsV2Content() {
       ) : contractors.length === 0 ? (
         <div className="atelier-enter atelier-glass rounded-2xl py-16 text-center">
           <Filter className="mx-auto h-8 w-8 text-muted-foreground/30" />
-          <p className="mt-3 text-sm font-medium text-muted-foreground">
-            {tv("noMatch")}
-          </p>
+          <p className="mt-3 text-sm font-medium text-muted-foreground">{tv("noMatch")}</p>
           <button
             type="button"
             onClick={() => {
@@ -629,7 +623,8 @@ function ContractorsV2Content() {
                 <ChevronLeft className="h-4 w-4" />
               </button>
               <span className="text-[11px] font-bold tabular-nums text-muted-foreground/60">
-                {page} <span className="text-muted-foreground/30">{tv("paginationOf")}</span> {totalPages}
+                {page} <span className="text-muted-foreground/30">{tv("paginationOf")}</span>{" "}
+                {totalPages}
               </span>
               <button
                 type="button"

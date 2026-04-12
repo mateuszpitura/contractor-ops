@@ -88,7 +88,7 @@ export function TemplatesTable() {
   const router = useRouter();
   const queryClient = useQueryClient();
 
-  const [page, setPage] = useState(1);
+  const [page, _setPage] = useState(1);
   const [deleteTarget, setDeleteTarget] = useState<TemplateRow | null>(null);
 
   // Fetch templates

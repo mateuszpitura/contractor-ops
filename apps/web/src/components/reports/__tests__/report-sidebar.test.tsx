@@ -1,7 +1,7 @@
 import { render, screen, setup, within } from "@/test/test-utils";
 import { ReportSidebar } from "../report-sidebar";
 
-const REPORT_IDS = [
+const _REPORT_IDS = [
   "spend-contractor",
   "spend-team",
   "expiring-contracts",

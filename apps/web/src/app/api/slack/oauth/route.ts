@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
     const code = searchParams.get("code");
     const stateParam = searchParams.get("state");
 
-    if (!code || !stateParam) {
+    if (!(code && stateParam)) {
       return NextResponse.redirect(settingsUrl("error"));
     }
 
@@ -84,7 +84,7 @@ export async function GET(request: NextRequest) {
     // Exchange code for token
     const clientId = process.env.SLACK_CLIENT_ID;
     const clientSecret = process.env.SLACK_CLIENT_SECRET;
-    if (!clientId || !clientSecret) {
+    if (!(clientId && clientSecret)) {
       console.error("[slack-oauth] Missing SLACK_CLIENT_ID or SLACK_CLIENT_SECRET");
       return NextResponse.redirect(settingsUrl("error"));
     }
@@ -107,7 +107,7 @@ export async function GET(request: NextRequest) {
       error?: string;
     };
 
-    if (!data.ok || !data.access_token) {
+    if (!(data.ok && data.access_token)) {
       console.error("[slack-oauth] Token exchange failed:", data.error);
       return NextResponse.redirect(settingsUrl("error"));
     }
@@ -159,10 +159,7 @@ export async function GET(request: NextRequest) {
 
     // Auto-sync workspace users by email (D-10)
     try {
-      const syncResult = await syncWorkspaceUsers(state.orgId, connectionId);
-      console.log(
-        `[slack-oauth] User sync complete: ${syncResult.matched}/${syncResult.total} matched`,
-      );
+      const _syncResult = await syncWorkspaceUsers(state.orgId, connectionId);
     } catch (syncError) {
       console.error("[slack-oauth] User sync failed (non-blocking):", syncError);
     }

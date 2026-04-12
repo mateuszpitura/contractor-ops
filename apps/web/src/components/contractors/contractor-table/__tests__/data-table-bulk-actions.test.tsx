@@ -225,7 +225,7 @@ describe("DataTableBulkActions", () => {
   it("clicking archive confirm button dispatches bulk archive", async () => {
     const { user } = setup(<DataTableBulkActions table={makeMockTable(2)} />);
     await user.click(screen.getByText("Archive"));
-    const dialog = await screen.findByRole("alertdialog");
+    const _dialog = await screen.findByRole("alertdialog");
     const confirmBtn = screen
       .getAllByRole("button")
       .find((b) => b.textContent?.includes("Archive 2"));

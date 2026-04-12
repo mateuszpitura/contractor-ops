@@ -2,7 +2,6 @@ import type { Prisma } from "@contractor-ops/db";
 import { decryptCredentials } from "@contractor-ops/integrations/services/credential-service";
 import type { LinearIssueMetadata } from "@contractor-ops/validators";
 import {
-  linearTaskConfigSchema,
   saveLinearStatusMappingInputSchema,
   saveLinearTaskConfigInputSchema,
 } from "@contractor-ops/validators";

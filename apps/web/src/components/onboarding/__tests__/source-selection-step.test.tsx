@@ -162,7 +162,7 @@ describe("SourceSelectionStep", () => {
     // Click on a source card to toggle it
     const connectedBadges = screen.getAllByText("Connected");
     // Click the parent card of the first connected source
-    const card = connectedBadges[0]!.closest("div[role='button'], button, div");
+    const card = connectedBadges[0]?.closest("div[role='button'], button, div");
     if (card) await user.click(card);
     // onSourcesChange should be called with the provider added
     expect(onSourcesChange).toHaveBeenCalled();

@@ -50,7 +50,7 @@ const createMockForm = (taskData: Record<string, any> = {}) => {
   return {
     watch: vi.fn((path: string) => {
       if (path.startsWith("tasks.")) return defaultTask;
-      return undefined;
+      return;
     }),
     register: vi.fn(() => ({ name: "test", onChange: vi.fn(), onBlur: vi.fn(), ref: vi.fn() })),
     setValue: vi.fn(),

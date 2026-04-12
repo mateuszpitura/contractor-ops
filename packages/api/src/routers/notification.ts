@@ -29,7 +29,7 @@ export const notificationRouter = router({
   list: tenantProcedure.input(notificationListSchema).query(async ({ ctx, input }) => {
     const where: Prisma.NotificationWhereInput = {
       organizationId: ctx.organizationId,
-      userId: ctx.user!.id,
+      userId: ctx.user?.id,
     };
 
     if (input.type) {
@@ -71,7 +71,7 @@ export const notificationRouter = router({
   unreadCount: tenantProcedure.query(async ({ ctx }) => {
     const count = await ctx.db.notification.count({
       where: {
-        userId: ctx.user!.id,
+        userId: ctx.user?.id,
         organizationId: ctx.organizationId,
         status: { in: ["PENDING", "SENT"] },
       },
@@ -88,7 +88,7 @@ export const notificationRouter = router({
     await ctx.db.notification.updateMany({
       where: {
         id: input.notificationId,
-        userId: ctx.user!.id,
+        userId: ctx.user?.id,
         organizationId: ctx.organizationId,
       },
       data: {
@@ -106,7 +106,7 @@ export const notificationRouter = router({
   markAllRead: tenantProcedure.mutation(async ({ ctx }) => {
     await ctx.db.notification.updateMany({
       where: {
-        userId: ctx.user!.id,
+        userId: ctx.user?.id,
         organizationId: ctx.organizationId,
         readAt: null,
       },
@@ -126,7 +126,7 @@ export const notificationRouter = router({
   getPreferences: tenantProcedure.query(async ({ ctx }) => {
     const preferences = await Promise.all(
       NOTIFICATION_TYPES.map((type) =>
-        getOrCreatePreferences(ctx.user!.id, ctx.organizationId, type),
+        getOrCreatePreferences(ctx.user?.id, ctx.organizationId, type),
       ),
     );
 
@@ -145,12 +145,12 @@ export const notificationRouter = router({
           ctx.db.userNotificationPreference.upsert({
             where: {
               userId_notificationType: {
-                userId: ctx.user!.id,
+                userId: ctx.user?.id,
                 notificationType: pref.notificationType,
               },
             },
             create: {
-              userId: ctx.user!.id,
+              userId: ctx.user?.id,
               organizationId: ctx.organizationId,
               notificationType: pref.notificationType,
               channelEmail: pref.channelEmail,

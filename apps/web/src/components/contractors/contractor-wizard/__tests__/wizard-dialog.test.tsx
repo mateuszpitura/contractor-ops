@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen, setup, waitFor } from "@/test/test-utils";
+import { render, screen, setup } from "@/test/test-utils";
 import { WizardDialog } from "../wizard-dialog";
 
 // ---------------------------------------------------------------------------
@@ -239,8 +239,8 @@ describe("WizardDialog (Contractor)", () => {
 
   it("advances to step 2 when step 1 validation passes", async () => {
     // Override step mocks to allow form.trigger to pass
-    const mockTrigger = vi.fn().mockResolvedValue(true);
-    const mockGetValues = vi.fn().mockReturnValue({
+    const _mockTrigger = vi.fn().mockResolvedValue(true);
+    const _mockGetValues = vi.fn().mockReturnValue({
       legalName: "Test Corp",
       displayName: "",
       type: "COMPANY",

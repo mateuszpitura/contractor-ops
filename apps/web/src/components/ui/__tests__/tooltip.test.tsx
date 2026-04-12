@@ -1,4 +1,4 @@
-import { render, screen, setup, waitFor } from "@/test/test-utils";
+import { screen, setup, waitFor } from "@/test/test-utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../tooltip";
 
 function renderTooltip(content = "Tooltip text") {

@@ -8,7 +8,6 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { trpc } from "@/trpc/init";
-import type { TierId } from "./plan-comparison-grid";
 import { ProrationPreview } from "./proration-preview";
 import { UsageDashboard } from "./usage-dashboard";
 
@@ -62,8 +61,8 @@ export function BillingTab() {
   }, [searchParams]);
 
   // Plan selection handler
-  function handleSelectPlan(priceId: string) {
-    if (subscription && subscription.tier) {
+  function _handleSelectPlan(priceId: string) {
+    if (subscription?.tier) {
       // Existing subscription: show proration preview first
       setSelectedPriceId(priceId);
     } else {

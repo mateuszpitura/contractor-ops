@@ -205,7 +205,7 @@ async function fetchSlackUsers(accessToken: string): Promise<SourcePerson[]> {
       response_metadata?: { next_cursor?: string };
     };
 
-    if (!data.ok || !data.members) break;
+    if (!(data.ok && data.members)) break;
 
     for (const member of data.members) {
       // Filter out bots, deleted users, app users, and Slackbot
@@ -302,7 +302,7 @@ export function mergeByEmail(
 
     merged.push({
       email,
-      name: data.sources[0]!.name,
+      name: data.sources[0]?.name,
       sources: data.sources.map((s) => ({
         source: s.source as "JIRA" | "LINEAR" | "GOOGLE_WORKSPACE" | "SLACK",
         name: s.name,

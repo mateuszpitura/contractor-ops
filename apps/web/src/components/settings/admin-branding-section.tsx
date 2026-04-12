@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Globe, Loader2, Upload, X } from "lucide-react";
+import { Globe, Loader2, Upload } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
@@ -91,7 +91,7 @@ export function AdminBrandingSection() {
     }),
   );
 
-  const portalDomainQuery = useQuery({
+  const _portalDomainQuery = useQuery({
     ...trpc.settings.getPortalDomain.queryOptions(),
     select: (data) => {
       if (!subdomainInitialized && data) {

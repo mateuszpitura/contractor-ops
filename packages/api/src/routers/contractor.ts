@@ -203,7 +203,7 @@ export const contractorRouter = router({
           `;
 
           if (matchingIds.length === 0) {
-            return { items: [] as Array<Record<string, unknown>>, total: 0, page, pageSize };
+            return { items: [] as Record<string, unknown>[], total: 0, page, pageSize };
           }
 
           where.id = { in: matchingIds.map((r) => r.id) };
@@ -270,7 +270,7 @@ export const contractorRouter = router({
       // Post-filter by compliance health if requested
       if (filters?.complianceHealth?.length) {
         const filtered = items.filter((i) =>
-          filters.complianceHealth!.includes(i.complianceHealth),
+          filters.complianceHealth?.includes(i.complianceHealth),
         );
         return {
           items: filtered,
@@ -983,7 +983,7 @@ export const contractorRouter = router({
       where: { id: ctx.organizationId },
       select: { countryCode: true },
     });
-    if (!org.countryCode || !countryFieldsSchemaMap[org.countryCode]) {
+    if (!(org.countryCode && countryFieldsSchemaMap[org.countryCode])) {
       return { hasCountryFields: false, countryCode: org.countryCode };
     }
     const fields =

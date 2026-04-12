@@ -10,7 +10,6 @@
  * use `trpc.zatca` directly.
  */
 
-import type { ZatcaOnboardingState, ZatcaTaxDetails } from "@contractor-ops/einvoice";
 import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------

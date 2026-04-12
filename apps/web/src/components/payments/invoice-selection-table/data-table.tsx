@@ -2,7 +2,7 @@
 
 import type { ColumnDef, RowSelectionState } from "@tanstack/react-table";
 import { flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 
 import { Skeleton } from "@/components/ui/skeleton";
 import {

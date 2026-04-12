@@ -49,7 +49,7 @@ describe("ActivityLog", () => {
     );
 
     // Separator between 2 entries = 1 separator
-    const separators = container.querySelectorAll("[data-separator]");
+    const _separators = container.querySelectorAll("[data-separator]");
     // Fallback: at least both events render
     expect(screen.getByText("Event 1")).toBeInTheDocument();
     expect(screen.getByText("Event 2")).toBeInTheDocument();

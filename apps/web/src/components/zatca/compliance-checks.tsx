@@ -89,9 +89,7 @@ export function ComplianceChecks({ onSuccess, onBack }: ComplianceChecksProps) {
     <div className="space-y-6">
       <div className="space-y-1">
         <h3 className="text-base font-semibold">{t("title")}</h3>
-        <p className="text-sm text-muted-foreground">
-          {t("description")}
-        </p>
+        <p className="text-sm text-muted-foreground">{t("description")}</p>
       </div>
 
       {results.length === 0 && (
@@ -116,7 +114,7 @@ export function ComplianceChecks({ onSuccess, onBack }: ComplianceChecksProps) {
           {TEST_LABELS.map((label, i) => {
             const result = results[i];
             const isRunning = checksMutation.isPending && !result;
-            const isPending = !checksMutation.isPending && !result;
+            const isPending = !(checksMutation.isPending || result);
 
             return (
               <div key={label} className="flex items-center justify-between" role="listitem">

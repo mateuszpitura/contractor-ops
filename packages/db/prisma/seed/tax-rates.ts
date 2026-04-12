@@ -120,5 +120,4 @@ export async function seedTaxRates(prisma: PrismaClient) {
       create: { ...rate },
     });
   }
-  console.log(`  ✓ Seeded ${taxRates.length} tax rates`);
 }

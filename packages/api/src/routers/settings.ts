@@ -454,7 +454,7 @@ export const settingsRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       // tenantProcedure guarantees user is non-null
-      const reviewerId = ctx.user!.id;
+      const reviewerId = ctx.user?.id;
 
       if (input.action === "approve") {
         await approveChangeRequest(input.requestId, ctx.organizationId, reviewerId, input.comment);

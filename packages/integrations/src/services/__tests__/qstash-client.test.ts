@@ -2,9 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { getQStashClient, resetQStashClient } from "../qstash-client.js";
 
 const { MockClient } = vi.hoisted(() => {
-  class MockClient {
-    constructor(_opts: { token: string }) {}
-  }
+  class MockClient {}
   return { MockClient };
 });
 

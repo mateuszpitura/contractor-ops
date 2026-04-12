@@ -62,8 +62,6 @@ function legacyDecrypt(encrypted: string, providerSlug: string): unknown {
 // ---------------------------------------------------------------------------
 
 async function main() {
-  console.log(`\n=== Credential Migration ${DRY_RUN ? "(DRY RUN)" : "(EXECUTING)"} ===\n`);
-
   // Dynamically import secret store so env is read at runtime
   const { getSecretStore } = await import("@contractor-ops/secrets");
   const store = getSecretStore();
@@ -80,17 +78,17 @@ async function main() {
       },
     });
 
-    let migrated = 0;
-    let skipped = 0;
-    let failed = 0;
+    let _migrated = 0;
+    let _skipped = 0;
+    let _failed = 0;
 
     for (const conn of connections) {
       const slug = conn.provider.toLowerCase();
       const ref = conn.credentialsRef;
 
       // Skip if already migrated (not legacy format) or empty
-      if (!ref || !LEGACY_FORMAT_RE.test(ref)) {
-        skipped++;
+      if (!(ref && LEGACY_FORMAT_RE.test(ref))) {
+        _skipped++;
         continue;
       }
 
@@ -100,8 +98,7 @@ async function main() {
         const path = `${conn.organizationId}/${slug}`;
 
         if (DRY_RUN) {
-          console.log(`  [dry-run] Would migrate ${conn.id} (${slug}) → ${path}`);
-          migrated++;
+          _migrated++;
           continue;
         }
 
@@ -123,25 +120,16 @@ async function main() {
           where: { id: conn.id },
           data: { credentialsRef: path },
         });
-
-        console.log(`  [ok] ${conn.id} (${slug}) → ${path}`);
-        migrated++;
+        _migrated++;
       } catch (err) {
-        failed++;
+        _failed++;
         console.error(
           `  [FAIL] ${conn.id} (${slug}): ${err instanceof Error ? err.message : String(err)}`,
         );
       }
     }
 
-    console.log(`\n--- Summary ---`);
-    console.log(`  Total:    ${connections.length}`);
-    console.log(`  Migrated: ${migrated}`);
-    console.log(`  Skipped:  ${skipped} (already migrated or empty)`);
-    console.log(`  Failed:   ${failed}`);
-
     if (DRY_RUN) {
-      console.log(`\nRe-run with --execute to apply changes.\n`);
     }
   } finally {
     await prisma.$disconnect();

@@ -70,7 +70,7 @@ export class TeamsAdapter extends BaseAdapter {
     const clientId = process.env.AZURE_BOT_APP_ID;
     const clientSecret = process.env.AZURE_BOT_APP_SECRET;
 
-    if (!clientId || !clientSecret) {
+    if (!(clientId && clientSecret)) {
       throw new Error(
         "AZURE_BOT_APP_ID and AZURE_BOT_APP_SECRET environment variables are required",
       );
@@ -119,7 +119,7 @@ export class TeamsAdapter extends BaseAdapter {
     const clientId = process.env.AZURE_BOT_APP_ID;
     const clientSecret = process.env.AZURE_BOT_APP_SECRET;
 
-    if (!clientId || !clientSecret) {
+    if (!(clientId && clientSecret)) {
       throw new Error(
         "AZURE_BOT_APP_ID and AZURE_BOT_APP_SECRET environment variables are required",
       );

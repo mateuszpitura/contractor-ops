@@ -57,7 +57,7 @@ describe("downloadBase64File", () => {
 
   it("creates and clicks a download link", () => {
     const mockClick = vi.fn();
-    const createElementSpy = vi.spyOn(document, "createElement").mockReturnValue({
+    const _createElementSpy = vi.spyOn(document, "createElement").mockReturnValue({
       href: "",
       download: "",
       click: mockClick,

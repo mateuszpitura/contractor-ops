@@ -565,7 +565,7 @@ function DatePicker({
   pickDateLabel?: string;
 }) {
   const parsed = value ? new Date(value) : undefined;
-  const isValid = parsed && !isNaN(parsed.getTime());
+  const isValid = parsed && !Number.isNaN(parsed.getTime());
 
   return (
     <Popover>

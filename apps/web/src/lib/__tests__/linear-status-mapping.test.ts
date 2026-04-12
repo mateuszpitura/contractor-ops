@@ -10,10 +10,10 @@ describe("computeSmartDefaultMappings", () => {
       { name: "Cancelled", type: "cancelled" },
     ];
     const result = computeSmartDefaultMappings(states);
-    expect(result["IN_PROGRESS"]).toBe("In Progress");
-    expect(result["DONE"]).toBe("Done");
-    expect(result["BLOCKED"]).toBe("Blocked");
-    expect(result["CANCELLED"]).toBe("Cancelled");
+    expect(result.IN_PROGRESS).toBe("In Progress");
+    expect(result.DONE).toBe("Done");
+    expect(result.BLOCKED).toBe("Blocked");
+    expect(result.CANCELLED).toBe("Cancelled");
   });
 
   it("falls back to type mapping for unmapped statuses (pass 2)", () => {
@@ -23,9 +23,9 @@ describe("computeSmartDefaultMappings", () => {
       { name: "Finished", type: "completed" },
     ];
     const result = computeSmartDefaultMappings(states);
-    expect(result["TODO"]).toBe("Backlog");
-    expect(result["IN_PROGRESS"]).toBe("Active");
-    expect(result["DONE"]).toBe("Finished");
+    expect(result.TODO).toBe("Backlog");
+    expect(result.IN_PROGRESS).toBe("Active");
+    expect(result.DONE).toBe("Finished");
   });
 
   it("does not override pass 1 matches with pass 2", () => {
@@ -35,7 +35,7 @@ describe("computeSmartDefaultMappings", () => {
     ];
     const result = computeSmartDefaultMappings(states);
     // "In Review" matches "review" keyword -> IN_PROGRESS
-    expect(result["IN_PROGRESS"]).toBe("In Review");
+    expect(result.IN_PROGRESS).toBe("In Review");
   });
 
   it("handles empty states array", () => {
@@ -48,30 +48,30 @@ describe("computeSmartDefaultMappings", () => {
       { name: "Done - Shipped", type: "completed" },
     ];
     const result = computeSmartDefaultMappings(states);
-    expect(result["DONE"]).toBe("Done - Verified");
+    expect(result.DONE).toBe("Done - Verified");
   });
 
   it("maps triage type to TODO", () => {
     const states = [{ name: "Triage Queue", type: "triage" }];
     const result = computeSmartDefaultMappings(states);
-    expect(result["TODO"]).toBe("Triage Queue");
+    expect(result.TODO).toBe("Triage Queue");
   });
 
   it("maps unstarted type to TODO", () => {
     const states = [{ name: "Not Started", type: "unstarted" }];
     const result = computeSmartDefaultMappings(states);
-    expect(result["TODO"]).toBe("Not Started");
+    expect(result.TODO).toBe("Not Started");
   });
 
   it("name keyword 'complete' matches DONE", () => {
     const states = [{ name: "Complete", type: "completed" }];
     const result = computeSmartDefaultMappings(states);
-    expect(result["DONE"]).toBe("Complete");
+    expect(result.DONE).toBe("Complete");
   });
 
   it("name keyword 'progress' matches IN_PROGRESS", () => {
     const states = [{ name: "Work In Progress", type: "started" }];
     const result = computeSmartDefaultMappings(states);
-    expect(result["IN_PROGRESS"]).toBe("Work In Progress");
+    expect(result.IN_PROGRESS).toBe("Work In Progress");
   });
 });

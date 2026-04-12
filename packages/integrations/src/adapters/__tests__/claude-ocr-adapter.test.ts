@@ -89,7 +89,7 @@ describe("ClaudeOcrAdapter", () => {
     expect(result.fields.currency?.value).toBe("PLN");
     expect(result.fields.sellerName?.value).toBe("Acme Sp. z o.o.");
     expect(result.lineItems).toHaveLength(1);
-    expect(result.lineItems[0]!.description).toBe("Uslugi programistyczne");
+    expect(result.lineItems[0]?.description).toBe("Uslugi programistyczne");
     expect(result.overallConfidence).toBeGreaterThan(0);
   });
 
@@ -106,10 +106,10 @@ describe("ClaudeOcrAdapter", () => {
     expect(result.fields.totalGross?.value).toBe(123000);
 
     // Line item amounts in minor units
-    expect(result.lineItems[0]!.unitPriceMinor).toBe(625);
-    expect(result.lineItems[0]!.netAmountMinor).toBe(100000);
-    expect(result.lineItems[0]!.vatAmountMinor).toBe(23000);
-    expect(result.lineItems[0]!.grossAmountMinor).toBe(123000);
+    expect(result.lineItems[0]?.unitPriceMinor).toBe(625);
+    expect(result.lineItems[0]?.netAmountMinor).toBe(100000);
+    expect(result.lineItems[0]?.vatAmountMinor).toBe(23000);
+    expect(result.lineItems[0]?.grossAmountMinor).toBe(123000);
   });
 
   it("adjusts confidence when NIP is invalid", async () => {

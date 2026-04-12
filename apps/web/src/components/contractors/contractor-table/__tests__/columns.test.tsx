@@ -53,7 +53,7 @@ function renderCell(columnId: string, row: ContractorRow) {
     },
     getValue: () => (row as any)[columnId],
   });
-  const { container } = render(<>{result}</>);
+  const { container } = render(result);
   return container;
 }
 
@@ -66,13 +66,13 @@ describe("getColumns", () => {
   });
 
   it("has a select column as first", () => {
-    expect(columns[0]!.id).toBe("select");
+    expect(columns[0]?.id).toBe("select");
   });
 
   it("has displayName as non-hideable column", () => {
     const nameCol = columns.find((c) => (c as any).accessorKey === "displayName");
     expect(nameCol).toBeDefined();
-    expect(nameCol!.enableHiding).toBe(false);
+    expect(nameCol?.enableHiding).toBe(false);
   });
 
   it("has compliance health as last data column", () => {
@@ -108,22 +108,20 @@ describe("getColumns cell renderers", () => {
   it("lifecycleStage cell renders badge for each stage", () => {
     for (const stage of ["DRAFT", "ONBOARDING", "ACTIVE", "OFFBOARDING", "ENDED"]) {
       const { unmount } = render(
-        <>
-          {(() => {
-            const t = (key: string) => key;
-            const cols = getColumns(t);
-            const col = cols.find((c) => (c as any).accessorKey === "lifecycleStage");
-            const cellFn = col!.cell as (info: any) => any;
-            return cellFn({
-              row: {
-                original: makeRow({ lifecycleStage: stage }),
-                getIsSelected: () => false,
-                toggleSelected: vi.fn(),
-              },
-              getValue: () => stage,
-            });
-          })()}
-        </>,
+        (() => {
+          const t = (key: string) => key;
+          const cols = getColumns(t);
+          const col = cols.find((c) => (c as any).accessorKey === "lifecycleStage");
+          const cellFn = col?.cell as (info: any) => any;
+          return cellFn({
+            row: {
+              original: makeRow({ lifecycleStage: stage }),
+              getIsSelected: () => false,
+              toggleSelected: vi.fn(),
+            },
+            getValue: () => stage,
+          });
+        })(),
       );
       expect(screen.getByText(`lifecycle.${stage}`)).toBeInTheDocument();
       unmount();

@@ -8,7 +8,6 @@
  *  - Each test verifies delegation params, guard logic, and data flow.
  */
 
-import { TRPCError } from "@trpc/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // ---------------------------------------------------------------------------

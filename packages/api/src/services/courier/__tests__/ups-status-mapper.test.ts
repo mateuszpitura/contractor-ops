@@ -13,31 +13,31 @@ describe("UPS Status Mapper", () => {
     });
 
     it("maps D (Delivered) to DELIVERED", () => {
-      expect(UPS_STATUS_MAP["D"]).toBe("DELIVERED");
+      expect(UPS_STATUS_MAP.D).toBe("DELIVERED");
     });
 
     it("maps I (In Transit) to IN_TRANSIT", () => {
-      expect(UPS_STATUS_MAP["I"]).toBe("IN_TRANSIT");
+      expect(UPS_STATUS_MAP.I).toBe("IN_TRANSIT");
     });
 
     it("maps M (Manifest) to CREATED", () => {
-      expect(UPS_STATUS_MAP["M"]).toBe("CREATED");
+      expect(UPS_STATUS_MAP.M).toBe("CREATED");
     });
 
     it("maps P (Picked Up) to PICKED_UP", () => {
-      expect(UPS_STATUS_MAP["P"]).toBe("PICKED_UP");
+      expect(UPS_STATUS_MAP.P).toBe("PICKED_UP");
     });
 
     it("maps O (Out for Delivery) to OUT_FOR_DELIVERY", () => {
-      expect(UPS_STATUS_MAP["O"]).toBe("OUT_FOR_DELIVERY");
+      expect(UPS_STATUS_MAP.O).toBe("OUT_FOR_DELIVERY");
     });
 
     it("maps X (Exception) to FAILED", () => {
-      expect(UPS_STATUS_MAP["X"]).toBe("FAILED");
+      expect(UPS_STATUS_MAP.X).toBe("FAILED");
     });
 
     it("maps RS (Returned) to RETURNED", () => {
-      expect(UPS_STATUS_MAP["RS"]).toBe("RETURNED");
+      expect(UPS_STATUS_MAP.RS).toBe("RETURNED");
     });
   });
 

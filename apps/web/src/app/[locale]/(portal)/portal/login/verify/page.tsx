@@ -130,7 +130,7 @@ export default function PortalVerifyPage() {
       },
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token]);
+  }, [token, verifyMagicLink.mutateAsync, t, router.push]);
 
   // Handle org selection
   const handleOrgSelect = useCallback(

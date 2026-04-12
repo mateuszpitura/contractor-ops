@@ -34,7 +34,7 @@ async function handler(request: NextRequest) {
     storageKey: string;
   };
 
-  if (!extractionId || !organizationId || !storageKey) {
+  if (!(extractionId && organizationId && storageKey)) {
     return NextResponse.json(
       { error: "Missing extractionId, organizationId, or storageKey" },
       { status: 400 },

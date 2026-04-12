@@ -219,7 +219,7 @@ describe("payment-export", () => {
       // Extract MsgId value
       const match = xml.match(/<MsgId>([^<]+)<\/MsgId>/);
       expect(match).toBeTruthy();
-      expect(match![1]!.length).toBeLessThanOrEqual(35);
+      expect(match?.[1]?.length).toBeLessThanOrEqual(35);
     });
 
     it("strips non-alphanumeric characters from MsgId except hyphens", () => {
@@ -230,7 +230,7 @@ describe("payment-export", () => {
       const match = xml.match(/<MsgId>([^<]+)<\/MsgId>/);
       expect(match).toBeTruthy();
       // Only [a-zA-Z0-9-] survive the sanitization
-      expect(match![1]).toBe("RUN2026001");
+      expect(match?.[1]).toBe("RUN2026001");
     });
 
     it("preserves hyphens in MsgId", () => {
@@ -240,7 +240,7 @@ describe("payment-export", () => {
 
       const match = xml.match(/<MsgId>([^<]+)<\/MsgId>/);
       expect(match).toBeTruthy();
-      expect(match![1]).toBe("RUN-2026-001");
+      expect(match?.[1]).toBe("RUN-2026-001");
     });
   });
 
@@ -361,14 +361,14 @@ describe("bank-statement", () => {
       expect(result).toHaveLength(2);
 
       // Amount should be absolute value in minor units
-      expect(result[0]!.amount).toBe(150050);
-      expect(result[0]!.currency).toBe("PLN");
-      expect(result[0]!.description).toBe("Payment to supplier");
-      expect(result[0]!.iban).toBe("PL61109010140000071219812874");
-      expect(result[0]!.reference).toBe("REF001");
+      expect(result[0]?.amount).toBe(150050);
+      expect(result[0]?.currency).toBe("PLN");
+      expect(result[0]?.description).toBe("Payment to supplier");
+      expect(result[0]?.iban).toBe("PL61109010140000071219812874");
+      expect(result[0]?.reference).toBe("REF001");
 
-      expect(result[1]!.amount).toBe(25000);
-      expect(result[1]!.iban).toBeUndefined();
+      expect(result[1]?.amount).toBe(25000);
+      expect(result[1]?.iban).toBeUndefined();
 
       parseSpy.mockRestore();
     });
@@ -385,11 +385,11 @@ describe("bank-statement", () => {
       const result = parseCsvStatement(csv);
 
       expect(result).toHaveLength(2);
-      expect(result[0]!.amount).toBe(150050);
-      expect(result[0]!.iban).toBe("PL61109010140000071219812874");
-      expect(result[0]!.description).toBe("Payment to supplier");
-      expect(result[0]!.reference).toBe("REF001");
-      expect(result[1]!.amount).toBe(25000);
+      expect(result[0]?.amount).toBe(150050);
+      expect(result[0]?.iban).toBe("PL61109010140000071219812874");
+      expect(result[0]?.description).toBe("Payment to supplier");
+      expect(result[0]?.reference).toBe("REF001");
+      expect(result[1]?.amount).toBe(25000);
     });
 
     it("handles semicolon separator", () => {
@@ -401,8 +401,8 @@ describe("bank-statement", () => {
       const result = parseCsvStatement(csv);
 
       expect(result).toHaveLength(1);
-      expect(result[0]!.amount).toBe(150050);
-      expect(result[0]!.iban).toBe("PL61109010140000071219812874");
+      expect(result[0]?.amount).toBe(150050);
+      expect(result[0]?.iban).toBe("PL61109010140000071219812874");
     });
 
     it("handles comma decimal separator in amounts", () => {
@@ -415,8 +415,8 @@ describe("bank-statement", () => {
       const result = parseCsvStatement(csv);
 
       expect(result).toHaveLength(2);
-      expect(result[0]!.amount).toBe(123456);
-      expect(result[1]!.amount).toBe(9999);
+      expect(result[0]?.amount).toBe(123456);
+      expect(result[1]?.amount).toBe(9999);
     });
 
     it("returns empty array for input with less than 2 lines", () => {
@@ -441,7 +441,7 @@ describe("bank-statement", () => {
 
       const result = parseCsvStatement(csv);
       expect(result).toHaveLength(1);
-      expect(result[0]!.amount).toBe(50000);
+      expect(result[0]?.amount).toBe(50000);
     });
   });
 
@@ -472,14 +472,14 @@ describe("bank-statement", () => {
       const csv = "date,amount\n2026-03-15,100.00";
       const result = parseBankStatement(csv, "statement.csv");
       expect(result).toHaveLength(1);
-      expect(result[0]!.amount).toBe(10000);
+      expect(result[0]?.amount).toBe(10000);
     });
 
     it("routes .txt files to parseCsvStatement", () => {
       const csv = "date,amount\n2026-03-15,200.00";
       const result = parseBankStatement(csv, "export.txt");
       expect(result).toHaveLength(1);
-      expect(result[0]!.amount).toBe(20000);
+      expect(result[0]?.amount).toBe(20000);
     });
 
     it("throws for unrecognized file extensions", () => {
@@ -523,10 +523,10 @@ describe("bank-statement", () => {
       const results = matchStatementToRun(transactions, baseItems);
 
       expect(results).toHaveLength(1);
-      expect(results[0]!.paymentRunItemId).toBe("item-1");
-      expect(results[0]!.confidence).toBe("exact");
-      expect(results[0]!.amountMatched).toBe(true);
-      expect(results[0]!.ibanMatched).toBe(true);
+      expect(results[0]?.paymentRunItemId).toBe("item-1");
+      expect(results[0]?.confidence).toBe("exact");
+      expect(results[0]?.amountMatched).toBe(true);
+      expect(results[0]?.ibanMatched).toBe(true);
     });
 
     it("returns partial match within 1 minor-unit tolerance", () => {
@@ -543,11 +543,11 @@ describe("bank-statement", () => {
       const results = matchStatementToRun(transactions, baseItems);
 
       expect(results).toHaveLength(1);
-      expect(results[0]!.paymentRunItemId).toBe("item-1");
-      expect(results[0]!.confidence).toBe("partial");
-      expect(results[0]!.ibanMatched).toBe(true);
+      expect(results[0]?.paymentRunItemId).toBe("item-1");
+      expect(results[0]?.confidence).toBe("partial");
+      expect(results[0]?.ibanMatched).toBe(true);
       // Close amount but not exact
-      expect(results[0]!.amountMatched).toBe(false);
+      expect(results[0]?.amountMatched).toBe(false);
     });
 
     it("returns partial match when only amount matches", () => {
@@ -564,10 +564,10 @@ describe("bank-statement", () => {
       const results = matchStatementToRun(transactions, baseItems);
 
       expect(results).toHaveLength(1);
-      expect(results[0]!.paymentRunItemId).toBe("item-1");
-      expect(results[0]!.confidence).toBe("partial");
-      expect(results[0]!.amountMatched).toBe(true);
-      expect(results[0]!.ibanMatched).toBe(false);
+      expect(results[0]?.paymentRunItemId).toBe("item-1");
+      expect(results[0]?.confidence).toBe("partial");
+      expect(results[0]?.amountMatched).toBe(true);
+      expect(results[0]?.ibanMatched).toBe(false);
     });
 
     it("returns unmatched when no match found", () => {
@@ -584,10 +584,10 @@ describe("bank-statement", () => {
       const results = matchStatementToRun(transactions, baseItems);
 
       expect(results).toHaveLength(1);
-      expect(results[0]!.confidence).toBe("unmatched");
-      expect(results[0]!.paymentRunItemId).toBe("");
-      expect(results[0]!.amountMatched).toBe(false);
-      expect(results[0]!.ibanMatched).toBe(false);
+      expect(results[0]?.confidence).toBe("unmatched");
+      expect(results[0]?.paymentRunItemId).toBe("");
+      expect(results[0]?.amountMatched).toBe(false);
+      expect(results[0]?.ibanMatched).toBe(false);
     });
 
     it("does not double-match items", () => {
@@ -612,11 +612,11 @@ describe("bank-statement", () => {
 
       expect(results).toHaveLength(2);
       // First transaction should match item-1
-      expect(results[0]!.paymentRunItemId).toBe("item-1");
-      expect(results[0]!.confidence).toBe("exact");
+      expect(results[0]?.paymentRunItemId).toBe("item-1");
+      expect(results[0]?.confidence).toBe("exact");
 
       // Second transaction should NOT match item-1 again
-      expect(results[1]!.paymentRunItemId).not.toBe("item-1");
+      expect(results[1]?.paymentRunItemId).not.toBe("item-1");
     });
 
     it("matches using last 20 chars of IBAN for normalization", () => {
@@ -634,8 +634,8 @@ describe("bank-statement", () => {
       const results = matchStatementToRun(transactions, baseItems);
 
       expect(results).toHaveLength(1);
-      expect(results[0]!.paymentRunItemId).toBe("item-1");
-      expect(results[0]!.confidence).toBe("exact");
+      expect(results[0]?.paymentRunItemId).toBe("item-1");
+      expect(results[0]?.confidence).toBe("exact");
     });
 
     it("requires IBAN length >= 10 for IBAN matching", () => {
@@ -653,9 +653,9 @@ describe("bank-statement", () => {
 
       expect(results).toHaveLength(1);
       // Should still match by amount only (partial)
-      expect(results[0]!.confidence).toBe("partial");
-      expect(results[0]!.amountMatched).toBe(true);
-      expect(results[0]!.ibanMatched).toBe(false);
+      expect(results[0]?.confidence).toBe("partial");
+      expect(results[0]?.amountMatched).toBe(true);
+      expect(results[0]?.ibanMatched).toBe(false);
     });
 
     it("handles transactions without IBAN", () => {
@@ -673,9 +673,9 @@ describe("bank-statement", () => {
 
       expect(results).toHaveLength(1);
       // Should match by amount only
-      expect(results[0]!.confidence).toBe("partial");
-      expect(results[0]!.amountMatched).toBe(true);
-      expect(results[0]!.ibanMatched).toBe(false);
+      expect(results[0]?.confidence).toBe("partial");
+      expect(results[0]?.amountMatched).toBe(true);
+      expect(results[0]?.ibanMatched).toBe(false);
     });
 
     it("handles empty transactions array", () => {
@@ -695,7 +695,7 @@ describe("bank-statement", () => {
 
       const results = matchStatementToRun(transactions, []);
       expect(results).toHaveLength(1);
-      expect(results[0]!.confidence).toBe("unmatched");
+      expect(results[0]?.confidence).toBe("unmatched");
     });
   });
 });

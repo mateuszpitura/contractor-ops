@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { render, screen } from "@/test/test-utils";
+import { render } from "@/test/test-utils";
 import {
   ConfluenceBrandIcon,
   GoogleCalendarBrandIcon,

@@ -35,7 +35,7 @@ vi.mock("@contractor-ops/db", () => ({
   createTenantClientFrom: vi.fn(() => mockScopedClient),
 }));
 
-import { createTenantClientFrom, getRegionalClient, tenantStore } from "@contractor-ops/db";
+import { createTenantClientFrom, getRegionalClient } from "@contractor-ops/db";
 
 // ---------------------------------------------------------------------------
 // Middleware under test — extracted logic
@@ -48,7 +48,7 @@ import { createTenantClientFrom, getRegionalClient, tenantStore } from "@contrac
 async function runTenantMiddleware(opts: { session: unknown; user: unknown }) {
   const { session, user } = opts;
 
-  if (!session || !user) {
+  if (!(session && user)) {
     throw new Error("UNAUTHORIZED");
   }
 

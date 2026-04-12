@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2, ShieldCheck, Unplug } from "lucide-react";
+import { Loader2, ShieldCheck } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -108,7 +108,7 @@ function KsefControls() {
 
 function KsefProviderSection() {
   const tIntegrations = useTranslations("Settings.integrations");
-  const tKsef = useTranslations("ksef");
+  const _tKsef = useTranslations("ksef");
   const [setupDialogOpen, setSetupDialogOpen] = useState(false);
 
   // Get org NIP from settings

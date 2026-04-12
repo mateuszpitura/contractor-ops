@@ -19,7 +19,7 @@ describe("INPOST_STATUS_MAP", () => {
       "RETURNED",
     ]);
 
-    for (const [shipxStatus, mapped] of Object.entries(INPOST_STATUS_MAP)) {
+    for (const [_shipxStatus, mapped] of Object.entries(INPOST_STATUS_MAP)) {
       expect(validStatuses.has(mapped)).toBe(true);
     }
   });

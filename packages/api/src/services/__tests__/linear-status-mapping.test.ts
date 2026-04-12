@@ -41,7 +41,7 @@ describe("linear-status-mapping", () => {
     });
     const r = await getStatusMapping(prisma as never, "c1", "team-1");
     expect(r).toHaveLength(1);
-    expect(r[0]!.linearStateId).toBe("s1");
+    expect(r[0]?.linearStateId).toBe("s1");
   });
 
   it("getStatusMapping returns empty when schema invalid", async () => {
@@ -73,7 +73,7 @@ describe("linear-status-mapping", () => {
     ]);
 
     expect(mockUpdate).toHaveBeenCalled();
-    const arg = mockUpdate.mock.calls[0]![0];
+    const arg = mockUpdate.mock.calls[0]?.[0];
     expect(arg.where.id).toBe("c1");
     expect(arg.data.status).toBe("CONNECTED");
   });

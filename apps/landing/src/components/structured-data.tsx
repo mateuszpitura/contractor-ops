@@ -1,7 +1,6 @@
 import type { Locale } from "@/i18n";
 import { localeConfigs } from "@/i18n";
 import type { PricingPlan } from "@/lib/stripe";
-import { formatPrice } from "@/lib/stripe";
 
 /**
  * JSON-LD structured data for SEO.

@@ -189,7 +189,7 @@ export const importRouter = router({
                     currency: String(row.currency ?? "PLN"),
                     status: "ACTIVE",
                     lifecycleStage: "ACTIVE",
-                    ownerUserId: ctx.user!.id,
+                    ownerUserId: ctx.user?.id,
                   },
                 });
                 created++;
@@ -236,7 +236,7 @@ export const importRouter = router({
                     billingModel: "MONTHLY_RETAINER",
                     rateType: "MONTHLY_FIXED",
                     status: "DRAFT",
-                    internalOwnerUserId: ctx.user!.id,
+                    internalOwnerUserId: ctx.user?.id,
                   },
                 });
                 created++;

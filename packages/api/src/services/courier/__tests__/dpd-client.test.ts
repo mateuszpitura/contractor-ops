@@ -15,7 +15,7 @@ const TEST_CONFIG = {
 
 const DPD_SANDBOX_BASE =
   "https://dpdservicesdemo.dpd.com.pl/DPDPackageObjServicesService/DPDPackageObjServices";
-const DPD_PRODUCTION_BASE =
+const _DPD_PRODUCTION_BASE =
   "https://dpdservices.dpd.com.pl/DPDPackageObjServicesService/DPDPackageObjServices";
 
 function createClient(overrides?: Partial<typeof TEST_CONFIG>) {

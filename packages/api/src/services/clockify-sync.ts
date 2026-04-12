@@ -107,7 +107,7 @@ export async function syncClockifyEntries(
   const credentials = decryptCredentials(connection.credentialsRef, "clockify");
   const config = connection.configJson as unknown as ClockifyConnectionConfig;
 
-  if (!config?.workspaceId || !config?.userId) {
+  if (!(config?.workspaceId && config?.userId)) {
     throw new TRPCError({
       code: "BAD_REQUEST",
       message: "Clockify connection is missing workspaceId or userId in config",

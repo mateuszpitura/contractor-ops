@@ -45,7 +45,7 @@ export class SlackAdapter extends BaseAdapter {
     const clientId = process.env.SLACK_CLIENT_ID;
     const clientSecret = process.env.SLACK_CLIENT_SECRET;
 
-    if (!clientId || !clientSecret) {
+    if (!(clientId && clientSecret)) {
       throw new Error("SLACK_CLIENT_ID and SLACK_CLIENT_SECRET environment variables are required");
     }
 
@@ -67,7 +67,7 @@ export class SlackAdapter extends BaseAdapter {
       error?: string;
     };
 
-    if (!data.ok || !data.access_token) {
+    if (!(data.ok && data.access_token)) {
       throw new Error(`Slack OAuth exchange failed: ${data.error ?? "unknown error"}`);
     }
 
@@ -112,7 +112,7 @@ export class SlackAdapter extends BaseAdapter {
     const timestamp = headers["x-slack-request-timestamp"] ?? "";
     const signature = headers["x-slack-signature"] ?? "";
 
-    if (!timestamp || !signature) {
+    if (!(timestamp && signature)) {
       return { valid: false };
     }
 
@@ -171,13 +171,10 @@ export class SlackAdapter extends BaseAdapter {
    */
   async handleWebhook(
     payload: unknown,
-    organizationId: string,
+    _organizationId: string,
     _connectionId: string,
   ): Promise<void> {
-    const typedPayload = payload as { type?: string };
-    console.log(
-      `[slack-adapter] handleWebhook called for org=${organizationId} type=${typedPayload.type ?? "unknown"}`,
-    );
+    const _typedPayload = payload as { type?: string };
     // Plan 03 will wire processBlockAction and processViewSubmission here
   }
 }

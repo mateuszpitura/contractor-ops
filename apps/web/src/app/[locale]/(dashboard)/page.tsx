@@ -24,7 +24,7 @@ import { trpc } from "@/trpc/init";
 // Error boundary wrapper for individual widgets
 // ---------------------------------------------------------------------------
 
-function WidgetErrorFallback({ name }: { name: string }) {
+function _WidgetErrorFallback({ name }: { name: string }) {
   const t = useTranslations("Dashboard");
   return (
     <div className="flex h-[200px] flex-col items-center justify-center rounded-xl border border-border/40 bg-surface-1 p-6 text-center shadow-sm">

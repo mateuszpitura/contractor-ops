@@ -10,7 +10,7 @@ import { TRPCClientError } from "@trpc/client";
 import { ExternalLink, FileText, Info, Loader2, UploadCloud, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -49,11 +49,11 @@ function createInvoiceSubmitSchema(t: (key: string) => string) {
       netAmount: z
         .string()
         .min(1, t("errors.netAmountRequired"))
-        .refine((v) => !isNaN(Number(v)) && Number(v) > 0, t("errors.mustBePositive")),
+        .refine((v) => !Number.isNaN(Number(v)) && Number(v) > 0, t("errors.mustBePositive")),
       grossAmount: z
         .string()
         .min(1, t("errors.grossAmountRequired"))
-        .refine((v) => !isNaN(Number(v)) && Number(v) > 0, t("errors.mustBePositive")),
+        .refine((v) => !Number.isNaN(Number(v)) && Number(v) > 0, t("errors.mustBePositive")),
     })
     .refine(
       (data) => {
@@ -132,7 +132,7 @@ function getNumericFieldMinor(
   const field = fields?.[key];
   if (!field || field.value == null) return 0;
   const num = typeof field.value === "number" ? field.value : parseFloat(field.value);
-  return isNaN(num) ? 0 : num;
+  return Number.isNaN(num) ? 0 : num;
 }
 
 // ---------------------------------------------------------------------------
@@ -283,14 +283,14 @@ export function InvoiceSubmitForm() {
 
     setOcrPopulated(true);
     toast.success(t("ocrExtracted"));
-  }, [resultJson, ocrPopulated, setValue]);
+  }, [resultJson, ocrPopulated, setValue, t]);
 
   // Show toast on extraction failure
   useEffect(() => {
     if (resultJson?.status === "FAILED") {
       toast.error(t("ocrFailed"));
     }
-  }, [resultJson?.status]);
+  }, [resultJson?.status, t]);
 
   // Selected contract info
   const selectedContract = contracts?.find((c) => c.id === selectedContractId);
@@ -378,7 +378,7 @@ export function InvoiceSubmitForm() {
         toast.error(t("errors.uploadFailed"));
       }
     },
-    [getUploadUrl, ocrTriggerMutation],
+    [getUploadUrl, ocrTriggerMutation, t],
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -582,9 +582,7 @@ export function InvoiceSubmitForm() {
       {ocrPopulated && (
         <div className="flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-950/30">
           <Info className="mt-0.5 h-4 w-4 shrink-0 text-blue-600 dark:text-blue-400" />
-          <p className="text-sm text-blue-800 dark:text-blue-200">
-            {t("ocrPrefillBanner")}
-          </p>
+          <p className="text-sm text-blue-800 dark:text-blue-200">{t("ocrPrefillBanner")}</p>
         </div>
       )}
 

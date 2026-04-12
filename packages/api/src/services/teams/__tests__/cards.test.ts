@@ -37,22 +37,22 @@ describe("buildApprovalCard", () => {
 
   it("has header text 'Invoice Approval Required'", () => {
     const card = buildApprovalCard(params);
-    const body = card.body as Array<Record<string, unknown>>;
+    const body = card.body as Record<string, unknown>[];
     const header = body.find(
       (b) => b.type === "TextBlock" && b.text === "Invoice Approval Required",
     );
     expect(header).toBeDefined();
-    expect(header!.weight).toBe("Bolder");
-    expect(header!.size).toBe("Medium");
+    expect(header?.weight).toBe("Bolder");
+    expect(header?.size).toBe("Medium");
   });
 
   it("includes FactSet with invoice details", () => {
     const card = buildApprovalCard(params);
-    const body = card.body as Array<Record<string, unknown>>;
+    const body = card.body as Record<string, unknown>[];
     const factSet = body.find((b) => b.type === "FactSet");
     expect(factSet).toBeDefined();
 
-    const facts = factSet!.facts as Array<{
+    const facts = factSet?.facts as Array<{
       title: string;
       value: string;
     }>;
@@ -68,13 +68,13 @@ describe("buildApprovalCard", () => {
 
   it("has exactly 2 actions (Approve and Reject)", () => {
     const card = buildApprovalCard(params);
-    const actions = card.actions as Array<Record<string, unknown>>;
+    const actions = card.actions as Record<string, unknown>[];
     expect(actions).toHaveLength(2);
   });
 
   it("has Approve button with positive style and correct data", () => {
     const card = buildApprovalCard(params);
-    const actions = card.actions as Array<Record<string, unknown>>;
+    const actions = card.actions as Record<string, unknown>[];
     const approve = actions[0]!;
 
     expect(approve.title).toBe("Approve");
@@ -88,7 +88,7 @@ describe("buildApprovalCard", () => {
 
   it("has Reject button with destructive style and msteams task/fetch", () => {
     const card = buildApprovalCard(params);
-    const actions = card.actions as Array<Record<string, unknown>>;
+    const actions = card.actions as Record<string, unknown>[];
     const reject = actions[1]!;
 
     expect(reject.title).toBe("Reject");
@@ -131,7 +131,7 @@ describe("buildApprovalResultCard", () => {
       approverName: "John Doe",
       viewUrl: "https://app.example.com/invoices/123",
     });
-    const body = card.body as Array<Record<string, unknown>>;
+    const body = card.body as Record<string, unknown>[];
     const header = body[0]!;
     expect(header.text).toContain("\u2705");
     expect(header.text).toContain("Approved");
@@ -148,7 +148,7 @@ describe("buildApprovalResultCard", () => {
       comment: "Incorrect amount",
       viewUrl: "https://app.example.com/invoices/123",
     });
-    const body = card.body as Array<Record<string, unknown>>;
+    const body = card.body as Record<string, unknown>[];
     const header = body[0]!;
     expect(header.text).toContain("\u274C");
     expect(header.text).toContain("Rejected");
@@ -165,7 +165,7 @@ describe("buildApprovalResultCard", () => {
       comment: "Incorrect amount",
       viewUrl: "https://app.example.com/invoices/123",
     });
-    const body = card.body as Array<Record<string, unknown>>;
+    const body = card.body as Record<string, unknown>[];
     const commentBlock = body.find(
       (b) =>
         b.type === "TextBlock" &&
@@ -184,11 +184,11 @@ describe("buildApprovalResultCard", () => {
       approverName: "John Doe",
       viewUrl: "https://app.example.com/invoices/123",
     });
-    const actions = card.actions as Array<Record<string, unknown>>;
+    const actions = card.actions as Record<string, unknown>[];
     expect(actions).toHaveLength(1);
-    expect(actions[0]!.type).toBe("Action.OpenUrl");
-    expect(actions[0]!.title).toBe("View in Contractor Ops");
-    expect(actions[0]!.url).toBe("https://app.example.com/invoices/123");
+    expect(actions[0]?.type).toBe("Action.OpenUrl");
+    expect(actions[0]?.title).toBe("View in Contractor Ops");
+    expect(actions[0]?.url).toBe("https://app.example.com/invoices/123");
   });
 });
 
@@ -218,11 +218,11 @@ describe("buildActivityAlertCard", () => {
       ],
       viewUrl: "https://app.example.com/invoices/123",
     });
-    const body = card.body as Array<Record<string, unknown>>;
+    const body = card.body as Record<string, unknown>[];
     const factSet = body.find((b) => b.type === "FactSet");
     expect(factSet).toBeDefined();
 
-    const facts = factSet!.facts as Array<{
+    const facts = factSet?.facts as Array<{
       title: string;
       value: string;
     }>;
@@ -238,9 +238,9 @@ describe("buildActivityAlertCard", () => {
       details: [],
       viewUrl: "https://example.com",
     });
-    const actions = card.actions as Array<Record<string, unknown>>;
-    expect(actions[0]!.type).toBe("Action.OpenUrl");
-    expect(actions[0]!.url).toBe("https://example.com");
+    const actions = card.actions as Record<string, unknown>[];
+    expect(actions[0]?.type).toBe("Action.OpenUrl");
+    expect(actions[0]?.url).toBe("https://example.com");
   });
 });
 
@@ -267,13 +267,13 @@ describe("buildApprovalReminderCard", () => {
 
   it("has header 'Overdue Approval Reminder'", () => {
     const card = buildApprovalReminderCard(params);
-    const body = card.body as Array<Record<string, unknown>>;
-    expect(body[0]!.text).toBe("Overdue Approval Reminder");
+    const body = card.body as Record<string, unknown>[];
+    expect(body[0]?.text).toBe("Overdue Approval Reminder");
   });
 
   it("shows overdue days with Attention color", () => {
     const card = buildApprovalReminderCard(params);
-    const body = card.body as Array<Record<string, unknown>>;
+    const body = card.body as Record<string, unknown>[];
     const overdue = body[1]!;
     expect(overdue.text).toBe("3 days overdue");
     expect(overdue.color).toBe("Attention");
@@ -281,16 +281,16 @@ describe("buildApprovalReminderCard", () => {
 
   it("has approve/reject actions like approval card", () => {
     const card = buildApprovalReminderCard(params);
-    const actions = card.actions as Array<Record<string, unknown>>;
+    const actions = card.actions as Record<string, unknown>[];
     expect(actions).toHaveLength(2);
 
-    expect(actions[0]!.title).toBe("Approve");
-    expect(actions[0]!.style).toBe("positive");
+    expect(actions[0]?.title).toBe("Approve");
+    expect(actions[0]?.style).toBe("positive");
 
-    expect(actions[1]!.title).toBe("Reject");
-    expect(actions[1]!.style).toBe("destructive");
+    expect(actions[1]?.title).toBe("Reject");
+    expect(actions[1]?.style).toBe("destructive");
 
-    const rejectData = actions[1]!.data as Record<string, unknown>;
+    const rejectData = actions[1]?.data as Record<string, unknown>;
     const msteams = rejectData.msteams as Record<string, unknown>;
     expect(msteams.type).toBe("task/fetch");
   });
@@ -308,20 +308,20 @@ describe("buildRejectModalCard", () => {
 
   it("has a required multiline text input for rejection reason", () => {
     const card = buildRejectModalCard("inv_123", "flow_456");
-    const body = card.body as Array<Record<string, unknown>>;
+    const body = card.body as Record<string, unknown>[];
     const input = body.find((b) => b.type === "Input.Text");
     expect(input).toBeDefined();
-    expect(input!.id).toBe("comment");
-    expect(input!.isRequired).toBe(true);
-    expect(input!.isMultiline).toBe(true);
+    expect(input?.id).toBe("comment");
+    expect(input?.isRequired).toBe(true);
+    expect(input?.isMultiline).toBe(true);
   });
 
   it("has submit action with submit_rejection data", () => {
     const card = buildRejectModalCard("inv_123", "flow_456");
-    const actions = card.actions as Array<Record<string, unknown>>;
+    const actions = card.actions as Record<string, unknown>[];
     expect(actions).toHaveLength(1);
 
-    const data = actions[0]!.data as Record<string, unknown>;
+    const data = actions[0]?.data as Record<string, unknown>;
     expect(data.action).toBe("submit_rejection");
     expect(data.invoiceId).toBe("inv_123");
     expect(data.flowId).toBe("flow_456");

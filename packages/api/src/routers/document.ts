@@ -14,13 +14,13 @@ import { requirePermission } from "../middleware/rbac.js";
 import { tenantProcedure } from "../middleware/tenant.js";
 import { uploadRateLimitMiddleware } from "../middleware/upload-rate-limit.js";
 import { isAllowedMimeType, validateMimeType } from "../services/mime-validator.js";
+import { generateStorageKey } from "../services/r2.js";
 import {
   createRegionalPresignedDownloadUrl,
   createRegionalPresignedUploadUrl,
   deleteRegionalObject,
   headRegionalObject,
 } from "../services/regional-storage.js";
-import { generateStorageKey } from "../services/r2.js";
 import { isClamAvailable, scanBuffer } from "../services/virus-scanner.js";
 
 // ---------------------------------------------------------------------------
@@ -48,7 +48,11 @@ type DocumentDb = {
   };
 };
 
-async function scanAndUpdate(db: DocumentDb, documentId: string, storageKey: string): Promise<void> {
+async function scanAndUpdate(
+  db: DocumentDb,
+  documentId: string,
+  storageKey: string,
+): Promise<void> {
   try {
     // Fetch first 4100 bytes for MIME validation (magic bytes are in the header)
     const { GetObjectCommand } = await import("@aws-sdk/client-s3");
@@ -160,7 +164,7 @@ export const documentRouter = router({
           status: "ACTIVE",
           virusScanStatus: "PENDING",
           source: "USER_UPLOAD",
-          uploadedByUserId: ctx.user!.id,
+          uploadedByUserId: ctx.user?.id,
         },
       });
 
@@ -385,7 +389,7 @@ export const documentRouter = router({
             visibility: existing.visibility,
             virusScanStatus: "PENDING",
             source: existing.source,
-            uploadedByUserId: ctx.user!.id,
+            uploadedByUserId: ctx.user?.id,
           },
         });
 

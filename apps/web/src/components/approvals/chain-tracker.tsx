@@ -210,7 +210,7 @@ export function ChainTracker({ invoiceId }: ChainTrackerProps) {
   const flow = (data as Record<string, unknown> | undefined)?.flow as
     | { steps?: StepData[]; chainName?: string }
     | undefined;
-  if (!flow || !flow.steps || flow.steps.length === 0) return null;
+  if (!flow?.steps || flow.steps.length === 0) return null;
 
   const steps: StepData[] = flow.steps;
 

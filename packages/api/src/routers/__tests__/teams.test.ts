@@ -115,7 +115,7 @@ describe("teamsRouter", () => {
       expect(result).toEqual({ success: true });
       expect(mockUpdate).toHaveBeenCalledOnce();
 
-      const updateArgs = mockUpdate.mock.calls[0]![0];
+      const updateArgs = mockUpdate.mock.calls[0]?.[0];
       expect(updateArgs.where.id).toBe(connectionId);
       expect(updateArgs.data.configJson.channelMapping).toEqual({
         approvals: "ch-approvals",

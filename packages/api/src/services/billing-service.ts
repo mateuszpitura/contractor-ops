@@ -250,10 +250,6 @@ export async function updateSubscriptionSeatCount(params: {
       ],
       proration_behavior: "create_prorations",
     });
-
-    console.log(
-      `[billing-service] Seat count updated: subscription=${params.stripeSubscriptionId}, quantity=${params.newQuantity}`,
-    );
   } catch (error) {
     console.error(
       `[billing-service] updateSubscriptionSeatCount failed: subscription=${params.stripeSubscriptionId}, quantity=${params.newQuantity}`,
@@ -306,10 +302,6 @@ export async function syncSeatCountForOrg(organizationId: string): Promise<void>
       where: { stripeSubscriptionId: sub.stripeSubscriptionId },
       data: { seatCount: newQuantity },
     });
-
-    console.log(
-      `[billing] Seat count synced for org ${organizationId}: ${sub.seatCount} -> ${newQuantity}`,
-    );
   } catch (error) {
     console.error(`[billing] Failed to sync seat count for org ${organizationId}:`, error);
   }

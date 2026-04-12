@@ -1,4 +1,3 @@
-import { useQuery } from "@tanstack/react-query";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen, setup } from "@/test/test-utils";
 import { SendForSignatureDialog } from "../send-for-signature-dialog";

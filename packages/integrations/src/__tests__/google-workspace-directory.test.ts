@@ -77,8 +77,8 @@ describe("GoogleWorkspaceAdapter — Directory API", () => {
 
       expect(users).toHaveLength(2);
       expect(fetchMock).toHaveBeenCalledTimes(2);
-      const firstUrl = fetchMock.mock.calls[0]![0] as string;
-      const secondUrl = fetchMock.mock.calls[1]![0] as string;
+      const firstUrl = fetchMock.mock.calls[0]?.[0] as string;
+      const secondUrl = fetchMock.mock.calls[1]?.[0] as string;
       expect(firstUrl).not.toMatch(/pageToken=/);
       expect(secondUrl).toContain("pageToken=page2");
     });
@@ -187,7 +187,7 @@ describe("GoogleWorkspaceAdapter — Directory API", () => {
       const groups = await adapter.listUserGroups("token", "user@example.com");
       expect(groups).toHaveLength(1);
       expect(groups[0]?.email).toBe("team@example.com");
-      const url = fetchMock.mock.calls[0]![0] as string;
+      const url = fetchMock.mock.calls[0]?.[0] as string;
       expect(url).toContain("userKey=user%40example.com");
     });
 

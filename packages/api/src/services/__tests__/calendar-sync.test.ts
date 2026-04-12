@@ -47,7 +47,7 @@ describe("syncContractExpiryDeadline", () => {
 
     await syncContractExpiryDeadline(mockPrisma, baseInput);
 
-    const args = mockCreateCalendarEvent.mock.calls[0]![1] as any;
+    const args = mockCreateCalendarEvent.mock.calls[0]?.[1] as any;
     expect(args.summary).toBe("[Contractor Ops] Contract expiry: Jane Doe - Dev Services");
   });
 
@@ -56,7 +56,7 @@ describe("syncContractExpiryDeadline", () => {
 
     await syncContractExpiryDeadline(mockPrisma, baseInput);
 
-    const args = mockCreateCalendarEvent.mock.calls[0]![1] as any;
+    const args = mockCreateCalendarEvent.mock.calls[0]?.[1] as any;
     expect(args.description).toContain('"Dev Services"');
     expect(args.description).toContain("Jane Doe");
     expect(args.description).toContain("2025-06-30");
@@ -68,7 +68,7 @@ describe("syncContractExpiryDeadline", () => {
 
     await syncContractExpiryDeadline(mockPrisma, baseInput);
 
-    const args = mockCreateCalendarEvent.mock.calls[0]![1] as any;
+    const args = mockCreateCalendarEvent.mock.calls[0]?.[1] as any;
     const start = new Date(args.startDateTime);
     expect(start.getUTCFullYear()).toBe(2025);
     expect(start.getUTCMonth()).toBe(5); // June = 5
@@ -83,7 +83,7 @@ describe("syncContractExpiryDeadline", () => {
 
     await syncContractExpiryDeadline(mockPrisma, baseInput);
 
-    const args = mockCreateCalendarEvent.mock.calls[0]![1] as any;
+    const args = mockCreateCalendarEvent.mock.calls[0]?.[1] as any;
     const start = new Date(args.startDateTime);
     const end = new Date(args.endDateTime);
     expect(end.getTime() - start.getTime()).toBe(30 * 60 * 1000);
@@ -116,7 +116,7 @@ describe("syncContractExpiryDeadline", () => {
     expect(mockCreateCalendarEvent).not.toHaveBeenCalled();
     expect(mockUpdateCalendarEvent).toHaveBeenCalledTimes(1);
 
-    const args = mockUpdateCalendarEvent.mock.calls[0]![1] as any;
+    const args = mockUpdateCalendarEvent.mock.calls[0]?.[1] as any;
     expect(args.summary).toBe("[Contractor Ops] Contract expiry: Jane Doe - Dev Services");
     expect(args.organizationId).toBe(ORG_ID);
     expect(args.entityType).toBe("CONTRACT");
@@ -160,7 +160,7 @@ describe("syncApprovalSlaDeadline", () => {
       userId: "user-1",
     });
 
-    const args = mockCreateCalendarEvent.mock.calls[0]![1] as any;
+    const args = mockCreateCalendarEvent.mock.calls[0]?.[1] as any;
     expect(args.summary).toBe("[Contractor Ops] Approval deadline: Invoice - INV-2025-001");
   });
 
@@ -175,7 +175,7 @@ describe("syncApprovalSlaDeadline", () => {
       deadline: new Date("2025-03-15T00:00:00.000Z"),
     });
 
-    const args = mockCreateCalendarEvent.mock.calls[0]![1] as any;
+    const args = mockCreateCalendarEvent.mock.calls[0]?.[1] as any;
     expect(args.description).toContain("/approvals");
     expect(args.description).toContain("2025-03-15");
     expect(args.description).toContain('"INV-2025-001"');
@@ -192,7 +192,7 @@ describe("syncApprovalSlaDeadline", () => {
       deadline: new Date("2025-03-15T00:00:00.000Z"),
     });
 
-    const args = mockCreateCalendarEvent.mock.calls[0]![1] as any;
+    const args = mockCreateCalendarEvent.mock.calls[0]?.[1] as any;
     expect(args.entityType).toBe("APPROVAL_FLOW");
     expect(args.entityId).toBe("af-99");
   });
@@ -215,7 +215,7 @@ describe("syncPaymentDueDeadline", () => {
       userId: "user-1",
     });
 
-    const args = mockCreateCalendarEvent.mock.calls[0]![1] as any;
+    const args = mockCreateCalendarEvent.mock.calls[0]?.[1] as any;
     expect(args.summary).toBe("[Contractor Ops] Payment due: Acme Corp - INV-2025-042");
   });
 
@@ -230,7 +230,7 @@ describe("syncPaymentDueDeadline", () => {
       dueDate: new Date("2025-04-01T00:00:00.000Z"),
     });
 
-    const args = mockCreateCalendarEvent.mock.calls[0]![1] as any;
+    const args = mockCreateCalendarEvent.mock.calls[0]?.[1] as any;
     expect(args.description).toContain("/invoices/inv-77");
     expect(args.description).toContain("INV-001");
     expect(args.description).toContain("Jane Doe");
@@ -247,7 +247,7 @@ describe("syncPaymentDueDeadline", () => {
       dueDate: new Date("2025-12-25T14:30:00.000Z"), // time part should be ignored
     });
 
-    const args = mockCreateCalendarEvent.mock.calls[0]![1] as any;
+    const args = mockCreateCalendarEvent.mock.calls[0]?.[1] as any;
     const start = new Date(args.startDateTime);
     const end = new Date(args.endDateTime);
     expect(start.getUTCHours()).toBe(9);
@@ -271,7 +271,7 @@ describe("syncPaymentDueDeadline", () => {
 
     expect(mockCreateCalendarEvent).not.toHaveBeenCalled();
     expect(mockUpdateCalendarEvent).toHaveBeenCalledTimes(1);
-    const args = mockUpdateCalendarEvent.mock.calls[0]![1] as any;
+    const args = mockUpdateCalendarEvent.mock.calls[0]?.[1] as any;
     expect(args.entityType).toBe("INVOICE");
     expect(args.entityId).toBe("inv-1");
   });
@@ -314,7 +314,7 @@ describe("createTaskCalendarEvent", () => {
       taskName: "Background Check",
     });
 
-    const args = mockCreateCalendarEvent.mock.calls[0]![1] as any;
+    const args = mockCreateCalendarEvent.mock.calls[0]?.[1] as any;
     expect(args.summary).toBe(
       "[Contractor Ops] Review Background Check for Alice Smith under Consulting Agreement",
     );
@@ -337,7 +337,7 @@ describe("createTaskCalendarEvent", () => {
       taskName: "Task Y",
     });
 
-    const args = mockCreateCalendarEvent.mock.calls[0]![1] as any;
+    const args = mockCreateCalendarEvent.mock.calls[0]?.[1] as any;
     // Default template: "{task} - {contractor} ({contract})"
     expect(args.summary).toBe("[Contractor Ops] Task Y - Bob (Contract X)");
   });
@@ -357,7 +357,7 @@ describe("createTaskCalendarEvent", () => {
       taskName: "T",
     });
 
-    const args = mockCreateCalendarEvent.mock.calls[0]![1] as any;
+    const args = mockCreateCalendarEvent.mock.calls[0]?.[1] as any;
     expect(args.summary).toBe("[Contractor Ops] Jane: T (Jane)");
   });
 
@@ -375,7 +375,7 @@ describe("createTaskCalendarEvent", () => {
       taskName: "T",
     });
 
-    const args = mockCreateCalendarEvent.mock.calls[0]![1] as any;
+    const args = mockCreateCalendarEvent.mock.calls[0]?.[1] as any;
     const start = new Date(args.startDateTime).getTime();
     const end = new Date(args.endDateTime).getTime();
     expect(end - start).toBe(60 * 60 * 1000);
@@ -395,7 +395,7 @@ describe("createTaskCalendarEvent", () => {
       taskName: "T",
     });
 
-    const args = mockCreateCalendarEvent.mock.calls[0]![1] as any;
+    const args = mockCreateCalendarEvent.mock.calls[0]?.[1] as any;
     const start = new Date(args.startDateTime).getTime();
     const end = new Date(args.endDateTime).getTime();
     expect(end - start).toBe(30 * 60 * 1000);
@@ -415,7 +415,7 @@ describe("createTaskCalendarEvent", () => {
       taskName: "T",
     });
 
-    const args = mockCreateCalendarEvent.mock.calls[0]![1] as any;
+    const args = mockCreateCalendarEvent.mock.calls[0]?.[1] as any;
     const start = new Date(args.startDateTime).getTime();
     const end = new Date(args.endDateTime).getTime();
     expect(end - start).toBe(2 * 60 * 60 * 1000);
@@ -435,7 +435,7 @@ describe("createTaskCalendarEvent", () => {
       taskName: "T",
     });
 
-    const args = mockCreateCalendarEvent.mock.calls[0]![1] as any;
+    const args = mockCreateCalendarEvent.mock.calls[0]?.[1] as any;
     const end = new Date(args.endDateTime);
     expect(end.getUTCHours()).toBe(23);
     expect(end.getUTCMinutes()).toBe(59);
@@ -456,7 +456,7 @@ describe("createTaskCalendarEvent", () => {
       taskName: "T",
     });
 
-    const args = mockCreateCalendarEvent.mock.calls[0]![1] as any;
+    const args = mockCreateCalendarEvent.mock.calls[0]?.[1] as any;
     const start = new Date(args.startDateTime).getTime();
     const end = new Date(args.endDateTime).getTime();
     expect(end - start).toBe(60 * 60 * 1000); // 1h fallback
@@ -479,7 +479,7 @@ describe("createTaskCalendarEvent", () => {
       userId: "user-1",
     });
 
-    const args = mockCreateCalendarEvent.mock.calls[0]![1] as any;
+    const args = mockCreateCalendarEvent.mock.calls[0]?.[1] as any;
     expect(args.attendees).toEqual(attendees);
   });
 
@@ -497,7 +497,7 @@ describe("createTaskCalendarEvent", () => {
       taskName: "Onboarding",
     });
 
-    const args = mockCreateCalendarEvent.mock.calls[0]![1] as any;
+    const args = mockCreateCalendarEvent.mock.calls[0]?.[1] as any;
     expect(args.description).toContain("/workflows");
     expect(args.description).toContain("Onboarding");
     expect(args.description).toContain("Jane Doe");
@@ -518,7 +518,7 @@ describe("createTaskCalendarEvent", () => {
       taskName: "T",
     });
 
-    const args = mockCreateCalendarEvent.mock.calls[0]![1] as any;
+    const args = mockCreateCalendarEvent.mock.calls[0]?.[1] as any;
     expect(args.entityType).toBe("WORKFLOW_TASK_RUN");
     expect(args.entityId).toBe("wtr-xyz");
   });

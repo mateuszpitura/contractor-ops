@@ -263,7 +263,7 @@ export const timeRouter = router({
         prisma,
         ctx.organizationId,
         input.timesheetId,
-        ctx.user!.id,
+        ctx.user?.id,
       );
       return plain(result);
     }),
@@ -279,7 +279,7 @@ export const timeRouter = router({
         prisma,
         ctx.organizationId,
         input.timesheetId,
-        ctx.user!.id,
+        ctx.user?.id,
         input.reason,
       );
       return plain(result);
@@ -296,7 +296,7 @@ export const timeRouter = router({
         prisma,
         ctx.organizationId,
         input.timesheetIds,
-        ctx.user!.id,
+        ctx.user?.id,
       );
       return { count: result.count };
     }),
@@ -312,7 +312,7 @@ export const timeRouter = router({
         prisma,
         ctx.organizationId,
         input.timesheetIds,
-        ctx.user!.id,
+        ctx.user?.id,
         input.reason,
       );
       return { count: result.count };
@@ -365,7 +365,7 @@ export const timeRouter = router({
         },
       });
 
-      if (!invoice || !invoice.contractId) return null;
+      if (!invoice?.contractId) return null;
 
       // Determine period from service period or fall back to month of issue date
       const issueDate = invoice.issueDate;

@@ -120,7 +120,7 @@ describe("OrgSettingsForm", () => {
 
   it("shows loading skeleton when settings query is loading", () => {
     // Override useQuery to return loading state
-    const originalMock = vi.mocked(require("@tanstack/react-query").useQuery);
+    const _originalMock = vi.mocked(require("@tanstack/react-query").useQuery);
     vi.mocked(require("@tanstack/react-query").useQuery).mockReturnValueOnce?.({
       isLoading: true,
       data: undefined,

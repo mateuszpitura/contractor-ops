@@ -172,7 +172,7 @@ describe("processKsefSync", () => {
     await processKsefSync({ organizationId: ORG_ID, connectionId: CONN_ID });
 
     expect(db.integrationSyncLog.create).toHaveBeenCalledOnce();
-    const createArg = db.integrationSyncLog.create.mock.calls[0]![0];
+    const createArg = db.integrationSyncLog.create.mock.calls[0]?.[0];
     expect(createArg.data.status).toBe("STARTED");
     expect(createArg.data.organizationId).toBe(ORG_ID);
     expect(createArg.data.integrationConnectionId).toBe(CONN_ID);
@@ -188,7 +188,7 @@ describe("processKsefSync", () => {
     // The connection update should include lastSuccessAt
     const updateCalls = db.integrationConnection.update.mock.calls;
     expect(updateCalls.length).toBeGreaterThanOrEqual(1);
-    const successUpdate = updateCalls[0]![0];
+    const successUpdate = updateCalls[0]?.[0];
     expect(successUpdate.where).toEqual({ id: CONN_ID });
     expect(successUpdate.data.lastSyncAt).toBeInstanceOf(Date);
     expect(successUpdate.data.lastSuccessAt).toBeInstanceOf(Date);
@@ -201,7 +201,7 @@ describe("processKsefSync", () => {
     await processKsefSync({ organizationId: ORG_ID, connectionId: CONN_ID });
 
     // Verify the findFirst check uses the KSeF reference number
-    const findFirstCall = db.invoice.findFirst.mock.calls[0]![0];
+    const findFirstCall = db.invoice.findFirst.mock.calls[0]?.[0];
     expect(findFirstCall.where.externalInvoiceId).toBe("KSEF-REF-123");
     expect(findFirstCall.where.source).toBe("KSEF");
   });
@@ -221,7 +221,7 @@ describe("processKsefSync", () => {
     await processKsefSync({ organizationId: ORG_ID, connectionId: CONN_ID });
 
     expect(mockDispatch).toHaveBeenCalledOnce();
-    const dispatchArg = mockDispatch.mock.calls[0]![0];
+    const dispatchArg = mockDispatch.mock.calls[0]?.[0];
     expect(dispatchArg.type).toBe("KSEF_SYNC_COMPLETE");
     expect(dispatchArg.organizationId).toBe(ORG_ID);
     expect(dispatchArg.recipientUserIds).toEqual(["user-1"]);
@@ -291,7 +291,7 @@ describe("processKsefSync", () => {
 
     await processKsefSync({ organizationId: ORG_ID, connectionId: CONN_ID });
 
-    const updateCall = db.integrationConnection.update.mock.calls[0]![0];
+    const updateCall = db.integrationConnection.update.mock.calls[0]?.[0];
     expect(updateCall.data.status).toBe("ERROR");
     expect(updateCall.data.lastErrorMessage).toContain("DB constraint violation");
   });
@@ -318,7 +318,7 @@ describe("processKsefSync", () => {
     ).rejects.toThrow("unexpected failure");
 
     // Sync log should be updated to FAILED
-    const updateCall = db.integrationSyncLog.update.mock.calls[0]![0];
+    const updateCall = db.integrationSyncLog.update.mock.calls[0]?.[0];
     expect(updateCall.data.status).toBe("FAILED");
     expect(updateCall.data.errorMessage).toBe("unexpected failure");
     expect(updateCall.data.completedAt).toBeInstanceOf(Date);

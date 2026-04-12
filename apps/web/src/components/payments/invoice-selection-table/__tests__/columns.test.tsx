@@ -31,7 +31,7 @@ function renderCell(columnId: string, row: ReadyInvoiceRow) {
     getValue: () => (row as any)[columnId],
   });
   if (result === null) return null;
-  const { container } = render(<>{result}</>);
+  const { container } = render(result);
   return container;
 }
 
@@ -80,7 +80,7 @@ describe("getColumns cell renderers (invoice selection)", () => {
 
   it("contractor cell renders mdash when contractor is null", () => {
     const container = renderCell("contractor", makeRow({ contractor: null }));
-    expect(container!.textContent).toContain("—");
+    expect(container?.textContent).toContain("—");
   });
 
   it("contractor cell shows Missing IBAN badge when bankAccountMasked is null", () => {
@@ -115,7 +115,7 @@ describe("getColumns cell renderers (invoice selection)", () => {
 
   it("dueDate cell renders mdash when null", () => {
     const container = renderCell("dueDate", makeRow({ dueDate: null }));
-    expect(container!.textContent).toContain("—");
+    expect(container?.textContent).toContain("—");
   });
 
   it("dueDate cell renders formatted date when present", () => {
@@ -130,7 +130,7 @@ describe("getColumns cell renderers (invoice selection)", () => {
 
   it("contract cell renders mdash when contract is null", () => {
     const container = renderCell("contract", makeRow({ contract: null }));
-    expect(container!.textContent).toContain("—");
+    expect(container?.textContent).toContain("—");
   });
 
   it("inRun cell returns null when not in a run", () => {
@@ -147,7 +147,7 @@ describe("getColumns cell renderers (invoice selection)", () => {
     const t = (key: string) => key;
     const columns = getColumns(t);
     const selectCol = columns.find((c) => c.id === "select");
-    const cellFn = selectCol!.cell as (info: any) => any;
+    const cellFn = selectCol?.cell as (info: any) => any;
     const result = cellFn({
       row: {
         original: makeRow({ _inRunNumber: "PR-001" }),
@@ -155,7 +155,7 @@ describe("getColumns cell renderers (invoice selection)", () => {
         toggleSelected: vi.fn(),
       },
     });
-    const { container } = render(<>{result}</>);
+    const { container } = render(result);
     const checkbox = container.querySelector("[disabled]");
     expect(checkbox).not.toBeNull();
   });

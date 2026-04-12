@@ -59,7 +59,7 @@ function OrgCalendarProviderCard({
   isDisconnecting,
 }: OrgCalendarProviderCardProps) {
   const t = useTranslations("CalendarSettings");
-  const tIntegrations = useTranslations("Settings.integrations");
+  const _tIntegrations = useTranslations("Settings.integrations");
   const [disconnectDialogOpen, setDisconnectDialogOpen] = useState(false);
 
   const isConnected = connection?.status === "CONNECTED";

@@ -64,7 +64,7 @@ export class LinearAdapter extends BaseAdapter {
     const clientId = process.env.LINEAR_CLIENT_ID;
     const clientSecret = process.env.LINEAR_CLIENT_SECRET;
 
-    if (!clientId || !clientSecret) {
+    if (!(clientId && clientSecret)) {
       throw new Error(
         "LINEAR_CLIENT_ID and LINEAR_CLIENT_SECRET environment variables are required",
       );
@@ -115,7 +115,7 @@ export class LinearAdapter extends BaseAdapter {
     const clientId = process.env.LINEAR_CLIENT_ID;
     const clientSecret = process.env.LINEAR_CLIENT_SECRET;
 
-    if (!clientId || !clientSecret) {
+    if (!(clientId && clientSecret)) {
       throw new Error(
         "LINEAR_CLIENT_ID and LINEAR_CLIENT_SECRET environment variables are required",
       );

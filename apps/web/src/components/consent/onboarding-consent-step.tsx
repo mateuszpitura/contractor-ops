@@ -28,7 +28,7 @@ interface OnboardingConsentStepProps {
 // ---------------------------------------------------------------------------
 
 export function OnboardingConsentStep({ orgCountryCode, onComplete }: OnboardingConsentStepProps) {
-  const t = useTranslations("Consent");
+  const _t = useTranslations("Consent");
 
   // Skip entirely for non-PDPL jurisdictions
   if (!isPdplJurisdiction(orgCountryCode)) {

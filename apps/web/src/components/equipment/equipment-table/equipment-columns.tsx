@@ -157,7 +157,7 @@ export function getEquipmentColumns(
                 <Pencil className="me-2 h-3.5 w-3.5" />
                 {t("detail.edit")}
               </DropdownMenuItem>
-              {!isRetired && !isAssigned && (
+              {!(isRetired || isAssigned) && (
                 <DropdownMenuItem onSelect={() => actions.onAssign(equipment)}>
                   <UserPlus className="me-2 h-3.5 w-3.5" />
                   {t("detail.assignToContractor")}

@@ -5,7 +5,6 @@ import { format } from "date-fns";
 import { ArrowRightLeft, ExternalLink } from "lucide-react";
 import { EmptyState } from "@/components/shared/empty-state";
 import { DeviationFlag } from "@/components/time/deviation-flag";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,

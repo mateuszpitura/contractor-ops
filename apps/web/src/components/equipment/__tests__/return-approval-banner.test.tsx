@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen, setup } from "@/test/test-utils";
+import { screen, setup } from "@/test/test-utils";
 
 vi.mock("@/trpc/init", () => ({
   trpc: {

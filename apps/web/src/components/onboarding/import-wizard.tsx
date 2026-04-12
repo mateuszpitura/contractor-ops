@@ -42,7 +42,7 @@ function WizardStepIndicator({
   steps: Array<{ step: WizardStep; label: string }>;
 }) {
   return (
-    <nav className="flex items-center gap-6" role="navigation" aria-label="Wizard steps">
+    <nav className="flex items-center gap-6" aria-label="Wizard steps">
       {steps.map(({ step, label }, index) => {
         const isCurrent = step === currentStep;
         const isCompleted = step < currentStep;

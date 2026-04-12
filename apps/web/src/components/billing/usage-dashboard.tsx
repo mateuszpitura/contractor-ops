@@ -88,19 +88,20 @@ export function UsageDashboard() {
     );
   }
 
-  const { subscription, credits, activeContractors, includedSeats, planConfig } = data as unknown as {
-    subscription: {
-      tier: string;
-      status: string;
-      trialEnd: string | null;
-      currentPeriodEnd: string | null;
-      cancelAt: string | null;
-    } | null;
-    credits: { balance: number; allowance: number; used: number; tier: string };
-    activeContractors: number;
-    includedSeats: number;
-    planConfig: { tiers: Array<{ id: string; seatPriceMinor: number; [key: string]: unknown }> };
-  };
+  const { subscription, credits, activeContractors, includedSeats, planConfig } =
+    data as unknown as {
+      subscription: {
+        tier: string;
+        status: string;
+        trialEnd: string | null;
+        currentPeriodEnd: string | null;
+        cancelAt: string | null;
+      } | null;
+      credits: { balance: number; allowance: number; used: number; tier: string };
+      activeContractors: number;
+      includedSeats: number;
+      planConfig: { tiers: Array<{ id: string; seatPriceMinor: number; [key: string]: unknown }> };
+    };
 
   // ---- No subscription state ----
   if (!subscription) {

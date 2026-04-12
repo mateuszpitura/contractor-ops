@@ -84,7 +84,7 @@ export class InfisicalSecretStore implements SecretStore {
     const { secretName, folderPath } = this.parsePath(path);
 
     try {
-      const secret = await this.sdk!.secrets().getSecret({
+      const secret = await this.sdk?.secrets().getSecret({
         environment: this.config.environment,
         projectId: this.config.projectId,
         secretName,
@@ -108,7 +108,7 @@ export class InfisicalSecretStore implements SecretStore {
     try {
       // Try update first, fall back to create
       try {
-        await this.sdk!.secrets().updateSecret(secretName, {
+        await this.sdk?.secrets().updateSecret(secretName, {
           environment: this.config.environment,
           projectId: this.config.projectId,
           secretPath: folderPath,
@@ -116,7 +116,7 @@ export class InfisicalSecretStore implements SecretStore {
         });
       } catch (updateError) {
         if (this.isNotFoundError(updateError)) {
-          await this.sdk!.secrets().createSecret(secretName, {
+          await this.sdk?.secrets().createSecret(secretName, {
             environment: this.config.environment,
             projectId: this.config.projectId,
             secretPath: folderPath,
@@ -138,7 +138,7 @@ export class InfisicalSecretStore implements SecretStore {
     const { secretName, folderPath } = this.parsePath(path);
 
     try {
-      await this.sdk!.secrets().deleteSecret(secretName, {
+      await this.sdk?.secrets().deleteSecret(secretName, {
         environment: this.config.environment,
         projectId: this.config.projectId,
         secretPath: folderPath,

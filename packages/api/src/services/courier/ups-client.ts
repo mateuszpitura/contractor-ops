@@ -169,7 +169,7 @@ export class UPSClient implements CourierClient {
    * POST /api/shipments/v2409/ship
    */
   async createShipment(params: ShipmentParams): Promise<CourierShipmentResult> {
-    if (!("deliveryAddress" in params) || !("serviceCode" in params)) {
+    if (!("deliveryAddress" in params && "serviceCode" in params)) {
       throw new Error(
         "[ups-client] createShipment requires deliveryAddress and serviceCode for UPS shipments",
       );

@@ -1,4 +1,3 @@
-import { useQuery } from "@tanstack/react-query";
 import { render, screen, setup } from "@/test/test-utils";
 import { EmbeddedSigningModal } from "../embedded-signing-modal";
 

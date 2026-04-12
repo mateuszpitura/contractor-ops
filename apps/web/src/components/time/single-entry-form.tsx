@@ -90,7 +90,7 @@ export function SingleEntryForm({
       newErrors.contractId = "Project is required";
     }
     const hoursVal = parseFloat(hours);
-    if (!hours || isNaN(hoursVal) || hoursVal < 0.25 || hoursVal > 24) {
+    if (!hours || Number.isNaN(hoursVal) || hoursVal < 0.25 || hoursVal > 24) {
       newErrors.hours = "Hours must be between 0.25 and 24";
     }
     if (description && description.length > 500) {

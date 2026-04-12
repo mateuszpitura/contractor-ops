@@ -220,7 +220,7 @@ describe("routeToChain", () => {
 
     const result = await routeToChain(mockTx as any, orgId, invoice);
 
-    expect(result!.id).toBe("chain-medium");
+    expect(result?.id).toBe("chain-medium");
   });
 
   it("returns chain 1 when invoice matches both chain 1 and chain 2 (earlier wins)", async () => {
@@ -236,7 +236,7 @@ describe("routeToChain", () => {
 
     const result = await routeToChain(mockTx as any, orgId, invoice);
 
-    expect(result!.id).toBe("chain-high");
+    expect(result?.id).toBe("chain-high");
   });
 
   it("falls back to default chain when no conditions match", async () => {
@@ -251,7 +251,7 @@ describe("routeToChain", () => {
 
     const result = await routeToChain(mockTx as any, orgId, invoice);
 
-    expect(result!.id).toBe("chain-default");
+    expect(result?.id).toBe("chain-default");
   });
 
   it("returns null when no chains exist at all", async () => {
@@ -291,12 +291,12 @@ describe("routeToChain", () => {
     // UoP contractor with 200 PLN — amount matches but type doesn't → falls to default
     const uopInvoice = { totalMinor: 200_00, contractorType: "UoP" };
     const result1 = await routeToChain(mockTx as any, orgId, uopInvoice);
-    expect(result1!.id).toBe("chain-default");
+    expect(result1?.id).toBe("chain-default");
 
     // B2B contractor with 200 PLN — both conditions match → gets b2b chain
     const b2bInvoice = { totalMinor: 200_00, contractorType: "B2B" };
     const result2 = await routeToChain(mockTx as any, orgId, b2bInvoice);
-    expect(result2!.id).toBe("chain-b2b");
+    expect(result2?.id).toBe("chain-b2b");
   });
 });
 
@@ -653,9 +653,9 @@ describe("computeSlaStatus", () => {
     const result = computeSlaStatus(deadline, "PENDING", 24);
 
     expect(result).not.toBeNull();
-    expect(result!.status).toBe("overdue");
-    expect(result!.remainingMs).toBeLessThan(0);
-    expect(result!.label).toBe("OVERDUE 2h");
+    expect(result?.status).toBe("overdue");
+    expect(result?.remainingMs).toBeLessThan(0);
+    expect(result?.label).toBe("OVERDUE 2h");
   });
 
   it("returns green when more than 50% time remaining", () => {
@@ -664,8 +664,8 @@ describe("computeSlaStatus", () => {
     const result = computeSlaStatus(deadline, "PENDING", 24);
 
     expect(result).not.toBeNull();
-    expect(result!.status).toBe("green");
-    expect(result!.remainingMs).toBeGreaterThan(0);
+    expect(result?.status).toBe("green");
+    expect(result?.remainingMs).toBeGreaterThan(0);
   });
 
   it("returns yellow when 25-50% time remaining", () => {
@@ -674,7 +674,7 @@ describe("computeSlaStatus", () => {
     const result = computeSlaStatus(deadline, "PENDING", 24);
 
     expect(result).not.toBeNull();
-    expect(result!.status).toBe("yellow");
+    expect(result?.status).toBe("yellow");
   });
 
   it("returns red when 25% or less time remaining", () => {
@@ -683,7 +683,7 @@ describe("computeSlaStatus", () => {
     const result = computeSlaStatus(deadline, "PENDING", 24);
 
     expect(result).not.toBeNull();
-    expect(result!.status).toBe("red");
+    expect(result?.status).toBe("red");
   });
 
   it("label shows hours remaining for non-overdue status", () => {
@@ -691,7 +691,7 @@ describe("computeSlaStatus", () => {
     const result = computeSlaStatus(deadline, "PENDING", 24);
 
     expect(result).not.toBeNull();
-    expect(result!.label).toBe("5h left");
+    expect(result?.label).toBe("5h left");
   });
 
   it("overdue label shows hours overdue", () => {
@@ -699,6 +699,6 @@ describe("computeSlaStatus", () => {
     const result = computeSlaStatus(deadline, "PENDING", 24);
 
     expect(result).not.toBeNull();
-    expect(result!.label).toBe("OVERDUE 5h");
+    expect(result?.label).toBe("OVERDUE 5h");
   });
 });

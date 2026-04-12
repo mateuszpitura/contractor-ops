@@ -5,7 +5,7 @@ vi.mock("next-intl", async (importOriginal) => {
   const actual = await importOriginal<typeof import("next-intl")>();
   return {
     ...actual,
-    useTranslations: () => (key: string, params?: any) => key,
+    useTranslations: () => (key: string, _params?: any) => key,
   };
 });
 

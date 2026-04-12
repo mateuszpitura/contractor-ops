@@ -63,7 +63,7 @@ describe("observabilityMiddleware", () => {
 
     expect(out).toEqual({ data: 1 });
     expect(next).toHaveBeenCalledTimes(1);
-    const arg = next.mock.calls[0]![0] as { ctx: { requestId: string } };
+    const arg = next.mock.calls[0]?.[0] as { ctx: { requestId: string } };
     expect(arg.ctx.requestId).toMatch(
       /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
     );

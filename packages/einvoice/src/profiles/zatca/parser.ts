@@ -44,7 +44,7 @@ function textOf(node: unknown): string {
  */
 export function parseZatcaXml(xml: string, metadata?: Record<string, unknown>): EInvoice {
   const parsed = parser.parse(xml);
-  const inv = parsed.Invoice ?? parsed["Invoice"];
+  const inv = parsed.Invoice ?? parsed.Invoice;
 
   if (!inv) {
     throw new Error("Invalid ZATCA XML: no Invoice root element found");

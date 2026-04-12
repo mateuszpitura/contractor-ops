@@ -1,7 +1,11 @@
-import { prisma as defaultPrisma } from "@contractor-ops/db";
 import type { PrismaClient } from "@contractor-ops/db";
+import { prisma as defaultPrisma } from "@contractor-ops/db";
 import type { ASPAdapter, InboundInvoicePayload } from "@contractor-ops/einvoice";
-import { PeppolAEProfile, PeppolAEQRCode, PINT_AE_DOCUMENT_TYPE_ID } from "@contractor-ops/einvoice";
+import {
+  PeppolAEProfile,
+  PeppolAEQRCode,
+  PINT_AE_DOCUMENT_TYPE_ID,
+} from "@contractor-ops/einvoice";
 import { computeDuplicateCheckHash } from "./invoice-matching.js";
 
 // ---------------------------------------------------------------------------

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { format, formatDistanceToNow } from "date-fns";
+import { format } from "date-fns";
 import { Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
@@ -17,7 +17,6 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { trpc } from "@/trpc/init";
-import { ShipmentStatusBadge } from "./shipment-status-badge";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -242,7 +241,7 @@ export function ShipmentTimeline({
         {/* Show FAILED or RETURNED as special terminal events if applicable */}
         {(() => {
           const terminalEvent =
-            (currentStatus === "FAILED" || currentStatus === "RETURNED")
+            currentStatus === "FAILED" || currentStatus === "RETURNED"
               ? eventByStatus.get(currentStatus)
               : undefined;
           if (!terminalEvent) return null;
@@ -256,9 +255,7 @@ export function ShipmentTimeline({
                       {t(`shipment.status.${currentStatus}`)}
                     </span>
                     {terminalEvent.notes && (
-                      <p className="mt-0.5 text-xs text-muted-foreground">
-                        {terminalEvent.notes}
-                      </p>
+                      <p className="mt-0.5 text-xs text-muted-foreground">{terminalEvent.notes}</p>
                     )}
                   </div>
                   <span className="shrink-0 text-xs text-muted-foreground">

@@ -64,7 +64,7 @@ export function upstashRedisHandlers(options?: HandlerOptions) {
           const allKeys = [...store.keys()];
           const matched = pattern
             ? allKeys.filter((k) => {
-                const regex = new RegExp("^" + pattern.replace(/\*/g, ".*") + "$");
+                const regex = new RegExp(`^${pattern.replace(/\*/g, ".*")}$`);
                 return regex.test(k);
               })
             : allKeys;

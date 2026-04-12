@@ -12,7 +12,7 @@ describe("navigationGroups", () => {
   });
 
   it("dashboard is always visible with root href", () => {
-    const dash = navigationGroups[0]!.items[0]!;
+    const dash = navigationGroups[0]?.items[0]!;
     expect(dash.key).toBe("dashboard");
     expect(dash.permission).toBeNull();
     expect(dash.href).toBe("/");

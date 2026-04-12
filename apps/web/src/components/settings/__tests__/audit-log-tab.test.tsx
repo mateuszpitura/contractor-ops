@@ -215,13 +215,13 @@ describe("AuditLogTab", () => {
 
   // ---- Pagination ----
   it("passes correct page number to table", () => {
-    queryStateValues["auditPage"] = "3";
+    queryStateValues.auditPage = "3";
     render(<AuditLogTab />);
     expect(screen.getByTestId("table-page")).toHaveTextContent("3");
   });
 
   it("defaults invalid page to 1", () => {
-    queryStateValues["auditPage"] = "abc";
+    queryStateValues.auditPage = "abc";
     render(<AuditLogTab />);
     expect(screen.getByTestId("table-page")).toHaveTextContent("1");
   });
@@ -261,7 +261,7 @@ describe("AuditLogTab", () => {
 
   // ---- Page number higher than 1 ----
   it("passes page 5 to table when query state is 5", () => {
-    queryStateValues["auditPage"] = "5";
+    queryStateValues.auditPage = "5";
     render(<AuditLogTab />);
     expect(screen.getByTestId("table-page")).toHaveTextContent("5");
   });
@@ -319,7 +319,7 @@ describe("AuditLogTab", () => {
 
   // ---- Search clears page ----
   it("resets page on search input via debounce", async () => {
-    queryStateValues["auditPage"] = "3";
+    queryStateValues.auditPage = "3";
     const { user } = setup(<AuditLogTab />);
     const input = screen.getByPlaceholderText("Search audit log...");
     await user.type(input, "test");
@@ -347,7 +347,7 @@ describe("AuditLogTab", () => {
 
   // ---- Negative page number ----
   it("clamps negative page number to 1", () => {
-    queryStateValues["auditPage"] = "-5";
+    queryStateValues.auditPage = "-5";
     render(<AuditLogTab />);
     expect(screen.getByTestId("table-page")).toHaveTextContent("1");
   });
@@ -362,8 +362,8 @@ describe("AuditLogTab", () => {
 
   // ---- Export button click with filters ----
   it("calls export mutation with current filter state", async () => {
-    queryStateValues["actorId"] = "u1";
-    queryStateValues["actionFilter"] = "CREATE";
+    queryStateValues.actorId = "u1";
+    queryStateValues.actionFilter = "CREATE";
     mockListData = { items: [{ id: "1" }], totalCount: 5 };
     const { user } = setup(<AuditLogTab />);
     const exportBtn = screen.getByText("Export audit log").closest("button")!;
@@ -373,7 +373,7 @@ describe("AuditLogTab", () => {
 
   // ---- Date from change resets page ----
   it("resets page to 1 when date from changes", async () => {
-    queryStateValues["auditPage"] = "5";
+    queryStateValues.auditPage = "5";
     const { container, user } = setup(<AuditLogTab />);
     const dateInputs = container.querySelectorAll('input[type="date"]');
     const dateFromInput = dateInputs[0] as HTMLInputElement;
@@ -383,7 +383,7 @@ describe("AuditLogTab", () => {
 
   // ---- Date to change resets page ----
   it("resets page to 1 when date to changes", async () => {
-    queryStateValues["auditPage"] = "3";
+    queryStateValues.auditPage = "3";
     const { container, user } = setup(<AuditLogTab />);
     const dateInputs = container.querySelectorAll('input[type="date"]');
     const dateToInput = dateInputs[1] as HTMLInputElement;
@@ -405,7 +405,7 @@ describe("AuditLogTab", () => {
 
   // ---- Table renders with correct page ----
   it("passes page 2 to table", () => {
-    queryStateValues["auditPage"] = "2";
+    queryStateValues.auditPage = "2";
     render(<AuditLogTab />);
     expect(screen.getByTestId("table-page")).toHaveTextContent("2");
   });
@@ -421,7 +421,7 @@ describe("AuditLogTab", () => {
 
   // ---- Large page number ----
   it("passes page 100 to table", () => {
-    queryStateValues["auditPage"] = "100";
+    queryStateValues.auditPage = "100";
     render(<AuditLogTab />);
     expect(screen.getByTestId("table-page")).toHaveTextContent("100");
   });
@@ -441,7 +441,7 @@ describe("AuditLogTab", () => {
 
   // ---- Action filter: pre-populated value renders ----
   it("renders action filter with pre-selected value from query state", () => {
-    queryStateValues["actionFilter"] = "CREATE";
+    queryStateValues.actionFilter = "CREATE";
     render(<AuditLogTab />);
     // The combobox for action filter should have value
     const selects = screen.getAllByRole("combobox");
@@ -450,7 +450,7 @@ describe("AuditLogTab", () => {
 
   // ---- Resource type filter: pre-populated value ----
   it("renders resource type filter with pre-selected value from query state", () => {
-    queryStateValues["resourceType"] = "INVOICE";
+    queryStateValues.resourceType = "INVOICE";
     render(<AuditLogTab />);
     const selects = screen.getAllByRole("combobox");
     expect(selects.length).toBeGreaterThanOrEqual(3);
@@ -458,7 +458,7 @@ describe("AuditLogTab", () => {
 
   // ---- Sort order from query state ----
   it("passes sort order from query state to table", () => {
-    queryStateValues["auditSort"] = "asc";
+    queryStateValues.auditSort = "asc";
     render(<AuditLogTab />);
     expect(screen.getByTestId("audit-log-table")).toBeInTheDocument();
   });
@@ -476,11 +476,11 @@ describe("AuditLogTab", () => {
 
   // ---- Export with filters applied ----
   it("export mutation called with all filter parameters", async () => {
-    queryStateValues["actorId"] = "u1";
-    queryStateValues["actionFilter"] = "UPDATE";
-    queryStateValues["resourceType"] = "CONTRACT";
-    queryStateValues["dateFrom"] = "2026-01-01";
-    queryStateValues["dateTo"] = "2026-12-31";
+    queryStateValues.actorId = "u1";
+    queryStateValues.actionFilter = "UPDATE";
+    queryStateValues.resourceType = "CONTRACT";
+    queryStateValues.dateFrom = "2026-01-01";
+    queryStateValues.dateTo = "2026-12-31";
     mockListData = { items: [{ id: "1" }], totalCount: 1 };
     const { user } = setup(<AuditLogTab />);
     const exportBtn = screen.getByText("Export audit log").closest("button")!;
@@ -490,7 +490,7 @@ describe("AuditLogTab", () => {
 
   // ---- Date pre-populated from query state ----
   it("renders date from input with query state value", () => {
-    queryStateValues["dateFrom"] = "2026-03-01";
+    queryStateValues.dateFrom = "2026-03-01";
     const { container } = render(<AuditLogTab />);
     const dateInputs = container.querySelectorAll('input[type="date"]');
     expect(dateInputs[0]).toHaveValue("2026-03-01");
@@ -498,7 +498,7 @@ describe("AuditLogTab", () => {
 
   // ---- Date to pre-populated from query state ----
   it("renders date to input with query state value", () => {
-    queryStateValues["dateTo"] = "2026-06-30";
+    queryStateValues.dateTo = "2026-06-30";
     const { container } = render(<AuditLogTab />);
     const dateInputs = container.querySelectorAll('input[type="date"]');
     expect(dateInputs[1]).toHaveValue("2026-06-30");
@@ -549,7 +549,7 @@ describe("AuditLogTab", () => {
   });
 
   it("resets page to 1 when actor filter changes", async () => {
-    queryStateValues["auditPage"] = "5";
+    queryStateValues.auditPage = "5";
     mockActorsData = [{ id: "u1", name: "Alice" }];
     const user = userEvent.setup({ pointerEventsCheck: 0 });
     render(<AuditLogTab />);
@@ -563,7 +563,7 @@ describe("AuditLogTab", () => {
   });
 
   it("resets page to 1 when action filter changes", async () => {
-    queryStateValues["auditPage"] = "3";
+    queryStateValues.auditPage = "3";
     const user = userEvent.setup({ pointerEventsCheck: 0 });
     render(<AuditLogTab />);
     const selects = screen.getAllByRole("combobox");
@@ -576,7 +576,7 @@ describe("AuditLogTab", () => {
   });
 
   it("resets page to 1 when resource type filter changes", async () => {
-    queryStateValues["auditPage"] = "4";
+    queryStateValues.auditPage = "4";
     const user = userEvent.setup({ pointerEventsCheck: 0 });
     render(<AuditLogTab />);
     const selects = screen.getAllByRole("combobox");

@@ -8,7 +8,7 @@ import { Prisma, prisma } from "@contractor-ops/db";
  * Extract Slack workspace team id from Events API, interactivity, or shortcuts payloads.
  */
 export function extractSlackTeamId(payload: unknown): string | undefined {
-  if (!payload || typeof payload !== "object") return undefined;
+  if (!payload || typeof payload !== "object") return;
   const p = payload as Record<string, unknown>;
 
   const team = p.team as Record<string, unknown> | undefined;
@@ -32,7 +32,7 @@ export function extractSlackTeamId(payload: unknown): string | undefined {
     if (typeof e.team_id === "string") return e.team_id;
   }
 
-  return undefined;
+  return;
 }
 
 /**

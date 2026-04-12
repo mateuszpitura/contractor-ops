@@ -368,7 +368,7 @@ export class ZatcaXAdESSigner implements Signable {
         };
       }
 
-      const certBase64 = certMatch[1]!.replace(/\s/g, "");
+      const certBase64 = certMatch[1]?.replace(/\s/g, "");
       const certPem = `-----BEGIN CERTIFICATE-----\n${certBase64}\n-----END CERTIFICATE-----`;
 
       const sigVerifier = new SignedXml({
@@ -385,14 +385,14 @@ export class ZatcaXAdESSigner implements Signable {
 
       const timeMatch = xml.match(/<xades:SigningTime>([\s\S]*?)<\/xades:SigningTime>/);
       if (timeMatch) {
-        signedAt = new Date(timeMatch[1]!.trim());
+        signedAt = new Date(timeMatch[1]?.trim());
       }
 
       try {
         const x509 = parseCertificate(certBase64);
         const cnMatch = x509.subject.match(/CN=([^,\n]+)/);
         if (cnMatch) {
-          signerName = cnMatch[1]!.trim();
+          signerName = cnMatch[1]?.trim();
         }
       } catch {
         // Non-critical
@@ -405,7 +405,7 @@ export class ZatcaXAdESSigner implements Signable {
       const refErrors = sigVerifier
         .getReferences()
         .filter((r) => r.validationError)
-        .map((r) => `Reference ${r.uri || "(document)"}: ${r.validationError!.message}`);
+        .map((r) => `Reference ${r.uri || "(document)"}: ${r.validationError?.message}`);
 
       return {
         valid: false,

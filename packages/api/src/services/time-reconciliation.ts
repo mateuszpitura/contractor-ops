@@ -47,7 +47,7 @@ export async function computeTimeReconciliation(
     select: { rateType: true, rateValueMinor: true },
   });
 
-  if (!contract || !contract.rateValueMinor) return null;
+  if (!contract?.rateValueMinor) return null;
 
   // Only compute for PER_HOUR and PER_DAY contracts
   // MONTHLY_FIXED: skip (expected = fixed rate regardless of hours)

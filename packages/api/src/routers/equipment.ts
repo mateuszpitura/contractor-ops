@@ -192,8 +192,8 @@ const equipmentCoreRouter = router({
         data: {
           organizationId: ctx.organizationId,
           actorType: "USER",
-          actorId: ctx.user!.id,
-          actorName: ctx.user!.name,
+          actorId: ctx.user?.id,
+          actorName: ctx.user?.name,
           action: "equipment.create",
           resourceType: "EQUIPMENT",
           resourceId: equipment.id,
@@ -247,8 +247,8 @@ const equipmentCoreRouter = router({
         data: {
           organizationId: ctx.organizationId,
           actorType: "USER",
-          actorId: ctx.user!.id,
-          actorName: ctx.user!.name,
+          actorId: ctx.user?.id,
+          actorName: ctx.user?.name,
           action: "equipment.update",
           resourceType: "EQUIPMENT",
           resourceId: equipment.id,
@@ -308,8 +308,8 @@ const equipmentCoreRouter = router({
         data: {
           organizationId: ctx.organizationId,
           actorType: "USER",
-          actorId: ctx.user!.id,
-          actorName: ctx.user!.name,
+          actorId: ctx.user?.id,
+          actorName: ctx.user?.name,
           action: "equipment.retire",
           resourceType: "EQUIPMENT",
           resourceId: updated.id,
@@ -375,7 +375,7 @@ const equipmentCoreRouter = router({
             organizationId: ctx.organizationId,
             equipmentId: input.equipmentId,
             contractorId: input.contractorId,
-            assignedByUserId: ctx.user!.id,
+            assignedByUserId: ctx.user?.id,
             notes: input.notes ?? null,
           },
         }),
@@ -389,8 +389,8 @@ const equipmentCoreRouter = router({
         data: {
           organizationId: ctx.organizationId,
           actorType: "USER",
-          actorId: ctx.user!.id,
-          actorName: ctx.user!.name,
+          actorId: ctx.user?.id,
+          actorName: ctx.user?.name,
           action: "equipment.assign",
           resourceType: "EQUIPMENT",
           resourceId: updated.id,
@@ -447,9 +447,9 @@ const equipmentCoreRouter = router({
           where: { id: activeAssignment.id },
           data: {
             unassignedAt: new Date(),
-            unassignedByUserId: ctx.user!.id,
+            unassignedByUserId: ctx.user?.id,
             notes: input.notes
-              ? `${activeAssignment.notes ? activeAssignment.notes + "\n" : ""}Unassign: ${input.notes}`
+              ? `${activeAssignment.notes ? `${activeAssignment.notes}\n` : ""}Unassign: ${input.notes}`
               : activeAssignment.notes,
           },
         }),
@@ -463,8 +463,8 @@ const equipmentCoreRouter = router({
         data: {
           organizationId: ctx.organizationId,
           actorType: "USER",
-          actorId: ctx.user!.id,
-          actorName: ctx.user!.name,
+          actorId: ctx.user?.id,
+          actorName: ctx.user?.name,
           action: "equipment.unassign",
           resourceType: "EQUIPMENT",
           resourceId: updated.id,

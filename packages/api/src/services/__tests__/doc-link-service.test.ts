@@ -488,8 +488,8 @@ describe("searchDocs", () => {
 
     expect(results).toHaveLength(2);
     // Notion results come first
-    expect(results[0]!.provider).toBe("notion");
-    expect(results[1]!.provider).toBe("confluence");
+    expect(results[0]?.provider).toBe("notion");
+    expect(results[1]?.provider).toBe("confluence");
   });
 
   it("returns empty for Confluence when connection exists but cloudId is missing", async () => {

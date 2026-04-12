@@ -87,7 +87,7 @@ function ChartTooltip({
   payload?: Array<{ name: string; value: number; color: string }>;
   label?: string;
 }) {
-  if (!active || !payload?.length) return null;
+  if (!(active && payload?.length)) return null;
 
   return (
     <div className="glass-medium relative overflow-hidden rounded-xl border border-border/40 p-3 shadow-lg">

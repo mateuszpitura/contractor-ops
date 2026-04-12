@@ -21,7 +21,7 @@ export default async function globalSetup() {
   const email = process.env.E2E_EMAIL;
   const password = process.env.E2E_PASSWORD;
 
-  if (!email || !password) {
+  if (!(email && password)) {
     fs.writeFileSync(authFile, JSON.stringify({ cookies: [], origins: [] }));
     console.warn(
       "[perf] E2E_EMAIL / E2E_PASSWORD not set — dashboard perf tests will skip. Public perf specs still run.",

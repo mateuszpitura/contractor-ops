@@ -1,9 +1,9 @@
-import { describe, expect, it } from "vitest";
 import {
   ksefConnectionConfigSchema,
   ksefParsedInvoiceSchema,
   ksefSyncParamsSchema,
 } from "@contractor-ops/einvoice";
+import { describe, expect, it } from "vitest";
 
 describe("ksefConnectionConfigSchema", () => {
   it("requires token when authMethod is token", () => {

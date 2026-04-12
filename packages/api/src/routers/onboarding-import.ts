@@ -369,7 +369,7 @@ export const onboardingImportRouter = router({
           await createWorkflowTemplatesFromProjects({
             projects: nonSkippedProjects,
             organizationId: ctx.organizationId,
-            createdByUserId: ctx.user!.id,
+            createdByUserId: ctx.user?.id,
           });
           job.completedItems += nonSkippedProjects.length;
         } catch (error) {

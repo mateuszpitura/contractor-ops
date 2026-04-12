@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen, setup, waitFor } from "@/test/test-utils";
 import { TemplateForm } from "../template-form";
@@ -560,7 +560,7 @@ describe("TemplateForm", () => {
       expect(screen.getByRole("alertdialog")).toBeInTheDocument();
     });
     // Click confirm in the alert dialog
-    const confirmBtn = screen.getByRole("button", { name: /delete/i });
+    const _confirmBtn = screen.getByRole("button", { name: /delete/i });
     const alertBtns = document.querySelectorAll('[data-slot="alert-dialog-action"]');
     if (alertBtns.length > 0) {
       await user.click(alertBtns[0] as HTMLElement);

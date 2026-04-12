@@ -272,7 +272,7 @@ describe("ocr.getResult", () => {
     const result = await tenantCaller.ocr.getResult({ extractionId: "ext-1" });
 
     expect(result).toBeTruthy();
-    expect(result!.status).toBe("COMPLETED");
+    expect(result?.status).toBe("COMPLETED");
     expect(mockGetExtractionResult).toHaveBeenCalledWith({
       organizationId: ORG_ID,
       extractionId: "ext-1",
@@ -300,7 +300,7 @@ describe("ocr.getByDocument", () => {
 
     const result = await tenantCaller.ocr.getByDocument({ documentId: "doc-1" });
 
-    expect(result!.id).toBe("ext-latest");
+    expect(result?.id).toBe("ext-latest");
     expect(mockGetExtractionByDocument).toHaveBeenCalledWith({
       organizationId: ORG_ID,
       documentId: "doc-1",
@@ -400,7 +400,7 @@ describe("ocr.portalGetResult", () => {
       extractionId: "ext-portal-result",
     });
 
-    expect(result!.id).toBe("ext-portal-result");
+    expect(result?.id).toBe("ext-portal-result");
     expect(mockGetExtractionResult).toHaveBeenCalledWith({
       organizationId: ORG_ID,
       extractionId: "ext-portal-result",

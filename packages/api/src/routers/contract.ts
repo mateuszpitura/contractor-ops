@@ -95,7 +95,7 @@ export const contractRouter = router({
           contractName: contract.title ?? input.title,
           contractorName: contract.contractor?.displayName ?? "Unknown",
           expiryDate: contract.endDate,
-          userId: ctx.user!.id,
+          userId: ctx.user?.id,
         }).catch((err) => console.error("[contract] calendar sync on create failed:", err));
       }
 
@@ -211,7 +211,7 @@ export const contractRouter = router({
           contractName: updated.title ?? "Untitled",
           contractorName: contractor?.displayName ?? "Unknown",
           expiryDate: updated.endDate,
-          userId: ctx.user!.id,
+          userId: ctx.user?.id,
         }).catch((err) => console.error("[contract] calendar sync on update failed:", err));
       } else if (!updated.endDate && existing.endDate) {
         // endDate was cleared -- delete calendar event (D-08)
@@ -293,7 +293,7 @@ export const contractRouter = router({
 
           if (matchingIds.length === 0) {
             return {
-              items: [] as Array<Record<string, unknown>>,
+              items: [] as Record<string, unknown>[],
               totalCount: 0,
               page,
               pageSize,

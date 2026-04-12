@@ -33,7 +33,10 @@ const STEP_TRANSLATION_KEYS: Record<string, { label: string; shortLabel: string 
   csr_generation: { label: "steps.csrGeneration", shortLabel: "steps.csrGenerationShort" },
   compliance_csid: { label: "steps.complianceCsid", shortLabel: "steps.complianceCsidShort" },
   compliance_checks: { label: "steps.complianceChecks", shortLabel: "steps.complianceChecksShort" },
-  production_certificate: { label: "steps.productionCertificate", shortLabel: "steps.productionCertificateShort" },
+  production_certificate: {
+    label: "steps.productionCertificate",
+    shortLabel: "steps.productionCertificateShort",
+  },
 };
 
 const STEP_INDEX_MAP: Record<string, number> = {
@@ -95,7 +98,7 @@ export function OnboardingWizard({ onComplete, onCancel }: OnboardingWizardProps
     queryClient.invalidateQueries({
       queryKey: zatcaTrpc.getOnboardingState.queryKey(),
     });
-  }, [serverStep, queryClient]);
+  }, [serverStep, queryClient, onboardingSteps.length]);
 
   const goBack = useCallback(() => {
     setCurrentStep((prev) => {

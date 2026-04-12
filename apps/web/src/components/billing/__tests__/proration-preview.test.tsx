@@ -16,7 +16,7 @@ vi.mock("@tanstack/react-query", () => ({
 vi.mock("@/trpc/init", () => ({
   trpc: {
     billing: {
-      getProrationPreview: { queryOptions: (args: any) => ({}) },
+      getProrationPreview: { queryOptions: (_args: any) => ({}) },
     },
   },
 }));

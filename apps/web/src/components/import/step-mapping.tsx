@@ -105,7 +105,7 @@ export function StepMapping({
       <div className="space-y-2">
         {headers.map((header) => {
           const currentTarget = columnMapping[header];
-          const isAutoMatched =
+          const _isAutoMatched =
             suggestedMapping[header] !== null &&
             suggestedMapping[header] !== undefined &&
             currentTarget === suggestedMapping[header];

@@ -2,10 +2,7 @@
 
 import { CalendarIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { parseAsString, useQueryState } from "nuqs";
-import { useCallback, useMemo, useState } from "react";
-
-import { Badge } from "@/components/ui/badge";
+import { useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";

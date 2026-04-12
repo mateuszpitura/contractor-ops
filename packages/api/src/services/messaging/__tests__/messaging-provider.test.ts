@@ -26,7 +26,7 @@ vi.mock("../../slack-client.js", () => ({
   sendReminderDM: vi.fn().mockResolvedValue(undefined),
 }));
 
-const mockContinueConversationAsync = vi.fn(
+const _mockContinueConversationAsync = vi.fn(
   async (_appId: string, _ref: unknown, callback: (ctx: unknown) => Promise<void>) => {
     await callback({ sendActivity: vi.fn() });
   },
@@ -328,7 +328,7 @@ describe("getConnectedMessagingProviders", () => {
     const { getConnectedMessagingProviders } = await import("../index.js");
     const providers = await getConnectedMessagingProviders("org-1");
     expect(providers).toHaveLength(1);
-    expect(providers[0]!.platform).toBe("slack");
+    expect(providers[0]?.platform).toBe("slack");
     expect(providers[0]).toBeInstanceOf(SlackMessagingProvider);
   });
 
@@ -341,7 +341,7 @@ describe("getConnectedMessagingProviders", () => {
     const { getConnectedMessagingProviders } = await import("../index.js");
     const providers = await getConnectedMessagingProviders("org-1");
     expect(providers).toHaveLength(1);
-    expect(providers[0]!.platform).toBe("teams");
+    expect(providers[0]?.platform).toBe("teams");
     expect(providers[0]).toBeInstanceOf(TeamsMessagingProvider);
   });
 });

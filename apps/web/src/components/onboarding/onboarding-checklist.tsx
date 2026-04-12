@@ -308,14 +308,16 @@ export function OnboardingChecklist() {
                 t={t}
               />
               {/* Inline consent step for PDPL jurisdictions */}
-              {step.id === "privacy-consent" && step.id === currentStepId && !completedSteps.includes(step.id) && (
-                <div className="ms-9 mt-2">
-                  <OnboardingConsentStep
-                    orgCountryCode={orgCountryCode}
-                    onComplete={() => completeStep("privacy-consent", true)}
-                  />
-                </div>
-              )}
+              {step.id === "privacy-consent" &&
+                step.id === currentStepId &&
+                !completedSteps.includes(step.id) && (
+                  <div className="ms-9 mt-2">
+                    <OnboardingConsentStep
+                      orgCountryCode={orgCountryCode}
+                      onComplete={() => completeStep("privacy-consent", true)}
+                    />
+                  </div>
+                )}
             </div>
           ))}
         </div>

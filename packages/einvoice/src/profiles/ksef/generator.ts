@@ -20,7 +20,6 @@ function mapInvoiceType(code: string): string {
   switch (code) {
     case "381":
       return "KOR";
-    case "380":
     default:
       return "VAT";
   }

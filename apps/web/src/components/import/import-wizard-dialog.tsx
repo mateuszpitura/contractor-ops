@@ -151,7 +151,7 @@ export function ImportWizardDialog({
   defaultEntityType = "contractor",
 }: ImportWizardDialogProps) {
   const t = useTranslations("Import");
-  const tAria = useTranslations("Common.aria");
+  const _tAria = useTranslations("Common.aria");
   const queryClient = useQueryClient();
 
   // Wizard state
@@ -326,6 +326,10 @@ export function ImportWizardDialog({
     parseMutation,
     validateMutation,
     commitMutation,
+    validateResult.validRows.map,
+    validateResult.duplicateRows.filter,
+    validateResult.duplicateRows,
+    validateResult,
   ]);
 
   const handleBack = useCallback(() => {

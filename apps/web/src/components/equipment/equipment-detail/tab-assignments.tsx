@@ -75,7 +75,7 @@ export function TabAssignments({ assignments, currentAssignmentId }: TabAssignme
                   new Date(assignment.assignedAt),
                   new Date(assignment.unassignedAt),
                 )
-              : formatDistanceStrict(new Date(assignment.assignedAt), new Date()) + " (active)";
+              : `${formatDistanceStrict(new Date(assignment.assignedAt), new Date())} (active)`;
 
             return (
               <TableRow key={assignment.id} className={isCurrent ? "bg-primary/5" : ""}>

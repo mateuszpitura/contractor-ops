@@ -9,8 +9,6 @@ const t = initTRPC.context<Context>().create({
 
 export const router = t.router;
 export const mergeRouters = t.mergeRouters;
-export const publicProcedure = t.procedure.use(
-  t.middleware(observabilityMiddleware),
-);
+export const publicProcedure = t.procedure.use(t.middleware(observabilityMiddleware));
 export const createCallerFactory = t.createCallerFactory;
 export { t };

@@ -15,7 +15,7 @@ export default function PortalInvoiceSubmitSuccessPage() {
   const t = useTranslations("Portal");
   const searchParams = useSearchParams();
   const invoiceId = searchParams.get("invoiceId");
-  const invoiceNumber = searchParams.get("invoiceNumber");
+  const _invoiceNumber = searchParams.get("invoiceNumber");
 
   return (
     <div className="flex min-h-[60vh] items-center justify-center">

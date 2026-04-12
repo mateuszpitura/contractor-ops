@@ -262,7 +262,7 @@ export function ProviderConnectionCard({
           )}
 
           {/* Disconnected state */}
-          {!isConnected && !isReauthRequired && !isError && (
+          {!(isConnected || isReauthRequired || isError) && (
             <div className="space-y-3">
               <p className="text-sm text-muted-foreground">{description}</p>
               <Button onClick={handleConnect}>

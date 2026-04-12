@@ -117,7 +117,7 @@ export const workflowExecutionRouter = router({
             contractorId: contractor.id,
             contractId: contract?.id ?? null,
             status: "IN_PROGRESS",
-            startedByUserId: ctx.user!.id,
+            startedByUserId: ctx.user?.id,
             startedAt: now,
             dueAt: maxDueDate,
           },
@@ -392,7 +392,7 @@ export const workflowExecutionRouter = router({
                   contractorName: run.contractorName,
                   contractName: run.contractName,
                   taskName: task.title,
-                  userId: ctx.user!.id,
+                  userId: ctx.user?.id,
                 }).catch((err) =>
                   console.error(
                     `[workflow/startRun] Calendar event creation failed for task ${task.id}:`,
@@ -679,7 +679,7 @@ export const workflowExecutionRouter = router({
 
       const where: Record<string, unknown> = {
         organizationId: ctx.organizationId,
-        assigneeUserId: ctx.user!.id,
+        assigneeUserId: ctx.user?.id,
         status: { in: ["TODO", "IN_PROGRESS", "BLOCKED"] },
       };
 
@@ -765,7 +765,7 @@ export const workflowExecutionRouter = router({
           data: {
             status: "DONE",
             completedAt: now,
-            completedByUserId: ctx.user!.id,
+            completedByUserId: ctx.user?.id,
             startedAt: task.startedAt ?? now,
           },
         });
@@ -1041,7 +1041,7 @@ export const workflowExecutionRouter = router({
           organizationId: ctx.organizationId,
           workflowRunId: input.workflowRunId,
           workflowTaskRunId: input.workflowTaskRunId ?? null,
-          authorUserId: ctx.user!.id,
+          authorUserId: ctx.user?.id,
           body: input.body,
         },
         include: {
@@ -1098,7 +1098,7 @@ export const workflowExecutionRouter = router({
       const count = await ctx.db.workflowTaskRun.count({
         where: {
           organizationId: ctx.organizationId,
-          assigneeUserId: ctx.user!.id,
+          assigneeUserId: ctx.user?.id,
           status: { in: ["TODO", "IN_PROGRESS"] },
           dueAt: { lt: new Date() },
         },

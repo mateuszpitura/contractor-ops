@@ -162,7 +162,7 @@ export async function hasRequiredConsents(
 
   for (const purpose of REQUIRED_PURPOSES) {
     const state = currentConsent.get(purpose);
-    if (!state || !state.granted) {
+    if (!state?.granted) {
       return false;
     }
   }

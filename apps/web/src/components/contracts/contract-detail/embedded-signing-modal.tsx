@@ -7,7 +7,6 @@ import { useCallback, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------

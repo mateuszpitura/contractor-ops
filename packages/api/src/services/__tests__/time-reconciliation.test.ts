@@ -63,8 +63,8 @@ describe("computeTimeReconciliation", () => {
     );
 
     expect(result).not.toBeNull();
-    expect(result!.expectedAmountMinor).toBe(12000);
-    expect(result!.rateType).toBe("PER_HOUR");
+    expect(result?.expectedAmountMinor).toBe(12000);
+    expect(result?.rateType).toBe("PER_HOUR");
   });
 
   it("returns approvedMinutes and invoicedAmountMinor in result", async () => {
@@ -85,9 +85,9 @@ describe("computeTimeReconciliation", () => {
     );
 
     expect(result).not.toBeNull();
-    expect(result!.approvedMinutes).toBe(60);
-    expect(result!.expectedAmountMinor).toBe(10000);
-    expect(result!.invoicedAmountMinor).toBe(5000);
+    expect(result?.approvedMinutes).toBe(60);
+    expect(result?.expectedAmountMinor).toBe(10000);
+    expect(result?.invoicedAmountMinor).toBe(5000);
   });
 
   it("computes expected amount for PER_DAY contract: minutes / (hoursPerDay * 60) * rate", async () => {
@@ -110,9 +110,9 @@ describe("computeTimeReconciliation", () => {
     );
 
     expect(result).not.toBeNull();
-    expect(result!.expectedAmountMinor).toBe(48000);
-    expect(result!.rateType).toBe("PER_DAY");
-    expect(result!.hoursPerDay).toBe(8);
+    expect(result?.expectedAmountMinor).toBe(48000);
+    expect(result?.rateType).toBe("PER_DAY");
+    expect(result?.hoursPerDay).toBe(8);
   });
 
   it("returns null for MONTHLY_FIXED contracts", async () => {
@@ -217,7 +217,7 @@ describe("computeTimeReconciliation", () => {
     );
 
     expect(result).not.toBeNull();
-    expect(result!.deviationPercent).toBe(3.33);
+    expect(result?.deviationPercent).toBe(3.33);
   });
 
   it("marks withinThreshold=true when deviation <= org threshold", async () => {
@@ -240,7 +240,7 @@ describe("computeTimeReconciliation", () => {
     );
 
     expect(result).not.toBeNull();
-    expect(result!.withinThreshold).toBe(true);
+    expect(result?.withinThreshold).toBe(true);
   });
 
   it("marks withinThreshold=false when deviation > org threshold", async () => {
@@ -263,8 +263,8 @@ describe("computeTimeReconciliation", () => {
     );
 
     expect(result).not.toBeNull();
-    expect(result!.withinThreshold).toBe(false);
-    expect(result!.deviationPercent).toBe(20);
+    expect(result?.withinThreshold).toBe(false);
+    expect(result?.deviationPercent).toBe(20);
   });
 
   it("uses org settingsJson.timeDeviationThresholdPercent (default 10%)", async () => {
@@ -287,8 +287,8 @@ describe("computeTimeReconciliation", () => {
     );
 
     expect(result).not.toBeNull();
-    expect(result!.thresholdPercent).toBe(10);
-    expect(result!.withinThreshold).toBe(true);
+    expect(result?.thresholdPercent).toBe(10);
+    expect(result?.withinThreshold).toBe(true);
   });
 
   it("uses org settingsJson.timeHoursPerDay for PER_DAY (default 8)", async () => {
@@ -311,7 +311,7 @@ describe("computeTimeReconciliation", () => {
     );
 
     expect(result).not.toBeNull();
-    expect(result!.hoursPerDay).toBe(8);
-    expect(result!.expectedAmountMinor).toBe(50000);
+    expect(result?.hoursPerDay).toBe(8);
+    expect(result?.expectedAmountMinor).toBe(50000);
   });
 });

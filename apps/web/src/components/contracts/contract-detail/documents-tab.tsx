@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { PenLine, Upload } from "lucide-react";
+import { PenLine } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { DocumentList } from "@/components/documents/document-list";
@@ -21,7 +21,7 @@ type DocumentsTabProps = {
 };
 
 export function DocumentsTab({ contractId, contractParties = [] }: DocumentsTabProps) {
-  const t = useTranslations("ContractDetail.documents");
+  const _t = useTranslations("ContractDetail.documents");
   const [signDialogOpen, setSignDialogOpen] = useState(false);
   const [selectedDocId, setSelectedDocId] = useState("");
 

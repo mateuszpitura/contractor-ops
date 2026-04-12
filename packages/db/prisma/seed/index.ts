@@ -5,10 +5,8 @@ import { seedWhtRates } from "./wht-rates.js";
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log("Seeding database...");
   await seedTaxRates(prisma);
   await seedWhtRates(prisma);
-  console.log("Seeding complete.");
 }
 
 main()

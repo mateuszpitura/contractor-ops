@@ -48,18 +48,14 @@ export function CsrGeneration({ onSuccess, onBack }: CsrGenerationProps) {
     <div className="space-y-6">
       <div className="space-y-1">
         <h3 className="text-base font-semibold">{t("title")}</h3>
-        <p className="text-sm text-muted-foreground">
-          {t("description")}
-        </p>
+        <p className="text-sm text-muted-foreground">{t("description")}</p>
       </div>
 
       <div className="space-y-2 text-sm text-muted-foreground">
         <p>
           <span className="font-medium text-foreground">{t("keyType")}</span> {t("keyTypeValue")}
         </p>
-        <p>
-          {t("privateKeyNote")}
-        </p>
+        <p>{t("privateKeyNote")}</p>
       </div>
 
       {/* CSR Preview */}

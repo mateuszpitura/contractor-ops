@@ -40,10 +40,10 @@ export function VatRateSelector({ value, onChange, disabled }: VatRateSelectorPr
 
   // Group rates by category
   const defaultRates = ratesQuery.data.filter(
-    (r) => !r.isExempt && !r.isReverseCharge && r.ratePercent > 0 && r.isDefault,
+    (r) => !(r.isExempt || r.isReverseCharge) && r.ratePercent > 0 && r.isDefault,
   );
   const reducedRates = ratesQuery.data.filter(
-    (r) => !r.isExempt && !r.isReverseCharge && r.ratePercent > 0 && !r.isDefault,
+    (r) => !(r.isExempt || r.isReverseCharge) && r.ratePercent > 0 && !r.isDefault,
   );
   const exemptRates = ratesQuery.data.filter((r) => r.isExempt || r.ratePercent === 0);
 

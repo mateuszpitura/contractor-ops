@@ -95,8 +95,8 @@ export function StepDuplicates({
           </TableHeader>
           <TableBody>
             {duplicateRows.map((row) => {
-              const taxId = String(row.data["taxId"] ?? row.data["contractorTaxId"] ?? "");
-              const name = String(row.data["legalName"] ?? row.data["title"] ?? "");
+              const taxId = String(row.data.taxId ?? row.data.contractorTaxId ?? "");
+              const name = String(row.data.legalName ?? row.data.title ?? "");
               const existingName = row.duplicateOf ?? "-";
               const action = getAction(row.rowNumber);
 

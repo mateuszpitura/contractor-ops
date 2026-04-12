@@ -37,7 +37,7 @@ export function parseEcbXml(xml: string): Map<string, number> {
   for (const match of xml.matchAll(pattern)) {
     const code = match[1];
     const rate = parseFloat(match[2]);
-    if (code && !isNaN(rate)) {
+    if (code && !Number.isNaN(rate)) {
       rates.set(code, rate);
     }
   }

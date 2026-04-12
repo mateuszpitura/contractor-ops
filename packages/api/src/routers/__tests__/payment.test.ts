@@ -9,7 +9,6 @@
  *    then asserts the arguments passed to Prisma (WHERE clauses, data).
  */
 
-import { TRPCError } from "@trpc/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // ---------------------------------------------------------------------------
@@ -943,8 +942,8 @@ describe("payment router", () => {
         (c: Array<{ data: Record<string, unknown> }>) => c[0].data.status === "COMPLETED",
       );
       expect(completionCall).toBeDefined();
-      expect(completionCall![0].data).toMatchObject({ status: "COMPLETED" });
-      expect(completionCall![0].data.completedAt).toBeInstanceOf(Date);
+      expect(completionCall?.[0].data).toMatchObject({ status: "COMPLETED" });
+      expect(completionCall?.[0].data.completedAt).toBeInstanceOf(Date);
     });
   });
 });

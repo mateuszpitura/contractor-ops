@@ -309,7 +309,7 @@ export async function handleSigningCompletion(
     },
   });
 
-  if (!envelope || !envelope.externalEnvelopeId) {
+  if (!envelope?.externalEnvelopeId) {
     throw new Error(
       `Cannot handle signing completion: envelope ${envelopeId} not found or missing external ID`,
     );

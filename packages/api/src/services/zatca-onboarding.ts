@@ -17,7 +17,6 @@
 import nodeCrypto from "node:crypto";
 import type { Prisma } from "@contractor-ops/db";
 import { prisma as defaultPrisma } from "@contractor-ops/db";
-import type { PrismaClient } from "@contractor-ops/db";
 import type {
   ZatcaConnectionConfig,
   ZatcaOnboardingState,
@@ -331,7 +330,7 @@ export async function runComplianceChecks(
     secretStore.get(ZATCA_SECRET_NAMES.API_SECRET),
   ]);
 
-  if (!certificate || !apiSecret) {
+  if (!(certificate && apiSecret)) {
     throw new TRPCError({
       code: "BAD_REQUEST",
       message: "errors.zatca.complianceCsidRequired",
@@ -419,7 +418,7 @@ export async function exchangeProductionCertificate(organizationId: string): Pro
     secretStore.get(ZATCA_SECRET_NAMES.API_SECRET),
   ]);
 
-  if (!requestId || !certificate || !apiSecret) {
+  if (!(requestId && certificate && apiSecret)) {
     throw new TRPCError({
       code: "BAD_REQUEST",
       message: "errors.zatca.complianceChecksMustPass",

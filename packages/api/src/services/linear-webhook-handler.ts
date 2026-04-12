@@ -227,7 +227,7 @@ export async function processLinearWebhook(
   let stateName = config.stateCache?.[teamId]?.[newStateId]?.name;
   let stateType = config.stateCache?.[teamId]?.[newStateId]?.type;
 
-  if (!stateName || !stateType) {
+  if (!(stateName && stateType)) {
     // Not in cache -- fetch from Linear API
     try {
       const credentials = decryptCredentials(connection.credentialsRef, "linear");
@@ -368,7 +368,7 @@ export async function registerLinearWebhook(
     where: { id: connectionId },
   });
 
-  if (!connection || !["CONNECTED", "PENDING_MAPPING"].includes(connection.status)) {
+  if (!(connection && ["CONNECTED", "PENDING_MAPPING"].includes(connection.status))) {
     throw new TRPCError({
       code: "PRECONDITION_FAILED",
       message: "Linear connection is not active",

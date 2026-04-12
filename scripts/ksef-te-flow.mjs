@@ -327,7 +327,7 @@ async function authenticate(token, nip) {
 
   const referenceNumber = init.referenceNumber;
   const authToken = init.authenticationToken?.token;
-  if (!referenceNumber || !authToken) {
+  if (!(referenceNumber && authToken)) {
     throw new Error("Brak referenceNumber lub authenticationToken w odpowiedzi ksef-token");
   }
 
@@ -447,36 +447,25 @@ async function main() {
     console.error("Ustaw KSEF_TOKEN oraz KSEF_NIP (10 cyfr) w .env lub w środowisku.");
     process.exit(1);
   }
-
-  console.log("BASE_URL:", BASE_URL);
   if (DEBUG) {
     console.error("KSeF_DEBUG=1 — pełne logi HTTP na stderr (tokeny/JWT redagowane).");
   }
-  console.log(
-    "Flow: public-key-certificates → challenge → ksef-token → auth status → token/redeem → query/metadata → (download) → DELETE sessions/current\n",
-  );
 
   let accessToken;
   try {
     const session = await authenticate(TOKEN, NIP);
     accessToken = session.accessToken;
-    console.log("OK: accessToken uzyskany, ref:", session.referenceNumber);
 
     const meta = await queryInvoiceMetadata(accessToken, DATE_FROM, DATE_TO);
     const list = meta.invoices ?? [];
-    console.log("Metadane (fragment):", JSON.stringify(list.slice(0, 3), null, 2));
-    console.log("hasMore:", meta.hasMore, "isTruncated:", meta.isTruncated);
 
     const firstKsef = list[0]?.ksefNumber;
     if (firstKsef) {
-      const xml = await downloadInvoiceXml(accessToken, firstKsef);
-      console.log("\nPierwsza faktura (początek XML, max 500 znaków):\n", xml.slice(0, 500));
+      const _xml = await downloadInvoiceXml(accessToken, firstKsef);
     } else {
-      console.log("\nBrak faktur w kryteriach — pomijam download.");
     }
   } finally {
     if (accessToken) await revokeCurrentSession(accessToken);
-    console.log("\nSesja: DELETE /auth/sessions/current (jeśli był accessToken).");
   }
 }
 

@@ -1,5 +1,4 @@
 import { TRPCError } from "@trpc/server";
-import { UNAUTHORIZED } from "../errors.js";
 import { publicProcedure, t } from "../init.js";
 
 /**
@@ -7,7 +6,7 @@ import { publicProcedure, t } from "../init.js";
  * Throws UNAUTHORIZED if no valid session exists or the user is banned.
  */
 export const authMiddleware = t.middleware(async ({ ctx, next }) => {
-  if (!ctx.session || !ctx.user) {
+  if (!(ctx.session && ctx.user)) {
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
 

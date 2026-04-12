@@ -1,5 +1,3 @@
-import { HttpResponse, http } from "msw";
-import type { CapturedRequest } from "../types.js";
 import { mockId } from "../utils.js";
 
 /**

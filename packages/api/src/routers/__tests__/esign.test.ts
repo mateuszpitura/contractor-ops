@@ -267,7 +267,7 @@ describe("esign.getEnvelopeDetail", () => {
     });
 
     expect(result).toBeTruthy();
-    expect(result!.id).toBe("env-detail-1");
+    expect(result?.id).toBe("env-detail-1");
 
     // Verify org scoping in WHERE clause
     const findArgs = mockPrisma.signingEnvelope.findFirst.mock.calls[0][0];

@@ -544,7 +544,7 @@ describe("ApprovalSidePanel", () => {
     await user.type(noteTextarea, "Out of office, please review");
     // Click delegate confirm - find the button inside the delegate overlay
     const delegateBtns = screen.getAllByText("Delegate approval");
-    const confirmBtn = delegateBtns[delegateBtns.length - 1]!.closest("button");
+    const confirmBtn = delegateBtns[delegateBtns.length - 1]?.closest("button");
     await user.click(confirmBtn!);
     expect(mockMutate).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -569,7 +569,7 @@ describe("ApprovalSidePanel", () => {
     });
     // Find the confirm button in the delegate overlay
     const delegateBtns = screen.getAllByText("Delegate approval");
-    const confirmBtn = delegateBtns[delegateBtns.length - 1]!.closest("button");
+    const confirmBtn = delegateBtns[delegateBtns.length - 1]?.closest("button");
     expect(confirmBtn).toBeDisabled();
   });
 

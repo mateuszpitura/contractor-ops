@@ -126,9 +126,8 @@ export const auth = betterAuth({
         external_accountant: roles.external_accountant,
         readonly: roles.readonly,
       },
-      async sendInvitationEmail(data) {
+      async sendInvitationEmail(_data) {
         if (process.env.NODE_ENV === "development") {
-          console.log(`[DEV] Invitation email to ${data.email}: ${data.invitation.id}`);
           return;
         }
         throw new Error("Production email sending not configured — integrate Resend adapter");
@@ -137,7 +136,6 @@ export const auth = betterAuth({
     magicLink({
       sendMagicLink: async ({ email, url }) => {
         if (process.env.NODE_ENV === "development") {
-          console.log(`[DEV] Magic link for ${email}: ${url}`);
           return;
         }
         throw new Error("Production email sending not configured — integrate Resend adapter");

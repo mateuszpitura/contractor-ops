@@ -55,7 +55,7 @@ export class OutlookCalendarAdapter extends BaseAdapter {
     const clientId = process.env.OUTLOOK_CLIENT_ID;
     const clientSecret = process.env.OUTLOOK_CLIENT_SECRET;
 
-    if (!clientId || !clientSecret) {
+    if (!(clientId && clientSecret)) {
       throw new Error(
         "OUTLOOK_CLIENT_ID and OUTLOOK_CLIENT_SECRET environment variables are required",
       );
@@ -102,7 +102,7 @@ export class OutlookCalendarAdapter extends BaseAdapter {
     const clientId = process.env.OUTLOOK_CLIENT_ID;
     const clientSecret = process.env.OUTLOOK_CLIENT_SECRET;
 
-    if (!clientId || !clientSecret) {
+    if (!(clientId && clientSecret)) {
       throw new Error(
         "OUTLOOK_CLIENT_ID and OUTLOOK_CLIENT_SECRET environment variables are required",
       );

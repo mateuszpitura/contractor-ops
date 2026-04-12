@@ -49,7 +49,6 @@ import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import type {
   TaskFormValues,
@@ -250,7 +249,7 @@ interface TaskCardV2Props {
 function TaskCardV2({ index, task, form, allTasks, onRemove, dragHandleProps }: TaskCardV2Props) {
   const [expanded, setExpanded] = useState(false);
   const cfg = TASK_TYPE_MAP[task.taskType] ?? TASK_TYPE_MAP.MANUAL;
-  const Icon = cfg.icon;
+  const _Icon = cfg.icon;
 
   const { data: users } = useQuery(
     trpc.user.list.queryOptions(undefined, {

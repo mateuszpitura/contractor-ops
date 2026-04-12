@@ -18,7 +18,7 @@ export function truncateFilename(name: string, maxLen = 40): string {
   const ext = name.lastIndexOf(".");
   if (ext > 0) {
     const extension = name.slice(ext);
-    return name.slice(0, maxLen - extension.length - 3) + "..." + extension;
+    return `${name.slice(0, maxLen - extension.length - 3)}...${extension}`;
   }
-  return name.slice(0, maxLen - 3) + "...";
+  return `${name.slice(0, maxLen - 3)}...`;
 }

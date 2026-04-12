@@ -118,7 +118,7 @@ export async function createJiraIssue(
     }
   }
 
-  if (!jiraConfig?.jiraEnabled || !jiraConfig.jiraProjectId || !jiraConfig.jiraIssueTypeId) {
+  if (!(jiraConfig?.jiraEnabled && jiraConfig.jiraProjectId && jiraConfig.jiraIssueTypeId)) {
     throw new TRPCError({
       code: "BAD_REQUEST",
       message:

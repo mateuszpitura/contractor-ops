@@ -78,7 +78,7 @@ export function DateRangeFilter({ dateFrom, dateTo, onDateChange }: DateRangeFil
   };
 
   const formatDisplay = () => {
-    if (!dateFrom || !dateTo) return "";
+    if (!(dateFrom && dateTo)) return "";
     return `${format(new Date(dateFrom), "MMM d, yyyy")} - ${format(new Date(dateTo), "MMM d, yyyy")}`;
   };
 

@@ -290,7 +290,7 @@ describe("StepUpload", () => {
     // Create a mock file with known content
     const file = new File(["test,data"], "import.csv", { type: "text/csv" });
     await act(async () => {
-      await capturedOnDrop!([file]);
+      await capturedOnDrop?.([file]);
     });
     await waitFor(() => {
       expect(onFileSelected).toHaveBeenCalledWith(expect.any(String), "import.csv");
@@ -303,7 +303,7 @@ describe("StepUpload", () => {
     expect(capturedOnDrop).toBeTruthy();
 
     await act(async () => {
-      await capturedOnDrop!([]);
+      await capturedOnDrop?.([]);
     });
     expect(onFileSelected).not.toHaveBeenCalled();
   });
@@ -313,7 +313,7 @@ describe("StepUpload", () => {
     expect(capturedOnDropRejected).toBeTruthy();
 
     await act(async () => {
-      capturedOnDropRejected!([
+      capturedOnDropRejected?.([
         {
           file: new File([""], "big.csv"),
           errors: [{ code: "file-too-large", message: "Too large" }],
@@ -328,7 +328,7 @@ describe("StepUpload", () => {
     expect(capturedOnDropRejected).toBeTruthy();
 
     await act(async () => {
-      capturedOnDropRejected!([
+      capturedOnDropRejected?.([
         {
           file: new File([""], "bad.exe"),
           errors: [{ code: "file-invalid-type", message: "Invalid type" }],
@@ -343,7 +343,7 @@ describe("StepUpload", () => {
     expect(capturedOnDropRejected).toBeTruthy();
 
     await act(async () => {
-      capturedOnDropRejected!([
+      capturedOnDropRejected?.([
         {
           file: new File([""], "unknown.bin"),
           errors: [{ code: "unknown-error", message: "Something went wrong" }],
@@ -358,7 +358,7 @@ describe("StepUpload", () => {
     expect(capturedOnDropRejected).toBeTruthy();
 
     await act(async () => {
-      capturedOnDropRejected!([]);
+      capturedOnDropRejected?.([]);
     });
     // Should not crash
   });
@@ -384,7 +384,7 @@ describe("StepUpload", () => {
     } as any;
 
     await act(async () => {
-      await capturedOnDrop!([file]);
+      await capturedOnDrop?.([file]);
     });
 
     await waitFor(() => {

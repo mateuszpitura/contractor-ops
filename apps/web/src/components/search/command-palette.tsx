@@ -297,7 +297,7 @@ export function CommandPalette() {
         )}
 
         {/* ----- EMPTY QUERY: Show recent, pinned, actions, pages ----- */}
-        {!isSearching && !isLoading && (
+        {!(isSearching || isLoading) && (
           <>
             {/* Recent items */}
             {recentItems.length > 0 && (

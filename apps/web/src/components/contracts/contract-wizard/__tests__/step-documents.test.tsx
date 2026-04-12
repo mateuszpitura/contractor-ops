@@ -6,7 +6,7 @@ import { StepDocuments } from "../step-documents";
 // ---------------------------------------------------------------------------
 
 let requestUploadMock = vi.fn();
-let confirmUploadMock = vi.fn();
+let _confirmUploadMock = vi.fn();
 
 vi.mock("@tanstack/react-query", () => ({
   useMutation: () => ({
@@ -50,7 +50,7 @@ describe("StepDocuments", () => {
       documentId: "doc-1",
       uploadUrl: "https://example.com/upload",
     });
-    confirmUploadMock = vi.fn().mockResolvedValue({});
+    _confirmUploadMock = vi.fn().mockResolvedValue({});
   });
 
   it("renders drop zone area with text", () => {

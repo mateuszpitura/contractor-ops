@@ -149,5 +149,4 @@ export async function seedWhtRates(prisma: PrismaClient) {
       create: { ...rate },
     });
   }
-  console.log(`  ✓ Seeded ${whtRates.length} withholding tax rates`);
 }

@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import type { InPostShipmentParams } from "../courier-client";
 import { InPostClient } from "../inpost-client";
 

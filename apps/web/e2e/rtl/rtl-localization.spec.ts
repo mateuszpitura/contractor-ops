@@ -1,4 +1,5 @@
-import { type Page, expect, test } from "@playwright/test";
+import type { Page } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
 /**
  * RTL / Arabic localization behavioral tests — Phase 50.
@@ -28,7 +29,7 @@ async function loginAndNavigate(page: Page, targetPath: string): Promise<boolean
   const email = process.env.E2E_EMAIL;
   const password = process.env.E2E_PASSWORD;
 
-  if (!email || !password) {
+  if (!(email && password)) {
     return false;
   }
 
@@ -89,7 +90,7 @@ test.describe("L10N-02 — RTL layout rendering", () => {
     const box = await sidebar.boundingBox();
     expect(box).not.toBeNull();
     // In RTL, the sidebar's left edge should be at least in the right half
-    expect(box!.x).toBeGreaterThan(viewportWidth / 2);
+    expect(box?.x).toBeGreaterThan(viewportWidth / 2);
   });
 });
 
@@ -118,10 +119,7 @@ test.describe("L10N-03 — Bidi text isolation", () => {
   }) => {
     const didLogin = await loginAndNavigate(page, "/ar/v2");
     if (!didLogin) {
-      test.skip(
-        true,
-        "E2E_EMAIL / E2E_PASSWORD not set — skipping Bdi element presence test",
-      );
+      test.skip(true, "E2E_EMAIL / E2E_PASSWORD not set — skipping Bdi element presence test");
       return;
     }
 
@@ -144,10 +142,7 @@ test.describe("L10N-03 — Bidi text isolation", () => {
   }) => {
     const didLogin = await loginAndNavigate(page, "/ar/v2");
     if (!didLogin) {
-      test.skip(
-        true,
-        "E2E_EMAIL / E2E_PASSWORD not set — skipping Bdi attribute test",
-      );
+      test.skip(true, "E2E_EMAIL / E2E_PASSWORD not set — skipping Bdi attribute test");
       return;
     }
 
@@ -175,10 +170,7 @@ test.describe("L10N-04 — Chart axis mirroring in RTL", () => {
   test("spend chart renders in arabic locale dashboard", async ({ page }) => {
     const didLogin = await loginAndNavigate(page, "/ar/v2");
     if (!didLogin) {
-      test.skip(
-        true,
-        "E2E_EMAIL / E2E_PASSWORD not set — skipping chart RTL test",
-      );
+      test.skip(true, "E2E_EMAIL / E2E_PASSWORD not set — skipping chart RTL test");
       return;
     }
 
@@ -188,19 +180,14 @@ test.describe("L10N-04 — Chart axis mirroring in RTL", () => {
     // The spend chart renders inside a Card. It either shows the chart SVG
     // or a loading skeleton, or the empty state.
     // We verify the chart card is present regardless of data state.
-    const chartCard = page
-      .locator(".recharts-responsive-container, [class*='iridescent']")
-      .first();
+    const chartCard = page.locator(".recharts-responsive-container, [class*='iridescent']").first();
     await expect(chartCard).toBeVisible({ timeout: 30_000 });
   });
 
   test("spend chart SVG in arabic locale has rtl direction applied", async ({ page }) => {
     const didLogin = await loginAndNavigate(page, "/ar/v2");
     if (!didLogin) {
-      test.skip(
-        true,
-        "E2E_EMAIL / E2E_PASSWORD not set — skipping chart RTL direction test",
-      );
+      test.skip(true, "E2E_EMAIL / E2E_PASSWORD not set — skipping chart RTL direction test");
       return;
     }
 
@@ -242,10 +229,7 @@ test.describe("L10N-01 — Locale switcher cycles through all three locales", ()
   test("locale switcher button is present in user menu", async ({ page }) => {
     const didLogin = await loginAndNavigate(page, "/en/v2");
     if (!didLogin) {
-      test.skip(
-        true,
-        "E2E_EMAIL / E2E_PASSWORD not set — skipping locale switcher test",
-      );
+      test.skip(true, "E2E_EMAIL / E2E_PASSWORD not set — skipping locale switcher test");
       return;
     }
 
@@ -268,15 +252,10 @@ test.describe("L10N-01 — Locale switcher cycles through all three locales", ()
     expect(buttonText?.trim()).toBe("عربي");
   });
 
-  test("clicking locale switcher from english navigates to arabic locale url", async ({
-    page,
-  }) => {
+  test("clicking locale switcher from english navigates to arabic locale url", async ({ page }) => {
     const didLogin = await loginAndNavigate(page, "/en/v2");
     if (!didLogin) {
-      test.skip(
-        true,
-        "E2E_EMAIL / E2E_PASSWORD not set — skipping locale switch navigation test",
-      );
+      test.skip(true, "E2E_EMAIL / E2E_PASSWORD not set — skipping locale switch navigation test");
       return;
     }
 
@@ -303,10 +282,7 @@ test.describe("L10N-01 — Locale switcher cycles through all three locales", ()
   }) => {
     const didLogin = await loginAndNavigate(page, "/en/v2");
     if (!didLogin) {
-      test.skip(
-        true,
-        "E2E_EMAIL / E2E_PASSWORD not set — skipping locale cycle test",
-      );
+      test.skip(true, "E2E_EMAIL / E2E_PASSWORD not set — skipping locale cycle test");
       return;
     }
 

@@ -75,7 +75,7 @@ export class JiraAdapter extends BaseAdapter {
     const clientId = process.env.JIRA_CLIENT_ID;
     const clientSecret = process.env.JIRA_CLIENT_SECRET;
 
-    if (!clientId || !clientSecret) {
+    if (!(clientId && clientSecret)) {
       throw new Error("JIRA_CLIENT_ID and JIRA_CLIENT_SECRET environment variables are required");
     }
 
@@ -119,7 +119,7 @@ export class JiraAdapter extends BaseAdapter {
     const clientId = process.env.JIRA_CLIENT_ID;
     const clientSecret = process.env.JIRA_CLIENT_SECRET;
 
-    if (!clientId || !clientSecret) {
+    if (!(clientId && clientSecret)) {
       throw new Error("JIRA_CLIENT_ID and JIRA_CLIENT_SECRET environment variables are required");
     }
 

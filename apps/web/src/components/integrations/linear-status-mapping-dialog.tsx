@@ -219,7 +219,7 @@ export function LinearStatusMappingDialog({ open, onOpenChange }: LinearStatusMa
   }
 
   function handleSave() {
-    if (!selectedTeamId || !connection) return;
+    if (!(selectedTeamId && connection)) return;
     saveMutation.mutate({
       connectionId: connection.id,
       teamId: selectedTeamId,

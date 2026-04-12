@@ -100,7 +100,7 @@ export function AuditLogTab() {
     }, DEBOUNCE_MS);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [localSearch]);
+  }, [localSearch, setSearch, setAuditPage]);
 
   // Sync URL -> local on external change
   useEffect(() => {

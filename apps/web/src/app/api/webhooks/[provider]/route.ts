@@ -33,7 +33,7 @@ export async function POST(
   const adapter = getAdapter(provider);
 
   // Unknown provider or adapter doesn't support webhooks
-  if (!adapter || !adapter.supportsWebhooks) {
+  if (!adapter?.supportsWebhooks) {
     return NextResponse.json({ error: "Unknown provider" }, { status: 404 });
   }
 

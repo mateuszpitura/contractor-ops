@@ -136,7 +136,7 @@ describe("processImportFile", () => {
     const columnMapping = autoMapColumns(["legalName", "taxId", "email"], "contractor");
     const result = await processImportFile(buf, "contractor", "org_1", columnMapping);
     expect(result.duplicateRows).toHaveLength(1);
-    expect(result.duplicateRows[0]!.duplicateOf).toBe("c-existing");
+    expect(result.duplicateRows[0]?.duplicateOf).toBe("c-existing");
     expect(result.validRows).toHaveLength(0);
   });
 });

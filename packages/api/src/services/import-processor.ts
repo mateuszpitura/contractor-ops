@@ -205,7 +205,7 @@ export function validateContractRow(row: Record<string, unknown>): {
     errors.push({ field: "startDate", message: E.VALIDATION_START_DATE_REQUIRED });
   } else {
     const parsed = new Date(String(row.startDate));
-    if (isNaN(parsed.getTime())) {
+    if (Number.isNaN(parsed.getTime())) {
       errors.push({ field: "startDate", message: E.VALIDATION_DATE_INVALID });
     }
   }

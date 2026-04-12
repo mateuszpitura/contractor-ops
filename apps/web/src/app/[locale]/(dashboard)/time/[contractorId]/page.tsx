@@ -100,7 +100,7 @@ function ContractorReviewContent() {
 
   const timesheet = detailQuery.data;
 
-  if (!timesheetId || !timesheet) {
+  if (!(timesheetId && timesheet)) {
     return (
       <EmptyState
         icon={Clock}

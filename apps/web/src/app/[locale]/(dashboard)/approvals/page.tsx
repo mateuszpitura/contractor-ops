@@ -181,7 +181,7 @@ function ApprovalsContent() {
   // Clear selection when tab, status, search, or page changes
   useEffect(() => {
     setSelectedIds([]);
-  }, [tab, status, search, page]);
+  }, []);
 
   const isLoading = queueQuery.isLoading;
   const isEmpty = !isLoading && data.length === 0;
@@ -336,7 +336,10 @@ function ApprovalsLoading() {
       <Skeleton className="h-9 w-80" />
       <div className="rounded-xl border bg-background">
         {Array.from({ length: 8 }).map((_, i) => (
-          <div key={`skel-${i}`} className="flex items-center gap-4 px-4 py-3 border-b last:border-b-0">
+          <div
+            key={`skel-${i}`}
+            className="flex items-center gap-4 px-4 py-3 border-b last:border-b-0"
+          >
             <Skeleton className="h-4 w-4" />
             <Skeleton className="h-4 w-24" />
             <Skeleton className="h-4 w-32" />

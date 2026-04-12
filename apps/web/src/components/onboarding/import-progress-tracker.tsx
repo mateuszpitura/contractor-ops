@@ -126,7 +126,7 @@ export function ImportProgressTracker({ jobId }: ImportProgressTrackerProps) {
       )}
 
       {/* In-progress items indicator */}
-      {!isComplete && !isFailed && progress.completedItems < progress.totalItems && (
+      {!(isComplete || isFailed) && progress.completedItems < progress.totalItems && (
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Loader2 className="size-4 animate-spin" aria-hidden="true" />
           <span>Processing...</span>

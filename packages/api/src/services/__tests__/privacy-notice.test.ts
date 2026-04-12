@@ -83,9 +83,9 @@ describe("privacy-notice", () => {
       const result = await getPrivacyNotice(ORG_ID, "AE");
 
       expect(result).not.toBeNull();
-      expect(result!.jurisdiction).toBe("AE");
-      expect(result!.controller.name).toBe("Test Corp");
-      expect(result!.legalReference).toContain("Federal Decree-Law No. 45/2021");
+      expect(result?.jurisdiction).toBe("AE");
+      expect(result?.controller.name).toBe("Test Corp");
+      expect(result?.legalReference).toContain("Federal Decree-Law No. 45/2021");
       // Should have created default notice
       expect(mockPrisma.privacyNotice.create).toHaveBeenCalled();
     });
@@ -101,7 +101,7 @@ describe("privacy-notice", () => {
       const result = await getPrivacyNotice(ORG_ID, "AE");
 
       expect(result).not.toBeNull();
-      expect(result!.controller.name).toBe("Test Corp");
+      expect(result?.controller.name).toBe("Test Corp");
       // Should NOT create a new notice
       expect(mockPrisma.privacyNotice.create).not.toHaveBeenCalled();
     });

@@ -196,7 +196,7 @@ export class KsefApiClient {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${this.session!.jwt}`,
+          Authorization: `Bearer ${this.session?.jwt}`,
         },
         body: JSON.stringify({
           queryCriteria: {
@@ -221,7 +221,7 @@ export class KsefApiClient {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${this.session!.jwt}`,
+            Authorization: `Bearer ${this.session?.jwt}`,
           },
         },
       );
@@ -272,7 +272,7 @@ export class KsefApiClient {
       {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${this.session!.jwt}`,
+          Authorization: `Bearer ${this.session?.jwt}`,
         },
       },
     );
@@ -288,7 +288,7 @@ export class KsefApiClient {
       const authTag = encryptedBuffer.subarray(encryptedBuffer.length - 16);
       const ciphertext = encryptedBuffer.subarray(12, encryptedBuffer.length - 16);
 
-      const decipher = createDecipheriv("aes-256-gcm", this.session!.encryptionKey, iv);
+      const decipher = createDecipheriv("aes-256-gcm", this.session?.encryptionKey, iv);
       decipher.setAuthTag(authTag);
 
       const decrypted = Buffer.concat([decipher.update(ciphertext), decipher.final()]);

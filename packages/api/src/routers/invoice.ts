@@ -566,7 +566,7 @@ export const invoiceRouter = router({
               flags: matchResult.flags,
               duplicateInvoiceId: matchResult.duplicateInvoiceId,
             },
-            createdByUserId: ctx.user!.id,
+            createdByUserId: ctx.user?.id,
           },
         });
 
@@ -664,7 +664,7 @@ export const invoiceRouter = router({
             matchScore: 100,
             matchedBy: "MANUAL",
             status: "MANUALLY_CONFIRMED",
-            createdByUserId: ctx.user!.id,
+            createdByUserId: ctx.user?.id,
           },
         });
 

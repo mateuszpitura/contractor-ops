@@ -5,7 +5,7 @@ import {
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import * as E from "../../errors.js";
 import { getSigningUrl, handleSigningCompletion } from "../esign-orchestrator.js";
-import { createPresignedUploadUrl, generateStorageKey } from "../r2.js";
+import { createPresignedUploadUrl } from "../r2.js";
 
 const { mockSigningEnvelopeFindFirst, mockDocumentFindUnique, mockTx, mockTransaction } =
   vi.hoisted(() => {

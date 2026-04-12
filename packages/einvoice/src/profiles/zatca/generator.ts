@@ -67,7 +67,7 @@ function extractIssueTime(issueDate: string): string {
 /**
  * Build a UBL party structure for ZATCA.
  */
-function buildParty(party: EInvoice["supplier"], currencyCode: string) {
+function buildParty(party: EInvoice["supplier"], _currencyCode: string) {
   return {
     "cac:Party": {
       "cac:PartyIdentification": {

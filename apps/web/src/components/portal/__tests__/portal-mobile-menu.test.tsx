@@ -1,4 +1,4 @@
-import { render, screen, setup } from "@/test/test-utils";
+import { render, screen } from "@/test/test-utils";
 import { PortalMobileMenu } from "../portal-mobile-menu";
 
 vi.mock("next/navigation", () => ({

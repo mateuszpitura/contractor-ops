@@ -6,7 +6,7 @@
  */
 
 import { prisma } from "@contractor-ops/db";
-import { CacheKeys, CacheTTL, cached, cacheKey } from "./cache.js";
+import { CacheTTL, cached, cacheKey } from "./cache.js";
 
 // ---------------------------------------------------------------------------
 // Types

@@ -29,7 +29,7 @@ function renderCell(columnId: string, row: WorkflowRunRow) {
     row: { original: row, getIsSelected: () => false, toggleSelected: vi.fn() },
     getValue: () => (row as any)[columnId],
   });
-  const { container } = render(<>{result}</>);
+  const { container } = render(result);
   return container;
 }
 
@@ -114,21 +114,19 @@ describe("getColumns cell renderers (workflow runs)", () => {
       "OVERDUE",
     ]) {
       const { unmount } = render(
-        <>
-          {(() => {
-            const t = (key: string) => key;
-            const cols = getColumns(t);
-            const col = cols.find((c) => (c as any).accessorKey === "status");
-            return (col!.cell as any)({
-              row: {
-                original: makeRow({ status }),
-                getIsSelected: () => false,
-                toggleSelected: vi.fn(),
-              },
-              getValue: () => status,
-            });
-          })()}
-        </>,
+        (() => {
+          const t = (key: string) => key;
+          const cols = getColumns(t);
+          const col = cols.find((c) => (c as any).accessorKey === "status");
+          return (col?.cell as any)({
+            row: {
+              original: makeRow({ status }),
+              getIsSelected: () => false,
+              toggleSelected: vi.fn(),
+            },
+            getValue: () => status,
+          });
+        })(),
       );
       expect(screen.getByText(`runStatus.${status}`)).toBeInTheDocument();
       unmount();

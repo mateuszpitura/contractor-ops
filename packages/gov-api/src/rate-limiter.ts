@@ -27,7 +27,7 @@ export class GovApiRateLimiter {
   private initLimiter(): void {
     const url = process.env.UPSTASH_REDIS_REST_URL;
     const token = process.env.UPSTASH_REDIS_REST_TOKEN;
-    if (!url || !token) {
+    if (!(url && token)) {
       // No Redis configured — allow all requests (dev mode)
       return;
     }

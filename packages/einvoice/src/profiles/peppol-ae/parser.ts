@@ -10,7 +10,6 @@ import type {
   EInvoiceParty,
   EInvoiceTaxSubtotal,
 } from "../../types/invoice.js";
-import { UAE_SCHEME_ID } from "./constants.js";
 
 const parser = new XMLParser({
   ignoreAttributes: false,
@@ -83,7 +82,7 @@ function parseParty(partyNode: Record<string, unknown>): EInvoiceParty {
  */
 export function parsePintAeXml(xml: string, metadata?: Record<string, unknown>): EInvoice {
   const parsed = parser.parse(xml) as Record<string, unknown>;
-  const inv = (parsed.Invoice ?? parsed["Invoice"]) as Record<string, unknown>;
+  const inv = (parsed.Invoice ?? parsed.Invoice) as Record<string, unknown>;
   if (!inv) {
     throw new Error("Invalid PINT-AE XML: missing Invoice root element");
   }

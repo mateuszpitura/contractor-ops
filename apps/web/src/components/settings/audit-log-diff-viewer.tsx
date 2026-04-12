@@ -34,7 +34,7 @@ export function AuditLogDiffViewer({ oldValues, newValues }: AuditLogDiffViewerP
   const t = useTranslations("Settings.auditLog");
 
   const changedFields = useMemo(() => {
-    if (!oldValues && !newValues) return [];
+    if (!(oldValues || newValues)) return [];
 
     const allKeys = new Set<string>([
       ...Object.keys(oldValues ?? {}),
@@ -48,7 +48,7 @@ export function AuditLogDiffViewer({ oldValues, newValues }: AuditLogDiffViewerP
     });
   }, [oldValues, newValues]);
 
-  if (!oldValues && !newValues) {
+  if (!(oldValues || newValues)) {
     return <p className="p-4 text-sm text-muted-foreground">{t("noChanges")}</p>;
   }
 

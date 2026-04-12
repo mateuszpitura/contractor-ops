@@ -282,7 +282,7 @@ export function TemplatePicker({
           <Button
             onClick={() => void handleStart()}
             disabled={
-              !selectedId || startRunMutation.isPending || (!effectiveContractorId && !isBulk)
+              !selectedId || startRunMutation.isPending || !(effectiveContractorId || isBulk)
             }
           >
             {startRunMutation.isPending ? "..." : tp("start")}

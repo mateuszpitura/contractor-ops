@@ -140,7 +140,7 @@ export async function processDirectorySync(params: {
     let newHireCount = 0;
 
     for (const [email, googleUser] of googleEmailMap) {
-      if (!memberEmailSet.has(email) && !previouslySyncedEmails.has(email)) {
+      if (!(memberEmailSet.has(email) || previouslySyncedEmails.has(email))) {
         newHireCount++;
 
         if (adminUserIds.length > 0) {

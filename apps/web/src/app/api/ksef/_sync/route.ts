@@ -37,7 +37,7 @@ async function handler(request: NextRequest) {
     connectionId: string;
   };
 
-  if (!organizationId || !connectionId) {
+  if (!(organizationId && connectionId)) {
     return NextResponse.json({ error: "Missing organizationId or connectionId" }, { status: 400 });
   }
 

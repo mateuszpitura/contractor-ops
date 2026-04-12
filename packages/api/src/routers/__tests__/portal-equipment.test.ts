@@ -253,7 +253,7 @@ describe("portal.listEquipment", () => {
         status: "DELIVERED",
       },
     });
-    expect(result[0]!.latestShipment).toMatchObject({
+    expect(result[0]?.latestShipment).toMatchObject({
       direction: "OUTBOUND",
       carrier: "InPost",
       trackingNumber: "TRACK001",

@@ -2,10 +2,10 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { addDays, format, startOfISOWeek } from "date-fns";
-import { ArrowRightLeft, ClipboardList, Clock } from "lucide-react";
+import { ClipboardList, Clock } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { parseAsString, useQueryState } from "nuqs";
-import { Suspense, useCallback, useMemo, useState } from "react";
+import { Suspense, useCallback, useMemo } from "react";
 import { toast } from "sonner";
 import { AnimateIn } from "@/components/shared/animate-in";
 import { EmptyState } from "@/components/shared/empty-state";

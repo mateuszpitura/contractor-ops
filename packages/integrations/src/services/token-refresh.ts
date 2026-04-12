@@ -88,7 +88,7 @@ export async function lazyRefresh(connectionId: string): Promise<boolean> {
     where: { id: connectionId },
   });
 
-  if (!conn || !conn.tokenExpiresAt) return false;
+  if (!conn?.tokenExpiresAt) return false;
   if (conn.tokenExpiresAt > new Date()) return false; // not expired yet
 
   // Check lock — skip if another process is currently refreshing

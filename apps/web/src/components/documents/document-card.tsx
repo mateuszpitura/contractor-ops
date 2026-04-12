@@ -17,7 +17,6 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { trpc } from "@/trpc/init";
 import { PdfPreview } from "./pdf-preview";
 import { VersionHistory } from "./version-history";
 

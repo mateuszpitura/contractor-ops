@@ -121,7 +121,7 @@ export function parseCsvStatement(content: string): ParsedTransaction[] {
     const normalizedAmount = rawAmount.replace(/\s/g, "").replace(",", ".");
     const amount = Math.round(Math.abs(parseFloat(normalizedAmount)) * 100);
 
-    if (isNaN(amount) || amount === 0) continue;
+    if (Number.isNaN(amount) || amount === 0) continue;
 
     const iban = ibanIdx >= 0 ? cells[ibanIdx]?.replace(/["'\s]/g, "").trim() : undefined;
     const dateStr = dateIdx >= 0 ? cells[dateIdx]?.replace(/["']/g, "").trim() : undefined;

@@ -193,7 +193,7 @@ describe("ConfluenceAdapter", () => {
       siteName: "My Site",
       siteUrl: "https://mysite.atlassian.net",
     });
-    expect(fetchMock.mock.calls[0]![0]).toBe(
+    expect(fetchMock.mock.calls[0]?.[0]).toBe(
       "https://api.atlassian.com/oauth/token/accessible-resources",
     );
   });
@@ -247,7 +247,7 @@ describe("ConfluenceAdapter", () => {
 
     const rows = await adapter.searchPages("tok", "cloud-uuid", "Runbook");
 
-    const url = fetchMock.mock.calls[0]![0] as string;
+    const url = fetchMock.mock.calls[0]?.[0] as string;
     expect(url).toContain("/ex/confluence/cloud-uuid/");
     expect(url).toContain(encodeURIComponent('type=page AND title~"Runbook"'));
 

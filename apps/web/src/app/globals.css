@@ -854,8 +854,8 @@ html.theme-transition *::after {
     background-color 0.3s ease,
     border-color 0.3s ease,
     color 0.15s ease,
-    box-shadow 0.3s ease !important;
-  transition-delay: 0s !important;
+    box-shadow 0.3s ease;
+  transition-delay: 0s;
 }
 
 /* ─── Sidebar Active Indicator ───────────────────────────────────────── */
@@ -1059,16 +1059,16 @@ html.theme-transition *::after {
 
 /* Dramatic teal glow on input focus — replaces default ring */
 [data-slot="input"]:focus-visible {
-  border-color: var(--ring) !important;
+  border-color: var(--ring);
   box-shadow:
     0 0 0 3px color-mix(in oklch, var(--ring) 15%, transparent),
-    0 0 20px color-mix(in oklch, var(--ring) 10%, transparent) !important;
+    0 0 20px color-mix(in oklch, var(--ring) 10%, transparent);
 }
 
 .dark [data-slot="input"]:focus-visible {
   box-shadow:
     0 0 0 3px color-mix(in oklch, var(--ring) 20%, transparent),
-    0 0 25px color-mix(in oklch, var(--ring) 12%, transparent) !important;
+    0 0 25px color-mix(in oklch, var(--ring) 12%, transparent);
 }
 
 /* ─── Primary Button — Gradient & Shimmer ──────────────────────────── */
@@ -1157,13 +1157,13 @@ html.theme-transition *::after {
 /* ─── Command Palette Glass ────────────────────────────────────────── */
 
 [data-slot="command"] {
-  background: color-mix(in oklch, var(--popover) 85%, transparent) !important;
+  background: color-mix(in oklch, var(--popover) 85%, transparent);
   backdrop-filter: blur(32px) saturate(1.5);
   -webkit-backdrop-filter: blur(32px) saturate(1.5);
 }
 
 .dark [data-slot="command"] {
-  background: color-mix(in oklch, var(--popover) 70%, transparent) !important;
+  background: color-mix(in oklch, var(--popover) 70%, transparent);
   backdrop-filter: blur(40px) saturate(1.8);
   -webkit-backdrop-filter: blur(40px) saturate(1.8);
 }
@@ -1174,7 +1174,7 @@ html.theme-transition *::after {
     135deg,
     color-mix(in oklch, var(--primary) 8%, var(--muted)),
     var(--muted)
-  ) !important;
+  );
 }
 
 /* ─── Org Switcher Logo — Animated Gradient ────────────────────────── */
@@ -1246,8 +1246,8 @@ html.theme-transition *::after {
     oklch(0.55 0.15 178),
     oklch(0.6 0.18 260),
     oklch(0.55 0.15 178)
-  ) !important;
-  background-size: 200% 100% !important;
+  );
+  background-size: 200% 100%;
   animation: gradient-flow 4s ease-in-out infinite;
 }
 
@@ -1656,26 +1656,26 @@ table th {
   *,
   *::before,
   *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
+    animation-duration: 0.01ms;
+    animation-iteration-count: 1;
+    transition-duration: 0.01ms;
+    scroll-behavior: auto;
   }
 
   .animate-shimmer {
-    animation: none !important;
-    background: var(--muted) !important;
+    animation: none;
+    background: var(--muted);
   }
 
   .animate-fade-up {
-    animation: none !important;
-    opacity: 1 !important;
-    transform: none !important;
+    animation: none;
+    opacity: 1;
+    transform: none;
   }
 
   .card-interactive:hover,
   .neon-card:hover {
-    transform: none !important;
+    transform: none;
   }
 
   .aurora-bg::before,
@@ -1686,20 +1686,20 @@ table th {
   .step-current-ring,
   .org-logo-gradient,
   [data-slot="progress-indicator"] {
-    animation: none !important;
+    animation: none;
   }
 
   .gradient-text {
-    animation: none !important;
-    -webkit-text-fill-color: var(--foreground) !important;
+    animation: none;
+    -webkit-text-fill-color: var(--foreground);
   }
 
   .hero-metric-glow {
-    text-shadow: none !important;
+    text-shadow: none;
   }
 
   .btn-shimmer::after {
-    display: none !important;
+    display: none;
   }
 }
 
@@ -1710,15 +1710,15 @@ table th {
   .glass-subtle,
   .glass-medium,
   .glass-heavy {
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    background: var(--surface-1) !important;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: var(--surface-1);
   }
 
   .glass-surface {
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    background: var(--surface-1) !important;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: var(--surface-1);
   }
 }
 

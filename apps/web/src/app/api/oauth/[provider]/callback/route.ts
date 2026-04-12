@@ -32,13 +32,13 @@ export async function GET(
     const code = searchParams.get("code");
     const stateParam = searchParams.get("state");
 
-    if (!code || !stateParam) {
+    if (!(code && stateParam)) {
       return NextResponse.redirect(settingsUrl("error"));
     }
 
     // Look up the adapter for this provider
     const adapter = getAdapter(provider);
-    if (!adapter?.supportsOAuth || !adapter.exchangeCodeForTokens || !adapter.getOAuthConfig) {
+    if (!(adapter?.supportsOAuth && adapter.exchangeCodeForTokens && adapter.getOAuthConfig)) {
       console.error(`[oauth/${provider}] No OAuth adapter registered`);
       return NextResponse.redirect(settingsUrl("error"));
     }

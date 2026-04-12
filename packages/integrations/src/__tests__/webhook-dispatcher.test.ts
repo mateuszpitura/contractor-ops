@@ -28,7 +28,6 @@ vi.mock("../services/qstash-client.js", () => ({
 // ---------------------------------------------------------------------------
 
 import { prisma } from "@contractor-ops/db";
-import type { Client } from "@upstash/qstash";
 import { getAdapter } from "../registry.js";
 import { getQStashClient } from "../services/qstash-client.js";
 import {

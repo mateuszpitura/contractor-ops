@@ -316,10 +316,10 @@ describe("onboardingImport", () => {
     const merged = mergeByEmail(people, new Set());
 
     expect(merged).toHaveLength(1);
-    expect(merged[0]!.status).toBe("conflict");
-    expect(merged[0]!.conflicts).toBeDefined();
-    expect(merged[0]!.conflicts![0]!.field).toBe("name");
-    expect(merged[0]!.conflicts![0]!.values).toHaveLength(2);
+    expect(merged[0]?.status).toBe("conflict");
+    expect(merged[0]?.conflicts).toBeDefined();
+    expect(merged[0]?.conflicts?.[0]?.field).toBe("name");
+    expect(merged[0]?.conflicts?.[0]?.values).toHaveLength(2);
   });
 
   it("fetchPeople marks person as 'exists' when email matches existing org member", async () => {
@@ -350,7 +350,7 @@ describe("onboardingImport", () => {
     // Verify mergeByEmail correctly processes only real users
     const merged = mergeByEmail(people, new Set());
     expect(merged).toHaveLength(1);
-    expect(merged[0]!.email).toBe("real@example.com");
+    expect(merged[0]?.email).toBe("real@example.com");
 
     // The actual bot filtering happens in fetchUsersFromSource (Slack branch).
     // We verify the service filters correctly by testing the router endpoint
@@ -428,7 +428,7 @@ describe("onboardingImport", () => {
 
     // Only the real user should be returned
     expect(result).toHaveLength(1);
-    expect(result[0]!.email).toBe("real@example.com");
+    expect(result[0]?.email).toBe("real@example.com");
   });
 
   // -------------------------------------------------------------------------
@@ -499,15 +499,15 @@ describe("onboardingImport", () => {
 
     const jiraProject = result.find((p: { sourceProvider: string }) => p.sourceProvider === "JIRA");
     expect(jiraProject).toBeDefined();
-    expect(jiraProject!.name).toBe("Project Alpha");
-    expect(jiraProject!.statuses.length).toBeGreaterThanOrEqual(1);
+    expect(jiraProject?.name).toBe("Project Alpha");
+    expect(jiraProject?.statuses.length).toBeGreaterThanOrEqual(1);
 
     const linearTeam = result.find(
       (p: { sourceProvider: string }) => p.sourceProvider === "LINEAR",
     );
     expect(linearTeam).toBeDefined();
-    expect(linearTeam!.name).toBe("Engineering");
-    expect(linearTeam!.statuses.length).toBeGreaterThanOrEqual(1);
+    expect(linearTeam?.name).toBe("Engineering");
+    expect(linearTeam?.statuses.length).toBeGreaterThanOrEqual(1);
   });
 
   // -------------------------------------------------------------------------
@@ -693,9 +693,9 @@ describe("onboardingImport", () => {
       const merged = mergeByEmail(people, new Set());
 
       expect(merged).toHaveLength(1);
-      expect(merged[0]!.email).toBe("alice@example.com");
-      expect(merged[0]!.sources).toHaveLength(2);
-      expect(merged[0]!.status).toBe("new");
+      expect(merged[0]?.email).toBe("alice@example.com");
+      expect(merged[0]?.sources).toHaveLength(2);
+      expect(merged[0]?.status).toBe("new");
     });
 
     it("sorts by status priority: conflicts first, then new, then exists", () => {
@@ -709,9 +709,9 @@ describe("onboardingImport", () => {
       const existingEmails = new Set(["existing@example.com"]);
       const merged = mergeByEmail(people, existingEmails);
 
-      expect(merged[0]!.status).toBe("conflict");
-      expect(merged[1]!.status).toBe("new");
-      expect(merged[2]!.status).toBe("exists");
+      expect(merged[0]?.status).toBe("conflict");
+      expect(merged[1]?.status).toBe("new");
+      expect(merged[2]?.status).toBe("exists");
     });
   });
 

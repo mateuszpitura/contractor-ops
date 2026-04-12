@@ -32,7 +32,7 @@ function createMockDb() {
 
 describe("verifyInPostSignature", () => {
   it("returns true for valid HMAC-SHA256 signature", () => {
-    const crypto = require("crypto");
+    const crypto = require("node:crypto");
     const secret = "test-secret-123";
     const rawBody = '{"shipment_id":"12345","status":"delivered"}';
     const expectedSignature = crypto.createHmac("sha256", secret).update(rawBody).digest("hex");

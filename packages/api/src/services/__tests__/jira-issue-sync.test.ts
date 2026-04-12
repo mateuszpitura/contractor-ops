@@ -1,4 +1,3 @@
-import { TRPCError } from "@trpc/server";
 import { afterAll, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   createJiraIssue,
@@ -173,7 +172,7 @@ describe("jira-issue-sync", () => {
         }),
       );
 
-      const body = JSON.parse(mockFetch.mock.calls[0][1]!.body as string);
+      const body = JSON.parse(mockFetch.mock.calls[0][1]?.body as string);
       expect(body.fields.description).toEqual({
         type: "doc",
         version: 1,
@@ -295,7 +294,7 @@ describe("jira-issue-sync", () => {
 
       await createJiraIssue(prisma, ORG_ID, CONNECTION_ID, TASK_RUN_ID);
 
-      const body = JSON.parse(mockFetch.mock.calls[0][1]!.body as string);
+      const body = JSON.parse(mockFetch.mock.calls[0][1]?.body as string);
       expect(body.fields.project).toEqual({ id: "20000" });
       expect(body.fields.issuetype).toEqual({ id: "20001" });
     });
@@ -431,7 +430,7 @@ describe("jira-issue-sync", () => {
         (call: any) => call[0].data.syncType === "issue-transition",
       );
       expect(transitionLog).toBeDefined();
-      expect(transitionLog![0].data).toMatchObject({
+      expect(transitionLog?.[0].data).toMatchObject({
         direction: "OUTBOUND",
         syncType: "issue-transition",
         entityType: "WORKFLOW_TASK_RUN",
@@ -447,7 +446,7 @@ describe("jira-issue-sync", () => {
       await transitionJiraIssue(prisma, ORG_ID, CONNECTION_ID, TASK_RUN_ID, "IN_PROGRESS");
 
       // The second externalLink.update (after fetch) should have the new status
-      const lastUpdateCall = prisma.externalLink.update.mock.calls.at(-1)![0];
+      const lastUpdateCall = prisma.externalLink.update.mock.calls.at(-1)?.[0];
       expect(lastUpdateCall.data.metadataJson).toMatchObject({
         status: "In Progress",
         statusCategory: "indeterminate",

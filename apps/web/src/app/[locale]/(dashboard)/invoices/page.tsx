@@ -14,7 +14,6 @@ import { StatusChipBar } from "@/components/invoices/status-chip-bar";
 import { AnimateIn } from "@/components/shared/animate-in";
 import { EmptyState } from "@/components/shared/empty-state";
 import { PageHeader } from "@/components/shared/page-header";
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { trpc } from "@/trpc/init";
 
@@ -173,7 +172,10 @@ function InvoicesLoading() {
         </div>
         <div className="rounded-xl border bg-background">
           {Array.from({ length: 8 }).map((_, i) => (
-            <div key={`skel-${i}`} className="flex items-center gap-4 px-4 py-3 border-b last:border-b-0">
+            <div
+              key={`skel-${i}`}
+              className="flex items-center gap-4 px-4 py-3 border-b last:border-b-0"
+            >
               <Skeleton className="h-4 w-4" />
               <Skeleton className="h-4 w-28" />
               <Skeleton className="h-4 w-32" />

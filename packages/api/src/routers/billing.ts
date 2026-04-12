@@ -268,7 +268,7 @@ export const billingRouter = router({
   syncSeatCount: adminProcedure.mutation(async ({ ctx }) => {
     const sub = await getSubscription(ctx.organizationId);
 
-    if (!sub || !sub.stripeSubscriptionItemId) {
+    if (!sub?.stripeSubscriptionItemId) {
       throw new TRPCError({
         code: "NOT_FOUND",
         message: "No active subscription with a subscription item found",

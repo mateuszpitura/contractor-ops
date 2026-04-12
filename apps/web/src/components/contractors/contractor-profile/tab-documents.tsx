@@ -1,11 +1,10 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { Files, Upload } from "lucide-react";
+import { Files } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { DocumentCard } from "@/components/documents/document-card";
 import { DropZone } from "@/components/documents/drop-zone";
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { trpc } from "@/trpc/init";
 

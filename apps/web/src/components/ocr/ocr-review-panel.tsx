@@ -1,8 +1,8 @@
 "use client";
 
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -33,11 +33,7 @@ const PdfViewer = dynamic(
   { ssr: false },
 );
 
-import type {
-  OcrExtractionField,
-  OcrExtractionResult,
-  OcrLineItem,
-} from "@contractor-ops/integrations/types/ocr";
+import type { OcrExtractionResult, OcrLineItem } from "@contractor-ops/integrations/types/ocr";
 import { ConfidenceFieldWrapper } from "@/components/ocr/confidence-field-wrapper";
 import { ExtractionStatusBar } from "@/components/ocr/extraction-status-bar";
 import { LineItemsTable } from "@/components/ocr/line-items-table";
@@ -111,7 +107,7 @@ function getNumericFieldMinor(
   const field = fields?.[key];
   if (!field || field.value == null) return 0;
   const num = typeof field.value === "number" ? field.value : parseFloat(field.value);
-  return isNaN(num) ? 0 : num;
+  return Number.isNaN(num) ? 0 : num;
 }
 
 function formatMinorUnits(minor: number): string {
@@ -121,7 +117,7 @@ function formatMinorUnits(minor: number): string {
 
 function parseMinorUnits(display: string): number {
   const value = parseFloat(display);
-  if (isNaN(value)) return 0;
+  if (Number.isNaN(value)) return 0;
   return Math.round(value * 100);
 }
 

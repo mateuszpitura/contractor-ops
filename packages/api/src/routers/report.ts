@@ -14,7 +14,7 @@ import {
 // Helpers
 // ---------------------------------------------------------------------------
 
-function plain<T>(data: T): T {
+function _plain<T>(data: T): T {
   return JSON.parse(JSON.stringify(data)) as T;
 }
 
@@ -256,8 +256,8 @@ export const reportRouter = router({
           contractTitle: c.title,
           contractorId: c.contractor.id,
           contractorName: c.contractor.legalName,
-          endDate: c.endDate!.toISOString(),
-          daysRemaining: Math.ceil((c.endDate!.getTime() - now.getTime()) / msPerDay),
+          endDate: c.endDate?.toISOString(),
+          daysRemaining: Math.ceil((c.endDate?.getTime() - now.getTime()) / msPerDay),
           status: c.status,
         })),
         totalCount,
@@ -746,8 +746,8 @@ export const reportRouter = router({
         contracts.map((c) => ({
           contractTitle: c.title,
           contractorName: c.contractor.legalName,
-          endDate: c.endDate!.toISOString().slice(0, 10),
-          daysRemaining: Math.ceil((c.endDate!.getTime() - now.getTime()) / msPerDay),
+          endDate: c.endDate?.toISOString().slice(0, 10),
+          daysRemaining: Math.ceil((c.endDate?.getTime() - now.getTime()) / msPerDay),
           status: c.status,
         })),
       );

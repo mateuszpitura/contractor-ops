@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -191,7 +190,7 @@ export function CarrierShipmentForm({
   });
 
   const handleSubmit = useCallback(() => {
-    if (!selectedCarrier || !isFormValid) return;
+    if (!(selectedCarrier && isFormValid)) return;
 
     switch (selectedCarrier) {
       case "inpost":

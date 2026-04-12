@@ -78,7 +78,8 @@ const wizardSchema = z.object({
     .transform((v) => (v === "" ? undefined : v))
     .pipe(z.string().optional()),
   paymentTermsDays: z.preprocess(
-    (v) => (v === "" || v === undefined || (typeof v === "number" && isNaN(v)) ? undefined : v),
+    (v) =>
+      v === "" || v === undefined || (typeof v === "number" && Number.isNaN(v)) ? undefined : v,
     z.number().int().positive().optional(),
   ),
   ownerUserId: z.string().min(1, "Owner is required"),

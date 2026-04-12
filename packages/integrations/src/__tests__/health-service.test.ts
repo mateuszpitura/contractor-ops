@@ -108,9 +108,9 @@ describe("health-service", () => {
       expect(result.provider).toBe("slack");
       expect(result.displayName).toBe("Test Workspace");
       expect(result.recentSyncs).toHaveLength(1);
-      expect(result.recentSyncs[0]!.syncType).toBe("FULL");
+      expect(result.recentSyncs[0]?.syncType).toBe("FULL");
       expect(result.recentWebhooks).toHaveLength(1);
-      expect(result.recentWebhooks[0]!.eventType).toBe("message.created");
+      expect(result.recentWebhooks[0]?.eventType).toBe("message.created");
       expect(result.errorCountLast24h).toBe(0);
     });
 
@@ -137,7 +137,7 @@ describe("health-service", () => {
       expect(result.errorCountLast24h).toBe(3);
 
       // Verify the count query filters by FAILED status and 24h window
-      const countCall = mockCount.mock.calls[0]![0] as {
+      const countCall = mockCount.mock.calls[0]?.[0] as {
         where: { status: string; startedAt: { gte: Date } };
       };
       expect(countCall.where.status).toBe("FAILED");
@@ -157,10 +157,10 @@ describe("health-service", () => {
       const results = await getAllProviderHealth("org-1");
 
       expect(results).toHaveLength(2);
-      expect(results[0]!.provider).toBe("slack");
-      expect(results[0]!.status).toBe("DISCONNECTED");
-      expect(results[1]!.provider).toBe("resend");
-      expect(results[1]!.status).toBe("DISCONNECTED");
+      expect(results[0]?.provider).toBe("slack");
+      expect(results[0]?.status).toBe("DISCONNECTED");
+      expect(results[1]?.provider).toBe("resend");
+      expect(results[1]?.status).toBe("DISCONNECTED");
     });
   });
 });

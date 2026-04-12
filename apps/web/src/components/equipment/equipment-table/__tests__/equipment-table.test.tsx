@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { render, screen, setup, waitFor } from "@/test/test-utils";
+import { render, screen, setup } from "@/test/test-utils";
 import { EquipmentTable } from "../equipment-table";
 
 vi.mock("@/i18n/navigation", () => ({

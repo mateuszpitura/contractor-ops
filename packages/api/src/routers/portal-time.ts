@@ -8,7 +8,6 @@ import {
   syncExternalEntriesSchema,
 } from "@contractor-ops/validators";
 import { TRPCError } from "@trpc/server";
-import { z } from "zod";
 import { router } from "../init.js";
 import { portalProcedure } from "../middleware/portal-auth.js";
 import { syncClockifyEntries } from "../services/clockify-sync.js";
@@ -32,7 +31,7 @@ function plain<T>(data: T): T {
  * Returns the ISO Monday for a given date string (YYYY-MM-DD).
  */
 function getISOMonday(dateStr: string): Date {
-  const d = new Date(dateStr + "T00:00:00Z");
+  const d = new Date(`${dateStr}T00:00:00Z`);
   const day = d.getUTCDay(); // 0=Sun, 1=Mon, ..., 6=Sat
   const diff = day === 0 ? -6 : 1 - day;
   d.setUTCDate(d.getUTCDate() + diff);
@@ -57,7 +56,7 @@ export const portalTimeRouter = router({
   // getTimesheet — fetch or create timesheet for a given week
   // -------------------------------------------------------------------------
   getTimesheet: portalProcedure.input(getTimesheetSchema).query(async ({ ctx, input }) => {
-    const weekStart = new Date(input.weekStartDate + "T00:00:00Z");
+    const weekStart = new Date(`${input.weekStartDate}T00:00:00Z`);
 
     const timesheet = await getOrCreateTimesheet(
       prisma,
@@ -186,13 +185,13 @@ export const portalTimeRouter = router({
     if (input.from) {
       where.weekStartDate = {
         ...(where.weekStartDate as Record<string, unknown> | undefined),
-        gte: new Date(input.from + "T00:00:00Z"),
+        gte: new Date(`${input.from}T00:00:00Z`),
       };
     }
     if (input.to) {
       where.weekStartDate = {
         ...(where.weekStartDate as Record<string, unknown> | undefined),
-        lte: new Date(input.to + "T00:00:00Z"),
+        lte: new Date(`${input.to}T00:00:00Z`),
       };
     }
     if (input.cursor) {

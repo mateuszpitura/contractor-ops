@@ -1,4 +1,4 @@
-import { render, screen } from "@/test/test-utils";
+import { render } from "@/test/test-utils";
 import { TabEquipment } from "../tab-equipment";
 
 const mockUseQuery = vi.fn(() => ({

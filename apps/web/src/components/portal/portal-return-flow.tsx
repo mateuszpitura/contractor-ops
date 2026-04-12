@@ -101,7 +101,7 @@ export function PortalReturnFlow({
       }
       onOpenChange(v);
     },
-    [onOpenChange, returnRequest],
+    [onOpenChange, getInitialStep],
   );
 
   // -------------------------------------------------------------------------

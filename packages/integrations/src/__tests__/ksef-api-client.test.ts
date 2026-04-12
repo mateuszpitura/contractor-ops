@@ -86,10 +86,10 @@ describe("KsefApiClient", () => {
 
       // Verify correct endpoints were called
       const calls = fetchMock.mock.calls;
-      expect(calls[0]![0]).toContain("/auth/public-key");
-      expect(calls[1]![0]).toContain("/auth/challenge");
-      expect(calls[2]![0]).toContain("/auth/token/redeem");
-      expect(calls[3]![0]).toContain("/auth/KSEF-REF-SESSION-001");
+      expect(calls[0]?.[0]).toContain("/auth/public-key");
+      expect(calls[1]?.[0]).toContain("/auth/challenge");
+      expect(calls[2]?.[0]).toContain("/auth/token/redeem");
+      expect(calls[3]?.[0]).toContain("/auth/KSEF-REF-SESSION-001");
     });
 
     it("throws on invalid credentials", async () => {
@@ -134,7 +134,7 @@ describe("KsefApiClient", () => {
       const result = await client.queryInvoices("5261040828", "2026-03-01", "2026-03-31");
 
       expect(result.invoiceMetadataList).toHaveLength(1);
-      expect(result.invoiceMetadataList[0]!.ksefReferenceNumber).toBe("KSEF-INV-001");
+      expect(result.invoiceMetadataList[0]?.ksefReferenceNumber).toBe("KSEF-INV-001");
       expect(result.hasMore).toBe(false);
     });
 

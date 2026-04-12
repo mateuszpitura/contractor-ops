@@ -9,15 +9,13 @@
 // responses before storing.
 // ---------------------------------------------------------------------------
 
-import {
-  GovApiClient,
-  GovApiAuditLogger,
-} from "@contractor-ops/gov-api";
 import type {
   GovApiAuditEntry,
+  GovApiAuditLogger,
   GovApiConfig,
   GovApiEnvironment,
 } from "@contractor-ops/gov-api";
+import { GovApiClient } from "@contractor-ops/gov-api";
 
 // ---------------------------------------------------------------------------
 // URLs
@@ -128,8 +126,7 @@ export class ZatcaApiClient extends GovApiClient {
   constructor(config: ZatcaApiClientConfig) {
     const govConfig = config.govConfig ?? DEFAULT_ZATCA_CONFIG;
     const env: GovApiEnvironment =
-      config.govEnvironment ??
-      (config.baseUrl === ZATCA_SANDBOX_URL ? "sandbox" : "production");
+      config.govEnvironment ?? (config.baseUrl === ZATCA_SANDBOX_URL ? "sandbox" : "production");
     super(govConfig, env);
 
     // Per ZATCA spec: Basic auth with Base64({binarySecurityToken}:{secret})
@@ -169,11 +166,7 @@ export class ZatcaApiClient extends GovApiClient {
     payload: ZatcaSubmissionPayload,
     organizationId?: string,
   ): Promise<ZatcaClearanceResponse> {
-    return this.post<ZatcaClearanceResponse>(
-      "/invoices/clearance/single",
-      payload,
-      organizationId,
-    );
+    return this.post<ZatcaClearanceResponse>("/invoices/clearance/single", payload, organizationId);
   }
 
   /**
@@ -184,11 +177,7 @@ export class ZatcaApiClient extends GovApiClient {
     payload: ZatcaSubmissionPayload,
     organizationId?: string,
   ): Promise<ZatcaReportingResponse> {
-    return this.post<ZatcaReportingResponse>(
-      "/invoices/reporting/single",
-      payload,
-      organizationId,
-    );
+    return this.post<ZatcaReportingResponse>("/invoices/reporting/single", payload, organizationId);
   }
 
   // -------------------------------------------------------------------------

@@ -9,7 +9,6 @@ import { requireTier } from "../middleware/tier.js";
 import {
   getExtractionByDocument,
   getExtractionResult,
-  processOcrExtraction,
   triggerOcrExtraction,
 } from "../services/ocr-extraction.js";
 

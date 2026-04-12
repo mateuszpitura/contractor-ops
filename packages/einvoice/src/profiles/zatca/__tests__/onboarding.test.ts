@@ -4,7 +4,6 @@
 
 import crypto from "node:crypto";
 import { describe, expect, it } from "vitest";
-import type { EInvoice } from "../../../types/invoice.js";
 import { buildComplianceTestInvoices, generateZatcaCsr } from "../onboarding.js";
 import type { ZatcaCsrAttributes, ZatcaTaxDetails } from "../schemas.js";
 
@@ -169,9 +168,9 @@ describe("onboarding", () => {
         expect(inv.taxInclusiveAmount).toBe(11500);
         expect(inv.payableAmount).toBe(11500);
         expect(inv.lines).toHaveLength(1);
-        expect(inv.lines[0]!.netAmountMinor).toBe(10000);
+        expect(inv.lines[0]?.netAmountMinor).toBe(10000);
         expect(inv.taxBreakdown).toHaveLength(1);
-        expect(inv.taxBreakdown[0]!.taxAmountMinor).toBe(1500);
+        expect(inv.taxBreakdown[0]?.taxAmountMinor).toBe(1500);
       }
     });
   });

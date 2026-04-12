@@ -204,13 +204,12 @@ export function TeamsChannelMappingCard() {
           )}
 
           {/* Empty state */}
-          {!isLoadingChannels && !isChannelError && selectedTeamId && channels.length === 0 && (
+          {!(isLoadingChannels || isChannelError) && selectedTeamId && channels.length === 0 && (
             <p className="text-sm text-muted-foreground">{t("noChannels")}</p>
           )}
 
           {/* Channel mapping rows */}
-          {!isLoadingChannels &&
-            !isChannelError &&
+          {!(isLoadingChannels || isChannelError) &&
             channels.length > 0 &&
             NOTIFICATION_CATEGORIES.map((category) => (
               <div
@@ -242,7 +241,7 @@ export function TeamsChannelMappingCard() {
             ))}
 
           {/* Save button */}
-          {!isLoadingChannels && !isChannelError && channels.length > 0 && (
+          {!(isLoadingChannels || isChannelError) && channels.length > 0 && (
             <div className="flex justify-end pt-2">
               <Button onClick={handleSave} disabled={saveMutation.isPending}>
                 {saveMutation.isPending && <Loader2 className="me-1.5 size-3.5 animate-spin" />}

@@ -59,7 +59,7 @@ export class ConfluenceAdapter extends BaseAdapter {
     const clientId = process.env.CONFLUENCE_CLIENT_ID;
     const clientSecret = process.env.CONFLUENCE_CLIENT_SECRET;
 
-    if (!clientId || !clientSecret) {
+    if (!(clientId && clientSecret)) {
       throw new Error(
         "CONFLUENCE_CLIENT_ID and CONFLUENCE_CLIENT_SECRET environment variables are required",
       );
@@ -105,7 +105,7 @@ export class ConfluenceAdapter extends BaseAdapter {
     const clientId = process.env.CONFLUENCE_CLIENT_ID;
     const clientSecret = process.env.CONFLUENCE_CLIENT_SECRET;
 
-    if (!clientId || !clientSecret) {
+    if (!(clientId && clientSecret)) {
       throw new Error(
         "CONFLUENCE_CLIENT_ID and CONFLUENCE_CLIENT_SECRET environment variables are required",
       );

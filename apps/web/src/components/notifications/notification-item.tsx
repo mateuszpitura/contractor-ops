@@ -88,7 +88,7 @@ const DEFAULT_STYLE: TypeStyle = {
 // ---------------------------------------------------------------------------
 
 export function getEntityUrl(entityType: string | null, entityId: string | null): string {
-  if (!entityType || !entityId) return "/notifications";
+  if (!(entityType && entityId)) return "/notifications";
 
   const routes: Record<string, string> = {
     INVOICE: `/invoices/${entityId}`,

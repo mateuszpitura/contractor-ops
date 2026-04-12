@@ -12,12 +12,12 @@ import { TaskOverdueEmail } from "../emails/task-overdue.js";
 // ---------------------------------------------------------------------------
 
 export const EMAIL_SUBJECT_KEYS = {
-  approvalRequest: 'email.subject.approvalRequest',
-  approvalDecision: 'email.subject.approvalDecision',
-  taskAssigned: 'email.subject.taskAssigned',
-  taskOverdue: 'email.subject.taskOverdue',
-  contractExpiring: 'email.subject.contractExpiring',
-  invoiceReceived: 'email.subject.invoiceReceived',
+  approvalRequest: "email.subject.approvalRequest",
+  approvalDecision: "email.subject.approvalDecision",
+  taskAssigned: "email.subject.taskAssigned",
+  taskOverdue: "email.subject.taskOverdue",
+  contractExpiring: "email.subject.contractExpiring",
+  invoiceReceived: "email.subject.invoiceReceived",
 } as const;
 
 // ---------------------------------------------------------------------------
@@ -96,7 +96,7 @@ export function renderNotificationEmail(
   const Component = TEMPLATE_MAP[type];
   const getSubject = SUBJECT_LINES[type];
 
-  if (!Component || !getSubject) {
+  if (!(Component && getSubject)) {
     throw new Error(`Unknown notification type: ${type}`);
   }
 

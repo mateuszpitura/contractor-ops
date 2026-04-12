@@ -99,8 +99,6 @@ vi.mock("../../services/cache.js", () => ({
 
 vi.mock("@contractor-ops/einvoice", () => ({
   KsefApiClient: class KsefApiClientMock {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    constructor(_environment: string) {}
     verifyCredentials = mockKsefVerifyCredentials;
   },
   ksefConnectionConfigSchema: { parse: vi.fn((x: unknown) => x) },

@@ -15,7 +15,6 @@
  *    and that cross-org mutations are rejected with NOT_FOUND.
  */
 
-import { TRPCError } from "@trpc/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // ---------------------------------------------------------------------------
@@ -34,8 +33,8 @@ const DOCUMENT_A_ID = "document-a-001";
 const DOCUMENT_B_ID = "document-b-001";
 const APPROVAL_STEP_A_ID = "step-a-001";
 const APPROVAL_STEP_B_ID = "step-b-001";
-const APPROVAL_FLOW_A_ID = "flow-a-001";
-const APPROVAL_FLOW_B_ID = "flow-b-001";
+const _APPROVAL_FLOW_A_ID = "flow-a-001";
+const _APPROVAL_FLOW_B_ID = "flow-b-001";
 const APPROVAL_CHAIN_A_ID = "chain-a-001";
 const APPROVAL_CHAIN_B_ID = "chain-b-001";
 
@@ -214,7 +213,7 @@ const { mockPrisma } = vi.hoisted(() => {
     for (const [op, operand] of Object.entries(operator)) {
       switch (op) {
         case "in":
-          if (!Array.isArray(operand) || !operand.includes(itemValue)) return false;
+          if (!(Array.isArray(operand) && operand.includes(itemValue))) return false;
           break;
         case "notIn":
           if (Array.isArray(operand) && operand.includes(itemValue)) return false;

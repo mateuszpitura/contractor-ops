@@ -64,7 +64,7 @@ export function evaluateConditions(
   conditionsJson: unknown,
   invoice: { totalMinor: number; contractorType?: string },
 ): boolean {
-  if (!conditionsJson || !Array.isArray(conditionsJson)) {
+  if (!(conditionsJson && Array.isArray(conditionsJson))) {
     return false;
   }
 

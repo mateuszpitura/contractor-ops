@@ -55,13 +55,24 @@ interface Constructable<T> {
 
 /** Envelopes API from docusign-esign SDK */
 interface DocuSignEnvelopesApi {
-  createEnvelope(accountId: string, opts: { envelopeDefinition: unknown }): Promise<DocuSignEnvelopeSummary>;
-  createRecipientView(accountId: string, envelopeId: string, opts: { recipientViewRequest: unknown }): Promise<DocuSignRecipientView>;
+  createEnvelope(
+    accountId: string,
+    opts: { envelopeDefinition: unknown },
+  ): Promise<DocuSignEnvelopeSummary>;
+  createRecipientView(
+    accountId: string,
+    envelopeId: string,
+    opts: { recipientViewRequest: unknown },
+  ): Promise<DocuSignRecipientView>;
   getDocument(accountId: string, envelopeId: string, documentId: string): Promise<Buffer>;
   getEnvelope(accountId: string, envelopeId: string): Promise<DocuSignEnvelope>;
   listRecipients(accountId: string, envelopeId: string): Promise<DocuSignRecipients>;
   update(accountId: string, envelopeId: string, opts: { envelope: unknown }): Promise<void>;
-  updateRecipients(accountId: string, envelopeId: string, opts: { recipients: unknown; resendEnvelope?: string }): Promise<void>;
+  updateRecipients(
+    accountId: string,
+    envelopeId: string,
+    opts: { recipients: unknown; resendEnvelope?: string },
+  ): Promise<void>;
 }
 
 /** Shape of the dynamically imported docusign-esign module */
@@ -124,7 +135,7 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
     const clientId = process.env.DOCUSIGN_CLIENT_ID;
     const clientSecret = process.env.DOCUSIGN_CLIENT_SECRET;
 
-    if (!clientId || !clientSecret) {
+    if (!(clientId && clientSecret)) {
       throw new Error(
         "DOCUSIGN_CLIENT_ID and DOCUSIGN_CLIENT_SECRET environment variables are required",
       );
@@ -168,7 +179,7 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
     const clientId = process.env.DOCUSIGN_CLIENT_ID;
     const clientSecret = process.env.DOCUSIGN_CLIENT_SECRET;
 
-    if (!clientId || !clientSecret) {
+    if (!(clientId && clientSecret)) {
       throw new Error(
         "DOCUSIGN_CLIENT_ID and DOCUSIGN_CLIENT_SECRET environment variables are required",
       );

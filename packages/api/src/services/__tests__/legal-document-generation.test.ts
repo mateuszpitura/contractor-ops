@@ -92,10 +92,10 @@ describe("legal-document-generation", () => {
       const result = await generateDPA(ORG_ID);
 
       expect(result).not.toBeNull();
-      expect(result!.content).toContain("Federal Decree-Law No. 45/2021");
-      expect(result!.content).toContain("Test Corp");
-      expect(result!.filename).toContain("AE");
-      expect(result!.jurisdiction).toBe("AE");
+      expect(result?.content).toContain("Federal Decree-Law No. 45/2021");
+      expect(result?.content).toContain("Test Corp");
+      expect(result?.filename).toContain("AE");
+      expect(result?.jurisdiction).toBe("AE");
     });
 
     it("returns DPA content for SA org", async () => {
@@ -111,9 +111,9 @@ describe("legal-document-generation", () => {
       const result = await generateDPA(ORG_ID);
 
       expect(result).not.toBeNull();
-      expect(result!.content).toContain("Royal Decree M/19");
-      expect(result!.content).toContain("Saudi Co");
-      expect(result!.jurisdiction).toBe("SA");
+      expect(result?.content).toContain("Royal Decree M/19");
+      expect(result?.content).toContain("Saudi Co");
+      expect(result?.jurisdiction).toBe("SA");
     });
 
     it("returns null for non-PDPL jurisdiction", async () => {
@@ -148,11 +148,11 @@ describe("legal-document-generation", () => {
       const result = await generateSCC(ORG_ID);
 
       expect(result).not.toBeNull();
-      expect(result!.content).toContain("Standard Contractual Clauses");
-      expect(result!.content).toContain("GCC");
-      expect(result!.content).toContain("EU");
-      expect(result!.content).toContain("UAE Corp");
-      expect(result!.filename).toContain("GCC-to-EU");
+      expect(result?.content).toContain("Standard Contractual Clauses");
+      expect(result?.content).toContain("GCC");
+      expect(result?.content).toContain("EU");
+      expect(result?.content).toContain("UAE Corp");
+      expect(result?.filename).toContain("GCC-to-EU");
     });
 
     it("returns null for org without countryCode", async () => {

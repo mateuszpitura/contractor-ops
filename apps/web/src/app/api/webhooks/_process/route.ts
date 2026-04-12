@@ -35,7 +35,7 @@ async function handler(request: NextRequest) {
     provider: string;
   };
 
-  if (!deliveryId || !provider) {
+  if (!(deliveryId && provider)) {
     return NextResponse.json({ error: "Missing deliveryId or provider" }, { status: 400 });
   }
 

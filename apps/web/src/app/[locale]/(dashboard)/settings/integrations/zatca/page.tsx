@@ -73,7 +73,7 @@ export default function ZatcaSettingsPage() {
       </AnimateIn>
 
       {/* Not Connected State */}
-      {!isConnected && !isOnboarding && !wizardOpen && (
+      {!(isConnected || isOnboarding || wizardOpen) && (
         <AnimateIn delay={1}>
           <div className="flex flex-col items-center justify-center rounded-xl border border-dashed bg-muted/20 px-6 py-16 text-center">
             <div className="rounded-lg bg-muted p-3 mb-4">

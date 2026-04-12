@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { render, screen, setup } from "@/test/test-utils";
+import { render, screen } from "@/test/test-utils";
 import { PdfViewer } from "../pdf-viewer";
 
 // Mock react-pdf

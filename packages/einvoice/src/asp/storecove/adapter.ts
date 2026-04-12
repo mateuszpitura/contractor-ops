@@ -1,8 +1,5 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
-import type {
-  GovApiAuditLogger,
-  GovApiRateLimiter,
-} from "@contractor-ops/gov-api";
+import type { GovApiAuditLogger, GovApiRateLimiter } from "@contractor-ops/gov-api";
 import type {
   ASPAdapter,
   ASPHealthStatus,
@@ -280,7 +277,10 @@ export class StorecoveAdapter implements ASPAdapter {
     };
   }
 
-  async pollInboundInvoices(since: Date, organizationId?: string): Promise<InboundInvoicePayload[]> {
+  async pollInboundInvoices(
+    since: Date,
+    organizationId?: string,
+  ): Promise<InboundInvoicePayload[]> {
     if (organizationId) {
       await this.checkRateLimit(organizationId);
     }
@@ -289,13 +289,7 @@ export class StorecoveAdapter implements ASPAdapter {
     const documents = await this.client.getReceivedDocuments(since);
 
     if (organizationId) {
-      this.emitAudit(
-        organizationId,
-        "/received_documents",
-        "GET",
-        200,
-        Date.now() - startMs,
-      );
+      this.emitAudit(organizationId, "/received_documents", "GET", 200, Date.now() - startMs);
     }
 
     return documents.map((doc) => ({

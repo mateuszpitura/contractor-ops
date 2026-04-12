@@ -148,7 +148,7 @@ export function getColumns(
         const showCancel =
           run.status === "DRAFT" || run.status === "LOCKED" || run.status === "EXPORTED";
 
-        if (!showDownload && !showMarkPaid && !showCancel) return null;
+        if (!(showDownload || showMarkPaid || showCancel)) return null;
 
         return (
           <DropdownMenu>

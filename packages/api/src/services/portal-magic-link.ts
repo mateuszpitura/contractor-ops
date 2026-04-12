@@ -140,6 +140,5 @@ export async function sendPortalMagicLink(opts: {
       `.trim(),
     });
   } else {
-    console.log(`[DEV] Portal magic link for ${opts.email}: ${magicLinkUrl}`);
   }
 }

@@ -73,7 +73,7 @@ export function TopBar() {
             {segments.map((segment, index) => {
               const isLast = index === segments.length - 1;
               const label = breadcrumbLabel(segment);
-              const href = "/" + segments.slice(0, index + 1).join("/");
+              const href = `/${segments.slice(0, index + 1).join("/")}`;
 
               return (
                 <span key={`${segment}-${index}`} className="contents">

@@ -23,7 +23,7 @@ async function handler(request: NextRequest) {
     organizationId: string;
   };
 
-  if (!deliveryId || !organizationId) {
+  if (!(deliveryId && organizationId)) {
     return NextResponse.json({ error: "Missing deliveryId or organizationId" }, { status: 400 });
   }
 

@@ -9,7 +9,6 @@
  *    then asserts the arguments passed to Prisma/R2 (WHERE clauses, data).
  */
 
-import { TRPCError } from "@trpc/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // ---------------------------------------------------------------------------
@@ -434,7 +433,7 @@ describe("document.list", () => {
 
     await caller.document.list({ page: 1, pageSize: 20 });
 
-    const findManyCall = mockPrisma.document.findMany.mock.calls[0]![0];
+    const findManyCall = mockPrisma.document.findMany.mock.calls[0]?.[0];
     expect(findManyCall.where).toMatchObject({
       organizationId: ORG_ID,
       deletedAt: null,
@@ -447,7 +446,7 @@ describe("document.list", () => {
 
     await caller.document.list({ page: 2, pageSize: 15 });
 
-    const findManyCall = mockPrisma.document.findMany.mock.calls[0]![0];
+    const findManyCall = mockPrisma.document.findMany.mock.calls[0]?.[0];
     expect(findManyCall.skip).toBe(15);
     expect(findManyCall.take).toBe(15);
   });

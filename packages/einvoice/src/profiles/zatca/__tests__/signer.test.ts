@@ -3,7 +3,6 @@
 // ---------------------------------------------------------------------------
 
 import { execSync } from "node:child_process";
-import crypto from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -174,7 +173,7 @@ describe("ZatcaXAdESSigner", () => {
 
     expect(result.valid).toBe(false);
     expect(result.errors).toBeDefined();
-    expect(result.errors!.length).toBeGreaterThan(0);
+    expect(result.errors?.length).toBeGreaterThan(0);
   });
 
   // Test 7: Private key does not appear in signed XML output
@@ -182,8 +181,8 @@ describe("ZatcaXAdESSigner", () => {
     const signedXml = await signer.sign(TEST_INVOICE_XML, testCert);
 
     // Extract the raw key data (between PEM headers) for checking
-    const keyLines = testCert
-      .privateKey!.split("\n")
+    const keyLines = testCert.privateKey
+      ?.split("\n")
       .filter((l) => l.trim() !== "" && !l.includes("-----BEGIN") && !l.includes("-----END"));
 
     // The private key base64 content should not appear in output

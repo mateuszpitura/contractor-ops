@@ -92,14 +92,14 @@ export const integrationRouter = router({
       const redirectUri = process.env.SLACK_REDIRECT_URI;
       const signingSecret = process.env.SLACK_SIGNING_SECRET ?? process.env.SLACK_CLIENT_SECRET;
 
-      if (!clientId || !redirectUri || !signingSecret) {
+      if (!(clientId && redirectUri && signingSecret)) {
         throw new TRPCError({
           code: "PRECONDITION_FAILED",
           message: E.INTEGRATION_NOT_CONFIGURED,
         });
       }
 
-      const state = generateSlackOAuthState(ctx.organizationId, ctx.user!.id, signingSecret);
+      const state = generateSlackOAuthState(ctx.organizationId, ctx.user?.id, signingSecret);
 
       const scopes = ["chat:write", "users:read", "users:read.email", "im:write"].join(",");
 
@@ -322,7 +322,7 @@ export const integrationRouter = router({
     .input(providerSlugSchema)
     .query(async ({ ctx, input }) => {
       const adapter = getAdapter(input.provider);
-      if (!adapter?.supportsOAuth || !adapter.getOAuthConfig) {
+      if (!(adapter?.supportsOAuth && adapter.getOAuthConfig)) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: E.INTEGRATION_NO_OAUTH,
@@ -334,7 +334,7 @@ export const integrationRouter = router({
       const clientSecret = process.env[oauthConfig.clientSecretEnvVar];
       const appUrl = process.env.NEXT_PUBLIC_APP_URL;
 
-      if (!clientId || !clientSecret || !appUrl) {
+      if (!(clientId && clientSecret && appUrl)) {
         throw new TRPCError({
           code: "PRECONDITION_FAILED",
           message: E.INTEGRATION_NOT_CONFIGURED,
@@ -345,7 +345,7 @@ export const integrationRouter = router({
       const state = generateOAuthState(
         input.provider,
         ctx.organizationId,
-        ctx.user!.id,
+        ctx.user?.id,
         clientSecret,
       );
 

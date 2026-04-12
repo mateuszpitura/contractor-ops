@@ -1,6 +1,6 @@
 "use client";
 
-import { Clock, FilePlus, FileText, RefreshCw, Upload } from "lucide-react";
+import { FilePlus, FileText, RefreshCw, Upload } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 // ---------------------------------------------------------------------------

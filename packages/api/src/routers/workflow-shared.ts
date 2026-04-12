@@ -88,7 +88,7 @@ export function evaluateCondition(
   condition: ConditionGroup | null,
   context: { contractor: Record<string, unknown>; contract?: Record<string, unknown> },
 ): boolean {
-  if (!condition || !condition.rules || condition.rules.length === 0) {
+  if (!condition?.rules || condition.rules.length === 0) {
     return true;
   }
 
@@ -160,9 +160,11 @@ export async function resolveAssignee(
  * Calculate workflow run progress, excluding condition-skipped tasks
  * from both numerator and denominator.
  */
-export function calculateProgress(
-  tasks: Array<{ status: string; resultJson?: unknown }>,
-): { done: number; total: number; percent: number } {
+export function calculateProgress(tasks: Array<{ status: string; resultJson?: unknown }>): {
+  done: number;
+  total: number;
+  percent: number;
+} {
   // Exclude condition-skipped tasks from the total
   const activeTasks = tasks.filter((t) => {
     if (

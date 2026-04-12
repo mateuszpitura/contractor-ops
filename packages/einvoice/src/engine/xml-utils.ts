@@ -10,7 +10,7 @@ export function dig(obj: Record<string, unknown>, ...keys: string[]): unknown {
   let current: unknown = obj;
   for (const key of keys) {
     if (current === null || current === undefined || typeof current !== "object") {
-      return undefined;
+      return;
     }
     current = (current as Record<string, unknown>)[key];
   }

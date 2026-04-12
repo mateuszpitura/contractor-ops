@@ -117,7 +117,7 @@ describe("StorecoveAdapter", () => {
 
     expect(result.status).toBe("rejected");
     expect(result.errors).toBeDefined();
-    expect(result.errors![0]!.code).toBe("INVALID_DOCUMENT");
+    expect(result.errors?.[0]?.code).toBe("INVALID_DOCUMENT");
   });
 
   // -----------------------------------------------------------------------
@@ -221,7 +221,7 @@ describe("StorecoveAdapter", () => {
     const results = await adapter.pollInboundInvoices(new Date("2026-04-11T08:00:00Z"));
 
     expect(results).toHaveLength(2);
-    expect(results[0]!.senderParticipantId).toBe("0192:111111111111111");
-    expect(results[1]!.documentId).toBe("recv-002");
+    expect(results[0]?.senderParticipantId).toBe("0192:111111111111111");
+    expect(results[1]?.documentId).toBe("recv-002");
   });
 });

@@ -184,7 +184,7 @@ describe("GoogleCalendarAdapter", () => {
       htmlLink: "https://calendar.google.com/e/evt-1",
       etag: '"abc123"',
     });
-    expect(fetchMock.mock.calls[0]![0]).toBe(
+    expect(fetchMock.mock.calls[0]?.[0]).toBe(
       "https://www.googleapis.com/calendar/v3/calendars/primary/events",
     );
   });

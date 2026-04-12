@@ -113,7 +113,7 @@ describe("SlackAdapter", () => {
     it("accepts a valid v0 signature", () => {
       process.env.SLACK_SIGNING_SECRET = "test-secret";
       const ts = String(Math.floor(Date.now() / 1000));
-      const rawBody = "payload=" + encodeURIComponent(JSON.stringify({ type: "block_actions" }));
+      const rawBody = `payload=${encodeURIComponent(JSON.stringify({ type: "block_actions" }))}`;
       const base = `v0:${ts}:${rawBody}`;
       const sig = `v0=${createHmac("sha256", "test-secret").update(base).digest("hex")}`;
 
@@ -129,7 +129,7 @@ describe("SlackAdapter", () => {
     it("returns invalid when signature length matches but HMAC differs", () => {
       process.env.SLACK_SIGNING_SECRET = "test-secret";
       const ts = String(Math.floor(Date.now() / 1000));
-      const rawBody = "payload=" + encodeURIComponent(JSON.stringify({ type: "block_actions" }));
+      const rawBody = `payload=${encodeURIComponent(JSON.stringify({ type: "block_actions" }))}`;
       const wrongSig = `v0=${"0".repeat(64)}`;
 
       const r = adapter.verifyWebhookSignature(rawBody, {
@@ -143,7 +143,7 @@ describe("SlackAdapter", () => {
     it("accepts signature but keeps eventType unknown when payload JSON is invalid", () => {
       process.env.SLACK_SIGNING_SECRET = "test-secret";
       const ts = String(Math.floor(Date.now() / 1000));
-      const rawBody = "payload=" + encodeURIComponent("{not-json");
+      const rawBody = `payload=${encodeURIComponent("{not-json")}`;
       const base = `v0:${ts}:${rawBody}`;
       const sig = `v0=${createHmac("sha256", "test-secret").update(base).digest("hex")}`;
 

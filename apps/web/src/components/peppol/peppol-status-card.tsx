@@ -90,9 +90,7 @@ export function PeppolStatusCard() {
             <div className="flex-1 space-y-1">
               <h3 className="text-base font-semibold">{t("title")}</h3>
               <p className="text-sm text-muted-foreground">{t("notConnected")}</p>
-              <p className="text-sm text-muted-foreground">
-                {t("connectDescription")}
-              </p>
+              <p className="text-sm text-muted-foreground">{t("connectDescription")}</p>
             </div>
             <Button onClick={() => setWizardOpen(true)}>{t("connect")}</Button>
           </div>
@@ -177,9 +175,7 @@ export function PeppolStatusCard() {
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>{t("disconnectTitle")}</AlertDialogTitle>
-                <AlertDialogDescription>
-                  {t("disconnectDescription")}
-                </AlertDialogDescription>
+                <AlertDialogDescription>{t("disconnectDescription")}</AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>{t("disconnectCancel")}</AlertDialogCancel>

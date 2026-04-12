@@ -108,7 +108,7 @@ export function StepFinancial({ form, preFilledFields }: StepFinancialProps) {
 
   const handleRateBlur = () => {
     const value = parseFloat(rateLocal);
-    if (!isNaN(value) && value >= 0) {
+    if (!Number.isNaN(value) && value >= 0) {
       setValue("rateValueMinor", Math.round(value * 100), {
         shouldDirty: true,
         shouldValidate: true,

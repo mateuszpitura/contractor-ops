@@ -252,7 +252,7 @@ export const approvalRouter = router({
 
       // Tab filter
       if (input.tab === "my") {
-        where.approverUserId = ctx.user!.id;
+        where.approverUserId = ctx.user?.id;
       }
 
       // Status filter
@@ -393,7 +393,7 @@ export const approvalRouter = router({
           });
         }
 
-        if (step.approverUserId !== ctx.user!.id) {
+        if (step.approverUserId !== ctx.user?.id) {
           throw new TRPCError({
             code: "FORBIDDEN",
             message: E.APPROVAL_NOT_ASSIGNED,
@@ -405,7 +405,7 @@ export const approvalRouter = router({
           data: {
             organizationId: ctx.organizationId,
             approvalStepId: step.id,
-            actorUserId: ctx.user!.id,
+            actorUserId: ctx.user?.id,
             decision: "APPROVE",
             comment: input.comment ?? null,
           },
@@ -465,13 +465,13 @@ export const approvalRouter = router({
           type: "APPROVAL_DECISION",
           recipientUserIds: [result.flow.createdByUserId],
           title: `Invoice ${result.invoice.invoiceNumber} approved`,
-          body: `Approved by ${ctx.user!.name ?? "approver"}`,
+          body: `Approved by ${ctx.user?.name ?? "approver"}`,
           entityType: "INVOICE",
           entityId: result.invoice.id,
           metadata: {
             invoiceNumber: result.invoice.invoiceNumber,
             decision: "approved",
-            approverName: ctx.user!.name ?? "approver",
+            approverName: ctx.user?.name ?? "approver",
           },
         }).catch((err) => console.error("[approval] dispatch APPROVAL_DECISION failed:", err));
       }
@@ -535,7 +535,7 @@ export const approvalRouter = router({
           invoiceNumber: result.invoice.invoiceNumber ?? `INV-${result.invoice.id.slice(-6)}`,
           contractorName: contractor?.displayName ?? "Unknown",
           dueDate: new Date(result.invoice.dueDate),
-          userId: ctx.user!.id,
+          userId: ctx.user?.id,
         }).catch((err) => console.error("[approval] payment deadline sync failed:", err));
       }
 
@@ -578,7 +578,7 @@ export const approvalRouter = router({
           });
         }
 
-        if (step.approverUserId !== ctx.user!.id) {
+        if (step.approverUserId !== ctx.user?.id) {
           throw new TRPCError({
             code: "FORBIDDEN",
             message: E.APPROVAL_NOT_ASSIGNED,
@@ -590,7 +590,7 @@ export const approvalRouter = router({
           data: {
             organizationId: ctx.organizationId,
             approvalStepId: step.id,
-            actorUserId: ctx.user!.id,
+            actorUserId: ctx.user?.id,
             decision: "REJECT",
             comment: input.comment,
           },
@@ -643,13 +643,13 @@ export const approvalRouter = router({
           type: "APPROVAL_DECISION",
           recipientUserIds: [result.flow.createdByUserId],
           title: `Invoice ${result.invoice.invoiceNumber} rejected`,
-          body: `Rejected by ${ctx.user!.name ?? "approver"}: ${input.comment}`,
+          body: `Rejected by ${ctx.user?.name ?? "approver"}: ${input.comment}`,
           entityType: "INVOICE",
           entityId: result.invoice.id,
           metadata: {
             invoiceNumber: result.invoice.invoiceNumber,
             decision: "rejected",
-            approverName: ctx.user!.name ?? "approver",
+            approverName: ctx.user?.name ?? "approver",
             comment: input.comment,
           },
         }).catch((err) =>
@@ -691,7 +691,7 @@ export const approvalRouter = router({
           });
         }
 
-        if (step.approverUserId !== ctx.user!.id) {
+        if (step.approverUserId !== ctx.user?.id) {
           throw new TRPCError({
             code: "FORBIDDEN",
             message: E.APPROVAL_NOT_ASSIGNED,
@@ -718,7 +718,7 @@ export const approvalRouter = router({
           data: {
             organizationId: ctx.organizationId,
             approvalStepId: step.id,
-            actorUserId: ctx.user!.id,
+            actorUserId: ctx.user?.id,
             decision: "DELEGATE",
             comment: input.comment ?? null,
           },
@@ -770,7 +770,7 @@ export const approvalRouter = router({
           });
         }
 
-        if (step.approverUserId !== ctx.user!.id) {
+        if (step.approverUserId !== ctx.user?.id) {
           throw new TRPCError({
             code: "FORBIDDEN",
             message: E.APPROVAL_NOT_ASSIGNED,
@@ -782,7 +782,7 @@ export const approvalRouter = router({
           data: {
             organizationId: ctx.organizationId,
             approvalStepId: step.id,
-            actorUserId: ctx.user!.id,
+            actorUserId: ctx.user?.id,
             decision: "REQUEST_CHANGES",
             comment: input.comment,
           },
@@ -815,7 +815,7 @@ export const approvalRouter = router({
                 id: stepId,
                 organizationId: ctx.organizationId,
                 status: "PENDING",
-                approverUserId: ctx.user!.id,
+                approverUserId: ctx.user?.id,
               },
               include: { approvalFlow: true },
             });
@@ -828,7 +828,7 @@ export const approvalRouter = router({
               data: {
                 organizationId: ctx.organizationId,
                 approvalStepId: step.id,
-                actorUserId: ctx.user!.id,
+                actorUserId: ctx.user?.id,
                 decision: "APPROVE",
               },
             });
@@ -872,7 +872,7 @@ export const approvalRouter = router({
                   invoiceNumber: invoice.invoiceNumber ?? `INV-${invoice.id.slice(-6)}`,
                   contractorName: contractor?.displayName ?? "Unknown",
                   dueDate: new Date(invoice.dueDate),
-                  userId: ctx.user!.id,
+                  userId: ctx.user?.id,
                 }).catch((err) =>
                   console.error("[approval] bulk payment deadline sync failed:", err),
                 );
@@ -911,7 +911,7 @@ export const approvalRouter = router({
                 id: stepId,
                 organizationId: ctx.organizationId,
                 status: "PENDING",
-                approverUserId: ctx.user!.id,
+                approverUserId: ctx.user?.id,
               },
               include: { approvalFlow: true },
             });
@@ -924,7 +924,7 @@ export const approvalRouter = router({
               data: {
                 organizationId: ctx.organizationId,
                 approvalStepId: step.id,
-                actorUserId: ctx.user!.id,
+                actorUserId: ctx.user?.id,
                 decision: "REJECT",
                 comment: input.comment,
               },
@@ -1032,7 +1032,7 @@ export const approvalRouter = router({
           resourceType: "INVOICE",
           resourceId: invoice.id,
           chainConfig,
-          createdByUserId: ctx.user!.id,
+          createdByUserId: ctx.user?.id,
         });
 
         // Update invoice status
@@ -1088,7 +1088,7 @@ export const approvalRouter = router({
           itemType: "Invoice",
           itemName: flow.invoice.invoiceNumber ?? `INV-${flow.invoice.id.slice(-6)}`,
           deadline: new Date(firstStep.slaDeadline),
-          userId: ctx.user!.id,
+          userId: ctx.user?.id,
         }).catch((err) => console.error("[approval] SLA deadline sync failed:", err));
       }
 
@@ -1131,7 +1131,7 @@ export const approvalRouter = router({
       });
 
       if (!flow) {
-        return { events: [] as Array<Record<string, unknown>>, flow: null };
+        return { events: [] as Record<string, unknown>[], flow: null };
       }
 
       // Resolve chain name for the flow
@@ -1173,7 +1173,7 @@ export const approvalRouter = router({
         steps: resolvedSteps,
       };
 
-      const events: Array<Record<string, unknown>> = [];
+      const events: Record<string, unknown>[] = [];
 
       // System event: submitted
       events.push({

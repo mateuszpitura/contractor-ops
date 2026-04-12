@@ -1,24 +1,6 @@
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
-import {
-  allHandlers,
-  autentiHandlers,
-  claudeOcrHandlers,
-  clockifyHandlers,
-  confluenceHandlers,
-  docusignHandlers,
-  googleCalendarHandlers,
-  jiraHandlers,
-  ksefHandlers,
-  linearHandlers,
-  notionHandlers,
-  outlookCalendarHandlers,
-  qstashHandlers,
-  resendHandlers,
-  selectHandlers,
-  slackHandlers,
-  stripeHandlers,
-} from "../msw/handlers/index.js";
+import { allHandlers, selectHandlers } from "../msw/handlers/index.js";
 
 // ----------------------------------------------------------------
 // Integration tests: verify each handler set produces valid MSW

@@ -74,7 +74,7 @@ export function ZatcaStatusCard() {
   }
 
   // Not connected state
-  if (!isConnected && !isOnboarding) {
+  if (!(isConnected || isOnboarding)) {
     return (
       <>
         <Card className="p-6">

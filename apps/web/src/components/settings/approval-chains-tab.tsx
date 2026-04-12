@@ -31,7 +31,7 @@ import { trpc } from "@/trpc/init";
 type SettingsTranslateFn = (key: string, params?: Record<string, string | number>) => string;
 
 function formatConditionSummary(conditions: unknown, t: SettingsTranslateFn): string {
-  if (!conditions || !Array.isArray(conditions) || conditions.length === 0) {
+  if (!(conditions && Array.isArray(conditions)) || conditions.length === 0) {
     return t("approvals.noConditions");
   }
 

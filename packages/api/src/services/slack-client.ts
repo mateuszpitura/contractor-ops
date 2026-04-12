@@ -9,7 +9,7 @@ import { WebClient } from "@slack/web-api";
 
 const ALGORITHM = "aes-256-gcm";
 const IV_LENGTH = 12;
-const AUTH_TAG_LENGTH = 16;
+const _AUTH_TAG_LENGTH = 16;
 
 function getEncryptionKey(): Buffer {
   const key = process.env.SLACK_TOKEN_ENCRYPTION_KEY;
@@ -313,7 +313,7 @@ export async function syncWorkspaceUsers(
 
   const result = await client.users.list({});
   const members = result.members ?? [];
-  const realMembers = members.filter((m) => !m.is_bot && !m.deleted && m.id !== "USLACKBOT");
+  const realMembers = members.filter((m) => !(m.is_bot || m.deleted) && m.id !== "USLACKBOT");
 
   let matched = 0;
 

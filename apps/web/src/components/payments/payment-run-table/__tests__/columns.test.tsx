@@ -35,7 +35,7 @@ function renderCell(columnId: string, row: PaymentRunRow) {
     getValue: () => (row as any)[columnId],
   });
   if (result === null) return null;
-  const { container } = render(<>{result}</>);
+  const { container } = render(result);
   return container;
 }
 
@@ -110,7 +110,7 @@ describe("getColumns cell renderers (payment runs)", () => {
 
   it("exportFormat cell renders dash when null", () => {
     const container = renderCell("exportFormat", makeRow({ exportFormat: null }));
-    expect(container!.textContent).toContain("—");
+    expect(container?.textContent).toContain("—");
   });
 
   it("actions cell returns null when no actions are available", () => {

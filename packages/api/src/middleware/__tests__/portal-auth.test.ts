@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const { validatePortalSession, tenantStoreRun } = vi.hoisted(() => ({
   validatePortalSession: vi.fn(),
-  tenantStoreRun: vi.fn((ctx: { organizationId: string }, fn: () => unknown) => fn()),
+  tenantStoreRun: vi.fn((_ctx: { organizationId: string }, fn: () => unknown) => fn()),
 }));
 
 vi.mock("../../services/portal-session.js", () => ({

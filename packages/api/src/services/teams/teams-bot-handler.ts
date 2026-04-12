@@ -235,7 +235,7 @@ export class TeamsBotHandler extends TeamsActivityHandler {
   // -------------------------------------------------------------------------
 
   async handleTeamsTaskModuleFetch(
-    context: TurnContext,
+    _context: TurnContext,
     taskModuleRequest: TaskModuleRequest,
   ): Promise<TaskModuleResponse> {
     const parsed = taskModuleFetchSchema.safeParse(taskModuleRequest.data);

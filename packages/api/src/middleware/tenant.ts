@@ -18,7 +18,7 @@ import { authedProcedure } from "./auth.js";
  * 5. Set regional client in context as ctx.db
  */
 const tenantMiddleware = t.middleware(async ({ ctx, next }) => {
-  if (!ctx.session || !ctx.user) {
+  if (!(ctx.session && ctx.user)) {
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
 

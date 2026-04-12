@@ -28,7 +28,7 @@ describe("truncateFilename", () => {
   });
 
   it("truncates long names preserving extension", () => {
-    const name = "a".repeat(50) + ".pdf";
+    const name = `${"a".repeat(50)}.pdf`;
     const result = truncateFilename(name);
     expect(result.length).toBeLessThanOrEqual(40);
     expect(result).toContain("...");
@@ -51,7 +51,7 @@ describe("truncateFilename", () => {
   });
 
   it("handles files with multiple dots", () => {
-    const name = "a".repeat(50) + ".test.pdf";
+    const name = `${"a".repeat(50)}.test.pdf`;
     const result = truncateFilename(name);
     expect(result).toMatch(/\.pdf$/);
   });

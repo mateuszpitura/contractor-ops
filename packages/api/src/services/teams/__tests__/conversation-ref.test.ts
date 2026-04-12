@@ -66,7 +66,7 @@ describe("ConversationReference storage (TEAM-06)", () => {
       await storeConversationReference(orgId, ref as never);
 
       expect(mockUpdate).toHaveBeenCalledOnce();
-      const updateCall = mockUpdate.mock.calls[0]![0];
+      const updateCall = mockUpdate.mock.calls[0]?.[0];
       expect(updateCall.where.id).toBe(connectionId);
 
       const configJson = updateCall.data.configJson;
@@ -98,7 +98,7 @@ describe("ConversationReference storage (TEAM-06)", () => {
       await storeConversationReference(orgId, newRef as never);
 
       expect(mockUpdate).toHaveBeenCalledOnce();
-      const configJson = mockUpdate.mock.calls[0]![0].data.configJson;
+      const configJson = mockUpdate.mock.calls[0]?.[0].data.configJson;
       expect(configJson.conversationReferences["aad-user-1"]).toEqual(newRef);
       expect(configJson.conversationReferences["aad-user-1"].serviceUrl).toBe(
         "https://new-service.example.com/",
@@ -125,7 +125,7 @@ describe("ConversationReference storage (TEAM-06)", () => {
       await storeConversationReference(orgId, ref as never);
 
       expect(mockUpdate).toHaveBeenCalledOnce();
-      const configJson = mockUpdate.mock.calls[0]![0].data.configJson;
+      const configJson = mockUpdate.mock.calls[0]?.[0].data.configJson;
       // Personal ref stored by aadObjectId
       expect(configJson.conversationReferences["aad-user-2"]).toEqual(ref);
       // Team ref stored by channelId (conversation.id) for sendChannelAlert lookup
@@ -182,7 +182,7 @@ describe("ConversationReference storage (TEAM-06)", () => {
 
       await storeConversationReference(orgId, newRef as never);
 
-      const configJson = mockUpdate.mock.calls[0]![0].data.configJson;
+      const configJson = mockUpdate.mock.calls[0]?.[0].data.configJson;
       // Existing ref preserved
       expect(configJson.conversationReferences["aad-user-1"]).toEqual(existingRef);
       // New ref added

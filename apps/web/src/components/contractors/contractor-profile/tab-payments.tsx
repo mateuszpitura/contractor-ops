@@ -184,7 +184,7 @@ export function TabPayments({ contractorId }: TabPaymentsProps) {
         ),
       },
     ],
-    [t],
+    [t, formatAmount],
   );
 
   const table = useReactTable({

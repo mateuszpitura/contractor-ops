@@ -39,7 +39,7 @@ export const calendarRouter = router({
       where: {
         organizationId: ctx.organizationId,
         provider: { in: [...CALENDAR_PROVIDERS] },
-        OR: [{ userId: ctx.user!.id }, { userId: null }],
+        OR: [{ userId: ctx.user?.id }, { userId: null }],
       },
       select: {
         id: true,
@@ -63,7 +63,7 @@ export const calendarRouter = router({
     const connections = await ctx.db.integrationConnection.findMany({
       where: {
         organizationId: ctx.organizationId,
-        userId: ctx.user!.id,
+        userId: ctx.user?.id,
         provider: { in: [...CALENDAR_PROVIDERS] },
       },
       select: {
@@ -109,7 +109,7 @@ export const calendarRouter = router({
 
       // Users can only disconnect their own personal connections
       // Org-level connections (userId = null) require settings:update permission
-      if (connection.userId !== null && connection.userId !== ctx.user!.id) {
+      if (connection.userId !== null && connection.userId !== ctx.user?.id) {
         throw new TRPCError({
           code: "FORBIDDEN",
           message: "PERMISSION_DENIED",

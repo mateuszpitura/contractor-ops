@@ -174,7 +174,7 @@ describe("NotionAdapter", () => {
 
     const rows = await adapter.searchPages("tok", "invoice");
 
-    expect(fetchMock.mock.calls[0]![0]).toBe("https://api.notion.com/v1/search");
+    expect(fetchMock.mock.calls[0]?.[0]).toBe("https://api.notion.com/v1/search");
     const [, init] = fetchMock.mock.calls[0]!;
     const headers = (init as RequestInit).headers as Record<string, string>;
     expect(headers["Notion-Version"]).toBe("2022-06-28");

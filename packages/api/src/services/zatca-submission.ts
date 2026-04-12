@@ -10,8 +10,8 @@
 // ---------------------------------------------------------------------------
 
 import { createHash, randomUUID } from "node:crypto";
-import { prisma as defaultPrisma } from "@contractor-ops/db";
 import type { PrismaClient } from "@contractor-ops/db";
+import { prisma as defaultPrisma } from "@contractor-ops/db";
 import type { Prisma } from "@contractor-ops/db/generated/prisma/client";
 import type {
   CertificateInfo,
@@ -114,7 +114,7 @@ export async function submitToZatca(
     secretStore.get(ZATCA_SECRET_NAMES.PRIVATE_KEY),
   ]);
 
-  if (!certificate || !apiSecret) {
+  if (!(certificate && apiSecret)) {
     throw new Error(
       `ZATCA certificates not found for organization ${organizationId}. Complete device onboarding first.`,
     );
@@ -344,7 +344,7 @@ function buildEInvoiceFromPrisma(
     amountToPayMinor: number;
     vatRate: string | null;
     vatAmountMinor: number | null;
-    lines: Array<Record<string, unknown>>;
+    lines: Record<string, unknown>[];
     contractor: Record<string, unknown> | null;
   },
   opts: { icv: number; pih: string; zatcaUuid: string },
@@ -366,7 +366,7 @@ function buildEInvoiceFromPrisma(
     },
     customer: {
       id: invoice.buyerTaxId ?? "",
-      name: (invoice.contractor as Record<string, unknown> | null)?.name as string ?? "",
+      name: ((invoice.contractor as Record<string, unknown> | null)?.name as string) ?? "",
     },
     lines: (invoice.lines ?? []).map((line: Record<string, unknown>, idx: number) => ({
       lineNumber: idx + 1,

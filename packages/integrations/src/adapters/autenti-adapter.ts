@@ -66,7 +66,7 @@ export class AutentiAdapter extends BaseAdapter implements ESignAdapter {
     const clientId = process.env.AUTENTI_CLIENT_ID;
     const clientSecret = process.env.AUTENTI_CLIENT_SECRET;
 
-    if (!clientId || !clientSecret) {
+    if (!(clientId && clientSecret)) {
       throw new Error(
         "AUTENTI_CLIENT_ID and AUTENTI_CLIENT_SECRET environment variables are required",
       );
@@ -109,7 +109,7 @@ export class AutentiAdapter extends BaseAdapter implements ESignAdapter {
     const clientId = process.env.AUTENTI_CLIENT_ID;
     const clientSecret = process.env.AUTENTI_CLIENT_SECRET;
 
-    if (!clientId || !clientSecret) {
+    if (!(clientId && clientSecret)) {
       throw new Error(
         "AUTENTI_CLIENT_ID and AUTENTI_CLIENT_SECRET environment variables are required",
       );
@@ -406,7 +406,7 @@ export class AutentiAdapter extends BaseAdapter implements ESignAdapter {
       Authorization: `Bearer ${credentials.accessToken}`,
     };
 
-    if (!options?.skipContentType && !(options?.body instanceof FormData)) {
+    if (!(options?.skipContentType || options?.body instanceof FormData)) {
       fetchHeaders["Content-Type"] = "application/json";
     }
 
@@ -431,7 +431,7 @@ export class AutentiAdapter extends BaseAdapter implements ESignAdapter {
       return await response.json();
     }
 
-    return undefined;
+    return;
   }
 
   private mapAutentiStatusToInternal(status: string): string {

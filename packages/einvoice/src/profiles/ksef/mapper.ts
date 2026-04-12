@@ -83,12 +83,12 @@ function mapInvoiceTypeCode(ksefType: string): string {
  * Map KSeF payment method to UNCL 4461 code.
  */
 function mapPaymentMethodCode(method: string | undefined): string | undefined {
-  if (!method) return undefined;
+  if (!method) return;
   const upper = method.toUpperCase();
   if (upper.includes("PRZELEW") || upper.includes("TRANSFER")) return "30"; // Credit transfer
   if (upper.includes("GOTOWKA") || upper.includes("CASH")) return "10"; // Cash
   if (upper.includes("KARTA") || upper.includes("CARD")) return "48"; // Bank card
-  return undefined;
+  return;
 }
 
 /**

@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import type { UPSShipmentParams } from "../courier-client";
 import { UPSClient } from "../ups-client";
 
@@ -13,8 +13,8 @@ const TEST_CONFIG = {
   sandbox: true,
 };
 
-const UPS_SANDBOX_BASE = "https://wwwcie.ups.com";
-const UPS_PRODUCTION_BASE = "https://onlinetools.ups.com";
+const _UPS_SANDBOX_BASE = "https://wwwcie.ups.com";
+const _UPS_PRODUCTION_BASE = "https://onlinetools.ups.com";
 
 function createClient(overrides?: Partial<typeof TEST_CONFIG>) {
   return new UPSClient({ ...TEST_CONFIG, ...overrides });
@@ -37,7 +37,7 @@ function mockFetchSequence(responses: Array<{ body: unknown; status?: number }>)
   });
 }
 
-function mockFetchResponse(body: unknown, status = 200) {
+function _mockFetchResponse(body: unknown, status = 200) {
   return mockFetchSequence([{ body, status }]);
 }
 
