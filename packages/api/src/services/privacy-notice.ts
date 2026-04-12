@@ -16,8 +16,17 @@ import {
   dePrivacyNotice,
   euPrivacyNotice,
   gbPrivacyNotice,
+  resolveJurisdiction as resolveJurisdictionImpl,
+  type SupportedJurisdiction as SupportedJurisdictionImpl,
 } from '@contractor-ops/validators';
 import { CacheTTL, cached, cacheKey } from './cache.js';
+
+// Re-export the pure jurisdiction resolver from validators so existing callers
+// that import from this service continue to work. Client components should
+// import directly from `@contractor-ops/validators` to avoid the Prisma side
+// effect of this module (D-09 fallback rule).
+export const resolveJurisdiction = resolveJurisdictionImpl;
+export type SupportedJurisdiction = SupportedJurisdictionImpl;
 
 // ---------------------------------------------------------------------------
 // Types
@@ -36,13 +45,6 @@ export interface PrivacyNoticeContent {
   }[];
 }
 
-/**
- * Union of every jurisdiction code the service can render a notice for.
- * - AE / SA: PDPL (Phase 51).
- * - GB / DE / EU: GDPR family (Phase 56 Plan 07).
- */
-export type SupportedJurisdiction = 'AE' | 'SA' | 'GB' | 'DE' | 'EU';
-
 const SUPPORTED_JURISDICTIONS = new Set<SupportedJurisdiction>([
   'AE',
   'SA',
@@ -50,26 +52,6 @@ const SUPPORTED_JURISDICTIONS = new Set<SupportedJurisdiction>([
   'DE',
   'EU',
 ]);
-
-/**
- * Map an ISO-3166 alpha-2 countryCode (typically `Organization.countryCode`)
- * to the jurisdiction whose privacy notice applies.
- *
- * Phase 56 D-09 fallback rule: unknown / missing countryCode -> 'EU' (generic
- * GDPR notice). AE / SA / GB / DE have dedicated notices; everything else
- * renders the EU fallback. This function is intentionally pure and synchronous
- * so it can be reused in the tRPC mutation (IDOR-safe) and in page redirects.
- */
-export function resolveJurisdiction(
-  countryCode: string | null | undefined,
-): SupportedJurisdiction {
-  if (!countryCode) return 'EU';
-  const upper = countryCode.toUpperCase();
-  if (upper === 'GB' || upper === 'DE' || upper === 'AE' || upper === 'SA') {
-    return upper;
-  }
-  return 'EU';
-}
 
 // ---------------------------------------------------------------------------
 // Default notice content per jurisdiction

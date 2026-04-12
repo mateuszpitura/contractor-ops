@@ -20,6 +20,7 @@ import { integrationRouter } from './routers/integration.js';
 import { invoiceRouter } from './routers/invoice.js';
 import { jiraRouter } from './routers/jira.js';
 import { ksefRouter } from './routers/ksef.js';
+import { legalRouter } from './routers/legal.js';
 import { linearRouter } from './routers/linear.js';
 import { notificationRouter } from './routers/notification.js';
 import { ocrRouter } from './routers/ocr.js';
@@ -91,6 +92,7 @@ export const appRouter = router({
   esign: esignRouter,
   ocr: ocrRouter,
   ksef: ksefRouter,
+  legal: legalRouter, // legal: GDPR privacy notice PDF downloads (IDOR-safe, session-derived jurisdiction)
   portalTime: portalTimeRouter,
   time: timeRouter,
   jira: jiraRouter,

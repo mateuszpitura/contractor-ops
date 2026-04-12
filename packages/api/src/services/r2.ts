@@ -10,6 +10,7 @@ import {
   S3Client,
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { getServerEnv } from '@contractor-ops/validators';
 
 // ---------------------------------------------------------------------------
 // R2 client singleton
@@ -19,12 +20,13 @@ let r2Client: S3Client | null = null;
 
 export function createR2Client(): S3Client {
   if (!r2Client) {
+    const env = getServerEnv();
     r2Client = new S3Client({
       region: 'auto',
-      endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+      endpoint: `https://${env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
       credentials: {
-        accessKeyId: process.env.R2_ACCESS_KEY_ID!,
-        secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
+        accessKeyId: env.R2_ACCESS_KEY_ID,
+        secretAccessKey: env.R2_SECRET_ACCESS_KEY,
       },
     });
   }
@@ -35,10 +37,16 @@ export function createR2Client(): S3Client {
 // Bucket resolution (backward compatible)
 // ---------------------------------------------------------------------------
 
+/**
+ * Default R2 bucket for document object operations (Put/Get/Head/presigned URLs).
+ */
+export function getR2BucketName(): string {
+  const env = getServerEnv();
+  return env.R2_BUCKET_NAME ?? env.R2_BUCKET_NAME_EU;
+}
+
 function getDefaultBucket(): string {
-  return (
-    process.env.R2_BUCKET_NAME ?? process.env.R2_BUCKET_NAME_EU ?? 'contractor-ops-documents-eu'
-  );
+  return getR2BucketName();
 }
 
 // ---------------------------------------------------------------------------
@@ -142,6 +150,50 @@ export async function createPresignedDownloadUrl(key: string, expiresIn = 900): 
     ResponseContentDisposition: 'attachment',
   });
   return getSignedUrl(client, command, { expiresIn });
+}
+
+// ---------------------------------------------------------------------------
+// Server-side object upload (no presigned URL)
+// ---------------------------------------------------------------------------
+
+/**
+ * Upload a server-generated buffer to R2 and return a short-TTL signed
+ * download URL. Used by workflows that render artifacts server-side
+ * (WHT certificates, privacy-notice PDFs) and hand the caller a
+ * time-limited download link instead of streaming the bytes back.
+ *
+ * `key` is trusted — callers must scope keys by organizationId to prevent
+ * cross-tenant access (Phase 56 · D-09 + ASVS V4).
+ */
+export async function putObjectAndSignDownload(params: {
+  key: string;
+  body: Uint8Array | Buffer;
+  contentType: string;
+  downloadFilename?: string;
+  ttlSeconds?: number;
+}): Promise<{ signedUrl: string; expiresInSeconds: number }> {
+  const client = createR2Client();
+  const ttlSeconds = params.ttlSeconds ?? 300;
+
+  await client.send(
+    new PutObjectCommand({
+      Bucket: getDefaultBucket(),
+      Key: params.key,
+      Body: params.body,
+      ContentType: params.contentType,
+    }),
+  );
+
+  const disposition = params.downloadFilename
+    ? `attachment; filename="${params.downloadFilename.replace(/"/g, '')}"`
+    : 'attachment';
+  const downloadCommand = new GetObjectCommand({
+    Bucket: getDefaultBucket(),
+    Key: params.key,
+    ResponseContentDisposition: disposition,
+  });
+  const signedUrl = await getSignedUrl(client, downloadCommand, { expiresIn: ttlSeconds });
+  return { signedUrl, expiresInSeconds: ttlSeconds };
 }
 
 // ---------------------------------------------------------------------------

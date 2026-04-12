@@ -249,6 +249,8 @@ export type {
 export { gbPrivacyNotice } from './privacy-notices/gb.js';
 export { dePrivacyNotice } from './privacy-notices/de.js';
 export { euPrivacyNotice } from './privacy-notices/eu.js';
+export type { SupportedJurisdiction } from './privacy-notices/jurisdiction.js';
+export { resolveJurisdiction } from './privacy-notices/jurisdiction.js';
 export {
   GDPR_COMPLAINT_HEADING,
   GDPR_CONTROLLER_LABEL,
