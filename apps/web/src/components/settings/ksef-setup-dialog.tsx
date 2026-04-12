@@ -23,6 +23,16 @@ import { trpc } from "@/trpc/init";
 // Props
 // ---------------------------------------------------------------------------
 
+/** KSeF connection input — matches the ksef.connect mutation schema. */
+type KsefConnectInput =
+  | { authMethod: "token"; token: string; environment: string }
+  | {
+      authMethod: "certificate";
+      certificateBase64: string;
+      certificatePassword?: string;
+      environment: string;
+    };
+
 interface KsefSetupDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -75,8 +85,7 @@ export function KsefSetupDialog({ open, onOpenChange, orgNip }: KsefSetupDialogP
 
   async function handleSave() {
     if (authMethod === "token") {
-      // biome-ignore lint/suspicious/noExplicitAny: TypeScript depth limit prevents resolving ksef.connect mutation input type
-      (connectMutation.mutate as (input: any) => void)({
+      (connectMutation.mutate as (input: KsefConnectInput) => void)({
         authMethod: "token" as const,
         token,
         environment,
@@ -88,8 +97,7 @@ export function KsefSetupDialog({ open, onOpenChange, orgNip }: KsefSetupDialogP
         const buffer = await certificateFile.arrayBuffer();
         certificateBase64 = btoa(String.fromCharCode(...new Uint8Array(buffer)));
       }
-      // biome-ignore lint/suspicious/noExplicitAny: TypeScript depth limit prevents resolving ksef.connect mutation input type
-      (connectMutation.mutate as (input: any) => void)({
+      (connectMutation.mutate as (input: KsefConnectInput) => void)({
         authMethod: "certificate" as const,
         certificateBase64,
         certificatePassword: certificatePassword || undefined,

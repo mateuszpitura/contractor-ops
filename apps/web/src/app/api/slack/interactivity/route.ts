@@ -45,6 +45,34 @@ interface ActionValue {
 }
 
 /**
+ * Slack interaction payload shape.
+ * Covers block_actions and view_submission interaction types.
+ * @see https://api.slack.com/reference/interaction-payloads
+ */
+interface SlackInteractionPayload {
+  type: "block_actions" | "view_submission" | string;
+  trigger_id?: string;
+  user: { id: string; name: string };
+  actions?: Array<{
+    action_id: string;
+    value?: string;
+    selected_option?: { value: string };
+  }>;
+  view?: {
+    callback_id: string;
+    private_metadata: string;
+    state: {
+      values: Record<
+        string,
+        Record<string, { value?: string; selected_option?: { value: string } }>
+      >;
+    };
+  };
+  channel?: { id: string };
+  message?: { ts: string };
+}
+
+/**
  * Resolves internal userId from a Slack user ID by looking up ExternalLink.
  */
 async function resolveUserFromSlackId(
@@ -77,10 +105,7 @@ async function resolveUserFromSlackId(
 // Async processing (fire-and-forget)
 // ---------------------------------------------------------------------------
 
-async function processBlockAction(
-  // biome-ignore lint/suspicious/noExplicitAny: Slack payload is dynamic
-  payload: any,
-) {
+async function processBlockAction(payload: SlackInteractionPayload) {
   const action = payload.actions?.[0];
   if (!action) return;
 
@@ -197,10 +222,7 @@ async function processBlockAction(
   }
 }
 
-async function processViewSubmission(
-  // biome-ignore lint/suspicious/noExplicitAny: Slack payload is dynamic
-  payload: any,
-) {
+async function processViewSubmission(payload: SlackInteractionPayload) {
   if (payload.view?.callback_id !== "reject_invoice_modal") return;
 
   const comment = payload.view?.state?.values?.comment_block?.comment_input?.value ?? "";
@@ -292,8 +314,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Missing payload" }, { status: 400 });
   }
 
-  // biome-ignore lint/suspicious/noExplicitAny: Slack payload is dynamic
-  const payload = JSON.parse(payloadStr) as any;
+  const payload = JSON.parse(payloadStr) as SlackInteractionPayload;
 
   // For view_submission, we must return synchronously with response_action
   if (payload.type === "view_submission") {

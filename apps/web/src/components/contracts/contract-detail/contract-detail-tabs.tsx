@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { useCallback } from "react";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import type { trpc } from "@/trpc/init";
 import { ActivityTab } from "./activity-tab";
 import { AmendmentsTab } from "./amendments-tab";
 import { DocumentsTab } from "./documents-tab";
@@ -13,9 +14,13 @@ import { OverviewTab } from "./overview-tab";
 const TAB_KEYS = ["overview", "documents", "amendments", "activity"] as const;
 type TabKey = (typeof TAB_KEYS)[number];
 
+/** Contract detail type derived from the tRPC router (contract.getById). */
+type ContractDetail = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof trpc.contract.getById.queryOptions>["queryFn"]>>
+>;
+
 type ContractDetailTabsProps = {
-  // biome-ignore lint/suspicious/noExplicitAny: Contract type is inferred from tRPC router (contract.getById) and passed through to child tabs
-  contract: any;
+  contract: ContractDetail;
 };
 
 export function ContractDetailTabs({ contract }: ContractDetailTabsProps) {

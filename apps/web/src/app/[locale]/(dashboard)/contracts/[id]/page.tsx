@@ -58,8 +58,7 @@ export default function ContractDetailPage() {
 
   const contractQuery = useQuery(trpc.contract.getById.queryOptions({ id: params.id }));
 
-  // biome-ignore lint/suspicious/noExplicitAny: tRPC return type is narrower than what DetailHeader/ContractDetailTabs expect (documents, _meta, contractor.email)
-  const contract = contractQuery.data as any;
+  const contract = contractQuery.data;
 
   // Set breadcrumb label for this detail page
   useBreadcrumbOverride(params.id, contract?.title);

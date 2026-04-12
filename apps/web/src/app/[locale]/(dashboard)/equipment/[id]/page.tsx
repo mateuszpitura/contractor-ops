@@ -67,8 +67,7 @@ export default function EquipmentDetailPage() {
 
   const equipmentQuery = useQuery(trpc.equipment.getById.queryOptions({ id: params.id }));
 
-  // biome-ignore lint/suspicious/noExplicitAny: tRPC returns Date objects but child components expect string dates
-  const equipment = equipmentQuery.data as any;
+  const equipment = equipmentQuery.data;
 
   // Query pending return requests for the current equipment's contractor
   const returnRequestsQuery = useQuery({
