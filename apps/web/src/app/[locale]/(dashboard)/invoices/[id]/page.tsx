@@ -23,6 +23,10 @@ import { ReconciliationCard } from "@/components/time/reconciliation-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import type { ZatcaBadgeStatus } from "@/components/zatca/zatca-status-badge";
+import { ZatcaStatusBadge } from "@/components/zatca/zatca-status-badge";
+import { ZatcaSubmissionDetail } from "@/components/zatca/zatca-submission-detail";
+import { zatcaTrpc } from "@/components/zatca/zatca-trpc";
 import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
@@ -96,7 +100,7 @@ function DetailSkeleton() {
         {/* Form fields skeleton */}
         <div className="space-y-3">
           {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="space-y-1.5">
+            <div key={`skel-${i}`} className="space-y-1.5">
               <Skeleton className="h-4 w-24" />
               <Skeleton className="h-9 w-full" />
             </div>
@@ -119,15 +123,15 @@ export default function InvoiceDetailPage() {
   // Fetch invoice data
   const invoiceQuery = useQuery(trpc.invoice.getById.queryOptions({ id: params.id }));
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: tRPC return type is narrower than what child components (MatchCard, InvoiceMetadataForm) expect
   const invoice = invoiceQuery.data as any;
 
   useBreadcrumbOverride(params.id, invoice?.invoiceNumber);
 
   // Fetch PDF download URL for the first SOURCE_ORIGINAL file
   const sourceFile = invoice?.files?.find(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (f: any) => f.role === "SOURCE_ORIGINAL",
+    (f: { role: string; document?: { id: string }; documentId?: string }) =>
+      f.role === "SOURCE_ORIGINAL",
   );
   const documentId = sourceFile?.document?.id ?? sourceFile?.documentId;
 
@@ -138,8 +142,7 @@ export default function InvoiceDetailPage() {
     enabled: !!documentId,
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const pdfUrl = (pdfUrlQuery.data as any)?.url ?? null;
+  const pdfUrl = pdfUrlQuery.data?.url ?? null;
 
   // Time reconciliation query (Phase 18, D-16)
   const reconciliationQuery = useQuery({
@@ -149,19 +152,28 @@ export default function InvoiceDetailPage() {
     enabled: !!invoice?.contractId,
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const reconciliation = reconciliationQuery.data as any;
+  const reconciliation = reconciliationQuery.data;
 
   // Peppol transmission query (Phase 49 gap closure)
   const peppolTransmissionQuery = useQuery({
-    ...trpc.peppol.getTransmissionByInvoiceId.queryOptions({
+    // biome-ignore lint/suspicious/noExplicitAny: peppol router procedure may not be fully typed yet
+    ...(trpc.peppol as any).getTransmissionByInvoiceId.queryOptions({
       invoiceId: params.id,
     }),
     enabled: !!invoice,
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: peppol transmission shape is dynamic
   const peppolTransmission = peppolTransmissionQuery.data as any;
+
+  // ZATCA submission query (Phase 48 gap closure)
+  const zatcaSubmissionQuery = useQuery({
+    ...zatcaTrpc.getStatus.queryOptions({ invoiceId: params.id }),
+    enabled: !!invoice,
+  });
+
+  // biome-ignore lint/suspicious/noExplicitAny: zatcaTrpc uses manual type proxy due to TypeScript depth limits
+  const zatcaSubmission = zatcaSubmissionQuery.data as any;
 
   // Submit for approval mutation
   const submitForApproval = useMutation(
@@ -208,14 +220,16 @@ export default function InvoiceDetailPage() {
 
   // Get duplicate invoice ID from latest match result
   const latestMatchResult = invoice.matchResults?.[0];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const explanationJson = latestMatchResult?.explanationJson as any;
-  const duplicateInvoiceId = explanationJson?.duplicateInvoiceId ?? null;
+  const explanationJson = latestMatchResult?.explanationJson as Record<string, unknown> | null;
+  const duplicateInvoiceId = (explanationJson?.duplicateInvoiceId as string) ?? null;
 
   // KSeF metadata detection
   const isKsefSource = invoice.source === "KSEF";
   const ksefReference = invoice.externalInvoiceId as string | null;
   const ksefUpoReceipt = invoice.sourceReference as string | null;
+
+  // ZATCA detection (Phase 48 gap closure)
+  const hasZatcaSubmission = !!zatcaSubmission;
 
   // Peppol detection
   const isPeppolSource = invoice.source === "PEPPOL";
@@ -260,6 +274,10 @@ export default function InvoiceDetailPage() {
           <KsefSourceBadge fetchedAt={invoice.receivedAt} />
         ) : (
           <SourceIcon className="h-4 w-4 text-muted-foreground" />
+        )}
+        {/* ZATCA status badge (Phase 48) */}
+        {hasZatcaSubmission && (
+          <ZatcaStatusBadge status={zatcaSubmission.zatcaStatus as ZatcaBadgeStatus} />
         )}
       </div>
 
@@ -321,6 +339,11 @@ export default function InvoiceDetailPage() {
           />
         )}
 
+        {/* ZATCA submission detail (Phase 48) */}
+        {hasZatcaSubmission && (
+          <ZatcaSubmissionDetail submission={zatcaSubmission} invoiceId={params.id} />
+        )}
+
         {/* Match card */}
         <MatchCard
           invoice={invoice}
@@ -332,7 +355,15 @@ export default function InvoiceDetailPage() {
         />
 
         {/* Time reconciliation card (D-16) */}
-        {reconciliation && <ReconciliationCard reconciliation={reconciliation} />}
+        {reconciliation && (
+          <ReconciliationCard
+            reconciliation={
+              reconciliation as unknown as Parameters<
+                typeof ReconciliationCard
+              >[0]["reconciliation"]
+            }
+          />
+        )}
 
         {/* Reverse charge banner (Phase 47) */}
         {invoice.isReverseCharge && (

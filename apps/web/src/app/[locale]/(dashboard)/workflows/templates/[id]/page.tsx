@@ -13,8 +13,7 @@ export default function EditTemplatePage() {
 
   const templateQuery = useQuery(trpc.workflow.getTemplate.queryOptions({ id: templateId }));
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const template = templateQuery.data as any;
+  const template = templateQuery.data;
 
   useBreadcrumbOverride(templateId, template?.name);
 

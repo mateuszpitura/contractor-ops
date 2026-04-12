@@ -78,9 +78,8 @@ export function TabContracts({ contractorId }: TabContractsProps) {
     }),
   );
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const queryData = contractsQuery.data as any;
-  const items: MiniContractRow[] = queryData?.items ?? [];
+  const queryData = contractsQuery.data;
+  const items: MiniContractRow[] = (queryData?.items ?? []) as unknown as MiniContractRow[];
   const totalCount: number = queryData?.totalCount ?? 0;
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
@@ -168,7 +167,7 @@ export function TabContracts({ contractorId }: TabContractsProps) {
     return (
       <div className="space-y-3">
         {Array.from({ length: 5 }).map((_, i) => (
-          <div key={i} className="flex items-center gap-4 px-4 py-3">
+          <div key={`skel-${i}`} className="flex items-center gap-4 px-4 py-3">
             <Skeleton className="h-4 w-40" />
             <Skeleton className="h-5 w-16 rounded-full" />
             <Skeleton className="h-4 w-20" />

@@ -103,16 +103,16 @@ export function InvoiceUploadArea({
 
       try {
         // Step 1: Request presigned upload URL
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const result: any = await requestUploadMutation.mutateAsync({
+        const result = await requestUploadMutation.mutateAsync({
           filename: file.name,
           mimeType: file.type,
           fileSizeBytes: file.size,
         } as Parameters<typeof requestUploadMutation.mutateAsync>[0]);
 
-        const documentId = result.documentId as string;
-        const uploadUrl = result.uploadUrl as string;
-        const storageKey = (result.storageKey as string) ?? "";
+        const uploadResult = result as Record<string, unknown>;
+        const documentId = uploadResult.documentId as string;
+        const uploadUrl = uploadResult.uploadUrl as string;
+        const storageKey = (uploadResult.storageKey as string) ?? "";
 
         setFiles((prev) =>
           prev.map((f) => (f.id === fileId ? { ...f, documentId, storageKey, progress: 10 } : f)),

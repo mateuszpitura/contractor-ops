@@ -53,7 +53,7 @@ function TabContentSkeleton() {
   return (
     <div className="grid gap-4 lg:grid-cols-2">
       {Array.from({ length: 4 }).map((_, i) => (
-        <div key={i} className="rounded-xl border bg-card p-4">
+        <div key={`skel-${i}`} className="rounded-xl border bg-card p-4">
           <Skeleton className="mb-3 h-5 w-32" />
           <div className="space-y-2">
             <Skeleton className="h-4 w-full" />
@@ -72,8 +72,7 @@ export default function ContractorProfilePage() {
 
   const contractorQuery = useQuery(trpc.contractor.getById.queryOptions({ id: params.id }));
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const contractor = contractorQuery.data as any;
+  const contractor = contractorQuery.data;
 
   // Set breadcrumb label for this detail page
   useBreadcrumbOverride(params.id, contractor?.displayName);
@@ -122,7 +121,7 @@ export default function ContractorProfilePage() {
               {/* Tab bar skeleton */}
               <div className="mb-4 flex gap-2 border-b pb-2">
                 {Array.from({ length: 8 }).map((_, i) => (
-                  <Skeleton key={i} className="h-7 w-20" />
+                  <Skeleton key={`skel-${i}`} className="h-7 w-20" />
                 ))}
               </div>
               <TabContentSkeleton />

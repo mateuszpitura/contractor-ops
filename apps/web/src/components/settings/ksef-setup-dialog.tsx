@@ -75,8 +75,8 @@ export function KsefSetupDialog({ open, onOpenChange, orgNip }: KsefSetupDialogP
 
   async function handleSave() {
     if (authMethod === "token") {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (connectMutation.mutate as any)({
+      // biome-ignore lint/suspicious/noExplicitAny: TypeScript depth limit prevents resolving ksef.connect mutation input type
+      (connectMutation.mutate as (input: any) => void)({
         authMethod: "token" as const,
         token,
         environment,
@@ -88,8 +88,8 @@ export function KsefSetupDialog({ open, onOpenChange, orgNip }: KsefSetupDialogP
         const buffer = await certificateFile.arrayBuffer();
         certificateBase64 = btoa(String.fromCharCode(...new Uint8Array(buffer)));
       }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (connectMutation.mutate as any)({
+      // biome-ignore lint/suspicious/noExplicitAny: TypeScript depth limit prevents resolving ksef.connect mutation input type
+      (connectMutation.mutate as (input: any) => void)({
         authMethod: "certificate" as const,
         certificateBase64,
         certificatePassword: certificatePassword || undefined,

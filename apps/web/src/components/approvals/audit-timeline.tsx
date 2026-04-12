@@ -125,7 +125,7 @@ function AuditTimelineSkeleton() {
       <CardContent>
         <div className="space-y-4">
           {[0, 1, 2].map((i) => (
-            <div key={i} className="flex gap-3">
+            <div key={`audit-entry-${i}`} className="flex gap-3">
               <Skeleton className="h-8 w-8 shrink-0 rounded-full" />
               <div className="flex-1 space-y-1.5">
                 <Skeleton className="h-3.5 w-32" />
@@ -239,8 +239,8 @@ export function AuditTimeline({ invoiceId }: AuditTimelineProps) {
 
   if (isLoading) return <AuditTimelineSkeleton />;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const events: AuditEvent[] = (data as any)?.events ?? [];
+  const events: AuditEvent[] =
+    ((data as Record<string, unknown> | undefined)?.events as AuditEvent[]) ?? [];
 
   // Cast t for sub-components that accept a simpler signature
   const tFn = (key: string, params?: Record<string, string>) =>

@@ -145,8 +145,7 @@ export function SendForSignatureDialog({
   // ---------------------------------------------------------------------------
 
   const connectionsQuery = useQuery(trpc.esign.listConnections.queryOptions());
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const esignConnections = ((connectionsQuery.data as any) ?? []) as Array<{
+  const esignConnections = (connectionsQuery.data ?? []) as Array<{
     id: string;
     provider: string;
     status: string;

@@ -70,23 +70,15 @@ export function StepReview({
   // Fetch selected invoices for display
   const invoicesQuery = useQuery(trpc.payment.readyForPayment.queryOptions({ limit: 100 }));
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const allInvoices = useMemo(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result = invoicesQuery.data as any;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return ((result?.items ?? []) as any[]).filter((inv: any) =>
-      selectedInvoiceIds.includes(inv.id),
-    );
+    const result = invoicesQuery.data;
+    return (result?.items ?? []).filter((inv) => selectedInvoiceIds.includes(inv.id));
   }, [invoicesQuery.data, selectedInvoiceIds]);
 
   // Group by currency
+  type InvoiceItem = (typeof allInvoices)[number];
   const groupedByCurrency = useMemo(() => {
-    const groups: Record<
-      string,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      { invoices: any[]; totalMinor: number }
-    > = {};
+    const groups: Record<string, { invoices: InvoiceItem[]; totalMinor: number }> = {};
     for (const inv of allInvoices) {
       const curr = inv.currency as string;
       if (!groups[curr]) groups[curr] = { invoices: [], totalMinor: 0 };
@@ -122,23 +114,21 @@ export function StepReview({
         notes: notes || undefined,
       });
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const runsArray = runs as any[];
+      const runsArray = Array.isArray(runs) ? runs : [runs];
       if (!runsArray.length) throw new Error("No runs created");
 
       // Step 2: Lock and export the first run
-      const run = runsArray[0];
+      const run = runsArray[0] as Record<string, unknown>;
       const result = await lockAndExportMutation.mutateAsync({
-        runId: run.id,
+        runId: run.id as string,
         exportFormat: exportFormat as "CSV" | "BANK_FILE" | "SEPA_XML",
       });
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const exportResult = result as any;
+      const exportResult = result as Record<string, unknown>;
       onComplete({
-        runNumber: run.runNumber ?? run.id.slice(0, 8),
-        fileBase64: exportResult.fileBase64,
-        fileName: exportResult.fileName,
+        runNumber: (run.runNumber as string) ?? (run.id as string).slice(0, 8),
+        fileBase64: exportResult.fileBase64 as string,
+        fileName: exportResult.fileName as string,
         invoiceCount: allInvoices.length,
         totalMinor: grandTotal,
         currency: currencies.join(", "),
@@ -239,7 +229,7 @@ export function StepReview({
         <div className="text-end">
           {currencies.map((curr) => (
             <p key={curr} className="text-[20px] font-semibold tabular-nums">
-              {formatMinorUnits(groupedByCurrency[curr]!.totalMinor)} {curr}
+              {formatMinorUnits(groupedByCurrency[curr]?.totalMinor ?? 0)} {curr}
             </p>
           ))}
         </div>

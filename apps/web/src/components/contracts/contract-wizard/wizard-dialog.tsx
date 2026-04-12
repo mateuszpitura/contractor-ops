@@ -165,7 +165,7 @@ export function ContractWizardDialog({
   const [preFilledFields, setPreFilledFields] = useState<Set<string>>(new Set());
 
   const form = useForm<ContractWizardFormValues>({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // biome-ignore lint/suspicious/noExplicitAny: zodResolver return type doesn't perfectly align with react-hook-form's Resolver generic
     resolver: zodResolver(contractWizardSchema) as any,
     defaultValues: {
       contractorId: contractorId ?? "",
@@ -197,8 +197,7 @@ export function ContractWizardDialog({
       hasPreFilled.current = true;
       const preFilledSet = new Set<string>();
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const contractor = contractorData as Record<string, any>;
+      const contractor = contractorData as Record<string, unknown>;
 
       if (contractor.currency) {
         form.setValue("currency", contractor.currency as string, {
@@ -235,8 +234,7 @@ export function ContractWizardDialog({
   const createMutation = useMutation(
     trpc.contract.create.mutationOptions({
       onSuccess: (data) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const contractId = (data as any).id as string;
+        const contractId = (data as Record<string, unknown>).id as string;
 
         // Link uploaded documents to the newly created contract
         if (uploadedDocumentIds.length > 0) {

@@ -50,11 +50,11 @@ export function TransferTitleSettings() {
 
   // Load current settings
   const settingsQuery = useQuery(trpc.settings.get.queryOptions());
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const orgData = settingsQuery.data as any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const settingsJson = (orgData?.metadata as any)?.settingsJson ?? {};
-  const currentTemplate: string = settingsJson.paymentTransferTitleTemplate ?? "{invoice_number}";
+  const orgData = settingsQuery.data;
+  const metadata = orgData?.metadata as Record<string, unknown> | undefined;
+  const settingsJson = (metadata?.settingsJson as Record<string, unknown>) ?? {};
+  const currentTemplate: string =
+    (settingsJson.paymentTransferTitleTemplate as string) ?? "{invoice_number}";
 
   const {
     register,

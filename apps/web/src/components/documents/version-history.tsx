@@ -41,8 +41,7 @@ export function VersionHistory({ documentId }: VersionHistoryProps) {
     enabled: expanded,
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const versions = (historyQuery.data as any[]) ?? [];
+  const versions = historyQuery.data ?? [];
 
   // Only show if there's potentially more than 1 version
   if (!expanded && versions.length <= 1) {

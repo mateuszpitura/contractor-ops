@@ -79,7 +79,7 @@ function LinkedIssuesSection({ runId }: { runId: string }) {
           // Loading skeleton: 2 rows
           <div className="space-y-2">
             {Array.from({ length: 2 }).map((_, i) => (
-              <div key={i} className="flex items-center gap-2">
+              <div key={`wf-step-${i}`} className="flex items-center gap-2">
                 <Skeleton className="h-4 w-[100px]" />
                 <Skeleton className="h-6 w-[120px] rounded-md" />
               </div>
@@ -159,7 +159,7 @@ function LinkedLinearIssuesSection({ runId }: { runId: string }) {
         {issuesQuery.isLoading ? (
           <div className="space-y-2">
             {Array.from({ length: 2 }).map((_, i) => (
-              <div key={i} className="flex items-center gap-2">
+              <div key={`wf-step-${i}`} className="flex items-center gap-2">
                 <Skeleton className="h-4 w-[100px]" />
                 <Skeleton className="h-6 w-[120px] rounded-md" />
               </div>
@@ -210,8 +210,7 @@ export function WorkflowSidePanel({ runId, onClose }: WorkflowSidePanelProps) {
     enabled: open && runId !== null,
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const run = runQuery.data as any;
+  const run = runQuery.data;
 
   // Compute task summary counts
   const taskSummary = useMemo(() => {

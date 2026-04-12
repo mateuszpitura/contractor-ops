@@ -80,9 +80,8 @@ export function SigningAuditTrail({ envelopeId, open, onOpenChange }: SigningAud
     trpc.esign.getEnvelopeDetail.queryOptions({ envelopeId }, { enabled: open && !!envelopeId }),
   );
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const envelope = detailQuery.data as any;
-  const events = (envelope?.events ?? []) as Array<{
+  const envelope = detailQuery.data;
+  const events = ((envelope as Record<string, unknown> | undefined)?.events ?? []) as Array<{
     id: string;
     eventType: string;
     description: string;
@@ -101,7 +100,7 @@ export function SigningAuditTrail({ envelopeId, open, onOpenChange }: SigningAud
           {detailQuery.isPending ? (
             <div className="space-y-4">
               {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="flex items-start gap-3 py-2">
+                <div key={`audit-step-${i}`} className="flex items-start gap-3 py-2">
                   <Skeleton className="size-4 rounded-full" />
                   <div className="flex-1 space-y-1">
                     <Skeleton className="h-4 w-48" />

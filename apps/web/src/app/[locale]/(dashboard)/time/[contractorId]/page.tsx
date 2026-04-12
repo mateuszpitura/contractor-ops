@@ -98,8 +98,7 @@ function ContractorReviewContent() {
     return <ReviewSkeleton />;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const timesheet = detailQuery.data as any;
+  const timesheet = detailQuery.data;
 
   if (!timesheetId || !timesheet) {
     return (

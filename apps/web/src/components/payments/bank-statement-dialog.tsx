@@ -62,9 +62,8 @@ export function BankStatementDialog({ runId, open, onOpenChange }: BankStatement
   // Import statement mutation
   const importMutation = useMutation(
     trpc.payment.importStatement.mutationOptions({
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      onSuccess: (data: any) => {
-        const results = (data?.matches ?? []) as MatchResult[];
+      onSuccess: (data) => {
+        const results = ((data as Record<string, unknown>)?.matches ?? []) as MatchResult[];
         setMatches(results);
 
         // Pre-select matched items

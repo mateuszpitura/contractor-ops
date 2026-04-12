@@ -71,20 +71,19 @@ export function TemplateForm({ templateId }: TemplateFormProps) {
     trpc.workflow.getTemplate.queryOptions({ id: templateId! }, { enabled: isEditing }),
   );
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const templateData = templateQuery.data as any;
-  const templateStatus: string = templateData?.status ?? "DRAFT";
+  const templateData = templateQuery.data;
+  const templateStatus: string =
+    ((templateData as Record<string, unknown> | undefined)?.status as string) ?? "DRAFT";
 
   // Initialize form
   const { form, fields, isDirty, addTask, removeTask, reorderTasks } = useTemplateForm(
     isEditing && templateData
-      ? {
+      ? ({
           name: templateData.name,
           type: templateData.type,
           description: templateData.description ?? "",
           tasks:
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            templateData.tasks?.map((task: any) => ({
+            templateData.tasks?.map((task) => ({
               id: task.id,
               title: task.title,
               taskType: task.taskType,
@@ -98,9 +97,9 @@ export function TemplateForm({ templateId }: TemplateFormProps) {
               dueOffsetHours: task.dueOffsetHours ?? undefined,
               dependsOnTaskTemplateId: task.dependsOnTaskTemplateId ?? undefined,
               externalUrl: task.externalUrl ?? "",
-              conditions: task.configJson ?? null,
+              conditions: (task.configJson ?? null) as Record<string, unknown> | null,
             })) ?? [],
-        }
+        } as Parameters<typeof useTemplateForm>[0])
       : undefined,
   );
 
@@ -148,8 +147,7 @@ export function TemplateForm({ templateId }: TemplateFormProps) {
       onSuccess: (data) => {
         toast.success(t("toastTemplateDuplicated"));
         queryClient.invalidateQueries({ queryKey: ["workflow"] });
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        router.push(`/workflows/templates/${(data as any).id}`);
+        router.push(`/workflows/templates/${(data as Record<string, unknown>).id}`);
       },
     }),
   );

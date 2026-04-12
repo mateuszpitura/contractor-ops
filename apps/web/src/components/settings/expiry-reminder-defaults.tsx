@@ -27,8 +27,7 @@ export function ExpiryReminderDefaults() {
 
   const defaultsQuery = useQuery(trpc.settings.getExpiryReminderDefaults.queryOptions());
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const serverDefaults = (defaultsQuery.data as any)?.reminderDaysBefore as number[] | undefined;
+  const serverDefaults = defaultsQuery.data?.reminderDaysBefore as number[] | undefined;
 
   const [inputValue, setInputValue] = useState("");
 

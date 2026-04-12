@@ -93,7 +93,7 @@ export function ActivityTimeline({
       {events.map((event, i) => {
         const Icon = event.icon;
         return (
-          <div key={i} className="flex items-start gap-3">
+          <div key={`skel-${i}`} className="flex items-start gap-3">
             <div className="relative mt-0.5 flex size-6 shrink-0 items-center justify-center">
               <Icon className="size-3.5 text-muted-foreground" />
               {i < events.length - 1 && (
@@ -118,7 +118,6 @@ export function RightRail({ contractor }: RightRailProps) {
   const [notes, setNotes] = useState(contractor.notes ?? "");
   const [isDirty, setIsDirty] = useState(false);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const noteSaveMutation = useMutation(
     trpc.contractor.update.mutationOptions({
       onSuccess: () => {
@@ -139,9 +138,7 @@ export function RightRail({ contractor }: RightRailProps) {
   );
 
   function handleSaveNotes() {
-    // The notes field was added to contractorUpdateSchema in validators
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (noteSaveMutation as any).mutate({ id: contractor.id, notes });
+    noteSaveMutation.mutate({ id: contractor.id, notes });
   }
 
   return (

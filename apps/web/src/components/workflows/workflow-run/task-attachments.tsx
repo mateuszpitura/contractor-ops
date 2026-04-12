@@ -35,8 +35,16 @@ export function TaskAttachments({ taskRunId }: TaskAttachmentsProps) {
     }),
   );
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const documents = ((docsQuery.data as any)?.items ?? []) as any[];
+  const documents = (docsQuery.data?.items ?? []) as unknown as Array<{
+    id: string;
+    originalFileName: string;
+    mimeType: string;
+    fileSizeBytes: number;
+    virusScanStatus: string;
+    createdAt: string | Date;
+    uploadedByUserId: string | null;
+    status: string;
+  }>;
 
   return (
     <div className="space-y-3">
@@ -51,7 +59,7 @@ export function TaskAttachments({ taskRunId }: TaskAttachmentsProps) {
       {docsQuery.isLoading ? (
         <div className="space-y-2">
           {Array.from({ length: 2 }).map((_, i) => (
-            <Skeleton key={i} className="h-16 w-full rounded-lg" />
+            <Skeleton key={`skel-${i}`} className="h-16 w-full rounded-lg" />
           ))}
         </div>
       ) : documents.length === 0 && !showDropZone ? (

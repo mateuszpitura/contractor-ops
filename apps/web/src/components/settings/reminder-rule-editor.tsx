@@ -170,12 +170,11 @@ function RuleUserPicker({
   const [search, setSearch] = useState("");
 
   const usersQuery = useQuery(trpc.user.list.queryOptions());
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const rawMembers = (usersQuery.data ?? []) as any[];
+  const rawMembers = usersQuery.data ?? [];
   const users = rawMembers.map((m) => ({
     id: (m.userId ?? m.id) as string,
-    name: (m.user?.name ?? m.name ?? "Unknown") as string,
-    email: (m.user?.email ?? m.email ?? "") as string,
+    name: (m.name ?? "Unknown") as string,
+    email: (m.email ?? "") as string,
   }));
 
   const selectedUser = users.find((u) => u.id === value);
