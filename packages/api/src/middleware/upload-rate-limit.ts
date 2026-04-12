@@ -74,7 +74,7 @@ export const uploadRateLimitMiddleware = t.middleware(async ({ ctx, next }) => {
   if (!allowed) {
     throw new TRPCError({
       code: "TOO_MANY_REQUESTS",
-      message: `Upload rate limit exceeded. Maximum ${MAX_UPLOADS} uploads per minute. Try again shortly.`,
+      message: "errors.upload.rateLimitExceeded",
     });
   }
 

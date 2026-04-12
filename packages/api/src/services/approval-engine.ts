@@ -178,7 +178,7 @@ export async function createApprovalFlow(
       if (!member) {
         throw new TRPCError({
           code: "PRECONDITION_FAILED",
-          message: `No user with role ${step.approverRole} found`,
+          message: "errors.approval.noUserWithRole",
         });
       }
 

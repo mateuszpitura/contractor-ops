@@ -78,14 +78,28 @@ interface BaseLayoutProps {
   ctaUrl?: string;
   ctaText?: string;
   preferencesUrl?: string;
+  /** Label for the CTA button. Accepts translated text. */
+  ctaLabel?: string;
+  /** Label for the "Manage notification preferences" link. */
+  managePrefsLabel?: string;
+  /** Label for the "Unsubscribe" link. */
+  unsubscribeLabel?: string;
+  /** Footer brand text. */
+  footerText?: string;
 }
 
 export function BaseLayout({
   children,
   ctaUrl,
-  ctaText = "View in Contractor Ops",
+  ctaText,
+  ctaLabel,
   preferencesUrl,
+  managePrefsLabel = "Manage notification preferences",
+  unsubscribeLabel = "Unsubscribe",
+  footerText = "Contractor Ops - Contractor operations platform",
 }: BaseLayoutProps) {
+  const resolvedCtaLabel = ctaLabel ?? ctaText ?? "View in Contractor Ops";
+
   return (
     <Html>
       <Head />
@@ -97,7 +111,7 @@ export function BaseLayout({
             {ctaUrl && (
               <Section style={{ textAlign: "center", margin: "32px 0" }}>
                 <Button style={ctaButton} href={ctaUrl}>
-                  {ctaText}
+                  {resolvedCtaLabel}
                 </Button>
               </Section>
             )}
@@ -108,16 +122,16 @@ export function BaseLayout({
               {preferencesUrl && (
                 <>
                   <Link style={footerLink} href={preferencesUrl}>
-                    Manage notification preferences
+                    {managePrefsLabel}
                   </Link>
                   {" | "}
                 </>
               )}
               <Link style={footerLink} href={preferencesUrl ?? "#"}>
-                Unsubscribe
+                {unsubscribeLabel}
               </Link>
             </Text>
-            <Text style={footer}>Contractor Ops - Contractor operations platform</Text>
+            <Text style={footer}>{footerText}</Text>
           </Section>
         </Container>
       </Body>
