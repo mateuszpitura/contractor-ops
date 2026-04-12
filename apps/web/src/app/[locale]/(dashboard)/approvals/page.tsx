@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { CheckSquare, ClipboardCheck } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { parseAsInteger, parseAsString, useQueryState } from 'nuqs';
 import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
@@ -27,6 +27,7 @@ import { trpc } from '@/trpc/init';
 function ApprovalsContent() {
   const t = useTranslations('Approvals');
   const te = useTranslations('EmptyStates');
+  const locale = useLocale();
   const { can } = usePermissions();
   const queryClient = useQueryClient();
 
@@ -133,11 +134,15 @@ function ApprovalsContent() {
   // Column definitions with action callbacks
   const columns = useMemo(
     () =>
-      getColumns((key: string) => t(key as Parameters<typeof t>[0]), {
-        onApprove: stepId => approveMutation.mutate({ stepId }),
-        onReject: (stepId, comment) => rejectMutation.mutate({ stepId, comment }),
-      }),
-    [t, approveMutation, rejectMutation],
+      getColumns(
+        (key: string) => t(key as Parameters<typeof t>[0]),
+        {
+          onApprove: stepId => approveMutation.mutate({ stepId }),
+          onReject: (stepId, comment) => rejectMutation.mutate({ stepId, comment }),
+        },
+        locale,
+      ),
+    [t, approveMutation, rejectMutation, locale],
   );
 
   // Row click handler for side panel

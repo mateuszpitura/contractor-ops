@@ -158,6 +158,7 @@ interface ColumnCallbacks {
 export function getColumns(
   t: TranslateFunction,
   callbacks: ColumnCallbacks,
+  locale: string = 'en',
 ): ColumnDef<ApprovalQueueRow>[] {
   return [
     // 1. Select checkbox
@@ -227,7 +228,7 @@ export function getColumns(
 
         return (
           <span className="block text-end font-mono text-sm tabular-nums">
-            {formatMinorUnits(invoice.totalMinor, invoice.currency)}
+            {formatMinorUnits(invoice.totalMinor, invoice.currency, locale)}
           </span>
         );
       },
