@@ -1,5 +1,6 @@
 "use client";
 
+import { isPdplJurisdiction } from "@contractor-ops/validators";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { LucideIcon } from "lucide-react";
 import {
@@ -15,6 +16,7 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useState } from "react";
+import { OnboardingConsentStep } from "@/components/consent/onboarding-consent-step";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -206,7 +208,20 @@ export function OnboardingChecklist() {
   const serverDismissed = (metadata.onboardingDismissed as boolean) ?? false;
   const isDismissed = localDismissed ?? serverDismissed;
 
-  const totalCount = ONBOARDING_STEPS.length;
+  // Filter steps: privacy-consent only shows for PDPL jurisdictions (UAE, Saudi)
+  const orgCountryCode = (metadata.countryCode as string) ?? null;
+  const isPdpl = isPdplJurisdiction(orgCountryCode);
+  const visibleSteps = isPdpl
+    ? ONBOARDING_STEPS
+    : ONBOARDING_STEPS.filter((s) => s.id !== "privacy-consent");
+
+  // Server-side consent validation for gating the privacy-consent step
+  const { data: hasConsents } = useQuery({
+    ...trpc.consent.hasRequiredConsents.queryOptions(),
+    enabled: isPdpl,
+  });
+
+  const totalCount = visibleSteps.length;
   const completedCount = completedSteps.length;
 
   // Settings update mutation
@@ -221,15 +236,23 @@ export function OnboardingChecklist() {
   );
 
   // Mark a step as complete
+  // skipValidation: true when called from OnboardingConsentStep.onComplete
+  // (which only fires after successful server-side bulkGrant mutation)
   const completeStep = useCallback(
-    (stepId: string) => {
+    (stepId: string, skipValidation = false) => {
       if (completedSteps.includes(stepId)) return;
+
+      // Server-side consent validation for privacy-consent step (D-03 belt-and-suspenders)
+      if (stepId === "privacy-consent" && !skipValidation && !hasConsents) {
+        return; // Block completion until server confirms consents
+      }
+
       const newSteps = [...completedSteps, stepId];
       updateMutation.mutate({
         onboardingCompletedSteps: newSteps,
       });
     },
-    [completedSteps, updateMutation],
+    [completedSteps, updateMutation, hasConsents],
   );
 
   // Dismiss / expand toggle
@@ -261,7 +284,7 @@ export function OnboardingChecklist() {
   }
 
   // Determine current step (first non-completed)
-  const currentStepId = ONBOARDING_STEPS.find((s) => !completedSteps.includes(s.id))?.id;
+  const currentStepId = visibleSteps.find((s) => !completedSteps.includes(s.id))?.id;
 
   return (
     <Card className="iridescent neon-card">
@@ -276,14 +299,24 @@ export function OnboardingChecklist() {
       </CardHeader>
       <CardContent>
         <div className="flex flex-col gap-3">
-          {ONBOARDING_STEPS.map((step) => (
-            <StepItem
-              key={step.id}
-              step={step}
-              completed={completedSteps.includes(step.id)}
-              current={step.id === currentStepId}
-              t={t}
-            />
+          {visibleSteps.map((step) => (
+            <div key={step.id}>
+              <StepItem
+                step={step}
+                completed={completedSteps.includes(step.id)}
+                current={step.id === currentStepId}
+                t={t}
+              />
+              {/* Inline consent step for PDPL jurisdictions */}
+              {step.id === "privacy-consent" && step.id === currentStepId && !completedSteps.includes(step.id) && (
+                <div className="ms-9 mt-2">
+                  <OnboardingConsentStep
+                    orgCountryCode={orgCountryCode}
+                    onComplete={() => completeStep("privacy-consent", true)}
+                  />
+                </div>
+              )}
+            </div>
           ))}
         </div>
       </CardContent>
