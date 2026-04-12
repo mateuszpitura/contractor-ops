@@ -241,6 +241,20 @@ export {
   groupRoleMappingSchema,
 } from './google-workspace.js';
 export { optionalFk, optionalPositiveInt, optionalString } from './helpers.js';
+export type { LockedDePhraseKey } from './legal/de.js';
+export {
+  GDPR_COMPLAINT_HEADING,
+  GDPR_CONTROLLER_LABEL,
+  GDPR_DPO_LABEL,
+  GDPR_RIGHTS_HEADING,
+  LOCKED_DE_PHRASES,
+  RESERVED_LEGAL_KEYS,
+  TAX_HANDELSREGISTER_LABEL,
+  TAX_KLEINUNTERNEHMER_LABEL,
+  TAX_SOZIALVERSICHERUNGSNUMMER_LABEL,
+  TAX_STEUERNUMMER_LABEL,
+  TAX_USTIDNR_LABEL,
+} from './legal/de.js';
 export type {
   DisconnectProviderInput,
   GetProviderHealthInput,
