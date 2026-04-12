@@ -1,13 +1,5 @@
 // Types
 
-export type {
-  KsefInvoiceMetadata,
-  KsefQueryResult,
-  KsefSession,
-} from "@contractor-ops/einvoice";
-// KSeF — backward compatibility re-exports from @contractor-ops/einvoice
-// TODO: Remove after all consumers switch to @contractor-ops/einvoice
-export { KsefApiClient, mapKsefToInvoiceFields, parseFa3Xml } from "@contractor-ops/einvoice";
 export { AutentiAdapter } from "./adapters/autenti-adapter.js";
 // Adapters
 export { BaseAdapter } from "./adapters/base-adapter.js";

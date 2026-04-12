@@ -1,5 +1,5 @@
-import type { KsefParsedInvoice } from "@contractor-ops/validators";
-import { ksefParsedInvoiceSchema } from "@contractor-ops/validators";
+import type { KsefParsedInvoice } from "@contractor-ops/einvoice";
+import { ksefParsedInvoiceSchema } from "@contractor-ops/einvoice";
 import { XMLParser } from "fast-xml-parser";
 
 // ---------------------------------------------------------------------------
@@ -101,11 +101,11 @@ export function parseFa3Xml(
       description: String(line["P_7"] ?? ""),
       quantity: line["P_8B"] != null ? Number(line["P_8B"]) : undefined,
       unit: line["P_8A"] != null ? String(line["P_8A"]) : undefined,
-      unitPriceGrosze: line["P_9A"] != null ? toGrosze(line["P_9A"]) : undefined,
-      netAmountGrosze: netAmount || undefined,
+      unitPriceMinor: line["P_9A"] != null ? toGrosze(line["P_9A"]) : undefined,
+      netAmountMinor: netAmount || undefined,
       vatRate: vatRateStr,
-      vatAmountGrosze: vatAmount,
-      grossAmountGrosze: grossAmount,
+      vatAmountMinor: vatAmount,
+      grossAmountMinor: grossAmount,
     };
   });
 
@@ -150,9 +150,9 @@ export function parseFa3Xml(
     },
     lines,
     totals: {
-      netGrosze: netTotal,
-      vatGrosze: vatTotal,
-      grossGrosze: grossTotal,
+      netMinor: netTotal,
+      vatMinor: vatTotal,
+      grossMinor: grossTotal,
     },
     payment,
     ksefReferenceNumber,
@@ -195,11 +195,11 @@ export function mapKsefToInvoiceFields(parsed: KsefParsedInvoice) {
     issueDate: new Date(parsed.issueDate),
     dueDate: parsed.payment?.dueDate ? new Date(parsed.payment.dueDate) : null,
     currency: parsed.currency,
-    subtotalGrosze: parsed.totals.netGrosze,
+    subtotalGrosze: parsed.totals.netMinor,
     vatRate: primaryVatRate,
-    vatAmountGrosze: parsed.totals.vatGrosze,
-    totalGrosze: parsed.totals.grossGrosze,
-    amountToPayGrosze: parsed.totals.grossGrosze,
+    vatAmountGrosze: parsed.totals.vatMinor,
+    totalGrosze: parsed.totals.grossMinor,
+    amountToPayGrosze: parsed.totals.grossMinor,
     sellerTaxId: parsed.seller.nip,
     sellerName: parsed.seller.name,
     sellerBankAccount: parsed.payment?.bankAccount ?? null,
@@ -211,11 +211,11 @@ export function mapKsefToInvoiceFields(parsed: KsefParsedInvoice) {
     description: line.description,
     quantity: line.quantity ?? null,
     unit: line.unit ?? null,
-    unitPriceGrosze: line.unitPriceGrosze ?? null,
-    netAmountGrosze: line.netAmountGrosze ?? null,
+    unitPriceGrosze: line.unitPriceMinor ?? null,
+    netAmountGrosze: line.netAmountMinor ?? null,
     vatRate: line.vatRate ?? null,
-    vatAmountGrosze: line.vatAmountGrosze ?? null,
-    grossAmountGrosze: line.grossAmountGrosze ?? null,
+    vatAmountGrosze: line.vatAmountMinor ?? null,
+    grossAmountGrosze: line.grossAmountMinor ?? null,
   }));
 
   return { invoice, lines };
