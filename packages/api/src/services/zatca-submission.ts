@@ -12,12 +12,19 @@
 import { createHash, randomUUID } from "node:crypto";
 import { prisma } from "@contractor-ops/db";
 import type { Prisma } from "@contractor-ops/db/generated/prisma/client";
-import type { ZatcaClearanceResponse, ZatcaReportingResponse } from "@contractor-ops/einvoice";
+import type {
+  CertificateInfo,
+  EInvoice,
+  EInvoiceTaxSubtotal,
+  ZatcaClearanceResponse,
+  ZatcaReportingResponse,
+} from "@contractor-ops/einvoice";
 import {
   ZATCA_PRODUCTION_URL,
   ZATCA_SANDBOX_URL,
   ZatcaApiClient,
   ZatcaApiError,
+  ZatcaProfile,
 } from "@contractor-ops/einvoice";
 import { createZatcaSecretStore, ZATCA_SECRET_NAMES } from "@contractor-ops/integrations";
 import { getQStashClient } from "@contractor-ops/integrations/services/qstash-client";
@@ -75,7 +82,7 @@ export async function submitToZatca(options: SubmitToZatcaOptions): Promise<void
   // Load invoice and org data
   const invoice = await prisma.invoice.findUniqueOrThrow({
     where: { id: invoiceId },
-    include: { contractor: true },
+    include: { contractor: true, lines: true },
   });
 
   // Get ZATCA connection config
@@ -96,14 +103,21 @@ export async function submitToZatca(options: SubmitToZatcaOptions): Promise<void
 
   // Retrieve certificates from Infisical
   const secretStore = createZatcaSecretStore(organizationId);
-  const [certificate, apiSecret] = await Promise.all([
+  const [certificate, apiSecret, privateKey] = await Promise.all([
     secretStore.get(ZATCA_SECRET_NAMES.X509_CERTIFICATE),
     secretStore.get(ZATCA_SECRET_NAMES.API_SECRET),
+    secretStore.get(ZATCA_SECRET_NAMES.PRIVATE_KEY),
   ]);
 
   if (!certificate || !apiSecret) {
     throw new Error(
       `ZATCA certificates not found for organization ${organizationId}. Complete device onboarding first.`,
+    );
+  }
+
+  if (!privateKey) {
+    throw new Error(
+      `ZATCA private key not found for organization ${organizationId}. Complete device onboarding first.`,
     );
   }
 
@@ -119,11 +133,32 @@ export async function submitToZatca(options: SubmitToZatcaOptions): Promise<void
     // Step 3-4: Generate invoice XML with ZATCA extensions
     const zatcaUuid = randomUUID();
 
-    // Generate the XML (uses ZatcaProfile.generate internally)
-    // For now, we create a placeholder XML that will be replaced
-    // when the full EInvoice pipeline is wired in subsequent plans
-    const invoiceXml = `<Invoice>${invoiceId}</Invoice>`;
-    const invoiceHash = createHash("sha256").update(invoiceXml).digest("hex");
+    // Build EInvoice from Prisma record
+    const eInvoice = buildEInvoiceFromPrisma(invoice, { icv, pih, zatcaUuid });
+
+    // Step 3: Generate UBL 2.1 XML with ZATCA extensions
+    const profile = new ZatcaProfile();
+    const unsignedXml = await profile.generate(eInvoice);
+
+    // Step 4a: Sign with XAdES-BES
+    const certInfo: CertificateInfo = { certificate, privateKey };
+    const signedXml = await profile.sign.sign(unsignedXml, certInfo);
+
+    // Step 4b: Compute hash of signed XML
+    const invoiceHash = createHash("sha256").update(signedXml).digest("hex");
+
+    // Step 4c: Generate TLV QR code
+    const qrEInvoice: EInvoice = {
+      ...eInvoice,
+      extensions: {
+        ...eInvoice.extensions,
+        invoiceHash,
+        signatureValue: signedXml,
+        publicKey: certificate,
+      },
+    };
+    const qrBuffer = await profile.qrCode.generateQR(qrEInvoice);
+    const qrBase64 = qrBuffer.toString("base64");
 
     // Step 5: Record chain entry
     const record = await recordChainEntry(txClient, {
@@ -140,8 +175,9 @@ export async function submitToZatca(options: SubmitToZatcaOptions): Promise<void
       icv,
       pih,
       zatcaUuid,
-      invoiceXml,
+      invoiceXml: signedXml,
       invoiceHash,
+      qrBase64,
     };
   });
 
@@ -276,6 +312,87 @@ export async function queueZatcaSubmission(
     retries: QSTASH_CONFIG.retries,
     delay: QSTASH_CONFIG.delay,
   });
+}
+
+// ---------------------------------------------------------------------------
+// EInvoice Builder
+// ---------------------------------------------------------------------------
+
+/**
+ * Converts a Prisma invoice record (with relations) to the canonical EInvoice
+ * format consumed by ZatcaProfile.generate().
+ *
+ * All monetary amounts stay in minor units (grosze/halalas) as the EInvoice
+ * type expects integer minor units throughout.
+ */
+function buildEInvoiceFromPrisma(
+  invoice: Record<string, unknown> & {
+    invoiceNumber: string;
+    issueDate: Date;
+    dueDate: Date | null;
+    currency: string;
+    sellerTaxId: string | null;
+    sellerName: string | null;
+    buyerTaxId: string | null;
+    subtotalMinor: number;
+    totalMinor: number;
+    amountToPayMinor: number;
+    vatRate: string | null;
+    vatAmountMinor: number | null;
+    lines: Array<Record<string, unknown>>;
+    contractor: Record<string, unknown> | null;
+  },
+  opts: { icv: number; pih: string; zatcaUuid: string },
+): EInvoice {
+  const metadata = (invoice.metadata ?? invoice.metadataJson ?? {}) as Record<string, unknown>;
+  const subtype = (metadata.zatcaSubtype as string) ?? "0100000";
+  const isSimplified = subtype.startsWith("02");
+
+  return {
+    id: invoice.invoiceNumber,
+    issueDate: invoice.issueDate.toISOString().split("T")[0]!,
+    dueDate: invoice.dueDate ? invoice.dueDate.toISOString().split("T")[0] : undefined,
+    invoiceTypeCode: "388",
+    currencyCode: invoice.currency,
+    supplier: {
+      id: invoice.sellerTaxId ?? "",
+      name: invoice.sellerName ?? "",
+      country: "SA",
+    },
+    customer: {
+      id: invoice.buyerTaxId ?? "",
+      name: (invoice.contractor as Record<string, unknown> | null)?.name as string ?? "",
+    },
+    lines: (invoice.lines ?? []).map((line: Record<string, unknown>, idx: number) => ({
+      lineNumber: idx + 1,
+      description: (line.description as string) ?? "",
+      quantity: (line.quantity as number) ?? 1,
+      unitPriceMinor: (line.unitPriceMinor as number) ?? 0,
+      netAmountMinor: (line.netAmountMinor as number) ?? (line.amountMinor as number) ?? 0,
+      vatRate: invoice.vatRate ?? "15.00",
+      vatAmountMinor: (line.vatAmountMinor as number) ?? 0,
+      grossAmountMinor: (line.grossAmountMinor as number) ?? 0,
+    })),
+    taxExclusiveAmount: invoice.subtotalMinor,
+    taxInclusiveAmount: invoice.totalMinor,
+    payableAmount: invoice.amountToPayMinor,
+    taxBreakdown: [
+      {
+        taxableAmountMinor: invoice.subtotalMinor,
+        taxAmountMinor: invoice.vatAmountMinor ?? 0,
+        taxCategory: "S",
+        percent: parseFloat(invoice.vatRate ?? "15"),
+      } satisfies EInvoiceTaxSubtotal,
+    ],
+    profileId: "zatca",
+    extensions: {
+      icv: opts.icv,
+      pih: opts.pih,
+      uuid: opts.zatcaUuid,
+      invoiceSubtype: subtype,
+      profileID: isSimplified ? "reporting:1.0" : "clearance:1.0",
+    },
+  };
 }
 
 // ---------------------------------------------------------------------------
