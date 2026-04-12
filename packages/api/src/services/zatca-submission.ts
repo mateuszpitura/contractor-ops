@@ -158,7 +158,7 @@ export async function submitToZatca(options: SubmitToZatcaOptions): Promise<void
   try {
     // Determine B2B (standard/clearance) vs B2C (simplified/reporting)
     // Standard invoices have subtypes starting with "01", simplified with "02"
-    const isStandard = isStandardInvoice(invoice);
+    const isStandard = isStandardInvoice(invoice as unknown as Record<string, unknown>);
 
     let response: ZatcaClearanceResponse | ZatcaReportingResponse;
     let status: string;
@@ -281,8 +281,8 @@ export async function queueZatcaSubmission(
 // Helpers
 // ---------------------------------------------------------------------------
 
-function isStandardInvoice(invoice: { metadata?: unknown }): boolean {
-  const metadata = invoice.metadata as Record<string, unknown> | null;
+function isStandardInvoice(invoice: Record<string, unknown>): boolean {
+  const metadata = (invoice.metadata ?? invoice.metadataJson) as Record<string, unknown> | null;
   const subtype = metadata?.zatcaSubtype as string | undefined;
   // Standard subtypes start with "01", simplified with "02"
   if (subtype) return subtype.startsWith("01");

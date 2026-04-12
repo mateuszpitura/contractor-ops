@@ -7,12 +7,14 @@
 // ---------------------------------------------------------------------------
 
 import crypto from "node:crypto";
-import { SignedXml, ExclusiveCanonicalization } from "xml-crypto";
+import { ExclusiveCanonicalization, SignedXml } from "xml-crypto";
 import type {
   CertificateInfo,
   Signable,
   SignatureVerificationResult,
 } from "../../types/profile.js";
+
+type XmlDomModule = typeof import("@xmldom/xmldom");
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -30,8 +32,6 @@ const SIGNED_PROPS_ID = "xadesSignedProperties";
 // ---------------------------------------------------------------------------
 // xmldom accessor (via xml-crypto's dependency)
 // ---------------------------------------------------------------------------
-
-type XmlDomModule = typeof import("@xmldom/xmldom");
 
 let _xmldom: XmlDomModule | undefined;
 
@@ -53,27 +53,24 @@ function getXmldom(): XmlDomModule {
 // ---------------------------------------------------------------------------
 
 class EcdsaSha256Algorithm {
-  getSignature(
-    signedInfo: crypto.BinaryLike,
-    privateKey: crypto.KeyLike,
-  ): string {
+  getSignature(signedInfo: crypto.BinaryLike, privateKey: crypto.KeyLike | string): string {
     const signer = crypto.createSign("SHA256");
     signer.update(signedInfo);
     return signer.sign(
-      { key: privateKey, dsaEncoding: "ieee-p1363" },
+      { key: privateKey, dsaEncoding: "ieee-p1363" } as crypto.SignPrivateKeyInput,
       "base64",
     );
   }
 
   verifySignature(
     material: string,
-    key: crypto.KeyLike,
+    key: crypto.KeyLike | string,
     signatureValue: string,
   ): boolean {
     const verifier = crypto.createVerify("SHA256");
     verifier.update(material);
     return verifier.verify(
-      { key, dsaEncoding: "ieee-p1363" },
+      { key, dsaEncoding: "ieee-p1363" } as crypto.VerifyPublicKeyInput,
       signatureValue,
       "base64",
     );
@@ -182,10 +179,7 @@ function canonicalizeFragment(xmlStr: string): string {
 // XAdES Building
 // ---------------------------------------------------------------------------
 
-function buildSignedProperties(
-  cert: crypto.X509Certificate,
-  signingTime: string,
-): string {
+function buildSignedProperties(cert: crypto.X509Certificate, signingTime: string): string {
   const certDigest = computeCertDigest(cert);
   const issuerDN = escapeXml(cert.issuer.replace(/\n/g, ", "));
   const serialNumber = extractSerialNumber(cert);
@@ -215,10 +209,7 @@ function buildSignedProperties(
 // Signature XML Builders
 // ---------------------------------------------------------------------------
 
-function buildSignedInfoXml(
-  docDigest: string,
-  signedPropsDigest: string,
-): string {
+function buildSignedInfoXml(docDigest: string, signedPropsDigest: string): string {
   return [
     `<ds:SignedInfo xmlns:ds="${DS_NS}">`,
     `<ds:CanonicalizationMethod Algorithm="${EXC_C14N}"></ds:CanonicalizationMethod>`,
@@ -324,9 +315,9 @@ export class ZatcaXAdESSigner implements Signable {
     const { DOMParser: DomParser } = getXmldom();
     const tempDoc = new DomParser().parseFromString(tempSignedXml, "text/xml");
     const allElements = tempDoc.getElementsByTagName("*");
-    let signedPropsElement: Element | null = null;
+    let signedPropsElement: unknown = null;
     for (let i = 0; i < allElements.length; i++) {
-      const el = allElements.item(i) as Element;
+      const el = allElements.item(i) as { getAttribute(name: string): string | null };
       if (el.getAttribute("Id") === SIGNED_PROPS_ID) {
         signedPropsElement = el;
         break;
@@ -336,7 +327,7 @@ export class ZatcaXAdESSigner implements Signable {
       throw new Error("Failed to find SignedProperties in temporary document");
     }
     const c14n = new ExclusiveCanonicalization();
-    const canonSignedProps = c14n.process(signedPropsElement, {}).toString();
+    const canonSignedProps = c14n.process(signedPropsElement as Element, {}).toString();
     const signedPropsDigest = sha256Base64(canonSignedProps);
 
     // 5. Build real SignedInfo with correct digest
@@ -346,10 +337,7 @@ export class ZatcaXAdESSigner implements Signable {
     const canonicalSignedInfo = canonicalizeFragment(signedInfoXml);
     const signer = crypto.createSign("SHA256");
     signer.update(canonicalSignedInfo);
-    const signatureValue = signer.sign(
-      { key: privateKey, dsaEncoding: "ieee-p1363" },
-      "base64",
-    );
+    const signatureValue = signer.sign({ key: privateKey, dsaEncoding: "ieee-p1363" }, "base64");
 
     // 7. Build final signature with real values
     const finalSignatureXml = buildSignatureXml({
@@ -368,9 +356,7 @@ export class ZatcaXAdESSigner implements Signable {
 
   async verify(xml: string): Promise<SignatureVerificationResult> {
     try {
-      const sigMatch = xml.match(
-        /<ds:Signature[\s\S]*?<\/ds:Signature>/,
-      );
+      const sigMatch = xml.match(/<ds:Signature[\s\S]*?<\/ds:Signature>/);
       if (!sigMatch) {
         return {
           valid: false,
@@ -378,9 +364,7 @@ export class ZatcaXAdESSigner implements Signable {
         };
       }
 
-      const certMatch = xml.match(
-        /<ds:X509Certificate>([\s\S]*?)<\/ds:X509Certificate>/,
-      );
+      const certMatch = xml.match(/<ds:X509Certificate>([\s\S]*?)<\/ds:X509Certificate>/);
       if (!certMatch) {
         return {
           valid: false,
@@ -394,8 +378,7 @@ export class ZatcaXAdESSigner implements Signable {
       const sigVerifier = new SignedXml({
         publicCert: certPem,
       });
-      sigVerifier.SignatureAlgorithms[ECDSA_SHA256] =
-        EcdsaSha256Algorithm as never;
+      sigVerifier.SignatureAlgorithms[ECDSA_SHA256] = EcdsaSha256Algorithm as never;
 
       sigVerifier.loadSignature(sigMatch[0]);
       const isValid = sigVerifier.checkSignature(xml);
@@ -404,9 +387,7 @@ export class ZatcaXAdESSigner implements Signable {
       let signedAt: Date | undefined;
       let signerName: string | undefined;
 
-      const timeMatch = xml.match(
-        /<xades:SigningTime>([\s\S]*?)<\/xades:SigningTime>/,
-      );
+      const timeMatch = xml.match(/<xades:SigningTime>([\s\S]*?)<\/xades:SigningTime>/);
       if (timeMatch) {
         signedAt = new Date(timeMatch[1]!.trim());
       }
@@ -428,10 +409,7 @@ export class ZatcaXAdESSigner implements Signable {
       const refErrors = sigVerifier
         .getReferences()
         .filter((r) => r.validationError)
-        .map(
-          (r) =>
-            `Reference ${r.uri || "(document)"}: ${r.validationError!.message}`,
-        );
+        .map((r) => `Reference ${r.uri || "(document)"}: ${r.validationError!.message}`);
 
       return {
         valid: false,
@@ -443,8 +421,7 @@ export class ZatcaXAdESSigner implements Signable {
             : ["Signature verification failed: signature value mismatch"],
       };
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Unknown verification error";
+      const message = error instanceof Error ? error.message : "Unknown verification error";
       return {
         valid: false,
         errors: [`Signature verification error: ${message}`],
