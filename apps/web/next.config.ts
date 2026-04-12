@@ -1,12 +1,32 @@
+import createMDX from '@next/mdx';
 import { withSentryConfig } from '@sentry/nextjs';
 import type { NextConfig } from 'next';
 import createNextIntlPlugin from 'next-intl/plugin';
+import rehypeAutolinkHeadings from 'rehype-autolink-headings';
+import rehypeSlug from 'rehype-slug';
 
 const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
+
+// MDX pipeline — compile-time static HTML only (no runtime user MDX).
+// rehype-slug auto-assigns heading IDs (anchor targets for TOC + deep-link).
+// rehype-autolink-headings wraps each heading with <a href="#id"> for A11y +
+// keyboard navigation per UI-SPEC §Interaction 9.
+const withMDX = createMDX({
+  options: {
+    remarkPlugins: [],
+    rehypePlugins: [rehypeSlug, [rehypeAutolinkHeadings, { behavior: 'wrap' }]],
+  },
+});
 
 const isDev = process.env.NODE_ENV === 'development';
 
 const nextConfig: NextConfig = {
+  // Produce a self-contained build in .next/standalone — used by the Docker
+  // worker image. Vercel ignores this flag so it's safe to keep always-on.
+  output: 'standalone',
+  // Allow .mdx files to be treated as page/route modules. Keep .ts/.tsx first so
+  // existing routes take precedence when a jurisdiction has both (defensive).
+  pageExtensions: ['ts', 'tsx', 'mdx'],
   // Disable Next.js built-in request logging — all observability goes through
   // pino (observability middleware) for consistent structured logging.
   logging: {
@@ -93,7 +113,7 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withSentryConfig(withNextIntl(nextConfig), {
+export default withSentryConfig(withNextIntl(withMDX(nextConfig)), {
   // Sentry org/project — set via env or replace with your values
   org: process.env.SENTRY_ORG,
   project: process.env.SENTRY_PROJECT,

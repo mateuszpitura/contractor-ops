@@ -242,6 +242,13 @@ export {
 } from './google-workspace.js';
 export { optionalFk, optionalPositiveInt, optionalString } from './helpers.js';
 export type { LockedDePhraseKey } from './legal/de.js';
+export type {
+  PrivacyNoticeSection,
+  PrivacyNoticeStructured,
+} from './privacy-notices/types.js';
+export { gbPrivacyNotice } from './privacy-notices/gb.js';
+export { dePrivacyNotice } from './privacy-notices/de.js';
+export { euPrivacyNotice } from './privacy-notices/eu.js';
 export {
   GDPR_COMPLAINT_HEADING,
   GDPR_CONTROLLER_LABEL,

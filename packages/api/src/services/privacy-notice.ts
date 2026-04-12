@@ -1,11 +1,22 @@
 /**
- * Privacy notice service — jurisdiction-specific PDPL privacy notices.
+ * Privacy notice service — jurisdiction-specific privacy notices.
  *
- * Per D-01: Privacy notices are jurisdiction-specific (UAE Federal Decree-Law No. 45/2021,
- * Saudi Royal Decree M/19 PDPL). Each org gets a versioned notice per jurisdiction.
+ * Per D-01: Privacy notices are jurisdiction-specific (UAE Federal Decree-Law
+ * No. 45/2021, Saudi Royal Decree M/19 PDPL).
+ *
+ * Phase 56 Plan 07 extends the service with UK GDPR (GB), German GDPR/BDSG (DE)
+ * and a generic EU GDPR fallback. Each org gets a versioned notice per
+ * jurisdiction. GB/DE/EU static content is imported from
+ * `@contractor-ops/validators` so MDX pages, React-PDF templates and the
+ * service share a single source of truth (prevents content drift).
  */
 
 import { prisma } from '@contractor-ops/db';
+import {
+  dePrivacyNotice,
+  euPrivacyNotice,
+  gbPrivacyNotice,
+} from '@contractor-ops/validators';
 import { CacheTTL, cached, cacheKey } from './cache.js';
 
 // ---------------------------------------------------------------------------
@@ -25,13 +36,81 @@ export interface PrivacyNoticeContent {
   }[];
 }
 
+/**
+ * Union of every jurisdiction code the service can render a notice for.
+ * - AE / SA: PDPL (Phase 51).
+ * - GB / DE / EU: GDPR family (Phase 56 Plan 07).
+ */
+export type SupportedJurisdiction = 'AE' | 'SA' | 'GB' | 'DE' | 'EU';
+
+const SUPPORTED_JURISDICTIONS = new Set<SupportedJurisdiction>([
+  'AE',
+  'SA',
+  'GB',
+  'DE',
+  'EU',
+]);
+
+/**
+ * Map an ISO-3166 alpha-2 countryCode (typically `Organization.countryCode`)
+ * to the jurisdiction whose privacy notice applies.
+ *
+ * Phase 56 D-09 fallback rule: unknown / missing countryCode -> 'EU' (generic
+ * GDPR notice). AE / SA / GB / DE have dedicated notices; everything else
+ * renders the EU fallback. This function is intentionally pure and synchronous
+ * so it can be reused in the tRPC mutation (IDOR-safe) and in page redirects.
+ */
+export function resolveJurisdiction(
+  countryCode: string | null | undefined,
+): SupportedJurisdiction {
+  if (!countryCode) return 'EU';
+  const upper = countryCode.toUpperCase();
+  if (upper === 'GB' || upper === 'DE' || upper === 'AE' || upper === 'SA') {
+    return upper;
+  }
+  return 'EU';
+}
+
 // ---------------------------------------------------------------------------
 // Default notice content per jurisdiction
 // ---------------------------------------------------------------------------
 
 export function getDefaultNoticeContent(
-  jurisdiction: 'AE' | 'SA',
+  jurisdiction: SupportedJurisdiction,
 ): Omit<PrivacyNoticeContent, 'controller'> {
+  if (jurisdiction === 'GB') {
+    return {
+      jurisdiction: gbPrivacyNotice.jurisdiction,
+      legalReference: gbPrivacyNotice.legalReference,
+      sections: gbPrivacyNotice.sections.map((s) => ({
+        title: s.title,
+        content: s.content,
+      })),
+    };
+  }
+
+  if (jurisdiction === 'DE') {
+    return {
+      jurisdiction: dePrivacyNotice.jurisdiction,
+      legalReference: dePrivacyNotice.legalReference,
+      sections: dePrivacyNotice.sections.map((s) => ({
+        title: s.title,
+        content: s.content,
+      })),
+    };
+  }
+
+  if (jurisdiction === 'EU') {
+    return {
+      jurisdiction: euPrivacyNotice.jurisdiction,
+      legalReference: euPrivacyNotice.legalReference,
+      sections: euPrivacyNotice.sections.map((s) => ({
+        title: s.title,
+        content: s.content,
+      })),
+    };
+  }
+
   if (jurisdiction === 'AE') {
     return {
       jurisdiction: 'AE',
@@ -147,9 +226,10 @@ export async function getPrivacyNotice(
   organizationId: string,
   jurisdiction: string,
 ): Promise<PrivacyNoticeContent | null> {
-  if (jurisdiction !== 'AE' && jurisdiction !== 'SA') {
+  if (!SUPPORTED_JURISDICTIONS.has(jurisdiction as SupportedJurisdiction)) {
     return null;
   }
+  const typedJurisdiction = jurisdiction as SupportedJurisdiction;
 
   const key = cacheKey(organizationId, 'consent', 'notice', jurisdiction);
 
@@ -176,8 +256,8 @@ export async function getPrivacyNotice(
       };
     }
 
-    // Create default notice
-    const defaultContent = getDefaultNoticeContent(jurisdiction);
+    // Create default notice (GB/DE/EU/AE/SA — guarded by SUPPORTED_JURISDICTIONS above)
+    const defaultContent = getDefaultNoticeContent(typedJurisdiction);
     await prisma.privacyNotice.create({
       data: {
         organizationId,
