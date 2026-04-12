@@ -1742,7 +1742,8 @@
       "bytes": "{size} B",
       "kilobytes": "{size} KB",
       "megabytes": "{size} MB"
-    }
+    },
+    "switchToLanguage": "تغيير اللغة إلى {name}"
   },
   "Workflows": {
     "pageTitle": "سير العمل",
@@ -4607,6 +4608,13 @@
       "approval": {
         "noUserWithRole": "No user with the required role found."
       }
+    }
+  },
+  "Layout": {
+    "footer": {
+      "privacy": "الخصوصية",
+      "terms": "الشروط",
+      "copyright": "© 2026 Contractor Ops"
     }
   }
 }

@@ -865,6 +865,7 @@
     "CONTRACTOR_NOT_FOUND": "Nie znaleziono kontrahenta.",
     "CONTRACTOR_HAS_UNPAID_INVOICES": "Nie można zarchiwizować kontrahenta z nieopłaconymi fakturami. Najpierw rozlicz wszystkie zaległe płatności.",
     "CONTRACTOR_HAS_ACTIVE_WORKFLOWS": "Nie można zarchiwizować kontrahenta z aktywnymi workflow. Najpierw dokończ lub anuluj workflow.",
+    "CONTRACTOR_HAS_ACTIVE_CONTRACTS": "Nie można zarchiwizować kontrahenta z aktywnymi umowami. Najpierw zakończ lub przypisz umowy inaczej.",
     "CONTRACTOR_INVALID_TRANSITION": "Ta zmiana statusu nie jest dozwolona.",
     "GUS_LOOKUP_FAILED": "Wyszukiwanie GUS nie powiodło się.",
     "CONTRACT_NOT_FOUND": "Nie znaleziono umowy.",
@@ -876,6 +877,7 @@
     "INVOICE_CONTRACT_NOT_FOUND": "Nie znaleziono umowy w tej organizacji.",
     "INVOICE_ALREADY_PENDING": "Faktura jest już w trakcie zatwierdzania.",
     "INVOICE_DUPLICATE": "Duplikat faktury o tym samym numerze, sprzedawcy i kwocie już istnieje.",
+    "INVOICE_AMOUNT_MISMATCH": "Kwota faktury nie zgadza się z oczekiwaną wartością dla tej pozycji.",
     "PAYMENT_RUN_NOT_FOUND": "Nie znaleziono przebiegu płatności.",
     "PAYMENT_INVOICES_NOT_READY": "Niektóre faktury nie są gotowe do płatności.",
     "PAYMENT_INVOICES_NOT_FOUND": "Jedna lub więcej faktur nie została znaleziona w tej organizacji.",
@@ -889,6 +891,7 @@
     "APPROVAL_STEP_NOT_FOUND": "Nie znaleziono kroku zatwierdzania.",
     "APPROVAL_STEP_NOT_PENDING": "Krok nie oczekuje na zatwierdzenie.",
     "APPROVAL_NOT_ASSIGNED": "Nie jesteś przypisanym zatwierdzającym dla tego kroku.",
+    "APPROVAL_SELF_APPROVAL_FORBIDDEN": "Nie możesz zatwierdzić własnego zgłoszenia.",
     "APPROVAL_DELEGATE_NOT_MEMBER": "Delegowany użytkownik nie jest członkiem tej organizacji.",
     "WORKFLOW_TEMPLATE_NOT_FOUND": "Nie znaleziono szablonu workflow.",
     "WORKFLOW_RUN_NOT_FOUND": "Nie znaleziono przebiegu workflow.",
@@ -1742,7 +1745,8 @@
       "bytes": "{size} B",
       "kilobytes": "{size} KB",
       "megabytes": "{size} MB"
-    }
+    },
+    "switchToLanguage": "Zmień język na {name}"
   },
   "Workflows": {
     "pageTitle": "Procesy",
@@ -4607,6 +4611,13 @@
       "approval": {
         "noUserWithRole": "No user with the required role found."
       }
+    }
+  },
+  "Layout": {
+    "footer": {
+      "privacy": "Prywatność",
+      "terms": "Regulamin",
+      "copyright": "© 2026 Contractor Ops"
     }
   }
 }

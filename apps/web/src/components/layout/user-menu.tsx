@@ -33,7 +33,7 @@ import { SidebarMenuButton, useSidebar } from '@/components/ui/sidebar';
 import { Switch } from '@/components/ui/switch';
 import { useDensity } from '@/hooks/use-density';
 import { usePathname, useRouter } from '@/i18n/navigation';
-import type { Locale } from '@/i18n/routing';
+import { routing, type Locale } from '@/i18n/routing';
 import { authClient } from '@/lib/auth-client';
 import { getAvatarInitials } from '@/lib/avatar-initials';
 
@@ -96,17 +96,23 @@ export function UserMenu() {
     window.location.href = '/login';
   };
 
-  const handleLocaleSwitch = () => {
-    const localeOrder: Locale[] = ['pl', 'en', 'ar'];
-    const currentIndex = localeOrder.indexOf(locale as Locale);
-    const nextLocale = localeOrder[(currentIndex + 1) % localeOrder.length];
-    router.replace(pathname, { locale: nextLocale });
+  // Phase 56 · Plan 07 — localeOrder derived from routing.locales so adding a
+  // new locale to `routing.locales` automatically propagates into the switcher.
+  // The `nativeNames` map below MUST have an entry for every routing.locales
+  // value — regression-tested by user-menu.test.tsx.
+  const localeOrder: Locale[] = [...routing.locales];
+  const nativeNames: Record<Locale, string> = {
+    pl: 'Polski',
+    en: 'English',
+    ar: '\u0627\u0644\u0639\u0631\u0628\u064A\u0629', // العربية
+    de: 'Deutsch',
   };
+  const currentIndex = localeOrder.indexOf(locale as Locale);
+  const nextLocale = localeOrder[(currentIndex + 1) % localeOrder.length];
+  const nextLocaleLabelText = nativeNames[nextLocale];
 
-  const nextLocaleLabel: Record<string, string> = {
-    pl: 'EN',
-    en: '\u0639\u0631\u0628\u064A',
-    ar: 'PL',
+  const handleLocaleSwitch = () => {
+    router.replace(pathname, { locale: nextLocale });
   };
 
   return (
@@ -211,8 +217,9 @@ export function UserMenu() {
             <button
               type="button"
               onClick={handleLocaleSwitch}
-              className="text-sm font-medium text-primary hover:underline">
-              {nextLocaleLabel[locale] ?? 'EN'}
+              className="text-sm font-medium text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+              aria-label={t('switchToLanguage', { name: nextLocaleLabelText })}>
+              <span lang={nextLocale}>{nextLocaleLabelText}</span>
             </button>
           </div>
 

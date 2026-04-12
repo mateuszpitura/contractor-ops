@@ -7,6 +7,7 @@ import { BillingOverlay } from '@/components/billing/billing-overlay';
 import { BreadcrumbProvider } from '@/components/layout/breadcrumb-context';
 import type { OrgInfo } from '@/components/layout/dashboard-context';
 import { DashboardProvider } from '@/components/layout/dashboard-context';
+import { AppFooter } from '@/components/layout/app-footer';
 import { AppSidebar } from '@/components/layout/sidebar';
 import { TopBar } from '@/components/layout/top-bar';
 import { SearchProvider } from '@/components/search/search-provider';
@@ -89,6 +90,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
                 id="main-content"
                 className="mesh-bg grain-overlay min-w-0 flex-1 overflow-x-hidden p-6">
                 {children}
+                <AppFooter />
               </main>
             </SidebarInset>
           </SidebarProvider>

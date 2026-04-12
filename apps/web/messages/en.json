@@ -865,6 +865,7 @@
     "CONTRACTOR_NOT_FOUND": "Contractor not found.",
     "CONTRACTOR_HAS_UNPAID_INVOICES": "Cannot archive contractor with unpaid invoices. Resolve all pending payments first.",
     "CONTRACTOR_HAS_ACTIVE_WORKFLOWS": "Cannot archive contractor with active workflows. Complete or cancel workflows first.",
+    "CONTRACTOR_HAS_ACTIVE_CONTRACTS": "Cannot archive contractor with active contracts. End or reassign contracts first.",
     "CONTRACTOR_INVALID_TRANSITION": "This status transition is not allowed.",
     "GUS_LOOKUP_FAILED": "GUS lookup failed.",
     "CONTRACT_NOT_FOUND": "Contract not found.",
@@ -876,6 +877,7 @@
     "INVOICE_CONTRACT_NOT_FOUND": "Contract not found in this organization.",
     "INVOICE_ALREADY_PENDING": "Invoice is already pending approval.",
     "INVOICE_DUPLICATE": "A duplicate invoice already exists with the same number, seller, and amount.",
+    "INVOICE_AMOUNT_MISMATCH": "The invoice amount does not match the expected value for this line item.",
     "PAYMENT_RUN_NOT_FOUND": "Payment run not found.",
     "PAYMENT_INVOICES_NOT_READY": "Some invoices are not ready for payment.",
     "PAYMENT_INVOICES_NOT_FOUND": "One or more invoices not found in this organization.",
@@ -889,6 +891,7 @@
     "APPROVAL_STEP_NOT_FOUND": "Approval step not found.",
     "APPROVAL_STEP_NOT_PENDING": "Step is not pending approval.",
     "APPROVAL_NOT_ASSIGNED": "You are not the assigned approver for this step.",
+    "APPROVAL_SELF_APPROVAL_FORBIDDEN": "You cannot approve your own submission.",
     "APPROVAL_DELEGATE_NOT_MEMBER": "Delegate user is not a member of this organization.",
     "WORKFLOW_TEMPLATE_NOT_FOUND": "Workflow template not found.",
     "WORKFLOW_RUN_NOT_FOUND": "Workflow run not found.",
@@ -1742,7 +1745,8 @@
       "bytes": "{size} B",
       "kilobytes": "{size} KB",
       "megabytes": "{size} MB"
-    }
+    },
+    "switchToLanguage": "Switch to {name}"
   },
   "Workflows": {
     "pageTitle": "Workflows",
@@ -4607,6 +4611,13 @@
       "approval": {
         "noUserWithRole": "No user with the required role found."
       }
+    }
+  },
+  "Layout": {
+    "footer": {
+      "privacy": "Privacy",
+      "terms": "Terms",
+      "copyright": "© 2026 Contractor Ops"
     }
   }
 }
