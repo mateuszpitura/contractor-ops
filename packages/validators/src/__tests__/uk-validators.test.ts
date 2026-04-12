@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { isValidUtr } from '../uk-validators.js';
+import {
+  isValidCompaniesHouseNumber,
+  isValidGbVat,
+  isValidUtr,
+} from '../uk-validators.js';
 
 // ---------------------------------------------------------------------------
 // isValidUtr
@@ -108,6 +112,243 @@ describe('isValidUtr', () => {
 
     it('handles whitespace + K suffix together', () => {
       expect(isValidUtr('  5097172561K  ')).toBe(true);
+    });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// isValidGbVat
+// ---------------------------------------------------------------------------
+//
+// UK VAT algorithm reference:
+//   weights = [8, 7, 6, 5, 4, 3, 2] applied to digits 1..7 of the 9-digit body
+//   mod-97    check = (97 - weighted % 97) % 97                (pre-2010)
+//   mod-9755  check = (97 - (weighted + 55) % 97) % 97         (post-2010)
+//   Both variants coexist in circulation → both must be accepted.
+//   12-digit form: body + 3-digit branch id (branch not checksummed)
+//   GBGD{500..999} = government department, accepted without checksum
+//   GBHA{000..499} = health authority, accepted without checksum
+// ---------------------------------------------------------------------------
+
+describe('isValidGbVat', () => {
+  describe('standard mod-97 (pre-2010) vectors', () => {
+    // body=[1,0,0,0,0,0,0], weighted = 1*8 = 8
+    // check_mod97 = (97 - 8 % 97) % 97 = 89 → "GB100000089"
+    it('accepts GB100000089 (derived mod-97 vector)', () => {
+      expect(isValidGbVat('GB100000089')).toBe(true);
+    });
+
+    // body=[1,2,3,4,5,6,7]
+    // weighted = 1*8+2*7+3*6+4*5+5*4+6*3+7*2
+    //          = 8+14+18+20+20+18+14 = 112
+    // check_mod97 = (97 - 112%97) % 97 = (97 - 15) % 97 = 82 → "GB123456782"
+    it('accepts GB123456782 (derived mod-97 vector)', () => {
+      expect(isValidGbVat('GB123456782')).toBe(true);
+    });
+
+    // body=[9,9,9,9,9,9,9]
+    // weighted = 9 * (8+7+6+5+4+3+2) = 9 * 35 = 315
+    // check_mod97 = (97 - 315%97) % 97 = (97 - 24) % 97 = 73 → "GB999999973"
+    it('accepts GB999999973 (derived mod-97 vector)', () => {
+      expect(isValidGbVat('GB999999973')).toBe(true);
+    });
+  });
+
+  describe('mod-9755 (post-2010) vectors', () => {
+    // body=[1,0,0,0,0,0,0], weighted = 8
+    // check_mod9755 = (97 - (8 + 55) % 97) % 97 = (97 - 63) % 97 = 34
+    // → "GB100000034"
+    it('accepts GB100000034 (derived mod-9755 vector)', () => {
+      expect(isValidGbVat('GB100000034')).toBe(true);
+    });
+
+    // body=[1,2,3,4,5,6,7], weighted = 112
+    // check_mod9755 = (97 - (112 + 55) % 97) % 97 = (97 - 70) % 97 = 27
+    // → "GB123456727"
+    it('accepts GB123456727 (derived mod-9755 vector)', () => {
+      expect(isValidGbVat('GB123456727')).toBe(true);
+    });
+
+    // body=[0,0,0,0,0,0,0], weighted = 0
+    // check_mod9755 = (97 - 55 % 97) % 97 = (97 - 55) % 97 = 42
+    // → "GB000000042"
+    it('accepts GB000000042 (derived mod-9755 vector, all-zero body)', () => {
+      expect(isValidGbVat('GB000000042')).toBe(true);
+    });
+  });
+
+  describe('12-digit branch-trader variant', () => {
+    it('accepts GB100000089001 (valid 9-digit body + branch 001)', () => {
+      expect(isValidGbVat('GB100000089001')).toBe(true);
+    });
+
+    it('accepts GB123456782999 (valid body + arbitrary branch)', () => {
+      expect(isValidGbVat('GB123456782999')).toBe(true);
+    });
+
+    it('rejects GB999999999999 (invalid 9-digit body, ignoring branch)', () => {
+      expect(isValidGbVat('GB999999999999')).toBe(false);
+    });
+  });
+
+  describe('GBGD (government department) accept-list', () => {
+    it('accepts GBGD500 (boundary: first allowed)', () => {
+      expect(isValidGbVat('GBGD500')).toBe(true);
+    });
+
+    it('accepts GBGD999 (boundary: last allowed)', () => {
+      expect(isValidGbVat('GBGD999')).toBe(true);
+    });
+
+    it('rejects GBGD499 (below documented range)', () => {
+      expect(isValidGbVat('GBGD499')).toBe(false);
+    });
+
+    it('rejects GBGD1000 (wrong length)', () => {
+      expect(isValidGbVat('GBGD1000')).toBe(false);
+    });
+  });
+
+  describe('GBHA (health authority) accept-list', () => {
+    it('accepts GBHA000 (boundary: first allowed)', () => {
+      expect(isValidGbVat('GBHA000')).toBe(true);
+    });
+
+    it('accepts GBHA499 (boundary: last allowed)', () => {
+      expect(isValidGbVat('GBHA499')).toBe(true);
+    });
+
+    it('rejects GBHA500 (above documented range)', () => {
+      expect(isValidGbVat('GBHA500')).toBe(false);
+    });
+
+    it('rejects GBHA999 (above documented range)', () => {
+      expect(isValidGbVat('GBHA999')).toBe(false);
+    });
+  });
+
+  describe('invalid VAT numbers', () => {
+    it('rejects GB123456789 (arbitrary digits, neither checksum matches)', () => {
+      // body=[1,2,3,4,5,6,7], check=89; expected mod97=82, mod9755=27 → fail
+      expect(isValidGbVat('GB123456789')).toBe(false);
+    });
+
+    it('rejects empty string', () => {
+      expect(isValidGbVat('')).toBe(false);
+    });
+
+    it('rejects GB with too few digits', () => {
+      expect(isValidGbVat('GB12345678')).toBe(false);
+    });
+
+    it('rejects GB with 11 digits (not 9 or 12)', () => {
+      expect(isValidGbVat('GB12345678901')).toBe(false);
+    });
+
+    it('rejects non-GB prefix', () => {
+      expect(isValidGbVat('FR123456789')).toBe(false);
+      expect(isValidGbVat('ABGD500')).toBe(false);
+    });
+  });
+
+  describe('input normalization', () => {
+    it('accepts lowercase prefix (upcases internally)', () => {
+      expect(isValidGbVat('gb100000089')).toBe(true);
+    });
+
+    it('strips whitespace', () => {
+      expect(isValidGbVat('GB 100 000 089')).toBe(true);
+    });
+
+    it('strips hyphens', () => {
+      expect(isValidGbVat('GB-100-000-089')).toBe(true);
+    });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// isValidCompaniesHouseNumber
+// ---------------------------------------------------------------------------
+//
+// Companies House number format (6 regional prefix variants + plain digits):
+//   - 1..8 digits       England / Wales (padded to 8 internally by CH registry)
+//   - SC + 6 digits     Scotland
+//   - NI + 6 digits     Northern Ireland
+//   - OC + 6 digits     LLP (England / Wales)
+//   - SO + 6 digits     LLP (Scotland)
+//   - NC + 6 digits     LLP (Northern Ireland)
+//   - R0 + 6 digits     Historic (pre-2009) registrations
+// ---------------------------------------------------------------------------
+
+describe('isValidCompaniesHouseNumber', () => {
+  describe('England/Wales digit-only numbers', () => {
+    it('accepts 00000006 (Tesco PLC actual registration number)', () => {
+      expect(isValidCompaniesHouseNumber('00000006')).toBe(true);
+    });
+
+    it('accepts 12345678 (8-digit)', () => {
+      expect(isValidCompaniesHouseNumber('12345678')).toBe(true);
+    });
+
+    it('accepts 6 (1-digit — CH accepts, pads internally)', () => {
+      expect(isValidCompaniesHouseNumber('6')).toBe(true);
+    });
+
+    it('accepts 1234 (4-digit)', () => {
+      expect(isValidCompaniesHouseNumber('1234')).toBe(true);
+    });
+
+    it('rejects 123456789 (9 digits — too many)', () => {
+      expect(isValidCompaniesHouseNumber('123456789')).toBe(false);
+    });
+  });
+
+  describe('regional / LLP prefix variants', () => {
+    it('accepts SC123456 (Scotland)', () => {
+      expect(isValidCompaniesHouseNumber('SC123456')).toBe(true);
+    });
+
+    it('accepts NI123456 (Northern Ireland)', () => {
+      expect(isValidCompaniesHouseNumber('NI123456')).toBe(true);
+    });
+
+    it('accepts OC123456 (LLP England/Wales)', () => {
+      expect(isValidCompaniesHouseNumber('OC123456')).toBe(true);
+    });
+
+    it('accepts SO123456 (LLP Scotland)', () => {
+      expect(isValidCompaniesHouseNumber('SO123456')).toBe(true);
+    });
+
+    it('accepts NC123456 (LLP Northern Ireland)', () => {
+      expect(isValidCompaniesHouseNumber('NC123456')).toBe(true);
+    });
+
+    it('accepts R0123456 (historic pre-2009 registration)', () => {
+      expect(isValidCompaniesHouseNumber('R0123456')).toBe(true);
+    });
+
+    it('normalizes lowercase prefix', () => {
+      expect(isValidCompaniesHouseNumber('sc123456')).toBe(true);
+    });
+  });
+
+  describe('invalid numbers', () => {
+    it('rejects unknown prefix AB', () => {
+      expect(isValidCompaniesHouseNumber('AB123456')).toBe(false);
+    });
+
+    it('rejects empty string', () => {
+      expect(isValidCompaniesHouseNumber('')).toBe(false);
+    });
+
+    it('rejects prefix with wrong digit length', () => {
+      expect(isValidCompaniesHouseNumber('SC12345')).toBe(false);
+      expect(isValidCompaniesHouseNumber('SC1234567')).toBe(false);
+    });
+
+    it('rejects non-alphanumeric junk', () => {
+      expect(isValidCompaniesHouseNumber('!!!!!!!!')).toBe(false);
     });
   });
 });
