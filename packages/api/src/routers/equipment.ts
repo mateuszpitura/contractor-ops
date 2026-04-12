@@ -34,6 +34,23 @@ import { checkShipmentTaskCompletion } from "../services/equipment-workflow.js";
 import { dispatch } from "../services/notification-service.js";
 
 // ---------------------------------------------------------------------------
+// i18n notification key constants
+// ---------------------------------------------------------------------------
+
+const NOTIFICATION_KEYS = {
+  equipment: {
+    returnApproved: {
+      title: 'notifications.equipment.returnApproved.title',
+      body: 'notifications.equipment.returnApproved.body',
+    },
+    returnRejected: {
+      title: 'notifications.equipment.returnRejected.title',
+      body: 'notifications.equipment.returnRejected.body',
+    },
+  },
+} as const;
+
+// ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
@@ -1722,8 +1739,8 @@ export const equipmentRouter = router({
         organizationId: ctx.organizationId,
         type: "EQUIPMENT_RETURN_APPROVED",
         recipientUserIds: [],
-        title: "Return request approved",
-        body: `Your return request has been approved. A shipping label has been generated.`,
+        title: NOTIFICATION_KEYS.equipment.returnApproved.title,
+        body: NOTIFICATION_KEYS.equipment.returnApproved.body,
         entityType: "RETURN_REQUEST",
         entityId: returnRequest.id,
         metadata: {
@@ -1826,10 +1843,8 @@ export const equipmentRouter = router({
         organizationId: ctx.organizationId,
         type: "EQUIPMENT_RETURN_REJECTED",
         recipientUserIds: [],
-        title: "Return request rejected",
-        body: input.reason
-          ? `Your return request was rejected: ${input.reason}`
-          : "Your return request was rejected.",
+        title: NOTIFICATION_KEYS.equipment.returnRejected.title,
+        body: NOTIFICATION_KEYS.equipment.returnRejected.body,
         entityType: "RETURN_REQUEST",
         entityId: returnRequest.id,
         metadata: {

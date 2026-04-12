@@ -27,6 +27,29 @@ import { handleEquipmentTaskStart } from "../services/equipment-workflow.js";
 import { dispatch } from "../services/notification-service.js";
 
 // ---------------------------------------------------------------------------
+// i18n workflow template key constants
+// ---------------------------------------------------------------------------
+
+const WORKFLOW_TEMPLATE_KEYS = {
+  onboarding: {
+    collectNda: 'workflow.templates.onboarding.collectNda',
+    signContract: 'workflow.templates.onboarding.signContract',
+    setupItAccess: 'workflow.templates.onboarding.setupItAccess',
+    setupFinance: 'workflow.templates.onboarding.setupFinance',
+    provisionEquipment: 'workflow.templates.onboarding.provisionEquipment',
+    teamIntroMeeting: 'workflow.templates.onboarding.teamIntroMeeting',
+    knowledgeTransfer: 'workflow.templates.onboarding.knowledgeTransfer',
+  },
+  offboarding: {
+    knowledgeTransfer: 'workflow.templates.offboarding.knowledgeTransfer',
+    revokeItAccess: 'workflow.templates.offboarding.revokeItAccess',
+    returnEquipment: 'workflow.templates.offboarding.returnEquipment',
+    financeWrapUp: 'workflow.templates.offboarding.financeWrapUp',
+    finalDocumentation: 'workflow.templates.offboarding.finalDocumentation',
+  },
+} as const;
+
+// ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
@@ -1648,49 +1671,49 @@ export const workflowRouter = router({
 
         const onboardingTasks = [
           {
-            title: "Collect NDA",
+            title: WORKFLOW_TEMPLATE_KEYS.onboarding.collectNda,
             taskType: "DOCUMENT_COLLECTION" as const,
             assigneeRole: "OPS_MANAGER" as const,
             dueOffsetDays: 2,
             sortOrder: 0,
           },
           {
-            title: "Sign contract",
+            title: WORKFLOW_TEMPLATE_KEYS.onboarding.signContract,
             taskType: "APPROVAL" as const,
             assigneeRole: "LEGAL_VIEWER" as const,
             dueOffsetDays: 5,
             sortOrder: 1,
           },
           {
-            title: "Set up IT access",
+            title: WORKFLOW_TEMPLATE_KEYS.onboarding.setupItAccess,
             taskType: "ACCESS_GRANT" as const,
             assigneeRole: "IT_ADMIN" as const,
             dueOffsetDays: 3,
             sortOrder: 2,
           },
           {
-            title: "Set up finance",
+            title: WORKFLOW_TEMPLATE_KEYS.onboarding.setupFinance,
             taskType: "FINANCE_SETUP" as const,
             assigneeRole: "FINANCE_ADMIN" as const,
             dueOffsetDays: 3,
             sortOrder: 3,
           },
           {
-            title: "Provision equipment",
+            title: WORKFLOW_TEMPLATE_KEYS.onboarding.provisionEquipment,
             taskType: "EQUIPMENT" as const,
             assigneeRole: "OPS_MANAGER" as const,
             dueOffsetDays: 5,
             sortOrder: 4,
           },
           {
-            title: "Team introduction meeting",
+            title: WORKFLOW_TEMPLATE_KEYS.onboarding.teamIntroMeeting,
             taskType: "MEETING" as const,
             assigneeRole: "TEAM_MANAGER" as const,
             dueOffsetDays: 7,
             sortOrder: 5,
           },
           {
-            title: "Knowledge transfer",
+            title: WORKFLOW_TEMPLATE_KEYS.onboarding.knowledgeTransfer,
             taskType: "KNOWLEDGE_TRANSFER" as const,
             assigneeRole: "TEAM_MANAGER" as const,
             dueOffsetDays: 14,
@@ -1734,35 +1757,35 @@ export const workflowRouter = router({
 
         const offboardingTasks = [
           {
-            title: "Knowledge transfer",
+            title: WORKFLOW_TEMPLATE_KEYS.offboarding.knowledgeTransfer,
             taskType: "KNOWLEDGE_TRANSFER" as const,
             assigneeRole: "TEAM_MANAGER" as const,
             dueOffsetDays: 7,
             sortOrder: 0,
           },
           {
-            title: "Revoke IT access",
+            title: WORKFLOW_TEMPLATE_KEYS.offboarding.revokeItAccess,
             taskType: "ACCESS_REVOKE" as const,
             assigneeRole: "IT_ADMIN" as const,
             dueOffsetDays: 1,
             sortOrder: 1,
           },
           {
-            title: "Return equipment",
+            title: WORKFLOW_TEMPLATE_KEYS.offboarding.returnEquipment,
             taskType: "EQUIPMENT" as const,
             assigneeRole: "OPS_MANAGER" as const,
             dueOffsetDays: 5,
             sortOrder: 2,
           },
           {
-            title: "Finance wrap-up",
+            title: WORKFLOW_TEMPLATE_KEYS.offboarding.financeWrapUp,
             taskType: "FINANCE_SETUP" as const,
             assigneeRole: "FINANCE_ADMIN" as const,
             dueOffsetDays: 3,
             sortOrder: 3,
           },
           {
-            title: "Final documentation",
+            title: WORKFLOW_TEMPLATE_KEYS.offboarding.finalDocumentation,
             taskType: "DOCUMENT_COLLECTION" as const,
             assigneeRole: "OPS_MANAGER" as const,
             dueOffsetDays: 5,

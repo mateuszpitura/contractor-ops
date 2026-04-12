@@ -1354,8 +1354,8 @@ export const portalRouter = router({
         organizationId: ctx.organizationId,
         type: "EQUIPMENT_RETURN_REQUESTED",
         recipientUserIds: [],
-        title: "New equipment return request",
-        body: `Contractor ${ctx.contractor?.email ?? "unknown"} requested equipment return`,
+        title: "notifications.equipment.returnRequested.title",
+        body: "notifications.equipment.returnRequested.body",
         entityType: "RETURN_REQUEST",
         entityId: result.id,
         metadata: {

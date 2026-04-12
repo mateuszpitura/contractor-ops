@@ -94,7 +94,7 @@ async function loadZatcaApiClient(options: Record<string, unknown>): Promise<Zat
   } catch {
     throw new TRPCError({
       code: "INTERNAL_SERVER_ERROR",
-      message: "ZATCA API client not available. Ensure e-invoicing engine is configured.",
+      message: "errors.zatca.apiClientUnavailable",
     });
   }
 }
@@ -207,7 +207,7 @@ export async function generateAndStoreCsr(organizationId: string): Promise<{ csr
   if (!taxDetails) {
     throw new TRPCError({
       code: "BAD_REQUEST",
-      message: "Tax details must be saved before generating CSR",
+      message: "errors.zatca.taxDetailsRequired",
     });
   }
 
@@ -269,7 +269,7 @@ export async function requestComplianceCsid(
   if (!csrPem) {
     throw new TRPCError({
       code: "BAD_REQUEST",
-      message: "CSR must be generated before requesting compliance CSID",
+      message: "errors.zatca.csrRequired",
     });
   }
 
@@ -319,7 +319,7 @@ export async function runComplianceChecks(
   if (!taxDetails) {
     throw new TRPCError({
       code: "BAD_REQUEST",
-      message: "Tax details required for compliance checks",
+      message: "errors.zatca.taxDetailsRequiredForCompliance",
     });
   }
 
@@ -333,7 +333,7 @@ export async function runComplianceChecks(
   if (!certificate || !apiSecret) {
     throw new TRPCError({
       code: "BAD_REQUEST",
-      message: "Compliance CSID must be obtained before running compliance checks",
+      message: "errors.zatca.complianceCsidRequired",
     });
   }
 
@@ -421,7 +421,7 @@ export async function exchangeProductionCertificate(organizationId: string): Pro
   if (!requestId || !certificate || !apiSecret) {
     throw new TRPCError({
       code: "BAD_REQUEST",
-      message: "Compliance checks must pass before requesting production certificate",
+      message: "errors.zatca.complianceChecksMustPass",
     });
   }
 

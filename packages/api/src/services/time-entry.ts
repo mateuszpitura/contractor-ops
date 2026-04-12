@@ -39,7 +39,7 @@ export async function getOrCreateTimesheet(
   if (monday.getTime() !== weekStartDate.getTime()) {
     throw new TRPCError({
       code: "BAD_REQUEST",
-      message: "weekStartDate must be a Monday",
+      message: "errors.timesheet.weekStartDateMustBeMonday",
     });
   }
 
@@ -88,14 +88,14 @@ export async function saveDraftEntries(
   if (!timesheet) {
     throw new TRPCError({
       code: "NOT_FOUND",
-      message: "Timesheet not found",
+      message: "errors.timesheet.notFound",
     });
   }
 
   if (timesheet.status !== "DRAFT" && timesheet.status !== "REJECTED") {
     throw new TRPCError({
       code: "PRECONDITION_FAILED",
-      message: "Can only edit DRAFT or REJECTED timesheets",
+      message: "errors.timesheet.canOnlyEditDraftOrRejected",
     });
   }
 
@@ -116,13 +116,13 @@ export async function saveDraftEntries(
         if (!existing) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: `Entry ${entry.id} not found`,
+            message: "errors.timesheet.entryNotFound",
           });
         }
         if (existing.source !== "MANUAL") {
           throw new TRPCError({
             code: "PRECONDITION_FAILED",
-            message: "Cannot edit imported entries (D-11)",
+            message: "errors.timesheet.cannotEditImportedEntries",
           });
         }
         const updated = await tx.timeEntry.update({
@@ -197,7 +197,7 @@ export async function submitTimesheet(
   if (updated.count === 0) {
     throw new TRPCError({
       code: "PRECONDITION_FAILED",
-      message: "Timesheet cannot be submitted (wrong status or not found)",
+      message: "errors.timesheet.cannotSubmit",
     });
   }
 
@@ -234,7 +234,7 @@ export async function approveTimesheet(
   if (updated.count === 0) {
     throw new TRPCError({
       code: "PRECONDITION_FAILED",
-      message: "Timesheet cannot be approved (must be SUBMITTED)",
+      message: "errors.timesheet.cannotApprove",
     });
   }
 
@@ -273,7 +273,7 @@ export async function rejectTimesheet(
   if (updated.count === 0) {
     throw new TRPCError({
       code: "PRECONDITION_FAILED",
-      message: "Timesheet cannot be rejected (must be SUBMITTED)",
+      message: "errors.timesheet.cannotReject",
     });
   }
 

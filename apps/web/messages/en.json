@@ -4511,5 +4511,102 @@
         }
       }
     }
+  },
+  "Api": {
+    "email": {
+      "subject": {
+        "approvalRequest": "Action required: Approve invoice {invoiceNumber}",
+        "approvalDecision": "Invoice {invoiceNumber} {decision}",
+        "taskAssigned": "New task assigned: {taskName}",
+        "taskOverdue": "Overdue: {taskName} is past due",
+        "contractExpiring": "Contract expiring soon: {contractTitle}",
+        "invoiceReceived": "New invoice received from {contractorName}"
+      },
+      "labels": {
+        "viewInApp": "View in Contractor Ops",
+        "managePrefs": "Manage notification preferences",
+        "unsubscribe": "Unsubscribe",
+        "footerText": "Contractor Ops - Contractor operations platform",
+        "reviewAndApprove": "Review & Approve",
+        "invoice": "Invoice",
+        "contractor": "Contractor",
+        "amount": "Amount",
+        "decision": "Decision",
+        "by": "By",
+        "comment": "Comment",
+        "task": "Task",
+        "workflow": "Workflow",
+        "due": "Due",
+        "wasDue": "Was due",
+        "contract": "Contract",
+        "expires": "Expires",
+        "from": "From"
+      }
+    },
+    "notifications": {
+      "equipment": {
+        "returnApproved": {
+          "title": "Return request approved",
+          "body": "Your return request has been approved. A shipping label has been generated."
+        },
+        "returnRejected": {
+          "title": "Return request rejected",
+          "body": "Your return request was rejected."
+        },
+        "returnRequested": {
+          "title": "New equipment return request",
+          "body": "A contractor requested an equipment return."
+        }
+      }
+    },
+    "workflow": {
+      "templates": {
+        "onboarding": {
+          "collectNda": "Collect NDA",
+          "signContract": "Sign contract",
+          "setupItAccess": "Set up IT access",
+          "setupFinance": "Set up finance",
+          "provisionEquipment": "Provision equipment",
+          "teamIntroMeeting": "Team introduction meeting",
+          "knowledgeTransfer": "Knowledge transfer"
+        },
+        "offboarding": {
+          "knowledgeTransfer": "Knowledge transfer",
+          "revokeItAccess": "Revoke IT access",
+          "returnEquipment": "Return equipment",
+          "financeWrapUp": "Finance wrap-up",
+          "finalDocumentation": "Final documentation"
+        }
+      }
+    },
+    "errors": {
+      "tenant": {
+        "noActiveOrganization": "No active organization. Please select an organization first."
+      },
+      "upload": {
+        "rateLimitExceeded": "Upload rate limit exceeded. Maximum 10 uploads per minute. Try again shortly."
+      },
+      "zatca": {
+        "apiClientUnavailable": "ZATCA API client not available. Ensure e-invoicing engine is configured.",
+        "taxDetailsRequired": "Tax details must be saved before generating CSR.",
+        "csrRequired": "CSR must be generated before requesting compliance CSID.",
+        "taxDetailsRequiredForCompliance": "Tax details required for compliance checks.",
+        "complianceCsidRequired": "Compliance CSID must be obtained before running compliance checks.",
+        "complianceChecksMustPass": "Compliance checks must pass before requesting production certificate."
+      },
+      "timesheet": {
+        "weekStartDateMustBeMonday": "Week start date must be a Monday.",
+        "notFound": "Timesheet not found.",
+        "canOnlyEditDraftOrRejected": "Can only edit DRAFT or REJECTED timesheets.",
+        "entryNotFound": "Time entry not found.",
+        "cannotEditImportedEntries": "Cannot edit imported entries.",
+        "cannotSubmit": "Timesheet cannot be submitted (wrong status or not found).",
+        "cannotApprove": "Timesheet cannot be approved (must be SUBMITTED).",
+        "cannotReject": "Timesheet cannot be rejected (must be SUBMITTED)."
+      },
+      "approval": {
+        "noUserWithRole": "No user with the required role found."
+      }
+    }
   }
 }

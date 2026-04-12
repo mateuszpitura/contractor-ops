@@ -1,6 +1,12 @@
 import { Text } from "@react-email/components";
 import { BaseLayout } from "./base-layout.js";
 
+interface InvoiceReceivedLabels {
+  invoice?: string;
+  from?: string;
+  amount?: string;
+}
+
 interface InvoiceReceivedEmailProps {
   title: string;
   body: string;
@@ -9,6 +15,7 @@ interface InvoiceReceivedEmailProps {
   amount?: string;
   ctaUrl: string;
   preferencesUrl: string;
+  labels?: InvoiceReceivedLabels;
 }
 
 export function InvoiceReceivedEmail({
@@ -19,24 +26,31 @@ export function InvoiceReceivedEmail({
   amount,
   ctaUrl,
   preferencesUrl,
+  labels,
 }: InvoiceReceivedEmailProps) {
+  const l = {
+    invoice: labels?.invoice ?? "Invoice",
+    from: labels?.from ?? "From",
+    amount: labels?.amount ?? "Amount",
+  };
+
   return (
     <BaseLayout ctaUrl={ctaUrl} preferencesUrl={preferencesUrl}>
       <Text style={{ fontSize: "20px", fontWeight: "600", color: "#1a1a1a" }}>{title}</Text>
       <Text style={{ fontSize: "14px", color: "#4a4a4a", lineHeight: "24px" }}>{body}</Text>
       {invoiceNumber && (
         <Text style={{ fontSize: "14px", color: "#6b7280" }}>
-          <strong>Invoice:</strong> {invoiceNumber}
+          <strong>{l.invoice}:</strong> {invoiceNumber}
           {contractorName && (
             <>
               <br />
-              <strong>From:</strong> {contractorName}
+              <strong>{l.from}:</strong> {contractorName}
             </>
           )}
           {amount && (
             <>
               <br />
-              <strong>Amount:</strong> {amount}
+              <strong>{l.amount}:</strong> {amount}
             </>
           )}
         </Text>

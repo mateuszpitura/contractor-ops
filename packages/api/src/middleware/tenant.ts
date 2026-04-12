@@ -27,7 +27,7 @@ const tenantMiddleware = t.middleware(async ({ ctx, next }) => {
   if (!orgId) {
     throw new TRPCError({
       code: "FORBIDDEN",
-      message: "No active organization. Please select an organization first.",
+      message: "errors.tenant.noActiveOrganization",
     });
   }
 
