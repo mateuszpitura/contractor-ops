@@ -1,4 +1,5 @@
 import { prisma } from "@contractor-ops/db";
+import type { DbClient } from "./types.js";
 import { createLogger } from "@contractor-ops/logger";
 import { metrics } from "@contractor-ops/logger/metrics";
 import { Resend } from "resend";
@@ -22,10 +23,8 @@ const log = createLogger({ service: "billing-webhook" });
 
 /**
  * Prisma transaction client passed from the webhook route's $transaction.
- * Using a permissive type since the exact shape depends on Prisma extensions.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type TxClient = any;
+type TxClient = DbClient;
 
 /**
  * Extended Stripe subscription shape that includes period fields.
