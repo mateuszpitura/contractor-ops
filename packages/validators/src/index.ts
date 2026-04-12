@@ -420,7 +420,11 @@ export type {
   WhtCalculation,
   WhtServiceType,
 } from './tax.js';
-export { isValidUtr } from './uk-validators.js';
+export {
+  isValidCompaniesHouseNumber,
+  isValidGbVat,
+  isValidUtr,
+} from './uk-validators.js';
 export {
   taxRateCodeSchema,
   taxRateResponseSchema,
