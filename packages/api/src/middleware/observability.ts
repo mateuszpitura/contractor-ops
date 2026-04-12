@@ -2,6 +2,7 @@ import { createTrpcLogger } from "@contractor-ops/logger";
 import { metrics } from "@contractor-ops/logger/metrics";
 import * as Sentry from "@sentry/nextjs";
 import type { Context } from "../context.js";
+import type { AnyMiddlewareFunction } from "@trpc/server";
 
 /**
  * Raw observability middleware handler for tRPC procedures.
@@ -14,18 +15,15 @@ import type { Context } from "../context.js";
  * - Logs procedure execution with duration and context
  * - Tracks custom metrics (call count, duration, errors)
  */
-export const observabilityMiddleware = async (opts: {
-  path: string;
-  type: string;
-  ctx: Context & { requestId?: string };
-  next: (opts: { ctx: Context & { requestId: string } }) => Promise<unknown>;
-}) => {
+export const observabilityMiddleware: AnyMiddlewareFunction = async (opts) => {
   const { path, type, ctx, next } = opts;
   const start = performance.now();
   const requestId = crypto.randomUUID();
 
-  const userId = ctx.session?.user?.id;
-  const organizationId = ctx.session?.session?.activeOrganizationId;
+  const context = ctx as Context;
+
+  const userId = context.session?.user?.id;
+  const organizationId = context.session?.session?.activeOrganizationId;
 
   const log = createTrpcLogger({
     procedure: path,
@@ -51,7 +49,7 @@ export const observabilityMiddleware = async (opts: {
     async (span) => {
       try {
         const result = await next({
-          ctx: { ...ctx, requestId },
+          ctx: { ...context, requestId },
         });
 
         const durationMs = Math.round(performance.now() - start);
