@@ -2,7 +2,7 @@
 
 ## What This Is
 
-A B2B contractor operations platform for EU companies (Poland-first) with 5-50 contractors. Replaces the Excel + email + Slack + bank chaos with a single system covering the full contractor lifecycle: onboarding, contracts, invoices, approvals, payments, and offboarding. Built as a multi-tenant SaaS targeting software houses, agencies, and tech companies with 10-200 employees.
+A B2B contractor operations platform for EU and Gulf companies with 5-50 contractors. Replaces the Excel + email + Slack + bank chaos with a single system covering the full contractor lifecycle: onboarding, contracts, invoices, approvals, payments, and offboarding. Built as a multi-tenant SaaS targeting software houses, agencies, and tech companies with 10-200 employees. Now with multi-market e-invoicing (KSeF, ZATCA, Peppol), multi-currency, Arabic localization, and Gulf compliance.
 
 ## Core Value
 
@@ -10,7 +10,9 @@ The invoice-to-payment flow must work end-to-end: a contractor's invoice arrives
 
 ## Current State
 
-**v3.0 Enterprise & Monetization shipped 2026-04-11** — ~469K LOC TypeScript, 44 phases (11 v1.0 + 16 v2.0 + 17 v3.0), 150 plans, 91 tasks in v3.0.
+**v4.0 International Foundation & Gulf Expansion shipped 2026-04-12** — ~562K LOC TypeScript, 55 phases (11 v1.0 + 16 v2.0 + 17 v3.0 + 11 v4.0), 205 plans, 55 plans in v4.0.
+
+v4.0 International Foundation & Gulf Expansion (shipped 2026-04-12): Pluggable e-invoicing engine with country profiles (KSeF refactored, ZATCA Fatoorah integration, Peppol PINT-AE via Storecove ASP). Multi-currency with AED/SAR/GBP support and SWIFT pain.001 payment export. VAT engine with per-country rates, Saudi WHT calculator with treaty rates, and reverse charge detection. Full Arabic localization with RTL layout using CSS logical properties. PDPL compliance with jurisdiction-specific consent management and legal document generation. Multi-region infrastructure with per-org database routing and regional R2 storage. Government API framework with cert auth, retry, rate limiting, and audit logging.
 
 v1.0 MVP foundation (shipped 2026-03-23): org setup, RBAC, contractors, contracts, documents, workflows, invoices, approvals, notifications (in-app + email + Slack), payments, dashboard, reports, data import, onboarding wizard, global search + Cmd+K. Full Polish + English i18n.
 
@@ -71,25 +73,24 @@ v3.0 Enterprise & Monetization (shipped 2026-04-11): Stripe subscription billing
 - ✓ InPost/DPD/UPS courier integrations with automated shipment tracking — v3.0
 - ✓ Feature gating with requireTier middleware on all premium features — v3.0
 
+### Validated — v4.0
+
+- ✓ Pluggable e-invoicing engine with country profiles (KSeF, ZATCA, Peppol) — v4.0
+- ✓ ZATCA Fatoorah integration with clearance, reporting, XML DSig, QR codes — v4.0
+- ✓ Peppol PINT-AE integration with Storecove ASP, outbound/inbound, QR codes — v4.0
+- ✓ Multi-currency support (AED, SAR, GBP + PLN/EUR) with SWIFT pain.001 export — v4.0
+- ✓ VAT engine with per-country rates, reverse charge detection — v4.0
+- ✓ Saudi WHT calculator with treaty rates and certificate generation — v4.0
+- ✓ Full Arabic localization with RTL layout (CSS logical properties) — v4.0
+- ✓ Country-specific contractor profile fields (freelance permits, trade licenses, tax IDs) — v4.0
+- ✓ PDPL compliance with consent management, privacy notices, DPA generation — v4.0
+- ✓ Multi-region infrastructure with per-org database routing and regional R2 storage — v4.0
+- ✓ Government API framework with cert auth, retry, rate limiting, audit logging — v4.0
+- ✓ Locale-aware formatting (currency, dates) across all supported locales — v4.0
+
 ### Active
 
-#### Current Milestone: v4.0 International Foundation & Gulf Expansion
-
-**Goal:** Build pluggable multi-market infrastructure (e-invoicing engine, multi-currency, i18n framework, multi-region) and launch UAE + Saudi Arabia as first international markets.
-
-**Target features:**
-- Pluggable e-invoicing engine with abstract core (EN 16931 / UBL 2.1) — refactoring existing KSeF into this architecture
-- ZATCA Fatoorah integration (Saudi Arabia — clearance, reporting, XML DSig, QR codes)
-- Peppol PINT-AE integration (UAE — XML generation, ASP integration)
-- Multi-currency support (AED, SAR, GBP + existing PLN/EUR)
-- Multi-tier VAT engine (5% UAE, 15% Saudi, replacing hardcoded Polish VAT)
-- SWIFT payment export format + purpose codes
-- Full Arabic localization with RTL layout support
-- Country-specific contractor profile fields (freelance permits, trade licenses, tax IDs)
-- WHT calculator for Saudi cross-border payments + certificate generation
-- PDPL compliance (UAE + Saudi) with consent management
-- Multi-region deployment infrastructure (Middle East cloud region)
-- Government API integration framework (reusable for ZATCA, Peppol, future markets)
+(No active milestone — run `/gsd:new-milestone` to start next)
 
 ### Out of Scope
 
