@@ -3,7 +3,7 @@ status: complete
 phase: 50-arabic-localization-rtl-layout
 source: [50-01-SUMMARY.md, 50-02-SUMMARY.md, 50-03-SUMMARY.md, 50-04-SUMMARY.md, 50-05-SUMMARY.md]
 started: 2026-04-11T14:00:00Z
-updated: 2026-04-11T14:10:00Z
+updated: 2026-04-12T08:00:00Z
 ---
 
 ## Current Test
@@ -58,9 +58,8 @@ result: pass
 
 ### 12. CSS Logical Property Conversion — Application Components
 expected: Under /ar locale, application components (not just UI primitives) render with correct RTL spacing and alignment. Specifically: padding, margins, and text alignment in invoice tables, contractor profiles, payment forms, and report charts should mirror correctly. No elements should appear with visually broken left/right spacing.
-result: issue
-reported: "Code analysis found 125 physical CSS property occurrences (pl-/pr-/ml-/mr-/text-left/text-right) across 66 application component files that were not converted to logical equivalents. Also, the UI primitive alert.tsx still has pl-7 and left-4 instead of ps-7 and start-4. Plans 03-05 claimed to convert all application components but the conversions are incomplete."
-severity: major
+result: pass
+note: Previously failed (125 physical CSS properties). Fixed by plan 50-06 (5 commits). Re-verified: zero directional className matches remain. Only 4 intentional `left-1/2` centering patterns (axis-specific, not RTL-dependent).
 
 ### 13. Locale Switcher Round-Trip
 expected: Switch from English/Polish to Arabic and back. The layout direction changes correctly each way. No state is lost during locale switching. The page does not require a full reload to reflect the new direction.
@@ -69,26 +68,12 @@ result: pass
 ## Summary
 
 total: 13
-passed: 12
-issues: 1
+passed: 13
+issues: 0
 pending: 0
 skipped: 0
 blocked: 0
 
 ## Gaps
 
-- truth: "Application components render with correct RTL spacing and alignment using CSS logical properties"
-  status: failed
-  reason: "Code analysis found 125 physical CSS property occurrences (pl-/pr-/ml-/mr-/text-left/text-right) across 66 application component files that were not converted to logical equivalents. Also alert.tsx UI primitive still has pl-7 and left-4."
-  severity: major
-  test: 12
-  root_cause: "Plans 03-05 claimed bulk conversion but left 125 physical CSS properties unconverted across 66 files. The alert.tsx UI primitive was missed in plan 01."
-  artifacts:
-    - path: "apps/web/src/components/ui/alert.tsx"
-      issue: "pl-7 and left-4 not converted to ps-7 and start-4"
-    - path: "apps/web/src/components (66 files)"
-      issue: "125 remaining pl-/pr-/ml-/mr-/text-left/text-right occurrences"
-  missing:
-    - "Convert remaining 125 physical CSS properties to logical equivalents across 66 application component files"
-    - "Fix alert.tsx: pl-7 -> ps-7, left-4 -> start-4"
-  debug_session: ""
+[none — all gaps resolved by plan 50-06]
