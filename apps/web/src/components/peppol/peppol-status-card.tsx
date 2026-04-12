@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Globe, Settings, Unplug } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
@@ -53,6 +54,7 @@ const STATUS_VARIANTS: Record<string, { label: string; className: string }> = {
 // ---------------------------------------------------------------------------
 
 export function PeppolStatusCard() {
+  const t = useTranslations("Peppol.statusCard");
   const queryClient = useQueryClient();
   const [wizardOpen, setWizardOpen] = useState(false);
 
@@ -62,7 +64,7 @@ export function PeppolStatusCard() {
   const disconnectMutation = useMutation(
     trpc.peppol.disconnect.mutationOptions({
       onSuccess: () => {
-        toast.success("Disconnected from Peppol network");
+        toast.success(t("toast.disconnected"));
         queryClient.invalidateQueries({
           queryKey: trpc.peppol.getStatus.queryKey(),
         });
@@ -71,7 +73,7 @@ export function PeppolStatusCard() {
         });
       },
       onError: (error) => {
-        toast.error(error.message || "Failed to disconnect");
+        toast.error(error.message || t("toast.disconnectError"));
       },
     }),
   );
@@ -86,14 +88,13 @@ export function PeppolStatusCard() {
               <Globe className="h-5 w-5 text-muted-foreground" />
             </div>
             <div className="flex-1 space-y-1">
-              <h3 className="text-base font-semibold">Peppol Network</h3>
-              <p className="text-sm text-muted-foreground">Not connected to Peppol</p>
+              <h3 className="text-base font-semibold">{t("title")}</h3>
+              <p className="text-sm text-muted-foreground">{t("notConnected")}</p>
               <p className="text-sm text-muted-foreground">
-                Connect to the Peppol network to send and receive e-invoices with UAE trading
-                partners. You will need your TRN and ASP credentials.
+                {t("connectDescription")}
               </p>
             </div>
-            <Button onClick={() => setWizardOpen(true)}>Connect to Peppol</Button>
+            <Button onClick={() => setWizardOpen(true)}>{t("connect")}</Button>
           </div>
         </Card>
         <PeppolWizard open={wizardOpen} onOpenChange={setWizardOpen} />
@@ -111,7 +112,7 @@ export function PeppolStatusCard() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Globe className="h-5 w-5" />
-            <CardTitle className="text-base font-semibold">Peppol Network</CardTitle>
+            <CardTitle className="text-base font-semibold">{t("title")}</CardTitle>
           </div>
           <Badge variant="outline" className={statusInfo.className}>
             {statusInfo.label}
@@ -123,16 +124,16 @@ export function PeppolStatusCard() {
         {/* Details */}
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Participant ID</span>
+            <span className="text-muted-foreground">{t("participantId")}</span>
             <span className="font-mono text-sm">{participant.participantId}</span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">ASP Provider</span>
+            <span className="text-muted-foreground">{t("aspProvider")}</span>
             <span className="capitalize">{participant.aspProvider}</span>
           </div>
           {connection?.lastSyncAt && (
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Last Sync</span>
+              <span className="text-muted-foreground">{t("lastSync")}</span>
               <span className="text-sm">{new Date(connection.lastSyncAt).toLocaleString()}</span>
             </div>
           )}
@@ -143,17 +144,17 @@ export function PeppolStatusCard() {
           <div className="flex gap-6 rounded-lg bg-muted/30 p-3">
             <div className="text-center">
               <p className="font-mono text-sm font-medium">{counts.sentTransmissions}</p>
-              <p className="text-xs text-muted-foreground">Sent</p>
+              <p className="text-xs text-muted-foreground">{t("sent")}</p>
             </div>
             <div className="text-center">
               <p className="font-mono text-sm font-medium">{counts.receivedTransmissions}</p>
-              <p className="text-xs text-muted-foreground">Received</p>
+              <p className="text-xs text-muted-foreground">{t("received")}</p>
             </div>
             <div className="text-center">
               <p className="font-mono text-sm font-medium text-destructive">
                 {counts.failedTransmissions}
               </p>
-              <p className="text-xs text-muted-foreground">Failed</p>
+              <p className="text-xs text-muted-foreground">{t("failed")}</p>
             </div>
           </div>
         )}
@@ -162,32 +163,31 @@ export function PeppolStatusCard() {
         <div className="flex gap-2 pt-2">
           <Button variant="outline" size="sm">
             <Settings className="me-1.5 h-3.5 w-3.5" />
-            Settings
+            {t("settings")}
           </Button>
           <AlertDialog>
             <AlertDialogTrigger
               render={
                 <Button variant="ghost" size="sm" className="text-destructive">
                   <Unplug className="me-1.5 h-3.5 w-3.5" />
-                  Disconnect
+                  {t("disconnect")}
                 </Button>
               }
             />
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Disconnect Peppol</AlertDialogTitle>
+                <AlertDialogTitle>{t("disconnectTitle")}</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Your Participant ID will be deregistered and you will not be able to send or
-                  receive Peppol invoices. Continue?
+                  {t("disconnectDescription")}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogCancel>{t("disconnectCancel")}</AlertDialogCancel>
                 <AlertDialogAction
                   onClick={() => disconnectMutation.mutate()}
                   className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                 >
-                  {disconnectMutation.isPending ? "Disconnecting..." : "Disconnect"}
+                  {disconnectMutation.isPending ? t("disconnecting") : t("disconnectConfirm")}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>

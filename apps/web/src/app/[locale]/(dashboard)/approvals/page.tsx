@@ -247,7 +247,7 @@ function ApprovalsContent() {
             {isAdmin && <TabsTrigger value="all">{t("tabAll")}</TabsTrigger>}
             {isAdmin && (
               <TabsTrigger value="profile-changes">
-                Profile Changes
+                {t("tabProfileChanges")}
                 {pendingCount > 0 && (
                   <span className="ms-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[11px] font-medium text-primary-foreground">
                     {pendingCount}
@@ -278,8 +278,8 @@ function ApprovalsContent() {
               ) : changeRequests.length === 0 ? (
                 <EmptyState
                   icon={ClipboardCheck}
-                  heading="No Pending Change Requests"
-                  body="Profile change requests from contractors will appear here when submitted."
+                  heading={t("changeRequests.noPendingHeading")}
+                  body={t("changeRequests.noPendingBody")}
                 />
               ) : (
                 <div className="space-y-4">

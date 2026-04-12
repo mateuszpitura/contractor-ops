@@ -992,7 +992,9 @@
     "health": {
       "green": "Healthy",
       "yellow": "تحذير",
-      "red": "Critical"
+      "red": "Critical",
+      "caution": "Caution",
+      "atRisk": "At Risk"
     },
     "lifecycle": {
       "DRAFT": "مسودة",
@@ -1058,6 +1060,34 @@
       "HOURLY": "بالساعة",
       "PROJECT": "Project-based",
       "MILESTONE": "مرحلة"
+    },
+    "v2": {
+      "stats": {
+        "total": "Total",
+        "active": "Active",
+        "onboarding": "Onboarding",
+        "offboarding": "Offboarding",
+        "draft": "Draft"
+      },
+      "stageFilters": {
+        "all": "All",
+        "active": "Active",
+        "onboarding": "Onboarding",
+        "offboarding": "Offboarding",
+        "draft": "Draft",
+        "ended": "Ended"
+      },
+      "emptyState": {
+        "heading": "No contractors yet",
+        "body": "Add your first contractor to start managing contracts, invoices, and payments.",
+        "addContractor": "Add contractor",
+        "import": "Import"
+      },
+      "noMatch": "No contractors match your filters",
+      "clearAllFilters": "Clear all filters",
+      "searchPlaceholder": "Search contractors...",
+      "updating": "Updating...",
+      "paginationOf": "of"
     }
   },
   "ContractorProfile": {
@@ -1274,7 +1304,8 @@
       "rateValueMinor": "المعدل",
       "billingModel": "Billing model",
       "internalOwner": "المسؤول",
-      "complianceRiskLevel": "مخاطر الامتثال"
+      "complianceRiskLevel": "مخاطر الامتثال",
+      "rateValueGrosze": "Rate"
     },
     "empty": {
       "heading": "لا توجد عقود بعد",
@@ -2294,7 +2325,12 @@
       "decisionClarification": "Clarification requested",
       "decisionDelegated": "Delegated"
     },
-    "pageDescription": "Review and approve pending items"
+    "pageDescription": "Review and approve pending items",
+    "tabProfileChanges": "Profile Changes",
+    "changeRequests": {
+      "noPendingHeading": "No Pending Change Requests",
+      "noPendingBody": "Profile change requests from contractors will appear here when submitted."
+    }
   },
   "Notifications": {
     "popover": {
@@ -3382,7 +3418,13 @@
         "uploadFirst": "Please upload an invoice PDF first.",
         "uploadFailed": "Failed to upload the file. Check your connection and try again.",
         "submitFailed": "فشل submit invoice. Your data has been saved. يرجى المحاولة مجددًا."
-      }
+      },
+      "ocrExtracted": "Invoice data extracted -- please review before submitting",
+      "ocrFailed": "Invoice extraction failed. Please try again or enter data manually.",
+      "ocrPrefillBanner": "We've pre-filled some fields from your invoice. Please review before submitting.",
+      "viewPdf": "View PDF",
+      "sellerNip": "Seller NIP",
+      "buyerNip": "Buyer NIP"
     },
     "submitSuccess": {
       "title": "Invoice Submitted",
@@ -3544,6 +3586,25 @@
       "bytes": "{size} B",
       "kilobytes": "{size} KB",
       "megabytes": "{size} MB"
+    },
+    "timeTracking": {
+      "title": "Time Entries",
+      "pastTimesheets": "Past Timesheets",
+      "addEntry": "Add Entry",
+      "noEntriesHeading": "No time entries yet",
+      "noEntriesBody": "Start logging hours using the timesheet grid above, or add a single entry.",
+      "columns": {
+        "period": "Period",
+        "totalHours": "Total Hours",
+        "status": "Status",
+        "submitted": "Submitted"
+      },
+      "toast": {
+        "entryAdded": "Time entry added",
+        "entryAddFailed": "Failed to add time entry",
+        "timesheetSubmitted": "Timesheet submitted for review",
+        "timesheetSubmitFailed": "Failed to submit timesheet"
+      }
     }
   },
   "ksef": {
@@ -4256,6 +4317,200 @@
       "remaining": "{remaining} of {total} credits remaining",
       "exhausted": "No credits remaining -- purchase more to continue OCR processing",
       "buyMore": "Buy more"
+    },
+    "topUp": {
+      "title": "Buy OCR Credits",
+      "description": "Select a credit bundle. You will be redirected to Stripe to complete the purchase.",
+      "selectPlaceholder": "Select bundle size",
+      "priceNote": "Exact price will be confirmed on the Stripe checkout page.",
+      "cancel": "Cancel",
+      "confirm": "Continue to checkout",
+      "errors": {
+        "checkoutFailed": "Failed to start checkout. Please try again.",
+        "priceNotConfigured": "Top-up price not configured."
+      }
+    },
+    "overlay": {
+      "paymentFailed": "Payment failed.",
+      "paymentFailedBody": "Update your payment method to avoid service interruption.",
+      "goToBilling": "Go to billing"
+    }
+  },
+  "Time": {
+    "pageTitle": "Time Tracking",
+    "tabs": {
+      "pendingReviews": "Pending Reviews",
+      "allEntries": "All Entries",
+      "reconciliation": "Reconciliation"
+    },
+    "filters": {
+      "allStatuses": "All Statuses",
+      "draft": "Draft",
+      "submitted": "Submitted",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "statusPlaceholder": "Status"
+    },
+    "columns": {
+      "contractor": "Contractor",
+      "period": "Period",
+      "totalHours": "Total Hours",
+      "status": "Status"
+    },
+    "emptyStates": {
+      "noPendingReviewsHeading": "No pending reviews",
+      "noPendingReviewsBody": "All timesheets have been reviewed. Check back when contractors submit new entries.",
+      "noTimeEntriesHeading": "No time entries",
+      "noTimeEntriesBody": "Time entries will appear here once contractors start logging hours."
+    },
+    "toast": {
+      "approved": "Timesheet approved",
+      "rejected": "Timesheet rejected",
+      "bulkApproved": "{count} timesheet(s) approved",
+      "bulkRejected": "{count} timesheet(s) rejected"
+    },
+    "errors": {
+      "failedToApprove": "Failed to approve timesheet",
+      "failedToReject": "Failed to reject timesheet",
+      "failedToApproveTimesheets": "Failed to approve timesheets",
+      "failedToRejectTimesheets": "Failed to reject timesheets"
+    },
+    "detail": {
+      "notFoundHeading": "Timesheet not found",
+      "notFoundBody": "The requested timesheet could not be found. It may have been removed or the URL is incorrect.",
+      "backToTimeTracking": "Back to Time Tracking"
+    }
+  },
+  "Zatca": {
+    "onboarding": {
+      "title": "ZATCA Onboarding",
+      "steps": {
+        "taxDetails": "Tax Details",
+        "taxDetailsShort": "Tax",
+        "csrGeneration": "CSR Generation",
+        "csrGenerationShort": "CSR",
+        "complianceCsid": "Compliance CSID",
+        "complianceCsidShort": "CSID",
+        "complianceChecks": "Compliance Checks",
+        "complianceChecksShort": "Checks",
+        "productionCertificate": "Production Certificate",
+        "productionCertificateShort": "Cert"
+      }
+    },
+    "csrGeneration": {
+      "title": "Step 2 of 5: Generate Certificate Request",
+      "description": "A Certificate Signing Request will be generated using your tax details from Step 1.",
+      "keyType": "Key Type:",
+      "keyTypeValue": "ECDSA P-256 (recommended by ZATCA)",
+      "privateKeyNote": "The private key will be stored securely in your organization's secret vault. It never leaves the server.",
+      "csrPreviewLabel": "CSR Preview (read-only)",
+      "back": "Back",
+      "next": "Next",
+      "generateCsr": "Generate CSR",
+      "toast": {
+        "success": "CSR generated successfully",
+        "error": "Failed to generate CSR"
+      }
+    },
+    "complianceChecks": {
+      "title": "Step 4 of 5: Run Compliance Checks",
+      "description": "6 test invoices will be submitted to ZATCA's sandbox to verify your setup.",
+      "runChecks": "Run Compliance Checks",
+      "resultsLabel": "Compliance check results",
+      "back": "Back",
+      "next": "Next",
+      "testLabels": {
+        "standardTaxInvoice": "Standard tax invoice",
+        "standardCreditNote": "Standard credit note",
+        "standardDebitNote": "Standard debit note",
+        "simplifiedInvoice": "Simplified invoice",
+        "simplifiedCreditNote": "Simplified credit note",
+        "simplifiedDebitNote": "Simplified debit note"
+      },
+      "toast": {
+        "allPassed": "All 6 compliance checks passed. Your setup is ready for production.",
+        "someFailed": "Compliance check failed: {failedCount} test(s) did not pass. Review your tax details and try again.",
+        "error": "Failed to run compliance checks"
+      }
+    }
+  },
+  "Peppol": {
+    "statusCard": {
+      "title": "Peppol Network",
+      "notConnected": "Not connected to Peppol",
+      "connectDescription": "Connect to the Peppol network to send and receive e-invoices with UAE trading partners. You will need your TRN and ASP credentials.",
+      "connect": "Connect to Peppol",
+      "participantId": "Participant ID",
+      "aspProvider": "ASP Provider",
+      "lastSync": "Last Sync",
+      "sent": "Sent",
+      "received": "Received",
+      "failed": "Failed",
+      "settings": "Settings",
+      "disconnect": "Disconnect",
+      "disconnectTitle": "Disconnect Peppol",
+      "disconnectDescription": "Your Participant ID will be deregistered and you will not be able to send or receive Peppol invoices. Continue?",
+      "disconnectCancel": "Cancel",
+      "disconnectConfirm": "Disconnect",
+      "disconnecting": "Disconnecting...",
+      "toast": {
+        "disconnected": "Disconnected from Peppol network",
+        "disconnectError": "Failed to disconnect"
+      }
+    },
+    "transmission": {
+      "title": "Peppol Transmission",
+      "created": "Created",
+      "transmitted": "Transmitted",
+      "delivered": "Delivered",
+      "aspRef": "ASP Ref:",
+      "retrying": "Retrying...",
+      "retryTransmission": "Retry Transmission",
+      "toast": {
+        "retryQueued": "Transmission queued for retry",
+        "retryFailed": "Retry failed"
+      }
+    }
+  },
+  "Integrations": {
+    "jira": {
+      "taskConfig": {
+        "configSaved": "Jira task configuration saved",
+        "configSaveFailed": "Failed to save Jira task configuration",
+        "enableToggle": "Create Jira issue when task activates",
+        "notConfigured": "Not configured",
+        "configure": "Configure Jira"
+      },
+      "statusMapping": {
+        "title": "Status Mapping",
+        "description": "Map workflow task statuses to Jira transitions for {projectName}.",
+        "descriptionDefault": "Map workflow task statuses to Jira transitions.",
+        "jiraProject": "Jira Project",
+        "selectProject": "Select a project",
+        "workflowStatus": "Workflow Status",
+        "jiraTransition": "Jira Transition",
+        "notMapped": "Not mapped",
+        "unmappedTooltip": "Not mapped -- status changes for this state will be ignored",
+        "discardChanges": "Discard Changes",
+        "saveMapping": "Save Mapping",
+        "toast": {
+          "saved": "Status mapping saved",
+          "saveFailed": "Failed to save status mapping"
+        }
+      }
+    },
+    "linear": {
+      "taskConfig": {
+        "configSaved": "Linear task configuration saved",
+        "configSaveFailed": "Failed to save Linear task configuration",
+        "notConfigured": "Not configured"
+      },
+      "statusMapping": {
+        "toast": {
+          "saved": "Status mapping saved",
+          "saveFailed": "Failed to save status mapping. Please try again."
+        }
+      }
     }
   }
 }

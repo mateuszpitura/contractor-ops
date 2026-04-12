@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { endOfISOWeek, endOfMonth, format, startOfISOWeek, startOfMonth } from "date-fns";
 import { Clock, Plus } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { ExternalSyncButton } from "@/components/time/external-sync-button";
@@ -44,6 +45,7 @@ function minutesToHoursDisplay(minutes: number): string {
 // ---------------------------------------------------------------------------
 
 export default function PortalTimePage() {
+  const t = useTranslations("Portal.timeTracking");
   const queryClient = useQueryClient();
 
   // Current week state
@@ -120,7 +122,7 @@ export default function PortalTimePage() {
   const createSingleEntryMutation = useMutation(
     trpc.portalTime.createSingleEntry.mutationOptions({
       onSuccess: () => {
-        toast.success("Time entry added");
+        toast.success(t("toast.entryAdded"));
         setSingleEntryOpen(false);
         void queryClient.invalidateQueries({
           queryKey: trpc.portalTime.getTimesheet.queryOptions({
@@ -132,7 +134,7 @@ export default function PortalTimePage() {
         });
       },
       onError: () => {
-        toast.error("Failed to add time entry");
+        toast.error(t("toast.entryAddFailed"));
       },
     }),
   );
@@ -140,7 +142,7 @@ export default function PortalTimePage() {
   const submitMutation = useMutation(
     trpc.portalTime.submitTimesheet.mutationOptions({
       onSuccess: () => {
-        toast.success("Timesheet submitted for review");
+        toast.success(t("toast.timesheetSubmitted"));
         void queryClient.invalidateQueries({
           queryKey: trpc.portalTime.getTimesheet.queryOptions({
             weekStartDate: weekStartStr,
@@ -151,7 +153,7 @@ export default function PortalTimePage() {
         });
       },
       onError: () => {
-        toast.error("Failed to submit timesheet");
+        toast.error(t("toast.timesheetSubmitFailed"));
       },
     }),
   );
@@ -244,7 +246,7 @@ export default function PortalTimePage() {
   return (
     <div className="space-y-8">
       {/* Page heading */}
-      <h1 className="text-xl font-semibold">Time Entries</h1>
+      <h1 className="text-xl font-semibold">{t("title")}</h1>
 
       {/* 1. Summary stats */}
       <TimeSummaryStats
@@ -299,7 +301,7 @@ export default function PortalTimePage() {
       {!isDisabled && (
         <Button variant="outline" onClick={() => setSingleEntryOpen(true)} className="gap-2">
           <Plus className="h-4 w-4" />
-          Add Entry
+          {t("addEntry")}
         </Button>
       )}
 
@@ -327,7 +329,7 @@ export default function PortalTimePage() {
 
       {/* 6. Time entry history */}
       <div>
-        <h2 className="text-xl font-semibold mb-4">Past Timesheets</h2>
+        <h2 className="text-xl font-semibold mb-4">{t("pastTimesheets")}</h2>
         {historyQuery.isPending ? (
           <div className="space-y-2">
             {Array.from({ length: 5 }).map((_, i) => (
@@ -337,19 +339,19 @@ export default function PortalTimePage() {
         ) : !historyQuery.data?.items || historyQuery.data.items.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <Clock className="h-12 w-12 text-muted-foreground" />
-            <h3 className="mt-4 font-display text-[20px] font-semibold">No time entries yet</h3>
+            <h3 className="mt-4 font-display text-[20px] font-semibold">{t("noEntriesHeading")}</h3>
             <p className="mt-2 max-w-sm text-sm text-muted-foreground">
-              Start logging hours using the timesheet grid above, or add a single entry.
+              {t("noEntriesBody")}
             </p>
           </div>
         ) : (
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Period</TableHead>
-                <TableHead>Total Hours</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Submitted</TableHead>
+                <TableHead>{t("columns.period")}</TableHead>
+                <TableHead>{t("columns.totalHours")}</TableHead>
+                <TableHead>{t("columns.status")}</TableHead>
+                <TableHead>{t("columns.submitted")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

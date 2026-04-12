@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { addDays, format, startOfISOWeek } from "date-fns";
 import { ArrowRightLeft, ClipboardList, Clock } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { parseAsString, useQueryState } from "nuqs";
 import { Suspense, useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -54,6 +55,7 @@ function minutesToDisplay(minutes: number): string {
 // ---------------------------------------------------------------------------
 
 function TimeTrackingContent() {
+  const t = useTranslations("Time");
   const router = useRouter();
   const queryClient = useQueryClient();
 
@@ -108,20 +110,20 @@ function TimeTrackingContent() {
   const approveMutation = useMutation(
     trpc.time.approve.mutationOptions({
       onSuccess: () => {
-        toast.success("Timesheet approved");
+        toast.success(t("toast.approved"));
         invalidate();
       },
-      onError: () => toast.error("Failed to approve timesheet"),
+      onError: () => toast.error(t("errors.failedToApprove")),
     }),
   );
 
   const rejectMutation = useMutation(
     trpc.time.reject.mutationOptions({
       onSuccess: () => {
-        toast.success("Timesheet rejected");
+        toast.success(t("toast.rejected"));
         invalidate();
       },
-      onError: () => toast.error("Failed to reject timesheet"),
+      onError: () => toast.error(t("errors.failedToReject")),
     }),
   );
 
@@ -129,10 +131,10 @@ function TimeTrackingContent() {
     trpc.time.bulkApprove.mutationOptions({
       onSuccess: (data) => {
         const result = data as { count: number };
-        toast.success(`${result.count} timesheet(s) approved`);
+        toast.success(t("toast.bulkApproved", { count: result.count }));
         invalidate();
       },
-      onError: () => toast.error("Failed to approve timesheets"),
+      onError: () => toast.error(t("errors.failedToApproveTimesheets")),
     }),
   );
 
@@ -140,10 +142,10 @@ function TimeTrackingContent() {
     trpc.time.bulkReject.mutationOptions({
       onSuccess: (data) => {
         const result = data as { count: number };
-        toast.success(`${result.count} timesheet(s) rejected`);
+        toast.success(t("toast.bulkRejected", { count: result.count }));
         invalidate();
       },
-      onError: () => toast.error("Failed to reject timesheets"),
+      onError: () => toast.error(t("errors.failedToRejectTimesheets")),
     }),
   );
 
@@ -193,22 +195,22 @@ function TimeTrackingContent() {
   return (
     <div className="space-y-6">
       <AnimateIn delay={0}>
-        <PageHeader title="Time Tracking" />
+        <PageHeader title={t("pageTitle")} />
       </AnimateIn>
 
       <AnimateIn delay={1}>
         <Tabs value={tab} onValueChange={(value) => void setTab(value)}>
           <TabsList>
             <TabsTrigger value="pending">
-              Pending Reviews
+              {t("tabs.pendingReviews")}
               {pendingTimesheets.length > 0 && (
                 <span className="ms-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[11px] font-medium text-primary-foreground">
                   {pendingTimesheets.length}
                 </span>
               )}
             </TabsTrigger>
-            <TabsTrigger value="all">All Entries</TabsTrigger>
-            <TabsTrigger value="reconciliation">Reconciliation</TabsTrigger>
+            <TabsTrigger value="all">{t("tabs.allEntries")}</TabsTrigger>
+            <TabsTrigger value="reconciliation">{t("tabs.reconciliation")}</TabsTrigger>
           </TabsList>
 
           {/* Tab 1: Pending Reviews */}
@@ -218,8 +220,8 @@ function TimeTrackingContent() {
             ) : pendingTimesheets.length === 0 ? (
               <EmptyState
                 icon={Clock}
-                heading="No pending reviews"
-                body="All timesheets have been reviewed. Check back when contractors submit new entries."
+                heading={t("emptyStates.noPendingReviewsHeading")}
+                body={t("emptyStates.noPendingReviewsBody")}
               />
             ) : (
               <ApprovalQueueTable
@@ -240,14 +242,14 @@ function TimeTrackingContent() {
               <div className="flex items-center gap-3">
                 <Select value={statusFilter} onValueChange={(v) => void setStatusFilter(v)}>
                   <SelectTrigger className="w-40">
-                    <SelectValue placeholder="Status" />
+                    <SelectValue placeholder={t("filters.statusPlaceholder")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Statuses</SelectItem>
-                    <SelectItem value="DRAFT">Draft</SelectItem>
-                    <SelectItem value="SUBMITTED">Submitted</SelectItem>
-                    <SelectItem value="APPROVED">Approved</SelectItem>
-                    <SelectItem value="REJECTED">Rejected</SelectItem>
+                    <SelectItem value="all">{t("filters.allStatuses")}</SelectItem>
+                    <SelectItem value="DRAFT">{t("filters.draft")}</SelectItem>
+                    <SelectItem value="SUBMITTED">{t("filters.submitted")}</SelectItem>
+                    <SelectItem value="APPROVED">{t("filters.approved")}</SelectItem>
+                    <SelectItem value="REJECTED">{t("filters.rejected")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -257,18 +259,18 @@ function TimeTrackingContent() {
               ) : allTimesheets.length === 0 ? (
                 <EmptyState
                   icon={ClipboardList}
-                  heading="No time entries"
-                  body="Time entries will appear here once contractors start logging hours."
+                  heading={t("emptyStates.noTimeEntriesHeading")}
+                  body={t("emptyStates.noTimeEntriesBody")}
                 />
               ) : (
                 <div className="rounded-xl border bg-background">
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Contractor</TableHead>
-                        <TableHead>Period</TableHead>
-                        <TableHead className="text-end">Total Hours</TableHead>
-                        <TableHead>Status</TableHead>
+                        <TableHead>{t("columns.contractor")}</TableHead>
+                        <TableHead>{t("columns.period")}</TableHead>
+                        <TableHead className="text-end">{t("columns.totalHours")}</TableHead>
+                        <TableHead>{t("columns.status")}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>

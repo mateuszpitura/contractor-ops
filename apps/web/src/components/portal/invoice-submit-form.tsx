@@ -279,13 +279,13 @@ export function InvoiceSubmitForm() {
       setValue("grossAmount", (grossMinor / 100).toFixed(2), { shouldValidate: true });
 
     setOcrPopulated(true);
-    toast.success("Invoice data extracted -- please review before submitting");
+    toast.success(t("ocrExtracted"));
   }, [resultJson, ocrPopulated, setValue]);
 
   // Show toast on extraction failure
   useEffect(() => {
     if (resultJson?.status === "FAILED") {
-      toast.error("Invoice extraction failed. Please try again or enter data manually.");
+      toast.error(t("ocrFailed"));
     }
   }, [resultJson?.status]);
 
@@ -536,7 +536,7 @@ export function InvoiceSubmitForm() {
                   onClick={() => window.open(pdfBlobUrl, "_blank")}
                 >
                   <ExternalLink className="me-1 h-3.5 w-3.5" />
-                  View PDF
+                  {t("viewPdf")}
                 </Button>
               )}
               <Button
@@ -580,7 +580,7 @@ export function InvoiceSubmitForm() {
         <div className="flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-950/30">
           <Info className="mt-0.5 h-4 w-4 shrink-0 text-blue-600 dark:text-blue-400" />
           <p className="text-sm text-blue-800 dark:text-blue-200">
-            We&apos;ve pre-filled some fields from your invoice. Please review before submitting.
+            {t("ocrPrefillBanner")}
           </p>
         </div>
       )}
@@ -654,7 +654,7 @@ export function InvoiceSubmitForm() {
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <Label className="text-[13px]">Seller NIP</Label>
+                <Label className="text-[13px]">{t("sellerNip")}</Label>
                 <ConfidenceBadge
                   confidence={getFieldConfidence(resultJson.fields, "sellerNip")}
                   showPercentage={false}
@@ -672,7 +672,7 @@ export function InvoiceSubmitForm() {
             {resultJson.fields.buyerNip && (
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
-                  <Label className="text-[13px]">Buyer NIP</Label>
+                  <Label className="text-[13px]">{t("buyerNip")}</Label>
                   <ConfidenceBadge
                     confidence={getFieldConfidence(resultJson.fields, "buyerNip")}
                     showPercentage={false}

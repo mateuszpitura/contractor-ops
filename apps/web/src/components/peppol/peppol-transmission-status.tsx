@@ -2,6 +2,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { RefreshCw } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -91,18 +92,19 @@ function TimelineStep({
 // ---------------------------------------------------------------------------
 
 export function PeppolTransmissionStatus({ transmission }: PeppolTransmissionStatusProps) {
+  const t = useTranslations("Peppol.transmission");
   const queryClient = useQueryClient();
 
   const retryMutation = useMutation(
     trpc.peppol.retryTransmission.mutationOptions({
       onSuccess: () => {
-        toast.success("Transmission queued for retry");
+        toast.success(t("toast.retryQueued"));
         queryClient.invalidateQueries({
           queryKey: trpc.peppol.getTransmissions.queryKey(),
         });
       },
       onError: (error) => {
-        toast.error(error.message || "Retry failed");
+        toast.error(error.message || t("toast.retryFailed"));
       },
     }),
   );
@@ -114,7 +116,7 @@ export function PeppolTransmissionStatus({ transmission }: PeppolTransmissionSta
     <Collapsible>
       <Card>
         <CollapsibleTrigger className="flex w-full cursor-pointer items-center justify-between p-4">
-          <CardTitle className="text-base font-semibold">Peppol Transmission</CardTitle>
+          <CardTitle className="text-base font-semibold">{t("title")}</CardTitle>
           <Badge variant="outline" className={statusInfo.className}>
             {statusInfo.label}
           </Badge>
@@ -123,14 +125,14 @@ export function PeppolTransmissionStatus({ transmission }: PeppolTransmissionSta
           <CardContent className="space-y-4 px-4 pb-4 pt-0">
             {/* Timeline */}
             <div className="space-y-3">
-              <TimelineStep label="Created" timestamp={transmission.createdAt} done={true} />
+              <TimelineStep label={t("created")} timestamp={transmission.createdAt} done={true} />
               <TimelineStep
-                label="Transmitted"
+                label={t("transmitted")}
                 timestamp={transmission.transmittedAt}
                 done={transmission.status === "TRANSMITTED" || transmission.status === "DELIVERED"}
               />
               <TimelineStep
-                label="Delivered"
+                label={t("delivered")}
                 timestamp={transmission.deliveredAt}
                 done={transmission.status === "DELIVERED"}
               />
@@ -144,7 +146,7 @@ export function PeppolTransmissionStatus({ transmission }: PeppolTransmissionSta
             {/* ASP Reference */}
             {transmission.aspTransmissionId && (
               <p className="font-mono text-xs text-muted-foreground">
-                ASP Ref: {transmission.aspTransmissionId}
+                {t("aspRef")} {transmission.aspTransmissionId}
               </p>
             )}
 
@@ -161,7 +163,7 @@ export function PeppolTransmissionStatus({ transmission }: PeppolTransmissionSta
                 disabled={retryMutation.isPending}
               >
                 <RefreshCw className="me-1.5 h-3.5 w-3.5" />
-                {retryMutation.isPending ? "Retrying..." : "Retry Transmission"}
+                {retryMutation.isPending ? t("retrying") : t("retryTransmission")}
               </Button>
             )}
           </CardContent>

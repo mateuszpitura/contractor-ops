@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Clock } from "lucide-react";
 import { useParams, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Suspense, useCallback, useMemo } from "react";
 import { toast } from "sonner";
 import { EmptyState } from "@/components/shared/empty-state";
@@ -16,6 +17,7 @@ import { trpc } from "@/trpc/init";
 // ---------------------------------------------------------------------------
 
 function ContractorReviewContent() {
+  const t = useTranslations("Time");
   const params = useParams();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -56,22 +58,22 @@ function ContractorReviewContent() {
   const approveMutation = useMutation(
     trpc.time.approve.mutationOptions({
       onSuccess: () => {
-        toast.success("Timesheet approved");
+        toast.success(t("toast.approved"));
         invalidate();
         router.push("/time");
       },
-      onError: () => toast.error("Failed to approve timesheet"),
+      onError: () => toast.error(t("errors.failedToApprove")),
     }),
   );
 
   const rejectMutation = useMutation(
     trpc.time.reject.mutationOptions({
       onSuccess: () => {
-        toast.success("Timesheet rejected");
+        toast.success(t("toast.rejected"));
         invalidate();
         router.push("/time");
       },
-      onError: () => toast.error("Failed to reject timesheet"),
+      onError: () => toast.error(t("errors.failedToReject")),
     }),
   );
 
@@ -103,9 +105,9 @@ function ContractorReviewContent() {
     return (
       <EmptyState
         icon={Clock}
-        heading="Timesheet not found"
-        body="The requested timesheet could not be found. It may have been removed or the URL is incorrect."
-        primaryAction={{ label: "Back to Time Tracking", href: "/time" }}
+        heading={t("detail.notFoundHeading")}
+        body={t("detail.notFoundBody")}
+        primaryAction={{ label: t("detail.backToTimeTracking"), href: "/time" }}
       />
     );
   }

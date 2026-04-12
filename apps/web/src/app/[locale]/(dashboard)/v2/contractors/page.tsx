@@ -202,10 +202,11 @@ function LifecycleBadge({ stage }: { stage: string }) {
 // =============================================================================
 
 function ComplianceDot({ health }: { health: string }) {
+  const tC = useTranslations("Contractors.health");
   const cfg: Record<string, { color: string; icon: typeof CheckCircle; label: string }> = {
-    green: { color: "text-emerald-500", icon: CheckCircle, label: "Healthy" },
-    yellow: { color: "text-amber-500", icon: AlertTriangleIcon, label: "Caution" },
-    red: { color: "text-red-500", icon: XCircle, label: "At Risk" },
+    green: { color: "text-emerald-500", icon: CheckCircle, label: tC("green") },
+    yellow: { color: "text-amber-500", icon: AlertTriangleIcon, label: tC("caution") },
+    red: { color: "text-red-500", icon: XCircle, label: tC("atRisk") },
   };
   const c = cfg[health] ?? cfg.green;
   const Icon = c.icon;
@@ -249,12 +250,13 @@ function fmtRate(minor: number, currency = "PLN") {
 // =============================================================================
 
 function StatsStrip({ total, byStage }: { total: number; byStage: Record<string, number> }) {
+  const t = useTranslations("Contractors.v2.stats");
   const stats = [
-    { label: "Total", value: total, color: "var(--color-foreground)" },
-    { label: "Active", value: byStage.ACTIVE ?? 0, color: "var(--color-success)" },
-    { label: "Onboarding", value: byStage.ONBOARDING ?? 0, color: "var(--color-info)" },
-    { label: "Offboarding", value: byStage.OFFBOARDING ?? 0, color: "var(--color-warning)" },
-    { label: "Draft", value: byStage.DRAFT ?? 0, color: "var(--color-muted-foreground)" },
+    { label: t("total"), value: total, color: "var(--color-foreground)" },
+    { label: t("active"), value: byStage.ACTIVE ?? 0, color: "var(--color-success)" },
+    { label: t("onboarding"), value: byStage.ONBOARDING ?? 0, color: "var(--color-info)" },
+    { label: t("offboarding"), value: byStage.OFFBOARDING ?? 0, color: "var(--color-warning)" },
+    { label: t("draft"), value: byStage.DRAFT ?? 0, color: "var(--color-muted-foreground)" },
   ];
 
   return (
@@ -280,14 +282,16 @@ function StatsStrip({ total, byStage }: { total: number; byStage: Record<string,
 // FILTER PILLS — horizontal toggles
 // =============================================================================
 
-const STAGE_FILTERS = [
-  { value: "", label: "All" },
-  { value: "ACTIVE", label: "Active" },
-  { value: "ONBOARDING", label: "Onboarding" },
-  { value: "OFFBOARDING", label: "Offboarding" },
-  { value: "DRAFT", label: "Draft" },
-  { value: "ENDED", label: "Ended" },
-];
+const STAGE_FILTER_VALUES = ["", "ACTIVE", "ONBOARDING", "OFFBOARDING", "DRAFT", "ENDED"] as const;
+
+const STAGE_FILTER_KEYS: Record<string, string> = {
+  "": "all",
+  ACTIVE: "active",
+  ONBOARDING: "onboarding",
+  OFFBOARDING: "offboarding",
+  DRAFT: "draft",
+  ENDED: "ended",
+};
 
 // =============================================================================
 // CONTRACTOR CARD — the star of the show
@@ -421,6 +425,7 @@ function ContractorCard({ c, index }: { c: ContractorCardData; index: number }) 
 
 function ContractorsV2Content() {
   const t = useTranslations("Contractors");
+  const tv = useTranslations("Contractors.v2");
 
   // ── URL state ──
   const [search, setSearch] = useQueryState("search", parseAsString.withDefault(""));
@@ -476,17 +481,17 @@ function ContractorsV2Content() {
           <Users className="h-7 w-7 text-primary" />
         </div>
         <h2 className="mt-5 font-display text-[24px] font-bold tracking-tight">
-          No contractors yet
+          {tv("emptyState.heading")}
         </h2>
         <p className="mt-2 max-w-sm text-sm text-muted-foreground">
-          Add your first contractor to start managing contracts, invoices, and payments.
+          {tv("emptyState.body")}
         </p>
         <div className="mt-6 flex gap-3">
           <Button onClick={() => setWizardOpen(true)}>
-            <Plus className="me-1.5 h-4 w-4" /> Add contractor
+            <Plus className="me-1.5 h-4 w-4" /> {tv("emptyState.addContractor")}
           </Button>
           <Button variant="outline">
-            <Upload className="me-1.5 h-4 w-4" /> Import
+            <Upload className="me-1.5 h-4 w-4" /> {tv("emptyState.import")}
           </Button>
         </div>
         <WizardDialog open={wizardOpen} onOpenChange={setWizardOpen} />
@@ -506,17 +511,17 @@ function ContractorsV2Content() {
               <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/10">
                 <Users className="h-4 w-4 text-primary" />
               </div>
-              <h1 className="font-display text-[28px] font-black tracking-tight">Contractors</h1>
+              <h1 className="font-display text-[28px] font-black tracking-tight">{t("pageTitle")}</h1>
             </div>
             <StatsStrip total={allTotal} byStage={byStage} />
           </div>
 
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" className="text-xs">
-              <Upload className="me-1.5 h-3.5 w-3.5" /> Import
+              <Upload className="me-1.5 h-3.5 w-3.5" /> {t("import")}
             </Button>
             <Button size="sm" className="text-xs" onClick={() => setWizardOpen(true)}>
-              <Plus className="me-1.5 h-3.5 w-3.5" /> Add contractor
+              <Plus className="me-1.5 h-3.5 w-3.5" /> {t("addContractor")}
             </Button>
           </div>
         </div>
@@ -531,21 +536,21 @@ function ContractorsV2Content() {
       >
         {/* Stage filter pills */}
         <div className="flex flex-wrap gap-1.5">
-          {STAGE_FILTERS.map((f) => (
+          {STAGE_FILTER_VALUES.map((value) => (
             <button
-              key={f.value}
+              key={value}
               type="button"
               onClick={() => {
-                setStage(f.value);
+                setStage(value);
                 setPage(1);
               }}
               className={`rounded-full px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.1em] transition-all ${
-                stage === f.value
+                stage === value
                   ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
                   : "bg-muted/30 text-muted-foreground/60 hover:bg-muted/50 hover:text-foreground"
               }`}
             >
-              {f.label}
+              {tv(`stageFilters.${STAGE_FILTER_KEYS[value]}` as Parameters<typeof tv>[0])}
             </button>
           ))}
         </div>
@@ -560,7 +565,7 @@ function ContractorsV2Content() {
               setSearch(e.target.value);
               setPage(1);
             }}
-            placeholder="Search contractors..."
+            placeholder={tv("searchPlaceholder")}
             className="h-9 w-full rounded-xl border border-border/40 bg-card/50 ps-9 pe-4 text-[12px] font-medium text-foreground placeholder:text-muted-foreground/40 backdrop-blur-sm transition-all focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/10 sm:w-[260px]"
           />
         </div>
@@ -579,7 +584,7 @@ function ContractorsV2Content() {
         <div className="atelier-enter atelier-glass rounded-2xl py-16 text-center">
           <Filter className="mx-auto h-8 w-8 text-muted-foreground/30" />
           <p className="mt-3 text-sm font-medium text-muted-foreground">
-            No contractors match your filters
+            {tv("noMatch")}
           </p>
           <button
             type="button"
@@ -590,7 +595,7 @@ function ContractorsV2Content() {
             }}
             className="mt-2 text-xs font-semibold text-primary hover:underline"
           >
-            Clear all filters
+            {tv("clearAllFilters")}
           </button>
         </div>
       ) : (
@@ -599,7 +604,7 @@ function ContractorsV2Content() {
           {isRefetching && (
             <div className="flex items-center gap-2 text-[10px] text-muted-foreground/50">
               <div className="h-3 w-3 animate-spin rounded-full border border-primary/20 border-t-primary" />
-              Updating...
+              {tv("updating")}
             </div>
           )}
 
@@ -624,7 +629,7 @@ function ContractorsV2Content() {
                 <ChevronLeft className="h-4 w-4" />
               </button>
               <span className="text-[11px] font-bold tabular-nums text-muted-foreground/60">
-                {page} <span className="text-muted-foreground/30">of</span> {totalPages}
+                {page} <span className="text-muted-foreground/30">{tv("paginationOf")}</span> {totalPages}
               </span>
               <button
                 type="button"

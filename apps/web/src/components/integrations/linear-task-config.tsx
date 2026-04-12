@@ -44,6 +44,7 @@ interface LinearTaskConfigProps {
 
 export function LinearTaskConfig({ taskTemplateId }: LinearTaskConfigProps) {
   const t = useTranslations("Settings.integrations.linear.templateSettings");
+  const tI = useTranslations("Integrations.linear.taskConfig");
   const queryClient = useQueryClient();
   const [linearEnabled, setLinearEnabled] = useState(false);
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
@@ -88,13 +89,13 @@ export function LinearTaskConfig({ taskTemplateId }: LinearTaskConfigProps) {
   const saveMutation = useMutation({
     ...trpc.linear.saveTaskConfig.mutationOptions(),
     onSuccess: () => {
-      toast.success("Linear task configuration saved");
+      toast.success(tI("configSaved"));
       queryClient.invalidateQueries({
         queryKey: trpc.jira.getTaskConfig.queryKey({ taskTemplateId }),
       });
     },
     onError: () => {
-      toast.error("Failed to save Linear task configuration");
+      toast.error(tI("configSaveFailed"));
       setLinearEnabled(existingConfig?.linearEnabled ?? false);
       setSelectedTeamId(existingConfig?.linearTeamId ?? null);
     },
@@ -138,8 +139,8 @@ export function LinearTaskConfig({ taskTemplateId }: LinearTaskConfigProps) {
   }
 
   const teamSummary = selectedTeamId
-    ? (teams.find((t) => t.id === selectedTeamId)?.name ?? "Not configured")
-    : "Not configured";
+    ? (teams.find((t) => t.id === selectedTeamId)?.name ?? tI("notConfigured"))
+    : tI("notConfigured");
 
   return (
     <div className="space-y-2">

@@ -2,6 +2,7 @@
 
 import { useMutation } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -46,6 +47,7 @@ interface TopUpDialogProps {
 // ---------------------------------------------------------------------------
 
 export function TopUpDialog({ open, onOpenChange }: TopUpDialogProps) {
+  const t = useTranslations("Billing.topUp");
   const [selectedBundle, setSelectedBundle] = useState<string>("10");
 
   const checkoutMutation = useMutation({
@@ -56,7 +58,7 @@ export function TopUpDialog({ open, onOpenChange }: TopUpDialogProps) {
       }
     },
     onError() {
-      toast.error("Failed to start checkout. Please try again.");
+      toast.error(t("errors.checkoutFailed"));
     },
   });
 
@@ -68,7 +70,7 @@ export function TopUpDialog({ open, onOpenChange }: TopUpDialogProps) {
     };
     const priceId = priceIdMap[selectedBundle];
     if (!priceId) {
-      toast.error("Top-up price not configured.");
+      toast.error(t("errors.priceNotConfigured"));
       return;
     }
     checkoutMutation.mutate({ priceId });
@@ -78,16 +80,16 @@ export function TopUpDialog({ open, onOpenChange }: TopUpDialogProps) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Buy OCR Credits</DialogTitle>
+          <DialogTitle>{t("title")}</DialogTitle>
           <DialogDescription>
-            Select a credit bundle. You will be redirected to Stripe to complete the purchase.
+            {t("description")}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-2">
           <Select value={selectedBundle} onValueChange={setSelectedBundle}>
             <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select bundle size" />
+              <SelectValue placeholder={t("selectPlaceholder")} />
             </SelectTrigger>
             <SelectContent>
               {CREDIT_BUNDLES.map((bundle) => (
@@ -99,7 +101,7 @@ export function TopUpDialog({ open, onOpenChange }: TopUpDialogProps) {
           </Select>
 
           <p className="text-xs text-muted-foreground">
-            Exact price will be confirmed on the Stripe checkout page.
+            {t("priceNote")}
           </p>
         </div>
 
@@ -109,11 +111,11 @@ export function TopUpDialog({ open, onOpenChange }: TopUpDialogProps) {
             onClick={() => onOpenChange(false)}
             disabled={checkoutMutation.isPending}
           >
-            Cancel
+            {t("cancel")}
           </Button>
           <Button onClick={handleConfirm} disabled={checkoutMutation.isPending}>
             {checkoutMutation.isPending && <Loader2 className="animate-spin" aria-hidden="true" />}
-            Continue to checkout
+            {t("confirm")}
           </Button>
         </DialogFooter>
       </DialogContent>

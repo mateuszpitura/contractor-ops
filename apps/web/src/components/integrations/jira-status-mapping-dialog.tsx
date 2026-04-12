@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AlertTriangle, Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -73,6 +74,7 @@ export function JiraStatusMappingDialog({
   onOpenChange,
   connectionId,
 }: JiraStatusMappingDialogProps) {
+  const t = useTranslations("Integrations.jira.statusMapping");
   const queryClient = useQueryClient();
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [mappings, setMappings] = useState<MappingEntry[]>([]);
@@ -128,7 +130,7 @@ export function JiraStatusMappingDialog({
   const saveMutation = useMutation({
     ...trpc.jira.saveStatusMapping.mutationOptions(),
     onSuccess: () => {
-      toast.success("Status mapping saved");
+      toast.success(t("toast.saved"));
       queryClient.invalidateQueries({
         queryKey: trpc.jira.getStatusMapping.queryKey({
           connectionId,
@@ -138,7 +140,7 @@ export function JiraStatusMappingDialog({
       onOpenChange(false);
     },
     onError: () => {
-      toast.error("Failed to save status mapping");
+      toast.error(t("toast.saveFailed"));
     },
   });
 
@@ -197,22 +199,21 @@ export function JiraStatusMappingDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Status Mapping</DialogTitle>
+          <DialogTitle>{t("title")}</DialogTitle>
           <DialogDescription>
-            Map workflow task statuses to Jira transitions
-            {selectedProject ? ` for ${selectedProject.name}` : ""}.
+            {selectedProject ? t("description", { projectName: selectedProject.name }) : t("descriptionDefault")}
           </DialogDescription>
         </DialogHeader>
 
         {/* Project selector */}
         <div className="space-y-2">
-          <Label>Jira Project</Label>
+          <Label>{t("jiraProject")}</Label>
           <Select
             value={selectedProjectId ?? undefined}
             onValueChange={(v) => setSelectedProjectId(v as string)}
           >
             <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select a project">
+              <SelectValue placeholder={t("selectProject")}>
                 {projectsQuery.isLoading && <Loader2 className="size-3.5 animate-spin" />}
               </SelectValue>
             </SelectTrigger>
@@ -232,8 +233,8 @@ export function JiraStatusMappingDialog({
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Workflow Status</TableHead>
-                  <TableHead>Jira Transition</TableHead>
+                  <TableHead>{t("workflowStatus")}</TableHead>
+                  <TableHead>{t("jiraTransition")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -253,7 +254,7 @@ export function JiraStatusMappingDialog({
                                   <AlertTriangle className="size-3.5 text-warning" />
                                 </TooltipTrigger>
                                 <TooltipContent>
-                                  Not mapped — status changes for this state will be ignored
+                                  {t("unmappedTooltip")}
                                 </TooltipContent>
                               </Tooltip>
                             </TooltipProvider>
@@ -269,7 +270,7 @@ export function JiraStatusMappingDialog({
                             onValueChange={(v) => handleStatusSelect(ws.value, v as string)}
                           >
                             <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Not mapped" />
+                              <SelectValue placeholder={t("notMapped")} />
                             </SelectTrigger>
                             <SelectContent>
                               {jiraStatuses.map((status) => (
@@ -291,14 +292,14 @@ export function JiraStatusMappingDialog({
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Discard Changes
+            {t("discardChanges")}
           </Button>
           <Button
             onClick={handleSave}
             disabled={!hasChanges || saveMutation.isPending || !selectedProjectId}
           >
             {saveMutation.isPending && <Loader2 className="me-1.5 size-3.5 animate-spin" />}
-            Save Mapping
+            {t("saveMapping")}
           </Button>
         </DialogFooter>
       </DialogContent>

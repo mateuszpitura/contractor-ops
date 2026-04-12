@@ -1,6 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -31,6 +32,7 @@ interface JiraTaskConfigProps {
 // ---------------------------------------------------------------------------
 
 export function JiraTaskConfig({ taskTemplateId }: JiraTaskConfigProps) {
+  const t = useTranslations("Integrations.jira.taskConfig");
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [jiraEnabled, setJiraEnabled] = useState(false);
@@ -63,13 +65,13 @@ export function JiraTaskConfig({ taskTemplateId }: JiraTaskConfigProps) {
   const saveMutation = useMutation({
     ...trpc.jira.saveTaskConfig.mutationOptions(),
     onSuccess: () => {
-      toast.success("Jira task configuration saved");
+      toast.success(t("configSaved"));
       queryClient.invalidateQueries({
         queryKey: trpc.jira.getTaskConfig.queryKey({ taskTemplateId }),
       });
     },
     onError: () => {
-      toast.error("Failed to save Jira task configuration");
+      toast.error(t("configSaveFailed"));
       // Revert toggle
       setJiraEnabled(config?.jiraEnabled ?? false);
     },
@@ -82,7 +84,7 @@ export function JiraTaskConfig({ taskTemplateId }: JiraTaskConfigProps) {
   const mappingSummary =
     hasMappingConfigured && config?.jiraProjectName && config?.jiraIssueTypeName
       ? `${config.jiraProjectName} / ${config.jiraIssueTypeName}`
-      : "Not configured";
+      : t("notConfigured");
 
   function handleToggle(checked: boolean) {
     if (!hasMappingConfigured) return;
@@ -112,7 +114,7 @@ export function JiraTaskConfig({ taskTemplateId }: JiraTaskConfigProps) {
             disabled={!hasMappingConfigured || saveMutation.isPending}
           />
           <Label htmlFor={`jira-toggle-${taskTemplateId}`} className="cursor-pointer text-sm">
-            Create Jira issue when task activates
+            {t("enableToggle")}
           </Label>
         </div>
 
@@ -123,7 +125,7 @@ export function JiraTaskConfig({ taskTemplateId }: JiraTaskConfigProps) {
 
         {/* Configure button */}
         <Button variant="ghost" size="sm" onClick={() => setDialogOpen(true)}>
-          Configure Jira
+          {t("configure")}
         </Button>
       </div>
 

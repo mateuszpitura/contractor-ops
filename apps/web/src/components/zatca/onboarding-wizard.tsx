@@ -2,6 +2,7 @@
 
 import type { ZatcaOnboardingState } from "@contractor-ops/einvoice";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
 import { useCallback, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -18,13 +19,22 @@ import { zatcaTrpc } from "./zatca-trpc";
 // Step definitions
 // ---------------------------------------------------------------------------
 
-const ONBOARDING_STEPS: StepDefinition[] = [
-  { id: "tax_details", label: "Tax Details", shortLabel: "Tax" },
-  { id: "csr_generation", label: "CSR Generation", shortLabel: "CSR" },
-  { id: "compliance_csid", label: "Compliance CSID", shortLabel: "CSID" },
-  { id: "compliance_checks", label: "Compliance Checks", shortLabel: "Checks" },
-  { id: "production_certificate", label: "Production Certificate", shortLabel: "Cert" },
-];
+// Step definitions are built inside the component to use translations
+const STEP_IDS = [
+  "tax_details",
+  "csr_generation",
+  "compliance_csid",
+  "compliance_checks",
+  "production_certificate",
+] as const;
+
+const STEP_TRANSLATION_KEYS: Record<string, { label: string; shortLabel: string }> = {
+  tax_details: { label: "steps.taxDetails", shortLabel: "steps.taxDetailsShort" },
+  csr_generation: { label: "steps.csrGeneration", shortLabel: "steps.csrGenerationShort" },
+  compliance_csid: { label: "steps.complianceCsid", shortLabel: "steps.complianceCsidShort" },
+  compliance_checks: { label: "steps.complianceChecks", shortLabel: "steps.complianceChecksShort" },
+  production_certificate: { label: "steps.productionCertificate", shortLabel: "steps.productionCertificateShort" },
+};
 
 const STEP_INDEX_MAP: Record<string, number> = {
   tax_details: 0,
@@ -54,7 +64,14 @@ interface OnboardingWizardProps {
  * Back navigation allowed to any completed step.
  */
 export function OnboardingWizard({ onComplete, onCancel }: OnboardingWizardProps) {
+  const t = useTranslations("Zatca.onboarding");
   const queryClient = useQueryClient();
+
+  const onboardingSteps: StepDefinition[] = STEP_IDS.map((id) => ({
+    id,
+    label: t(STEP_TRANSLATION_KEYS[id]!.label as Parameters<typeof t>[0]),
+    shortLabel: t(STEP_TRANSLATION_KEYS[id]!.shortLabel as Parameters<typeof t>[0]),
+  }));
 
   const stateQuery = useQuery(zatcaTrpc.getOnboardingState.queryOptions());
   const state = stateQuery.data as ZatcaOnboardingState | undefined;
@@ -69,7 +86,7 @@ export function OnboardingWizard({ onComplete, onCancel }: OnboardingWizardProps
   const goNext = useCallback(() => {
     setCurrentStep((prev) => {
       const current = prev ?? serverStep;
-      return Math.min(current + 1, ONBOARDING_STEPS.length - 1);
+      return Math.min(current + 1, onboardingSteps.length - 1);
     });
     // Refresh onboarding state from server
     queryClient.invalidateQueries({
@@ -111,8 +128,8 @@ export function OnboardingWizard({ onComplete, onCancel }: OnboardingWizardProps
   return (
     <Card>
       <CardHeader className="space-y-4 border-b">
-        <CardTitle className="text-base font-semibold">ZATCA Onboarding</CardTitle>
-        <Stepper steps={ONBOARDING_STEPS} currentStep={activeStep} onStepClick={goToStep} />
+        <CardTitle className="text-base font-semibold">{t("title")}</CardTitle>
+        <Stepper steps={onboardingSteps} currentStep={activeStep} onStepClick={goToStep} />
       </CardHeader>
 
       <CardContent className="pt-6">

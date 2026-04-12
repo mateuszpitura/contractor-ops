@@ -110,6 +110,7 @@ function computeSmartDefaults(states: LinearState[]): MappingEntry[] {
 
 export function LinearStatusMappingDialog({ open, onOpenChange }: LinearStatusMappingDialogProps) {
   const t = useTranslations("Settings.integrations.linear.mapping");
+  const tI = useTranslations("Integrations.linear.statusMapping");
   const queryClient = useQueryClient();
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
   const [mappings, setMappings] = useState<MappingEntry[]>([]);
@@ -161,7 +162,7 @@ export function LinearStatusMappingDialog({ open, onOpenChange }: LinearStatusMa
   const saveMutation = useMutation({
     ...trpc.linear.saveStatusMapping.mutationOptions(),
     onSuccess: () => {
-      toast.success(t("save") === "Save Mapping" ? "Status mapping saved" : t("save"));
+      toast.success(tI("toast.saved"));
       queryClient.invalidateQueries({
         queryKey: trpc.linear.getStatusMapping.queryKey({
           teamId: selectedTeamId ?? "",
@@ -176,7 +177,7 @@ export function LinearStatusMappingDialog({ open, onOpenChange }: LinearStatusMa
       onOpenChange(false);
     },
     onError: () => {
-      toast.error("Failed to save status mapping. Please try again.");
+      toast.error(tI("toast.saveFailed"));
     },
   });
 

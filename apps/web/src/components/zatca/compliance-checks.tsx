@@ -2,6 +2,7 @@
 
 import { useMutation } from "@tanstack/react-query";
 import { Check, Loader2, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -46,6 +47,7 @@ const STATUS_BADGE: Record<
  * Next enabled only when all 6 pass.
  */
 export function ComplianceChecks({ onSuccess, onBack }: ComplianceChecksProps) {
+  const t = useTranslations("Zatca.complianceChecks");
   const [results, setResults] = useState<ComplianceCheckResult[]>([]);
 
   const checksMutation = useMutation({
@@ -55,18 +57,16 @@ export function ComplianceChecks({ onSuccess, onBack }: ComplianceChecksProps) {
       setResults(typedData);
       const allPassed = typedData.every((r) => r.status === "CLEARED" || r.status === "REPORTED");
       if (allPassed) {
-        toast.success("All 6 compliance checks passed. Your setup is ready for production.");
+        toast.success(t("toast.allPassed"));
       } else {
         const failedCount = typedData.filter(
           (r) => r.status === "REJECTED" || r.status === "ERROR",
         ).length;
-        toast.error(
-          `Compliance check failed: ${failedCount} test(s) did not pass. Review your tax details and try again.`,
-        );
+        toast.error(t("toast.someFailed", { failedCount }));
       }
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Failed to run compliance checks");
+      toast.error(error.message || t("toast.error"));
     },
   });
 
@@ -77,20 +77,20 @@ export function ComplianceChecks({ onSuccess, onBack }: ComplianceChecksProps) {
 
   // Test invoice labels
   const TEST_LABELS = [
-    "Standard tax invoice",
-    "Standard credit note",
-    "Standard debit note",
-    "Simplified invoice",
-    "Simplified credit note",
-    "Simplified debit note",
+    t("testLabels.standardTaxInvoice"),
+    t("testLabels.standardCreditNote"),
+    t("testLabels.standardDebitNote"),
+    t("testLabels.simplifiedInvoice"),
+    t("testLabels.simplifiedCreditNote"),
+    t("testLabels.simplifiedDebitNote"),
   ];
 
   return (
     <div className="space-y-6">
       <div className="space-y-1">
-        <h3 className="text-base font-semibold">Step 4 of 5: Run Compliance Checks</h3>
+        <h3 className="text-base font-semibold">{t("title")}</h3>
         <p className="text-sm text-muted-foreground">
-          6 test invoices will be submitted to ZATCA&apos;s sandbox to verify your setup.
+          {t("description")}
         </p>
       </div>
 
@@ -102,7 +102,7 @@ export function ComplianceChecks({ onSuccess, onBack }: ComplianceChecksProps) {
           {checksMutation.isPending && (
             <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" aria-hidden="true" />
           )}
-          Run Compliance Checks
+          {t("runChecks")}
         </Button>
       )}
 
@@ -111,7 +111,7 @@ export function ComplianceChecks({ onSuccess, onBack }: ComplianceChecksProps) {
         <div
           className="space-y-3 rounded-lg border bg-muted/20 p-4"
           role="list"
-          aria-label="Compliance check results"
+          aria-label={t("resultsLabel")}
         >
           {TEST_LABELS.map((label, i) => {
             const result = results[i];
@@ -163,10 +163,10 @@ export function ComplianceChecks({ onSuccess, onBack }: ComplianceChecksProps) {
       {/* Actions */}
       <div className="flex justify-end gap-2 pt-2">
         <Button type="button" variant="outline" onClick={onBack}>
-          Back
+          {t("back")}
         </Button>
         <Button onClick={onSuccess} disabled={!allPassed}>
-          Next
+          {t("next")}
         </Button>
       </div>
     </div>

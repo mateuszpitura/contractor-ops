@@ -1,6 +1,7 @@
 "use client";
 
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { trpc } from "@/trpc/init";
 import { SoftBlockModal } from "./soft-block-modal";
@@ -82,19 +83,19 @@ export function BillingOverlay() {
 // ---------------------------------------------------------------------------
 
 function PastDueBanner({ onResolve }: { onResolve: () => void }) {
+  const t = useTranslations("Billing.overlay");
   return (
     <div
       role="alert"
       className="bg-destructive/10 border-b border-destructive/20 px-4 py-2 text-center text-sm text-destructive"
     >
-      <span className="font-medium">Payment failed.</span> Update your payment method to avoid
-      service interruption.{" "}
+      <span className="font-medium">{t("paymentFailed")}</span> {t("paymentFailedBody")}{" "}
       <button
         type="button"
         onClick={onResolve}
         className="underline font-medium hover:no-underline"
       >
-        Go to billing
+        {t("goToBilling")}
       </button>
     </div>
   );
