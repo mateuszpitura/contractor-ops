@@ -4,8 +4,8 @@ import {
   exchangeRateLatestSchema,
   exchangeRateQuerySchema,
 } from "@contractor-ops/validators";
-import { z } from "zod";
-import { publicProcedure, router } from "../init.js";
+import { router } from "../init.js";
+import { cronProcedure } from "../middleware/cron-trpc.js";
 import { tenantProcedure } from "../middleware/tenant.js";
 import { convertAmount, fetchAndStoreRates, getRate } from "../services/exchange-rate.js";
 
@@ -64,10 +64,8 @@ export const exchangeRateRouter = router({
    * Cron endpoint: Fetch and store today's rates.
    * Called by QStash daily cron job.
    */
-  fetchDaily: publicProcedure
-    .input(z.object({ signature: z.string().optional() }).optional())
-    .mutation(async () => {
-      const result = await fetchAndStoreRates(prisma);
-      return result;
-    }),
+  fetchDaily: cronProcedure.mutation(async () => {
+    const result = await fetchAndStoreRates(prisma);
+    return result;
+  }),
 });

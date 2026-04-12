@@ -46,11 +46,65 @@ function getDefaultBucket(): string {
 // ---------------------------------------------------------------------------
 
 /**
+ * Allowed file extensions for document uploads.
+ * Restricts storage keys to known-safe document types.
+ */
+const ALLOWED_EXTENSIONS = new Set([
+  "pdf",
+  "doc",
+  "docx",
+  "xls",
+  "xlsx",
+  "csv",
+  "txt",
+  "rtf",
+  "odt",
+  "ods",
+  "png",
+  "jpg",
+  "jpeg",
+  "gif",
+  "webp",
+  "svg",
+  "tiff",
+  "tif",
+  "bmp",
+  "xml",
+  "json",
+  "zip",
+  "eml",
+]);
+
+/**
+ * Sanitize and validate a file extension extracted from user input.
+ * Strips path traversal characters and rejects unknown extensions.
+ * Returns the cleaned extension or empty string if invalid.
+ */
+function sanitizeExtension(raw: string): string {
+  // Strip path traversal sequences and special characters
+  const cleaned = raw
+    .replace(/[/\\]/g, "") // remove slashes and backslashes
+    .replace(/\.\./g, "") // remove parent directory traversal
+    .replace(/[^a-zA-Z0-9]/g, "") // keep only alphanumeric
+    .toLowerCase();
+
+  if (!cleaned || !ALLOWED_EXTENSIONS.has(cleaned)) {
+    return "";
+  }
+
+  return cleaned;
+}
+
+/**
  * Generates a deterministic storage key for a document.
  * Format: `orgs/{orgId}/documents/{docId}.{ext}`
+ *
+ * The extension is extracted from the user-provided filename, sanitized
+ * to prevent path traversal, and validated against an allowlist.
  */
 export function generateStorageKey(orgId: string, docId: string, filename: string): string {
-  const ext = filename.split(".").pop() ?? "";
+  const rawExt = filename.split(".").pop() ?? "";
+  const ext = sanitizeExtension(rawExt);
   return `orgs/${orgId}/documents/${docId}${ext ? `.${ext}` : ""}`;
 }
 

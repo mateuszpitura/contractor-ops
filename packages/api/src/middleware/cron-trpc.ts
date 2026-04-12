@@ -6,8 +6,9 @@ import { t } from "../init.js";
  * Requires `Authorization: Bearer <CRON_SECRET>` (same contract as /api/cron/* routes).
  * Use for tRPC mutations that should only be triggered by trusted schedulers (Vercel Cron, internal jobs).
  */
-export const cronTrpcMiddleware = t.middleware(({ ctx, next }) => {
+const cronTrpcMiddleware = t.middleware(({ ctx, next }) => {
   const cronSecret = process.env.CRON_SECRET;
+
   if (!cronSecret) {
     throw new TRPCError({
       code: "INTERNAL_SERVER_ERROR",
@@ -27,3 +28,9 @@ export const cronTrpcMiddleware = t.middleware(({ ctx, next }) => {
 
   return next();
 });
+
+/**
+ * Procedure protected by cron secret verification.
+ * Use for tRPC endpoints called exclusively by scheduled jobs (QStash / Vercel Cron).
+ */
+export const cronProcedure = t.procedure.use(cronTrpcMiddleware);
