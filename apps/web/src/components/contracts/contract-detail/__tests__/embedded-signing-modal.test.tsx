@@ -11,13 +11,13 @@ vi.mock('@/trpc/init', () => ({
   trpc: {
     esign: {
       getSigningUrl: {
-        queryOptions: (input: any, opts: Record<string, unknown>) => ({
+        queryOptions: (input: unknown, opts?: Record<string, unknown>) => ({
           queryKey: ['esign', 'getSigningUrl', input],
           ...opts,
         }),
       },
       getPortalSigningUrl: {
-        queryOptions: (input: any, opts: Record<string, unknown>) => ({
+        queryOptions: (input: unknown, opts?: Record<string, unknown>) => ({
           queryKey: ['esign', 'getPortalSigningUrl', input],
           ...opts,
         }),

@@ -15,7 +15,7 @@ vi.mock('@/trpc/init', () => ({
   trpc: {
     esign: {
       getEnvelopeDetail: {
-        queryOptions: (input: any, opts: Record<string, unknown>) => ({
+        queryOptions: (input: unknown, opts?: Record<string, unknown>) => ({
           queryKey: ['esign', 'detail', input],
           ...opts,
         }),
