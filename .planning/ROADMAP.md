@@ -91,7 +91,7 @@ Full details: `.planning/milestones/v3.0-ROADMAP.md`
 - [x] **Phase 52: Multi-Region Infrastructure** - Regional database routing, file storage residency, and government API framework (completed 2026-04-11)
 - [x] **Phase 53: Peppol QR Persistence & Consent Onboarding Gate** - [GAP CLOSURE] Add qrCodeBase64 to Invoice model, wire OnboardingConsentStep into onboarding (2 plans) (completed 2026-04-12)
 - [x] **Phase 54: Regional Routing Adoption & Gov API Wiring** - [GAP CLOSURE] Migrate routers to ctx.db, adopt regional storage, wire gov-api framework (4 plans) (completed 2026-04-12)
-- [ ] **Phase 55: Verification & Documentation Fixes** - [GAP CLOSURE] Re-verify phases 45/48, update SUMMARY frontmatter, fix hardcoded pl-PL formatters
+- [x] **Phase 55: Verification & Documentation Fixes** - [GAP CLOSURE] Re-verify phases 45/48, update SUMMARY frontmatter, fix hardcoded pl-PL formatters (completed 2026-04-12)
 
 ## Phase Details
 
@@ -278,4 +278,4 @@ Phases 45-52 complete. Gap closure: 53 -> 54 -> 55
 | 52. Multi-Region Infrastructure | v4.0 | 4/4 | Complete    | 2026-04-12 |
 | 53. Peppol QR & Consent Gate | v4.0 | 2/2 | Complete    | 2026-04-12 |
 | 54. Regional Routing & Gov API | v4.0 | 4/4 | Complete    | 2026-04-12 |
-| 55. Verification & Doc Fixes | v4.0 | 0/0 | Planned    | — |
+| 55. Verification & Doc Fixes | v4.0 | 3/4 | Complete    | 2026-04-12 |
