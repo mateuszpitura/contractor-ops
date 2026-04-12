@@ -34,7 +34,7 @@ See .planning/milestones/v4.0/ for details.
 
 **Milestone Goal:** Expand Contractor Ops to UK and German markets with contractor classification engines (IR35, Scheinselbstandigkeit), EN 16931 e-invoicing (XRechnung, ZUGFeRD), UK payment infrastructure (BACS), government API integrations (HMRC, VIES), and German localization.
 
-- [ ] **Phase 56: Country Foundations & German i18n** - UK/DE contractor fields, German locale, GDPR compliance notices
+- [x] **Phase 56: Country Foundations & German i18n** - UK/DE contractor fields, German locale, GDPR compliance notices (completed 2026-04-12)
 - [ ] **Phase 57: Government API Clients** - HMRC VAT validation, VIES USt-IdNr validation, UK/DE VAT rates
 - [ ] **Phase 58: Classification Engine & Rule Sets** - Generic classification engine with IR35 and Scheinselbstandigkeit rule sets
 - [ ] **Phase 59: Classification Documents & Chain Tracking** - SDS generation, IR35 chain participants, DRV audit defense documentation
@@ -60,10 +60,10 @@ See .planning/milestones/v4.0/ for details.
 - [x] 56-02-PLAN.md — UK validators (UTR mod-11, GB VAT mod-97/9755 + GBGD/GBHA, Companies House)
 - [x] 56-03-PLAN.md — DE validators (USt-IdNr ISO-7064, SV-Nummer, Steuernummer/Handelsregister dispatchers) + locked legal phrases module + CI guard
 - [x] 56-04-PLAN.md — Steuernummer 16-Bundesland regex map + Handelsregister ~120-court list + UK/DE Zod discriminated-union schemas
-- [ ] 56-05-PLAN.md — DE locale in next-intl routing + localeSettings (Europe/Berlin, EUR) + messages/de.json (AI first-pass, Sie register)
-- [ ] 56-06-PLAN.md — UK/DE contractor profile field groups (7 components + CountryComplianceSection dispatch)
-- [ ] 56-07-PLAN.md — MDX privacy pages (GB/DE/EU) + React-PDF template + legal tRPC router (IDOR-safe) + app footer + user-menu drift fix
-- [ ] 56-08-PLAN.md — Onboarding consent extension + SV-Nummer PII mask + DE-default language + Steuerberater review gate + phase verification
+- [x] 56-05-PLAN.md — DE locale in next-intl routing + localeSettings (Europe/Berlin, EUR) + messages/de.json (AI first-pass, Sie register)
+- [x] 56-06-PLAN.md — UK/DE contractor profile field groups (7 components + CountryComplianceSection dispatch)
+- [x] 56-07-PLAN.md — MDX privacy pages (GB/DE/EU) + React-PDF template + legal tRPC router (IDOR-safe) + app footer + user-menu drift fix
+- [x] 56-08-PLAN.md — Onboarding consent extension + SV-Nummer PII mask + DE-default language + Steuerberater review gate + phase verification
 **UI hint**: yes
 
 ### Phase 57: Government API Clients
@@ -150,7 +150,7 @@ Phases execute in numeric order: 56 -> 57 -> 58 -> 59 -> 60 -> 61 -> 62 -> 63
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 56. Country Foundations & German i18n | v5.0 | 4/8 | In Progress|  |
+| 56. Country Foundations & German i18n | v5.0 | 8/8 | Complete   | 2026-04-12 |
 | 57. Government API Clients | v5.0 | 0/TBD | Not started | - |
 | 58. Classification Engine & Rule Sets | v5.0 | 0/TBD | Not started | - |
 | 59. Classification Documents & Chain Tracking | v5.0 | 0/TBD | Not started | - |
