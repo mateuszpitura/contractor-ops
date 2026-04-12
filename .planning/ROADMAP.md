@@ -56,10 +56,10 @@ See .planning/milestones/v4.0/ for details.
   4. User sees legally correct German tax terminology (e.g., "Steuerschuldnerschaft des Leistungsempfangers") as locked constants that cannot be accidentally modified through translation
   5. User in a UK or German organization can view jurisdiction-appropriate GDPR privacy notices and data processing information
 **Plans**: 8 plans
-- [ ] 56-01-PLAN.md — Wave 0 test scaffolds + MDX/React-PDF dep install
-- [ ] 56-02-PLAN.md — UK validators (UTR mod-11, GB VAT mod-97/9755 + GBGD/GBHA, Companies House)
-- [ ] 56-03-PLAN.md — DE validators (USt-IdNr ISO-7064, SV-Nummer, Steuernummer/Handelsregister dispatchers) + locked legal phrases module + CI guard
-- [ ] 56-04-PLAN.md — Steuernummer 16-Bundesland regex map + Handelsregister ~120-court list + UK/DE Zod discriminated-union schemas
+- [x] 56-01-PLAN.md — Wave 0 test scaffolds + MDX/React-PDF dep install
+- [x] 56-02-PLAN.md — UK validators (UTR mod-11, GB VAT mod-97/9755 + GBGD/GBHA, Companies House)
+- [x] 56-03-PLAN.md — DE validators (USt-IdNr ISO-7064, SV-Nummer, Steuernummer/Handelsregister dispatchers) + locked legal phrases module + CI guard
+- [x] 56-04-PLAN.md — Steuernummer 16-Bundesland regex map + Handelsregister ~120-court list + UK/DE Zod discriminated-union schemas
 - [ ] 56-05-PLAN.md — DE locale in next-intl routing + localeSettings (Europe/Berlin, EUR) + messages/de.json (AI first-pass, Sie register)
 - [ ] 56-06-PLAN.md — UK/DE contractor profile field groups (7 components + CountryComplianceSection dispatch)
 - [ ] 56-07-PLAN.md — MDX privacy pages (GB/DE/EU) + React-PDF template + legal tRPC router (IDOR-safe) + app footer + user-menu drift fix
@@ -150,7 +150,7 @@ Phases execute in numeric order: 56 -> 57 -> 58 -> 59 -> 60 -> 61 -> 62 -> 63
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 56. Country Foundations & German i18n | v5.0 | 0/8 | Not started | - |
+| 56. Country Foundations & German i18n | v5.0 | 4/8 | In Progress|  |
 | 57. Government API Clients | v5.0 | 0/TBD | Not started | - |
 | 58. Classification Engine & Rule Sets | v5.0 | 0/TBD | Not started | - |
 | 59. Classification Documents & Chain Tracking | v5.0 | 0/TBD | Not started | - |
