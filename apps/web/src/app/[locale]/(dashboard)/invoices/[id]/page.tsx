@@ -26,7 +26,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import type { ZatcaBadgeStatus } from "@/components/zatca/zatca-status-badge";
 import { ZatcaStatusBadge } from "@/components/zatca/zatca-status-badge";
 import { ZatcaSubmissionDetail } from "@/components/zatca/zatca-submission-detail";
+import type { ZatcaSubmissionResult } from "@/components/zatca/zatca-trpc";
 import { zatcaTrpc } from "@/components/zatca/zatca-trpc";
+import type { PeppolTransmissionResult } from "@/lib/peppol-trpc";
+import { peppolTrpc } from "@/lib/peppol-trpc";
 import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
@@ -123,8 +126,7 @@ export default function InvoiceDetailPage() {
   // Fetch invoice data
   const invoiceQuery = useQuery(trpc.invoice.getById.queryOptions({ id: params.id }));
 
-  // biome-ignore lint/suspicious/noExplicitAny: tRPC return type is narrower than what child components (MatchCard, InvoiceMetadataForm) expect
-  const invoice = invoiceQuery.data as any;
+  const invoice = invoiceQuery.data;
 
   useBreadcrumbOverride(params.id, invoice?.invoiceNumber);
 
@@ -156,15 +158,13 @@ export default function InvoiceDetailPage() {
 
   // Peppol transmission query (Phase 49 gap closure)
   const peppolTransmissionQuery = useQuery({
-    // biome-ignore lint/suspicious/noExplicitAny: peppol router procedure may not be fully typed yet
-    ...(trpc.peppol as any).getTransmissionByInvoiceId.queryOptions({
+    ...peppolTrpc.getTransmissionByInvoiceId.queryOptions({
       invoiceId: params.id,
     }),
     enabled: !!invoice,
   });
 
-  // biome-ignore lint/suspicious/noExplicitAny: peppol transmission shape is dynamic
-  const peppolTransmission = peppolTransmissionQuery.data as any;
+  const peppolTransmission = peppolTransmissionQuery.data as PeppolTransmissionResult | undefined;
 
   // ZATCA submission query (Phase 48 gap closure)
   const zatcaSubmissionQuery = useQuery({
@@ -172,8 +172,7 @@ export default function InvoiceDetailPage() {
     enabled: !!invoice,
   });
 
-  // biome-ignore lint/suspicious/noExplicitAny: zatcaTrpc uses manual type proxy due to TypeScript depth limits
-  const zatcaSubmission = zatcaSubmissionQuery.data as any;
+  const zatcaSubmission = zatcaSubmissionQuery.data as ZatcaSubmissionResult | undefined;
 
   // Submit for approval mutation
   const submitForApproval = useMutation(

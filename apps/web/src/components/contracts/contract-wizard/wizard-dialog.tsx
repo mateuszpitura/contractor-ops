@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
+import type { Resolver } from "react-hook-form";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -165,8 +166,7 @@ export function ContractWizardDialog({
   const [preFilledFields, setPreFilledFields] = useState<Set<string>>(new Set());
 
   const form = useForm<ContractWizardFormValues>({
-    // biome-ignore lint/suspicious/noExplicitAny: zodResolver return type doesn't perfectly align with react-hook-form's Resolver generic
-    resolver: zodResolver(contractWizardSchema) as any,
+    resolver: zodResolver(contractWizardSchema) as unknown as Resolver<ContractWizardFormValues>,
     defaultValues: {
       contractorId: contractorId ?? "",
       title: "",

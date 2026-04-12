@@ -18,9 +18,9 @@ interface Equipment {
   customType: string | null;
   status: string;
   notes: string | null;
-  purchaseDate: string | null;
-  createdAt: string;
-  updatedAt: string;
+  purchaseDate: string | Date | null;
+  createdAt: string | Date;
+  updatedAt: string | Date;
 }
 
 interface TabInfoProps {
