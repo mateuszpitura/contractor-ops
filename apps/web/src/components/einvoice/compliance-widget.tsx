@@ -7,6 +7,7 @@ import { trpc } from "@/trpc/init";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "@/i18n/navigation";
+import { PeppolComplianceWidget } from "@/components/peppol/peppol-compliance-widget";
 
 // ---------------------------------------------------------------------------
 // State → color mapping (per D-08: green/yellow/red/gray)
@@ -90,9 +91,22 @@ export function EInvoiceComplianceWidget() {
     );
   }
 
+  const { data: peppolStatus } = useQuery(trpc.peppol.getStatus.queryOptions());
+
   const statuses = data?.statuses ?? [];
 
-  if (statuses.length === 0) {
+  // Derive Peppol compliance state from connection status
+  const peppolState = peppolStatus
+    ? peppolStatus.participant.status === "ACTIVE"
+      ? "active"
+      : peppolStatus.participant.status === "PENDING" || peppolStatus.participant.status === "REGISTERED"
+        ? "onboarding"
+        : peppolStatus.participant.status === "SUSPENDED"
+          ? "suspended"
+          : "error"
+    : null;
+
+  if (statuses.length === 0 && !peppolState) {
     return null;
   }
 
@@ -130,6 +144,14 @@ export function EInvoiceComplianceWidget() {
             </Link>
           );
         })}
+        {peppolState && (
+          <PeppolComplianceWidget
+            status={{
+              state: peppolState,
+              healthScore: peppolState === "active" ? 100 : peppolState === "onboarding" ? 50 : 0,
+            }}
+          />
+        )}
       </CardContent>
     </Card>
   );

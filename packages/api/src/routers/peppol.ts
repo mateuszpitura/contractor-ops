@@ -4,6 +4,7 @@ import { prisma } from "@contractor-ops/db";
 import {
   connectPeppolSchema,
   getTransmissionsSchema,
+  getTransmissionByInvoiceIdSchema,
   retryTransmissionSchema,
 } from "@contractor-ops/validators";
 import { storeCredentials } from "@contractor-ops/integrations";
@@ -311,6 +312,36 @@ export const peppolRouter = router({
           receivedTransmissions: receivedCount,
           failedTransmissions: failedCount,
         },
+      });
+    }),
+
+  /**
+   * Get the latest PeppolTransmission for a specific invoice.
+   * Includes participant relation for receiver context.
+   * Used by the invoice detail page to show transmission status.
+   */
+  getTransmissionByInvoiceId: tenantProcedure
+    .use(requirePermission({ settings: ["read"] }))
+    .input(getTransmissionByInvoiceIdSchema)
+    .query(async ({ ctx, input }) => {
+      const transmission = await prisma.peppolTransmission.findFirst({
+        where: {
+          organizationId: ctx.organizationId,
+          invoiceId: input.invoiceId,
+        },
+        include: {
+          participant: true,
+        },
+        orderBy: { createdAt: "desc" },
+      });
+
+      if (!transmission) return null;
+
+      return plain({
+        ...transmission,
+        // Map participant data for UI consumption
+        receiverParticipantId: transmission.participant.participantId,
+        receiverSchemeId: transmission.participant.schemeId,
       });
     }),
 

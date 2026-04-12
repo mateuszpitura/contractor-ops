@@ -57,6 +57,16 @@ export const getTransmissionsSchema = z.object({
 export type GetTransmissionsInput = z.infer<typeof getTransmissionsSchema>;
 
 // ---------------------------------------------------------------------------
+// Get Transmission by Invoice ID
+// ---------------------------------------------------------------------------
+
+export const getTransmissionByInvoiceIdSchema = z.object({
+  invoiceId: z.string().cuid(),
+});
+
+export type GetTransmissionByInvoiceIdInput = z.infer<typeof getTransmissionByInvoiceIdSchema>;
+
+// ---------------------------------------------------------------------------
 // Retry Transmission
 // ---------------------------------------------------------------------------
 
