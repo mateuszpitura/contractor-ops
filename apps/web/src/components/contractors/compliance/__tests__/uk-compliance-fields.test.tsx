@@ -1,12 +1,12 @@
-// Wave 0 scaffold — implemented in Plan 06 (UK compliance field UI)
-// Tests fail by design until Plan 06 creates
-// `apps/web/src/components/contractors/compliance/uk-compliance-fields.tsx`.
-// Covers FOUND-01 (UK contractor fields rendered via UkComplianceFields).
+// Plan 06 — FOUND-01 (UK contractor profile field UI).
+//
+// Rendering rules verified:
+//   * Entity-type-driven required markers (UTR vs Companies House)
+//   * VAT-registered toggle gating the VAT registration number input
 
 import { render, screen } from '@/test/test-utils';
 import { describe, expect, it } from 'vitest';
-// biome-ignore lint/correctness/noUnresolvedImports: Plan 06 creates this module
-// @ts-expect-error Plan 06 creates this module
+
 import { UkComplianceFields } from '@/components/contractors/compliance/uk-compliance-fields';
 
 describe('UkComplianceFields (FOUND-01)', () => {
@@ -24,9 +24,17 @@ describe('UkComplianceFields (FOUND-01)', () => {
     expect(ch).toHaveAttribute('aria-required', 'true');
   });
 
+  it('does not mark UTR as required when entity type is LTD', () => {
+    render(<UkComplianceFields entityType="LTD" isVatRegistered={false} />);
+    const utr = screen.getByLabelText(/UTR/i);
+    expect(utr).not.toHaveAttribute('aria-required', 'true');
+  });
+
   it('conditionally renders VAT registration input when isVatRegistered=true', () => {
     render(<UkComplianceFields entityType="LTD" isVatRegistered={true} />);
-    expect(screen.getByLabelText(/VAT/i)).toBeInTheDocument();
+    const vat = screen.getByLabelText(/VAT registration number/i);
+    expect(vat).toBeInTheDocument();
+    expect(vat).toHaveAttribute('aria-required', 'true');
   });
 
   it('does not render VAT input when isVatRegistered=false', () => {
