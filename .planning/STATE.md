@@ -1,16 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v4.0
-milestone_name: International Foundation & Gulf Expansion
-status: executing
-stopped_at: Phase 55 context gathered
-last_updated: "2026-04-12T11:25:52.766Z"
+milestone: v5.0
+milestone_name: UK & Germany Expansion
+status: defining_requirements
+stopped_at: null
+last_updated: "2026-04-12T12:00:00.000Z"
 last_activity: 2026-04-12
 progress:
-  total_phases: 11
-  completed_phases: 11
-  total_plans: 55
-  completed_plans: 55
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
   percent: 0
 ---
 
@@ -18,19 +18,19 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-04-11)
+See: .planning/PROJECT.md (updated 2026-04-12)
 
 **Core value:** The invoice-to-payment flow must work end-to-end: invoice arrives, gets matched to contract, routed through approval, and batched for payment — with full audit trail.
-**Current focus:** Phase 55 — verification-documentation-fixes
+**Current focus:** Defining requirements for v5.0 UK & Germany Expansion
 
 ## Current Position
 
-Phase: 55
-Plan: Not started
-Status: Executing Phase 55
-Last activity: 2026-04-12
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-04-12 — Milestone v5.0 started
 
-Progress: [░░░░░░░░░░] 0% (v4.0)
+Progress: [░░░░░░░░░░] 0% (v5.0)
 
 ## Performance Metrics
 

@@ -2,7 +2,7 @@
 
 ## What This Is
 
-A B2B contractor operations platform for EU and Gulf companies with 5-50 contractors. Replaces the Excel + email + Slack + bank chaos with a single system covering the full contractor lifecycle: onboarding, contracts, invoices, approvals, payments, and offboarding. Built as a multi-tenant SaaS targeting software houses, agencies, and tech companies with 10-200 employees. Now with multi-market e-invoicing (KSeF, ZATCA, Peppol), multi-currency, Arabic localization, and Gulf compliance.
+A B2B contractor operations platform for EU, UK, and Gulf companies with 5-50 contractors. Replaces the Excel + email + Slack + bank chaos with a single system covering the full contractor lifecycle: onboarding, contracts, invoices, approvals, payments, and offboarding. Built as a multi-tenant SaaS targeting software houses, agencies, and tech companies with 10-200 employees. Multi-market e-invoicing (KSeF, ZATCA, Peppol), multi-currency, Arabic localization, Gulf compliance, and now expanding to UK (IR35) and Germany (Scheinselbständigkeit, XRechnung/ZUGFeRD).
 
 ## Core Value
 
@@ -90,7 +90,20 @@ v3.0 Enterprise & Monetization (shipped 2026-04-11): Stripe subscription billing
 
 ### Active
 
-(No active milestone — run `/gsd:new-milestone` to start next)
+## Current Milestone: v5.0 UK & Germany Expansion
+
+**Goal:** Expand Contractor Ops to the UK and German markets with full compliance coverage, contractor classification engines, market-specific e-invoicing, payment formats, and German localization.
+
+**Target features:**
+- Generic contractor classification risk engine with UK (IR35) and German (Scheinselbständigkeit) rule sets
+- IR35 status determination, SDS generation, chain participant tracking
+- Scheinselbständigkeit risk assessment with DRV audit defense documentation
+- EN 16931 e-invoicing engine with XRechnung and ZUGFeRD country profiles
+- UK payment infrastructure (BACS Standard 18, research Faster Payments)
+- Full German i18n (third language)
+- UK GDPR + German GDPR compliance
+- HMRC VAT validation, German USt-IdNr validation via VIES
+- UK contractor fields (UTR, Companies House), German fields (Steuernummer, Handelsregister)
 
 ### Out of Scope
 
@@ -182,4 +195,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-12 after Phase 55 (Verification & Documentation Fixes) completed — v4.0 milestone complete*
+*Last updated: 2026-04-12 after milestone v5.0 UK & Germany Expansion started*
