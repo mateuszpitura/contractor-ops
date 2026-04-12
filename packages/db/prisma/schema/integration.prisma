@@ -104,7 +104,6 @@ enum IntegrationProvider {
   GOOGLE_WORKSPACE
   MICROSOFT_365
   JIRA
-  ESIGN // @deprecated Use DOCUSIGN or AUTENTI — kept for migration compatibility
   DOCUSIGN
   AUTENTI
   KSEF
