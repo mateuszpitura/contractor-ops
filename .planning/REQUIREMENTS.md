@@ -84,43 +84,43 @@ Deferred to future release. Tracked but not in current roadmap.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| FOUND-01 | — | Pending |
-| FOUND-02 | — | Pending |
-| FOUND-03 | — | Pending |
-| FOUND-04 | — | Pending |
-| FOUND-05 | — | Pending |
-| FOUND-06 | — | Pending |
-| CLASS-01 | — | Pending |
-| CLASS-02 | — | Pending |
-| CLASS-03 | — | Pending |
-| CLASS-04 | — | Pending |
-| CLASS-05 | — | Pending |
-| CLASS-06 | — | Pending |
-| CLASS-07 | — | Pending |
-| CLASS-08 | — | Pending |
-| CLASS-09 | — | Pending |
-| CLASS-10 | — | Pending |
-| CLASS-11 | — | Pending |
-| EINV-01 | — | Pending |
-| EINV-02 | — | Pending |
-| EINV-03 | — | Pending |
-| EINV-04 | — | Pending |
-| EINV-05 | — | Pending |
-| EINV-06 | — | Pending |
-| EINV-07 | — | Pending |
-| PAY-01 | — | Pending |
-| PAY-02 | — | Pending |
-| PAY-03 | — | Pending |
-| PAY-04 | — | Pending |
-| PAY-05 | — | Pending |
-| PAY-06 | — | Pending |
-| PAY-07 | — | Pending |
+| FOUND-01 | Phase 56 | Pending |
+| FOUND-02 | Phase 56 | Pending |
+| FOUND-03 | Phase 56 | Pending |
+| FOUND-04 | Phase 56 | Pending |
+| FOUND-05 | Phase 56 | Pending |
+| FOUND-06 | Phase 56 | Pending |
+| CLASS-01 | Phase 58 | Pending |
+| CLASS-02 | Phase 58 | Pending |
+| CLASS-03 | Phase 59 | Pending |
+| CLASS-04 | Phase 59 | Pending |
+| CLASS-05 | Phase 58 | Pending |
+| CLASS-06 | Phase 59 | Pending |
+| CLASS-07 | Phase 60 | Pending |
+| CLASS-08 | Phase 60 | Pending |
+| CLASS-09 | Phase 60 | Pending |
+| CLASS-10 | Phase 60 | Pending |
+| CLASS-11 | Phase 58 | Pending |
+| EINV-01 | Phase 61 | Pending |
+| EINV-02 | Phase 62 | Pending |
+| EINV-03 | Phase 62 | Pending |
+| EINV-04 | Phase 61 | Pending |
+| EINV-05 | Phase 61 | Pending |
+| EINV-06 | Phase 61 | Pending |
+| EINV-07 | Phase 61 | Pending |
+| PAY-01 | Phase 63 | Pending |
+| PAY-02 | Phase 57 | Pending |
+| PAY-03 | Phase 57 | Pending |
+| PAY-04 | Phase 57 | Pending |
+| PAY-05 | Phase 57 | Pending |
+| PAY-06 | Phase 63 | Pending |
+| PAY-07 | Phase 63 | Pending |
 
 **Coverage:**
 - v5.0 requirements: 31 total
-- Mapped to phases: 0
-- Unmapped: 31 ⚠️
+- Mapped to phases: 31/31
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-04-12*
-*Last updated: 2026-04-12 after initial definition*
+*Last updated: 2026-04-12 after roadmap creation (all 31 requirements mapped to phases 56-63)*
