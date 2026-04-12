@@ -11,11 +11,17 @@
  *   cd packages/db && npm run db:push:all
  */
 
+import { config } from "dotenv";
 import { execSync } from "node:child_process";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+const ROOT_DIR = resolve(__dirname, "../../..");
+
+// Load .env from project root (handles running from packages/db via npm script)
+config({ path: resolve(ROOT_DIR, ".env") });
+
 const SCHEMA_PATH = resolve(__dirname, "../prisma/schema");
 
 const REGION_ENV_VARS = ["DATABASE_URL_EU", "DATABASE_URL_ME"] as const;
