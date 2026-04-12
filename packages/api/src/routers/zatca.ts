@@ -120,6 +120,8 @@ export const zatcaRouter = router({
           rejectedAt: true,
           rejectionReason: true,
           createdAt: true,
+          invoiceHash: true,
+          previousHash: true,
         },
       });
       return chain;
