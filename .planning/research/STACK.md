@@ -1,237 +1,430 @@
-# Stack Research: v4.0 International Foundation & Gulf Expansion
+# Stack Research: v5.0 UK & Germany Market Expansion
 
-**Domain:** Pluggable e-invoicing, multi-currency, Arabic RTL, SWIFT payments, multi-region deployment, government API integrations
-**Researched:** 2026-04-11
-**Confidence:** MEDIUM-HIGH (libraries verified via npm/GitHub; ZATCA and Peppol specs confirmed via official sources; Neon region availability verified via docs)
+**Domain:** UK IR35 compliance, German Scheinselbstaendigkeit, EN 16931 e-invoicing (XRechnung/ZUGFeRD), BACS payments, German localization, HMRC/VIES VAT validation
+**Researched:** 2026-04-12
+**Confidence:** MEDIUM (web search tools unavailable; recommendations based on thorough codebase analysis of existing patterns and training data knowledge of standards/APIs)
 
-## Scope
+## Key Finding: Build From Spec, Not From Libraries
 
-This document covers ONLY the stack additions needed for v4.0 features:
-- Pluggable e-invoicing engine (EN 16931 / UBL 2.1 / ZATCA / Peppol PINT-AE)
-- Multi-currency support (AED, SAR, GBP + exchange rates)
-- Arabic RTL localization
-- SWIFT payment file generation
-- Multi-region deployment (Middle East)
-- Government API integrations (ZATCA Fatoorah, Peppol ASP)
-- WHT calculator, PDPL compliance, country-specific contractor fields
+The JS/TS ecosystem for EU e-invoicing is extremely thin. Unlike the Java/.NET world (which has Mustang, ZUGFeRD-csharp, etc.), Node.js has no mature, maintained libraries for XRechnung, ZUGFeRD, or EN 16931. The existing codebase already uses the right approach: `fast-xml-parser` for XML generation + `xml-crypto` for digital signatures, building country profiles that implement the `EInvoiceProfile` interface. **The new profiles (XRechnung, ZUGFeRD) follow this same pattern with zero engine changes.**
 
-The existing stack is validated and unchanged: Next.js 15, React 19, Tailwind CSS 4, shadcn/ui, tRPC 11, Prisma 7, Neon Postgres, Better Auth, QStash, Upstash Redis, R2, Vercel, next-intl 4, Zod, date-fns, Sentry.
+Similarly, no meaningful npm packages exist for BACS Standard 18, IR35 determination, or Scheinselbstaendigkeit risk assessment. These are all build-from-spec domains.
+
+---
 
 ## What We Already Have (DO NOT Add)
 
-| Capability | Existing | Notes |
-|------------|----------|-------|
-| XML parsing | KSeF integration in `packages/api` | Will refactor into pluggable engine |
-| Currency field in schema | `String @db.Char(3)` on invoices, orgs, contracts | Already supports arbitrary ISO 4217 codes |
-| Integer minor units for money | `subtotalMinor`, `vatAmountMinor` as `Int` | Correct approach -- keeps precision |
-| i18n framework | next-intl 4.8.3 | Already supports locale routing, pluralization |
-| Provider adapter pattern | BaseAdapter, credential store, webhook pipeline | Reuse for ZATCA + Peppol providers |
-| QStash async processing | Fire-and-forget for integrations | Reuse for government API calls |
-| AES-256-GCM credential encryption | Per-provider key isolation | Reuse for ZATCA/Peppol API credentials |
-| Zod schema validation | All external inputs validated | Extend for new invoice schemas |
-| date-fns | Date formatting, locale-aware | Already supports Arabic locale |
+| Capability | Existing Package | Version | Notes |
+|------------|------------------|---------|-------|
+| XML generation | fast-xml-parser | ^5.5.9 | Used by ZATCA + Peppol-AE generators. Same `XMLBuilder`/`XMLParser` for XRechnung UBL and ZUGFeRD CII. |
+| XAdES digital signatures | xml-crypto | ^6.0.0 | Used by `ZatcaXAdESSigner`. Same `SignedXml` + `ExclusiveCanonicalization` for XRechnung XAdES. |
+| XML DOM | @xmldom/xmldom | 0.8.12 | Peer dependency of xml-crypto. Already installed. |
+| E-invoice profile architecture | @contractor-ops/einvoice | workspace | `EInvoiceProfile` interface, `Signable` capability, `registerProfile()` registry. New profiles slot in with zero engine changes. |
+| Payment export framework | payment-export.ts | -- | `generateCsv()`, `generateElixir()`, `generateSepaXml()`, `generateSwiftXml()`. BACS is another generator alongside these. |
+| Payment format detection | payment-format-detection.ts | -- | `detectFormat()` routes by currency + IBAN country. Add BACS rule for GBP + GB. |
+| Government API framework | @contractor-ops/gov-api | workspace | Cert auth, retry, rate limiting, audit logging. HMRC + VIES clients fit this pattern. |
+| i18n framework | next-intl | ^4.8.3 | Routing, pluralization, ICU MessageFormat. Adding `de` locale is config + translation file. |
+| Locale-aware formatting | date-fns + Intl | ^4.1.0 | German `de-DE` locale supported out of the box by both. |
+| Schema validation | zod | ^3.23.0 | Extend for IR35 questionnaire, Scheinselbstaendigkeit assessment, BACS format validation. |
+| Certificate handling | node-forge + crypto | ^1.3.1 | Node.js crypto module handles RSA-SHA256 for XRechnung (ZATCA uses ECDSA-SHA256). |
+| QR code generation | qrcode | ^1.5.4 | Already installed. Potentially useful for German invoice QR codes. |
 
 ## Recommended Stack Additions
 
-### Core Technologies
+### New Libraries to Add
 
-| Technology | Version | Purpose | Why Recommended |
-|------------|---------|---------|-----------------|
-| xmlbuilder2 | ^4.0.0 | XML document construction (UBL 2.1 invoices) | Type-safe chainable API, namespace support, DOM-conformant. Used for generating ZATCA UBL XML, Peppol PINT-AE XML, and EN 16931 compliant invoices. Replaces ad-hoc XML string building in KSeF. |
-| xml-crypto | ^6.0.0 | XML digital signature (XMLDSig) | The standard Node.js library for XML digital signatures. Required for ZATCA invoice signing (X.509 certificates, ECDSA). Maintained by node-saml org, 3M+ weekly downloads, battle-tested in SAML/security contexts. |
-| @xmldom/xmldom | ^0.9.0 | XML DOM parsing/serialization | Required peer dependency for xml-crypto. W3C DOM Level 2 compliant XML parser for Node.js. Needed for parsing ZATCA responses and validating XML structure. |
-| qrcode | ^1.5.4 | QR code generation (ZATCA + Peppol) | Most popular QR library (5M+ weekly downloads). Generates QR codes as Buffer/DataURL/SVG for ZATCA TLV-encoded invoice QR codes and Peppol invoice identifiers. |
+| Library | Version | Package Target | Purpose | Why Recommended |
+|---------|---------|----------------|---------|-----------------|
+| pdf-lib | ^1.17.1 | @contractor-ops/einvoice | PDF/A-3 generation for ZUGFeRD (embed CII XML in PDF) | Pure JS, no native dependencies, works on Vercel. Supports PDF modification: file attachments (AF array), XMP metadata, output intent. The only mature JS library capable of producing PDF/A-3b compliant output with embedded XML. react-pdf (already installed) is for viewing -- pdf-lib is for generation/modification. |
 
-### Multi-Currency & Exchange Rates
+That is the only new dependency. Everything else is build-from-spec using existing libraries.
 
-| Technology | Version | Purpose | Why Recommended |
-|------------|---------|---------|-----------------|
-| @dinero.js/dinero.js | ^2.0.0-alpha.14 | Money object model with currency safety | Type-safe money operations with compile-time currency mismatch detection. Immutable, tree-shakeable. Works with our existing integer minor units pattern (grosze/fils/halalah). Prevents floating-point bugs in multi-currency arithmetic. |
-| @dinero.js/currencies | ^2.0.0-alpha.14 | ISO 4217 currency definitions | Pre-built currency objects (AED, SAR, GBP, PLN, EUR, USD) with correct exponents. AED has exponent 2, SAR has exponent 2 -- matches our `Int` minor units. |
-| frankfurter (API) | N/A (external) | Exchange rate data source | Free, open-source API backed by ECB daily reference rates. Covers EUR/AED/SAR/GBP/PLN/USD. No API key needed. Self-hostable if needed. Use as primary rate source with fallback caching in Redis. |
+### Libraries NOT to Add
 
-**Architecture note:** Do NOT replace the existing `Int` minor-unit pattern in Prisma. Dinero.js wraps these values at the application layer for safe arithmetic and conversion. Store amounts as integers, compute with Dinero, convert back to integers for persistence.
+| Avoid | Why | Use Instead |
+|-------|-----|-------------|
+| Any npm `zugferd` package | No mature, maintained packages in JS/TS. What exists is experimental or abandoned. | Build CII XML with `fast-xml-parser` following existing ZATCA/Peppol generator pattern. |
+| Any npm `xrechnung` package | Same situation -- no viable JS packages. | Build XRechnung UBL XML with `fast-xml-parser`, structurally identical to Peppol-AE generator. |
+| Any npm `bacs` package | Nothing exists. BACS Standard 18 is fixed-width text, simpler than the Elixir format already built. | `generateBacs()` function in `payment-export.ts` (~100-150 lines). |
+| `hmrc-client` or `hmrc-mtd-api` | No official HMRC npm SDK. Existing packages are unmaintained. | Direct `fetch` to HMRC REST API + Zod response validation. Fits existing gov-api pattern. |
+| `soap` for VIES | EU VIES now has a REST API alongside SOAP. Avoid adding a SOAP dependency. | Direct `fetch` to VIES REST endpoint (`/rest-api/check-vat-number`). Fall back to SOAP only if REST proves unreliable. |
+| Any "IR35 calculator" library | Does not exist. IR35 determination is a rules engine based on public CEST criteria. | Build questionnaire-driven weighted rules engine. |
+| `mustangserver` (Java ZUGFeRD) | Wrong ecosystem -- requires JVM. | Build natively in TypeScript. |
+| `pdfkit` | No PDF/A-3 support, no file embedding API for ZUGFeRD compliance. | `pdf-lib` |
+| `libxmljs` / `libxmljs2` | Native C++ bindings, breaks on Vercel/Edge. | `fast-xml-parser` (pure JS, already installed). |
+| `xrechnung-visualization` | For rendering XRechnung as HTML, not for generation. | Our UI already renders invoices. |
 
-### RTL & Arabic Localization
+---
 
-| Technology | Version | Purpose | Why Recommended |
-|------------|---------|---------|-----------------|
-| shadcn CLI `--rtl` | Built-in (shadcn ^4.0.8) | Convert physical CSS to logical properties | shadcn/ui has first-class RTL support since January 2026. The CLI converts `ml-4` to `ms-4`, `left-*` to `start-*`, `text-left` to `text-start` automatically. Run `shadcn migrate rtl` on existing components -- no plugin needed. |
-| @radix-ui/react-direction | Already installed (via shadcn) | DirectionProvider for RTL context | Provides `<DirectionProvider dir="rtl">` wrapper. Already a dependency of Radix primitives used by shadcn/ui. |
-| rtl-detect | ^2.0.0 | Detect RTL locales programmatically | Tiny utility (1KB) to detect if a locale code is RTL. Use with next-intl to set `dir` attribute on `<html>` based on active locale. |
+## Detailed Analysis by Domain
 
-**What NOT to add for RTL:**
-- `tailwindcss-rtl` plugin -- unnecessary. Tailwind CSS 4 supports CSS logical properties natively (`ps-*`, `pe-*`, `ms-*`, `me-*`, `start-*`, `end-*`). The shadcn `migrate rtl` command handles the conversion.
-- `tailwindcss-flip` -- unnecessary for same reason. shadcn's approach is more granular and doesn't flip everything blindly.
+### 1. EN 16931 E-Invoicing: XRechnung (UBL 2.1)
 
-**Implementation approach:** Use CSS logical properties throughout (already the direction Tailwind 4 pushes). Set `dir="rtl"` on `<html>` when locale is `ar`. next-intl's middleware already routes by locale -- add Arabic locale to the config. Arabic has 6 plural forms -- next-intl handles this via ICU MessageFormat.
+**Confidence: HIGH** -- existing Peppol-AE UBL 2.1 generator is structurally identical.
 
-### SWIFT Payment Files
+XRechnung is Germany's CIUS (Core Invoice Usage Specification) of EN 16931 using UBL 2.1 syntax. The existing `generatePintAeXml()` in `packages/einvoice/src/profiles/peppol-ae/generator.ts` is the direct template:
 
-| Technology | Version | Purpose | Why Recommended |
-|------------|---------|---------|-----------------|
-| Custom implementation | N/A | SWIFT MT101 / pain.001 generation | No production-quality JavaScript library exists for SWIFT MT101 generation. The format is well-documented (fixed-width fields with specific tag structure). Build a custom generator in `packages/api` following the MT101 spec. Reuse the existing payment run CSV export pattern -- add MT101 as an output format. |
+- Same `XMLBuilder` from fast-xml-parser
+- Same UBL namespaces (`urn:oasis:names:specification:ubl:schema:xsd:Invoice-2`, `cac:`, `cbc:`)
+- Different `CustomizationID`: `urn:cen.eu:en16931:2017#compliant#urn:xoev-de:kosit:standard:xrechnung_3.0`
+- Different `ProfileID`: `urn:fdc:peppol.eu:2017:poacc:billing:01:1.0`
+- Mandatory German fields: `BuyerReference` (Leitweg-ID for B2G), `PaymentTerms` (Skonto)
 
-**Format choice:** Generate ISO 20022 `pain.001.001.09` (XML-based) rather than legacy MT101 (text-based). SWIFT is migrating all MT messages to ISO 20022 by November 2025. pain.001 is XML -- use xmlbuilder2 (already added above) for generation. This future-proofs the implementation.
+**Key difference from Peppol-AE:** XRechnung requires German-specific business rules (BR-DE-1 through BR-DE-26). These are Schematron validation rules, not XML structure differences. Implementation: add a `validate()` method that checks these rules.
 
-**Purpose codes:** UAE Central Bank requires purpose codes on all transfers. Store purpose code mapping as a configuration table (e.g., `SCVE` for services, `SUPP` for supplier payments). Apply per-payment based on contractor service type.
+**New profile structure:**
+```
+packages/einvoice/src/profiles/xrechnung/
+  index.ts          -- XRechnungProfile implementing EInvoiceProfile
+  generator.ts      -- UBL 2.1 XML generation (adapt from peppol-ae/generator.ts)
+  parser.ts         -- UBL 2.1 XML parsing
+  validator.ts      -- BR-DE-* business rule validation
+  signer.ts         -- XAdES-BES with RSA-SHA256 (adapt from zatca/signer.ts)
+  constants.ts      -- XRechnung-specific IDs, namespaces
+  schemas.ts        -- Zod schemas for XRechnung extensions
+```
 
-### Cryptographic Infrastructure (ZATCA)
+### 2. EN 16931 E-Invoicing: ZUGFeRD (CII + PDF/A-3)
 
-| Technology | Version | Purpose | Why Recommended |
-|------------|---------|---------|-----------------|
-| Node.js `crypto` module | Built-in | ECDSA key generation, hashing, certificate handling | ZATCA requires ECDSA with secp256k1 curve for invoice signing. Node.js crypto module handles this natively -- no external dependency needed. Generate key pairs, create CSRs for ZATCA onboarding, compute SHA-256 invoice hashes for hash chain. |
-| @peculiar/x509 | ^1.12.0 | X.509 certificate parsing and creation | Parse ZATCA-issued compliance and production certificates (CSIDs). Create Certificate Signing Requests (CSRs) for ZATCA onboarding flow. Pure JavaScript, works in Node.js and browser. More ergonomic than raw OpenSSL commands. |
-| @peculiar/asn1-schema | ^2.3.0 | ASN.1 encoding/decoding | Peer dependency of @peculiar/x509. Handles DER/PEM encoding for certificate operations. Required for ZATCA's TLV (Tag-Length-Value) QR code encoding. |
+**Confidence: MEDIUM** -- CII syntax is new to the codebase; pdf-lib PDF/A-3 capabilities should be verified during implementation.
 
-**Why NOT zatca-xml-js:** The `zatca-xml-js` package (v0.1.9, last updated 3 years ago) and `zatca-xml-ts` (v0.1.5, more recent) are reference implementations but have limitations: dependency on system OpenSSL, no support for standard tax invoices (only simplified), and tight coupling that doesn't fit our pluggable engine architecture. Better to build our own ZATCA adapter using the underlying primitives (xml-crypto, xmlbuilder2, @peculiar/x509) within our existing provider adapter pattern.
+ZUGFeRD 2.2+ (also Factur-X in France) uses UN/CEFACT CII (Cross-Industry Invoice) XML syntax. This is a different XML structure from UBL but maps to the same `EInvoice` canonical model.
 
-### Peppol Integration
+**CII vs UBL key differences:**
+- Different root element: `rsm:CrossIndustryInvoice` (not `Invoice`)
+- Different namespaces: `urn:un:unece:uncefact:data:standard:CrossIndustryInvoice:100`
+- Different element names: `ram:SellerTradeParty` (not `cac:AccountingSupplierParty`)
+- Same semantic content, different XML vocabulary
 
-| Technology | Version | Purpose | Why Recommended |
-|------------|---------|---------|-----------------|
-| ASP REST API integration | N/A (external service) | Peppol network access for UAE PINT-AE | Peppol uses a 5-corner model. We do NOT become a Peppol Access Point -- we integrate with an Accredited Service Provider (ASP) via their REST API. The ASP handles network delivery, SMP lookup, and AS4 transport. We generate the PINT-AE XML and submit via API. Build as a provider adapter (like DocuSign/Autenti pattern). |
+**ZUGFeRD profiles** (conformance levels):
+- MINIMUM -- basic metadata only
+- BASIC WL -- no line items
+- BASIC -- with line items
+- EN 16931 (COMFORT) -- full EN 16931 compliance (recommended for contractor invoices)
+- EXTENDED -- additional German-specific fields
 
-**ASP selection criteria:** Look for ASPs with REST API (not just SFTP), webhook support for delivery status, sandbox/test environment, and UAE FTA accreditation. Candidates include Storecove, Pagero (Thomson Reuters), and EDICOM. Selection is a deployment decision, not a code dependency.
+**PDF/A-3 workflow:**
+1. Generate CII XML from `EInvoice` canonical model
+2. Take the contractor's submitted invoice PDF (or generate one)
+3. Convert to PDF/A-3b: embed sRGB ICC profile, add XMP metadata with `pdfaid:part=3` and `pdfaid:conformance=B`
+4. Attach CII XML as `factur-x.xml` with AFRelationship `Data` and MIME type `text/xml`
+5. Add the file to the catalog's AF (Associated Files) array
 
-### Multi-Region Deployment
+**pdf-lib** handles steps 2-5. Step 1 uses fast-xml-parser.
 
-| Technology | Version | Purpose | Why Recommended |
-|------------|---------|---------|-----------------|
-| Neon logical replication | Built-in | Data residency for UAE/Saudi (PDPL compliance) | Neon does NOT have a Middle East region (verified: only US, EU Frankfurt/London, APAC Singapore/Sydney, South America). For PDPL compliance, use Neon's logical replication to replicate to a separate Neon project in `aws-eu-central-1` (Frankfurt) as the nearest supported region. Alternatively, evaluate Supabase (has Middle East regions) for the ME-specific database if strict data residency is required. |
-| Vercel Edge Config | Already available | Region-aware routing configuration | Store per-org region preferences. Route API calls to appropriate database connection based on org's data residency setting. |
+**New profile structure:**
+```
+packages/einvoice/src/profiles/zugferd/
+  index.ts          -- ZUGFeRDProfile implementing EInvoiceProfile
+  generator.ts      -- CII XML generation (NEW syntax, new builder)
+  parser.ts         -- CII XML parsing
+  validator.ts      -- ZUGFeRD profile conformance validation
+  pdf-embedder.ts   -- PDF/A-3b creation with XML attachment (uses pdf-lib)
+  constants.ts      -- CII namespaces, ZUGFeRD profile identifiers
+  schemas.ts        -- Zod schemas for ZUGFeRD extensions
+```
 
-**CRITICAL finding:** Neon has no Middle East region. This is a blocker for strict PDPL data residency requirements if UAE/Saudi regulators require data to physically reside in-country. Options:
+**ZUGFeRD does NOT need XML digital signatures.** The PDF can optionally be signed (PAdES), but the XML itself is unsigned. This is a key difference from XRechnung.
 
-1. **Frankfurt (recommended for MVP):** `aws-eu-central-1` is the nearest Neon region. PDPL allows cross-border transfer with contractual safeguards (similar to GDPR SCCs). Most Gulf SaaS companies use EU or Singapore regions.
-2. **Separate provider for ME data:** If a customer requires in-region hosting, deploy a Supabase instance in `me-south-1` (Bahrain) for that org's data. This adds operational complexity.
-3. **Read replicas (future):** Neon's cross-region read replica feature (in development, tracked in GitHub issue #4178) would solve latency without full data residency.
+### 3. BACS Standard 18 File Format
 
-**Recommendation:** Start with Frankfurt. Add contractual safeguards for PDPL compliance. Revisit if a customer explicitly requires in-country hosting.
+**Confidence: HIGH** -- simpler than Elixir format already implemented.
 
-### VAT & Tax Engine
+BACS Standard 18 is the UK domestic payment file format. Fixed-width flat file with:
 
-| Technology | Version | Purpose | Why Recommended |
-|------------|---------|---------|-----------------|
-| Custom implementation | N/A | Multi-tier VAT calculation | The VAT rules are simple enough that a library adds more complexity than value. UAE: flat 5%, Saudi: flat 15%, Poland: 23%/8%/5%/0%, UK: 20%/5%/0%. Build a `TaxEngine` service with country-specific rate tables stored in the database. Supports reverse charge flags, zero-rating, and exemptions. Use Dinero.js for the arithmetic. |
+- **VOL1** header (80 chars) -- volume label
+- **HDR1/HDR2** headers -- file identification, processing date
+- **UHL1** user header -- service/originator codes, processing date
+- **Data records** (100 chars) -- destination sort code (6), account number (8), transaction type (2 = credit), amount in pence (11), originator sort code (6), account number (8), free text ref (18), originator name (18)
+- **EOF1/EOF2** file trailers
+- **UTL1** user trailer -- debit/credit totals, record count
 
-**WHT (Withholding Tax) calculator:** Saudi WHT applies only to cross-border payments to non-resident contractors (5-20% depending on service type). Build as a rule engine with treaty rate lookups. Store treaty rates in a configuration table. Generate WHT certificates as PDFs using the existing PDF generation infrastructure (react-pdf already installed).
+**Implementation:** Add `generateBacs()` to `packages/api/src/services/payment-export.ts` alongside existing generators. The function signature matches the existing pattern:
 
-## Supporting Libraries
+```typescript
+export function generateBacs(items: ExportItem[], org: OrgBankInfo): Buffer
+```
 
-| Library | Version | Purpose | When to Use |
-|---------|---------|---------|-------------|
-| zod | ^3.23.0 (existing) | Schema validation for new invoice/tax types | Extend existing schemas for UBL fields, ZATCA-specific fields, PINT-AE fields |
-| date-fns | ^4.1.0 (existing) | Hijri calendar awareness, Arabic date formatting | date-fns supports `ar-SA` locale out of the box. For Hijri dates on ZATCA invoices, use `date-fns-jalali` or format via `Intl.DateTimeFormat` with `calendar: 'islamic'` |
-| uuid | (existing via Prisma) | ZATCA invoice UUIDs | ZATCA requires UUIDv4 per invoice. Already available in the codebase. |
+**Payment format detection changes** in `payment-format-detection.ts`:
+- Add `'BACS'` to `ExportFormat` type
+- Add rule: GBP + GB IBAN -> `BACS`
+- Note: UK sort codes (6 digits) and account numbers (8 digits) can be extracted from GB IBANs (positions 9-14 and 15-22 respectively after the `GB` country code and 2-digit check)
 
-## Development Tools
+**Important BACS specifics:**
+- Amounts in pence (minor units) -- already the project standard
+- All text must be uppercase ASCII -- reuse `stripDiacritics()` helper + `.toUpperCase()`
+- Transaction code 99 = credit transfer (the payment type we need)
+- File must end with CRLF line endings -- same as Elixir
 
-| Tool | Purpose | Notes |
-|------|---------|-------|
-| ZATCA Sandbox | Test ZATCA integration | `https://gw-fatoora.zatca.gov.sa/e-invoicing/developer-portal` -- free sandbox with test certificates |
-| Peppol Test Network | Test Peppol PINT-AE | ASP providers offer sandbox environments for testing XML submission and delivery |
-| shadcn migrate rtl | Convert existing components to logical properties | Run once: `npx shadcn@latest migrate rtl` -- converts all existing shadcn components |
+### 4. HMRC VAT Number Validation
+
+**Confidence: MEDIUM** -- API exists and is REST-based; verify exact endpoint URLs during implementation.
+
+HMRC provides a REST API for VAT number validation (no authentication needed for basic lookup):
+
+```
+GET https://api.service.hmrc.gov.uk/organisations/vat/check-vat-number/lookup/{vatNumber}
+```
+
+Returns JSON:
+```json
+{
+  "target": {
+    "name": "ACME LTD",
+    "vatNumber": "123456789",
+    "address": { "line1": "...", "postcode": "..." }
+  },
+  "processingDate": "2026-04-12"
+}
+```
+
+**Implementation:** Add `hmrc-vat.ts` client in `packages/gov-api/src/` following the existing client pattern (fetch + Zod response validation + retry + rate limiting).
+
+**No new dependency needed.** Direct HTTP fetch with Zod response schema.
+
+**UK VAT number format:** `GB` + 9 digits (or 12 for government departments). Validate with regex before API call.
+
+### 5. VIES USt-IdNr (VAT ID) Validation
+
+**Confidence: LOW** -- VIES REST API availability needs verification during implementation.
+
+The EU VIES service validates EU VAT numbers. Two endpoints exist:
+
+1. **SOAP** (legacy, guaranteed available): WSDL at `https://ec.europa.eu/taxation_customs/vies/checkVatService.wsdl`
+2. **REST** (newer, verify availability): `POST https://ec.europa.eu/taxation_customs/vies/rest-api/check-vat-number`
+
+**Recommendation:** Try REST first (no new dependency). Request body: `{ "countryCode": "DE", "vatNumber": "123456789" }`. If REST is unreliable or in beta, fall back to SOAP (add `soap` package).
+
+**German USt-IdNr format:** `DE` + 9 digits. VIES validates against Bundeszentralamt fuer Steuern (BZSt) records.
+
+**Implementation:** Add `vies.ts` client in `packages/gov-api/src/`. Use qualified confirmation requests (provides name/address match) for KYC compliance.
+
+**Validation flag:** VIES REST API stability MUST be verified before implementation. If unavailable, add `soap@^1.1.0` as dependency.
+
+### 6. IR35 Determination Engine
+
+**Confidence: HIGH** -- well-documented public criteria, build-from-spec.
+
+No npm library or commercial API exists for IR35 determination. HMRC's CEST (Check Employment Status for Tax) tool is web-only with no public API.
+
+**Build a generic classification engine** with pluggable rule sets:
+
+```
+packages/classification/    (NEW package)
+  src/
+    engine.ts               -- Generic weighted questionnaire evaluator
+    types.ts                -- RuleSet, Question, Answer, RiskAssessment interfaces
+    rulesets/
+      ir35.ts               -- UK IR35 rule set (~20 weighted questions)
+      scheinselbst.ts       -- German Scheinselbstaendigkeit rule set
+    generators/
+      sds.ts                -- UK Status Determination Statement (PDF)
+      drv-defense.ts        -- German DRV audit defense documentation
+```
+
+**IR35 assessment factors** (from case law + CEST):
+1. Personal service / substitution rights
+2. Mutuality of obligation
+3. Control (how, when, where)
+4. Financial risk (own equipment, insurance, bad debt)
+5. Part of the organization (integration)
+6. Provision of equipment
+7. Right of dismissal / engagement length
+8. Employee-type benefits (holiday pay, pension)
+
+**Output:** INSIDE IR35 / OUTSIDE IR35 / INDETERMINATE with per-factor weighted scores and reasoning text.
+
+**SDS generation:** UK law requires medium/large companies to issue a Status Determination Statement. Template-driven document using assessment results.
+
+### 7. Scheinselbstaendigkeit Risk Engine
+
+**Confidence: HIGH** -- well-established German case law criteria.
+
+Same architecture as IR35 -- uses the generic classification engine with a different rule set.
+
+**DRV (Deutsche Rentenversicherung) assessment criteria:**
+1. Weisungsgebundenheit (bound by instructions)
+2. Eingliederung (organizational integration)
+3. Eigenes Unternehmerrisiko (own business risk)
+4. Eigene Arbeitsmittel (own work equipment)
+5. Mehrere Auftraggeber (multiple clients)
+6. Eigene Mitarbeiter (own employees)
+7. Marktauftritt (market presence)
+8. Keine Arbeitnehmeraehnliche Verguetung (not employee-like compensation)
+
+**Output:** HIGH RISK / MEDIUM RISK / LOW RISK with per-factor assessment and German-language reasoning for DRV audit defense.
+
+**DRV Statusfeststellungsverfahren** documentation: Generate structured defense documents that can be submitted to DRV if audited.
+
+### 8. German i18n with next-intl
+
+**Confidence: HIGH** -- next-intl handles German with zero issues.
+
+**Changes needed:**
+
+1. **Routing:** Add `'de'` to `locales` array in `apps/web/src/i18n/routing.ts`:
+   ```typescript
+   locales: ['en', 'pl', 'ar', 'de'] as const
+   ```
+
+2. **Messages:** Create `apps/web/messages/de.json` translation file (copy structure from `en.json`, translate)
+
+3. **No library changes.**
+
+**German-specific formatting handled by existing Intl APIs:**
+- Numbers: `1.234,56` (comma decimal, period thousands) -- `Intl.NumberFormat('de-DE')`
+- Dates: `12.04.2026` (DD.MM.YYYY) -- `Intl.DateTimeFormat('de-DE')`
+- Currency: `1.234,56 EUR` -- `Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' })`
+
+**German-specific field formats (validation with Zod, not i18n):**
+- Handelsregister: `HR[AB]\s?\d+` (e.g., "HRB 12345")
+- Steuernummer: varies by Bundesland, 10-11 digits with slashes (e.g., "123/456/78901")
+- USt-IdNr: `DE\d{9}` (e.g., "DE123456789")
+- Skonto terms: display string like "2% Skonto bei Zahlung innerhalb von 10 Tagen" -- translation key with ICU placeholders
+
+**UI layout note:** German compound words are long (Rechnungsstellungsdatum, Zahlungsbedingungen, Umsatzsteuervoranmeldung). Ensure:
+- Flexible column widths in tables (already using TanStack Table with auto-sizing)
+- `hyphens: auto` with `lang="de"` on `<html>` element for line breaking
+- Test all UI views with German translations for overflow
+
+### 9. XAdES Digital Signatures for XRechnung
+
+**Confidence: HIGH** -- existing ZATCA XAdES-BES signer is directly reusable.
+
+XRechnung requires XAdES-BES enveloped signatures when submitted to German public sector portals (ZRE -- Zentrale Rechnungseingangsplattform, OZG-RE).
+
+**Existing infrastructure in `packages/einvoice/src/profiles/zatca/signer.ts`:**
+- `ZatcaXAdESSigner` implements `Signable` interface
+- Uses `xml-crypto` for canonicalization + `crypto` for signing
+- Builds XAdES-BES SignedProperties manually
+- Full sign + verify flow
+
+**Key adaptation for XRechnung:**
+- ZATCA: ECDSA-SHA256 (secp256k1 curve) -- `dsaEncoding: 'ieee-p1363'`
+- XRechnung: RSA-SHA256 -- standard RSA signing, simpler
+- Algorithm URI: `http://www.w3.org/2001/04/xmldsig-more#rsa-sha256`
+- Certificate: Standard X.509 RSA certificate (not ECDSA)
+
+**Create `XRechnungSigner` class** adapting `ZatcaXAdESSigner`:
+- Change algorithm from ECDSA-SHA256 to RSA-SHA256
+- Remove ECDSA-specific `dsaEncoding` option
+- Same XAdES-BES structure (SignedProperties, CertDigest, IssuerSerial)
+- Same enveloped signature injection pattern
+
+**No new library needed.** `xml-crypto@^6.0.0` + Node.js `crypto` handles RSA-SHA256 natively.
+
+---
 
 ## Installation
 
 ```bash
-# E-invoicing engine (XML generation + signing)
-pnpm add xmlbuilder2 xml-crypto @xmldom/xmldom qrcode
-
-# Cryptographic infrastructure (ZATCA certificates)
-pnpm add @peculiar/x509 @peculiar/asn1-schema
-
-# Multi-currency
-pnpm add @dinero.js/dinero.js @dinero.js/currencies
-
-# RTL detection
-pnpm add rtl-detect
-
-# Type definitions
-pnpm add -D @types/qrcode @types/rtl-detect
+# The ONLY new dependency for the entire v5.0 milestone
+pnpm --filter @contractor-ops/einvoice add pdf-lib@^1.17.1
 ```
 
-**Where to install:**
-- `xmlbuilder2`, `xml-crypto`, `@xmldom/xmldom`, `@peculiar/x509`, `@peculiar/asn1-schema` --> `packages/api` (server-side only, handles XML generation and crypto)
-- `qrcode` --> `packages/api` (generates QR as base64 for PDF/HTML rendering)
-- `@dinero.js/dinero.js`, `@dinero.js/currencies` --> `packages/validators` or new `packages/currency` (shared between frontend display and backend calculation)
-- `rtl-detect` --> `apps/web` (frontend layout direction detection)
+**Conditional (only if VIES REST API proves unreliable):**
+```bash
+pnpm --filter @contractor-ops/gov-api add soap@^1.1.0
+```
+
+---
+
+## New Package: @contractor-ops/classification
+
+A new workspace package for the contractor classification engine:
+
+```bash
+# Create new package
+mkdir -p packages/classification/src
+```
+
+**Dependencies:** Only `zod` (already in workspace). No external libraries.
+
+**package.json:**
+```json
+{
+  "name": "@contractor-ops/classification",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "zod": "^3.23.0"
+  }
+}
+```
+
+---
 
 ## Alternatives Considered
 
 | Recommended | Alternative | When to Use Alternative |
 |-------------|-------------|-------------------------|
-| xmlbuilder2 | fast-xml-parser | If you only need parsing, not building. fast-xml-parser is faster for read-only XML but lacks the chainable builder API needed for constructing complex UBL documents with namespaces. |
-| xml-crypto | xmldsigjs | If you need W3C Web Crypto API compatibility (browser-side signing). xmldsigjs uses WebCrypto, xml-crypto uses Node.js crypto. We only sign server-side, so xml-crypto is simpler. |
-| @peculiar/x509 | node-forge | If you need broader crypto features (TLS, PKCS#7, etc.). node-forge is larger and slower. @peculiar/x509 is focused, modern, and uses native crypto under the hood. |
-| @dinero.js | currency.js | If you don't need type-safe multi-currency. currency.js is simpler but only handles single-currency arithmetic. Dinero.js enforces currency matching at the type level -- critical when mixing AED/SAR/PLN/EUR. |
-| Frankfurter API | Open Exchange Rates / Fixer.io | If you need real-time (sub-daily) rates or 170+ currencies. Frankfurter is ECB-backed (free, reliable) but updates once daily. For financial-grade real-time FX, use Open Exchange Rates ($12/mo) or Fixer.io. ECB daily rates are sufficient for our invoice matching and display use case. |
-| Custom SWIFT generator | zatca-xml-js | Never use zatca-xml-js for SWIFT. No JS library exists for MT101. Custom pain.001 XML generation via xmlbuilder2 is the correct approach. |
-| Frankfurt (Neon) | Supabase ME region | If a customer has a hard legal requirement for in-country data storage in UAE/Saudi. Adds operational complexity of managing a second database provider. |
+| pdf-lib (PDF/A-3) | puppeteer/playwright | If pixel-perfect HTML-to-PDF rendering needed. Not our case -- we need PDF metadata control for ZUGFeRD compliance. Also, puppeteer requires browser binary (breaks Vercel). |
+| pdf-lib (PDF/A-3) | @react-pdf/renderer | If generating PDFs from React components. Lacks PDF/A-3 metadata control and file embedding needed for ZUGFeRD. |
+| Direct fetch (HMRC) | Any `hmrc-*` npm package | Never. All are unmaintained; the API is simple REST. |
+| Direct fetch (VIES REST) | soap package (VIES SOAP) | Only if VIES REST API is unreliable or undocumented. Verify REST first. |
+| Build BACS from spec | N/A | No alternatives exist. Simple fixed-width format. |
+| Build IR35 engine | Commercial API (IR35 Shield, Kingsbridge) | If legal liability for determination is a concern. Commercial APIs cost $$$, add vendor lock-in, and CEST criteria are public. Build own engine, consider commercial validation as optional premium feature later. |
+| Build Scheinselbstaendigkeit engine | N/A | No APIs or libraries exist for this. |
+| CII XML with fast-xml-parser | Dedicated CII library | No maintained CII library exists in JS/TS. fast-xml-parser handles arbitrary XML generation. |
 
-## What NOT to Use
-
-| Avoid | Why | Use Instead |
-|-------|-----|-------------|
-| zatca-xml-js / zatca-xml-ts | Unmaintained (3 years), only supports simplified invoices, requires system OpenSSL, tight coupling | Build custom ZATCA adapter using xml-crypto + xmlbuilder2 + @peculiar/x509 within provider adapter pattern |
-| ubl-builder (npm) | Built for UBL 2.0 (not 2.1), limited maintenance, doesn't support ZATCA/Peppol customizations | Use xmlbuilder2 directly with UBL 2.1 schema definitions as TypeScript types |
-| tailwindcss-rtl plugin | Unnecessary with Tailwind CSS 4 logical properties + shadcn RTL migration | Use native Tailwind 4 logical utilities (`ms-*`, `me-*`, `ps-*`, `pe-*`, `start-*`, `end-*`) |
-| tailwindcss-flip | Blindly flips all directional classes -- breaks intentional LTR elements in RTL layouts (e.g., code blocks, numbers) | Use shadcn `migrate rtl` for surgical conversion to logical properties |
-| moment.js / moment-hijri | Deprecated, massive bundle size | Use `Intl.DateTimeFormat` with `calendar: 'islamic-umalqura'` for Hijri dates (built into Node.js / browsers) |
-| Full Peppol Access Point SDK | Massive overhead to become an Access Point. Requires SMP registration, AS4 transport, PKI infrastructure | Integrate with an ASP via REST API. They handle the Peppol network complexity. |
-| Separate currency microservice | Over-engineering for our scale (5-50 contractors per org) | Dinero.js in-process with cached exchange rates from Redis |
-
-## Stack Patterns by Capability
-
-**E-invoicing engine (pluggable):**
-- Abstract `EInvoiceProvider` interface extending existing `BaseAdapter` pattern
-- Concrete implementations: `KSeFProvider` (refactored), `ZATCAProvider`, `PeppolPINTAEProvider`
-- Each provider: XML generation (xmlbuilder2) + signing (xml-crypto) + submission (provider API) + status tracking
-- Schema validation with Zod for each format's required fields
-
-**Multi-currency conversions:**
-- Fetch ECB rates daily via QStash cron -> store in Redis with 24h TTL
-- `CurrencyService` wraps Dinero.js: `convert(amount: MoneyValue, targetCurrency: Currency): MoneyValue`
-- All display formatting via `Intl.NumberFormat` with locale from next-intl (already handles AED/SAR/GBP formatting)
-- Invoice matching: compare amounts in org's base currency using stored exchange rate at invoice date
-
-**Arabic RTL:**
-- `middleware.ts`: next-intl already handles locale detection -> add `ar` to supported locales
-- `layout.tsx`: read locale, use `rtl-detect` to set `dir` attribute on `<html>`
-- `DirectionProvider` from Radix wraps app for component-level direction awareness
-- Run `shadcn migrate rtl` once to convert all existing components to logical properties
-
-**SWIFT payments:**
-- Extend existing payment run export. Currently generates CSV -> add `pain.001` XML output format
-- xmlbuilder2 generates ISO 20022 pain.001.001.09 with SWIFT BIC, IBAN, purpose codes
-- Purpose code stored per-contractor or per-payment based on service type
+---
 
 ## Version Compatibility
 
-| Package A | Compatible With | Notes |
-|-----------|-----------------|-------|
-| xml-crypto@^6.0.0 | @xmldom/xmldom@^0.9.0 | xml-crypto requires xmldom as peer dependency for DOM parsing |
-| @dinero.js/dinero.js@2.0.0-alpha.14 | @dinero.js/currencies@2.0.0-alpha.14 | Must use matching alpha versions. v2 is the current release (alpha is stable, used in production). |
-| shadcn@^4.0.8 | tailwindcss@^4.2.1 | RTL migration command requires shadcn 4+ and Tailwind CSS 4+ (both already installed) |
-| @peculiar/x509@^1.12.0 | @peculiar/asn1-schema@^2.3.0 | x509 depends on asn1-schema for DER/PEM encoding |
-| next-intl@^4.8.3 | next@^15.3.0 | Arabic locale support works with current versions. ICU MessageFormat handles 6 Arabic plural forms. |
+| Package | Compatible With | Notes |
+|---------|-----------------|-------|
+| pdf-lib@^1.17.1 | Node.js 18+, Vercel serverless | Pure JS, zero native deps. No conflict with existing react-pdf (different purpose). |
+| fast-xml-parser@^5.5.9 | pdf-lib (no conflict) | Already installed. Generates both UBL (XRechnung) and CII (ZUGFeRD) XML. |
+| xml-crypto@^6.0.0 | RSA-SHA256 + ECDSA-SHA256 | Already installed. Supports both algorithm families needed. |
+| next-intl@^4.8.3 | German `de` locale | No version change. ICU MessageFormat handles German pluralization (2 forms: singular/plural). |
+| zod@^3.23.0 | All new schemas | Already installed everywhere. Classification engine uses it for questionnaire validation. |
+
+---
+
+## Integration Summary
+
+| Domain | Approach | New Deps | Effort Estimate |
+|--------|----------|----------|-----------------|
+| XRechnung (UBL 2.1) | New einvoice profile, adapt Peppol-AE generator | None | Medium -- familiar pattern |
+| ZUGFeRD (CII + PDF/A-3) | New einvoice profile + PDF embedding | pdf-lib | High -- new XML syntax + PDF/A-3 |
+| BACS Standard 18 | Add generator to payment-export.ts | None | Low -- simpler than Elixir |
+| HMRC VAT validation | Add client to gov-api | None | Low -- simple REST call |
+| VIES validation | Add client to gov-api | None (maybe soap) | Low-Medium -- depends on REST availability |
+| IR35 engine | New classification package | None | Medium-High -- rules engine + SDS generation |
+| Scheinselbstaendigkeit | Rule set in classification package | None | Medium -- follows IR35 pattern |
+| German i18n | Config change + translation file | None | Low (translation effort is content, not code) |
+| XRechnung XAdES | Adapt ZATCA signer for RSA | None | Low -- algorithm swap only |
+
+**Total new runtime dependencies: 1 (pdf-lib)**
+
+---
+
+## Validation Flags (MUST Verify During Implementation)
+
+1. **VIES REST API** -- Confirm `https://ec.europa.eu/taxation_customs/vies/rest-api/check-vat-number` is production-ready. If beta-only, add `soap@^1.1.0`.
+2. **pdf-lib PDF/A-3b compliance** -- Verify pdf-lib can set required XMP metadata (`pdfaid:part=3`, `pdfaid:conformance=B`), embed ICC output intent profile, and create AF (Associated Files) entries. May need manual `PDFDict`/`PDFArray` manipulation.
+3. **XRechnung CIUS version** -- Confirm current version (expected 3.0.x in 2026). Schematron rules change between versions.
+4. **ZUGFeRD version** -- Confirm current version (expected 2.3.x). Verify Factur-X alignment still maintained.
+5. **HMRC VAT API** -- Verify exact endpoint URLs and rate limits.
+6. **BACS Standard 18** -- Verify if any 2025/2026 spec updates exist (format is stable but check).
+
+---
 
 ## Sources
 
-- [ZATCA E-Invoicing Technical Guidelines (PDF)](https://zatca.gov.sa/en/E-Invoicing/Introduction/Guidelines/Documents/E-invoicing-Detailed-Technical-Guideline.pdf) -- official ZATCA XML schema, signing requirements, QR encoding spec (HIGH confidence)
-- [zatca-xml-js GitHub](https://github.com/wes4m/zatca-xml-js) -- reference implementation reviewed for architecture patterns, NOT recommended as dependency (MEDIUM confidence)
-- [UAE Electronic Invoicing Guidelines V1.0](https://mof.gov.ae/wp-content/uploads/2026/02/UAE-Electronic-Invoicing-Guidelines_V-1.0-23Feb2026.pdf) -- official UAE PINT-AE spec (HIGH confidence)
-- [Neon Regions Documentation](https://neon.com/docs/introduction/regions) -- confirmed no Middle East region available (HIGH confidence)
-- [shadcn/ui RTL Documentation](https://ui.shadcn.com/docs/rtl) -- RTL migration command, logical property conversion (HIGH confidence)
-- [xml-crypto npm](https://www.npmjs.com/package/xml-crypto) -- XML digital signature library, actively maintained (HIGH confidence)
-- [xmlbuilder2 npm](https://www.npmjs.com/package/xmlbuilder2) -- XML builder v4.0.0, TypeScript definitions included (HIGH confidence)
-- [Dinero.js v2 Documentation](https://v2.dinerojs.com/) -- multi-currency money library, alpha but stable (MEDIUM confidence -- alpha version)
-- [Frankfurter API](https://frankfurter.dev/) -- free ECB exchange rate API (HIGH confidence)
-- [Avalara UAE E-Invoicing Guide](https://www.avalara.com/blog/en/europe/2026/03/uae-e-invoicing-mandate-2026-readiness-asp-pint-ae.html) -- Peppol PINT-AE architecture overview (MEDIUM confidence)
-- [SWIFT MT101 Specifications](https://www.paiementor.com/swift-mt101-format-specifications/) -- MT101 format reference, used to confirm pain.001 is the better choice (MEDIUM confidence)
-- [@peculiar/x509 GitHub](https://github.com/nicolo-ribaudo/nicolo-ribaudo) -- X.509 certificate handling for Node.js (HIGH confidence)
+- Codebase analysis: `packages/einvoice/` profile architecture (HIGH confidence)
+- Codebase analysis: `packages/api/src/services/payment-export.ts` payment generators (HIGH confidence)
+- Codebase analysis: `packages/einvoice/src/profiles/zatca/signer.ts` XAdES implementation (HIGH confidence)
+- Codebase analysis: `apps/web/src/i18n/routing.ts` locale configuration (HIGH confidence)
+- EN 16931 / XRechnung / ZUGFeRD standard knowledge (training data) -- MEDIUM confidence
+- BACS Standard 18 specification (training data) -- HIGH confidence, well-established format
+- HMRC VAT API (training data) -- MEDIUM confidence, verify endpoints
+- VIES API (training data) -- LOW confidence, verify REST availability
+- pdf-lib capabilities (training data) -- MEDIUM confidence, verify PDF/A-3b specifics
+- IR35 CEST criteria (training data) -- HIGH confidence, publicly documented
+- Scheinselbstaendigkeit DRV criteria (training data) -- HIGH confidence, established case law
 
 ---
-*Stack research for: v4.0 International Foundation & Gulf Expansion*
-*Researched: 2026-04-11*
+*Stack research for: v5.0 UK & Germany Market Expansion*
+*Researched: 2026-04-12*

@@ -1,709 +1,532 @@
 # Architecture Research
 
-**Domain:** International expansion of contractor ops platform -- pluggable e-invoicing, multi-currency, multi-region, RTL, government API integrations
-**Researched:** 2026-04-11
-**Confidence:** HIGH (existing codebase fully inspected, government API specs verified via official sources)
+**Domain:** UK & Germany market expansion integration with existing contractor ops platform
+**Researched:** 2026-04-12
+**Confidence:** HIGH (codebase-driven analysis with MEDIUM on external API specifics)
 
 ## System Overview
 
 ```
-┌──────────────────────────────────────────────────────────────────────────────┐
-│                           apps/web (Next.js)                                 │
-│  ┌──────────┐  ┌──────────────┐  ┌───────────┐  ┌─────────────────────────┐ │
-│  │ RTL/i18n │  │ Multi-currency│  │ Gov API   │  │ Country-specific       │ │
-│  │ Layout   │  │ Display Layer │  │ Status UI │  │ Contractor Fields UI   │ │
-│  └────┬─────┘  └──────┬───────┘  └─────┬─────┘  └──────────┬────────────┘ │
-├───────┴───────────────┴────────────────┴─────────────────────┴──────────────┤
-│                         packages/api (tRPC)                                  │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  ┌────────────────┐  │
-│  │ einvoicing   │  │ currency     │  │ tax          │  │ payment        │  │
-│  │ router       │  │ router       │  │ router       │  │ router (ext)   │  │
-│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘  └──────┬─────────┘  │
-├─────────┴──────────────────┴────────────────┴──────────────────┴────────────┤
-│                    NEW: packages/einvoicing                                   │
-│  ┌─────────────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐            │
-│  │ Core Engine     │  │ KSeF     │  │ ZATCA    │  │ Peppol   │            │
-│  │ (EN 16931/UBL)  │  │ Profile  │  │ Profile  │  │ PINT-AE  │            │
-│  └────────┬────────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘            │
-│           │                │              │              │                   │
-│  ┌────────┴────────┐  ┌───┴──────────────┴──────────────┴────┐             │
-│  │ XML/Validation  │  │ Government API Clients               │             │
-│  │ Pipeline        │  │ (KSeF, ZATCA Fatoora, Peppol ASP)    │             │
-│  └─────────────────┘  └─────────────────────────────────────┘             │
-├──────────────────────────────────────────────────────────────────────────────┤
-│                    EXISTING: packages/integrations                            │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────────┐ │
-│  │ Registry │  │ Cred Svc │  │ Webhook  │  │ Health   │  │ ZATCA/Peppol │ │
-│  │          │  │ (AES-GCM)│  │ Pipeline │  │ Monitor  │  │ Adapters     │ │
-│  └──────────┘  └──────────┘  └──────────┘  └──────────┘  └──────────────┘ │
-├──────────────────────────────────────────────────────────────────────────────┤
-│                    packages/db (Prisma) + packages/validators (Zod)          │
-│  ┌───────────────┐  ┌──────────────┐  ┌──────────────┐  ┌───────────────┐ │
-│  │ einvoice.prisma│ │ currency.prisma│ │ tax.prisma   │ │ consent.prisma│ │
-│  │ (submissions, │  │ (rates, Money │  │ (WHT, rules, │  │ (PDPL, data  │ │
-│  │  documents)   │  │  conversion)  │  │  certificates)│ │  residency)  │ │
-│  └───────────────┘  └──────────────┘  └──────────────┘  └───────────────┘ │
-├──────────────────────────────────────────────────────────────────────────────┤
-│                    Infrastructure                                            │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  ┌───────────────┐  │
-│  │ Neon PG      │  │ QStash       │  │ R2 Storage   │  │ Vercel Edge   │  │
-│  │ (eu-central-1│  │ (async govt  │  │ (XML archive,│  │ (geo-routing) │  │
-│  │  + logical   │  │  API calls)  │  │  certificates)│ │               │  │
-│  │  replication) │  │              │  │              │  │               │  │
-│  └──────────────┘  └──────────────┘  └──────────────┘  └───────────────┘  │
-└──────────────────────────────────────────────────────────────────────────────┘
+                         EXISTING ARCHITECTURE (unchanged)
+ +---------------------------------------------------------------------------+
+ |  apps/web (Next.js)                                                       |
+ |   +-----------+  +------------+  +-------------+  +-----------+           |
+ |   | next-intl |  | Contractor |  | Invoices /  |  | Payments  |           |
+ |   | +de locale|  | + classify |  | e-invoicing |  | + BACS    |           |
+ |   +-----------+  +-----+------+  +------+------+  +-----+-----+          |
+ +---------------------------------------------------------------------------+
+        |                  |                |                |
+ +---------------------------------------------------------------------------+
+ |  packages/api (tRPC)                                                      |
+ |   +-----------+  +------------+  +-------------+  +-----------+           |
+ |   | tax router|  | contractor |  | einvoice    |  | payment   |           |
+ |   | +HMRC/VIES|  | + classify |  | router      |  | router    |           |
+ |   +-----------+  +-----+------+  +------+------+  +-----+-----+          |
+ +---------------------------------------------------------------------------+
+        |                  |                |                |
+ +------+------+  +--------+------+  +------+------+  +-----+------+
+ | packages/   |  | NEW:          |  | packages/   |  | packages/  |
+ | gov-api     |  | packages/     |  | einvoice    |  | api/       |
+ | + HMRC      |  | classification|  | + xrechnung |  | services/  |
+ | + VIES      |  |               |  | + zugferd   |  | payment-   |
+ +-------------+  +---------------+  +-------------+  | export     |
+                                                       | + BACS     |
+ +------+------+  +--------+------+                    +------------+
+ | packages/   |  | packages/     |
+ | validators  |  | db (Prisma)   |
+ | + UK/DE     |  | + new schemas |
+ | fields/TIN  |  |               |
+ +-------------+  +---------------+
 ```
 
 ### Component Responsibilities
 
-| Component | Responsibility | Typical Implementation |
-|-----------|----------------|------------------------|
-| `packages/einvoicing` (NEW) | Pluggable e-invoicing engine -- XML generation, validation, signing, QR codes | Country profiles implementing abstract core; EN 16931/UBL 2.1 base |
-| `packages/integrations` (EXTENDED) | ZATCA + Peppol adapters in existing adapter registry | New `ZatcaAdapter`, `PeppolAdapter` extending `BaseAdapter` |
-| `packages/db` (EXTENDED) | New schemas for e-invoice submissions, currency rates, tax rules, WHT, PDPL consent | New Prisma schema files in existing multi-file structure |
-| `packages/validators` (EXTENDED) | Zod schemas for ZATCA XML fields, currency amounts, tax calculations | New validator files following existing pattern |
-| `packages/api` (EXTENDED) | New tRPC routers for e-invoicing, currency, tax | New routers in existing router structure |
-| `apps/web` (EXTENDED) | RTL layout, currency display, government API status UIs | Existing pages + new country-specific components |
+| Component | Responsibility | Change Type |
+|-----------|----------------|-------------|
+| `packages/einvoice` | XRechnung + ZUGFeRD as new country profiles | **EXTEND** (new profiles, pipeline enhancement for PDF/A-3) |
+| `packages/gov-api` | HMRC VAT check + VIES USt-IdNr validation | **EXTEND** (new GovApiClient subclasses) |
+| `packages/api/services/payment-export` | BACS Standard 18 file generation | **EXTEND** (new export function + format detection rule) |
+| `packages/validators/country-fields` | UK + German contractor field schemas | **EXTEND** (new schemas in existing map) |
+| `packages/classification` | Contractor classification risk engine | **NEW PACKAGE** |
+| `packages/db` | Classification, UK/DE compliance schemas | **EXTEND** (new .prisma files) |
+| `apps/web/messages/de.json` | German translations | **NEW FILE** |
+| `apps/web` (next-intl config) | Add `de` to supported locales | **MODIFY** (config only) |
 
-## Recommended Project Structure
+## Integration Analysis: Question by Question
 
-### New Package: `packages/einvoicing`
+### 1. EN 16931 E-Invoicing (XRechnung + ZUGFeRD)
 
-```
-packages/einvoicing/
-├── src/
-│   ├── core/
-│   │   ├── types.ts                  # InvoiceDocument, LineItem, Party, TaxSubtotal
-│   │   ├── ubl-builder.ts            # UBL 2.1 XML document builder
-│   │   ├── en16931-validator.ts       # EN 16931 semantic validation rules
-│   │   ├── xml-signer.ts             # XML DSig / XAdES signing abstraction
-│   │   └── qr-generator.ts           # QR code generation (TLV + standard)
-│   ├── profiles/
-│   │   ├── base-profile.ts           # Abstract profile interface
-│   │   ├── ksef/
-│   │   │   ├── ksef-profile.ts       # KSeF FA(3) XML specifics
-│   │   │   ├── ksef-mapper.ts        # Invoice -> KSeF FA(3) XML mapping
-│   │   │   └── ksef-validator.ts     # KSeF-specific validation rules
-│   │   ├── zatca/
-│   │   │   ├── zatca-profile.ts      # ZATCA Fatoorah specifics
-│   │   │   ├── zatca-mapper.ts       # Invoice -> ZATCA UBL 2.1 mapping
-│   │   │   ├── zatca-signer.ts       # ZATCA XML DSig + hash chain
-│   │   │   ├── zatca-qr.ts           # TLV-encoded Base64 QR for ZATCA
-│   │   │   └── zatca-validator.ts    # ZATCA-specific validation
-│   │   └── peppol/
-│   │       ├── peppol-profile.ts     # Peppol BIS Billing 3.0
-│   │       ├── pint-ae-mapper.ts     # Invoice -> PINT-AE mapping
-│   │       └── peppol-validator.ts   # Peppol-specific validation
-│   ├── clients/
-│   │   ├── zatca-api-client.ts       # ZATCA Fatoora Portal REST API
-│   │   └── peppol-asp-client.ts      # Peppol ASP integration client
-│   └── index.ts
-├── package.json
-└── tsconfig.json
-```
+**Can the existing pluggable engine handle these as new country profiles? YES, with one architectural enhancement.**
 
-### Extensions to Existing Packages
+The `EInvoiceProfile` interface (`generate`, `parse`, `validate`, `getComplianceStatus`, optional `sign`, `qrCode`) maps cleanly to XRechnung. XRechnung is pure UBL 2.1 / UN/CEFACT CII XML -- identical in nature to KSeF FA(3) XML and ZATCA UBL XML. It slots in as:
 
 ```
-packages/db/prisma/schema/
-├── einvoice.prisma               # NEW: EInvoiceSubmission, EInvoiceDocument, HashChain
-├── currency.prisma                # NEW: ExchangeRate, CurrencyConfig
-├── tax-rule.prisma                # NEW: TaxRule, WHTRate, WHTCertificate
-├── consent.prisma                 # NEW: ConsentRecord, DataResidencyConfig
-├── invoice.prisma                 # MODIFIED: add eInvoiceStatus, clearanceRef
-├── payment.prisma                 # MODIFIED: add SWIFT format, purpose codes
-├── contractor.prisma              # MODIFIED: add country-specific fields JSON
-├── organization.prisma            # MODIFIED: add region, taxJurisdiction
-└── integration.prisma             # MODIFIED: add ZATCA, PEPPOL to IntegrationProvider enum
-
-packages/integrations/src/adapters/
-├── zatca-adapter.ts               # NEW: extends BaseAdapter, ZATCA Fatoorah
-├── peppol-adapter.ts              # NEW: extends BaseAdapter, Peppol ASP
-└── ksef-adapter.ts                # EXISTING: refactored to use packages/einvoicing
-
-packages/validators/src/
-├── einvoicing.ts                  # NEW: ZATCA XML fields, UBL validation
-├── currency.ts                    # NEW: exchange rates, Money type validation
-├── tax-rules.ts                   # NEW: WHT rates, VAT config validation
-└── invoice.ts                     # MODIFIED: multi-currency amount validation
-
-packages/api/src/routers/
-├── einvoicing.ts                  # NEW: e-invoice submission, status, history
-├── currency.ts                    # NEW: exchange rates, conversion endpoints
-├── tax.ts                         # NEW: WHT calculation, tax rule config
-└── payment.ts                     # MODIFIED: SWIFT export, purpose codes
+packages/einvoice/src/profiles/xrechnung/
+  index.ts       -- XRechnungProfile implements EInvoiceProfile
+  generator.ts   -- UBL 2.1 XML generation from EInvoice
+  parser.ts      -- UBL 2.1 XML to EInvoice mapping
+  validator.ts   -- EN 16931 + XRechnung CIUS rules
+  schemas.ts     -- Zod schemas for XRechnung-specific fields
+  compliance.ts  -- Leitweg-ID validation, routing status
 ```
 
-### Structure Rationale
+**ZUGFeRD is architecturally different and requires a pipeline enhancement.** ZUGFeRD is PDF/A-3 with embedded CII XML (factur-x.xml attachment). The current pipeline is: `generate XML -> validate -> sign -> QR`. ZUGFeRD needs: `generate CII XML -> validate -> embed XML into PDF/A-3 -> output PDF`.
 
-- **`packages/einvoicing` as a separate package:** The e-invoicing engine has complex XML generation, cryptographic signing, and government-specific validation that should not live inside `packages/integrations`. The integrations package handles connection lifecycle (OAuth, credentials, health) while einvoicing handles document generation and compliance logic. The ZATCA/Peppol adapters in integrations delegate to einvoicing for XML work.
-- **Profile-based architecture:** Each country's e-invoicing requirements differ in XML format, validation rules, signing requirements, and QR codes. A profile pattern (similar to the existing `BaseAdapter` pattern) keeps country-specific logic isolated while sharing the UBL 2.1 core.
-- **No new `packages/currency`:** Multi-currency is a cross-cutting concern. Exchange rates go in `packages/db`, conversion logic goes in a utility module within `packages/api` or a shared helper in `packages/validators`, display formatting stays in `apps/web`. Creating a full package for this would be overengineering.
+**Required changes:**
+
+1. **New pipeline step: `embed`** -- Add an optional `Embeddable` capability interface to `EInvoiceProfile`:
+
+```typescript
+// New capability in types/profile.ts
+export interface Embeddable {
+  /** Embed XML into a carrier document (e.g., PDF/A-3 for ZUGFeRD) */
+  embed(xml: string, carrierPdf?: Buffer): Promise<Buffer>;
+  /** Extract embedded XML from a carrier document */
+  extract(document: Buffer): Promise<string>;
+}
+```
+
+2. **Pipeline extension** -- `runPipeline` gains a new step after validate: if `profile.embed` exists, call it. The `PipelineResult` gains a `document: Buffer | null` field.
+
+3. **PDF/A-3 generation** -- Use `pdf-lib` (already viable in Node.js) or `@nicepage/pdfa-converter` to create PDF/A-3 compliant documents with the CII XML as an AF (Associated File) attachment. This is the key technical challenge. The `pdf-lib` library can manipulate PDFs but PDF/A-3 compliance requires specific metadata (XMP, color profiles). Consider `muhimbi` or building a thin wrapper around `pdf-lib` + `xmp-toolkit`.
+
+**ZUGFeRD profile structure:**
+
+```
+packages/einvoice/src/profiles/zugferd/
+  index.ts       -- ZugferdProfile implements EInvoiceProfile (with embed capability)
+  generator.ts   -- UN/CEFACT CII XML generation
+  parser.ts      -- CII XML to EInvoice mapping
+  validator.ts   -- EN 16931 + ZUGFeRD profile rules (BASIC, COMFORT, EXTENDED)
+  embedder.ts    -- PDF/A-3 creation with embedded factur-x.xml
+  extractor.ts   -- Extract CII XML from PDF/A-3
+  schemas.ts     -- ZUGFeRD-specific field schemas
+```
+
+**Confidence:** HIGH for XRechnung (pure XML, same pattern as existing profiles). MEDIUM for ZUGFeRD PDF/A-3 (PDF/A-3 compliance in Node.js requires careful library selection -- verify `pdf-lib` capabilities during implementation).
+
+### 2. Contractor Classification Engine
+
+**Where it should live: NEW PACKAGE `packages/classification`.**
+
+Rationale for a separate package rather than extending the contractor module:
+
+1. **Distinct domain** -- Classification (IR35 / Scheinselbstaendigkeit) is a risk assessment engine with questionnaire logic, scoring algorithms, and document generation. This is fundamentally different from contractor CRUD.
+2. **Multiple consumers** -- The classification engine feeds: contractor profiles (risk score badge), compliance health (classification status as compliance item), reports (risk distribution), and notifications (re-assessment triggers).
+3. **Country-pluggable** -- Same pattern as einvoice: a generic `ClassificationEngine` with country-specific `ClassificationRuleSet` implementations.
+
+**Architecture:**
+
+```
+packages/classification/
+  src/
+    types/
+      engine.ts          -- ClassificationRuleSet interface
+      assessment.ts      -- Assessment, Question, RiskScore types
+      document.ts        -- SDS/audit-defense doc generation types
+    engine/
+      engine.ts          -- ClassificationEngine (orchestrates rule sets)
+      scoring.ts         -- Generic risk scoring algorithm
+    rulesets/
+      ir35/
+        index.ts         -- IR35RuleSet implements ClassificationRuleSet
+        questions.ts     -- CEST-aligned question bank
+        scoring.ts       -- IR35-specific weight/threshold config
+        sds-generator.ts -- Status Determination Statement PDF
+      scheinselbst/
+        index.ts         -- ScheinselbstRuleSet implements ClassificationRuleSet
+        questions.ts     -- DRV criteria question bank
+        scoring.ts       -- German-specific scoring
+        drv-generator.ts -- DRV audit defense documentation
+    registry.ts          -- Rule set registry (same pattern as einvoice)
+    index.ts
+```
+
+**Key interface:**
+
+```typescript
+export interface ClassificationRuleSet {
+  readonly ruleSetId: string;
+  readonly country: string;
+  readonly displayName: string;
+  
+  /** Get the question bank for this classification */
+  getQuestions(): ClassificationQuestion[];
+  /** Score responses and return risk assessment */
+  assess(responses: QuestionResponse[]): ClassificationResult;
+  /** Generate determination/defense documents */
+  generateDocument(assessment: ClassificationResult): Promise<Buffer>;
+}
+```
+
+**Integration with existing modules:**
+
+| Integration Point | How |
+|-------------------|-----|
+| Contractor profile | `classificationStatus` field on Contractor model (JSON, stores latest assessment result + date) |
+| Compliance health | Classification expiry as a `ContractorComplianceItem` (type: `CLASSIFICATION`) -- auto-created when assessment completes |
+| Country-specific fields | UK: UTR, Companies House number. DE: Steuernummer, Handelsregister. Added to `countryFieldsSchemaMap` in `packages/validators` |
+| Notifications | Re-assessment reminders via existing notification system (trigger when contract renews or 12 months elapsed) |
+
+**Database additions (new `classification.prisma`):**
+
+```prisma
+model ClassificationAssessment {
+  id               String   @id @default(cuid())
+  organizationId   String
+  contractorId     String
+  ruleSetId        String   // "ir35" | "scheinselbst"
+  status           ClassificationStatus
+  riskScore        Decimal  @db.Decimal(5, 2)
+  riskLevel        RiskLevel
+  responsesJson    Json
+  determinedAt     DateTime
+  determinedByUserId String
+  expiresAt        DateTime?
+  documentId       String?  // Link to generated SDS/defense doc
+  notes            String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([organizationId, contractorId])
+  @@index([organizationId, ruleSetId])
+}
+```
+
+**Confidence:** HIGH -- follows the same pluggable pattern established by einvoice profiles.
+
+### 3. BACS Payment Export
+
+**Can this be added alongside existing SEPA/SWIFT? YES, cleanly as a new format.**
+
+The existing architecture already supports this pattern perfectly:
+
+1. **`PaymentExportFormat` enum** -- Already has CSV, BANK_FILE, SEPA_XML, SWIFT_XML, MT940, XML, API_PUSH. Add `BACS_STD18`.
+2. **`payment-export.ts`** -- Add `generateBacsStd18()` alongside existing `generateSepaXml()` and `generateSwiftXml()`.
+3. **`payment-format-detection.ts`** -- Add a rule: `GBP + GB IBAN -> BACS_STD18`.
+
+**BACS Standard 18 is a fixed-width flat file format** (similar in concept to the existing Elixir format for Polish domestic transfers). Each record is a fixed-width line with specific field positions for sort code, account number, amount, and reference.
+
+**Implementation:**
+
+```typescript
+// In payment-format-detection.ts - add to detectFormat():
+if (currency === 'GBP' && ibanCountry === 'GB') {
+  return 'BACS_STD18';
+}
+
+// In payment-export.ts - new function:
+export function generateBacsStd18(
+  items: ExportItem[],
+  org: OrgBankInfo,
+  processingDate: Date
+): Buffer {
+  // VOL1 header, HDR1/HDR2, UHL1 header record
+  // Transaction records (type "CR" for credits)  
+  // EOF1/EOF2, UTL1 trailer
+}
+```
+
+**The `ExportItem` type already has** `contractorName`, `iban` (extract sort code + account from GB IBAN), `amountMinor`, `currency`, `invoiceNumber`, `transferTitle`. No new fields needed.
+
+**UK IBAN structure:** GB + 2 check digits + 4 char bank code + 6 digit sort code + 8 digit account number. The sort code and account number are extractable from the IBAN directly.
+
+**Confidence:** HIGH -- identical integration pattern to Elixir flat file. BACS Standard 18 format is well-documented. MEDIUM on whether Faster Payments needs a separate format (it typically uses BACS or ISO 20022 depending on the bank -- research during implementation).
+
+### 4. German i18n
+
+**Architectural impact of adding German: MINIMAL.**
+
+The existing setup with next-intl and 3 languages (pl, en, ar) is already proven at scale. Adding German (`de`) requires:
+
+1. **New message file:** `apps/web/messages/de.json` -- Translation of all keys from `en.json`.
+2. **next-intl config update:** Add `'de'` to the `locales` array.
+3. **Middleware update:** Add `'de'` to locale detection.
+4. **Locale-aware formatting:** Already uses Intl APIs for date/currency formatting -- German formatting comes free (Intl supports `de-DE` natively).
+
+**Concerns with 4 languages:**
+
+- **Bundle size:** next-intl loads messages per-locale (not all at once), so no bundle impact.
+- **RTL:** German is LTR like English and Polish. No new layout direction concerns (Arabic RTL is already handled).
+- **Compound nouns:** German has very long compound words (e.g., "Scheinselbstaendigkeitspruefung"). UI may need wider containers or text truncation in table columns and buttons. This is a UI concern, not architectural.
+- **Date/number formats:** German uses DD.MM.YYYY dates and 1.234,56 number formatting. Already handled by Intl.DateTimeFormat and Intl.NumberFormat with locale parameter.
+- **Translation maintenance:** 4 languages is manageable. The real scaling concern starts at 8+.
+
+**Confidence:** HIGH -- adding a 4th language to next-intl is a well-trodden path, and the existing i18n architecture is already battle-tested with RTL.
+
+### 5. HMRC and VIES Validation APIs
+
+**Do these fit the existing government API framework? YES for HMRC. VIES is simpler but should still use it for consistency.**
+
+**HMRC VAT Check API:**
+
+HMRC provides a REST API for checking UK VAT registration numbers. It requires:
+- OAuth 2.0 authentication (application-restricted or user-restricted endpoints)
+- Rate limiting (HMRC has strict rate limits)
+- Sandbox/production URL switching
+
+This maps directly to the existing `GovApiClient` abstract class:
+
+```typescript
+// packages/gov-api/src/clients/hmrc.ts
+export class HmrcVatClient extends GovApiClient {
+  getApiName() { return 'hmrc-vat'; }
+  
+  async checkVatNumber(vatNumber: string, orgId: string): Promise<HmrcVatCheckResult> {
+    const response = await this.fetch(`/organisations/vat/check-vat-number/lookup/${vatNumber}`, {
+      method: 'GET',
+    }, { organizationId: orgId });
+    // ...
+  }
+}
+```
+
+The existing `GovApiClient` already provides: retry with exponential backoff, timeout via AbortController, audit logging, cert/auth loading from secret store. HMRC uses OAuth rather than cert auth, so the auth header would be set differently -- but the `fetch` method already supports custom headers.
+
+**VIES VAT Validation (EU USt-IdNr):**
+
+VIES provides a SOAP API (legacy) and a newer REST API for validating EU VAT numbers. It is simpler than HMRC (no auth required, just rate-limited), but should still use `GovApiClient` for:
+- Rate limiting (VIES is notoriously slow and rate-limited)
+- Retry (VIES has frequent downtime)
+- Audit logging (compliance record of validation attempts)
+
+```typescript
+// packages/gov-api/src/clients/vies.ts
+export class ViesClient extends GovApiClient {
+  getApiName() { return 'vies'; }
+  
+  async checkVatNumber(countryCode: string, vatNumber: string, orgId: string): Promise<ViesCheckResult> {
+    const response = await this.fetch(
+      `/check-vat-number`, 
+      { method: 'POST', body: JSON.stringify({ countryCode, vatNumber }) },
+      { organizationId: orgId }
+    );
+    // ...
+  }
+}
+```
+
+**Integration with tax router:** Both HMRC and VIES clients integrate via the existing `tax` tRPC router, adding `tax.validateUkVat` and `tax.validateEuVat` procedures.
+
+**Confidence:** HIGH for architectural fit. MEDIUM on exact HMRC API endpoints (verify during implementation -- HMRC frequently updates their developer documentation).
+
+### 6. Suggested Build Order
+
+Based on dependency analysis:
+
+```
+Phase 1: Foundation (no dependencies)
+  ├── UK country fields (validators + DB)
+  ├── German country fields (validators + DB)  
+  ├── UK VAT rates (seed data in TaxRate table)
+  ├── German VAT rates (seed data)
+  └── German i18n (de.json + config)
+       
+Phase 2: Government APIs (depends on: nothing new)
+  ├── HMRC VAT validation client (extends GovApiClient)
+  ├── VIES validation client (extends GovApiClient)
+  └── Tax router procedures for validation
+       
+Phase 3: Classification Engine (depends on: Phase 1 country fields)
+  ├── packages/classification (new package)
+  ├── IR35 rule set + SDS generation
+  ├── Scheinselbstaendigkeit rule set + DRV docs
+  ├── Classification DB schema
+  └── Contractor profile integration (risk badge, compliance items)
+       
+Phase 4: E-Invoicing (depends on: Phase 1 for VAT rates, Phase 2 for validation)
+  ├── EInvoiceProfile pipeline enhancement (Embeddable interface)
+  ├── XRechnung profile (UBL XML -- simpler, do first)
+  ├── ZUGFeRD profile (CII XML + PDF/A-3 embedding -- complex, do second)
+  └── EN 16931 validation rules
+       
+Phase 5: Payments (depends on: Phase 1 for GBP support)
+  ├── BACS Standard 18 export function
+  ├── Format detection rule (GBP + GB -> BACS)
+  └── Payment run UI for BACS format
+       
+Phase 6: Compliance & Polish (depends on: all above)
+  ├── UK GDPR adaptations
+  ├── German GDPR (BDSG) adaptations
+  ├── Chain participant tracking (IR35)
+  └── Re-assessment notification triggers
+```
+
+**Ordering rationale:**
+- **Phase 1 first** because country fields, VAT rates, and i18n are prerequisites for everything else and have zero external dependencies.
+- **Phase 2 early** because HMRC/VIES validation is needed by classification (validate tax IDs before classification) and e-invoicing (validate VAT numbers on invoices).
+- **Phase 3 before Phase 4** because classification is the key differentiator for UK/DE markets and is independent of e-invoicing. Ship value early.
+- **Phase 4 after Phase 3** because XRechnung/ZUGFeRD is the most complex work and benefits from having country fields and VAT rates already in place.
+- **Phase 5 late** because BACS is a straightforward format addition with proven patterns (Elixir precedent) -- low risk, can be fast.
+- **Phase 6 last** because compliance polish depends on all functional pieces being in place.
 
 ## Architectural Patterns
 
-### Pattern 1: E-Invoice Profile Strategy
+### Pattern 1: Country Profile Plugin (Established)
 
-**What:** Abstract base profile with country-specific implementations, each providing XML generation, validation, signing, and submission logic.
-**When to use:** Adding any new country's e-invoicing requirements.
-**Trade-offs:** More initial setup per country, but complete isolation of country-specific logic. Prevents one country's changes from breaking another.
+**What:** Each country/market implements a standard interface. The engine delegates all country-specific logic to the profile. New markets are added without modifying engine code.
+**Where used:** `packages/einvoice` (EInvoiceProfile), to be reused in `packages/classification` (ClassificationRuleSet).
+**Trade-offs:** Slightly more boilerplate per country vs. inline conditionals, but dramatically better maintainability and testability.
 
-```typescript
-// packages/einvoicing/src/profiles/base-profile.ts
-export interface EInvoiceProfile {
-  readonly countryCode: string;
-  readonly formatName: string;
+### Pattern 2: Capability Interfaces (Established, Extending)
 
-  /** Generate compliant XML from normalized invoice data */
-  generateXml(invoice: InvoiceDocument): Promise<string>;
+**What:** Optional behaviors as separate interfaces. A profile declares capabilities it supports (signing, QR codes, PDF embedding) by implementing the corresponding interface.
+**Extension needed:** Add `Embeddable` capability for ZUGFeRD PDF/A-3.
+**Trade-offs:** Clean optional behavior without forcing empty implementations. Type system enforces correct pipeline behavior.
 
-  /** Validate invoice against country-specific rules */
-  validate(invoice: InvoiceDocument): ValidationResult;
+### Pattern 3: Format Detection with Routing (Established)
 
-  /** Sign XML (XML DSig, XAdES, or country-specific) */
-  signXml?(xml: string, certificate: SigningCertificate): Promise<string>;
+**What:** Payment format is auto-detected from currency + IBAN country code. Items are grouped by format, then each group is exported with the appropriate generator.
+**Extension needed:** One new rule in `detectFormat()` for GBP + GB -> BACS_STD18.
+**Trade-offs:** Simple, deterministic routing. May need override mechanism eventually (e.g., org prefers SWIFT over BACS for some UK payments).
 
-  /** Generate QR code data (TLV for ZATCA, standard for others) */
-  generateQrData?(invoice: InvoiceDocument): string;
+### Pattern 4: Country Fields via JSON + Zod (Established)
 
-  /** Submit to government API (clearance/reporting) */
-  submit?(signedXml: string, client: GovernmentApiClient): Promise<SubmissionResult>;
-}
-
-// packages/einvoicing/src/profiles/zatca/zatca-profile.ts
-export class ZatcaProfile implements EInvoiceProfile {
-  readonly countryCode = "SA";
-  readonly formatName = "ZATCA Fatoorah UBL 2.1";
-
-  async generateXml(invoice: InvoiceDocument): Promise<string> {
-    // ZATCA-specific UBL 2.1 with required extensions
-    // UUID, seller/buyer TIN, hash of previous invoice
-  }
-
-  validate(invoice: InvoiceDocument): ValidationResult {
-    // ZATCA-specific: TIN format, hash chain, mandatory fields
-  }
-
-  async signXml(xml: string, cert: SigningCertificate): Promise<string> {
-    // XML DSig with X.509 CSD certificate from ZATCA
-  }
-
-  generateQrData(invoice: InvoiceDocument): string {
-    // TLV-encoded Base64: seller name, VAT number, timestamp, total, VAT
-  }
-
-  async submit(signedXml: string, client: GovernmentApiClient): Promise<SubmissionResult> {
-    // B2B: clearance (synchronous validation by ZATCA)
-    // B2C: reporting (within 24 hours)
-  }
-}
-```
-
-### Pattern 2: Integration Adapter Delegation to E-Invoice Engine
-
-**What:** ZATCA and Peppol adapters in `packages/integrations` handle connection lifecycle (credentials, health, webhooks) and delegate document work to `packages/einvoicing`.
-**When to use:** Any government e-invoicing API that requires both connection management AND document generation.
-**Trade-offs:** Two-package coordination adds indirection but maintains clean separation of concerns. The adapter registry stays lightweight; the heavy XML/crypto work lives in the specialized package.
-
-```typescript
-// packages/integrations/src/adapters/zatca-adapter.ts
-export class ZatcaAdapter extends BaseAdapter {
-  readonly slug = "zatca";
-  readonly displayName = "ZATCA Fatoorah";
-  readonly supportsOAuth = false;  // Uses CSD certificate, not OAuth
-  readonly supportsWebhooks = false;  // Polling-based like KSeF
-
-  async getHealthStatus(connectionId: string): Promise<ProviderHealthStatus> {
-    // Same pattern as KsefAdapter -- check sync logs, token expiry
-    // ZATCA CSD certificates have expiration dates
-  }
-
-  // Document generation delegated to packages/einvoicing
-  // This adapter does NOT generate XML -- it manages the connection
-}
-```
-
-### Pattern 3: Multi-Currency Money Type with Integer Minor Units
-
-**What:** Extend existing integer grosze pattern to handle multiple currencies with different decimal places (AED: 2 decimals = fils, SAR: 2 decimals = halalas, BHD: 3 decimals = fils). All arithmetic stays in minor units. Exchange rate conversion produces a new Money value with explicit rate + timestamp.
-**When to use:** Any monetary calculation, display, or storage.
-**Trade-offs:** Requires knowing each currency's minor unit factor (stored in a lookup). Conversion always produces a new amount -- never mutate in place.
-
-```typescript
-// packages/validators/src/currency.ts
-import { z } from "zod";
-
-export const CURRENCY_MINOR_UNITS: Record<string, number> = {
-  PLN: 2, EUR: 2, USD: 2, GBP: 2, AED: 2, SAR: 2,
-  BHD: 3, KWD: 3, OMR: 3,  // Gulf currencies with 3 decimals
-  JPY: 0,                    // Zero-decimal currencies
-};
-
-export const moneySchema = z.object({
-  amountMinor: z.number().int(),
-  currency: z.string().length(3),
-});
-
-export const exchangeRateSchema = z.object({
-  fromCurrency: z.string().length(3),
-  toCurrency: z.string().length(3),
-  rate: z.number().positive(),        // e.g., 1 PLN = 0.92 SAR
-  inverseRate: z.number().positive(),  // e.g., 1 SAR = 1.087 PLN
-  effectiveDate: z.date(),
-  source: z.enum(["ECB", "MANUAL", "API"]),
-});
-
-// Conversion function -- always explicit, never implicit
-export function convertCurrency(
-  amountMinor: number,
-  fromCurrency: string,
-  toCurrency: string,
-  rate: number,
-): { amountMinor: number; currency: string } {
-  const fromDecimals = CURRENCY_MINOR_UNITS[fromCurrency] ?? 2;
-  const toDecimals = CURRENCY_MINOR_UNITS[toCurrency] ?? 2;
-
-  // Convert to major units, apply rate, convert back to minor units
-  const majorAmount = amountMinor / Math.pow(10, fromDecimals);
-  const convertedMajor = majorAmount * rate;
-  const convertedMinor = Math.round(convertedMajor * Math.pow(10, toDecimals));
-
-  return { amountMinor: convertedMinor, currency: toCurrency };
-}
-```
-
-### Pattern 4: Country-Scoped Tax Rules via Organization Configuration
-
-**What:** Tax rules (VAT rates, WHT rates, reverse charge rules) stored per-organization based on their `countryCode` and `taxJurisdiction`. Rules are configurable but seeded with country defaults. The tax engine resolves applicable rules at invoice/payment time.
-**When to use:** Any tax calculation -- VAT on invoices, WHT on cross-border payments.
-**Trade-offs:** Slightly more complex than hardcoded Polish VAT, but essential for multi-market. Default seeding means zero config for standard cases.
-
-```typescript
-// Tax rule resolution at invoice time
-async function resolveTaxRules(
-  orgId: string,
-  contractorCountry: string,
-  serviceType: string,
-): Promise<TaxRuleSet> {
-  const org = await getOrganization(orgId);
-
-  // 1. Get org's country VAT rate
-  const vatRule = await getVatRule(org.countryCode, serviceType);
-
-  // 2. Check for reverse charge (cross-border B2B within EU)
-  const reverseCharge = shouldApplyReverseCharge(org.countryCode, contractorCountry);
-
-  // 3. Check for WHT (Saudi cross-border payments)
-  const whtRule = await getWhtRule(org.countryCode, contractorCountry, serviceType);
-
-  return { vatRule, reverseCharge, whtRule };
-}
-```
-
-### Pattern 5: QStash-Based Government API Submission Pipeline
-
-**What:** All government API calls (ZATCA clearance, Peppol submission, KSeF sync) go through QStash for reliability. The flow: tRPC mutation triggers QStash job, QStash calls a Next.js API route, API route calls the einvoicing engine, result is stored in DB and surfaces via tRPC query.
-**When to use:** Any government API interaction that can fail, retry, or take time.
-**Trade-offs:** Async means UI needs polling/optimistic state. But government APIs are unreliable and slow -- synchronous calls would block the user and risk timeouts.
-
-```
-User submits invoice for clearance
-    |
-tRPC mutation: creates EInvoiceSubmission (status: PENDING)
-    |
-QStash: enqueue "zatca-clearance" job with submissionId
-    |
-API route: /api/qstash/zatca-clearance
-    |
-packages/einvoicing: generateXml() -> signXml() -> submit()
-    |
-DB update: EInvoiceSubmission (status: CLEARED | REJECTED)
-    |
-User polls via tRPC query or receives notification
-```
+**What:** The `Contractor.countryFields` JSON column stores country-specific data, validated by Zod schemas keyed by country code in `countryFieldsSchemaMap`.
+**Extension needed:** Add `GB` and `DE` schemas to the map.
+**Trade-offs:** Avoids schema migrations for every new country's fields. Zod ensures type safety at runtime. Downside: no DB-level constraints on JSON contents.
 
 ## Data Flow
 
-### E-Invoice Submission Flow (ZATCA Example)
+### Classification Assessment Flow
 
 ```
-Invoice (existing) -> [Generate XML] -> [Validate] -> [Sign with CSD] -> [Add QR] -> [Submit to ZATCA]
-       |                    |              |              |                |              |
-  packages/db        einvoicing/      einvoicing/    einvoicing/     einvoicing/    integrations/
-  Invoice model      core/ubl-builder profiles/zatca  profiles/zatca  profiles/zatca  zatca-adapter
-                     + zatca-mapper   zatca-validator  zatca-signer    zatca-qr       -> zatca-api-client
+[User starts classification]
+    |
+[Select contractor] -> [Engine loads rule set for contractor.countryCode]
+    |
+[Display questionnaire] -> [User answers questions]
+    |
+[Submit responses] -> [Engine.assess(responses)]
+    |
+[Return ClassificationResult with riskScore, riskLevel, determination]
+    |
+[Save ClassificationAssessment to DB]
+    |
+[Create/update ContractorComplianceItem (type: CLASSIFICATION)]
+    |
+[Generate SDS/DRV document if requested] -> [Store in Document system]
+    |
+[Update contractor.classificationStatus JSON field]
 ```
 
-### Multi-Currency Invoice Processing Flow
+### ZUGFeRD Invoice Flow (New)
 
 ```
-Invoice received (SAR amount)
+[Invoice data (EInvoice)]
     |
-OCR/KSeF/Portal extracts: { amountMinor: 150000, currency: "SAR" }
+[ZugferdProfile.generate()] -> CII XML (factur-x.xml)
     |
-Match against contract (contract may be in PLN)
+[ZugferdProfile.validate()] -> EN 16931 + ZUGFeRD rules
     |
-Currency conversion: SAR 1500.00 -> PLN at rate from ExchangeRate table
+[ZugferdProfile.embed.embed(xml, basePdf?)] -> PDF/A-3 with XML attachment
     |
-Deviation check: converted PLN amount vs expected contract amount
+[Pipeline returns PipelineResult with document: Buffer]
     |
-Store both original (SAR) and converted (PLN) amounts on invoice
-    |
-Payment run: group by currency, SWIFT export for SAR, SEPA for PLN
+[Store PDF/A-3 in R2 + link to Invoice record]
 ```
 
-### RTL Layout Flow
+### BACS Export Flow (Follows Existing Pattern)
 
 ```
-Request with locale cookie/header
+[Payment run with GBP items]
     |
-next-intl resolves locale (ar, pl, en)
+[detectFormat('GBP', 'GB...')] -> BACS_STD18
     |
-Root layout: <html lang={locale} dir={rtlLocales.includes(locale) ? 'rtl' : 'ltr'}>
+[groupItemsByFormat()] -> groups BACS items together
     |
-shadcn/ui components: logical CSS properties (ms-*, me-*, ps-*, pe-*, start-*, end-*)
+[generateBacsStd18(items, org, date)] -> Fixed-width flat file Buffer
     |
-Tailwind RTL plugin: rtl:rotate-180 on directional icons (chevrons, arrows)
-    |
-Currency/number formatting: Intl.NumberFormat(locale, { style: 'currency', currency })
+[Store export in R2 + create PaymentExport record]
 ```
-
-### Key Data Flows
-
-1. **E-invoice lifecycle:** Invoice created/received -> XML generated per country profile -> validated -> signed -> submitted to government API via QStash -> clearance/rejection stored -> status surfaces in UI
-2. **Multi-currency payment:** Invoices in mixed currencies -> grouped by currency in payment run -> SEPA export for EUR/PLN, SWIFT export for AED/SAR/GBP -> purpose codes added for Gulf SWIFT transfers
-3. **WHT calculation:** Cross-border payment detected (org=SA, contractor=foreign) -> resolve WHT rate by service type + treaty -> calculate withholding -> generate WHT certificate -> net payment = gross - WHT
-4. **Country profile onboarding:** Organization selects country -> tax rules seeded (VAT rates, WHT rates) -> e-invoicing profile configured -> contractor fields schema adjusted (freelance permit for UAE, commercial registration for SA)
-
-## Schema Changes
-
-### New Models
-
-```prisma
-// einvoice.prisma
-model EInvoiceSubmission {
-  id                String              @id @default(cuid())
-  organizationId    String
-  invoiceId         String
-  profile           EInvoiceProfile     // KSEF, ZATCA, PEPPOL
-  status            EInvoiceStatus      // PENDING, GENERATING, SUBMITTED, CLEARED, REJECTED, ERROR
-  xmlDocumentId     String?             // Reference to R2-stored XML
-  signedXmlDocumentId String?
-  governmentRef     String?             // KSeF ref, ZATCA clearance ID, Peppol message ID
-  previousHashRef   String?             // For ZATCA hash chain
-  qrCodeData        String?
-  submittedAt       DateTime?
-  clearedAt         DateTime?
-  rejectedAt        DateTime?
-  rejectionReason   String?
-  retryCount        Int                 @default(0)
-  lastErrorMessage  String?
-  createdAt         DateTime            @default(now())
-  updatedAt         DateTime            @updatedAt
-
-  organization      Organization        @relation(fields: [organizationId], references: [id])
-  invoice           Invoice             @relation(fields: [invoiceId], references: [id])
-
-  @@index([organizationId])
-  @@index([organizationId, invoiceId])
-  @@index([organizationId, status])
-}
-
-// currency.prisma
-model ExchangeRate {
-  id              String   @id @default(cuid())
-  organizationId  String?  // null = system-wide rate
-  fromCurrency    String   @db.Char(3)
-  toCurrency      String   @db.Char(3)
-  rate            Decimal  @db.Decimal(18, 8)
-  inverseRate     Decimal  @db.Decimal(18, 8)
-  effectiveDate   DateTime @db.Date
-  source          String   // ECB, MANUAL, etc.
-  createdAt       DateTime @default(now())
-
-  organization    Organization? @relation(fields: [organizationId], references: [id])
-
-  @@unique([organizationId, fromCurrency, toCurrency, effectiveDate])
-  @@index([fromCurrency, toCurrency, effectiveDate])
-}
-
-// tax-rule.prisma
-model TaxRule {
-  id              String   @id @default(cuid())
-  organizationId  String?  // null = system default
-  countryCode     String   @db.Char(2)
-  taxType         TaxType  // VAT, WHT, CORPORATE_TAX
-  name            String
-  rate            Decimal  @db.Decimal(8, 4)
-  serviceCategory String?  // For WHT: MANAGEMENT, TECHNICAL, ROYALTY
-  appliesToNonResident Boolean @default(false)
-  effectiveFrom   DateTime @db.Date
-  effectiveTo     DateTime? @db.Date
-  createdAt       DateTime @default(now())
-
-  organization    Organization? @relation(fields: [organizationId], references: [id])
-
-  @@index([countryCode, taxType])
-}
-
-model WhtCertificate {
-  id              String   @id @default(cuid())
-  organizationId  String
-  invoiceId       String
-  contractorId    String
-  grossAmountMinor Int
-  whtAmountMinor  Int
-  whtRate         Decimal  @db.Decimal(8, 4)
-  netAmountMinor  Int
-  currency        String   @db.Char(3)
-  certificateRef  String?
-  documentId      String?  // Generated PDF stored in R2
-  issuedAt        DateTime @default(now())
-
-  organization    Organization @relation(fields: [organizationId], references: [id])
-
-  @@index([organizationId])
-  @@index([organizationId, contractorId])
-}
-
-// consent.prisma
-model ConsentRecord {
-  id              String      @id @default(cuid())
-  organizationId  String
-  entityType      String      // CONTRACTOR, PORTAL_USER
-  entityId        String
-  consentType     String      // DATA_PROCESSING, CROSS_BORDER_TRANSFER, MARKETING
-  jurisdiction    String      @db.Char(2) // AE, SA
-  granted         Boolean
-  grantedAt       DateTime?
-  revokedAt       DateTime?
-  ipAddress       String?
-  userAgent       String?
-  createdAt       DateTime    @default(now())
-
-  organization    Organization @relation(fields: [organizationId], references: [id])
-
-  @@index([organizationId, entityType, entityId])
-  @@index([organizationId, consentType])
-}
-```
-
-### Modified Existing Models
-
-```prisma
-// invoice.prisma -- ADD fields
-model Invoice {
-  // ... existing fields ...
-  originalCurrency      String?   @db.Char(3)   // Original invoice currency
-  originalAmountMinor   Int?                     // Original amount before conversion
-  exchangeRateId        String?                  // Rate used for conversion
-  eInvoiceProfile       String?                  // KSEF, ZATCA, PEPPOL
-  eInvoiceStatus        String?                  // CLEARED, REPORTED, PENDING
-  governmentRef         String?                  // External reference from govt API
-  eInvoiceSubmissions   EInvoiceSubmission[]
-}
-
-// payment.prisma -- ADD to PaymentExportFormat enum
-enum PaymentExportFormat {
-  CSV
-  BANK_FILE
-  SEPA_XML
-  MT940
-  XML
-  API_PUSH
-  SWIFT_MT103    // NEW: SWIFT single payment
-  SWIFT_MT101    // NEW: SWIFT batch payment
-}
-
-// payment.prisma -- ADD to PaymentRunItem
-model PaymentRunItem {
-  // ... existing fields ...
-  purposeCode     String?   @db.VarChar(10)  // SWIFT purpose code (e.g., SCVE for services)
-  whtAmountMinor  Int?                        // Withheld tax amount
-  netAmountMinor  Int?                        // Amount after WHT
-}
-
-// organization.prisma -- ADD fields
-model Organization {
-  // ... existing fields ...
-  taxJurisdiction   String?   @db.Char(2)  // Primary tax jurisdiction
-  region            String?                 // Deployment region hint
-  eInvoiceProfile   String?                 // Default e-invoice profile
-}
-
-// contractor.prisma -- ADD to ContractorType enum
-enum ContractorType {
-  SOLE_TRADER
-  COMPANY
-  INDIVIDUAL_FREELANCER
-  FREEZONE_ENTITY        // NEW: UAE free zone
-  MICRO_ENTREPRENEUR     // NEW: France
-  OTHER
-}
-
-// integration.prisma -- ADD to IntegrationProvider enum
-enum IntegrationProvider {
-  // ... existing providers ...
-  ZATCA              // NEW
-  PEPPOL             // NEW
-}
-```
-
-## Integration Points with Existing Architecture
-
-### What Gets Reused Directly
-
-| Existing Component | How v4.0 Uses It |
-|-------------------|-----------------|
-| `BaseAdapter` + adapter registry | ZATCA and Peppol adapters register via `registerAdapter()` |
-| `CredentialService` (AES-256-GCM) | ZATCA CSD certificates and Peppol ASP credentials stored encrypted |
-| QStash pipeline | Government API calls (clearance, reporting) use existing async pattern |
-| Health monitoring | ZATCA/Peppol health status follows same `getHealthStatus()` pattern |
-| `IntegrationSyncLog` | All government API interactions logged via existing sync log model |
-| `WebhookDelivery` | Peppol ASP may send webhooks for delivery receipts |
-| Multi-tenant scoping | All new models include `organizationId` + existing Prisma extension |
-| `InvoiceSource` enum | Add `ZATCA` and `PEPPOL` sources (already has `KSEF`) |
-| next-intl | Add Arabic locale + RTL detection |
-| Integer minor units | All new monetary fields use `*Minor: Int` pattern |
-| Document/R2 storage | XML documents, signed XML, WHT certificates stored via existing document service |
-
-### What Gets Modified
-
-| Component | Change | Risk |
-|-----------|--------|------|
-| `KsefAdapter` | Refactor to delegate XML parsing to `packages/einvoicing` KSeF profile | LOW -- adapter becomes thinner, logic moves to dedicated package |
-| `KsefApiClient` | Move to `packages/einvoicing/src/clients/` or keep in integrations and import | LOW -- just a location change |
-| Invoice model | Add e-invoice fields + multi-currency fields | LOW -- additive columns only |
-| Payment export | Add SWIFT formats + purpose codes | LOW -- new enum values + export generator |
-| `PaymentExportFormat` enum | Add SWIFT_MT103, SWIFT_MT101 | LOW -- additive |
-| `IntegrationProvider` enum | Add ZATCA, PEPPOL | LOW -- additive |
-| Organization model | Add taxJurisdiction, region, eInvoiceProfile | LOW -- additive nullable columns |
-
-### What Is Completely New
-
-| Component | Complexity | Dependencies |
-|-----------|-----------|-------------|
-| `packages/einvoicing` | HIGH | `packages/db`, `packages/validators`, node:crypto |
-| ZATCA API client | MEDIUM | ZATCA sandbox/prod, CSD certificates |
-| Peppol ASP client | MEDIUM | Third-party ASP provider selection required |
-| Multi-currency exchange rate service | MEDIUM | ECB API or manual rate entry |
-| WHT calculator + certificate generator | LOW-MEDIUM | Tax rule configuration |
-| Arabic locale files + RTL layout | MEDIUM | next-intl, shadcn RTL mode |
-| PDPL consent management | LOW | New DB models + UI forms |
-| SWIFT payment export generator | LOW-MEDIUM | MT103/MT101 format specification |
-| Country-specific contractor fields | LOW | JSON schema in existing `customFieldsJson` |
-
-## Scaling Considerations
-
-| Scale | Architecture Adjustments |
-|-------|--------------------------|
-| 1-50 orgs (current) | Single Neon instance in eu-central-1. Government API calls via QStash. No caching needed for exchange rates. |
-| 50-500 orgs | ECB rate caching in Upstash Redis (rates change daily, cache for 1h). ZATCA API rate limiting may require per-org queuing. Peppol ASP selection affects throughput. |
-| 500+ orgs | Logical replication from Neon eu-central-1 to a second Neon project in ap-southeast-1 (Singapore, closest to Gulf). Read replicas for Gulf users. Consider dedicated ZATCA submission queue per large org. |
-
-### Neon Multi-Region Strategy
-
-Neon does NOT have a Middle East region. Available closest options:
-- **Primary:** `aws-eu-central-1` (Frankfurt) -- existing, serves EU + UK
-- **Gulf read replica:** `aws-ap-southeast-1` (Singapore) -- closest to UAE/Saudi
-- **Implementation:** Neon logical replication from Frankfurt to Singapore project
-- **Latency:** Frankfurt-to-Dubai ~100ms, Singapore-to-Dubai ~80ms -- marginal improvement
-- **Recommendation:** Stay on Frankfurt for now. Gulf latency is acceptable for B2B SaaS (not real-time). Revisit when Neon adds `me-south-1` (Bahrain) or `me-central-1` (UAE).
-
-### Scaling Priorities
-
-1. **First bottleneck:** ZATCA API rate limits during invoice volume spikes. Mitigation: per-org QStash queuing with configurable concurrency.
-2. **Second bottleneck:** Exchange rate freshness for multi-currency matching. Mitigation: daily ECB rate fetch + manual override capability.
 
 ## Anti-Patterns
 
-### Anti-Pattern 1: Monolithic E-Invoice Processor
+### Anti-Pattern 1: Putting Classification Logic in the Contractor Router
 
-**What people do:** Put all country-specific XML generation, signing, validation, and API calls in a single service or a single massive function with country-code switches.
-**Why it's wrong:** Each country's requirements are complex enough to warrant isolation. ZATCA needs hash chains and TLV QR codes; KSeF needs RSA-OAEP auth and FA(3) format; Peppol needs ASP routing. Mixing them creates untestable spaghetti.
-**Do this instead:** Profile-per-country pattern. Each profile is independently testable and deployable.
+**What people do:** Add IR35/Scheinselbstaendigkeit scoring directly to `packages/api/src/routers/contractor.ts` with country-specific if/else branches.
+**Why it's wrong:** Classification is a separate domain with its own data model, document generation, and rule versioning. Embedding it in the contractor router creates a 2000+ line file and makes it impossible to test rule sets in isolation.
+**Do this instead:** New `packages/classification` package with clean interfaces. The contractor router calls the classification engine, but doesn't contain classification logic.
 
-### Anti-Pattern 2: Synchronous Government API Calls
+### Anti-Pattern 2: Forking the Pipeline for ZUGFeRD
 
-**What people do:** Call ZATCA clearance API synchronously in the tRPC mutation that processes the invoice.
-**Why it's wrong:** Government APIs are slow (2-10 seconds for ZATCA clearance), unreliable (maintenance windows), and rate-limited. Synchronous calls block the user and risk Vercel function timeouts (default 10s).
-**Do this instead:** QStash-based async pipeline. Create submission record immediately, process via background job, surface result via polling or notification.
+**What people do:** Create a separate `runZugferdPipeline()` function that duplicates the generate/validate logic and adds PDF embedding.
+**Why it's wrong:** Pipeline logic duplication. Every future pipeline enhancement needs updating in two places.
+**Do this instead:** Extend the existing `runPipeline()` with the `Embeddable` capability check -- same pattern as the existing `Signable` and `QRCodeable` checks.
 
-### Anti-Pattern 3: Implicit Currency Conversion
+### Anti-Pattern 3: Hardcoding UK Sort Codes in Payment Export
 
-**What people do:** Auto-convert all amounts to org's default currency at storage time, discarding the original currency/amount.
-**Why it's wrong:** Audit trails require original amounts. Exchange rates change daily. WHT calculations need original currency. Tax authorities audit in the original transaction currency.
-**Do this instead:** Always store original `currency` + `amountMinor`. Store converted amounts separately with explicit rate reference. Never overwrite originals.
+**What people do:** Add UK-specific bank code extraction logic scattered through the payment module.
+**Why it's wrong:** The IBAN already contains the sort code (positions 9-14 in a GB IBAN). The `ExportItem` type already has `iban`.
+**Do this instead:** Extract sort code and account number from the IBAN within `generateBacsStd18()` as a pure function. No schema changes needed.
 
-### Anti-Pattern 4: Hardcoded Tax Rates
+### Anti-Pattern 4: Separate HMRC/VIES Fetch Without GovApiClient
 
-**What people do:** Replace the existing hardcoded Polish VAT with hardcoded rate tables per country.
-**Why it's wrong:** Tax rates change (Saudi VAT went from 5% to 15% in 2020). WHT rates vary by treaty. New countries mean code changes instead of data changes.
-**Do this instead:** Tax rules in the database, seeded with defaults, configurable per org. Rate lookups at calculation time with effective date filtering.
+**What people do:** Use raw `fetch()` for HMRC/VIES since they're "simple HTTP APIs."
+**Why it's wrong:** Loses retry, rate limiting, timeout, and audit logging. VIES is notoriously unreliable and needs all of these. HMRC has strict rate limits.
+**Do this instead:** Extend `GovApiClient` even for simple APIs. The base class is lightweight and provides exactly the reliability features these APIs need.
 
-### Anti-Pattern 5: RTL as an Afterthought CSS Override
+## Integration Points
 
-**What people do:** Build the entire UI in LTR, then add RTL-specific CSS overrides and `[dir="rtl"]` selectors.
-**Why it's wrong:** Maintenance nightmare. Every new component needs RTL overrides. Icons, animations, and spacing all break.
-**Do this instead:** Use CSS logical properties from the start (shadcn/ui supports this with `rtl: true` in components.json). Set `dir` attribute on `<html>`. Use `rtl:rotate-180` for directional icons. Test Arabic layout from day one of RTL phase.
-
-## Integration Points: External Services
+### External Services
 
 | Service | Integration Pattern | Notes |
 |---------|---------------------|-------|
-| ZATCA Fatoora Portal | REST API with CSD certificate auth | Sandbox available for testing. CSD cert must be obtained from ZATCA-approved providers (Geotrust, Digicert). NOT Let's Encrypt. |
-| Peppol ASP (UAE) | REST API via chosen ASP provider | Must select an accredited ASP. Options TBD when UAE publishes approved list (expected mid-2026). |
-| ECB Exchange Rates | Daily XML feed from ECB | Free, no auth. `https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml` |
-| KSeF (refactored) | Existing REST API, moves under einvoicing package | No new integration -- architectural refactor only |
+| HMRC VAT API | `GovApiClient` subclass, OAuth 2.0 auth | Rate limited, sandbox available, verify OAuth flow during implementation |
+| VIES REST API | `GovApiClient` subclass, no auth needed | Notoriously slow/unreliable, aggressive retry needed, cache valid results |
+| XRechnung Leitweg-ID | Validation only (regex + checksum) | No external API -- just format validation |
+| ZUGFeRD validator | Local validation against EN 16931 schematron | Consider `mustangproject` via child process or pure JS reimplementation |
+| BACS | File export only (no API submission) | Org uploads file to their bank portal manually |
 
 ### Internal Boundaries
 
 | Boundary | Communication | Notes |
 |----------|---------------|-------|
-| `packages/api` <-> `packages/einvoicing` | Direct import | tRPC routers call einvoicing engine functions directly |
-| `packages/einvoicing` <-> `packages/integrations` | Adapter delegates to profile | ZATCA/Peppol adapters import from einvoicing for XML work |
-| `packages/einvoicing` <-> `packages/db` | Prisma client via import | XML storage, submission status, hash chain lookups |
-| `packages/api` <-> QStash | HTTP (existing pattern) | Government API calls enqueued as QStash jobs |
-| QStash -> Next.js API routes -> `packages/einvoicing` | HTTP callback | Background job handler calls einvoicing engine |
+| `classification` -> `contractor` | tRPC procedures call classification engine | Classification stores assessment, contractor gets risk badge |
+| `classification` -> `compliance` | Classification creates/updates ComplianceItem | Uses existing compliance item pattern |
+| `einvoice` (ZUGFeRD) -> Document storage | Pipeline result includes PDF Buffer | Store via existing document upload service (R2) |
+| `gov-api` (HMRC/VIES) -> `tax` router | Tax router calls gov-api clients | Existing pattern used by ZATCA/Peppol |
+| `payment-export` -> `payment` router | Router calls new `generateBacsStd18()` | Same as existing SEPA/SWIFT/Elixir calls |
+| `validators` -> `contractor` router | Country field validation on save | Existing pattern -- just new schemas in map |
 
-## Suggested Build Order
+## New vs Modified Summary
 
-The build order respects dependency chains: infrastructure first, then features that depend on it.
-
-| Phase | What | Why This Order | Dependencies |
-|-------|------|----------------|-------------|
-| 1 | Multi-currency schema + exchange rate service | Foundation for all Gulf monetary operations. Invoice, payment, contractor models need currency support before anything else. | None -- additive schema changes |
-| 2 | Multi-tier tax engine (VAT rules DB, WHT calculator) | Tax calculation is needed by e-invoicing XML generation and payment processing. | Phase 1 (currency) |
-| 3 | `packages/einvoicing` core (UBL builder, EN 16931 validator, profile interface) | The abstract engine must exist before any country profile. KSeF refactor validates the architecture. | None (parallel with 1-2 possible) |
-| 4 | KSeF profile refactor | Migrate existing KSeF XML parsing into the new einvoicing engine. Proves the profile pattern works with real production code. | Phase 3 (einvoicing core) |
-| 5 | ZATCA profile + API client | Highest-complexity government integration. ZATCA is mandatory NOW in Saudi. | Phases 2 (tax), 3 (einvoicing core) |
-| 6 | Peppol PINT-AE profile + ASP client | UAE e-invoicing. Depends on ASP provider selection. Can start once core engine exists. | Phase 3 (einvoicing core) |
-| 7 | SWIFT payment export + purpose codes | Gulf payment infrastructure. | Phase 1 (currency) |
-| 8 | Arabic RTL + i18n | Can be built in parallel with backend work. shadcn RTL mode + next-intl Arabic locale. | None (frontend-only) |
-| 9 | Country-specific contractor fields + PDPL consent | UAE/Saudi contractor profiles, freelance permits, data protection consent. | Phase 1 (for currency fields) |
-| 10 | Multi-region infrastructure | Deployment optimization. Least urgent -- Gulf latency is acceptable from Frankfurt. | All above stable |
-
-**Critical path:** Phases 1 -> 2 -> 3 -> 5 (multi-currency -> tax -> einvoicing core -> ZATCA)
-
-**Parallelizable:** Phases 7, 8, 9 can run alongside phases 4-6.
+| Change | Type | Package | Effort |
+|--------|------|---------|--------|
+| `packages/classification/` | **NEW** | New package | HIGH |
+| XRechnung profile | **NEW** | `packages/einvoice/profiles/xrechnung/` | MEDIUM |
+| ZUGFeRD profile | **NEW** | `packages/einvoice/profiles/zugferd/` | HIGH |
+| `Embeddable` capability interface | **MODIFY** | `packages/einvoice/types/profile.ts` | LOW |
+| Pipeline `embed` step | **MODIFY** | `packages/einvoice/engine/pipeline.ts` | LOW |
+| HMRC VAT client | **NEW** | `packages/gov-api/src/clients/hmrc.ts` | MEDIUM |
+| VIES client | **NEW** | `packages/gov-api/src/clients/vies.ts` | MEDIUM |
+| `generateBacsStd18()` | **NEW** | `packages/api/services/payment-export.ts` | MEDIUM |
+| BACS format detection rule | **MODIFY** | `packages/api/services/payment-format-detection.ts` | LOW |
+| `BACS_STD18` enum value | **MODIFY** | `packages/db/prisma/schema/payment.prisma` | LOW |
+| UK country fields schema | **NEW** | `packages/validators/src/country-fields.ts` | LOW |
+| DE country fields schema | **NEW** | `packages/validators/src/country-fields.ts` | LOW |
+| UK/DE TIN validators | **NEW** | `packages/validators/src/country-fields.ts` | LOW |
+| `classification.prisma` | **NEW** | `packages/db/prisma/schema/` | MEDIUM |
+| `de.json` translations | **NEW** | `apps/web/messages/de.json` | MEDIUM (volume) |
+| UK/DE VAT rate seed data | **NEW** | Seed script | LOW |
+| Tax router HMRC/VIES procedures | **MODIFY** | `packages/api/src/routers/tax.ts` | LOW |
 
 ## Sources
 
-- [ZATCA E-Invoicing Official Portal](https://zatca.gov.sa/en/E-Invoicing/Pages/default.aspx)
-- [ZATCA E-Invoicing Detailed Technical Guidelines (PDF)](https://zatca.gov.sa/en/E-Invoicing/Introduction/Guidelines/Documents/E-invoicing-Detailed-Technical-Guideline.pdf)
-- [ZATCA Roll-out Phases](https://zatca.gov.sa/en/E-Invoicing/Introduction/Pages/Roll-out-phases.aspx)
-- [UAE Electronic Invoicing Guidelines V1.0 (Feb 2026)](https://mof.gov.ae/wp-content/uploads/2026/02/UAE-Electronic-Invoicing-Guidelines_V-1.0-23Feb2026.pdf)
-- [Avalara: UAE e-invoicing mandate 2026 ASP and PINT AE](https://www.avalara.com/blog/en/europe/2026/03/uae-e-invoicing-mandate-2026-readiness-asp-pint-ae.html)
-- [Peppol BIS Billing 3.0 Syntax](https://docs.peppol.eu/poacc/billing/3.0/syntax/ubl-invoice/)
-- [Neon Regions Documentation](https://neon.com/docs/introduction/regions)
-- [shadcn/ui RTL Support (January 2026)](https://ui.shadcn.com/docs/changelog/2026-01-rtl)
-- [shadcn/ui RTL Documentation](https://ui.shadcn.com/docs/rtl)
-- [next-intl RTL Usage](https://next-intl.dev/docs/usage/translations)
-- [EN 16931 Validation Artefacts (GitHub)](https://github.com/ConnectingEurope/eInvoicing-EN16931)
-- [Adyen Currency Codes and Minor Units](https://docs.adyen.com/development-resources/currency-codes)
-- Existing codebase: `packages/integrations/src/adapters/base-adapter.ts`, `ksef-adapter.ts`, `ksef-api-client.ts`, `registry.ts`
-- Existing codebase: `packages/db/prisma/schema/invoice.prisma`, `payment.prisma`, `organization.prisma`, `contractor.prisma`, `integration.prisma`
+- Codebase analysis: `packages/einvoice/src/types/profile.ts` (EInvoiceProfile interface)
+- Codebase analysis: `packages/einvoice/src/engine/pipeline.ts` (pipeline pattern)
+- Codebase analysis: `packages/einvoice/src/profiles/ksef/index.ts` (profile implementation pattern)
+- Codebase analysis: `packages/gov-api/src/client.ts` (GovApiClient base class)
+- Codebase analysis: `packages/api/src/services/payment-export.ts` (export generators)
+- Codebase analysis: `packages/api/src/services/payment-format-detection.ts` (format routing)
+- Codebase analysis: `packages/validators/src/country-fields.ts` (country field pattern)
+- Codebase analysis: `packages/db/prisma/schema/contractor.prisma` (countryFields JSON pattern)
+- Codebase analysis: `packages/db/prisma/schema/payment.prisma` (PaymentExportFormat enum)
+- Codebase analysis: `packages/db/prisma/schema/tax.prisma` (TaxRate model for VAT rates)
+- Training data: EN 16931, XRechnung, ZUGFeRD specifications (MEDIUM confidence -- verify during implementation)
+- Training data: BACS Standard 18 file format (MEDIUM confidence -- verify format spec during implementation)
+- Training data: HMRC VAT API, VIES REST API (MEDIUM confidence -- verify endpoints during implementation)
 
 ---
-*Architecture research for: v4.0 International Foundation & Gulf Expansion*
-*Researched: 2026-04-11*
+*Architecture research for: UK & Germany market expansion*
+*Researched: 2026-04-12*
