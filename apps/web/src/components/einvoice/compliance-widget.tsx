@@ -77,6 +77,7 @@ export function EInvoiceComplianceWidget() {
   const { data, isLoading } = useQuery(
     trpc.einvoice.complianceStatuses.queryOptions(),
   );
+  const { data: peppolStatus } = useQuery(trpc.peppol.getStatus.queryOptions());
 
   if (isLoading) {
     return (
@@ -90,8 +91,6 @@ export function EInvoiceComplianceWidget() {
       </Card>
     );
   }
-
-  const { data: peppolStatus } = useQuery(trpc.peppol.getStatus.queryOptions());
 
   const statuses = data?.statuses ?? [];
 
