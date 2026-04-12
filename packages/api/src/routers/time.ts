@@ -337,7 +337,7 @@ export const timeRouter = router({
         input.contractId,
         new Date(input.periodStart),
         new Date(input.periodEnd),
-        input.invoicedAmountGrosze,
+        input.invoicedAmountMinor,
       );
       return plain(result);
     }),
@@ -359,7 +359,7 @@ export const timeRouter = router({
         },
         select: {
           contractId: true,
-          totalGrosze: true,
+          totalMinor: true,
           servicePeriodStart: true,
           servicePeriodEnd: true,
           issueDate: true,
@@ -383,7 +383,7 @@ export const timeRouter = router({
         invoice.contractId,
         periodStart,
         periodEnd,
-        invoice.totalGrosze,
+        invoice.totalMinor,
       );
 
       return plain(result);
@@ -434,7 +434,7 @@ export const timeRouter = router({
               id: true,
               title: true,
               rateType: true,
-              rateValueGrosze: true,
+              rateValueMinor: true,
             },
           },
         },
@@ -465,7 +465,7 @@ export const timeRouter = router({
             inv.contractId,
             periodStart,
             periodEnd,
-            inv.totalGrosze,
+            inv.totalMinor,
           );
 
           if (!reconciliation) return null;
@@ -475,7 +475,7 @@ export const timeRouter = router({
               id: inv.id,
               invoiceNumber: inv.invoiceNumber,
               issueDate: inv.issueDate,
-              totalGrosze: inv.totalGrosze,
+              totalMinor: inv.totalMinor,
               currency: inv.currency,
               servicePeriodStart: inv.servicePeriodStart,
               servicePeriodEnd: inv.servicePeriodEnd,

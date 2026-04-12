@@ -125,8 +125,8 @@ describe("report-export", () => {
         {
           contractorName: "Jan Kowalski",
           invoiceCount: 3,
-          totalGrosze: 150000,
-          avgGrosze: 50000,
+          totalMinor: 150000,
+          avgMinor: 50000,
           lastPaidAt: "2026-02-01",
         },
       ]);
@@ -141,7 +141,7 @@ describe("report-export", () => {
       expect(decoded).toContain("Average Amount");
       expect(decoded).toContain("Last Paid");
       expect(decoded).toContain("Jan Kowalski");
-      expect(decoded).toContain("1500.00"); // 150000 grosze -> 1500.00 PLN
+      expect(decoded).toContain("1500.00"); // 150000 minor -> 1500.00 PLN
       expect(decoded).toContain("500.00");
     });
 
@@ -174,7 +174,7 @@ describe("report-export", () => {
         {
           invoiceNumber: "FV/2026/001",
           contractorName: "Test Contractor",
-          amountGrosze: 250000,
+          amountMinor: 250000,
           currency: "PLN",
           dueDate: "2026-01-15",
           daysOverdue: 75,
@@ -193,7 +193,7 @@ describe("report-export", () => {
       expect(decoded).toContain("Due Date");
       expect(decoded).toContain("Days Overdue");
       expect(decoded).toContain("FV/2026/001");
-      expect(decoded).toContain("2500.00"); // 250000 grosze -> 2500.00
+      expect(decoded).toContain("2500.00"); // 250000 minor -> 2500.00
       expect(decoded).toContain("PLN");
     });
 

@@ -1305,7 +1305,7 @@
       "billingModel": "Billing model",
       "internalOwner": "المسؤول",
       "complianceRiskLevel": "مخاطر الامتثال",
-      "rateValueGrosze": "Rate"
+      "rateValueMinor": "Rate"
     },
     "empty": {
       "heading": "لا توجد عقود بعد",

@@ -57,11 +57,11 @@ async function fetchKpis(organizationId: string) {
       },
     }),
     prisma.invoice.aggregate({
-      _sum: { amountToPayGrosze: true },
+      _sum: { amountToPayMinor: true },
       where: { organizationId, paymentStatus: "READY", deletedAt: null },
     }),
     prisma.invoice.aggregate({
-      _sum: { amountToPayGrosze: true },
+      _sum: { amountToPayMinor: true },
       where: {
         organizationId,
         paymentStatus: "READY",
@@ -98,8 +98,8 @@ async function fetchKpis(organizationId: string) {
       prevValue: prevPendingApprovals,
     },
     readyToPayTotal: {
-      valueGrosze: readyToPayAgg._sum.amountToPayGrosze ?? 0,
-      prevValueGrosze: prevReadyToPayAgg._sum.amountToPayGrosze ?? 0,
+      valueMinor: readyToPayAgg._sum.amountToPayMinor ?? 0,
+      prevValueMinor: prevReadyToPayAgg._sum.amountToPayMinor ?? 0,
     },
     expiringContracts: {
       value: expiringContracts,
@@ -122,12 +122,12 @@ async function fetchSpendTrend(organizationId: string, months: string) {
   }
 
   const rows = await prisma.$queryRaw<
-    Array<{ month: Date; currency: string; totalGrosze: number }>
+    Array<{ month: Date; currency: string; totalMinor: number }>
   >`
     SELECT
       date_trunc('month', "paidAt") AS month,
       currency,
-      COALESCE(SUM("amountToPayGrosze")::int, 0) AS "totalGrosze"
+      COALESCE(SUM("amountToPayMinor")::int, 0) AS "totalMinor"
     FROM "Invoice"
     WHERE "organizationId" = ${organizationId}
       AND "paymentStatus" = 'PAID'
@@ -140,7 +140,7 @@ async function fetchSpendTrend(organizationId: string, months: string) {
   return rows.map((r) => ({
     month: new Date(r.month).toISOString(),
     currency: r.currency,
-    totalGrosze: Number(r.totalGrosze),
+    totalMinor: Number(r.totalMinor),
   }));
 }
 

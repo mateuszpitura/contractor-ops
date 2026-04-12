@@ -13,13 +13,13 @@ import { downloadBase64File, ExportButtons } from "./export-buttons";
 import { ReportChart } from "./report-chart";
 import { ReportTable } from "./report-table";
 
-function formatCurrency(grosze: number): string {
+function formatCurrency(minor: number): string {
   return new Intl.NumberFormat("pl-PL", {
     style: "currency",
     currency: "PLN",
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  }).format(grosze / 100);
+  }).format(minor / 100);
 }
 
 function formatDate(iso: string | null): string {
@@ -40,8 +40,8 @@ type SpendRow = {
   contractorId: string;
   contractorName: string;
   invoiceCount: number;
-  totalGrosze: number;
-  avgGrosze: number;
+  totalMinor: number;
+  avgMinor: number;
   lastPaidAt: string | null;
 };
 
@@ -101,7 +101,7 @@ export function SpendContractorReport({ dateFrom, dateTo }: SpendContractorRepor
     return (chartQuery.data ?? []) as Array<{
       contractorId: string;
       contractorName: string;
-      totalGrosze: number;
+      totalMinor: number;
     }>;
   }, [chartQuery.data]);
 
@@ -112,7 +112,7 @@ export function SpendContractorReport({ dateFrom, dateTo }: SpendContractorRepor
   }, [drillDownContractorId, chartData]);
 
   const grandTotal = useMemo(() => {
-    return tableData.reduce((sum, row) => sum + row.totalGrosze, 0);
+    return tableData.reduce((sum, row) => sum + row.totalMinor, 0);
   }, [tableData]);
 
   const columns: ColumnDef<SpendRow>[] = useMemo(
@@ -128,13 +128,13 @@ export function SpendContractorReport({ dateFrom, dateTo }: SpendContractorRepor
         enableSorting: true,
       },
       {
-        accessorKey: "totalGrosze",
+        accessorKey: "totalMinor",
         header: t("totalSpend"),
         enableSorting: true,
         cell: ({ getValue }) => formatCurrency(getValue<number>()),
       },
       {
-        accessorKey: "avgGrosze",
+        accessorKey: "avgMinor",
         header: t("avgInvoice"),
         cell: ({ getValue }) => formatCurrency(getValue<number>()),
       },
@@ -168,7 +168,7 @@ export function SpendContractorReport({ dateFrom, dateTo }: SpendContractorRepor
       <ReportChart
         type="bar-horizontal"
         data={chartData}
-        dataKey="totalGrosze"
+        dataKey="totalMinor"
         nameKey="contractorName"
         idKey="contractorId"
         activeId={drillDownContractorId ?? undefined}

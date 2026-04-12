@@ -1301,7 +1301,7 @@
       "billingCycle": "Cykl rozliczeń",
       "owner": "Opiekun",
       "complianceRisk": "Ryzyko zgodności",
-      "rateValueGrosze": "Stawka",
+      "rateValueMinor": "Stawka",
       "billingModel": "Model rozliczeń",
       "internalOwner": "Opiekun",
       "complianceRiskLevel": "Ryzyko zgodności"

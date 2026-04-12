@@ -62,7 +62,7 @@ function addHours(date: Date, hours: number): Date {
  */
 export function evaluateConditions(
   conditionsJson: unknown,
-  invoice: { totalGrosze: number; contractorType?: string },
+  invoice: { totalMinor: number; contractorType?: string },
 ): boolean {
   if (!conditionsJson || !Array.isArray(conditionsJson)) {
     return false;
@@ -76,16 +76,16 @@ export function evaluateConditions(
 
   return conditions.every((condition) => {
     if (condition.field === "amount") {
-      const thresholdGrosze =
+      const thresholdMinor =
         typeof condition.value === "number" ? condition.value * 100 : Number(condition.value) * 100;
 
       switch (condition.operator) {
         case "gt":
-          return invoice.totalGrosze > thresholdGrosze;
+          return invoice.totalMinor > thresholdMinor;
         case "lt":
-          return invoice.totalGrosze < thresholdGrosze;
+          return invoice.totalMinor < thresholdMinor;
         case "eq":
-          return invoice.totalGrosze === thresholdGrosze;
+          return invoice.totalMinor === thresholdMinor;
         default:
           return false;
       }
@@ -120,7 +120,7 @@ export function evaluateConditions(
 export async function routeToChain(
   tx: TxClient,
   organizationId: string,
-  invoice: { totalGrosze: number; contractorType?: string },
+  invoice: { totalMinor: number; contractorType?: string },
 ) {
   const chains = await tx.approvalChainConfig.findMany({
     where: {

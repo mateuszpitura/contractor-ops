@@ -12,13 +12,13 @@ import { trpc } from "@/trpc/init";
 import { downloadBase64File, ExportButtons } from "./export-buttons";
 import { ReportTable } from "./report-table";
 
-function formatCurrency(grosze: number): string {
+function formatCurrency(minor: number): string {
   return new Intl.NumberFormat("pl-PL", {
     style: "currency",
     currency: "PLN",
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  }).format(grosze / 100);
+  }).format(minor / 100);
 }
 
 function formatDate(iso: string): string {
@@ -39,7 +39,7 @@ type OverdueRow = {
   invoiceNumber: string;
   contractorId: string | null;
   contractorName: string;
-  amountGrosze: number;
+  amountMinor: number;
   currency: string;
   dueDate: string;
   daysOverdue: number;
@@ -106,10 +106,10 @@ export function OverdueInvoicesReport({
         enableSorting: true,
       },
       {
-        accessorKey: "amountGrosze",
+        accessorKey: "amountMinor",
         header: t("amount"),
         enableSorting: true,
-        cell: ({ row }) => `${formatCurrency(row.original.amountGrosze)} ${row.original.currency}`,
+        cell: ({ row }) => `${formatCurrency(row.original.amountMinor)} ${row.original.currency}`,
       },
       {
         accessorKey: "dueDate",

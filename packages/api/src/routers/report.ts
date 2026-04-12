@@ -62,11 +62,11 @@ export const reportRouter = router({
 
       // Map sort keys to SQL column names
       const sortMap: Record<string, string> = {
-        totalSpend: '"totalGrosze"',
+        totalSpend: '"totalMinor"',
         invoiceCount: '"invoiceCount"',
         contractorName: '"contractorName"',
       };
-      const orderCol = sortMap[input.sortBy] ?? '"totalGrosze"';
+      const orderCol = sortMap[input.sortBy] ?? '"totalMinor"';
       const orderDir = input.sortOrder === "asc" ? "ASC" : "DESC";
 
       // Build optional contractor filter
@@ -79,8 +79,8 @@ export const reportRouter = router({
           contractorId: string;
           contractorName: string;
           invoiceCount: number;
-          totalGrosze: number;
-          avgGrosze: number;
+          totalMinor: number;
+          avgMinor: number;
           lastPaidAt: Date | null;
         }>
       >`
@@ -88,8 +88,8 @@ export const reportRouter = router({
           c.id AS "contractorId",
           c."legalName" AS "contractorName",
           COUNT(i.id)::int AS "invoiceCount",
-          COALESCE(SUM(i."amountToPayGrosze")::int, 0) AS "totalGrosze",
-          COALESCE(AVG(i."amountToPayGrosze")::int, 0) AS "avgGrosze",
+          COALESCE(SUM(i."amountToPayMinor")::int, 0) AS "totalMinor",
+          COALESCE(AVG(i."amountToPayMinor")::int, 0) AS "avgMinor",
           MAX(i."paidAt") AS "lastPaidAt"
         FROM "Invoice" i
         JOIN "Contractor" c ON c.id = i."contractorId"
@@ -120,8 +120,8 @@ export const reportRouter = router({
         items: items.map((r) => ({
           ...r,
           invoiceCount: Number(r.invoiceCount),
-          totalGrosze: Number(r.totalGrosze),
-          avgGrosze: Number(r.avgGrosze),
+          totalMinor: Number(r.totalMinor),
+          avgMinor: Number(r.avgMinor),
           lastPaidAt: r.lastPaidAt ? new Date(r.lastPaidAt).toISOString() : null,
         })),
         totalCount: countResult[0]?.count ?? 0,
@@ -146,11 +146,11 @@ export const reportRouter = router({
       const offset = (input.page - 1) * input.pageSize;
 
       const sortMap: Record<string, string> = {
-        totalSpend: '"totalGrosze"',
+        totalSpend: '"totalMinor"',
         invoiceCount: '"invoiceCount"',
         teamName: '"teamName"',
       };
-      const orderCol = sortMap[input.sortBy] ?? '"totalGrosze"';
+      const orderCol = sortMap[input.sortBy] ?? '"totalMinor"';
       const orderDir = input.sortOrder === "asc" ? "ASC" : "DESC";
 
       const items = await prisma.$queryRaw<
@@ -159,7 +159,7 @@ export const reportRouter = router({
           teamName: string | null;
           contractorCount: number;
           invoiceCount: number;
-          totalGrosze: number;
+          totalMinor: number;
         }>
       >`
         SELECT
@@ -167,7 +167,7 @@ export const reportRouter = router({
           t.name AS "teamName",
           COUNT(DISTINCT c.id)::int AS "contractorCount",
           COUNT(i.id)::int AS "invoiceCount",
-          COALESCE(SUM(i."amountToPayGrosze")::int, 0) AS "totalGrosze"
+          COALESCE(SUM(i."amountToPayMinor")::int, 0) AS "totalMinor"
         FROM "Invoice" i
         JOIN "Contractor" c ON c.id = i."contractorId"
         LEFT JOIN "Team" t ON t.id = c."primaryTeamId"
@@ -199,7 +199,7 @@ export const reportRouter = router({
           teamName: r.teamName,
           contractorCount: Number(r.contractorCount),
           invoiceCount: Number(r.invoiceCount),
-          totalGrosze: Number(r.totalGrosze),
+          totalMinor: Number(r.totalMinor),
         })),
         totalCount: countResult[0]?.count ?? 0,
       };
@@ -283,7 +283,7 @@ export const reportRouter = router({
         input.sortBy === "contractorName"
           ? { contractor: { legalName: input.sortOrder } }
           : input.sortBy === "amount"
-            ? { amountToPayGrosze: input.sortOrder }
+            ? { amountToPayMinor: input.sortOrder }
             : { dueDate: input.sortOrder };
 
       const where = {
@@ -316,7 +316,7 @@ export const reportRouter = router({
           invoiceNumber: inv.invoiceNumber,
           contractorId: inv.contractor?.id ?? null,
           contractorName: inv.contractor?.legalName ?? "Unknown",
-          amountGrosze: inv.amountToPayGrosze,
+          amountMinor: inv.amountToPayMinor,
           currency: inv.currency,
           dueDate: inv.dueDate.toISOString(),
           daysOverdue: Math.ceil((now.getTime() - inv.dueDate.getTime()) / msPerDay),
@@ -443,13 +443,13 @@ export const reportRouter = router({
         Array<{
           contractorId: string;
           contractorName: string;
-          totalGrosze: number;
+          totalMinor: number;
         }>
       >`
         SELECT
           c.id AS "contractorId",
           c."legalName" AS "contractorName",
-          COALESCE(SUM(i."amountToPayGrosze")::int, 0) AS "totalGrosze"
+          COALESCE(SUM(i."amountToPayMinor")::int, 0) AS "totalMinor"
         FROM "Invoice" i
         JOIN "Contractor" c ON c.id = i."contractorId"
         WHERE i."organizationId" = ${ctx.organizationId}
@@ -458,14 +458,14 @@ export const reportRouter = router({
           AND i."paidAt" <= ${dateTo}
           AND i."deletedAt" IS NULL
         GROUP BY c.id, c."legalName"
-        ORDER BY "totalGrosze" DESC
+        ORDER BY "totalMinor" DESC
         LIMIT 10
       `;
 
       return items.map((r) => ({
         contractorId: r.contractorId,
         contractorName: r.contractorName,
-        totalGrosze: Number(r.totalGrosze),
+        totalMinor: Number(r.totalMinor),
       }));
     }),
 
@@ -483,13 +483,13 @@ export const reportRouter = router({
         Array<{
           teamId: string | null;
           teamName: string | null;
-          totalGrosze: number;
+          totalMinor: number;
         }>
       >`
         SELECT
           t.id AS "teamId",
           t.name AS "teamName",
-          COALESCE(SUM(i."amountToPayGrosze")::int, 0) AS "totalGrosze"
+          COALESCE(SUM(i."amountToPayMinor")::int, 0) AS "totalMinor"
         FROM "Invoice" i
         JOIN "Contractor" c ON c.id = i."contractorId"
         LEFT JOIN "Team" t ON t.id = c."primaryTeamId"
@@ -499,13 +499,13 @@ export const reportRouter = router({
           AND i."paidAt" <= ${dateTo}
           AND i."deletedAt" IS NULL
         GROUP BY t.id, t.name
-        ORDER BY "totalGrosze" DESC
+        ORDER BY "totalMinor" DESC
       `;
 
       return items.map((r) => ({
         teamId: r.teamId,
         teamName: r.teamName,
-        totalGrosze: Number(r.totalGrosze),
+        totalMinor: Number(r.totalMinor),
       }));
     }),
 
@@ -623,16 +623,16 @@ export const reportRouter = router({
         Array<{
           contractorName: string;
           invoiceCount: number;
-          totalGrosze: number;
-          avgGrosze: number;
+          totalMinor: number;
+          avgMinor: number;
           lastPaidAt: Date | null;
         }>
       >`
         SELECT
           c."legalName" AS "contractorName",
           COUNT(i.id)::int AS "invoiceCount",
-          COALESCE(SUM(i."amountToPayGrosze")::int, 0) AS "totalGrosze",
-          COALESCE(AVG(i."amountToPayGrosze")::int, 0) AS "avgGrosze",
+          COALESCE(SUM(i."amountToPayMinor")::int, 0) AS "totalMinor",
+          COALESCE(AVG(i."amountToPayMinor")::int, 0) AS "avgMinor",
           MAX(i."paidAt") AS "lastPaidAt"
         FROM "Invoice" i
         JOIN "Contractor" c ON c.id = i."contractorId"
@@ -643,15 +643,15 @@ export const reportRouter = router({
           AND i."deletedAt" IS NULL
           ${contractorFilter}
         GROUP BY c.id, c."legalName"
-        ORDER BY "totalGrosze" DESC
+        ORDER BY "totalMinor" DESC
       `;
 
       const csv = await generateSpendCsv(
         items.map((r) => ({
           ...r,
           invoiceCount: Number(r.invoiceCount),
-          totalGrosze: Number(r.totalGrosze),
-          avgGrosze: Number(r.avgGrosze),
+          totalMinor: Number(r.totalMinor),
+          avgMinor: Number(r.avgMinor),
           lastPaidAt: r.lastPaidAt ? new Date(r.lastPaidAt).toISOString() : null,
         })),
       );
@@ -679,14 +679,14 @@ export const reportRouter = router({
           teamName: string | null;
           contractorCount: number;
           invoiceCount: number;
-          totalGrosze: number;
+          totalMinor: number;
         }>
       >`
         SELECT
           t.name AS "teamName",
           COUNT(DISTINCT c.id)::int AS "contractorCount",
           COUNT(i.id)::int AS "invoiceCount",
-          COALESCE(SUM(i."amountToPayGrosze")::int, 0) AS "totalGrosze"
+          COALESCE(SUM(i."amountToPayMinor")::int, 0) AS "totalMinor"
         FROM "Invoice" i
         JOIN "Contractor" c ON c.id = i."contractorId"
         LEFT JOIN "Team" t ON t.id = c."primaryTeamId"
@@ -696,7 +696,7 @@ export const reportRouter = router({
           AND i."paidAt" <= ${dateTo}
           AND i."deletedAt" IS NULL
         GROUP BY t.id, t.name
-        ORDER BY "totalGrosze" DESC
+        ORDER BY "totalMinor" DESC
       `;
 
       // Reuse generateSpendCsv with adapted data
@@ -704,8 +704,8 @@ export const reportRouter = router({
         items.map((r) => ({
           contractorName: r.teamName ?? "",
           invoiceCount: Number(r.invoiceCount),
-          totalGrosze: Number(r.totalGrosze),
-          avgGrosze: 0,
+          totalMinor: Number(r.totalMinor),
+          avgMinor: 0,
           lastPaidAt: null,
         })),
       );
@@ -785,7 +785,7 @@ export const reportRouter = router({
       invoices.map((inv) => ({
         invoiceNumber: inv.invoiceNumber,
         contractorName: inv.contractor?.legalName ?? "Unknown",
-        amountGrosze: inv.amountToPayGrosze,
+        amountMinor: inv.amountToPayMinor,
         currency: inv.currency,
         dueDate: inv.dueDate.toISOString().slice(0, 10),
         daysOverdue: Math.ceil((now.getTime() - inv.dueDate.getTime()) / msPerDay),

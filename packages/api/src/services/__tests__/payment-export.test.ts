@@ -32,7 +32,7 @@ function makeItem(overrides: Partial<ExportItem> = {}): ExportItem {
   return {
     contractorName: "Jan Kowalski",
     iban: "PL61109010140000071219812874",
-    amountGrosze: 150000,
+    amountMinor: 150000,
     currency: "PLN",
     invoiceNumber: "FV/2026/03/001",
     taxId: "1234567890",
@@ -95,7 +95,7 @@ describe("payment-export", () => {
     });
 
     it("formats amounts as decimal strings", async () => {
-      const items = [makeItem({ amountGrosze: 150000 }), makeItem({ amountGrosze: 99 })];
+      const items = [makeItem({ amountMinor: 150000 }), makeItem({ amountMinor: 99 })];
       const buf = await generateCsv(items);
       const csv = buf.toString("utf-8");
       expect(csv).toContain("1500.00");
@@ -142,11 +142,11 @@ describe("payment-export", () => {
       expect(text).toContain("|");
     });
 
-    it("uses grosze integer for amount field", () => {
-      const items = [makeItem({ amountGrosze: 123456 })];
+    it("uses minor-unit integer for amount field", () => {
+      const items = [makeItem({ amountMinor: 123456 })];
       const buf = generateElixir(items, makeOrg());
       const text = buf.toString("utf-8");
-      // The raw grosze value should appear in the line
+      // The raw minor-unit value should appear in the line
       expect(text).toContain("123456");
     });
 
@@ -200,7 +200,7 @@ describe("payment-export", () => {
     });
 
     it("formats amounts with 2 decimal places", () => {
-      const items = [makeItem({ amountGrosze: 150000 }), makeItem({ amountGrosze: 1 })];
+      const items = [makeItem({ amountMinor: 150000 }), makeItem({ amountMinor: 1 })];
       const buf = generateSepaXml(items, makeOrg(), "RUN-001");
       const xml = buf.toString("utf-8");
 
@@ -332,7 +332,7 @@ describe("payment-export", () => {
 
 describe("bank-statement", () => {
   describe("parseMt940", () => {
-    it("parses MT940 transactions with amounts in grosze", () => {
+    it("parses MT940 transactions with amounts in minor units", () => {
       const parseSpy = vi.spyOn(mt940js.Parser.prototype, "parse").mockReturnValue([
         {
           currency: "PLN",
@@ -360,7 +360,7 @@ describe("bank-statement", () => {
 
       expect(result).toHaveLength(2);
 
-      // Amount should be absolute value in grosze
+      // Amount should be absolute value in minor units
       expect(result[0]!.amount).toBe(150050);
       expect(result[0]!.currency).toBe("PLN");
       expect(result[0]!.description).toBe("Payment to supplier");
@@ -494,17 +494,17 @@ describe("bank-statement", () => {
     const baseItems = [
       {
         id: "item-1",
-        amountGrosze: 150000,
+        amountMinor: 150000,
         iban: "PL61109010140000071219812874",
       },
       {
         id: "item-2",
-        amountGrosze: 250000,
+        amountMinor: 250000,
         iban: "PL27114020040000300201355387",
       },
       {
         id: "item-3",
-        amountGrosze: 75000,
+        amountMinor: 75000,
         iban: "PL10105014451000002276470461",
       },
     ];
@@ -529,10 +529,10 @@ describe("bank-statement", () => {
       expect(results[0]!.ibanMatched).toBe(true);
     });
 
-    it("returns partial match within 1 grosze tolerance", () => {
+    it("returns partial match within 1 minor-unit tolerance", () => {
       const transactions: ParsedTransaction[] = [
         {
-          amount: 150001, // 1 grosze off
+          amount: 150001, // 1 minor unit off
           currency: "PLN",
           description: "Payment",
           iban: "PL61109010140000071219812874",

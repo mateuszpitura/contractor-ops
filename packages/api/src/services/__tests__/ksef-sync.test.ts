@@ -35,14 +35,14 @@ vi.mock("@contractor-ops/integrations", () => {
       invoice: {
         invoiceNumber: "FV/2026/001",
         sellerTaxId: "1234567890",
-        totalGrosze: 10000,
+        totalMinor: 10000,
         currency: "PLN",
         issueDate: new Date("2026-03-01"),
         dueDate: new Date("2026-03-15"),
         source: "KSEF",
         externalInvoiceId: "ref-001",
       },
-      lines: [{ description: "Service", netGrosze: 8130, vatGrosze: 1870 }],
+      lines: [{ description: "Service", netMinor: 8130, vatMinor: 1870 }],
     }),
     decryptCredentials: vi.fn().mockReturnValue({ accessToken: "token" }),
   };

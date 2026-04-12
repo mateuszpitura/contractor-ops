@@ -277,10 +277,10 @@ export const portalRouter = router({
         paidAt: { gte: ninetyDaysAgo },
         deletedAt: null,
       },
-      select: { totalGrosze: true, currency: true },
+      select: { totalMinor: true, currency: true },
     });
 
-    const recentPaymentsGrosze = recentPaidInvoices.reduce((sum, inv) => sum + inv.totalGrosze, 0);
+    const recentPaymentsMinor = recentPaidInvoices.reduce((sum, inv) => sum + inv.totalMinor, 0);
     const recentPaymentsCurrency = recentPaidInvoices[0]?.currency ?? "PLN";
 
     // Upcoming deadline: earliest due date from unpaid invoices or earliest end date from expiring contracts
@@ -369,7 +369,7 @@ export const portalRouter = router({
     return plain({
       activeContracts,
       pendingInvoices,
-      recentPaymentsGrosze,
+      recentPaymentsMinor,
       recentPaymentsCurrency,
       upcomingDeadline,
       recentActivity,
@@ -397,7 +397,7 @@ export const portalRouter = router({
         currency: true,
         billingModel: true,
         rateType: true,
-        rateValueGrosze: true,
+        rateValueMinor: true,
       },
       orderBy: { startDate: "desc" },
     });
@@ -423,14 +423,14 @@ export const portalRouter = router({
         currency: true,
         billingModel: true,
         rateType: true,
-        rateValueGrosze: true,
+        rateValueMinor: true,
         paymentTermsDays: true,
         autoRenewal: true,
         noticePeriodDays: true,
         ratePeriods: {
           select: {
             rateType: true,
-            rateValueGrosze: true,
+            rateValueMinor: true,
             currency: true,
             validFrom: true,
             validTo: true,
@@ -487,7 +487,7 @@ export const portalRouter = router({
         id: true,
         invoiceNumber: true,
         contractId: true,
-        totalGrosze: true,
+        totalMinor: true,
         currency: true,
         issueDate: true,
         receivedAt: true,
@@ -516,8 +516,8 @@ export const portalRouter = router({
         invoiceNumber: true,
         issueDate: true,
         dueDate: true,
-        subtotalGrosze: true,
-        totalGrosze: true,
+        subtotalMinor: true,
+        totalMinor: true,
         currency: true,
         status: true,
         approvalStatus: true,
@@ -564,7 +564,7 @@ export const portalRouter = router({
       },
       select: {
         markedPaidAt: true,
-        amountGrosze: true,
+        amountMinor: true,
         currency: true,
       },
     });
@@ -572,7 +572,7 @@ export const portalRouter = router({
     const payment = paymentItem
       ? {
           paidAt: paymentItem.markedPaidAt,
-          amountGrosze: paymentItem.amountGrosze,
+          amountMinor: paymentItem.amountMinor,
           currency: paymentItem.currency,
         }
       : null;
@@ -732,7 +732,7 @@ export const portalRouter = router({
       select: {
         id: true,
         invoiceId: true,
-        amountGrosze: true,
+        amountMinor: true,
         currency: true,
         markedPaidAt: true,
         invoice: { select: { invoiceNumber: true } },
@@ -744,7 +744,7 @@ export const portalRouter = router({
       items.map((item) => ({
         id: item.id,
         invoiceNumber: item.invoice.invoiceNumber,
-        amountGrosze: item.amountGrosze,
+        amountMinor: item.amountMinor,
         currency: item.currency,
         paidAt: item.markedPaidAt,
       })),
@@ -786,8 +786,8 @@ export const portalRouter = router({
         invoiceNumber: z.string().min(1).max(100),
         issueDate: z.date(),
         dueDate: z.date(),
-        netAmountGrosze: z.number().int().positive(),
-        grossAmountGrosze: z.number().int().positive(),
+        netAmountMinor: z.number().int().positive(),
+        grossAmountMinor: z.number().int().positive(),
         documentId: z.string(),
         storageKey: z.string(),
         originalFileName: z.string(),
@@ -837,9 +837,9 @@ export const portalRouter = router({
           source: "PORTAL",
           issueDate: input.issueDate,
           dueDate: input.dueDate,
-          subtotalGrosze: input.netAmountGrosze,
-          totalGrosze: input.grossAmountGrosze,
-          amountToPayGrosze: input.grossAmountGrosze,
+          subtotalMinor: input.netAmountMinor,
+          totalMinor: input.grossAmountMinor,
+          amountToPayMinor: input.grossAmountMinor,
           currency: contract.currency,
           status: "RECEIVED",
           matchStatus: "UNMATCHED",
@@ -876,7 +876,7 @@ export const portalRouter = router({
         id: true,
         title: true,
         currency: true,
-        rateValueGrosze: true,
+        rateValueMinor: true,
         rateType: true,
         billingModel: true,
       },

@@ -308,8 +308,8 @@ describe("report router", () => {
             contractorId: "c-1",
             contractorName: "Alpha Corp",
             invoiceCount: 5,
-            totalGrosze: 500000,
-            avgGrosze: 100000,
+            totalMinor: 500000,
+            avgMinor: 100000,
             lastPaidAt: new Date("2025-06-15"),
           },
         ])
@@ -328,7 +328,7 @@ describe("report router", () => {
         contractorId: "c-1",
         contractorName: "Alpha Corp",
         invoiceCount: 5,
-        totalGrosze: 500000,
+        totalMinor: 500000,
       });
       expect(result.totalCount).toBe(1);
 
@@ -393,8 +393,8 @@ describe("report router", () => {
             contractorId: "c-specific",
             contractorName: "Target Corp",
             invoiceCount: 3,
-            totalGrosze: 300000,
-            avgGrosze: 100000,
+            totalMinor: 300000,
+            avgMinor: 100000,
             lastPaidAt: null,
           },
         ])
@@ -427,14 +427,14 @@ describe("report router", () => {
             teamName: "Engineering",
             contractorCount: 5,
             invoiceCount: 10,
-            totalGrosze: 1000000,
+            totalMinor: 1000000,
           },
           {
             teamId: null,
             teamName: null,
             contractorCount: 2,
             invoiceCount: 3,
-            totalGrosze: 200000,
+            totalMinor: 200000,
           },
         ])
         .mockResolvedValueOnce([{ count: 2 }]);
@@ -464,7 +464,7 @@ describe("report router", () => {
             teamName: "Design",
             contractorCount: 3,
             invoiceCount: 7,
-            totalGrosze: 700000,
+            totalMinor: 700000,
           },
         ])
         .mockResolvedValueOnce([{ count: 1 }]);
@@ -595,7 +595,7 @@ describe("report router", () => {
         {
           id: "inv-1",
           invoiceNumber: "FV/2025/001",
-          amountToPayGrosze: 150000,
+          amountToPayMinor: 150000,
           currency: "PLN",
           dueDate: pastDate,
           paymentStatus: "UNPAID",
@@ -634,7 +634,7 @@ describe("report router", () => {
         {
           id: "inv-1",
           invoiceNumber: "FV/2025/099",
-          amountToPayGrosze: 50000,
+          amountToPayMinor: 50000,
           currency: "EUR",
           dueDate: pastDate,
           paymentStatus: "UNPAID",
@@ -670,7 +670,7 @@ describe("report router", () => {
       const call = mockPrisma.invoice.findMany.mock.calls[0]?.[0];
       expect(call?.skip).toBe(10); // (page 2 - 1) * 10
       expect(call?.take).toBe(10);
-      expect(call?.orderBy).toEqual({ amountToPayGrosze: "asc" });
+      expect(call?.orderBy).toEqual({ amountToPayMinor: "asc" });
     });
   });
 
@@ -752,7 +752,7 @@ describe("report router", () => {
       const topContractors = Array.from({ length: 10 }, (_, i) => ({
         contractorId: `c-${i}`,
         contractorName: `Contractor ${i}`,
-        totalGrosze: (10 - i) * 100000,
+        totalMinor: (10 - i) * 100000,
       }));
       mockPrisma.$queryRaw.mockResolvedValue(topContractors);
 
@@ -762,14 +762,14 @@ describe("report router", () => {
       expect(result[0]).toMatchObject({
         contractorId: "c-0",
         contractorName: "Contractor 0",
-        totalGrosze: 1000000,
+        totalMinor: 1000000,
       });
     });
 
     it("spendByTeamChart returns all teams with spend", async () => {
       mockPrisma.$queryRaw.mockResolvedValue([
-        { teamId: "t-1", teamName: "Engineering", totalGrosze: 500000 },
-        { teamId: null, teamName: null, totalGrosze: 100000 },
+        { teamId: "t-1", teamName: "Engineering", totalMinor: 500000 },
+        { teamId: null, teamName: null, totalMinor: 100000 },
       ]);
 
       const result = await caller.report.spendByTeamChart(DATE_RANGE);
@@ -836,8 +836,8 @@ describe("report router", () => {
         {
           contractorName: "Alpha Corp",
           invoiceCount: 5,
-          totalGrosze: 500000,
-          avgGrosze: 100000,
+          totalMinor: 500000,
+          avgMinor: 100000,
           lastPaidAt: new Date("2025-06-15"),
         },
       ]);
@@ -856,7 +856,7 @@ describe("report router", () => {
           teamName: "Engineering",
           contractorCount: 3,
           invoiceCount: 7,
-          totalGrosze: 700000,
+          totalMinor: 700000,
         },
       ]);
 
@@ -898,7 +898,7 @@ describe("report router", () => {
         {
           id: "inv-1",
           invoiceNumber: "FV/2025/001",
-          amountToPayGrosze: 150000,
+          amountToPayMinor: 150000,
           currency: "PLN",
           dueDate: pastDate,
           paymentStatus: "UNPAID",

@@ -18,20 +18,20 @@ describe("parseFa3Xml", () => {
     expect(result.seller.name).toBe("Test Seller Sp. z o.o.");
     expect(result.buyer.nip).toBe("9876543210");
     expect(result.buyer.name).toBe("Test Buyer S.A.");
-    expect(result.totals.grossGrosze).toBe(3567000);
+    expect(result.totals.grossMinor).toBe(3567000);
     expect(result.lines).toHaveLength(2);
     expect(result.lines[0]!.description).toBe("Uslugi programistyczne");
-    expect(result.lines[0]!.netAmountGrosze).toBe(2400000);
+    expect(result.lines[0]!.netAmountMinor).toBe(2400000);
     expect(result.ksefReferenceNumber).toBe("KSEF-REF-001");
     expect(result.upoNumber).toBe("UPO-001");
   });
 
-  it("converts PLN amounts to grosze correctly", () => {
+  it("converts PLN amounts to minor units correctly", () => {
     const result = parseFa3Xml(sampleXml, "KSEF-REF-001");
 
-    expect(result.totals.netGrosze).toBe(2900000);
-    expect(result.totals.vatGrosze).toBe(667000);
-    expect(result.lines[1]!.unitPriceGrosze).toBe(500000);
+    expect(result.totals.netMinor).toBe(2900000);
+    expect(result.totals.vatMinor).toBe(667000);
+    expect(result.lines[1]!.unitPriceMinor).toBe(500000);
   });
 
   it("handles missing optional payment fields", () => {
@@ -65,10 +65,10 @@ describe("mapKsefToInvoiceFields", () => {
     expect(invoice.sourceReference).toBe("UPO-001");
     expect(invoice.sellerTaxId).toBe("5261040828");
     expect(invoice.buyerTaxId).toBe("9876543210");
-    expect(invoice.totalGrosze).toBe(3567000);
-    expect(invoice.subtotalGrosze).toBe(2900000);
-    expect(invoice.vatAmountGrosze).toBe(667000);
-    expect(invoice.amountToPayGrosze).toBe(3567000);
+    expect(invoice.totalMinor).toBe(3567000);
+    expect(invoice.subtotalMinor).toBe(2900000);
+    expect(invoice.vatAmountMinor).toBe(667000);
+    expect(invoice.amountToPayMinor).toBe(3567000);
     expect(invoice.currency).toBe("PLN");
     expect(invoice.sellerBankAccount).toBe("PL61109010140000071219812874");
     expect(invoice.issueDate).toBeInstanceOf(Date);

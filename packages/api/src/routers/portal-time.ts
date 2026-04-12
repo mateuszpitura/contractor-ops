@@ -98,7 +98,7 @@ export const portalTimeRouter = router({
         id: true,
         title: true,
         rateType: true,
-        rateValueGrosze: true,
+        rateValueMinor: true,
       },
       orderBy: { title: "asc" },
     });

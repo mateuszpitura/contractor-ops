@@ -1301,7 +1301,7 @@
       "billingCycle": "Billing cycle",
       "owner": "Owner",
       "complianceRisk": "Compliance risk",
-      "rateValueGrosze": "Rate",
+      "rateValueMinor": "Rate",
       "billingModel": "Billing model",
       "internalOwner": "Owner",
       "complianceRiskLevel": "Compliance risk"

@@ -29,11 +29,11 @@ export interface OcrLineItem {
   description: string;
   quantity: number | null;
   unit: string | null;
-  unitPriceGrosze: number | null;
-  netAmountGrosze: number | null;
+  unitPriceMinor: number | null;
+  netAmountMinor: number | null;
   vatRate: string | null;
-  vatAmountGrosze: number | null;
-  grossAmountGrosze: number | null;
+  vatAmountMinor: number | null;
+  grossAmountMinor: number | null;
   confidence: number; // average confidence across line item fields
 }
 

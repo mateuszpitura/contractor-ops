@@ -81,7 +81,7 @@ export const contractorCreateSchema = z.object({
 
   // Billing
   billingModel: z.string().min(1, "Billing model is required"),
-  rateValueGrosze: z.number().int().positive("Rate must be a positive integer"),
+  rateValueMinor: z.number().int().positive("Rate must be a positive integer"),
   bankAccount: z
     .string()
     .transform((v) => (v === "" ? undefined : v))

@@ -312,7 +312,7 @@ function makeInvoice(overrides: Record<string, unknown> = {}) {
     billingProfileId: "bp-1",
     invoiceNumber: "FV/2025/001",
     paymentStatus: "READY",
-    amountToPayGrosze: 100000,
+    amountToPayMinor: 100000,
     currency: "PLN",
     deletedAt: null,
     dueDate: new Date("2025-06-01"),
@@ -330,7 +330,7 @@ function makeRun(overrides: Record<string, unknown> = {}) {
     runNumber: "PR-2025-001",
     status: "DRAFT",
     currency: "PLN",
-    totalGrosze: 100000,
+    totalMinor: 100000,
     invoiceCount: 1,
     items: [],
     ...overrides,
@@ -345,7 +345,7 @@ function makeItem(overrides: Record<string, unknown> = {}) {
     invoiceId: INVOICE_ID_1,
     contractorId: CONTRACTOR_ID,
     billingProfileId: "bp-1",
-    amountGrosze: 100000,
+    amountMinor: 100000,
     currency: "PLN",
     status: "PENDING",
     paymentRun: makeRun(),
@@ -421,7 +421,7 @@ describe("payment router", () => {
       const invoice2 = makeInvoice({
         id: INVOICE_ID_2,
         invoiceNumber: "FV/2025/002",
-        amountToPayGrosze: 200000,
+        amountToPayMinor: 200000,
       });
 
       mockPrisma.invoice.findMany.mockResolvedValueOnce([invoice1, invoice2]);
@@ -436,7 +436,7 @@ describe("payment router", () => {
       expect(createCall.data).toMatchObject({
         organizationId: ORG_ID,
         status: "DRAFT",
-        totalGrosze: 300000,
+        totalMinor: 300000,
         invoiceCount: 2,
       });
 
@@ -472,11 +472,11 @@ describe("payment router", () => {
     });
 
     it("groups by currency when groupByCurrency is true", async () => {
-      const invoicePLN = makeInvoice({ currency: "PLN", amountToPayGrosze: 100000 });
+      const invoicePLN = makeInvoice({ currency: "PLN", amountToPayMinor: 100000 });
       const invoiceEUR = makeInvoice({
         id: INVOICE_ID_2,
         currency: "EUR",
-        amountToPayGrosze: 50000,
+        amountToPayMinor: 50000,
         billingProfile: { id: "bp-2", preferredCurrency: "EUR" },
       });
 
@@ -506,11 +506,11 @@ describe("payment router", () => {
 
   describe("removeFromRun", () => {
     it("resets invoice paymentStatus to READY and recalculates totals", async () => {
-      const run = makeRun({ invoiceCount: 2, totalGrosze: 300000 });
+      const run = makeRun({ invoiceCount: 2, totalMinor: 300000 });
       const item = makeItem();
       mockPrisma.paymentRun.findFirst.mockResolvedValueOnce(run);
       mockPrisma.paymentRunItem.findFirst.mockResolvedValueOnce(item);
-      mockPrisma.paymentRunItem.findMany.mockResolvedValueOnce([{ amountGrosze: 200000 }]);
+      mockPrisma.paymentRunItem.findMany.mockResolvedValueOnce([{ amountMinor: 200000 }]);
 
       await caller.payment.removeFromRun({
         runId: RUN_ID,
@@ -530,7 +530,7 @@ describe("payment router", () => {
       // Run totals recalculated
       const runUpdate = mockPrisma.paymentRun.update.mock.calls[0][0];
       expect(runUpdate.data).toMatchObject({
-        totalGrosze: 200000,
+        totalMinor: 200000,
         invoiceCount: 1,
       });
     });
@@ -564,7 +564,7 @@ describe("payment router", () => {
 
       const runUpdate = mockPrisma.paymentRun.update.mock.calls[0][0];
       expect(runUpdate.data).toMatchObject({
-        totalGrosze: 0,
+        totalMinor: 0,
         invoiceCount: 0,
         status: "CANCELLED",
       });
@@ -582,7 +582,7 @@ describe("payment router", () => {
         items: [
           {
             id: ITEM_ID,
-            amountGrosze: 100000,
+            amountMinor: 100000,
             currency: "PLN",
             invoice: {
               invoiceNumber: "FV/2025/001",

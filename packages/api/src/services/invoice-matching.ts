@@ -11,8 +11,8 @@ export interface MatchResult {
   contractorId: string | null;
   contractId: string | null;
   score: number;
-  expectedAmountGrosze: number | null;
-  amountDeltaGrosze: number | null;
+  expectedAmountMinor: number | null;
+  amountDeltaMinor: number | null;
   amountDeltaPercent: number | null;
   flags: string[];
   duplicateInvoiceId: string | null;
@@ -29,10 +29,10 @@ export interface MatchResult {
 export function computeDuplicateCheckHash(
   invoiceNumber: string,
   sellerTaxId: string,
-  totalGrosze: number,
+  totalMinor: number,
 ): string {
   return createHash("sha256")
-    .update(`${invoiceNumber.trim().toLowerCase()}|${sellerTaxId.trim()}|${totalGrosze}`)
+    .update(`${invoiceNumber.trim().toLowerCase()}|${sellerTaxId.trim()}|${totalMinor}`)
     .digest("hex");
 }
 
@@ -55,7 +55,7 @@ export async function runAutoMatch(
   invoice: {
     id?: string;
     sellerTaxId: string | null;
-    totalGrosze: number;
+    totalMinor: number;
     currency: string;
     duplicateCheckHash: string | null;
     servicePeriodStart?: Date | null;
@@ -67,8 +67,8 @@ export async function runAutoMatch(
   let score = 0;
   let matchedContractorId: string | null = null;
   let matchedContractId: string | null = null;
-  let expectedAmountGrosze: number | null = null;
-  let amountDeltaGrosze: number | null = null;
+  let expectedAmountMinor: number | null = null;
+  let amountDeltaMinor: number | null = null;
   let amountDeltaPercent: number | null = null;
   let duplicateInvoiceId: string | null = null;
 
@@ -82,8 +82,8 @@ export async function runAutoMatch(
       contractorId: null,
       contractId: null,
       score: 0,
-      expectedAmountGrosze: null,
-      amountDeltaGrosze: null,
+      expectedAmountMinor: null,
+      amountDeltaMinor: null,
       amountDeltaPercent: null,
       flags: [],
       duplicateInvoiceId: null,
@@ -104,8 +104,8 @@ export async function runAutoMatch(
       contractorId: null,
       contractId: null,
       score: 0,
-      expectedAmountGrosze: null,
-      amountDeltaGrosze: null,
+      expectedAmountMinor: null,
+      amountDeltaMinor: null,
       amountDeltaPercent: null,
       flags: [],
       duplicateInvoiceId: null,
@@ -159,9 +159,9 @@ export async function runAutoMatch(
     score += 30;
 
     for (const contract of contracts) {
-      const rateGrosze = contract.rateValueGrosze ?? 0;
-      if (rateGrosze > 0) {
-        const delta = Math.abs(invoice.totalGrosze - rateGrosze);
+      const rateMinor = contract.rateValueMinor ?? 0;
+      if (rateMinor > 0) {
+        const delta = Math.abs(invoice.totalMinor - rateMinor);
         if (delta < bestDelta) {
           bestDelta = delta;
           bestContract = contract;
@@ -185,11 +185,11 @@ export async function runAutoMatch(
     // Step 4: Deviation calculation
     // -----------------------------------------------------------------------
 
-    const expectedAmount = bestContract.rateValueGrosze;
+    const expectedAmount = bestContract.rateValueMinor;
     if (expectedAmount && expectedAmount > 0) {
-      expectedAmountGrosze = expectedAmount;
-      amountDeltaGrosze = invoice.totalGrosze - expectedAmount;
-      amountDeltaPercent = (amountDeltaGrosze / expectedAmount) * 100;
+      expectedAmountMinor = expectedAmount;
+      amountDeltaMinor = invoice.totalMinor - expectedAmount;
+      amountDeltaPercent = (amountDeltaMinor / expectedAmount) * 100;
 
       // Amount within threshold: +20 points
       if (Math.abs(amountDeltaPercent) <= deviationThresholdPercent) {
@@ -221,7 +221,7 @@ export async function runAutoMatch(
         bestContract.id,
         periodStart,
         periodEnd,
-        invoice.totalGrosze,
+        invoice.totalMinor,
       );
 
       if (timeRecon && !timeRecon.withinThreshold) {
@@ -278,8 +278,8 @@ export async function runAutoMatch(
     contractorId: matchedContractorId,
     contractId: matchedContractId,
     score,
-    expectedAmountGrosze,
-    amountDeltaGrosze,
+    expectedAmountMinor,
+    amountDeltaMinor,
     amountDeltaPercent,
     flags,
     duplicateInvoiceId,

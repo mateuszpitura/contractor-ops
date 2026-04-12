@@ -27,7 +27,7 @@ const { ORG_ID, USER_ID, mockPrisma } = vi.hoisted(() => {
       count: vi.fn(async () => 0),
     },
     invoice: {
-      aggregate: vi.fn(async () => ({ _sum: { amountToPayGrosze: null } })),
+      aggregate: vi.fn(async () => ({ _sum: { amountToPayMinor: null } })),
       findMany: vi.fn(async () => []),
     },
     contract: {
@@ -254,7 +254,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   mockPrisma.contractor.count.mockResolvedValue(0);
   mockPrisma.approvalStep.count.mockResolvedValue(0);
-  mockPrisma.invoice.aggregate.mockResolvedValue({ _sum: { amountToPayGrosze: null } });
+  mockPrisma.invoice.aggregate.mockResolvedValue({ _sum: { amountToPayMinor: null } });
   mockPrisma.contract.count.mockResolvedValue(0);
   mockPrisma.workflowTaskRun.count.mockResolvedValue(0);
   mockPrisma.contract.findMany.mockResolvedValue([]);
@@ -274,7 +274,7 @@ describe("dashboard router", () => {
       mockPrisma.contractor.count.mockResolvedValue(10);
       mockPrisma.approvalStep.count.mockResolvedValue(5);
       mockPrisma.invoice.aggregate.mockResolvedValue({
-        _sum: { amountToPayGrosze: 500000 },
+        _sum: { amountToPayMinor: 500000 },
       });
       mockPrisma.contract.count.mockResolvedValue(3);
       mockPrisma.workflowTaskRun.count.mockResolvedValue(7);
@@ -311,14 +311,14 @@ describe("dashboard router", () => {
 
     it("returns prevValue for trend comparison on readyToPayTotal", async () => {
       mockPrisma.invoice.aggregate
-        .mockResolvedValueOnce({ _sum: { amountToPayGrosze: 100000 } })
-        .mockResolvedValueOnce({ _sum: { amountToPayGrosze: 80000 } });
+        .mockResolvedValueOnce({ _sum: { amountToPayMinor: 100000 } })
+        .mockResolvedValueOnce({ _sum: { amountToPayMinor: 80000 } });
 
       const result = await caller.dashboard.kpis();
 
       expect(result.readyToPayTotal).toEqual({
-        valueGrosze: 100000,
-        prevValueGrosze: 80000,
+        valueMinor: 100000,
+        prevValueMinor: 80000,
       });
     });
 
@@ -385,9 +385,9 @@ describe("dashboard router", () => {
   describe("spendTrend", () => {
     it("returns monthly aggregations grouped by currency for 6 months", async () => {
       mockPrisma.$queryRaw.mockResolvedValue([
-        { month: new Date("2025-01-01"), currency: "PLN", totalGrosze: 100000 },
-        { month: new Date("2025-02-01"), currency: "PLN", totalGrosze: 200000 },
-        { month: new Date("2025-01-01"), currency: "EUR", totalGrosze: 50000 },
+        { month: new Date("2025-01-01"), currency: "PLN", totalMinor: 100000 },
+        { month: new Date("2025-02-01"), currency: "PLN", totalMinor: 200000 },
+        { month: new Date("2025-01-01"), currency: "EUR", totalMinor: 50000 },
       ]);
 
       const result = await caller.dashboard.spendTrend({ months: "6" });
@@ -396,7 +396,7 @@ describe("dashboard router", () => {
       expect(result[0]).toEqual({
         month: new Date("2025-01-01").toISOString(),
         currency: "PLN",
-        totalGrosze: 100000,
+        totalMinor: 100000,
       });
     });
 
@@ -412,26 +412,26 @@ describe("dashboard router", () => {
 
     it("returns monthly aggregations for YTD (from Jan 1)", async () => {
       mockPrisma.$queryRaw.mockResolvedValue([
-        { month: new Date("2026-01-01"), currency: "PLN", totalGrosze: 300000 },
+        { month: new Date("2026-01-01"), currency: "PLN", totalMinor: 300000 },
       ]);
 
       const result = await caller.dashboard.spendTrend({ months: "ytd" });
 
       expect(result).toHaveLength(1);
-      expect(result[0]!.totalGrosze).toBe(300000);
+      expect(result[0]!.totalMinor).toBe(300000);
     });
 
     it("casts BigInt SUM to number to avoid serialization issues", async () => {
       // Return a BigInt-like value from the raw query
       mockPrisma.$queryRaw.mockResolvedValue([
-        { month: new Date("2025-06-01"), currency: "PLN", totalGrosze: BigInt(999999) },
+        { month: new Date("2025-06-01"), currency: "PLN", totalMinor: BigInt(999999) },
       ]);
 
       const result = await caller.dashboard.spendTrend({ months: "6" });
 
-      // The router maps totalGrosze with Number(), so it should be a regular number
-      expect(typeof result[0]!.totalGrosze).toBe("number");
-      expect(result[0]!.totalGrosze).toBe(999999);
+      // The router maps totalMinor with Number(), so it should be a regular number
+      expect(typeof result[0]!.totalMinor).toBe("number");
+      expect(result[0]!.totalMinor).toBe(999999);
     });
 
     it("filters only PAID invoices with deletedAt IS NULL", async () => {

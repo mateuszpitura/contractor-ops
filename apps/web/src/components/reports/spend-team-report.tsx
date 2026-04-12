@@ -13,13 +13,13 @@ import { downloadBase64File, ExportButtons } from "./export-buttons";
 import { ReportChart } from "./report-chart";
 import { ReportTable } from "./report-table";
 
-function formatCurrency(grosze: number): string {
+function formatCurrency(minor: number): string {
   return new Intl.NumberFormat("pl-PL", {
     style: "currency",
     currency: "PLN",
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  }).format(grosze / 100);
+  }).format(minor / 100);
 }
 
 interface SpendTeamReportProps {
@@ -32,7 +32,7 @@ type TeamSpendRow = {
   teamName: string | null;
   contractorCount: number;
   invoiceCount: number;
-  totalGrosze: number;
+  totalMinor: number;
 };
 
 export function SpendTeamReport({ dateFrom, dateTo }: SpendTeamReportProps) {
@@ -87,7 +87,7 @@ export function SpendTeamReport({ dateFrom, dateTo }: SpendTeamReportProps) {
     const raw = (chartQuery.data ?? []) as Array<{
       teamId: string | null;
       teamName: string | null;
-      totalGrosze: number;
+      totalMinor: number;
     }>;
     return raw.map((item) => ({
       ...item,
@@ -102,7 +102,7 @@ export function SpendTeamReport({ dateFrom, dateTo }: SpendTeamReportProps) {
   }, [drillDownTeamId, tableData, t]);
 
   const grandTotal = useMemo(() => {
-    return tableData.reduce((sum, row) => sum + row.totalGrosze, 0);
+    return tableData.reduce((sum, row) => sum + row.totalMinor, 0);
   }, [tableData]);
 
   const columns: ColumnDef<TeamSpendRow>[] = useMemo(
@@ -124,7 +124,7 @@ export function SpendTeamReport({ dateFrom, dateTo }: SpendTeamReportProps) {
         enableSorting: true,
       },
       {
-        accessorKey: "totalGrosze",
+        accessorKey: "totalMinor",
         header: t("totalSpend"),
         enableSorting: true,
         cell: ({ getValue }) => formatCurrency(getValue<number>()),
@@ -159,7 +159,7 @@ export function SpendTeamReport({ dateFrom, dateTo }: SpendTeamReportProps) {
       <ReportChart
         type="bar-horizontal"
         data={chartData}
-        dataKey="totalGrosze"
+        dataKey="totalMinor"
         nameKey="teamName"
         idKey="teamId"
         activeId={drillDownTeamId ?? undefined}

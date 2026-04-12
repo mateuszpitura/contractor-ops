@@ -296,7 +296,7 @@ describe("getProrationPreview", () => {
     );
   });
 
-  it("transforms Stripe line items: maps amount to amountGrosze", async () => {
+  it("transforms Stripe line items: maps amount to amountMinor", async () => {
     mockStripe.invoices.createPreview.mockResolvedValue({
       lines: {
         data: [
@@ -310,12 +310,12 @@ describe("getProrationPreview", () => {
     const result = await getProrationPreview(prorationParams);
 
     expect(result.lines).toEqual([
-      { description: "Unused time on Starter", amountGrosze: -1500 },
-      { description: "Remaining time on Pro", amountGrosze: 3000 },
+      { description: "Unused time on Starter", amountMinor: -1500 },
+      { description: "Remaining time on Pro", amountMinor: 3000 },
     ]);
   });
 
-  it("maps Stripe total to totalGrosze", async () => {
+  it("maps Stripe total to totalMinor", async () => {
     mockStripe.invoices.createPreview.mockResolvedValue({
       lines: { data: [{ description: "X", amount: 5000 }] },
       total: 5000,
@@ -323,7 +323,7 @@ describe("getProrationPreview", () => {
 
     const result = await getProrationPreview(prorationParams);
 
-    expect(result.totalGrosze).toBe(5000);
+    expect(result.totalMinor).toBe(5000);
   });
 
   it("defaults description to empty string when Stripe returns null", async () => {

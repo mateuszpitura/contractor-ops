@@ -30,8 +30,8 @@ const PLAN_CONFIG = {
     {
       id: "STARTER" as const,
       name: "Starter",
-      basePriceGrosze: 9_900, // 99 PLN base
-      seatPriceGrosze: 1_000, // 10 PLN per contractor
+      basePriceMinor: 9_900, // 99 PLN base
+      seatPriceMinor: 1_000, // 10 PLN per contractor
       monthlyOcrCredits: TIER_CREDIT_ALLOWANCE.STARTER,
       description: "Everything you need to manage contractors",
       features: [
@@ -52,8 +52,8 @@ const PLAN_CONFIG = {
     {
       id: "PRO" as const,
       name: "Pro",
-      basePriceGrosze: 29_900, // 299 PLN base
-      seatPriceGrosze: 1_500, // 15 PLN per contractor
+      basePriceMinor: 29_900, // 299 PLN base
+      seatPriceMinor: 1_500, // 15 PLN per contractor
       monthlyOcrCredits: TIER_CREDIT_ALLOWANCE.PRO,
       description: "Integrations, OCR, and advanced workflows",
       features: [
@@ -68,8 +68,8 @@ const PLAN_CONFIG = {
     {
       id: "ENTERPRISE" as const,
       name: "Enterprise",
-      basePriceGrosze: 89_900, // 899 PLN base
-      seatPriceGrosze: 2_900, // 29 PLN per contractor
+      basePriceMinor: 89_900, // 899 PLN base
+      seatPriceMinor: 2_900, // 29 PLN per contractor
       monthlyOcrCredits: TIER_CREDIT_ALLOWANCE.ENTERPRISE,
       description: "Full platform access with audit and API",
       features: [
@@ -333,7 +333,7 @@ export const billingRouter = router({
 
     const tierConfig = PLAN_CONFIG.tiers.find((t) => t.id === sub?.tier);
     const includedSeats = tierConfig
-      ? Math.floor(tierConfig.basePriceGrosze / tierConfig.seatPriceGrosze)
+      ? Math.floor(tierConfig.basePriceMinor / tierConfig.seatPriceMinor)
       : 0;
 
     return {

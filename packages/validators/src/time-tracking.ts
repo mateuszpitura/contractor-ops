@@ -102,7 +102,7 @@ export const timeReconciliationSchema = z.object({
   contractId: z.string().min(1),
   periodStart: z.string().date(),
   periodEnd: z.string().date(),
-  invoicedAmountGrosze: z.number().int(),
+  invoicedAmountMinor: z.number().int(),
 });
 
 // ---------------------------------------------------------------------------

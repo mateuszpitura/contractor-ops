@@ -779,7 +779,7 @@ async function handleChargeRefunded(charge: Stripe.Charge, tx: TxClient): Promis
     {
       chargeId: charge.id,
       organizationId: sub.organizationId,
-      amountRefundedGrosze: charge.amount_refunded,
+      amountRefundedMinor: charge.amount_refunded,
       paymentIntentId:
         typeof charge.payment_intent === "string"
           ? charge.payment_intent

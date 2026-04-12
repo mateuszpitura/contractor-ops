@@ -238,7 +238,7 @@ describe("TeamsBotHandler", () => {
           invoice: {
             id: "invoice-1",
             invoiceNumber: "INV-001",
-            totalGrosze: 10000,
+            totalMinor: 10000,
             currency: "PLN",
           },
         },

@@ -161,7 +161,7 @@ describe("getUsageDashboard", () => {
     expect(result.includedSeats).toBe(0);
   });
 
-  it("calculates includedSeats as floor(basePriceGrosze / seatPriceGrosze) for PRO tier", async () => {
+  it("calculates includedSeats as floor(basePriceMinor / seatPriceMinor) for PRO tier", async () => {
     mockGetSubscription.mockResolvedValue(makeSub("PRO"));
     mockGetCreditBalance.mockResolvedValue({
       balance: 100,

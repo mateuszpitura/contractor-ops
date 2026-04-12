@@ -315,7 +315,7 @@ export class TeamsBotHandler extends TeamsActivityHandler {
               where: { id: flow.resourceId },
               select: {
                 invoiceNumber: true,
-                totalGrosze: true,
+                totalMinor: true,
                 currency: true,
               },
             })
@@ -325,7 +325,7 @@ export class TeamsBotHandler extends TeamsActivityHandler {
         const resultCard = buildApprovalResultCard({
           result: "rejected",
           invoiceNumber: invoice.invoiceNumber ?? "N/A",
-          amount: (invoice.totalGrosze / 100).toFixed(2),
+          amount: (invoice.totalMinor / 100).toFixed(2),
           currency: invoice.currency,
           approverName: user.userName,
           comment,
@@ -483,7 +483,7 @@ export class TeamsBotHandler extends TeamsActivityHandler {
               select: {
                 id: true,
                 invoiceNumber: true,
-                totalGrosze: true,
+                totalMinor: true,
                 currency: true,
               },
             })
@@ -526,7 +526,7 @@ export class TeamsBotHandler extends TeamsActivityHandler {
 
       return {
         invoiceNumber: invoice?.invoiceNumber ?? "N/A",
-        amount: ((invoice?.totalGrosze ?? 0) / 100).toFixed(2),
+        amount: ((invoice?.totalMinor ?? 0) / 100).toFixed(2),
         currency: invoice?.currency ?? "PLN",
         viewUrl: `${process.env.NEXT_PUBLIC_APP_URL ?? ""}/invoices/${flow.resourceId}`,
       };

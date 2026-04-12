@@ -311,9 +311,9 @@ export async function POST(request: NextRequest) {
             issueDate: new Date(),
             dueDate: new Date(),
             currency: "PLN",
-            subtotalGrosze: 0,
-            totalGrosze: 0,
-            amountToPayGrosze: 0,
+            subtotalMinor: 0,
+            totalMinor: 0,
+            amountToPayMinor: 0,
           },
         });
 

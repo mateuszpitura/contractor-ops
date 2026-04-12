@@ -66,7 +66,7 @@ export async function getSubscription(organizationId: string) {
 /**
  * Create a Stripe Checkout session for a new subscription.
  * Includes a 14-day trial for new organizations per D-07.
- * Currency is PLN (grosze) per project convention.
+ * Currency is PLN (minor units) per project convention.
  */
 export async function createCheckoutSession(
   params: CreateCheckoutSessionParams,
@@ -115,11 +115,11 @@ export async function createCheckoutSession(
 
 /**
  * Preview proration costs for a plan change.
- * Returns line items with amounts in grosze (PLN smallest unit).
+ * Returns line items with amounts in minor units (PLN smallest unit).
  */
 export async function getProrationPreview(params: ProrationPreviewParams): Promise<{
-  lines: Array<{ description: string; amountGrosze: number }>;
-  totalGrosze: number;
+  lines: Array<{ description: string; amountMinor: number }>;
+  totalMinor: number;
 }> {
   assertNonEmpty(params.stripeCustomerId, "stripeCustomerId");
   assertNonEmpty(params.stripeSubscriptionId, "stripeSubscriptionId");
@@ -143,12 +143,12 @@ export async function getProrationPreview(params: ProrationPreviewParams): Promi
 
     const lines = (preview.lines?.data ?? []).map((line) => ({
       description: line.description ?? "",
-      amountGrosze: line.amount,
+      amountMinor: line.amount,
     }));
 
     return {
       lines,
-      totalGrosze: preview.total,
+      totalMinor: preview.total,
     };
   } catch (error) {
     console.error("[billing-service] getProrationPreview failed:", error);

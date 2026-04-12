@@ -8,12 +8,12 @@ type PrismaClient = DbClient;
 
 export interface TimeReconciliation {
   approvedMinutes: number;
-  rateValueGrosze: number;
+  rateValueMinor: number;
   rateType: string;
   hoursPerDay: number;
-  expectedAmountGrosze: number;
-  invoicedAmountGrosze: number;
-  deviationGrosze: number;
+  expectedAmountMinor: number;
+  invoicedAmountMinor: number;
+  deviationMinor: number;
   deviationPercent: number;
   withinThreshold: boolean;
   thresholdPercent: number;
@@ -39,15 +39,15 @@ export async function computeTimeReconciliation(
   contractId: string,
   periodStart: Date,
   periodEnd: Date,
-  invoicedAmountGrosze: number,
+  invoicedAmountMinor: number,
 ): Promise<TimeReconciliation | null> {
-  // 1. Get contract with rateType and rateValueGrosze
+  // 1. Get contract with rateType and rateValueMinor
   const contract = await prisma.contract.findFirst({
     where: { id: contractId, organizationId },
-    select: { rateType: true, rateValueGrosze: true },
+    select: { rateType: true, rateValueMinor: true },
   });
 
-  if (!contract || !contract.rateValueGrosze) return null;
+  if (!contract || !contract.rateValueMinor) return null;
 
   // Only compute for PER_HOUR and PER_DAY contracts
   // MONTHLY_FIXED: skip (expected = fixed rate regardless of hours)
@@ -84,33 +84,33 @@ export async function computeTimeReconciliation(
   const hoursPerDay = typeof settings.timeHoursPerDay === "number" ? settings.timeHoursPerDay : 8;
 
   // 4. Calculate expected amount
-  //    PER_HOUR: (minutes * rateGrosze) / 60
-  //    PER_DAY: (minutes / (hoursPerDay * 60)) * rateGrosze
-  let expectedAmountGrosze: number;
+  //    PER_HOUR: (minutes * rateMinor) / 60
+  //    PER_DAY: (minutes / (hoursPerDay * 60)) * rateMinor
+  let expectedAmountMinor: number;
   if (contract.rateType === "PER_HOUR") {
-    expectedAmountGrosze = Math.round((approvedMinutes * contract.rateValueGrosze) / 60);
+    expectedAmountMinor = Math.round((approvedMinutes * contract.rateValueMinor) / 60);
   } else {
     // PER_DAY
     const days = approvedMinutes / (hoursPerDay * 60);
-    expectedAmountGrosze = Math.round(days * contract.rateValueGrosze);
+    expectedAmountMinor = Math.round(days * contract.rateValueMinor);
   }
 
   // 5. Calculate deviation
-  const deviationGrosze = invoicedAmountGrosze - expectedAmountGrosze;
+  const deviationMinor = invoicedAmountMinor - expectedAmountMinor;
   const deviationPercent =
-    expectedAmountGrosze > 0
-      ? Math.round((Math.abs(deviationGrosze) / expectedAmountGrosze) * 10000) / 100
+    expectedAmountMinor > 0
+      ? Math.round((Math.abs(deviationMinor) / expectedAmountMinor) * 10000) / 100
       : 0;
   const withinThreshold = deviationPercent <= thresholdPercent;
 
   return {
     approvedMinutes,
-    rateValueGrosze: contract.rateValueGrosze,
+    rateValueMinor: contract.rateValueMinor,
     rateType: contract.rateType,
     hoursPerDay,
-    expectedAmountGrosze,
-    invoicedAmountGrosze,
-    deviationGrosze,
+    expectedAmountMinor,
+    invoicedAmountMinor,
+    deviationMinor,
     deviationPercent,
     withinThreshold,
     thresholdPercent,

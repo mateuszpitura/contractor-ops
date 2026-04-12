@@ -8,7 +8,7 @@
 // ---------------------------------------------------------------------------
 
 export interface ParsedTransaction {
-  /** Absolute value in grosze (integer) */
+  /** Absolute value in minor units (integer) */
   amount: number;
   currency: string;
   description: string;
@@ -32,7 +32,7 @@ export interface MatchResult {
 
 /**
  * Parse an MT940 bank statement using mt940js.
- * Extracts transactions with amounts converted to absolute integer grosze.
+ * Extracts transactions with amounts converted to absolute integer minor units.
  */
 export function parseMt940(content: string): ParsedTransaction[] {
   // mt940js uses CommonJS; dynamic import for ESM compatibility
@@ -178,7 +178,7 @@ export function parseBankStatement(content: string, filename: string): ParsedTra
  */
 export function matchStatementToRun(
   transactions: ParsedTransaction[],
-  items: { id: string; amountGrosze: number; iban: string }[],
+  items: { id: string; amountMinor: number; iban: string }[],
 ): MatchResult[] {
   const results: MatchResult[] = [];
   const matchedItemIds = new Set<string>();
@@ -201,8 +201,8 @@ export function matchStatementToRun(
       const ibanMatched =
         txIban.length >= 10 && itemIban.length >= 10 && txIban.slice(-20) === itemIban.slice(-20);
 
-      const exactAmount = tx.amount === item.amountGrosze;
-      const closeAmount = Math.abs(tx.amount - item.amountGrosze) <= 1;
+      const exactAmount = tx.amount === item.amountMinor;
+      const closeAmount = Math.abs(tx.amount - item.amountMinor) <= 1;
 
       if (ibanMatched && exactAmount) {
         bestMatch = {

@@ -304,7 +304,7 @@ export const approvalRouter = router({
           id: true,
           invoiceNumber: true,
           sellerName: true,
-          totalGrosze: true,
+          totalMinor: true,
           currency: true,
           createdAt: true,
           contractor: {
@@ -444,7 +444,7 @@ export const approvalRouter = router({
           select: {
             id: true,
             invoiceNumber: true,
-            totalGrosze: true,
+            totalMinor: true,
             currency: true,
             contractorId: true,
             dueDate: true,
@@ -504,13 +504,13 @@ export const approvalRouter = router({
             type: "APPROVAL_REQUEST",
             recipientUserIds: [nextStep.approverUserId],
             title: `Approval requested for ${result.invoice.invoiceNumber}`,
-            body: `${contractor?.legalName ?? "Unknown"} - ${(result.invoice.totalGrosze / 100).toFixed(2)} ${result.invoice.currency}`,
+            body: `${contractor?.legalName ?? "Unknown"} - ${(result.invoice.totalMinor / 100).toFixed(2)} ${result.invoice.currency}`,
             entityType: "INVOICE",
             entityId: result.invoice.id,
             metadata: {
               invoiceNumber: result.invoice.invoiceNumber,
               contractorName: contractor?.legalName ?? "Unknown",
-              amount: (result.invoice.totalGrosze / 100).toFixed(2),
+              amount: (result.invoice.totalMinor / 100).toFixed(2),
               currency: result.invoice.currency,
               slaDeadline,
               invoiceId: result.invoice.id,
@@ -1017,7 +1017,7 @@ export const approvalRouter = router({
 
         // Route to appropriate chain
         const chainConfig = await routeToChain(tx, ctx.organizationId, {
-          totalGrosze: invoice.totalGrosze,
+          totalMinor: invoice.totalMinor,
         });
 
         if (!chainConfig) {
@@ -1066,13 +1066,13 @@ export const approvalRouter = router({
           type: "APPROVAL_REQUEST",
           recipientUserIds: [firstStep.approverUserId],
           title: `Approval requested for ${inv.invoiceNumber}`,
-          body: `${contractor?.legalName ?? "Unknown"} - ${(inv.totalGrosze / 100).toFixed(2)} ${inv.currency}. SLA: ${slaDeadline}`,
+          body: `${contractor?.legalName ?? "Unknown"} - ${(inv.totalMinor / 100).toFixed(2)} ${inv.currency}. SLA: ${slaDeadline}`,
           entityType: "INVOICE",
           entityId: inv.id,
           metadata: {
             invoiceNumber: inv.invoiceNumber,
             contractorName: contractor?.legalName ?? "Unknown",
-            amount: (inv.totalGrosze / 100).toFixed(2),
+            amount: (inv.totalMinor / 100).toFixed(2),
             currency: inv.currency,
             slaDeadline,
             invoiceId: inv.id,

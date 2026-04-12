@@ -16,9 +16,9 @@ model Contract {
   currency                      String              @db.Char(3)
   billingModel                  BillingModel
   rateType                      RateType
-  rateValueGrosze               Int?
+  rateValueMinor               Int?
   expectedHoursPerPeriod        Decimal?            @db.Decimal(10, 2)
-  retainerAmountGrosze          Int?
+  retainerAmountMinor          Int?
   paymentTermsDays              Int?
   invoiceCycle                  InvoiceCycle?
   expenseReimbursementAllowed   Boolean             @default(false)
@@ -86,7 +86,7 @@ model ContractRatePeriod {
   organizationId String
   contractId     String
   rateType       RateType
-  rateValueGrosze Int
+  rateValueMinor Int
   currency       String   @db.Char(3)
   validFrom      DateTime @db.Date
   validTo        DateTime? @db.Date

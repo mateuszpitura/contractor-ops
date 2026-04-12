@@ -93,23 +93,23 @@ describe("ClaudeOcrAdapter", () => {
     expect(result.overallConfidence).toBeGreaterThan(0);
   });
 
-  it("normalizes amounts to grosze correctly", async () => {
+  it("normalizes amounts to minor units correctly", async () => {
     mockCreate.mockResolvedValueOnce(makeMockToolResponse(FULL_EXTRACTION_RESPONSE));
 
     const result = await adapter.extractInvoice(BASE_REQUEST);
 
-    // 1000.00 PLN = 100000 grosze
+    // 1000.00 PLN = 100000 minor
     expect(result.fields.totalNet?.value).toBe(100000);
-    // 230.00 PLN = 23000 grosze
+    // 230.00 PLN = 23000 minor
     expect(result.fields.totalTax?.value).toBe(23000);
-    // 1230.00 PLN = 123000 grosze
+    // 1230.00 PLN = 123000 minor
     expect(result.fields.totalGross?.value).toBe(123000);
 
-    // Line item amounts in grosze
-    expect(result.lineItems[0]!.unitPriceGrosze).toBe(625);
-    expect(result.lineItems[0]!.netAmountGrosze).toBe(100000);
-    expect(result.lineItems[0]!.vatAmountGrosze).toBe(23000);
-    expect(result.lineItems[0]!.grossAmountGrosze).toBe(123000);
+    // Line item amounts in minor units
+    expect(result.lineItems[0]!.unitPriceMinor).toBe(625);
+    expect(result.lineItems[0]!.netAmountMinor).toBe(100000);
+    expect(result.lineItems[0]!.vatAmountMinor).toBe(23000);
+    expect(result.lineItems[0]!.grossAmountMinor).toBe(123000);
   });
 
   it("adjusts confidence when NIP is invalid", async () => {

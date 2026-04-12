@@ -303,7 +303,7 @@ export class ClaudeOcrAdapter implements OcrAdapter {
 
   /**
    * Parses the raw tool_use response into OcrExtractionResult.
-   * Normalizes amounts from decimal to grosze (integer cents).
+   * Normalizes amounts from decimal to minor units (integer cents).
    */
   private parseExtractionResponse(
     rawData: Record<string, unknown>,
@@ -337,7 +337,7 @@ export class ClaudeOcrAdapter implements OcrAdapter {
       }
     }
 
-    // Parse amount fields -- convert from decimal to grosze
+    // Parse amount fields -- convert from decimal to minor units
     const amountFieldKeys = ["totalNet", "totalTax", "totalGross"] as const;
 
     for (const key of amountFieldKeys) {
@@ -351,7 +351,7 @@ export class ClaudeOcrAdapter implements OcrAdapter {
       }
     }
 
-    // Parse line items -- convert amounts to grosze
+    // Parse line items -- convert amounts to minor units
     const rawLineItems = (rawData.lineItems ?? []) as Array<{
       description: string;
       quantity?: number | null;
@@ -368,11 +368,11 @@ export class ClaudeOcrAdapter implements OcrAdapter {
       description: item.description,
       quantity: item.quantity ?? null,
       unit: item.unit ?? null,
-      unitPriceGrosze: item.unitPrice != null ? Math.round(item.unitPrice * 100) : null,
-      netAmountGrosze: item.netAmount != null ? Math.round(item.netAmount * 100) : null,
+      unitPriceMinor: item.unitPrice != null ? Math.round(item.unitPrice * 100) : null,
+      netAmountMinor: item.netAmount != null ? Math.round(item.netAmount * 100) : null,
       vatRate: item.vatRate ?? null,
-      vatAmountGrosze: item.vatAmount != null ? Math.round(item.vatAmount * 100) : null,
-      grossAmountGrosze: item.grossAmount != null ? Math.round(item.grossAmount * 100) : null,
+      vatAmountMinor: item.vatAmount != null ? Math.round(item.vatAmount * 100) : null,
+      grossAmountMinor: item.grossAmount != null ? Math.round(item.grossAmount * 100) : null,
       confidence: item.confidence ?? 0,
     }));
 

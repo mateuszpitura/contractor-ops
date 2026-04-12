@@ -16,10 +16,10 @@ const parser = new XMLParser({
 });
 
 /**
- * Converts a PLN amount (float or string) to grosze (integer).
+ * Converts a PLN amount (float or string) to minor units (integer).
  * Handles missing/undefined values by returning 0.
  */
-function toGrosze(value: unknown): number {
+function toMinor(value: unknown): number {
   if (value === undefined || value === null || value === "") return 0;
   return Math.round(parseFloat(String(value)) * 100);
 }
@@ -42,7 +42,7 @@ function dig(obj: Record<string, unknown>, ...keys: string[]): unknown {
 /**
  * Parses a KSeF FA(3) XML string into a validated, typed invoice structure.
  *
- * All monetary amounts are converted from PLN to grosze (integer, 1/100 PLN).
+ * All monetary amounts are converted to minor units (integer, 1/100 PLN).
  *
  * @param xmlString - Raw FA(3) XML string from KSeF
  * @param ksefReferenceNumber - KSeF reference number from query metadata
@@ -86,11 +86,11 @@ export function parseFa3Xml(
   const linesArray = Array.isArray(rawLines) ? rawLines : rawLines ? [rawLines] : [];
 
   const lines = linesArray.map((line) => {
-    const netAmount = toGrosze(line["P_11"]);
+    const netAmount = toMinor(line["P_11"]);
     const vatRateStr = line["P_12"] != null ? String(line["P_12"]) : undefined;
     const vatAmount =
       line["P_11A"] != null
-        ? toGrosze(line["P_11A"])
+        ? toMinor(line["P_11A"])
         : vatRateStr && !Number.isNaN(parseFloat(vatRateStr))
           ? Math.round(netAmount * (parseFloat(vatRateStr) / 100))
           : undefined;
@@ -101,7 +101,7 @@ export function parseFa3Xml(
       description: String(line["P_7"] ?? ""),
       quantity: line["P_8B"] != null ? Number(line["P_8B"]) : undefined,
       unit: line["P_8A"] != null ? String(line["P_8A"]) : undefined,
-      unitPriceMinor: line["P_9A"] != null ? toGrosze(line["P_9A"]) : undefined,
+      unitPriceMinor: line["P_9A"] != null ? toMinor(line["P_9A"]) : undefined,
       netAmountMinor: netAmount || undefined,
       vatRate: vatRateStr,
       vatAmountMinor: vatAmount,
@@ -112,13 +112,13 @@ export function parseFa3Xml(
   // Totals
   const netTotal =
     fa["P_13_1"] != null
-      ? toGrosze(fa["P_13_1"])
-      : lines.reduce((s, l) => s + (l.netAmountGrosze ?? 0), 0);
+      ? toMinor(fa["P_13_1"])
+      : lines.reduce((s, l) => s + (l.netAmountMinor ?? 0), 0);
   const vatTotal =
     fa["P_14_1"] != null
-      ? toGrosze(fa["P_14_1"])
-      : lines.reduce((s, l) => s + (l.vatAmountGrosze ?? 0), 0);
-  const grossTotal = fa["P_15"] != null ? toGrosze(fa["P_15"]) : netTotal + vatTotal;
+      ? toMinor(fa["P_14_1"])
+      : lines.reduce((s, l) => s + (l.vatAmountMinor ?? 0), 0);
+  const grossTotal = fa["P_15"] != null ? toMinor(fa["P_15"]) : netTotal + vatTotal;
 
   // Payment info
   const platnosc = fa["Platnosc"] as Record<string, unknown> | undefined;
@@ -195,11 +195,11 @@ export function mapKsefToInvoiceFields(parsed: KsefParsedInvoice) {
     issueDate: new Date(parsed.issueDate),
     dueDate: parsed.payment?.dueDate ? new Date(parsed.payment.dueDate) : null,
     currency: parsed.currency,
-    subtotalGrosze: parsed.totals.netMinor,
+    subtotalMinor: parsed.totals.netMinor,
     vatRate: primaryVatRate,
-    vatAmountGrosze: parsed.totals.vatMinor,
-    totalGrosze: parsed.totals.grossMinor,
-    amountToPayGrosze: parsed.totals.grossMinor,
+    vatAmountMinor: parsed.totals.vatMinor,
+    totalMinor: parsed.totals.grossMinor,
+    amountToPayMinor: parsed.totals.grossMinor,
     sellerTaxId: parsed.seller.nip,
     sellerName: parsed.seller.name,
     sellerBankAccount: parsed.payment?.bankAccount ?? null,
@@ -211,11 +211,11 @@ export function mapKsefToInvoiceFields(parsed: KsefParsedInvoice) {
     description: line.description,
     quantity: line.quantity ?? null,
     unit: line.unit ?? null,
-    unitPriceGrosze: line.unitPriceMinor ?? null,
-    netAmountGrosze: line.netAmountMinor ?? null,
+    unitPriceMinor: line.unitPriceMinor ?? null,
+    netAmountMinor: line.netAmountMinor ?? null,
     vatRate: line.vatRate ?? null,
-    vatAmountGrosze: line.vatAmountMinor ?? null,
-    grossAmountGrosze: line.grossAmountMinor ?? null,
+    vatAmountMinor: line.vatAmountMinor ?? null,
+    grossAmountMinor: line.grossAmountMinor ?? null,
   }));
 
   return { invoice, lines };
