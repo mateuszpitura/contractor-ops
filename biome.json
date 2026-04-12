@@ -17,7 +17,9 @@
     "domains": {
       "react": "recommended",
       "next": "recommended",
-      "test": "recommended"
+      "test": "recommended",
+      "project": "recommended",
+      "types": "recommended"
     },
     "rules": {
       "recommended": true,
@@ -26,7 +28,8 @@
           "level": "warn",
           "options": { "allow": ["warn", "error", "info"] }
         },
-        "noEmptyBlockStatements": "error"
+        "noEmptyBlockStatements": "error",
+        "noEvolvingTypes": "error"
       },
       "style": {
         "useImportType": {
@@ -34,6 +37,11 @@
           "options": {
             "style": "separatedType"
           }
+        },
+        "useThrowNewError": "error",
+        "useConsistentArrayType": {
+          "level": "warn",
+          "options": { "syntax": "shorthand" }
         }
       },
       "performance": {
@@ -44,6 +52,7 @@
       "complexity": {
         "noUselessUndefined": "error",
         "noExcessiveCognitiveComplexity": "warn",
+        "noForEach": "error",
         "useDateNow": "error",
         "useSimplifiedLogicExpression": "warn"
       },
