@@ -88,20 +88,41 @@ export {
   nipSchema,
 } from './contractor.js';
 export type {
+  DeCountryFields,
   SaudiCountryFields,
   UaeCountryFields,
+  UkCountryFields,
 } from './country-fields.js';
 export {
   countryFieldsSchemaMap,
+  deCountryFieldsSchema,
+  deEntityTypeEnum,
   saudiCountryFieldsSchema,
   tinValidators,
   uaeCountryFieldsSchema,
+  ukCountryFieldsSchema,
+  ukEntityTypeEnum,
   validateCountryFields,
   validatePolishNip,
   validateSaudiTin,
   validateTin,
   validateUaeTin,
 } from './country-fields.js';
+export type {
+  HandelsregisterCourt,
+} from './handelsregister-courts.js';
+export {
+  HANDELSREGISTER_COURTS,
+} from './handelsregister-courts.js';
+export type {
+  BundeslandCode,
+  SteuernummerFormat,
+} from './steuernummer-formats.js';
+export {
+  getSteuernummerFormat,
+  getSteuernummerRegex,
+  STEUERNUMMER_FORMATS,
+} from './steuernummer-formats.js';
 export type {
   AttachDocInput,
   ConfluencePageMetadata,
