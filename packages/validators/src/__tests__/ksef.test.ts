@@ -3,7 +3,7 @@ import {
   ksefConnectionConfigSchema,
   ksefParsedInvoiceSchema,
   ksefSyncParamsSchema,
-} from "../ksef.js";
+} from "@contractor-ops/einvoice";
 
 describe("ksefConnectionConfigSchema", () => {
   it("requires token when authMethod is token", () => {
@@ -88,10 +88,7 @@ describe("ksefParsedInvoiceSchema", () => {
     expect(nonNumeric.success).toBe(false);
   });
 
-  // NOTE: The schema uses `z.array(ksefInvoiceLineSchema)` without `.min(1)`,
-  // so empty lines are accepted. This is a potential schema gap — real invoices
-  // should have at least one line item.
-  it("accepts empty lines array (schema gap — no .min(1) constraint)", () => {
+  it("rejects empty lines array", () => {
     const r = ksefParsedInvoiceSchema.safeParse({
       invoiceNumber: "FV/1/2026",
       issueDate: "2026-04-01",
@@ -103,7 +100,7 @@ describe("ksefParsedInvoiceSchema", () => {
       totals: { netMinor: 0, vatMinor: 0, grossMinor: 0 },
       ksefReferenceNumber: "ref-1",
     });
-    expect(r.success).toBe(true);
+    expect(r.success).toBe(false);
   });
 
   it("rejects wrong currency length", () => {

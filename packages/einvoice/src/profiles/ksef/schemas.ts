@@ -95,7 +95,7 @@ export const ksefParsedInvoiceSchema = z.object({
   currency: z.string().length(3),
   seller: ksefPartySchema,
   buyer: ksefPartySchema.omit({ address: true }),
-  lines: z.array(ksefInvoiceLineSchema),
+  lines: z.array(ksefInvoiceLineSchema).min(1),
   totals: ksefTotalsSchema,
   payment: ksefPaymentSchema.optional(),
   ksefReferenceNumber: z.string(),
