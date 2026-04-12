@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v5.0
 milestone_name: UK & Germany Expansion
 status: planning
-stopped_at: Phase 56 context gathered
-last_updated: "2026-04-12T14:40:11.004Z"
+stopped_at: Phase 56 UI-SPEC approved
+last_updated: "2026-04-12T15:07:21.092Z"
 last_activity: 2026-04-12 — Roadmap created for v5.0 (8 phases, 31 requirements)
 progress:
   total_phases: 8
@@ -65,6 +65,7 @@ None yet.
 
 ### Blockers/Concerns
 
+- **[BLOCKER — 2026-04-12] Phase 56 plan-phase workflow cannot spawn subagents.** The `/gsd-plan-phase 56 --auto` run was invoked as a background agent session (GSD autonomous pipeline). In that context the `Task` tool is not available, so the workflow cannot spawn `gsd-ui-researcher`, `gsd-ui-checker`, `gsd-phase-researcher`, `gsd-planner`, or `gsd-plan-checker`. The workflow auto-chained into `gsd:ui-phase` (UI-SPEC gate, step 5.6) and stopped at the first researcher spawn. Resolution options: (1) re-run `/gsd-plan-phase 56 --auto` from an interactive top-level session (not as a nested background agent) so Task-tool-based subagent spawning works; (2) run the pipeline stages manually at top-level: `/gsd-ui-phase 56 --auto` → `/gsd-plan-phase 56 --auto --skip-research` (or with research) — each as a separate top-level invocation; (3) disable UI gate via `node .claude/get-shit-done/bin/gsd-tools.cjs config-set workflow.ui_phase false` and `workflow.ui_safety_gate false` and re-run (not recommended — loses design contract). Side effect: `workflow._auto_chain_active` was set to `true` during the aborted run; reset with `node .claude/get-shit-done/bin/gsd-tools.cjs config-set workflow._auto_chain_active false` before a clean re-run. CONTEXT.md is in place; no other artifacts were created.
 - HMRC developer hub registration takes weeks — initiate during Phase 56 to avoid blocking Phase 57
 - pdf-lib PDF/A-3b capability needs proof-of-concept before Phase 62 implementation — fallback is Apache PDFBox child process
 - German Steuerberater review of tax terminology should be commissioned during Phase 56
@@ -73,6 +74,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-12T14:40:11.001Z
-Stopped at: Phase 56 context gathered
-Resume file: .planning/phases/56-country-foundations-german-i18n/56-CONTEXT.md
+Last session: 2026-04-12T15:07:21.090Z
+Stopped at: Phase 56 UI-SPEC approved
+Resume file: .planning/phases/56-country-foundations-german-i18n/56-UI-SPEC.md
