@@ -1,4 +1,3 @@
-import { prisma } from "@contractor-ops/db";
 import { computeKsefComplianceStatus, listProfiles } from "@contractor-ops/einvoice";
 import { router } from "../init.js";
 import { requirePermission } from "../middleware/rbac.js";
@@ -23,7 +22,7 @@ export const einvoiceRouter = router({
       for (const profile of profiles) {
         if (profile.profileId === "ksef") {
           // Fetch KSeF connection data from DB
-          const connection = await prisma.integrationConnection.findFirst({
+          const connection = await ctx.db.integrationConnection.findFirst({
             where: {
               organizationId: ctx.organizationId,
               provider: "KSEF",
@@ -41,7 +40,7 @@ export const einvoiceRouter = router({
 
           let recentSyncStatuses: string[] = [];
           if (connection) {
-            const recentSyncs = await prisma.integrationSyncLog.findMany({
+            const recentSyncs = await ctx.db.integrationSyncLog.findMany({
               where: {
                 organizationId: ctx.organizationId,
                 integrationConnection: {

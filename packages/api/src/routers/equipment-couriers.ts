@@ -2,7 +2,6 @@
  * Equipment courier integration procedures: InPost, DPD, UPS shipment
  * creation, courier config management, connection testing, and label retrieval.
  */
-import { prisma } from "@contractor-ops/db";
 import type { Prisma } from "@contractor-ops/db/generated/prisma/client";
 import {
   dpdConfigSchema,
@@ -49,7 +48,7 @@ export const equipmentCouriersRouter = router({
     .input(inpostShipmentCreateSchema)
     .mutation(async ({ ctx, input }) => {
       // Load courier config for InPost
-      const courierConfig = await prisma.courierConfig.findUnique({
+      const courierConfig = await ctx.db.courierConfig.findUnique({
         where: {
           organizationId_carrier: {
             organizationId: ctx.organizationId,
@@ -69,7 +68,7 @@ export const equipmentCouriersRouter = router({
       const client = new InPostClient(configJson);
 
       // Verify all equipment items exist and load contractor details
-      const equipmentItems = await prisma.equipment.findMany({
+      const equipmentItems = await ctx.db.equipment.findMany({
         where: {
           id: { in: input.equipmentIds },
           organizationId: ctx.organizationId,
@@ -114,7 +113,7 @@ export const equipmentCouriersRouter = router({
       }
 
       // Load org for sender details
-      const org = await prisma.organization.findUnique({
+      const org = await ctx.db.organization.findUnique({
         where: { id: ctx.organizationId },
         select: { name: true },
       });
@@ -143,7 +142,7 @@ export const equipmentCouriersRouter = router({
         input.direction === "OUTBOUND" ? "IN_TRANSIT" : "RETURN_IN_TRANSIT";
 
       // Create shipment records for each equipment item
-      const shipments = await prisma.$transaction(async (tx) => {
+      const shipments = await ctx.db.$transaction(async (tx) => {
         const created = [];
 
         for (const eq of equipmentItems) {
@@ -209,7 +208,7 @@ export const equipmentCouriersRouter = router({
       });
 
       // Audit log
-      await prisma.auditLog.create({
+      await ctx.db.auditLog.create({
         data: {
           organizationId: ctx.organizationId,
           actorType: "USER",
@@ -229,7 +228,7 @@ export const equipmentCouriersRouter = router({
       });
 
       // Fetch created shipments with events
-      const result = await prisma.shipment.findMany({
+      const result = await ctx.db.shipment.findMany({
         where: {
           id: { in: shipments.map((s) => s.id) },
         },
@@ -254,7 +253,7 @@ export const equipmentCouriersRouter = router({
     .input(dpdShipmentCreateSchema)
     .mutation(async ({ ctx, input }) => {
       // 1. Load courier config for DPD
-      const courierConfig = await prisma.courierConfig.findUnique({
+      const courierConfig = await ctx.db.courierConfig.findUnique({
         where: {
           organizationId_carrier: {
             organizationId: ctx.organizationId,
@@ -274,7 +273,7 @@ export const equipmentCouriersRouter = router({
       const client = new DPDClient(configJson);
 
       // 2. Load equipment items with current assignments
-      const equipmentItems = await prisma.equipment.findMany({
+      const equipmentItems = await ctx.db.equipment.findMany({
         where: {
           id: { in: input.equipmentIds },
           organizationId: ctx.organizationId,
@@ -313,7 +312,7 @@ export const equipmentCouriersRouter = router({
       }
 
       // Load org for sender info
-      const org = await prisma.organization.findUnique({
+      const org = await ctx.db.organization.findUnique({
         where: { id: ctx.organizationId },
         select: { name: true },
       });
@@ -345,7 +344,7 @@ export const equipmentCouriersRouter = router({
       const newEquipmentStatus =
         input.direction === "OUTBOUND" ? "IN_TRANSIT" : "RETURN_IN_TRANSIT";
 
-      const shipments = await prisma.$transaction(async (tx) => {
+      const shipments = await ctx.db.$transaction(async (tx) => {
         const created = [];
 
         for (const item of equipmentItems) {
@@ -389,7 +388,7 @@ export const equipmentCouriersRouter = router({
       });
 
       // 5. Audit log
-      await prisma.auditLog.create({
+      await ctx.db.auditLog.create({
         data: {
           organizationId: ctx.organizationId,
           actorType: "USER",
@@ -418,7 +417,7 @@ export const equipmentCouriersRouter = router({
       }
 
       // Fetch created shipments with events
-      const result = await prisma.shipment.findMany({
+      const result = await ctx.db.shipment.findMany({
         where: { id: { in: shipments.map((s) => s.id) } },
         include: { events: { orderBy: { occurredAt: "asc" } } },
       });
@@ -439,7 +438,7 @@ export const equipmentCouriersRouter = router({
     .input(upsShipmentCreateSchema)
     .mutation(async ({ ctx, input }) => {
       // 1. Load courier config for UPS
-      const courierConfig = await prisma.courierConfig.findUnique({
+      const courierConfig = await ctx.db.courierConfig.findUnique({
         where: {
           organizationId_carrier: {
             organizationId: ctx.organizationId,
@@ -459,7 +458,7 @@ export const equipmentCouriersRouter = router({
       const client = new UPSClient(configJson);
 
       // 2. Load equipment items with current assignments
-      const equipmentItems = await prisma.equipment.findMany({
+      const equipmentItems = await ctx.db.equipment.findMany({
         where: {
           id: { in: input.equipmentIds },
           organizationId: ctx.organizationId,
@@ -498,7 +497,7 @@ export const equipmentCouriersRouter = router({
       }
 
       // Load org for sender info
-      const org = await prisma.organization.findUnique({
+      const org = await ctx.db.organization.findUnique({
         where: { id: ctx.organizationId },
         select: { name: true },
       });
@@ -531,7 +530,7 @@ export const equipmentCouriersRouter = router({
       const newEquipmentStatus =
         input.direction === "OUTBOUND" ? "IN_TRANSIT" : "RETURN_IN_TRANSIT";
 
-      const shipments = await prisma.$transaction(async (tx) => {
+      const shipments = await ctx.db.$transaction(async (tx) => {
         const created = [];
 
         for (const item of equipmentItems) {
@@ -575,7 +574,7 @@ export const equipmentCouriersRouter = router({
       });
 
       // 5. Audit log
-      await prisma.auditLog.create({
+      await ctx.db.auditLog.create({
         data: {
           organizationId: ctx.organizationId,
           actorType: "USER",
@@ -605,7 +604,7 @@ export const equipmentCouriersRouter = router({
       }
 
       // Fetch created shipments with events
-      const result = await prisma.shipment.findMany({
+      const result = await ctx.db.shipment.findMany({
         where: { id: { in: shipments.map((s) => s.id) } },
         include: { events: { orderBy: { occurredAt: "asc" } } },
       });
@@ -624,7 +623,7 @@ export const equipmentCouriersRouter = router({
     .input(z.union([dpdConfigSchema, upsConfigSchema]))
     .mutation(async ({ ctx, input }) => {
       const { carrier, ...credentials } = input;
-      await prisma.courierConfig.upsert({
+      await ctx.db.courierConfig.upsert({
         where: {
           organizationId_carrier: {
             organizationId: ctx.organizationId,
@@ -641,7 +640,7 @@ export const equipmentCouriersRouter = router({
         },
       });
 
-      await prisma.auditLog.create({
+      await ctx.db.auditLog.create({
         data: {
           organizationId: ctx.organizationId,
           actorType: "USER",
@@ -663,7 +662,7 @@ export const equipmentCouriersRouter = router({
    * never sent back to the client.
    */
   getCourierConfigs: adminProcedure.query(async ({ ctx }) => {
-    const configs = await prisma.courierConfig.findMany({
+    const configs = await ctx.db.courierConfig.findMany({
       where: { organizationId: ctx.organizationId },
       select: { carrier: true, createdAt: true, updatedAt: true },
     });
@@ -709,7 +708,7 @@ export const equipmentCouriersRouter = router({
     .use(requirePermission({ equipment: ["read"] }))
     .input(z.object({ shipmentId: z.string() }))
     .query(async ({ ctx, input }) => {
-      const shipment = await prisma.shipment.findFirst({
+      const shipment = await ctx.db.shipment.findFirst({
         where: {
           id: input.shipmentId,
           organizationId: ctx.organizationId,
@@ -731,7 +730,7 @@ export const equipmentCouriersRouter = router({
       }
 
       // Load courier config
-      const courierConfig = await prisma.courierConfig.findUnique({
+      const courierConfig = await ctx.db.courierConfig.findUnique({
         where: {
           organizationId_carrier: {
             organizationId: ctx.organizationId,

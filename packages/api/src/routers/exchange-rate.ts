@@ -1,4 +1,3 @@
-import { prisma } from "@contractor-ops/db";
 import {
   exchangeRateConvertSchema,
   exchangeRateLatestSchema,
@@ -14,7 +13,7 @@ export const exchangeRateRouter = router({
    * Get exchange rates for a date range and currency pair.
    */
   query: tenantProcedure.input(exchangeRateQuerySchema).query(async ({ input }) => {
-    const rates = await prisma.exchangeRate.findMany({
+    const rates = await ctx.db.exchangeRate.findMany({
       where: {
         base: input.base,
         target: input.target,

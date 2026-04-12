@@ -7,7 +7,6 @@
  * - equipment-returns.ts — return request approve/reject/list
  */
 import type { Prisma } from "@contractor-ops/db";
-import { prisma } from "@contractor-ops/db";
 import {
   equipmentAssignSchema,
   equipmentCreateSchema,
@@ -79,7 +78,7 @@ const equipmentCoreRouter = router({
       }
 
       const [items, total] = await Promise.all([
-        prisma.equipment.findMany({
+        ctx.db.equipment.findMany({
           where,
           skip: (page - 1) * perPage,
           take: perPage,
@@ -96,7 +95,7 @@ const equipmentCoreRouter = router({
             },
           },
         }),
-        prisma.equipment.count({ where }),
+        ctx.db.equipment.count({ where }),
       ]);
 
       const mapped = items.map((eq) => {
@@ -126,7 +125,7 @@ const equipmentCoreRouter = router({
     .use(requirePermission({ equipment: ["read"] }))
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
-      const equipment = await prisma.equipment.findFirst({
+      const equipment = await ctx.db.equipment.findFirst({
         where: {
           id: input.id,
           organizationId: ctx.organizationId,
@@ -176,7 +175,7 @@ const equipmentCoreRouter = router({
     .use(requirePermission({ equipment: ["create"] }))
     .input(equipmentCreateSchema)
     .mutation(async ({ ctx, input }) => {
-      const equipment = await prisma.equipment.create({
+      const equipment = await ctx.db.equipment.create({
         data: {
           organizationId: ctx.organizationId,
           name: input.name,
@@ -189,7 +188,7 @@ const equipmentCoreRouter = router({
       });
 
       // Audit log
-      await prisma.auditLog.create({
+      await ctx.db.auditLog.create({
         data: {
           organizationId: ctx.organizationId,
           actorType: "USER",
@@ -215,7 +214,7 @@ const equipmentCoreRouter = router({
     .mutation(async ({ ctx, input }) => {
       const { id, ...fields } = input;
 
-      const existing = await prisma.equipment.findFirst({
+      const existing = await ctx.db.equipment.findFirst({
         where: { id, organizationId: ctx.organizationId },
       });
 
@@ -226,7 +225,7 @@ const equipmentCoreRouter = router({
         });
       }
 
-      const equipment = await prisma.equipment.update({
+      const equipment = await ctx.db.equipment.update({
         where: { id },
         data: {
           ...(fields.name !== undefined && { name: fields.name }),
@@ -244,7 +243,7 @@ const equipmentCoreRouter = router({
         },
       });
 
-      await prisma.auditLog.create({
+      await ctx.db.auditLog.create({
         data: {
           organizationId: ctx.organizationId,
           actorType: "USER",
@@ -276,7 +275,7 @@ const equipmentCoreRouter = router({
     .use(requirePermission({ equipment: ["delete"] }))
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const equipment = await prisma.equipment.findFirst({
+      const equipment = await ctx.db.equipment.findFirst({
         where: { id: input.id, organizationId: ctx.organizationId },
         include: {
           assignments: {
@@ -300,12 +299,12 @@ const equipmentCoreRouter = router({
         });
       }
 
-      const updated = await prisma.equipment.update({
+      const updated = await ctx.db.equipment.update({
         where: { id: input.id },
         data: { status: "RETIRED" },
       });
 
-      await prisma.auditLog.create({
+      await ctx.db.auditLog.create({
         data: {
           organizationId: ctx.organizationId,
           actorType: "USER",
@@ -333,7 +332,7 @@ const equipmentCoreRouter = router({
     .use(requirePermission({ equipment: ["update"] }))
     .input(equipmentAssignSchema)
     .mutation(async ({ ctx, input }) => {
-      const equipment = await prisma.equipment.findFirst({
+      const equipment = await ctx.db.equipment.findFirst({
         where: {
           id: input.equipmentId,
           organizationId: ctx.organizationId,
@@ -355,7 +354,7 @@ const equipmentCoreRouter = router({
       }
 
       // Verify contractor exists in same org
-      const contractor = await prisma.contractor.findFirst({
+      const contractor = await ctx.db.contractor.findFirst({
         where: {
           id: input.contractorId,
           organizationId: ctx.organizationId,
@@ -370,8 +369,8 @@ const equipmentCoreRouter = router({
         });
       }
 
-      const [assignment, updated] = await prisma.$transaction([
-        prisma.equipmentAssignment.create({
+      const [assignment, updated] = await ctx.db.$transaction([
+        ctx.db.equipmentAssignment.create({
           data: {
             organizationId: ctx.organizationId,
             equipmentId: input.equipmentId,
@@ -380,13 +379,13 @@ const equipmentCoreRouter = router({
             notes: input.notes ?? null,
           },
         }),
-        prisma.equipment.update({
+        ctx.db.equipment.update({
           where: { id: input.equipmentId },
           data: { status: "ASSIGNED" },
         }),
       ]);
 
-      await prisma.auditLog.create({
+      await ctx.db.auditLog.create({
         data: {
           organizationId: ctx.organizationId,
           actorType: "USER",
@@ -415,7 +414,7 @@ const equipmentCoreRouter = router({
     .use(requirePermission({ equipment: ["update"] }))
     .input(equipmentUnassignSchema)
     .mutation(async ({ ctx, input }) => {
-      const equipment = await prisma.equipment.findFirst({
+      const equipment = await ctx.db.equipment.findFirst({
         where: {
           id: input.equipmentId,
           organizationId: ctx.organizationId,
@@ -443,8 +442,8 @@ const equipmentCoreRouter = router({
         });
       }
 
-      const [, updated] = await prisma.$transaction([
-        prisma.equipmentAssignment.update({
+      const [, updated] = await ctx.db.$transaction([
+        ctx.db.equipmentAssignment.update({
           where: { id: activeAssignment.id },
           data: {
             unassignedAt: new Date(),
@@ -454,13 +453,13 @@ const equipmentCoreRouter = router({
               : activeAssignment.notes,
           },
         }),
-        prisma.equipment.update({
+        ctx.db.equipment.update({
           where: { id: input.equipmentId },
           data: { status: "AVAILABLE" },
         }),
       ]);
 
-      await prisma.auditLog.create({
+      await ctx.db.auditLog.create({
         data: {
           organizationId: ctx.organizationId,
           actorType: "USER",

@@ -1,4 +1,3 @@
-import { prisma } from "@contractor-ops/db";
 import type { Prisma } from "@contractor-ops/db/generated/prisma/client";
 import {
   amendmentCreateSchema,
@@ -55,7 +54,7 @@ export const contractRouter = router({
     .use(requirePermission({ contract: ["create"] }))
     .input(contractCreateSchema)
     .mutation(async ({ ctx, input }) => {
-      const contract = await prisma.contract.create({
+      const contract = await ctx.db.contract.create({
         data: {
           organizationId: ctx.organizationId,
           contractorId: input.contractorId,
@@ -110,7 +109,7 @@ export const contractRouter = router({
     .use(requirePermission({ contract: ["read"] }))
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
-      const contract = await prisma.contract.findFirst({
+      const contract = await ctx.db.contract.findFirst({
         where: {
           id: input.id,
           organizationId: ctx.organizationId,
@@ -142,7 +141,7 @@ export const contractRouter = router({
       }
 
       // Count linked documents
-      const documentCount = await prisma.documentLink.count({
+      const documentCount = await ctx.db.documentLink.count({
         where: {
           organizationId: ctx.organizationId,
           entityType: "CONTRACT",
@@ -160,7 +159,7 @@ export const contractRouter = router({
     .use(requirePermission({ contract: ["update"] }))
     .input(z.object({ id: z.string(), data: contractUpdateSchema }))
     .mutation(async ({ ctx, input }) => {
-      const existing = await prisma.contract.findFirst({
+      const existing = await ctx.db.contract.findFirst({
         where: {
           id: input.id,
           organizationId: ctx.organizationId,
@@ -195,14 +194,14 @@ export const contractRouter = router({
         }
       }
 
-      const updated = await prisma.contract.update({
+      const updated = await ctx.db.contract.update({
         where: { id: input.id },
         data: updateData,
       });
 
       // Calendar auto-push: sync or cleanup contract expiry deadline (D-06, D-08)
       if (updated.endDate) {
-        const contractor = await prisma.contractor.findUnique({
+        const contractor = await ctx.db.contractor.findUnique({
           where: { id: updated.contractorId },
           select: { displayName: true },
         });
@@ -285,7 +284,7 @@ export const contractRouter = router({
           .join(" & ");
 
         if (terms) {
-          const matchingIds: Array<{ id: string }> = await prisma.$queryRaw`
+          const matchingIds: Array<{ id: string }> = await ctx.db.$queryRaw`
             SELECT id FROM "Contract"
             WHERE "organizationId" = ${ctx.organizationId}
               AND "deletedAt" IS NULL
@@ -306,7 +305,7 @@ export const contractRouter = router({
       }
 
       const [contracts, totalCount] = await Promise.all([
-        prisma.contract.findMany({
+        ctx.db.contract.findMany({
           where,
           skip: (page - 1) * pageSize,
           take: pageSize,
@@ -320,7 +319,7 @@ export const contractRouter = router({
             },
           },
         }),
-        prisma.contract.count({ where }),
+        ctx.db.contract.count({ where }),
       ]);
 
       return { items: plain(contracts), totalCount, page, pageSize };
@@ -333,7 +332,7 @@ export const contractRouter = router({
     .use(requirePermission({ contract: ["update"] }))
     .input(contractStatusTransitionSchema)
     .mutation(async ({ ctx, input }) => {
-      const contract = await prisma.contract.findFirst({
+      const contract = await ctx.db.contract.findFirst({
         where: {
           id: input.id,
           organizationId: ctx.organizationId,
@@ -364,7 +363,7 @@ export const contractRouter = router({
         updateData.terminatedAt = new Date();
       }
 
-      const updated = await prisma.contract.update({
+      const updated = await ctx.db.contract.update({
         where: { id: input.id },
         data: updateData,
       });
@@ -379,7 +378,7 @@ export const contractRouter = router({
     .use(requirePermission({ contract: ["update"] }))
     .input(amendmentCreateSchema)
     .mutation(async ({ ctx, input }) => {
-      const contract = await prisma.contract.findFirst({
+      const contract = await ctx.db.contract.findFirst({
         where: {
           id: input.contractId,
           organizationId: ctx.organizationId,
@@ -395,14 +394,14 @@ export const contractRouter = router({
       }
 
       // Auto-generate amendment number
-      const existingCount = await prisma.contractAmendment.count({
+      const existingCount = await ctx.db.contractAmendment.count({
         where: {
           contractId: input.contractId,
           organizationId: ctx.organizationId,
         },
       });
 
-      const amendment = await prisma.contractAmendment.create({
+      const amendment = await ctx.db.contractAmendment.create({
         data: {
           organizationId: ctx.organizationId,
           contractId: input.contractId,
@@ -424,7 +423,7 @@ export const contractRouter = router({
     .use(requirePermission({ contract: ["read"] }))
     .input(z.object({ contractId: z.string() }))
     .query(async ({ ctx, input }) => {
-      const amendments = await prisma.contractAmendment.findMany({
+      const amendments = await ctx.db.contractAmendment.findMany({
         where: {
           contractId: input.contractId,
           organizationId: ctx.organizationId,
@@ -442,7 +441,7 @@ export const contractRouter = router({
     .use(requirePermission({ contract: ["update"] }))
     .input(contractExpiryReminderSchema)
     .mutation(async ({ ctx, input }) => {
-      const contract = await prisma.contract.findFirst({
+      const contract = await ctx.db.contract.findFirst({
         where: {
           id: input.contractId,
           organizationId: ctx.organizationId,
@@ -464,7 +463,7 @@ export const contractRouter = router({
         reminderDaysBefore: input.reminderDaysBefore,
       };
 
-      const updated = await prisma.contract.update({
+      const updated = await ctx.db.contract.update({
         where: { id: input.contractId },
         data: {
           metadataJson: newMetadata as Prisma.InputJsonValue,
@@ -481,7 +480,7 @@ export const contractRouter = router({
     .use(requirePermission({ contract: ["delete"] }))
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const contract = await prisma.contract.findFirst({
+      const contract = await ctx.db.contract.findFirst({
         where: {
           id: input.id,
           organizationId: ctx.organizationId,
@@ -503,7 +502,7 @@ export const contractRouter = router({
         });
       }
 
-      await prisma.contract.update({
+      await ctx.db.contract.update({
         where: { id: input.id },
         data: { deletedAt: new Date() },
       });
@@ -530,7 +529,7 @@ export const contractRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const contracts = await prisma.contract.findMany({
+      const contracts = await ctx.db.contract.findMany({
         where: {
           id: { in: input.ids },
           organizationId: ctx.organizationId,
@@ -560,7 +559,7 @@ export const contractRouter = router({
       }
 
       if (valid.length > 0) {
-        await prisma.$transaction(async (tx) => {
+        await ctx.db.$transaction(async (tx) => {
           const updateData: Record<string, unknown> = {
             status: input.targetStatus,
           };

@@ -1,11 +1,10 @@
-import { prisma } from "@contractor-ops/db";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import * as E from "../errors.js";
 import { router } from "../init.js";
 import { requirePermission } from "../middleware/rbac.js";
 import { tenantProcedure } from "../middleware/tenant.js";
-import { deleteObject } from "../services/r2.js";
+import { deleteRegionalObject } from "../services/regional-storage.js";
 
 // ---------------------------------------------------------------------------
 // GDPR Router — Right to Erasure (Art. 17) + Data Portability (Art. 20)
@@ -43,7 +42,7 @@ export const gdprRouter = router({
 
       const results: Record<string, number> = {};
 
-      await prisma.$transaction(async (tx) => {
+      await ctx.db.$transaction(async (tx) => {
         // 1. Soft-delete contractors
         const contractors = await tx.contractor.updateMany({
           where: { organizationId: orgId, deletedAt: null },
@@ -382,7 +381,7 @@ export const gdprRouter = router({
       });
 
       // Clean up R2 objects for soft-deleted documents (outside transaction)
-      const docsToClean = await prisma.document.findMany({
+      const docsToClean = await ctx.db.document.findMany({
         where: { organizationId: orgId, deletedAt: { not: null } },
         select: { storageKey: true },
       });
@@ -390,7 +389,7 @@ export const gdprRouter = router({
       for (const doc of docsToClean) {
         if (doc.storageKey) {
           try {
-            await deleteObject(doc.storageKey);
+            await deleteRegionalObject(doc.storageKey);
             r2Cleaned++;
           } catch {
             // Non-critical: data-purge cron will retry
@@ -400,7 +399,7 @@ export const gdprRouter = router({
       results.r2ObjectsCleaned = r2Cleaned;
 
       // 7. Log the erasure request in audit (new org-level record)
-      await prisma.auditLog.create({
+      await ctx.db.auditLog.create({
         data: {
           organizationId: orgId,
           action: "organization.erasure_requested",
@@ -446,7 +445,7 @@ export const gdprRouter = router({
 
       const [organization, contractors, contracts, invoices, documents, auditLogs, members] =
         await Promise.all([
-          prisma.organization.findUnique({
+          ctx.db.organization.findUnique({
             where: { id: orgId },
             select: {
               id: true,
@@ -455,7 +454,7 @@ export const gdprRouter = router({
               createdAt: true,
             },
           }),
-          prisma.contractor.findMany({
+          ctx.db.contractor.findMany({
             where: { organizationId: orgId, deletedAt: null },
             select: {
               id: true,
@@ -469,7 +468,7 @@ export const gdprRouter = router({
               updatedAt: true,
             },
           }),
-          prisma.contract.findMany({
+          ctx.db.contract.findMany({
             where: { organizationId: orgId, deletedAt: null },
             select: {
               id: true,
@@ -484,7 +483,7 @@ export const gdprRouter = router({
               createdAt: true,
             },
           }),
-          prisma.invoice.findMany({
+          ctx.db.invoice.findMany({
             where: { organizationId: orgId, deletedAt: null },
             select: {
               id: true,
@@ -499,7 +498,7 @@ export const gdprRouter = router({
               createdAt: true,
             },
           }),
-          prisma.document.findMany({
+          ctx.db.document.findMany({
             where: { organizationId: orgId, deletedAt: null },
             select: {
               id: true,
@@ -510,7 +509,7 @@ export const gdprRouter = router({
               createdAt: true,
             },
           }),
-          prisma.auditLog.findMany({
+          ctx.db.auditLog.findMany({
             where: { organizationId: orgId },
             select: {
               id: true,
@@ -523,7 +522,7 @@ export const gdprRouter = router({
             orderBy: { createdAt: "desc" },
             take: 10000,
           }),
-          prisma.member.findMany({
+          ctx.db.member.findMany({
             where: { organizationId: orgId },
             select: {
               userId: true,

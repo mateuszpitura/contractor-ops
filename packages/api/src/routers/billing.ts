@@ -1,4 +1,3 @@
-import { prisma } from "@contractor-ops/db";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { router } from "../init.js";
@@ -117,7 +116,7 @@ export const billingRouter = router({
         });
       }
 
-      const org = await prisma.organization.findUnique({
+      const org = await ctx.db.organization.findUnique({
         where: { id: ctx.organizationId },
         select: { billingEmail: true, name: true },
       });
@@ -142,7 +141,7 @@ export const billingRouter = router({
       const isNewOrg = !existingSub;
 
       // Count active contractors as seat quantity (minimum 1)
-      const contractorCount = await prisma.contractor.count({
+      const contractorCount = await ctx.db.contractor.count({
         where: { organizationId: ctx.organizationId, status: "ACTIVE" },
       });
       const quantity = Math.max(1, contractorCount);
@@ -283,7 +282,7 @@ export const billingRouter = router({
       });
     }
 
-    const contractorCount = await prisma.contractor.count({
+    const contractorCount = await ctx.db.contractor.count({
       where: { organizationId: ctx.organizationId, status: "ACTIVE" },
     });
     const newQuantity = Math.max(1, contractorCount);
@@ -326,7 +325,7 @@ export const billingRouter = router({
     const [sub, credits, activeContractors] = await Promise.all([
       getSubscription(ctx.organizationId),
       getCreditBalance(ctx.organizationId),
-      prisma.contractor.count({
+      ctx.db.contractor.count({
         where: { organizationId: ctx.organizationId, status: "ACTIVE" },
       }),
     ]);

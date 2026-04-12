@@ -1,4 +1,3 @@
-import { prisma } from "@contractor-ops/db";
 import { getQStashClient } from "@contractor-ops/integrations/services/qstash-client";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -117,7 +116,7 @@ export const ocrRouter = router({
     .input(retriggerInput)
     .mutation(async ({ ctx, input }) => {
       // Find the existing extraction to get documentId and storageKey
-      const existing = await prisma.ocrExtraction.findFirst({
+      const existing = await ctx.db.ocrExtraction.findFirst({
         where: {
           id: input.extractionId,
           organizationId: ctx.organizationId,
@@ -129,7 +128,7 @@ export const ocrRouter = router({
       }
 
       // Look up the document to get storageKey
-      const document = await prisma.document.findFirst({
+      const document = await ctx.db.document.findFirst({
         where: {
           id: existing.documentId,
           organizationId: ctx.organizationId,
@@ -142,7 +141,7 @@ export const ocrRouter = router({
       }
 
       // Create a new extraction for the same document
-      const newExtraction = await prisma.ocrExtraction.create({
+      const newExtraction = await ctx.db.ocrExtraction.create({
         data: {
           organizationId: ctx.organizationId,
           documentId: existing.documentId,

@@ -1,5 +1,4 @@
 import { createHmac } from "node:crypto";
-import { prisma } from "@contractor-ops/db";
 import {
   generateOAuthState,
   getAdapter,
@@ -57,7 +56,7 @@ export const integrationRouter = router({
    * Returns connection info or null if not connected.
    */
   getSlackStatus: tenantProcedure.query(async ({ ctx }) => {
-    const connection = await prisma.integrationConnection.findFirst({
+    const connection = await ctx.db.integrationConnection.findFirst({
       where: {
         organizationId: ctx.organizationId,
         provider: "SLACK",
@@ -123,7 +122,7 @@ export const integrationRouter = router({
   disconnect: tenantProcedure
     .use(requirePermission({ organization: ["update"] }))
     .mutation(async ({ ctx }) => {
-      const connection = await prisma.integrationConnection.findFirst({
+      const connection = await ctx.db.integrationConnection.findFirst({
         where: {
           organizationId: ctx.organizationId,
           provider: "SLACK",
@@ -137,7 +136,7 @@ export const integrationRouter = router({
         });
       }
 
-      await prisma.integrationConnection.update({
+      await ctx.db.integrationConnection.update({
         where: { id: connection.id },
         data: {
           status: "DISCONNECTED",
@@ -154,7 +153,7 @@ export const integrationRouter = router({
    */
   listUserMappings: tenantProcedure.query(async ({ ctx }) => {
     // Find Slack integration connection
-    const connection = await prisma.integrationConnection.findFirst({
+    const connection = await ctx.db.integrationConnection.findFirst({
       where: {
         organizationId: ctx.organizationId,
         provider: "SLACK",
@@ -167,7 +166,7 @@ export const integrationRouter = router({
     }
 
     // Get all Slack user links
-    const externalLinks = await prisma.externalLink.findMany({
+    const externalLinks = await ctx.db.externalLink.findMany({
       where: {
         organizationId: ctx.organizationId,
         integrationConnectionId: connection.id,
@@ -176,7 +175,7 @@ export const integrationRouter = router({
     });
 
     // Get org members
-    const members = await prisma.member.findMany({
+    const members = await ctx.db.member.findMany({
       where: { organizationId: ctx.organizationId },
       include: {
         user: {
@@ -217,7 +216,7 @@ export const integrationRouter = router({
     .use(requirePermission({ organization: ["update"] }))
     .input(slackUserLinkSchema)
     .mutation(async ({ ctx, input }) => {
-      const connection = await prisma.integrationConnection.findFirst({
+      const connection = await ctx.db.integrationConnection.findFirst({
         where: {
           organizationId: ctx.organizationId,
           provider: "SLACK",
@@ -231,7 +230,7 @@ export const integrationRouter = router({
         });
       }
 
-      const link = await prisma.externalLink.create({
+      const link = await ctx.db.externalLink.create({
         data: {
           organizationId: ctx.organizationId,
           integrationConnectionId: connection.id,
@@ -253,7 +252,7 @@ export const integrationRouter = router({
     .use(requirePermission({ organization: ["update"] }))
     .input(slackUserUnlinkSchema)
     .mutation(async ({ ctx, input }) => {
-      const existing = await prisma.externalLink.findFirst({
+      const existing = await ctx.db.externalLink.findFirst({
         where: {
           id: input.externalLinkId,
           organizationId: ctx.organizationId,
@@ -267,7 +266,7 @@ export const integrationRouter = router({
         });
       }
 
-      await prisma.externalLink.delete({
+      await ctx.db.externalLink.delete({
         where: { id: input.externalLinkId },
       });
 
@@ -277,7 +276,7 @@ export const integrationRouter = router({
   syncUsers: tenantProcedure
     .use(requirePermission({ organization: ["update"] }))
     .mutation(async ({ ctx }) => {
-      const connection = await prisma.integrationConnection.findFirst({
+      const connection = await ctx.db.integrationConnection.findFirst({
         where: { organizationId: ctx.organizationId, provider: "SLACK" },
         select: { id: true },
       });
@@ -377,7 +376,7 @@ export const integrationRouter = router({
     .use(requirePermission({ organization: ["update"] }))
     .input(disconnectProviderSchema)
     .mutation(async ({ ctx, input }) => {
-      const connection = await prisma.integrationConnection.findFirst({
+      const connection = await ctx.db.integrationConnection.findFirst({
         where: {
           organizationId: ctx.organizationId,
           provider: input.provider.toUpperCase() as "SLACK",
@@ -391,7 +390,7 @@ export const integrationRouter = router({
         });
       }
 
-      await prisma.integrationConnection.update({
+      await ctx.db.integrationConnection.update({
         where: { id: connection.id },
         data: {
           status: "DISCONNECTED",
@@ -407,7 +406,7 @@ export const integrationRouter = router({
    * Cursor-based pagination for the detail sheet.
    */
   getSyncLog: tenantProcedure.input(getSyncLogSchema).query(async ({ ctx, input }) => {
-    const connection = await prisma.integrationConnection.findFirst({
+    const connection = await ctx.db.integrationConnection.findFirst({
       where: {
         organizationId: ctx.organizationId,
         provider: input.provider.toUpperCase() as "SLACK",
@@ -419,7 +418,7 @@ export const integrationRouter = router({
       return { items: [], nextCursor: null };
     }
 
-    const items = await prisma.integrationSyncLog.findMany({
+    const items = await ctx.db.integrationSyncLog.findMany({
       where: { integrationConnectionId: connection.id },
       orderBy: { startedAt: "desc" },
       take: input.limit + 1,
@@ -449,7 +448,7 @@ export const integrationRouter = router({
    * Cursor-based pagination for the detail sheet.
    */
   getWebhookLog: tenantProcedure.input(getWebhookLogSchema).query(async ({ ctx, input }) => {
-    const items = await prisma.webhookDelivery.findMany({
+    const items = await ctx.db.webhookDelivery.findMany({
       where: {
         organizationId: ctx.organizationId,
         provider: input.provider.toUpperCase() as "SLACK",

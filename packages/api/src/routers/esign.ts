@@ -1,4 +1,3 @@
-import { prisma } from "@contractor-ops/db";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { router } from "../init.js";
@@ -76,7 +75,7 @@ export const esignRouter = router({
    * Returns connection ID, provider, and status for the provider picker UI.
    */
   listConnections: tenantProcedure.query(async ({ ctx }) => {
-    const connections = await prisma.integrationConnection.findMany({
+    const connections = await ctx.db.integrationConnection.findMany({
       where: {
         organizationId: ctx.organizationId,
         provider: { in: ["DOCUSIGN", "AUTENTI"] },
@@ -140,7 +139,7 @@ export const esignRouter = router({
    * delegating to the shared getSigningUrl orchestrator.
    */
   getPortalSigningUrl: portalProcedure.input(getSigningUrlInput).query(async ({ ctx, input }) => {
-    const envelope = await prisma.signingEnvelope.findFirst({
+    const envelope = await ctx.db.signingEnvelope.findFirst({
       where: {
         id: input.envelopeId,
         organizationId: ctx.organizationId,
@@ -212,7 +211,7 @@ export const esignRouter = router({
    * Includes recipients and events (ordered by occurredAt desc).
    */
   getEnvelopeDetail: tenantProcedure.input(getEnvelopeDetailInput).query(async ({ ctx, input }) => {
-    const envelope = await prisma.signingEnvelope.findFirst({
+    const envelope = await ctx.db.signingEnvelope.findFirst({
       where: {
         id: input.envelopeId,
         organizationId: ctx.organizationId,
@@ -242,7 +241,7 @@ export const esignRouter = router({
    * Ordered by createdAt desc with recipient summary.
    */
   listEnvelopes: tenantProcedure.input(listEnvelopesInput).query(async ({ ctx, input }) => {
-    const envelopes = await prisma.signingEnvelope.findMany({
+    const envelopes = await ctx.db.signingEnvelope.findMany({
       where: {
         contractId: input.contractId,
         organizationId: ctx.organizationId,
@@ -286,7 +285,7 @@ export const esignRouter = router({
     }
 
     // Find envelopes where this contractor's email is a recipient
-    const recipients = await prisma.signingRecipient.findMany({
+    const recipients = await ctx.db.signingRecipient.findMany({
       where: {
         email: contractor.email,
         status: { in: ["PENDING", "SENT", "DELIVERED"] },

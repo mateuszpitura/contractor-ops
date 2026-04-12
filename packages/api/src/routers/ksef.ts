@@ -1,4 +1,3 @@
-import { prisma } from "@contractor-ops/db";
 import { KsefApiClient, ksefConnectionConfigSchema } from "@contractor-ops/einvoice";
 import { encryptCredentials } from "@contractor-ops/integrations";
 import { getQStashClient } from "@contractor-ops/integrations/services/qstash-client";
@@ -49,7 +48,7 @@ export const ksefRouter = router({
     .input(connectInput)
     .mutation(async ({ ctx, input }) => {
       // Step 1: Get org NIP (per D-03)
-      const org = await prisma.organization.findUniqueOrThrow({
+      const org = await ctx.db.organization.findUniqueOrThrow({
         where: { id: ctx.organizationId },
       });
       const settingsJson = (org.settingsJson as Record<string, unknown> | null) ?? {};
@@ -98,7 +97,7 @@ export const ksefRouter = router({
       );
 
       // Step 5: Upsert IntegrationConnection (use findFirst + create/update)
-      const existing = await prisma.integrationConnection.findFirst({
+      const existing = await ctx.db.integrationConnection.findFirst({
         where: {
           organizationId: ctx.organizationId,
           provider: "KSEF",
@@ -107,7 +106,7 @@ export const ksefRouter = router({
 
       let connection;
       if (existing) {
-        connection = await prisma.integrationConnection.update({
+        connection = await ctx.db.integrationConnection.update({
           where: { id: existing.id },
           data: {
             status: "CONNECTED",
@@ -121,7 +120,7 @@ export const ksefRouter = router({
           },
         });
       } else {
-        connection = await prisma.integrationConnection.create({
+        connection = await ctx.db.integrationConnection.create({
           data: {
             organizationId: ctx.organizationId,
             provider: "KSEF",
@@ -151,7 +150,7 @@ export const ksefRouter = router({
 
         // Store schedule ID in configJson
         const currentConfig = (connection.configJson as Record<string, unknown>) ?? {};
-        await prisma.integrationConnection.update({
+        await ctx.db.integrationConnection.update({
           where: { id: connection.id },
           data: {
             configJson: {
@@ -175,7 +174,7 @@ export const ksefRouter = router({
   disconnect: tenantProcedure
     .use(requirePermission({ settings: ["update"] }))
     .mutation(async ({ ctx }) => {
-      const connection = await prisma.integrationConnection.findFirst({
+      const connection = await ctx.db.integrationConnection.findFirst({
         where: {
           organizationId: ctx.organizationId,
           provider: "KSEF",
@@ -202,7 +201,7 @@ export const ksefRouter = router({
         }
       }
 
-      await prisma.integrationConnection.update({
+      await ctx.db.integrationConnection.update({
         where: { id: connection.id },
         data: {
           status: "DISCONNECTED",
@@ -220,7 +219,7 @@ export const ksefRouter = router({
   triggerSync: tenantProcedure
     .use(requirePermission({ settings: ["update"] }))
     .mutation(async ({ ctx }) => {
-      const connection = await prisma.integrationConnection.findFirst({
+      const connection = await ctx.db.integrationConnection.findFirst({
         where: {
           organizationId: ctx.organizationId,
           provider: "KSEF",
@@ -255,7 +254,7 @@ export const ksefRouter = router({
     .use(requirePermission({ settings: ["read"] }))
     .input(syncHistoryInput)
     .query(async ({ ctx, input }) => {
-      const connection = await prisma.integrationConnection.findFirst({
+      const connection = await ctx.db.integrationConnection.findFirst({
         where: {
           organizationId: ctx.organizationId,
           provider: "KSEF",
@@ -267,7 +266,7 @@ export const ksefRouter = router({
         return { logs: [] };
       }
 
-      const logs = await prisma.integrationSyncLog.findMany({
+      const logs = await ctx.db.integrationSyncLog.findMany({
         where: {
           integrationConnectionId: connection.id,
         },
@@ -295,7 +294,7 @@ export const ksefRouter = router({
   connectionStatus: tenantProcedure
     .use(requirePermission({ settings: ["read"] }))
     .query(async ({ ctx }) => {
-      const connection = await prisma.integrationConnection.findFirst({
+      const connection = await ctx.db.integrationConnection.findFirst({
         where: {
           organizationId: ctx.organizationId,
           provider: "KSEF",

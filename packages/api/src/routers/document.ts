@@ -1,5 +1,4 @@
 import type { Prisma } from "@contractor-ops/db";
-import { prisma } from "@contractor-ops/db";
 import {
   documentConfirmUploadSchema,
   documentLinkSchema,
@@ -16,12 +15,12 @@ import { tenantProcedure } from "../middleware/tenant.js";
 import { uploadRateLimitMiddleware } from "../middleware/upload-rate-limit.js";
 import { isAllowedMimeType, validateMimeType } from "../services/mime-validator.js";
 import {
-  createPresignedDownloadUrl,
-  createPresignedUploadUrl,
-  deleteObject,
-  generateStorageKey,
-  headObject,
-} from "../services/r2.js";
+  createRegionalPresignedDownloadUrl,
+  createRegionalPresignedUploadUrl,
+  deleteRegionalObject,
+  headRegionalObject,
+} from "../services/regional-storage.js";
+import { generateStorageKey } from "../services/r2.js";
 import { isClamAvailable, scanBuffer } from "../services/virus-scanner.js";
 
 // ---------------------------------------------------------------------------
@@ -42,7 +41,14 @@ function plain<T>(data: T): T {
  * Updates document virusScanStatus accordingly.
  * Never throws — all errors are caught and logged.
  */
-async function scanAndUpdate(documentId: string, storageKey: string): Promise<void> {
+/** Prisma-like client for document updates (regional or global). */
+type DocumentDb = {
+  document: {
+    update: (args: { where: { id: string }; data: Record<string, unknown> }) => Promise<unknown>;
+  };
+};
+
+async function scanAndUpdate(db: DocumentDb, documentId: string, storageKey: string): Promise<void> {
   try {
     // Fetch first 4100 bytes for MIME validation (magic bytes are in the header)
     const { GetObjectCommand } = await import("@aws-sdk/client-s3");
@@ -60,7 +66,7 @@ async function scanAndUpdate(documentId: string, storageKey: string): Promise<vo
 
     if (!bodyBytes) {
       console.error("[document-scan] Could not read object body for:", storageKey);
-      await prisma.document.update({
+      await db.document.update({
         where: { id: documentId },
         data: { virusScanStatus: "FAILED" },
       });
@@ -75,7 +81,7 @@ async function scanAndUpdate(documentId: string, storageKey: string): Promise<vo
       console.warn(
         `[document-scan] Invalid MIME type for ${documentId}: detected ${mimeResult.detectedMime ?? "unknown"}`,
       );
-      await prisma.document.update({
+      await db.document.update({
         where: { id: documentId },
         data: { virusScanStatus: "FAILED" },
       });
@@ -86,7 +92,7 @@ async function scanAndUpdate(documentId: string, storageKey: string): Promise<vo
     const clamReady = await isClamAvailable();
     if (!clamReady) {
       console.error("[document-scan] ClamAV not available — marking FAILED");
-      await prisma.document.update({
+      await db.document.update({
         where: { id: documentId },
         data: { virusScanStatus: "FAILED" },
       });
@@ -95,7 +101,7 @@ async function scanAndUpdate(documentId: string, storageKey: string): Promise<vo
 
     const scanResult = await scanBuffer(buffer);
     if (scanResult.isClean) {
-      await prisma.document.update({
+      await db.document.update({
         where: { id: documentId },
         data: { virusScanStatus: "CLEAN" },
       });
@@ -103,14 +109,14 @@ async function scanAndUpdate(documentId: string, storageKey: string): Promise<vo
       console.warn(
         `[document-scan] Virus detected in ${documentId}: ${scanResult.virusName ?? "unknown"}`,
       );
-      await prisma.document.update({
+      await db.document.update({
         where: { id: documentId },
         data: { virusScanStatus: "INFECTED" },
       });
     }
   } catch (error) {
     console.error("[document-scan] Scan pipeline failed for:", documentId, error);
-    await prisma.document
+    await db.document
       .update({
         where: { id: documentId },
         data: { virusScanStatus: "FAILED" },
@@ -142,7 +148,7 @@ export const documentRouter = router({
       }
 
       // Create Document record
-      const doc = await prisma.document.create({
+      const doc = await ctx.db.document.create({
         data: {
           organizationId: ctx.organizationId,
           storageKey: "", // Placeholder — updated below
@@ -160,17 +166,17 @@ export const documentRouter = router({
 
       // Generate and persist storage key
       const storageKey = generateStorageKey(ctx.organizationId, doc.id, input.filename);
-      await prisma.document.update({
+      await ctx.db.document.update({
         where: { id: doc.id },
         data: { storageKey },
       });
 
       // Generate presigned upload URL (5-minute expiry)
-      const uploadUrl = await createPresignedUploadUrl(storageKey, input.mimeType, 300);
+      const uploadUrl = await createRegionalPresignedUploadUrl(storageKey, input.mimeType, 300);
 
       // Create entity link if provided
       if (input.entityType && input.entityId) {
-        await prisma.documentLink.create({
+        await ctx.db.documentLink.create({
           data: {
             organizationId: ctx.organizationId,
             documentId: doc.id,
@@ -192,7 +198,7 @@ export const documentRouter = router({
     .use(requirePermission({ document: ["create"] }))
     .input(documentConfirmUploadSchema)
     .mutation(async ({ ctx, input }) => {
-      const doc = await prisma.document.findFirst({
+      const doc = await ctx.db.document.findFirst({
         where: {
           id: input.documentId,
           organizationId: ctx.organizationId,
@@ -209,7 +215,7 @@ export const documentRouter = router({
       // Verify object exists in R2
       let headResponse;
       try {
-        headResponse = await headObject(doc.storageKey);
+        headResponse = await headRegionalObject(doc.storageKey);
       } catch {
         throw new TRPCError({
           code: "NOT_FOUND",
@@ -218,7 +224,7 @@ export const documentRouter = router({
       }
 
       // Update file size from actual R2 object
-      const updated = await prisma.document.update({
+      const updated = await ctx.db.document.update({
         where: { id: doc.id },
         data: {
           fileSizeBytes: headResponse.ContentLength ?? doc.fileSizeBytes,
@@ -226,7 +232,7 @@ export const documentRouter = router({
       });
 
       // Fire-and-forget async scan pipeline
-      void scanAndUpdate(doc.id, doc.storageKey);
+      void scanAndUpdate(ctx.db, doc.id, doc.storageKey);
 
       return plain(updated);
     }),
@@ -239,7 +245,7 @@ export const documentRouter = router({
     .use(requirePermission({ document: ["read"] }))
     .input(z.object({ documentId: z.string() }))
     .query(async ({ ctx, input }) => {
-      const doc = await prisma.document.findFirst({
+      const doc = await ctx.db.document.findFirst({
         where: {
           id: input.documentId,
           organizationId: ctx.organizationId,
@@ -261,7 +267,7 @@ export const documentRouter = router({
         });
       }
 
-      const url = await createPresignedDownloadUrl(doc.storageKey, 900);
+      const url = await createRegionalPresignedDownloadUrl(doc.storageKey, 900);
       return { url, expiresIn: 900 };
     }),
 
@@ -282,7 +288,7 @@ export const documentRouter = router({
 
       // Filter by entity link (join through DocumentLink)
       if (entityType && entityId) {
-        const linkedDocIds = await prisma.documentLink.findMany({
+        const linkedDocIds = await ctx.db.documentLink.findMany({
           where: {
             organizationId: ctx.organizationId,
             entityType,
@@ -302,7 +308,7 @@ export const documentRouter = router({
       }
 
       const [documents, totalCount] = await Promise.all([
-        prisma.document.findMany({
+        ctx.db.document.findMany({
           where,
           skip: (page - 1) * pageSize,
           take: pageSize,
@@ -311,7 +317,7 @@ export const documentRouter = router({
             links: true,
           },
         }),
-        prisma.document.count({ where }),
+        ctx.db.document.count({ where }),
       ]);
 
       return { items: plain(documents), totalCount, page, pageSize };
@@ -334,7 +340,7 @@ export const documentRouter = router({
         });
       }
 
-      const result = await prisma.$transaction(async (tx) => {
+      const result = await ctx.db.$transaction(async (tx) => {
         // Find existing document
         const existing = await tx.document.findFirst({
           where: {
@@ -404,7 +410,7 @@ export const documentRouter = router({
         }
 
         // Generate presigned upload URL
-        const uploadUrl = await createPresignedUploadUrl(storageKey, input.mimeType, 300);
+        const uploadUrl = await createRegionalPresignedUploadUrl(storageKey, input.mimeType, 300);
 
         return { documentId: newDoc.id, uploadUrl, storageKey };
       });
@@ -420,7 +426,7 @@ export const documentRouter = router({
     .use(requirePermission({ document: ["read"] }))
     .input(z.object({ documentId: z.string() }))
     .query(async ({ ctx, input }) => {
-      const doc = await prisma.document.findFirst({
+      const doc = await ctx.db.document.findFirst({
         where: {
           id: input.documentId,
           organizationId: ctx.organizationId,
@@ -441,7 +447,7 @@ export const documentRouter = router({
 
       // Find all documents linked to the same entity as this document
       const firstLink = doc.links[0]!;
-      const relatedLinks = await prisma.documentLink.findMany({
+      const relatedLinks = await ctx.db.documentLink.findMany({
         where: {
           organizationId: ctx.organizationId,
           entityType: firstLink.entityType,
@@ -452,7 +458,7 @@ export const documentRouter = router({
 
       const relatedDocIds = [...new Set(relatedLinks.map((l) => l.documentId))];
 
-      const documents = await prisma.document.findMany({
+      const documents = await ctx.db.document.findMany({
         where: {
           id: { in: relatedDocIds },
           organizationId: ctx.organizationId,
@@ -471,7 +477,7 @@ export const documentRouter = router({
     .use(requirePermission({ document: ["delete"] }))
     .input(z.object({ documentId: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const doc = await prisma.document.findFirst({
+      const doc = await ctx.db.document.findFirst({
         where: {
           id: input.documentId,
           organizationId: ctx.organizationId,
@@ -487,20 +493,20 @@ export const documentRouter = router({
       }
 
       // Soft-delete the document
-      await prisma.document.update({
+      await ctx.db.document.update({
         where: { id: doc.id },
         data: { deletedAt: new Date() },
       });
 
       // Remove R2 object
       try {
-        await deleteObject(doc.storageKey);
+        await deleteRegionalObject(doc.storageKey);
       } catch (error) {
         console.error("[document-delete] Failed to delete R2 object:", doc.storageKey, error);
       }
 
       // Remove associated document links
-      await prisma.documentLink.deleteMany({
+      await ctx.db.documentLink.deleteMany({
         where: {
           documentId: doc.id,
           organizationId: ctx.organizationId,
@@ -518,7 +524,7 @@ export const documentRouter = router({
     .input(documentLinkSchema)
     .mutation(async ({ ctx, input }) => {
       // Verify document belongs to org
-      const doc = await prisma.document.findFirst({
+      const doc = await ctx.db.document.findFirst({
         where: {
           id: input.documentId,
           organizationId: ctx.organizationId,
@@ -533,7 +539,7 @@ export const documentRouter = router({
         });
       }
 
-      const link = await prisma.documentLink.create({
+      const link = await ctx.db.documentLink.create({
         data: {
           organizationId: ctx.organizationId,
           documentId: input.documentId,

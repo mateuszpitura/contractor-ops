@@ -1,6 +1,5 @@
 import { auth } from "@contractor-ops/auth";
 import type { Prisma } from "@contractor-ops/db";
-import { prisma } from "@contractor-ops/db";
 import {
   decryptCredentials,
   encryptCredentials,
@@ -30,7 +29,7 @@ registerAllAdapters();
  * decrypts credentials, refreshes token if expired, and returns adapter.
  */
 async function getGoogleWorkspaceConnection(organizationId: string) {
-  const connection = await prisma.integrationConnection.findFirst({
+  const connection = await ctx.db.integrationConnection.findFirst({
     where: {
       organizationId,
       provider: "GOOGLE_WORKSPACE",
@@ -59,7 +58,7 @@ async function getGoogleWorkspaceConnection(organizationId: string) {
   if (credentials.expiresAt && new Date(credentials.expiresAt) < new Date()) {
     credentials = await adapter.refreshToken(credentials);
     const encrypted = encryptCredentials(credentials, "google_workspace");
-    await prisma.integrationConnection.update({
+    await ctx.db.integrationConnection.update({
       where: { id: connection.id },
       data: {
         credentialsRef: encrypted,
@@ -76,7 +75,7 @@ async function getGoogleWorkspaceConnection(organizationId: string) {
  * Idempotent: skips if schedule already exists in connection config.
  */
 async function ensureSyncCronSchedule(connectionId: string, organizationId: string) {
-  const connection = await prisma.integrationConnection.findUnique({
+  const connection = await ctx.db.integrationConnection.findUnique({
     where: { id: connectionId },
     select: { configJson: true },
   });
@@ -94,7 +93,7 @@ async function ensureSyncCronSchedule(connectionId: string, organizationId: stri
       scheduleId,
     });
 
-    await prisma.integrationConnection.update({
+    await ctx.db.integrationConnection.update({
       where: { id: connectionId },
       data: {
         configJson: {
@@ -303,7 +302,7 @@ export const googleWorkspaceRouter = router({
 
       // Store import metadata
       const currentConfig = (connection.configJson as Record<string, unknown>) ?? {};
-      await prisma.integrationConnection.update({
+      await ctx.db.integrationConnection.update({
         where: { id: connection.id },
         data: {
           configJson: {
@@ -353,7 +352,7 @@ export const googleWorkspaceRouter = router({
   syncStatus: tenantProcedure
     .use(requirePermission({ member: ["read"] }))
     .query(async ({ ctx }) => {
-      const connection = await prisma.integrationConnection.findFirst({
+      const connection = await ctx.db.integrationConnection.findFirst({
         where: {
           organizationId: ctx.organizationId,
           provider: "GOOGLE_WORKSPACE",
@@ -370,7 +369,7 @@ export const googleWorkspaceRouter = router({
         return { connected: false as const };
       }
 
-      const lastSync = await prisma.integrationSyncLog.findFirst({
+      const lastSync = await ctx.db.integrationSyncLog.findFirst({
         where: { integrationConnectionId: connection.id },
         orderBy: { startedAt: "desc" },
         select: {

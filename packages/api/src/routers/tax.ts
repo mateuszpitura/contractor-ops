@@ -1,4 +1,3 @@
-import { prisma } from "@contractor-ops/db";
 import { whtServiceTypeEnum } from "@contractor-ops/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -14,7 +13,7 @@ import { createWhtCertificate, listWhtCertificates } from "../services/wht-certi
 export const taxRouter = router({
   /** Get active tax rates for the tenant org's country */
   getRates: tenantProcedure.query(async ({ ctx }) => {
-    const org = await prisma.organization.findUniqueOrThrow({
+    const org = await ctx.db.organization.findUniqueOrThrow({
       where: { id: ctx.organizationId },
       select: { countryCode: true },
     });
@@ -33,7 +32,7 @@ export const taxRouter = router({
   validateRate: tenantProcedure
     .input(z.object({ code: z.string().max(10) }))
     .query(async ({ ctx, input }) => {
-      const org = await prisma.organization.findUniqueOrThrow({
+      const org = await ctx.db.organization.findUniqueOrThrow({
         where: { id: ctx.organizationId },
         select: { countryCode: true },
       });
@@ -52,7 +51,7 @@ export const taxRouter = router({
       }),
     )
     .query(async ({ ctx, input }) => {
-      const org = await prisma.organization.findUniqueOrThrow({
+      const org = await ctx.db.organization.findUniqueOrThrow({
         where: { id: ctx.organizationId },
         select: { countryCode: true },
       });
@@ -85,7 +84,7 @@ export const taxRouter = router({
   getWhtCertificate: tenantProcedure
     .input(z.object({ certificateId: z.string() }))
     .query(async ({ ctx, input }) => {
-      const cert = await prisma.whtCertificate.findUnique({
+      const cert = await ctx.db.whtCertificate.findUnique({
         where: { id: input.certificateId },
       });
       if (!cert || cert.organizationId !== ctx.organizationId) {
@@ -101,7 +100,7 @@ export const taxRouter = router({
     const endOfPeriod = new Date(now.getFullYear(), now.getMonth() + 1, 0);
 
     // VAT collected (from approved/paid invoices this period)
-    const vatCollected = await prisma.invoice.aggregate({
+    const vatCollected = await ctx.db.invoice.aggregate({
       where: {
         organizationId: ctx.organizationId,
         issueDate: { gte: startOfPeriod, lte: endOfPeriod },
@@ -112,7 +111,7 @@ export const taxRouter = router({
     });
 
     // VAT owed (from received/under_review invoices this period)
-    const vatOwed = await prisma.invoice.aggregate({
+    const vatOwed = await ctx.db.invoice.aggregate({
       where: {
         organizationId: ctx.organizationId,
         issueDate: { gte: startOfPeriod, lte: endOfPeriod },
@@ -123,7 +122,7 @@ export const taxRouter = router({
     });
 
     // WHT withheld this period
-    const whtCerts = await prisma.whtCertificate.findMany({
+    const whtCerts = await ctx.db.whtCertificate.findMany({
       where: {
         organizationId: ctx.organizationId,
         generatedAt: { gte: startOfPeriod, lte: endOfPeriod },
@@ -134,7 +133,7 @@ export const taxRouter = router({
     const whtCertCount = whtCerts.length;
 
     // Pending WHT (payment run items with WHT but no certificate)
-    const pendingWht = await prisma.paymentRunItem.aggregate({
+    const pendingWht = await ctx.db.paymentRunItem.aggregate({
       where: {
         organizationId: ctx.organizationId,
         whtAmountMinor: { gt: 0 },

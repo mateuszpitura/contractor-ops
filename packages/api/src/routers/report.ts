@@ -1,4 +1,3 @@
-import { prisma } from "@contractor-ops/db";
 import { Prisma } from "@contractor-ops/db/generated/prisma/client";
 import { z } from "zod";
 import { router } from "../init.js";
@@ -74,7 +73,7 @@ export const reportRouter = router({
         ? Prisma.sql`AND i."contractorId" = ${input.contractorId}`
         : Prisma.empty;
 
-      const items = await prisma.$queryRaw<
+      const items = await ctx.db.$queryRaw<
         Array<{
           contractorId: string;
           contractorName: string;
@@ -105,7 +104,7 @@ export const reportRouter = router({
         OFFSET ${offset}
       `;
 
-      const countResult = await prisma.$queryRaw<Array<{ count: number }>>`
+      const countResult = await ctx.db.$queryRaw<Array<{ count: number }>>`
         SELECT COUNT(DISTINCT i."contractorId")::int AS count
         FROM "Invoice" i
         WHERE i."organizationId" = ${ctx.organizationId}
@@ -153,7 +152,7 @@ export const reportRouter = router({
       const orderCol = sortMap[input.sortBy] ?? '"totalMinor"';
       const orderDir = input.sortOrder === "asc" ? "ASC" : "DESC";
 
-      const items = await prisma.$queryRaw<
+      const items = await ctx.db.$queryRaw<
         Array<{
           teamId: string | null;
           teamName: string | null;
@@ -182,7 +181,7 @@ export const reportRouter = router({
         OFFSET ${offset}
       `;
 
-      const countResult = await prisma.$queryRaw<Array<{ count: number }>>`
+      const countResult = await ctx.db.$queryRaw<Array<{ count: number }>>`
         SELECT COUNT(DISTINCT COALESCE(c."primaryTeamId", 'unassigned'))::int AS count
         FROM "Invoice" i
         JOIN "Contractor" c ON c.id = i."contractorId"
@@ -235,7 +234,7 @@ export const reportRouter = router({
       };
 
       const [contracts, totalCount] = await Promise.all([
-        prisma.contract.findMany({
+        ctx.db.contract.findMany({
           where,
           skip: (input.page - 1) * input.pageSize,
           take: input.pageSize,
@@ -246,7 +245,7 @@ export const reportRouter = router({
             },
           },
         }),
-        prisma.contract.count({ where }),
+        ctx.db.contract.count({ where }),
       ]);
 
       const msPerDay = 24 * 60 * 60 * 1000;
@@ -294,7 +293,7 @@ export const reportRouter = router({
       };
 
       const [invoices, totalCount] = await Promise.all([
-        prisma.invoice.findMany({
+        ctx.db.invoice.findMany({
           where,
           skip: (input.page - 1) * input.pageSize,
           take: input.pageSize,
@@ -305,7 +304,7 @@ export const reportRouter = router({
             },
           },
         }),
-        prisma.invoice.count({ where }),
+        ctx.db.invoice.count({ where }),
       ]);
 
       const msPerDay = 24 * 60 * 60 * 1000;
@@ -339,7 +338,7 @@ export const reportRouter = router({
     )
     .query(async ({ ctx, input }) => {
       // Get contractors with compliance issues
-      const contractors = await prisma.contractor.findMany({
+      const contractors = await ctx.db.contractor.findMany({
         where: {
           organizationId: ctx.organizationId,
           status: "ACTIVE",
@@ -439,7 +438,7 @@ export const reportRouter = router({
       const dateFrom = new Date(input.dateFrom);
       const dateTo = new Date(input.dateTo);
 
-      const items = await prisma.$queryRaw<
+      const items = await ctx.db.$queryRaw<
         Array<{
           contractorId: string;
           contractorName: string;
@@ -479,7 +478,7 @@ export const reportRouter = router({
       const dateFrom = new Date(input.dateFrom);
       const dateTo = new Date(input.dateTo);
 
-      const items = await prisma.$queryRaw<
+      const items = await ctx.db.$queryRaw<
         Array<{
           teamId: string | null;
           teamName: string | null;
@@ -521,7 +520,7 @@ export const reportRouter = router({
       const bucketCount = daysNum / 30;
       const msPerDay = 24 * 60 * 60 * 1000;
 
-      const contracts = await prisma.contract.findMany({
+      const contracts = await ctx.db.contract.findMany({
         where: {
           organizationId: ctx.organizationId,
           status: { in: ["ACTIVE", "EXPIRING"] },
@@ -556,7 +555,7 @@ export const reportRouter = router({
    * Compliance gaps summary for pie chart.
    */
   complianceGapsChart: tenantProcedure.use(reportRead).query(async ({ ctx }) => {
-    const contractors = await prisma.contractor.findMany({
+    const contractors = await ctx.db.contractor.findMany({
       where: {
         organizationId: ctx.organizationId,
         status: "ACTIVE",
@@ -619,7 +618,7 @@ export const reportRouter = router({
         ? Prisma.sql`AND i."contractorId" = ${input.contractorId}`
         : Prisma.empty;
 
-      const items = await prisma.$queryRaw<
+      const items = await ctx.db.$queryRaw<
         Array<{
           contractorName: string;
           invoiceCount: number;
@@ -674,7 +673,7 @@ export const reportRouter = router({
       const dateFrom = new Date(input.dateFrom);
       const dateTo = new Date(input.dateTo);
 
-      const items = await prisma.$queryRaw<
+      const items = await ctx.db.$queryRaw<
         Array<{
           teamName: string | null;
           contractorCount: number;
@@ -730,7 +729,7 @@ export const reportRouter = router({
       const futureDate = new Date(now.getTime() + daysNum * 24 * 60 * 60 * 1000);
       const msPerDay = 24 * 60 * 60 * 1000;
 
-      const contracts = await prisma.contract.findMany({
+      const contracts = await ctx.db.contract.findMany({
         where: {
           organizationId: ctx.organizationId,
           status: { in: ["ACTIVE", "EXPIRING"] as ("ACTIVE" | "EXPIRING")[] },
@@ -768,7 +767,7 @@ export const reportRouter = router({
     const now = new Date();
     const msPerDay = 24 * 60 * 60 * 1000;
 
-    const invoices = await prisma.invoice.findMany({
+    const invoices = await ctx.db.invoice.findMany({
       where: {
         organizationId: ctx.organizationId,
         dueDate: { lt: now },
@@ -805,7 +804,7 @@ export const reportRouter = router({
    * Export compliance gaps as CSV.
    */
   exportComplianceGaps: tenantProcedure.use(reportRead).mutation(async ({ ctx }) => {
-    const contractors = await prisma.contractor.findMany({
+    const contractors = await ctx.db.contractor.findMany({
       where: {
         organizationId: ctx.organizationId,
         status: "ACTIVE",

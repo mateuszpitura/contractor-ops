@@ -4,7 +4,6 @@
  * row validation, duplicate detection, and batch database operations.
  */
 
-import { prisma } from "@contractor-ops/db";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import * as E from "../errors.js";
@@ -129,7 +128,7 @@ export const importRouter = router({
       let failed = 0;
 
       try {
-        await prisma.$transaction(async (tx) => {
+        await ctx.db.$transaction(async (tx) => {
           for (const row of rows) {
             const taxId = String(row.taxId ?? row.contractorTaxId ?? "").trim();
             const duplicateAction = duplicateActions[taxId];

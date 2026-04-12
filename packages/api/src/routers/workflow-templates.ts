@@ -2,7 +2,6 @@
  * Workflow template procedures: CRUD, duplication, and starter template seeding.
  */
 import type { Prisma } from "@contractor-ops/db";
-import { prisma } from "@contractor-ops/db";
 import {
   templateCreateSchema,
   templateListSchema,
@@ -28,7 +27,7 @@ export const workflowTemplatesRouter = router({
     .use(requirePermission({ workflow: ["create"] }))
     .input(templateCreateSchema)
     .mutation(async ({ ctx, input }) => {
-      const template = await prisma.$transaction(async (tx) => {
+      const template = await ctx.db.$transaction(async (tx) => {
         const created = await tx.workflowTemplate.create({
           data: {
             organizationId: ctx.organizationId,
@@ -80,7 +79,7 @@ export const workflowTemplatesRouter = router({
     .use(requirePermission({ workflow: ["update"] }))
     .input(templateUpdateSchema)
     .mutation(async ({ ctx, input }) => {
-      const template = await prisma.$transaction(async (tx) => {
+      const template = await ctx.db.$transaction(async (tx) => {
         const existing = await tx.workflowTemplate.findFirst({
           where: {
             id: input.id,
@@ -152,7 +151,7 @@ export const workflowTemplatesRouter = router({
     .use(requirePermission({ workflow: ["read"] }))
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
-      const template = await prisma.workflowTemplate.findFirst({
+      const template = await ctx.db.workflowTemplate.findFirst({
         where: {
           id: input.id,
           organizationId: ctx.organizationId,
@@ -192,7 +191,7 @@ export const workflowTemplatesRouter = router({
       }
 
       const [items, total] = await Promise.all([
-        prisma.workflowTemplate.findMany({
+        ctx.db.workflowTemplate.findMany({
           where,
           skip: (page - 1) * pageSize,
           take: pageSize,
@@ -201,7 +200,7 @@ export const workflowTemplatesRouter = router({
             _count: { select: { runs: true, tasks: true } },
           },
         }),
-        prisma.workflowTemplate.count({ where }),
+        ctx.db.workflowTemplate.count({ where }),
       ]);
 
       return plain({ items, total, page, pageSize });
@@ -214,7 +213,7 @@ export const workflowTemplatesRouter = router({
     .use(requirePermission({ workflow: ["delete"] }))
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const template = await prisma.workflowTemplate.findFirst({
+      const template = await ctx.db.workflowTemplate.findFirst({
         where: {
           id: input.id,
           organizationId: ctx.organizationId,
@@ -243,7 +242,7 @@ export const workflowTemplatesRouter = router({
         });
       }
 
-      await prisma.$transaction(async (tx) => {
+      await ctx.db.$transaction(async (tx) => {
         await tx.workflowTaskTemplate.deleteMany({
           where: { workflowTemplateId: input.id },
         });
@@ -262,7 +261,7 @@ export const workflowTemplatesRouter = router({
     .use(requirePermission({ workflow: ["create"] }))
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const source = await prisma.workflowTemplate.findFirst({
+      const source = await ctx.db.workflowTemplate.findFirst({
         where: {
           id: input.id,
           organizationId: ctx.organizationId,
@@ -277,7 +276,7 @@ export const workflowTemplatesRouter = router({
         });
       }
 
-      const duplicate = await prisma.$transaction(async (tx) => {
+      const duplicate = await ctx.db.$transaction(async (tx) => {
         const created = await tx.workflowTemplate.create({
           data: {
             organizationId: ctx.organizationId,
@@ -349,7 +348,7 @@ export const workflowTemplatesRouter = router({
   seedStarterTemplates: tenantProcedure
     .use(requirePermission({ workflow: ["create"] }))
     .mutation(async ({ ctx }) => {
-      const existingCount = await prisma.workflowTemplate.count({
+      const existingCount = await ctx.db.workflowTemplate.count({
         where: { organizationId: ctx.organizationId },
       });
 
@@ -357,7 +356,7 @@ export const workflowTemplatesRouter = router({
         return { seeded: false };
       }
 
-      await prisma.$transaction(async (tx) => {
+      await ctx.db.$transaction(async (tx) => {
         // ----- Template 1: Contractor Onboarding -----
         const onboarding = await tx.workflowTemplate.create({
           data: {

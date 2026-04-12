@@ -1,5 +1,4 @@
 import { auth } from "@contractor-ops/auth";
-import { prisma } from "@contractor-ops/db";
 import type { Prisma } from "@contractor-ops/db/generated/prisma/client";
 import {
   orgExpiryReminderDefaultsSchema,
@@ -14,7 +13,7 @@ import { sensitiveActionProcedure } from "../middleware/sensitive.js";
 import { tenantProcedure } from "../middleware/tenant.js";
 import { CacheKeys, CacheTTL, cached, invalidateByPrefix } from "../services/cache.js";
 import { approveChangeRequest, rejectChangeRequest } from "../services/portal-change-request.js";
-import { createPresignedUploadUrl } from "../services/r2.js";
+import { createRegionalPresignedUploadUrl } from "../services/regional-storage.js";
 
 export const settingsRouter = router({
   /**
@@ -99,7 +98,7 @@ export const settingsRouter = router({
         CacheKeys.orgSettingsJson(ctx.organizationId, "expiry"),
         CacheTTL.ORG_SETTINGS_JSON,
         async () => {
-          const org = await prisma.organization.findUnique({
+          const org = await ctx.db.organization.findUnique({
             where: { id: ctx.organizationId },
             select: { settingsJson: true },
           });
@@ -121,7 +120,7 @@ export const settingsRouter = router({
     .use(requirePermission({ settings: ["update"] }))
     .input(orgExpiryReminderDefaultsSchema)
     .mutation(async ({ ctx, input }) => {
-      const org = await prisma.organization.findUnique({
+      const org = await ctx.db.organization.findUnique({
         where: { id: ctx.organizationId },
         select: { settingsJson: true },
       });
@@ -133,7 +132,7 @@ export const settingsRouter = router({
         contractExpiryReminderDaysBefore: input.reminderDaysBefore,
       };
 
-      await prisma.organization.update({
+      await ctx.db.organization.update({
         where: { id: ctx.organizationId },
         data: {
           settingsJson: newSettings as Prisma.InputJsonValue,
@@ -156,7 +155,7 @@ export const settingsRouter = router({
         CacheKeys.orgSettingsJson(ctx.organizationId, "invoice"),
         CacheTTL.ORG_SETTINGS_JSON,
         async () => {
-          const org = await prisma.organization.findUnique({
+          const org = await ctx.db.organization.findUnique({
             where: { id: ctx.organizationId },
             select: { settingsJson: true },
           });
@@ -181,7 +180,7 @@ export const settingsRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const org = await prisma.organization.findUnique({
+      const org = await ctx.db.organization.findUnique({
         where: { id: ctx.organizationId },
         select: { settingsJson: true },
       });
@@ -193,7 +192,7 @@ export const settingsRouter = router({
         invoiceDeviationThresholdPercent: input.invoiceDeviationThresholdPercent,
       };
 
-      await prisma.organization.update({
+      await ctx.db.organization.update({
         where: { id: ctx.organizationId },
         data: {
           settingsJson: newSettings as Prisma.InputJsonValue,
@@ -219,7 +218,7 @@ export const settingsRouter = router({
     .use(requirePermission({ settings: ["read"] }))
     .query(async ({ ctx }) => {
       return cached(CacheKeys.orgBranding(ctx.organizationId), CacheTTL.ORG_BRANDING, async () => {
-        const org = await prisma.organization.findUnique({
+        const org = await ctx.db.organization.findUnique({
           where: { id: ctx.organizationId },
           select: { logo: true, settingsJson: true },
         });
@@ -253,7 +252,7 @@ export const settingsRouter = router({
     .mutation(async ({ ctx, input }) => {
       const ext = input.filename.split(".").pop() ?? "png";
       const key = `orgs/${ctx.organizationId}/branding/logo.${ext}`;
-      const uploadUrl = await createPresignedUploadUrl(key, input.contentType);
+      const uploadUrl = await createRegionalPresignedUploadUrl(key, input.contentType);
       // Public URL for R2 (bucket public access)
       const publicUrl = `${process.env.R2_PUBLIC_URL ?? ""}/${key}`;
       return { uploadUrl, publicUrl, storageKey: key };
@@ -277,7 +276,7 @@ export const settingsRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const org = await prisma.organization.findUnique({
+      const org = await ctx.db.organization.findUnique({
         where: { id: ctx.organizationId },
         select: { settingsJson: true, logo: true },
       });
@@ -304,7 +303,7 @@ export const settingsRouter = router({
         updateData.logo = input.logoUrl;
       }
 
-      await prisma.organization.update({
+      await ctx.db.organization.update({
         where: { id: ctx.organizationId },
         data: updateData,
       });
@@ -327,7 +326,7 @@ export const settingsRouter = router({
   getPortalDomain: tenantProcedure
     .use(requirePermission({ settings: ["read"] }))
     .query(async ({ ctx }) => {
-      const org = await prisma.organization.findUnique({
+      const org = await ctx.db.organization.findUnique({
         where: { id: ctx.organizationId },
         select: { slug: true, portalSubdomain: true, portalCustomDomain: true },
       });
@@ -363,7 +362,7 @@ export const settingsRouter = router({
     .mutation(async ({ ctx, input }) => {
       if (input.portalSubdomain) {
         // Check uniqueness across all orgs
-        const existing = await prisma.organization.findFirst({
+        const existing = await ctx.db.organization.findFirst({
           where: {
             portalSubdomain: input.portalSubdomain,
             id: { not: ctx.organizationId },
@@ -377,7 +376,7 @@ export const settingsRouter = router({
         }
       }
 
-      await prisma.organization.update({
+      await ctx.db.organization.update({
         where: { id: ctx.organizationId },
         data: { portalSubdomain: input.portalSubdomain ?? null },
       });
@@ -411,7 +410,7 @@ export const settingsRouter = router({
         where.status = input.status;
       }
 
-      const requests = await prisma.contractorChangeRequest.findMany({
+      const requests = await ctx.db.contractorChangeRequest.findMany({
         where,
         include: {
           contractor: {

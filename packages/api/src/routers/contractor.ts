@@ -1,5 +1,4 @@
 import type { Prisma } from "@contractor-ops/db";
-import { prisma } from "@contractor-ops/db";
 import {
   contractorCreateSchema,
   contractorLifecycleTransitionSchema,
@@ -196,7 +195,7 @@ export const contractorRouter = router({
           .join(" & ");
 
         if (terms) {
-          const matchingIds: Array<{ id: string }> = await prisma.$queryRaw`
+          const matchingIds: Array<{ id: string }> = await ctx.db.$queryRaw`
             SELECT id FROM "Contractor"
             WHERE "organizationId" = ${ctx.organizationId}
               AND "deletedAt" IS NULL
@@ -212,7 +211,7 @@ export const contractorRouter = router({
       }
 
       const [contractors, total] = await Promise.all([
-        prisma.contractor.findMany({
+        ctx.db.contractor.findMany({
           where,
           skip: (page - 1) * pageSize,
           take: pageSize,
@@ -241,14 +240,14 @@ export const contractorRouter = router({
             },
           },
         }),
-        prisma.contractor.count({ where }),
+        ctx.db.contractor.count({ where }),
       ]);
 
       // Compute health badge and get pending counts for each contractor
       const contractorIds = contractors.map((c) => c.id);
       const pendingCounts =
         contractorIds.length > 0
-          ? await prisma.contractorComplianceItem.groupBy({
+          ? await ctx.db.contractorComplianceItem.groupBy({
               by: ["contractorId"],
               where: {
                 contractorId: { in: contractorIds },
@@ -294,7 +293,7 @@ export const contractorRouter = router({
       const now = new Date();
       const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
 
-      const contractor = await prisma.contractor.findFirst({
+      const contractor = await ctx.db.contractor.findFirst({
         where: {
           id: input.id,
           organizationId: ctx.organizationId,
@@ -406,7 +405,7 @@ export const contractorRouter = router({
         ...companyFields
       } = input;
 
-      const contractor = await prisma.$transaction(async (tx) => {
+      const contractor = await ctx.db.$transaction(async (tx) => {
         const created = await tx.contractor.create({
           data: {
             organizationId: ctx.organizationId,
@@ -486,7 +485,7 @@ export const contractorRouter = router({
       } = input;
 
       // Verify contractor belongs to org
-      const existing = await prisma.contractor.findFirst({
+      const existing = await ctx.db.contractor.findFirst({
         where: {
           id,
           organizationId: ctx.organizationId,
@@ -521,14 +520,14 @@ export const contractorRouter = router({
         };
       }
 
-      const updated = await prisma.contractor.update({
+      const updated = await ctx.db.contractor.update({
         where: { id },
         data: updateData,
       });
 
       // Update default billing profile if billing fields changed
       if (bankAccount !== undefined || paymentTermsDays !== undefined) {
-        const defaultProfile = await prisma.contractorBillingProfile.findFirst({
+        const defaultProfile = await ctx.db.contractorBillingProfile.findFirst({
           where: {
             contractorId: id,
             organizationId: ctx.organizationId,
@@ -546,7 +545,7 @@ export const contractorRouter = router({
           if (paymentTermsDays !== undefined) {
             profileUpdate.paymentTermsDays = paymentTermsDays ?? null;
           }
-          await prisma.contractorBillingProfile.update({
+          await ctx.db.contractorBillingProfile.update({
             where: { id: defaultProfile.id },
             data: profileUpdate,
           });
@@ -563,7 +562,7 @@ export const contractorRouter = router({
     .use(requirePermission({ contractor: ["update"] }))
     .input(contractorLifecycleTransitionSchema)
     .mutation(async ({ ctx, input }) => {
-      const contractor = await prisma.contractor.findFirst({
+      const contractor = await ctx.db.contractor.findFirst({
         where: {
           id: input.id,
           organizationId: ctx.organizationId,
@@ -592,7 +591,7 @@ export const contractorRouter = router({
 
       // Block ENDED transition if contractor has active contracts
       if (input.stage === "ENDED") {
-        const activeContracts = await prisma.contract.count({
+        const activeContracts = await ctx.db.contract.count({
           where: {
             contractorId: input.id,
             organizationId: ctx.organizationId,
@@ -616,7 +615,7 @@ export const contractorRouter = router({
         updateData.status = "ACTIVE";
       }
 
-      const updated = await prisma.contractor.update({
+      const updated = await ctx.db.contractor.update({
         where: { id: input.id },
         data: updateData,
       });
@@ -637,7 +636,7 @@ export const contractorRouter = router({
     .use(requirePermission({ contractor: ["delete"] }))
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const contractor = await prisma.contractor.findFirst({
+      const contractor = await ctx.db.contractor.findFirst({
         where: {
           id: input.id,
           organizationId: ctx.organizationId,
@@ -653,7 +652,7 @@ export const contractorRouter = router({
       }
 
       // Block archival if contractor has unpaid invoices
-      const unpaidInvoiceCount = await prisma.invoice.count({
+      const unpaidInvoiceCount = await ctx.db.invoice.count({
         where: {
           contractorId: input.id,
           organizationId: ctx.organizationId,
@@ -669,7 +668,7 @@ export const contractorRouter = router({
       }
 
       // Block archival if contractor has active workflow runs
-      const activeWorkflowCount = await prisma.workflowRun.count({
+      const activeWorkflowCount = await ctx.db.workflowRun.count({
         where: {
           contractorId: input.id,
           status: { in: ["IN_PROGRESS", "BLOCKED"] },
@@ -684,7 +683,7 @@ export const contractorRouter = router({
       }
 
       // Block archival if contractor has active contracts
-      const activeContracts = await prisma.contract.count({
+      const activeContracts = await ctx.db.contract.count({
         where: {
           contractorId: input.id,
           organizationId: ctx.organizationId,
@@ -701,7 +700,7 @@ export const contractorRouter = router({
       }
 
       // Auto-reject any pending change requests before archiving
-      await prisma.contractorChangeRequest.updateMany({
+      await ctx.db.contractorChangeRequest.updateMany({
         where: {
           contractorId: input.id,
           organizationId: ctx.organizationId,
@@ -713,7 +712,7 @@ export const contractorRouter = router({
         },
       });
 
-      const updated = await prisma.contractor.update({
+      const updated = await ctx.db.contractor.update({
         where: { id: input.id },
         data: {
           status: "ARCHIVED",
@@ -737,7 +736,7 @@ export const contractorRouter = router({
     .input(z.object({ ids: z.array(z.string()).min(1).max(100) }))
     .mutation(async ({ ctx, input }) => {
       // Block archival for contractors with unpaid invoices
-      const contractorsWithUnpaid = await prisma.invoice.groupBy({
+      const contractorsWithUnpaid = await ctx.db.invoice.groupBy({
         by: ["contractorId"],
         where: {
           contractorId: { in: input.ids },
@@ -751,7 +750,7 @@ export const contractorRouter = router({
       );
 
       // Block archival for contractors with active contracts
-      const contractorsWithActiveContracts = await prisma.contract.groupBy({
+      const contractorsWithActiveContracts = await ctx.db.contract.groupBy({
         by: ["contractorId"],
         where: {
           contractorId: { in: input.ids },
@@ -777,7 +776,7 @@ export const contractorRouter = router({
         });
       }
 
-      const result = await prisma.contractor.updateMany({
+      const result = await ctx.db.contractor.updateMany({
         where: {
           id: { in: archivableIds },
           organizationId: ctx.organizationId,
@@ -811,7 +810,7 @@ export const contractorRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const result = await prisma.contractor.updateMany({
+      const result = await ctx.db.contractor.updateMany({
         where: {
           id: { in: input.ids },
           organizationId: ctx.organizationId,
@@ -837,7 +836,7 @@ export const contractorRouter = router({
     .mutation(async ({ ctx, input }) => {
       const { default: XLSX } = await import("xlsx");
 
-      const contractors = await prisma.contractor.findMany({
+      const contractors = await ctx.db.contractor.findMany({
         where: {
           id: { in: input.ids },
           organizationId: ctx.organizationId,
@@ -980,7 +979,7 @@ export const contractorRouter = router({
 
   /** Get country-specific field configuration for the org's country */
   getCountryFieldsConfig: tenantProcedure.query(async ({ ctx }) => {
-    const org = await prisma.organization.findUniqueOrThrow({
+    const org = await ctx.db.organization.findUniqueOrThrow({
       where: { id: ctx.organizationId },
       select: { countryCode: true },
     });
@@ -998,7 +997,7 @@ export const contractorRouter = router({
   getCountryFields: tenantProcedure
     .input(z.object({ contractorId: z.string() }))
     .query(async ({ ctx, input }) => {
-      const contractor = await prisma.contractor.findUnique({
+      const contractor = await ctx.db.contractor.findUnique({
         where: { id: input.contractorId, organizationId: ctx.organizationId },
         select: { countryFields: true },
       });
@@ -1017,7 +1016,7 @@ export const contractorRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const org = await prisma.organization.findUniqueOrThrow({
+      const org = await ctx.db.organization.findUniqueOrThrow({
         where: { id: ctx.organizationId },
         select: { countryCode: true },
       });
@@ -1038,7 +1037,7 @@ export const contractorRouter = router({
           message: `Invalid country fields: ${parsed.error.message}`,
         });
       }
-      return prisma.contractor.update({
+      return ctx.db.contractor.update({
         where: { id: input.contractorId, organizationId: ctx.organizationId },
         data: { countryFields: parsed.data as object },
       });

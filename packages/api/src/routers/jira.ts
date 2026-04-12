@@ -1,4 +1,3 @@
-import { prisma } from "@contractor-ops/db";
 import { decryptCredentials } from "@contractor-ops/integrations/services/credential-service";
 import type { JiraIssueMetadata } from "@contractor-ops/validators";
 import {
@@ -64,7 +63,7 @@ function buildJiraApiContext(
  * Loads and validates a Jira connection, throwing if not found or disconnected.
  */
 async function loadConnection(connectionId: string, organizationId: string) {
-  const connection = await prisma.integrationConnection.findFirst({
+  const connection = await ctx.db.integrationConnection.findFirst({
     where: { id: connectionId, organizationId },
   });
 
@@ -94,7 +93,7 @@ export const jiraRouter = router({
   connectionStatus: tenantProcedure
     .use(requirePermission({ settings: ["read"] }))
     .query(async ({ ctx }) => {
-      const connection = await prisma.integrationConnection.findFirst({
+      const connection = await ctx.db.integrationConnection.findFirst({
         where: {
           organizationId: ctx.organizationId,
           provider: "JIRA",
@@ -274,7 +273,7 @@ export const jiraRouter = router({
     .use(requirePermission({ workflow: ["read"] }))
     .input(z.object({ taskTemplateId: z.string() }))
     .query(async ({ input }) => {
-      const template = await prisma.workflowTaskTemplate.findUnique({
+      const template = await ctx.db.workflowTaskTemplate.findUnique({
         where: { id: input.taskTemplateId },
         select: { configJson: true },
       });
@@ -299,7 +298,7 @@ export const jiraRouter = router({
     )
     .query(async ({ ctx, input }) => {
       if (input.entityType === "WORKFLOW_TASK_RUN") {
-        const links = await prisma.externalLink.findMany({
+        const links = await ctx.db.externalLink.findMany({
           where: {
             organizationId: ctx.organizationId,
             entityType: "WORKFLOW_TASK_RUN",
@@ -318,7 +317,7 @@ export const jiraRouter = router({
       }
 
       // WORKFLOW_RUN: find all task runs, then their external links
-      const taskRuns = await prisma.workflowTaskRun.findMany({
+      const taskRuns = await ctx.db.workflowTaskRun.findMany({
         where: {
           workflowRunId: input.entityId,
           organizationId: ctx.organizationId,
@@ -328,7 +327,7 @@ export const jiraRouter = router({
 
       if (taskRuns.length === 0) return [];
 
-      const links = await prisma.externalLink.findMany({
+      const links = await ctx.db.externalLink.findMany({
         where: {
           organizationId: ctx.organizationId,
           entityType: "WORKFLOW_TASK_RUN",
@@ -358,7 +357,7 @@ export const jiraRouter = router({
     )
     .query(async ({ ctx, input }) => {
       // Find all workflow runs for this contractor
-      const runs = await prisma.workflowRun.findMany({
+      const runs = await ctx.db.workflowRun.findMany({
         where: {
           contractorId: input.contractorId,
           organizationId: ctx.organizationId,
@@ -369,7 +368,7 @@ export const jiraRouter = router({
       if (runs.length === 0) return [];
 
       // Get all task run IDs
-      const taskRuns = await prisma.workflowTaskRun.findMany({
+      const taskRuns = await ctx.db.workflowTaskRun.findMany({
         where: {
           workflowRunId: { in: runs.map((r) => r.id) },
         },
@@ -379,7 +378,7 @@ export const jiraRouter = router({
       if (taskRuns.length === 0) return [];
 
       // Find recent Jira-linked external links
-      const links = await prisma.externalLink.findMany({
+      const links = await ctx.db.externalLink.findMany({
         where: {
           organizationId: ctx.organizationId,
           entityType: "WORKFLOW_TASK_RUN",
@@ -450,7 +449,7 @@ export const jiraRouter = router({
     .use(requireTier("PRO"))
     .input(saveJiraTaskConfigInputSchema)
     .mutation(async ({ ctx, input }) => {
-      const template = await prisma.workflowTaskTemplate.findFirst({
+      const template = await ctx.db.workflowTaskTemplate.findFirst({
         where: {
           id: input.taskTemplateId,
           organizationId: ctx.organizationId,
@@ -467,7 +466,7 @@ export const jiraRouter = router({
 
       const existingConfig = (template.configJson as Record<string, unknown>) ?? {};
 
-      await prisma.workflowTaskTemplate.update({
+      await ctx.db.workflowTaskTemplate.update({
         where: { id: input.taskTemplateId },
         data: {
           configJson: {
@@ -489,7 +488,7 @@ export const jiraRouter = router({
     .use(requireTier("PRO"))
     .input(z.object({ connectionId: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const connection = await prisma.integrationConnection.findFirst({
+      const connection = await ctx.db.integrationConnection.findFirst({
         where: {
           id: input.connectionId,
           organizationId: ctx.organizationId,
@@ -511,7 +510,7 @@ export const jiraRouter = router({
         console.error("[jira.disconnect] Failed to deregister webhooks:", error);
       }
 
-      await prisma.integrationConnection.update({
+      await ctx.db.integrationConnection.update({
         where: { id: connection.id },
         data: { status: "DISCONNECTED" },
       });

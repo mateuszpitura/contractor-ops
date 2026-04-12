@@ -1,4 +1,3 @@
-import { prisma } from "@contractor-ops/db";
 import {
   reminderRuleCreateSchema,
   reminderRuleToggleSchema,
@@ -29,7 +28,7 @@ export const reminderRouter = router({
    * Available to all tenant members.
    */
   list: tenantProcedure.query(async ({ ctx }) => {
-    const rules = await prisma.reminderRule.findMany({
+    const rules = await ctx.db.reminderRule.findMany({
       where: { organizationId: ctx.organizationId },
       orderBy: { createdAt: "desc" },
     });
@@ -44,7 +43,7 @@ export const reminderRouter = router({
     .use(requirePermission({ organization: ["update"] }))
     .input(reminderRuleCreateSchema)
     .mutation(async ({ ctx, input }) => {
-      const rule = await prisma.reminderRule.create({
+      const rule = await ctx.db.reminderRule.create({
         data: {
           organizationId: ctx.organizationId,
           name: input.name,
@@ -71,7 +70,7 @@ export const reminderRouter = router({
     .mutation(async ({ ctx, input }) => {
       const { id, ...data } = input;
 
-      const existing = await prisma.reminderRule.findFirst({
+      const existing = await ctx.db.reminderRule.findFirst({
         where: { id, organizationId: ctx.organizationId },
       });
 
@@ -82,7 +81,7 @@ export const reminderRouter = router({
         });
       }
 
-      const updated = await prisma.reminderRule.update({
+      const updated = await ctx.db.reminderRule.update({
         where: { id },
         data: {
           ...data,
@@ -100,7 +99,7 @@ export const reminderRouter = router({
     .use(requirePermission({ organization: ["update"] }))
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const existing = await prisma.reminderRule.findFirst({
+      const existing = await ctx.db.reminderRule.findFirst({
         where: { id: input.id, organizationId: ctx.organizationId },
       });
 
@@ -111,7 +110,7 @@ export const reminderRouter = router({
         });
       }
 
-      await prisma.$transaction(async (tx) => {
+      await ctx.db.$transaction(async (tx) => {
         await tx.reminderInstance.deleteMany({
           where: {
             reminderRuleId: input.id,
@@ -134,7 +133,7 @@ export const reminderRouter = router({
     .use(requirePermission({ organization: ["update"] }))
     .input(reminderRuleToggleSchema)
     .mutation(async ({ ctx, input }) => {
-      const existing = await prisma.reminderRule.findFirst({
+      const existing = await ctx.db.reminderRule.findFirst({
         where: { id: input.id, organizationId: ctx.organizationId },
       });
 
@@ -145,7 +144,7 @@ export const reminderRouter = router({
         });
       }
 
-      await prisma.$transaction(async (tx) => {
+      await ctx.db.$transaction(async (tx) => {
         await tx.reminderRule.update({
           where: { id: input.id },
           data: { active: input.active },

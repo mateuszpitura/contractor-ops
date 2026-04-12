@@ -2,7 +2,6 @@
  * Workflow execution procedures: run lifecycle (start, cancel, get, list),
  * task actions (complete, skip, reassign), comments, and overdue count.
  */
-import { prisma } from "@contractor-ops/db";
 import {
   addCommentSchema,
   calendarTaskConfigSchema,
@@ -54,7 +53,7 @@ export const workflowExecutionRouter = router({
     .use(requirePermission({ workflow: ["execute"] }))
     .input(startRunSchema)
     .mutation(async ({ ctx, input }) => {
-      const run = await prisma.$transaction(async (tx) => {
+      const run = await ctx.db.$transaction(async (tx) => {
         const template = await tx.workflowTemplate.findFirst({
           where: {
             id: input.templateId,
@@ -304,7 +303,7 @@ export const workflowExecutionRouter = router({
         void (async () => {
           try {
             const { createJiraIssue } = await import("../services/jira-issue-sync.js");
-            const connection = await prisma.integrationConnection.findFirst({
+            const connection = await ctx.db.integrationConnection.findFirst({
               where: {
                 organizationId: ctx.organizationId,
                 provider: "JIRA",
@@ -336,7 +335,7 @@ export const workflowExecutionRouter = router({
         void (async () => {
           try {
             const { createLinearIssue } = await import("../services/linear-issue-sync.js");
-            const linearConnection = await prisma.integrationConnection.findFirst({
+            const linearConnection = await ctx.db.integrationConnection.findFirst({
               where: {
                 organizationId: ctx.organizationId,
                 provider: "LINEAR",
@@ -434,7 +433,7 @@ export const workflowExecutionRouter = router({
     .use(requirePermission({ workflow: ["update"] }))
     .input(cancelRunSchema)
     .mutation(async ({ ctx, input }) => {
-      const run = await prisma.$transaction(async (tx) => {
+      const run = await ctx.db.$transaction(async (tx) => {
         const existing = await tx.workflowRun.findFirst({
           where: {
             id: input.runId,
@@ -490,7 +489,7 @@ export const workflowExecutionRouter = router({
           void (async () => {
             try {
               const { transitionJiraIssue } = await import("../services/jira-issue-sync.js");
-              const connection = await prisma.integrationConnection.findFirst({
+              const connection = await ctx.db.integrationConnection.findFirst({
                 where: {
                   organizationId: ctx.organizationId,
                   provider: "JIRA",
@@ -538,7 +537,7 @@ export const workflowExecutionRouter = router({
     .use(requirePermission({ workflow: ["read"] }))
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
-      const run = await prisma.workflowRun.findFirst({
+      const run = await ctx.db.workflowRun.findFirst({
         where: {
           id: input.id,
           organizationId: ctx.organizationId,
@@ -642,7 +641,7 @@ export const workflowExecutionRouter = router({
       }
 
       const [items, total] = await Promise.all([
-        prisma.workflowRun.findMany({
+        ctx.db.workflowRun.findMany({
           where,
           skip: (page - 1) * pageSize,
           take: pageSize,
@@ -657,7 +656,7 @@ export const workflowExecutionRouter = router({
             },
           },
         }),
-        prisma.workflowRun.count({ where }),
+        ctx.db.workflowRun.count({ where }),
       ]);
 
       // Compute progress for each run
@@ -689,7 +688,7 @@ export const workflowExecutionRouter = router({
       }
 
       const [items, total] = await Promise.all([
-        prisma.workflowTaskRun.findMany({
+        ctx.db.workflowTaskRun.findMany({
           where,
           skip: (page - 1) * pageSize,
           take: pageSize,
@@ -707,7 +706,7 @@ export const workflowExecutionRouter = router({
             },
           },
         }),
-        prisma.workflowTaskRun.count({ where }),
+        ctx.db.workflowTaskRun.count({ where }),
       ]);
 
       const now = new Date();
@@ -733,7 +732,7 @@ export const workflowExecutionRouter = router({
     .use(requirePermission({ workflow: ["execute"] }))
     .input(taskActionSchema)
     .mutation(async ({ ctx, input }) => {
-      const result = await prisma.$transaction(async (tx) => {
+      const result = await ctx.db.$transaction(async (tx) => {
         const task = await tx.workflowTaskRun.findFirst({
           where: {
             id: input.taskRunId,
@@ -805,7 +804,7 @@ export const workflowExecutionRouter = router({
         void (async () => {
           try {
             const { transitionJiraIssue } = await import("../services/jira-issue-sync.js");
-            const connection = await prisma.integrationConnection.findFirst({
+            const connection = await ctx.db.integrationConnection.findFirst({
               where: {
                 organizationId: ctx.organizationId,
                 provider: "JIRA",
@@ -850,7 +849,7 @@ export const workflowExecutionRouter = router({
     .use(requirePermission({ workflow: ["execute"] }))
     .input(skipTaskSchema)
     .mutation(async ({ ctx, input }) => {
-      const result = await prisma.$transaction(async (tx) => {
+      const result = await ctx.db.$transaction(async (tx) => {
         const task = await tx.workflowTaskRun.findFirst({
           where: {
             id: input.taskRunId,
@@ -916,7 +915,7 @@ export const workflowExecutionRouter = router({
         void (async () => {
           try {
             const { transitionJiraIssue } = await import("../services/jira-issue-sync.js");
-            const connection = await prisma.integrationConnection.findFirst({
+            const connection = await ctx.db.integrationConnection.findFirst({
               where: {
                 organizationId: ctx.organizationId,
                 provider: "JIRA",
@@ -961,7 +960,7 @@ export const workflowExecutionRouter = router({
     .use(requirePermission({ workflow: ["update"] }))
     .input(reassignTaskSchema)
     .mutation(async ({ ctx, input }) => {
-      const task = await prisma.workflowTaskRun.findFirst({
+      const task = await ctx.db.workflowTaskRun.findFirst({
         where: {
           id: input.taskRunId,
           organizationId: ctx.organizationId,
@@ -975,7 +974,7 @@ export const workflowExecutionRouter = router({
         });
       }
 
-      const updated = await prisma.workflowTaskRun.update({
+      const updated = await ctx.db.workflowTaskRun.update({
         where: { id: input.taskRunId },
         data: { assigneeUserId: input.newAssigneeUserId },
         include: {
@@ -1023,7 +1022,7 @@ export const workflowExecutionRouter = router({
     .input(addCommentSchema)
     .mutation(async ({ ctx, input }) => {
       // Verify run belongs to org
-      const run = await prisma.workflowRun.findFirst({
+      const run = await ctx.db.workflowRun.findFirst({
         where: {
           id: input.workflowRunId,
           organizationId: ctx.organizationId,
@@ -1037,7 +1036,7 @@ export const workflowExecutionRouter = router({
         });
       }
 
-      const comment = await prisma.workflowComment.create({
+      const comment = await ctx.db.workflowComment.create({
         data: {
           organizationId: ctx.organizationId,
           workflowRunId: input.workflowRunId,
@@ -1074,7 +1073,7 @@ export const workflowExecutionRouter = router({
         where.workflowTaskRunId = input.workflowTaskRunId;
       }
 
-      const comments = await prisma.workflowComment.findMany({
+      const comments = await ctx.db.workflowComment.findMany({
         where,
         include: {
           author: { select: { id: true, name: true, image: true } },
@@ -1096,7 +1095,7 @@ export const workflowExecutionRouter = router({
   overdueCount: tenantProcedure
     .use(requirePermission({ workflow: ["read"] }))
     .query(async ({ ctx }) => {
-      const count = await prisma.workflowTaskRun.count({
+      const count = await ctx.db.workflowTaskRun.count({
         where: {
           organizationId: ctx.organizationId,
           assigneeUserId: ctx.user!.id,

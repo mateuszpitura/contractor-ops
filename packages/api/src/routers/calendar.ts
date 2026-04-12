@@ -1,4 +1,3 @@
-import { prisma } from "@contractor-ops/db";
 import { calendarTaskConfigSchema } from "@contractor-ops/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -36,7 +35,7 @@ export const calendarRouter = router({
    * Includes both org-level (userId null) and personal (userId = current user) connections.
    */
   listConnections: tenantProcedure.query(async ({ ctx }) => {
-    const connections = await prisma.integrationConnection.findMany({
+    const connections = await ctx.db.integrationConnection.findMany({
       where: {
         organizationId: ctx.organizationId,
         provider: { in: [...CALENDAR_PROVIDERS] },
@@ -61,7 +60,7 @@ export const calendarRouter = router({
    * List only personal calendar connections for the current user.
    */
   listPersonalConnections: tenantProcedure.query(async ({ ctx }) => {
-    const connections = await prisma.integrationConnection.findMany({
+    const connections = await ctx.db.integrationConnection.findMany({
       where: {
         organizationId: ctx.organizationId,
         userId: ctx.user!.id,
@@ -93,7 +92,7 @@ export const calendarRouter = router({
     .use(requireTier("PRO"))
     .input(z.object({ connectionId: z.string().cuid() }))
     .mutation(async ({ ctx, input }) => {
-      const connection = await prisma.integrationConnection.findFirst({
+      const connection = await ctx.db.integrationConnection.findFirst({
         where: {
           id: input.connectionId,
           organizationId: ctx.organizationId,
@@ -117,7 +116,7 @@ export const calendarRouter = router({
         });
       }
 
-      await prisma.integrationConnection.update({
+      await ctx.db.integrationConnection.update({
         where: { id: connection.id },
         data: { status: "DISCONNECTED" },
       });
@@ -133,7 +132,7 @@ export const calendarRouter = router({
    * Count calendar events created by the system for this organization.
    */
   listEvents: tenantProcedure.query(async ({ ctx }) => {
-    const count = await prisma.externalLink.count({
+    const count = await ctx.db.externalLink.count({
       where: {
         organizationId: ctx.organizationId,
         externalType: { in: [...CALENDAR_EVENT_TYPES] },
@@ -158,7 +157,7 @@ export const calendarRouter = router({
   getTaskConfig: tenantProcedure
     .input(z.object({ taskTemplateId: z.string().cuid() }))
     .query(async ({ input }) => {
-      const template = await prisma.workflowTaskTemplate.findUnique({
+      const template = await ctx.db.workflowTaskTemplate.findUnique({
         where: { id: input.taskTemplateId },
         select: { configJson: true },
       });
@@ -188,7 +187,7 @@ export const calendarRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const template = await prisma.workflowTaskTemplate.findFirst({
+      const template = await ctx.db.workflowTaskTemplate.findFirst({
         where: {
           id: input.taskTemplateId,
           organizationId: ctx.organizationId,
@@ -206,7 +205,7 @@ export const calendarRouter = router({
       // Merge: preserve existing fields (e.g., Jira config) while updating calendar fields
       const existingConfig = (template.configJson as Record<string, unknown>) ?? {};
 
-      await prisma.workflowTaskTemplate.update({
+      await ctx.db.workflowTaskTemplate.update({
         where: { id: input.taskTemplateId },
         data: {
           configJson: {

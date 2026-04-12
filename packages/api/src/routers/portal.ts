@@ -19,10 +19,10 @@ import {
 } from "../services/portal-magic-link.js";
 import { createPortalSession, deletePortalSession } from "../services/portal-session.js";
 import {
-  createPresignedDownloadUrl,
-  createPresignedUploadUrl,
-  generateStorageKey,
-} from "../services/r2.js";
+  createRegionalPresignedDownloadUrl,
+  createRegionalPresignedUploadUrl,
+} from "../services/regional-storage.js";
+import { generateStorageKey } from "../services/r2.js";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -462,7 +462,7 @@ export const portalRouter = router({
 
     const documents = await Promise.all(
       docLinks.map(async (link) => {
-        const downloadUrl = await createPresignedDownloadUrl(link.document.storageKey);
+        const downloadUrl = await createRegionalPresignedDownloadUrl(link.document.storageKey);
         return {
           id: link.document.id,
           name: link.document.originalFileName,
@@ -546,7 +546,7 @@ export const portalRouter = router({
     // Generate download URLs for attached files
     const files = await Promise.all(
       invoice.files.map(async (f) => {
-        const downloadUrl = await createPresignedDownloadUrl(f.document.storageKey);
+        const downloadUrl = await createRegionalPresignedDownloadUrl(f.document.storageKey);
         return {
           id: f.document.id,
           name: f.document.originalFileName,
@@ -703,7 +703,7 @@ export const portalRouter = router({
           return true;
         })
         .map(async (link) => {
-          const downloadUrl = await createPresignedDownloadUrl(link.document.storageKey);
+          const downloadUrl = await createRegionalPresignedDownloadUrl(link.document.storageKey);
           return {
             id: link.document.id,
             name: link.document.originalFileName,
@@ -769,7 +769,7 @@ export const portalRouter = router({
     .mutation(async ({ ctx, input }) => {
       const docId = randomUUID();
       const key = generateStorageKey(ctx.organizationId, docId, input.filename);
-      const uploadUrl = await createPresignedUploadUrl(key, input.contentType);
+      const uploadUrl = await createRegionalPresignedUploadUrl(key, input.contentType);
 
       return { uploadUrl, documentId: docId, storageKey: key };
     }),

@@ -1,5 +1,4 @@
 import type { Prisma } from "@contractor-ops/db";
-import { prisma } from "@contractor-ops/db";
 import {
   approveTimesheetSchema,
   bulkApproveTimesheetsSchema,
@@ -53,7 +52,7 @@ export const timeRouter = router({
    * Ordered by submittedAt ASC (oldest first).
    */
   listPending: tenantProcedure.use(requirePermission({ time: ["read"] })).query(async ({ ctx }) => {
-    const timesheets = await prisma.timesheet.findMany({
+    const timesheets = await ctx.db.timesheet.findMany({
       where: {
         organizationId: ctx.organizationId,
         status: "SUBMITTED",
@@ -96,7 +95,7 @@ export const timeRouter = router({
         if (input.to) where.weekStartDate.lte = new Date(input.to);
       }
 
-      const timesheets = await prisma.timesheet.findMany({
+      const timesheets = await ctx.db.timesheet.findMany({
         where,
         take: input.limit + 1,
         ...(input.cursor ? { cursor: { id: input.cursor }, skip: 1 } : {}),
@@ -132,7 +131,7 @@ export const timeRouter = router({
     .use(requirePermission({ time: ["read"] }))
     .input(z.object({ timesheetId: z.string().min(1) }))
     .query(async ({ ctx, input }) => {
-      const timesheet = await prisma.timesheet.findFirst({
+      const timesheet = await ctx.db.timesheet.findFirst({
         where: {
           id: input.timesheetId,
           organizationId: ctx.organizationId,
@@ -175,7 +174,7 @@ export const timeRouter = router({
     .query(async ({ ctx }) => {
       // Get contractors with timesheets via a grouped query
       // Get all contractors in the org
-      const contractors = await prisma.contractor.findMany({
+      const contractors = await ctx.db.contractor.findMany({
         where: {
           organizationId: ctx.organizationId,
         },
@@ -187,7 +186,7 @@ export const timeRouter = router({
       });
 
       // Get pending counts per contractor
-      const pendingCounts = await prisma.timesheet.groupBy({
+      const pendingCounts = await ctx.db.timesheet.groupBy({
         by: ["contractorId"],
         where: {
           organizationId: ctx.organizationId,
@@ -204,7 +203,7 @@ export const timeRouter = router({
       );
 
       // Get contractors who have at least one timesheet
-      const contractorWithTimesheets = await prisma.timesheet.groupBy({
+      const contractorWithTimesheets = await ctx.db.timesheet.groupBy({
         by: ["contractorId"],
         where: {
           organizationId: ctx.organizationId,
@@ -219,7 +218,7 @@ export const timeRouter = router({
       const now = new Date();
       const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
 
-      const monthlyStats = await prisma.timesheet.groupBy({
+      const monthlyStats = await ctx.db.timesheet.groupBy({
         by: ["contractorId"],
         where: {
           organizationId: ctx.organizationId,
@@ -351,7 +350,7 @@ export const timeRouter = router({
     .use(requirePermission({ time: ["read"] }))
     .input(z.object({ invoiceId: z.string().min(1) }))
     .query(async ({ ctx, input }) => {
-      const invoice = await prisma.invoice.findFirst({
+      const invoice = await ctx.db.invoice.findFirst({
         where: {
           id: input.invoiceId,
           organizationId: ctx.organizationId,
@@ -420,7 +419,7 @@ export const timeRouter = router({
         if (input.to) invoiceWhere.issueDate.lte = new Date(input.to);
       }
 
-      const invoices = await prisma.invoice.findMany({
+      const invoices = await ctx.db.invoice.findMany({
         where: invoiceWhere,
         take: input.limit + 1,
         ...(input.cursor ? { cursor: { id: input.cursor }, skip: 1 } : {}),

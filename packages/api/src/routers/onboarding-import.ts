@@ -1,7 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { auth } from "@contractor-ops/auth";
 import type { Prisma } from "@contractor-ops/db";
-import { prisma } from "@contractor-ops/db";
 import { decryptCredentials } from "@contractor-ops/integrations";
 import {
   fetchPeopleInputSchema,
@@ -56,7 +55,7 @@ interface OrgSettings {
 async function getOrgSettings(
   organizationId: string,
 ): Promise<{ orgId: string; settings: OrgSettings }> {
-  const org = await prisma.organization.findFirst({
+  const org = await ctx.db.organization.findFirst({
     where: { id: organizationId },
     select: { id: true, settingsJson: true },
   });
@@ -78,7 +77,7 @@ async function updateImportJob(
   const jobs = currentSettings.importJobs ?? {};
   jobs[job.jobId] = job;
 
-  await prisma.organization.update({
+  await ctx.db.organization.update({
     where: { id: organizationId },
     data: {
       settingsJson: {
@@ -99,7 +98,7 @@ export const onboardingImportRouter = router({
    * Lists all 4 supported integration sources with their connection status.
    */
   listSources: tenantProcedure.use(requireTier("PRO")).query(async ({ ctx }) => {
-    const connections = await prisma.integrationConnection.findMany({
+    const connections = await ctx.db.integrationConnection.findMany({
       where: { organizationId: ctx.organizationId },
       select: { provider: true, status: true, credentialsRef: true },
     });
@@ -134,7 +133,7 @@ export const onboardingImportRouter = router({
       // Fetch from each requested source using Promise.allSettled
       const results = await Promise.allSettled(
         input.sources.map(async (source) => {
-          const connection = await prisma.integrationConnection.findFirst({
+          const connection = await ctx.db.integrationConnection.findFirst({
             where: {
               organizationId: ctx.organizationId,
               provider: source,
@@ -190,7 +189,7 @@ export const onboardingImportRouter = router({
       }> = [];
 
       for (const source of input.sources) {
-        const connection = await prisma.integrationConnection.findFirst({
+        const connection = await ctx.db.integrationConnection.findFirst({
           where: {
             organizationId: ctx.organizationId,
             provider: source,

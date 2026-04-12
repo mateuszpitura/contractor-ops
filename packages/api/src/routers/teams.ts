@@ -1,5 +1,4 @@
 import type { Prisma } from "@contractor-ops/db";
-import { prisma } from "@contractor-ops/db";
 import { decryptCredentials } from "@contractor-ops/integrations/services/credential-service";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -26,7 +25,7 @@ interface TeamsConnectionConfig {
  * Accepts CONNECTED status.
  */
 async function loadTeamsConnection(organizationId: string) {
-  const connection = await prisma.integrationConnection.findFirst({
+  const connection = await ctx.db.integrationConnection.findFirst({
     where: {
       organizationId,
       provider: "MICROSOFT_TEAMS",
@@ -74,7 +73,7 @@ export const teamsRouter = router({
    * Returns connection info or null if not connected.
    */
   connectionStatus: tenantProcedure.query(async ({ ctx }) => {
-    const connection = await prisma.integrationConnection.findFirst({
+    const connection = await ctx.db.integrationConnection.findFirst({
       where: {
         organizationId: ctx.organizationId,
         provider: "MICROSOFT_TEAMS",
@@ -143,7 +142,7 @@ export const teamsRouter = router({
       const connection = await loadTeamsConnection(ctx.organizationId);
       const config = (connection.configJson as TeamsConnectionConfig) ?? {};
 
-      await prisma.integrationConnection.update({
+      await ctx.db.integrationConnection.update({
         where: { id: connection.id },
         data: {
           configJson: {

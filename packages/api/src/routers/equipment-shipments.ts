@@ -2,7 +2,6 @@
  * Equipment shipment procedures: generic shipment CRUD, event tracking,
  * status transitions, and contractor equipment view.
  */
-import { prisma } from "@contractor-ops/db";
 import { shipmentCreateSchema, shipmentEventCreateSchema } from "@contractor-ops/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -32,7 +31,7 @@ export const equipmentShipmentsRouter = router({
     .use(requirePermission({ equipment: ["create"] }))
     .input(shipmentCreateSchema)
     .mutation(async ({ ctx, input }) => {
-      const equipment = await prisma.equipment.findFirst({
+      const equipment = await ctx.db.equipment.findFirst({
         where: {
           id: input.equipmentId,
           organizationId: ctx.organizationId,
@@ -50,7 +49,7 @@ export const equipmentShipmentsRouter = router({
       const newEquipmentStatus =
         input.direction === "OUTBOUND" ? "IN_TRANSIT" : "RETURN_IN_TRANSIT";
 
-      const shipment = await prisma.$transaction(async (tx) => {
+      const shipment = await ctx.db.$transaction(async (tx) => {
         const created = await tx.shipment.create({
           data: {
             organizationId: ctx.organizationId,
@@ -88,14 +87,14 @@ export const equipmentShipmentsRouter = router({
       });
 
       // Fetch with events for return
-      const result = await prisma.shipment.findUnique({
+      const result = await ctx.db.shipment.findUnique({
         where: { id: shipment.id },
         include: {
           events: { orderBy: { occurredAt: "asc" } },
         },
       });
 
-      await prisma.auditLog.create({
+      await ctx.db.auditLog.create({
         data: {
           organizationId: ctx.organizationId,
           actorType: "USER",
@@ -125,7 +124,7 @@ export const equipmentShipmentsRouter = router({
     .use(requirePermission({ equipment: ["update"] }))
     .input(shipmentEventCreateSchema)
     .mutation(async ({ ctx, input }) => {
-      const shipment = await prisma.shipment.findFirst({
+      const shipment = await ctx.db.shipment.findFirst({
         where: {
           id: input.shipmentId,
           organizationId: ctx.organizationId,
@@ -142,7 +141,7 @@ export const equipmentShipmentsRouter = router({
         });
       }
 
-      await prisma.$transaction(async (tx) => {
+      await ctx.db.$transaction(async (tx) => {
         // Create event
         await tx.shipmentEvent.create({
           data: {
@@ -175,14 +174,14 @@ export const equipmentShipmentsRouter = router({
         }
       });
 
-      const result = await prisma.shipment.findUnique({
+      const result = await ctx.db.shipment.findUnique({
         where: { id: input.shipmentId },
         include: {
           events: { orderBy: { occurredAt: "asc" } },
         },
       });
 
-      await prisma.auditLog.create({
+      await ctx.db.auditLog.create({
         data: {
           organizationId: ctx.organizationId,
           actorType: "USER",
@@ -219,7 +218,7 @@ export const equipmentShipmentsRouter = router({
     .use(requirePermission({ equipment: ["read"] }))
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
-      const shipment = await prisma.shipment.findFirst({
+      const shipment = await ctx.db.shipment.findFirst({
         where: {
           id: input.id,
           organizationId: ctx.organizationId,
@@ -255,7 +254,7 @@ export const equipmentShipmentsRouter = router({
     .use(requirePermission({ equipment: ["read"] }))
     .input(z.object({ equipmentId: z.string() }))
     .query(async ({ ctx, input }) => {
-      const shipments = await prisma.shipment.findMany({
+      const shipments = await ctx.db.shipment.findMany({
         where: {
           equipmentId: input.equipmentId,
           organizationId: ctx.organizationId,
@@ -279,7 +278,7 @@ export const equipmentShipmentsRouter = router({
     .use(requirePermission({ equipment: ["delete"] }))
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const shipment = await prisma.shipment.findFirst({
+      const shipment = await ctx.db.shipment.findFirst({
         where: {
           id: input.id,
           organizationId: ctx.organizationId,
@@ -300,11 +299,11 @@ export const equipmentShipmentsRouter = router({
         });
       }
 
-      await prisma.$transaction([
-        prisma.shipmentEvent.deleteMany({
+      await ctx.db.$transaction([
+        ctx.db.shipmentEvent.deleteMany({
           where: { shipmentId: input.id },
         }),
-        prisma.shipment.delete({
+        ctx.db.shipment.delete({
           where: { id: input.id },
         }),
       ]);
@@ -320,7 +319,7 @@ export const equipmentShipmentsRouter = router({
     .use(requirePermission({ equipment: ["read"] }))
     .input(z.object({ contractorId: z.string() }))
     .query(async ({ ctx, input }) => {
-      const assignments = await prisma.equipmentAssignment.findMany({
+      const assignments = await ctx.db.equipmentAssignment.findMany({
         where: {
           contractorId: input.contractorId,
           organizationId: ctx.organizationId,

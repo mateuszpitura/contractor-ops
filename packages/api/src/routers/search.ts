@@ -4,7 +4,6 @@
  * full-text search for a global search / command palette experience.
  */
 
-import { prisma } from "@contractor-ops/db";
 import { Prisma } from "@contractor-ops/db/generated/prisma/client";
 import { z } from "zod";
 import { router } from "../init.js";
@@ -60,7 +59,7 @@ export const searchRouter = router({
 
       // Run 3 parallel raw queries across entity types
       const [contractors, contracts, invoices] = await Promise.all([
-        prisma.$queryRaw<SearchResult[]>`
+        ctx.db.$queryRaw<SearchResult[]>`
           SELECT id, "legalName" as name, "taxId" as subtitle, 'contractor' as type
           FROM "Contractor"
           WHERE "organizationId" = ${ctx.organizationId}
@@ -68,7 +67,7 @@ export const searchRouter = router({
             AND "search_vector" @@ ${tsquery}
           LIMIT 5
         `,
-        prisma.$queryRaw<SearchResult[]>`
+        ctx.db.$queryRaw<SearchResult[]>`
           SELECT id, title as name, '' as subtitle, 'contract' as type
           FROM "Contract"
           WHERE "organizationId" = ${ctx.organizationId}
@@ -76,7 +75,7 @@ export const searchRouter = router({
             AND "searchVector" @@ ${tsquery}
           LIMIT 5
         `,
-        prisma.$queryRaw<SearchResult[]>`
+        ctx.db.$queryRaw<SearchResult[]>`
           SELECT id, "invoiceNumber" as name, '' as subtitle, 'invoice' as type
           FROM "Invoice"
           WHERE "organizationId" = ${ctx.organizationId}

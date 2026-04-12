@@ -1,5 +1,4 @@
 import type { Prisma } from "@contractor-ops/db";
-import { prisma } from "@contractor-ops/db";
 import {
   invoiceCreateSchema,
   invoiceListSchema,
@@ -27,7 +26,7 @@ import { sanitizeStrings } from "../services/sanitize.js";
  * Queries organization members with FINANCE_ADMIN role and returns their user IDs.
  */
 async function getFinanceTeamUserIds(orgId: string): Promise<string[]> {
-  const members = await prisma.member.findMany({
+  const members = await ctx.db.member.findMany({
     where: {
       organizationId: orgId,
       role: "FINANCE_ADMIN",
@@ -76,7 +75,7 @@ export const invoiceRouter = router({
           invoiceData.totalMinor,
         );
 
-        const existing = await prisma.invoice.findFirst({
+        const existing = await ctx.db.invoice.findFirst({
           where: {
             organizationId: ctx.organizationId,
             duplicateCheckHash,
@@ -92,7 +91,7 @@ export const invoiceRouter = router({
         }
       }
 
-      const invoice = await prisma.$transaction(async (tx) => {
+      const invoice = await ctx.db.$transaction(async (tx) => {
         // Create invoice record
         const inv = await tx.invoice.create({
           data: {
@@ -185,7 +184,7 @@ export const invoiceRouter = router({
     .use(requirePermission({ invoice: ["read"] }))
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
-      const invoice = await prisma.invoice.findFirst({
+      const invoice = await ctx.db.invoice.findFirst({
         where: {
           id: input.id,
           organizationId: ctx.organizationId,
@@ -245,7 +244,7 @@ export const invoiceRouter = router({
     .input(z.object({ id: z.string(), data: invoiceUpdateSchema }))
     .mutation(async ({ ctx, input: rawInput }) => {
       const input = sanitizeStrings(rawInput);
-      const existing = await prisma.invoice.findFirst({
+      const existing = await ctx.db.invoice.findFirst({
         where: {
           id: input.id,
           organizationId: ctx.organizationId,
@@ -349,7 +348,7 @@ export const invoiceRouter = router({
         }
       }
 
-      const updated = await prisma.invoice.update({
+      const updated = await ctx.db.invoice.update({
         where: { id: input.id },
         data: updateData,
         select: {
@@ -424,7 +423,7 @@ export const invoiceRouter = router({
       }
 
       const [invoices, totalCount] = await Promise.all([
-        prisma.invoice.findMany({
+        ctx.db.invoice.findMany({
           where,
           skip: (page - 1) * pageSize,
           take: pageSize,
@@ -435,7 +434,7 @@ export const invoiceRouter = router({
             },
           },
         }),
-        prisma.invoice.count({ where }),
+        ctx.db.invoice.count({ where }),
       ]);
 
       return { items: plain(invoices), totalCount, page, pageSize };
@@ -449,7 +448,7 @@ export const invoiceRouter = router({
     .use(requirePermission({ invoice: ["read"] }))
     .query(async ({ ctx }) => {
       const [statusGroups, matchStatusGroups] = await Promise.all([
-        prisma.invoice.groupBy({
+        ctx.db.invoice.groupBy({
           by: ["status"],
           where: {
             organizationId: ctx.organizationId,
@@ -457,7 +456,7 @@ export const invoiceRouter = router({
           },
           _count: { id: true },
         }),
-        prisma.invoice.groupBy({
+        ctx.db.invoice.groupBy({
           by: ["matchStatus"],
           where: {
             organizationId: ctx.organizationId,
@@ -490,7 +489,7 @@ export const invoiceRouter = router({
     .use(requirePermission({ invoice: ["update"] }))
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const invoice = await prisma.invoice.findFirst({
+      const invoice = await ctx.db.invoice.findFirst({
         where: {
           id: input.id,
           organizationId: ctx.organizationId,
@@ -513,7 +512,7 @@ export const invoiceRouter = router({
       }
 
       // Read org settings for deviation threshold
-      const org = await prisma.organization.findUnique({
+      const org = await ctx.db.organization.findUnique({
         where: { id: ctx.organizationId },
         select: { settingsJson: true },
       });
@@ -550,7 +549,7 @@ export const invoiceRouter = router({
       }
 
       // Create match result record and update invoice in a transaction
-      const updated = await prisma.$transaction(async (tx) => {
+      const updated = await ctx.db.$transaction(async (tx) => {
         await tx.invoiceMatchResult.create({
           data: {
             organizationId: ctx.organizationId,
@@ -599,7 +598,7 @@ export const invoiceRouter = router({
     .use(requirePermission({ invoice: ["update"] }))
     .input(invoiceManualMatchSchema)
     .mutation(async ({ ctx, input }) => {
-      const invoice = await prisma.invoice.findFirst({
+      const invoice = await ctx.db.invoice.findFirst({
         where: {
           id: input.invoiceId,
           organizationId: ctx.organizationId,
@@ -615,7 +614,7 @@ export const invoiceRouter = router({
       }
 
       // Validate contractor belongs to org
-      const contractor = await prisma.contractor.findFirst({
+      const contractor = await ctx.db.contractor.findFirst({
         where: {
           id: input.contractorId,
           organizationId: ctx.organizationId,
@@ -632,7 +631,7 @@ export const invoiceRouter = router({
 
       // Validate contract belongs to org (if provided)
       if (input.contractId) {
-        const contract = await prisma.contract.findFirst({
+        const contract = await ctx.db.contract.findFirst({
           where: {
             id: input.contractId,
             organizationId: ctx.organizationId,
@@ -654,7 +653,7 @@ export const invoiceRouter = router({
         contractorId: input.contractorId,
       });
 
-      const updated = await prisma.$transaction(async (tx) => {
+      const updated = await ctx.db.$transaction(async (tx) => {
         // Create manual match result
         await tx.invoiceMatchResult.create({
           data: {
@@ -692,7 +691,7 @@ export const invoiceRouter = router({
     .use(requirePermission({ invoice: ["delete"] }))
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const invoice = await prisma.invoice.findFirst({
+      const invoice = await ctx.db.invoice.findFirst({
         where: {
           id: input.id,
           organizationId: ctx.organizationId,
@@ -707,7 +706,7 @@ export const invoiceRouter = router({
         });
       }
 
-      const updated = await prisma.invoice.update({
+      const updated = await ctx.db.invoice.update({
         where: { id: input.id },
         data: { status: "VOID" },
       });
@@ -732,7 +731,7 @@ export const invoiceRouter = router({
     .use(requirePermission({ invoice: ["update"] }))
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const invoice = await prisma.invoice.findFirst({
+      const invoice = await ctx.db.invoice.findFirst({
         where: {
           id: input.id,
           organizationId: ctx.organizationId,
@@ -750,7 +749,7 @@ export const invoiceRouter = router({
       const currentFlags = Array.isArray(invoice.flagsJson) ? (invoice.flagsJson as string[]) : [];
       const updatedFlags = currentFlags.filter((f) => f !== "DUPLICATE_SUSPECTED");
 
-      const updated = await prisma.invoice.update({
+      const updated = await ctx.db.invoice.update({
         where: { id: input.id },
         data: {
           flagsJson: updatedFlags.length > 0 ? updatedFlags : undefined,
@@ -768,7 +767,7 @@ export const invoiceRouter = router({
     .use(requirePermission({ invoice: ["read"] }))
     .input(z.object({ query: z.string().min(1) }))
     .query(async ({ ctx, input }) => {
-      const contractors = await prisma.contractor.findMany({
+      const contractors = await ctx.db.contractor.findMany({
         where: {
           organizationId: ctx.organizationId,
           deletedAt: null,
@@ -800,7 +799,7 @@ export const invoiceRouter = router({
     .use(requirePermission({ invoice: ["read"] }))
     .input(z.object({ contractorId: z.string() }))
     .query(async ({ ctx, input }) => {
-      const contracts = await prisma.contract.findMany({
+      const contracts = await ctx.db.contract.findMany({
         where: {
           contractorId: input.contractorId,
           organizationId: ctx.organizationId,
@@ -833,7 +832,7 @@ export const invoiceRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const invoice = await prisma.invoice.update({
+      const invoice = await ctx.db.invoice.update({
         where: {
           id: input.invoiceId,
           organizationId: ctx.organizationId,

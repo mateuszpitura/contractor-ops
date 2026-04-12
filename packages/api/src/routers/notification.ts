@@ -1,5 +1,4 @@
 import type { Prisma } from "@contractor-ops/db";
-import { prisma } from "@contractor-ops/db";
 import {
   NOTIFICATION_TYPES,
   notificationListSchema,
@@ -47,13 +46,13 @@ export const notificationRouter = router({
     }
 
     const [items, total] = await Promise.all([
-      prisma.notification.findMany({
+      ctx.db.notification.findMany({
         where,
         orderBy: { createdAt: "desc" },
         skip: (input.page - 1) * input.perPage,
         take: input.perPage,
       }),
-      prisma.notification.count({ where }),
+      ctx.db.notification.count({ where }),
     ]);
 
     const totalPages = Math.ceil(total / input.perPage);
@@ -70,7 +69,7 @@ export const notificationRouter = router({
    * Get unread notification count for the current user.
    */
   unreadCount: tenantProcedure.query(async ({ ctx }) => {
-    const count = await prisma.notification.count({
+    const count = await ctx.db.notification.count({
       where: {
         userId: ctx.user!.id,
         organizationId: ctx.organizationId,
@@ -86,7 +85,7 @@ export const notificationRouter = router({
    * Only the notification owner can mark it read.
    */
   markRead: tenantProcedure.input(notificationMarkReadSchema).mutation(async ({ ctx, input }) => {
-    await prisma.notification.updateMany({
+    await ctx.db.notification.updateMany({
       where: {
         id: input.notificationId,
         userId: ctx.user!.id,
@@ -105,7 +104,7 @@ export const notificationRouter = router({
    * Mark all notifications as read for the current user.
    */
   markAllRead: tenantProcedure.mutation(async ({ ctx }) => {
-    await prisma.notification.updateMany({
+    await ctx.db.notification.updateMany({
       where: {
         userId: ctx.user!.id,
         organizationId: ctx.organizationId,
@@ -143,7 +142,7 @@ export const notificationRouter = router({
     .mutation(async ({ ctx, input }) => {
       const results = await Promise.all(
         input.preferences.map((pref) =>
-          prisma.userNotificationPreference.upsert({
+          ctx.db.userNotificationPreference.upsert({
             where: {
               userId_notificationType: {
                 userId: ctx.user!.id,

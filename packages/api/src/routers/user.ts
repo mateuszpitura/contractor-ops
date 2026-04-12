@@ -1,5 +1,4 @@
 import { auth } from "@contractor-ops/auth";
-import { prisma } from "@contractor-ops/db";
 import { inviteUserSchema, updateUserRoleSchema } from "@contractor-ops/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -85,7 +84,7 @@ export const userRouter = router({
     .input(z.object({ userId: z.string().min(1) }))
     .mutation(async ({ ctx, input }) => {
       // Prevent deactivating the last admin/owner in the organization
-      const targetMember = await prisma.member.findFirst({
+      const targetMember = await ctx.db.member.findFirst({
         where: {
           organizationId: ctx.organizationId,
           userId: input.userId,
@@ -94,7 +93,7 @@ export const userRouter = router({
       });
 
       if (targetMember && (targetMember.role === "owner" || targetMember.role === "admin")) {
-        const adminCount = await prisma.member.count({
+        const adminCount = await ctx.db.member.count({
           where: {
             organizationId: ctx.organizationId,
             role: { in: ["owner", "admin"] },
@@ -118,7 +117,7 @@ export const userRouter = router({
       // Reassign pending approval steps from deactivated user to another
       // eligible user with the same role, or clear the assignment so the
       // step can be picked up by any user with the matching role.
-      const pendingSteps = await prisma.approvalStep.findMany({
+      const pendingSteps = await ctx.db.approvalStep.findMany({
         where: {
           organizationId: ctx.organizationId,
           approverUserId: input.userId,
@@ -133,7 +132,7 @@ export const userRouter = router({
           let replacementUserId: string | null = null;
 
           if (step.approverRole) {
-            const replacement = await prisma.member.findFirst({
+            const replacement = await ctx.db.member.findFirst({
               where: {
                 organizationId: ctx.organizationId,
                 role: step.approverRole,
@@ -145,7 +144,7 @@ export const userRouter = router({
             replacementUserId = replacement?.userId ?? null;
           }
 
-          await prisma.approvalStep.update({
+          await ctx.db.approvalStep.update({
             where: { id: step.id },
             data: { approverUserId: replacementUserId },
           });
@@ -153,7 +152,7 @@ export const userRouter = router({
       }
 
       // Transfer contractor ownership from deactivated user to an admin
-      const ownedContractors = await prisma.contractor.findMany({
+      const ownedContractors = await ctx.db.contractor.findMany({
         where: {
           organizationId: ctx.organizationId,
           ownerUserId: input.userId,
@@ -164,7 +163,7 @@ export const userRouter = router({
 
       if (ownedContractors.length > 0) {
         // Find a replacement admin (prefer owner, then admin role)
-        const replacement = await prisma.member.findFirst({
+        const replacement = await ctx.db.member.findFirst({
           where: {
             organizationId: ctx.organizationId,
             role: { in: ["owner", "admin"] },
@@ -175,7 +174,7 @@ export const userRouter = router({
         });
 
         if (replacement) {
-          await prisma.contractor.updateMany({
+          await ctx.db.contractor.updateMany({
             where: {
               id: { in: ownedContractors.map((c) => c.id) },
             },
@@ -183,7 +182,7 @@ export const userRouter = router({
           });
         } else {
           // No admin available — clear ownership to prevent dangling reference
-          await prisma.contractor.updateMany({
+          await ctx.db.contractor.updateMany({
             where: {
               id: { in: ownedContractors.map((c) => c.id) },
             },

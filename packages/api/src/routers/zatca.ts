@@ -6,7 +6,6 @@
 // Per T-48-16: All onboarding mutations require authenticated user with org admin role.
 // ---------------------------------------------------------------------------
 
-import { prisma } from "@contractor-ops/db";
 import { zatcaTaxDetailsSchema } from "@contractor-ops/einvoice";
 import { z } from "zod";
 import { router } from "../init.js";
@@ -103,7 +102,7 @@ export const zatcaRouter = router({
     .use(requirePermission({ invoice: ["read"] }))
     .input(z.object({ invoiceId: z.string() }))
     .query(async ({ ctx, input }) => {
-      const chain = await prisma.zatcaInvoiceChain.findFirst({
+      const chain = await ctx.db.zatcaInvoiceChain.findFirst({
         where: {
           invoiceId: input.invoiceId,
           organizationId: ctx.organizationId,
@@ -140,7 +139,7 @@ export const zatcaRouter = router({
       }),
     )
     .query(async ({ ctx, input }) => {
-      const items = await prisma.zatcaInvoiceChain.findMany({
+      const items = await ctx.db.zatcaInvoiceChain.findMany({
         where: { organizationId: ctx.organizationId },
         orderBy: { icv: "desc" },
         take: input.limit + 1,
@@ -174,7 +173,7 @@ export const zatcaRouter = router({
     .input(z.object({ invoiceId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       // Verify invoice belongs to org
-      const chain = await prisma.zatcaInvoiceChain.findFirst({
+      const chain = await ctx.db.zatcaInvoiceChain.findFirst({
         where: {
           invoiceId: input.invoiceId,
           organizationId: ctx.organizationId,
@@ -200,22 +199,22 @@ export const zatcaRouter = router({
     .use(requirePermission({ settings: ["read"] }))
     .query(async ({ ctx }) => {
       const [total, cleared, reported, rejected, pending, warning] = await Promise.all([
-        prisma.zatcaInvoiceChain.count({
+        ctx.db.zatcaInvoiceChain.count({
           where: { organizationId: ctx.organizationId },
         }),
-        prisma.zatcaInvoiceChain.count({
+        ctx.db.zatcaInvoiceChain.count({
           where: { organizationId: ctx.organizationId, zatcaStatus: "CLEARED" },
         }),
-        prisma.zatcaInvoiceChain.count({
+        ctx.db.zatcaInvoiceChain.count({
           where: { organizationId: ctx.organizationId, zatcaStatus: "REPORTED" },
         }),
-        prisma.zatcaInvoiceChain.count({
+        ctx.db.zatcaInvoiceChain.count({
           where: { organizationId: ctx.organizationId, zatcaStatus: "REJECTED" },
         }),
-        prisma.zatcaInvoiceChain.count({
+        ctx.db.zatcaInvoiceChain.count({
           where: { organizationId: ctx.organizationId, zatcaStatus: "PENDING" },
         }),
-        prisma.zatcaInvoiceChain.count({
+        ctx.db.zatcaInvoiceChain.count({
           where: { organizationId: ctx.organizationId, zatcaStatus: "WARNING" },
         }),
       ]);

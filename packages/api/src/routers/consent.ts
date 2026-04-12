@@ -6,7 +6,6 @@
  * to authenticated user. Admin endpoints require settings:read permission.
  */
 
-import { prisma } from "@contractor-ops/db";
 import {
   bulkGrantConsentSchema,
   consentPurposeEnum,
@@ -59,7 +58,7 @@ export const consentRouter = router({
    * Returns null if org has no countryCode or is not in a PDPL jurisdiction.
    */
   getPrivacyNotice: tenantProcedure.query(async ({ ctx }) => {
-    const org = await prisma.organization.findUniqueOrThrow({
+    const org = await ctx.db.organization.findUniqueOrThrow({
       where: { id: ctx.organizationId },
       select: { countryCode: true },
     });
@@ -189,7 +188,7 @@ export const consentRouter = router({
    * Get cross-border transfer status for the current org.
    */
   getCrossBorderStatus: tenantProcedure.query(async ({ ctx }) => {
-    const org = await prisma.organization.findUniqueOrThrow({
+    const org = await ctx.db.organization.findUniqueOrThrow({
       where: { id: ctx.organizationId },
       select: { countryCode: true },
     });

@@ -1,4 +1,3 @@
-import { prisma } from "@contractor-ops/db";
 import { attachDocInputSchema, docSearchInputSchema } from "@contractor-ops/validators";
 import { z } from "zod";
 import { router } from "../init.js";
@@ -42,7 +41,7 @@ export const docsRouter = router({
   attach: tenantProcedure.input(attachDocInputSchema).mutation(async ({ ctx, input }) => {
     const provider = providerFromExternalType(input.externalType);
 
-    const connection = await prisma.integrationConnection.findFirst({
+    const connection = await ctx.db.integrationConnection.findFirst({
       where: {
         organizationId: ctx.organizationId,
         provider,

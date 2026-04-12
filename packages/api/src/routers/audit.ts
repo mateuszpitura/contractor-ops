@@ -1,5 +1,4 @@
 import type { Prisma } from "@contractor-ops/db";
-import { prisma } from "@contractor-ops/db";
 import { z } from "zod";
 import { router } from "../init.js";
 import { requirePermission } from "../middleware/rbac.js";
@@ -81,13 +80,13 @@ export const auditRouter = router({
       }
 
       const [items, totalCount] = await Promise.all([
-        prisma.auditLog.findMany({
+        ctx.db.auditLog.findMany({
           where,
           skip: (input.page - 1) * input.pageSize,
           take: input.pageSize,
           orderBy: { createdAt: input.sortOrder },
         }),
-        prisma.auditLog.count({ where }),
+        ctx.db.auditLog.count({ where }),
       ]);
 
       return {
@@ -102,7 +101,7 @@ export const auditRouter = router({
    * Returns distinct actors for filter dropdown.
    */
   actors: tenantProcedure.use(settingsRead).query(async ({ ctx }) => {
-    const actors = await prisma.auditLog.findMany({
+    const actors = await ctx.db.auditLog.findMany({
       where: { organizationId: ctx.organizationId },
       distinct: ["actorId"],
       select: { actorId: true, actorName: true },
@@ -153,7 +152,7 @@ export const auditRouter = router({
         where.createdAt = { ...where.createdAt, lte: new Date(input.dateTo) };
       }
 
-      const items = await prisma.auditLog.findMany({
+      const items = await ctx.db.auditLog.findMany({
         where,
         orderBy: { createdAt: "desc" },
         take: 10000,

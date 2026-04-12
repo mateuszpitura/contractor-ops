@@ -1,4 +1,3 @@
-import { prisma } from "@contractor-ops/db";
 import {
   bankStatementConfirmSchema,
   markAllPaidSchema,
@@ -114,7 +113,7 @@ export const paymentRouter = router({
         where.id = { gt: input.cursor };
       }
 
-      const items = await prisma.invoice.findMany({
+      const items = await ctx.db.invoice.findMany({
         where,
         take: input.limit + 1,
         orderBy: { dueDate: "asc" },
@@ -176,7 +175,7 @@ export const paymentRouter = router({
 
       let result;
       try {
-        result = await prisma.$transaction(async (tx) => {
+        result = await ctx.db.$transaction(async (tx) => {
           // Fetch all invoices with their data
           const invoices = await tx.invoice.findMany({
             where: {
@@ -356,7 +355,7 @@ export const paymentRouter = router({
     .use(requirePermission({ payment: ["read"] }))
     .input(z.object({ runId: z.string().cuid() }))
     .query(async ({ ctx, input }) => {
-      const run = await prisma.paymentRun.findFirst({
+      const run = await ctx.db.paymentRun.findFirst({
         where: {
           id: input.runId,
           organizationId: ctx.organizationId,
@@ -420,7 +419,7 @@ export const paymentRouter = router({
         where.id = { gt: input.cursor };
       }
 
-      const items = await prisma.paymentRun.findMany({
+      const items = await ctx.db.paymentRun.findMany({
         where,
         take: input.limit + 1,
         orderBy: { [input.sortBy]: input.sortOrder },
@@ -446,7 +445,7 @@ export const paymentRouter = router({
     .use(requirePermission({ payment: ["export"] }))
     .input(paymentRunLockSchema)
     .mutation(async ({ ctx, input }) => {
-      const result = await prisma.$transaction(async (tx) => {
+      const result = await ctx.db.$transaction(async (tx) => {
         const run = await tx.paymentRun.findFirst({
           where: {
             id: input.runId,
@@ -642,7 +641,7 @@ export const paymentRouter = router({
     .use(requirePermission({ payment: ["create"] }))
     .input(paymentRunItemStatusSchema)
     .mutation(async ({ ctx, input }) => {
-      const result = await prisma.$transaction(async (tx) => {
+      const result = await ctx.db.$transaction(async (tx) => {
         const item = await tx.paymentRunItem.findFirst({
           where: {
             id: input.itemId,
@@ -722,7 +721,7 @@ export const paymentRouter = router({
     .use(requirePermission({ payment: ["create"] }))
     .input(markAllPaidSchema)
     .mutation(async ({ ctx, input }) => {
-      const result = await prisma.$transaction(async (tx) => {
+      const result = await ctx.db.$transaction(async (tx) => {
         const run = await tx.paymentRun.findFirst({
           where: {
             id: input.runId,
@@ -785,7 +784,7 @@ export const paymentRouter = router({
     .use(requirePermission({ payment: ["create"] }))
     .input(paymentRunCancelSchema)
     .mutation(async ({ ctx, input }) => {
-      const result = await prisma.$transaction(async (tx) => {
+      const result = await ctx.db.$transaction(async (tx) => {
         const run = await tx.paymentRun.findFirst({
           where: {
             id: input.runId,
@@ -866,7 +865,7 @@ export const paymentRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const run = await prisma.paymentRun.findFirst({
+      const run = await ctx.db.paymentRun.findFirst({
         where: {
           id: input.runId,
           organizationId: ctx.organizationId,
@@ -919,7 +918,7 @@ export const paymentRouter = router({
     .use(requirePermission({ payment: ["create"] }))
     .input(bankStatementConfirmSchema)
     .mutation(async ({ ctx, input }) => {
-      const result = await prisma.$transaction(async (tx) => {
+      const result = await ctx.db.$transaction(async (tx) => {
         const run = await tx.paymentRun.findFirst({
           where: {
             id: input.runId,
@@ -1009,7 +1008,7 @@ export const paymentRouter = router({
     .use(requirePermission({ payment: ["create"] }))
     .input(removeFromRunSchema)
     .mutation(async ({ ctx, input }) => {
-      const result = await prisma.$transaction(
+      const result = await ctx.db.$transaction(
         async (tx) => {
           const run = await tx.paymentRun.findFirst({
             where: {
@@ -1103,7 +1102,7 @@ export const paymentRouter = router({
     .use(requirePermission({ payment: ["read"] }))
     .input(z.object({ contractorId: z.string().cuid() }))
     .query(async ({ ctx, input }) => {
-      const items = await prisma.paymentRunItem.findMany({
+      const items = await ctx.db.paymentRunItem.findMany({
         where: {
           organizationId: ctx.organizationId,
           contractorId: input.contractorId,

@@ -1,4 +1,3 @@
-import { prisma } from "@contractor-ops/db";
 import { z } from "zod";
 import { router } from "../init.js";
 import { requirePermission } from "../middleware/rbac.js";
@@ -35,10 +34,10 @@ async function fetchKpis(organizationId: string) {
     expiringContracts,
     openTasks,
   ] = await Promise.all([
-    prisma.contractor.count({
+    ctx.db.contractor.count({
       where: { organizationId, status: "ACTIVE", deletedAt: null },
     }),
-    prisma.contractor.count({
+    ctx.db.contractor.count({
       where: {
         organizationId,
         status: "ACTIVE",
@@ -46,21 +45,21 @@ async function fetchKpis(organizationId: string) {
         createdAt: { lt: startOfCurrentMonth },
       },
     }),
-    prisma.approvalStep.count({
+    ctx.db.approvalStep.count({
       where: { organizationId, status: "PENDING" },
     }),
-    prisma.approvalStep.count({
+    ctx.db.approvalStep.count({
       where: {
         organizationId,
         status: "PENDING",
         createdAt: { lt: startOfCurrentMonth },
       },
     }),
-    prisma.invoice.aggregate({
+    ctx.db.invoice.aggregate({
       _sum: { amountToPayMinor: true },
       where: { organizationId, paymentStatus: "READY", deletedAt: null },
     }),
-    prisma.invoice.aggregate({
+    ctx.db.invoice.aggregate({
       _sum: { amountToPayMinor: true },
       where: {
         organizationId,
@@ -72,7 +71,7 @@ async function fetchKpis(organizationId: string) {
         },
       },
     }),
-    prisma.contract.count({
+    ctx.db.contract.count({
       where: {
         organizationId,
         status: { in: ["ACTIVE", "EXPIRING"] },
@@ -80,7 +79,7 @@ async function fetchKpis(organizationId: string) {
         deletedAt: null,
       },
     }),
-    prisma.workflowTaskRun.count({
+    ctx.db.workflowTaskRun.count({
       where: {
         organizationId,
         status: { in: ["TODO", "IN_PROGRESS"] },
@@ -121,7 +120,7 @@ async function fetchSpendTrend(organizationId: string, months: string) {
     startDate = new Date(now.getFullYear(), now.getMonth() - monthsBack, 1);
   }
 
-  const rows = await prisma.$queryRaw<
+  const rows = await ctx.db.$queryRaw<
     Array<{ month: Date; currency: string; totalMinor: number }>
   >`
     SELECT
@@ -150,7 +149,7 @@ async function fetchDeadlines(organizationId: string) {
   const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
 
   const [expiringContracts, overdueTasks, dueInvoices] = await Promise.all([
-    prisma.contract.findMany({
+    ctx.db.contract.findMany({
       where: {
         organizationId,
         status: { in: ["ACTIVE", "EXPIRING"] },
@@ -161,7 +160,7 @@ async function fetchDeadlines(organizationId: string) {
       orderBy: { endDate: "asc" },
       take: 20,
     }),
-    prisma.workflowTaskRun.findMany({
+    ctx.db.workflowTaskRun.findMany({
       where: {
         organizationId,
         status: { in: ["TODO", "IN_PROGRESS"] },
@@ -171,7 +170,7 @@ async function fetchDeadlines(organizationId: string) {
       orderBy: { dueAt: "asc" },
       take: 20,
     }),
-    prisma.invoice.findMany({
+    ctx.db.invoice.findMany({
       where: {
         organizationId,
         dueDate: { gte: now, lte: thirtyDaysFromNow },
@@ -244,7 +243,7 @@ async function fetchDeadlines(organizationId: string) {
 }
 
 async function fetchActivity(organizationId: string) {
-  const items = await prisma.auditLog.findMany({
+  const items = await ctx.db.auditLog.findMany({
     where: { organizationId },
     orderBy: { createdAt: "desc" },
     take: 20,

@@ -1,4 +1,3 @@
-import { prisma } from "@contractor-ops/db";
 import { storeCredentials } from "@contractor-ops/integrations";
 import { getQStashClient } from "@contractor-ops/integrations/services/qstash-client";
 import {
@@ -39,7 +38,7 @@ export const peppolRouter = router({
       const participantId = `0192:${input.trn}`;
 
       // Check if already connected
-      const existing = await prisma.peppolParticipant.findFirst({
+      const existing = await ctx.db.peppolParticipant.findFirst({
         where: {
           organizationId: ctx.organizationId,
           status: { in: ["PENDING", "REGISTERED", "ACTIVE"] },
@@ -67,7 +66,7 @@ export const peppolRouter = router({
       );
 
       // Upsert IntegrationConnection
-      const existingConnection = await prisma.integrationConnection.findFirst({
+      const existingConnection = await ctx.db.integrationConnection.findFirst({
         where: {
           organizationId: ctx.organizationId,
           provider: "PEPPOL",
@@ -76,7 +75,7 @@ export const peppolRouter = router({
 
       let connection;
       if (existingConnection) {
-        connection = await prisma.integrationConnection.update({
+        connection = await ctx.db.integrationConnection.update({
           where: { id: existingConnection.id },
           data: {
             status: "CONNECTED",
@@ -90,7 +89,7 @@ export const peppolRouter = router({
           },
         });
       } else {
-        connection = await prisma.integrationConnection.create({
+        connection = await ctx.db.integrationConnection.create({
           data: {
             organizationId: ctx.organizationId,
             provider: "PEPPOL",
@@ -106,7 +105,7 @@ export const peppolRouter = router({
       }
 
       // Create PeppolParticipant
-      const participant = await prisma.peppolParticipant.create({
+      const participant = await ctx.db.peppolParticipant.create({
         data: {
           organizationId: ctx.organizationId,
           participantId,
@@ -130,7 +129,7 @@ export const peppolRouter = router({
         });
 
         const currentConfig = (connection.configJson as Record<string, unknown>) ?? {};
-        await prisma.integrationConnection.update({
+        await ctx.db.integrationConnection.update({
           where: { id: connection.id },
           data: {
             configJson: {
@@ -154,7 +153,7 @@ export const peppolRouter = router({
   disconnect: tenantProcedure
     .use(requirePermission({ settings: ["update"] }))
     .mutation(async ({ ctx }) => {
-      const participant = await prisma.peppolParticipant.findFirst({
+      const participant = await ctx.db.peppolParticipant.findFirst({
         where: {
           organizationId: ctx.organizationId,
           status: { in: ["PENDING", "REGISTERED", "ACTIVE"] },
@@ -169,13 +168,13 @@ export const peppolRouter = router({
       }
 
       // Deregister participant
-      await prisma.peppolParticipant.update({
+      await ctx.db.peppolParticipant.update({
         where: { id: participant.id },
         data: { status: "DEREGISTERED" },
       });
 
       // Update IntegrationConnection
-      const connection = await prisma.integrationConnection.findFirst({
+      const connection = await ctx.db.integrationConnection.findFirst({
         where: {
           organizationId: ctx.organizationId,
           provider: "PEPPOL",
@@ -196,7 +195,7 @@ export const peppolRouter = router({
           }
         }
 
-        await prisma.integrationConnection.update({
+        await ctx.db.integrationConnection.update({
           where: { id: connection.id },
           data: {
             status: "DISCONNECTED",
@@ -215,7 +214,7 @@ export const peppolRouter = router({
   getStatus: tenantProcedure
     .use(requirePermission({ settings: ["read"] }))
     .query(async ({ ctx }) => {
-      const participant = await prisma.peppolParticipant.findFirst({
+      const participant = await ctx.db.peppolParticipant.findFirst({
         where: {
           organizationId: ctx.organizationId,
           status: { in: ["PENDING", "REGISTERED", "ACTIVE"] },
@@ -226,7 +225,7 @@ export const peppolRouter = router({
         return null;
       }
 
-      const connection = await prisma.integrationConnection.findFirst({
+      const connection = await ctx.db.integrationConnection.findFirst({
         where: {
           organizationId: ctx.organizationId,
           provider: "PEPPOL",
@@ -252,7 +251,7 @@ export const peppolRouter = router({
   getParticipant: tenantProcedure
     .use(requirePermission({ settings: ["read"] }))
     .query(async ({ ctx }) => {
-      const participant = await prisma.peppolParticipant.findFirst({
+      const participant = await ctx.db.peppolParticipant.findFirst({
         where: {
           organizationId: ctx.organizationId,
           status: { in: ["PENDING", "REGISTERED", "ACTIVE"] },
@@ -272,21 +271,21 @@ export const peppolRouter = router({
 
       // Get transmission counts by status
       const [sentCount, receivedCount, failedCount] = await Promise.all([
-        prisma.peppolTransmission.count({
+        ctx.db.peppolTransmission.count({
           where: {
             organizationId: ctx.organizationId,
             peppolParticipantId: participant.id,
             direction: "OUTBOUND",
           },
         }),
-        prisma.peppolTransmission.count({
+        ctx.db.peppolTransmission.count({
           where: {
             organizationId: ctx.organizationId,
             peppolParticipantId: participant.id,
             direction: "INBOUND",
           },
         }),
-        prisma.peppolTransmission.count({
+        ctx.db.peppolTransmission.count({
           where: {
             organizationId: ctx.organizationId,
             peppolParticipantId: participant.id,
@@ -314,7 +313,7 @@ export const peppolRouter = router({
     .use(requirePermission({ invoice: ["read"] }))
     .input(getTransmissionByInvoiceIdSchema)
     .query(async ({ ctx, input }) => {
-      const transmission = await prisma.peppolTransmission.findFirst({
+      const transmission = await ctx.db.peppolTransmission.findFirst({
         where: {
           organizationId: ctx.organizationId,
           invoiceId: input.invoiceId,
@@ -351,7 +350,7 @@ export const peppolRouter = router({
         where.direction = input.direction;
       }
 
-      const transmissions = await prisma.peppolTransmission.findMany({
+      const transmissions = await ctx.db.peppolTransmission.findMany({
         where,
         orderBy: { createdAt: "desc" },
         take: input.limit + 1,
@@ -375,7 +374,7 @@ export const peppolRouter = router({
     .use(requirePermission({ settings: ["update"] }))
     .input(retryTransmissionSchema)
     .mutation(async ({ ctx, input }) => {
-      const transmission = await prisma.peppolTransmission.findFirst({
+      const transmission = await ctx.db.peppolTransmission.findFirst({
         where: {
           id: input.transmissionId,
           organizationId: ctx.organizationId,
@@ -390,7 +389,7 @@ export const peppolRouter = router({
         });
       }
 
-      const updated = await prisma.peppolTransmission.update({
+      const updated = await ctx.db.peppolTransmission.update({
         where: { id: transmission.id },
         data: {
           status: "PENDING",

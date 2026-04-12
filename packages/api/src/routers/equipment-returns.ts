@@ -2,7 +2,6 @@
  * Equipment return request procedures: approve, reject, list return requests.
  */
 import type { Prisma } from "@contractor-ops/db";
-import { prisma } from "@contractor-ops/db";
 import {
   returnRequestApproveSchema,
   returnRequestRejectSchema,
@@ -31,7 +30,7 @@ export const equipmentReturnsRouter = router({
     .use(requirePermission({ equipment: ["update"] }))
     .input(returnRequestApproveSchema)
     .mutation(async ({ ctx, input }) => {
-      const returnRequest = await prisma.returnRequest.findFirst({
+      const returnRequest = await ctx.db.returnRequest.findFirst({
         where: {
           id: input.id,
           organizationId: ctx.organizationId,
@@ -63,7 +62,7 @@ export const equipmentReturnsRouter = router({
       }
 
       // Load all equipment assigned to the contractor (D-11 all-or-nothing)
-      const assignments = await prisma.equipmentAssignment.findMany({
+      const assignments = await ctx.db.equipmentAssignment.findMany({
         where: {
           organizationId: ctx.organizationId,
           contractorId: returnRequest.contractorId,
@@ -75,7 +74,7 @@ export const equipmentReturnsRouter = router({
       });
 
       // Load courier config
-      const courierConfig = await prisma.courierConfig.findUnique({
+      const courierConfig = await ctx.db.courierConfig.findUnique({
         where: {
           organizationId_carrier: {
             organizationId: ctx.organizationId,
@@ -95,7 +94,7 @@ export const equipmentReturnsRouter = router({
       const client = new InPostClient(configJson);
 
       // Load org for sender info
-      const org = await prisma.organization.findUnique({
+      const org = await ctx.db.organization.findUnique({
         where: { id: ctx.organizationId },
         select: { name: true },
       });
@@ -120,7 +119,7 @@ export const equipmentReturnsRouter = router({
       });
 
       // Create records in transaction
-      const result = await prisma.$transaction(async (tx) => {
+      const result = await ctx.db.$transaction(async (tx) => {
         // Create shipment records for each equipment item
         let firstShipmentId: string | null = null;
 
@@ -210,7 +209,7 @@ export const equipmentReturnsRouter = router({
       );
 
       // Audit log
-      await prisma.auditLog.create({
+      await ctx.db.auditLog.create({
         data: {
           organizationId: ctx.organizationId,
           actorType: "USER",
@@ -239,7 +238,7 @@ export const equipmentReturnsRouter = router({
     .use(requirePermission({ equipment: ["update"] }))
     .input(returnRequestRejectSchema)
     .mutation(async ({ ctx, input }) => {
-      const returnRequest = await prisma.returnRequest.findFirst({
+      const returnRequest = await ctx.db.returnRequest.findFirst({
         where: {
           id: input.id,
           organizationId: ctx.organizationId,
@@ -260,7 +259,7 @@ export const equipmentReturnsRouter = router({
         });
       }
 
-      const result = await prisma.$transaction(async (tx) => {
+      const result = await ctx.db.$transaction(async (tx) => {
         // Update ReturnRequest
         const updated = await tx.returnRequest.update({
           where: { id: input.id },
@@ -313,7 +312,7 @@ export const equipmentReturnsRouter = router({
       );
 
       // Audit log
-      await prisma.auditLog.create({
+      await ctx.db.auditLog.create({
         data: {
           organizationId: ctx.organizationId,
           actorType: "USER",
@@ -352,7 +351,7 @@ export const equipmentReturnsRouter = router({
         where.status = input.status;
       }
 
-      const returnRequests = await prisma.returnRequest.findMany({
+      const returnRequests = await ctx.db.returnRequest.findMany({
         where,
         orderBy: { createdAt: "desc" },
         include: {

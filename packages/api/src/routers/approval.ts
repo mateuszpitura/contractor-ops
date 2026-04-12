@@ -1,5 +1,4 @@
 import type { Prisma } from "@contractor-ops/db";
-import { prisma } from "@contractor-ops/db";
 import {
   approvalChainCreateSchema,
   approvalChainUpdateSchema,
@@ -62,7 +61,7 @@ export const approvalRouter = router({
         CacheKeys.approvalChains(ctx.organizationId),
         CacheTTL.APPROVAL_CHAINS,
         async () => {
-          const chains = await prisma.approvalChainConfig.findMany({
+          const chains = await ctx.db.approvalChainConfig.findMany({
             where: {
               organizationId: ctx.organizationId,
               resourceType: "INVOICE",
@@ -82,7 +81,7 @@ export const approvalRouter = router({
     .use(requirePermission({ settings: ["read"] }))
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
-      const chain = await prisma.approvalChainConfig.findFirst({
+      const chain = await ctx.db.approvalChainConfig.findFirst({
         where: {
           id: input.id,
           organizationId: ctx.organizationId,
@@ -107,7 +106,7 @@ export const approvalRouter = router({
     .use(requirePermission({ settings: ["update"] }))
     .input(approvalChainCreateSchema)
     .mutation(async ({ ctx, input }) => {
-      const chain = await prisma.$transaction(async (tx) => {
+      const chain = await ctx.db.$transaction(async (tx) => {
         // If setting as default, unset existing default
         if (input.isDefault) {
           await tx.approvalChainConfig.updateMany({
@@ -147,7 +146,7 @@ export const approvalRouter = router({
     .mutation(async ({ ctx, input }) => {
       const { id, ...data } = input;
 
-      const updated = await prisma.$transaction(async (tx) => {
+      const updated = await ctx.db.$transaction(async (tx) => {
         // Verify chain belongs to org
         const existing = await tx.approvalChainConfig.findFirst({
           where: { id, organizationId: ctx.organizationId },
@@ -198,7 +197,7 @@ export const approvalRouter = router({
     .use(requirePermission({ settings: ["update"] }))
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      await prisma.$transaction(async (tx) => {
+      await ctx.db.$transaction(async (tx) => {
         // Verify chain belongs to org
         const existing = await tx.approvalChainConfig.findFirst({
           where: { id: input.id, organizationId: ctx.organizationId },
@@ -271,7 +270,7 @@ export const approvalRouter = router({
       // "all" — no additional status filter
 
       const [steps, total] = await Promise.all([
-        prisma.approvalStep.findMany({
+        ctx.db.approvalStep.findMany({
           where,
           skip: (input.page - 1) * input.pageSize,
           take: input.pageSize,
@@ -292,13 +291,13 @@ export const approvalRouter = router({
             },
           },
         }),
-        prisma.approvalStep.count({ where }),
+        ctx.db.approvalStep.count({ where }),
       ]);
 
       // Batch-fetch invoice data for all steps
       const invoiceIds = [...new Set(steps.map((s) => s.approvalFlow.resourceId))];
 
-      const invoices = await prisma.invoice.findMany({
+      const invoices = await ctx.db.invoice.findMany({
         where: { id: { in: invoiceIds } },
         select: {
           id: true,
@@ -322,7 +321,7 @@ export const approvalRouter = router({
 
       const chainConfigs =
         chainConfigIds.length > 0
-          ? await prisma.approvalChainConfig.findMany({
+          ? await ctx.db.approvalChainConfig.findMany({
               where: { id: { in: chainConfigIds } },
               select: { id: true, stepsJson: true },
             })
@@ -357,7 +356,7 @@ export const approvalRouter = router({
     }),
 
   // =========================================================================
-  // Approval Actions (all wrapped in prisma.$transaction)
+  // Approval Actions (all wrapped in ctx.db.$transaction)
   // =========================================================================
 
   /**
@@ -369,7 +368,7 @@ export const approvalRouter = router({
     .use(requirePermission({ invoice: ["approve"] }))
     .input(approveStepSchema)
     .mutation(async ({ ctx, input }) => {
-      const result = await prisma.$transaction(async (tx) => {
+      const result = await ctx.db.$transaction(async (tx) => {
         const step = await tx.approvalStep.findFirst({
           where: {
             id: input.stepId,
@@ -489,7 +488,7 @@ export const approvalRouter = router({
         );
         if (nextStep?.approverUserId) {
           const contractor = result.invoice.contractorId
-            ? await prisma.contractor.findUnique({
+            ? await ctx.db.contractor.findUnique({
                 where: { id: result.invoice.contractorId },
                 select: { legalName: true },
               })
@@ -525,7 +524,7 @@ export const approvalRouter = router({
       // Calendar auto-push: sync payment deadline when invoice fully approved (D-07)
       if (result.advanceResult.completed && result.invoice?.dueDate) {
         const contractor = result.invoice.contractorId
-          ? await prisma.contractor.findUnique({
+          ? await ctx.db.contractor.findUnique({
               where: { id: result.invoice.contractorId },
               select: { displayName: true },
             })
@@ -554,7 +553,7 @@ export const approvalRouter = router({
     .use(requirePermission({ invoice: ["approve"] }))
     .input(rejectStepSchema)
     .mutation(async ({ ctx, input }) => {
-      const result = await prisma.$transaction(async (tx) => {
+      const result = await ctx.db.$transaction(async (tx) => {
         const step = await tx.approvalStep.findFirst({
           where: {
             id: input.stepId,
@@ -670,7 +669,7 @@ export const approvalRouter = router({
     .use(requirePermission({ invoice: ["approve"] }))
     .input(delegateStepSchema)
     .mutation(async ({ ctx, input }) => {
-      const result = await prisma.$transaction(async (tx) => {
+      const result = await ctx.db.$transaction(async (tx) => {
         const step = await tx.approvalStep.findFirst({
           where: {
             id: input.stepId,
@@ -749,7 +748,7 @@ export const approvalRouter = router({
     .use(requirePermission({ invoice: ["approve"] }))
     .input(requestClarificationSchema)
     .mutation(async ({ ctx, input }) => {
-      const result = await prisma.$transaction(async (tx) => {
+      const result = await ctx.db.$transaction(async (tx) => {
         const step = await tx.approvalStep.findFirst({
           where: {
             id: input.stepId,
@@ -810,7 +809,7 @@ export const approvalRouter = router({
     .mutation(async ({ ctx, input }) => {
       const results = await Promise.allSettled(
         input.stepIds.map(async (stepId) => {
-          await prisma.$transaction(async (tx) => {
+          await ctx.db.$transaction(async (tx) => {
             const step = await tx.approvalStep.findFirst({
               where: {
                 id: stepId,
@@ -862,7 +861,7 @@ export const approvalRouter = router({
               });
               if (invoice?.dueDate) {
                 const contractor = invoice.contractorId
-                  ? await prisma.contractor.findUnique({
+                  ? await ctx.db.contractor.findUnique({
                       where: { id: invoice.contractorId },
                       select: { displayName: true },
                     })
@@ -906,7 +905,7 @@ export const approvalRouter = router({
     .mutation(async ({ ctx, input }) => {
       const results = await Promise.allSettled(
         input.stepIds.map(async (stepId) => {
-          await prisma.$transaction(async (tx) => {
+          await ctx.db.$transaction(async (tx) => {
             const step = await tx.approvalStep.findFirst({
               where: {
                 id: stepId,
@@ -983,7 +982,7 @@ export const approvalRouter = router({
     .use(requirePermission({ invoice: ["update"] }))
     .input(z.object({ invoiceId: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const flow = await prisma.$transaction(async (tx) => {
+      const flow = await ctx.db.$transaction(async (tx) => {
         const invoice = await tx.invoice.findFirst({
           where: {
             id: input.invoiceId,
@@ -1051,7 +1050,7 @@ export const approvalRouter = router({
         const inv = flow.invoice;
         // Fetch contractor name for notification metadata
         const contractor = inv.contractorId
-          ? await prisma.contractor.findUnique({
+          ? await ctx.db.contractor.findUnique({
               where: { id: inv.contractorId },
               select: { legalName: true },
             })
@@ -1109,7 +1108,7 @@ export const approvalRouter = router({
     .use(requirePermission({ invoice: ["read"] }))
     .input(z.object({ invoiceId: z.string() }))
     .query(async ({ ctx, input }) => {
-      const flow = await prisma.approvalFlow.findFirst({
+      const flow = await ctx.db.approvalFlow.findFirst({
         where: {
           resourceId: input.invoiceId,
           organizationId: ctx.organizationId,
@@ -1138,7 +1137,7 @@ export const approvalRouter = router({
       // Resolve chain name for the flow
       let chainName: string | null = null;
       if (flow.chainConfigId) {
-        const cfg = await prisma.approvalChainConfig.findUnique({
+        const cfg = await ctx.db.approvalChainConfig.findUnique({
           where: { id: flow.chainConfigId },
           select: { name: true },
         });
@@ -1158,7 +1157,7 @@ export const approvalRouter = router({
           actedAt: step.actedAt?.toISOString() ?? null,
           decision: step.decision ?? null,
           approver: step.approverUserId
-            ? await prisma.user.findUnique({
+            ? await ctx.db.user.findUnique({
                 where: { id: step.approverUserId },
                 select: { id: true, name: true, email: true, image: true },
               })

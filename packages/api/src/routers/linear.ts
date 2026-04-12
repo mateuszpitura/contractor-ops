@@ -1,5 +1,4 @@
 import type { Prisma } from "@contractor-ops/db";
-import { prisma } from "@contractor-ops/db";
 import { decryptCredentials } from "@contractor-ops/integrations/services/credential-service";
 import type { LinearIssueMetadata } from "@contractor-ops/validators";
 import {
@@ -55,7 +54,7 @@ function buildLinearApiContext(credentialsRef: string): {
  * and CONNECTED statuses (per D-03: mapping dialog needs access post-OAuth).
  */
 async function loadLinearConnection(organizationId: string) {
-  const connection = await prisma.integrationConnection.findFirst({
+  const connection = await ctx.db.integrationConnection.findFirst({
     where: {
       organizationId,
       provider: "LINEAR",
@@ -88,7 +87,7 @@ export const linearRouter = router({
    * Returns null when no connection exists.
    */
   connectionStatus: tenantProcedure.query(async ({ ctx }) => {
-    const connection = await prisma.integrationConnection.findFirst({
+    const connection = await ctx.db.integrationConnection.findFirst({
       where: {
         organizationId: ctx.organizationId,
         provider: "LINEAR",
@@ -223,7 +222,7 @@ export const linearRouter = router({
       stateCache[input.teamId] = teamStateCache;
 
       // Update connection config and transition to CONNECTED if PENDING_MAPPING
-      await prisma.integrationConnection.update({
+      await ctx.db.integrationConnection.update({
         where: { id: connection.id },
         data: {
           configJson: {
@@ -255,7 +254,7 @@ export const linearRouter = router({
     .use(requireTier("PRO"))
     .input(saveLinearTaskConfigInputSchema)
     .mutation(async ({ ctx, input }) => {
-      const template = await prisma.workflowTaskTemplate.findFirst({
+      const template = await ctx.db.workflowTaskTemplate.findFirst({
         where: {
           id: input.taskTemplateId,
           organizationId: ctx.organizationId,
@@ -272,7 +271,7 @@ export const linearRouter = router({
 
       const existingConfig = (template.configJson as Record<string, unknown>) ?? {};
 
-      await prisma.workflowTaskTemplate.update({
+      await ctx.db.workflowTaskTemplate.update({
         where: { id: input.taskTemplateId },
         data: {
           configJson: {
@@ -292,7 +291,7 @@ export const linearRouter = router({
   getLinkedIssue: tenantProcedure
     .input(z.object({ taskRunId: z.string() }))
     .query(async ({ ctx, input }) => {
-      const link = await prisma.externalLink.findFirst({
+      const link = await ctx.db.externalLink.findFirst({
         where: {
           organizationId: ctx.organizationId,
           entityType: "WORKFLOW_TASK_RUN",
@@ -324,7 +323,7 @@ export const linearRouter = router({
     .query(async ({ ctx, input }) => {
       if (input.taskRunIds.length === 0) return {};
 
-      const links = await prisma.externalLink.findMany({
+      const links = await ctx.db.externalLink.findMany({
         where: {
           organizationId: ctx.organizationId,
           entityType: "WORKFLOW_TASK_RUN",
@@ -381,7 +380,7 @@ export const linearRouter = router({
     )
     .query(async ({ ctx, input }) => {
       if (input.entityType === "WORKFLOW_TASK_RUN") {
-        const links = await prisma.externalLink.findMany({
+        const links = await ctx.db.externalLink.findMany({
           where: {
             organizationId: ctx.organizationId,
             entityType: "WORKFLOW_TASK_RUN",
@@ -400,7 +399,7 @@ export const linearRouter = router({
       }
 
       // WORKFLOW_RUN: find all task runs, then their external links
-      const taskRuns = await prisma.workflowTaskRun.findMany({
+      const taskRuns = await ctx.db.workflowTaskRun.findMany({
         where: {
           workflowRunId: input.entityId,
           organizationId: ctx.organizationId,
@@ -410,7 +409,7 @@ export const linearRouter = router({
 
       if (taskRuns.length === 0) return [];
 
-      const links = await prisma.externalLink.findMany({
+      const links = await ctx.db.externalLink.findMany({
         where: {
           organizationId: ctx.organizationId,
           entityType: "WORKFLOW_TASK_RUN",
