@@ -10,6 +10,8 @@ export interface RegisterParticipantParams {
   schemeId: string;
   identifierValue: string;
   organizationName: string;
+  /** Organization ID for rate limiting and audit logging (optional). */
+  organizationId?: string;
 }
 
 /**
@@ -38,6 +40,8 @@ export interface TransmitInvoiceParams {
   senderParticipantId: string;
   receiverParticipantId: string;
   documentTypeId: string;
+  /** Organization ID for rate limiting and audit logging (optional). */
+  organizationId?: string;
 }
 
 /**

@@ -1,5 +1,9 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import type {
+  GovApiAuditLogger,
+  GovApiRateLimiter,
+} from "@contractor-ops/gov-api";
+import type {
   ASPAdapter,
   ASPHealthStatus,
   InboundInvoicePayload,
@@ -16,6 +20,18 @@ import { storecoveWebhookPayloadSchema } from "./schemas.js";
 import type { StorecoveConfig } from "./types.js";
 
 // ---------------------------------------------------------------------------
+// Dependency injection for gov-api framework
+// ---------------------------------------------------------------------------
+
+/** Optional dependencies for gov-api framework integration. */
+export interface StorecoveAdapterDeps {
+  /** Rate limiter for Storecove API calls (optional — fail-open if not provided). */
+  rateLimiter?: GovApiRateLimiter;
+  /** Audit logger for compliance trail (optional — no-op if not provided). */
+  auditLogger?: GovApiAuditLogger;
+}
+
+// ---------------------------------------------------------------------------
 // Storecove ASP Adapter
 // ---------------------------------------------------------------------------
 
@@ -24,6 +40,9 @@ import type { StorecoveConfig } from "./types.js";
  *
  * Wraps the Storecove REST API v2 for Peppol network operations.
  * HMAC-SHA256 webhook signature verification per Storecove docs.
+ *
+ * Optionally composes GovApiRateLimiter and GovApiAuditLogger
+ * for rate limiting and compliance audit trails.
  */
 export class StorecoveAdapter implements ASPAdapter {
   readonly providerId = "storecove" as const;
@@ -31,25 +50,96 @@ export class StorecoveAdapter implements ASPAdapter {
 
   private readonly client: StorecoveClient;
   private readonly webhookSecret: string | undefined;
+  private readonly rateLimiter: GovApiRateLimiter | null;
+  private readonly auditLogger: GovApiAuditLogger | null;
 
-  constructor(config: StorecoveConfig) {
+  constructor(config: StorecoveConfig, deps?: StorecoveAdapterDeps) {
     this.client = new StorecoveClient(config);
     this.webhookSecret = config.webhookSecret;
+    this.rateLimiter = deps?.rateLimiter ?? null;
+    this.auditLogger = deps?.auditLogger ?? null;
   }
 
-  async registerParticipant(params: RegisterParticipantParams): Promise<ParticipantRegistration> {
-    const entity = await this.client.createLegalEntity({
-      partyName: params.organizationName,
-      identifier: params.identifierValue,
-      scheme: params.schemeId,
-    });
+  // -------------------------------------------------------------------------
+  // Rate limiting and audit logging helpers
+  // -------------------------------------------------------------------------
 
-    return {
-      registrationId: String(entity.id),
-      participantId: params.participantId,
-      status: "registered",
-      registeredAt: new Date(),
-    };
+  /**
+   * Check rate limit for the given organization.
+   * Throws if rate limit exceeded. No-op if no rate limiter configured.
+   */
+  private async checkRateLimit(identifier: string): Promise<void> {
+    if (!this.rateLimiter) return;
+    const result = await this.rateLimiter.checkLimit(identifier);
+    if (!result.allowed) {
+      throw new Error(
+        `Storecove API rate limit exceeded for ${identifier}. ` +
+          `Remaining: ${result.remaining}, resets in ${result.resetMs}ms`,
+      );
+    }
+  }
+
+  /**
+   * Emit an audit log entry for a Storecove API call.
+   * Fire-and-forget: failures are silently caught. No-op if no logger.
+   */
+  private emitAudit(
+    organizationId: string,
+    endpoint: string,
+    method: string,
+    responseStatus: number,
+    responseTimeMs: number,
+    errorMessage?: string,
+  ): void {
+    if (!this.auditLogger) return;
+    void this.auditLogger.log({
+      apiName: "storecove-peppol",
+      organizationId,
+      endpoint,
+      method,
+      responseStatus,
+      responseTimeMs,
+      errorMessage,
+    });
+  }
+
+  // -------------------------------------------------------------------------
+  // ASPAdapter implementation
+  // -------------------------------------------------------------------------
+
+  async registerParticipant(params: RegisterParticipantParams): Promise<ParticipantRegistration> {
+    const orgId = params.organizationId ?? "unknown";
+    await this.checkRateLimit(orgId);
+
+    const startMs = Date.now();
+    try {
+      const entity = await this.client.createLegalEntity({
+        partyName: params.organizationName,
+        identifier: params.identifierValue,
+        scheme: params.schemeId,
+      });
+
+      this.emitAudit(orgId, "/legal_entities", "POST", 200, Date.now() - startMs);
+
+      return {
+        registrationId: String(entity.id),
+        participantId: params.participantId,
+        status: "registered",
+        registeredAt: new Date(),
+      };
+    } catch (error) {
+      if (error instanceof StorecoveApiError) {
+        this.emitAudit(
+          orgId,
+          "/legal_entities",
+          "POST",
+          error.statusCode,
+          Date.now() - startMs,
+          error.message,
+        );
+      }
+      throw error;
+    }
   }
 
   async getParticipantStatus(participantId: string): Promise<ParticipantStatus> {
@@ -63,8 +153,12 @@ export class StorecoveAdapter implements ASPAdapter {
   }
 
   async transmitInvoice(params: TransmitInvoiceParams): Promise<TransmissionResult> {
+    const orgId = params.organizationId ?? "unknown";
+    await this.checkRateLimit(orgId);
+
     // Parse receiver participant ID "scheme:identifier"
     const [receiverScheme, receiverIdentifier] = params.receiverParticipantId.split(":");
+    const startMs = Date.now();
 
     try {
       const submission = await this.client.submitDocument({
@@ -75,29 +169,42 @@ export class StorecoveAdapter implements ASPAdapter {
         documentType: params.documentTypeId,
       });
 
+      this.emitAudit(orgId, "/document_submissions", "POST", 200, Date.now() - startMs);
+
       return {
         transmissionId: submission.guid,
         status: "accepted",
         timestamp: new Date(submission.created_at),
       };
     } catch (error) {
-      if (error instanceof StorecoveApiError && error.statusCode === 422) {
-        let errors: Array<{ code: string; message: string }> = [];
-        try {
-          const parsed = JSON.parse(error.responseBody);
-          errors = Array.isArray(parsed.errors)
-            ? parsed.errors
-            : [{ code: "VALIDATION_ERROR", message: error.responseBody }];
-        } catch {
-          errors = [{ code: "VALIDATION_ERROR", message: error.responseBody }];
-        }
+      if (error instanceof StorecoveApiError) {
+        this.emitAudit(
+          orgId,
+          "/document_submissions",
+          "POST",
+          error.statusCode,
+          Date.now() - startMs,
+          error.message,
+        );
 
-        return {
-          transmissionId: "",
-          status: "rejected",
-          timestamp: new Date(),
-          errors,
-        };
+        if (error.statusCode === 422) {
+          let errors: Array<{ code: string; message: string }> = [];
+          try {
+            const parsed = JSON.parse(error.responseBody);
+            errors = Array.isArray(parsed.errors)
+              ? parsed.errors
+              : [{ code: "VALIDATION_ERROR", message: error.responseBody }];
+          } catch {
+            errors = [{ code: "VALIDATION_ERROR", message: error.responseBody }];
+          }
+
+          return {
+            transmissionId: "",
+            status: "rejected",
+            timestamp: new Date(),
+            errors,
+          };
+        }
       }
       throw error;
     }
@@ -173,8 +280,23 @@ export class StorecoveAdapter implements ASPAdapter {
     };
   }
 
-  async pollInboundInvoices(since: Date): Promise<InboundInvoicePayload[]> {
+  async pollInboundInvoices(since: Date, organizationId?: string): Promise<InboundInvoicePayload[]> {
+    if (organizationId) {
+      await this.checkRateLimit(organizationId);
+    }
+
+    const startMs = Date.now();
     const documents = await this.client.getReceivedDocuments(since);
+
+    if (organizationId) {
+      this.emitAudit(
+        organizationId,
+        "/received_documents",
+        "GET",
+        200,
+        Date.now() - startMs,
+      );
+    }
 
     return documents.map((doc) => ({
       documentId: doc.guid,

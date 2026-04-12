@@ -1,4 +1,5 @@
-import { prisma } from "@contractor-ops/db";
+import { prisma as defaultPrisma } from "@contractor-ops/db";
+import type { PrismaClient } from "@contractor-ops/db";
 import type { ASPAdapter, InboundInvoicePayload } from "@contractor-ops/einvoice";
 import { PeppolAEProfile, PeppolAEQRCode, PINT_AE_DOCUMENT_TYPE_ID } from "@contractor-ops/einvoice";
 import { computeDuplicateCheckHash } from "./invoice-matching.js";
@@ -15,11 +16,13 @@ import { computeDuplicateCheckHash } from "./invoice-matching.js";
  */
 export class PeppolOrchestrator {
   private readonly aspAdapter: ASPAdapter;
+  private readonly db: PrismaClient;
   private readonly profile = new PeppolAEProfile();
   private readonly qrCode = new PeppolAEQRCode();
 
-  constructor(aspAdapter: ASPAdapter) {
+  constructor(aspAdapter: ASPAdapter, db?: PrismaClient) {
     this.aspAdapter = aspAdapter;
+    this.db = db ?? (defaultPrisma as unknown as PrismaClient);
   }
 
   /**
@@ -39,7 +42,7 @@ export class PeppolOrchestrator {
     receiverParticipantId: string;
   }) {
     // Load invoice (tenant-isolated)
-    const invoice = await prisma.invoice.findUniqueOrThrow({
+    const invoice = await this.db.invoice.findUniqueOrThrow({
       where: {
         id: params.invoiceId,
         organizationId: params.organizationId,
@@ -48,7 +51,7 @@ export class PeppolOrchestrator {
     });
 
     // Load active participant
-    const participant = await prisma.peppolParticipant.findFirst({
+    const participant = await this.db.peppolParticipant.findFirst({
       where: {
         organizationId: params.organizationId,
         status: "ACTIVE",
@@ -136,13 +139,13 @@ export class PeppolOrchestrator {
     const qrCodeBase64 = `data:image/png;base64,${qrBuffer.toString("base64")}`;
 
     // Persist QR code on the invoice record
-    await prisma.invoice.update({
+    await this.db.invoice.update({
       where: { id: invoice.id },
       data: { qrCodeBase64 },
     });
 
     // Create transmission record
-    const transmission = await prisma.peppolTransmission.create({
+    const transmission = await this.db.peppolTransmission.create({
       data: {
         organizationId: params.organizationId,
         peppolParticipantId: participant.id,
@@ -164,7 +167,7 @@ export class PeppolOrchestrator {
       });
 
       if (result.status === "rejected") {
-        return prisma.peppolTransmission.update({
+        return this.db.peppolTransmission.update({
           where: { id: transmission.id },
           data: {
             status: "REJECTED",
@@ -173,7 +176,7 @@ export class PeppolOrchestrator {
         });
       }
 
-      return prisma.peppolTransmission.update({
+      return this.db.peppolTransmission.update({
         where: { id: transmission.id },
         data: {
           status: "TRANSMITTED",
@@ -182,7 +185,7 @@ export class PeppolOrchestrator {
         },
       });
     } catch (error) {
-      return prisma.peppolTransmission.update({
+      return this.db.peppolTransmission.update({
         where: { id: transmission.id },
         data: {
           status: "FAILED",
@@ -199,7 +202,7 @@ export class PeppolOrchestrator {
    */
   async processInboundInvoice(params: { payload: InboundInvoicePayload; organizationId: string }) {
     // Idempotent — check for duplicate by ASP document ID
-    const existing = await prisma.peppolTransmission.findFirst({
+    const existing = await this.db.peppolTransmission.findFirst({
       where: { aspTransmissionId: params.payload.documentId },
     });
 
@@ -208,7 +211,7 @@ export class PeppolOrchestrator {
     }
 
     // Load active participant
-    const participant = await prisma.peppolParticipant.findFirst({
+    const participant = await this.db.peppolParticipant.findFirst({
       where: {
         organizationId: params.organizationId,
         status: { in: ["ACTIVE", "REGISTERED", "PENDING"] },
@@ -223,7 +226,7 @@ export class PeppolOrchestrator {
     const parsed = await this.profile.parse(params.payload.xml);
 
     // Create transmission record
-    const transmission = await prisma.peppolTransmission.create({
+    const transmission = await this.db.peppolTransmission.create({
       data: {
         organizationId: params.organizationId,
         peppolParticipantId: participant.id,
@@ -237,7 +240,7 @@ export class PeppolOrchestrator {
 
     // Create invoice from parsed EInvoice data
     const invoiceNumber = parsed.id || `PEPPOL-${params.payload.documentId}`;
-    const invoice = await prisma.invoice.create({
+    const invoice = await this.db.invoice.create({
       data: {
         organizationId: params.organizationId,
         invoiceNumber,
@@ -270,7 +273,7 @@ export class PeppolOrchestrator {
    * Update the status of an outbound transmission by querying the ASP.
    */
   async updateTransmissionStatus(transmissionId: string) {
-    const transmission = await prisma.peppolTransmission.findUniqueOrThrow({
+    const transmission = await this.db.peppolTransmission.findUniqueOrThrow({
       where: { id: transmissionId },
     });
 
@@ -287,7 +290,7 @@ export class PeppolOrchestrator {
       pending: "PENDING",
     };
 
-    return prisma.peppolTransmission.update({
+    return this.db.peppolTransmission.update({
       where: { id: transmissionId },
       data: {
         status: (statusMap[aspStatus.status] ?? "PENDING") as
@@ -308,7 +311,7 @@ export class PeppolOrchestrator {
    */
   async pollAndProcessInbound(organizationId: string): Promise<number> {
     // Find last inbound transmission timestamp
-    const lastInbound = await prisma.peppolTransmission.findFirst({
+    const lastInbound = await this.db.peppolTransmission.findFirst({
       where: {
         organizationId,
         direction: "INBOUND",
