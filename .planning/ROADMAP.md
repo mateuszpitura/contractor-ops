@@ -89,7 +89,7 @@ Full details: `.planning/milestones/v3.0-ROADMAP.md`
 - [x] **Phase 50: Arabic Localization & RTL Layout** - Full Arabic translation with codebase-wide RTL migration to CSS logical properties (completed 2026-04-11)
 - [x] **Phase 51: PDPL Compliance** - UAE and Saudi privacy law compliance with consent management and cross-border transfer safeguards (completed 2026-04-11)
 - [x] **Phase 52: Multi-Region Infrastructure** - Regional database routing, file storage residency, and government API framework (completed 2026-04-11)
-- [ ] **Phase 53: Peppol QR Persistence & Consent Onboarding Gate** - [GAP CLOSURE] Add qrCodeBase64 to Invoice model, wire OnboardingConsentStep into onboarding
+- [ ] **Phase 53: Peppol QR Persistence & Consent Onboarding Gate** - [GAP CLOSURE] Add qrCodeBase64 to Invoice model, wire OnboardingConsentStep into onboarding (2 plans)
 - [ ] **Phase 54: Regional Routing Adoption & Gov API Wiring** - [GAP CLOSURE] Migrate routers to ctx.db, adopt regional storage, wire gov-api framework
 - [ ] **Phase 55: Verification & Documentation Fixes** - [GAP CLOSURE] Re-verify phases 45/48, update SUMMARY frontmatter, fix hardcoded pl-PL formatters
 
@@ -226,7 +226,10 @@ Plans:
   1. Invoice Prisma model has `qrCodeBase64` field and PeppolQRDisplay renders QR on Peppol invoices
   2. OnboardingConsentStep is rendered in the onboarding checklist for PDPL jurisdictions (UAE, Saudi)
   3. Consent step completion is gated on `hasRequiredConsents` returning true
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 53-01-PLAN.md — Add qrCodeBase64 to Invoice model, wire QR generation in Peppol orchestrator
+- [ ] 53-02-PLAN.md — Wire OnboardingConsentStep into onboarding checklist with server-side gating
 
 ### Phase 54: Regional Routing Adoption & Gov API Wiring
 **Goal**: All v4.0 phase routers use regional database routing and government API calls use the shared framework
@@ -268,6 +271,6 @@ Phases 45-52 complete. Gap closure: 53 -> 54 -> 55
 | 50. Arabic Localization & RTL Layout | v4.0 | 7/7 | Complete    | 2026-04-12 |
 | 51. PDPL Compliance | v4.0 | 4/4 | Complete    | 2026-04-11 |
 | 52. Multi-Region Infrastructure | v4.0 | 4/4 | Complete    | 2026-04-12 |
-| 53. Peppol QR & Consent Gate | v4.0 | 0/0 | Planned    | — |
+| 53. Peppol QR & Consent Gate | v4.0 | 0/2 | Planned    | — |
 | 54. Regional Routing & Gov API | v4.0 | 0/0 | Planned    | — |
 | 55. Verification & Doc Fixes | v4.0 | 0/0 | Planned    | — |
