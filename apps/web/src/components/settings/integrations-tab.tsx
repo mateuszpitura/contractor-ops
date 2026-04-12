@@ -27,6 +27,7 @@ import {
 } from "@/components/integrations/provider-icons";
 import { OrgCalendarSection } from "./org-calendar-section";
 import { PeppolStatusCard } from "@/components/peppol/peppol-status-card";
+import { ZatcaStatusCard } from "@/components/zatca/zatca-status-card";
 
 // ---------------------------------------------------------------------------
 // Provider registry for UI (static for now, will be dynamic in future phases)
@@ -209,6 +210,9 @@ export function IntegrationsTab() {
 
         {/* KSeF has custom connect dialog + sync controls */}
         <KsefProviderSection />
+
+        {/* ZATCA (Saudi Arabia) has onboarding wizard + status card */}
+        <ZatcaStatusCard />
 
         {/* Peppol (UAE) has custom wizard + status card */}
         <PeppolStatusCard />
