@@ -1,10 +1,11 @@
 ---
 phase: 56
 slug: country-foundations-german-i18n
-status: draft
+status: approved
 shadcn_initialized: true
 preset: base-nova
 created: 2026-04-12
+reviewed_at: 2026-04-12T00:00:00Z
 ---
 
 # Phase 56 — UI Design Contract
