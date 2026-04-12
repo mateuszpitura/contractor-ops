@@ -108,6 +108,13 @@ export {
   validateTin,
   validateUaeTin,
 } from './country-fields.js';
+export {
+  isValidHandelsregister,
+  isValidSteuernummer,
+  isValidSvNummer,
+  isValidUstIdNr,
+  mod11_10CheckDigit,
+} from './de-validators.js';
 export type {
   HandelsregisterCourt,
 } from './handelsregister-courts.js';

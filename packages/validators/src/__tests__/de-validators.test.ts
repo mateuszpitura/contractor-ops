@@ -280,7 +280,7 @@ describe('isValidHandelsregister composite (FOUND-02, D-03)', () => {
   it('accepts well-formed HRA composite', () => {
     expect(
       isValidHandelsregister({
-        court: 'amtsgericht-berlin-charlottenburg',
+        court: 'amtsgericht-charlottenburg',
         type: 'HRA',
         number: '42',
       }),
