@@ -136,7 +136,7 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
   return (
     <div className="space-y-2">
       {value.rules.map((rule, index) => (
-        <div key={index}>
+        <div key={`rule-${index}`}>
           {/* Combinator toggle between rows */}
           {index > 0 && (
             <div className="flex items-center justify-center py-1">
@@ -204,7 +204,7 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
                   <SelectValue placeholder={t("conditionValuePlaceholder")} />
                 </SelectTrigger>
                 <SelectContent>
-                  {ENUM_VALUE_FIELDS[rule.field]!.map((v) => (
+                  {ENUM_VALUE_FIELDS[rule.field]?.map((v) => (
                     <SelectItem key={v} value={v}>
                       {v}
                     </SelectItem>

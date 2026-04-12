@@ -1,8 +1,10 @@
 {
   "extends": "../../tsconfig.node.json",
   "compilerOptions": {
-    "composite": true,
     "tsBuildInfoFile": "node_modules/.cache/tsc/tsconfig.tsbuildinfo",
+    "composite": false,
+    "declaration": false,
+    "declarationMap": false,
     "outDir": "dist",
     "rootDir": "src",
     "jsx": "react-jsx"

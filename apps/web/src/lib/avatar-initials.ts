@@ -9,11 +9,11 @@ export function getAvatarInitials(name: string | null | undefined, email?: strin
   if (trimmed) {
     const parts = trimmed.split(/\s+/).filter(Boolean);
     if (parts.length >= 2) {
-      const a = parts[0]![0] ?? "";
-      const b = parts[parts.length - 1]![0] ?? "";
+      const a = parts[0]?.[0] ?? "";
+      const b = parts[parts.length - 1]?.[0] ?? "";
       return (a + b).toUpperCase().slice(0, 2);
     }
-    const w = parts[0]!;
+    const w = parts[0] ?? "";
     return w.length >= 2 ? w.slice(0, 2).toUpperCase() : w.toUpperCase().slice(0, 1);
   }
   if (email?.trim()) {

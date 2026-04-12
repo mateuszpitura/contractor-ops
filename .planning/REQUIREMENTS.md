@@ -22,9 +22,9 @@ Requirements for International Foundation & Gulf Expansion. Each maps to roadmap
 - [x] **ZATCA-02**: Invoices are cryptographically signed using X.509 certificates (XAdES enveloped signatures)
 - [x] **ZATCA-03**: Each invoice includes a TLV-encoded QR code (seller name, VAT number, timestamp, total, VAT amount)
 - [x] **ZATCA-04**: Invoice hash chain is maintained — each invoice references the hash of the previous invoice per organization
-- [x] **ZATCA-05**: Invoices are submitted to ZATCA Fatoora Portal API for clearance (B2B tax invoices)
+- [ ] **ZATCA-05**: Invoices are submitted to ZATCA Fatoora Portal API for clearance (B2B tax invoices)
 - [x] **ZATCA-06**: Platform supports ZATCA device onboarding — CSR generation, CSID request, production certificate exchange
-- [x] **ZATCA-07**: Platform handles ZATCA reporting for simplified invoices (B2C)
+- [ ] **ZATCA-07**: Platform handles ZATCA reporting for simplified invoices (B2C)
 
 ### Peppol PINT-AE (UAE)
 
@@ -125,13 +125,13 @@ Requirements for International Foundation & Gulf Expansion. Each maps to roadmap
 | ZATCA-02 | Phase 48 | Complete |
 | ZATCA-03 | Phase 48 | Complete |
 | ZATCA-04 | Phase 48 | Complete |
-| ZATCA-05 | Phase 48 | Complete |
+| ZATCA-05 | Phase 48 → Phase 55 (re-verify) | Pending |
 | ZATCA-06 | Phase 48 | Complete |
-| ZATCA-07 | Phase 48 | Complete |
+| ZATCA-07 | Phase 48 → Phase 55 (re-verify) | Pending |
 | PEPPOL-01 | Phase 49 | Pending |
 | PEPPOL-02 | Phase 49 | Pending |
 | PEPPOL-03 | Phase 49 | Pending |
-| PEPPOL-04 | Phase 49 | Pending |
+| PEPPOL-04 | Phase 49 → Phase 53 (gap closure) | Pending |
 | CURR-01 | Phase 46 | Pending |
 | CURR-02 | Phase 46 | Pending |
 | CURR-03 | Phase 46 | Pending |
@@ -158,9 +158,9 @@ Requirements for International Foundation & Gulf Expansion. Each maps to roadmap
 | PDPL-02 | Phase 51 | Pending |
 | PDPL-03 | Phase 51 | Pending |
 | PDPL-04 | Phase 51 | Pending |
-| INFRA-01 | Phase 52 | Pending |
-| INFRA-02 | Phase 52 | Pending |
-| INFRA-03 | Phase 52 | Pending |
+| INFRA-01 | Phase 52 → Phase 54 (gap closure) | Pending |
+| INFRA-02 | Phase 52 → Phase 54 (gap closure) | Pending |
+| INFRA-03 | Phase 52 → Phase 54 (gap closure) | Pending |
 | INFRA-04 | Phase 52 | Pending |
 
 **Coverage:**
@@ -170,4 +170,4 @@ Requirements for International Foundation & Gulf Expansion. Each maps to roadmap
 
 ---
 *Requirements defined: 2026-04-11*
-*Last updated: 2026-04-11 after roadmap creation*
+*Last updated: 2026-04-12 after gap closure phase creation*

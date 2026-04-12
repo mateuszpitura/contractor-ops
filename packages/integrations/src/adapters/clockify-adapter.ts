@@ -101,7 +101,7 @@ export class ClockifyAdapter extends BaseAdapter {
       status = "DISCONNECTED";
     } else if (connection.lastErrorAt && !connection.lastSuccessAt) {
       status = "ERROR";
-    } else if (recentSyncs.length > 0 && recentSyncs[0]!.status === "FAILED") {
+    } else if (recentSyncs[0]?.status === "FAILED") {
       status = "ERROR";
     } else {
       status = "CONNECTED";

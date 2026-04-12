@@ -577,7 +577,7 @@ function ContractorsV2Content() {
       {isLoading ? (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {Array.from({ length: 8 }).map((_, i) => (
-            <Skeleton key={i} className="h-[220px] rounded-2xl" />
+            <Skeleton key={`skel-${i}`} className="h-[220px] rounded-2xl" />
           ))}
         </div>
       ) : contractors.length === 0 ? (
@@ -664,12 +664,12 @@ export default function ContractorsV2Page() {
               <Skeleton className="h-[140px] rounded-2xl" />
               <div className="flex gap-2">
                 {Array.from({ length: 5 }).map((_, i) => (
-                  <Skeleton key={i} className="h-8 w-20 rounded-full" />
+                  <Skeleton key={`skel-${i}`} className="h-8 w-20 rounded-full" />
                 ))}
               </div>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
                 {Array.from({ length: 8 }).map((_, i) => (
-                  <Skeleton key={i} className="h-[220px] rounded-2xl" />
+                  <Skeleton key={`skel-${i}`} className="h-[220px] rounded-2xl" />
                 ))}
               </div>
             </div>

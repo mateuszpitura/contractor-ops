@@ -73,7 +73,7 @@ export function JiraActivitySummary({ contractorId }: JiraActivitySummaryProps) 
           <Skeleton className="h-4 w-32" />
         </div>
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="flex items-center gap-2">
+          <div key={`activity-${i}`} className="flex items-center gap-2">
             <Skeleton className="h-6 w-[120px] rounded-md" />
             <Skeleton className="h-4 w-[200px]" />
             <Skeleton className="ms-auto h-3 w-[60px]" />

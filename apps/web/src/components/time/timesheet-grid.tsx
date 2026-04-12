@@ -106,10 +106,11 @@ export function TimesheetGrid({
       const dateStr = toDateStr(entry.entryDate);
       const contractId = entry.contractId;
       if (!map.has(contractId)) map.set(contractId, new Map());
+      const contractEntries = map.get(contractId)!; // guaranteed by set above
       // Find which day index this date corresponds to
       for (let i = 0; i < 7; i++) {
         if (getDateForDay(weekStartDate, i) === dateStr) {
-          map.get(contractId)!.set(i, entry);
+          contractEntries.set(i, entry);
           break;
         }
       }

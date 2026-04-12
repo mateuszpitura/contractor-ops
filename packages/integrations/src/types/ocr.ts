@@ -116,10 +116,11 @@ export function adjustConfidences(result: OcrExtractionResult): OcrExtractionRes
     if (Math.abs(expectedGross - gross) > 0.01) {
       // Amounts don't add up -- lower confidence on all amount fields
       for (const key of ["totalNet", "totalTax", "totalGross"]) {
-        if (fields[key]) {
+        const field = fields[key];
+        if (field) {
           fields[key] = {
-            ...fields[key]!,
-            confidence: Math.min(fields[key]!.confidence, 60),
+            ...field,
+            confidence: Math.min(field.confidence, 60),
           };
         }
       }

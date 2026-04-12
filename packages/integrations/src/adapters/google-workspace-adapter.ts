@@ -337,7 +337,7 @@ export class GoogleWorkspaceAdapter extends BaseAdapter {
       status = "ERROR";
     } else if (connection.tokenExpiresAt && connection.tokenExpiresAt < new Date()) {
       status = "REAUTH_REQUIRED";
-    } else if (recentSyncs.length > 0 && recentSyncs[0]!.status === "FAILED") {
+    } else if (recentSyncs[0]?.status === "FAILED") {
       status = "ERROR";
     } else {
       status = "CONNECTED";

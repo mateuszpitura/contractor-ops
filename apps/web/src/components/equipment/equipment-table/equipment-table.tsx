@@ -129,9 +129,10 @@ export function EquipmentTable({
         typeof updater === "function"
           ? updater([{ id: sortBy, desc: sortOrder === "desc" }])
           : updater;
-      if (next.length > 0) {
-        setSortBy(next[0]!.id);
-        setSortOrder(next[0]!.desc ? "desc" : "asc");
+      const first = next[0];
+      if (first) {
+        setSortBy(first.id);
+        setSortOrder(first.desc ? "desc" : "asc");
         setPage(1);
       } else {
         setSortBy("createdAt");

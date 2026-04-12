@@ -21,7 +21,7 @@ function PopoverSkeletons() {
   return (
     <div className="flex flex-col gap-2 p-2">
       {Array.from({ length: 4 }).map((_, i) => (
-        <div key={i} className="flex items-center gap-3 px-3 py-2">
+        <div key={`skel-${i}`} className="flex items-center gap-3 px-3 py-2">
           <Skeleton className="h-8 w-8 rounded-full" />
           <div className="flex flex-1 flex-col gap-1">
             <Skeleton className="h-3.5 w-32" />

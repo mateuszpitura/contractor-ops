@@ -250,7 +250,10 @@ export function InvoiceSubmitForm() {
   // Auto-select if only 1 active contract
   useEffect(() => {
     if (contracts && contracts.length === 1 && !selectedContractId) {
-      setValue("contractId", contracts[0]!.id, { shouldValidate: true });
+      const onlyContract = contracts[0];
+      if (onlyContract) {
+        setValue("contractId", onlyContract.id, { shouldValidate: true });
+      }
     }
   }, [contracts, selectedContractId, setValue]);
 

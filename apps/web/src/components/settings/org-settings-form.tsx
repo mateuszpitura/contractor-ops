@@ -283,7 +283,7 @@ export function OrgSettingsForm() {
         </CardHeader>
         <CardContent className="space-y-4">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="space-y-2">
+            <div key={`field-${i}`} className="space-y-2">
               <Skeleton className="h-4 w-24" />
               <Skeleton className="h-8 w-full max-w-lg" />
             </div>

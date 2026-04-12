@@ -98,7 +98,7 @@ export function ApprovalQueueWidget() {
         {isLoading ? (
           <div className="flex flex-col gap-2">
             {Array.from({ length: 5 }).map((_, i) => (
-              <Skeleton key={i} className="h-10 w-full rounded-md" />
+              <Skeleton key={`skel-${i}`} className="h-10 w-full rounded-md" />
             ))}
           </div>
         ) : items.length === 0 ? (

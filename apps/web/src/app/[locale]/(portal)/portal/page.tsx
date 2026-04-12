@@ -158,7 +158,7 @@ export default function PortalOverviewPage() {
           {isLoading ? (
             <>
               {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="flex items-center justify-between">
+                <div key={`skel-${i}`} className="flex items-center justify-between">
                   <Skeleton className="h-4 w-64" />
                   <Skeleton className="h-3 w-16" />
                 </div>
@@ -167,7 +167,7 @@ export default function PortalOverviewPage() {
           ) : overview?.recentActivity && overview.recentActivity.length > 0 ? (
             overview.recentActivity.map((entry, i) => (
               <div
-                key={i}
+                key={`skel-${i}`}
                 className="flex items-start justify-between gap-4 border-b border-border/50 pb-3 last:border-0"
               >
                 <p className="text-sm">{entry.event}</p>

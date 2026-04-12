@@ -89,6 +89,9 @@ Full details: `.planning/milestones/v3.0-ROADMAP.md`
 - [x] **Phase 50: Arabic Localization & RTL Layout** - Full Arabic translation with codebase-wide RTL migration to CSS logical properties (completed 2026-04-11)
 - [x] **Phase 51: PDPL Compliance** - UAE and Saudi privacy law compliance with consent management and cross-border transfer safeguards (completed 2026-04-11)
 - [x] **Phase 52: Multi-Region Infrastructure** - Regional database routing, file storage residency, and government API framework (completed 2026-04-11)
+- [ ] **Phase 53: Peppol QR Persistence & Consent Onboarding Gate** - [GAP CLOSURE] Add qrCodeBase64 to Invoice model, wire OnboardingConsentStep into onboarding
+- [ ] **Phase 54: Regional Routing Adoption & Gov API Wiring** - [GAP CLOSURE] Migrate routers to ctx.db, adopt regional storage, wire gov-api framework
+- [ ] **Phase 55: Verification & Documentation Fixes** - [GAP CLOSURE] Re-verify phases 45/48, update SUMMARY frontmatter, fix hardcoded pl-PL formatters
 
 ## Phase Details
 
@@ -214,11 +217,46 @@ Plans:
   4. Government API integrations (ZATCA, Peppol, future markets) use a shared framework with certificate auth, retry logic, rate limiting, sandbox/production modes, and audit logging
 **Plans**: TBD
 
+### Phase 53: Peppol QR Persistence & Consent Onboarding Gate
+**Goal**: Peppol QR codes display on invoice detail and PDPL consent is enforced during onboarding for Gulf jurisdictions
+**Depends on**: Phase 49, Phase 51
+**Requirements**: PEPPOL-04, PDPL-03, PDPL-04
+**Gap Closure**: Closes gaps from v4.0 audit
+**Success Criteria** (what must be TRUE):
+  1. Invoice Prisma model has `qrCodeBase64` field and PeppolQRDisplay renders QR on Peppol invoices
+  2. OnboardingConsentStep is rendered in the onboarding checklist for PDPL jurisdictions (UAE, Saudi)
+  3. Consent step completion is gated on `hasRequiredConsents` returning true
+**Plans**: TBD
+
+### Phase 54: Regional Routing Adoption & Gov API Wiring
+**Goal**: All v4.0 phase routers use regional database routing and government API calls use the shared framework
+**Depends on**: Phase 52
+**Requirements**: INFRA-01, INFRA-02, INFRA-03
+**Gap Closure**: Closes gaps from v4.0 audit
+**Success Criteria** (what must be TRUE):
+  1. All v4.0 routers and services use `ctx.db` (regional Prisma client) instead of importing `prisma` directly
+  2. Document router uses `regional-storage.ts` instead of legacy `r2.ts` for presigned URLs
+  3. ZatcaApiClient extends GovApiClient (or uses GovApiRateLimiter and GovApiAuditLogger)
+  4. StorecoveAdapter uses GovApiRateLimiter for Peppol ASP API calls
+**Plans**: TBD
+
+### Phase 55: Verification & Documentation Fixes
+**Goal**: All milestone verification artifacts are current, SUMMARY frontmatter is complete, and locale formatters are consistent
+**Depends on**: Phase 53, Phase 54
+**Requirements**: EINV-01, EINV-02, EINV-03, EINV-04, EINV-05, EINV-06, ZATCA-05, ZATCA-07, CURR-01, CURR-02, CURR-03, CURR-04, CURR-05, PAY-01, PAY-02, PAY-03
+**Gap Closure**: Closes verification/documentation gaps from v4.0 audit
+**Success Criteria** (what must be TRUE):
+  1. Phase 45 has a VERIFICATION.md with all 6 EINV requirements verified
+  2. Phase 48 VERIFICATION.md is updated to reflect gap closure plans 48-07/48-08 (ZATCA-05/07 satisfied)
+  3. Phase 46 SUMMARY files have `requirements_completed` frontmatter populated
+  4. `format-currency.ts` and `format-relative-date.ts` use locale-aware formatting (no hardcoded pl-PL)
+  5. Phase 49 VERIFICATION.md updated to reflect resolved hooks violation
+**Plans**: TBD
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 45 -> 46 -> 47 -> 48 -> 49 -> 50 -> 51 -> 52
-(Phase 49 depends on Phase 45 only, not 48 -- can potentially parallel with 46-48 if capacity allows)
+Phases 45-52 complete. Gap closure: 53 -> 54 -> 55
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -230,3 +268,6 @@ Phases execute in numeric order: 45 -> 46 -> 47 -> 48 -> 49 -> 50 -> 51 -> 52
 | 50. Arabic Localization & RTL Layout | v4.0 | 7/7 | Complete    | 2026-04-12 |
 | 51. PDPL Compliance | v4.0 | 4/4 | Complete    | 2026-04-11 |
 | 52. Multi-Region Infrastructure | v4.0 | 4/4 | Complete    | 2026-04-12 |
+| 53. Peppol QR & Consent Gate | v4.0 | 0/0 | Planned    | — |
+| 54. Regional Routing & Gov API | v4.0 | 0/0 | Planned    | — |
+| 55. Verification & Doc Fixes | v4.0 | 0/0 | Planned    | — |

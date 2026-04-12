@@ -68,8 +68,9 @@ export function ReportTable<TData>({
     state: { sorting },
     onSortingChange: (updater) => {
       const next = typeof updater === "function" ? updater(sorting) : updater;
-      if (next.length > 0) {
-        onSortChange(next[0]!.id, next[0]!.desc ? "desc" : "asc");
+      const first = next[0];
+      if (first) {
+        onSortChange(first.id, first.desc ? "desc" : "asc");
       }
     },
     getCoreRowModel: getCoreRowModel(),

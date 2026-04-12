@@ -75,7 +75,7 @@ function PreferencesSkeleton() {
   return (
     <div className="space-y-1">
       {Array.from({ length: 5 }).map((_, i) => (
-        <div key={i} className="flex min-h-[48px] items-center justify-between px-4 py-3">
+        <div key={`pref-${i}`} className="flex min-h-[48px] items-center justify-between px-4 py-3">
           <div className="flex items-center gap-3">
             <Skeleton className="h-5 w-5 rounded" />
             <div className="space-y-1">

@@ -67,11 +67,14 @@ export function OnboardingWizard({ onComplete, onCancel }: OnboardingWizardProps
   const t = useTranslations("Zatca.onboarding");
   const queryClient = useQueryClient();
 
-  const onboardingSteps: StepDefinition[] = STEP_IDS.map((id) => ({
-    id,
-    label: t(STEP_TRANSLATION_KEYS[id]!.label as Parameters<typeof t>[0]),
-    shortLabel: t(STEP_TRANSLATION_KEYS[id]!.shortLabel as Parameters<typeof t>[0]),
-  }));
+  const onboardingSteps: StepDefinition[] = STEP_IDS.map((id) => {
+    const keys = STEP_TRANSLATION_KEYS[id];
+    return {
+      id,
+      label: t((keys?.label ?? id) as Parameters<typeof t>[0]),
+      shortLabel: t((keys?.shortLabel ?? id) as Parameters<typeof t>[0]),
+    };
+  });
 
   const stateQuery = useQuery(zatcaTrpc.getOnboardingState.queryOptions());
   const state = stateQuery.data as ZatcaOnboardingState | undefined;

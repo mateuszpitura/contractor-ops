@@ -291,7 +291,7 @@ export function CommandPalette() {
         {isLoading && (
           <div className="space-y-2 p-2">
             {Array.from({ length: 4 }).map((_, i) => (
-              <Skeleton key={i} className="h-8 w-full rounded-md" />
+              <Skeleton key={`skel-${i}`} className="h-8 w-full rounded-md" />
             ))}
           </div>
         )}
@@ -432,7 +432,7 @@ export function CommandPalette() {
               <CommandGroup heading="Docs">
                 <div className="space-y-2 p-2">
                   {Array.from({ length: 3 }).map((_, i) => (
-                    <Skeleton key={i} className="h-8 w-full rounded-md" />
+                    <Skeleton key={`skel-${i}`} className="h-8 w-full rounded-md" />
                   ))}
                 </div>
               </CommandGroup>

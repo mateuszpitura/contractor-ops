@@ -92,7 +92,7 @@ function InvoiceListSkeleton({ t }: { t: ReturnType<typeof useTranslations<"Port
           </TableHeader>
           <TableBody>
             {Array.from({ length: 5 }).map((_, i) => (
-              <TableRow key={i}>
+              <TableRow key={`skel-${i}`}>
                 <TableCell>
                   <Skeleton className="h-4 w-24" />
                 </TableCell>
@@ -116,7 +116,7 @@ function InvoiceListSkeleton({ t }: { t: ReturnType<typeof useTranslations<"Port
       {/* Mobile skeleton */}
       <div className="space-y-3 md:hidden">
         {Array.from({ length: 5 }).map((_, i) => (
-          <Card key={i}>
+          <Card key={`skel-${i}`}>
             <CardContent className="space-y-2 pt-4">
               <div className="flex items-center justify-between">
                 <Skeleton className="h-4 w-28" />

@@ -29,7 +29,7 @@ export function OcrProcessingOverlay({ progress }: OcrProcessingOverlayProps) {
       {/* Skeleton fields underneath */}
       <div className="flex flex-col gap-4 p-4">
         {Array.from({ length: 8 }).map((_, i) => (
-          <div key={i} className="flex flex-col gap-2">
+          <div key={`skel-${i}`} className="flex flex-col gap-2">
             <Skeleton className="h-4 w-20" />
             <Skeleton className="h-8 w-full" />
           </div>

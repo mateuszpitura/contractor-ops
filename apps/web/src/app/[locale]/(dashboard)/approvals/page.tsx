@@ -272,7 +272,7 @@ function ApprovalsContent() {
               {changeRequestsQuery.isLoading ? (
                 <div className="space-y-4">
                   {Array.from({ length: 3 }).map((_, i) => (
-                    <Skeleton key={i} className="h-48 w-full rounded-xl" />
+                    <Skeleton key={`skel-${i}`} className="h-48 w-full rounded-xl" />
                   ))}
                 </div>
               ) : changeRequests.length === 0 ? (
@@ -330,13 +330,13 @@ function ApprovalsLoading() {
       <Skeleton className="h-10 w-60" />
       <div className="flex items-center gap-2">
         {Array.from({ length: 5 }).map((_, i) => (
-          <Skeleton key={i} className="h-8 w-24 rounded-full" />
+          <Skeleton key={`skel-${i}`} className="h-8 w-24 rounded-full" />
         ))}
       </div>
       <Skeleton className="h-9 w-80" />
       <div className="rounded-xl border bg-background">
         {Array.from({ length: 8 }).map((_, i) => (
-          <div key={i} className="flex items-center gap-4 px-4 py-3 border-b last:border-b-0">
+          <div key={`skel-${i}`} className="flex items-center gap-4 px-4 py-3 border-b last:border-b-0">
             <Skeleton className="h-4 w-4" />
             <Skeleton className="h-4 w-24" />
             <Skeleton className="h-4 w-32" />

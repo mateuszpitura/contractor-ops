@@ -69,9 +69,9 @@ export function StructuredData({
 
   return (
     <>
-      {schemas.map((schema, i) => (
+      {schemas.map((schema) => (
         <script
-          key={i}
+          key={(schema as Record<string, string>)["@type"] ?? JSON.stringify(schema).slice(0, 32)}
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
         />

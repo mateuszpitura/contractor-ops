@@ -84,7 +84,7 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
   return (
     <div className="space-y-3">
       {value.map((condition, index) => (
-        <div key={index} className="flex h-10 items-center gap-2">
+        <div key={`condition-${index}`} className="flex h-10 items-center gap-2">
           {/* Field select */}
           <Select
             value={condition.field}

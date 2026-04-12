@@ -103,10 +103,11 @@ export function WorkflowRunsDataTable({ onRowClick, onStartWorkflow }: WorkflowR
         typeof updater === "function"
           ? updater([{ id: filters.sortBy, desc: filters.sortOrder === "desc" }])
           : updater;
-      if (next.length > 0) {
+      const first = next[0];
+      if (first) {
         void setFilters({
-          sortBy: next[0]!.id,
-          sortOrder: next[0]!.desc ? "desc" : "asc",
+          sortBy: first.id,
+          sortOrder: first.desc ? "desc" : "asc",
           page: 1,
         });
       } else {

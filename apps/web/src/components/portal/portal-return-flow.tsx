@@ -50,7 +50,7 @@ function StepIndicator({ currentStep, totalSteps }: { currentStep: number; total
     <div className="flex items-center justify-center gap-2" aria-hidden="true">
       {Array.from({ length: totalSteps }).map((_, i) => (
         <div
-          key={i}
+          key={`step-${i}`}
           className={cn(
             "h-2 w-2 rounded-full transition-colors",
             i + 1 === currentStep ? "bg-primary" : "bg-muted",
@@ -178,7 +178,7 @@ export function PortalReturnFlow({
               </p>
               <ul className="space-y-1 text-sm">
                 {equipmentItems.map((item, i) => (
-                  <li key={i} className="flex items-center gap-2">
+                  <li key={`equipment-${i}`} className="flex items-center gap-2">
                     <Package className="h-3.5 w-3.5 text-muted-foreground" />
                     <span>
                       {item.name}
@@ -231,7 +231,7 @@ export function PortalReturnFlow({
                 </p>
                 <ul className="space-y-1 ps-4">
                   {equipmentItems.map((item, i) => (
-                    <li key={i}>
+                    <li key={`equipment-${i}`}>
                       {item.name}
                       {item.serialNumber && (
                         <span className="ms-1 font-mono text-xs text-muted-foreground">

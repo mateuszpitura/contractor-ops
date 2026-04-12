@@ -132,7 +132,10 @@ export function SigningProgressBar({ envelope }: SigningProgressBarProps) {
   if (allSigned) {
     statusText = t("allSigned");
   } else if (currentIndex >= 0) {
-    statusText = t("waitingFor", { name: sortedRecipients[currentIndex]!.name });
+    const currentRecipient = sortedRecipients[currentIndex];
+    if (currentRecipient) {
+      statusText = t("waitingFor", { name: currentRecipient.name });
+    }
   }
 
   // Pending recipients for resend

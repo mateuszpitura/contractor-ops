@@ -153,7 +153,7 @@ export default function DashboardPage() {
           </div>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
             {Array.from({ length: 5 }).map((_, i) => (
-              <Skeleton key={i} className="h-[100px] rounded-xl" />
+              <Skeleton key={`skel-${i}`} className="h-[100px] rounded-xl" />
             ))}
           </div>
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">

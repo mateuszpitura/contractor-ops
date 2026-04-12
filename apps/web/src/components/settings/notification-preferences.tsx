@@ -186,7 +186,7 @@ export function NotificationPreferences() {
         </div>
         <div className="space-y-2">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="flex items-center gap-4 py-3">
+            <div key={`pref-${i}`} className="flex items-center gap-4 py-3">
               <Skeleton className="size-8 rounded-full" />
               <Skeleton className="h-4 w-32" />
               <div className="ms-auto flex gap-8">

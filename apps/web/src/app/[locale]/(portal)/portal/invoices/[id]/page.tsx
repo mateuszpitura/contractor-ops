@@ -80,7 +80,7 @@ function DetailSkeleton() {
       <Card>
         <CardContent className="space-y-4 pt-4">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="flex items-center justify-between">
+            <div key={`skel-${i}`} className="flex items-center justify-between">
               <Skeleton className="h-4 w-24" />
               <Skeleton className="h-4 w-32" />
             </div>
@@ -90,7 +90,7 @@ function DetailSkeleton() {
       <div className="space-y-3">
         <Skeleton className="h-6 w-20" />
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="flex items-center gap-3">
+          <div key={`skel-${i}`} className="flex items-center gap-3">
             <Skeleton className="h-4 w-4 rounded-full" />
             <div className="space-y-1">
               <Skeleton className="h-4 w-48" />

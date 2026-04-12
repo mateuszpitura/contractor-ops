@@ -134,7 +134,7 @@ export function ActivityFeed() {
         {isLoading ? (
           <div className="flex flex-col gap-2">
             {Array.from({ length: 8 }).map((_, i) => (
-              <Skeleton key={i} className="h-12 w-full rounded-md" />
+              <Skeleton key={`skel-${i}`} className="h-12 w-full rounded-md" />
             ))}
           </div>
         ) : grouped.length === 0 ? (

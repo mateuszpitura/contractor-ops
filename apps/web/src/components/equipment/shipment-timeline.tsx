@@ -240,8 +240,13 @@ export function ShipmentTimeline({
         })}
 
         {/* Show FAILED or RETURNED as special terminal events if applicable */}
-        {(currentStatus === "FAILED" || currentStatus === "RETURNED") &&
-          eventByStatus.has(currentStatus) && (
+        {(() => {
+          const terminalEvent =
+            (currentStatus === "FAILED" || currentStatus === "RETURNED")
+              ? eventByStatus.get(currentStatus)
+              : undefined;
+          if (!terminalEvent) return null;
+          return (
             <div role="listitem" className="relative pb-0">
               <div className="flex items-start gap-3">
                 <div className="relative z-10 mt-0.5 h-3 w-3 shrink-0 rounded-full border-2 border-primary bg-primary/20" />
@@ -250,19 +255,20 @@ export function ShipmentTimeline({
                     <span className="text-sm font-medium text-primary">
                       {t(`shipment.status.${currentStatus}`)}
                     </span>
-                    {eventByStatus.get(currentStatus)?.notes && (
+                    {terminalEvent.notes && (
                       <p className="mt-0.5 text-xs text-muted-foreground">
-                        {eventByStatus.get(currentStatus)!.notes}
+                        {terminalEvent.notes}
                       </p>
                     )}
                   </div>
                   <span className="shrink-0 text-xs text-muted-foreground">
-                    {format(new Date(eventByStatus.get(currentStatus)!.occurredAt), "MMM d, HH:mm")}
+                    {format(new Date(terminalEvent.occurredAt), "MMM d, HH:mm")}
                   </span>
                 </div>
               </div>
             </div>
-          )}
+          );
+        })()}
       </div>
     </div>
   );

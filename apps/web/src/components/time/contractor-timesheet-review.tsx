@@ -103,10 +103,11 @@ export function ContractorTimesheetReview({
       if (!map.has(contractId)) {
         map.set(contractId, { title, entries: new Map() });
       }
+      const contractData = map.get(contractId)!; // guaranteed by set above
       const dateStr = toDateStr(entry.entryDate);
       for (let i = 0; i < 7; i++) {
         if (getDateForDay(weekStart, i) === dateStr) {
-          map.get(contractId)!.entries.set(i, entry);
+          contractData.entries.set(i, entry);
           break;
         }
       }

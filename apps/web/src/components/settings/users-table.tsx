@@ -147,7 +147,7 @@ export function UsersTable() {
           </TableHeader>
           <TableBody>
             {Array.from({ length: 5 }).map((_, i) => (
-              <TableRow key={i}>
+              <TableRow key={`skel-${i}`}>
                 <TableCell>
                   <Skeleton className="h-4 w-28" />
                 </TableCell>

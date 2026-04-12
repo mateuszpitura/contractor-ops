@@ -84,7 +84,7 @@ export function KsefSyncHistory({ connectionId }: KsefSyncHistoryProps) {
         {syncHistoryQuery.isLoading ? (
           <div className="space-y-2 py-2">
             {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="flex items-center gap-3">
+              <div key={`skel-${i}`} className="flex items-center gap-3">
                 <Skeleton className="h-4 w-20" />
                 <Skeleton className="h-5 w-12" />
                 <Skeleton className="ms-auto h-5 w-16" />

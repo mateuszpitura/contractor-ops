@@ -162,7 +162,7 @@ function InvoicesLoading() {
       {/* Chip bar skeleton */}
       <div className="flex items-center gap-2">
         {Array.from({ length: 7 }).map((_, i) => (
-          <Skeleton key={i} className="h-8 w-24 rounded-full" />
+          <Skeleton key={`skel-${i}`} className="h-8 w-24 rounded-full" />
         ))}
       </div>
       {/* Table skeleton */}
@@ -173,7 +173,7 @@ function InvoicesLoading() {
         </div>
         <div className="rounded-xl border bg-background">
           {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="flex items-center gap-4 px-4 py-3 border-b last:border-b-0">
+            <div key={`skel-${i}`} className="flex items-center gap-4 px-4 py-3 border-b last:border-b-0">
               <Skeleton className="h-4 w-4" />
               <Skeleton className="h-4 w-28" />
               <Skeleton className="h-4 w-32" />

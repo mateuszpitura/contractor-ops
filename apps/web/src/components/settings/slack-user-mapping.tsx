@@ -175,7 +175,7 @@ export function SlackUserMapping() {
         </div>
         <div className="space-y-2">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="flex items-center gap-4 py-3">
+            <div key={`mapping-${i}`} className="flex items-center gap-4 py-3">
               <Skeleton className="size-8 rounded-full" />
               <Skeleton className="h-4 w-32" />
               <Skeleton className="ms-auto h-4 w-24" />
@@ -260,7 +260,7 @@ export function SlackUserMapping() {
                       size="sm"
                       onClick={() =>
                         unlinkMutation.mutate({
-                          externalLinkId: mapping.slackLink!.externalLinkId,
+                          externalLinkId: mapping.slackLink.externalLinkId,
                         })
                       }
                       disabled={unlinkMutation.isPending}

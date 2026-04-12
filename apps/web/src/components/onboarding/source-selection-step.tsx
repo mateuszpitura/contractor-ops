@@ -127,7 +127,7 @@ export function SourceSelectionStep({
       {sourcesQuery.isLoading ? (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-24 w-full" />
+            <Skeleton key={`skel-${i}`} className="h-24 w-full" />
           ))}
         </div>
       ) : (

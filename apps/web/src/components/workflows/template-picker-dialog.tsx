@@ -223,7 +223,7 @@ export function TemplatePicker({
           {isLoading ? (
             <div className="space-y-2 p-1">
               {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="flex items-center gap-3 rounded-lg border p-3">
+                <div key={`skel-${i}`} className="flex items-center gap-3 rounded-lg border p-3">
                   <div className="flex-1 space-y-2">
                     <Skeleton className="h-4 w-40" />
                     <Skeleton className="h-3 w-24" />

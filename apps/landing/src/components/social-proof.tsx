@@ -74,8 +74,8 @@ export function SocialProof() {
               <div className="flex h-full flex-col rounded-2xl border border-border/50 bg-surface-1 p-6 transition-all duration-300 hover:border-border hover:shadow-sm">
                 {/* Stars */}
                 <div className="flex gap-0.5">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <Star key={i} className="h-4 w-4 fill-accent-warm text-accent-warm" />
+                  {(["s1", "s2", "s3", "s4", "s5"] as const).map((id) => (
+                    <Star key={id} className="h-4 w-4 fill-accent-warm text-accent-warm" />
                   ))}
                 </div>
                 <blockquote className="mt-4 flex-1 text-sm leading-relaxed text-foreground/85">

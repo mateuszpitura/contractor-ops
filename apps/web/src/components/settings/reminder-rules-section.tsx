@@ -171,7 +171,7 @@ export function ReminderRulesSection() {
           <Skeleton className="h-8 w-32" />
         </div>
         {Array.from({ length: 3 }).map((_, i) => (
-          <Card key={i}>
+          <Card key={`skel-${i}`}>
             <CardHeader>
               <Skeleton className="h-4 w-48" />
             </CardHeader>
