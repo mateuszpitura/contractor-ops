@@ -1,111 +1,107 @@
 ---
-phase: 49
-phase_name: peppol-pint-ae-integration
 status: issues_found
+phase: 49
 depth: standard
-files_reviewed: 34
+files_reviewed: 5
 findings:
-  critical: 2
-  warning: 9
-  info: 5
-  total: 16
-reviewed: 2026-04-12T14:30:00Z
+  critical: 1
+  warning: 5
+  info: 4
+  total: 10
 ---
 
-# Code Review: Phase 49 -- Peppol PINT-AE Integration
+# Code Review: Phase 49
 
 ## Summary
 
-The Peppol PINT-AE integration is well-structured with clean separation between the ASP adapter layer, the e-invoicing profile engine, and the tRPC router. Two critical security issues were found: the Storecove adapter hardcodes `senderLegalEntityId: 0` which will cause all outbound transmissions to fail or route to the wrong entity, and the inbound route does not verify that the `deliveryId` belongs to the claimed `organizationId`, enabling cross-tenant data access. Several warning-level issues include missing retry queue for the `retryTransmission` mutation, potential `timingSafeEqual` crash on malformed signatures, and the poll endpoint iterating all active participants without concurrency limits.
+The Phase 49 gap-closure wiring (orphaned UI components, validator exports, and the Peppol tRPC router) is generally sound, but one critical miscategorisation in permission scoping exposes invoice transmission data to users without invoice read rights, and several warning-level issues exist around React Rules-of-Hooks violations, incomplete transmission logic, and weak input validation.
 
 ## Findings
 
-### CR-01: Cross-tenant data access in inbound route -- deliveryId not scoped to organizationId
-- **Severity**: critical
-- **File**: `apps/web/src/app/api/peppol/inbound/route.ts`:35
-- **Description**: The handler accepts `deliveryId` and `organizationId` from the request body and fetches the `WebhookDelivery` by `id` alone (`findUniqueOrThrow`). It never verifies that `delivery.organizationId === organizationId`. A caller (or compromised QStash message) could supply a `deliveryId` belonging to org A with `organizationId` of org B, causing org B to process org A's webhook data and potentially create an invoice in the wrong tenant.
-- **Recommendation**: Add `organizationId` to the `findUniqueOrThrow` where clause: `where: { id: deliveryId, organizationId }`, or validate after fetch that `delivery.organizationId === organizationId`.
+### CR-001: Wrong permission scope on getTransmissionByInvoiceId
+**Severity:** critical
+**File:** packages/api/src/routers/peppol.ts
+**Line:** 323
+**Issue:** `getTransmissionByInvoiceId` is guarded by `requirePermission({ settings: ["read"] })`. This is the same permission used for Peppol connection management (connect, disconnect, getStatus). Invoice-level transmission data is invoice data — it should require `invoice: ["read"]`. Users who have settings read access but no invoice read access can retrieve the full transmission record (including `documentTypeId`, timestamps, status, and a full participant join) for any invoice in their org. Comparable routes in the codebase (e.g. `zatca.ts:103,133`) correctly use `invoice: ["read"]`.
+**Fix:** Change the permission guard on `getTransmissionByInvoiceId` to `.use(requirePermission({ invoice: ["read"] }))`.
 
-### CR-02: Hardcoded senderLegalEntityId: 0 in StorecoveAdapter.transmitInvoice
-- **Severity**: critical
-- **File**: `packages/einvoice/src/asp/storecove/adapter.ts`:79
-- **Description**: The `transmitInvoice` method passes `senderLegalEntityId: 0` to the Storecove client. This is a placeholder value (with a comment "Caller should resolve this from participant data") that was never wired up. Storecove requires the actual legal entity ID obtained during registration. All outbound transmissions will either fail with a 404/422 or be sent from the wrong entity.
-- **Recommendation**: Add `senderLegalEntityId` to the `TransmitInvoiceParams` interface and pass the value from `PeppolParticipant.aspRegistrationId` (stored during registration) through the orchestrator. The orchestrator already loads the participant; pass `parseInt(participant.aspRegistrationId)` to the adapter.
+---
 
-### WR-01: timingSafeEqual crash on malformed hex signature
-- **Severity**: warning
-- **File**: `packages/einvoice/src/asp/storecove/adapter.ts`:158-160
-- **Description**: `timingSafeEqual` requires both buffers to be the same length. If the `storecove-signature` header contains a non-hex string or a hex string of different length than SHA-256 output (64 hex chars), `Buffer.from(signature, "hex")` will produce a buffer of different length, causing `timingSafeEqual` to throw a `RangeError` instead of returning `false`.
-- **Recommendation**: Guard with a length check: `if (computed.length !== Buffer.from(signature, "hex").length) return { valid: false };` or wrap in try/catch and return `{ valid: false }` on `RangeError`.
+### WR-001: Rules of Hooks violation — useQuery called after early return
+**Severity:** warning
+**File:** apps/web/src/components/einvoice/compliance-widget.tsx
+**Line:** 94
+**Issue:** `useQuery(trpc.peppol.getStatus.queryOptions())` on line 94 is called after the `if (isLoading) return (...)` early return on line 81. React Rules of Hooks require hooks to be called in the same order on every render; an early return before a hook call is a violation that will cause a runtime error ("Rendered more hooks than during the previous render") once React transitions from loading to loaded state.
+**Fix:** Move the `peppol.getStatus` query declaration above the `if (isLoading)` guard, alongside the first `useQuery` call on line 77.
 
-### WR-02: retryTransmission only resets status without re-queuing
-- **Severity**: warning
-- **File**: `packages/api/src/routers/peppol.ts`:412-418
-- **Description**: The `retryTransmission` mutation sets the transmission status back to `PENDING` but does not enqueue a new QStash job to actually process the retry. There is no background worker polling for `PENDING` transmissions. The transmission will remain in `PENDING` state indefinitely unless manually triggered.
-- **Recommendation**: After resetting status to PENDING, publish a QStash message to `/api/peppol/outbound` with the relevant `organizationId`, `invoiceId`, and `receiverParticipantId` to trigger actual reprocessing.
+---
 
-### WR-03: Poll endpoint processes all organizations sequentially without concurrency limit
-- **Severity**: warning
-- **File**: `apps/web/src/app/api/peppol/poll/route.ts`:39-113
-- **Description**: The poll handler iterates all active `PeppolParticipant` records sequentially. With many organizations, this could exceed the serverless function timeout (typically 10-60s). Each iteration makes multiple DB queries plus an external API call to Storecove.
-- **Recommendation**: Either limit the number of participants processed per invocation (batch + cursor), use `Promise.allSettled` with a concurrency pool (e.g., p-limit), or schedule individual per-org poll jobs via QStash instead of a single global poll.
+### WR-002: retryTransmission resets DB status but never re-enqueues work
+**Severity:** warning
+**File:** packages/api/src/routers/peppol.ts
+**Line:** 402–411
+**Issue:** The `retryTransmission` mutation sets `status: "PENDING"` and clears `errorMessage`, but does not publish a new QStash message to `/api/peppol/outbound`. There is no background worker polling for PENDING transmissions. The record will remain permanently stuck in PENDING unless the cron poll happens to pick it up, which the poll route is not designed to do for outbound jobs.
+**Fix:** After the `prisma.peppolTransmission.update` call, enqueue a QStash message to the outbound route with `{ organizationId, transmissionId }`. Wrap in a try/catch so a QStash failure doesn't prevent the status reset from being returned.
 
-### WR-04: Missing organizationId scope in processInboundInvoice duplicate check
-- **Severity**: warning
-- **File**: `packages/api/src/services/peppol-orchestrator.ts`:176-178
-- **Description**: The idempotency check queries `PeppolTransmission` by `aspTransmissionId` without scoping to the organization. If two different organizations somehow receive the same `aspTransmissionId` (unlikely but possible with ASP bugs or test environments), the second org's invoice would be silently skipped.
-- **Recommendation**: Add `organizationId: params.organizationId` to the `findFirst` where clause for defense in depth.
+---
 
-### WR-05: Outbound route returns 200 on all business errors, masking infrastructure failures
-- **Severity**: warning
-- **File**: `apps/web/src/app/api/peppol/outbound/route.ts`:83-88
-- **Description**: The catch block always returns 200 to "prevent QStash retry on business errors." However, this also prevents retries for transient infrastructure errors (network timeouts, DB connection failures, Storecove 500s). The comment says "transmission record is already marked FAILED in the orchestrator" but infrastructure errors may occur before the orchestrator can update the record.
-- **Recommendation**: Differentiate between business errors (validation failures from Storecove 422) and infrastructure errors (network failures, 500s). Return 500 for infrastructure errors to allow QStash retries, and 200 only for non-retryable business errors.
+### WR-003: peppolTransmission query enabled too eagerly on invoice detail page
+**Severity:** warning
+**File:** apps/web/src/app/[locale]/(dashboard)/invoices/[id]/page.tsx
+**Line:** 163–168
+**Issue:** `enabled: !!invoice` fires the `getTransmissionByInvoiceId` query for every invoice as soon as invoice data is loaded, regardless of whether the invoice has any Peppol relevance. This is an unnecessary API call for the vast majority of invoices (KSeF, manual upload, email). Given the permission bug in CR-001 the call also leaks intent.
+**Fix:** Scope the query to only Peppol-related invoices: `enabled: !!invoice && (invoice.source === "PEPPOL" || /* check for outbound indicator */ true)`. At minimum, gate on `invoice.source === "PEPPOL"` until the outbound case can be determined without the query result.
 
-### WR-06: No invoice line creation for inbound Peppol invoices
-- **Severity**: warning
-- **File**: `packages/api/src/services/peppol-orchestrator.ts`:213-237
-- **Description**: The `processInboundInvoice` method parses the XML into an `EInvoice` (which includes `lines`), but only creates the `Invoice` header record. The parsed `lines` are discarded -- no `InvoiceLine` records are created. This means inbound Peppol invoices will have no line items visible in the UI.
-- **Recommendation**: After creating the invoice, also create `InvoiceLine` records from `parsed.lines` using `prisma.invoiceLine.createMany`.
+---
 
-### WR-07: Missing aspRegistrationId storage during participant registration
-- **Severity**: warning
-- **File**: `packages/api/src/routers/peppol.ts`:110-119
-- **Description**: The `connect` mutation creates a `PeppolParticipant` record but never calls `aspAdapter.registerParticipant()` to actually register with Storecove. The `aspRegistrationId` field remains null. This means the participant is never registered on the Peppol network through the ASP, and the legal entity ID needed for outbound transmission (see CR-02) is never obtained.
-- **Recommendation**: After storing credentials, instantiate the StorecoveAdapter and call `registerParticipant()`. Store the returned `registrationId` as `aspRegistrationId` on the participant record. Update participant status based on the registration result.
+### WR-004: Peppol inbound banner uses sellerTaxId as senderParticipantId
+**Severity:** warning
+**File:** apps/web/src/app/[locale]/(dashboard)/invoices/[id]/page.tsx
+**Line:** 319
+**Issue:** `senderParticipantId={invoice.sellerTaxId ?? "Unknown sender"}` passes the raw tax ID (a TRN or NIP) as the Peppol participant ID. A Peppol participant ID has the scheme-prefixed format `0192:NNNNNNNNNNNNNNN`. The `sellerTaxId` field is the unqualified identifier. The banner will display a structurally incorrect participant ID, and any downstream copy-to-clipboard or lookup action will be broken.
+**Fix:** Use the resolved `peppolTransmission.senderParticipantId` (already mapped by the router) or construct it as `` `0192:${invoice.sellerTaxId}` `` only when the source is `PEPPOL` and a proper schemed ID is unavailable. The router's `getTransmissionByInvoiceId` response already includes `receiverParticipantId`; the inbound sender should be surfaced analogously.
 
-### WR-08: QR code XSS via base64 src attribute
-- **Severity**: warning
-- **File**: `apps/web/src/components/peppol/peppol-qr-display.tsx`:29-34
-- **Description**: The `qrCodeBase64` prop is rendered directly into an `<img src>` attribute. If an attacker controls this value, they could inject a `javascript:` URI or other malicious content. While modern browsers block `javascript:` in img src, this is still a defense-in-depth concern.
-- **Recommendation**: Validate that `qrCodeBase64` starts with `data:image/png;base64,` before rendering. Reject any value that doesn't match this prefix.
+---
 
-### IR-01: Duplicated text() helper function across parser and validator
-- **Severity**: info
-- **File**: `packages/einvoice/src/profiles/peppol-ae/parser.ts`:22-30, `packages/einvoice/src/profiles/peppol-ae/validator.ts`:22-30
-- **Description**: The `text()` utility function is identically duplicated in both `parser.ts` and `validator.ts`. This violates DRY.
-- **Recommendation**: Extract the shared `text()` function into a shared utility module (e.g., the existing `xml-utils.ts`) and import it in both files.
+### WR-005: healthScore is hard-coded rather than derived from data
+**Severity:** warning
+**File:** apps/web/src/components/einvoice/compliance-widget.tsx
+**Line:** 150–152
+**Issue:** `healthScore` is computed as a static mapping from state string to fixed numbers (`active → 100`, `onboarding → 50`, otherwise `0`). The `peppolStatus` response includes connection metadata (`lastSyncAt`, `lastErrorAt`, `lastSuccessAt`, `lastErrorMessage`) that would allow a more meaningful health score. Displaying 0 for a `suspended` state that is merely awaiting manual reactivation is misleading.
+**Fix:** Derive health score from the connection record: if `lastErrorAt` is null, health is 100; if `lastErrorAt > lastSuccessAt`, health is 0; otherwise scale by recency. Alternatively document that the static mapping is intentional and track improvements in a follow-up issue.
 
-### IR-02: Duplicated peppolParticipantIdSchema in two packages
-- **Severity**: info
-- **File**: `packages/einvoice/src/profiles/peppol-ae/schemas.ts`:11-16, `packages/validators/src/peppol.ts`:11-16
-- **Description**: The `peppolParticipantIdSchema` Zod schema is defined identically in both `@contractor-ops/einvoice` and `@contractor-ops/validators`. Changes to the format in one place may not be reflected in the other.
-- **Recommendation**: Define the schema in one canonical location (validators package) and import it in the einvoice package, or re-export from a shared schemas package.
+---
 
-### IR-03: XMLParser instance created at module level in multiple files
-- **Severity**: info
-- **File**: `packages/einvoice/src/profiles/peppol-ae/parser.ts`:10-17, `packages/einvoice/src/profiles/peppol-ae/validator.ts`:10-17
-- **Description**: Two identical `XMLParser` instances with the same configuration are created at module scope. This is a minor DRY violation and increases the memory footprint.
-- **Recommendation**: Share a single configured parser instance via a shared module.
+### IR-001: TRN length validation is redundant
+**Severity:** info
+**File:** packages/validators/src/peppol.ts
+**Line:** 26–29
+**Issue:** `connectPeppolSchema.trn` applies both `.length(15)` and `.regex(/^\d+$/)`. The `peppolParticipantIdSchema` already validates the full `0192:NNNNNNNNNNNNNNN` format. These two validations on the raw TRN are sufficient but the length check and regex check duplicate the guarantee provided by `peppolParticipantIdSchema`. This is not a bug but adds maintenance surface.
+**Fix:** Consider using `peppolParticipantIdSchema` as the basis for the connect schema, or document that the two validations are intentionally separate because connect accepts a raw TRN, not the full participant ID.
 
-### IR-04: PeppolStatusCard uses non-standard AlertDialogTrigger render prop
-- **Severity**: info
-- **File**: `apps/web/src/components/peppol/peppol-status-card.tsx`:188-195
-- **Description**: `AlertDialogTrigger` is used with a `render` prop, which is not part of the standard shadcn/ui API. This may be a custom extension or may break with library updates. Standard pattern is to use `asChild` with a child component.
-- **Recommendation**: Verify this matches the project's UI library API. If using Radix primitives directly, consider using the `asChild` pattern for consistency.
+---
 
-### IR-05: Wizard step 4 allows navigating back during pending registration
-- **Severity**: info
-- **File**: `apps/web/src/components/peppol/peppol-wizard.tsx`:362-370
-- **Description**: While the Back button is disabled during `connectMutation.isPending` at step 4, a user could close the dialog entirely via the X button or clicking outside, leaving the registration in an indeterminate state. The `resetAndClose` function resets local state but doesn't cancel the in-flight mutation.
-- **Recommendation**: Consider disabling dialog close during the pending mutation, or handle the case where the mutation completes after the dialog is closed (the `onSuccess` handler already invalidates queries, so this is low-risk but could show a stale state).
+### IR-002: aspProvider enum locks to a single value without future-proofing
+**Severity:** info
+**File:** packages/validators/src/peppol.ts
+**Line:** 29
+**Issue:** `aspProvider: z.enum(["storecove"])` is a single-value enum. Zod single-value enums behave correctly, but `z.literal("storecove")` would be more idiomatic and make intent clearer. If a second provider is added later, the schema and all downstream discriminated unions will need updating.
+**Fix:** No immediate action required. Consider using `z.literal("storecove")` for clarity, or add a comment noting that additional providers will extend this enum.
+
+---
+
+### IR-003: Missing type exports for new peppol validators in index.ts
+**Severity:** info
+**File:** packages/validators/src/index.ts
+**Line:** 467–481
+**Issue:** The peppol exports are present and correct. However, the `transmitInvoiceSchema` is exported but `TransmitInvoiceInput` is the only type exported alongside it. All other schema/type pairs are symmetrically exported. No gap exists here, but verifying completeness: `peppolParticipantIdSchema` exports `PeppolParticipantId` ✓, `connectPeppolSchema` exports `ConnectPeppolInput` ✓, `transmitInvoiceSchema` exports `TransmitInvoiceInput` ✓, `getTransmissionsSchema` exports `GetTransmissionsInput` ✓, `getTransmissionByInvoiceIdSchema` exports `GetTransmissionByInvoiceIdInput` ✓, `retryTransmissionSchema` exports `RetryTransmissionInput` ✓. All symmetric. No action required — recorded for completeness.
+**Fix:** No action required.
+
+---
+
+### IR-004: any casts on invoice and transmission data in page.tsx reduce type safety
+**Severity:** info
+**File:** apps/web/src/app/[locale]/(dashboard)/invoices/[id]/page.tsx
+**Line:** 130, 149, 160, 171
+**Issue:** Four separate `as any` casts suppress TypeScript on the core data objects (`invoice`, `pdfUrl`, `reconciliation`, `peppolTransmission`). The Peppol-specific access patterns at lines 231–232 (`peppolTransmission.direction`, `peppolTransmission.documentTypeId`, `peppolTransmission.createdAt`) are entirely untyped. A typo or schema change would silently produce `undefined` at runtime.
+**Fix:** Infer the return type from the tRPC query using `inferOutput` or the inferred router type, and replace `as any` with properly typed variables. This is a pre-existing pattern in the file but the Phase 49 additions extend it further.
