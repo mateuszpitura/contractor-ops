@@ -16,7 +16,8 @@
 
 import nodeCrypto from "node:crypto";
 import type { Prisma } from "@contractor-ops/db";
-import { prisma } from "@contractor-ops/db";
+import { prisma as defaultPrisma } from "@contractor-ops/db";
+import type { PrismaClient } from "@contractor-ops/db";
 import type {
   ZatcaConnectionConfig,
   ZatcaOnboardingState,
@@ -104,7 +105,7 @@ async function loadZatcaApiClient(options: Record<string, unknown>): Promise<Zat
  * Returns the connection record with parsed config.
  */
 async function getOrCreateConnection(organizationId: string, userId?: string) {
-  let connection = await prisma.integrationConnection.findFirst({
+  let connection = await defaultPrisma.integrationConnection.findFirst({
     where: {
       organizationId,
       provider: "ZATCA",
@@ -118,7 +119,7 @@ async function getOrCreateConnection(organizationId: string, userId?: string) {
       certificateStatus: "none",
     };
 
-    connection = await prisma.integrationConnection.create({
+    connection = await defaultPrisma.integrationConnection.create({
       data: {
         organizationId,
         provider: "ZATCA",
@@ -141,14 +142,14 @@ async function updateConnectionConfig(
   update: Record<string, unknown>,
   statusOverride?: "CONNECTED" | "DISCONNECTED" | "ERROR" | "REAUTH_REQUIRED" | "PENDING_MAPPING",
 ) {
-  const connection = await prisma.integrationConnection.findUniqueOrThrow({
+  const connection = await defaultPrisma.integrationConnection.findUniqueOrThrow({
     where: { id: connectionId },
   });
 
   const currentConfig = (connection.configJson as Record<string, unknown>) ?? {};
   const newConfig = { ...currentConfig, ...update };
 
-  await prisma.integrationConnection.update({
+  await defaultPrisma.integrationConnection.update({
     where: { id: connectionId },
     data: {
       configJson: newConfig as unknown as Prisma.InputJsonValue,
@@ -452,7 +453,7 @@ export async function exchangeProductionCertificate(organizationId: string): Pro
     environment: "production",
   };
 
-  await prisma.integrationConnection.update({
+  await defaultPrisma.integrationConnection.update({
     where: { id: connection.id },
     data: {
       status: "CONNECTED",
@@ -473,7 +474,7 @@ export async function exchangeProductionCertificate(organizationId: string): Pro
  * @returns Current onboarding step and progress flags
  */
 export async function getOnboardingState(organizationId: string): Promise<ZatcaOnboardingState> {
-  const connection = await prisma.integrationConnection.findFirst({
+  const connection = await defaultPrisma.integrationConnection.findFirst({
     where: {
       organizationId,
       provider: "ZATCA",

@@ -10,7 +10,8 @@
 // ---------------------------------------------------------------------------
 
 import { createHash, randomUUID } from "node:crypto";
-import { prisma } from "@contractor-ops/db";
+import { prisma as defaultPrisma } from "@contractor-ops/db";
+import type { PrismaClient } from "@contractor-ops/db";
 import type { Prisma } from "@contractor-ops/db/generated/prisma/client";
 import type {
   CertificateInfo,
@@ -76,7 +77,11 @@ const QSTASH_CONFIG = {
  * 6. Submit to ZATCA (clearance for standard, reporting for simplified)
  * 7. Update chain entry with response
  */
-export async function submitToZatca(options: SubmitToZatcaOptions): Promise<void> {
+export async function submitToZatca(
+  options: SubmitToZatcaOptions,
+  db?: PrismaClient,
+): Promise<void> {
+  const prisma = db ?? defaultPrisma;
   const { invoiceId, organizationId } = options;
 
   // Load invoice and org data
@@ -203,10 +208,10 @@ export async function submitToZatca(options: SubmitToZatcaOptions): Promise<void
     let status: string;
 
     if (isStandard) {
-      response = await apiClient.submitForClearance(payload);
+      response = await apiClient.submitForClearance(payload, organizationId);
       status = (response as ZatcaClearanceResponse).clearanceStatus;
     } else {
-      response = await apiClient.submitForReporting(payload);
+      response = await apiClient.submitForReporting(payload, organizationId);
       status = (response as ZatcaReportingResponse).reportingStatus;
     }
 
