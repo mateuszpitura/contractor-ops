@@ -3,18 +3,18 @@ status: partial
 phase: 47-vat-engine-wht-calculator-country-fields
 source: 47-01-SUMMARY.md, 47-02-SUMMARY.md, 47-03-SUMMARY.md, 47-04-SUMMARY.md, 47-05-SUMMARY.md
 started: 2026-04-11T13:00:00Z
-updated: 2026-04-11T13:15:00Z
+updated: 2026-04-12T00:00:00Z
 ---
 
 ## Current Test
 
-[testing paused -- 12 items require manual user verification]
+[testing paused — 11 items outstanding, deferred to manual UAT]
 
 ## Tests
 
 ### 1. Cold Start Smoke Test
 expected: Kill any running server/service. Clear ephemeral state. Start the application from scratch. Server boots without errors, seed/migration completes (including new TaxRate and WithholdingTaxRate seed data), and a basic page or health check returns successfully.
-result: [pending]
+result: pass
 code_review: |
   Seed files verified: tax-rates.ts seeds 10 VAT rates, wht-rates.ts seeds 14 WHT rates.
   seed/index.ts imports and calls both seedTaxRates and seedWhtRates.
@@ -121,9 +121,9 @@ code_review: |
 ## Summary
 
 total: 12
-passed: 0
+passed: 1
 issues: 0
-pending: 12
+pending: 11
 skipped: 0
 blocked: 0
 
