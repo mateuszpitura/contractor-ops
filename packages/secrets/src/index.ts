@@ -23,9 +23,6 @@ let _instance: SecretStore | null = null;
 export function getSecretStore(): SecretStore {
   if (_instance) return _instance;
 
-  // TODO: when a provider SDK is wired up, detect its env vars here and
-  // return `new CachedStore(new InfisicalStore(...))` (or Doppler, etc.)
-
   console.warn(
     "[secrets] No external secret store configured — using in-memory store. " +
       "Credentials will be lost on process restart.",

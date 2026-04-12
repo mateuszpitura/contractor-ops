@@ -131,7 +131,7 @@ export const auth = betterAuth({
           console.log(`[DEV] Invitation email to ${data.email}: ${data.invitation.id}`);
           return;
         }
-        // TODO: Implement production email sending via Resend (Phase 7)
+        throw new Error("Production email sending not configured — integrate Resend adapter");
       },
     }),
     magicLink({
@@ -140,7 +140,7 @@ export const auth = betterAuth({
           console.log(`[DEV] Magic link for ${email}: ${url}`);
           return;
         }
-        // TODO: Implement production email sending via Resend (Phase 7)
+        throw new Error("Production email sending not configured — integrate Resend adapter");
       },
     }),
     admin(),
