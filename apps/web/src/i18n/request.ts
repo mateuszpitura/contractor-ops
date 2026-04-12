@@ -9,6 +9,7 @@ const localeSettings: Record<
   en: { timeZone: 'Europe/Warsaw', currency: 'EUR' },
   pl: { timeZone: 'Europe/Warsaw', currency: 'PLN' },
   ar: { timeZone: 'Asia/Dubai', currency: 'AED', numberingSystem: 'latn' },
+  de: { timeZone: 'Europe/Berlin', currency: 'EUR' },
 };
 
 export default getRequestConfig(async ({ requestLocale }) => {
