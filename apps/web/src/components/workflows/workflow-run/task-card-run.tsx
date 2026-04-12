@@ -193,23 +193,21 @@ function ReassignPopover({ taskRunId, runId }: { taskRunId: string; runId: strin
   const [selectedUserId, setSelectedUserId] = useState("");
   const [open, setOpen] = useState(false);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const usersQuery = useQuery({
     ...trpc.user.list.queryOptions(),
     enabled: open,
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const members = (usersQuery.data as any)?.members ?? [];
+  // user.list returns flattened members: { id, userId, name, email, role, ... }
+  const members = usersQuery.data ?? [];
 
   const reassignMutation = useMutation(
     trpc.workflow.reassignTask.mutationOptions({
       onSuccess: () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const member = members.find((m: any) => m.userId === selectedUserId);
+        const member = members.find((m) => m.userId === selectedUserId);
         toast.success(
           t("toastTaskReassigned", {
-            name: member?.user?.name ?? "user",
+            name: (member?.name as string) ?? "user",
           }),
         );
         queryClient.invalidateQueries({
@@ -239,10 +237,9 @@ function ReassignPopover({ taskRunId, runId }: { taskRunId: string; runId: strin
             <SelectValue placeholder={t("reassignPlaceholder")} />
           </SelectTrigger>
           <SelectContent>
-            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-            {members.map((member: any) => (
-              <SelectItem key={member.userId} value={member.userId}>
-                {member.user?.name ?? member.user?.email ?? member.userId}
+            {members.map((member) => (
+              <SelectItem key={member.userId as string} value={member.userId as string}>
+                {(member.name ?? member.email ?? member.userId) as string}
               </SelectItem>
             ))}
           </SelectContent>

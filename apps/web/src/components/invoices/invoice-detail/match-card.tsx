@@ -304,10 +304,8 @@ function UnmatchedCard({
     enabled: !!selectedContractorId,
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const contractors = (contractorsQuery.data as any[]) ?? [];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const contracts = (contractsQuery.data as any[]) ?? [];
+  const contractors = contractorsQuery.data ?? [];
+  const contracts = contractsQuery.data ?? [];
 
   // Manual match mutation
   const manualMatchMutation = useMutation(

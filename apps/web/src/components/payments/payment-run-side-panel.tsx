@@ -68,8 +68,7 @@ export function PaymentRunSidePanel({
     enabled: !!runId && open,
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const run = runQuery.data as any;
+  const run = runQuery.data;
 
   // ---------------------------------------------------------------------------
   // Mutations
@@ -164,7 +163,7 @@ export function PaymentRunSidePanel({
         <SheetContent className="w-[400px] p-0">
           <div className="p-6 space-y-4">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="h-4 bg-muted animate-pulse rounded w-full" />
+              <div key={`skel-${i}`} className="h-4 bg-muted animate-pulse rounded w-full" />
             ))}
           </div>
         </SheetContent>
@@ -173,7 +172,7 @@ export function PaymentRunSidePanel({
   }
 
   const status = run.status as string;
-  const items = (run.items ?? []) as Array<{
+  const items = (run.items ?? []) as unknown as Array<{
     id: string;
     invoiceId: string;
     amountMinor: number;

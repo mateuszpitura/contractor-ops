@@ -198,9 +198,11 @@ export function WorkflowsTab({ contractorId }: WorkflowsTabProps) {
     }),
   );
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const queryData = runsQuery.data as any;
-  const items: WorkflowRunRow[] = useMemo(() => queryData?.items ?? [], [queryData]);
+  const queryData = runsQuery.data;
+  const items: WorkflowRunRow[] = useMemo(
+    () => (queryData?.items ?? []) as unknown as WorkflowRunRow[],
+    [queryData],
+  );
   const totalCount: number = queryData?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
@@ -209,7 +211,7 @@ export function WorkflowsTab({ contractorId }: WorkflowsTabProps) {
     return (
       <div className="space-y-3">
         {Array.from({ length: 5 }).map((_, i) => (
-          <div key={i} className="flex items-center gap-4 px-4 py-3">
+          <div key={`skel-${i}`} className="flex items-center gap-4 px-4 py-3">
             <Skeleton className="h-4 w-40" />
             <Skeleton className="h-5 w-16 rounded-full" />
             <Skeleton className="h-4 w-20" />

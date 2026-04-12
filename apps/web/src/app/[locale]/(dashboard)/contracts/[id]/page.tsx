@@ -39,7 +39,7 @@ function TabContentSkeleton() {
   return (
     <div className="grid gap-4 lg:grid-cols-2">
       {Array.from({ length: 4 }).map((_, i) => (
-        <div key={i} className="rounded-xl border bg-card p-4">
+        <div key={`skel-${i}`} className="rounded-xl border bg-card p-4">
           <Skeleton className="mb-3 h-5 w-32" />
           <div className="space-y-2">
             <Skeleton className="h-4 w-full" />
@@ -58,7 +58,7 @@ export default function ContractDetailPage() {
 
   const contractQuery = useQuery(trpc.contract.getById.queryOptions({ id: params.id }));
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: tRPC return type is narrower than what DetailHeader/ContractDetailTabs expect (documents, _meta, contractor.email)
   const contract = contractQuery.data as any;
 
   // Set breadcrumb label for this detail page
@@ -66,18 +66,14 @@ export default function ContractDetailPage() {
 
   // E-sign: check for connected providers
   const connectionsQuery = useQuery(trpc.esign.listConnections.queryOptions());
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const esignConnections = (connectionsQuery.data ?? []) as any[];
+  const esignConnections = connectionsQuery.data ?? [];
 
   // E-sign: fetch signing envelopes for this contract
   const envelopesQuery = useQuery(
     trpc.esign.listEnvelopes.queryOptions({ contractId: params.id }, { enabled: !!params.id }),
   );
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const envelopes = (envelopesQuery.data ?? []) as any[];
-  const activeEnvelope = envelopes.find((e: { status: string }) =>
-    ["SENT", "DELIVERED", "CREATED"].includes(e.status),
-  );
+  const envelopes = envelopesQuery.data ?? [];
+  const activeEnvelope = envelopes.find((e) => ["SENT", "DELIVERED", "CREATED"].includes(e.status));
 
   if (contractQuery.isError) {
     const isNotFound =
@@ -131,14 +127,20 @@ export default function ContractDetailPage() {
       )}
 
       {/* Signing progress (between header and tabs) */}
-      {activeEnvelope && <SigningProgressBar envelope={activeEnvelope} />}
+      {activeEnvelope && (
+        <SigningProgressBar
+          envelope={
+            activeEnvelope as unknown as Parameters<typeof SigningProgressBar>[0]["envelope"]
+          }
+        />
+      )}
 
       {/* Tabs */}
       {contractQuery.isLoading || !contract ? (
         <>
           <div className="mb-4 flex gap-2 border-b pb-2">
             {Array.from({ length: 4 }).map((_, i) => (
-              <Skeleton key={i} className="h-7 w-24" />
+              <Skeleton key={`skel-${i}`} className="h-7 w-24" />
             ))}
           </div>
           <TabContentSkeleton />

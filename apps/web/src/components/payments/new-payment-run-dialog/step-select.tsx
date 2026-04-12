@@ -81,9 +81,8 @@ export function StepSelect({
   const invoicesQuery = useQuery(trpc.payment.readyForPayment.queryOptions(queryInput));
 
   const allInvoices = useMemo(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result = invoicesQuery.data as any;
-    return (result?.items ?? []) as ReadyInvoiceRow[];
+    const result = invoicesQuery.data;
+    return (result?.items ?? []) as unknown as ReadyInvoiceRow[];
   }, [invoicesQuery.data]);
 
   // Filter by contractor search (client-side)

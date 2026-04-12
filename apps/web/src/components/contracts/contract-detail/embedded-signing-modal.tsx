@@ -60,8 +60,7 @@ export function EmbeddedSigningModal({
       : trpc.esign.getSigningUrl.queryOptions(queryInput, queryEnabled),
   );
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const signingData = signingUrlQuery.data as any as
+  const signingData = signingUrlQuery.data as
     | { embedded: boolean; url?: string; expiresAt?: string }
     | undefined;
 

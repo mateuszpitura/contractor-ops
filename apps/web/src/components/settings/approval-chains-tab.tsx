@@ -30,11 +30,7 @@ import { trpc } from "@/trpc/init";
 
 type SettingsTranslateFn = (key: string, params?: Record<string, string | number>) => string;
 
-function formatConditionSummary(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  conditions: any,
-  t: SettingsTranslateFn,
-): string {
+function formatConditionSummary(conditions: unknown, t: SettingsTranslateFn): string {
   if (!conditions || !Array.isArray(conditions) || conditions.length === 0) {
     return t("approvals.noConditions");
   }
@@ -99,20 +95,17 @@ export function ApprovalChainsTab() {
   );
 
   // ---- Handlers ----
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  function handleToggleActive(chain: any) {
+  function handleToggleActive(chain: (typeof chains)[number]) {
     toggleActiveMutation.mutate({
-      id: chain.id as string,
-      name: chain.name as string,
-      isDefault: chain.isDefault as boolean,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      stepsJson: chain.stepsJson as any,
+      id: chain.id,
+      name: chain.name,
+      isDefault: chain.isDefault,
+      stepsJson: chain.stepsJson as Parameters<typeof toggleActiveMutation.mutate>[0]["stepsJson"],
       isActive: !chain.isActive,
     });
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  function handleEdit(chain: any) {
+  function handleEdit(chain: (typeof chains)[number]) {
     setEditingChain({
       id: chain.id,
       name: chain.name,
@@ -145,7 +138,7 @@ export function ApprovalChainsTab() {
           <Skeleton className="h-8 w-44" />
         </div>
         {Array.from({ length: 3 }).map((_, i) => (
-          <Card key={i}>
+          <Card key={`skel-${i}`}>
             <CardHeader>
               <Skeleton className="h-4 w-48" />
             </CardHeader>

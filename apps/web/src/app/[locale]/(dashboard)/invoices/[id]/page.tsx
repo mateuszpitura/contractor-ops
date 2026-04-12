@@ -20,13 +20,13 @@ import { PeppolInboundBanner } from "@/components/peppol/peppol-inbound-banner";
 import { PeppolQRDisplay } from "@/components/peppol/peppol-qr-display";
 import { PeppolTransmissionStatus } from "@/components/peppol/peppol-transmission-status";
 import { ReconciliationCard } from "@/components/time/reconciliation-card";
-import { ZatcaStatusBadge } from "@/components/zatca/zatca-status-badge";
-import type { ZatcaBadgeStatus } from "@/components/zatca/zatca-status-badge";
-import { ZatcaSubmissionDetail } from "@/components/zatca/zatca-submission-detail";
-import { zatcaTrpc } from "@/components/zatca/zatca-trpc";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import type { ZatcaBadgeStatus } from "@/components/zatca/zatca-status-badge";
+import { ZatcaStatusBadge } from "@/components/zatca/zatca-status-badge";
+import { ZatcaSubmissionDetail } from "@/components/zatca/zatca-submission-detail";
+import { zatcaTrpc } from "@/components/zatca/zatca-trpc";
 import { trpc } from "@/trpc/init";
 
 // ---------------------------------------------------------------------------
@@ -123,13 +123,15 @@ export default function InvoiceDetailPage() {
   // Fetch invoice data
   const invoiceQuery = useQuery(trpc.invoice.getById.queryOptions({ id: params.id }));
 
-  const invoice = invoiceQuery.data;
+  // biome-ignore lint/suspicious/noExplicitAny: tRPC return type is narrower than what child components (MatchCard, InvoiceMetadataForm) expect
+  const invoice = invoiceQuery.data as any;
 
   useBreadcrumbOverride(params.id, invoice?.invoiceNumber);
 
   // Fetch PDF download URL for the first SOURCE_ORIGINAL file
   const sourceFile = invoice?.files?.find(
-    (f) => f.role === "SOURCE_ORIGINAL",
+    (f: { role: string; document?: { id: string }; documentId?: string }) =>
+      f.role === "SOURCE_ORIGINAL",
   );
   const documentId = sourceFile?.document?.id ?? sourceFile?.documentId;
 
@@ -154,13 +156,15 @@ export default function InvoiceDetailPage() {
 
   // Peppol transmission query (Phase 49 gap closure)
   const peppolTransmissionQuery = useQuery({
-    ...trpc.peppol.getTransmissionByInvoiceId.queryOptions({
+    // biome-ignore lint/suspicious/noExplicitAny: peppol router procedure may not be fully typed yet
+    ...(trpc.peppol as any).getTransmissionByInvoiceId.queryOptions({
       invoiceId: params.id,
     }),
     enabled: !!invoice,
   });
 
-  const peppolTransmission = peppolTransmissionQuery.data;
+  // biome-ignore lint/suspicious/noExplicitAny: peppol transmission shape is dynamic
+  const peppolTransmission = peppolTransmissionQuery.data as any;
 
   // ZATCA submission query (Phase 48 gap closure)
   const zatcaSubmissionQuery = useQuery({
@@ -168,6 +172,7 @@ export default function InvoiceDetailPage() {
     enabled: !!invoice,
   });
 
+  // biome-ignore lint/suspicious/noExplicitAny: zatcaTrpc uses manual type proxy due to TypeScript depth limits
   const zatcaSubmission = zatcaSubmissionQuery.data as any;
 
   // Submit for approval mutation
@@ -272,9 +277,7 @@ export default function InvoiceDetailPage() {
         )}
         {/* ZATCA status badge (Phase 48) */}
         {hasZatcaSubmission && (
-          <ZatcaStatusBadge
-            status={zatcaSubmission.zatcaStatus as ZatcaBadgeStatus}
-          />
+          <ZatcaStatusBadge status={zatcaSubmission.zatcaStatus as ZatcaBadgeStatus} />
         )}
       </div>
 
@@ -338,10 +341,7 @@ export default function InvoiceDetailPage() {
 
         {/* ZATCA submission detail (Phase 48) */}
         {hasZatcaSubmission && (
-          <ZatcaSubmissionDetail
-            submission={zatcaSubmission}
-            invoiceId={params.id}
-          />
+          <ZatcaSubmissionDetail submission={zatcaSubmission} invoiceId={params.id} />
         )}
 
         {/* Match card */}
@@ -355,7 +355,15 @@ export default function InvoiceDetailPage() {
         />
 
         {/* Time reconciliation card (D-16) */}
-        {reconciliation && <ReconciliationCard reconciliation={reconciliation} />}
+        {reconciliation && (
+          <ReconciliationCard
+            reconciliation={
+              reconciliation as unknown as Parameters<
+                typeof ReconciliationCard
+              >[0]["reconciliation"]
+            }
+          />
+        )}
 
         {/* Reverse charge banner (Phase 47) */}
         {invoice.isReverseCharge && (

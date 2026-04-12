@@ -109,10 +109,8 @@ export type ChainData = {
   name: string;
   isDefault: boolean;
   isActive: boolean;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  conditionsJson: any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  stepsJson: any;
+  conditionsJson: unknown;
+  stepsJson: unknown;
 };
 
 type ChainEditorDialogProps = {
@@ -150,13 +148,12 @@ function UserPicker({
   const [search, setSearch] = useState("");
 
   const usersQuery = useQuery(trpc.user.list.queryOptions());
-  // user.list returns members with nested user objects
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const rawMembers = (usersQuery.data ?? []) as any[];
+  // user.list returns flattened members: { id, userId, name, email, role, ... }
+  const rawMembers = usersQuery.data ?? [];
   const users = rawMembers.map((m) => ({
     id: (m.userId ?? m.id) as string,
-    name: (m.user?.name ?? m.name ?? "Unknown") as string,
-    email: (m.user?.email ?? m.email ?? "") as string,
+    name: (m.name ?? "Unknown") as string,
+    email: (m.email ?? "") as string,
     role: (m.role ?? "") as string,
   }));
 

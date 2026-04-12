@@ -27,8 +27,7 @@ export function DocumentsTab({ contractId, contractParties = [] }: DocumentsTabP
 
   // Check if at least one e-sign provider is connected
   const connectionsQuery = useQuery(trpc.esign.listConnections.queryOptions());
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const hasProvider = ((connectionsQuery.data ?? []) as any[]).length > 0;
+  const hasProvider = (connectionsQuery.data ?? []).length > 0;
 
   // Fetch documents to get their IDs for per-document signing
   const documentsQuery = useQuery(
@@ -39,8 +38,7 @@ export function DocumentsTab({ contractId, contractParties = [] }: DocumentsTabP
       pageSize: 50,
     }),
   );
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const documents = ((documentsQuery.data as any)?.items ?? []) as Array<{
+  const documents = (documentsQuery.data?.items ?? []) as Array<{
     id: string;
     originalFileName: string;
   }>;

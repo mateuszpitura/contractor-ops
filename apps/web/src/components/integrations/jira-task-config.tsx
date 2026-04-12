@@ -43,8 +43,7 @@ export function JiraTaskConfig({ taskTemplateId }: JiraTaskConfigProps) {
     staleTime: Infinity,
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const connection = connectionQuery.data as any;
+  const connection = connectionQuery.data;
 
   // Fetch task config
   const configQuery = useQuery({

@@ -126,8 +126,7 @@ export function TaskCard({ index, onRemove, allTasks, form, dragHandleProps }: T
     enabled: assigneeMode === "FIXED_USER",
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const users = (usersQuery.data as any)?.items ?? [];
+  const users = usersQuery.data ?? [];
 
   const taskTypeItems = TASK_TYPES.map((type) => ({
     value: type,
@@ -149,8 +148,7 @@ export function TaskCard({ index, onRemove, allTasks, form, dragHandleProps }: T
 
   const conditionSummary = getConditionSummary(
     conditions as Parameters<typeof getConditionSummary>[0],
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    t as any,
+    t as (key: string, values?: Record<string, string | number>) => string,
   );
 
   // Dependency options: only tasks with lower sortOrder
@@ -162,8 +160,7 @@ export function TaskCard({ index, onRemove, allTasks, form, dragHandleProps }: T
     }));
 
   const handleConditionsChange = useCallback(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (val: any) => {
+    (val: Parameters<typeof getConditionSummary>[0]) => {
       form.setValue(`tasks.${index}.conditions`, val, { shouldDirty: true });
     },
     [form, index],
@@ -338,10 +335,9 @@ export function TaskCard({ index, onRemove, allTasks, form, dragHandleProps }: T
               <div className="space-y-1.5">
                 <Label htmlFor={`task-user-${index}`}>{t("userField")}</Label>
                 {(() => {
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  const userItems = users.map((user: any) => ({
+                  const userItems = users.map((user) => ({
                     value: user.id as string,
-                    label: (user.name ?? user.email) as string,
+                    label: ((user.name ?? user.email) as string) ?? "",
                   }));
                   return (
                     <Select

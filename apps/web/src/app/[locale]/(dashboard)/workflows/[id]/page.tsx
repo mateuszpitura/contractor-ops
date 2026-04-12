@@ -32,7 +32,7 @@ function RunDetailSkeleton() {
       <div className="space-y-3">
         <Skeleton className="h-6 w-16" />
         {Array.from({ length: 5 }).map((_, i) => (
-          <div key={i} className="flex items-center gap-3 rounded-lg border bg-card p-4">
+          <div key={`skel-${i}`} className="flex items-center gap-3 rounded-lg border bg-card p-4">
             <Skeleton className="size-5 shrink-0 rounded-full" />
             <div className="flex-1 space-y-2">
               <Skeleton className="h-4 w-48" />
@@ -59,8 +59,7 @@ export default function WorkflowRunDetailPage() {
 
   const runQuery = useQuery(trpc.workflow.getRun.queryOptions({ id: params.id }));
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const run = runQuery.data as any;
+  const run = runQuery.data;
 
   useBreadcrumbOverride(params.id, run?.workflowTemplate?.name);
 

@@ -67,14 +67,13 @@ function PaymentsContent() {
   const runsQuery = useQuery(trpc.payment.list.queryOptions(queryInput));
 
   const data = useMemo(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result = runsQuery.data as any;
-    return (result?.items ?? []) as PaymentRunRow[];
+    const result = runsQuery.data;
+    // tRPC returns Date objects but PaymentRunRow expects string dates
+    return (result?.items ?? []) as unknown as PaymentRunRow[];
   }, [runsQuery.data]);
 
   const nextCursor = useMemo(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result = runsQuery.data as any;
+    const result = runsQuery.data;
     return result?.nextCursor as string | undefined;
   }, [runsQuery.data]);
 
@@ -248,13 +247,16 @@ function PaymentsLoading() {
       {/* Chip bar skeleton */}
       <div className="flex items-center gap-2">
         {Array.from({ length: 6 }).map((_, i) => (
-          <Skeleton key={i} className="h-7 w-20 rounded-full" />
+          <Skeleton key={`skel-${i}`} className="h-7 w-20 rounded-full" />
         ))}
       </div>
       {/* Table skeleton */}
       <div className="rounded-xl border bg-background">
         {Array.from({ length: 8 }).map((_, i) => (
-          <div key={i} className="flex items-center gap-4 px-4 py-3 border-b last:border-b-0">
+          <div
+            key={`skel-${i}`}
+            className="flex items-center gap-4 px-4 py-3 border-b last:border-b-0"
+          >
             <Skeleton className="h-4 w-24" />
             <Skeleton className="h-4 w-20" />
             <Skeleton className="h-4 w-16" />

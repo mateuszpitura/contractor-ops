@@ -14,7 +14,7 @@ const TAB_KEYS = ["overview", "documents", "amendments", "activity"] as const;
 type TabKey = (typeof TAB_KEYS)[number];
 
 type ContractDetailTabsProps = {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: Contract type is inferred from tRPC router (contract.getById) and passed through to child tabs
   contract: any;
 };
 

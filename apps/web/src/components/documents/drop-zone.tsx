@@ -73,8 +73,7 @@ export function DropZone({
 
       try {
         // Step 1: Request presigned upload URL
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const result: any = await requestUploadMutation.mutateAsync({
+        const result = await requestUploadMutation.mutateAsync({
           filename: file.name,
           mimeType: file.type,
           fileSizeBytes: file.size,
@@ -83,8 +82,9 @@ export function DropZone({
           entityId,
         } as Parameters<typeof requestUploadMutation.mutateAsync>[0]);
 
-        const documentId = result.documentId as string;
-        const uploadUrl = result.uploadUrl as string;
+        const uploadResult = result as Record<string, unknown>;
+        const documentId = uploadResult.documentId as string;
+        const uploadUrl = uploadResult.uploadUrl as string;
 
         setFiles((prev) =>
           prev.map((f) => (f.id === fileId ? { ...f, documentId, progress: 10 } : f)),

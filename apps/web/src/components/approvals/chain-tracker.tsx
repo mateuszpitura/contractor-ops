@@ -104,7 +104,7 @@ function ChainTrackerSkeleton() {
       <CardContent>
         <div className="flex items-center gap-2">
           {[0, 1, 2].map((i) => (
-            <div key={i} className="flex items-center gap-2">
+            <div key={`approver-${i}`} className="flex items-center gap-2">
               {i > 0 && <Skeleton className="h-[2px] w-8 flex-1" />}
               <div className="flex flex-col items-center gap-1.5">
                 <Skeleton className="h-8 w-8 rounded-full" />
@@ -207,8 +207,9 @@ export function ChainTracker({ invoiceId }: ChainTrackerProps) {
 
   if (isLoading) return <ChainTrackerSkeleton />;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const flow = (data as any)?.flow;
+  const flow = (data as Record<string, unknown> | undefined)?.flow as
+    | { steps?: StepData[]; chainName?: string }
+    | undefined;
   if (!flow || !flow.steps || flow.steps.length === 0) return null;
 
   const steps: StepData[] = flow.steps;

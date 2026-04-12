@@ -68,8 +68,7 @@ export function TabPayments({ contractorId }: TabPaymentsProps) {
 
   const paymentsQuery = useQuery(trpc.payment.listByContractor.queryOptions({ contractorId }));
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const rawItems: any[] = paymentsQuery.data ?? [];
+  const rawItems = paymentsQuery.data ?? [];
 
   // Map to row type (API returns nested paymentRun/invoice relations)
   const allItems: PaymentItemRow[] = useMemo(
@@ -84,8 +83,8 @@ export function TabPayments({ contractorId }: TabPaymentsProps) {
         currency: item.currency,
         status: item.status,
         paymentReference: item.paymentReference ?? null,
-        markedPaidAt: item.markedPaidAt ?? null,
-        createdAt: item.createdAt ?? item.paymentRun?.createdAt ?? "",
+        markedPaidAt: item.markedPaidAt ? String(item.markedPaidAt) : null,
+        createdAt: String(item.createdAt ?? item.paymentRun?.createdAt ?? ""),
       })),
     [rawItems],
   );
@@ -199,7 +198,7 @@ export function TabPayments({ contractorId }: TabPaymentsProps) {
     return (
       <div className="space-y-3">
         {Array.from({ length: 5 }).map((_, i) => (
-          <div key={i} className="flex items-center gap-4 px-4 py-3">
+          <div key={`skel-${i}`} className="flex items-center gap-4 px-4 py-3">
             <Skeleton className="h-4 w-20" />
             <Skeleton className="h-4 w-20" />
             <Skeleton className="h-4 w-24" />

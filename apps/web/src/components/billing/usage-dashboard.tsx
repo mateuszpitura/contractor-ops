@@ -65,7 +65,7 @@ export function UsageDashboard() {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="rounded-xl border p-4 space-y-3">
+          <div key={`usage-${i}`} className="rounded-xl border p-4 space-y-3">
             <Skeleton className="h-4 w-20" />
             <Skeleton className="h-7 w-24" />
             <Skeleton className="h-2 w-full" />
@@ -88,12 +88,18 @@ export function UsageDashboard() {
     );
   }
 
-  const { subscription, credits, activeContractors, includedSeats, planConfig } = data as {
-    subscription: any;
+  const { subscription, credits, activeContractors, includedSeats, planConfig } = data as unknown as {
+    subscription: {
+      tier: string;
+      status: string;
+      trialEnd: string | null;
+      currentPeriodEnd: string | null;
+      cancelAt: string | null;
+    } | null;
     credits: { balance: number; allowance: number; used: number; tier: string };
     activeContractors: number;
     includedSeats: number;
-    planConfig: { tiers: any[] };
+    planConfig: { tiers: Array<{ id: string; seatPriceMinor: number; [key: string]: unknown }> };
   };
 
   // ---- No subscription state ----
@@ -111,7 +117,7 @@ export function UsageDashboard() {
 
   // ---- Derive values ----
   const currentTier = subscription.tier as TierId;
-  const tierConfig = planConfig?.tiers?.find((tier: any) => tier.id === currentTier);
+  const tierConfig = planConfig?.tiers?.find((tier) => tier.id === currentTier);
   const seatPriceMinor = tierConfig?.seatPriceMinor ?? 0;
   const isTrialing = subscription.status === "TRIALING";
   const billingDate = isTrialing ? subscription.trialEnd : subscription.currentPeriodEnd;

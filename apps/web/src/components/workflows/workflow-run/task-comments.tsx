@@ -37,8 +37,7 @@ export function TaskComments({ runId, taskRunId }: TaskCommentsProps) {
     }),
   );
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const comments = (commentsQuery.data ?? []) as any[];
+  const comments = commentsQuery.data ?? [];
 
   const addCommentMutation = useMutation(
     trpc.workflow.addComment.mutationOptions({
@@ -76,7 +75,7 @@ export function TaskComments({ runId, taskRunId }: TaskCommentsProps) {
       {commentsQuery.isLoading ? (
         <div className="space-y-3">
           {Array.from({ length: 2 }).map((_, i) => (
-            <div key={i} className="flex items-start gap-2">
+            <div key={`skel-${i}`} className="flex items-start gap-2">
               <Skeleton className="size-6 rounded-full shrink-0" />
               <div className="space-y-1 flex-1">
                 <Skeleton className="h-3 w-24" />
@@ -96,7 +95,7 @@ export function TaskComments({ runId, taskRunId }: TaskCommentsProps) {
                   <AvatarImage src={comment.author.image} alt={comment.author?.name ?? ""} />
                 )}
                 <AvatarFallback className="text-xs">
-                  {getAvatarInitials(comment.author?.name, comment.author?.email)}
+                  {getAvatarInitials(comment.author?.name)}
                 </AvatarFallback>
               </Avatar>
               <div className="min-w-0 flex-1">

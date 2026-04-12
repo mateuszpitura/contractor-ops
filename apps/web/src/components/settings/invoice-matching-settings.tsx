@@ -28,15 +28,13 @@ export function InvoiceMatchingSettings() {
 
   // Load org data for slug (email address)
   const settingsQuery = useQuery(trpc.settings.get.queryOptions());
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const orgData = settingsQuery.data as any;
+  const orgData = settingsQuery.data;
   const orgSlug = orgData?.slug ?? "org";
   const emailAddress = `invoices@${orgSlug}.contractorhub.io`;
 
   // Load current deviation threshold
   const invoiceSettingsQuery = useQuery(trpc.settings.getInvoiceSettings.queryOptions());
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const invoiceData = invoiceSettingsQuery.data as any;
+  const invoiceData = invoiceSettingsQuery.data;
 
   const [threshold, setThreshold] = useState(10);
 

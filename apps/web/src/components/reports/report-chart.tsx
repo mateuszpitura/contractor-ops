@@ -21,8 +21,7 @@ type ChartType = "bar-horizontal" | "bar-grouped" | "pie";
 
 interface ReportChartProps {
   type: ChartType;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  data: any[];
+  data: Record<string, unknown>[];
   dataKey: string;
   nameKey: string;
   activeId?: string;
@@ -127,8 +126,9 @@ export function ReportChart({
               radius={[0, 4, 4, 0]}
               cursor="pointer"
               onClick={(_data, _index, e) => {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const payload = (e as any)?.payload ?? _data;
+                const payload =
+                  ((e as unknown as Record<string, unknown>)?.payload as Record<string, unknown>) ??
+                  _data;
                 const id = payload?.[idKey] as string;
                 if (id) onSegmentClick(id);
               }}
@@ -169,8 +169,9 @@ export function ReportChart({
               radius={[4, 4, 0, 0]}
               cursor="pointer"
               onClick={(_data, _index, e) => {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const payload = (e as any)?.payload ?? _data;
+                const payload =
+                  ((e as unknown as Record<string, unknown>)?.payload as Record<string, unknown>) ??
+                  _data;
                 const id = payload?.[idKey] as string;
                 if (id) onSegmentClick(id);
               }}
@@ -195,9 +196,11 @@ export function ReportChart({
               outerRadius={80}
               cursor="pointer"
               onClick={(_data, _index, e) => {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const payload = (e as any)?.payload ?? _data;
-                const id = (payload?.id ?? payload?.name?.toLowerCase()) as string;
+                const payload =
+                  ((e as unknown as Record<string, unknown>)?.payload as Record<string, unknown>) ??
+                  (_data as unknown as Record<string, unknown>);
+                const id = (payload?.id ??
+                  (payload?.name as string | undefined)?.toLowerCase()) as string;
                 if (id) onSegmentClick(id);
               }}
               label={({ name, value }: { name?: string; value?: number }) =>
