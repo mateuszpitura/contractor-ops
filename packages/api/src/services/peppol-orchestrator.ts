@@ -1,6 +1,6 @@
 import { prisma } from "@contractor-ops/db";
 import type { ASPAdapter, InboundInvoicePayload } from "@contractor-ops/einvoice";
-import { PeppolAEProfile, PINT_AE_DOCUMENT_TYPE_ID } from "@contractor-ops/einvoice";
+import { PeppolAEProfile, PeppolAEQRCode, PINT_AE_DOCUMENT_TYPE_ID } from "@contractor-ops/einvoice";
 import { computeDuplicateCheckHash } from "./invoice-matching.js";
 
 // ---------------------------------------------------------------------------
@@ -16,6 +16,7 @@ import { computeDuplicateCheckHash } from "./invoice-matching.js";
 export class PeppolOrchestrator {
   private readonly aspAdapter: ASPAdapter;
   private readonly profile = new PeppolAEProfile();
+  private readonly qrCode = new PeppolAEQRCode();
 
   constructor(aspAdapter: ASPAdapter) {
     this.aspAdapter = aspAdapter;
@@ -100,6 +101,44 @@ export class PeppolOrchestrator {
       extensions: {
         buyerReference: invoice.externalInvoiceId ?? invoice.invoiceNumber,
       },
+    });
+
+    // Generate QR code for UAE FTA compliance (PEPPOL-04)
+    const qrBuffer = await this.qrCode.generateQR({
+      id: invoice.invoiceNumber,
+      invoiceTypeCode: "380",
+      issueDate: invoice.issueDate.toISOString().slice(0, 10),
+      dueDate: invoice.dueDate.toISOString().slice(0, 10),
+      currencyCode: invoice.currency,
+      supplier: {
+        id: invoice.sellerTaxId ?? "",
+        name: invoice.sellerName ?? "",
+        country: "AE",
+      },
+      customer: {
+        id: invoice.buyerTaxId ?? "",
+        name: "",
+        country: "AE",
+      },
+      lines: [],
+      taxExclusiveAmount: invoice.subtotalMinor,
+      taxInclusiveAmount: invoice.totalMinor,
+      payableAmount: invoice.amountToPayMinor,
+      taxBreakdown: [
+        {
+          taxableAmountMinor: invoice.subtotalMinor,
+          taxAmountMinor: vatAmountMinor,
+          taxCategory: "S",
+        },
+      ],
+      profileId: "peppol-ae",
+    });
+    const qrCodeBase64 = `data:image/png;base64,${qrBuffer.toString("base64")}`;
+
+    // Persist QR code on the invoice record
+    await prisma.invoice.update({
+      where: { id: invoice.id },
+      data: { qrCodeBase64 },
     });
 
     // Create transmission record
