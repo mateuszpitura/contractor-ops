@@ -8,7 +8,7 @@ const signInEmail = vi.fn();
 vi.mock('@/lib/auth-client', () => ({
   authClient: {
     signIn: {
-      email: (...args: unknown[]) => signInEmail(...args),
+      email: (...args: any[]) => signInEmail(...args),
       magicLink: vi.fn(),
     },
   },

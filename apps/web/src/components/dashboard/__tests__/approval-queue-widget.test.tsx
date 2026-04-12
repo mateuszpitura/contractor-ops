@@ -27,7 +27,7 @@ const mockedUseQuery = vi.mocked(useQuery);
 
 describe('ApprovalQueueWidget', () => {
   it('shows loading skeletons', () => {
-    mockedUseQuery.mockReturnValue({ data: undefined, isLoading: true } as any);
+    mockedUseQuery.mockReturnValue({ data: undefined, isLoading: true } as unknown);
     const { container } = render(<ApprovalQueueWidget />);
     expect(container.querySelectorAll("[data-slot='skeleton']").length).toBeGreaterThan(0);
   });
@@ -36,7 +36,7 @@ describe('ApprovalQueueWidget', () => {
     mockedUseQuery.mockReturnValue({
       data: { items: [] },
       isLoading: false,
-    } as any);
+    } as unknown);
     render(<ApprovalQueueWidget />);
     expect(screen.getByText('No pending approvals')).toBeInTheDocument();
   });
@@ -45,7 +45,7 @@ describe('ApprovalQueueWidget', () => {
     mockedUseQuery.mockReturnValue({
       data: { items: [] },
       isLoading: false,
-    } as any);
+    } as unknown);
     render(<ApprovalQueueWidget />);
     expect(screen.getByText('Approval queue')).toBeInTheDocument();
     expect(screen.getByText('See all approvals')).toBeInTheDocument();
@@ -69,7 +69,7 @@ describe('ApprovalQueueWidget', () => {
         ],
       },
       isLoading: false,
-    } as any);
+    } as unknown);
     render(<ApprovalQueueWidget />);
     expect(screen.getByText('Acme sp. z o.o.')).toBeInTheDocument();
   });
@@ -92,7 +92,7 @@ describe('ApprovalQueueWidget', () => {
         ],
       },
       isLoading: false,
-    } as any);
+    } as unknown);
     render(<ApprovalQueueWidget />);
     expect(screen.getByText('Vendor Ltd')).toBeInTheDocument();
   });
@@ -115,7 +115,7 @@ describe('ApprovalQueueWidget', () => {
         ],
       },
       isLoading: false,
-    } as any);
+    } as unknown);
     render(<ApprovalQueueWidget />);
     const link = screen.getByRole('link', { name: /X/ });
     expect(link.getAttribute('href')).toBe('/invoices/inv-42');
@@ -139,7 +139,7 @@ describe('ApprovalQueueWidget', () => {
         ],
       },
       isLoading: false,
-    } as any);
+    } as unknown);
     render(<ApprovalQueueWidget />);
     const link = screen.getByRole('link', { name: /Orphan/ });
     expect(link.getAttribute('href')).toBe('/approvals');
@@ -163,7 +163,7 @@ describe('ApprovalQueueWidget', () => {
         ],
       },
       isLoading: false,
-    } as any);
+    } as unknown);
     render(<ApprovalQueueWidget />);
     expect(screen.getByText('Breached')).toBeInTheDocument();
   });

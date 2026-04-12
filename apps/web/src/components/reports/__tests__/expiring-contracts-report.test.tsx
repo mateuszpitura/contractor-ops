@@ -5,7 +5,7 @@ vi.mock('next-intl', async importOriginal => {
   const actual = await importOriginal<typeof import('next-intl')>();
   return {
     ...actual,
-    useTranslations: () => (key: string, _params?: any) => key,
+    useTranslations: () => (key: string, _params?: Record<string, unknown>) => key,
   };
 });
 
@@ -20,9 +20,9 @@ vi.mock('@tanstack/react-query', () => ({
 vi.mock('@/trpc/init', () => ({
   trpc: {
     report: {
-      expiringContracts: { queryOptions: (opts: any) => opts },
-      expiringContractsChart: { queryOptions: (opts: any) => opts },
-      exportExpiringContracts: { mutationOptions: (opts: any) => opts },
+      expiringContracts: { queryOptions: (opts: Record<string, unknown>) => opts },
+      expiringContractsChart: { queryOptions: (opts: Record<string, unknown>) => opts },
+      exportExpiringContracts: { mutationOptions: (opts: Record<string, unknown>) => opts },
     },
   },
 }));
@@ -52,7 +52,7 @@ vi.mock('../report-table', () => ({
       <div data-testid="empty">{emptyTitle}</div>
     ) : (
       <div data-testid="report-table">
-        {data.map((row: any) => (
+        {data.map((row: unknown) => (
           <div key={row.contractId}>{row.contractTitle}</div>
         ))}
       </div>
@@ -87,7 +87,7 @@ describe('ExpiringContractsReport', () => {
         totalCount: 1,
       },
       isLoading: false,
-    } as any);
+    } as unknown);
   });
 
   it('renders days selector buttons', () => {
@@ -124,7 +124,7 @@ describe('ExpiringContractsReport', () => {
     mockUseQuery.mockReturnValue({
       data: { items: [], totalCount: 0 },
       isLoading: false,
-    } as any);
+    } as unknown);
     render(<ExpiringContractsReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByTestId('empty')).toBeInTheDocument();
     expect(screen.getByText('emptyExpiringContracts')).toBeInTheDocument();

@@ -75,7 +75,7 @@ describe('pollInPostShipmentStatuses', () => {
     });
     db.shipment.findMany.mockResolvedValue([]);
 
-    const result = await pollInPostShipmentStatuses(db as any, 'org-1');
+    const result = await pollInPostShipmentStatuses(db as unknown, 'org-1');
 
     expect(db.shipment.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -129,7 +129,7 @@ describe('pollInPostShipmentStatuses', () => {
     });
     db.equipment.update.mockResolvedValue({});
 
-    const result = await pollInPostShipmentStatuses(db as any, 'org-1');
+    const result = await pollInPostShipmentStatuses(db as unknown, 'org-1');
 
     expect(mockGetStatus).toHaveBeenCalledWith('ext-1');
     expect(db.shipmentEvent.create).toHaveBeenCalled();
@@ -149,7 +149,7 @@ describe('pollInPostShipmentStatuses', () => {
     // The query itself filters out null externalIds, so findMany returns empty
     db.shipment.findMany.mockResolvedValue([]);
 
-    const result = await pollInPostShipmentStatuses(db as any, 'org-1');
+    const result = await pollInPostShipmentStatuses(db as unknown, 'org-1');
 
     expect(result).toEqual({ checked: 0, updated: 0 });
   });
@@ -157,7 +157,7 @@ describe('pollInPostShipmentStatuses', () => {
   it('returns early if no courier config found', async () => {
     db.courierConfig.findUnique.mockResolvedValue(null);
 
-    const result = await pollInPostShipmentStatuses(db as any, 'org-1');
+    const result = await pollInPostShipmentStatuses(db as unknown, 'org-1');
 
     expect(result).toEqual({ checked: 0, updated: 0 });
     expect(db.shipment.findMany).not.toHaveBeenCalled();
@@ -189,7 +189,7 @@ describe('pollInPostShipmentStatuses', () => {
       status: 'adopted_at_source_branch', // maps to IN_TRANSIT — same as current
     });
 
-    const result = await pollInPostShipmentStatuses(db as any, 'org-1');
+    const result = await pollInPostShipmentStatuses(db as unknown, 'org-1');
 
     expect(result.checked).toBe(1);
     expect(result.updated).toBe(0);
@@ -232,7 +232,7 @@ describe('pollInPostShipmentStatuses', () => {
     });
     db.equipment.update.mockResolvedValue({});
 
-    await pollInPostShipmentStatuses(db as any, 'org-1');
+    await pollInPostShipmentStatuses(db as unknown, 'org-1');
 
     expect(mockCheckShipmentTaskCompletion).toHaveBeenCalledWith(
       db,
@@ -272,7 +272,7 @@ describe('pollInPostShipmentStatuses', () => {
       status: 'adopted_at_source_branch', // maps to IN_TRANSIT — same as current
     });
 
-    await pollInPostShipmentStatuses(db as any, 'org-1');
+    await pollInPostShipmentStatuses(db as unknown, 'org-1');
 
     expect(mockCheckShipmentTaskCompletion).not.toHaveBeenCalled();
   });
@@ -314,7 +314,7 @@ describe('pollInPostShipmentStatuses', () => {
     });
     db.equipment.update.mockResolvedValue({});
 
-    await pollInPostShipmentStatuses(db as any, 'org-1');
+    await pollInPostShipmentStatuses(db as unknown, 'org-1');
 
     expect(mockDispatchShipmentNotification).toHaveBeenCalledWith(
       db,
@@ -360,7 +360,7 @@ describe('pollInPostShipmentStatuses', () => {
     db.shipmentEvent.create.mockResolvedValue({});
     db.shipment.update.mockResolvedValue({});
 
-    await pollInPostShipmentStatuses(db as any, 'org-1');
+    await pollInPostShipmentStatuses(db as unknown, 'org-1');
 
     expect(mockDispatchShipmentNotification).not.toHaveBeenCalled();
   });
@@ -408,7 +408,7 @@ describe('pollInPostShipmentStatuses', () => {
     });
     db.equipment.update.mockResolvedValue({});
 
-    await pollInPostShipmentStatuses(db as any, 'org-1');
+    await pollInPostShipmentStatuses(db as unknown, 'org-1');
 
     expect(db.shipment.update).toHaveBeenCalledTimes(2);
   });

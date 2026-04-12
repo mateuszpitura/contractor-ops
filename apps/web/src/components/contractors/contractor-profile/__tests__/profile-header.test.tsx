@@ -9,8 +9,8 @@ vi.mock('@tanstack/react-query', () => ({
 vi.mock('@/trpc/init', () => ({
   trpc: {
     contractor: {
-      updateLifecycleStage: { mutationOptions: (opts: any) => opts },
-      archive: { mutationOptions: (opts: any) => opts },
+      updateLifecycleStage: { mutationOptions: (opts: Record<string, unknown>) => opts },
+      archive: { mutationOptions: (opts: Record<string, unknown>) => opts },
       getById: { queryKey: () => ['contractor', 'getById'] },
     },
   },

@@ -6,8 +6,8 @@ const mockUseQuery = vi.fn();
 const mockUseMutation = vi.fn();
 
 vi.mock('@tanstack/react-query', () => ({
-  useQuery: (...args: unknown[]) => mockUseQuery(...args),
-  useMutation: (...args: unknown[]) => mockUseMutation(...args),
+  useQuery: (...args: any[]) => mockUseQuery(...args),
+  useMutation: (...args: any[]) => mockUseMutation(...args),
   useQueryClient: () => ({
     invalidateQueries: vi.fn(),
   }),
@@ -29,10 +29,10 @@ vi.mock('@/trpc/init', () => ({
         }),
       },
       markRead: {
-        mutationOptions: (opts: any) => ({ ...opts }),
+        mutationOptions: (opts: Record<string, unknown>) => ({ ...opts }),
       },
       markAllRead: {
-        mutationOptions: (opts: any) => ({ ...opts }),
+        mutationOptions: (opts: Record<string, unknown>) => ({ ...opts }),
       },
     },
   },

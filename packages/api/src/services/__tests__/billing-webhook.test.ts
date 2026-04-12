@@ -36,8 +36,8 @@ vi.mock('../stripe-client.js', () => ({
 vi.mock('../billing-constants.js', () => ({
   TIER_CREDIT_ALLOWANCE: { STARTER: 20, PRO: 100, ENTERPRISE: 500 },
   TRIAL_CREDIT_ALLOWANCE: 5,
-  resolveTierFromPriceId: (...args: unknown[]) => mockResolveTierFromPriceId(...args),
-  resolveTopUpCredits: (...args: unknown[]) => mockResolveTopUpCredits(...args),
+  resolveTierFromPriceId: (...args: any[]) => mockResolveTierFromPriceId(...args),
+  resolveTopUpCredits: (...args: any[]) => mockResolveTopUpCredits(...args),
 }));
 
 vi.mock('../credit-service.js', () => ({
@@ -45,11 +45,11 @@ vi.mock('../credit-service.js', () => ({
 }));
 
 vi.mock('../notification-service.js', () => ({
-  dispatch: (...args: unknown[]) => mockDispatch(...args),
+  dispatch: (...args: any[]) => mockDispatch(...args),
 }));
 
 vi.mock('../cache.js', () => ({
-  invalidate: (...args: unknown[]) => mockInvalidate(...args),
+  invalidate: (...args: any[]) => mockInvalidate(...args),
   CacheKeys: {
     subscription: (id: string) => `sub:${id}`,
     creditBalance: (id: string) => `credit:${id}`,
@@ -70,7 +70,7 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
 
 vi.mock('resend', () => {
   class MockResend {
-    emails = { send: (...args: unknown[]) => mockEmailSend(...args) };
+    emails = { send: (...args: any[]) => mockEmailSend(...args) };
   }
   return { Resend: MockResend };
 });

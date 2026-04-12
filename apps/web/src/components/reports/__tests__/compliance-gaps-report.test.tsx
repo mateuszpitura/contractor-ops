@@ -5,7 +5,7 @@ vi.mock('next-intl', async importOriginal => {
   const actual = await importOriginal<typeof import('next-intl')>();
   return {
     ...actual,
-    useTranslations: () => (key: string, _params?: any) => key,
+    useTranslations: () => (key: string, _params?: Record<string, unknown>) => key,
   };
 });
 
@@ -20,9 +20,9 @@ vi.mock('@tanstack/react-query', () => ({
 vi.mock('@/trpc/init', () => ({
   trpc: {
     report: {
-      complianceGaps: { queryOptions: (opts: any) => opts },
+      complianceGaps: { queryOptions: (opts: Record<string, unknown>) => opts },
       complianceGapsChart: { queryOptions: () => ({}) },
-      exportComplianceGaps: { mutationOptions: (opts: any) => opts },
+      exportComplianceGaps: { mutationOptions: (opts: Record<string, unknown>) => opts },
     },
   },
 }));
@@ -52,7 +52,7 @@ vi.mock('../report-table', () => ({
       <div data-testid="empty">{emptyTitle}</div>
     ) : (
       <div data-testid="report-table">
-        {data.map((row: any) => (
+        {data.map((row: unknown) => (
           <div key={row.contractorId}>{row.contractorName}</div>
         ))}
       </div>
@@ -90,7 +90,7 @@ describe('ComplianceGapsReport', () => {
         totalCount: 1,
       },
       isLoading: false,
-    } as any);
+    } as unknown);
   });
 
   it('renders chart component', () => {
@@ -118,7 +118,7 @@ describe('ComplianceGapsReport', () => {
     mockUseQuery.mockReturnValue({
       data: { items: [], totalCount: 0 },
       isLoading: false,
-    } as any);
+    } as unknown);
     render(<ComplianceGapsReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByTestId('empty')).toBeInTheDocument();
   });
@@ -161,7 +161,7 @@ describe('ComplianceGapsReport', () => {
         totalCount: 2,
       },
       isLoading: false,
-    } as any);
+    } as unknown);
     render(<ComplianceGapsReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByText('Acme')).toBeInTheDocument();
     expect(screen.getByText('Beta Corp')).toBeInTheDocument();
@@ -172,7 +172,7 @@ describe('ComplianceGapsReport', () => {
     mockUseQuery.mockReturnValue({
       data: { items: [], totalCount: 0 },
       isLoading: false,
-    } as any);
+    } as unknown);
     render(<ComplianceGapsReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByTestId('report-chart')).toBeInTheDocument();
   });
@@ -182,7 +182,7 @@ describe('ComplianceGapsReport', () => {
     mockUseQuery.mockReturnValue({
       data: { items: [], totalCount: 0 },
       isLoading: false,
-    } as any);
+    } as unknown);
     render(<ComplianceGapsReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByTestId('breadcrumb')).toBeInTheDocument();
   });
@@ -192,7 +192,7 @@ describe('ComplianceGapsReport', () => {
     mockUseQuery.mockReturnValue({
       data: { items: [], totalCount: 0 },
       isLoading: false,
-    } as any);
+    } as unknown);
     render(<ComplianceGapsReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByTestId('export-buttons')).toBeInTheDocument();
   });
@@ -206,12 +206,12 @@ describe('ComplianceGapsReport', () => {
         return {
           data: { items: [], totalCount: 0 },
           isLoading: false,
-        } as any;
+        } as unknown;
       }
       return {
         data: { critical: 5, warning: 3, ok: 10 },
         isLoading: false,
-      } as any;
+      } as unknown;
     });
     render(<ComplianceGapsReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByTestId('report-chart')).toBeInTheDocument();
@@ -234,7 +234,7 @@ describe('ComplianceGapsReport', () => {
         totalCount: 50,
       },
       isLoading: false,
-    } as any);
+    } as unknown);
     render(<ComplianceGapsReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByTestId('report-table')).toBeInTheDocument();
   });
@@ -272,7 +272,7 @@ describe('ComplianceGapsReport', () => {
         totalCount: 3,
       },
       isLoading: false,
-    } as any);
+    } as unknown);
     render(<ComplianceGapsReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByText('Red Co')).toBeInTheDocument();
     expect(screen.getByText('Yellow Co')).toBeInTheDocument();
@@ -284,7 +284,7 @@ describe('ComplianceGapsReport', () => {
     mockUseQuery.mockReturnValue({
       data: undefined,
       isLoading: true,
-    } as any);
+    } as unknown);
     render(<ComplianceGapsReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByTestId('loading')).toBeInTheDocument();
   });
@@ -295,9 +295,9 @@ describe('ComplianceGapsReport', () => {
     mockUseQuery.mockImplementation(() => {
       callCount++;
       if (callCount === 1) {
-        return { data: { items: [], totalCount: 0 }, isLoading: false } as any;
+        return { data: { items: [], totalCount: 0 }, isLoading: false } as unknown;
       }
-      return { data: undefined, isLoading: false } as any;
+      return { data: undefined, isLoading: false } as unknown;
     });
     render(<ComplianceGapsReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByTestId('report-chart')).toBeInTheDocument();
@@ -316,7 +316,7 @@ describe('ComplianceGapsReport', () => {
     mockUseQuery.mockReturnValue({
       data: { items, totalCount: 20 },
       isLoading: false,
-    } as any);
+    } as unknown);
     render(<ComplianceGapsReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByText('Company 0')).toBeInTheDocument();
     expect(screen.getByText('Company 19')).toBeInTheDocument();
@@ -339,7 +339,7 @@ describe('ComplianceGapsReport', () => {
         totalCount: 1,
       },
       isLoading: false,
-    } as any);
+    } as unknown);
     render(<ComplianceGapsReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByText('Solo LLC')).toBeInTheDocument();
   });
@@ -349,8 +349,8 @@ describe('ComplianceGapsReport', () => {
     let callCount = 0;
     mockUseQuery.mockImplementation(() => {
       callCount++;
-      if (callCount === 1) return { data: undefined, isLoading: true } as any;
-      return { data: undefined, isLoading: true } as any;
+      if (callCount === 1) return { data: undefined, isLoading: true } as unknown;
+      return { data: undefined, isLoading: true } as unknown;
     });
     render(<ComplianceGapsReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByTestId('export-buttons')).toBeInTheDocument();
@@ -389,7 +389,7 @@ describe('ComplianceGapsReport', () => {
         totalCount: 2,
       },
       isLoading: false,
-    } as any);
+    } as unknown);
     render(<ComplianceGapsReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     // Both contractors are shown initially
     expect(screen.getByText('Red Co')).toBeInTheDocument();
@@ -413,7 +413,7 @@ describe('ComplianceGapsReport', () => {
         totalCount: 1,
       },
       isLoading: false,
-    } as any);
+    } as unknown);
     render(<ComplianceGapsReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByTestId('breadcrumb')).toBeInTheDocument();
   });
@@ -443,7 +443,7 @@ describe('ComplianceGapsReport', () => {
         totalCount: 2,
       },
       isLoading: false,
-    } as any);
+    } as unknown);
     render(<ComplianceGapsReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByTestId('report-table')).toBeInTheDocument();
   });
@@ -454,9 +454,9 @@ describe('ComplianceGapsReport', () => {
     mockUseQuery.mockImplementation(() => {
       callCount++;
       if (callCount === 1) {
-        return { data: { items: [], totalCount: 0 }, isLoading: false } as any;
+        return { data: { items: [], totalCount: 0 }, isLoading: false } as unknown;
       }
-      return { data: undefined, isLoading: false } as any;
+      return { data: undefined, isLoading: false } as unknown;
     });
     render(<ComplianceGapsReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByTestId('report-chart')).toBeInTheDocument();
@@ -479,7 +479,7 @@ describe('ComplianceGapsReport', () => {
         totalCount: 1,
       },
       isLoading: false,
-    } as any);
+    } as unknown);
     render(<ComplianceGapsReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByText('NavTarget')).toBeInTheDocument();
   });

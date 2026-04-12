@@ -318,7 +318,7 @@ describe('BankStatementDialog', () => {
     ];
 
     // Override mockMutate to fire onSuccess callback from mutation options
-    mockMutate.mockImplementation(function (this: any, _input: any) {
+    mockMutate.mockImplementation(function (this: unknown, _input: unknown) {
       // The useMutation mock spreads opts, so onSuccess is on the returned object
       // We need to simulate the mutation's onSuccess callback
     });

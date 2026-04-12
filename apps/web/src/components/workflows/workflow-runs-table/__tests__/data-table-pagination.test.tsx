@@ -6,7 +6,7 @@ const createMockTable = (selectedCount = 0) =>
     getFilteredSelectedRowModel: () => ({
       rows: Array.from({ length: selectedCount }),
     }),
-  }) as any;
+  }) as unknown;
 
 describe('DataTablePagination', () => {
   it('renders page indicator', () => {

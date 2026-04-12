@@ -36,7 +36,7 @@ const sampleProjects = [
     name: 'Beta Project',
     statuses: [{ name: 'Backlog' }, { name: 'Completed' }],
   },
-] as any;
+] as unknown;
 
 function makeSelections(projects: typeof sampleProjects) {
   const map = new Map();
@@ -57,7 +57,7 @@ function makeSelections(projects: typeof sampleProjects) {
 describe('ProjectImportStep', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as any);
+    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown);
   });
 
   // ---- Empty state ----
@@ -92,7 +92,7 @@ describe('ProjectImportStep', () => {
     mockedUseQuery.mockReturnValue({
       data: undefined,
       isLoading: true,
-    } as any);
+    } as unknown);
     const { container } = render(
       <ProjectImportStep
         selectedSources={['JIRA']}
@@ -365,7 +365,7 @@ describe('ProjectImportStep', () => {
   it('calls onProjectsChange when data arrives and projects is empty', () => {
     const onProjectsChange = vi.fn();
     const onProjectSelectionsChange = vi.fn();
-    mockedUseQuery.mockReturnValue({ data: sampleProjects, isLoading: false } as any);
+    mockedUseQuery.mockReturnValue({ data: sampleProjects, isLoading: false } as unknown);
 
     render(
       <ProjectImportStep

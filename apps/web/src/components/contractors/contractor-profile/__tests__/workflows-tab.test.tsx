@@ -16,18 +16,20 @@ vi.mock('@/trpc/init', () => ({
   trpc: {
     workflow: {
       listRuns: {
-        queryOptions: (input: any) => ({
+        queryOptions: (input: unknown) => ({
           queryKey: ['workflow', 'listRuns', input],
         }),
       },
     },
     jira: {
       connectionStatus: { queryOptions: () => ({ queryKey: ['jira', 'conn'] }) },
-      linkedIssues: { queryOptions: (input: any) => ({ queryKey: ['jira', 'linked', input] }) },
+      linkedIssues: { queryOptions: (input: unknown) => ({ queryKey: ['jira', 'linked', input] }) },
     },
     linear: {
       connectionStatus: { queryOptions: () => ({ queryKey: ['linear', 'conn'] }) },
-      linkedIssues: { queryOptions: (input: any) => ({ queryKey: ['linear', 'linked', input] }) },
+      linkedIssues: {
+        queryOptions: (input: unknown) => ({ queryKey: ['linear', 'linked', input] }),
+      },
     },
   },
 }));

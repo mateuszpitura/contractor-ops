@@ -10,7 +10,7 @@ vi.mock('@tanstack/react-query', () => ({
 vi.mock('@/trpc/init', () => ({
   trpc: {
     contract: {
-      createAmendment: { mutationOptions: (opts: any) => opts },
+      createAmendment: { mutationOptions: (opts: Record<string, unknown>) => opts },
       getById: { queryKey: () => ['contract', 'getById'] },
       listAmendments: { queryKey: () => ['contract', 'listAmendments'] },
     },

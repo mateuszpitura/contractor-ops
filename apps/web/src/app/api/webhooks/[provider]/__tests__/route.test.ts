@@ -14,7 +14,7 @@ vi.mock('@contractor-ops/integrations/adapters/register-all', () => ({
 }));
 
 vi.mock('@contractor-ops/integrations/registry', () => ({
-  getAdapter: (...args: unknown[]) => mockGetAdapter(...args),
+  getAdapter: (...args: any[]) => mockGetAdapter(...args),
 }));
 
 vi.mock('@contractor-ops/integrations/services/qstash-client', () => ({
@@ -26,7 +26,7 @@ vi.mock('@contractor-ops/integrations/services/qstash-client', () => ({
 vi.mock('@contractor-ops/db', () => ({
   prisma: {
     webhookDelivery: {
-      create: (...args: unknown[]) => mockCreate(...args),
+      create: (...args: any[]) => mockCreate(...args),
     },
   },
 }));

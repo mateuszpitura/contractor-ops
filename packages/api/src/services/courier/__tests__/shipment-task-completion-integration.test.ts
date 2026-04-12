@@ -46,13 +46,13 @@ function createIntegrationMockDb(opts: {
   return {
     shipment: {
       findFirst: vi.fn(async () => opts.shipment),
-      findMany: vi.fn(async (args: any) => {
+      findMany: vi.fn(async (args: Record<string, unknown>) => {
         // When called by checkShipmentTaskCompletion (for linked shipments)
         if (args?.where?.workflowTaskRunId) return opts.allLinkedShipments;
         // When called by polling service (for active shipments)
         return [opts.shipment];
       }),
-      update: vi.fn(async (args: any) => {
+      update: vi.fn(async (args: Record<string, unknown>) => {
         const updated = { ...opts.shipment, ...args.data };
         // Reflect status change in allLinkedShipments
         const linked = opts.allLinkedShipments.find(s => s.id === opts.shipment.id);
@@ -134,7 +134,7 @@ describe('Shipment Task Completion Integration', () => {
       created_at: '2026-04-04T10:00:00Z',
     };
 
-    await handleInPostWebhook(db as any, 'org-1', webhookPayload);
+    await handleInPostWebhook(db as unknown, 'org-1', webhookPayload);
 
     // Wait for fire-and-forget to execute
     await new Promise(r => setTimeout(r, 50));
@@ -173,7 +173,7 @@ describe('Shipment Task Completion Integration', () => {
       trackingNumber: 'T1',
     });
 
-    await pollInPostShipmentStatuses(db as any, 'org-1');
+    await pollInPostShipmentStatuses(db as unknown, 'org-1');
 
     // Wait for fire-and-forget to execute
     await new Promise(r => setTimeout(r, 50));
@@ -215,7 +215,7 @@ describe('Shipment Task Completion Integration', () => {
       created_at: '2026-04-04T10:00:00Z',
     };
 
-    await handleInPostWebhook(db as any, 'org-1', webhookPayload);
+    await handleInPostWebhook(db as unknown, 'org-1', webhookPayload);
 
     // Wait for fire-and-forget to execute
     await new Promise(r => setTimeout(r, 50));
@@ -255,7 +255,7 @@ describe('Shipment Task Completion Integration', () => {
       trackingNumber: 'T1',
     });
 
-    await pollInPostShipmentStatuses(db as any, 'org-1');
+    await pollInPostShipmentStatuses(db as unknown, 'org-1');
 
     // Wait for fire-and-forget to execute
     await new Promise(r => setTimeout(r, 50));

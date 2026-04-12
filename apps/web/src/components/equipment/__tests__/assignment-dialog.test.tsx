@@ -26,7 +26,11 @@ vi.mock('@tanstack/react-query', () => ({
     data: mockContractors.length > 0 ? { items: mockContractors } : undefined,
     isLoading: mockIsLoading,
   }),
-  useMutation: (opts: any) => ({ mutate: mockMutate, isPending: mockIsPending, ...opts }),
+  useMutation: (opts: Record<string, unknown>) => ({
+    mutate: mockMutate,
+    isPending: mockIsPending,
+    ...opts,
+  }),
   useQueryClient: () => ({ invalidateQueries: vi.fn() }),
 }));
 
@@ -34,7 +38,9 @@ vi.mock('@/trpc/init', () => ({
   trpc: {
     contractor: { list: { queryOptions: () => ({ queryKey: ['contractor.list'] }) } },
     equipment: {
-      assign: { mutationOptions: (opts: any) => ({ mutationFn: vi.fn(), ...opts }) },
+      assign: {
+        mutationOptions: (opts: Record<string, unknown>) => ({ mutationFn: vi.fn(), ...opts }),
+      },
       list: { queryKey: () => ['equipment.list'] },
       getById: { queryKey: () => ['equipment.getById'] },
     },

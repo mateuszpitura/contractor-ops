@@ -124,7 +124,7 @@ describe('OrgSettingsForm', () => {
     vi.mocked(require('@tanstack/react-query').useQuery).mockReturnValueOnce?.({
       isLoading: true,
       data: undefined,
-    } as any);
+    } as unknown);
     // Since the mock is at module level and returns stableSettings, we need a different approach
     // Just verify the form renders correctly with data
     render(<OrgSettingsForm />);

@@ -51,7 +51,7 @@ function renderCell(columnId: string, row: ContractorRow) {
       getIsSelected: () => false,
       toggleSelected: vi.fn(),
     },
-    getValue: () => (row as any)[columnId],
+    getValue: () => (row as unknown)[columnId],
   });
   const { container } = render(result);
   return container;
@@ -70,18 +70,18 @@ describe('getColumns', () => {
   });
 
   it('has displayName as non-hideable column', () => {
-    const nameCol = columns.find(c => (c as any).accessorKey === 'displayName');
+    const nameCol = columns.find(c => (c as unknown).accessorKey === 'displayName');
     expect(nameCol).toBeDefined();
     expect(nameCol?.enableHiding).toBe(false);
   });
 
   it('has compliance health as last data column', () => {
     const lastCol = columns[columns.length - 1]!;
-    expect((lastCol as any).accessorKey).toBe('complianceHealth');
+    expect((lastCol as unknown).accessorKey).toBe('complianceHealth');
   });
 
   it('disables sorting on owner column', () => {
-    const ownerCol = columns.find(c => (c as any).accessorKey === 'owner');
+    const ownerCol = columns.find(c => (c as unknown).accessorKey === 'owner');
     expect(ownerCol?.enableSorting).toBe(false);
   });
 });
@@ -111,7 +111,7 @@ describe('getColumns cell renderers', () => {
         (() => {
           const t = (key: string) => key;
           const cols = getColumns(t);
-          const col = cols.find(c => (c as any).accessorKey === 'lifecycleStage');
+          const col = cols.find(c => (c as unknown).accessorKey === 'lifecycleStage');
           const cellFn = col?.cell as (info: any) => any;
           return cellFn({
             row: {

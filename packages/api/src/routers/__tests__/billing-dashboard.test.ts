@@ -5,7 +5,7 @@ const mockGetCreditBalance = vi.fn();
 const mockContractorCount = vi.fn();
 
 vi.mock('../../services/billing-service.js', () => ({
-  getSubscription: (...args: unknown[]) => mockGetSubscription(...args),
+  getSubscription: (...args: any[]) => mockGetSubscription(...args),
   createCheckoutSession: vi.fn(),
   createTopUpCheckoutSession: vi.fn(),
   getProrationPreview: vi.fn(),
@@ -15,13 +15,13 @@ vi.mock('../../services/billing-service.js', () => ({
 }));
 
 vi.mock('../../services/credit-service.js', () => ({
-  getCreditBalance: (...args: unknown[]) => mockGetCreditBalance(...args),
+  getCreditBalance: (...args: any[]) => mockGetCreditBalance(...args),
 }));
 
 vi.mock('@contractor-ops/db', () => ({
   prisma: {
     organization: { findUnique: vi.fn() },
-    contractor: { count: (...args: unknown[]) => mockContractorCount(...args) },
+    contractor: { count: (...args: any[]) => mockContractorCount(...args) },
     subscription: { findUnique: vi.fn() },
   },
   tenantStore: {

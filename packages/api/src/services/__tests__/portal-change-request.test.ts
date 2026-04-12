@@ -22,7 +22,7 @@ import {
   rejectChangeRequest,
 } from '../portal-change-request.js';
 
-const mockPrisma = prisma as any;
+const mockPrisma = prisma as unknown;
 
 const CONTRACTOR_ID = 'contractor-1';
 const ORG_ID = 'org-1';
@@ -31,7 +31,9 @@ const REQUEST_ID = 'req-1';
 
 beforeEach(() => {
   vi.clearAllMocks();
-  mockPrisma.$transaction.mockImplementation(async (fn: any) => fn(mockPrisma));
+  mockPrisma.$transaction.mockImplementation(async (fn: (...a: unknown[]) => unknown) =>
+    fn(mockPrisma),
+  );
 });
 
 describe('portal-change-request', () => {

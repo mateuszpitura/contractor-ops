@@ -40,11 +40,11 @@ const { mockPostMessage, mockUpdate, mockUsersList, mockPrisma, mockGetCredentia
 vi.mock('@slack/web-api', () => ({
   WebClient: class WebClient {
     chat = {
-      postMessage: (...args: unknown[]) => mockPostMessage(...args),
-      update: (...args: unknown[]) => mockUpdate(...args),
+      postMessage: (...args: any[]) => mockPostMessage(...args),
+      update: (...args: any[]) => mockUpdate(...args),
     };
     users = {
-      list: (...args: unknown[]) => mockUsersList(...args),
+      list: (...args: any[]) => mockUsersList(...args),
     };
   },
 }));

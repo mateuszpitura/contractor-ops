@@ -10,12 +10,12 @@ const mockCount = vi.fn();
 
 vi.mock('@contractor-ops/db', () => ({
   prisma: {
-    integrationConnection: { findFirst: (...args: unknown[]) => mockFindFirst(...args) },
+    integrationConnection: { findFirst: (...args: any[]) => mockFindFirst(...args) },
     integrationSyncLog: {
-      findMany: (...args: unknown[]) => mockFindMany(...args),
-      count: (...args: unknown[]) => mockCount(...args),
+      findMany: (...args: any[]) => mockFindMany(...args),
+      count: (...args: any[]) => mockCount(...args),
     },
-    webhookDelivery: { findMany: (...args: unknown[]) => mockFindMany(...args) },
+    webhookDelivery: { findMany: (...args: any[]) => mockFindMany(...args) },
   },
 }));
 

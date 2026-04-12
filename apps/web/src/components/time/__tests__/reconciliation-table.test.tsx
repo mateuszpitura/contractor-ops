@@ -8,7 +8,7 @@ vi.mock('@tanstack/react-query', () => ({
 vi.mock('@/trpc/init', () => ({
   trpc: {
     time: {
-      listReconciliations: { queryOptions: (opts: any) => opts },
+      listReconciliations: { queryOptions: (opts: Record<string, unknown>) => opts },
     },
   },
 }));
@@ -69,7 +69,7 @@ describe('ReconciliationTable', () => {
     mockUseQuery.mockReturnValue({
       data: undefined,
       isLoading: true,
-    } as any);
+    } as unknown);
     const { container } = render(<ReconciliationTable />);
     expect(container.querySelector("[data-slot='skeleton']")).toBeTruthy();
   });
@@ -78,7 +78,7 @@ describe('ReconciliationTable', () => {
     mockUseQuery.mockReturnValue({
       data: { items: [] },
       isLoading: false,
-    } as any);
+    } as unknown);
     render(<ReconciliationTable />);
     expect(screen.getByTestId('empty-state')).toHaveTextContent('No reconciliation data');
   });
@@ -87,7 +87,7 @@ describe('ReconciliationTable', () => {
     mockUseQuery.mockReturnValue({
       data: { items: [mockItem] },
       isLoading: false,
-    } as any);
+    } as unknown);
     render(<ReconciliationTable />);
     expect(screen.getByText('Test Contractor')).toBeInTheDocument();
   });
@@ -96,7 +96,7 @@ describe('ReconciliationTable', () => {
     mockUseQuery.mockReturnValue({
       data: { items: [mockItem] },
       isLoading: false,
-    } as any);
+    } as unknown);
     render(<ReconciliationTable />);
     // 9600 min = 160h
     expect(screen.getByText('160h')).toBeInTheDocument();
@@ -106,7 +106,7 @@ describe('ReconciliationTable', () => {
     mockUseQuery.mockReturnValue({
       data: { items: [mockItem] },
       isLoading: false,
-    } as any);
+    } as unknown);
     render(<ReconciliationTable />);
     expect(screen.getByTestId('deviation-flag')).toHaveTextContent('4.17%');
   });
@@ -115,7 +115,7 @@ describe('ReconciliationTable', () => {
     mockUseQuery.mockReturnValue({
       data: { items: [mockItem] },
       isLoading: false,
-    } as any);
+    } as unknown);
     render(<ReconciliationTable />);
     const link = screen.getByRole('link', { name: /View invoice/i });
     expect(link).toHaveAttribute('href', '/invoices/inv-1');

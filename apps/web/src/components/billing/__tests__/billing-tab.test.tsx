@@ -12,7 +12,7 @@ let portalPending = false;
 
 vi.mock('@tanstack/react-query', () => ({
   useQuery: () => ({ data: subscriptionData, isLoading: false }),
-  useMutation: (opts: any) => {
+  useMutation: (opts: Record<string, unknown>) => {
     // Differentiate checkout vs portal by checking options shape
     if (opts?.onError?.toString().includes('checkout')) {
       return { mutate: mockCheckoutMutate, isPending: false };

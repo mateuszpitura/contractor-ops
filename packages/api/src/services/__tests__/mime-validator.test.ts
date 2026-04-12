@@ -7,7 +7,7 @@ import { describe, expect, it, vi } from 'vitest';
 const mockFileTypeFromBuffer = vi.fn();
 
 vi.mock('file-type', () => ({
-  fileTypeFromBuffer: (...args: unknown[]) => mockFileTypeFromBuffer(...args),
+  fileTypeFromBuffer: (...args: any[]) => mockFileTypeFromBuffer(...args),
 }));
 
 import {

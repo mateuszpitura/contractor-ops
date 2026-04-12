@@ -167,7 +167,7 @@ vi.mock('node:crypto', () => ({
 }));
 
 vi.mock('../../services/portal-change-request.js', () => ({
-  createChangeRequest: (...args: unknown[]) => mockCreateChangeRequest(...args),
+  createChangeRequest: (...args: any[]) => mockCreateChangeRequest(...args),
 }));
 
 vi.mock('../../services/bank-account-crypto.js', () => ({

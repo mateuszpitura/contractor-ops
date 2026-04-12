@@ -6,7 +6,7 @@ vi.mock('@/components/equipment/shipment-label-view', () => ({
 }));
 
 vi.mock('@tanstack/react-query', () => ({
-  useQuery: vi.fn().mockImplementation((opts: any) => {
+  useQuery: vi.fn().mockImplementation((opts: Record<string, unknown>) => {
     // Return empty equipment by default
     if (opts?.queryKey?.[0] === 'portal.listEquipment') {
       return { data: [], isPending: false };
@@ -29,7 +29,7 @@ vi.mock('@/trpc/init', () => ({
         queryKey: () => ['portal.returnStatus'],
       },
       cancelReturn: {
-        mutationOptions: (opts: any) => ({ mutationFn: vi.fn(), ...opts }),
+        mutationOptions: (opts: Record<string, unknown>) => ({ mutationFn: vi.fn(), ...opts }),
       },
     },
   },
@@ -77,11 +77,11 @@ describe('PortalEquipmentTab', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     // Reset to default empty equipment
-    mockedUseQuery.mockImplementation((opts: any) => {
+    mockedUseQuery.mockImplementation((opts: Record<string, unknown>) => {
       if (opts?.queryKey?.[0] === 'portal.listEquipment') {
-        return { data: [], isPending: false } as any;
+        return { data: [], isPending: false } as unknown;
       }
-      return { data: null, isPending: false } as any;
+      return { data: null, isPending: false } as unknown;
     });
   });
 
@@ -96,72 +96,72 @@ describe('PortalEquipmentTab', () => {
   });
 
   it('renders loading skeletons when equipment query is pending', () => {
-    mockedUseQuery.mockImplementation((opts: any) => {
+    mockedUseQuery.mockImplementation((opts: Record<string, unknown>) => {
       if (opts?.queryKey?.[0] === 'portal.listEquipment') {
-        return { data: undefined, isPending: true } as any;
+        return { data: undefined, isPending: true } as unknown;
       }
-      return { data: null, isPending: false } as any;
+      return { data: null, isPending: false } as unknown;
     });
     const { container } = render(<PortalEquipmentTab />);
     expect(container.querySelector("[data-slot='skeleton']")).toBeTruthy();
   });
 
   it('renders equipment card with name when equipment exists', () => {
-    mockedUseQuery.mockImplementation((opts: any) => {
+    mockedUseQuery.mockImplementation((opts: Record<string, unknown>) => {
       if (opts?.queryKey?.[0] === 'portal.listEquipment') {
-        return { data: MOCK_EQUIPMENT, isPending: false } as any;
+        return { data: MOCK_EQUIPMENT, isPending: false } as unknown;
       }
-      return { data: null, isPending: false } as any;
+      return { data: null, isPending: false } as unknown;
     });
     render(<PortalEquipmentTab />);
     expect(screen.getByText('MacBook Pro')).toBeInTheDocument();
   });
 
   it('renders serial number for equipment', () => {
-    mockedUseQuery.mockImplementation((opts: any) => {
+    mockedUseQuery.mockImplementation((opts: Record<string, unknown>) => {
       if (opts?.queryKey?.[0] === 'portal.listEquipment') {
-        return { data: MOCK_EQUIPMENT, isPending: false } as any;
+        return { data: MOCK_EQUIPMENT, isPending: false } as unknown;
       }
-      return { data: null, isPending: false } as any;
+      return { data: null, isPending: false } as unknown;
     });
     render(<PortalEquipmentTab />);
     expect(screen.getByText('SN-12345')).toBeInTheDocument();
   });
 
   it('renders equipment status badge', () => {
-    mockedUseQuery.mockImplementation((opts: any) => {
+    mockedUseQuery.mockImplementation((opts: Record<string, unknown>) => {
       if (opts?.queryKey?.[0] === 'portal.listEquipment') {
-        return { data: MOCK_EQUIPMENT, isPending: false } as any;
+        return { data: MOCK_EQUIPMENT, isPending: false } as unknown;
       }
-      return { data: null, isPending: false } as any;
+      return { data: null, isPending: false } as unknown;
     });
     render(<PortalEquipmentTab />);
     expect(screen.getByText('ASSIGNED')).toBeInTheDocument();
   });
 
   it('renders return all button when returnable equipment exists', () => {
-    mockedUseQuery.mockImplementation((opts: any) => {
+    mockedUseQuery.mockImplementation((opts: Record<string, unknown>) => {
       if (opts?.queryKey?.[0] === 'portal.listEquipment') {
-        return { data: MOCK_EQUIPMENT, isPending: false } as any;
+        return { data: MOCK_EQUIPMENT, isPending: false } as unknown;
       }
-      return { data: null, isPending: false } as any;
+      return { data: null, isPending: false } as unknown;
     });
     render(<PortalEquipmentTab />);
     expect(screen.getByText('Return equipment')).toBeInTheDocument();
   });
 
   it('shows pending approval banner when return request is pending', () => {
-    mockedUseQuery.mockImplementation((opts: any) => {
+    mockedUseQuery.mockImplementation((opts: Record<string, unknown>) => {
       if (opts?.queryKey?.[0] === 'portal.listEquipment') {
-        return { data: MOCK_EQUIPMENT, isPending: false } as any;
+        return { data: MOCK_EQUIPMENT, isPending: false } as unknown;
       }
       if (opts?.queryKey?.[0] === 'portal.returnStatus') {
         return {
           data: { id: 'r1', status: 'PENDING_APPROVAL', shipmentId: null, targetPointName: null },
           isPending: false,
-        } as any;
+        } as unknown;
       }
-      return { data: null, isPending: false } as any;
+      return { data: null, isPending: false } as unknown;
     });
     render(<PortalEquipmentTab />);
     expect(screen.getByText(/pending approval/i)).toBeInTheDocument();
@@ -169,51 +169,51 @@ describe('PortalEquipmentTab', () => {
   });
 
   it('shows shipment created banner when return is approved', () => {
-    mockedUseQuery.mockImplementation((opts: any) => {
+    mockedUseQuery.mockImplementation((opts: Record<string, unknown>) => {
       if (opts?.queryKey?.[0] === 'portal.listEquipment') {
-        return { data: MOCK_EQUIPMENT, isPending: false } as any;
+        return { data: MOCK_EQUIPMENT, isPending: false } as unknown;
       }
       if (opts?.queryKey?.[0] === 'portal.returnStatus') {
         return {
           data: { id: 'r1', status: 'SHIPMENT_CREATED', shipmentId: 's1', targetPointName: null },
           isPending: false,
-        } as any;
+        } as unknown;
       }
-      return { data: null, isPending: false } as any;
+      return { data: null, isPending: false } as unknown;
     });
     render(<PortalEquipmentTab />);
     expect(screen.getByText(/return approved/i)).toBeInTheDocument();
   });
 
   it('hides return button when active return exists', () => {
-    mockedUseQuery.mockImplementation((opts: any) => {
+    mockedUseQuery.mockImplementation((opts: Record<string, unknown>) => {
       if (opts?.queryKey?.[0] === 'portal.listEquipment') {
-        return { data: MOCK_EQUIPMENT, isPending: false } as any;
+        return { data: MOCK_EQUIPMENT, isPending: false } as unknown;
       }
       if (opts?.queryKey?.[0] === 'portal.returnStatus') {
         return {
           data: { id: 'r1', status: 'PENDING_APPROVAL', shipmentId: null, targetPointName: null },
           isPending: false,
-        } as any;
+        } as unknown;
       }
-      return { data: null, isPending: false } as any;
+      return { data: null, isPending: false } as unknown;
     });
     render(<PortalEquipmentTab />);
     expect(screen.queryByText('Return equipment')).not.toBeInTheDocument();
   });
 
   it('opens cancel return confirmation dialog when cancel is clicked', async () => {
-    mockedUseQuery.mockImplementation((opts: any) => {
+    mockedUseQuery.mockImplementation((opts: Record<string, unknown>) => {
       if (opts?.queryKey?.[0] === 'portal.listEquipment') {
-        return { data: MOCK_EQUIPMENT, isPending: false } as any;
+        return { data: MOCK_EQUIPMENT, isPending: false } as unknown;
       }
       if (opts?.queryKey?.[0] === 'portal.returnStatus') {
         return {
           data: { id: 'r1', status: 'PENDING_APPROVAL', shipmentId: null, targetPointName: null },
           isPending: false,
-        } as any;
+        } as unknown;
       }
-      return { data: null, isPending: false } as any;
+      return { data: null, isPending: false } as unknown;
     });
     const { setup: setupUtil, waitFor: wf } = await import('@/test/test-utils');
     const { user } = setupUtil(<PortalEquipmentTab />);
@@ -230,11 +230,11 @@ describe('PortalEquipmentTab', () => {
         equipment: { ...MOCK_EQUIPMENT[0].equipment, serialNumber: null },
       },
     ];
-    mockedUseQuery.mockImplementation((opts: any) => {
+    mockedUseQuery.mockImplementation((opts: Record<string, unknown>) => {
       if (opts?.queryKey?.[0] === 'portal.listEquipment') {
-        return { data: noSerialEquipment, isPending: false } as any;
+        return { data: noSerialEquipment, isPending: false } as unknown;
       }
-      return { data: null, isPending: false } as any;
+      return { data: null, isPending: false } as unknown;
     });
     render(<PortalEquipmentTab />);
     expect(screen.getByText('MacBook Pro')).toBeInTheDocument();
@@ -247,11 +247,11 @@ describe('PortalEquipmentTab', () => {
         latestShipment: null,
       },
     ];
-    mockedUseQuery.mockImplementation((opts: any) => {
+    mockedUseQuery.mockImplementation((opts: Record<string, unknown>) => {
       if (opts?.queryKey?.[0] === 'portal.listEquipment') {
-        return { data: noDeliveryEquipment, isPending: false } as any;
+        return { data: noDeliveryEquipment, isPending: false } as unknown;
       }
-      return { data: null, isPending: false } as any;
+      return { data: null, isPending: false } as unknown;
     });
     render(<PortalEquipmentTab />);
     expect(screen.getByText('MacBook Pro')).toBeInTheDocument();
@@ -269,22 +269,22 @@ describe('PortalEquipmentTab', () => {
         equipment: { ...MOCK_EQUIPMENT[0].equipment, status: 'RETURNED' },
       },
     ];
-    mockedUseQuery.mockImplementation((opts: any) => {
+    mockedUseQuery.mockImplementation((opts: Record<string, unknown>) => {
       if (opts?.queryKey?.[0] === 'portal.listEquipment') {
-        return { data: returnedEquipment, isPending: false } as any;
+        return { data: returnedEquipment, isPending: false } as unknown;
       }
-      return { data: null, isPending: false } as any;
+      return { data: null, isPending: false } as unknown;
     });
     render(<PortalEquipmentTab />);
     expect(screen.queryByText('Return equipment')).not.toBeInTheDocument();
   });
 
   it('renders type icon for each equipment item', () => {
-    mockedUseQuery.mockImplementation((opts: any) => {
+    mockedUseQuery.mockImplementation((opts: Record<string, unknown>) => {
       if (opts?.queryKey?.[0] === 'portal.listEquipment') {
-        return { data: MOCK_EQUIPMENT, isPending: false } as any;
+        return { data: MOCK_EQUIPMENT, isPending: false } as unknown;
       }
-      return { data: null, isPending: false } as any;
+      return { data: null, isPending: false } as unknown;
     });
     render(<PortalEquipmentTab />);
     expect(screen.getByTestId('type-icon')).toBeInTheDocument();

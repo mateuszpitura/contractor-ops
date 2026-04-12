@@ -35,11 +35,11 @@ const mockedUseMutation = vi.mocked(useMutation);
 
 describe('CalendarTaskConfig', () => {
   beforeEach(() => {
-    mockedUseMutation.mockReturnValue({ mutate: vi.fn(), isPending: false } as any);
+    mockedUseMutation.mockReturnValue({ mutate: vi.fn(), isPending: false } as unknown);
   });
 
   it('shows loading skeleton when loading', () => {
-    mockedUseQuery.mockReturnValue({ data: undefined, isLoading: true } as any);
+    mockedUseQuery.mockReturnValue({ data: undefined, isLoading: true } as unknown);
     const { container } = render(<CalendarTaskConfig taskTemplateId="t1" />);
     expect(container.querySelectorAll("[data-slot='skeleton']").length).toBeGreaterThan(0);
   });
@@ -48,7 +48,7 @@ describe('CalendarTaskConfig', () => {
     mockedUseQuery.mockReturnValue({
       data: { calendarEnabled: false, duration: '1h', attendees: [] },
       isLoading: false,
-    } as any);
+    } as unknown);
     render(<CalendarTaskConfig taskTemplateId="t1" />);
     expect(screen.getByText('Not configured')).toBeInTheDocument();
   });
@@ -57,7 +57,7 @@ describe('CalendarTaskConfig', () => {
     mockedUseQuery.mockReturnValue({
       data: { calendarEnabled: true, titleTemplate: 'Meeting', duration: '1h', attendees: [] },
       isLoading: false,
-    } as any);
+    } as unknown);
     render(<CalendarTaskConfig taskTemplateId="t1" />);
     expect(screen.getByText(/Meeting - 1 hour/)).toBeInTheDocument();
   });
@@ -66,7 +66,7 @@ describe('CalendarTaskConfig', () => {
     mockedUseQuery.mockReturnValue({
       data: { calendarEnabled: false, duration: '1h', attendees: [] },
       isLoading: false,
-    } as any);
+    } as unknown);
     render(<CalendarTaskConfig taskTemplateId="t1" />);
     expect(screen.getByText('Configure')).toBeInTheDocument();
   });

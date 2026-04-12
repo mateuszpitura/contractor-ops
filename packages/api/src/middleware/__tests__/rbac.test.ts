@@ -6,7 +6,7 @@ const mockHasPermission = vi.fn();
 vi.mock('@contractor-ops/auth', () => ({
   auth: {
     api: {
-      hasPermission: (...args: unknown[]) => mockHasPermission(...args),
+      hasPermission: (...args: any[]) => mockHasPermission(...args),
     },
   },
 }));

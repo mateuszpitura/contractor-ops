@@ -52,7 +52,7 @@ vi.mock('@/components/workflows/template-builder/sortable-task-list', () => ({
 vi.mock('@/components/workflows/template-builder/use-template-form', () => ({
   useTemplateForm: () => ({
     form: {
-      handleSubmit: (fn: any) => (e: any) => {
+      handleSubmit: (fn: (values: unknown) => void) => (e?: { preventDefault: () => void }) => {
         e?.preventDefault();
         fn({ name: 'Test', type: 'ONBOARDING', description: '', tasks: [] });
       },
@@ -89,11 +89,11 @@ describe('TemplateForm', () => {
     mockedUseQuery.mockReturnValue({
       data: undefined,
       isLoading: false,
-    } as any);
+    } as unknown);
     mockedUseMutation.mockReturnValue({
       mutate: vi.fn(),
       isPending: false,
-    } as any);
+    } as unknown);
   });
 
   // ---- Form fields ----
@@ -139,7 +139,7 @@ describe('TemplateForm', () => {
         tasks: [],
       },
       isLoading: false,
-    } as any);
+    } as unknown);
     render(<TemplateForm templateId="t-1" />);
     expect(screen.getByText('Status')).toBeInTheDocument();
   });
@@ -154,7 +154,7 @@ describe('TemplateForm', () => {
         tasks: [],
       },
       isLoading: false,
-    } as any);
+    } as unknown);
     render(<TemplateForm templateId="t-1" />);
     expect(screen.getByText('Activate')).toBeInTheDocument();
     expect(screen.getByText('Delete')).toBeInTheDocument();
@@ -171,7 +171,7 @@ describe('TemplateForm', () => {
         tasks: [],
       },
       isLoading: false,
-    } as any);
+    } as unknown);
     render(<TemplateForm templateId="t-1" />);
     expect(screen.getByText('Archive')).toBeInTheDocument();
     expect(screen.queryByText('Activate')).not.toBeInTheDocument();
@@ -189,7 +189,7 @@ describe('TemplateForm', () => {
         tasks: [],
       },
       isLoading: false,
-    } as any);
+    } as unknown);
     render(<TemplateForm templateId="t-1" />);
     expect(screen.getByText('Duplicate')).toBeInTheDocument();
   });
@@ -199,7 +199,7 @@ describe('TemplateForm', () => {
     mockedUseMutation.mockReturnValue({
       mutate: vi.fn(),
       isPending: true,
-    } as any);
+    } as unknown);
     render(<TemplateForm />);
     const saveBtn = screen.getByText('Save template').closest('button');
     expect(saveBtn).toBeDisabled();
@@ -216,7 +216,7 @@ describe('TemplateForm', () => {
         tasks: [],
       },
       isLoading: false,
-    } as any);
+    } as unknown);
     render(<TemplateForm templateId="t-1" />);
     expect(screen.queryByText('Activate')).not.toBeInTheDocument();
     expect(screen.queryByText('Archive')).not.toBeInTheDocument();
@@ -242,11 +242,11 @@ describe('TemplateForm', () => {
         tasks: [],
       },
       isLoading: false,
-    } as any);
+    } as unknown);
     mockedUseMutation.mockReturnValue({
       mutate: mutateFn,
       isPending: false,
-    } as any);
+    } as unknown);
     const { user } = setup(<TemplateForm templateId="t-1" />);
     await user.click(screen.getByText('Activate'));
     expect(mutateFn).toHaveBeenCalled();
@@ -264,11 +264,11 @@ describe('TemplateForm', () => {
         tasks: [],
       },
       isLoading: false,
-    } as any);
+    } as unknown);
     mockedUseMutation.mockReturnValue({
       mutate: mutateFn,
       isPending: false,
-    } as any);
+    } as unknown);
     const { user } = setup(<TemplateForm templateId="t-1" />);
     await user.click(screen.getByText('Duplicate'));
     expect(mutateFn).toHaveBeenCalled();
@@ -285,7 +285,7 @@ describe('TemplateForm', () => {
         tasks: [],
       },
       isLoading: false,
-    } as any);
+    } as unknown);
     render(<TemplateForm templateId="t-1" />);
     expect(screen.getByText('DRAFT')).toBeInTheDocument();
   });
@@ -300,7 +300,7 @@ describe('TemplateForm', () => {
         tasks: [],
       },
       isLoading: false,
-    } as any);
+    } as unknown);
     render(<TemplateForm templateId="t-1" />);
     expect(screen.getByText('ACTIVE')).toBeInTheDocument();
   });
@@ -315,7 +315,7 @@ describe('TemplateForm', () => {
         tasks: [],
       },
       isLoading: false,
-    } as any);
+    } as unknown);
     render(<TemplateForm templateId="t-1" />);
     expect(screen.getByText('ARCHIVED')).toBeInTheDocument();
   });
@@ -340,7 +340,7 @@ describe('TemplateForm', () => {
         tasks: [],
       },
       isLoading: false,
-    } as any);
+    } as unknown);
     render(<TemplateForm templateId="t-1" />);
     expect(screen.getByText('Delete')).toBeInTheDocument();
   });
@@ -355,11 +355,11 @@ describe('TemplateForm', () => {
         tasks: [],
       },
       isLoading: false,
-    } as any);
+    } as unknown);
     mockedUseMutation.mockReturnValue({
       mutate: vi.fn(),
       isPending: false,
-    } as any);
+    } as unknown);
     const { user } = setup(<TemplateForm templateId="t-1" />);
     await user.click(screen.getByText('Delete'));
     // Click should not throw
@@ -376,11 +376,11 @@ describe('TemplateForm', () => {
         tasks: [],
       },
       isLoading: false,
-    } as any);
+    } as unknown);
     mockedUseMutation.mockReturnValue({
       mutate: vi.fn(),
       isPending: false,
-    } as any);
+    } as unknown);
     const { user } = setup(<TemplateForm templateId="t-1" />);
     await user.click(screen.getByText('Archive'));
     // Click should not throw
@@ -407,7 +407,7 @@ describe('TemplateForm', () => {
     mockedUseQuery.mockReturnValue({
       data: undefined,
       isLoading: true,
-    } as any);
+    } as unknown);
     render(<TemplateForm templateId="t-1" />);
     expect(screen.getByText('Template name')).toBeInTheDocument();
   });
@@ -433,7 +433,7 @@ describe('TemplateForm', () => {
         tasks: [],
       },
       isLoading: false,
-    } as any);
+    } as unknown);
     render(<TemplateForm templateId="t-1" />);
     expect(screen.getByText('Duplicate')).toBeInTheDocument();
   });
@@ -462,7 +462,7 @@ describe('TemplateForm', () => {
     mockedUseMutation.mockReturnValue({
       mutate: vi.fn(),
       isPending: false,
-    } as any);
+    } as unknown);
     const { user } = setup(<TemplateForm />);
     const saveBtn = screen.getByText('Save template').closest('button')!;
     // Click submit - form handleSubmit is called via mock
@@ -481,11 +481,11 @@ describe('TemplateForm', () => {
         tasks: [],
       },
       isLoading: false,
-    } as any);
+    } as unknown);
     mockedUseMutation.mockReturnValue({
       mutate: vi.fn(),
       isPending: false,
-    } as any);
+    } as unknown);
     const { user } = setup(<TemplateForm templateId="t-1" />);
     await user.click(screen.getByText('Save template'));
     // The form should still be visible after submit
@@ -502,11 +502,11 @@ describe('TemplateForm', () => {
         tasks: [],
       },
       isLoading: false,
-    } as any);
+    } as unknown);
     mockedUseMutation.mockReturnValue({
       mutate: vi.fn(),
       isPending: false,
-    } as any);
+    } as unknown);
     const { user } = setup(<TemplateForm templateId="t-1" />);
     await user.click(screen.getByText('Archive'));
     // Alert dialog should appear
@@ -525,11 +525,11 @@ describe('TemplateForm', () => {
         tasks: [],
       },
       isLoading: false,
-    } as any);
+    } as unknown);
     mockedUseMutation.mockReturnValue({
       mutate: vi.fn(),
       isPending: false,
-    } as any);
+    } as unknown);
     const { user } = setup(<TemplateForm templateId="t-1" />);
     await user.click(screen.getByText('Delete'));
     // Alert dialog should appear
@@ -549,11 +549,11 @@ describe('TemplateForm', () => {
         tasks: [],
       },
       isLoading: false,
-    } as any);
+    } as unknown);
     mockedUseMutation.mockReturnValue({
       mutate: mutateFn,
       isPending: false,
-    } as any);
+    } as unknown);
     const { user } = setup(<TemplateForm templateId="t-1" />);
     await user.click(screen.getByText('Delete'));
     await waitFor(() => {
@@ -579,11 +579,11 @@ describe('TemplateForm', () => {
         tasks: [],
       },
       isLoading: false,
-    } as any);
+    } as unknown);
     mockedUseMutation.mockReturnValue({
       mutate: mutateFn,
       isPending: false,
-    } as any);
+    } as unknown);
     const { user } = setup(<TemplateForm templateId="t-1" />);
     await user.click(screen.getByText('Archive'));
     await waitFor(() => {

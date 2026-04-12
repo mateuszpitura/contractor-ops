@@ -5,7 +5,7 @@ vi.mock('next-intl', async importOriginal => {
   const actual = await importOriginal<typeof import('next-intl')>();
   return {
     ...actual,
-    useTranslations: () => (key: string, params?: any) => {
+    useTranslations: () => (key: string, params?: Record<string, unknown>) => {
       if (params?.count) return `${key}(${params.count})`;
       return key;
     },
@@ -13,7 +13,7 @@ vi.mock('next-intl', async importOriginal => {
 });
 
 vi.mock('@tanstack/react-query', () => ({
-  useMutation: (_opts: any) => ({
+  useMutation: (_opts: Record<string, unknown>) => ({
     mutate: vi.fn(),
     isPending: false,
   }),
@@ -25,8 +25,8 @@ vi.mock('@tanstack/react-query', () => ({
 vi.mock('@/trpc/init', () => ({
   trpc: {
     approval: {
-      bulkApprove: { mutationOptions: (opts: any) => opts },
-      bulkReject: { mutationOptions: (opts: any) => opts },
+      bulkApprove: { mutationOptions: (opts: Record<string, unknown>) => opts },
+      bulkReject: { mutationOptions: (opts: Record<string, unknown>) => opts },
     },
   },
 }));

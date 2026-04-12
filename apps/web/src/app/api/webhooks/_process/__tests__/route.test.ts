@@ -18,14 +18,14 @@ vi.mock('@contractor-ops/integrations/adapters/register-all', () => ({
 }));
 
 vi.mock('@contractor-ops/integrations/registry', () => ({
-  getAdapter: (...args: unknown[]) => mockGetAdapter(...args),
+  getAdapter: (...args: any[]) => mockGetAdapter(...args),
 }));
 
 vi.mock('@contractor-ops/db', () => ({
   prisma: {
     webhookDelivery: {
-      findUnique: (...args: unknown[]) => mockFindUnique(...args),
-      update: (...args: unknown[]) => mockUpdate(...args),
+      findUnique: (...args: any[]) => mockFindUnique(...args),
+      update: (...args: any[]) => mockUpdate(...args),
     },
   },
 }));

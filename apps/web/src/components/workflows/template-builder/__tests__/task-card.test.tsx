@@ -54,7 +54,7 @@ const createMockForm = (taskData: Record<string, any> = {}) => {
     }),
     register: vi.fn(() => ({ name: 'test', onChange: vi.fn(), onBlur: vi.fn(), ref: vi.fn() })),
     setValue: vi.fn(),
-  } as any;
+  } as unknown;
 };
 
 describe('TaskCard', () => {

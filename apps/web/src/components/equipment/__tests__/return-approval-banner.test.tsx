@@ -5,13 +5,13 @@ vi.mock('@/trpc/init', () => ({
   trpc: {
     equipment: {
       approveReturnRequest: {
-        mutationOptions: (opts: any) => ({
+        mutationOptions: (opts: Record<string, unknown>) => ({
           mutationFn: vi.fn(),
           ...opts,
         }),
       },
       rejectReturnRequest: {
-        mutationOptions: (opts: any) => ({
+        mutationOptions: (opts: Record<string, unknown>) => ({
           mutationFn: vi.fn(),
           ...opts,
         }),

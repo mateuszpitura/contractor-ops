@@ -5,7 +5,7 @@ vi.mock('next-intl', async importOriginal => {
   const actual = await importOriginal<typeof import('next-intl')>();
   return {
     ...actual,
-    useTranslations: () => (key: string, _params?: any) => key,
+    useTranslations: () => (key: string, _params?: Record<string, unknown>) => key,
   };
 });
 
@@ -20,8 +20,8 @@ vi.mock('@tanstack/react-query', () => ({
 vi.mock('@/trpc/init', () => ({
   trpc: {
     report: {
-      overdueInvoices: { queryOptions: (opts: any) => opts },
-      exportOverdueInvoices: { mutationOptions: (opts: any) => opts },
+      overdueInvoices: { queryOptions: (opts: Record<string, unknown>) => opts },
+      exportOverdueInvoices: { mutationOptions: (opts: Record<string, unknown>) => opts },
     },
   },
 }));
@@ -47,7 +47,7 @@ vi.mock('../report-table', () => ({
       <div data-testid="empty">{emptyTitle}</div>
     ) : (
       <div data-testid="report-table">
-        {data.map((row: any) => (
+        {data.map((row: unknown) => (
           <div key={row.invoiceId}>{row.invoiceNumber}</div>
         ))}
       </div>
@@ -84,7 +84,7 @@ describe('OverdueInvoicesReport', () => {
         totalCount: 1,
       },
       isLoading: false,
-    } as any);
+    } as unknown);
   });
 
   it('renders table with data', () => {
@@ -101,7 +101,7 @@ describe('OverdueInvoicesReport', () => {
     mockUseQuery.mockReturnValue({
       data: { items: [], totalCount: 0 },
       isLoading: false,
-    } as any);
+    } as unknown);
     render(<OverdueInvoicesReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByTestId('empty')).toBeInTheDocument();
     expect(screen.getByText('emptyOverdueInvoices')).toBeInTheDocument();
@@ -111,7 +111,7 @@ describe('OverdueInvoicesReport', () => {
     mockUseQuery.mockReturnValue({
       data: undefined,
       isLoading: true,
-    } as any);
+    } as unknown);
     render(<OverdueInvoicesReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByTestId('loading')).toBeInTheDocument();
   });

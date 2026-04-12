@@ -27,7 +27,7 @@ function renderCell(columnId: string, row: WorkflowRunRow) {
   const cellFn = col.cell as (info: any) => any;
   const result = cellFn({
     row: { original: row, getIsSelected: () => false, toggleSelected: vi.fn() },
-    getValue: () => (row as any)[columnId],
+    getValue: () => (row as unknown)[columnId],
   });
   const { container } = render(result);
   return container;
@@ -117,8 +117,8 @@ describe('getColumns cell renderers (workflow runs)', () => {
         (() => {
           const t = (key: string) => key;
           const cols = getColumns(t);
-          const col = cols.find(c => (c as any).accessorKey === 'status');
-          return (col?.cell as any)({
+          const col = cols.find(c => (c as unknown).accessorKey === 'status');
+          return (col?.cell as unknown)({
             row: {
               original: makeRow({ status }),
               getIsSelected: () => false,

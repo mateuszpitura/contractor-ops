@@ -706,7 +706,7 @@ describe('Search isolation', () => {
   });
 
   it('search results from orgB data never appear for orgA caller', async () => {
-    mockPrisma.$queryRaw.mockImplementation(async (...args: unknown[]) => {
+    mockPrisma.$queryRaw.mockImplementation(async (...args: any[]) => {
       const serialized = JSON.stringify(args);
       if (serialized.includes(ORG_B_ID)) {
         return [

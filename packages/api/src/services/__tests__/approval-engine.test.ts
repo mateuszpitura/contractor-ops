@@ -218,7 +218,7 @@ describe('routeToChain', () => {
       defaultChain,
     ]);
 
-    const result = await routeToChain(mockTx as any, orgId, invoice);
+    const result = await routeToChain(mockTx as unknown, orgId, invoice);
 
     expect(result?.id).toBe('chain-medium');
   });
@@ -234,7 +234,7 @@ describe('routeToChain', () => {
       defaultChain,
     ]);
 
-    const result = await routeToChain(mockTx as any, orgId, invoice);
+    const result = await routeToChain(mockTx as unknown, orgId, invoice);
 
     expect(result?.id).toBe('chain-high');
   });
@@ -249,7 +249,7 @@ describe('routeToChain', () => {
       defaultChain,
     ]);
 
-    const result = await routeToChain(mockTx as any, orgId, invoice);
+    const result = await routeToChain(mockTx as unknown, orgId, invoice);
 
     expect(result?.id).toBe('chain-default');
   });
@@ -257,7 +257,7 @@ describe('routeToChain', () => {
   it('returns null when no chains exist at all', async () => {
     mockTx.approvalChainConfig.findMany.mockResolvedValue([]);
 
-    const result = await routeToChain(mockTx as any, orgId, { totalMinor: 100_00 });
+    const result = await routeToChain(mockTx as unknown, orgId, { totalMinor: 100_00 });
 
     expect(result).toBeNull();
   });
@@ -271,7 +271,7 @@ describe('routeToChain', () => {
       // no default chain
     ]);
 
-    const result = await routeToChain(mockTx as any, orgId, invoice);
+    const result = await routeToChain(mockTx as unknown, orgId, invoice);
 
     expect(result).toBeNull();
   });
@@ -290,12 +290,12 @@ describe('routeToChain', () => {
 
     // UoP contractor with 200 PLN — amount matches but type doesn't → falls to default
     const uopInvoice = { totalMinor: 200_00, contractorType: 'UoP' };
-    const result1 = await routeToChain(mockTx as any, orgId, uopInvoice);
+    const result1 = await routeToChain(mockTx as unknown, orgId, uopInvoice);
     expect(result1?.id).toBe('chain-default');
 
     // B2B contractor with 200 PLN — both conditions match → gets b2b chain
     const b2bInvoice = { totalMinor: 200_00, contractorType: 'B2B' };
-    const result2 = await routeToChain(mockTx as any, orgId, b2bInvoice);
+    const result2 = await routeToChain(mockTx as unknown, orgId, b2bInvoice);
     expect(result2?.id).toBe('chain-b2b');
   });
 });
@@ -315,7 +315,7 @@ describe('createApprovalFlow', () => {
   beforeEach(() => {
     mockTx = createMockTx();
     // Return the nested create payload so we can inspect it
-    mockTx.approvalFlow.create.mockImplementation(async (args: any) => ({
+    mockTx.approvalFlow.create.mockImplementation(async (args: Record<string, unknown>) => ({
       id: 'flow-1',
       ...args.data,
       steps: args.data.steps.create,
@@ -338,7 +338,7 @@ describe('createApprovalFlow', () => {
       createdByUserId: 'creator',
     };
 
-    await createApprovalFlow(mockTx as any, params);
+    await createApprovalFlow(mockTx as unknown, params);
 
     const steps = captureCreateData(mockTx).steps.create;
     expect(steps).toHaveLength(3);
@@ -360,7 +360,7 @@ describe('createApprovalFlow', () => {
       createdByUserId: 'creator',
     };
 
-    await createApprovalFlow(mockTx as any, params);
+    await createApprovalFlow(mockTx as unknown, params);
 
     const steps = captureCreateData(mockTx).steps.create;
 
@@ -391,12 +391,12 @@ describe('createApprovalFlow', () => {
       createdByUserId: 'creator',
     };
 
-    await createApprovalFlow(mockTx as any, params);
+    await createApprovalFlow(mockTx as unknown, params);
 
     const steps = captureCreateData(mockTx).steps.create;
 
-    expect(steps.map((s: any) => s.stepOrder)).toEqual([1, 2, 3]);
-    expect(steps.map((s: any) => s.name)).toEqual(['Team Lead', 'Finance', 'Director']);
+    expect(steps.map((s: unknown) => s.stepOrder)).toEqual([1, 2, 3]);
+    expect(steps.map((s: unknown) => s.name)).toEqual(['Team Lead', 'Finance', 'Director']);
   });
 
   it('first step slaDeadline reflects slaHours from config', async () => {
@@ -414,7 +414,7 @@ describe('createApprovalFlow', () => {
     };
 
     const beforeCall = Date.now();
-    await createApprovalFlow(mockTx as any, params);
+    await createApprovalFlow(mockTx as unknown, params);
 
     const steps = captureCreateData(mockTx).steps.create;
     const deadline = steps[0].slaDeadline as Date;
@@ -441,7 +441,7 @@ describe('createApprovalFlow', () => {
 
     mockTx.member.findFirst.mockResolvedValue({ userId: 'resolved-finance-user' });
 
-    await createApprovalFlow(mockTx as any, params);
+    await createApprovalFlow(mockTx as unknown, params);
 
     // Verify the resolved userId ends up in the step data
     const steps = captureCreateData(mockTx).steps.create;
@@ -465,7 +465,7 @@ describe('createApprovalFlow', () => {
 
     mockTx.member.findFirst.mockResolvedValue(null);
 
-    await expect(createApprovalFlow(mockTx as any, params)).rejects.toThrow(
+    await expect(createApprovalFlow(mockTx as unknown, params)).rejects.toThrow(
       'No user with role LEGAL_VIEWER found',
     );
   });
@@ -490,7 +490,7 @@ describe('createApprovalFlow', () => {
       createdByUserId: 'creator',
     };
 
-    await createApprovalFlow(mockTx as any, params);
+    await createApprovalFlow(mockTx as unknown, params);
 
     // approverUserId is set, so member lookup should not happen even though approverRole is present
     expect(mockTx.member.findFirst).not.toHaveBeenCalled();
@@ -528,7 +528,7 @@ describe('advanceFlow', () => {
       ],
     });
 
-    const result = await advanceFlow(mockTx as any, 'flow-1');
+    const result = await advanceFlow(mockTx as unknown, 'flow-1');
 
     expect(result).toEqual({ completed: true, flowStatus: 'APPROVED' });
 
@@ -562,7 +562,7 @@ describe('advanceFlow', () => {
     });
 
     const beforeCall = Date.now();
-    const result = await advanceFlow(mockTx as any, 'flow-1');
+    const result = await advanceFlow(mockTx as unknown, 'flow-1');
 
     // Return value indicates not completed, next step is 2
     expect(result).toEqual({ completed: false, nextStepOrder: 2 });
@@ -595,7 +595,7 @@ describe('advanceFlow', () => {
     mockTx.approvalChainConfig.findUnique.mockResolvedValue(null);
 
     const beforeCall = Date.now();
-    const result = await advanceFlow(mockTx as any, 'flow-1');
+    const result = await advanceFlow(mockTx as unknown, 'flow-1');
 
     expect(result).toEqual({ completed: false, nextStepOrder: 2 });
 
@@ -616,7 +616,7 @@ describe('advanceFlow', () => {
       ],
     });
 
-    const result = await advanceFlow(mockTx as any, 'flow-1');
+    const result = await advanceFlow(mockTx as unknown, 'flow-1');
 
     expect(result).toEqual({ completed: false, nextStepOrder: 2 });
 

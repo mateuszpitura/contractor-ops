@@ -140,7 +140,7 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
 
 vi.mock('../../services/billing-service.js', () => ({
   syncSeatCountForOrg: vi.fn(async () => undefined),
-  getSubscription: (...args: unknown[]) => mockGetSubscription(...args),
+  getSubscription: (...args: any[]) => mockGetSubscription(...args),
   createCheckoutSession: vi.fn(async () => ({ url: 'https://stripe.test/checkout' })),
   createPortalSession: vi.fn(async () => ({})),
   getProrationPreview: vi.fn(async () => ({})),

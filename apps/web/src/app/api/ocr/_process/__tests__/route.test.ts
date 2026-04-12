@@ -14,7 +14,7 @@ vi.mock('@contractor-ops/integrations/adapters/register-all', () => ({
 }));
 
 vi.mock('@contractor-ops/api/services/ocr-extraction', () => ({
-  processOcrExtraction: (...args: unknown[]) => mockProcessOcrExtraction(...args),
+  processOcrExtraction: (...args: any[]) => mockProcessOcrExtraction(...args),
 }));
 
 import { POST } from '../route';

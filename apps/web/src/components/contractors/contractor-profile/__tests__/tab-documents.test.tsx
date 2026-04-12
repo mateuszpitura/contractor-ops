@@ -16,7 +16,7 @@ vi.mock('@/trpc/init', () => ({
   trpc: {
     document: {
       list: {
-        queryOptions: (input: any) => ({ queryKey: ['document', 'list', input] }),
+        queryOptions: (input: unknown) => ({ queryKey: ['document', 'list', input] }),
       },
     },
   },

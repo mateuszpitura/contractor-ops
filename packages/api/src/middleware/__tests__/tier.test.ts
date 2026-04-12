@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const mockGetSubscription = vi.fn();
 
 vi.mock('../../services/billing-service.js', () => ({
-  getSubscription: (...args: unknown[]) => mockGetSubscription(...args),
+  getSubscription: (...args: any[]) => mockGetSubscription(...args),
 }));
 
 vi.mock('@sentry/nextjs', () => {

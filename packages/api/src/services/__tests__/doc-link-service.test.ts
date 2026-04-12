@@ -43,7 +43,7 @@ const mockPrisma = {
   integrationConnection: {
     findFirst: vi.fn(),
   },
-} as any;
+} as unknown;
 
 const ORG_ID = 'org-1';
 

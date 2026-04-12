@@ -47,7 +47,7 @@ vi.mock('@contractor-ops/db', () => ({
 }));
 
 vi.mock('@contractor-ops/api/services/notification-service', () => ({
-  dispatch: (...args: unknown[]) => mockDispatch(...args),
+  dispatch: (...args: any[]) => mockDispatch(...args),
 }));
 
 vi.mock('@sentry/nextjs', () => ({

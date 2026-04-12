@@ -887,7 +887,7 @@ describe('report router', () => {
 
       // Verify the data passed to CSV generator
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const csvArg = (mockGenerateContractsCsv.mock.calls as any)[0]?.[0];
+      const csvArg = (mockGenerateContractsCsv.mock.calls as unknown)[0]?.[0];
       expect(csvArg[0]).toHaveProperty('contractTitle', 'Service Agreement');
       expect(csvArg[0]).toHaveProperty('contractorName', 'Alpha Corp');
     });
@@ -937,7 +937,7 @@ describe('report router', () => {
 
       // Verify only non-green items are passed to CSV
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const csvArg = (mockGenerateComplianceCsv.mock.calls as any)[0]?.[0];
+      const csvArg = (mockGenerateComplianceCsv.mock.calls as unknown)[0]?.[0];
       expect(csvArg).toHaveLength(1);
       expect(csvArg[0]).toHaveProperty('health', 'red');
     });

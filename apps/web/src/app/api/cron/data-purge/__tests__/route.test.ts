@@ -14,23 +14,23 @@ const mockContractorDeleteMany = vi.fn();
 vi.mock('@contractor-ops/db', () => ({
   prisma: {
     document: {
-      findMany: (...args: unknown[]) => mockDocumentFindMany(...args),
-      deleteMany: (...args: unknown[]) => mockDocumentDeleteMany(...args),
+      findMany: (...args: any[]) => mockDocumentFindMany(...args),
+      deleteMany: (...args: any[]) => mockDocumentDeleteMany(...args),
     },
     documentLink: {
-      deleteMany: (...args: unknown[]) => mockDocumentLinkDeleteMany(...args),
+      deleteMany: (...args: any[]) => mockDocumentLinkDeleteMany(...args),
     },
     invoiceFile: {
-      deleteMany: (...args: unknown[]) => mockInvoiceFileDeleteMany(...args),
+      deleteMany: (...args: any[]) => mockInvoiceFileDeleteMany(...args),
     },
     invoice: {
-      deleteMany: (...args: unknown[]) => mockInvoiceDeleteMany(...args),
+      deleteMany: (...args: any[]) => mockInvoiceDeleteMany(...args),
     },
     contract: {
-      deleteMany: (...args: unknown[]) => mockContractDeleteMany(...args),
+      deleteMany: (...args: any[]) => mockContractDeleteMany(...args),
     },
     contractor: {
-      deleteMany: (...args: unknown[]) => mockContractorDeleteMany(...args),
+      deleteMany: (...args: any[]) => mockContractorDeleteMany(...args),
     },
   },
 }));
@@ -59,7 +59,7 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
 const mockDeleteObject = vi.fn();
 
 vi.mock('@contractor-ops/api/services/r2', () => ({
-  deleteObject: (...args: unknown[]) => mockDeleteObject(...args),
+  deleteObject: (...args: any[]) => mockDeleteObject(...args),
 }));
 
 import { GET } from '../route';

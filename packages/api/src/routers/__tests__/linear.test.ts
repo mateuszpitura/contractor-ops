@@ -108,12 +108,12 @@ vi.mock('../../services/linear-issue-sync.js', async importOriginal => {
   const actual = await importOriginal<typeof import('../../services/linear-issue-sync.js')>();
   return {
     ...actual,
-    linearGraphQL: (...args: unknown[]) => mockLinearGraphQL(...args),
+    linearGraphQL: (...args: any[]) => mockLinearGraphQL(...args),
   };
 });
 
 vi.mock('../../services/linear-webhook-handler.js', () => ({
-  registerLinearWebhook: (...args: unknown[]) => mockRegisterLinearWebhook(...args),
+  registerLinearWebhook: (...args: any[]) => mockRegisterLinearWebhook(...args),
 }));
 
 import { createCallerFactory } from '../../init.js';

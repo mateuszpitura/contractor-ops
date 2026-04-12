@@ -21,7 +21,7 @@ let currentConsentData: any = {
   ANALYTICS_REPORTING: { granted: false, version: 0, lastUpdated: null },
 };
 
-let consentHistoryData: any[] = [
+let consentHistoryData: unknown[] = [
   {
     id: 'rec-1',
     purpose: 'CONTRACTOR_DATA_PROCESSING',
@@ -89,7 +89,7 @@ vi.mock('@/trpc/init', () => ({
       },
       downloadDPA: {
         useMutation: (opts?: {
-          onSuccess?: (data: any) => void;
+          onSuccess?: (data: unknown) => void;
           onError?: (e: Error) => void;
         }) => ({
           mutate: () => {
@@ -101,7 +101,7 @@ vi.mock('@/trpc/init', () => ({
       },
       downloadSCC: {
         useMutation: (opts?: {
-          onSuccess?: (data: any) => void;
+          onSuccess?: (data: unknown) => void;
           onError?: (e: Error) => void;
         }) => ({
           mutate: () => {

@@ -41,7 +41,7 @@ function renderCell(columnId: string, row: ContractRow) {
       getIsSelected: () => false,
       toggleSelected: vi.fn(),
     },
-    getValue: () => (row as any)[columnId],
+    getValue: () => (row as unknown)[columnId],
   });
   const { container } = render(result);
   return container;
@@ -60,7 +60,7 @@ describe('getColumns (contracts)', () => {
   });
 
   it('has title as non-hideable column', () => {
-    const titleCol = columns.find(c => (c as any).accessorKey === 'title');
+    const titleCol = columns.find(c => (c as unknown).accessorKey === 'title');
     expect(titleCol).toBeDefined();
     expect(titleCol?.enableHiding).toBe(false);
   });
@@ -71,12 +71,12 @@ describe('getColumns (contracts)', () => {
   });
 
   it('has compliance risk column', () => {
-    const col = columns.find(c => (c as any).accessorKey === 'complianceRiskLevel');
+    const col = columns.find(c => (c as unknown).accessorKey === 'complianceRiskLevel');
     expect(col).toBeDefined();
   });
 
   it('disables sorting on rate column', () => {
-    const rateCol = columns.find(c => (c as any).accessorKey === 'rateValueMinor');
+    const rateCol = columns.find(c => (c as unknown).accessorKey === 'rateValueMinor');
     expect(rateCol?.enableSorting).toBe(false);
   });
 });
@@ -113,8 +113,8 @@ describe('getColumns cell renderers (contracts)', () => {
         (() => {
           const t = (key: string) => key;
           const cols = getColumns(t);
-          const col = cols.find(c => (c as any).accessorKey === 'status');
-          return (col?.cell as any)({
+          const col = cols.find(c => (c as unknown).accessorKey === 'status');
+          return (col?.cell as unknown)({
             row: {
               original: makeRow({ status }),
               getIsSelected: () => false,
@@ -186,8 +186,8 @@ describe('getColumns cell renderers (contracts)', () => {
         (() => {
           const t = (key: string) => key;
           const cols = getColumns(t);
-          const col = cols.find(c => (c as any).accessorKey === 'complianceRiskLevel');
-          return (col?.cell as any)({
+          const col = cols.find(c => (c as unknown).accessorKey === 'complianceRiskLevel');
+          return (col?.cell as unknown)({
             row: {
               original: makeRow({ complianceRiskLevel: risk }),
               getIsSelected: () => false,

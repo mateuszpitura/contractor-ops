@@ -5,7 +5,7 @@ import { StepUpload } from '../step-upload';
 vi.mock('sonner', () => ({ toast: { error: vi.fn() } }));
 
 let capturedOnDrop: ((files: File[]) => void) | null = null;
-let capturedOnDropRejected: ((rejections: any[]) => void) | null = null;
+let capturedOnDropRejected: ((rejections: unknown[]) => void) | null = null;
 
 vi.mock('react-dropzone', () => ({
   useDropzone: ({ onDrop, onDropRejected }: any) => {
@@ -381,7 +381,7 @@ describe('StepUpload', () => {
       readAsDataURL() {
         setTimeout(() => this.onerror?.(), 0);
       }
-    } as any;
+    } as unknown;
 
     await act(async () => {
       await capturedOnDrop?.([file]);

@@ -60,7 +60,7 @@ function createMockPrisma() {
       update: vi.fn().mockResolvedValue({}),
       findFirst: vi.fn(),
     },
-  } as any;
+  } as unknown;
 }
 
 // ---------------------------------------------------------------------------
@@ -129,7 +129,7 @@ function makeExternalLink(metadataOverrides: Record<string, unknown> = {}) {
 }
 
 function setupValidPayload(payload = makeWebhookPayload()) {
-  mockPayloadParse.mockReturnValue({ success: true, data: payload } as any);
+  mockPayloadParse.mockReturnValue({ success: true, data: payload } as unknown);
 }
 
 // ---------------------------------------------------------------------------
@@ -139,7 +139,7 @@ function setupValidPayload(payload = makeWebhookPayload()) {
 beforeEach(() => {
   vi.resetAllMocks();
   mockFetch.mockReset();
-  mockDecryptCredentials.mockReturnValue({ accessToken: 'mock-token' } as any);
+  mockDecryptCredentials.mockReturnValue({ accessToken: 'mock-token' } as unknown);
 });
 
 describe('jira-webhook-handler', () => {
@@ -262,7 +262,7 @@ describe('jira-webhook-handler', () => {
 
       const syncCreateCalls = prisma.integrationSyncLog.create.mock.calls;
       const statusChangeLog = syncCreateCalls.find(
-        (call: any) => call[0].data.syncType === 'issue-status-change',
+        (call: unknown) => call[0].data.syncType === 'issue-status-change',
       );
       expect(statusChangeLog).toBeDefined();
       expect(statusChangeLog?.[0].data).toMatchObject({

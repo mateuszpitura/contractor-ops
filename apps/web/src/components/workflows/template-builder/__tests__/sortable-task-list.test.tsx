@@ -41,7 +41,7 @@ vi.mock('../task-card', () => ({
 }));
 
 describe('SortableTaskList', () => {
-  const mockForm = { watch: vi.fn(), register: vi.fn(), setValue: vi.fn() } as any;
+  const mockForm = { watch: vi.fn(), register: vi.fn(), setValue: vi.fn() } as unknown;
 
   it('renders empty state with add button when no fields', () => {
     render(
@@ -62,7 +62,7 @@ describe('SortableTaskList', () => {
     render(
       <SortableTaskList
         fields={[{ id: 'f1' }, { id: 'f2' }]}
-        tasks={[{ title: 'Task 1' } as any, { title: 'Task 2' } as any]}
+        tasks={[{ title: 'Task 1' } as unknown, { title: 'Task 2' } as unknown]}
         form={mockForm}
         onReorder={vi.fn()}
         onRemove={vi.fn()}
@@ -77,7 +77,7 @@ describe('SortableTaskList', () => {
     render(
       <SortableTaskList
         fields={[{ id: 'f1' }]}
-        tasks={[{ title: 'Task 1' } as any]}
+        tasks={[{ title: 'Task 1' } as unknown]}
         form={mockForm}
         onReorder={vi.fn()}
         onRemove={vi.fn()}

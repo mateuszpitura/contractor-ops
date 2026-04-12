@@ -8,7 +8,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const useQueryMock = vi.fn();
 
 vi.mock('@tanstack/react-query', () => ({
-  useQuery: (...args: unknown[]) => useQueryMock(...args),
+  useQuery: (...args: any[]) => useQueryMock(...args),
   QueryClient: vi.fn(),
   QueryClientProvider: ({ children }: { children: React.ReactNode }) => children,
 }));

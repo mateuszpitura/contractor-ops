@@ -96,10 +96,10 @@ const mockBulkApproveTimesheets = vi.fn(async () => ({ count: 2 }));
 const mockBulkRejectTimesheets = vi.fn(async () => ({ count: 2 }));
 
 vi.mock('../../services/time-entry.js', () => ({
-  approveTimesheet: (...args: any[]) => (mockApproveTimesheet as any)(...args),
-  rejectTimesheet: (...args: any[]) => (mockRejectTimesheet as any)(...args),
-  bulkApproveTimesheets: (...args: any[]) => (mockBulkApproveTimesheets as any)(...args),
-  bulkRejectTimesheets: (...args: any[]) => (mockBulkRejectTimesheets as any)(...args),
+  approveTimesheet: (...args: any[]) => (mockApproveTimesheet as unknown)(...args),
+  rejectTimesheet: (...args: any[]) => (mockRejectTimesheet as unknown)(...args),
+  bulkApproveTimesheets: (...args: any[]) => (mockBulkApproveTimesheets as unknown)(...args),
+  bulkRejectTimesheets: (...args: any[]) => (mockBulkRejectTimesheets as unknown)(...args),
 }));
 
 vi.mock('../../services/time-reconciliation.js', () => ({

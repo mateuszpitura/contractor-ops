@@ -138,7 +138,7 @@ vi.mock('@contractor-ops/integrations/services/credential-service', () => ({
 }));
 
 vi.mock('../../services/linear-issue-sync.js', () => ({
-  linearGraphQL: (...args: unknown[]) => mockLinearGraphQL(...args),
+  linearGraphQL: (...args: any[]) => mockLinearGraphQL(...args),
 }));
 
 vi.mock('../../services/cache.js', () => ({
@@ -151,7 +151,7 @@ vi.mock('../../services/cache.js', () => ({
 
 vi.mock('../../services/billing-service.js', () => ({
   syncSeatCountForOrg: vi.fn(async () => undefined),
-  getSubscription: (...args: unknown[]) => mockGetSubscription(...args),
+  getSubscription: (...args: any[]) => mockGetSubscription(...args),
   createCheckoutSession: vi.fn(async () => ({ url: 'https://stripe.test/checkout' })),
   createPortalSession: vi.fn(async () => ({})),
   getProrationPreview: vi.fn(async () => ({})),

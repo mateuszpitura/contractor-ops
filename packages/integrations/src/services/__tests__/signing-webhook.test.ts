@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const normalizeSigningEvent = vi.fn();
 
 vi.mock('../esign-service.js', () => ({
-  normalizeSigningEvent: (...args: unknown[]) => normalizeSigningEvent(...args),
+  normalizeSigningEvent: (...args: any[]) => normalizeSigningEvent(...args),
 }));
 
 const mockSigningEnvelopeFindFirst = vi.fn();
@@ -19,12 +19,12 @@ const mockContractUpdate = vi.fn();
 vi.mock('@contractor-ops/db', () => ({
   prisma: {
     signingEnvelope: {
-      findFirst: (...args: unknown[]) => mockSigningEnvelopeFindFirst(...args),
+      findFirst: (...args: any[]) => mockSigningEnvelopeFindFirst(...args),
     },
     signingEvent: {
-      findFirst: (...args: unknown[]) => mockSigningEventFindFirst(...args),
+      findFirst: (...args: any[]) => mockSigningEventFindFirst(...args),
     },
-    $transaction: (...args: unknown[]) => mockTransaction(...args),
+    $transaction: (...args: any[]) => mockTransaction(...args),
   },
 }));
 

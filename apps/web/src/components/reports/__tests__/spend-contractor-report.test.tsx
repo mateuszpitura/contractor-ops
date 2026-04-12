@@ -5,7 +5,7 @@ vi.mock('next-intl', async importOriginal => {
   const actual = await importOriginal<typeof import('next-intl')>();
   return {
     ...actual,
-    useTranslations: () => (key: string, _params?: any) => key,
+    useTranslations: () => (key: string, _params?: Record<string, unknown>) => key,
   };
 });
 
@@ -20,9 +20,9 @@ vi.mock('@tanstack/react-query', () => ({
 vi.mock('@/trpc/init', () => ({
   trpc: {
     report: {
-      spendByContractor: { queryOptions: (opts: any) => opts },
-      spendByContractorChart: { queryOptions: (opts: any) => opts },
-      exportSpendByContractor: { mutationOptions: (opts: any) => opts },
+      spendByContractor: { queryOptions: (opts: Record<string, unknown>) => opts },
+      spendByContractorChart: { queryOptions: (opts: Record<string, unknown>) => opts },
+      exportSpendByContractor: { mutationOptions: (opts: Record<string, unknown>) => opts },
     },
   },
 }));
@@ -52,7 +52,7 @@ vi.mock('../report-table', () => ({
       <div data-testid="empty">{emptyTitle}</div>
     ) : (
       <div data-testid="report-table">
-        {data.map((row: any) => (
+        {data.map((row: unknown) => (
           <div key={row.contractorId}>{row.contractorName}</div>
         ))}
         {grandTotalLabel && (
@@ -95,7 +95,7 @@ describe('SpendContractorReport', () => {
         totalCount: 1,
       },
       isLoading: false,
-    } as any);
+    } as unknown);
   });
 
   it('renders chart', () => {
@@ -127,7 +127,7 @@ describe('SpendContractorReport', () => {
     mockUseQuery.mockReturnValue({
       data: { items: [], totalCount: 0 },
       isLoading: false,
-    } as any);
+    } as unknown);
     render(<SpendContractorReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByTestId('empty')).toBeInTheDocument();
   });
@@ -157,7 +157,7 @@ describe('SpendContractorReport', () => {
         grandTotalMinor: 80000,
       },
       isLoading: false,
-    } as any);
+    } as unknown);
     render(<SpendContractorReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByText('Alpha')).toBeInTheDocument();
     expect(screen.getByText('Beta')).toBeInTheDocument();
@@ -193,7 +193,7 @@ describe('SpendContractorReport', () => {
     mockUseQuery.mockReturnValue({
       data: { items, totalCount: 20, grandTotalMinor: 2100000 },
       isLoading: false,
-    } as any);
+    } as unknown);
     render(<SpendContractorReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByText('Contractor 0')).toBeInTheDocument();
     expect(screen.getByText('Contractor 19')).toBeInTheDocument();
@@ -224,7 +224,7 @@ describe('SpendContractorReport', () => {
         totalCount: 2,
       },
       isLoading: false,
-    } as any);
+    } as unknown);
     render(<SpendContractorReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByTestId('grand-total')).toBeInTheDocument();
   });
@@ -234,7 +234,7 @@ describe('SpendContractorReport', () => {
     mockUseQuery.mockReturnValue({
       data: undefined,
       isLoading: true,
-    } as any);
+    } as unknown);
     render(<SpendContractorReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByTestId('loading')).toBeInTheDocument();
   });
@@ -256,7 +256,7 @@ describe('SpendContractorReport', () => {
         totalCount: 1,
       },
       isLoading: false,
-    } as any);
+    } as unknown);
     render(<SpendContractorReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByTestId('breadcrumb')).toBeInTheDocument();
   });
@@ -267,9 +267,9 @@ describe('SpendContractorReport', () => {
     mockUseQuery.mockImplementation(() => {
       callCount++;
       if (callCount === 1) {
-        return { data: { items: [], totalCount: 0 }, isLoading: false } as any;
+        return { data: { items: [], totalCount: 0 }, isLoading: false } as unknown;
       }
-      return { data: undefined, isLoading: false } as any;
+      return { data: undefined, isLoading: false } as unknown;
     });
     render(<SpendContractorReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByTestId('report-chart')).toBeInTheDocument();
@@ -280,8 +280,8 @@ describe('SpendContractorReport', () => {
     let callCount = 0;
     mockUseQuery.mockImplementation(() => {
       callCount++;
-      if (callCount === 1) return { data: undefined, isLoading: true } as any;
-      return { data: undefined, isLoading: true } as any;
+      if (callCount === 1) return { data: undefined, isLoading: true } as unknown;
+      return { data: undefined, isLoading: true } as unknown;
     });
     render(<SpendContractorReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByTestId('export-buttons')).toBeInTheDocument();
@@ -304,7 +304,7 @@ describe('SpendContractorReport', () => {
         totalCount: 1,
       },
       isLoading: false,
-    } as any);
+    } as unknown);
     render(<SpendContractorReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByText('Solo Inc')).toBeInTheDocument();
   });
@@ -326,7 +326,7 @@ describe('SpendContractorReport', () => {
         totalCount: 1,
       },
       isLoading: false,
-    } as any);
+    } as unknown);
     render(<SpendContractorReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByTestId('report-table')).toBeInTheDocument();
   });
@@ -348,7 +348,7 @@ describe('SpendContractorReport', () => {
         totalCount: 1,
       },
       isLoading: false,
-    } as any);
+    } as unknown);
     render(<SpendContractorReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByText('NullDate')).toBeInTheDocument();
   });
@@ -387,7 +387,7 @@ describe('SpendContractorReport', () => {
         totalCount: 2,
       },
       isLoading: false,
-    } as any);
+    } as unknown);
     render(<SpendContractorReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByText('High Vol')).toBeInTheDocument();
     expect(screen.getByText('Low Vol')).toBeInTheDocument();
@@ -399,9 +399,9 @@ describe('SpendContractorReport', () => {
     mockUseQuery.mockImplementation(() => {
       callCount++;
       if (callCount === 1) {
-        return { data: { items: [], totalCount: 0 }, isLoading: false } as any;
+        return { data: { items: [], totalCount: 0 }, isLoading: false } as unknown;
       }
-      return { data: undefined, isLoading: false } as any;
+      return { data: undefined, isLoading: false } as unknown;
     });
     render(<SpendContractorReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByTestId('report-chart')).toBeInTheDocument();
@@ -428,12 +428,12 @@ describe('SpendContractorReport', () => {
             totalCount: 1,
           },
           isLoading: false,
-        } as any;
+        } as unknown;
       }
       return {
         data: [{ contractorId: 'c-1', contractorName: 'ChartCo', totalMinor: 100000 }],
         isLoading: false,
-      } as any;
+      } as unknown;
     });
     render(<SpendContractorReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByTestId('report-chart')).toBeInTheDocument();

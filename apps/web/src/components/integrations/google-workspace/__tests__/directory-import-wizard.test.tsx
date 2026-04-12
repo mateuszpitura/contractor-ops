@@ -53,7 +53,7 @@ vi.mock('../directory-summary-bar', () => ({
 vi.mock('../directory-preview-table', () => ({
   DirectoryPreviewTable: ({ users, selectedEmails, onSelectionChange }: any) => (
     <div data-testid="preview-table">
-      {users.map((u: any) => (
+      {users.map((u: unknown) => (
         <div key={u.primaryEmail}>
           <span>{u.name.fullName}</span>
           <button
@@ -131,7 +131,7 @@ function setupDirectoryMock(
     isLoading,
     isError,
     data: { users, stats },
-  } as any);
+  } as unknown);
 }
 
 // ---------------------------------------------------------------------------
@@ -192,7 +192,7 @@ describe('DirectoryImportWizard', () => {
       isLoading: false,
       isError: true,
       data: undefined,
-    } as any);
+    } as unknown);
     render(<DirectoryImportWizard open={true} onOpenChange={vi.fn()} />);
     expect(screen.getByText(/Could not load the directory/)).toBeInTheDocument();
   });
@@ -206,7 +206,7 @@ describe('DirectoryImportWizard', () => {
       isLoading: true,
       isError: false,
       data: undefined,
-    } as any);
+    } as unknown);
     render(<DirectoryImportWizard open={true} onOpenChange={vi.fn()} />);
     expect(screen.getByText('Import Google Workspace Users')).toBeInTheDocument();
   });

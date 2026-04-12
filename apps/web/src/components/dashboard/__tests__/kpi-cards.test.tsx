@@ -65,7 +65,7 @@ describe('KpiCards', () => {
     mockedUseQuery.mockReturnValue({
       data: undefined,
       isLoading: true,
-    } as any);
+    } as unknown);
 
     render(<KpiCards />);
 
@@ -85,7 +85,7 @@ describe('KpiCards', () => {
     mockedUseQuery.mockReturnValue({
       data: mockKpiData,
       isLoading: false,
-    } as any);
+    } as unknown);
 
     render(<KpiCards />);
 
@@ -104,7 +104,7 @@ describe('KpiCards', () => {
     mockedUseQuery.mockReturnValue({
       data: mockKpiData,
       isLoading: false,
-    } as any);
+    } as unknown);
 
     render(<KpiCards />);
 
@@ -126,7 +126,7 @@ describe('KpiCards', () => {
     mockedUseQuery.mockReturnValue({
       data: mockKpiData,
       isLoading: false,
-    } as any);
+    } as unknown);
 
     render(<KpiCards />);
 
@@ -147,7 +147,7 @@ describe('KpiCards', () => {
         activeContractors: { value: 10, prevValue: 10 },
       },
       isLoading: false,
-    } as any);
+    } as unknown);
 
     render(<KpiCards />);
 
@@ -159,7 +159,7 @@ describe('KpiCards', () => {
     mockedUseQuery.mockReturnValue({
       data: mockKpiData,
       isLoading: false,
-    } as any);
+    } as unknown);
 
     render(<KpiCards />);
 
@@ -178,7 +178,7 @@ describe('KpiCards', () => {
     mockedUseQuery.mockReturnValue({
       data: mockKpiData,
       isLoading: false,
-    } as any);
+    } as unknown);
 
     render(<KpiCards />);
 
@@ -199,7 +199,7 @@ describe('KpiCards', () => {
     mockedUseQuery.mockReturnValue({
       data: mockKpiData,
       isLoading: false,
-    } as any);
+    } as unknown);
 
     render(<KpiCards />);
 

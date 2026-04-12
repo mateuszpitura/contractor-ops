@@ -603,7 +603,11 @@ describe('ApprovalSidePanel', () => {
   it('does not render approver section when approver is null', () => {
     const stepNoApprover = { ...baseStep, approver: null };
     render(
-      <ApprovalSidePanel step={stepNoApprover as any} open={true} onOpenChange={onOpenChange} />,
+      <ApprovalSidePanel
+        step={stepNoApprover as unknown}
+        open={true}
+        onOpenChange={onOpenChange}
+      />,
     );
     expect(screen.queryByText('John Doe')).not.toBeInTheDocument();
   });

@@ -16,7 +16,7 @@ vi.mock('@/trpc/init', () => ({
       listConnections: {
         queryOptions: () => ({ queryKey: ['esign', 'connections'] }),
       },
-      sendForSignature: { mutationOptions: (opts: any) => opts },
+      sendForSignature: { mutationOptions: (opts: Record<string, unknown>) => opts },
       listEnvelopes: { queryKey: () => ['esign', 'envelopes'] },
     },
     contract: {

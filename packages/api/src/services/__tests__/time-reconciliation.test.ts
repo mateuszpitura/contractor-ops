@@ -5,7 +5,7 @@ const mockPrisma = {
   contract: { findFirst: vi.fn() },
   timeEntry: { aggregate: vi.fn() },
   organization: { findUniqueOrThrow: vi.fn() },
-} as any;
+} as unknown;
 
 const ORG_ID = 'org-1';
 const CONTRACT_ID = 'contract-1';

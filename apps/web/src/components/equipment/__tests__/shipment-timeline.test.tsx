@@ -5,7 +5,7 @@ vi.mock('@/trpc/init', () => ({
   trpc: {
     equipment: {
       addShipmentEvent: {
-        mutationOptions: (opts: any) => ({
+        mutationOptions: (opts: Record<string, unknown>) => ({
           mutationFn: vi.fn(),
           ...opts,
         }),

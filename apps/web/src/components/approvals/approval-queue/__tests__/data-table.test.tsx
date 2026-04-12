@@ -8,7 +8,7 @@ vi.mock('next-intl', async importOriginal => {
   const actual = await importOriginal<typeof import('next-intl')>();
   return {
     ...actual,
-    useTranslations: () => (key: string, params?: any) => {
+    useTranslations: () => (key: string, params?: Record<string, unknown>) => {
       if (params) {
         return Object.entries(params).reduce((s, [k, v]) => s.replace(`{${k}}`, String(v)), key);
       }

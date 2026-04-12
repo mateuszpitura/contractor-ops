@@ -5,7 +5,7 @@ vi.mock('next-intl', async importOriginal => {
   const actual = await importOriginal<typeof import('next-intl')>();
   return {
     ...actual,
-    useTranslations: () => (key: string, params?: any) => {
+    useTranslations: () => (key: string, params?: Record<string, unknown>) => {
       if (params?.chainName) return `${key}(${params.chainName})`;
       return key;
     },
@@ -19,7 +19,7 @@ vi.mock('@tanstack/react-query', () => ({
 vi.mock('@/trpc/init', () => ({
   trpc: {
     approval: {
-      getAuditTrail: { queryOptions: (opts: any) => opts },
+      getAuditTrail: { queryOptions: (opts: Record<string, unknown>) => opts },
     },
   },
 }));
@@ -42,7 +42,7 @@ describe('ChainTracker', () => {
     mockUseQuery.mockReturnValue({
       data: undefined,
       isLoading: true,
-    } as any);
+    } as unknown);
     const { container } = render(<ChainTracker invoiceId="inv-1" />);
     expect(container.querySelector("[data-slot='skeleton']")).toBeTruthy();
   });
@@ -51,7 +51,7 @@ describe('ChainTracker', () => {
     mockUseQuery.mockReturnValue({
       data: { flow: { steps: [] } },
       isLoading: false,
-    } as any);
+    } as unknown);
     const { container } = render(<ChainTracker invoiceId="inv-1" />);
     expect(container.innerHTML).toBe('');
   });
@@ -60,7 +60,7 @@ describe('ChainTracker', () => {
     mockUseQuery.mockReturnValue({
       data: {},
       isLoading: false,
-    } as any);
+    } as unknown);
     const { container } = render(<ChainTracker invoiceId="inv-1" />);
     expect(container.innerHTML).toBe('');
   });
@@ -104,7 +104,7 @@ describe('ChainTracker', () => {
         },
       },
       isLoading: false,
-    } as any);
+    } as unknown);
     render(<ChainTracker invoiceId="inv-1" />);
     expect(screen.getByText('chainTracker.heading')).toBeInTheDocument();
     // APPROVED step shows icon (not number), PENDING step shows "2"
@@ -136,7 +136,7 @@ describe('ChainTracker', () => {
         },
       },
       isLoading: false,
-    } as any);
+    } as unknown);
     render(<ChainTracker invoiceId="inv-1" />);
     expect(screen.getByTestId('sla-badge')).toBeInTheDocument();
   });
@@ -174,7 +174,7 @@ describe('ChainTracker', () => {
         },
       },
       isLoading: false,
-    } as any);
+    } as unknown);
     const { container } = render(<ChainTracker invoiceId="inv-1" />);
     // The second step should use muted styling (bg-muted)
     const circles = container.querySelectorAll('.rounded-full');

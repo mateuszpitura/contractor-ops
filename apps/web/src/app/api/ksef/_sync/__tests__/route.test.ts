@@ -14,7 +14,7 @@ vi.mock('@contractor-ops/integrations/adapters/register-all', () => ({
 }));
 
 vi.mock('@contractor-ops/api/services/ksef-sync-orchestrator', () => ({
-  processKsefSync: (...args: unknown[]) => mockProcessKsefSync(...args),
+  processKsefSync: (...args: any[]) => mockProcessKsefSync(...args),
 }));
 
 import { POST } from '../route';

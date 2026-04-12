@@ -111,7 +111,7 @@ describe('handleInPostWebhook', () => {
     });
     db.equipment.update.mockResolvedValue({});
 
-    await handleInPostWebhook(db as any, 'org-1', validPayload);
+    await handleInPostWebhook(db as unknown, 'org-1', validPayload);
 
     expect(db.shipmentEvent.create).toHaveBeenCalledWith({
       data: expect.objectContaining({
@@ -136,7 +136,7 @@ describe('handleInPostWebhook', () => {
     db.shipment.findFirst.mockResolvedValue(mockShipment);
     db.shipmentEvent.findFirst.mockResolvedValue({ id: 'existing-event' }); // duplicate
 
-    await handleInPostWebhook(db as any, 'org-1', validPayload);
+    await handleInPostWebhook(db as unknown, 'org-1', validPayload);
 
     expect(db.shipmentEvent.create).not.toHaveBeenCalled();
   });
@@ -162,7 +162,7 @@ describe('handleInPostWebhook', () => {
     });
     db.equipment.update.mockResolvedValue({});
 
-    await handleInPostWebhook(db as any, 'org-1', validPayload);
+    await handleInPostWebhook(db as unknown, 'org-1', validPayload);
 
     expect(db.shipment.update).toHaveBeenCalledWith({
       where: { id: 'ship-1' },
@@ -191,7 +191,7 @@ describe('handleInPostWebhook', () => {
     });
     db.equipment.update.mockResolvedValue({});
 
-    await handleInPostWebhook(db as any, 'org-1', validPayload);
+    await handleInPostWebhook(db as unknown, 'org-1', validPayload);
 
     expect(db.equipment.update).toHaveBeenCalledWith({
       where: { id: 'equip-1' },
@@ -200,9 +200,9 @@ describe('handleInPostWebhook', () => {
   });
 
   it('returns early for invalid payload', async () => {
-    await handleInPostWebhook(db as any, 'org-1', {
+    await handleInPostWebhook(db as unknown, 'org-1', {
       invalid: 'data',
-    } as any);
+    } as unknown);
 
     expect(db.shipment.findFirst).not.toHaveBeenCalled();
   });
@@ -220,7 +220,7 @@ describe('handleInPostWebhook', () => {
 
     db.shipment.findFirst.mockResolvedValue(mockShipment);
 
-    await handleInPostWebhook(db as any, 'org-1', {
+    await handleInPostWebhook(db as unknown, 'org-1', {
       ...validPayload,
       status: 'totally_unknown_status',
     });
@@ -250,7 +250,7 @@ describe('handleInPostWebhook', () => {
     });
     db.equipment.update.mockResolvedValue({});
 
-    await handleInPostWebhook(db as any, 'org-1', validPayload);
+    await handleInPostWebhook(db as unknown, 'org-1', validPayload);
 
     // Second findFirst should be called with trackingNumber
     expect(db.shipment.findFirst).toHaveBeenCalledTimes(2);
@@ -278,7 +278,7 @@ describe('handleInPostWebhook', () => {
     });
     db.equipment.update.mockResolvedValue({});
 
-    await handleInPostWebhook(db as any, 'org-1', validPayload);
+    await handleInPostWebhook(db as unknown, 'org-1', validPayload);
 
     expect(mockCheckShipmentTaskCompletion).toHaveBeenCalledWith(
       db,
@@ -295,7 +295,7 @@ describe('handleInPostWebhook', () => {
   it('does not call checkShipmentTaskCompletion when shipment not found', async () => {
     db.shipment.findFirst.mockResolvedValue(null);
 
-    await handleInPostWebhook(db as any, 'org-1', validPayload);
+    await handleInPostWebhook(db as unknown, 'org-1', validPayload);
 
     expect(mockCheckShipmentTaskCompletion).not.toHaveBeenCalled();
   });

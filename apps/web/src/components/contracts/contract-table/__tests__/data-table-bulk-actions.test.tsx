@@ -9,7 +9,7 @@ vi.mock('@tanstack/react-query', () => ({
 vi.mock('@/trpc/init', () => ({
   trpc: {
     contract: {
-      bulkTransition: { mutationOptions: (opts: any) => opts },
+      bulkTransition: { mutationOptions: (opts: Record<string, unknown>) => opts },
     },
   },
 }));
@@ -21,7 +21,7 @@ function makeMockTable(selectedCount: number) {
   return {
     getFilteredSelectedRowModel: () => ({ rows }),
     toggleAllPageRowsSelected: vi.fn(),
-  } as any;
+  } as unknown;
 }
 
 describe('DataTableBulkActions (contracts)', () => {

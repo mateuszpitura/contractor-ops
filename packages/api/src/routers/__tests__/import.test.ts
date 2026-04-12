@@ -111,9 +111,9 @@ const mockProcessImportFile = vi.fn(async () => ({
 }));
 
 vi.mock('../../services/import-processor.js', () => ({
-  parseImportFile: (...args: any[]) => (mockParseImportFile as any)(...args),
-  autoMapColumns: (...args: any[]) => (mockAutoMapColumns as any)(...args),
-  processImportFile: (...args: any[]) => (mockProcessImportFile as any)(...args),
+  parseImportFile: (...args: any[]) => (mockParseImportFile as unknown)(...args),
+  autoMapColumns: (...args: any[]) => (mockAutoMapColumns as unknown)(...args),
+  processImportFile: (...args: any[]) => (mockProcessImportFile as unknown)(...args),
 }));
 
 vi.mock('../../services/r2.js', () => ({
@@ -355,7 +355,7 @@ describe('import router', () => {
 
       expect(mockParseImportFile).toHaveBeenCalledTimes(1);
       // Verify buffer was passed
-      const bufferArg = (mockParseImportFile.mock.calls as any)[0]?.[0];
+      const bufferArg = (mockParseImportFile.mock.calls as unknown)[0]?.[0];
       expect(Buffer.isBuffer(bufferArg)).toBe(true);
 
       expect(mockAutoMapColumns).toHaveBeenCalledWith(
@@ -396,11 +396,11 @@ describe('import router', () => {
     it('works for contract entity type', async () => {
       mockParseImportFile.mockResolvedValueOnce([
         { title: 'Contract 1', contractorTaxId: '1234567890', startDate: '2025-01-01' },
-      ] as any);
+      ] as unknown);
       mockAutoMapColumns.mockReturnValueOnce({
         title: 'title',
         contractorTaxId: 'contractorTaxId',
-      } as any);
+      } as unknown);
 
       const result = await caller.import.parse({
         fileBase64: SAMPLE_CSV_BASE64,
@@ -430,7 +430,7 @@ describe('import router', () => {
       });
 
       expect(mockProcessImportFile).toHaveBeenCalledTimes(1);
-      const args = (mockProcessImportFile.mock.calls as any)[0];
+      const args = (mockProcessImportFile.mock.calls as unknown)[0];
       expect(Buffer.isBuffer(args?.[0])).toBe(true);
       expect(args?.[1]).toBe('contractor');
       expect(args?.[2]).toBe(ORG_ID);

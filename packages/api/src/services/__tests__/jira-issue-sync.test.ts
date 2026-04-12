@@ -69,7 +69,7 @@ function createMockPrisma() {
       update: vi.fn().mockResolvedValue({}),
       findFirst: vi.fn(),
     },
-  } as any;
+  } as unknown;
 }
 
 // ---------------------------------------------------------------------------
@@ -122,7 +122,7 @@ function setupCreateMocks(
   mockJiraConfigParse.mockReturnValue({
     success: true,
     data: overrides.jiraConfig ?? mockJiraConfig(),
-  } as any);
+  } as unknown);
   prisma.integrationConnection.findUnique.mockResolvedValue(
     overrides.connection ?? mockConnection(),
   );
@@ -143,7 +143,7 @@ function mockCreateIssueResponse(key = 'PROJ-42', id = '12345') {
 beforeEach(() => {
   vi.resetAllMocks();
   mockFetch.mockReset();
-  mockDecryptCredentials.mockReturnValue({ accessToken: 'mock-token' } as any);
+  mockDecryptCredentials.mockReturnValue({ accessToken: 'mock-token' } as unknown);
 });
 
 describe('jira-issue-sync', () => {
@@ -322,7 +322,7 @@ describe('jira-issue-sync', () => {
       mockJiraConfigParse.mockReturnValue({
         success: true,
         data: { jiraProjectId: '10000' },
-      } as any);
+      } as unknown);
       mockLookupTransition.mockResolvedValue({
         transitionId: '21',
         targetStatusName: 'In Progress',
@@ -403,7 +403,7 @@ describe('jira-issue-sync', () => {
       mockJiraConfigParse.mockReturnValue({
         success: true,
         data: { jiraProjectId: '10000' },
-      } as any);
+      } as unknown);
       mockLookupTransition.mockResolvedValue(null);
 
       await transitionJiraIssue(prisma, ORG_ID, CONNECTION_ID, TASK_RUN_ID, 'UNKNOWN_STATUS');
@@ -427,7 +427,7 @@ describe('jira-issue-sync', () => {
       // The second integrationSyncLog.create is for the actual transition
       const syncLogCalls = prisma.integrationSyncLog.create.mock.calls;
       const transitionLog = syncLogCalls.find(
-        (call: any) => call[0].data.syncType === 'issue-transition',
+        (call: unknown) => call[0].data.syncType === 'issue-transition',
       );
       expect(transitionLog).toBeDefined();
       expect(transitionLog?.[0].data).toMatchObject({

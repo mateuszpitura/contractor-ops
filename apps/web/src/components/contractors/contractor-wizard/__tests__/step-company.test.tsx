@@ -17,7 +17,7 @@ vi.mock('@/trpc/init', () => ({
   trpc: {
     contractor: {
       gusLookup: {
-        queryOptions: (input: any) => ({
+        queryOptions: (input: unknown) => ({
           queryKey: ['contractor', 'gusLookup', input],
         }),
       },
@@ -42,7 +42,7 @@ function Wrapper({ defaultValues }: { defaultValues?: Record<string, any> }) {
       ...defaultValues,
     },
   });
-  return <StepCompany form={form as any} />;
+  return <StepCompany form={form as unknown} />;
 }
 
 describe('StepCompany', () => {

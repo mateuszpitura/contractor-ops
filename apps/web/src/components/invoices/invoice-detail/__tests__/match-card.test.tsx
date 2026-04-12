@@ -22,7 +22,7 @@ vi.mock('@/trpc/init', () => ({
         })),
       },
       manualMatch: {
-        mutationOptions: vi.fn((opts: any) => opts),
+        mutationOptions: vi.fn((opts: Record<string, unknown>) => opts),
       },
     },
   },

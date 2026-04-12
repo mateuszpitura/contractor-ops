@@ -7,7 +7,7 @@ vi.mock('@microsoft/microsoft-graph-client', () => ({
     init: vi.fn(() => ({
       api: vi.fn(() => ({
         select: vi.fn().mockReturnThis(),
-        get: (...args: unknown[]) => mockGet(...args),
+        get: (...args: any[]) => mockGet(...args),
       })),
     })),
   },

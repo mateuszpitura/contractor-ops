@@ -8,7 +8,7 @@ vi.mock('@tanstack/react-query', () => ({
 vi.mock('@/trpc/init', () => ({
   trpc: {
     esign: {
-      voidEnvelope: { mutationOptions: (opts: any) => opts },
+      voidEnvelope: { mutationOptions: (opts: Record<string, unknown>) => opts },
     },
   },
 }));

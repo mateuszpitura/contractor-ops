@@ -80,7 +80,7 @@ describe('pollUpsShipmentStatuses', () => {
     });
     db.shipment.findMany.mockResolvedValue([]);
 
-    const result = await pollUpsShipmentStatuses(db as any, 'org-1');
+    const result = await pollUpsShipmentStatuses(db as unknown, 'org-1');
 
     expect(db.shipment.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -135,7 +135,7 @@ describe('pollUpsShipmentStatuses', () => {
     });
     db.equipment.update.mockResolvedValue({});
 
-    const result = await pollUpsShipmentStatuses(db as any, 'org-1');
+    const result = await pollUpsShipmentStatuses(db as unknown, 'org-1');
 
     expect(mockGetStatus).toHaveBeenCalledWith('ext-1');
     expect(db.shipmentEvent.create).toHaveBeenCalled();
@@ -146,7 +146,7 @@ describe('pollUpsShipmentStatuses', () => {
   it('returns early if no courier config found', async () => {
     db.courierConfig.findUnique.mockResolvedValue(null);
 
-    const result = await pollUpsShipmentStatuses(db as any, 'org-1');
+    const result = await pollUpsShipmentStatuses(db as unknown, 'org-1');
 
     expect(result).toEqual({ checked: 0, updated: 0 });
     expect(db.shipment.findMany).not.toHaveBeenCalled();
@@ -189,7 +189,7 @@ describe('pollUpsShipmentStatuses', () => {
     });
     db.equipment.update.mockResolvedValue({});
 
-    await pollUpsShipmentStatuses(db as any, 'org-1');
+    await pollUpsShipmentStatuses(db as unknown, 'org-1');
 
     expect(mockCheckShipmentTaskCompletion).toHaveBeenCalledWith(
       db,
@@ -230,7 +230,7 @@ describe('pollUpsShipmentStatuses', () => {
       status: 'UNKNOWN_STATUS',
     });
 
-    await pollUpsShipmentStatuses(db as any, 'org-1');
+    await pollUpsShipmentStatuses(db as unknown, 'org-1');
 
     expect(mockCheckShipmentTaskCompletion).not.toHaveBeenCalled();
   });
@@ -273,7 +273,7 @@ describe('pollUpsShipmentStatuses', () => {
     });
     db.equipment.update.mockResolvedValue({});
 
-    await pollUpsShipmentStatuses(db as any, 'org-1');
+    await pollUpsShipmentStatuses(db as unknown, 'org-1');
 
     expect(mockDispatchShipmentNotification).toHaveBeenCalledWith(
       db,
@@ -320,7 +320,7 @@ describe('pollUpsShipmentStatuses', () => {
     db.shipmentEvent.create.mockResolvedValue({});
     db.shipment.update.mockResolvedValue({});
 
-    await pollUpsShipmentStatuses(db as any, 'org-1');
+    await pollUpsShipmentStatuses(db as unknown, 'org-1');
 
     expect(mockDispatchShipmentNotification).not.toHaveBeenCalled();
   });
@@ -369,7 +369,7 @@ describe('pollUpsShipmentStatuses', () => {
     });
     db.equipment.update.mockResolvedValue({});
 
-    await pollUpsShipmentStatuses(db as any, 'org-1');
+    await pollUpsShipmentStatuses(db as unknown, 'org-1');
 
     expect(db.shipment.update).toHaveBeenCalledTimes(2);
   });

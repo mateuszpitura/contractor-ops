@@ -19,11 +19,11 @@ vi.mock('@/trpc/init', () => ({
   trpc: {
     contract: {
       list: {
-        queryOptions: (input: any) => ({
+        queryOptions: (input: unknown) => ({
           queryKey: ['contract', 'list', input],
         }),
       },
-      bulkTransition: { mutationOptions: (opts: any) => opts },
+      bulkTransition: { mutationOptions: (opts: Record<string, unknown>) => opts },
     },
     user: {
       list: { queryOptions: () => ({ queryKey: ['user', 'list'] }) },
@@ -92,7 +92,7 @@ describe('ContractDataTable', () => {
       isLoading: false,
       isFetching: false,
       isPending: false,
-    } as any);
+    } as unknown);
 
     render(<ContractDataTable onRowClick={vi.fn()} onNewContract={vi.fn()} />);
     expect(screen.getByText('Service Agreement')).toBeInTheDocument();
@@ -120,7 +120,7 @@ describe('ContractDataTable', () => {
       isLoading: false,
       isFetching: false,
       isPending: false,
-    } as any);
+    } as unknown);
 
     const onRowClick = vi.fn();
     const { user } = setup(<ContractDataTable onRowClick={onRowClick} onNewContract={vi.fn()} />);
@@ -137,7 +137,7 @@ describe('ContractDataTable', () => {
       isLoading: true,
       isFetching: true,
       isPending: true,
-    } as any);
+    } as unknown);
 
     render(<ContractDataTable onRowClick={vi.fn()} onNewContract={vi.fn()} />);
     const skeletons = document.querySelectorAll("[data-slot='skeleton']");
@@ -150,7 +150,7 @@ describe('ContractDataTable', () => {
       isLoading: false,
       isFetching: true,
       isPending: false,
-    } as any);
+    } as unknown);
 
     render(<ContractDataTable onRowClick={vi.fn()} onNewContract={vi.fn()} />);
     const spinner = document.querySelector('.animate-spin');

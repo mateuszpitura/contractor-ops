@@ -6,7 +6,7 @@ import { OrgCalendarSection } from '../org-calendar-section';
 // Mocks
 // ---------------------------------------------------------------------------
 
-let connectionsData: any[] = [];
+let connectionsData: unknown[] = [];
 let connectionsLoading = false;
 const mockMutate = vi.fn();
 const mockInvalidateQueries = vi.fn();
@@ -68,15 +68,15 @@ beforeEach(() => {
 
   vi.mocked(useQueryClient).mockReturnValue({
     invalidateQueries: mockInvalidateQueries,
-  } as any);
+  } as unknown);
 
   vi.mocked(useMutation).mockReturnValue({
     mutate: mockMutate,
     isPending: false,
-  } as any);
+  } as unknown);
 
   vi.mocked(useQuery).mockImplementation(() => {
-    return { data: connectionsData, isLoading: connectionsLoading, refetch: vi.fn() } as any;
+    return { data: connectionsData, isLoading: connectionsLoading, refetch: vi.fn() } as unknown;
   });
 });
 

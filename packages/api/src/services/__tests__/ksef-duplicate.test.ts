@@ -7,7 +7,7 @@ const mockPrisma = {
     findUniqueOrThrow: vi.fn(),
     update: vi.fn(),
   },
-} as any;
+} as unknown;
 
 const ORG_ID = 'org-1';
 
@@ -93,10 +93,10 @@ describe('linkDuplicateInvoices', () => {
     expect(mockPrisma.invoice.update).toHaveBeenCalledTimes(2);
 
     const ksefUpdateCall = mockPrisma.invoice.update.mock.calls.find(
-      (c: any) => c[0].where.id === 'inv-ksef',
+      (c: unknown) => c[0].where.id === 'inv-ksef',
     );
     const manualUpdateCall = mockPrisma.invoice.update.mock.calls.find(
-      (c: any) => c[0].where.id === 'inv-manual',
+      (c: unknown) => c[0].where.id === 'inv-manual',
     );
 
     expect(ksefUpdateCall[0].data.flagsJson).toEqual(
@@ -124,10 +124,10 @@ describe('linkDuplicateInvoices', () => {
     await linkDuplicateInvoices(mockPrisma, 'inv-ksef', 'inv-manual');
 
     const ksefUpdateCall = mockPrisma.invoice.update.mock.calls.find(
-      (c: any) => c[0].where.id === 'inv-ksef',
+      (c: unknown) => c[0].where.id === 'inv-ksef',
     );
     const manualUpdateCall = mockPrisma.invoice.update.mock.calls.find(
-      (c: any) => c[0].where.id === 'inv-manual',
+      (c: unknown) => c[0].where.id === 'inv-manual',
     );
 
     expect(ksefUpdateCall[0].data.flagsJson).toEqual(
@@ -154,10 +154,10 @@ describe('linkDuplicateInvoices', () => {
     await linkDuplicateInvoices(mockPrisma, 'inv-ksef', 'inv-manual');
 
     const ksefUpdateCall = mockPrisma.invoice.update.mock.calls.find(
-      (c: any) => c[0].where.id === 'inv-ksef',
+      (c: unknown) => c[0].where.id === 'inv-ksef',
     );
     const manualUpdateCall = mockPrisma.invoice.update.mock.calls.find(
-      (c: any) => c[0].where.id === 'inv-manual',
+      (c: unknown) => c[0].where.id === 'inv-manual',
     );
 
     expect(ksefUpdateCall[0].data.flagsJson.duplicateSource).toBe('MANUAL');

@@ -9,8 +9,12 @@ vi.mock('@tanstack/react-query', () => ({
 vi.mock('@/trpc/init', () => ({
   trpc: {
     equipment: {
-      create: { mutationOptions: (opts: any) => ({ mutationFn: vi.fn(), ...opts }) },
-      update: { mutationOptions: (opts: any) => ({ mutationFn: vi.fn(), ...opts }) },
+      create: {
+        mutationOptions: (opts: Record<string, unknown>) => ({ mutationFn: vi.fn(), ...opts }),
+      },
+      update: {
+        mutationOptions: (opts: Record<string, unknown>) => ({ mutationFn: vi.fn(), ...opts }),
+      },
       list: { queryKey: () => ['equipment.list'] },
       getById: { queryKey: () => ['equipment.getById'] },
     },

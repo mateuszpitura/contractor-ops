@@ -27,19 +27,19 @@ const mockedUseQuery = vi.mocked(useQuery);
 
 describe('DeadlinesWidget', () => {
   it('shows loading skeletons', () => {
-    mockedUseQuery.mockReturnValue({ data: undefined, isLoading: true } as any);
+    mockedUseQuery.mockReturnValue({ data: undefined, isLoading: true } as unknown);
     const { container } = render(<DeadlinesWidget />);
     expect(container.querySelectorAll("[data-slot='skeleton']").length).toBeGreaterThan(0);
   });
 
   it('shows empty state when no deadlines', () => {
-    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as any);
+    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown);
     render(<DeadlinesWidget />);
     expect(screen.getByText('No upcoming deadlines')).toBeInTheDocument();
   });
 
   it('renders widget title', () => {
-    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as any);
+    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown);
     render(<DeadlinesWidget />);
     expect(screen.getByText('Upcoming deadlines')).toBeInTheDocument();
   });
@@ -55,13 +55,13 @@ describe('DeadlinesWidget', () => {
         },
       ],
       isLoading: false,
-    } as any);
+    } as unknown);
     render(<DeadlinesWidget />);
     expect(screen.getByText('NDA with Acme')).toBeInTheDocument();
   });
 
   it('renders see all link', () => {
-    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as any);
+    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown);
     render(<DeadlinesWidget />);
     expect(screen.getByText('See all deadlines')).toBeInTheDocument();
   });
@@ -77,7 +77,7 @@ describe('DeadlinesWidget', () => {
         },
       ],
       isLoading: false,
-    } as any);
+    } as unknown);
     render(<DeadlinesWidget />);
     expect(screen.getByText('Sign contract')).toBeInTheDocument();
     expect(screen.getByText('Overdue by 3 days')).toBeInTheDocument();
@@ -96,7 +96,7 @@ describe('DeadlinesWidget', () => {
         },
       ],
       isLoading: false,
-    } as any);
+    } as unknown);
     render(<DeadlinesWidget />);
     const link = screen.getByRole('link', { name: 'FV/2026/01' });
     expect(link.getAttribute('href')).toBe('/invoices/inv-99');

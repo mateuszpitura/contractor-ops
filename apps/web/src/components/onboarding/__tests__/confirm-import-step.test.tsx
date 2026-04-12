@@ -23,7 +23,7 @@ const mockedUseMutation = vi.mocked(useMutation);
 
 describe('ConfirmImportStep', () => {
   beforeEach(() => {
-    mockedUseMutation.mockReturnValue({ mutate: vi.fn(), isPending: false } as any);
+    mockedUseMutation.mockReturnValue({ mutate: vi.fn(), isPending: false } as unknown);
   });
 
   const people = [
@@ -32,7 +32,7 @@ describe('ConfirmImportStep', () => {
 
   const projects = [
     { sourceProvider: 'JIRA', externalId: 'p1', name: 'Project A', statuses: [{ name: 'Todo' }] },
-  ] as any;
+  ] as unknown;
 
   it('renders summary cards', () => {
     render(

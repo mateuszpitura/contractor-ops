@@ -22,7 +22,7 @@ let subscriptionData: any = null;
 
 vi.mock('@tanstack/react-query', () => ({
   useQuery: () => ({ data: subscriptionData }),
-  useMutation: (opts: any) => ({
+  useMutation: (opts: Record<string, unknown>) => ({
     mutate: mockMutate,
     isPending: false,
     ...opts,

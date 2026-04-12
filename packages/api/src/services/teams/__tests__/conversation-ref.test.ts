@@ -11,8 +11,8 @@ const mockUpdate = vi.fn();
 vi.mock('@contractor-ops/db', () => ({
   prisma: {
     integrationConnection: {
-      findFirst: (...args: unknown[]) => mockFindFirst(...args),
-      update: (...args: unknown[]) => mockUpdate(...args),
+      findFirst: (...args: any[]) => mockFindFirst(...args),
+      update: (...args: any[]) => mockUpdate(...args),
     },
   },
 }));

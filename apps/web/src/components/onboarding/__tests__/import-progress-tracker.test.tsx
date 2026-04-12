@@ -37,11 +37,11 @@ const mockedUseMutation = vi.mocked(useMutation);
 
 describe('ImportProgressTracker', () => {
   beforeEach(() => {
-    mockedUseMutation.mockReturnValue({ mutate: vi.fn(), isPending: false } as any);
+    mockedUseMutation.mockReturnValue({ mutate: vi.fn(), isPending: false } as unknown);
   });
 
   it('shows loading spinner when no progress data', () => {
-    mockedUseQuery.mockReturnValue({ data: undefined, isLoading: true } as any);
+    mockedUseQuery.mockReturnValue({ data: undefined, isLoading: true } as unknown);
     const { container } = render(<ImportProgressTracker jobId="job-1" />);
     expect(container.querySelector('.animate-spin')).toBeInTheDocument();
   });
@@ -50,7 +50,7 @@ describe('ImportProgressTracker', () => {
     mockedUseQuery.mockReturnValue({
       data: { status: 'completed', completedItems: 5, totalItems: 5, failedItems: [] },
       isLoading: false,
-    } as any);
+    } as unknown);
     render(<ImportProgressTracker jobId="job-1" />);
     expect(screen.getByText('Import complete')).toBeInTheDocument();
     expect(screen.getByText('Go to Dashboard')).toBeInTheDocument();
@@ -60,7 +60,7 @@ describe('ImportProgressTracker', () => {
     mockedUseQuery.mockReturnValue({
       data: { status: 'in_progress', completedItems: 3, totalItems: 10, failedItems: [] },
       isLoading: false,
-    } as any);
+    } as unknown);
     render(<ImportProgressTracker jobId="job-1" />);
     expect(screen.getByText('Processing...')).toBeInTheDocument();
   });
@@ -74,7 +74,7 @@ describe('ImportProgressTracker', () => {
         failedItems: [{ email: 'bad@test.com', error: 'Invalid email' }],
       },
       isLoading: false,
-    } as any);
+    } as unknown);
     render(<ImportProgressTracker jobId="job-1" />);
     expect(screen.getByText('bad@test.com')).toBeInTheDocument();
     expect(screen.getByText('Retry')).toBeInTheDocument();

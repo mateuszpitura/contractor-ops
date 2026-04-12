@@ -31,7 +31,7 @@ vi.mock('@contractor-ops/db', () => ({
 }));
 
 vi.mock('@contractor-ops/integrations/services/credential-service', () => ({
-  getCredentials: (...args: unknown[]) => mockGetCredentials(...args),
+  getCredentials: (...args: any[]) => mockGetCredentials(...args),
 }));
 
 import { sendReminderDM, syncWorkspaceUsers } from '../slack-client.js';

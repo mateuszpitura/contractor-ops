@@ -43,14 +43,14 @@ const mockedUseQuery = vi.mocked(useQuery);
 
 describe('WorkflowSidePanel', () => {
   it('renders nothing visually when runId is null', () => {
-    mockedUseQuery.mockReturnValue({ data: undefined, isLoading: false } as any);
+    mockedUseQuery.mockReturnValue({ data: undefined, isLoading: false } as unknown);
     render(<WorkflowSidePanel runId={null} onClose={vi.fn()} />);
     // Sheet is closed when runId is null
     expect(screen.queryByText('Open workflow')).not.toBeInTheDocument();
   });
 
   it('renders run details when open with data', () => {
-    mockedUseQuery.mockImplementation(((opts: any) => {
+    mockedUseQuery.mockImplementation(((opts: Record<string, unknown>) => {
       if (opts?.queryKey?.[0] === 'workflow') {
         return {
           data: {
@@ -69,19 +69,19 @@ describe('WorkflowSidePanel', () => {
       }
       // jira/linear connection status
       return { data: null, isLoading: false };
-    }) as any);
+    }) as unknown);
     render(<WorkflowSidePanel runId="run-1" onClose={vi.fn()} />);
     expect(screen.getAllByText('Onboarding').length).toBeGreaterThan(0);
   });
 
   it('does not show run details when query is loading', () => {
-    mockedUseQuery.mockReturnValue({ data: undefined, isLoading: true } as any);
+    mockedUseQuery.mockReturnValue({ data: undefined, isLoading: true } as unknown);
     render(<WorkflowSidePanel runId="run-1" onClose={vi.fn()} />);
     expect(screen.queryByText('Open workflow')).not.toBeInTheDocument();
   });
 
   it('renders progress bar and task summary', () => {
-    mockedUseQuery.mockImplementation(((opts: any) => {
+    mockedUseQuery.mockImplementation(((opts: Record<string, unknown>) => {
       if (opts?.queryKey?.[0] === 'workflow') {
         return {
           data: {
@@ -101,13 +101,13 @@ describe('WorkflowSidePanel', () => {
         };
       }
       return { data: null, isLoading: false };
-    }) as any);
+    }) as unknown);
     render(<WorkflowSidePanel runId="run-1" onClose={vi.fn()} />);
     expect(screen.getByText('2 of 4 tasks complete')).toBeInTheDocument();
   });
 
   it('renders open workflow link button', () => {
-    mockedUseQuery.mockImplementation(((opts: any) => {
+    mockedUseQuery.mockImplementation(((opts: Record<string, unknown>) => {
       if (opts?.queryKey?.[0] === 'workflow') {
         return {
           data: {
@@ -122,13 +122,13 @@ describe('WorkflowSidePanel', () => {
         };
       }
       return { data: null, isLoading: false };
-    }) as any);
+    }) as unknown);
     render(<WorkflowSidePanel runId="run-1" onClose={vi.fn()} />);
     expect(screen.getByText('Open workflow')).toBeInTheDocument();
   });
 
   it('renders contractor link when contractor is present', () => {
-    mockedUseQuery.mockImplementation(((opts: any) => {
+    mockedUseQuery.mockImplementation(((opts: Record<string, unknown>) => {
       if (opts?.queryKey?.[0] === 'workflow') {
         return {
           data: {
@@ -143,13 +143,13 @@ describe('WorkflowSidePanel', () => {
         };
       }
       return { data: null, isLoading: false };
-    }) as any);
+    }) as unknown);
     render(<WorkflowSidePanel runId="run-1" onClose={vi.fn()} />);
     expect(screen.getByText('Acme')).toBeInTheDocument();
   });
 
   it('excludes condition-skipped tasks from progress count', () => {
-    mockedUseQuery.mockImplementation(((opts: any) => {
+    mockedUseQuery.mockImplementation(((opts: Record<string, unknown>) => {
       if (opts?.queryKey?.[0] === 'workflow') {
         return {
           data: {
@@ -172,7 +172,7 @@ describe('WorkflowSidePanel', () => {
         };
       }
       return { data: null, isLoading: false };
-    }) as any);
+    }) as unknown);
     render(<WorkflowSidePanel runId="run-1" onClose={vi.fn()} />);
     // 1 DONE of 2 active tasks (condition-skipped excluded)
     expect(screen.getByText('1 of 2 tasks complete')).toBeInTheDocument();

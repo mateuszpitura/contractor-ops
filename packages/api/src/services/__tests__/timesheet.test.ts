@@ -7,7 +7,7 @@ const mockPrisma = {
     updateMany: vi.fn(),
     findUniqueOrThrow: vi.fn(),
   },
-} as any;
+} as unknown;
 
 const ORG_ID = 'org-1';
 const CONTRACTOR_ID = 'contractor-1';

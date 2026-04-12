@@ -5,7 +5,7 @@ vi.mock('next-intl', async importOriginal => {
   const actual = await importOriginal<typeof import('next-intl')>();
   return {
     ...actual,
-    useTranslations: () => (key: string, _params?: any) => key,
+    useTranslations: () => (key: string, _params?: Record<string, unknown>) => key,
   };
 });
 
@@ -20,9 +20,9 @@ vi.mock('@tanstack/react-query', () => ({
 vi.mock('@/trpc/init', () => ({
   trpc: {
     report: {
-      spendByTeam: { queryOptions: (opts: any) => opts },
-      spendByTeamChart: { queryOptions: (opts: any) => opts },
-      exportSpendByTeam: { mutationOptions: (opts: any) => opts },
+      spendByTeam: { queryOptions: (opts: Record<string, unknown>) => opts },
+      spendByTeamChart: { queryOptions: (opts: Record<string, unknown>) => opts },
+      exportSpendByTeam: { mutationOptions: (opts: Record<string, unknown>) => opts },
     },
   },
 }));
@@ -95,11 +95,11 @@ describe('SpendTeamReport', () => {
           totalCount: 2,
         },
         isLoading: false,
-      } as any)
+      } as unknown)
       .mockReturnValueOnce({
         data: [{ teamId: 't-1', teamName: 'Engineering', totalMinor: 4800000 }],
         isLoading: false,
-      } as any);
+      } as unknown);
   });
 
   it('renders chart', () => {
@@ -133,11 +133,11 @@ describe('SpendTeamReport', () => {
       .mockReturnValueOnce({
         data: { items: [], totalCount: 0 },
         isLoading: false,
-      } as any)
+      } as unknown)
       .mockReturnValueOnce({
         data: [],
         isLoading: false,
-      } as any);
+      } as unknown);
     render(<SpendTeamReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByTestId('empty')).toBeInTheDocument();
   });
@@ -148,11 +148,11 @@ describe('SpendTeamReport', () => {
       .mockReturnValueOnce({
         data: undefined,
         isLoading: true,
-      } as any)
+      } as unknown)
       .mockReturnValueOnce({
         data: [],
         isLoading: false,
-      } as any);
+      } as unknown);
     render(<SpendTeamReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByTestId('loading')).toBeInTheDocument();
   });
@@ -174,11 +174,11 @@ describe('SpendTeamReport', () => {
           totalCount: 1,
         },
         isLoading: false,
-      } as any)
+      } as unknown)
       .mockReturnValueOnce({
         data: undefined,
         isLoading: true,
-      } as any);
+      } as unknown);
     render(<SpendTeamReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByTestId('chart-loading')).toBeInTheDocument();
     expect(screen.getByText('Engineering')).toBeInTheDocument();

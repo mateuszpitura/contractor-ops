@@ -55,7 +55,7 @@ function renderCell(columnId: string, row: EquipmentRow) {
   const cellFn = col.cell as (info: any) => any;
   const result = cellFn({
     row: { original: row, getIsSelected: () => false, toggleSelected: vi.fn() },
-    getValue: () => (row as any)[columnId],
+    getValue: () => (row as unknown)[columnId],
   });
   const { container } = render(result);
   return container;

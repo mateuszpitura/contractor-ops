@@ -19,13 +19,13 @@ vi.mock('@/trpc/init', () => ({
   trpc: {
     contractor: {
       list: {
-        queryOptions: (input: any) => ({
+        queryOptions: (input: unknown) => ({
           queryKey: ['contractor', 'list', input],
         }),
       },
-      bulkArchive: { mutationOptions: (opts: any) => opts },
-      bulkAssignOwner: { mutationOptions: (opts: any) => opts },
-      export: { mutationOptions: (opts: any) => opts },
+      bulkArchive: { mutationOptions: (opts: Record<string, unknown>) => opts },
+      bulkAssignOwner: { mutationOptions: (opts: Record<string, unknown>) => opts },
+      export: { mutationOptions: (opts: Record<string, unknown>) => opts },
     },
     user: {
       list: { queryOptions: () => ({ queryKey: ['user', 'list'] }) },
@@ -109,7 +109,7 @@ describe('ContractorDataTable', () => {
       isLoading: false,
       isFetching: false,
       isPending: false,
-    } as any);
+    } as unknown);
 
     render(<ContractorDataTable onRowClick={vi.fn()} onAddContractor={vi.fn()} />);
     expect(screen.getByText('ACME')).toBeInTheDocument();
@@ -140,7 +140,7 @@ describe('ContractorDataTable', () => {
       isLoading: false,
       isFetching: false,
       isPending: false,
-    } as any);
+    } as unknown);
 
     const onRowClick = vi.fn();
     const { user } = setup(
@@ -160,7 +160,7 @@ describe('ContractorDataTable', () => {
       isLoading: true,
       isFetching: true,
       isPending: true,
-    } as any);
+    } as unknown);
 
     render(<ContractorDataTable onRowClick={vi.fn()} onAddContractor={vi.fn()} />);
     // Skeleton rows produce Skeleton components
@@ -174,7 +174,7 @@ describe('ContractorDataTable', () => {
       isLoading: false,
       isFetching: true,
       isPending: false,
-    } as any);
+    } as unknown);
 
     render(<ContractorDataTable onRowClick={vi.fn()} onAddContractor={vi.fn()} />);
     // Refetch overlay has a spinner

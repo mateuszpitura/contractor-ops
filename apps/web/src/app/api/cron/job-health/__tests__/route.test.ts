@@ -10,9 +10,9 @@ const mockCount = vi.fn();
 vi.mock('@contractor-ops/db', () => ({
   prisma: {
     webhookDelivery: {
-      findMany: (...args: unknown[]) => mockFindMany(...args),
-      updateMany: (...args: unknown[]) => mockUpdateMany(...args),
-      count: (...args: unknown[]) => mockCount(...args),
+      findMany: (...args: any[]) => mockFindMany(...args),
+      updateMany: (...args: any[]) => mockUpdateMany(...args),
+      count: (...args: any[]) => mockCount(...args),
     },
   },
 }));

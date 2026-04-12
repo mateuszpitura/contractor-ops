@@ -53,7 +53,7 @@ describe('WorkflowRunsDataTable', () => {
       isLoading: false,
       isPending: false,
       isFetching: false,
-    } as any);
+    } as unknown);
     render(<WorkflowRunsDataTable onRowClick={vi.fn()} onStartWorkflow={vi.fn()} />);
     expect(screen.getAllByText('Start workflow').length).toBeGreaterThan(0);
   });
@@ -64,7 +64,7 @@ describe('WorkflowRunsDataTable', () => {
       isLoading: false,
       isPending: false,
       isFetching: false,
-    } as any);
+    } as unknown);
     render(<WorkflowRunsDataTable onRowClick={vi.fn()} onStartWorkflow={vi.fn()} />);
     expect(screen.getByText('No active workflows')).toBeInTheDocument();
   });
@@ -75,7 +75,7 @@ describe('WorkflowRunsDataTable', () => {
       isLoading: true,
       isPending: true,
       isFetching: true,
-    } as any);
+    } as unknown);
     const { container } = render(
       <WorkflowRunsDataTable onRowClick={vi.fn()} onStartWorkflow={vi.fn()} />,
     );
@@ -88,7 +88,7 @@ describe('WorkflowRunsDataTable', () => {
       isLoading: false,
       isPending: false,
       isFetching: false,
-    } as any);
+    } as unknown);
     render(<WorkflowRunsDataTable onRowClick={vi.fn()} onStartWorkflow={vi.fn()} />);
     expect(screen.getByText('Filters')).toBeInTheDocument();
   });

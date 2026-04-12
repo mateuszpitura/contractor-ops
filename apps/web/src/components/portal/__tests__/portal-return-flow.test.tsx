@@ -14,7 +14,9 @@ vi.mock('@tanstack/react-query', () => ({
 vi.mock('@/trpc/init', () => ({
   trpc: {
     portal: {
-      requestReturn: { mutationOptions: (opts: any) => ({ mutationFn: vi.fn(), ...opts }) },
+      requestReturn: {
+        mutationOptions: (opts: Record<string, unknown>) => ({ mutationFn: vi.fn(), ...opts }),
+      },
       getReturnStatus: { queryKey: () => ['portal.returnStatus'] },
       getReturnLabel: {
         queryOptions: () => ({ queryKey: ['portal.returnLabel'], enabled: false }),

@@ -80,7 +80,7 @@ describe('pollDpdShipmentStatuses', () => {
     });
     db.shipment.findMany.mockResolvedValue([]);
 
-    const result = await pollDpdShipmentStatuses(db as any, 'org-1');
+    const result = await pollDpdShipmentStatuses(db as unknown, 'org-1');
 
     expect(db.shipment.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -135,7 +135,7 @@ describe('pollDpdShipmentStatuses', () => {
     });
     db.equipment.update.mockResolvedValue({});
 
-    const result = await pollDpdShipmentStatuses(db as any, 'org-1');
+    const result = await pollDpdShipmentStatuses(db as unknown, 'org-1');
 
     expect(mockGetStatus).toHaveBeenCalledWith('ext-1');
     expect(db.shipmentEvent.create).toHaveBeenCalled();
@@ -146,7 +146,7 @@ describe('pollDpdShipmentStatuses', () => {
   it('returns early if no courier config found', async () => {
     db.courierConfig.findUnique.mockResolvedValue(null);
 
-    const result = await pollDpdShipmentStatuses(db as any, 'org-1');
+    const result = await pollDpdShipmentStatuses(db as unknown, 'org-1');
 
     expect(result).toEqual({ checked: 0, updated: 0 });
     expect(db.shipment.findMany).not.toHaveBeenCalled();
@@ -189,7 +189,7 @@ describe('pollDpdShipmentStatuses', () => {
     });
     db.equipment.update.mockResolvedValue({});
 
-    await pollDpdShipmentStatuses(db as any, 'org-1');
+    await pollDpdShipmentStatuses(db as unknown, 'org-1');
 
     expect(mockCheckShipmentTaskCompletion).toHaveBeenCalledWith(
       db,
@@ -232,7 +232,7 @@ describe('pollDpdShipmentStatuses', () => {
       status: 'UNKNOWN_STATUS',
     });
 
-    await pollDpdShipmentStatuses(db as any, 'org-1');
+    await pollDpdShipmentStatuses(db as unknown, 'org-1');
 
     expect(mockCheckShipmentTaskCompletion).not.toHaveBeenCalled();
   });
@@ -275,7 +275,7 @@ describe('pollDpdShipmentStatuses', () => {
     });
     db.equipment.update.mockResolvedValue({});
 
-    await pollDpdShipmentStatuses(db as any, 'org-1');
+    await pollDpdShipmentStatuses(db as unknown, 'org-1');
 
     expect(mockDispatchShipmentNotification).toHaveBeenCalledWith(
       db,
@@ -322,7 +322,7 @@ describe('pollDpdShipmentStatuses', () => {
     db.shipmentEvent.create.mockResolvedValue({});
     db.shipment.update.mockResolvedValue({});
 
-    await pollDpdShipmentStatuses(db as any, 'org-1');
+    await pollDpdShipmentStatuses(db as unknown, 'org-1');
 
     expect(mockDispatchShipmentNotification).not.toHaveBeenCalled();
   });
@@ -371,7 +371,7 @@ describe('pollDpdShipmentStatuses', () => {
     });
     db.equipment.update.mockResolvedValue({});
 
-    await pollDpdShipmentStatuses(db as any, 'org-1');
+    await pollDpdShipmentStatuses(db as unknown, 'org-1');
 
     expect(db.shipment.update).toHaveBeenCalledTimes(2);
   });

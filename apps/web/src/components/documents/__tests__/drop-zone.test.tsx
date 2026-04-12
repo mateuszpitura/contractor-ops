@@ -10,7 +10,7 @@ let mockIsDragActive = false;
 let mockOnDrop: ((accepted: File[], rejected: unknown[]) => void) | null = null;
 
 vi.mock('react-dropzone', () => ({
-  useDropzone: (opts: any) => {
+  useDropzone: (opts: Record<string, unknown>) => {
     mockOnDrop = opts.onDrop;
     return {
       getRootProps: () => ({
@@ -42,10 +42,10 @@ vi.mock('@/trpc/init', () => ({
   trpc: {
     document: {
       requestUpload: {
-        mutationOptions: (opts: any) => ({ ...opts }),
+        mutationOptions: (opts: Record<string, unknown>) => ({ ...opts }),
       },
       confirmUpload: {
-        mutationOptions: (opts: any) => ({ ...opts }),
+        mutationOptions: (opts: Record<string, unknown>) => ({ ...opts }),
       },
       list: {
         queryKey: () => ['document', 'list'],

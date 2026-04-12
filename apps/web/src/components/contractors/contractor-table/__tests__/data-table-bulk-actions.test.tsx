@@ -16,9 +16,9 @@ vi.mock('@tanstack/react-query', () => ({
 vi.mock('@/trpc/init', () => ({
   trpc: {
     contractor: {
-      bulkArchive: { mutationOptions: (opts: any) => opts },
-      bulkAssignOwner: { mutationOptions: (opts: any) => opts },
-      export: { mutationOptions: (opts: any) => opts },
+      bulkArchive: { mutationOptions: (opts: Record<string, unknown>) => opts },
+      bulkAssignOwner: { mutationOptions: (opts: Record<string, unknown>) => opts },
+      export: { mutationOptions: (opts: Record<string, unknown>) => opts },
     },
     user: {
       list: { queryOptions: () => ({ queryKey: ['user', 'list'] }) },
@@ -39,7 +39,7 @@ function makeMockTable(selectedCount: number) {
   return {
     getFilteredSelectedRowModel: () => ({ rows }),
     toggleAllPageRowsSelected: vi.fn(),
-  } as any;
+  } as unknown;
 }
 
 describe('DataTableBulkActions', () => {

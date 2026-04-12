@@ -10,15 +10,15 @@ vi.mock('@tanstack/react-query', () => ({
 vi.mock('@/trpc/init', () => ({
   trpc: {
     esign: {
-      resendToRecipient: { mutationOptions: (opts: any) => opts },
+      resendToRecipient: { mutationOptions: (opts: Record<string, unknown>) => opts },
       getEnvelopeDetail: {
-        queryOptions: (input: any, opts: any) => ({
+        queryOptions: (input: any, opts: Record<string, unknown>) => ({
           queryKey: ['esign', 'detail', input],
           ...opts,
         }),
       },
       listEnvelopes: { queryKey: () => ['esign', 'envelopes'] },
-      voidEnvelope: { mutationOptions: (opts: any) => opts },
+      voidEnvelope: { mutationOptions: (opts: Record<string, unknown>) => opts },
     },
     contract: {
       getById: { queryKey: () => ['contract', 'getById'] },

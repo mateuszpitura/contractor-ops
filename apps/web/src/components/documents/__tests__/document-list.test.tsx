@@ -5,7 +5,7 @@ import { DocumentList } from '../document-list';
 const mockUseQuery = vi.fn();
 
 vi.mock('@tanstack/react-query', () => ({
-  useQuery: (...args: unknown[]) => mockUseQuery(...args),
+  useQuery: (...args: any[]) => mockUseQuery(...args),
 }));
 
 vi.mock('@/trpc/init', () => ({

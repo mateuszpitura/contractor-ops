@@ -6,7 +6,7 @@ import { MyCalendarSection } from '../my-calendar-section';
 // Mocks
 // ---------------------------------------------------------------------------
 
-let connectionsData: any[] = [];
+let connectionsData: unknown[] = [];
 let connectionsLoading = false;
 let eventsData: any;
 const mockMutate = vi.fn();
@@ -77,20 +77,20 @@ beforeEach(() => {
   vi.mocked(useQueryClient).mockReturnValue({
     invalidateQueries: mockInvalidateQueries,
     fetchQuery: mockFetchQuery,
-  } as any);
+  } as unknown);
 
   vi.mocked(useMutation).mockReturnValue({
     mutate: mockMutate,
     isPending: false,
-  } as any);
+  } as unknown);
 
-  vi.mocked(useQuery).mockImplementation((opts: any) => {
+  vi.mocked(useQuery).mockImplementation((opts: Record<string, unknown>) => {
     // Distinguish between connections and events queries
     const key = opts?.queryKey?.[0] ?? '';
     if (key === 'cal' && opts?.queryKey?.[1] === 'listEvents') {
-      return { data: eventsData, isLoading: false } as any;
+      return { data: eventsData, isLoading: false } as unknown;
     }
-    return { data: connectionsData, isLoading: connectionsLoading } as any;
+    return { data: connectionsData, isLoading: connectionsLoading } as unknown;
   });
 });
 

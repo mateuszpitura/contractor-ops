@@ -25,7 +25,7 @@ describe('zatca-hash-chain', () => {
     // No existing chain entries
     mockFindFirst.mockResolvedValue(null);
 
-    const entry = await getNextChainEntry(mockPrisma as any, 'org_test123');
+    const entry = await getNextChainEntry(mockPrisma as unknown, 'org_test123');
 
     expect(entry.icv).toBe(1);
     // SHA-256 of literal string "0"
@@ -42,7 +42,7 @@ describe('zatca-hash-chain', () => {
       invoiceHash: lastHash,
     });
 
-    const entry = await getNextChainEntry(mockPrisma as any, 'org_test123');
+    const entry = await getNextChainEntry(mockPrisma as unknown, 'org_test123');
 
     expect(entry.icv).toBe(6);
     expect(entry.pih).toBe(lastHash);
@@ -53,7 +53,7 @@ describe('zatca-hash-chain', () => {
 
     mockExecuteRawUnsafe.mockResolvedValue(undefined);
 
-    await acquireChainLock(mockPrisma as any, 'org_test123');
+    await acquireChainLock(mockPrisma as unknown, 'org_test123');
 
     expect(mockExecuteRawUnsafe).toHaveBeenCalledWith(
       expect.stringContaining('pg_advisory_xact_lock'),
@@ -75,7 +75,7 @@ describe('zatca-hash-chain', () => {
       zatcaUuid: 'uuid-v4-here',
     };
 
-    await recordChainEntry(mockPrisma as any, data);
+    await recordChainEntry(mockPrisma as unknown, data);
 
     expect(mockCreate).toHaveBeenCalledWith({
       data: expect.objectContaining({

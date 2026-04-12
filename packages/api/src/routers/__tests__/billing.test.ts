@@ -321,7 +321,7 @@ describe('billing.getSubscription', () => {
       status: 'ACTIVE',
       tier: 'STARTER',
     };
-    mockGetSubscription.mockResolvedValueOnce(mockSub as any);
+    mockGetSubscription.mockResolvedValueOnce(mockSub as unknown);
 
     const result = await caller.billing.getSubscription();
 
@@ -378,7 +378,7 @@ describe('billing.createCheckoutSession', () => {
     mockGetSubscription.mockResolvedValueOnce({
       id: 'sub-existing',
       stripeCustomerId: STRIPE_CUSTOMER_ID,
-    } as any);
+    } as unknown);
     mockPrisma.contractor.count.mockResolvedValueOnce(3);
 
     await caller.billing.createCheckoutSession({ priceId: PRICE_ID });
@@ -406,7 +406,7 @@ describe('billing.createPortalSession', () => {
     mockGetSubscription.mockResolvedValueOnce({
       stripeCustomerId: STRIPE_CUSTOMER_ID,
       stripeSubscriptionId: STRIPE_SUB_ID,
-    } as any);
+    } as unknown);
 
     await caller.billing.createPortalSession();
 
@@ -433,7 +433,7 @@ describe('billing.getProrationPreview', () => {
       stripeCustomerId: STRIPE_CUSTOMER_ID,
       stripeSubscriptionId: STRIPE_SUB_ID,
       stripeSubscriptionItemId: null,
-    } as any);
+    } as unknown);
 
     await expect(caller.billing.getProrationPreview({ newPriceId: PRICE_ID })).rejects.toThrow(
       'Subscription item ID not available',
@@ -445,7 +445,7 @@ describe('billing.getProrationPreview', () => {
       stripeCustomerId: STRIPE_CUSTOMER_ID,
       stripeSubscriptionId: STRIPE_SUB_ID,
       stripeSubscriptionItemId: STRIPE_ITEM_ID,
-    } as any);
+    } as unknown);
 
     await caller.billing.getProrationPreview({ newPriceId: PRICE_ID });
 

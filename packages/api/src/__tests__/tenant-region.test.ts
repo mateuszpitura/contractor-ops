@@ -21,11 +21,11 @@ const mockTenantStoreRun = vi.fn((_ctx: unknown, fn: () => unknown) => fn());
 vi.mock('@contractor-ops/db', () => ({
   prisma: {
     organization: {
-      findUnique: (...args: unknown[]) => mockFindUnique(...args),
+      findUnique: (...args: any[]) => mockFindUnique(...args),
     },
   },
   tenantStore: {
-    run: (...args: unknown[]) => mockTenantStoreRun(...args),
+    run: (...args: any[]) => mockTenantStoreRun(...args),
     getStore: vi.fn(() => null),
   },
   getRegionalClient: vi.fn((region: string) => ({

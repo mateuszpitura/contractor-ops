@@ -19,7 +19,7 @@ function makeMockTable() {
         toggleVisibility: vi.fn(),
       },
     ],
-  } as any;
+  } as unknown;
 }
 
 describe('DataTableColumnToggle (contracts)', () => {

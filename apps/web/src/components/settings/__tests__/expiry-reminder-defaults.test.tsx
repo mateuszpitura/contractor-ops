@@ -54,17 +54,17 @@ beforeEach(() => {
 
   vi.mocked(useQueryClient).mockReturnValue({
     invalidateQueries: vi.fn(),
-  } as any);
+  } as unknown);
 
   vi.mocked(useMutation).mockReturnValue({
     mutate: mockMutate,
     isPending: false,
-  } as any);
+  } as unknown);
 
   vi.mocked(useQuery).mockReturnValue({
     data: queryData,
     isLoading: queryLoading,
-  } as any);
+  } as unknown);
 });
 
 // ---------------------------------------------------------------------------
@@ -112,7 +112,7 @@ describe('ExpiryReminderDefaults', () => {
     vi.mocked(useQuery).mockReturnValue({
       data: null,
       isLoading: false,
-    } as any);
+    } as unknown);
     render(<ExpiryReminderDefaults />);
     const input = screen.getByLabelText('expiryReminders.label') as HTMLInputElement;
     expect(input.value).toBe('30, 60, 90');
@@ -131,7 +131,7 @@ describe('ExpiryReminderDefaults', () => {
     vi.mocked(useQuery).mockReturnValue({
       data: null,
       isLoading: false,
-    } as any);
+    } as unknown);
     const { user } = setup(<ExpiryReminderDefaults />);
     const input = screen.getByLabelText('expiryReminders.label') as HTMLInputElement;
     await user.clear(input);
@@ -144,7 +144,7 @@ describe('ExpiryReminderDefaults', () => {
     vi.mocked(useMutation).mockReturnValue({
       mutate: mockMutate,
       isPending: true,
-    } as any);
+    } as unknown);
     const { container } = render(<ExpiryReminderDefaults />);
     expect(container.querySelector('.animate-spin')).toBeInTheDocument();
   });
@@ -153,7 +153,7 @@ describe('ExpiryReminderDefaults', () => {
     vi.mocked(useMutation).mockReturnValue({
       mutate: mockMutate,
       isPending: true,
-    } as any);
+    } as unknown);
     render(<ExpiryReminderDefaults />);
     expect(screen.getByRole('button')).toBeDisabled();
   });

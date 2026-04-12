@@ -11,7 +11,7 @@ const mockPrisma = {
     findUnique: vi.fn(),
     update: vi.fn(),
   },
-} as any;
+} as unknown;
 
 const CONNECTION_ID = 'conn-1';
 const PROJECT_ID = '10000';

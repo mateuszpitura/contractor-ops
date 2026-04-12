@@ -14,7 +14,7 @@ const mockMutateAsync = vi.fn();
 let queryCallIndex = 0;
 
 vi.mock('@tanstack/react-query', () => ({
-  useQuery: (opts: any) => {
+  useQuery: (opts: Record<string, unknown>) => {
     const idx = queryCallIndex++;
     // First useQuery = getBranding, second = getPortalDomain
     const isBranding = idx % 2 === 0;
@@ -28,7 +28,7 @@ vi.mock('@tanstack/react-query', () => ({
 
     return { data, isLoading: loading };
   },
-  useMutation: (opts: any) => ({
+  useMutation: (opts: Record<string, unknown>) => ({
     mutate: (...args: any[]) => {
       mockMutate(...args);
       opts?.onSuccess?.();
@@ -47,12 +47,12 @@ vi.mock('@/trpc/init', () => ({
         queryKey: () => ['settings.getBranding'],
       },
       getLogoUploadUrl: { mutationOptions: () => ({}) },
-      updateBranding: { mutationOptions: (opts: any) => opts },
+      updateBranding: { mutationOptions: (opts: Record<string, unknown>) => opts },
       getPortalDomain: {
         queryOptions: () => ({ queryKey: ['settings.getPortalDomain'] }),
         queryKey: () => ['settings.getPortalDomain'],
       },
-      updatePortalDomain: { mutationOptions: (opts: any) => opts },
+      updatePortalDomain: { mutationOptions: (opts: Record<string, unknown>) => opts },
     },
   },
 }));

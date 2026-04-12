@@ -1,7 +1,7 @@
 import { render, screen } from '@/test/test-utils';
 import { ApprovalChainsTab } from '../approval-chains-tab';
 
-let mockChains: any[] = [
+let mockChains: unknown[] = [
   {
     id: 'c1',
     name: 'Default Chain',
