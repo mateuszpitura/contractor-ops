@@ -1,6 +1,7 @@
 /**
  * Workflow template procedures: CRUD, duplication, and starter template seeding.
  */
+import type { Prisma } from "@contractor-ops/db";
 import { prisma } from "@contractor-ops/db";
 import {
   templateCreateSchema,
@@ -95,8 +96,7 @@ export const workflowTemplatesRouter = router({
         }
 
         // Update template fields
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const updateData: Record<string, any> = {};
+        const updateData: Prisma.WorkflowTemplateUpdateInput = {};
         if (input.name !== undefined) updateData.name = input.name;
         if (input.type !== undefined) updateData.type = input.type;
         if (input.description !== undefined) updateData.description = input.description;
@@ -179,8 +179,7 @@ export const workflowTemplatesRouter = router({
     .query(async ({ ctx, input }) => {
       const { page, pageSize, search, status } = input;
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const where: Record<string, any> = {
+      const where: Prisma.WorkflowTemplateWhereInput = {
         organizationId: ctx.organizationId,
       };
 

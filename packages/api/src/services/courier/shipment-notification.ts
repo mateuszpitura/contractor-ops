@@ -1,8 +1,7 @@
 import { dispatch } from "../notification-service.js";
+import type { DbClient } from "../types.js";
 
-// Loosely typed PrismaClient for parallel execution compatibility
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type PrismaClient = any;
+type PrismaClient = DbClient;
 
 /**
  * Dispatch a SHIPMENT_STATUS_CHANGE notification to org admins.

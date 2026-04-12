@@ -1,3 +1,4 @@
+import type { Prisma } from "@contractor-ops/db";
 import { prisma } from "@contractor-ops/db";
 import {
   NOTIFICATION_TYPES,
@@ -27,8 +28,7 @@ export const notificationRouter = router({
    * Supports filtering by type, status, unread-only, and pagination.
    */
   list: tenantProcedure.input(notificationListSchema).query(async ({ ctx, input }) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const where: Record<string, any> = {
+    const where: Prisma.NotificationWhereInput = {
       organizationId: ctx.organizationId,
       userId: ctx.user!.id,
     };

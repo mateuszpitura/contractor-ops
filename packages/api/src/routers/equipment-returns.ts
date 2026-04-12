@@ -1,6 +1,7 @@
 /**
  * Equipment return request procedures: approve, reject, list return requests.
  */
+import type { Prisma } from "@contractor-ops/db";
 import { prisma } from "@contractor-ops/db";
 import {
   returnRequestApproveSchema,
@@ -343,8 +344,7 @@ export const equipmentReturnsRouter = router({
       }),
     )
     .query(async ({ ctx, input }) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const where: Record<string, any> = {
+      const where: Prisma.ReturnRequestWhereInput = {
         organizationId: ctx.organizationId,
       };
 

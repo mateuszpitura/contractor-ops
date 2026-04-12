@@ -1,6 +1,6 @@
-// Loosely typed PrismaClient for parallel execution compatibility (precedent: Phase 16, 18)
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type PrismaClient = any;
+import type { DbClient } from "./types.js";
+
+type PrismaClient = DbClient;
 
 // ---------------------------------------------------------------------------
 // Types

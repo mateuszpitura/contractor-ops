@@ -1,3 +1,4 @@
+import type { Prisma } from "@contractor-ops/db";
 import { prisma } from "@contractor-ops/db";
 import {
   approvalChainCreateSchema,
@@ -246,8 +247,7 @@ export const approvalRouter = router({
     .use(requirePermission({ invoice: ["approve"] }))
     .input(approvalQueueSchema)
     .query(async ({ ctx, input }) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const where: Record<string, any> = {
+      const where: Prisma.ApprovalStepWhereInput = {
         organizationId: ctx.organizationId,
       };
 
@@ -1174,8 +1174,7 @@ export const approvalRouter = router({
         steps: resolvedSteps,
       };
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const events: Array<Record<string, any>> = [];
+      const events: Array<Record<string, unknown>> = [];
 
       // System event: submitted
       events.push({

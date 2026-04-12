@@ -2,10 +2,9 @@ import { GoogleCalendarAdapter } from "@contractor-ops/integrations/adapters/goo
 import { OutlookCalendarAdapter } from "@contractor-ops/integrations/adapters/outlook-calendar-adapter";
 import { decryptCredentials } from "@contractor-ops/integrations/services/credential-service";
 import type { CalendarEventMetadata } from "@contractor-ops/validators";
+import type { DbClient } from "./types.js";
 
-// Use loosely typed prisma client for parallel execution compatibility
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type PrismaClient = any;
+type PrismaClient = DbClient;
 
 // ---------------------------------------------------------------------------
 // Constants

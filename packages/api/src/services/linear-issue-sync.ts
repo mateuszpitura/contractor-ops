@@ -2,10 +2,9 @@ import { decryptCredentials } from "@contractor-ops/integrations/services/creden
 import type { LinearIssueMetadata } from "@contractor-ops/validators";
 import { TRPCError } from "@trpc/server";
 import { resolveLinearStateId } from "./linear-status-mapping.js";
+import type { DbClient } from "./types.js";
 
-// Use loosely typed prisma client for parallel execution compatibility
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type PrismaClient = any;
+type PrismaClient = DbClient;
 
 // ---------------------------------------------------------------------------
 // Constants

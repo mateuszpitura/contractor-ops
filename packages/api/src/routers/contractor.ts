@@ -1,3 +1,4 @@
+import type { Prisma } from "@contractor-ops/db";
 import { prisma } from "@contractor-ops/db";
 import {
   contractorCreateSchema,
@@ -165,8 +166,7 @@ export const contractorRouter = router({
     .query(async ({ ctx, input }) => {
       const { page, pageSize, search, sortBy, sortOrder, filters } = input;
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const where: Record<string, any> = {
+      const where: Prisma.ContractorWhereInput = {
         organizationId: ctx.organizationId,
         deletedAt: null,
       };
@@ -501,8 +501,7 @@ export const contractorRouter = router({
         });
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const updateData: Record<string, any> = {
+      const updateData: Prisma.ContractorUpdateInput = {
         ...companyFields,
       };
 
@@ -538,8 +537,7 @@ export const contractorRouter = router({
         });
 
         if (defaultProfile) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const profileUpdate: Record<string, any> = {};
+          const profileUpdate: Prisma.ContractorBillingProfileUpdateInput = {};
           if (bankAccount !== undefined) {
             const cleaned = bankAccount ? bankAccount.replace(/\s/g, "") : null;
             profileUpdate.bankAccountEncrypted = cleaned ? encryptBankAccount(cleaned) : null;
@@ -588,8 +586,7 @@ export const contractorRouter = router({
         });
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const updateData: Record<string, any> = {
+      const updateData: Prisma.ContractorUpdateInput = {
         lifecycleStage: input.stage,
       };
 

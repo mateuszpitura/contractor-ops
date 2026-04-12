@@ -1,3 +1,4 @@
+import type { Prisma } from "@contractor-ops/db";
 import { prisma } from "@contractor-ops/db";
 import {
   invoiceCreateSchema,
@@ -266,8 +267,7 @@ export const invoiceRouter = router({
         });
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const updateData: Record<string, any> = { ...input.data };
+      const updateData: Record<string, unknown> = { ...input.data };
 
       // Remove documentIds from update data — not a direct Invoice field
       delete updateData.documentIds;
@@ -392,8 +392,7 @@ export const invoiceRouter = router({
     .query(async ({ ctx, input }) => {
       const { page, pageSize, search, sortBy, sortOrder, filters } = input;
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const where: Record<string, any> = {
+      const where: Prisma.InvoiceWhereInput = {
         organizationId: ctx.organizationId,
         deletedAt: null,
       };
@@ -519,8 +518,7 @@ export const invoiceRouter = router({
         select: { settingsJson: true },
       });
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const settings = (org?.settingsJson as Record<string, any>) ?? {};
+      const settings = (org?.settingsJson as Record<string, unknown>) ?? {};
       const deviationThreshold = (settings.invoiceDeviationThresholdPercent as number) ?? 10;
 
       // Run auto-match

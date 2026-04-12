@@ -6,6 +6,7 @@
  * - equipment-couriers.ts — InPost, DPD, UPS integrations, courier config, label retrieval
  * - equipment-returns.ts — return request approve/reject/list
  */
+import type { Prisma } from "@contractor-ops/db";
 import { prisma } from "@contractor-ops/db";
 import {
   equipmentAssignSchema,
@@ -49,8 +50,7 @@ const equipmentCoreRouter = router({
       const { page, perPage, search, status, type, assignedContractorId, sortBy, sortOrder } =
         input;
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const where: Record<string, any> = {
+      const where: Prisma.EquipmentWhereInput = {
         organizationId: ctx.organizationId,
       };
 

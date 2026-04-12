@@ -3,10 +3,9 @@ import { NotionAdapter } from "@contractor-ops/integrations/adapters/notion-adap
 import { decryptCredentials } from "@contractor-ops/integrations/services/credential-service";
 import type { DocSearchResult } from "@contractor-ops/validators";
 import { TRPCError } from "@trpc/server";
+import type { DbClient } from "./types.js";
 
-// Use loosely typed prisma client for parallel execution compatibility
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type PrismaClient = any;
+type PrismaClient = DbClient;
 
 // ---------------------------------------------------------------------------
 // Singleton adapter instances

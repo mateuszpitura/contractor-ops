@@ -1,9 +1,8 @@
 import type { CalendarTaskConfig } from "@contractor-ops/validators";
 import { createCalendarEvent, updateCalendarEvent } from "./calendar-event-service.js";
+import type { DbClient } from "./types.js";
 
-// Use loosely typed prisma client for parallel execution compatibility
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type PrismaClient = any;
+type PrismaClient = DbClient;
 
 // ---------------------------------------------------------------------------
 // Constants

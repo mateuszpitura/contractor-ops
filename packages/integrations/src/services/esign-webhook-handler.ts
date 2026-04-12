@@ -1,3 +1,4 @@
+import type { Prisma } from "@contractor-ops/db";
 import { prisma } from "@contractor-ops/db";
 import { normalizeSigningEvent } from "./esign-service.js";
 
@@ -111,8 +112,7 @@ export async function handleSigningWebhook(params: {
     if (event.recipientEmail && event.recipientStatus) {
       const recipientStatus = RECIPIENT_STATUS_MAP[event.recipientStatus] ?? event.recipientStatus;
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const recipientUpdate: Record<string, any> = {
+      const recipientUpdate: Prisma.SigningRecipientUpdateInput = {
         status: recipientStatus,
       };
 
@@ -146,8 +146,7 @@ export async function handleSigningWebhook(params: {
     if (event.envelopeStatus) {
       const envelopeStatus = ENVELOPE_STATUS_MAP[event.envelopeStatus] ?? event.envelopeStatus;
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const envelopeUpdate: Record<string, any> = {
+      const envelopeUpdate: Prisma.SigningEnvelopeUpdateInput = {
         status: envelopeStatus,
       };
 
@@ -167,8 +166,7 @@ export async function handleSigningWebhook(params: {
       if (envelope.contractId && CONTRACT_STATUS_MAP[event.envelopeStatus]) {
         const contractStatus = CONTRACT_STATUS_MAP[event.envelopeStatus]!;
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const contractUpdate: Record<string, any> = {
+        const contractUpdate: Prisma.ContractUpdateInput = {
           status: contractStatus,
         };
 

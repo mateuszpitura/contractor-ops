@@ -1,3 +1,4 @@
+import type { Prisma } from "@contractor-ops/db";
 import { prisma } from "@contractor-ops/db";
 import { z } from "zod";
 import { router } from "../init.js";
@@ -50,8 +51,7 @@ export const auditRouter = router({
         .merge(auditFilterSchema),
     )
     .query(async ({ ctx, input }) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const where: Record<string, any> = {
+      const where: Prisma.AuditLogWhereInput = {
         organizationId: ctx.organizationId,
       };
 
@@ -126,8 +126,7 @@ export const auditRouter = router({
     .use(requireTier("ENTERPRISE"))
     .input(auditFilterSchema)
     .mutation(async ({ ctx, input }) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const where: Record<string, any> = {
+      const where: Prisma.AuditLogWhereInput = {
         organizationId: ctx.organizationId,
       };
 

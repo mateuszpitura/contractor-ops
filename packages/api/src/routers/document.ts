@@ -1,3 +1,4 @@
+import type { Prisma } from "@contractor-ops/db";
 import { prisma } from "@contractor-ops/db";
 import {
   documentConfirmUploadSchema,
@@ -274,8 +275,7 @@ export const documentRouter = router({
     .query(async ({ ctx, input }) => {
       const { page, pageSize, entityType, entityId, documentType, status } = input;
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const where: Record<string, any> = {
+      const where: Prisma.DocumentWhereInput = {
         organizationId: ctx.organizationId,
         deletedAt: null,
       };

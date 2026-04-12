@@ -16,9 +16,9 @@ import { dispatchShipmentNotification } from "./shipment-notification.js";
 // - Fires workflow task completion check
 // ---------------------------------------------------------------------------
 
-// Loosely typed PrismaClient for parallel execution compatibility
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type PrismaClient = any;
+import type { DbClient } from "../types.js";
+
+type PrismaClient = DbClient;
 
 /**
  * Maps (shipment status, direction) to equipment status.

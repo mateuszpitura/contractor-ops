@@ -19,7 +19,6 @@ import { BaseAdapter } from "./base-adapter.js";
 // DocuSign SDK types (untyped JS SDK — declare minimal shapes)
 // ---------------------------------------------------------------------------
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 interface DocuSignApiClient {
   setBasePath(basePath: string): void;
   addDefaultHeader(name: string, value: string): void;
@@ -48,7 +47,6 @@ interface DocuSignSigner {
 interface DocuSignRecipients {
   signers?: DocuSignSigner[];
 }
-/* eslint-enable @typescript-eslint/no-explicit-any */
 
 // ---------------------------------------------------------------------------
 // DocuSign Adapter

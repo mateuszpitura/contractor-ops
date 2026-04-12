@@ -1,3 +1,4 @@
+import type { Prisma } from "@contractor-ops/db";
 import { prisma } from "@contractor-ops/db";
 import {
   approveTimesheetSchema,
@@ -83,8 +84,7 @@ export const timeRouter = router({
     .use(requirePermission({ time: ["read"] }))
     .input(listTimesheetsSchema)
     .query(async ({ ctx, input }) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const where: Record<string, any> = {
+      const where: Prisma.TimesheetWhereInput = {
         organizationId: ctx.organizationId,
       };
 
@@ -405,8 +405,7 @@ export const timeRouter = router({
       }),
     )
     .query(async ({ ctx, input }) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const invoiceWhere: Record<string, any> = {
+      const invoiceWhere: Prisma.InvoiceWhereInput = {
         organizationId: ctx.organizationId,
         deletedAt: null,
         contractId: { not: null },

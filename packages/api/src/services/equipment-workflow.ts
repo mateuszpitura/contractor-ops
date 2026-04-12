@@ -1,9 +1,8 @@
 import type { InPostClientConfig } from "./courier/inpost-client.js";
 import { InPostClient } from "./courier/inpost-client.js";
+import type { DbClient } from "./types.js";
 
-// Loosely typed PrismaClient for parallel execution compatibility (precedent: Phase 16, 18)
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type PrismaClient = any;
+type PrismaClient = DbClient;
 
 // ---------------------------------------------------------------------------
 // Equipment Workflow Integration Service
@@ -275,7 +274,6 @@ async function autoCreateInPostReturnShipment(
     equipmentIds: string[];
     taskRunId: string;
     workflowRunId: string;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     assignments: Array<{ equipment: { id: string; name: string } }>;
   },
 ): Promise<void> {

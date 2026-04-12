@@ -10,9 +10,9 @@ import { dispatchShipmentNotification } from "./shipment-notification.js";
 // Fetches all active InPost shipments and creates missing ShipmentEvents.
 // ---------------------------------------------------------------------------
 
-// Loosely typed PrismaClient for parallel execution compatibility
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type PrismaClient = any;
+import type { DbClient } from "../types.js";
+
+type PrismaClient = DbClient;
 
 /** Terminal statuses — no need to poll these shipments. */
 const TERMINAL_STATUSES = ["DELIVERED", "FAILED", "RETURNED"];
