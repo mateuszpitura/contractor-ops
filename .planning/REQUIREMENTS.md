@@ -20,10 +20,10 @@ Requirements for UK & Germany market expansion. Each maps to roadmap phases.
 
 - [x] **CLASS-01**: User can run a contractor classification risk assessment using a generic pluggable engine that supports multiple country rule sets
 - [x] **CLASS-02**: User can assess IR35 status for a UK contractor engagement using CEST-aligned questions across 5 assessment areas (substitution, control, financial risk, part-and-parcel, mutuality of obligation) with inside/outside/undetermined outcomes
-- [ ] **CLASS-03**: User can generate a Status Determination Statement (SDS) PDF containing determination outcome, reasoning per assessment area, engagement details, and dispute process
-- [ ] **CLASS-04**: User can track IR35 chain participants (client → agency/intermediary → contractor PSC → worker) and SDS delivery timestamps per engagement
+- [x] **CLASS-03**: User can generate a Status Determination Statement (SDS) PDF containing determination outcome, reasoning per assessment area, engagement details, and dispute process
+- [x] **CLASS-04**: User can track IR35 chain participants (client → agency/intermediary → contractor PSC → worker) and SDS delivery timestamps per engagement
 - [x] **CLASS-05**: User can assess Scheinselbständigkeit risk for a German contractor engagement using ~20 DRV criteria across 4 categories (integration, entrepreneurial independence, personal dependency, economic dependency) with weighted risk scoring
-- [ ] **CLASS-06**: User can generate DRV audit defense documentation as an exportable PDF bundle (engagement structure summary, independence indicators, risk assessment history, other-client attestation)
+- [x] **CLASS-06**: User can generate DRV audit defense documentation as an exportable PDF bundle (engagement structure summary, independence indicators, risk assessment history, other-client attestation)
 - [ ] **CLASS-07**: User receives automated alerts when a German contractor's billing exceeds 70% (warning) or 83.33% (critical) from a single client, indicating economic dependency under Section 2 SGB VI
 - [ ] **CLASS-08**: User receives automated reassessment triggers when a UK engagement materially changes (contract amendment, rate change, scope change, extension) linking to previous SDS for comparison
 - [ ] **CLASS-09**: User can track Statusfeststellungsverfahren (DRV clearance procedure) applications with filing date, DRV reference, outcome, validity period, and expiry reminders
@@ -92,10 +92,10 @@ Deferred to future release. Tracked but not in current roadmap.
 | FOUND-06 | Phase 56 | Pending |
 | CLASS-01 | Phase 58 | Complete |
 | CLASS-02 | Phase 58 | Complete |
-| CLASS-03 | Phase 59 | Pending |
-| CLASS-04 | Phase 59 | Pending |
+| CLASS-03 | Phase 59 | Complete |
+| CLASS-04 | Phase 59 | Complete |
 | CLASS-05 | Phase 58 | Complete |
-| CLASS-06 | Phase 59 | Pending |
+| CLASS-06 | Phase 59 | Complete |
 | CLASS-07 | Phase 60 | Pending |
 | CLASS-08 | Phase 60 | Pending |
 | CLASS-09 | Phase 60 | Pending |
