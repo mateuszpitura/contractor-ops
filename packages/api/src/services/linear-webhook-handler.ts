@@ -169,9 +169,10 @@ export async function processLinearWebhook(
       responsePayloadJson: {
         action: webhookPayload.action,
         identifier: webhookPayload.data.identifier,
-        reason: webhookPayload.action === 'update'
-          ? 'No state change detected (updatedFrom.stateId missing)'
-          : `Action '${webhookPayload.action}' not processed`,
+        reason:
+          webhookPayload.action === 'update'
+            ? 'No state change detected (updatedFrom.stateId missing)'
+            : `Action '${webhookPayload.action}' not processed`,
       },
     });
     return;
@@ -188,7 +189,10 @@ export async function processLinearWebhook(
 
   if (!externalLink) {
     await logInboundSync(prisma, organizationId, connectionId, 'webhook-unlinked', {
-      responsePayloadJson: { identifier: issueIdentifier, reason: 'No ExternalLink found for this Linear issue' },
+      responsePayloadJson: {
+        identifier: issueIdentifier,
+        reason: 'No ExternalLink found for this Linear issue',
+      },
     });
     return;
   }
@@ -199,7 +203,10 @@ export async function processLinearWebhook(
   if (isBounceBack(metadata, LOOP_PREVENTION_WINDOW_MS)) {
     const syncAge = Date.now() - new Date(metadata.lastSyncAt as string).getTime();
     await logInboundSync(prisma, organizationId, connectionId, 'webhook-loop-suppressed', {
-      responsePayloadJson: { identifier: issueIdentifier, reason: `Suppressed bounce-back (origin=APP, age=${syncAge}ms)` },
+      responsePayloadJson: {
+        identifier: issueIdentifier,
+        reason: `Suppressed bounce-back (origin=APP, age=${syncAge}ms)`,
+      },
     });
     return;
   }
@@ -241,7 +248,12 @@ export async function processLinearWebhook(
     await logInboundSync(prisma, organizationId, connectionId, 'webhook-status-unmapped', {
       entityType: 'WORKFLOW_TASK_RUN',
       entityId: externalLink.entityId,
-      responsePayloadJson: { identifier: issueIdentifier, stateId: newStateId, teamId, reason: 'No workflow status mapping found for this Linear state' },
+      responsePayloadJson: {
+        identifier: issueIdentifier,
+        stateId: newStateId,
+        teamId,
+        reason: 'No workflow status mapping found for this Linear state',
+      },
     });
     return;
   }
@@ -255,17 +267,23 @@ export async function processLinearWebhook(
   const { stateName, stateType } = await resolveStateName(prisma, connection, teamId, newStateId);
 
   // 8. Create sync log
-  const syncLog = await logInboundSync(prisma, organizationId, connectionId, 'issue-status-change', {
-    status: 'STARTED',
-    entityType: 'WORKFLOW_TASK_RUN',
-    entityId: externalLink.entityId,
-    requestPayloadJson: {
-      identifier: issueIdentifier,
-      fromStateId: webhookPayload.updatedFrom.stateId,
-      toStateId: newStateId,
-      teamId,
+  const syncLog = await logInboundSync(
+    prisma,
+    organizationId,
+    connectionId,
+    'issue-status-change',
+    {
+      status: 'STARTED',
+      entityType: 'WORKFLOW_TASK_RUN',
+      entityId: externalLink.entityId,
+      requestPayloadJson: {
+        identifier: issueIdentifier,
+        fromStateId: webhookPayload.updatedFrom.stateId,
+        toStateId: newStateId,
+        teamId,
+      },
     },
-  });
+  );
 
   try {
     // 9. Update WorkflowTaskRun status

@@ -660,7 +660,13 @@ export const contractorRouter = router({
       await handleVatIdChange(ctx.db, id, ctx.organizationId, ctx.user.id, existing, updated);
 
       // Update default billing profile if billing fields changed
-      await updateBillingProfileIfNeeded(ctx.db, id, ctx.organizationId, bankAccount, paymentTermsDays);
+      await updateBillingProfileIfNeeded(
+        ctx.db,
+        id,
+        ctx.organizationId,
+        bankAccount,
+        paymentTermsDays,
+      );
 
       return plain(updated);
     }),

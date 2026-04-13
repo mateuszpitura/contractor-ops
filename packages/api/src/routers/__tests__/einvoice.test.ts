@@ -79,10 +79,14 @@ vi.mock('@contractor-ops/db', () => ({
   getRegionalClient: vi.fn(() => mockPrisma),
 }));
 
-vi.mock('@contractor-ops/einvoice', () => ({
-  listProfiles: mockListProfiles,
-  computeKsefComplianceStatus: mockComputeKsefComplianceStatus,
-}));
+vi.mock('@contractor-ops/einvoice', async importOriginal => {
+  const actual = await importOriginal<typeof import('@contractor-ops/einvoice')>();
+  return {
+    ...actual,
+    listProfiles: mockListProfiles,
+    computeKsefComplianceStatus: mockComputeKsefComplianceStatus,
+  };
+});
 
 vi.mock('../../services/cache.js', () => ({
   cached: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),

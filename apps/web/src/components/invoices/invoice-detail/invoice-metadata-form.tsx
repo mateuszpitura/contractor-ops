@@ -5,7 +5,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { AlertTriangle, CalendarIcon, Loader2, MoreHorizontal } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -292,9 +292,9 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
           <form className="space-y-4">
             {/* Invoice number */}
             <div className="space-y-1.5">
-              <Label htmlFor="invoiceNumber">{t('detail.invoiceNumber')}</Label>
+              <Label htmlFor={`${id}-invoiceNumber`}>{t('detail.invoiceNumber')}</Label>
               <Input
-                id="invoiceNumber"
+                id={`${id}-invoiceNumber`}
                 className="font-mono text-[13px]"
                 placeholder={t('detail.invoiceNumberPlaceholder')}
                 disabled={!isEditable}
@@ -361,9 +361,9 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
 
             {/* Seller NIP */}
             <div className="space-y-1.5">
-              <Label htmlFor="sellerTaxId">{t('detail.sellerNip')}</Label>
+              <Label htmlFor={`${id}-sellerTaxId`}>{t('detail.sellerNip')}</Label>
               <Input
-                id="sellerTaxId"
+                id={`${id}-sellerTaxId`}
                 className="font-mono text-[13px]"
                 placeholder={t('detail.sellerNipPlaceholder')}
                 disabled={!isEditable}
@@ -374,9 +374,9 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
             {/* Net amount + VAT rate row */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label htmlFor="netAmount">{t('detail.netAmount')}</Label>
+                <Label htmlFor={`${id}-netAmount`}>{t('detail.netAmount')}</Label>
                 <CurrencyInput
-                  id="netAmount"
+                  id={`${id}-netAmount`}
                   value={watch('subtotalMinor')}
                   // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                   onChange={minor => setValue('subtotalMinor', minor)}
@@ -400,9 +400,9 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
             {/* VAT amount + Gross amount row */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label htmlFor="vatAmount">{t('detail.vatAmount')}</Label>
+                <Label htmlFor={`${id}-vatAmount`}>{t('detail.vatAmount')}</Label>
                 <CurrencyInput
-                  id="vatAmount"
+                  id={`${id}-vatAmount`}
                   value={watch('vatAmountMinor') ?? 0}
                   // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                   onChange={minor => setValue('vatAmountMinor', minor)}
@@ -410,9 +410,9 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="grossAmount">{t('detail.grossAmount')}</Label>
+                <Label htmlFor={`${id}-grossAmount`}>{t('detail.grossAmount')}</Label>
                 <CurrencyInput
-                  id="grossAmount"
+                  id={`${id}-grossAmount`}
                   value={watch('totalMinor')}
                   // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                   onChange={minor => setValue('totalMinor', minor)}
@@ -427,9 +427,9 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
             {/* Withholding + Amount to pay row */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label htmlFor="withholding">{t('detail.withholding')}</Label>
+                <Label htmlFor={`${id}-withholding`}>{t('detail.withholding')}</Label>
                 <CurrencyInput
-                  id="withholding"
+                  id={`${id}-withholding`}
                   value={watch('withholdingMinor') ?? 0}
                   // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                   onChange={minor => setValue('withholdingMinor', minor)}
@@ -437,9 +437,9 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="amountToPay">{t('detail.amountToPay')}</Label>
+                <Label htmlFor={`${id}-amountToPay`}>{t('detail.amountToPay')}</Label>
                 <CurrencyInput
-                  id="amountToPay"
+                  id={`${id}-amountToPay`}
                   value={watch('amountToPayMinor')}
                   // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                   onChange={minor => setValue('amountToPayMinor', minor)}
@@ -472,9 +472,9 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="bankAccount">{t('detail.bankAccount')}</Label>
+                <Label htmlFor={`${id}-bankAccount`}>{t('detail.bankAccount')}</Label>
                 <Input
-                  id="bankAccount"
+                  id={`${id}-bankAccount`}
                   className="font-mono text-[13px]"
                   placeholder={t('detail.bankAccountPlaceholder')}
                   disabled={!isEditable}
@@ -572,6 +572,7 @@ function DatePicker({
   disabled?: boolean;
   pickDateLabel?: string;
 }) {
+  const _id = useId();
   const parsed = value ? new Date(value) : undefined;
   const isValid = parsed && !Number.isNaN(parsed.getTime());
 

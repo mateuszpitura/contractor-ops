@@ -11,7 +11,7 @@
 'use client';
 
 import { AlertCircle } from 'lucide-react';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { toast } from 'sonner';
 import {
   AlertDialog,
@@ -46,6 +46,7 @@ export function ReverseChargeLineToggle({
   onEnable,
   disabled,
 }: ReverseChargeLineToggleProps) {
+  const id = useId();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [reason, setReason] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -104,9 +105,9 @@ export function ReverseChargeLineToggle({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="space-y-2">
-            <Label htmlFor="rc-override-reason">Reason</Label>
+            <Label htmlFor={`${id}-rc-override-reason`}>Reason</Label>
             <Textarea
-              id="rc-override-reason"
+              id={`${id}-rc-override-reason`}
               data-testid="reverse-charge-override-reason"
               value={reason}
               // biome-ignore lint/nursery/noJsxPropsBind: small dialog component

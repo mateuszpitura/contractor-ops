@@ -10,7 +10,7 @@ import { TRPCClientError } from '@trpc/client';
 import { ExternalLink, FileText, Info, Loader2, UploadCloud, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useCallback, useEffect, useState , useId } from 'react';
+import { useCallback, useEffect, useId, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
@@ -305,7 +305,7 @@ function ReviewSummary({
   upload: UploadState;
   t: (key: string) => string;
 }) {
-  if (!invoiceNumber && !selectedContract && upload.status !== 'uploaded') return null;
+  if (!(invoiceNumber || selectedContract) && upload.status !== 'uploaded') return null;
 
   return (
     <Card>
@@ -492,15 +492,27 @@ function useFileUploadWithOcr(t: (key: string) => string) {
           xhr.setRequestHeader('Content-Type', 'application/pdf');
           xhr.upload.onprogress = event => {
             if (event.lengthComputable) {
-              setUpload({ status: 'uploading', progress: Math.round(20 + (event.loaded / event.total) * 70) });
+              setUpload({
+                status: 'uploading',
+                progress: Math.round(20 + (event.loaded / event.total) * 70),
+              });
             }
           };
-          xhr.onload = () => (xhr.status >= 200 && xhr.status < 300 ? resolve() : reject(new Error(`Upload failed with status ${xhr.status}`)));
+          xhr.onload = () =>
+            xhr.status >= 200 && xhr.status < 300
+              ? resolve()
+              : reject(new Error(`Upload failed with status ${xhr.status}`));
           xhr.onerror = () => reject(new Error('Upload failed'));
           xhr.send(file);
         });
 
-        setUpload({ status: 'uploaded', documentId, storageKey, originalFileName: file.name, fileSizeBytes: file.size });
+        setUpload({
+          status: 'uploaded',
+          documentId,
+          storageKey,
+          originalFileName: file.name,
+          fileSizeBytes: file.size,
+        });
 
         if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
           try {
@@ -508,7 +520,11 @@ function useFileUploadWithOcr(t: (key: string) => string) {
             setExtractionId(ocrResult.extractionId);
             setPdfBlobUrl(URL.createObjectURL(file));
           } catch (error) {
-            if (error instanceof TRPCClientError && error.data?.code === 'PRECONDITION_FAILED' && error.message === 'OCR credits exhausted') {
+            if (
+              error instanceof TRPCClientError &&
+              error.data?.code === 'PRECONDITION_FAILED' &&
+              error.message === 'OCR credits exhausted'
+            ) {
               setCreditExhausted(true);
             } else {
               console.warn('Portal OCR trigger failed, manual entry available');
@@ -524,9 +540,18 @@ function useFileUploadWithOcr(t: (key: string) => string) {
   );
 
   return {
-    upload, extractionStatus, resultJson, isOcrProcessing,
-    fieldCount, totalFields, ocrPopulated, setOcrPopulated,
-    creditExhausted, pdfBlobUrl, removeFile, onDrop,
+    upload,
+    extractionStatus,
+    resultJson,
+    isOcrProcessing,
+    fieldCount,
+    totalFields,
+    ocrPopulated,
+    setOcrPopulated,
+    creditExhausted,
+    pdfBlobUrl,
+    removeFile,
+    onDrop,
   };
 }
 
@@ -559,7 +584,8 @@ function useOcrPrefill(
     if (netMinor > 0) setValue('netAmount', (netMinor / 100).toFixed(2), { shouldValidate: true });
 
     const grossMinor = getNumericFieldMinor(fields, 'totalGross');
-    if (grossMinor > 0) setValue('grossAmount', (grossMinor / 100).toFixed(2), { shouldValidate: true });
+    if (grossMinor > 0)
+      setValue('grossAmount', (grossMinor / 100).toFixed(2), { shouldValidate: true });
 
     setOcrPopulated(true);
     toast.success(t('ocrExtracted'));
@@ -584,9 +610,18 @@ export function InvoiceSubmitForm() {
   const router = useRouter();
 
   const {
-    upload, extractionStatus, resultJson, isOcrProcessing,
-    fieldCount, totalFields, ocrPopulated, setOcrPopulated,
-    creditExhausted, pdfBlobUrl, removeFile, onDrop,
+    upload,
+    extractionStatus,
+    resultJson,
+    isOcrProcessing,
+    fieldCount,
+    totalFields,
+    ocrPopulated,
+    setOcrPopulated,
+    creditExhausted,
+    pdfBlobUrl,
+    removeFile,
+    onDrop,
   } = useFileUploadWithOcr(t);
 
   const invoiceSubmitSchema = createInvoiceSubmitSchema(t);
@@ -785,21 +820,50 @@ export function InvoiceSubmitForm() {
         <h2 className="text-sm font-semibold">{t('details')}</h2>
 
         <div className="space-y-2">
-          <OcrLabel htmlFor={`${id}-invoiceNumber`} label={t('invoiceNumber')} ocrPopulated={ocrPopulated} fields={resultJson?.fields} fieldKey="invoiceNumber" />
-          <Input id={`${id}-invoiceNumber`} type="text" placeholder={t('invoicePlaceholder')} {...register('invoiceNumber')} />
-          {!!errors.invoiceNumber && <p className="text-sm text-destructive">{errors.invoiceNumber.message}</p>}
+          <OcrLabel
+            htmlFor={`${id}-invoiceNumber`}
+            label={t('invoiceNumber')}
+            ocrPopulated={ocrPopulated}
+            fields={resultJson?.fields}
+            fieldKey="invoiceNumber"
+          />
+          <Input
+            id={`${id}-invoiceNumber`}
+            type="text"
+            placeholder={t('invoicePlaceholder')}
+            {...register('invoiceNumber')}
+          />
+          {!!errors.invoiceNumber && (
+            <p className="text-sm text-destructive">{errors.invoiceNumber.message}</p>
+          )}
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
-            <OcrLabel htmlFor={`${id}-issueDate`} label={t('issueDate')} ocrPopulated={ocrPopulated} fields={resultJson?.fields} fieldKey="issueDate" />
+            <OcrLabel
+              htmlFor={`${id}-issueDate`}
+              label={t('issueDate')}
+              ocrPopulated={ocrPopulated}
+              fields={resultJson?.fields}
+              fieldKey="issueDate"
+            />
             <Input id={`${id}-issueDate`} type="date" {...register('issueDate')} />
-            {!!errors.issueDate && <p className="text-sm text-destructive">{errors.issueDate.message}</p>}
+            {!!errors.issueDate && (
+              <p className="text-sm text-destructive">{errors.issueDate.message}</p>
+            )}
           </div>
           <div className="space-y-2">
-            <OcrLabel htmlFor={`${id}-dueDate`} label={t('dueDate')} ocrPopulated={ocrPopulated} fields={resultJson?.fields} fieldKey="dueDate" />
+            <OcrLabel
+              htmlFor={`${id}-dueDate`}
+              label={t('dueDate')}
+              ocrPopulated={ocrPopulated}
+              fields={resultJson?.fields}
+              fieldKey="dueDate"
+            />
             <Input id={`${id}-dueDate`} type="date" {...register('dueDate')} />
-            {!!errors.dueDate && <p className="text-sm text-destructive">{errors.dueDate.message}</p>}
+            {!!errors.dueDate && (
+              <p className="text-sm text-destructive">{errors.dueDate.message}</p>
+            )}
           </div>
         </div>
 
@@ -808,14 +872,44 @@ export function InvoiceSubmitForm() {
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
-            <OcrLabel htmlFor={`${id}-netAmount`} label={`${t('netAmount')}${selectedContract ? ` (${selectedContract.currency})` : ''}`} ocrPopulated={ocrPopulated} fields={resultJson?.fields} fieldKey="totalNet" />
-            <Input id={`${id}-netAmount`} type="number" step="0.01" min="0.01" placeholder={t('amountPlaceholder')} {...register('netAmount')} />
-            {!!errors.netAmount && <p className="text-sm text-destructive">{errors.netAmount.message}</p>}
+            <OcrLabel
+              htmlFor={`${id}-netAmount`}
+              label={`${t('netAmount')}${selectedContract ? ` (${selectedContract.currency})` : ''}`}
+              ocrPopulated={ocrPopulated}
+              fields={resultJson?.fields}
+              fieldKey="totalNet"
+            />
+            <Input
+              id={`${id}-netAmount`}
+              type="number"
+              step="0.01"
+              min="0.01"
+              placeholder={t('amountPlaceholder')}
+              {...register('netAmount')}
+            />
+            {!!errors.netAmount && (
+              <p className="text-sm text-destructive">{errors.netAmount.message}</p>
+            )}
           </div>
           <div className="space-y-2">
-            <OcrLabel htmlFor={`${id}-grossAmount`} label={`${t('grossAmount')}${selectedContract ? ` (${selectedContract.currency})` : ''}`} ocrPopulated={ocrPopulated} fields={resultJson?.fields} fieldKey="totalGross" />
-            <Input id={`${id}-grossAmount`} type="number" step="0.01" min="0.01" placeholder={t('amountPlaceholder')} {...register('grossAmount')} />
-            {!!errors.grossAmount && <p className="text-sm text-destructive">{errors.grossAmount.message}</p>}
+            <OcrLabel
+              htmlFor={`${id}-grossAmount`}
+              label={`${t('grossAmount')}${selectedContract ? ` (${selectedContract.currency})` : ''}`}
+              ocrPopulated={ocrPopulated}
+              fields={resultJson?.fields}
+              fieldKey="totalGross"
+            />
+            <Input
+              id={`${id}-grossAmount`}
+              type="number"
+              step="0.01"
+              min="0.01"
+              placeholder={t('amountPlaceholder')}
+              {...register('grossAmount')}
+            />
+            {!!errors.grossAmount && (
+              <p className="text-sm text-destructive">{errors.grossAmount.message}</p>
+            )}
           </div>
         </div>
       </div>

@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2 } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useCallback, useState } from 'react';
+import { useCallback, useId, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -32,6 +32,7 @@ export function LoginForm() {
     rawRedirectTo.startsWith('/') && !rawRedirectTo.startsWith('//') && !rawRedirectTo.includes(':')
       ? rawRedirectTo
       : '/';
+  const id = useId();
   const [isLoading, setIsLoading] = useState(false);
   const [isMagicLinkSent, setIsMagicLinkSent] = useState(false);
   const clearMagicLinkSent = useCallback(() => setIsMagicLinkSent(false), []);
@@ -137,20 +138,20 @@ export function LoginForm() {
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-[13px]">
+              <Label htmlFor={`${id}-email`} className="text-[13px]">
                 {t('emailLabel')}
               </Label>
               <Input
-                id="email"
+                id={`${id}-email`}
                 type="email"
                 placeholder={t('emailPlaceholder')}
                 disabled={isLoading}
                 aria-invalid={!!errors.email}
-                aria-describedby={errors.email ? 'email-error' : undefined}
+                aria-describedby={errors.email ? `${id}-email-error` : undefined}
                 {...register('email')}
               />
               {!!errors.email && (
-                <p id="email-error" role="alert" className="text-sm text-destructive">
+                <p id={`${id}-email-error`} role="alert" className="text-sm text-destructive">
                   {errors.email.message}
                 </p>
               )}
@@ -158,21 +159,21 @@ export function LoginForm() {
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label htmlFor="password" className="text-[13px]">
+                <Label htmlFor={`${id}-password`} className="text-[13px]">
                   {t('passwordLabel')}
                 </Label>
               </div>
               <Input
-                id="password"
+                id={`${id}-password`}
                 type="password"
                 autoComplete="current-password"
                 disabled={isLoading}
                 aria-invalid={!!errors.password}
-                aria-describedby={errors.password ? 'password-error' : undefined}
+                aria-describedby={errors.password ? `${id}-password-error` : undefined}
                 {...register('password')}
               />
               {!!errors.password && (
-                <p id="password-error" role="alert" className="text-sm text-destructive">
+                <p id={`${id}-password-error`} role="alert" className="text-sm text-destructive">
                   {errors.password.message}
                 </p>
               )}

@@ -81,6 +81,93 @@ export abstract class GovApiClient {
   }
 
   /**
+   * Build request headers with default Content-Type and optional Authorization.
+   */
+  private buildHeaders(options: RequestInit): Headers {
+    const headers = new Headers(options.headers);
+    if (this.certificate && !headers.has('Authorization')) {
+      headers.set('Authorization', `Bearer ${this.certificate}`);
+    }
+    if (!headers.has('Content-Type')) {
+      headers.set('Content-Type', 'application/json');
+    }
+    return headers;
+  }
+
+  /**
+   * Emit audit entry if conditions are met (not skipped, organizationId present).
+   */
+  private maybeAudit(
+    opts: { organizationId?: string; skipAudit?: boolean } | undefined,
+    path: string,
+    method: string,
+    responseStatus: number,
+    responseTimeMs: number,
+  ): void {
+    if (!opts?.skipAudit && opts?.organizationId) {
+      this.emitAuditEntry({
+        apiName: this.getApiName(),
+        organizationId: opts.organizationId,
+        endpoint: path,
+        method,
+        responseStatus,
+        responseTimeMs,
+      });
+    }
+  }
+
+  /**
+   * Calculate retry backoff delay for a given attempt.
+   */
+  private retryDelay(attempt: number, retry: GovApiRetryConfig): number {
+    return Math.min(retry.baseDelayMs * 2 ** (attempt - 1), retry.maxDelayMs);
+  }
+
+  /**
+   * Execute a single fetch attempt with timeout and audit logging.
+   * Returns the response, or throws on network/timeout error.
+   */
+  private async fetchOnce(
+    url: string,
+    options: RequestInit,
+    opts: { organizationId?: string; skipAudit?: boolean } | undefined,
+    path: string,
+    timeoutMs: number,
+  ): Promise<Response> {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+    try {
+      const headers = this.buildHeaders(options);
+      const startMs = Date.now();
+      const response = await globalThis.fetch(url, {
+        ...options,
+        headers,
+        signal: controller.signal,
+      });
+
+      this.maybeAudit(opts, path, options.method ?? 'GET', response.status, Date.now() - startMs);
+      return response;
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  /**
+   * Normalize an unknown thrown value into an Error instance.
+   */
+  private static toError(err: unknown): Error {
+    return err instanceof Error ? err : new Error(String(err));
+  }
+
+  /**
+   * Check whether a response status is retryable for the given attempt.
+   */
+  private isRetryable(response: Response, attempt: number, retry: GovApiRetryConfig): boolean {
+    return retry.retryableStatuses.includes(response.status) && attempt < retry.maxRetries;
+  }
+
+  /**
    * HTTP fetch with retry, timeout, and audit logging.
    *
    * - Retries on configurable status codes with exponential backoff
@@ -101,53 +188,21 @@ export abstract class GovApiClient {
 
     for (let attempt = 0; attempt <= retry.maxRetries; attempt++) {
       if (attempt > 0) {
-        const delay = Math.min(retry.baseDelayMs * 2 ** (attempt - 1), retry.maxDelayMs);
-        await new Promise(r => setTimeout(r, delay));
+        await new Promise(r => setTimeout(r, this.retryDelay(attempt, retry)));
       }
 
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), timeoutMs);
-
       try {
-        const headers = new Headers(options.headers);
-        if (this.certificate && !headers.has('Authorization')) {
-          headers.set('Authorization', `Bearer ${this.certificate}`);
-        }
-        if (!headers.has('Content-Type')) {
-          headers.set('Content-Type', 'application/json');
-        }
+        const response = await this.fetchOnce(url, options, opts, path, timeoutMs);
 
-        const startMs = Date.now();
-        const response = await globalThis.fetch(url, {
-          ...options,
-          headers,
-          signal: controller.signal,
-        });
-        const responseTimeMs = Date.now() - startMs;
-
-        // Audit log (fire-and-forget)
-        if (!opts?.skipAudit && opts?.organizationId) {
-          this.emitAuditEntry({
-            apiName: this.getApiName(),
-            organizationId: opts.organizationId,
-            endpoint: path,
-            method: options.method ?? 'GET',
-            responseStatus: response.status,
-            responseTimeMs,
-          });
-        }
-
-        if (retry.retryableStatuses.includes(response.status) && attempt < retry.maxRetries) {
+        if (this.isRetryable(response, attempt, retry)) {
           lastResponse = response;
           continue;
         }
 
         return response;
       } catch (err) {
-        lastError = err instanceof Error ? err : new Error(String(err));
+        lastError = GovApiClient.toError(err);
         if (attempt >= retry.maxRetries) break;
-      } finally {
-        clearTimeout(timer);
       }
     }
 

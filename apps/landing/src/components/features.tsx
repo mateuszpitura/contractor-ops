@@ -89,6 +89,7 @@ const features = [
 
 export function Features() {
   return (
+    // biome-ignore lint/correctness/useUniqueElementIds: anchor target for scroll navigation
     <section id="features" className="relative py-28 sm:py-36 overflow-hidden">
       <div className="relative mx-auto max-w-6xl px-6">
         <FadeUp className="text-center">

@@ -19,13 +19,11 @@ function SortIcon({ direction }: { direction: false | 'asc' | 'desc' }) {
 // aria-sort value
 // ---------------------------------------------------------------------------
 
-function getAriaSort(
-  column: Column<unknown, unknown>,
-): 'ascending' | 'descending' | undefined {
+function getAriaSort(column: Column<unknown, unknown>): 'ascending' | 'descending' | undefined {
   const sorted = column.getIsSorted();
   if (sorted === 'asc') return 'ascending';
   if (sorted === 'desc') return 'descending';
-  return undefined;
+  return;
 }
 
 // ---------------------------------------------------------------------------
@@ -65,10 +63,7 @@ export function SortableTableHead<TData, TValue>({
   }
 
   return (
-    <TableHead
-      key={header.id}
-      style={widthStyle}
-      aria-sort={getAriaSort(column)}>
+    <TableHead key={header.id} style={widthStyle} aria-sort={getAriaSort(column)}>
       <button
         type="button"
         className="flex items-center gap-1 uppercase hover:text-foreground"

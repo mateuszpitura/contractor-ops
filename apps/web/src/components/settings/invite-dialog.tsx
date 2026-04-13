@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useEffect } from 'react';
+import { useEffect, useId } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -62,6 +62,7 @@ export function InviteDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const id = useId();
   const t = useTranslations('Users.inviteDialog');
   const tr = useTranslations('Users.roles');
   const tToast = useTranslations('Settings.toast');
@@ -119,11 +120,11 @@ export function InviteDialog({
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="invite-email" className="text-[13px]">
+            <Label htmlFor={`${id}-invite-email`} className="text-[13px]">
               {t('emailLabel')}
             </Label>
             <Input
-              id="invite-email"
+              id={`${id}-invite-email`}
               type="email"
               autoComplete="email"
               disabled={inviteMutation.isPending}
@@ -133,7 +134,7 @@ export function InviteDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="invite-role" className="text-[13px]">
+            <Label htmlFor={`${id}-invite-role`} className="text-[13px]">
               {t('roleLabel')}
             </Label>
             <Select
@@ -142,7 +143,7 @@ export function InviteDialog({
               onValueChange={value => setValue('role', value as InviteValues['role'])}
               disabled={inviteMutation.isPending}
               items={roleItems}>
-              <SelectTrigger id="invite-role">
+              <SelectTrigger id={`${id}-invite-role`}>
                 <SelectValue placeholder={t('rolePlaceholder')} />
               </SelectTrigger>
               <SelectContent>

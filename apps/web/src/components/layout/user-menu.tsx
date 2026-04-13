@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useTheme } from 'next-themes';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Bdi } from '@/components/ui/bdi';
@@ -55,6 +55,7 @@ export function UserMenu() {
   const { isMobile } = useSidebar();
   const { theme, setTheme } = useTheme();
   const { density, toggleDensity } = useDensity();
+  const id = useId();
   const session = authClient.useSession();
 
   const user = session.data?.user;
@@ -252,10 +253,10 @@ export function UserMenu() {
             }}
             className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="user-name">{t('editNamePrompt')}</Label>
+              <Label htmlFor={`${id}-user-name`}>{t('editNamePrompt')}</Label>
               <Input
                 ref={nameInputRef}
-                id="user-name"
+                id={`${id}-user-name`}
                 value={nameValue}
                 // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                 onChange={e => setNameValue(e.target.value)}

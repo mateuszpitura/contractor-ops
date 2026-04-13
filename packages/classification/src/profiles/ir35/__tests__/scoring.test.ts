@@ -190,7 +190,7 @@ describe('IR35 scoreIr35 — output shape', () => {
     );
     for (const a of res.outcome.areas) {
       expect(a.drivingQuestionIds).toBeDefined();
-      expect(a.drivingQuestionIds!.length).toBeLessThanOrEqual(3);
+      expect(a.drivingQuestionIds?.length).toBeLessThanOrEqual(3);
     }
   });
 

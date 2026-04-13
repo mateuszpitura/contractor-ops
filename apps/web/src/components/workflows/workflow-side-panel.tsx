@@ -14,8 +14,8 @@ import { Separator } from '@/components/ui/separator';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Link } from '@/i18n/navigation';
-import { trpc } from '@/trpc/init';
 import { enumKey } from '@/lib/enum-key';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Status badge colors (same as columns.tsx)

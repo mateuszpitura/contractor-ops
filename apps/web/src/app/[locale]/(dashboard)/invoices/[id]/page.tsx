@@ -29,10 +29,10 @@ import { ZatcaStatusBadge } from '@/components/zatca/zatca-status-badge';
 import { ZatcaSubmissionDetail } from '@/components/zatca/zatca-submission-detail';
 import type { ZatcaSubmissionResult } from '@/components/zatca/zatca-trpc';
 import { zatcaTrpc } from '@/components/zatca/zatca-trpc';
+import { enumKey } from '@/lib/enum-key';
 import type { PeppolTransmissionResult } from '@/lib/peppol-trpc';
 import { peppolTrpc } from '@/lib/peppol-trpc';
 import { trpc } from '@/trpc/init';
-import { enumKey } from '@/lib/enum-key';
 
 // ---------------------------------------------------------------------------
 // Status badge config (reuse from columns.tsx pattern)
@@ -181,7 +181,14 @@ function deriveInvoiceFlags(invoice: Record<string, any>) {
 // ---------------------------------------------------------------------------
 
 // biome-ignore lint/suspicious/noExplicitAny: invoice shape from tRPC
-function IntegrationBanners({ invoice, flags, peppolTransmission, zatcaSubmission, invoiceId, onInvalidate }: {
+function IntegrationBanners({
+  invoice,
+  flags,
+  peppolTransmission,
+  zatcaSubmission,
+  invoiceId,
+  onInvalidate,
+}: {
   invoice: Record<string, any>;
   flags: ReturnType<typeof deriveInvoiceFlags>;
   peppolTransmission: PeppolTransmissionResult | undefined;
@@ -224,9 +231,7 @@ function IntegrationBanners({ invoice, flags, peppolTransmission, zatcaSubmissio
           receivedAt={new Date(peppolTransmission.createdAt)}
         />
       )}
-      {!!hasPeppolOutbound && (
-        <PeppolTransmissionStatus transmission={peppolTransmission} />
-      )}
+      {!!hasPeppolOutbound && <PeppolTransmissionStatus transmission={peppolTransmission} />}
       {!!invoice.qrCodeBase64 && (flags.isPeppolSource || hasPeppolOutbound) && (
         <PeppolQRDisplay
           qrCodeBase64={invoice.qrCodeBase64}
@@ -293,10 +298,8 @@ export default function InvoiceDetailPage() {
   const t = useTranslations('Invoices');
   const queryClient = useQueryClient();
 
-  const {
-    invoiceQuery, invoice, pdfUrl,
-    reconciliation, peppolTransmission, zatcaSubmission,
-  } = useInvoiceDetailQueries(params.id);
+  const { invoiceQuery, invoice, pdfUrl, reconciliation, peppolTransmission, zatcaSubmission } =
+    useInvoiceDetailQueries(params.id);
 
   useBreadcrumbOverride(params.id, invoice?.invoiceNumber);
 

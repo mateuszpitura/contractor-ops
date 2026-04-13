@@ -3,7 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Eye, EyeOff, Loader2, Truck } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useCallback, useState } from 'react';
+import { useCallback, useId, useState } from 'react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -88,6 +88,7 @@ function PasswordField({
  * Uses saveCourierConfig and getCourierConfigs from the equipment router.
  */
 export function CarrierCredentialForm({ carrier, carrierLabel }: CarrierCredentialFormProps) {
+  const id = useId();
   const t = useTranslations('Settings.carriers');
   const queryClient = useQueryClient();
 
@@ -194,9 +195,9 @@ export function CarrierCredentialForm({ carrier, carrierLabel }: CarrierCredenti
               // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
               onChange={v => setDpdCreds(prev => ({ ...prev, fid: v }))}
             />
-            <label htmlFor="dpd-sandbox" className="flex cursor-pointer items-center gap-2">
+            <label htmlFor={`${id}-dpd-sandbox`} className="flex cursor-pointer items-center gap-2">
               <Checkbox
-                id="dpd-sandbox"
+                id={`${id}-dpd-sandbox`}
                 checked={dpdCreds.sandbox}
                 // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
                 onCheckedChange={checked =>
@@ -229,9 +230,9 @@ export function CarrierCredentialForm({ carrier, carrierLabel }: CarrierCredenti
               // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
               onChange={v => setUpsCreds(prev => ({ ...prev, accountNumber: v }))}
             />
-            <label htmlFor="ups-sandbox" className="flex cursor-pointer items-center gap-2">
+            <label htmlFor={`${id}-ups-sandbox`} className="flex cursor-pointer items-center gap-2">
               <Checkbox
-                id="ups-sandbox"
+                id={`${id}-ups-sandbox`}
                 checked={upsCreds.sandbox}
                 // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
                 onCheckedChange={checked =>

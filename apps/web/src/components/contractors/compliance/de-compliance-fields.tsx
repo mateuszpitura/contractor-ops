@@ -92,7 +92,8 @@ function collectShorthandProps(props: DeComplianceFieldsProps): Partial<DeCountr
   if (props.steuernummer !== undefined) result.steuernummer = props.steuernummer;
   if (props.ustIdNr !== undefined) result.ustIdNr = props.ustIdNr;
   if (props.handelsregister !== undefined) result.handelsregister = props.handelsregister;
-  if (props.sozialversicherungsnummer !== undefined) result.sozialversicherungsnummer = props.sozialversicherungsnummer;
+  if (props.sozialversicherungsnummer !== undefined)
+    result.sozialversicherungsnummer = props.sozialversicherungsnummer;
   return result;
 }
 

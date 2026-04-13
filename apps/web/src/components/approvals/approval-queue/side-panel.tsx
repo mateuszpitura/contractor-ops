@@ -152,7 +152,9 @@ function ClarifyOverlay({
         onKeyDown={e => e.stopPropagation()}>
         <h4 className="font-medium text-sm mb-3">{t('clarifyPopover.heading')}</h4>
         <div className="space-y-1.5 mb-3">
-          <label htmlFor={`${reactId}-clarify-comment`} className="text-[12px] text-muted-foreground">
+          <label
+            htmlFor={`${reactId}-clarify-comment`}
+            className="text-[12px] text-muted-foreground">
             {t('clarifyPopover.commentLabel')}
           </label>
           <Textarea
@@ -221,7 +223,9 @@ function DelegateOverlay({
         <h4 className="font-medium text-sm mb-3">{t('delegatePopover.heading')}</h4>
         <div className="space-y-3 mb-3">
           <div className="space-y-1.5">
-            <label htmlFor={`${reactId}-delegate-user-id`} className="text-[12px] text-muted-foreground">
+            <label
+              htmlFor={`${reactId}-delegate-user-id`}
+              className="text-[12px] text-muted-foreground">
               {t('delegatePopover.userLabel')}
             </label>
             <Input
@@ -233,7 +237,9 @@ function DelegateOverlay({
             />
           </div>
           <div className="space-y-1.5">
-            <label htmlFor={`${reactId}-delegate-note`} className="text-[12px] text-muted-foreground">
+            <label
+              htmlFor={`${reactId}-delegate-note`}
+              className="text-[12px] text-muted-foreground">
               {t('delegatePopover.noteLabel')}
             </label>
             <Textarea

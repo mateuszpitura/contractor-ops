@@ -345,22 +345,48 @@ export const invoiceRouter = router({
       let contractor: ContractorTaxSnapshot | null = null;
       if (invoiceData.contractorId) {
         contractor = await ctx.db.contractor.findFirst({
-          where: { id: invoiceData.contractorId, organizationId: ctx.organizationId, deletedAt: null },
-          select: { id: true, countryCode: true, vatId: true, type: true, latestVatValidatedAt: true, latestVatValidationStatus: true },
+          where: {
+            id: invoiceData.contractorId,
+            organizationId: ctx.organizationId,
+            deletedAt: null,
+          },
+          select: {
+            id: true,
+            countryCode: true,
+            vatId: true,
+            type: true,
+            latestVatValidatedAt: true,
+            latestVatValidationStatus: true,
+          },
         });
 
         if (contractor) {
-          await revalidateStaleVatIfNeeded(contractor, { organizationId: ctx.organizationId, db: ctx.db, userId: ctx.user.id });
+          await revalidateStaleVatIfNeeded(contractor, {
+            organizationId: ctx.organizationId,
+            db: ctx.db,
+            userId: ctx.user.id,
+          });
         }
       }
 
       const finalIsReverseCharge = resolveReverseCharge(
-        contractor, org.countryCode, invoiceData.serviceType, invoiceData.reverseChargeOverride,
+        contractor,
+        org.countryCode,
+        invoiceData.serviceType,
+        invoiceData.reverseChargeOverride,
       );
-      const rcShouldApply = resolveReverseCharge(contractor, org.countryCode, invoiceData.serviceType, undefined);
+      const rcShouldApply = resolveReverseCharge(
+        contractor,
+        org.countryCode,
+        invoiceData.serviceType,
+        undefined,
+      );
 
       const effectiveVatRate = await resolveEffectiveVatRate(
-        invoiceData.vatRate, finalIsReverseCharge, org, ctx.db,
+        invoiceData.vatRate,
+        finalIsReverseCharge,
+        org,
+        ctx.db,
       );
       // ---------------------------------------------------------------------
 

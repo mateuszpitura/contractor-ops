@@ -2,7 +2,7 @@
 
 import { Building2, ChevronsUpDown, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { toast } from 'sonner';
 import { useDashboardContext } from '@/components/layout/dashboard-context';
 import { Button } from '@/components/ui/button';
@@ -37,6 +37,7 @@ export function OrgSwitcher() {
   const { isMobile } = useSidebar();
   const { activeOrg: serverOrg } = useDashboardContext();
   const { data: orgList } = authClient.useListOrganizations();
+  const id = useId();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [newOrgName, setNewOrgName] = useState('');
   const [isCreating, setIsCreating] = useState(false);
@@ -139,9 +140,9 @@ export function OrgSwitcher() {
             }}
             className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="org-name">{t('nameLabel')}</Label>
+              <Label htmlFor={`${id}-org-name`}>{t('nameLabel')}</Label>
               <Input
-                id="org-name"
+                id={`${id}-org-name`}
                 value={newOrgName}
                 // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                 onChange={e => setNewOrgName(e.target.value)}

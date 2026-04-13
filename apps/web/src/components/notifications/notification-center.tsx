@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Bell } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { parseAsInteger, parseAsString, useQueryState } from 'nuqs';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useId, useMemo } from 'react';
 import { toast } from 'sonner';
 import { AnimateIn } from '@/components/shared/animate-in';
 import { EmptyState } from '@/components/shared/empty-state';
@@ -46,6 +46,7 @@ const FILTER_KEYS = ['all', 'approvals', 'tasks', 'contracts', 'invoices'] as co
 export function NotificationCenter() {
   const t = useTranslations('Notifications');
   const te = useTranslations('EmptyStates');
+  const id = useId();
   const router = useRouter();
   const queryClient = useQueryClient();
 
@@ -190,11 +191,11 @@ export function NotificationCenter() {
         {/* Unread only toggle */}
         <div className="flex items-center gap-2">
           <Switch
-            id="unread-only"
+            id={`${id}-unread-only`}
             checked={unreadOnly === 'true'}
             onCheckedChange={handleUnreadToggle}
           />
-          <Label htmlFor="unread-only" className="text-sm">
+          <Label htmlFor={`${id}-unread-only`} className="text-sm">
             {t('unreadOnly')}
           </Label>
         </div>

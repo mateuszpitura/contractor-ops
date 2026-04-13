@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -45,6 +45,7 @@ export function RejectionReasonDialog({
   isBulk = false,
   count = 0,
 }: RejectionReasonDialogProps) {
+  const id = useId();
   const [reason, setReason] = useState('');
   const [error, setError] = useState<string | null>(null);
 
@@ -83,9 +84,9 @@ export function RejectionReasonDialog({
         </DialogHeader>
 
         <div className="space-y-2 py-2">
-          <Label htmlFor="rejection-reason">Rejection Reason</Label>
+          <Label htmlFor={`${id}-rejection-reason`}>Rejection Reason</Label>
           <Textarea
-            id="rejection-reason"
+            id={`${id}-rejection-reason`}
             value={reason}
             // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
             onChange={e => {

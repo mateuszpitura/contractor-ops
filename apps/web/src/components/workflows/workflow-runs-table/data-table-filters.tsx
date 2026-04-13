@@ -133,7 +133,9 @@ export function DataTableFilters({ filters, onFiltersChange }: DataTableFiltersP
 
               {/* Overdue only toggle */}
               <div className="flex items-center justify-between">
-                <Label htmlFor={`${reactId}-overdue-toggle`} className="text-[13px] font-medium text-foreground">
+                <Label
+                  htmlFor={`${reactId}-overdue-toggle`}
+                  className="text-[13px] font-medium text-foreground">
                   {t('filterOverdueOnly')}
                 </Label>
                 <Switch

@@ -353,6 +353,76 @@ export class KsefApiClient {
   }
 
   /**
+   * Calculate backoff delay for a given attempt, capped at 10 seconds.
+   */
+  private static backoffMs(attempt: number): number {
+    return Math.min(1000 * 2 ** attempt, 10000);
+  }
+
+  /**
+   * Determine retry delay for a failed HTTP response, or `null` if non-retryable.
+   */
+  private static retryDelayForResponse(
+    response: Response,
+    attempt: number,
+    retries: number,
+  ): number | null {
+    if (response.status === 429 && attempt < retries) {
+      const retryAfter = response.headers.get('retry-after');
+      return retryAfter ? parseInt(retryAfter, 10) * 1000 : KsefApiClient.backoffMs(attempt);
+    }
+    if (response.status >= 500 && attempt < retries) {
+      return KsefApiClient.backoffMs(attempt);
+    }
+    return null;
+  }
+
+  /**
+   * Returns true if the error is a non-retryable KSeF API error that should be re-thrown.
+   */
+  private static isNonRetryableApiError(error: unknown): boolean {
+    return error instanceof Error && error.message.startsWith('KSeF API error');
+  }
+
+  /**
+   * Build a non-retryable API error from a failed HTTP response.
+   */
+  private static async buildApiError(response: Response): Promise<Error> {
+    const errorBody = await response.text().catch(() => '');
+    return new Error(`KSeF API error ${response.status}: ${errorBody || response.statusText}`);
+  }
+
+  /**
+   * Normalize an unknown thrown value into an Error instance.
+   */
+  private static toError(error: unknown): Error {
+    return error instanceof Error ? error : new Error(String(error));
+  }
+
+  /**
+   * Execute a single fetch attempt: returns the response or decides to retry/throw.
+   * Returns `null` when the caller should continue to the next attempt.
+   */
+  private async attemptFetch(
+    url: string,
+    options: RequestInit,
+    attempt: number,
+    retries: number,
+  ): Promise<Response | null> {
+    const response = await fetch(url, options);
+
+    if (response.ok) return response;
+
+    const delayMs = KsefApiClient.retryDelayForResponse(response, attempt, retries);
+    if (delayMs != null) {
+      await new Promise(resolve => setTimeout(resolve, delayMs));
+      return null;
+    }
+
+    throw await KsefApiClient.buildApiError(response);
+  }
+
+  /**
    * Fetch wrapper with retry logic for transient errors.
    * - Retries on HTTP 429 (rate limit) with Retry-After backoff
    * - Retries on HTTP 5xx with exponential backoff
@@ -363,41 +433,13 @@ export class KsefApiClient {
 
     for (let attempt = 0; attempt <= retries; attempt++) {
       try {
-        const response = await fetch(url, options);
-
-        if (response.ok) {
-          return response;
-        }
-
-        if (response.status === 429) {
-          const retryAfter = response.headers.get('retry-after');
-          const waitMs = retryAfter
-            ? parseInt(retryAfter, 10) * 1000
-            : Math.min(1000 * 2 ** attempt, 10000);
-
-          if (attempt < retries) {
-            await new Promise(resolve => setTimeout(resolve, waitMs));
-            continue;
-          }
-        }
-
-        if (response.status >= 500 && attempt < retries) {
-          const waitMs = Math.min(1000 * 2 ** attempt, 10000);
-          await new Promise(resolve => setTimeout(resolve, waitMs));
-          continue;
-        }
-
-        // Non-retryable error
-        const errorBody = await response.text().catch(() => '');
-        throw new Error(`KSeF API error ${response.status}: ${errorBody || response.statusText}`);
+        const result = await this.attemptFetch(url, options, attempt, retries);
+        if (result) return result;
       } catch (error) {
-        if (error instanceof Error && error.message.startsWith('KSeF API error')) {
-          throw error;
-        }
-        lastError = error instanceof Error ? error : new Error(String(error));
+        if (KsefApiClient.isNonRetryableApiError(error)) throw error;
+        lastError = KsefApiClient.toError(error);
         if (attempt < retries) {
-          const waitMs = Math.min(1000 * 2 ** attempt, 10000);
-          await new Promise(resolve => setTimeout(resolve, waitMs));
+          await new Promise(resolve => setTimeout(resolve, KsefApiClient.backoffMs(attempt)));
         }
       }
     }

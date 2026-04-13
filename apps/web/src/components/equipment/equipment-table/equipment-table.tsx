@@ -8,11 +8,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { DataTableBody } from '@/components/shared/data-table-body';
 import { SortableTableHead } from '@/components/shared/sortable-table-head';
 import { Button } from '@/components/ui/button';
-import {
-  Table,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { Table, TableHeader, TableRow } from '@/components/ui/table';
 import { trpc } from '@/trpc/init';
 import type { EquipmentRow } from './equipment-columns';
 import { getEquipmentColumns } from './equipment-columns';

@@ -1,7 +1,7 @@
+import { enumKey } from '@/lib/enum-key';
 import { render, screen } from '@/test/test-utils';
 import type { ContractorRow } from '../columns';
 import { getColumns } from '../columns';
-import { enumKey } from '@/lib/enum-key';
 
 vi.mock('date-fns', () => ({
   formatDistanceToNow: () => '2 days ago',
@@ -103,7 +103,7 @@ describe('getColumns cell renderers', () => {
 
   it('type cell renders badge with translated type', () => {
     renderCell('type', makeRow({ type: 'COMPANY' }));
-    expect(screen.getByText('type.COMPANY')).toBeInTheDocument();
+    expect(screen.getByText('type.company')).toBeInTheDocument();
   });
 
   it('lifecycleStage cell renders badge for each stage', () => {
@@ -166,7 +166,7 @@ describe('getColumns cell renderers', () => {
         customFieldsJson: { billingModel: 'HOURLY' },
       }),
     );
-    expect(screen.getByText('billingModel.HOURLY')).toBeInTheDocument();
+    expect(screen.getByText('billingModel.hourly')).toBeInTheDocument();
   });
 
   it('rate cell renders mdash when rateValueMinor is missing', () => {

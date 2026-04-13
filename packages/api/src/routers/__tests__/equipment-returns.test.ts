@@ -102,9 +102,9 @@ vi.mock('@contractor-ops/db', () => ({
 }));
 
 vi.mock('../../services/courier/inpost-client.js', () => ({
-  InPostClient: vi.fn().mockImplementation(() => ({
-    createShipment: mockInPostCreateShipment,
-  })),
+  InPostClient: vi.fn().mockImplementation(function (this: Record<string, unknown>) {
+    this.createShipment = mockInPostCreateShipment;
+  }),
 }));
 
 vi.mock('../../services/notification-service.js', () => ({
@@ -267,13 +267,13 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
 
 import { auth } from '@contractor-ops/auth';
 import { createCallerFactory } from '../../init.js';
-import { appRouter } from '../../root.js';
+import { equipmentReturnsRouter } from '../equipment-returns.js';
 
 // ---------------------------------------------------------------------------
 // Caller helper
 // ---------------------------------------------------------------------------
 
-const createCaller = createCallerFactory(appRouter);
+const createCaller = createCallerFactory(equipmentReturnsRouter);
 
 function makeCaller(userId = USER_ID, orgId = ORG_ID) {
   const session = {
@@ -362,9 +362,9 @@ describe('equipmentReturns.approveReturnRequest', () => {
     mockPrisma.returnRequest.update.mockResolvedValueOnce(updatedRequest);
     mockPrisma.auditLog.create.mockResolvedValue({});
 
-    const result = await caller.equipmentReturns.approveReturnRequest({
+    const result = await caller.approveReturnRequest({
       id: 'rr-1',
-      parcelSize: 'A',
+      parcelSize: 'small',
     });
 
     expect(result).toBeDefined();
@@ -381,7 +381,7 @@ describe('equipmentReturns.approveReturnRequest', () => {
     mockPrisma.returnRequest.findFirst.mockResolvedValueOnce(null);
 
     await expect(
-      caller.equipmentReturns.approveReturnRequest({ id: 'nonexistent', parcelSize: 'A' }),
+      caller.approveReturnRequest({ id: 'nonexistent', parcelSize: 'small' }),
     ).rejects.toThrow('RETURN_REQUEST_NOT_FOUND');
   });
 
@@ -393,9 +393,9 @@ describe('equipmentReturns.approveReturnRequest', () => {
       contractor: { id: 'c-1', displayName: 'Test', email: 'test@test.com', phone: null },
     });
 
-    await expect(
-      caller.equipmentReturns.approveReturnRequest({ id: 'rr-1', parcelSize: 'A' }),
-    ).rejects.toThrow('RETURN_REQUEST_NOT_PENDING');
+    await expect(caller.approveReturnRequest({ id: 'rr-1', parcelSize: 'small' })).rejects.toThrow(
+      'RETURN_REQUEST_NOT_PENDING',
+    );
   });
 
   it('throws NOT_FOUND when courier config is missing', async () => {
@@ -410,9 +410,9 @@ describe('equipmentReturns.approveReturnRequest', () => {
     mockPrisma.equipmentAssignment.findMany.mockResolvedValueOnce([]);
     mockPrisma.courierConfig.findUnique.mockResolvedValueOnce(null);
 
-    await expect(
-      caller.equipmentReturns.approveReturnRequest({ id: 'rr-1', parcelSize: 'A' }),
-    ).rejects.toThrow('COURIER_CONFIG_NOT_FOUND');
+    await expect(caller.approveReturnRequest({ id: 'rr-1', parcelSize: 'small' })).rejects.toThrow(
+      'COURIER_CONFIG_NOT_FOUND',
+    );
   });
 });
 
@@ -435,7 +435,7 @@ describe('equipmentReturns.rejectReturnRequest', () => {
     mockPrisma.equipment.updateMany.mockResolvedValueOnce({ count: 2 });
     mockPrisma.auditLog.create.mockResolvedValue({});
 
-    const result = await caller.equipmentReturns.rejectReturnRequest({
+    const result = await caller.rejectReturnRequest({
       id: 'rr-1',
       reason: 'Equipment not needed',
     });
@@ -451,9 +451,9 @@ describe('equipmentReturns.rejectReturnRequest', () => {
   it('throws NOT_FOUND when return request does not exist', async () => {
     mockPrisma.returnRequest.findFirst.mockResolvedValueOnce(null);
 
-    await expect(
-      caller.equipmentReturns.rejectReturnRequest({ id: 'nonexistent' }),
-    ).rejects.toThrow('RETURN_REQUEST_NOT_FOUND');
+    await expect(caller.rejectReturnRequest({ id: 'nonexistent' })).rejects.toThrow(
+      'RETURN_REQUEST_NOT_FOUND',
+    );
   });
 
   it('throws BAD_REQUEST when return request is not pending', async () => {
@@ -463,7 +463,7 @@ describe('equipmentReturns.rejectReturnRequest', () => {
       status: 'REJECTED',
     });
 
-    await expect(caller.equipmentReturns.rejectReturnRequest({ id: 'rr-1' })).rejects.toThrow(
+    await expect(caller.rejectReturnRequest({ id: 'rr-1' })).rejects.toThrow(
       'RETURN_REQUEST_NOT_PENDING',
     );
   });
@@ -494,7 +494,7 @@ describe('equipmentReturns.listReturnRequests', () => {
     ];
     mockPrisma.returnRequest.findMany.mockResolvedValueOnce(requests);
 
-    const result = await caller.equipmentReturns.listReturnRequests({});
+    const result = await caller.listReturnRequests({});
 
     expect(result).toHaveLength(2);
     expect(mockPrisma.returnRequest.findMany).toHaveBeenCalledWith(
@@ -507,7 +507,7 @@ describe('equipmentReturns.listReturnRequests', () => {
   it('filters by status when provided', async () => {
     mockPrisma.returnRequest.findMany.mockResolvedValueOnce([]);
 
-    await caller.equipmentReturns.listReturnRequests({ status: 'PENDING_APPROVAL' });
+    await caller.listReturnRequests({ status: 'PENDING_APPROVAL' });
 
     expect(mockPrisma.returnRequest.findMany).toHaveBeenCalledWith(
       expect.objectContaining({

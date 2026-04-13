@@ -69,17 +69,31 @@ function collectShorthandProps(props: UkComplianceFieldsProps): Partial<UkCountr
   if (props.entityType !== undefined) result.entityType = props.entityType;
   if (props.isVatRegistered !== undefined) result.isVatRegistered = props.isVatRegistered;
   if (props.utr !== undefined) result.utr = props.utr;
-  if (props.companiesHouseNumber !== undefined) result.companiesHouseNumber = props.companiesHouseNumber;
-  if (props.vatRegistrationNumber !== undefined) result.vatRegistrationNumber = props.vatRegistrationNumber;
+  if (props.companiesHouseNumber !== undefined)
+    result.companiesHouseNumber = props.companiesHouseNumber;
+  if (props.vatRegistrationNumber !== undefined)
+    result.vatRegistrationNumber = props.vatRegistrationNumber;
   return result;
 }
 
 /** Required-field label with optional asterisk. */
-function RequiredLabel({ htmlFor, children, required }: { htmlFor: string; children: React.ReactNode; required: boolean }) {
+function RequiredLabel({
+  htmlFor,
+  children,
+  required,
+}: {
+  htmlFor: string;
+  children: React.ReactNode;
+  required: boolean;
+}) {
   return (
     <Label htmlFor={htmlFor} className="text-sm font-medium">
       {children}
-      {required ? <span aria-hidden="true" className="ms-1 text-destructive">*</span> : null}
+      {required ? (
+        <span aria-hidden="true" className="ms-1 text-destructive">
+          *
+        </span>
+      ) : null}
     </Label>
   );
 }
@@ -147,7 +161,9 @@ export function UkComplianceFields(props: UkComplianceFieldsProps) {
       />
 
       <div className="space-y-2">
-        <RequiredLabel htmlFor={`${id}-utr`} required={utrRequired}>UTR</RequiredLabel>
+        <RequiredLabel htmlFor={`${id}-utr`} required={utrRequired}>
+          UTR
+        </RequiredLabel>
         <Input
           id={`${id}-utr`}
           inputMode="numeric"
@@ -165,7 +181,9 @@ export function UkComplianceFields(props: UkComplianceFieldsProps) {
 
       {isLtdOrLlp ? (
         <div className="space-y-2">
-          <RequiredLabel htmlFor={`${id}-ch`} required={chRequired}>Companies House number</RequiredLabel>
+          <RequiredLabel htmlFor={`${id}-ch`} required={chRequired}>
+            Companies House number
+          </RequiredLabel>
           <Input
             id={`${id}-ch`}
             maxLength={8}
@@ -190,7 +208,9 @@ export function UkComplianceFields(props: UkComplianceFieldsProps) {
 
       {isVatRegistered ? (
         <div className="space-y-2">
-          <RequiredLabel htmlFor={`${id}-vat`} required={vatRequired}>VAT registration number</RequiredLabel>
+          <RequiredLabel htmlFor={`${id}-vat`} required={vatRequired}>
+            VAT registration number
+          </RequiredLabel>
           <Input
             id={`${id}-vat`}
             aria-required={vatRequired ? 'true' : undefined}

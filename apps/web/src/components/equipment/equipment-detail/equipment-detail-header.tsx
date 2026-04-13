@@ -21,10 +21,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { enumKey } from '@/lib/enum-key';
 import { trpc } from '@/trpc/init';
 import { EquipmentStatusBadge } from '../equipment-status-badge';
 import { EquipmentTypeIcon } from '../equipment-type-icon';
-import { enumKey } from '@/lib/enum-key';
 
 // ---------------------------------------------------------------------------
 // Types

@@ -100,38 +100,14 @@ function buildParty(party: EInvoice['supplier'], _currencyCode: string) {
 }
 
 // ---------------------------------------------------------------------------
-// Generator
+// Section builders (reduce cognitive complexity of generateZatcaXml)
 // ---------------------------------------------------------------------------
 
 /**
- * Generates a ZATCA-compliant UBL 2.1 Invoice XML from a canonical EInvoice.
- *
- * The invoice.extensions field MUST contain:
- * - invoiceType: "standard" | "simplified"
- * - invoiceSubtype: string (e.g., "0100000")
- * - icv: number (Invoice Counter Value)
- * - pih: string (Previous Invoice Hash, hex SHA-256)
- * - uuid: string (UUID v4)
- *
- * The generated XML is unsigned — Plan 02 wires XAdES signing.
+ * Build UBL TaxSubtotal elements from the canonical tax breakdown.
  */
-export function generateZatcaXml(invoice: EInvoice): string {
-  const ext = (invoice.extensions ?? {}) as Record<string, unknown>;
-  const invoiceType = (ext.invoiceType as ZatcaInvoiceType) ?? 'standard';
-  const invoiceSubtype = (ext.invoiceSubtype as string) ?? '0100000';
-  const icv = (ext.icv as number) ?? 1;
-  const pih = (ext.pih as string) ?? '';
-  const uuid = (ext.uuid as string) ?? '';
-
-  const profileId = resolveProfileId(invoiceType);
-  const issueTime = extractIssueTime(invoice.issueDate);
-  const issueDate = invoice.issueDate.split('T')[0] ?? invoice.issueDate;
-
-  // Base64-encode the PIH for embedding
-  const pihBase64 = Buffer.from(pih, 'hex').toString('base64');
-
-  // Tax subtotals
-  const taxSubtotals = invoice.taxBreakdown.map(tax => ({
+function buildTaxSubtotals(invoice: EInvoice) {
+  return invoice.taxBreakdown.map(tax => ({
     'cbc:TaxableAmount': {
       '@_currencyID': invoice.currencyCode,
       '#text': fromMinor(tax.taxableAmountMinor),
@@ -143,16 +119,16 @@ export function generateZatcaXml(invoice: EInvoice): string {
     'cac:TaxCategory': {
       'cbc:ID': tax.taxCategory,
       ...(tax.percent == null ? {} : { 'cbc:Percent': tax.percent.toString() }),
-      'cac:TaxScheme': {
-        'cbc:ID': ZATCA_TAX_SCHEME_ID,
-      },
+      'cac:TaxScheme': { 'cbc:ID': ZATCA_TAX_SCHEME_ID },
     },
   }));
+}
 
-  const totalTaxAmount = invoice.taxBreakdown.reduce((sum, t) => sum + t.taxAmountMinor, 0);
-
-  // Invoice lines
-  const invoiceLines = invoice.lines.map(line => ({
+/**
+ * Build UBL InvoiceLine elements from the canonical line items.
+ */
+function buildInvoiceLines(invoice: EInvoice) {
+  return invoice.lines.map(line => ({
     'cbc:ID': String(line.lineNumber),
     'cbc:InvoicedQuantity': {
       '@_unitCode': line.unit ?? 'EA',
@@ -179,9 +155,7 @@ export function generateZatcaXml(invoice: EInvoice): string {
             'cac:ClassifiedTaxCategory': {
               'cbc:ID': line.vatRate,
               ...(line.vatRate === 'S' ? { 'cbc:Percent': '15' } : {}),
-              'cac:TaxScheme': {
-                'cbc:ID': ZATCA_TAX_SCHEME_ID,
-              },
+              'cac:TaxScheme': { 'cbc:ID': ZATCA_TAX_SCHEME_ID },
             },
           }
         : {}),
@@ -193,6 +167,59 @@ export function generateZatcaXml(invoice: EInvoice): string {
       },
     },
   }));
+}
+
+/**
+ * Build UBL PaymentMeans element, or empty object if no payment means provided.
+ */
+function buildPaymentMeans(invoice: EInvoice): Record<string, unknown> {
+  if (!invoice.paymentMeans) return {};
+
+  const pm = invoice.paymentMeans;
+  const node: Record<string, unknown> = {};
+  if (pm.code) node['cbc:PaymentMeansCode'] = pm.code;
+  if (pm.dueDate) node['cbc:PaymentDueDate'] = pm.dueDate;
+  if (pm.bankAccount) {
+    const account: Record<string, unknown> = { 'cbc:ID': pm.bankAccount };
+    if (pm.bankName) {
+      account['cac:FinancialInstitutionBranch'] = { 'cbc:Name': pm.bankName };
+    }
+    node['cac:PayeeFinancialAccount'] = account;
+  }
+
+  return { 'cac:PaymentMeans': node };
+}
+
+// ---------------------------------------------------------------------------
+// Generator
+// ---------------------------------------------------------------------------
+
+/**
+ * Generates a ZATCA-compliant UBL 2.1 Invoice XML from a canonical EInvoice.
+ *
+ * The invoice.extensions field MUST contain:
+ * - invoiceType: "standard" | "simplified"
+ * - invoiceSubtype: string (e.g., "0100000")
+ * - icv: number (Invoice Counter Value)
+ * - pih: string (Previous Invoice Hash, hex SHA-256)
+ * - uuid: string (UUID v4)
+ *
+ * The generated XML is unsigned — Plan 02 wires XAdES signing.
+ */
+export function generateZatcaXml(invoice: EInvoice): string {
+  const ext = (invoice.extensions ?? {}) as Record<string, unknown>;
+  const invoiceType = (ext.invoiceType as ZatcaInvoiceType) ?? 'standard';
+  const invoiceSubtype = (ext.invoiceSubtype as string) ?? '0100000';
+  const icv = (ext.icv as number) ?? 1;
+  const pih = (ext.pih as string) ?? '';
+  const uuid = (ext.uuid as string) ?? '';
+
+  const profileId = resolveProfileId(invoiceType);
+  const issueTime = extractIssueTime(invoice.issueDate);
+  const issueDate = invoice.issueDate.split('T')[0] ?? invoice.issueDate;
+  const pihBase64 = Buffer.from(pih, 'hex').toString('base64');
+
+  const totalTaxAmount = invoice.taxBreakdown.reduce((sum, t) => sum + t.taxAmountMinor, 0);
 
   const doc = {
     Invoice: {
@@ -209,9 +236,7 @@ export function generateZatcaXml(invoice: EInvoice): string {
       'ext:UBLExtensions': {
         'ext:UBLExtension': {
           'ext:ExtensionURI': 'urn:oasis:names:specification:ubl:dsig:enveloped:xades',
-          'ext:ExtensionContent': {
-            // Signature placeholder — Plan 02 fills this
-          },
+          'ext:ExtensionContent': {},
         },
       },
 
@@ -226,63 +251,28 @@ export function generateZatcaXml(invoice: EInvoice): string {
       },
       'cbc:DocumentCurrencyCode': invoice.currencyCode,
 
-      // Additional Document References: ICV, PIH, QR placeholder
       'cac:AdditionalDocumentReference': [
-        {
-          'cbc:ID': 'ICV',
-          'cbc:UUID': String(icv),
-        },
+        { 'cbc:ID': 'ICV', 'cbc:UUID': String(icv) },
         {
           'cbc:ID': 'PIH',
           'cac:Attachment': {
-            'cbc:EmbeddedDocumentBinaryObject': {
-              '@_mimeCode': 'text/plain',
-              '#text': pihBase64,
-            },
+            'cbc:EmbeddedDocumentBinaryObject': { '@_mimeCode': 'text/plain', '#text': pihBase64 },
           },
         },
-        {
-          'cbc:ID': 'QR',
-          // QR code data placeholder — Plan 03 fills this
-        },
+        { 'cbc:ID': 'QR' },
       ],
 
       'cac:AccountingSupplierParty': buildParty(invoice.supplier, invoice.currencyCode),
       'cac:AccountingCustomerParty': buildParty(invoice.customer, invoice.currencyCode),
 
-      ...(invoice.paymentMeans
-        ? {
-            'cac:PaymentMeans': {
-              ...(invoice.paymentMeans.code
-                ? { 'cbc:PaymentMeansCode': invoice.paymentMeans.code }
-                : {}),
-              ...(invoice.paymentMeans.dueDate
-                ? { 'cbc:PaymentDueDate': invoice.paymentMeans.dueDate }
-                : {}),
-              ...(invoice.paymentMeans.bankAccount
-                ? {
-                    'cac:PayeeFinancialAccount': {
-                      'cbc:ID': invoice.paymentMeans.bankAccount,
-                      ...(invoice.paymentMeans.bankName
-                        ? {
-                            'cac:FinancialInstitutionBranch': {
-                              'cbc:Name': invoice.paymentMeans.bankName,
-                            },
-                          }
-                        : {}),
-                    },
-                  }
-                : {}),
-            },
-          }
-        : {}),
+      ...buildPaymentMeans(invoice),
 
       'cac:TaxTotal': {
         'cbc:TaxAmount': {
           '@_currencyID': invoice.currencyCode,
           '#text': fromMinor(totalTaxAmount),
         },
-        'cac:TaxSubtotal': taxSubtotals,
+        'cac:TaxSubtotal': buildTaxSubtotals(invoice),
       },
 
       'cac:LegalMonetaryTotal': {
@@ -300,7 +290,7 @@ export function generateZatcaXml(invoice: EInvoice): string {
         },
       },
 
-      'cac:InvoiceLine': invoiceLines,
+      'cac:InvoiceLine': buildInvoiceLines(invoice),
     },
   };
 

@@ -9,8 +9,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Link } from '@/i18n/navigation';
-import type { InvoiceRow } from './invoice-table/columns';
 import { enumKey } from '@/lib/enum-key';
+import type { InvoiceRow } from './invoice-table/columns';
 
 // ---------------------------------------------------------------------------
 // Status badge colors (mirrors columns.tsx)

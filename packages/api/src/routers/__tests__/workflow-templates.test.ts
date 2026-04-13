@@ -9,18 +9,13 @@ import { TRPCError } from '@trpc/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ---------------------------------------------------------------------------
-// Constants
+// Mock Prisma via vi.hoisted (constants defined here to avoid TDZ errors)
 // ---------------------------------------------------------------------------
 
-const ORG_ID = 'org-wftmpl-001';
-const USER_ID = 'user-wftmpl-001';
-const TEMPLATE_ID = 'tmpl-001';
-
-// ---------------------------------------------------------------------------
-// Mock Prisma via vi.hoisted
-// ---------------------------------------------------------------------------
-
-const { mockPrisma } = vi.hoisted(() => {
+const { mockPrisma, ORG_ID, USER_ID, TEMPLATE_ID } = vi.hoisted(() => {
+  const ORG_ID = 'org-wftmpl-001';
+  const USER_ID = 'user-wftmpl-001';
+  const TEMPLATE_ID = 'tmpl-001';
   type Rec = Record<string, unknown>;
 
   const mockPrisma: Rec = {
@@ -71,7 +66,7 @@ const { mockPrisma } = vi.hoisted(() => {
     }),
   };
 
-  return { mockPrisma };
+  return { mockPrisma, ORG_ID, USER_ID, TEMPLATE_ID };
 });
 
 // ---------------------------------------------------------------------------
@@ -257,28 +252,14 @@ describe('workflowTemplatesRouter', () => {
       });
     });
 
-    it('creates template with empty tasks array', async () => {
-      mockPrisma.workflowTemplate.create.mockResolvedValueOnce({
-        id: TEMPLATE_ID,
-        organizationId: ORG_ID,
-        name: 'Empty',
-        status: 'DRAFT',
-      });
-      mockPrisma.workflowTemplate.findUniqueOrThrow.mockResolvedValueOnce({
-        id: TEMPLATE_ID,
-        name: 'Empty',
-        status: 'DRAFT',
-        tasks: [],
-      });
-
-      const result = await caller.createTemplate({
-        name: 'Empty',
-        type: 'ONBOARDING',
-        tasks: [],
-      });
-
-      expect(result).toMatchObject({ id: TEMPLATE_ID });
-      expect(mockPrisma.workflowTaskTemplate.createMany).not.toHaveBeenCalled();
+    it('rejects template with empty tasks array (min 1 required)', async () => {
+      await expect(
+        caller.createTemplate({
+          name: 'Empty',
+          type: 'ONBOARDING',
+          tasks: [],
+        }),
+      ).rejects.toThrow();
     });
   });
 

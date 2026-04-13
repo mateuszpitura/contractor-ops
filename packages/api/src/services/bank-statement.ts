@@ -116,7 +116,10 @@ export function parseCsvStatement(content: string): ParsedTransaction[] {
   const headerLine = lines[0] ?? '';
   const delimiter = headerLine.includes(';') ? ';' : ',';
   const headers = headerLine.split(delimiter).map(h =>
-    h.replace(/^["']|["']$/g, '').trim().toLowerCase(),
+    h
+      .replace(/^["']|["']$/g, '')
+      .trim()
+      .toLowerCase(),
   );
 
   const col = detectCsvColumns(headers);
@@ -131,8 +134,10 @@ export function parseCsvStatement(content: string): ParsedTransaction[] {
 
     const iban = col.iban >= 0 ? cells[col.iban]?.replace(/["'\s]/g, '').trim() : undefined;
     const dateStr = col.date >= 0 ? cells[col.date]?.replace(/["']/g, '').trim() : undefined;
-    const reference = col.reference >= 0 ? cells[col.reference]?.replace(/["']/g, '').trim() : undefined;
-    const description = col.description >= 0 ? (cells[col.description]?.replace(/["']/g, '').trim() ?? '') : '';
+    const reference =
+      col.reference >= 0 ? cells[col.reference]?.replace(/["']/g, '').trim() : undefined;
+    const description =
+      col.description >= 0 ? (cells[col.description]?.replace(/["']/g, '').trim() ?? '') : '';
 
     transactions.push({
       amount,
@@ -185,7 +190,12 @@ function scoreTransactionItem(
   txAmount: number,
   txIban: string,
   item: { id: string; amountMinor: number; iban: string },
-): { itemId: string; confidence: 'exact' | 'partial'; amountMatched: boolean; ibanMatched: boolean } | null {
+): {
+  itemId: string;
+  confidence: 'exact' | 'partial';
+  amountMatched: boolean;
+  ibanMatched: boolean;
+} | null {
   const itemIban = normalizeIban(item.iban);
   const ibanMatched =
     txIban.length >= 10 && itemIban.length >= 10 && txIban.slice(-20) === itemIban.slice(-20);
@@ -213,7 +223,12 @@ function findBestMatch(
   txIban: string,
   items: { id: string; amountMinor: number; iban: string }[],
   matchedItemIds: Set<string>,
-): { itemId: string; confidence: 'exact' | 'partial'; amountMatched: boolean; ibanMatched: boolean } | null {
+): {
+  itemId: string;
+  confidence: 'exact' | 'partial';
+  amountMatched: boolean;
+  ibanMatched: boolean;
+} | null {
   let bestMatch: ReturnType<typeof scoreTransactionItem> = null;
 
   for (const item of items) {

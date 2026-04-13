@@ -1,7 +1,7 @@
+import { enumKey } from '@/lib/enum-key';
 import { render, screen } from '@/test/test-utils';
 import type { ContractRow } from '../columns';
 import { getColumns } from '../columns';
-import { enumKey } from '@/lib/enum-key';
 
 vi.mock('date-fns', () => ({
   formatDistanceToNow: () => '2 days ago',
@@ -210,6 +210,6 @@ describe('getColumns cell renderers (contracts)', () => {
 
   it('billingModel cell renders translated billing model', () => {
     renderCell('billingModel', makeRow({ billingModel: 'FIXED' }));
-    expect(screen.getByText('billingModel.FIXED')).toBeInTheDocument();
+    expect(screen.getByText('billingModel.fixed')).toBeInTheDocument();
   });
 });

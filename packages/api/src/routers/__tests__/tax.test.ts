@@ -387,11 +387,11 @@ describe('tax.calculateWht', () => {
 
     const result = await caller.tax.calculateWht({
       contractorResidency: 'DE',
-      serviceType: 'CONSULTING',
+      serviceType: 'technical_services',
       grossAmountMinor: 10000,
     });
 
-    expect(mockCalculateWht).toHaveBeenCalledWith('PL', 'DE', 'CONSULTING', 10000);
+    expect(mockCalculateWht).toHaveBeenCalledWith('PL', 'DE', 'technical_services', 10000);
     expect(result).toEqual(whtResult);
   });
 
@@ -400,7 +400,7 @@ describe('tax.calculateWht', () => {
 
     const result = await caller.tax.calculateWht({
       contractorResidency: 'DE',
-      serviceType: 'CONSULTING',
+      serviceType: 'technical_services',
       grossAmountMinor: 10000,
     });
 

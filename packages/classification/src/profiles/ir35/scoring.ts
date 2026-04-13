@@ -79,8 +79,8 @@ export function scoreIr35(answers: AnswerMap): ScoreIr35Result {
     });
   }
 
-  const subVerdict = areaMap.get('substitution')!.verdict;
-  const mooVerdict = areaMap.get('moo')!.verdict;
+  const subVerdict = areaMap.get('substitution')?.verdict;
+  const mooVerdict = areaMap.get('moo')?.verdict;
 
   let overall: Ir35Verdict;
   let reasoning: string;
@@ -105,7 +105,9 @@ export function scoreIr35(answers: AnswerMap): ScoreIr35Result {
     let outsideCount = 0;
     let neutralCriticalCount = 0;
     for (const area of AREAS_ORDERED) {
-      const v = areaMap.get(area)!.verdict;
+      const areaEntry = areaMap.get(area);
+      if (!areaEntry) continue;
+      const v = areaEntry.verdict;
       if (isInsideSignal(v)) insideCount += 1;
       if (isOutsideSignal(v)) outsideCount += 1;
       if (CRITICAL_AREAS.includes(area) && v === 'neutral') neutralCriticalCount += 1;
@@ -135,7 +137,11 @@ export function scoreIr35(answers: AnswerMap): ScoreIr35Result {
   }
 
   const areas: Ir35AreaResult[] = AREAS_ORDERED.map(area => {
-    const base = areaMap.get(area)!;
+    const base = areaMap.get(area);
+    if (!base) {
+      // Unreachable: we populated every area in the loop above.
+      throw new Error(`scoreIr35: missing area result for ${area}`);
+    }
     return { ...base, rationaleKey: rationaleKey(overall, triggerKey) };
   });
 

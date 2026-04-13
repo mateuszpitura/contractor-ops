@@ -3,7 +3,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Loader2, ShieldCheck, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import {
@@ -44,6 +44,7 @@ interface KsefSetupDialogProps {
 // ---------------------------------------------------------------------------
 
 export function KsefSetupDialog({ open, onOpenChange, orgNip }: KsefSetupDialogProps) {
+  const id = useId();
   const t = useTranslations('ksef');
   const queryClient = useQueryClient();
 
@@ -126,8 +127,14 @@ export function KsefSetupDialog({ open, onOpenChange, orgNip }: KsefSetupDialogP
         <div className="space-y-4">
           {/* Organization NIP (read-only) */}
           <div className="space-y-2">
-            <Label htmlFor="ksef-nip">{t('orgNipLabel')}</Label>
-            <Input id="ksef-nip" value={orgNip ?? ''} readOnly disabled className="font-mono" />
+            <Label htmlFor={`${id}-ksef-nip`}>{t('orgNipLabel')}</Label>
+            <Input
+              id={`${id}-ksef-nip`}
+              value={orgNip ?? ''}
+              readOnly
+              disabled
+              className="font-mono"
+            />
             {orgNip ? (
               <p className="text-xs text-muted-foreground">{t('orgNipHelper')}</p>
             ) : (
@@ -149,9 +156,9 @@ export function KsefSetupDialog({ open, onOpenChange, orgNip }: KsefSetupDialogP
 
             <TabsContent value="token">
               <div className="space-y-2 pt-2">
-                <Label htmlFor="ksef-token">{t('tokenLabel')}</Label>
+                <Label htmlFor={`${id}-ksef-token`}>{t('tokenLabel')}</Label>
                 <textarea
-                  id="ksef-token"
+                  id={`${id}-ksef-token`}
                   rows={4}
                   value={token}
                   // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
@@ -169,7 +176,7 @@ export function KsefSetupDialog({ open, onOpenChange, orgNip }: KsefSetupDialogP
                 <div className="space-y-2">
                   <Label>{t('certificateFileLabel')}</Label>
                   <label
-                    htmlFor="ksef-cert-file"
+                    htmlFor={`${id}-ksef-cert-file`}
                     className="flex h-20 cursor-pointer items-center justify-center rounded-md border-2 border-dashed border-muted-foreground/25 bg-muted/30 text-sm text-muted-foreground transition-colors hover:border-primary/50 hover:bg-muted/50">
                     {certificateFile ? (
                       <span className="font-medium text-foreground">{certificateFile.name}</span>
@@ -180,7 +187,7 @@ export function KsefSetupDialog({ open, onOpenChange, orgNip }: KsefSetupDialogP
                       </span>
                     )}
                     <input
-                      id="ksef-cert-file"
+                      id={`${id}-ksef-cert-file`}
                       type="file"
                       accept=".p12,.pem"
                       disabled={isFormDisabled}
@@ -192,9 +199,11 @@ export function KsefSetupDialog({ open, onOpenChange, orgNip }: KsefSetupDialogP
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="ksef-cert-password">{t('certificatePasswordLabel')}</Label>
+                  <Label htmlFor={`${id}-ksef-cert-password`}>
+                    {t('certificatePasswordLabel')}
+                  </Label>
                   <Input
-                    id="ksef-cert-password"
+                    id={`${id}-ksef-cert-password`}
                     type="password"
                     value={certificatePassword}
                     // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler

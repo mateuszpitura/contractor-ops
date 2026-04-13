@@ -3,7 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ClipboardCopy, Loader2, Save } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useId, useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import {
@@ -22,6 +22,7 @@ import { trpc } from '@/trpc/init';
 // ---------------------------------------------------------------------------
 
 export function InvoiceMatchingSettings() {
+  const id = useId();
   const t = useTranslations('Settings');
   const tToast = useTranslations('Settings.toast');
   const queryClient = useQueryClient();
@@ -83,11 +84,16 @@ export function InvoiceMatchingSettings() {
       <CardContent className="space-y-6">
         {/* Email inbox address */}
         <div className="space-y-2">
-          <label htmlFor="invoice-email" className="text-sm font-medium">
+          <label htmlFor={`${id}-invoice-email`} className="text-sm font-medium">
             {t('invoiceEmailInbox')}
           </label>
           <div className="flex items-center gap-2">
-            <Input id="invoice-email" value={emailAddress} readOnly className="font-mono text-sm" />
+            <Input
+              id={`${id}-invoice-email`}
+              value={emailAddress}
+              readOnly
+              className="font-mono text-sm"
+            />
             <Button
               type="button"
               variant="outline"
@@ -102,11 +108,11 @@ export function InvoiceMatchingSettings() {
 
         {/* Deviation threshold */}
         <div className="space-y-2">
-          <label htmlFor="deviation-threshold" className="text-sm font-medium">
+          <label htmlFor={`${id}-deviation-threshold`} className="text-sm font-medium">
             {t('deviationThreshold')}
           </label>
           <Input
-            id="deviation-threshold"
+            id={`${id}-deviation-threshold`}
             type="number"
             min={1}
             max={100}

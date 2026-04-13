@@ -21,6 +21,7 @@ import { Badge } from '@/components/ui/badge';
 import { usePermissions } from '@/hooks/use-permissions';
 import { Link } from '@/i18n/navigation';
 import { authClient } from '@/lib/auth-client';
+import { enumKey } from '@/lib/enum-key';
 import { trpc } from '@/trpc/init';
 import {
   AnimatedNumber,
@@ -38,7 +39,6 @@ import {
   TiltCard,
 } from './_components/dashboard-primitives';
 import { SpendChartV2 } from './_components/spend-chart-v2';
-import { enumKey } from '@/lib/enum-key';
 
 // =============================================================================
 // MAIN PAGE
@@ -196,12 +196,7 @@ export default function DashboardV2Page() {
 
                   {/* Sparkline — stretches to full width */}
                   <div className="w-full">
-                    <Sparkline
-                      data={sparkData}
-                      w={600}
-                      h={56}
-                      color="var(--color-primary)"
-                    />
+                    <Sparkline data={sparkData} w={600} h={56} color="var(--color-primary)" />
                   </div>
                 </div>
               </TiltCard>
@@ -460,7 +455,11 @@ export default function DashboardV2Page() {
                         <Badge
                           variant="secondary"
                           className="px-1.5 py-0 text-[8px] font-bold uppercase tracking-wider">
-                          {t(`activity.resources.${enumKey(item.resourceType)}` as Parameters<typeof t>[0])}
+                          {t(
+                            `activity.resources.${enumKey(item.resourceType)}` as Parameters<
+                              typeof t
+                            >[0],
+                          )}
                         </Badge>
                         <span className="text-[9px] text-muted-foreground/40">
                           {formatDistanceToNow(new Date(item.createdAt), { addSuffix: true })}

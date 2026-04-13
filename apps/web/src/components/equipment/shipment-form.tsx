@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useEffect } from 'react';
+import { useEffect, useId } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -67,6 +67,7 @@ export function ShipmentForm({
   equipmentId,
   equipmentName,
 }: ShipmentFormProps) {
+  const id = useId();
   const t = useTranslations('Equipment');
   const queryClient = useQueryClient();
 
@@ -176,16 +177,16 @@ export function ShipmentForm({
           {/* Custom carrier name */}
           {watchedCarrier === 'Other' && (
             <div className="space-y-2">
-              <Label htmlFor="shipment-carrier-custom">{t('shipment.carrierCustom')}</Label>
-              <Input id="shipment-carrier-custom" {...form.register('carrierCustom')} />
+              <Label htmlFor={`${id}-shipment-carrier-custom`}>{t('shipment.carrierCustom')}</Label>
+              <Input id={`${id}-shipment-carrier-custom`} {...form.register('carrierCustom')} />
             </div>
           )}
 
           {/* Tracking number */}
           <div className="space-y-2">
-            <Label htmlFor="shipment-tracking">{t('shipment.trackingNumber')}</Label>
+            <Label htmlFor={`${id}-shipment-tracking`}>{t('shipment.trackingNumber')}</Label>
             <Input
-              id="shipment-tracking"
+              id={`${id}-shipment-tracking`}
               className="font-mono"
               {...form.register('trackingNumber')}
             />
@@ -193,9 +194,11 @@ export function ShipmentForm({
 
           {/* Expected delivery */}
           <div className="space-y-2">
-            <Label htmlFor="shipment-expected-delivery">{t('shipment.expectedDelivery')}</Label>
+            <Label htmlFor={`${id}-shipment-expected-delivery`}>
+              {t('shipment.expectedDelivery')}
+            </Label>
             <Input
-              id="shipment-expected-delivery"
+              id={`${id}-shipment-expected-delivery`}
               type="date"
               {...form.register('expectedDeliveryAt', {
                 setValueAs: (v: string) => (v ? new Date(v) : undefined),
@@ -205,8 +208,8 @@ export function ShipmentForm({
 
           {/* Notes */}
           <div className="space-y-2">
-            <Label htmlFor="shipment-notes">{t('shipment.notes')}</Label>
-            <Textarea id="shipment-notes" rows={2} {...form.register('notes')} />
+            <Label htmlFor={`${id}-shipment-notes`}>{t('shipment.notes')}</Label>
+            <Textarea id={`${id}-shipment-notes`} rows={2} {...form.register('notes')} />
           </div>
 
           <DialogFooter>

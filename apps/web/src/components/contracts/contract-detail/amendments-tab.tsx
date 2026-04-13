@@ -3,7 +3,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ChevronDown, ChevronRight, FileText, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import {
@@ -65,6 +65,7 @@ function AddAmendmentDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const id = useId();
   const t = useTranslations('ContractDetail.amendments');
   const queryClient = useQueryClient();
   const [title, setTitle] = useState('');
@@ -118,11 +119,11 @@ function AddAmendmentDialog({
         {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <label htmlFor="amendment-title" className="text-sm font-medium">
+            <label htmlFor={`${id}-amendment-title`} className="text-sm font-medium">
               {t('fields.title')}
             </label>
             <input
-              id="amendment-title"
+              id={`${id}-amendment-title`}
               type="text"
               value={title}
               // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
@@ -133,11 +134,11 @@ function AddAmendmentDialog({
             />
           </div>
           <div className="space-y-2">
-            <label htmlFor="amendment-effective-date" className="text-sm font-medium">
+            <label htmlFor={`${id}-amendment-effective-date`} className="text-sm font-medium">
               {t('fields.effectiveDate')}
             </label>
             <input
-              id="amendment-effective-date"
+              id={`${id}-amendment-effective-date`}
               type="date"
               value={effectiveDate}
               // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
@@ -147,11 +148,11 @@ function AddAmendmentDialog({
             />
           </div>
           <div className="space-y-2">
-            <label htmlFor="amendment-description" className="text-sm font-medium">
+            <label htmlFor={`${id}-amendment-description`} className="text-sm font-medium">
               {t('fields.description')}
             </label>
             <textarea
-              id="amendment-description"
+              id={`${id}-amendment-description`}
               value={description}
               // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
               onChange={e => setDescription(e.target.value)}

@@ -185,7 +185,11 @@ function _buildExportItems(
  * Applies withholding tax calculations for Saudi organizations on cross-border payments.
  */
 // biome-ignore lint/suspicious/noExplicitAny: transaction client type not exported from Prisma
-async function _applyWhtIfSaudi(tx: any, organizationId: string, paymentRunId: string): Promise<void> {
+async function _applyWhtIfSaudi(
+  tx: any,
+  organizationId: string,
+  paymentRunId: string,
+): Promise<void> {
   const org = await tx.organization.findUniqueOrThrow({
     where: { id: organizationId },
     select: { countryCode: true },
@@ -230,7 +234,10 @@ async function _applyWhtIfSaudi(tx: any, organizationId: string, paymentRunId: s
  * Resolves the organization's bank info and transfer title template from metadata.
  */
 // biome-ignore lint/suspicious/noExplicitAny: transaction client type not exported from Prisma
-async function _resolveOrgBankInfo(tx: any, organizationId: string): Promise<{ orgBank: OrgBankInfo; transferTitleTemplate: string }> {
+async function _resolveOrgBankInfo(
+  tx: any,
+  organizationId: string,
+): Promise<{ orgBank: OrgBankInfo; transferTitleTemplate: string }> {
   const org = await tx.organization.findUnique({
     where: { id: organizationId },
     select: { name: true, metadata: true },
@@ -243,7 +250,8 @@ async function _resolveOrgBankInfo(tx: any, organizationId: string): Promise<{ o
   const bankAccount = (settingsJson.bankAccount ?? {}) as Record<string, unknown>;
 
   return {
-    transferTitleTemplate: (settingsJson.paymentTransferTitleTemplate as string | undefined) ?? '{invoice_number}',
+    transferTitleTemplate:
+      (settingsJson.paymentTransferTitleTemplate as string | undefined) ?? '{invoice_number}',
     orgBank: {
       name: org?.name ?? '',
       iban: (bankAccount.iban as string | undefined) ?? '',
@@ -692,7 +700,10 @@ export const paymentRouter = router({
         const freshInvoiceCount = itemsAgg._count;
 
         // Fetch org settings for transfer title template and bank info
-        const { orgBank, transferTitleTemplate } = await _resolveOrgBankInfo(tx, ctx.organizationId);
+        const { orgBank, transferTitleTemplate } = await _resolveOrgBankInfo(
+          tx,
+          ctx.organizationId,
+        );
 
         // Build ExportItems and generate export file
         const exportItems = _buildExportItems(run.items, transferTitleTemplate);

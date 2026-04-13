@@ -132,38 +132,37 @@ function sanitizeHeadersForLog(headers) {
   return h;
 }
 
+/** Redakcja pojedynczego stringa (JWT, base64, truncate). */
+function sanitizeString(s) {
+  if (s.split('.').length === 3 && s.length > 40) {
+    return `<jwt len=${s.length} …${s.slice(-8)}>`;
+  }
+  if (s.length > 120 && /^[A-Za-z0-9+/=\s\n]+$/s.test(s)) {
+    return `<base64-like len=${s.length}>`;
+  }
+  return s.length > LOG_MAX ? `${s.slice(0, LOG_MAX)}…` : s;
+}
+
+/** Map znanych wrażliwych kluczy → ich zamaskowana wartość (lub null jeśli klucz nie jest wrażliwy). */
+function sanitizeKnownKey(k, v) {
+  if (k === 'encryptedToken' && typeof v === 'string') return `<base64 ${v.length} chars>`;
+  if (k === 'certificate' && typeof v === 'string' && v.length > 80)
+    return `<DER base64 ${v.length} chars>`;
+  if (k === 'token' && typeof v === 'string' && v.length > 24)
+    return `<secret len=${v.length} …${v.slice(-6)}>`;
+  return null;
+}
+
 /** Redakcja JSON-ów do logów (tokeny, JWT, PEM/base64 certyfikatów). */
 function sanitizeForLog(data, depth = 0) {
-  if (depth > 14) return data;
-  if (data === null || data === undefined) return data;
-  if (typeof data === 'string') {
-    if (data.split('.').length === 3 && data.length > 40) {
-      return `<jwt len=${data.length} …${data.slice(-8)}>`;
-    }
-    if (data.length > 120 && /^[A-Za-z0-9+/=\s\n]+$/s.test(data)) {
-      return `<base64-like len=${data.length}>`;
-    }
-    return data.length > LOG_MAX ? `${data.slice(0, LOG_MAX)}…` : data;
-  }
-  if (Array.isArray(data)) {
-    return data.map(x => sanitizeForLog(x, depth + 1));
-  }
+  if (depth > 14 || data === null || data === undefined) return data;
+  if (typeof data === 'string') return sanitizeString(data);
+  if (Array.isArray(data)) return data.map(x => sanitizeForLog(x, depth + 1));
   if (typeof data === 'object') {
     const o = {};
     for (const [k, v] of Object.entries(data)) {
-      if (k === 'encryptedToken' && typeof v === 'string') {
-        o[k] = `<base64 ${v.length} chars>`;
-        continue;
-      }
-      if (k === 'certificate' && typeof v === 'string' && v.length > 80) {
-        o[k] = `<DER base64 ${v.length} chars>`;
-        continue;
-      }
-      if (k === 'token' && typeof v === 'string' && v.length > 24) {
-        o[k] = `<secret len=${v.length} …${v.slice(-6)}>`;
-        continue;
-      }
-      o[k] = sanitizeForLog(v, depth + 1);
+      const masked = sanitizeKnownKey(k, v);
+      o[k] = masked === null ? sanitizeForLog(v, depth + 1) : masked;
     }
     return o;
   }
@@ -185,48 +184,53 @@ function formatBodyForLog(text, contentType) {
   return text.length > LOG_MAX ? `${text.slice(0, LOG_MAX)}…` : text;
 }
 
+/** Sanitize and format a request body string for debug logging. */
+function formatRequestBodyForLog(body) {
+  if (body == null || body === '') return null;
+  const raw = String(body);
+  if (raw.trim().startsWith('{')) {
+    try {
+      return JSON.stringify(sanitizeForLog(JSON.parse(raw)), null, 2);
+    } catch {
+      return raw.length > LOG_MAX ? `${raw.slice(0, LOG_MAX)}…` : raw;
+    }
+  }
+  return raw;
+}
+
+function logRequest(method, url, headers, body) {
+  console.error('\n────────── REQUEST ──────────');
+  console.error(`${method} ${url}`);
+  console.error('headers:', JSON.stringify(sanitizeHeadersForLog(headers), null, 2));
+  const formatted = formatRequestBodyForLog(body);
+  if (formatted) console.error('body:\n', formatted);
+}
+
+function logResponse(res, method, url, text, ct) {
+  console.error('────────── RESPONSE ──────────');
+  console.error(`${res.status} ${res.statusText} ← ${method} ${url}`);
+  console.error('content-type:', ct || '(none)');
+  for (const name of ['x-request-id', 'retry-after', 'www-authenticate']) {
+    const v = res.headers.get(name);
+    if (v) console.error(`${name}:`, v);
+  }
+  console.error('body:\n', formatBodyForLog(text, ct));
+}
+
 /**
  * Fetch z opcjonalnym logiem: metoda, URL, nagłówki (bez pełnego Bearer), body żądania / odpowiedzi.
  */
 async function loggedFetch(url, options = {}) {
   const method = options.method ?? 'GET';
-  const headers = {
-    ...(options.headers ?? {}),
-  };
+  const headers = { ...(options.headers ?? {}) };
 
-  if (DEBUG) {
-    console.error('\n────────── REQUEST ──────────');
-    console.error(`${method} ${url}`);
-    console.error('headers:', JSON.stringify(sanitizeHeadersForLog(headers), null, 2));
-    if (options.body != null && options.body !== '') {
-      const raw = String(options.body);
-      let printed = raw;
-      if (raw.trim().startsWith('{')) {
-        try {
-          printed = JSON.stringify(sanitizeForLog(JSON.parse(raw)), null, 2);
-        } catch {
-          printed = raw.length > LOG_MAX ? `${raw.slice(0, LOG_MAX)}…` : raw;
-        }
-      }
-      console.error('body:\n', printed);
-    }
-  }
+  if (DEBUG) logRequest(method, url, headers, options.body);
 
   const res = await fetch(url, { ...options, method, headers });
   const text = await res.text();
   const ct = res.headers.get('content-type') ?? '';
 
-  if (DEBUG) {
-    console.error('────────── RESPONSE ──────────');
-    console.error(`${res.status} ${res.statusText} ← ${method} ${url}`);
-    console.error('content-type:', ct || '(none)');
-    const interesting = ['x-request-id', 'retry-after', 'www-authenticate'];
-    for (const name of interesting) {
-      const v = res.headers.get(name);
-      if (v) console.error(`${name}:`, v);
-    }
-    console.error('body:\n', formatBodyForLog(text, ct));
-  }
+  if (DEBUG) logResponse(res, method, url, text, ct);
 
   return { res, text };
 }

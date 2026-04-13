@@ -124,7 +124,7 @@ describe('getEquipmentColumns cell renderers', () => {
 
   it('type cell renders badge with translated type key', () => {
     renderCell('type', makeRow({ type: 'LAPTOP' }));
-    expect(screen.getByText('type.LAPTOP')).toBeInTheDocument();
+    expect(screen.getByText('type.laptop')).toBeInTheDocument();
   });
 
   it('status cell renders status badge component', () => {

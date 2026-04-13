@@ -41,13 +41,7 @@ interface DataTableBodyProps<TData> {
 // Skeleton rows
 // ---------------------------------------------------------------------------
 
-function SkeletonRows<TData>({
-  table,
-  count,
-}: {
-  table: Table<TData>;
-  count: number;
-}) {
+function SkeletonRows<TData>({ table, count }: { table: Table<TData>; count: number }) {
   return (
     <>
       {Array.from({ length: count }).map((_, i) => (
@@ -88,9 +82,7 @@ function EmptyState({
       <TableCell colSpan={colSpan} className="py-16 text-center">
         {icon}
         <h3 className="mt-3 text-[16px] font-medium">{title}</h3>
-        {!!description && (
-          <p className="mt-1 text-sm text-muted-foreground">{description}</p>
-        )}
+        {!!description && <p className="mt-1 text-sm text-muted-foreground">{description}</p>}
         {!!cta && !!onCta && (
           <Button className="mt-4" onClick={onCta}>
             {cta}
@@ -122,9 +114,7 @@ function NoResultsState({
     <TableRow>
       <TableCell colSpan={colSpan} className="py-16 text-center">
         <h3 className="text-[16px] font-medium">{title}</h3>
-        {!!description && (
-          <p className="mt-1 text-sm text-muted-foreground">{description}</p>
-        )}
+        {!!description && <p className="mt-1 text-sm text-muted-foreground">{description}</p>}
         {!!cta && !!onClearFilters && (
           <Button variant="outline" className="mt-4" onClick={onClearFilters}>
             {cta}

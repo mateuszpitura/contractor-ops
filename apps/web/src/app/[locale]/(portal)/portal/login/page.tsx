@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { Loader2, Mail } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useCallback, useState } from 'react';
+import { useCallback, useId, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -44,6 +44,7 @@ type LoginValues = z.infer<ReturnType<typeof createLoginSchema>>;
  */
 export default function PortalLoginPage() {
   const t = useTranslations('Portal');
+  const id = useId();
   const [sent, setSent] = useState(false);
   const resetSent = useCallback(() => setSent(false), []);
 
@@ -107,11 +108,11 @@ export default function PortalLoginPage() {
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-[13px]">
+              <Label htmlFor={`${id}-email`} className="text-[13px]">
                 {t('login.emailLabel')}
               </Label>
               <Input
-                id="email"
+                id={`${id}-email`}
                 type="email"
                 placeholder={t('login.emailPlaceholder')}
                 autoComplete="email"

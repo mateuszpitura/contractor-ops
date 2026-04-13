@@ -101,6 +101,24 @@ export class StorecoveAdapter implements ASPAdapter {
   }
 
   // -------------------------------------------------------------------------
+  // Private helpers
+  // -------------------------------------------------------------------------
+
+  /**
+   * Parse Storecove 422 validation errors from the response body.
+   */
+  private parseValidationErrors(responseBody: string): Array<{ code: string; message: string }> {
+    try {
+      const parsed = JSON.parse(responseBody);
+      return Array.isArray(parsed.errors)
+        ? parsed.errors
+        : [{ code: 'VALIDATION_ERROR', message: responseBody }];
+    } catch {
+      return [{ code: 'VALIDATION_ERROR', message: responseBody }];
+    }
+  }
+
+  // -------------------------------------------------------------------------
   // ASPAdapter implementation
   // -------------------------------------------------------------------------
 
@@ -185,21 +203,11 @@ export class StorecoveAdapter implements ASPAdapter {
         );
 
         if (error.statusCode === 422) {
-          let errors: Array<{ code: string; message: string }> = [];
-          try {
-            const parsed = JSON.parse(error.responseBody);
-            errors = Array.isArray(parsed.errors)
-              ? parsed.errors
-              : [{ code: 'VALIDATION_ERROR', message: error.responseBody }];
-          } catch {
-            errors = [{ code: 'VALIDATION_ERROR', message: error.responseBody }];
-          }
-
           return {
             transmissionId: '',
             status: 'rejected',
             timestamp: new Date(),
-            errors,
+            errors: this.parseValidationErrors(error.responseBody),
           };
         }
       }

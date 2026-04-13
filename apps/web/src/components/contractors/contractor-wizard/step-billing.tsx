@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import React from 'react';
+import React, { useId } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
 
 import { Input } from '@/components/ui/input';
@@ -29,6 +29,7 @@ const CURRENCIES = ['PLN', 'EUR', 'USD'] as const;
  * Fields: billing model, currency, rate, bank account IBAN, payment terms.
  */
 export function StepBilling({ form }: StepBillingProps) {
+  const id = useId();
   const t = useTranslations('ContractorWizard.fields');
   const tb = useTranslations('ContractorWizard.billingModelOptions');
 
@@ -141,12 +142,12 @@ export function StepBilling({ form }: StepBillingProps) {
 
       {/* Default rate (display as zloty, store as minor units) */}
       <div className="space-y-2">
-        <Label htmlFor="rate" className="text-[13px]">
+        <Label htmlFor={`${id}-rate`} className="text-[13px]">
           {t('rate')}
         </Label>
         <div className="relative">
           <Input
-            id="rate"
+            id={`${id}-rate`}
             type="number"
             step="0.01"
             min="0"
@@ -168,11 +169,11 @@ export function StepBilling({ form }: StepBillingProps) {
 
       {/* Bank account IBAN */}
       <div className="space-y-2">
-        <Label htmlFor="bankAccount" className="text-[13px]">
+        <Label htmlFor={`${id}-bankAccount`} className="text-[13px]">
           {t('bankAccount')}
         </Label>
         <Input
-          id="bankAccount"
+          id={`${id}-bankAccount`}
           className="font-mono"
           placeholder="PL00 0000 0000 0000 0000 0000 0000"
           {...register('bankAccount')}
@@ -184,11 +185,11 @@ export function StepBilling({ form }: StepBillingProps) {
 
       {/* Payment terms */}
       <div className="space-y-2">
-        <Label htmlFor="paymentTermsDays" className="text-[13px]">
+        <Label htmlFor={`${id}-paymentTermsDays`} className="text-[13px]">
           {t('paymentTerms')}
         </Label>
         <Input
-          id="paymentTermsDays"
+          id={`${id}-paymentTermsDays`}
           type="number"
           min="1"
           placeholder="30"

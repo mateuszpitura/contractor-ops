@@ -82,7 +82,10 @@ async function updateExistingEntry(
     throw new TRPCError({ code: 'NOT_FOUND', message: 'errors.timesheet.entryNotFound' });
   }
   if (existing.source !== 'MANUAL') {
-    throw new TRPCError({ code: 'PRECONDITION_FAILED', message: 'errors.timesheet.cannotEditImportedEntries' });
+    throw new TRPCError({
+      code: 'PRECONDITION_FAILED',
+      message: 'errors.timesheet.cannotEditImportedEntries',
+    });
   }
   return tx.timeEntry.update({
     where: { id: entryId },

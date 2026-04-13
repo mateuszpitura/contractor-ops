@@ -71,6 +71,7 @@ export default async function PortalLayout({ children }: { children: ReactNode }
         contractorName={session.contractor?.displayName ?? 'Contractor'}
         contractorEmail={session.email}
       />
+      {/* biome-ignore lint/correctness/useUniqueElementIds: skip-link target for accessibility */}
       <main id="portal-content" className="flex-1">
         <div className="mx-auto max-w-[1200px] p-6">{children}</div>
       </main>

@@ -38,32 +38,12 @@ function textOf(node: unknown): string {
 }
 
 /**
- * Parse a ZATCA-generated UBL 2.1 XML string into a canonical EInvoice.
- *
- * Extracts ICV, PIH, UUID from AdditionalDocumentReference into extensions.
+ * Extract ICV and PIH from AdditionalDocumentReference nodes.
  */
-export function parseZatcaXml(xml: string, metadata?: Record<string, unknown>): EInvoice {
-  const parsed = parser.parse(xml);
-  const inv = parsed.Invoice ?? parsed.Invoice;
-
-  if (!inv) {
-    throw new Error('Invalid ZATCA XML: no Invoice root element found');
-  }
-
-  // Extract basic fields
-  const id = textOf(inv['cbc:ID']);
-  const uuid = textOf(inv['cbc:UUID']);
-  const issueDate = textOf(inv['cbc:IssueDate']);
-  const dueDate = textOf(inv['cbc:DueDate']) || undefined;
-  const invoiceTypeCode = textOf(inv['cbc:InvoiceTypeCode']);
-  const invoiceSubtype = inv['cbc:InvoiceTypeCode']?.['@_name'] ?? undefined;
-  const currencyCode = textOf(inv['cbc:DocumentCurrencyCode']);
-  const profileId = textOf(inv['cbc:ProfileID']);
-
-  // Determine invoice type from ProfileID
-  const invoiceType = profileId.includes('reporting') ? 'simplified' : 'standard';
-
-  // Extract ICV and PIH from AdditionalDocumentReference
+function parseDocumentReferences(inv: Record<string, unknown>): {
+  icv: number | undefined;
+  pih: string | undefined;
+} {
   let icv: number | undefined;
   let pih: string | undefined;
   const additionalRefs = inv['cac:AdditionalDocumentReference'] ?? [];
@@ -81,26 +61,63 @@ export function parseZatcaXml(xml: string, metadata?: Record<string, unknown>): 
     }
   }
 
-  // Parse parties
+  return { icv, pih };
+}
+
+/**
+ * Extract monetary totals from LegalMonetaryTotal node.
+ */
+function parseMonetaryTotals(inv: Record<string, unknown>): {
+  taxExclusiveAmount: number;
+  taxInclusiveAmount: number;
+  payableAmount: number;
+} {
+  const monetaryTotal = inv['cac:LegalMonetaryTotal'] as Record<string, unknown> | undefined;
+  return {
+    taxExclusiveAmount: toMinorUnits(textOf(monetaryTotal?.['cbc:TaxExclusiveAmount'])),
+    taxInclusiveAmount: toMinorUnits(textOf(monetaryTotal?.['cbc:TaxInclusiveAmount'])),
+    payableAmount: toMinorUnits(textOf(monetaryTotal?.['cbc:PayableAmount'])),
+  };
+}
+
+/**
+ * Parse a ZATCA-generated UBL 2.1 XML string into a canonical EInvoice.
+ *
+ * Extracts ICV, PIH, UUID from AdditionalDocumentReference into extensions.
+ */
+export function parseZatcaXml(xml: string, metadata?: Record<string, unknown>): EInvoice {
+  const parsed = parser.parse(xml);
+  const inv = parsed.Invoice ?? parsed.Invoice;
+
+  if (!inv) {
+    throw new Error('Invalid ZATCA XML: no Invoice root element found');
+  }
+
+  const id = textOf(inv['cbc:ID']);
+  const uuid = textOf(inv['cbc:UUID']);
+  const issueDate = textOf(inv['cbc:IssueDate']);
+  const dueDate = textOf(inv['cbc:DueDate']) || undefined;
+  const invoiceTypeCode = textOf(inv['cbc:InvoiceTypeCode']);
+  const invoiceSubtype = inv['cbc:InvoiceTypeCode']?.['@_name'] ?? undefined;
+  const currencyCode = textOf(inv['cbc:DocumentCurrencyCode']);
+  const profileId = textOf(inv['cbc:ProfileID']);
+  const invoiceType = profileId.includes('reporting') ? 'simplified' : 'standard';
+
+  const { icv, pih } = parseDocumentReferences(inv);
+
   const supplier = parseParty(inv['cac:AccountingSupplierParty']);
   const customer = parseParty(inv['cac:AccountingCustomerParty']);
 
-  // Parse lines
   const rawLines = inv['cac:InvoiceLine'] ?? [];
   const lines: EInvoiceLine[] = (Array.isArray(rawLines) ? rawLines : [rawLines]).map(parseLine);
 
-  // Parse tax breakdown
   const taxTotal = inv['cac:TaxTotal'];
   const rawSubtotals = taxTotal?.['cac:TaxSubtotal'] ?? [];
   const taxBreakdown: EInvoiceTaxSubtotal[] = (
     Array.isArray(rawSubtotals) ? rawSubtotals : [rawSubtotals]
   ).map(parseTaxSubtotal);
 
-  // Parse monetary totals
-  const monetaryTotal = inv['cac:LegalMonetaryTotal'];
-  const taxExclusiveAmount = toMinorUnits(textOf(monetaryTotal?.['cbc:TaxExclusiveAmount']));
-  const taxInclusiveAmount = toMinorUnits(textOf(monetaryTotal?.['cbc:TaxInclusiveAmount']));
-  const payableAmount = toMinorUnits(textOf(monetaryTotal?.['cbc:PayableAmount']));
+  const { taxExclusiveAmount, taxInclusiveAmount, payableAmount } = parseMonetaryTotals(inv);
 
   return {
     id,

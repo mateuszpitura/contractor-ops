@@ -25,8 +25,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Progress } from '@/components/ui/progress';
 import { Link } from '@/i18n/navigation';
-import { trpc } from '@/trpc/init';
 import { enumKey } from '@/lib/enum-key';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Status badge colors (shared with side panel)

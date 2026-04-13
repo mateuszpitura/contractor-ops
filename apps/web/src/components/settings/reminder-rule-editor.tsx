@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useId, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -270,6 +270,7 @@ function useSelectorItems(t: ReturnType<typeof useTranslations<'Settings'>>) {
 }
 
 export function ReminderRuleEditor({ open, onOpenChange, rule }: ReminderRuleEditorProps) {
+  const id = useId();
   const t = useTranslations('Settings');
   const { triggerItems, entityItems, channelItems, recipientItems } = useSelectorItems(t);
   const queryClient = useQueryClient();
@@ -424,9 +425,9 @@ export function ReminderRuleEditor({ open, onOpenChange, rule }: ReminderRuleEdi
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           {/* 1. Rule name */}
           <div className="space-y-2">
-            <Label htmlFor="rule-name">{t('reminderRules.editor.ruleName')}</Label>
+            <Label htmlFor={`${id}-rule-name`}>{t('reminderRules.editor.ruleName')}</Label>
             <Input
-              id="rule-name"
+              id={`${id}-rule-name`}
               placeholder={t('reminderRules.editor.ruleNamePlaceholder')}
               {...form.register('name')}
             />
@@ -467,10 +468,10 @@ export function ReminderRuleEditor({ open, onOpenChange, rule }: ReminderRuleEdi
           {/* 3. Offset (conditional) */}
           {showOffset && (
             <div className="space-y-2">
-              <Label htmlFor="rule-offset">{t('reminderRules.editor.offset')}</Label>
+              <Label htmlFor={`${id}-rule-offset`}>{t('reminderRules.editor.offset')}</Label>
               <div className="flex items-center gap-2">
                 <Input
-                  id="rule-offset"
+                  id={`${id}-rule-offset`}
                   type="number"
                   placeholder="7"
                   min={1}
@@ -617,13 +618,17 @@ export function ReminderRuleEditor({ open, onOpenChange, rule }: ReminderRuleEdi
 
           {/* 8. Active toggle */}
           <div className="flex items-center justify-between">
-            <Label htmlFor="rule-active">{t('reminderRules.editor.activeToggle')}</Label>
+            <Label htmlFor={`${id}-rule-active`}>{t('reminderRules.editor.activeToggle')}</Label>
             <Controller
               control={form.control}
               name="active"
               // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
               render={({ field }) => (
-                <Switch id="rule-active" checked={field.value} onCheckedChange={field.onChange} />
+                <Switch
+                  id={`${id}-rule-active`}
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
               )}
             />
           </div>

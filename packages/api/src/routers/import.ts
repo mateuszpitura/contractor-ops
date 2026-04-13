@@ -249,9 +249,16 @@ export const importRouter = router({
         await ctx.db.$transaction(async tx => {
           for (const row of rows) {
             const taxId = String(row.taxId ?? row.contractorTaxId ?? '').trim();
-            const result = entityType === 'contractor'
-              ? await commitContractorRow(tx, ctx.organizationId, ctx.user?.id, row, duplicateActions[taxId])
-              : await commitContractRow(tx, ctx.organizationId, ctx.user?.id, row);
+            const result =
+              entityType === 'contractor'
+                ? await commitContractorRow(
+                    tx,
+                    ctx.organizationId,
+                    ctx.user?.id,
+                    row,
+                    duplicateActions[taxId],
+                  )
+                : await commitContractRow(tx, ctx.organizationId, ctx.user?.id, row);
             counts[result]++;
           }
         });

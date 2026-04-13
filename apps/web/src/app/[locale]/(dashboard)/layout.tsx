@@ -87,6 +87,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
               <TopBar />
               <BillingOverlay />
               <main
+                // biome-ignore lint/correctness/useUniqueElementIds: skip-link target for accessibility
                 id="main-content"
                 className="mesh-bg grain-overlay min-w-0 flex-1 overflow-x-hidden p-6">
                 {children}

@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Globe, Loader2, Upload } from 'lucide-react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
-import { useRef, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -38,6 +38,7 @@ const DEFAULT_BRAND_COLOR = '#4f46e5'; // indigo-600
  * - Save button wired to settings.updateBranding
  */
 export function AdminBrandingSection() {
+  const id = useId();
   const t = useTranslations('Settings.branding');
   const tAria = useTranslations('Common.aria');
   const queryClient = useQueryClient();
@@ -342,13 +343,15 @@ export function AdminBrandingSection() {
               aria-label={tAria('portalSubdomain')}
               aria-describedby="subdomain-suffix subdomain-error"
             />
-            <span id="subdomain-suffix" className="text-sm text-muted-foreground whitespace-nowrap">
+            <span
+              id={`${id}-subdomain-suffix`}
+              className="text-sm text-muted-foreground whitespace-nowrap">
               {t('subdomainSuffix')}
             </span>
           </div>
 
           {!!subdomainError && (
-            <p id="subdomain-error" className="text-sm text-destructive" role="alert">
+            <p id={`${id}-subdomain-error`} className="text-sm text-destructive" role="alert">
               {subdomainError}
             </p>
           )}

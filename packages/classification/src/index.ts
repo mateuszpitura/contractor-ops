@@ -5,8 +5,9 @@
 // biome-ignore lint/performance/noBarrelFile: package entry point
 
 // Profile registrations (side-effect imports — must run before the registry is consulted).
-// IR35 (GB) registers on first load.
+// IR35 (GB) and Scheinselbständigkeit (DE) register themselves on first load.
 import './profiles/ir35/index.js';
+import './profiles/scheinselbstandigkeit/index.js';
 
 // Registry
 export {

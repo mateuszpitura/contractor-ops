@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import React from 'react';
+import React, { useId } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
 
 import { Input } from '@/components/ui/input';
@@ -13,9 +13,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-
-import type { ContractWizardFormValues } from './wizard-dialog';
 import { enumKey } from '@/lib/enum-key';
+import type { ContractWizardFormValues } from './wizard-dialog';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -57,6 +56,7 @@ interface StepFinancialProps {
  * payment terms, invoice cycle. Shows pre-fill hint when applicable.
  */
 export function StepFinancial({ form, preFilledFields }: StepFinancialProps) {
+  const id = useId();
   const t = useTranslations('Contracts.wizard');
 
   const billingModelItems = BILLING_MODELS.map(m => ({
@@ -130,12 +130,12 @@ export function StepFinancial({ form, preFilledFields }: StepFinancialProps) {
     <div className="space-y-4">
       {/* Rate */}
       <div className="space-y-2">
-        <Label htmlFor="rate" className="text-[13px]">
+        <Label htmlFor={`${id}-rate`} className="text-[13px]">
           {t('fields.rate')}
         </Label>
         <div className="relative">
           <Input
-            id="rate"
+            id={`${id}-rate`}
             type="number"
             step="0.01"
             min="0"
@@ -248,11 +248,11 @@ export function StepFinancial({ form, preFilledFields }: StepFinancialProps) {
 
       {/* Payment terms */}
       <div className="space-y-2">
-        <Label htmlFor="paymentTermsDays" className="text-[13px]">
+        <Label htmlFor={`${id}-paymentTermsDays`} className="text-[13px]">
           {t('fields.paymentTerms')}
         </Label>
         <Input
-          id="paymentTermsDays"
+          id={`${id}-paymentTermsDays`}
           type="number"
           min="1"
           placeholder="30"

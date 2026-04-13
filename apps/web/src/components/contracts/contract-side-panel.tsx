@@ -9,8 +9,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Link } from '@/i18n/navigation';
-import type { ContractRow } from './contract-table/columns';
 import { enumKey } from '@/lib/enum-key';
+import type { ContractRow } from './contract-table/columns';
 
 // ---------------------------------------------------------------------------
 // Status badge colors (same as columns.tsx)
@@ -118,7 +118,9 @@ export function ContractSidePanel({ contract, open, onOpenChange }: ContractSide
                 <DetailItem label={t('columns.currency')} value={contract.currency} />
                 <DetailItem
                   label={t('columns.billingCycle')}
-                  value={t(`billingModel.${enumKey(contract.billingModel)}` as Parameters<typeof t>[0])}
+                  value={t(
+                    `billingModel.${enumKey(contract.billingModel)}` as Parameters<typeof t>[0],
+                  )}
                 />
                 <DetailItem label={t('columns.owner')} value={contract.internalOwner?.name} />
               </div>

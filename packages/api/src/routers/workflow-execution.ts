@@ -156,10 +156,7 @@ function syncTaskToExternalSystems(
 /**
  * Computes the latest due date across all template tasks based on offset days.
  */
-function computeMaxDueDate(
-  tasks: Array<{ dueOffsetDays: number | null }>,
-  now: Date,
-): Date | null {
+function computeMaxDueDate(tasks: Array<{ dueOffsetDays: number | null }>, now: Date): Date | null {
   let maxDueDate: Date | null = null;
   for (const task of tasks) {
     if (!task.dueOffsetDays) continue;
@@ -178,7 +175,10 @@ function resolveTaskRunStatus(
   dependsOnRunId: string | null,
 ): { status: 'TODO' | 'BLOCKED' | 'SKIPPED'; resultJson: Record<string, unknown> | null } {
   if (!conditionMet) {
-    return { status: 'SKIPPED', resultJson: { skipReason: workflowTaskSkipReason.conditionNotMet } };
+    return {
+      status: 'SKIPPED',
+      resultJson: { skipReason: workflowTaskSkipReason.conditionNotMet },
+    };
   }
   return { status: dependsOnRunId ? 'BLOCKED' : 'TODO', resultJson: null };
 }
@@ -237,7 +237,12 @@ async function instantiateTaskRuns(
       ? await resolveAssignee(taskTemplate, contractor, contract, organizationId, tx)
       : null;
 
-    const dueAt = computeTaskDueAt(conditionMet, taskTemplate.dueOffsetDays, taskTemplate.dueOffsetHours, now);
+    const dueAt = computeTaskDueAt(
+      conditionMet,
+      taskTemplate.dueOffsetDays,
+      taskTemplate.dueOffsetHours,
+      now,
+    );
 
     const dependsOnRunId = taskTemplate.dependsOnTaskTemplateId
       ? (taskIdMap.get(taskTemplate.dependsOnTaskTemplateId) ?? null)
@@ -377,7 +382,10 @@ async function syncCalendarTasksAfterStart(
         taskName: task.title,
         userId,
       }).catch(err =>
-        console.error(`[workflow/startRun] Calendar event creation failed for task ${task.id}:`, err),
+        console.error(
+          `[workflow/startRun] Calendar event creation failed for task ${task.id}:`,
+          err,
+        ),
       );
     }
   } catch (err) {
@@ -466,8 +474,13 @@ export const workflowExecutionRouter = router({
 
         // Instantiate all task runs from template tasks
         const taskIdMap = await instantiateTaskRuns(
-          tx, ctx.organizationId, workflowRun.id, template.tasks,
-          contractor, contract, now,
+          tx,
+          ctx.organizationId,
+          workflowRun.id,
+          template.tasks,
+          contractor,
+          contract,
+          now,
         );
 
         // Compute initial progress
@@ -530,9 +543,27 @@ export const workflowExecutionRouter = router({
       }
 
       // Fire-and-forget: sync eligible tasks to external integrations
-      void syncJiraTasksAfterStart(ctx.db, ctx.organizationId, run.run.tasks, run.jiraEligibleTaskRunIds);
-      void syncLinearTasksAfterStart(ctx.db, ctx.organizationId, run.run.tasks, run.linearEligibleTaskRuns);
-      void syncCalendarTasksAfterStart(ctx.db, ctx.organizationId, run.run.tasks, run.calendarConfigMap, run.contractorName, run.contractName, ctx.user?.id);
+      void syncJiraTasksAfterStart(
+        ctx.db,
+        ctx.organizationId,
+        run.run.tasks,
+        run.jiraEligibleTaskRunIds,
+      );
+      void syncLinearTasksAfterStart(
+        ctx.db,
+        ctx.organizationId,
+        run.run.tasks,
+        run.linearEligibleTaskRuns,
+      );
+      void syncCalendarTasksAfterStart(
+        ctx.db,
+        ctx.organizationId,
+        run.run.tasks,
+        run.calendarConfigMap,
+        run.contractorName,
+        run.contractName,
+        ctx.user?.id,
+      );
 
       // Fire-and-forget: handle EQUIPMENT task integration hooks (Phase 30)
       const equipmentTasks = run.run.tasks.filter(

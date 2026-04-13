@@ -85,7 +85,11 @@ export function EnvironmentToggle({
                 ? 'border-primary ring-2 ring-primary/20'
                 : 'border-border hover:border-muted-foreground/30'
             }`}>
-            <RadioGroupItem id={`${reactId}-zatca-env-sandbox`} value="sandbox" className="mt-0.5" />
+            <RadioGroupItem
+              id={`${reactId}-zatca-env-sandbox`}
+              value="sandbox"
+              className="mt-0.5"
+            />
             <div className="space-y-1">
               <div className="flex items-center gap-1.5">
                 <TestTube className="h-4 w-4 text-amber-500" aria-hidden="true" />

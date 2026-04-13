@@ -13,80 +13,77 @@ import { TRPCError } from '@trpc/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ---------------------------------------------------------------------------
-// Constants
+// Mock Prisma via vi.hoisted (constants defined here to avoid TDZ errors)
 // ---------------------------------------------------------------------------
 
-const ORG_ID = 'org-wfexec-001';
-const USER_ID = 'user-wfexec-001';
-const RUN_ID = 'run-001';
-const TASK_RUN_ID = 'taskrun-001';
-const TEMPLATE_ID = 'tmpl-001';
-const CONTRACTOR_ID = 'contractor-001';
+const { mockPrisma, ORG_ID, USER_ID, RUN_ID, TASK_RUN_ID, TEMPLATE_ID, CONTRACTOR_ID } = vi.hoisted(
+  () => {
+    const ORG_ID = 'org-wfexec-001';
+    const USER_ID = 'user-wfexec-001';
+    const RUN_ID = 'run-001';
+    const TASK_RUN_ID = 'taskrun-001';
+    const TEMPLATE_ID = 'tmpl-001';
+    const CONTRACTOR_ID = 'contractor-001';
+    type Rec = Record<string, unknown>;
 
-// ---------------------------------------------------------------------------
-// Mock Prisma via vi.hoisted
-// ---------------------------------------------------------------------------
+    const mockPrisma: Rec = {
+      organization: {
+        findUnique: vi.fn().mockResolvedValue({ dataRegion: 'EU' }),
+      },
+      workflowTemplate: {
+        findFirst: vi.fn(),
+        findUniqueOrThrow: vi.fn(),
+        count: vi.fn(),
+        create: vi.fn(),
+      },
+      workflowTaskTemplate: {
+        createMany: vi.fn(),
+        deleteMany: vi.fn(),
+      },
+      workflowRun: {
+        findFirst: vi.fn(),
+        findMany: vi.fn(),
+        findUniqueOrThrow: vi.fn(),
+        create: vi.fn(),
+        update: vi.fn(),
+        count: vi.fn(),
+      },
+      workflowTaskRun: {
+        findFirst: vi.fn(),
+        findMany: vi.fn(),
+        create: vi.fn(),
+        update: vi.fn(),
+        updateMany: vi.fn(),
+        count: vi.fn(),
+      },
+      workflowComment: {
+        findMany: vi.fn(),
+        create: vi.fn(),
+      },
+      contractor: {
+        findFirst: vi.fn(),
+      },
+      contract: {
+        findFirst: vi.fn(),
+      },
+      member: {
+        findFirst: vi.fn().mockResolvedValue({ role: 'admin', userId: USER_ID }),
+      },
+      integrationConnection: {
+        findFirst: vi.fn(),
+      },
+      auditLog: {
+        create: vi.fn(),
+      },
+      $transaction: vi.fn(async (fnOrArray: ((tx: Rec) => Promise<unknown>) | unknown[]) => {
+        if (typeof fnOrArray === 'function') return fnOrArray(mockPrisma);
+        return Promise.all(fnOrArray);
+      }),
+    };
 
-const { mockPrisma } = vi.hoisted(() => {
-  type Rec = Record<string, unknown>;
-
-  const mockPrisma: Rec = {
-    organization: {
-      findUnique: vi.fn().mockResolvedValue({ dataRegion: 'EU' }),
-    },
-    workflowTemplate: {
-      findFirst: vi.fn(),
-      findUniqueOrThrow: vi.fn(),
-      count: vi.fn(),
-      create: vi.fn(),
-    },
-    workflowTaskTemplate: {
-      createMany: vi.fn(),
-      deleteMany: vi.fn(),
-    },
-    workflowRun: {
-      findFirst: vi.fn(),
-      findMany: vi.fn(),
-      findUniqueOrThrow: vi.fn(),
-      create: vi.fn(),
-      update: vi.fn(),
-      count: vi.fn(),
-    },
-    workflowTaskRun: {
-      findFirst: vi.fn(),
-      findMany: vi.fn(),
-      create: vi.fn(),
-      update: vi.fn(),
-      updateMany: vi.fn(),
-      count: vi.fn(),
-    },
-    workflowComment: {
-      findMany: vi.fn(),
-      create: vi.fn(),
-    },
-    contractor: {
-      findFirst: vi.fn(),
-    },
-    contract: {
-      findFirst: vi.fn(),
-    },
-    member: {
-      findFirst: vi.fn().mockResolvedValue({ role: 'admin', userId: USER_ID }),
-    },
-    integrationConnection: {
-      findFirst: vi.fn(),
-    },
-    auditLog: {
-      create: vi.fn(),
-    },
-    $transaction: vi.fn(async (fnOrArray: ((tx: Rec) => Promise<unknown>) | unknown[]) => {
-      if (typeof fnOrArray === 'function') return fnOrArray(mockPrisma);
-      return Promise.all(fnOrArray);
-    }),
-  };
-
-  return { mockPrisma };
-});
+    return { mockPrisma, ORG_ID, USER_ID, RUN_ID, TASK_RUN_ID, TEMPLATE_ID, CONTRACTOR_ID };
+  },
+);
 
 // ---------------------------------------------------------------------------
 // Module mocks
@@ -440,8 +437,8 @@ describe('workflowExecutionRouter', () => {
       mockPrisma.workflowTaskRun.findFirst.mockResolvedValueOnce({
         id: TASK_RUN_ID,
         organizationId: ORG_ID,
-        status: 'TODO',
-        startedAt: null,
+        status: 'IN_PROGRESS',
+        startedAt: new Date(),
         externalRefType: null,
         externalRefId: null,
         workflowRun: { id: RUN_ID, status: 'IN_PROGRESS' },

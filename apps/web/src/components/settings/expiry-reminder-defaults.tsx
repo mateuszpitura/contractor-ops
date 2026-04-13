@@ -3,7 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Loader2, Save } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,6 +21,7 @@ const DEFAULT_DAYS = [30, 60, 90];
 // ---------------------------------------------------------------------------
 
 export function ExpiryReminderDefaults() {
+  const id = useId();
   const t = useTranslations('Settings');
   const tToast = useTranslations('Settings.toast');
   const queryClient = useQueryClient();
@@ -76,11 +77,11 @@ export function ExpiryReminderDefaults() {
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
-          <label htmlFor="reminder-days" className="text-sm font-medium">
+          <label htmlFor={`${id}-reminder-days`} className="text-sm font-medium">
             {t('expiryReminders.label')}
           </label>
           <Input
-            id="reminder-days"
+            id={`${id}-reminder-days`}
             value={inputValue}
             // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
             onChange={e => setInputValue(e.target.value)}

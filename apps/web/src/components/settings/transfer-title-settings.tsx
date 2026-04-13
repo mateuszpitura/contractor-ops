@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Loader2, Save } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useId, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -45,6 +45,7 @@ function resolvePreview(template: string): string {
 // ---------------------------------------------------------------------------
 
 export function TransferTitleSettings() {
+  const id = useId();
   const t = useTranslations('Payments');
   const queryClient = useQueryClient();
 
@@ -115,11 +116,11 @@ export function TransferTitleSettings() {
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
-            <label htmlFor="transfer-title-template" className="text-sm font-medium">
+            <label htmlFor={`${id}-transfer-title-template`} className="text-sm font-medium">
               {t('templateLabel')}
             </label>
             <Input
-              id="transfer-title-template"
+              id={`${id}-transfer-title-template`}
               placeholder={t('templatePlaceholder')}
               {...register('template')}
             />

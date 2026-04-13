@@ -29,7 +29,7 @@ describe('EquipmentStatusBadge', () => {
     // as the fallback label when no translation exists.
     render(<EquipmentStatusBadge status="UNKNOWN_STATUS" />);
     // next-intl returns the full key path as fallback when no translation exists
-    const badge = screen.getByLabelText('Equipment.status.UNKNOWN_STATUS');
+    const badge = screen.getByLabelText('Equipment.status.unknownStatus');
     expect(badge).toBeInTheDocument();
     // Verify it uses the secondary variant (no colored variant classes)
     expect(badge.className).not.toContain('bg-green');

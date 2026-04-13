@@ -3,7 +3,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -26,6 +26,7 @@ export function RegisterForm() {
   const tc = useTranslations('Common');
   const tToast = useTranslations('Auth.toast');
   const router = useRouter();
+  const id = useId();
   const [isLoading, setIsLoading] = useState(false);
 
   const registerSchema = z.object({
@@ -95,60 +96,60 @@ export function RegisterForm() {
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="orgName" className="text-[13px]">
+            <Label htmlFor={`${id}-orgName`} className="text-[13px]">
               {t('orgNameLabel')}
             </Label>
             <Input
-              id="orgName"
+              id={`${id}-orgName`}
               placeholder={t('orgNamePlaceholder')}
               disabled={isLoading}
               aria-invalid={!!errors.orgName}
-              aria-describedby={errors.orgName ? 'orgName-error' : undefined}
+              aria-describedby={errors.orgName ? `${id}-orgName-error` : undefined}
               {...register('orgName')}
             />
             {!!errors.orgName && (
-              <p id="orgName-error" role="alert" className="text-sm text-destructive">
+              <p id={`${id}-orgName-error`} role="alert" className="text-sm text-destructive">
                 {errors.orgName.message}
               </p>
             )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-[13px]">
+            <Label htmlFor={`${id}-email`} className="text-[13px]">
               {t('emailLabel')}
             </Label>
             <Input
-              id="email"
+              id={`${id}-email`}
               type="email"
               placeholder={t('emailPlaceholder')}
               disabled={isLoading}
               aria-invalid={!!errors.email}
-              aria-describedby={errors.email ? 'reg-email-error' : undefined}
+              aria-describedby={errors.email ? `${id}-email-error` : undefined}
               {...register('email')}
             />
             {!!errors.email && (
-              <p id="reg-email-error" role="alert" className="text-sm text-destructive">
+              <p id={`${id}-email-error`} role="alert" className="text-sm text-destructive">
                 {errors.email.message}
               </p>
             )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password" className="text-[13px]">
+            <Label htmlFor={`${id}-password`} className="text-[13px]">
               {t('passwordLabel')}
             </Label>
             <Input
-              id="password"
+              id={`${id}-password`}
               type="password"
               autoComplete="new-password"
               placeholder={t('passwordPlaceholder')}
               disabled={isLoading}
               aria-invalid={!!errors.password}
-              aria-describedby={errors.password ? 'reg-password-error' : undefined}
+              aria-describedby={errors.password ? `${id}-password-error` : undefined}
               {...register('password')}
             />
             {!!errors.password && (
-              <p id="reg-password-error" role="alert" className="text-sm text-destructive">
+              <p id={`${id}-password-error`} role="alert" className="text-sm text-destructive">
                 {errors.password.message}
               </p>
             )}

@@ -189,7 +189,7 @@ function getDaysRemainingColor(days: number | null): string {
 }
 
 function getNoticeDeadline(endDate: string | Date | null, noticeDays: number | null): Date | null {
-  if (!endDate || !noticeDays) return null;
+  if (!(endDate && noticeDays)) return null;
   const end = typeof endDate === 'string' ? new Date(endDate) : endDate;
   return new Date(end.getTime() - noticeDays * 24 * 60 * 60 * 1000);
 }
@@ -266,7 +266,11 @@ export function OverviewTab({ contract }: OverviewTabProps) {
           <FieldRow label={t('fields.currency')} value={contract.currency} />
           <FieldRow
             label={t('fields.billingModel')}
-            value={translateEnum(contract.billingModel, 'billingModel', tEnum as (key: string) => string)}
+            value={translateEnum(
+              contract.billingModel,
+              'billingModel',
+              tEnum as (key: string) => string,
+            )}
           />
           <FieldRow
             label={t('fields.rateType')}
@@ -282,7 +286,11 @@ export function OverviewTab({ contract }: OverviewTabProps) {
           )}
           <FieldRow
             label={t('fields.invoiceCycle')}
-            value={translateEnum(contract.invoiceCycle, 'invoiceCycle', tEnum as (key: string) => string)}
+            value={translateEnum(
+              contract.invoiceCycle,
+              'invoiceCycle',
+              tEnum as (key: string) => string,
+            )}
           />
           {contract.retainerAmountMinor != null && (
             <FieldRow

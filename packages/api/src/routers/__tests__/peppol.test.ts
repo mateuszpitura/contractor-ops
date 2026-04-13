@@ -94,9 +94,13 @@ vi.mock('@contractor-ops/db', () => ({
   getRegionalClient: vi.fn(() => mockPrisma),
 }));
 
-vi.mock('@contractor-ops/integrations', () => ({
-  storeCredentials: mockStoreCredentials,
-}));
+vi.mock('@contractor-ops/integrations', async importOriginal => {
+  const actual = await importOriginal<typeof import('@contractor-ops/integrations')>();
+  return {
+    ...actual,
+    storeCredentials: mockStoreCredentials,
+  };
+});
 
 vi.mock('@contractor-ops/integrations/services/qstash-client', () => ({
   getQStashClient: mockGetQStashClient,
@@ -346,9 +350,9 @@ describe('peppol.connect', () => {
     const mockParticipant = {
       id: 'part-1',
       organizationId: ORG_ID,
-      participantId: '0192:1234567890',
+      participantId: '0192:123456789012345',
       schemeId: '0192',
-      identifierValue: '1234567890',
+      identifierValue: '123456789012345',
       aspProvider: 'storecove',
       status: 'PENDING',
     };
@@ -357,7 +361,7 @@ describe('peppol.connect', () => {
     mockPrisma.integrationConnection.update.mockResolvedValueOnce(mockConnection);
 
     const result = await caller.peppol.connect({
-      trn: '1234567890',
+      trn: '123456789012345',
       aspProvider: 'storecove',
       environment: 'sandbox',
       apiKey: 'test-api-key',
@@ -381,7 +385,7 @@ describe('peppol.connect', () => {
 
     await expect(
       caller.peppol.connect({
-        trn: '1234567890',
+        trn: '123456789012345',
         aspProvider: 'storecove',
         environment: 'sandbox',
         apiKey: 'test-api-key',
@@ -403,7 +407,7 @@ describe('peppol.connect', () => {
     });
 
     await caller.peppol.connect({
-      trn: '1234567890',
+      trn: '123456789012345',
       aspProvider: 'storecove',
       environment: 'sandbox',
       apiKey: 'test-api-key',
@@ -529,7 +533,9 @@ describe('peppol.retryTransmission', () => {
     const updated = { ...transmission, status: 'PENDING', errorMessage: null };
     mockPrisma.peppolTransmission.update.mockResolvedValueOnce(updated);
 
-    const result = await caller.peppol.retryTransmission({ transmissionId: 'tx-1' });
+    const result = await caller.peppol.retryTransmission({
+      transmissionId: 'clxxxxxxxxxxxxxxxxxtx001',
+    });
 
     expect(result.status).toBe('PENDING');
     expect(result.errorMessage).toBeNull();
@@ -539,7 +545,7 @@ describe('peppol.retryTransmission', () => {
     mockPrisma.peppolTransmission.findFirst.mockResolvedValueOnce(null);
 
     await expect(
-      caller.peppol.retryTransmission({ transmissionId: 'nonexistent' }),
+      caller.peppol.retryTransmission({ transmissionId: 'clxxxxxxxxxxxxxxxxxnoext' }),
     ).rejects.toThrow('Failed transmission not found');
   });
 });

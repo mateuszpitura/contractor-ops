@@ -231,6 +231,6 @@ describe('getColumns / invoice row cells', () => {
         }}
       />,
     );
-    expect(screen.getByText(/unknown_status/i)).toBeInTheDocument();
+    expect(screen.getByText(/unknownStatus/i)).toBeInTheDocument();
   });
 });

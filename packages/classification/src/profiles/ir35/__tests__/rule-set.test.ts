@@ -73,8 +73,8 @@ describe('IR35 rule-set inventory', () => {
   });
 
   it('at least one Q-FIN question uses a likert-5 answerType (CEST 2025 sharpening)', () => {
-    expect(IR35_QUESTIONS.some(q => q.area === 'financial-risk' && q.answerType === 'likert-5')).toBe(
-      true,
-    );
+    expect(
+      IR35_QUESTIONS.some(q => q.area === 'financial-risk' && q.answerType === 'likert-5'),
+    ).toBe(true);
   });
 });

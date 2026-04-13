@@ -9,14 +9,7 @@ import { useMemo } from 'react';
 import { SortableTableHead } from '@/components/shared/sortable-table-head';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
 
 interface ReportTableProps<TData> {
   columns: ColumnDef<TData>[];

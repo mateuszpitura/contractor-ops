@@ -27,7 +27,7 @@ async function updateConnectionAfterSync(
     where: { id: connectionId },
     data: {
       lastSyncAt: new Date(),
-      ...(!hasErrors ? { lastSuccessAt: new Date() } : {}),
+      ...(hasErrors ? {} : { lastSuccessAt: new Date() }),
       status: hasErrors ? 'ERROR' : 'CONNECTED',
       ...(hasErrors
         ? { lastErrorAt: new Date(), lastErrorMessage: errors.join('; ').slice(0, 1000) }
@@ -68,7 +68,10 @@ async function dispatchKsefSyncNotification(
       metadata: { invoicesCreated, duplicatesFound, link: '/invoices?source=KSEF' },
     });
   } catch (notificationError) {
-    console.error(`[ksef-sync] Notification dispatch failed for org=${organizationId}:`, notificationError);
+    console.error(
+      `[ksef-sync] Notification dispatch failed for org=${organizationId}:`,
+      notificationError,
+    );
   }
 }
 
@@ -89,7 +92,12 @@ async function processSingleKsefInvoice(
 ): Promise<'skipped' | 'created' | 'duplicate'> {
   // Check if already fetched
   const alreadyExists = await db.invoice.findFirst({
-    where: { organizationId, externalInvoiceId: ksefReferenceNumber, source: 'KSEF', deletedAt: null },
+    where: {
+      organizationId,
+      externalInvoiceId: ksefReferenceNumber,
+      source: 'KSEF',
+      deletedAt: null,
+    },
     select: { id: true },
   });
   if (alreadyExists) return 'skipped';
@@ -100,10 +108,19 @@ async function processSingleKsefInvoice(
   const { invoice: fields, lines } = mapKsefToInvoiceFields(parsed);
 
   // Compute duplicate check hash
-  const hash = computeDuplicateCheckHash(fields.invoiceNumber, fields.sellerTaxId ?? '', fields.totalMinor);
+  const hash = computeDuplicateCheckHash(
+    fields.invoiceNumber,
+    fields.sellerTaxId ?? '',
+    fields.totalMinor,
+  );
 
   // Check cross-source duplicate (per D-11)
-  const dup = await checkCrossSourceDuplicate(db, organizationId, fields.invoiceNumber, fields.sellerTaxId ?? '');
+  const dup = await checkCrossSourceDuplicate(
+    db,
+    organizationId,
+    fields.invoiceNumber,
+    fields.sellerTaxId ?? '',
+  );
 
   // dueDate required by Prisma — fall back to issueDate + 14 days
   const dueDate = fields.dueDate ?? new Date(fields.issueDate.getTime() + 14 * 24 * 3600 * 1000);
@@ -258,7 +275,10 @@ export async function processKsefSync(params: {
       for (const metadata of result.invoiceMetadataList) {
         try {
           const outcome = await processSingleKsefInvoice(
-            db, client, params.organizationId, metadata.ksefReferenceNumber,
+            db,
+            client,
+            params.organizationId,
+            metadata.ksefReferenceNumber,
           );
           if (outcome === 'skipped') continue;
           invoicesCreated++;
@@ -284,7 +304,13 @@ export async function processKsefSync(params: {
         },
       });
 
-      await dispatchKsefSyncNotification(db, params.organizationId, params.connectionId, invoicesCreated, duplicatesFound);
+      await dispatchKsefSyncNotification(
+        db,
+        params.organizationId,
+        params.connectionId,
+        invoicesCreated,
+        duplicatesFound,
+      );
 
       return { invoicesCreated, duplicatesFound, errors };
     } catch (error) {

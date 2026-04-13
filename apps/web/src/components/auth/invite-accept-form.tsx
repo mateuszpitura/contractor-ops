@@ -3,7 +3,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -36,6 +36,7 @@ export function InviteAcceptForm({
   const tc = useTranslations('Common');
   const tToast = useTranslations('Auth.toast');
   const router = useRouter();
+  const id = useId();
   const [isLoading, setIsLoading] = useState(false);
 
   const inviteSchema = z.object({
@@ -98,18 +99,18 @@ export function InviteAcceptForm({
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-[13px]">
+            <Label htmlFor={`${id}-email`} className="text-[13px]">
               {t('emailLabel')}
             </Label>
-            <Input id="email" type="email" value={email} disabled className="bg-muted" />
+            <Input id={`${id}-email`} type="email" value={email} disabled className="bg-muted" />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password" className="text-[13px]">
+            <Label htmlFor={`${id}-password`} className="text-[13px]">
               {t('passwordLabel')}
             </Label>
             <Input
-              id="password"
+              id={`${id}-password`}
               type="password"
               autoComplete="new-password"
               placeholder={t('passwordPlaceholder')}

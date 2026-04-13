@@ -16,10 +16,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
+import { enumKey } from '@/lib/enum-key';
 import { trpc } from '@/trpc/init';
 import type { AuditLogEntry } from './audit-log-table';
 import { AuditLogTable } from './audit-log-table';
-import { enumKey } from '@/lib/enum-key';
 
 // ---------------------------------------------------------------------------
 // Constants

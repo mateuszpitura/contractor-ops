@@ -39,120 +39,122 @@ function hasTrnIdentifier(partyNode: Record<string, unknown>): boolean {
 }
 
 /**
- * Validates a PINT-AE UBL 2.1 XML document against UAE business rules.
+ * Parse XML and extract the Invoice root element, or return an early error result.
  */
-export function validatePintAeXml(xml: string): ValidationResult {
-  const errors: ValidationError[] = [];
-  const warnings: ValidationError[] = [];
-
-  let inv: Record<string, unknown>;
+function parseInvoiceRoot(
+  xml: string,
+): { ok: true; inv: Record<string, unknown> } | { ok: false; result: ValidationResult } {
   try {
     const parsed = parser.parse(xml) as Record<string, unknown>;
-    inv = (parsed.Invoice ?? parsed.Invoice) as Record<string, unknown>;
+    const inv = (parsed.Invoice ?? parsed.Invoice) as Record<string, unknown>;
     if (!inv) {
       return {
+        ok: false,
+        result: {
+          valid: false,
+          errors: [
+            { code: 'MISSING_ROOT', message: 'Missing Invoice root element', severity: 'error' },
+          ],
+          warnings: [],
+          profileId: 'peppol-ae',
+        },
+      };
+    }
+    return { ok: true, inv };
+  } catch (err) {
+    return {
+      ok: false,
+      result: {
         valid: false,
         errors: [
           {
-            code: 'MISSING_ROOT',
-            message: 'Missing Invoice root element',
+            code: 'PARSE_ERROR',
+            message: err instanceof Error ? err.message : String(err),
             severity: 'error',
           },
         ],
         warnings: [],
         profileId: 'peppol-ae',
-      };
-    }
-  } catch (err) {
-    return {
-      valid: false,
-      errors: [
-        {
-          code: 'PARSE_ERROR',
-          message: err instanceof Error ? err.message : String(err),
-          severity: 'error',
-        },
-      ],
-      warnings: [],
-      profileId: 'peppol-ae',
+      },
     };
   }
+}
 
-  // Check CustomizationID
+function validateCustomizationId(inv: Record<string, unknown>): ValidationError | null {
   const customizationId = text(dig(inv, 'cbc:CustomizationID'));
   if (customizationId !== PINT_AE_CUSTOMIZATION_ID) {
-    errors.push({
+    return {
       code: 'WRONG_CUSTOMIZATION_ID',
       message: `CustomizationID must be "${PINT_AE_CUSTOMIZATION_ID}", got "${customizationId}"`,
       path: 'cbc:CustomizationID',
       severity: 'error',
-    });
+    };
   }
+  return null;
+}
 
-  // Check BuyerReference (mandatory for UAE)
-  const buyerRef = text(dig(inv, 'cbc:BuyerReference'));
-  if (!buyerRef) {
-    errors.push({
-      code: 'MISSING_BUYER_REFERENCE',
-      message: 'BuyerReference is mandatory for UAE PINT-AE invoices',
-      path: 'cbc:BuyerReference',
-      severity: 'error',
-    });
+function validateRequiredTextField(
+  inv: Record<string, unknown>,
+  path: string,
+  code: string,
+  message: string,
+): ValidationError | null {
+  const value = text(dig(inv, path));
+  if (!value) {
+    return { code, message, path, severity: 'error' };
   }
+  return null;
+}
 
-  // Check DocumentCurrencyCode
-  const currencyCode = text(dig(inv, 'cbc:DocumentCurrencyCode'));
-  if (!currencyCode) {
-    errors.push({
-      code: 'MISSING_CURRENCY_CODE',
-      message: 'DocumentCurrencyCode is required',
-      path: 'cbc:DocumentCurrencyCode',
-      severity: 'error',
-    });
-  }
-
-  // Check supplier TRN
+function validateSupplierTrn(inv: Record<string, unknown>): ValidationError | null {
   const supplierParty = dig(inv, 'cac:AccountingSupplierParty') as
     | Record<string, unknown>
     | undefined;
   if (!(supplierParty && hasTrnIdentifier(supplierParty))) {
-    errors.push({
+    return {
       code: 'MISSING_SUPPLIER_TRN',
       message: `Supplier must have PartyIdentification with schemeID="${UAE_SCHEME_ID}" (UAE TRN)`,
       path: 'cac:AccountingSupplierParty/cac:Party/cac:PartyIdentification',
       severity: 'error',
-    });
+    };
   }
+  return null;
+}
 
-  // Check customer TRN (warning for cross-border)
+function validateCustomerTrn(inv: Record<string, unknown>): ValidationError | null {
   const customerParty = dig(inv, 'cac:AccountingCustomerParty') as
     | Record<string, unknown>
     | undefined;
   if (customerParty && !hasTrnIdentifier(customerParty)) {
-    warnings.push({
+    return {
       code: 'MISSING_CUSTOMER_TRN',
       message: `Customer does not have PartyIdentification with schemeID="${UAE_SCHEME_ID}". Required for domestic UAE invoices.`,
       path: 'cac:AccountingCustomerParty/cac:Party/cac:PartyIdentification',
       severity: 'warning',
-    });
+    };
   }
+  return null;
+}
 
-  // Check tax subtotals exist
+function validateTaxSubtotals(inv: Record<string, unknown>): ValidationError | null {
   const taxSubtotals = dig(inv, 'cac:TaxTotal', 'cac:TaxSubtotal');
   if (!taxSubtotals || (Array.isArray(taxSubtotals) && taxSubtotals.length === 0)) {
-    errors.push({
+    return {
       code: 'MISSING_TAX_SUBTOTAL',
       message: 'At least one TaxSubtotal is required',
       path: 'cac:TaxTotal/cac:TaxSubtotal',
       severity: 'error',
-    });
+    };
   }
+  return null;
+}
 
-  // Check invoice lines have LineExtensionAmount
+function validateLineAmounts(inv: Record<string, unknown>): ValidationError[] {
+  const errors: ValidationError[] = [];
   const rawLines = dig(inv, 'cac:InvoiceLine') as Record<string, unknown>[] | undefined;
   if (rawLines) {
-    rawLines.forEach((line, idx) => {
-      const amount = dig(line, 'cbc:LineExtensionAmount');
+    for (let idx = 0; idx < rawLines.length; idx++) {
+      const amount = dig(rawLines[idx] as Record<string, unknown>, 'cbc:LineExtensionAmount');
       if (!amount) {
         errors.push({
           code: 'MISSING_LINE_AMOUNT',
@@ -161,8 +163,48 @@ export function validatePintAeXml(xml: string): ValidationResult {
           severity: 'error',
         });
       }
-    });
+    }
   }
+  return errors;
+}
+
+/**
+ * Validates a PINT-AE UBL 2.1 XML document against UAE business rules.
+ */
+export function validatePintAeXml(xml: string): ValidationResult {
+  const parsed = parseInvoiceRoot(xml);
+  if (!parsed.ok) return parsed.result;
+  const inv = parsed.inv;
+
+  const errors: ValidationError[] = [];
+  const warnings: ValidationError[] = [];
+
+  const checks: Array<ValidationError | null> = [
+    validateCustomizationId(inv),
+    validateRequiredTextField(
+      inv,
+      'cbc:BuyerReference',
+      'MISSING_BUYER_REFERENCE',
+      'BuyerReference is mandatory for UAE PINT-AE invoices',
+    ),
+    validateRequiredTextField(
+      inv,
+      'cbc:DocumentCurrencyCode',
+      'MISSING_CURRENCY_CODE',
+      'DocumentCurrencyCode is required',
+    ),
+    validateSupplierTrn(inv),
+    validateTaxSubtotals(inv),
+  ];
+
+  for (const err of checks) {
+    if (err) errors.push(err);
+  }
+
+  const customerWarning = validateCustomerTrn(inv);
+  if (customerWarning) warnings.push(customerWarning);
+
+  errors.push(...validateLineAmounts(inv));
 
   return {
     valid: errors.length === 0,

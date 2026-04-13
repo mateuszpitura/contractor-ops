@@ -21,6 +21,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@contractor-ops/validators": "workspace:*",
     "zod": "^3.25.76"
   },
   "devDependencies": {

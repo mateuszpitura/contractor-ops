@@ -11,7 +11,7 @@ import {
   ShieldAlert,
   Trash2,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { toast } from 'sonner';
 import { FeatureGate } from '@/components/billing/feature-gate';
 import {
@@ -108,6 +108,7 @@ function CreateKeyDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const id = useId();
   const queryClient = useQueryClient();
   const [name, setName] = useState('');
   const [scopes, setScopes] = useState<ScopeValue[]>([]);
@@ -217,9 +218,9 @@ function CreateKeyDialog({
 
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="key-name">Name</Label>
+            <Label htmlFor={`${id}-key-name`}>Name</Label>
             <Input
-              id="key-name"
+              id={`${id}-key-name`}
               placeholder="e.g. ERP Integration"
               value={name}
               // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
@@ -234,10 +235,10 @@ function CreateKeyDialog({
               {AVAILABLE_SCOPES.map(scope => (
                 <label
                   key={scope.value}
-                  htmlFor={`scope-${scope.value}`}
+                  htmlFor={`${id}-scope-${scope.value}`}
                   className="flex cursor-pointer items-center gap-2.5 text-sm">
                   <Checkbox
-                    id={`scope-${scope.value}`}
+                    id={`${id}-scope-${scope.value}`}
                     checked={scopes.includes(scope.value)}
                     // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
                     onCheckedChange={() => toggleScope(scope.value)}
@@ -249,9 +250,9 @@ function CreateKeyDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="key-expiry">Expiry (optional)</Label>
+            <Label htmlFor={`${id}-key-expiry`}>Expiry (optional)</Label>
             <Input
-              id="key-expiry"
+              id={`${id}-key-expiry`}
               type="date"
               value={expiresAt}
               // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler

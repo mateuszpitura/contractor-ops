@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Loader2, Save } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useId, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -197,6 +197,7 @@ function getMonths(locale: string): Array<{ value: number; label: string }> {
  * Fetches current settings via tRPC, allows editing, saves via tRPC mutation.
  */
 export function OrgSettingsForm() {
+  const id = useId();
   const t = useTranslations('Settings');
   const tToast = useTranslations('Settings.toast');
   const locale = useLocale();
@@ -303,25 +304,29 @@ export function OrgSettingsForm() {
         <CardContent className="space-y-5 max-w-lg">
           {/* Organization name */}
           <div className="space-y-1.5">
-            <Label htmlFor="name" className="text-[13px]">
+            <Label htmlFor={`${id}-name`} className="text-[13px]">
               {t('fields.orgName')}
             </Label>
-            <Input id="name" disabled={updateMutation.isPending} {...register('name')} />
+            <Input id={`${id}-name`} disabled={updateMutation.isPending} {...register('name')} />
             {!!errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
           </div>
 
           {/* Legal name */}
           <div className="space-y-1.5">
-            <Label htmlFor="legalName" className="text-[13px]">
+            <Label htmlFor={`${id}-legalName`} className="text-[13px]">
               {t('fields.legalName')}{' '}
               <span className="text-muted-foreground">{t('fields.legalNameOptional')}</span>
             </Label>
-            <Input id="legalName" disabled={updateMutation.isPending} {...register('legalName')} />
+            <Input
+              id={`${id}-legalName`}
+              disabled={updateMutation.isPending}
+              {...register('legalName')}
+            />
           </div>
 
           {/* Country */}
           <div className="space-y-1.5">
-            <Label htmlFor="country" className="text-[13px]">
+            <Label htmlFor={`${id}-country`} className="text-[13px]">
               {t('fields.country')}
             </Label>
             <Select
@@ -332,7 +337,7 @@ export function OrgSettingsForm() {
               }}
               disabled={updateMutation.isPending}
               items={countries}>
-              <SelectTrigger id="country" className="w-full">
+              <SelectTrigger id={`${id}-country`} className="w-full">
                 <SelectValue placeholder={t('fields.countryPlaceholder')} />
               </SelectTrigger>
               <SelectContent className="max-h-60">
@@ -347,7 +352,7 @@ export function OrgSettingsForm() {
 
           {/* Currency */}
           <div className="space-y-1.5">
-            <Label htmlFor="currency" className="text-[13px]">
+            <Label htmlFor={`${id}-currency`} className="text-[13px]">
               {t('fields.currency')}
             </Label>
             <Select
@@ -358,7 +363,7 @@ export function OrgSettingsForm() {
               }}
               disabled={updateMutation.isPending}
               items={currencies}>
-              <SelectTrigger id="currency" className="w-full">
+              <SelectTrigger id={`${id}-currency`} className="w-full">
                 <SelectValue placeholder={t('fields.currencyPlaceholder')} />
               </SelectTrigger>
               <SelectContent className="max-h-60">
@@ -373,7 +378,7 @@ export function OrgSettingsForm() {
 
           {/* Timezone */}
           <div className="space-y-1.5">
-            <Label htmlFor="timezone" className="text-[13px]">
+            <Label htmlFor={`${id}-timezone`} className="text-[13px]">
               {t('fields.timezone')}
             </Label>
             <Select
@@ -384,7 +389,7 @@ export function OrgSettingsForm() {
               }}
               disabled={updateMutation.isPending}
               items={timezones}>
-              <SelectTrigger id="timezone" className="w-full">
+              <SelectTrigger id={`${id}-timezone`} className="w-full">
                 <SelectValue placeholder={t('fields.timezonePlaceholder')} />
               </SelectTrigger>
               <SelectContent className="max-h-60">
@@ -399,7 +404,7 @@ export function OrgSettingsForm() {
 
           {/* Language */}
           <div className="space-y-1.5">
-            <Label htmlFor="language" className="text-[13px]">
+            <Label htmlFor={`${id}-language`} className="text-[13px]">
               {t('fields.language')}
             </Label>
             <Select
@@ -413,7 +418,7 @@ export function OrgSettingsForm() {
                 { value: 'pl', label: t('fields.languagePolish') },
                 { value: 'en', label: t('fields.languageEnglish') },
               ]}>
-              <SelectTrigger id="language" className="w-full">
+              <SelectTrigger id={`${id}-language`} className="w-full">
                 <SelectValue placeholder={t('fields.languagePlaceholder')} />
               </SelectTrigger>
               <SelectContent>
@@ -425,7 +430,7 @@ export function OrgSettingsForm() {
 
           {/* Fiscal year start */}
           <div className="space-y-1.5">
-            <Label htmlFor="fiscalYearStartMonth" className="text-[13px]">
+            <Label htmlFor={`${id}-fiscalYearStartMonth`} className="text-[13px]">
               {t('fields.fiscalYear')}
             </Label>
             <Select
@@ -437,7 +442,7 @@ export function OrgSettingsForm() {
               }}
               disabled={updateMutation.isPending}
               items={months.map(m => ({ value: String(m.value), label: m.label }))}>
-              <SelectTrigger id="fiscalYearStartMonth" className="w-full">
+              <SelectTrigger id={`${id}-fiscalYearStartMonth`} className="w-full">
                 <SelectValue placeholder={t('fields.fiscalYearPlaceholder')} />
               </SelectTrigger>
               <SelectContent>
@@ -452,12 +457,12 @@ export function OrgSettingsForm() {
 
           {/* Billing email */}
           <div className="space-y-1.5">
-            <Label htmlFor="billingEmail" className="text-[13px]">
+            <Label htmlFor={`${id}-billingEmail`} className="text-[13px]">
               {t('fields.billingEmail')}{' '}
               <span className="text-muted-foreground">{t('fields.billingEmailOptional')}</span>
             </Label>
             <Input
-              id="billingEmail"
+              id={`${id}-billingEmail`}
               type="email"
               disabled={updateMutation.isPending}
               {...register('billingEmail')}

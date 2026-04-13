@@ -8,11 +8,7 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DataTableBody } from '@/components/shared/data-table-body';
 import { SortableTableHead } from '@/components/shared/sortable-table-head';
-import {
-  Table,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { Table, TableHeader, TableRow } from '@/components/ui/table';
 import { trpc } from '@/trpc/init';
 import type { ContractRow } from './columns';
 import { getColumns } from './columns';
@@ -91,9 +87,22 @@ export function ContractDataTable({ onRowClick, onNewContract, onImport }: Contr
         'endDate',
       sortOrder: (filters.sortOrder as 'asc' | 'desc') || 'asc',
       filters: {
-        status: asFilterArray<'DRAFT' | 'PENDING_SIGNATURE' | 'ACTIVE' | 'EXPIRING' | 'EXPIRED' | 'TERMINATED' | 'SUPERSEDED' | 'ARCHIVED'>(filters.status),
-        type: asFilterArray<'B2B_MASTER_SERVICE' | 'STATEMENT_OF_WORK' | 'NDA' | 'IP_ASSIGNMENT' | 'DPA' | 'OTHER'>(filters.type),
-        billingModel: asFilterArray<'MONTHLY_RETAINER' | 'HOURLY' | 'DAILY' | 'MILESTONE' | 'DELIVERABLE_BASED' | 'MIXED'>(filters.billingModel),
+        status: asFilterArray<
+          | 'DRAFT'
+          | 'PENDING_SIGNATURE'
+          | 'ACTIVE'
+          | 'EXPIRING'
+          | 'EXPIRED'
+          | 'TERMINATED'
+          | 'SUPERSEDED'
+          | 'ARCHIVED'
+        >(filters.status),
+        type: asFilterArray<
+          'B2B_MASTER_SERVICE' | 'STATEMENT_OF_WORK' | 'NDA' | 'IP_ASSIGNMENT' | 'DPA' | 'OTHER'
+        >(filters.type),
+        billingModel: asFilterArray<
+          'MONTHLY_RETAINER' | 'HOURLY' | 'DAILY' | 'MILESTONE' | 'DELIVERABLE_BASED' | 'MIXED'
+        >(filters.billingModel),
         ownerUserId: asFilterArray(filters.ownerUserId),
         endDateFrom: asDateFilter(filters.endDateFrom),
         endDateTo: asDateFilter(filters.endDateTo),

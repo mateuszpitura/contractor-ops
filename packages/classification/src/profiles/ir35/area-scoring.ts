@@ -19,7 +19,8 @@
 
 import type { AnswerMap } from '../../types/assessment.js';
 import type { Ir35Area, Ir35AreaVerdict } from '../../types/outcome.js';
-import { IR35_QUESTIONS, IR35_YES_DIRECTION, type YesDirection } from './rule-set.js';
+import type { YesDirection } from './rule-set.js';
+import { IR35_QUESTIONS, IR35_YES_DIRECTION } from './rule-set.js';
 
 type AnsweredSignal = YesDirection;
 
@@ -33,7 +34,7 @@ const MAGNITUDE: Record<AnsweredSignal, number> = {
 };
 
 function interpretAnswer(
-  questionId: string,
+  _questionId: string,
   rawValue: unknown,
   yesDirection: YesDirection,
 ): AnsweredSignal {

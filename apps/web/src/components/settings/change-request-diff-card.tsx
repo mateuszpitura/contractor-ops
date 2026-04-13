@@ -17,8 +17,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
-import { trpc } from '@/trpc/init';
 import { enumKey } from '@/lib/enum-key';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Field label key mapping

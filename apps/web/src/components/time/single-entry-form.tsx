@@ -2,7 +2,7 @@
 
 import { format } from 'date-fns';
 import { CalendarDays } from 'lucide-react';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import {
@@ -65,6 +65,7 @@ export function SingleEntryForm({
   onSubmit,
   isSubmitting,
 }: SingleEntryFormProps) {
+  const id = useId();
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [contractId, setContractId] = useState('');
   const [hours, setHours] = useState('');
@@ -135,11 +136,11 @@ export function SingleEntryForm({
         <div className="space-y-4">
           {/* Date picker */}
           <div className="space-y-2">
-            <Label htmlFor="entry-date">Date</Label>
+            <Label htmlFor={`${id}-entry-date`}>Date</Label>
             <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
               <PopoverTrigger asChild>
                 <Button
-                  id="entry-date"
+                  id={`${id}-entry-date`}
                   variant="outline"
                   className={cn(
                     'w-full justify-start font-normal',
@@ -167,9 +168,9 @@ export function SingleEntryForm({
 
           {/* Project select */}
           <div className="space-y-2">
-            <Label htmlFor="entry-project">Project</Label>
+            <Label htmlFor={`${id}-entry-project`}>Project</Label>
             <Select value={contractId} onValueChange={setContractId}>
-              <SelectTrigger id="entry-project">
+              <SelectTrigger id={`${id}-entry-project`}>
                 <SelectValue placeholder="Select a project" />
               </SelectTrigger>
               <SelectContent>
@@ -185,9 +186,9 @@ export function SingleEntryForm({
 
           {/* Hours input */}
           <div className="space-y-2">
-            <Label htmlFor="entry-hours">Hours</Label>
+            <Label htmlFor={`${id}-entry-hours`}>Hours</Label>
             <Input
-              id="entry-hours"
+              id={`${id}-entry-hours`}
               type="number"
               step="0.25"
               min="0.25"
@@ -203,11 +204,11 @@ export function SingleEntryForm({
 
           {/* Description textarea */}
           <div className="space-y-2">
-            <Label htmlFor="entry-description">
+            <Label htmlFor={`${id}-entry-description`}>
               Description <span className="font-normal text-muted-foreground">(optional)</span>
             </Label>
             <Textarea
-              id="entry-description"
+              id={`${id}-entry-description`}
               rows={3}
               maxLength={500}
               placeholder="What did you work on?"

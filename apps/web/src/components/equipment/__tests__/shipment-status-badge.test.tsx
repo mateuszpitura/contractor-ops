@@ -25,7 +25,7 @@ describe('ShipmentStatusBadge', () => {
 
   it('falls back to secondary variant for unknown status', () => {
     render(<ShipmentStatusBadge status="UNKNOWN" />);
-    const badge = screen.getByLabelText('Equipment.shipment.status.UNKNOWN');
+    const badge = screen.getByLabelText('Equipment.shipment.status.unknown');
     expect(badge).toBeInTheDocument();
   });
 

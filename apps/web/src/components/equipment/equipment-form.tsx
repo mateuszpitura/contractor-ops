@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useEffect } from 'react';
+import { useEffect, useId } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -28,9 +28,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { enumKey } from '@/lib/enum-key';
 import { trpc } from '@/trpc/init';
 import { EquipmentTypeIcon } from './equipment-type-icon';
-import { enumKey } from '@/lib/enum-key';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -66,6 +66,7 @@ interface EquipmentFormProps {
 // ---------------------------------------------------------------------------
 
 export function EquipmentForm({ open, onOpenChange, equipment }: EquipmentFormProps) {
+  const id = useId();
   const t = useTranslations('Equipment');
   const queryClient = useQueryClient();
   const isEdit = !!equipment;
@@ -163,9 +164,9 @@ export function EquipmentForm({ open, onOpenChange, equipment }: EquipmentFormPr
         <form onSubmit={onSubmit} className="space-y-4">
           {/* Name */}
           <div className="space-y-2">
-            <Label htmlFor="eq-name">{t('form.name')}</Label>
+            <Label htmlFor={`${id}-eq-name`}>{t('form.name')}</Label>
             <Input
-              id="eq-name"
+              id={`${id}-eq-name`}
               placeholder={t('form.namePlaceholder')}
               {...form.register('name')}
               aria-invalid={!!form.formState.errors.name}
@@ -177,9 +178,9 @@ export function EquipmentForm({ open, onOpenChange, equipment }: EquipmentFormPr
 
           {/* Serial Number */}
           <div className="space-y-2">
-            <Label htmlFor="eq-serial">{t('form.serialNumber')}</Label>
+            <Label htmlFor={`${id}-eq-serial`}>{t('form.serialNumber')}</Label>
             <Input
-              id="eq-serial"
+              id={`${id}-eq-serial`}
               placeholder={t('form.serialNumberPlaceholder')}
               className="font-mono"
               {...form.register('serialNumber')}
@@ -214,9 +215,9 @@ export function EquipmentForm({ open, onOpenChange, equipment }: EquipmentFormPr
           {/* Custom type (shown when OTHER) */}
           {watchedType === 'OTHER' && (
             <div className="space-y-2">
-              <Label htmlFor="eq-custom-type">{t('form.customType')}</Label>
+              <Label htmlFor={`${id}-eq-custom-type`}>{t('form.customType')}</Label>
               <Input
-                id="eq-custom-type"
+                id={`${id}-eq-custom-type`}
                 placeholder={t('form.customTypePlaceholder')}
                 {...form.register('customType')}
               />
@@ -225,9 +226,9 @@ export function EquipmentForm({ open, onOpenChange, equipment }: EquipmentFormPr
 
           {/* Purchase Date */}
           <div className="space-y-2">
-            <Label htmlFor="eq-purchase-date">{t('form.purchaseDate')}</Label>
+            <Label htmlFor={`${id}-eq-purchase-date`}>{t('form.purchaseDate')}</Label>
             <Input
-              id="eq-purchase-date"
+              id={`${id}-eq-purchase-date`}
               type="date"
               {...form.register('purchaseDate', {
                 setValueAs: (v: string) => (v ? new Date(v) : undefined),
@@ -237,8 +238,8 @@ export function EquipmentForm({ open, onOpenChange, equipment }: EquipmentFormPr
 
           {/* Notes */}
           <div className="space-y-2">
-            <Label htmlFor="eq-notes">{t('form.notes')}</Label>
-            <Textarea id="eq-notes" rows={3} {...form.register('notes')} />
+            <Label htmlFor={`${id}-eq-notes`}>{t('form.notes')}</Label>
+            <Textarea id={`${id}-eq-notes`} rows={3} {...form.register('notes')} />
           </div>
 
           <DialogFooter>

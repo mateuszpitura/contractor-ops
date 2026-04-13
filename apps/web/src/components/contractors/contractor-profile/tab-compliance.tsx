@@ -2,6 +2,7 @@
 
 import { ShieldCheck, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { useId } from 'react';
 import { CountryComplianceSection } from '@/components/contractors/country-compliance-section';
 import { DocumentList } from '@/components/documents/document-list';
 import { DropZone } from '@/components/documents/drop-zone';
@@ -51,6 +52,7 @@ function formatDate(date: string | Date): string {
 }
 
 export function TabCompliance({ contractor }: TabComplianceProps) {
+  const id = useId();
   const t = useTranslations('ContractorProfile.compliance');
 
   if (contractor.complianceItems.length === 0) {
@@ -133,7 +135,7 @@ export function TabCompliance({ contractor }: TabComplianceProps) {
                     onClick={() => {
                       // Scroll to the upload section at bottom
                       document
-                        .getElementById('compliance-upload-zone')
+                        .getElementById(`${id}-compliance-upload-zone`)
                         ?.scrollIntoView({ behavior: 'smooth' });
                     }}>
                     <Upload className="me-1.5 size-3.5" />
@@ -147,7 +149,7 @@ export function TabCompliance({ contractor }: TabComplianceProps) {
       </div>
 
       {/* Required documents section — upload zone */}
-      <div id="compliance-upload-zone" className="space-y-4">
+      <div id={`${id}-compliance-upload-zone`} className="space-y-4">
         <h3 className="text-base font-medium">
           {t('uploadCompliance' as Parameters<typeof t>[0])}
         </h3>

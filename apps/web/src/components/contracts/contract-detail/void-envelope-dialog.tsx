@@ -3,7 +3,7 @@
 import { useMutation } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { toast } from 'sonner';
 import {
   AlertDialog,
@@ -44,6 +44,7 @@ export function VoidEnvelopeDialog({
   onOpenChange,
   onVoided,
 }: VoidEnvelopeDialogProps) {
+  const id = useId();
   const t = useTranslations('ContractDetail.signing.voidDialog');
   const tToast = useTranslations('ContractDetail.signing.toast');
   const [reason, setReason] = useState('');
@@ -78,9 +79,9 @@ export function VoidEnvelopeDialog({
         </AlertDialogHeader>
 
         <div className="space-y-2 py-2">
-          <Label htmlFor="void-reason">{t('reasonLabel')}</Label>
+          <Label htmlFor={`${id}-void-reason`}>{t('reasonLabel')}</Label>
           <Textarea
-            id="void-reason"
+            id={`${id}-void-reason`}
             rows={2}
             placeholder={t('reasonPlaceholder')}
             value={reason}

@@ -11,6 +11,7 @@ export function Pricing({ plans }: { plans: PricingPlan[] }) {
   const locale = useLocale();
 
   return (
+    // biome-ignore lint/correctness/useUniqueElementIds: anchor target for scroll navigation
     <section id="pricing" className="relative py-28 sm:py-36 overflow-hidden">
       <div className="mx-auto max-w-6xl px-6">
         <FadeUp className="text-center">

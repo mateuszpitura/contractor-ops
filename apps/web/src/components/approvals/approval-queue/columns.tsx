@@ -107,7 +107,9 @@ function RejectPopover({
         <div className="space-y-3">
           <h4 className="font-medium text-sm">{t('rejectPopover.heading')}</h4>
           <div className="space-y-1.5">
-            <label htmlFor={`${reactId}-reject-comment`} className="text-[12px] text-muted-foreground">
+            <label
+              htmlFor={`${reactId}-reject-comment`}
+              className="text-[12px] text-muted-foreground">
               {t('rejectPopover.commentLabel')}
             </label>
             <Textarea

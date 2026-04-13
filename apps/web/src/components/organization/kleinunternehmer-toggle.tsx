@@ -15,7 +15,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { toast } from 'sonner';
 import {
   AlertDialog,
@@ -40,6 +40,7 @@ export function KleinunternehmerToggle({
   orgCountryCode,
   isKleinunternehmer,
 }: KleinunternehmerToggleProps) {
+  const id = useId();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pendingValue, setPendingValue] = useState<boolean | null>(null);
 
@@ -80,7 +81,7 @@ export function KleinunternehmerToggle({
     <div className="space-y-3" data-testid="kleinunternehmer-toggle">
       <div className="flex items-center justify-between gap-4">
         <div className="space-y-1">
-          <Label htmlFor="kleinunternehmer-switch" className="text-base font-medium">
+          <Label htmlFor={`${id}-kleinunternehmer-switch`} className="text-base font-medium">
             Kleinunternehmerregelung (§ 19 UStG)
           </Label>
           <p className="text-sm text-muted-foreground max-w-prose">
@@ -90,7 +91,7 @@ export function KleinunternehmerToggle({
           </p>
         </div>
         <Switch
-          id="kleinunternehmer-switch"
+          id={`${id}-kleinunternehmer-switch`}
           checked={isKleinunternehmer}
           // biome-ignore lint/nursery/noJsxPropsBind: small toggle component
           onCheckedChange={handleCheckedChange}

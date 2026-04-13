@@ -139,7 +139,11 @@ export function TaxDetailsForm({ defaultValues, onSuccess, onCancel }: TaxDetail
 
           <div className="space-y-2">
             <Label htmlFor={`${reactId}-district`}>District</Label>
-            <Input id={`${reactId}-district`} {...register('district')} aria-invalid={!!errors.district} />
+            <Input
+              id={`${reactId}-district`}
+              {...register('district')}
+              aria-invalid={!!errors.district}
+            />
             {!!errors.district && (
               <p className="text-xs text-destructive">{errors.district.message}</p>
             )}
@@ -171,7 +175,9 @@ export function TaxDetailsForm({ defaultValues, onSuccess, onCancel }: TaxDetail
           // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
           render={({ field }) => (
             <div className="space-y-2">
-              <label htmlFor={`${reactId}-zatca-inv-standard`} className="flex items-center gap-2 text-sm">
+              <label
+                htmlFor={`${reactId}-zatca-inv-standard`}
+                className="flex items-center gap-2 text-sm">
                 <Checkbox
                   id={`${reactId}-zatca-inv-standard`}
                   checked={field.value?.includes('standard')}
@@ -185,7 +191,9 @@ export function TaxDetailsForm({ defaultValues, onSuccess, onCancel }: TaxDetail
                 />
                 Standard Tax Invoices (B2B clearance)
               </label>
-              <label htmlFor={`${reactId}-zatca-inv-simplified`} className="flex items-center gap-2 text-sm">
+              <label
+                htmlFor={`${reactId}-zatca-inv-simplified`}
+                className="flex items-center gap-2 text-sm">
                 <Checkbox
                   id={`${reactId}-zatca-inv-simplified`}
                   checked={field.value?.includes('simplified')}

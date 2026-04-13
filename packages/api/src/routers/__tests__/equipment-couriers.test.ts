@@ -121,22 +121,22 @@ vi.mock('@contractor-ops/db', () => ({
 }));
 
 vi.mock('../../services/courier/inpost-client.js', () => ({
-  InPostClient: vi.fn().mockImplementation(() => ({
-    createShipment: mockInPostCreateShipment,
-    getLabel: mockInPostGetLabel,
-  })),
+  InPostClient: vi.fn().mockImplementation(function (this: Record<string, unknown>) {
+    this.createShipment = mockInPostCreateShipment;
+    this.getLabel = mockInPostGetLabel;
+  }),
 }));
 
 vi.mock('../../services/courier/dpd-client.js', () => ({
-  DPDClient: vi.fn().mockImplementation(() => ({
-    createShipment: mockDPDCreateShipment,
-  })),
+  DPDClient: vi.fn().mockImplementation(function (this: Record<string, unknown>) {
+    this.createShipment = mockDPDCreateShipment;
+  }),
 }));
 
 vi.mock('../../services/courier/ups-client.js', () => ({
-  UPSClient: vi.fn().mockImplementation(() => ({
-    createShipment: mockUPSCreateShipment,
-  })),
+  UPSClient: vi.fn().mockImplementation(function (this: Record<string, unknown>) {
+    this.createShipment = mockUPSCreateShipment;
+  }),
 }));
 
 vi.mock('../../services/courier/carrier-factory.js', () => ({
@@ -307,13 +307,13 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
 
 import { auth } from '@contractor-ops/auth';
 import { createCallerFactory } from '../../init.js';
-import { appRouter } from '../../root.js';
+import { equipmentCouriersRouter } from '../equipment-couriers.js';
 
 // ---------------------------------------------------------------------------
 // Caller helper
 // ---------------------------------------------------------------------------
 
-const createCaller = createCallerFactory(appRouter);
+const createCaller = createCallerFactory(equipmentCouriersRouter);
 
 function makeCaller(userId = USER_ID, orgId = ORG_ID) {
   const session = {
@@ -408,11 +408,13 @@ describe('equipmentCouriers.createInPostShipment', () => {
     mockPrisma.auditLog.create.mockResolvedValue({});
     mockPrisma.shipment.findMany.mockResolvedValueOnce([{ ...createdShipment, events: [] }]);
 
-    const result = await caller.equipmentCouriers.createInPostShipment({
+    const result = await caller.createInPostShipment({
       equipmentIds: ['eq-1'],
       direction: 'OUTBOUND',
       targetPointId: 'WAW01A',
-      parcelSize: 'A',
+      targetPointName: 'Paczkomat WAW01A',
+      targetPointAddress: 'ul. Testowa 1, Warszawa',
+      parcelSize: 'small',
     });
 
     expect(result).toBeDefined();
@@ -423,11 +425,13 @@ describe('equipmentCouriers.createInPostShipment', () => {
     mockPrisma.courierConfig.findUnique.mockResolvedValueOnce(null);
 
     await expect(
-      caller.equipmentCouriers.createInPostShipment({
+      caller.createInPostShipment({
         equipmentIds: ['eq-1'],
         direction: 'OUTBOUND',
         targetPointId: 'WAW01A',
-        parcelSize: 'A',
+        targetPointName: 'Paczkomat WAW01A',
+        targetPointAddress: 'ul. Testowa 1, Warszawa',
+        parcelSize: 'small',
       }),
     ).rejects.toThrow('COURIER_CONFIG_NOT_FOUND');
   });
@@ -439,11 +443,13 @@ describe('equipmentCouriers.createInPostShipment', () => {
     mockPrisma.equipment.findMany.mockResolvedValueOnce([]); // no items found
 
     await expect(
-      caller.equipmentCouriers.createInPostShipment({
+      caller.createInPostShipment({
         equipmentIds: ['eq-missing'],
         direction: 'OUTBOUND',
         targetPointId: 'WAW01A',
-        parcelSize: 'A',
+        targetPointName: 'Paczkomat WAW01A',
+        targetPointAddress: 'ul. Testowa 1, Warszawa',
+        parcelSize: 'small',
       }),
     ).rejects.toThrow();
   });
@@ -457,11 +463,13 @@ describe('equipmentCouriers.createInPostShipment', () => {
     ]);
 
     await expect(
-      caller.equipmentCouriers.createInPostShipment({
+      caller.createInPostShipment({
         equipmentIds: ['eq-1'],
         direction: 'OUTBOUND',
         targetPointId: 'WAW01A',
-        parcelSize: 'A',
+        targetPointName: 'Paczkomat WAW01A',
+        targetPointAddress: 'ul. Testowa 1, Warszawa',
+        parcelSize: 'small',
       }),
     ).rejects.toThrow();
   });
@@ -472,7 +480,7 @@ describe('equipmentCouriers.saveCourierConfig', () => {
     mockPrisma.courierConfig.upsert.mockResolvedValueOnce({});
     mockPrisma.auditLog.create.mockResolvedValueOnce({});
 
-    const result = await caller.equipmentCouriers.saveCourierConfig({
+    const result = await caller.saveCourierConfig({
       carrier: 'dpd',
       username: 'dpd-user',
       password: 'dpd-pass',
@@ -493,7 +501,7 @@ describe('equipmentCouriers.getCourierConfigs', () => {
     ];
     mockPrisma.courierConfig.findMany.mockResolvedValueOnce(configs);
 
-    const result = await caller.equipmentCouriers.getCourierConfigs();
+    const result = await caller.getCourierConfigs();
 
     expect(result).toEqual(configs);
     expect(mockPrisma.courierConfig.findMany).toHaveBeenCalledWith(
@@ -511,7 +519,7 @@ describe('equipmentCouriers.testCourierConnection', () => {
       getStatus: vi.fn().mockRejectedValueOnce(new Error('Shipment not found (404)')),
     });
 
-    const result = await caller.equipmentCouriers.testCourierConnection({
+    const result = await caller.testCourierConnection({
       carrier: 'dpd',
       username: 'dpd-user',
       password: 'dpd-pass',
@@ -526,7 +534,7 @@ describe('equipmentCouriers.testCourierConnection', () => {
       getStatus: vi.fn().mockRejectedValueOnce(new Error('Invalid credentials')),
     });
 
-    const result = await caller.equipmentCouriers.testCourierConnection({
+    const result = await caller.testCourierConnection({
       carrier: 'dpd',
       username: 'dpd-user',
       password: 'wrong-pass',
@@ -551,7 +559,7 @@ describe('equipmentCouriers.getShipmentLabel', () => {
       configJson: { organizationId: 123, token: 'tok' },
     });
 
-    const result = await caller.equipmentCouriers.getShipmentLabel({
+    const result = await caller.getShipmentLabel({
       shipmentId: 'ship-1',
     });
 
@@ -563,9 +571,7 @@ describe('equipmentCouriers.getShipmentLabel', () => {
   it('throws NOT_FOUND when shipment does not exist', async () => {
     mockPrisma.shipment.findFirst.mockResolvedValueOnce(null);
 
-    await expect(
-      caller.equipmentCouriers.getShipmentLabel({ shipmentId: 'nonexistent' }),
-    ).rejects.toThrow();
+    await expect(caller.getShipmentLabel({ shipmentId: 'nonexistent' })).rejects.toThrow();
   });
 
   it('throws BAD_REQUEST for non-InPost shipments', async () => {
@@ -576,8 +582,8 @@ describe('equipmentCouriers.getShipmentLabel', () => {
       externalId: 'ext-1',
     });
 
-    await expect(
-      caller.equipmentCouriers.getShipmentLabel({ shipmentId: 'ship-1' }),
-    ).rejects.toThrow('SHIPMENT_NO_INPOST_LABEL');
+    await expect(caller.getShipmentLabel({ shipmentId: 'ship-1' })).rejects.toThrow(
+      'SHIPMENT_NO_INPOST_LABEL',
+    );
   });
 });

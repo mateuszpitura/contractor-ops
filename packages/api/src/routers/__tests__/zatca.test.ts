@@ -110,12 +110,10 @@ vi.mock('@contractor-ops/db', () => ({
   getRegionalClient: vi.fn(() => mockPrisma),
 }));
 
-vi.mock('@contractor-ops/einvoice', () => ({
-  zatcaTaxDetailsSchema: {
-    parse: vi.fn((x: unknown) => x),
-    safeParse: vi.fn((x: unknown) => ({ success: true, data: x })),
-  },
-}));
+vi.mock('@contractor-ops/einvoice', async importOriginal => {
+  const actual = await importOriginal<typeof import('@contractor-ops/einvoice')>();
+  return { ...actual };
+});
 
 vi.mock('../../services/zatca-onboarding.js', () => ({
   saveTaxDetails: mockSaveTaxDetails,
@@ -221,27 +219,25 @@ describe('zatcaRouter', () => {
   // =========================================================================
 
   describe('saveTaxDetails', () => {
-    it('calls saveTaxDetails service with org ID and input', async () => {
-      const taxDetails = {
-        vatNumber: '300000000000003',
-        orgNameAr: '\u0634\u0631\u0643\u0629 \u0627\u062E\u062A\u0628\u0627\u0631',
-        streetAr: '\u0634\u0627\u0631\u0639 \u0627\u0644\u0645\u0644\u0643',
-        cityAr: '\u0627\u0644\u0631\u064A\u0627\u0636',
-        districtAr: '\u0627\u0644\u0639\u0644\u064A\u0627',
-        postalCode: '12345',
-        buildingNumber: '1234',
-      };
+    const validTaxDetails = {
+      vatNumber: '300000000000003',
+      orgNameArabic: '\u0634\u0631\u0643\u0629 \u0627\u062E\u062A\u0628\u0627\u0631',
+      street: '\u0634\u0627\u0631\u0639 \u0627\u0644\u0645\u0644\u0643',
+      city: '\u0627\u0644\u0631\u064A\u0627\u0636',
+      district: '\u0627\u0644\u0639\u0644\u064A\u0627',
+      postalCode: '12345',
+      invoiceTypes: ['standard' as const],
+    };
 
-      const result = await caller.saveTaxDetails({ taxDetails });
+    it('calls saveTaxDetails service with org ID and input', async () => {
+      const result = await caller.saveTaxDetails({ taxDetails: validTaxDetails });
 
       expect(result).toEqual({ success: true });
-      expect(mockSaveTaxDetails).toHaveBeenCalledWith(ORG_ID, taxDetails);
+      expect(mockSaveTaxDetails).toHaveBeenCalledWith(ORG_ID, validTaxDetails);
     });
 
     it('calls service exactly once per invocation', async () => {
-      await caller.saveTaxDetails({
-        taxDetails: { vatNumber: '300000000000003' },
-      });
+      await caller.saveTaxDetails({ taxDetails: validTaxDetails });
 
       expect(mockSaveTaxDetails).toHaveBeenCalledTimes(1);
     });

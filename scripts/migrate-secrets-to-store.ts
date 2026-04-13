@@ -61,8 +61,58 @@ function legacyDecrypt(encrypted: string, providerSlug: string): unknown {
 // Main
 // ---------------------------------------------------------------------------
 
+interface ConnectionRecord {
+  id: string;
+  organizationId: string;
+  provider: string;
+  credentialsRef: string | null;
+}
+
+/**
+ * Migrate a single connection's credentials to the secret store.
+ * Returns 'migrated' | 'skipped' | 'failed'.
+ */
+async function migrateConnection(
+  conn: ConnectionRecord,
+  store: {
+    get(path: string): Promise<string | null>;
+    set(path: string, value: string): Promise<void>;
+  },
+  prisma: PrismaClient,
+): Promise<'migrated' | 'skipped' | 'failed'> {
+  const slug = conn.provider.toLowerCase();
+  const ref = conn.credentialsRef;
+
+  if (!(ref && LEGACY_FORMAT_RE.test(ref))) {
+    return 'skipped';
+  }
+
+  const blob = legacyDecrypt(ref, slug);
+  const path = `${conn.organizationId}/${slug}`;
+
+  if (DRY_RUN) {
+    return 'migrated';
+  }
+
+  await store.set(path, JSON.stringify(blob));
+
+  const readBack = await store.get(path);
+  if (!readBack) {
+    throw new Error(`Verification failed: could not read back ${path}`);
+  }
+  const parsed = JSON.parse(readBack);
+  if (JSON.stringify(parsed) !== JSON.stringify(blob)) {
+    throw new Error(`Verification failed: round-trip mismatch for ${path}`);
+  }
+
+  await prisma.integrationConnection.update({
+    where: { id: conn.id },
+    data: { credentialsRef: path },
+  });
+  return 'migrated';
+}
+
 async function main() {
-  // Dynamically import secret store so env is read at runtime
   const { getSecretStore } = await import('@contractor-ops/secrets');
   const store = getSecretStore();
 
@@ -78,59 +128,15 @@ async function main() {
       },
     });
 
-    let _migrated = 0;
-    let _skipped = 0;
-    let _failed = 0;
-
     for (const conn of connections) {
-      const slug = conn.provider.toLowerCase();
-      const ref = conn.credentialsRef;
-
-      // Skip if already migrated (not legacy format) or empty
-      if (!(ref && LEGACY_FORMAT_RE.test(ref))) {
-        _skipped++;
-        continue;
-      }
-
       try {
-        // Step 1: Decrypt with old key
-        const blob = legacyDecrypt(ref, slug);
-        const path = `${conn.organizationId}/${slug}`;
-
-        if (DRY_RUN) {
-          _migrated++;
-          continue;
-        }
-
-        // Step 2: Store in secret store
-        await store.set(path, JSON.stringify(blob));
-
-        // Step 3: Verify round-trip
-        const readBack = await store.get(path);
-        if (!readBack) {
-          throw new Error(`Verification failed: could not read back ${path}`);
-        }
-        const parsed = JSON.parse(readBack);
-        if (JSON.stringify(parsed) !== JSON.stringify(blob)) {
-          throw new Error(`Verification failed: round-trip mismatch for ${path}`);
-        }
-
-        // Step 4: Update DB to new path
-        await prisma.integrationConnection.update({
-          where: { id: conn.id },
-          data: { credentialsRef: path },
-        });
-        _migrated++;
+        await migrateConnection(conn, store, prisma);
       } catch (err) {
-        _failed++;
+        const slug = conn.provider.toLowerCase();
         console.error(
           `  [FAIL] ${conn.id} (${slug}): ${err instanceof Error ? err.message : String(err)}`,
         );
       }
-    }
-
-    if (DRY_RUN) {
-      // Dry run complete - no changes persisted
     }
   } finally {
     await prisma.$disconnect();

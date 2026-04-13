@@ -2,7 +2,7 @@
 
 import type { DeCountryFields, UkCountryFields } from '@contractor-ops/validators';
 import { AlertCircle, Check, Loader2 } from 'lucide-react';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -162,14 +162,15 @@ function UaeFields({
   values: Record<string, unknown>;
   onChange: (key: string, val: unknown) => void;
 }) {
+  const id = useId();
   return (
     <>
       <div className="space-y-2">
-        <Label htmlFor="freelancePermitNumber" className="text-sm font-medium">
+        <Label htmlFor={`${id}-freelancePermitNumber`} className="text-sm font-medium">
           Freelance Permit Number
         </Label>
         <Input
-          id="freelancePermitNumber"
+          id={`${id}-freelancePermitNumber`}
           value={(values.freelancePermitNumber as string) ?? ''}
           // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
           onChange={e => onChange('freelancePermitNumber', e.target.value || undefined)}
@@ -177,11 +178,11 @@ function UaeFields({
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="tradeLicenseNumber" className="text-sm font-medium">
+        <Label htmlFor={`${id}-tradeLicenseNumber`} className="text-sm font-medium">
           Trade License Number
         </Label>
         <Input
-          id="tradeLicenseNumber"
+          id={`${id}-tradeLicenseNumber`}
           value={(values.tradeLicenseNumber as string) ?? ''}
           // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
           onChange={e => onChange('tradeLicenseNumber', e.target.value || undefined)}
@@ -190,21 +191,21 @@ function UaeFields({
       </div>
       <div className="flex items-center gap-2">
         <Switch
-          id="freeZone"
+          id={`${id}-freeZone`}
           checked={(values.freeZone as boolean) ?? false}
           // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
           onCheckedChange={checked => onChange('freeZone', checked)}
         />
-        <Label htmlFor="freeZone" className="text-sm font-medium">
+        <Label htmlFor={`${id}-freeZone`} className="text-sm font-medium">
           Free Zone
         </Label>
       </div>
       <div className="space-y-2">
-        <Label htmlFor="tradeLicenseExpiry" className="text-sm font-medium">
+        <Label htmlFor={`${id}-tradeLicenseExpiry`} className="text-sm font-medium">
           Trade License Expiry
         </Label>
         <Input
-          id="tradeLicenseExpiry"
+          id={`${id}-tradeLicenseExpiry`}
           type="date"
           value={(values.tradeLicenseExpiry as string) ?? ''}
           // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
@@ -222,14 +223,15 @@ function SaudiFields({
   values: Record<string, unknown>;
   onChange: (key: string, val: unknown) => void;
 }) {
+  const id = useId();
   return (
     <>
       <div className="space-y-2">
-        <Label htmlFor="freelanceSaLicense" className="text-sm font-medium">
+        <Label htmlFor={`${id}-freelanceSaLicense`} className="text-sm font-medium">
           Freelance.sa License
         </Label>
         <Input
-          id="freelanceSaLicense"
+          id={`${id}-freelanceSaLicense`}
           value={(values.freelanceSaLicense as string) ?? ''}
           // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
           onChange={e => onChange('freelanceSaLicense', e.target.value || undefined)}
@@ -237,11 +239,11 @@ function SaudiFields({
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="commercialRegistration" className="text-sm font-medium">
+        <Label htmlFor={`${id}-commercialRegistration`} className="text-sm font-medium">
           Commercial Registration
         </Label>
         <Input
-          id="commercialRegistration"
+          id={`${id}-commercialRegistration`}
           value={(values.commercialRegistration as string) ?? ''}
           // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
           onChange={e => onChange('commercialRegistration', e.target.value || undefined)}
@@ -249,11 +251,11 @@ function SaudiFields({
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="commercialRegistrationExpiry" className="text-sm font-medium">
+        <Label htmlFor={`${id}-commercialRegistrationExpiry`} className="text-sm font-medium">
           CR Expiry Date
         </Label>
         <Input
-          id="commercialRegistrationExpiry"
+          id={`${id}-commercialRegistrationExpiry`}
           type="date"
           value={(values.commercialRegistrationExpiry as string) ?? ''}
           // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler

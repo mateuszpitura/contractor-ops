@@ -8,11 +8,7 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { DataTableBody } from '@/components/shared/data-table-body';
 import { SortableTableHead } from '@/components/shared/sortable-table-head';
-import {
-  Table,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { Table, TableHeader, TableRow } from '@/components/ui/table';
 import { trpc } from '@/trpc/init';
 import type { ContractorRow } from './columns';
 import { getColumns } from './columns';

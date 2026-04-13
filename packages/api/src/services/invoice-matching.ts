@@ -113,7 +113,12 @@ function computeDeviation(
   invoiceTotalMinor: number,
   expectedAmount: number | null,
   thresholdPercent: number,
-): { scoreIncrement: number; expectedAmountMinor: number | null; deltaMinor: number | null; deltaPercent: number | null } {
+): {
+  scoreIncrement: number;
+  expectedAmountMinor: number | null;
+  deltaMinor: number | null;
+  deltaPercent: number | null;
+} {
   if (!expectedAmount || expectedAmount <= 0) {
     return { scoreIncrement: 0, expectedAmountMinor: null, deltaMinor: null, deltaPercent: null };
   }
@@ -241,7 +246,12 @@ export async function runAutoMatch(
 
   // Step 2: Find active contracts
   const contracts = await db.contract.findMany({
-    where: { contractorId: contractor.id, organizationId, status: { in: ['ACTIVE', 'EXPIRING'] }, deletedAt: null },
+    where: {
+      contractorId: contractor.id,
+      organizationId,
+      status: { in: ['ACTIVE', 'EXPIRING'] },
+      deletedAt: null,
+    },
   });
 
   if (contracts.length === 0) {
@@ -261,7 +271,11 @@ export async function runAutoMatch(
       state.matchedContractId = bestContract.id;
 
       // Step 4: Deviation calculation
-      const deviation = computeDeviation(invoice.totalMinor, bestContract.rateValueMinor, deviationThresholdPercent);
+      const deviation = computeDeviation(
+        invoice.totalMinor,
+        bestContract.rateValueMinor,
+        deviationThresholdPercent,
+      );
       state.score += deviation.scoreIncrement;
       state.expectedAmountMinor = deviation.expectedAmountMinor;
       state.amountDeltaMinor = deviation.deltaMinor;
@@ -278,14 +292,23 @@ export async function runAutoMatch(
   }
 
   // Step 6: Duplicate check
-  const dupId = await findDuplicateInvoice(db, organizationId, invoice.duplicateCheckHash, invoice.id);
+  const dupId = await findDuplicateInvoice(
+    db,
+    organizationId,
+    invoice.duplicateCheckHash,
+    invoice.id,
+  );
   if (dupId) {
     state.flags.push('DUPLICATE_SUSPECTED');
     state.duplicateInvoiceId = dupId;
   }
 
   return {
-    matchStatus: deriveMatchStatus(state.score, state.amountDeltaPercent, deviationThresholdPercent),
+    matchStatus: deriveMatchStatus(
+      state.score,
+      state.amountDeltaPercent,
+      deviationThresholdPercent,
+    ),
     contractorId: state.matchedContractorId,
     contractId: state.matchedContractId,
     score: state.score,

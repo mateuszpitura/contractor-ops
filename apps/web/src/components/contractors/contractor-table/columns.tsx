@@ -6,8 +6,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { getAvatarInitials } from '@/lib/avatar-initials';
-import { ComplianceHealthBadge } from '../compliance-health-badge';
 import { enumKey } from '@/lib/enum-key';
+import { ComplianceHealthBadge } from '../compliance-health-badge';
 
 // ---------------------------------------------------------------------------
 // Row type matching the tRPC contractor.list response shape

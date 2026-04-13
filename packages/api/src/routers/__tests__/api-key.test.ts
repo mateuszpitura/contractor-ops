@@ -165,7 +165,11 @@ vi.mock('../../services/r2.js', () => ({
 }));
 
 vi.mock('../../services/billing-service.js', () => ({
-  getSubscription: vi.fn(async () => null),
+  getSubscription: vi.fn(async () => ({
+    id: 'sub_enterprise_mock',
+    status: 'ACTIVE',
+    tier: 'ENTERPRISE',
+  })),
   createCheckoutSession: vi.fn(async () => ({ url: 'https://checkout.stripe.com/session' })),
   createPortalSession: vi.fn(async () => ({ url: 'https://billing.stripe.com/portal' })),
   getProrationPreview: vi.fn(async () => ({

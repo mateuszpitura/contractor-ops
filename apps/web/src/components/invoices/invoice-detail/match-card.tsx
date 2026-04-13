@@ -27,9 +27,9 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePermissions } from '@/hooks/use-permissions';
 import { Link } from '@/i18n/navigation';
+import { enumKey } from '@/lib/enum-key';
 import { canViewSensitivePii, maskTaxId } from '@/lib/mask-pii';
 import { trpc } from '@/trpc/init';
-import { enumKey } from '@/lib/enum-key';
 
 // ---------------------------------------------------------------------------
 // Types

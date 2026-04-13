@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Loader2, Plus, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useId, useState } from 'react';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -231,6 +231,7 @@ function UserPicker({
 // ---------------------------------------------------------------------------
 
 export function ChainEditorDialog({ open, onOpenChange, chainData }: ChainEditorDialogProps) {
+  const id = useId();
   const t = useTranslations('Settings');
   const queryClient = useQueryClient();
   const isEditMode = chainData !== null;
@@ -372,9 +373,9 @@ export function ChainEditorDialog({ open, onOpenChange, chainData }: ChainEditor
           {/* Section 1: Chain name + default toggle */}
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="chain-name">{t('approvals.editor.chainName')}</Label>
+              <Label htmlFor={`${id}-chain-name`}>{t('approvals.editor.chainName')}</Label>
               <Input
-                id="chain-name"
+                id={`${id}-chain-name`}
                 placeholder={t('approvals.editor.chainNamePlaceholder')}
                 {...form.register('name')}
               />
@@ -385,7 +386,7 @@ export function ChainEditorDialog({ open, onOpenChange, chainData }: ChainEditor
 
             <div className="flex items-center justify-between">
               <div>
-                <Label htmlFor="chain-default">{t('approvals.editor.defaultToggle')}</Label>
+                <Label htmlFor={`${id}-chain-default`}>{t('approvals.editor.defaultToggle')}</Label>
                 <p className="text-xs text-muted-foreground">{t('approvals.editor.defaultHelp')}</p>
               </div>
               <Controller
@@ -394,7 +395,7 @@ export function ChainEditorDialog({ open, onOpenChange, chainData }: ChainEditor
                 // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
                 render={({ field }) => (
                   <Switch
-                    id="chain-default"
+                    id={`${id}-chain-default`}
                     checked={field.value}
                     onCheckedChange={field.onChange}
                   />

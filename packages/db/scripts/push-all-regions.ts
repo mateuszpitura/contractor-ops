@@ -34,44 +34,45 @@ interface RegionResult {
   error?: string;
 }
 
+function pushRegion(envVar: string): RegionResult {
+  const url = process.env[envVar];
+  const region = envVar.replace('DATABASE_URL_', '');
+
+  if (!url) {
+    return { region, status: 'skipped' };
+  }
+
+  try {
+    execSync(`npx prisma db push --schema=${SCHEMA_PATH}`, {
+      env: { ...process.env, DATABASE_URL: url },
+      stdio: 'inherit',
+      cwd: resolve(__dirname, '..'),
+    });
+    return { region, status: 'ok' };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error(`[${region}] Schema push FAILED: ${message}`);
+    return { region, status: 'failed', error: message };
+  }
+}
+
 function main() {
   const results: RegionResult[] = [];
 
   for (const envVar of REGION_ENV_VARS) {
-    const url = process.env[envVar];
-    const region = envVar.replace('DATABASE_URL_', '');
+    const result = pushRegion(envVar);
+    results.push(result);
 
-    if (!url) {
-      results.push({ region, status: 'skipped' });
-      continue;
-    }
-    try {
-      execSync(`npx prisma db push --schema=${SCHEMA_PATH}`, {
-        env: { ...process.env, DATABASE_URL: url },
-        stdio: 'inherit',
-        cwd: resolve(__dirname, '..'),
-      });
-      results.push({ region, status: 'ok' });
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      console.error(`[${region}] Schema push FAILED: ${message}`);
-      results.push({ region, status: 'failed', error: message });
-      // Fail fast — do not continue to other regions if one fails
+    if (result.status === 'failed') {
       console.error('\nAborting: Schema push failed. Fix the issue and re-run.');
       process.exit(1);
     }
   }
-  for (const r of results) {
-    const _icon = r.status === 'ok' ? 'OK' : r.status === 'skipped' ? 'SKIP' : 'FAIL';
-  }
 
-  const failed = results.filter(r => r.status === 'failed');
-  if (failed.length > 0) {
-    process.exit(1);
-  }
+  const hasFailed = results.some(r => r.status === 'failed');
+  const hasPushed = results.some(r => r.status === 'ok');
 
-  const pushed = results.filter(r => r.status === 'ok');
-  if (pushed.length === 0) {
+  if (hasFailed || !hasPushed) {
     process.exit(1);
   }
 }

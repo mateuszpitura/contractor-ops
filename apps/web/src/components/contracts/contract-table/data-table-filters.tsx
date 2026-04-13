@@ -3,7 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { Calendar, Filter, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useCallback } from 'react';
+import { useCallback, useId } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -218,13 +218,15 @@ export function DataTableFilters({ filters, onFiltersChange }: DataTableFiltersP
               <h4 className="text-[13px] font-medium text-foreground">{t('columns.endDate')}</h4>
               <div className="grid grid-cols-2 gap-2">
                 <div className="space-y-1">
-                  <label htmlFor="contract-end-date-from" className="text-xs text-muted-foreground">
+                  <label
+                    htmlFor={`${id}-contract-end-date-from`}
+                    className="text-xs text-muted-foreground">
                     {t('dateFrom')}
                   </label>
                   <div className="relative">
                     <Calendar className="absolute start-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
                     <Input
-                      id="contract-end-date-from"
+                      id={`${id}-contract-end-date-from`}
                       type="date"
                       value={filters.endDateFrom}
                       // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
@@ -234,13 +236,15 @@ export function DataTableFilters({ filters, onFiltersChange }: DataTableFiltersP
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <label htmlFor="contract-end-date-to" className="text-xs text-muted-foreground">
+                  <label
+                    htmlFor={`${id}-contract-end-date-to`}
+                    className="text-xs text-muted-foreground">
                     {t('dateTo')}
                   </label>
                   <div className="relative">
                     <Calendar className="absolute start-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
                     <Input
-                      id="contract-end-date-to"
+                      id={`${id}-contract-end-date-to`}
                       type="date"
                       value={filters.endDateTo}
                       // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
@@ -349,6 +353,8 @@ function FilterSection({
   selected: string[];
   onToggle: (value: string) => void;
 }) {
+  const _id = useId();
+  const filterId = useId();
   if (options.length === 0) return null;
 
   return (
@@ -358,10 +364,10 @@ function FilterSection({
         {options.map(option => (
           <label
             key={option.value}
-            htmlFor={`filter-${title}-${option.value}`}
+            htmlFor={`${filterId}-filter-${option.value}`}
             className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-accent">
             <Checkbox
-              id={`filter-${title}-${option.value}`}
+              id={`${filterId}-filter-${option.value}`}
               checked={selected.includes(option.value)}
               // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
               onCheckedChange={() => onToggle(option.value)}

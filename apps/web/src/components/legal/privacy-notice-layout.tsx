@@ -51,6 +51,7 @@ export function PrivacyNoticeLayout({
           <aside className="hidden lg:block">
             <PrivacyNoticeToc />
           </aside>
+          {/* biome-ignore lint/correctness/useUniqueElementIds: skip-link target for accessibility */}
           <main id="main" className="min-w-0" tabIndex={-1}>
             <article>{children}</article>
           </main>

@@ -360,12 +360,23 @@ export async function syncJiraWorklogs(
     const endDateObj = new Date(`${endDate}T23:59:59Z`);
 
     for (const issue of allIssues) {
-      const worklogs = await fetchIssueWorklogs(baseUrl, authHeaders, issue.key, accountId, startDateObj, endDateObj);
+      const worklogs = await fetchIssueWorklogs(
+        baseUrl,
+        authHeaders,
+        issue.key,
+        accountId,
+        startDateObj,
+        endDateObj,
+      );
 
       for (const worklog of worklogs) {
         const result = await upsertWorklogEntry(prisma, {
-          organizationId, contractorId, contractId, timesheetId,
-          issue, worklog,
+          organizationId,
+          contractorId,
+          contractId,
+          timesheetId,
+          issue,
+          worklog,
         });
         if (result === 'imported') imported++;
         else skipped++;

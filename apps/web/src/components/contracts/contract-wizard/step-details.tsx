@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -28,10 +28,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { usePermissions } from '@/hooks/use-permissions';
+import { enumKey } from '@/lib/enum-key';
 import { canViewSensitivePii, maskTaxId } from '@/lib/mask-pii';
 import { trpc } from '@/trpc/init';
 import type { ContractWizardFormValues } from './wizard-dialog';
-import { enumKey } from '@/lib/enum-key';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -72,6 +72,7 @@ interface StepDetailsProps {
  * notice period, auto-renewal.
  */
 export function StepDetails({ form, contractorId }: StepDetailsProps) {
+  const id = useId();
   const t = useTranslations('Contracts.wizard');
   const { role } = usePermissions();
   const showPii = canViewSensitivePii(role);
@@ -210,10 +211,10 @@ export function StepDetails({ form, contractorId }: StepDetailsProps) {
 
       {/* Contract title */}
       <div className="space-y-2">
-        <Label htmlFor="title" className="text-[13px]">
+        <Label htmlFor={`${id}-title`} className="text-[13px]">
           {t('fields.title')}
         </Label>
-        <Input id="title" {...register('title')} />
+        <Input id={`${id}-title`} {...register('title')} />
         {!!errors.title && <p className="text-sm text-destructive">{errors.title.message}</p>}
       </div>
 
@@ -300,11 +301,11 @@ export function StepDetails({ form, contractorId }: StepDetailsProps) {
 
       {/* Notice period */}
       <div className="space-y-2">
-        <Label htmlFor="noticePeriodDays" className="text-[13px]">
+        <Label htmlFor={`${id}-noticePeriodDays`} className="text-[13px]">
           {t('fields.noticePeriod')}
         </Label>
         <Input
-          id="noticePeriodDays"
+          id={`${id}-noticePeriodDays`}
           type="number"
           min="1"
           placeholder="30"
@@ -318,14 +319,14 @@ export function StepDetails({ form, contractorId }: StepDetailsProps) {
       {/* Auto-renewal */}
       <div className="flex items-center gap-2">
         <Checkbox
-          id="autoRenewal"
+          id={`${id}-autoRenewal`}
           checked={autoRenewal}
           // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
           onCheckedChange={checked =>
             setValue('autoRenewal', checked === true, { shouldDirty: true })
           }
         />
-        <Label htmlFor="autoRenewal" className="text-[13px] cursor-pointer">
+        <Label htmlFor={`${id}-autoRenewal`} className="text-[13px] cursor-pointer">
           {t('fields.autoRenewal')}
         </Label>
       </div>

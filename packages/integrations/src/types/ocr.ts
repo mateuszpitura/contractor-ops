@@ -99,47 +99,55 @@ export function validateNip(nip: string): { valid: boolean; formatted: string } 
 // ---------------------------------------------------------------------------
 
 /**
+ * Cap confidence on amount fields if net + tax does not equal gross.
+ */
+function crossValidateAmounts(
+  fields: Record<string, OcrExtractionField>,
+): Record<string, OcrExtractionField> {
+  const net = fields.totalNet?.value as number | null;
+  const tax = fields.totalTax?.value as number | null;
+  const gross = fields.totalGross?.value as number | null;
+
+  if (net == null || tax == null || gross == null) return fields;
+
+  const expectedGross = Math.round((net + tax) * 100) / 100;
+  if (Math.abs(expectedGross - gross) <= 0.01) return fields;
+
+  const updated = { ...fields };
+  for (const key of ['totalNet', 'totalTax', 'totalGross'] as const) {
+    const field = updated[key];
+    if (field) {
+      updated[key] = { ...field, confidence: Math.min(field.confidence, 60) };
+    }
+  }
+  return updated;
+}
+
+/**
+ * Cap confidence on NIP fields that fail checksum validation.
+ */
+function crossValidateNips(
+  fields: Record<string, OcrExtractionField>,
+): Record<string, OcrExtractionField> {
+  const updated = { ...fields };
+  for (const key of ['sellerNip', 'buyerNip'] as const) {
+    const nipField = updated[key];
+    if (nipField?.value && typeof nipField.value === 'string') {
+      const { valid } = validateNip(nipField.value);
+      if (!valid) {
+        updated[key] = { ...nipField, confidence: Math.min(nipField.confidence, 40) };
+      }
+    }
+  }
+  return updated;
+}
+
+/**
  * Adjusts extraction confidence scores based on cross-validation:
  * - net + tax should equal gross (cap amount confidences to 60 if mismatch > 0.01)
  * - NIP checksums must be valid (cap NIP confidence to 40 if invalid)
  */
 export function adjustConfidences(result: OcrExtractionResult): OcrExtractionResult {
-  const fields = { ...result.fields };
-
-  // Cross-validate: net + tax should equal gross
-  const net = fields.totalNet?.value as number | null;
-  const tax = fields.totalTax?.value as number | null;
-  const gross = fields.totalGross?.value as number | null;
-
-  if (net != null && tax != null && gross != null) {
-    const expectedGross = Math.round((net + tax) * 100) / 100;
-    if (Math.abs(expectedGross - gross) > 0.01) {
-      // Amounts don't add up -- lower confidence on all amount fields
-      for (const key of ['totalNet', 'totalTax', 'totalGross']) {
-        const field = fields[key];
-        if (field) {
-          fields[key] = {
-            ...field,
-            confidence: Math.min(field.confidence, 60),
-          };
-        }
-      }
-    }
-  }
-
-  // Validate NIP checksums
-  for (const key of ['sellerNip', 'buyerNip']) {
-    const nipField = fields[key];
-    if (nipField?.value && typeof nipField.value === 'string') {
-      const { valid } = validateNip(nipField.value);
-      if (!valid) {
-        fields[key] = {
-          ...nipField,
-          confidence: Math.min(nipField.confidence, 40),
-        };
-      }
-    }
-  }
-
+  const fields = crossValidateNips(crossValidateAmounts({ ...result.fields }));
   return { ...result, fields };
 }

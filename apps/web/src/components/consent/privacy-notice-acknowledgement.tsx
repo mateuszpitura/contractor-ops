@@ -1,6 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import { useId } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 
@@ -48,13 +49,14 @@ export function PrivacyNoticeAcknowledgement({
   error,
 }: PrivacyNoticeAcknowledgementProps) {
   const t = useTranslations('Consent.privacyAcknowledgement');
-  const errorId = 'privacy-ack-error';
+  const id = useId();
+  const errorId = `${id}-privacy-ack-error`;
 
   return (
     <div className="space-y-2">
       <div className="flex items-start gap-3">
         <Checkbox
-          id="privacy-ack"
+          id={`${id}-privacy-ack`}
           name="privacyNoticeAcknowledged"
           checked={checked}
           // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
@@ -64,7 +66,7 @@ export function PrivacyNoticeAcknowledgement({
           aria-describedby={error ? errorId : undefined}
           className="mt-0.5"
         />
-        <Label htmlFor="privacy-ack" className="text-sm leading-5 font-normal">
+        <Label htmlFor={`${id}-privacy-ack`} className="text-sm leading-5 font-normal">
           {t.rich('label', {
             link: (chunks: React.ReactNode) => (
               <a

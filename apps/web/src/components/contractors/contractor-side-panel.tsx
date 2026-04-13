@@ -9,10 +9,10 @@ import { Separator } from '@/components/ui/separator';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { usePermissions } from '@/hooks/use-permissions';
 import { Link } from '@/i18n/navigation';
+import { enumKey } from '@/lib/enum-key';
 import { canViewSensitivePii, maskTaxId } from '@/lib/mask-pii';
 import { ComplianceHealthBadge } from './compliance-health-badge';
 import type { ContractorRow } from './contractor-table/columns';
-import { enumKey } from '@/lib/enum-key';
 
 // ---------------------------------------------------------------------------
 // Lifecycle badge colors (same as columns.tsx)
