@@ -85,16 +85,72 @@ export async function syncClockifyEntries(
   startDate: string,
   endDate: string,
 ): Promise<{ imported: number; skipped: number }> {
-  // 1. Get connection + decrypt credentials
+  const { credentials, config, baseUrl } = await loadClockifyConnection(prisma, connectionId);
+
+  const syncLog = await prisma.integrationSyncLog.create({
+    data: {
+      organizationId,
+      integrationConnectionId: connectionId,
+      direction: 'INBOUND',
+      syncType: 'time_entries',
+      status: 'STARTED',
+    },
+  });
+
+  let imported = 0;
+  let skipped = 0;
+
+  try {
+    const allEntries = await fetchAllClockifyEntries(
+      baseUrl,
+      config,
+      credentials.accessToken,
+      startDate,
+      endDate,
+    );
+
+    for (const entry of allEntries) {
+      const result = await upsertTimeEntry(prisma, entry, {
+        organizationId,
+        contractorId,
+        contractId,
+        timesheetId,
+      });
+      if (result === 'imported') imported++;
+      else skipped++;
+    }
+
+    await recalculateTimesheetTotal(prisma, timesheetId);
+    await markSyncSuccess(prisma, connectionId, syncLog.id, {
+      totalFetched: allEntries.length,
+      imported,
+      skipped,
+    });
+  } catch (error) {
+    await markSyncFailure(prisma, connectionId, syncLog.id, error);
+
+    if (error instanceof TRPCError) throw error;
+    throw new TRPCError({
+      code: 'INTERNAL_SERVER_ERROR',
+      message: 'Failed to sync Clockify time entries',
+      cause: error,
+    });
+  }
+
+  return { imported, skipped };
+}
+
+// ---------------------------------------------------------------------------
+// Connection validation
+// ---------------------------------------------------------------------------
+
+async function loadClockifyConnection(prisma: PrismaClient, connectionId: string) {
   const connection = await prisma.integrationConnection.findUnique({
     where: { id: connectionId },
   });
 
   if (!connection) {
-    throw new TRPCError({
-      code: 'NOT_FOUND',
-      message: 'Clockify connection not found',
-    });
+    throw new TRPCError({ code: 'NOT_FOUND', message: 'Clockify connection not found' });
   }
 
   if (connection.status !== 'CONNECTED') {
@@ -114,195 +170,183 @@ export async function syncClockifyEntries(
     });
   }
 
-  // 2. Build base URL from region
   const region = config.region || 'global';
   const baseUrl = CLOCKIFY_REGIONS[region] ?? CLOCKIFY_REGIONS.global;
 
-  // 3. Create sync log
-  const syncLog = await prisma.integrationSyncLog.create({
-    data: {
-      organizationId,
-      integrationConnectionId: connectionId,
-      direction: 'INBOUND',
-      syncType: 'time_entries',
-      status: 'STARTED',
-    },
-  });
+  return { credentials, config, baseUrl };
+}
 
-  let imported = 0;
-  let skipped = 0;
+// ---------------------------------------------------------------------------
+// API pagination
+// ---------------------------------------------------------------------------
 
-  try {
-    // 4. Paginate through Clockify time entries
-    const allEntries: ClockifyTimeEntry[] = [];
-    let page = 1;
-    const pageSize = 100;
+async function fetchAllClockifyEntries(
+  baseUrl: string,
+  config: ClockifyConnectionConfig,
+  apiKey: string,
+  startDate: string,
+  endDate: string,
+): Promise<ClockifyTimeEntry[]> {
+  const allEntries: ClockifyTimeEntry[] = [];
+  let page = 1;
+  const pageSize = 100;
 
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    while (true) {
-      const url = new URL(
-        `${baseUrl}/workspaces/${config.workspaceId}/user/${config.userId}/time-entries`,
-      );
-      url.searchParams.set('start', `${startDate}T00:00:00Z`);
-      url.searchParams.set('end', `${endDate}T23:59:59Z`);
-      url.searchParams.set('page', String(page));
-      url.searchParams.set('page-size', String(pageSize));
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  while (true) {
+    const url = new URL(
+      `${baseUrl}/workspaces/${config.workspaceId}/user/${config.userId}/time-entries`,
+    );
+    url.searchParams.set('start', `${startDate}T00:00:00Z`);
+    url.searchParams.set('end', `${endDate}T23:59:59Z`);
+    url.searchParams.set('page', String(page));
+    url.searchParams.set('page-size', String(pageSize));
 
-      const response = await fetch(url.toString(), {
-        headers: {
-          'X-Api-Key': credentials.accessToken,
-          Accept: 'application/json',
-        },
+    const response = await fetch(url.toString(), {
+      headers: { 'X-Api-Key': apiKey, Accept: 'application/json' },
+    });
+
+    if (response.status === 401) {
+      throw new TRPCError({
+        code: 'UNAUTHORIZED',
+        message:
+          'Clockify API key is invalid or expired. Please reconnect your Clockify integration.',
       });
-
-      if (response.status === 401) {
-        throw new TRPCError({
-          code: 'UNAUTHORIZED',
-          message:
-            'Clockify API key is invalid or expired. Please reconnect your Clockify integration.',
-        });
-      }
-
-      if (response.status === 429) {
-        const retryAfter = response.headers.get('Retry-After');
-        throw new TRPCError({
-          code: 'TOO_MANY_REQUESTS',
-          message: `Clockify API rate limit exceeded. Retry after ${retryAfter ?? '60'} seconds.`,
-        });
-      }
-
-      if (!response.ok) {
-        const text = await response.text();
-        throw new Error(`Clockify API error (${response.status}): ${text}`);
-      }
-
-      const entries = (await response.json()) as ClockifyTimeEntry[];
-      allEntries.push(...entries);
-
-      // Check if this is the last page
-      if (entries.length < pageSize) break;
-      page++;
     }
 
-    // 5. Upsert entries into TimeEntry table
-    for (const entry of allEntries) {
-      const minutes = parseDurationToMinutes(entry.timeInterval.duration);
-      const entryDate = entry.timeInterval.start.split('T')[0]!; // Date portion
-
-      // Skip entries with zero duration
-      if (minutes === 0) {
-        skipped++;
-        continue;
-      }
-
-      const existingEntry = await prisma.timeEntry.findFirst({
-        where: {
-          organizationId,
-          contractorId,
-          source: 'CLOCKIFY',
-          externalId: entry.id,
-        },
-        select: { id: true },
+    if (response.status === 429) {
+      const retryAfter = response.headers.get('Retry-After');
+      throw new TRPCError({
+        code: 'TOO_MANY_REQUESTS',
+        message: `Clockify API rate limit exceeded. Retry after ${retryAfter ?? '60'} seconds.`,
       });
-
-      if (existingEntry) {
-        // Update existing entry (hours may have changed in Clockify)
-        await prisma.timeEntry.update({
-          where: { id: existingEntry.id },
-          data: {
-            minutes,
-            description: entry.description || null,
-            metadataJson: {
-              clockifyProjectId: entry.projectId,
-              clockifyProjectName: entry.project?.name ?? null,
-              clockifyDescription: entry.description,
-            },
-          },
-        });
-        skipped++;
-      } else {
-        // Create new entry
-        await prisma.timeEntry.create({
-          data: {
-            organizationId,
-            timesheetId,
-            contractorId,
-            contractId,
-            entryDate: new Date(entryDate),
-            minutes,
-            description: entry.description || null,
-            source: 'CLOCKIFY',
-            externalId: entry.id,
-            metadataJson: {
-              clockifyProjectId: entry.projectId,
-              clockifyProjectName: entry.project?.name ?? null,
-              clockifyDescription: entry.description,
-            },
-          },
-        });
-        imported++;
-      }
     }
 
-    // 6. Recalculate timesheet totalMinutes
-    const totalResult = await prisma.timeEntry.aggregate({
-      where: { timesheetId },
-      _sum: { minutes: true },
-    });
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`Clockify API error (${response.status}): ${text}`);
+    }
 
-    await prisma.timesheet.update({
-      where: { id: timesheetId },
-      data: { totalMinutes: totalResult._sum.minutes ?? 0 },
-    });
+    const entries = (await response.json()) as ClockifyTimeEntry[];
+    allEntries.push(...entries);
 
-    // 7. Update connection and sync log
-    await prisma.integrationConnection.update({
-      where: { id: connectionId },
-      data: {
-        lastSyncAt: new Date(),
-        lastSuccessAt: new Date(),
-      },
-    });
-
-    await prisma.integrationSyncLog.update({
-      where: { id: syncLog.id },
-      data: {
-        status: 'SUCCESS',
-        completedAt: new Date(),
-        responsePayloadJson: {
-          totalFetched: allEntries.length,
-          imported,
-          skipped,
-        },
-      },
-    });
-  } catch (error) {
-    // Update sync log with failure
-    await prisma.integrationSyncLog.update({
-      where: { id: syncLog.id },
-      data: {
-        status: 'FAILED',
-        completedAt: new Date(),
-        errorMessage: error instanceof Error ? error.message : 'Unknown error',
-      },
-    });
-
-    await prisma.integrationConnection.update({
-      where: { id: connectionId },
-      data: {
-        lastErrorAt: new Date(),
-        lastErrorMessage: error instanceof Error ? error.message : 'Unknown error',
-      },
-    });
-
-    // Re-throw TRPCErrors as-is, wrap others
-    if (error instanceof TRPCError) throw error;
-    throw new TRPCError({
-      code: 'INTERNAL_SERVER_ERROR',
-      message: 'Failed to sync Clockify time entries',
-      cause: error,
-    });
+    if (entries.length < pageSize) break;
+    page++;
   }
 
-  return { imported, skipped };
+  return allEntries;
+}
+
+// ---------------------------------------------------------------------------
+// Entry upsert
+// ---------------------------------------------------------------------------
+
+async function upsertTimeEntry(
+  prisma: PrismaClient,
+  entry: ClockifyTimeEntry,
+  ctx: {
+    organizationId: string;
+    contractorId: string;
+    contractId: string;
+    timesheetId: string;
+  },
+): Promise<'imported' | 'skipped'> {
+  const minutes = parseDurationToMinutes(entry.timeInterval.duration);
+  const entryDate = entry.timeInterval.start.split('T')[0] ?? '';
+
+  if (minutes === 0) return 'skipped';
+
+  const metadataJson = {
+    clockifyProjectId: entry.projectId,
+    clockifyProjectName: entry.project?.name ?? null,
+    clockifyDescription: entry.description,
+  };
+
+  const existingEntry = await prisma.timeEntry.findFirst({
+    where: {
+      organizationId: ctx.organizationId,
+      contractorId: ctx.contractorId,
+      source: 'CLOCKIFY',
+      externalId: entry.id,
+    },
+    select: { id: true },
+  });
+
+  if (existingEntry) {
+    await prisma.timeEntry.update({
+      where: { id: existingEntry.id },
+      data: { minutes, description: entry.description || null, metadataJson },
+    });
+    return 'skipped';
+  }
+
+  await prisma.timeEntry.create({
+    data: {
+      organizationId: ctx.organizationId,
+      timesheetId: ctx.timesheetId,
+      contractorId: ctx.contractorId,
+      contractId: ctx.contractId,
+      entryDate: new Date(entryDate),
+      minutes,
+      description: entry.description || null,
+      source: 'CLOCKIFY',
+      externalId: entry.id,
+      metadataJson,
+    },
+  });
+  return 'imported';
+}
+
+// ---------------------------------------------------------------------------
+// Sync status helpers
+// ---------------------------------------------------------------------------
+
+async function recalculateTimesheetTotal(
+  prisma: PrismaClient,
+  timesheetId: string,
+): Promise<void> {
+  const totalResult = await prisma.timeEntry.aggregate({
+    where: { timesheetId },
+    _sum: { minutes: true },
+  });
+
+  await prisma.timesheet.update({
+    where: { id: timesheetId },
+    data: { totalMinutes: totalResult._sum.minutes ?? 0 },
+  });
+}
+
+async function markSyncSuccess(
+  prisma: PrismaClient,
+  connectionId: string,
+  syncLogId: string,
+  payload: Record<string, unknown>,
+): Promise<void> {
+  await prisma.integrationConnection.update({
+    where: { id: connectionId },
+    data: { lastSyncAt: new Date(), lastSuccessAt: new Date() },
+  });
+
+  await prisma.integrationSyncLog.update({
+    where: { id: syncLogId },
+    data: { status: 'SUCCESS', completedAt: new Date(), responsePayloadJson: payload },
+  });
+}
+
+async function markSyncFailure(
+  prisma: PrismaClient,
+  connectionId: string,
+  syncLogId: string,
+  error: unknown,
+): Promise<void> {
+  const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+
+  await prisma.integrationSyncLog.update({
+    where: { id: syncLogId },
+    data: { status: 'FAILED', completedAt: new Date(), errorMessage },
+  });
+
+  await prisma.integrationConnection.update({
+    where: { id: connectionId },
+    data: { lastErrorAt: new Date(), lastErrorMessage: errorMessage },
+  });
 }

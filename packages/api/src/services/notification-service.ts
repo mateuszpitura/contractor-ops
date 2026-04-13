@@ -187,125 +187,171 @@ export async function dispatch(event: NotificationEvent): Promise<void> {
   const dedupCutoff = new Date(now.getTime() - DEDUP_WINDOW_MS);
 
   for (const userId of event.recipientUserIds) {
-    const prefs = await getOrCreatePreferences(userId, event.organizationId, event.type);
+    await dispatchToUser(userId, event, now, dedupCutoff);
+  }
 
-    // Deduplication: skip if same notification was sent recently
-    const duplicate = await prisma.notification.findFirst({
-      where: {
+  // Channel alert dispatch (org-level, not per-user)
+  await dispatchChannelAlerts(event);
+}
+
+// ---------------------------------------------------------------------------
+// Per-user dispatch
+// ---------------------------------------------------------------------------
+
+async function dispatchToUser(
+  userId: string,
+  event: NotificationEvent,
+  now: Date,
+  dedupCutoff: Date,
+): Promise<void> {
+  const prefs = await getOrCreatePreferences(userId, event.organizationId, event.type);
+
+  // Deduplication: skip if same notification was sent recently
+  const duplicate = await prisma.notification.findFirst({
+    where: {
+      userId,
+      type: event.type,
+      entityId: event.entityId,
+      createdAt: { gte: dedupCutoff },
+    },
+  });
+
+  if (duplicate) return;
+
+  // IN_APP notification (always created -- channelInApp is always true)
+  if (prefs.channelInApp) {
+    await prisma.notification.create({
+      data: {
+        organizationId: event.organizationId,
         userId,
+        channel: 'IN_APP',
         type: event.type,
+        title: event.title,
+        body: event.body,
+        entityType: event.entityType,
         entityId: event.entityId,
-        createdAt: { gte: dedupCutoff },
+        status: 'SENT',
+        sentAt: now,
       },
     });
+  }
 
-    if (duplicate) {
-      continue;
-    }
-
-    // IN_APP notification (always created — channelInApp is always true)
-    if (prefs.channelInApp) {
-      await prisma.notification.create({
-        data: {
-          organizationId: event.organizationId,
-          userId,
-          channel: 'IN_APP',
-          type: event.type,
-          title: event.title,
-          body: event.body,
-          entityType: event.entityType,
-          entityId: event.entityId,
-          status: 'SENT',
-          sentAt: now,
-        },
-      });
-    }
-
-    // Email notification (preference-gated, try/catch wrapped)
-    if (prefs.channelEmail) {
-      try {
-        await sendNotificationEmail(userId, event);
-      } catch (error) {
-        console.error(`[notification-service] Email send failed for user=${userId}:`, error);
-      }
-    }
-
-    // Messaging provider dispatch (Slack, Teams, future platforms)
-    const providers = await getConnectedMessagingProviders(event.organizationId);
-    for (const provider of providers) {
-      const prefKey = provider.platform === 'slack' ? 'channelSlack' : 'channelTeams';
-      if (!prefs[prefKey]) continue;
-
-      try {
-        const recipientId = await provider.getUserId(event.organizationId, userId);
-        if (!recipientId) continue;
-
-        if (event.type === 'APPROVAL_REQUEST') {
-          const meta = event.metadata ?? {};
-          await provider.sendApprovalCard({
-            organizationId: event.organizationId,
-            recipientId,
-            invoiceNumber: (meta.invoiceNumber as string) ?? '',
-            contractorName: (meta.contractorName as string) ?? '',
-            amount: String(meta.amount ?? ''),
-            currency: (meta.currency as string) ?? '',
-            dueDate: (meta.slaDeadline as string) ?? '',
-            invoiceId: (meta.invoiceId as string) ?? '',
-            flowId: (meta.flowId as string) ?? '',
-          });
-        } else {
-          await provider.sendReminderDM({
-            organizationId: event.organizationId,
-            recipientId,
-            text: `*${event.title}*\n${event.body}`,
-          });
-        }
-      } catch (error) {
-        console.error(
-          `[notification-service] ${provider.platform} send failed for user=${userId}:`,
-          error,
-        );
-      }
+  // Email notification (preference-gated)
+  if (prefs.channelEmail) {
+    try {
+      await sendNotificationEmail(userId, event);
+    } catch (error) {
+      console.error(`[notification-service] Email send failed for user=${userId}:`, error);
     }
   }
 
-  // ---------------------------------------------------------------------------
-  // Channel alert dispatch (org-level, not per-user)
-  // ---------------------------------------------------------------------------
+  // Messaging provider dispatch (Slack, Teams, future platforms)
+  await dispatchToMessagingProviders(userId, event, prefs);
+}
+
+// ---------------------------------------------------------------------------
+// Messaging provider dispatch (per-user DMs)
+// ---------------------------------------------------------------------------
+
+async function dispatchToMessagingProviders(
+  userId: string,
+  event: NotificationEvent,
+  prefs: Awaited<ReturnType<typeof getOrCreatePreferences>>,
+): Promise<void> {
+  const providers = await getConnectedMessagingProviders(event.organizationId);
+
+  for (const provider of providers) {
+    const prefKey = provider.platform === 'slack' ? 'channelSlack' : 'channelTeams';
+    if (!prefs[prefKey]) continue;
+
+    try {
+      const recipientId = await provider.getUserId(event.organizationId, userId);
+      if (!recipientId) continue;
+
+      await sendProviderMessage(provider, event, recipientId);
+    } catch (error) {
+      console.error(
+        `[notification-service] ${provider.platform} send failed for user=${userId}:`,
+        error,
+      );
+    }
+  }
+}
+
+async function sendProviderMessage(
+  provider: Awaited<ReturnType<typeof getConnectedMessagingProviders>>[number],
+  event: NotificationEvent,
+  recipientId: string,
+): Promise<void> {
+  if (event.type === 'APPROVAL_REQUEST') {
+    const meta = event.metadata ?? {};
+    await provider.sendApprovalCard({
+      organizationId: event.organizationId,
+      recipientId,
+      invoiceNumber: (meta.invoiceNumber as string) ?? '',
+      contractorName: (meta.contractorName as string) ?? '',
+      amount: String(meta.amount ?? ''),
+      currency: (meta.currency as string) ?? '',
+      dueDate: (meta.slaDeadline as string) ?? '',
+      invoiceId: (meta.invoiceId as string) ?? '',
+      flowId: (meta.flowId as string) ?? '',
+    });
+  } else {
+    await provider.sendReminderDM({
+      organizationId: event.organizationId,
+      recipientId,
+      text: `*${event.title}*\n${event.body}`,
+    });
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Channel alert dispatch (org-level, not per-user)
+// ---------------------------------------------------------------------------
+
+async function dispatchChannelAlerts(event: NotificationEvent): Promise<void> {
   const category = NOTIFICATION_TYPE_TO_CHANNEL_CATEGORY[event.type];
-  if (category) {
-    const channelProviders = await getConnectedMessagingProviders(event.organizationId);
-    for (const provider of channelProviders) {
-      try {
-        const providerKey = provider.platform === 'teams' ? 'MICROSOFT_TEAMS' : 'SLACK';
-        const connection = await prisma.integrationConnection.findFirst({
-          where: {
-            organizationId: event.organizationId,
-            provider: providerKey,
-            status: 'CONNECTED',
-          },
-          select: { configJson: true },
-        });
+  if (!category) return;
 
-        const config = (connection?.configJson as Record<string, unknown>) ?? {};
-        const channelMapping = (config.channelMapping as Record<string, string>) ?? {};
-        const channelId = channelMapping[category];
+  const providers = await getConnectedMessagingProviders(event.organizationId);
 
-        if (!channelId) continue;
+  for (const provider of providers) {
+    try {
+      const channelId = await resolveChannelId(event.organizationId, provider.platform, category);
+      if (!channelId) continue;
 
-        await provider.sendChannelAlert({
-          organizationId: event.organizationId,
-          channelId,
-          title: event.title,
-          body: event.body,
-          entityType: event.entityType ?? 'unknown',
-          entityId: event.entityId ?? '',
-          details: [],
-          viewUrl: buildEntityUrl(event.entityType ?? 'unknown', event.entityId ?? ''),
-        });
-      } catch (error) {
-        console.error(`[notification-service] ${provider.platform} channel alert failed:`, error);
-      }
+      await provider.sendChannelAlert({
+        organizationId: event.organizationId,
+        channelId,
+        title: event.title,
+        body: event.body,
+        entityType: event.entityType ?? 'unknown',
+        entityId: event.entityId ?? '',
+        details: [],
+        viewUrl: buildEntityUrl(event.entityType ?? 'unknown', event.entityId ?? ''),
+      });
+    } catch (error) {
+      console.error(`[notification-service] ${provider.platform} channel alert failed:`, error);
     }
   }
+}
+
+async function resolveChannelId(
+  organizationId: string,
+  platform: string,
+  category: string,
+): Promise<string | null> {
+  const providerKey = platform === 'teams' ? 'MICROSOFT_TEAMS' : 'SLACK';
+  const connection = await prisma.integrationConnection.findFirst({
+    where: {
+      organizationId,
+      provider: providerKey,
+      status: 'CONNECTED',
+    },
+    select: { configJson: true },
+  });
+
+  const config = (connection?.configJson as Record<string, unknown>) ?? {};
+  const channelMapping = (config.channelMapping as Record<string, string>) ?? {};
+  return channelMapping[category] ?? null;
 }

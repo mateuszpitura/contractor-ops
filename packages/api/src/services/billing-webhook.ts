@@ -11,6 +11,7 @@ import {
 } from './billing-constants.js';
 import { CacheKeys, invalidate } from './cache.js';
 import { dispatch } from './notification-service.js';
+import type { NotificationEvent } from './notification-service.js';
 import { stripe } from './stripe-client.js';
 import type { DbClient } from './types.js';
 
@@ -317,10 +318,36 @@ async function handleSubscriptionUpdated(
     return;
   }
 
+  const { tier, data } = buildSubscriptionData(subscription, organizationId);
+
+  // Check if tier changed (for notification)
+  const previousSub = await tx.subscription.findUnique({
+    where: { stripeSubscriptionId: subscription.id },
+    select: { tier: true },
+  });
+
+  await tx.subscription.upsert({
+    where: { stripeSubscriptionId: subscription.id },
+    create: { stripeSubscriptionId: subscription.id, ...data },
+    update: data,
+  });
+
+  void invalidate(CacheKeys.subscription(organizationId), CacheKeys.creditBalance(organizationId));
+
+  // Notify admins when subscription tier changes
+  if (previousSub && previousSub.tier !== tier) {
+    void notifyAdminsOfTierChange(tx, organizationId, previousSub.tier, tier);
+  }
+}
+
+function buildSubscriptionData(
+  subscription: SubscriptionWithPeriod,
+  organizationId: string,
+) {
   const status = STRIPE_STATUS_MAP[subscription.status] ?? 'ACTIVE';
   const priceId = subscription.items.data[0]?.price?.id;
-  let tier: string;
 
+  let tier: string;
   try {
     tier = priceId ? resolveTierFromPriceId(priceId) : 'STARTER';
   } catch {
@@ -331,17 +358,7 @@ async function handleSubscriptionUpdated(
     tier = 'STARTER';
   }
 
-  // Period dates from subscription (webhook payloads include these)
-  const currentPeriodStart = subscription.current_period_start
-    ? new Date(subscription.current_period_start * 1000)
-    : subscription.start_date
-      ? new Date(subscription.start_date * 1000)
-      : new Date();
-  const currentPeriodEnd = subscription.current_period_end
-    ? new Date(subscription.current_period_end * 1000)
-    : subscription.start_date
-      ? new Date((subscription.start_date + 30 * 24 * 60 * 60) * 1000)
-      : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+  const { periodStart, periodEnd } = resolveSubscriptionPeriod(subscription);
 
   const data = {
     organizationId,
@@ -351,59 +368,60 @@ async function handleSubscriptionUpdated(
     stripePriceId: priceId ?? null,
     tier,
     status,
-    currentPeriodStart,
-    currentPeriodEnd,
+    currentPeriodStart: periodStart,
+    currentPeriodEnd: periodEnd,
     trialEnd: subscription.trial_end ? new Date(subscription.trial_end * 1000) : null,
     cancelAtPeriodEnd: subscription.cancel_at_period_end,
     seatCount: subscription.items.data[0]?.quantity ?? 1,
   };
 
-  // Check if tier changed (for notification)
-  const previousSub = await tx.subscription.findUnique({
-    where: { stripeSubscriptionId: subscription.id },
-    select: { tier: true },
+  return { tier, status, data };
+}
+
+function resolveSubscriptionPeriod(subscription: SubscriptionWithPeriod): {
+  periodStart: Date;
+  periodEnd: Date;
+} {
+  const periodStart = subscription.current_period_start
+    ? new Date(subscription.current_period_start * 1000)
+    : subscription.start_date
+      ? new Date(subscription.start_date * 1000)
+      : new Date();
+
+  const periodEnd = subscription.current_period_end
+    ? new Date(subscription.current_period_end * 1000)
+    : subscription.start_date
+      ? new Date((subscription.start_date + 30 * 24 * 60 * 60) * 1000)
+      : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
+  return { periodStart, periodEnd };
+}
+
+async function notifyAdminsOfTierChange(
+  tx: TxClient,
+  organizationId: string,
+  previousTier: string,
+  newTier: string,
+): Promise<void> {
+  const adminMembers = await tx.member.findMany({
+    where: { organizationId, role: { in: ['owner', 'admin'] } },
+    select: { userId: true },
   });
-  const tierChanged = previousSub && previousSub.tier !== tier;
 
-  await tx.subscription.upsert({
-    where: { stripeSubscriptionId: subscription.id },
-    create: {
-      stripeSubscriptionId: subscription.id,
-      ...data,
-    },
-    update: data,
-  });
+  const adminUserIds = adminMembers.map((m: { userId: string }) => m.userId);
+  if (adminUserIds.length === 0) return;
 
-  // Invalidate billing caches after subscription state change
-  void invalidate(CacheKeys.subscription(organizationId), CacheKeys.creditBalance(organizationId));
-
-  // Notify admins when subscription tier changes
-  if (tierChanged && previousSub) {
-    const previousTier = previousSub.tier;
-    const adminMembers = await tx.member.findMany({
-      where: {
-        organizationId,
-        role: { in: ['owner', 'admin'] },
-      },
-      select: { userId: true },
-    });
-
-    const adminUserIds = adminMembers.map((m: { userId: string }) => m.userId);
-
-    if (adminUserIds.length > 0) {
-      void dispatch({
-        organizationId,
-        type: 'SUBSCRIPTION_CHANGED' as const,
-        recipientUserIds: adminUserIds,
-        title: 'Subscription plan changed',
-        body: `Your plan has been changed from ${previousTier} to ${tier}.`,
-        entityType: 'ORGANIZATION',
-        entityId: organizationId,
-      }).catch((error: unknown) =>
-        console.error('[stripe-webhook] Subscription change notification failed:', error),
-      );
-    }
-  }
+  void dispatch({
+    organizationId,
+    type: 'SUBSCRIPTION_CHANGED' as const,
+    recipientUserIds: adminUserIds,
+    title: 'Subscription plan changed',
+    body: `Your plan has been changed from ${previousTier} to ${newTier}.`,
+    entityType: 'ORGANIZATION',
+    entityId: organizationId,
+  }).catch((error: unknown) =>
+    console.error('[stripe-webhook] Subscription change notification failed:', error),
+  );
 }
 
 /**
@@ -549,7 +567,6 @@ async function handleInvoicePaid(invoice: Stripe.Invoice, tx: TxClient): Promise
  */
 async function handlePaymentFailed(invoice: Stripe.Invoice, tx: TxClient): Promise<void> {
   const subscriptionId = getSubscriptionIdFromInvoice(invoice);
-
   if (!subscriptionId) return;
 
   const sub = await tx.subscription.findUnique({
@@ -564,45 +581,17 @@ async function handlePaymentFailed(invoice: Stripe.Invoice, tx: TxClient): Promi
     data: { status: 'PAST_DUE' },
   });
 
-  // Invalidate billing caches so soft-block kicks in
   void invalidate(
     CacheKeys.subscription(sub.organizationId),
     CacheKeys.creditBalance(sub.organizationId),
   );
 
-  // Notify admin users
-  const adminMembers = await tx.member.findMany({
-    where: {
-      organizationId: sub.organizationId,
-      role: { in: ['owner', 'admin'] },
-    },
-    select: { userId: true },
+  await notifyBillingAdmins(tx, sub, {
+    type: 'PAYMENT_FAILED' as const,
+    title: 'Payment failed',
+    body: 'Payment failed. Update your payment method to continue your subscription.',
+    emailSubject: 'Payment failed - action required',
   });
-
-  const adminUserIds = adminMembers.map((m: { userId: string }) => m.userId);
-
-  if (adminUserIds.length > 0) {
-    void dispatch({
-      organizationId: sub.organizationId,
-      type: 'PAYMENT_FAILED' as const,
-      recipientUserIds: adminUserIds,
-      title: 'Payment failed',
-      body: 'Payment failed. Update your payment method to continue your subscription.',
-      entityType: 'ORGANIZATION',
-      entityId: sub.organizationId,
-    }).catch((error: unknown) =>
-      console.error('[stripe-webhook] Payment failed notification dispatch failed:', error),
-    );
-  }
-
-  // Also email billing contact
-  if (sub.organization?.billingEmail) {
-    await sendBillingEmail({
-      to: sub.organization.billingEmail,
-      subject: 'Payment failed - action required',
-      body: 'Payment failed. Update your payment method to continue your subscription.',
-    });
-  }
 }
 
 /**
@@ -620,11 +609,24 @@ async function handlePaymentActionRequired(invoice: Stripe.Invoice, tx: TxClient
 
   if (!sub) return;
 
+  await notifyBillingAdmins(tx, sub, {
+    type: 'PAYMENT_ACTION_REQUIRED' as const,
+    title: 'Payment verification required',
+    body: 'Your bank requires additional verification. Please complete the payment to keep your subscription active.',
+    emailSubject: 'Payment verification required',
+  });
+}
+
+/**
+ * Shared helper: notify org admins via in-app dispatch and email the billing contact.
+ */
+async function notifyBillingAdmins(
+  tx: TxClient,
+  sub: { organizationId: string; organization?: { id: string; billingEmail: string | null } | null },
+  notification: { type: string; title: string; body: string; emailSubject: string },
+): Promise<void> {
   const adminMembers = await tx.member.findMany({
-    where: {
-      organizationId: sub.organizationId,
-      role: { in: ['owner', 'admin'] },
-    },
+    where: { organizationId: sub.organizationId, role: { in: ['owner', 'admin'] } },
     select: { userId: true },
   });
 
@@ -633,22 +635,22 @@ async function handlePaymentActionRequired(invoice: Stripe.Invoice, tx: TxClient
   if (adminUserIds.length > 0) {
     void dispatch({
       organizationId: sub.organizationId,
-      type: 'PAYMENT_ACTION_REQUIRED' as const,
+      type: notification.type as NotificationEvent['type'],
       recipientUserIds: adminUserIds,
-      title: 'Payment verification required',
-      body: 'Your bank requires additional verification. Please complete the payment to keep your subscription active.',
+      title: notification.title,
+      body: notification.body,
       entityType: 'ORGANIZATION',
       entityId: sub.organizationId,
     }).catch((error: unknown) =>
-      console.error('[stripe-webhook] Payment action required notification failed:', error),
+      console.error(`[stripe-webhook] ${notification.type} notification failed:`, error),
     );
   }
 
   if (sub.organization?.billingEmail) {
     await sendBillingEmail({
       to: sub.organization.billingEmail,
-      subject: 'Payment verification required',
-      body: 'Your bank requires additional verification. Please complete the payment to keep your subscription active.',
+      subject: notification.emailSubject,
+      body: notification.body,
     });
   }
 }

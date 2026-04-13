@@ -332,21 +332,9 @@ export async function refreshDocMetadata(
   }
 
   const metadata = (link.metadataJson ?? {}) as Record<string, unknown>;
-  const lastEditedTime = metadata.lastEditedTime as string | undefined;
 
-  // Check staleness — if metadata has a lastEditedTime and it's recent, skip refresh
-  if (lastEditedTime) {
-    const lastEdited = new Date(lastEditedTime).getTime();
-    const now = Date.now();
-    if (now - lastEdited < METADATA_STALENESS_MS) {
-      return link;
-    }
-  }
-
-  // Find the integration connection for this link
-  if (!link.integrationConnectionId) {
-    return link;
-  }
+  if (isMetadataFresh(metadata)) return link;
+  if (!link.integrationConnectionId) return link;
 
   const connection = await prisma.integrationConnection.findFirst({
     where: {
@@ -356,103 +344,121 @@ export async function refreshDocMetadata(
     },
   });
 
-  if (!connection) {
-    return link;
-  }
+  if (!connection) return link;
 
   try {
-    if (link.externalType === 'NOTION_PAGE') {
-      const credentials = decryptCredentials(connection.credentialsRef, 'notion');
-
-      // Re-fetch the page via Notion API
-      const response = await fetch(`https://api.notion.com/v1/pages/${link.externalId}`, {
-        headers: {
-          Authorization: `Bearer ${credentials.accessToken}`,
-          'Notion-Version': '2022-06-28',
-        },
+    const updatedMetadata = await fetchFreshMetadata(link.externalType, link.externalId, connection, metadata);
+    if (updatedMetadata) {
+      return prisma.externalLink.update({
+        where: { id: externalLinkId },
+        data: { metadataJson: updatedMetadata },
       });
-
-      if (response.ok) {
-        const page = (await response.json()) as {
-          last_edited_time: string;
-          icon?: {
-            type: string;
-            emoji?: string;
-            external?: { url: string };
-          } | null;
-          properties?: {
-            title?: { title?: Array<{ plain_text: string }> };
-          };
-        };
-
-        const titleProp = page.properties?.title?.title;
-        const title = titleProp?.[0]?.plain_text ?? metadata.title ?? 'Untitled';
-
-        let icon: string | null = null;
-        if (page.icon?.type === 'emoji') {
-          icon = page.icon.emoji ?? null;
-        } else if (page.icon?.type === 'external') {
-          icon = page.icon.external?.url ?? null;
-        }
-
-        const updatedMetadata = {
-          ...metadata,
-          title,
-          icon,
-          lastEditedTime: page.last_edited_time,
-        };
-
-        const updated = await prisma.externalLink.update({
-          where: { id: externalLinkId },
-          data: { metadataJson: updatedMetadata },
-        });
-
-        return updated;
-      }
-    } else if (link.externalType === 'CONFLUENCE_PAGE') {
-      const credentials = decryptCredentials(connection.credentialsRef, 'confluence');
-      const config = connection.configJson as ConnectionConfig | null;
-      const cloudId = config?.cloudId;
-
-      if (cloudId) {
-        const response = await fetch(
-          `https://api.atlassian.com/ex/confluence/${cloudId}/wiki/rest/api/content/${link.externalId}?expand=space,version`,
-          {
-            headers: {
-              Authorization: `Bearer ${credentials.accessToken}`,
-              Accept: 'application/json',
-            },
-          },
-        );
-
-        if (response.ok) {
-          const content = (await response.json()) as {
-            title: string;
-            space?: { key: string; name: string };
-            version?: { when: string };
-          };
-
-          const updatedMetadata = {
-            ...metadata,
-            title: content.title,
-            spaceKey: content.space?.key ?? metadata.spaceKey,
-            spaceName: content.space?.name ?? metadata.spaceName,
-            lastEditedTime: content.version?.when,
-          };
-
-          const updated = await prisma.externalLink.update({
-            where: { id: externalLinkId },
-            data: { metadataJson: updatedMetadata },
-          });
-
-          return updated;
-        }
-      }
     }
   } catch (error) {
     console.error('[doc-link-service] Metadata refresh failed:', error);
   }
 
-  // Return existing link if refresh failed
   return link;
+}
+
+// ---------------------------------------------------------------------------
+// Staleness check
+// ---------------------------------------------------------------------------
+
+function isMetadataFresh(metadata: Record<string, unknown>): boolean {
+  const lastEditedTime = metadata.lastEditedTime as string | undefined;
+  if (!lastEditedTime) return false;
+  return Date.now() - new Date(lastEditedTime).getTime() < METADATA_STALENESS_MS;
+}
+
+// ---------------------------------------------------------------------------
+// Per-provider metadata refresh
+// ---------------------------------------------------------------------------
+
+async function fetchFreshMetadata(
+  externalType: string,
+  externalId: string,
+  connection: { credentialsRef: string; configJson: unknown },
+  existingMetadata: Record<string, unknown>,
+): Promise<Record<string, unknown> | null> {
+  if (externalType === 'NOTION_PAGE') {
+    return refreshNotionMetadata(externalId, connection.credentialsRef, existingMetadata);
+  }
+  if (externalType === 'CONFLUENCE_PAGE') {
+    return refreshConfluenceMetadata(externalId, connection, existingMetadata);
+  }
+  return null;
+}
+
+async function refreshNotionMetadata(
+  externalId: string,
+  credentialsRef: string,
+  existingMetadata: Record<string, unknown>,
+): Promise<Record<string, unknown> | null> {
+  const credentials = decryptCredentials(credentialsRef, 'notion');
+
+  const response = await fetch(`https://api.notion.com/v1/pages/${externalId}`, {
+    headers: {
+      Authorization: `Bearer ${credentials.accessToken}`,
+      'Notion-Version': '2022-06-28',
+    },
+  });
+
+  if (!response.ok) return null;
+
+  const page = (await response.json()) as {
+    last_edited_time: string;
+    icon?: { type: string; emoji?: string; external?: { url: string } } | null;
+    properties?: { title?: { title?: Array<{ plain_text: string }> } };
+  };
+
+  const titleProp = page.properties?.title?.title;
+  const title = titleProp?.[0]?.plain_text ?? existingMetadata.title ?? 'Untitled';
+
+  let icon: string | null = null;
+  if (page.icon?.type === 'emoji') {
+    icon = page.icon.emoji ?? null;
+  } else if (page.icon?.type === 'external') {
+    icon = page.icon.external?.url ?? null;
+  }
+
+  return { ...existingMetadata, title, icon, lastEditedTime: page.last_edited_time };
+}
+
+async function refreshConfluenceMetadata(
+  externalId: string,
+  connection: { credentialsRef: string; configJson: unknown },
+  existingMetadata: Record<string, unknown>,
+): Promise<Record<string, unknown> | null> {
+  const config = connection.configJson as ConnectionConfig | null;
+  const cloudId = config?.cloudId;
+  if (!cloudId) return null;
+
+  const credentials = decryptCredentials(connection.credentialsRef, 'confluence');
+
+  const response = await fetch(
+    `https://api.atlassian.com/ex/confluence/${cloudId}/wiki/rest/api/content/${externalId}?expand=space,version`,
+    {
+      headers: {
+        Authorization: `Bearer ${credentials.accessToken}`,
+        Accept: 'application/json',
+      },
+    },
+  );
+
+  if (!response.ok) return null;
+
+  const content = (await response.json()) as {
+    title: string;
+    space?: { key: string; name: string };
+    version?: { when: string };
+  };
+
+  return {
+    ...existingMetadata,
+    title: content.title,
+    spaceKey: content.space?.key ?? existingMetadata.spaceKey,
+    spaceName: content.space?.name ?? existingMetadata.spaceName,
+    lastEditedTime: content.version?.when,
+  };
 }

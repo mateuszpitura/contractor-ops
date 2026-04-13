@@ -238,7 +238,10 @@ export async function parseImportFile(buffer: Buffer): Promise<Record<string, st
     throw new Error('File contains no sheets');
   }
 
-  const sheet = workbook.Sheets[sheetName]!;
+  const sheet = workbook.Sheets[sheetName];
+  if (!sheet) {
+    throw new Error('Sheet not found in workbook');
+  }
   const rows = XLSX.utils.sheet_to_json<Record<string, string>>(sheet, {
     defval: '',
     raw: false,
@@ -266,8 +269,35 @@ export async function processImportFile(
   columnMapping: Record<string, string | null>,
 ): Promise<ImportResult> {
   const rawRows = await parseImportFile(buffer);
+  const mappedRows = applyColumnMapping(rawRows, columnMapping);
 
-  // Build reverse mapping: source header -> target field
+  const { validRows, invalidRows } = validateRows(mappedRows, entityType);
+  const duplicateRows: ImportRow[] = [];
+
+  // Post-validation: duplicate detection / FK resolution
+  if (entityType === 'contractor') {
+    await detectContractorDuplicates(validRows, duplicateRows, organizationId);
+  } else {
+    await resolveContractorForeignKeys(validRows, invalidRows, organizationId);
+  }
+
+  return {
+    validRows,
+    invalidRows,
+    duplicateRows,
+    totalRows: rawRows.length,
+    columnMapping,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Column mapping
+// ---------------------------------------------------------------------------
+
+function applyColumnMapping(
+  rawRows: Record<string, string>[],
+  columnMapping: Record<string, string | null>,
+): Array<{ rowNumber: number; data: Record<string, unknown> }> {
   const reverseMapping: Record<string, string> = {};
   for (const [targetField, sourceHeader] of Object.entries(columnMapping)) {
     if (sourceHeader) {
@@ -275,26 +305,29 @@ export async function processImportFile(
     }
   }
 
-  // Transform raw rows using column mapping
-  const mappedRows: Array<{ rowNumber: number; data: Record<string, unknown> }> = rawRows.map(
-    (raw, idx) => {
-      const mapped: Record<string, unknown> = {};
-      for (const [sourceHeader, value] of Object.entries(raw)) {
-        const targetField = reverseMapping[sourceHeader];
-        if (targetField) {
-          mapped[targetField] = value;
-        }
+  return rawRows.map((raw, idx) => {
+    const mapped: Record<string, unknown> = {};
+    for (const [sourceHeader, value] of Object.entries(raw)) {
+      const targetField = reverseMapping[sourceHeader];
+      if (targetField) {
+        mapped[targetField] = value;
       }
-      return { rowNumber: idx + 1, data: mapped };
-    },
-  );
+    }
+    return { rowNumber: idx + 1, data: mapped };
+  });
+}
 
+// ---------------------------------------------------------------------------
+// Row validation
+// ---------------------------------------------------------------------------
+
+function validateRows(
+  mappedRows: Array<{ rowNumber: number; data: Record<string, unknown> }>,
+  entityType: 'contractor' | 'contract',
+): { validRows: ImportRow[]; invalidRows: ImportRow[] } {
+  const validator = entityType === 'contractor' ? validateContractorRow : validateContractRow;
   const validRows: ImportRow[] = [];
   const invalidRows: ImportRow[] = [];
-  const duplicateRows: ImportRow[] = [];
-
-  // Validate each row
-  const validator = entityType === 'contractor' ? validateContractorRow : validateContractRow;
 
   for (const { rowNumber, data } of mappedRows) {
     const { valid, errors } = validator({ ...data });
@@ -305,88 +338,76 @@ export async function processImportFile(
     }
   }
 
-  // Duplicate detection
-  if (entityType === 'contractor') {
-    // Batch query existing contractors by taxId
-    const taxIds = validRows.map(r => String(r.data.taxId ?? '').trim()).filter(Boolean);
+  return { validRows, invalidRows };
+}
 
-    if (taxIds.length > 0) {
-      const existing = await prisma.contractor.findMany({
-        where: {
-          organizationId,
-          taxId: { in: taxIds },
-          deletedAt: null,
-        },
-        select: { id: true, taxId: true },
-      });
+// ---------------------------------------------------------------------------
+// Duplicate detection (contractor imports)
+// ---------------------------------------------------------------------------
 
-      const existingByTaxId = new Map(existing.map(c => [c.taxId, c.id]));
+async function detectContractorDuplicates(
+  validRows: ImportRow[],
+  duplicateRows: ImportRow[],
+  organizationId: string,
+): Promise<void> {
+  const taxIds = validRows.map(r => String(r.data.taxId ?? '').trim()).filter(Boolean);
+  if (taxIds.length === 0) return;
 
-      // Move duplicates from validRows to duplicateRows
-      const stillValid: ImportRow[] = [];
-      for (const row of validRows) {
-        const taxId = String(row.data.taxId ?? '').trim();
-        const existingId = existingByTaxId.get(taxId);
-        if (existingId) {
-          duplicateRows.push({
-            ...row,
-            status: 'duplicate',
-            duplicateOf: existingId,
-          });
-        } else {
-          stillValid.push(row);
-        }
-      }
-      validRows.length = 0;
-      validRows.push(...stillValid);
-    }
-  } else {
-    // For contracts: batch query contractors by taxId to resolve contractorId FK
-    const taxIds = validRows.map(r => String(r.data.contractorTaxId ?? '').trim()).filter(Boolean);
+  const existing = await prisma.contractor.findMany({
+    where: { organizationId, taxId: { in: taxIds }, deletedAt: null },
+    select: { id: true, taxId: true },
+  });
 
-    if (taxIds.length > 0) {
-      const contractors = await prisma.contractor.findMany({
-        where: {
-          organizationId,
-          taxId: { in: taxIds },
-          deletedAt: null,
-        },
-        select: { id: true, taxId: true },
-      });
+  const existingByTaxId = new Map(existing.map(c => [c.taxId, c.id]));
 
-      const contractorByTaxId = new Map(contractors.map(c => [c.taxId, c.id]));
-
-      // Attach resolved contractorId or mark as invalid
-      const stillValid: ImportRow[] = [];
-      for (const row of validRows) {
-        const taxId = String(row.data.contractorTaxId ?? '').trim();
-        const contractorId = contractorByTaxId.get(taxId);
-        if (contractorId) {
-          row.data.contractorId = contractorId;
-          stillValid.push(row);
-        } else {
-          invalidRows.push({
-            ...row,
-            status: 'invalid',
-            errors: [
-              {
-                field: 'contractorTaxId',
-                message: `No contractor found with tax ID: ${taxId}`,
-              },
-            ],
-          });
-        }
-      }
-      validRows.length = 0;
-      validRows.push(...stillValid);
+  const stillValid: ImportRow[] = [];
+  for (const row of validRows) {
+    const taxId = String(row.data.taxId ?? '').trim();
+    const existingId = existingByTaxId.get(taxId);
+    if (existingId) {
+      duplicateRows.push({ ...row, status: 'duplicate', duplicateOf: existingId });
+    } else {
+      stillValid.push(row);
     }
   }
+  validRows.length = 0;
+  validRows.push(...stillValid);
+}
 
-  return {
-    validRows,
-    invalidRows,
-    duplicateRows,
-    totalRows: rawRows.length,
-    columnMapping,
-  };
+// ---------------------------------------------------------------------------
+// FK resolution (contract imports)
+// ---------------------------------------------------------------------------
+
+async function resolveContractorForeignKeys(
+  validRows: ImportRow[],
+  invalidRows: ImportRow[],
+  organizationId: string,
+): Promise<void> {
+  const taxIds = validRows.map(r => String(r.data.contractorTaxId ?? '').trim()).filter(Boolean);
+  if (taxIds.length === 0) return;
+
+  const contractors = await prisma.contractor.findMany({
+    where: { organizationId, taxId: { in: taxIds }, deletedAt: null },
+    select: { id: true, taxId: true },
+  });
+
+  const contractorByTaxId = new Map(contractors.map(c => [c.taxId, c.id]));
+
+  const stillValid: ImportRow[] = [];
+  for (const row of validRows) {
+    const taxId = String(row.data.contractorTaxId ?? '').trim();
+    const contractorId = contractorByTaxId.get(taxId);
+    if (contractorId) {
+      row.data.contractorId = contractorId;
+      stillValid.push(row);
+    } else {
+      invalidRows.push({
+        ...row,
+        status: 'invalid',
+        errors: [{ field: 'contractorTaxId', message: `No contractor found with tax ID: ${taxId}` }],
+      });
+    }
+  }
+  validRows.length = 0;
+  validRows.push(...stillValid);
 }

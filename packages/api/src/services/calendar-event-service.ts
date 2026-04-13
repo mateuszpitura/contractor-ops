@@ -130,83 +130,85 @@ export async function createCalendarEvent(
     if (connections.length === 0) return;
 
     const results = await Promise.allSettled(
-      connections.map(async conn => {
-        const externalType = EXTERNAL_TYPE_MAP[conn.provider];
-
-        if (conn.provider === 'GOOGLE_CALENDAR') {
-          const result = await googleAdapter.createEvent(conn.accessToken, {
-            summary: input.summary,
-            description: input.description,
-            startDateTime: input.startDateTime,
-            endDateTime: input.endDateTime,
-            attendees: input.attendees,
-          });
-
-          const metadata: CalendarEventMetadata = {
-            eventId: result.eventId,
-            title: input.summary,
-            startTime: input.startDateTime,
-            endTime: input.endDateTime,
-            link: result.htmlLink,
-            etag: result.etag,
-            provider: 'google_calendar',
-          };
-
-          await prisma.externalLink.create({
-            data: {
-              organizationId: input.organizationId,
-              integrationConnectionId: conn.id,
-              entityType: input.entityType,
-              entityId: input.entityId,
-              externalType,
-              externalId: result.eventId,
-              externalUrl: result.htmlLink,
-              metadataJson: metadata,
-            },
-          });
-        } else {
-          const result = await outlookAdapter.createEvent(conn.accessToken, {
-            subject: input.summary,
-            bodyHtml: input.description,
-            startDateTime: input.startDateTime,
-            endDateTime: input.endDateTime,
-            attendees: input.attendees,
-          });
-
-          const metadata: CalendarEventMetadata = {
-            eventId: result.eventId,
-            title: input.summary,
-            startTime: input.startDateTime,
-            endTime: input.endDateTime,
-            link: result.webLink,
-            provider: 'outlook_calendar',
-          };
-
-          await prisma.externalLink.create({
-            data: {
-              organizationId: input.organizationId,
-              integrationConnectionId: conn.id,
-              entityType: input.entityType,
-              entityId: input.entityId,
-              externalType,
-              externalId: result.eventId,
-              externalUrl: result.webLink,
-              metadataJson: metadata,
-            },
-          });
-        }
-      }),
+      connections.map(conn => createEventForConnection(prisma, conn, input)),
     );
 
-    // Log rejected results for observability
-    for (const result of results) {
-      if (result.status === 'rejected') {
-        console.error('[calendar-event-service] Failed to create calendar event:', result.reason);
-      }
-    }
+    logRejected(results, 'create');
   } catch (error) {
     console.error('[calendar-event-service] Unexpected error in createCalendarEvent:', error);
   }
+}
+
+async function createEventForConnection(
+  prisma: PrismaClient,
+  conn: CalendarConnection,
+  input: CreateCalendarEventInput,
+): Promise<void> {
+  const externalType = EXTERNAL_TYPE_MAP[conn.provider];
+  const { eventId, url, metadata } = await createProviderEvent(conn, input);
+
+  await prisma.externalLink.create({
+    data: {
+      organizationId: input.organizationId,
+      integrationConnectionId: conn.id,
+      entityType: input.entityType,
+      entityId: input.entityId,
+      externalType,
+      externalId: eventId,
+      externalUrl: url,
+      metadataJson: metadata,
+    },
+  });
+}
+
+async function createProviderEvent(
+  conn: CalendarConnection,
+  input: CreateCalendarEventInput,
+): Promise<{ eventId: string; url: string; metadata: CalendarEventMetadata }> {
+  if (conn.provider === 'GOOGLE_CALENDAR') {
+    const result = await googleAdapter.createEvent(conn.accessToken, {
+      summary: input.summary,
+      description: input.description,
+      startDateTime: input.startDateTime,
+      endDateTime: input.endDateTime,
+      attendees: input.attendees,
+    });
+
+    return {
+      eventId: result.eventId,
+      url: result.htmlLink,
+      metadata: {
+        eventId: result.eventId,
+        title: input.summary,
+        startTime: input.startDateTime,
+        endTime: input.endDateTime,
+        link: result.htmlLink,
+        etag: result.etag,
+        provider: 'google_calendar',
+      },
+    };
+  }
+
+  const result = await outlookAdapter.createEvent(conn.accessToken, {
+    subject: input.summary,
+    bodyHtml: input.description,
+    startDateTime: input.startDateTime,
+    endDateTime: input.endDateTime,
+    attendees: input.attendees,
+  });
+
+  return {
+    eventId: result.eventId,
+    url: result.webLink,
+    metadata: {
+      eventId: result.eventId,
+      title: input.summary,
+      startTime: input.startDateTime,
+      endTime: input.endDateTime,
+      link: result.webLink,
+      provider: 'outlook_calendar',
+    },
+  };
 }
 
 /**
@@ -220,122 +222,14 @@ export async function updateCalendarEvent(
   input: UpdateCalendarEventInput,
 ): Promise<void> {
   try {
-    const externalLinks = await prisma.externalLink.findMany({
-      where: {
-        organizationId: input.organizationId,
-        entityType: input.entityType,
-        entityId: input.entityId,
-        externalType: {
-          in: ['GOOGLE_CALENDAR_EVENT', 'OUTLOOK_CALENDAR_EVENT'],
-        },
-      },
-      include: {
-        integrationConnection: {
-          select: {
-            id: true,
-            provider: true,
-            credentialsRef: true,
-            status: true,
-          },
-        },
-      },
-    });
-
+    const externalLinks = await findCalendarExternalLinks(prisma, input);
     if (externalLinks.length === 0) return;
 
     const results = await Promise.allSettled(
-      externalLinks.map(
-        async (link: {
-          id: string;
-          externalId: string;
-          externalType: string;
-          metadataJson: Record<string, unknown> | null;
-          integrationConnection: {
-            id: string;
-            provider: string;
-            credentialsRef: string;
-            status: string;
-          };
-        }) => {
-          const conn = link.integrationConnection;
-          if (conn.status !== 'CONNECTED') return;
-
-          const providerSlug =
-            conn.provider === 'GOOGLE_CALENDAR' ? 'google-calendar' : 'outlook-calendar';
-          const credentials = decryptCredentials(conn.credentialsRef, providerSlug);
-
-          const existingMetadata =
-            (link.metadataJson as CalendarEventMetadata) ?? ({} as CalendarEventMetadata);
-
-          if (conn.provider === 'GOOGLE_CALENDAR') {
-            const etag = existingMetadata.etag ?? '';
-            const result = await googleAdapter.updateEvent(
-              credentials.accessToken,
-              link.externalId,
-              {
-                summary: input.summary,
-                description: input.description,
-                startDateTime: input.startDateTime,
-                endDateTime: input.endDateTime,
-              },
-              etag,
-            );
-
-            const updatedMetadata: CalendarEventMetadata = {
-              ...existingMetadata,
-              ...(input.summary ? { title: input.summary } : {}),
-              ...(input.startDateTime ? { startTime: input.startDateTime } : {}),
-              ...(input.endDateTime ? { endTime: input.endDateTime } : {}),
-              etag: result.etag,
-              link: result.htmlLink,
-              provider: 'google_calendar',
-            };
-
-            await prisma.externalLink.update({
-              where: { id: link.id },
-              data: {
-                externalUrl: result.htmlLink,
-                metadataJson: updatedMetadata,
-              },
-            });
-          } else {
-            const result = await outlookAdapter.updateEvent(
-              credentials.accessToken,
-              link.externalId,
-              {
-                subject: input.summary,
-                bodyHtml: input.description,
-                startDateTime: input.startDateTime,
-                endDateTime: input.endDateTime,
-              },
-            );
-
-            const updatedMetadata: CalendarEventMetadata = {
-              ...existingMetadata,
-              ...(input.summary ? { title: input.summary } : {}),
-              ...(input.startDateTime ? { startTime: input.startDateTime } : {}),
-              ...(input.endDateTime ? { endTime: input.endDateTime } : {}),
-              link: result.webLink,
-              provider: 'outlook_calendar',
-            };
-
-            await prisma.externalLink.update({
-              where: { id: link.id },
-              data: {
-                externalUrl: result.webLink,
-                metadataJson: updatedMetadata,
-              },
-            });
-          }
-        },
-      ),
+      externalLinks.map(link => updateEventForLink(prisma, link, input)),
     );
 
-    for (const result of results) {
-      if (result.status === 'rejected') {
-        console.error('[calendar-event-service] Failed to update calendar event:', result.reason);
-      }
-    }
+    logRejected(results, 'update');
   } catch (error) {
     console.error('[calendar-event-service] Unexpected error in updateCalendarEvent:', error);
   }
@@ -352,75 +246,160 @@ export async function deleteCalendarEvent(
   input: DeleteCalendarEventInput,
 ): Promise<void> {
   try {
-    const externalLinks = await prisma.externalLink.findMany({
-      where: {
-        organizationId: input.organizationId,
-        entityType: input.entityType,
-        entityId: input.entityId,
-        externalType: {
-          in: ['GOOGLE_CALENDAR_EVENT', 'OUTLOOK_CALENDAR_EVENT'],
-        },
-      },
-      include: {
-        integrationConnection: {
-          select: {
-            id: true,
-            provider: true,
-            credentialsRef: true,
-            status: true,
-          },
-        },
-      },
-    });
-
+    const externalLinks = await findCalendarExternalLinks(prisma, input);
     if (externalLinks.length === 0) return;
 
     const results = await Promise.allSettled(
-      externalLinks.map(
-        async (link: {
-          id: string;
-          externalId: string;
-          externalType: string;
-          integrationConnection: {
-            id: string;
-            provider: string;
-            credentialsRef: string;
-            status: string;
-          };
-        }) => {
-          const conn = link.integrationConnection;
-
-          // Attempt deletion even if disconnected — best effort
-          try {
-            if (conn.status === 'CONNECTED') {
-              const providerSlug =
-                conn.provider === 'GOOGLE_CALENDAR' ? 'google-calendar' : 'outlook-calendar';
-              const credentials = decryptCredentials(conn.credentialsRef, providerSlug);
-
-              if (conn.provider === 'GOOGLE_CALENDAR') {
-                await googleAdapter.deleteEvent(credentials.accessToken, link.externalId);
-              } else {
-                await outlookAdapter.deleteEvent(credentials.accessToken, link.externalId);
-              }
-            }
-          } catch (deleteError) {
-            console.error('[calendar-event-service] Failed to delete provider event:', deleteError);
-          }
-
-          // Always clean up the ExternalLink
-          await prisma.externalLink.delete({
-            where: { id: link.id },
-          });
-        },
-      ),
+      externalLinks.map(link => deleteEventForLink(prisma, link)),
     );
 
-    for (const result of results) {
-      if (result.status === 'rejected') {
-        console.error('[calendar-event-service] Failed to delete calendar event:', result.reason);
-      }
-    }
+    logRejected(results, 'delete');
   } catch (error) {
     console.error('[calendar-event-service] Unexpected error in deleteCalendarEvent:', error);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Internal: shared query for calendar external links
+// ---------------------------------------------------------------------------
+
+interface CalendarExternalLink {
+  id: string;
+  externalId: string;
+  externalType: string;
+  metadataJson: Record<string, unknown> | null;
+  integrationConnection: {
+    id: string;
+    provider: string;
+    credentialsRef: string;
+    status: string;
+  };
+}
+
+async function findCalendarExternalLinks(
+  prisma: PrismaClient,
+  input: { organizationId: string; entityType: string; entityId: string },
+): Promise<CalendarExternalLink[]> {
+  return prisma.externalLink.findMany({
+    where: {
+      organizationId: input.organizationId,
+      entityType: input.entityType,
+      entityId: input.entityId,
+      externalType: { in: ['GOOGLE_CALENDAR_EVENT', 'OUTLOOK_CALENDAR_EVENT'] },
+    },
+    include: {
+      integrationConnection: {
+        select: { id: true, provider: true, credentialsRef: true, status: true },
+      },
+    },
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Internal: per-link update
+// ---------------------------------------------------------------------------
+
+async function updateEventForLink(
+  prisma: PrismaClient,
+  link: CalendarExternalLink,
+  input: UpdateCalendarEventInput,
+): Promise<void> {
+  const conn = link.integrationConnection;
+  if (conn.status !== 'CONNECTED') return;
+
+  const providerSlug = conn.provider === 'GOOGLE_CALENDAR' ? 'google-calendar' : 'outlook-calendar';
+  const credentials = decryptCredentials(conn.credentialsRef, providerSlug);
+  const existingMetadata = (link.metadataJson as CalendarEventMetadata) ?? ({} as CalendarEventMetadata);
+
+  const fieldOverrides = {
+    ...(input.summary ? { title: input.summary } : {}),
+    ...(input.startDateTime ? { startTime: input.startDateTime } : {}),
+    ...(input.endDateTime ? { endTime: input.endDateTime } : {}),
+  };
+
+  if (conn.provider === 'GOOGLE_CALENDAR') {
+    const etag = existingMetadata.etag ?? '';
+    const result = await googleAdapter.updateEvent(
+      credentials.accessToken,
+      link.externalId,
+      {
+        summary: input.summary,
+        description: input.description,
+        startDateTime: input.startDateTime,
+        endDateTime: input.endDateTime,
+      },
+      etag,
+    );
+
+    await prisma.externalLink.update({
+      where: { id: link.id },
+      data: {
+        externalUrl: result.htmlLink,
+        metadataJson: { ...existingMetadata, ...fieldOverrides, etag: result.etag, link: result.htmlLink, provider: 'google_calendar' },
+      },
+    });
+  } else {
+    const result = await outlookAdapter.updateEvent(
+      credentials.accessToken,
+      link.externalId,
+      {
+        subject: input.summary,
+        bodyHtml: input.description,
+        startDateTime: input.startDateTime,
+        endDateTime: input.endDateTime,
+      },
+    );
+
+    await prisma.externalLink.update({
+      where: { id: link.id },
+      data: {
+        externalUrl: result.webLink,
+        metadataJson: { ...existingMetadata, ...fieldOverrides, link: result.webLink, provider: 'outlook_calendar' },
+      },
+    });
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Internal: per-link delete
+// ---------------------------------------------------------------------------
+
+async function deleteEventForLink(
+  prisma: PrismaClient,
+  link: CalendarExternalLink,
+): Promise<void> {
+  const conn = link.integrationConnection;
+
+  // Attempt deletion even if disconnected -- best effort
+  try {
+    if (conn.status === 'CONNECTED') {
+      const providerSlug = conn.provider === 'GOOGLE_CALENDAR' ? 'google-calendar' : 'outlook-calendar';
+      const credentials = decryptCredentials(conn.credentialsRef, providerSlug);
+
+      if (conn.provider === 'GOOGLE_CALENDAR') {
+        await googleAdapter.deleteEvent(credentials.accessToken, link.externalId);
+      } else {
+        await outlookAdapter.deleteEvent(credentials.accessToken, link.externalId);
+      }
+    }
+  } catch (deleteError) {
+    console.error('[calendar-event-service] Failed to delete provider event:', deleteError);
+  }
+
+  // Always clean up the ExternalLink
+  await prisma.externalLink.delete({
+    where: { id: link.id },
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Internal: observability helper
+// ---------------------------------------------------------------------------
+
+function logRejected(results: PromiseSettledResult<unknown>[], operation: string): void {
+  for (const result of results) {
+    if (result.status === 'rejected') {
+      console.error(`[calendar-event-service] Failed to ${operation} calendar event:`, result.reason);
+    }
   }
 }
