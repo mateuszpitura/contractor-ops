@@ -138,29 +138,29 @@
       "earlier": "سابقًا",
       "systemActor": "النظام",
       "actions": {
-        "CREATE": "تم الإنشاء",
-        "UPDATE": "تم التحديث",
-        "DELETE": "تم الحذف",
-        "APPROVE": "تمت الموافقة",
-        "REJECT": "مرفوض",
-        "UPLOAD": "تم الرفع",
-        "DOWNLOAD": "تم التحميل",
-        "SUBMIT": "تم الإرسال",
-        "ASSIGN": "تم التعيين",
-        "COMPLETE": "مكتمل",
-        "EXPORT": "تم التصدير",
-        "IMPORT": "تم الاستيراد",
-        "INVITE": "تمت الدعوة",
-        "LOCK": "مقفل",
-        "CANCEL": "ملغى"
+        "create": "تم الإنشاء",
+        "update": "تم التحديث",
+        "delete": "تم الحذف",
+        "approve": "تمت الموافقة",
+        "reject": "مرفوض",
+        "upload": "تم الرفع",
+        "download": "تم التحميل",
+        "submit": "تم الإرسال",
+        "assign": "تم التعيين",
+        "complete": "مكتمل",
+        "export": "تم التصدير",
+        "import": "تم الاستيراد",
+        "invite": "تمت الدعوة",
+        "lock": "مقفل",
+        "cancel": "ملغى"
       },
       "resources": {
-        "CONTRACTOR": "مقاول",
-        "CONTRACT": "عقد",
-        "INVOICE": "فاتورة",
+        "contractor": "مقاول",
+        "contract": "عقد",
+        "invoice": "فاتورة",
         "workflowTemplate": "قالب سير العمل",
         "workflowRun": "سير العمل",
-        "DOCUMENT": "مستند",
+        "document": "مستند",
         "paymentRun": "دفعة",
         "approvalFlow": "موافقة",
         "approvalStep": "خطوة الموافقة"
@@ -648,28 +648,28 @@
         "resource": "المورد"
       },
       "actions": {
-        "CREATE": "تم الإنشاء",
-        "UPDATE": "تم التحديث",
-        "DELETE": "تم الحذف",
-        "APPROVE": "تمت الموافقة",
-        "REJECT": "مرفوض",
-        "SUBMIT": "تم الإرسال",
-        "EXPORT": "تم التصدير",
-        "INVITE": "تمت الدعوة",
-        "DEACTIVATE": "Deactivated",
-        "LOGIN": "Logged in"
+        "create": "تم الإنشاء",
+        "update": "تم التحديث",
+        "delete": "تم الحذف",
+        "approve": "تمت الموافقة",
+        "reject": "مرفوض",
+        "submit": "تم الإرسال",
+        "export": "تم التصدير",
+        "invite": "تمت الدعوة",
+        "deactivate": "Deactivated",
+        "login": "Logged in"
       },
       "resources": {
-        "ORGANIZATION": "المؤسسة",
-        "CONTRACTOR": "مقاول",
-        "CONTRACT": "عقد",
-        "DOCUMENT": "مستند",
-        "INVOICE": "فاتورة",
+        "organization": "المؤسسة",
+        "contractor": "مقاول",
+        "contract": "عقد",
+        "document": "مستند",
+        "invoice": "فاتورة",
         "workflowRun": "سير العمل",
         "workflowTaskRun": "مهمة",
         "paymentRun": "دفعة",
-        "PROJECT": "المشروع",
-        "TEAM": "الفريق",
+        "project": "المشروع",
+        "team": "الفريق",
         "approvalFlow": "موافقة"
       },
       "pagination": {
@@ -728,9 +728,9 @@
         "country": "الدولة"
       },
       "status": {
-        "PENDING": "قيد الانتظار",
-        "APPROVED": "تمت الموافقة",
-        "REJECTED": "مرفوض"
+        "pending": "قيد الانتظار",
+        "approved": "تمت الموافقة",
+        "rejected": "مرفوض"
       },
       "table": {
         "field": "Field",
@@ -1003,17 +1003,17 @@
       "atRisk": "At Risk"
     },
     "lifecycle": {
-      "DRAFT": "مسودة",
-      "ONBOARDING": "الإعداد",
-      "ACTIVE": "نشط",
-      "OFFBOARDING": "إنهاء الخدمة",
-      "ENDED": "غير نشط"
+      "draft": "مسودة",
+      "onboarding": "الإعداد",
+      "active": "نشط",
+      "offboarding": "إنهاء الخدمة",
+      "ended": "غير نشط"
     },
     "type": {
       "soleTrader": "Sole proprietorship (JDG)",
-      "COMPANY": "شركة",
+      "company": "شركة",
       "individualFreelancer": "مستقل",
-      "OTHER": "أخرى"
+      "other": "أخرى"
     },
     "bulkActions": {
       "selected": "{count} selected",
@@ -1062,10 +1062,10 @@
     },
     "pageDescription": "إدارة your contractor network and compliance",
     "billingModel": {
-      "FIXED": "ثابت",
-      "HOURLY": "بالساعة",
-      "PROJECT": "Project-based",
-      "MILESTONE": "مرحلة"
+      "fixed": "ثابت",
+      "hourly": "بالساعة",
+      "project": "Project-based",
+      "milestone": "مرحلة"
     },
     "v2": {
       "stats": {
@@ -1171,11 +1171,11 @@
       "uploadCompliance": "رفع مستند الامتثال",
       "noRequirements": "No compliance requirements configured for this contractor type.",
       "status": {
-        "SATISFIED": "تم الرفع",
-        "MISSING": "مفقود",
-        "EXPIRED": "منتهي",
-        "PENDING": "قيد الانتظار",
-        "WAIVED": "تم التنازل"
+        "satisfied": "تم الرفع",
+        "missing": "مفقود",
+        "expired": "منتهي",
+        "pending": "قيد الانتظار",
+        "waived": "تم التنازل"
       },
       "expires": "Expires",
       "expiringSoon": "ينتهي قريبًا",
@@ -1196,11 +1196,11 @@
       "lifecycleStage": "Status: {stage}"
     },
     "lifecycle": {
-      "DRAFT": "مسودة",
-      "ONBOARDING": "الإعداد",
-      "ACTIVE": "نشط",
-      "OFFBOARDING": "إنهاء الخدمة",
-      "ENDED": "Ended",
+      "draft": "مسودة",
+      "onboarding": "الإعداد",
+      "active": "نشط",
+      "offboarding": "إنهاء الخدمة",
+      "ended": "Ended",
       "transitioned": "Status changed to {stage}",
       "archived": "Contractor archived"
     },
@@ -1245,9 +1245,9 @@
       "type": "Contractor type",
       "typeOptions": {
         "soleTrader": "Sole proprietorship (JDG)",
-        "COMPANY": "Company (sp. z o.o. / S.A.)",
+        "company": "Company (sp. z o.o. / S.A.)",
         "individualFreelancer": "مستقل",
-        "OTHER": "أخرى"
+        "other": "أخرى"
       },
       "email": "Contact email",
       "vatId": "VAT-EU",
@@ -1267,10 +1267,10 @@
       "costCenter": "Cost center"
     },
     "billingModelOptions": {
-      "FIXED": "ثابت",
-      "HOURLY": "بالساعة",
-      "PROJECT": "المشروع",
-      "MILESTONE": "مرحلة"
+      "fixed": "ثابت",
+      "hourly": "بالساعة",
+      "project": "المشروع",
+      "milestone": "مرحلة"
     },
     "success": "Contractor added",
     "error": "فشل add contractor. حاول مجددًا."
@@ -1336,28 +1336,28 @@
     "type": {
       "b2bMasterService": "اتفاقية خدمات B2B",
       "statementOfWork": "بيان العمل",
-      "NDA": "اتفاقية عدم الإفصاح",
+      "nda": "اتفاقية عدم الإفصاح",
       "ipAssignment": "تنازل عن الملكية الفكرية",
-      "DPA": "اتفاقية معالجة البيانات",
-      "OTHER": "أخرى"
+      "dpa": "اتفاقية معالجة البيانات",
+      "other": "أخرى"
     },
     "status": {
-      "DRAFT": "مسودة",
+      "draft": "مسودة",
       "pendingSignature": "بانتظار التوقيع",
-      "ACTIVE": "نشط",
-      "EXPIRING": "ينتهي قريبًا",
-      "EXPIRED": "منتهي",
-      "TERMINATED": "منهي",
-      "SUPERSEDED": "مستبدل",
-      "ARCHIVED": "مؤرشف"
+      "active": "نشط",
+      "expiring": "ينتهي قريبًا",
+      "expired": "منتهي",
+      "terminated": "منهي",
+      "superseded": "مستبدل",
+      "archived": "مؤرشف"
     },
     "billingModel": {
       "monthlyRetainer": "أجر شهري ثابت",
-      "HOURLY": "بالساعة",
-      "DAILY": "يومي",
-      "MILESTONE": "مرحلة",
+      "hourly": "بالساعة",
+      "daily": "يومي",
+      "milestone": "مرحلة",
       "deliverableBased": "حسب المخرجات",
-      "MIXED": "مختلط"
+      "mixed": "مختلط"
     },
     "rateType": {
       "monthlyFixed": "ثابت شهري",
@@ -1367,16 +1367,16 @@
       "perDeliverable": "لكل مخرج"
     },
     "invoiceCycle": {
-      "WEEKLY": "أسبوعي",
-      "BIWEEKLY": "كل أسبوعين",
-      "MONTHLY": "شهري",
+      "weekly": "أسبوعي",
+      "biweekly": "كل أسبوعين",
+      "monthly": "شهري",
       "onDeliverable": "عند التسليم",
       "adHoc": "حسب الحاجة"
     },
     "risk": {
-      "LOW": "منخفض",
-      "MEDIUM": "متوسط",
-      "HIGH": "مرتفع"
+      "low": "منخفض",
+      "medium": "متوسط",
+      "high": "مرتفع"
     },
     "wizard": {
       "title": "عقد جديد",
@@ -1446,18 +1446,18 @@
       "typeOptions": {
         "b2bMasterService": "اتفاقية خدمات B2B",
         "statementOfWork": "بيان العمل",
-        "NDA": "اتفاقية عدم الإفصاح",
+        "nda": "اتفاقية عدم الإفصاح",
         "ipAssignment": "تنازل عن الملكية الفكرية",
-        "DPA": "اتفاقية معالجة البيانات",
-        "OTHER": "أخرى"
+        "dpa": "اتفاقية معالجة البيانات",
+        "other": "أخرى"
       },
       "billingModelOptions": {
         "monthlyRetainer": "أجر شهري ثابت",
-        "HOURLY": "بالساعة",
-        "DAILY": "يومي",
-        "MILESTONE": "مرحلة",
+        "hourly": "بالساعة",
+        "daily": "يومي",
+        "milestone": "مرحلة",
         "deliverableBased": "حسب المخرجات",
-        "MIXED": "مختلط"
+        "mixed": "مختلط"
       },
       "rateTypeOptions": {
         "monthlyFixed": "ثابت شهري",
@@ -1467,9 +1467,9 @@
         "perDeliverable": "لكل مخرج"
       },
       "invoiceCycleOptions": {
-        "WEEKLY": "أسبوعي",
-        "BIWEEKLY": "كل أسبوعين",
-        "MONTHLY": "شهري",
+        "weekly": "أسبوعي",
+        "biweekly": "كل أسبوعين",
+        "monthly": "شهري",
         "onDeliverable": "عند التسليم",
         "adHoc": "حسب الحاجة"
       },
@@ -1776,22 +1776,22 @@
     "runStatus": {
       "notStarted": "Not started",
       "inProgress": "In progress",
-      "COMPLETED": "مكتمل",
-      "CANCELLED": "ملغى",
-      "BLOCKED": "Blocked",
-      "OVERDUE": "متأخر"
+      "completed": "مكتمل",
+      "cancelled": "ملغى",
+      "blocked": "Blocked",
+      "overdue": "متأخر"
     },
     "templateType": {
-      "ONBOARDING": "الإعداد",
-      "OFFBOARDING": "إنهاء الخدمة",
+      "onboarding": "الإعداد",
+      "offboarding": "إنهاء الخدمة",
       "documentCollection": "Document collection",
       "complianceReview": "Compliance review",
-      "CUSTOM": "مخصص"
+      "custom": "مخصص"
     },
     "templateStatus": {
-      "DRAFT": "مسودة",
-      "ACTIVE": "نشط",
-      "ARCHIVED": "مؤرشف"
+      "draft": "مسودة",
+      "active": "نشط",
+      "archived": "مؤرشف"
     },
     "empty": {
       "heading": "No active workflows",
@@ -1901,7 +1901,6 @@
     "untitledTask": "Untitled task",
     "taskTitle": "Task title",
     "taskTitlePlaceholder": "مثال: Collect NDA",
-    "taskType": "Task type",
     "taskDescription": "Description (optional)",
     "assignedTo": "Assigned to",
     "roleField": "الدور",
@@ -1927,18 +1926,6 @@
     "removeCondition": "إزالة",
     "conditionFieldPlaceholder": "اختر field...",
     "conditionValuePlaceholder": "Enter value...",
-    "conditionField_contractor_type": "Contractor type",
-    "conditionField_contractor_status": "Contractor status",
-    "conditionField_contractor_billingModel": "Billing model",
-    "conditionField_contractor_team": "الفريق",
-    "conditionField_contractor_complianceRiskLevel": "مخاطر الامتثال",
-    "conditionField_contract_type": "Contract type",
-    "conditionField_contract_status": "Contract status",
-    "conditionField_contract_currency": "العملة",
-    "operatorEquals": "equals",
-    "operator_notEquals": "does not equal",
-    "operatorContains": "contains",
-    "operator_startsWith": "starts with",
     "toastTemplateSaved": "تم حفظ Template",
     "toastTemplateActivated": "Template activated",
     "toastTemplateArchived": "Template archived",
@@ -2026,6 +2013,39 @@
       "contractorOwner": "Contractor owner",
       "contractOwner": "Contract owner",
       "projectManager": "Project manager"
+    },
+    "taskTypeLabel": "Task type",
+    "taskType": {
+      "documentCollection": "Document collection",
+      "approval": "موافقة",
+      "accessGrant": "Access grant",
+      "accessRevoke": "Access revoke",
+      "financeSetup": "Finance setup",
+      "equipment": "المعدات",
+      "knowledgeTransfer": "Knowledge transfer",
+      "meeting": "Meeting",
+      "manual": "Manual",
+      "notification": "Notification"
+    },
+    "operator": {
+      "notEquals": "does not equal",
+      "startsWith": "starts with",
+      "equals": "equals",
+      "contains": "contains"
+    },
+    "conditionField": {
+      "contractor": {
+        "type": "Contractor type",
+        "status": "Contractor status",
+        "billingModel": "Billing model",
+        "team": "الفريق",
+        "complianceRiskLevel": "مخاطر الامتثال"
+      },
+      "contract": {
+        "type": "Contract type",
+        "status": "Contract status",
+        "currency": "العملة"
+      }
     }
   },
   "Invoices": {
@@ -2049,15 +2069,15 @@
       "source": "Source"
     },
     "status": {
-      "RECEIVED": "مستلمة",
+      "received": "مستلمة",
       "underReview": "Under review",
       "approvalPending": "Pending approval",
-      "APPROVED": "تمت الموافقة",
-      "REJECTED": "مرفوض",
+      "approved": "تمت الموافقة",
+      "rejected": "مرفوض",
       "readyForPayment": "Ready for payment",
       "partiallyPaid": "Partially paid",
-      "PAID": "مدفوعة",
-      "VOID": "Void"
+      "paid": "مدفوعة",
+      "void": "Void"
     },
     "matchStatus": {
       "strongMatch": "Strong match",
@@ -3773,34 +3793,34 @@
       "deleteTitle": "حذف shipment",
       "deleteDescription": "This will permanently remove this shipment record. This action cannot be undone.",
       "status": {
-        "CREATED": "تم الإنشاء",
+        "created": "تم الإنشاء",
         "labelGenerated": "Label generated",
         "pickedUp": "Picked up",
         "inTransit": "In transit",
         "outForDelivery": "Out for delivery",
-        "DELIVERED": "Delivered",
-        "FAILED": "Failed",
-        "RETURNED": "Returned"
+        "delivered": "Delivered",
+        "failed": "Failed",
+        "returned": "Returned"
       }
     },
     "status": {
-      "AVAILABLE": "Available",
-      "ASSIGNED": "تم التعيين",
+      "available": "Available",
+      "assigned": "تم التعيين",
       "inTransit": "In transit",
-      "DELIVERED": "Delivered",
+      "delivered": "Delivered",
       "returnRequested": "Return requested",
       "returnInTransit": "Return in transit",
-      "RETURNED": "Returned",
-      "RETIRED": "Retired"
+      "returned": "Returned",
+      "retired": "Retired"
     },
     "type": {
-      "LAPTOP": "Laptop",
-      "MONITOR": "Monitor",
-      "PHONE": "الهاتف",
-      "HEADSET": "Headset",
-      "KEYBOARD": "Keyboard",
-      "MOUSE": "Mouse",
-      "OTHER": "أخرى"
+      "laptop": "Laptop",
+      "monitor": "Monitor",
+      "phone": "الهاتف",
+      "headset": "Headset",
+      "keyboard": "Keyboard",
+      "mouse": "Mouse",
+      "other": "أخرى"
     },
     "toast": {
       "created": "Equipment added",
@@ -4632,6 +4652,37 @@
       "privacy": "الخصوصية",
       "terms": "الشروط",
       "copyright": "© 2026 Contractor Ops"
+    }
+  },
+  "contractor": {
+    "vatValidation": {
+      "valid": "صالح",
+      "invalid": "غير صالح",
+      "stale": "قديم",
+      "unavailable": "غير متوفر",
+      "notValidated": "لم يتم التحقق",
+      "revalidateButton": "إعادة التحقق من ضريبة القيمة المضافة",
+      "tooltipStale": "آخر تحقق منذ {relativeTime}؛ التحقق المباشر غير متاح",
+      "tooltipUnavailable": "التحقق المباشر من ضريبة القيمة المضافة غير متاح حالياً"
+    }
+  },
+  "organization": {
+    "kleinunternehmer": {
+      "toggleLabel": "Kleinunternehmerregelung (§ 19 UStG)",
+      "description": "عند التفعيل، تُصدر جميع بنود الفواتير بنسبة 0٪ ضريبة قيمة مضافة مع إشعار § 19 UStG في التذييل. لا ينطبق إلا على المنشآت الألمانية الصغيرة تحت حد § 19.",
+      "confirmEnableTitle": "تفعيل Kleinunternehmerregelung؟",
+      "confirmDisableTitle": "إلغاء تفعيل Kleinunternehmerregelung؟",
+      "confirmEnableBody": "سيتم إصدار جميع البنود الجديدة بنسبة 0٪ ضريبة مع إشعار § 19 UStG. يرجى التأكيد للمتابعة.",
+      "confirmDisableBody": "ستعود الفواتير المستقبلية إلى المعالجة القياسية لضريبة القيمة المضافة الألمانية (19٪ / 7٪ / RC). لا تتأثر الفواتير الحالية."
+    }
+  },
+  "invoice": {
+    "reverseCharge": {
+      "autoDetectedChip": "RC تم اكتشافه تلقائياً",
+      "toggleOffPromptTitle": "تجاوز الرسوم العكسية المكتشفة تلقائياً؟",
+      "reasonLabel": "السبب",
+      "reasonPlaceholder": "مثال: يفضل العميل المعدل القياسي وفق البند 4.2 من العقد",
+      "reasonRequiredError": "يرجى تقديم سبب تجاري (5 أحرف على الأقل)"
     }
   }
 }

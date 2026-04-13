@@ -138,29 +138,29 @@
       "earlier": "Wcześniej",
       "systemActor": "System",
       "actions": {
-        "CREATE": "Utworzono",
-        "UPDATE": "Zaktualizowano",
-        "DELETE": "Usunięto",
-        "APPROVE": "Zatwierdzono",
-        "REJECT": "Odrzucono",
-        "UPLOAD": "Przesłano",
-        "DOWNLOAD": "Pobrano",
-        "SUBMIT": "Wysłano",
-        "ASSIGN": "Przypisano",
-        "COMPLETE": "Ukończono",
-        "EXPORT": "Wyeksportowano",
-        "IMPORT": "Zaimportowano",
-        "INVITE": "Zaproszono",
-        "LOCK": "Zablokowano",
-        "CANCEL": "Anulowano"
+        "create": "Utworzono",
+        "update": "Zaktualizowano",
+        "delete": "Usunięto",
+        "approve": "Zatwierdzono",
+        "reject": "Odrzucono",
+        "upload": "Przesłano",
+        "download": "Pobrano",
+        "submit": "Wysłano",
+        "assign": "Przypisano",
+        "complete": "Ukończono",
+        "export": "Wyeksportowano",
+        "import": "Zaimportowano",
+        "invite": "Zaproszono",
+        "lock": "Zablokowano",
+        "cancel": "Anulowano"
       },
       "resources": {
-        "CONTRACTOR": "Kontrahent",
-        "CONTRACT": "Umowa",
-        "INVOICE": "Faktura",
+        "contractor": "Kontrahent",
+        "contract": "Umowa",
+        "invoice": "Faktura",
         "workflowTemplate": "Szablon workflow",
         "workflowRun": "Workflow",
-        "DOCUMENT": "Dokument",
+        "document": "Dokument",
         "paymentRun": "Płatność",
         "approvalFlow": "Akceptacja",
         "approvalStep": "Krok akceptacji"
@@ -648,28 +648,28 @@
         "resource": "Zasób"
       },
       "actions": {
-        "CREATE": "Utworzono",
-        "UPDATE": "Zaktualizowano",
-        "DELETE": "Usunięto",
-        "APPROVE": "Zatwierdzono",
-        "REJECT": "Odrzucono",
-        "SUBMIT": "Przesłano",
-        "EXPORT": "Wyeksportowano",
-        "INVITE": "Zaproszono",
-        "DEACTIVATE": "Dezaktywowano",
-        "LOGIN": "Zalogowano"
+        "create": "Utworzono",
+        "update": "Zaktualizowano",
+        "delete": "Usunięto",
+        "approve": "Zatwierdzono",
+        "reject": "Odrzucono",
+        "submit": "Przesłano",
+        "export": "Wyeksportowano",
+        "invite": "Zaproszono",
+        "deactivate": "Dezaktywowano",
+        "login": "Zalogowano"
       },
       "resources": {
-        "ORGANIZATION": "Organizacja",
-        "CONTRACTOR": "Wykonawca",
-        "CONTRACT": "Umowa",
-        "DOCUMENT": "Dokument",
-        "INVOICE": "Faktura",
+        "organization": "Organizacja",
+        "contractor": "Wykonawca",
+        "contract": "Umowa",
+        "document": "Dokument",
+        "invoice": "Faktura",
         "workflowRun": "Workflow",
         "workflowTaskRun": "Zadanie",
         "paymentRun": "Płatność",
-        "PROJECT": "Projekt",
-        "TEAM": "Zespół",
+        "project": "Projekt",
+        "team": "Zespół",
         "approvalFlow": "Zatwierdzenie"
       },
       "pagination": {
@@ -728,9 +728,9 @@
         "country": "Kraj"
       },
       "status": {
-        "PENDING": "Oczekujący",
-        "APPROVED": "Zatwierdzony",
-        "REJECTED": "Odrzucony"
+        "pending": "Oczekujący",
+        "approved": "Zatwierdzony",
+        "rejected": "Odrzucony"
       },
       "table": {
         "field": "Pole",
@@ -1003,17 +1003,17 @@
       "atRisk": "At Risk"
     },
     "lifecycle": {
-      "DRAFT": "Szkic",
-      "ONBOARDING": "Onboarding",
-      "ACTIVE": "Aktywny",
-      "OFFBOARDING": "Offboarding",
-      "ENDED": "Nieaktywny"
+      "draft": "Szkic",
+      "onboarding": "Onboarding",
+      "active": "Aktywny",
+      "offboarding": "Offboarding",
+      "ended": "Nieaktywny"
     },
     "type": {
       "soleTrader": "Jednoosobowa działalność (JDG)",
-      "COMPANY": "Spółka",
+      "company": "Spółka",
       "individualFreelancer": "Freelancer",
-      "OTHER": "Inne"
+      "other": "Inne"
     },
     "bulkActions": {
       "selected": "{count} zaznaczonych",
@@ -1062,10 +1062,10 @@
     },
     "pageDescription": "Zarządzaj siecią wykonawców i zgodnością",
     "billingModel": {
-      "FIXED": "Stała stawka",
-      "HOURLY": "Godzinowy",
-      "PROJECT": "Projektowy",
-      "MILESTONE": "Kamienie milowe"
+      "fixed": "Stała stawka",
+      "hourly": "Godzinowy",
+      "project": "Projektowy",
+      "milestone": "Kamienie milowe"
     },
     "v2": {
       "stats": {
@@ -1171,11 +1171,11 @@
       "uploadCompliance": "Prześlij dokument zgodności",
       "noRequirements": "Brak wymagań zgodności skonfigurowanych dla tego typu kontrahenta.",
       "status": {
-        "SATISFIED": "Przesłano",
-        "MISSING": "Brak",
-        "EXPIRED": "Wygasło",
-        "PENDING": "Oczekujące",
-        "WAIVED": "Zwolnione"
+        "satisfied": "Przesłano",
+        "missing": "Brak",
+        "expired": "Wygasło",
+        "pending": "Oczekujące",
+        "waived": "Zwolnione"
       },
       "expires": "Wygasa",
       "expiringSoon": "Wkrótce wygasa",
@@ -1196,11 +1196,11 @@
       "lifecycleStage": "Status: {stage}"
     },
     "lifecycle": {
-      "DRAFT": "Wersja robocza",
-      "ONBOARDING": "Wdrażanie",
-      "ACTIVE": "Aktywny",
-      "OFFBOARDING": "Zakończenie współpracy",
-      "ENDED": "Zakończony",
+      "draft": "Wersja robocza",
+      "onboarding": "Wdrażanie",
+      "active": "Aktywny",
+      "offboarding": "Zakończenie współpracy",
+      "ended": "Zakończony",
       "transitioned": "Status zmieniony na {stage}",
       "archived": "Kontrahent zarchiwizowany"
     },
@@ -1245,9 +1245,9 @@
       "type": "Typ kontrahenta",
       "typeOptions": {
         "soleTrader": "Jednoosobowa działalność (JDG)",
-        "COMPANY": "Spółka (sp. z o.o. / S.A.)",
+        "company": "Spółka (sp. z o.o. / S.A.)",
         "individualFreelancer": "Freelancer",
-        "OTHER": "Inne"
+        "other": "Inne"
       },
       "email": "Email kontaktowy",
       "vatId": "VAT-EU",
@@ -1267,10 +1267,10 @@
       "costCenter": "Centrum kosztów"
     },
     "billingModelOptions": {
-      "FIXED": "Stała",
-      "HOURLY": "Godzinowa",
-      "PROJECT": "Projektowa",
-      "MILESTONE": "Kamieniowa"
+      "fixed": "Stała",
+      "hourly": "Godzinowa",
+      "project": "Projektowa",
+      "milestone": "Kamieniowa"
     },
     "success": "Kontrahent dodany",
     "error": "Nie udało się dodać kontrahenta. Spróbuj ponownie."
@@ -1336,28 +1336,28 @@
     "type": {
       "b2bMasterService": "Umowa B2B",
       "statementOfWork": "Zlecenie",
-      "NDA": "Umowa o poufności",
+      "nda": "Umowa o poufności",
       "ipAssignment": "Cesja IP",
-      "DPA": "Umowa powierzenia danych",
-      "OTHER": "Inna"
+      "dpa": "Umowa powierzenia danych",
+      "other": "Inna"
     },
     "status": {
-      "DRAFT": "Szkic",
+      "draft": "Szkic",
       "pendingSignature": "Oczekuje na podpis",
-      "ACTIVE": "Aktywna",
-      "EXPIRING": "Wygasająca",
-      "EXPIRED": "Wygasła",
-      "TERMINATED": "Rozwiązana",
-      "SUPERSEDED": "Zastapiona",
-      "ARCHIVED": "Zarchiwizowana"
+      "active": "Aktywna",
+      "expiring": "Wygasająca",
+      "expired": "Wygasła",
+      "terminated": "Rozwiązana",
+      "superseded": "Zastapiona",
+      "archived": "Zarchiwizowana"
     },
     "billingModel": {
       "monthlyRetainer": "Ryczałt miesięczny",
-      "HOURLY": "Godzinowa",
-      "DAILY": "Dzienna",
-      "MILESTONE": "Kamieniowa",
+      "hourly": "Godzinowa",
+      "daily": "Dzienna",
+      "milestone": "Kamieniowa",
       "deliverableBased": "Za dostarczenie",
-      "MIXED": "Mieszana"
+      "mixed": "Mieszana"
     },
     "rateType": {
       "monthlyFixed": "Stała miesięczna",
@@ -1367,16 +1367,16 @@
       "perDeliverable": "Za dostarczenie"
     },
     "invoiceCycle": {
-      "WEEKLY": "Tygodniowo",
-      "BIWEEKLY": "Co dwa tygodnie",
-      "MONTHLY": "Miesięczne",
+      "weekly": "Tygodniowo",
+      "biweekly": "Co dwa tygodnie",
+      "monthly": "Miesięczne",
       "onDeliverable": "Po dostarczeniu",
       "adHoc": "Ad hoc"
     },
     "risk": {
-      "LOW": "Niskie",
-      "MEDIUM": "Średnie",
-      "HIGH": "Wysokie"
+      "low": "Niskie",
+      "medium": "Średnie",
+      "high": "Wysokie"
     },
     "wizard": {
       "title": "Nowa umowa",
@@ -1446,18 +1446,18 @@
       "typeOptions": {
         "b2bMasterService": "Umowa B2B",
         "statementOfWork": "Zlecenie",
-        "NDA": "Umowa o poufności",
+        "nda": "Umowa o poufności",
         "ipAssignment": "Cesja IP",
-        "DPA": "Umowa powierzenia danych",
-        "OTHER": "Inna"
+        "dpa": "Umowa powierzenia danych",
+        "other": "Inna"
       },
       "billingModelOptions": {
         "monthlyRetainer": "Ryczałt miesięczny",
-        "HOURLY": "Godzinowa",
-        "DAILY": "Dzienna",
-        "MILESTONE": "Kamieniowa",
+        "hourly": "Godzinowa",
+        "daily": "Dzienna",
+        "milestone": "Kamieniowa",
         "deliverableBased": "Za dostarczenie",
-        "MIXED": "Mieszana"
+        "mixed": "Mieszana"
       },
       "rateTypeOptions": {
         "monthlyFixed": "Stała miesięczna",
@@ -1467,9 +1467,9 @@
         "perDeliverable": "Za dostarczenie"
       },
       "invoiceCycleOptions": {
-        "WEEKLY": "Tygodniowo",
-        "BIWEEKLY": "Co dwa tygodnie",
-        "MONTHLY": "Miesięczne",
+        "weekly": "Tygodniowo",
+        "biweekly": "Co dwa tygodnie",
+        "monthly": "Miesięczne",
         "onDeliverable": "Po dostarczeniu",
         "adHoc": "Ad hoc"
       },
@@ -1776,22 +1776,22 @@
     "runStatus": {
       "notStarted": "Nierozpoczęty",
       "inProgress": "W toku",
-      "COMPLETED": "Zakończony",
-      "CANCELLED": "Anulowany",
-      "BLOCKED": "Zablokowany",
-      "OVERDUE": "Przeterminowany"
+      "completed": "Zakończony",
+      "cancelled": "Anulowany",
+      "blocked": "Zablokowany",
+      "overdue": "Przeterminowany"
     },
     "templateType": {
-      "ONBOARDING": "Onboarding",
-      "OFFBOARDING": "Offboarding",
+      "onboarding": "Onboarding",
+      "offboarding": "Offboarding",
       "documentCollection": "Zbieranie dokumentów",
       "complianceReview": "Przegląd zgodności",
-      "CUSTOM": "Niestandardowy"
+      "custom": "Niestandardowy"
     },
     "templateStatus": {
-      "DRAFT": "Wersja robocza",
-      "ACTIVE": "Aktywny",
-      "ARCHIVED": "Zarchiwizowany"
+      "draft": "Wersja robocza",
+      "active": "Aktywny",
+      "archived": "Zarchiwizowany"
     },
     "empty": {
       "heading": "Brak aktywnych procesów",
@@ -1901,7 +1901,6 @@
     "untitledTask": "Zadanie bez tytułu",
     "taskTitle": "Tytuł zadania",
     "taskTitlePlaceholder": "np. Zbierz NDA",
-    "taskType": "Typ zadania",
     "taskDescription": "Opis (opcjonalnie)",
     "assignedTo": "Przypisany do",
     "roleField": "Rola",
@@ -1927,18 +1926,6 @@
     "removeCondition": "Usuń",
     "conditionFieldPlaceholder": "Wybierz pole...",
     "conditionValuePlaceholder": "Podaj wartość...",
-    "conditionField_contractor_type": "Typ kontrahenta",
-    "conditionField_contractor_status": "Status kontrahenta",
-    "conditionField_contractor_billingModel": "Model rozliczeń",
-    "conditionField_contractor_team": "Zespół",
-    "conditionField_contractor_complianceRiskLevel": "Ryzyko zgodności",
-    "conditionField_contract_type": "Typ umowy",
-    "conditionField_contract_status": "Status umowy",
-    "conditionField_contract_currency": "Waluta",
-    "operatorEquals": "równa się",
-    "operator_notEquals": "nie równa się",
-    "operatorContains": "zawiera",
-    "operator_startsWith": "zaczyna się od",
     "toastTemplateSaved": "Szablon zapisany",
     "toastTemplateActivated": "Szablon aktywowany",
     "toastTemplateArchived": "Szablon zarchiwizowany",
@@ -2026,6 +2013,39 @@
       "contractorOwner": "Opiekun kontrahenta",
       "contractOwner": "Opiekun umowy",
       "projectManager": "Kierownik projektu"
+    },
+    "taskTypeLabel": "Typ zadania",
+    "taskType": {
+      "documentCollection": "Zbieranie dokumentów",
+      "approval": "Zatwierdzenie",
+      "accessGrant": "Nadanie dostępu",
+      "accessRevoke": "Cofniecie dostępu",
+      "financeSetup": "Konfiguracja finansów",
+      "equipment": "Sprzet",
+      "knowledgeTransfer": "Transfer wiedzy",
+      "meeting": "Spotkanie",
+      "manual": "Ręczne",
+      "notification": "Powiadomienie"
+    },
+    "operator": {
+      "notEquals": "nie równa się",
+      "startsWith": "zaczyna się od",
+      "equals": "równa się",
+      "contains": "zawiera"
+    },
+    "conditionField": {
+      "contractor": {
+        "type": "Typ kontrahenta",
+        "status": "Status kontrahenta",
+        "billingModel": "Model rozliczeń",
+        "team": "Zespół",
+        "complianceRiskLevel": "Ryzyko zgodności"
+      },
+      "contract": {
+        "type": "Typ umowy",
+        "status": "Status umowy",
+        "currency": "Waluta"
+      }
     }
   },
   "Invoices": {
@@ -2049,15 +2069,15 @@
       "source": "Źródło"
     },
     "status": {
-      "RECEIVED": "Otrzymana",
+      "received": "Otrzymana",
       "underReview": "W przeglądzie",
       "approvalPending": "Oczekuje na akceptacje",
-      "APPROVED": "Zaakceptowana",
-      "REJECTED": "Odrzucona",
+      "approved": "Zaakceptowana",
+      "rejected": "Odrzucona",
       "readyForPayment": "Gotowa do zapłaty",
       "partiallyPaid": "Częściowo oplacona",
-      "PAID": "Oplacona",
-      "VOID": "Anulowana"
+      "paid": "Oplacona",
+      "void": "Anulowana"
     },
     "matchStatus": {
       "strongMatch": "Silne dopasowanie",
@@ -3773,34 +3793,34 @@
       "deleteTitle": "Usun przesylke",
       "deleteDescription": "Przesylka zostanie trwale usunieta. Tej operacji nie mozna cofnac.",
       "status": {
-        "CREATED": "Utworzona",
+        "created": "Utworzona",
         "labelGenerated": "Etykieta wygenerowana",
         "pickedUp": "Odebrana",
         "inTransit": "W transporcie",
         "outForDelivery": "W dostawie",
-        "DELIVERED": "Dostarczona",
-        "FAILED": "Nieudana",
-        "RETURNED": "Zwrocona"
+        "delivered": "Dostarczona",
+        "failed": "Nieudana",
+        "returned": "Zwrocona"
       }
     },
     "status": {
-      "AVAILABLE": "Dostepny",
-      "ASSIGNED": "Przypisany",
+      "available": "Dostepny",
+      "assigned": "Przypisany",
       "inTransit": "W transporcie",
-      "DELIVERED": "Dostarczony",
+      "delivered": "Dostarczony",
       "returnRequested": "Zwrot zgloszony",
       "returnInTransit": "Zwrot w transporcie",
-      "RETURNED": "Zwrocony",
-      "RETIRED": "Wycofany"
+      "returned": "Zwrocony",
+      "retired": "Wycofany"
     },
     "type": {
-      "LAPTOP": "Laptop",
-      "MONITOR": "Monitor",
-      "PHONE": "Telefon",
-      "HEADSET": "Sluchawki",
-      "KEYBOARD": "Klawiatura",
-      "MOUSE": "Myszka",
-      "OTHER": "Inny"
+      "laptop": "Laptop",
+      "monitor": "Monitor",
+      "phone": "Telefon",
+      "headset": "Sluchawki",
+      "keyboard": "Klawiatura",
+      "mouse": "Myszka",
+      "other": "Inny"
     },
     "toast": {
       "created": "Sprzet dodany",
@@ -4632,6 +4652,37 @@
       "privacy": "Prywatność",
       "terms": "Regulamin",
       "copyright": "© 2026 Contractor Ops"
+    }
+  },
+  "contractor": {
+    "vatValidation": {
+      "valid": "Prawidłowy",
+      "invalid": "Nieprawidłowy",
+      "stale": "Nieaktualny",
+      "unavailable": "Niedostępne",
+      "notValidated": "Niezweryfikowany",
+      "revalidateButton": "Zweryfikuj ponownie VAT",
+      "tooltipStale": "Ostatnia weryfikacja {relativeTime} temu; bieżąca weryfikacja niedostępna",
+      "tooltipUnavailable": "Bieżąca weryfikacja VAT jest chwilowo niedostępna"
+    }
+  },
+  "organization": {
+    "kleinunternehmer": {
+      "toggleLabel": "Kleinunternehmerregelung (§ 19 UStG)",
+      "description": "Po włączeniu wszystkie pozycje faktur są rozliczane ze stawką 0% VAT wraz z notą § 19 UStG w stopce. Dotyczy wyłącznie niemieckich małych przedsiębiorców poniżej progu § 19.",
+      "confirmEnableTitle": "Włączyć Kleinunternehmerregelung?",
+      "confirmDisableTitle": "Wyłączyć Kleinunternehmerregelung?",
+      "confirmEnableBody": "Wszystkie nowe pozycje faktur będą rozliczane ze stawką 0% VAT z notą § 19 UStG w stopce. Potwierdź, aby kontynuować.",
+      "confirmDisableBody": "Przyszłe faktury wrócą do standardowego niemieckiego VAT (19% / 7% / RC). Istniejące faktury pozostają bez zmian."
+    }
+  },
+  "invoice": {
+    "reverseCharge": {
+      "autoDetectedChip": "RC wykryte automatycznie",
+      "toggleOffPromptTitle": "Nadpisać automatycznie wykryte odwrotne obciążenie?",
+      "reasonLabel": "Uzasadnienie",
+      "reasonPlaceholder": "np. Klient preferuje stawkę standardową zgodnie z klauzulą 4.2 umowy",
+      "reasonRequiredError": "Proszę podać uzasadnienie biznesowe (minimum 5 znaków)"
     }
   }
 }

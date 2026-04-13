@@ -138,29 +138,29 @@
       "earlier": "Earlier",
       "systemActor": "System",
       "actions": {
-        "CREATE": "Created",
-        "UPDATE": "Updated",
-        "DELETE": "Deleted",
-        "APPROVE": "Approved",
-        "REJECT": "Rejected",
-        "UPLOAD": "Uploaded",
-        "DOWNLOAD": "Downloaded",
-        "SUBMIT": "Submitted",
-        "ASSIGN": "Assigned",
-        "COMPLETE": "Completed",
-        "EXPORT": "Exported",
-        "IMPORT": "Imported",
-        "INVITE": "Invited",
-        "LOCK": "Locked",
-        "CANCEL": "Cancelled"
+        "create": "Created",
+        "update": "Updated",
+        "delete": "Deleted",
+        "approve": "Approved",
+        "reject": "Rejected",
+        "upload": "Uploaded",
+        "download": "Downloaded",
+        "submit": "Submitted",
+        "assign": "Assigned",
+        "complete": "Completed",
+        "export": "Exported",
+        "import": "Imported",
+        "invite": "Invited",
+        "lock": "Locked",
+        "cancel": "Cancelled"
       },
       "resources": {
-        "CONTRACTOR": "Contractor",
-        "CONTRACT": "Contract",
-        "INVOICE": "Invoice",
+        "contractor": "Contractor",
+        "contract": "Contract",
+        "invoice": "Invoice",
         "workflowTemplate": "Workflow Template",
         "workflowRun": "Workflow",
-        "DOCUMENT": "Document",
+        "document": "Document",
         "paymentRun": "Payment",
         "approvalFlow": "Approval",
         "approvalStep": "Approval Step"
@@ -648,28 +648,28 @@
         "resource": "Resource"
       },
       "actions": {
-        "CREATE": "Created",
-        "UPDATE": "Updated",
-        "DELETE": "Deleted",
-        "APPROVE": "Approved",
-        "REJECT": "Rejected",
-        "SUBMIT": "Submitted",
-        "EXPORT": "Exported",
-        "INVITE": "Invited",
-        "DEACTIVATE": "Deactivated",
-        "LOGIN": "Logged in"
+        "create": "Created",
+        "update": "Updated",
+        "delete": "Deleted",
+        "approve": "Approved",
+        "reject": "Rejected",
+        "submit": "Submitted",
+        "export": "Exported",
+        "invite": "Invited",
+        "deactivate": "Deactivated",
+        "login": "Logged in"
       },
       "resources": {
-        "ORGANIZATION": "Organization",
-        "CONTRACTOR": "Contractor",
-        "CONTRACT": "Contract",
-        "DOCUMENT": "Document",
-        "INVOICE": "Invoice",
+        "organization": "Organization",
+        "contractor": "Contractor",
+        "contract": "Contract",
+        "document": "Document",
+        "invoice": "Invoice",
         "workflowRun": "Workflow",
         "workflowTaskRun": "Task",
         "paymentRun": "Payment",
-        "PROJECT": "Project",
-        "TEAM": "Team",
+        "project": "Project",
+        "team": "Team",
         "approvalFlow": "Approval"
       },
       "pagination": {
@@ -728,9 +728,9 @@
         "country": "Country"
       },
       "status": {
-        "PENDING": "Pending",
-        "APPROVED": "Approved",
-        "REJECTED": "Rejected"
+        "pending": "Pending",
+        "approved": "Approved",
+        "rejected": "Rejected"
       },
       "table": {
         "field": "Field",
@@ -1031,17 +1031,17 @@
       "paginationOf": "of"
     },
     "lifecycle": {
-      "DRAFT": "Draft",
-      "ONBOARDING": "Onboarding",
-      "ACTIVE": "Active",
-      "OFFBOARDING": "Offboarding",
-      "ENDED": "Inactive"
+      "draft": "Draft",
+      "onboarding": "Onboarding",
+      "active": "Active",
+      "offboarding": "Offboarding",
+      "ended": "Inactive"
     },
     "type": {
       "soleTrader": "Sole proprietorship (JDG)",
-      "COMPANY": "Company",
+      "company": "Company",
       "individualFreelancer": "Freelancer",
-      "OTHER": "Other"
+      "other": "Other"
     },
     "bulkActions": {
       "selected": "{count} selected",
@@ -1090,10 +1090,10 @@
     },
     "pageDescription": "Manage your contractor network and compliance",
     "billingModel": {
-      "FIXED": "Fixed",
-      "HOURLY": "Hourly",
-      "PROJECT": "Project-based",
-      "MILESTONE": "Milestone"
+      "fixed": "Fixed",
+      "hourly": "Hourly",
+      "project": "Project-based",
+      "milestone": "Milestone"
     }
   },
   "ContractorProfile": {
@@ -1171,11 +1171,11 @@
       "uploadCompliance": "Upload compliance document",
       "noRequirements": "No compliance requirements configured for this contractor type.",
       "status": {
-        "SATISFIED": "Uploaded",
-        "MISSING": "Missing",
-        "EXPIRED": "Expired",
-        "PENDING": "Pending",
-        "WAIVED": "Waived"
+        "satisfied": "Uploaded",
+        "missing": "Missing",
+        "expired": "Expired",
+        "pending": "Pending",
+        "waived": "Waived"
       },
       "expires": "Expires",
       "expiringSoon": "Expiring soon",
@@ -1196,11 +1196,11 @@
       "lifecycleStage": "Status: {stage}"
     },
     "lifecycle": {
-      "DRAFT": "Draft",
-      "ONBOARDING": "Onboarding",
-      "ACTIVE": "Active",
-      "OFFBOARDING": "Offboarding",
-      "ENDED": "Ended",
+      "draft": "Draft",
+      "onboarding": "Onboarding",
+      "active": "Active",
+      "offboarding": "Offboarding",
+      "ended": "Ended",
       "transitioned": "Status changed to {stage}",
       "archived": "Contractor archived"
     },
@@ -1245,9 +1245,9 @@
       "type": "Contractor type",
       "typeOptions": {
         "soleTrader": "Sole proprietorship (JDG)",
-        "COMPANY": "Company (sp. z o.o. / S.A.)",
+        "company": "Company (sp. z o.o. / S.A.)",
         "individualFreelancer": "Freelancer",
-        "OTHER": "Other"
+        "other": "Other"
       },
       "email": "Contact email",
       "vatId": "VAT-EU",
@@ -1267,10 +1267,10 @@
       "costCenter": "Cost center"
     },
     "billingModelOptions": {
-      "FIXED": "Fixed",
-      "HOURLY": "Hourly",
-      "PROJECT": "Project",
-      "MILESTONE": "Milestone"
+      "fixed": "Fixed",
+      "hourly": "Hourly",
+      "project": "Project",
+      "milestone": "Milestone"
     },
     "success": "Contractor added",
     "error": "Failed to add contractor. Try again."
@@ -1336,28 +1336,28 @@
     "type": {
       "b2bMasterService": "B2B Service Agreement",
       "statementOfWork": "Statement of Work",
-      "NDA": "Non-Disclosure Agreement",
+      "nda": "Non-Disclosure Agreement",
       "ipAssignment": "IP Assignment",
-      "DPA": "Data Processing Agreement",
-      "OTHER": "Other"
+      "dpa": "Data Processing Agreement",
+      "other": "Other"
     },
     "status": {
-      "DRAFT": "Draft",
+      "draft": "Draft",
       "pendingSignature": "Pending signature",
-      "ACTIVE": "Active",
-      "EXPIRING": "Expiring",
-      "EXPIRED": "Expired",
-      "TERMINATED": "Terminated",
-      "SUPERSEDED": "Superseded",
-      "ARCHIVED": "Archived"
+      "active": "Active",
+      "expiring": "Expiring",
+      "expired": "Expired",
+      "terminated": "Terminated",
+      "superseded": "Superseded",
+      "archived": "Archived"
     },
     "billingModel": {
       "monthlyRetainer": "Monthly retainer",
-      "HOURLY": "Hourly",
-      "DAILY": "Daily",
-      "MILESTONE": "Milestone",
+      "hourly": "Hourly",
+      "daily": "Daily",
+      "milestone": "Milestone",
       "deliverableBased": "Deliverable-based",
-      "MIXED": "Mixed"
+      "mixed": "Mixed"
     },
     "rateType": {
       "monthlyFixed": "Monthly fixed",
@@ -1367,16 +1367,16 @@
       "perDeliverable": "Per deliverable"
     },
     "invoiceCycle": {
-      "WEEKLY": "Weekly",
-      "BIWEEKLY": "Biweekly",
-      "MONTHLY": "Monthly",
+      "weekly": "Weekly",
+      "biweekly": "Biweekly",
+      "monthly": "Monthly",
       "onDeliverable": "On deliverable",
       "adHoc": "Ad hoc"
     },
     "risk": {
-      "LOW": "Low",
-      "MEDIUM": "Medium",
-      "HIGH": "High"
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High"
     },
     "wizard": {
       "title": "New contract",
@@ -1446,18 +1446,18 @@
       "typeOptions": {
         "b2bMasterService": "B2B Service Agreement",
         "statementOfWork": "Statement of Work",
-        "NDA": "Non-Disclosure Agreement",
+        "nda": "Non-Disclosure Agreement",
         "ipAssignment": "IP Assignment",
-        "DPA": "Data Processing Agreement",
-        "OTHER": "Other"
+        "dpa": "Data Processing Agreement",
+        "other": "Other"
       },
       "billingModelOptions": {
         "monthlyRetainer": "Monthly retainer",
-        "HOURLY": "Hourly",
-        "DAILY": "Daily",
-        "MILESTONE": "Milestone",
+        "hourly": "Hourly",
+        "daily": "Daily",
+        "milestone": "Milestone",
         "deliverableBased": "Deliverable-based",
-        "MIXED": "Mixed"
+        "mixed": "Mixed"
       },
       "rateTypeOptions": {
         "monthlyFixed": "Monthly fixed",
@@ -1467,9 +1467,9 @@
         "perDeliverable": "Per deliverable"
       },
       "invoiceCycleOptions": {
-        "WEEKLY": "Weekly",
-        "BIWEEKLY": "Biweekly",
-        "MONTHLY": "Monthly",
+        "weekly": "Weekly",
+        "biweekly": "Biweekly",
+        "monthly": "Monthly",
         "onDeliverable": "On deliverable",
         "adHoc": "Ad hoc"
       },
@@ -1776,22 +1776,22 @@
     "runStatus": {
       "notStarted": "Not started",
       "inProgress": "In progress",
-      "COMPLETED": "Completed",
-      "CANCELLED": "Cancelled",
-      "BLOCKED": "Blocked",
-      "OVERDUE": "Overdue"
+      "completed": "Completed",
+      "cancelled": "Cancelled",
+      "blocked": "Blocked",
+      "overdue": "Overdue"
     },
     "templateType": {
-      "ONBOARDING": "Onboarding",
-      "OFFBOARDING": "Offboarding",
+      "onboarding": "Onboarding",
+      "offboarding": "Offboarding",
       "documentCollection": "Document collection",
       "complianceReview": "Compliance review",
-      "CUSTOM": "Custom"
+      "custom": "Custom"
     },
     "templateStatus": {
-      "DRAFT": "Draft",
-      "ACTIVE": "Active",
-      "ARCHIVED": "Archived"
+      "draft": "Draft",
+      "active": "Active",
+      "archived": "Archived"
     },
     "empty": {
       "heading": "No active workflows",
@@ -1901,7 +1901,6 @@
     "untitledTask": "Untitled task",
     "taskTitle": "Task title",
     "taskTitlePlaceholder": "e.g. Collect NDA",
-    "taskType": "Task type",
     "taskDescription": "Description (optional)",
     "assignedTo": "Assigned to",
     "roleField": "Role",
@@ -1927,18 +1926,6 @@
     "removeCondition": "Remove",
     "conditionFieldPlaceholder": "Select field...",
     "conditionValuePlaceholder": "Enter value...",
-    "conditionField_contractor_type": "Contractor type",
-    "conditionField_contractor_status": "Contractor status",
-    "conditionField_contractor_billingModel": "Billing model",
-    "conditionField_contractor_team": "Team",
-    "conditionField_contractor_complianceRiskLevel": "Compliance risk",
-    "conditionField_contract_type": "Contract type",
-    "conditionField_contract_status": "Contract status",
-    "conditionField_contract_currency": "Currency",
-    "operatorEquals": "equals",
-    "operator_notEquals": "does not equal",
-    "operatorContains": "contains",
-    "operator_startsWith": "starts with",
     "toastTemplateSaved": "Template saved",
     "toastTemplateActivated": "Template activated",
     "toastTemplateArchived": "Template archived",
@@ -2026,6 +2013,39 @@
       "contractorOwner": "Contractor owner",
       "contractOwner": "Contract owner",
       "projectManager": "Project manager"
+    },
+    "taskTypeLabel": "Task type",
+    "taskType": {
+      "documentCollection": "Document collection",
+      "approval": "Approval",
+      "accessGrant": "Access grant",
+      "accessRevoke": "Access revoke",
+      "financeSetup": "Finance setup",
+      "equipment": "Equipment",
+      "knowledgeTransfer": "Knowledge transfer",
+      "meeting": "Meeting",
+      "manual": "Manual",
+      "notification": "Notification"
+    },
+    "operator": {
+      "notEquals": "does not equal",
+      "startsWith": "starts with",
+      "equals": "equals",
+      "contains": "contains"
+    },
+    "conditionField": {
+      "contractor": {
+        "type": "Contractor type",
+        "status": "Contractor status",
+        "billingModel": "Billing model",
+        "team": "Team",
+        "complianceRiskLevel": "Compliance risk"
+      },
+      "contract": {
+        "type": "Contract type",
+        "status": "Contract status",
+        "currency": "Currency"
+      }
     }
   },
   "Invoices": {
@@ -2049,15 +2069,15 @@
       "source": "Source"
     },
     "status": {
-      "RECEIVED": "Received",
+      "received": "Received",
       "underReview": "Under review",
       "approvalPending": "Pending approval",
-      "APPROVED": "Approved",
-      "REJECTED": "Rejected",
+      "approved": "Approved",
+      "rejected": "Rejected",
       "readyForPayment": "Ready for payment",
       "partiallyPaid": "Partially paid",
-      "PAID": "Paid",
-      "VOID": "Void"
+      "paid": "Paid",
+      "void": "Void"
     },
     "matchStatus": {
       "strongMatch": "Strong match",
@@ -3773,34 +3793,34 @@
       "deleteTitle": "Delete shipment",
       "deleteDescription": "This will permanently remove this shipment record. This action cannot be undone.",
       "status": {
-        "CREATED": "Created",
+        "created": "Created",
         "labelGenerated": "Label generated",
         "pickedUp": "Picked up",
         "inTransit": "In transit",
         "outForDelivery": "Out for delivery",
-        "DELIVERED": "Delivered",
-        "FAILED": "Failed",
-        "RETURNED": "Returned"
+        "delivered": "Delivered",
+        "failed": "Failed",
+        "returned": "Returned"
       }
     },
     "status": {
-      "AVAILABLE": "Available",
-      "ASSIGNED": "Assigned",
+      "available": "Available",
+      "assigned": "Assigned",
       "inTransit": "In transit",
-      "DELIVERED": "Delivered",
+      "delivered": "Delivered",
       "returnRequested": "Return requested",
       "returnInTransit": "Return in transit",
-      "RETURNED": "Returned",
-      "RETIRED": "Retired"
+      "returned": "Returned",
+      "retired": "Retired"
     },
     "type": {
-      "LAPTOP": "Laptop",
-      "MONITOR": "Monitor",
-      "PHONE": "Phone",
-      "HEADSET": "Headset",
-      "KEYBOARD": "Keyboard",
-      "MOUSE": "Mouse",
-      "OTHER": "Other"
+      "laptop": "Laptop",
+      "monitor": "Monitor",
+      "phone": "Phone",
+      "headset": "Headset",
+      "keyboard": "Keyboard",
+      "mouse": "Mouse",
+      "other": "Other"
     },
     "toast": {
       "created": "Equipment added",
@@ -4632,6 +4652,37 @@
       "privacy": "Privacy",
       "terms": "Terms",
       "copyright": "© 2026 Contractor Ops"
+    }
+  },
+  "contractor": {
+    "vatValidation": {
+      "valid": "Valid",
+      "invalid": "Invalid",
+      "stale": "Stale",
+      "unavailable": "Unavailable",
+      "notValidated": "Not validated",
+      "revalidateButton": "Revalidate VAT",
+      "tooltipStale": "Last validated {relativeTime} ago; live check unavailable",
+      "tooltipUnavailable": "Live VAT check is temporarily unavailable"
+    }
+  },
+  "organization": {
+    "kleinunternehmer": {
+      "toggleLabel": "Kleinunternehmerregelung (§ 19 UStG)",
+      "description": "When enabled, all invoice lines are billed at 0% VAT with the § 19 UStG footer notice. Only applicable for German small businesses below the § 19 threshold.",
+      "confirmEnableTitle": "Enable Kleinunternehmerregelung?",
+      "confirmDisableTitle": "Disable Kleinunternehmerregelung?",
+      "confirmEnableBody": "All new invoice lines will be billed at 0% VAT with the § 19 UStG footer notice. Confirm to continue.",
+      "confirmDisableBody": "Future invoices will resume standard German VAT handling (19% / 7% / RC). Existing invoices are unaffected."
+    }
+  },
+  "invoice": {
+    "reverseCharge": {
+      "autoDetectedChip": "RC auto-detected",
+      "toggleOffPromptTitle": "Override auto-detected reverse charge?",
+      "reasonLabel": "Reason",
+      "reasonPlaceholder": "e.g. Customer prefers standard rate per contract clause 4.2",
+      "reasonRequiredError": "Please provide a business reason (minimum 5 characters)"
     }
   }
 }

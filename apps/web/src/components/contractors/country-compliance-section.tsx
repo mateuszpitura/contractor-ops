@@ -122,6 +122,25 @@ export function CountryComplianceSection({ contractorId }: CountryComplianceSect
             onChange={(key, val) => setFormData(prev => ({ ...prev, [key]: val }))}
           />
         )}
+        {(countryCode === 'GB' || countryCode === 'DE') && (
+          <div
+            className="flex flex-wrap items-center gap-3 rounded-md border bg-muted/30 p-3"
+            data-testid="vat-validation-section">
+            <Label className="text-sm font-medium">VAT validation</Label>
+            <VatValidationStatusPill
+              status={
+                (contractorQuery.data?.latestVatValidationStatus ?? null) as
+                  | 'valid'
+                  | 'invalid'
+                  | 'stale'
+                  | 'unavailable'
+                  | null
+              }
+              validatedAt={contractorQuery.data?.latestVatValidatedAt ?? null}
+            />
+            <RevalidateVatButton contractorId={contractorId} />
+          </div>
+        )}
         {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
         <Button onClick={handleSave} disabled={updateMutation.isPending} className="mt-4">
           {updateMutation.isPending ? (

@@ -280,29 +280,29 @@
       "earlier": "Früher",
       "systemActor": "System",
       "actions": {
-        "CREATE": "Erstellt",
-        "UPDATE": "Aktualisiert",
-        "DELETE": "Gelöscht",
-        "APPROVE": "Genehmigt",
-        "REJECT": "Abgelehnt",
-        "UPLOAD": "Hochgeladen",
-        "DOWNLOAD": "Heruntergeladen",
-        "SUBMIT": "Eingereicht",
-        "ASSIGN": "Zugewiesen",
-        "COMPLETE": "Abgeschlossen",
-        "EXPORT": "Exportiert",
-        "IMPORT": "Importiert",
-        "INVITE": "Eingeladen",
-        "LOCK": "Gesperrt",
-        "CANCEL": "Storniert"
+        "create": "Erstellt",
+        "update": "Aktualisiert",
+        "delete": "Gelöscht",
+        "approve": "Genehmigt",
+        "reject": "Abgelehnt",
+        "upload": "Hochgeladen",
+        "download": "Heruntergeladen",
+        "submit": "Eingereicht",
+        "assign": "Zugewiesen",
+        "complete": "Abgeschlossen",
+        "export": "Exportiert",
+        "import": "Importiert",
+        "invite": "Eingeladen",
+        "lock": "Gesperrt",
+        "cancel": "Storniert"
       },
       "resources": {
-        "CONTRACTOR": "Auftragnehmer",
-        "CONTRACT": "Vertrag",
-        "INVOICE": "Rechnung",
+        "contractor": "Auftragnehmer",
+        "contract": "Vertrag",
+        "invoice": "Rechnung",
         "workflowTemplate": "Workflow Template",
         "workflowRun": "Workflow",
-        "DOCUMENT": "Dokument",
+        "document": "Dokument",
         "paymentRun": "Zahlung",
         "approvalFlow": "Freigabe",
         "approvalStep": "Approval Step"
@@ -790,28 +790,28 @@
         "resource": "Resource"
       },
       "actions": {
-        "CREATE": "Erstellt",
-        "UPDATE": "Aktualisiert",
-        "DELETE": "Gelöscht",
-        "APPROVE": "Genehmigt",
-        "REJECT": "Abgelehnt",
-        "SUBMIT": "Eingereicht",
-        "EXPORT": "Exportiert",
-        "INVITE": "Eingeladen",
-        "DEACTIVATE": "Deaktiviert",
-        "LOGIN": "Angemeldet"
+        "create": "Erstellt",
+        "update": "Aktualisiert",
+        "delete": "Gelöscht",
+        "approve": "Genehmigt",
+        "reject": "Abgelehnt",
+        "submit": "Eingereicht",
+        "export": "Exportiert",
+        "invite": "Eingeladen",
+        "deactivate": "Deaktiviert",
+        "login": "Angemeldet"
       },
       "resources": {
-        "ORGANIZATION": "Organization",
-        "CONTRACTOR": "Auftragnehmer",
-        "CONTRACT": "Vertrag",
-        "DOCUMENT": "Dokument",
-        "INVOICE": "Rechnung",
+        "organization": "Organization",
+        "contractor": "Auftragnehmer",
+        "contract": "Vertrag",
+        "document": "Dokument",
+        "invoice": "Rechnung",
         "workflowRun": "Workflow",
         "workflowTaskRun": "Aufgabe",
         "paymentRun": "Zahlung",
-        "PROJECT": "Projekt",
-        "TEAM": "Team",
+        "project": "Projekt",
+        "team": "Team",
         "approvalFlow": "Freigabe"
       },
       "pagination": {
@@ -870,9 +870,9 @@
         "country": "Land"
       },
       "status": {
-        "PENDING": "Ausstehend",
-        "APPROVED": "Genehmigt",
-        "REJECTED": "Abgelehnt"
+        "pending": "Ausstehend",
+        "approved": "Genehmigt",
+        "rejected": "Abgelehnt"
       },
       "table": {
         "field": "Field",
@@ -1173,17 +1173,17 @@
       "paginationOf": "von"
     },
     "lifecycle": {
-      "DRAFT": "Entwurf",
-      "ONBOARDING": "Onboarding",
-      "ACTIVE": "Aktiv",
-      "OFFBOARDING": "Offboarding",
-      "ENDED": "Inaktiv"
+      "draft": "Entwurf",
+      "onboarding": "Onboarding",
+      "active": "Aktiv",
+      "offboarding": "Offboarding",
+      "ended": "Inaktiv"
     },
     "type": {
       "soleTrader": "Sole proprietorship (JDG)",
-      "COMPANY": "Company",
+      "company": "Company",
       "individualFreelancer": "Freelancer",
-      "OTHER": "Other"
+      "other": "Other"
     },
     "bulkActions": {
       "selected": "{count} selected",
@@ -1232,10 +1232,10 @@
     },
     "pageDescription": "Manage your contractor network and compliance",
     "billingModel": {
-      "FIXED": "Fixed",
-      "HOURLY": "Hourly",
-      "PROJECT": "Project-based",
-      "MILESTONE": "Milestone"
+      "fixed": "Fixed",
+      "hourly": "Hourly",
+      "project": "Project-based",
+      "milestone": "Milestone"
     }
   },
   "ContractorProfile": {
@@ -1313,11 +1313,11 @@
       "uploadCompliance": "Konformitätsdokument hochladen",
       "noRequirements": "No compliance requirements configured for this contractor type.",
       "status": {
-        "SATISFIED": "Hochgeladen",
-        "MISSING": "Missing",
-        "EXPIRED": "Abgelaufen",
-        "PENDING": "Ausstehend",
-        "WAIVED": "Waived"
+        "satisfied": "Hochgeladen",
+        "missing": "Missing",
+        "expired": "Abgelaufen",
+        "pending": "Ausstehend",
+        "waived": "Waived"
       },
       "expires": "Expires",
       "expiringSoon": "Läuft bald ab",
@@ -1338,11 +1338,11 @@
       "lifecycleStage": "Status: {stage}"
     },
     "lifecycle": {
-      "DRAFT": "Entwurf",
-      "ONBOARDING": "Onboarding",
-      "ACTIVE": "Aktiv",
-      "OFFBOARDING": "Offboarding",
-      "ENDED": "Beendet",
+      "draft": "Entwurf",
+      "onboarding": "Onboarding",
+      "active": "Aktiv",
+      "offboarding": "Offboarding",
+      "ended": "Beendet",
       "transitioned": "Status changed to {stage}",
       "archived": "Contractor archived"
     },
@@ -1387,9 +1387,9 @@
       "type": "Contractor type",
       "typeOptions": {
         "soleTrader": "Sole proprietorship (JDG)",
-        "COMPANY": "Company (sp. z o.o. / S.A.)",
+        "company": "Company (sp. z o.o. / S.A.)",
         "individualFreelancer": "Freelancer",
-        "OTHER": "Other"
+        "other": "Other"
       },
       "email": "Contact email",
       "vatId": "VAT-EU",
@@ -1409,10 +1409,10 @@
       "costCenter": "Cost center"
     },
     "billingModelOptions": {
-      "FIXED": "Fixed",
-      "HOURLY": "Hourly",
-      "PROJECT": "Projekt",
-      "MILESTONE": "Milestone"
+      "fixed": "Fixed",
+      "hourly": "Hourly",
+      "project": "Projekt",
+      "milestone": "Milestone"
     },
     "success": "Contractor added",
     "error": "Aktion fehlgeschlagen: add contractor. Try again."
@@ -1478,28 +1478,28 @@
     "type": {
       "b2bMasterService": "B2B Service Agreement",
       "statementOfWork": "Statement of Work",
-      "NDA": "Non-Disclosure Agreement",
+      "nda": "Non-Disclosure Agreement",
       "ipAssignment": "IP Assignment",
-      "DPA": "Data Processing Agreement",
-      "OTHER": "Other"
+      "dpa": "Data Processing Agreement",
+      "other": "Other"
     },
     "status": {
-      "DRAFT": "Entwurf",
+      "draft": "Entwurf",
       "pendingSignature": "Pending signature",
-      "ACTIVE": "Aktiv",
-      "EXPIRING": "Läuft ab",
-      "EXPIRED": "Abgelaufen",
-      "TERMINATED": "Beendet",
-      "SUPERSEDED": "Ersetzt",
-      "ARCHIVED": "Archiviert"
+      "active": "Aktiv",
+      "expiring": "Läuft ab",
+      "expired": "Abgelaufen",
+      "terminated": "Beendet",
+      "superseded": "Ersetzt",
+      "archived": "Archiviert"
     },
     "billingModel": {
       "monthlyRetainer": "Monthly retainer",
-      "HOURLY": "Hourly",
-      "DAILY": "Daily",
-      "MILESTONE": "Milestone",
+      "hourly": "Hourly",
+      "daily": "Daily",
+      "milestone": "Milestone",
       "deliverableBased": "Deliverable-based",
-      "MIXED": "Mixed"
+      "mixed": "Mixed"
     },
     "rateType": {
       "monthlyFixed": "Monthly fixed",
@@ -1509,16 +1509,16 @@
       "perDeliverable": "Per deliverable"
     },
     "invoiceCycle": {
-      "WEEKLY": "Weekly",
-      "BIWEEKLY": "Biweekly",
-      "MONTHLY": "Monthly",
+      "weekly": "Weekly",
+      "biweekly": "Biweekly",
+      "monthly": "Monthly",
       "onDeliverable": "On deliverable",
       "adHoc": "Ad hoc"
     },
     "risk": {
-      "LOW": "Niedrig",
-      "MEDIUM": "Mittel",
-      "HIGH": "Hoch"
+      "low": "Niedrig",
+      "medium": "Mittel",
+      "high": "Hoch"
     },
     "wizard": {
       "title": "Neuer Vertrag",
@@ -1588,18 +1588,18 @@
       "typeOptions": {
         "b2bMasterService": "B2B Service Agreement",
         "statementOfWork": "Statement of Work",
-        "NDA": "Non-Disclosure Agreement",
+        "nda": "Non-Disclosure Agreement",
         "ipAssignment": "IP Assignment",
-        "DPA": "Data Processing Agreement",
-        "OTHER": "Other"
+        "dpa": "Data Processing Agreement",
+        "other": "Other"
       },
       "billingModelOptions": {
         "monthlyRetainer": "Monthly retainer",
-        "HOURLY": "Hourly",
-        "DAILY": "Daily",
-        "MILESTONE": "Milestone",
+        "hourly": "Hourly",
+        "daily": "Daily",
+        "milestone": "Milestone",
         "deliverableBased": "Deliverable-based",
-        "MIXED": "Mixed"
+        "mixed": "Mixed"
       },
       "rateTypeOptions": {
         "monthlyFixed": "Monthly fixed",
@@ -1609,9 +1609,9 @@
         "perDeliverable": "Per deliverable"
       },
       "invoiceCycleOptions": {
-        "WEEKLY": "Weekly",
-        "BIWEEKLY": "Biweekly",
-        "MONTHLY": "Monthly",
+        "weekly": "Weekly",
+        "biweekly": "Biweekly",
+        "monthly": "Monthly",
         "onDeliverable": "On deliverable",
         "adHoc": "Ad hoc"
       },
@@ -1918,22 +1918,22 @@
     "runStatus": {
       "notStarted": "Nicht begonnen",
       "inProgress": "In Bearbeitung",
-      "COMPLETED": "Abgeschlossen",
-      "CANCELLED": "Storniert",
-      "BLOCKED": "Blockiert",
-      "OVERDUE": "Überfällig"
+      "completed": "Abgeschlossen",
+      "cancelled": "Storniert",
+      "blocked": "Blockiert",
+      "overdue": "Überfällig"
     },
     "templateType": {
-      "ONBOARDING": "Onboarding",
-      "OFFBOARDING": "Offboarding",
+      "onboarding": "Onboarding",
+      "offboarding": "Offboarding",
       "documentCollection": "Document collection",
       "complianceReview": "Compliance review",
-      "CUSTOM": "Benutzerdefiniert"
+      "custom": "Benutzerdefiniert"
     },
     "templateStatus": {
-      "DRAFT": "Entwurf",
-      "ACTIVE": "Aktiv",
-      "ARCHIVED": "Archiviert"
+      "draft": "Entwurf",
+      "active": "Aktiv",
+      "archived": "Archiviert"
     },
     "empty": {
       "heading": "No active workflows",
@@ -2043,7 +2043,6 @@
     "untitledTask": "Untitled task",
     "taskTitle": "Task title",
     "taskTitlePlaceholder": "e.g. Collect NDA",
-    "taskType": "Task type",
     "taskDescription": "Description (optional)",
     "assignedTo": "Assigned to",
     "roleField": "Rolle",
@@ -2069,18 +2068,6 @@
     "removeCondition": "Entfernen",
     "conditionFieldPlaceholder": "Select field...",
     "conditionValuePlaceholder": "Enter value...",
-    "conditionField_contractor_type": "Contractor type",
-    "conditionField_contractor_status": "Contractor status",
-    "conditionField_contractor_billingModel": "Abrechnungsmodell",
-    "conditionField_contractor_team": "Team",
-    "conditionField_contractor_complianceRiskLevel": "Compliance risk",
-    "conditionField_contract_type": "Vertragstyp",
-    "conditionField_contract_status": "Contract status",
-    "conditionField_contract_currency": "Währung",
-    "operatorEquals": "equals",
-    "operator_notEquals": "does not equal",
-    "operatorContains": "contains",
-    "operator_startsWith": "starts with",
     "toastTemplateSaved": "Vorlage gespeichert",
     "toastTemplateActivated": "Vorlage aktiviert",
     "toastTemplateArchived": "Vorlage archiviert",
@@ -2168,6 +2155,39 @@
       "contractorOwner": "Contractor owner",
       "contractOwner": "Contract owner",
       "projectManager": "Project manager"
+    },
+    "taskTypeLabel": "Task type",
+    "taskType": {
+      "documentCollection": "Document collection",
+      "approval": "Freigabe",
+      "accessGrant": "Access grant",
+      "accessRevoke": "Access revoke",
+      "financeSetup": "Finance setup",
+      "equipment": "Ausstattung",
+      "knowledgeTransfer": "Knowledge transfer",
+      "meeting": "Meeting",
+      "manual": "Manual",
+      "notification": "Notification"
+    },
+    "operator": {
+      "notEquals": "does not equal",
+      "startsWith": "starts with",
+      "equals": "equals",
+      "contains": "contains"
+    },
+    "conditionField": {
+      "contractor": {
+        "type": "Contractor type",
+        "status": "Contractor status",
+        "billingModel": "Abrechnungsmodell",
+        "team": "Team",
+        "complianceRiskLevel": "Compliance risk"
+      },
+      "contract": {
+        "type": "Vertragstyp",
+        "status": "Contract status",
+        "currency": "Währung"
+      }
     }
   },
   "Invoices": {
@@ -2191,15 +2211,15 @@
       "source": "Source"
     },
     "status": {
-      "RECEIVED": "Received",
+      "received": "Received",
       "underReview": "Under review",
       "approvalPending": "Pending approval",
-      "APPROVED": "Genehmigt",
-      "REJECTED": "Abgelehnt",
+      "approved": "Genehmigt",
+      "rejected": "Abgelehnt",
       "readyForPayment": "Ready for payment",
       "partiallyPaid": "Partially paid",
-      "PAID": "Paid",
-      "VOID": "Void"
+      "paid": "Paid",
+      "void": "Void"
     },
     "matchStatus": {
       "strongMatch": "Strong match",
@@ -3915,34 +3935,34 @@
       "deleteTitle": "Delete shipment",
       "deleteDescription": "This will permanently remove this shipment record. This action cannot be undone.",
       "status": {
-        "CREATED": "Erstellt",
+        "created": "Erstellt",
         "labelGenerated": "Label generated",
         "pickedUp": "Picked up",
         "inTransit": "In transit",
         "outForDelivery": "Out for delivery",
-        "DELIVERED": "Delivered",
-        "FAILED": "Failed",
-        "RETURNED": "Returned"
+        "delivered": "Delivered",
+        "failed": "Failed",
+        "returned": "Returned"
       }
     },
     "status": {
-      "AVAILABLE": "Available",
-      "ASSIGNED": "Zugewiesen",
+      "available": "Available",
+      "assigned": "Zugewiesen",
       "inTransit": "In transit",
-      "DELIVERED": "Delivered",
+      "delivered": "Delivered",
       "returnRequested": "Return requested",
       "returnInTransit": "Return in transit",
-      "RETURNED": "Returned",
-      "RETIRED": "Retired"
+      "returned": "Returned",
+      "retired": "Retired"
     },
     "type": {
-      "LAPTOP": "Laptop",
-      "MONITOR": "Monitor",
-      "PHONE": "Telefon",
-      "HEADSET": "Headset",
-      "KEYBOARD": "Keyboard",
-      "MOUSE": "Mouse",
-      "OTHER": "Other"
+      "laptop": "Laptop",
+      "monitor": "Monitor",
+      "phone": "Telefon",
+      "headset": "Headset",
+      "keyboard": "Keyboard",
+      "mouse": "Mouse",
+      "other": "Other"
     },
     "toast": {
       "created": "Equipment added",
@@ -4774,6 +4794,37 @@
       "privacy": "Datenschutz",
       "terms": "Nutzungsbedingungen",
       "copyright": "© 2026 Contractor Ops"
+    }
+  },
+  "contractor": {
+    "vatValidation": {
+      "valid": "Gültig",
+      "invalid": "Ungültig",
+      "stale": "Veraltet",
+      "unavailable": "Nicht verfügbar",
+      "notValidated": "Nicht geprüft",
+      "revalidateButton": "USt-Nummer erneut prüfen",
+      "tooltipStale": "Zuletzt geprüft vor {relativeTime}; Live-Prüfung nicht verfügbar",
+      "tooltipUnavailable": "Live-USt-Prüfung vorübergehend nicht verfügbar"
+    }
+  },
+  "organization": {
+    "kleinunternehmer": {
+      "toggleLabel": "Kleinunternehmerregelung (§ 19 UStG)",
+      "description": "Wenn aktiviert, werden alle Rechnungspositionen mit 0 % USt ausgewiesen und der § 19 UStG Hinweis im Fuß ergänzt. Nur für deutsche Kleinunternehmer unter der § 19-Grenze.",
+      "confirmEnableTitle": "Kleinunternehmerregelung aktivieren?",
+      "confirmDisableTitle": "Kleinunternehmerregelung deaktivieren?",
+      "confirmEnableBody": "Alle neuen Rechnungspositionen werden mit 0 % USt und dem § 19 UStG Fußnotenhinweis ausgestellt. Bitte bestätigen Sie.",
+      "confirmDisableBody": "Künftige Rechnungen verwenden wieder die regulären deutschen USt-Sätze (19 % / 7 % / RC). Bestehende Rechnungen bleiben unverändert."
+    }
+  },
+  "invoice": {
+    "reverseCharge": {
+      "autoDetectedChip": "RC automatisch erkannt",
+      "toggleOffPromptTitle": "Automatische Reverse-Charge-Erkennung überschreiben?",
+      "reasonLabel": "Begründung",
+      "reasonPlaceholder": "z. B. Kunde bevorzugt Standardsatz laut Vertrag Ziff. 4.2",
+      "reasonRequiredError": "Bitte geben Sie eine betriebliche Begründung an (mindestens 5 Zeichen)"
     }
   }
 }
