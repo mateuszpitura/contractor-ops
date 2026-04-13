@@ -34,10 +34,42 @@ const EU_MEMBER_STATES = new Set([
 // GCC member states (for future GCC reverse charge rules)
 const GCC_MEMBER_STATES = new Set(['AE', 'SA', 'BH', 'KW', 'OM', 'QA']);
 
+// ---------------------------------------------------------------------------
+// Phase 57 · Plan 03 — §13b UStG domestic reverse-charge service types (D-12.3)
+//
+// Section 13b Abs. 2 UStG lists ~12 scenarios where VAT liability shifts from
+// seller to buyer for domestic DE transactions. For Phase 57 we lock the
+// 5 most commonly-invoiced by contractor-ops customers (software houses,
+// agencies, freelancers with building clients). Expansion is deferred; the
+// enum lives here (not in the DB) because it is legally specified, not
+// tenant-configurable. Extending requires Steuerberater sign-off on the
+// service description mapping.
+// ---------------------------------------------------------------------------
+
+export type DE13bServiceType =
+  | 'CONSTRUCTION' // § 13b Abs. 2 Nr. 4 UStG — Bauleistungen
+  | 'CLEANING_BUILDING' // § 13b Abs. 2 Nr. 8 UStG — Gebäudereinigung
+  | 'SCRAP_METALS' // § 13b Abs. 2 Nr. 7 UStG — Altmetalle (Anlage 3)
+  | 'GOLD' // § 13b Abs. 2 Nr. 9 UStG — Lieferungen von Gold
+  | 'MOBILE_PHONES'; // § 13b Abs. 2 Nr. 10 UStG — Mobilfunkgeräte
+
+export const DE_13B_SERVICE_TYPES: ReadonlySet<DE13bServiceType> =
+  new Set<DE13bServiceType>([
+    'CONSTRUCTION',
+    'CLEANING_BUILDING',
+    'SCRAP_METALS',
+    'GOLD',
+    'MOBILE_PHONES',
+  ]);
+
 export interface ReverseChargeResult {
   shouldApply: boolean;
   reason: string;
-  rule: 'eu_cross_border_b2b' | 'not_applicable';
+  rule:
+    | 'eu_cross_border_b2b'
+    | 'gb_eu_post_brexit_b2b' // D-12.1 — UK ↔ EU post-Brexit (symmetric)
+    | 'de_domestic_13b_ustg' // D-12.3 — DE domestic §13b UStG
+    | 'not_applicable';
 }
 
 /**
@@ -54,15 +86,12 @@ export function detectReverseCharge(params: {
   buyerCountry: string;
   buyerHasVatId: boolean;
   isB2B: boolean;
+  serviceType?: DE13bServiceType;
 }): ReverseChargeResult {
-  const { sellerCountry, buyerCountry, buyerHasVatId, isB2B } = params;
+  const { sellerCountry, buyerCountry, buyerHasVatId, isB2B, serviceType } = params;
 
-  // Rule 1: Same country - no reverse charge
-  if (sellerCountry === buyerCountry) {
-    return { shouldApply: false, reason: 'Domestic transaction', rule: 'not_applicable' };
-  }
-
-  // Rule 2: Not B2B - no reverse charge
+  // Rule 0: Not B2B — no reverse charge regardless of jurisdiction.
+  // Evaluated FIRST so the §13b + B2C edge-case short-circuits correctly.
   if (!isB2B) {
     return {
       shouldApply: false,
@@ -71,7 +100,48 @@ export function detectReverseCharge(params: {
     };
   }
 
-  // Rule 3: EU cross-border B2B with valid VAT ID
+  // Rule 1 (D-12.3): DE domestic §13b UStG — evaluated BEFORE the generic
+  // same-country short-circuit because §13b is precisely a domestic rule.
+  if (
+    sellerCountry === 'DE' &&
+    buyerCountry === 'DE' &&
+    serviceType &&
+    DE_13B_SERVICE_TYPES.has(serviceType)
+  ) {
+    return {
+      shouldApply: true,
+      reason: `§13b UStG domestic reverse charge: ${serviceType}`,
+      rule: 'de_domestic_13b_ustg',
+    };
+  }
+
+  // Rule 2: Same country (outside §13b) — no reverse charge.
+  if (sellerCountry === buyerCountry) {
+    return { shouldApply: false, reason: 'Domestic transaction', rule: 'not_applicable' };
+  }
+
+  // Rule 3 (D-12.1): Post-Brexit UK ↔ EU B2B (symmetric). Takes precedence
+  // over the generic EU-cross-border rule when GB is on either side of the
+  // transaction, so audit logs surface the correct legal basis.
+  const isUkEuDirection =
+    (sellerCountry === 'GB' && EU_MEMBER_STATES.has(buyerCountry)) ||
+    (EU_MEMBER_STATES.has(sellerCountry) && buyerCountry === 'GB');
+  if (isUkEuDirection && buyerHasVatId) {
+    return {
+      shouldApply: true,
+      reason: `UK↔EU post-Brexit B2B reverse charge: ${sellerCountry} -> ${buyerCountry}`,
+      rule: 'gb_eu_post_brexit_b2b',
+    };
+  }
+  if (isUkEuDirection && !buyerHasVatId) {
+    return {
+      shouldApply: false,
+      reason: 'UK↔EU B2B but buyer has no VAT ID - standard VAT applies',
+      rule: 'not_applicable',
+    };
+  }
+
+  // Rule 4 (D-12.2): EU cross-border B2B with valid buyer VAT ID.
   if (EU_MEMBER_STATES.has(sellerCountry) && EU_MEMBER_STATES.has(buyerCountry) && buyerHasVatId) {
     return {
       shouldApply: true,
@@ -80,7 +150,7 @@ export function detectReverseCharge(params: {
     };
   }
 
-  // Rule 4: EU cross-border but no buyer VAT ID
+  // Rule 5: EU cross-border but no buyer VAT ID → standard VAT applies.
   if (EU_MEMBER_STATES.has(sellerCountry) && EU_MEMBER_STATES.has(buyerCountry) && !buyerHasVatId) {
     return {
       shouldApply: false,
@@ -89,7 +159,7 @@ export function detectReverseCharge(params: {
     };
   }
 
-  // GCC: No standardized reverse charge between GCC states yet
+  // GCC: No standardized reverse charge between GCC states yet.
   if (GCC_MEMBER_STATES.has(sellerCountry) && GCC_MEMBER_STATES.has(buyerCountry)) {
     return {
       shouldApply: false,
@@ -98,7 +168,7 @@ export function detectReverseCharge(params: {
     };
   }
 
-  // Default: no reverse charge
+  // Default: no reverse charge.
   return {
     shouldApply: false,
     reason: 'No applicable reverse charge rule',
@@ -114,8 +184,13 @@ export async function applyReverseCharge(params: {
   organizationId: string;
   contractorId: string;
   reverseChargeOverride?: boolean | null;
+  /**
+   * Phase 57 · Plan 03 (D-12.3) — optional §13b UStG service classification.
+   * When set AND jurisdiction=DE→DE, triggers domestic reverse charge.
+   */
+  serviceType?: DE13bServiceType;
 }): Promise<{ isReverseCharge: boolean; reason: string }> {
-  const { organizationId, contractorId, reverseChargeOverride } = params;
+  const { organizationId, contractorId, reverseChargeOverride, serviceType } = params;
 
   // Manual override takes precedence
   if (reverseChargeOverride !== undefined && reverseChargeOverride !== null) {
@@ -148,6 +223,7 @@ export async function applyReverseCharge(params: {
     buyerCountry: org.countryCode,
     buyerHasVatId: !!contractor.vatId,
     isB2B: contractor.type === 'COMPANY' || contractor.type === 'SOLE_TRADER',
+    serviceType,
   });
 
   return { isReverseCharge: result.shouldApply, reason: result.reason };
