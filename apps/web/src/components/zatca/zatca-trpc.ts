@@ -86,5 +86,4 @@ interface ZatcaTrpcProxy {
   };
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const zatcaTrpc = (trpc as any).zatca as ZatcaTrpcProxy;
+export const zatcaTrpc = (trpc as unknown as Record<string, unknown>).zatca as ZatcaTrpcProxy;

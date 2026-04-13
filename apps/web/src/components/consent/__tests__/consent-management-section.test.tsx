@@ -5,7 +5,7 @@ import { ConsentManagementSection } from '../consent-management-section';
 // Mock data
 // ---------------------------------------------------------------------------
 
-let noticeData: any = {
+let noticeData: Record<string, unknown> = {
   jurisdiction: 'AE',
   legalReference: 'Federal Decree-Law No. 45/2021',
   controller: { name: 'Test Org', country: 'AE' },
@@ -14,7 +14,7 @@ let noticeData: any = {
 let noticeLoading = false;
 let consentLoading = false;
 
-let currentConsentData: any = {
+let currentConsentData: Record<string, unknown> = {
   CONTRACTOR_DATA_PROCESSING: { granted: true, version: 1, lastUpdated: '2026-04-11' },
   INVOICE_PAYMENT_PROCESSING: { granted: true, version: 1, lastUpdated: '2026-04-11' },
   COMMUNICATION_NOTIFICATIONS: { granted: true, version: 1, lastUpdated: '2026-04-11' },
@@ -38,7 +38,7 @@ let consentHistoryData: unknown[] = [
   },
 ];
 
-let crossBorderData: any = {
+let crossBorderData: Record<string, unknown> = {
   detected: true,
   orgRegion: 'GCC',
   hostingRegion: 'EU',
@@ -133,7 +133,19 @@ vi.mock('../privacy-notice-display', () => ({
 }));
 
 vi.mock('../consent-purpose-toggle', () => ({
-  ConsentPurposeToggle: ({ purpose, required, granted, onToggle, disabled }: { purpose: string; required: boolean; granted: boolean; onToggle: (v: boolean) => void; disabled: boolean }) => (
+  ConsentPurposeToggle: ({
+    purpose,
+    required,
+    granted,
+    onToggle,
+    disabled,
+  }: {
+    purpose: string;
+    required: boolean;
+    granted: boolean;
+    onToggle: (v: boolean) => void;
+    disabled: boolean;
+  }) => (
     <div data-testid={`toggle-${purpose}`}>
       <button
         type="button"
@@ -143,6 +155,7 @@ vi.mock('../consent-purpose-toggle', () => ({
         aria-label={`${purpose} consent toggle`}
         aria-disabled={disabled}
         disabled={disabled}
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onClick={() => onToggle(purpose, !granted)}>
         {purpose} {required ? '(required/locked)' : '(optional)'}
       </button>

@@ -18,6 +18,7 @@ vi.mock('../privacy-notice-acknowledgement', () => ({
         type="checkbox"
         aria-label="privacy-acknowledge"
         checked={checked}
+        // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
         onChange={e => onChange(e.target.checked)}
       />
       <a href={jurisdictionUrl} target="_blank" rel="noopener noreferrer">
@@ -31,7 +32,7 @@ vi.mock('../privacy-notice-acknowledgement', () => ({
 // Mocks
 // ---------------------------------------------------------------------------
 
-let noticeData: any = {
+let noticeData: Record<string, unknown> = {
   jurisdiction: 'AE',
   legalReference: 'Federal Decree-Law No. 45/2021',
   controller: { name: 'Test Org', country: 'AE' },
@@ -90,7 +91,17 @@ vi.mock('../privacy-notice-display', () => ({
 }));
 
 vi.mock('../consent-purpose-toggle', () => ({
-  ConsentPurposeToggle: ({ purpose, required, granted, onToggle }: { purpose: string; required: boolean; granted: boolean; onToggle: (v: boolean) => void }) => (
+  ConsentPurposeToggle: ({
+    purpose,
+    required,
+    granted,
+    onToggle,
+  }: {
+    purpose: string;
+    required: boolean;
+    granted: boolean;
+    onToggle: (v: boolean) => void;
+  }) => (
     <div data-testid={`toggle-${purpose}`}>
       <button
         type="button"
@@ -98,6 +109,7 @@ vi.mock('../consent-purpose-toggle', () => ({
         role="switch"
         aria-checked={granted}
         aria-label={`${purpose} consent toggle`}
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onClick={() => onToggle(purpose, !granted)}>
         {purpose} {required ? '(required)' : '(optional)'}
       </button>

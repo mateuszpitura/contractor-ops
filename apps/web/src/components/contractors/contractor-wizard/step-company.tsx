@@ -49,10 +49,9 @@ export function StepCompany({ form }: StepCompanyProps) {
 
     setIsGusLoading(true);
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const data = (await queryClient.fetchQuery(
         trpc.contractor.gusLookup.queryOptions({ nip: cleanNip }),
-      )) as Record<string, any>;
+      )) as Record<string, unknown>;
 
       if (data?.found) {
         // Map GUS response fields to form fields
@@ -99,6 +98,7 @@ export function StepCompany({ form }: StepCompanyProps) {
             variant="outline"
             size="sm"
             className="whitespace-nowrap"
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={handleGusLookup}
             disabled={isGusLoading}>
             {isGusLoading ? (
@@ -130,6 +130,7 @@ export function StepCompany({ form }: StepCompanyProps) {
         <Label className="text-[13px]">{t('type')}</Label>
         <RadioGroup
           value={watch('type') ?? ''}
+          // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
           onValueChange={value =>
             setValue('type', value as WizardFormValues['type'], {
               shouldDirty: true,

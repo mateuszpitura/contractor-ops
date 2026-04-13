@@ -26,6 +26,7 @@ import { tenantProcedure } from '../middleware/tenant.js';
 import { CacheKeys, invalidateByPrefix } from '../services/cache.js';
 import { handleEquipmentTaskStart } from '../services/equipment-workflow.js';
 import { dispatch } from '../services/notification-service.js';
+import type { DbClient } from '../services/types.js';
 import type { ConditionGroup } from './workflow-shared.js';
 import {
   addDays,
@@ -114,7 +115,7 @@ function buildIntegrationEligibility(
  * Fire-and-forget: syncs task status to external Jira and Linear integrations.
  */
 function syncTaskToExternalSystems(
-  db: Parameters<typeof workflowExecutionRouter>[0] extends never ? never : any,
+  db: DbClient,
   organizationId: string,
   task: { id: string; externalRefType: string | null; externalRefId: string | null },
   targetStatus: string,

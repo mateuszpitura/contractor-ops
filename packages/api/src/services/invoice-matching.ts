@@ -237,8 +237,7 @@ export async function runAutoMatch(
   // -------------------------------------------------------------------------
 
   if (invoice.duplicateCheckHash) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const duplicateWhere: Record<string, any> = {
+    const duplicateWhere: Record<string, unknown> = {
       duplicateCheckHash: invoice.duplicateCheckHash,
       organizationId,
     };

@@ -119,8 +119,7 @@ function DetailSkeleton() {
 // Invoice feature flag derivation (reduces cognitive complexity in render)
 // ---------------------------------------------------------------------------
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function deriveInvoiceFlags(invoice: Record<string, any>) {
+function deriveInvoiceFlags(invoice: Record<string, unknown>) {
   // Duplicate detection
   const flagsArray: string[] = Array.isArray(invoice.flagsJson) ? invoice.flagsJson : [];
   const hasDuplicateFlag = flagsArray.includes('DUPLICATE_SUSPECTED');
@@ -263,6 +262,7 @@ export default function InvoiceDetailPage() {
     return (
       <div className="flex min-h-[400px] flex-col items-center justify-center gap-3 text-center">
         <h2 className="text-lg font-medium">{t('detail.loadError')}</h2>
+        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
         <Button variant="outline" onClick={() => invoiceQuery.refetch()}>
           {t('detail.retry')}
         </Button>
@@ -329,6 +329,7 @@ export default function InvoiceDetailPage() {
             invoiceId={invoice.id}
             duplicateInvoiceId={duplicateInvoiceId}
             invoiceNumber={invoice.invoiceNumber}
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onDismiss={() => {
               queryClient.invalidateQueries({
                 queryKey: trpc.invoice.getById.queryKey({ id: invoice.id }),
@@ -378,6 +379,7 @@ export default function InvoiceDetailPage() {
         {/* Match card */}
         <MatchCard
           invoice={invoice}
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
           onMatchConfirmed={() => {
             queryClient.invalidateQueries({
               queryKey: trpc.invoice.getById.queryKey({ id: invoice.id }),
@@ -401,6 +403,7 @@ export default function InvoiceDetailPage() {
           <ReverseChargeBanner
             invoiceId={invoice.id}
             isReverseCharge={invoice.isReverseCharge}
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onToggle={() => {
               queryClient.invalidateQueries({
                 queryKey: trpc.invoice.getById.queryKey({ id: invoice.id }),
@@ -413,6 +416,7 @@ export default function InvoiceDetailPage() {
         {!!canSubmitForApproval && (
           <div className="flex justify-end">
             <Button
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => submitForApproval.mutate({ invoiceId: invoice.id })}
               disabled={submitForApproval.isPending}>
               {submitForApproval.isPending
@@ -431,6 +435,7 @@ export default function InvoiceDetailPage() {
         {/* Metadata form */}
         <InvoiceMetadataForm
           invoice={invoice}
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
           onSubmittedForMatching={() => {
             queryClient.invalidateQueries({
               queryKey: trpc.invoice.getById.queryKey({ id: invoice.id }),

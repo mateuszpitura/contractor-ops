@@ -6,6 +6,7 @@ import { router } from '../init.js';
 import { requirePermission } from '../middleware/rbac.js';
 import { sensitiveActionProcedure } from '../middleware/sensitive.js';
 import { tenantProcedure } from '../middleware/tenant.js';
+import type { DbClient } from '../services/types.js';
 
 // ---------------------------------------------------------------------------
 // Deactivation helpers
@@ -50,7 +51,7 @@ async function guardLastAdmin(
  * with the same role, or clears the assignment.
  */
 async function reassignPendingApprovalSteps(
-  db: any,
+  db: DbClient,
   organizationId: string,
   deactivatedUserId: string,
 ) {
@@ -91,7 +92,7 @@ async function reassignPendingApprovalSteps(
  * or clears ownership if no admin is available.
  */
 async function transferContractorOwnership(
-  db: any,
+  db: DbClient,
   organizationId: string,
   deactivatedUserId: string,
 ) {
