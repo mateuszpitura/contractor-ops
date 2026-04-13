@@ -77,6 +77,9 @@ model User {
 
   // API key relations
   apiKeys OrganizationApiKey[]
+
+  // Phase 59 — Classification documents (D-06)
+  generatedClassificationDocuments ClassificationDocument[]
 }
 
 model Session {

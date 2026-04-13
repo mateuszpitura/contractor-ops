@@ -28,10 +28,104 @@ model ClassificationAssessment {
   createdAt                DateTime                       @default(now())
   updatedAt                DateTime                       @updatedAt
 
-  organization         Organization         @relation(fields: [organizationId], references: [id])
-  contractorAssignment ContractorAssignment @relation(fields: [contractorAssignmentId], references: [id])
+  organization            Organization             @relation(fields: [organizationId], references: [id])
+  contractorAssignment    ContractorAssignment     @relation(fields: [contractorAssignmentId], references: [id])
+  classificationDocuments ClassificationDocument[]
 
   @@index([organizationId])
   @@index([organizationId, contractorAssignmentId, status], map: "CA_org_assign_status_idx")
   @@index([organizationId, contractorAssignmentId, completedAt(sort: Desc)], map: "CA_org_assign_completedAt_idx")
+}
+
+// ---------------------------------------------------------------------------
+// Phase 59 · CLASS-03 — persisted immutable classification documents (SDS, DRV bundle)
+// See .planning/phases/59-classification-documents-chain-tracking/59-CONTEXT.md D-06.
+// ---------------------------------------------------------------------------
+
+enum ClassificationDocumentKind {
+  SDS
+  DRV_DEFENSE_BUNDLE
+}
+
+model ClassificationDocument {
+  id                         String                     @id @default(cuid())
+  organizationId             String
+  classificationAssessmentId String
+  kind                       ClassificationDocumentKind
+  pdfKey                     String
+  sha256Hash                 String                     @db.Char(64)
+  byteSize                   Int
+  rendererVersion            String
+  ruleSetVersion             String
+  generatedAt                DateTime                   @default(now())
+  generatedByUserId          String
+  createdAt                  DateTime                   @default(now())
+  updatedAt                  DateTime                   @updatedAt
+
+  organization             Organization             @relation(fields: [organizationId], references: [id])
+  classificationAssessment ClassificationAssessment @relation(fields: [classificationAssessmentId], references: [id])
+  generatedBy              User                     @relation(fields: [generatedByUserId], references: [id])
+  // Append-only (D-06) — enforced by APPEND_ONLY_MODELS guard in packages/db/src/tenant.ts.
+
+  @@index([organizationId, classificationAssessmentId, kind])
+  @@index([organizationId, generatedAt(sort: Desc)])
+}
+
+// ---------------------------------------------------------------------------
+// Phase 59 · CLASS-04 — IR35 chain participants + per-link SDS delivery tracking
+// See .planning/phases/59-classification-documents-chain-tracking/59-CONTEXT.md D-10..D-13.
+// ---------------------------------------------------------------------------
+
+enum Ir35ChainRole {
+  CLIENT
+  AGENCY
+  PSC
+  WORKER
+}
+
+model Ir35ChainParticipant {
+  id                     String        @id @default(cuid())
+  organizationId         String
+  contractorAssignmentId String
+  role                   Ir35ChainRole
+  orderIndex             Int
+  displayName            String
+  contactEmail           String?
+  linkedOrganizationId   String?
+  linkedContractorId     String?
+  sdsDeliveredAt         DateTime?
+  sdsDeliveredNote       String?       @db.VarChar(500)
+  sdsAcknowledgedAt      DateTime?
+  sdsAcknowledgedNote    String?       @db.VarChar(500)
+  createdAt              DateTime      @default(now())
+  updatedAt              DateTime      @updatedAt
+
+  organization         Organization         @relation(fields: [organizationId], references: [id])
+  contractorAssignment ContractorAssignment @relation(fields: [contractorAssignmentId], references: [id])
+  linkedOrganization   Organization?        @relation("Ir35ChainParticipantLinkedOrg", fields: [linkedOrganizationId], references: [id])
+  linkedContractor     Contractor?          @relation(fields: [linkedContractorId], references: [id])
+
+  @@index([organizationId, contractorAssignmentId, orderIndex])
+  @@index([organizationId, linkedOrganizationId])
+}
+
+// ---------------------------------------------------------------------------
+// Phase 59 · CLASS-06 — DRV defense bundle: contractor's "other clients" attestation
+// See .planning/phases/59-classification-documents-chain-tracking/59-CONTEXT.md D-17.
+// ---------------------------------------------------------------------------
+
+model Ir35OtherClientAttestation {
+  id                     String    @id @default(cuid())
+  organizationId         String
+  contractorAssignmentId String    @unique
+  statementText          String    @db.VarChar(4000)
+  signedName             String
+  signedAt               DateTime?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  organization         Organization         @relation(fields: [organizationId], references: [id])
+  contractorAssignment ContractorAssignment @relation(fields: [contractorAssignmentId], references: [id])
+
+  @@index([organizationId, contractorAssignmentId])
 }

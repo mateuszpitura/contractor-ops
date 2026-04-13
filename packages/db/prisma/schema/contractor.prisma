@@ -48,23 +48,24 @@ model Contractor {
   primaryProject    Project?     @relation(fields: [primaryProjectId], references: [id])
   defaultCostCenter CostCenter?  @relation(fields: [defaultCostCenterId], references: [id])
 
-  contacts                ContractorContact[]
-  billingProfiles         ContractorBillingProfile[]
-  assignments             ContractorAssignment[]
-  contracts               Contract[]
-  complianceItems         ContractorComplianceItem[]
-  workflowRuns            WorkflowRun[]
-  invoices                Invoice[]
-  paymentRunItems         PaymentRunItem[]
-  tags                    ContractorTagLink[]
-  portalSessions          PortalSession[]
-  changeRequests          ContractorChangeRequest[]
-  notificationPreferences ContractorNotificationPreference[]
-  timesheets              Timesheet[]
-  timeEntries             TimeEntry[]
-  equipmentAssignments    EquipmentAssignment[]
-  returnRequests          ReturnRequest[]
-  taxIdValidations        TaxIdValidation[]
+  contacts                  ContractorContact[]
+  billingProfiles           ContractorBillingProfile[]
+  assignments               ContractorAssignment[]
+  contracts                 Contract[]
+  complianceItems           ContractorComplianceItem[]
+  workflowRuns              WorkflowRun[]
+  invoices                  Invoice[]
+  paymentRunItems           PaymentRunItem[]
+  tags                      ContractorTagLink[]
+  portalSessions            PortalSession[]
+  changeRequests            ContractorChangeRequest[]
+  notificationPreferences   ContractorNotificationPreference[]
+  timesheets                Timesheet[]
+  timeEntries               TimeEntry[]
+  equipmentAssignments      EquipmentAssignment[]
+  returnRequests            ReturnRequest[]
+  taxIdValidations          TaxIdValidation[]
+  ir35ChainParticipantLinks Ir35ChainParticipant[]
 
   // InPost preferred Paczkomat (D-03)
   preferredPaczkomatId      String?
@@ -155,7 +156,9 @@ model ContractorAssignment {
   project      Project?     @relation(fields: [projectId], references: [id])
   costCenter   CostCenter?  @relation(fields: [costCenterId], references: [id])
 
-  classificationAssessments ClassificationAssessment[]
+  classificationAssessments  ClassificationAssessment[]
+  ir35ChainParticipants      Ir35ChainParticipant[]
+  ir35OtherClientAttestation Ir35OtherClientAttestation?
 
   @@index([organizationId])
   @@index([organizationId, contractorId, status])
