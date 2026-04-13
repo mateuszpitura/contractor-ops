@@ -102,7 +102,7 @@ export function StepConfirm({
         <AlertCircle className="size-12 text-destructive" />
         <h3 className="mt-4 text-lg font-semibold">{t('confirm.errorTitle')}</h3>
         <p className="mt-2 text-sm text-muted-foreground">{t('confirm.errorDescription')}</p>
-        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
         <Button className="mt-6" onClick={handleImport} type="button">
           {t('confirm.tryAgain')}
         </Button>
@@ -138,7 +138,7 @@ export function StepConfirm({
         </div>
       </div>
 
-      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+      {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
       <Button className="mt-8" onClick={handleImport} type="button">
         {t('confirm.importButton', { count: totalToImport })}
       </Button>

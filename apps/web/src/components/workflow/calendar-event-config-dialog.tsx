@@ -122,7 +122,7 @@ export function CalendarEventConfigDialog({
           {/* Duration */}
           <div className="space-y-2">
             <Label htmlFor="calendar-event-duration">{t('durationLabel')}</Label>
-            // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
+            {/* biome-ignore lint/nursery/noJsxPropsBind: controlled component handler */}
             <Select value={duration} onValueChange={val => setDuration(val ?? '1h')}>
               <SelectTrigger id="calendar-event-duration">
                 <SelectValue />
@@ -153,11 +153,11 @@ export function CalendarEventConfigDialog({
         </div>
 
         <DialogFooter>
-          // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler
+          {/* biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler */}
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             {t('cancelButton')}
           </Button>
-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+          {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
           <Button onClick={handleSave}>{t('saveEventConfig')}</Button>
         </DialogFooter>
       </DialogContent>

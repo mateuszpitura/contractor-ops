@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Switch } from '@/components/ui/switch';
 import { trpc } from '@/trpc/init';
+import { enumKey } from '@/lib/enum-key';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -110,7 +111,7 @@ export function DataTableFilters({ filters, onFiltersChange }: DataTableFiltersP
                 title={t('columns.status')}
                 options={RUN_STATUSES.map(s => ({
                   value: s,
-                  label: t(`runStatus.${s}` as Parameters<typeof t>[0]),
+                  label: t(`runStatus.${enumKey(s)}` as Parameters<typeof t>[0]),
                 }))}
                 selected={filters.status}
                 // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
@@ -152,7 +153,7 @@ export function DataTableFilters({ filters, onFiltersChange }: DataTableFiltersP
           {filters.status.map(s => (
             <FilterBadge
               key={`status-${s}`}
-              label={t(`runStatus.${s}` as Parameters<typeof t>[0])}
+              label={t(`runStatus.${enumKey(s)}` as Parameters<typeof t>[0])}
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onRemove={() => removeFilter('status', s)}
             />

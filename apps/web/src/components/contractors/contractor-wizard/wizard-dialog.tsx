@@ -324,6 +324,7 @@ export function WizardDialog({ open, onOpenChange }: WizardDialogProps) {
           <div className="flex items-center justify-between border-t pt-4 mt-2">
             <div>
               {currentStep > 0 ? (
+                // biome-ignore lint/nursery/noJsxPropsBind: inline callback
                 <Button type="button" variant="outline" onClick={handleBack}>
                   {t('back')}
                 </Button>
@@ -334,7 +335,7 @@ export function WizardDialog({ open, onOpenChange }: WizardDialogProps) {
                 </Button>
               )}
             </div>
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+            {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
             <Button type="button" onClick={handleNext} disabled={createMutation.isPending}>
               {createMutation.isPending ? (
                 <>
@@ -349,21 +350,24 @@ export function WizardDialog({ open, onOpenChange }: WizardDialogProps) {
         </DialogContent>
       </Dialog>
 
-      {/* Discard confirmation */}
-      <AlertDialog open={showDiscardDialog} onOpenChange={setShowDiscardDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t('discardConfirm.title')}</AlertDialogTitle>
-            <AlertDialogDescription>{t('discardConfirm.body')}</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{t('discardConfirm.keep')}</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDiscard} variant="destructive">
-              {t('discardConfirm.discard')}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </>
-  );
+  {
+    /* Discard confirmation */
+  }
+  <AlertDialog open={showDiscardDialog} onOpenChange={setShowDiscardDialog}>
+    <AlertDialogContent>
+      <AlertDialogHeader>
+        <AlertDialogTitle>{t('discardConfirm.title')}</AlertDialogTitle>
+        <AlertDialogDescription>{t('discardConfirm.body')}</AlertDialogDescription>
+      </AlertDialogHeader>
+      <AlertDialogFooter>
+        <AlertDialogCancel>{t('discardConfirm.keep')}</AlertDialogCancel>
+        {/* biome-ignore lint/nursery/noJsxPropsBind: inline callback */}
+        <AlertDialogAction onClick={handleDiscard} variant="destructive">
+          {t('discardConfirm.discard')}
+        </AlertDialogAction>
+      </AlertDialogFooter>
+    </AlertDialogContent>
+  </AlertDialog>;
+  </>
+  )
 }

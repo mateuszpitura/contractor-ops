@@ -53,7 +53,7 @@ export function DataTablePagination<TData>({
         {/* Page size selector */}
         <div className="flex items-center gap-2">
           <span className="text-sm text-muted-foreground">{t('rowsPerPage')}</span>
-          // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
+          {/* biome-ignore lint/nursery/noJsxPropsBind: controlled component handler */}
           <Select value={String(pageSize)} onValueChange={value => onPageSizeChange(Number(value))}>
             <SelectTrigger className="h-8 w-[70px]">
               <SelectValue />

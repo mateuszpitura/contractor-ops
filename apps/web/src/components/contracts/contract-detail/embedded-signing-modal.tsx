@@ -173,14 +173,14 @@ export function EmbeddedSigningModal({
                   })}
                 </p>
                 <div className="flex gap-3">
-                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+                  {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
                   <Button onClick={() => window.open(signingData.url, '_blank')}>
                     <ExternalLink className="me-1.5 size-4" />
                     {t('continueToProvider', {
                       provider: provider === 'AUTENTI' ? 'Autenti' : provider,
                     })}
                   </Button>
-                  // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler
+                  {/* biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler */}
                   <Button variant="outline" onClick={() => onOpenChange(false)}>
                     {t('returnToContract')}
                   </Button>
@@ -193,7 +193,7 @@ export function EmbeddedSigningModal({
           <div className="flex h-full items-center justify-center">
             <div className="flex flex-col items-center gap-3 text-center">
               <p className="text-sm text-muted-foreground">{t('loadError')}</p>
-              // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler
+              {/* biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler */}
               <Button variant="outline" onClick={() => onOpenChange(false)}>
                 {t('returnToContract')}
               </Button>

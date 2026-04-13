@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { enumKey } from '@/lib/enum-key';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -148,7 +149,7 @@ export function EquipmentToolbar({
                 title={t('list.filters.type')}
                 options={EQUIPMENT_TYPES.map(type => ({
                   value: type,
-                  label: t(`type.${type}`),
+                  label: t(`type.${enumKey(type)}`),
                 }))}
                 selected={filters.type}
                 // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
@@ -160,7 +161,7 @@ export function EquipmentToolbar({
                 title={t('list.filters.status')}
                 options={EQUIPMENT_STATUSES.map(status => ({
                   value: status,
-                  label: t(`status.${status}`),
+                  label: t(`status.${enumKey(status)}`),
                 }))}
                 selected={filters.status}
                 // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
@@ -185,7 +186,7 @@ export function EquipmentToolbar({
           {filters.type.map(type => (
             <FilterBadge
               key={`type-${type}`}
-              label={t(`type.${type}` as Parameters<typeof t>[0])}
+              label={t(`type.${enumKey(type)}` as Parameters<typeof t>[0])}
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onRemove={() => removeFilter('type', type)}
             />
@@ -193,7 +194,7 @@ export function EquipmentToolbar({
           {filters.status.map(status => (
             <FilterBadge
               key={`status-${status}`}
-              label={t(`status.${status}` as Parameters<typeof t>[0])}
+              label={t(`status.${enumKey(status)}` as Parameters<typeof t>[0])}
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onRemove={() => removeFilter('status', status)}
             />

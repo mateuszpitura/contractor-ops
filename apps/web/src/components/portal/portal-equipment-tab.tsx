@@ -167,7 +167,7 @@ export function PortalEquipmentTab() {
         <div className="rounded-md border-s-4 border-warning bg-warning/10 p-4">
           <div className="flex items-center justify-between">
             <p className="text-sm font-medium">{t('pendingApproval')}</p>
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+            {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
             <Button variant="outline" size="sm" onClick={() => setCancelDialogOpen(true)}>
               {t('cancelReturn')}
             </Button>
@@ -179,7 +179,7 @@ export function PortalEquipmentTab() {
         <div className="rounded-md border-s-4 border-primary bg-primary/10 p-4">
           <div className="flex items-center justify-between">
             <p className="text-sm font-medium">{t('returnApproved')}</p>
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+            {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
             <Button size="sm" onClick={() => setReturnFlowOpen(true)}>
               {t('viewLabel')}
             </Button>

@@ -41,7 +41,7 @@ export function LabelDisplay({
         <a href={label.url} download className="text-sm underline">
           Download
         </a>
-        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
         <button type="button" className="text-sm underline" onClick={() => window.print()}>
           Print
         </button>

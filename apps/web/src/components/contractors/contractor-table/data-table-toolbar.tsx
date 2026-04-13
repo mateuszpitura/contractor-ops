@@ -10,6 +10,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { trpc } from '@/trpc/init';
+import { enumKey } from '@/lib/enum-key';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -159,7 +160,7 @@ export function DataTableToolbar({
                 title={t('columns.status')}
                 options={LIFECYCLE_STAGES.map(stage => ({
                   value: stage,
-                  label: t(`lifecycle.${stage}`),
+                  label: t(`lifecycle.${enumKey(stage)}`),
                 }))}
                 selected={filters.lifecycleStage}
                 // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
@@ -190,7 +191,7 @@ export function DataTableToolbar({
                 title={t('columns.billingModel')}
                 options={BILLING_MODELS.map(model => ({
                   value: model,
-                  label: t(`billingModel.${model}`),
+                  label: t(`billingModel.${enumKey(model)}`),
                 }))}
                 selected={filters.billingModel}
                 // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
@@ -202,7 +203,7 @@ export function DataTableToolbar({
                 title={t('columns.health')}
                 options={HEALTH_OPTIONS.map(health => ({
                   value: health,
-                  label: t(`health.${health}`),
+                  label: t(`health.${enumKey(health)}`),
                 }))}
                 selected={filters.health}
                 // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
@@ -234,7 +235,7 @@ export function DataTableToolbar({
           {filters.lifecycleStage.map(stage => (
             <FilterBadge
               key={`stage-${stage}`}
-              label={t(`lifecycle.${stage}` as Parameters<typeof t>[0])}
+              label={t(`lifecycle.${enumKey(stage)}` as Parameters<typeof t>[0])}
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onRemove={() => removeFilter('lifecycleStage', stage)}
             />
@@ -260,7 +261,7 @@ export function DataTableToolbar({
           {filters.billingModel.map(model => (
             <FilterBadge
               key={`billing-${model}`}
-              label={t(`billingModel.${model}`)}
+              label={t(`billingModel.${enumKey(model)}`)}
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onRemove={() => removeFilter('billingModel', model)}
             />
@@ -268,7 +269,7 @@ export function DataTableToolbar({
           {filters.health.map(health => (
             <FilterBadge
               key={`health-${health}`}
-              label={t(`health.${health}` as Parameters<typeof t>[0])}
+              label={t(`health.${enumKey(health)}` as Parameters<typeof t>[0])}
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onRemove={() => removeFilter('health', health)}
             />

@@ -389,7 +389,7 @@ export function ApprovalSidePanel({ step, open, onOpenChange }: ApprovalSidePane
         {isPending && (
           <div className="border-t p-4 space-y-2">
             <div className="flex items-center gap-2">
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+              {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
               <Button className="flex-1" onClick={() => approveAction()} disabled={actionsPending}>
                 <CheckCircle2 className="me-1.5 h-4 w-4" />
                 {t('sidePanel.approve')}
@@ -466,12 +466,12 @@ export function ApprovalSidePanel({ step, open, onOpenChange }: ApprovalSidePane
                 )}
               />
               <DropdownMenuContent align="end" className="w-56">
-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+                {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
                 <DropdownMenuItem onClick={() => setClarifyOpen(true)}>
                   <HelpCircle className="me-2 h-4 w-4" />
                   {t('sidePanel.requestClarification')}
                 </DropdownMenuItem>
-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+                {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
                 <DropdownMenuItem onClick={() => setDelegateOpen(true)}>
                   <UserPlus className="me-2 h-4 w-4" />
                   {t('sidePanel.delegateApproval')}

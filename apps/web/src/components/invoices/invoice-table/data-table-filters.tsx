@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { enumKey } from '@/lib/enum-key';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -103,7 +104,7 @@ export function DataTableFilters({ filters, onFiltersChange }: DataTableFiltersP
               title={t('columns.status')}
               options={INVOICE_STATUSES.map(s => ({
                 value: s,
-                label: t(`status.${s}`),
+                label: t(`status.${enumKey(s)}`),
               }))}
               selected={filters.status}
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
@@ -115,7 +116,7 @@ export function DataTableFilters({ filters, onFiltersChange }: DataTableFiltersP
               title={t('columns.source')}
               options={INVOICE_SOURCES.map(s => ({
                 value: s,
-                label: t(`source.${s}`),
+                label: t(`source.${enumKey(s)}`),
               }))}
               selected={filters.source}
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
@@ -131,7 +132,7 @@ export function DataTableFilters({ filters, onFiltersChange }: DataTableFiltersP
           {filters.status.map(s => (
             <FilterBadge
               key={`status-${s}`}
-              label={t(`status.${s}` as Parameters<typeof t>[0])}
+              label={t(`status.${enumKey(s)}` as Parameters<typeof t>[0])}
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onRemove={() => removeFilter('status', s)}
             />
@@ -139,7 +140,7 @@ export function DataTableFilters({ filters, onFiltersChange }: DataTableFiltersP
           {filters.source.map(s => (
             <FilterBadge
               key={`source-${s}`}
-              label={t(`source.${s}` as Parameters<typeof t>[0])}
+              label={t(`source.${enumKey(s)}` as Parameters<typeof t>[0])}
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onRemove={() => removeFilter('source', s)}
             />

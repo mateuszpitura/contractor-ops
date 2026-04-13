@@ -110,7 +110,7 @@ function ProjectCard({ project, selection, onSelectionChange }: ProjectCardProps
               {expanded ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}
               {t('editSteps')}
             </Button>
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+            {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
             <Button variant="link" size="sm" onClick={handleSkip} className="text-muted-foreground">
               {t('skipProject')}
             </Button>
@@ -174,7 +174,7 @@ function ProjectCard({ project, selection, onSelectionChange }: ProjectCardProps
               </div>
             ))}
 
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+            {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
             <Button variant="outline" size="sm" onClick={handleAddStep} className="mt-1">
               <Plus className="size-3" />
               {t('addStep')}

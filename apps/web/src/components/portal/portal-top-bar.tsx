@@ -175,7 +175,7 @@ export function PortalTopBar({
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+              {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
               <DropdownMenuItem onClick={handleLogout}>
                 <LogOut className="me-2 h-4 w-4" />
                 Sign out

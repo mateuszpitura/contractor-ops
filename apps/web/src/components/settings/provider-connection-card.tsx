@@ -222,7 +222,7 @@ export function ProviderConnectionCard({
                 )}
               </div>
               <div className="flex gap-2">
-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+                {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
                 <Button variant="outline" onClick={() => setDetailSheetOpen(true)}>
                   {t('provider.manageCta')}
                 </Button>
@@ -246,7 +246,7 @@ export function ProviderConnectionCard({
                   : t('provider.errorConnectionFailed')}
               </p>
               <div className="flex gap-2">
-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+                {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
                 <Button variant="outline" onClick={handleConnect}>
                   {t('provider.reconnectCta')}
                 </Button>
@@ -267,7 +267,7 @@ export function ProviderConnectionCard({
           {!(isConnected || isReauthRequired || isError) && (
             <div className="space-y-3">
               <p className="text-sm text-muted-foreground">{description}</p>
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+              {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
               <Button onClick={handleConnect}>
                 {t('provider.connectCta', { provider: displayName })}
               </Button>

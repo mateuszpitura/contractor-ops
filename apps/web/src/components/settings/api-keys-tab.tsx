@@ -176,7 +176,7 @@ function CreateKeyDialog({
           <div className="space-y-3">
             <div className="flex items-center gap-2 rounded-lg border bg-muted/50 p-3">
               <code className="flex-1 break-all text-xs font-mono">{createdKey}</code>
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+              {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
               <Button variant="ghost" size="icon-sm" onClick={handleCopy} aria-label="Copy key">
                 {copied ? (
                   <Check className="size-4 text-green-600" />
@@ -355,7 +355,7 @@ export function ApiKeysTab() {
               Manage API keys for the Enterprise REST API.
             </p>
           </div>
-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+          {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
           <Button size="sm" onClick={() => setCreateOpen(true)}>
             <Plus className="mr-1.5 size-4" />
             Create Key

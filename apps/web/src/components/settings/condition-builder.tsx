@@ -157,7 +157,7 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
       ))}
 
       {/* Add condition */}
-      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+      {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
       <Button type="button" variant="outline" size="sm" onClick={handleAdd}>
         <Plus className="me-1.5 size-3.5" />
         {t('approvals.editor.addCondition')}

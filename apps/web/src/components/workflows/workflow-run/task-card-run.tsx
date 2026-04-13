@@ -24,6 +24,7 @@ import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { DocLinksSection } from '@/components/integrations/doc-links-section';
+import { enumKey } from '@/lib/enum-key';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -236,7 +237,7 @@ function ReassignPopover({ taskRunId, runId }: { taskRunId: string; runId: strin
         )}
       />
       <PopoverContent className="w-72 space-y-3" align="start">
-        // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
+        {/* biome-ignore lint/nursery/noJsxPropsBind: controlled component handler */}
         <Select value={selectedUserId} onValueChange={val => setSelectedUserId(val ?? '')}>
           <SelectTrigger>
             <SelectValue placeholder={t('reassignPlaceholder')} />
@@ -333,7 +334,7 @@ export function TaskCardRun({ task, runId, currentUserId, dependencyTitle }: Tas
                   <span className="text-sm font-medium truncate">{task.title}</span>
                   <Badge variant="secondary" className="shrink-0 gap-1 text-xs">
                     <TypeIcon className="size-3" />
-                    {t(`taskType_${task.taskType}` as Parameters<typeof t>[0])}
+                    {t(`taskType.${enumKey(task.taskType)}` as Parameters<typeof t>[0])}
                   </Badge>
                 </div>
                 <div className="mt-1 flex items-center gap-3 text-[13px] text-muted-foreground">

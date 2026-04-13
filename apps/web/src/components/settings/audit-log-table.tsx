@@ -20,6 +20,7 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Link } from '@/i18n/navigation';
 import { AuditLogDiffViewer } from './audit-log-diff-viewer';
+import { enumKey } from '@/lib/enum-key';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -157,7 +158,7 @@ export function AuditLogTable({
           const actionKey = row.original.action;
           return (
             <span className="text-sm font-semibold">
-              {t(`actions.${actionKey}` as Parameters<typeof t>[0])}
+              {t(`actions.${enumKey(actionKey)}` as Parameters<typeof t>[0])}
             </span>
           );
         },
@@ -172,7 +173,7 @@ export function AuditLogTable({
           return (
             <div className="flex items-center gap-2">
               <Badge variant="outline" className="text-[11px]">
-                {t(`resources.${resourceType}` as Parameters<typeof t>[0])}
+                {t(`resources.${enumKey(resourceType)}` as Parameters<typeof t>[0])}
               </Badge>
               {href ? (
                 <Link
@@ -304,7 +305,7 @@ export function AuditLogTable({
               const isExpanded = !!expandedRows[row.original.id];
               return (
                 <span key={row.id} className="contents">
-                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+                  {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
                   <TableRow className="cursor-pointer" onClick={() => onToggleRow(row.original.id)}>
                     {row.getVisibleCells().map(cell => (
                       <TableCell key={cell.id}>

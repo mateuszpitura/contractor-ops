@@ -15,6 +15,7 @@ import {
 import { Link } from '@/i18n/navigation';
 import { EquipmentStatusBadge } from '../equipment-status-badge';
 import { EquipmentTypeIcon } from '../equipment-type-icon';
+import { enumKey } from '@/lib/enum-key';
 
 // ---------------------------------------------------------------------------
 // Row type matching tRPC equipment.list response shape
@@ -95,7 +96,7 @@ export function getEquipmentColumns(
       accessorKey: 'type',
       header: t('list.columns.type'),
       cell: ({ row }) => (
-        <Badge variant="secondary">{t(`type.${row.original.type}` as string)}</Badge>
+        <Badge variant="secondary">{t(`type.${enumKey(row.original.type)}` as string)}</Badge>
       ),
     },
 
@@ -154,7 +155,7 @@ export function getEquipmentColumns(
               )}
             />
             <DropdownMenuContent align="end">
-              // biome-ignore lint/nursery/noJsxPropsBind: column definition
+              {/* biome-ignore lint/nursery/noJsxPropsBind: column definition */}
               <DropdownMenuItem onSelect={() => actions.onEdit(equipment)}>
                 <Pencil className="me-2 h-3.5 w-3.5" />
                 {t('detail.edit')}

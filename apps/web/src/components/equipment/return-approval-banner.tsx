@@ -123,7 +123,7 @@ export function ReturnApprovalBanner({ returnRequest }: ReturnApprovalBannerProp
               )}
               {t('reject')}
             </Button>
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+            {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
             <Button size="sm" onClick={handleApprove} disabled={isPending}>
               {!!approveMutation.isPending && (
                 <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />

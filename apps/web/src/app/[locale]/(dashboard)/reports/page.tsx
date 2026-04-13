@@ -74,14 +74,14 @@ function ReportsContent() {
     <div className="space-y-6">
       {/* Mobile sidebar (horizontal pill bar) */}
       <div className="lg:hidden">
-        // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
+        {/* biome-ignore lint/nursery/noJsxPropsBind: menu item handler */}
         <ReportSidebar activeReport={report} onSelect={r => void setReport(r)} />
       </div>
 
       <div className="flex gap-6">
         {/* Desktop sidebar */}
         <div className="hidden lg:block">
-          // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
+          {/* biome-ignore lint/nursery/noJsxPropsBind: menu item handler */}
           <ReportSidebar activeReport={report} onSelect={r => void setReport(r)} />
         </div>
 
@@ -96,7 +96,7 @@ function ReportsContent() {
 
           {/* Date range filter */}
           <AnimateIn delay={1}>
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+            {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
             <DateRangeFilter dateFrom={dateFrom} dateTo={dateTo} onDateChange={handleDateChange} />
           </AnimateIn>
 

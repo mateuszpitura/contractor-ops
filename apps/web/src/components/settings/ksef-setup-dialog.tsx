@@ -136,7 +136,7 @@ export function KsefSetupDialog({ open, onOpenChange, orgNip }: KsefSetupDialogP
           </div>
 
           {/* Auth method tabs */}
-          // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
+          {/* biome-ignore lint/nursery/noJsxPropsBind: controlled component handler */}
           <Tabs value={authMethod} onValueChange={v => setAuthMethod(v as 'token' | 'certificate')}>
             <TabsList>
               <TabsTrigger value="token" disabled={isFormDisabled}>
@@ -209,11 +209,11 @@ export function KsefSetupDialog({ open, onOpenChange, orgNip }: KsefSetupDialogP
         </div>
 
         <DialogFooter>
-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+          {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
           <Button variant="outline" onClick={resetAndClose}>
             {t('discard')}
           </Button>
-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+          {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
           <Button onClick={handleSave} disabled={isSaveDisabled}>
             {!!connectMutation.isPending && (
               <Loader2 className="me-1.5 size-3.5 animate-spin" aria-hidden="true" />

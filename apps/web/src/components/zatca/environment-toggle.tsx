@@ -142,7 +142,7 @@ export function EnvironmentToggle({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+            {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
             <AlertDialogAction onClick={confirmSwitchToSandbox}>
               Switch to Sandbox
             </AlertDialogAction>

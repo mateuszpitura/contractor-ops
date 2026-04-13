@@ -78,7 +78,7 @@ export function SendForSignatureButton({
 
   return (
     <>
-      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+      {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
       <Button variant="default" size="sm" onClick={() => setDialogOpen(true)}>
         <PenLine className="me-1.5 size-4" />
         Send for Signature

@@ -333,7 +333,7 @@ export function ContractWizardDialog({
 
   return (
     <>
-      // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler
+      {/* biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler */}
       <Dialog open={open} onOpenChange={o => !o && handleClose()}>
         <DialogContent className="sm:max-w-[640px]" showCloseButton={false}>
           <DialogHeader>
@@ -371,7 +371,7 @@ export function ContractWizardDialog({
                 </Button>
               )}
             </div>
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+            {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
             <Button type="button" onClick={handleNext} disabled={createMutation.isPending}>
               {createMutation.isPending ? (
                 <>
@@ -395,7 +395,7 @@ export function ContractWizardDialog({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{t('discardConfirm.keep')}</AlertDialogCancel>
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+            {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
             <AlertDialogAction onClick={handleDiscard} variant="destructive">
               {t('discardConfirm.discard')}
             </AlertDialogAction>

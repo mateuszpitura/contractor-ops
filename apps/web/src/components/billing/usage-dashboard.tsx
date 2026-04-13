@@ -81,7 +81,7 @@ export function UsageDashboard() {
     return (
       <div className="flex flex-col items-center gap-4 py-12">
         <p className="text-sm text-muted-foreground">{t('errorLoading')}</p>
-        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
         <Button variant="outline" size="sm" onClick={() => refetch()}>
           <RefreshCw size={14} aria-hidden="true" />
           {t('retry')}
@@ -182,7 +182,7 @@ export function UsageDashboard() {
       <Separator />
 
       {/* Plan Comparison Grid */}
-      // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
+      {/* biome-ignore lint/nursery/noJsxPropsBind: menu item handler */}
       <PlanComparisonGrid currentTier={currentTier} onSelectPlan={() => undefined} />
 
       <TopUpDialog open={topUpOpen} onOpenChange={setTopUpOpen} />

@@ -169,7 +169,7 @@ export function ExternalSyncButton({
             </Popover>
           </div>
 
-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+          {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
           <Button className="w-full" onClick={handleImport}>
             Import Entries
           </Button>

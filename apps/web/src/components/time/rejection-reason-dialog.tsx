@@ -104,7 +104,7 @@ export function RejectionReasonDialog({
         </div>
 
         <DialogFooter className="gap-2 sm:gap-0">
-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+          {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
           <Button variant="outline" onClick={() => handleOpenChange(false)} disabled={isSubmitting}>
             Keep Reviewing
           </Button>

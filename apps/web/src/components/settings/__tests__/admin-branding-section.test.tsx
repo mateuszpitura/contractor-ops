@@ -70,7 +70,7 @@ vi.mock('../brand-color-picker', () => ({
   BrandColorPicker: ({ value, onChange }: { value: string; onChange: (v: string) => void }) => (
     <div data-testid="color-picker">
       <span>Color: {value}</span>
-      // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
+      {/* biome-ignore lint/nursery/noJsxPropsBind: controlled input handler */}
       <button type="button" onClick={() => onChange('#ff0000')}>
         Set red
       </button>

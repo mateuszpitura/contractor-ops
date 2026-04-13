@@ -115,7 +115,7 @@ function AddAmendmentDialog({
         <DialogHeader>
           <DialogTitle>{t('addTitle')}</DialogTitle>
         </DialogHeader>
-        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <label htmlFor="amendment-title" className="text-sm font-medium">
@@ -161,7 +161,7 @@ function AddAmendmentDialog({
             />
           </div>
           <DialogFooter>
-            // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler
+            {/* biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler */}
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               {t('cancel')}
             </Button>
@@ -267,7 +267,7 @@ export function AmendmentsTab({ contract }: AmendmentsTabProps) {
       {/* Header with CTA */}
       <div className="flex items-center justify-between">
         <h3 className="text-base font-medium">{t('heading')}</h3>
-        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
         <Button size="sm" onClick={() => setDialogOpen(true)}>
           <Plus className="me-1.5 size-3.5" />
           {t('addCta')}

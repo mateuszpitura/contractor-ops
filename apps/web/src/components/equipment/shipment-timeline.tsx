@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { trpc } from '@/trpc/init';
+import { enumKey } from '@/lib/enum-key';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -129,7 +130,7 @@ export function ShipmentTimeline({
               className="text-xs font-medium text-muted-foreground">
               {t('shipment.addStatusUpdate')}
             </label>
-            // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
+            {/* biome-ignore lint/nursery/noJsxPropsBind: controlled component handler */}
             <Select value={newStatus} onValueChange={val => val && setNewStatus(val)}>
               <SelectTrigger id="shipment-new-status" className="w-full">
                 <SelectValue placeholder="Select status..." />
@@ -137,7 +138,7 @@ export function ShipmentTimeline({
               <SelectContent>
                 {UPDATABLE_STATUSES.map(status => (
                   <SelectItem key={status} value={status}>
-                    {t(`shipment.status.${status}`)}
+                    {t(`shipment.status.${enumKey(status)}`)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -221,7 +222,7 @@ export function ShipmentTimeline({
                         isCurrent && 'text-primary',
                         isPending && 'text-muted-foreground',
                       )}>
-                      {t(`shipment.status.${status}`)}
+                      {t(`shipment.status.${enumKey(status)}`)}
                     </span>
                     {!!event?.notes && (
                       <p className="mt-0.5 text-xs text-muted-foreground">{event.notes}</p>
@@ -257,7 +258,7 @@ export function ShipmentTimeline({
                 <div className="flex flex-1 items-start justify-between gap-2 rounded-md bg-primary/5 px-2 py-1 -mx-2">
                   <div>
                     <span className="text-sm font-medium text-primary">
-                      {t(`shipment.status.${currentStatus}`)}
+                      {t(`shipment.status.${enumKey(currentStatus)}`)}
                     </span>
                     {!!terminalEvent.notes && (
                       <p className="mt-0.5 text-xs text-muted-foreground">{terminalEvent.notes}</p>

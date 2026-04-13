@@ -19,6 +19,7 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { trpc } from '@/trpc/init';
+import { enumKey } from '@/lib/enum-key';
 
 // ---------------------------------------------------------------------------
 // Template type badge styling
@@ -207,7 +208,7 @@ export function TemplatePicker({
         {!!typeFilter && (
           <div className="flex items-center gap-2">
             <Badge variant="secondary">
-              {t(`templateType.${typeFilter}` as Parameters<typeof t>[0])}
+              {t(`templateType.${enumKey(typeFilter)}` as Parameters<typeof t>[0])}
             </Badge>
             <button
               type="button"
@@ -263,7 +264,7 @@ export function TemplatePicker({
                       <Badge
                         variant="secondary"
                         className={templateTypeBadgeColors[template.type] ?? ''}>
-                        {t(`templateType.${template.type}` as Parameters<typeof t>[0])}
+                        {t(`templateType.${enumKey(template.type)}` as Parameters<typeof t>[0])}
                       </Badge>
                     </div>
                   </div>
@@ -277,7 +278,7 @@ export function TemplatePicker({
         </ScrollArea>
 
         <DialogFooter>
-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+          {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
           <Button variant="outline" onClick={() => handleOpenChange(false)}>
             {tp('close')}
           </Button>

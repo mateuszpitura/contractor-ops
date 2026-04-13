@@ -243,7 +243,7 @@ export function StepReview({
       {/* Export format */}
       <div className="space-y-1.5">
         <Label className="text-xs">{t('step2.exportFormatLabel')}</Label>
-        // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
+        {/* biome-ignore lint/nursery/noJsxPropsBind: controlled component handler */}
         <Select value={exportFormat} onValueChange={v => setExportFormat(v ?? 'CSV')}>
           <SelectTrigger className="w-full h-8">
             <SelectValue />

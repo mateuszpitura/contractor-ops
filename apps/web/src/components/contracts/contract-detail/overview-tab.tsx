@@ -140,7 +140,7 @@ function ExpiryRemindersEditor({
               })
             : t('reminders.none')}
         </span>
-        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
         <Button variant="ghost" size="icon-sm" onClick={() => setEditing(true)}>
           <Pencil className="size-3" />
           <span className="sr-only">{t('reminders.edit')}</span>
@@ -159,7 +159,7 @@ function ExpiryRemindersEditor({
         className="h-7 w-40 rounded-md border bg-background px-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
         placeholder={t('remindersPlaceholder')}
       />
-      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+      {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
       <Button variant="ghost" size="icon-sm" onClick={handleSave} disabled={mutation.isPending}>
         <Check className="size-3" />
       </Button>

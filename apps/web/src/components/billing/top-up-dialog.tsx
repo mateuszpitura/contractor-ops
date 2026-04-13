@@ -109,7 +109,7 @@ export function TopUpDialog({ open, onOpenChange }: TopUpDialogProps) {
             disabled={checkoutMutation.isPending}>
             {t('cancel')}
           </Button>
-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+          {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
           <Button onClick={handleConfirm} disabled={checkoutMutation.isPending}>
             {!!checkoutMutation.isPending && (
               <Loader2 className="animate-spin" aria-hidden="true" />

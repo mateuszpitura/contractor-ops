@@ -3,6 +3,7 @@
 import { Plus, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Badge } from '@/components/ui/badge';
+import { enumKey } from '@/lib/enum-key';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -125,7 +126,7 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
     return (
       <div className="space-y-2">
         <p className="text-sm text-muted-foreground">{t('noConditions')}</p>
-        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
         <Button type="button" variant="outline" size="sm" onClick={addRule}>
           <Plus className="me-1.5 size-3.5" />
           {t('addCondition')}
@@ -169,7 +170,7 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
               <SelectContent>
                 {CONDITION_FIELDS.map(field => (
                   <SelectItem key={field} value={field}>
-                    {t(`conditionField_${field.replace('.', '_')}`)}
+                    {t(`conditionField.${field}` as Parameters<typeof t>[0])}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -190,7 +191,7 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
               <SelectContent>
                 {OPERATORS.map(op => (
                   <SelectItem key={op} value={op}>
-                    {t(`operator_${op}`)}
+                    {t(`operator.${enumKey(op)}` as Parameters<typeof t>[0])}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -239,7 +240,7 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
       ))}
 
       {/* Add condition button */}
-      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+      {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
       <Button type="button" variant="outline" size="sm" onClick={addRule}>
         <Plus className="me-1.5 size-3.5" />
         {t('addCondition')}

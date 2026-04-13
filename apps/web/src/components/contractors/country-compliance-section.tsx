@@ -14,6 +14,8 @@ import { trpc } from '@/trpc/init';
 
 import { DeComplianceFields } from './compliance/de-compliance-fields';
 import { UkComplianceFields } from './compliance/uk-compliance-fields';
+import { RevalidateVatButton } from './revalidate-vat-button';
+import { VatValidationStatusPill } from './vat-validation-status-pill';
 
 interface CountryComplianceSectionProps {
   contractorId: string;
@@ -24,6 +26,8 @@ export function CountryComplianceSection({ contractorId }: CountryComplianceSect
   const fieldsQuery = trpc.contractor.getCountryFields.useQuery({
     contractorId,
   });
+  // Phase 57 · Plan 04 — surface latest HMRC/VIES validation state for GB/DE orgs.
+  const contractorQuery = trpc.contractor.getById.useQuery({ id: contractorId });
   const updateMutation = trpc.contractor.updateCountryFields.useMutation({
     onSuccess: () => {
       toast.success('Compliance fields saved');
@@ -118,7 +122,7 @@ export function CountryComplianceSection({ contractorId }: CountryComplianceSect
             onChange={(key, val) => setFormData(prev => ({ ...prev, [key]: val }))}
           />
         )}
-        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
         <Button onClick={handleSave} disabled={updateMutation.isPending} className="mt-4">
           {updateMutation.isPending ? (
             <Loader2 className="me-2 h-4 w-4 animate-spin" />

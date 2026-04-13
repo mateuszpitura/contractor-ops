@@ -225,11 +225,11 @@ export function SingleEntryForm({
         </div>
 
         <DialogFooter className="gap-2 sm:gap-0">
-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+          {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
           <Button variant="outline" onClick={handleDiscard}>
             Discard Entry
           </Button>
-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+          {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
           <Button onClick={handleSubmit} disabled={isSubmitting}>
             {isSubmitting ? 'Adding...' : 'Add Entry'}
           </Button>

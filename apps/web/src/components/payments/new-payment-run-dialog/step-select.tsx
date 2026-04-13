@@ -148,7 +148,7 @@ export function StepSelect({
     <div className="flex flex-col gap-4">
       {/* Filter row */}
       <div className="flex items-center gap-2 flex-wrap">
-        // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
+        {/* biome-ignore lint/nursery/noJsxPropsBind: controlled component handler */}
         <Select value={currency} onValueChange={v => setCurrency(v ?? 'all')}>
           <SelectTrigger className="w-[160px] h-8">
             <SelectValue placeholder={t('step1.allCurrencies')} />

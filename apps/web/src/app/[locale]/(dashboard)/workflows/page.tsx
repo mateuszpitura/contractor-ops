@@ -119,7 +119,7 @@ function WorkflowsContent() {
 
       {/* Tabs */}
       <AnimateIn delay={1}>
-        // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
+        {/* biome-ignore lint/nursery/noJsxPropsBind: controlled component handler */}
         <Tabs value={tab} onValueChange={value => void setTab(value)}>
           <TabsList>
             <TabsTrigger value="runs">{t('tabRuns')}</TabsTrigger>

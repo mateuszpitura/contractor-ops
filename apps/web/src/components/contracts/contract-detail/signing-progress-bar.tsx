@@ -161,7 +161,7 @@ export function SigningProgressBar({ envelope }: SigningProgressBarProps) {
           <div className="flex items-center gap-3">
             <p className="text-sm text-muted-foreground">{statusText}</p>
 
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+            {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
             <Button variant="ghost" size="sm" onClick={() => setAuditOpen(true)}>
               {t('viewHistory')}
             </Button>
@@ -192,7 +192,7 @@ export function SigningProgressBar({ envelope }: SigningProgressBarProps) {
                     {t('resendTo', { name: r.name })}
                   </DropdownMenuItem>
                 ))}
-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+                {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
                 <DropdownMenuItem variant="destructive" onClick={() => setVoidOpen(true)}>
                   <Ban className="me-2 size-3.5" />
                   {t('voidEnvelope')}

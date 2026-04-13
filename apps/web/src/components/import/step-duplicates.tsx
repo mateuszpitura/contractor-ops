@@ -69,7 +69,7 @@ export function StepDuplicates({
 
       {/* Bulk action buttons */}
       <div className="flex gap-2">
-        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
         <Button variant="outline" size="sm" onClick={() => handleBulkAction('skip')} type="button">
           {t('duplicates.skipAll')}
         </Button>

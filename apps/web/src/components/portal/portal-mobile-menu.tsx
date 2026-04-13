@@ -141,7 +141,7 @@ export function PortalMobileMenu({
             <p className="text-sm font-medium">{contractorName}</p>
             <p className="text-xs text-muted-foreground">{contractorEmail}</p>
           </div>
-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+          {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
           <Button variant="outline" className="w-full" onClick={handleLogout}>
             <LogOut className="me-2 h-4 w-4" />
             {t('signOut')}

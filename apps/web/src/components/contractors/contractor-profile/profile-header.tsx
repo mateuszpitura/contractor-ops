@@ -18,6 +18,7 @@ import {
 import { TemplatePicker } from '@/components/workflows/template-picker-dialog';
 import { getAvatarInitials } from '@/lib/avatar-initials';
 import { trpc } from '@/trpc/init';
+import { enumKey } from '@/lib/enum-key';
 
 type LifecycleStage = 'DRAFT' | 'ONBOARDING' | 'ACTIVE' | 'OFFBOARDING' | 'ENDED';
 
@@ -156,7 +157,7 @@ export function ProfileHeader({ contractor }: ProfileHeaderProps) {
           <div className="flex items-center gap-2">
             <h1 className="text-[20px] font-semibold leading-tight">{contractor.displayName}</h1>
             <Badge variant="secondary" className={lifecycleBadgeStyles[stage] ?? ''}>
-              {t(`lifecycle.${stage}` as Parameters<typeof t>[0]) ?? stage}
+              {t(`lifecycle.${enumKey(stage)}` as Parameters<typeof t>[0]) ?? stage}
             </Badge>
             <Badge variant="secondary" className="bg-secondary text-secondary-foreground">
               {tc(`type.${contractor.type}` as Parameters<typeof tc>[0])}
@@ -179,13 +180,13 @@ export function ProfileHeader({ contractor }: ProfileHeaderProps) {
       </div>
 
       <div className="flex items-center gap-2">
-        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
         <Button variant="outline" size="sm" onClick={() => toast.info(t('actions.editComingSoon'))}>
           <Pencil className="me-1.5 size-3.5" />
           {t('actions.edit')}
         </Button>
 
-        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
         <Button variant="outline" size="sm" onClick={() => setWizardOpen(true)}>
           <FilePlus className="me-1.5 size-3.5" />
           {t('actions.addContract')}

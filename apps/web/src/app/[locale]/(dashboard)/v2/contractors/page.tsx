@@ -446,7 +446,7 @@ function ContractorsV2Content() {
         </h2>
         <p className="mt-2 max-w-sm text-sm text-muted-foreground">{tv('emptyState.body')}</p>
         <div className="mt-6 flex gap-3">
-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+          {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
           <Button onClick={() => setWizardOpen(true)}>
             <Plus className="me-1.5 h-4 w-4" /> {tv('emptyState.addContractor')}
           </Button>
@@ -482,7 +482,7 @@ function ContractorsV2Content() {
             <Button variant="outline" size="sm" className="text-xs">
               <Upload className="me-1.5 h-3.5 w-3.5" /> {t('import')}
             </Button>
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+            {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
             <Button size="sm" className="text-xs" onClick={() => setWizardOpen(true)}>
               <Plus className="me-1.5 h-3.5 w-3.5" /> {t('addContractor')}
             </Button>

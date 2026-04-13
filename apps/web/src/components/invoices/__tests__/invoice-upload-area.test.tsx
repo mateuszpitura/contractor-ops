@@ -134,15 +134,15 @@ vi.mock('@/components/ocr/ocr-review-panel', () => ({
     onRetrigger: () => void | Promise<void>;
   }) => (
     <div data-testid="ocr-review-panel">
-      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+      {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
       <button type="button" onClick={() => onAccept(sampleOcrDataForMock)}>
         Apply OCR data
       </button>
-      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+      {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
       <button type="button" onClick={() => onDiscard()}>
         Discard OCR
       </button>
-      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+      {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
       <button type="button" onClick={() => void onRetrigger()}>
         Re-run OCR
       </button>

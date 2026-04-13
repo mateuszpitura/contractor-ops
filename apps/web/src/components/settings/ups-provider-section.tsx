@@ -44,7 +44,7 @@ export function UpsProviderSection() {
         </CardHeader>
       </Card>
 
-      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+      {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
       <Button variant="outline" size="sm" onClick={() => setConfigOpen(true)}>
         {t('configureUps')}
       </Button>

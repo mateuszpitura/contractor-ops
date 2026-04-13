@@ -200,14 +200,14 @@ export function ApprovalQueueToolbar({
             <span className="text-sm font-medium text-muted-foreground whitespace-nowrap">
               {t('bulk.selectedCount', { count })}
             </span>
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+            {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
             <Button size="sm" onClick={handleBulkApprove} disabled={bulkApproveMutation.isPending}>
               {!!bulkApproveMutation.isPending && (
                 <Loader2 className="me-1 h-3.5 w-3.5 animate-spin" />
               )}
               {t('bulk.approve', { count })}
             </Button>
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+            {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
             <Button variant="destructive" size="sm" onClick={() => setBulkRejectOpen(true)}>
               {t('bulk.reject', { count })}
             </Button>

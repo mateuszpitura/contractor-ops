@@ -365,7 +365,7 @@ export function CarrierShipmentForm({
           </div>
 
           <DialogFooter>
-            // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler
+            {/* biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler */}
             <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
               {t('cancel')}
             </Button>

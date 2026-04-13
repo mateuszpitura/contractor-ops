@@ -13,6 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { TemplatePicker } from '@/components/workflows/template-picker-dialog';
 import { Link } from '@/i18n/navigation';
 import { trpc } from '@/trpc/init';
+import { enumKey } from '@/lib/enum-key';
 
 // ---------------------------------------------------------------------------
 // Run status badge styling (matching UI-SPEC)
@@ -233,7 +234,7 @@ export function WorkflowsTab({ contractorId }: WorkflowsTabProps) {
           <GitBranch className="size-10 text-muted-foreground/50" />
           <h4 className="text-sm font-medium">{t('contractorNoWorkflows')}</h4>
           <p className="max-w-sm text-sm text-muted-foreground">{t('contractorNoWorkflowsBody')}</p>
-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+          {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
           <Button size="sm" onClick={() => setPickerOpen(true)}>
             <Plus className="me-1.5 size-3.5" />
             {t('contractorNoWorkflowsCta')}
@@ -256,7 +257,7 @@ export function WorkflowsTab({ contractorId }: WorkflowsTabProps) {
       {/* Header with CTA */}
       <div className="flex items-center justify-between">
         <h3 className="text-base font-medium">{t('contractorWorkflowsTab')}</h3>
-        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
         <Button size="sm" onClick={() => setPickerOpen(true)}>
           <Plus className="me-1.5 size-3.5" />
           {t('contractorStartWorkflow')}
@@ -276,7 +277,7 @@ export function WorkflowsTab({ contractorId }: WorkflowsTabProps) {
               </p>
             </div>
             <Badge variant="secondary" className={runStatusBadgeColors[run.status] ?? ''}>
-              {t(`runStatus.${run.status}` as Parameters<typeof t>[0])}
+              {t(`runStatus.${enumKey(run.status)}` as Parameters<typeof t>[0])}
             </Badge>
             <RunJiraChips runId={run.id} />
             <RunLinearChips runId={run.id} />

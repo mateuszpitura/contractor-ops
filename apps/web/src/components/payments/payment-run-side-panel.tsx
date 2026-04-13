@@ -466,7 +466,7 @@ function PaymentRunItemRow({
             <DropdownMenuContent align="end">
               {!isTerminal && (
                 <>
-                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+                  {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
                   <DropdownMenuItem onClick={() => setActiveAction('paid')}>
                     <CheckCircle2 className="me-2 h-4 w-4" />
                     {t('sidePanel.markPaid')}

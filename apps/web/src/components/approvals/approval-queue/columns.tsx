@@ -101,7 +101,7 @@ function RejectPopover({
           </Button>
         )}
       />
-      // biome-ignore lint/nursery/noJsxPropsBind: stopPropagation on popover
+      {/* biome-ignore lint/nursery/noJsxPropsBind: stopPropagation on popover */}
       <PopoverContent className="w-80 p-4" align="end" onClick={e => e.stopPropagation()}>
         <div className="space-y-3">
           <h4 className="font-medium text-sm">{t('rejectPopover.heading')}</h4>
@@ -317,7 +317,7 @@ export function getColumns(
               <CheckCircle2 className="h-3.5 w-3.5" />
               {t('actions.approve')}
             </Button>
-            // biome-ignore lint/nursery/noJsxPropsBind: column definition
+            {/* biome-ignore lint/nursery/noJsxPropsBind: column definition */}
             <RejectPopover onReject={comment => callbacks.onReject(step.id, comment)} t={t} />
           </div>
         );

@@ -365,7 +365,7 @@ export function SendForSignatureDialog({
             <div className="flex gap-2">
               <div className="flex-1 space-y-2">
                 <Label>{tSend('expiresLabel')}</Label>
-                // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
+                {/* biome-ignore lint/nursery/noJsxPropsBind: controlled component handler */}
                 <Select value={expiresInDays} onValueChange={val => setExpiresInDays(val ?? '14')}>
                   <SelectTrigger className="w-full">
                     <SelectValue />

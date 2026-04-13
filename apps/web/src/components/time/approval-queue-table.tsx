@@ -227,7 +227,7 @@ export function ApprovalQueueTable({
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center justify-end gap-2 opacity-0 transition-opacity group-hover:opacity-100 sm:opacity-100">
-                    // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+                    {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
                     <Button size="sm" variant="default" onClick={() => onApprove(ts.id)}>
                       <CheckCircle className="me-1.5 h-3.5 w-3.5" />
                       Approve
@@ -257,7 +257,7 @@ export function ApprovalQueueTable({
               {selectedArray.length} timesheet{selectedArray.length === 1 ? '' : 's'} selected
             </p>
             <div className="flex items-center gap-2">
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+              {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
               <Button variant="outline" size="sm" onClick={() => setSelectedIds(new Set())}>
                 Clear
               </Button>
@@ -269,7 +269,7 @@ export function ApprovalQueueTable({
                 onClick={() => setBulkRejectOpen(true)}>
                 Reject All
               </Button>
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+              {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
               <Button size="sm" onClick={() => setBulkApproveOpen(true)}>
                 Approve All
               </Button>

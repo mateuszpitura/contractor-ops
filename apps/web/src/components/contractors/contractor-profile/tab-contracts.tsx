@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/table';
 import { Link } from '@/i18n/navigation';
 import { trpc } from '@/trpc/init';
+import { enumKey } from '@/lib/enum-key';
 
 // ---------------------------------------------------------------------------
 // Row type (subset of full ContractRow for the mini table)
@@ -95,7 +96,7 @@ export function TabContracts({ contractorId }: TabContractsProps) {
         header: t('contractorTab.columns.status' as Parameters<typeof t>[0]),
         cell: ({ row }) => (
           <Badge variant="secondary" className={statusBadgeColors[row.original.status] ?? ''}>
-            {t(`status.${row.original.status}` as Parameters<typeof t>[0])}
+            {t(`status.${enumKey(row.original.status)}` as Parameters<typeof t>[0])}
           </Badge>
         ),
       },
@@ -188,7 +189,7 @@ export function TabContracts({ contractorId }: TabContractsProps) {
           <FileText className="size-10 text-muted-foreground/50" />
           <h4 className="text-sm font-medium">{t('contractorTab.emptyHeading')}</h4>
           <p className="max-w-sm text-sm text-muted-foreground">{t('contractorTab.emptyBody')}</p>
-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+          {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
           <Button size="sm" onClick={() => setWizardOpen(true)}>
             <Plus className="me-1.5 size-3.5" />
             {t('contractorTab.emptyCTA')}
@@ -208,7 +209,7 @@ export function TabContracts({ contractorId }: TabContractsProps) {
       {/* Header with CTA */}
       <div className="flex items-center justify-between">
         <h3 className="text-base font-medium">{t('contractorTab.heading')}</h3>
-        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
         <Button size="sm" onClick={() => setWizardOpen(true)}>
           <Plus className="me-1.5 size-3.5" />
           {t('contractorTab.addCTA')}

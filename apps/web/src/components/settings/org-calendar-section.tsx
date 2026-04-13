@@ -126,7 +126,7 @@ function OrgCalendarProviderCard({
           ) : (
             <div className="space-y-3">
               <p className="text-sm text-muted-foreground">{t('orgCalendarDescription')}</p>
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+              {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
               <Button onClick={handleConnect}>{t('connectCalendar')}</Button>
             </div>
           )}

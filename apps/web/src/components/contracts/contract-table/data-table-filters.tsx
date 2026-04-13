@@ -10,6 +10,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { trpc } from '@/trpc/init';
+import { enumKey } from '@/lib/enum-key';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -150,7 +151,7 @@ export function DataTableFilters({ filters, onFiltersChange }: DataTableFiltersP
               title={t('columns.status')}
               options={CONTRACT_STATUSES.map(s => ({
                 value: s,
-                label: t(`status.${s}`),
+                label: t(`status.${enumKey(s)}`),
               }))}
               selected={filters.status}
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
@@ -162,7 +163,7 @@ export function DataTableFilters({ filters, onFiltersChange }: DataTableFiltersP
               title={t('columns.type')}
               options={CONTRACT_TYPES.map(ct => ({
                 value: ct,
-                label: t(`type.${ct}`),
+                label: t(`type.${enumKey(ct)}`),
               }))}
               selected={filters.type}
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
@@ -174,7 +175,7 @@ export function DataTableFilters({ filters, onFiltersChange }: DataTableFiltersP
               title={t('columns.billingCycle')}
               options={BILLING_MODELS.map(bm => ({
                 value: bm,
-                label: t(`billingModel.${bm}`),
+                label: t(`billingModel.${enumKey(bm)}`),
               }))}
               selected={filters.billingModel}
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
@@ -205,7 +206,7 @@ export function DataTableFilters({ filters, onFiltersChange }: DataTableFiltersP
               title={t('columns.complianceRisk')}
               options={RISK_LEVELS.map(rl => ({
                 value: rl,
-                label: t(`risk.${rl}`),
+                label: t(`risk.${enumKey(rl)}`),
               }))}
               selected={filters.complianceRiskLevel}
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
@@ -260,7 +261,7 @@ export function DataTableFilters({ filters, onFiltersChange }: DataTableFiltersP
           {filters.status.map(s => (
             <FilterBadge
               key={`status-${s}`}
-              label={t(`status.${s}` as Parameters<typeof t>[0])}
+              label={t(`status.${enumKey(s)}` as Parameters<typeof t>[0])}
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onRemove={() => removeFilter('status', s)}
             />
@@ -268,7 +269,7 @@ export function DataTableFilters({ filters, onFiltersChange }: DataTableFiltersP
           {filters.type.map(ct => (
             <FilterBadge
               key={`type-${ct}`}
-              label={t(`type.${ct}` as Parameters<typeof t>[0])}
+              label={t(`type.${enumKey(ct)}` as Parameters<typeof t>[0])}
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onRemove={() => removeFilter('type', ct)}
             />
@@ -276,7 +277,7 @@ export function DataTableFilters({ filters, onFiltersChange }: DataTableFiltersP
           {filters.billingModel.map(bm => (
             <FilterBadge
               key={`billing-${bm}`}
-              label={t(`billingModel.${bm}` as Parameters<typeof t>[0])}
+              label={t(`billingModel.${enumKey(bm)}` as Parameters<typeof t>[0])}
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onRemove={() => removeFilter('billingModel', bm)}
             />
@@ -302,7 +303,7 @@ export function DataTableFilters({ filters, onFiltersChange }: DataTableFiltersP
           {filters.complianceRiskLevel.map(rl => (
             <FilterBadge
               key={`risk-${rl}`}
-              label={t(`risk.${rl}` as Parameters<typeof t>[0])}
+              label={t(`risk.${enumKey(rl)}` as Parameters<typeof t>[0])}
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onRemove={() => removeFilter('complianceRiskLevel', rl)}
             />

@@ -281,7 +281,7 @@ export function PeppolWizard({ open, onOpenChange }: PeppolWizardProps) {
                 <Alert variant="destructive">
                   <AlertTitle>Registration Failed</AlertTitle>
                   <AlertDescription>{registrationError}</AlertDescription>
-                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+                  {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
                   <Button variant="outline" size="sm" className="mt-3" onClick={handleRetry}>
                     Retry
                   </Button>

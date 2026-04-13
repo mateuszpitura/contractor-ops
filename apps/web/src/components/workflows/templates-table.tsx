@@ -35,6 +35,7 @@ import {
 import { useTemplateMutations } from '@/hooks/use-template-mutations';
 import { Link, useRouter } from '@/i18n/navigation';
 import { trpc } from '@/trpc/init';
+import { enumKey } from '@/lib/enum-key';
 
 // ---------------------------------------------------------------------------
 // Template status badge styling per UI-SPEC
@@ -257,14 +258,14 @@ export function TemplatesTable() {
                   <Badge
                     variant="secondary"
                     className={templateTypeBadgeColors[template.type] ?? ''}>
-                    {t(`templateType.${template.type}` as Parameters<typeof t>[0])}
+                    {t(`templateType.${enumKey(template.type)}` as Parameters<typeof t>[0])}
                   </Badge>
                 </TableCell>
                 <TableCell>
                   <Badge
                     variant="secondary"
                     className={templateStatusBadgeColors[template.status] ?? ''}>
-                    {t(`templateStatus.${template.status}` as Parameters<typeof t>[0])}
+                    {t(`templateStatus.${enumKey(template.status)}` as Parameters<typeof t>[0])}
                   </Badge>
                 </TableCell>
                 <TableCell>
@@ -299,7 +300,7 @@ export function TemplatesTable() {
                         <Pencil className="me-2 h-4 w-4" />
                         {t('templates.actionEdit')}
                       </DropdownMenuItem>
-                      // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
+                      {/* biome-ignore lint/nursery/noJsxPropsBind: menu item handler */}
                       <DropdownMenuItem onSelect={() => void handleDuplicate(template)}>
                         <Copy className="me-2 h-4 w-4" />
                         {t('templates.actionDuplicate')}
@@ -354,7 +355,7 @@ export function TemplatesTable() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{t('templates.deleteCancel')}</AlertDialogCancel>
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+            {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
             <AlertDialogAction variant="destructive" onClick={() => void handleDelete()}>
               {t('templates.deleteConfirm')}
             </AlertDialogAction>

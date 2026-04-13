@@ -388,7 +388,7 @@ export function ImportWizardDialog({
 
   return (
     <>
-      // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler
+      {/* biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler */}
       <Dialog open={open} onOpenChange={o => !o && handleClose()}>
         <DialogContent className="sm:max-w-[720px]" showCloseButton={false}>
           <DialogHeader>

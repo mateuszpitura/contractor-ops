@@ -166,7 +166,7 @@ export function TabShipments({
       ))}
 
       {/* Delete confirmation */}
-      // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler
+      {/* biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler */}
       <Dialog open={!!deleteTarget} onOpenChange={v => !v && setDeleteTarget(null)}>
         <DialogContent>
           <DialogHeader>

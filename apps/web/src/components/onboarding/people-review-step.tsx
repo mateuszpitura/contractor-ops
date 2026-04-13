@@ -321,7 +321,7 @@ export function PeopleReviewStep({
             <Button size="sm" variant="outline" onClick={handleBatchSkip}>
               {t('batchSkip')}
             </Button>
-            // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
+            {/* biome-ignore lint/nursery/noJsxPropsBind: controlled component handler */}
             <Select onValueChange={val => val && handleBatchRole(val as string)}>
               <SelectTrigger size="sm" className="w-36">
                 <SelectValue>{t('batchRole')}</SelectValue>

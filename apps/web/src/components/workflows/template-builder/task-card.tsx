@@ -18,6 +18,7 @@ import {
 import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
+import { enumKey } from '@/lib/enum-key';
 import { JiraTaskConfig } from '@/components/integrations/jira-task-config';
 import { LinearTaskConfig } from '@/components/integrations/linear-task-config';
 import { Badge } from '@/components/ui/badge';
@@ -130,12 +131,12 @@ export function TaskCard({ index, onRemove, allTasks, form, dragHandleProps }: T
 
   const taskTypeItems = TASK_TYPES.map(type => ({
     value: type,
-    label: t(`taskType_${type}`),
+    label: t(`taskType.${enumKey(type)}` as Parameters<typeof t>[0]),
   }));
 
   const assigneeModeItems = ASSIGNEE_MODES.map(mode => ({
     value: mode,
-    label: t(`assigneeMode_${mode}`),
+    label: t(`assigneeMode.${enumKey(mode)}` as Parameters<typeof t>[0]),
   }));
 
   const userRoleItems = USER_ROLES.map(role => ({
@@ -188,12 +189,12 @@ export function TaskCard({ index, onRemove, allTasks, form, dragHandleProps }: T
 
             <Badge variant="secondary" className="shrink-0 gap-1 text-xs">
               <TypeIcon className="size-3" />
-              {t(`taskType_${taskType}`)}
+              {t(`taskType.${enumKey(taskType)}` as Parameters<typeof t>[0])}
             </Badge>
 
             {!!task?.assigneeMode && (
               <span className="hidden text-xs text-muted-foreground sm:inline">
-                {t(`assigneeMode_${assigneeMode}`)}
+                {t(`assigneeMode.${enumKey(assigneeMode)}` as Parameters<typeof t>[0])}
               </span>
             )}
 
@@ -237,7 +238,7 @@ export function TaskCard({ index, onRemove, allTasks, form, dragHandleProps }: T
 
             {/* Task type */}
             <div className="space-y-1.5">
-              <Label htmlFor={`task-type-${index}`}>{t('taskType')}</Label>
+              <Label htmlFor={`task-type-${index}`}>{t('taskTypeLabel')}</Label>
               <Select
                 value={taskType}
                 // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
@@ -474,7 +475,7 @@ export function TaskCard({ index, onRemove, allTasks, form, dragHandleProps }: T
                 onClick={() => onRemove(index)}>
                 {t('removeTask')}
               </button>
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+              {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
               <Button type="button" variant="secondary" size="sm" onClick={() => setIsOpen(false)}>
                 {t('doneEditing')}
               </Button>

@@ -119,7 +119,7 @@ export function InvoiceMatchingSettings() {
         </div>
       </CardContent>
       <CardFooter>
-        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
         <Button size="sm" onClick={handleSave} disabled={updateMutation.isPending}>
           {updateMutation.isPending ? (
             <Loader2 className="me-1.5 size-3.5 animate-spin" />
