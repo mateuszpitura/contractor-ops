@@ -4827,6 +4827,50 @@
       "reasonRequiredError": "Bitte geben Sie eine betriebliche Begründung an (mindestens 5 Zeichen)"
     }
   },
+  "Ir35Chain": {
+    "title": "IR35-Kette",
+    "subtitle": "Erfassen Sie die Kette Auftraggeber → Vermittler → PSC → Auftragnehmer und dokumentieren Sie SDS-Zustellung und -Bestätigung je Glied.",
+    "emptyState": "Noch keine Teilnehmer in der Kette.",
+    "addParticipant": "Teilnehmer hinzufügen",
+    "addParticipantTitle": "Kettenteilnehmer hinzufügen",
+    "addParticipantHint": "Fügen Sie eine Agentur oder eine Personal Service Company zur Engagement-Kette hinzu.",
+    "displayName": "Anzeigename",
+    "roleLabel": "Rolle",
+    "contactEmail": "Kontakt-E-Mail",
+    "cancel": "Abbrechen",
+    "save": "Speichern",
+    "saving": "Wird gespeichert…",
+    "confirm": "Bestätigen",
+    "noteLabel": "Notiz (optional)",
+    "markDelivered": "Als zugestellt markieren",
+    "markAcknowledged": "Als bestätigt markieren",
+    "markDeliveredTitle": "SDS als zugestellt markieren",
+    "markAcknowledgedTitle": "SDS als bestätigt markieren",
+    "remove": "Entfernen",
+    "notDelivered": "Nicht zugestellt",
+    "notAcknowledged": "Nicht bestätigt",
+    "columnRole": "Rolle",
+    "columnDisplayName": "Name",
+    "columnDelivered": "Zugestellt",
+    "columnAcknowledged": "Bestätigt",
+    "columnActions": "Aktionen",
+    "role": {
+      "CLIENT": "Auftraggeber",
+      "AGENCY": "Vermittler",
+      "PSC": "PSC",
+      "WORKER": "Auftragnehmer"
+    }
+  },
+  "OtherClientAttestation": {
+    "title": "Attestierung weiterer Auftraggeber",
+    "subtitle": "Bestätigen Sie, ob dieser Auftragnehmer für weitere Auftraggeber tätig ist – wird zur Unterstützung der DRV-Defensivdokumentation verwendet.",
+    "statementLabel": "Erklärung",
+    "statementHint": "Beschreiben Sie Ihre weiteren aktiven Auftraggeber. Maximal {max} Zeichen.",
+    "signedNameLabel": "Unterzeichnet von",
+    "submit": "Attestierung einreichen",
+    "update": "Attestierung aktualisieren",
+    "saving": "Wird gespeichert…"
+  },
   "Classification": {
     "_NOTE": "Legal-locked phrases live in packages/validators/src/legal/{de,disclaimers}.ts. Do NOT duplicate CLASSIFICATION_* or DISCLAIMER_* values here.",
     "pageTitle": "Klassifizierungsbewertung",

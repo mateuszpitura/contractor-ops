@@ -4,7 +4,7 @@
 
 'use client';
 
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useFormatter, useTranslations } from 'next-intl';
 import { useState } from 'react';
 
@@ -25,23 +25,26 @@ export function DocumentHistoryList({ engagementId }: DocumentHistoryListProps) 
   const formatter = useFormatter();
   const [openingId, setOpeningId] = useState<string | null>(null);
 
+  const queryClient = useQueryClient();
+
   const listQuery = useQuery(
     trpc.classificationDocument.listByEngagement.queryOptions({
       contractorAssignmentId: engagementId,
     }),
   );
 
-  const downloadMutation = useMutation(
-    trpc.classificationDocument.getDownloadUrl.mutationOptions({
-      onSuccess: data => {
-        setOpeningId(null);
-        window.open(data.url, '_blank', 'noopener,noreferrer');
-      },
-      onError: () => {
-        setOpeningId(null);
-      },
-    }),
-  );
+  async function handleDownload(classificationDocumentId: string): Promise<void> {
+    setOpeningId(classificationDocumentId);
+    try {
+      const options = trpc.classificationDocument.getDownloadUrl.queryOptions({
+        classificationDocumentId,
+      });
+      const data = await queryClient.fetchQuery(options);
+      window.open(data.url, '_blank', 'noopener,noreferrer');
+    } finally {
+      setOpeningId(null);
+    }
+  }
 
   const docs = listQuery.data ?? [];
 
@@ -81,8 +84,7 @@ export function DocumentHistoryList({ engagementId }: DocumentHistoryListProps) 
                   aria-busy={isOpening}
                   disabled={isOpening}
                   onClick={() => {
-                    setOpeningId(doc.id);
-                    downloadMutation.mutate({ classificationDocumentId: doc.id });
+                    void handleDownload(doc.id);
                   }}
                   className="rounded-md border px-3 py-1.5 text-sm font-medium hover:bg-accent disabled:opacity-60"
                 >

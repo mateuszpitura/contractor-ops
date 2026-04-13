@@ -4685,6 +4685,50 @@
       "reasonRequiredError": "Please provide a business reason (minimum 5 characters)"
     }
   },
+  "Ir35Chain": {
+    "title": "IR35 chain",
+    "subtitle": "Track the client → agency → PSC → worker chain and SDS delivery/acknowledgement per link.",
+    "emptyState": "No chain participants yet.",
+    "addParticipant": "Add participant",
+    "addParticipantTitle": "Add chain participant",
+    "addParticipantHint": "Add an agency or personal service company to this engagement's chain.",
+    "displayName": "Display name",
+    "roleLabel": "Role",
+    "contactEmail": "Contact email",
+    "cancel": "Cancel",
+    "save": "Save",
+    "saving": "Saving…",
+    "confirm": "Confirm",
+    "noteLabel": "Note (optional)",
+    "markDelivered": "Mark delivered",
+    "markAcknowledged": "Mark acknowledged",
+    "markDeliveredTitle": "Mark SDS delivered",
+    "markAcknowledgedTitle": "Mark SDS acknowledged",
+    "remove": "Remove",
+    "notDelivered": "Not delivered",
+    "notAcknowledged": "Not acknowledged",
+    "columnRole": "Role",
+    "columnDisplayName": "Name",
+    "columnDelivered": "Delivered",
+    "columnAcknowledged": "Acknowledged",
+    "columnActions": "Actions",
+    "role": {
+      "CLIENT": "Client",
+      "AGENCY": "Agency",
+      "PSC": "PSC",
+      "WORKER": "Worker"
+    }
+  },
+  "OtherClientAttestation": {
+    "title": "Other clients attestation",
+    "subtitle": "Confirm whether this contractor is engaged with other clients — used to support the DRV audit defence bundle.",
+    "statementLabel": "Statement",
+    "statementHint": "Describe your other active clients. Maximum {max} characters.",
+    "signedNameLabel": "Signed name",
+    "submit": "Submit attestation",
+    "update": "Update attestation",
+    "saving": "Saving…"
+  },
   "Classification": {
     "_NOTE": "Legal-locked phrases live in packages/validators/src/legal/{de,disclaimers}.ts. Do NOT duplicate CLASSIFICATION_* or DISCLAIMER_* values here.",
     "pageTitle": "Classification assessment",

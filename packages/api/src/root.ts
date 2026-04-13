@@ -16,11 +16,14 @@ import { einvoiceRouter } from './routers/einvoice.js';
 import { equipmentRouter } from './routers/equipment.js';
 import { esignRouter } from './routers/esign.js';
 import { exchangeRateRouter } from './routers/exchange-rate.js';
+import { featureFlagsRouter } from './routers/feature-flags.js';
 import { gdprRouter } from './routers/gdpr.js';
 import { googleWorkspaceRouter } from './routers/google-workspace.js';
 import { importRouter } from './routers/import.js';
 import { integrationRouter } from './routers/integration.js';
 import { invoiceRouter } from './routers/invoice.js';
+import { ir35ChainRouter } from './routers/ir35-chain.js';
+import { ir35AttestationRouter } from './routers/ir35-other-client-attestation.js';
 import { jiraRouter } from './routers/jira.js';
 import { ksefRouter } from './routers/ksef.js';
 import { legalRouter } from './routers/legal.js';
@@ -111,12 +114,15 @@ export const appRouter = router({
   onboardingImport: onboardingImportRouter, // onboardingImport: Cross-tool import wizard -- source discovery, user merge, project import, async progress
   einvoice: einvoiceRouter, // einvoice: E-invoicing compliance statuses per country profile
   exchangeRate: exchangeRateRouter, // exchangeRate: Daily ECB exchange rates — query, convert, cron fetch
+  featureFlags: featureFlagsRouter, // featureFlags: Self-hosted Unleash-backed flag introspection for the web dashboard
   consent: consentRouter, // consent: PDPL consent management — privacy notices, per-purpose consent, admin audit
   peppol: peppolRouter, // peppol: Peppol network integration — participant registration, transmission tracking, ASP management
   tax: taxRouter, // tax: Tax rate lookup, VAT validation, WHT calculation, WHT certificates, tax summary dashboard
   zatca: zatcaRouter, // zatca: ZATCA device onboarding — tax details, CSR generation, compliance CSID, compliance checks, production cert
   classification: classificationRouter, // classification: IR35 + Scheinselbständigkeit engagement classification — draft/autosave/submit/outcome (Phase 58)
   classificationDocument: classificationDocumentRouter, // classificationDocument: IR35 SDS + DRV defense bundle PDFs — append-only, content-addressed R2 (Phase 59)
+  ir35Chain: ir35ChainRouter, // ir35Chain: IR35 chain participant tracking + SDS delivery / acknowledgement (Phase 59 CLASS-04)
+  ir35Attestation: ir35AttestationRouter, // ir35Attestation: contractor other-client attestation + same-tenant cross-reference for DRV defense bundle (Phase 59 CLASS-06)
 });
 
 /** Type-safe router type for client consumption */
