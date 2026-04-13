@@ -114,7 +114,7 @@ interface CachedToken {
 // ---------------------------------------------------------------------------
 
 export class HmrcVatClient extends GovApiClient {
-  private readonly secretStore: SecretStore;
+  private readonly hmrcSecretStore: SecretStore;
   private readonly platformVrn: string;
   private readonly pkgVersion: string;
   protected rateLimiter: GovApiRateLimiter;
@@ -122,7 +122,7 @@ export class HmrcVatClient extends GovApiClient {
 
   constructor(deps: HmrcVatClientDeps) {
     super(deps.config, deps.environment);
-    this.secretStore = deps.secretStore;
+    this.hmrcSecretStore = deps.secretStore;
     this.platformVrn = deps.platformVrn;
     this.pkgVersion = deps.pkgVersion;
     this.rateLimiter = new GovApiRateLimiter('hmrc-vat', HMRC_RATE_LIMIT);
@@ -150,8 +150,8 @@ export class HmrcVatClient extends GovApiClient {
   }
 
   private async refreshAccessToken(): Promise<string> {
-    const clientId = await this.secretStore.get(SECRET_PATH_CLIENT_ID);
-    const clientSecret = await this.secretStore.get(SECRET_PATH_CLIENT_SECRET);
+    const clientId = await this.hmrcSecretStore.get(SECRET_PATH_CLIENT_ID);
+    const clientSecret = await this.hmrcSecretStore.get(SECRET_PATH_CLIENT_SECRET);
     if (!clientId || !clientSecret) {
       throw new HmrcApiError(
         'HMRC client credentials not found in secret store',

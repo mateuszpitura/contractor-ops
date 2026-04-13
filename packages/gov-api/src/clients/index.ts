@@ -9,4 +9,9 @@ export {
   type HmrcVatClientDeps,
   type HmrcVatLookupResult,
 } from './hmrc-vat-client.js';
-// ViesClient barrel entries appended in Task 2.
+export {
+  ViesApiError,
+  ViesClient,
+  type ViesClientDeps,
+  type ViesLookupResult,
+} from './vies-client.js';
