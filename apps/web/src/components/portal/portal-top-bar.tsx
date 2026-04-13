@@ -175,6 +175,7 @@ export function PortalTopBar({
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               <DropdownMenuItem onClick={handleLogout}>
                 <LogOut className="me-2 h-4 w-4" />
                 Sign out
@@ -188,6 +189,7 @@ export function PortalTopBar({
           variant="ghost"
           size="icon"
           className="md:hidden"
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
           onClick={() => setMobileMenuOpen(true)}
           aria-label={tAria('openNavigationMenu')}>
           <Menu className="h-5 w-5" />

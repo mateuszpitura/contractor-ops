@@ -169,6 +169,7 @@ export function PortalSettingsPage() {
           <ProfileSection
             title={t('settings.personalInfo')}
             fields={personalFields}
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onSave={handleContactSave}
             defaultOpen
           />
@@ -178,6 +179,7 @@ export function PortalSettingsPage() {
             title={t('settings.financialDetails')}
             fields={financialFields}
             requiresApproval
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onSave={handleFinancialSave}
             pendingChangeRequest={
               profile?.pendingChangeRequest

@@ -54,6 +54,7 @@ export function SourceCard({
       aria-checked={selected}
       aria-label={name}
       tabIndex={0}
+      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
       onKeyDown={handleKeyDown}
       onClick={connected ? onToggle : undefined}>
       <CardContent className="flex items-center gap-4 py-4">
@@ -82,6 +83,7 @@ export function SourceCard({
               id={`import-toggle-${provider}`}
               checked={selected}
               onCheckedChange={onToggle}
+              // biome-ignore lint/nursery/noJsxPropsBind: stopPropagation handler
               onClick={e => e.stopPropagation()}
             />
           </div>
@@ -89,6 +91,7 @@ export function SourceCard({
           <Button
             variant="outline"
             size="sm"
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={e => {
               e.stopPropagation();
               onConnect();

@@ -1,9 +1,15 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { GoogleWorkspaceAdapter } from '../google-workspace-adapter.js';
 
-const mockFindUnique = vi.fn();
-const mockFindMany = vi.fn();
-const mockCount = vi.fn();
+const {
+  mockFindUnique,
+  mockFindMany,
+  mockCount,
+} = vi.hoisted(() => ({
+  mockFindUnique: vi.fn(),
+  mockFindMany: vi.fn(),
+  mockCount: vi.fn(),
+}));
 
 vi.mock('@contractor-ops/db', () => ({
   prisma: {

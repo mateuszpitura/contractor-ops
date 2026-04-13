@@ -4,7 +4,7 @@ model OrganizationApiKey {
   id              String    @id @default(cuid())
   organizationId  String
   name            String
-  prefix          String    @db.Char(8)
+  prefix          String    @db.Char(12)
   hash            String
   scopes          String[]
   createdByUserId String

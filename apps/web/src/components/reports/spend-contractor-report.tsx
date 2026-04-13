@@ -172,6 +172,7 @@ export function SpendContractorReport({ dateFrom, dateTo }: SpendContractorRepor
         nameKey="contractorName"
         idKey="contractorId"
         activeId={drillDownContractorId ?? undefined}
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onSegmentClick={handleDrillDown}
         isLoading={chartQuery.isLoading}
       />
@@ -181,6 +182,7 @@ export function SpendContractorReport({ dateFrom, dateTo }: SpendContractorRepor
           { label: t('all') },
           ...(drillDownName ? [{ label: drillDownName, id: drillDownContractorId as string }] : []),
         ]}
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onClear={handleClearDrillDown}
       />
 
@@ -191,9 +193,11 @@ export function SpendContractorReport({ dateFrom, dateTo }: SpendContractorRepor
         page={page}
         pageSize={20}
         onPageChange={setPage}
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onSortChange={handleSortChange}
         sortBy={sortBy}
         sortOrder={sortOrder}
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onRowClick={row => router.push(`/contractors/${row.contractorId}`)}
         isLoading={tableQuery.isLoading}
         emptyIcon={<DollarSign className="mx-auto h-10 w-10 text-muted-foreground/50" />}
@@ -204,6 +208,7 @@ export function SpendContractorReport({ dateFrom, dateTo }: SpendContractorRepor
       />
 
       <ExportButtons
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onExportPage={() =>
           exportMutation.mutate({
             dateFrom,
@@ -211,6 +216,7 @@ export function SpendContractorReport({ dateFrom, dateTo }: SpendContractorRepor
             contractorId: drillDownContractorId ?? undefined,
           })
         }
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onExportAll={() => exportMutation.mutate({ dateFrom, dateTo })}
         isExporting={exportMutation.isPending}
       />

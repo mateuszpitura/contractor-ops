@@ -82,11 +82,13 @@ export function ExpiryReminderDefaults() {
           <Input
             id="reminder-days"
             value={inputValue}
+            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
             onChange={e => setInputValue(e.target.value)}
             placeholder={t('expiryReminders.placeholder')}
           />
           <p className="text-xs text-muted-foreground">{t('expiryReminders.description')}</p>
         </div>
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         <Button size="sm" onClick={handleSave} disabled={updateMutation.isPending}>
           {updateMutation.isPending ? (
             <Loader2 className="me-1.5 size-3.5 animate-spin" />

@@ -67,6 +67,7 @@ export function PdfPreview({ documentId, filename, open, onOpenChange }: PdfPrev
         <DialogHeader className="flex flex-row items-center justify-between gap-4">
           <DialogTitle className="truncate">{filename}</DialogTitle>
           {!!pdfUrl && (
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             <Button variant="outline" size="sm" onClick={() => window.open(pdfUrl, '_blank')}>
               <Download className="me-1.5 size-3.5" />
               {t('download')}

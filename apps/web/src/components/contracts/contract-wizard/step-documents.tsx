@@ -285,6 +285,7 @@ export function StepDocuments({ onSkip, onDocumentsChange }: StepDocumentsProps)
                 variant="ghost"
                 size="icon"
                 className="h-6 w-6 shrink-0"
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 onClick={() => removeFile(item.id)}>
                 <X className="h-3.5 w-3.5" />
                 <span className="sr-only">{tCommon('srOnly.remove')}</span>

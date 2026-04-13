@@ -134,6 +134,7 @@ export function StepMapping({
               {/* Target field select */}
               <Select
                 value={currentTarget ?? '__skip__'}
+                // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
                 onValueChange={val => handleMappingChange(header, val ?? '__skip__')}
                 aria-label={tAria('mapColumnToField', { header })}>
                 <SelectTrigger className="w-full" aria-label={tAria('mapTo', { header })}>

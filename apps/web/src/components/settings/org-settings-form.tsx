@@ -326,6 +326,7 @@ export function OrgSettingsForm() {
             </Label>
             <Select
               value={watch('country')}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
               onValueChange={value => {
                 if (value) setValue('country', value, { shouldDirty: true });
               }}
@@ -351,6 +352,7 @@ export function OrgSettingsForm() {
             </Label>
             <Select
               value={watch('currency')}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
               onValueChange={value => {
                 if (value) setValue('currency', value, { shouldDirty: true });
               }}
@@ -376,6 +378,7 @@ export function OrgSettingsForm() {
             </Label>
             <Select
               value={watch('timezone')}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
               onValueChange={value => {
                 if (value) setValue('timezone', value, { shouldDirty: true });
               }}
@@ -401,6 +404,7 @@ export function OrgSettingsForm() {
             </Label>
             <Select
               value={watch('language')}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
               onValueChange={value => {
                 if (value) setValue('language', value as 'pl' | 'en', { shouldDirty: true });
               }}
@@ -426,6 +430,7 @@ export function OrgSettingsForm() {
             </Label>
             <Select
               value={String(watch('fiscalYearStartMonth'))}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
               onValueChange={value => {
                 if (!value) return;
                 setValue('fiscalYearStartMonth', Number.parseInt(value, 10), { shouldDirty: true });

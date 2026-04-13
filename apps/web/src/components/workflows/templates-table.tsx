@@ -248,6 +248,7 @@ export function TemplatesTable() {
               <TableRow
                 key={template.id}
                 className="cursor-pointer"
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 onClick={() => router.push(`/workflows/templates/${template.id}`)}>
                 <TableCell>
                   <span className="font-medium">{template.name}</span>
@@ -277,12 +278,14 @@ export function TemplatesTable() {
                 <TableCell>
                   <DropdownMenu>
                     <DropdownMenuTrigger
+                      // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
                       render={props => (
                         <Button
                           {...props}
                           variant="ghost"
                           size="icon"
                           className="h-8 w-8"
+                          // biome-ignore lint/nursery/noJsxPropsBind: stopPropagation handler
                           onClick={e => e.stopPropagation()}>
                           <MoreHorizontal className="h-4 w-4" />
                           <span className="sr-only">{t('templates.actions')}</span>
@@ -291,22 +294,26 @@ export function TemplatesTable() {
                     />
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem
+                        // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
                         onSelect={() => router.push(`/workflows/templates/${template.id}`)}>
                         <Pencil className="me-2 h-4 w-4" />
                         {t('templates.actionEdit')}
                       </DropdownMenuItem>
+                      // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
                       <DropdownMenuItem onSelect={() => void handleDuplicate(template)}>
                         <Copy className="me-2 h-4 w-4" />
                         {t('templates.actionDuplicate')}
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       {template.status === 'DRAFT' && (
+                        // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
                         <DropdownMenuItem onSelect={() => void handleActivate(template)}>
                           <Power className="me-2 h-4 w-4" />
                           {t('templates.actionActivate')}
                         </DropdownMenuItem>
                       )}
                       {template.status === 'ACTIVE' && (
+                        // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
                         <DropdownMenuItem onSelect={() => void handleArchive(template)}>
                           <Archive className="me-2 h-4 w-4" />
                           {t('templates.actionArchive')}
@@ -317,6 +324,7 @@ export function TemplatesTable() {
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
                             className="text-destructive focus:text-destructive"
+                            // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
                             onSelect={() => setDeleteTarget(template)}>
                             <Trash2 className="me-2 h-4 w-4" />
                             {t('templates.actionDelete')}
@@ -335,6 +343,7 @@ export function TemplatesTable() {
       {/* Delete confirmation dialog */}
       <AlertDialog
         open={deleteTarget !== null}
+        // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler
         onOpenChange={open => !open && setDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -345,6 +354,7 @@ export function TemplatesTable() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{t('templates.deleteCancel')}</AlertDialogCancel>
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             <AlertDialogAction variant="destructive" onClick={() => void handleDelete()}>
               {t('templates.deleteConfirm')}
             </AlertDialogAction>

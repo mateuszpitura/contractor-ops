@@ -313,6 +313,7 @@ export function OnboardingChecklist() {
                   <div className="ms-9 mt-2">
                     <OnboardingConsentStep
                       orgCountryCode={orgCountryCode}
+                      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                       onComplete={() => completeStep('privacy-consent', true)}
                     />
                   </div>

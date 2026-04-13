@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Inbox, Mail, Upload } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import { useCallback } from 'react';
 import { toast } from 'sonner';
 import { AuditTimeline } from '@/components/approvals/audit-timeline';
 import { ChainTracker } from '@/components/approvals/chain-tracker';
@@ -119,7 +120,8 @@ function DetailSkeleton() {
 // Invoice feature flag derivation (reduces cognitive complexity in render)
 // ---------------------------------------------------------------------------
 
-function deriveInvoiceFlags(invoice: Record<string, unknown>) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function deriveInvoiceFlags(invoice: Record<string, any>) {
   // Duplicate detection
   const flagsArray: string[] = Array.isArray(invoice.flagsJson) ? invoice.flagsJson : [];
   const hasDuplicateFlag = flagsArray.includes('DUPLICATE_SUSPECTED');
@@ -248,6 +250,19 @@ export default function InvoiceDetailPage() {
     }),
   );
 
+  // Handlers
+  const handleRetry = useCallback(() => invoiceQuery.refetch(), [invoiceQuery]);
+
+  const handleInvoiceInvalidate = useCallback(() => {
+    queryClient.invalidateQueries({
+      queryKey: trpc.invoice.getById.queryKey({ id: params.id }),
+    });
+  }, [queryClient, params.id]);
+
+  const handleSubmitForApproval = useCallback(() => {
+    if (invoice) submitForApproval.mutate({ invoiceId: invoice.id });
+  }, [invoice, submitForApproval]);
+
   // Loading state
   if (invoiceQuery.isLoading) {
     return (
@@ -262,8 +277,7 @@ export default function InvoiceDetailPage() {
     return (
       <div className="flex min-h-[400px] flex-col items-center justify-center gap-3 text-center">
         <h2 className="text-lg font-medium">{t('detail.loadError')}</h2>
-        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
-        <Button variant="outline" onClick={() => invoiceQuery.refetch()}>
+        <Button variant="outline" onClick={handleRetry}>
           {t('detail.retry')}
         </Button>
       </div>
@@ -329,12 +343,7 @@ export default function InvoiceDetailPage() {
             invoiceId={invoice.id}
             duplicateInvoiceId={duplicateInvoiceId}
             invoiceNumber={invoice.invoiceNumber}
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-            onDismiss={() => {
-              queryClient.invalidateQueries({
-                queryKey: trpc.invoice.getById.queryKey({ id: invoice.id }),
-              });
-            }}
+            onDismiss={handleInvoiceInvalidate}
           />
         )}
 
@@ -377,15 +386,7 @@ export default function InvoiceDetailPage() {
         )}
 
         {/* Match card */}
-        <MatchCard
-          invoice={invoice}
-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-          onMatchConfirmed={() => {
-            queryClient.invalidateQueries({
-              queryKey: trpc.invoice.getById.queryKey({ id: invoice.id }),
-            });
-          }}
-        />
+        <MatchCard invoice={invoice} onMatchConfirmed={handleInvoiceInvalidate} />
 
         {/* Time reconciliation card (D-16) */}
         {!!reconciliation && (
@@ -403,22 +404,14 @@ export default function InvoiceDetailPage() {
           <ReverseChargeBanner
             invoiceId={invoice.id}
             isReverseCharge={invoice.isReverseCharge}
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-            onToggle={() => {
-              queryClient.invalidateQueries({
-                queryKey: trpc.invoice.getById.queryKey({ id: invoice.id }),
-              });
-            }}
+            onToggle={handleInvoiceInvalidate}
           />
         )}
 
         {/* Submit for approval button */}
         {!!canSubmitForApproval && (
           <div className="flex justify-end">
-            <Button
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              onClick={() => submitForApproval.mutate({ invoiceId: invoice.id })}
-              disabled={submitForApproval.isPending}>
+            <Button onClick={handleSubmitForApproval} disabled={submitForApproval.isPending}>
               {submitForApproval.isPending
                 ? t('detail.submittingForApproval')
                 : t('detail.submitForApproval')}
@@ -433,15 +426,7 @@ export default function InvoiceDetailPage() {
         {!!hasApprovalFlow && <AuditTimeline invoiceId={invoice.id} />}
 
         {/* Metadata form */}
-        <InvoiceMetadataForm
-          invoice={invoice}
-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-          onSubmittedForMatching={() => {
-            queryClient.invalidateQueries({
-              queryKey: trpc.invoice.getById.queryKey({ id: invoice.id }),
-            });
-          }}
-        />
+        <InvoiceMetadataForm invoice={invoice} onSubmittedForMatching={handleInvoiceInvalidate} />
       </InvoiceDetailLayout>
     </div>
   );

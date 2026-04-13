@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { CheckSquare, ClipboardCheck } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { parseAsInteger, parseAsString, useQueryState } from 'nuqs';
-import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { type ChangeEvent, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import type { ApprovalQueueRow } from '@/components/approvals/approval-queue/columns';
 import { getColumns } from '@/components/approvals/approval-queue/columns';
@@ -180,6 +180,28 @@ function ApprovalsContent() {
     [setSearch, setPage],
   );
 
+  // Tab change handler
+  const handleTabChange = useCallback(
+    (value: string) => {
+      void setTab(value);
+      void setPage(1);
+    },
+    [setTab, setPage],
+  );
+
+  // Change request invalidation handler
+  const handleChangeRequestInvalidate = useCallback(() => {
+    void queryClient.invalidateQueries({
+      queryKey: trpc.settings.listChangeRequests.queryKey(),
+    });
+  }, [queryClient]);
+
+  // Side panel open change handler
+  const handleSidePanelOpenChange = useCallback((open: boolean) => {
+    setSidePanelOpen(open);
+    if (!open) setSelectedStep(null);
+  }, []);
+
   // Selection state for bulk actions
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
@@ -213,6 +235,7 @@ function ApprovalsContent() {
           onSearchChange={handleSearchChange}
           isSearching={queueQuery.isFetching && !isLoading}
           selectedIds={selectedIds}
+          // biome-ignore lint/nursery/noJsxPropsBind: simple state reset, component not memoized
           onClearSelection={() => setSelectedIds([])}
         />
         <ApprovalQueueTable
@@ -242,10 +265,7 @@ function ApprovalsContent() {
       <AnimateIn delay={1}>
         <Tabs
           value={tab}
-          onValueChange={value => {
-            void setTab(value);
-            void setPage(1);
-          }}>
+          onValueChange={handleTabChange}>
           <TabsList>
             <TabsTrigger value="my">{t('tabMy')}</TabsTrigger>
             {isAdmin && <TabsTrigger value="all">{t('tabAll')}</TabsTrigger>}
@@ -292,16 +312,8 @@ function ApprovalsContent() {
                     <ChangeRequestDiffCard
                       key={req.id}
                       request={req}
-                      onApproved={() => {
-                        void queryClient.invalidateQueries({
-                          queryKey: trpc.settings.listChangeRequests.queryKey(),
-                        });
-                      }}
-                      onRejected={() => {
-                        void queryClient.invalidateQueries({
-                          queryKey: trpc.settings.listChangeRequests.queryKey(),
-                        });
-                      }}
+                      onApproved={handleChangeRequestInvalidate}
+                      onRejected={handleChangeRequestInvalidate}
                     />
                   ))}
                 </div>
@@ -315,10 +327,7 @@ function ApprovalsContent() {
       <ApprovalSidePanel
         step={sidePanelOpen ? selectedStep : null}
         open={sidePanelOpen}
-        onOpenChange={open => {
-          setSidePanelOpen(open);
-          if (!open) setSelectedStep(null);
-        }}
+        onOpenChange={handleSidePanelOpenChange}
       />
     </div>
   );

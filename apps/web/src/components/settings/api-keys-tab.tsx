@@ -163,6 +163,7 @@ function CreateKeyDialog({
   // After creation — show plaintext key
   if (createdKey) {
     return (
+      // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler */}
       <Dialog open={open} onOpenChange={handleClose}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
@@ -175,6 +176,7 @@ function CreateKeyDialog({
           <div className="space-y-3">
             <div className="flex items-center gap-2 rounded-lg border bg-muted/50 p-3">
               <code className="flex-1 break-all text-xs font-mono">{createdKey}</code>
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               <Button variant="ghost" size="icon-sm" onClick={handleCopy} aria-label="Copy key">
                 {copied ? (
                   <Check className="size-4 text-green-600" />
@@ -202,6 +204,7 @@ function CreateKeyDialog({
 
   // Creation form
   return (
+    // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler */}
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
@@ -219,6 +222,7 @@ function CreateKeyDialog({
               id="key-name"
               placeholder="e.g. ERP Integration"
               value={name}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
               onChange={e => setName(e.target.value)}
               autoFocus
             />
@@ -235,6 +239,7 @@ function CreateKeyDialog({
                   <Checkbox
                     id={`scope-${scope.value}`}
                     checked={scopes.includes(scope.value)}
+                    // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
                     onCheckedChange={() => toggleScope(scope.value)}
                   />
                   <span>{scope.label}</span>
@@ -249,6 +254,7 @@ function CreateKeyDialog({
               id="key-expiry"
               type="date"
               value={expiresAt}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
               onChange={e => setExpiresAt(e.target.value)}
               min={new Date().toISOString().split('T')[0]}
             />
@@ -258,6 +264,7 @@ function CreateKeyDialog({
         <DialogFooter>
           <DialogClose render={<Button variant="outline" />}>Cancel</DialogClose>
           <Button
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={handleCreate}
             disabled={!name.trim() || scopes.length === 0 || createMutation.isPending}>
             {createMutation.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
@@ -316,6 +323,7 @@ function RevokeDialog({
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction
             variant="destructive"
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={() => revokeMutation.mutate({ id: keyId })}
             disabled={revokeMutation.isPending}>
             {revokeMutation.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
@@ -347,6 +355,7 @@ export function ApiKeysTab() {
               Manage API keys for the Enterprise REST API.
             </p>
           </div>
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
           <Button size="sm" onClick={() => setCreateOpen(true)}>
             <Plus className="mr-1.5 size-4" />
             Create Key
@@ -418,6 +427,7 @@ export function ApiKeysTab() {
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem
                                 className="text-destructive"
+                                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                                 onClick={() => setRevokeTarget({ id: key.id, name: key.name })}>
                                 <Trash2 className="mr-2 size-4" />
                                 Revoke
@@ -445,6 +455,7 @@ export function ApiKeysTab() {
               size="sm"
               variant="outline"
               className="mt-2"
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => setCreateOpen(true)}>
               <Plus className="mr-1.5 size-4" />
               Create Key
@@ -459,6 +470,7 @@ export function ApiKeysTab() {
             keyId={revokeTarget.id}
             keyName={revokeTarget.name}
             open={!!revokeTarget}
+            // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler
             onOpenChange={open => {
               if (!open) setRevokeTarget(null);
             }}

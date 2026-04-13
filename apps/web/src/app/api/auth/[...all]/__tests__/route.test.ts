@@ -1,8 +1,13 @@
 /** @vitest-environment node */
 import { describe, expect, it, vi } from 'vitest';
 
-const mockGet = vi.fn();
-const mockPost = vi.fn();
+const {
+  mockGet,
+  mockPost,
+} = vi.hoisted(() => ({
+  mockGet: vi.fn(),
+  mockPost: vi.fn(),
+}));
 
 vi.mock('@contractor-ops/auth', () => ({
   auth: {},

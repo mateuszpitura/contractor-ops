@@ -70,6 +70,10 @@ function InvoicesContent() {
     setUploadOpen(prev => !prev);
   }, []);
 
+  const handleUploadComplete = useCallback(() => {
+    setUploadOpen(false);
+  }, []);
+
   const handleStatusChange = useCallback(
     (status: string) => {
       void setFilters({ matchStatus: status, page: 1 });
@@ -90,7 +94,7 @@ function InvoicesContent() {
       <div className="space-y-6">
         <PageHeader title={t('pageTitle')} description={t('pageDescription')} />
         {uploadOpen ? (
-          <InvoiceUploadArea onUploadComplete={() => setUploadOpen(false)} />
+          <InvoiceUploadArea onUploadComplete={handleUploadComplete} />
         ) : (
           <EmptyState
             icon={Receipt}
@@ -121,7 +125,7 @@ function InvoicesContent() {
       {/* Upload area (collapsible) */}
       {!!uploadOpen && (
         <div className="space-y-3">
-          <InvoiceUploadArea onUploadComplete={() => setUploadOpen(false)} />
+          <InvoiceUploadArea onUploadComplete={handleUploadComplete} />
           {/* Email inbox tip */}
           <p className="text-sm text-muted-foreground text-center">
             {t('upload.emailTip', { email: '' })}

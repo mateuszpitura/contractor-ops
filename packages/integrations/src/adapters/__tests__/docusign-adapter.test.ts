@@ -1,7 +1,23 @@
 import { createHmac } from 'node:crypto';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-const mockFindUnique = vi.fn();
+const {
+  mockFindUnique,
+  mockCreateEnvelope,
+  mockCreateRecipientView,
+  mockGetDocument,
+  mockUpdateEnvelope,
+  mockGetEnvelope,
+  mockListRecipients,
+} = vi.hoisted(() => ({
+  mockFindUnique: vi.fn(),
+  mockCreateEnvelope: vi.fn(async () => ({,
+  mockCreateRecipientView: vi.fn(async () => ({,
+  mockGetDocument: vi.fn(async () => Buffer.from('%PDF-1.4 fake')),
+  mockUpdateEnvelope: vi.fn(async () => undefined),
+  mockGetEnvelope: vi.fn(async () => ({,
+  mockListRecipients: vi.fn(async () => ({,
+}));
 
 vi.mock('@contractor-ops/db', () => ({
   prisma: {
@@ -18,20 +34,14 @@ vi.mock('../../services/credential-service.js', () => ({
   })),
 }));
 
-const mockCreateEnvelope = vi.fn(async () => ({
   envelopeId: 'env-abc',
   status: 'sent',
 }));
-const mockCreateRecipientView = vi.fn(async () => ({
   url: 'https://apps-d.docusign.com/signing/xyz',
 }));
-const mockGetDocument = vi.fn(async () => Buffer.from('%PDF-1.4 fake'));
-const mockUpdateEnvelope = vi.fn(async () => undefined);
-const mockGetEnvelope = vi.fn(async () => ({
   envelopeId: 'env-abc',
   status: 'completed',
 }));
-const mockListRecipients = vi.fn(async () => ({
   signers: [
     {
       recipientId: '1',

@@ -256,6 +256,7 @@ export function NotificationPreferences() {
                     <Controller
                       control={form.control}
                       name={`preferences.${index}.channelEmail`}
+                      // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
                       render={({ field }) => (
                         <Switch
                           checked={field.value}
@@ -272,6 +273,7 @@ export function NotificationPreferences() {
                       <Controller
                         control={form.control}
                         name={`preferences.${index}.channelSlack`}
+                        // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
                         render={({ field }) => (
                           <Switch
                             checked={field.value}
@@ -296,6 +298,7 @@ export function NotificationPreferences() {
                       <Controller
                         control={form.control}
                         name={`preferences.${index}.channelTeams`}
+                        // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
                         render={({ field }) => (
                           <Switch
                             checked={field.value}

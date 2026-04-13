@@ -114,6 +114,7 @@ export function StepUpload({
         </label>
         <RadioGroup
           value={entityType}
+          // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
           onValueChange={val => onEntityTypeChange(val as EntityType)}
           aria-label={t('upload.entityType')}
           className="flex gap-4">
@@ -142,6 +143,7 @@ export function StepUpload({
           <Button
             variant="ghost"
             size="sm"
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={e => {
               e.stopPropagation();
               onFileRemoved();

@@ -5,8 +5,16 @@ import type { ApprovalQueueRow } from '../columns';
 import { getColumns } from '../columns';
 
 vi.mock('@/i18n/navigation', () => ({
-  Link: ({ children, href, ...props }: { children: React.ReactNode; href: string; [key: string]: unknown }) => (
-    <a href={href} {...props}>
+  Link: ({
+    children,
+    href,
+    ...props
+  }: {
+    children: React.ReactNode;
+    href: string;
+    [key: string]: unknown;
+  }) => (
+    <a href={href} {...(props as React.AnchorHTMLAttributes<HTMLAnchorElement>)}>
       {children}
     </a>
   ),
@@ -15,7 +23,7 @@ vi.mock('@/i18n/navigation', () => ({
 }));
 
 vi.mock('../../sla-badge', () => ({
-  SlaBadge: ({ slaDeadline, status }: any) => (
+  SlaBadge: ({ slaDeadline, status }: { slaDeadline: string | null; status: string }) => (
     <span data-testid="sla-badge">
       {status}-{slaDeadline ?? 'none'}
     </span>

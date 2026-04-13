@@ -29,6 +29,7 @@ export function DrillDownBreadcrumb({ segments, onClear }: DrillDownBreadcrumbPr
         <BreadcrumbList>
           <BreadcrumbItem>
             <BreadcrumbLink
+              // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
               render={props => (
                 <button
                   {...props}

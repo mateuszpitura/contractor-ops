@@ -10,6 +10,7 @@ const KEY_PREFIX = 'co_live_';
 // For multi-instance, replace with Upstash Ratelimit.
 const windowMs = 60_000; // 1 minute
 const maxRequestsPerKey = 100;
+const MAX_WINDOWS = 50_000; // Safety cap to prevent memory exhaustion
 
 const windows = new Map<string, { count: number; resetAt: number }>();
 
@@ -23,7 +24,7 @@ function extractRateLimitKey(c: Context): string | null {
   if (!auth.startsWith(`Bearer ${KEY_PREFIX}`)) return null;
 
   const random = auth.slice(`Bearer ${KEY_PREFIX}`.length);
-  return `rl:${random.slice(0, 8)}`;
+  return `rl:${random.slice(0, 12)}`;
 }
 
 /**
@@ -43,6 +44,10 @@ export async function rateLimitMiddleware(c: Context, next: Next) {
   let window = windows.get(key);
 
   if (!window || now >= window.resetAt) {
+    // Safety cap: clear all windows if map grows too large (DoS protection)
+    if (windows.size >= MAX_WINDOWS) {
+      windows.clear();
+    }
     window = { count: 0, resetAt: now + windowMs };
     windows.set(key, window);
   }
@@ -73,7 +78,7 @@ export async function rateLimitMiddleware(c: Context, next: Next) {
   await next();
 }
 
-// Periodic cleanup of expired windows (every 5 minutes)
+// Periodic cleanup of expired windows (every 1 minute — matches window duration)
 setInterval(() => {
   const now = Date.now();
   for (const [key, window] of windows) {
@@ -81,4 +86,4 @@ setInterval(() => {
       windows.delete(key);
     }
   }
-}, 5 * 60_000).unref();
+}, 60_000).unref();

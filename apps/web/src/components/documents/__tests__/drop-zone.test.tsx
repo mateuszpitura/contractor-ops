@@ -55,7 +55,13 @@ vi.mock('@/trpc/init', () => ({
 }));
 
 vi.mock('@/components/documents/upload-progress', () => ({
-  UploadProgress: ({ file, onRemove }: any) => (
+  UploadProgress: ({
+    file,
+    onRemove,
+  }: {
+    file: { file: { name: string }; status: string };
+    onRemove: () => void;
+  }) => (
     <div data-testid="upload-progress">
       <span>{file.file.name}</span>
       <span>{file.status}</span>

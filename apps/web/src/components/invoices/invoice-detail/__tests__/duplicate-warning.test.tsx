@@ -3,7 +3,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, setup } from '@/test/test-utils';
 import { DuplicateWarning } from '../duplicate-warning';
 
-const mutateMock = vi.fn();
+const {
+  mutateMock,
+} = vi.hoisted(() => ({
+  mutateMock: vi.fn(),
+}));
 
 vi.mock('@/trpc/init', () => ({
   trpc: {

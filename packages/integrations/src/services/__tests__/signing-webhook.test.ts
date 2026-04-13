@@ -1,14 +1,21 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const normalizeSigningEvent = vi.fn();
+const {
+  normalizeSigningEvent,
+  mockSigningEnvelopeFindFirst,
+  mockSigningEventFindFirst,
+  mockTransaction,
+} = vi.hoisted(() => ({
+  normalizeSigningEvent: vi.fn(),
+  mockSigningEnvelopeFindFirst: vi.fn(),
+  mockSigningEventFindFirst: vi.fn(),
+  mockTransaction: vi.fn(),
+}));
 
 vi.mock('../esign-service.js', () => ({
   normalizeSigningEvent: normalizeSigningEvent,
 }));
 
-const mockSigningEnvelopeFindFirst = vi.fn();
-const mockSigningEventFindFirst = vi.fn();
-const mockTransaction = vi.fn();
 
 const mockSigningEventCreate = vi.fn();
 const mockSigningRecipientFindFirst = vi.fn();

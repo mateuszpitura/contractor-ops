@@ -23,7 +23,11 @@ node_modules
 **/e2e
 **/load-tests
 **/__tests__
-**/test-utils
+# test-utils is a workspace package referenced as a devDependency by api,
+# integrations, and gov-api — turbo's `^build` forces it to compile during
+# the web build, so we must keep its source in the build context.
+packages/test-utils/dist
+packages/test-utils/__tests__
 **/coverage
 
 # Docker internals

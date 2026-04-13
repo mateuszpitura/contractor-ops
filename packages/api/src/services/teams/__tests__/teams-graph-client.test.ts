@@ -1,6 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const mockGet = vi.fn();
+const {
+  mockGet,
+} = vi.hoisted(() => ({
+  mockGet: vi.fn(),
+}));
 
 vi.mock('@microsoft/microsoft-graph-client', () => ({
   Client: {

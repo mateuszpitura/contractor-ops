@@ -3,13 +3,25 @@
 import { NextRequest } from 'next/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const mockDocumentFindMany = vi.fn();
-const mockDocumentDeleteMany = vi.fn();
-const mockDocumentLinkDeleteMany = vi.fn();
-const mockInvoiceFileDeleteMany = vi.fn();
-const mockInvoiceDeleteMany = vi.fn();
-const mockContractDeleteMany = vi.fn();
-const mockContractorDeleteMany = vi.fn();
+const {
+  mockDocumentFindMany,
+  mockDocumentDeleteMany,
+  mockDocumentLinkDeleteMany,
+  mockInvoiceFileDeleteMany,
+  mockInvoiceDeleteMany,
+  mockContractDeleteMany,
+  mockContractorDeleteMany,
+  mockDeleteObject,
+} = vi.hoisted(() => ({
+  mockDocumentFindMany: vi.fn(),
+  mockDocumentDeleteMany: vi.fn(),
+  mockDocumentLinkDeleteMany: vi.fn(),
+  mockInvoiceFileDeleteMany: vi.fn(),
+  mockInvoiceDeleteMany: vi.fn(),
+  mockContractDeleteMany: vi.fn(),
+  mockContractorDeleteMany: vi.fn(),
+  mockDeleteObject: vi.fn(),
+}));
 
 vi.mock('@contractor-ops/db', () => ({
   prisma: {
@@ -56,7 +68,6 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
   metrics: { gauge: vi.fn() },
 }));
 
-const mockDeleteObject = vi.fn();
 
 vi.mock('@contractor-ops/api/services/r2', () => ({
   deleteObject: mockDeleteObject,

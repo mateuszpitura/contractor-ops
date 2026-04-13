@@ -5,8 +5,13 @@ import { getConversationReference, storeConversationReference } from '../teams-b
 // Mocks
 // ---------------------------------------------------------------------------
 
-const mockFindFirst = vi.fn();
-const mockUpdate = vi.fn();
+const {
+  mockFindFirst,
+  mockUpdate,
+} = vi.hoisted(() => ({
+  mockFindFirst: vi.fn(),
+  mockUpdate: vi.fn(),
+}));
 
 vi.mock('@contractor-ops/db', () => ({
   prisma: {

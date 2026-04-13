@@ -26,6 +26,7 @@ export function DataTableColumnToggle<TData>({ table }: DataTableColumnTogglePro
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
+        // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
         render={props => (
           <Button {...props} variant="outline" size="icon" className="h-9 w-9">
             <SlidersHorizontal className="h-4 w-4" />
@@ -45,6 +46,7 @@ export function DataTableColumnToggle<TData>({ table }: DataTableColumnTogglePro
             <DropdownMenuCheckboxItem
               key={column.id}
               checked={column.getIsVisible()}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
               onCheckedChange={value => column.toggleVisibility(!!value)}
               className="capitalize">
               {t(`columns.${column.id}` as Parameters<typeof t>[0])}

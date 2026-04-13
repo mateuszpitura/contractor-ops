@@ -200,14 +200,18 @@ export function BankStatementDialog({ runId, open, onOpenChange }: BankStatement
               role="button"
               tabIndex={0}
               aria-label={t('bankStatement.dropzoneText')}
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => fileInputRef.current?.click()}
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onKeyDown={e => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
                   fileInputRef.current?.click();
                 }
               }}
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onDragOver={e => e.preventDefault()}
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onDrop={e => {
                 e.preventDefault();
                 const file = e.dataTransfer.files[0];
@@ -273,6 +277,7 @@ export function BankStatementDialog({ runId, open, onOpenChange }: BankStatement
                         {!!match.matched && (
                           <Checkbox
                             checked={selectedMatches.has(match.transactionIndex)}
+                            // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
                             onCheckedChange={() => toggleMatch(match.transactionIndex)}
                           />
                         )}

@@ -196,6 +196,7 @@ export function DropZone({
       {files.length > 0 && (
         <div className="space-y-2">
           {files.map(item => (
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             <UploadProgress key={item.id} file={item} onRemove={() => removeFile(item.id)} />
           ))}
         </div>

@@ -148,6 +148,7 @@ export function StepSelect({
     <div className="flex flex-col gap-4">
       {/* Filter row */}
       <div className="flex items-center gap-2 flex-wrap">
+        // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
         <Select value={currency} onValueChange={v => setCurrency(v ?? 'all')}>
           <SelectTrigger className="w-[160px] h-8">
             <SelectValue placeholder={t('step1.allCurrencies')} />
@@ -191,6 +192,7 @@ export function StepSelect({
         <Input
           placeholder={t('step1.searchContractors')}
           value={contractorSearch}
+          // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
           onChange={e => setContractorSearch(e.target.value)}
           className="h-8 w-[200px] text-xs"
         />

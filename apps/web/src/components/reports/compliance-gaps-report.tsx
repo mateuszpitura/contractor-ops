@@ -178,6 +178,7 @@ export function ComplianceGapsReport({
         dataKey="value"
         nameKey="name"
         activeId={drillDownHealth ?? undefined}
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onSegmentClick={handleDrillDown}
         isLoading={chartQuery.isLoading}
       />
@@ -187,6 +188,7 @@ export function ComplianceGapsReport({
           { label: t('all') },
           ...(drillDownLabel ? [{ label: drillDownLabel, id: drillDownHealth as string }] : []),
         ]}
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onClear={handleClearDrillDown}
       />
 
@@ -197,9 +199,11 @@ export function ComplianceGapsReport({
         page={page}
         pageSize={20}
         onPageChange={setPage}
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onSortChange={handleSortChange}
         sortBy={sortBy}
         sortOrder={sortOrder}
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onRowClick={row => router.push(`/contractors/${row.contractorId}`)}
         isLoading={tableQuery.isLoading}
         emptyIcon={<ShieldAlert className="mx-auto h-10 w-10 text-muted-foreground/50" />}
@@ -208,7 +212,9 @@ export function ComplianceGapsReport({
       />
 
       <ExportButtons
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onExportPage={() => exportMutation.mutate()}
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onExportAll={() => exportMutation.mutate()}
         isExporting={exportMutation.isPending}
       />

@@ -83,6 +83,7 @@ function LifecycleMenuItems({
           key={item.labelKey}
           disabled={isPending}
           variant={item.variant}
+          // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
           onSelect={() => (item.isArchive ? onArchive() : onLifecycleAction(item.target))}>
           {t(item.labelKey)}
         </DropdownMenuItem>
@@ -178,11 +179,13 @@ export function ProfileHeader({ contractor }: ProfileHeaderProps) {
       </div>
 
       <div className="flex items-center gap-2">
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         <Button variant="outline" size="sm" onClick={() => toast.info(t('actions.editComingSoon'))}>
           <Pencil className="me-1.5 size-3.5" />
           {t('actions.edit')}
         </Button>
 
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         <Button variant="outline" size="sm" onClick={() => setWizardOpen(true)}>
           <FilePlus className="me-1.5 size-3.5" />
           {t('actions.addContract')}
@@ -192,6 +195,7 @@ export function ProfileHeader({ contractor }: ProfileHeaderProps) {
           <Button
             variant="outline"
             size="sm"
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={() => {
               setPickerType('ONBOARDING');
               setPickerOpen(true);
@@ -205,6 +209,7 @@ export function ProfileHeader({ contractor }: ProfileHeaderProps) {
           <Button
             variant="outline"
             size="sm"
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={() => {
               setPickerType('OFFBOARDING');
               setPickerOpen(true);
@@ -216,6 +221,7 @@ export function ProfileHeader({ contractor }: ProfileHeaderProps) {
 
         <DropdownMenu>
           <DropdownMenuTrigger
+            // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
             render={props => (
               <Button {...props} variant="outline" size="icon-sm">
                 <MoreHorizontal className="size-4" />
@@ -227,7 +233,9 @@ export function ProfileHeader({ contractor }: ProfileHeaderProps) {
             <LifecycleMenuItems
               stage={stage}
               isPending={isPending}
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onLifecycleAction={handleLifecycleAction}
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onArchive={handleArchive}
               t={t}
             />

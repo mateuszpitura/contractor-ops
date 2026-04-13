@@ -348,6 +348,7 @@ export function ContractDataTable({ onRowClick, onNewContract, onImport }: Contr
                   key={row.id}
                   data-state={row.getIsSelected() ? 'selected' : undefined}
                   className="cursor-pointer"
+                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                   onClick={() => onRowClick(row.original)}>
                   {row.getVisibleCells().map(cell => (
                     <TableCell key={cell.id}>

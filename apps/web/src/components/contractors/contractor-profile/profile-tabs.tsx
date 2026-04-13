@@ -61,6 +61,7 @@ export function ProfileTabs({
   );
 
   return (
+    // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler */}
     <Tabs value={currentTab} onValueChange={value => setTab(value as string)} className="w-full">
       <TabsList variant="line" className="w-full justify-start overflow-x-auto">
         {TAB_KEYS.map(key => (

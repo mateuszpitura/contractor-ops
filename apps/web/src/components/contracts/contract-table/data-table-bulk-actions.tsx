@@ -75,6 +75,7 @@ export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
         {/* Export — placeholder for now, actual export router is not yet implemented */}
         <DropdownMenu>
           <DropdownMenuTrigger
+            // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
             render={props => (
               <Button {...props} variant="outline" size="sm" className="h-8 gap-1.5">
                 <Download className="h-3.5 w-3.5" />
@@ -84,12 +85,14 @@ export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
           />
           <DropdownMenuContent align="start">
             <DropdownMenuItem
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => {
                 toast.info(tc('exportComingSoon'));
               }}>
               {t('exportCsv')}
             </DropdownMenuItem>
             <DropdownMenuItem
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => {
                 toast.info(tc('exportComingSoon'));
               }}>
@@ -103,6 +106,7 @@ export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
           variant="outline"
           size="sm"
           className="h-8 gap-1.5 text-destructive hover:text-destructive"
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
           onClick={() => setShowTerminateDialog(true)}>
           <XCircle className="h-3.5 w-3.5" />
           {t('terminate')}
@@ -119,6 +123,7 @@ export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
           <AlertDialogFooter>
             <AlertDialogCancel>{tc('cancel')}</AlertDialogCancel>
             <AlertDialogAction
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() =>
                 bulkTransitionMutation.mutate({
                   ids: selectedIds,

@@ -120,9 +120,11 @@ export function TaskComments({ runId, taskRunId }: TaskCommentsProps) {
         <Textarea
           placeholder={t('commentPlaceholder')}
           value={body}
+          // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
           onChange={e => setBody(e.target.value)}
           rows={2}
           className="flex-1 resize-none"
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
           onKeyDown={e => {
             if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
               e.preventDefault();
@@ -133,6 +135,7 @@ export function TaskComments({ runId, taskRunId }: TaskCommentsProps) {
         <Button
           size="sm"
           disabled={body.trim().length === 0 || addCommentMutation.isPending}
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
           onClick={handleSubmit}
           className="self-end">
           {t('postComment')}

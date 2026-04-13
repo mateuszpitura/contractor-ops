@@ -23,6 +23,7 @@ vi.mock('../step-upload', () => ({
       <button
         type="button"
         data-testid="select-file"
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onClick={() => props.onFileSelected('base64data', 'test.csv')}>
         Select
       </button>
@@ -32,6 +33,7 @@ vi.mock('../step-upload', () => ({
       <button
         type="button"
         data-testid="change-entity"
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onClick={() => props.onEntityTypeChange('contract')}>
         Change Entity
       </button>
@@ -82,7 +84,11 @@ vi.mock('../step-confirm', () => ({
   ),
 }));
 
-const mockMutate = vi.fn();
+const {
+  mockMutate,
+} = vi.hoisted(() => ({
+  mockMutate: vi.fn(),
+}));
 let lastMutationCallbacks: Array<{
   onSuccess?: (data: unknown) => void;
   onError?: () => void;

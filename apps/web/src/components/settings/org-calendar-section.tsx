@@ -118,6 +118,7 @@ function OrgCalendarProviderCard({
               <Button
                 variant="outline"
                 className="text-destructive hover:text-destructive"
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 onClick={() => setDisconnectDialogOpen(true)}>
                 {t('disconnectCalendar')}
               </Button>
@@ -125,6 +126,7 @@ function OrgCalendarProviderCard({
           ) : (
             <div className="space-y-3">
               <p className="text-sm text-muted-foreground">{t('orgCalendarDescription')}</p>
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               <Button onClick={handleConnect}>{t('connectCalendar')}</Button>
             </div>
           )}
@@ -143,6 +145,7 @@ function OrgCalendarProviderCard({
             <AlertDialogAction
               variant="destructive"
               disabled={isDisconnecting}
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => {
                 if (connection) {
                   onDisconnect(connection.id);
@@ -239,6 +242,7 @@ export function OrgCalendarSection() {
             displayName={t('googleCalendar')}
             icon={<GoogleCalendarIcon className="h-8 w-8" />}
             connection={googleConnection}
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onDisconnect={handleDisconnect}
             isDisconnecting={disconnectMutation.isPending}
           />
@@ -247,6 +251,7 @@ export function OrgCalendarSection() {
             displayName={t('outlookCalendar')}
             icon={<OutlookCalendarIcon className="h-8 w-8 text-[#0078D4]" />}
             connection={outlookConnection}
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onDisconnect={handleDisconnect}
             isDisconnecting={disconnectMutation.isPending}
           />

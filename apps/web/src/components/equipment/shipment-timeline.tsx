@@ -129,6 +129,7 @@ export function ShipmentTimeline({
               className="text-xs font-medium text-muted-foreground">
               {t('shipment.addStatusUpdate')}
             </label>
+            // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
             <Select value={newStatus} onValueChange={val => val && setNewStatus(val)}>
               <SelectTrigger id="shipment-new-status" className="w-full">
                 <SelectValue placeholder="Select status..." />
@@ -151,12 +152,14 @@ export function ShipmentTimeline({
             <Input
               id="shipment-new-notes"
               value={newNotes}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
               onChange={e => setNewNotes(e.target.value)}
               placeholder="Optional notes..."
             />
           </div>
           <Button
             size="sm"
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={handleAddEvent}
             disabled={!newStatus || addEventMutation.isPending}>
             {!!addEventMutation.isPending && <Loader2 className="me-1 h-3 w-3 animate-spin" />}

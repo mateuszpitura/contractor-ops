@@ -94,6 +94,7 @@ function ProjectCard({ project, selection, onSelectionChange }: ProjectCardProps
             {SOURCE_ICONS[project.sourceProvider]}
             <Input
               value={selection.name}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
               onChange={e => handleNameChange(e.target.value)}
               className="h-7 max-w-xs border-none bg-transparent px-1 text-sm font-medium shadow-none focus-visible:ring-1"
               disabled={selection.skip}
@@ -103,11 +104,13 @@ function ProjectCard({ project, selection, onSelectionChange }: ProjectCardProps
             <Button
               variant="ghost"
               size="sm"
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => setExpanded(!expanded)}
               disabled={selection.skip}>
               {expanded ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}
               {t('editSteps')}
             </Button>
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             <Button variant="link" size="sm" onClick={handleSkip} className="text-muted-foreground">
               {t('skipProject')}
             </Button>
@@ -137,6 +140,7 @@ function ProjectCard({ project, selection, onSelectionChange }: ProjectCardProps
                 <GripVertical className="size-4 text-muted-foreground" aria-hidden="true" />
                 <Input
                   value={step.name}
+                  // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                   onChange={e => handleRenameStep(i, e.target.value)}
                   placeholder={`Step ${i + 1}`}
                   className="h-7 flex-1 text-sm"
@@ -144,6 +148,7 @@ function ProjectCard({ project, selection, onSelectionChange }: ProjectCardProps
                 <Button
                   variant="ghost"
                   size="icon-xs"
+                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                   onClick={() => handleMoveStep(i, 'up')}
                   disabled={i === 0}
                   aria-label="Move up">
@@ -152,6 +157,7 @@ function ProjectCard({ project, selection, onSelectionChange }: ProjectCardProps
                 <Button
                   variant="ghost"
                   size="icon-xs"
+                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                   onClick={() => handleMoveStep(i, 'down')}
                   disabled={i === selection.steps.length - 1}
                   aria-label="Move down">
@@ -160,6 +166,7 @@ function ProjectCard({ project, selection, onSelectionChange }: ProjectCardProps
                 <Button
                   variant="ghost"
                   size="icon-xs"
+                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                   onClick={() => handleRemoveStep(i)}
                   aria-label="Remove step">
                   <X className="size-3" />
@@ -167,6 +174,7 @@ function ProjectCard({ project, selection, onSelectionChange }: ProjectCardProps
               </div>
             ))}
 
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             <Button variant="outline" size="sm" onClick={handleAddStep} className="mt-1">
               <Plus className="size-3" />
               {t('addStep')}
@@ -290,6 +298,7 @@ export function ProjectImportStep({
               key={key}
               project={project}
               selection={sel}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
               onSelectionChange={s => handleSelectionChange(key, s)}
             />
           );

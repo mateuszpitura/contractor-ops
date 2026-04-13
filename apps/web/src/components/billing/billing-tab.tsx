@@ -97,7 +97,9 @@ export function BillingTab() {
           <Separator />
           <ProrationPreview
             newPriceId={selectedPriceId}
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onConfirm={handleConfirmChange}
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onCancel={handleCancelChange}
           />
         </>
@@ -107,6 +109,7 @@ export function BillingTab() {
 
       {/* Manage Billing Portal */}
       {!!subscription && (
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         <Button variant="outline" onClick={handlePortal} disabled={portalMutation.isPending}>
           {!!portalMutation.isPending && <Loader2 className="animate-spin" aria-hidden="true" />}
           Manage billing

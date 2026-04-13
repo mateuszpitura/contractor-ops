@@ -228,6 +228,7 @@ function TaskCardV2({ index, task, form, allTasks, onRemove, dragHandleProps }: 
       <button
         type="button"
         className="flex w-full items-center gap-3 px-4 py-3 text-start"
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onClick={() => setExpanded(!expanded)}>
         {/* Drag handle */}
         <span
@@ -310,6 +311,7 @@ function TaskCardV2({ index, task, form, allTasks, onRemove, dragHandleProps }: 
                       key={tt.value}
                       type="button"
                       title={tt.label}
+                      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                       onClick={() =>
                         form.setValue(`tasks.${index}.taskType`, tt.value, { shouldDirty: true })
                       }
@@ -354,6 +356,7 @@ function TaskCardV2({ index, task, form, allTasks, onRemove, dragHandleProps }: 
                 id={`task-${index}-assignee`}
                 className="h-9 w-full rounded-lg border border-border/40 bg-transparent px-2 text-[12px] focus:border-primary/40 focus:outline-none"
                 value={task.assigneeMode}
+                // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                 onChange={e =>
                   form.setValue(
                     `tasks.${index}.assigneeMode`,
@@ -373,6 +376,7 @@ function TaskCardV2({ index, task, form, allTasks, onRemove, dragHandleProps }: 
                 <select
                   className="mt-1.5 h-8 w-full rounded-lg border border-border/30 bg-transparent px-2 text-[11px] focus:border-primary/40 focus:outline-none"
                   value={task.assigneeRole ?? ''}
+                  // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                   onChange={e =>
                     form.setValue(
                       `tasks.${index}.assigneeRole`,
@@ -394,6 +398,7 @@ function TaskCardV2({ index, task, form, allTasks, onRemove, dragHandleProps }: 
                 <select
                   className="mt-1.5 h-8 w-full rounded-lg border border-border/30 bg-transparent px-2 text-[11px] focus:border-primary/40 focus:outline-none"
                   value={task.assigneeUserId ?? ''}
+                  // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                   onChange={e =>
                     form.setValue(`tasks.${index}.assigneeUserId`, e.target.value, {
                       shouldDirty: true,
@@ -457,6 +462,7 @@ function TaskCardV2({ index, task, form, allTasks, onRemove, dragHandleProps }: 
                   <Switch
                     id={`task-${index}-required`}
                     checked={task.required}
+                    // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
                     onCheckedChange={v =>
                       form.setValue(`tasks.${index}.required`, !!v, { shouldDirty: true })
                     }
@@ -477,6 +483,7 @@ function TaskCardV2({ index, task, form, allTasks, onRemove, dragHandleProps }: 
                     id={`task-${index}-depends`}
                     className="h-8 w-full rounded-lg border border-border/30 bg-transparent px-2 text-[11px] focus:border-primary/40 focus:outline-none"
                     value={task.dependsOnTaskTemplateId ?? ''}
+                    // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                     onChange={e =>
                       form.setValue(
                         `tasks.${index}.dependsOnTaskTemplateId`,
@@ -501,6 +508,7 @@ function TaskCardV2({ index, task, form, allTasks, onRemove, dragHandleProps }: 
           <div className="flex justify-end pt-1">
             <button
               type="button"
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => onRemove(index)}
               className="flex items-center gap-1 text-[11px] font-medium text-destructive/60 transition-colors hover:text-destructive">
               <Trash2 className="h-3 w-3" /> Remove task
@@ -653,6 +661,7 @@ export default function NewWorkflowTemplatePage() {
                         <button
                           key={tt.value}
                           type="button"
+                          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                           onClick={() => form.setValue('type', tt.value, { shouldDirty: true })}
                           className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.08em] transition-all ${
                             active
@@ -765,6 +774,7 @@ export default function NewWorkflowTemplatePage() {
                   variant="outline"
                   size="sm"
                   className="text-xs"
+                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                   onClick={() => router.push('/workflows')}>
                   Cancel
                 </Button>

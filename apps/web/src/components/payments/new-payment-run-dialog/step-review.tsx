@@ -168,6 +168,7 @@ export function StepReview({
           <Input
             placeholder={t('step2.namePlaceholder')}
             value={name}
+            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
             onChange={e => setName(e.target.value)}
             maxLength={100}
             className="h-8 text-sm"
@@ -178,6 +179,7 @@ export function StepReview({
           <Textarea
             placeholder={t('step2.descriptionPlaceholder')}
             value={notes}
+            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
             onChange={e => setNotes(e.target.value)}
             maxLength={500}
             className="h-16 text-sm resize-none"
@@ -241,6 +243,7 @@ export function StepReview({
       {/* Export format */}
       <div className="space-y-1.5">
         <Label className="text-xs">{t('step2.exportFormatLabel')}</Label>
+        // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
         <Select value={exportFormat} onValueChange={v => setExportFormat(v ?? 'CSV')}>
           <SelectTrigger className="w-full h-8">
             <SelectValue />

@@ -3,6 +3,7 @@ import { cors } from 'hono/cors';
 import { requestId } from 'hono/request-id';
 import { handleError } from './lib/error-handler.js';
 import { rateLimitMiddleware } from './lib/rate-limiter.js';
+import { openApiSpec } from './openapi.js';
 import contractors from './routes/contractors.js';
 import contracts from './routes/contracts.js';
 import documents from './routes/documents.js';
@@ -27,6 +28,24 @@ app.route('/documents', documents);
 
 // --- Health check (outside auth) ---
 app.get('/health', c => c.json({ status: 'ok' }));
+
+// --- OpenAPI spec + interactive docs ---
+app.get('/openapi.json', c => c.json(openApiSpec));
+app.get('/docs', c => {
+  const html = `<!DOCTYPE html>
+<html>
+<head>
+  <title>Contractor Ops API</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+</head>
+<body>
+  <script id="api-reference" data-url="/api/v1/openapi.json"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference"></script>
+</body>
+</html>`;
+  return c.html(html);
+});
 
 // --- Error handler ---
 app.onError(handleError);

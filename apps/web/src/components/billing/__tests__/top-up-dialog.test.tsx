@@ -5,7 +5,11 @@ import { TopUpDialog } from '../top-up-dialog';
 // Mocks
 // ---------------------------------------------------------------------------
 
-const mockMutate = vi.fn();
+const {
+  mockMutate,
+} = vi.hoisted(() => ({
+  mockMutate: vi.fn(),
+}));
 
 vi.mock('@tanstack/react-query', () => ({
   useMutation: () => ({

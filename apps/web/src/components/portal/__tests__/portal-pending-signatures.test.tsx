@@ -15,7 +15,11 @@ vi.mock('@/components/contracts/contract-detail/embedded-signing-modal', () => (
   EmbeddedSigningModal: () => null,
 }));
 
-const mockUseQuery = vi.fn();
+const {
+  mockUseQuery,
+} = vi.hoisted(() => ({
+  mockUseQuery: vi.fn(),
+}));
 
 vi.mock('@tanstack/react-query', () => ({
   useQuery: mockUseQuery,

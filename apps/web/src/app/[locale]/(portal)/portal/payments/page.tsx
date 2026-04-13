@@ -113,6 +113,7 @@ export default function PortalPaymentsPage() {
                 <TableRow
                   key={payment.id}
                   className="cursor-pointer"
+                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                   onClick={() => router.push(`/portal/invoices/${payment.id}`)}>
                   <TableCell className="text-sm font-medium">{payment.invoiceNumber}</TableCell>
                   <TableCell className="text-sm">

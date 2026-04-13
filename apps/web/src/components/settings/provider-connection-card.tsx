@@ -222,12 +222,14 @@ export function ProviderConnectionCard({
                 )}
               </div>
               <div className="flex gap-2">
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 <Button variant="outline" onClick={() => setDetailSheetOpen(true)}>
                   {t('provider.manageCta')}
                 </Button>
                 <Button
                   variant="outline"
                   className="text-destructive hover:text-destructive"
+                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                   onClick={() => setDisconnectDialogOpen(true)}>
                   {t('provider.disconnectCta', { provider: displayName })}
                 </Button>
@@ -244,6 +246,7 @@ export function ProviderConnectionCard({
                   : t('provider.errorConnectionFailed')}
               </p>
               <div className="flex gap-2">
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 <Button variant="outline" onClick={handleConnect}>
                   {t('provider.reconnectCta')}
                 </Button>
@@ -251,6 +254,7 @@ export function ProviderConnectionCard({
                   <Button
                     variant="outline"
                     className="text-destructive hover:text-destructive"
+                    // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                     onClick={() => setDisconnectDialogOpen(true)}>
                     {t('provider.disconnectCta', { provider: displayName })}
                   </Button>
@@ -263,6 +267,7 @@ export function ProviderConnectionCard({
           {!(isConnected || isReauthRequired || isError) && (
             <div className="space-y-3">
               <p className="text-sm text-muted-foreground">{description}</p>
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               <Button onClick={handleConnect}>
                 {t('provider.connectCta', { provider: displayName })}
               </Button>
@@ -296,6 +301,7 @@ export function ProviderConnectionCard({
             <AlertDialogAction
               variant="destructive"
               disabled={disconnectMutation.isPending}
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => disconnectMutation.mutate({ provider })}>
               {!!disconnectMutation.isPending && (
                 <Loader2 className="me-1.5 size-3.5 animate-spin" />

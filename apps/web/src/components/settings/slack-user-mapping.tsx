@@ -117,6 +117,7 @@ function LinkUserPopover({ userId, onLinked }: { userId: string; onLinked: () =>
               {search.length > 0 ? (
                 <CommandItem
                   value={search}
+                  // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
                   onSelect={() => handleSelect(search)}
                   className="cursor-pointer">
                   <span className="text-sm">Link as &quot;{search}&quot;</span>
@@ -257,6 +258,7 @@ export function SlackUserMapping() {
                     <Button
                       variant="ghost"
                       size="sm"
+                      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                       onClick={() =>
                         unlinkMutation.mutate({
                           externalLinkId: mapping.slackLink.externalLinkId,
@@ -266,6 +268,7 @@ export function SlackUserMapping() {
                       {t('integrations.userMapping.unlinkUser')}
                     </Button>
                   ) : (
+                    // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                     <LinkUserPopover userId={mapping.userId} onLinked={() => undefined} />
                   )}
                 </TableCell>

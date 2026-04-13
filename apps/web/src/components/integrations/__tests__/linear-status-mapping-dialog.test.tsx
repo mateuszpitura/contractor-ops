@@ -44,7 +44,11 @@ let teamsLoading = false;
 let existingMapping: unknown[] = [];
 let existingMappingLoading = false;
 
-const mockMutate = vi.fn();
+const {
+  mockMutate,
+} = vi.hoisted(() => ({
+  mockMutate: vi.fn(),
+}));
 
 vi.mock('@tanstack/react-query', async () => {
   const actual =

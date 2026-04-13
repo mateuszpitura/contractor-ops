@@ -321,6 +321,7 @@ export function PeopleReviewStep({
             <Button size="sm" variant="outline" onClick={handleBatchSkip}>
               {t('batchSkip')}
             </Button>
+            // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
             <Select onValueChange={val => val && handleBatchRole(val as string)}>
               <SelectTrigger size="sm" className="w-36">
                 <SelectValue>{t('batchRole')}</SelectValue>
@@ -382,6 +383,7 @@ export function PeopleReviewStep({
                           ) : (
                             <Checkbox
                               checked={checkedEmails.has(person.email)}
+                              // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
                               onCheckedChange={() => handleRowCheck(person.email)}
                               aria-label={`Select ${person.name}`}
                             />
@@ -422,6 +424,7 @@ export function PeopleReviewStep({
                             <ConflictResolutionPopover
                               conflicts={person.conflicts ?? []}
                               resolvedConflicts={sel?.resolvedConflicts ?? {}}
+                              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                               onResolve={(field, value) =>
                                 handleResolveConflict(person.email, field, value)
                               }
@@ -434,6 +437,7 @@ export function PeopleReviewStep({
                         <TableCell>
                           <Select
                             value={sel?.role ?? 'member'}
+                            // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
                             onValueChange={val =>
                               val && handleRoleChange(person.email, val as string)
                             }
@@ -457,6 +461,7 @@ export function PeopleReviewStep({
                             <Button
                               variant="ghost"
                               size="sm"
+                              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                               onClick={() => handleSkipRow(person.email)}
                               disabled={isSkipped}>
                               {t('skipRow')}

@@ -94,6 +94,7 @@ export function ComplianceChecks({ onSuccess, onBack }: ComplianceChecksProps) {
 
       {results.length === 0 && (
         <Button
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
           onClick={() => (checksMutation.mutate as () => void)()}
           disabled={checksMutation.isPending}>
           {!!checksMutation.isPending && (

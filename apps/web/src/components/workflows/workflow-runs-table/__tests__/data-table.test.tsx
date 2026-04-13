@@ -30,7 +30,7 @@ vi.mock('@/i18n/navigation', () => ({
     href: string;
     [key: string]: unknown;
   }) => (
-    <a href={href} {...props}>
+    <a href={href} {...(props as React.AnchorHTMLAttributes<HTMLAnchorElement>)}>
       {children}
     </a>
   ),

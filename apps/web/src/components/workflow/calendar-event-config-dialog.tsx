@@ -96,6 +96,7 @@ export function CalendarEventConfigDialog({
   }
 
   return (
+    // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler */}
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
@@ -110,6 +111,7 @@ export function CalendarEventConfigDialog({
             <Input
               id="calendar-event-title"
               value={titleTemplate}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
               onChange={e => setTitleTemplate(e.target.value)}
               placeholder={t('eventTitlePlaceholder')}
               maxLength={200}
@@ -120,6 +122,7 @@ export function CalendarEventConfigDialog({
           {/* Duration */}
           <div className="space-y-2">
             <Label htmlFor="calendar-event-duration">{t('durationLabel')}</Label>
+            // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
             <Select value={duration} onValueChange={val => setDuration(val ?? '1h')}>
               <SelectTrigger id="calendar-event-duration">
                 <SelectValue />
@@ -140,6 +143,7 @@ export function CalendarEventConfigDialog({
             <Textarea
               id="calendar-event-attendees"
               value={attendeesText}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
               onChange={e => setAttendeesText(e.target.value)}
               placeholder={t('attendeesPlaceholder')}
               rows={3}
@@ -149,9 +153,11 @@ export function CalendarEventConfigDialog({
         </div>
 
         <DialogFooter>
+          // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             {t('cancelButton')}
           </Button>
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
           <Button onClick={handleSave}>{t('saveEventConfig')}</Button>
         </DialogFooter>
       </DialogContent>

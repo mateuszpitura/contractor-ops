@@ -16,16 +16,31 @@
  */
 
 import cron from 'node-cron';
+import pino from 'pino';
+
+// Pino is used directly here (not @contractor-ops/logger) because this worker
+// runs as a standalone Node ESM script outside the Next.js bundle and cannot
+// import the TypeScript workspace package. Options mirror packages/logger.
+const log = pino({
+  level: process.env.LOG_LEVEL ?? 'info',
+  timestamp: pino.stdTimeFunctions.isoTime,
+  formatters: {
+    level(label) {
+      return { level: label };
+    },
+  },
+  base: { service: 'worker-cron' },
+});
 
 const TARGET = process.env.WORKER_TARGET_URL;
 const CRON_SECRET = process.env.CRON_SECRET;
 
 if (!TARGET) {
-  console.error('[worker-cron] WORKER_TARGET_URL is required (e.g. http://web-XXXX:3000)');
+  log.fatal('WORKER_TARGET_URL is required (e.g. http://web-XXXX:3000)');
   process.exit(1);
 }
 if (!CRON_SECRET) {
-  console.error('[worker-cron] CRON_SECRET is required');
+  log.fatal('CRON_SECRET is required');
   process.exit(1);
 }
 
@@ -44,22 +59,28 @@ async function triggerCron(job) {
       headers: { Authorization: `Bearer ${CRON_SECRET}` },
       signal: AbortSignal.timeout(120_000),
     });
-    const ms = Date.now() - start;
+    const durationMs = Date.now() - start;
     if (!res.ok) {
-      console.error(`[worker-cron] ${job.name} -> ${res.status} (${ms}ms)`);
+      log.error({ job: job.name, status: res.status, durationMs }, 'cron call failed');
       return;
     }
+    log.info({ job: job.name, status: res.status, durationMs }, 'cron call ok');
   } catch (err) {
-    console.error(`[worker-cron] ${job.name} -> ERROR: ${err.message}`);
+    log.error(
+      { job: job.name, durationMs: Date.now() - start, err },
+      'cron call threw',
+    );
   }
 }
 
 const scheduled = jobs.map(job => {
   const task = cron.schedule(job.schedule, () => triggerCron(job), { timezone: 'UTC' });
+  log.info({ job: job.name, schedule: job.schedule }, 'cron scheduled');
   return task;
 });
 
-function shutdown(_signal) {
+function shutdown(signal) {
+  log.info({ signal, scheduledCount: scheduled.length }, 'worker shutting down');
   for (const task of scheduled) task.stop();
   process.exit(0);
 }

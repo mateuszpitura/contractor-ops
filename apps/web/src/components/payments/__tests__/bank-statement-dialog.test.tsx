@@ -11,11 +11,16 @@ vi.mock('sonner', () => ({
   toast: { success: vi.fn(), error: vi.fn() },
 }));
 
-const mockMutate = vi.fn();
+const {
+  mockMutate,
+  confirmMutate,
+} = vi.hoisted(() => ({
+  mockMutate: vi.fn(),
+  confirmMutate: vi.fn(),
+}));
 
 let importOnSuccess: ((data: unknown) => void) | null = null;
 let importOnError: ((err: unknown) => void) | null = null;
-const confirmMutate = vi.fn();
 
 vi.mock('@tanstack/react-query', async () => {
   const actual =

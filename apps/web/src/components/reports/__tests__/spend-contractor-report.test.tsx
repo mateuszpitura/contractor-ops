@@ -28,8 +28,16 @@ vi.mock('@/trpc/init', () => ({
 }));
 
 vi.mock('@/i18n/navigation', () => ({
-  Link: ({ children, href, ...props }: { children: React.ReactNode; href: string; [key: string]: unknown }) => (
-    <a href={href} {...props}>
+  Link: ({
+    children,
+    href,
+    ...props
+  }: {
+    children: React.ReactNode;
+    href: string;
+    [key: string]: unknown;
+  }) => (
+    <a href={href} {...(props as React.AnchorHTMLAttributes<HTMLAnchorElement>)}>
       {children}
     </a>
   ),
@@ -45,14 +53,26 @@ vi.mock('../report-chart', () => ({
 }));
 
 vi.mock('../report-table', () => ({
-  ReportTable: ({ data, emptyTitle, isLoading, grandTotalLabel, grandTotalValue }: any) =>
+  ReportTable: ({
+    data,
+    emptyTitle,
+    isLoading,
+    grandTotalLabel,
+    grandTotalValue,
+  }: {
+    data: Record<string, unknown>[];
+    emptyTitle: string;
+    isLoading: boolean;
+    grandTotalLabel?: string;
+    grandTotalValue?: string;
+  }) =>
     isLoading ? (
       <div data-testid="loading" />
     ) : data.length === 0 ? (
       <div data-testid="empty">{emptyTitle}</div>
     ) : (
       <div data-testid="report-table">
-        {data.map((row: unknown) => (
+        {data.map(row => (
           <div key={row.contractorId}>{row.contractorName}</div>
         ))}
         {!!grandTotalLabel && (

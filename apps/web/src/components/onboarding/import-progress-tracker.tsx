@@ -110,6 +110,7 @@ export function ImportProgressTracker({ jobId }: ImportProgressTrackerProps) {
               <Button
                 variant="ghost"
                 size="sm"
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 onClick={() => retryMutation.mutate({ jobId, email: item.email })}
                 disabled={retryMutation.isPending}>
                 {retryMutation.isPending ? (

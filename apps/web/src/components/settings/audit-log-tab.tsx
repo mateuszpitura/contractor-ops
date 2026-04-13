@@ -254,10 +254,13 @@ export function AuditLogTab() {
           totalCount={0}
           page={1}
           pageSize={PAGE_SIZE}
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
           onPageChange={() => undefined}
           sortOrder="desc"
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
           onSortOrderChange={() => undefined}
           expandedRows={{}}
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
           onToggleRow={() => undefined}
           isLoading
         />
@@ -277,6 +280,7 @@ export function AuditLogTab() {
           <Search className="absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={localSearch}
+            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
             onChange={e => setLocalSearch(e.target.value)}
             placeholder={t('searchPlaceholder')}
             className="ps-9"
@@ -300,6 +304,7 @@ export function AuditLogTab() {
         {/* Actor filter */}
         <Select
           value={actorId}
+          // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
           onValueChange={val => {
             void setActorId(val || null);
             void setAuditPage('1');
@@ -320,6 +325,7 @@ export function AuditLogTab() {
         {/* Action filter */}
         <Select
           value={actionFilter}
+          // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
           onValueChange={val => {
             void setActionFilter(val || null);
             void setAuditPage('1');
@@ -340,6 +346,7 @@ export function AuditLogTab() {
         {/* Resource type filter */}
         <Select
           value={resourceType}
+          // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
           onValueChange={val => {
             void setResourceType(val || null);
             void setAuditPage('1');
@@ -361,6 +368,7 @@ export function AuditLogTab() {
         <Input
           type="date"
           value={dateFrom}
+          // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
           onChange={e => {
             void setDateFrom(e.target.value || null);
             void setAuditPage('1');
@@ -373,6 +381,7 @@ export function AuditLogTab() {
         <Input
           type="date"
           value={dateTo}
+          // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
           onChange={e => {
             void setDateTo(e.target.value || null);
             void setAuditPage('1');

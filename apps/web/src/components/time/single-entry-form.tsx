@@ -153,6 +153,7 @@ export function SingleEntryForm({
                 <Calendar
                   mode="single"
                   selected={date}
+                  // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
                   onSelect={d => {
                     setDate(d);
                     setCalendarOpen(false);
@@ -193,6 +194,7 @@ export function SingleEntryForm({
               max="24"
               placeholder="e.g. 1.5"
               value={hours}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
               onChange={e => setHours(e.target.value)}
               className="[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
             />
@@ -210,6 +212,7 @@ export function SingleEntryForm({
               maxLength={500}
               placeholder="What did you work on?"
               value={description}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
               onChange={e => setDescription(e.target.value)}
             />
             {!!errors.description && (
@@ -222,9 +225,11 @@ export function SingleEntryForm({
         </div>
 
         <DialogFooter className="gap-2 sm:gap-0">
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
           <Button variant="outline" onClick={handleDiscard}>
             Discard Entry
           </Button>
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
           <Button onClick={handleSubmit} disabled={isSubmitting}>
             {isSubmitting ? 'Adding...' : 'Add Entry'}
           </Button>

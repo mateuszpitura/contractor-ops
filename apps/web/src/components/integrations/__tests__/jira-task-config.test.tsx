@@ -24,7 +24,11 @@ vi.mock('../jira-project-mapping-dialog', () => ({
 let connectionData: unknown = { id: 'conn-1', status: 'CONNECTED' };
 let configData: unknown;
 
-const mockMutate = vi.fn();
+const {
+  mockMutate,
+} = vi.hoisted(() => ({
+  mockMutate: vi.fn(),
+}));
 
 vi.mock('@tanstack/react-query', async () => {
   const actual =

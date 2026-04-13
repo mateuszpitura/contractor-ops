@@ -161,6 +161,7 @@ export function ExpiringContractsReport({
             key={d}
             variant={days === d ? 'default' : 'outline'}
             size="sm"
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={() => {
               setDays(d);
               setPage(1);
@@ -176,6 +177,7 @@ export function ExpiringContractsReport({
         dataKey="count"
         nameKey="bucket"
         idKey="bucket"
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onSegmentClick={() => undefined}
         isLoading={chartQuery.isLoading}
       />
@@ -187,9 +189,11 @@ export function ExpiringContractsReport({
         page={page}
         pageSize={20}
         onPageChange={setPage}
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onSortChange={handleSortChange}
         sortBy={sortBy}
         sortOrder={sortOrder}
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onRowClick={row => router.push(`/contracts/${row.contractId}`)}
         isLoading={tableQuery.isLoading}
         emptyIcon={<FileWarning className="mx-auto h-10 w-10 text-muted-foreground/50" />}
@@ -198,7 +202,9 @@ export function ExpiringContractsReport({
       />
 
       <ExportButtons
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onExportPage={() => exportMutation.mutate({ days })}
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onExportAll={() => exportMutation.mutate({ days })}
         isExporting={exportMutation.isPending}
       />

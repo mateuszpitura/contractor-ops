@@ -257,6 +257,7 @@ export function TabOverview({ contractor }: TabOverviewProps) {
               <button
                 key={factor.key}
                 type="button"
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 onClick={() => targetTab && switchTab(targetTab)}
                 className="flex items-center gap-2 rounded-md px-2 py-1.5 text-start transition-colors hover:bg-muted">
                 <Icon className={`size-4 shrink-0 ${colorClass}`} />

@@ -163,6 +163,7 @@ export function SpendTeamReport({ dateFrom, dateTo }: SpendTeamReportProps) {
         nameKey="teamName"
         idKey="teamId"
         activeId={drillDownTeamId ?? undefined}
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onSegmentClick={handleDrillDown}
         isLoading={chartQuery.isLoading}
       />
@@ -172,6 +173,7 @@ export function SpendTeamReport({ dateFrom, dateTo }: SpendTeamReportProps) {
           { label: t('all') },
           ...(drillDownName ? [{ label: drillDownName, id: drillDownTeamId as string }] : []),
         ]}
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onClear={handleClearDrillDown}
       />
 
@@ -182,6 +184,7 @@ export function SpendTeamReport({ dateFrom, dateTo }: SpendTeamReportProps) {
         page={page}
         pageSize={20}
         onPageChange={setPage}
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onSortChange={handleSortChange}
         sortBy={sortBy}
         sortOrder={sortOrder}
@@ -194,7 +197,9 @@ export function SpendTeamReport({ dateFrom, dateTo }: SpendTeamReportProps) {
       />
 
       <ExportButtons
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onExportPage={() => exportMutation.mutate({ dateFrom, dateTo })}
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onExportAll={() => exportMutation.mutate({ dateFrom, dateTo })}
         isExporting={exportMutation.isPending}
       />

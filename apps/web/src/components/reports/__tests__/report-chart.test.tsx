@@ -2,11 +2,24 @@ import { describe, expect, it, vi } from 'vitest';
 import { render, screen, setup } from '@/test/test-utils';
 
 vi.mock('recharts', () => ({
-  BarChart: ({ children }: { children: React.ReactNode }) => <div data-testid="bar-chart">{children}</div>,
-  Bar: ({ children, onClick }: any) => (
+  BarChart: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="bar-chart">{children}</div>
+  ),
+  Bar: ({
+    children,
+    onClick,
+  }: {
+    children: React.ReactNode;
+    onClick?: (
+      data: Record<string, unknown>,
+      index: number,
+      event: Record<string, unknown>,
+    ) => void;
+  }) => (
     <button
       type="button"
       data-testid="bar"
+      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
       onClick={() =>
         onClick?.({ id: 'segment-id', name: 'Row' }, 0, {
           payload: { id: 'segment-id', name: 'Row' },
@@ -21,7 +34,9 @@ vi.mock('recharts', () => ({
   ResponsiveContainer: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="responsive-container">{children}</div>
   ),
-  PieChart: ({ children }: { children: React.ReactNode }) => <div data-testid="pie-chart">{children}</div>,
+  PieChart: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="pie-chart">{children}</div>
+  ),
   Pie: ({ children }: { children: React.ReactNode }) => <div data-testid="pie">{children}</div>,
   Cell: ({ fill }: { fill: string }) => <div data-testid="cell" data-fill={fill} />,
 }));

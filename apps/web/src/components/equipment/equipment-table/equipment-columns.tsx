@@ -69,6 +69,7 @@ export function getEquipmentColumns(
           <Link
             href={`/equipment/${row.original.id}`}
             className="font-medium hover:underline"
+            // biome-ignore lint/nursery/noJsxPropsBind: column definition
             onClick={e => e.stopPropagation()}>
             {row.original.name}
           </Link>
@@ -118,6 +119,7 @@ export function getEquipmentColumns(
           <Link
             href={`/contractors/${assignment.contractorId}`}
             className="text-sm hover:underline"
+            // biome-ignore lint/nursery/noJsxPropsBind: column definition
             onClick={e => e.stopPropagation()}>
             {assignment.contractorName ?? assignment.contractorId}
           </Link>
@@ -138,11 +140,13 @@ export function getEquipmentColumns(
         return (
           <DropdownMenu>
             <DropdownMenuTrigger
+              // biome-ignore lint/nursery/noJsxPropsBind: column definition
               render={props => (
                 <Button
                   {...props}
                   variant="ghost"
                   size="icon-sm"
+                  // biome-ignore lint/nursery/noJsxPropsBind: column definition
                   onClick={e => e.stopPropagation()}>
                   <MoreHorizontal className="h-4 w-4" />
                   <span className="sr-only">{tCommon('srOnly.moreActions')}</span>
@@ -150,23 +154,27 @@ export function getEquipmentColumns(
               )}
             />
             <DropdownMenuContent align="end">
+              // biome-ignore lint/nursery/noJsxPropsBind: column definition
               <DropdownMenuItem onSelect={() => actions.onEdit(equipment)}>
                 <Pencil className="me-2 h-3.5 w-3.5" />
                 {t('detail.edit')}
               </DropdownMenuItem>
               {!(isRetired || isAssigned) && (
+                // biome-ignore lint/nursery/noJsxPropsBind: column definition
                 <DropdownMenuItem onSelect={() => actions.onAssign(equipment)}>
                   <UserPlus className="me-2 h-3.5 w-3.5" />
                   {t('detail.assignToContractor')}
                 </DropdownMenuItem>
               )}
               {isAssigned && (
+                // biome-ignore lint/nursery/noJsxPropsBind: column definition
                 <DropdownMenuItem onSelect={() => actions.onUnassign(equipment)}>
                   <UserMinus className="me-2 h-3.5 w-3.5" />
                   {t('detail.unassignEquipment')}
                 </DropdownMenuItem>
               )}
               {!isRetired && (
+                // biome-ignore lint/nursery/noJsxPropsBind: column definition
                 <DropdownMenuItem onSelect={() => actions.onCreateShipment(equipment)}>
                   <Truck className="me-2 h-3.5 w-3.5" />
                   {t('detail.createShipment')}
@@ -177,6 +185,7 @@ export function getEquipmentColumns(
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
                     variant="destructive"
+                    // biome-ignore lint/nursery/noJsxPropsBind: column definition
                     onSelect={() => actions.onRetire(equipment)}>
                     <Archive className="me-2 h-3.5 w-3.5" />
                     {t('detail.retire')}

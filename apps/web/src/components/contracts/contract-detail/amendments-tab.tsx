@@ -115,6 +115,7 @@ function AddAmendmentDialog({
         <DialogHeader>
           <DialogTitle>{t('addTitle')}</DialogTitle>
         </DialogHeader>
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <label htmlFor="amendment-title" className="text-sm font-medium">
@@ -124,6 +125,7 @@ function AddAmendmentDialog({
               id="amendment-title"
               type="text"
               value={title}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
               onChange={e => setTitle(e.target.value)}
               className="h-9 w-full rounded-md border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               placeholder={t('fields.titlePlaceholder')}
@@ -138,6 +140,7 @@ function AddAmendmentDialog({
               id="amendment-effective-date"
               type="date"
               value={effectiveDate}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
               onChange={e => setEffectiveDate(e.target.value)}
               className="h-9 w-full rounded-md border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               required
@@ -150,6 +153,7 @@ function AddAmendmentDialog({
             <textarea
               id="amendment-description"
               value={description}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
               onChange={e => setDescription(e.target.value)}
               className="w-full resize-none rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               rows={3}
@@ -157,6 +161,7 @@ function AddAmendmentDialog({
             />
           </div>
           <DialogFooter>
+            // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               {t('cancel')}
             </Button>
@@ -204,6 +209,7 @@ function TimelineNode({
       <div className="min-w-0 flex-1 pb-6">
         <button
           type="button"
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
           onClick={() => setExpanded(!expanded)}
           className="flex items-center gap-2 text-start">
           {expanded ? (
@@ -261,6 +267,7 @@ export function AmendmentsTab({ contract }: AmendmentsTabProps) {
       {/* Header with CTA */}
       <div className="flex items-center justify-between">
         <h3 className="text-base font-medium">{t('heading')}</h3>
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         <Button size="sm" onClick={() => setDialogOpen(true)}>
           <Plus className="me-1.5 size-3.5" />
           {t('addCta')}

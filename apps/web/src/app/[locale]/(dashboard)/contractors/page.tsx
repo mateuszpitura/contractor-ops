@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Users } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { parseAsString, useQueryState } from 'nuqs';
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useCallback, useEffect, useState } from 'react';
 import { ContractorSidePanel } from '@/components/contractors/contractor-side-panel';
 import type { ContractorRow } from '@/components/contractors/contractor-table/columns';
 import { ContractorDataTable } from '@/components/contractors/contractor-table/data-table';
@@ -42,14 +42,18 @@ function ContractorsContent() {
   const totalCount = (countQuery.data as { total: number } | undefined)?.total ?? 0;
   const isCountLoading = countQuery.isLoading;
 
-  const handleRowClick = (contractor: ContractorRow) => {
+  const handleRowClick = useCallback((contractor: ContractorRow) => {
     setSelectedContractor(contractor);
     setSidePanelOpen(true);
-  };
+  }, []);
 
-  const handleAddContractor = () => {
+  const handleAddContractor = useCallback(() => {
     setWizardOpen(true);
-  };
+  }, []);
+
+  const handleOpenImportWizard = useCallback(() => {
+    setImportWizardOpen(true);
+  }, []);
 
   // Show empty state only when count query resolved and total is 0
   if (!isCountLoading && totalCount === 0) {
@@ -63,7 +67,7 @@ function ContractorsContent() {
           primaryAction={{ label: te('contractors.cta'), onClick: handleAddContractor }}
           secondaryAction={{
             label: te('contractors.secondary'),
-            onClick: () => setImportWizardOpen(true),
+            onClick: handleOpenImportWizard,
           }}
         />
         <WizardDialog open={wizardOpen} onOpenChange={setWizardOpen} />
@@ -88,7 +92,7 @@ function ContractorsContent() {
         <ContractorDataTable
           onRowClick={handleRowClick}
           onAddContractor={handleAddContractor}
-          onImport={() => setImportWizardOpen(true)}
+          onImport={handleOpenImportWizard}
         />
       </AnimateIn>
 

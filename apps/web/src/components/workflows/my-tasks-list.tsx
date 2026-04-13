@@ -124,6 +124,7 @@ export function MyTasksList() {
         <Switch
           id="overdue-only-toggle"
           checked={overdueOnly}
+          // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
           onCheckedChange={checked => setOverdueOnly(checked === true)}
         />
         <Label htmlFor="overdue-only-toggle" className="text-sm">

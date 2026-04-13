@@ -14,9 +14,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 // Mock @contractor-ops/db
 // ---------------------------------------------------------------------------
 
-const mockFindUnique = vi.fn();
+const {
+  mockFindUnique,
+  mockTenantStoreRun,
+} = vi.hoisted(() => ({
+  mockFindUnique: vi.fn(),
+  mockTenantStoreRun: vi.fn((_ctx: unknown, fn: () => unknown) => fn()),
+}));
 const mockScopedClient = { _scoped: true };
-const mockTenantStoreRun = vi.fn((_ctx: unknown, fn: () => unknown) => fn());
 
 vi.mock('@contractor-ops/db', () => ({
   prisma: {

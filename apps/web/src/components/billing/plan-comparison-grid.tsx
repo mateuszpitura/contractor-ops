@@ -124,6 +124,7 @@ export function PlanComparisonGrid({
             tier={plan}
             ctaMode={getCtaMode(plan.id, currentTier)}
             isRecommended={plan.id === 'PRO'}
+            // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
             onSelect={() => onSelectPlan(plan.priceId)}
             disabled={!plan.priceId}
             compact={compact}

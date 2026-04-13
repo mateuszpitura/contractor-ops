@@ -86,6 +86,7 @@ export function WhtSummaryCard({ paymentRunId: _paymentRunId, items }: WhtSummar
           {treatyCount > 0 && <Badge variant="outline">Treaty rates applied: {treatyCount}</Badge>}
         </div>
 
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         <Button onClick={handleGenerateAll} disabled={generateMutation.isPending} className="mt-6">
           {generateMutation.isPending ? (
             <Loader2 className="me-2 h-4 w-4 animate-spin" />

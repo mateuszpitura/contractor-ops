@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { parseAsString, useQueryState } from 'nuqs';
-import { Suspense } from 'react';
+import { Suspense, useCallback } from 'react';
 import { BillingTab } from '@/components/billing/billing-tab';
 import { ConsentManagementSection } from '@/components/consent/consent-management-section';
 import { EInvoiceComplianceDetail } from '@/components/einvoice/compliance-detail';
@@ -34,6 +34,7 @@ function SettingsContent() {
   // URL-synced tab state for deep linking (e.g. OAuth callback to ?tab=integrations)
   const [activeTab, setActiveTab] = useQueryState('tab', parseAsString.withDefault('general'));
 
+  const goToMembers = useCallback(() => router.push('/settings/members'), [router]);
   const canManageIntegrations = can('organization', ['update']);
   const canManageBilling = can('organization', ['update']);
   const canViewAuditLog = can('settings', ['read']);
@@ -50,7 +51,7 @@ function SettingsContent() {
       </AnimateIn>
 
       <AnimateIn delay={1}>
-        <Tabs value={activeTab} onValueChange={val => setActiveTab(val)} className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList>
             <TabsTrigger value="general">{t('tabs.general')}</TabsTrigger>
             <TabsTrigger value="approvals">{t('tabs.approvals')}</TabsTrigger>
@@ -66,7 +67,7 @@ function SettingsContent() {
                 {t('tabs.apiKeys', { defaultMessage: 'API Keys' })}
               </TabsTrigger>
             )}
-            <TabsTrigger value="members" onClick={() => router.push('/settings/members')}>
+            <TabsTrigger value="members" onClick={goToMembers}>
               {t('tabs.members')}
             </TabsTrigger>
           </TabsList>

@@ -58,6 +58,7 @@ export function KsefDuplicateBanner({
                 View KSeF Invoice
               </Link>
               {!!onVoid && (
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 <Button variant="destructive" size="sm" onClick={() => setVoidDialogOpen(true)}>
                   Void This Invoice
                 </Button>
@@ -84,6 +85,7 @@ export function KsefDuplicateBanner({
             <AlertDialogCancel>Keep Invoice</AlertDialogCancel>
             <AlertDialogAction
               variant="destructive"
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => {
                 onVoid?.();
                 setVoidDialogOpen(false);

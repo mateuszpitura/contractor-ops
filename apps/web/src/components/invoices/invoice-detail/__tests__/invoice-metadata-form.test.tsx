@@ -18,7 +18,11 @@ vi.mock('@/trpc/init', () => ({
   },
 }));
 
-const invalidateQueries = vi.fn();
+const {
+  invalidateQueries,
+} = vi.hoisted(() => ({
+  invalidateQueries: vi.fn(),
+}));
 
 vi.mock('@tanstack/react-query', async () => {
   const actual =
@@ -47,6 +51,7 @@ vi.mock('@/components/invoices/vat-rate-selector', () => ({
     <select
       data-testid="vat-rate-selector"
       value={value}
+      // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
       onChange={e => onChange(e.target.value)}
       disabled={disabled}>
       <option value="23">23%</option>

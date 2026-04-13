@@ -126,6 +126,7 @@ export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
         {/* Assign owner */}
         <Popover open={ownerPopoverOpen} onOpenChange={setOwnerPopoverOpen}>
           <PopoverTrigger
+            // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
             render={props => (
               <Button {...props} variant="outline" size="sm" className="h-8 gap-1.5">
                 <UserCheck className="h-3.5 w-3.5" />
@@ -149,6 +150,7 @@ export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
                     key={userId}
                     type="button"
                     className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-start text-sm hover:bg-accent"
+                    // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                     onClick={() =>
                       bulkAssignOwnerMutation.mutate({
                         ids: selectedIds,
@@ -167,6 +169,7 @@ export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
         {/* Export */}
         <DropdownMenu>
           <DropdownMenuTrigger
+            // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
             render={props => (
               <Button {...props} variant="outline" size="sm" className="h-8 gap-1.5">
                 {exportMutation.isPending ? (
@@ -180,11 +183,13 @@ export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
           />
           <DropdownMenuContent align="start">
             <DropdownMenuItem
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => exportMutation.mutate({ ids: selectedIds, format: 'csv' })}
               disabled={exportMutation.isPending}>
               {t('exportCsv')}
             </DropdownMenuItem>
             <DropdownMenuItem
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => exportMutation.mutate({ ids: selectedIds, format: 'xlsx' })}
               disabled={exportMutation.isPending}>
               {t('exportXlsx')}
@@ -197,6 +202,7 @@ export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
           variant="outline"
           size="sm"
           className="h-8 gap-1.5 text-destructive hover:text-destructive"
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
           onClick={() => setShowArchiveDialog(true)}>
           <Archive className="h-3.5 w-3.5" />
           {t('archive')}
@@ -207,6 +213,7 @@ export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
           variant="outline"
           size="sm"
           className="h-8 gap-1.5"
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
           onClick={() => setWorkflowPickerOpen(true)}>
           <Zap className="h-3.5 w-3.5" />
           {t('launchWorkflow')}
@@ -231,6 +238,7 @@ export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => bulkArchiveMutation.mutate({ ids: selectedIds })}
               disabled={bulkArchiveMutation.isPending}
               variant="destructive">

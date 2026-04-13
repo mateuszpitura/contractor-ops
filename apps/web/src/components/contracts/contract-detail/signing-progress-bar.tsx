@@ -161,12 +161,14 @@ export function SigningProgressBar({ envelope }: SigningProgressBarProps) {
           <div className="flex items-center gap-3">
             <p className="text-sm text-muted-foreground">{statusText}</p>
 
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             <Button variant="ghost" size="sm" onClick={() => setAuditOpen(true)}>
               {t('viewHistory')}
             </Button>
 
             <DropdownMenu>
               <DropdownMenuTrigger
+                // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
                 render={props => (
                   <Button {...props} variant="ghost" size="icon-sm">
                     <MoreVertical className="size-4" />
@@ -178,6 +180,7 @@ export function SigningProgressBar({ envelope }: SigningProgressBarProps) {
                 {pendingRecipients.map(r => (
                   <DropdownMenuItem
                     key={r.id}
+                    // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                     onClick={() =>
                       resendMutation.mutate({
                         envelopeId: envelope.id,
@@ -189,6 +192,7 @@ export function SigningProgressBar({ envelope }: SigningProgressBarProps) {
                     {t('resendTo', { name: r.name })}
                   </DropdownMenuItem>
                 ))}
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 <DropdownMenuItem variant="destructive" onClick={() => setVoidOpen(true)}>
                   <Ban className="me-2 size-3.5" />
                   {t('voidEnvelope')}
@@ -205,6 +209,7 @@ export function SigningProgressBar({ envelope }: SigningProgressBarProps) {
         envelopeId={envelope.id}
         open={voidOpen}
         onOpenChange={setVoidOpen}
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onVoided={() => {
           queryClient.invalidateQueries({
             queryKey: trpc.esign.listEnvelopes.queryKey(),

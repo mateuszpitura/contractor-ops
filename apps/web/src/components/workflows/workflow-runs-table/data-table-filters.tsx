@@ -90,6 +90,7 @@ export function DataTableFilters({ filters, onFiltersChange }: DataTableFiltersP
       <div className="flex items-center gap-2">
         <Popover>
           <PopoverTrigger
+            // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
             render={props => (
               <Button {...props} variant="outline" size="lg">
                 <Filter className="h-3.5 w-3.5" />
@@ -112,6 +113,7 @@ export function DataTableFilters({ filters, onFiltersChange }: DataTableFiltersP
                   label: t(`runStatus.${s}` as Parameters<typeof t>[0]),
                 }))}
                 selected={filters.status}
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 onToggle={value => toggleFilterValue('status', value)}
               />
 
@@ -123,6 +125,7 @@ export function DataTableFilters({ filters, onFiltersChange }: DataTableFiltersP
                   label: tmpl.name,
                 }))}
                 selected={filters.templateId}
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 onToggle={value => toggleFilterValue('templateId', value)}
               />
 
@@ -134,6 +137,7 @@ export function DataTableFilters({ filters, onFiltersChange }: DataTableFiltersP
                 <Switch
                   id="overdue-toggle"
                   checked={filters.overdueOnly}
+                  // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
                   onCheckedChange={checked => onFiltersChange({ overdueOnly: checked === true })}
                 />
               </div>
@@ -149,6 +153,7 @@ export function DataTableFilters({ filters, onFiltersChange }: DataTableFiltersP
             <FilterBadge
               key={`status-${s}`}
               label={t(`runStatus.${s}` as Parameters<typeof t>[0])}
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onRemove={() => removeFilter('status', s)}
             />
           ))}
@@ -158,6 +163,7 @@ export function DataTableFilters({ filters, onFiltersChange }: DataTableFiltersP
               <FilterBadge
                 key={`template-${tmplId}`}
                 label={tmpl?.name ?? tmplId}
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 onRemove={() => removeFilter('templateId', tmplId)}
               />
             );
@@ -165,6 +171,7 @@ export function DataTableFilters({ filters, onFiltersChange }: DataTableFiltersP
           {!!filters.overdueOnly && (
             <FilterBadge
               label={t('filterOverdueOnly')}
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onRemove={() => onFiltersChange({ overdueOnly: false })}
             />
           )}
@@ -209,6 +216,7 @@ function FilterSection({
             <Checkbox
               id={`wf-filter-${title}-${option.value}`}
               checked={selected.includes(option.value)}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
               onCheckedChange={() => onToggle(option.value)}
             />
             <span>{option.label}</span>

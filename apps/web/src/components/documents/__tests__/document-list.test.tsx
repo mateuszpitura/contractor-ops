@@ -2,7 +2,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@/test/test-utils';
 import { DocumentList } from '../document-list';
 
-const mockUseQuery = vi.fn();
+const {
+  mockUseQuery,
+} = vi.hoisted(() => ({
+  mockUseQuery: vi.fn(),
+}));
 
 vi.mock('@tanstack/react-query', () => ({
   useQuery: mockUseQuery,
@@ -22,7 +26,13 @@ vi.mock('@/trpc/init', () => ({
 }));
 
 vi.mock('@/components/documents/document-card', () => ({
-  DocumentCard: ({ document, versionNumber }: any) => (
+  DocumentCard: ({
+    document,
+    versionNumber,
+  }: {
+    document: { originalFileName: string };
+    versionNumber: number;
+  }) => (
     <div data-testid="document-card">
       {document.originalFileName} v{versionNumber}
     </div>

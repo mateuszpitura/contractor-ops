@@ -54,6 +54,7 @@ export function Stepper({ steps, currentStep, onStepClick, className }: StepperP
       role="tablist"
       aria-label="Onboarding progress"
       className={cn('flex flex-col gap-2 md:flex-row md:items-center md:gap-0', className)}
+      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
       onKeyDown={handleKeyDown}>
       {steps.map((step, index) => {
         const isCompleted = index < currentStep;
@@ -72,6 +73,7 @@ export function Stepper({ steps, currentStep, onStepClick, className }: StepperP
               aria-label={`Step ${index + 1}: ${step.label}`}
               tabIndex={isCurrent ? 0 : -1}
               disabled={isFuture}
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => isClickable && onStepClick(index)}
               className={cn(
                 'relative flex shrink-0 items-center gap-2 outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-2 rounded-full',

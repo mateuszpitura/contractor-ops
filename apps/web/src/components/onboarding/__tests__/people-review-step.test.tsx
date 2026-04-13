@@ -17,7 +17,7 @@ vi.mock('@/trpc/init', () => ({
 }));
 
 vi.mock('../conflict-resolution-popover', () => ({
-  ConflictResolutionPopover: ({ conflicts }: any) => (
+  ConflictResolutionPopover: ({ conflicts }: { conflicts: unknown[] | null }) => (
     <span data-testid="conflict-popover">{conflicts?.length ?? 0} conflicts</span>
   ),
 }));

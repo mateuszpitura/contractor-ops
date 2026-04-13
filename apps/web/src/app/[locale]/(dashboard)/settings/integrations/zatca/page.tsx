@@ -3,7 +3,7 @@
 import type { ZatcaOnboardingState } from '@contractor-ops/einvoice';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, ShieldCheck } from 'lucide-react';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 import { AnimateIn } from '@/components/shared/animate-in';
 import { Button } from '@/components/ui/button';
@@ -26,6 +26,8 @@ import { Link } from '@/i18n/navigation';
 export default function ZatcaSettingsPage() {
   const queryClient = useQueryClient();
   const [wizardOpen, setWizardOpen] = useState(false);
+  const openWizard = useCallback(() => setWizardOpen(true), []);
+  const closeWizard = useCallback(() => setWizardOpen(false), []);
 
   const stateQuery = useQuery(zatcaTrpc.getOnboardingState.queryOptions());
   const state = stateQuery.data as ZatcaOnboardingState | undefined;
@@ -83,7 +85,7 @@ export default function ZatcaSettingsPage() {
               Submit e-invoices to ZATCA for clearance and reporting. Set up your
               organization&apos;s certificate to get started.
             </p>
-            <Button className="mt-6" onClick={() => setWizardOpen(true)}>
+            <Button className="mt-6" onClick={openWizard}>
               Connect to ZATCA
             </Button>
           </div>
@@ -95,7 +97,7 @@ export default function ZatcaSettingsPage() {
         <AnimateIn delay={1}>
           <OnboardingWizard
             onComplete={handleWizardComplete}
-            onCancel={() => setWizardOpen(false)}
+            onCancel={closeWizard}
           />
         </AnimateIn>
       )}

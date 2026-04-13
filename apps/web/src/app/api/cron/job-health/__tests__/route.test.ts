@@ -3,9 +3,15 @@
 import { NextRequest } from 'next/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const mockFindMany = vi.fn();
-const mockUpdateMany = vi.fn();
-const mockCount = vi.fn();
+const {
+  mockFindMany,
+  mockUpdateMany,
+  mockCount,
+} = vi.hoisted(() => ({
+  mockFindMany: vi.fn(),
+  mockUpdateMany: vi.fn(),
+  mockCount: vi.fn(),
+}));
 
 vi.mock('@contractor-ops/db', () => ({
   prisma: {

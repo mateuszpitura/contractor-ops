@@ -3,7 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { Suspense } from 'react';
+import { Suspense, useCallback } from 'react';
 import { ProfileHeader } from '@/components/contractors/contractor-profile/profile-header';
 import { ProfileTabs } from '@/components/contractors/contractor-profile/profile-tabs';
 import {
@@ -78,6 +78,8 @@ export default function ContractorProfilePage() {
   // Set breadcrumb label for this detail page
   useBreadcrumbOverride(params.id, contractor?.displayName);
 
+  const handleRetry = useCallback(() => contractorQuery.refetch(), [contractorQuery]);
+
   // Error state
   if (contractorQuery.isError) {
     const isNotFound =
@@ -98,7 +100,7 @@ export default function ContractorProfilePage() {
     return (
       <div className="flex min-h-[400px] flex-col items-center justify-center gap-3 text-center">
         <h2 className="text-lg font-medium">{t('error.loadFailed')}</h2>
-        <Button variant="outline" onClick={() => contractorQuery.refetch()}>
+        <Button variant="outline" onClick={handleRetry}>
           {t('error.retry')}
         </Button>
       </div>

@@ -141,7 +141,9 @@ export function SourceSelectionStep({
               icon={PROVIDER_ICONS[source.provider] ?? null}
               connected={source.connected}
               selected={selectedSources.includes(source.provider)}
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onToggle={() => handleToggle(source.provider)}
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onConnect={() => handleConnect(source.provider)}
             />
           ))}

@@ -333,6 +333,7 @@ export function ContractWizardDialog({
 
   return (
     <>
+      // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler
       <Dialog open={open} onOpenChange={o => !o && handleClose()}>
         <DialogContent className="sm:max-w-[640px]" showCloseButton={false}>
           <DialogHeader>
@@ -349,6 +350,7 @@ export function ContractWizardDialog({
             {currentStep === 2 && (
               <StepDocuments
                 onDocumentsChange={setUploadedDocumentIds}
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 onSkip={handleSkipDocuments}
               />
             )}
@@ -358,15 +360,18 @@ export function ContractWizardDialog({
           <div className="flex items-center justify-between border-t pt-4 mt-2">
             <div>
               {currentStep > 0 ? (
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 <Button type="button" variant="outline" onClick={handleBack}>
                   {t('back')}
                 </Button>
               ) : (
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 <Button type="button" variant="ghost" onClick={() => handleClose()}>
                   {isDirty ? t('discardChanges') : t('close')}
                 </Button>
               )}
             </div>
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             <Button type="button" onClick={handleNext} disabled={createMutation.isPending}>
               {createMutation.isPending ? (
                 <>
@@ -390,6 +395,7 @@ export function ContractWizardDialog({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{t('discardConfirm.keep')}</AlertDialogCancel>
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             <AlertDialogAction onClick={handleDiscard} variant="destructive">
               {t('discardConfirm.discard')}
             </AlertDialogAction>

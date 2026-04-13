@@ -215,6 +215,7 @@ export function ChangeRequestDiffCard({
           {request.status === 'PENDING' && (
             <div className="flex items-center gap-2">
               <Button
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 onClick={handleApprove}
                 disabled={approveMutation.isPending || rejectMutation.isPending}>
                 {approveMutation.isPending ? t('approving') : t('approveChanges')}
@@ -222,6 +223,7 @@ export function ChangeRequestDiffCard({
               <Button
                 variant="outline"
                 className="text-destructive hover:text-destructive"
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 onClick={() => setRejectDialogOpen(true)}
                 disabled={approveMutation.isPending || rejectMutation.isPending}>
                 {t('rejectChanges')}
@@ -241,12 +243,14 @@ export function ChangeRequestDiffCard({
           <Textarea
             placeholder={t('rejectPlaceholder')}
             value={rejectComment}
+            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
             onChange={e => setRejectComment(e.target.value)}
             rows={3}
           />
           <DialogFooter>
             <Button
               variant="destructive"
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={handleRejectConfirm}
               disabled={rejectMutation.isPending}>
               {rejectMutation.isPending ? t('rejecting') : t('confirmRejection')}

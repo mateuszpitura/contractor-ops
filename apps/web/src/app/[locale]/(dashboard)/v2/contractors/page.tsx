@@ -446,6 +446,7 @@ function ContractorsV2Content() {
         </h2>
         <p className="mt-2 max-w-sm text-sm text-muted-foreground">{tv('emptyState.body')}</p>
         <div className="mt-6 flex gap-3">
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
           <Button onClick={() => setWizardOpen(true)}>
             <Plus className="me-1.5 h-4 w-4" /> {tv('emptyState.addContractor')}
           </Button>
@@ -481,6 +482,7 @@ function ContractorsV2Content() {
             <Button variant="outline" size="sm" className="text-xs">
               <Upload className="me-1.5 h-3.5 w-3.5" /> {t('import')}
             </Button>
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             <Button size="sm" className="text-xs" onClick={() => setWizardOpen(true)}>
               <Plus className="me-1.5 h-3.5 w-3.5" /> {t('addContractor')}
             </Button>
@@ -498,6 +500,7 @@ function ContractorsV2Content() {
             <button
               key={value}
               type="button"
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => {
                 setStage(value);
                 setPage(1);
@@ -518,6 +521,7 @@ function ContractorsV2Content() {
           <input
             type="text"
             value={search}
+            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
             onChange={e => {
               setSearch(e.target.value);
               setPage(1);
@@ -544,6 +548,7 @@ function ContractorsV2Content() {
           <p className="mt-3 text-sm font-medium text-muted-foreground">{tv('noMatch')}</p>
           <button
             type="button"
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={() => {
               setSearch('');
               setStage('');
@@ -575,6 +580,7 @@ function ContractorsV2Content() {
               <button
                 type="button"
                 disabled={page <= 1}
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 onClick={() => setPage(Math.max(1, page - 1))}
                 className="flex h-8 w-8 items-center justify-center rounded-lg border border-border/40 text-muted-foreground transition-all hover:bg-muted/30 disabled:opacity-30">
                 <ChevronLeft className="h-4 w-4" />
@@ -586,6 +592,7 @@ function ContractorsV2Content() {
               <button
                 type="button"
                 disabled={page >= totalPages}
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 onClick={() => setPage(Math.min(totalPages, page + 1))}
                 className="flex h-8 w-8 items-center justify-center rounded-lg border border-border/40 text-muted-foreground transition-all hover:bg-muted/30 disabled:opacity-30">
                 <ChevronRight className="h-4 w-4" />

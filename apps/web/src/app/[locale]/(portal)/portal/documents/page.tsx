@@ -129,6 +129,7 @@ export default function PortalDocumentsPage() {
                     <Button
                       variant="outline"
                       size="sm"
+                      // biome-ignore lint/nursery/noJsxPropsBind: dynamic URL per list item
                       onClick={() => window.open(doc.downloadUrl, '_blank')}>
                       <Download className="me-1 h-4 w-4" />
                       {t('documents.download')}

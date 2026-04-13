@@ -195,6 +195,7 @@ export function ReminderRulesSection() {
           <p className="mt-1 max-w-sm text-sm text-muted-foreground">
             {t('reminderRules.emptyBody')}
           </p>
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
           <Button className="mt-4" onClick={handleCreate}>
             <Plus className="me-1.5 size-4" />
             {t('reminderRules.emptyCta')}
@@ -219,6 +220,7 @@ export function ReminderRulesSection() {
             <h3 className="text-base font-semibold">{t('reminderRules.heading')}</h3>
             <p className="text-sm text-muted-foreground">{t('reminderRules.description')}</p>
           </div>
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
           <Button onClick={handleCreate}>
             <Plus className="me-1.5 size-4" />
             {t('reminderRules.createRule')}
@@ -237,6 +239,7 @@ export function ReminderRulesSection() {
                   <span className="text-sm font-semibold">{rule.name}</span>
                   <Switch
                     checked={rule.active}
+                    // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
                     onCheckedChange={() => handleToggleActive(rule)}
                     aria-label={tAria('toggleActive', { name: rule.name })}
                   />
@@ -262,6 +265,7 @@ export function ReminderRulesSection() {
                 </div>
               </CardContent>
               <CardFooter className="gap-2">
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 <Button variant="ghost" size="sm" onClick={() => handleEdit(rule)}>
                   <Pencil className="me-1.5 size-3.5" />
                   {t('reminderRules.edit')}
@@ -270,6 +274,7 @@ export function ReminderRulesSection() {
                   variant="ghost"
                   size="sm"
                   className="text-destructive hover:text-destructive"
+                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                   onClick={() => setDeletingRuleId(rule.id)}>
                   <Trash2 className="me-1.5 size-3.5" />
                   {t('reminderRules.delete')}
@@ -290,6 +295,7 @@ export function ReminderRulesSection() {
       {/* Delete confirmation dialog */}
       <AlertDialog
         open={deletingRuleId !== null}
+        // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler
         onOpenChange={open => {
           if (!open) setDeletingRuleId(null);
         }}>
@@ -303,6 +309,7 @@ export function ReminderRulesSection() {
             <AlertDialogAction
               variant="destructive"
               disabled={deleteMutation.isPending}
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => {
                 if (deletingRuleId) handleDelete(deletingRuleId);
               }}>

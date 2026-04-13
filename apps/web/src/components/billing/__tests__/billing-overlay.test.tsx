@@ -5,7 +5,13 @@ import { BillingOverlay } from '../billing-overlay';
 // Mocks
 // ---------------------------------------------------------------------------
 
-const mockPush = vi.fn();
+const {
+  mockPush,
+  mockMutate,
+} = vi.hoisted(() => ({
+  mockPush: vi.fn(),
+  mockMutate: vi.fn(),
+}));
 
 vi.mock('@/i18n/navigation', () => ({
   Link: ({
@@ -17,7 +23,7 @@ vi.mock('@/i18n/navigation', () => ({
     href: string;
     [key: string]: unknown;
   }) => (
-    <a href={href} {...props}>
+    <a href={href} {...(props as React.AnchorHTMLAttributes<HTMLAnchorElement>)}>
       {children}
     </a>
   ),
@@ -25,7 +31,6 @@ vi.mock('@/i18n/navigation', () => ({
   usePathname: () => '/test',
 }));
 
-const mockMutate = vi.fn();
 let subscriptionData: unknown = null;
 
 vi.mock('@tanstack/react-query', () => ({

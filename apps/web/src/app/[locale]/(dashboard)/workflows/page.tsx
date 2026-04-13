@@ -78,6 +78,7 @@ function WorkflowsContent() {
           title={t('pageTitle')}
           description={t('pageDescription')}
           actions={
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             <Button size="sm" onClick={handleStartWorkflow}>
               {t('startWorkflow')}
             </Button>
@@ -108,6 +109,7 @@ function WorkflowsContent() {
           title={t('pageTitle')}
           description={t('pageDescription')}
           actions={
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             <Button size="sm" onClick={handleStartWorkflow}>
               {t('startWorkflow')}
             </Button>
@@ -117,6 +119,7 @@ function WorkflowsContent() {
 
       {/* Tabs */}
       <AnimateIn delay={1}>
+        // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
         <Tabs value={tab} onValueChange={value => void setTab(value)}>
           <TabsList>
             <TabsTrigger value="runs">{t('tabRuns')}</TabsTrigger>
@@ -126,7 +129,9 @@ function WorkflowsContent() {
 
           <TabsContent value="runs" className="mt-4">
             <WorkflowRunsDataTable
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onRowClick={handleRowClick}
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onStartWorkflow={handleStartWorkflow}
             />
           </TabsContent>
@@ -151,6 +156,7 @@ function WorkflowsContent() {
       {/* Side panel */}
       <WorkflowSidePanel
         runId={sidePanelOpen && selectedRun ? selectedRun.id : null}
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onClose={() => {
           setSidePanelOpen(false);
           setSelectedRun(null);

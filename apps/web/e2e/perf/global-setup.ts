@@ -3,8 +3,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from '@playwright/test';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const authDir = path.join(__dirname, '.auth');
+const currentDir = path.dirname(fileURLToPath(import.meta.url));
+const authDir = path.join(currentDir, '.auth');
 const authFile = path.join(authDir, 'user.json');
 
 /**
@@ -14,7 +14,7 @@ const authFile = path.join(authDir, 'user.json');
  */
 export default async function globalSetup() {
   fs.mkdirSync(authDir, { recursive: true });
-  fs.mkdirSync(path.join(__dirname, 'results'), { recursive: true });
+  fs.mkdirSync(path.join(currentDir, 'results'), { recursive: true });
 
   const baseURL =
     process.env.PLAYWRIGHT_BASE_URL || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';

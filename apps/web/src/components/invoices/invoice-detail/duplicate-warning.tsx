@@ -65,6 +65,7 @@ export function DuplicateWarning({
             <Button
               variant="ghost"
               size="sm"
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => dismissMutation.mutate({ id: invoiceId })}
               disabled={dismissMutation.isPending}>
               {!!dismissMutation.isPending && (

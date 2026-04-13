@@ -9,7 +9,11 @@ let mockSyncLogData: { items: unknown[]; nextCursor?: string } = {
 let mockWebhookLogData: { items: unknown[]; nextCursor?: string } = {
   items: [],
 };
-const mockDisconnectMutate = vi.fn();
+const {
+  mockDisconnectMutate,
+} = vi.hoisted(() => ({
+  mockDisconnectMutate: vi.fn(),
+}));
 
 vi.mock('@tanstack/react-query', async () => {
   const actual =

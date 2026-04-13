@@ -89,6 +89,7 @@ export function StepBilling({ form }: StepBillingProps) {
         <Label className="text-[13px]">{t('billingModel')}</Label>
         <Select
           value={watch('billingModel') ?? ''}
+          // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
           onValueChange={value =>
             setValue('billingModel', value ?? '', {
               shouldDirty: true,
@@ -117,6 +118,7 @@ export function StepBilling({ form }: StepBillingProps) {
         <Label className="text-[13px]">{t('currency')}</Label>
         <Select
           value={watch('currency') ?? 'PLN'}
+          // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
           onValueChange={value =>
             setValue('currency', value ?? 'PLN', {
               shouldDirty: true,
@@ -150,7 +152,9 @@ export function StepBilling({ form }: StepBillingProps) {
             min="0"
             className="font-mono pe-16"
             value={rateLocal}
+            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
             onChange={e => setRateLocal(e.target.value)}
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onBlur={handleRateBlur}
           />
           <span className="absolute end-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">

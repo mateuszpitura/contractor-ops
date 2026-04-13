@@ -61,6 +61,7 @@ export function DocumentsTab({ contractId, contractParties = [] }: DocumentsTabP
               key={doc.id}
               variant="outline"
               size="sm"
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => handleSendForSignature(doc.id)}>
               <PenLine className="me-1.5 size-3.5" />
               Send for Signature: {doc.originalFileName}

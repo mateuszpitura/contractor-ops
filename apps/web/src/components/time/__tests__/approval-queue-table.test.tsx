@@ -19,6 +19,7 @@ vi.mock('../rejection-reason-dialog', () => ({
   }) =>
     open ? (
       <div data-testid="rejection-dialog">
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         <button type="button" onClick={() => onConfirm('too long')}>
           confirm-reject
         </button>

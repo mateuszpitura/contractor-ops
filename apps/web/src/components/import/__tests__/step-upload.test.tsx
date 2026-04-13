@@ -8,7 +8,13 @@ let capturedOnDrop: ((files: File[]) => void) | null = null;
 let capturedOnDropRejected: ((rejections: unknown[]) => void) | null = null;
 
 vi.mock('react-dropzone', () => ({
-  useDropzone: ({ onDrop, onDropRejected }: any) => {
+  useDropzone: ({
+    onDrop,
+    onDropRejected,
+  }: {
+    onDrop: (files: File[]) => void;
+    onDropRejected: (rejections: unknown[]) => void;
+  }) => {
     capturedOnDrop = onDrop;
     capturedOnDropRejected = onDropRejected;
     return {

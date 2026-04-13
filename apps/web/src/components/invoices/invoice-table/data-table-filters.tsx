@@ -83,6 +83,7 @@ export function DataTableFilters({ filters, onFiltersChange }: DataTableFiltersP
       {/* Filter popover button */}
       <Popover>
         <PopoverTrigger
+          // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
           render={props => (
             <Button {...props} variant="outline" size="lg">
               <Filter className="h-3.5 w-3.5" />
@@ -105,6 +106,7 @@ export function DataTableFilters({ filters, onFiltersChange }: DataTableFiltersP
                 label: t(`status.${s}`),
               }))}
               selected={filters.status}
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onToggle={value => toggleFilterValue('status', value)}
             />
 
@@ -116,6 +118,7 @@ export function DataTableFilters({ filters, onFiltersChange }: DataTableFiltersP
                 label: t(`source.${s}`),
               }))}
               selected={filters.source}
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onToggle={value => toggleFilterValue('source', value)}
             />
           </div>
@@ -129,6 +132,7 @@ export function DataTableFilters({ filters, onFiltersChange }: DataTableFiltersP
             <FilterBadge
               key={`status-${s}`}
               label={t(`status.${s}` as Parameters<typeof t>[0])}
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onRemove={() => removeFilter('status', s)}
             />
           ))}
@@ -136,6 +140,7 @@ export function DataTableFilters({ filters, onFiltersChange }: DataTableFiltersP
             <FilterBadge
               key={`source-${s}`}
               label={t(`source.${s}` as Parameters<typeof t>[0])}
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onRemove={() => removeFilter('source', s)}
             />
           ))}
@@ -180,6 +185,7 @@ function FilterSection({
             <Checkbox
               id={`inv-filter-${title}-${option.value}`}
               checked={selected.includes(option.value)}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
               onCheckedChange={() => onToggle(option.value)}
             />
             <span>{option.label}</span>

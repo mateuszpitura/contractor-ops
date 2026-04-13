@@ -275,6 +275,7 @@ export function TabPayments({ contractorId }: TabPaymentsProps) {
             variant="outline"
             size="sm"
             disabled={page <= 1}
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={() => setPage(p => Math.max(1, p - 1))}>
             &laquo;
           </Button>
@@ -285,6 +286,7 @@ export function TabPayments({ contractorId }: TabPaymentsProps) {
             variant="outline"
             size="sm"
             disabled={page >= totalPages}
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={() => setPage(p => Math.min(totalPages, p + 1))}>
             &raquo;
           </Button>

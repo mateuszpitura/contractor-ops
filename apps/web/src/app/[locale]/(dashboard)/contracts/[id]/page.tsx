@@ -3,7 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { Suspense } from 'react';
+import { Suspense, useCallback } from 'react';
 import { ContractDetailTabs } from '@/components/contracts/contract-detail/contract-detail-tabs';
 import { DetailHeader } from '@/components/contracts/contract-detail/detail-header';
 import { SigningProgressBar } from '@/components/contracts/contract-detail/signing-progress-bar';
@@ -64,6 +64,8 @@ export default function ContractDetailPage() {
   // Set breadcrumb label for this detail page
   useBreadcrumbOverride(params.id, contract?.title);
 
+  const handleRetry = useCallback(() => contractQuery.refetch(), [contractQuery]);
+
   // E-sign: check for connected providers
   const connectionsQuery = useQuery(trpc.esign.listConnections.queryOptions());
   const esignConnections = connectionsQuery.data ?? [];
@@ -94,7 +96,7 @@ export default function ContractDetailPage() {
     return (
       <div className="flex min-h-[400px] flex-col items-center justify-center gap-3 text-center">
         <h2 className="text-lg font-medium">{t('error.loadFailed')}</h2>
-        <Button variant="outline" onClick={() => contractQuery.refetch()}>
+        <Button variant="outline" onClick={handleRetry}>
           {t('error.retry')}
         </Button>
       </div>

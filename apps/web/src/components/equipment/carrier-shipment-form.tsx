@@ -304,12 +304,14 @@ export function CarrierShipmentForm({
                       pointId={selectedPoint.id}
                       pointName={selectedPoint.name}
                       pointAddress={selectedPoint.address}
+                      // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                       onChangeClick={() => setPickerOpen(true)}
                     />
                   ) : (
                     <Button
                       variant="outline"
                       className="w-full"
+                      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                       onClick={() => setPickerOpen(true)}>
                       <Package className="me-2 h-4 w-4" />
                       {tInpost('selectPaczkomat')}
@@ -322,6 +324,7 @@ export function CarrierShipmentForm({
                   <Label>{t('parcelSize')}</Label>
                   <RadioGroup
                     value={parcelSize}
+                    // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
                     onValueChange={val => val && setParcelSize(val as ParcelSize)}
                     className="flex gap-4">
                     {(['small', 'medium', 'large'] as const).map(size => (
@@ -362,6 +365,7 @@ export function CarrierShipmentForm({
           </div>
 
           <DialogFooter>
+            // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler
             <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
               {t('cancel')}
             </Button>

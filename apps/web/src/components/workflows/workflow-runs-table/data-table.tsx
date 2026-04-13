@@ -283,6 +283,7 @@ export function WorkflowRunsDataTable({ onRowClick, onStartWorkflow }: WorkflowR
                   className={`cursor-pointer ${
                     isRowOverdue(row.original) ? 'bg-destructive/5' : ''
                   }`}
+                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                   onClick={() => onRowClick(row.original)}>
                   {row.getVisibleCells().map(cell => (
                     <TableCell key={cell.id}>

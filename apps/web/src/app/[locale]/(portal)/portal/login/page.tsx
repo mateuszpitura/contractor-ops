@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { Loader2, Mail } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -45,6 +45,7 @@ type LoginValues = z.infer<ReturnType<typeof createLoginSchema>>;
 export default function PortalLoginPage() {
   const t = useTranslations('Portal');
   const [sent, setSent] = useState(false);
+  const resetSent = useCallback(() => setSent(false), []);
 
   const loginSchema = createLoginSchema(t);
 
@@ -82,8 +83,9 @@ export default function PortalLoginPage() {
             <p className="mt-2 text-sm text-muted-foreground">
               {t('login.linkSentTo', { email: getValues('email') })}
             </p>
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             <p className="mt-4 text-sm text-muted-foreground">{t('login.didntReceive')}</p>
-            <Button variant="ghost" className="mt-4" onClick={() => setSent(false)}>
+            <Button variant="ghost" className="mt-4" onClick={resetSent}>
               {t('login.tryAnother')}
             </Button>
           </CardContent>

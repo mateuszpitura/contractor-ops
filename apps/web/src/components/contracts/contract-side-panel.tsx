@@ -76,6 +76,7 @@ export function ContractSidePanel({ contract, open, onOpenChange }: ContractSide
                 <Link
                   href={`/contractors/${contract.contractor.id}`}
                   className="text-sm text-primary hover:underline"
+                  // biome-ignore lint/nursery/noJsxPropsBind: stopPropagation handler
                   onClick={e => e.stopPropagation()}>
                   {contract.contractor.displayName ?? contract.contractor.legalName}
                 </Link>

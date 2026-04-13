@@ -212,6 +212,7 @@ export function RunHeader({ run }: RunHeaderProps) {
           <AlertDialog open={cancelOpen} onOpenChange={setCancelOpen}>
             <DropdownMenu>
               <DropdownMenuTrigger
+                // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
                 render={props => (
                   <Button {...props} variant="ghost" size="icon">
                     <MoreHorizontal className="size-4" />
@@ -221,6 +222,7 @@ export function RunHeader({ run }: RunHeaderProps) {
               />
               <DropdownMenuContent align="end">
                 <AlertDialogTrigger
+                  // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
                   render={props => (
                     <DropdownMenuItem
                       {...props}
@@ -239,6 +241,7 @@ export function RunHeader({ run }: RunHeaderProps) {
                 <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
                 <AlertDialogAction
                   variant="destructive"
+                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                   onClick={() => {
                     cancelMutation.mutate({ runId: run.id });
                   }}

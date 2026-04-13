@@ -154,6 +154,7 @@ function CommentText({ text, t }: { text: string; t: TranslateFn }) {
       {text.length > 150 && (
         <button
           type="button"
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
           onClick={() => setExpanded(prev => !prev)}
           className="mt-0.5 text-[12px] font-medium text-primary hover:underline">
           {expanded ? t('auditTrail.showLess') : t('auditTrail.showMore')}
@@ -263,8 +264,10 @@ export function AuditTimeline({ invoiceId }: AuditTimelineProps) {
               // biome-ignore lint/suspicious/noArrayIndexKey: audit events may share label+timestamp
               <div key={`${event.label}-${event.timestamp}-${idx}`} className="relative">
                 {event.type === 'decision' ? (
+                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                   <HumanEntry event={event} t={tFn} />
                 ) : (
+                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                   <SystemEntry event={event} t={tFn} />
                 )}
               </div>

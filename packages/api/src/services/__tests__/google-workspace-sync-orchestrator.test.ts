@@ -1,9 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const mockCreate = vi.fn();
-const mockFindUniqueOrThrow = vi.fn();
-const mockUpdate = vi.fn();
-const mockSyncLogUpdate = vi.fn();
+const {
+  mockCreate,
+  mockFindUniqueOrThrow,
+  mockUpdate,
+  mockSyncLogUpdate,
+} = vi.hoisted(() => ({
+  mockCreate: vi.fn(),
+  mockFindUniqueOrThrow: vi.fn(),
+  mockUpdate: vi.fn(),
+  mockSyncLogUpdate: vi.fn(),
+}));
 
 vi.mock('@contractor-ops/db', () => ({
   prisma: {

@@ -37,14 +37,26 @@ vi.mock('../report-chart', () => ({
 }));
 
 vi.mock('../report-table', () => ({
-  ReportTable: ({ data, emptyTitle, isLoading, grandTotalLabel, grandTotalValue }: any) =>
+  ReportTable: ({
+    data,
+    emptyTitle,
+    isLoading,
+    grandTotalLabel,
+    grandTotalValue,
+  }: {
+    data: Record<string, unknown>[];
+    emptyTitle: string;
+    isLoading: boolean;
+    grandTotalLabel?: string;
+    grandTotalValue?: string;
+  }) =>
     isLoading ? (
       <div data-testid="loading" />
     ) : data.length === 0 ? (
       <div data-testid="empty">{emptyTitle}</div>
     ) : (
       <div data-testid="report-table">
-        {data.map((row: any, i: number) => (
+        {data.map((row: Record<string, unknown>, i: number) => (
           <div key={row.teamId ?? i}>{row.teamName}</div>
         ))}
         {!!grandTotalLabel && (

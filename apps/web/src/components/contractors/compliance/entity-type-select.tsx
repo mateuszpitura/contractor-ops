@@ -57,6 +57,7 @@ export function EntityTypeSelect<T extends string>({
         aria-required={required ? 'true' : undefined}
         aria-invalid={error ? 'true' : undefined}
         aria-describedby={error ? errorId : undefined}
+        // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
         onChange={e => {
           const next = e.target.value;
           if (next !== '') onChange(next as T);

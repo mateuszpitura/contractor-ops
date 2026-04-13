@@ -110,7 +110,9 @@ export function NewPaymentRunDialog({ open, onOpenChange, onViewRun }: NewPaymen
             onSelectionChange={setSelectedInvoiceIds}
             groupByCurrency={groupByCurrency}
             onGroupByCurrencyChange={setGroupByCurrency}
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onCancel={() => handleOpenChange(false)}
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onNext={() => setStep(2)}
           />
         )}
@@ -119,6 +121,7 @@ export function NewPaymentRunDialog({ open, onOpenChange, onViewRun }: NewPaymen
           <StepReview
             selectedInvoiceIds={selectedInvoiceIds}
             groupByCurrency={groupByCurrency}
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onBack={() => setStep(1)}
             onComplete={handleComplete}
           />
@@ -127,11 +130,13 @@ export function NewPaymentRunDialog({ open, onOpenChange, onViewRun }: NewPaymen
         {step === 3 && confirmationData && (
           <StepConfirmation
             {...confirmationData}
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onViewRun={() => {
               handleOpenChange(false);
               // Could trigger side panel open via onViewRun callback
               onViewRun?.(confirmationData.runNumber);
             }}
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClose={() => handleOpenChange(false)}
           />
         )}

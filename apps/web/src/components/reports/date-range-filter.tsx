@@ -89,6 +89,7 @@ export function DateRangeFilter({ dateFrom, dateTo, onDateChange }: DateRangeFil
           key={preset.id}
           variant="ghost"
           size="sm"
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
           onClick={() => handlePresetClick(preset.id)}
           className={cn(
             'h-8 text-sm',
@@ -99,6 +100,7 @@ export function DateRangeFilter({ dateFrom, dateTo, onDateChange }: DateRangeFil
           {preset.id === 'custom' ? (
             <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
               <PopoverTrigger
+                // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
                 render={props => (
                   <span {...props} className="flex items-center gap-1.5">
                     <CalendarIcon className="h-3.5 w-3.5" />
@@ -112,6 +114,7 @@ export function DateRangeFilter({ dateFrom, dateTo, onDateChange }: DateRangeFil
                 <Calendar
                   mode="range"
                   selected={calendarRange}
+                  // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
                   onSelect={handleRangeSelect}
                   numberOfMonths={2}
                 />

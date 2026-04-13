@@ -136,6 +136,7 @@ export function SigningAuditTrail({ envelopeId, open, onOpenChange }: SigningAud
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger
+                            // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
                             render={props => (
                               <p {...props} className="text-sm text-muted-foreground">
                                 {formatRelativeTime(event.occurredAt)}

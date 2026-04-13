@@ -125,6 +125,7 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
     return (
       <div className="space-y-2">
         <p className="text-sm text-muted-foreground">{t('noConditions')}</p>
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         <Button type="button" variant="outline" size="sm" onClick={addRule}>
           <Plus className="me-1.5 size-3.5" />
           {t('addCondition')}
@@ -146,6 +147,7 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
                 variant="ghost"
                 size="sm"
                 className="h-6 px-2 text-xs font-medium"
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 onClick={toggleCombinator}>
                 <Badge variant="outline" className="cursor-pointer text-xs">
                   {value.combinator === 'AND' ? t('conditionAnd') : t('conditionOr')}
@@ -159,6 +161,7 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
             {/* Field select */}
             <Select
               value={rule.field}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
               onValueChange={val => updateRule(index, { field: val as string, value: '' })}>
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder={t('conditionFieldPlaceholder')} />
@@ -175,6 +178,7 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
             {/* Operator select */}
             <Select
               value={rule.operator}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
               onValueChange={val =>
                 updateRule(index, {
                   operator: val as ConditionRule['operator'],
@@ -196,6 +200,7 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
             {rule.field && ENUM_VALUE_FIELDS[rule.field] ? (
               <Select
                 value={rule.value}
+                // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
                 onValueChange={val => updateRule(index, { value: val as string })}>
                 <SelectTrigger className="w-[160px]">
                   <SelectValue placeholder={t('conditionValuePlaceholder')} />
@@ -213,6 +218,7 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
                 className="w-[160px]"
                 placeholder={t('conditionValuePlaceholder')}
                 value={rule.value}
+                // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                 onChange={e => updateRule(index, { value: e.target.value })}
               />
             )}
@@ -223,6 +229,7 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
               variant="ghost"
               size="sm"
               className="size-8 p-0 text-muted-foreground hover:text-destructive"
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => removeRule(index)}>
               <X className="size-3.5" />
               <span className="sr-only">{t('removeCondition')}</span>
@@ -232,6 +239,7 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
       ))}
 
       {/* Add condition button */}
+      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
       <Button type="button" variant="outline" size="sm" onClick={addRule}>
         <Plus className="me-1.5 size-3.5" />
         {t('addCondition')}

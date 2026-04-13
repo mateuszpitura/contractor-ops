@@ -8,7 +8,11 @@ import { UsageDashboard } from '../usage-dashboard';
 let dashboardData: unknown = null;
 let isLoading = false;
 let isError = false;
-const mockRefetch = vi.fn();
+const {
+  mockRefetch,
+} = vi.hoisted(() => ({
+  mockRefetch: vi.fn(),
+}));
 
 vi.mock('@tanstack/react-query', () => ({
   useQuery: () => ({
@@ -37,7 +41,7 @@ vi.mock('@/i18n/navigation', () => ({
     href: string;
     [key: string]: unknown;
   }) => (
-    <a href={href} {...props}>
+    <a href={href} {...(props as React.AnchorHTMLAttributes<HTMLAnchorElement>)}>
       {children}
     </a>
   ),

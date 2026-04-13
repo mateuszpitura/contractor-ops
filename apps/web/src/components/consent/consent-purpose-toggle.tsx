@@ -59,6 +59,7 @@ export function ConsentPurposeToggle({
       <Switch
         id={switchId}
         checked={granted}
+        // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
         onCheckedChange={checked => onToggle(purpose, checked)}
         disabled={disabled || (required && !granted)}
         aria-required={required}

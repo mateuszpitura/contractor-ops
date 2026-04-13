@@ -77,6 +77,7 @@ export function CsrGeneration({ onSuccess, onBack }: CsrGenerationProps) {
           <Button onClick={onSuccess}>{t('next')}</Button>
         ) : (
           <Button
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={() => (generateMutation.mutate as () => void)()}
             disabled={generateMutation.isPending}>
             {!!generateMutation.isPending && (

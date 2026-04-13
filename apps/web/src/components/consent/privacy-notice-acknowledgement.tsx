@@ -57,6 +57,7 @@ export function PrivacyNoticeAcknowledgement({
           id="privacy-ack"
           name="privacyNoticeAcknowledged"
           checked={checked}
+          // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
           onCheckedChange={value => onChange(value === true)}
           aria-required="true"
           aria-invalid={error ? true : undefined}

@@ -43,6 +43,7 @@ export function WhtCertificatePreviewDialog({
   if (!certificate) return null;
 
   return (
+    // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler */}
     <Dialog open={open} onOpenChange={o => !o && onClose()}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>

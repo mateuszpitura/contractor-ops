@@ -177,6 +177,7 @@ export function StepDetails({ form, contractorId }: StepDetailsProps) {
                       <CommandItem
                         key={contractor.id}
                         value={contractor.id}
+                        // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
                         onSelect={() => {
                           setValue('contractorId', contractor.id, {
                             shouldDirty: true,
@@ -220,6 +221,7 @@ export function StepDetails({ form, contractorId }: StepDetailsProps) {
         <Label className="text-[13px]">{t('fields.type')}</Label>
         <Select
           value={watch('type') ?? ''}
+          // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
           onValueChange={value =>
             setValue('type', (value ?? '') as ContractWizardFormValues['type'], {
               shouldDirty: true,
@@ -258,6 +260,7 @@ export function StepDetails({ form, contractorId }: StepDetailsProps) {
             <Calendar
               mode="single"
               selected={startDate ? new Date(startDate) : undefined}
+              // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
               onSelect={handleStartDateSelect}
             />
           </PopoverContent>
@@ -284,7 +287,9 @@ export function StepDetails({ form, contractorId }: StepDetailsProps) {
             <Calendar
               mode="single"
               selected={endDate ? new Date(endDate) : undefined}
+              // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
               onSelect={handleEndDateSelect}
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               disabled={date => (startDate ? date < new Date(startDate) : false)}
             />
           </PopoverContent>
@@ -314,6 +319,7 @@ export function StepDetails({ form, contractorId }: StepDetailsProps) {
         <Checkbox
           id="autoRenewal"
           checked={autoRenewal}
+          // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
           onCheckedChange={checked =>
             setValue('autoRenewal', checked === true, { shouldDirty: true })
           }

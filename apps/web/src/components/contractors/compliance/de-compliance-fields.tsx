@@ -138,6 +138,7 @@ export function DeComplianceFields(props: DeComplianceFieldsProps) {
 
       <BundeslandSelect
         value={bundesland}
+        // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
         onChange={v => handleChange('bundesland', v)}
         label="Bundesland"
         required
@@ -147,16 +148,19 @@ export function DeComplianceFields(props: DeComplianceFieldsProps) {
       <EntityTypeSelect<DeEntityType>
         values={deEntityTypeEnum.options}
         value={entityType}
+        // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
         onChange={v => handleChange('entityType', v)}
         label="Rechtsform"
         required
         error={errors.entityType}
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         renderOption={v => DE_ENTITY_LABELS[v]}
       />
 
       <SteuernummerInput
         bundesland={bundesland}
         value={merged.steuernummer}
+        // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
         onChange={v => handleChange('steuernummer', v || undefined)}
         label={TAX_STEUERNUMMER_LABEL}
         required
@@ -165,12 +169,14 @@ export function DeComplianceFields(props: DeComplianceFieldsProps) {
 
       <VatRegisteredToggle
         checked={isVatRegistered}
+        // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
         onChange={v => handleChange('isVatRegistered', v)}
         label="Umsatzsteuerpflichtig"
       />
 
       <VatRegisteredToggle
         checked={isKleinunternehmer}
+        // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
         onChange={v => handleChange('isKleinunternehmer', v)}
         label={TAX_KLEINUNTERNEHMER_LABEL}
       />
@@ -190,6 +196,7 @@ export function DeComplianceFields(props: DeComplianceFieldsProps) {
             aria-describedby={errors.ustIdNr ? 'de-ust-id-error' : undefined}
             placeholder="DE123456789"
             value={merged.ustIdNr ?? ''}
+            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
             onChange={e => handleChange('ustIdNr', e.target.value || undefined)}
           />
           {errors.ustIdNr ? (
@@ -207,6 +214,7 @@ export function DeComplianceFields(props: DeComplianceFieldsProps) {
       {showHandelsregister ? (
         <HandelsregisterInput
           value={merged.handelsregister}
+          // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
           onChange={v => handleChange('handelsregister', v as DeCountryFields['handelsregister'])}
           legend={TAX_HANDELSREGISTER_LABEL}
           required={handelsregisterRequired}
@@ -224,6 +232,7 @@ export function DeComplianceFields(props: DeComplianceFieldsProps) {
           aria-describedby={errors.sozialversicherungsnummer ? 'de-sv-error' : undefined}
           placeholder="12 345678 A 901"
           value={merged.sozialversicherungsnummer ?? ''}
+          // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
           onChange={e => handleChange('sozialversicherungsnummer', e.target.value || undefined)}
         />
         {errors.sozialversicherungsnummer ? (

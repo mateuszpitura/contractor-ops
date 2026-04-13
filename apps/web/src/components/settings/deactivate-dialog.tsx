@@ -67,6 +67,7 @@ export function DeactivateDialog({ open, onOpenChange, userId, userName }: Deact
           </AlertDialogCancel>
           <Button
             variant="destructive"
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={handleConfirm}
             disabled={deactivateMutation.isPending}>
             {deactivateMutation.isPending ? (

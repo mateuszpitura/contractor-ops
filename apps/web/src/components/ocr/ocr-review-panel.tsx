@@ -338,6 +338,7 @@ export function OcrReviewPanel({
                       label="Invoice Number">
                       <Input
                         value={invoiceNumber}
+                        // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                         onChange={e => setInvoiceNumber(e.target.value)}
                         placeholder="FV/2026/001"
                       />
@@ -350,6 +351,7 @@ export function OcrReviewPanel({
                       <Input
                         type="date"
                         value={issueDate}
+                        // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                         onChange={e => setIssueDate(e.target.value)}
                       />
                     </ConfidenceFieldWrapper>
@@ -361,6 +363,7 @@ export function OcrReviewPanel({
                       <Input
                         type="date"
                         value={dueDate}
+                        // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                         onChange={e => setDueDate(e.target.value)}
                       />
                     </ConfidenceFieldWrapper>
@@ -371,6 +374,7 @@ export function OcrReviewPanel({
                       label="Currency">
                       <Select
                         value={currency}
+                        // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
                         onValueChange={val => {
                           if (val) setCurrency(val);
                         }}>
@@ -401,6 +405,7 @@ export function OcrReviewPanel({
                     <div className="flex items-center gap-2">
                       <Input
                         value={sellerTaxId}
+                        // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                         onChange={e => setSellerTaxId(e.target.value)}
                         placeholder="0000000000"
                       />
@@ -415,6 +420,7 @@ export function OcrReviewPanel({
                     <div className="flex items-center gap-2">
                       <Input
                         value={buyerTaxId}
+                        // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                         onChange={e => setBuyerTaxId(e.target.value)}
                         placeholder="0000000000"
                       />
@@ -428,6 +434,7 @@ export function OcrReviewPanel({
                     label="Seller Name">
                     <Input
                       value={sellerName}
+                      // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                       onChange={e => setSellerName(e.target.value)}
                       placeholder="Company name"
                     />
@@ -439,6 +446,7 @@ export function OcrReviewPanel({
                     label="Buyer Name">
                     <Input
                       value={buyerName}
+                      // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                       onChange={e => setBuyerName(e.target.value)}
                       placeholder="Company name"
                     />
@@ -458,6 +466,7 @@ export function OcrReviewPanel({
                       type="number"
                       step="0.01"
                       value={subtotalMinor}
+                      // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                       onChange={e => setSubtotalMinor(e.target.value)}
                       placeholder="0.00"
                     />
@@ -471,6 +480,7 @@ export function OcrReviewPanel({
                       type="number"
                       step="0.01"
                       value={vatAmountMinor}
+                      // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                       onChange={e => setVatAmountMinor(e.target.value)}
                       placeholder="0.00"
                     />
@@ -484,6 +494,7 @@ export function OcrReviewPanel({
                       type="number"
                       step="0.01"
                       value={totalMinor}
+                      // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                       onChange={e => setTotalMinor(e.target.value)}
                       placeholder="0.00"
                     />
@@ -500,6 +511,7 @@ export function OcrReviewPanel({
                   label="Seller Bank Account">
                   <Input
                     value={sellerBankAccount}
+                    // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                     onChange={e => setSellerBankAccount(e.target.value)}
                     placeholder="PL00 0000 0000 0000 0000 0000 0000"
                   />

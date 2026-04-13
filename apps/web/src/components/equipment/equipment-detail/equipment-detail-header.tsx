@@ -150,6 +150,7 @@ export function EquipmentDetailHeader({
           )}
 
           {isAssigned && (
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             <Button variant="outline" size="sm" onClick={() => setUnassignDialogOpen(true)}>
               <UserMinus className="me-1.5 size-3.5" />
               {t('detail.unassignEquipment')}
@@ -165,6 +166,7 @@ export function EquipmentDetailHeader({
 
           <DropdownMenu>
             <DropdownMenuTrigger
+              // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
               render={props => (
                 <Button {...props} variant="outline" size="icon-sm">
                   <MoreHorizontal className="size-4" />
@@ -176,6 +178,7 @@ export function EquipmentDetailHeader({
             />
             <DropdownMenuContent align="end">
               {!(isRetired || isAssigned) && (
+                // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
                 <DropdownMenuItem variant="destructive" onSelect={() => setRetireDialogOpen(true)}>
                   <Archive className="me-2 h-3.5 w-3.5" />
                   {t('detail.retire')}
@@ -196,12 +199,14 @@ export function EquipmentDetailHeader({
           <DialogFooter>
             <Button
               variant="outline"
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => setRetireDialogOpen(false)}
               disabled={retireMutation.isPending}>
               {t('form.cancel')}
             </Button>
             <Button
               variant="destructive"
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => retireMutation.mutate({ id: equipment.id })}
               disabled={retireMutation.isPending}>
               {t('detail.retire')}
@@ -224,12 +229,14 @@ export function EquipmentDetailHeader({
           <DialogFooter>
             <Button
               variant="outline"
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => setUnassignDialogOpen(false)}
               disabled={unassignMutation.isPending}>
               {t('form.cancel')}
             </Button>
             <Button
               variant="destructive"
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => unassignMutation.mutate({ equipmentId: equipment.id })}
               disabled={unassignMutation.isPending}>
               {t('detail.unassignEquipment')}

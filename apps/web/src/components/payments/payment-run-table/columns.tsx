@@ -152,12 +152,14 @@ export function getColumns(
         return (
           <DropdownMenu>
             <DropdownMenuTrigger
+              // biome-ignore lint/nursery/noJsxPropsBind: column definition
               render={props => (
                 <Button
                   {...props}
                   variant="ghost"
                   size="icon"
                   className="h-8 w-8"
+                  // biome-ignore lint/nursery/noJsxPropsBind: column definition
                   onClick={e => {
                     e.stopPropagation();
                     props.onClick?.(e);
@@ -170,6 +172,7 @@ export function getColumns(
             <DropdownMenuContent align="end">
               {showDownload && (
                 <DropdownMenuItem
+                  // biome-ignore lint/nursery/noJsxPropsBind: column definition
                   onClick={e => {
                     e.stopPropagation();
                     actions.onDownloadExport?.(run);
@@ -180,6 +183,7 @@ export function getColumns(
               )}
               {showMarkPaid && (
                 <DropdownMenuItem
+                  // biome-ignore lint/nursery/noJsxPropsBind: column definition
                   onClick={e => {
                     e.stopPropagation();
                     actions.onMarkAllPaid?.(run);
@@ -191,6 +195,7 @@ export function getColumns(
               {!!showCancel && (
                 <DropdownMenuItem
                   className="text-destructive"
+                  // biome-ignore lint/nursery/noJsxPropsBind: column definition
                   onClick={e => {
                     e.stopPropagation();
                     actions.onCancelRun?.(run);

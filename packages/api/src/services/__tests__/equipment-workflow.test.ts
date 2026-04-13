@@ -174,7 +174,11 @@ describe('handleEquipmentTaskStart', () => {
 // We test autoCreateInPostReturnShipment indirectly through handleEquipmentTaskStart
 // with OFFBOARDING template type and equipment assignments present.
 
-const mockCreateShipment = vi.fn();
+const {
+  mockCreateShipment,
+} = vi.hoisted(() => ({
+  mockCreateShipment: vi.fn(),
+}));
 
 vi.mock('../courier/inpost-client.js', () => {
   const MockInPostClient = vi.fn().mockImplementation(function (this: {

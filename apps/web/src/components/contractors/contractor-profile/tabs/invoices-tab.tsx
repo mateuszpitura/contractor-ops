@@ -131,6 +131,7 @@ export function InvoicesTab({ contractorId }: InvoicesTabProps) {
           <FileText className="size-10 text-muted-foreground/50" />
           <h4 className="text-sm font-medium">{t('tab.noInvoicesHeading')}</h4>
           <p className="max-w-sm text-sm text-muted-foreground">{t('tab.noInvoicesBody')}</p>
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
           <Button size="sm" onClick={() => setUploadOpen(true)}>
             <Upload className="me-1.5 size-3.5" />
             {t('tab.uploadInvoice')}
@@ -153,6 +154,7 @@ export function InvoicesTab({ contractorId }: InvoicesTabProps) {
       {/* Header with upload CTA */}
       <div className="flex items-center justify-between">
         <h3 className="text-base font-medium">{t('tab.heading')}</h3>
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         <Button size="sm" onClick={() => setUploadOpen(true)}>
           <Upload className="me-1.5 size-3.5" />
           {t('tab.uploadInvoice')}
@@ -198,6 +200,7 @@ export function InvoicesTab({ contractorId }: InvoicesTabProps) {
             variant="outline"
             size="sm"
             disabled={page <= 1}
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={() => setPage(p => Math.max(1, p - 1))}>
             &laquo;
           </Button>
@@ -208,6 +211,7 @@ export function InvoicesTab({ contractorId }: InvoicesTabProps) {
             variant="outline"
             size="sm"
             disabled={page >= totalPages}
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={() => setPage(p => Math.min(totalPages, p + 1))}>
             &raquo;
           </Button>

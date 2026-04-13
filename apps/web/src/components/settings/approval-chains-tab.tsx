@@ -159,6 +159,7 @@ export function ApprovalChainsTab() {
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <h3 className="text-base font-semibold">{t('approvals.empty.heading')}</h3>
           <p className="mt-1 max-w-sm text-sm text-muted-foreground">{t('approvals.empty.body')}</p>
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
           <Button className="mt-4" onClick={handleCreate}>
             <Plus className="me-1.5 size-4" />
             {t('approvals.empty.cta')}
@@ -183,6 +184,7 @@ export function ApprovalChainsTab() {
             <h3 className="text-base font-semibold">{t('approvals.heading')}</h3>
             <p className="text-sm text-muted-foreground">{t('approvals.description')}</p>
           </div>
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
           <Button onClick={handleCreate}>
             <Plus className="me-1.5 size-4" />
             {t('approvals.createChain')}
@@ -202,6 +204,7 @@ export function ApprovalChainsTab() {
                 </div>
                 <Switch
                   checked={chain.isActive}
+                  // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
                   onCheckedChange={() => handleToggleActive(chain)}
                   aria-label={tAria('toggleActive', { name: chain.name })}
                 />
@@ -224,6 +227,7 @@ export function ApprovalChainsTab() {
               </div>
             </CardContent>
             <CardFooter className="gap-2">
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               <Button variant="ghost" size="sm" onClick={() => handleEdit(chain)}>
                 <Pencil className="me-1.5 size-3.5" />
                 {t('approvals.edit')}
@@ -232,6 +236,7 @@ export function ApprovalChainsTab() {
                 variant="ghost"
                 size="sm"
                 className="text-destructive hover:text-destructive"
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 onClick={() => setDeletingChainId(chain.id)}>
                 <Trash2 className="me-1.5 size-3.5" />
                 {t('approvals.delete')}
@@ -247,6 +252,7 @@ export function ApprovalChainsTab() {
       {/* Delete confirmation dialog */}
       <AlertDialog
         open={deletingChainId !== null}
+        // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler
         onOpenChange={open => {
           if (!open) setDeletingChainId(null);
         }}>
@@ -260,6 +266,7 @@ export function ApprovalChainsTab() {
             <AlertDialogAction
               variant="destructive"
               disabled={deleteMutation.isPending}
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => {
                 if (deletingChainId) handleDelete(deletingChainId);
               }}>

@@ -104,6 +104,7 @@ function RunLinearChips({ runId }: { runId: string }) {
   const overflow = issues.length - 3;
 
   return (
+    // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
     <div className="flex items-center gap-1" role="presentation" onClick={e => e.preventDefault()}>
       {visible.map(issue => (
         <LinearIssueChip
@@ -150,6 +151,7 @@ function RunJiraChips({ runId }: { runId: string }) {
   const overflow = issues.length - 3;
 
   return (
+    // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
     <div className="flex items-center gap-1" role="presentation" onClick={e => e.preventDefault()}>
       {visible.map(issue => (
         <JiraIssueChip
@@ -231,6 +233,7 @@ export function WorkflowsTab({ contractorId }: WorkflowsTabProps) {
           <GitBranch className="size-10 text-muted-foreground/50" />
           <h4 className="text-sm font-medium">{t('contractorNoWorkflows')}</h4>
           <p className="max-w-sm text-sm text-muted-foreground">{t('contractorNoWorkflowsBody')}</p>
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
           <Button size="sm" onClick={() => setPickerOpen(true)}>
             <Plus className="me-1.5 size-3.5" />
             {t('contractorNoWorkflowsCta')}
@@ -253,6 +256,7 @@ export function WorkflowsTab({ contractorId }: WorkflowsTabProps) {
       {/* Header with CTA */}
       <div className="flex items-center justify-between">
         <h3 className="text-base font-medium">{t('contractorWorkflowsTab')}</h3>
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         <Button size="sm" onClick={() => setPickerOpen(true)}>
           <Plus className="me-1.5 size-3.5" />
           {t('contractorStartWorkflow')}
@@ -295,6 +299,7 @@ export function WorkflowsTab({ contractorId }: WorkflowsTabProps) {
             variant="outline"
             size="sm"
             disabled={page <= 1}
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={() => setPage(p => Math.max(1, p - 1))}>
             &laquo;
           </Button>
@@ -305,6 +310,7 @@ export function WorkflowsTab({ contractorId }: WorkflowsTabProps) {
             variant="outline"
             size="sm"
             disabled={page >= totalPages}
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={() => setPage(p => Math.min(totalPages, p + 1))}>
             &raquo;
           </Button>

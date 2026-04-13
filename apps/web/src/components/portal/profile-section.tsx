@@ -123,6 +123,7 @@ export function ProfileSection({
         {/* Trigger row */}
         <div className="flex min-h-[48px] items-center gap-3 px-4 py-3">
           <CollapsibleTrigger
+            // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
             render={props => (
               <button
                 {...props}
@@ -143,6 +144,7 @@ export function ProfileSection({
               variant="ghost"
               size="sm"
               className="shrink-0 gap-1.5 text-muted-foreground"
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={handleEditClick}>
               <Pencil className="h-3.5 w-3.5" />
               {t('editSection')}
@@ -213,6 +215,7 @@ export function ProfileSection({
                       type="button"
                       variant="outline"
                       size="sm"
+                      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                       onClick={handleDiscard}
                       disabled={saving}>
                       {t('discardChanges')}

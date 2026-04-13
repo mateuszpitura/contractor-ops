@@ -166,12 +166,14 @@ export function TaxDetailsForm({ defaultValues, onSuccess, onCancel }: TaxDetail
         <Controller
           control={control}
           name="invoiceTypes"
+          // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
           render={({ field }) => (
             <div className="space-y-2">
               <label htmlFor="zatca-inv-standard" className="flex items-center gap-2 text-sm">
                 <Checkbox
                   id="zatca-inv-standard"
                   checked={field.value?.includes('standard')}
+                  // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
                   onCheckedChange={checked => {
                     const current = field.value ?? [];
                     field.onChange(
@@ -185,6 +187,7 @@ export function TaxDetailsForm({ defaultValues, onSuccess, onCancel }: TaxDetail
                 <Checkbox
                   id="zatca-inv-simplified"
                   checked={field.value?.includes('simplified')}
+                  // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
                   onCheckedChange={checked => {
                     const current = field.value ?? [];
                     field.onChange(

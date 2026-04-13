@@ -5,7 +5,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 // Mocks
 // ---------------------------------------------------------------------------
 
-const useQueryMock = vi.fn();
+const {
+  useQueryMock,
+} = vi.hoisted(() => ({
+  useQueryMock: vi.fn(),
+}));
 
 vi.mock('@tanstack/react-query', () => ({
   useQuery: useQueryMock,

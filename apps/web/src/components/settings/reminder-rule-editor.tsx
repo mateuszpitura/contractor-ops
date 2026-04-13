@@ -219,6 +219,7 @@ function RuleUserPicker({
                 <CommandItem
                   key={user.id}
                   value={user.id}
+                  // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
                   onSelect={() => {
                     onChange(user.id);
                     setPickerOpen(false);
@@ -440,6 +441,7 @@ export function ReminderRuleEditor({ open, onOpenChange, rule }: ReminderRuleEdi
             <Controller
               control={form.control}
               name="triggerType"
+              // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
               render={({ field }) => (
                 <Select value={field.value} onValueChange={field.onChange} items={triggerItems}>
                   <SelectTrigger className="w-full">
@@ -494,6 +496,7 @@ export function ReminderRuleEditor({ open, onOpenChange, rule }: ReminderRuleEdi
             <Controller
               control={form.control}
               name="entityType"
+              // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
               render={({ field }) => (
                 <Select value={field.value} onValueChange={field.onChange} items={entityItems}>
                   <SelectTrigger className="w-full">
@@ -517,6 +520,7 @@ export function ReminderRuleEditor({ open, onOpenChange, rule }: ReminderRuleEdi
             <Controller
               control={form.control}
               name="channel"
+              // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
               render={({ field }) => (
                 <Select value={field.value} onValueChange={field.onChange} items={channelItems}>
                   <SelectTrigger className="w-full">
@@ -546,6 +550,7 @@ export function ReminderRuleEditor({ open, onOpenChange, rule }: ReminderRuleEdi
             <Controller
               control={form.control}
               name="recipientMode"
+              // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
               render={({ field }) => (
                 <Select value={field.value} onValueChange={field.onChange} items={recipientItems}>
                   <SelectTrigger className="w-full">
@@ -574,6 +579,7 @@ export function ReminderRuleEditor({ open, onOpenChange, rule }: ReminderRuleEdi
               <Controller
                 control={form.control}
                 name="configUserId"
+                // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
                 render={({ field }) => (
                   <RuleUserPicker value={field.value} onChange={field.onChange} />
                 )}
@@ -587,6 +593,7 @@ export function ReminderRuleEditor({ open, onOpenChange, rule }: ReminderRuleEdi
               <Controller
                 control={form.control}
                 name="configRole"
+                // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
                 render={({ field }) => (
                   <Select
                     value={field.value ?? undefined}
@@ -614,6 +621,7 @@ export function ReminderRuleEditor({ open, onOpenChange, rule }: ReminderRuleEdi
             <Controller
               control={form.control}
               name="active"
+              // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
               render={({ field }) => (
                 <Switch id="rule-active" checked={field.value} onCheckedChange={field.onChange} />
               )}
@@ -625,6 +633,7 @@ export function ReminderRuleEditor({ open, onOpenChange, rule }: ReminderRuleEdi
             <Button
               type="button"
               variant="ghost"
+              // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler
               onClick={() => onOpenChange(false)}
               disabled={isPending}>
               {t('reminderRules.editor.discard')}

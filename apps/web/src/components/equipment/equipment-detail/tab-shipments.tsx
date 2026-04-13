@@ -146,6 +146,7 @@ export function TabShipments({
                   <Button
                     variant="ghost"
                     size="icon-sm"
+                    // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                     onClick={() => setDeleteTarget(shipment.id)}>
                     <Trash2 className="h-3.5 w-3.5 text-destructive" />
                   </Button>
@@ -165,6 +166,7 @@ export function TabShipments({
       ))}
 
       {/* Delete confirmation */}
+      // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler
       <Dialog open={!!deleteTarget} onOpenChange={v => !v && setDeleteTarget(null)}>
         <DialogContent>
           <DialogHeader>
@@ -174,12 +176,14 @@ export function TabShipments({
           <DialogFooter>
             <Button
               variant="outline"
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => setDeleteTarget(null)}
               disabled={deleteMutation.isPending}>
               {t('form.cancel')}
             </Button>
             <Button
               variant="destructive"
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => deleteTarget && deleteMutation.mutate({ id: deleteTarget })}
               disabled={deleteMutation.isPending}>
               {t('shipment.deleteTitle')}

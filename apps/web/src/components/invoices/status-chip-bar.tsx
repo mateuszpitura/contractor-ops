@@ -81,6 +81,7 @@ export function StatusChipBar({ activeStatus, onStatusChange }: StatusChipBarPro
             <button
               key={chip.key}
               type="button"
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => onStatusChange(chip.key)}
               className="shrink-0">
               <Badge

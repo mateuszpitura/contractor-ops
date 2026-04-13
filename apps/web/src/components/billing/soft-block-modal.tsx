@@ -30,7 +30,9 @@ export function SoftBlockModal({ isOpen, onSelectPlan }: SoftBlockModalProps) {
         role="alertdialog"
         showCloseButton={false}
         className="max-w-4xl"
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onPointerDownOutside={e => e.preventDefault()}
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onEscapeKeyDown={e => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle className="font-display text-[28px] font-semibold leading-tight">

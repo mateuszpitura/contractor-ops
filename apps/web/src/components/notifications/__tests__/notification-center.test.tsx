@@ -2,8 +2,15 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@/test/test-utils';
 import { NotificationCenter } from '../notification-center';
 
-const mockUseQuery = vi.fn();
-const mockUseMutation = vi.fn();
+const {
+  mockUseQuery,
+  mockUseMutation,
+  mockPush,
+} = vi.hoisted(() => ({
+  mockUseQuery: vi.fn(),
+  mockUseMutation: vi.fn(),
+  mockPush: vi.fn(),
+}));
 
 vi.mock('@tanstack/react-query', () => ({
   useQuery: mockUseQuery,
@@ -38,7 +45,6 @@ vi.mock('@/trpc/init', () => ({
   },
 }));
 
-const mockPush = vi.fn();
 vi.mock('@/i18n/navigation', () => ({
   useRouter: () => ({ push: mockPush }),
   Link: ({ children, href }: { children: React.ReactNode; href: string }) => (

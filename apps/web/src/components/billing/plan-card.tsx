@@ -72,6 +72,7 @@ export function PlanCard({
         isRecommended && !isCurrentPlan && 'ring-2 ring-primary/50',
         compact && 'py-3',
       )}
+      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
       onKeyDown={e => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();

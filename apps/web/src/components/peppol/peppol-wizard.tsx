@@ -127,7 +127,7 @@ export function PeppolWizard({ open, onOpenChange }: PeppolWizardProps) {
   }
 
   return (
-    {/* biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler */}
+    // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler */}
     <Dialog open={open} onOpenChange={resetAndClose}>
       <DialogContent className="max-w-[640px]">
         <DialogHeader>
@@ -281,7 +281,7 @@ export function PeppolWizard({ open, onOpenChange }: PeppolWizardProps) {
                 <Alert variant="destructive">
                   <AlertTitle>Registration Failed</AlertTitle>
                   <AlertDescription>{registrationError}</AlertDescription>
-                  {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                   <Button variant="outline" size="sm" className="mt-3" onClick={handleRetry}>
                     Retry
                   </Button>
@@ -330,12 +330,12 @@ export function PeppolWizard({ open, onOpenChange }: PeppolWizardProps) {
             </Button>
           )}
           {step === 5 ? (
-            {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             <Button className="ms-auto" onClick={resetAndClose}>
               Done
             </Button>
           ) : step < 4 ? (
-            {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             <Button className="ms-auto" onClick={handleNext} disabled={!canGoNext}>
               Next
             </Button>

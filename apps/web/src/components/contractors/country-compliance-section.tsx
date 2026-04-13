@@ -93,27 +93,32 @@ export function CountryComplianceSection({ contractorId }: CountryComplianceSect
         {countryCode === 'AE' && (
           <UaeFields
             values={merged}
+            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
             onChange={(key, val) => setFormData(prev => ({ ...prev, [key]: val }))}
           />
         )}
         {countryCode === 'SA' && (
           <SaudiFields
             values={merged}
+            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
             onChange={(key, val) => setFormData(prev => ({ ...prev, [key]: val }))}
           />
         )}
         {countryCode === 'GB' && (
           <UkComplianceFields
             values={merged as Partial<UkCountryFields>}
+            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
             onChange={(key, val) => setFormData(prev => ({ ...prev, [key]: val }))}
           />
         )}
         {countryCode === 'DE' && (
           <DeComplianceFields
             values={merged as Partial<DeCountryFields>}
+            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
             onChange={(key, val) => setFormData(prev => ({ ...prev, [key]: val }))}
           />
         )}
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         <Button onClick={handleSave} disabled={updateMutation.isPending} className="mt-4">
           {updateMutation.isPending ? (
             <Loader2 className="me-2 h-4 w-4 animate-spin" />
@@ -143,6 +148,7 @@ function UaeFields({
         <Input
           id="freelancePermitNumber"
           value={(values.freelancePermitNumber as string) ?? ''}
+          // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
           onChange={e => onChange('freelancePermitNumber', e.target.value || undefined)}
           placeholder="Enter permit number"
         />
@@ -154,6 +160,7 @@ function UaeFields({
         <Input
           id="tradeLicenseNumber"
           value={(values.tradeLicenseNumber as string) ?? ''}
+          // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
           onChange={e => onChange('tradeLicenseNumber', e.target.value || undefined)}
           placeholder="Enter license number"
         />
@@ -162,6 +169,7 @@ function UaeFields({
         <Switch
           id="freeZone"
           checked={(values.freeZone as boolean) ?? false}
+          // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
           onCheckedChange={checked => onChange('freeZone', checked)}
         />
         <Label htmlFor="freeZone" className="text-sm font-medium">
@@ -176,6 +184,7 @@ function UaeFields({
           id="tradeLicenseExpiry"
           type="date"
           value={(values.tradeLicenseExpiry as string) ?? ''}
+          // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
           onChange={e => onChange('tradeLicenseExpiry', e.target.value || undefined)}
         />
       </div>
@@ -199,6 +208,7 @@ function SaudiFields({
         <Input
           id="freelanceSaLicense"
           value={(values.freelanceSaLicense as string) ?? ''}
+          // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
           onChange={e => onChange('freelanceSaLicense', e.target.value || undefined)}
           placeholder="Enter Freelance.sa license number"
         />
@@ -210,6 +220,7 @@ function SaudiFields({
         <Input
           id="commercialRegistration"
           value={(values.commercialRegistration as string) ?? ''}
+          // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
           onChange={e => onChange('commercialRegistration', e.target.value || undefined)}
           placeholder="Enter CR number"
         />
@@ -222,6 +233,7 @@ function SaudiFields({
           id="commercialRegistrationExpiry"
           type="date"
           value={(values.commercialRegistrationExpiry as string) ?? ''}
+          // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
           onChange={e => onChange('commercialRegistrationExpiry', e.target.value || undefined)}
         />
       </div>

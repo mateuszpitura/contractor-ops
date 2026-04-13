@@ -311,6 +311,7 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
                 <Label>{t('detail.issueDate')}</Label>
                 <DatePicker
                   value={issueDateValue}
+                  // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                   onChange={date => setValue('issueDate', date)}
                   disabled={!isEditable}
                   pickDateLabel={tMeta('pickDate')}
@@ -323,6 +324,7 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
                 <Label>{t('detail.dueDate')}</Label>
                 <DatePicker
                   value={dueDateValue}
+                  // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                   onChange={date => setValue('dueDate', date)}
                   disabled={!isEditable}
                   pickDateLabel={tMeta('pickDate')}
@@ -339,6 +341,7 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
                 <Label>{t('detail.servicePeriodStart')}</Label>
                 <DatePicker
                   value={servicePeriodStartValue ?? ''}
+                  // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                   onChange={date => setValue('servicePeriodStart', date || undefined)}
                   disabled={!isEditable}
                   pickDateLabel={tMeta('pickDate')}
@@ -348,6 +351,7 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
                 <Label>{t('detail.servicePeriodEnd')}</Label>
                 <DatePicker
                   value={servicePeriodEndValue ?? ''}
+                  // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                   onChange={date => setValue('servicePeriodEnd', date || undefined)}
                   disabled={!isEditable}
                   pickDateLabel={tMeta('pickDate')}
@@ -374,6 +378,7 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
                 <CurrencyInput
                   id="netAmount"
                   value={watch('subtotalMinor')}
+                  // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                   onChange={minor => setValue('subtotalMinor', minor)}
                   disabled={!isEditable}
                 />
@@ -385,6 +390,7 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
                 <Label>{t('detail.vatRate')}</Label>
                 <VatRateSelector
                   value={vatRateValue ?? undefined}
+                  // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                   onChange={code => setValue('vatRate', code)}
                   disabled={!isEditable}
                 />
@@ -398,6 +404,7 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
                 <CurrencyInput
                   id="vatAmount"
                   value={watch('vatAmountMinor') ?? 0}
+                  // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                   onChange={minor => setValue('vatAmountMinor', minor)}
                   disabled={!isEditable}
                 />
@@ -407,6 +414,7 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
                 <CurrencyInput
                   id="grossAmount"
                   value={watch('totalMinor')}
+                  // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                   onChange={minor => setValue('totalMinor', minor)}
                   disabled={!isEditable}
                 />
@@ -423,6 +431,7 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
                 <CurrencyInput
                   id="withholding"
                   value={watch('withholdingMinor') ?? 0}
+                  // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                   onChange={minor => setValue('withholdingMinor', minor)}
                   disabled={!isEditable}
                 />
@@ -432,6 +441,7 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
                 <CurrencyInput
                   id="amountToPay"
                   value={watch('amountToPayMinor')}
+                  // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                   onChange={minor => setValue('amountToPayMinor', minor)}
                   disabled={!isEditable}
                 />
@@ -444,6 +454,7 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
                 <Label>{t('detail.currency')}</Label>
                 <Select
                   value={currencyValue}
+                  // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
                   onValueChange={val => {
                     if (val) setValue('currency', val);
                   }}
@@ -508,6 +519,7 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem
                     className="text-destructive focus:text-destructive"
+                    // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                     onClick={() => setVoidDialogOpen(true)}>
                     <AlertTriangle className="me-1.5 h-3.5 w-3.5" />
                     {t('detail.voidInvoice')}
@@ -530,6 +542,7 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
             <AlertDialogCancel>{t('detail.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               variant="destructive"
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => {
                 voidMutation.mutate({ id: invoice.id });
                 setVoidDialogOpen(false);
@@ -581,6 +594,7 @@ function DatePicker({
         <Calendar
           mode="single"
           selected={isValid ? parsed : undefined}
+          // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
           onSelect={date => {
             if (date) onChange(toDateString(date));
           }}
@@ -620,6 +634,7 @@ function CurrencyInput({
       className="font-mono text-[13px] text-end"
       value={displayValue}
       disabled={disabled}
+      // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
       onChange={e => {
         const raw = e.target.value;
         // Allow typing decimals
@@ -627,6 +642,7 @@ function CurrencyInput({
           setDisplayValue(raw);
         }
       }}
+      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
       onBlur={() => {
         const minor = displayToMinor(displayValue.replace(',', '.'));
         onChange(minor);

@@ -68,6 +68,7 @@ export function TimesheetHeader({
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       {/* Left: Week selector */}
       <div className="flex items-center gap-2">
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         <Button variant="ghost" size="icon" onClick={handlePrevWeek} aria-label="Previous week">
           <ChevronLeft className="h-4 w-4" />
         </Button>
@@ -83,12 +84,14 @@ export function TimesheetHeader({
             <Calendar
               mode="single"
               selected={weekStartDate}
+              // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
               onSelect={handleCalendarSelect}
               defaultMonth={weekStartDate}
             />
           </PopoverContent>
         </Popover>
 
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         <Button variant="ghost" size="icon" onClick={handleNextWeek} aria-label="Next week">
           <ChevronRight className="h-4 w-4" />
         </Button>

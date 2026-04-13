@@ -138,6 +138,7 @@ export function InviteDialog({
             </Label>
             <Select
               value={watch('role')}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
               onValueChange={value => setValue('role', value as InviteValues['role'])}
               disabled={inviteMutation.isPending}
               items={roleItems}>

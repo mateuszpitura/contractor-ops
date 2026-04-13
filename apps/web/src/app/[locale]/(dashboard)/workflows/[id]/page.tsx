@@ -84,6 +84,7 @@ export default function WorkflowRunDetailPage() {
     return (
       <div className="flex min-h-[400px] flex-col items-center justify-center gap-3 text-center">
         <h2 className="text-lg font-medium">{t('errors.failedToLoadWorkflowDetail')}</h2>
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         <Button variant="outline" onClick={() => runQuery.refetch()}>
           {t('errors.retry')}
         </Button>

@@ -269,6 +269,7 @@ export function SendForSignatureDialog({
               ) : (
                 <Select
                   value={selectedConnectionId}
+                  // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
                   onValueChange={val => setSelectedConnectionId(val ?? '')}>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder={tSend('providerPlaceholder')} />
@@ -315,6 +316,7 @@ export function SendForSignatureDialog({
                 <button
                   type="button"
                   className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
+                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                   onClick={() =>
                     setSigners(prev => [
                       ...prev,
@@ -339,6 +341,7 @@ export function SendForSignatureDialog({
                 rows={3}
                 placeholder={tSend('messagePlaceholder')}
                 value={message}
+                // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                 onChange={e => setMessage(e.target.value)}
               />
             </div>
@@ -362,6 +365,7 @@ export function SendForSignatureDialog({
             <div className="flex gap-2">
               <div className="flex-1 space-y-2">
                 <Label>{tSend('expiresLabel')}</Label>
+                // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
                 <Select value={expiresInDays} onValueChange={val => setExpiresInDays(val ?? '14')}>
                   <SelectTrigger className="w-full">
                     <SelectValue />
@@ -379,6 +383,7 @@ export function SendForSignatureDialog({
                 <Label>{tSend('remindersLabel')}</Label>
                 <Select
                   value={reminderInterval}
+                  // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
                   onValueChange={val => setReminderInterval(val ?? '7')}>
                   <SelectTrigger className="w-full">
                     <SelectValue />
@@ -397,6 +402,7 @@ export function SendForSignatureDialog({
         <DialogFooter className="px-6 pb-6">
           <Button
             variant="outline"
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={() => {
               onOpenChange(false);
               resetForm();
@@ -404,6 +410,7 @@ export function SendForSignatureDialog({
             {tSend('discard')}
           </Button>
           <Button
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={handleSubmit}
             disabled={
               sendMutation.isPending || !selectedConnectionId || signers.length === 0 || !documentId

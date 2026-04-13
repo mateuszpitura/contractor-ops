@@ -128,6 +128,7 @@ export function PaczkomatPicker({
                 <Button
                   variant="outline"
                   size="sm"
+                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                   onClick={() => {
                     setIframeError(false);
                     setIframeLoaded(false);
@@ -148,7 +149,9 @@ export function PaczkomatPicker({
                 title="InPost Paczkomat locker map"
                 className="h-[400px] w-full rounded-md"
                 allow=""
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 onLoad={() => setIframeLoaded(true)}
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 onError={() => setIframeError(true)}
               />
             </div>

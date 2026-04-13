@@ -20,7 +20,7 @@ describe('errors.ts vs i18n Errors namespace', () => {
   const errorCodeExports: string[] = [];
   for (const [, value] of Object.entries(ApiErrors)) {
     if (typeof value !== 'string') continue;
-    if (!/^[A-Z][A-Z0-9_]+$/.test(value)) continue;
+    if (!/^[a-z][a-zA-Z0-9]+$/.test(value)) continue;
     errorCodeExports.push(value);
   }
 

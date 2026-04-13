@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { FileText } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { parseAsString, useQueryState } from 'nuqs';
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useCallback, useEffect, useState } from 'react';
 import { ContractSidePanel } from '@/components/contracts/contract-side-panel';
 import type { ContractRow } from '@/components/contracts/contract-table/columns';
 import { ContractDataTable } from '@/components/contracts/contract-table/data-table';
@@ -47,14 +47,18 @@ function ContractsContent() {
   const contractorCount = (contractorCountQuery.data as { total: number } | undefined)?.total ?? 0;
   const isCountLoading = contractCountQuery.isLoading;
 
-  const handleRowClick = (contract: ContractRow) => {
+  const handleRowClick = useCallback((contract: ContractRow) => {
     setSelectedContract(contract);
     setSidePanelOpen(true);
-  };
+  }, []);
 
-  const handleNewContract = () => {
+  const handleNewContract = useCallback(() => {
     setWizardOpen(true);
-  };
+  }, []);
+
+  const handleOpenImportWizard = useCallback(() => {
+    setImportWizardOpen(true);
+  }, []);
 
   // Show empty state when no contracts exist
   if (!isCountLoading && contractTotal === 0) {
@@ -86,7 +90,7 @@ function ContractsContent() {
         <ContractDataTable
           onRowClick={handleRowClick}
           onNewContract={handleNewContract}
-          onImport={() => setImportWizardOpen(true)}
+          onImport={handleOpenImportWizard}
         />
       </AnimateIn>
 

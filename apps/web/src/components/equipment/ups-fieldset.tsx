@@ -73,6 +73,7 @@ export function UpsFieldset({
           <Input
             placeholder={t('street')}
             value={address.street}
+            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
             onChange={e => updateField('street', e.target.value)}
             aria-label={t('street')}
           />
@@ -81,12 +82,14 @@ export function UpsFieldset({
             <Input
               placeholder={t('city')}
               value={address.city}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
               onChange={e => updateField('city', e.target.value)}
               aria-label={t('city')}
             />
             <Input
               placeholder={t('postalCode')}
               value={address.postalCode}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
               onChange={e => updateField('postalCode', e.target.value)}
               aria-label={t('postalCode')}
             />
@@ -102,6 +105,7 @@ export function UpsFieldset({
         <Label>{tCarrier('parcelSize')}</Label>
         <RadioGroup
           value={parcelSize}
+          // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
           onValueChange={val => val && onParcelSizeChange(val as ParcelSize)}
           className="flex gap-4">
           {(['small', 'medium', 'large'] as const).map(size => (
@@ -121,6 +125,7 @@ export function UpsFieldset({
         <Label>{t('serviceType')}</Label>
         <Select
           value={serviceCode}
+          // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
           onValueChange={val => val && onServiceCodeChange(val as UpsServiceCode)}>
           <SelectTrigger className="w-full">
             <SelectValue />

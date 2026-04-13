@@ -371,6 +371,7 @@ function UnmatchedCard({
                         <CommandItem
                           key={contractor.id}
                           value={contractor.id}
+                          // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
                           onSelect={() => {
                             setSelectedContractorId(contractor.id);
                             setSelectedContractorName(contractor.legalName);
@@ -411,6 +412,7 @@ function UnmatchedCard({
             ) : (
               <Select
                 value={selectedContractId ?? undefined}
+                // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
                 onValueChange={val => setSelectedContractId(val)}>
                 <SelectTrigger>
                   <SelectValue placeholder={t('match.selectContract')} />
@@ -436,6 +438,7 @@ function UnmatchedCard({
 
         {/* Confirm match CTA */}
         <Button
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
           onClick={handleConfirmMatch}
           disabled={!selectedContractorId || manualMatchMutation.isPending}
           className="w-full">

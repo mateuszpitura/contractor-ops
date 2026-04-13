@@ -116,6 +116,7 @@ export function EquipmentToolbar({
           <Input
             placeholder={t('list.filters.search')}
             value={localSearch}
+            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
             onChange={e => handleSearchInput(e.target.value)}
             className="h-9 ps-9 pe-8"
           />
@@ -127,6 +128,7 @@ export function EquipmentToolbar({
         {/* Filters popover */}
         <Popover>
           <PopoverTrigger
+            // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
             render={props => (
               <Button {...props} variant="outline" size="lg">
                 <Filter className="h-3.5 w-3.5" />
@@ -149,6 +151,7 @@ export function EquipmentToolbar({
                   label: t(`type.${type}`),
                 }))}
                 selected={filters.type}
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 onToggle={value => toggleFilterValue('type', value)}
               />
 
@@ -160,6 +163,7 @@ export function EquipmentToolbar({
                   label: t(`status.${status}`),
                 }))}
                 selected={filters.status}
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 onToggle={value => toggleFilterValue('status', value)}
               />
             </div>
@@ -182,6 +186,7 @@ export function EquipmentToolbar({
             <FilterBadge
               key={`type-${type}`}
               label={t(`type.${type}` as Parameters<typeof t>[0])}
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onRemove={() => removeFilter('type', type)}
             />
           ))}
@@ -189,12 +194,14 @@ export function EquipmentToolbar({
             <FilterBadge
               key={`status-${status}`}
               label={t(`status.${status}` as Parameters<typeof t>[0])}
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onRemove={() => removeFilter('status', status)}
             />
           ))}
           <button
             type="button"
             className="ms-1 text-xs text-muted-foreground hover:text-foreground underline"
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={clearAllFilters}>
             Clear all
           </button>
@@ -231,6 +238,7 @@ function FilterSection({
             <Checkbox
               id={`equip-filter-${title}-${option.value}`}
               checked={selected.includes(option.value)}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
               onCheckedChange={() => onToggle(option.value)}
             />
             <span>{option.label}</span>

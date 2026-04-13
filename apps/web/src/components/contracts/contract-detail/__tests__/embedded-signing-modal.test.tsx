@@ -1,7 +1,11 @@
 import { render, screen, setup } from '@/test/test-utils';
 import { EmbeddedSigningModal } from '../embedded-signing-modal';
 
-const mockedUseQuery = vi.fn();
+const {
+  mockedUseQuery,
+} = vi.hoisted(() => ({
+  mockedUseQuery: vi.fn(),
+}));
 
 vi.mock('@tanstack/react-query', () => ({
   useQuery: mockedUseQuery,

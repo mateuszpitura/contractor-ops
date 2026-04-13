@@ -155,6 +155,7 @@ function PaymentsContent() {
           title={t('title')}
           description={t('pageDescription')}
           actions={
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             <Button size="sm" className="gap-1.5" onClick={() => setDialogOpen(true)}>
               <Plus className="h-3.5 w-3.5" />
               {t('newPaymentRun')}
@@ -203,10 +204,12 @@ function PaymentsContent() {
       <PaymentRunSidePanel
         runId={selectedRunId}
         open={sidePanelOpen}
+        // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler
         onOpenChange={open => {
           setSidePanelOpen(open);
           if (!open) setSelectedRunId(null);
         }}
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onImportStatement={runId => setBankStatementRunId(runId)}
       />
 
@@ -214,6 +217,7 @@ function PaymentsContent() {
       <NewPaymentRunDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onViewRun={() => {
           // After dialog creates a run, refresh the list
         }}
@@ -224,6 +228,7 @@ function PaymentsContent() {
         <BankStatementDialog
           runId={bankStatementRunId}
           open={!!bankStatementRunId}
+          // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler
           onOpenChange={open => {
             if (!open) setBankStatementRunId(null);
           }}

@@ -104,6 +104,7 @@ export function AuditLogTable({
           <button
             type="button"
             className="flex items-center gap-1 uppercase hover:text-foreground"
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={() => onSortOrderChange(sortOrder === 'desc' ? 'asc' : 'desc')}>
             {t('columns.timestamp')}
             {sortOrder === 'asc' ? (
@@ -177,6 +178,7 @@ export function AuditLogTable({
                 <Link
                   href={href}
                   className="text-sm text-primary underline-offset-2 hover:underline"
+                  // biome-ignore lint/nursery/noJsxPropsBind: stopPropagation handler
                   onClick={e => e.stopPropagation()}>
                   {resourceName ?? resourceId}
                 </Link>
@@ -197,6 +199,7 @@ export function AuditLogTable({
             <button
               type="button"
               className="flex items-center justify-center rounded p-1 hover:bg-muted"
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={e => {
                 e.stopPropagation();
                 onToggleRow(row.original.id);
@@ -301,6 +304,7 @@ export function AuditLogTable({
               const isExpanded = !!expandedRows[row.original.id];
               return (
                 <span key={row.id} className="contents">
+                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                   <TableRow className="cursor-pointer" onClick={() => onToggleRow(row.original.id)}>
                     {row.getVisibleCells().map(cell => (
                       <TableCell key={cell.id}>
@@ -336,6 +340,7 @@ export function AuditLogTable({
               variant="outline"
               size="sm"
               disabled={page <= 1}
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => onPageChange(page - 1)}>
               {t('pagination.previous')}
             </Button>
@@ -343,6 +348,7 @@ export function AuditLogTable({
               variant="outline"
               size="sm"
               disabled={page >= totalPages}
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => onPageChange(page + 1)}>
               {t('pagination.next')}
             </Button>

@@ -119,6 +119,7 @@ export function PortalMobileMenu({
               <button
                 key={item.href}
                 type="button"
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 onClick={() => handleNavClick(item.href)}
                 className={cn(
                   'flex items-center gap-3 border-b px-4 py-3 text-base transition-colors text-start',
@@ -140,6 +141,7 @@ export function PortalMobileMenu({
             <p className="text-sm font-medium">{contractorName}</p>
             <p className="text-xs text-muted-foreground">{contractorEmail}</p>
           </div>
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
           <Button variant="outline" className="w-full" onClick={handleLogout}>
             <LogOut className="me-2 h-4 w-4" />
             {t('signOut')}

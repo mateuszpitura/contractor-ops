@@ -6,8 +6,13 @@ import { BillingTab } from '../billing-tab';
 // ---------------------------------------------------------------------------
 
 let subscriptionData: unknown = null;
-const mockCheckoutMutate = vi.fn();
-const mockPortalMutate = vi.fn();
+const {
+  mockCheckoutMutate,
+  mockPortalMutate,
+} = vi.hoisted(() => ({
+  mockCheckoutMutate: vi.fn(),
+  mockPortalMutate: vi.fn(),
+}));
 let portalPending = false;
 
 vi.mock('@tanstack/react-query', () => ({

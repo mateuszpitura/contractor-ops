@@ -84,6 +84,7 @@ export function VoidEnvelopeDialog({
             rows={2}
             placeholder={t('reasonPlaceholder')}
             value={reason}
+            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
             onChange={e => setReason(e.target.value)}
           />
         </div>
@@ -92,6 +93,7 @@ export function VoidEnvelopeDialog({
           <AlertDialogCancel>{t('keepActive')}</AlertDialogCancel>
           <AlertDialogAction
             variant="destructive"
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={handleConfirm}
             disabled={voidMutation.isPending}>
             {voidMutation.isPending ? (

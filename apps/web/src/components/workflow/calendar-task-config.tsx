@@ -103,6 +103,7 @@ export function CalendarTaskConfig({ taskTemplateId }: CalendarTaskConfigProps) 
       <div className="flex items-center gap-3">
         <Switch
           checked={config?.calendarEnabled ?? false}
+          // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
           onCheckedChange={handleToggle}
           disabled={!isConfigured}
           aria-label={t('createCalendarEvent')}
@@ -111,6 +112,7 @@ export function CalendarTaskConfig({ taskTemplateId }: CalendarTaskConfigProps) 
         <span className={`flex-1 text-sm ${isConfigured ? '' : 'text-muted-foreground'}`}>
           {summaryText}
         </span>
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         <Button variant="ghost" size="sm" onClick={() => setDialogOpen(true)}>
           {t('configureButton')}
         </Button>
@@ -127,6 +129,7 @@ export function CalendarTaskConfig({ taskTemplateId }: CalendarTaskConfigProps) 
         }
         open={dialogOpen}
         onOpenChange={setDialogOpen}
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onSave={handleSaveConfig}
       />
     </>

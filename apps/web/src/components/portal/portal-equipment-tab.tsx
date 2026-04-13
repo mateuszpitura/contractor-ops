@@ -154,6 +154,7 @@ export function PortalEquipmentTab() {
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">{t('title')}</h1>
         {canReturn && !hasActiveReturn && (
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
           <Button onClick={() => setReturnFlowOpen(true)}>
             <RotateCcw className="me-1.5 h-3.5 w-3.5" />
             {t('returnAll')}
@@ -166,6 +167,7 @@ export function PortalEquipmentTab() {
         <div className="rounded-md border-s-4 border-warning bg-warning/10 p-4">
           <div className="flex items-center justify-between">
             <p className="text-sm font-medium">{t('pendingApproval')}</p>
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             <Button variant="outline" size="sm" onClick={() => setCancelDialogOpen(true)}>
               {t('cancelReturn')}
             </Button>
@@ -177,6 +179,7 @@ export function PortalEquipmentTab() {
         <div className="rounded-md border-s-4 border-primary bg-primary/10 p-4">
           <div className="flex items-center justify-between">
             <p className="text-sm font-medium">{t('returnApproved')}</p>
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             <Button size="sm" onClick={() => setReturnFlowOpen(true)}>
               {t('viewLabel')}
             </Button>
@@ -219,6 +222,7 @@ export function PortalEquipmentTab() {
         onOpenChange={setReturnFlowOpen}
         equipmentItems={returnableItems}
         returnRequest={returnRequest}
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onSuccess={() => {
           queryClient.invalidateQueries({
             queryKey: trpc.portal.getReturnStatus.queryKey(),
@@ -242,6 +246,7 @@ export function PortalEquipmentTab() {
             </AlertDialogCancel>
             <AlertDialogAction
               variant="destructive"
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => {
                 if (returnRequest) {
                   cancelMutation.mutate({ id: returnRequest.id });

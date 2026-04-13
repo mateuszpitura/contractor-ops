@@ -21,7 +21,15 @@ Element.prototype.scrollIntoView ??= () => undefined;
 // Mocks
 // ---------------------------------------------------------------------------
 
-const mockPush = vi.fn();
+const {
+  mockPush,
+  mockSetOpen,
+  mockAddRecentItem,
+} = vi.hoisted(() => ({
+  mockPush: vi.fn(),
+  mockSetOpen: vi.fn(),
+  mockAddRecentItem: vi.fn(),
+}));
 vi.mock('@/i18n/navigation', () => ({
   useRouter: () => ({ push: mockPush }),
   Link: ({ children, ...props }: React.PropsWithChildren<{ href: string }>) => (
@@ -29,8 +37,6 @@ vi.mock('@/i18n/navigation', () => ({
   ),
 }));
 
-const mockSetOpen = vi.fn();
-const mockAddRecentItem = vi.fn();
 let mockOpen = true;
 let mockRecentItems: Array<{
   id: string;

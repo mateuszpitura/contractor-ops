@@ -200,9 +200,11 @@ export function PortalReturnFlow({
                     pointId={selectedPoint.id}
                     pointName={selectedPoint.name}
                     pointAddress={selectedPoint.address}
+                    // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                     onChangeClick={() => setPickerOpen(true)}
                   />
                 ) : (
+                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                   <Button variant="outline" className="w-full" onClick={() => setPickerOpen(true)}>
                     <Package className="me-2 h-4 w-4" />
                     {t('selectDropOff')}
@@ -211,9 +213,11 @@ export function PortalReturnFlow({
               </div>
 
               <DialogFooter>
+                // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler
                 <Button variant="outline" onClick={() => onOpenChange(false)}>
                   {t('cancel')}
                 </Button>
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 <Button onClick={() => setStep(2)} disabled={!selectedPoint}>
                   {t('next')}
                 </Button>
@@ -256,6 +260,7 @@ export function PortalReturnFlow({
               </div>
 
               <DialogFooter>
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 <Button variant="outline" onClick={() => setStep(1)}>
                   {t('back')}
                 </Button>
@@ -294,6 +299,7 @@ export function PortalReturnFlow({
               )}
 
               <DialogFooter>
+                // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler
                 <Button onClick={() => onOpenChange(false)}>{t('cancel')}</Button>
               </DialogFooter>
             </div>

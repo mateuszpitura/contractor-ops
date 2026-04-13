@@ -69,10 +69,12 @@ export function OrgPicker({ orgs, email, onSelect, loading }: OrgPickerProps) {
                 isSelected && loading ? 'border-primary' : 'hover:border-primary',
                 isDisabled && 'opacity-50 cursor-not-allowed',
               )}
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => !isDisabled && handleSelect(org)}
               role="button"
               tabIndex={0}
               aria-label={tAria('selectOrg', { name: org.orgName })}
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onKeyDown={e => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();

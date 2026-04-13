@@ -84,12 +84,14 @@ function RejectPopover({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger
+        // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
         render={props => (
           <Button
             {...props}
             variant="ghost"
             size="sm"
             className="h-7 gap-1 text-destructive hover:text-destructive"
+            // biome-ignore lint/nursery/noJsxPropsBind: stopPropagation in render-prop
             onClick={e => {
               e.stopPropagation();
               props.onClick?.(e);
@@ -99,6 +101,7 @@ function RejectPopover({
           </Button>
         )}
       />
+      // biome-ignore lint/nursery/noJsxPropsBind: stopPropagation on popover
       <PopoverContent className="w-80 p-4" align="end" onClick={e => e.stopPropagation()}>
         <div className="space-y-3">
           <h4 className="font-medium text-sm">{t('rejectPopover.heading')}</h4>
@@ -109,6 +112,7 @@ function RejectPopover({
             <Textarea
               id="reject-comment"
               value={comment}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
               onChange={e => setComment(e.target.value)}
               placeholder={t('rejectPopover.commentPlaceholder')}
               className="min-h-[80px]"
@@ -121,6 +125,7 @@ function RejectPopover({
             <Button
               variant="ghost"
               size="sm"
+              // biome-ignore lint/nursery/noJsxPropsBind: dismiss handler in popover
               onClick={() => {
                 setOpen(false);
                 setComment('');
@@ -131,6 +136,7 @@ function RejectPopover({
               variant="destructive"
               size="sm"
               disabled={comment.length < 10}
+              // biome-ignore lint/nursery/noJsxPropsBind: local handler in popover
               onClick={handleReject}>
               {t('rejectPopover.confirm')}
             </Button>
@@ -169,6 +175,7 @@ export function getColumns(
         <Checkbox
           checked={table.getIsAllPageRowsSelected()}
           indeterminate={table.getIsSomePageRowsSelected() && !table.getIsAllPageRowsSelected()}
+          // biome-ignore lint/nursery/noJsxPropsBind: column definition
           onCheckedChange={value => table.toggleAllPageRowsSelected(!!value)}
           aria-label={t('columns.selectAll')}
         />
@@ -176,8 +183,10 @@ export function getColumns(
       cell: ({ row }) => (
         <Checkbox
           checked={row.getIsSelected()}
+          // biome-ignore lint/nursery/noJsxPropsBind: column definition
           onCheckedChange={value => row.toggleSelected(!!value)}
           aria-label={t('columns.selectRow')}
+          // biome-ignore lint/nursery/noJsxPropsBind: column definition
           onClick={e => e.stopPropagation()}
         />
       ),
@@ -198,6 +207,7 @@ export function getColumns(
           <Link
             href={`/invoices/${row.original.approvalFlow.resourceId}`}
             className="font-mono text-sm text-primary hover:underline"
+            // biome-ignore lint/nursery/noJsxPropsBind: column definition
             onClick={e => e.stopPropagation()}>
             {invoice.invoiceNumber}
           </Link>
@@ -293,11 +303,13 @@ export function getColumns(
           <div
             className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
             role="presentation"
+            // biome-ignore lint/nursery/noJsxPropsBind: column definition
             onClick={e => e.stopPropagation()}>
             <Button
               variant="ghost"
               size="sm"
               className="h-7 gap-1 text-primary hover:text-primary"
+              // biome-ignore lint/nursery/noJsxPropsBind: column definition
               onClick={e => {
                 e.stopPropagation();
                 callbacks.onApprove(step.id);
@@ -305,6 +317,7 @@ export function getColumns(
               <CheckCircle2 className="h-3.5 w-3.5" />
               {t('actions.approve')}
             </Button>
+            // biome-ignore lint/nursery/noJsxPropsBind: column definition
             <RejectPopover onReject={comment => callbacks.onReject(step.id, comment)} t={t} />
           </div>
         );

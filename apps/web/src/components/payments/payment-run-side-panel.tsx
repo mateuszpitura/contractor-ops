@@ -242,6 +242,7 @@ export function PaymentRunSidePanel({
               {status === 'DRAFT' && (
                 <CancelRunButton
                   status={status}
+                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                   onConfirm={() => cancelMutation.mutate({ runId: safeRunId })}
                   isLoading={cancelMutation.isPending}
                   t={t}
@@ -269,6 +270,7 @@ export function PaymentRunSidePanel({
                       <Button
                         variant="outline"
                         size="sm"
+                        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                         onClick={() => onImportStatement?.(safeRunId)}>
                         <FileUp className="me-1.5 h-3.5 w-3.5" />
                         {t('sidePanel.importStatement')}
@@ -277,6 +279,7 @@ export function PaymentRunSidePanel({
                   )}
                   <CancelRunButton
                     status={status}
+                    // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                     onConfirm={() => cancelMutation.mutate({ runId: safeRunId })}
                     isLoading={cancelMutation.isPending}
                     t={t}
@@ -306,6 +309,7 @@ export function PaymentRunSidePanel({
                     key={item.id}
                     item={item}
                     runStatus={status}
+                    // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                     onUpdateStatus={(itemId, itemStatus, ref, reason) =>
                       updateItemStatusMutation.mutate({
                         itemId,
@@ -314,6 +318,7 @@ export function PaymentRunSidePanel({
                         failureReason: reason || undefined,
                       })
                     }
+                    // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                     onRemoveFromRun={invoiceId =>
                       removeFromRunMutation.mutate({
                         runId: safeRunId,
@@ -421,6 +426,7 @@ function PaymentRunItemRow({
             <Link
               href={`/invoices/${item.invoiceId}`}
               className="text-primary hover:underline text-xs font-medium truncate"
+              // biome-ignore lint/nursery/noJsxPropsBind: stopPropagation handler
               onClick={e => e.stopPropagation()}>
               <Bdi>{item.invoice.invoiceNumber}</Bdi>
             </Link>
@@ -441,12 +447,14 @@ function PaymentRunItemRow({
         {(!isTerminal || isDraft) && (
           <DropdownMenu>
             <DropdownMenuTrigger
+              // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
               render={props => (
                 <Button
                   {...props}
                   variant="ghost"
                   size="icon"
                   className="h-6 w-6 shrink-0"
+                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                   onClick={e => {
                     e.stopPropagation();
                     props.onClick?.(e);
@@ -458,12 +466,14 @@ function PaymentRunItemRow({
             <DropdownMenuContent align="end">
               {!isTerminal && (
                 <>
+                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                   <DropdownMenuItem onClick={() => setActiveAction('paid')}>
                     <CheckCircle2 className="me-2 h-4 w-4" />
                     {t('sidePanel.markPaid')}
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     className="text-destructive"
+                    // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                     onClick={() => setActiveAction('failed')}>
                     <XCircle className="me-2 h-4 w-4" />
                     {t('sidePanel.markFailed')}
@@ -473,6 +483,7 @@ function PaymentRunItemRow({
               {isDraft && (
                 <DropdownMenuItem
                   className="text-destructive"
+                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                   onClick={() => setActiveAction('remove')}>
                   <Trash2 className="me-2 h-4 w-4" />
                   {t('sidePanel.removeFromRun')}
@@ -490,6 +501,7 @@ function PaymentRunItemRow({
           <Input
             placeholder={t('sidePanel.referencePlaceholder')}
             value={reference}
+            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
             onChange={e => setReference(e.target.value)}
             className="h-7 text-xs"
           />
@@ -497,6 +509,7 @@ function PaymentRunItemRow({
             <Button
               size="sm"
               className="h-6 text-xs flex-1"
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => {
                 onUpdateStatus(item.id, 'PAID', reference || undefined);
                 setActiveAction(null);
@@ -508,6 +521,7 @@ function PaymentRunItemRow({
               size="sm"
               variant="ghost"
               className="h-6 text-xs"
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => {
                 setActiveAction(null);
                 setReference('');
@@ -525,6 +539,7 @@ function PaymentRunItemRow({
           <Textarea
             placeholder={t('sidePanel.failureReasonPlaceholder')}
             value={failureReason}
+            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
             onChange={e => setFailureReason(e.target.value)}
             className="h-14 text-xs resize-none"
           />
@@ -533,6 +548,7 @@ function PaymentRunItemRow({
               size="sm"
               variant="destructive"
               className="h-6 text-xs flex-1"
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => {
                 if (failureReason.trim()) {
                   onUpdateStatus(item.id, 'FAILED', undefined, failureReason.trim());
@@ -547,6 +563,7 @@ function PaymentRunItemRow({
               size="sm"
               variant="ghost"
               className="h-6 text-xs"
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => {
                 setActiveAction(null);
                 setFailureReason('');
@@ -566,6 +583,7 @@ function PaymentRunItemRow({
               size="sm"
               variant="destructive"
               className="h-6 text-xs flex-1"
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => {
                 onRemoveFromRun(item.invoiceId);
                 setActiveAction(null);
@@ -576,6 +594,7 @@ function PaymentRunItemRow({
               size="sm"
               variant="ghost"
               className="h-6 text-xs"
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => setActiveAction(null)}>
               Cancel
             </Button>

@@ -20,7 +20,9 @@ vi.mock('@/components/documents/drop-zone', () => ({
 }));
 
 vi.mock('@/components/documents/document-card', () => ({
-  DocumentCard: ({ document }: any) => <div data-testid="document-card">{document.name}</div>,
+  DocumentCard: ({ document }: { document: { name: string } }) => (
+    <div data-testid="document-card">{document.name}</div>
+  ),
 }));
 
 const mockedUseQuery = vi.mocked(useQuery);

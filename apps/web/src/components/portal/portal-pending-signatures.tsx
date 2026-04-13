@@ -127,6 +127,7 @@ export function PortalPendingSignatures() {
                   </div>
                   <Button
                     size="sm"
+                    // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                     onClick={() =>
                       setSigningTarget({
                         envelopeId: item.envelopeId,
@@ -158,9 +159,11 @@ export function PortalPendingSignatures() {
           provider="DOCUSIGN"
           usePortalAuth
           open={!!signingTarget}
+          // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler
           onOpenChange={open => {
             if (!open) setSigningTarget(null);
           }}
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
           onComplete={() => {
             setSigningTarget(null);
             pendingQuery.refetch();

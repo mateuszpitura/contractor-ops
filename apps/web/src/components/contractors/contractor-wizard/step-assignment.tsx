@@ -56,6 +56,7 @@ export function StepAssignment({ form }: StepAssignmentProps) {
           return (
             <Select
               value={watch('ownerUserId') ?? ''}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
               onValueChange={value =>
                 setValue('ownerUserId', value ?? '', {
                   shouldDirty: true,

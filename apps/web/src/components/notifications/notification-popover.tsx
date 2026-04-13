@@ -114,7 +114,7 @@ export function NotificationPopover() {
   const badgeText = unreadCount > 99 ? '99+' : String(unreadCount);
 
   return (
-    {/* biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler */}
+    // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler */}
     <Popover onOpenChange={handleOpenChange}>
       <PopoverTrigger
         render={

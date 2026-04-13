@@ -94,6 +94,7 @@ export function ComplianceCsid({ onSuccess, onBack }: ComplianceCsidProps) {
 
       {phase === 'idle' && (
         <Button
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
           onClick={() => (requestMutation.mutate as () => void)()}
           disabled={requestMutation.isPending}>
           {!!requestMutation.isPending && (

@@ -48,6 +48,7 @@ export function VersionHistory({ documentId }: VersionHistoryProps) {
     return (
       <button
         type="button"
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onClick={() => setExpanded(true)}
         className="mt-1 flex items-center gap-1 text-xs text-primary hover:underline">
         <ChevronRight className="size-3" />
@@ -60,6 +61,7 @@ export function VersionHistory({ documentId }: VersionHistoryProps) {
     return (
       <button
         type="button"
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onClick={() => setExpanded(true)}
         className="mt-1 flex items-center gap-1 text-xs text-primary hover:underline">
         <ChevronRight className="size-3" />
@@ -72,6 +74,7 @@ export function VersionHistory({ documentId }: VersionHistoryProps) {
     <div className="mt-2">
       <button
         type="button"
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onClick={() => setExpanded(false)}
         className="flex items-center gap-1 text-xs text-primary hover:underline">
         <ChevronDown className="size-3" />
@@ -113,6 +116,7 @@ export function VersionHistory({ documentId }: VersionHistoryProps) {
                 <Button
                   variant="ghost"
                   size="icon-sm"
+                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                   onClick={async () => {
                     try {
                       const result = await fetch(

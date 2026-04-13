@@ -39,6 +39,7 @@ export function ReportSidebar({ activeReport, onSelect }: ReportSidebarProps) {
               <li key={report.id}>
                 <button
                   type="button"
+                  // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
                   onClick={() => onSelect(report.id)}
                   className={cn(
                     'flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors',
@@ -66,6 +67,7 @@ export function ReportSidebar({ activeReport, onSelect }: ReportSidebarProps) {
               <button
                 key={report.id}
                 type="button"
+                // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
                 onClick={() => onSelect(report.id)}
                 className={cn(
                   'flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-sm transition-colors',

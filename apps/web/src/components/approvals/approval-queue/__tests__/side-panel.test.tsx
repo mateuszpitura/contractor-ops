@@ -21,7 +21,11 @@ vi.mock('../../sla-badge', () => ({
   SlaBadge: () => <span data-testid="sla-badge">SLA</span>,
 }));
 
-const mockMutate = vi.fn();
+const {
+  mockMutate,
+} = vi.hoisted(() => ({
+  mockMutate: vi.fn(),
+}));
 
 vi.mock('@tanstack/react-query', async () => {
   const actual =

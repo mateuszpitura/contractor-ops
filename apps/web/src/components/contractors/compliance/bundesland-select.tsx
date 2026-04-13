@@ -65,6 +65,7 @@ export function BundeslandSelect({
         aria-invalid={error ? 'true' : undefined}
         aria-describedby={error ? errorId : undefined}
         disabled={disabled}
+        // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
         onChange={e => {
           const next = e.target.value as BundeslandCode | '';
           if (next !== '') onChange(next);

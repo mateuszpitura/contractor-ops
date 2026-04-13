@@ -8,8 +8,13 @@ import { AdminBrandingSection } from '../admin-branding-section';
 let brandingData: unknown = null;
 let brandingLoading = false;
 let portalDomainData: unknown = null;
-const mockMutate = vi.fn();
-const mockMutateAsync = vi.fn();
+const {
+  mockMutate,
+  mockMutateAsync,
+} = vi.hoisted(() => ({
+  mockMutate: vi.fn(),
+  mockMutateAsync: vi.fn(),
+}));
 
 let queryCallIndex = 0;
 
@@ -65,6 +70,7 @@ vi.mock('../brand-color-picker', () => ({
   BrandColorPicker: ({ value, onChange }: { value: string; onChange: (v: string) => void }) => (
     <div data-testid="color-picker">
       <span>Color: {value}</span>
+      // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
       <button type="button" onClick={() => onChange('#ff0000')}>
         Set red
       </button>

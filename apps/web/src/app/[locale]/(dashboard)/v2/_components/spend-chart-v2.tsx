@@ -46,6 +46,7 @@ export function SpendChartV2() {
             <button
               key={r}
               type="button"
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => setRange(r)}
               className={`rounded-lg px-3 py-1 text-[9px] font-bold uppercase tracking-[0.1em] transition-all ${
                 range === r
@@ -97,6 +98,7 @@ export function SpendChartV2() {
               tickLine={false}
               axisLine={false}
               stroke="var(--color-muted-foreground)"
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               tickFormatter={(v: number) => plnFmt.format(v / 100)}
               width={72}
             />
@@ -109,6 +111,7 @@ export function SpendChartV2() {
                 boxShadow: '0 16px 48px rgba(0,0,0,0.16)',
                 backdropFilter: 'blur(16px)',
               }}
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               formatter={(value: unknown, name: unknown) => [
                 plnFmt.format(Number(value) / 100),
                 String(name),

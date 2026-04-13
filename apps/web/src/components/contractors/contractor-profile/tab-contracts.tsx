@@ -188,6 +188,7 @@ export function TabContracts({ contractorId }: TabContractsProps) {
           <FileText className="size-10 text-muted-foreground/50" />
           <h4 className="text-sm font-medium">{t('contractorTab.emptyHeading')}</h4>
           <p className="max-w-sm text-sm text-muted-foreground">{t('contractorTab.emptyBody')}</p>
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
           <Button size="sm" onClick={() => setWizardOpen(true)}>
             <Plus className="me-1.5 size-3.5" />
             {t('contractorTab.emptyCTA')}
@@ -207,6 +208,7 @@ export function TabContracts({ contractorId }: TabContractsProps) {
       {/* Header with CTA */}
       <div className="flex items-center justify-between">
         <h3 className="text-base font-medium">{t('contractorTab.heading')}</h3>
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         <Button size="sm" onClick={() => setWizardOpen(true)}>
           <Plus className="me-1.5 size-3.5" />
           {t('contractorTab.addCTA')}
@@ -252,6 +254,7 @@ export function TabContracts({ contractorId }: TabContractsProps) {
             variant="outline"
             size="sm"
             disabled={page <= 1}
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={() => setPage(p => Math.max(1, p - 1))}>
             &laquo;
           </Button>
@@ -262,6 +265,7 @@ export function TabContracts({ contractorId }: TabContractsProps) {
             variant="outline"
             size="sm"
             disabled={page >= totalPages}
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={() => setPage(p => Math.min(totalPages, p + 1))}>
             &raquo;
           </Button>

@@ -165,6 +165,7 @@ export default function DashboardV2Page() {
                     <p className="atelier-hero-glow bg-gradient-to-r from-foreground via-primary/80 to-foreground bg-clip-text font-display text-[56px] font-black leading-none tracking-tighter text-transparent sm:text-[72px] lg:text-[80px]">
                       <AnimatedNumber
                         value={totalSpend}
+                        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                         format={n => plnFmt.format(n / 100)}
                         duration={2200}
                       />

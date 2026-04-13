@@ -3,14 +3,27 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, setup, waitFor } from '@/test/test-utils';
 import { AuditLogTab } from '../audit-log-tab';
 
-const mockSetSearch = vi.fn();
-const mockSetActorId = vi.fn();
-const mockSetActionFilter = vi.fn();
-const mockSetResourceType = vi.fn();
-const mockSetDateFrom = vi.fn();
-const mockSetDateTo = vi.fn();
-const mockSetAuditPage = vi.fn();
-const mockSetAuditSort = vi.fn();
+const {
+  mockSetSearch,
+  mockSetActorId,
+  mockSetActionFilter,
+  mockSetResourceType,
+  mockSetDateFrom,
+  mockSetDateTo,
+  mockSetAuditPage,
+  mockSetAuditSort,
+  mockExportMutate,
+} = vi.hoisted(() => ({
+  mockSetSearch: vi.fn(),
+  mockSetActorId: vi.fn(),
+  mockSetActionFilter: vi.fn(),
+  mockSetResourceType: vi.fn(),
+  mockSetDateFrom: vi.fn(),
+  mockSetDateTo: vi.fn(),
+  mockSetAuditPage: vi.fn(),
+  mockSetAuditSort: vi.fn(),
+  mockExportMutate: vi.fn(),
+}));
 
 let queryStateValues: Record<string, string> = {};
 
@@ -40,7 +53,6 @@ let mockListData: { items: unknown[]; totalCount: number } = {
 let mockListPending = false;
 let mockListFetching = false;
 let mockActorsData: Array<{ id: string; name: string }> = [];
-const mockExportMutate = vi.fn();
 let mockExportPending = false;
 
 vi.mock('@tanstack/react-query', async () => {
@@ -97,7 +109,7 @@ vi.mock('@/i18n/navigation', () => ({
     href: string;
     [key: string]: unknown;
   }) => (
-    <a href={href} {...props}>
+    <a href={href} {...(props as React.AnchorHTMLAttributes<HTMLAnchorElement>)}>
       {children}
     </a>
   ),

@@ -38,7 +38,10 @@ COPY packages/test-utils/package.json packages/test-utils/
 COPY packages/ui/package.json packages/ui/
 COPY packages/validators/package.json packages/validators/
 
-RUN pnpm install --frozen-lockfile
+# --ignore-scripts skips the root `postinstall` (turbo build of shared
+# packages) — that build needs source files which are not yet copied at
+# this stage. The builder stage runs the full turbo build explicitly.
+RUN pnpm install --frozen-lockfile --ignore-scripts
 
 # ── Stage 3: builder — build packages + Next.js standalone ─────────────────
 FROM base AS builder
@@ -50,7 +53,13 @@ COPY --from=deps /app/packages ./packages
 
 COPY . .
 
-RUN pnpm --filter @contractor-ops/db exec prisma generate
+# Prisma 7's prisma.config.ts loads env at generate time. We pass a
+# dummy URL purely to satisfy the loader — no DB connection is made
+# during code generation.
+RUN DATABASE_URL=postgres://x:x@localhost:5432/x \
+    DATABASE_URL_EU=postgres://x:x@localhost:5432/x \
+    DATABASE_URL_ME=postgres://x:x@localhost:5432/x \
+    pnpm --filter @contractor-ops/db exec prisma generate
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
@@ -62,9 +71,11 @@ ENV SENTRY_PROJECT=""
 
 RUN pnpm turbo build --filter=@contractor-ops/web
 
-# Install node-cron into standalone output for the worker target. The web
-# target also pulls this stage but never executes worker-cron.mjs.
-RUN cd apps/web/.next/standalone && pnpm init -y && pnpm add node-cron
+# Install runtime deps for the worker target into the standalone output:
+#   - node-cron: scheduler
+#   - pino: structured logger (matches @contractor-ops/logger baseOptions)
+# The web target reuses this stage but never executes worker-cron.mjs.
+RUN cd apps/web/.next/standalone && pnpm init -y && pnpm add node-cron pino
 
 # ── Stage 4a: runner-base — minimal common runtime layer ───────────────────
 FROM node:24-alpine AS runner-base

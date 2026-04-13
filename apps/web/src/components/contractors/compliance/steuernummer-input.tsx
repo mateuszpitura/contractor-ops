@@ -89,10 +89,12 @@ export function SteuernummerInput({
           aria-describedby={describedBy}
           placeholder={placeholder}
           value={value ?? ''}
+          // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
           onChange={e => {
             setLocalError(undefined);
             onChange(e.target.value);
           }}
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
           onBlur={() => {
             setTouched(true);
             if (bundesland && value) {

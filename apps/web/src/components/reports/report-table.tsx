@@ -147,6 +147,7 @@ export function ReportTable<TData>({
                 <TableRow
                   key={row.id}
                   className={onRowClick ? 'cursor-pointer' : ''}
+                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                   onClick={() => onRowClick?.(row.original)}>
                   {row.getVisibleCells().map(cell => (
                     <TableCell key={cell.id}>
@@ -188,6 +189,7 @@ export function ReportTable<TData>({
             <Button
               variant="outline"
               size="sm"
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => onPageChange(page - 1)}
               disabled={page <= 1}>
               Previous
@@ -195,6 +197,7 @@ export function ReportTable<TData>({
             <Button
               variant="outline"
               size="sm"
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => onPageChange(page + 1)}
               disabled={page >= pageCount}>
               Next

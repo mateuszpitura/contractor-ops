@@ -258,6 +258,7 @@ export function AdminBrandingSection() {
               <button
                 type="button"
                 className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 onClick={handleRemoveLogo}>
                 {t('removeLogo')}
               </button>
@@ -266,6 +267,7 @@ export function AdminBrandingSection() {
             <button
               type="button"
               className="flex h-20 w-20 flex-col items-center justify-center gap-1 rounded-md border-2 border-dashed border-muted-foreground/25 text-muted-foreground transition-colors hover:border-muted-foreground/50 hover:text-foreground"
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading}>
               {uploading ? (
@@ -284,6 +286,7 @@ export function AdminBrandingSection() {
             type="file"
             className="hidden"
             accept="image/png,image/jpeg,image/svg+xml"
+            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
             onChange={handleFileSelect}
           />
         </div>
@@ -299,6 +302,7 @@ export function AdminBrandingSection() {
 
         {/* Save button */}
         <Button
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
           onClick={handleSave}
           disabled={updateBrandingMutation.isPending}
           className="w-full sm:w-auto">
@@ -331,6 +335,7 @@ export function AdminBrandingSection() {
           <div className="flex items-center gap-2">
             <Input
               value={portalSubdomain}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
               onChange={e => handleSubdomainChange(e.target.value)}
               placeholder={t('subdomainPlaceholder')}
               className="max-w-[200px]"
@@ -350,6 +355,7 @@ export function AdminBrandingSection() {
 
           <Button
             variant="outline"
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={handleSaveSubdomain}
             disabled={updatePortalDomainMutation.isPending}
             className="w-full sm:w-auto">

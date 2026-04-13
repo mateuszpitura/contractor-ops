@@ -157,6 +157,7 @@ export function ApprovalQueueToolbar({
                 <button
                   key={chip.key}
                   type="button"
+                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                   onClick={() => onStatusChange(chip.key)}
                   className="shrink-0">
                   <Badge
@@ -182,6 +183,7 @@ export function ApprovalQueueToolbar({
           <Input
             placeholder={t('searchPlaceholder')}
             value={localSearch}
+            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
             onChange={e => handleSearchInput(e.target.value)}
             className="h-9 ps-9 pe-8"
           />
@@ -198,12 +200,14 @@ export function ApprovalQueueToolbar({
             <span className="text-sm font-medium text-muted-foreground whitespace-nowrap">
               {t('bulk.selectedCount', { count })}
             </span>
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             <Button size="sm" onClick={handleBulkApprove} disabled={bulkApproveMutation.isPending}>
               {!!bulkApproveMutation.isPending && (
                 <Loader2 className="me-1 h-3.5 w-3.5 animate-spin" />
               )}
               {t('bulk.approve', { count })}
             </Button>
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             <Button variant="destructive" size="sm" onClick={() => setBulkRejectOpen(true)}>
               {t('bulk.reject', { count })}
             </Button>
@@ -230,6 +234,7 @@ export function ApprovalQueueToolbar({
             <Textarea
               id="bulk-reject-comment"
               value={bulkRejectComment}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
               onChange={e => setBulkRejectComment(e.target.value)}
               placeholder={t('bulkRejectDialog.commentPlaceholder')}
               className="min-h-[100px]"
@@ -241,6 +246,7 @@ export function ApprovalQueueToolbar({
           <DialogFooter>
             <Button
               variant="ghost"
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => {
                 setBulkRejectOpen(false);
                 setBulkRejectComment('');
@@ -250,6 +256,7 @@ export function ApprovalQueueToolbar({
             <Button
               variant="destructive"
               disabled={bulkRejectComment.length < 10 || bulkRejectMutation.isPending}
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={handleBulkReject}>
               {!!bulkRejectMutation.isPending && (
                 <Loader2 className="me-1 h-3.5 w-3.5 animate-spin" />

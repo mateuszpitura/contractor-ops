@@ -150,9 +150,11 @@ export function OverdueInvoicesReport({
         page={page}
         pageSize={20}
         onPageChange={setPage}
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onSortChange={handleSortChange}
         sortBy={sortBy}
         sortOrder={sortOrder}
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onRowClick={row => router.push(`/invoices/${row.invoiceId}`)}
         isLoading={tableQuery.isLoading}
         emptyIcon={<Clock className="mx-auto h-10 w-10 text-muted-foreground/50" />}
@@ -161,7 +163,9 @@ export function OverdueInvoicesReport({
       />
 
       <ExportButtons
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onExportPage={() => exportMutation.mutate()}
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onExportAll={() => exportMutation.mutate()}
         isExporting={exportMutation.isPending}
       />

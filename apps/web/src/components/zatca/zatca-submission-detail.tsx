@@ -131,6 +131,7 @@ export function ZatcaSubmissionDetail({
                 <span className="font-mono text-xs break-all">{submission.zatcaUuid}</span>
                 <button
                   type="button"
+                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                   onClick={() => copyToClipboard(submission.zatcaUuid, 'UUID')}
                   className="shrink-0 text-muted-foreground hover:text-foreground"
                   aria-label="Copy UUID">
@@ -174,6 +175,7 @@ export function ZatcaSubmissionDetail({
                       </span>
                       <button
                         type="button"
+                        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                         onClick={() =>
                           copyToClipboard(submission.previousHash ?? '', 'Previous hash')
                         }
@@ -194,6 +196,7 @@ export function ZatcaSubmissionDetail({
                       </span>
                       <button
                         type="button"
+                        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                         onClick={() =>
                           copyToClipboard(submission.invoiceHash ?? '', 'Invoice hash')
                         }
@@ -269,6 +272,7 @@ export function ZatcaSubmissionDetail({
                 <Button
                   variant="outline"
                   size="sm"
+                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                   onClick={() =>
                     (resubmitMutation.mutate as unknown as (input: { invoiceId: string }) => void)({
                       invoiceId,

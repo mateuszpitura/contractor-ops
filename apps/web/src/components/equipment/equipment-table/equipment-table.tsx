@@ -299,6 +299,7 @@ export function EquipmentTable({
                 variant="outline"
                 size="sm"
                 disabled={page <= 1}
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 onClick={() => setPage(p => Math.max(1, p - 1))}>
                 Previous
               </Button>
@@ -309,6 +310,7 @@ export function EquipmentTable({
                 variant="outline"
                 size="sm"
                 disabled={page >= totalPages}
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 onClick={() => setPage(p => p + 1)}>
                 Next
               </Button>

@@ -197,6 +197,7 @@ export function TemplatePicker({
           <Input
             placeholder={tp('searchPlaceholder')}
             value={search}
+            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
             onChange={e => setSearch(e.target.value)}
             className="h-9 ps-9"
           />
@@ -211,6 +212,7 @@ export function TemplatePicker({
             <button
               type="button"
               className="text-xs text-muted-foreground hover:text-foreground underline"
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => setTypeFilter(null)}>
               {t('clearAll')}
             </button>
@@ -246,6 +248,7 @@ export function TemplatePicker({
                   className={`w-full text-start rounded-lg border p-3 transition-colors hover:bg-accent/50 ${
                     selectedId === template.id ? 'ring-2 ring-primary border-primary' : ''
                   }`}
+                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                   onClick={() => setSelectedId(template.id)}>
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0 flex-1">
@@ -274,10 +277,12 @@ export function TemplatePicker({
         </ScrollArea>
 
         <DialogFooter>
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
           <Button variant="outline" onClick={() => handleOpenChange(false)}>
             {tp('close')}
           </Button>
           <Button
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={() => void handleStart()}
             disabled={
               !selectedId || startRunMutation.isPending || !(effectiveContractorId || isBulk)

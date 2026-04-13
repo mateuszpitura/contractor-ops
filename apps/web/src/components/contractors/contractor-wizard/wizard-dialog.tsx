@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Check, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -284,9 +284,19 @@ export function WizardDialog({ open, onOpenChange }: WizardDialogProps) {
     goBack();
   };
 
+  const handleDialogOpenChange = useCallback(
+    (o: boolean) => {
+      if (!o) handleClose();
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [isDirty, onOpenChange],
+  );
+
+  const handleCloseButton = useCallback(() => handleClose(), [isDirty, onOpenChange]);
+
   return (
     <>
-      <Dialog open={open} onOpenChange={o => !o && handleClose()}>
+      <Dialog open={open} onOpenChange={handleDialogOpenChange}>
         <DialogContent className="sm:max-w-[640px]" showCloseButton={false}>
           <DialogHeader>
             <DialogTitle>{t('title')}</DialogTitle>
@@ -299,6 +309,7 @@ export function WizardDialog({ open, onOpenChange }: WizardDialogProps) {
           <div
             className="min-h-[320px] px-1"
             role="presentation"
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onKeyDown={e => {
               if (e.key === 'Enter' && e.target instanceof HTMLInputElement) {
                 e.preventDefault();
@@ -317,11 +328,13 @@ export function WizardDialog({ open, onOpenChange }: WizardDialogProps) {
                   {t('back')}
                 </Button>
               ) : (
+                // biome-ignore lint/nursery/noJsxPropsBind: callback wrapping named handler
                 <Button type="button" variant="ghost" onClick={() => handleClose()}>
                   {isDirty ? t('discardChanges') : t('close')}
                 </Button>
               )}
             </div>
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             <Button type="button" onClick={handleNext} disabled={createMutation.isPending}>
               {createMutation.isPending ? (
                 <>

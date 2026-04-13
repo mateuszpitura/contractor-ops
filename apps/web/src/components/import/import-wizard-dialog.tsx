@@ -388,6 +388,7 @@ export function ImportWizardDialog({
 
   return (
     <>
+      // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler
       <Dialog open={open} onOpenChange={o => !o && handleClose()}>
         <DialogContent className="sm:max-w-[720px]" showCloseButton={false}>
           <DialogHeader>
@@ -405,6 +406,7 @@ export function ImportWizardDialog({
                 onEntityTypeChange={setEntityType}
                 onFileSelected={handleFileSelected}
                 fileName={fileName}
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 onFileRemoved={() => {
                   setFileBase64(null);
                   setFileName(null);
@@ -439,6 +441,7 @@ export function ImportWizardDialog({
               <StepConfirm
                 entityType={entityType}
                 counts={confirmCounts}
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 onImport={async () => handleNext()}
                 importResult={importResult}
                 isImporting={commitMutation.isPending}
@@ -459,6 +462,7 @@ export function ImportWizardDialog({
                     {t('actions.back')}
                   </Button>
                 ) : (
+                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                   <Button type="button" variant="ghost" onClick={() => handleClose()}>
                     {fileBase64 ? t('actions.discard') : t('actions.close')}
                   </Button>

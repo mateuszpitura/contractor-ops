@@ -35,6 +35,7 @@ vi.mock('@/components/settings/condition-builder', () => ({
       <button
         type="button"
         data-testid="add-condition"
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onClick={() =>
           onChange([...(value ?? []), { field: 'amount', operator: 'gt', value: 1000 }])
         }>

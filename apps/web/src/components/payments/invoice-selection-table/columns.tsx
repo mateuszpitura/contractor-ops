@@ -60,6 +60,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<ReadyInvoiceRow>[] {
         <Checkbox
           checked={table.getIsAllPageRowsSelected()}
           indeterminate={table.getIsSomePageRowsSelected() && !table.getIsAllPageRowsSelected()}
+          // biome-ignore lint/nursery/noJsxPropsBind: column definition
           onCheckedChange={value => table.toggleAllPageRowsSelected(!!value)}
           aria-label={t('selection.selectAll')}
         />
@@ -69,9 +70,11 @@ export function getColumns(t: TranslateFunction): ColumnDef<ReadyInvoiceRow>[] {
         return (
           <Checkbox
             checked={row.getIsSelected()}
+            // biome-ignore lint/nursery/noJsxPropsBind: column definition
             onCheckedChange={value => row.toggleSelected(!!value)}
             disabled={inRun}
             aria-label={t('selection.selectRow')}
+            // biome-ignore lint/nursery/noJsxPropsBind: column definition
             onClick={e => e.stopPropagation()}
           />
         );

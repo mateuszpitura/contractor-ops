@@ -83,7 +83,11 @@ const { mockPrisma } = vi.hoisted(() => {
       })),
       findUniqueOrThrow: vi.fn(async () => ({
         countryCode: 'PL',
+        isKleinunternehmer: false,
       })),
+    },
+    auditLog: {
+      create: vi.fn(async (opts: { data: Rec }) => ({ id: 'audit-1', ...opts.data })),
     },
     $transaction: vi.fn(async (fn: (tx: Rec) => Promise<unknown>) => fn(mockPrisma)),
   };
@@ -253,6 +257,86 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
 }));
 
 // ---------------------------------------------------------------------------
+// Phase 57 · Plan 04 — gov-api + tax-id-validation mocks
+// ---------------------------------------------------------------------------
+
+const {
+  mockHmrcClient,
+  mockViesClient,
+  validateTaxIdMock,
+  isValidationFreshMock,
+  getDefaultRateCodeMock,
+  applyKleinunternehmerOverrideMock,
+  detectReverseChargeMock,
+} = vi.hoisted(() => ({
+  mockHmrcClient: { checkVatNumber: vi.fn() },
+  mockViesClient: { checkVatNumber: vi.fn() },
+  validateTaxIdMock: vi.fn(async () => ({
+    responseStatus: 'valid' as const,
+    confirmationRef: null,
+    source: 'api' as const,
+    requestedAt: new Date('2026-04-13T10:00:00Z'),
+    taxIdValidationId: 'clval00000000000000000001',
+  })),
+  isValidationFreshMock: vi.fn(() => true),
+  getDefaultRateCodeMock: vi.fn(async (cc: string) =>
+    cc === 'GB' ? '20' : cc === 'DE' ? '19' : '23',
+  ),
+  applyKleinunternehmerOverrideMock: vi.fn(
+    (
+      line: { vatRate: string | null },
+      org: { countryCode: string | null; isKleinunternehmer: boolean },
+    ) => {
+      const original = line.vatRate ?? '';
+      if (org.countryCode !== 'DE' || !org.isKleinunternehmer) {
+        return { vatRate: original, forced: false };
+      }
+      if (original === 'RC') return { vatRate: 'RC', forced: false };
+      return { vatRate: 'KU', forced: true };
+    },
+  ),
+  detectReverseChargeMock: vi.fn(() => ({
+    shouldApply: false,
+    reason: 'no-op mock default',
+    rule: 'not_applicable' as const,
+  })),
+}));
+
+vi.mock('../../gov-api-clients.js', () => ({
+  getHmrcVatClient: vi.fn(() => mockHmrcClient),
+  getViesClient: vi.fn(() => mockViesClient),
+}));
+
+vi.mock('../../services/tax-id-validation.service.js', () => ({
+  validateTaxId: validateTaxIdMock,
+  isValidationFresh: isValidationFreshMock,
+  NINETY_DAYS_MS: 90 * 24 * 60 * 60 * 1000,
+  getLatestValidation: vi.fn(async () => null),
+}));
+
+vi.mock('../../services/tax-rate.service.js', () => ({
+  getDefaultRateCode: getDefaultRateCodeMock,
+  getTaxRatesForCountry: vi.fn(async () => []),
+  validateVatRateCode: vi.fn(async () => true),
+  calculateWht: vi.fn(async () => null),
+}));
+
+vi.mock('../../services/kleinunternehmer.service.js', () => ({
+  applyKleinunternehmerOverride: applyKleinunternehmerOverrideMock,
+  shouldSuppressVatBreakdown: vi.fn(() => false),
+}));
+
+vi.mock('../../services/reverse-charge.service.js', async () => {
+  const actual = await vi.importActual<
+    typeof import('../../services/reverse-charge.service.js')
+  >('../../services/reverse-charge.service.js');
+  return {
+    ...actual,
+    detectReverseCharge: detectReverseChargeMock,
+  };
+});
+
+// ---------------------------------------------------------------------------
 // Imports (after mocks)
 // ---------------------------------------------------------------------------
 
@@ -345,7 +429,10 @@ beforeEach(() => {
     dataRegion: 'EU',
     settingsJson: { invoiceDeviationThresholdPercent: 10 },
   });
-  mockPrisma.organization.findUniqueOrThrow.mockResolvedValue({ countryCode: 'PL' });
+  mockPrisma.organization.findUniqueOrThrow.mockResolvedValue({
+    countryCode: 'PL',
+    isKleinunternehmer: false,
+  });
   mockPrisma.contractor.findUniqueOrThrow.mockResolvedValue({
     countryCode: 'DE',
     vatId: 'DE123',
@@ -799,20 +886,221 @@ describe('invoice.statusCounts', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Phase 57 — RED scaffolds: default rate + Kleinunternehmer + staleness triggers
-// (PAY-02, PAY-04). Implemented in Plan 57-04.
+// Phase 57 · Plan 04 — default rate + Kleinunternehmer + staleness + RC pipeline
 // ---------------------------------------------------------------------------
 
-describe('Phase 57 — default rate + Kleinunternehmer + staleness (RED scaffolds)', () => {
-  it('GB org invoice line pre-selects the isDefault=true TaxRate (code 20) — PAY-02', () => {
-    throw new Error('RED — Phase 57: implemented in Wave 3 Plan 57-04');
+describe('Phase 57 · Plan 04 — invoice-line tax pipeline', () => {
+  const baseInput = {
+    invoiceNumber: 'FV/2026/001',
+    issueDate: '2026-04-01',
+    dueDate: '2026-05-01',
+    currency: 'GBP',
+    subtotalMinor: 100000,
+    totalMinor: 100000,
+    amountToPayMinor: 100000,
+    documentIds: [DOC_ID_1],
+  };
+
+  beforeEach(() => {
+    // Clean state — mockReset resets queues + implementation so defaults take effect.
+    getDefaultRateCodeMock.mockReset();
+    getDefaultRateCodeMock.mockImplementation(async (cc: string) =>
+      cc === 'GB' ? '20' : cc === 'DE' ? '19' : '23',
+    );
+    applyKleinunternehmerOverrideMock.mockReset();
+    applyKleinunternehmerOverrideMock.mockImplementation(
+      (
+        line: { vatRate: string | null },
+        org: { countryCode: string | null; isKleinunternehmer: boolean },
+      ) => {
+        const original = line.vatRate ?? '';
+        if (org.countryCode !== 'DE' || !org.isKleinunternehmer) {
+          return { vatRate: original, forced: false };
+        }
+        if (original === 'RC') return { vatRate: 'RC', forced: false };
+        return { vatRate: 'KU', forced: true };
+      },
+    );
+    detectReverseChargeMock.mockReset();
+    detectReverseChargeMock.mockReturnValue({
+      shouldApply: false,
+      reason: 'default no-op',
+      rule: 'not_applicable',
+    });
+    isValidationFreshMock.mockReset();
+    isValidationFreshMock.mockReturnValue(true);
+    validateTaxIdMock.mockReset();
+    validateTaxIdMock.mockResolvedValue({
+      responseStatus: 'valid',
+      confirmationRef: null,
+      source: 'api',
+      requestedAt: new Date('2026-04-13T10:00:00Z'),
+      taxIdValidationId: 'clval00000000000000000001',
+    });
   });
 
-  it('DE org with isKleinunternehmer=true forces every invoice line to code KU — PAY-04', () => {
-    throw new Error('RED — Phase 57: implemented in Wave 3 Plan 57-04');
+  it('GB org invoice pre-selects the isDefault TaxRate code 20 — PAY-02', async () => {
+    mockPrisma.organization.findUniqueOrThrow.mockResolvedValue({
+      countryCode: 'GB',
+      isKleinunternehmer: false,
+    });
+
+    await caller.invoice.create(baseInput);
+
+    expect(getDefaultRateCodeMock).toHaveBeenCalledWith('GB', expect.anything());
+    const createCall = mockPrisma.invoice.create.mock.calls[0]?.[0];
+    expect(createCall?.data).toMatchObject({ vatRate: '20' });
   });
 
-  it('invoice line creation with stale contractor VAT validation triggers inline revalidation (D-07)', () => {
-    throw new Error('RED — Phase 57: implemented in Wave 3 Plan 57-04');
+  it('DE org invoice pre-selects the isDefault TaxRate code 19 — PAY-04', async () => {
+    mockPrisma.organization.findUniqueOrThrow.mockResolvedValue({
+      countryCode: 'DE',
+      isKleinunternehmer: false,
+    });
+
+    await caller.invoice.create({ ...baseInput, currency: 'EUR' });
+
+    const createCall = mockPrisma.invoice.create.mock.calls[0]?.[0];
+    expect(createCall?.data).toMatchObject({ vatRate: '19' });
+  });
+
+  it('DE Kleinunternehmer org forces invoice vatRate to KU — PAY-04 (§19 UStG)', async () => {
+    mockPrisma.organization.findUniqueOrThrow.mockResolvedValue({
+      countryCode: 'DE',
+      isKleinunternehmer: true,
+    });
+
+    await caller.invoice.create({ ...baseInput, currency: 'EUR' });
+
+    expect(applyKleinunternehmerOverrideMock).toHaveBeenCalled();
+    const createCall = mockPrisma.invoice.create.mock.calls[0]?.[0];
+    expect(createCall?.data).toMatchObject({ vatRate: 'KU' });
+  });
+
+  it('auto-selects RC when detectReverseCharge reports shouldApply=true', async () => {
+    mockPrisma.organization.findUniqueOrThrow.mockResolvedValue({
+      countryCode: 'DE',
+      isKleinunternehmer: false,
+    });
+    mockPrisma.contractor.findFirst.mockResolvedValueOnce({
+      id: CONTRACTOR_ID,
+      countryCode: 'GB',
+      vatId: 'GB193054661',
+      type: 'COMPANY',
+      latestVatValidatedAt: new Date('2026-04-01T00:00:00Z'),
+      latestVatValidationStatus: 'valid',
+    });
+    detectReverseChargeMock.mockReturnValue({
+      shouldApply: true,
+      reason: 'UK↔EU post-Brexit B2B',
+      rule: 'gb_eu_post_brexit_b2b',
+    });
+
+    await caller.invoice.create({
+      ...baseInput,
+      currency: 'EUR',
+      contractorId: CONTRACTOR_ID,
+    });
+
+    const createCall = mockPrisma.invoice.create.mock.calls[0]?.[0];
+    expect(createCall?.data).toMatchObject({
+      vatRate: 'RC',
+      isReverseCharge: true,
+    });
+  });
+
+  it('stale contractor VAT validation triggers inline revalidation (D-07 trigger 2)', async () => {
+    mockPrisma.organization.findUniqueOrThrow.mockResolvedValue({
+      countryCode: 'GB',
+      isKleinunternehmer: false,
+    });
+    mockPrisma.contractor.findFirst.mockResolvedValueOnce({
+      id: CONTRACTOR_ID,
+      countryCode: 'GB',
+      vatId: 'GB193054661',
+      type: 'COMPANY',
+      latestVatValidatedAt: new Date('2025-01-01T00:00:00Z'), // older than 90d
+      latestVatValidationStatus: 'valid',
+    });
+    isValidationFreshMock.mockReturnValue(false);
+
+    await caller.invoice.create({ ...baseInput, contractorId: CONTRACTOR_ID });
+
+    expect(validateTaxIdMock).toHaveBeenCalledTimes(1);
+    expect(validateTaxIdMock.mock.calls[0]?.[0]).toMatchObject({
+      taxIdType: 'GB_VAT',
+      taxIdValue: 'GB193054661',
+    });
+  });
+
+  it('does NOT revalidate when contractor has fresh validation', async () => {
+    mockPrisma.organization.findUniqueOrThrow.mockResolvedValue({
+      countryCode: 'GB',
+      isKleinunternehmer: false,
+    });
+    mockPrisma.contractor.findFirst.mockResolvedValueOnce({
+      id: CONTRACTOR_ID,
+      countryCode: 'GB',
+      vatId: 'GB193054661',
+      type: 'COMPANY',
+      latestVatValidatedAt: new Date('2026-04-01T00:00:00Z'),
+      latestVatValidationStatus: 'valid',
+    });
+    isValidationFreshMock.mockReturnValue(true);
+
+    await caller.invoice.create({ ...baseInput, contractorId: CONTRACTOR_ID });
+
+    expect(validateTaxIdMock).not.toHaveBeenCalled();
+  });
+
+  it('persists AuditLog when user disables auto-detected RC with a reason (D-13)', async () => {
+    mockPrisma.organization.findUniqueOrThrow.mockResolvedValue({
+      countryCode: 'DE',
+      isKleinunternehmer: false,
+    });
+    mockPrisma.contractor.findFirst.mockResolvedValueOnce({
+      id: CONTRACTOR_ID,
+      countryCode: 'GB',
+      vatId: 'GB193054661',
+      type: 'COMPANY',
+      latestVatValidatedAt: new Date('2026-04-01T00:00:00Z'),
+      latestVatValidationStatus: 'valid',
+    });
+    detectReverseChargeMock.mockReturnValue({
+      shouldApply: true,
+      reason: 'UK↔EU post-Brexit',
+      rule: 'gb_eu_post_brexit_b2b',
+    });
+
+    await caller.invoice.create({
+      ...baseInput,
+      currency: 'EUR',
+      contractorId: CONTRACTOR_ID,
+      reverseChargeOverride: false,
+      reverseChargeOverrideReason: 'Customer prefers standard rate per contract clause 4.2',
+    });
+
+    expect(mockPrisma.auditLog.create).toHaveBeenCalledTimes(1);
+    const auditCall = mockPrisma.auditLog.create.mock.calls[0]?.[0];
+    expect(auditCall?.data).toMatchObject({
+      organizationId: ORG_ID,
+      action: 'invoice.reverse-charge-override',
+      metadataJson: expect.objectContaining({
+        reason: 'Customer prefers standard rate per contract clause 4.2',
+        autoDetected: true,
+      }),
+    });
+    // Line saved WITHOUT RC since user overrode
+    const createCall = mockPrisma.invoice.create.mock.calls[0]?.[0];
+    expect(createCall?.data.isReverseCharge).toBe(false);
+  });
+
+  it('rejects reverseChargeOverride=false without a reason (Zod refine)', async () => {
+    await expect(
+      caller.invoice.create({
+        ...baseInput,
+        reverseChargeOverride: false,
+      }),
+    ).rejects.toThrow();
   });
 });

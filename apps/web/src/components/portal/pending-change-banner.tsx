@@ -68,6 +68,7 @@ export function PendingChangeBanner({ pendingChangeRequest }: PendingChangeBanne
           {changeEntries.length > 0 && (
             <Collapsible open={detailsOpen} onOpenChange={setDetailsOpen}>
               <CollapsibleTrigger
+                // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
                 render={props => (
                   <button
                     {...props}

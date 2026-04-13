@@ -62,6 +62,7 @@ export function SendForSignatureButton({
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger
+            // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
             render={props => (
               <Button {...props} variant="default" size="sm" disabled>
                 <PenLine className="me-1.5 size-4" />
@@ -77,6 +78,7 @@ export function SendForSignatureButton({
 
   return (
     <>
+      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
       <Button variant="default" size="sm" onClick={() => setDialogOpen(true)}>
         <PenLine className="me-1.5 size-4" />
         Send for Signature

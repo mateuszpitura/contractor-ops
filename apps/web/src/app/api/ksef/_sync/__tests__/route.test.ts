@@ -3,7 +3,11 @@
 import { NextRequest } from 'next/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const mockProcessKsefSync = vi.fn();
+const {
+  mockProcessKsefSync,
+} = vi.hoisted(() => ({
+  mockProcessKsefSync: vi.fn(),
+}));
 
 vi.mock('@upstash/qstash/nextjs', () => ({
   verifySignatureAppRouter: (fn: (req: NextRequest) => Promise<Response>) => fn,

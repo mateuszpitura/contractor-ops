@@ -240,6 +240,7 @@ export function TaskCard({ index, onRemove, allTasks, form, dragHandleProps }: T
               <Label htmlFor={`task-type-${index}`}>{t('taskType')}</Label>
               <Select
                 value={taskType}
+                // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
                 onValueChange={val =>
                   form.setValue(`tasks.${index}.taskType`, val as typeof taskType, {
                     shouldDirty: true,
@@ -279,6 +280,7 @@ export function TaskCard({ index, onRemove, allTasks, form, dragHandleProps }: T
               <Label htmlFor={`task-assignee-${index}`}>{t('assignedTo')}</Label>
               <Select
                 value={assigneeMode}
+                // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
                 onValueChange={val =>
                   form.setValue(`tasks.${index}.assigneeMode`, val as typeof assigneeMode, {
                     shouldDirty: true,
@@ -304,6 +306,7 @@ export function TaskCard({ index, onRemove, allTasks, form, dragHandleProps }: T
                 <Label htmlFor={`task-role-${index}`}>{t('roleField')}</Label>
                 <Select
                   value={task?.assigneeRole ?? ''}
+                  // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
                   onValueChange={val =>
                     form.setValue(
                       `tasks.${index}.assigneeRole`,
@@ -338,6 +341,7 @@ export function TaskCard({ index, onRemove, allTasks, form, dragHandleProps }: T
                   return (
                     <Select
                       value={task?.assigneeUserId ?? ''}
+                      // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
                       onValueChange={val =>
                         form.setValue(`tasks.${index}.assigneeUserId`, val as string, {
                           shouldDirty: true,
@@ -398,6 +402,7 @@ export function TaskCard({ index, onRemove, allTasks, form, dragHandleProps }: T
               <Switch
                 id={`task-required-${index}`}
                 checked={task?.required ?? false}
+                // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
                 onCheckedChange={checked =>
                   form.setValue(`tasks.${index}.required`, !!checked, {
                     shouldDirty: true,
@@ -418,6 +423,7 @@ export function TaskCard({ index, onRemove, allTasks, form, dragHandleProps }: T
                 return (
                   <Select
                     value={task?.dependsOnTaskTemplateId ?? ''}
+                    // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
                     onValueChange={val =>
                       form.setValue(
                         `tasks.${index}.dependsOnTaskTemplateId`,
@@ -464,9 +470,11 @@ export function TaskCard({ index, onRemove, allTasks, form, dragHandleProps }: T
               <button
                 type="button"
                 className="text-sm text-destructive hover:underline"
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 onClick={() => onRemove(index)}>
                 {t('removeTask')}
               </button>
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               <Button type="button" variant="secondary" size="sm" onClick={() => setIsOpen(false)}>
                 {t('doneEditing')}
               </Button>

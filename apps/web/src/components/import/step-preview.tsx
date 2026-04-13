@@ -95,6 +95,7 @@ export function StepPreview({ validRows, invalidRows, totalRows }: StepPreviewPr
           <Button
             variant={showErrorsOnly ? 'outline' : 'default'}
             size="sm"
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={() => setShowErrorsOnly(false)}
             type="button">
             {t('preview.showAll')}
@@ -102,6 +103,7 @@ export function StepPreview({ validRows, invalidRows, totalRows }: StepPreviewPr
           <Button
             variant={showErrorsOnly ? 'default' : 'outline'}
             size="sm"
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={() => setShowErrorsOnly(true)}
             type="button">
             {t('preview.showErrors')}

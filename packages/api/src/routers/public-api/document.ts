@@ -35,17 +35,15 @@ export const publicDocumentRouter = router({
         deletedAt: null,
       };
 
-      // Filter by entity link
+      // Filter by entity link via Prisma relation filter (single query, uses JOIN)
       if (entityType && entityId) {
-        const linkedDocIds = await ctx.db.documentLink.findMany({
-          where: {
+        where.links = {
+          some: {
             organizationId: ctx.organizationId,
             entityType,
             entityId,
           },
-          select: { documentId: true },
-        });
-        where.id = { in: linkedDocIds.map(l => l.documentId) };
+        };
       }
 
       const [items, total] = await Promise.all([

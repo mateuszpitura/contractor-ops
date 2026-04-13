@@ -60,6 +60,7 @@ function PasswordField({
         <Input
           type={visible ? 'text' : 'password'}
           value={value}
+          // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
           onChange={e => onChange(e.target.value)}
           placeholder={placeholder}
           className="pe-10"
@@ -67,6 +68,7 @@ function PasswordField({
         <button
           type="button"
           className="absolute end-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
           onClick={() => setVisible(!visible)}
           aria-label={visible ? 'Hide' : 'Show'}>
           {visible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -177,22 +179,26 @@ export function CarrierCredentialForm({ carrier, carrierLabel }: CarrierCredenti
             <PasswordField
               label={t('username')}
               value={dpdCreds.username}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
               onChange={v => setDpdCreds(prev => ({ ...prev, username: v }))}
             />
             <PasswordField
               label={t('password')}
               value={dpdCreds.password}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
               onChange={v => setDpdCreds(prev => ({ ...prev, password: v }))}
             />
             <PasswordField
               label={t('fid')}
               value={dpdCreds.fid}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
               onChange={v => setDpdCreds(prev => ({ ...prev, fid: v }))}
             />
             <label htmlFor="dpd-sandbox" className="flex cursor-pointer items-center gap-2">
               <Checkbox
                 id="dpd-sandbox"
                 checked={dpdCreds.sandbox}
+                // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
                 onCheckedChange={checked =>
                   setDpdCreds(prev => ({
                     ...prev,
@@ -208,22 +214,26 @@ export function CarrierCredentialForm({ carrier, carrierLabel }: CarrierCredenti
             <PasswordField
               label={t('clientId')}
               value={upsCreds.clientId}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
               onChange={v => setUpsCreds(prev => ({ ...prev, clientId: v }))}
             />
             <PasswordField
               label={t('clientSecret')}
               value={upsCreds.clientSecret}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
               onChange={v => setUpsCreds(prev => ({ ...prev, clientSecret: v }))}
             />
             <PasswordField
               label={t('accountNumber')}
               value={upsCreds.accountNumber}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
               onChange={v => setUpsCreds(prev => ({ ...prev, accountNumber: v }))}
             />
             <label htmlFor="ups-sandbox" className="flex cursor-pointer items-center gap-2">
               <Checkbox
                 id="ups-sandbox"
                 checked={upsCreds.sandbox}
+                // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
                 onCheckedChange={checked =>
                   setUpsCreds(prev => ({
                     ...prev,

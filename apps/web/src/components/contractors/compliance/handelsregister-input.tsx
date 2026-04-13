@@ -137,6 +137,7 @@ export function HandelsregisterInput({
                       <CommandItem
                         key={court.code}
                         value={`${court.name} ${court.city}`}
+                        // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
                         onSelect={() => {
                           patch({ court: court.code });
                           setOpen(false);
@@ -163,6 +164,7 @@ export function HandelsregisterInput({
           <Label className="sr-only">Register type</Label>
           <RadioGroup
             value={current.type ?? 'HRB'}
+            // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
             onValueChange={(v: string) => {
               if (v === 'HRB' || v === 'HRA') {
                 patch({ type: v });
@@ -208,6 +210,7 @@ export function HandelsregisterInput({
             aria-invalid={error ? 'true' : undefined}
             placeholder="123456"
             value={current.number ?? ''}
+            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
             onChange={e => {
               const digits = e.target.value.replace(/\D/g, '').slice(0, 7);
               patch({ number: digits });

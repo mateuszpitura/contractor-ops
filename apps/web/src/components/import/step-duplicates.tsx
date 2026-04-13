@@ -69,12 +69,14 @@ export function StepDuplicates({
 
       {/* Bulk action buttons */}
       <div className="flex gap-2">
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         <Button variant="outline" size="sm" onClick={() => handleBulkAction('skip')} type="button">
           {t('duplicates.skipAll')}
         </Button>
         <Button
           variant="outline"
           size="sm"
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
           onClick={() => handleBulkAction('update')}
           type="button">
           {t('duplicates.updateAll')}
@@ -109,6 +111,7 @@ export function StepDuplicates({
                   <TableCell>
                     <RadioGroup
                       value={action}
+                      // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
                       onValueChange={val =>
                         handleActionChange(row.rowNumber, val as 'skip' | 'update' | 'create')
                       }

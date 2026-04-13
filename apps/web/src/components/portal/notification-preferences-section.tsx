@@ -165,6 +165,7 @@ export function NotificationPreferencesSection() {
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         {/* Trigger row */}
         <CollapsibleTrigger
+          // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
           render={props => (
             <button
               {...props}
@@ -205,6 +206,7 @@ export function NotificationPreferencesSection() {
                       <div className="shrink-0">
                         <Switch
                           checked={checked}
+                          // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
                           onCheckedChange={val => handleToggle(cat.category, val)}
                           disabled={cat.locked}
                           aria-label={cat.label}

@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Truck } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { Suspense, useState } from 'react';
+import { Suspense, useCallback, useState } from 'react';
 import { AssignmentDialog } from '@/components/equipment/assignment-dialog';
 import { CarrierShipmentForm } from '@/components/equipment/carrier-shipment-form';
 import { EquipmentDetailHeader } from '@/components/equipment/equipment-detail/equipment-detail-header';
@@ -116,6 +116,17 @@ export default function EquipmentDetailPage() {
   // Breadcrumb override
   useBreadcrumbOverride(params.id, equipment?.name);
 
+  // Handlers
+  const handleRetry = useCallback(() => equipmentQuery.refetch(), [equipmentQuery]);
+  const handleOpenForm = useCallback(() => setFormOpen(true), []);
+  const handleOpenAssign = useCallback(() => setAssignOpen(true), []);
+  const handleOpenShipment = useCallback(() => setShipmentOpen(true), []);
+  const handleOpenCarrierShipment = useCallback(() => setCarrierShipmentOpen(true), []);
+  const handleCarrierShipmentSuccess = useCallback(() => {
+    setCarrierShipmentOpen(false);
+    equipmentQuery.refetch();
+  }, [equipmentQuery]);
+
   // Error state
   if (equipmentQuery.isError) {
     const isNotFound =
@@ -136,7 +147,7 @@ export default function EquipmentDetailPage() {
     return (
       <div className="flex min-h-[400px] flex-col items-center justify-center gap-3 text-center">
         <h2 className="text-lg font-medium">{t('error.loadFailed')}</h2>
-        <Button variant="outline" onClick={() => equipmentQuery.refetch()}>
+        <Button variant="outline" onClick={handleRetry}>
           Retry
         </Button>
       </div>
@@ -152,14 +163,14 @@ export default function EquipmentDetailPage() {
     <div className="space-y-6">
       <EquipmentDetailHeader
         equipment={equipment}
-        onEdit={() => setFormOpen(true)}
-        onAssign={() => setAssignOpen(true)}
-        onCreateShipment={() => setShipmentOpen(true)}
+        onEdit={handleOpenForm}
+        onAssign={handleOpenAssign}
+        onCreateShipment={handleOpenShipment}
       />
 
       {configuredCarriers.length > 0 && !equipment.status?.includes('RETIRED') && (
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={() => setCarrierShipmentOpen(true)}>
+          <Button variant="outline" size="sm" onClick={handleOpenCarrierShipment}>
             <Truck className="me-1.5 size-4" />
             {t('carrier.shipViaCarrier')}
           </Button>
@@ -168,7 +179,7 @@ export default function EquipmentDetailPage() {
 
       <Suspense fallback={<DetailSkeleton />}>
         <EquipmentDetailTabs
-          infoContent={<TabInfo equipment={equipment} onEdit={() => setFormOpen(true)} />}
+          infoContent={<TabInfo equipment={equipment} onEdit={handleOpenForm} />}
           assignmentsContent={
             <TabAssignments
               assignments={equipment.assignments ?? []}
@@ -179,7 +190,7 @@ export default function EquipmentDetailPage() {
             <TabShipments
               shipments={equipment.shipments ?? []}
               equipmentId={equipment.id}
-              onCreateShipment={() => setShipmentOpen(true)}
+              onCreateShipment={handleOpenShipment}
               pendingReturn={pendingReturnData}
             />
           }
@@ -214,10 +225,7 @@ export default function EquipmentDetailPage() {
         }
         direction="OUTBOUND"
         configuredCarriers={configuredCarriers}
-        onSuccess={() => {
-          setCarrierShipmentOpen(false);
-          equipmentQuery.refetch();
-        }}
+        onSuccess={handleCarrierShipmentSuccess}
       />
     </div>
   );

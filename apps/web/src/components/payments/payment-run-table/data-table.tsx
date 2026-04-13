@@ -90,6 +90,7 @@ export function PaymentRunDataTable({
                     <TableRow
                       key={row.id}
                       className="cursor-pointer"
+                      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                       onClick={() => onRowClick(row.original)}>
                       {row.getVisibleCells().map(cell => (
                         <TableCell key={cell.id}>

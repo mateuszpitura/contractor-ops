@@ -205,11 +205,13 @@ export default function PortalInvoicesPage() {
                     <TableRow
                       key={invoice.id}
                       className="cursor-pointer"
+                      // biome-ignore lint/nursery/noJsxPropsBind: dynamic route per list item
                       onClick={() => router.push(`/portal/invoices/${invoice.id}`)}>
                       <TableCell>
                         <Link
                           href={`/portal/invoices/${invoice.id}`}
                           className="font-medium text-primary hover:underline"
+                          // biome-ignore lint/nursery/noJsxPropsBind: stopPropagation handler in list
                           onClick={e => e.stopPropagation()}>
                           {invoice.invoiceNumber}
                         </Link>

@@ -16,7 +16,11 @@ beforeAll(() => {
   Element.prototype.scrollIntoView = vi.fn();
 });
 
-const mockMutate = vi.fn();
+const {
+  mockMutate,
+} = vi.hoisted(() => ({
+  mockMutate: vi.fn(),
+}));
 let mockContractors: Array<{ id: string; displayName: string | null; legalName: string }> = [];
 let mockIsLoading = false;
 let mockIsPending = false;

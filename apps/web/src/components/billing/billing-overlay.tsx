@@ -72,9 +72,12 @@ export function BillingOverlay() {
   return (
     <>
       {!!showTrialBanner && !!trialEnd && (
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         <TrialBanner trialEnd={trialEnd} onUpgrade={handleUpgrade} />
       )}
+      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
       {isPastDue && <PastDueBanner onResolve={handleUpgrade} />}
+      // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
       <SoftBlockModal isOpen={isTrialExpired || isBlocked} onSelectPlan={handleSelectPlan} />
     </>
   );

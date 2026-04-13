@@ -2,7 +2,7 @@
 
 import { UserPlus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { InviteDialog } from '@/components/settings/invite-dialog';
 import { UsersTable } from '@/components/settings/users-table';
 import { AnimateIn } from '@/components/shared/animate-in';
@@ -16,6 +16,7 @@ import { usePermissions } from '@/hooks/use-permissions';
 export default function MembersPage() {
   const t = useTranslations('Users');
   const [inviteOpen, setInviteOpen] = useState(false);
+  const openInvite = useCallback(() => setInviteOpen(true), []);
   const { can } = usePermissions();
 
   const canInvite = can('member', ['create']);
@@ -32,7 +33,7 @@ export default function MembersPage() {
           </div>
 
           {canInvite && (
-            <Button onClick={() => setInviteOpen(true)}>
+            <Button onClick={openInvite}>
               <UserPlus className="me-2 h-4 w-4" />
               {t('inviteCta')}
             </Button>

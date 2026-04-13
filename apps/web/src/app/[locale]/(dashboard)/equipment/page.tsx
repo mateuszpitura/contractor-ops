@@ -2,7 +2,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
-import { Suspense, useState } from 'react';
+import { Suspense, useCallback, useState } from 'react';
 import { toast } from 'sonner';
 import { AssignmentDialog } from '@/components/equipment/assignment-dialog';
 import { EquipmentForm } from '@/components/equipment/equipment-form';
@@ -69,15 +69,53 @@ function EquipmentContent() {
     }),
   );
 
-  const handleEdit = (equipment: EquipmentRow) => {
+  const handleEdit = useCallback((equipment: EquipmentRow) => {
     setEditEquipment(equipment);
     setFormOpen(true);
-  };
+  }, []);
 
-  const handleAddEquipment = () => {
+  const handleAddEquipment = useCallback(() => {
     setEditEquipment(null);
     setFormOpen(true);
-  };
+  }, []);
+
+  const handleAssign = useCallback((eq: EquipmentRow) => setAssignTarget(eq), []);
+  const handleUnassign = useCallback((eq: EquipmentRow) => setUnassignTarget(eq), []);
+  const handleCreateShipment = useCallback((eq: EquipmentRow) => setShipmentTarget(eq), []);
+  const handleRetire = useCallback((eq: EquipmentRow) => setRetireTarget(eq), []);
+
+  const handleFormOpenChange = useCallback((v: boolean) => {
+    setFormOpen(v);
+    if (!v) setEditEquipment(null);
+  }, []);
+
+  const handleAssignDialogClose = useCallback((v: boolean) => {
+    if (!v) setAssignTarget(null);
+  }, []);
+
+  const handleShipmentDialogClose = useCallback((v: boolean) => {
+    if (!v) setShipmentTarget(null);
+  }, []);
+
+  const handleRetireDialogClose = useCallback((v: boolean) => {
+    if (!v) setRetireTarget(null);
+  }, []);
+
+  const handleUnassignDialogClose = useCallback((v: boolean) => {
+    if (!v) setUnassignTarget(null);
+  }, []);
+
+  const handleCancelRetire = useCallback(() => setRetireTarget(null), []);
+  const handleConfirmRetire = useCallback(
+    () => retireTarget && retireMutation.mutate({ id: retireTarget.id }),
+    [retireTarget, retireMutation],
+  );
+
+  const handleCancelUnassign = useCallback(() => setUnassignTarget(null), []);
+  const handleConfirmUnassign = useCallback(
+    () => unassignTarget && unassignMutation.mutate({ equipmentId: unassignTarget.id }),
+    [unassignTarget, unassignMutation],
+  );
 
   return (
     <div className="space-y-6">
@@ -88,10 +126,10 @@ function EquipmentContent() {
       <AnimateIn delay={1}>
         <EquipmentTable
           onEdit={handleEdit}
-          onAssign={eq => setAssignTarget(eq)}
-          onUnassign={eq => setUnassignTarget(eq)}
-          onCreateShipment={eq => setShipmentTarget(eq)}
-          onRetire={eq => setRetireTarget(eq)}
+          onAssign={handleAssign}
+          onUnassign={handleUnassign}
+          onCreateShipment={handleCreateShipment}
+          onRetire={handleRetire}
           onAddEquipment={handleAddEquipment}
         />
       </AnimateIn>
@@ -99,10 +137,7 @@ function EquipmentContent() {
       {/* Create/Edit form dialog */}
       <EquipmentForm
         open={formOpen}
-        onOpenChange={v => {
-          setFormOpen(v);
-          if (!v) setEditEquipment(null);
-        }}
+        onOpenChange={handleFormOpenChange}
         equipment={editEquipment}
       />
 
@@ -110,7 +145,7 @@ function EquipmentContent() {
       {!!assignTarget && (
         <AssignmentDialog
           open={!!assignTarget}
-          onOpenChange={v => !v && setAssignTarget(null)}
+          onOpenChange={handleAssignDialogClose}
           equipmentId={assignTarget.id}
           equipmentName={assignTarget.name}
         />
@@ -120,14 +155,14 @@ function EquipmentContent() {
       {!!shipmentTarget && (
         <ShipmentForm
           open={!!shipmentTarget}
-          onOpenChange={v => !v && setShipmentTarget(null)}
+          onOpenChange={handleShipmentDialogClose}
           equipmentId={shipmentTarget.id}
           equipmentName={shipmentTarget.name}
         />
       )}
 
       {/* Retire confirmation */}
-      <Dialog open={!!retireTarget} onOpenChange={v => !v && setRetireTarget(null)}>
+      <Dialog open={!!retireTarget} onOpenChange={handleRetireDialogClose}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{t('detail.retireConfirmTitle')}</DialogTitle>
@@ -136,13 +171,13 @@ function EquipmentContent() {
           <DialogFooter>
             <Button
               variant="outline"
-              onClick={() => setRetireTarget(null)}
+              onClick={handleCancelRetire}
               disabled={retireMutation.isPending}>
               {t('form.cancel')}
             </Button>
             <Button
               variant="destructive"
-              onClick={() => retireTarget && retireMutation.mutate({ id: retireTarget.id })}
+              onClick={handleConfirmRetire}
               disabled={retireMutation.isPending}>
               {t('detail.retire')}
             </Button>
@@ -151,7 +186,7 @@ function EquipmentContent() {
       </Dialog>
 
       {/* Unassign confirmation */}
-      <Dialog open={!!unassignTarget} onOpenChange={v => !v && setUnassignTarget(null)}>
+      <Dialog open={!!unassignTarget} onOpenChange={handleUnassignDialogClose}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{t('detail.unassignConfirmTitle')}</DialogTitle>
@@ -164,15 +199,13 @@ function EquipmentContent() {
           <DialogFooter>
             <Button
               variant="outline"
-              onClick={() => setUnassignTarget(null)}
+              onClick={handleCancelUnassign}
               disabled={unassignMutation.isPending}>
               {t('form.cancel')}
             </Button>
             <Button
               variant="destructive"
-              onClick={() =>
-                unassignTarget && unassignMutation.mutate({ equipmentId: unassignTarget.id })
-              }
+              onClick={handleConfirmUnassign}
               disabled={unassignMutation.isPending}>
               {t('detail.unassignEquipment')}
             </Button>

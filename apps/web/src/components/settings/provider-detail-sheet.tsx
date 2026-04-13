@@ -269,6 +269,7 @@ export function ProviderDetailSheet({
             </SheetDescription>
             <div className="flex gap-2 pt-2">
               {(connectionStatus === 'REAUTH_REQUIRED' || connectionStatus === 'ERROR') && (
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 <Button variant="outline" size="sm" onClick={handleReauthorize}>
                   {t('provider.reconnectCta')}
                 </Button>
@@ -278,6 +279,7 @@ export function ProviderDetailSheet({
                   variant="outline"
                   size="sm"
                   className="text-destructive hover:text-destructive"
+                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                   onClick={() => setDisconnectDialogOpen(true)}>
                   {t('provider.disconnectCta', { provider: displayName })}
                 </Button>
@@ -372,6 +374,7 @@ export function ProviderDetailSheet({
                       <Button
                         variant="outline"
                         size="sm"
+                        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                         onClick={handleLoadMoreSync}
                         disabled={syncLogQuery.isFetching}>
                         {!!syncLogQuery.isFetching && (
@@ -430,6 +433,7 @@ export function ProviderDetailSheet({
                       <Button
                         variant="outline"
                         size="sm"
+                        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                         onClick={handleLoadMoreWebhook}
                         disabled={webhookLogQuery.isFetching}>
                         {!!webhookLogQuery.isFetching && (
@@ -462,6 +466,7 @@ export function ProviderDetailSheet({
             <AlertDialogAction
               variant="destructive"
               disabled={disconnectMutation.isPending}
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => disconnectMutation.mutate({ provider })}>
               {!!disconnectMutation.isPending && (
                 <Loader2 className="me-1.5 size-3.5 animate-spin" />

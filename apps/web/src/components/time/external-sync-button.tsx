@@ -133,6 +133,7 @@ export function ExternalSyncButton({
                 <Calendar
                   mode="single"
                   selected={fromDate}
+                  // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
                   onSelect={d => {
                     if (d) setFromDate(d);
                     setFromCalendarOpen(false);
@@ -157,6 +158,7 @@ export function ExternalSyncButton({
                 <Calendar
                   mode="single"
                   selected={toDate}
+                  // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
                   onSelect={d => {
                     if (d) setToDate(d);
                     setToCalendarOpen(false);
@@ -167,6 +169,7 @@ export function ExternalSyncButton({
             </Popover>
           </div>
 
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
           <Button className="w-full" onClick={handleImport}>
             Import Entries
           </Button>

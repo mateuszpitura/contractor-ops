@@ -90,6 +90,7 @@ export function ConflictResolutionPopover({
                         type="radio"
                         name={`conflict-${conflict.field}`}
                         checked={resolved === cv.value}
+                        // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                         onChange={() => onResolve(conflict.field, cv.value)}
                         className="accent-primary"
                       />
@@ -106,6 +107,7 @@ export function ConflictResolutionPopover({
                       type="radio"
                       name={`conflict-${conflict.field}`}
                       checked={!!resolved && !conflict.values.some(cv => cv.value === resolved)}
+                      // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                       onChange={() => {
                         const custom = customValues[conflict.field] ?? '';
                         if (custom) onResolve(conflict.field, custom);
@@ -115,12 +117,14 @@ export function ConflictResolutionPopover({
                     <Input
                       placeholder={t('conflictCustom')}
                       value={customValues[conflict.field] ?? ''}
+                      // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                       onChange={e => {
                         setCustomValues(prev => ({
                           ...prev,
                           [conflict.field]: e.target.value,
                         }));
                       }}
+                      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                       onBlur={() => {
                         const custom = customValues[conflict.field];
                         if (custom) onResolve(conflict.field, custom);

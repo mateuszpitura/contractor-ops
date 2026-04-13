@@ -307,6 +307,7 @@ export function TemplateForm({ templateId }: TemplateFormProps) {
           <Label htmlFor="template-type">{t('columns.templateType')}</Label>
           <Select
             value={form.watch('type')}
+            // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
             onValueChange={val =>
               form.setValue('type', val as TemplateFormValues['type'], {
                 shouldDirty: true,

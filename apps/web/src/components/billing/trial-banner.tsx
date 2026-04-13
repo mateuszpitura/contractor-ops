@@ -42,6 +42,7 @@ export function TrialBanner({ trialEnd, onUpgrade }: TrialBannerProps) {
           </Button>
           <button
             type="button"
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={() => setDismissed(true)}
             className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             aria-label="Dismiss trial banner">

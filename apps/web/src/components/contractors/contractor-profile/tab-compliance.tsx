@@ -129,6 +129,7 @@ export function TabCompliance({ contractor }: TabComplianceProps) {
                   <Button
                     variant="outline"
                     size="sm"
+                    // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                     onClick={() => {
                       // Scroll to the upload section at bottom
                       document

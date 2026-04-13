@@ -35,12 +35,14 @@ describe('NewPaymentRunDialog', () => {
   });
 
   it('shows title and step 1 content when open', () => {
+    // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler
     render(<NewPaymentRunDialog open onOpenChange={() => undefined} />);
     expect(screen.getByText('New payment run')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /mock-go-review/i })).toBeInTheDocument();
   });
 
   it('advances to review step when step 1 completes', async () => {
+    // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler
     const { user } = setup(<NewPaymentRunDialog open onOpenChange={() => undefined} />);
     await user.click(screen.getByRole('button', { name: /mock-go-review/i }));
     expect(screen.getByText('step-review-mock')).toBeInTheDocument();

@@ -190,6 +190,7 @@ export function EquipmentForm({ open, onOpenChange, equipment }: EquipmentFormPr
             <Label>{t('form.type')}</Label>
             <Select
               value={watchedType}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
               onValueChange={val =>
                 val && form.setValue('type', val as EquipmentCreateInput['type'])
               }>
@@ -243,6 +244,7 @@ export function EquipmentForm({ open, onOpenChange, equipment }: EquipmentFormPr
             <Button
               type="button"
               variant="outline"
+              // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler
               onClick={() => onOpenChange(false)}
               disabled={isPending}>
               {t('form.cancel')}

@@ -139,6 +139,7 @@ export function ShipmentForm({
             <Label>{t('shipment.direction')}</Label>
             <Select
               value={form.watch('direction')}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
               onValueChange={val =>
                 val && form.setValue('direction', val as 'OUTBOUND' | 'RETURN')
               }>
@@ -157,6 +158,7 @@ export function ShipmentForm({
             <Label>{t('shipment.carrier')}</Label>
             <Select
               value={watchedCarrier}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
               onValueChange={val => val && form.setValue('carrier', val)}>
               <SelectTrigger className="w-full">
                 <SelectValue />
@@ -211,6 +213,7 @@ export function ShipmentForm({
             <Button
               type="button"
               variant="outline"
+              // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler
               onClick={() => onOpenChange(false)}
               disabled={createMutation.isPending}>
               {t('form.cancel')}

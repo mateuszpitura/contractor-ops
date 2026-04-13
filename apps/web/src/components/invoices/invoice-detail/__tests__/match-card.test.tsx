@@ -29,14 +29,26 @@ vi.mock('@/trpc/init', () => ({
 }));
 
 vi.mock('@/i18n/navigation', () => ({
-  Link: ({ children, href, ...props }: { children: React.ReactNode; href: string; [key: string]: unknown }) => (
-    <a href={href} {...props}>
+  Link: ({
+    children,
+    href,
+    ...props
+  }: {
+    children: React.ReactNode;
+    href: string;
+    [key: string]: unknown;
+  }) => (
+    <a href={href} {...(props as React.AnchorHTMLAttributes<HTMLAnchorElement>)}>
       {children}
     </a>
   ),
 }));
 
-const usePermissionsMock = vi.fn(() => ({ role: 'admin' }));
+const {
+  usePermissionsMock,
+} = vi.hoisted(() => ({
+  usePermissionsMock: vi.fn(() => ({ role: 'admin' })),
+}));
 vi.mock('@/hooks/use-permissions', () => ({
   usePermissions: () => usePermissionsMock(),
 }));

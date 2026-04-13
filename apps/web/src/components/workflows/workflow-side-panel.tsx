@@ -250,6 +250,7 @@ export function WorkflowSidePanel({ runId, onClose }: WorkflowSidePanelProps) {
     taskSummary.total > 0 ? Math.round((taskSummary.done / taskSummary.total) * 100) : 0;
 
   return (
+    // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler
     <Sheet open={open} onOpenChange={isOpen => !isOpen && onClose()}>
       <SheetContent className="w-[400px] sm:w-[480px] p-0">
         <ScrollArea className="h-full">

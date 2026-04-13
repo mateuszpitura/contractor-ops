@@ -3,8 +3,13 @@ import { render, screen } from '@/test/test-utils';
 import { OcrReviewPanel } from '../ocr-review-panel';
 
 // Mock tanstack query
-const mockUseQuery = vi.fn();
-const mockUseMutation = vi.fn();
+const {
+  mockUseQuery,
+  mockUseMutation,
+} = vi.hoisted(() => ({
+  mockUseQuery: vi.fn(),
+  mockUseMutation: vi.fn(),
+}));
 
 vi.mock('@tanstack/react-query', () => ({
   useQuery: mockUseQuery,
@@ -48,7 +53,9 @@ vi.mock('sonner', () => ({
 
 vi.mock('motion/react', () => ({
   motion: {
-    div: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => <div {...props}>{children}</div>,
+    div: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => (
+      <div {...(props as React.HTMLAttributes<HTMLDivElement>)}>{children}</div>
+    ),
   },
   AnimatePresence: ({ children }: { children: React.ReactNode }) => children,
 }));

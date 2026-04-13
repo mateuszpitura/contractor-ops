@@ -155,6 +155,7 @@ function SkipPopover({ taskRunId, runId }: { taskRunId: string; runId: string })
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger
+        // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
         render={props => (
           <Button {...props} variant="ghost" size="sm">
             {t('taskActionSkip')}
@@ -165,6 +166,7 @@ function SkipPopover({ taskRunId, runId }: { taskRunId: string; runId: string })
         <Textarea
           placeholder={t('skipReasonPlaceholder')}
           value={reason}
+          // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
           onChange={e => setReason(e.target.value)}
           rows={3}
         />
@@ -173,6 +175,7 @@ function SkipPopover({ taskRunId, runId }: { taskRunId: string; runId: string })
           size="sm"
           className="w-full"
           disabled={reason.trim().length < 3 || skipMutation.isPending}
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
           onClick={() => {
             skipMutation.mutate({ taskRunId, reason: reason.trim() });
           }}>
@@ -225,6 +228,7 @@ function ReassignPopover({ taskRunId, runId }: { taskRunId: string; runId: strin
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger
+        // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
         render={props => (
           <Button {...props} variant="ghost" size="sm">
             {t('taskActionReassign')}
@@ -232,6 +236,7 @@ function ReassignPopover({ taskRunId, runId }: { taskRunId: string; runId: strin
         )}
       />
       <PopoverContent className="w-72 space-y-3" align="start">
+        // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
         <Select value={selectedUserId} onValueChange={val => setSelectedUserId(val ?? '')}>
           <SelectTrigger>
             <SelectValue placeholder={t('reassignPlaceholder')} />
@@ -248,6 +253,7 @@ function ReassignPopover({ taskRunId, runId }: { taskRunId: string; runId: strin
           size="sm"
           className="w-full"
           disabled={!selectedUserId || reassignMutation.isPending}
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
           onClick={() => {
             reassignMutation.mutate({
               taskRunId,
@@ -312,6 +318,7 @@ export function TaskCardRun({ task, runId, currentUserId, dependencyTitle }: Tas
       <div className="rounded-lg border bg-card">
         {/* Collapsed view */}
         <CollapsibleTrigger
+          // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
           render={props => (
             <button
               {...props}
@@ -345,7 +352,9 @@ export function TaskCardRun({ task, runId, currentUserId, dependencyTitle }: Tas
               <div
                 className="flex items-center gap-1 shrink-0"
                 role="presentation"
+                // biome-ignore lint/nursery/noJsxPropsBind: stopPropagation handler
                 onClick={e => e.stopPropagation()}
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 onKeyDown={e => {
                   if (e.key === 'Enter' || e.key === ' ') e.stopPropagation();
                 }}>
@@ -354,6 +363,7 @@ export function TaskCardRun({ task, runId, currentUserId, dependencyTitle }: Tas
                     <Button
                       size="sm"
                       disabled={completeMutation.isPending}
+                      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                       onClick={() => {
                         completeMutation.mutate({ taskRunId: task.id });
                       }}>
@@ -368,6 +378,7 @@ export function TaskCardRun({ task, runId, currentUserId, dependencyTitle }: Tas
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger
+                        // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
                         render={props => (
                           <span {...props} className="text-xs text-muted-foreground cursor-default">
                             <Lock className="size-3.5 text-amber-600 dark:text-amber-400" />

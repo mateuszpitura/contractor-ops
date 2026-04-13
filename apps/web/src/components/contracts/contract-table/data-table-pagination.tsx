@@ -54,6 +54,7 @@ export function DataTablePagination<TData>({
         {/* Page size selector */}
         <div className="flex items-center gap-2">
           <span className="text-sm text-muted-foreground">{t('rowsPerPage')}</span>
+          // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
           <Select value={String(pageSize)} onValueChange={value => onPageSizeChange(Number(value))}>
             <SelectTrigger className="h-8 w-[70px]">
               <SelectValue />
@@ -80,6 +81,7 @@ export function DataTablePagination<TData>({
             size="icon"
             className="h-8 w-8"
             disabled={currentPage <= 1}
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={() => onPageChange(currentPage - 1)}
             aria-label={tAria('previousPage')}>
             <ChevronLeft className="h-4 w-4" />
@@ -89,6 +91,7 @@ export function DataTablePagination<TData>({
             size="icon"
             className="h-8 w-8"
             disabled={currentPage >= totalPages}
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={() => onPageChange(currentPage + 1)}
             aria-label={tAria('nextPage')}>
             <ChevronRight className="h-4 w-4" />

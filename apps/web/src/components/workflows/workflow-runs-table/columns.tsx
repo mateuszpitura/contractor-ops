@@ -75,6 +75,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<WorkflowRunRow>[] {
         <Checkbox
           checked={table.getIsAllPageRowsSelected()}
           indeterminate={table.getIsSomePageRowsSelected() && !table.getIsAllPageRowsSelected()}
+          // biome-ignore lint/nursery/noJsxPropsBind: column definition
           onCheckedChange={value => table.toggleAllPageRowsSelected(!!value)}
           aria-label={t('columns.selectAll')}
         />
@@ -82,8 +83,10 @@ export function getColumns(t: TranslateFunction): ColumnDef<WorkflowRunRow>[] {
       cell: ({ row }) => (
         <Checkbox
           checked={row.getIsSelected()}
+          // biome-ignore lint/nursery/noJsxPropsBind: column definition
           onCheckedChange={value => row.toggleSelected(!!value)}
           aria-label={t('columns.selectRow')}
+          // biome-ignore lint/nursery/noJsxPropsBind: column definition
           onClick={e => e.stopPropagation()}
         />
       ),

@@ -327,6 +327,7 @@ export function TimesheetGrid({
                           <td key={dayIdx} className={cn('px-1 py-1.5', imported && 'bg-muted/50')}>
                             <div className="relative">
                               <Input
+                                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                                 ref={el => {
                                   if (el) inputRefs.current.set(cellKey, el);
                                   else inputRefs.current.delete(cellKey);
@@ -337,10 +338,13 @@ export function TimesheetGrid({
                                 max="24"
                                 className="h-10 w-16 text-center text-sm [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                                 value={getCellValue(contract.id, dayIdx)}
+                                // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                                 onChange={e =>
                                   handleCellChange(contract.id, dayIdx, e.target.value)
                                 }
+                                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                                 onBlur={() => handleCellBlur(contract.id, dayIdx)}
+                                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                                 onKeyDown={e => handleKeyDown(e, contract.id, dayIdx, contractIdx)}
                                 disabled={cellDisabled}
                                 aria-label={`Hours for ${contract.title} on ${DAY_LABELS[dayIdx]}`}

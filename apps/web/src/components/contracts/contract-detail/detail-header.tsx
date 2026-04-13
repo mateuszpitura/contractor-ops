@@ -173,6 +173,7 @@ export function DetailHeader({ contract }: DetailHeaderProps) {
         />
         <DropdownMenu>
           <DropdownMenuTrigger
+            // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
             render={props => (
               <Button {...props} variant="outline" size="sm">
                 <MoreHorizontal className="me-1.5 size-3.5" />
@@ -199,6 +200,7 @@ export function DetailHeader({ contract }: DetailHeaderProps) {
             {canTerminate && (
               <DropdownMenuItem
                 variant="destructive"
+                // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
                 onSelect={() => setTerminateOpen(true)}
                 disabled={terminateMutation.isPending}>
                 <Ban className="me-2 size-3.5" />
@@ -209,6 +211,7 @@ export function DetailHeader({ contract }: DetailHeaderProps) {
             {canSupersede && (
               <DropdownMenuItem
                 variant="destructive"
+                // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
                 onSelect={() =>
                   supersedeMutation.mutate({
                     id: contract.id,
@@ -237,6 +240,7 @@ export function DetailHeader({ contract }: DetailHeaderProps) {
             <AlertDialogCancel>{t('actions.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               variant="destructive"
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() =>
                 terminateMutation.mutate({
                   id: contract.id,

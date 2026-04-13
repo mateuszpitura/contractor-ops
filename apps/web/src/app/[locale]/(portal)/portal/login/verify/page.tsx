@@ -76,6 +76,7 @@ export default function PortalVerifyPage() {
   const verifiedRef = useRef(false);
 
   const [state, setState] = useState<VerifyState>({ status: 'verifying' });
+  const goToLogin = useCallback(() => router.push('/portal/login'), [router]);
 
   const verifyMagicLink = useMutation(trpc.portal.verifyMagicLink.mutationOptions());
 
@@ -176,8 +177,9 @@ export default function PortalVerifyPage() {
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
               <AlertCircle className="h-6 w-6 text-destructive" />
             </div>
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             <p className="text-sm text-muted-foreground">{state.message}</p>
-            <Button variant="outline" className="mt-2" onClick={() => router.push('/portal/login')}>
+            <Button variant="outline" className="mt-2" onClick={goToLogin}>
               {t('verify.backToLogin')}
             </Button>
           </CardContent>

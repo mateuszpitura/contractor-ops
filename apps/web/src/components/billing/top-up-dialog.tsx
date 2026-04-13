@@ -3,7 +3,7 @@
 import { useMutation } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import {
@@ -49,6 +49,7 @@ interface TopUpDialogProps {
 export function TopUpDialog({ open, onOpenChange }: TopUpDialogProps) {
   const t = useTranslations('Billing.topUp');
   const [selectedBundle, setSelectedBundle] = useState<string>('10');
+  const closeDialog = useCallback(() => onOpenChange(false), [onOpenChange]);
 
   const checkoutMutation = useMutation({
     ...trpc.billing.createTopUpCheckout.mutationOptions(),
@@ -104,10 +105,11 @@ export function TopUpDialog({ open, onOpenChange }: TopUpDialogProps) {
         <DialogFooter>
           <Button
             variant="outline"
-            onClick={() => onOpenChange(false)}
+            onClick={closeDialog}
             disabled={checkoutMutation.isPending}>
             {t('cancel')}
           </Button>
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
           <Button onClick={handleConfirm} disabled={checkoutMutation.isPending}>
             {!!checkoutMutation.isPending && (
               <Loader2 className="animate-spin" aria-hidden="true" />

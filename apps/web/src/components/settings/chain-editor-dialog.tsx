@@ -202,6 +202,7 @@ function UserPicker({
                 <CommandItem
                   key={user.id}
                   value={user.id}
+                  // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
                   onSelect={() => {
                     onChange(user.id);
                     setOpen(false);
@@ -390,6 +391,7 @@ export function ChainEditorDialog({ open, onOpenChange, chainData }: ChainEditor
               <Controller
                 control={form.control}
                 name="isDefault"
+                // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
                 render={({ field }) => (
                   <Switch
                     id="chain-default"
@@ -423,6 +425,7 @@ export function ChainEditorDialog({ open, onOpenChange, chainData }: ChainEditor
                         variant="ghost"
                         size="icon-sm"
                         className="text-destructive hover:text-destructive"
+                        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                         onClick={() => remove(index)}
                         aria-label={t('approvals.editor.removeLevel')}>
                         <X className="size-4" />
@@ -451,6 +454,7 @@ export function ChainEditorDialog({ open, onOpenChange, chainData }: ChainEditor
                     <Controller
                       control={form.control}
                       name={`steps.${index}.approverType`}
+                      // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
                       render={({ field: radioField }) => (
                         <RadioGroup
                           value={radioField.value}
@@ -478,6 +482,7 @@ export function ChainEditorDialog({ open, onOpenChange, chainData }: ChainEditor
                     <Controller
                       control={form.control}
                       name={`steps.${index}.approverUserId`}
+                      // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
                       render={({ field: userField }) => (
                         <UserPicker value={userField.value} onChange={userField.onChange} />
                       )}
@@ -486,6 +491,7 @@ export function ChainEditorDialog({ open, onOpenChange, chainData }: ChainEditor
                     <Controller
                       control={form.control}
                       name={`steps.${index}.approverRole`}
+                      // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
                       render={({ field: roleField }) => (
                         <Select
                           value={roleField.value ?? undefined}
@@ -534,6 +540,7 @@ export function ChainEditorDialog({ open, onOpenChange, chainData }: ChainEditor
                     <Controller
                       control={form.control}
                       name={`steps.${index}.required`}
+                      // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
                       render={({ field: reqField }) => (
                         <Switch
                           id={`step-required-${index}`}
@@ -562,6 +569,7 @@ export function ChainEditorDialog({ open, onOpenChange, chainData }: ChainEditor
                 type="button"
                 variant="outline"
                 size="sm"
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 onClick={() => append({ ...DEFAULT_STEP })}>
                 <Plus className="me-1.5 size-3.5" />
                 {t('approvals.editor.addLevel')}
@@ -575,6 +583,7 @@ export function ChainEditorDialog({ open, onOpenChange, chainData }: ChainEditor
             <Controller
               control={form.control}
               name="conditions"
+              // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
               render={({ field: condField }) => (
                 <ConditionBuilder
                   value={(condField.value ?? []) as Condition[]}
@@ -589,6 +598,7 @@ export function ChainEditorDialog({ open, onOpenChange, chainData }: ChainEditor
             <Button
               type="button"
               variant="ghost"
+              // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler
               onClick={() => onOpenChange(false)}
               disabled={isPending}>
               {t('approvals.editor.discard')}

@@ -73,6 +73,7 @@ export function EnvironmentToggle({
         <p className="text-sm font-medium">Environment</p>
         <RadioGroup
           value={value}
+          // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
           onValueChange={handleChange}
           className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {/* Sandbox */}
@@ -141,6 +142,7 @@ export function EnvironmentToggle({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             <AlertDialogAction onClick={confirmSwitchToSandbox}>
               Switch to Sandbox
             </AlertDialogAction>

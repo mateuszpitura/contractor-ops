@@ -4,9 +4,15 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 // Mock Prisma
 // ---------------------------------------------------------------------------
 
-const mockFindFirst = vi.fn();
-const mockFindMany = vi.fn();
-const mockCount = vi.fn();
+const {
+  mockFindFirst,
+  mockFindMany,
+  mockCount,
+} = vi.hoisted(() => ({
+  mockFindFirst: vi.fn(),
+  mockFindMany: vi.fn(),
+  mockCount: vi.fn(),
+}));
 
 vi.mock('@contractor-ops/db', () => ({
   prisma: {

@@ -4,7 +4,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 // Mocks
 // ---------------------------------------------------------------------------
 
-const mockLimit = vi.fn();
+const {
+  mockLimit,
+} = vi.hoisted(() => ({
+  mockLimit: vi.fn(),
+}));
 
 vi.mock('@upstash/redis', () => {
   class MockRedis {}

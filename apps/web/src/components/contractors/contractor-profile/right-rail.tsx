@@ -164,6 +164,7 @@ export function RightRail({ contractor }: RightRailProps) {
           rows={3}
           placeholder={t('notesPlaceholder')}
           value={notes}
+          // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
           onChange={e => {
             setNotes(e.target.value);
             setIsDirty(true);
@@ -175,6 +176,7 @@ export function RightRail({ contractor }: RightRailProps) {
             variant="outline"
             className="mt-2 w-full"
             disabled={noteSaveMutation.isPending}
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={handleSaveNotes}>
             {noteSaveMutation.isPending ? t('saving') : t('save')}
           </Button>

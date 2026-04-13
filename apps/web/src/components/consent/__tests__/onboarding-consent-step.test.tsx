@@ -40,7 +40,11 @@ let noticeData: Record<string, unknown> = {
 };
 let noticeLoading = false;
 
-const mockBulkGrantMutate = vi.fn();
+const {
+  mockBulkGrantMutate,
+} = vi.hoisted(() => ({
+  mockBulkGrantMutate: vi.fn(),
+}));
 let bulkGrantPending = false;
 
 vi.mock('next-intl', async importOriginal => {

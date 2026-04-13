@@ -77,6 +77,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<ContractRow>[] {
         <Checkbox
           checked={table.getIsAllPageRowsSelected()}
           indeterminate={table.getIsSomePageRowsSelected() && !table.getIsAllPageRowsSelected()}
+          // biome-ignore lint/nursery/noJsxPropsBind: column definition
           onCheckedChange={value => table.toggleAllPageRowsSelected(!!value)}
           aria-label={t('columns.selectAll')}
         />
@@ -84,8 +85,10 @@ export function getColumns(t: TranslateFunction): ColumnDef<ContractRow>[] {
       cell: ({ row }) => (
         <Checkbox
           checked={row.getIsSelected()}
+          // biome-ignore lint/nursery/noJsxPropsBind: column definition
           onCheckedChange={value => row.toggleSelected(!!value)}
           aria-label={t('columns.selectRow')}
+          // biome-ignore lint/nursery/noJsxPropsBind: column definition
           onClick={e => e.stopPropagation()}
         />
       ),
@@ -176,6 +179,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<ContractRow>[] {
           return (
             <Tooltip>
               <TooltipTrigger
+                // biome-ignore lint/nursery/noJsxPropsBind: column definition
                 render={props => (
                   <span {...props} className="text-sm cursor-default">
                     {date.toLocaleDateString('pl-PL')}

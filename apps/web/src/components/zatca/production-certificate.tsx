@@ -68,6 +68,7 @@ export function ProductionCertificate({ onSuccess, onBack }: ProductionCertifica
       {/* Complete Onboarding CTA */}
       {!completed && (
         <Button
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
           onClick={() => (exchangeMutation.mutate as () => void)()}
           disabled={exchangeMutation.isPending}>
           {!!exchangeMutation.isPending && (

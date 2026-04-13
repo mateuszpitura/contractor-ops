@@ -10,7 +10,13 @@ vi.mock('sonner', () => ({
   toast: { success: vi.fn(), error: vi.fn() },
 }));
 
-const mockPush = vi.fn();
+const {
+  mockPush,
+  mockMutate,
+} = vi.hoisted(() => ({
+  mockPush: vi.fn(),
+  mockMutate: vi.fn(),
+}));
 vi.mock('@/i18n/navigation', () => ({
   useRouter: () => ({ push: mockPush }),
   Link: ({ children, ...props }: React.PropsWithChildren<{ href: string }>) => (
@@ -45,7 +51,6 @@ let templatesData: { items: typeof mockTemplates; total: number } | null = {
 };
 let isLoading = false;
 
-const mockMutate = vi.fn();
 
 vi.mock('@tanstack/react-query', async () => {
   const actual =

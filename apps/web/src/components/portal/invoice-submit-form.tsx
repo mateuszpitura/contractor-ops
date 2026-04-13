@@ -457,6 +457,7 @@ export function InvoiceSubmitForm() {
           ) : (
             <Select
               value={selectedContractId}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
               onValueChange={val => setValue('contractId', val ?? '', { shouldValidate: true })}
               items={contractItems}>
               <SelectTrigger className="w-full">
@@ -534,6 +535,7 @@ export function InvoiceSubmitForm() {
                   type="button"
                   variant="ghost"
                   size="sm"
+                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                   onClick={() => window.open(pdfBlobUrl, '_blank')}>
                   <ExternalLink className="me-1 h-3.5 w-3.5" />
                   {t('viewPdf')}
@@ -543,6 +545,7 @@ export function InvoiceSubmitForm() {
                 type="button"
                 variant="ghost"
                 size="icon"
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 onClick={removeFile}
                 aria-label={tAria('removeFile')}>
                 <X className="h-4 w-4" />
@@ -556,7 +559,9 @@ export function InvoiceSubmitForm() {
         {/* Credit exhaustion banner */}
         {!!creditExhausted && (
           <CreditExhaustedInline
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onUpgrade={() => router.push('/settings?tab=billing')}
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onBuyCredits={() => router.push('/settings?tab=billing')}
           />
         )}

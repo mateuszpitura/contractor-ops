@@ -1,4 +1,4 @@
-import { randomBytes, scrypt, timingSafeEqual } from 'node:crypto';
+import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 import { prisma } from '@contractor-ops/db';
 
 // ---------------------------------------------------------------------------
@@ -6,10 +6,15 @@ import { prisma } from '@contractor-ops/db';
 // ---------------------------------------------------------------------------
 
 const KEY_PREFIX = 'co_live_';
-const RANDOM_BYTES = 24;
-const SCRYPT_KEYLEN = 64;
-const SCRYPT_PARAMS = { N: 16384, r: 8, p: 1 } as const;
-const SALT_BYTES = 16;
+const RANDOM_BYTES = 32;
+const PREFIX_LENGTH = 12;
+/**
+ * Server-side secret for HMAC key hashing. Generated once at startup.
+ * API keys are high-entropy (256 bits) so HMAC-SHA256 is sufficient —
+ * scrypt/bcrypt are only needed for low-entropy passwords.
+ */
+const HMAC_SECRET = process.env.API_KEY_HMAC_SECRET ?? '';
+const MAX_PREFIX_CANDIDATES = 3;
 
 // ---------------------------------------------------------------------------
 // Key generation
@@ -18,21 +23,21 @@ const SALT_BYTES = 16;
 /**
  * Generates a new API key with its hash for storage.
  *
- * Format: `co_live_<32-char-base64url>`
- * The first 8 chars after the prefix serve as a lookup prefix.
- * The full key is hashed with scrypt for secure storage.
+ * Format: `co_live_<43-char-base64url>` (256 bits of entropy)
+ * The first 12 chars after the prefix serve as a lookup prefix.
+ * The full key is hashed with HMAC-SHA256 for secure storage.
  *
  * @returns plaintext (shown once), display prefix, and hash for DB storage
  */
-export async function generateApiKey(): Promise<{
+export function generateApiKey(): {
   plaintext: string;
   prefix: string;
   hash: string;
-}> {
+} {
   const random = randomBytes(RANDOM_BYTES).toString('base64url');
   const plaintext = `${KEY_PREFIX}${random}`;
-  const prefix = random.slice(0, 8);
-  const hash = await hashKey(plaintext);
+  const prefix = random.slice(0, PREFIX_LENGTH);
+  const hash = hashKey(plaintext);
 
   return { plaintext, prefix, hash };
 }
@@ -42,28 +47,27 @@ export async function generateApiKey(): Promise<{
 // ---------------------------------------------------------------------------
 
 /**
- * Hashes an API key using scrypt with a random salt.
- * Returns `salt:hash` (both hex-encoded).
+ * Hashes an API key using HMAC-SHA256.
+ * Returns hex-encoded hash.
+ *
+ * HMAC-SHA256 is appropriate here because API keys have high entropy (256 bits).
+ * Slow KDFs like scrypt/bcrypt are designed for low-entropy passwords and would
+ * add ~100ms latency per request without security benefit.
  */
-async function hashKey(plaintext: string): Promise<string> {
-  const salt = randomBytes(SALT_BYTES);
-  const derived = await scryptAsync(plaintext, salt, SCRYPT_KEYLEN);
-  return `${salt.toString('hex')}:${derived.toString('hex')}`;
+function hashKey(plaintext: string): string {
+  return createHmac('sha256', HMAC_SECRET).update(plaintext).digest('hex');
 }
 
 /**
- * Verifies a plaintext API key against a stored `salt:hash`.
+ * Verifies a plaintext API key against a stored HMAC hash.
  * Uses timing-safe comparison to prevent timing attacks.
  */
-async function verifyKey(plaintext: string, storedHash: string): Promise<boolean> {
-  const [saltHex, hashHex] = storedHash.split(':');
-  if (!(saltHex && hashHex)) return false;
+function verifyKey(plaintext: string, storedHash: string): boolean {
+  const computed = Buffer.from(hashKey(plaintext), 'hex');
+  const expected = Buffer.from(storedHash, 'hex');
 
-  const salt = Buffer.from(saltHex, 'hex');
-  const expected = Buffer.from(hashHex, 'hex');
-  const derived = await scryptAsync(plaintext, salt, SCRYPT_KEYLEN);
-
-  return timingSafeEqual(derived, expected);
+  if (computed.length !== expected.length) return false;
+  return timingSafeEqual(computed, expected);
 }
 
 // ---------------------------------------------------------------------------
@@ -73,20 +77,32 @@ async function verifyKey(plaintext: string, storedHash: string): Promise<boolean
 /**
  * Resolves a plaintext API key to its database record.
  *
- * 1. Extracts the 8-char prefix for fast DB lookup
- * 2. Finds non-revoked keys with that prefix
- * 3. Verifies the hash (may check multiple keys if prefixes collide)
+ * 1. Extracts the 12-char prefix for fast DB lookup
+ * 2. Finds non-revoked, non-expired keys with that prefix (capped at MAX_PREFIX_CANDIDATES)
+ * 3. Verifies the HMAC hash (timing-safe)
+ *
+ * Revocation and expiration are checked at the DB level to avoid wasting
+ * compute on keys that are already known to be invalid.
  *
  * @returns The key record with organization, or null if invalid
  */
-export async function resolveApiKey(plaintext: string) {
+export function resolveApiKey(plaintext: string) {
   if (!plaintext.startsWith(KEY_PREFIX)) return null;
 
   const random = plaintext.slice(KEY_PREFIX.length);
-  const prefix = random.slice(0, 8);
+  const prefix = random.slice(0, PREFIX_LENGTH);
 
+  return resolveByPrefix(plaintext, prefix);
+}
+
+async function resolveByPrefix(plaintext: string, prefix: string) {
   const candidates = await prisma.organizationApiKey.findMany({
-    where: { prefix },
+    where: {
+      prefix,
+      revokedAt: null,
+      OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+    },
+    take: MAX_PREFIX_CANDIDATES,
     include: {
       organization: {
         select: { id: true, dataRegion: true, status: true },
@@ -95,7 +111,7 @@ export async function resolveApiKey(plaintext: string) {
   });
 
   for (const candidate of candidates) {
-    if (await verifyKey(plaintext, candidate.hash)) {
+    if (verifyKey(plaintext, candidate.hash)) {
       return candidate;
     }
   }
@@ -109,7 +125,7 @@ export async function resolveApiKey(plaintext: string) {
 
 /**
  * Updates the `lastUsedAt` timestamp for an API key.
- * Fire-and-forget — errors are silently ignored.
+ * Fire-and-forget — errors are logged but don't fail the request.
  */
 export function touchLastUsed(keyId: string): void {
   prisma.organizationApiKey
@@ -117,20 +133,7 @@ export function touchLastUsed(keyId: string): void {
       where: { id: keyId },
       data: { lastUsedAt: new Date() },
     })
-    .catch(() => {
-      // Intentionally swallowed — non-critical
+    .catch((err) => {
+      console.error('[api-key] Failed to update lastUsedAt:', keyId, err);
     });
-}
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-function scryptAsync(password: string, salt: Buffer, keylen: number): Promise<Buffer> {
-  return new Promise((resolve, reject) => {
-    scrypt(password, salt, keylen, SCRYPT_PARAMS, (err, derived) => {
-      if (err) reject(err);
-      else resolve(derived);
-    });
-  });
 }

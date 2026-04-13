@@ -115,6 +115,7 @@ export function ReturnApprovalBanner({ returnRequest }: ReturnApprovalBannerProp
             <Button
               variant="destructive"
               size="sm"
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => setRejectDialogOpen(true)}
               disabled={isPending}>
               {!!rejectMutation.isPending && (
@@ -122,6 +123,7 @@ export function ReturnApprovalBanner({ returnRequest }: ReturnApprovalBannerProp
               )}
               {t('reject')}
             </Button>
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             <Button size="sm" onClick={handleApprove} disabled={isPending}>
               {!!approveMutation.isPending && (
                 <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />
@@ -145,6 +147,7 @@ export function ReturnApprovalBanner({ returnRequest }: ReturnApprovalBannerProp
             </AlertDialogCancel>
             <AlertDialogAction
               variant="destructive"
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={handleReject}
               disabled={rejectMutation.isPending}>
               {!!rejectMutation.isPending && (

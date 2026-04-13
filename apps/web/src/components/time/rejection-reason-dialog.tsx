@@ -74,6 +74,7 @@ export function RejectionReasonDialog({
   }
 
   return (
+    // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler */}
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
@@ -86,6 +87,7 @@ export function RejectionReasonDialog({
           <Textarea
             id="rejection-reason"
             value={reason}
+            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
             onChange={e => {
               setReason(e.target.value);
               if (error) setError(null);
@@ -102,11 +104,13 @@ export function RejectionReasonDialog({
         </div>
 
         <DialogFooter className="gap-2 sm:gap-0">
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
           <Button variant="outline" onClick={() => handleOpenChange(false)} disabled={isSubmitting}>
             Keep Reviewing
           </Button>
           <Button
             variant="destructive"
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={handleSubmit}
             disabled={isSubmitting || reason.trim().length < 10}>
             {isSubmitting ? 'Rejecting...' : 'Reject Timesheet'}

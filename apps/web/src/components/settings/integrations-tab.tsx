@@ -88,6 +88,7 @@ function KsefControls() {
       <Button
         variant="outline"
         size="sm"
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onClick={() => (syncMutation.mutate as () => void)()}
         disabled={syncMutation.isPending}>
         {!!syncMutation.isPending && (

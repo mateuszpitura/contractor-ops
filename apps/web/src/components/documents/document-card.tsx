@@ -170,6 +170,7 @@ export function DocumentCard({
       {/* Actions */}
       <div className="flex shrink-0 items-center gap-1">
         {isPdf && !isInfected && (
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
           <Button variant="ghost" size="icon-sm" onClick={() => setPreviewOpen(true)}>
             <Eye className="size-3.5" />
             <span className="sr-only">{t('preview')}</span>
@@ -180,6 +181,7 @@ export function DocumentCard({
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger
+                // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
                 render={props => (
                   <Button {...props} variant="ghost" size="icon-sm" disabled>
                     <Download className="size-3.5" />
@@ -191,6 +193,7 @@ export function DocumentCard({
             </Tooltip>
           </TooltipProvider>
         ) : (
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
           <Button variant="ghost" size="icon-sm" onClick={handleDownload}>
             <Download className="size-3.5" />
             <span className="sr-only">{t('download')}</span>
@@ -198,6 +201,7 @@ export function DocumentCard({
         )}
 
         {onUploadNewVersion && doc.status === 'ACTIVE' && (
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
           <Button variant="ghost" size="icon-sm" onClick={() => onUploadNewVersion(doc.id)}>
             <Upload className="size-3.5" />
             <span className="sr-only">{t('uploadNewVersion')}</span>

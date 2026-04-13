@@ -2,7 +2,11 @@ import { useQuery } from '@tanstack/react-query';
 import { render, screen, setup, waitFor } from '@/test/test-utils';
 import { SourceSelectionStep } from '../source-selection-step';
 
-const mockFetchQuery = vi.fn();
+const {
+  mockFetchQuery,
+} = vi.hoisted(() => ({
+  mockFetchQuery: vi.fn(),
+}));
 vi.mock('@tanstack/react-query', async () => {
   const actual = await vi.importActual('@tanstack/react-query');
   return {
@@ -31,8 +35,16 @@ vi.mock('@/trpc/init', () => ({
 }));
 
 vi.mock('@/i18n/navigation', () => ({
-  Link: ({ children, href, ...props }: { children: React.ReactNode; href: string; [key: string]: unknown }) => (
-    <a href={href} {...props}>
+  Link: ({
+    children,
+    href,
+    ...props
+  }: {
+    children: React.ReactNode;
+    href: string;
+    [key: string]: unknown;
+  }) => (
+    <a href={href} {...(props as React.AnchorHTMLAttributes<HTMLAnchorElement>)}>
       {children}
     </a>
   ),

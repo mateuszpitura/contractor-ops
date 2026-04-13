@@ -45,8 +45,13 @@ vi.mock('../step-documents', () => ({
 
 let contractorData: Record<string, unknown> | null = null;
 
-const mockMutate = vi.fn();
-const mockMutateAsync = vi.fn().mockResolvedValue({ id: 'new-contract-1' });
+const {
+  mockMutate,
+  mockMutateAsync,
+} = vi.hoisted(() => ({
+  mockMutate: vi.fn(),
+  mockMutateAsync: vi.fn().mockResolvedValue({ id: 'new-contract-1' }),
+}));
 
 vi.mock('@tanstack/react-query', async () => {
   const actual =

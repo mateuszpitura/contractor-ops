@@ -229,6 +229,7 @@ export function UsersTable() {
                           {assignableRoles.map(role => (
                             <DropdownMenuItem
                               key={role}
+                              // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
                               onSelect={() => {
                                 if (role !== m.role) {
                                   updateRoleMutation.mutate({
@@ -260,6 +261,7 @@ export function UsersTable() {
                         <Button
                           variant="outline"
                           size="sm"
+                          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                           onClick={() => reactivateMutation.mutate({ userId: memberId })}
                           disabled={reactivateMutation.isPending}>
                           {t('actions.reactivate')}
@@ -268,6 +270,7 @@ export function UsersTable() {
                         <Button
                           variant="destructive"
                           size="sm"
+                          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                           onClick={() =>
                             setDeactivateTarget({
                               userId: memberId,
@@ -289,6 +292,7 @@ export function UsersTable() {
       {!!deactivateTarget && (
         <DeactivateDialog
           open={!!deactivateTarget}
+          // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler
           onOpenChange={open => {
             if (!open) setDeactivateTarget(null);
           }}

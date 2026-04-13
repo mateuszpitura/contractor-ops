@@ -282,6 +282,7 @@ export function ContractorTimesheetReview({
                 <Button
                   variant="outline"
                   className="text-destructive hover:bg-destructive/10"
+                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                   onClick={() => setRejectDialogOpen(true)}>
                   <XCircle className="me-2 h-4 w-4" />
                   Reject
@@ -300,6 +301,7 @@ export function ContractorTimesheetReview({
       <RejectionReasonDialog
         open={rejectDialogOpen}
         onOpenChange={setRejectDialogOpen}
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onConfirm={handleReject}
         isSubmitting={isRejecting}
       />

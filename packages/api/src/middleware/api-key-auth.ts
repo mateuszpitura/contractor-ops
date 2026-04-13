@@ -16,11 +16,11 @@ const KEY_PREFIX = 'co_live_';
  *
  * Flow:
  * 1. Extract Bearer token from Authorization header
- * 2. Resolve key via prefix lookup + scrypt verification
- * 3. Validate key is not revoked or expired
- * 4. Establish tenant context (regional DB + AsyncLocalStorage)
- * 5. Enrich context with authMode, apiKeyId, apiKeyScopes
- * 6. Fire-and-forget lastUsedAt update
+ * 2. Resolve key via prefix lookup + HMAC verification
+ *    (revoked/expired keys are excluded at the DB level)
+ * 3. Establish tenant context (regional DB + AsyncLocalStorage)
+ * 4. Enrich context with authMode, apiKeyId, apiKeyScopes
+ * 5. Fire-and-forget lastUsedAt update
  */
 const apiKeyAuthMiddleware = t.middleware(async ({ ctx, next }) => {
   const authHeader = ctx.headers.get('authorization') ?? '';
@@ -36,30 +36,17 @@ const apiKeyAuthMiddleware = t.middleware(async ({ ctx, next }) => {
   const keyRecord = await resolveApiKey(plaintext);
 
   if (!keyRecord) {
+    // resolveApiKey returns null for: invalid key, revoked, expired, prefix mismatch
     throw new TRPCError({
       code: 'UNAUTHORIZED',
       message: E.INVALID_API_KEY,
     });
   }
 
-  if (keyRecord.revokedAt) {
-    throw new TRPCError({
-      code: 'UNAUTHORIZED',
-      message: E.API_KEY_REVOKED,
-    });
-  }
-
-  if (keyRecord.expiresAt && keyRecord.expiresAt < new Date()) {
-    throw new TRPCError({
-      code: 'UNAUTHORIZED',
-      message: E.API_KEY_EXPIRED,
-    });
-  }
-
   // Fire-and-forget
   touchLastUsed(keyRecord.id);
 
-  return runWithTenantContext(keyRecord.organizationId, async tenantCtx =>
+  return runWithTenantContext(keyRecord.organizationId, async (tenantCtx) =>
     next({
       ctx: {
         ...ctx,

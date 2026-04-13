@@ -50,6 +50,7 @@ export function TaskAttachments({ taskRunId }: TaskAttachmentsProps) {
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <h4 className="text-sm font-medium">{t('attachmentsHeading')}</h4>
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         <Button variant="ghost" size="sm" onClick={() => setShowDropZone(prev => !prev)}>
           {t('addAttachment')}
         </Button>

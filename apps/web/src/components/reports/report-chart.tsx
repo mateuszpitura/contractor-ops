@@ -105,6 +105,7 @@ export function ReportChart({
             style={chartStyle}>
             <XAxis
               type="number"
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               tickFormatter={(v: number) => formatCurrency(v)}
               tick={{ fontSize: 12 }}
               {...xAxisProps}
@@ -117,6 +118,7 @@ export function ReportChart({
               {...yAxisProps}
             />
             <Tooltip
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               formatter={value => formatCurrency(Number(value))}
               cursor={{ fill: 'var(--color-muted)', opacity: 0.3 }}
             />
@@ -124,6 +126,7 @@ export function ReportChart({
               dataKey={dataKey}
               radius={[0, 4, 4, 0]}
               cursor="pointer"
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={(_data, _index, e) => {
                 const payload =
                   ((e as unknown as Record<string, unknown>)?.payload as Record<string, unknown>) ??
@@ -165,6 +168,7 @@ export function ReportChart({
               fill="var(--color-primary)"
               radius={[4, 4, 0, 0]}
               cursor="pointer"
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={(_data, _index, e) => {
                 const payload =
                   ((e as unknown as Record<string, unknown>)?.payload as Record<string, unknown>) ??
@@ -192,6 +196,7 @@ export function ReportChart({
               cy="50%"
               outerRadius={80}
               cursor="pointer"
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={(_data, _index, e) => {
                 const payload =
                   ((e as unknown as Record<string, unknown>)?.payload as Record<string, unknown>) ??
@@ -200,6 +205,7 @@ export function ReportChart({
                   (payload?.name as string | undefined)?.toLowerCase()) as string;
                 if (id) onSegmentClick(id);
               }}
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               label={({ name, value }: { name?: string; value?: number }) =>
                 `${name ?? ''}: ${value ?? 0}`
               }>

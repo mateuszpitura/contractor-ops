@@ -127,6 +127,7 @@ export function DataTableToolbar({
           <Input
             placeholder={t('searchPlaceholder')}
             value={localSearch}
+            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
             onChange={e => handleSearchInput(e.target.value)}
             className="h-9 ps-9 pe-8"
           />
@@ -138,6 +139,7 @@ export function DataTableToolbar({
         {/* Filters popover */}
         <Popover>
           <PopoverTrigger
+            // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
             render={props => (
               <Button {...props} variant="outline" size="lg">
                 <Filter className="h-3.5 w-3.5" />
@@ -160,6 +162,7 @@ export function DataTableToolbar({
                   label: t(`lifecycle.${stage}`),
                 }))}
                 selected={filters.lifecycleStage}
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 onToggle={value => toggleFilterValue('lifecycleStage', value)}
               />
 
@@ -178,6 +181,7 @@ export function DataTableToolbar({
                   label: user.name ?? user.email ?? 'Unknown',
                 }))}
                 selected={filters.owner}
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 onToggle={value => toggleFilterValue('owner', value)}
               />
 
@@ -189,6 +193,7 @@ export function DataTableToolbar({
                   label: t(`billingModel.${model}`),
                 }))}
                 selected={filters.billingModel}
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 onToggle={value => toggleFilterValue('billingModel', value)}
               />
 
@@ -200,6 +205,7 @@ export function DataTableToolbar({
                   label: t(`health.${health}`),
                 }))}
                 selected={filters.health}
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 onToggle={value => toggleFilterValue('health', value)}
               />
             </div>
@@ -229,6 +235,7 @@ export function DataTableToolbar({
             <FilterBadge
               key={`stage-${stage}`}
               label={t(`lifecycle.${stage}` as Parameters<typeof t>[0])}
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onRemove={() => removeFilter('lifecycleStage', stage)}
             />
           ))}
@@ -245,6 +252,7 @@ export function DataTableToolbar({
               <FilterBadge
                 key={`owner-${ownerId}`}
                 label={user?.name ?? user?.email ?? ownerId}
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 onRemove={() => removeFilter('owner', ownerId)}
               />
             );
@@ -253,6 +261,7 @@ export function DataTableToolbar({
             <FilterBadge
               key={`billing-${model}`}
               label={t(`billingModel.${model}`)}
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onRemove={() => removeFilter('billingModel', model)}
             />
           ))}
@@ -260,12 +269,14 @@ export function DataTableToolbar({
             <FilterBadge
               key={`health-${health}`}
               label={t(`health.${health}` as Parameters<typeof t>[0])}
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onRemove={() => removeFilter('health', health)}
             />
           ))}
           <button
             type="button"
             className="ms-1 text-xs text-muted-foreground hover:text-foreground underline"
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={clearAllFilters}>
             {t('clearAll')}
           </button>
@@ -304,6 +315,7 @@ function FilterSection({
             <Checkbox
               id={`filter-${title}-${option.value}`}
               checked={selected.includes(option.value)}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
               onCheckedChange={() => onToggle(option.value)}
             />
             <span>{option.label}</span>

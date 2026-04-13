@@ -71,6 +71,7 @@ export function DataTableToolbar({
             <button
               key={chip.key}
               type="button"
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => onStatusChange(chip.key)}
               className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium transition-colors ${
                 isActive
@@ -114,6 +115,7 @@ export function DataTableToolbar({
                 variant="ghost"
                 size="sm"
                 className="h-7 text-xs"
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 onClick={() => {
                   onDateFromChange(undefined);
                   onDateToChange(undefined);

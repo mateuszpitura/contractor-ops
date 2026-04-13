@@ -89,6 +89,7 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
           {/* Field select */}
           <Select
             value={condition.field}
+            // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
             onValueChange={v => handleUpdate(index, { field: v as Condition['field'] })}
             items={fieldItems}>
             <SelectTrigger className="w-[160px]">
@@ -106,6 +107,7 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
           {/* Operator select */}
           <Select
             value={condition.operator}
+            // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
             onValueChange={v => handleUpdate(index, { operator: v as Condition['operator'] })}
             items={operatorItems}>
             <SelectTrigger className="w-[140px]">
@@ -124,6 +126,7 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
           <Input
             type={condition.field === 'amount' ? 'number' : 'text'}
             value={condition.value}
+            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
             onChange={e =>
               handleUpdate(index, {
                 value:
@@ -145,6 +148,7 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
             variant="ghost"
             size="icon-sm"
             className="shrink-0 text-destructive hover:text-destructive"
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={() => handleRemove(index)}
             aria-label={t('approvals.editor.removeCondition')}>
             <X className="size-4" />
@@ -153,6 +157,7 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
       ))}
 
       {/* Add condition */}
+      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
       <Button type="button" variant="outline" size="sm" onClick={handleAdd}>
         <Plus className="me-1.5 size-3.5" />
         {t('approvals.editor.addCondition')}

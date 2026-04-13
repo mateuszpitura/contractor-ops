@@ -199,6 +199,7 @@ function TimeTrackingContent() {
       </AnimateIn>
 
       <AnimateIn delay={1}>
+        // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
         <Tabs value={tab} onValueChange={value => void setTab(value)}>
           <TabsList>
             <TabsTrigger value="pending">
@@ -240,6 +241,7 @@ function TimeTrackingContent() {
             <div className="space-y-4">
               {/* Filters */}
               <div className="flex items-center gap-3">
+                // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
                 <Select value={statusFilter} onValueChange={v => void setStatusFilter(v)}>
                   <SelectTrigger className="w-40">
                     <SelectValue placeholder={t('filters.statusPlaceholder')} />

@@ -9,115 +9,115 @@
  */
 
 // ─── Generic ─────────────────────────────────────────────────────
-export const UNAUTHORIZED = 'UNAUTHORIZED';
-export const FORBIDDEN = 'FORBIDDEN';
-export const ACCOUNT_BANNED = 'ACCOUNT_BANNED';
-export const LAST_ADMIN_CANNOT_DEACTIVATE = 'LAST_ADMIN_CANNOT_DEACTIVATE';
-export const PERMISSION_DENIED = 'PERMISSION_DENIED';
-export const UNKNOWN_ERROR = 'UNKNOWN_ERROR';
+export const UNAUTHORIZED = 'unauthorized';
+export const FORBIDDEN = 'forbidden';
+export const ACCOUNT_BANNED = 'accountBanned';
+export const LAST_ADMIN_CANNOT_DEACTIVATE = 'lastAdminCannotDeactivate';
+export const PERMISSION_DENIED = 'permissionDenied';
+export const UNKNOWN_ERROR = 'unknownError';
 
 // ─── Contractor ──────────────────────────────────────────────────
-export const CONTRACTOR_NOT_FOUND = 'CONTRACTOR_NOT_FOUND';
-export const CONTRACTOR_HAS_UNPAID_INVOICES = 'CONTRACTOR_HAS_UNPAID_INVOICES';
-export const CONTRACTOR_HAS_ACTIVE_WORKFLOWS = 'CONTRACTOR_HAS_ACTIVE_WORKFLOWS';
-export const CONTRACTOR_HAS_ACTIVE_CONTRACTS = 'CONTRACTOR_HAS_ACTIVE_CONTRACTS';
-export const CONTRACTOR_INVALID_TRANSITION = 'CONTRACTOR_INVALID_TRANSITION';
-export const GUS_LOOKUP_FAILED = 'GUS_LOOKUP_FAILED';
+export const CONTRACTOR_NOT_FOUND = 'contractorNotFound';
+export const CONTRACTOR_HAS_UNPAID_INVOICES = 'contractorHasUnpaidInvoices';
+export const CONTRACTOR_HAS_ACTIVE_WORKFLOWS = 'contractorHasActiveWorkflows';
+export const CONTRACTOR_HAS_ACTIVE_CONTRACTS = 'contractorHasActiveContracts';
+export const CONTRACTOR_INVALID_TRANSITION = 'contractorInvalidTransition';
+export const GUS_LOOKUP_FAILED = 'gusLookupFailed';
 
 // ─── Contract ────────────────────────────────────────────────────
-export const CONTRACT_NOT_FOUND = 'CONTRACT_NOT_FOUND';
-export const CONTRACT_END_DATE_BEFORE_START = 'CONTRACT_END_DATE_BEFORE_START';
-export const CONTRACT_INVALID_TRANSITION = 'CONTRACT_INVALID_TRANSITION';
+export const CONTRACT_NOT_FOUND = 'contractNotFound';
+export const CONTRACT_END_DATE_BEFORE_START = 'contractEndDateBeforeStart';
+export const CONTRACT_INVALID_TRANSITION = 'contractInvalidTransition';
 
 // ─── Invoice ─────────────────────────────────────────────────────
-export const INVOICE_AMOUNT_MISMATCH = 'INVOICE_AMOUNT_MISMATCH';
-export const INVOICE_NOT_FOUND = 'INVOICE_NOT_FOUND';
-export const INVOICE_NOT_RECEIVED_STATUS = 'INVOICE_NOT_RECEIVED_STATUS';
-export const INVOICE_CONTRACTOR_NOT_FOUND = 'INVOICE_CONTRACTOR_NOT_FOUND';
-export const INVOICE_CONTRACT_NOT_FOUND = 'INVOICE_CONTRACT_NOT_FOUND';
-export const INVOICE_ALREADY_PENDING = 'INVOICE_ALREADY_PENDING';
-export const INVOICE_DUPLICATE = 'INVOICE_DUPLICATE';
+export const INVOICE_AMOUNT_MISMATCH = 'invoiceAmountMismatch';
+export const INVOICE_NOT_FOUND = 'invoiceNotFound';
+export const INVOICE_NOT_RECEIVED_STATUS = 'invoiceNotReceivedStatus';
+export const INVOICE_CONTRACTOR_NOT_FOUND = 'invoiceContractorNotFound';
+export const INVOICE_CONTRACT_NOT_FOUND = 'invoiceContractNotFound';
+export const INVOICE_ALREADY_PENDING = 'invoiceAlreadyPending';
+export const INVOICE_DUPLICATE = 'invoiceDuplicate';
 
 // ─── Payment ─────────────────────────────────────────────────────
-export const PAYMENT_RUN_NOT_FOUND = 'PAYMENT_RUN_NOT_FOUND';
-export const PAYMENT_INVOICES_NOT_READY = 'PAYMENT_INVOICES_NOT_READY';
-export const PAYMENT_INVOICES_NOT_FOUND = 'PAYMENT_INVOICES_NOT_FOUND';
-export const PAYMENT_RUN_INVALID_STATUS = 'PAYMENT_RUN_INVALID_STATUS';
-export const PAYMENT_RUN_ITEM_NOT_FOUND = 'PAYMENT_RUN_ITEM_NOT_FOUND';
-export const PAYMENT_RUN_NOT_DRAFT = 'PAYMENT_RUN_NOT_DRAFT';
-export const PAYMENT_INVOICE_NOT_IN_RUN = 'PAYMENT_INVOICE_NOT_IN_RUN';
-export const PAYMENT_MIXED_CURRENCIES = 'PAYMENT_MIXED_CURRENCIES';
+export const PAYMENT_RUN_NOT_FOUND = 'paymentRunNotFound';
+export const PAYMENT_INVOICES_NOT_READY = 'paymentInvoicesNotReady';
+export const PAYMENT_INVOICES_NOT_FOUND = 'paymentInvoicesNotFound';
+export const PAYMENT_RUN_INVALID_STATUS = 'paymentRunInvalidStatus';
+export const PAYMENT_RUN_ITEM_NOT_FOUND = 'paymentRunItemNotFound';
+export const PAYMENT_RUN_NOT_DRAFT = 'paymentRunNotDraft';
+export const PAYMENT_INVOICE_NOT_IN_RUN = 'paymentInvoiceNotInRun';
+export const PAYMENT_MIXED_CURRENCIES = 'paymentMixedCurrencies';
 
 // ─── Approval ────────────────────────────────────────────────────
-export const APPROVAL_CHAIN_NOT_FOUND = 'APPROVAL_CHAIN_NOT_FOUND';
-export const APPROVAL_CHAIN_HAS_ACTIVE_FLOWS = 'APPROVAL_CHAIN_HAS_ACTIVE_FLOWS';
-export const APPROVAL_STEP_NOT_FOUND = 'APPROVAL_STEP_NOT_FOUND';
-export const APPROVAL_STEP_NOT_PENDING = 'APPROVAL_STEP_NOT_PENDING';
-export const APPROVAL_NOT_ASSIGNED = 'APPROVAL_NOT_ASSIGNED';
-export const APPROVAL_DELEGATE_NOT_MEMBER = 'APPROVAL_DELEGATE_NOT_MEMBER';
-export const APPROVAL_SELF_APPROVAL_FORBIDDEN = 'APPROVAL_SELF_APPROVAL_FORBIDDEN';
+export const APPROVAL_CHAIN_NOT_FOUND = 'approvalChainNotFound';
+export const APPROVAL_CHAIN_HAS_ACTIVE_FLOWS = 'approvalChainHasActiveFlows';
+export const APPROVAL_STEP_NOT_FOUND = 'approvalStepNotFound';
+export const APPROVAL_STEP_NOT_PENDING = 'approvalStepNotPending';
+export const APPROVAL_NOT_ASSIGNED = 'approvalNotAssigned';
+export const APPROVAL_DELEGATE_NOT_MEMBER = 'approvalDelegateNotMember';
+export const APPROVAL_SELF_APPROVAL_FORBIDDEN = 'approvalSelfApprovalForbidden';
 
 // ─── Workflow ────────────────────────────────────────────────────
-export const WORKFLOW_TEMPLATE_NOT_FOUND = 'WORKFLOW_TEMPLATE_NOT_FOUND';
-export const WORKFLOW_RUN_NOT_FOUND = 'WORKFLOW_RUN_NOT_FOUND';
-export const WORKFLOW_RUN_ALREADY_CANCELLED = 'WORKFLOW_RUN_ALREADY_CANCELLED';
-export const WORKFLOW_TASK_NOT_FOUND = 'WORKFLOW_TASK_NOT_FOUND';
-export const WORKFLOW_TASK_INVALID_STATUS = 'WORKFLOW_TASK_INVALID_STATUS';
-export const WORKFLOW_TASK_CANNOT_SKIP = 'WORKFLOW_TASK_CANNOT_SKIP';
+export const WORKFLOW_TEMPLATE_NOT_FOUND = 'workflowTemplateNotFound';
+export const WORKFLOW_RUN_NOT_FOUND = 'workflowRunNotFound';
+export const WORKFLOW_RUN_ALREADY_CANCELLED = 'workflowRunAlreadyCancelled';
+export const WORKFLOW_TASK_NOT_FOUND = 'workflowTaskNotFound';
+export const WORKFLOW_TASK_INVALID_STATUS = 'workflowTaskInvalidStatus';
+export const WORKFLOW_TASK_CANNOT_SKIP = 'workflowTaskCannotSkip';
 
 // ─── Document ────────────────────────────────────────────────────
-export const DOCUMENT_NOT_FOUND = 'DOCUMENT_NOT_FOUND';
-export const DOCUMENT_FILE_TYPE_NOT_ALLOWED = 'DOCUMENT_FILE_TYPE_NOT_ALLOWED';
-export const DOCUMENT_NOT_IN_STORAGE = 'DOCUMENT_NOT_IN_STORAGE';
-export const DOCUMENT_INFECTED = 'DOCUMENT_INFECTED';
-export const DOCUMENT_NOT_ACTIVE = 'DOCUMENT_NOT_ACTIVE';
+export const DOCUMENT_NOT_FOUND = 'documentNotFound';
+export const DOCUMENT_FILE_TYPE_NOT_ALLOWED = 'documentFileTypeNotAllowed';
+export const DOCUMENT_NOT_IN_STORAGE = 'documentNotInStorage';
+export const DOCUMENT_INFECTED = 'documentInfected';
+export const DOCUMENT_NOT_ACTIVE = 'documentNotActive';
 
 // ─── Import ──────────────────────────────────────────────────────
-export const IMPORT_NO_DATA_ROWS = 'IMPORT_NO_DATA_ROWS';
+export const IMPORT_NO_DATA_ROWS = 'importNoDataRows';
 
 // ─── Portal ──────────────────────────────────────────────────────
-export const PORTAL_INVALID_LINK = 'PORTAL_INVALID_LINK';
-export const PORTAL_INVALID_VERIFICATION = 'PORTAL_INVALID_VERIFICATION';
-export const PORTAL_CONTRACT_NOT_FOUND = 'PORTAL_CONTRACT_NOT_FOUND';
-export const PORTAL_NO_CHANGES = 'PORTAL_NO_CHANGES';
-export const PORTAL_SECURITY_ALERTS_LOCKED = 'PORTAL_SECURITY_ALERTS_LOCKED';
-export const PORTAL_PENDING_CHANGE_EXISTS = 'PORTAL_PENDING_CHANGE_EXISTS';
-export const PORTAL_CHANGE_REQUEST_NOT_FOUND = 'PORTAL_CHANGE_REQUEST_NOT_FOUND';
-export const PORTAL_BILLING_PROFILE_NOT_FOUND = 'PORTAL_BILLING_PROFILE_NOT_FOUND';
+export const PORTAL_INVALID_LINK = 'portalInvalidLink';
+export const PORTAL_INVALID_VERIFICATION = 'portalInvalidVerification';
+export const PORTAL_CONTRACT_NOT_FOUND = 'portalContractNotFound';
+export const PORTAL_NO_CHANGES = 'portalNoChanges';
+export const PORTAL_SECURITY_ALERTS_LOCKED = 'portalSecurityAlertsLocked';
+export const PORTAL_PENDING_CHANGE_EXISTS = 'portalPendingChangeExists';
+export const PORTAL_CHANGE_REQUEST_NOT_FOUND = 'portalChangeRequestNotFound';
+export const PORTAL_BILLING_PROFILE_NOT_FOUND = 'portalBillingProfileNotFound';
 
 // ─── Integration ─────────────────────────────────────────────────
-export const INTEGRATION_NOT_FOUND = 'INTEGRATION_NOT_FOUND';
-export const INTEGRATION_NOT_CONNECTED = 'INTEGRATION_NOT_CONNECTED';
-export const INTEGRATION_LINK_NOT_FOUND = 'INTEGRATION_LINK_NOT_FOUND';
-export const INTEGRATION_NO_OAUTH = 'INTEGRATION_NO_OAUTH';
-export const INTEGRATION_NOT_CONFIGURED = 'INTEGRATION_NOT_CONFIGURED';
+export const INTEGRATION_NOT_FOUND = 'integrationNotFound';
+export const INTEGRATION_NOT_CONNECTED = 'integrationNotConnected';
+export const INTEGRATION_LINK_NOT_FOUND = 'integrationLinkNotFound';
+export const INTEGRATION_NO_OAUTH = 'integrationNoOauth';
+export const INTEGRATION_NOT_CONFIGURED = 'integrationNotConfigured';
 
 // ─── Reminder ────────────────────────────────────────────────────
-export const REMINDER_RULE_NOT_FOUND = 'REMINDER_RULE_NOT_FOUND';
+export const REMINDER_RULE_NOT_FOUND = 'reminderRuleNotFound';
 
 // ─── Settings ────────────────────────────────────────────────────
-export const SETTINGS_SUBDOMAIN_TAKEN = 'SETTINGS_SUBDOMAIN_TAKEN';
+export const SETTINGS_SUBDOMAIN_TAKEN = 'settingsSubdomainTaken';
 
 // ─── E-Sign ──────────────────────────────────────────────────────
-export const ESIGN_DOCUMENT_NOT_FOUND = 'ESIGN_DOCUMENT_NOT_FOUND';
-export const ESIGN_DOWNLOAD_FAILED = 'ESIGN_DOWNLOAD_FAILED';
-export const ESIGN_ENVELOPE_NOT_FOUND = 'ESIGN_ENVELOPE_NOT_FOUND';
-export const ESIGN_NO_EXTERNAL_ID = 'ESIGN_NO_EXTERNAL_ID';
+export const ESIGN_DOCUMENT_NOT_FOUND = 'esignDocumentNotFound';
+export const ESIGN_DOWNLOAD_FAILED = 'esignDownloadFailed';
+export const ESIGN_ENVELOPE_NOT_FOUND = 'esignEnvelopeNotFound';
+export const ESIGN_NO_EXTERNAL_ID = 'esignNoExternalId';
 
 // ─── API Key ────────────────────────────────────────────────────
-export const INVALID_API_KEY = 'INVALID_API_KEY';
-export const API_KEY_REVOKED = 'API_KEY_REVOKED';
-export const API_KEY_EXPIRED = 'API_KEY_EXPIRED';
+export const INVALID_API_KEY = 'invalidApiKey';
+export const API_KEY_REVOKED = 'apiKeyRevoked';
+export const API_KEY_EXPIRED = 'apiKeyExpired';
 
 // ─── Validation (import processor) ──────────────────────────────
-export const VALIDATION_LEGAL_NAME_REQUIRED = 'VALIDATION_LEGAL_NAME_REQUIRED';
-export const VALIDATION_TAX_ID_REQUIRED = 'VALIDATION_TAX_ID_REQUIRED';
-export const VALIDATION_EMAIL_REQUIRED = 'VALIDATION_EMAIL_REQUIRED';
-export const VALIDATION_EMAIL_INVALID = 'VALIDATION_EMAIL_INVALID';
-export const VALIDATION_COUNTRY_CODE_LENGTH = 'VALIDATION_COUNTRY_CODE_LENGTH';
-export const VALIDATION_CURRENCY_LENGTH = 'VALIDATION_CURRENCY_LENGTH';
-export const VALIDATION_CONTRACT_TITLE_REQUIRED = 'VALIDATION_CONTRACT_TITLE_REQUIRED';
-export const VALIDATION_CONTRACT_TYPE_REQUIRED = 'VALIDATION_CONTRACT_TYPE_REQUIRED';
-export const VALIDATION_START_DATE_REQUIRED = 'VALIDATION_START_DATE_REQUIRED';
-export const VALIDATION_DATE_INVALID = 'VALIDATION_DATE_INVALID';
-export const VALIDATION_TAX_ID_FK_REQUIRED = 'VALIDATION_TAX_ID_FK_REQUIRED';
+export const VALIDATION_LEGAL_NAME_REQUIRED = 'validationLegalNameRequired';
+export const VALIDATION_TAX_ID_REQUIRED = 'validationTaxIdRequired';
+export const VALIDATION_EMAIL_REQUIRED = 'validationEmailRequired';
+export const VALIDATION_EMAIL_INVALID = 'validationEmailInvalid';
+export const VALIDATION_COUNTRY_CODE_LENGTH = 'validationCountryCodeLength';
+export const VALIDATION_CURRENCY_LENGTH = 'validationCurrencyLength';
+export const VALIDATION_CONTRACT_TITLE_REQUIRED = 'validationContractTitleRequired';
+export const VALIDATION_CONTRACT_TYPE_REQUIRED = 'validationContractTypeRequired';
+export const VALIDATION_START_DATE_REQUIRED = 'validationStartDateRequired';
+export const VALIDATION_DATE_INVALID = 'validationDateInvalid';
+export const VALIDATION_TAX_ID_FK_REQUIRED = 'validationTaxIdFkRequired';

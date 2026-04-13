@@ -90,6 +90,7 @@ function MiniChainTracker({ step }: { step: ApprovalQueueRow }) {
             )}
             <Tooltip>
               <TooltipTrigger
+                // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
                 render={props => (
                   <div {...props} className={circleClass}>
                     {/* biome-ignore lint/nursery/noLeakedRender: order is intentionally rendered as text */}
@@ -137,13 +138,16 @@ function ClarifyOverlay({
       aria-modal="true"
       aria-label={t('clarifyPopover.heading')}
       onClick={onClose}
+      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
       onKeyDown={(e: React.KeyboardEvent) => {
         if (e.key === 'Escape') onClose();
       }}>
       <div
         className="w-96 rounded-xl bg-background p-4 shadow-lg ring-1 ring-border"
         role="document"
+        // biome-ignore lint/nursery/noJsxPropsBind: stopPropagation handler
         onClick={e => e.stopPropagation()}
+        // biome-ignore lint/nursery/noJsxPropsBind: stopPropagation handler
         onKeyDown={e => e.stopPropagation()}>
         <h4 className="font-medium text-sm mb-3">{t('clarifyPopover.heading')}</h4>
         <div className="space-y-1.5 mb-3">
@@ -153,6 +157,7 @@ function ClarifyOverlay({
           <Textarea
             id="clarify-comment"
             value={comment}
+            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
             onChange={e => onCommentChange(e.target.value)}
             placeholder={t('clarifyPopover.commentPlaceholder')}
             className="min-h-[80px]"
@@ -200,13 +205,16 @@ function DelegateOverlay({
       aria-modal="true"
       aria-label={t('delegatePopover.heading')}
       onClick={onClose}
+      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
       onKeyDown={(e: React.KeyboardEvent) => {
         if (e.key === 'Escape') onClose();
       }}>
       <div
         className="w-96 rounded-xl bg-background p-4 shadow-lg ring-1 ring-border"
         role="document"
+        // biome-ignore lint/nursery/noJsxPropsBind: stopPropagation handler
         onClick={e => e.stopPropagation()}
+        // biome-ignore lint/nursery/noJsxPropsBind: stopPropagation handler
         onKeyDown={e => e.stopPropagation()}>
         <h4 className="font-medium text-sm mb-3">{t('delegatePopover.heading')}</h4>
         <div className="space-y-3 mb-3">
@@ -217,6 +225,7 @@ function DelegateOverlay({
             <Input
               id="delegate-user-id"
               value={userId}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
               onChange={e => onUserIdChange(e.target.value)}
               placeholder={t('delegatePopover.userPlaceholder')}
             />
@@ -228,6 +237,7 @@ function DelegateOverlay({
             <Textarea
               id="delegate-note"
               value={note}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
               onChange={e => onNoteChange(e.target.value)}
               placeholder={t('delegatePopover.notePlaceholder')}
               className="min-h-[60px]"
@@ -379,6 +389,7 @@ export function ApprovalSidePanel({ step, open, onOpenChange }: ApprovalSidePane
         {isPending && (
           <div className="border-t p-4 space-y-2">
             <div className="flex items-center gap-2">
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               <Button className="flex-1" onClick={() => approveAction()} disabled={actionsPending}>
                 <CheckCircle2 className="me-1.5 h-4 w-4" />
                 {t('sidePanel.approve')}
@@ -387,6 +398,7 @@ export function ApprovalSidePanel({ step, open, onOpenChange }: ApprovalSidePane
               {/* Reject popover */}
               <Popover open={rejectOpen} onOpenChange={setRejectOpen}>
                 <PopoverTrigger
+                  // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
                   render={props => (
                     <Button {...props} variant="destructive" className="flex-1">
                       <XCircle className="me-1.5 h-4 w-4" />
@@ -406,6 +418,7 @@ export function ApprovalSidePanel({ step, open, onOpenChange }: ApprovalSidePane
                       <Textarea
                         id="side-reject-comment"
                         value={rejectComment}
+                        // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                         onChange={e => setRejectComment(e.target.value)}
                         placeholder={t('rejectPopover.commentPlaceholder')}
                         className="min-h-[80px]"
@@ -420,6 +433,7 @@ export function ApprovalSidePanel({ step, open, onOpenChange }: ApprovalSidePane
                       <Button
                         variant="ghost"
                         size="sm"
+                        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                         onClick={() => {
                           setRejectOpen(false);
                           setRejectComment('');
@@ -430,6 +444,7 @@ export function ApprovalSidePanel({ step, open, onOpenChange }: ApprovalSidePane
                         variant="destructive"
                         size="sm"
                         disabled={rejectComment.length < 10 || actionsPending}
+                        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                         onClick={() => rejectAction(rejectComment)}>
                         {t('rejectPopover.confirm')}
                       </Button>
@@ -442,6 +457,7 @@ export function ApprovalSidePanel({ step, open, onOpenChange }: ApprovalSidePane
             {/* More dropdown: clarify + delegate */}
             <DropdownMenu>
               <DropdownMenuTrigger
+                // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
                 render={props => (
                   <Button {...props} variant="outline" size="sm" className="w-full">
                     <MoreHorizontal className="me-1.5 h-4 w-4" />
@@ -450,10 +466,12 @@ export function ApprovalSidePanel({ step, open, onOpenChange }: ApprovalSidePane
                 )}
               />
               <DropdownMenuContent align="end" className="w-56">
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 <DropdownMenuItem onClick={() => setClarifyOpen(true)}>
                   <HelpCircle className="me-2 h-4 w-4" />
                   {t('sidePanel.requestClarification')}
                 </DropdownMenuItem>
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 <DropdownMenuItem onClick={() => setDelegateOpen(true)}>
                   <UserPlus className="me-2 h-4 w-4" />
                   {t('sidePanel.delegateApproval')}
@@ -468,10 +486,12 @@ export function ApprovalSidePanel({ step, open, onOpenChange }: ApprovalSidePane
         open={clarifyOpen}
         comment={clarifyComment}
         onCommentChange={setClarifyComment}
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onClose={() => {
           setClarifyOpen(false);
           setClarifyComment('');
         }}
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onSubmit={() => clarifyAction(clarifyComment)}
         isPending={actionsPending}
         t={t}
@@ -483,11 +503,13 @@ export function ApprovalSidePanel({ step, open, onOpenChange }: ApprovalSidePane
         note={delegateNote}
         onUserIdChange={setDelegateUserId}
         onNoteChange={setDelegateNote}
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onClose={() => {
           setDelegateOpen(false);
           setDelegateUserId('');
           setDelegateNote('');
         }}
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onSubmit={() => delegateAction(delegateUserId, delegateNote)}
         isPending={actionsPending}
         t={t}

@@ -143,6 +143,7 @@ export function LineItemsTable({ items, onChange, readOnly = false }: LineItemsT
                 <TableCell>
                   <InlineInput
                     value={item.description}
+                    // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                     onChange={v => updateItem(index, 'description', v)}
                     readOnly={readOnly}
                     placeholder="Description"
@@ -151,6 +152,7 @@ export function LineItemsTable({ items, onChange, readOnly = false }: LineItemsT
                 <TableCell>
                   <InlineInput
                     value={formatNumber(item.quantity)}
+                    // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                     onChange={v => updateItem(index, 'quantity', v)}
                     readOnly={readOnly}
                     placeholder="0"
@@ -160,6 +162,7 @@ export function LineItemsTable({ items, onChange, readOnly = false }: LineItemsT
                 <TableCell>
                   <InlineInput
                     value={item.unit ?? ''}
+                    // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                     onChange={v => updateItem(index, 'unit', v)}
                     readOnly={readOnly}
                     placeholder="pcs"
@@ -168,6 +171,7 @@ export function LineItemsTable({ items, onChange, readOnly = false }: LineItemsT
                 <TableCell>
                   <InlineInput
                     value={formatMinorUnits(item.unitPriceMinor)}
+                    // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                     onChange={v => updateItem(index, 'unitPriceMinor', v)}
                     readOnly={readOnly}
                     placeholder="0.00"
@@ -177,6 +181,7 @@ export function LineItemsTable({ items, onChange, readOnly = false }: LineItemsT
                 <TableCell>
                   <InlineInput
                     value={formatMinorUnits(item.netAmountMinor)}
+                    // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                     onChange={v => updateItem(index, 'netAmountMinor', v)}
                     readOnly={readOnly}
                     placeholder="0.00"
@@ -186,6 +191,7 @@ export function LineItemsTable({ items, onChange, readOnly = false }: LineItemsT
                 <TableCell>
                   <InlineInput
                     value={item.vatRate ?? ''}
+                    // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                     onChange={v => updateItem(index, 'vatRate', v)}
                     readOnly={readOnly}
                     placeholder="23%"
@@ -194,6 +200,7 @@ export function LineItemsTable({ items, onChange, readOnly = false }: LineItemsT
                 <TableCell>
                   <InlineInput
                     value={formatMinorUnits(item.vatAmountMinor)}
+                    // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                     onChange={v => updateItem(index, 'vatAmountMinor', v)}
                     readOnly={readOnly}
                     placeholder="0.00"
@@ -203,6 +210,7 @@ export function LineItemsTable({ items, onChange, readOnly = false }: LineItemsT
                 <TableCell>
                   <InlineInput
                     value={formatMinorUnits(item.grossAmountMinor)}
+                    // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                     onChange={v => updateItem(index, 'grossAmountMinor', v)}
                     readOnly={readOnly}
                     placeholder="0.00"
@@ -217,6 +225,7 @@ export function LineItemsTable({ items, onChange, readOnly = false }: LineItemsT
                     <Button
                       variant="ghost"
                       size="icon-sm"
+                      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                       onClick={() => removeItem(index)}
                       aria-label="Remove Item">
                       <Trash2 className="text-muted-foreground" />
@@ -264,6 +273,7 @@ function InlineInput({
   return (
     <Input
       value={value}
+      // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
       onChange={e => onChange(e.target.value)}
       placeholder={placeholder}
       className={cn(

@@ -21,7 +21,11 @@ let projectsLoading = false;
 let statusesData: unknown[] = [];
 let existingMapping: unknown[] = [];
 
-const mockMutate = vi.fn();
+const {
+  mockMutate,
+} = vi.hoisted(() => ({
+  mockMutate: vi.fn(),
+}));
 
 vi.mock('@tanstack/react-query', async () => {
   const actual =

@@ -85,6 +85,7 @@ export function BrandColorPicker({ value, onChange }: BrandColorPickerProps) {
                   'relative h-8 w-8 rounded-md transition-all',
                   isSelected && 'ring-2 ring-offset-2 ring-primary',
                 )}
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 onClick={() => handleSwatchClick(swatch.hex)}
                 aria-label={tAria('colorSwatch', { label: swatch.label, hex: swatch.hex })}
                 aria-pressed={isSelected}>
@@ -100,6 +101,7 @@ export function BrandColorPicker({ value, onChange }: BrandColorPickerProps) {
         <div className="mt-3">
           <Input
             value={hexInput}
+            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
             onChange={e => handleHexChange(e.target.value)}
             placeholder="#4f46e5"
             className="h-8 font-mono text-sm"

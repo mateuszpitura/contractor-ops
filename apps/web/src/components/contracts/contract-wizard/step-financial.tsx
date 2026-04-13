@@ -140,7 +140,9 @@ export function StepFinancial({ form, preFilledFields }: StepFinancialProps) {
             min="0"
             className="font-mono pe-16"
             value={rateLocal}
+            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
             onChange={e => setRateLocal(e.target.value)}
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onBlur={handleRateBlur}
           />
           <span className="absolute end-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
@@ -160,6 +162,7 @@ export function StepFinancial({ form, preFilledFields }: StepFinancialProps) {
         <Label className="text-[13px]">{t('fields.currency')}</Label>
         <Select
           value={currency}
+          // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
           onValueChange={value =>
             setValue('currency', value ?? 'PLN', {
               shouldDirty: true,
@@ -188,6 +191,7 @@ export function StepFinancial({ form, preFilledFields }: StepFinancialProps) {
         <Label className="text-[13px]">{t('fields.billingModel')}</Label>
         <Select
           value={watch('billingModel') ?? ''}
+          // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
           onValueChange={value =>
             setValue('billingModel', (value ?? '') as ContractWizardFormValues['billingModel'], {
               shouldDirty: true,
@@ -219,6 +223,7 @@ export function StepFinancial({ form, preFilledFields }: StepFinancialProps) {
         <Label className="text-[13px]">{t('fields.rateType')}</Label>
         <Select
           value={watch('rateType') ?? ''}
+          // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
           onValueChange={value =>
             setValue('rateType', (value ?? '') as ContractWizardFormValues['rateType'], {
               shouldDirty: true,
@@ -262,6 +267,7 @@ export function StepFinancial({ form, preFilledFields }: StepFinancialProps) {
         <Label className="text-[13px]">{t('fields.invoiceCycle')}</Label>
         <Select
           value={watch('invoiceCycle') ?? ''}
+          // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
           onValueChange={value =>
             setValue('invoiceCycle', (value ?? '') as ContractWizardFormValues['invoiceCycle'], {
               shouldDirty: true,

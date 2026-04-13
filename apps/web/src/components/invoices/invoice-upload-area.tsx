@@ -289,6 +289,7 @@ export function InvoiceUploadArea({
             type="button"
             variant="outline"
             size="sm"
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={() => setShowPdfReview(prev => !prev)}>
             {showPdfReview ? (
               <>
@@ -326,7 +327,9 @@ export function InvoiceUploadArea({
       {/* Credit exhaustion banner */}
       {!!creditExhausted && (
         <CreditExhaustedInline
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
           onUpgrade={() => router.push('/settings?tab=billing')}
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
           onBuyCredits={() => router.push('/settings?tab=billing')}
         />
       )}
@@ -363,6 +366,7 @@ export function InvoiceUploadArea({
                     variant="ghost"
                     size="sm"
                     className="h-6 px-1.5 text-xs"
+                    // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                     onClick={() => retryFile(item.id)}>
                     <RotateCcw className="size-3 me-1" />
                     {t('retry')}

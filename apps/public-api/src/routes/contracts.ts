@@ -14,7 +14,16 @@ contracts.get('/', async c => {
   const result = await caller.contract.list({
     page: query.page ? Number(query.page) : undefined,
     pageSize: query.pageSize ? Number(query.pageSize) : undefined,
-    status: query.status as 'DRAFT' | 'ACTIVE' | 'EXPIRED' | 'TERMINATED' | undefined,
+    status: query.status as
+      | 'DRAFT'
+      | 'PENDING_SIGNATURE'
+      | 'ACTIVE'
+      | 'EXPIRING'
+      | 'EXPIRED'
+      | 'TERMINATED'
+      | 'SUPERSEDED'
+      | 'ARCHIVED'
+      | undefined,
     contractorId: query.contractorId,
     sortBy: query.sortBy as 'title' | 'startDate' | 'endDate' | 'createdAt' | undefined,
     sortOrder: query.sortOrder as 'asc' | 'desc' | undefined,

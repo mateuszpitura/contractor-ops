@@ -146,6 +146,7 @@ export function ApprovalQueueTable({
                         key={row.id}
                         data-state={row.getIsSelected() ? 'selected' : undefined}
                         className={`group cursor-pointer ${overdue ? 'bg-destructive/5' : ''}`}
+                        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                         onClick={() => onRowClick(row.original)}>
                         {row.getVisibleCells().map(cell => (
                           <TableCell key={cell.id}>
@@ -167,6 +168,7 @@ export function ApprovalQueueTable({
             <span className="text-sm text-muted-foreground">{t('pagination.rowsPerPage')}</span>
             <select
               value={pageSize}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
               onChange={e => onPageSizeChange(Number(e.target.value))}
               className="h-8 w-16 rounded-md border bg-background px-2 text-sm">
               {PAGE_SIZE_OPTIONS.map(size => (
@@ -185,6 +187,7 @@ export function ApprovalQueueTable({
               variant="outline"
               size="sm"
               disabled={page <= 1}
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => onPageChange(page - 1)}>
               {t('pagination.previous')}
             </Button>
@@ -192,6 +195,7 @@ export function ApprovalQueueTable({
               variant="outline"
               size="sm"
               disabled={page >= totalPages}
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => onPageChange(page + 1)}>
               {t('pagination.next')}
             </Button>

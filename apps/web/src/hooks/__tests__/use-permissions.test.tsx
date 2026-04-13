@@ -2,12 +2,17 @@ import { renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { usePermissions } from '../use-permissions';
 
-const mockUseSession = vi.fn(() => ({
+const {
+  mockUseSession,
+  mockDashboard,
+} = vi.hoisted(() => ({
+  mockUseSession: vi.fn(() => ({,
+  mockDashboard: vi.fn(() => ({,
+}));
   isPending: false,
   data: {},
 }));
 
-const mockDashboard = vi.fn(() => ({
   userRole: 'finance_admin' as string | null,
 }));
 

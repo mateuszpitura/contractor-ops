@@ -146,6 +146,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<InvoiceRow>[] {
         <Checkbox
           checked={table.getIsAllPageRowsSelected()}
           indeterminate={table.getIsSomePageRowsSelected() && !table.getIsAllPageRowsSelected()}
+          // biome-ignore lint/nursery/noJsxPropsBind: column definition
           onCheckedChange={value => table.toggleAllPageRowsSelected(!!value)}
           aria-label={t('columns.selectAll')}
         />
@@ -153,8 +154,10 @@ export function getColumns(t: TranslateFunction): ColumnDef<InvoiceRow>[] {
       cell: ({ row }) => (
         <Checkbox
           checked={row.getIsSelected()}
+          // biome-ignore lint/nursery/noJsxPropsBind: column definition
           onCheckedChange={value => row.toggleSelected(!!value)}
           aria-label={t('columns.selectRow')}
+          // biome-ignore lint/nursery/noJsxPropsBind: column definition
           onClick={e => e.stopPropagation()}
         />
       ),
@@ -185,6 +188,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<InvoiceRow>[] {
           <Link
             href={`/contractors/${contractor.id}`}
             className="text-sm text-primary hover:underline"
+            // biome-ignore lint/nursery/noJsxPropsBind: column definition
             onClick={e => e.stopPropagation()}>
             {contractor.legalName}
           </Link>

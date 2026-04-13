@@ -60,6 +60,7 @@ export function DataTableToolbar({
         <Input
           placeholder={t('searchPlaceholder')}
           value={localSearch}
+          // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
           onChange={e => handleSearchInput(e.target.value)}
           className="h-9 ps-9 pe-8"
         />

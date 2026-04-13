@@ -197,6 +197,7 @@ export function ApprovalQueueTable({
                 <TableCell>
                   <Checkbox
                     checked={selectedIds.has(ts.id)}
+                    // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
                     onCheckedChange={() => toggleRow(ts.id)}
                     aria-label={`Select timesheet for ${ts.contractor.legalName}`}
                   />
@@ -205,6 +206,7 @@ export function ApprovalQueueTable({
                   <button
                     type="button"
                     className="text-sm font-medium text-primary underline-offset-4 hover:underline"
+                    // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                     onClick={() =>
                       onNavigateToReview(ts.contractor.id, toDateStr(ts.weekStartDate))
                     }>
@@ -225,6 +227,7 @@ export function ApprovalQueueTable({
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center justify-end gap-2 opacity-0 transition-opacity group-hover:opacity-100 sm:opacity-100">
+                    // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                     <Button size="sm" variant="default" onClick={() => onApprove(ts.id)}>
                       <CheckCircle className="me-1.5 h-3.5 w-3.5" />
                       Approve
@@ -233,6 +236,7 @@ export function ApprovalQueueTable({
                       size="sm"
                       variant="outline"
                       className="text-destructive hover:bg-destructive/10"
+                      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                       onClick={() => setRejectingId(ts.id)}>
                       <XCircle className="me-1.5 h-3.5 w-3.5" />
                       Reject
@@ -253,6 +257,7 @@ export function ApprovalQueueTable({
               {selectedArray.length} timesheet{selectedArray.length === 1 ? '' : 's'} selected
             </p>
             <div className="flex items-center gap-2">
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               <Button variant="outline" size="sm" onClick={() => setSelectedIds(new Set())}>
                 Clear
               </Button>
@@ -260,9 +265,11 @@ export function ApprovalQueueTable({
                 variant="outline"
                 size="sm"
                 className="text-destructive hover:bg-destructive/10"
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 onClick={() => setBulkRejectOpen(true)}>
                 Reject All
               </Button>
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               <Button size="sm" onClick={() => setBulkApproveOpen(true)}>
                 Approve All
               </Button>
@@ -274,6 +281,7 @@ export function ApprovalQueueTable({
       {/* Single rejection dialog */}
       <RejectionReasonDialog
         open={rejectingId !== null}
+        // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler
         onOpenChange={open => {
           if (!open) setRejectingId(null);
         }}

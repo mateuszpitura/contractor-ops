@@ -12,6 +12,7 @@ function FiltersProbe() {
       <span data-testid="page">{state.page}</span>
       <span data-testid="pageSize">{state.pageSize}</span>
       <span data-testid="search">{state.search}</span>
+      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
       <button type="button" onClick={() => void setState({ page: 4 })}>
         setPage4
       </button>

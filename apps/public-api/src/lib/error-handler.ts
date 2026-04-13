@@ -1,3 +1,4 @@
+import { TRPCError } from '@trpc/server';
 import type { Context } from 'hono';
 
 // ---------------------------------------------------------------------------
@@ -35,20 +36,11 @@ function formatErrorResponse(status: number, code: string, message: string) {
 }
 
 /**
- * Checks if an error is a TRPCError by duck-typing (avoids direct @trpc/server dependency).
- */
-function isTRPCError(err: unknown): err is { code: string; message: string } {
-  if (typeof err !== 'object' || err === null || !('code' in err)) return false;
-  const code = (err as { code: unknown }).code;
-  return typeof code === 'string' && code in TRPC_TO_HTTP;
-}
-
-/**
- * Hono error handler that catches tRPC errors and maps them
- * to structured JSON HTTP responses.
+ * Hono error handler that catches TRPCError instances and maps them
+ * to structured JSON HTTP responses. Uses instanceof for reliable detection.
  */
 export function handleError(err: Error, c: Context) {
-  if (isTRPCError(err)) {
+  if (err instanceof TRPCError) {
     const status = mapTrpcCodeToHttp(err.code);
     return c.json(formatErrorResponse(status, err.message, err.message), status as 400);
   }

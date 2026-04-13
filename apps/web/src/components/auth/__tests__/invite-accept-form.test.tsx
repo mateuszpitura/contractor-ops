@@ -3,8 +3,15 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { screen, setup, waitFor } from '@/test/test-utils';
 import { InviteAcceptForm } from '../invite-accept-form';
 
-const signUpEmail = vi.fn();
-const acceptInvitation = vi.fn();
+const {
+  signUpEmail,
+  acceptInvitation,
+  mockPush,
+} = vi.hoisted(() => ({
+  signUpEmail: vi.fn(),
+  acceptInvitation: vi.fn(),
+  mockPush: vi.fn(),
+}));
 
 vi.mock('@/lib/auth-client', () => ({
   authClient: {
@@ -17,7 +24,6 @@ vi.mock('@/lib/auth-client', () => ({
   },
 }));
 
-const mockPush = vi.fn();
 vi.mock('@/i18n/navigation', () => ({
   useRouter: () => ({ push: mockPush }),
   Link: ({ children, href }: { children: ReactNode; href: string }) => (

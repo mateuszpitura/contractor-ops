@@ -60,6 +60,7 @@ function RangeToggle({ value, onChange, t }: RangeToggleProps) {
         <button
           key={range.value}
           type="button"
+          // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
           onClick={() => onChange(range.value)}
           className={`rounded-md px-2.5 py-1 text-xs font-medium transition-all duration-200 ${
             value === range.value
@@ -217,6 +218,7 @@ export function SpendChart() {
                 tickLine={false}
                 axisLine={false}
                 tick={{ fill: 'var(--color-muted-foreground)' }}
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 tickFormatter={(val: number) => currencyFormatter.format(val / 100)}
                 width={70}
                 {...yAxisProps}

@@ -105,6 +105,26 @@
       "types": "./src/services/teams/teams-bot-handler.ts",
       "import": "./src/services/teams/teams-bot-handler.ts",
       "default": "./src/services/teams/teams-bot-handler.ts"
+    },
+    "./services/courier/inpost-polling-service": {
+      "types": "./src/services/courier/inpost-polling-service.ts",
+      "import": "./src/services/courier/inpost-polling-service.ts",
+      "default": "./src/services/courier/inpost-polling-service.ts"
+    },
+    "./services/courier/dpd-polling-service": {
+      "types": "./src/services/courier/dpd-polling-service.ts",
+      "import": "./src/services/courier/dpd-polling-service.ts",
+      "default": "./src/services/courier/dpd-polling-service.ts"
+    },
+    "./services/courier/ups-polling-service": {
+      "types": "./src/services/courier/ups-polling-service.ts",
+      "import": "./src/services/courier/ups-polling-service.ts",
+      "default": "./src/services/courier/ups-polling-service.ts"
+    },
+    "./services/courier/inpost-webhook-handler": {
+      "types": "./src/services/courier/inpost-webhook-handler.ts",
+      "import": "./src/services/courier/inpost-webhook-handler.ts",
+      "default": "./src/services/courier/inpost-webhook-handler.ts"
     }
   },
   "scripts": {

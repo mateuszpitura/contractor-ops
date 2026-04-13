@@ -60,7 +60,40 @@
         "useExponentiationOperator": "error",
         "noNegationElse": "warn",
         "useNodejsImportProtocol": "error",
-        "noNonNullAssertion": "warn"
+        "noNonNullAssertion": "warn",
+        "useNamingConvention": {
+          "level": "error",
+          "options": {
+            "strictCase": false,
+            "requireAscii": true,
+            "conventions": [
+              {
+                "selector": { "kind": "objectLiteralProperty" },
+                "match": ".*"
+              },
+              {
+                "selector": { "kind": "typeProperty" },
+                "match": ".*"
+              },
+              {
+                "selector": { "kind": "enumMember" },
+                "formats": ["CONSTANT_CASE", "PascalCase", "camelCase"]
+              },
+              {
+                "selector": { "kind": "const" },
+                "formats": ["camelCase", "PascalCase", "CONSTANT_CASE"]
+              },
+              {
+                "selector": { "kind": "let" },
+                "formats": ["camelCase", "PascalCase"]
+              },
+              {
+                "selector": { "kind": "var" },
+                "formats": ["camelCase", "PascalCase", "CONSTANT_CASE"]
+              }
+            ]
+          }
+        }
       },
       "correctness": {
         "useImportExtensions": "off",

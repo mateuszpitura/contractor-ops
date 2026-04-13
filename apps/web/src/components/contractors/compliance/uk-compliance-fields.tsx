@@ -114,10 +114,12 @@ export function UkComplianceFields(props: UkComplianceFieldsProps) {
       <EntityTypeSelect<UkEntityType>
         values={ukEntityTypeEnum.options}
         value={entityType}
+        // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
         onChange={v => handleChange('entityType', v)}
         label="Entity type"
         required
         error={errors.entityType}
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         renderOption={v => UK_ENTITY_LABELS[v]}
       />
 
@@ -139,6 +141,7 @@ export function UkComplianceFields(props: UkComplianceFieldsProps) {
           aria-describedby={errors.utr ? 'uk-utr-error' : undefined}
           placeholder="10-digit UTR"
           value={merged.utr ?? ''}
+          // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
           onChange={e => handleChange('utr', e.target.value || undefined)}
         />
         {errors.utr ? (
@@ -166,6 +169,7 @@ export function UkComplianceFields(props: UkComplianceFieldsProps) {
             aria-describedby={errors.companiesHouseNumber ? 'uk-ch-error' : undefined}
             placeholder="e.g. 12345678 or SC123456"
             value={merged.companiesHouseNumber ?? ''}
+            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
             onChange={e => handleChange('companiesHouseNumber', e.target.value || undefined)}
           />
           {errors.companiesHouseNumber ? (
@@ -182,6 +186,7 @@ export function UkComplianceFields(props: UkComplianceFieldsProps) {
 
       <VatRegisteredToggle
         checked={isVatRegistered}
+        // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
         onChange={v => handleChange('isVatRegistered', v)}
         label="VAT registered"
       />
@@ -203,6 +208,7 @@ export function UkComplianceFields(props: UkComplianceFieldsProps) {
             aria-describedby={errors.vatRegistrationNumber ? 'uk-vat-error' : undefined}
             placeholder="GB123456789"
             value={merged.vatRegistrationNumber ?? ''}
+            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
             onChange={e => handleChange('vatRegistrationNumber', e.target.value || undefined)}
           />
           {errors.vatRegistrationNumber ? (

@@ -197,6 +197,7 @@ export function ConsentManagementSection() {
               <Button
                 variant="outline"
                 size="sm"
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 onClick={() => downloadDPAMutation.mutate()}
                 disabled={downloadDPAMutation.isPending}
                 className="w-full">
@@ -219,6 +220,7 @@ export function ConsentManagementSection() {
               <Button
                 variant="outline"
                 size="sm"
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 onClick={() => downloadSCCMutation.mutate()}
                 disabled={downloadSCCMutation.isPending}
                 className="w-full">

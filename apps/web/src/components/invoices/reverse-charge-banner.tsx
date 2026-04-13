@@ -48,6 +48,7 @@ export function ReverseChargeBanner({
           </DropdownMenuTrigger>
           <DropdownMenuContent>
             <DropdownMenuItem
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() =>
                 toggleMutation.mutate({
                   invoiceId,

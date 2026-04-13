@@ -102,6 +102,7 @@ export function AssignmentDialog({
   return (
     <Dialog
       open={open}
+      // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler
       onOpenChange={v => {
         onOpenChange(v);
         if (!v) {
@@ -137,6 +138,7 @@ export function AssignmentDialog({
                 <CommandItem
                   key={contractor.id}
                   value={contractor.id}
+                  // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
                   onSelect={() => {
                     setSelectedContractorId(contractor.id);
                     setSelectedContractorName(contractor.displayName ?? contractor.legalName);
@@ -153,11 +155,13 @@ export function AssignmentDialog({
           <Button
             type="button"
             variant="outline"
+            // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler
             onClick={() => onOpenChange(false)}
             disabled={assignMutation.isPending}>
             {t('form.cancel')}
           </Button>
           <Button
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={handleAssign}
             disabled={!selectedContractorId || assignMutation.isPending}>
             {!!assignMutation.isPending && <Loader2 className="me-2 h-4 w-4 animate-spin" />}

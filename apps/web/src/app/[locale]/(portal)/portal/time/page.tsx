@@ -50,6 +50,7 @@ export default function PortalTimePage() {
   // Current week state
   const [currentWeekStart, setCurrentWeekStart] = useState<Date>(startOfISOWeek(new Date()));
   const [singleEntryOpen, setSingleEntryOpen] = useState(false);
+  const openSingleEntry = useCallback(() => setSingleEntryOpen(true), []);
 
   const weekStartStr = format(currentWeekStart, 'yyyy-MM-dd');
 
@@ -298,7 +299,7 @@ export default function PortalTimePage() {
 
       {/* 4. Add Entry button */}
       {!isDisabled && (
-        <Button variant="outline" onClick={() => setSingleEntryOpen(true)} className="gap-2">
+        <Button variant="outline" onClick={openSingleEntry} className="gap-2">
           <Plus className="h-4 w-4" />
           {t('addEntry')}
         </Button>
@@ -357,6 +358,7 @@ export default function PortalTimePage() {
                 <TableRow
                   key={ts.id}
                   className="cursor-pointer"
+                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                   onClick={() => {
                     const d = new Date(ts.weekStartDate);
                     setCurrentWeekStart(startOfISOWeek(d));
