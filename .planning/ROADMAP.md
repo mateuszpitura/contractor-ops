@@ -91,7 +91,7 @@ See .planning/milestones/v4.0/ for details.
   3. User can complete a Scheinselbstandigkeit risk assessment using DRV-aligned criteria across 4 categories with weighted risk scoring and traffic-light outcome
   4. A single contractor with multiple engagements has independent classification assessments per engagement, visible from the contractor profile
 **Plans**: 5 plans
-- [ ] 58-01-PLAN.md — Wave 0: classification workspace scaffold + Prisma model + [BLOCKING] db push + locked phrases (CLASSIFICATION_SCHEIN_* + DISCLAIMER_*) + extended CI guard + 11 test files
+- [x] 58-01-PLAN.md — Wave 0: classification workspace scaffold + Prisma model + [BLOCKING] db push + locked phrases (CLASSIFICATION_SCHEIN_* + DISCLAIMER_*) + extended CI guard + 11 test files
 - [ ] 58-02-PLAN.md — Wave 1: IR35 rule set (25 questions, dispositive-first scoring per Atholl House + PGMOL) + DRV rule set (20 criteria, 30/30/25/15 weights, thresholds 29.9/30/60/60.1) + self-registering profile classes
 - [ ] 58-03-PLAN.md — Wave 2: classification tRPC router (createDraft, saveAnswer, submit, acknowledgeDisclaimer, getLatest, listByContractor, getDraft) + multi-tenant leak test + autosave rate-limit + rule-set drift detection
 - [ ] 58-04-PLAN.md — Wave 3: wizard entry page + multi-step shell + progress bar + step indicator + autosave indicator + 4 answer inputs (Yes/No, Likert, Score03, Rationale) + EconomicDependencyInput + legal-reference Collapsible + a11y
@@ -161,7 +161,7 @@ Phases execute in numeric order: 56 -> 57 -> 58 -> 59 -> 60 -> 61 -> 62 -> 63
 |-------|-----------|----------------|--------|-----------|
 | 56. Country Foundations & German i18n | v5.0 | 8/8 | Complete   | 2026-04-12 |
 | 57. Government API Clients | v5.0 | 3/4 | In Progress|  |
-| 58. Classification Engine & Rule Sets | v5.0 | 0/5 | Planned | - |
+| 58. Classification Engine & Rule Sets | v5.0 | 1/5 | In Progress|  |
 | 59. Classification Documents & Chain Tracking | v5.0 | 0/TBD | Not started | - |
 | 60. Classification Polish | v5.0 | 0/TBD | Not started | - |
 | 61. XRechnung E-Invoicing | v5.0 | 0/TBD | Not started | - |
