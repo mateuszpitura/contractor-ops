@@ -4777,6 +4777,87 @@
         "personalDep": "Zależność osobista",
         "economicDep": "Zależność ekonomiczna"
       }
+    },
+    "disclaimer": {
+      "title": "Zanim zobaczysz wynik",
+      "confirm": "Rozumiem — pokaż wynik",
+      "defer": "Wróć do zlecenia",
+      "acknowledging": "Zapisywanie…",
+      "ackFailed": "Nie udało się zapisać potwierdzenia"
+    },
+    "outcome": {
+      "loading": "Ładowanie wyniku…",
+      "notFound": "Nie znaleziono oceny",
+      "notFoundBody": "Ta ocena nie jest dostępna lub nie masz uprawnień, aby ją wyświetlić.",
+      "backToList": "Wróć do listy ocen",
+      "ruleSetVersion": "Zestaw reguł {version}",
+      "completedAt": "Ukończono {date}",
+      "printTitle": "Wynik klasyfikacji",
+      "printSubtitle": "Nieoficjalny podgląd — nie stanowi prawnego rozstrzygnięcia",
+      "print": "Drukuj / zapisz jako PDF",
+      "rerun": "Uruchom ocenę ponownie",
+      "printedOn": "Wydrukowano {date}",
+      "ir35": {
+        "verdict": {
+          "outside": "Poza IR35",
+          "inside": "Wewnątrz IR35",
+          "indeterminate": "Nierozstrzygnięte"
+        },
+        "areaVerdict": {
+          "strong-outside": "Silny wskaźnik: poza IR35",
+          "leaning-outside": "Skłania się poza IR35",
+          "neutral": "Neutralne",
+          "leaning-inside": "Skłania się wewnątrz IR35",
+          "strong-inside": "Silny wskaźnik: wewnątrz IR35"
+        },
+        "drivingQuestions": "Pytania decydujące",
+        "allQuestions": "Wszystkie pytania w tym obszarze",
+        "caseLawCitations": "Orzecznictwo"
+      },
+      "drv": {
+        "verdict": {
+          "green": "Niskie ryzyko",
+          "amber": "Umiarkowane ryzyko",
+          "red": "Wysokie ryzyko"
+        },
+        "totalScore": "Całkowity wynik {score} z {max}",
+        "categoryScore": "{weighted} z {max}",
+        "categoryAriaLabel": "{category}: {weighted} z {max}. Poziom ryzyka {level}.",
+        "thresholds": "Progi",
+        "criterionBreakdown": "Szczegóły kryteriów",
+        "criterion": "Kryterium",
+        "answer": "Odpowiedź",
+        "score": "Punkty",
+        "answerNotApplicable": "Nie dotyczy",
+        "answerMissing": "Brak odpowiedzi"
+      },
+      "criteriaCaption": "Szczegółowe odpowiedzi dla {category}"
+    },
+    "tile": {
+      "heading": "Klasyfikacja",
+      "loading": "Ładowanie klasyfikacji…",
+      "viewDetails": "Zobacz szczegóły",
+      "rerun": "Uruchom ocenę ponownie",
+      "ruleSetVersion": "Zestaw reguł {version}",
+      "completedLabel": "Ukończono"
+    },
+    "list": {
+      "heading": "Historia klasyfikacji",
+      "subtitle": "Wszystkie oceny dla tego wykonawcy, wersja robocza na początku.",
+      "empty": "Nie zarejestrowano jeszcze żadnych ocen klasyfikacji.",
+      "caption": "Oceny klasyfikacji — wersja robocza jako pierwsza, następnie ukończone malejąco.",
+      "column": {
+        "engagement": "Zlecenie",
+        "country": "Kraj",
+        "ruleSet": "Zestaw reguł",
+        "verdict": "Werdykt",
+        "completedAt": "Ukończono",
+        "actions": "Akcje"
+      },
+      "draftBadge": "Wersja robocza",
+      "open": "Otwórz",
+      "resume": "Wznów",
+      "notCompleted": "—"
     }
   }
 }

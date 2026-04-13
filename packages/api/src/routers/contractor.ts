@@ -1090,6 +1090,39 @@ export const contractorRouter = router({
     }),
 
   // ---------------------------------------------------------------------------
+  // Engagements (Phase 58 Plan 05 — classification tile dispatch)
+  // ---------------------------------------------------------------------------
+
+  /**
+   * List ContractorAssignments (engagements) for a given contractor. Used by
+   * the CountryComplianceSection to render one ClassificationTile per
+   * engagement whose contractor.countryCode is in ['GB', 'DE'].
+   * Tenant-scoped (Prisma extension) — cross-tenant lookups return empty.
+   */
+  listEngagements: tenantProcedure
+    .use(requirePermission({ contractor: ['read'] }))
+    .input(z.object({ contractorId: z.string().min(1) }))
+    .query(async ({ ctx, input }) => {
+      const rows = await ctx.db.contractorAssignment.findMany({
+        where: {
+          contractorId: input.contractorId,
+          organizationId: ctx.organizationId,
+        },
+        orderBy: [{ activeTo: 'asc' }, { activeFrom: 'desc' }],
+        select: {
+          id: true,
+          contractorId: true,
+          activeFrom: true,
+          activeTo: true,
+          status: true,
+          contractor: { select: { id: true, displayName: true, countryCode: true } },
+          project: { select: { id: true, name: true } },
+        },
+      });
+      return rows;
+    }),
+
+  // ---------------------------------------------------------------------------
   // Country-specific compliance fields (Phase 47)
   // ---------------------------------------------------------------------------
 

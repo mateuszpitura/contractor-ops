@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { trpc } from '@/trpc/init';
 
+import { ClassificationTile } from './classification/classification-tile';
 import { DeComplianceFields } from './compliance/de-compliance-fields';
 import { UkComplianceFields } from './compliance/uk-compliance-fields';
 import { RevalidateVatButton } from './revalidate-vat-button';
@@ -150,8 +151,68 @@ export function CountryComplianceSection({ contractorId }: CountryComplianceSect
           )}
           Save Compliance Fields
         </Button>
+
+        {/* Phase 58 addition — per-engagement classification per CLASS-11. */}
+        <ClassificationEngagementsBlock contractorId={contractorId} />
       </CardContent>
     </Card>
+  );
+}
+
+/**
+ * Dispatch one ClassificationTile per engagement whose contractor.countryCode
+ * is GB or DE. Non-GB/DE engagements render nothing; contractors with zero
+ * GB/DE engagements render nothing (no dead section). Keeps the Phase 56
+ * CountryComplianceSection shape untouched — this is an appended block.
+ */
+function ClassificationEngagementsBlock({ contractorId }: { contractorId: string }) {
+  const engagementsQuery = trpc.contractor.listEngagements.useQuery({ contractorId });
+
+  if (engagementsQuery.isLoading) {
+    return (
+      <div
+        data-testid="classification-engagements-loading"
+        className="mt-6 flex items-center gap-2 text-xs text-muted-foreground">
+        <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" />
+        <span>Loading engagements…</span>
+      </div>
+    );
+  }
+
+  const engagements = engagementsQuery.data ?? [];
+  const eligible = engagements.filter(e => {
+    const cc = e.contractor?.countryCode?.toUpperCase();
+    return cc === 'GB' || cc === 'DE';
+  });
+
+  if (eligible.length === 0) return null;
+
+  return (
+    <section
+      data-testid="classification-section"
+      aria-label="Classification"
+      className="mt-6 space-y-3 border-t pt-4">
+      <h3 className="text-sm font-semibold">Classification</h3>
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+        {eligible.map(engagement => {
+          const cc = engagement.contractor?.countryCode?.toUpperCase();
+          const countryCode = cc === 'GB' ? 'GB' : 'DE';
+          const projectName = engagement.project?.name ?? 'Engagement';
+          const contractorDisplay = engagement.contractor?.displayName ?? projectName;
+          return (
+            <ClassificationTile
+              key={engagement.id}
+              engagement={{
+                id: engagement.id,
+                name: `${contractorDisplay} — ${projectName}`,
+                contractorId,
+                countryCode,
+              }}
+            />
+          );
+        })}
+      </div>
+    </section>
   );
 }
 

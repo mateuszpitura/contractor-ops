@@ -4840,6 +4840,87 @@
       "errorGenericTitle": "Could not generate document",
       "kindSds": "Status Determination Statement",
       "kindDrvDefenseBundle": "DRV audit defence bundle"
+    },
+    "disclaimer": {
+      "title": "Before you view the outcome",
+      "confirm": "I understand — view outcome",
+      "defer": "Return to engagement",
+      "acknowledging": "Saving…",
+      "ackFailed": "Could not record your acknowledgement"
+    },
+    "outcome": {
+      "loading": "Loading outcome…",
+      "notFound": "Assessment not found",
+      "notFoundBody": "This assessment is not available or you don't have permission to view it.",
+      "backToList": "Back to assessments",
+      "ruleSetVersion": "Rule set {version}",
+      "completedAt": "Completed {date}",
+      "printTitle": "Classification outcome",
+      "printSubtitle": "Unofficial preview — not a legal determination",
+      "print": "Print / Save as PDF",
+      "rerun": "Re-run assessment",
+      "printedOn": "Printed {date}",
+      "ir35": {
+        "verdict": {
+          "outside": "Outside IR35",
+          "inside": "Inside IR35",
+          "indeterminate": "Indeterminate"
+        },
+        "areaVerdict": {
+          "strong-outside": "Strong indicator: outside IR35",
+          "leaning-outside": "Leaning outside IR35",
+          "neutral": "Neutral",
+          "leaning-inside": "Leaning inside IR35",
+          "strong-inside": "Strong indicator: inside IR35"
+        },
+        "drivingQuestions": "Top driving questions",
+        "allQuestions": "All questions in this area",
+        "caseLawCitations": "Case-law citations"
+      },
+      "drv": {
+        "verdict": {
+          "green": "Low risk",
+          "amber": "Moderate risk",
+          "red": "High risk"
+        },
+        "totalScore": "Total score {score} of {max}",
+        "categoryScore": "{weighted} of {max}",
+        "categoryAriaLabel": "{category}: {weighted} of {max}. Risk level {level}.",
+        "thresholds": "Thresholds",
+        "criterionBreakdown": "Criterion breakdown",
+        "criterion": "Criterion",
+        "answer": "Answer",
+        "score": "Score",
+        "answerNotApplicable": "Not applicable",
+        "answerMissing": "Not answered"
+      },
+      "criteriaCaption": "Detailed answers for {category}"
+    },
+    "tile": {
+      "heading": "Classification",
+      "loading": "Loading classification…",
+      "viewDetails": "View details",
+      "rerun": "Re-run assessment",
+      "ruleSetVersion": "Rule set {version}",
+      "completedLabel": "Completed"
+    },
+    "list": {
+      "heading": "Classification history",
+      "subtitle": "All assessments for this contractor, draft first.",
+      "empty": "No classification assessments recorded yet.",
+      "caption": "Classification assessments — draft first, then completed descending.",
+      "column": {
+        "engagement": "Engagement",
+        "country": "Country",
+        "ruleSet": "Rule set",
+        "verdict": "Verdict",
+        "completedAt": "Completed",
+        "actions": "Actions"
+      },
+      "draftBadge": "Draft",
+      "open": "Open",
+      "resume": "Resume",
+      "notCompleted": "—"
     }
   }
 }

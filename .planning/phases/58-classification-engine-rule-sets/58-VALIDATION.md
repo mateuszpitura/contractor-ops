@@ -1,9 +1,10 @@
 ---
 phase: 58
 slug: classification-engine-rule-sets
-status: draft
+status: shipped-pending-legal-review
 nyquist_compliant: false
-wave_0_complete: false
+nyquist_compliant_reason: "Automated gates pass (locked-phrases guard + classification + validators + API suites green; web classification + country-compliance suites green). Remaining gate is external Steuerberater + UK tax-adviser sign-off — deferred post-deploy per .planning/STATE.md §Standing Project Constraints (local-only app)."
+wave_0_complete: true
 created: 2026-04-12
 ---
 

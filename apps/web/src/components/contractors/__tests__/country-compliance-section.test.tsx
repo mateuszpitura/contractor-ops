@@ -15,8 +15,24 @@ const mockConfigData: {
   value: { hasCountryFields: boolean; countryCode?: string; fields?: string[] };
 } = { value: { hasCountryFields: true, countryCode: 'GB', fields: [] } };
 
+type EngagementRow = {
+  id: string;
+  contractorId: string;
+  activeFrom: Date | null;
+  activeTo: Date | null;
+  status: string;
+  contractor: { id: string; displayName: string; countryCode: string };
+  project: { id: string; name: string };
+};
+const mockEngagements: { value: EngagementRow[] } = { value: [] };
+
 vi.mock('@/trpc/init', () => ({
   trpc: {
+    useUtils: () => ({
+      contractor: {
+        getById: { invalidate: vi.fn() },
+      },
+    }),
     contractor: {
       getCountryFieldsConfig: {
         useQuery: () => ({ isLoading: false, data: mockConfigData.value }),
@@ -28,11 +44,45 @@ vi.mock('@/trpc/init', () => ({
           refetch: vi.fn(),
         }),
       },
+      getById: {
+        useQuery: () => ({ isLoading: false, data: null }),
+      },
+      listEngagements: {
+        useQuery: () => ({ isLoading: false, data: mockEngagements.value }),
+      },
       updateCountryFields: {
         useMutation: () => ({ mutate: vi.fn(), isPending: false }),
       },
+      revalidateVat: {
+        useMutation: () => ({ mutate: vi.fn(), isPending: false }),
+      },
+    },
+    classification: {
+      getLatest: {
+        useQuery: () => ({ isPending: false, data: null }),
+        queryOptions: (input: { contractorAssignmentId: string }) => ({
+          queryKey: [['classification', 'getLatest'], input],
+          queryFn: async () => null,
+        }),
+      },
     },
   },
+}));
+
+vi.mock('@/i18n/navigation', () => ({
+  useRouter: () => ({ push: vi.fn() }),
+  Link: ({
+    href,
+    children,
+    ...rest
+  }: {
+    href: string;
+    children: React.ReactNode;
+  }) => (
+    <a href={href} {...rest}>
+      {children}
+    </a>
+  ),
 }));
 
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
@@ -74,5 +124,104 @@ describe('CountryComplianceSection — GB/DE dispatch (Plan 06)', () => {
     mockConfigData.value = { hasCountryFields: false };
     const { container } = render(<CountryComplianceSection contractorId="contractor-1" />);
     expect(container.textContent).toBe('');
+  });
+});
+
+describe('CountryComplianceSection — Phase 58 classification extension (CCS-1..4)', () => {
+  it('CCS-1 GB dispatch: renders 2 ClassificationTile for 2 GB engagements', () => {
+    mockConfigData.value = { hasCountryFields: true, countryCode: 'GB' };
+    mockEngagements.value = [
+      {
+        id: 'e1',
+        contractorId: 'contractor-1',
+        activeFrom: new Date(),
+        activeTo: null,
+        status: 'active',
+        contractor: { id: 'contractor-1', displayName: 'Alice', countryCode: 'GB' },
+        project: { id: 'p1', name: 'Widgets' },
+      },
+      {
+        id: 'e2',
+        contractorId: 'contractor-1',
+        activeFrom: new Date(),
+        activeTo: null,
+        status: 'active',
+        contractor: { id: 'contractor-1', displayName: 'Alice', countryCode: 'GB' },
+        project: { id: 'p2', name: 'Gadgets' },
+      },
+    ];
+    render(<CountryComplianceSection contractorId="contractor-1" />);
+    expect(screen.getAllByTestId('classification-tile')).toHaveLength(2);
+  });
+
+  it('CCS-2 DE dispatch: renders 2 ClassificationTile for 2 DE engagements', () => {
+    mockConfigData.value = { hasCountryFields: true, countryCode: 'DE' };
+    mockEngagements.value = [
+      {
+        id: 'e1',
+        contractorId: 'contractor-1',
+        activeFrom: new Date(),
+        activeTo: null,
+        status: 'active',
+        contractor: { id: 'contractor-1', displayName: 'Bob', countryCode: 'DE' },
+        project: { id: 'p1', name: 'Lager' },
+      },
+      {
+        id: 'e2',
+        contractorId: 'contractor-1',
+        activeFrom: new Date(),
+        activeTo: null,
+        status: 'active',
+        contractor: { id: 'contractor-1', displayName: 'Bob', countryCode: 'DE' },
+        project: { id: 'p2', name: 'Werkstatt' },
+      },
+    ];
+    render(<CountryComplianceSection contractorId="contractor-1" />);
+    expect(screen.getAllByTestId('classification-tile')).toHaveLength(2);
+  });
+
+  it('CCS-3 non-GB/DE: engagements with FR countryCode render no ClassificationTile', () => {
+    mockConfigData.value = { hasCountryFields: true, countryCode: 'GB' };
+    mockEngagements.value = [
+      {
+        id: 'e1',
+        contractorId: 'contractor-1',
+        activeFrom: new Date(),
+        activeTo: null,
+        status: 'active',
+        contractor: { id: 'contractor-1', displayName: 'Carol', countryCode: 'FR' },
+        project: { id: 'p1', name: 'Something' },
+      },
+    ];
+    render(<CountryComplianceSection contractorId="contractor-1" />);
+    expect(screen.queryByTestId('classification-tile')).toBeNull();
+    // Regression guard — existing Phase 56 UK input still renders.
+    expect(screen.getByLabelText(/UTR/i)).toBeInTheDocument();
+  });
+
+  it('CCS-4 mixed: one GB + one FR engagement → exactly 1 ClassificationTile', () => {
+    mockConfigData.value = { hasCountryFields: true, countryCode: 'GB' };
+    mockEngagements.value = [
+      {
+        id: 'e1',
+        contractorId: 'contractor-1',
+        activeFrom: new Date(),
+        activeTo: null,
+        status: 'active',
+        contractor: { id: 'contractor-1', displayName: 'Dana', countryCode: 'GB' },
+        project: { id: 'p1', name: 'One' },
+      },
+      {
+        id: 'e2',
+        contractorId: 'contractor-1',
+        activeFrom: new Date(),
+        activeTo: null,
+        status: 'active',
+        contractor: { id: 'contractor-1', displayName: 'Dana', countryCode: 'FR' },
+        project: { id: 'p2', name: 'Two' },
+      },
+    ];
+    render(<CountryComplianceSection contractorId="contractor-1" />);
+    expect(screen.getAllByTestId('classification-tile')).toHaveLength(1);
   });
 });

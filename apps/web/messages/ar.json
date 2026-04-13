@@ -4777,6 +4777,87 @@
         "personalDep": "التبعية الشخصية",
         "economicDep": "التبعية الاقتصادية"
       }
+    },
+    "disclaimer": {
+      "title": "قبل عرض النتيجة",
+      "confirm": "فهمت — عرض النتيجة",
+      "defer": "العودة إلى التعاقد",
+      "acknowledging": "جارٍ الحفظ…",
+      "ackFailed": "تعذر تسجيل تأكيدك"
+    },
+    "outcome": {
+      "loading": "جارٍ تحميل النتيجة…",
+      "notFound": "التقييم غير موجود",
+      "notFoundBody": "هذا التقييم غير متاح أو ليس لديك صلاحية عرضه.",
+      "backToList": "العودة إلى التقييمات",
+      "ruleSetVersion": "مجموعة القواعد {version}",
+      "completedAt": "اكتمل في {date}",
+      "printTitle": "نتيجة التصنيف",
+      "printSubtitle": "معاينة غير رسمية — ليست قراراً قانونياً",
+      "print": "طباعة / حفظ كـ PDF",
+      "rerun": "إعادة تشغيل التقييم",
+      "printedOn": "طُبع في {date}",
+      "ir35": {
+        "verdict": {
+          "outside": "خارج IR35",
+          "inside": "ضمن IR35",
+          "indeterminate": "غير محدد"
+        },
+        "areaVerdict": {
+          "strong-outside": "مؤشر قوي: خارج IR35",
+          "leaning-outside": "يميل إلى خارج IR35",
+          "neutral": "محايد",
+          "leaning-inside": "يميل إلى ضمن IR35",
+          "strong-inside": "مؤشر قوي: ضمن IR35"
+        },
+        "drivingQuestions": "الأسئلة الحاسمة",
+        "allQuestions": "جميع الأسئلة في هذا المجال",
+        "caseLawCitations": "المراجع القضائية"
+      },
+      "drv": {
+        "verdict": {
+          "green": "مخاطر منخفضة",
+          "amber": "مخاطر متوسطة",
+          "red": "مخاطر عالية"
+        },
+        "totalScore": "النتيجة الإجمالية {score} من {max}",
+        "categoryScore": "{weighted} من {max}",
+        "categoryAriaLabel": "{category}: {weighted} من {max}. مستوى المخاطر {level}.",
+        "thresholds": "العتبات",
+        "criterionBreakdown": "تفصيل المعايير",
+        "criterion": "المعيار",
+        "answer": "الإجابة",
+        "score": "النقاط",
+        "answerNotApplicable": "غير منطبق",
+        "answerMissing": "لم تتم الإجابة"
+      },
+      "criteriaCaption": "الإجابات التفصيلية لفئة {category}"
+    },
+    "tile": {
+      "heading": "التصنيف",
+      "loading": "جارٍ تحميل التصنيف…",
+      "viewDetails": "عرض التفاصيل",
+      "rerun": "إعادة تشغيل التقييم",
+      "ruleSetVersion": "مجموعة القواعد {version}",
+      "completedLabel": "مكتمل"
+    },
+    "list": {
+      "heading": "سجل التصنيف",
+      "subtitle": "جميع التقييمات لهذا المقاول، المسودات أولاً.",
+      "empty": "لم يتم تسجيل تقييمات تصنيف بعد.",
+      "caption": "تقييمات التصنيف — المسودات أولاً ثم المكتملة تنازلياً.",
+      "column": {
+        "engagement": "التعاقد",
+        "country": "الدولة",
+        "ruleSet": "مجموعة القواعد",
+        "verdict": "النتيجة",
+        "completedAt": "اكتمل",
+        "actions": "الإجراءات"
+      },
+      "draftBadge": "مسودة",
+      "open": "فتح",
+      "resume": "استئناف",
+      "notCompleted": "—"
     }
   }
 }

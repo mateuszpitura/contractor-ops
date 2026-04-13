@@ -4982,6 +4982,87 @@
       "errorGenericTitle": "Dokument konnte nicht erstellt werden",
       "kindSds": "Status Determination Statement",
       "kindDrvDefenseBundle": "DRV-Defensivdokumentation"
+    },
+    "disclaimer": {
+      "title": "Bevor Sie das Ergebnis ansehen",
+      "confirm": "Ich habe verstanden — Ergebnis anzeigen",
+      "defer": "Zurück zum Auftrag",
+      "acknowledging": "Speichern…",
+      "ackFailed": "Bestätigung konnte nicht gespeichert werden"
+    },
+    "outcome": {
+      "loading": "Ergebnis wird geladen…",
+      "notFound": "Bewertung nicht gefunden",
+      "notFoundBody": "Diese Bewertung ist nicht verfügbar oder Sie sind nicht berechtigt, sie anzusehen.",
+      "backToList": "Zurück zu den Bewertungen",
+      "ruleSetVersion": "Regelwerk {version}",
+      "completedAt": "Abgeschlossen {date}",
+      "printTitle": "Klassifizierungsergebnis",
+      "printSubtitle": "Inoffizielle Vorschau — keine rechtliche Statusfeststellung",
+      "print": "Drucken / als PDF speichern",
+      "rerun": "Bewertung erneut durchführen",
+      "printedOn": "Gedruckt am {date}",
+      "ir35": {
+        "verdict": {
+          "outside": "Außerhalb IR35",
+          "inside": "Innerhalb IR35",
+          "indeterminate": "Unentschieden"
+        },
+        "areaVerdict": {
+          "strong-outside": "Starker Indikator: außerhalb IR35",
+          "leaning-outside": "Tendiert außerhalb IR35",
+          "neutral": "Neutral",
+          "leaning-inside": "Tendiert innerhalb IR35",
+          "strong-inside": "Starker Indikator: innerhalb IR35"
+        },
+        "drivingQuestions": "Entscheidende Fragen",
+        "allQuestions": "Alle Fragen in diesem Bereich",
+        "caseLawCitations": "Rechtsprechung"
+      },
+      "drv": {
+        "verdict": {
+          "green": "Niedriges Risiko",
+          "amber": "Mittleres Risiko",
+          "red": "Hohes Risiko"
+        },
+        "totalScore": "Gesamtpunktzahl {score} von {max}",
+        "categoryScore": "{weighted} von {max}",
+        "categoryAriaLabel": "{category}: {weighted} von {max}. Risikostufe {level}.",
+        "thresholds": "Schwellenwerte",
+        "criterionBreakdown": "Detaillierte Kriterien",
+        "criterion": "Kriterium",
+        "answer": "Antwort",
+        "score": "Punkte",
+        "answerNotApplicable": "Kriterium nicht zutreffend",
+        "answerMissing": "Nicht beantwortet"
+      },
+      "criteriaCaption": "Detaillierte Antworten für {category}"
+    },
+    "tile": {
+      "heading": "Klassifizierung",
+      "loading": "Klassifizierung wird geladen…",
+      "viewDetails": "Details anzeigen",
+      "rerun": "Bewertung erneut durchführen",
+      "ruleSetVersion": "Regelwerk {version}",
+      "completedLabel": "Abgeschlossen"
+    },
+    "list": {
+      "heading": "Klassifizierungshistorie",
+      "subtitle": "Alle Bewertungen für diese Arbeitskraft, Entwürfe zuerst.",
+      "empty": "Noch keine Klassifizierungsbewertungen erfasst.",
+      "caption": "Klassifizierungsbewertungen — Entwürfe zuerst, anschließend abgeschlossen absteigend.",
+      "column": {
+        "engagement": "Auftrag",
+        "country": "Land",
+        "ruleSet": "Regelwerk",
+        "verdict": "Ergebnis",
+        "completedAt": "Abgeschlossen",
+        "actions": "Aktionen"
+      },
+      "draftBadge": "Entwurf",
+      "open": "Öffnen",
+      "resume": "Fortsetzen",
+      "notCompleted": "—"
     }
   }
 }

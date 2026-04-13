@@ -79,6 +79,10 @@ const getLatestInput = z.object({
   contractorAssignmentId: cuid,
 });
 
+const getByIdInput = z.object({
+  assessmentId: cuid,
+});
+
 const listByContractorInput = z.object({
   contractorId: cuid,
 });
@@ -464,6 +468,30 @@ export const classificationRouter = router({
 
     // Defence-in-depth: re-parse outcome on read so a malformed/forged JSON
     // never reaches the client (Pitfall 12).
+    if (row.outcome !== null && row.outcome !== undefined) {
+      outcomeSchema.parse(row.outcome);
+    }
+    return row;
+  }),
+
+  // -------------------------------------------------------------------------
+  // getById — fetch a specific assessment by id (tenant-scoped).
+  //
+  // Plan 05 outcome route uses this to render the exact assessment the user
+  // was redirected to after submit. Returns null (not NOT_FOUND) when the
+  // assessment is not visible to the caller's org — mirrors getLatest so the
+  // outcome page can surface the same "not found" UX without leaking
+  // cross-tenant existence (V7).
+  // -------------------------------------------------------------------------
+  getById: tenantProcedure.input(getByIdInput).query(async ({ ctx, input }) => {
+    const row = await ctx.db.classificationAssessment.findFirst({
+      where: { id: input.assessmentId },
+    });
+
+    if (!row) return null;
+
+    // Defence-in-depth: re-parse outcome on read so a malformed/forged JSON
+    // never reaches the client (Pitfall 12). Drafts have null outcome — skip.
     if (row.outcome !== null && row.outcome !== undefined) {
       outcomeSchema.parse(row.outcome);
     }
