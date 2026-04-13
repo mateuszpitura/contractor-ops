@@ -224,3 +224,31 @@ export async function deleteObject(key: string) {
   });
   return client.send(command);
 }
+
+/**
+ * Sign a GET URL for an existing R2 object WITHOUT uploading anything.
+ * Used by Phase 59 `classificationDocument.getDownloadUrl` query — the PDF bytes
+ * were persisted by an earlier `generateSds` / `generateDrvDefenseBundle` mutation,
+ * and subsequent downloads re-sign the same object so bytes never change (D-05).
+ *
+ * `key` is trusted — callers MUST scope by organizationId + verify the caller
+ * owns the ClassificationDocument row before invoking this helper
+ * (Phase 59 D-06 + ASVS V4).
+ */
+export async function signExistingDownload(
+  key: string,
+  ttlSeconds: number = 300,
+  downloadFilename?: string,
+): Promise<{ signedUrl: string; expiresInSeconds: number }> {
+  const client = createR2Client();
+  const disposition = downloadFilename
+    ? `attachment; filename="${downloadFilename.replace(/"/g, '')}"`
+    : 'attachment';
+  const downloadCommand = new GetObjectCommand({
+    Bucket: getDefaultBucket(),
+    Key: key,
+    ResponseContentDisposition: disposition,
+  });
+  const signedUrl = await getSignedUrl(client, downloadCommand, { expiresIn: ttlSeconds });
+  return { signedUrl, expiresInSeconds: ttlSeconds };
+}
