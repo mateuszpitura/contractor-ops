@@ -4,14 +4,14 @@ milestone: v5.0
 milestone_name: UK & Germany Expansion
 status: executing
 stopped_at: Phase 59 context gathered
-last_updated: "2026-04-13T17:23:25.348Z"
-last_activity: 2026-04-13 -- Phase 59 planning complete
+last_updated: "2026-04-13T21:33:29.368Z"
+last_activity: 2026-04-13 -- Phase 58 execution started
 progress:
   total_phases: 8
   completed_phases: 2
   total_plans: 21
-  completed_plans: 14
-  percent: 67
+  completed_plans: 15
+  percent: 71
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-12)
 
 **Core value:** The invoice-to-payment flow must work end-to-end: invoice arrives, gets matched to contract, routed through approval, and batched for payment — with full audit trail.
-**Current focus:** Phase 57 — Government API Clients
+**Current focus:** Phase 58 — classification-engine-rule-sets
 
 ## Current Position
 
-Phase: 57 (Government API Clients) — ALL PLANS COMPLETE (ready for /gsd:verify-work)
-Plan: 4 of 4 (Plan 04 shipped; Task 3 human-verify checkpoint deferred to manual sign-off)
-Status: Ready to execute
-Last activity: 2026-04-13 -- Phase 59 planning complete
+Phase: 58 (classification-engine-rule-sets) — EXECUTING
+Plan: 1 of 5
+Status: Executing Phase 58
+Last activity: 2026-04-13 -- Phase 58 execution started
 
 Progress: [███████░░░] 71% (v5.0) — 12 / 17 plans shipped
 
@@ -65,7 +65,9 @@ None yet.
 
 ### Blockers/Concerns
 
-- **[BLOCKER — 2026-04-13] Phase 58 Plan 58-04 (wizard UI + i18n) cannot proceed — file-level dependencies on Plans 58-02 and 58-03 not yet committed.** Agent invoked for Plan 58-04 per orchestrator instructions that Plans 58-02 and 58-03 were running as parallel agents. On inspection at start of this session (branch `v2`, HEAD `fb95eb3e`): (1) `packages/classification/src/profiles/ir35/` and `packages/classification/src/profiles/scheinselbstandigkeit/` still contain ONLY `__tests__/` subdirectories — no `rule-set.ts`, no `scoring.ts`, no registered profiles; (2) `packages/api/src/routers/classification.ts` does NOT exist — there is no `classification` router in `packages/api/src/routers/` at all; (3) `58-02-SUMMARY.md` and `58-03-SUMMARY.md` are both absent from `.planning/phases/58-classification-engine-rule-sets/`; (4) `git log --oneline -30` contains zero commits referencing `[58-02]` or `[58-03]` — newest classification-related commit remains `55ce4204` (Plan 58-01 Task 3). Plan 58-04's wizard shell (`apps/web/src/components/contractors/classification/wizard/classification-wizard-shell.tsx`) explicitly imports `IR35_QUESTIONS`, `RULE_SET_VERSION` from `@contractor-ops/classification/profiles/ir35/rule-set`, `SCHEIN_QUESTIONS`, `CATEGORY_WEIGHTS`, `CATEGORY_TITLES` from `@contractor-ops/classification/profiles/scheinselbstandigkeit/rule-set`, and calls `trpc.classification.createDraft`, `.getDraft`, `.saveAnswer`, `.submit`, `.acknowledgeDisclaimer` — every one of those exports depends on Plan 58-02's rule-set constants landing AND Plan 58-03's tRPC router landing. Plan 58-04's `<context>` block even directly `@`-references `58-03-SUMMARY.md` as a read-first input. Note that Plan 58-03's own agent has just recorded its own blocker above — 58-03 is gated on 58-02, and 58-04 is gated on both, so the dependency chain is: 58-02 must land → 58-03 can run → 58-04 can run. Executing 58-04 now would (a) produce TypeScript errors against missing exports, (b) require speculative mocking of both upstream APIs that would need rewriting once real code exists, (c) violate the plan's `depends_on: [58-01, 58-02, 58-03]` declaration, and (d) risk making import paths drift from what 58-02/58-03 will actually export. Per dispatch instructions ("If Plan 58-04 has a file-level dependency on 58-02 or 58-03 output, check whether those commits have landed before proceeding; if not, write a blocker stating the dependency and stop"), STOPPING without making any code changes. No files were modified and no commits were created by this aborted 58-04 run. Resolution: wait for Plan 58-02 parallel agent to land IR35 + DRV rule-sets + scoring + profile registration on `v2`, then for Plan 58-03 parallel agent to land the classification tRPC router on `v2`, then re-dispatch `/gsd:execute-plan 58-04` as a fresh top-level agent. Re-run checks: (a) `ls packages/classification/src/profiles/ir35/ packages/classification/src/profiles/scheinselbstandigkeit/` must show more than `__tests__/`, (b) `ls packages/api/src/routers/classification.ts` must succeed, (c) `ls .planning/phases/58-classification-engine-rule-sets/58-02-SUMMARY.md .planning/phases/58-classification-engine-rule-sets/58-03-SUMMARY.md` must succeed, (d) `git log --oneline --all | grep -E "\[58-0[23]\]"` must return commits.
+- **[RESOLVED — 2026-04-13] Phase 58 Plan 58-04 COMPLETE.** Wizard UI + i18n shipped in commits `3fed4277` (i18n Classification namespace across en/pl/de/ar + Pitfall-9 _NOTE) and `13310313` (13 wizard component files + RSC page entry + 16/16 RTL + a11y tests + new `recreateDraftAfterDrift` tRPC mutation for the rule-set drift escape hatch). All plan grep assertions green (scoring-free client bundle, aria-current / aria-valuenow / aria-live / inputMode="numeric" / CLASSIFICATION_SCHEIN_NOT_APPLICABLE / isNotApplicable / Classification namespace / _NOTE all present). Locked-phrases guard 32/32 green. See `.planning/phases/58-classification-engine-rule-sets/58-04-SUMMARY.md`. Plan 58-05 remains (outcome page + disclaimer modal + classification tile + 2 human-verify checkpoints — `autonomous: false`).
+
+- **[HISTORICAL — 2026-04-13] Plan 58-04 prior race-condition blocker (now obsolete).** Agent invoked for Plan 58-04 per orchestrator instructions that Plans 58-02 and 58-03 were running as parallel agents. On inspection at start of this session (branch `v2`, HEAD `fb95eb3e`): (1) `packages/classification/src/profiles/ir35/` and `packages/classification/src/profiles/scheinselbstandigkeit/` still contain ONLY `__tests__/` subdirectories — no `rule-set.ts`, no `scoring.ts`, no registered profiles; (2) `packages/api/src/routers/classification.ts` does NOT exist — there is no `classification` router in `packages/api/src/routers/` at all; (3) `58-02-SUMMARY.md` and `58-03-SUMMARY.md` are both absent from `.planning/phases/58-classification-engine-rule-sets/`; (4) `git log --oneline -30` contains zero commits referencing `[58-02]` or `[58-03]` — newest classification-related commit remains `55ce4204` (Plan 58-01 Task 3). Plan 58-04's wizard shell (`apps/web/src/components/contractors/classification/wizard/classification-wizard-shell.tsx`) explicitly imports `IR35_QUESTIONS`, `RULE_SET_VERSION` from `@contractor-ops/classification/profiles/ir35/rule-set`, `SCHEIN_QUESTIONS`, `CATEGORY_WEIGHTS`, `CATEGORY_TITLES` from `@contractor-ops/classification/profiles/scheinselbstandigkeit/rule-set`, and calls `trpc.classification.createDraft`, `.getDraft`, `.saveAnswer`, `.submit`, `.acknowledgeDisclaimer` — every one of those exports depends on Plan 58-02's rule-set constants landing AND Plan 58-03's tRPC router landing. Plan 58-04's `<context>` block even directly `@`-references `58-03-SUMMARY.md` as a read-first input. Note that Plan 58-03's own agent has just recorded its own blocker above — 58-03 is gated on 58-02, and 58-04 is gated on both, so the dependency chain is: 58-02 must land → 58-03 can run → 58-04 can run. Executing 58-04 now would (a) produce TypeScript errors against missing exports, (b) require speculative mocking of both upstream APIs that would need rewriting once real code exists, (c) violate the plan's `depends_on: [58-01, 58-02, 58-03]` declaration, and (d) risk making import paths drift from what 58-02/58-03 will actually export. Per dispatch instructions ("If Plan 58-04 has a file-level dependency on 58-02 or 58-03 output, check whether those commits have landed before proceeding; if not, write a blocker stating the dependency and stop"), STOPPING without making any code changes. No files were modified and no commits were created by this aborted 58-04 run. Resolution: wait for Plan 58-02 parallel agent to land IR35 + DRV rule-sets + scoring + profile registration on `v2`, then for Plan 58-03 parallel agent to land the classification tRPC router on `v2`, then re-dispatch `/gsd:execute-plan 58-04` as a fresh top-level agent. Re-run checks: (a) `ls packages/classification/src/profiles/ir35/ packages/classification/src/profiles/scheinselbstandigkeit/` must show more than `__tests__/`, (b) `ls packages/api/src/routers/classification.ts` must succeed, (c) `ls .planning/phases/58-classification-engine-rule-sets/58-02-SUMMARY.md .planning/phases/58-classification-engine-rule-sets/58-03-SUMMARY.md` must succeed, (d) `git log --oneline --all | grep -E "\[58-0[23]\]"` must return commits.
 
 - **[RESOLVED — 2026-04-13] Phase 58 Plan 58-03 COMPLETE.** Classification tRPC router landed in commit `4ad362f9` on `v2`. Seven procedures (createDraft / getDraft / saveAnswer / submit / acknowledgeDisclaimer / getLatest / listByContractor) wired into appRouter; `classificationSaveAnswerRateLimit` middleware (Upstash + in-memory fallback, 120/min/assessment); observability `LOG_BODY_EXCLUDE_PREFIXES` sentinel covers `classification.*`. 36 green tests (30 router integration + 6 middleware unit), 0 new TS errors. See `.planning/phases/58-classification-engine-rule-sets/58-03-SUMMARY.md`. Plan 58-04 is now unblocked.
 
