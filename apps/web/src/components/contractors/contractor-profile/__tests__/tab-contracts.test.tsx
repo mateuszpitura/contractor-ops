@@ -1,11 +1,7 @@
 import { render, screen } from '@/test/test-utils';
 import { TabContracts } from '../tab-contracts';
 
-const {
-  mockUseQuery,
-} = vi.hoisted(() => ({
-  mockUseQuery: vi.fn(() => ({,
-}));
+const mockUseQuery = vi.fn(() => ({
   data: null,
   isLoading: false,
   isFetching: false,
@@ -28,16 +24,8 @@ vi.mock('@/trpc/init', () => ({
 }));
 
 vi.mock('@/i18n/navigation', () => ({
-  Link: ({
-    children,
-    href,
-    ...props
-  }: {
-    children: React.ReactNode;
-    href: string;
-    [key: string]: unknown;
-  }) => (
-    <a href={href} {...(props as React.AnchorHTMLAttributes<HTMLAnchorElement>)}>
+  Link: ({ children, href, ...props }: { children: React.ReactNode; href: string; [key: string]: unknown }) => (
+    <a href={href} {...props}>
       {children}
     </a>
   ),
