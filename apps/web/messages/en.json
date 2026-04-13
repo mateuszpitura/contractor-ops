@@ -4684,5 +4684,99 @@
       "reasonPlaceholder": "e.g. Customer prefers standard rate per contract clause 4.2",
       "reasonRequiredError": "Please provide a business reason (minimum 5 characters)"
     }
+  },
+  "Classification": {
+    "_NOTE": "Legal-locked phrases live in packages/validators/src/legal/{de,disclaimers}.ts. Do NOT duplicate CLASSIFICATION_* or DISCLAIMER_* values here.",
+    "pageTitle": "Classification assessment",
+    "pageSubtitle": "Assess the employment status risk for this engagement.",
+    "start": "Run classification assessment",
+    "previous": "Previous",
+    "next": "Next",
+    "submitAssessment": "Submit assessment",
+    "cancelDraft": "Cancel draft",
+    "backToEngagement": "Back to engagement",
+    "stepCounter": "Step {current} of {total}",
+    "progress": {
+      "ariaLabel": "Assessment progress — step {current} of {total}",
+      "announce": "Step {current} of {total}: {label}"
+    },
+    "autosave": {
+      "notSavedYet": "Not saved yet",
+      "saving": "Saving…",
+      "saved": "Saved {relativeTime}",
+      "failed": "Save failed — retrying"
+    },
+    "stepNotApplicable": "Not applicable",
+    "score03": {
+      "weak": "Weak indicator",
+      "moderate": "Moderate indicator",
+      "strong": "Strong indicator"
+    },
+    "yesNo": {
+      "yes": "Yes",
+      "no": "No"
+    },
+    "likert": {
+      "stronglyDisagree": "Strongly disagree",
+      "disagree": "Disagree",
+      "neutral": "Neutral",
+      "agree": "Agree",
+      "stronglyAgree": "Strongly agree"
+    },
+    "rationale": {
+      "label": "Rationale (optional)",
+      "placeholder": "Briefly explain the evidence behind this answer.",
+      "counter": "{current} / {max}"
+    },
+    "billingRatio": {
+      "label": "Share of total billings from this engagement",
+      "suffix": "%",
+      "help": "Enter the percentage of the contractor's annual turnover that comes from your organisation."
+    },
+    "legalReference": {
+      "show": "Show legal reference",
+      "hide": "Hide legal reference",
+      "ariaLabel": "Legal reference"
+    },
+    "helpText": {
+      "show": "Show guidance",
+      "hide": "Hide guidance"
+    },
+    "error": {
+      "draftDrift": "Resume draft blocked — rule-set version mismatch",
+      "draftDriftBody": "This draft was started against an older rule set (v{oldVersion}). Start a new assessment to use the current rule set (v{newVersion}). Your draft answers are preserved in the history.",
+      "startNew": "Start a new assessment",
+      "ratioOutOfRange": "Billing ratio must be between 0 and 100. Enter the percentage of this contractor's total billings that come from your organization.",
+      "nonNumeric": "Enter a number between 0 and 100.",
+      "rationaleTooLong": "Rationale is limited to 1000 characters. Shorten your note to continue.",
+      "autosaveNetwork": "Couldn't save draft. Check your connection; we'll retry automatically.",
+      "submitFailed": "Submission failed. Please try again. If the problem persists, contact support."
+    },
+    "emptyState": {
+      "noAssessment": "No classification assessment yet",
+      "noAssessmentBody": "Run an IR35/Scheinselbständigkeit assessment for this engagement to capture risk status. You can save a draft and resume later.",
+      "notSupported": "Classification not available",
+      "notSupportedBody": "Classification rule sets are currently available for UK (IR35) and Germany (Scheinselbständigkeit) engagements. Your contractor's country ({countryCode}) is not yet supported."
+    },
+    "ir35": {
+      "title": "IR35 status assessment",
+      "step": {
+        "substitution": "Substitution",
+        "control": "Control",
+        "financialRisk": "Financial risk",
+        "partAndParcel": "Part-and-parcel",
+        "moo": "Mutuality of obligation"
+      }
+    },
+    "schein": {
+      "title": "Status assessment",
+      "weightLabel": "{weight}% weight",
+      "step": {
+        "integration": "Integration",
+        "entrepreneurial": "Entrepreneurial independence",
+        "personalDep": "Personal dependency",
+        "economicDep": "Economic dependency"
+      }
+    }
   }
 }

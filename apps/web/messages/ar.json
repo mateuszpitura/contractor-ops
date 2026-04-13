@@ -4684,5 +4684,99 @@
       "reasonPlaceholder": "مثال: يفضل العميل المعدل القياسي وفق البند 4.2 من العقد",
       "reasonRequiredError": "يرجى تقديم سبب تجاري (5 أحرف على الأقل)"
     }
+  },
+  "Classification": {
+    "_NOTE": "Legal-locked phrases live in packages/validators/src/legal/{de,disclaimers}.ts. Do NOT duplicate CLASSIFICATION_* or DISCLAIMER_* values here. Arabic is out of scope for Phase 58; strings carry REVIEW:AR tokens pending native review.",
+    "pageTitle": "تقييم التصنيف",
+    "pageSubtitle": "قيّم مخاطر حالة التوظيف لهذا التعاقد.",
+    "start": "بدء تقييم التصنيف",
+    "previous": "السابق",
+    "next": "التالي",
+    "submitAssessment": "إرسال التقييم",
+    "cancelDraft": "إلغاء المسودة",
+    "backToEngagement": "العودة إلى التعاقد",
+    "stepCounter": "الخطوة {current} من {total}",
+    "progress": {
+      "ariaLabel": "تقدم التقييم — الخطوة {current} من {total}",
+      "announce": "الخطوة {current} من {total}: {label}"
+    },
+    "autosave": {
+      "notSavedYet": "لم يُحفظ بعد",
+      "saving": "جاري الحفظ…",
+      "saved": "تم الحفظ {relativeTime}",
+      "failed": "فشل الحفظ — إعادة المحاولة"
+    },
+    "stepNotApplicable": "غير منطبق",
+    "score03": {
+      "weak": "إشارة ضعيفة",
+      "moderate": "إشارة متوسطة",
+      "strong": "إشارة قوية"
+    },
+    "yesNo": {
+      "yes": "نعم",
+      "no": "لا"
+    },
+    "likert": {
+      "stronglyDisagree": "أعارض بشدة",
+      "disagree": "أعارض",
+      "neutral": "محايد",
+      "agree": "أوافق",
+      "stronglyAgree": "أوافق بشدة"
+    },
+    "rationale": {
+      "label": "المبرر (اختياري)",
+      "placeholder": "اشرح باختصار الأدلة خلف هذه الإجابة.",
+      "counter": "{current} / {max}"
+    },
+    "billingRatio": {
+      "label": "حصة إجمالي الفواتير من هذا التعاقد",
+      "suffix": "%",
+      "help": "أدخل النسبة المئوية من إجمالي إيرادات المقاول السنوية القادمة من مؤسستك."
+    },
+    "legalReference": {
+      "show": "عرض المرجع القانوني",
+      "hide": "إخفاء المرجع القانوني",
+      "ariaLabel": "المرجع القانوني"
+    },
+    "helpText": {
+      "show": "عرض الإرشادات",
+      "hide": "إخفاء الإرشادات"
+    },
+    "error": {
+      "draftDrift": "تم حظر استئناف المسودة — عدم تطابق إصدار مجموعة القواعد",
+      "draftDriftBody": "بدأت هذه المسودة بإصدار أقدم من مجموعة القواعد (v{oldVersion}). ابدأ تقييماً جديداً لاستخدام مجموعة القواعد الحالية (v{newVersion}). تُحفظ إجاباتك في السجل.",
+      "startNew": "بدء تقييم جديد",
+      "ratioOutOfRange": "يجب أن تكون نسبة الفوترة بين 0 و 100. أدخل نسبة إجمالي فواتير المقاول الصادرة إلى مؤسستك.",
+      "nonNumeric": "أدخل رقماً بين 0 و 100.",
+      "rationaleTooLong": "المبرر محدود بـ 1000 حرف. قم بتقصير الملاحظة للمتابعة.",
+      "autosaveNetwork": "تعذر حفظ المسودة. تحقق من اتصالك؛ سنحاول تلقائياً.",
+      "submitFailed": "فشل الإرسال. يرجى المحاولة مرة أخرى. إذا استمرت المشكلة فاتصل بالدعم."
+    },
+    "emptyState": {
+      "noAssessment": "لا يوجد تقييم تصنيف بعد",
+      "noAssessmentBody": "قم بتشغيل تقييم IR35 أو تقييم الحالة الألماني لهذا التعاقد لالتقاط حالة المخاطر. يمكنك حفظ مسودة واستئنافها لاحقاً.",
+      "notSupported": "التصنيف غير متاح",
+      "notSupportedBody": "مجموعات قواعد التصنيف متاحة حالياً للتعاقدات في المملكة المتحدة (IR35) وألمانيا. بلد المقاول ({countryCode}) غير مدعوم بعد."
+    },
+    "ir35": {
+      "title": "تقييم حالة IR35",
+      "step": {
+        "substitution": "الاستبدال",
+        "control": "التحكم",
+        "financialRisk": "المخاطر المالية",
+        "partAndParcel": "الاندماج في المؤسسة",
+        "moo": "الالتزام المتبادل"
+      }
+    },
+    "schein": {
+      "title": "تقييم الحالة",
+      "weightLabel": "{weight}% وزن",
+      "step": {
+        "integration": "الاندماج",
+        "entrepreneurial": "الاستقلال التجاري",
+        "personalDep": "التبعية الشخصية",
+        "economicDep": "التبعية الاقتصادية"
+      }
+    }
   }
 }

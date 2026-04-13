@@ -4684,5 +4684,99 @@
       "reasonPlaceholder": "np. Klient preferuje stawkę standardową zgodnie z klauzulą 4.2 umowy",
       "reasonRequiredError": "Proszę podać uzasadnienie biznesowe (minimum 5 znaków)"
     }
+  },
+  "Classification": {
+    "_NOTE": "Legal-locked phrases live in packages/validators/src/legal/{de,disclaimers}.ts. Do NOT duplicate CLASSIFICATION_* or DISCLAIMER_* values here.",
+    "pageTitle": "Ocena klasyfikacji",
+    "pageSubtitle": "Oceń ryzyko statusu zatrudnienia dla tego zlecenia.",
+    "start": "Uruchom ocenę klasyfikacji",
+    "previous": "Wstecz",
+    "next": "Dalej",
+    "submitAssessment": "Prześlij ocenę",
+    "cancelDraft": "Anuluj wersję roboczą",
+    "backToEngagement": "Powrót do zlecenia",
+    "stepCounter": "Krok {current} z {total}",
+    "progress": {
+      "ariaLabel": "Postęp oceny — krok {current} z {total}",
+      "announce": "Krok {current} z {total}: {label}"
+    },
+    "autosave": {
+      "notSavedYet": "Jeszcze nie zapisano",
+      "saving": "Zapisywanie…",
+      "saved": "Zapisano {relativeTime}",
+      "failed": "Zapis nieudany — ponawiam"
+    },
+    "stepNotApplicable": "Nie dotyczy",
+    "score03": {
+      "weak": "Słaba wskazówka",
+      "moderate": "Umiarkowana wskazówka",
+      "strong": "Silna wskazówka"
+    },
+    "yesNo": {
+      "yes": "Tak",
+      "no": "Nie"
+    },
+    "likert": {
+      "stronglyDisagree": "Zdecydowanie się nie zgadzam",
+      "disagree": "Nie zgadzam się",
+      "neutral": "Neutralnie",
+      "agree": "Zgadzam się",
+      "stronglyAgree": "Zdecydowanie się zgadzam"
+    },
+    "rationale": {
+      "label": "Uzasadnienie (opcjonalne)",
+      "placeholder": "Krótko opisz dowody stojące za tą odpowiedzią.",
+      "counter": "{current} / {max}"
+    },
+    "billingRatio": {
+      "label": "Udział w łącznym przychodzie z tego zlecenia",
+      "suffix": "%",
+      "help": "Wprowadź procent rocznego obrotu wykonawcy pochodzący od Twojej organizacji."
+    },
+    "legalReference": {
+      "show": "Pokaż podstawę prawną",
+      "hide": "Ukryj podstawę prawną",
+      "ariaLabel": "Podstawa prawna"
+    },
+    "helpText": {
+      "show": "Pokaż wskazówki",
+      "hide": "Ukryj wskazówki"
+    },
+    "error": {
+      "draftDrift": "Wznowienie wersji roboczej zablokowane — niezgodność wersji zestawu reguł",
+      "draftDriftBody": "Wersja robocza została rozpoczęta względem starszego zestawu reguł (v{oldVersion}). Uruchom nową ocenę, aby użyć bieżącego zestawu reguł (v{newVersion}). Odpowiedzi z wersji roboczej są zachowane w historii.",
+      "startNew": "Rozpocznij nową ocenę",
+      "ratioOutOfRange": "Współczynnik przychodu musi mieścić się w zakresie 0-100. Wprowadź procent całkowitych przychodów wykonawcy pochodzący od Twojej organizacji.",
+      "nonNumeric": "Wprowadź liczbę z zakresu 0-100.",
+      "rationaleTooLong": "Uzasadnienie jest ograniczone do 1000 znaków. Skróć notatkę, aby kontynuować.",
+      "autosaveNetwork": "Nie udało się zapisać wersji roboczej. Sprawdź połączenie; ponowimy próbę automatycznie.",
+      "submitFailed": "Przesłanie nie powiodło się. Spróbuj ponownie. Jeśli problem się powtórzy, skontaktuj się z pomocą."
+    },
+    "emptyState": {
+      "noAssessment": "Brak oceny klasyfikacji",
+      "noAssessmentBody": "Uruchom ocenę IR35/Scheinselbständigkeit dla tego zlecenia, aby uchwycić status ryzyka. Możesz zapisać wersję roboczą i wznowić później.",
+      "notSupported": "Klasyfikacja niedostępna",
+      "notSupportedBody": "Zestawy reguł klasyfikacji są obecnie dostępne dla zleceń w Wielkiej Brytanii (IR35) i w Niemczech (Scheinselbständigkeit). Kraj wykonawcy ({countryCode}) nie jest jeszcze obsługiwany."
+    },
+    "ir35": {
+      "title": "Ocena statusu IR35",
+      "step": {
+        "substitution": "Zastępstwo",
+        "control": "Kontrola",
+        "financialRisk": "Ryzyko finansowe",
+        "partAndParcel": "Część organizacji",
+        "moo": "Wzajemność zobowiązań"
+      }
+    },
+    "schein": {
+      "title": "Ocena statusu",
+      "weightLabel": "{weight}% wagi",
+      "step": {
+        "integration": "Integracja",
+        "entrepreneurial": "Niezależność przedsiębiorcza",
+        "personalDep": "Zależność osobista",
+        "economicDep": "Zależność ekonomiczna"
+      }
+    }
   }
 }

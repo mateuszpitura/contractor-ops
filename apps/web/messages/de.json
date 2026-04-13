@@ -19,11 +19,11 @@
         "note": "AI first-pass — Steuerberater to translate and verify formal Sie register."
       },
       {
-        "path": "Dashboard.activity.resources.WORKFLOW_TEMPLATE",
+        "path": "Dashboard.activity.resources.workflowTemplate",
         "note": "AI first-pass — Steuerberater to translate and verify formal Sie register."
       },
       {
-        "path": "Dashboard.activity.resources.APPROVAL_STEP",
+        "path": "Dashboard.activity.resources.approvalStep",
         "note": "AI first-pass — Steuerberater to translate and verify formal Sie register."
       },
       {
@@ -4825,6 +4825,100 @@
       "reasonLabel": "Begründung",
       "reasonPlaceholder": "z. B. Kunde bevorzugt Standardsatz laut Vertrag Ziff. 4.2",
       "reasonRequiredError": "Bitte geben Sie eine betriebliche Begründung an (mindestens 5 Zeichen)"
+    }
+  },
+  "Classification": {
+    "_NOTE": "Legal-locked phrases live in packages/validators/src/legal/{de,disclaimers}.ts. Do NOT duplicate CLASSIFICATION_* or DISCLAIMER_* values here.",
+    "pageTitle": "Klassifizierungsbewertung",
+    "pageSubtitle": "Bewerten Sie das Beschäftigungsstatusrisiko für diesen Auftrag.",
+    "start": "Klassifizierungsbewertung starten",
+    "previous": "Zurück",
+    "next": "Weiter",
+    "submitAssessment": "Bewertung einreichen",
+    "cancelDraft": "Entwurf verwerfen",
+    "backToEngagement": "Zurück zum Auftrag",
+    "stepCounter": "Schritt {current} von {total}",
+    "progress": {
+      "ariaLabel": "Bewertungsfortschritt — Schritt {current} von {total}",
+      "announce": "Schritt {current} von {total}: {label}"
+    },
+    "autosave": {
+      "notSavedYet": "Noch nicht gespeichert",
+      "saving": "Speichern…",
+      "saved": "Gespeichert {relativeTime}",
+      "failed": "Speichern fehlgeschlagen — wird wiederholt"
+    },
+    "stepNotApplicable": "Nicht zutreffend",
+    "score03": {
+      "weak": "Schwacher Hinweis",
+      "moderate": "Mäßiger Hinweis",
+      "strong": "Starker Hinweis"
+    },
+    "yesNo": {
+      "yes": "Ja",
+      "no": "Nein"
+    },
+    "likert": {
+      "stronglyDisagree": "Stimme überhaupt nicht zu",
+      "disagree": "Stimme nicht zu",
+      "neutral": "Neutral",
+      "agree": "Stimme zu",
+      "stronglyAgree": "Stimme voll zu"
+    },
+    "rationale": {
+      "label": "Begründung (optional)",
+      "placeholder": "Bitte beschreiben Sie die Anhaltspunkte hinter dieser Antwort kurz.",
+      "counter": "{current} / {max}"
+    },
+    "billingRatio": {
+      "label": "Anteil am Gesamtumsatz aus diesem Auftrag",
+      "suffix": "%",
+      "help": "Geben Sie den Prozentsatz des Jahresumsatzes der Arbeitskraft an, der von Ihrer Organisation stammt."
+    },
+    "legalReference": {
+      "show": "Rechtliche Grundlage anzeigen",
+      "hide": "Rechtliche Grundlage ausblenden",
+      "ariaLabel": "Rechtliche Grundlage"
+    },
+    "helpText": {
+      "show": "Hinweise anzeigen",
+      "hide": "Hinweise ausblenden"
+    },
+    "error": {
+      "draftDrift": "Entwurf kann nicht fortgesetzt werden — Versionskonflikt",
+      "draftDriftBody": "Dieser Entwurf wurde gegen ein älteres Regelwerk gestartet (v{oldVersion}). Starten Sie eine neue Bewertung, um das aktuelle Regelwerk zu verwenden (v{newVersion}). Ihre Entwurfsantworten bleiben in der Historie erhalten.",
+      "startNew": "Neue Bewertung starten",
+      "ratioOutOfRange": "Der Umsatzanteil muss zwischen 0 und 100 liegen. Geben Sie den Prozentsatz der Gesamteinnahmen der Arbeitskraft an, der von Ihrer Organisation stammt.",
+      "nonNumeric": "Geben Sie eine Zahl zwischen 0 und 100 ein.",
+      "rationaleTooLong": "Die Begründung ist auf 1000 Zeichen begrenzt. Bitte kürzen Sie Ihren Text, um fortzufahren.",
+      "autosaveNetwork": "Entwurf konnte nicht gespeichert werden. Bitte prüfen Sie Ihre Verbindung; wir versuchen es automatisch erneut.",
+      "submitFailed": "Einreichen fehlgeschlagen. Bitte versuchen Sie es erneut. Wenden Sie sich an den Support, falls das Problem bestehen bleibt."
+    },
+    "emptyState": {
+      "noAssessment": "Noch keine Klassifizierungsbewertung",
+      "noAssessmentBody": "Führen Sie eine IR35- oder DRV-Statusbewertung für diesen Auftrag durch, um den Risikostatus zu erfassen. Sie können einen Entwurf speichern und später fortsetzen.",
+      "notSupported": "Klassifizierung nicht verfügbar",
+      "notSupportedBody": "Klassifizierungsregelwerke stehen derzeit für Aufträge in Großbritannien (IR35) und Deutschland (DRV-Statusbewertung) zur Verfügung. Das Land der Arbeitskraft ({countryCode}) wird noch nicht unterstützt."
+    },
+    "ir35": {
+      "title": "IR35-Statusbewertung",
+      "step": {
+        "substitution": "Substitution",
+        "control": "Kontrolle",
+        "financialRisk": "Finanzielles Risiko",
+        "partAndParcel": "Eingliederung in den Betrieb",
+        "moo": "Gegenseitige Verpflichtung"
+      }
+    },
+    "schein": {
+      "title": "Statusbewertung",
+      "weightLabel": "{weight}% Gewichtung",
+      "step": {
+        "integration": "Eingliederung",
+        "entrepreneurial": "Selbstständigkeit",
+        "personalDep": "Persönliche Bindung",
+        "economicDep": "Wirtschaftliche Bindung"
+      }
     }
   }
 }
