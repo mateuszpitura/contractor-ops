@@ -2,7 +2,7 @@ import { render, screen } from '@/test/test-utils';
 import { ContractorSidePanel } from '../contractor-side-panel';
 
 vi.mock('@/i18n/navigation', () => ({
-  Link: ({ children, href, ...props }: any) => (
+  Link: ({ children, href, ...props }: { children: React.ReactNode; href: string; [key: string]: unknown }) => (
     <a href={href} {...props}>
       {children}
     </a>

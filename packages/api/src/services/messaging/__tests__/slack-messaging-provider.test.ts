@@ -7,10 +7,10 @@ const mockSendReminderDM = vi.fn();
 const mockGetSlackClient = vi.fn();
 
 vi.mock('../../slack-client.js', () => ({
-  getSlackUserIdForUser: (...args: any[]) => mockGetSlackUserId(...args),
-  sendApprovalCard: (...args: any[]) => mockSendApprovalCard(...args),
-  sendReminderDM: (...args: any[]) => mockSendReminderDM(...args),
-  getSlackClient: (...args: any[]) => mockGetSlackClient(...args),
+  getSlackUserIdForUser: mockGetSlackUserId,
+  sendApprovalCard: mockSendApprovalCard,
+  sendReminderDM: mockSendReminderDM,
+  getSlackClient: mockGetSlackClient,
 }));
 
 describe('SlackMessagingProvider', () => {

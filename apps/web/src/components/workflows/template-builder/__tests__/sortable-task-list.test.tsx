@@ -2,7 +2,15 @@ import { render, screen } from '@/test/test-utils';
 import { SortableTaskList } from '../sortable-task-list';
 
 vi.mock('@/i18n/navigation', () => ({
-  Link: ({ children, href, ...props }: any) => (
+  Link: ({
+    children,
+    href,
+    ...props
+  }: {
+    children: React.ReactNode;
+    href: string;
+    [key: string]: unknown;
+  }) => (
     <a href={href} {...props}>
       {children}
     </a>
@@ -10,7 +18,7 @@ vi.mock('@/i18n/navigation', () => ({
 }));
 
 vi.mock('@dnd-kit/core', () => ({
-  DndContext: ({ children }: any) => <div>{children}</div>,
+  DndContext: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   closestCenter: vi.fn(),
   PointerSensor: vi.fn(),
   KeyboardSensor: vi.fn(),
@@ -19,7 +27,7 @@ vi.mock('@dnd-kit/core', () => ({
 }));
 
 vi.mock('@dnd-kit/sortable', () => ({
-  SortableContext: ({ children }: any) => <div>{children}</div>,
+  SortableContext: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   verticalListSortingStrategy: {},
   useSortable: () => ({
     attributes: {},
@@ -37,7 +45,9 @@ vi.mock('@dnd-kit/utilities', () => ({
 }));
 
 vi.mock('../task-card', () => ({
-  TaskCard: ({ index }: any) => <div data-testid={`task-card-${index}`}>Task {index}</div>,
+  TaskCard: ({ index }: { index: number }) => (
+    <div data-testid={`task-card-${index}`}>Task {index}</div>
+  ),
 }));
 
 describe('SortableTaskList', () => {

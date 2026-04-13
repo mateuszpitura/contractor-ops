@@ -6,13 +6,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const { ORG_ID, USER_ID, mockPrisma, mockLinearGraphQL, mockRegisterLinearWebhook } = vi.hoisted(
   () => {
-    const ORG_ID = 'org-linear-00000000-0000-0000-0000-000000000001';
-    const USER_ID = 'user-linear-00000000-0000-0000-0000-000000000001';
+    const OrgId = 'org-linear-00000000-0000-0000-0000-000000000001';
+    const UserId = 'user-linear-00000000-0000-0000-0000-000000000001';
     const mockLinearGraphQL = vi.fn();
     const mockRegisterLinearWebhook = vi.fn().mockResolvedValue(undefined);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const mockPrisma: Record<string, any> = {
+    const mockPrisma: Record<string, unknown> = {
       organization: {
         findUnique: vi.fn().mockResolvedValue({ dataRegion: 'EU' }),
       },
@@ -41,8 +41,8 @@ const { ORG_ID, USER_ID, mockPrisma, mockLinearGraphQL, mockRegisterLinearWebhoo
     };
 
     return {
-      ORG_ID,
-      USER_ID,
+      ORG_ID: OrgId,
+      USER_ID: UserId,
       mockPrisma,
       mockLinearGraphQL,
       mockRegisterLinearWebhook,
@@ -115,12 +115,12 @@ vi.mock('../../services/linear-issue-sync.js', async importOriginal => {
   const actual = await importOriginal<typeof import('../../services/linear-issue-sync.js')>();
   return {
     ...actual,
-    linearGraphQL: (...args: any[]) => mockLinearGraphQL(...args),
+    linearGraphQL: mockLinearGraphQL,
   };
 });
 
 vi.mock('../../services/linear-webhook-handler.js', () => ({
-  registerLinearWebhook: (...args: any[]) => mockRegisterLinearWebhook(...args),
+  registerLinearWebhook: mockRegisterLinearWebhook,
 }));
 
 import { createCallerFactory } from '../../init.js';

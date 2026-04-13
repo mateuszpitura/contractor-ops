@@ -7,7 +7,7 @@ import { SoftBlockModal } from '../soft-block-modal';
 
 // Mock PlanComparisonGrid to simplify
 vi.mock('../plan-comparison-grid', () => ({
-  PlanComparisonGrid: ({ onSelectPlan }: any) => (
+  PlanComparisonGrid: ({ onSelectPlan }: { onSelectPlan: (plan: string) => void }) => (
     <div data-testid="plan-grid">
       <button type="button" onClick={() => onSelectPlan('price_pro')}>
         Select Pro

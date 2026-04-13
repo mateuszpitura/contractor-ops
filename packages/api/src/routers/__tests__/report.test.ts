@@ -21,11 +21,11 @@ const {
   mockGenerateInvoicesCsv,
   mockGenerateComplianceCsv,
 } = vi.hoisted(() => {
-  const ORG_ID = 'org-report-00000000-0000-0000-0000-000000000001';
-  const USER_ID = 'user-report-00000000-0000-0000-0000-000000000001';
+  const OrgId = 'org-report-00000000-0000-0000-0000-000000000001';
+  const UserId = 'user-report-00000000-0000-0000-0000-000000000001';
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  type Rec = Record<string, any>;
+  type Rec = Record<string, unknown>;
 
   const mockPrisma: Rec = {
     organization: {
@@ -54,8 +54,8 @@ const {
   const mockGenerateComplianceCsv = vi.fn(async () => csvResult);
 
   return {
-    ORG_ID,
-    USER_ID,
+    ORG_ID: OrgId,
+    USER_ID: UserId,
     mockPrisma,
     mockGenerateSpendCsv,
     mockGenerateContractsCsv,

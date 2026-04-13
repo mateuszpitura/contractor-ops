@@ -12,12 +12,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 // ---------------------------------------------------------------------------
 
 const { ORG_ID, USER_ID, PORTAL_SESSION_TOKEN, CONTRACTOR_ID, mockPrisma } = vi.hoisted(() => {
-  const ORG_ID = 'org-branding-001';
-  const USER_ID = 'user-branding-001';
-  const PORTAL_SESSION_TOKEN = 'portal-branding-session';
-  const CONTRACTOR_ID = 'contractor-branding-001';
+  const OrgId = 'org-branding-001';
+  const UserId = 'user-branding-001';
+  const PortalSessionToken = 'portal-branding-session';
+  const ContractorId = 'contractor-branding-001';
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  type Rec = Record<string, any>;
+  type Rec = Record<string, unknown>;
 
   const mockPrisma: Rec = {
     organization: {
@@ -27,7 +27,13 @@ const { ORG_ID, USER_ID, PORTAL_SESSION_TOKEN, CONTRACTOR_ID, mockPrisma } = vi.
     $transaction: vi.fn(async (fn: (tx: Rec) => Promise<unknown>) => fn(mockPrisma)),
   };
 
-  return { ORG_ID, USER_ID, PORTAL_SESSION_TOKEN, CONTRACTOR_ID, mockPrisma };
+  return {
+    ORG_ID: OrgId,
+    USER_ID: UserId,
+    PORTAL_SESSION_TOKEN: PortalSessionToken,
+    CONTRACTOR_ID: ContractorId,
+    mockPrisma,
+  };
 });
 
 // ---------------------------------------------------------------------------

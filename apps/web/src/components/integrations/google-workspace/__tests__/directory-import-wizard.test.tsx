@@ -3,7 +3,7 @@ import { render, screen, setup } from '@/test/test-utils';
 import { DirectoryImportWizard } from '../directory-import-wizard';
 
 vi.mock('@/i18n/navigation', () => ({
-  Link: ({ children, href, ...props }: any) => (
+  Link: ({ children, href, ...props }: { children: React.ReactNode; href: string; [key: string]: unknown }) => (
     <a href={href} {...props}>
       {children}
     </a>
@@ -13,7 +13,7 @@ vi.mock('@/i18n/navigation', () => ({
 }));
 
 vi.mock('@/components/billing/feature-gate', () => ({
-  FeatureGate: ({ children }: any) => <>{children}</>,
+  FeatureGate: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
 vi.mock('@tanstack/react-query', async () => {
@@ -44,16 +44,16 @@ vi.mock('@/trpc/init', () => ({
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
 vi.mock('../directory-summary-bar', () => ({
-  DirectorySummaryBar: ({ total, selected }: any) => (
+  DirectorySummaryBar: ({ total, selected }: { total: number; selected: number }) => (
     <div data-testid="summary-bar">
       {total} total, {selected} selected
     </div>
   ),
 }));
 vi.mock('../directory-preview-table', () => ({
-  DirectoryPreviewTable: ({ users, selectedEmails, onSelectionChange }: any) => (
+  DirectoryPreviewTable: ({ users, selectedEmails, onSelectionChange }: { users: Array<{ primaryEmail: string; name: { fullName: string } }>; selectedEmails: Set<string>; onSelectionChange: (emails: Set<string>) => void }) => (
     <div data-testid="preview-table">
-      {users.map((u: unknown) => (
+      {users.map((u) => (
         <div key={u.primaryEmail}>
           <span>{u.name.fullName}</span>
           <button
@@ -71,7 +71,7 @@ vi.mock('../directory-preview-table', () => ({
   ),
 }));
 vi.mock('../role-assignment-controls', () => ({
-  RoleAssignmentControls: ({ defaultRole }: any) => (
+  RoleAssignmentControls: ({ defaultRole }: { defaultRole: string }) => (
     <div data-testid="role-controls">Default: {defaultRole}</div>
   ),
   ROLE_LABELS: { readonly: 'Read Only', admin: 'Admin', manager: 'Manager', member: 'Member' },
@@ -80,7 +80,7 @@ vi.mock('../group-role-mapping-step', () => ({
   GroupRoleMappingStep: () => <div data-testid="group-mapping" />,
 }));
 vi.mock('../import-confirm-step', () => ({
-  ImportConfirmStep: ({ userCount, onBack, onConfirm }: any) => (
+  ImportConfirmStep: ({ userCount, onBack, onConfirm }: { userCount: number; onBack: () => void; onConfirm: () => void }) => (
     <div data-testid="import-confirm">
       <span>{userCount} users to import</span>
       <button type="button" onClick={onBack}>

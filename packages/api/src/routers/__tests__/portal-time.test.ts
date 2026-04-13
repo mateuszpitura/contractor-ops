@@ -20,7 +20,7 @@ const {
   mockSyncJira,
 } = vi.hoisted(() => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  type Rec = Record<string, any>;
+  type Rec = Record<string, unknown>;
 
   const mockGetOrCreateTimesheet = vi.fn(async () => ({
     id: TS_ID,

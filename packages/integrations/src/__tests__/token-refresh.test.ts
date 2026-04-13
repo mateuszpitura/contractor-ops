@@ -15,10 +15,10 @@ const mockUpdate = vi.fn();
 vi.mock('@contractor-ops/db', () => ({
   prisma: {
     integrationConnection: {
-      findMany: (...args: any[]) => mockFindMany(...args),
-      findUnique: (...args: any[]) => mockFindUnique(...args),
-      updateMany: (...args: any[]) => mockUpdateMany(...args),
-      update: (...args: any[]) => mockUpdate(...args),
+      findMany: mockFindMany,
+      findUnique: mockFindUnique,
+      updateMany: mockUpdateMany,
+      update: mockUpdate,
     },
   },
 }));

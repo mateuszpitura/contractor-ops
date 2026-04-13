@@ -6,8 +6,8 @@ const mockUseQuery = vi.fn();
 const mockUseMutation = vi.fn();
 
 vi.mock('@tanstack/react-query', () => ({
-  useQuery: (...args: any[]) => mockUseQuery(...args),
-  useMutation: (...args: any[]) => mockUseMutation(...args),
+  useQuery: mockUseQuery,
+  useMutation: mockUseMutation,
   useQueryClient: () => ({
     invalidateQueries: vi.fn(),
   }),
@@ -41,7 +41,9 @@ vi.mock('@/trpc/init', () => ({
 const mockPush = vi.fn();
 vi.mock('@/i18n/navigation', () => ({
   useRouter: () => ({ push: mockPush }),
-  Link: ({ children, href }: any) => <a href={href}>{children}</a>,
+  Link: ({ children, href }: { children: React.ReactNode; href: string }) => (
+    <a href={href}>{children}</a>
+  ),
   usePathname: () => '/test',
 }));
 

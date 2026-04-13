@@ -5,7 +5,7 @@ import { FeatureGate } from '../feature-gate';
 // Mocks
 // ---------------------------------------------------------------------------
 
-let subscriptionData: any = null;
+let subscriptionData: unknown = null;
 let isLoading = false;
 
 vi.mock('@tanstack/react-query', () => ({
@@ -21,7 +21,15 @@ vi.mock('@/trpc/init', () => ({
 }));
 
 vi.mock('@/i18n/navigation', () => ({
-  Link: ({ children, href, ...props }: any) => (
+  Link: ({
+    children,
+    href,
+    ...props
+  }: {
+    children: React.ReactNode;
+    href: string;
+    [key: string]: unknown;
+  }) => (
     <a href={href} {...props}>
       {children}
     </a>

@@ -21,7 +21,7 @@ const SESSION_TOKEN = 'portal-session-token-profile';
 
 const { mockPrisma } = vi.hoisted(() => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  type Rec = Record<string, any>;
+  type Rec = Record<string, unknown>;
 
   const mockPrisma: Rec = {
     organization: {

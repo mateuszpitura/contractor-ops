@@ -2,12 +2,12 @@ import { render, screen } from '@/test/test-utils';
 import { AppSidebar } from '../sidebar';
 
 vi.mock('@/components/ui/sidebar', () => ({
-  Sidebar: ({ children }: any) => <nav data-testid="sidebar">{children}</nav>,
-  SidebarContent: ({ children }: any) => <div>{children}</div>,
-  SidebarFooter: ({ children }: any) => <div>{children}</div>,
-  SidebarHeader: ({ children }: any) => <div>{children}</div>,
-  SidebarMenu: ({ children }: any) => <ul>{children}</ul>,
-  SidebarMenuItem: ({ children }: any) => <li>{children}</li>,
+  Sidebar: ({ children }: { children: React.ReactNode }) => <nav data-testid="sidebar">{children}</nav>,
+  SidebarContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  SidebarFooter: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  SidebarHeader: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  SidebarMenu: ({ children }: { children: React.ReactNode }) => <ul>{children}</ul>,
+  SidebarMenuItem: ({ children }: { children: React.ReactNode }) => <li>{children}</li>,
   SidebarRail: () => null,
 }));
 

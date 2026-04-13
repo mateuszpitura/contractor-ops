@@ -32,7 +32,7 @@ const {
   mockGetSubscription,
 } = vi.hoisted(() => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const mockPrisma: Record<string, any> = {
+  const mockPrisma: Record<string, unknown> = {
     organization: {
       findUnique: vi.fn().mockResolvedValue({ dataRegion: 'EU' }),
     },
@@ -147,7 +147,7 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
 
 vi.mock('../../services/billing-service.js', () => ({
   syncSeatCountForOrg: vi.fn(async () => undefined),
-  getSubscription: (...args: any[]) => mockGetSubscription(...args),
+  getSubscription: mockGetSubscription,
   createCheckoutSession: vi.fn(async () => ({ url: 'https://stripe.test/checkout' })),
   createPortalSession: vi.fn(async () => ({})),
   getProrationPreview: vi.fn(async () => ({})),

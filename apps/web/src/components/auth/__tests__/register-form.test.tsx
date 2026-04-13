@@ -9,10 +9,10 @@ const organizationCreate = vi.fn();
 vi.mock('@/lib/auth-client', () => ({
   authClient: {
     signUp: {
-      email: (...args: any[]) => signUpEmail(...args),
+      email: signUpEmail,
     },
     organization: {
-      create: (...args: any[]) => organizationCreate(...args),
+      create: organizationCreate,
     },
   },
 }));

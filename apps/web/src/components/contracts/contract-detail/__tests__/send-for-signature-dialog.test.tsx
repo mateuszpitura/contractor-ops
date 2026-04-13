@@ -5,7 +5,7 @@ import { SendForSignatureDialog } from '../send-for-signature-dialog';
 const mockedUseQuery = vi.fn();
 
 vi.mock('@tanstack/react-query', () => ({
-  useQuery: (...args: any[]) => mockedUseQuery(...args),
+  useQuery: mockedUseQuery,
   useMutation: () => ({ mutate: vi.fn(), isPending: false }),
   useQueryClient: () => ({ invalidateQueries: vi.fn() }),
 }));
@@ -26,7 +26,7 @@ vi.mock('@/trpc/init', () => ({
 }));
 
 vi.mock('@dnd-kit/core', () => ({
-  DndContext: ({ children }: any) => <div>{children}</div>,
+  DndContext: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   closestCenter: vi.fn(),
   KeyboardSensor: vi.fn(),
   PointerSensor: vi.fn(),
@@ -35,7 +35,7 @@ vi.mock('@dnd-kit/core', () => ({
 }));
 
 vi.mock('@dnd-kit/sortable', () => ({
-  SortableContext: ({ children }: any) => <div>{children}</div>,
+  SortableContext: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   sortableKeyboardCoordinates: vi.fn(),
   useSortable: () => ({
     attributes: {},

@@ -2,7 +2,15 @@ import { render, screen, setup } from '@/test/test-utils';
 import { ConditionBuilder, getConditionSummary } from '../condition-builder';
 
 vi.mock('@/i18n/navigation', () => ({
-  Link: ({ children, href, ...props }: any) => (
+  Link: ({
+    children,
+    href,
+    ...props
+  }: {
+    children: React.ReactNode;
+    href: string;
+    [key: string]: unknown;
+  }) => (
     <a href={href} {...props}>
       {children}
     </a>

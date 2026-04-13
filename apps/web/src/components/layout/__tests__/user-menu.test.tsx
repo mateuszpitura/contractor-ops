@@ -43,7 +43,7 @@ vi.mock('next-themes', () => ({
 }));
 
 vi.mock('@/components/ui/sidebar', () => ({
-  SidebarMenuButton: ({ children, ...props }: any) => <button {...props}>{children}</button>,
+  SidebarMenuButton: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => <button {...props}>{children}</button>,
   useSidebar: () => ({ isMobile: false }),
 }));
 

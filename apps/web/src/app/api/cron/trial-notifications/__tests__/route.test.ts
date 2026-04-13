@@ -8,7 +8,7 @@ const mockSubscriptionFindMany = vi.fn();
 vi.mock('@contractor-ops/db', () => ({
   prisma: {
     subscription: {
-      findMany: (...args: any[]) => mockSubscriptionFindMany(...args),
+      findMany: mockSubscriptionFindMany,
     },
   },
 }));

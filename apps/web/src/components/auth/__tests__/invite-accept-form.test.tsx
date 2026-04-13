@@ -9,10 +9,10 @@ const acceptInvitation = vi.fn();
 vi.mock('@/lib/auth-client', () => ({
   authClient: {
     signUp: {
-      email: (...args: any[]) => signUpEmail(...args),
+      email: signUpEmail,
     },
     organization: {
-      acceptInvitation: (...args: any[]) => acceptInvitation(...args),
+      acceptInvitation: acceptInvitation,
     },
   },
 }));

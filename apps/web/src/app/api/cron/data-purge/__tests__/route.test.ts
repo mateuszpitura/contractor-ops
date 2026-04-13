@@ -14,23 +14,23 @@ const mockContractorDeleteMany = vi.fn();
 vi.mock('@contractor-ops/db', () => ({
   prisma: {
     document: {
-      findMany: (...args: any[]) => mockDocumentFindMany(...args),
-      deleteMany: (...args: any[]) => mockDocumentDeleteMany(...args),
+      findMany: mockDocumentFindMany,
+      deleteMany: mockDocumentDeleteMany,
     },
     documentLink: {
-      deleteMany: (...args: any[]) => mockDocumentLinkDeleteMany(...args),
+      deleteMany: mockDocumentLinkDeleteMany,
     },
     invoiceFile: {
-      deleteMany: (...args: any[]) => mockInvoiceFileDeleteMany(...args),
+      deleteMany: mockInvoiceFileDeleteMany,
     },
     invoice: {
-      deleteMany: (...args: any[]) => mockInvoiceDeleteMany(...args),
+      deleteMany: mockInvoiceDeleteMany,
     },
     contract: {
-      deleteMany: (...args: any[]) => mockContractDeleteMany(...args),
+      deleteMany: mockContractDeleteMany,
     },
     contractor: {
-      deleteMany: (...args: any[]) => mockContractorDeleteMany(...args),
+      deleteMany: mockContractorDeleteMany,
     },
   },
 }));
@@ -59,7 +59,7 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
 const mockDeleteObject = vi.fn();
 
 vi.mock('@contractor-ops/api/services/r2', () => ({
-  deleteObject: (...args: any[]) => mockDeleteObject(...args),
+  deleteObject: mockDeleteObject,
 }));
 
 import { GET } from '../route';

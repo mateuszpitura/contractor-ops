@@ -8,7 +8,15 @@ import { BillingOverlay } from '../billing-overlay';
 const mockPush = vi.fn();
 
 vi.mock('@/i18n/navigation', () => ({
-  Link: ({ children, href, ...props }: any) => (
+  Link: ({
+    children,
+    href,
+    ...props
+  }: {
+    children: React.ReactNode;
+    href: string;
+    [key: string]: unknown;
+  }) => (
     <a href={href} {...props}>
       {children}
     </a>
@@ -18,7 +26,7 @@ vi.mock('@/i18n/navigation', () => ({
 }));
 
 const mockMutate = vi.fn();
-let subscriptionData: any = null;
+let subscriptionData: unknown = null;
 
 vi.mock('@tanstack/react-query', () => ({
   useQuery: () => ({ data: subscriptionData }),
@@ -40,13 +48,13 @@ vi.mock('@/trpc/init', () => ({
 
 // Mock child components to simplify assertions
 vi.mock('../trial-banner', () => ({
-  TrialBanner: ({ trialEnd }: any) => (
+  TrialBanner: ({ trialEnd }: { trialEnd: string }) => (
     <div data-testid="trial-banner">Trial ends {trialEnd.toISOString()}</div>
   ),
 }));
 
 vi.mock('../soft-block-modal', () => ({
-  SoftBlockModal: ({ isOpen }: any) =>
+  SoftBlockModal: ({ isOpen }: { isOpen: boolean }) =>
     isOpen ? <div data-testid="soft-block-modal">Blocked</div> : null,
 }));
 

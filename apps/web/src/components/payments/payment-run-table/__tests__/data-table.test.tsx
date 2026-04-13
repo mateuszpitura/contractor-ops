@@ -4,7 +4,7 @@ import { getColumns } from '../columns';
 import { PaymentRunDataTable } from '../data-table';
 
 vi.mock('../payment-run-badge', () => ({
-  PaymentRunBadge: ({ status }: any) => <span>{status}</span>,
+  PaymentRunBadge: ({ status }: { status: string }) => <span>{status}</span>,
 }));
 
 function makeRow(overrides: Partial<PaymentRunRow> = {}): PaymentRunRow {

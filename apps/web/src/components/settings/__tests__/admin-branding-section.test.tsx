@@ -5,9 +5,9 @@ import { AdminBrandingSection } from '../admin-branding-section';
 // Mocks
 // ---------------------------------------------------------------------------
 
-let brandingData: any = null;
+let brandingData: unknown = null;
 let brandingLoading = false;
-let portalDomainData: any = null;
+let portalDomainData: unknown = null;
 const mockMutate = vi.fn();
 const mockMutateAsync = vi.fn();
 
@@ -29,8 +29,8 @@ vi.mock('@tanstack/react-query', () => ({
     return { data, isLoading: loading };
   },
   useMutation: (opts: Record<string, unknown>) => ({
-    mutate: (...args: any[]) => {
-      mockMutate(...args);
+    mutate: (...args: unknown[]) => {
+      mockMutate(...(args as Parameters<typeof mockMutate>));
       opts?.onSuccess?.();
     },
     mutateAsync: mockMutateAsync,
@@ -62,7 +62,7 @@ vi.mock('sonner', () => ({
 }));
 
 vi.mock('../brand-color-picker', () => ({
-  BrandColorPicker: ({ value, onChange }: any) => (
+  BrandColorPicker: ({ value, onChange }: { value: string; onChange: (v: string) => void }) => (
     <div data-testid="color-picker">
       <span>Color: {value}</span>
       <button type="button" onClick={() => onChange('#ff0000')}>
@@ -73,7 +73,9 @@ vi.mock('../brand-color-picker', () => ({
 }));
 
 vi.mock('../brand-preview-strip', () => ({
-  BrandPreviewStrip: ({ color }: any) => <div data-testid="preview-strip">Preview: {color}</div>,
+  BrandPreviewStrip: ({ color }: { color: string }) => (
+    <div data-testid="preview-strip">Preview: {color}</div>
+  ),
 }));
 
 // ---------------------------------------------------------------------------

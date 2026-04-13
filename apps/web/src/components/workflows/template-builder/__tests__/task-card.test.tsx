@@ -13,7 +13,15 @@ vi.mock('@/trpc/init', () => ({
 }));
 
 vi.mock('@/i18n/navigation', () => ({
-  Link: ({ children, href, ...props }: any) => (
+  Link: ({
+    children,
+    href,
+    ...props
+  }: {
+    children: React.ReactNode;
+    href: string;
+    [key: string]: unknown;
+  }) => (
     <a href={href} {...props}>
       {children}
     </a>
@@ -37,7 +45,7 @@ vi.mock('./condition-builder', () => ({
   getConditionSummary: () => null,
 }));
 
-const createMockForm = (taskData: Record<string, any> = {}) => {
+const createMockForm = (taskData: Record<string, unknown> = {}) => {
   const defaultTask = {
     title: 'Test Task',
     taskType: 'MANUAL',

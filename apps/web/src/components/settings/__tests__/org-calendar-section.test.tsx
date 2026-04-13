@@ -45,7 +45,9 @@ vi.mock('@/trpc/init', () => ({
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 vi.mock('@/i18n/navigation', () => ({
   useRouter: () => ({ push: vi.fn() }),
-  Link: ({ children, href }: any) => <a href={href}>{children}</a>,
+  Link: ({ children, href }: { children: React.ReactNode; href: string }) => (
+    <a href={href}>{children}</a>
+  ),
   usePathname: () => '/settings',
 }));
 vi.mock('@/components/billing/feature-gate', () => ({

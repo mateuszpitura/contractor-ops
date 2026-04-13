@@ -3,7 +3,15 @@ import type { AuditLogEntry } from '../audit-log-table';
 import { AuditLogTable } from '../audit-log-table';
 
 vi.mock('@/i18n/navigation', () => ({
-  Link: ({ children, href, ...props }: any) => (
+  Link: ({
+    children,
+    href,
+    ...props
+  }: {
+    children: React.ReactNode;
+    href: string;
+    [key: string]: unknown;
+  }) => (
     <a href={href} {...props}>
       {children}
     </a>

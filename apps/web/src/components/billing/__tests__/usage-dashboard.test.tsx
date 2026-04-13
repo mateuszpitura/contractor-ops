@@ -5,7 +5,7 @@ import { UsageDashboard } from '../usage-dashboard';
 // Mocks
 // ---------------------------------------------------------------------------
 
-let dashboardData: any = null;
+let dashboardData: unknown = null;
 let isLoading = false;
 let isError = false;
 const mockRefetch = vi.fn();
@@ -28,7 +28,15 @@ vi.mock('@/trpc/init', () => ({
 }));
 
 vi.mock('@/i18n/navigation', () => ({
-  Link: ({ children, href, ...props }: any) => (
+  Link: ({
+    children,
+    href,
+    ...props
+  }: {
+    children: React.ReactNode;
+    href: string;
+    [key: string]: unknown;
+  }) => (
     <a href={href} {...props}>
       {children}
     </a>
@@ -39,7 +47,7 @@ vi.mock('@/i18n/navigation', () => ({
 
 // Mock child components to isolate
 vi.mock('../usage-kpi-card', () => ({
-  UsageKpiCard: ({ label, value }: any) => (
+  UsageKpiCard: ({ label, value }: { label: string; value: string | number }) => (
     <div data-testid="kpi-card">
       <span>{label}</span>
       <div>{value}</div>

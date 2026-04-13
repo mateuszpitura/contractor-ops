@@ -12,14 +12,14 @@ const {
   mockSchedulesCreate,
   mockKsefVerifyCredentials,
 } = vi.hoisted(() => {
-  const ORG_ID = 'org-ksef-00000000-0000-0000-0000-000000000001';
-  const USER_ID = 'user-ksef-00000000-0000-0000-0000-000000000001';
+  const OrgId = 'org-ksef-00000000-0000-0000-0000-000000000001';
+  const UserId = 'user-ksef-00000000-0000-0000-0000-000000000001';
   const mockPublishJSON = vi.fn().mockResolvedValue(undefined);
   const mockSchedulesCreate = vi.fn().mockResolvedValue({ scheduleId: 'sched-ksef-1' });
   const mockKsefVerifyCredentials = vi.fn(async () => true);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const mockPrisma: Record<string, any> = {
+  const mockPrisma: Record<string, unknown> = {
     organization: {
       findUniqueOrThrow: vi.fn(),
       findUnique: vi.fn().mockResolvedValue({ dataRegion: 'EU' }),
@@ -38,8 +38,8 @@ const {
   };
 
   return {
-    ORG_ID,
-    USER_ID,
+    ORG_ID: OrgId,
+    USER_ID: UserId,
     mockPrisma,
     mockPublishJSON,
     mockSchedulesCreate,

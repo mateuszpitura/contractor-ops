@@ -8,7 +8,7 @@ const signInSocial = vi.fn();
 vi.mock('@/lib/auth-client', () => ({
   authClient: {
     signIn: {
-      social: (...args: any[]) => signInSocial(...args),
+      social: signInSocial,
     },
   },
 }));

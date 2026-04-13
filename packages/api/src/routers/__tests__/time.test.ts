@@ -28,7 +28,7 @@ const CONTRACTOR_ID = 'clcontractor000000000001';
 
 const { mockPrisma } = vi.hoisted(() => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  type Rec = Record<string, any>;
+  type Rec = Record<string, unknown>;
 
   const mockPrisma: Rec = {
     organization: {
@@ -103,10 +103,10 @@ const mockBulkApproveTimesheets = vi.fn(async () => ({ count: 2 }));
 const mockBulkRejectTimesheets = vi.fn(async () => ({ count: 2 }));
 
 vi.mock('../../services/time-entry.js', () => ({
-  approveTimesheet: (...args: any[]) => (mockApproveTimesheet as unknown)(...args),
-  rejectTimesheet: (...args: any[]) => (mockRejectTimesheet as unknown)(...args),
-  bulkApproveTimesheets: (...args: any[]) => (mockBulkApproveTimesheets as unknown)(...args),
-  bulkRejectTimesheets: (...args: any[]) => (mockBulkRejectTimesheets as unknown)(...args),
+  approveTimesheet: mockApproveTimesheet,
+  rejectTimesheet: mockRejectTimesheet,
+  bulkApproveTimesheets: mockBulkApproveTimesheets,
+  bulkRejectTimesheets: mockBulkRejectTimesheets,
 }));
 
 vi.mock('../../services/time-reconciliation.js', () => ({

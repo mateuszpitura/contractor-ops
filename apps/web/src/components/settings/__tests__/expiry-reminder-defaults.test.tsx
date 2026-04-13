@@ -6,7 +6,7 @@ import { ExpiryReminderDefaults } from '../expiry-reminder-defaults';
 // Mocks
 // ---------------------------------------------------------------------------
 
-let queryData: any = { reminderDaysBefore: [30, 60, 90] };
+let queryData: unknown = { reminderDaysBefore: [30, 60, 90] };
 let queryLoading = false;
 const mockMutate = vi.fn();
 

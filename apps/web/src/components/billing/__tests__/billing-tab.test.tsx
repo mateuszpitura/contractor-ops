@@ -5,7 +5,7 @@ import { BillingTab } from '../billing-tab';
 // Mocks
 // ---------------------------------------------------------------------------
 
-let subscriptionData: any = null;
+let subscriptionData: unknown = null;
 const mockCheckoutMutate = vi.fn();
 const mockPortalMutate = vi.fn();
 let portalPending = false;
@@ -47,7 +47,7 @@ vi.mock('../usage-dashboard', () => ({
 }));
 
 vi.mock('../proration-preview', () => ({
-  ProrationPreview: ({ onCancel }: any) => (
+  ProrationPreview: ({ onCancel }: { onCancel: () => void }) => (
     <div data-testid="proration-preview">
       <button type="button" onClick={onCancel}>
         Cancel

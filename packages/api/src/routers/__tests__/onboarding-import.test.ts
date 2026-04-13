@@ -23,7 +23,7 @@ const {
   mockGetSubscription,
 } = vi.hoisted(() => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const mockPrisma: Record<string, any> = {
+  const mockPrisma: Record<string, unknown> = {
     integrationConnection: {
       findFirst: vi.fn(),
       findMany: vi.fn(),
@@ -142,7 +142,7 @@ vi.mock('@contractor-ops/integrations/services/credential-service', () => ({
 }));
 
 vi.mock('../../services/linear-issue-sync.js', () => ({
-  linearGraphQL: (...args: any[]) => mockLinearGraphQL(...args),
+  linearGraphQL: mockLinearGraphQL,
 }));
 
 vi.mock('../../services/cache.js', () => ({
@@ -155,7 +155,7 @@ vi.mock('../../services/cache.js', () => ({
 
 vi.mock('../../services/billing-service.js', () => ({
   syncSeatCountForOrg: vi.fn(async () => undefined),
-  getSubscription: (...args: any[]) => mockGetSubscription(...args),
+  getSubscription: mockGetSubscription,
   createCheckoutSession: vi.fn(async () => ({ url: 'https://stripe.test/checkout' })),
   createPortalSession: vi.fn(async () => ({})),
   getProrationPreview: vi.fn(async () => ({})),

@@ -13,11 +13,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 // ---------------------------------------------------------------------------
 
 const { ORG_ID, USER_ID, mockPrisma, mockGenerateAuditCsv } = vi.hoisted(() => {
-  const ORG_ID = 'org-audit-00000000-0000-0000-0000-000000000001';
-  const USER_ID = 'user-audit-00000000-0000-0000-0000-000000000001';
+  const OrgId = 'org-audit-00000000-0000-0000-0000-000000000001';
+  const UserId = 'user-audit-00000000-0000-0000-0000-000000000001';
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  type Rec = Record<string, any>;
+  type Rec = Record<string, unknown>;
 
   const mockPrisma: Rec = {
     organization: {
@@ -35,7 +35,7 @@ const { ORG_ID, USER_ID, mockPrisma, mockGenerateAuditCsv } = vi.hoisted(() => {
     mimeType: 'text/csv;charset=utf-8',
   }));
 
-  return { ORG_ID, USER_ID, mockPrisma, mockGenerateAuditCsv };
+  return { ORG_ID: OrgId, USER_ID: UserId, mockPrisma, mockGenerateAuditCsv };
 });
 
 // ---------------------------------------------------------------------------

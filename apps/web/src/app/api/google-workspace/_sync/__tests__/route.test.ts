@@ -14,7 +14,7 @@ vi.mock('@contractor-ops/integrations/adapters/register-all', () => ({
 }));
 
 vi.mock('@contractor-ops/api/services/google-workspace-sync-orchestrator', () => ({
-  processDirectorySync: (...args: any[]) => mockProcessDirectorySync(...args),
+  processDirectorySync: mockProcessDirectorySync,
 }));
 
 import { POST } from '../route';

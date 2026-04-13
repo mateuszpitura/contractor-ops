@@ -28,7 +28,7 @@ const AMENDMENT_ID = 'clamendment000000000000001';
 
 const { mockPrisma } = vi.hoisted(() => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  type Rec = Record<string, any>;
+  type Rec = Record<string, unknown>;
 
   const mockPrisma: Rec = {
     organization: {

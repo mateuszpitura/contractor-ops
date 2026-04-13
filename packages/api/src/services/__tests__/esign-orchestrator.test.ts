@@ -41,7 +41,7 @@ vi.mock('@contractor-ops/db', () => ({
 }));
 
 vi.mock('@contractor-ops/integrations/services/esign-service', () => ({
-  createSigningEnvelope: (...args: any[]) => mockCreateSigningEnvelope(...args),
+  createSigningEnvelope: mockCreateSigningEnvelope,
   getEmbeddedSigningUrl: vi.fn(),
   downloadSignedDocument: vi.fn(),
   voidSigningEnvelope: vi.fn(),

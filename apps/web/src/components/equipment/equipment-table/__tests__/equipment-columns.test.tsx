@@ -3,7 +3,15 @@ import type { EquipmentRow } from '../equipment-columns';
 import { getEquipmentColumns } from '../equipment-columns';
 
 vi.mock('@/i18n/navigation', () => ({
-  Link: ({ children, href, ...props }: any) => (
+  Link: ({
+    children,
+    href,
+    ...props
+  }: {
+    children: React.ReactNode;
+    href: string;
+    [key: string]: unknown;
+  }) => (
     <a href={href} {...props}>
       {children}
     </a>
@@ -52,7 +60,7 @@ function renderCell(columnId: string, row: EquipmentRow) {
     c => ('accessorKey' in c && c.accessorKey === columnId) || c.id === columnId,
   );
   if (!col?.cell) throw new Error(`No cell for column ${columnId}`);
-  const cellFn = col.cell as (info: any) => any;
+  const cellFn = col.cell as (info: unknown) => unknown;
   const result = cellFn({
     row: { original: row, getIsSelected: () => false, toggleSelected: vi.fn() },
     getValue: () => (row as unknown)[columnId],

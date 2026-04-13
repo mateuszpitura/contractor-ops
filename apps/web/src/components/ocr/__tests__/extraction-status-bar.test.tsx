@@ -4,9 +4,9 @@ import { ExtractionStatusBar } from '../extraction-status-bar';
 
 vi.mock('motion/react', () => ({
   motion: {
-    div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
+    div: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => <div {...props}>{children}</div>,
   },
-  AnimatePresence: ({ children }: any) => children,
+  AnimatePresence: ({ children }: { children: React.ReactNode }) => children,
 }));
 
 describe('ExtractionStatusBar', () => {

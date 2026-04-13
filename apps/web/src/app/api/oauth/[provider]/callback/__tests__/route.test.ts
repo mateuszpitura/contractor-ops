@@ -31,9 +31,9 @@ vi.mock('@contractor-ops/integrations', () => ({
 vi.mock('@contractor-ops/db', () => ({
   prisma: {
     integrationConnection: {
-      findFirst: (...args: any[]) => mockFindFirst(...args),
-      create: (...args: any[]) => mockCreate(...args),
-      update: (...args: any[]) => mockUpdate(...args),
+      findFirst: mockFindFirst,
+      create: mockCreate,
+      update: mockUpdate,
     },
   },
 }));

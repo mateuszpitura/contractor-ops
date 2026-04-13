@@ -127,13 +127,13 @@ vi.mock('sonner', () => ({
 
 // Mock child components
 vi.mock('../privacy-notice-display', () => ({
-  PrivacyNoticeDisplay: ({ notice }: any) => (
+  PrivacyNoticeDisplay: ({ notice }: { notice: { jurisdiction: string } }) => (
     <div data-testid="privacy-notice">{notice.jurisdiction}</div>
   ),
 }));
 
 vi.mock('../consent-purpose-toggle', () => ({
-  ConsentPurposeToggle: ({ purpose, required, granted, onToggle, disabled }: any) => (
+  ConsentPurposeToggle: ({ purpose, required, granted, onToggle, disabled }: { purpose: string; required: boolean; granted: boolean; onToggle: (v: boolean) => void; disabled: boolean }) => (
     <div data-testid={`toggle-${purpose}`}>
       <button
         type="button"

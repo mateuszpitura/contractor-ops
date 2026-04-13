@@ -44,16 +44,16 @@ const APPROVAL_CHAIN_B_ID = 'chain-b-001';
 
 const { mockPrisma } = vi.hoisted(() => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  type Rec = Record<string, any>;
+  type Rec = Record<string, unknown>;
 
-  const ORG_A = 'org-a-00000000-0000-0000-0000-000000000001';
-  const ORG_B = 'org-b-00000000-0000-0000-0000-000000000002';
-  const USER_A = 'user-a-00000000-0000-0000-0000-000000000001';
-  const USER_B = 'user-b-00000000-0000-0000-0000-000000000002';
+  const OrgA = 'org-a-00000000-0000-0000-0000-000000000001';
+  const OrgB = 'org-b-00000000-0000-0000-0000-000000000002';
+  const UserA = 'user-a-00000000-0000-0000-0000-000000000001';
+  const UserB = 'user-b-00000000-0000-0000-0000-000000000002';
 
   const contractorA: Rec = {
     id: 'contractor-a-001',
-    organizationId: ORG_A,
+    organizationId: OrgA,
     legalName: 'Alpha Consulting Sp. z o.o.',
     taxId: '1111111111',
     status: 'ACTIVE',
@@ -68,7 +68,7 @@ const { mockPrisma } = vi.hoisted(() => {
   };
   const contractorB: Rec = {
     id: 'contractor-b-001',
-    organizationId: ORG_B,
+    organizationId: OrgB,
     legalName: 'Beta Services S.A.',
     taxId: '2222222222',
     status: 'ACTIVE',
@@ -83,7 +83,7 @@ const { mockPrisma } = vi.hoisted(() => {
   };
   const invoiceA: Rec = {
     id: 'invoice-a-001',
-    organizationId: ORG_A,
+    organizationId: OrgA,
     contractorId: 'contractor-a-001',
     invoiceNumber: 'FV/2025/001',
     status: 'RECEIVED',
@@ -95,7 +95,7 @@ const { mockPrisma } = vi.hoisted(() => {
   };
   const invoiceB: Rec = {
     id: 'invoice-b-001',
-    organizationId: ORG_B,
+    organizationId: OrgB,
     contractorId: 'contractor-b-001',
     invoiceNumber: 'FV/2025/002',
     status: 'RECEIVED',
@@ -107,7 +107,7 @@ const { mockPrisma } = vi.hoisted(() => {
   };
   const documentA: Rec = {
     id: 'document-a-001',
-    organizationId: ORG_A,
+    organizationId: OrgA,
     storageKey: 'org-a/docs/file-a.pdf',
     filename: 'contract-a.pdf',
     mimeType: 'application/pdf',
@@ -117,7 +117,7 @@ const { mockPrisma } = vi.hoisted(() => {
   };
   const documentB: Rec = {
     id: 'document-b-001',
-    organizationId: ORG_B,
+    organizationId: OrgB,
     storageKey: 'org-b/docs/file-b.pdf',
     filename: 'contract-b.pdf',
     mimeType: 'application/pdf',
@@ -127,9 +127,9 @@ const { mockPrisma } = vi.hoisted(() => {
   };
   const auditLogA: Rec = {
     id: 'audit-a-001',
-    organizationId: ORG_A,
+    organizationId: OrgA,
     action: 'contractor.created',
-    actorId: USER_A,
+    actorId: UserA,
     actorName: 'User A',
     resourceType: 'Contractor',
     resourceId: 'contractor-a-001',
@@ -138,9 +138,9 @@ const { mockPrisma } = vi.hoisted(() => {
   };
   const auditLogB: Rec = {
     id: 'audit-b-001',
-    organizationId: ORG_B,
+    organizationId: OrgB,
     action: 'contractor.created',
-    actorId: USER_B,
+    actorId: UserB,
     actorName: 'User B',
     resourceType: 'Contractor',
     resourceId: 'contractor-b-001',
@@ -149,7 +149,7 @@ const { mockPrisma } = vi.hoisted(() => {
   };
   const chainA: Rec = {
     id: 'chain-a-001',
-    organizationId: ORG_A,
+    organizationId: OrgA,
     resourceType: 'INVOICE',
     name: 'Org A Chain',
     isDefault: true,
@@ -159,7 +159,7 @@ const { mockPrisma } = vi.hoisted(() => {
   };
   const chainB: Rec = {
     id: 'chain-b-001',
-    organizationId: ORG_B,
+    organizationId: OrgB,
     resourceType: 'INVOICE',
     name: 'Org B Chain',
     isDefault: true,
@@ -169,7 +169,7 @@ const { mockPrisma } = vi.hoisted(() => {
   };
   const flowA: Rec = {
     id: 'flow-a-001',
-    organizationId: ORG_A,
+    organizationId: OrgA,
     resourceId: 'invoice-a-001',
     resourceType: 'INVOICE',
     chainConfigId: 'chain-a-001',
@@ -177,7 +177,7 @@ const { mockPrisma } = vi.hoisted(() => {
   };
   const flowB: Rec = {
     id: 'flow-b-001',
-    organizationId: ORG_B,
+    organizationId: OrgB,
     resourceId: 'invoice-b-001',
     resourceType: 'INVOICE',
     chainConfigId: 'chain-b-001',
@@ -185,9 +185,9 @@ const { mockPrisma } = vi.hoisted(() => {
   };
   const stepA: Rec = {
     id: 'step-a-001',
-    organizationId: ORG_A,
+    organizationId: OrgA,
     approvalFlowId: 'flow-a-001',
-    approverUserId: USER_A,
+    approverUserId: UserA,
     stepOrder: 1,
     status: 'PENDING',
     slaDeadline: null,
@@ -195,9 +195,9 @@ const { mockPrisma } = vi.hoisted(() => {
   };
   const stepB: Rec = {
     id: 'step-b-001',
-    organizationId: ORG_B,
+    organizationId: OrgB,
     approvalFlowId: 'flow-b-001',
-    approverUserId: USER_B,
+    approverUserId: UserB,
     stepOrder: 1,
     status: 'PENDING',
     slaDeadline: null,
@@ -205,13 +205,13 @@ const { mockPrisma } = vi.hoisted(() => {
   };
 
   /** Primary DB routing rows — tenant middleware reads dataRegion via prisma.organization */
-  const orgARecord: Rec = { id: ORG_A, dataRegion: 'EU' };
-  const orgBRecord: Rec = { id: ORG_B, dataRegion: 'EU' };
+  const orgARecord: Rec = { id: OrgA, dataRegion: 'EU' };
+  const orgBRecord: Rec = { id: OrgB, dataRegion: 'EU' };
 
   // -- Where-clause filter --
   type OperatorCheck = (itemValue: unknown, operand: unknown) => boolean;
 
-  const OPERATOR_CHECKS: Record<string, OperatorCheck> = {
+  const OperatorChecks: Record<string, OperatorCheck> = {
     in: (v, op) => Array.isArray(op) && op.includes(v),
     notIn: (v, op) => !(Array.isArray(op) && op.includes(v)),
     not: (v, op) => v !== op,
@@ -227,7 +227,7 @@ const { mockPrisma } = vi.hoisted(() => {
 
   function matchesOperator(itemValue: unknown, operator: Rec): boolean {
     for (const [op, operand] of Object.entries(operator)) {
-      const check = OPERATOR_CHECKS[op];
+      const check = OperatorChecks[op];
       if (check && !check(itemValue, operand)) return false;
     }
     return true;
@@ -685,7 +685,7 @@ describe('Search isolation', () => {
   });
 
   it('search results from orgB data never appear for orgA caller', async () => {
-    mockPrisma.$queryRaw.mockImplementation(async (...args: any[]) => {
+    mockPrisma.$queryRaw.mockImplementation(async (...args: unknown[]) => {
       const serialized = JSON.stringify(args);
       if (serialized.includes(ORG_B_ID)) {
         return [

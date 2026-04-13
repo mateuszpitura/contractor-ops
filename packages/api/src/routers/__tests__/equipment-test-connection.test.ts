@@ -21,7 +21,7 @@ const USER_ID = 'user-test-conn-001';
 
 const { mockPrisma, mockCourierClient } = vi.hoisted(() => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  type Rec = Record<string, any>;
+  type Rec = Record<string, unknown>;
 
   const mockPrisma: Rec = {
     equipmentAssignment: { findMany: vi.fn() },

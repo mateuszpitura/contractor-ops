@@ -24,7 +24,7 @@ function renderCell(columnId: string, row: WorkflowRunRow) {
     c => ('accessorKey' in c && c.accessorKey === columnId) || c.id === columnId,
   );
   if (!col?.cell) throw new Error(`No cell for column ${columnId}`);
-  const cellFn = col.cell as (info: any) => any;
+  const cellFn = col.cell as (info: unknown) => unknown;
   const result = cellFn({
     row: { original: row, getIsSelected: () => false, toggleSelected: vi.fn() },
     getValue: () => (row as unknown)[columnId],

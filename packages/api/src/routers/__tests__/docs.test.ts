@@ -13,7 +13,7 @@ const CONNECTION_ID = 'clconnect0000000000000001';
 
 const { mockPrisma, mockDocLink } = vi.hoisted(() => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  type Rec = Record<string, any>;
+  type Rec = Record<string, unknown>;
 
   const mockDocLink = {
     attachDocLink: vi.fn(async () => ({ id: 'el-attach' })),

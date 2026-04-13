@@ -8,7 +8,7 @@ const { mockVerify } = vi.hoisted(() => ({
 vi.mock('resend', () => ({
   Resend: class {
     webhooks = {
-      verify: (...args: any[]) => mockVerify(...args),
+      verify: mockVerify,
     };
   },
 }));

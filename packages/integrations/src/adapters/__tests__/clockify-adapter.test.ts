@@ -8,11 +8,11 @@ const mockCount = vi.fn();
 vi.mock('@contractor-ops/db', () => ({
   prisma: {
     integrationConnection: {
-      findUnique: (...args: any[]) => mockFindUnique(...args),
+      findUnique: mockFindUnique,
     },
     integrationSyncLog: {
-      findMany: (...args: any[]) => mockFindMany(...args),
-      count: (...args: any[]) => mockCount(...args),
+      findMany: mockFindMany,
+      count: mockCount,
     },
   },
 }));

@@ -6,8 +6,8 @@ const mockUseQuery = vi.fn();
 const mockUseMutation = vi.fn();
 
 vi.mock('@tanstack/react-query', () => ({
-  useQuery: (...args: any[]) => mockUseQuery(...args),
-  useMutation: (...args: any[]) => mockUseMutation(...args),
+  useQuery: mockUseQuery,
+  useMutation: mockUseMutation,
   useQueryClient: () => ({
     invalidateQueries: vi.fn(),
   }),
@@ -41,7 +41,9 @@ vi.mock('@/trpc/init', () => ({
 const mockPush = vi.fn();
 vi.mock('@/i18n/navigation', () => ({
   useRouter: () => ({ push: mockPush }),
-  Link: ({ children, href }: any) => <a href={href}>{children}</a>,
+  Link: ({ children, href }: { children: React.ReactNode; href: string }) => (
+    <a href={href}>{children}</a>
+  ),
   usePathname: () => '/notifications',
 }));
 
@@ -53,7 +55,7 @@ vi.mock('nuqs', () => ({
     withDefault: () => ({}),
   },
   useQueryState: (key: string) => {
-    const defaults: Record<string, any> = {
+    const defaults: Record<string, unknown> = {
       type: 'all',
       unread: '',
       page: 1,
@@ -64,17 +66,19 @@ vi.mock('nuqs', () => ({
 
 vi.mock('motion/react', () => ({
   motion: {
-    div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
+    div: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => (
+      <div {...props}>{children}</div>
+    ),
   },
-  AnimatePresence: ({ children }: any) => children,
+  AnimatePresence: ({ children }: { children: React.ReactNode }) => children,
 }));
 
 vi.mock('@/components/shared/animate-in', () => ({
-  AnimateIn: ({ children }: any) => <div>{children}</div>,
+  AnimateIn: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
 
 vi.mock('@/components/shared/empty-state', () => ({
-  EmptyState: ({ heading, body }: any) => (
+  EmptyState: ({ heading, body }: { heading: string; body: string }) => (
     <div>
       <h2>{heading}</h2>
       <p>{body}</p>

@@ -24,7 +24,7 @@ vi.mock('@/components/equipment/shipment-timeline', () => ({
 }));
 
 vi.mock('@/components/equipment/shipment-status-badge', () => ({
-  ShipmentStatusBadge: ({ status }: any) => <span>{status}</span>,
+  ShipmentStatusBadge: ({ status }: { status: string }) => <span>{status}</span>,
 }));
 
 vi.mock('@/components/equipment/return-approval-banner', () => ({

@@ -25,7 +25,7 @@ function renderCell(columnId: string, row: ReadyInvoiceRow) {
     c => ('accessorKey' in c && c.accessorKey === columnId) || c.id === columnId,
   );
   if (!col?.cell) throw new Error(`No cell for column ${columnId}`);
-  const cellFn = col.cell as (info: any) => any;
+  const cellFn = col.cell as (info: unknown) => unknown;
   const result = cellFn({
     row: { original: row, getIsSelected: () => false, toggleSelected: vi.fn() },
     getValue: () => (row as unknown)[columnId],
@@ -147,7 +147,7 @@ describe('getColumns cell renderers (invoice selection)', () => {
     const t = (key: string) => key;
     const columns = getColumns(t);
     const selectCol = columns.find(c => c.id === 'select');
-    const cellFn = selectCol?.cell as (info: any) => any;
+    const cellFn = selectCol?.cell as (info: unknown) => unknown;
     const result = cellFn({
       row: {
         original: makeRow({ _inRunNumber: 'PR-001' }),

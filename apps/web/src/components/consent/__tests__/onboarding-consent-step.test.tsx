@@ -84,13 +84,13 @@ vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
 // Mock child components to isolate unit behavior
 vi.mock('../privacy-notice-display', () => ({
-  PrivacyNoticeDisplay: ({ notice }: any) => (
+  PrivacyNoticeDisplay: ({ notice }: { notice: { jurisdiction: string } }) => (
     <div data-testid="privacy-notice">{notice.jurisdiction}</div>
   ),
 }));
 
 vi.mock('../consent-purpose-toggle', () => ({
-  ConsentPurposeToggle: ({ purpose, required, granted, onToggle }: any) => (
+  ConsentPurposeToggle: ({ purpose, required, granted, onToggle }: { purpose: string; required: boolean; granted: boolean; onToggle: (v: boolean) => void }) => (
     <div data-testid={`toggle-${purpose}`}>
       <button
         type="button"

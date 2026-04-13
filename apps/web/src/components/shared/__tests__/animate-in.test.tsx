@@ -2,7 +2,7 @@ import { render, screen } from '@/test/test-utils';
 
 vi.mock('motion/react', () => ({
   motion: {
-    div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
+    div: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => <div {...props}>{children}</div>,
   },
 }));
 

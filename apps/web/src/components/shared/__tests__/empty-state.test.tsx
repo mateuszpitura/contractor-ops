@@ -4,7 +4,7 @@ import { render, screen, setup } from '@/test/test-utils';
 import { EmptyState } from '../empty-state';
 
 vi.mock('@/i18n/navigation', () => ({
-  Link: ({ children, href, ...props }: any) => (
+  Link: ({ children, href, ...props }: { children: React.ReactNode; href: string; [key: string]: unknown }) => (
     <a href={href} {...props}>
       {children}
     </a>

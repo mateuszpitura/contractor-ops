@@ -7,8 +7,8 @@ const mockUseQuery = vi.fn();
 const mockUseMutation = vi.fn();
 
 vi.mock('@tanstack/react-query', () => ({
-  useQuery: (...args: any[]) => mockUseQuery(...args),
-  useMutation: (...args: any[]) => mockUseMutation(...args),
+  useQuery: mockUseQuery,
+  useMutation: mockUseMutation,
   useQueryClient: () => ({
     invalidateQueries: vi.fn(),
   }),
@@ -48,9 +48,9 @@ vi.mock('sonner', () => ({
 
 vi.mock('motion/react', () => ({
   motion: {
-    div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
+    div: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => <div {...props}>{children}</div>,
   },
-  AnimatePresence: ({ children }: any) => children,
+  AnimatePresence: ({ children }: { children: React.ReactNode }) => children,
 }));
 
 describe('OcrReviewPanel', () => {

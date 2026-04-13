@@ -13,7 +13,7 @@ const { mockPrisma } = vi.hoisted(() => {
 });
 
 vi.mock('../../services/billing-service.js', () => ({
-  getSubscription: (...args: any[]) => mockGetSubscription(...args),
+  getSubscription: mockGetSubscription,
 }));
 
 vi.mock('@sentry/nextjs', () => {

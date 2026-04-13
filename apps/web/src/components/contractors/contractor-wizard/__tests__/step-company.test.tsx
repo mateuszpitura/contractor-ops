@@ -25,7 +25,7 @@ vi.mock('@/trpc/init', () => ({
   },
 }));
 
-function Wrapper({ defaultValues }: { defaultValues?: Record<string, any> }) {
+function Wrapper({ defaultValues }: { defaultValues?: Record<string, unknown> }) {
   const form = useForm({
     defaultValues: {
       taxId: '',

@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { render, screen, setup } from '@/test/test-utils';
 
 vi.mock('recharts', () => ({
-  BarChart: ({ children }: any) => <div data-testid="bar-chart">{children}</div>,
+  BarChart: ({ children }: { children: React.ReactNode }) => <div data-testid="bar-chart">{children}</div>,
   Bar: ({ children, onClick }: any) => (
     <button
       type="button"
@@ -18,12 +18,12 @@ vi.mock('recharts', () => ({
   XAxis: () => <div data-testid="x-axis" />,
   YAxis: () => <div data-testid="y-axis" />,
   Tooltip: () => <div data-testid="tooltip" />,
-  ResponsiveContainer: ({ children }: any) => (
+  ResponsiveContainer: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="responsive-container">{children}</div>
   ),
-  PieChart: ({ children }: any) => <div data-testid="pie-chart">{children}</div>,
-  Pie: ({ children }: any) => <div data-testid="pie">{children}</div>,
-  Cell: ({ fill }: any) => <div data-testid="cell" data-fill={fill} />,
+  PieChart: ({ children }: { children: React.ReactNode }) => <div data-testid="pie-chart">{children}</div>,
+  Pie: ({ children }: { children: React.ReactNode }) => <div data-testid="pie">{children}</div>,
+  Cell: ({ fill }: { fill: string }) => <div data-testid="cell" data-fill={fill} />,
 }));
 
 import { ReportChart } from '../report-chart';

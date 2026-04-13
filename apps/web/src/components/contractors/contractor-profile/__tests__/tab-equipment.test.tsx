@@ -9,7 +9,7 @@ const mockUseQuery = vi.fn(() => ({
 }));
 
 vi.mock('@tanstack/react-query', () => ({
-  useQuery: (...args: any[]) => mockUseQuery(...args),
+  useQuery: mockUseQuery,
 }));
 
 vi.mock('@/trpc/init', () => ({
@@ -25,7 +25,7 @@ vi.mock('@/trpc/init', () => ({
 }));
 
 vi.mock('@/i18n/navigation', () => ({
-  Link: ({ children, href, ...props }: any) => (
+  Link: ({ children, href, ...props }: { children: React.ReactNode; href: string; [key: string]: unknown }) => (
     <a href={href} {...props}>
       {children}
     </a>
@@ -37,7 +37,7 @@ vi.mock('@/components/equipment/equipment-type-icon', () => ({
 }));
 
 vi.mock('@/components/equipment/equipment-status-badge', () => ({
-  EquipmentStatusBadge: ({ status }: any) => <span>{status}</span>,
+  EquipmentStatusBadge: ({ status }: { status: string }) => <span>{status}</span>,
 }));
 
 vi.mock('@/components/equipment/shipment-condensed', () => ({

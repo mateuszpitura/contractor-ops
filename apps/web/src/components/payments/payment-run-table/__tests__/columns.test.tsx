@@ -3,7 +3,9 @@ import type { PaymentRunRow } from '../columns';
 import { getColumns } from '../columns';
 
 vi.mock('@/components/payments/payment-run-badge', () => ({
-  PaymentRunBadge: ({ status }: any) => <span data-testid="run-badge">{status}</span>,
+  PaymentRunBadge: ({ status }: { status: string }) => (
+    <span data-testid="run-badge">{status}</span>
+  ),
 }));
 
 function makeRow(overrides: Partial<PaymentRunRow> = {}): PaymentRunRow {
@@ -29,7 +31,7 @@ function renderCell(columnId: string, row: PaymentRunRow) {
     c => ('accessorKey' in c && c.accessorKey === columnId) || c.id === columnId,
   );
   if (!col?.cell) throw new Error(`No cell for column ${columnId}`);
-  const cellFn = col.cell as (info: any) => any;
+  const cellFn = col.cell as (info: unknown) => unknown;
   const result = cellFn({
     row: { original: row, getIsSelected: () => false, toggleSelected: vi.fn() },
     getValue: () => (row as unknown)[columnId],

@@ -32,7 +32,7 @@ const {
   mockGenerateStorageKey,
 } = vi.hoisted(() => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  type Rec = Record<string, any>;
+  type Rec = Record<string, unknown>;
 
   const mockFindContractorsByEmail = vi.fn();
   const mockCreateMagicLinkToken = vi.fn();
@@ -181,7 +181,7 @@ vi.mock('node:crypto', async importOriginal => {
 });
 
 vi.mock('../../services/portal-change-request.js', () => ({
-  createChangeRequest: (...args: any[]) => mockCreateChangeRequest(...args),
+  createChangeRequest: mockCreateChangeRequest,
 }));
 
 vi.mock('../../services/bank-account-crypto.js', () => ({

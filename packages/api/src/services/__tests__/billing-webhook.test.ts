@@ -36,8 +36,8 @@ vi.mock('../stripe-client.js', () => ({
 vi.mock('../billing-constants.js', () => ({
   TIER_CREDIT_ALLOWANCE: { STARTER: 20, PRO: 100, ENTERPRISE: 500 },
   TRIAL_CREDIT_ALLOWANCE: 5,
-  resolveTierFromPriceId: (...args: any[]) => mockResolveTierFromPriceId(...args),
-  resolveTopUpCredits: (...args: any[]) => mockResolveTopUpCredits(...args),
+  resolveTierFromPriceId: mockResolveTierFromPriceId,
+  resolveTopUpCredits: mockResolveTopUpCredits,
 }));
 
 vi.mock('../credit-service.js', () => ({
@@ -45,11 +45,11 @@ vi.mock('../credit-service.js', () => ({
 }));
 
 vi.mock('../notification-service.js', () => ({
-  dispatch: (...args: any[]) => mockDispatch(...args),
+  dispatch: mockDispatch,
 }));
 
 vi.mock('../cache.js', () => ({
-  invalidate: (...args: any[]) => mockInvalidate(...args),
+  invalidate: mockInvalidate,
   CacheKeys: {
     subscription: (id: string) => `sub:${id}`,
     creditBalance: (id: string) => `credit:${id}`,

@@ -13,8 +13,8 @@ const {
   mockRegisterJiraWebhooks,
   mockDeregisterJiraWebhooks,
 } = vi.hoisted(() => {
-  const ORG_ID = 'org-jira-00000000-0000-0000-0000-000000000001';
-  const USER_ID = 'user-jira-00000000-0000-0000-0000-000000000001';
+  const OrgId = 'org-jira-00000000-0000-0000-0000-000000000001';
+  const UserId = 'user-jira-00000000-0000-0000-0000-000000000001';
 
   const mockGetStatusMapping = vi.fn(async () => null as unknown[] | null);
   const mockSaveStatusMappingSvc = vi.fn(async () => undefined);
@@ -22,7 +22,7 @@ const {
   const mockDeregisterJiraWebhooks = vi.fn(async () => undefined);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const mockPrisma: Record<string, any> = {
+  const mockPrisma: Record<string, unknown> = {
     organization: {
       findUnique: vi.fn().mockResolvedValue({ dataRegion: 'EU' }),
     },
@@ -56,8 +56,8 @@ const {
   };
 
   return {
-    ORG_ID,
-    USER_ID,
+    ORG_ID: OrgId,
+    USER_ID: UserId,
     mockPrisma,
     mockGetStatusMapping,
     mockSaveStatusMappingSvc,

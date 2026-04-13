@@ -44,7 +44,7 @@ function renderCell(columnId: string, row: ContractorRow) {
     c => ('accessorKey' in c && c.accessorKey === columnId) || c.id === columnId,
   );
   if (!col?.cell) throw new Error(`No cell for column ${columnId}`);
-  const cellFn = col.cell as (info: any) => any;
+  const cellFn = col.cell as (info: unknown) => unknown;
   const result = cellFn({
     row: {
       original: row,
@@ -112,7 +112,7 @@ describe('getColumns cell renderers', () => {
           const t = (key: string) => key;
           const cols = getColumns(t);
           const col = cols.find(c => (c as unknown).accessorKey === 'lifecycleStage');
-          const cellFn = col?.cell as (info: any) => any;
+          const cellFn = col?.cell as (info: unknown) => unknown;
           return cellFn({
             row: {
               original: makeRow({ lifecycleStage: stage }),

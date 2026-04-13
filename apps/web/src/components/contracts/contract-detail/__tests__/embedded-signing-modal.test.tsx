@@ -4,7 +4,7 @@ import { EmbeddedSigningModal } from '../embedded-signing-modal';
 const mockedUseQuery = vi.fn();
 
 vi.mock('@tanstack/react-query', () => ({
-  useQuery: (...args: any[]) => mockedUseQuery(...args),
+  useQuery: mockedUseQuery,
 }));
 
 vi.mock('@/trpc/init', () => ({

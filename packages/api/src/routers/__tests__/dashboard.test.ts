@@ -13,11 +13,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 // ---------------------------------------------------------------------------
 
 const { ORG_ID, USER_ID, mockPrisma } = vi.hoisted(() => {
-  const ORG_ID = 'org-dash-00000000-0000-0000-0000-000000000001';
-  const USER_ID = 'user-dash-00000000-0000-0000-0000-000000000001';
+  const OrgId = 'org-dash-00000000-0000-0000-0000-000000000001';
+  const UserId = 'user-dash-00000000-0000-0000-0000-000000000001';
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  type Rec = Record<string, any>;
+  type Rec = Record<string, unknown>;
 
   const mockPrisma: Rec = {
     organization: {
@@ -48,7 +48,7 @@ const { ORG_ID, USER_ID, mockPrisma } = vi.hoisted(() => {
     $transaction: vi.fn(async (fn: (tx: Rec) => Promise<unknown>) => fn(mockPrisma)),
   };
 
-  return { ORG_ID, USER_ID, mockPrisma };
+  return { ORG_ID: OrgId, USER_ID: UserId, mockPrisma };
 });
 
 // ---------------------------------------------------------------------------

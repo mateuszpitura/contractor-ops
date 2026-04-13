@@ -5,7 +5,7 @@ import { ProrationPreview } from '../proration-preview';
 // Mocks
 // ---------------------------------------------------------------------------
 
-let prorationData: any = null;
+let prorationData: unknown = null;
 let isLoading = false;
 let isError = false;
 

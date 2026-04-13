@@ -26,7 +26,7 @@ const CONTRACTOR_ID = 'clcontractor000000000001';
 
 const { mockPrisma } = vi.hoisted(() => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  type Rec = Record<string, any>;
+  type Rec = Record<string, unknown>;
 
   const mockPrisma: Rec = {
     organization: {
@@ -118,9 +118,9 @@ const mockProcessImportFile = vi.fn(async () => ({
 }));
 
 vi.mock('../../services/import-processor.js', () => ({
-  parseImportFile: (...args: any[]) => (mockParseImportFile as unknown)(...args),
-  autoMapColumns: (...args: any[]) => (mockAutoMapColumns as unknown)(...args),
-  processImportFile: (...args: any[]) => (mockProcessImportFile as unknown)(...args),
+  parseImportFile: mockParseImportFile,
+  autoMapColumns: mockAutoMapColumns,
+  processImportFile: mockProcessImportFile,
 }));
 
 vi.mock('../../services/r2.js', () => ({

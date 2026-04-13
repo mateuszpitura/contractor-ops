@@ -6,7 +6,7 @@ const mockFindUnique = vi.fn();
 vi.mock('@contractor-ops/db', () => ({
   prisma: {
     integrationConnection: {
-      findUnique: (...args: any[]) => mockFindUnique(...args),
+      findUnique: mockFindUnique,
     },
   },
 }));

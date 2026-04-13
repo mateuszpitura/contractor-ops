@@ -42,8 +42,8 @@ const { toastSuccess, toastError, invalidateQueries } = vi.hoisted(() => ({
 
 vi.mock('sonner', () => ({
   toast: {
-    success: (...args: any[]) => toastSuccess(...args),
-    error: (...args: any[]) => toastError(...args),
+    success: toastSuccess,
+    error: toastError,
   },
 }));
 

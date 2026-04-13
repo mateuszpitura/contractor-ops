@@ -23,9 +23,9 @@ const mockGetQStashClient = vi.hoisted(() => vi.fn(() => ({ publishJSON: mockPub
 vi.mock('@contractor-ops/db', () => ({
   prisma: {
     ocrExtraction: {
-      create: (...args: any[]) => mockCreate(...args),
-      update: (...args: any[]) => mockUpdate(...args),
-      findFirst: (...args: any[]) => mockFindFirst(...args),
+      create: mockCreate,
+      update: mockUpdate,
+      findFirst: mockFindFirst,
     },
   },
 }));
@@ -47,15 +47,15 @@ vi.mock('@contractor-ops/integrations/services/qstash-client', () => ({
 }));
 
 vi.mock('../credit-service.js', () => ({
-  checkAndDeductCredit: (...args: any[]) => mockCheckCredit(...args),
+  checkAndDeductCredit: mockCheckCredit,
 }));
 
 vi.mock('../r2.js', () => ({
-  createPresignedDownloadUrl: (...args: any[]) => mockPresignedUrl(...args),
+  createPresignedDownloadUrl: mockPresignedUrl,
 }));
 
 vi.mock('@contractor-ops/integrations/services/ocr-service', () => ({
-  extractInvoice: (...args: any[]) => mockExtractInvoice(...args),
+  extractInvoice: mockExtractInvoice,
 }));
 
 import {

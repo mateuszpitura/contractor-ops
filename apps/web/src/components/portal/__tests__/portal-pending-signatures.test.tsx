@@ -18,7 +18,7 @@ vi.mock('@/components/contracts/contract-detail/embedded-signing-modal', () => (
 const mockUseQuery = vi.fn();
 
 vi.mock('@tanstack/react-query', () => ({
-  useQuery: (...args: any[]) => mockUseQuery(...args),
+  useQuery: mockUseQuery,
 }));
 
 describe('PortalPendingSignatures', () => {

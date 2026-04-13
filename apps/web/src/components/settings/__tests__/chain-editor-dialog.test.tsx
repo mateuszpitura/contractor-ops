@@ -29,7 +29,7 @@ vi.mock('@/trpc/init', () => ({
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
 vi.mock('@/components/settings/condition-builder', () => ({
-  ConditionBuilder: ({ value, onChange }: any) => (
+  ConditionBuilder: ({ value, onChange }: { value: string; onChange: (v: string) => void }) => (
     <div data-testid="condition-builder">
       <span data-testid="condition-count">{value?.length ?? 0}</span>
       <button

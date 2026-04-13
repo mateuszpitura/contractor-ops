@@ -100,8 +100,8 @@ vi.mock('@tanstack/react-query', async () => {
       };
       lastMutationCallbacks.push(entry);
       return {
-        mutate: (...args: any[]) => {
-          mockMutate(...args);
+        mutate: (...args: unknown[]) => {
+          mockMutate(...(args as Parameters<typeof mockMutate>));
         },
         isPending: false,
         reset: vi.fn(),

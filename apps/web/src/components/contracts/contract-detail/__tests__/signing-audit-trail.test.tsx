@@ -8,7 +8,7 @@ const mockUseQuery = vi.fn(() => ({
 }));
 
 vi.mock('@tanstack/react-query', () => ({
-  useQuery: (...args: any[]) => mockUseQuery(...args),
+  useQuery: mockUseQuery,
 }));
 
 vi.mock('@/trpc/init', () => ({

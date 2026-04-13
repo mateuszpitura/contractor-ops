@@ -8,12 +8,12 @@ const mockSyncLogUpdate = vi.fn();
 vi.mock('@contractor-ops/db', () => ({
   prisma: {
     integrationSyncLog: {
-      create: (...args: any[]) => mockCreate(...args),
-      update: (...args: any[]) => mockSyncLogUpdate(...args),
+      create: mockCreate,
+      update: mockSyncLogUpdate,
     },
     integrationConnection: {
-      findUniqueOrThrow: (...args: any[]) => mockFindUniqueOrThrow(...args),
-      update: (...args: any[]) => mockUpdate(...args),
+      findUniqueOrThrow: mockFindUniqueOrThrow,
+      update: mockUpdate,
     },
   },
 }));

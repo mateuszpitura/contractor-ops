@@ -42,7 +42,7 @@ vi.mock('@/components/equipment/equipment-type-icon', () => ({
 }));
 
 vi.mock('@/components/equipment/equipment-status-badge', () => ({
-  EquipmentStatusBadge: ({ status }: any) => <span>{status}</span>,
+  EquipmentStatusBadge: ({ status }: { status: string }) => <span>{status}</span>,
 }));
 
 vi.mock('@/components/portal/portal-return-flow', () => ({
