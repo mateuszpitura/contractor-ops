@@ -1,11 +1,7 @@
 import { render, screen } from '@/test/test-utils';
 import { TabDocuments } from '../tab-documents';
 
-const {
-  mockUseQuery,
-} = vi.hoisted(() => ({
-  mockUseQuery: vi.fn(() => ({,
-}));
+const mockUseQuery = vi.fn(() => ({
   data: null,
   isLoading: false,
   isFetching: false,
@@ -31,9 +27,7 @@ vi.mock('@/components/documents/drop-zone', () => ({
 }));
 
 vi.mock('@/components/documents/document-card', () => ({
-  DocumentCard: ({ document }: { document: { id: string } }) => (
-    <div data-testid="document-card">{document.id}</div>
-  ),
+  DocumentCard: ({ document }: any) => <div data-testid="document-card">{document.id}</div>,
 }));
 
 describe('TabDocuments', () => {

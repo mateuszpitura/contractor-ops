@@ -49,7 +49,6 @@ export function JiraProviderSection() {
         )}
 
         {isConnected && !connection?.scopeExpansionNeeded && (
-          {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
           <Button variant="outline" size="sm" onClick={() => setMappingDialogOpen(true)}>
             Configure Status Mapping
           </Button>

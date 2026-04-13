@@ -53,7 +53,6 @@ export function LinearProviderSection() {
         )}
 
         {!!(isConnected || isPendingMapping) && (
-          {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
           <Button variant="outline" size="sm" onClick={() => setMappingOpen(true)}>
             {t('configureMapping')}
           </Button>

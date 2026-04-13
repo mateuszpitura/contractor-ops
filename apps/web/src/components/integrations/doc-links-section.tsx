@@ -76,7 +76,6 @@ export function DocLinksSection({ workflowTaskRunId, readOnly }: DocLinksSection
           <span className="text-sm font-semibold">Documents</span>
         </div>
         {!readOnly && (
-          {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
           <Button variant="ghost" size="sm" onClick={() => setAttachOpen(true)}>
             Attach Document
           </Button>
@@ -106,7 +105,6 @@ export function DocLinksSection({ workflowTaskRunId, readOnly }: DocLinksSection
                 provider={provider}
                 lastEditedTime={metadata.lastEditedTime as string | undefined}
                 readOnly={readOnly}
-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 onRemove={handleRemove}
               />
             );

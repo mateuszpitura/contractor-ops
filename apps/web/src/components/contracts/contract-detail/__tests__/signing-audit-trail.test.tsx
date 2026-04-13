@@ -1,11 +1,7 @@
 import { render, screen } from '@/test/test-utils';
 import { SigningAuditTrail } from '../signing-audit-trail';
 
-const {
-  mockUseQuery,
-} = vi.hoisted(() => ({
-  mockUseQuery: vi.fn(() => ({,
-}));
+const mockUseQuery = vi.fn(() => ({
   data: null,
   isPending: false,
   isLoading: false,

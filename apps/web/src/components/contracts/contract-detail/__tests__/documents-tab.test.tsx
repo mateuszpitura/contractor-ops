@@ -1,11 +1,7 @@
 import { render, screen } from '@/test/test-utils';
 import { DocumentsTab } from '../documents-tab';
 
-const {
-  mockUseQuery,
-} = vi.hoisted(() => ({
-  mockUseQuery: vi.fn(() => ({,
-}));
+const mockUseQuery = vi.fn(() => ({
   data: null,
   isLoading: false,
   isFetching: false,
