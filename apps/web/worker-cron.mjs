@@ -66,10 +66,7 @@ async function triggerCron(job) {
     }
     log.info({ job: job.name, status: res.status, durationMs }, 'cron call ok');
   } catch (err) {
-    log.error(
-      { job: job.name, durationMs: Date.now() - start, err },
-      'cron call threw',
-    );
+    log.error({ job: job.name, durationMs: Date.now() - start, err }, 'cron call threw');
   }
 }
 

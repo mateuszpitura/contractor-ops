@@ -8,9 +8,7 @@ import { UsageDashboard } from '../usage-dashboard';
 let dashboardData: unknown = null;
 let isLoading = false;
 let isError = false;
-const {
-  mockRefetch,
-} = vi.hoisted(() => ({
+const { mockRefetch } = vi.hoisted(() => ({
   mockRefetch: vi.fn(),
 }));
 

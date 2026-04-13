@@ -141,38 +141,36 @@ describe('Phase 58 — CLASSIFICATION_* locked phrases (D-07)', () => {
     'CLASSIFICATION_SCHEIN_NOT_APPLICABLE',
   ] as const;
 
-  it.each(locales)(
-    'messages/%s.json does not define any CLASSIFICATION_* key as a (nested) property',
-    locale => {
-      const messages = loadMessages(locale);
-      if (messages === null) return;
-      const keys = flatKeys(messages);
-      const violations = keys.filter(k =>
-        CLASSIFICATION_KEYS.some(r => k === r || k.endsWith(`.${r}`)),
-      );
-      expect(
-        violations,
-        `CLASSIFICATION_* keys leaked into ${locale}.json: ${violations.join(', ')}`,
-      ).toEqual([]);
-    },
-  );
+  it.each(
+    locales,
+  )('messages/%s.json does not define any CLASSIFICATION_* key as a (nested) property', locale => {
+    const messages = loadMessages(locale);
+    if (messages === null) return;
+    const keys = flatKeys(messages);
+    const violations = keys.filter(k =>
+      CLASSIFICATION_KEYS.some(r => k === r || k.endsWith(`.${r}`)),
+    );
+    expect(
+      violations,
+      `CLASSIFICATION_* keys leaked into ${locale}.json: ${violations.join(', ')}`,
+    ).toEqual([]);
+  });
 
-  it.each(locales)(
-    'messages/%s.json does not contain any CLASSIFICATION_* value verbatim',
-    locale => {
-      const filePath = path.join(messagesDir, `${locale}.json`);
-      if (!fs.existsSync(filePath)) return;
-      const raw = fs.readFileSync(filePath, 'utf8');
-      for (const key of CLASSIFICATION_KEYS) {
-        const value = (LOCKED_DE_PHRASES as Record<string, string>)[key];
-        if (!value) continue;
-        expect(
-          raw.includes(`"${value}"`),
-          `CLASSIFICATION value "${value}" found verbatim in ${locale}.json`,
-        ).toBe(false);
-      }
-    },
-  );
+  it.each(
+    locales,
+  )('messages/%s.json does not contain any CLASSIFICATION_* value verbatim', locale => {
+    const filePath = path.join(messagesDir, `${locale}.json`);
+    if (!fs.existsSync(filePath)) return;
+    const raw = fs.readFileSync(filePath, 'utf8');
+    for (const key of CLASSIFICATION_KEYS) {
+      const value = (LOCKED_DE_PHRASES as Record<string, string>)[key];
+      if (!value) continue;
+      expect(
+        raw.includes(`"${value}"`),
+        `CLASSIFICATION value "${value}" found verbatim in ${locale}.json`,
+      ).toBe(false);
+    }
+  });
 
   it('RESERVED_LEGAL_KEYS includes all CLASSIFICATION_* keys', () => {
     for (const key of CLASSIFICATION_KEYS) {
@@ -182,21 +180,20 @@ describe('Phase 58 — CLASSIFICATION_* locked phrases (D-07)', () => {
 });
 
 describe('Phase 58 — DISCLAIMER_* locked bilingual disclaimers (D-12)', () => {
-  it.each(locales)(
-    'messages/%s.json does not define any DISCLAIMER_* key as a (nested) property',
-    locale => {
-      const messages = loadMessages(locale);
-      if (messages === null) return;
-      const keys = flatKeys(messages);
-      const violations = keys.filter(k =>
-        RESERVED_DISCLAIMER_KEYS.some(r => k === r || k.endsWith(`.${r}`)),
-      );
-      expect(
-        violations,
-        `DISCLAIMER_* keys leaked into ${locale}.json: ${violations.join(', ')}`,
-      ).toEqual([]);
-    },
-  );
+  it.each(
+    locales,
+  )('messages/%s.json does not define any DISCLAIMER_* key as a (nested) property', locale => {
+    const messages = loadMessages(locale);
+    if (messages === null) return;
+    const keys = flatKeys(messages);
+    const violations = keys.filter(k =>
+      RESERVED_DISCLAIMER_KEYS.some(r => k === r || k.endsWith(`.${r}`)),
+    );
+    expect(
+      violations,
+      `DISCLAIMER_* keys leaked into ${locale}.json: ${violations.join(', ')}`,
+    ).toEqual([]);
+  });
 
   it('RESERVED_DISCLAIMER_KEYS mirrors LOCKED_DISCLAIMERS keys', () => {
     expect([...RESERVED_DISCLAIMER_KEYS].sort()).toEqual(Object.keys(LOCKED_DISCLAIMERS).sort());

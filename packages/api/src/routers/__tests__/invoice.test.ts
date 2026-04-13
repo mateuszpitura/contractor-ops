@@ -327,9 +327,9 @@ vi.mock('../../services/kleinunternehmer.service.js', () => ({
 }));
 
 vi.mock('../../services/reverse-charge.service.js', async () => {
-  const actual = await vi.importActual<
-    typeof import('../../services/reverse-charge.service.js')
-  >('../../services/reverse-charge.service.js');
+  const actual = await vi.importActual<typeof import('../../services/reverse-charge.service.js')>(
+    '../../services/reverse-charge.service.js',
+  );
   return {
     ...actual,
     detectReverseCharge: detectReverseChargeMock,

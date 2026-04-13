@@ -175,7 +175,10 @@ vi.mock('../../services/virus-scanner.js', () => ({
 }));
 
 vi.mock('../../services/r2.js', () => ({
-  createPresignedUploadUrl: vi.fn(async () => ({ url: 'https://r2.example.com/upload', key: 'mock-key' })),
+  createPresignedUploadUrl: vi.fn(async () => ({
+    url: 'https://r2.example.com/upload',
+    key: 'mock-key',
+  })),
   createPresignedDownloadUrl: vi.fn(async () => 'https://r2.example.com/download'),
   generateStorageKey: vi.fn(() => 'mock-storage-key'),
   headObject: vi.fn(async () => ({ ContentLength: 1024 })),
@@ -186,7 +189,11 @@ vi.mock('../../services/billing-service.js', () => ({
   getSubscription: vi.fn(async () => null),
   createCheckoutSession: vi.fn(async () => ({ url: 'https://checkout.stripe.com/session' })),
   createPortalSession: vi.fn(async () => ({ url: 'https://billing.stripe.com/portal' })),
-  getProrationPreview: vi.fn(async () => ({ immediateTotal: 0, proratedCredits: 0, newPriceAmount: 0 })),
+  getProrationPreview: vi.fn(async () => ({
+    immediateTotal: 0,
+    proratedCredits: 0,
+    newPriceAmount: 0,
+  })),
   ensureStripeCustomer: vi.fn(async () => 'cus_test'),
   createTopUpCheckoutSession: vi.fn(async () => ({ url: 'https://checkout.stripe.com/topup' })),
   updateSubscriptionSeatCount: vi.fn(async () => undefined),
@@ -199,7 +206,11 @@ vi.mock('../../services/credit-service.js', () => ({
 vi.mock('../../services/billing-constants.js', () => ({
   TIER_CREDIT_ALLOWANCE: { STARTER: 20, PRO: 100, ENTERPRISE: 500 },
   TRIAL_CREDIT_ALLOWANCE: 5,
-  KNOWN_SUBSCRIPTION_PRICE_IDS: new Set(['price_starter_monthly', 'price_pro_monthly', 'price_enterprise_monthly']),
+  KNOWN_SUBSCRIPTION_PRICE_IDS: new Set([
+    'price_starter_monthly',
+    'price_pro_monthly',
+    'price_enterprise_monthly',
+  ]),
   KNOWN_TOPUP_PRICE_IDS: new Set(['price_topup_10', 'price_topup_50']),
 }));
 
@@ -452,9 +463,9 @@ describe('equipmentReturns.rejectReturnRequest', () => {
       status: 'REJECTED',
     });
 
-    await expect(
-      caller.equipmentReturns.rejectReturnRequest({ id: 'rr-1' }),
-    ).rejects.toThrow('RETURN_REQUEST_NOT_PENDING');
+    await expect(caller.equipmentReturns.rejectReturnRequest({ id: 'rr-1' })).rejects.toThrow(
+      'RETURN_REQUEST_NOT_PENDING',
+    );
   });
 });
 
@@ -471,7 +482,14 @@ describe('equipmentReturns.listReturnRequests', () => {
         id: 'rr-2',
         status: 'SHIPMENT_CREATED',
         contractor: { id: 'c-2', displayName: 'Jane', email: 'jane@test.com' },
-        shipment: { id: 's-1', trackingNumber: 'TR-123', externalId: 'ext-1', currentStatus: 'CREATED', carrier: 'InPost', labelUrl: null },
+        shipment: {
+          id: 's-1',
+          trackingNumber: 'TR-123',
+          externalId: 'ext-1',
+          currentStatus: 'CREATED',
+          carrier: 'InPost',
+          labelUrl: null,
+        },
       },
     ];
     mockPrisma.returnRequest.findMany.mockResolvedValueOnce(requests);

@@ -45,10 +45,7 @@ vi.mock('../step-documents', () => ({
 
 let contractorData: Record<string, unknown> | null = null;
 
-const {
-  mockMutate,
-  mockMutateAsync,
-} = vi.hoisted(() => ({
+const { mockMutate, mockMutateAsync } = vi.hoisted(() => ({
   mockMutate: vi.fn(),
   mockMutateAsync: vi.fn().mockResolvedValue({ id: 'new-contract-1' }),
 }));

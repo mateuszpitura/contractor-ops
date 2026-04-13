@@ -7,11 +7,7 @@
 // MUST stay server-side (per Pitfall 2) — never import this module in a
 // client bundle.
 
-import type {
-  Assessment,
-  AnswerMap,
-  AssessmentShell,
-} from './assessment.js';
+import type { AnswerMap, Assessment, AssessmentShell } from './assessment.js';
 import type { Outcome, OutcomeView } from './outcome.js';
 
 export interface ClassificationProfile {

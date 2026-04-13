@@ -19,6 +19,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { trpc } from '@/trpc/init';
 import type { AuditLogEntry } from './audit-log-table';
 import { AuditLogTable } from './audit-log-table';
+import { enumKey } from '@/lib/enum-key';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -337,7 +338,7 @@ export function AuditLogTab() {
             <SelectItem value="">{t('filterActionAll')}</SelectItem>
             {ACTION_OPTIONS.map(action => (
               <SelectItem key={action} value={action}>
-                {t(`actions.${action}` as Parameters<typeof t>[0])}
+                {t(`actions.${enumKey(action)}` as Parameters<typeof t>[0])}
               </SelectItem>
             ))}
           </SelectContent>
@@ -358,7 +359,7 @@ export function AuditLogTab() {
             <SelectItem value="">{t('filterResourceAll')}</SelectItem>
             {RESOURCE_TYPE_OPTIONS.map(rt => (
               <SelectItem key={rt} value={rt}>
-                {t(`resources.${rt}` as Parameters<typeof t>[0])}
+                {t(`resources.${enumKey(rt)}` as Parameters<typeof t>[0])}
               </SelectItem>
             ))}
           </SelectContent>

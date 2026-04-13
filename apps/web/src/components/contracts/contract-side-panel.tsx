@@ -10,6 +10,7 @@ import { Separator } from '@/components/ui/separator';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Link } from '@/i18n/navigation';
 import type { ContractRow } from './contract-table/columns';
+import { enumKey } from '@/lib/enum-key';
 
 // ---------------------------------------------------------------------------
 // Status badge colors (same as columns.tsx)
@@ -71,7 +72,7 @@ export function ContractSidePanel({ contract, open, onOpenChange }: ContractSide
               </SheetTitle>
               <div className="flex items-center gap-2 flex-wrap">
                 <Badge variant="secondary" className={statusBadgeColors[contract.status] ?? ''}>
-                  {t(`status.${contract.status}` as Parameters<typeof t>[0])}
+                  {t(`status.${enumKey(contract.status)}` as Parameters<typeof t>[0])}
                 </Badge>
                 <Link
                   href={`/contractors/${contract.contractor.id}`}
@@ -93,7 +94,7 @@ export function ContractSidePanel({ contract, open, onOpenChange }: ContractSide
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <DetailItem
                   label={t('columns.type')}
-                  value={t(`type.${contract.type}` as Parameters<typeof t>[0])}
+                  value={t(`type.${enumKey(contract.type)}` as Parameters<typeof t>[0])}
                 />
                 <DetailItem
                   label={t('columns.startDate')}
@@ -117,7 +118,7 @@ export function ContractSidePanel({ contract, open, onOpenChange }: ContractSide
                 <DetailItem label={t('columns.currency')} value={contract.currency} />
                 <DetailItem
                   label={t('columns.billingCycle')}
-                  value={t(`billingModel.${contract.billingModel}` as Parameters<typeof t>[0])}
+                  value={t(`billingModel.${enumKey(contract.billingModel)}` as Parameters<typeof t>[0])}
                 />
                 <DetailItem label={t('columns.owner')} value={contract.internalOwner?.name} />
               </div>

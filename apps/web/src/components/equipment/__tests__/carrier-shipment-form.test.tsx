@@ -26,9 +26,7 @@ vi.mock('../ups-fieldset', () => ({
   UpsFieldset: () => <div data-testid="ups-fieldset">UPS fields</div>,
 }));
 
-const {
-  mockMutate,
-} = vi.hoisted(() => ({
+const { mockMutate } = vi.hoisted(() => ({
   mockMutate: vi.fn(),
 }));
 

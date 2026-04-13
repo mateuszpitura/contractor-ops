@@ -2,9 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@/test/test-utils';
 import { DocumentList } from '../document-list';
 
-const {
-  mockUseQuery,
-} = vi.hoisted(() => ({
+const { mockUseQuery } = vi.hoisted(() => ({
   mockUseQuery: vi.fn(),
 }));
 

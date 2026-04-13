@@ -28,9 +28,7 @@ vi.mock('../step-assignment', () => ({
   ),
 }));
 
-const {
-  mockMutate,
-} = vi.hoisted(() => ({
+const { mockMutate } = vi.hoisted(() => ({
   mockMutate: vi.fn(),
 }));
 

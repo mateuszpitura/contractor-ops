@@ -44,11 +44,7 @@ let crossBorderData: Record<string, unknown> = {
   hostingRegion: 'EU',
 };
 
-const {
-  mockGrantMutate,
-  mockDownloadDPAMutate,
-  mockDownloadSCCMutate,
-} = vi.hoisted(() => ({
+const { mockGrantMutate, mockDownloadDPAMutate, mockDownloadSCCMutate } = vi.hoisted(() => ({
   mockGrantMutate: vi.fn(),
   mockDownloadDPAMutate: vi.fn(),
   mockDownloadSCCMutate: vi.fn(),

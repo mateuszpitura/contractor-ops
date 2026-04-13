@@ -31,6 +31,7 @@ import { usePermissions } from '@/hooks/use-permissions';
 import { canViewSensitivePii, maskTaxId } from '@/lib/mask-pii';
 import { trpc } from '@/trpc/init';
 import type { ContractWizardFormValues } from './wizard-dialog';
+import { enumKey } from '@/lib/enum-key';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -112,7 +113,7 @@ export function StepDetails({ form, contractorId }: StepDetailsProps) {
 
   const contractTypeItems = CONTRACT_TYPES.map(type => ({
     value: type,
-    label: t(`typeOptions.${type}`),
+    label: t(`typeOptions.${enumKey(type)}`),
   }));
 
   const handleStartDateSelect = (date: Date | undefined) => {

@@ -46,7 +46,7 @@ const apiKeyAuthMiddleware = t.middleware(async ({ ctx, next }) => {
   // Fire-and-forget
   touchLastUsed(keyRecord.id);
 
-  return runWithTenantContext(keyRecord.organizationId, async (tenantCtx) =>
+  return runWithTenantContext(keyRecord.organizationId, async tenantCtx =>
     next({
       ctx: {
         ...ctx,

@@ -1,3 +1,4 @@
+import { enumKey } from '@/lib/enum-key';
 import { render, screen } from '@/test/test-utils';
 import type { WorkflowRunRow } from '../columns';
 import { getColumns } from '../columns';
@@ -101,7 +102,7 @@ describe('getColumns cell renderers (workflow runs)', () => {
 
   it('templateType cell renders badge with translated type', () => {
     renderCell('templateType', makeRow({ workflowTemplate: { name: 'Test', type: 'ONBOARDING' } }));
-    expect(screen.getByText('templateType.ONBOARDING')).toBeInTheDocument();
+    expect(screen.getByText('templateType.onboarding')).toBeInTheDocument();
   });
 
   it('status cell renders badge for each status', () => {
@@ -128,7 +129,7 @@ describe('getColumns cell renderers (workflow runs)', () => {
           });
         })(),
       );
-      expect(screen.getByText(`runStatus.${status}`)).toBeInTheDocument();
+      expect(screen.getByText(`runStatus.${enumKey(status)}`)).toBeInTheDocument();
       unmount();
     }
   });

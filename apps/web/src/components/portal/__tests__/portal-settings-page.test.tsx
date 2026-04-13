@@ -41,7 +41,9 @@ vi.mock('@/trpc/init', () => ({
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
 vi.mock('@/components/portal/profile-section', () => ({
-  ProfileSection: ({ title }: { title: string }) => <div data-testid="profile-section">{title}</div>,
+  ProfileSection: ({ title }: { title: string }) => (
+    <div data-testid="profile-section">{title}</div>
+  ),
 }));
 
 vi.mock('@/components/portal/notification-preferences-section', () => ({

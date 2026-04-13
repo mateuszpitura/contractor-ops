@@ -12,6 +12,7 @@ import type { SecretStore } from './secret-store.js';
 // Singleton secret store
 // ---------------------------------------------------------------------------
 
+// biome-ignore lint/style/useNamingConvention: underscore prefix indicates module-private singleton
 let _instance: SecretStore | null = null;
 
 /**

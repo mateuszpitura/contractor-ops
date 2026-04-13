@@ -3,9 +3,7 @@
 import { NextRequest } from 'next/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const {
-  mockSubscriptionFindMany,
-} = vi.hoisted(() => ({
+const { mockSubscriptionFindMany } = vi.hoisted(() => ({
   mockSubscriptionFindMany: vi.fn(),
 }));
 

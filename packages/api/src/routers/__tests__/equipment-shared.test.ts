@@ -16,10 +16,10 @@ import {
   EQUIPMENT_NOT_FOUND,
   EQUIPMENT_STATUS_TRANSITIONS,
   NOTIFICATION_KEYS,
+  plain,
   SHIPMENT_CANNOT_DELETE,
   SHIPMENT_NOT_FOUND,
   SHIPMENT_TO_EQUIPMENT_STATUS,
-  plain,
 } from '../equipment-shared.js';
 
 // ===========================================================================
@@ -35,7 +35,14 @@ describe('plain()', () => {
   });
 
   it('strips non-serializable properties (functions, undefined)', () => {
-    const input = { id: '1', fn: () => {}, undef: undefined, name: 'Test' };
+    const input = {
+      id: '1',
+      fn: () => {
+        /* noop */
+      },
+      undef: undefined,
+      name: 'Test',
+    };
     const result = plain(input);
     expect(result).toEqual({ id: '1', name: 'Test' });
     expect(result).not.toHaveProperty('fn');

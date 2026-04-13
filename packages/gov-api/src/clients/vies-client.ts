@@ -36,6 +36,7 @@ const VIES_RATE_LIMIT = { maxRequests: 10, windowMs: 1000 } as const;
 // MOD 11,10 Pure System). Duplicated inline to avoid a workspace dependency
 // cycle (gov-api ← einvoice ← validators ← einvoice). The orchestrator
 // (Plan 57-03) invokes the full validator first; this is defense-in-depth.
+// biome-ignore lint/style/useNamingConvention: name mirrors ISO 7064 MOD-11-10 algorithm identifier
 function mod11_10CheckDigit(digits: readonly number[]): number {
   let product = 10;
   for (const d of digits) {

@@ -19,8 +19,8 @@ import {
 } from '@/components/ui/table';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Link } from '@/i18n/navigation';
-import { AuditLogDiffViewer } from './audit-log-diff-viewer';
 import { enumKey } from '@/lib/enum-key';
+import { AuditLogDiffViewer } from './audit-log-diff-viewer';
 
 // ---------------------------------------------------------------------------
 // Types

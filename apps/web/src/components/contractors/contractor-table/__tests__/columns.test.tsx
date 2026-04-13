@@ -1,6 +1,7 @@
 import { render, screen } from '@/test/test-utils';
 import type { ContractorRow } from '../columns';
 import { getColumns } from '../columns';
+import { enumKey } from '@/lib/enum-key';
 
 vi.mock('date-fns', () => ({
   formatDistanceToNow: () => '2 days ago',
@@ -123,7 +124,7 @@ describe('getColumns cell renderers', () => {
           });
         })(),
       );
-      expect(screen.getByText(`lifecycle.${stage}`)).toBeInTheDocument();
+      expect(screen.getByText(`lifecycle.${enumKey(stage)}`)).toBeInTheDocument();
       unmount();
     }
   });

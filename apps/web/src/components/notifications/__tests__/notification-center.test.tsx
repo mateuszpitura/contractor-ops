@@ -2,11 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@/test/test-utils';
 import { NotificationCenter } from '../notification-center';
 
-const {
-  mockUseQuery,
-  mockUseMutation,
-  mockPush,
-} = vi.hoisted(() => ({
+const { mockUseQuery, mockUseMutation, mockPush } = vi.hoisted(() => ({
   mockUseQuery: vi.fn(),
   mockUseMutation: vi.fn(),
   mockPush: vi.fn(),

@@ -31,6 +31,7 @@ import { getSteuernummerRegex, STEUERNUMMER_FORMATS } from './steuernummer-forma
  * algorithm used by Polish NIP and Luhn-family IDs — it yields wrong results
  * for German USt-IdNr and must not be used here.
  */
+// biome-ignore lint/style/useNamingConvention: name mirrors ISO 7064 MOD-11-10 algorithm identifier
 export function mod11_10CheckDigit(digits: readonly number[]): number {
   let product = 10;
   for (const d of digits) {

@@ -16,7 +16,6 @@ vi.mock('../esign-service.js', () => ({
   normalizeSigningEvent: normalizeSigningEvent,
 }));
 
-
 const mockSigningEventCreate = vi.fn();
 const mockSigningRecipientFindFirst = vi.fn();
 const mockSigningRecipientUpdate = vi.fn();

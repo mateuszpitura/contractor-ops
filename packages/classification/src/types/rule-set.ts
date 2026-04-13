@@ -5,12 +5,7 @@
 import type { Ir35Area, ScheinCategory } from './outcome.js';
 
 /** Supported answer input types (maps 1:1 to UI components). */
-export type AnswerType =
-  | 'yes-no'
-  | 'likert-5'
-  | 'score-0-3'
-  | 'billing-ratio'
-  | 'rationale';
+export type AnswerType = 'yes-no' | 'likert-5' | 'score-0-3' | 'billing-ratio' | 'rationale';
 
 /** Canonical per-locale prompt/help shape. */
 export interface LocalisedText {

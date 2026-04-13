@@ -18,7 +18,6 @@ import {
 import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
-import { enumKey } from '@/lib/enum-key';
 import { JiraTaskConfig } from '@/components/integrations/jira-task-config';
 import { LinearTaskConfig } from '@/components/integrations/linear-task-config';
 import { Badge } from '@/components/ui/badge';
@@ -37,6 +36,7 @@ import {
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { CalendarTaskConfig } from '@/components/workflow/calendar-task-config';
+import { enumKey } from '@/lib/enum-key';
 import { trpc } from '@/trpc/init';
 import { ConditionBuilder, getConditionSummary } from './condition-builder';
 import type { TaskFormValues, TemplateFormValues } from './use-template-form';

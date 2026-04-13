@@ -30,6 +30,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { trpc } from '@/trpc/init';
 import { EquipmentTypeIcon } from './equipment-type-icon';
+import { enumKey } from '@/lib/enum-key';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -202,7 +203,7 @@ export function EquipmentForm({ open, onOpenChange, equipment }: EquipmentFormPr
                   <SelectItem key={type} value={type}>
                     <div className="flex items-center gap-2">
                       <EquipmentTypeIcon type={type} />
-                      <span>{t(`type.${type}`)}</span>
+                      <span>{t(`type.${enumKey(type)}`)}</span>
                     </div>
                   </SelectItem>
                 ))}

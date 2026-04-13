@@ -80,10 +80,12 @@ describe('POST /api/cron/inpost-status-poll', () => {
     const res = await POST(req);
     expect(res.status).toBe(200);
 
-    const json = (await res.json()) as { results: Array<{ organizationId: string; carriers: unknown[] }> };
+    const json = (await res.json()) as {
+      results: Array<{ organizationId: string; carriers: unknown[] }>;
+    };
     expect(json.results).toHaveLength(1);
-    expect(json.results[0]!.organizationId).toBe('org-42');
-    expect(json.results[0]!.carriers).toHaveLength(3);
+    expect(json.results[0]?.organizationId).toBe('org-42');
+    expect(json.results[0]?.carriers).toHaveLength(3);
     expect(mockPollInPost).toHaveBeenCalledWith(mockPrisma, 'org-42');
     expect(mockPollDpd).toHaveBeenCalledWith(mockPrisma, 'org-42');
     expect(mockPollUps).toHaveBeenCalledWith(mockPrisma, 'org-42');
@@ -104,8 +106,10 @@ describe('POST /api/cron/inpost-status-poll', () => {
     const res = await POST(req);
     expect(res.status).toBe(200);
 
-    const json = (await res.json()) as { results: Array<{ carriers: Array<{ carrier: string; checked: number; updated: number }> }> };
-    const carriers = json.results[0]!.carriers;
+    const json = (await res.json()) as {
+      results: Array<{ carriers: Array<{ carrier: string; checked: number; updated: number }> }>;
+    };
+    const carriers = json.results[0]?.carriers;
     // InPost and UPS failed => fallback to {checked:0, updated:0}
     expect(carriers).toEqual([
       { carrier: 'inpost', checked: 0, updated: 0 },

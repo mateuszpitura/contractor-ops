@@ -27,9 +27,7 @@ vi.mock('@contractor-ops/integrations', () => ({
 }));
 
 vi.mock('@contractor-ops/einvoice', () => ({
-  StorecoveAdapter: class {
-    constructor() {}
-  },
+  StorecoveAdapter: class {},
 }));
 
 vi.mock('@contractor-ops/api/services/peppol-orchestrator', () => ({
@@ -81,9 +79,7 @@ describe('POST /api/peppol/poll', () => {
   });
 
   it('polls a specific org when organizationId is provided', async () => {
-    mockPrisma.peppolParticipant.findMany.mockResolvedValue([
-      { organizationId: 'org-42' },
-    ]);
+    mockPrisma.peppolParticipant.findMany.mockResolvedValue([{ organizationId: 'org-42' }]);
 
     const req = new NextRequest('http://localhost/api/peppol/poll', {
       method: 'POST',
@@ -93,19 +89,20 @@ describe('POST /api/peppol/poll', () => {
     const res = await POST(req);
     expect(res.status).toBe(200);
 
-    const json = (await res.json()) as { polled: number; results: Array<{ organizationId: string; processed: number }> };
+    const json = (await res.json()) as {
+      polled: number;
+      results: Array<{ organizationId: string; processed: number }>;
+    };
     expect(json.polled).toBe(1);
-    expect(json.results[0]!.organizationId).toBe('org-42');
-    expect(json.results[0]!.processed).toBe(3);
+    expect(json.results[0]?.organizationId).toBe('org-42');
+    expect(json.results[0]?.processed).toBe(3);
     expect(mockPrisma.peppolParticipant.findMany).toHaveBeenCalledWith({
       where: { organizationId: 'org-42', status: 'ACTIVE' },
     });
   });
 
   it('returns early with zero results when no connection exists', async () => {
-    mockPrisma.peppolParticipant.findMany.mockResolvedValue([
-      { organizationId: 'org-no-conn' },
-    ]);
+    mockPrisma.peppolParticipant.findMany.mockResolvedValue([{ organizationId: 'org-no-conn' }]);
     mockPrisma.integrationConnection.findFirst.mockResolvedValue(null);
 
     const req = new NextRequest('http://localhost/api/peppol/poll', {
@@ -123,9 +120,7 @@ describe('POST /api/peppol/poll', () => {
   });
 
   it('handles poll errors and records error on integration connection', async () => {
-    mockPrisma.peppolParticipant.findMany.mockResolvedValue([
-      { organizationId: 'org-err' },
-    ]);
+    mockPrisma.peppolParticipant.findMany.mockResolvedValue([{ organizationId: 'org-err' }]);
     mockPollAndProcessInbound.mockRejectedValue(new Error('Storecove API down'));
 
     const req = new NextRequest('http://localhost/api/peppol/poll', {

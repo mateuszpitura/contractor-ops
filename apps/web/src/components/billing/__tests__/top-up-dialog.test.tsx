@@ -5,9 +5,7 @@ import { TopUpDialog } from '../top-up-dialog';
 // Mocks
 // ---------------------------------------------------------------------------
 
-const {
-  mockMutate,
-} = vi.hoisted(() => ({
+const { mockMutate } = vi.hoisted(() => ({
   mockMutate: vi.fn(),
 }));
 

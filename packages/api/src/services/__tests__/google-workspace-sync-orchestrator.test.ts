@@ -1,11 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const {
-  mockCreate,
-  mockFindUniqueOrThrow,
-  mockUpdate,
-  mockSyncLogUpdate,
-} = vi.hoisted(() => ({
+const { mockCreate, mockFindUniqueOrThrow, mockUpdate, mockSyncLogUpdate } = vi.hoisted(() => ({
   mockCreate: vi.fn(),
   mockFindUniqueOrThrow: vi.fn(),
   mockUpdate: vi.fn(),

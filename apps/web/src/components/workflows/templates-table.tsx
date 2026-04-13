@@ -34,8 +34,8 @@ import {
 } from '@/components/ui/table';
 import { useTemplateMutations } from '@/hooks/use-template-mutations';
 import { Link, useRouter } from '@/i18n/navigation';
-import { trpc } from '@/trpc/init';
 import { enumKey } from '@/lib/enum-key';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Template status badge styling per UI-SPEC

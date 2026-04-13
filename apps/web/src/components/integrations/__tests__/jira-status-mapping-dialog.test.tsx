@@ -21,9 +21,7 @@ let projectsLoading = false;
 let statusesData: unknown[] = [];
 let existingMapping: unknown[] = [];
 
-const {
-  mockMutate,
-} = vi.hoisted(() => ({
+const { mockMutate } = vi.hoisted(() => ({
   mockMutate: vi.fn(),
 }));
 

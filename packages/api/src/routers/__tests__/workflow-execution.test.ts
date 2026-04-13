@@ -248,9 +248,7 @@ describe('workflowExecutionRouter', () => {
         id: RUN_ID,
         status: 'CANCELLED',
         cancelledAt: expect.any(Date),
-        tasks: [
-          { id: 'task-1', status: 'CANCELLED', externalRefType: null, externalRefId: null },
-        ],
+        tasks: [{ id: 'task-1', status: 'CANCELLED', externalRefType: null, externalRefId: null }],
       });
 
       const result = await caller.cancelRun({ runId: RUN_ID, reason: 'No longer needed' });
@@ -306,7 +304,12 @@ describe('workflowExecutionRouter', () => {
         ],
         comments: [],
         workflowTemplate: { id: TEMPLATE_ID, name: 'Onboarding', type: 'ONBOARDING' },
-        contractor: { id: CONTRACTOR_ID, legalName: 'Test Corp', displayName: null, status: 'ACTIVE' },
+        contractor: {
+          id: CONTRACTOR_ID,
+          legalName: 'Test Corp',
+          displayName: null,
+          status: 'ACTIVE',
+        },
         contract: null,
       });
 
@@ -525,9 +528,9 @@ describe('workflowExecutionRouter', () => {
     it('throws NOT_FOUND when task does not exist', async () => {
       mockPrisma.workflowTaskRun.findFirst.mockResolvedValueOnce(null);
 
-      await expect(
-        caller.skipTask({ taskRunId: 'nonexistent', reason: 'test' }),
-      ).rejects.toThrow(TRPCError);
+      await expect(caller.skipTask({ taskRunId: 'nonexistent', reason: 'test' })).rejects.toThrow(
+        TRPCError,
+      );
     });
   });
 

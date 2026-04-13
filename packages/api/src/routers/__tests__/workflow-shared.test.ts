@@ -9,13 +9,13 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import {
-  TASK_TRANSITIONS,
   addDays,
   addHours,
   calculateProgress,
   evaluateCondition,
   plain,
   resolveAssignee,
+  TASK_TRANSITIONS,
   validateTransition,
   WORKFLOW_TEMPLATE_KEYS,
 } from '../workflow-shared.js';
@@ -33,7 +33,13 @@ describe('plain()', () => {
   });
 
   it('strips functions and undefined values', () => {
-    const input = { id: '1', fn: () => {}, undef: undefined };
+    const input = {
+      id: '1',
+      fn: () => {
+        /* noop */
+      },
+      undef: undefined,
+    };
     const result = plain(input);
     expect(result).toEqual({ id: '1' });
   });
@@ -112,7 +118,9 @@ describe('evaluateCondition()', () => {
     };
 
     expect(evaluateCondition(condition, { contractor: { type: 'B2B', country: 'PL' } })).toBe(true);
-    expect(evaluateCondition(condition, { contractor: { type: 'B2B', country: 'DE' } })).toBe(false);
+    expect(evaluateCondition(condition, { contractor: { type: 'B2B', country: 'DE' } })).toBe(
+      false,
+    );
   });
 
   it('OR combinator requires at least one rule to match', () => {
@@ -287,13 +295,7 @@ describe('resolveAssignee()', () => {
   });
 
   it('returns null for unknown mode', async () => {
-    const result = await resolveAssignee(
-      { assigneeMode: 'UNKNOWN' },
-      {},
-      null,
-      'org-1',
-      mockTx,
-    );
+    const result = await resolveAssignee({ assigneeMode: 'UNKNOWN' }, {}, null, 'org-1', mockTx);
     expect(result).toBeNull();
   });
 });

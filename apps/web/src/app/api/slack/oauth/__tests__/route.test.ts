@@ -4,19 +4,14 @@ import { createHmac } from 'node:crypto';
 import { NextRequest } from 'next/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const {
-  mockEncryptToken,
-  mockSyncWorkspaceUsers,
-  mockFindFirst,
-  mockCreate,
-  mockUpdate,
-} = vi.hoisted(() => ({
-  mockEncryptToken: vi.fn(),
-  mockSyncWorkspaceUsers: vi.fn(),
-  mockFindFirst: vi.fn(),
-  mockCreate: vi.fn(),
-  mockUpdate: vi.fn(),
-}));
+const { mockEncryptToken, mockSyncWorkspaceUsers, mockFindFirst, mockCreate, mockUpdate } =
+  vi.hoisted(() => ({
+    mockEncryptToken: vi.fn(),
+    mockSyncWorkspaceUsers: vi.fn(),
+    mockFindFirst: vi.fn(),
+    mockCreate: vi.fn(),
+    mockUpdate: vi.fn(),
+  }));
 
 vi.mock('@contractor-ops/api/services/slack-client', () => ({
   encryptToken: mockEncryptToken,
@@ -41,7 +36,9 @@ import { GET } from '../route';
 
 const SIGNING_SECRET = 'test-signing-secret';
 
-function makeState(overrides: Partial<{ orgId: string; userId: string; timestamp: number }> = {}): string {
+function makeState(
+  overrides: Partial<{ orgId: string; userId: string; timestamp: number }> = {},
+): string {
   const orgId = overrides.orgId ?? 'org-1';
   const userId = overrides.userId ?? 'user-1';
   const timestamp = overrides.timestamp ?? Date.now();
@@ -49,9 +46,7 @@ function makeState(overrides: Partial<{ orgId: string; userId: string; timestamp
   const payload = `${orgId}:${userId}:${timestamp}`;
   const sig = createHmac('sha256', SIGNING_SECRET).update(payload).digest('hex');
 
-  return Buffer.from(
-    JSON.stringify({ orgId, userId, timestamp, sig }),
-  ).toString('base64url');
+  return Buffer.from(JSON.stringify({ orgId, userId, timestamp, sig })).toString('base64url');
 }
 
 describe('GET /api/slack/oauth', () => {

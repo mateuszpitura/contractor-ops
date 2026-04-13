@@ -1,8 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const {
-  mockGet,
-} = vi.hoisted(() => ({
+const { mockGet } = vi.hoisted(() => ({
   mockGet: vi.fn(),
 }));
 

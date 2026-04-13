@@ -1,11 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { CLOCKIFY_REGIONS, ClockifyAdapter } from '../clockify-adapter.js';
 
-const {
-  mockFindUnique,
-  mockFindMany,
-  mockCount,
-} = vi.hoisted(() => ({
+const { mockFindUnique, mockFindMany, mockCount } = vi.hoisted(() => ({
   mockFindUnique: vi.fn(),
   mockFindMany: vi.fn(),
   mockCount: vi.fn(),

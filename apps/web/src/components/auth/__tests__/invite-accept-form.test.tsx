@@ -3,11 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { screen, setup, waitFor } from '@/test/test-utils';
 import { InviteAcceptForm } from '../invite-accept-form';
 
-const {
-  signUpEmail,
-  acceptInvitation,
-  mockPush,
-} = vi.hoisted(() => ({
+const { signUpEmail, acceptInvitation, mockPush } = vi.hoisted(() => ({
   signUpEmail: vi.fn(),
   acceptInvitation: vi.fn(),
   mockPush: vi.fn(),

@@ -58,9 +58,7 @@ const mockDocLinks = [
 let listData: unknown[] = [];
 let listLoading = false;
 
-const {
-  mockMutate,
-} = vi.hoisted(() => ({
+const { mockMutate } = vi.hoisted(() => ({
   mockMutate: vi.fn(),
 }));
 

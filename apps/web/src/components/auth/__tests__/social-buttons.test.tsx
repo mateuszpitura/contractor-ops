@@ -3,9 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, setup, waitFor } from '@/test/test-utils';
 import { SocialButtons } from '../social-buttons';
 
-const {
-  signInSocial,
-} = vi.hoisted(() => ({
+const { signInSocial } = vi.hoisted(() => ({
   signInSocial: vi.fn(),
 }));
 

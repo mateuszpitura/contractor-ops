@@ -5,6 +5,7 @@ import { defineConfig } from 'vitest/config';
 
 import { vitestProject } from '../../vitest.monorepo';
 
+// biome-ignore lint/style/useNamingConvention: standard Node.js __dirname polyfill for ESM
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const packagesDir = path.resolve(__dirname, '..');
 

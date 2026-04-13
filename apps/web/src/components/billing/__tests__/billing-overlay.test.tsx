@@ -5,10 +5,7 @@ import { BillingOverlay } from '../billing-overlay';
 // Mocks
 // ---------------------------------------------------------------------------
 
-const {
-  mockPush,
-  mockMutate,
-} = vi.hoisted(() => ({
+const { mockPush, mockMutate } = vi.hoisted(() => ({
   mockPush: vi.fn(),
   mockMutate: vi.fn(),
 }));

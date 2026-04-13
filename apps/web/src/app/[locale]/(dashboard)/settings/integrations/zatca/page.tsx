@@ -95,10 +95,7 @@ export default function ZatcaSettingsPage() {
       {/* Onboarding In Progress */}
       {(isOnboarding || wizardOpen) && !isConnected && (
         <AnimateIn delay={1}>
-          <OnboardingWizard
-            onComplete={handleWizardComplete}
-            onCancel={closeWizard}
-          />
+          <OnboardingWizard onComplete={handleWizardComplete} onCancel={closeWizard} />
         </AnimateIn>
       )}
 

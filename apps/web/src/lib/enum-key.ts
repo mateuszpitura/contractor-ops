@@ -12,5 +12,11 @@ export function enumKey(value: string): string {
   }
   const parts = value.toLowerCase().split(/[_-]/).filter(Boolean);
   if (parts.length === 0) return value;
-  return parts[0] + parts.slice(1).map(p => p.charAt(0).toUpperCase() + p.slice(1)).join('');
+  return (
+    parts[0] +
+    parts
+      .slice(1)
+      .map(p => p.charAt(0).toUpperCase() + p.slice(1))
+      .join('')
+  );
 }

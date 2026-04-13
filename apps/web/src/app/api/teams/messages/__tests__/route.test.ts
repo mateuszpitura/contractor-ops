@@ -10,8 +10,11 @@ vi.mock('botbuilder', () => ({
     process = mockProcess;
   },
   ConfigurationBotFrameworkAuthentication: class {
+    // biome-ignore lint/style/useNamingConvention: must match external botbuilder SDK property names
     MicrosoftAppId = '';
+    // biome-ignore lint/style/useNamingConvention: must match external botbuilder SDK property names
     MicrosoftAppPassword = '';
+    // biome-ignore lint/style/useNamingConvention: must match external botbuilder SDK property names
     MicrosoftAppType = 'MultiTenant';
   },
 }));

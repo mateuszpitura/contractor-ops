@@ -20,7 +20,7 @@ export function requirePermission(permission: Permission) {
   const middleware = t.middleware(async ({ ctx, next }) => {
     // API key auth: check scopes instead of Better Auth session
     if (ctx.authMode === 'apiKey') {
-      if (!ctx.apiKeyId || !ctx.apiKeyScopes) {
+      if (!(ctx.apiKeyId && ctx.apiKeyScopes)) {
         throw new TRPCError({
           code: 'FORBIDDEN',
           message: E.PERMISSION_DENIED,

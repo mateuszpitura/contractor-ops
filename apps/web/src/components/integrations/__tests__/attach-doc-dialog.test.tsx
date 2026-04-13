@@ -41,9 +41,7 @@ const mockSearchResults = [
 let searchData: unknown[] = [];
 let searchLoading = false;
 
-const {
-  mockMutate,
-} = vi.hoisted(() => ({
+const { mockMutate } = vi.hoisted(() => ({
   mockMutate: vi.fn(),
 }));
 

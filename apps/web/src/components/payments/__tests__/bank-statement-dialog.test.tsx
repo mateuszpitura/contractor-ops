@@ -11,10 +11,7 @@ vi.mock('sonner', () => ({
   toast: { success: vi.fn(), error: vi.fn() },
 }));
 
-const {
-  mockMutate,
-  confirmMutate,
-} = vi.hoisted(() => ({
+const { mockMutate, confirmMutate } = vi.hoisted(() => ({
   mockMutate: vi.fn(),
   confirmMutate: vi.fn(),
 }));

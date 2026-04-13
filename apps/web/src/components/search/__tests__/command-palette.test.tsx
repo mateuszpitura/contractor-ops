@@ -21,11 +21,7 @@ Element.prototype.scrollIntoView ??= () => undefined;
 // Mocks
 // ---------------------------------------------------------------------------
 
-const {
-  mockPush,
-  mockSetOpen,
-  mockAddRecentItem,
-} = vi.hoisted(() => ({
+const { mockPush, mockSetOpen, mockAddRecentItem } = vi.hoisted(() => ({
   mockPush: vi.fn(),
   mockSetOpen: vi.fn(),
   mockAddRecentItem: vi.fn(),

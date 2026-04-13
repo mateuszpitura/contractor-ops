@@ -73,9 +73,6 @@ export const scheinOutcomeSchema = z.object({
 
 // --- Union ----------------------------------------------------------------
 
-export const outcomeSchema = z.discriminatedUnion('kind', [
-  ir35OutcomeSchema,
-  scheinOutcomeSchema,
-]);
+export const outcomeSchema = z.discriminatedUnion('kind', [ir35OutcomeSchema, scheinOutcomeSchema]);
 
 export type OutcomeSchemaType = z.infer<typeof outcomeSchema>;

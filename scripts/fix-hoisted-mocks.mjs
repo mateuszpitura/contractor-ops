@@ -16,10 +16,10 @@ if (files.length === 0) {
   process.exit(1);
 }
 
-let totalFixed = 0;
+let _totalFixed = 0;
 
 for (const file of files) {
-  let content = readFileSync(file, 'utf-8');
+  const content = readFileSync(file, 'utf-8');
   const lines = content.split('\n');
 
   // Step 1: Find all top-level const mockXxx = vi.fn() lines
@@ -92,7 +92,7 @@ for (const file of files) {
   // Build destructured hoisted block
   const hoistedEntries = mocksToHoist.map(d => {
     // Remove trailing semicolon from initializer
-    let init = d.initializer.replace(/;?\s*$/, '');
+    const init = d.initializer.replace(/;?\s*$/, '');
     return `  ${d.name}: ${init},`;
   });
 
@@ -139,8 +139,5 @@ for (const file of files) {
   }
 
   writeFileSync(file, cleanedLines.join('\n'));
-  totalFixed++;
-  console.log(`Fixed: ${file} (${mocksToHoist.length} mocks hoisted)`);
+  _totalFixed++;
 }
-
-console.log(`\nTotal files fixed: ${totalFixed}`);

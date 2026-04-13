@@ -237,15 +237,18 @@ export function WizardDialog({ open, onOpenChange }: WizardDialogProps) {
 
   const isDirty = form.formState.isDirty;
 
-  const handleClose = (force = false) => {
-    if (!force && isDirty) {
-      setShowDiscardDialog(true);
-      return;
-    }
-    form.reset();
-    resetSteps();
-    onOpenChange(false);
-  };
+  const handleClose = useCallback(
+    (force = false) => {
+      if (!force && isDirty) {
+        setShowDiscardDialog(true);
+        return;
+      }
+      form.reset();
+      resetSteps();
+      onOpenChange(false);
+    },
+    [isDirty, form, resetSteps, onOpenChange],
+  );
 
   const handleDiscard = () => {
     setShowDiscardDialog(false);
@@ -289,10 +292,10 @@ export function WizardDialog({ open, onOpenChange }: WizardDialogProps) {
       if (!o) handleClose();
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [isDirty, onOpenChange],
+    [handleClose],
   );
 
-  const handleCloseButton = useCallback(() => handleClose(), [isDirty, onOpenChange]);
+  const _handleCloseButton = useCallback(() => handleClose(), [handleClose]);
 
   return (
     <>
@@ -349,25 +352,23 @@ export function WizardDialog({ open, onOpenChange }: WizardDialogProps) {
           </div>
         </DialogContent>
       </Dialog>
-
-  {
-    /* Discard confirmation */
-  }
-  <AlertDialog open={showDiscardDialog} onOpenChange={setShowDiscardDialog}>
-    <AlertDialogContent>
-      <AlertDialogHeader>
-        <AlertDialogTitle>{t('discardConfirm.title')}</AlertDialogTitle>
-        <AlertDialogDescription>{t('discardConfirm.body')}</AlertDialogDescription>
-      </AlertDialogHeader>
-      <AlertDialogFooter>
-        <AlertDialogCancel>{t('discardConfirm.keep')}</AlertDialogCancel>
-        {/* biome-ignore lint/nursery/noJsxPropsBind: inline callback */}
-        <AlertDialogAction onClick={handleDiscard} variant="destructive">
-          {t('discardConfirm.discard')}
-        </AlertDialogAction>
-      </AlertDialogFooter>
-    </AlertDialogContent>
-  </AlertDialog>;
-  </>
-  )
+      {/* Discard confirmation */}
+      <AlertDialog open={showDiscardDialog} onOpenChange={setShowDiscardDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('discardConfirm.title')}</AlertDialogTitle>
+            <AlertDialogDescription>{t('discardConfirm.body')}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('discardConfirm.keep')}</AlertDialogCancel>
+            {/* biome-ignore lint/nursery/noJsxPropsBind: inline callback */}
+            <AlertDialogAction onClick={handleDiscard} variant="destructive">
+              {t('discardConfirm.discard')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      ;
+    </>
+  );
 }

@@ -91,7 +91,10 @@ describe('POST /api/slack/interactivity', () => {
     mockUpdateMessageToResult.mockResolvedValue(undefined);
     mockTransaction.mockImplementation(async (fn: Function) => {
       const tx = {
-        approvalFlow: { findUniqueOrThrow: mockApprovalFlowFindUniqueOrThrow, update: mockApprovalFlowUpdate },
+        approvalFlow: {
+          findUniqueOrThrow: mockApprovalFlowFindUniqueOrThrow,
+          update: mockApprovalFlowUpdate,
+        },
         approvalStep: { update: mockApprovalStepUpdate },
         approvalDecision: { create: mockApprovalDecisionCreate },
       };

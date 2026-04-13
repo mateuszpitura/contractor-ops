@@ -10,6 +10,7 @@ import { Separator } from '@/components/ui/separator';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Link } from '@/i18n/navigation';
 import type { InvoiceRow } from './invoice-table/columns';
+import { enumKey } from '@/lib/enum-key';
 
 // ---------------------------------------------------------------------------
 // Status badge colors (mirrors columns.tsx)
@@ -98,7 +99,7 @@ export function InvoiceSidePanel({ invoice, open, onOpenChange }: InvoiceSidePan
               </SheetTitle>
               <div className="flex items-center gap-2 flex-wrap">
                 <Badge variant="secondary" className={statusBadgeColors[invoice.status] ?? ''}>
-                  {t(`status.${invoice.status}` as Parameters<typeof t>[0])}
+                  {t(`status.${enumKey(invoice.status)}` as Parameters<typeof t>[0])}
                 </Badge>
                 {invoice.source === 'MANUAL_UPLOAD' ? (
                   <Upload className="h-4 w-4 text-muted-foreground" />
@@ -165,7 +166,7 @@ export function InvoiceSidePanel({ invoice, open, onOpenChange }: InvoiceSidePan
                   <>
                     <span className={`inline-block h-2 w-2 rounded-full ${matchConfig.dotClass}`} />
                     <span>
-                      {t(`matchStatus.${matchConfig.labelKey}` as Parameters<typeof t>[0])}
+                      {t(`matchStatus.${enumKey(matchConfig.labelKey)}` as Parameters<typeof t>[0])}
                     </span>
                   </>
                 ) : (

@@ -1,17 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { SlackMessagingProvider } from '../slack-messaging-provider.js';
 
-const {
-  mockGetSlackUserId,
-  mockSendApprovalCard,
-  mockSendReminderDM,
-  mockGetSlackClient,
-} = vi.hoisted(() => ({
-  mockGetSlackUserId: vi.fn(),
-  mockSendApprovalCard: vi.fn(),
-  mockSendReminderDM: vi.fn(),
-  mockGetSlackClient: vi.fn(),
-}));
+const { mockGetSlackUserId, mockSendApprovalCard, mockSendReminderDM, mockGetSlackClient } =
+  vi.hoisted(() => ({
+    mockGetSlackUserId: vi.fn(),
+    mockSendApprovalCard: vi.fn(),
+    mockSendReminderDM: vi.fn(),
+    mockGetSlackClient: vi.fn(),
+  }));
 
 vi.mock('../../slack-client.js', () => ({
   getSlackUserIdForUser: mockGetSlackUserId,

@@ -9,9 +9,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 // ---------------------------------------------------------------------------
 
 // Mock only external courier clients -- NOT equipment-workflow
-const {
-  mockInPostGetStatus,
-} = vi.hoisted(() => ({
+const { mockInPostGetStatus } = vi.hoisted(() => ({
   mockInPostGetStatus: vi.fn(),
 }));
 vi.mock('../inpost-client', () => ({

@@ -83,7 +83,7 @@ export default function PortalLoginPage() {
             <p className="mt-2 text-sm text-muted-foreground">
               {t('login.linkSentTo', { email: getValues('email') })}
             </p>
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+            {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
             <p className="mt-4 text-sm text-muted-foreground">{t('login.didntReceive')}</p>
             <Button variant="ghost" className="mt-4" onClick={resetSent}>
               {t('login.tryAnother')}

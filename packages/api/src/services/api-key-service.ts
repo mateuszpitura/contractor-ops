@@ -133,7 +133,7 @@ export function touchLastUsed(keyId: string): void {
       where: { id: keyId },
       data: { lastUsedAt: new Date() },
     })
-    .catch((err) => {
+    .catch(err => {
       console.error('[api-key] Failed to update lastUsedAt:', keyId, err);
     });
 }

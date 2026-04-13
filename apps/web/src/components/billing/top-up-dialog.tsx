@@ -103,10 +103,7 @@ export function TopUpDialog({ open, onOpenChange }: TopUpDialogProps) {
         </div>
 
         <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={closeDialog}
-            disabled={checkoutMutation.isPending}>
+          <Button variant="outline" onClick={closeDialog} disabled={checkoutMutation.isPending}>
             {t('cancel')}
           </Button>
           {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}

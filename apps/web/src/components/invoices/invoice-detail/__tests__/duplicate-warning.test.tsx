@@ -3,9 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, setup } from '@/test/test-utils';
 import { DuplicateWarning } from '../duplicate-warning';
 
-const {
-  mutateMock,
-} = vi.hoisted(() => ({
+const { mutateMock } = vi.hoisted(() => ({
   mutateMock: vi.fn(),
 }));
 

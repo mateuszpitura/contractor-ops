@@ -12,7 +12,30 @@ export {
   listProfiles,
   registerProfile,
 } from './registry.js';
-
+export {
+  billingRatioSchema,
+  getAnswerSchemaForType,
+  likert5AnswerSchema,
+  rationaleSchema,
+  score03AnswerSchema,
+  yesNoAnswerSchema,
+} from './schemas/answers.js';
+export type { OutcomeSchemaType } from './schemas/assessment.js';
+// Schemas
+export {
+  ir35AreaResultSchema,
+  ir35AreaSchema,
+  ir35AreaVerdictSchema,
+  ir35OutcomeSchema,
+  ir35VerdictSchema,
+  outcomeSchema,
+  scheinCategoryResultSchema,
+  scheinCategorySchema,
+  scheinOutcomeSchema,
+  scheinVerdictSchema,
+} from './schemas/assessment.js';
+// Snapshot helper
+export { buildQuestionsSnapshot } from './snapshot.js';
 // Types
 export type {
   AnswerMap,
@@ -42,29 +65,3 @@ export type {
   RuleSet,
   RuleSetQuestion,
 } from './types/rule-set.js';
-
-// Schemas
-export {
-  ir35AreaResultSchema,
-  ir35AreaSchema,
-  ir35AreaVerdictSchema,
-  ir35OutcomeSchema,
-  ir35VerdictSchema,
-  outcomeSchema,
-  scheinCategoryResultSchema,
-  scheinCategorySchema,
-  scheinOutcomeSchema,
-  scheinVerdictSchema,
-} from './schemas/assessment.js';
-export type { OutcomeSchemaType } from './schemas/assessment.js';
-export {
-  billingRatioSchema,
-  getAnswerSchemaForType,
-  likert5AnswerSchema,
-  rationaleSchema,
-  score03AnswerSchema,
-  yesNoAnswerSchema,
-} from './schemas/answers.js';
-
-// Snapshot helper
-export { buildQuestionsSnapshot } from './snapshot.js';

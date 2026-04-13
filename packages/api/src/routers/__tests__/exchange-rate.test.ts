@@ -85,7 +85,7 @@ vi.mock('../../services/exchange-rate.js', () => ({
   fetchAndStoreRates: mockFetchAndStoreRates,
 }));
 
-vi.mock('@contractor-ops/validators', async (importOriginal) => {
+vi.mock('@contractor-ops/validators', async importOriginal => {
   const actual = await importOriginal<Record<string, unknown>>();
   return {
     ...actual,
@@ -165,7 +165,10 @@ vi.mock('../../services/virus-scanner.js', () => ({
 }));
 
 vi.mock('../../services/r2.js', () => ({
-  createPresignedUploadUrl: vi.fn(async () => ({ url: 'https://r2.example.com/upload', key: 'mock-key' })),
+  createPresignedUploadUrl: vi.fn(async () => ({
+    url: 'https://r2.example.com/upload',
+    key: 'mock-key',
+  })),
   createPresignedDownloadUrl: vi.fn(async () => 'https://r2.example.com/download'),
   generateStorageKey: vi.fn(() => 'mock-storage-key'),
   headObject: vi.fn(async () => ({ ContentLength: 1024 })),
@@ -176,7 +179,11 @@ vi.mock('../../services/billing-service.js', () => ({
   getSubscription: vi.fn(async () => null),
   createCheckoutSession: vi.fn(async () => ({ url: 'https://checkout.stripe.com/session' })),
   createPortalSession: vi.fn(async () => ({ url: 'https://billing.stripe.com/portal' })),
-  getProrationPreview: vi.fn(async () => ({ immediateTotal: 0, proratedCredits: 0, newPriceAmount: 0 })),
+  getProrationPreview: vi.fn(async () => ({
+    immediateTotal: 0,
+    proratedCredits: 0,
+    newPriceAmount: 0,
+  })),
   ensureStripeCustomer: vi.fn(async () => 'cus_test'),
   createTopUpCheckoutSession: vi.fn(async () => ({ url: 'https://checkout.stripe.com/topup' })),
   updateSubscriptionSeatCount: vi.fn(async () => undefined),
@@ -189,7 +196,11 @@ vi.mock('../../services/credit-service.js', () => ({
 vi.mock('../../services/billing-constants.js', () => ({
   TIER_CREDIT_ALLOWANCE: { STARTER: 20, PRO: 100, ENTERPRISE: 500 },
   TRIAL_CREDIT_ALLOWANCE: 5,
-  KNOWN_SUBSCRIPTION_PRICE_IDS: new Set(['price_starter_monthly', 'price_pro_monthly', 'price_enterprise_monthly']),
+  KNOWN_SUBSCRIPTION_PRICE_IDS: new Set([
+    'price_starter_monthly',
+    'price_pro_monthly',
+    'price_enterprise_monthly',
+  ]),
   KNOWN_TOPUP_PRICE_IDS: new Set(['price_topup_10', 'price_topup_50']),
 }));
 
@@ -374,9 +385,9 @@ describe('exchangeRate.latest', () => {
   it('throws when no rate is found', async () => {
     mockGetRate.mockResolvedValueOnce(null);
 
-    await expect(
-      caller.exchangeRate.latest({ base: 'EUR', target: 'XYZ' }),
-    ).rejects.toThrow('No exchange rate found for EUR/XYZ');
+    await expect(caller.exchangeRate.latest({ base: 'EUR', target: 'XYZ' })).rejects.toThrow(
+      'No exchange rate found for EUR/XYZ',
+    );
   });
 });
 

@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { getAvatarInitials } from '@/lib/avatar-initials';
 import { ComplianceHealthBadge } from '../compliance-health-badge';
+import { enumKey } from '@/lib/enum-key';
 
 // ---------------------------------------------------------------------------
 // Row type matching the tRPC contractor.list response shape
@@ -108,7 +109,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<ContractorRow>[] {
       header: t('columns.type'),
       cell: ({ row }) => (
         <Badge variant="secondary" className="whitespace-nowrap">
-          {t(`type.${row.original.type}`)}
+          {t(`type.${enumKey(row.original.type)}`)}
         </Badge>
       ),
     },
@@ -121,7 +122,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<ContractorRow>[] {
         const stage = row.original.lifecycleStage;
         return (
           <Badge variant="secondary" className={lifecycleBadgeColors[stage] ?? ''}>
-            {t(`lifecycle.${stage}`)}
+            {t(`lifecycle.${enumKey(stage)}`)}
           </Badge>
         );
       },
@@ -160,7 +161,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<ContractorRow>[] {
             ? (custom as Record<string, unknown>).billingModel
             : null;
         return model ? (
-          <span className="text-sm">{t(`billingModel.${String(model)}`)}</span>
+          <span className="text-sm">{t(`billingModel.${enumKey(String(model))}`)}</span>
         ) : (
           <span className="text-muted-foreground">&mdash;</span>
         );

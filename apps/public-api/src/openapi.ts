@@ -81,7 +81,11 @@ export const openApiSpec = {
             in: 'query',
             schema: { type: 'string', enum: ['ACTIVE', 'INACTIVE', 'ARCHIVED'] },
           },
-          { name: 'sortBy', in: 'query', schema: { type: 'string', enum: ['legalName', 'createdAt', 'updatedAt'] } },
+          {
+            name: 'sortBy',
+            in: 'query',
+            schema: { type: 'string', enum: ['legalName', 'createdAt', 'updatedAt'] },
+          },
         ],
         responses: {
           '200': { description: 'Paginated list of contractors' },
@@ -114,11 +118,23 @@ export const openApiSpec = {
             in: 'query',
             schema: {
               type: 'string',
-              enum: ['RECEIVED', 'UNDER_REVIEW', 'APPROVED', 'SCHEDULED', 'PAID', 'VOID', 'REJECTED'],
+              enum: [
+                'RECEIVED',
+                'UNDER_REVIEW',
+                'APPROVED',
+                'SCHEDULED',
+                'PAID',
+                'VOID',
+                'REJECTED',
+              ],
             },
           },
           { name: 'contractorId', in: 'query', schema: { type: 'string' } },
-          { name: 'sortBy', in: 'query', schema: { type: 'string', enum: ['issueDate', 'dueDate', 'createdAt', 'totalMinor'] } },
+          {
+            name: 'sortBy',
+            in: 'query',
+            schema: { type: 'string', enum: ['issueDate', 'dueDate', 'createdAt', 'totalMinor'] },
+          },
         ],
         responses: {
           '200': { description: 'Paginated list of invoices' },
@@ -149,11 +165,24 @@ export const openApiSpec = {
             in: 'query',
             schema: {
               type: 'string',
-              enum: ['DRAFT', 'PENDING_SIGNATURE', 'ACTIVE', 'EXPIRING', 'EXPIRED', 'TERMINATED', 'SUPERSEDED', 'ARCHIVED'],
+              enum: [
+                'DRAFT',
+                'PENDING_SIGNATURE',
+                'ACTIVE',
+                'EXPIRING',
+                'EXPIRED',
+                'TERMINATED',
+                'SUPERSEDED',
+                'ARCHIVED',
+              ],
             },
           },
           { name: 'contractorId', in: 'query', schema: { type: 'string' } },
-          { name: 'sortBy', in: 'query', schema: { type: 'string', enum: ['title', 'startDate', 'endDate', 'createdAt'] } },
+          {
+            name: 'sortBy',
+            in: 'query',
+            schema: { type: 'string', enum: ['title', 'startDate', 'endDate', 'createdAt'] },
+          },
         ],
         responses: {
           '200': { description: 'Paginated list of contracts' },
@@ -179,7 +208,11 @@ export const openApiSpec = {
           { $ref: '#/components/parameters/page' },
           { $ref: '#/components/parameters/pageSize' },
           { $ref: '#/components/parameters/sortOrder' },
-          { name: 'entityType', in: 'query', schema: { type: 'string', enum: ['CONTRACTOR', 'CONTRACT', 'INVOICE'] } },
+          {
+            name: 'entityType',
+            in: 'query',
+            schema: { type: 'string', enum: ['CONTRACTOR', 'CONTRACT', 'INVOICE'] },
+          },
           { name: 'entityId', in: 'query', schema: { type: 'string' } },
         ],
         responses: {

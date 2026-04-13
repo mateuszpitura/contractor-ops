@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { trpc } from '@/trpc/init';
+import { enumKey } from '@/lib/enum-key';
 
 // ---------------------------------------------------------------------------
 // Field label key mapping
@@ -170,7 +171,7 @@ export function ChangeRequestDiffCard({
               </p>
             </div>
             {request.status !== 'PENDING' && (
-              <Badge variant={statusVariant}>{t(`status.${request.status}`)}</Badge>
+              <Badge variant={statusVariant}>{t(`status.${enumKey(request.status)}`)}</Badge>
             )}
           </div>
         </CardHeader>

@@ -5,6 +5,7 @@ import { differenceInDays, isPast } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { enumKey } from '@/lib/enum-key';
 
 // ---------------------------------------------------------------------------
 // Row type matching the tRPC contract.list response shape
@@ -127,7 +128,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<ContractRow>[] {
       header: t('columns.type'),
       cell: ({ row }) => (
         <Badge variant="secondary" className="whitespace-nowrap">
-          {t(`type.${row.original.type}`)}
+          {t(`type.${enumKey(row.original.type)}`)}
         </Badge>
       ),
     },
@@ -140,7 +141,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<ContractRow>[] {
         const status = row.original.status;
         return (
           <Badge variant="secondary" className={statusBadgeColors[status] ?? ''}>
-            {t(`status.${status}`)}
+            {t(`status.${enumKey(status)}`)}
           </Badge>
         );
       },
@@ -228,7 +229,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<ContractRow>[] {
       header: t('columns.billingCycle'),
       enableSorting: false,
       cell: ({ row }) => (
-        <span className="text-sm">{t(`billingModel.${row.original.billingModel}`)}</span>
+        <span className="text-sm">{t(`billingModel.${enumKey(row.original.billingModel)}`)}</span>
       ),
     },
 
@@ -253,7 +254,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<ContractRow>[] {
         if (!risk) return <span className="text-muted-foreground">&mdash;</span>;
         return (
           <Badge variant="secondary" className={riskBadgeColors[risk] ?? ''}>
-            {t(`risk.${risk}`)}
+            {t(`risk.${enumKey(risk)}`)}
           </Badge>
         );
       },

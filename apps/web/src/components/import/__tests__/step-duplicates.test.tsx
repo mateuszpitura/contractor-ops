@@ -7,9 +7,7 @@ import { StepDuplicates } from '../step-duplicates';
 // Mocks
 // ---------------------------------------------------------------------------
 
-const {
-  usePermissionsMock,
-} = vi.hoisted(() => ({
+const { usePermissionsMock } = vi.hoisted(() => ({
   usePermissionsMock: vi.fn(() => ({ role: 'admin' })),
 }));
 

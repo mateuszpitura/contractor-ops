@@ -28,6 +28,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { enumKey } from '@/lib/enum-key';
 
 import { trpc } from '@/trpc/init';
 import { SortableTaskList } from './sortable-task-list';
@@ -209,7 +210,7 @@ export function TemplateForm({ templateId }: TemplateFormProps) {
 
   const templateTypeItems = TEMPLATE_TYPES.map(type => ({
     value: type,
-    label: t(`type_${type}`),
+    label: t(`type.${enumKey(type)}` as Parameters<typeof t>[0]),
   }));
 
   const isSaving = createMutation.isPending || updateMutation.isPending;
@@ -331,7 +332,7 @@ export function TemplateForm({ templateId }: TemplateFormProps) {
             <p className="text-sm font-medium leading-none">{t('columns.status')}</p>
             <div className="flex min-h-8 items-center">
               <Badge className={STATUS_BADGE_STYLES[templateStatus] ?? ''} variant="secondary">
-                {templateStatus}
+                {t(`templateStatus.${enumKey(templateStatus)}` as Parameters<typeof t>[0])}
               </Badge>
             </div>
           </div>

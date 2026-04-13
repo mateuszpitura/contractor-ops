@@ -7,12 +7,7 @@ import type { IntegrationProviderAdapter } from '../types/provider.js';
 // Mock Prisma
 // ---------------------------------------------------------------------------
 
-const {
-  mockFindMany,
-  mockFindUnique,
-  mockUpdateMany,
-  mockUpdate,
-} = vi.hoisted(() => ({
+const { mockFindMany, mockFindUnique, mockUpdateMany, mockUpdate } = vi.hoisted(() => ({
   mockFindMany: vi.fn(),
   mockFindUnique: vi.fn(),
   mockUpdateMany: vi.fn(),

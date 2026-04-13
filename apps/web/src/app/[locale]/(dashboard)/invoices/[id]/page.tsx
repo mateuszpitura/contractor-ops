@@ -32,6 +32,7 @@ import { zatcaTrpc } from '@/components/zatca/zatca-trpc';
 import type { PeppolTransmissionResult } from '@/lib/peppol-trpc';
 import { peppolTrpc } from '@/lib/peppol-trpc';
 import { trpc } from '@/trpc/init';
+import { enumKey } from '@/lib/enum-key';
 
 // ---------------------------------------------------------------------------
 // Status badge config (reuse from columns.tsx pattern)
@@ -312,7 +313,7 @@ export default function InvoiceDetailPage() {
         <h1 className="text-xl font-semibold font-mono">{invoice.invoiceNumber}</h1>
         {!!statusConfig && (
           <Badge variant="secondary" className={`gap-1 ${statusConfig.className}`}>
-            {t(`status.${statusConfig.label}`)}
+            {t(`status.${enumKey(statusConfig.label)}`)}
           </Badge>
         )}
         {isKsefSource ? (

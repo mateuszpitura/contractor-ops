@@ -68,7 +68,6 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
   metrics: { gauge: vi.fn() },
 }));
 
-
 vi.mock('@contractor-ops/api/services/r2', () => ({
   deleteObject: mockDeleteObject,
 }));

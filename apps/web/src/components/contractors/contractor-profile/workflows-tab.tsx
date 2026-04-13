@@ -12,8 +12,8 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { TemplatePicker } from '@/components/workflows/template-picker-dialog';
 import { Link } from '@/i18n/navigation';
-import { trpc } from '@/trpc/init';
 import { enumKey } from '@/lib/enum-key';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Run status badge styling (matching UI-SPEC)

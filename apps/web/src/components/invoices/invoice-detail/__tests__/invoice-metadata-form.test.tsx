@@ -18,9 +18,7 @@ vi.mock('@/trpc/init', () => ({
   },
 }));
 
-const {
-  invalidateQueries,
-} = vi.hoisted(() => ({
+const { invalidateQueries } = vi.hoisted(() => ({
   invalidateQueries: vi.fn(),
 }));
 

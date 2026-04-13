@@ -2,9 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@/test/test-utils';
 import { DashboardGreeting } from '../dashboard-greeting';
 
-const {
-  useSession,
-} = vi.hoisted(() => ({
+const { useSession } = vi.hoisted(() => ({
   useSession: vi.fn(),
 }));
 

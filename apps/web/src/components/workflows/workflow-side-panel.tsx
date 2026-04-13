@@ -15,6 +15,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { Skeleton } from '@/components/ui/skeleton';
 import { Link } from '@/i18n/navigation';
 import { trpc } from '@/trpc/init';
+import { enumKey } from '@/lib/enum-key';
 
 // ---------------------------------------------------------------------------
 // Status badge colors (same as columns.tsx)
@@ -279,7 +280,7 @@ export function WorkflowSidePanel({ runId, onClose }: WorkflowSidePanelProps) {
                   </SheetTitle>
                   <div className="flex items-center gap-2 flex-wrap">
                     <Badge variant="secondary" className={statusBadgeColors[run.status] ?? ''}>
-                      {t(`runStatus.${run.status}` as Parameters<typeof t>[0])}
+                      {t(`runStatus.${enumKey(run.status)}` as Parameters<typeof t>[0])}
                     </Badge>
                     {!!run.workflowTemplate && (
                       <span className="text-sm text-muted-foreground">

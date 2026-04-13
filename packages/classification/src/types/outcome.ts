@@ -11,12 +11,7 @@
 // A discriminated union on `kind` makes outcomes type-safe at every consumer.
 
 /** IR35 five areas (per HMRC CEST + case law). */
-export type Ir35Area =
-  | 'substitution'
-  | 'control'
-  | 'financial-risk'
-  | 'part-and-parcel'
-  | 'moo';
+export type Ir35Area = 'substitution' | 'control' | 'financial-risk' | 'part-and-parcel' | 'moo';
 
 /** Per-area verdict for IR35 — 5-level gradient. */
 export type Ir35AreaVerdict =
@@ -47,11 +42,7 @@ export interface Ir35Outcome {
 }
 
 /** DRV 4 categories for Scheinselbständigkeit. */
-export type ScheinCategory =
-  | 'integration'
-  | 'entrepreneurial'
-  | 'personal-dep'
-  | 'economic-dep';
+export type ScheinCategory = 'integration' | 'entrepreneurial' | 'personal-dep' | 'economic-dep';
 
 /** Traffic-light verdicts per DRV thresholds (D-14). */
 export type ScheinVerdict = 'green' | 'amber' | 'red';

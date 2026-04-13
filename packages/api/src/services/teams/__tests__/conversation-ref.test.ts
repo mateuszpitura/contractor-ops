@@ -5,10 +5,7 @@ import { getConversationReference, storeConversationReference } from '../teams-b
 // Mocks
 // ---------------------------------------------------------------------------
 
-const {
-  mockFindFirst,
-  mockUpdate,
-} = vi.hoisted(() => ({
+const { mockFindFirst, mockUpdate } = vi.hoisted(() => ({
   mockFindFirst: vi.fn(),
   mockUpdate: vi.fn(),
 }));

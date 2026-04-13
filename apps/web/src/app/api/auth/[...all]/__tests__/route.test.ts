@@ -1,10 +1,7 @@
 /** @vitest-environment node */
 import { describe, expect, it, vi } from 'vitest';
 
-const {
-  mockGet,
-  mockPost,
-} = vi.hoisted(() => ({
+const { mockGet, mockPost } = vi.hoisted(() => ({
   mockGet: vi.fn(),
   mockPost: vi.fn(),
 }));

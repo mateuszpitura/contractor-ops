@@ -7,6 +7,7 @@ describe('withTenantScope', () => {
     const innerQuery = vi.fn(async (args: unknown) => args);
     const base = {
       $extends: (ext: { query: { $allOperations: (p: unknown) => Promise<unknown> } }) => {
+        // biome-ignore lint/style/useNamingConvention: mirrors Prisma $allOperations convention
         const $allOps = ext.query.$allOperations;
         return {
           contractor: {

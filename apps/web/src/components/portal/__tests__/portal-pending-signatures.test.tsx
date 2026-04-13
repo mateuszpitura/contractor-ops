@@ -15,9 +15,7 @@ vi.mock('@/components/contracts/contract-detail/embedded-signing-modal', () => (
   EmbeddedSigningModal: () => null,
 }));
 
-const {
-  mockUseQuery,
-} = vi.hoisted(() => ({
+const { mockUseQuery } = vi.hoisted(() => ({
   mockUseQuery: vi.fn(),
 }));
 

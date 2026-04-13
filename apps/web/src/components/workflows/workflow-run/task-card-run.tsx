@@ -24,7 +24,6 @@ import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { DocLinksSection } from '@/components/integrations/doc-links-section';
-import { enumKey } from '@/lib/enum-key';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -38,6 +37,7 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { enumKey } from '@/lib/enum-key';
 import { trpc } from '@/trpc/init';
 import { TaskAttachments } from './task-attachments';
 import { TaskComments } from './task-comments';

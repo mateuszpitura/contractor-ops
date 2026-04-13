@@ -3,6 +3,7 @@
 import type { ColumnDef } from '@tanstack/react-table';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
+import { enumKey } from '@/lib/enum-key';
 
 // ---------------------------------------------------------------------------
 // Row type matching the tRPC workflow.listRuns response shape
@@ -129,7 +130,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<WorkflowRunRow>[] {
         <Badge
           variant="secondary"
           className={templateTypeBadgeColors[row.original.workflowTemplate.type] ?? ''}>
-          {t(`templateType.${row.original.workflowTemplate.type}`)}
+          {t(`templateType.${enumKey(row.original.workflowTemplate.type)}`)}
         </Badge>
       ),
       enableSorting: false,
@@ -143,7 +144,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<WorkflowRunRow>[] {
         const status = row.original.status;
         return (
           <Badge variant="secondary" className={statusBadgeColors[status] ?? ''}>
-            {t(`runStatus.${status}`)}
+            {t(`runStatus.${enumKey(status)}`)}
           </Badge>
         );
       },

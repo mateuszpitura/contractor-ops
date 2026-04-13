@@ -44,9 +44,7 @@ let teamsLoading = false;
 let existingMapping: unknown[] = [];
 let existingMappingLoading = false;
 
-const {
-  mockMutate,
-} = vi.hoisted(() => ({
+const { mockMutate } = vi.hoisted(() => ({
   mockMutate: vi.fn(),
 }));
 

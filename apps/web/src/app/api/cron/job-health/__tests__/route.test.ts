@@ -3,11 +3,7 @@
 import { NextRequest } from 'next/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const {
-  mockFindMany,
-  mockUpdateMany,
-  mockCount,
-} = vi.hoisted(() => ({
+const { mockFindMany, mockUpdateMany, mockCount } = vi.hoisted(() => ({
   mockFindMany: vi.fn(),
   mockUpdateMany: vi.fn(),
   mockCount: vi.fn(),

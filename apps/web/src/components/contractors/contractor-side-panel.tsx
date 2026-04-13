@@ -12,6 +12,7 @@ import { Link } from '@/i18n/navigation';
 import { canViewSensitivePii, maskTaxId } from '@/lib/mask-pii';
 import { ComplianceHealthBadge } from './compliance-health-badge';
 import type { ContractorRow } from './contractor-table/columns';
+import { enumKey } from '@/lib/enum-key';
 
 // ---------------------------------------------------------------------------
 // Lifecycle badge colors (same as columns.tsx)
@@ -73,10 +74,10 @@ export function ContractorSidePanel({ contractor, open, onOpenChange }: Contract
                 <Badge
                   variant="secondary"
                   className={lifecycleBadgeColors[contractor.lifecycleStage] ?? ''}>
-                  {t(`lifecycle.${contractor.lifecycleStage}` as Parameters<typeof t>[0])}
+                  {t(`lifecycle.${enumKey(contractor.lifecycleStage)}` as Parameters<typeof t>[0])}
                 </Badge>
                 <Badge variant="secondary">
-                  {t(`type.${contractor.type}` as Parameters<typeof t>[0])}
+                  {t(`type.${enumKey(contractor.type)}` as Parameters<typeof t>[0])}
                 </Badge>
                 <ComplianceHealthBadge health={contractor.complianceHealth} />
               </div>

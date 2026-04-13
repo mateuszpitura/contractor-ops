@@ -16,7 +16,7 @@
 //   - `getDefaultRateCode` returns the `isDefault: true` row's code for the
 //     country as of the supplied date (GB → '20', DE → '19').
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@contractor-ops/db', () => {
   const findMany = vi.fn();
@@ -30,7 +30,7 @@ vi.mock('@contractor-ops/db', () => {
 });
 
 import { prisma } from '@contractor-ops/db';
-import { getTaxRatesForCountry, getDefaultRateCode } from '../tax-rate.service.js';
+import { getDefaultRateCode, getTaxRatesForCountry } from '../tax-rate.service.js';
 
 const mockTaxRate = vi.mocked(prisma.taxRate);
 
@@ -141,10 +141,7 @@ describe('tax-rate.service — getTaxRatesForCountry (PAY-02, PAY-04)', () => {
     // The `findMany` query carries the correct ordering + temporal window.
     const findManyArgs = mockTaxRate.findMany.mock.calls[0]?.[0];
     expect(findManyArgs?.where?.countryCode).toBe('GB');
-    expect(findManyArgs?.orderBy).toEqual([
-      { isDefault: 'desc' },
-      { ratePercent: 'desc' },
-    ]);
+    expect(findManyArgs?.orderBy).toEqual([{ isDefault: 'desc' }, { ratePercent: 'desc' }]);
   });
 
   it('returns the 4 DE rates ordered isDefault-first — code 19 must be first', async () => {
@@ -195,9 +192,7 @@ describe('tax-rate.service — getDefaultRateCode (PAY-02, PAY-04)', () => {
   });
 
   it('returns null when no rates exist for the country (no default + no fallback)', async () => {
-    mockTaxRate.findFirst
-      .mockResolvedValueOnce(null)
-      .mockResolvedValueOnce(null);
+    mockTaxRate.findFirst.mockResolvedValueOnce(null).mockResolvedValueOnce(null);
     const code = await getDefaultRateCode('ZZ');
     expect(code).toBeNull();
   });

@@ -57,9 +57,7 @@ let channelsLoading = false;
 let channelsError = false;
 let mappingData: Record<string, string> = {};
 
-const {
-  mockMutate,
-} = vi.hoisted(() => ({
+const { mockMutate } = vi.hoisted(() => ({
   mockMutate: vi.fn(),
 }));
 

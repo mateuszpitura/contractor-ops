@@ -3,10 +3,7 @@ import { render, screen } from '@/test/test-utils';
 import { OcrReviewPanel } from '../ocr-review-panel';
 
 // Mock tanstack query
-const {
-  mockUseQuery,
-  mockUseMutation,
-} = vi.hoisted(() => ({
+const { mockUseQuery, mockUseMutation } = vi.hoisted(() => ({
   mockUseQuery: vi.fn(),
   mockUseMutation: vi.fn(),
 }));

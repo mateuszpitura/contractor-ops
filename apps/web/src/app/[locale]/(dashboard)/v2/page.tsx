@@ -38,6 +38,7 @@ import {
   TiltCard,
 } from './_components/dashboard-primitives';
 import { SpendChartV2 } from './_components/spend-chart-v2';
+import { enumKey } from '@/lib/enum-key';
 
 // =============================================================================
 // MAIN PAGE
@@ -453,14 +454,14 @@ export default function DashboardV2Page() {
                       <p className="text-[12px] leading-snug">
                         <span className="font-semibold">{item.actorName ?? 'System'}</span>{' '}
                         <span className="text-muted-foreground/70">
-                          {t(`activity.actions.${item.action}` as Parameters<typeof t>[0])}
+                          {t(`activity.actions.${enumKey(item.action)}` as Parameters<typeof t>[0])}
                         </span>
                       </p>
                       <div className="mt-1 flex items-center gap-1.5">
                         <Badge
                           variant="secondary"
                           className="px-1.5 py-0 text-[8px] font-bold uppercase tracking-wider">
-                          {t(`activity.resources.${item.resourceType}` as Parameters<typeof t>[0])}
+                          {t(`activity.resources.${enumKey(item.resourceType)}` as Parameters<typeof t>[0])}
                         </Badge>
                         <span className="text-[9px] text-muted-foreground/40">
                           {formatDistanceToNow(new Date(item.createdAt), { addSuffix: true })}

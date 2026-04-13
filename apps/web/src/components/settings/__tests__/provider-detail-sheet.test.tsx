@@ -9,9 +9,7 @@ let mockSyncLogData: { items: unknown[]; nextCursor?: string } = {
 let mockWebhookLogData: { items: unknown[]; nextCursor?: string } = {
   items: [],
 };
-const {
-  mockDisconnectMutate,
-} = vi.hoisted(() => ({
+const { mockDisconnectMutate } = vi.hoisted(() => ({
   mockDisconnectMutate: vi.fn(),
 }));
 

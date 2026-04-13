@@ -4,11 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 // Mock Prisma
 // ---------------------------------------------------------------------------
 
-const {
-  mockFindFirst,
-  mockFindMany,
-  mockCount,
-} = vi.hoisted(() => ({
+const { mockFindFirst, mockFindMany, mockCount } = vi.hoisted(() => ({
   mockFindFirst: vi.fn(),
   mockFindMany: vi.fn(),
   mockCount: vi.fn(),

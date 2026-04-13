@@ -339,11 +339,17 @@ describe('equipmentShipmentsRouter', () => {
         equipment: { id: EQUIPMENT_ID, name: 'Laptop', status: 'IN_TRANSIT' },
       });
       mockPrisma.shipmentEvent.create.mockResolvedValueOnce({ id: 'evt-2' });
-      mockPrisma.shipment.update.mockResolvedValueOnce({ id: SHIPMENT_ID, currentStatus: 'DELIVERED' });
+      mockPrisma.shipment.update.mockResolvedValueOnce({
+        id: SHIPMENT_ID,
+        currentStatus: 'DELIVERED',
+      });
       mockPrisma.equipment.update.mockResolvedValueOnce({ id: EQUIPMENT_ID, status: 'DELIVERED' });
       mockPrisma.shipment.findUnique.mockResolvedValueOnce({
         id: SHIPMENT_ID,
-        events: [{ id: 'evt-1', status: 'CREATED' }, { id: 'evt-2', status: 'DELIVERED' }],
+        events: [
+          { id: 'evt-1', status: 'CREATED' },
+          { id: 'evt-2', status: 'DELIVERED' },
+        ],
       });
 
       const result = await caller.addShipmentEvent({
@@ -408,7 +414,13 @@ describe('equipmentShipmentsRouter', () => {
         id: SHIPMENT_ID,
         organizationId: ORG_ID,
         events: [{ id: 'evt-1', status: 'CREATED' }],
-        equipment: { id: EQUIPMENT_ID, name: 'Laptop', serialNumber: 'SN1', type: 'LAPTOP', status: 'IN_TRANSIT' },
+        equipment: {
+          id: EQUIPMENT_ID,
+          name: 'Laptop',
+          serialNumber: 'SN1',
+          type: 'LAPTOP',
+          status: 'IN_TRANSIT',
+        },
       };
       mockPrisma.shipment.findFirst.mockResolvedValueOnce(shipment);
 

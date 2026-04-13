@@ -4,9 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 // Mocks
 // ---------------------------------------------------------------------------
 
-const {
-  mockLimit,
-} = vi.hoisted(() => ({
+const { mockLimit } = vi.hoisted(() => ({
   mockLimit: vi.fn(),
 }));
 

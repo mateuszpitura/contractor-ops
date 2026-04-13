@@ -17,6 +17,7 @@ import { KsefSourceBadge } from '@/components/invoices/ksef-badge';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Link } from '@/i18n/navigation';
+import { enumKey } from '@/lib/enum-key';
 
 // ---------------------------------------------------------------------------
 // Row type matching the tRPC invoice.list response shape
@@ -268,13 +269,13 @@ export function getColumns(t: TranslateFunction): ColumnDef<InvoiceRow>[] {
         const status = row.original.status;
         const config = statusBadgeConfig[status];
         if (!config) {
-          return <Badge variant="secondary">{t(`status.${status}`)}</Badge>;
+          return <Badge variant="secondary">{t(`status.${enumKey(status)}`)}</Badge>;
         }
         const { className, Icon } = config;
         return (
           <Badge variant="secondary" className={`gap-1 ${className}`}>
             <Icon className="h-3 w-3" />
-            {t(`status.${status}`)}
+            {t(`status.${enumKey(status)}`)}
           </Badge>
         );
       },
@@ -293,7 +294,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<InvoiceRow>[] {
         return (
           <span className="inline-flex items-center gap-1.5 text-sm">
             <span className={`inline-block h-2 w-2 rounded-full ${config.dotClass}`} />
-            {t(`matchStatus.${config.label}`)}
+            {t(`matchStatus.${enumKey(config.label)}`)}
           </span>
         );
       },

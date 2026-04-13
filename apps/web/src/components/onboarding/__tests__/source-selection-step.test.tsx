@@ -2,9 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { render, screen, setup, waitFor } from '@/test/test-utils';
 import { SourceSelectionStep } from '../source-selection-step';
 
-const {
-  mockFetchQuery,
-} = vi.hoisted(() => ({
+const { mockFetchQuery } = vi.hoisted(() => ({
   mockFetchQuery: vi.fn(),
 }));
 vi.mock('@tanstack/react-query', async () => {

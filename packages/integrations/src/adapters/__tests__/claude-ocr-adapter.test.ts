@@ -7,9 +7,7 @@ import { ClaudeOcrAdapter } from '../claude-ocr-adapter.js';
 // Mock the Anthropic SDK
 // ---------------------------------------------------------------------------
 
-const {
-  mockCreate,
-} = vi.hoisted(() => ({
+const { mockCreate } = vi.hoisted(() => ({
   mockCreate: vi.fn(),
 }));
 

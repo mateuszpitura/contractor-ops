@@ -1,11 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { GoogleWorkspaceAdapter } from '../google-workspace-adapter.js';
 
-const {
-  mockFindUnique,
-  mockFindMany,
-  mockCount,
-} = vi.hoisted(() => ({
+const { mockFindUnique, mockFindMany, mockCount } = vi.hoisted(() => ({
   mockFindUnique: vi.fn(),
   mockFindMany: vi.fn(),
   mockCount: vi.fn(),

@@ -10,7 +10,13 @@ vi.mock('react-pdf', () => {
   };
   return {
     pdfjs,
-    Document: ({ children, onLoadSuccess }: { children: React.ReactNode; onLoadSuccess?: (result: { numPages: number }) => void }) => {
+    Document: ({
+      children,
+      onLoadSuccess,
+    }: {
+      children: React.ReactNode;
+      onLoadSuccess?: (result: { numPages: number }) => void;
+    }) => {
       // Simulate document load on mount
       if (onLoadSuccess) {
         setTimeout(() => onLoadSuccess({ numPages: 3 }), 0);

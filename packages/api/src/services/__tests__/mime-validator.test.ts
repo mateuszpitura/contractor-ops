@@ -4,9 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 // Mock file-type (magic byte detection)
 // ---------------------------------------------------------------------------
 
-const {
-  mockFileTypeFromBuffer,
-} = vi.hoisted(() => ({
+const { mockFileTypeFromBuffer } = vi.hoisted(() => ({
   mockFileTypeFromBuffer: vi.fn(),
 }));
 

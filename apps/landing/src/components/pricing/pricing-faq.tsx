@@ -2,7 +2,7 @@
 
 import { ChevronDown } from 'lucide-react';
 import { motion } from 'motion/react';
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 import { FadeUp, StaggerContainer, StaggerItem } from '@/components/motion-wrapper';
 import { posthog } from '@/lib/posthog';
 

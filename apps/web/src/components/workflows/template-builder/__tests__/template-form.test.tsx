@@ -130,7 +130,7 @@ describe('TemplateForm', () => {
   // ---- New template mode ----
   it('does not show status badge, activate, duplicate, or delete buttons for new template', () => {
     render(<TemplateForm />);
-    expect(screen.queryByText('DRAFT')).not.toBeInTheDocument();
+    expect(screen.queryByText('Draft')).not.toBeInTheDocument();
     expect(screen.queryByText('Activate')).not.toBeInTheDocument();
     expect(screen.queryByText('Duplicate')).not.toBeInTheDocument();
     expect(screen.queryByText('Delete')).not.toBeInTheDocument();
@@ -295,7 +295,7 @@ describe('TemplateForm', () => {
       isLoading: false,
     } as unknown);
     render(<TemplateForm templateId="t-1" />);
-    expect(screen.getByText('DRAFT')).toBeInTheDocument();
+    expect(screen.getByText('Draft')).toBeInTheDocument();
   });
 
   it('renders ACTIVE status badge', () => {
@@ -310,7 +310,7 @@ describe('TemplateForm', () => {
       isLoading: false,
     } as unknown);
     render(<TemplateForm templateId="t-1" />);
-    expect(screen.getByText('ACTIVE')).toBeInTheDocument();
+    expect(screen.getByText('Active')).toBeInTheDocument();
   });
 
   it('renders ARCHIVED status badge', () => {
@@ -325,7 +325,7 @@ describe('TemplateForm', () => {
       isLoading: false,
     } as unknown);
     render(<TemplateForm templateId="t-1" />);
-    expect(screen.getByText('ARCHIVED')).toBeInTheDocument();
+    expect(screen.getByText('Archived')).toBeInTheDocument();
   });
 
   // ---- Dirty indicator ----

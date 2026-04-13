@@ -14,10 +14,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 // Mock @contractor-ops/db
 // ---------------------------------------------------------------------------
 
-const {
-  mockFindUnique,
-  mockTenantStoreRun,
-} = vi.hoisted(() => ({
+const { mockFindUnique, mockTenantStoreRun } = vi.hoisted(() => ({
   mockFindUnique: vi.fn(),
   mockTenantStoreRun: vi.fn((_ctx: unknown, fn: () => unknown) => fn()),
 }));

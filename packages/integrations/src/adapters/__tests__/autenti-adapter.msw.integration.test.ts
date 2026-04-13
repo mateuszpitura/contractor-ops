@@ -1,9 +1,7 @@
 import { createMockServer, selectHandlers } from '@contractor-ops/test-utils';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
-const {
-  mockFindUnique,
-} = vi.hoisted(() => ({
+const { mockFindUnique } = vi.hoisted(() => ({
   mockFindUnique: vi.fn(),
 }));
 

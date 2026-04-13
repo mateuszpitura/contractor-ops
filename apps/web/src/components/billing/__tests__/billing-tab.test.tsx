@@ -6,10 +6,7 @@ import { BillingTab } from '../billing-tab';
 // ---------------------------------------------------------------------------
 
 let subscriptionData: unknown = null;
-const {
-  mockCheckoutMutate,
-  mockPortalMutate,
-} = vi.hoisted(() => ({
+const { mockCheckoutMutate, mockPortalMutate } = vi.hoisted(() => ({
   mockCheckoutMutate: vi.fn(),
   mockPortalMutate: vi.fn(),
 }));

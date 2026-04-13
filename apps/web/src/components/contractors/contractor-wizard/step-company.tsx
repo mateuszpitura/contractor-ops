@@ -13,6 +13,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { trpc } from '@/trpc/init';
 
 import type { WizardFormValues } from './wizard-dialog';
+import { enumKey } from '@/lib/enum-key';
 
 interface StepCompanyProps {
   form: UseFormReturn<WizardFormValues>;
@@ -143,7 +144,7 @@ export function StepCompany({ form }: StepCompanyProps) {
               htmlFor={`contractor-type-${type}`}
               className="flex cursor-pointer items-center gap-3 rounded-md border px-3 py-2.5 text-sm hover:bg-accent/50 has-[[data-checked]]:border-primary has-[[data-checked]]:bg-primary/5">
               <RadioGroupItem id={`contractor-type-${type}`} value={type} />
-              <span>{t(`typeOptions.${type}`)}</span>
+              <span>{t(`typeOptions.${enumKey(type)}`)}</span>
             </label>
           ))}
         </RadioGroup>

@@ -174,9 +174,7 @@ describe('handleEquipmentTaskStart', () => {
 // We test autoCreateInPostReturnShipment indirectly through handleEquipmentTaskStart
 // with OFFBOARDING template type and equipment assignments present.
 
-const {
-  mockCreateShipment,
-} = vi.hoisted(() => ({
+const { mockCreateShipment } = vi.hoisted(() => ({
   mockCreateShipment: vi.fn(),
 }));
 

@@ -11,6 +11,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Link } from '@/i18n/navigation';
 import { trpc } from '@/trpc/init';
+import { enumKey } from '@/lib/enum-key';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -161,7 +162,7 @@ export function ActivityFeed() {
                               <Bdi>{item.actorName ?? t('activity.systemActor')}</Bdi>
                             </span>{' '}
                             <span className="font-semibold">
-                              {t(`activity.actions.${item.action}` as Parameters<typeof t>[0])}
+                              {t(`activity.actions.${enumKey(item.action)}` as Parameters<typeof t>[0])}
                             </span>
                           </p>
                           <div className="mt-0.5 flex items-center gap-2">

@@ -1,6 +1,7 @@
 import { render, screen } from '@/test/test-utils';
 import type { ContractRow } from '../columns';
 import { getColumns } from '../columns';
+import { enumKey } from '@/lib/enum-key';
 
 vi.mock('date-fns', () => ({
   formatDistanceToNow: () => '2 days ago',
@@ -124,7 +125,7 @@ describe('getColumns cell renderers (contracts)', () => {
           });
         })(),
       );
-      expect(screen.getByText(`status.${status}`)).toBeInTheDocument();
+      expect(screen.getByText(`status.${enumKey(status)}`)).toBeInTheDocument();
       unmount();
     }
   });
@@ -197,7 +198,7 @@ describe('getColumns cell renderers (contracts)', () => {
           });
         })(),
       );
-      expect(screen.getByText(`risk.${risk}`)).toBeInTheDocument();
+      expect(screen.getByText(`risk.${enumKey(risk)}`)).toBeInTheDocument();
       unmount();
     }
   });

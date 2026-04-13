@@ -21,6 +21,7 @@ function textResponse(text: string, status = 200) {
 }
 
 // Generate a real RSA key pair for testing the crypto path
+// biome-ignore lint/style/useNamingConvention: SCREAMING_CASE conveys test constant semantics
 let TEST_PUBLIC_KEY_PEM: string;
 
 beforeAll(() => {

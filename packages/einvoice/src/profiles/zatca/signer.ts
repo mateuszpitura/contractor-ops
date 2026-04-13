@@ -33,6 +33,7 @@ const SIGNED_PROPS_ID = 'xadesSignedProperties';
 // xmldom accessor (via xml-crypto's dependency)
 // ---------------------------------------------------------------------------
 
+// biome-ignore lint/style/useNamingConvention: underscore prefix indicates module-private lazy cache
 let _xmldom: XmlDomModule | undefined;
 
 function getXmldom(): XmlDomModule {

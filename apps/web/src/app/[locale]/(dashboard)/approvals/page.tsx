@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { CheckSquare, ClipboardCheck } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { parseAsInteger, parseAsString, useQueryState } from 'nuqs';
-import { type ChangeEvent, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import type { ApprovalQueueRow } from '@/components/approvals/approval-queue/columns';
 import { getColumns } from '@/components/approvals/approval-queue/columns';
@@ -263,9 +263,7 @@ function ApprovalsContent() {
 
       {/* Tabs */}
       <AnimateIn delay={1}>
-        <Tabs
-          value={tab}
-          onValueChange={handleTabChange}>
+        <Tabs value={tab} onValueChange={handleTabChange}>
           <TabsList>
             <TabsTrigger value="my">{t('tabMy')}</TabsTrigger>
             {isAdmin && <TabsTrigger value="all">{t('tabAll')}</TabsTrigger>}

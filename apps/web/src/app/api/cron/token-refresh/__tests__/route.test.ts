@@ -3,9 +3,7 @@
 import { NextRequest } from 'next/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const {
-  mockRefreshExpiring,
-} = vi.hoisted(() => ({
+const { mockRefreshExpiring } = vi.hoisted(() => ({
   mockRefreshExpiring: vi.fn(),
 }));
 

@@ -8,10 +8,7 @@ import { AdminBrandingSection } from '../admin-branding-section';
 let brandingData: unknown = null;
 let brandingLoading = false;
 let portalDomainData: unknown = null;
-const {
-  mockMutate,
-  mockMutateAsync,
-} = vi.hoisted(() => ({
+const { mockMutate, mockMutateAsync } = vi.hoisted(() => ({
   mockMutate: vi.fn(),
   mockMutateAsync: vi.fn(),
 }));

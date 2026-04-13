@@ -67,9 +67,7 @@ const baseRun = {
 
 let runData: typeof baseRun | null = baseRun;
 
-const {
-  mockMutate,
-} = vi.hoisted(() => ({
+const { mockMutate } = vi.hoisted(() => ({
   mockMutate: vi.fn(),
 }));
 

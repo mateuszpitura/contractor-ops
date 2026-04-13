@@ -1,9 +1,7 @@
 import { createHmac } from 'node:crypto';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-const {
-  mockFindUnique,
-} = vi.hoisted(() => ({
+const { mockFindUnique } = vi.hoisted(() => ({
   mockFindUnique: vi.fn(),
 }));
 

@@ -24,9 +24,7 @@ vi.mock('../jira-project-mapping-dialog', () => ({
 let connectionData: unknown = { id: 'conn-1', status: 'CONNECTED' };
 let configData: unknown;
 
-const {
-  mockMutate,
-} = vi.hoisted(() => ({
+const { mockMutate } = vi.hoisted(() => ({
   mockMutate: vi.fn(),
 }));
 

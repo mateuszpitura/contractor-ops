@@ -21,9 +21,7 @@ vi.mock('../../sla-badge', () => ({
   SlaBadge: () => <span data-testid="sla-badge">SLA</span>,
 }));
 
-const {
-  mockMutate,
-} = vi.hoisted(() => ({
+const { mockMutate } = vi.hoisted(() => ({
   mockMutate: vi.fn(),
 }));
 

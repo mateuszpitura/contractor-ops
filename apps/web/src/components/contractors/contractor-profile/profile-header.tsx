@@ -17,8 +17,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { TemplatePicker } from '@/components/workflows/template-picker-dialog';
 import { getAvatarInitials } from '@/lib/avatar-initials';
-import { trpc } from '@/trpc/init';
 import { enumKey } from '@/lib/enum-key';
+import { trpc } from '@/trpc/init';
 
 type LifecycleStage = 'DRAFT' | 'ONBOARDING' | 'ACTIVE' | 'OFFBOARDING' | 'ENDED';
 

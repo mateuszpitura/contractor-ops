@@ -56,11 +56,7 @@ describe('POST /api/webhooks/inpost', () => {
 
     const json = (await res.json()) as { received: boolean };
     expect(json.received).toBe(true);
-    expect(mockHandleInPostWebhook).toHaveBeenCalledWith(
-      mockPrisma,
-      'org-1',
-      validPayload,
-    );
+    expect(mockHandleInPostWebhook).toHaveBeenCalledWith(mockPrisma, 'org-1', validPayload);
   });
 
   it('returns 401 when signature is invalid and shipment cannot be matched', async () => {
@@ -94,11 +90,7 @@ describe('POST /api/webhooks/inpost', () => {
     const res = await POST(req);
     expect(res.status).toBe(200);
 
-    expect(mockHandleInPostWebhook).toHaveBeenCalledWith(
-      mockPrisma,
-      'org-fallback',
-      validPayload,
-    );
+    expect(mockHandleInPostWebhook).toHaveBeenCalledWith(mockPrisma, 'org-fallback', validPayload);
   });
 
   it('returns 404 when no InPost courier configs exist', async () => {

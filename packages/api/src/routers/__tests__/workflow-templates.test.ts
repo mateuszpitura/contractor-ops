@@ -331,9 +331,9 @@ describe('workflowTemplatesRouter', () => {
     it('throws NOT_FOUND when template does not exist', async () => {
       mockPrisma.workflowTemplate.findFirst.mockResolvedValueOnce(null);
 
-      await expect(
-        caller.updateTemplate({ id: 'nonexistent', name: 'Fail' }),
-      ).rejects.toThrow(TRPCError);
+      await expect(caller.updateTemplate({ id: 'nonexistent', name: 'Fail' })).rejects.toThrow(
+        TRPCError,
+      );
     });
   });
 

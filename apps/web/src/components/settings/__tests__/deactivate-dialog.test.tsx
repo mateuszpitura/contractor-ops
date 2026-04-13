@@ -1,9 +1,7 @@
 import { render, screen } from '@/test/test-utils';
 import { DeactivateDialog } from '../deactivate-dialog';
 
-const {
-  mockMutate,
-} = vi.hoisted(() => ({
+const { mockMutate } = vi.hoisted(() => ({
   mockMutate: vi.fn(),
 }));
 

@@ -26,6 +26,7 @@ import {
 import { Progress } from '@/components/ui/progress';
 import { Link } from '@/i18n/navigation';
 import { trpc } from '@/trpc/init';
+import { enumKey } from '@/lib/enum-key';
 
 // ---------------------------------------------------------------------------
 // Status badge colors (shared with side panel)
@@ -156,7 +157,7 @@ export function RunHeader({ run }: RunHeaderProps) {
               {run.workflowTemplate?.name ?? t('workflowLabel')}
             </h1>
             <Badge variant="secondary" className={statusBadgeColors[run.status] ?? ''}>
-              {t(`runStatus.${run.status}` as Parameters<typeof t>[0])}
+              {t(`runStatus.${enumKey(run.status)}` as Parameters<typeof t>[0])}
             </Badge>
           </div>
 

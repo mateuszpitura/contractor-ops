@@ -3,9 +3,7 @@
 import { NextRequest } from 'next/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const {
-  mockProcessKsefSync,
-} = vi.hoisted(() => ({
+const { mockProcessKsefSync } = vi.hoisted(() => ({
   mockProcessKsefSync: vi.fn(),
 }));
 

@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/table';
 import { usePermissions } from '@/hooks/use-permissions';
 import { trpc } from '@/trpc/init';
+import { enumKey } from '@/lib/enum-key';
 
 type Member = {
   id?: string;
@@ -183,10 +184,10 @@ export function UsersTable() {
     );
   }
 
-  const roleLabel = (role: string) => t(`roles.${role}` as Parameters<typeof t>[0]) ?? role;
+  const roleLabel = (role: string) => t(`roles.${enumKey(role)}` as Parameters<typeof t>[0]) ?? role;
 
   const statusLabel = (status: string) =>
-    t(`status.${status}` as Parameters<typeof t>[0]) ?? status;
+    t(`status.${enumKey(status)}` as Parameters<typeof t>[0]) ?? status;
 
   return (
     <>

@@ -3,9 +3,7 @@
 import { NextRequest } from 'next/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const {
-  mockProcessOcrExtraction,
-} = vi.hoisted(() => ({
+const { mockProcessOcrExtraction } = vi.hoisted(() => ({
   mockProcessOcrExtraction: vi.fn(),
 }));
 

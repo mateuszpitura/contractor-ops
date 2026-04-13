@@ -1,5 +1,5 @@
 // Wave 0 scaffold — registry behavior (D-02, CLASS-01)
-import { describe, expect, it, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
   clearProfiles,

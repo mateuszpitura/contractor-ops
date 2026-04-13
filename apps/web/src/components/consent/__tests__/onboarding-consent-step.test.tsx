@@ -40,9 +40,7 @@ let noticeData: Record<string, unknown> = {
 };
 let noticeLoading = false;
 
-const {
-  mockBulkGrantMutate,
-} = vi.hoisted(() => ({
+const { mockBulkGrantMutate } = vi.hoisted(() => ({
   mockBulkGrantMutate: vi.fn(),
 }));
 let bulkGrantPending = false;

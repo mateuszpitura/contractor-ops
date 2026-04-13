@@ -10,10 +10,7 @@ vi.mock('sonner', () => ({
   toast: { success: vi.fn(), error: vi.fn() },
 }));
 
-const {
-  mockPush,
-  mockMutate,
-} = vi.hoisted(() => ({
+const { mockPush, mockMutate } = vi.hoisted(() => ({
   mockPush: vi.fn(),
   mockMutate: vi.fn(),
 }));
@@ -50,7 +47,6 @@ let templatesData: { items: typeof mockTemplates; total: number } | null = {
   total: 2,
 };
 let isLoading = false;
-
 
 vi.mock('@tanstack/react-query', async () => {
   const actual =

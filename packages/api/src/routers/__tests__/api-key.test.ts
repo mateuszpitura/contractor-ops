@@ -154,7 +154,10 @@ vi.mock('../../services/virus-scanner.js', () => ({
 }));
 
 vi.mock('../../services/r2.js', () => ({
-  createPresignedUploadUrl: vi.fn(async () => ({ url: 'https://r2.example.com/upload', key: 'mock-key' })),
+  createPresignedUploadUrl: vi.fn(async () => ({
+    url: 'https://r2.example.com/upload',
+    key: 'mock-key',
+  })),
   createPresignedDownloadUrl: vi.fn(async () => 'https://r2.example.com/download'),
   generateStorageKey: vi.fn(() => 'mock-storage-key'),
   headObject: vi.fn(async () => ({ ContentLength: 1024 })),
@@ -165,7 +168,11 @@ vi.mock('../../services/billing-service.js', () => ({
   getSubscription: vi.fn(async () => null),
   createCheckoutSession: vi.fn(async () => ({ url: 'https://checkout.stripe.com/session' })),
   createPortalSession: vi.fn(async () => ({ url: 'https://billing.stripe.com/portal' })),
-  getProrationPreview: vi.fn(async () => ({ immediateTotal: 0, proratedCredits: 0, newPriceAmount: 0 })),
+  getProrationPreview: vi.fn(async () => ({
+    immediateTotal: 0,
+    proratedCredits: 0,
+    newPriceAmount: 0,
+  })),
   ensureStripeCustomer: vi.fn(async () => 'cus_test'),
   createTopUpCheckoutSession: vi.fn(async () => ({ url: 'https://checkout.stripe.com/topup' })),
   updateSubscriptionSeatCount: vi.fn(async () => undefined),
@@ -178,7 +185,11 @@ vi.mock('../../services/credit-service.js', () => ({
 vi.mock('../../services/billing-constants.js', () => ({
   TIER_CREDIT_ALLOWANCE: { STARTER: 20, PRO: 100, ENTERPRISE: 500 },
   TRIAL_CREDIT_ALLOWANCE: 5,
-  KNOWN_SUBSCRIPTION_PRICE_IDS: new Set(['price_starter_monthly', 'price_pro_monthly', 'price_enterprise_monthly']),
+  KNOWN_SUBSCRIPTION_PRICE_IDS: new Set([
+    'price_starter_monthly',
+    'price_pro_monthly',
+    'price_enterprise_monthly',
+  ]),
   KNOWN_TOPUP_PRICE_IDS: new Set(['price_topup_10', 'price_topup_50']),
 }));
 
@@ -355,8 +366,28 @@ describe('apiKey.create', () => {
 describe('apiKey.list', () => {
   it('returns all keys for the organization', async () => {
     const keys = [
-      { id: 'key-1', name: 'Key A', prefix: 'co_a', scopes: ['contractor:read'], lastUsedAt: null, revokedAt: null, expiresAt: null, createdAt: new Date(), createdBy: { id: USER_ID, name: 'Test' } },
-      { id: 'key-2', name: 'Key B', prefix: 'co_b', scopes: ['invoice:read'], lastUsedAt: null, revokedAt: null, expiresAt: null, createdAt: new Date(), createdBy: { id: USER_ID, name: 'Test' } },
+      {
+        id: 'key-1',
+        name: 'Key A',
+        prefix: 'co_a',
+        scopes: ['contractor:read'],
+        lastUsedAt: null,
+        revokedAt: null,
+        expiresAt: null,
+        createdAt: new Date(),
+        createdBy: { id: USER_ID, name: 'Test' },
+      },
+      {
+        id: 'key-2',
+        name: 'Key B',
+        prefix: 'co_b',
+        scopes: ['invoice:read'],
+        lastUsedAt: null,
+        revokedAt: null,
+        expiresAt: null,
+        createdAt: new Date(),
+        createdBy: { id: USER_ID, name: 'Test' },
+      },
     ];
     mockPrisma.organizationApiKey.findMany.mockResolvedValueOnce(keys);
 
@@ -399,9 +430,9 @@ describe('apiKey.update', () => {
   it('throws NOT_FOUND when key does not exist', async () => {
     mockPrisma.organizationApiKey.findFirst.mockResolvedValueOnce(null);
 
-    await expect(
-      caller.apiKey.update({ id: 'nonexistent', name: 'New Name' }),
-    ).rejects.toThrow('API_KEY_NOT_FOUND');
+    await expect(caller.apiKey.update({ id: 'nonexistent', name: 'New Name' })).rejects.toThrow(
+      'API_KEY_NOT_FOUND',
+    );
   });
 
   it('throws BAD_REQUEST when updating a revoked key', async () => {
@@ -411,9 +442,9 @@ describe('apiKey.update', () => {
       revokedAt: new Date(),
     });
 
-    await expect(
-      caller.apiKey.update({ id: 'key-1', name: 'New Name' }),
-    ).rejects.toThrow('Cannot update a revoked key.');
+    await expect(caller.apiKey.update({ id: 'key-1', name: 'New Name' })).rejects.toThrow(
+      'Cannot update a revoked key.',
+    );
   });
 });
 
@@ -440,9 +471,7 @@ describe('apiKey.revoke', () => {
   it('throws NOT_FOUND when key does not exist', async () => {
     mockPrisma.organizationApiKey.findFirst.mockResolvedValueOnce(null);
 
-    await expect(caller.apiKey.revoke({ id: 'nonexistent' })).rejects.toThrow(
-      'API_KEY_NOT_FOUND',
-    );
+    await expect(caller.apiKey.revoke({ id: 'nonexistent' })).rejects.toThrow('API_KEY_NOT_FOUND');
   });
 
   it('throws BAD_REQUEST when key is already revoked', async () => {
@@ -452,8 +481,6 @@ describe('apiKey.revoke', () => {
       revokedAt: new Date(),
     });
 
-    await expect(caller.apiKey.revoke({ id: 'key-1' })).rejects.toThrow(
-      'Key is already revoked.',
-    );
+    await expect(caller.apiKey.revoke({ id: 'key-1' })).rejects.toThrow('Key is already revoked.');
   });
 });

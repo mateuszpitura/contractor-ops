@@ -44,9 +44,7 @@ vi.mock('@/i18n/navigation', () => ({
   ),
 }));
 
-const {
-  usePermissionsMock,
-} = vi.hoisted(() => ({
+const { usePermissionsMock } = vi.hoisted(() => ({
   usePermissionsMock: vi.fn(() => ({ role: 'admin' })),
 }));
 vi.mock('@/hooks/use-permissions', () => ({

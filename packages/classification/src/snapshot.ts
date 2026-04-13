@@ -6,8 +6,8 @@
 // historical assessments always re-render with the exact wording shown to the
 // user. Uses structuredClone + Object.freeze (RESEARCH §Pattern 4).
 
-import type { ClassificationProfile } from './types/profile.js';
 import type { QuestionsSnapshot } from './types/assessment.js';
+import type { ClassificationProfile } from './types/profile.js';
 import type { RuleSet } from './types/rule-set.js';
 
 function deepFreeze<T>(value: T): T {

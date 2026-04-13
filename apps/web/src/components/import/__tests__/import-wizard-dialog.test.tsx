@@ -84,9 +84,7 @@ vi.mock('../step-confirm', () => ({
   ),
 }));
 
-const {
-  mockMutate,
-} = vi.hoisted(() => ({
+const { mockMutate } = vi.hoisted(() => ({
   mockMutate: vi.fn(),
 }));
 let lastMutationCallbacks: Array<{

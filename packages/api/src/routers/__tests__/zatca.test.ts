@@ -366,8 +366,24 @@ describe('zatcaRouter', () => {
   describe('getInvoiceChain', () => {
     it('returns paginated chain entries ordered by ICV desc', async () => {
       const entries = [
-        { id: 'c1', icv: 3, invoiceId: 'inv-3', zatcaUuid: 'u3', zatcaStatus: 'CLEARED', submittedAt: new Date(), createdAt: new Date() },
-        { id: 'c2', icv: 2, invoiceId: 'inv-2', zatcaUuid: 'u2', zatcaStatus: 'REPORTED', submittedAt: new Date(), createdAt: new Date() },
+        {
+          id: 'c1',
+          icv: 3,
+          invoiceId: 'inv-3',
+          zatcaUuid: 'u3',
+          zatcaStatus: 'CLEARED',
+          submittedAt: new Date(),
+          createdAt: new Date(),
+        },
+        {
+          id: 'c2',
+          icv: 2,
+          invoiceId: 'inv-2',
+          zatcaUuid: 'u2',
+          zatcaStatus: 'REPORTED',
+          submittedAt: new Date(),
+          createdAt: new Date(),
+        },
       ];
       mockPrisma.zatcaInvoiceChain.findMany.mockResolvedValueOnce(entries);
 
@@ -432,12 +448,12 @@ describe('zatcaRouter', () => {
   describe('getComplianceStats', () => {
     it('returns counts by ZATCA status', async () => {
       mockPrisma.zatcaInvoiceChain.count
-        .mockResolvedValueOnce(100)  // total
-        .mockResolvedValueOnce(60)   // cleared
-        .mockResolvedValueOnce(20)   // reported
-        .mockResolvedValueOnce(5)    // rejected
-        .mockResolvedValueOnce(10)   // pending
-        .mockResolvedValueOnce(5);   // warning
+        .mockResolvedValueOnce(100) // total
+        .mockResolvedValueOnce(60) // cleared
+        .mockResolvedValueOnce(20) // reported
+        .mockResolvedValueOnce(5) // rejected
+        .mockResolvedValueOnce(10) // pending
+        .mockResolvedValueOnce(5); // warning
 
       const result = await caller.getComplianceStats();
 
