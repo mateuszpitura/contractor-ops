@@ -31,6 +31,9 @@ const { mockPrisma } = vi.hoisted(() => {
   type Rec = Record<string, any>;
 
   const mockPrisma: Rec = {
+    organization: {
+      findUnique: vi.fn().mockResolvedValue({ dataRegion: 'EU' }),
+    },
     contractor: {
       findMany: vi.fn(async () => []),
       findFirst: vi.fn(async () => null),
@@ -88,18 +91,22 @@ vi.mock('@contractor-ops/auth', () => ({
       hasPermission: vi.fn().mockResolvedValue({ success: true }),
     },
   },
+  authApi: {
+    hasPermission: vi.fn().mockResolvedValue({ success: true }),
+  },
 }));
 
 vi.mock('@contractor-ops/db', () => ({
   prisma: mockPrisma,
   tenantStore: {
     run: (_ctx: unknown, fn: () => unknown) => fn(),
-    getStore: vi.fn(),
+    getStore: vi.fn(() => ({ region: 'EU' })),
   },
   withTenantScope: vi.fn((c: unknown) => c),
   withSoftDelete: vi.fn((c: unknown) => c),
   createTenantClient: vi.fn(() => mockPrisma),
   createTenantClientFrom: vi.fn(() => mockPrisma),
+  getRegionalClient: vi.fn(() => mockPrisma),
 }));
 
 vi.mock('../../services/stripe-client.js', () => ({
@@ -348,7 +355,7 @@ describe('contractor router', () => {
       await caller.contractor.list({
         page: 1,
         pageSize: 25,
-        sortBy: 'created_at',
+        sortBy: 'createdAt',
         sortOrder: 'desc',
       });
 
@@ -366,7 +373,7 @@ describe('contractor router', () => {
       await caller.contractor.list({
         page: 3,
         pageSize: 10,
-        sortBy: 'created_at',
+        sortBy: 'createdAt',
         sortOrder: 'desc',
       });
 
@@ -384,7 +391,7 @@ describe('contractor router', () => {
       await caller.contractor.list({
         page: 1,
         pageSize: 25,
-        sortBy: 'created_at',
+        sortBy: 'createdAt',
         sortOrder: 'desc',
         search: 'acme',
       });
@@ -402,7 +409,7 @@ describe('contractor router', () => {
       await caller.contractor.list({
         page: 1,
         pageSize: 25,
-        sortBy: 'legal_name',
+        sortBy: 'legalName',
         sortOrder: 'asc',
       });
 
@@ -697,5 +704,20 @@ describe('contractor router', () => {
       });
       expect(call.data).toEqual({ ownerUserId: USER_ID });
     });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Phase 57 — RED scaffolds: contractor.validateVat / revalidateVat (PAY-03, PAY-05)
+// Implemented in Plan 57-03.
+// ---------------------------------------------------------------------------
+
+describe('contractor.validateVat / revalidateVat (Phase 57 — RED scaffolds)', () => {
+  it('validateVat writes a TaxIdValidation row and updates Contractor.latestVatValidated* atomically', () => {
+    throw new Error('RED — Phase 57: implemented in Wave 2 Plan 57-03');
+  });
+
+  it('revalidateVat on HMRC 503 returns the latest valid row with stale flag (D-08)', () => {
+    throw new Error('RED — Phase 57: implemented in Wave 2 Plan 57-03');
   });
 });

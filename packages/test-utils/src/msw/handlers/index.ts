@@ -7,6 +7,7 @@ import { confluenceHandlers } from './confluence.js';
 import { docusignHandlers } from './docusign.js';
 import { googleCalendarHandlers } from './google-calendar.js';
 import { googleWorkspaceHandlers } from './google-workspace.js';
+import { hmrcHandlers } from './hmrc.js';
 import { jiraHandlers } from './jira.js';
 import { ksefHandlers } from './ksef.js';
 import { linearHandlers } from './linear.js';
@@ -18,6 +19,7 @@ import { resendHandlers } from './resend.js';
 import { slackHandlers } from './slack.js';
 import { stripeHandlers } from './stripe.js';
 import { upstashRedisHandlers } from './upstash-redis.js';
+import { viesHandlers } from './vies.js';
 
 /**
  * All handler factories indexed by provider name.
@@ -42,6 +44,8 @@ export const handlersByProvider = {
   upstashRedis: upstashRedisHandlers,
   r2: r2Handlers,
   googleWorkspace: googleWorkspaceHandlers,
+  hmrc: hmrcHandlers,
+  vies: viesHandlers,
 } as const;
 
 export type ProviderName = keyof typeof handlersByProvider;
@@ -64,7 +68,12 @@ export function selectHandlers(providers: ProviderName[], options?: HandlerOptio
   return providers.flatMap(name => handlersByProvider[name](options));
 }
 
-export { clearRedisStore } from './upstash-redis.js';
+export {
+  clearRedisStore,
+  isUpstashRedisApiHostname,
+  isUpstashRedisPipelineUrl,
+  isUpstashRedisSingleCommandUrl,
+} from './upstash-redis.js';
 // Re-export individual factories for direct use
 export {
   autentiHandlers,
@@ -74,6 +83,7 @@ export {
   docusignHandlers,
   googleCalendarHandlers,
   googleWorkspaceHandlers,
+  hmrcHandlers,
   jiraHandlers,
   ksefHandlers,
   linearHandlers,
@@ -85,4 +95,6 @@ export {
   slackHandlers,
   stripeHandlers,
   upstashRedisHandlers,
+  viesHandlers,
 };
+export { clearHmrcTokenRefreshLedger } from './hmrc.js';

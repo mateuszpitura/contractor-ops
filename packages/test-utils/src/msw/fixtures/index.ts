@@ -8,3 +8,7 @@ export { jiraFixtures } from './jira.js';
 export { linearFixtures } from './linear.js';
 export { ocrFixtures } from './ocr.js';
 export { stripeFixtures } from './stripe.js';
+
+// Phase 57 — HMRC + VIES fixtures
+export * as hmrcFixtures from './hmrc.js';
+export * as viesFixtures from './vies.js';

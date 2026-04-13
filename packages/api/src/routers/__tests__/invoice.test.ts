@@ -67,13 +67,22 @@ const { mockPrisma } = vi.hoisted(() => {
     },
     contractor: {
       findFirst: vi.fn(async () => null),
+      findUniqueOrThrow: vi.fn(async () => ({
+        countryCode: 'PL',
+        vatId: '123',
+        type: 'COMPANY',
+      })),
     },
     contract: {
       findFirst: vi.fn(async () => null),
     },
     organization: {
       findUnique: vi.fn(async () => ({
+        dataRegion: 'EU',
         settingsJson: { invoiceDeviationThresholdPercent: 10 },
+      })),
+      findUniqueOrThrow: vi.fn(async () => ({
+        countryCode: 'PL',
       })),
     },
     $transaction: vi.fn(async (fn: (tx: Rec) => Promise<unknown>) => fn(mockPrisma)),
@@ -93,18 +102,22 @@ vi.mock('@contractor-ops/auth', () => ({
       hasPermission: vi.fn().mockResolvedValue({ success: true }),
     },
   },
+  authApi: {
+    hasPermission: vi.fn().mockResolvedValue({ success: true }),
+  },
 }));
 
 vi.mock('@contractor-ops/db', () => ({
   prisma: mockPrisma,
   tenantStore: {
     run: (_ctx: unknown, fn: () => unknown) => fn(),
-    getStore: vi.fn(),
+    getStore: vi.fn(() => ({ region: 'EU' })),
   },
   withTenantScope: vi.fn((c: unknown) => c),
   withSoftDelete: vi.fn((c: unknown) => c),
   createTenantClient: vi.fn(() => mockPrisma),
   createTenantClientFrom: vi.fn(() => mockPrisma),
+  getRegionalClient: vi.fn(() => mockPrisma),
 }));
 
 vi.mock('../../services/invoice-matching.js', () => ({
@@ -328,6 +341,16 @@ function makeInvoice(overrides: Record<string, unknown> = {}) {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mockPrisma.organization.findUnique.mockResolvedValue({
+    dataRegion: 'EU',
+    settingsJson: { invoiceDeviationThresholdPercent: 10 },
+  });
+  mockPrisma.organization.findUniqueOrThrow.mockResolvedValue({ countryCode: 'PL' });
+  mockPrisma.contractor.findUniqueOrThrow.mockResolvedValue({
+    countryCode: 'DE',
+    vatId: 'DE123',
+    type: 'COMPANY',
+  });
   // Default: no duplicate found
   mockPrisma.invoice.findFirst.mockResolvedValue(null);
 });
@@ -500,7 +523,7 @@ describe('invoice.list', () => {
     mockPrisma.invoice.findMany.mockResolvedValue([]);
     mockPrisma.invoice.count.mockResolvedValue(0);
 
-    await caller.invoice.list({ page: 1, pageSize: 20, sortBy: 'received_at', sortOrder: 'desc' });
+    await caller.invoice.list({ page: 1, pageSize: 20, sortBy: 'receivedAt', sortOrder: 'desc' });
 
     const findManyCall = mockPrisma.invoice.findMany.mock.calls[0]?.[0];
     expect(findManyCall.where).toMatchObject({
@@ -516,7 +539,7 @@ describe('invoice.list', () => {
     await caller.invoice.list({
       page: 1,
       pageSize: 20,
-      sortBy: 'received_at',
+      sortBy: 'receivedAt',
       sortOrder: 'desc',
       filters: { status: ['RECEIVED', 'UNDER_REVIEW'] },
     });
@@ -532,7 +555,7 @@ describe('invoice.list', () => {
     await caller.invoice.list({
       page: 3,
       pageSize: 10,
-      sortBy: 'due_date',
+      sortBy: 'dueDate',
       sortOrder: 'asc',
     });
 
@@ -592,6 +615,7 @@ describe('invoice.submitForMatching', () => {
       ORG_ID,
       {
         id: INVOICE_ID,
+        issueDate: invoice.issueDate,
         sellerTaxId: '1234567890',
         totalMinor: 123000,
         currency: 'PLN',
@@ -771,5 +795,24 @@ describe('invoice.statusCounts', () => {
       organizationId: ORG_ID,
       deletedAt: null,
     });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Phase 57 — RED scaffolds: default rate + Kleinunternehmer + staleness triggers
+// (PAY-02, PAY-04). Implemented in Plan 57-04.
+// ---------------------------------------------------------------------------
+
+describe('Phase 57 — default rate + Kleinunternehmer + staleness (RED scaffolds)', () => {
+  it('GB org invoice line pre-selects the isDefault=true TaxRate (code 20) — PAY-02', () => {
+    throw new Error('RED — Phase 57: implemented in Wave 3 Plan 57-04');
+  });
+
+  it('DE org with isKleinunternehmer=true forces every invoice line to code KU — PAY-04', () => {
+    throw new Error('RED — Phase 57: implemented in Wave 3 Plan 57-04');
+  });
+
+  it('invoice line creation with stale contractor VAT validation triggers inline revalidation (D-07)', () => {
+    throw new Error('RED — Phase 57: implemented in Wave 3 Plan 57-04');
   });
 });
