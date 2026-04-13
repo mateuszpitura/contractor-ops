@@ -4,6 +4,28 @@ import * as Sentry from '@sentry/nextjs';
 import type { AnyMiddlewareFunction } from '@trpc/server';
 import type { Context } from '../context.js';
 
+// ---------------------------------------------------------------------------
+// PII-sensitive procedure prefixes — never log input/output bodies for these
+// ---------------------------------------------------------------------------
+//
+// Phase 58 (Plan 03) / T-58-PII / ASVS V8: classification answers are PII
+// (hours worked, billing ratio, free-text rationales describing the working
+// relationship). Audit / metric entries still record procedure path, userId,
+// organizationId, duration and outcome code, but the `input` and `result`
+// bodies MUST NOT be logged. This constant is grep-asserted by the plan's
+// acceptance criteria — do not rename without updating CLASS-11 tests.
+export const LOG_BODY_EXCLUDE_PREFIXES: readonly string[] = ['classification.'];
+
+/**
+ * Returns true when the given tRPC procedure path should NEVER have its
+ * input/output body captured by the logger / metrics layer. Prefix match
+ * keeps us forward-compatible with new `classification.*` procedures added
+ * by downstream phases (e.g. Phase 59 document chain-tracking).
+ */
+export function isBodyLoggingExcluded(procedurePath: string): boolean {
+  return LOG_BODY_EXCLUDE_PREFIXES.some(prefix => procedurePath.startsWith(prefix));
+}
+
 /**
  * Raw observability middleware handler for tRPC procedures.
  *

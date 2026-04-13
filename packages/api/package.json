@@ -137,6 +137,7 @@
     "@azure/identity": "^4.13.1",
     "@react-pdf/renderer": "^4.4.1",
     "@contractor-ops/auth": "workspace:*",
+    "@contractor-ops/classification": "workspace:*",
     "@contractor-ops/db": "workspace:*",
     "@contractor-ops/einvoice": "workspace:*",
     "@contractor-ops/gov-api": "workspace:*",
