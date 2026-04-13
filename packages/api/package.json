@@ -151,6 +151,7 @@
     "@sentry/nextjs": "^9.47.1",
     "@slack/web-api": "^7.15.0",
     "@trpc/server": "^11.16.0",
+    "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.37.0",
     "bir1": "^4.1.1",
     "botbuilder": "^4.23.3",
