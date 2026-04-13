@@ -16,6 +16,7 @@ import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import { LOCKED_DE_PHRASES, RESERVED_LEGAL_KEYS } from '../legal/de.js';
+import { LOCKED_DISCLAIMERS, RESERVED_DISCLAIMER_KEYS } from '../legal/disclaimers.js';
 import { LOCKED_EN_PHRASES, RESERVED_EN_LEGAL_KEYS } from '../legal/en.js';
 
 const messagesDir = path.resolve(__dirname, '../../../../apps/web/messages');
@@ -57,7 +58,21 @@ describe('Locked German legal phrases (D-05, D-06)', () => {
     const serialized = JSON.stringify(dePrivacy);
     // Phase 57 (D-11, D-14) — invoice-footer phrases are rendered on invoices,
     // NOT in privacy notices; exempt them from the privacy-notice content check.
-    const privacyScopedKeys = new Set(['TAX_KLEINUNTERNEHMER_NOTICE', 'TAX_STEUERSCHULDNERSCHAFT']);
+    // Phase 58 (D-07) — classification criteria titles live in classification
+    // rule sets (packages/classification), not in privacy notices.
+    const privacyScopedKeys = new Set([
+      'TAX_KLEINUNTERNEHMER_NOTICE',
+      'TAX_STEUERSCHULDNERSCHAFT',
+      'CLASSIFICATION_SCHEIN_TITLE',
+      'CLASSIFICATION_SCHEIN_ASSESSMENT_LABEL',
+      'CLASSIFICATION_SCHEIN_CRITERIA_LABEL',
+      'CLASSIFICATION_SCHEIN_INTEGRATION',
+      'CLASSIFICATION_SCHEIN_ENTREPRENEURIAL',
+      'CLASSIFICATION_SCHEIN_PERSONAL_DEP',
+      'CLASSIFICATION_SCHEIN_ECONOMIC_DEP',
+      'CLASSIFICATION_SCHEIN_DRV_REFERENCE_LABEL',
+      'CLASSIFICATION_SCHEIN_NOT_APPLICABLE',
+    ]);
     for (const [key, phrase] of Object.entries(LOCKED_DE_PHRASES)) {
       if (privacyScopedKeys.has(key)) continue;
       expect(serialized, `Missing ${key}="${phrase}" in privacy-notices/de.ts`).toContain(phrase);
@@ -110,6 +125,96 @@ describe('DE locked tax-notice phrases (Phase 57 — D-11, D-14)', () => {
     expect(LOCKED_DE_PHRASES.TAX_STEUERSCHULDNERSCHAFT).toBe(
       'Steuerschuldnerschaft des Leistungsempfängers',
     );
+  });
+});
+
+describe('Phase 58 — CLASSIFICATION_* locked phrases (D-07)', () => {
+  const CLASSIFICATION_KEYS = [
+    'CLASSIFICATION_SCHEIN_TITLE',
+    'CLASSIFICATION_SCHEIN_ASSESSMENT_LABEL',
+    'CLASSIFICATION_SCHEIN_CRITERIA_LABEL',
+    'CLASSIFICATION_SCHEIN_INTEGRATION',
+    'CLASSIFICATION_SCHEIN_ENTREPRENEURIAL',
+    'CLASSIFICATION_SCHEIN_PERSONAL_DEP',
+    'CLASSIFICATION_SCHEIN_ECONOMIC_DEP',
+    'CLASSIFICATION_SCHEIN_DRV_REFERENCE_LABEL',
+    'CLASSIFICATION_SCHEIN_NOT_APPLICABLE',
+  ] as const;
+
+  it.each(locales)(
+    'messages/%s.json does not define any CLASSIFICATION_* key as a (nested) property',
+    locale => {
+      const messages = loadMessages(locale);
+      if (messages === null) return;
+      const keys = flatKeys(messages);
+      const violations = keys.filter(k =>
+        CLASSIFICATION_KEYS.some(r => k === r || k.endsWith(`.${r}`)),
+      );
+      expect(
+        violations,
+        `CLASSIFICATION_* keys leaked into ${locale}.json: ${violations.join(', ')}`,
+      ).toEqual([]);
+    },
+  );
+
+  it.each(locales)(
+    'messages/%s.json does not contain any CLASSIFICATION_* value verbatim',
+    locale => {
+      const filePath = path.join(messagesDir, `${locale}.json`);
+      if (!fs.existsSync(filePath)) return;
+      const raw = fs.readFileSync(filePath, 'utf8');
+      for (const key of CLASSIFICATION_KEYS) {
+        const value = (LOCKED_DE_PHRASES as Record<string, string>)[key];
+        if (!value) continue;
+        expect(
+          raw.includes(`"${value}"`),
+          `CLASSIFICATION value "${value}" found verbatim in ${locale}.json`,
+        ).toBe(false);
+      }
+    },
+  );
+
+  it('RESERVED_LEGAL_KEYS includes all CLASSIFICATION_* keys', () => {
+    for (const key of CLASSIFICATION_KEYS) {
+      expect(RESERVED_LEGAL_KEYS).toContain(key);
+    }
+  });
+});
+
+describe('Phase 58 — DISCLAIMER_* locked bilingual disclaimers (D-12)', () => {
+  it.each(locales)(
+    'messages/%s.json does not define any DISCLAIMER_* key as a (nested) property',
+    locale => {
+      const messages = loadMessages(locale);
+      if (messages === null) return;
+      const keys = flatKeys(messages);
+      const violations = keys.filter(k =>
+        RESERVED_DISCLAIMER_KEYS.some(r => k === r || k.endsWith(`.${r}`)),
+      );
+      expect(
+        violations,
+        `DISCLAIMER_* keys leaked into ${locale}.json: ${violations.join(', ')}`,
+      ).toEqual([]);
+    },
+  );
+
+  it('RESERVED_DISCLAIMER_KEYS mirrors LOCKED_DISCLAIMERS keys', () => {
+    expect([...RESERVED_DISCLAIMER_KEYS].sort()).toEqual(Object.keys(LOCKED_DISCLAIMERS).sort());
+  });
+
+  it('every LOCKED_DISCLAIMERS value is a non-empty string', () => {
+    for (const [key, value] of Object.entries(LOCKED_DISCLAIMERS)) {
+      expect(typeof value, `${key} is not a string`).toBe('string');
+      expect(value.length, `${key} is empty`).toBeGreaterThan(0);
+    }
+  });
+
+  it('IR35 disclaimer contains the ITEPA 2003 statutory reference', () => {
+    expect(LOCKED_DISCLAIMERS.DISCLAIMER_IR35_BODY).toContain('Chapter 10 ITEPA 2003');
+  });
+
+  it('Schein disclaimer contains the § 7a SGB IV reference with Unicode preserved', () => {
+    expect(LOCKED_DISCLAIMERS.DISCLAIMER_SCHEIN_BODY).toContain('§ 7a SGB IV');
   });
 });
 
