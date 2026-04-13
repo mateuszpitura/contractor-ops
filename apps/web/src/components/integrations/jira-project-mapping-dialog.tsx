@@ -183,6 +183,7 @@ export function JiraProjectMappingDialog({
           {/* Jira Project selector */}
           <div className="space-y-2">
             <Label>Jira Project</Label>
+            {/* biome-ignore lint/nursery/noJsxPropsBind: controlled component handler */}
             <Select value={projectId} onValueChange={handleProjectChange}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select a project">
@@ -202,6 +203,7 @@ export function JiraProjectMappingDialog({
           {/* Issue Type selector */}
           <div className="space-y-2">
             <Label>Issue Type</Label>
+            {/* biome-ignore lint/nursery/noJsxPropsBind: controlled component handler */}
             <Select value={issueTypeId} onValueChange={handleIssueTypeChange} disabled={!projectId}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select an issue type">
@@ -226,15 +228,18 @@ export function JiraProjectMappingDialog({
             <Switch
               id="jira-auto-create"
               checked={jiraEnabled}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
               onCheckedChange={checked => setJiraEnabled(checked as boolean)}
             />
           </div>
         </div>
 
         <DialogFooter>
+          {/* biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler */}
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Discard Changes
           </Button>
+          {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
           <Button onClick={handleSave} disabled={!hasChanges || saveMutation.isPending}>
             {!!saveMutation.isPending && <Loader2 className="me-1.5 size-3.5 animate-spin" />}
             Save Mapping

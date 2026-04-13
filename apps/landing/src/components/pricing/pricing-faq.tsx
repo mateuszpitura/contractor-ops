@@ -2,7 +2,7 @@
 
 import { ChevronDown } from 'lucide-react';
 import { motion } from 'motion/react';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { FadeUp, StaggerContainer, StaggerItem } from '@/components/motion-wrapper';
 import { posthog } from '@/lib/posthog';
 
@@ -62,6 +62,7 @@ function FAQItem({ q, a }: { q: string; a: string }) {
     <div className="border-b border-border/30 last:border-b-0">
       <button
         type="button"
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onClick={handleToggle}
         className="flex w-full items-start justify-between gap-4 py-5 text-left transition-colors hover:text-primary"
         aria-expanded={open}>

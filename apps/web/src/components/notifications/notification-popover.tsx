@@ -114,6 +114,7 @@ export function NotificationPopover() {
   const badgeText = unreadCount > 99 ? '99+' : String(unreadCount);
 
   return (
+    {/* biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler */}
     <Popover onOpenChange={handleOpenChange}>
       <PopoverTrigger
         render={
@@ -146,6 +147,7 @@ export function NotificationPopover() {
           {unreadCount > 0 && (
             <button
               type="button"
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => markAllReadMutation.mutate()}
               disabled={markAllReadMutation.isPending}
               className="text-xs text-primary hover:underline disabled:opacity-50">
@@ -171,6 +173,7 @@ export function NotificationPopover() {
                   <NotificationItem
                     key={n.id}
                     notification={n}
+                    // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                     onClick={() => handleItemClick(n)}
                     compact
                   />
@@ -182,6 +185,7 @@ export function NotificationPopover() {
             <div className="border-t px-4 py-2 text-center">
               <button
                 type="button"
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 onClick={() => router.push('/notifications')}
                 className="text-xs text-primary hover:underline">
                 {t('viewAll')}

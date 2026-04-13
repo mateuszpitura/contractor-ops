@@ -180,6 +180,7 @@ export function DirectoryPreviewTable({
           return (
             <Checkbox
               checked={selectedEmails.has(user.primaryEmail)}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
               onCheckedChange={() => handleRowSelect(user.primaryEmail)}
               aria-label={`Select ${user.name.fullName}`}
             />
@@ -286,6 +287,7 @@ export function DirectoryPreviewTable({
         <Input
           placeholder={t('searchPlaceholder')}
           value={searchValue}
+          // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
           onChange={e => handleSearchChange(e.target.value)}
           className="max-w-xs"
         />
@@ -293,6 +295,7 @@ export function DirectoryPreviewTable({
         {orgUnits.length > 1 && (
           <Select
             value={orgUnitFilter}
+            // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
             onValueChange={val => setOrgUnitFilter(val === '__all__' ? '' : (val ?? ''))}>
             <SelectTrigger className="w-48">
               <SelectValue>{orgUnitFilter || t('allOrgUnits')}</SelectValue>
@@ -398,6 +401,7 @@ export function DirectoryPreviewTable({
             <Button
               variant="outline"
               size="icon-sm"
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => table.previousPage()}
               disabled={!table.getCanPreviousPage()}
               aria-label="Previous page">
@@ -406,6 +410,7 @@ export function DirectoryPreviewTable({
             <Button
               variant="outline"
               size="icon-sm"
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => table.nextPage()}
               disabled={!table.getCanNextPage()}
               aria-label="Next page">

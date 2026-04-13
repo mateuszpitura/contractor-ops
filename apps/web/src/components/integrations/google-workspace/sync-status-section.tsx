@@ -74,6 +74,7 @@ export function SyncStatusSection({ onImportClick }: SyncStatusSectionProps) {
           <Button
             variant="outline"
             size="sm"
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={() => (triggerSyncMutation.mutate as () => void)()}
             disabled={triggerSyncMutation.isPending}>
             {!!triggerSyncMutation.isPending && (

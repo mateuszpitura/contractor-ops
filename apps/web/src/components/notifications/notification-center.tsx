@@ -157,6 +157,7 @@ export function NotificationCenter() {
           <Button
             variant="outline"
             size="sm"
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={() => markAllReadMutation.mutate()}
             disabled={unreadCount === 0 || markAllReadMutation.isPending}>
             {t('markAllRead')}
@@ -171,6 +172,7 @@ export function NotificationCenter() {
           <button
             key={key}
             type="button"
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={() => handleFilterChange(key)}
             className={cn(
               'rounded-full px-3 py-1 text-xs font-medium transition-colors',
@@ -227,6 +229,7 @@ export function NotificationCenter() {
           <div className="flex flex-col rounded-lg border">
             {notifications.map(n => (
               <div key={n.id} className="border-b last:border-b-0">
+                {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
                 <NotificationItem notification={n} onClick={() => handleItemClick(n)} />
               </div>
             ))}
@@ -238,6 +241,7 @@ export function NotificationCenter() {
               <Button
                 variant="outline"
                 size="sm"
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 onClick={() => void setPage(page - 1)}
                 disabled={page <= 1}>
                 {t('pagination.previous')}
@@ -248,6 +252,7 @@ export function NotificationCenter() {
               <Button
                 variant="outline"
                 size="sm"
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 onClick={() => void setPage(page + 1)}
                 disabled={page >= totalPages}>
                 {t('pagination.next')}

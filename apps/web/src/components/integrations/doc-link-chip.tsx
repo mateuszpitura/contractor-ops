@@ -98,6 +98,7 @@ export function DocLinkChip({
               type="button"
               className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 text-muted-foreground hover:text-destructive ms-0.5 shrink-0"
               aria-label={`Remove link to ${title}`}
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={e => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -124,6 +125,7 @@ export function DocLinkChip({
               <AlertDialogCancel>Keep Link</AlertDialogCancel>
               <AlertDialogAction
                 variant="destructive"
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 onClick={() => {
                   onRemove(id);
                   setConfirmOpen(false);

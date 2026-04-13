@@ -354,9 +354,11 @@ export function DirectoryImportWizard({ open, onOpenChange }: DirectoryImportWiz
               )}
 
               <div className="flex justify-end gap-2">
+                {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
                 <Button variant="outline" onClick={() => setStep(1)}>
                   {t('back')}
                 </Button>
+                {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
                 <Button onClick={() => setStep(3)}>{t('nextReview')}</Button>
               </div>
             </div>
@@ -368,6 +370,7 @@ export function DirectoryImportWizard({ open, onOpenChange }: DirectoryImportWiz
               userCount={selectedUsers.length}
               roleBreakdown={roleBreakdown}
               onConfirm={handleConfirmImport}
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onBack={() => setStep(2)}
               isImporting={importMutation.isPending}
             />

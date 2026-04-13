@@ -2,7 +2,7 @@
 
 import { ArrowRight, Menu, X } from 'lucide-react';
 import { motion, useMotionValueEvent, useScroll } from 'motion/react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 const navLinks = [
   { label: 'Features', href: '#features' },
@@ -26,6 +26,9 @@ export function Navbar() {
       document.body.style.overflow = '';
     };
   }, [mobileOpen]);
+
+  const toggleMobileMenu = useCallback(() => setMobileOpen(prev => !prev), []);
+  const closeMobileMenu = useCallback(() => setMobileOpen(false), []);
 
   // Close mobile menu on Escape key
   useEffect(() => {
@@ -99,7 +102,7 @@ export function Navbar() {
           {/* Mobile toggle */}
           <button
             type="button"
-            onClick={() => setMobileOpen(!mobileOpen)}
+            onClick={toggleMobileMenu}
             className="flex h-10 w-10 items-center justify-center rounded-xl text-foreground transition-colors hover:bg-muted/50 md:hidden"
             aria-label={mobileOpen ? 'Close menu' : 'Open menu'}>
             {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -119,7 +122,8 @@ export function Navbar() {
               <a
                 key={link.href}
                 href={link.href}
-                onClick={() => setMobileOpen(false)}
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+                onClick={closeMobileMenu}
                 className="rounded-xl px-4 py-3.5 text-lg font-medium text-foreground transition-colors hover:bg-muted/50">
                 {link.label}
               </a>
@@ -133,7 +137,8 @@ export function Navbar() {
             </a>
             <a
               href="#cta"
-              onClick={() => setMobileOpen(false)}
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+              onClick={closeMobileMenu}
               className="rounded-xl bg-primary px-4 py-3 text-center text-base font-semibold text-primary-foreground shadow-md">
               Get started free
             </a>

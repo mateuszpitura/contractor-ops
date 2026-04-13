@@ -109,6 +109,7 @@ export function JiraTaskConfig({ taskTemplateId }: JiraTaskConfigProps) {
           <Switch
             id={`jira-toggle-${taskTemplateId}`}
             checked={jiraEnabled}
+            // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
             onCheckedChange={handleToggle}
             disabled={!hasMappingConfigured || saveMutation.isPending}
           />
@@ -123,6 +124,7 @@ export function JiraTaskConfig({ taskTemplateId }: JiraTaskConfigProps) {
         </span>
 
         {/* Configure button */}
+        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
         <Button variant="ghost" size="sm" onClick={() => setDialogOpen(true)}>
           {t('configure')}
         </Button>

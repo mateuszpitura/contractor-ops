@@ -58,6 +58,7 @@ export function RoleAssignmentControls({
       </label>
       <Select
         value={defaultRole}
+        // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
         onValueChange={val => {
           if (val) onDefaultRoleChange(val as DirectoryRole);
         }}>

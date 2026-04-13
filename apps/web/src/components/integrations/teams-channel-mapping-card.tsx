@@ -116,6 +116,7 @@ function ChannelMappingContent({
           </span>
           <Select
             value={localMapping[category] ?? undefined}
+            // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
             onValueChange={v => v && onChannelSelect(category, v)}>
             <SelectTrigger
               className="w-full sm:w-64"
@@ -236,6 +237,7 @@ export function TeamsChannelMappingCard() {
                 <Button
                   variant="ghost"
                   size="icon"
+                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                   onClick={handleRefresh}
                   disabled={isLoadingChannels}
                   aria-label={t('refreshChannels')}>
@@ -256,6 +258,7 @@ export function TeamsChannelMappingCard() {
           {teams.length > 1 && (
             <Select
               value={selectedTeamId ?? undefined}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
               onValueChange={v => v && setSelectedTeamId(v)}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder={t('selectChannel')} />
@@ -276,7 +279,9 @@ export function TeamsChannelMappingCard() {
             selectedTeamId={selectedTeamId}
             channels={channels}
             localMapping={localMapping}
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onChannelSelect={handleChannelSelect}
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onSave={handleSave}
             isSaving={saveMutation.isPending}
             t={t}

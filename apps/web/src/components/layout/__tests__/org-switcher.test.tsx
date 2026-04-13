@@ -23,7 +23,13 @@ vi.mock('@/components/layout/dashboard-context', () => ({
 }));
 
 vi.mock('@/components/ui/sidebar', () => ({
-  SidebarMenuButton: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => <button {...props}>{children}</button>,
+  SidebarMenuButton: ({
+    children,
+    ...props
+  }: {
+    children: React.ReactNode;
+    [key: string]: unknown;
+  }) => <button {...(props as React.ButtonHTMLAttributes<HTMLButtonElement>)}>{children}</button>,
   useSidebar: () => ({ isMobile: false }),
 }));
 

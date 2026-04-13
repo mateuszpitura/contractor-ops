@@ -155,6 +155,7 @@ export function PeppolTransmissionStatus({ transmission }: PeppolTransmissionSta
               <Button
                 variant="outline"
                 size="sm"
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 onClick={() =>
                   retryMutation.mutate({
                     transmissionId: transmission.id,

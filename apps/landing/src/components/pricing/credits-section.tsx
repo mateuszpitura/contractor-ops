@@ -1,7 +1,7 @@
 'use client';
 
 import { ArrowRight, FileSignature, Receipt, Send, UserPlus, Zap } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { TrackClick } from '@/components/analytics/track-click';
 import { FadeUp, StaggerContainer, StaggerItem } from '@/components/motion-wrapper';
 import type { CreditPack } from '@/lib/stripe';
@@ -38,6 +38,10 @@ const sliderStops = [10, 25, 50, 100, 200, 500];
 
 export function CreditsSection({ creditPacks }: { creditPacks: CreditPack[] }) {
   const [contractorsCount, setContractorsCount] = useState(2);
+  const handleSliderChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setContractorsCount(Number(e.target.value)),
+    [],
+  );
 
   const contractors = sliderStops[contractorsCount];
 
@@ -117,11 +121,12 @@ export function CreditsSection({ creditPacks }: { creditPacks: CreditPack[] }) {
                   <span className="text-xs text-muted-foreground">500 contractors</span>
                 </div>
                 <input
+                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                   type="range"
                   min={0}
                   max={sliderStops.length - 1}
                   value={contractorsCount}
-                  onChange={e => setContractorsCount(Number(e.target.value))}
+                  onChange={handleSliderChange}
                   className="w-full h-2 rounded-full appearance-none cursor-pointer bg-muted accent-primary"
                   aria-label="Number of contractors"
                 />

@@ -85,6 +85,7 @@ export function TopBar() {
                     ) : isLast ? (
                       <BreadcrumbPage>{label}</BreadcrumbPage>
                     ) : (
+                      {/* biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI */}
                       <BreadcrumbLink render={props => <Link {...props} href={href} />}>
                         {label}
                       </BreadcrumbLink>
@@ -108,6 +109,7 @@ export function TopBar() {
                   variant="ghost"
                   size="icon"
                   className="h-8 w-8"
+                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                   onClick={() => router.push('/contractors?action=new')}
                 />
               }>
@@ -124,6 +126,7 @@ export function TopBar() {
                   variant="ghost"
                   size="icon"
                   className="h-8 w-8"
+                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                   onClick={() => setContractWizardOpen(true)}
                 />
               }>
@@ -140,6 +143,7 @@ export function TopBar() {
                   variant="ghost"
                   size="icon"
                   className="h-8 w-8"
+                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                   onClick={() => router.push('/invoices?action=upload')}
                 />
               }>
@@ -152,6 +156,7 @@ export function TopBar() {
           {/* Search bar trigger */}
           <button
             type="button"
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={() => setSearchOpen(true)}
             className="search-trigger hidden md:flex h-9 w-[240px] items-center gap-2 rounded-lg border bg-background px-3 text-sm text-muted-foreground">
             <Search className="h-4 w-4" />
@@ -169,6 +174,7 @@ export function TopBar() {
                   variant="ghost"
                   size="icon"
                   className="h-8 w-8 md:hidden"
+                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                   onClick={() => setSearchOpen(true)}
                 />
               }>

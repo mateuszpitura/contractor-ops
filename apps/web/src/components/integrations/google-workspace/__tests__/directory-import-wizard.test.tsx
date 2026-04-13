@@ -3,8 +3,16 @@ import { render, screen, setup } from '@/test/test-utils';
 import { DirectoryImportWizard } from '../directory-import-wizard';
 
 vi.mock('@/i18n/navigation', () => ({
-  Link: ({ children, href, ...props }: { children: React.ReactNode; href: string; [key: string]: unknown }) => (
-    <a href={href} {...props}>
+  Link: ({
+    children,
+    href,
+    ...props
+  }: {
+    children: React.ReactNode;
+    href: string;
+    [key: string]: unknown;
+  }) => (
+    <a href={href} {...(props as React.AnchorHTMLAttributes<HTMLAnchorElement>)}>
       {children}
     </a>
   ),
@@ -51,13 +59,22 @@ vi.mock('../directory-summary-bar', () => ({
   ),
 }));
 vi.mock('../directory-preview-table', () => ({
-  DirectoryPreviewTable: ({ users, selectedEmails, onSelectionChange }: { users: Array<{ primaryEmail: string; name: { fullName: string } }>; selectedEmails: Set<string>; onSelectionChange: (emails: Set<string>) => void }) => (
+  DirectoryPreviewTable: ({
+    users,
+    selectedEmails,
+    onSelectionChange,
+  }: {
+    users: Array<{ primaryEmail: string; name: { fullName: string } }>;
+    selectedEmails: Set<string>;
+    onSelectionChange: (emails: Set<string>) => void;
+  }) => (
     <div data-testid="preview-table">
-      {users.map((u) => (
+      {users.map(u => (
         <div key={u.primaryEmail}>
           <span>{u.name.fullName}</span>
           <button
             type="button"
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={() => {
               const next = new Set(selectedEmails);
               next.add(u.primaryEmail);
@@ -80,7 +97,15 @@ vi.mock('../group-role-mapping-step', () => ({
   GroupRoleMappingStep: () => <div data-testid="group-mapping" />,
 }));
 vi.mock('../import-confirm-step', () => ({
-  ImportConfirmStep: ({ userCount, onBack, onConfirm }: { userCount: number; onBack: () => void; onConfirm: () => void }) => (
+  ImportConfirmStep: ({
+    userCount,
+    onBack,
+    onConfirm,
+  }: {
+    userCount: number;
+    onBack: () => void;
+    onConfirm: () => void;
+  }) => (
     <div data-testid="import-confirm">
       <span>{userCount} users to import</span>
       <button type="button" onClick={onBack}>

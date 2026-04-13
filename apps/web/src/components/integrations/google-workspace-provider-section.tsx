@@ -44,6 +44,7 @@ export function GoogleWorkspaceProviderSection() {
           description={isConnected ? t('descriptionConnected') : t('descriptionDisconnected')}
         />
 
+        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
         {isConnected && <SyncStatusSection onImportClick={() => setWizardOpen(true)} />}
 
         <DirectoryImportWizard open={wizardOpen} onOpenChange={setWizardOpen} />

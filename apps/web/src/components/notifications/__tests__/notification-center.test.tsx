@@ -67,7 +67,7 @@ vi.mock('nuqs', () => ({
 vi.mock('motion/react', () => ({
   motion: {
     div: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => (
-      <div {...props}>{children}</div>
+      <div {...(props as React.HTMLAttributes<HTMLDivElement>)}>{children}</div>
     ),
   },
   AnimatePresence: ({ children }: { children: React.ReactNode }) => children,

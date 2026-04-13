@@ -305,6 +305,7 @@ export function CommandPalette() {
                 {recentItems.map(item => (
                   <CommandItem
                     key={`recent-${item.type}-${item.id}`}
+                    // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
                     onSelect={() => handleRecentClick(item)}>
                     <Clock className="h-4 w-4 text-muted-foreground" />
                     <span className="flex-1 truncate text-sm font-medium">{item.name}</span>
@@ -332,6 +333,7 @@ export function CommandPalette() {
                   {pinnedItems.map(item => (
                     <CommandItem
                       key={`pinned-${item.type}-${item.id}`}
+                      // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
                       onSelect={() => navigate(entityDetailUrl(item.type, item.id))}>
                       <Star className="h-4 w-4 text-warning" />
                       <span className="flex-1 truncate text-sm font-medium">{item.name}</span>
@@ -348,6 +350,7 @@ export function CommandPalette() {
             <CommandSeparator />
             <CommandGroup heading={t('sections.actions')}>
               {QUICK_ACTIONS.map(action => (
+                {/* biome-ignore lint/nursery/noJsxPropsBind: menu item handler */}
                 <CommandItem key={action.key} onSelect={() => navigate(action.href)}>
                   <action.icon className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm">{t(action.labelKey as Parameters<typeof t>[0])}</span>
@@ -361,6 +364,7 @@ export function CommandPalette() {
               {navigationItems.map(item => (
                 <CommandItem
                   key={`page-${item.key}`}
+                  // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
                   onSelect={() => {
                     addRecentItem({
                       id: item.href,
@@ -386,6 +390,7 @@ export function CommandPalette() {
                 {searchResults.map(item => (
                   <CommandItem
                     key={`result-${item.type}-${item.id}`}
+                    // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
                     onSelect={() => handleEntityClick(item)}
                     className="group">
                     <Badge variant="secondary" className={TYPE_BADGE_CLASSES[item.type] ?? ''}>
@@ -400,6 +405,7 @@ export function CommandPalette() {
                     <button
                       type="button"
                       className="opacity-0 transition-opacity group-hover:opacity-100"
+                      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                       onClick={e => {
                         e.stopPropagation();
                         togglePin({
@@ -443,6 +449,7 @@ export function CommandPalette() {
                     return (
                       <CommandItem
                         key={`doc-${result.provider}-${result.id}`}
+                        // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
                         onSelect={() => window.open(result.url, '_blank')}>
                         <ProviderIcon className="h-3.5 w-3.5 shrink-0" />
                         <span className="flex-1 truncate text-sm font-medium">{result.title}</span>
@@ -465,6 +472,7 @@ export function CommandPalette() {
                 <CommandSeparator />
                 <CommandGroup heading={t('sections.pages')}>
                   {matchedPages.map(item => (
+                    {/* biome-ignore lint/nursery/noJsxPropsBind: menu item handler */}
                     <CommandItem key={`page-${item.key}`} onSelect={() => navigate(item.href)}>
                       <ArrowRight className="h-4 w-4 text-muted-foreground" />
                       <span className="text-sm">{item.label}</span>
@@ -480,6 +488,7 @@ export function CommandPalette() {
                 <CommandSeparator />
                 <CommandGroup heading={t('sections.actions')}>
                   {matchedActions.map(action => (
+                    {/* biome-ignore lint/nursery/noJsxPropsBind: menu item handler */}
                     <CommandItem key={action.key} onSelect={() => navigate(action.href)}>
                       <action.icon className="h-4 w-4 text-muted-foreground" />
                       <span className="text-sm">

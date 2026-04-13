@@ -137,6 +137,7 @@ export function GdprPrivacyNoticeTemplate({
         </Text>
         <Text
           style={styles.pageNumber}
+          // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
           render={({ pageNumber, totalPages }) => `${pageNumber} / ${totalPages}`}
           fixed
         />

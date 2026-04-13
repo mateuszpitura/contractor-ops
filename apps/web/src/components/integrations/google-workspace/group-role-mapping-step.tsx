@@ -64,6 +64,7 @@ export function GroupRoleMappingStep({
                 <div className="flex items-center gap-2">
                   <Select
                     value={mappedRole ?? ''}
+                    // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
                     onValueChange={val => {
                       if (val) onMappingChange(group.email, val as DirectoryRole);
                     }}>

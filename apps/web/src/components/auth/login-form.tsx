@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2 } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -34,6 +34,7 @@ export function LoginForm() {
       : '/';
   const [isLoading, setIsLoading] = useState(false);
   const [isMagicLinkSent, setIsMagicLinkSent] = useState(false);
+  const clearMagicLinkSent = useCallback(() => setIsMagicLinkSent(false), []);
   const [magicLinkLoading, setMagicLinkLoading] = useState(false);
 
   const loginSchema = z.object({
@@ -77,7 +78,7 @@ export function LoginForm() {
     }
   };
 
-  const handleMagicLink = async () => {
+  const handleMagicLink = useCallback(async () => {
     const email = getValues('email');
     if (!(email && z.string().email().safeParse(email).success)) {
       toast.error(tv('invalidEmail'));
@@ -103,7 +104,7 @@ export function LoginForm() {
     } finally {
       setMagicLinkLoading(false);
     }
-  };
+  }, [getValues, tv, redirectTo, tToast, tc]);
 
   if (isMagicLinkSent) {
     return (
@@ -116,7 +117,7 @@ export function LoginForm() {
               <span className="font-medium text-foreground">{getValues('email')}</span>
             </p>
           </div>
-          <Button variant="ghost" className="mt-6" onClick={() => setIsMagicLinkSent(false)}>
+          <Button variant="ghost" className="mt-6" onClick={clearMagicLinkSent}>
             {t('magicLinkBack')}
           </Button>
         </CardContent>
@@ -194,6 +195,7 @@ export function LoginForm() {
                 variant="outline"
                 className="w-full"
                 disabled={magicLinkLoading || isLoading}
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 onClick={handleMagicLink}>
                 {magicLinkLoading ? (
                   <>

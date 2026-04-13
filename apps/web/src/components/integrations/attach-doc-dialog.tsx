@@ -142,6 +142,7 @@ export function AttachDocDialog({ workflowTaskRunId, open, onOpenChange }: Attac
           <Input
             placeholder="Search Notion and Confluence pages..."
             value={query}
+            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
             onChange={e => setQuery(e.target.value)}
             className="ps-9"
           />
@@ -155,6 +156,7 @@ export function AttachDocDialog({ workflowTaskRunId, open, onOpenChange }: Attac
               variant={providerFilter === btn.value ? 'secondary' : 'ghost'}
               size="sm"
               className="h-7 px-2.5 text-xs"
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => setProviderFilter(btn.value)}>
               {!!btn.icon && <span className="me-1">{btn.icon}</span>}
               {btn.label}
@@ -189,6 +191,7 @@ export function AttachDocDialog({ workflowTaskRunId, open, onOpenChange }: Attac
                     key={`${result.provider}-${result.id}`}
                     type="button"
                     className="flex w-full items-center gap-2 rounded-md p-2 text-start transition-colors hover:bg-muted focus-visible:bg-muted focus-visible:outline-none"
+                    // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                     onClick={() => handleSelect(result)}
                     disabled={attachMutation.isPending}>
                     <ProviderIcon className="h-3.5 w-3.5 shrink-0" />

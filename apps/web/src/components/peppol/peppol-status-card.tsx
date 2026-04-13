@@ -92,6 +92,7 @@ export function PeppolStatusCard() {
               <p className="text-sm text-muted-foreground">{t('notConnected')}</p>
               <p className="text-sm text-muted-foreground">{t('connectDescription')}</p>
             </div>
+            {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
             <Button onClick={() => setWizardOpen(true)}>{t('connect')}</Button>
           </div>
         </Card>
@@ -180,6 +181,7 @@ export function PeppolStatusCard() {
               <AlertDialogFooter>
                 <AlertDialogCancel>{t('disconnectCancel')}</AlertDialogCancel>
                 <AlertDialogAction
+                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                   onClick={() => disconnectMutation.mutate()}
                   className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
                   {disconnectMutation.isPending ? t('disconnecting') : t('disconnectConfirm')}

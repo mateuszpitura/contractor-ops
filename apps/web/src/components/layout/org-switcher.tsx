@@ -105,6 +105,7 @@ export function OrgSwitcher() {
           {organizations.map(org => (
             <DropdownMenuItem
               key={org.id}
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => handleOrgSwitch(org.id)}
               className="gap-2 p-2">
               <div className="flex size-6 items-center justify-center rounded-sm border">
@@ -114,6 +115,7 @@ export function OrgSwitcher() {
             </DropdownMenuItem>
           ))}
           <DropdownMenuSeparator />
+          {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
           <DropdownMenuItem className="gap-2 p-2" onClick={() => setDialogOpen(true)}>
             <div className="flex size-6 items-center justify-center rounded-md border bg-background">
               <Plus className="size-3.5" />
@@ -130,6 +132,7 @@ export function OrgSwitcher() {
             <DialogDescription>{t('createDescription')}</DialogDescription>
           </DialogHeader>
           <form
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onSubmit={e => {
               e.preventDefault();
               void handleCreateOrg();
@@ -140,6 +143,7 @@ export function OrgSwitcher() {
               <Input
                 id="org-name"
                 value={newOrgName}
+                // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                 onChange={e => setNewOrgName(e.target.value)}
                 placeholder={t('namePlaceholder')}
                 disabled={isCreating}
@@ -150,6 +154,7 @@ export function OrgSwitcher() {
               <Button
                 type="button"
                 variant="outline"
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 onClick={() => setDialogOpen(false)}
                 disabled={isCreating}>
                 {t('cancel')}

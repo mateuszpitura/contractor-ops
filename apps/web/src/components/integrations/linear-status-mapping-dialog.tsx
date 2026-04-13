@@ -246,6 +246,7 @@ export function LinearStatusMappingDialog({ open, onOpenChange }: LinearStatusMa
         {/* Team selector */}
         <div className="space-y-2">
           <Label>{t('selectTeam')}</Label>
+          {/* biome-ignore lint/nursery/noJsxPropsBind: controlled component handler */}
           <Select value={selectedTeamId ?? undefined} onValueChange={v => setSelectedTeamId(v)}>
             <SelectTrigger className="w-full">
               <SelectValue placeholder={t('selectTeam')}>
@@ -308,6 +309,7 @@ export function LinearStatusMappingDialog({ open, onOpenChange }: LinearStatusMa
                         ) : (
                           <Select
                             value={mappedId ?? undefined}
+                            // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
                             onValueChange={v => {
                               if (v) handleStateSelect(ws.value, v);
                             }}>
@@ -339,10 +341,12 @@ export function LinearStatusMappingDialog({ open, onOpenChange }: LinearStatusMa
         )}
 
         <DialogFooter>
+          {/* biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler */}
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             {t('discard')}
           </Button>
           <Button
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={handleSave}
             disabled={!hasChanges || saveMutation.isPending || !selectedTeamId}>
             {!!saveMutation.isPending && <Loader2 className="me-1.5 size-3.5 animate-spin" />}

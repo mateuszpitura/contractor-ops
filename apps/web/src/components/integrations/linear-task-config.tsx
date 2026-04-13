@@ -149,6 +149,7 @@ export function LinearTaskConfig({ taskTemplateId }: LinearTaskConfigProps) {
           <Switch
             id={`linear-toggle-${taskTemplateId}`}
             checked={linearEnabled}
+            // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
             onCheckedChange={handleToggle}
             disabled={!selectedTeamId || saveMutation.isPending}
           />
@@ -169,6 +170,7 @@ export function LinearTaskConfig({ taskTemplateId }: LinearTaskConfigProps) {
         <Label className="text-sm">{t('teamLabel')}</Label>
         <Select
           value={selectedTeamId ?? undefined}
+          // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
           onValueChange={v => {
             if (v) handleTeamChange(v);
           }}>

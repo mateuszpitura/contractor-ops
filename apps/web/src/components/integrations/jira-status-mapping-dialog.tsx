@@ -212,6 +212,7 @@ export function JiraStatusMappingDialog({
           <Label>{t('jiraProject')}</Label>
           <Select
             value={selectedProjectId ?? undefined}
+            // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
             onValueChange={v => setSelectedProjectId(v as string)}>
             <SelectTrigger className="w-full">
               <SelectValue placeholder={t('selectProject')}>
@@ -266,6 +267,7 @@ export function JiraStatusMappingDialog({
                         ) : (
                           <Select
                             value={mappedId ?? undefined}
+                            // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
                             onValueChange={v => handleStatusSelect(ws.value, v as string)}>
                             <SelectTrigger className="w-full">
                               <SelectValue placeholder={t('notMapped')} />
@@ -289,10 +291,12 @@ export function JiraStatusMappingDialog({
         )}
 
         <DialogFooter>
+          {/* biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler */}
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             {t('discardChanges')}
           </Button>
           <Button
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={handleSave}
             disabled={!hasChanges || saveMutation.isPending || !selectedProjectId}>
             {!!saveMutation.isPending && <Loader2 className="me-1.5 size-3.5 animate-spin" />}

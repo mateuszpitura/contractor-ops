@@ -127,6 +127,7 @@ export function PeppolWizard({ open, onOpenChange }: PeppolWizardProps) {
   }
 
   return (
+    {/* biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler */}
     <Dialog open={open} onOpenChange={resetAndClose}>
       <DialogContent className="max-w-[640px]">
         <DialogHeader>
@@ -155,6 +156,7 @@ export function PeppolWizard({ open, onOpenChange }: PeppolWizardProps) {
                   id="trn"
                   placeholder="123456789012345"
                   value={trn}
+                  // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                   onChange={e => {
                     const val = e.target.value.replace(/\D/g, '').slice(0, 15);
                     setTrn(val);
@@ -206,6 +208,7 @@ export function PeppolWizard({ open, onOpenChange }: PeppolWizardProps) {
                     id="apiKey"
                     type={showApiKey ? 'text' : 'password'}
                     value={apiKey}
+                    // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                     onChange={e => setApiKey(e.target.value)}
                     placeholder="Enter your API key"
                   />
@@ -214,6 +217,7 @@ export function PeppolWizard({ open, onOpenChange }: PeppolWizardProps) {
                     variant="ghost"
                     size="sm"
                     className="absolute end-1 top-1/2 -translate-y-1/2 h-7 px-2 text-xs"
+                    // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                     onClick={() => setShowApiKey(!showApiKey)}>
                     {showApiKey ? 'Hide' : 'Show'}
                   </Button>
@@ -224,6 +228,7 @@ export function PeppolWizard({ open, onOpenChange }: PeppolWizardProps) {
                 <Label>Environment</Label>
                 <RadioGroup
                   value={environment}
+                  // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
                   onValueChange={val => setEnvironment(val as 'sandbox' | 'production')}
                   className="flex gap-4">
                   <label
@@ -276,6 +281,7 @@ export function PeppolWizard({ open, onOpenChange }: PeppolWizardProps) {
                 <Alert variant="destructive">
                   <AlertTitle>Registration Failed</AlertTitle>
                   <AlertDescription>{registrationError}</AlertDescription>
+                  {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
                   <Button variant="outline" size="sm" className="mt-3" onClick={handleRetry}>
                     Retry
                   </Button>
@@ -317,16 +323,19 @@ export function PeppolWizard({ open, onOpenChange }: PeppolWizardProps) {
           {step > 1 && step < 5 && (
             <Button
               variant="outline"
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => setStep(step - 1)}
               disabled={step === 4 && connectMutation.isPending}>
               Back
             </Button>
           )}
           {step === 5 ? (
+            {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
             <Button className="ms-auto" onClick={resetAndClose}>
               Done
             </Button>
           ) : step < 4 ? (
+            {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
             <Button className="ms-auto" onClick={handleNext} disabled={!canGoNext}>
               Next
             </Button>

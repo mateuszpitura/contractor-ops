@@ -2,7 +2,7 @@
 
 import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { authClient } from '@/lib/auth-client';
 
@@ -14,7 +14,7 @@ export function SocialButtons() {
   const t = useTranslations('Auth.register');
   const [loadingProvider, setLoadingProvider] = useState<string | null>(null);
 
-  const handleSocialLogin = async (provider: 'google' | 'microsoft') => {
+  const handleSocialLogin = useCallback(async (provider: 'google' | 'microsoft') => {
     setLoadingProvider(provider);
     try {
       await authClient.signIn.social({
@@ -24,7 +24,13 @@ export function SocialButtons() {
     } catch {
       setLoadingProvider(null);
     }
-  };
+  }, []);
+
+  const handleGoogleLogin = useCallback(() => handleSocialLogin('google'), [handleSocialLogin]);
+  const handleMicrosoftLogin = useCallback(
+    () => handleSocialLogin('microsoft'),
+    [handleSocialLogin],
+  );
 
   return (
     <div className="space-y-3">
@@ -42,7 +48,7 @@ export function SocialButtons() {
           variant="outline"
           type="button"
           disabled={loadingProvider !== null}
-          onClick={() => handleSocialLogin('google')}
+          onClick={handleGoogleLogin}
           className="w-full">
           {loadingProvider === 'google' ? (
             <Loader2 className="me-2 h-4 w-4 animate-spin" />
@@ -73,7 +79,7 @@ export function SocialButtons() {
           variant="outline"
           type="button"
           disabled={loadingProvider !== null}
-          onClick={() => handleSocialLogin('microsoft')}
+          onClick={handleMicrosoftLogin}
           className="w-full">
           {loadingProvider === 'microsoft' ? (
             <Loader2 className="me-2 h-4 w-4 animate-spin" />

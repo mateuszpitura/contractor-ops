@@ -1,7 +1,7 @@
 'use client';
 
 import { Check, Copy } from 'lucide-react';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { cn } from '@/lib/utils';
 
@@ -14,7 +14,7 @@ interface CopyableFieldProps {
 export function CopyableField({ value, ariaLabel, className }: CopyableFieldProps) {
   const [copied, setCopied] = useState(false);
 
-  async function handleCopy() {
+  const handleCopy = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(value);
       setCopied(true);
@@ -22,7 +22,7 @@ export function CopyableField({ value, ariaLabel, className }: CopyableFieldProp
     } catch {
       // Clipboard API not available — fail silently
     }
-  }
+  }, [value]);
 
   return (
     <button

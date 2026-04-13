@@ -164,11 +164,13 @@ export function UserMenu() {
 
           <DropdownMenuSeparator />
 
+          {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
           <DropdownMenuItem onClick={() => setNameDialogOpen(true)}>
             <UserPen className="me-2 h-4 w-4" />
             {t('editName')}
           </DropdownMenuItem>
 
+          {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
           <DropdownMenuItem onClick={() => router.push('/settings')}>
             <Settings className="me-2 h-4 w-4" />
             {t('settings')}
@@ -183,6 +185,7 @@ export function UserMenu() {
             </div>
             <Switch
               checked={theme === 'dark'}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
               onCheckedChange={checked => {
                 document.documentElement.classList.add('theme-transition');
                 setTheme(checked ? 'dark' : 'light');
@@ -217,6 +220,7 @@ export function UserMenu() {
             </div>
             <button
               type="button"
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={handleLocaleSwitch}
               className="text-sm font-medium text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
               aria-label={t('switchToLanguage', { name: nextLocaleLabelText })}>
@@ -226,6 +230,7 @@ export function UserMenu() {
 
           <DropdownMenuSeparator />
 
+          {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
           <DropdownMenuItem onClick={handleSignOut}>
             <LogOut className="me-2 h-4 w-4" />
             {t('signOut')}
@@ -240,6 +245,7 @@ export function UserMenu() {
             <DialogTitle>{t('editName')}</DialogTitle>
           </DialogHeader>
           <form
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onSubmit={e => {
               e.preventDefault();
               void handleSaveName();
@@ -251,12 +257,14 @@ export function UserMenu() {
                 ref={nameInputRef}
                 id="user-name"
                 value={nameValue}
+                // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                 onChange={e => setNameValue(e.target.value)}
                 placeholder={t('editNamePrompt')}
                 autoFocus
               />
             </div>
             <div className="flex justify-end gap-2">
+              {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
               <Button type="button" variant="outline" onClick={() => setNameDialogOpen(false)}>
                 {t('cancel')}
               </Button>
