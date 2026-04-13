@@ -2,7 +2,7 @@
 
 import type { ColumnDef } from '@tanstack/react-table';
 import { CheckCircle2, XCircle } from 'lucide-react';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -70,6 +70,7 @@ function RejectPopover({
   onReject: (comment: string) => void;
   t: (key: string) => string;
 }) {
+  const reactId = useId();
   const [comment, setComment] = useState('');
   const [open, setOpen] = useState(false);
 
@@ -106,11 +107,11 @@ function RejectPopover({
         <div className="space-y-3">
           <h4 className="font-medium text-sm">{t('rejectPopover.heading')}</h4>
           <div className="space-y-1.5">
-            <label htmlFor="reject-comment" className="text-[12px] text-muted-foreground">
+            <label htmlFor={`${reactId}-reject-comment`} className="text-[12px] text-muted-foreground">
               {t('rejectPopover.commentLabel')}
             </label>
             <Textarea
-              id="reject-comment"
+              id={`${reactId}-reject-comment`}
               value={comment}
               // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
               onChange={e => setComment(e.target.value)}

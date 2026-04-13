@@ -11,7 +11,7 @@ import {
   XCircle,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useMemo, useState } from 'react';
+import { useId, useMemo, useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -69,6 +69,7 @@ type MyTaskRow = {
  */
 export function MyTasksList() {
   const t = useTranslations('Workflows');
+  const reactId = useId();
 
   const [overdueOnly, setOverdueOnly] = useState(false);
 
@@ -122,12 +123,12 @@ export function MyTasksList() {
       {/* Overdue only toggle */}
       <div className="flex items-center gap-2">
         <Switch
-          id="overdue-only-toggle"
+          id={`${reactId}-overdue-only-toggle`}
           checked={overdueOnly}
           // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
           onCheckedChange={checked => setOverdueOnly(checked === true)}
         />
-        <Label htmlFor="overdue-only-toggle" className="text-sm">
+        <Label htmlFor={`${reactId}-overdue-only-toggle`} className="text-sm">
           {t('filterOverdueOnly')}
         </Label>
       </div>

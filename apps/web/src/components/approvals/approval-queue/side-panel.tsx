@@ -2,7 +2,7 @@
 
 import { CheckCircle2, HelpCircle, MoreHorizontal, UserPlus, XCircle } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -130,6 +130,7 @@ function ClarifyOverlay({
   isPending: boolean;
   t: (key: string) => string;
 }) {
+  const reactId = useId();
   if (!isOpen) return null;
   return (
     <div
@@ -151,11 +152,11 @@ function ClarifyOverlay({
         onKeyDown={e => e.stopPropagation()}>
         <h4 className="font-medium text-sm mb-3">{t('clarifyPopover.heading')}</h4>
         <div className="space-y-1.5 mb-3">
-          <label htmlFor="clarify-comment" className="text-[12px] text-muted-foreground">
+          <label htmlFor={`${reactId}-clarify-comment`} className="text-[12px] text-muted-foreground">
             {t('clarifyPopover.commentLabel')}
           </label>
           <Textarea
-            id="clarify-comment"
+            id={`${reactId}-clarify-comment`}
             value={comment}
             // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
             onChange={e => onCommentChange(e.target.value)}
@@ -197,6 +198,7 @@ function DelegateOverlay({
   isPending: boolean;
   t: (key: string) => string;
 }) {
+  const reactId = useId();
   if (!isOpen) return null;
   return (
     <div
@@ -219,11 +221,11 @@ function DelegateOverlay({
         <h4 className="font-medium text-sm mb-3">{t('delegatePopover.heading')}</h4>
         <div className="space-y-3 mb-3">
           <div className="space-y-1.5">
-            <label htmlFor="delegate-user-id" className="text-[12px] text-muted-foreground">
+            <label htmlFor={`${reactId}-delegate-user-id`} className="text-[12px] text-muted-foreground">
               {t('delegatePopover.userLabel')}
             </label>
             <Input
-              id="delegate-user-id"
+              id={`${reactId}-delegate-user-id`}
               value={userId}
               // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
               onChange={e => onUserIdChange(e.target.value)}
@@ -231,11 +233,11 @@ function DelegateOverlay({
             />
           </div>
           <div className="space-y-1.5">
-            <label htmlFor="delegate-note" className="text-[12px] text-muted-foreground">
+            <label htmlFor={`${reactId}-delegate-note`} className="text-[12px] text-muted-foreground">
               {t('delegatePopover.noteLabel')}
             </label>
             <Textarea
-              id="delegate-note"
+              id={`${reactId}-delegate-note`}
               value={note}
               // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
               onChange={e => onNoteChange(e.target.value)}
@@ -268,6 +270,7 @@ function DelegateOverlay({
 export function ApprovalSidePanel({ step, open, onOpenChange }: ApprovalSidePanelProps) {
   const t = useTranslations('Approvals');
   const locale = useLocale();
+  const reactId = useId();
 
   // Approval action mutations (extracted hook)
   const {
@@ -411,12 +414,12 @@ export function ApprovalSidePanel({ step, open, onOpenChange }: ApprovalSidePane
                     <h4 className="font-medium text-sm">{t('rejectPopover.heading')}</h4>
                     <div className="space-y-1.5">
                       <label
-                        htmlFor="side-reject-comment"
+                        htmlFor={`${reactId}-side-reject-comment`}
                         className="text-[12px] text-muted-foreground">
                         {t('rejectPopover.commentLabel')}
                       </label>
                       <Textarea
-                        id="side-reject-comment"
+                        id={`${reactId}-side-reject-comment`}
                         value={rejectComment}
                         // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                         onChange={e => setRejectComment(e.target.value)}

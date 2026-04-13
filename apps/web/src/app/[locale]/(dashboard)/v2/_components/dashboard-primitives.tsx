@@ -2,7 +2,7 @@
 
 import { AlertTriangle, CalendarClock, FileCheck } from 'lucide-react';
 import type { CSSProperties, MouseEvent as ReactMouseEvent, ReactNode } from 'react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { Link } from '@/i18n/navigation';
 
 // =============================================================================
@@ -196,14 +196,15 @@ export function Sparkline({
   w = 180,
   h = 52,
   color = 'var(--color-primary)',
-  id = 'sp',
 }: {
   data: number[];
   w?: number;
   h?: number;
   color?: string;
+  /** @deprecated Use auto-generated useId() instead */
   id?: string;
 }) {
+  const gradientId = useId();
   if (!data.length) return null;
   const max = Math.max(...data, 1);
   const min = Math.min(...data, 0);
@@ -223,12 +224,12 @@ export function Sparkline({
       className="overflow-visible"
       aria-hidden="true">
       <defs>
-        <linearGradient id={`${id}-g`} x1="0" y1="0" x2="0" y2="1">
+        <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor={color} stopOpacity={0.35} />
           <stop offset="100%" stopColor={color} stopOpacity={0} />
         </linearGradient>
       </defs>
-      <polygon points={area} fill={`url(#${id}-g)`} />
+      <polygon points={area} fill={`url(#${gradientId})`} />
       <polyline
         points={line}
         fill="none"

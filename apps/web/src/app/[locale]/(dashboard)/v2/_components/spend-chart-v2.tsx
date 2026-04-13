@@ -2,7 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useId, useMemo, useState } from 'react';
 import { trpc } from '@/trpc/init';
 import { plnFmt } from './dashboard-primitives';
 
@@ -18,6 +18,10 @@ export function SpendChartV2() {
   useEffect(() => {
     void import('recharts').then(setRC);
   }, []);
+
+  const reactId = useId();
+  const gradPlnId = `${reactId}-v2p`;
+  const gradEurId = `${reactId}-v2e`;
 
   const [range, setRange] = useState<'6' | '12' | 'ytd'>('6');
   const { data, isLoading } = useQuery(trpc.dashboard.spendTrend.queryOptions({ months: range }));
@@ -71,11 +75,11 @@ export function SpendChartV2() {
         <RC.ResponsiveContainer width="100%" height={280}>
           <RC.AreaChart data={chartData}>
             <defs>
-              <linearGradient id="v2p" x1="0" y1="0" x2="0" y2="1">
+              <linearGradient id={gradPlnId} x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="var(--color-chart-1)" stopOpacity={0.45} />
                 <stop offset="100%" stopColor="var(--color-chart-1)" stopOpacity={0} />
               </linearGradient>
-              <linearGradient id="v2e" x1="0" y1="0" x2="0" y2="1">
+              <linearGradient id={gradEurId} x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="var(--color-chart-3)" stopOpacity={0.45} />
                 <stop offset="100%" stopColor="var(--color-chart-3)" stopOpacity={0} />
               </linearGradient>
@@ -122,7 +126,7 @@ export function SpendChartV2() {
               dataKey="PLN"
               stackId="1"
               stroke="var(--color-chart-1)"
-              fill="url(#v2p)"
+              fill={`url(#${gradPlnId})`}
               strokeWidth={2.5}
               dot={false}
               activeDot={{
@@ -138,7 +142,7 @@ export function SpendChartV2() {
                 dataKey="EUR"
                 stackId="1"
                 stroke="var(--color-chart-3)"
-                fill="url(#v2e)"
+                fill={`url(#${gradEurId})`}
                 strokeWidth={2.5}
                 dot={false}
               />

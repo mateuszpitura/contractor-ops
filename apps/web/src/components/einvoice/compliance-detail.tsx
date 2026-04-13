@@ -3,6 +3,7 @@
 import { complianceState } from '@contractor-ops/einvoice';
 import { useQuery } from '@tanstack/react-query';
 import { CheckCircle2, FileCheck, XCircle } from 'lucide-react';
+import { useId } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -83,6 +84,7 @@ function CapabilityItem({ label, enabled }: { label: string; enabled: boolean })
  * sync history, error log, and capability matrix.
  */
 export function EInvoiceComplianceDetail() {
+  const reactId = useId();
   const { data, isLoading } = useQuery(trpc.einvoice.complianceStatuses.queryOptions());
 
   if (isLoading) {
@@ -97,7 +99,7 @@ export function EInvoiceComplianceDetail() {
   const statuses = data?.statuses ?? [];
 
   return (
-    <div className="space-y-6" id="einvoice">
+    <div className="space-y-6" id={`${reactId}-einvoice`}>
       <div>
         <h2 className="flex items-center gap-2 text-lg font-semibold">
           <FileCheck className="h-5 w-5 text-muted-foreground" />

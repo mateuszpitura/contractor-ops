@@ -3,7 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useCallback } from 'react';
+import { useCallback, useId } from 'react';
 import { toast } from 'sonner';
 import {
   AlertDialog,
@@ -65,6 +65,7 @@ export function TemplateForm({ templateId }: TemplateFormProps) {
   const t = useTranslations('Workflows');
   const router = useRouter();
   const queryClient = useQueryClient();
+  const reactId = useId();
   const isEditing = !!templateId;
 
   // Fetch existing template when editing
@@ -219,10 +220,10 @@ export function TemplateForm({ templateId }: TemplateFormProps) {
     <form onSubmit={form.handleSubmit(handleSave)} className="space-y-4">
       {/* Name + actions */}
       <div className="space-y-1.5">
-        <Label htmlFor="template-name">{t('templateName')}</Label>
+        <Label htmlFor={`${reactId}-template-name`}>{t('templateName')}</Label>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
           <Input
-            id="template-name"
+            id={`${reactId}-template-name`}
             className="min-w-0 flex-1"
             aria-invalid={!!form.formState.errors.name}
             placeholder={t('templateNamePlaceholder')}
@@ -305,7 +306,7 @@ export function TemplateForm({ templateId }: TemplateFormProps) {
       {/* Type + status */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-6">
         <div className="min-w-0 flex-1 space-y-1.5">
-          <Label htmlFor="template-type">{t('columns.templateType')}</Label>
+          <Label htmlFor={`${reactId}-template-type`}>{t('columns.templateType')}</Label>
           <Select
             value={form.watch('type')}
             // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
@@ -315,7 +316,7 @@ export function TemplateForm({ templateId }: TemplateFormProps) {
               })
             }
             items={templateTypeItems}>
-            <SelectTrigger id="template-type" className="w-full min-w-0">
+            <SelectTrigger id={`${reactId}-template-type`} className="w-full min-w-0">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -341,9 +342,9 @@ export function TemplateForm({ templateId }: TemplateFormProps) {
 
       {/* Description */}
       <div className="space-y-1.5">
-        <Label htmlFor="template-description">{t('descriptionField')}</Label>
+        <Label htmlFor={`${reactId}-template-description`}>{t('descriptionField')}</Label>
         <Textarea
-          id="template-description"
+          id={`${reactId}-template-description`}
           placeholder={t('descriptionPlaceholder')}
           rows={2}
           {...form.register('description')}

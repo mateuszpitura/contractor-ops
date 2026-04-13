@@ -35,6 +35,7 @@ describe('Label', () => {
 
   it('forwards HTML attributes', () => {
     render(
+      // biome-ignore lint/correctness/useUniqueElementIds: test render
       <Label data-testid="lbl" id="my-label">
         Test
       </Label>,

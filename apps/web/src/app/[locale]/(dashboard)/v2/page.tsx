@@ -201,7 +201,6 @@ export default function DashboardV2Page() {
                       w={600}
                       h={56}
                       color="var(--color-primary)"
-                      id="hero"
                     />
                   </div>
                 </div>

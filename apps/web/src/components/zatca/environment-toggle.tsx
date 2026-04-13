@@ -1,7 +1,7 @@
 'use client';
 
 import { Cloud, TestTube } from 'lucide-react';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -43,6 +43,7 @@ export function EnvironmentToggle({
   onChange,
   productionReady = false,
 }: EnvironmentToggleProps) {
+  const reactId = useId();
   const [confirmSandbox, setConfirmSandbox] = useState(false);
 
   function handleChange(newValue: string) {
@@ -78,13 +79,13 @@ export function EnvironmentToggle({
           className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {/* Sandbox */}
           <label
-            htmlFor="zatca-env-sandbox"
+            htmlFor={`${reactId}-zatca-env-sandbox`}
             className={`relative flex cursor-pointer items-start gap-3 rounded-lg border-2 p-4 transition-all ${
               value === 'sandbox'
                 ? 'border-primary ring-2 ring-primary/20'
                 : 'border-border hover:border-muted-foreground/30'
             }`}>
-            <RadioGroupItem id="zatca-env-sandbox" value="sandbox" className="mt-0.5" />
+            <RadioGroupItem id={`${reactId}-zatca-env-sandbox`} value="sandbox" className="mt-0.5" />
             <div className="space-y-1">
               <div className="flex items-center gap-1.5">
                 <TestTube className="h-4 w-4 text-amber-500" aria-hidden="true" />
@@ -98,7 +99,7 @@ export function EnvironmentToggle({
 
           {/* Production */}
           <label
-            htmlFor="zatca-env-production"
+            htmlFor={`${reactId}-zatca-env-production`}
             className={`relative flex items-start gap-3 rounded-lg border-2 p-4 transition-all ${
               productionReady ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'
             } ${
@@ -107,7 +108,7 @@ export function EnvironmentToggle({
                 : 'border-border hover:border-muted-foreground/30'
             }`}>
             <RadioGroupItem
-              id="zatca-env-production"
+              id={`${reactId}-zatca-env-production`}
               value="production"
               className="mt-0.5"
               disabled={!productionReady}

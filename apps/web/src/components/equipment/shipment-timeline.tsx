@@ -4,7 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -76,6 +76,7 @@ export function ShipmentTimeline({
 }: ShipmentTimelineProps) {
   const t = useTranslations('Equipment');
   const queryClient = useQueryClient();
+  const reactId = useId();
   const [newStatus, setNewStatus] = useState<string>('');
   const [newNotes, setNewNotes] = useState('');
 
@@ -126,13 +127,13 @@ export function ShipmentTimeline({
         <div className="flex items-end gap-2 rounded-lg border bg-card p-3">
           <div className="flex-1 space-y-1">
             <label
-              htmlFor="shipment-new-status"
+              htmlFor={`${reactId}-shipment-new-status`}
               className="text-xs font-medium text-muted-foreground">
               {t('shipment.addStatusUpdate')}
             </label>
             {/* biome-ignore lint/nursery/noJsxPropsBind: controlled component handler */}
             <Select value={newStatus} onValueChange={val => val && setNewStatus(val)}>
-              <SelectTrigger id="shipment-new-status" className="w-full">
+              <SelectTrigger id={`${reactId}-shipment-new-status`} className="w-full">
                 <SelectValue placeholder="Select status..." />
               </SelectTrigger>
               <SelectContent>
@@ -146,12 +147,12 @@ export function ShipmentTimeline({
           </div>
           <div className="flex-1 space-y-1">
             <label
-              htmlFor="shipment-new-notes"
+              htmlFor={`${reactId}-shipment-new-notes`}
               className="text-xs font-medium text-muted-foreground">
               {t('shipment.notes')}
             </label>
             <Input
-              id="shipment-new-notes"
+              id={`${reactId}-shipment-new-notes`}
               value={newNotes}
               // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
               onChange={e => setNewNotes(e.target.value)}

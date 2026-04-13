@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useId, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import {
@@ -55,6 +55,7 @@ export function JiraProjectMappingDialog({
   connectionId,
 }: JiraProjectMappingDialogProps) {
   const queryClient = useQueryClient();
+  const reactId = useId();
 
   // ---- Local state ----
   const [projectId, setProjectId] = useState<string | undefined>(undefined);
@@ -222,11 +223,11 @@ export function JiraProjectMappingDialog({
 
           {/* Auto-create switch */}
           <div className="flex items-center justify-between gap-4 rounded-md border p-3">
-            <Label htmlFor="jira-auto-create" className="cursor-pointer">
+            <Label htmlFor={`${reactId}-jira-auto-create`} className="cursor-pointer">
               Create Jira issue when task activates
             </Label>
             <Switch
-              id="jira-auto-create"
+              id={`${reactId}-jira-auto-create`}
               checked={jiraEnabled}
               // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
               onCheckedChange={checked => setJiraEnabled(checked as boolean)}

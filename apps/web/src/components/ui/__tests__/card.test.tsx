@@ -45,6 +45,7 @@ describe('Card', () => {
 
   it('forwards HTML attributes', () => {
     render(
+      // biome-ignore lint/correctness/useUniqueElementIds: test render
       <Card data-testid="card" id="card-1" aria-label="Main card">
         Test
       </Card>,

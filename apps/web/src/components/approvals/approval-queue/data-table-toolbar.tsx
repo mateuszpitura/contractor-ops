@@ -3,7 +3,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Loader2, Search } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -71,6 +71,7 @@ export function ApprovalQueueToolbar({
 }: ApprovalQueueToolbarProps) {
   const t = useTranslations('Approvals');
   const queryClient = useQueryClient();
+  const reactId = useId();
 
   // Debounced search
   const [localSearch, setLocalSearch] = useState(search);
@@ -227,12 +228,12 @@ export function ApprovalQueueToolbar({
           </DialogHeader>
           <div className="space-y-2">
             <label
-              htmlFor="bulk-reject-comment"
+              htmlFor={`${reactId}-bulk-reject-comment`}
               className="text-[12px] font-medium text-muted-foreground">
               {t('bulkRejectDialog.commentLabel')}
             </label>
             <Textarea
-              id="bulk-reject-comment"
+              id={`${reactId}-bulk-reject-comment`}
               value={bulkRejectComment}
               // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
               onChange={e => setBulkRejectComment(e.target.value)}

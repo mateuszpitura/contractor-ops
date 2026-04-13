@@ -2,6 +2,7 @@
 
 import type { DirectoryRole } from '@contractor-ops/validators';
 import { useTranslations } from 'next-intl';
+import { useId } from 'react';
 import {
   Select,
   SelectContent,
@@ -50,10 +51,11 @@ export function RoleAssignmentControls({
   onDefaultRoleChange,
 }: RoleAssignmentControlsProps) {
   const t = useTranslations('GoogleWorkspace.import');
+  const reactId = useId();
 
   return (
     <div className="space-y-2">
-      <label htmlFor="gw-default-role" className="text-sm font-medium">
+      <label htmlFor={`${reactId}-gw-default-role`} className="text-sm font-medium">
         {t('defaultRoleLabel')}
       </label>
       <Select
@@ -62,7 +64,7 @@ export function RoleAssignmentControls({
         onValueChange={val => {
           if (val) onDefaultRoleChange(val as DirectoryRole);
         }}>
-        <SelectTrigger id="gw-default-role" className="w-60">
+        <SelectTrigger id={`${reactId}-gw-default-role`} className="w-60">
           <SelectValue>{ROLE_LABELS[defaultRole]}</SelectValue>
         </SelectTrigger>
         <SelectContent>

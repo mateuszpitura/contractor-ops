@@ -3,7 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { Filter, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useCallback } from 'react';
+import { useCallback, useId } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -43,6 +43,7 @@ const RUN_STATUSES = ['NOT_STARTED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED', 'B
  */
 export function DataTableFilters({ filters, onFiltersChange }: DataTableFiltersProps) {
   const t = useTranslations('Workflows');
+  const reactId = useId();
 
   // Fetch templates for template filter
   const templatesQuery = useQuery(
@@ -132,11 +133,11 @@ export function DataTableFilters({ filters, onFiltersChange }: DataTableFiltersP
 
               {/* Overdue only toggle */}
               <div className="flex items-center justify-between">
-                <Label htmlFor="overdue-toggle" className="text-[13px] font-medium text-foreground">
+                <Label htmlFor={`${reactId}-overdue-toggle`} className="text-[13px] font-medium text-foreground">
                   {t('filterOverdueOnly')}
                 </Label>
                 <Switch
-                  id="overdue-toggle"
+                  id={`${reactId}-overdue-toggle`}
                   checked={filters.overdueOnly}
                   // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
                   onCheckedChange={checked => onFiltersChange({ overdueOnly: checked === true })}
@@ -203,6 +204,7 @@ function FilterSection({
   selected: string[];
   onToggle: (value: string) => void;
 }) {
+  const filterSectionId = useId();
   if (options.length === 0) return null;
 
   return (
@@ -212,10 +214,10 @@ function FilterSection({
         {options.map(option => (
           <label
             key={option.value}
-            htmlFor={`wf-filter-${title}-${option.value}`}
+            htmlFor={`${filterSectionId}-${option.value}`}
             className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-accent">
             <Checkbox
-              id={`wf-filter-${title}-${option.value}`}
+              id={`${filterSectionId}-${option.value}`}
               checked={selected.includes(option.value)}
               // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
               onCheckedChange={() => onToggle(option.value)}

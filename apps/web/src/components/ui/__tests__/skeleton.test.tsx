@@ -31,6 +31,7 @@ describe('Skeleton', () => {
   });
 
   it('forwards HTML attributes', () => {
+    // biome-ignore lint/correctness/useUniqueElementIds: test render
     render(<Skeleton data-testid="skel" id="sk-1" />);
     expect(screen.getByTestId('skel')).toHaveAttribute('id', 'sk-1');
   });

@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import type { RowSelectionState } from '@tanstack/react-table';
 import { CalendarIcon, FileSearch } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Input } from '@/components/ui/input';
@@ -49,6 +49,7 @@ export function StepSelect({
   onNext,
 }: StepSelectProps) {
   const t = useTranslations('Payments');
+  const reactId = useId();
 
   // Filter state
   const [currency, setCurrency] = useState<string>('all');
@@ -255,9 +256,9 @@ export function StepSelect({
               <Switch
                 checked={groupByCurrency}
                 onCheckedChange={onGroupByCurrencyChange}
-                id="group-by-currency"
+                id={`${reactId}-group-by-currency`}
               />
-              <Label htmlFor="group-by-currency" className="text-xs">
+              <Label htmlFor={`${reactId}-group-by-currency`} className="text-xs">
                 {t('step1.groupByCurrency')}
                 {groupByCurrency && uniqueCurrencies.length > 1 && (
                   <span className="ms-1 text-muted-foreground">

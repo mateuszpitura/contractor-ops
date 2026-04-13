@@ -3,7 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useLocale, useTranslations } from 'next-intl';
 import { parseAsString, useQueryState } from 'nuqs';
-import { useMemo } from 'react';
+import { useId, useMemo } from 'react';
 import {
   Area,
   AreaChart,
@@ -122,6 +122,10 @@ export function SpendChart() {
   const t = useTranslations('Dashboard');
   const locale = useLocale();
   const { xAxisProps, yAxisProps, chartStyle } = useRtlChartConfig();
+  const reactId = useId();
+  const gradPlnId = `${reactId}-gradPLN`;
+  const gradEurId = `${reactId}-gradEUR`;
+  const glowPlnId = `${reactId}-glowPLN`;
 
   const currencyFormatter = useMemo(
     () =>
@@ -184,18 +188,18 @@ export function SpendChart() {
           <ResponsiveContainer width="100%" height={280}>
             <AreaChart data={chartData} style={chartStyle}>
               <defs>
-                <linearGradient id="gradPLN" x1="0" y1="0" x2="0" y2="1">
+                <linearGradient id={gradPlnId} x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="oklch(0.65 0.145 178)" stopOpacity={0.35} />
                   <stop offset="50%" stopColor="oklch(0.55 0.15 178)" stopOpacity={0.12} />
                   <stop offset="100%" stopColor="oklch(0.55 0.15 178)" stopOpacity={0.02} />
                 </linearGradient>
-                <linearGradient id="gradEUR" x1="0" y1="0" x2="0" y2="1">
+                <linearGradient id={gradEurId} x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="oklch(0.72 0.14 65)" stopOpacity={0.3} />
                   <stop offset="50%" stopColor="oklch(0.72 0.14 65)" stopOpacity={0.1} />
                   <stop offset="100%" stopColor="oklch(0.72 0.14 65)" stopOpacity={0.02} />
                 </linearGradient>
                 {/* Glow filter for stroke lines */}
-                <filter id="glowPLN" x="-20%" y="-20%" width="140%" height="140%">
+                <filter id={glowPlnId} x="-20%" y="-20%" width="140%" height="140%">
                   <feGaussianBlur stdDeviation="3" result="blur" />
                   <feComposite in="SourceGraphic" in2="blur" operator="over" />
                 </filter>
@@ -237,9 +241,9 @@ export function SpendChart() {
                 dataKey="PLN"
                 stackId="1"
                 stroke="var(--color-viz-1)"
-                fill="url(#gradPLN)"
+                fill={`url(#${gradPlnId})`}
                 strokeWidth={2.5}
-                filter="url(#glowPLN)"
+                filter={`url(#${glowPlnId})`}
                 dot={false}
                 activeDot={{
                   r: 5,
@@ -254,7 +258,7 @@ export function SpendChart() {
                   dataKey="EUR"
                   stackId="1"
                   stroke="var(--color-viz-2)"
-                  fill="url(#gradEUR)"
+                  fill={`url(#${gradEurId})`}
                   strokeWidth={2}
                   dot={false}
                   activeDot={{

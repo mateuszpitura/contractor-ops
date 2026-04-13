@@ -44,7 +44,7 @@ import {
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import type { ReactNode, MouseEvent as RME } from 'react';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useId, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -556,6 +556,7 @@ export default function NewWorkflowTemplatePage() {
   const t = useTranslations('Workflows');
   const router = useRouter();
   const queryClient = useQueryClient();
+  const reactId = useId();
 
   const { form, fields, isDirty, addTask, removeTask, reorderTasks } = useTemplateForm();
   const tasks = form.watch('tasks');
@@ -646,12 +647,12 @@ export default function NewWorkflowTemplatePage() {
                 {/* Type selector — visual pills */}
                 <div>
                   <label
-                    htmlFor="workflow-type-group"
+                    htmlFor={`${reactId}-workflow-type-group`}
                     className="mb-1.5 block text-[9px] font-bold uppercase tracking-[0.15em] text-muted-foreground/40">
                     Workflow Type
                   </label>
                   <fieldset
-                    id="workflow-type-group"
+                    id={`${reactId}-workflow-type-group`}
                     className="flex flex-wrap gap-1.5"
                     aria-label="Workflow Type">
                     {TEMPLATE_TYPES.map(tt => {

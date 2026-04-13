@@ -2,7 +2,7 @@
 
 import { FileSpreadsheet, Upload, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useCallback } from 'react';
+import { useCallback, useId } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { toast } from 'sonner';
 
@@ -70,6 +70,7 @@ export function StepUpload({
   onFileRemoved,
 }: StepUploadProps) {
   const t = useTranslations('Import');
+  const reactId = useId();
 
   const onDrop = useCallback(
     async (acceptedFiles: File[]) => {
@@ -109,7 +110,7 @@ export function StepUpload({
     <div className="space-y-6">
       {/* Entity type selection */}
       <div className="space-y-3">
-        <label htmlFor="import-entity-contractor" className="text-sm font-medium">
+        <label htmlFor={`${reactId}-import-entity-contractor`} className="text-sm font-medium">
           {t('upload.entityType')}
         </label>
         <RadioGroup
@@ -119,15 +120,15 @@ export function StepUpload({
           aria-label={t('upload.entityType')}
           className="flex gap-4">
           <label
-            htmlFor="import-entity-contractor"
+            htmlFor={`${reactId}-import-entity-contractor`}
             className="flex cursor-pointer items-center gap-2">
-            <RadioGroupItem id="import-entity-contractor" value="contractor" />
+            <RadioGroupItem id={`${reactId}-import-entity-contractor`} value="contractor" />
             <span className="text-sm">{t('upload.contractors')}</span>
           </label>
           <label
-            htmlFor="import-entity-contract"
+            htmlFor={`${reactId}-import-entity-contract`}
             className="flex cursor-pointer items-center gap-2">
-            <RadioGroupItem id="import-entity-contract" value="contract" />
+            <RadioGroupItem id={`${reactId}-import-entity-contract`} value="contract" />
             <span className="text-sm">{t('upload.contracts')}</span>
           </label>
         </RadioGroup>

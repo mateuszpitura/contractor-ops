@@ -31,6 +31,7 @@ describe('Separator', () => {
   });
 
   it('forwards HTML attributes', () => {
+    // biome-ignore lint/correctness/useUniqueElementIds: test render
     render(<Separator data-testid="sep" id="main-sep" />);
     expect(screen.getByTestId('sep')).toHaveAttribute('id', 'main-sep');
   });

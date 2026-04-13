@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -62,6 +62,7 @@ export function CalendarEventConfigDialog({
   onSave,
 }: CalendarEventConfigDialogProps) {
   const t = useTranslations('CalendarSettings');
+  const reactId = useId();
 
   // Local form state (same pattern as OcrReviewPanel)
   const [titleTemplate, setTitleTemplate] = useState(config.titleTemplate ?? '');
@@ -107,9 +108,9 @@ export function CalendarEventConfigDialog({
         <div className="space-y-4">
           {/* Event Title */}
           <div className="space-y-2">
-            <Label htmlFor="calendar-event-title">{t('eventTitleLabel')}</Label>
+            <Label htmlFor={`${reactId}-calendar-event-title`}>{t('eventTitleLabel')}</Label>
             <Input
-              id="calendar-event-title"
+              id={`${reactId}-calendar-event-title`}
               value={titleTemplate}
               // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
               onChange={e => setTitleTemplate(e.target.value)}
@@ -121,10 +122,10 @@ export function CalendarEventConfigDialog({
 
           {/* Duration */}
           <div className="space-y-2">
-            <Label htmlFor="calendar-event-duration">{t('durationLabel')}</Label>
+            <Label htmlFor={`${reactId}-calendar-event-duration`}>{t('durationLabel')}</Label>
             {/* biome-ignore lint/nursery/noJsxPropsBind: controlled component handler */}
             <Select value={duration} onValueChange={val => setDuration(val ?? '1h')}>
-              <SelectTrigger id="calendar-event-duration">
+              <SelectTrigger id={`${reactId}-calendar-event-duration`}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -139,9 +140,9 @@ export function CalendarEventConfigDialog({
 
           {/* Attendees */}
           <div className="space-y-2">
-            <Label htmlFor="calendar-event-attendees">{t('attendeesLabel')}</Label>
+            <Label htmlFor={`${reactId}-calendar-event-attendees`}>{t('attendeesLabel')}</Label>
             <Textarea
-              id="calendar-event-attendees"
+              id={`${reactId}-calendar-event-attendees`}
               value={attendeesText}
               // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
               onChange={e => setAttendeesText(e.target.value)}

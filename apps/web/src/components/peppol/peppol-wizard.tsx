@@ -2,7 +2,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { CheckCircle2, Globe, Loader2 } from 'lucide-react';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import {
@@ -69,6 +69,7 @@ function StepIndicator({ current }: { current: number }) {
 
 export function PeppolWizard({ open, onOpenChange }: PeppolWizardProps) {
   const queryClient = useQueryClient();
+  const reactId = useId();
 
   // Form state
   const [step, setStep] = useState(1);
@@ -151,9 +152,9 @@ export function PeppolWizard({ open, onOpenChange }: PeppolWizardProps) {
             <div className="space-y-4">
               <h3 className="text-base font-semibold">Step 1: Tax Registration Number</h3>
               <div className="space-y-2">
-                <Label htmlFor="trn">Tax Registration Number (TRN)</Label>
+                <Label htmlFor={`${reactId}-trn`}>Tax Registration Number (TRN)</Label>
                 <Input
-                  id="trn"
+                  id={`${reactId}-trn`}
                   placeholder="123456789012345"
                   value={trn}
                   // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
@@ -182,9 +183,9 @@ export function PeppolWizard({ open, onOpenChange }: PeppolWizardProps) {
               <h3 className="text-base font-semibold">Step 2: Select ASP Provider</h3>
               <RadioGroup value={aspProvider} className="space-y-3">
                 <label
-                  htmlFor="storecove"
+                  htmlFor={`${reactId}-storecove`}
                   className="flex cursor-pointer items-start gap-3 rounded-lg border p-4 transition-colors hover:bg-muted/50 has-[:checked]:border-primary has-[:checked]:bg-primary/5">
-                  <RadioGroupItem value="storecove" id="storecove" />
+                  <RadioGroupItem value="storecove" id={`${reactId}-storecove`} />
                   <div>
                     <p className="text-sm font-medium">Storecove</p>
                     <p className="text-sm text-muted-foreground">
@@ -202,10 +203,10 @@ export function PeppolWizard({ open, onOpenChange }: PeppolWizardProps) {
             <div className="space-y-4">
               <h3 className="text-base font-semibold">Step 3: API Credentials</h3>
               <div className="space-y-2">
-                <Label htmlFor="apiKey">Storecove API Key</Label>
+                <Label htmlFor={`${reactId}-apiKey`}>Storecove API Key</Label>
                 <div className="relative">
                   <Input
-                    id="apiKey"
+                    id={`${reactId}-apiKey`}
                     type={showApiKey ? 'text' : 'password'}
                     value={apiKey}
                     // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
@@ -232,15 +233,15 @@ export function PeppolWizard({ open, onOpenChange }: PeppolWizardProps) {
                   onValueChange={val => setEnvironment(val as 'sandbox' | 'production')}
                   className="flex gap-4">
                   <label
-                    htmlFor="peppol-env-sandbox"
+                    htmlFor={`${reactId}-peppol-env-sandbox`}
                     className="flex cursor-pointer items-center gap-2">
-                    <RadioGroupItem id="peppol-env-sandbox" value="sandbox" />
+                    <RadioGroupItem id={`${reactId}-peppol-env-sandbox`} value="sandbox" />
                     <span className="text-sm">Sandbox (testing)</span>
                   </label>
                   <label
-                    htmlFor="peppol-env-production"
+                    htmlFor={`${reactId}-peppol-env-production`}
                     className="flex cursor-pointer items-center gap-2">
-                    <RadioGroupItem id="peppol-env-production" value="production" />
+                    <RadioGroupItem id={`${reactId}-peppol-env-production`} value="production" />
                     <span className="text-sm">Production</span>
                   </label>
                 </RadioGroup>
