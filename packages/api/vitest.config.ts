@@ -35,7 +35,11 @@ export default defineConfig({
     },
     globals: true,
     environment: 'node',
-    include: ['src/**/__tests__/**/*.test.ts', 'src/__tests__/**/*.test.ts'],
+    include: [
+      'src/**/__tests__/**/*.test.ts',
+      'src/**/__tests__/**/*.test.tsx',
+      'src/__tests__/**/*.test.ts',
+    ],
     /** Avoid cross-file `vi.mock("@contractor-ops/db")` leakage between workers */
     pool: 'forks',
     sequence: { groupOrder: vitestProject.api.groupOrder },
