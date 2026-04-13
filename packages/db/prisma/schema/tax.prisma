@@ -62,3 +62,43 @@ model WhtCertificate {
   @@index([organizationId])
   @@index([organizationId, paymentRunItemId])
 }
+
+// ---------------------------------------------------------------------------
+// Phase 57 — Tax-ID validation audit trail (HMRC VAT + VIES USt-IdNr)
+// D-04: append-only audit log of every HMRC/VIES call for compliance evidence.
+// ---------------------------------------------------------------------------
+
+enum TaxIdType {
+  GB_VAT
+  DE_USTIDNR
+}
+
+enum ValidationStatus {
+  valid
+  invalid
+  stale
+  unavailable
+}
+
+model TaxIdValidation {
+  id              String           @id @default(cuid())
+  organizationId  String
+  contractorId    String
+  taxIdType       TaxIdType
+  taxIdValue      String           @db.VarChar(20)
+  apiProvider     String           @db.VarChar(20)
+  requestedAt     DateTime         @default(now())
+  validFrom       DateTime?
+  validTo         DateTime?
+  confirmationRef String?          @db.VarChar(50)
+  responseStatus  ValidationStatus
+  responseBody    Json
+  errorMessage    String?
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  contractor   Contractor   @relation(fields: [contractorId], references: [id])
+
+  @@index([contractorId, taxIdType, requestedAt(sort: Desc)])
+  @@index([organizationId, requestedAt])
+  @@index([organizationId, responseStatus])
+}

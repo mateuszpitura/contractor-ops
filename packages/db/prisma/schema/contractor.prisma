@@ -34,6 +34,9 @@ model Contractor {
   isSensitive         Boolean                  @default(false)
   customFieldsJson    Json?
   countryFields       Json? // Country-specific compliance fields (validated by Zod per country)
+  // Phase 57 (D-05) — denormalized VAT validation summary (source of truth = TaxIdValidation)
+  latestVatValidatedAt      DateTime?
+  latestVatValidationStatus ValidationStatus?
   createdAt           DateTime                 @default(now())
   updatedAt           DateTime                 @updatedAt
   archivedAt          DateTime?
@@ -61,6 +64,7 @@ model Contractor {
   timeEntries             TimeEntry[]
   equipmentAssignments    EquipmentAssignment[]
   returnRequests          ReturnRequest[]
+  taxIdValidations        TaxIdValidation[]
 
   // InPost preferred Paczkomat (D-03)
   preferredPaczkomatId      String?

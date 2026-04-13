@@ -1,6 +1,6 @@
 import type { PrismaClient } from '../../generated/prisma/client/index.js';
 
-const taxRates = [
+export const taxRates = [
   // Poland (PL)
   {
     countryCode: 'PL',
@@ -103,6 +103,88 @@ const taxRates = [
     isReverseCharge: false,
     isExempt: false,
     effectiveFrom: new Date('2020-07-01'),
+  },
+  // Phase 57 — United Kingdom (GB) — PAY-02 (D-09)
+  {
+    countryCode: 'GB',
+    code: '20',
+    description: 'Standard rate',
+    ratePercent: 20.0,
+    isDefault: true,
+    isReverseCharge: false,
+    isExempt: false,
+    effectiveFrom: new Date('2011-01-04'),
+  },
+  {
+    countryCode: 'GB',
+    code: '5',
+    description: 'Reduced rate',
+    ratePercent: 5.0,
+    isDefault: false,
+    isReverseCharge: false,
+    isExempt: false,
+    effectiveFrom: new Date('1997-09-01'),
+  },
+  {
+    countryCode: 'GB',
+    code: '0',
+    description: 'Zero-rated',
+    ratePercent: 0.0,
+    isDefault: false,
+    isReverseCharge: false,
+    isExempt: false,
+    effectiveFrom: new Date('1973-04-01'),
+  },
+  {
+    countryCode: 'GB',
+    code: 'RC',
+    description: 'Reverse charge',
+    ratePercent: 0.0,
+    isDefault: false,
+    isReverseCharge: true,
+    isExempt: false,
+    effectiveFrom: new Date('2021-01-01'),
+  },
+  // Phase 57 — Germany (DE) — PAY-04 (D-09)
+  {
+    countryCode: 'DE',
+    code: '19',
+    description: 'Standard rate (Regelsteuersatz)',
+    ratePercent: 19.0,
+    isDefault: true,
+    isReverseCharge: false,
+    isExempt: false,
+    effectiveFrom: new Date('2007-01-01'),
+  },
+  {
+    countryCode: 'DE',
+    code: '7',
+    description: 'Reduced rate (Ermaessigter Steuersatz)',
+    ratePercent: 7.0,
+    isDefault: false,
+    isReverseCharge: false,
+    isExempt: false,
+    effectiveFrom: new Date('1983-07-01'),
+  },
+  {
+    countryCode: 'DE',
+    code: 'RC',
+    description: 'Reverse charge (§13b UStG / intra-EU)',
+    ratePercent: 0.0,
+    isDefault: false,
+    isReverseCharge: true,
+    isExempt: false,
+    effectiveFrom: new Date('2010-01-01'),
+  },
+  {
+    countryCode: 'DE',
+    code: 'KU',
+    description: 'Kleinunternehmer (§19 UStG)',
+    ratePercent: 0.0,
+    isDefault: false,
+    isReverseCharge: false,
+    isExempt: true,
+    effectiveFrom: new Date('2020-01-01'),
   },
 ];
 

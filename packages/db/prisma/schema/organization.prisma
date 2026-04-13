@@ -18,6 +18,8 @@ model Organization {
   language             String?
   fiscalYearStartMonth Int?               @default(1)
   status               OrganizationStatus @default(ACTIVE)
+  // Phase 57 (D-11) — Kleinunternehmerregelung §19 UStG toggle (DE orgs only)
+  isKleinunternehmer   Boolean            @default(false)
   billingEmail         String?
   settingsJson         Json?
   portalSubdomain      String?            @unique
@@ -93,6 +95,7 @@ model Organization {
   peppolTransmissions         PeppolTransmission[]
   govApiAuditLogs             GovApiAuditLog[]
   zatcaChainEntries           ZatcaInvoiceChain[]
+  taxIdValidations            TaxIdValidation[]
 }
 
 model Member {
