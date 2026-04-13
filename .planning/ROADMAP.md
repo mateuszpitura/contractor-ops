@@ -36,7 +36,7 @@ See .planning/milestones/v4.0/ for details.
 
 - [x] **Phase 56: Country Foundations & German i18n** - UK/DE contractor fields, German locale, GDPR compliance notices (completed 2026-04-12)
 - [ ] **Phase 57: Government API Clients** - HMRC VAT validation, VIES USt-IdNr validation, UK/DE VAT rates
-- [ ] **Phase 58: Classification Engine & Rule Sets** - Generic classification engine with IR35 and Scheinselbstandigkeit rule sets
+- [x] **Phase 58: Classification Engine & Rule Sets** - Generic classification engine with IR35 and Scheinselbstandigkeit rule sets (completed 2026-04-13)
 - [x] **Phase 59: Classification Documents & Chain Tracking** - SDS generation, IR35 chain participants, DRV audit defense documentation (completed 2026-04-13)
 - [ ] **Phase 60: Classification Polish** - Economic dependency alerts, reassessment triggers, DRV tracking, compliance dashboard
 - [ ] **Phase 61: XRechnung E-Invoicing** - XRechnung CII XML generation, KoSIT validation, Leitweg-ID, Peppol UK
@@ -95,7 +95,7 @@ See .planning/milestones/v4.0/ for details.
 - [x] 58-02-PLAN.md — Wave 1: IR35 rule set (25 questions, dispositive-first scoring per Atholl House + PGMOL) + DRV rule set (20 criteria, 30/30/25/15 weights, thresholds 29.9/30/60/60.1) + self-registering profile classes
 - [x] 58-03-PLAN.md — Wave 2: classification tRPC router (createDraft, saveAnswer, submit, acknowledgeDisclaimer, getLatest, listByContractor, getDraft) + multi-tenant leak test + autosave rate-limit + rule-set drift detection
 - [x] 58-04-PLAN.md — Wave 3: wizard entry page + multi-step shell + progress bar + step indicator + autosave indicator + 4 answer inputs (Yes/No, Likert, Score03, Rationale) + EconomicDependencyInput + legal-reference Collapsible + a11y
-- [ ] 58-05-PLAN.md — Wave 3: SSR outcome pages (IR35 5-area + DRV traffic-light + category bars) + blocking disclaimer AlertDialog + tile on CountryComplianceSection + assessment list + print layout + Steuerberater + UK tax-adviser human-verify checkpoint
+- [x] 58-05-PLAN.md — Wave 3: SSR outcome pages (IR35 5-area + DRV traffic-light + category bars) + blocking disclaimer AlertDialog + tile on CountryComplianceSection + assessment list + print layout + Steuerberater + UK tax-adviser human-verify checkpoint
 **UI hint**: yes
 
 ### Phase 59: Classification Documents & Chain Tracking
@@ -161,7 +161,7 @@ Phases execute in numeric order: 56 -> 57 -> 58 -> 59 -> 60 -> 61 -> 62 -> 63
 |-------|-----------|----------------|--------|-----------|
 | 56. Country Foundations & German i18n | v5.0 | 8/8 | Complete   | 2026-04-12 |
 | 57. Government API Clients | v5.0 | 3/4 | In Progress|  |
-| 58. Classification Engine & Rule Sets | v5.0 | 4/5 | In Progress|  |
+| 58. Classification Engine & Rule Sets | v5.0 | 5/5 | Complete    | 2026-04-13 |
 | 59. Classification Documents & Chain Tracking | v5.0 | 4/4 | Complete    | 2026-04-13 |
 | 60. Classification Polish | v5.0 | 0/TBD | Not started | - |
 | 61. XRechnung E-Invoicing | v5.0 | 0/TBD | Not started | - |
