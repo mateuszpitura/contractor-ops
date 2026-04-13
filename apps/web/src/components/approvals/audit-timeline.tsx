@@ -1,5 +1,6 @@
 'use client';
 
+import { approvalAuditSystemLabel } from '@contractor-ops/validators';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowRightLeft, CheckCircle2, HelpCircle, XCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -79,7 +80,7 @@ function getSystemEventLabel(event: AuditEvent, t: TranslateFn): string {
       return t('auditTrail.submitted');
     case 'routed':
       return t('auditTrail.routed', { chainName: event.chainName ?? 'Unknown' });
-    case 'sla_breached':
+    case approvalAuditSystemLabel.slaBreached:
       return t('auditTrail.slaBreached', { levelName: event.levelName ?? 'unknown' });
     case 'approved':
       return t('auditTrail.flowApproved');

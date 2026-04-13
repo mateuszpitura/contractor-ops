@@ -181,9 +181,10 @@ describe('ZatcaXAdESSigner', () => {
     const signedXml = await signer.sign(TEST_INVOICE_XML, testCert);
 
     // Extract the raw key data (between PEM headers) for checking
-    const keyLines = testCert.privateKey
-      ?.split('\n')
-      .filter(l => l.trim() !== '' && !l.includes('-----BEGIN') && !l.includes('-----END'));
+    const keyLines =
+      testCert.privateKey
+        ?.split('\n')
+        .filter(l => l.trim() !== '' && !l.includes('-----BEGIN') && !l.includes('-----END')) ?? [];
 
     // The private key base64 content should not appear in output
     for (const line of keyLines) {

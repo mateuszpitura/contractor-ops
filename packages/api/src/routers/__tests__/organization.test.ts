@@ -17,6 +17,31 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const ORG_ID = 'clxxxxxxxxxxxxxxxxxxxxxxxxx';
 const USER_ID = 'clyyyyyyyyyyyyyyyyyyyyyyyy';
 
+// Shared with `auth.api` — organization router calls `authApi.*`.
+const { orgAuthApi } = vi.hoisted(() => ({
+  orgAuthApi: {
+    getSession: vi.fn(),
+    hasPermission: vi.fn().mockResolvedValue({ success: true }),
+    getFullOrganization: vi.fn(async () => ({
+      id: 'clxxxxxxxxxxxxxxxxxxxxxxxxx',
+      name: 'Test Org',
+      slug: 'test-org',
+      metadata: { countryCode: 'PL' },
+      members: [],
+    })),
+    createOrganization: vi.fn(async () => ({
+      id: 'new-org-id',
+      name: 'New Org',
+      slug: 'new-org',
+    })),
+    setActiveOrganization: vi.fn(async () => undefined),
+    updateOrganization: vi.fn(async () => ({
+      id: 'clxxxxxxxxxxxxxxxxxxxxxxxxx',
+      name: 'Updated Org',
+    })),
+  },
+}));
+
 // ---------------------------------------------------------------------------
 // Mock Prisma
 // ---------------------------------------------------------------------------
@@ -26,6 +51,9 @@ const { mockPrisma } = vi.hoisted(() => {
   type Rec = Record<string, any>;
 
   const mockPrisma: Rec = {
+    organization: {
+      findUnique: vi.fn().mockResolvedValue({ dataRegion: 'EU' }),
+    },
     member: {
       findFirst: vi.fn(async () => ({ role: 'admin' })),
     },
@@ -40,41 +68,21 @@ const { mockPrisma } = vi.hoisted(() => {
 // ---------------------------------------------------------------------------
 
 vi.mock('@contractor-ops/auth', () => ({
-  auth: {
-    api: {
-      getSession: vi.fn(),
-      hasPermission: vi.fn().mockResolvedValue({ success: true }),
-      getFullOrganization: vi.fn(async () => ({
-        id: ORG_ID,
-        name: 'Test Org',
-        slug: 'test-org',
-        metadata: { countryCode: 'PL' },
-        members: [],
-      })),
-      createOrganization: vi.fn(async () => ({
-        id: 'new-org-id',
-        name: 'New Org',
-        slug: 'new-org',
-      })),
-      setActiveOrganization: vi.fn(async () => undefined),
-      updateOrganization: vi.fn(async () => ({
-        id: ORG_ID,
-        name: 'Updated Org',
-      })),
-    },
-  },
+  auth: { api: orgAuthApi },
+  authApi: orgAuthApi,
 }));
 
 vi.mock('@contractor-ops/db', () => ({
   prisma: mockPrisma,
   tenantStore: {
     run: (_ctx: unknown, fn: () => unknown) => fn(),
-    getStore: vi.fn(),
+    getStore: vi.fn(() => ({ region: 'EU' })),
   },
   withTenantScope: vi.fn((c: unknown) => c),
   withSoftDelete: vi.fn((c: unknown) => c),
   createTenantClient: vi.fn(() => mockPrisma),
   createTenantClientFrom: vi.fn(() => mockPrisma),
+  getRegionalClient: vi.fn(() => mockPrisma),
 }));
 
 vi.mock('../../services/r2.js', () => ({

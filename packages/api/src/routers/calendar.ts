@@ -156,7 +156,7 @@ export const calendarRouter = router({
    */
   getTaskConfig: tenantProcedure
     .input(z.object({ taskTemplateId: z.string().cuid() }))
-    .query(async ({ input }) => {
+    .query(async ({ ctx, input }) => {
       const template = await ctx.db.workflowTaskTemplate.findUnique({
         where: { id: input.taskTemplateId },
         select: { configJson: true },

@@ -58,13 +58,13 @@ export function EquipmentTable({
   const [page, setPage] = useState(1);
   const [sortBy, setSortBy] = useState<string>('createdAt');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
-  const perPage = 25;
+  const pageSize = 25;
 
   // Build query input
   const queryInput = useMemo(
     () => ({
       page,
-      perPage,
+      pageSize,
       search: search || undefined,
       type: typeFilter.length
         ? (typeFilter as Array<
@@ -120,7 +120,7 @@ export function EquipmentTable({
   const table = useReactTable({
     data,
     columns,
-    pageCount: Math.ceil(totalRows / perPage),
+    pageCount: Math.ceil(totalRows / pageSize),
     state: {
       sorting: [{ id: sortBy, desc: sortOrder === 'desc' }],
     },
@@ -174,7 +174,7 @@ export function EquipmentTable({
   const isRefetching = equipmentQuery.isFetching && !isLoading;
   const hasFiltersOrSearch = search.length > 0 || typeFilter.length > 0 || statusFilter.length > 0;
 
-  const totalPages = Math.ceil(totalRows / perPage);
+  const totalPages = Math.ceil(totalRows / pageSize);
 
   return (
     <div className="space-y-4">

@@ -19,7 +19,8 @@
 //      session-derived jurisdiction, this function throws — preventing a
 //      future refactor from quietly re-introducing an IDOR.
 
-import { resolveJurisdiction, type SupportedJurisdiction } from '@contractor-ops/validators';
+import type { SupportedJurisdiction } from '@contractor-ops/validators';
+import { resolveJurisdiction } from '@contractor-ops/validators';
 
 export interface AssertJurisdictionArgs {
   /** Organization.countryCode from the authenticated session. */
@@ -33,9 +34,7 @@ export interface AssertJurisdictionArgs {
  * Resolve the jurisdiction server-side. If the caller supplies a hint that
  * contradicts the session, throw — preventing cross-tenant PDF leakage.
  */
-export function assertJurisdictionOrReject(
-  args: AssertJurisdictionArgs,
-): SupportedJurisdiction {
+export function assertJurisdictionOrReject(args: AssertJurisdictionArgs): SupportedJurisdiction {
   const sessionJurisdiction = resolveJurisdiction(args.sessionOrgCountryCode);
 
   if (args.requestedJurisdiction !== undefined) {

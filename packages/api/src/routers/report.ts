@@ -59,7 +59,7 @@ export const reportRouter = router({
       const dateTo = new Date(input.dateTo);
       const offset = (input.page - 1) * input.pageSize;
 
-      // Map sort keys to SQL column names
+      // Raw SQL: map API sort field (camelCase) to SELECT aliases for ORDER BY
       const sortMap: Record<string, string> = {
         totalSpend: '"totalMinor"',
         invoiceCount: '"invoiceCount"',
@@ -144,6 +144,7 @@ export const reportRouter = router({
       const dateTo = new Date(input.dateTo);
       const offset = (input.page - 1) * input.pageSize;
 
+      // Raw SQL: camelCase sort keys -> quoted SELECT aliases
       const sortMap: Record<string, string> = {
         totalSpend: '"totalMinor"',
         invoiceCount: '"invoiceCount"',

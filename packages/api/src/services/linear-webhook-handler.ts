@@ -1,6 +1,6 @@
 import { decryptCredentials } from '@contractor-ops/integrations/services/credential-service';
 import type { LinearIssueMetadata } from '@contractor-ops/validators';
-import { linearWebhookPayloadSchema } from '@contractor-ops/validators';
+import { getServerEnv, linearWebhookPayloadSchema } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { linearGraphQL } from './linear-issue-sync.js';
 import { resolveInternalStatus } from './linear-status-mapping.js';
@@ -377,13 +377,7 @@ export async function registerLinearWebhook(
 
   const credentials = decryptCredentials(connection.credentialsRef, 'linear');
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? process.env.APP_URL;
-  if (!appUrl) {
-    throw new TRPCError({
-      code: 'INTERNAL_SERVER_ERROR',
-      message: 'NEXT_PUBLIC_APP_URL environment variable is required for webhook registration',
-    });
-  }
+  const appUrl = getServerEnv().NEXT_PUBLIC_APP_URL;
 
   const webhookUrl = `${appUrl}/api/webhooks/linear`;
 

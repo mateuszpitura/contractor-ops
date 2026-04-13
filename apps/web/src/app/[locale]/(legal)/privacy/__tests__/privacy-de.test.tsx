@@ -5,8 +5,8 @@
 //   - Plan 07 redirects `/legal/privacy` to `/legal/privacy/de` for DE orgs
 // Covers FOUND-06 (DE privacy notice locked phrases + IDOR guard).
 
-import { render, screen } from '@/test/test-utils';
 import { describe, expect, it, vi } from 'vitest';
+import { render } from '@/test/test-utils';
 // biome-ignore lint/correctness/noUnresolvedImports: Plan 07 creates this module
 // @ts-expect-error Plan 07 creates this module
 import DePrivacyPage from '../(content)/de.mdx';
@@ -45,12 +45,8 @@ describe('DE privacy PDF IDOR guard (FOUND-06, V4 Access Control)', () => {
     // input 'SA' must be rejected or coerced. Test calls the tRPC mutation handler
     // directly (Plan 07 exposes a pure function for this check).
     // @ts-expect-error Plan 07 creates this module
-    const { assertJurisdictionOrReject } = await import(
-      '@/server/api/routers/privacy-pdf.guard'
-    );
+    const { assertJurisdictionOrReject } = await import('@/server/api/routers/privacy-pdf.guard');
     const enforce = vi.fn(assertJurisdictionOrReject);
-    expect(() =>
-      enforce({ sessionOrgCountryCode: 'DE', requestedJurisdiction: 'SA' }),
-    ).toThrow();
+    expect(() => enforce({ sessionOrgCountryCode: 'DE', requestedJurisdiction: 'SA' })).toThrow();
   });
 });

@@ -15,9 +15,9 @@ import { resolveJurisdiction } from '@contractor-ops/validators';
  * D-09 fallback: unknown / unsupported countryCode -> /legal/privacy/eu.
  * GB / DE / AE / SA get their dedicated notices.
  */
-export function resolvePrivacyRedirect(
-  args: { countryCode: string | null | undefined },
-):
+export function resolvePrivacyRedirect(args: {
+  countryCode: string | null | undefined;
+}):
   | '/legal/privacy/gb'
   | '/legal/privacy/de'
   | '/legal/privacy/eu'

@@ -1,5 +1,7 @@
 import type { Prisma } from '@contractor-ops/db';
+import { Prisma as PrismaClient } from '@contractor-ops/db/generated/prisma/client';
 import {
+  approvalAuditSystemLabel,
   approvalChainCreateSchema,
   approvalChainUpdateSchema,
   approvalQueueSchema,
@@ -16,6 +18,7 @@ import * as E from '../errors.js';
 import { router } from '../init.js';
 import { requirePermission } from '../middleware/rbac.js';
 import { tenantProcedure } from '../middleware/tenant.js';
+import type { TxClient } from '../services/approval-engine.js';
 import {
   advanceFlow,
   computeSlaStatus,
@@ -40,6 +43,30 @@ import { dispatch } from '../services/notification-service.js';
  */
 function plain<T>(data: T): T {
   return JSON.parse(JSON.stringify(data)) as T;
+}
+
+/** WHERE fragments for raw SQL — must stay aligned with `where` below. */
+function approvalQueueSqlConditions(
+  organizationId: string,
+  approverUserId: string | undefined,
+  input: z.infer<typeof approvalQueueSchema>,
+) {
+  const conditions = [PrismaClient.sql`s."organizationId" = ${organizationId}`];
+  if (input.tab === 'my' && approverUserId) {
+    conditions.push(PrismaClient.sql`s."approverUserId" = ${approverUserId}`);
+  }
+  const now = new Date();
+  if (input.status === 'pending') {
+    conditions.push(PrismaClient.sql`s."status" = 'PENDING'::"ApprovalStatus"`);
+  } else if (input.status === 'overdue') {
+    conditions.push(PrismaClient.sql`s."status" = 'PENDING'::"ApprovalStatus"`);
+    conditions.push(PrismaClient.sql`s."slaDeadline" < ${now}`);
+  } else if (input.status === 'approved') {
+    conditions.push(PrismaClient.sql`s."status" = 'APPROVED'::"ApprovalStatus"`);
+  } else if (input.status === 'rejected') {
+    conditions.push(PrismaClient.sql`s."status" = 'REJECTED'::"ApprovalStatus"`);
+  }
+  return conditions;
 }
 
 // ---------------------------------------------------------------------------
@@ -269,30 +296,84 @@ export const approvalRouter = router({
       }
       // "all" — no additional status filter
 
-      const [steps, total] = await Promise.all([
-        ctx.db.approvalStep.findMany({
-          where,
-          skip: (input.page - 1) * input.pageSize,
-          take: input.pageSize,
-          orderBy: { slaDeadline: input.sortOrder },
-          include: {
-            approvalFlow: {
-              select: {
-                id: true,
-                resourceId: true,
-                resourceType: true,
-                status: true,
-                startedAt: true,
-                chainConfigId: true,
-              },
-            },
-            approver: {
-              select: { id: true, name: true, email: true, image: true },
-            },
+      const stepInclude = {
+        approvalFlow: {
+          select: {
+            id: true,
+            resourceId: true,
+            resourceType: true,
+            status: true,
+            startedAt: true,
+            chainConfigId: true,
           },
-        }),
-        ctx.db.approvalStep.count({ where }),
-      ]);
+        },
+        approver: {
+          select: { id: true, name: true, email: true, image: true },
+        },
+      } satisfies Prisma.ApprovalStepInclude;
+
+      type ApprovalQueueStepRow = Prisma.ApprovalStepGetPayload<{
+        include: typeof stepInclude;
+      }>;
+
+      let steps: ApprovalQueueStepRow[];
+      let total: number;
+
+      if (input.sortBy === 'amount') {
+        const sqlConditions = approvalQueueSqlConditions(ctx.organizationId, ctx.user?.id, input);
+        const whereSql = PrismaClient.sql`WHERE ${PrismaClient.join(sqlConditions, ' AND ')}`;
+        const orderDirSql =
+          input.sortOrder === 'asc' ? PrismaClient.sql`ASC` : PrismaClient.sql`DESC`;
+        const skip = (input.page - 1) * input.pageSize;
+
+        const [idRows, totalCount] = await Promise.all([
+          ctx.db.$queryRaw<Array<{ id: string }>>`
+            SELECT s.id
+            FROM "ApprovalStep" s
+            INNER JOIN "ApprovalFlow" f ON f.id = s."approvalFlowId"
+            LEFT JOIN "Invoice" i ON i.id = f."resourceId" AND f."resourceType" = 'INVOICE'::"EntityType"
+            ${whereSql}
+            ORDER BY COALESCE(i."amountToPayMinor", 0) ${orderDirSql}
+            LIMIT ${input.pageSize} OFFSET ${skip}
+          `,
+          ctx.db.approvalStep.count({ where }),
+        ]);
+
+        total = totalCount;
+        const ids = idRows.map(r => r.id);
+
+        if (ids.length === 0) {
+          return {
+            items: [],
+            total,
+            page: input.page,
+            pageSize: input.pageSize,
+          };
+        }
+
+        const unordered = await ctx.db.approvalStep.findMany({
+          where: { id: { in: ids } },
+          include: stepInclude,
+        });
+        const order = new Map(ids.map((id, idx) => [id, idx]));
+        steps = [...unordered].sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0));
+      } else {
+        const orderBy: Prisma.ApprovalStepOrderByWithRelationInput =
+          input.sortBy === 'submitted'
+            ? { approvalFlow: { startedAt: input.sortOrder } }
+            : { slaDeadline: input.sortOrder };
+
+        [steps, total] = await Promise.all([
+          ctx.db.approvalStep.findMany({
+            where,
+            skip: (input.page - 1) * input.pageSize,
+            take: input.pageSize,
+            orderBy,
+            include: stepInclude,
+          }),
+          ctx.db.approvalStep.count({ where }),
+        ]);
+      }
 
       // Batch-fetch invoice data for all steps
       const invoiceIds = [...new Set(steps.map(s => s.approvalFlow.resourceId))];
@@ -423,7 +504,7 @@ export const approvalRouter = router({
         });
 
         // Advance flow
-        const advanceResult = await advanceFlow(tx, step.approvalFlowId);
+        const advanceResult = await advanceFlow(tx as TxClient, step.approvalFlowId);
 
         // If flow completed, update invoice status and payment status
         if (advanceResult.completed) {
@@ -529,7 +610,7 @@ export const approvalRouter = router({
               select: { displayName: true },
             })
           : null;
-        void syncPaymentDueDeadline(prisma, {
+        void syncPaymentDueDeadline(ctx.db, {
           organizationId: ctx.organizationId,
           invoiceId: result.invoice.id,
           invoiceNumber: result.invoice.invoiceNumber ?? `INV-${result.invoice.id.slice(-6)}`,
@@ -842,7 +923,7 @@ export const approvalRouter = router({
               },
             });
 
-            const advanceResult = await advanceFlow(tx, step.approvalFlowId);
+            const advanceResult = await advanceFlow(tx as TxClient, step.approvalFlowId);
 
             if (advanceResult.completed) {
               await tx.invoice.update({
@@ -866,7 +947,7 @@ export const approvalRouter = router({
                       select: { displayName: true },
                     })
                   : null;
-                void syncPaymentDueDeadline(prisma, {
+                void syncPaymentDueDeadline(ctx.db, {
                   organizationId: ctx.organizationId,
                   invoiceId: invoice.id,
                   invoiceNumber: invoice.invoiceNumber ?? `INV-${invoice.id.slice(-6)}`,
@@ -1015,7 +1096,7 @@ export const approvalRouter = router({
         }
 
         // Route to appropriate chain
-        const chainConfig = await routeToChain(tx, ctx.organizationId, {
+        const chainConfig = await routeToChain(tx as TxClient, ctx.organizationId, {
           totalMinor: invoice.totalMinor,
         });
 
@@ -1027,7 +1108,7 @@ export const approvalRouter = router({
         }
 
         // Create approval flow with snapshotted steps
-        const approvalFlow = await createApprovalFlow(tx, {
+        const approvalFlow = await createApprovalFlow(tx as TxClient, {
           organizationId: ctx.organizationId,
           resourceType: 'INVOICE',
           resourceId: invoice.id,
@@ -1082,7 +1163,7 @@ export const approvalRouter = router({
 
       // Calendar auto-push: sync approval SLA deadline (D-09)
       if (firstStep?.slaDeadline) {
-        void syncApprovalSlaDeadline(prisma, {
+        void syncApprovalSlaDeadline(ctx.db, {
           organizationId: ctx.organizationId,
           approvalFlowId: flow.approvalFlow.id,
           itemType: 'Invoice',
@@ -1216,7 +1297,7 @@ export const approvalRouter = router({
           if (breached) {
             events.push({
               type: 'system',
-              label: 'sla_breached',
+              label: approvalAuditSystemLabel.slaBreached,
               levelName: step.name,
               timestamp: step.slaDeadline.toISOString(),
             });

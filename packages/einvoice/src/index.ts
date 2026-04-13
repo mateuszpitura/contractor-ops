@@ -15,6 +15,7 @@ export type {
   ComplianceState,
   ComplianceStatus,
 } from './types/compliance.js';
+export { complianceState } from './types/compliance.js';
 // Core types
 export type {
   EInvoice,

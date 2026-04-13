@@ -34,6 +34,13 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
 }));
 
 vi.mock('@contractor-ops/db', () => ({
+  prisma: {
+    organization: {
+      findUnique: vi.fn().mockResolvedValue({ dataRegion: 'EU' }),
+    },
+  },
+  getRegionalClient: vi.fn(() => ({})),
+  createTenantClientFrom: vi.fn(() => ({ scoped: true })),
   tenantStore: {
     run: tenantStoreRun,
     getStore: vi.fn(),
@@ -113,7 +120,7 @@ describe('portalProcedure', () => {
     expect(result.organizationId).toBe('org_portal');
     expect(result.portalSubdomain).toBe('acme');
     expect(tenantStoreRun).toHaveBeenCalledWith(
-      { organizationId: 'org_portal' },
+      { organizationId: 'org_portal', region: 'EU' },
       expect.any(Function),
     );
   });

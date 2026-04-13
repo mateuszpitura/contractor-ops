@@ -13,27 +13,20 @@
 // They are legally vetted canonical forms (BfDI-aligned, DSGVO Art. 13/14;
 // UStG § 19). Steuerberater review tracked in STATE.md Blockers (D-13).
 
-export const GDPR_CONTROLLER_LABEL =
-  'Verantwortlicher im Sinne der DSGVO' as const;
-export const GDPR_RIGHTS_HEADING =
-  'Ihre Rechte als betroffene Person' as const;
+export const GDPR_CONTROLLER_LABEL = 'Verantwortlicher im Sinne der DSGVO' as const;
+export const GDPR_RIGHTS_HEADING = 'Ihre Rechte als betroffene Person' as const;
 export const GDPR_DPO_LABEL = 'Datenschutzbeauftragter' as const;
-export const GDPR_COMPLAINT_HEADING =
-  'Beschwerderecht bei der Aufsichtsbehörde' as const;
-export const TAX_USTIDNR_LABEL =
-  'Umsatzsteuer-Identifikationsnummer (USt-IdNr)' as const;
+export const GDPR_COMPLAINT_HEADING = 'Beschwerderecht bei der Aufsichtsbehörde' as const;
+export const TAX_USTIDNR_LABEL = 'Umsatzsteuer-Identifikationsnummer (USt-IdNr)' as const;
 export const TAX_STEUERNUMMER_LABEL = 'Steuernummer' as const;
 export const TAX_HANDELSREGISTER_LABEL = 'Handelsregisternummer' as const;
-export const TAX_SOZIALVERSICHERUNGSNUMMER_LABEL =
-  'Sozialversicherungsnummer' as const;
-export const TAX_KLEINUNTERNEHMER_LABEL =
-  'Kleinunternehmer gemäß § 19 UStG' as const;
+export const TAX_SOZIALVERSICHERUNGSNUMMER_LABEL = 'Sozialversicherungsnummer' as const;
+export const TAX_KLEINUNTERNEHMER_LABEL = 'Kleinunternehmer gemäß § 19 UStG' as const;
 
 // Phase 57 (D-11, D-14) — invoice-footer tax notices.
 export const TAX_KLEINUNTERNEHMER_NOTICE =
   'Gemäß § 19 UStG wird keine Umsatzsteuer ausgewiesen' as const;
-export const TAX_STEUERSCHULDNERSCHAFT =
-  'Steuerschuldnerschaft des Leistungsempfängers' as const;
+export const TAX_STEUERSCHULDNERSCHAFT = 'Steuerschuldnerschaft des Leistungsempfängers' as const;
 
 /**
  * Identifier names that the CI guard forbids in any `messages/*.json` file.

@@ -68,6 +68,7 @@ export function selectHandlers(providers: ProviderName[], options?: HandlerOptio
   return providers.flatMap(name => handlersByProvider[name](options));
 }
 
+export { clearHmrcTokenRefreshLedger } from './hmrc.js';
 export {
   clearRedisStore,
   isUpstashRedisApiHostname,
@@ -97,4 +98,3 @@ export {
   upstashRedisHandlers,
   viesHandlers,
 };
-export { clearHmrcTokenRefreshLedger } from './hmrc.js';

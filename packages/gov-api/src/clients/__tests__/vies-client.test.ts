@@ -12,11 +12,11 @@
 //   - Pre-flight isValidUstIdNr short-circuit for DE VAT
 //   - Qualified request carries query params
 
-import { createMockServer, http, HttpResponse } from '@contractor-ops/test-utils';
+import { createMockServer, HttpResponse, http } from '@contractor-ops/test-utils';
 import { viesHandlers } from '@contractor-ops/test-utils/msw/handlers';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-
-import { ViesApiError, ViesClient, type ViesClientDeps } from '../vies-client.js';
+import type { ViesClientDeps } from '../vies-client.js';
+import { ViesClient } from '../vies-client.js';
 
 // ---------------------------------------------------------------------------
 // Mock server setup
@@ -218,9 +218,11 @@ describe('ViesClient — pre-flight DE USt-IdNr short-circuit', () => {
 describe('ViesClient — rate limiting', () => {
   it('throws ViesApiError(429) when rate limit denies the request', async () => {
     const client = makeClient();
-    (client as unknown as {
-      rateLimiter: { checkLimit: (id: string) => Promise<{ allowed: boolean }> };
-    }).rateLimiter = {
+    (
+      client as unknown as {
+        rateLimiter: { checkLimit: (id: string) => Promise<{ allowed: boolean }> };
+      }
+    ).rateLimiter = {
       checkLimit: async () => ({ allowed: false, remaining: 0, resetMs: 1000 }),
     };
 

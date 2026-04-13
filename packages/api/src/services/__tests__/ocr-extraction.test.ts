@@ -99,7 +99,7 @@ describe('ocr-extraction', () => {
       mockCheckCredit.mockResolvedValueOnce({
         allowed: false,
         remaining: 0,
-        reason: 'no_subscription',
+        reason: 'noSubscription',
         stripeCustomerId: null,
       });
 
@@ -109,7 +109,7 @@ describe('ocr-extraction', () => {
         storageKey: 'k/pdf',
       });
 
-      expect(out).toEqual({ error: 'no_subscription', remaining: 0 });
+      expect(out).toEqual({ error: 'noSubscription', remaining: 0 });
       expect(mockCreate).not.toHaveBeenCalled();
       expect(mockPublishJSON).not.toHaveBeenCalled();
     });

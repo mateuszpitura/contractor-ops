@@ -174,7 +174,7 @@ describe('invoiceListSchema', () => {
     if (result.success) {
       expect(result.data.page).toBe(1);
       expect(result.data.pageSize).toBe(25);
-      expect(result.data.sortBy).toBe('received_at');
+      expect(result.data.sortBy).toBe('receivedAt');
       expect(result.data.sortOrder).toBe('desc');
     }
   });

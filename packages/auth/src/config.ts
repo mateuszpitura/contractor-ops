@@ -148,3 +148,11 @@ export const auth = betterAuth({
 
 /** Session type inferred from the auth configuration */
 export type Session = typeof auth.$Infer.Session;
+
+/**
+ * Better Auth `api` surface with plugins (organization, admin, …). Prefer over `auth.api`
+ * where you want an explicit type.
+ */
+export type AuthServerAPI = typeof auth.api;
+
+export const authApi: AuthServerAPI = auth.api;

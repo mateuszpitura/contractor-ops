@@ -1,18 +1,7 @@
-import {
-  Document,
-  Page,
-  StyleSheet,
-  Text,
-  View,
-  type DocumentProps,
-} from '@react-pdf/renderer';
-import {
-  dePrivacyNotice,
-  euPrivacyNotice,
-  gbPrivacyNotice,
-  type PrivacyNoticeStructured,
-  type SupportedJurisdiction,
-} from '@contractor-ops/validators';
+import type { PrivacyNoticeStructured, SupportedJurisdiction } from '@contractor-ops/validators';
+import { dePrivacyNotice, euPrivacyNotice, gbPrivacyNotice } from '@contractor-ops/validators';
+import type { DocumentProps } from '@react-pdf/renderer';
+import { Document, Page, StyleSheet, Text, View } from '@react-pdf/renderer';
 
 export interface GdprPrivacyNoticeTemplateProps {
   jurisdiction: 'GB' | 'DE' | 'EU';
@@ -154,9 +143,7 @@ export function GdprPrivacyNoticeTemplate({
             {organization.name}
             {organization.countryCode ? ` · ${organization.countryCode}` : ''}
           </Text>
-          <Text style={styles.versionLine}>
-            {notice.legalReference}
-          </Text>
+          <Text style={styles.versionLine}>{notice.legalReference}</Text>
         </View>
 
         {notice.sections.map((section, index) => (

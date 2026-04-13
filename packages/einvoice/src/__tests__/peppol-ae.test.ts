@@ -85,10 +85,10 @@ describe('PeppolAEProfile', () => {
     expect(profile.sign).toBeUndefined();
   });
 
-  it('returns not_connected compliance status without fetcher', async () => {
+  it('returns notConnected compliance status without fetcher', async () => {
     const profile = new PeppolAEProfile();
     const status = await profile.getComplianceStatus('org-1');
-    expect(status.state).toBe('not_connected');
+    expect(status.state).toBe('notConnected');
     expect(status.profileId).toBe('peppol-ae');
     expect(status.country).toBe('AE');
   });

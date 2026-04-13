@@ -3,6 +3,15 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mockGetSubscription = vi.fn();
 
+const { mockPrisma } = vi.hoisted(() => {
+  const mockPrisma = {
+    organization: {
+      findUnique: vi.fn().mockResolvedValue({ dataRegion: 'EU' }),
+    },
+  };
+  return { mockPrisma };
+});
+
 vi.mock('../../services/billing-service.js', () => ({
   getSubscription: (...args: any[]) => mockGetSubscription(...args),
 }));
@@ -32,10 +41,13 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
 }));
 
 vi.mock('@contractor-ops/db', () => ({
+  prisma: mockPrisma,
   tenantStore: {
-    run: (_ctx: { organizationId: string }, fn: () => unknown) => fn(),
+    run: (_ctx: { organizationId: string; region: string }, fn: () => unknown) => fn(),
     getStore: vi.fn(),
   },
+  getRegionalClient: vi.fn(() => mockPrisma),
+  createTenantClientFrom: vi.fn((client: unknown) => client),
 }));
 
 import { t } from '../../init.js';

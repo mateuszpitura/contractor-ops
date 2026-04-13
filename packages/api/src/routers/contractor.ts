@@ -502,11 +502,24 @@ export const contractorRouter = router({
         ...companyFields,
       };
 
-      if (ownerUserId !== undefined) updateData.ownerUserId = ownerUserId ?? null;
-      if (primaryTeamId !== undefined) updateData.primaryTeamId = primaryTeamId ?? null;
-      if (primaryProjectId !== undefined) updateData.primaryProjectId = primaryProjectId ?? null;
-      if (defaultCostCenterId !== undefined)
-        updateData.defaultCostCenterId = defaultCostCenterId ?? null;
+      if (ownerUserId !== undefined) {
+        updateData.owner = ownerUserId ? { connect: { id: ownerUserId } } : { disconnect: true };
+      }
+      if (primaryTeamId !== undefined) {
+        updateData.primaryTeam = primaryTeamId
+          ? { connect: { id: primaryTeamId } }
+          : { disconnect: true };
+      }
+      if (primaryProjectId !== undefined) {
+        updateData.primaryProject = primaryProjectId
+          ? { connect: { id: primaryProjectId } }
+          : { disconnect: true };
+      }
+      if (defaultCostCenterId !== undefined) {
+        updateData.defaultCostCenter = defaultCostCenterId
+          ? { connect: { id: defaultCostCenterId } }
+          : { disconnect: true };
+      }
 
       // Update customFieldsJson for billing fields
       if (billingModel !== undefined || rateValueMinor !== undefined) {

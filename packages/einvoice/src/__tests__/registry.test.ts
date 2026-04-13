@@ -28,7 +28,7 @@ function createMockProfile(id: string): EInvoiceProfile {
     async getComplianceStatus(_orgId: string): Promise<ComplianceStatus> {
       return {
         profileId: id,
-        state: 'not_connected',
+        state: 'notConnected',
         country: 'XX',
         displayName: `Mock (${id})`,
         healthScore: 0,

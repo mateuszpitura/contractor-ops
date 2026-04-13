@@ -408,7 +408,7 @@ export const equipmentCouriersRouter = router({
 
       // 6. Check workflow task completion
       if (input.workflowTaskRunId && shipments[0]) {
-        void checkShipmentTaskCompletion(prisma, ctx.organizationId, {
+        void checkShipmentTaskCompletion(ctx.db, ctx.organizationId, {
           id: shipments[0].id,
           workflowTaskRunId: input.workflowTaskRunId,
           direction: input.direction,
@@ -595,7 +595,7 @@ export const equipmentCouriersRouter = router({
 
       // 6. Check workflow task completion
       if (input.workflowTaskRunId && shipments[0]) {
-        void checkShipmentTaskCompletion(prisma, ctx.organizationId, {
+        void checkShipmentTaskCompletion(ctx.db, ctx.organizationId, {
           id: shipments[0].id,
           workflowTaskRunId: input.workflowTaskRunId,
           direction: input.direction,

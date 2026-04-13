@@ -19,6 +19,21 @@ const ORG_ID = 'clxxxxxxxxxxxxxxxxxxxxxxxxx';
 const USER_ID = 'clyyyyyyyyyyyyyyyyyyyyyyyy';
 const REQUEST_ID = 'clrequest000000000000001';
 
+// Router calls `authApi.*`; tests assert on `auth.api.*` (same hoisted object).
+const { settingsAuthApi } = vi.hoisted(() => ({
+  settingsAuthApi: {
+    getSession: vi.fn(),
+    hasPermission: vi.fn().mockResolvedValue({ success: true }),
+    getFullOrganization: vi.fn(async () => ({
+      id: 'clxxxxxxxxxxxxxxxxxxxxxxxxx',
+      name: 'Test Org',
+      slug: 'test-org',
+      metadata: { legalName: 'Test Org LLC', fiscalYearStartMonth: 1 },
+    })),
+    updateOrganization: vi.fn(async () => ({ id: 'clxxxxxxxxxxxxxxxxxxxxxxxxx' })),
+  },
+}));
+
 // ---------------------------------------------------------------------------
 // Mock Prisma
 // ---------------------------------------------------------------------------
@@ -48,6 +63,13 @@ const { mockPrisma } = vi.hoisted(() => {
   return { mockPrisma };
 });
 
+/** Tenant middleware resolves region via `organization.findUnique` before handler Prisma calls. */
+function orgFindUniqueAfterTenant(result: Record<string, unknown> | null) {
+  mockPrisma.organization.findUnique
+    .mockResolvedValueOnce({ dataRegion: 'EU' })
+    .mockResolvedValueOnce(result);
+}
+
 // ---------------------------------------------------------------------------
 // Mock service functions (hoisted)
 // ---------------------------------------------------------------------------
@@ -62,31 +84,21 @@ const { mockApproveChangeRequest, mockRejectChangeRequest } = vi.hoisted(() => (
 // ---------------------------------------------------------------------------
 
 vi.mock('@contractor-ops/auth', () => ({
-  auth: {
-    api: {
-      getSession: vi.fn(),
-      hasPermission: vi.fn().mockResolvedValue({ success: true }),
-      getFullOrganization: vi.fn(async () => ({
-        id: ORG_ID,
-        name: 'Test Org',
-        slug: 'test-org',
-        metadata: { legalName: 'Test Org LLC', fiscalYearStartMonth: 1 },
-      })),
-      updateOrganization: vi.fn(async (_opts: unknown) => ({ id: ORG_ID })),
-    },
-  },
+  auth: { api: settingsAuthApi },
+  authApi: settingsAuthApi,
 }));
 
 vi.mock('@contractor-ops/db', () => ({
   prisma: mockPrisma,
   tenantStore: {
     run: (_ctx: unknown, fn: () => unknown) => fn(),
-    getStore: vi.fn(),
+    getStore: vi.fn(() => ({ region: 'EU' })),
   },
   withTenantScope: vi.fn((c: unknown) => c),
   withSoftDelete: vi.fn((c: unknown) => c),
   createTenantClient: vi.fn(() => mockPrisma),
   createTenantClientFrom: vi.fn(() => mockPrisma),
+  getRegionalClient: vi.fn(() => mockPrisma),
 }));
 
 vi.mock('../../services/portal-change-request.js', () => ({
@@ -372,7 +384,7 @@ describe('settings.update', () => {
 
 describe('settings.getExpiryReminderDefaults', () => {
   it('returns configured reminder days from settingsJson', async () => {
-    mockPrisma.organization.findUnique.mockResolvedValueOnce({
+    orgFindUniqueAfterTenant({
       settingsJson: { contractExpiryReminderDaysBefore: [14, 30, 60] },
     });
 
@@ -386,7 +398,7 @@ describe('settings.getExpiryReminderDefaults', () => {
   });
 
   it('falls back to [30, 60, 90] when no settingsJson exists', async () => {
-    mockPrisma.organization.findUnique.mockResolvedValueOnce(null);
+    orgFindUniqueAfterTenant(null);
 
     const result = await caller.settings.getExpiryReminderDefaults();
 
@@ -396,7 +408,7 @@ describe('settings.getExpiryReminderDefaults', () => {
 
 describe('settings.updateExpiryReminderDefaults', () => {
   it('merges new reminderDaysBefore into existing settingsJson', async () => {
-    mockPrisma.organization.findUnique.mockResolvedValueOnce({
+    orgFindUniqueAfterTenant({
       settingsJson: { brandColor: '#FF0000', contractExpiryReminderDaysBefore: [30, 60, 90] },
     });
 
@@ -418,7 +430,7 @@ describe('settings.updateExpiryReminderDefaults', () => {
 
 describe('settings.getBranding', () => {
   it('returns brandColor from settingsJson and logo from org', async () => {
-    mockPrisma.organization.findUnique.mockResolvedValueOnce({
+    orgFindUniqueAfterTenant({
       logo: 'https://cdn.example.com/logo.png',
       settingsJson: { brandColor: '#3366FF' },
     });
@@ -432,7 +444,7 @@ describe('settings.getBranding', () => {
   });
 
   it('returns null for brandColor when not set in settingsJson', async () => {
-    mockPrisma.organization.findUnique.mockResolvedValueOnce({
+    orgFindUniqueAfterTenant({
       logo: null,
       settingsJson: {},
     });
@@ -445,7 +457,7 @@ describe('settings.getBranding', () => {
 
 describe('settings.updateBranding', () => {
   it('merges brandColor into existing settingsJson without replacing other keys', async () => {
-    mockPrisma.organization.findUnique.mockResolvedValueOnce({
+    orgFindUniqueAfterTenant({
       settingsJson: { existingKey: 'keep-me', brandColor: '#000000' },
       logo: 'old-logo.png',
     });
@@ -467,7 +479,7 @@ describe('settings.updateBranding', () => {
   });
 
   it('removes brandColor from settingsJson when set to null', async () => {
-    mockPrisma.organization.findUnique.mockResolvedValueOnce({
+    orgFindUniqueAfterTenant({
       settingsJson: { brandColor: '#123456', other: 'value' },
       logo: null,
     });
@@ -485,7 +497,7 @@ describe('settings.updateBranding', () => {
 
 describe('settings.getPortalDomain', () => {
   it('returns slug, portalSubdomain, and portalCustomDomain', async () => {
-    mockPrisma.organization.findUnique.mockResolvedValueOnce({
+    orgFindUniqueAfterTenant({
       slug: 'test-org',
       portalSubdomain: 'my-portal',
       portalCustomDomain: 'portal.example.com',

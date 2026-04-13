@@ -5,8 +5,8 @@ import { TRPCError } from '@trpc/server';
 // Types
 // ---------------------------------------------------------------------------
 
-/** Prisma transaction client type (subset of PrismaClient) */
-type TxClient = Parameters<Parameters<PrismaClient['$transaction']>[0]>[0];
+/** Prisma interactive transaction client (subset of PrismaClient). */
+export type TxClient = Parameters<Parameters<PrismaClient['$transaction']>[0]>[0];
 
 interface StepConfig {
   name: string;

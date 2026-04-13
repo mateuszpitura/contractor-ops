@@ -1,6 +1,7 @@
 import { createHash, randomBytes } from 'node:crypto';
 import { prisma } from '@contractor-ops/db';
-import { Resend } from 'resend';
+import { getServerEnv } from '@contractor-ops/validators';
+import { sendAppEmail } from './app-email.js';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -8,17 +9,6 @@ import { Resend } from 'resend';
 
 /** Magic link tokens expire after 15 minutes. */
 const MAGIC_LINK_EXPIRY_MS = 15 * 60 * 1000;
-
-// ---------------------------------------------------------------------------
-// Resend client (lazy init — mirrors notification-service.ts pattern)
-// ---------------------------------------------------------------------------
-
-let resendClient: Resend | null = null;
-
-function getResend(): Resend {
-  resendClient ??= new Resend(process.env.RESEND_API_KEY);
-  return resendClient;
-}
 
 // ---------------------------------------------------------------------------
 // Magic link token management
@@ -113,8 +103,9 @@ export async function findContractorsByEmail(email: string) {
 // ---------------------------------------------------------------------------
 
 /**
- * Send a portal magic link email.
- * Uses Resend in production (when RESEND_API_KEY is set) and console.log in dev.
+ * Send a portal magic link email via Resend or dev SMTP (see {@link sendAppEmail}).
+ *
+ * `RESEND_API_KEY` and `EMAIL_FROM` are required by the app server env schema — this runs only in a validated process.
  *
  * The caller should check if contractors exist for the email but ALWAYS show
  * the same "check your email" response to prevent enumeration (Pitfall 2 / D-16).
@@ -126,18 +117,15 @@ export async function sendPortalMagicLink(opts: {
 }): Promise<void> {
   const magicLinkUrl = `${opts.baseUrl}/portal/login/verify?token=${opts.token}`;
 
-  if (process.env.RESEND_API_KEY) {
-    const resend = getResend();
-    await resend.emails.send({
-      from: process.env.EMAIL_FROM ?? 'noreply@contractor-ops.com',
-      to: opts.email,
-      subject: 'Sign in to Contractor Portal',
-      html: `
+  await sendAppEmail({
+    from: getServerEnv().EMAIL_FROM,
+    to: opts.email,
+    subject: 'Sign in to Contractor Portal',
+    html: `
         <p>Click the link below to sign in to the Contractor Portal:</p>
         <p><a href="${magicLinkUrl}">Sign in to Portal</a></p>
         <p>This link expires in 15 minutes.</p>
         <p>If you did not request this, you can safely ignore this email.</p>
       `.trim(),
-    });
-  }
+  });
 }

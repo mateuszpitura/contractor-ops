@@ -20,6 +20,9 @@ const { ORG_ID, USER_ID, mockPrisma, mockGenerateAuditCsv } = vi.hoisted(() => {
   type Rec = Record<string, any>;
 
   const mockPrisma: Rec = {
+    organization: {
+      findUnique: vi.fn().mockResolvedValue({ dataRegion: 'EU' }),
+    },
     auditLog: {
       findMany: vi.fn(async () => []),
       count: vi.fn(async () => 0),
@@ -46,18 +49,22 @@ vi.mock('@contractor-ops/auth', () => ({
       hasPermission: vi.fn().mockResolvedValue({ success: true }),
     },
   },
+  authApi: {
+    hasPermission: vi.fn().mockResolvedValue({ success: true }),
+  },
 }));
 
 vi.mock('@contractor-ops/db', () => ({
   prisma: mockPrisma,
   tenantStore: {
     run: (_ctx: unknown, fn: () => unknown) => fn(),
-    getStore: vi.fn(),
+    getStore: vi.fn(() => ({ region: 'EU' })),
   },
   withTenantScope: vi.fn((c: unknown) => c),
   withSoftDelete: vi.fn((c: unknown) => c),
   createTenantClient: vi.fn(() => mockPrisma),
   createTenantClientFrom: vi.fn(() => mockPrisma),
+  getRegionalClient: vi.fn(() => mockPrisma),
 }));
 
 vi.mock('../../services/report-export.js', () => ({
@@ -460,10 +467,10 @@ describe('audit router', () => {
       const sourceDir = path.resolve(import.meta.dirname, '../../routers');
       const source = fs.readFileSync(path.join(sourceDir, 'audit.ts'), 'utf-8');
 
-      expect(source).toContain('import { requireTier } from "../middleware/tier.js"');
-      expect(source).toContain('requireTier("ENTERPRISE")');
+      expect(source).toContain("import { requireTier } from '../middleware/tier.js'");
+      expect(source).toContain("requireTier('ENTERPRISE')");
 
-      const matches = source.match(/\.use\(requireTier\("ENTERPRISE"\)\)/g);
+      const matches = source.match(/\.use\(requireTier\('ENTERPRISE'\)\)/g);
       expect(matches).toHaveLength(1);
     });
   });

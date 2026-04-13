@@ -1,12 +1,9 @@
 'use client';
 
+import type { DeCountryFields, UkCountryFields } from '@contractor-ops/validators';
 import { AlertCircle, Check, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import type {
-  DeCountryFields,
-  UkCountryFields,
-} from '@contractor-ops/validators';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -111,17 +108,13 @@ export function CountryComplianceSection({ contractorId }: CountryComplianceSect
         {countryCode === 'GB' && (
           <UkComplianceFields
             values={merged as Partial<UkCountryFields>}
-            onChange={(key, val) =>
-              setFormData(prev => ({ ...prev, [key]: val }))
-            }
+            onChange={(key, val) => setFormData(prev => ({ ...prev, [key]: val }))}
           />
         )}
         {countryCode === 'DE' && (
           <DeComplianceFields
             values={merged as Partial<DeCountryFields>}
-            onChange={(key, val) =>
-              setFormData(prev => ({ ...prev, [key]: val }))
-            }
+            onChange={(key, val) => setFormData(prev => ({ ...prev, [key]: val }))}
           />
         )}
         <Button onClick={handleSave} disabled={updateMutation.isPending} className="mt-4">

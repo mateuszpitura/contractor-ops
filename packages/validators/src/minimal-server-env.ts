@@ -1,0 +1,66 @@
+/**
+ * Minimal env object that passes {@link serverEnvSchema} — for unit tests and
+ * Vitest `test.env` so modules calling {@link getServerEnv} at import time load safely.
+ */
+
+const HEX32 = 'a'.repeat(64);
+
+export function minimalServerEnv(): Record<string, string> {
+  return {
+    NODE_ENV: 'development',
+    NEXT_PUBLIC_APP_URL: 'http://localhost:3000',
+    APP_URL: 'http://localhost:3000',
+    DATABASE_URL: 'postgresql://u:p@localhost:5432/db',
+    DATABASE_URL_EU: 'postgresql://u:p@localhost:5432/db_eu',
+    DATABASE_URL_ME: 'postgresql://u:p@localhost:5432/db_me',
+    BETTER_AUTH_SECRET: '1234567890123456',
+    BETTER_AUTH_URL: 'http://localhost:3000',
+    GOOGLE_CLIENT_ID: 'g',
+    GOOGLE_CLIENT_SECRET: 'g',
+    MICROSOFT_CLIENT_ID: 'm',
+    MICROSOFT_CLIENT_SECRET: 'm',
+    STRIPE_SECRET_KEY: 'sk_test_xxxxxxxx',
+    STRIPE_WEBHOOK_SECRET: 'whsec_xxxxxxxx',
+    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: 'pk_test_xxxx',
+    STRIPE_PRICE_STARTER: 'price_1',
+    STRIPE_PRICE_PRO: 'price_2',
+    STRIPE_PRICE_ENTERPRISE: 'price_3',
+    NEXT_PUBLIC_STRIPE_PRICE_TOPUP_10: 'price_t10',
+    NEXT_PUBLIC_STRIPE_PRICE_TOPUP_25: 'price_t25',
+    NEXT_PUBLIC_STRIPE_PRICE_TOPUP_50: 'price_t50',
+    RESEND_API_KEY: 're_xxx',
+    RESEND_WEBHOOK_SECRET: 'wh_xxx',
+    R2_ACCOUNT_ID: 'r2',
+    R2_ACCESS_KEY_ID: 'key',
+    R2_SECRET_ACCESS_KEY: 'secret',
+    SLACK_CLIENT_ID: 's',
+    SLACK_CLIENT_SECRET: 's',
+    SLACK_SIGNING_SECRET: 'sig',
+    SLACK_TOKEN_ENCRYPTION_KEY: HEX32,
+    JIRA_CLIENT_ID: 'j',
+    JIRA_CLIENT_SECRET: 'j',
+    DOCUSIGN_CLIENT_ID: 'd',
+    DOCUSIGN_CLIENT_SECRET: 'd',
+    AUTENTI_CLIENT_ID: 'a',
+    AUTENTI_CLIENT_SECRET: 'a',
+    NOTION_CLIENT_ID: 'n',
+    NOTION_CLIENT_SECRET: 'n',
+    CONFLUENCE_CLIENT_ID: 'c',
+    CONFLUENCE_CLIENT_SECRET: 'c',
+    GOOGLE_CALENDAR_CLIENT_ID: 'gc',
+    GOOGLE_CALENDAR_CLIENT_SECRET: 'gc',
+    OUTLOOK_CALENDAR_CLIENT_ID: 'oc',
+    OUTLOOK_CALENDAR_CLIENT_SECRET: 'oc',
+    LINEAR_CLIENT_ID: 'l',
+    LINEAR_CLIENT_SECRET: 'l',
+    BANK_ACCOUNT_ENCRYPTION_KEY: HEX32,
+    ANTHROPIC_API_KEY: 'sk-ant-xxx',
+    QSTASH_TOKEN: 'q',
+    QSTASH_CURRENT_SIGNING_KEY: 'sig1',
+    QSTASH_NEXT_SIGNING_KEY: 'sig2',
+    CRON_SECRET: '1234567890123456',
+    /** So `cache.getRedis()` can resolve in Vitest without stale-cache surprises */
+    UPSTASH_REDIS_REST_URL: 'https://placeholder.upstash.io',
+    UPSTASH_REDIS_REST_TOKEN: 'local-test-token',
+  };
+}

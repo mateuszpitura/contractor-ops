@@ -28,6 +28,9 @@ const {
   type Rec = Record<string, any>;
 
   const mockPrisma: Rec = {
+    organization: {
+      findUnique: vi.fn().mockResolvedValue({ dataRegion: 'EU' }),
+    },
     contractor: {
       findMany: vi.fn(async () => []),
       count: vi.fn(async () => 0),
@@ -72,6 +75,9 @@ vi.mock('@contractor-ops/auth', () => ({
       hasPermission: vi.fn().mockResolvedValue({ success: true }),
     },
   },
+  authApi: {
+    hasPermission: vi.fn().mockResolvedValue({ success: true }),
+  },
 }));
 
 vi.mock('@contractor-ops/db', () => ({
@@ -83,12 +89,13 @@ vi.mock('@contractor-ops/db', () => ({
   },
   tenantStore: {
     run: (_ctx: unknown, fn: () => unknown) => fn(),
-    getStore: vi.fn(),
+    getStore: vi.fn(() => ({ region: 'EU' })),
   },
   withTenantScope: vi.fn((c: unknown) => c),
   withSoftDelete: vi.fn((c: unknown) => c),
   createTenantClient: vi.fn(() => mockPrisma),
   createTenantClientFrom: vi.fn(() => mockPrisma),
+  getRegionalClient: vi.fn(() => mockPrisma),
 }));
 
 // Need to also mock the Prisma client subpath since report.ts imports from there

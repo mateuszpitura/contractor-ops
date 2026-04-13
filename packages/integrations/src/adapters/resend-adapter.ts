@@ -15,15 +15,12 @@ const EMAIL_DOMAIN_SUFFIX = '.contractorhub.io';
 /**
  * Integration adapter for Resend (email webhook provider).
  *
- * Supports:
- * - Webhook signature verification via Svix headers
- * - Webhook processing for inbound email events
+ * Signature verification matches `apps/web/.../webhooks/resend-inbound/route.ts`
+ * (legacy URL) and unified `/api/webhooks/resend`.
  *
- * Does NOT support OAuth (Resend is API-key / webhook-only).
- *
- * Env vars required:
- * - RESEND_WEBHOOK_SECRET — for Svix signature verification
- * - RESEND_API_KEY — for Resend SDK initialization
+ * Inbound processing runs in `apps/web/.../webhooks/_process` via
+ * `@contractor-ops/api/services/resend-email-intake` (not in this package, to
+ * avoid pulling Prisma/R2 into integrations).
  */
 export class ResendAdapter extends BaseAdapter {
   readonly slug = 'resend';
@@ -31,17 +28,6 @@ export class ResendAdapter extends BaseAdapter {
   readonly supportsOAuth = false;
   readonly supportsWebhooks = true;
 
-  // -------------------------------------------------------------------------
-  // Webhook Verification
-  // -------------------------------------------------------------------------
-
-  /**
-   * Verifies Resend webhook signature using Svix headers.
-   * Mirrors the exact logic from apps/web/src/app/api/webhooks/resend-inbound/route.ts.
-   *
-   * Required headers: svix-id, svix-timestamp, svix-signature
-   * Required env: RESEND_WEBHOOK_SECRET, RESEND_API_KEY
-   */
   verifyWebhookSignature(
     rawBody: string,
     headers: Record<string, string>,
@@ -73,65 +59,41 @@ export class ResendAdapter extends BaseAdapter {
         webhookSecret,
       });
 
-      // Extract event type
       const eventType = (event as { type?: string }).type ?? 'unknown';
 
-      // Attempt to resolve organizationId from recipient email domain
-      let organizationId: string | undefined;
+      let organizationSlug: string | undefined;
       try {
         const data = (event as { data?: { to?: string[] } }).data;
         const toAddresses = data?.to ?? [];
         for (const addr of toAddresses) {
           const slug = parseOrgSlugFromEmail(addr);
           if (slug) {
-            // Note: actual org lookup (prisma.organization.findFirst) happens
-            // in the webhook route layer. Here we pass the slug as a hint.
-            organizationId = slug;
+            organizationSlug = slug;
             break;
           }
         }
       } catch {
-        // If parsing fails, organizationId stays undefined
+        // organizationSlug stays undefined
       }
 
       return {
         valid: true,
         eventType,
-        organizationId,
+        organizationSlug,
       };
     } catch {
       return { valid: false };
     }
   }
 
-  // -------------------------------------------------------------------------
-  // Webhook Processing
-  // -------------------------------------------------------------------------
-
   /**
-   * Processes a verified Resend webhook payload.
-   * Stub for Plan 02 — the actual email processing logic remains in the
-   * resend-inbound route until full migration in Plan 03.
+   * No-op: real work runs in `_process` via `processResendWebhookDelivery`.
    */
-  async handleWebhook(
-    payload: unknown,
-    _organizationId: string,
-    _connectionId: string,
-  ): Promise<void> {
-    const _typedPayload = payload as { type?: string };
-    // Plan 03 will wire the full email processing logic here
+  async handleWebhook(): Promise<void> {
+    return;
   }
 }
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-/**
- * Extracts the org slug from a recipient email address.
- * Handles both "invoices@slug.contractorhub.io" and
- * "Display Name <invoices@slug.contractorhub.io>" formats.
- */
 function parseOrgSlugFromEmail(toAddress: string): string | null {
   const bracketMatch = toAddress.match(/<([^>]+)>/);
   const email = bracketMatch ? bracketMatch[1]! : toAddress.trim();

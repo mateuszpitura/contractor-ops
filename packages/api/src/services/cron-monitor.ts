@@ -1,3 +1,5 @@
+import { getServerEnv } from '@contractor-ops/validators';
+
 /**
  * Cron job monitoring via Cronitor heartbeats.
  *
@@ -28,7 +30,7 @@ type PingState = 'run' | 'complete' | 'fail';
  * Send a heartbeat ping to Cronitor. Fire-and-forget — never throws.
  */
 async function ping(monitorKey: string, state: PingState, message?: string): Promise<void> {
-  const apiKey = process.env.CRONITOR_API_KEY;
+  const apiKey = getServerEnv().CRONITOR_API_KEY;
   if (!apiKey) return;
 
   const url = new URL(`${CRONITOR_PING_URL}/${apiKey}/${monitorKey}`);

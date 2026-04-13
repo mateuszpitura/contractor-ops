@@ -1,4 +1,5 @@
 import type { SubscriptionTier } from '@contractor-ops/db/generated/prisma/client';
+import { getServerEnv } from '@contractor-ops/validators';
 
 /** Monthly OCR credit allowance per tier for active subscriptions (D-06) */
 export const TIER_CREDIT_ALLOWANCE: Record<SubscriptionTier, number> = {
@@ -10,6 +11,8 @@ export const TIER_CREDIT_ALLOWANCE: Record<SubscriptionTier, number> = {
 /** OCR credit allowance for trial subscriptions per D-08 */
 export const TRIAL_CREDIT_ALLOWANCE = 5;
 
+const stripeEnv = getServerEnv();
+
 /**
  * Maps Stripe Price IDs to subscription tiers.
  * Uses env vars so prices are configurable without code changes.
@@ -18,9 +21,9 @@ export const TRIAL_CREDIT_ALLOWANCE = 5;
 export const PRICE_TO_TIER_MAP: Record<string, SubscriptionTier> = Object.fromEntries(
   (
     [
-      [process.env.STRIPE_PRICE_STARTER, 'STARTER'],
-      [process.env.STRIPE_PRICE_PRO, 'PRO'],
-      [process.env.STRIPE_PRICE_ENTERPRISE, 'ENTERPRISE'],
+      [stripeEnv.STRIPE_PRICE_STARTER, 'STARTER'],
+      [stripeEnv.STRIPE_PRICE_PRO, 'PRO'],
+      [stripeEnv.STRIPE_PRICE_ENTERPRISE, 'ENTERPRISE'],
     ] as const
   ).filter(([key]) => key),
 ) as Record<string, SubscriptionTier>;
@@ -44,9 +47,9 @@ export function resolveTierFromPriceId(priceId: string): SubscriptionTier {
 export const TOPUP_PRICE_TO_CREDITS: Record<string, number> = Object.fromEntries(
   (
     [
-      [process.env.NEXT_PUBLIC_STRIPE_PRICE_TOPUP_10, 10],
-      [process.env.NEXT_PUBLIC_STRIPE_PRICE_TOPUP_25, 25],
-      [process.env.NEXT_PUBLIC_STRIPE_PRICE_TOPUP_50, 50],
+      [stripeEnv.NEXT_PUBLIC_STRIPE_PRICE_TOPUP_10, 10],
+      [stripeEnv.NEXT_PUBLIC_STRIPE_PRICE_TOPUP_25, 25],
+      [stripeEnv.NEXT_PUBLIC_STRIPE_PRICE_TOPUP_50, 50],
     ] as const
   ).filter(([key]) => key),
 );

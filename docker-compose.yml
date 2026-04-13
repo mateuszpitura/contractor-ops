@@ -1,13 +1,22 @@
-# Local services: ClamAV (default), optional self-hosted Infisical (profile `infisical`).
-# Security: bind ports below to localhost only on shared machines (e.g. docker compose port
-#   "127.0.0.1:3310:3310") — do not expose ClamAV/Infisical UI to untrusted networks.
+# Local services: ClamAV (default), optional Infisical (`infisical`), optional dev tooling (`dev-tooling`).
+#
+# Security: bind ports below to localhost only on shared machines — see 127.0.0.1 prefixes on Infisical/dev services.
+#
 # Infisical: cp docker/infisical.env.example docker/infisical.env, set secrets, then:
 #   docker compose --profile infisical up -d
-# UI: http://localhost:8090 — override with INFISICAL_HTTP_PORT
+# UI: http://localhost:8090 (nginx → Infisical backend). Override with INFISICAL_HTTP_PORT.
+#
+# Dev email + S3 + DB/Redis UIs + portal:
+#   docker compose --profile infisical --profile dev-tooling up -d
+# Open http://localhost:8888 for links (dev-portal). Mailpit: :8025. MinIO console: :9001 (API :9000). CloudBeaver: :8978.
+#
+# Postgres 17: if you previously ran pg14 from this compose, stop containers, then either
+#   docker volume rm contractor-ops_infisical_pg_data
+#   (data loss) or pg_dump before upgrade and restore after.
 
 services:
   clamav:
-    image: clamav/clamav-debian:1.4
+    image: clamav/clamav-debian:1.5.2
     container_name: contractor-ops-clamav
     restart: unless-stopped
     ports:
@@ -35,8 +44,6 @@ services:
       infisical-redis:
         condition: service_started
     env_file: ./docker/infisical.env
-    ports:
-      - "${INFISICAL_HTTP_PORT:-8090}:8080"
     environment:
       NODE_ENV: production
     healthcheck:
@@ -52,9 +59,30 @@ services:
     networks:
       - infisical
 
+  infisical-gateway:
+    profiles: [infisical]
+    image: nginx:1.28-alpine
+    container_name: contractor-ops-infisical-gateway
+    restart: unless-stopped
+    depends_on:
+      infisical-backend:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:${INFISICAL_HTTP_PORT:-8090}:80"
+    volumes:
+      - ./docker/nginx/infisical-main.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/nginx/infisical-gateway.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - infisical
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   infisical-redis:
     profiles: [infisical]
-    image: redis:7-alpine
+    image: redis:8-alpine
     container_name: contractor-ops-infisical-redis
     restart: unless-stopped
     volumes:
@@ -64,7 +92,7 @@ services:
 
   infisical-db:
     profiles: [infisical]
-    image: postgres:14-alpine
+    image: postgres:17-alpine
     container_name: contractor-ops-infisical-db
     restart: unless-stopped
     env_file: ./docker/infisical.env
@@ -78,6 +106,92 @@ services:
       timeout: 10s
       retries: 10
 
+  mailpit:
+    profiles: [dev-tooling]
+    image: axllent/mailpit:v1.29.6
+    container_name: contractor-ops-mailpit
+    restart: unless-stopped
+    networks:
+      - infisical
+    ports:
+      - "127.0.0.1:${MAILPIT_UI_PORT:-8025}:8025"
+      - "127.0.0.1:${MAILPIT_SMTP_PORT:-1025}:1025"
+
+  minio:
+    profiles: [dev-tooling]
+    image: minio/minio:RELEASE.2025-09-07T16-13-09Z
+    container_name: contractor-ops-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
+    volumes:
+      - minio_data:/data
+    ports:
+      - "127.0.0.1:${MINIO_API_PORT:-9000}:9000"
+      - "127.0.0.1:${MINIO_CONSOLE_PORT:-9001}:9001"
+
+  cloudbeaver:
+    profiles: [dev-tooling]
+    image: dbeaver/cloudbeaver:24.3.5
+    container_name: contractor-ops-cloudbeaver
+    restart: unless-stopped
+    volumes:
+      - cloudbeaver_workspace:/opt/cloudbeaver/workspace
+    networks:
+      - infisical
+    ports:
+      - "127.0.0.1:${CLOUDBEAVER_PORT:-8978}:8978"
+
+  redisinsight:
+    profiles: [dev-tooling]
+    image: redis/redisinsight:3.2.0
+    container_name: contractor-ops-redisinsight
+    restart: unless-stopped
+    networks:
+      - infisical
+    ports:
+      - "127.0.0.1:${REDISINSIGHT_PORT:-5540}:5540"
+
+  dev-portal:
+    profiles: [dev-tooling]
+    image: nginx:1.28-alpine
+    container_name: contractor-ops-dev-portal
+    restart: unless-stopped
+    volumes:
+      - ./docker/nginx/dev-portal.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./docker/nginx/public:/usr/share/nginx/html:ro
+    ports:
+      - "127.0.0.1:${DEV_PORTAL_PORT:-8888}:80"
+
+  # ── Worker — background jobs, cron, QStash callbacks, webhooks ──────────────
+  # Build: docker compose --profile worker build worker
+  # Run:   docker compose --profile worker up -d worker
+  worker:
+    profiles: [worker]
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    container_name: contractor-ops-worker
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      HOSTNAME: "0.0.0.0"
+    ports:
+      - "${WORKER_PORT:-3001}:3000"
+    depends_on:
+      clamav:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
 networks:
   infisical:
 
@@ -85,3 +199,5 @@ volumes:
   clamav-db:
   infisical_pg_data:
   infisical_redis_data:
+  minio_data:
+  cloudbeaver_workspace:

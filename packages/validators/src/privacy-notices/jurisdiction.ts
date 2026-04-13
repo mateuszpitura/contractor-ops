@@ -15,9 +15,7 @@ export type SupportedJurisdiction = 'AE' | 'SA' | 'GB' | 'DE' | 'EU';
  * Pure and synchronous — safe to call in server components, client
  * components, tRPC handlers, and test mocks alike.
  */
-export function resolveJurisdiction(
-  countryCode: string | null | undefined,
-): SupportedJurisdiction {
+export function resolveJurisdiction(countryCode: string | null | undefined): SupportedJurisdiction {
   if (!countryCode) return 'EU';
   const upper = countryCode.toUpperCase();
   if (upper === 'GB' || upper === 'DE' || upper === 'AE' || upper === 'SA') {

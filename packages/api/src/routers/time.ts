@@ -260,7 +260,7 @@ export const timeRouter = router({
     .input(approveTimesheetSchema)
     .mutation(async ({ ctx, input }) => {
       const result = await approveTimesheet(
-        prisma,
+        ctx.db,
         ctx.organizationId,
         input.timesheetId,
         ctx.user?.id,
@@ -276,7 +276,7 @@ export const timeRouter = router({
     .input(rejectTimesheetSchema)
     .mutation(async ({ ctx, input }) => {
       const result = await rejectTimesheet(
-        prisma,
+        ctx.db,
         ctx.organizationId,
         input.timesheetId,
         ctx.user?.id,
@@ -293,7 +293,7 @@ export const timeRouter = router({
     .input(bulkApproveTimesheetsSchema)
     .mutation(async ({ ctx, input }) => {
       const result = await bulkApproveTimesheets(
-        prisma,
+        ctx.db,
         ctx.organizationId,
         input.timesheetIds,
         ctx.user?.id,
@@ -309,7 +309,7 @@ export const timeRouter = router({
     .input(bulkRejectTimesheetsSchema)
     .mutation(async ({ ctx, input }) => {
       const result = await bulkRejectTimesheets(
-        prisma,
+        ctx.db,
         ctx.organizationId,
         input.timesheetIds,
         ctx.user?.id,
@@ -331,7 +331,7 @@ export const timeRouter = router({
     .input(timeReconciliationSchema)
     .query(async ({ ctx, input }) => {
       const result = await computeTimeReconciliation(
-        prisma,
+        ctx.db,
         ctx.organizationId,
         input.contractId,
         new Date(input.periodStart),
@@ -377,7 +377,7 @@ export const timeRouter = router({
         new Date(Date.UTC(issueDate.getUTCFullYear(), issueDate.getUTCMonth() + 1, 0));
 
       const result = await computeTimeReconciliation(
-        prisma,
+        ctx.db,
         ctx.organizationId,
         invoice.contractId,
         periodStart,
@@ -459,7 +459,7 @@ export const timeRouter = router({
             new Date(Date.UTC(issueDate.getUTCFullYear(), issueDate.getUTCMonth() + 1, 0));
 
           const reconciliation = await computeTimeReconciliation(
-            prisma,
+            ctx.db,
             ctx.organizationId,
             inv.contractId,
             periodStart,

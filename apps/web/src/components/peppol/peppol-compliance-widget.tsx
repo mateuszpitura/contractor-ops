@@ -1,5 +1,6 @@
 'use client';
 
+import { complianceState } from '@contractor-ops/einvoice';
 import { Globe } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
@@ -26,7 +27,7 @@ const STATE_COLORS: Record<string, string> = {
   onboarding: 'bg-warning',
   suspended: 'bg-destructive',
   error: 'bg-destructive',
-  not_connected: 'bg-muted-foreground/30',
+  [complianceState.notConnected]: 'bg-muted-foreground/30',
 };
 
 const STATE_LABELS: Record<string, string> = {
@@ -34,7 +35,7 @@ const STATE_LABELS: Record<string, string> = {
   onboarding: 'Onboarding',
   suspended: 'Suspended',
   error: 'Error',
-  not_connected: 'Not Connected',
+  [complianceState.notConnected]: 'Not Connected',
 };
 
 // ---------------------------------------------------------------------------
@@ -49,7 +50,7 @@ export function PeppolComplianceWidget({
   status,
   transmissionCounts,
 }: PeppolComplianceWidgetProps) {
-  const dotColor = STATE_COLORS[status.state] ?? STATE_COLORS.not_connected;
+  const dotColor = STATE_COLORS[status.state] ?? STATE_COLORS[complianceState.notConnected];
   const label = STATE_LABELS[status.state] ?? 'Unknown';
 
   return (

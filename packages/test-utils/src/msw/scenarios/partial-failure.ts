@@ -1,5 +1,15 @@
 import { delay, HttpResponse, http } from 'msw';
+import { isQStashPublishUrl } from '../handlers/qstash.js';
 import { mockId } from '../utils.js';
+
+function isAtlassianJiraApiUrl(url: string): boolean {
+  try {
+    const u = new URL(url);
+    return u.hostname === 'api.atlassian.com' && u.pathname.startsWith('/ex/jira/');
+  } catch {
+    return false;
+  }
+}
 
 /**
  * Handlers simulating partial service failures.
@@ -30,17 +40,23 @@ export function partialFailureHandlers() {
     }),
 
     // QStash works fine
-    http.post('https://qstash.upstash.io/v2/publish/*', () => {
-      return HttpResponse.json({ messageId: `msg_${mockId()}` });
-    }),
+    http.post(
+      ({ request }) => isQStashPublishUrl(request.url),
+      () => {
+        return HttpResponse.json({ messageId: `msg_${mockId()}` });
+      },
+    ),
 
     // ===== FAILING SERVICES =====
 
     // Jira is completely down
-    http.all('https://api.atlassian.com/ex/jira/*', async () => {
-      await delay(500);
-      return HttpResponse.json({ message: 'Service is unavailable' }, { status: 503 });
-    }),
+    http.all(
+      ({ request }) => isAtlassianJiraApiUrl(request.url),
+      async () => {
+        await delay(500);
+        return HttpResponse.json({ message: 'Service is unavailable' }, { status: 503 });
+      },
+    ),
 
     // Linear returns errors
     http.post('https://api.linear.app/graphql', () => {

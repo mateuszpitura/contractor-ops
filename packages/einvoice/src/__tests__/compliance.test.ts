@@ -3,9 +3,9 @@ import type { KsefConnectionData } from '../profiles/ksef/compliance.js';
 import { computeKsefComplianceStatus } from '../profiles/ksef/compliance.js';
 
 describe('computeKsefComplianceStatus', () => {
-  it('returns not_connected when no connection exists', () => {
+  it('returns notConnected when no connection exists', () => {
     const result = computeKsefComplianceStatus(null);
-    expect(result.state).toBe('not_connected');
+    expect(result.state).toBe('notConnected');
     expect(result.profileId).toBe('ksef');
     expect(result.healthScore).toBe(0);
   });

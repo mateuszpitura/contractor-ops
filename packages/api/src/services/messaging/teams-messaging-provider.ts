@@ -7,6 +7,7 @@
 // ---------------------------------------------------------------------------
 
 import { prisma } from '@contractor-ops/db';
+import { getServerEnv } from '@contractor-ops/validators';
 import type { ConversationReference, TurnContext } from 'botbuilder';
 import { CardFactory, CloudAdapter, ConfigurationBotFrameworkAuthentication } from 'botbuilder';
 import { buildActivityAlertCard } from '../teams/cards/activity-alert-card.js';
@@ -29,9 +30,10 @@ let adapterInstance: CloudAdapter | null = null;
 function getCloudAdapter(): CloudAdapter {
   if (adapterInstance) return adapterInstance;
 
+  const { AZURE_BOT_APP_ID, AZURE_BOT_APP_SECRET } = getServerEnv();
   const auth = new ConfigurationBotFrameworkAuthentication({
-    MicrosoftAppId: process.env.AZURE_BOT_APP_ID ?? '',
-    MicrosoftAppPassword: process.env.AZURE_BOT_APP_SECRET ?? '',
+    MicrosoftAppId: AZURE_BOT_APP_ID ?? '',
+    MicrosoftAppPassword: AZURE_BOT_APP_SECRET ?? '',
     MicrosoftAppType: 'MultiTenant',
   });
 
@@ -91,7 +93,7 @@ export class TeamsMessagingProvider implements MessagingProvider {
 
     const adapter = getCloudAdapter();
     await adapter.continueConversationAsync(
-      process.env.AZURE_BOT_APP_ID ?? '',
+      getServerEnv().AZURE_BOT_APP_ID ?? '',
       convRef,
       async (context: TurnContext) => {
         await context.sendActivity({
@@ -125,7 +127,7 @@ export class TeamsMessagingProvider implements MessagingProvider {
       });
 
       await adapter.continueConversationAsync(
-        process.env.AZURE_BOT_APP_ID ?? '',
+        getServerEnv().AZURE_BOT_APP_ID ?? '',
         convRef,
         async (context: TurnContext) => {
           await context.sendActivity({
@@ -139,7 +141,7 @@ export class TeamsMessagingProvider implements MessagingProvider {
 
     // Simple text reminder
     await adapter.continueConversationAsync(
-      process.env.AZURE_BOT_APP_ID ?? '',
+      getServerEnv().AZURE_BOT_APP_ID ?? '',
       convRef,
       async (context: TurnContext) => {
         await context.sendActivity({ type: 'message', text: params.text });
@@ -180,7 +182,7 @@ export class TeamsMessagingProvider implements MessagingProvider {
 
     const adapter = getCloudAdapter();
     await adapter.continueConversationAsync(
-      process.env.AZURE_BOT_APP_ID ?? '',
+      getServerEnv().AZURE_BOT_APP_ID ?? '',
       channelRef as ConversationReference,
       async (context: TurnContext) => {
         await context.sendActivity({

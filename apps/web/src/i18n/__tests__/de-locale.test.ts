@@ -80,10 +80,7 @@ describe('German localeSettings (FOUND-03)', () => {
   it('request.ts exports a localeSettings entry for de with Europe/Berlin + EUR', async () => {
     // next-intl's getRequestConfig wraps the settings, so we inspect the source
     // directly until Plan 05 extracts localeSettings into a named export.
-    const requestSource = readFileSync(
-      join(__dirname, '..', 'request.ts'),
-      'utf-8',
-    );
+    const requestSource = readFileSync(join(__dirname, '..', 'request.ts'), 'utf-8');
     expect(requestSource).toMatch(/de:\s*\{\s*timeZone:\s*['"]Europe\/Berlin['"]/);
     expect(requestSource).toMatch(/de:\s*\{[^}]*currency:\s*['"]EUR['"]/);
   });

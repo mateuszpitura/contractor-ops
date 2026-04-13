@@ -119,3 +119,8 @@ export const bulkRejectSchema = z.object({
   stepIds: z.array(z.string()).min(1).max(50),
   comment: z.string().min(10),
 });
+
+/** Labels for synthetic system rows in approval audit trail (camelCase tokens). */
+export const approvalAuditSystemLabel = {
+  slaBreached: 'slaBreached',
+} as const;

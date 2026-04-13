@@ -1,4 +1,3 @@
-import { prisma } from '@contractor-ops/db';
 import {
   createSingleEntrySchema,
   getTimesheetSchema,
@@ -59,14 +58,14 @@ export const portalTimeRouter = router({
     const weekStart = new Date(`${input.weekStartDate}T00:00:00Z`);
 
     const timesheet = await getOrCreateTimesheet(
-      prisma,
+      ctx.db,
       ctx.organizationId,
       ctx.contractorId,
       weekStart,
     );
 
     // Fetch entries with contract info
-    const entries = await prisma.timeEntry.findMany({
+    const entries = await ctx.db.timeEntry.findMany({
       where: {
         timesheetId: timesheet.id,
         organizationId: ctx.organizationId,
@@ -86,7 +85,7 @@ export const portalTimeRouter = router({
   // getActiveContracts — contractor's active contracts for project picker
   // -------------------------------------------------------------------------
   getActiveContracts: portalProcedure.query(async ({ ctx }) => {
-    const contracts = await prisma.contract.findMany({
+    const contracts = await ctx.db.contract.findMany({
       where: {
         organizationId: ctx.organizationId,
         contractorId: ctx.contractorId,
@@ -112,7 +111,7 @@ export const portalTimeRouter = router({
     .input(saveDraftEntriesSchema)
     .mutation(async ({ ctx, input }) => {
       const result = await saveDraftEntries(
-        prisma,
+        ctx.db,
         ctx.organizationId,
         ctx.contractorId,
         input.timesheetId,
@@ -132,14 +131,14 @@ export const portalTimeRouter = router({
       const monday = getISOMonday(input.entryDate);
 
       const timesheet = await getOrCreateTimesheet(
-        prisma,
+        ctx.db,
         ctx.organizationId,
         ctx.contractorId,
         monday,
       );
 
       const result = await saveDraftEntries(
-        prisma,
+        ctx.db,
         ctx.organizationId,
         ctx.contractorId,
         timesheet.id,
@@ -161,7 +160,7 @@ export const portalTimeRouter = router({
   // -------------------------------------------------------------------------
   submitTimesheet: portalProcedure.input(submitTimesheetSchema).mutation(async ({ ctx, input }) => {
     const result = await submitTimesheet(
-      prisma,
+      ctx.db,
       ctx.organizationId,
       ctx.contractorId,
       input.timesheetId,
@@ -198,7 +197,7 @@ export const portalTimeRouter = router({
       where.id = { lt: input.cursor };
     }
 
-    const timesheets = await prisma.timesheet.findMany({
+    const timesheets = await ctx.db.timesheet.findMany({
       where,
       orderBy: { weekStartDate: 'desc' },
       take: input.limit + 1,
@@ -228,7 +227,7 @@ export const portalTimeRouter = router({
     .input(syncExternalEntriesSchema)
     .mutation(async ({ ctx, input }) => {
       // Find the connected integration for the provider
-      const connection = await prisma.integrationConnection.findFirst({
+      const connection = await ctx.db.integrationConnection.findFirst({
         where: {
           organizationId: ctx.organizationId,
           provider: input.provider,
@@ -246,14 +245,14 @@ export const portalTimeRouter = router({
       // Get or create timesheet for the start date's week
       const monday = getISOMonday(input.startDate);
       const timesheet = await getOrCreateTimesheet(
-        prisma,
+        ctx.db,
         ctx.organizationId,
         ctx.contractorId,
         monday,
       );
 
       // Find the contractor's first active contract for association
-      const contract = await prisma.contract.findFirst({
+      const contract = await ctx.db.contract.findFirst({
         where: {
           organizationId: ctx.organizationId,
           contractorId: ctx.contractorId,
@@ -272,7 +271,7 @@ export const portalTimeRouter = router({
 
       if (input.provider === 'CLOCKIFY') {
         return syncClockifyEntries(
-          prisma,
+          ctx.db,
           ctx.organizationId,
           ctx.contractorId,
           contract.id,
@@ -285,7 +284,7 @@ export const portalTimeRouter = router({
 
       // JIRA
       return syncJiraWorklogs(
-        prisma,
+        ctx.db,
         ctx.organizationId,
         ctx.contractorId,
         contract.id,
@@ -300,7 +299,7 @@ export const portalTimeRouter = router({
   // getConnectedProviders — which time providers are connected
   // -------------------------------------------------------------------------
   getConnectedProviders: portalProcedure.query(async ({ ctx }) => {
-    const connections = await prisma.integrationConnection.findMany({
+    const connections = await ctx.db.integrationConnection.findMany({
       where: {
         organizationId: ctx.organizationId,
         provider: { in: ['CLOCKIFY', 'JIRA'] },

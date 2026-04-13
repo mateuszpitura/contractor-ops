@@ -13,6 +13,11 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
+    },
+    "./minimal-server-env": {
+      "types": "./src/minimal-server-env.ts",
+      "import": "./src/minimal-server-env.ts",
+      "default": "./src/minimal-server-env.ts"
     }
   },
   "scripts": {
@@ -21,13 +26,13 @@
   },
   "dependencies": {
     "@contractor-ops/einvoice": "workspace:*",
-    "ibantools": "^4.5.1",
+    "ibantools": "^4.5.4",
     "validate-polish": "^2.1.40",
-    "zod": "^3.23.0"
+    "zod": "^3.25.76"
   },
   "devDependencies": {
-    "@vitest/coverage-v8": "^4.1.2",
-    "typescript": "^5.7.0",
-    "vitest": "^4.1.2"
+    "@vitest/coverage-v8": "^4.1.4",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.4"
   }
 }

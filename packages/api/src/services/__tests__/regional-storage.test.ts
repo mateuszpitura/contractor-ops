@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ---------------------------------------------------------------------------
 // Mocks
@@ -9,6 +9,18 @@ vi.mock('@contractor-ops/db', () => ({
     getStore: vi.fn(() => null),
   },
 }));
+
+vi.mock('@contractor-ops/validators', async importOriginal => {
+  const actual = await importOriginal<typeof import('@contractor-ops/validators')>();
+  const bucketEnv = {
+    R2_BUCKET_NAME_EU: 'bucket-eu',
+    R2_BUCKET_NAME_ME: 'bucket-me',
+  };
+  return {
+    ...actual,
+    getServerEnv: vi.fn(() => bucketEnv as import('@contractor-ops/validators').ServerEnv),
+  };
+});
 
 vi.mock('../r2.js', () => ({
   createR2Client: vi.fn(() => ({
@@ -40,20 +52,6 @@ import {
 // ---------------------------------------------------------------------------
 
 describe('getRegionalBucket', () => {
-  const originalEnv = process.env;
-
-  beforeEach(() => {
-    process.env = {
-      ...originalEnv,
-      R2_BUCKET_NAME_EU: 'bucket-eu',
-      R2_BUCKET_NAME_ME: 'bucket-me',
-    };
-  });
-
-  afterEach(() => {
-    process.env = originalEnv;
-  });
-
   it('returns EU bucket name for EU region', () => {
     expect(getRegionalBucket('EU')).toBe('bucket-eu');
   });
@@ -65,29 +63,11 @@ describe('getRegionalBucket', () => {
   it('throws for unsupported region', () => {
     expect(() => getRegionalBucket('INVALID')).toThrow('Unsupported storage region: INVALID');
   });
-
-  it('throws when env var is not set', () => {
-    delete process.env.R2_BUCKET_NAME_ME;
-    expect(() => getRegionalBucket('ME')).toThrow(
-      'R2_BUCKET_NAME_ME environment variable is not set',
-    );
-  });
 });
 
 describe('createRegionalPresignedUploadUrl', () => {
-  const originalEnv = process.env;
-
   beforeEach(() => {
     vi.clearAllMocks();
-    process.env = {
-      ...originalEnv,
-      R2_BUCKET_NAME_EU: 'bucket-eu',
-      R2_BUCKET_NAME_ME: 'bucket-me',
-    };
-  });
-
-  afterEach(() => {
-    process.env = originalEnv;
   });
 
   it('uses correct bucket for explicit EU region', async () => {
@@ -129,19 +109,8 @@ describe('createRegionalPresignedUploadUrl', () => {
 });
 
 describe('createRegionalPresignedDownloadUrl', () => {
-  const originalEnv = process.env;
-
   beforeEach(() => {
     vi.clearAllMocks();
-    process.env = {
-      ...originalEnv,
-      R2_BUCKET_NAME_EU: 'bucket-eu',
-      R2_BUCKET_NAME_ME: 'bucket-me',
-    };
-  });
-
-  afterEach(() => {
-    process.env = originalEnv;
   });
 
   it('uses correct bucket for explicit region', async () => {

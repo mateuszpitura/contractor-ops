@@ -14,14 +14,11 @@
 //   - checkVatNumber signature EXCLUDES requesterVrn (threat T-57-02-04)
 
 import { MemoryStore } from '@contractor-ops/secrets';
-import { createMockServer, http, HttpResponse } from '@contractor-ops/test-utils';
-import {
-  clearHmrcTokenRefreshLedger,
-  hmrcHandlers,
-} from '@contractor-ops/test-utils/msw/handlers';
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-
-import { HmrcApiError, HmrcVatClient, type HmrcVatClientDeps } from '../hmrc-vat-client.js';
+import { createMockServer, HttpResponse, http } from '@contractor-ops/test-utils';
+import { clearHmrcTokenRefreshLedger, hmrcHandlers } from '@contractor-ops/test-utils/msw/handlers';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import type { HmrcVatClientDeps } from '../hmrc-vat-client.js';
+import { HmrcApiError, HmrcVatClient } from '../hmrc-vat-client.js';
 
 // ---------------------------------------------------------------------------
 // Mock server setup
@@ -42,9 +39,7 @@ afterAll(() => server.close());
 
 const HMRC_TEST_BASE = 'https://test-api.service.hmrc.gov.uk';
 
-async function makeClient(
-  overrides: Partial<HmrcVatClientDeps> = {},
-): Promise<HmrcVatClient> {
+async function makeClient(overrides: Partial<HmrcVatClientDeps> = {}): Promise<HmrcVatClient> {
   const secretStore = new MemoryStore();
   await secretStore.set('hmrc/client_id', 'test-client-id');
   await secretStore.set('hmrc/client_secret', 'test-client-secret');
@@ -117,9 +112,8 @@ describe('HmrcVatClient — 404 handling (PAY-03)', () => {
     // We need an actual VRN that passes isValidGbVat but maps to HMRC_SANDBOX_INVALID_VRN.
     // Use override handler to force 404:
     server.use(
-      http.get(
-        `${HMRC_TEST_BASE}/organisations/vat/check-vat-number/lookup/:targetVrn`,
-        () => HttpResponse.json({ code: 'NOT_FOUND', message: 'VRN not found' }, { status: 404 }),
+      http.get(`${HMRC_TEST_BASE}/organisations/vat/check-vat-number/lookup/:targetVrn`, () =>
+        HttpResponse.json({ code: 'NOT_FOUND', message: 'VRN not found' }, { status: 404 }),
       ),
     );
     const result2 = await client.checkVatNumber('GB193054661', {
@@ -174,26 +168,23 @@ describe('HmrcVatClient — 401 refresh-once-then-retry', () => {
     const client = await makeClient();
     let lookupCalls = 0;
     server.use(
-      http.get(
-        `${HMRC_TEST_BASE}/organisations/vat/check-vat-number/lookup/:targetVrn`,
-        () => {
-          lookupCalls += 1;
-          if (lookupCalls === 1) {
-            return HttpResponse.json(
-              { code: 'INVALID_CREDENTIALS', message: 'Token expired' },
-              { status: 401 },
-            );
-          }
-          return HttpResponse.json({
-            processingDate: '2026-04-12T10:00:00Z',
-            target: {
-              name: 'TEST LTD',
-              vatNumber: 'GB193054661',
-              address: { line1: '1 St', postcode: 'SW1A 1AA', countryCode: 'GB' },
-            },
-          });
-        },
-      ),
+      http.get(`${HMRC_TEST_BASE}/organisations/vat/check-vat-number/lookup/:targetVrn`, () => {
+        lookupCalls += 1;
+        if (lookupCalls === 1) {
+          return HttpResponse.json(
+            { code: 'INVALID_CREDENTIALS', message: 'Token expired' },
+            { status: 401 },
+          );
+        }
+        return HttpResponse.json({
+          processingDate: '2026-04-12T10:00:00Z',
+          target: {
+            name: 'TEST LTD',
+            vatNumber: 'GB193054661',
+            address: { line1: '1 St', postcode: 'SW1A 1AA', countryCode: 'GB' },
+          },
+        });
+      }),
     );
 
     const result = await client.checkVatNumber('GB193054661', {
@@ -206,13 +197,11 @@ describe('HmrcVatClient — 401 refresh-once-then-retry', () => {
   it('throws HmrcApiError(401) when two consecutive 401s occur', async () => {
     const client = await makeClient();
     server.use(
-      http.get(
-        `${HMRC_TEST_BASE}/organisations/vat/check-vat-number/lookup/:targetVrn`,
-        () =>
-          HttpResponse.json(
-            { code: 'INVALID_CREDENTIALS', message: 'Token expired' },
-            { status: 401 },
-          ),
+      http.get(`${HMRC_TEST_BASE}/organisations/vat/check-vat-number/lookup/:targetVrn`, () =>
+        HttpResponse.json(
+          { code: 'INVALID_CREDENTIALS', message: 'Token expired' },
+          { status: 401 },
+        ),
       ),
     );
 
@@ -229,9 +218,11 @@ describe('HmrcVatClient — rate limiting', () => {
   it('throws HmrcApiError(429) when rate limit denies the request', async () => {
     const client = await makeClient();
     // Inject a fake rate-limiter that denies.
-    (client as unknown as {
-      rateLimiter: { checkLimit: (id: string) => Promise<{ allowed: boolean }> };
-    }).rateLimiter = {
+    (
+      client as unknown as {
+        rateLimiter: { checkLimit: (id: string) => Promise<{ allowed: boolean }> };
+      }
+    ).rateLimiter = {
       checkLimit: async () => ({ allowed: false, remaining: 0, resetMs: 1000 }),
     };
 

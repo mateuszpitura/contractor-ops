@@ -1,4 +1,5 @@
 import type { CalendarTaskConfig } from '@contractor-ops/validators';
+import { getServerEnv } from '@contractor-ops/validators';
 import { createCalendarEvent, updateCalendarEvent } from './calendar-event-service.js';
 import type { DbClient } from './types.js';
 
@@ -8,7 +9,9 @@ type PrismaClient = DbClient;
 // Constants
 // ---------------------------------------------------------------------------
 
-const APP_BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://app.contractorop.com';
+function appBaseUrl(): string {
+  return getServerEnv().NEXT_PUBLIC_APP_URL;
+}
 const TITLE_PREFIX = '[Contractor Ops] ';
 
 const DURATION_MS: Record<string, number> = {
@@ -78,7 +81,7 @@ export async function syncContractExpiryDeadline(
   },
 ): Promise<void> {
   const title = `${TITLE_PREFIX}Contract expiry: ${input.contractorName} - ${input.contractName}`;
-  const description = `Contract "${input.contractName}" with ${input.contractorName} expires on ${input.expiryDate.toISOString().split('T')[0]}.\n\nView in Contractor Ops: ${APP_BASE_URL}/contracts/${input.contractId}`;
+  const description = `Contract "${input.contractName}" with ${input.contractorName} expires on ${input.expiryDate.toISOString().split('T')[0]}.\n\nView in Contractor Ops: ${appBaseUrl()}/contracts/${input.contractId}`;
 
   const expiryDay = new Date(input.expiryDate);
   expiryDay.setUTCHours(9, 0, 0, 0);
@@ -141,7 +144,7 @@ export async function syncApprovalSlaDeadline(
   },
 ): Promise<void> {
   const title = `${TITLE_PREFIX}Approval deadline: ${input.itemType} - ${input.itemName}`;
-  const description = `Approval for ${input.itemType} "${input.itemName}" is due by ${input.deadline.toISOString().split('T')[0]}.\n\nView in Contractor Ops: ${APP_BASE_URL}/approvals`;
+  const description = `Approval for ${input.itemType} "${input.itemName}" is due by ${input.deadline.toISOString().split('T')[0]}.\n\nView in Contractor Ops: ${appBaseUrl()}/approvals`;
 
   const deadlineDay = new Date(input.deadline);
   deadlineDay.setUTCHours(9, 0, 0, 0);
@@ -204,7 +207,7 @@ export async function syncPaymentDueDeadline(
   },
 ): Promise<void> {
   const title = `${TITLE_PREFIX}Payment due: ${input.contractorName} - ${input.invoiceNumber}`;
-  const description = `Invoice ${input.invoiceNumber} from ${input.contractorName} is due on ${input.dueDate.toISOString().split('T')[0]}.\n\nView in Contractor Ops: ${APP_BASE_URL}/invoices/${input.invoiceId}`;
+  const description = `Invoice ${input.invoiceNumber} from ${input.contractorName} is due on ${input.dueDate.toISOString().split('T')[0]}.\n\nView in Contractor Ops: ${appBaseUrl()}/invoices/${input.invoiceId}`;
 
   const dueDay = new Date(input.dueDate);
   dueDay.setUTCHours(9, 0, 0, 0);
@@ -276,7 +279,7 @@ export async function createTaskCalendarEvent(
   title = title.replace(/\{task\}/g, input.taskName);
   title = `${TITLE_PREFIX}${title}`;
 
-  const description = `Workflow task "${input.taskName}" for ${input.contractorName} (${input.contractName}).\n\nView in Contractor Ops: ${APP_BASE_URL}/workflows`;
+  const description = `Workflow task "${input.taskName}" for ${input.contractorName} (${input.contractName}).\n\nView in Contractor Ops: ${appBaseUrl()}/workflows`;
 
   const now = new Date();
   const startDateTime = now.toISOString();

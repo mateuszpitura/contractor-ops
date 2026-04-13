@@ -42,7 +42,7 @@ describe('equipmentListSchema', () => {
     expect(r.success).toBe(true);
     if (r.success) {
       expect(r.data.page).toBe(1);
-      expect(r.data.perPage).toBe(25);
+      expect(r.data.pageSize).toBe(25);
     }
   });
 });

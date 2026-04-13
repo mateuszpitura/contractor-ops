@@ -1,4 +1,5 @@
 import type { ComplianceState, ComplianceStatus } from '../../types/compliance.js';
+import { complianceState } from '../../types/compliance.js';
 
 // ---------------------------------------------------------------------------
 // KSeF Compliance Status
@@ -31,7 +32,7 @@ export function computeKsefComplianceStatus(
   if (!connection) {
     return {
       profileId: 'ksef',
-      state: 'not_connected',
+      state: complianceState.notConnected,
       country: 'PL',
       displayName: 'KSeF (Poland)',
       healthScore: 0,

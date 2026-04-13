@@ -1,7 +1,8 @@
 import { createLogger } from '@contractor-ops/logger';
 import { metrics } from '@contractor-ops/logger/metrics';
-import { Resend } from 'resend';
+import { getServerEnv } from '@contractor-ops/validators';
 import type Stripe from 'stripe';
+import { sendAppEmail } from './app-email.js';
 import {
   resolveTierFromPriceId,
   resolveTopUpCredits,
@@ -49,21 +50,8 @@ const STRIPE_STATUS_MAP: Record<string, string> = {
   paused: 'PAUSED',
 };
 
-// ---------------------------------------------------------------------------
-// Resend client (lazy init for direct billing emails)
-// ---------------------------------------------------------------------------
-
-let resendClient: Resend | null = null;
-
-function getResend(): Resend {
-  if (!resendClient) {
-    resendClient = new Resend(process.env.RESEND_API_KEY);
-  }
-  return resendClient;
-}
-
 function buildBillingUrl(): string {
-  const base = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
+  const base = getServerEnv().NEXT_PUBLIC_APP_URL;
   return `${base}/settings?tab=billing`;
 }
 
@@ -77,8 +65,7 @@ async function sendBillingEmail(params: {
   body: string;
 }): Promise<void> {
   try {
-    const resend = getResend();
-    await resend.emails.send({
+    await sendAppEmail({
       from: 'Contractor Ops <notifications@contractorhub.io>',
       to: params.to,
       subject: params.subject,

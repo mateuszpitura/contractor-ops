@@ -15,6 +15,9 @@ const { mockPrisma } = vi.hoisted(() => {
   type Rec = Record<string, any>;
 
   const mockPrisma: Rec = {
+    organization: {
+      findUnique: vi.fn().mockResolvedValue({ dataRegion: 'EU' }),
+    },
     $queryRaw: vi.fn(),
     notification: {
       findMany: vi.fn(async () => []),
@@ -67,18 +70,22 @@ vi.mock('@contractor-ops/auth', () => ({
       hasPermission: vi.fn().mockResolvedValue({ success: true }),
     },
   },
+  authApi: {
+    hasPermission: vi.fn().mockResolvedValue({ success: true }),
+  },
 }));
 
 vi.mock('@contractor-ops/db', () => ({
   prisma: mockPrisma,
   tenantStore: {
     run: (_ctx: unknown, fn: () => unknown) => fn(),
-    getStore: vi.fn(),
+    getStore: vi.fn(() => ({ region: 'EU' })),
   },
   withTenantScope: vi.fn((c: unknown) => c),
   withSoftDelete: vi.fn((c: unknown) => c),
   createTenantClient: vi.fn(() => mockPrisma),
   createTenantClientFrom: vi.fn(() => mockPrisma),
+  getRegionalClient: vi.fn(() => mockPrisma),
 }));
 
 vi.mock('../../services/teams/teams-graph-client.js', () => ({
@@ -488,10 +495,10 @@ describe('calendar router', () => {
       const sourceDir = path.resolve(import.meta.dirname, '../../routers');
       const source = fs.readFileSync(path.join(sourceDir, 'calendar.ts'), 'utf-8');
 
-      expect(source).toContain('import { requireTier } from "../middleware/tier.js"');
-      expect(source).toContain('requireTier("PRO")');
+      expect(source).toContain("import { requireTier } from '../middleware/tier.js'");
+      expect(source).toContain("requireTier('PRO')");
 
-      const matches = source.match(/\.use\(requireTier\("PRO"\)\)/g);
+      const matches = source.match(/\.use\(requireTier\('PRO'\)\)/g);
       expect(matches).toHaveLength(2);
     });
 

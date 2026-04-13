@@ -194,7 +194,7 @@ describe('isValidSteuernummer per Bundesland (FOUND-02, D-03)', () => {
   });
 
   it('accepts all 16 Bundesländer with their canonical example (Wikipedia Steuernummer 2026-04-12)', () => {
-    const vectors: Array<[string, string]> = [
+    const vectors: [string, string][] = [
       ['BW', '93/815/08152'],
       ['BY', '181/815/08155'],
       ['BE', '21/815/08150'],
@@ -213,16 +213,15 @@ describe('isValidSteuernummer per Bundesland (FOUND-02, D-03)', () => {
       ['TH', '151/815/08156'],
     ];
     for (const [bundesland, value] of vectors) {
-      expect(
-        isValidSteuernummer(bundesland, value),
-        `${bundesland} must accept ${value}`,
-      ).toBe(true);
+      expect(isValidSteuernummer(bundesland, value), `${bundesland} must accept ${value}`).toBe(
+        true,
+      );
     }
   });
 
   it('rejects each Bundesland with a cross-state format (length mismatch)', () => {
     // 10-digit states fed an 11-digit value → reject; and vice versa.
-    const mismatches: Array<[string, string]> = [
+    const mismatches: [string, string][] = [
       ['BW', '181/815/08155'], // 10-digit state fed 11-digit
       ['BE', '181/815/08155'],
       ['HB', '181/815/08155'],
@@ -241,10 +240,9 @@ describe('isValidSteuernummer per Bundesland (FOUND-02, D-03)', () => {
       ['NW', '93/815/08152'], // NW is 11-digit with 3-4-4 split
     ];
     for (const [bundesland, value] of mismatches) {
-      expect(
-        isValidSteuernummer(bundesland, value),
-        `${bundesland} must reject ${value}`,
-      ).toBe(false);
+      expect(isValidSteuernummer(bundesland, value), `${bundesland} must reject ${value}`).toBe(
+        false,
+      );
     }
   });
 
@@ -298,9 +296,7 @@ describe('isValidHandelsregister composite (FOUND-02, D-03)', () => {
   });
 
   it('rejects empty court', () => {
-    expect(
-      isValidHandelsregister({ court: '', type: 'HRB', number: '123456' }),
-    ).toBe(false);
+    expect(isValidHandelsregister({ court: '', type: 'HRB', number: '123456' })).toBe(false);
   });
 
   it('rejects unknown court code', () => {

@@ -9,6 +9,7 @@ import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import * as E from '../errors.js';
 import { router } from '../init.js';
+import type { TenantScopedDb } from '../lib/tenant-db.js';
 import { requirePermission } from '../middleware/rbac.js';
 import { tenantProcedure } from '../middleware/tenant.js';
 import { CacheKeys, invalidateByPrefix } from '../services/cache.js';
@@ -25,15 +26,15 @@ import { sanitizeStrings } from '../services/sanitize.js';
 /**
  * Queries organization members with FINANCE_ADMIN role and returns their user IDs.
  */
-async function getFinanceTeamUserIds(orgId: string): Promise<string[]> {
-  const members = await ctx.db.member.findMany({
+async function getFinanceTeamUserIds(db: TenantScopedDb, orgId: string): Promise<string[]> {
+  const members = await db.member.findMany({
     where: {
       organizationId: orgId,
       role: 'FINANCE_ADMIN',
     },
     select: { userId: true },
   });
-  return members.map(m => m.userId);
+  return members.map((m: { userId: string }) => m.userId);
 }
 
 // ---------------------------------------------------------------------------
@@ -153,7 +154,7 @@ export const invoiceRouter = router({
       });
 
       // Fire-and-forget: dispatch INVOICE_RECEIVED to finance team
-      const financeUserIds = await getFinanceTeamUserIds(ctx.organizationId);
+      const financeUserIds = await getFinanceTeamUserIds(ctx.db, ctx.organizationId);
       if (financeUserIds.length > 0) {
         dispatch({
           organizationId: ctx.organizationId,
@@ -522,7 +523,7 @@ export const invoiceRouter = router({
 
       // Run auto-match
       const matchResult = await runAutoMatch(
-        prisma,
+        ctx.db,
         ctx.organizationId,
         {
           id: invoice.id,
@@ -712,7 +713,7 @@ export const invoiceRouter = router({
       });
 
       // Calendar cleanup: remove payment deadline event (D-08)
-      void deleteCalendarEvent(prisma, {
+      void deleteCalendarEvent(ctx.db, {
         organizationId: ctx.organizationId,
         entityType: 'INVOICE',
         entityId: input.id,

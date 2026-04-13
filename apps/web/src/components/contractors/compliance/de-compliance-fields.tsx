@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import type { BundeslandCode, DeCountryFields } from '@contractor-ops/validators';
 import {
   deEntityTypeEnum,
   TAX_HANDELSREGISTER_LABEL,
@@ -8,19 +8,16 @@ import {
   TAX_SOZIALVERSICHERUNGSNUMMER_LABEL,
   TAX_STEUERNUMMER_LABEL,
   TAX_USTIDNR_LABEL,
-  type BundeslandCode,
-  type DeCountryFields,
 } from '@contractor-ops/validators';
+import { useCallback, useState } from 'react';
 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 import { BundeslandSelect } from './bundesland-select';
 import { EntityTypeSelect } from './entity-type-select';
-import {
-  HandelsregisterInput,
-  type HandelsregisterValue,
-} from './handelsregister-input';
+import type { HandelsregisterValue } from './handelsregister-input';
+import { HandelsregisterInput } from './handelsregister-input';
 import { SteuernummerInput } from './steuernummer-input';
 import { VatRegisteredToggle } from './vat-registered-toggle';
 
@@ -43,11 +40,7 @@ const DE_ENTITY_LABELS: Record<DeEntityType, string> = {
   AG: 'AG',
 };
 
-const ENTITIES_REQUIRING_HANDELSREGISTER: readonly DeEntityType[] = [
-  'UG',
-  'GMBH',
-  'AG',
-] as const;
+const ENTITIES_REQUIRING_HANDELSREGISTER: readonly DeEntityType[] = ['UG', 'GMBH', 'AG'] as const;
 const ENTITIES_SHOWING_HANDELSREGISTER: readonly DeEntityType[] = [
   'OHG',
   'KG',
@@ -58,10 +51,7 @@ const ENTITIES_SHOWING_HANDELSREGISTER: readonly DeEntityType[] = [
 
 export interface DeComplianceFieldsProps {
   values?: Partial<DeCountryFields>;
-  onChange?: <K extends keyof DeCountryFields>(
-    key: K,
-    val: DeCountryFields[K] | undefined,
-  ) => void;
+  onChange?: <K extends keyof DeCountryFields>(key: K, val: DeCountryFields[K] | undefined) => void;
   errors?: Partial<Record<keyof DeCountryFields, string>>;
 
   // Shorthand props — see `UkComplianceFieldsProps` for the rationale.
@@ -92,39 +82,28 @@ export interface DeComplianceFieldsProps {
  * as a string literal. The CI guard (Plan 03) will fail the build if any of
  * these identifiers appears in `messages/*.json`.
  */
-export function DeComplianceFields(
-  props: DeComplianceFieldsProps,
-) {
+export function DeComplianceFields(props: DeComplianceFieldsProps) {
   const [internal, setInternal] = useState<Partial<DeCountryFields>>({});
 
   const merged: Partial<DeCountryFields> = {
     ...internal,
-    ...(props.entityType !== undefined ? { entityType: props.entityType } : {}),
-    ...(props.bundesland !== undefined ? { bundesland: props.bundesland } : {}),
-    ...(props.isVatRegistered !== undefined
-      ? { isVatRegistered: props.isVatRegistered }
-      : {}),
-    ...(props.isKleinunternehmer !== undefined
-      ? { isKleinunternehmer: props.isKleinunternehmer }
-      : {}),
-    ...(props.steuernummer !== undefined
-      ? { steuernummer: props.steuernummer }
-      : {}),
-    ...(props.ustIdNr !== undefined ? { ustIdNr: props.ustIdNr } : {}),
-    ...(props.handelsregister !== undefined
-      ? { handelsregister: props.handelsregister }
-      : {}),
-    ...(props.sozialversicherungsnummer !== undefined
-      ? { sozialversicherungsnummer: props.sozialversicherungsnummer }
-      : {}),
+    ...(props.entityType === undefined ? {} : { entityType: props.entityType }),
+    ...(props.bundesland === undefined ? {} : { bundesland: props.bundesland }),
+    ...(props.isVatRegistered === undefined ? {} : { isVatRegistered: props.isVatRegistered }),
+    ...(props.isKleinunternehmer === undefined
+      ? {}
+      : { isKleinunternehmer: props.isKleinunternehmer }),
+    ...(props.steuernummer === undefined ? {} : { steuernummer: props.steuernummer }),
+    ...(props.ustIdNr === undefined ? {} : { ustIdNr: props.ustIdNr }),
+    ...(props.handelsregister === undefined ? {} : { handelsregister: props.handelsregister }),
+    ...(props.sozialversicherungsnummer === undefined
+      ? {}
+      : { sozialversicherungsnummer: props.sozialversicherungsnummer }),
     ...(props.values ?? {}),
   };
 
   const handleChange = useCallback(
-    <K extends keyof DeCountryFields>(
-      key: K,
-      val: DeCountryFields[K] | undefined,
-    ) => {
+    <K extends keyof DeCountryFields>(key: K, val: DeCountryFields[K] | undefined) => {
       if (props.onChange) {
         props.onChange(key, val);
         return;
@@ -142,11 +121,9 @@ export function DeComplianceFields(
 
   const showUstId = isVatRegistered && !isKleinunternehmer;
   const showHandelsregister =
-    entityType !== undefined &&
-    ENTITIES_SHOWING_HANDELSREGISTER.includes(entityType);
+    entityType !== undefined && ENTITIES_SHOWING_HANDELSREGISTER.includes(entityType);
   const handelsregisterRequired =
-    entityType !== undefined &&
-    ENTITIES_REQUIRING_HANDELSREGISTER.includes(entityType);
+    entityType !== undefined && ENTITIES_REQUIRING_HANDELSREGISTER.includes(entityType);
 
   return (
     <div className="space-y-4">
@@ -230,12 +207,7 @@ export function DeComplianceFields(
       {showHandelsregister ? (
         <HandelsregisterInput
           value={merged.handelsregister}
-          onChange={v =>
-            handleChange(
-              'handelsregister',
-              v as DeCountryFields['handelsregister'],
-            )
-          }
+          onChange={v => handleChange('handelsregister', v as DeCountryFields['handelsregister'])}
           legend={TAX_HANDELSREGISTER_LABEL}
           required={handelsregisterRequired}
           error={errors.handelsregister}
@@ -249,24 +221,13 @@ export function DeComplianceFields(
         <Input
           id="de-sv"
           aria-invalid={errors.sozialversicherungsnummer ? 'true' : undefined}
-          aria-describedby={
-            errors.sozialversicherungsnummer ? 'de-sv-error' : undefined
-          }
+          aria-describedby={errors.sozialversicherungsnummer ? 'de-sv-error' : undefined}
           placeholder="12 345678 A 901"
           value={merged.sozialversicherungsnummer ?? ''}
-          onChange={e =>
-            handleChange(
-              'sozialversicherungsnummer',
-              e.target.value || undefined,
-            )
-          }
+          onChange={e => handleChange('sozialversicherungsnummer', e.target.value || undefined)}
         />
         {errors.sozialversicherungsnummer ? (
-          <p
-            id="de-sv-error"
-            role="alert"
-            aria-live="polite"
-            className="text-xs text-destructive">
+          <p id="de-sv-error" role="alert" aria-live="polite" className="text-xs text-destructive">
             {errors.sozialversicherungsnummer}
           </p>
         ) : null}

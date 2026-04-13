@@ -125,18 +125,22 @@ vi.mock('@contractor-ops/auth', () => ({
       hasPermission: vi.fn().mockResolvedValue({ success: true }),
     },
   },
+  authApi: {
+    hasPermission: vi.fn().mockResolvedValue({ success: true }),
+  },
 }));
 
 vi.mock('@contractor-ops/db', () => ({
   prisma: mockPrisma,
   tenantStore: {
     run: (_ctx: unknown, fn: () => unknown) => fn(),
-    getStore: vi.fn(),
+    getStore: vi.fn(() => ({ organizationId: 'org-portal-main-001', region: 'EU' })),
   },
   withTenantScope: vi.fn((c: unknown) => c),
   withSoftDelete: vi.fn((c: unknown) => c),
   createTenantClient: vi.fn(() => mockPrisma),
   createTenantClientFrom: vi.fn(() => mockPrisma),
+  getRegionalClient: vi.fn(() => mockPrisma),
 }));
 
 vi.mock('@sentry/nextjs', () => {
@@ -162,9 +166,19 @@ vi.mock('../../services/r2.js', () => ({
   generateStorageKey: mockGenerateStorageKey,
 }));
 
-vi.mock('node:crypto', () => ({
-  randomUUID: vi.fn(() => '00000000-0000-4000-8000-000000000001'),
+vi.mock('../../services/regional-storage.js', () => ({
+  createRegionalPresignedDownloadUrl: async (key: string) => mockCreatePresignedDownloadUrl(key),
+  createRegionalPresignedUploadUrl: async (key: string, contentType: string) =>
+    mockCreatePresignedUploadUrl(key, contentType),
 }));
+
+vi.mock('node:crypto', async importOriginal => {
+  const actual = await importOriginal<typeof import('node:crypto')>();
+  return {
+    ...actual,
+    randomUUID: vi.fn(() => '00000000-0000-4000-8000-000000000001'),
+  };
+});
 
 vi.mock('../../services/portal-change-request.js', () => ({
   createChangeRequest: (...args: any[]) => mockCreateChangeRequest(...args),
@@ -413,11 +427,13 @@ describe('portal router — logout', () => {
 
 describe('portal router — getSession + overview', () => {
   it('getSession merges contractor with organization name and logo', async () => {
-    mockPrisma.organization.findUnique.mockResolvedValueOnce({
-      id: ORG_ID,
-      name: 'Northwind',
-      logo: 'https://cdn.example/logo.png',
-    });
+    mockPrisma.organization.findUnique
+      .mockResolvedValueOnce({ dataRegion: 'EU' })
+      .mockResolvedValueOnce({
+        id: ORG_ID,
+        name: 'Northwind',
+        logo: 'https://cdn.example/logo.png',
+      });
 
     const out = await authedPortalCaller().getSession();
 

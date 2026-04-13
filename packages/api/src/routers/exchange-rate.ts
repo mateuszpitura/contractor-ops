@@ -1,3 +1,4 @@
+import { getRegionalClient, SUPPORTED_REGIONS } from '@contractor-ops/db';
 import {
   exchangeRateConvertSchema,
   exchangeRateLatestSchema,
@@ -12,7 +13,7 @@ export const exchangeRateRouter = router({
   /**
    * Get exchange rates for a date range and currency pair.
    */
-  query: tenantProcedure.input(exchangeRateQuerySchema).query(async ({ input }) => {
+  query: tenantProcedure.input(exchangeRateQuerySchema).query(async ({ ctx, input }) => {
     const rates = await ctx.db.exchangeRate.findMany({
       where: {
         base: input.base,
@@ -36,8 +37,8 @@ export const exchangeRateRouter = router({
   /**
    * Get the latest available rate for a currency pair.
    */
-  latest: tenantProcedure.input(exchangeRateLatestSchema).query(async ({ input }) => {
-    const result = await getRate(prisma, input.base, input.target, new Date());
+  latest: tenantProcedure.input(exchangeRateLatestSchema).query(async ({ ctx, input }) => {
+    const result = await getRate(ctx.db, input.base, input.target, new Date());
     if (!result) {
       throw new Error(`No exchange rate found for ${input.base}/${input.target}`);
     }
@@ -51,8 +52,8 @@ export const exchangeRateRouter = router({
   /**
    * Convert an amount between currencies using stored rates.
    */
-  convert: tenantProcedure.input(exchangeRateConvertSchema).query(async ({ input }) => {
-    const result = await convertAmount(prisma, input.amountMinor, input.from, input.to, input.date);
+  convert: tenantProcedure.input(exchangeRateConvertSchema).query(async ({ ctx, input }) => {
+    const result = await convertAmount(ctx.db, input.amountMinor, input.from, input.to, input.date);
     if (!result) {
       throw new Error(`Cannot convert ${input.from} to ${input.to} — missing exchange rate`);
     }
@@ -60,11 +61,23 @@ export const exchangeRateRouter = router({
   }),
 
   /**
-   * Cron endpoint: Fetch and store today's rates.
-   * Called by QStash daily cron job.
+   * Cron endpoint: Fetch ECB rates once and persist into **each** regional DB
+   * (same `ExchangeRate` rows per region; tenant reads use `ctx.db`).
    */
   fetchDaily: cronProcedure.mutation(async () => {
-    const result = await fetchAndStoreRates(prisma);
-    return result;
+    const errors: string[] = [];
+    let stored = 0;
+    for (const region of SUPPORTED_REGIONS) {
+      try {
+        const r = await fetchAndStoreRates(getRegionalClient(region));
+        stored += r.stored;
+        for (const e of r.errors) {
+          errors.push(`[${region}] ${e}`);
+        }
+      } catch (err) {
+        errors.push(`[${region}] ${err instanceof Error ? err.message : String(err)}`);
+      }
+    }
+    return { stored, errors };
   }),
 });

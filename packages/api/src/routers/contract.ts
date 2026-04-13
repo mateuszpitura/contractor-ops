@@ -89,7 +89,7 @@ export const contractRouter = router({
 
       // Calendar auto-push: sync contract expiry deadline (D-06)
       if (contract.endDate) {
-        void syncContractExpiryDeadline(prisma, {
+        void syncContractExpiryDeadline(ctx.db, {
           organizationId: ctx.organizationId,
           contractId: contract.id,
           contractName: contract.title ?? input.title,
@@ -205,7 +205,7 @@ export const contractRouter = router({
           where: { id: updated.contractorId },
           select: { displayName: true },
         });
-        void syncContractExpiryDeadline(prisma, {
+        void syncContractExpiryDeadline(ctx.db, {
           organizationId: ctx.organizationId,
           contractId: updated.id,
           contractName: updated.title ?? 'Untitled',
@@ -215,7 +215,7 @@ export const contractRouter = router({
         }).catch(err => console.error('[contract] calendar sync on update failed:', err));
       } else if (!updated.endDate && existing.endDate) {
         // endDate was cleared -- delete calendar event (D-08)
-        void deleteCalendarEvent(prisma, {
+        void deleteCalendarEvent(ctx.db, {
           organizationId: ctx.organizationId,
           entityType: 'CONTRACT',
           entityId: updated.id,
@@ -508,7 +508,7 @@ export const contractRouter = router({
       });
 
       // Calendar cleanup: remove contract expiry event (D-08)
-      void deleteCalendarEvent(prisma, {
+      void deleteCalendarEvent(ctx.db, {
         organizationId: ctx.organizationId,
         entityType: 'CONTRACT',
         entityId: input.id,

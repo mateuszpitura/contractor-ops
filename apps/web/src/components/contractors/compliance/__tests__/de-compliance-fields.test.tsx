@@ -9,10 +9,9 @@
 //   * Handelsregister composite is a real <fieldset> with <legend>
 
 import { fireEvent } from '@testing-library/react';
-import { render, screen, within } from '@/test/test-utils';
 import { describe, expect, it } from 'vitest';
-
 import { DeComplianceFields } from '@/components/contractors/compliance/de-compliance-fields';
+import { render, screen, within } from '@/test/test-utils';
 
 describe('DeComplianceFields — Bundesland (FOUND-02)', () => {
   it('renders a Bundesland select with 16 options sorted alphabetically', () => {
@@ -49,16 +48,12 @@ describe('DeComplianceFields — locked German phrases (FOUND-04)', () => {
     'Sozialversicherungsnummer',
     'Kleinunternehmer gemäß § 19 UStG',
   ])('renders verbatim locked phrase %s', phrase => {
-    const { container } = render(
-      <DeComplianceFields entityType="GMBH" isVatRegistered={true} />,
-    );
+    const { container } = render(<DeComplianceFields entityType="GMBH" isVatRegistered={true} />);
     expect(container.textContent).toContain(phrase);
   });
 
   it('renders Handelsregister as a fieldset with legend "Handelsregisternummer"', () => {
-    const { container } = render(
-      <DeComplianceFields entityType="GMBH" isVatRegistered={false} />,
-    );
+    const { container } = render(<DeComplianceFields entityType="GMBH" isVatRegistered={false} />);
     const fieldset = container.querySelector('fieldset');
     expect(fieldset).not.toBeNull();
     const legend = fieldset?.querySelector('legend');

@@ -58,7 +58,7 @@ export const docsRouter = router({
       });
     }
 
-    const result = await attachDocLink(prisma, {
+    const result = await attachDocLink(ctx.db, {
       organizationId: ctx.organizationId,
       integrationConnectionId: connection.id,
       workflowTaskRunId: input.workflowTaskRunId,
@@ -77,7 +77,7 @@ export const docsRouter = router({
   detach: tenantProcedure
     .input(z.object({ externalLinkId: z.string().cuid() }))
     .mutation(async ({ ctx, input }) => {
-      await detachDocLink(prisma, {
+      await detachDocLink(ctx.db, {
         organizationId: ctx.organizationId,
         externalLinkId: input.externalLinkId,
       });
@@ -91,7 +91,7 @@ export const docsRouter = router({
   list: tenantProcedure
     .input(z.object({ workflowTaskRunId: z.string().cuid() }))
     .query(async ({ ctx, input }) => {
-      const links = await getDocLinks(prisma, {
+      const links = await getDocLinks(ctx.db, {
         organizationId: ctx.organizationId,
         workflowTaskRunId: input.workflowTaskRunId,
       });
@@ -110,7 +110,7 @@ export const docsRouter = router({
       organizationId: ctx.organizationId,
       query: input.query,
       provider: input.provider,
-      prisma,
+      prisma: ctx.db,
     });
 
     return results;
@@ -125,7 +125,7 @@ export const docsRouter = router({
   refreshMetadata: tenantProcedure
     .input(z.object({ externalLinkId: z.string().cuid() }))
     .mutation(async ({ ctx, input }) => {
-      const result = await refreshDocMetadata(prisma, input.externalLinkId, ctx.organizationId);
+      const result = await refreshDocMetadata(ctx.db, input.externalLinkId, ctx.organizationId);
 
       return plain(result);
     }),

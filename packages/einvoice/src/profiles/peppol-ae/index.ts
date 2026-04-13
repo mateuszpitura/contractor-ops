@@ -3,6 +3,7 @@
 // ---------------------------------------------------------------------------
 
 import type { ComplianceStatus } from '../../types/compliance.js';
+import { complianceState } from '../../types/compliance.js';
 import type { EInvoice } from '../../types/invoice.js';
 import type { EInvoiceProfile } from '../../types/profile.js';
 import type { ValidationResult } from '../../types/validation.js';
@@ -31,7 +32,7 @@ export function computePeppolComplianceStatus(data: PeppolConnectionData | null)
   if (!data) {
     return {
       profileId: 'peppol-ae',
-      state: 'not_connected',
+      state: complianceState.notConnected,
       country: 'AE',
       displayName: 'Peppol PINT-AE (UAE)',
       healthScore: 0,
@@ -49,7 +50,7 @@ export function computePeppolComplianceStatus(data: PeppolConnectionData | null)
     REGISTERED: 'onboarding',
     ACTIVE: 'active',
     SUSPENDED: 'suspended',
-    DEREGISTERED: 'not_connected',
+    DEREGISTERED: complianceState.notConnected,
   };
 
   const state = stateMap[data.status] ?? 'error';

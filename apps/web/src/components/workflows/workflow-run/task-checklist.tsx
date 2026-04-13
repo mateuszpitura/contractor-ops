@@ -1,5 +1,6 @@
 'use client';
 
+import { workflowTaskSkipReason } from '@contractor-ops/validators';
 import { useTranslations } from 'next-intl';
 
 import { Skeleton } from '@/components/ui/skeleton';
@@ -90,7 +91,8 @@ export function TaskChecklist({
         {tasks.map(task => {
           const isConditionSkipped =
             task.status === 'SKIPPED' &&
-            (task.resultJson as Record<string, unknown>)?.skipReason === 'condition_not_met';
+            (task.resultJson as Record<string, unknown>)?.skipReason ===
+              workflowTaskSkipReason.conditionNotMet;
 
           return (
             <div key={task.id} className={isConditionSkipped ? 'opacity-50' : undefined}>

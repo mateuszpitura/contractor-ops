@@ -1,4 +1,4 @@
-import { auth } from '@contractor-ops/auth';
+import { authApi } from '@contractor-ops/auth';
 import type { Prisma } from '@contractor-ops/db';
 import {
   decryptCredentials,
@@ -9,10 +9,11 @@ import {
 import type { GoogleWorkspaceAdapter } from '@contractor-ops/integrations/adapters/google-workspace-adapter';
 import { getQStashClient } from '@contractor-ops/integrations/services/qstash-client';
 import type { DirectoryRole } from '@contractor-ops/validators';
-import { directoryImportInputSchema } from '@contractor-ops/validators';
+import { directoryImportInputSchema, getServerEnv } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { router } from '../init.js';
+import type { TenantScopedDb } from '../lib/tenant-db.js';
 import { requirePermission } from '../middleware/rbac.js';
 import { tenantProcedure } from '../middleware/tenant.js';
 import { requireTier } from '../middleware/tier.js';
@@ -28,8 +29,8 @@ registerAllAdapters();
  * Loads the active Google Workspace connection for an organization,
  * decrypts credentials, refreshes token if expired, and returns adapter.
  */
-async function getGoogleWorkspaceConnection(organizationId: string) {
-  const connection = await ctx.db.integrationConnection.findFirst({
+async function getGoogleWorkspaceConnection(db: TenantScopedDb, organizationId: string) {
+  const connection = await db.integrationConnection.findFirst({
     where: {
       organizationId,
       provider: 'GOOGLE_WORKSPACE',
@@ -58,7 +59,7 @@ async function getGoogleWorkspaceConnection(organizationId: string) {
   if (credentials.expiresAt && new Date(credentials.expiresAt) < new Date()) {
     credentials = await adapter.refreshToken(credentials);
     const encrypted = encryptCredentials(credentials, 'google_workspace');
-    await ctx.db.integrationConnection.update({
+    await db.integrationConnection.update({
       where: { id: connection.id },
       data: {
         credentialsRef: encrypted,
@@ -74,8 +75,12 @@ async function getGoogleWorkspaceConnection(organizationId: string) {
  * Creates a QStash cron schedule for daily directory sync at 2 AM.
  * Idempotent: skips if schedule already exists in connection config.
  */
-async function ensureSyncCronSchedule(connectionId: string, organizationId: string) {
-  const connection = await ctx.db.integrationConnection.findUnique({
+async function ensureSyncCronSchedule(
+  db: TenantScopedDb,
+  connectionId: string,
+  organizationId: string,
+) {
+  const connection = await db.integrationConnection.findUnique({
     where: { id: connectionId },
     select: { configJson: true },
   });
@@ -87,13 +92,13 @@ async function ensureSyncCronSchedule(connectionId: string, organizationId: stri
     const scheduleId = `gw-sync-${organizationId}`;
 
     const schedule = await qstashClient.schedules.create({
-      destination: `${process.env.NEXT_PUBLIC_APP_URL}/api/google-workspace/_sync`,
+      destination: `${getServerEnv().NEXT_PUBLIC_APP_URL}/api/google-workspace/_sync`,
       body: JSON.stringify({ organizationId, connectionId }),
       cron: '0 2 * * *', // Daily at 2 AM
       scheduleId,
     });
 
-    await ctx.db.integrationConnection.update({
+    await db.integrationConnection.update({
       where: { id: connectionId },
       data: {
         configJson: {
@@ -154,12 +159,15 @@ export const googleWorkspaceRouter = router({
   listDirectory: tenantProcedure
     .use(requirePermission({ member: ['read'] }))
     .query(async ({ ctx }) => {
-      const { credentials, adapter } = await getGoogleWorkspaceConnection(ctx.organizationId);
+      const { credentials, adapter } = await getGoogleWorkspaceConnection(
+        ctx.db,
+        ctx.organizationId,
+      );
 
       const googleUsers = await adapter.listAllDirectoryUsers(credentials.accessToken);
 
       // Get existing org members to mark already-imported users
-      const org = await auth.api.getFullOrganization({
+      const org = await authApi.getFullOrganization({
         headers: ctx.headers,
         query: { organizationId: ctx.organizationId },
       });
@@ -214,7 +222,10 @@ export const googleWorkspaceRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const { credentials, adapter } = await getGoogleWorkspaceConnection(ctx.organizationId);
+      const { credentials, adapter } = await getGoogleWorkspaceConnection(
+        ctx.db,
+        ctx.organizationId,
+      );
 
       const groupMap = new Map<
         string,
@@ -261,6 +272,7 @@ export const googleWorkspaceRouter = router({
     .input(directoryImportInputSchema)
     .mutation(async ({ ctx, input }) => {
       const { connection, credentials, adapter } = await getGoogleWorkspaceConnection(
+        ctx.db,
         ctx.organizationId,
       );
 
@@ -284,7 +296,7 @@ export const googleWorkspaceRouter = router({
             input.defaultRole,
           );
 
-          await auth.api.createInvitation({
+          await authApi.createInvitation({
             headers: ctx.headers,
             body: {
               email: user.email,
@@ -314,7 +326,7 @@ export const googleWorkspaceRouter = router({
       });
 
       // Set up daily sync cron after successful import
-      void ensureSyncCronSchedule(connection.id, ctx.organizationId);
+      void ensureSyncCronSchedule(ctx.db, connection.id, ctx.organizationId);
 
       return { succeeded, failed };
     }),
@@ -327,15 +339,15 @@ export const googleWorkspaceRouter = router({
     .use(requirePermission({ member: ['read'] }))
     .use(requireTier('PRO'))
     .mutation(async ({ ctx }) => {
-      const { connection } = await getGoogleWorkspaceConnection(ctx.organizationId);
+      const { connection } = await getGoogleWorkspaceConnection(ctx.db, ctx.organizationId);
 
       // Ensure cron schedule exists
-      await ensureSyncCronSchedule(connection.id, ctx.organizationId);
+      await ensureSyncCronSchedule(ctx.db, connection.id, ctx.organizationId);
 
       // Publish immediate sync job
       const qstashClient = getQStashClient();
       await qstashClient.publishJSON({
-        url: `${process.env.NEXT_PUBLIC_APP_URL}/api/google-workspace/_sync`,
+        url: `${getServerEnv().NEXT_PUBLIC_APP_URL}/api/google-workspace/_sync`,
         body: {
           organizationId: ctx.organizationId,
           connectionId: connection.id,

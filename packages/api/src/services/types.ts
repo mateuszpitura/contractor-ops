@@ -1,13 +1,16 @@
-import type { PrismaClient as BasePrismaClient } from '@contractor-ops/db';
+import type { PrismaClient } from '@contractor-ops/db';
+import type { TenantScopedDb } from '../lib/tenant-db.js';
+
+export type { TenantScopedDb } from '../lib/tenant-db.js';
 
 /**
- * Database client type used across services.
- *
- * Covers both the root PrismaClient and Prisma interactive transaction
- * clients (`prisma.$transaction(async (tx) => ...)`), which share the
- * same query interface but have different runtime types.
- *
- * Using the full PrismaClient type here because Prisma's TransactionClient
- * is a subset — functions accepting DbClient work with either.
+ * Regional, tenant-scoped client (`ctx.db`). Use for all organization-bound queries/mutations
+ * inside tenant procedures — it targets the correct region and enforces tenant scope.
  */
-export type DbClient = BasePrismaClient;
+export type DbClient = TenantScopedDb;
+
+/**
+ * Primary Prisma singleton from `@contractor-ops/db` (EU routing table, cron, auth-adjacent
+ * global tables). Do not use for tenant business data when `ctx.db` is available.
+ */
+export type PrimaryPrismaClient = PrismaClient;

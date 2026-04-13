@@ -1,8 +1,8 @@
-import type { PrismaClient } from '@contractor-ops/db';
 import type { TimeEntry } from '@contractor-ops/db/generated/prisma/client';
 import { TRPCError } from '@trpc/server';
+import type { DbClient } from './types.js';
 
-type TxClient = Parameters<Parameters<PrismaClient['$transaction']>[0]>[0];
+type TxClient = Parameters<Parameters<DbClient['$transaction']>[0]>[0];
 
 // ---------------------------------------------------------------------------
 // Status transition rules (D-03):
@@ -30,7 +30,7 @@ function getISOMonday(date: Date): Date {
 // ---------------------------------------------------------------------------
 
 export async function getOrCreateTimesheet(
-  prisma: PrismaClient,
+  db: DbClient,
   organizationId: string,
   contractorId: string,
   weekStartDate: Date, // Must be a Monday
@@ -44,7 +44,7 @@ export async function getOrCreateTimesheet(
     });
   }
 
-  return prisma.timesheet.upsert({
+  return db.timesheet.upsert({
     where: {
       organizationId_contractorId_weekStartDate: {
         organizationId,
@@ -69,7 +69,7 @@ export async function getOrCreateTimesheet(
 // ---------------------------------------------------------------------------
 
 export async function saveDraftEntries(
-  prisma: PrismaClient,
+  db: DbClient,
   organizationId: string,
   contractorId: string,
   timesheetId: string,
@@ -82,7 +82,7 @@ export async function saveDraftEntries(
   }>,
 ) {
   // Verify timesheet belongs to contractor and is in DRAFT or REJECTED status
-  const timesheet = await prisma.timesheet.findFirst({
+  const timesheet = await db.timesheet.findFirst({
     where: { id: timesheetId, organizationId, contractorId },
   });
 
@@ -101,7 +101,7 @@ export async function saveDraftEntries(
   }
 
   // Upsert entries in transaction
-  const result = await prisma.$transaction(async (tx: TxClient) => {
+  const result = await db.$transaction(async (tx: TxClient) => {
     const upserted: TimeEntry[] = [];
     for (const entry of entries) {
       if (entry.id) {
@@ -175,13 +175,13 @@ export async function saveDraftEntries(
 // ---------------------------------------------------------------------------
 
 export async function submitTimesheet(
-  prisma: PrismaClient,
+  db: DbClient,
   organizationId: string,
   contractorId: string,
   timesheetId: string,
 ) {
   // Optimistic lock: update only if status is DRAFT or REJECTED
-  const updated = await prisma.timesheet.updateMany({
+  const updated = await db.timesheet.updateMany({
     where: {
       id: timesheetId,
       organizationId,
@@ -202,7 +202,7 @@ export async function submitTimesheet(
     });
   }
 
-  return prisma.timesheet.findUniqueOrThrow({
+  return db.timesheet.findUniqueOrThrow({
     where: { id: timesheetId },
     include: { entries: true },
   });
@@ -213,13 +213,13 @@ export async function submitTimesheet(
 // ---------------------------------------------------------------------------
 
 export async function approveTimesheet(
-  prisma: PrismaClient,
+  db: DbClient,
   organizationId: string,
   timesheetId: string,
   reviewerUserId: string,
 ) {
   // D-08: Standalone approval (one person)
-  const updated = await prisma.timesheet.updateMany({
+  const updated = await db.timesheet.updateMany({
     where: {
       id: timesheetId,
       organizationId,
@@ -239,7 +239,7 @@ export async function approveTimesheet(
     });
   }
 
-  return prisma.timesheet.findUniqueOrThrow({
+  return db.timesheet.findUniqueOrThrow({
     where: { id: timesheetId },
     include: { entries: true, contractor: true },
   });
@@ -250,14 +250,14 @@ export async function approveTimesheet(
 // ---------------------------------------------------------------------------
 
 export async function rejectTimesheet(
-  prisma: PrismaClient,
+  db: DbClient,
   organizationId: string,
   timesheetId: string,
   reviewerUserId: string,
   reason: string,
 ) {
   // D-07: Rejection includes reason
-  const updated = await prisma.timesheet.updateMany({
+  const updated = await db.timesheet.updateMany({
     where: {
       id: timesheetId,
       organizationId,
@@ -278,7 +278,7 @@ export async function rejectTimesheet(
     });
   }
 
-  return prisma.timesheet.findUniqueOrThrow({
+  return db.timesheet.findUniqueOrThrow({
     where: { id: timesheetId },
     include: { entries: true, contractor: true },
   });
@@ -289,12 +289,12 @@ export async function rejectTimesheet(
 // ---------------------------------------------------------------------------
 
 export async function bulkApproveTimesheets(
-  prisma: PrismaClient,
+  db: DbClient,
   organizationId: string,
   timesheetIds: string[],
   reviewerUserId: string,
 ) {
-  return prisma.timesheet.updateMany({
+  return db.timesheet.updateMany({
     where: {
       id: { in: timesheetIds },
       organizationId,
@@ -313,13 +313,13 @@ export async function bulkApproveTimesheets(
 // ---------------------------------------------------------------------------
 
 export async function bulkRejectTimesheets(
-  prisma: PrismaClient,
+  db: DbClient,
   organizationId: string,
   timesheetIds: string[],
   reviewerUserId: string,
   reason: string,
 ) {
-  return prisma.timesheet.updateMany({
+  return db.timesheet.updateMany({
     where: {
       id: { in: timesheetIds },
       organizationId,

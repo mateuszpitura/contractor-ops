@@ -1,4 +1,5 @@
 import { randomBytes } from 'node:crypto';
+import { resetServerEnvCacheForTesting } from '@contractor-ops/validators';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { decryptBankAccount, encryptBankAccount } from '../bank-account-crypto.js';
 
@@ -7,16 +8,19 @@ const TEST_KEY = randomBytes(32).toString('hex');
 describe('bank-account-crypto', () => {
   beforeEach(() => {
     vi.stubEnv('BANK_ACCOUNT_ENCRYPTION_KEY', TEST_KEY);
+    resetServerEnvCacheForTesting();
   });
 
   afterEach(() => {
     vi.unstubAllEnvs();
+    resetServerEnvCacheForTesting();
   });
 
   it('throws when BANK_ACCOUNT_ENCRYPTION_KEY is missing', () => {
     vi.stubEnv('BANK_ACCOUNT_ENCRYPTION_KEY', undefined);
+    resetServerEnvCacheForTesting();
     expect(() => encryptBankAccount('PL61109010140000071219812874')).toThrow(
-      'BANK_ACCOUNT_ENCRYPTION_KEY',
+      /Environment validation failed/,
     );
   });
 

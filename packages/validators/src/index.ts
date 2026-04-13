@@ -117,21 +117,6 @@ export {
   mod11_10CheckDigit,
 } from './de-validators.js';
 export type {
-  HandelsregisterCourt,
-} from './handelsregister-courts.js';
-export {
-  HANDELSREGISTER_COURTS,
-} from './handelsregister-courts.js';
-export type {
-  BundeslandCode,
-  SteuernummerFormat,
-} from './steuernummer-formats.js';
-export {
-  getSteuernummerFormat,
-  getSteuernummerRegex,
-  STEUERNUMMER_FORMATS,
-} from './steuernummer-formats.js';
-export type {
   AttachDocInput,
   ConfluencePageMetadata,
   DocSearchInput,
@@ -241,38 +226,9 @@ export {
   googleGroupSchema,
   groupRoleMappingSchema,
 } from './google-workspace.js';
+export type { HandelsregisterCourt } from './handelsregister-courts.js';
+export { HANDELSREGISTER_COURTS } from './handelsregister-courts.js';
 export { optionalFk, optionalPositiveInt, optionalString } from './helpers.js';
-export type { LockedDePhraseKey } from './legal/de.js';
-export type { LockedEnPhraseKey } from './legal/en.js';
-export {
-  LOCKED_EN_PHRASES,
-  RESERVED_EN_LEGAL_KEYS,
-  TAX_UK_REVERSE_CHARGE_NOTICE,
-} from './legal/en.js';
-export type {
-  PrivacyNoticeSection,
-  PrivacyNoticeStructured,
-} from './privacy-notices/types.js';
-export { gbPrivacyNotice } from './privacy-notices/gb.js';
-export { dePrivacyNotice } from './privacy-notices/de.js';
-export { euPrivacyNotice } from './privacy-notices/eu.js';
-export type { SupportedJurisdiction } from './privacy-notices/jurisdiction.js';
-export { resolveJurisdiction } from './privacy-notices/jurisdiction.js';
-export {
-  GDPR_COMPLAINT_HEADING,
-  GDPR_CONTROLLER_LABEL,
-  GDPR_DPO_LABEL,
-  GDPR_RIGHTS_HEADING,
-  LOCKED_DE_PHRASES,
-  RESERVED_LEGAL_KEYS,
-  TAX_HANDELSREGISTER_LABEL,
-  TAX_KLEINUNTERNEHMER_LABEL,
-  TAX_KLEINUNTERNEHMER_NOTICE,
-  TAX_SOZIALVERSICHERUNGSNUMMER_LABEL,
-  TAX_STEUERNUMMER_LABEL,
-  TAX_STEUERSCHULDNERSCHAFT,
-  TAX_USTIDNR_LABEL,
-} from './legal/de.js';
 export type {
   DisconnectProviderInput,
   GetProviderHealthInput,
@@ -330,6 +286,28 @@ export {
   saveJiraStatusMappingInputSchema,
   saveJiraTaskConfigInputSchema,
 } from './jira.js';
+export type { LockedDePhraseKey } from './legal/de.js';
+export {
+  GDPR_COMPLAINT_HEADING,
+  GDPR_CONTROLLER_LABEL,
+  GDPR_DPO_LABEL,
+  GDPR_RIGHTS_HEADING,
+  LOCKED_DE_PHRASES,
+  RESERVED_LEGAL_KEYS,
+  TAX_HANDELSREGISTER_LABEL,
+  TAX_KLEINUNTERNEHMER_LABEL,
+  TAX_KLEINUNTERNEHMER_NOTICE,
+  TAX_SOZIALVERSICHERUNGSNUMMER_LABEL,
+  TAX_STEUERNUMMER_LABEL,
+  TAX_STEUERSCHULDNERSCHAFT,
+  TAX_USTIDNR_LABEL,
+} from './legal/de.js';
+export type { LockedEnPhraseKey } from './legal/en.js';
+export {
+  LOCKED_EN_PHRASES,
+  RESERVED_EN_LEGAL_KEYS,
+  TAX_UK_REVERSE_CHARGE_NOTICE,
+} from './legal/en.js';
 export type {
   LinearIssueMetadata,
   LinearStateType,
@@ -440,6 +418,15 @@ export {
   retryTransmissionSchema,
   transmitInvoiceSchema,
 } from './peppol.js';
+export { dePrivacyNotice } from './privacy-notices/de.js';
+export { euPrivacyNotice } from './privacy-notices/eu.js';
+export { gbPrivacyNotice } from './privacy-notices/gb.js';
+export type { SupportedJurisdiction } from './privacy-notices/jurisdiction.js';
+export { resolveJurisdiction } from './privacy-notices/jurisdiction.js';
+export type {
+  PrivacyNoticeSection,
+  PrivacyNoticeStructured,
+} from './privacy-notices/types.js';
 export type {
   ReminderRuleCreateInput,
   ReminderRuleToggleInput,
@@ -455,15 +442,19 @@ export {
   reminderTriggerTypeEnum,
 } from './reminder.js';
 export type {
+  BundeslandCode,
+  SteuernummerFormat,
+} from './steuernummer-formats.js';
+export {
+  getSteuernummerFormat,
+  getSteuernummerRegex,
+  STEUERNUMMER_FORMATS,
+} from './steuernummer-formats.js';
+export type {
   TaxRateResponse,
   WhtCalculation,
   WhtServiceType,
 } from './tax.js';
-export {
-  isValidCompaniesHouseNumber,
-  isValidGbVat,
-  isValidUtr,
-} from './uk-validators.js';
 export {
   taxRateCodeSchema,
   taxRateResponseSchema,
@@ -498,6 +489,11 @@ export {
   syncExternalEntriesSchema,
   timeReconciliationSchema,
 } from './time-tracking.js';
+export {
+  isValidCompaniesHouseNumber,
+  isValidGbVat,
+  isValidUtr,
+} from './uk-validators.js';
 export type {
   InviteUserInput,
   UpdateUserRoleInput,

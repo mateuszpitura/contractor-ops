@@ -13,6 +13,9 @@ const { ORG_ID, USER_ID, mockPrisma, mockLinearGraphQL, mockRegisterLinearWebhoo
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const mockPrisma: Record<string, any> = {
+      organization: {
+        findUnique: vi.fn().mockResolvedValue({ dataRegion: 'EU' }),
+      },
       integrationConnection: {
         findFirst: vi.fn(),
         update: vi.fn(),
@@ -54,18 +57,22 @@ vi.mock('@contractor-ops/auth', () => ({
       hasPermission: vi.fn().mockResolvedValue({ success: true }),
     },
   },
+  authApi: {
+    hasPermission: vi.fn().mockResolvedValue({ success: true }),
+  },
 }));
 
 vi.mock('@contractor-ops/db', () => ({
   prisma: mockPrisma,
   tenantStore: {
     run: (_ctx: unknown, fn: () => unknown) => fn(),
-    getStore: vi.fn(),
+    getStore: vi.fn(() => ({ region: 'EU' })),
   },
   withTenantScope: vi.fn((c: unknown) => c),
   withSoftDelete: vi.fn((c: unknown) => c),
   createTenantClient: vi.fn(() => mockPrisma),
   createTenantClientFrom: vi.fn(() => mockPrisma),
+  getRegionalClient: vi.fn(() => mockPrisma),
 }));
 
 vi.mock('@sentry/nextjs', () => {
@@ -469,10 +476,10 @@ describe('linearRouter', () => {
       const sourceDir = path.resolve(import.meta.dirname, '../../routers');
       const source = fs.readFileSync(path.join(sourceDir, 'linear.ts'), 'utf-8');
 
-      expect(source).toContain('import { requireTier } from "../middleware/tier.js"');
-      expect(source).toContain('requireTier("PRO")');
+      expect(source).toContain("import { requireTier } from '../middleware/tier.js'");
+      expect(source).toContain("requireTier('PRO')");
 
-      const matches = source.match(/\.use\(requireTier\("PRO"\)\)/g);
+      const matches = source.match(/\.use\(requireTier\('PRO'\)\)/g);
       expect(matches).toHaveLength(2);
     });
 

@@ -8,10 +8,7 @@ export const HMRC_OAUTH_TOKEN_200 = {
   scope: 'read:vat',
 };
 
-export const HMRC_VAT_LOOKUP_200 = (
-  targetVrn: string,
-  requesterVrn?: string,
-) => ({
+export const HMRC_VAT_LOOKUP_200 = (targetVrn: string, requesterVrn?: string) => ({
   processingDate: '2026-04-12T10:00:00Z',
   target: {
     name: 'TEST COMPANY LTD',
@@ -22,9 +19,7 @@ export const HMRC_VAT_LOOKUP_200 = (
       countryCode: 'GB',
     },
   },
-  ...(requesterVrn
-    ? { requester: requesterVrn, consultationNumber: 'C-2026-0001' }
-    : {}),
+  ...(requesterVrn ? { requester: requesterVrn, consultationNumber: 'C-2026-0001' } : {}),
 });
 
 export const HMRC_VAT_LOOKUP_404 = {

@@ -11,12 +11,9 @@ describe('consent — jurisdiction predicates', () => {
       expect(isPdplJurisdiction(code)).toBe(true);
     });
 
-    it.each(['GB', 'DE', 'PL', 'EU', '', null, undefined])(
-      'returns false for %s',
-      code => {
-        expect(isPdplJurisdiction(code)).toBe(false);
-      },
-    );
+    it.each(['GB', 'DE', 'PL', 'EU', '', null, undefined])('returns false for %s', code => {
+      expect(isPdplJurisdiction(code)).toBe(false);
+    });
   });
 
   describe('requiresPrivacyAcknowledgement (Phase 56 · Plan 08, D-10)', () => {
@@ -29,19 +26,14 @@ describe('consent — jurisdiction predicates', () => {
       expect(requiresPrivacyAcknowledgement('de')).toBe(true);
     });
 
-    it.each(['PL', 'US', 'FR', 'EU', '', null, undefined])(
-      'returns false for %s',
-      code => {
-        expect(requiresPrivacyAcknowledgement(code)).toBe(false);
-      },
-    );
+    it.each(['PL', 'US', 'FR', 'EU', '', null, undefined])('returns false for %s', code => {
+      expect(requiresPrivacyAcknowledgement(code)).toBe(false);
+    });
   });
 });
 
 describe('bulkGrantConsentSchema — privacy acknowledgement fields', () => {
-  const baseConsents = [
-    { purpose: 'CONTRACTOR_DATA_PROCESSING', granted: true },
-  ] as const;
+  const baseConsents = [{ purpose: 'CONTRACTOR_DATA_PROCESSING', granted: true }] as const;
 
   it('accepts payload without acknowledgement (existing PDPL flow)', () => {
     const parsed = bulkGrantConsentSchema.parse({ consents: baseConsents });

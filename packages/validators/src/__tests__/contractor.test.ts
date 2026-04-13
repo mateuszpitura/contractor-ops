@@ -209,7 +209,7 @@ describe('contractorListSchema', () => {
     if (result.success) {
       expect(result.data.page).toBe(1);
       expect(result.data.pageSize).toBe(25);
-      expect(result.data.sortBy).toBe('created_at');
+      expect(result.data.sortBy).toBe('createdAt');
       expect(result.data.sortOrder).toBe('desc');
     }
   });
@@ -218,7 +218,7 @@ describe('contractorListSchema', () => {
     const result = contractorListSchema.safeParse({
       page: 3,
       pageSize: 50,
-      sortBy: 'legal_name',
+      sortBy: 'legalName',
       sortOrder: 'asc',
       search: 'acme',
     });
@@ -226,7 +226,7 @@ describe('contractorListSchema', () => {
     if (result.success) {
       expect(result.data.page).toBe(3);
       expect(result.data.pageSize).toBe(50);
-      expect(result.data.sortBy).toBe('legal_name');
+      expect(result.data.sortBy).toBe('legalName');
       expect(result.data.sortOrder).toBe('asc');
     }
   });

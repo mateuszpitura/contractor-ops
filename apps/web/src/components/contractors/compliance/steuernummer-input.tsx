@@ -1,12 +1,9 @@
 'use client';
 
+import type { BundeslandCode } from '@contractor-ops/validators';
+import { getSteuernummerFormat, getSteuernummerRegex } from '@contractor-ops/validators';
 import { Check } from 'lucide-react';
 import { useId, useState } from 'react';
-import {
-  getSteuernummerFormat,
-  getSteuernummerRegex,
-  type BundeslandCode,
-} from '@contractor-ops/validators';
 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -56,12 +53,8 @@ export function SteuernummerInput({
 
   const format = bundesland ? getSteuernummerFormat(bundesland) : undefined;
   const disabled = !bundesland;
-  const placeholder = disabled
-    ? 'Select Bundesland first'
-    : format?.example ?? '';
-  const hint = format
-    ? `Format: ${format.example} · ${format.germanName}`
-    : undefined;
+  const placeholder = disabled ? 'Select Bundesland first' : (format?.example ?? '');
+  const hint = format ? `Format: ${format.example} · ${format.germanName}` : undefined;
 
   const displayError = error ?? localError;
   const showValid =
@@ -71,9 +64,8 @@ export function SteuernummerInput({
     !!bundesland &&
     getSteuernummerRegex(bundesland).test(value);
 
-  const describedBy = [hint ? hintId : null, displayError ? errorId : null]
-    .filter(Boolean)
-    .join(' ') || undefined;
+  const describedBy =
+    [hint ? hintId : null, displayError ? errorId : null].filter(Boolean).join(' ') || undefined;
 
   return (
     <div className="space-y-2">

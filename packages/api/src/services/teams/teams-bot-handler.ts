@@ -11,6 +11,7 @@
 
 import type { Prisma } from '@contractor-ops/db';
 import { prisma } from '@contractor-ops/db';
+import { getServerEnv } from '@contractor-ops/validators';
 import type {
   AdaptiveCardInvokeResponse,
   AdaptiveCardInvokeValue,
@@ -329,7 +330,7 @@ export class TeamsBotHandler extends TeamsActivityHandler {
           currency: invoice.currency,
           approverName: user.userName,
           comment,
-          viewUrl: `${process.env.NEXT_PUBLIC_APP_URL ?? ''}/invoices/${flow.resourceId}`,
+          viewUrl: `${getServerEnv().NEXT_PUBLIC_APP_URL}/invoices/${flow.resourceId}`,
         });
 
         // Update the original card in-place
@@ -528,7 +529,7 @@ export class TeamsBotHandler extends TeamsActivityHandler {
         invoiceNumber: invoice?.invoiceNumber ?? 'N/A',
         amount: ((invoice?.totalMinor ?? 0) / 100).toFixed(2),
         currency: invoice?.currency ?? 'PLN',
-        viewUrl: `${process.env.NEXT_PUBLIC_APP_URL ?? ''}/invoices/${flow.resourceId}`,
+        viewUrl: `${getServerEnv().NEXT_PUBLIC_APP_URL}/invoices/${flow.resourceId}`,
       };
     });
   }

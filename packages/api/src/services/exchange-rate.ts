@@ -6,7 +6,7 @@
  * Per D-06: ExchangeRate table with QStash daily cron.
  */
 
-import type { PrismaClient } from '@contractor-ops/db';
+import type { DbClient, PrimaryPrismaClient } from './types.js';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -72,11 +72,15 @@ export function deriveSarRate(usdPerEur: number | undefined): number | null {
 // ---------------------------------------------------------------------------
 
 /**
- * Fetch rates from ECB, derive AED/SAR, and store in ExchangeRate table.
+ * Fetch rates from ECB, derive AED/SAR, and store in `ExchangeRate`.
  * On fetch failure, attempts to copy previous day's rates as fallback.
+ *
+ * Pass a **base** regional `PrismaClient` from `getRegionalClient(region)` (no tenant
+ * extension): `ExchangeRate` has no `organizationId`, so it must not go through
+ * `createTenantClientFrom`. Cron loops `SUPPORTED_REGIONS` and calls this per region.
  */
 export async function fetchAndStoreRates(
-  prisma: PrismaClient,
+  prisma: PrimaryPrismaClient,
   fetchFn: typeof fetch = fetch,
 ): Promise<{ stored: number; errors: string[] }> {
   const today = new Date();
@@ -222,9 +226,11 @@ export async function fetchAndStoreRates(
 /**
  * Get exchange rate for a currency pair on a specific date.
  * Falls back to most recent available rate if exact date not found (weekends/holidays).
+ *
+ * Pass **`ctx.db`** (regional tenant client) from tenant routes.
  */
 export async function getRate(
-  prisma: PrismaClient,
+  db: DbClient,
   base: string,
   target: string,
   date: Date,
@@ -233,7 +239,7 @@ export async function getRate(
   date: Date;
   source: string;
 } | null> {
-  const direct = await prisma.exchangeRate.findFirst({
+  const direct = await db.exchangeRate.findFirst({
     where: { base, target, date: { lte: date } },
     orderBy: { date: 'desc' },
   });
@@ -254,9 +260,11 @@ export async function getRate(
  * Convert an amount from one currency to another using stored rates.
  * All rates are stored relative to EUR, so non-EUR conversions go through EUR.
  * Returns the converted amount in minor units of the target currency.
+ *
+ * Pass **`ctx.db`** (regional tenant client) from tenant routes.
  */
 export async function convertAmount(
-  prisma: PrismaClient,
+  db: DbClient,
   amountMinor: number,
   fromCurrency: string,
   toCurrency: string,
@@ -279,14 +287,14 @@ export async function convertAmount(
   // Convert through EUR as base
   let fromToEur = 1; // If from is EUR, rate is 1
   if (fromCurrency !== 'EUR') {
-    const fromRate = await getRate(prisma, 'EUR', fromCurrency, rateDate);
+    const fromRate = await getRate(db, 'EUR', fromCurrency, rateDate);
     if (!fromRate) return null;
     fromToEur = 1 / fromRate.rate; // Invert: EUR per 1 fromCurrency
   }
 
   let eurToTarget = 1; // If target is EUR, rate is 1
   if (toCurrency !== 'EUR') {
-    const toRate = await getRate(prisma, 'EUR', toCurrency, rateDate);
+    const toRate = await getRate(db, 'EUR', toCurrency, rateDate);
     if (!toRate) return null;
     eurToTarget = toRate.rate; // EUR to target directly
   }

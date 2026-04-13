@@ -1,9 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  isValidCompaniesHouseNumber,
-  isValidGbVat,
-  isValidUtr,
-} from '../uk-validators.js';
+import { isValidCompaniesHouseNumber, isValidGbVat, isValidUtr } from '../uk-validators.js';
 
 // ---------------------------------------------------------------------------
 // isValidUtr

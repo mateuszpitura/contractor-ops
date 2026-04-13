@@ -288,7 +288,11 @@ export class KsefApiClient {
       const authTag = encryptedBuffer.subarray(encryptedBuffer.length - 16);
       const ciphertext = encryptedBuffer.subarray(12, encryptedBuffer.length - 16);
 
-      const decipher = createDecipheriv('aes-256-gcm', this.session?.encryptionKey, iv);
+      const encryptionKey = this.session?.encryptionKey;
+      if (!encryptionKey) {
+        throw new Error('KSeF session encryption key is required to decrypt the response');
+      }
+      const decipher = createDecipheriv('aes-256-gcm', encryptionKey, iv);
       decipher.setAuthTag(authTag);
 
       const decrypted = Buffer.concat([decipher.update(ciphertext), decipher.final()]);

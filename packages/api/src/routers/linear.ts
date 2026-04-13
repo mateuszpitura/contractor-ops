@@ -9,6 +9,7 @@ import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import * as E from '../errors.js';
 import { router } from '../init.js';
+import type { TenantScopedDb } from '../lib/tenant-db.js';
 import { requirePermission } from '../middleware/rbac.js';
 import { tenantProcedure } from '../middleware/tenant.js';
 import { requireTier } from '../middleware/tier.js';
@@ -52,8 +53,8 @@ function buildLinearApiContext(credentialsRef: string): {
  * Loads a Linear connection for the org, accepting both PENDING_MAPPING
  * and CONNECTED statuses (per D-03: mapping dialog needs access post-OAuth).
  */
-async function loadLinearConnection(organizationId: string) {
-  const connection = await ctx.db.integrationConnection.findFirst({
+async function loadLinearConnection(db: TenantScopedDb, organizationId: string) {
+  const connection = await db.integrationConnection.findFirst({
     where: {
       organizationId,
       provider: 'LINEAR',
@@ -113,7 +114,7 @@ export const linearRouter = router({
    * Accepts both PENDING_MAPPING and CONNECTED connections (D-03).
    */
   teams: tenantProcedure.query(async ({ ctx }) => {
-    const connection = await loadLinearConnection(ctx.organizationId);
+    const connection = await loadLinearConnection(ctx.db, ctx.organizationId);
     const { accessToken } = buildLinearApiContext(connection.credentialsRef);
 
     const result = await linearGraphQL<{
@@ -176,7 +177,7 @@ export const linearRouter = router({
   getStatusMapping: tenantProcedure
     .input(z.object({ teamId: z.string() }))
     .query(async ({ ctx, input }) => {
-      const connection = await loadLinearConnection(ctx.organizationId);
+      const connection = await loadLinearConnection(ctx.db, ctx.organizationId);
       const config = (connection.configJson as LinearConnectionConfig) ?? {};
       const mappings = config.statusMappings ?? {};
       const teamMappings = mappings[input.teamId];
@@ -194,7 +195,7 @@ export const linearRouter = router({
     .use(requireTier('PRO'))
     .input(saveLinearStatusMappingInputSchema)
     .mutation(async ({ ctx, input }) => {
-      const connection = await loadLinearConnection(ctx.organizationId);
+      const connection = await loadLinearConnection(ctx.db, ctx.organizationId);
 
       if (connection.id !== input.connectionId) {
         throw new TRPCError({
@@ -236,7 +237,7 @@ export const linearRouter = router({
       // Fire-and-forget: register webhook for this team if not yet registered
       const webhooks = (config.webhooks as Record<string, string> | undefined) ?? {};
       if (!webhooks[input.teamId]) {
-        void registerLinearWebhook(prisma, connection.id, input.teamId).catch(err =>
+        void registerLinearWebhook(ctx.db, connection.id, input.teamId).catch(err =>
           console.error(`[Linear] Webhook registration failed for team ${input.teamId}:`, err),
         );
       }

@@ -4,6 +4,8 @@ import { extractInvoice } from '@contractor-ops/integrations/services/ocr-servic
 import { getQStashClient } from '@contractor-ops/integrations/services/qstash-client';
 import { createLogger } from '@contractor-ops/logger';
 import { metrics } from '@contractor-ops/logger/metrics';
+import type { BillingCreditDenialReason } from '@contractor-ops/validators';
+import { billingCreditDenialReason, getServerEnv } from '@contractor-ops/validators';
 import * as Sentry from '@sentry/nextjs';
 import { checkAndDeductCredit } from './credit-service.js';
 import { createPresignedDownloadUrl } from './r2.js';
@@ -27,14 +29,12 @@ export async function triggerOcrExtraction(params: {
   documentId: string;
   storageKey: string;
   invoiceId?: string;
-}): Promise<
-  { extractionId: string } | { error: 'no_subscription' | 'credits_exhausted'; remaining: number }
-> {
+}): Promise<{ extractionId: string } | { error: BillingCreditDenialReason; remaining: number }> {
   // Credit check per BILL-06 -- hard-block when exhausted
   const creditResult = await checkAndDeductCredit(params.organizationId);
   if (!creditResult.allowed) {
     return {
-      error: creditResult.reason ?? 'credits_exhausted',
+      error: creditResult.reason ?? billingCreditDenialReason.creditsExhausted,
       remaining: creditResult.remaining,
     };
   }
@@ -51,7 +51,7 @@ export async function triggerOcrExtraction(params: {
 
   const qstash = getQStashClient();
   await qstash.publishJSON({
-    url: `${process.env.NEXT_PUBLIC_APP_URL}/api/ocr/_process`,
+    url: `${getServerEnv().NEXT_PUBLIC_APP_URL}/api/ocr/_process`,
     body: {
       extractionId: extraction.id,
       organizationId: params.organizationId,

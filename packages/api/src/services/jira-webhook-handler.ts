@@ -1,6 +1,6 @@
 import { decryptCredentials } from '@contractor-ops/integrations/services/credential-service';
 import type { JiraIssueMetadata } from '@contractor-ops/validators';
-import { jiraWebhookPayloadSchema } from '@contractor-ops/validators';
+import { getServerEnv, jiraWebhookPayloadSchema } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { lookupWorkflowStatus } from './jira-status-mapping.js';
 import type { DbClient } from './types.js';
@@ -348,13 +348,7 @@ export async function registerJiraWebhooks(
     connection.credentialsRef,
   );
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? process.env.APP_URL;
-  if (!appUrl) {
-    throw new TRPCError({
-      code: 'INTERNAL_SERVER_ERROR',
-      message: 'NEXT_PUBLIC_APP_URL environment variable is required for webhook registration',
-    });
-  }
+  const appUrl = getServerEnv().NEXT_PUBLIC_APP_URL;
 
   // Build JQL filter combining all project keys
   const jqlFilter =

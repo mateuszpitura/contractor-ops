@@ -3,10 +3,18 @@
 import { NextRequest } from 'next/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { mockGetAdapter, mockFindUnique, mockUpdate } = vi.hoisted(() => ({
+const {
+  mockGetAdapter,
+  mockFindUnique,
+  mockUpdate,
+  mockIntegrationConnectionFindUnique,
+  mockProcessResendWebhookDelivery,
+} = vi.hoisted(() => ({
   mockGetAdapter: vi.fn(),
   mockFindUnique: vi.fn(),
   mockUpdate: vi.fn(),
+  mockIntegrationConnectionFindUnique: vi.fn(),
+  mockProcessResendWebhookDelivery: vi.fn(async () => ({ processedCount: 0 })),
 }));
 
 vi.mock('@upstash/qstash/nextjs', () => ({
@@ -26,6 +34,9 @@ vi.mock('@contractor-ops/db', () => ({
     webhookDelivery: {
       findUnique: (...args: any[]) => mockFindUnique(...args),
       update: (...args: any[]) => mockUpdate(...args),
+    },
+    integrationConnection: {
+      findUnique: (...args: any[]) => mockIntegrationConnectionFindUnique(...args),
     },
   },
 }));
@@ -51,6 +62,10 @@ vi.mock('@contractor-ops/api/services/linear-webhook-handler', () => ({
   processLinearWebhook: mockProcessLinearWebhook,
 }));
 
+vi.mock('@contractor-ops/api/services/resend-email-intake', () => ({
+  processResendWebhookDelivery: (...args: unknown[]) => mockProcessResendWebhookDelivery(...args),
+}));
+
 import { POST } from '../route';
 
 function postJson(body: unknown) {
@@ -67,6 +82,7 @@ describe('POST /api/webhooks/_process', () => {
     mockGetAdapter.mockReturnValue(null);
     mockFindUnique.mockResolvedValue(null);
     mockUpdate.mockResolvedValue({});
+    mockIntegrationConnectionFindUnique.mockResolvedValue(null);
   });
 
   it('returns 400 when deliveryId or provider is missing', async () => {
@@ -112,6 +128,7 @@ describe('POST /api/webhooks/_process', () => {
     expect(json.processed).toBe(true);
 
     expect(handleWebhook).toHaveBeenCalledWith({ type: 'test' }, 'org-1', 'conn-1');
+    expect(mockProcessResendWebhookDelivery).not.toHaveBeenCalled();
     expect(mockUpdate).toHaveBeenCalledWith({
       where: { id: 'del-1' },
       data: expect.objectContaining({
@@ -209,6 +226,60 @@ describe('POST /api/webhooks/_process', () => {
 
     expect(res.status).toBe(200);
     expect(mockHandleSigningCompletion).toHaveBeenCalledWith('env-456', 'conn-au', 'AUTENTI');
+  });
+
+  it('backfills organizationId from IntegrationConnection when delivery org is empty', async () => {
+    const handleWebhook = vi.fn(async () => ({ ok: true }));
+
+    mockGetAdapter.mockReturnValue({ handleWebhook });
+    mockFindUnique.mockResolvedValue({
+      id: 'del-backfill',
+      organizationId: '',
+      integrationConnectionId: 'ic-1',
+      eventType: 'UNKNOWN',
+      payloadJson: { type: 'test' },
+    });
+    mockIntegrationConnectionFindUnique.mockResolvedValue({
+      organizationId: 'org-from-connection',
+    });
+
+    const res = await POST(postJson({ deliveryId: 'del-backfill', provider: 'stripe' }));
+
+    expect(res.status).toBe(200);
+    expect(mockIntegrationConnectionFindUnique).toHaveBeenCalledWith({
+      where: { id: 'ic-1' },
+      select: { organizationId: true },
+    });
+    expect(mockUpdate).toHaveBeenCalledWith({
+      where: { id: 'del-backfill' },
+      data: { organizationId: 'org-from-connection' },
+    });
+    expect(handleWebhook).toHaveBeenCalledWith({ type: 'test' }, 'org-from-connection', 'ic-1');
+  });
+
+  it('calls processResendWebhookDelivery for resend provider', async () => {
+    mockGetAdapter.mockReturnValue({
+      handleWebhook: vi.fn(async () => undefined),
+    });
+    mockFindUnique.mockResolvedValue({
+      id: 'del-resend',
+      organizationId: 'org-r',
+      integrationConnectionId: null,
+      eventType: 'email.received',
+      payloadJson: { type: 'email.received', data: { email_id: 'e1' } },
+    });
+
+    const res = await POST(postJson({ deliveryId: 'del-resend', provider: 'resend' }));
+
+    expect(res.status).toBe(200);
+    expect(mockProcessResendWebhookDelivery).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        organizationId: 'org-r',
+        eventType: 'email.received',
+        payloadJson: { type: 'email.received', data: { email_id: 'e1' } },
+      }),
+    );
   });
 
   it('dispatches to processLinearWebhook for linear provider', async () => {

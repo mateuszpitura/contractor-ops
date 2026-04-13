@@ -3,10 +3,24 @@
 import { NextRequest } from 'next/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { mockGetAdapter, mockPublishJSON, mockCreate } = vi.hoisted(() => ({
+const {
+  mockGetAdapter,
+  mockPublishJSON,
+  mockCreate,
+  mockUpdate,
+  mockExtractSlackTeamId,
+  mockResolveSlackConnectionByTeamId,
+  mockOrgFindUnique,
+} = vi.hoisted(() => ({
   mockGetAdapter: vi.fn(),
   mockPublishJSON: vi.fn(async () => undefined),
   mockCreate: vi.fn(async () => ({ id: 'del-1' })),
+  mockUpdate: vi.fn(async () => ({})),
+  mockExtractSlackTeamId: vi.fn(() => undefined as string | undefined),
+  mockResolveSlackConnectionByTeamId: vi.fn(
+    async () => null as { organizationId: string; connectionId: string } | null,
+  ),
+  mockOrgFindUnique: vi.fn(),
 }));
 
 vi.mock('@contractor-ops/integrations/adapters/register-all', () => ({
@@ -14,7 +28,7 @@ vi.mock('@contractor-ops/integrations/adapters/register-all', () => ({
 }));
 
 vi.mock('@contractor-ops/integrations/registry', () => ({
-  getAdapter: (...args: any[]) => mockGetAdapter(...args),
+  getAdapter: (...args: unknown[]) => mockGetAdapter(...args),
 }));
 
 vi.mock('@contractor-ops/integrations/services/qstash-client', () => ({
@@ -26,9 +40,18 @@ vi.mock('@contractor-ops/integrations/services/qstash-client', () => ({
 vi.mock('@contractor-ops/db', () => ({
   prisma: {
     webhookDelivery: {
-      create: (...args: any[]) => mockCreate(...args),
+      create: (...args: unknown[]) => mockCreate(...args),
+      update: (...args: unknown[]) => mockUpdate(...args),
+    },
+    organization: {
+      findUnique: (...args: unknown[]) => mockOrgFindUnique(...args),
     },
   },
+}));
+
+vi.mock('../../slack-webhook-context.js', () => ({
+  extractSlackTeamId: (...a: unknown[]) => mockExtractSlackTeamId(...a),
+  resolveSlackConnectionByTeamId: (...a: unknown[]) => mockResolveSlackConnectionByTeamId(...a),
 }));
 
 import { POST } from '../route';
@@ -50,6 +73,9 @@ describe('POST /api/webhooks/[provider]', () => {
     process.env.NEXT_PUBLIC_APP_URL = 'https://app.test';
     mockCreate.mockResolvedValue({ id: 'del-1' });
     mockGetAdapter.mockReturnValue(null);
+    mockExtractSlackTeamId.mockReturnValue(undefined);
+    mockResolveSlackConnectionByTeamId.mockResolvedValue(null);
+    mockOrgFindUnique.mockResolvedValue(null);
   });
 
   it('returns 404 when provider is unknown', async () => {
@@ -132,7 +158,7 @@ describe('POST /api/webhooks/[provider]', () => {
     );
   });
 
-  it('stores PENDING organizationId when adapter omits org for Slack webhook', async () => {
+  it('resolves Slack organizationId from workspace team id when adapter omits org', async () => {
     const verify = vi.fn(() => ({
       valid: true,
       eventType: 'block_actions',
@@ -142,6 +168,12 @@ describe('POST /api/webhooks/[provider]', () => {
       slug: 'slack',
       supportsWebhooks: true,
       verifyWebhookSignature: verify,
+    });
+
+    mockExtractSlackTeamId.mockReturnValue('T09ABCDEF');
+    mockResolveSlackConnectionByTeamId.mockResolvedValue({
+      organizationId: 'org-from-slack',
+      connectionId: 'conn-slack-1',
     });
 
     const body = new URLSearchParams({
@@ -162,21 +194,47 @@ describe('POST /api/webhooks/[provider]', () => {
     });
 
     expect(res.status).toBe(200);
+    expect(mockResolveSlackConnectionByTeamId).toHaveBeenCalledWith('T09ABCDEF');
     expect(mockCreate).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
-          organizationId: 'PENDING',
-          provider: 'SLACK',
+          organizationId: 'org-from-slack',
+          integrationConnectionId: 'conn-slack-1',
         }),
       }),
     );
   });
 
-  it('persists delivery with organizationId from verification for Resend webhook', async () => {
+  it('does not persist when Slack team cannot be resolved to an org', async () => {
+    mockGetAdapter.mockReturnValue({
+      slug: 'slack',
+      supportsWebhooks: true,
+      verifyWebhookSignature: vi.fn(() => ({ valid: true, eventType: 'event_callback' })),
+    });
+
+    mockExtractSlackTeamId.mockReturnValue(undefined);
+
+    const req = new NextRequest('http://localhost/api/webhooks/slack', {
+      method: 'POST',
+      body: JSON.stringify({ type: 'event_callback' }),
+      headers: { 'content-type': 'application/json' },
+    });
+
+    const res = await POST(req, {
+      params: Promise.resolve({ provider: 'slack' }),
+    });
+
+    expect(res.status).toBe(200);
+    const json = (await res.json()) as { persisted?: boolean };
+    expect(json.persisted).toBe(false);
+    expect(mockCreate).not.toHaveBeenCalled();
+  });
+
+  it('resolves Resend organizationId from slug via Organization lookup', async () => {
     const verify = vi.fn(() => ({
       valid: true,
       eventType: 'email.received',
-      organizationId: 'org-cuid-acme',
+      organizationSlug: 'acme',
     }));
 
     mockGetAdapter.mockReturnValue({
@@ -185,15 +243,22 @@ describe('POST /api/webhooks/[provider]', () => {
       verifyWebhookSignature: verify,
     });
 
+    mockOrgFindUnique.mockResolvedValue({ id: 'org-cuid-acme' });
+
     const req = makeRequest(JSON.stringify({ data: { to: ['x@acme.contractorhub.io'] } }));
     const res = await POST(req, {
       params: Promise.resolve({ provider: 'resend' }),
     });
 
     expect(res.status).toBe(200);
-    const json = (await res.json()) as { received?: boolean };
+    const json = (await res.json()) as { received?: boolean; persisted?: boolean };
     expect(json.received).toBe(true);
+    expect(json.persisted).not.toBe(false);
 
+    expect(mockOrgFindUnique).toHaveBeenCalledWith({
+      where: { slug: 'acme' },
+      select: { id: true },
+    });
     expect(mockCreate).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
@@ -203,15 +268,18 @@ describe('POST /api/webhooks/[provider]', () => {
     );
   });
 
-  it('stores PENDING organizationId when Resend verification omits orgId', async () => {
+  it('returns 200 without persisting when Resend slug does not match an organization', async () => {
     mockGetAdapter.mockReturnValue({
       slug: 'resend',
       supportsWebhooks: true,
       verifyWebhookSignature: vi.fn(() => ({
         valid: true,
         eventType: 'email.received',
+        organizationSlug: 'unknown-slug',
       })),
     });
+
+    mockOrgFindUnique.mockResolvedValue(null);
 
     const req = makeRequest('{}');
     const res = await POST(req, {
@@ -219,14 +287,9 @@ describe('POST /api/webhooks/[provider]', () => {
     });
 
     expect(res.status).toBe(200);
-    const json = (await res.json()) as { received?: boolean };
-    expect(json.received).toBe(true);
-    expect(mockCreate).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({
-          organizationId: 'PENDING',
-        }),
-      }),
-    );
+    const json = (await res.json()) as { persisted?: boolean };
+    expect(json.persisted).toBe(false);
+    expect(mockCreate).not.toHaveBeenCalled();
+    expect(mockPublishJSON).not.toHaveBeenCalled();
   });
 });

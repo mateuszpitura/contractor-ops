@@ -2,6 +2,7 @@
  * Shared constants, helpers, and types for the workflow domain routers.
  * Used by workflow-templates.ts and workflow-execution.ts.
  */
+import { workflowTaskSkipReason } from '@contractor-ops/validators';
 
 // ---------------------------------------------------------------------------
 // i18n workflow template key constants
@@ -169,7 +170,8 @@ export function calculateProgress(tasks: Array<{ status: string; resultJson?: un
   const activeTasks = tasks.filter(t => {
     if (
       t.status === 'SKIPPED' &&
-      (t.resultJson as Record<string, unknown>)?.skipReason === 'condition_not_met'
+      (t.resultJson as Record<string, unknown>)?.skipReason ===
+        workflowTaskSkipReason.conditionNotMet
     ) {
       return false;
     }

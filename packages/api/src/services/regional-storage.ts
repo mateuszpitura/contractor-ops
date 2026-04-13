@@ -17,35 +17,32 @@ import {
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { tenantStore } from '@contractor-ops/db';
+import type { ServerEnv } from '@contractor-ops/validators';
+import { getServerEnv } from '@contractor-ops/validators';
 import { createR2Client } from './r2.js';
 
 // ---------------------------------------------------------------------------
-// Region → bucket env var mapping
+// Region → bucket (validated env)
 // ---------------------------------------------------------------------------
 
-const REGION_BUCKET_MAP: Record<string, string> = {
-  EU: 'R2_BUCKET_NAME_EU',
-  ME: 'R2_BUCKET_NAME_ME',
+const REGION_BUCKET_MAP: Record<'EU' | 'ME', (env: ServerEnv) => string> = {
+  EU: env => env.R2_BUCKET_NAME_EU,
+  ME: env => env.R2_BUCKET_NAME_ME,
 };
 
 /**
  * Returns the R2 bucket name for the given data region.
  *
  * @throws If region is not supported
- * @throws If the corresponding env var is not set
  */
 export function getRegionalBucket(region: string): string {
-  const envVar = REGION_BUCKET_MAP[region];
-  if (!envVar) {
+  const pick = REGION_BUCKET_MAP[region as 'EU' | 'ME'];
+  if (!pick) {
     throw new Error(
       `Unsupported storage region: ${region}. Supported: ${Object.keys(REGION_BUCKET_MAP).join(', ')}`,
     );
   }
-  const bucket = process.env[envVar];
-  if (!bucket) {
-    throw new Error(`${envVar} environment variable is not set for region ${region}`);
-  }
-  return bucket;
+  return pick(getServerEnv());
 }
 
 // ---------------------------------------------------------------------------

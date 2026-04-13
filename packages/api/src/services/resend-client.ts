@@ -1,3 +1,4 @@
+import { getServerEnv } from '@contractor-ops/validators';
 import { Resend } from 'resend';
 
 let resendClient: Resend | null = null;
@@ -7,6 +8,6 @@ let resendClient: Resend | null = null;
  * Shared across billing-webhook, notification-service, and portal-magic-link.
  */
 export function getResend(): Resend {
-  resendClient ??= new Resend(process.env.RESEND_API_KEY);
+  resendClient ??= new Resend(getServerEnv().RESEND_API_KEY);
   return resendClient;
 }

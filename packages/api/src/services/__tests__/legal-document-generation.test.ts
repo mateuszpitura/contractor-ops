@@ -1,3 +1,4 @@
+import { resetServerEnvCacheForTesting } from '@contractor-ops/validators';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@contractor-ops/db', () => ({
@@ -39,7 +40,7 @@ const ORG_ID = 'org_legal_test_001';
 
 beforeEach(() => {
   vi.clearAllMocks();
-  // Reset DATA_HOSTING_REGION to default
+  resetServerEnvCacheForTesting();
   process.env.DATA_HOSTING_REGION = 'EU';
 });
 

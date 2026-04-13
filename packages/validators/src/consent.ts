@@ -61,9 +61,7 @@ export function isPdplJurisdiction(
  * existing Phase 51 PDPL-specific code paths (legal references, notice
  * content) continue to narrow exclusively to AE/SA.
  */
-export function requiresPrivacyAcknowledgement(
-  countryCode: string | null | undefined,
-): boolean {
+export function requiresPrivacyAcknowledgement(countryCode: string | null | undefined): boolean {
   if (isPdplJurisdiction(countryCode)) return true;
   const upper = typeof countryCode === 'string' ? countryCode.toUpperCase() : '';
   return upper === 'GB' || upper === 'DE';
@@ -89,9 +87,7 @@ export const bulkGrantConsentSchema = z.object({
    */
   privacyNoticeAcknowledged: z.boolean().optional(),
   /** ISO-3166 alpha-2 jurisdiction of the notice the user acknowledged. */
-  privacyNoticeJurisdiction: z
-    .enum(['AE', 'SA', 'GB', 'DE', 'EU'])
-    .optional(),
+  privacyNoticeJurisdiction: z.enum(['AE', 'SA', 'GB', 'DE', 'EU']).optional(),
   /** Version number of the notice content that was acknowledged. */
   privacyNoticeVersion: z.number().int().positive().optional(),
 });

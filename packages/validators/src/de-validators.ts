@@ -13,12 +13,9 @@
 // will fail to build until Plan 04's data modules are present, which is
 // the designed cross-plan integration signal.
 
-import {
-  getSteuernummerRegex,
-  STEUERNUMMER_FORMATS,
-  type BundeslandCode,
-} from './steuernummer-formats.js';
 import { HANDELSREGISTER_COURTS } from './handelsregister-courts.js';
+import type { BundeslandCode } from './steuernummer-formats.js';
+import { getSteuernummerRegex, STEUERNUMMER_FORMATS } from './steuernummer-formats.js';
 
 // ---------------------------------------------------------------------------
 // ISO 7064 MOD 11,10 Pure System check digit
@@ -61,7 +58,7 @@ export function isValidUstIdNr(raw: string): boolean {
   const vat = raw.replace(/[\s-]/g, '').toUpperCase();
   const m = vat.match(/^DE(\d{9})$/);
   if (!m) return false;
-  const digits = m[1]!.split('').map(Number);
+  const digits = m[1]?.split('').map(Number);
   const body = digits.slice(0, 8);
   const check = digits[8]!;
   return mod11_10CheckDigit(body) === check;
@@ -106,15 +103,10 @@ export function isValidSvNummer(raw: string): boolean {
   const letter = sv.charCodeAt(8) - 64; // 'A' → 1 … 'Z' → 26
   const serialAndCheck = sv.slice(9);
   const expandedLetter = letter.toString().padStart(2, '0');
-  const expanded = (areaAndDob + expandedLetter + serialAndCheck.slice(0, 2))
-    .split('')
-    .map(Number);
+  const expanded = (areaAndDob + expandedLetter + serialAndCheck.slice(0, 2)).split('').map(Number);
   const checkDigit = Number(serialAndCheck[2]);
 
-  const sum = SV_WEIGHTS.reduce(
-    (acc, w, i) => acc + digitSum(w * expanded[i]!),
-    0,
-  );
+  const sum = SV_WEIGHTS.reduce((acc, w, i) => acc + digitSum(w * expanded[i]!), 0);
 
   return sum % 10 === checkDigit;
 }
@@ -133,7 +125,7 @@ export function isValidSvNummer(raw: string): boolean {
  * Returns `false` for unknown Bundesland codes (defensive default).
  */
 export function isValidSteuernummer(bundesland: string, value: string): boolean {
-  const known = STEUERNUMMER_FORMATS.some((f) => f.code === bundesland);
+  const known = STEUERNUMMER_FORMATS.some(f => f.code === bundesland);
   if (!known) return false;
   const rx = getSteuernummerRegex(bundesland as BundeslandCode);
   return rx.test(value);
@@ -143,9 +135,7 @@ export function isValidSteuernummer(bundesland: string, value: string): boolean 
 // Handelsregister — composite (court + HRB/HRA + number ≤ 7 digits)
 // ---------------------------------------------------------------------------
 
-const COURT_CODE_SET: ReadonlySet<string> = new Set(
-  HANDELSREGISTER_COURTS.map((c) => c.code),
-);
+const COURT_CODE_SET: ReadonlySet<string> = new Set(HANDELSREGISTER_COURTS.map(c => c.code));
 
 /**
  * Validates the Handelsregister composite identifier.
@@ -162,7 +152,7 @@ export function isValidHandelsregister(input: {
   type: 'HRB' | 'HRA';
   number: string;
 }): boolean {
-  if (!input.court || !COURT_CODE_SET.has(input.court)) return false;
+  if (!(input.court && COURT_CODE_SET.has(input.court))) return false;
   if (input.type !== 'HRB' && input.type !== 'HRA') return false;
   if (!/^\d{1,7}$/.test(input.number)) return false;
   return true;

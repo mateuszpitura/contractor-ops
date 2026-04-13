@@ -1,20 +1,8 @@
 import { z } from 'zod';
-
-import {
-  isValidCompaniesHouseNumber,
-  isValidGbVat,
-  isValidUtr,
-} from './uk-validators.js';
-import {
-  isValidHandelsregister,
-  isValidSvNummer,
-  isValidUstIdNr,
-} from './de-validators.js';
-import {
-  getSteuernummerFormat,
-  getSteuernummerRegex,
-} from './steuernummer-formats.js';
+import { isValidHandelsregister, isValidSvNummer, isValidUstIdNr } from './de-validators.js';
 import { HANDELSREGISTER_COURTS } from './handelsregister-courts.js';
+import { getSteuernummerFormat, getSteuernummerRegex } from './steuernummer-formats.js';
+import { isValidCompaniesHouseNumber, isValidGbVat, isValidUtr } from './uk-validators.js';
 
 // ---------------------------------------------------------------------------
 // UAE Country Fields
@@ -61,21 +49,15 @@ export const ukCountryFieldsSchema = z
     isVatRegistered: z.boolean().default(false),
     utr: z
       .string()
-      .refine((v) => !v || isValidUtr(v), 'Invalid UTR checksum')
+      .refine(v => !v || isValidUtr(v), 'Invalid UTR checksum')
       .optional(),
     companiesHouseNumber: z
       .string()
-      .refine(
-        (v) => !v || isValidCompaniesHouseNumber(v),
-        'Invalid Companies House number',
-      )
+      .refine(v => !v || isValidCompaniesHouseNumber(v), 'Invalid Companies House number')
       .optional(),
     vatRegistrationNumber: z
       .string()
-      .refine(
-        (v) => !v || isValidGbVat(v),
-        'Invalid UK VAT registration number',
-      )
+      .refine(v => !v || isValidGbVat(v), 'Invalid UK VAT registration number')
       .optional(),
   })
   .superRefine((data, ctx) => {
@@ -103,8 +85,7 @@ export const ukCountryFieldsSchema = z
     if (data.isVatRegistered && !data.vatRegistrationNumber) {
       ctx.addIssue({
         code: 'custom',
-        message:
-          'VAT registration number is required when VAT-registered is toggled on',
+        message: 'VAT registration number is required when VAT-registered is toggled on',
         path: ['vatRegistrationNumber'],
       });
     }
@@ -161,13 +142,10 @@ const handelsregisterSchema = z
     type: z.enum(['HRB', 'HRA']),
     number: z.string().regex(/^\d{1,7}$/, 'Number must be 1–7 digits'),
   })
-  .refine(
-    (v) => HANDELSREGISTER_COURTS.some((c) => c.code === v.court),
-    {
-      message: 'Unknown Handelsregister court',
-      path: ['court'],
-    },
-  );
+  .refine(v => HANDELSREGISTER_COURTS.some(c => c.code === v.court), {
+    message: 'Unknown Handelsregister court',
+    path: ['court'],
+  });
 
 export const deCountryFieldsSchema = z
   .object({
@@ -178,29 +156,17 @@ export const deCountryFieldsSchema = z
     steuernummer: z.string().optional(),
     ustIdNr: z
       .string()
-      .refine(
-        (v) => !v || isValidUstIdNr(v),
-        'Invalid USt-IdNr checksum',
-      )
+      .refine(v => !v || isValidUstIdNr(v), 'Invalid USt-IdNr checksum')
       .optional(),
     handelsregister: handelsregisterSchema.optional(),
     sozialversicherungsnummer: z
       .string()
-      .refine(
-        (v) => !v || isValidSvNummer(v),
-        'Invalid Sozialversicherungsnummer structural check',
-      )
+      .refine(v => !v || isValidSvNummer(v), 'Invalid Sozialversicherungsnummer structural check')
       .optional(),
   })
   .superRefine((data, ctx) => {
     // Steuernummer — required + Bundesland-specific regex dispatch
-    if (!data.steuernummer) {
-      ctx.addIssue({
-        code: 'custom',
-        message: 'Steuernummer is required',
-        path: ['steuernummer'],
-      });
-    } else {
+    if (data.steuernummer) {
       const format = getSteuernummerFormat(data.bundesland);
       const rx = getSteuernummerRegex(data.bundesland);
       if (!rx.test(data.steuernummer)) {
@@ -210,13 +176,16 @@ export const deCountryFieldsSchema = z
           path: ['steuernummer'],
         });
       }
+    } else {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'Steuernummer is required',
+        path: ['steuernummer'],
+      });
     }
 
     // Handelsregister — required for UG/GMBH only
-    if (
-      (data.entityType === 'UG' || data.entityType === 'GMBH') &&
-      !data.handelsregister
-    ) {
+    if ((data.entityType === 'UG' || data.entityType === 'GMBH') && !data.handelsregister) {
       ctx.addIssue({
         code: 'custom',
         message: 'Handelsregister is required for UG/GmbH entities',
@@ -228,28 +197,19 @@ export const deCountryFieldsSchema = z
     // Delegates to Plan 03's isValidHandelsregister for cross-field structural
     // consistency. Per-field format + court-whitelist are handled by the inner
     // `handelsregisterSchema` .refine, so this catches any residual mismatch.
-    if (
-      data.handelsregister &&
-      !isValidHandelsregister(data.handelsregister)
-    ) {
+    if (data.handelsregister && !isValidHandelsregister(data.handelsregister)) {
       ctx.addIssue({
         code: 'custom',
-        message:
-          'All three parts are required: court, register type (HRB/HRA), and number.',
+        message: 'All three parts are required: court, register type (HRB/HRA), and number.',
         path: ['handelsregister'],
       });
     }
 
     // USt-IdNr — required when VAT-registered and not Kleinunternehmer
-    if (
-      data.isVatRegistered &&
-      !data.isKleinunternehmer &&
-      !data.ustIdNr
-    ) {
+    if (data.isVatRegistered && !data.isKleinunternehmer && !data.ustIdNr) {
       ctx.addIssue({
         code: 'custom',
-        message:
-          'USt-IdNr is required when VAT-registered and not a Kleinunternehmer',
+        message: 'USt-IdNr is required when VAT-registered and not a Kleinunternehmer',
         path: ['ustIdNr'],
       });
     }

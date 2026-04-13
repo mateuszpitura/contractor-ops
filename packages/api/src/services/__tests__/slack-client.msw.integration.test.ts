@@ -1,15 +1,17 @@
 /**
  * Integration: real Slack WebClient + MSW HTTP mocks (no @slack/web-api mock).
- * Validates outbound URLs and JSON against handlers in @contractor-ops/test-utils.
+ * Credential blob: encryptCredentials(JSON) with SLACK_ENCRYPTION_KEY; accessToken uses encryptToken() with SLACK_TOKEN_ENCRYPTION_KEY.
  */
-
+import { encryptCredentials } from '@contractor-ops/integrations/services/credential-service';
 import { createMockServer, selectHandlers } from '@contractor-ops/test-utils';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { encryptToken, sendReminderDM, syncWorkspaceUsers } from '../slack-client.js';
 
 const ORG_ID = 'org-msw-slack';
 const CONN_ID = 'conn-msw-slack';
 
-const { mockPrisma, mockGetCredentials } = vi.hoisted(() => {
+const { mockPrisma } = vi.hoisted(() => {
   const mockPrisma = {
     integrationConnection: {
       findFirst: vi.fn(),
@@ -22,19 +24,12 @@ const { mockPrisma, mockGetCredentials } = vi.hoisted(() => {
       findFirst: vi.fn(),
     },
   };
-  const mockGetCredentials = vi.fn();
-  return { mockPrisma, mockGetCredentials };
+  return { mockPrisma };
 });
 
 vi.mock('@contractor-ops/db', () => ({
   prisma: mockPrisma,
 }));
-
-vi.mock('@contractor-ops/integrations/services/credential-service', () => ({
-  getCredentials: (...args: any[]) => mockGetCredentials(...args),
-}));
-
-import { sendReminderDM, syncWorkspaceUsers } from '../slack-client.js';
 
 const { server } = createMockServer({
   handlersOnly: true,
@@ -54,12 +49,13 @@ afterAll(() => server.close());
 
 describe('slack-client + MSW', () => {
   beforeEach(() => {
+    const inner = encryptToken('xoxb-msw-integration');
+    const credentialsRef = encryptCredentials({ accessToken: inner }, 'slack');
     mockPrisma.integrationConnection.findFirst.mockResolvedValue({
       id: CONN_ID,
-      credentialsRef: `${ORG_ID}/slack`,
+      credentialsRef,
       status: 'CONNECTED',
     });
-    mockGetCredentials.mockResolvedValue({ accessToken: 'xoxb-msw-integration' });
   });
 
   it('sendReminderDM reaches mock Slack chat.postMessage', async () => {
@@ -71,7 +67,6 @@ describe('slack-client + MSW', () => {
 
     expect(out).not.toBeNull();
     expect(out?.ok).toBe(true);
-    expect(mockGetCredentials).toHaveBeenCalledWith(`${ORG_ID}/slack`, 'slack');
   });
 
   it('syncWorkspaceUsers uses mock users.list and creates links for matched emails', async () => {

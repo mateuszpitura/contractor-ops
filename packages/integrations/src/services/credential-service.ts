@@ -81,3 +81,29 @@ export function decryptCredentials(encrypted: string, providerSlug: string): Cre
 
   return JSON.parse(decrypted) as CredentialBlob;
 }
+
+// ---------------------------------------------------------------------------
+// Async API — credentialsRef is the encrypted string stored on IntegrationConnection
+// ---------------------------------------------------------------------------
+
+export async function storeCredentials(
+  blob: CredentialBlob,
+  _organizationId: string,
+  providerSlug: string,
+): Promise<string> {
+  return encryptCredentials(blob, providerSlug);
+}
+
+export async function getCredentials(
+  credentialsRef: string,
+  providerSlug: string,
+): Promise<CredentialBlob> {
+  return decryptCredentials(credentialsRef, providerSlug);
+}
+
+export async function deleteCredentials(
+  _credentialsRef: string,
+  _providerSlug: string,
+): Promise<void> {
+  // Inline AES blob: nothing external to delete
+}

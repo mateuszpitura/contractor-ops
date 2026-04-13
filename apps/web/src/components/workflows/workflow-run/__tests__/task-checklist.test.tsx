@@ -1,3 +1,4 @@
+import { workflowTaskSkipReason } from '@contractor-ops/validators';
 import { render, screen } from '@/test/test-utils';
 import { TaskChecklist } from '../task-checklist';
 
@@ -101,7 +102,7 @@ describe('TaskChecklist', () => {
       ...mockTasks[0],
       id: 't3',
       status: 'SKIPPED',
-      resultJson: { skipReason: 'condition_not_met' },
+      resultJson: { skipReason: workflowTaskSkipReason.conditionNotMet },
     };
     render(<TaskChecklist tasks={[skippedTask]} runId="run-1" currentUserId="u1" />);
     const wrapper = screen.getByText('Task 1').closest("[class*='opacity']");

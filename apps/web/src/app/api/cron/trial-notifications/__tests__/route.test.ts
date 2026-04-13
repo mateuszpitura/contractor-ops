@@ -17,10 +17,8 @@ vi.mock('@contractor-ops/api/services/notification-service', () => ({
   dispatch: vi.fn(),
 }));
 
-vi.mock('resend', () => ({
-  Resend: class {
-    emails = { send: vi.fn().mockResolvedValue({ id: 'email-1' }) };
-  },
+vi.mock('@contractor-ops/api/services/app-email', () => ({
+  sendAppEmail: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock('@sentry/nextjs', () => ({

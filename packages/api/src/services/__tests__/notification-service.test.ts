@@ -12,6 +12,7 @@ const {
   mockUserFindUnique,
   mockConnectionFindMany,
   mockConnectionFindFirst,
+  mockSendAppEmail,
 } = vi.hoisted(() => ({
   mockFindFirst: vi.fn(),
   mockCreate: vi.fn(),
@@ -20,6 +21,7 @@ const {
   mockUserFindUnique: vi.fn(),
   mockConnectionFindMany: vi.fn(),
   mockConnectionFindFirst: vi.fn(),
+  mockSendAppEmail: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock('@contractor-ops/db', () => ({
@@ -42,10 +44,8 @@ vi.mock('@contractor-ops/db', () => ({
   },
 }));
 
-vi.mock('resend', () => ({
-  Resend: vi.fn().mockImplementation(() => ({
-    emails: { send: vi.fn().mockResolvedValue({ id: 'email_1' }) },
-  })),
+vi.mock('../app-email.js', () => ({
+  sendAppEmail: (...args: unknown[]) => mockSendAppEmail(...args),
 }));
 
 vi.mock('../email-templates.js', () => ({

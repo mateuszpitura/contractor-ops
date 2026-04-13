@@ -8,6 +8,8 @@ import {
 } from '@contractor-ops/integrations';
 import {
   disconnectProviderSchema,
+  getServerEnv,
+  getServerEnvRecord,
   getSyncLogSchema,
   getWebhookLogSchema,
   providerSlugSchema,
@@ -88,9 +90,10 @@ export const integrationRouter = router({
   getOAuthUrl: tenantProcedure
     .use(requirePermission({ organization: ['update'] }))
     .query(async ({ ctx }) => {
-      const clientId = process.env.SLACK_CLIENT_ID;
-      const redirectUri = process.env.SLACK_REDIRECT_URI;
-      const signingSecret = process.env.SLACK_SIGNING_SECRET ?? process.env.SLACK_CLIENT_SECRET;
+      const env = getServerEnv();
+      const clientId = env.SLACK_CLIENT_ID;
+      const redirectUri = env.SLACK_REDIRECT_URI;
+      const signingSecret = env.SLACK_SIGNING_SECRET ?? env.SLACK_CLIENT_SECRET;
 
       if (!(clientId && redirectUri && signingSecret)) {
         throw new TRPCError({
@@ -330,9 +333,10 @@ export const integrationRouter = router({
       }
 
       const oauthConfig = adapter.getOAuthConfig();
-      const clientId = process.env[oauthConfig.clientIdEnvVar];
-      const clientSecret = process.env[oauthConfig.clientSecretEnvVar];
-      const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+      const env = getServerEnvRecord();
+      const clientId = env[oauthConfig.clientIdEnvVar];
+      const clientSecret = env[oauthConfig.clientSecretEnvVar];
+      const appUrl = getServerEnv().NEXT_PUBLIC_APP_URL;
 
       if (!(clientId && clientSecret && appUrl)) {
         throw new TRPCError({

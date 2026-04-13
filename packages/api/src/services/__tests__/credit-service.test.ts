@@ -221,11 +221,11 @@ describe('getCreditBalance', () => {
 
 describe('checkAndDeductCredit', () => {
   // -------------------------------------------------------------------------
-  // Branch: no subscription → { allowed: false, reason: "no_subscription" }
+  // Branch: no subscription → { allowed: false, reason: "noSubscription" }
   // -------------------------------------------------------------------------
 
   describe('when no active subscription exists', () => {
-    it("denies with reason 'no_subscription' when subscription is null", async () => {
+    it("denies with reason 'noSubscription' when subscription is null", async () => {
       mockPrisma.subscription.findUnique.mockResolvedValue(null);
 
       const result = await checkAndDeductCredit(ORG_ID);
@@ -233,11 +233,11 @@ describe('checkAndDeductCredit', () => {
       expect(result).toEqual({
         allowed: false,
         remaining: 0,
-        reason: 'no_subscription',
+        reason: 'noSubscription',
       });
     });
 
-    it("denies with reason 'no_subscription' when status is CANCELED", async () => {
+    it("denies with reason 'noSubscription' when status is CANCELED", async () => {
       mockPrisma.subscription.findUnique.mockResolvedValue(
         makeSubscription({ status: 'CANCELED' }),
       );
@@ -247,7 +247,7 @@ describe('checkAndDeductCredit', () => {
       expect(result).toEqual({
         allowed: false,
         remaining: 0,
-        reason: 'no_subscription',
+        reason: 'noSubscription',
       });
     });
 
@@ -256,7 +256,7 @@ describe('checkAndDeductCredit', () => {
 
       await checkAndDeductCredit(ORG_ID);
 
-      // The no_subscription branch returns immediately after findUnique,
+      // The noSubscription branch returns immediately after findUnique,
       // so neither ledger deduction nor Stripe metering should run
       expect(mockPrisma.ocrCreditLedger.create).not.toHaveBeenCalled();
       expect(mockPrisma.ocrCreditLedger.aggregate).not.toHaveBeenCalled();
@@ -265,7 +265,7 @@ describe('checkAndDeductCredit', () => {
   });
 
   // -------------------------------------------------------------------------
-  // Branch: used >= allowance → { allowed: false, reason: "credits_exhausted" }
+  // Branch: used >= allowance → { allowed: false, reason: "creditsExhausted" }
   // -------------------------------------------------------------------------
 
   describe('when credits are exhausted', () => {
@@ -278,7 +278,7 @@ describe('checkAndDeductCredit', () => {
       expect(result).toEqual({
         allowed: false,
         remaining: 0,
-        reason: 'credits_exhausted',
+        reason: 'creditsExhausted',
       });
     });
 
@@ -291,7 +291,7 @@ describe('checkAndDeductCredit', () => {
       expect(result).toEqual({
         allowed: false,
         remaining: 0,
-        reason: 'credits_exhausted',
+        reason: 'creditsExhausted',
       });
     });
 
@@ -306,7 +306,7 @@ describe('checkAndDeductCredit', () => {
       expect(result).toEqual({
         allowed: false,
         remaining: 0,
-        reason: 'credits_exhausted',
+        reason: 'creditsExhausted',
       });
     });
 
@@ -316,7 +316,7 @@ describe('checkAndDeductCredit', () => {
 
       await checkAndDeductCredit(ORG_ID);
 
-      // The credits_exhausted branch returns after aggregate check (remaining <= 0),
+      // The creditsExhausted branch returns after aggregate check (remaining <= 0),
       // so no ledger entry is created, no Stripe event is fired, and cache is not invalidated
       expect(mockPrisma.ocrCreditLedger.create).not.toHaveBeenCalled();
       expect(mockStripe.billing.meterEvents.create).not.toHaveBeenCalled();

@@ -47,7 +47,8 @@ export default async function PrivacyIndexPage({ params }: PrivacyIndexPageProps
           Privacy Notice
         </h1>
         <p className="mt-3 text-sm text-muted-foreground">
-          Select the jurisdiction that applies to you. If you're signed in, we route you automatically based on your organisation's country.
+          Select the jurisdiction that applies to you. If you're signed in, we route you
+          automatically based on your organisation's country.
         </p>
       </header>
 
@@ -56,7 +57,7 @@ export default async function PrivacyIndexPage({ params }: PrivacyIndexPageProps
           { slug: 'gb', label: 'United Kingdom', subtitle: 'UK GDPR · DPA 2018' },
           { slug: 'de', label: 'Deutschland', subtitle: 'DSGVO · BDSG' },
           { slug: 'eu', label: 'European Union', subtitle: 'GDPR · general fallback' },
-        ].map((jurisdiction) => (
+        ].map(jurisdiction => (
           <li key={jurisdiction.slug}>
             <Link
               href={`/legal/privacy/${jurisdiction.slug}`}

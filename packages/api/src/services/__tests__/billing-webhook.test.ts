@@ -68,12 +68,9 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
   metrics: { increment: vi.fn() },
 }));
 
-vi.mock('resend', () => {
-  class MockResend {
-    emails = { send: (...args: any[]) => mockEmailSend(...args) };
-  }
-  return { Resend: MockResend };
-});
+vi.mock('../app-email.js', () => ({
+  sendAppEmail: (...args: unknown[]) => mockEmailSend(...args),
+}));
 
 // ---------------------------------------------------------------------------
 // Import after mocks

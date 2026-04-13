@@ -27,24 +27,14 @@ export interface VatRegisteredToggleProps {
  * `htmlFor`-style `onClick` on the container. Keyboard access uses the
  * Switch's own focus ring + Space/Enter handling.
  */
-export function VatRegisteredToggle({
-  checked,
-  onChange,
-  label,
-  id,
-}: VatRegisteredToggleProps) {
+export function VatRegisteredToggle({ checked, onChange, label, id }: VatRegisteredToggleProps) {
   const reactId = useId();
   const switchId = id ?? `vat-toggle-${reactId}`;
   const textId = `${switchId}-text`;
 
   return (
     <div className="flex items-center gap-2">
-      <Switch
-        id={switchId}
-        checked={checked}
-        onCheckedChange={onChange}
-        aria-labelledby={textId}
-      />
+      <Switch id={switchId} checked={checked} onCheckedChange={onChange} aria-labelledby={textId} />
       <span
         id={textId}
         className="text-sm font-medium select-none"

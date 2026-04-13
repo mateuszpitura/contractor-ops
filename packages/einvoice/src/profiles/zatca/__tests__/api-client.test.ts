@@ -93,7 +93,10 @@ describe('ZatcaApiClient', () => {
     });
 
     const expectedAuth = `Basic ${Buffer.from('mytoken:mysecret').toString('base64')}`;
-    const callArgs = mockFetch.mock.calls[0];
-    expect(callArgs[1].headers.Authorization).toBe(expectedAuth);
+    const opts = mockFetch.mock.calls[0][1] as RequestInit;
+    const h = opts.headers;
+    const auth =
+      h instanceof Headers ? h.get('Authorization') : (h as Record<string, string>).Authorization;
+    expect(auth).toBe(expectedAuth);
   });
 });

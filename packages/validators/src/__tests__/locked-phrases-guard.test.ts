@@ -18,10 +18,7 @@ import { describe, expect, it } from 'vitest';
 import { LOCKED_DE_PHRASES, RESERVED_LEGAL_KEYS } from '../legal/de.js';
 import { LOCKED_EN_PHRASES, RESERVED_EN_LEGAL_KEYS } from '../legal/en.js';
 
-const messagesDir = path.resolve(
-  __dirname,
-  '../../../../apps/web/messages',
-);
+const messagesDir = path.resolve(__dirname, '../../../../apps/web/messages');
 const locales = ['en', 'pl', 'ar', 'de'] as const;
 
 function loadMessages(locale: string): Record<string, unknown> | null {
@@ -33,58 +30,37 @@ function loadMessages(locale: string): Record<string, unknown> | null {
 function flatKeys(obj: unknown, prefix = ''): string[] {
   if (!obj || typeof obj !== 'object') return [];
   return Object.entries(obj as Record<string, unknown>).flatMap(([k, v]) =>
-    v !== null && typeof v === 'object'
-      ? flatKeys(v, `${prefix}${k}.`)
-      : [`${prefix}${k}`],
+    v !== null && typeof v === 'object' ? flatKeys(v, `${prefix}${k}.`) : [`${prefix}${k}`],
   );
 }
 
 describe('Locked German legal phrases (D-05, D-06)', () => {
-  it.each(locales)(
-    'messages/%s.json does not define any reserved legal key',
-    (locale) => {
-      const messages = loadMessages(locale);
-      if (messages === null) return; // locale file not yet created (Plan 05 adds de.json)
+  it.each(locales)('messages/%s.json does not define any reserved legal key', locale => {
+    const messages = loadMessages(locale);
+    if (messages === null) return; // locale file not yet created (Plan 05 adds de.json)
 
-      const keys = flatKeys(messages);
-      const reserved = [
-        ...RESERVED_LEGAL_KEYS,
-        ...RESERVED_EN_LEGAL_KEYS,
-      ];
-      const violations = keys.filter((k) =>
-        reserved.some(
-          (r) => k === r || k.endsWith(`.${r}`),
-        ),
-      );
-      expect(
-        violations,
-        `Reserved legal keys leaked into ${locale}.json: ${violations.join(', ')}`,
-      ).toEqual([]);
-    },
-  );
+    const keys = flatKeys(messages);
+    const reserved = [...RESERVED_LEGAL_KEYS, ...RESERVED_EN_LEGAL_KEYS];
+    const violations = keys.filter(k => reserved.some(r => k === r || k.endsWith(`.${r}`)));
+    expect(
+      violations,
+      `Reserved legal keys leaked into ${locale}.json: ${violations.join(', ')}`,
+    ).toEqual([]);
+  });
 
   it('privacy-notices/de.ts content contains every locked phrase (output-level D-06)', async () => {
     // TODO Plan 07 — privacy-notices/de.ts is created there. Skip until it exists.
-    const privacyDePath = path.resolve(
-      __dirname,
-      '../privacy-notices/de.ts',
-    );
+    const privacyDePath = path.resolve(__dirname, '../privacy-notices/de.ts');
     if (!fs.existsSync(privacyDePath)) return;
 
     const dePrivacy = await import('../privacy-notices/de.js');
     const serialized = JSON.stringify(dePrivacy);
     // Phase 57 (D-11, D-14) — invoice-footer phrases are rendered on invoices,
     // NOT in privacy notices; exempt them from the privacy-notice content check.
-    const privacyScopedKeys = new Set([
-      'TAX_KLEINUNTERNEHMER_NOTICE',
-      'TAX_STEUERSCHULDNERSCHAFT',
-    ]);
+    const privacyScopedKeys = new Set(['TAX_KLEINUNTERNEHMER_NOTICE', 'TAX_STEUERSCHULDNERSCHAFT']);
     for (const [key, phrase] of Object.entries(LOCKED_DE_PHRASES)) {
       if (privacyScopedKeys.has(key)) continue;
-      expect(
-        serialized,
-        `Missing ${key}="${phrase}" in privacy-notices/de.ts`,
-      ).toContain(phrase);
+      expect(serialized, `Missing ${key}="${phrase}" in privacy-notices/de.ts`).toContain(phrase);
     }
   });
 
@@ -103,9 +79,7 @@ describe('Locked German legal phrases (D-05, D-06)', () => {
   });
 
   it('RESERVED_LEGAL_KEYS mirrors LOCKED_DE_PHRASES keys', () => {
-    expect([...RESERVED_LEGAL_KEYS].sort()).toEqual(
-      Object.keys(LOCKED_DE_PHRASES).sort(),
-    );
+    expect([...RESERVED_LEGAL_KEYS].sort()).toEqual(Object.keys(LOCKED_DE_PHRASES).sort());
   });
 
   it('every LOCKED_DE_PHRASES value is a non-empty string', () => {
@@ -116,16 +90,12 @@ describe('Locked German legal phrases (D-05, D-06)', () => {
   });
 
   it('contains the GDPR controller label verbatim', () => {
-    expect(LOCKED_DE_PHRASES.GDPR_CONTROLLER_LABEL).toBe(
-      'Verantwortlicher im Sinne der DSGVO',
-    );
+    expect(LOCKED_DE_PHRASES.GDPR_CONTROLLER_LABEL).toBe('Verantwortlicher im Sinne der DSGVO');
   });
 
   it('contains the Kleinunternehmer label with Unicode chars preserved', () => {
     // Unicode sanity — § and ä must round-trip (not be mojibake'd).
-    expect(LOCKED_DE_PHRASES.TAX_KLEINUNTERNEHMER_LABEL).toBe(
-      'Kleinunternehmer gemäß § 19 UStG',
-    );
+    expect(LOCKED_DE_PHRASES.TAX_KLEINUNTERNEHMER_LABEL).toBe('Kleinunternehmer gemäß § 19 UStG');
   });
 });
 
@@ -151,9 +121,7 @@ describe('UK locked phrases (Phase 57 — D-14)', () => {
   });
 
   it('RESERVED_EN_LEGAL_KEYS mirrors LOCKED_EN_PHRASES keys', () => {
-    expect([...RESERVED_EN_LEGAL_KEYS].sort()).toEqual(
-      Object.keys(LOCKED_EN_PHRASES).sort(),
-    );
+    expect([...RESERVED_EN_LEGAL_KEYS].sort()).toEqual(Object.keys(LOCKED_EN_PHRASES).sort());
   });
 
   it('every LOCKED_EN_PHRASES value is a non-empty string', () => {

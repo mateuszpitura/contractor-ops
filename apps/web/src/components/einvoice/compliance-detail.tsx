@@ -1,5 +1,6 @@
 'use client';
 
+import { complianceState } from '@contractor-ops/einvoice';
 import { useQuery } from '@tanstack/react-query';
 import { CheckCircle2, FileCheck, XCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -18,7 +19,7 @@ const stateBadgeVariant: Record<string, 'default' | 'secondary' | 'destructive' 
   onboarding: 'secondary',
   suspended: 'outline',
   error: 'destructive',
-  not_connected: 'outline',
+  [complianceState.notConnected]: 'outline',
 };
 
 const stateLabels: Record<string, string> = {
@@ -28,7 +29,7 @@ const stateLabels: Record<string, string> = {
   onboarding: 'Onboarding',
   suspended: 'Suspended',
   error: 'Error',
-  not_connected: 'Not Connected',
+  [complianceState.notConnected]: 'Not Connected',
 };
 
 // ---------------------------------------------------------------------------

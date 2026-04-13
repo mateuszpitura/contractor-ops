@@ -34,10 +34,12 @@ export function PrivacyNoticeToc() {
     if (collected.length === 0) return;
 
     const observer = new IntersectionObserver(
-      (entries) => {
+      entries => {
         const visible = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => a.target.getBoundingClientRect().top - b.target.getBoundingClientRect().top);
+          .filter(entry => entry.isIntersecting)
+          .sort(
+            (a, b) => a.target.getBoundingClientRect().top - b.target.getBoundingClientRect().top,
+          );
         if (visible[0]) {
           setActiveId(visible[0].target.id);
         }
@@ -68,7 +70,7 @@ export function PrivacyNoticeToc() {
         On this page
       </p>
       <ol className="space-y-1.5 text-sm">
-        {headings.map((heading) => {
+        {headings.map(heading => {
           const isActive = heading.id === activeId;
           return (
             <li key={heading.id}>

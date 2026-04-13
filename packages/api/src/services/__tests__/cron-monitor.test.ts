@@ -1,3 +1,4 @@
+import { resetServerEnvCacheForTesting } from '@contractor-ops/validators';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CronMonitors, withCronMonitor } from '../cron-monitor.js';
 
@@ -8,6 +9,7 @@ describe('cron-monitor', () => {
     vi.clearAllMocks();
     vi.stubGlobal('fetch', fetchMock);
     fetchMock.mockResolvedValue({ ok: true });
+    resetServerEnvCacheForTesting();
     delete process.env.CRONITOR_API_KEY;
   });
 
@@ -24,6 +26,7 @@ describe('cron-monitor', () => {
   });
 
   it('pings run then complete on success', async () => {
+    resetServerEnvCacheForTesting();
     process.env.CRONITOR_API_KEY = 'key-123';
 
     await withCronMonitor(CronMonitors.REMINDERS, async () => ({ n: 1 }));
@@ -35,6 +38,7 @@ describe('cron-monitor', () => {
   });
 
   it('pings fail then rethrows on handler error', async () => {
+    resetServerEnvCacheForTesting();
     process.env.CRONITOR_API_KEY = 'key-123';
 
     await expect(

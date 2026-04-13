@@ -1,12 +1,18 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { mockPortalCreate, mockPortalUpdateMany, mockPortalFindUnique, mockContractorFindMany } =
-  vi.hoisted(() => ({
-    mockPortalCreate: vi.fn(),
-    mockPortalUpdateMany: vi.fn(),
-    mockPortalFindUnique: vi.fn(),
-    mockContractorFindMany: vi.fn(),
-  }));
+const {
+  mockPortalCreate,
+  mockPortalUpdateMany,
+  mockPortalFindUnique,
+  mockContractorFindMany,
+  mockResendSend,
+} = vi.hoisted(() => ({
+  mockPortalCreate: vi.fn(),
+  mockPortalUpdateMany: vi.fn(),
+  mockPortalFindUnique: vi.fn(),
+  mockContractorFindMany: vi.fn(),
+  mockResendSend: vi.fn().mockResolvedValue({ id: 'email_1' }),
+}));
 
 vi.mock('@contractor-ops/db', () => ({
   prisma: {
@@ -21,10 +27,8 @@ vi.mock('@contractor-ops/db', () => ({
   },
 }));
 
-vi.mock('resend', () => ({
-  Resend: vi.fn().mockImplementation(() => ({
-    emails: { send: vi.fn().mockResolvedValue({ id: 'email_1' }) },
-  })),
+vi.mock('../app-email.js', () => ({
+  sendAppEmail: (...args: unknown[]) => mockResendSend(...args),
 }));
 
 import { createHash } from 'node:crypto';
@@ -99,21 +103,20 @@ describe('findContractorsByEmail', () => {
 });
 
 describe('sendPortalMagicLink', () => {
-  it('logs in dev when RESEND_API_KEY is unset', async () => {
-    const prev = process.env.RESEND_API_KEY;
-    delete process.env.RESEND_API_KEY;
-    const log = vi.spyOn(console, 'log').mockImplementation(() => undefined);
-
+  it('sends the magic link URL via sendAppEmail', async () => {
     await sendPortalMagicLink({
       email: 'a@b.com',
       token: 'tok',
       baseUrl: 'https://app.example.com',
     });
 
-    expect(log).toHaveBeenCalledWith(
-      expect.stringContaining('https://app.example.com/portal/login/verify?token=tok'),
+    expect(mockResendSend).toHaveBeenCalledWith(
+      expect.objectContaining({
+        to: 'a@b.com',
+        subject: 'Sign in to Contractor Portal',
+      }),
     );
-    log.mockRestore();
-    process.env.RESEND_API_KEY = prev;
+    const payload = mockResendSend.mock.calls[0]?.[0] as { html: string };
+    expect(payload.html).toContain('https://app.example.com/portal/login/verify?token=tok');
   });
 });

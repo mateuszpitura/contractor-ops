@@ -62,3 +62,8 @@ export const getWebhookLogSchema = z.object({
 });
 
 export type GetWebhookLogInput = z.infer<typeof getWebhookLogSchema>;
+
+/** Reasons returned when async webhook ingress cannot process a delivery. */
+export const webhookIngressReason = {
+  missingOrganizationId: 'missingOrganizationId',
+} as const;

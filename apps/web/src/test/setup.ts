@@ -9,17 +9,15 @@ import { vi } from 'vitest';
  */
 if (typeof globalThis.IntersectionObserver === 'undefined') {
   class IntersectionObserverStub {
-    // biome-ignore lint/suspicious/noExplicitAny: test stub
-    constructor(_cb: any, _opts?: any) {}
-    observe(): void {}
-    unobserve(): void {}
-    disconnect(): void {}
+    observe(): void { /* no-op stub */ }
+    unobserve(): void { /* no-op stub */ }
+    disconnect(): void { /* no-op stub */ }
     takeRecords(): IntersectionObserverEntry[] {
       return [];
     }
     root = null;
     rootMargin = '';
-    thresholds: ReadonlyArray<number> = [];
+    thresholds: readonly number[] = [];
   }
   // biome-ignore lint/suspicious/noExplicitAny: assign to globalThis
   (globalThis as any).IntersectionObserver = IntersectionObserverStub;

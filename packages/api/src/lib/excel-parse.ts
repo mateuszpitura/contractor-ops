@@ -41,7 +41,8 @@ export async function parseSpreadsheetBuffer(buffer: Buffer): Promise<Record<str
   const nodeBuffer = Buffer.from(buffer);
 
   if (isZipXlsx) {
-    await workbook.xlsx.load(nodeBuffer);
+    // exceljs typings expect legacy Node Buffer; Uint8Array-backed Buffer is runtime-compatible
+    await workbook.xlsx.load(nodeBuffer as never);
   } else {
     await workbook.csv.read(Readable.from(nodeBuffer), {});
   }

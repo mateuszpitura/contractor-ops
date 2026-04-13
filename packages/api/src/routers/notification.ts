@@ -49,13 +49,13 @@ export const notificationRouter = router({
       ctx.db.notification.findMany({
         where,
         orderBy: { createdAt: 'desc' },
-        skip: (input.page - 1) * input.perPage,
-        take: input.perPage,
+        skip: (input.page - 1) * input.pageSize,
+        take: input.pageSize,
       }),
       ctx.db.notification.count({ where }),
     ]);
 
-    const totalPages = Math.ceil(total / input.perPage);
+    const totalPages = Math.ceil(total / input.pageSize);
 
     return plain({
       items,

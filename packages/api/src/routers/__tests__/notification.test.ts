@@ -27,6 +27,9 @@ const { mockPrisma } = vi.hoisted(() => {
   type Rec = Record<string, any>;
 
   const mockPrisma: Rec = {
+    organization: {
+      findUnique: vi.fn().mockResolvedValue({ dataRegion: 'EU' }),
+    },
     notification: {
       findMany: vi.fn(async () => []),
       count: vi.fn(async () => 0),
@@ -55,18 +58,22 @@ vi.mock('@contractor-ops/auth', () => ({
       hasPermission: vi.fn().mockResolvedValue({ success: true }),
     },
   },
+  authApi: {
+    hasPermission: vi.fn().mockResolvedValue({ success: true }),
+  },
 }));
 
 vi.mock('@contractor-ops/db', () => ({
   prisma: mockPrisma,
   tenantStore: {
     run: (_ctx: unknown, fn: () => unknown) => fn(),
-    getStore: vi.fn(),
+    getStore: vi.fn(() => ({ region: 'EU' })),
   },
   withTenantScope: vi.fn((c: unknown) => c),
   withSoftDelete: vi.fn((c: unknown) => c),
   createTenantClient: vi.fn(() => mockPrisma),
   createTenantClientFrom: vi.fn(() => mockPrisma),
+  getRegionalClient: vi.fn(() => mockPrisma),
 }));
 
 vi.mock('../../services/notification-service.js', () => ({
@@ -291,7 +298,7 @@ describe('notification.list', () => {
     mockPrisma.notification.findMany.mockResolvedValueOnce([]);
     mockPrisma.notification.count.mockResolvedValueOnce(0);
 
-    await caller.notification.list({ page: 1, perPage: 20 });
+    await caller.notification.list({ page: 1, pageSize: 20 });
 
     expect(mockPrisma.notification.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -304,11 +311,11 @@ describe('notification.list', () => {
     );
   });
 
-  it('applies pagination with skip/take based on page and perPage', async () => {
+  it('applies pagination with skip/take based on page and pageSize', async () => {
     mockPrisma.notification.findMany.mockResolvedValueOnce([]);
     mockPrisma.notification.count.mockResolvedValueOnce(50);
 
-    const result = await caller.notification.list({ page: 3, perPage: 10 });
+    const result = await caller.notification.list({ page: 3, pageSize: 10 });
 
     expect(mockPrisma.notification.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -323,7 +330,7 @@ describe('notification.list', () => {
     mockPrisma.notification.findMany.mockResolvedValueOnce([]);
     mockPrisma.notification.count.mockResolvedValueOnce(0);
 
-    await caller.notification.list({ page: 1, perPage: 20, unreadOnly: true });
+    await caller.notification.list({ page: 1, pageSize: 20, unreadOnly: true });
 
     expect(mockPrisma.notification.findMany).toHaveBeenCalledWith(
       expect.objectContaining({

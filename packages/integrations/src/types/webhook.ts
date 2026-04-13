@@ -3,7 +3,13 @@
  */
 export interface WebhookVerificationResult {
   valid: boolean;
+  /** Resolved organization primary key (cuid) when known at verification time */
   organizationId?: string;
+  /**
+   * Organization slug (e.g. from inbound email domain) — resolve to `organizationId`
+   * in the HTTP route before persisting WebhookDelivery (FK).
+   */
+  organizationSlug?: string;
   eventType?: string;
   connectionId?: string;
 }

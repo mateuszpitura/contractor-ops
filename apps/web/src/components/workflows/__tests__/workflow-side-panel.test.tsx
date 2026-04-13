@@ -1,3 +1,4 @@
+import { workflowTaskSkipReason } from '@contractor-ops/validators';
 import { useQuery } from '@tanstack/react-query';
 import { render, screen } from '@/test/test-utils';
 import { WorkflowSidePanel } from '../workflow-side-panel';
@@ -163,7 +164,7 @@ describe('WorkflowSidePanel', () => {
               {
                 status: 'SKIPPED',
                 isOverdue: false,
-                resultJson: { skipReason: 'condition_not_met' },
+                resultJson: { skipReason: workflowTaskSkipReason.conditionNotMet },
               },
               { status: 'TODO', isOverdue: false, resultJson: null },
             ],

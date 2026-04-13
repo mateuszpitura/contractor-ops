@@ -9,9 +9,7 @@
 export const TAX_UK_REVERSE_CHARGE_NOTICE =
   'Reverse charge: Customer to pay the VAT to HMRC' as const;
 
-export const RESERVED_EN_LEGAL_KEYS = [
-  'TAX_UK_REVERSE_CHARGE_NOTICE',
-] as const;
+export const RESERVED_EN_LEGAL_KEYS = ['TAX_UK_REVERSE_CHARGE_NOTICE'] as const;
 
 export const LOCKED_EN_PHRASES = {
   TAX_UK_REVERSE_CHARGE_NOTICE,

@@ -6,6 +6,7 @@
  * scope joining, and extra auth params.
  */
 
+import { resetServerEnvCacheForTesting } from '@contractor-ops/validators';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ---------------------------------------------------------------------------
@@ -24,6 +25,9 @@ const { mockPrisma, mockGetAdapter, mockGenerateOAuthState } = vi.hoisted(() => 
   type Rec = Record<string, any>;
 
   const mockPrisma: Rec = {
+    organization: {
+      findUnique: vi.fn().mockResolvedValue({ dataRegion: 'EU' }),
+    },
     integrationConnection: {
       findFirst: vi.fn(),
       findMany: vi.fn(),
@@ -65,14 +69,19 @@ vi.mock('@contractor-ops/auth', () => ({
       hasPermission: vi.fn().mockResolvedValue({ success: true }),
     },
   },
+  authApi: {
+    hasPermission: vi.fn().mockResolvedValue({ success: true }),
+  },
 }));
 
 vi.mock('@contractor-ops/db', () => ({
   prisma: mockPrisma,
   tenantStore: {
     run: (_ctx: unknown, fn: () => unknown) => fn(),
-    getStore: vi.fn(),
+    getStore: vi.fn(() => ({ region: 'EU' })),
   },
+  getRegionalClient: vi.fn(() => mockPrisma),
+  createTenantClientFrom: vi.fn((client: unknown) => client),
 }));
 
 vi.mock('@contractor-ops/integrations', () => ({
@@ -210,7 +219,8 @@ const caller = makeTenantCaller();
 
 beforeEach(() => {
   vi.clearAllMocks();
-  // Set required env vars
+  resetServerEnvCacheForTesting();
+  // Set required env vars (after reset so getServerEnv re-parses process.env)
   process.env.NEXT_PUBLIC_APP_URL = 'https://app.test.com';
 });
 

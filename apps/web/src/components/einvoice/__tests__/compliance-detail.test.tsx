@@ -246,13 +246,13 @@ describe('EInvoiceComplianceDetail', () => {
     expect(screen.getByText('Suspended')).toBeInTheDocument();
   });
 
-  it('renders not_connected state badge', () => {
+  it('renders notConnected state badge', () => {
     queryData = {
       statuses: [
         {
           profileId: 'p1',
           displayName: 'Disconnected',
-          state: 'not_connected',
+          state: 'notConnected',
           country: 'PL',
           healthScore: 0,
           lastSyncAt: null,

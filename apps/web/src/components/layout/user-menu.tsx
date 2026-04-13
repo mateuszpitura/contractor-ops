@@ -33,7 +33,8 @@ import { SidebarMenuButton, useSidebar } from '@/components/ui/sidebar';
 import { Switch } from '@/components/ui/switch';
 import { useDensity } from '@/hooks/use-density';
 import { usePathname, useRouter } from '@/i18n/navigation';
-import { routing, type Locale } from '@/i18n/routing';
+import type { Locale } from '@/i18n/routing';
+import { routing } from '@/i18n/routing';
 import { authClient } from '@/lib/auth-client';
 import { getAvatarInitials } from '@/lib/avatar-initials';
 

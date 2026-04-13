@@ -72,9 +72,7 @@ describe('CountryComplianceSection — GB/DE dispatch (Plan 06)', () => {
 
   it('returns nothing when org has no country fields', () => {
     mockConfigData.value = { hasCountryFields: false };
-    const { container } = render(
-      <CountryComplianceSection contractorId="contractor-1" />,
-    );
+    const { container } = render(<CountryComplianceSection contractorId="contractor-1" />);
     expect(container.textContent).toBe('');
   });
 });

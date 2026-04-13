@@ -17,9 +17,11 @@ export {
 } from './registry.js';
 // Credential Service
 export {
+  decryptCredentials,
   deleteCredentials,
+  encryptCredentials,
   getCredentials,
-  legacyEncryptCredentials,
+  getProviderEncryptionKey,
   storeCredentials,
 } from './services/credential-service.js';
 // E-Sign Service

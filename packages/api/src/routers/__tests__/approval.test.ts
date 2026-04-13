@@ -18,6 +18,9 @@ const { mockPrisma } = vi.hoisted(() => {
   type Rec = Record<string, any>;
 
   const mockPrisma: Rec = {
+    organization: {
+      findUnique: vi.fn().mockResolvedValue({ dataRegion: 'EU' }),
+    },
     approvalChainConfig: {
       findMany: vi.fn(async () => []),
       findFirst: vi.fn(async () => null),
@@ -41,6 +44,7 @@ const { mockPrisma } = vi.hoisted(() => {
       update: vi.fn(async () => ({})),
       updateMany: vi.fn(async () => ({ count: 1 })),
     },
+    $queryRaw: vi.fn(async () => []),
     approvalDecision: {
       create: vi.fn(async () => ({})),
     },
@@ -72,18 +76,22 @@ vi.mock('@contractor-ops/auth', () => ({
       hasPermission: vi.fn().mockResolvedValue({ success: true }),
     },
   },
+  authApi: {
+    hasPermission: vi.fn().mockResolvedValue({ success: true }),
+  },
 }));
 
 vi.mock('@contractor-ops/db', () => ({
   prisma: mockPrisma,
   tenantStore: {
     run: (_ctx: unknown, fn: () => unknown) => fn(),
-    getStore: vi.fn(),
+    getStore: vi.fn(() => ({ region: 'EU' })),
   },
   withTenantScope: vi.fn((c: unknown) => c),
   withSoftDelete: vi.fn((c: unknown) => c),
   createTenantClient: vi.fn(() => mockPrisma),
   createTenantClientFrom: vi.fn(() => mockPrisma),
+  getRegionalClient: vi.fn(() => mockPrisma),
 }));
 
 vi.mock('../../services/cache.js', () => ({
@@ -186,6 +194,7 @@ const caller = makeCaller();
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mockPrisma.organization.findUnique.mockResolvedValue({ dataRegion: 'EU' });
   mockPrisma.approvalChainConfig.findMany.mockResolvedValue([]);
   mockPrisma.approvalChainConfig.findFirst.mockResolvedValue(null);
   mockPrisma.approvalFlow.findFirst.mockResolvedValue(null);
@@ -199,6 +208,7 @@ beforeEach(() => {
   mockPrisma.approvalFlow.update.mockResolvedValue({});
   mockPrisma.user.findUnique.mockResolvedValue(null);
   mockPrisma.approvalChainConfig.findUnique.mockResolvedValue(null);
+  mockPrisma.$queryRaw.mockResolvedValue([]);
   vi.mocked(routeToChain).mockResolvedValue(null);
   vi.mocked(createApprovalFlow).mockResolvedValue({ id: FLOW_ID, steps: [] });
   vi.mocked(advanceFlow).mockResolvedValue({
@@ -278,10 +288,12 @@ describe('approval router — queue', () => {
           organizationId: ORG_ID,
           approverUserId: USER_ID,
         }),
+        orderBy: { slaDeadline: 'asc' },
         skip: 0,
         take: 10,
       }),
     );
+    expect(mockPrisma.$queryRaw).not.toHaveBeenCalled();
     expect(mockPrisma.approvalStep.count).toHaveBeenCalled();
     expect(mockPrisma.invoice.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -315,6 +327,23 @@ describe('approval router — queue', () => {
         }),
       }),
     );
+  });
+
+  it('listPending sortBy submitted orders by flow startedAt', async () => {
+    await caller.listPending({ sortBy: 'submitted', tab: 'all' });
+
+    expect(mockPrisma.approvalStep.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        orderBy: { approvalFlow: { startedAt: 'asc' } },
+      }),
+    );
+  });
+
+  it('listPending sortBy amount uses $queryRaw and skips findMany when no ids', async () => {
+    await caller.listPending({ sortBy: 'amount', tab: 'all' });
+
+    expect(mockPrisma.$queryRaw).toHaveBeenCalled();
+    expect(mockPrisma.approvalStep.findMany).not.toHaveBeenCalled();
   });
 });
 
@@ -388,11 +417,15 @@ describe('approval router — approve', () => {
       createdByUserId: null,
       steps: [],
     });
+    mockPrisma.approvalStep.update.mockResolvedValueOnce({
+      id: STEP_ID,
+      status: 'APPROVED',
+    });
 
     const out = await caller.approve({ stepId: STEP_ID, comment: 'ok' });
 
     expect(mockPrisma.approvalDecision.create).toHaveBeenCalled();
-    expect(mockPrisma.approvalStep.updateMany).toHaveBeenCalled();
+    expect(mockPrisma.approvalStep.update).toHaveBeenCalled();
     expect(out).toMatchObject({ id: STEP_ID, status: 'APPROVED' });
     expect(invalidateByPrefix).toHaveBeenCalledWith(`dash:${ORG_ID}`);
     expect(advanceFlow).toHaveBeenCalledWith(expect.anything(), FLOW_ID);
@@ -560,6 +593,10 @@ describe('approval router — reject', () => {
       invoiceNumber: 'INV-9',
     });
     mockPrisma.approvalFlow.findUnique.mockResolvedValue({ createdByUserId: null });
+    mockPrisma.approvalStep.update.mockResolvedValueOnce({
+      id: STEP_ID,
+      status: 'REJECTED',
+    });
 
     const out = await caller.reject({ stepId: STEP_ID, comment: REJECT_COMMENT });
 

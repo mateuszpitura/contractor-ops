@@ -15,7 +15,7 @@ export const euPrivacyNotice: PrivacyNoticeStructured = {
     {
       title: 'Data controller',
       content:
-        'Contractor Ops is the data controller for personal data collected through your organisation\'s workspace. Your organisation administrator can confirm the specific controller entity and relevant data protection officer contact details. General privacy enquiries can be directed to privacy@contractorops.com.',
+        "Contractor Ops is the data controller for personal data collected through your organisation's workspace. Your organisation administrator can confirm the specific controller entity and relevant data protection officer contact details. General privacy enquiries can be directed to privacy@contractorops.com.",
     },
     {
       title: 'Data protection officer',

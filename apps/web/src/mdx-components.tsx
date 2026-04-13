@@ -1,5 +1,10 @@
 import type { MDXComponents } from 'mdx/types';
-import type { AnchorHTMLAttributes, HTMLAttributes, LiHTMLAttributes, OlHTMLAttributes } from 'react';
+import type {
+  AnchorHTMLAttributes,
+  HTMLAttributes,
+  LiHTMLAttributes,
+  OlHTMLAttributes,
+} from 'react';
 
 /**
  * MDX component map — Phase 56 Plan 07.
@@ -24,9 +29,7 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
       </h1>
     ),
     h2: ({ children, ...props }: HTMLAttributes<HTMLHeadingElement>) => (
-      <h2
-        className="mt-12 text-[18px] font-semibold leading-[1.25] scroll-mt-24"
-        {...props}>
+      <h2 className="mt-12 text-[18px] font-semibold leading-[1.25] scroll-mt-24" {...props}>
         {children}
       </h2>
     ),

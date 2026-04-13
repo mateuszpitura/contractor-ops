@@ -1,5 +1,5 @@
 import type { Permission } from '@contractor-ops/auth';
-import { auth } from '@contractor-ops/auth';
+import { authApi } from '@contractor-ops/auth';
 import { TRPCError } from '@trpc/server';
 import * as E from '../errors.js';
 import { t } from '../init.js';
@@ -16,7 +16,7 @@ import { tenantProcedure } from './tenant.js';
  */
 export function requirePermission(permission: Permission) {
   const middleware = t.middleware(async ({ ctx, next }) => {
-    const hasPermission = await auth.api.hasPermission({
+    const hasPermission = await authApi.hasPermission({
       headers: ctx.headers,
       body: { permissions: permission },
     });

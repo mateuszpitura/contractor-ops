@@ -3,6 +3,7 @@ import { storeCredentials } from '@contractor-ops/integrations';
 import { getQStashClient } from '@contractor-ops/integrations/services/qstash-client';
 import {
   connectPeppolSchema,
+  getServerEnv,
   getTransmissionByInvoiceIdSchema,
   getTransmissionsSchema,
   retryTransmissionSchema,
@@ -120,7 +121,7 @@ export const peppolRouter = router({
       try {
         const qstash = getQStashClient();
         const schedule = await qstash.schedules.create({
-          destination: `${process.env.NEXT_PUBLIC_APP_URL}/api/peppol/poll`,
+          destination: `${getServerEnv().NEXT_PUBLIC_APP_URL}/api/peppol/poll`,
           cron: '*/15 * * * *',
           body: JSON.stringify({
             organizationId: ctx.organizationId,

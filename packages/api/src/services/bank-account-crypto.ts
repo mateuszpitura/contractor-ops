@@ -1,4 +1,5 @@
 import { createCipheriv, createDecipheriv, randomBytes } from 'node:crypto';
+import { getServerEnv } from '@contractor-ops/validators';
 
 // ---------------------------------------------------------------------------
 // AES-256-GCM Bank Account Number Encryption
@@ -10,13 +11,7 @@ const IV_LENGTH = 12;
 const _AUTH_TAG_LENGTH = 16;
 
 function getEncryptionKey(): Buffer {
-  const key = process.env.BANK_ACCOUNT_ENCRYPTION_KEY;
-  if (!key) {
-    throw new Error(
-      'BANK_ACCOUNT_ENCRYPTION_KEY environment variable is not set. ' +
-        'Generate with: openssl rand -hex 32',
-    );
-  }
+  const key = getServerEnv().BANK_ACCOUNT_ENCRYPTION_KEY;
   return Buffer.from(key, 'hex');
 }
 

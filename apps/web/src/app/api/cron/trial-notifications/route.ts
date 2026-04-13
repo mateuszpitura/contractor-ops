@@ -1,3 +1,4 @@
+import { sendAppEmail } from '@contractor-ops/api/services/app-email';
 import { withCronMonitor } from '@contractor-ops/api/services/cron-monitor';
 import { dispatch } from '@contractor-ops/api/services/notification-service';
 import { prisma } from '@contractor-ops/db';
@@ -6,22 +7,8 @@ import { metrics } from '@contractor-ops/logger/metrics';
 import * as Sentry from '@sentry/nextjs';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { Resend } from 'resend';
 
 const log = createCronLogger('trial-notifications');
-
-// ---------------------------------------------------------------------------
-// Resend client (lazy init)
-// ---------------------------------------------------------------------------
-
-let resendClient: Resend | null = null;
-
-function getResend(): Resend {
-  if (!resendClient) {
-    resendClient = new Resend(process.env.RESEND_API_KEY);
-  }
-  return resendClient;
-}
 
 function buildBillingUrl(): string {
   const base = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
@@ -105,8 +92,7 @@ async function handleTrialNotifications() {
 
         if (sub.organization.billingEmail) {
           try {
-            const resend = getResend();
-            await resend.emails.send({
+            await sendAppEmail({
               from: 'Contractor Ops <notifications@contractorhub.io>',
               to: sub.organization.billingEmail,
               subject: 'Your Contractor Ops trial ends in 7 days',
@@ -136,8 +122,7 @@ async function handleTrialNotifications() {
 
         if (sub.organization.billingEmail) {
           try {
-            const resend = getResend();
-            await resend.emails.send({
+            await sendAppEmail({
               from: 'Contractor Ops <notifications@contractorhub.io>',
               to: sub.organization.billingEmail,
               subject: 'Your Contractor Ops trial ends tomorrow',

@@ -61,7 +61,7 @@ function createBarebonesProfile(): EInvoiceProfile {
     async getComplianceStatus(): Promise<ComplianceStatus> {
       return {
         profileId: 'bare',
-        state: 'not_connected',
+        state: 'notConnected',
         country: 'XX',
         displayName: 'Barebones',
         healthScore: 0,

@@ -1,6 +1,6 @@
+import { routing } from '@/i18n/routing';
 import { render, screen, setup } from '@/test/test-utils';
 import { UserMenu } from '../user-menu';
-import { routing } from '@/i18n/routing';
 
 vi.mock('@/lib/auth-client', () => ({
   authClient: {
@@ -272,9 +272,9 @@ describe('UserMenu', () => {
       const langSpans = document.querySelectorAll('span[lang]');
       expect(langSpans.length).toBeGreaterThan(0);
       let foundNonEmpty = false;
-      langSpans.forEach((span) => {
+      for (const span of langSpans) {
         if ((span.textContent ?? '').trim().length > 0) foundNonEmpty = true;
-      });
+      }
       expect(foundNonEmpty).toBe(true);
     });
 

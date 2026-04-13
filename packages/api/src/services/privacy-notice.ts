@@ -12,12 +12,12 @@
  */
 
 import { prisma } from '@contractor-ops/db';
+import type { SupportedJurisdiction as SupportedJurisdictionImpl } from '@contractor-ops/validators';
 import {
   dePrivacyNotice,
   euPrivacyNotice,
   gbPrivacyNotice,
   resolveJurisdiction as resolveJurisdictionImpl,
-  type SupportedJurisdiction as SupportedJurisdictionImpl,
 } from '@contractor-ops/validators';
 import { CacheTTL, cached, cacheKey } from './cache.js';
 
@@ -45,13 +45,7 @@ export interface PrivacyNoticeContent {
   }[];
 }
 
-const SUPPORTED_JURISDICTIONS = new Set<SupportedJurisdiction>([
-  'AE',
-  'SA',
-  'GB',
-  'DE',
-  'EU',
-]);
+const SUPPORTED_JURISDICTIONS = new Set<SupportedJurisdiction>(['AE', 'SA', 'GB', 'DE', 'EU']);
 
 // ---------------------------------------------------------------------------
 // Default notice content per jurisdiction
@@ -64,7 +58,7 @@ export function getDefaultNoticeContent(
     return {
       jurisdiction: gbPrivacyNotice.jurisdiction,
       legalReference: gbPrivacyNotice.legalReference,
-      sections: gbPrivacyNotice.sections.map((s) => ({
+      sections: gbPrivacyNotice.sections.map(s => ({
         title: s.title,
         content: s.content,
       })),
@@ -75,7 +69,7 @@ export function getDefaultNoticeContent(
     return {
       jurisdiction: dePrivacyNotice.jurisdiction,
       legalReference: dePrivacyNotice.legalReference,
-      sections: dePrivacyNotice.sections.map((s) => ({
+      sections: dePrivacyNotice.sections.map(s => ({
         title: s.title,
         content: s.content,
       })),
@@ -86,7 +80,7 @@ export function getDefaultNoticeContent(
     return {
       jurisdiction: euPrivacyNotice.jurisdiction,
       legalReference: euPrivacyNotice.legalReference,
-      sections: euPrivacyNotice.sections.map((s) => ({
+      sections: euPrivacyNotice.sections.map(s => ({
         title: s.title,
         content: s.content,
       })),

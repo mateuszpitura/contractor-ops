@@ -1,6 +1,8 @@
 import { prisma } from '@contractor-ops/db';
 import type { Prisma } from '@contractor-ops/db/generated/prisma/client';
 import { metrics } from '@contractor-ops/logger/metrics';
+import type { BillingCreditDenialReason } from '@contractor-ops/validators';
+import { billingCreditDenialReason } from '@contractor-ops/validators';
 import { TIER_CREDIT_ALLOWANCE, TRIAL_CREDIT_ALLOWANCE } from './billing-constants.js';
 import { CacheKeys, CacheTTL, cached, invalidate } from './cache.js';
 import { dispatch } from './notification-service.js';
@@ -20,7 +22,7 @@ export interface CreditBalance {
 export interface CreditDeductionResult {
   allowed: boolean;
   remaining: number;
-  reason?: 'no_subscription' | 'credits_exhausted';
+  reason?: BillingCreditDenialReason;
 }
 
 export interface TopUpResult {
@@ -120,7 +122,7 @@ export async function checkAndDeductCredit(organizationId: string): Promise<Cred
         return {
           allowed: false as const,
           remaining: 0,
-          reason: 'no_subscription' as const,
+          reason: billingCreditDenialReason.noSubscription,
           stripeCustomerId: null,
         };
       }
@@ -149,7 +151,7 @@ export async function checkAndDeductCredit(organizationId: string): Promise<Cred
         return {
           allowed: false as const,
           remaining: 0,
-          reason: 'credits_exhausted' as const,
+          reason: billingCreditDenialReason.creditsExhausted,
           stripeCustomerId: null,
         };
       }
@@ -188,7 +190,7 @@ export async function checkAndDeductCredit(organizationId: string): Promise<Cred
 
   // Notify admins when credits are exhausted
   if (result.allowed && result.remaining === 0) {
-    metrics.increment('billing.credits_exhausted', 1);
+    metrics.increment('billing.creditsExhausted', 1);
     void notifyCreditExhausted(organizationId);
   }
 

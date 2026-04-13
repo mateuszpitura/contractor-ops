@@ -10,9 +10,6 @@
 // Registered for both HMRC test (sandbox) and production base URLs.
 
 import { HttpResponse, http } from 'msw';
-
-import type { HandlerOptions } from '../types.js';
-import { applyNetworkConditions } from '../utils.js';
 import {
   HMRC_OAUTH_TOKEN_200,
   HMRC_SANDBOX_INVALID_VRN,
@@ -21,6 +18,8 @@ import {
   HMRC_VAT_LOOKUP_404,
   HMRC_VAT_LOOKUP_500,
 } from '../fixtures/hmrc.js';
+import type { HandlerOptions } from '../types.js';
+import { applyNetworkConditions } from '../utils.js';
 
 const HMRC_TEST = 'https://test-api.service.hmrc.gov.uk';
 const HMRC_PROD = 'https://api.service.hmrc.gov.uk';
@@ -63,9 +62,7 @@ function hmrcEndpoints(baseUrl: string, net: HandlerOptions['network']) {
           return HttpResponse.json(HMRC_VAT_LOOKUP_500, { status: 500 });
         }
 
-        return HttpResponse.json(
-          HMRC_VAT_LOOKUP_200(targetVrn || HMRC_SANDBOX_VALID_VRN),
-        );
+        return HttpResponse.json(HMRC_VAT_LOOKUP_200(targetVrn || HMRC_SANDBOX_VALID_VRN));
       },
     ),
 
@@ -83,9 +80,7 @@ function hmrcEndpoints(baseUrl: string, net: HandlerOptions['network']) {
           return HttpResponse.json(HMRC_VAT_LOOKUP_404, { status: 404 });
         }
 
-        return HttpResponse.json(
-          HMRC_VAT_LOOKUP_200(targetVrn, requesterVrn),
-        );
+        return HttpResponse.json(HMRC_VAT_LOOKUP_200(targetVrn, requesterVrn));
       },
     ),
   ];
@@ -93,10 +88,7 @@ function hmrcEndpoints(baseUrl: string, net: HandlerOptions['network']) {
 
 export function hmrcHandlers(options?: HandlerOptions) {
   const net = options?.network;
-  return [
-    ...hmrcEndpoints(HMRC_TEST, net),
-    ...hmrcEndpoints(HMRC_PROD, net),
-  ];
+  return [...hmrcEndpoints(HMRC_TEST, net), ...hmrcEndpoints(HMRC_PROD, net)];
 }
 
 /** Test-helper: clear the in-memory refresh ledger between tests. */

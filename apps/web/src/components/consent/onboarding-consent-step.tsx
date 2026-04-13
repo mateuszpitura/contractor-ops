@@ -35,10 +35,7 @@ interface OnboardingConsentStepProps {
  * flow. UK/DE orgs render a privacy-notice acknowledgement checkbox that
  * must be ticked before the Continue button activates.
  */
-export function OnboardingConsentStep({
-  orgCountryCode,
-  onComplete,
-}: OnboardingConsentStepProps) {
+export function OnboardingConsentStep({ orgCountryCode, onComplete }: OnboardingConsentStepProps) {
   // Skip entirely for jurisdictions that do not require onboarding consent.
   if (!requiresPrivacyAcknowledgement(orgCountryCode)) {
     return null;

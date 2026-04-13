@@ -1,4 +1,5 @@
 import { delay, HttpResponse, http } from 'msw';
+import { isQStashPublishUrl } from '../handlers/qstash.js';
 
 /**
  * Handlers simulating degraded external service performance.
@@ -100,9 +101,12 @@ export function degradedHandlers() {
     }),
 
     // --- QStash: 503 ---
-    http.post('https://qstash.upstash.io/v2/publish/*', async () => {
-      await delay(1000);
-      return HttpResponse.json({ error: 'Service temporarily unavailable' }, { status: 503 });
-    }),
+    http.post(
+      ({ request }) => isQStashPublishUrl(request.url),
+      async () => {
+        await delay(1000);
+        return HttpResponse.json({ error: 'Service temporarily unavailable' }, { status: 503 });
+      },
+    ),
   ];
 }

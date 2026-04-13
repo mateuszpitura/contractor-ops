@@ -1,10 +1,8 @@
 'use client';
 
+import type { BundeslandCode } from '@contractor-ops/validators';
+import { STEUERNUMMER_FORMATS } from '@contractor-ops/validators';
 import { useId, useMemo } from 'react';
-import {
-  STEUERNUMMER_FORMATS,
-  type BundeslandCode,
-} from '@contractor-ops/validators';
 
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
@@ -43,10 +41,7 @@ export function BundeslandSelect({
   const errorId = `${selectId}-error`;
 
   const sorted = useMemo(
-    () =>
-      [...STEUERNUMMER_FORMATS].sort((a, b) =>
-        a.germanName.localeCompare(b.germanName, 'de'),
-      ),
+    () => [...STEUERNUMMER_FORMATS].sort((a, b) => a.germanName.localeCompare(b.germanName, 'de')),
     [],
   );
 

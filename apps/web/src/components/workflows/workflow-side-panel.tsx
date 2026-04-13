@@ -1,5 +1,6 @@
 'use client';
 
+import { workflowTaskSkipReason } from '@contractor-ops/validators';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';
@@ -226,7 +227,8 @@ export function WorkflowSidePanel({ runId, onClose }: WorkflowSidePanelProps) {
     const activeTasks = tasks.filter(task => {
       if (
         task.status === 'SKIPPED' &&
-        (task.resultJson as Record<string, unknown>)?.skipReason === 'condition_not_met'
+        (task.resultJson as Record<string, unknown>)?.skipReason ===
+          workflowTaskSkipReason.conditionNotMet
       ) {
         return false;
       }

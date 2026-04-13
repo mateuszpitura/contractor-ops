@@ -55,7 +55,7 @@ export function NotificationPopover() {
   // List query -- only fetches when popover is open (enabled below is always true,
   // but we refetch on open via the popover onOpenChange)
   const listQuery = useQuery({
-    ...trpc.notification.list.queryOptions({ perPage: 10 }),
+    ...trpc.notification.list.queryOptions({ pageSize: 10 }),
     enabled: true,
   });
 

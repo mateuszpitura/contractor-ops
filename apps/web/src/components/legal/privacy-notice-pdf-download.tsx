@@ -24,13 +24,15 @@ export interface PrivacyNoticePdfDownloadProps {
  * Unauthenticated visitors see the button but the mutation returns
  * UNAUTHORIZED; the toast surfaces a friendly fallback message.
  */
-export function PrivacyNoticePdfDownload({ jurisdiction: _jurisdiction }: PrivacyNoticePdfDownloadProps) {
+export function PrivacyNoticePdfDownload({
+  jurisdiction: _jurisdiction,
+}: PrivacyNoticePdfDownloadProps) {
   const mutation = useMutation(
     trpc.legal.generatePrivacyNoticePdf.mutationOptions({
-      onSuccess: (result) => {
+      onSuccess: result => {
         window.open(result.url, '_blank', 'noopener,noreferrer');
       },
-      onError: (error) => {
+      onError: error => {
         const message = error instanceof Error ? error.message : 'Unable to generate PDF';
         toast.error(message);
       },

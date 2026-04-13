@@ -1,4 +1,4 @@
-import { auth } from '@contractor-ops/auth';
+import { authApi } from '@contractor-ops/auth';
 import { inviteUserSchema, updateUserRoleSchema } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
@@ -13,7 +13,7 @@ export const userRouter = router({
    * Returns user details including name, email, role, and status.
    */
   list: tenantProcedure.use(requirePermission({ member: ['read'] })).query(async ({ ctx }) => {
-    const org = await auth.api.getFullOrganization({
+    const org = await authApi.getFullOrganization({
       headers: ctx.headers,
       query: { organizationId: ctx.organizationId },
     });
@@ -42,7 +42,7 @@ export const userRouter = router({
     .use(requirePermission({ member: ['create'] }))
     .input(inviteUserSchema)
     .mutation(async ({ ctx, input }) => {
-      const result = await auth.api.createInvitation({
+      const result = await authApi.createInvitation({
         headers: ctx.headers,
         body: {
           email: input.email,
@@ -62,7 +62,7 @@ export const userRouter = router({
     .use(requirePermission({ member: ['update'] }))
     .input(updateUserRoleSchema)
     .mutation(async ({ ctx, input }) => {
-      const result = await auth.api.updateMemberRole({
+      const result = await authApi.updateMemberRole({
         headers: ctx.headers,
         body: {
           memberId: input.userId,
@@ -109,7 +109,7 @@ export const userRouter = router({
         }
       }
 
-      const result = await auth.api.banUser({
+      const result = await authApi.banUser({
         headers: ctx.headers,
         body: { userId: input.userId },
       });
@@ -202,7 +202,7 @@ export const userRouter = router({
     .use(requirePermission({ member: ['update'] }))
     .input(z.object({ userId: z.string().min(1) }))
     .mutation(async ({ ctx, input }) => {
-      const result = await auth.api.unbanUser({
+      const result = await authApi.unbanUser({
         headers: ctx.headers,
         body: { userId: input.userId },
       });

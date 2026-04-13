@@ -70,9 +70,7 @@ describe('hmrcVatLookupResponseSchema', () => {
   });
 
   it('rejects a malformed body missing the target node', () => {
-    expect(() =>
-      hmrcVatLookupResponseSchema.parse({ processingDate: 'x' }),
-    ).toThrow();
+    expect(() => hmrcVatLookupResponseSchema.parse({ processingDate: 'x' })).toThrow();
   });
 });
 

@@ -1,4 +1,5 @@
 import { timingSafeEqual } from 'node:crypto';
+import { getServerEnv } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { t } from '../init.js';
 
@@ -7,14 +8,7 @@ import { t } from '../init.js';
  * Use for tRPC mutations that should only be triggered by trusted schedulers (Vercel Cron, internal jobs).
  */
 const cronTrpcMiddleware = t.middleware(({ ctx, next }) => {
-  const cronSecret = process.env.CRON_SECRET;
-
-  if (!cronSecret) {
-    throw new TRPCError({
-      code: 'INTERNAL_SERVER_ERROR',
-      message: 'CRON_SECRET is not configured',
-    });
-  }
+  const cronSecret = getServerEnv().CRON_SECRET;
 
   const authHeader = ctx.headers.get('authorization') ?? '';
   const expected = `Bearer ${cronSecret}`;

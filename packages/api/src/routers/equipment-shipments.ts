@@ -200,7 +200,7 @@ export const equipmentShipmentsRouter = router({
 
       // Fire-and-forget: auto-complete linked workflow task if shipment reached target status (Phase 30)
       void (async () => {
-        await checkShipmentTaskCompletion(prisma, ctx.organizationId, {
+        await checkShipmentTaskCompletion(ctx.db, ctx.organizationId, {
           id: shipment.id,
           workflowTaskRunId: shipment.workflowTaskRunId,
           direction: shipment.direction as 'OUTBOUND' | 'RETURN',

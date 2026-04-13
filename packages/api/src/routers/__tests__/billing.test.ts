@@ -32,6 +32,7 @@ const { mockPrisma } = vi.hoisted(() => {
   const mockPrisma: Rec = {
     organization: {
       findUnique: vi.fn(async () => ({
+        dataRegion: 'EU',
         billingEmail: 'billing@test.com',
         name: 'Test Org',
       })),
@@ -85,18 +86,22 @@ vi.mock('@contractor-ops/auth', () => ({
       hasPermission: vi.fn().mockResolvedValue({ success: true }),
     },
   },
+  authApi: {
+    hasPermission: vi.fn().mockResolvedValue({ success: true }),
+  },
 }));
 
 vi.mock('@contractor-ops/db', () => ({
   prisma: mockPrisma,
   tenantStore: {
     run: (_ctx: unknown, fn: () => unknown) => fn(),
-    getStore: vi.fn(),
+    getStore: vi.fn(() => ({ region: 'EU' })),
   },
   withTenantScope: vi.fn((c: unknown) => c),
   withSoftDelete: vi.fn((c: unknown) => c),
   createTenantClient: vi.fn(() => mockPrisma),
   createTenantClientFrom: vi.fn(() => mockPrisma),
+  getRegionalClient: vi.fn(() => mockPrisma),
 }));
 
 vi.mock('../../services/billing-service.js', () => ({
@@ -357,10 +362,12 @@ describe('billing.createCheckoutSession', () => {
   });
 
   it('uses billing email from org or generates fallback', async () => {
-    mockPrisma.organization.findUnique.mockResolvedValueOnce({
-      billingEmail: null,
-      name: 'No Email Org',
-    });
+    mockPrisma.organization.findUnique
+      .mockResolvedValueOnce({ dataRegion: 'EU' })
+      .mockResolvedValueOnce({
+        billingEmail: null,
+        name: 'No Email Org',
+      });
     mockGetSubscription.mockResolvedValueOnce(null);
     mockPrisma.contractor.count.mockResolvedValueOnce(0);
 

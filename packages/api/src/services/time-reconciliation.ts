@@ -1,7 +1,5 @@
 import type { DbClient } from './types.js';
 
-type PrismaClient = DbClient;
-
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
@@ -34,7 +32,7 @@ export interface TimeReconciliation {
  * (timeDeviationThresholdPercent, default 10%).
  */
 export async function computeTimeReconciliation(
-  prisma: PrismaClient,
+  db: DbClient,
   organizationId: string,
   contractId: string,
   periodStart: Date,
@@ -42,7 +40,7 @@ export async function computeTimeReconciliation(
   invoicedAmountMinor: number,
 ): Promise<TimeReconciliation | null> {
   // 1. Get contract with rateType and rateValueMinor
-  const contract = await prisma.contract.findFirst({
+  const contract = await db.contract.findFirst({
     where: { id: contractId, organizationId },
     select: { rateType: true, rateValueMinor: true },
   });
@@ -58,7 +56,7 @@ export async function computeTimeReconciliation(
 
   // 2. Sum approved minutes for this contract in the period
   //    Only count entries from APPROVED timesheets
-  const approvedEntries = await prisma.timeEntry.aggregate({
+  const approvedEntries = await db.timeEntry.aggregate({
     where: {
       organizationId,
       contractId,
@@ -72,7 +70,7 @@ export async function computeTimeReconciliation(
   if (approvedMinutes === 0) return null;
 
   // 3. Get org threshold setting (default 10% per D-14)
-  const org = await prisma.organization.findUniqueOrThrow({
+  const org = await db.organization.findUniqueOrThrow({
     where: { id: organizationId },
     select: { settingsJson: true },
   });

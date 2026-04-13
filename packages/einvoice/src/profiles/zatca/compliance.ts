@@ -3,6 +3,7 @@
 // ---------------------------------------------------------------------------
 
 import type { ComplianceState, ComplianceStatus } from '../../types/compliance.js';
+import { complianceState } from '../../types/compliance.js';
 
 /**
  * Data needed to compute ZATCA compliance status.
@@ -24,7 +25,7 @@ export interface ZatcaConnectionData {
  * Pure function -- no database access. Data is provided by the caller.
  *
  * States:
- * - not_connected: No ZATCA integration configured
+ * - notConnected: No ZATCA integration configured
  * - onboarding: Device onboarding in progress
  * - active: Production certificate active, submitting invoices
  * - suspended: Certificate expired or manually paused
@@ -34,7 +35,7 @@ export function computeZatcaComplianceStatus(data: ZatcaConnectionData | null): 
   if (!data) {
     return {
       profileId: 'zatca',
-      state: 'not_connected',
+      state: complianceState.notConnected,
       country: 'SA',
       displayName: 'ZATCA (Saudi Arabia)',
       healthScore: 0,

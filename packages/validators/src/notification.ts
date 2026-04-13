@@ -43,7 +43,7 @@ export const notificationListSchema = z.object({
   status: notificationStatusEnum.optional(),
   unreadOnly: z.boolean().optional(),
   page: z.number().int().min(1).default(1),
-  perPage: z.number().int().min(1).max(50).default(10),
+  pageSize: z.number().int().min(1).max(50).default(10),
 });
 
 export type NotificationListInput = z.infer<typeof notificationListSchema>;

@@ -10,14 +10,12 @@
  */
 
 import { prisma } from '@contractor-ops/db';
+import { getServerEnv } from '@contractor-ops/validators';
 import { getCurrentConsent } from './consent-record.js';
 
 // ---------------------------------------------------------------------------
 // Cross-border transfer detection
 // ---------------------------------------------------------------------------
-
-/** Static hosting region — becomes dynamic in Phase 52 (Multi-Region Infrastructure) */
-const DATA_HOSTING_REGION = process.env.DATA_HOSTING_REGION ?? 'EU';
 
 const COUNTRY_TO_REGION: Record<string, string> = {
   // GCC
@@ -64,11 +62,12 @@ export interface CrossBorderResult {
 }
 
 export function detectCrossBorderTransfer(orgCountryCode: string): CrossBorderResult {
+  const hostingRegion = getServerEnv().DATA_HOSTING_REGION;
   const orgRegion = COUNTRY_TO_REGION[orgCountryCode] ?? 'OTHER';
   return {
-    isCrossBorder: orgRegion !== DATA_HOSTING_REGION,
+    isCrossBorder: orgRegion !== hostingRegion,
     orgRegion,
-    hostingRegion: DATA_HOSTING_REGION,
+    hostingRegion,
   };
 }
 

@@ -92,7 +92,7 @@ describe('approvalQueueSchema', () => {
     if (r.success) {
       expect(r.data.tab).toBe('my');
       expect(r.data.pageSize).toBe(10);
-      expect(r.data.sortBy).toBe('sla_deadline');
+      expect(r.data.sortBy).toBe('slaDeadline');
     }
   });
 });

@@ -1,10 +1,11 @@
 import { randomUUID } from 'node:crypto';
-import { prisma } from '@contractor-ops/db';
+import { createTenantClientFrom, getRegionalClient, prisma, tenantStore } from '@contractor-ops/db';
 import { returnRequestCreateSchema } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import * as E from '../errors.js';
 import { router } from '../init.js';
+import type { TenantScopedDb } from '../lib/tenant-db.js';
 import { portalProcedure, portalPublicProcedure } from '../middleware/portal-auth.js';
 import { encryptBankAccount } from '../services/bank-account-crypto.js';
 import type { InPostClientConfig } from '../services/courier/inpost-client.js';
@@ -27,6 +28,24 @@ import {
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
+
+/**
+ * Runs a callback with the regional tenant-scoped client for an org (e.g. public
+ * `selectOrg` before `portalProcedure` attaches `ctx.db`). Routing: primary
+ * `Organization` → `dataRegion` → `getRegionalClient` + `createTenantClientFrom`.
+ */
+async function withOrgRegionalDb<T>(
+  organizationId: string,
+  fn: (db: TenantScopedDb) => Promise<T>,
+): Promise<T> {
+  const org = await prisma.organization.findUnique({
+    where: { id: organizationId },
+    select: { dataRegion: true },
+  });
+  const region = org?.dataRegion ?? 'EU';
+  const db = createTenantClientFrom(getRegionalClient(region));
+  return tenantStore.run({ organizationId, region }, () => fn(db));
+}
 
 /**
  * Strips Prisma class prototype from query results, producing plain
@@ -195,16 +214,18 @@ export const portalRouter = router({
 
       const email = verification.email.toLowerCase().trim();
 
-      // Verify contractor exists and matches the verified email
-      const contractor = await prisma.contractor.findFirst({
-        where: {
-          id: input.contractorId,
-          organizationId: input.organizationId,
-          email,
-          status: 'ACTIVE',
-          deletedAt: null,
-        },
-      });
+      // Verify contractor exists and matches the verified email (regional DB)
+      const contractor = await withOrgRegionalDb(input.organizationId, db =>
+        db.contractor.findFirst({
+          where: {
+            id: input.contractorId,
+            organizationId: input.organizationId,
+            email,
+            status: 'ACTIVE',
+            deletedAt: null,
+          },
+        }),
+      );
 
       if (!contractor) {
         throw new TRPCError({
@@ -250,7 +271,7 @@ export const portalRouter = router({
     const contractorId = ctx.contractorId;
 
     // Active contracts count
-    const activeContracts = await prisma.contract.count({
+    const activeContracts = await ctx.db.contract.count({
       where: {
         contractorId,
         status: { in: ['ACTIVE', 'EXPIRING'] },
@@ -258,7 +279,7 @@ export const portalRouter = router({
     });
 
     // Pending invoices count
-    const pendingInvoices = await prisma.invoice.count({
+    const pendingInvoices = await ctx.db.invoice.count({
       where: {
         contractorId,
         status: { in: ['RECEIVED', 'UNDER_REVIEW', 'APPROVAL_PENDING'] },
@@ -270,7 +291,7 @@ export const portalRouter = router({
     const ninetyDaysAgo = new Date();
     ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
 
-    const recentPaidInvoices = await prisma.invoice.findMany({
+    const recentPaidInvoices = await ctx.db.invoice.findMany({
       where: {
         contractorId,
         paymentStatus: 'PAID',
@@ -284,7 +305,7 @@ export const portalRouter = router({
     const recentPaymentsCurrency = recentPaidInvoices[0]?.currency ?? 'PLN';
 
     // Upcoming deadline: earliest due date from unpaid invoices or earliest end date from expiring contracts
-    const nextUnpaidInvoice = await prisma.invoice.findFirst({
+    const nextUnpaidInvoice = await ctx.db.invoice.findFirst({
       where: {
         contractorId,
         paymentStatus: { not: 'PAID' },
@@ -294,7 +315,7 @@ export const portalRouter = router({
       select: { dueDate: true },
     });
 
-    const nextExpiringContract = await prisma.contract.findFirst({
+    const nextExpiringContract = await ctx.db.contract.findFirst({
       where: {
         contractorId,
         status: 'EXPIRING',
@@ -313,7 +334,7 @@ export const portalRouter = router({
     }
 
     // Recent activity: last 5 invoices with their status-derived events
-    const recentInvoices = await prisma.invoice.findMany({
+    const recentInvoices = await ctx.db.invoice.findMany({
       where: { contractorId, deletedAt: null },
       orderBy: { updatedAt: 'desc' },
       take: 5,
@@ -381,7 +402,7 @@ export const portalRouter = router({
    * Excludes internal fields per D-11 / Pitfall 3.
    */
   listContracts: portalProcedure.query(async ({ ctx }) => {
-    const contracts = await prisma.contract.findMany({
+    const contracts = await ctx.db.contract.findMany({
       where: {
         contractorId: ctx.contractorId,
         status: { in: ['ACTIVE', 'EXPIRING', 'EXPIRED'] },
@@ -410,7 +431,7 @@ export const portalRouter = router({
    * Excludes internal fields. Generates presigned download URLs for documents.
    */
   getContract: portalProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
-    const contract = await prisma.contract.findFirst({
+    const contract = await ctx.db.contract.findFirst({
       where: { id: input.id, contractorId: ctx.contractorId },
       select: {
         id: true,
@@ -444,7 +465,7 @@ export const portalRouter = router({
     }
 
     // Fetch attached documents via DocumentLink
-    const docLinks = await prisma.documentLink.findMany({
+    const docLinks = await ctx.db.documentLink.findMany({
       where: { entityType: 'CONTRACT', entityId: input.id },
       include: {
         document: {
@@ -481,7 +502,7 @@ export const portalRouter = router({
    * List contractor's invoices with status info.
    */
   listInvoices: portalProcedure.query(async ({ ctx }) => {
-    const invoices = await prisma.invoice.findMany({
+    const invoices = await ctx.db.invoice.findMany({
       where: { contractorId: ctx.contractorId, deletedAt: null },
       select: {
         id: true,
@@ -509,7 +530,7 @@ export const portalRouter = router({
    * Excludes internal data (batch IDs, reviewer names, cost centers) per D-11/D-12.
    */
   getInvoice: portalProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
-    const invoice = await prisma.invoice.findFirst({
+    const invoice = await ctx.db.invoice.findFirst({
       where: { id: input.id, contractorId: ctx.contractorId, deletedAt: null },
       select: {
         id: true,
@@ -556,7 +577,7 @@ export const portalRouter = router({
     );
 
     // Payment info (date + amount only, no batch IDs per D-12)
-    const paymentItem = await prisma.paymentRunItem.findFirst({
+    const paymentItem = await ctx.db.paymentRunItem.findFirst({
       where: {
         invoiceId: input.id,
         contractorId: ctx.contractorId,
@@ -641,7 +662,7 @@ export const portalRouter = router({
    */
   listDocuments: portalProcedure.query(async ({ ctx }) => {
     // Documents linked directly to the contractor
-    const contractorDocLinks = await prisma.documentLink.findMany({
+    const contractorDocLinks = await ctx.db.documentLink.findMany({
       where: {
         entityType: 'CONTRACTOR',
         entityId: ctx.contractorId,
@@ -662,7 +683,7 @@ export const portalRouter = router({
     });
 
     // Documents linked to contractor's contracts
-    const contractIds = await prisma.contract.findMany({
+    const contractIds = await ctx.db.contract.findMany({
       where: { contractorId: ctx.contractorId },
       select: { id: true },
     });
@@ -670,7 +691,7 @@ export const portalRouter = router({
 
     const contractDocLinks =
       contractIdList.length > 0
-        ? await prisma.documentLink.findMany({
+        ? await ctx.db.documentLink.findMany({
             where: {
               entityType: 'CONTRACT',
               entityId: { in: contractIdList },
@@ -724,7 +745,7 @@ export const portalRouter = router({
    * Returns only paidAt + amount + currency + invoiceNumber (no batch IDs per D-12).
    */
   listPayments: portalProcedure.query(async ({ ctx }) => {
-    const items = await prisma.paymentRunItem.findMany({
+    const items = await ctx.db.paymentRunItem.findMany({
       where: {
         contractorId: ctx.contractorId,
         status: 'PAID',
@@ -797,7 +818,7 @@ export const portalRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       // Verify contract belongs to this contractor and is ACTIVE
-      const contract = await prisma.contract.findFirst({
+      const contract = await ctx.db.contract.findFirst({
         where: {
           id: input.contractId,
           contractorId: ctx.contractorId,
@@ -813,7 +834,7 @@ export const portalRouter = router({
       }
 
       // Create document record for the uploaded PDF
-      await prisma.document.create({
+      await ctx.db.document.create({
         data: {
           id: input.documentId,
           organizationId: ctx.organizationId,
@@ -828,7 +849,7 @@ export const portalRouter = router({
       });
 
       // Create invoice with PORTAL source
-      const invoice = await prisma.invoice.create({
+      const invoice = await ctx.db.invoice.create({
         data: {
           organizationId: ctx.organizationId,
           contractorId: ctx.contractorId,
@@ -850,7 +871,7 @@ export const portalRouter = router({
       });
 
       // Link document to invoice
-      await prisma.invoiceFile.create({
+      await ctx.db.invoiceFile.create({
         data: {
           organizationId: ctx.organizationId,
           invoiceId: invoice.id,
@@ -870,7 +891,7 @@ export const portalRouter = router({
    * Get active contracts for invoice form dropdown.
    */
   getActiveContracts: portalProcedure.query(async ({ ctx }) => {
-    const contracts = await prisma.contract.findMany({
+    const contracts = await ctx.db.contract.findMany({
       where: { contractorId: ctx.contractorId, status: 'ACTIVE' },
       select: {
         id: true,
@@ -889,7 +910,7 @@ export const portalRouter = router({
    * Get current session info for portal layout (contractor + org info).
    */
   getSession: portalProcedure.query(async ({ ctx }) => {
-    // Fetch organization separately since validatePortalSession only includes contractor
+    // Routing table (`Organization`) lives on primary — not regional `ctx.db`
     const org = await prisma.organization.findUnique({
       where: { id: ctx.organizationId },
       select: { id: true, name: true, logo: true },
@@ -919,7 +940,7 @@ export const portalRouter = router({
    * SECURITY: Never exposes bankAccountEncrypted.
    */
   getProfile: portalProcedure.query(async ({ ctx }) => {
-    const contractor = await prisma.contractor.findUnique({
+    const contractor = await ctx.db.contractor.findUnique({
       where: { id: ctx.contractorId },
       select: {
         id: true,
@@ -940,7 +961,7 @@ export const portalRouter = router({
     }
 
     // Get default billing profile — NEVER select bankAccountEncrypted
-    const billingProfile = await prisma.contractorBillingProfile.findFirst({
+    const billingProfile = await ctx.db.contractorBillingProfile.findFirst({
       where: {
         contractorId: ctx.contractorId,
         organizationId: ctx.organizationId,
@@ -956,7 +977,7 @@ export const portalRouter = router({
     });
 
     // Check for pending change request
-    const pendingChangeRequest = await prisma.contractorChangeRequest.findFirst({
+    const pendingChangeRequest = await ctx.db.contractorChangeRequest.findFirst({
       where: {
         contractorId: ctx.contractorId,
         organizationId: ctx.organizationId,
@@ -993,7 +1014,7 @@ export const portalRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const updated = await prisma.contractor.update({
+      const updated = await ctx.db.contractor.update({
         where: { id: ctx.contractorId },
         data: {
           displayName: input.displayName,
@@ -1034,7 +1055,7 @@ export const portalRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       // Read current billing profile values for previousValues snapshot
-      const currentProfile = await prisma.contractorBillingProfile.findFirst({
+      const currentProfile = await ctx.db.contractorBillingProfile.findFirst({
         where: {
           contractorId: ctx.contractorId,
           organizationId: ctx.organizationId,
@@ -1107,7 +1128,7 @@ export const portalRouter = router({
       'SECURITY_ALERTS',
     ] as const;
 
-    const existing = await prisma.contractorNotificationPreference.findMany({
+    const existing = await ctx.db.contractorNotificationPreference.findMany({
       where: {
         contractorId: ctx.contractorId,
         organizationId: ctx.organizationId,
@@ -1155,7 +1176,7 @@ export const portalRouter = router({
         });
       }
 
-      const preference = await prisma.contractorNotificationPreference.upsert({
+      const preference = await ctx.db.contractorNotificationPreference.upsert({
         where: {
           contractorId_category: {
             contractorId: ctx.contractorId,
@@ -1189,7 +1210,7 @@ export const portalRouter = router({
    * Returns active assignments with equipment details and latest shipment.
    */
   listEquipment: portalProcedure.query(async ({ ctx }) => {
-    const assignments = await prisma.equipmentAssignment.findMany({
+    const assignments = await ctx.db.equipmentAssignment.findMany({
       where: {
         contractorId: ctx.contractorId,
         organizationId: ctx.organizationId,
@@ -1236,7 +1257,7 @@ export const portalRouter = router({
    * Returns null if no active return exists.
    */
   getReturnStatus: portalProcedure.query(async ({ ctx }) => {
-    const returnRequest = await prisma.returnRequest.findFirst({
+    const returnRequest = await ctx.db.returnRequest.findFirst({
       where: {
         contractorId: ctx.contractorId,
         organizationId: ctx.organizationId,
@@ -1269,7 +1290,7 @@ export const portalRouter = router({
     .input(returnRequestCreateSchema)
     .mutation(async ({ ctx, input }) => {
       // Verify contractor has assigned equipment
-      const assignments = await prisma.equipmentAssignment.findMany({
+      const assignments = await ctx.db.equipmentAssignment.findMany({
         where: {
           contractorId: ctx.contractorId,
           organizationId: ctx.organizationId,
@@ -1288,7 +1309,7 @@ export const portalRouter = router({
       }
 
       // Verify no existing active return request
-      const existingReturn = await prisma.returnRequest.findFirst({
+      const existingReturn = await ctx.db.returnRequest.findFirst({
         where: {
           contractorId: ctx.contractorId,
           organizationId: ctx.organizationId,
@@ -1305,7 +1326,7 @@ export const portalRouter = router({
         });
       }
 
-      const result = await prisma.$transaction(async tx => {
+      const result = await ctx.db.$transaction(async tx => {
         // Create return request
         const returnRequest = await tx.returnRequest.create({
           data: {
@@ -1376,7 +1397,7 @@ export const portalRouter = router({
   cancelReturn: portalProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const returnRequest = await prisma.returnRequest.findFirst({
+      const returnRequest = await ctx.db.returnRequest.findFirst({
         where: {
           id: input.id,
           contractorId: ctx.contractorId,
@@ -1398,7 +1419,7 @@ export const portalRouter = router({
         });
       }
 
-      const result = await prisma.$transaction(async tx => {
+      const result = await ctx.db.$transaction(async tx => {
         const updated = await tx.returnRequest.update({
           where: { id: input.id },
           data: { status: 'CANCELLED' },
@@ -1446,7 +1467,7 @@ export const portalRouter = router({
   getReturnLabel: portalProcedure
     .input(z.object({ returnRequestId: z.string() }))
     .query(async ({ ctx, input }) => {
-      const returnRequest = await prisma.returnRequest.findFirst({
+      const returnRequest = await ctx.db.returnRequest.findFirst({
         where: {
           id: input.returnRequestId,
           contractorId: ctx.contractorId,
@@ -1468,7 +1489,7 @@ export const portalRouter = router({
         });
       }
 
-      const shipment = await prisma.shipment.findFirst({
+      const shipment = await ctx.db.shipment.findFirst({
         where: {
           id: returnRequest.shipmentId,
           organizationId: ctx.organizationId,
@@ -1482,7 +1503,7 @@ export const portalRouter = router({
         });
       }
 
-      const courierConfig = await prisma.courierConfig.findUnique({
+      const courierConfig = await ctx.db.courierConfig.findUnique({
         where: {
           organizationId_carrier: {
             organizationId: ctx.organizationId,

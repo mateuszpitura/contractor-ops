@@ -1,3 +1,4 @@
+import { getServerEnv } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { router } from '../init.js';
@@ -146,7 +147,7 @@ export const billingRouter = router({
       });
       const quantity = Math.max(1, contractorCount);
 
-      const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
+      const baseUrl = getServerEnv().NEXT_PUBLIC_APP_URL;
 
       return createCheckoutSession({
         organizationId: ctx.organizationId,
@@ -215,7 +216,7 @@ export const billingRouter = router({
       });
     }
 
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
+    const baseUrl = getServerEnv().NEXT_PUBLIC_APP_URL;
 
     return createPortalSession({
       stripeCustomerId: sub.stripeCustomerId,
@@ -250,7 +251,7 @@ export const billingRouter = router({
         });
       }
 
-      const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
+      const baseUrl = getServerEnv().NEXT_PUBLIC_APP_URL;
 
       return createTopUpCheckoutSession({
         organizationId: ctx.organizationId,

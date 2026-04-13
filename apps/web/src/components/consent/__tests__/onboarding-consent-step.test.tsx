@@ -53,8 +53,9 @@ vi.mock('next-intl', async importOriginal => {
         return key;
       };
       // Provide a minimal t.rich stub compatible with next-intl consumers.
-      (translate as unknown as { rich: (k: string, values?: Record<string, unknown>) => string }).rich =
-        translate as never;
+      (
+        translate as unknown as { rich: (k: string, values?: Record<string, unknown>) => string }
+      ).rich = translate as never;
       return translate;
     },
   };
@@ -231,17 +232,17 @@ describe('OnboardingConsentStep', () => {
   // Covers FOUND-01..06 onboarding privacy acknowledgement flow.
   // -------------------------------------------------------------------------
   describe('privacy acknowledgement for GB + DE orgs (FOUND-01..06, Plan 08)', () => {
-    it.each(['GB', 'DE'] as const)(
-      'renders acknowledgement step for orgCountryCode=%s',
-      countryCode => {
-        const { container } = render(
-          <OnboardingConsentStep orgCountryCode={countryCode} onComplete={onComplete} />,
-        );
-        // Wave 0: current isPdplJurisdiction returns false for GB/DE -> component
-        // returns null. When Plan 08 extends the predicate, the step renders.
-        expect(container.innerHTML).not.toBe('');
-      },
-    );
+    it.each([
+      'GB',
+      'DE',
+    ] as const)('renders acknowledgement step for orgCountryCode=%s', countryCode => {
+      const { container } = render(
+        <OnboardingConsentStep orgCountryCode={countryCode} onComplete={onComplete} />,
+      );
+      // Wave 0: current isPdplJurisdiction returns false for GB/DE -> component
+      // returns null. When Plan 08 extends the predicate, the step renders.
+      expect(container.innerHTML).not.toBe('');
+    });
 
     it('acknowledgement checkbox is unchecked by default for GB org', () => {
       render(<OnboardingConsentStep orgCountryCode="GB" onComplete={onComplete} />);

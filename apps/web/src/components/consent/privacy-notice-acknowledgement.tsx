@@ -78,11 +78,7 @@ export function PrivacyNoticeAcknowledgement({
         </Label>
       </div>
       {error ? (
-        <p
-          id={errorId}
-          role="alert"
-          aria-live="polite"
-          className="text-xs text-destructive">
+        <p id={errorId} role="alert" aria-live="polite" className="text-xs text-destructive">
           {error}
         </p>
       ) : null}

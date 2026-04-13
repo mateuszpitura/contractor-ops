@@ -82,7 +82,7 @@ describe('contractListSchema', () => {
     if (r.success) {
       expect(r.data.page).toBe(1);
       expect(r.data.pageSize).toBe(25);
-      expect(r.data.sortBy).toBe('end_date');
+      expect(r.data.sortBy).toBe('endDate');
     }
   });
 

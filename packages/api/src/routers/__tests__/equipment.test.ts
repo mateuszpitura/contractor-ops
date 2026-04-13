@@ -32,6 +32,9 @@ const { mockPrisma } = vi.hoisted(() => {
   type Rec = Record<string, any>;
 
   const mockPrisma: Rec = {
+    organization: {
+      findUnique: vi.fn().mockResolvedValue({ dataRegion: 'EU' }),
+    },
     equipment: {
       findMany: vi.fn(async () => []),
       findFirst: vi.fn(async () => null),
@@ -109,18 +112,22 @@ vi.mock('@contractor-ops/auth', () => ({
       hasPermission: vi.fn().mockResolvedValue({ success: true }),
     },
   },
+  authApi: {
+    hasPermission: vi.fn().mockResolvedValue({ success: true }),
+  },
 }));
 
 vi.mock('@contractor-ops/db', () => ({
   prisma: mockPrisma,
   tenantStore: {
     run: (_ctx: unknown, fn: () => unknown) => fn(),
-    getStore: vi.fn(),
+    getStore: vi.fn(() => ({ region: 'EU' })),
   },
   withTenantScope: vi.fn((c: unknown) => c),
   withSoftDelete: vi.fn((c: unknown) => c),
   createTenantClient: vi.fn(() => mockPrisma),
   createTenantClientFrom: vi.fn(() => mockPrisma),
+  getRegionalClient: vi.fn(() => mockPrisma),
 }));
 
 vi.mock('../../services/equipment-workflow.js', () => ({
@@ -343,13 +350,13 @@ describe('equipment router', () => {
       mockPrisma.equipment.findMany.mockResolvedValueOnce([]);
       mockPrisma.equipment.count.mockResolvedValueOnce(0);
 
-      await caller.equipment.list({ page: 2, perPage: 10 });
+      await caller.equipment.list({ page: 2, pageSize: 10 });
 
       const findCall = mockPrisma.equipment.findMany.mock.calls[0]?.[0];
       expect(findCall.where).toMatchObject({
         organizationId: ORG_ID,
       });
-      expect(findCall.skip).toBe(10); // (page-1) * perPage
+      expect(findCall.skip).toBe(10); // (page-1) * pageSize
       expect(findCall.take).toBe(10);
 
       const countCall = mockPrisma.equipment.count.mock.calls[0]?.[0];
@@ -362,7 +369,7 @@ describe('equipment router', () => {
       mockPrisma.equipment.findMany.mockResolvedValueOnce([]);
       mockPrisma.equipment.count.mockResolvedValueOnce(0);
 
-      await caller.equipment.list({ page: 1, perPage: 20, status: ['AVAILABLE', 'ASSIGNED'] });
+      await caller.equipment.list({ page: 1, pageSize: 20, status: ['AVAILABLE', 'ASSIGNED'] });
 
       const findCall = mockPrisma.equipment.findMany.mock.calls[0]?.[0];
       expect(findCall.where.status).toEqual({ in: ['AVAILABLE', 'ASSIGNED'] });
@@ -372,7 +379,7 @@ describe('equipment router', () => {
       mockPrisma.equipment.findMany.mockResolvedValueOnce([]);
       mockPrisma.equipment.count.mockResolvedValueOnce(0);
 
-      await caller.equipment.list({ page: 1, perPage: 20 });
+      await caller.equipment.list({ page: 1, pageSize: 20 });
 
       const findCall = mockPrisma.equipment.findMany.mock.calls[0]?.[0];
       expect(findCall.include.assignments).toBeDefined();

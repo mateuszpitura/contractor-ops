@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { auth } from '@contractor-ops/auth';
+import { authApi } from '@contractor-ops/auth';
 import type { Prisma } from '@contractor-ops/db';
 import { decryptCredentials } from '@contractor-ops/integrations';
 import {
@@ -11,6 +11,7 @@ import {
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { router } from '../init.js';
+import type { TenantScopedDb } from '../lib/tenant-db.js';
 import { tenantProcedure } from '../middleware/tenant.js';
 import { requireTier } from '../middleware/tier.js';
 import { linearGraphQL } from '../services/linear-issue-sync.js';
@@ -53,9 +54,10 @@ interface OrgSettings {
  * Reads the org settingsJson and extracts import job data.
  */
 async function getOrgSettings(
+  db: TenantScopedDb,
   organizationId: string,
 ): Promise<{ orgId: string; settings: OrgSettings }> {
-  const org = await ctx.db.organization.findFirst({
+  const org = await db.organization.findFirst({
     where: { id: organizationId },
     select: { id: true, settingsJson: true },
   });
@@ -70,6 +72,7 @@ async function getOrgSettings(
  * Updates a specific import job in org settingsJson.
  */
 async function updateImportJob(
+  db: TenantScopedDb,
   organizationId: string,
   currentSettings: OrgSettings,
   job: ImportJob,
@@ -77,7 +80,7 @@ async function updateImportJob(
   const jobs = currentSettings.importJobs ?? {};
   jobs[job.jobId] = job;
 
-  await ctx.db.organization.update({
+  await db.organization.update({
     where: { id: organizationId },
     data: {
       settingsJson: {
@@ -159,7 +162,7 @@ export const onboardingImportRouter = router({
       }
 
       // Get existing org members
-      const org = await auth.api.getFullOrganization({
+      const org = await authApi.getFullOrganization({
         headers: ctx.headers,
         query: { organizationId: ctx.organizationId },
       });
@@ -324,7 +327,7 @@ export const onboardingImportRouter = router({
       const nonSkippedProjects = input.projects.filter(p => !p.skip);
       const totalItems = nonSkippedPeople.length + nonSkippedProjects.length;
 
-      const { settings } = await getOrgSettings(ctx.organizationId);
+      const { settings } = await getOrgSettings(ctx.db, ctx.organizationId);
 
       const job: ImportJob = {
         jobId,
@@ -334,12 +337,12 @@ export const onboardingImportRouter = router({
         failedItems: [],
       };
 
-      await updateImportJob(ctx.organizationId, settings, job);
+      await updateImportJob(ctx.db, ctx.organizationId, settings, job);
 
       // Process people - create invitations
       for (const person of nonSkippedPeople) {
         try {
-          await auth.api.createInvitation({
+          await authApi.createInvitation({
             headers: ctx.headers,
             body: {
               email: person.email,
@@ -393,8 +396,8 @@ export const onboardingImportRouter = router({
       }
 
       // Re-read settings to avoid overwriting concurrent changes
-      const { settings: freshSettings } = await getOrgSettings(ctx.organizationId);
-      await updateImportJob(ctx.organizationId, freshSettings, job);
+      const { settings: freshSettings } = await getOrgSettings(ctx.db, ctx.organizationId);
+      await updateImportJob(ctx.db, ctx.organizationId, freshSettings, job);
 
       return { jobId };
     }),
@@ -406,7 +409,7 @@ export const onboardingImportRouter = router({
     .use(requireTier('PRO'))
     .input(z.object({ jobId: z.string() }))
     .query(async ({ ctx, input }) => {
-      const { settings } = await getOrgSettings(ctx.organizationId);
+      const { settings } = await getOrgSettings(ctx.db, ctx.organizationId);
       const job = settings.importJobs?.[input.jobId];
 
       if (!job) {
@@ -426,7 +429,7 @@ export const onboardingImportRouter = router({
     .use(requireTier('PRO'))
     .input(retryItemInputSchema)
     .mutation(async ({ ctx, input }) => {
-      const { settings } = await getOrgSettings(ctx.organizationId);
+      const { settings } = await getOrgSettings(ctx.db, ctx.organizationId);
 
       const job = settings.importJobs?.[input.jobId];
 
@@ -449,7 +452,7 @@ export const onboardingImportRouter = router({
       // Retry the invitation with the original role
       const failedItem = job.failedItems[failedIndex]!;
       try {
-        await auth.api.createInvitation({
+        await authApi.createInvitation({
           headers: ctx.headers,
           body: {
             email: input.email,
@@ -471,7 +474,7 @@ export const onboardingImportRouter = router({
         job.failedItems.splice(failedIndex, 1);
         job.completedItems++;
 
-        await updateImportJob(ctx.organizationId, settings, job);
+        await updateImportJob(ctx.db, ctx.organizationId, settings, job);
 
         return { success: true };
       } catch (error) {
@@ -479,7 +482,7 @@ export const onboardingImportRouter = router({
 
         // Update the error message
         job.failedItems[failedIndex]!.error = message;
-        await updateImportJob(ctx.organizationId, settings, job);
+        await updateImportJob(ctx.db, ctx.organizationId, settings, job);
 
         return { success: false, error: message };
       }

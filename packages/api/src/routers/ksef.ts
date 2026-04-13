@@ -2,6 +2,7 @@ import type { IntegrationConnection } from '@contractor-ops/db/generated/prisma/
 import { KsefApiClient, ksefConnectionConfigSchema } from '@contractor-ops/einvoice';
 import { encryptCredentials } from '@contractor-ops/integrations';
 import { getQStashClient } from '@contractor-ops/integrations/services/qstash-client';
+import { getServerEnv } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import * as E from '../errors.js';
@@ -139,7 +140,7 @@ export const ksefRouter = router({
       try {
         const qstash = getQStashClient();
         const schedule = await qstash.schedules.create({
-          destination: `${process.env.NEXT_PUBLIC_APP_URL}/api/ksef/_sync`,
+          destination: `${getServerEnv().NEXT_PUBLIC_APP_URL}/api/ksef/_sync`,
           cron: '0 * * * *',
           body: JSON.stringify({
             organizationId: ctx.organizationId,
@@ -236,7 +237,7 @@ export const ksefRouter = router({
 
       const qstash = getQStashClient();
       await qstash.publishJSON({
-        url: `${process.env.NEXT_PUBLIC_APP_URL}/api/ksef/_sync`,
+        url: `${getServerEnv().NEXT_PUBLIC_APP_URL}/api/ksef/_sync`,
         body: {
           organizationId: ctx.organizationId,
           connectionId: connection.id,

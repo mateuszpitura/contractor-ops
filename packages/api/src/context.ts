@@ -4,7 +4,7 @@
  */
 
 import type { Session } from '@contractor-ops/auth';
-import { auth } from '@contractor-ops/auth';
+import { authApi } from '@contractor-ops/auth';
 
 export type ApiContext = {
   headers: Headers;
@@ -13,7 +13,7 @@ export type ApiContext = {
 };
 
 export async function createContext(opts: { headers: Headers }): Promise<ApiContext> {
-  const session = await auth.api.getSession({ headers: opts.headers });
+  const session = await authApi.getSession({ headers: opts.headers });
 
   return {
     headers: opts.headers,

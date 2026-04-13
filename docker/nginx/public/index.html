@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>contractor-ops — local dev links</title>
+    <style>
+      body {
+              font-family: system-ui, sans-serif;
+              max-width: 40rem;
+              margin: 2rem auto;
+              padding: 0 1rem;
+              line-height: 1.5;
+            }
+            h1 {
+              font-size: 1.25rem;
+            }
+            ul {
+              padding-left: 1.2rem;
+            }
+            a {
+              color: #2563eb;
+            }
+            code {
+              font-size: 0.9em;
+            }
+    </style>
+  </head>
+  <body>
+    <h1>Local dev (default ports)</h1>
+    <p>
+      Start stacks with
+      <code>docker compose --profile infisical --profile dev-tooling up -d</code>
+      (adjust ports via env — see <code>docker-compose.yml</code>).
+    </p>
+    <ul>
+      <li><a href="http://localhost:8090">Infisical</a> (via nginx gateway)</li>
+      <li><a href="http://localhost:8025">Mailpit</a> (captured email)</li>
+      <li><a href="http://localhost:9001">MinIO Console</a> (S3-compatible API on :9000)</li>
+      <li>
+        <a href="http://localhost:8978">CloudBeaver</a> (Postgres — new connection: host
+        <code>infisical-db</code>, port <code>5432</code>, database <code>infisical</code>, credentials from
+        <code>docker/infisical.env</code>)
+      </li>
+      <li><a href="http://localhost:5540">Redis Insight</a> (add <code>redis://infisical-redis:6379</code>)</li>
+    </ul>
+  </body>
+</html>

@@ -31,6 +31,9 @@ const { mockPrisma } = vi.hoisted(() => {
   type Rec = Record<string, any>;
 
   const mockPrisma: Rec = {
+    organization: {
+      findUnique: vi.fn().mockResolvedValue({ dataRegion: 'EU' }),
+    },
     contract: {
       findMany: vi.fn(async () => []),
       findFirst: vi.fn(async () => null),
@@ -83,18 +86,22 @@ vi.mock('@contractor-ops/auth', () => ({
       hasPermission: vi.fn().mockResolvedValue({ success: true }),
     },
   },
+  authApi: {
+    hasPermission: vi.fn().mockResolvedValue({ success: true }),
+  },
 }));
 
 vi.mock('@contractor-ops/db', () => ({
   prisma: mockPrisma,
   tenantStore: {
     run: (_ctx: unknown, fn: () => unknown) => fn(),
-    getStore: vi.fn(),
+    getStore: vi.fn(() => ({ region: 'EU' })),
   },
   withTenantScope: vi.fn((c: unknown) => c),
   withSoftDelete: vi.fn((c: unknown) => c),
   createTenantClient: vi.fn(() => mockPrisma),
   createTenantClientFrom: vi.fn(() => mockPrisma),
+  getRegionalClient: vi.fn(() => mockPrisma),
 }));
 
 vi.mock('../../services/stripe-client.js', () => ({
@@ -437,7 +444,7 @@ describe('contract router', () => {
       await caller.contract.list({
         page: 1,
         pageSize: 25,
-        sortBy: 'created_at',
+        sortBy: 'createdAt',
         sortOrder: 'desc',
       });
 
@@ -455,7 +462,7 @@ describe('contract router', () => {
       await caller.contract.list({
         page: 1,
         pageSize: 25,
-        sortBy: 'created_at',
+        sortBy: 'createdAt',
         sortOrder: 'desc',
         contractorId: CONTRACTOR_ID,
       });
@@ -475,7 +482,7 @@ describe('contract router', () => {
       await caller.contract.list({
         page: 1,
         pageSize: 25,
-        sortBy: 'created_at',
+        sortBy: 'createdAt',
         sortOrder: 'desc',
         search: 'service',
       });

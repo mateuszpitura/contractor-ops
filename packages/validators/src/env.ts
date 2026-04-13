@@ -61,6 +61,12 @@ const emailSchema = z.object({
   EMAIL_FROM: z.string().email().default('noreply@contractor-ops.com'),
 });
 
+/** Optional dev-only SMTP (e.g. Mailpit). Used by app email when NODE_ENV=development and host is set. */
+const devMailSchema = z.object({
+  DEV_SMTP_HOST: z.string().optional(),
+  DEV_SMTP_PORT: z.coerce.number().int().positive().default(1025),
+});
+
 // ── Cloudflare R2 ───────────────────────────────────────────────────────────
 
 const r2Schema = z.object({
@@ -192,6 +198,30 @@ const observabilitySchema = z.object({
   LOG_LEVEL: z.enum(['trace', 'debug', 'info', 'warn', 'error', 'fatal']).optional(),
 });
 
+// ── Optional infrastructure (graceful degradation when unset) ───────────────
+
+const infrastructureSchema = z.object({
+  UPSTASH_REDIS_REST_URL: z.string().url().optional(),
+  UPSTASH_REDIS_REST_TOKEN: z.string().optional(),
+  CRONITOR_API_KEY: z.string().optional(),
+  AZURE_BOT_APP_ID: z.string().optional(),
+  AZURE_BOT_APP_SECRET: z.string().optional(),
+  /** Primary data region for generated legal PDFs and similar (EU | ME). */
+  DATA_HOSTING_REGION: z.enum(['EU', 'ME']).default('EU'),
+  /** Slack bot token encryption (AES-256-GCM); required when Slack is used. */
+  SLACK_TOKEN_ENCRYPTION_KEY: hex32.optional(),
+});
+
+// ── OAuth env names used by specific adapters only (optional when unused) ──
+// e.g. Google Workspace Directory import, Outlook Calendar (Microsoft identity vars).
+
+const oauthAliasSchema = z.object({
+  GOOGLE_WORKSPACE_CLIENT_ID: z.string().min(1).optional(),
+  GOOGLE_WORKSPACE_CLIENT_SECRET: z.string().min(1).optional(),
+  OUTLOOK_CLIENT_ID: z.string().min(1).optional(),
+  OUTLOOK_CLIENT_SECRET: z.string().min(1).optional(),
+});
+
 // ── Full server env (all variables) ─────────────────────────────────────────
 
 export const serverEnvSchema = coreSchema
@@ -199,6 +229,7 @@ export const serverEnvSchema = coreSchema
   .merge(authSchema)
   .merge(stripeSchema)
   .merge(emailSchema)
+  .merge(devMailSchema)
   .merge(r2Schema)
   .merge(clamavSchema)
   .merge(slackSchema)
@@ -215,7 +246,9 @@ export const serverEnvSchema = coreSchema
   .merge(qstashSchema)
   .merge(cronSchema)
   .merge(portalSchema)
-  .merge(observabilitySchema);
+  .merge(observabilitySchema)
+  .merge(oauthAliasSchema)
+  .merge(infrastructureSchema);
 
 // ── Client env (NEXT_PUBLIC_ only) ──────────────────────────────────────────
 
@@ -231,9 +264,50 @@ export const clientEnvSchema = z.object({
 export type ServerEnv = z.infer<typeof serverEnvSchema>;
 export type ClientEnv = z.infer<typeof clientEnvSchema>;
 
+let serverEnvCache: ServerEnv | undefined;
+
+/**
+ * Parsed, type-safe server environment (Zod-validated). Lazily reads `process.env`
+ * on first access and caches the result for the process lifetime.
+ *
+ * Prefer this over raw `process.env` in application code so values match
+ * `serverEnvSchema` and TypeScript types are accurate without non-null assertions.
+ *
+ * Call from `instrumentation` (or another startup hook) to fail fast on boot, or rely
+ * on the first call site to validate.
+ */
+export function getServerEnv(): ServerEnv {
+  if (serverEnvCache === undefined) {
+    validateServerEnv();
+  }
+  if (serverEnvCache === undefined) {
+    throw new Error('getServerEnv: cache not populated after validateServerEnv');
+  }
+  return serverEnvCache;
+}
+
+/**
+ * Validated env as a string map for dynamic lookups (e.g. OAuth `clientIdEnvVar` from adapters).
+ */
+export function getServerEnvRecord(): Record<string, string | undefined> {
+  return getServerEnv() as unknown as Record<string, string | undefined>;
+}
+
+/**
+ * Clears the cached result of {@link getServerEnv}. Intended for unit tests that
+ * mutate `process.env` between cases.
+ */
+export function resetServerEnvCacheForTesting(): void {
+  serverEnvCache = undefined;
+}
+
 /**
  * Validate server environment variables. Call once at app startup.
  * Throws a descriptive error listing all missing/invalid variables.
+ *
+ * For ad-hoc parsing (e.g. tests with a custom env object), use {@link serverEnvSchema.safeParse}
+ * or pass a record here — this does not update the {@link getServerEnv} cache unless
+ * validating the default `process.env`.
  */
 export function validateServerEnv(
   env: Record<string, string | undefined> = process.env,
@@ -242,6 +316,9 @@ export function validateServerEnv(
   if (!result.success) {
     const errors = result.error.issues.map(i => `  ${i.path.join('.')}: ${i.message}`).join('\n');
     throw new Error(`Environment validation failed:\n${errors}`);
+  }
+  if (env === process.env) {
+    serverEnvCache = result.data;
   }
   return result.data;
 }

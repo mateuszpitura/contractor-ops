@@ -29,9 +29,7 @@ const { mockPostMessage, mockUpdate, mockUsersList, mockPrisma, mockGetCredentia
       },
     };
 
-    const mockGetCredentials = vi.fn(async () => ({
-      accessToken: 'xoxb-mock-token',
-    }));
+    const mockGetCredentials = vi.fn();
 
     return { mockPostMessage, mockUpdate, mockUsersList, mockPrisma, mockGetCredentials };
   },
@@ -58,6 +56,7 @@ vi.mock('@contractor-ops/integrations/services/credential-service', () => ({
 }));
 
 import {
+  encryptToken,
   getSlackClient,
   getSlackUserIdForUser,
   sendReminderDM,
@@ -73,7 +72,9 @@ describe('slack-client', () => {
     mockPrisma.user.findFirst.mockReset();
     mockPrisma.integrationConnection.findFirst.mockResolvedValue(null);
     mockUsersList.mockResolvedValue({ members: [] });
-    mockGetCredentials.mockResolvedValue({ accessToken: 'xoxb-mock-token' });
+    mockGetCredentials.mockResolvedValue({
+      accessToken: encryptToken('xoxb-mock-token'),
+    });
   });
 
   it('getSlackClient returns null when no connected integration', async () => {

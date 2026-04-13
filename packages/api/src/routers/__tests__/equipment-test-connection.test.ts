@@ -44,7 +44,10 @@ const { mockPrisma, mockCourierClient } = vi.hoisted(() => {
       count: vi.fn(),
     },
     contractorBillingProfile: { findFirst: vi.fn() },
-    organization: { findUnique: vi.fn(), update: vi.fn() },
+    organization: {
+      findUnique: vi.fn().mockResolvedValue({ dataRegion: 'EU' }),
+      update: vi.fn(),
+    },
     courierConfig: { findUnique: vi.fn(), upsert: vi.fn(), findMany: vi.fn() },
     auditLog: { create: vi.fn() },
     contract: { count: vi.fn(), findFirst: vi.fn(), findMany: vi.fn() },
@@ -82,14 +85,22 @@ vi.mock('@contractor-ops/auth', () => ({
       hasPermission: vi.fn().mockResolvedValue({ success: true }),
     },
   },
+  authApi: {
+    hasPermission: vi.fn().mockResolvedValue({ success: true }),
+  },
 }));
 
 vi.mock('@contractor-ops/db', () => ({
   prisma: mockPrisma,
   tenantStore: {
     run: (_ctx: unknown, fn: () => unknown) => fn(),
-    getStore: vi.fn(),
+    getStore: vi.fn(() => ({ region: 'EU' })),
   },
+  withTenantScope: vi.fn((c: unknown) => c),
+  withSoftDelete: vi.fn((c: unknown) => c),
+  createTenantClient: vi.fn(() => mockPrisma),
+  createTenantClientFrom: vi.fn(() => mockPrisma),
+  getRegionalClient: vi.fn(() => mockPrisma),
 }));
 
 vi.mock('../../services/notification-service.js', () => ({

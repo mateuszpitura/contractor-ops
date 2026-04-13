@@ -1,5 +1,7 @@
 import { createCipheriv, createDecipheriv, randomBytes } from 'node:crypto';
 import { prisma } from '@contractor-ops/db';
+import { getCredentials } from '@contractor-ops/integrations/services/credential-service';
+import { getServerEnv } from '@contractor-ops/validators';
 import { WebClient } from '@slack/web-api';
 
 // ---------------------------------------------------------------------------
@@ -12,7 +14,7 @@ const IV_LENGTH = 12;
 const _AUTH_TAG_LENGTH = 16;
 
 function getEncryptionKey(): Buffer {
-  const key = process.env.SLACK_TOKEN_ENCRYPTION_KEY;
+  const key = getServerEnv().SLACK_TOKEN_ENCRYPTION_KEY;
   if (!key) {
     throw new Error('SLACK_TOKEN_ENCRYPTION_KEY environment variable is not set');
   }
@@ -80,7 +82,8 @@ export async function getSlackClient(organizationId: string): Promise<WebClient 
     return null;
   }
 
-  const token = decryptToken(connection.credentialsRef);
+  const blob = await getCredentials(connection.credentialsRef, 'slack');
+  const token = decryptToken(blob.accessToken);
   return new WebClient(token);
 }
 

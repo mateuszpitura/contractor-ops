@@ -15,6 +15,7 @@ import {
   startRunSchema,
   taskActionSchema,
   workflowRunListSchema,
+  workflowTaskSkipReason,
 } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
@@ -160,7 +161,7 @@ export const workflowExecutionRouter = router({
             : ('SKIPPED' as const);
 
           if (!conditionMet) {
-            resultJson = { skipReason: 'condition_not_met' };
+            resultJson = { skipReason: workflowTaskSkipReason.conditionNotMet };
           }
 
           const taskRun = await tx.workflowTaskRun.create({
@@ -313,7 +314,7 @@ export const workflowExecutionRouter = router({
             });
             if (connection) {
               for (const task of todoJiraTasks) {
-                createJiraIssue(prisma, ctx.organizationId, connection.id, task.id).catch(err =>
+                createJiraIssue(ctx.db, ctx.organizationId, connection.id, task.id).catch(err =>
                   console.error(
                     `[workflow/startRun] Jira issue creation failed for task ${task.id}:`,
                     err,
@@ -347,7 +348,7 @@ export const workflowExecutionRouter = router({
               for (const task of todoLinearTasks) {
                 const linearConfig = run.linearEligibleTaskRuns.get(task.id);
                 if (linearConfig) {
-                  createLinearIssue(prisma, {
+                  createLinearIssue(ctx.db, {
                     organizationId: ctx.organizationId,
                     connectionId: linearConnection.id,
                     taskRunId: task.id,
@@ -385,7 +386,7 @@ export const workflowExecutionRouter = router({
               for (const task of todoCalendarTasks) {
                 const config = run.calendarConfigMap.get(task.id);
                 if (!config) continue;
-                createTaskCalendarEvent(prisma, {
+                createTaskCalendarEvent(ctx.db, {
                   organizationId: ctx.organizationId,
                   workflowTaskRunId: task.id,
                   config,
@@ -413,7 +414,7 @@ export const workflowExecutionRouter = router({
       );
       for (const eqTask of equipmentTasks) {
         void (async () => {
-          await handleEquipmentTaskStart(prisma, ctx.organizationId, eqTask, {
+          await handleEquipmentTaskStart(ctx.db, ctx.organizationId, eqTask, {
             id: run.run.id,
             contractorId: run.run.contractorId,
             templateType: run.templateType,
@@ -499,7 +500,7 @@ export const workflowExecutionRouter = router({
               });
               if (connection) {
                 await transitionJiraIssue(
-                  prisma,
+                  ctx.db,
                   ctx.organizationId,
                   connection.id,
                   task.id,
@@ -517,7 +518,7 @@ export const workflowExecutionRouter = router({
           void (async () => {
             try {
               const { syncTaskStatusToLinear } = await import('../services/linear-issue-sync.js');
-              await syncTaskStatusToLinear(prisma, task.id, 'CANCELLED');
+              await syncTaskStatusToLinear(ctx.db, task.id, 'CANCELLED');
             } catch (err) {
               console.error('[workflow/cancelRun] Outbound Linear sync failed:', err);
             }
@@ -814,7 +815,7 @@ export const workflowExecutionRouter = router({
             });
             if (connection) {
               await transitionJiraIssue(
-                prisma,
+                ctx.db,
                 ctx.organizationId,
                 connection.id,
                 result.id,
@@ -831,7 +832,7 @@ export const workflowExecutionRouter = router({
       void (async () => {
         try {
           const { syncTaskStatusToLinear } = await import('../services/linear-issue-sync.js');
-          await syncTaskStatusToLinear(prisma, result.id, 'DONE');
+          await syncTaskStatusToLinear(ctx.db, result.id, 'DONE');
         } catch (err) {
           console.error('[workflow/completeTask] Outbound Linear sync failed:', err);
         }
@@ -925,7 +926,7 @@ export const workflowExecutionRouter = router({
             });
             if (connection) {
               await transitionJiraIssue(
-                prisma,
+                ctx.db,
                 ctx.organizationId,
                 connection.id,
                 result.id,
@@ -942,7 +943,7 @@ export const workflowExecutionRouter = router({
       void (async () => {
         try {
           const { syncTaskStatusToLinear } = await import('../services/linear-issue-sync.js');
-          await syncTaskStatusToLinear(prisma, result.id, 'SKIPPED');
+          await syncTaskStatusToLinear(ctx.db, result.id, 'SKIPPED');
         } catch (err) {
           console.error('[workflow/skipTask] Outbound Linear sync failed:', err);
         }

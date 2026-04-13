@@ -45,9 +45,9 @@ packages/test-utils/src/msw/
 │   ├── ksef.ts        # Public key, auth challenge, token redeem, session poll, invoice query+poll, XML download, session terminate (both test+prod env)
 │   ├── resend.ts      # Send email, batch, get email
 │   ├── claude-ocr.ts  # Anthropic Messages API with tool_use (extract_invoice_data)
-│   ├── qstash.ts      # Publish, enqueue, batch
+│   ├── qstash.ts      # Publish/enqueue (URL predicates — path includes encoded destination; avoids * globs + path-to-regexp v8)
 │   ├── upstash-redis.ts # GET, SET, DEL, SCAN — in-memory key-value store (clearRedisStore() to reset)
-│   ├── r2.ts          # S3-compatible PUT, GET, HEAD, DELETE — in-memory object store
+│   ├── r2.ts          # S3-compatible PUT, GET, HEAD, DELETE — in-memory store; URL predicate (hostname *.r2.cloudflarestorage.com)
 │   └── google-workspace.ts # OAuth, Directory API users list, groups list
 ├── scenarios/         # Override handlers for specific test conditions
 │   ├── missing-data.ts     # Null fields, empty arrays, missing optional data

@@ -1,0 +1,32 @@
+# Dependencies (reinstalled in Docker)
+node_modules
+**/node_modules
+
+# Build artifacts
+**/.next
+**/dist
+**/out
+
+# Dev / CI
+.git
+.github
+.claude
+.planning
+.env
+.env.*
+!.env.example
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/vitest.config.*
+**/playwright.*
+**/e2e
+**/load-tests
+**/__tests__
+**/test-utils
+**/coverage
+
+# Docker internals
+**/Dockerfile
+docker-compose.yml
+docker/

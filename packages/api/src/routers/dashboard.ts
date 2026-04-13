@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { router } from '../init.js';
+import type { TenantScopedDb } from '../lib/tenant-db.js';
 import { requirePermission } from '../middleware/rbac.js';
 import { tenantProcedure } from '../middleware/tenant.js';
 import { CacheKeys, CacheTTL, cached } from '../services/cache.js';
@@ -18,7 +19,7 @@ const reportRead = requirePermission({ report: ['read'] });
 // Data fetchers (extracted for caching)
 // ---------------------------------------------------------------------------
 
-async function fetchKpis(organizationId: string) {
+async function fetchKpis(organizationId: string, db: TenantScopedDb) {
   const now = new Date();
   const startOfCurrentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
   const startOfPreviousMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
@@ -34,10 +35,10 @@ async function fetchKpis(organizationId: string) {
     expiringContracts,
     openTasks,
   ] = await Promise.all([
-    ctx.db.contractor.count({
+    db.contractor.count({
       where: { organizationId, status: 'ACTIVE', deletedAt: null },
     }),
-    ctx.db.contractor.count({
+    db.contractor.count({
       where: {
         organizationId,
         status: 'ACTIVE',
@@ -45,21 +46,21 @@ async function fetchKpis(organizationId: string) {
         createdAt: { lt: startOfCurrentMonth },
       },
     }),
-    ctx.db.approvalStep.count({
+    db.approvalStep.count({
       where: { organizationId, status: 'PENDING' },
     }),
-    ctx.db.approvalStep.count({
+    db.approvalStep.count({
       where: {
         organizationId,
         status: 'PENDING',
         createdAt: { lt: startOfCurrentMonth },
       },
     }),
-    ctx.db.invoice.aggregate({
+    db.invoice.aggregate({
       _sum: { amountToPayMinor: true },
       where: { organizationId, paymentStatus: 'READY', deletedAt: null },
     }),
-    ctx.db.invoice.aggregate({
+    db.invoice.aggregate({
       _sum: { amountToPayMinor: true },
       where: {
         organizationId,
@@ -71,7 +72,7 @@ async function fetchKpis(organizationId: string) {
         },
       },
     }),
-    ctx.db.contract.count({
+    db.contract.count({
       where: {
         organizationId,
         status: { in: ['ACTIVE', 'EXPIRING'] },
@@ -79,7 +80,7 @@ async function fetchKpis(organizationId: string) {
         deletedAt: null,
       },
     }),
-    ctx.db.workflowTaskRun.count({
+    db.workflowTaskRun.count({
       where: {
         organizationId,
         status: { in: ['TODO', 'IN_PROGRESS'] },
@@ -109,7 +110,7 @@ async function fetchKpis(organizationId: string) {
   });
 }
 
-async function fetchSpendTrend(organizationId: string, months: string) {
+async function fetchSpendTrend(organizationId: string, months: string, db: TenantScopedDb) {
   const now = new Date();
   let startDate: Date;
 
@@ -120,7 +121,7 @@ async function fetchSpendTrend(organizationId: string, months: string) {
     startDate = new Date(now.getFullYear(), now.getMonth() - monthsBack, 1);
   }
 
-  const rows = await ctx.db.$queryRaw<Array<{ month: Date; currency: string; totalMinor: number }>>`
+  const rows = await db.$queryRaw<Array<{ month: Date; currency: string; totalMinor: number }>>`
     SELECT
       date_trunc('month', "paidAt") AS month,
       currency,
@@ -141,13 +142,13 @@ async function fetchSpendTrend(organizationId: string, months: string) {
   }));
 }
 
-async function fetchDeadlines(organizationId: string) {
+async function fetchDeadlines(organizationId: string, db: TenantScopedDb) {
   const now = new Date();
   const ninetyDaysFromNow = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000);
   const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
 
   const [expiringContracts, overdueTasks, dueInvoices] = await Promise.all([
-    ctx.db.contract.findMany({
+    db.contract.findMany({
       where: {
         organizationId,
         status: { in: ['ACTIVE', 'EXPIRING'] },
@@ -158,7 +159,7 @@ async function fetchDeadlines(organizationId: string) {
       orderBy: { endDate: 'asc' },
       take: 20,
     }),
-    ctx.db.workflowTaskRun.findMany({
+    db.workflowTaskRun.findMany({
       where: {
         organizationId,
         status: { in: ['TODO', 'IN_PROGRESS'] },
@@ -168,7 +169,7 @@ async function fetchDeadlines(organizationId: string) {
       orderBy: { dueAt: 'asc' },
       take: 20,
     }),
-    ctx.db.invoice.findMany({
+    db.invoice.findMany({
       where: {
         organizationId,
         dueDate: { gte: now, lte: thirtyDaysFromNow },
@@ -240,8 +241,8 @@ async function fetchDeadlines(organizationId: string) {
   return plain(result);
 }
 
-async function fetchActivity(organizationId: string) {
-  const items = await ctx.db.auditLog.findMany({
+async function fetchActivity(organizationId: string, db: TenantScopedDb) {
+  const items = await db.auditLog.findMany({
     where: { organizationId },
     orderBy: { createdAt: 'desc' },
     take: 20,
@@ -271,7 +272,7 @@ export const dashboardRouter = router({
    */
   kpis: tenantProcedure.use(reportRead).query(async ({ ctx }) => {
     return cached(CacheKeys.dashboardKpis(ctx.organizationId), CacheTTL.DASHBOARD_KPIS, () =>
-      fetchKpis(ctx.organizationId),
+      fetchKpis(ctx.organizationId, ctx.db),
     );
   }),
 
@@ -290,7 +291,7 @@ export const dashboardRouter = router({
       return cached(
         CacheKeys.dashboardSpend(ctx.organizationId, input.months),
         CacheTTL.DASHBOARD_SPEND,
-        () => fetchSpendTrend(ctx.organizationId, input.months),
+        () => fetchSpendTrend(ctx.organizationId, input.months, ctx.db),
       );
     }),
 
@@ -302,7 +303,7 @@ export const dashboardRouter = router({
     return cached(
       CacheKeys.dashboardDeadlines(ctx.organizationId),
       CacheTTL.DASHBOARD_DEADLINES,
-      () => fetchDeadlines(ctx.organizationId),
+      () => fetchDeadlines(ctx.organizationId, ctx.db),
     );
   }),
 
@@ -314,7 +315,7 @@ export const dashboardRouter = router({
     return cached(
       CacheKeys.dashboardActivity(ctx.organizationId),
       CacheTTL.DASHBOARD_ACTIVITY,
-      () => fetchActivity(ctx.organizationId),
+      () => fetchActivity(ctx.organizationId, ctx.db),
     );
   }),
 });

@@ -37,6 +37,9 @@ const {
   const mockSyncJira = vi.fn(async () => ({ imported: 1 }));
 
   const mockPrisma: Rec = {
+    organization: {
+      findUnique: vi.fn().mockResolvedValue({ dataRegion: 'EU' }),
+    },
     timeEntry: {
       findMany: vi.fn(async () => []),
     },
@@ -84,14 +87,22 @@ vi.mock('@contractor-ops/auth', () => ({
       hasPermission: vi.fn().mockResolvedValue({ success: true }),
     },
   },
+  authApi: {
+    hasPermission: vi.fn().mockResolvedValue({ success: true }),
+  },
 }));
 
 vi.mock('@contractor-ops/db', () => ({
   prisma: mockPrisma,
   tenantStore: {
     run: (_ctx: unknown, fn: () => unknown) => fn(),
-    getStore: vi.fn(),
+    getStore: vi.fn(() => ({ region: 'EU' })),
   },
+  withTenantScope: vi.fn((c: unknown) => c),
+  withSoftDelete: vi.fn((c: unknown) => c),
+  createTenantClient: vi.fn(() => mockPrisma),
+  createTenantClientFrom: vi.fn(() => mockPrisma),
+  getRegionalClient: vi.fn(() => mockPrisma),
 }));
 
 vi.mock('../../services/portal-session.js', () => ({

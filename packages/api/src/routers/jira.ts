@@ -8,6 +8,7 @@ import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import * as E from '../errors.js';
 import { router } from '../init.js';
+import type { TenantScopedDb } from '../lib/tenant-db.js';
 import { requirePermission } from '../middleware/rbac.js';
 import { tenantProcedure } from '../middleware/tenant.js';
 import { requireTier } from '../middleware/tier.js';
@@ -61,8 +62,8 @@ function buildJiraApiContext(
 /**
  * Loads and validates a Jira connection, throwing if not found or disconnected.
  */
-async function loadConnection(connectionId: string, organizationId: string) {
-  const connection = await ctx.db.integrationConnection.findFirst({
+async function loadConnection(db: TenantScopedDb, connectionId: string, organizationId: string) {
+  const connection = await db.integrationConnection.findFirst({
     where: { id: connectionId, organizationId },
   });
 
@@ -142,7 +143,7 @@ export const jiraRouter = router({
     .use(requirePermission({ settings: ['read'] }))
     .input(z.object({ connectionId: z.string() }))
     .query(async ({ ctx, input }) => {
-      const connection = await loadConnection(input.connectionId, ctx.organizationId);
+      const connection = await loadConnection(ctx.db, input.connectionId, ctx.organizationId);
       const { baseUrl, authHeaders } = buildJiraApiContext(
         connection.configJson,
         connection.credentialsRef,
@@ -181,7 +182,7 @@ export const jiraRouter = router({
       }),
     )
     .query(async ({ ctx, input }) => {
-      const connection = await loadConnection(input.connectionId, ctx.organizationId);
+      const connection = await loadConnection(ctx.db, input.connectionId, ctx.organizationId);
       const { baseUrl, authHeaders } = buildJiraApiContext(
         connection.configJson,
         connection.credentialsRef,
@@ -221,7 +222,7 @@ export const jiraRouter = router({
       }),
     )
     .query(async ({ ctx, input }) => {
-      const connection = await loadConnection(input.connectionId, ctx.organizationId);
+      const connection = await loadConnection(ctx.db, input.connectionId, ctx.organizationId);
       const { baseUrl, authHeaders } = buildJiraApiContext(
         connection.configJson,
         connection.credentialsRef,
@@ -259,8 +260,8 @@ export const jiraRouter = router({
         projectId: z.string(),
       }),
     )
-    .query(async ({ input }) => {
-      const mapping = await getStatusMapping(prisma, input.connectionId, input.projectId);
+    .query(async ({ ctx, input }) => {
+      const mapping = await getStatusMapping(ctx.db, input.connectionId, input.projectId);
 
       return mapping ?? [];
     }),
@@ -271,7 +272,7 @@ export const jiraRouter = router({
   getTaskConfig: tenantProcedure
     .use(requirePermission({ workflow: ['read'] }))
     .input(z.object({ taskTemplateId: z.string() }))
-    .query(async ({ input }) => {
+    .query(async ({ ctx, input }) => {
       const template = await ctx.db.workflowTaskTemplate.findUnique({
         where: { id: input.taskTemplateId },
         select: { configJson: true },
@@ -411,9 +412,9 @@ export const jiraRouter = router({
     .use(requireTier('PRO'))
     .input(saveJiraStatusMappingInputSchema)
     .mutation(async ({ ctx, input }) => {
-      const connection = await loadConnection(input.connectionId, ctx.organizationId);
+      const connection = await loadConnection(ctx.db, input.connectionId, ctx.organizationId);
 
-      await saveStatusMapping(prisma, input.connectionId, input.projectId, input.mappings);
+      await saveStatusMapping(ctx.db, input.connectionId, input.projectId, input.mappings);
 
       // Re-register webhooks for all projects that have status mappings
       const config = (connection.configJson as JiraConnectionConfig) ?? {};
@@ -430,7 +431,7 @@ export const jiraRouter = router({
           // Gather project keys from Jira (we need keys, not IDs, for JQL)
           // The project IDs in statusMappings keys need to be resolved to keys
           // For now, use the project IDs directly in JQL (Jira accepts both)
-          await registerJiraWebhooks(prisma, input.connectionId, projectKeys);
+          await registerJiraWebhooks(ctx.db, input.connectionId, projectKeys);
         } catch (error) {
           console.error('[jira.saveStatusMapping] Failed to register webhooks:', error);
           // Don't fail the save — webhooks can be retried
@@ -504,7 +505,7 @@ export const jiraRouter = router({
 
       // Deregister webhooks first (best effort)
       try {
-        await deregisterJiraWebhooks(prisma, input.connectionId);
+        await deregisterJiraWebhooks(ctx.db, input.connectionId);
       } catch (error) {
         console.error('[jira.disconnect] Failed to deregister webhooks:', error);
       }

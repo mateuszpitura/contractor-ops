@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
-import type { PrismaClient } from '@contractor-ops/db';
 import { computeTimeReconciliation } from './time-reconciliation.js';
+import type { DbClient } from './types.js';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -50,7 +50,7 @@ export function computeDuplicateCheckHash(
  * 6. Duplicate check
  */
 export async function runAutoMatch(
-  prisma: PrismaClient,
+  db: DbClient,
   organizationId: string,
   invoice: {
     id?: string;
@@ -58,6 +58,7 @@ export async function runAutoMatch(
     totalMinor: number;
     currency: string;
     duplicateCheckHash: string | null;
+    issueDate?: Date | null;
     servicePeriodStart?: Date | null;
     servicePeriodEnd?: Date | null;
   },
@@ -90,7 +91,7 @@ export async function runAutoMatch(
     };
   }
 
-  const contractor = await prisma.contractor.findFirst({
+  const contractor = await db.contractor.findFirst({
     where: {
       taxId: invoice.sellerTaxId,
       organizationId,
@@ -120,7 +121,7 @@ export async function runAutoMatch(
   // Step 2: Find active contracts
   // -------------------------------------------------------------------------
 
-  const contracts = await prisma.contract.findMany({
+  const contracts = await db.contract.findMany({
     where: {
       contractorId: contractor.id,
       organizationId,
@@ -133,7 +134,7 @@ export async function runAutoMatch(
     flags.push('NO_ACTIVE_CONTRACT');
 
     // Check for expired contracts as a hint
-    const expiredContract = await prisma.contract.findFirst({
+    const expiredContract = await db.contract.findFirst({
       where: {
         contractorId: contractor.id,
         organizationId,
@@ -208,15 +209,16 @@ export async function runAutoMatch(
     // Time-based reconciliation (Phase 18 - D-13)
     // Warning only: does NOT change matchStatus or block approval (D-15)
     if (bestContract.rateType === 'PER_HOUR' || bestContract.rateType === 'PER_DAY') {
-      // Use invoice service period or fall back to issueDate +/- 30 days
-      const now = new Date();
+      const anchor = invoice.servicePeriodStart ?? invoice.issueDate ?? new Date();
       const periodStart =
-        invoice.servicePeriodStart ?? new Date(now.getFullYear(), now.getMonth(), 1);
+        invoice.servicePeriodStart ??
+        new Date(Date.UTC(anchor.getUTCFullYear(), anchor.getUTCMonth(), 1));
       const periodEnd =
-        invoice.servicePeriodEnd ?? new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        invoice.servicePeriodEnd ??
+        new Date(Date.UTC(anchor.getUTCFullYear(), anchor.getUTCMonth() + 1, 0));
 
       const timeRecon = await computeTimeReconciliation(
-        prisma,
+        db,
         organizationId,
         bestContract.id,
         periodStart,
@@ -245,7 +247,7 @@ export async function runAutoMatch(
       duplicateWhere.id = { not: invoice.id };
     }
 
-    const duplicate = await prisma.invoice.findFirst({
+    const duplicate = await db.invoice.findFirst({
       where: duplicateWhere,
       select: { id: true },
     });

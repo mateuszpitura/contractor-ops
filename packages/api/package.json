@@ -119,6 +119,7 @@
     "@contractor-ops/auth": "workspace:*",
     "@contractor-ops/db": "workspace:*",
     "@contractor-ops/einvoice": "workspace:*",
+    "@contractor-ops/gov-api": "workspace:*",
     "@contractor-ops/integrations": "workspace:*",
     "@contractor-ops/logger": "workspace:*",
     "@contractor-ops/secrets": "workspace:*",

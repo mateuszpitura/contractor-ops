@@ -1,4 +1,5 @@
 import { getQStashClient } from '@contractor-ops/integrations/services/qstash-client';
+import { billingCreditDenialReason, getServerEnv } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { router } from '../init.js';
@@ -71,7 +72,7 @@ export const ocrRouter = router({
         throw new TRPCError({
           code: 'PRECONDITION_FAILED',
           message:
-            result.error === 'credits_exhausted'
+            result.error === billingCreditDenialReason.creditsExhausted
               ? 'OCR credits exhausted'
               : 'No active subscription',
           cause: { reason: result.error, remaining: result.remaining },
@@ -153,7 +154,7 @@ export const ocrRouter = router({
       // Dispatch QStash job
       const qstash = getQStashClient();
       await qstash.publishJSON({
-        url: `${process.env.NEXT_PUBLIC_APP_URL}/api/ocr/_process`,
+        url: `${getServerEnv().NEXT_PUBLIC_APP_URL}/api/ocr/_process`,
         body: {
           extractionId: newExtraction.id,
           organizationId: ctx.organizationId,
@@ -185,7 +186,9 @@ export const ocrRouter = router({
       throw new TRPCError({
         code: 'PRECONDITION_FAILED',
         message:
-          result.error === 'credits_exhausted' ? 'OCR credits exhausted' : 'No active subscription',
+          result.error === billingCreditDenialReason.creditsExhausted
+            ? 'OCR credits exhausted'
+            : 'No active subscription',
         cause: { reason: result.error, remaining: result.remaining },
       });
     }

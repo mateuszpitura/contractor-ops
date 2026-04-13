@@ -33,6 +33,9 @@ const {
   type Rec = Record<string, any>;
 
   const mockPrisma: Rec = {
+    organization: {
+      findUnique: vi.fn().mockResolvedValue({ dataRegion: 'EU' }),
+    },
     ocrExtraction: {
       findFirst: vi.fn(),
       create: vi.fn(),
@@ -63,14 +66,22 @@ vi.mock('@contractor-ops/auth', () => ({
       hasPermission: vi.fn().mockResolvedValue({ success: true }),
     },
   },
+  authApi: {
+    hasPermission: vi.fn().mockResolvedValue({ success: true }),
+  },
 }));
 
 vi.mock('@contractor-ops/db', () => ({
   prisma: mockPrisma,
   tenantStore: {
     run: (_ctx: unknown, fn: () => unknown) => fn(),
-    getStore: vi.fn(),
+    getStore: vi.fn(() => ({ region: 'EU' })),
   },
+  withTenantScope: vi.fn((c: unknown) => c),
+  withSoftDelete: vi.fn((c: unknown) => c),
+  createTenantClient: vi.fn(() => mockPrisma),
+  createTenantClientFrom: vi.fn(() => mockPrisma),
+  getRegionalClient: vi.fn(() => mockPrisma),
 }));
 
 vi.mock('../../services/ocr-extraction.js', () => ({
@@ -221,6 +232,7 @@ const portalCaller = makePortalCaller();
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mockPrisma.organization.findUnique.mockResolvedValue({ dataRegion: 'EU' });
 });
 
 // ===========================================================================
@@ -247,7 +259,7 @@ describe('ocr.trigger', () => {
   });
 
   it('throws PRECONDITION_FAILED when credits are exhausted', async () => {
-    mockTriggerOcr.mockResolvedValue({ error: 'credits_exhausted', remaining: 0 });
+    mockTriggerOcr.mockResolvedValue({ error: 'creditsExhausted', remaining: 0 });
 
     await expect(
       tenantCaller.ocr.trigger({ documentId: 'doc-1', storageKey: 'key' }),
@@ -414,10 +426,10 @@ describe('ocr.portalGetResult', () => {
       const sourceDir = path.resolve(import.meta.dirname, '../../routers');
       const source = fs.readFileSync(path.join(sourceDir, 'ocr.ts'), 'utf-8');
 
-      expect(source).toContain('import { requireTier } from "../middleware/tier.js"');
-      expect(source).toContain('requireTier("PRO")');
+      expect(source).toContain("import { requireTier } from '../middleware/tier.js'");
+      expect(source).toContain("requireTier('PRO')");
 
-      const matches = source.match(/\.use\(requireTier\("PRO"\)\)/g);
+      const matches = source.match(/\.use\(requireTier\('PRO'\)\)/g);
       expect(matches).toHaveLength(2);
     });
 

@@ -1,5 +1,6 @@
 'use client';
 
+import { workflowTaskSkipReason } from '@contractor-ops/validators';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { MoreHorizontal } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -78,7 +79,8 @@ function calculateRunProgress(tasks: RunTask[]) {
   const activeTasks = tasks.filter(t => {
     if (
       t.status === 'SKIPPED' &&
-      (t.resultJson as Record<string, unknown>)?.skipReason === 'condition_not_met'
+      (t.resultJson as Record<string, unknown>)?.skipReason ===
+        workflowTaskSkipReason.conditionNotMet
     ) {
       return false;
     }

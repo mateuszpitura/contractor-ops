@@ -1,10 +1,8 @@
 'use client';
 
+import type { UkCountryFields } from '@contractor-ops/validators';
+import { ukEntityTypeEnum } from '@contractor-ops/validators';
 import { useCallback, useState } from 'react';
-import {
-  ukEntityTypeEnum,
-  type UkCountryFields,
-} from '@contractor-ops/validators';
 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -37,10 +35,7 @@ export interface UkComplianceFieldsProps {
    * also usable in isolation (primarily for scaffold tests and Storybook).
    */
   values?: Partial<UkCountryFields>;
-  onChange?: <K extends keyof UkCountryFields>(
-    key: K,
-    val: UkCountryFields[K] | undefined,
-  ) => void;
+  onChange?: <K extends keyof UkCountryFields>(key: K, val: UkCountryFields[K] | undefined) => void;
   errors?: Partial<Record<keyof UkCountryFields, string>>;
 
   // Shorthand props — convenience form for tests and storybook. Equivalent to
@@ -72,25 +67,20 @@ export function UkComplianceFields(props: UkComplianceFieldsProps) {
   const [internal, setInternal] = useState<Partial<UkCountryFields>>({});
   const merged: Partial<UkCountryFields> = {
     ...internal,
-    ...(props.entityType !== undefined ? { entityType: props.entityType } : {}),
-    ...(props.isVatRegistered !== undefined
-      ? { isVatRegistered: props.isVatRegistered }
-      : {}),
-    ...(props.utr !== undefined ? { utr: props.utr } : {}),
-    ...(props.companiesHouseNumber !== undefined
-      ? { companiesHouseNumber: props.companiesHouseNumber }
-      : {}),
-    ...(props.vatRegistrationNumber !== undefined
-      ? { vatRegistrationNumber: props.vatRegistrationNumber }
-      : {}),
+    ...(props.entityType === undefined ? {} : { entityType: props.entityType }),
+    ...(props.isVatRegistered === undefined ? {} : { isVatRegistered: props.isVatRegistered }),
+    ...(props.utr === undefined ? {} : { utr: props.utr }),
+    ...(props.companiesHouseNumber === undefined
+      ? {}
+      : { companiesHouseNumber: props.companiesHouseNumber }),
+    ...(props.vatRegistrationNumber === undefined
+      ? {}
+      : { vatRegistrationNumber: props.vatRegistrationNumber }),
     ...(props.values ?? {}),
   };
 
   const handleChange = useCallback(
-    <K extends keyof UkCountryFields>(
-      key: K,
-      val: UkCountryFields[K] | undefined,
-    ) => {
+    <K extends keyof UkCountryFields>(key: K, val: UkCountryFields[K] | undefined) => {
       if (props.onChange) {
         props.onChange(key, val);
         return;
@@ -173,14 +163,10 @@ export function UkComplianceFields(props: UkComplianceFieldsProps) {
             maxLength={8}
             aria-required={chRequired ? 'true' : undefined}
             aria-invalid={errors.companiesHouseNumber ? 'true' : undefined}
-            aria-describedby={
-              errors.companiesHouseNumber ? 'uk-ch-error' : undefined
-            }
+            aria-describedby={errors.companiesHouseNumber ? 'uk-ch-error' : undefined}
             placeholder="e.g. 12345678 or SC123456"
             value={merged.companiesHouseNumber ?? ''}
-            onChange={e =>
-              handleChange('companiesHouseNumber', e.target.value || undefined)
-            }
+            onChange={e => handleChange('companiesHouseNumber', e.target.value || undefined)}
           />
           {errors.companiesHouseNumber ? (
             <p
@@ -214,17 +200,10 @@ export function UkComplianceFields(props: UkComplianceFieldsProps) {
             id="uk-vat"
             aria-required={vatRequired ? 'true' : undefined}
             aria-invalid={errors.vatRegistrationNumber ? 'true' : undefined}
-            aria-describedby={
-              errors.vatRegistrationNumber ? 'uk-vat-error' : undefined
-            }
+            aria-describedby={errors.vatRegistrationNumber ? 'uk-vat-error' : undefined}
             placeholder="GB123456789"
             value={merged.vatRegistrationNumber ?? ''}
-            onChange={e =>
-              handleChange(
-                'vatRegistrationNumber',
-                e.target.value || undefined,
-              )
-            }
+            onChange={e => handleChange('vatRegistrationNumber', e.target.value || undefined)}
           />
           {errors.vatRegistrationNumber ? (
             <p

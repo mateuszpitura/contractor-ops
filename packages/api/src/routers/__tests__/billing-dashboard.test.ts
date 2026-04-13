@@ -2,10 +2,19 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mockGetSubscription = vi.fn();
 const mockGetCreditBalance = vi.fn();
-const mockContractorCount = vi.fn();
+
+const { prismaMock, mockContractorCount } = vi.hoisted(() => {
+  const mockContractorCount = vi.fn();
+  const prismaMock = {
+    organization: { findUnique: vi.fn().mockResolvedValue({ dataRegion: 'EU' }) },
+    contractor: { count: (...args: unknown[]) => mockContractorCount(...args) },
+    subscription: { findUnique: vi.fn() },
+  };
+  return { prismaMock, mockContractorCount };
+});
 
 vi.mock('../../services/billing-service.js', () => ({
-  getSubscription: (...args: any[]) => mockGetSubscription(...args),
+  getSubscription: (...args: unknown[]) => mockGetSubscription(...args),
   createCheckoutSession: vi.fn(),
   createTopUpCheckoutSession: vi.fn(),
   getProrationPreview: vi.fn(),
@@ -15,19 +24,20 @@ vi.mock('../../services/billing-service.js', () => ({
 }));
 
 vi.mock('../../services/credit-service.js', () => ({
-  getCreditBalance: (...args: any[]) => mockGetCreditBalance(...args),
+  getCreditBalance: (...args: unknown[]) => mockGetCreditBalance(...args),
 }));
 
 vi.mock('@contractor-ops/db', () => ({
-  prisma: {
-    organization: { findUnique: vi.fn() },
-    contractor: { count: (...args: any[]) => mockContractorCount(...args) },
-    subscription: { findUnique: vi.fn() },
-  },
+  prisma: prismaMock,
   tenantStore: {
     run: (_ctx: { organizationId: string }, fn: () => unknown) => fn(),
-    getStore: vi.fn(),
+    getStore: vi.fn(() => ({ region: 'EU' })),
   },
+  withTenantScope: vi.fn((c: unknown) => c),
+  withSoftDelete: vi.fn((c: unknown) => c),
+  createTenantClient: vi.fn(() => prismaMock),
+  createTenantClientFrom: vi.fn(() => prismaMock),
+  getRegionalClient: vi.fn(() => prismaMock),
 }));
 
 vi.mock('@sentry/nextjs', () => {

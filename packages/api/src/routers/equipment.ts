@@ -46,7 +46,7 @@ const equipmentCoreRouter = router({
     .use(requirePermission({ equipment: ['read'] }))
     .input(equipmentListSchema)
     .query(async ({ ctx, input }) => {
-      const { page, perPage, search, status, type, assignedContractorId, sortBy, sortOrder } =
+      const { page, pageSize, search, status, type, assignedContractorId, sortBy, sortOrder } =
         input;
 
       const where: Prisma.EquipmentWhereInput = {
@@ -80,8 +80,8 @@ const equipmentCoreRouter = router({
       const [items, total] = await Promise.all([
         ctx.db.equipment.findMany({
           where,
-          skip: (page - 1) * perPage,
-          take: perPage,
+          skip: (page - 1) * pageSize,
+          take: pageSize,
           orderBy: { [sortBy]: sortOrder },
           include: {
             assignments: {
@@ -114,7 +114,7 @@ const equipmentCoreRouter = router({
         };
       });
 
-      return { items: mapped, total, page, perPage };
+      return { items: mapped, total, page, pageSize };
     }),
 
   /**

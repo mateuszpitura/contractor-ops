@@ -27,35 +27,43 @@ const {
   mockBulkGrantConsent,
   mockGetPrivacyNotice,
   mockOrgFindUniqueOrThrow,
-} = vi.hoisted(() => ({
-  mockGrantConsent: vi.fn(),
-  mockRevokeConsent: vi.fn(),
-  mockGetCurrentConsent: vi.fn(),
-  mockGetConsentHistory: vi.fn(),
-  mockHasRequiredConsents: vi.fn(),
-  mockBulkGrantConsent: vi.fn(),
-  mockGetPrivacyNotice: vi.fn(),
-  mockOrgFindUniqueOrThrow: vi.fn(),
-}));
+  mockPrismaRoot,
+} = vi.hoisted(() => {
+  const mockOrgFindUniqueOrThrow = vi.fn();
+  const mockPrismaRoot = {
+    organization: {
+      findUnique: vi.fn().mockResolvedValue({ dataRegion: 'EU' }),
+      findUniqueOrThrow: mockOrgFindUniqueOrThrow,
+    },
+  };
+  return {
+    mockGrantConsent: vi.fn(),
+    mockRevokeConsent: vi.fn(),
+    mockGetCurrentConsent: vi.fn(),
+    mockGetConsentHistory: vi.fn(),
+    mockHasRequiredConsents: vi.fn(),
+    mockBulkGrantConsent: vi.fn(),
+    mockGetPrivacyNotice: vi.fn(),
+    mockOrgFindUniqueOrThrow,
+    mockPrismaRoot,
+  };
+});
 
 // ---------------------------------------------------------------------------
 // Module mocks
 // ---------------------------------------------------------------------------
 
 vi.mock('@contractor-ops/db', () => ({
-  prisma: {
-    organization: {
-      findUniqueOrThrow: mockOrgFindUniqueOrThrow,
-    },
-  },
+  prisma: mockPrismaRoot,
   tenantStore: {
     run: (_ctx: unknown, fn: () => unknown) => fn(),
-    getStore: vi.fn(),
+    getStore: vi.fn(() => ({ region: 'EU' })),
   },
   withTenantScope: vi.fn((c: unknown) => c),
   withSoftDelete: vi.fn((c: unknown) => c),
-  createTenantClient: vi.fn(),
-  createTenantClientFrom: vi.fn(),
+  createTenantClient: vi.fn(() => mockPrismaRoot),
+  createTenantClientFrom: vi.fn(() => mockPrismaRoot),
+  getRegionalClient: vi.fn(() => mockPrismaRoot),
 }));
 
 vi.mock('@contractor-ops/auth', () => ({
@@ -64,6 +72,9 @@ vi.mock('@contractor-ops/auth', () => ({
       getSession: vi.fn(),
       hasPermission: vi.fn().mockResolvedValue({ success: true }),
     },
+  },
+  authApi: {
+    hasPermission: vi.fn().mockResolvedValue({ success: true }),
   },
 }));
 

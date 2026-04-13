@@ -29,6 +29,7 @@ import {
 } from '@contractor-ops/einvoice';
 import { createZatcaSecretStore, ZATCA_SECRET_NAMES } from '@contractor-ops/integrations';
 import { getQStashClient } from '@contractor-ops/integrations/services/qstash-client';
+import { getServerEnv } from '@contractor-ops/validators';
 import type { PrismaLike } from './zatca-hash-chain.js';
 import { acquireChainLock, getNextChainEntry, recordChainEntry } from './zatca-hash-chain.js';
 
@@ -302,11 +303,7 @@ export async function queueZatcaSubmission(
   organizationId: string,
 ): Promise<void> {
   const qstash = getQStashClient();
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? process.env.APP_URL;
-
-  if (!appUrl) {
-    throw new Error('APP_URL or NEXT_PUBLIC_APP_URL must be set for QStash');
-  }
+  const appUrl = getServerEnv().NEXT_PUBLIC_APP_URL;
 
   await qstash.publishJSON({
     url: `${appUrl}/api/zatca/_submit`,

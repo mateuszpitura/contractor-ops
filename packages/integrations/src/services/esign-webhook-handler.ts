@@ -1,5 +1,10 @@
 import type { Prisma } from '@contractor-ops/db';
 import { prisma } from '@contractor-ops/db';
+import type {
+  ContractStatus,
+  SigningEnvelopeStatus,
+  SigningRecipientStatus,
+} from '@contractor-ops/db/generated/prisma/client';
 import { normalizeSigningEvent } from './esign-service.js';
 
 // ---------------------------------------------------------------------------
@@ -113,7 +118,7 @@ export async function handleSigningWebhook(params: {
       const recipientStatus = RECIPIENT_STATUS_MAP[event.recipientStatus] ?? event.recipientStatus;
 
       const recipientUpdate: Prisma.SigningRecipientUpdateInput = {
-        status: recipientStatus,
+        status: recipientStatus as SigningRecipientStatus,
       };
 
       if (event.eventType === 'RECIPIENT_SIGNED') {
@@ -147,7 +152,7 @@ export async function handleSigningWebhook(params: {
       const envelopeStatus = ENVELOPE_STATUS_MAP[event.envelopeStatus] ?? event.envelopeStatus;
 
       const envelopeUpdate: Prisma.SigningEnvelopeUpdateInput = {
-        status: envelopeStatus,
+        status: envelopeStatus as SigningEnvelopeStatus,
       };
 
       if (event.envelopeStatus === 'COMPLETED') {
@@ -167,7 +172,7 @@ export async function handleSigningWebhook(params: {
         const contractStatus = CONTRACT_STATUS_MAP[event.envelopeStatus]!;
 
         const contractUpdate: Prisma.ContractUpdateInput = {
-          status: contractStatus,
+          status: contractStatus as ContractStatus,
         };
 
         if (event.envelopeStatus === 'COMPLETED') {

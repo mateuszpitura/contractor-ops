@@ -15,7 +15,7 @@ import { requirePermission } from '../middleware/rbac.js';
 import { tenantProcedure } from '../middleware/tenant.js';
 import { uploadRateLimitMiddleware } from '../middleware/upload-rate-limit.js';
 import { isAllowedMimeType, validateMimeType } from '../services/mime-validator.js';
-import { generateStorageKey } from '../services/r2.js';
+import { generateStorageKey, getR2BucketName } from '../services/r2.js';
 import {
   createRegionalPresignedDownloadUrl,
   createRegionalPresignedUploadUrl,
@@ -61,7 +61,7 @@ async function scanAndUpdate(
     const client = createR2Client();
 
     const getCmd = new GetObjectCommand({
-      Bucket: process.env.R2_BUCKET_NAME!,
+      Bucket: getR2BucketName(),
       Key: storageKey,
       Range: 'bytes=0-4099',
     });

@@ -70,7 +70,7 @@ export type EquipmentUpdateInput = z.infer<typeof equipmentUpdateSchema>;
  */
 export const equipmentListSchema = z.object({
   page: z.number().min(1).default(1),
-  perPage: z.number().min(1).max(100).default(25),
+  pageSize: z.number().min(1).max(100).default(25),
   search: z.string().optional(),
   status: z.array(equipmentStatusEnum).optional(),
   type: z.array(equipmentTypeEnum).optional(),

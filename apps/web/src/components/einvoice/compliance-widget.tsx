@@ -1,5 +1,6 @@
 'use client';
 
+import { complianceState } from '@contractor-ops/einvoice';
 import { useQuery } from '@tanstack/react-query';
 import { FileCheck } from 'lucide-react';
 import { PeppolComplianceWidget } from '@/components/peppol/peppol-compliance-widget';
@@ -43,7 +44,7 @@ const stateStyles: Record<string, { bg: string; text: string; dot: string }> = {
     text: 'text-red-700 dark:text-red-400',
     dot: 'bg-red-500',
   },
-  not_connected: {
+  [complianceState.notConnected]: {
     bg: 'bg-muted/50',
     text: 'text-muted-foreground/60',
     dot: 'bg-muted-foreground/30',
@@ -57,7 +58,7 @@ const stateLabels: Record<string, string> = {
   onboarding: 'Onboarding',
   suspended: 'Suspended',
   error: 'Error',
-  not_connected: 'Not Connected',
+  [complianceState.notConnected]: 'Not Connected',
 };
 
 // ---------------------------------------------------------------------------
@@ -114,7 +115,7 @@ export function EInvoiceComplianceWidget() {
       </CardHeader>
       <CardContent className="space-y-2">
         {statuses.map(status => {
-          const style = stateStyles[status.state] ?? stateStyles.not_connected;
+          const style = stateStyles[status.state] ?? stateStyles[complianceState.notConnected];
           const label = stateLabels[status.state] ?? status.state;
           return (
             <Link

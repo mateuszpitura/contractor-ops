@@ -3,17 +3,21 @@
 // ---------------------------------------------------------------------------
 
 /**
- * Lifecycle state of an e-invoicing country profile for an organization.
+ * Canonical compliance state tokens (camelCase).
  * Per D-09: states based on actual provider lifecycle needs.
  */
-export type ComplianceState =
-  | 'not_connected' // No profile configured for this org
-  | 'onboarding' // Setup in progress (e.g., ZATCA CSID exchange)
-  | 'sandbox' // Connected to test environment
-  | 'active' // Connected and syncing successfully
-  | 'degraded' // Connected but recent errors (still operational)
-  | 'suspended' // Manually paused or credential expired
-  | 'error'; // Failed — requires intervention
+export const complianceState = {
+  /** No profile configured for this org */
+  notConnected: 'notConnected',
+  onboarding: 'onboarding',
+  sandbox: 'sandbox',
+  active: 'active',
+  degraded: 'degraded',
+  suspended: 'suspended',
+  error: 'error',
+} as const;
+
+export type ComplianceState = (typeof complianceState)[keyof typeof complianceState];
 
 /**
  * Capability flags for a profile.

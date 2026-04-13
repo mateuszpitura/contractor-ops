@@ -15,10 +15,10 @@ import {
 // ---------------------------------------------------------------------------
 
 const VALID_UTR = '5097172561';
-const VALID_CH_NUMBER = '00000006';       // England/Wales 8-digit (Shell plc historically)
-const VALID_CH_NUMBER_SCOT = 'SC000001';  // Scottish alphanumeric
-const VALID_GB_VAT = 'GB123456782';       // post-2010 9755 checksum vector
-const VALID_USTIDNR = 'DE136695976';       // BMW Group — canonical BMF test vector
+const VALID_CH_NUMBER = '00000006'; // England/Wales 8-digit (Shell plc historically)
+const VALID_CH_NUMBER_SCOT = 'SC000001'; // Scottish alphanumeric
+const VALID_GB_VAT = 'GB123456782'; // post-2010 9755 checksum vector
+const VALID_USTIDNR = 'DE136695976'; // BMW Group — canonical BMF test vector
 
 // ---------------------------------------------------------------------------
 // countryFieldsSchemaMap — existing entries untouched
@@ -83,9 +83,9 @@ describe('ukCountryFieldsSchema — D-04 required-field rules', () => {
     });
     expect(result.success).toBe(false);
     if (!result.success) {
-      const utrIssue = result.error.issues.find((i) => i.path[0] === 'utr');
+      const utrIssue = result.error.issues.find(i => i.path[0] === 'utr');
       expect(utrIssue).toBeDefined();
-      expect(utrIssue!.message).toBe('UTR is required for sole traders');
+      expect(utrIssue?.message).toBe('UTR is required for sole traders');
     }
   });
 
@@ -106,7 +106,7 @@ describe('ukCountryFieldsSchema — D-04 required-field rules', () => {
     });
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error.issues.some((i) => i.path[0] === 'utr')).toBe(true);
+      expect(result.error.issues.some(i => i.path[0] === 'utr')).toBe(true);
     }
   });
 
@@ -118,13 +118,9 @@ describe('ukCountryFieldsSchema — D-04 required-field rules', () => {
     });
     expect(result.success).toBe(false);
     if (!result.success) {
-      const issue = result.error.issues.find(
-        (i) => i.path[0] === 'companiesHouseNumber',
-      );
+      const issue = result.error.issues.find(i => i.path[0] === 'companiesHouseNumber');
       expect(issue).toBeDefined();
-      expect(issue!.message).toBe(
-        'Companies House number is required for limited companies',
-      );
+      expect(issue?.message).toBe('Companies House number is required for limited companies');
     }
   });
 
@@ -136,9 +132,7 @@ describe('ukCountryFieldsSchema — D-04 required-field rules', () => {
     });
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(
-        result.error.issues.some((i) => i.path[0] === 'vatRegistrationNumber'),
-      ).toBe(true);
+      expect(result.error.issues.some(i => i.path[0] === 'vatRegistrationNumber')).toBe(true);
     }
   });
 
@@ -169,9 +163,7 @@ describe('ukCountryFieldsSchema — D-04 required-field rules', () => {
     });
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(
-        result.error.issues.some((i) => i.path[0] === 'companiesHouseNumber'),
-      ).toBe(true);
+      expect(result.error.issues.some(i => i.path[0] === 'companiesHouseNumber')).toBe(true);
     }
   });
 
@@ -202,9 +194,9 @@ describe('deCountryFieldsSchema — D-04 required-field rules', () => {
     const result = deCountryFieldsSchema.safeParse(baseEinzel);
     expect(result.success).toBe(false);
     if (!result.success) {
-      const issue = result.error.issues.find((i) => i.path[0] === 'steuernummer');
+      const issue = result.error.issues.find(i => i.path[0] === 'steuernummer');
       expect(issue).toBeDefined();
-      expect(issue!.message).toBe('Steuernummer is required');
+      expect(issue?.message).toBe('Steuernummer is required');
     }
   });
 
@@ -223,13 +215,12 @@ describe('deCountryFieldsSchema — D-04 required-field rules', () => {
     });
     expect(result.success).toBe(false);
     if (!result.success) {
-      const issue = result.error.issues.find((i) => i.path[0] === 'steuernummer');
+      const issue = result.error.issues.find(i => i.path[0] === 'steuernummer');
       expect(issue).toBeDefined();
       // Message must mention the Bundesland (either code or German name)
-      expect(
-        issue!.message.includes('BW') ||
-          issue!.message.includes('Baden-Württemberg'),
-      ).toBe(true);
+      expect(issue?.message.includes('BW') || issue?.message.includes('Baden-Württemberg')).toBe(
+        true,
+      );
     }
   });
 
@@ -244,13 +235,9 @@ describe('deCountryFieldsSchema — D-04 required-field rules', () => {
     });
     expect(result.success).toBe(false);
     if (!result.success) {
-      const issue = result.error.issues.find(
-        (i) => i.path[0] === 'handelsregister',
-      );
+      const issue = result.error.issues.find(i => i.path[0] === 'handelsregister');
       expect(issue).toBeDefined();
-      expect(issue!.message).toBe(
-        'Handelsregister is required for UG/GmbH entities',
-      );
+      expect(issue?.message).toBe('Handelsregister is required for UG/GmbH entities');
     }
   });
 
@@ -264,9 +251,7 @@ describe('deCountryFieldsSchema — D-04 required-field rules', () => {
     });
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(
-        result.error.issues.some((i) => i.path[0] === 'handelsregister'),
-      ).toBe(true);
+      expect(result.error.issues.some(i => i.path[0] === 'handelsregister')).toBe(true);
     }
   });
 
@@ -324,7 +309,7 @@ describe('deCountryFieldsSchema — D-04 required-field rules', () => {
     });
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error.issues.some((i) => i.path[0] === 'ustIdNr')).toBe(true);
+      expect(result.error.issues.some(i => i.path[0] === 'ustIdNr')).toBe(true);
     }
   });
 
@@ -362,7 +347,7 @@ describe('deCountryFieldsSchema — D-04 required-field rules', () => {
     });
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error.issues.some((i) => i.path[0] === 'ustIdNr')).toBe(true);
+      expect(result.error.issues.some(i => i.path[0] === 'ustIdNr')).toBe(true);
     }
   });
 
@@ -423,7 +408,7 @@ describe('deCountryFieldsSchema — D-04 required-field rules', () => {
 
 describe('countryFieldsSchemaMap dispatch', () => {
   it('GB dispatch uses ukCountryFieldsSchema rules', () => {
-    const result = countryFieldsSchemaMap.GB!.safeParse({
+    const result = countryFieldsSchemaMap.GB?.safeParse({
       entityType: 'SOLE_TRADER',
       isVatRegistered: false,
     });
@@ -431,7 +416,7 @@ describe('countryFieldsSchemaMap dispatch', () => {
   });
 
   it('DE dispatch uses deCountryFieldsSchema rules', () => {
-    const result = countryFieldsSchemaMap.DE!.safeParse({
+    const result = countryFieldsSchemaMap.DE?.safeParse({
       bundesland: 'BW',
       entityType: 'EINZELUNTERNEHMEN',
       isVatRegistered: false,

@@ -26,8 +26,8 @@ const baseOptions: LoggerOptions = {
   },
 };
 
-export { PII_MASK_KEYWORDS, PII_MASK_PATHS } from './pii-mask.js';
 export type { PiiMaskKeyword } from './pii-mask.js';
+export { PII_MASK_KEYWORDS, PII_MASK_PATHS } from './pii-mask.js';
 
 // ---------------------------------------------------------------------------
 // Root logger

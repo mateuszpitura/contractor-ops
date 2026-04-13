@@ -19,6 +19,34 @@ const USER_ID = 'clyyyyyyyyyyyyyyyyyyyyyyyy';
 const TARGET_USER_ID = 'cltarget0000000000000001';
 const MEMBER_ID = 'clmember0000000000000001';
 
+// Shared auth API mocks: `user` router calls `authApi.*`; tests assert on `auth.api.*`.
+// (String literals inside hoisted — `vi.hoisted` runs before module `const` initializers.)
+const { userAuthApi } = vi.hoisted(() => {
+  const getFullOrganization = vi.fn(async () => ({
+    id: 'clxxxxxxxxxxxxxxxxxxxxxxxxx',
+    members: [] as unknown[],
+  }));
+  const createInvitation = vi.fn(async () => ({ id: 'inv-1' }));
+  const updateMemberRole = vi.fn(async () => ({ id: 'clmember0000000000000001' }));
+  const banUser = vi.fn(async () => ({
+    user: { id: 'cltarget0000000000000001', banned: true },
+  }));
+  const unbanUser = vi.fn(async () => ({
+    user: { id: 'cltarget0000000000000001', banned: false },
+  }));
+  return {
+    userAuthApi: {
+      getSession: vi.fn(),
+      hasPermission: vi.fn().mockResolvedValue({ success: true }),
+      getFullOrganization,
+      createInvitation,
+      updateMemberRole,
+      banUser,
+      unbanUser,
+    },
+  };
+});
+
 // ---------------------------------------------------------------------------
 // Mock Prisma
 // ---------------------------------------------------------------------------
@@ -28,6 +56,9 @@ const { mockPrisma } = vi.hoisted(() => {
   type Rec = Record<string, any>;
 
   const mockPrisma: Rec = {
+    organization: {
+      findUnique: vi.fn().mockResolvedValue({ dataRegion: 'EU' }),
+    },
     member: {
       findFirst: vi.fn(async () => ({ role: 'admin' })),
       count: vi.fn(async () => 2),
@@ -51,32 +82,21 @@ const { mockPrisma } = vi.hoisted(() => {
 // ---------------------------------------------------------------------------
 
 vi.mock('@contractor-ops/auth', () => ({
-  auth: {
-    api: {
-      getSession: vi.fn(),
-      hasPermission: vi.fn().mockResolvedValue({ success: true }),
-      getFullOrganization: vi.fn(async () => ({
-        id: ORG_ID,
-        members: [],
-      })),
-      createInvitation: vi.fn(async () => ({ id: 'inv-1' })),
-      updateMemberRole: vi.fn(async () => ({ id: MEMBER_ID })),
-      banUser: vi.fn(async () => ({ user: { id: TARGET_USER_ID, banned: true } })),
-      unbanUser: vi.fn(async () => ({ user: { id: TARGET_USER_ID, banned: false } })),
-    },
-  },
+  auth: { api: userAuthApi },
+  authApi: userAuthApi,
 }));
 
 vi.mock('@contractor-ops/db', () => ({
   prisma: mockPrisma,
   tenantStore: {
     run: (_ctx: unknown, fn: () => unknown) => fn(),
-    getStore: vi.fn(),
+    getStore: vi.fn(() => ({ region: 'EU' })),
   },
   withTenantScope: vi.fn((c: unknown) => c),
   withSoftDelete: vi.fn((c: unknown) => c),
   createTenantClient: vi.fn(() => mockPrisma),
   createTenantClientFrom: vi.fn(() => mockPrisma),
+  getRegionalClient: vi.fn(() => mockPrisma),
 }));
 
 vi.mock('../../services/r2.js', () => ({

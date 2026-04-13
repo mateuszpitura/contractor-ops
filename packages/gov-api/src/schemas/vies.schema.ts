@@ -38,9 +38,8 @@ export const viesLookupResponseSchema = z
     traderPostcodeMatch: z.enum(['1', '2', '3']).optional(),
     traderCityMatch: z.enum(['1', '2', '3']).optional(),
   })
-  .refine(
-    (data) => data.isValid !== undefined || data.userError !== undefined,
-    { message: 'VIES response must contain either isValid or userError' },
-  );
+  .refine(data => data.isValid !== undefined || data.userError !== undefined, {
+    message: 'VIES response must contain either isValid or userError',
+  });
 
 export type ViesLookupResponse = z.infer<typeof viesLookupResponseSchema>;

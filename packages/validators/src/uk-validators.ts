@@ -89,10 +89,7 @@ export function isValidGbVat(raw: string): boolean {
   const body = match[1]!;
   const digits = body.split('').map(Number);
   const check = digits[7]! * 10 + digits[8]!;
-  const weighted = VAT_WEIGHTS.reduce(
-    (sum, w, i) => sum + w * digits[i]!,
-    0,
-  );
+  const weighted = VAT_WEIGHTS.reduce((sum, w, i) => sum + w * digits[i]!, 0);
   const mod97 = (97 - (weighted % 97)) % 97;
   const mod9755 = (97 - ((weighted + 55) % 97)) % 97;
   return check === mod97 || check === mod9755;

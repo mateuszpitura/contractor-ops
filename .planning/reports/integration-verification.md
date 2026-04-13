@@ -1,7 +1,25 @@
 # Weryfikacja integracji w kodzie — raport
 
 **Data:** 2026-04-11  
+**Ostatnia aktualizacja standardu DB:** 2026-04-12  
 **Zakres:** mechanizmy wspólne, KSeF (ścieżka referencyjna), webhooks + OAuth, cykl życia sekretów, RBAC, luki audytu.
+
+---
+
+## 0. Standard dostępu do bazy (obowiązuje cały backend API)
+
+Decyzja zespołu — **nie podmienia** zamkniętych faz w `milestones/`; uzupełnia ten raport jako źródło prawdy dla implementacji.
+
+| Zasada | Treść |
+|--------|--------|
+| **Tenant w procedurach** | Zawsze **`ctx.db`** (`tenantProcedure`, `portalProcedure` po stronie API): rozszerzony, tenant-scoped, **regionalny** klient. Nie wykonujemy odczytu/zapisu danych domenowych organizacji przez „goły” `PrismaClient` importowany do routera. |
+| **Region** | Tam, gdzie organizacja ma przypisany region (`dataRegion`), **wszystkie dane tenantowe** idą do **bazy regionalnej** — to było założenie implementacji multi-region; koniec dyskusji na poziomie kodu produkcyjnego. |
+| **Joby bez HTTP (cron, QStash)** | Ten sam semantycznie klient co `ctx.db`: `getRegionalClient(region)` → `createTenantClientFrom` → praca wewnątrz **`tenantStore.run({ organizationId, region }, …)`** po rozwiązaniu regionu (np. z wiersza `Organization` na primary). |
+| **Singleton `prisma` z `@contractor-ops/db`** | **Tylko** do minimalnej infrastruktury routingu: odczyt **`Organization`** (np. `dataRegion`, ewentualnie slug → id przy ingress), gdzie tabela nadal jest na **primary**. Bez tego middleware nie rozwiąże regionu. **Nie** używać go do CRUD na `IntegrationConnection`, `Invoice`, `Member`, itd. — to należy do klienta regionalnego. |
+
+**Checklist dla PR:** brak `import { prisma } from '@contractor-ops/db'` w routerach i serwisach domenowych, poza wyjątkami jawnie opisanymi w kodzie (middleware, rozwiązanie org przy wejściu bez sesji). Zamiast tego `ctx.db` albo wzorzec jobowy powyżej.
+
+**Wdrożenie (2026-04-12):** [`portal.ts`](../../packages/api/src/routers/portal.ts) — dane domenowe przez `ctx.db`; `prisma.organization` tylko dla tabeli routingu (m.in. `getSession`); publiczne `selectOrg` przez `withOrgRegionalDb` (primary → region → tenant client). [`exchange-rate.ts`](../../packages/api/src/routers/exchange-rate.ts) — cron `fetchDaily` zapisuje kursy ECB w **każdej** bazie regionalnej (`SUPPORTED_REGIONS` × `getRegionalClient`); [`fetchAndStoreRates`](../../packages/api/src/services/exchange-rate.ts) pozostaje na surowym kliencie regionalnym (bez `createTenantClientFrom`, bo `ExchangeRate` nie ma `organizationId`).
 
 ---
 
@@ -53,7 +71,7 @@ Pozostałe routery (invoice, workflow, equipment, …) korzystają z integracji 
 
 | Werdykt | Uwagi |
 |---------|--------|
-| **PASS z zastrzeżeniem** | Procedury użytkownika idą przez `tenantProcedure` → `ctx.organizationId`. Routery integracji (np. [`ksef.ts`](../../packages/api/src/routers/ksef.ts)) używają globalnego `prisma` z filtrem `organizationId` — spójne z wzorcem w repo; [`tenant.ts`](../../packages/api/src/middleware/tenant.ts) ustawia też `ctx.db` (regionalny klient). Warto świadomie ustalić, czy wszystkie zapytania do danych org powinny przejść na `ctx.db` dla pełnej spójności z RLS/rozszerzeniami. |
+| **PASS (standard §0)** | Procedury użytkownika: [`tenant.ts`](../../packages/api/src/middleware/tenant.ts) ustawia **`ctx.db`** (regionalny klient + tenant scope + soft-delete). **Portal:** [`portal-auth.ts`](../../packages/api/src/middleware/portal-auth.ts) — ten sam wzorzec (`getRegionalClient` + `createTenantClientFrom` + `tenantStore.run`). Zapytania o dane domenowe organizacji **nie** idą przez globalny `prisma` w routerze — patrz §0 i I5. |
 
 ### 3.2 RBAC (serwer vs `roles.ts` vs UI)
 
@@ -125,7 +143,7 @@ Pozostałe routery (invoice, workflow, equipment, …) korzystają z integracji 
 | I2 | AuditLog dla connect/disconnect | **NAPRAWIONE (częściowo)** | KSeF connect/disconnect, Peppol connect/disconnect, Jira disconnect; OAuth: [`oauth/.../callback`](../../apps/web/src/app/api/oauth/[provider]/callback/route.ts) (`integration.oauth.connected`). |
 | I3 | KSeF sync: status przy częściowych błędach | **NAPRAWIONE** | Przy `errors.length > 0`: `IntegrationSyncLog.status = FAILED`, `errorMessage` + `responsePayloadJson` w [`ksef-sync-orchestrator.ts`](../../packages/api/src/services/ksef-sync-orchestrator.ts). |
 | I4 | Certyfikat KSeF przy connect | **NAPRAWIONE** | Jawny `BAD_REQUEST` jeśli `authMethod === "certificate"` — zgodnie z tym, że `KsefApiClient.authenticateWithCertificate` nie jest zaimplementowane. |
-| I5 | `prisma` vs `ctx.db` w routerach integracji | **RISK (zaakceptowane)** | W `packages/api/src/routers` **nie ma** użycia `ctx.db` — procedury używają globalnego `prisma` + filtr `organizationId`. [`tenant.ts`](../../packages/api/src/middleware/tenant.ts) ustawia `ctx.db` (regionalny klient), lecz routery z niego nie korzystają. Pełne przejście na `ctx.db` to osobny, szeroki refaktor (RLS/spójność regionu). |
+| I5 | `prisma` vs `ctx.db` | **STANDARD (§0) — migracja kodu w toku** | **Zasada:** zawsze **`ctx.db`** w procedurach; dane w **bazie regionalnej** tam, gdzie jest region. Globalny `prisma` wyłącznie do **routingu** (`Organization` na primary). Routery i serwisy mają być dosuwane do tego standardu; stary wzorzec „`prisma` + `where: { organizationId }`” jest **odchyleniem** do usunięcia, nie normą. |
 | I6 | Webhook `organizationId` pusty | **NAPRAWIONE (Slack) + MITIGACJA (Jira/Linear)** | Slack: lookup po `configJson.teamId` w ingress (§11). Jira/Linear: guard w `_process` (§10). |
 | I7 | Kalendarz (Google/Outlook) `disconnect` | **NAPRAWIONE** | [`calendar.ts`](../../packages/api/src/routers/calendar.ts): `deleteCredentials`, `credentialsRef: ""`, audyt `integration.calendar.disconnected`. |
 | I8 | Teams / eSign audyt przy disconnect z UI | **NAPRAWIONE** | UI używa `disconnectGeneric` — audyt `integration.provider.disconnected` (§11). |
@@ -153,17 +171,17 @@ Wykonano poprawki kodu zgodnie z sekcją 6 (I1–I4). OAuth callback zapisuje au
 
 ## 9. Zakończenie (stan po naprawach)
 
-Pierwotny plan weryfikacji (inwentaryzacja + checklista) został uzupełniony **implementacją** luk I1–I4 oraz aktualizacją testów KSeF / Jira (asercje audytu i `deleteCredentials`).
+Pierwotny plan weryfikacji (inwentaryzacja + checklista) został uzupełniony **implementacją** luk I1–I4 oraz aktualizacją testów KSeF / Jira (asercje audytu i `deleteCredentials`). Obowiązujący standard dostępu do DB: **§0** (aktualizacja 2026-04-12).
 
 ---
 
 ## 10. Runda 2 audytu (kontynuacja)
 
-- **I5:** Potwierdzono brak `ctx.db` w routerach — decyzja dokumentacyjna, bez zmiany kodu.
+- **I5:** Standard zespołu ustalony — **§0** (zawsze `ctx.db` / baza regionalna; `prisma` singleton tylko routing). Dalsza praca to **wdrożenie** tego standardu w całym API, nie dyskusja „czy”.
 - **I6:** Dodano ochronę w `_process` dla webhooków wymagających tenanta (Jira, Linear).
 - **I7:** Ujednolicono cykl sekretów i audyt przy disconnect kalendarza (OAuth Google/Outlook).
 
-**Następne kroki (opcjonalnie):** migracja wybranych routerów na `ctx.db` po ustaleniu standardu zespołu.
+**Następne kroki:** przegląd routerów i jobów pod kątem §0; ingress (np. Resend slug → org na primary dla FK) zostaje minimalnym wyjątkiem routingu — przetwarzanie treści tenantowej po rozwiązaniu `organizationId` ma iść regionalnym klientem zgodnie z §0.
 
 ---
 
@@ -188,9 +206,15 @@ Pierwotny plan weryfikacji (inwentaryzacja + checklista) został uzupełniony **
 
 - [`WebhookVerificationResult`](../../packages/integrations/src/types/webhook.ts): pole **`organizationSlug`** (domena mailowa → fragment przed `.contractorhub.io`) — rozróżnienie od **`organizationId`** (cuid FK do `Organization`).
 - [`resend-adapter.ts`](../../packages/integrations/src/adapters/resend-adapter.ts): weryfikacja zwraca wyłącznie `organizationSlug`, nie udaje slugiem identyfikatora organizacji.
-- [`webhooks/[provider]/route.ts`](../../apps/web/src/app/api/webhooks/[provider]/route.ts): dla `provider === "resend"` wykonywane jest `prisma.organization.findUnique({ where: { slug } })`; zapis `WebhookDelivery.organizationId` tylko po rozwiązaniu FK. Gdy slug nie pasuje do żadnej organizacji — odpowiedź `200` z `{ persisted: false }`, bez rekordu dostawy (uniknięcie naruszenia FK).
+- [`webhooks/[provider]/route.ts`](../../apps/web/src/app/api/webhooks/[provider]/route.ts): dla `provider === "resend"` wykonywane jest `prisma.organization.findUnique({ where: { slug } })` — **wyłącznie** rozwiązanie rekordu routingu na primary (§0); zapis `WebhookDelivery.organizationId` tylko po rozwiązaniu FK. Gdy slug nie pasuje do żadnej organizacji — odpowiedź `200` z `{ persisted: false }`, bez rekordu dostawy (uniknięcie naruszenia FK). Dalsze kroki (`processResendWebhookDelivery`, dokumenty, faktury) powinny używać **klienta regionalnego** po znanym `organizationId` / `dataRegion`, zgodnie z §0.
 
 ### 12.2 `_process` — backfill `organizationId` z połączenia
 
 - [`_process/route.ts`](../../apps/web/src/app/api/webhooks/_process/route.ts): jeśli `WebhookDelivery.organizationId` jest puste, a ustawione jest `integrationConnectionId`, pobierane jest `organizationId` z `IntegrationConnection` i **aktualizowany** rekord dostawy przed dispatch do adaptera / guardów Jira/Linear.
 - Testy: [`resend-adapter.test.ts`](../../packages/integrations/src/adapters/__tests__/resend-adapter.test.ts), rozszerzone [`[provider]/__tests__/route.test.ts`](../../apps/web/src/app/api/webhooks/[provider]/__tests__/route.test.ts), [`_process/__tests__/route.test.ts`](../../apps/web/src/app/api/webhooks/_process/__tests__/route.test.ts).
+
+### 12.3 Resend — przetwarzanie treści (PDF / R2 / faktury)
+
+- Wspólna logika: [`resend-email-intake.ts`](../../packages/api/src/services/resend-email-intake.ts) — limit 100 maili/godz. per org, pobranie załączników z Resend Receiving API, upload do R2, utworzenie `Document` / `Invoice` / powiązań (jak dotychczas w legacy [`resend-inbound/route.ts`](../../apps/web/src/app/api/webhooks/resend-inbound/route.ts)).
+- [`_process/route.ts`](../../apps/web/src/app/api/webhooks/_process/route.ts): dla `provider === "resend"` wywoływane jest `processResendWebhookDelivery` (ten sam limiter i ścieżka co legacy).
+- Ingress Slack: JSON lub `x-www-form-urlencoded`; bez rozwiązania workspace → `persisted: false` (bez `PENDING` w FK). Ogólnie: brak `organizationId` po weryfikacji → brak zapisu `WebhookDelivery`.

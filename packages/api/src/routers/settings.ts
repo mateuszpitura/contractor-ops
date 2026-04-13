@@ -1,6 +1,7 @@
-import { auth } from '@contractor-ops/auth';
+import { authApi } from '@contractor-ops/auth';
 import type { Prisma } from '@contractor-ops/db/generated/prisma/client';
 import {
+  getServerEnv,
   orgExpiryReminderDefaultsSchema,
   updateOrganizationSettingsSchema,
 } from '@contractor-ops/validators';
@@ -22,7 +23,7 @@ export const settingsRouter = router({
    */
   get: tenantProcedure.use(requirePermission({ settings: ['read'] })).query(async ({ ctx }) => {
     return cached(CacheKeys.orgSettings(ctx.organizationId), CacheTTL.ORG_SETTINGS, async () => {
-      const org = await auth.api.getFullOrganization({
+      const org = await authApi.getFullOrganization({
         headers: ctx.headers,
         query: { organizationId: ctx.organizationId },
       });
@@ -73,7 +74,7 @@ export const settingsRouter = router({
         data.metadata = metadataUpdates;
       }
 
-      const updated = await auth.api.updateOrganization({
+      const updated = await authApi.updateOrganization({
         headers: ctx.headers,
         body: {
           organizationId: ctx.organizationId,
@@ -254,7 +255,7 @@ export const settingsRouter = router({
       const key = `orgs/${ctx.organizationId}/branding/logo.${ext}`;
       const uploadUrl = await createRegionalPresignedUploadUrl(key, input.contentType);
       // Public URL for R2 (bucket public access)
-      const publicUrl = `${process.env.R2_PUBLIC_URL ?? ''}/${key}`;
+      const publicUrl = `${getServerEnv().R2_PUBLIC_URL ?? ''}/${key}`;
       return { uploadUrl, publicUrl, storageKey: key };
     }),
 

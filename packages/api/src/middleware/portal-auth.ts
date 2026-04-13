@@ -1,4 +1,4 @@
-import { tenantStore } from '@contractor-ops/db';
+import { createTenantClientFrom, getRegionalClient, prisma, tenantStore } from '@contractor-ops/db';
 import { TRPCError } from '@trpc/server';
 import { publicProcedure, t } from '../init.js';
 import { validatePortalSession } from '../services/portal-session.js';
@@ -33,7 +33,7 @@ function parsePortalCookie(cookieHeader: string): string | null {
  * 3. Wraps downstream handlers in tenantStore.run() for automatic
  *    organization-scoped Prisma queries.
  * 4. Extends context with portal session data, contractor info,
- *    contractorId, and organizationId.
+ *    contractorId, organizationId, region, and regional `db` (same pattern as tenant middleware).
  *
  * Throws UNAUTHORIZED if no cookie is present or session is invalid/expired.
  */
@@ -61,7 +61,16 @@ const portalAuthMiddleware = t.middleware(async ({ ctx, next }) => {
   // The subdomain is passed as context metadata for logging/audit/rate-limiting.
   const portalSubdomain = ctx.headers.get('x-portal-org-subdomain') ?? null;
 
-  return tenantStore.run({ organizationId: session.organizationId }, () =>
+  const org = await prisma.organization.findUnique({
+    where: { id: session.organizationId },
+    select: { dataRegion: true },
+  });
+  const region = org?.dataRegion ?? 'EU';
+
+  const regionalPrisma = getRegionalClient(region);
+  const scopedClient = createTenantClientFrom(regionalPrisma);
+
+  return tenantStore.run({ organizationId: session.organizationId, region }, () =>
     next({
       ctx: {
         ...ctx,
@@ -70,6 +79,8 @@ const portalAuthMiddleware = t.middleware(async ({ ctx, next }) => {
         organizationId: session.organizationId,
         contractor: session.contractor,
         portalSubdomain,
+        region,
+        db: scopedClient,
       },
     }),
   );
@@ -91,6 +102,6 @@ export const portalPublicProcedure = publicProcedure;
  * Chain: publicProcedure -> portalAuthMiddleware -> handler
  *
  * Provides ctx.portalSession, ctx.contractorId, ctx.organizationId,
- * and ctx.contractor to all downstream handlers.
+ * ctx.region, ctx.db, and ctx.contractor to all downstream handlers.
  */
 export const portalProcedure = publicProcedure.use(portalAuthMiddleware);

@@ -5,6 +5,8 @@ import { getQStashClient } from '@contractor-ops/integrations/services/qstash-cl
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
+import { extractSlackTeamId, resolveSlackConnectionByTeamId } from '../slack-webhook-context.js';
+
 // ---------------------------------------------------------------------------
 // Ensure adapters are registered
 // ---------------------------------------------------------------------------
@@ -25,6 +27,7 @@ registerAllAdapters();
  * 4. Queue for async processing via QStash
  * 5. Return 200 (or response_action for Slack view_submission)
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: provider-specific branching for Slack/Resend/org resolution
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ provider: string }> },
@@ -32,7 +35,6 @@ export async function POST(
   const { provider } = await params;
   const adapter = getAdapter(provider);
 
-  // Unknown provider or adapter doesn't support webhooks
   if (!adapter?.supportsWebhooks) {
     return NextResponse.json({ error: 'Unknown provider' }, { status: 404 });
   }
@@ -40,21 +42,24 @@ export async function POST(
   const rawBody = await request.text();
   const headers = Object.fromEntries(request.headers.entries());
 
-  // Step 1: Verify signature via adapter
   const verification = adapter.verifyWebhookSignature?.(rawBody, headers);
   if (!verification?.valid) {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
   }
 
-  // Step 2: Parse payload (Slack sends form-encoded, others send JSON)
   const isSlackViewSubmission = provider === 'slack' && rawBody.includes('view_submission');
 
   let payloadJson: unknown;
   try {
     if (provider === 'slack') {
-      const formParams = new URLSearchParams(rawBody);
-      const payloadStr = formParams.get('payload');
-      payloadJson = payloadStr ? JSON.parse(payloadStr) : {};
+      const trimmed = rawBody.trim();
+      if (trimmed.startsWith('{')) {
+        payloadJson = JSON.parse(trimmed);
+      } else {
+        const formParams = new URLSearchParams(rawBody);
+        const payloadStr = formParams.get('payload');
+        payloadJson = payloadStr ? JSON.parse(payloadStr) : {};
+      }
     } else {
       payloadJson = JSON.parse(rawBody);
     }
@@ -62,20 +67,54 @@ export async function POST(
     payloadJson = { raw: rawBody.slice(0, 10000) };
   }
 
-  // Step 3: Log to WebhookDelivery
+  let resolvedOrgId = verification.organizationId ?? '';
+  let resolvedConnectionId = verification.connectionId ?? null;
+
+  if (provider === 'slack') {
+    const teamId = extractSlackTeamId(payloadJson);
+    if (teamId && !resolvedOrgId) {
+      const resolved = await resolveSlackConnectionByTeamId(teamId);
+      if (resolved) {
+        resolvedOrgId = resolved.organizationId;
+        resolvedConnectionId = resolvedConnectionId ?? resolved.connectionId;
+      }
+    }
+  }
+
+  if (provider === 'resend' && verification.organizationSlug && !resolvedOrgId) {
+    const org = await prisma.organization.findUnique({
+      where: { slug: verification.organizationSlug },
+      select: { id: true },
+    });
+    if (org) {
+      resolvedOrgId = org.id;
+    }
+  }
+
+  if (provider === 'resend' && !resolvedOrgId) {
+    console.warn(
+      `[webhook/resend] Skipping WebhookDelivery: unresolved organization (slug=${verification.organizationSlug ?? 'none'})`,
+    );
+    return NextResponse.json({ received: true, persisted: false });
+  }
+
+  if (!resolvedOrgId) {
+    console.warn(`[webhook/${provider}] Skipping WebhookDelivery: missing organizationId`);
+    return NextResponse.json({ received: true, persisted: false });
+  }
+
   const delivery = await prisma.webhookDelivery.create({
     data: {
-      organizationId: verification.organizationId ?? 'PENDING',
+      organizationId: resolvedOrgId,
       provider: adapter.slug.toUpperCase() as never,
       eventType: verification.eventType ?? 'UNKNOWN',
       signatureValid: true,
       payloadJson: payloadJson as never,
       deliveryStatus: 'RECEIVED',
-      integrationConnectionId: verification.connectionId ?? null,
+      integrationConnectionId: resolvedConnectionId,
     },
   });
 
-  // Step 4: Queue for async processing via QStash (per D-05)
   try {
     const qstash = getQStashClient();
     await qstash.publishJSON({
@@ -85,10 +124,19 @@ export async function POST(
     });
   } catch (queueError) {
     console.error(`[webhook/${provider}] Failed to queue for processing:`, queueError);
-    // Still return 200 — delivery is logged, can be retried manually
+    await prisma.webhookDelivery.update({
+      where: { id: delivery.id },
+      data: {
+        deliveryStatus: 'FAILED',
+        errorMessage:
+          `QStash publish failed: ${queueError instanceof Error ? queueError.message : String(queueError)}`.slice(
+            0,
+            500,
+          ),
+      },
+    });
   }
 
-  // For Slack view_submission, return response_action to close the modal
   if (isSlackViewSubmission) {
     return NextResponse.json({ response_action: 'clear' });
   }

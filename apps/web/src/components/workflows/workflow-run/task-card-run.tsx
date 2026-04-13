@@ -1,5 +1,6 @@
 'use client';
 
+import { workflowTaskSkipReason } from '@contractor-ops/validators';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   AlertCircle,
@@ -279,7 +280,8 @@ export function TaskCardRun({ task, runId, currentUserId, dependencyTitle }: Tas
 
   const isConditionSkipped =
     task.status === 'SKIPPED' &&
-    (task.resultJson as Record<string, unknown>)?.skipReason === 'condition_not_met';
+    (task.resultJson as Record<string, unknown>)?.skipReason ===
+      workflowTaskSkipReason.conditionNotMet;
 
   const isUserSkipped = task.status === 'SKIPPED' && !isConditionSkipped;
 

@@ -1,7 +1,9 @@
 import { handleSigningCompletion } from '@contractor-ops/api/services/esign-orchestrator';
+import { processResendWebhookDelivery } from '@contractor-ops/api/services/resend-email-intake';
 import { prisma } from '@contractor-ops/db';
 import { registerAllAdapters } from '@contractor-ops/integrations/adapters/register-all';
 import { getAdapter } from '@contractor-ops/integrations/registry';
+import { webhookIngressReason } from '@contractor-ops/validators';
 import { verifySignatureAppRouter } from '@upstash/qstash/nextjs';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
@@ -25,9 +27,10 @@ registerAllAdapters();
  * Flow:
  * 1. QStash verifies its own signature (via verifySignatureAppRouter wrapper)
  * 2. Look up WebhookDelivery record
- * 3. Dispatch to adapter.handleWebhook
+ * 3. Dispatch to adapter.handleWebhook (+ provider-specific handlers in this file)
  * 4. Update delivery status (PROCESSED or FAILED)
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: per-provider dispatch (Jira/Linear/Resend/e-sign)
 async function handler(request: NextRequest) {
   const body = await request.json();
   const { deliveryId, provider } = body as {
@@ -44,7 +47,7 @@ async function handler(request: NextRequest) {
     return NextResponse.json({ error: 'No handler for provider' }, { status: 404 });
   }
 
-  const delivery = await prisma.webhookDelivery.findUnique({
+  let delivery = await prisma.webhookDelivery.findUnique({
     where: { id: deliveryId },
   });
 
@@ -52,45 +55,77 @@ async function handler(request: NextRequest) {
     return NextResponse.json({ error: 'Delivery not found' }, { status: 404 });
   }
 
+  let effectiveOrgId = delivery.organizationId;
+  if (!effectiveOrgId && delivery.integrationConnectionId) {
+    const conn = await prisma.integrationConnection.findUnique({
+      where: { id: delivery.integrationConnectionId },
+      select: { organizationId: true },
+    });
+    if (conn?.organizationId) {
+      effectiveOrgId = conn.organizationId;
+      await prisma.webhookDelivery.update({
+        where: { id: deliveryId },
+        data: { organizationId: effectiveOrgId },
+      });
+      delivery = { ...delivery, organizationId: effectiveOrgId };
+    }
+  }
+
+  if (!effectiveOrgId && (provider === 'jira' || provider === 'linear')) {
+    await prisma.webhookDelivery.update({
+      where: { id: deliveryId },
+      data: {
+        deliveryStatus: 'FAILED',
+        processedAt: new Date(),
+        errorMessage:
+          'Missing organizationId on delivery; Jira/Linear webhooks require org resolution at ingress',
+      },
+    });
+    return NextResponse.json({
+      processed: false,
+      reason: webhookIngressReason.missingOrganizationId,
+    });
+  }
+
   try {
     const webhookResult = await adapter.handleWebhook(
       delivery.payloadJson,
-      delivery.organizationId,
+      effectiveOrgId,
       delivery.integrationConnectionId ?? '',
     );
 
-    // For Jira provider, dispatch to processJiraWebhook from @contractor-ops/api.
-    // Done here in apps/web to avoid circular dependency between packages/integrations and packages/api.
-    // JiraAdapter.handleWebhook is a no-op — actual processing dispatched here.
     if (provider === 'jira') {
       const { processJiraWebhook } = await import(
         '@contractor-ops/api/services/jira-webhook-handler'
       );
       await processJiraWebhook(
         prisma,
-        delivery.organizationId,
+        effectiveOrgId,
         delivery.integrationConnectionId ?? '',
         delivery.payloadJson,
       );
     }
 
-    // For Linear provider, dispatch to processLinearWebhook from @contractor-ops/api.
-    // Done here in apps/web to avoid circular dependency between packages/integrations and packages/api.
-    // LinearAdapter.handleWebhook is a no-op — actual processing dispatched here.
     if (provider === 'linear') {
       const { processLinearWebhook } = await import(
         '@contractor-ops/api/services/linear-webhook-handler'
       );
       await processLinearWebhook(
         prisma,
-        delivery.organizationId,
+        effectiveOrgId,
         delivery.integrationConnectionId ?? '',
         delivery.payloadJson,
       );
     }
 
-    // For e-sign providers, check if signing was completed and trigger
-    // signed PDF download + R2 storage via the orchestrator
+    if (provider === 'resend') {
+      await processResendWebhookDelivery(prisma, {
+        organizationId: effectiveOrgId,
+        eventType: delivery.eventType,
+        payloadJson: delivery.payloadJson,
+      });
+    }
+
     const isESignProvider = provider === 'docusign' || provider === 'autenti';
     if (isESignProvider) {
       const esignResult = webhookResult as { envelopeId: string; completed: boolean } | undefined;
@@ -126,7 +161,7 @@ async function handler(request: NextRequest) {
       data: {
         deliveryStatus: 'FAILED',
         processedAt: new Date(),
-        errorMessage: error instanceof Error ? error.message : 'Processing failed',
+        errorMessage: error instanceof Error ? error.message.slice(0, 500) : 'Processing failed',
       },
     });
 
@@ -134,6 +169,4 @@ async function handler(request: NextRequest) {
   }
 }
 
-// Wrap with QStash signature verification (per Research Pitfall 6)
-// Uses QSTASH_CURRENT_SIGNING_KEY and QSTASH_NEXT_SIGNING_KEY env vars
 export const POST = verifySignatureAppRouter(handler);

@@ -3,11 +3,23 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mockHasPermission = vi.fn();
 
+const { mockPrisma } = vi.hoisted(() => {
+  const mockPrisma = {
+    organization: {
+      findUnique: vi.fn().mockResolvedValue({ dataRegion: 'EU' }),
+    },
+  };
+  return { mockPrisma };
+});
+
 vi.mock('@contractor-ops/auth', () => ({
   auth: {
     api: {
-      hasPermission: (...args: any[]) => mockHasPermission(...args),
+      hasPermission: (...args: unknown[]) => mockHasPermission(...args),
     },
+  },
+  authApi: {
+    hasPermission: (...args: unknown[]) => mockHasPermission(...args),
   },
 }));
 
@@ -36,10 +48,13 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
 }));
 
 vi.mock('@contractor-ops/db', () => ({
+  prisma: mockPrisma,
   tenantStore: {
-    run: (_ctx: { organizationId: string }, fn: () => unknown) => fn(),
+    run: (_ctx: { organizationId: string; region: string }, fn: () => unknown) => fn(),
     getStore: vi.fn(),
   },
+  getRegionalClient: vi.fn(() => mockPrisma),
+  createTenantClientFrom: vi.fn((client: unknown) => client),
 }));
 
 import * as E from '../../errors.js';

@@ -1,22 +1,34 @@
 import { describe, expect, it } from 'vitest';
+import type { HandelsregisterCourt } from '../handelsregister-courts.js';
+import { HANDELSREGISTER_COURTS } from '../handelsregister-courts.js';
+import type { BundeslandCode } from '../steuernummer-formats.js';
 import {
-  STEUERNUMMER_FORMATS,
   getSteuernummerFormat,
   getSteuernummerRegex,
-  type BundeslandCode,
+  STEUERNUMMER_FORMATS,
 } from '../steuernummer-formats.js';
-import {
-  HANDELSREGISTER_COURTS,
-  type HandelsregisterCourt,
-} from '../handelsregister-courts.js';
 
 // ---------------------------------------------------------------------------
 // STEUERNUMMER_FORMATS
 // ---------------------------------------------------------------------------
 
 const ALL_BUNDESLAND_CODES: readonly BundeslandCode[] = [
-  'BW', 'BY', 'BE', 'BB', 'HB', 'HH', 'HE', 'MV',
-  'NI', 'NW', 'RP', 'SL', 'SN', 'ST', 'SH', 'TH',
+  'BW',
+  'BY',
+  'BE',
+  'BB',
+  'HB',
+  'HH',
+  'HE',
+  'MV',
+  'NI',
+  'NW',
+  'RP',
+  'SL',
+  'SN',
+  'ST',
+  'SH',
+  'TH',
 ] as const;
 
 describe('STEUERNUMMER_FORMATS', () => {
@@ -25,30 +37,26 @@ describe('STEUERNUMMER_FORMATS', () => {
   });
 
   it('covers every Bundesland code with a unique entry', () => {
-    const codes = STEUERNUMMER_FORMATS.map((f) => f.code);
+    const codes = STEUERNUMMER_FORMATS.map(f => f.code);
     expect(new Set(codes).size).toBe(16);
     for (const expected of ALL_BUNDESLAND_CODES) {
       expect(codes).toContain(expected);
     }
   });
 
-  it.each(ALL_BUNDESLAND_CODES)(
-    '%s: regex matches its own example (slash-separated form)',
-    (code) => {
-      const entry = STEUERNUMMER_FORMATS.find((f) => f.code === code);
-      expect(entry).toBeDefined();
-      expect(entry!.regex.test(entry!.example)).toBe(true);
-    },
-  );
+  it.each(
+    ALL_BUNDESLAND_CODES,
+  )('%s: regex matches its own example (slash-separated form)', code => {
+    const entry = STEUERNUMMER_FORMATS.find(f => f.code === code);
+    expect(entry).toBeDefined();
+    expect(entry?.regex.test(entry?.example)).toBe(true);
+  });
 
-  it.each(ALL_BUNDESLAND_CODES)(
-    '%s: regex matches its example with slashes removed',
-    (code) => {
-      const entry = STEUERNUMMER_FORMATS.find((f) => f.code === code);
-      expect(entry).toBeDefined();
-      expect(entry!.regex.test(entry!.example.replace(/\//g, ''))).toBe(true);
-    },
-  );
+  it.each(ALL_BUNDESLAND_CODES)('%s: regex matches its example with slashes removed', code => {
+    const entry = STEUERNUMMER_FORMATS.find(f => f.code === code);
+    expect(entry).toBeDefined();
+    expect(entry?.regex.test(entry?.example.replace(/\//g, ''))).toBe(true);
+  });
 
   it('every entry has non-empty germanName', () => {
     for (const entry of STEUERNUMMER_FORMATS) {
@@ -75,9 +83,7 @@ describe('getSteuernummerFormat', () => {
   });
 
   it('throws on unknown Bundesland code', () => {
-    expect(() => getSteuernummerFormat('ZZ' as never)).toThrow(
-      'Unknown Bundesland: ZZ',
-    );
+    expect(() => getSteuernummerFormat('ZZ' as never)).toThrow('Unknown Bundesland: ZZ');
   });
 });
 
@@ -112,7 +118,7 @@ describe('HANDELSREGISTER_COURTS', () => {
   });
 
   it('has no duplicate codes', () => {
-    const codes = HANDELSREGISTER_COURTS.map((c) => c.code);
+    const codes = HANDELSREGISTER_COURTS.map(c => c.code);
     expect(new Set(codes).size).toBe(codes.length);
   });
 
@@ -138,7 +144,7 @@ describe('HANDELSREGISTER_COURTS', () => {
   });
 
   it('every Bundesland has at least one court', () => {
-    const states = new Set(HANDELSREGISTER_COURTS.map((c) => c.state));
+    const states = new Set(HANDELSREGISTER_COURTS.map(c => c.state));
     expect(states.size).toBe(16);
     for (const code of ALL_BUNDESLAND_CODES) {
       expect(states.has(code)).toBe(true);

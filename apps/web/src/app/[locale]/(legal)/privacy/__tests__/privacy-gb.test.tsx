@@ -3,8 +3,8 @@
 // `apps/web/src/app/[locale]/(legal)/privacy/(content)/gb.mdx` (or equivalent route).
 // Covers FOUND-05 (UK privacy notice Article 13 coverage + accessibility).
 
-import { render, screen } from '@/test/test-utils';
 import { describe, expect, it } from 'vitest';
+import { render, screen } from '@/test/test-utils';
 // biome-ignore lint/correctness/noUnresolvedImports: Plan 07 creates this module
 // @ts-expect-error Plan 07 creates this module
 import GbPrivacyPage from '../(content)/gb.mdx';

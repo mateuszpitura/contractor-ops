@@ -1,8 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { tenantStoreRun } = vi.hoisted(() => ({
-  tenantStoreRun: vi.fn((_ctx: { organizationId: string }, fn: () => unknown) => fn()),
-}));
+const { mockPrisma, tenantStoreRun } = vi.hoisted(() => {
+  const mockPrisma = {
+    organization: {
+      findUnique: vi.fn().mockResolvedValue({ dataRegion: 'EU' }),
+    },
+  };
+  const tenantStoreRun = vi.fn(
+    (_ctx: { organizationId: string; region: string }, fn: () => unknown) => fn(),
+  );
+  return { mockPrisma, tenantStoreRun };
+});
 
 vi.mock('@sentry/nextjs', () => {
   const mockSpan = {
@@ -29,10 +37,13 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
 }));
 
 vi.mock('@contractor-ops/db', () => ({
+  prisma: mockPrisma,
   tenantStore: {
     run: tenantStoreRun,
     getStore: vi.fn(),
   },
+  getRegionalClient: vi.fn(() => mockPrisma),
+  createTenantClientFrom: vi.fn((client: unknown) => client),
 }));
 
 import { t } from '../../init.js';
@@ -106,7 +117,7 @@ describe('tenantMiddleware', () => {
     const result = await createCaller(ctx).scoped();
     expect(result.organizationId).toBe('org_abc');
     expect(tenantStoreRun).toHaveBeenCalledWith(
-      { organizationId: 'org_abc' },
+      { organizationId: 'org_abc', region: 'EU' },
       expect.any(Function),
     );
   });

@@ -1,6 +1,7 @@
 import { prisma } from '@contractor-ops/db';
 import type { NOTIFICATION_TYPES } from '@contractor-ops/validators';
-import { Resend } from 'resend';
+import { getServerEnv } from '@contractor-ops/validators';
+import { sendAppEmail } from './app-email.js';
 import { renderNotificationEmail } from './email-templates.js';
 import { getConnectedMessagingProviders } from './messaging/index.js';
 
@@ -38,19 +39,6 @@ export interface NotificationEvent {
 }
 
 // ---------------------------------------------------------------------------
-// Resend client (lazy init)
-// ---------------------------------------------------------------------------
-
-let resendClient: Resend | null = null;
-
-function getResend(): Resend {
-  if (!resendClient) {
-    resendClient = new Resend(process.env.RESEND_API_KEY);
-  }
-  return resendClient;
-}
-
-// ---------------------------------------------------------------------------
 // Entity URL helper
 // ---------------------------------------------------------------------------
 
@@ -65,13 +53,13 @@ const ENTITY_ROUTES: Record<string, string> = {
 };
 
 function buildEntityUrl(entityType: string, entityId: string): string {
-  const base = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
+  const base = getServerEnv().NEXT_PUBLIC_APP_URL;
   const route = ENTITY_ROUTES[entityType] ?? '';
   return `${base}${route}/${entityId}`;
 }
 
 function buildPreferencesUrl(): string {
-  const base = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
+  const base = getServerEnv().NEXT_PUBLIC_APP_URL;
   return `${base}/settings?tab=notifications`;
 }
 
@@ -152,9 +140,7 @@ async function sendNotificationEmail(userId: string, event: NotificationEvent): 
     body: event.body,
   });
 
-  const resend = getResend();
-
-  await resend.emails.send({
+  await sendAppEmail({
     from: 'Contractor Ops <notifications@contractorhub.io>',
     to: user.email,
     subject,

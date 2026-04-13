@@ -66,7 +66,7 @@ export function NotificationCenter() {
       type,
       unreadOnly: unreadOnly === 'true' ? true : undefined,
       page,
-      perPage: 10,
+      pageSize: 10,
     };
   }, [typeFilter, unreadOnly, page]);
 

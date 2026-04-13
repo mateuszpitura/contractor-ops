@@ -218,3 +218,8 @@ export const myTasksListSchema = z.object({
 });
 
 export type MyTasksListInput = z.infer<typeof myTasksListSchema>;
+
+/** Written to WorkflowTaskRun.resultJson.skipReason when conditions are not met at run start. */
+export const workflowTaskSkipReason = {
+  conditionNotMet: 'conditionNotMet',
+} as const;

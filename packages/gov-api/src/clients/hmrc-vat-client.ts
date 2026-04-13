@@ -23,11 +23,8 @@ import type { SecretStore } from '@contractor-ops/secrets';
 
 import { GovApiClient } from '../client.js';
 import { GovApiRateLimiter } from '../rate-limiter.js';
-import {
-  hmrcOauthTokenSchema,
-  hmrcVatLookupResponseSchema,
-  type HmrcVatLookupResponse,
-} from '../schemas/hmrc-vat.schema.js';
+import type { HmrcVatLookupResponse } from '../schemas/hmrc-vat.schema.js';
+import { hmrcOauthTokenSchema, hmrcVatLookupResponseSchema } from '../schemas/hmrc-vat.schema.js';
 import type { GovApiConfig, GovApiEnvironment } from '../types.js';
 
 // ---------------------------------------------------------------------------
@@ -152,11 +149,8 @@ export class HmrcVatClient extends GovApiClient {
   private async refreshAccessToken(): Promise<string> {
     const clientId = await this.hmrcSecretStore.get(SECRET_PATH_CLIENT_ID);
     const clientSecret = await this.hmrcSecretStore.get(SECRET_PATH_CLIENT_SECRET);
-    if (!clientId || !clientSecret) {
-      throw new HmrcApiError(
-        'HMRC client credentials not found in secret store',
-        500,
-      );
+    if (!(clientId && clientSecret)) {
+      throw new HmrcApiError('HMRC client credentials not found in secret store', 500);
     }
 
     const body = new URLSearchParams({
@@ -240,10 +234,7 @@ export class HmrcVatClient extends GovApiClient {
     }
 
     if (!response.ok) {
-      throw new HmrcApiError(
-        `HMRC lookup returned ${response.status}`,
-        response.status,
-      );
+      throw new HmrcApiError(`HMRC lookup returned ${response.status}`, response.status);
     }
 
     const parsed = hmrcVatLookupResponseSchema.parse(await response.json());
@@ -269,10 +260,6 @@ export class HmrcVatClient extends GovApiClient {
       'Gov-Vendor-Version': this.pkgVersion,
     } as Record<string, string>;
 
-    return this.fetch(
-      path,
-      { method: 'GET', headers },
-      { organizationId, skipAudit: false },
-    );
+    return this.fetch(path, { method: 'GET', headers }, { organizationId, skipAudit: false });
   }
 }

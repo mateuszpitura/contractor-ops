@@ -1,21 +1,25 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ---------------------------------------------------------------------------
-// Mocks
+// Mocks — `teams` router uses `ctx.db` (tenant-scoped client), not root `prisma`.
 // ---------------------------------------------------------------------------
 
-const mockFindFirst = vi.fn();
-const mockFindMany = vi.fn();
-const mockUpdate = vi.fn();
+const { teamCtxDb, mockFindFirst, mockFindMany, mockUpdate } = vi.hoisted(() => {
+  const mockFindFirst = vi.fn();
+  const mockFindMany = vi.fn();
+  const mockUpdate = vi.fn();
+  const teamCtxDb = {
+    integrationConnection: {
+      findFirst: (...args: unknown[]) => mockFindFirst(...args),
+      findMany: (...args: unknown[]) => mockFindMany(...args),
+      update: (...args: unknown[]) => mockUpdate(...args),
+    },
+  };
+  return { teamCtxDb, mockFindFirst, mockFindMany, mockUpdate };
+});
 
 vi.mock('@contractor-ops/db', () => ({
-  prisma: {
-    integrationConnection: {
-      findFirst: (...args: any[]) => mockFindFirst(...args),
-      findMany: (...args: any[]) => mockFindMany(...args),
-      update: (...args: any[]) => mockUpdate(...args),
-    },
-  },
+  prisma: teamCtxDb,
 }));
 
 vi.mock('@contractor-ops/integrations/services/credential-service', () => ({
@@ -102,7 +106,7 @@ describe('teamsRouter', () => {
       }) => Promise<{ success: boolean }>;
 
       const result = await handler({
-        ctx: { organizationId: 'org-1' },
+        ctx: { organizationId: 'org-1', db: teamCtxDb },
         input: {
           mapping: {
             approvals: 'ch-approvals',
@@ -149,7 +153,7 @@ describe('teamsRouter', () => {
       }) => Promise<Record<string, string>>;
 
       const result = await handler({
-        ctx: { organizationId: 'org-1' },
+        ctx: { organizationId: 'org-1', db: teamCtxDb },
       });
 
       expect(result).toEqual(storedMapping);
@@ -169,7 +173,7 @@ describe('teamsRouter', () => {
       }) => Promise<Record<string, string>>;
 
       const result = await handler({
-        ctx: { organizationId: 'org-1' },
+        ctx: { organizationId: 'org-1', db: teamCtxDb },
       });
 
       expect(result).toEqual({});
@@ -187,7 +191,7 @@ describe('teamsRouter', () => {
       }) => Promise<null>;
 
       const result = await handler({
-        ctx: { organizationId: 'org-1' },
+        ctx: { organizationId: 'org-1', db: teamCtxDb },
       });
 
       expect(result).toBeNull();
@@ -211,7 +215,7 @@ describe('teamsRouter', () => {
       }>;
 
       const result = await handler({
-        ctx: { organizationId: 'org-1' },
+        ctx: { organizationId: 'org-1', db: teamCtxDb },
       });
 
       expect(result).toEqual({
@@ -230,7 +234,9 @@ describe('teamsRouter', () => {
         ctx: { organizationId: string };
       }) => Promise<unknown>;
 
-      await expect(handler({ ctx: { organizationId: 'org-1' } })).rejects.toMatchObject({
+      await expect(
+        handler({ ctx: { organizationId: 'org-1', db: teamCtxDb } }),
+      ).rejects.toMatchObject({
         code: 'NOT_FOUND',
       });
     });
@@ -248,7 +254,7 @@ describe('teamsRouter', () => {
       }) => Promise<Array<{ id: string; displayName: string }>>;
 
       const result = await handler({
-        ctx: { organizationId: 'org-1' },
+        ctx: { organizationId: 'org-1', db: teamCtxDb },
       });
 
       expect(result).toEqual([
@@ -268,7 +274,7 @@ describe('teamsRouter', () => {
       }) => Promise<unknown>;
 
       await expect(
-        handler({ ctx: { organizationId: 'org-1' }, input: { teamId: 'team-1' } }),
+        handler({ ctx: { organizationId: 'org-1', db: teamCtxDb }, input: { teamId: 'team-1' } }),
       ).rejects.toMatchObject({ code: 'NOT_FOUND' });
     });
 
@@ -286,7 +292,7 @@ describe('teamsRouter', () => {
       }) => Promise<Array<{ id: string; displayName: string }>>;
 
       const result = await handler({
-        ctx: { organizationId: 'org-1' },
+        ctx: { organizationId: 'org-1', db: teamCtxDb },
         input: { teamId: 'team-1' },
       });
 
@@ -305,13 +311,13 @@ describe('teamsRouter', () => {
       const source = fs.readFileSync(path.join(sourceDir, 'teams.ts'), 'utf-8');
 
       // Verify import exists
-      expect(source).toContain('import { requireTier } from "../middleware/tier.js"');
+      expect(source).toContain("import { requireTier } from '../middleware/tier.js'");
 
       // Verify saveChannelMapping has requireTier
-      expect(source).toContain('requireTier("PRO")');
+      expect(source).toContain("requireTier('PRO')");
 
       // Count occurrences -- should be exactly 1 (only saveChannelMapping, not read-only procedures)
-      const matches = source.match(/\.use\(requireTier\("PRO"\)\)/g);
+      const matches = source.match(/\.use\(requireTier\('PRO'\)\)/g);
       expect(matches).toHaveLength(1);
     });
 

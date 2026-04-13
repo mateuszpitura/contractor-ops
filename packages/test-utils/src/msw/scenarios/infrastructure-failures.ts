@@ -1,4 +1,9 @@
 import { delay, HttpResponse, http } from 'msw';
+import { isR2CloudflareStorageUrl } from '../handlers/r2.js';
+import {
+  isUpstashRedisPipelineUrl,
+  isUpstashRedisSingleCommandUrl,
+} from '../handlers/upstash-redis.js';
 
 /**
  * Infrastructure failure scenarios for cache, storage, email, and OCR.
@@ -15,15 +20,21 @@ import { delay, HttpResponse, http } from 'msw';
  */
 export function redisTimeoutHandlers() {
   return [
-    http.post('https://*.upstash.io', async () => {
-      await delay(30_000); // 30s timeout — will exceed any reasonable timeout
-      return HttpResponse.json({ result: null });
-    }),
+    http.post(
+      ({ request }) => isUpstashRedisSingleCommandUrl(request.url),
+      async () => {
+        await delay(30_000); // 30s timeout — will exceed any reasonable timeout
+        return HttpResponse.json({ result: null });
+      },
+    ),
 
-    http.post('https://*.upstash.io/pipeline', async () => {
-      await delay(30_000);
-      return HttpResponse.json([]);
-    }),
+    http.post(
+      ({ request }) => isUpstashRedisPipelineUrl(request.url),
+      async () => {
+        await delay(30_000);
+        return HttpResponse.json([]);
+      },
+    ),
   ];
 }
 
@@ -33,13 +44,19 @@ export function redisTimeoutHandlers() {
  */
 export function redisCorruptResponseHandlers() {
   return [
-    http.post('https://*.upstash.io', async () => {
-      // Return non-JSON, malformed response
-      return new HttpResponse('WRONGTYPE Operation against a key holding the wrong kind of value', {
-        status: 200,
-        headers: { 'Content-Type': 'text/plain' },
-      });
-    }),
+    http.post(
+      ({ request }) => isUpstashRedisSingleCommandUrl(request.url),
+      async () => {
+        // Return non-JSON, malformed response
+        return new HttpResponse(
+          'WRONGTYPE Operation against a key holding the wrong kind of value',
+          {
+            status: 200,
+            headers: { 'Content-Type': 'text/plain' },
+          },
+        );
+      },
+    ),
   ];
 }
 
@@ -48,12 +65,18 @@ export function redisCorruptResponseHandlers() {
  */
 export function redisDownHandlers() {
   return [
-    http.post('https://*.upstash.io', () => {
-      return HttpResponse.json({ error: 'Connection refused' }, { status: 503 });
-    }),
-    http.post('https://*.upstash.io/pipeline', () => {
-      return HttpResponse.json({ error: 'Connection refused' }, { status: 503 });
-    }),
+    http.post(
+      ({ request }) => isUpstashRedisSingleCommandUrl(request.url),
+      () => {
+        return HttpResponse.json({ error: 'Connection refused' }, { status: 503 });
+      },
+    ),
+    http.post(
+      ({ request }) => isUpstashRedisPipelineUrl(request.url),
+      () => {
+        return HttpResponse.json({ error: 'Connection refused' }, { status: 503 });
+      },
+    ),
   ];
 }
 
@@ -66,18 +89,24 @@ export function redisDownHandlers() {
  */
 export function r2ForbiddenHandlers() {
   return [
-    http.put('https://*.r2.cloudflarestorage.com/*', () => {
-      return HttpResponse.xml(
-        `<?xml version="1.0" encoding="UTF-8"?><Error><Code>AccessDenied</Code><Message>Access Denied</Message></Error>`,
-        { status: 403 },
-      );
-    }),
-    http.get('https://*.r2.cloudflarestorage.com/*', () => {
-      return HttpResponse.xml(
-        `<?xml version="1.0" encoding="UTF-8"?><Error><Code>AccessDenied</Code><Message>Access Denied</Message></Error>`,
-        { status: 403 },
-      );
-    }),
+    http.put(
+      ({ request }) => isR2CloudflareStorageUrl(request.url),
+      () => {
+        return HttpResponse.xml(
+          `<?xml version="1.0" encoding="UTF-8"?><Error><Code>AccessDenied</Code><Message>Access Denied</Message></Error>`,
+          { status: 403 },
+        );
+      },
+    ),
+    http.get(
+      ({ request }) => isR2CloudflareStorageUrl(request.url),
+      () => {
+        return HttpResponse.xml(
+          `<?xml version="1.0" encoding="UTF-8"?><Error><Code>AccessDenied</Code><Message>Access Denied</Message></Error>`,
+          { status: 403 },
+        );
+      },
+    ),
   ];
 }
 
@@ -86,24 +115,30 @@ export function r2ForbiddenHandlers() {
  */
 export function r2EmptyObjectHandlers() {
   return [
-    http.get('https://*.r2.cloudflarestorage.com/*', () => {
-      return new HttpResponse(new Uint8Array(0), {
-        status: 200,
-        headers: {
-          'Content-Type': 'application/pdf',
-          'Content-Length': '0',
-        },
-      });
-    }),
-    http.head('https://*.r2.cloudflarestorage.com/*', () => {
-      return new HttpResponse(null, {
-        status: 200,
-        headers: {
-          'Content-Type': 'application/pdf',
-          'Content-Length': '0',
-        },
-      });
-    }),
+    http.get(
+      ({ request }) => isR2CloudflareStorageUrl(request.url),
+      () => {
+        return new HttpResponse(new Uint8Array(0), {
+          status: 200,
+          headers: {
+            'Content-Type': 'application/pdf',
+            'Content-Length': '0',
+          },
+        });
+      },
+    ),
+    http.head(
+      ({ request }) => isR2CloudflareStorageUrl(request.url),
+      () => {
+        return new HttpResponse(null, {
+          status: 200,
+          headers: {
+            'Content-Type': 'application/pdf',
+            'Content-Length': '0',
+          },
+        });
+      },
+    ),
   ];
 }
 
@@ -112,15 +147,21 @@ export function r2EmptyObjectHandlers() {
  */
 export function r2NotFoundHandlers() {
   return [
-    http.get('https://*.r2.cloudflarestorage.com/*', () => {
-      return HttpResponse.xml(
-        `<?xml version="1.0" encoding="UTF-8"?><Error><Code>NoSuchKey</Code><Message>The specified key does not exist.</Message></Error>`,
-        { status: 404 },
-      );
-    }),
-    http.head('https://*.r2.cloudflarestorage.com/*', () => {
-      return new HttpResponse(null, { status: 404 });
-    }),
+    http.get(
+      ({ request }) => isR2CloudflareStorageUrl(request.url),
+      () => {
+        return HttpResponse.xml(
+          `<?xml version="1.0" encoding="UTF-8"?><Error><Code>NoSuchKey</Code><Message>The specified key does not exist.</Message></Error>`,
+          { status: 404 },
+        );
+      },
+    ),
+    http.head(
+      ({ request }) => isR2CloudflareStorageUrl(request.url),
+      () => {
+        return new HttpResponse(null, { status: 404 });
+      },
+    ),
   ];
 }
 

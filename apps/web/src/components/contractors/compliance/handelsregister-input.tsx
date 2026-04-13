@@ -1,11 +1,9 @@
 'use client';
 
+import type { HandelsregisterCourt } from '@contractor-ops/validators';
+import { HANDELSREGISTER_COURTS } from '@contractor-ops/validators';
 import { Check, ChevronsUpDown } from 'lucide-react';
 import { useId, useMemo, useState } from 'react';
-import {
-  HANDELSREGISTER_COURTS,
-  type HandelsregisterCourt,
-} from '@contractor-ops/validators';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -76,10 +74,7 @@ export function HandelsregisterInput({
   );
 
   const sortedCourts = useMemo(
-    () =>
-      [...HANDELSREGISTER_COURTS].sort((a, b) =>
-        a.name.localeCompare(b.name, 'de'),
-      ),
+    () => [...HANDELSREGISTER_COURTS].sort((a, b) => a.name.localeCompare(b.name, 'de')),
     [],
   );
 
@@ -88,9 +83,7 @@ export function HandelsregisterInput({
     onChange(merged);
   }
 
-  const describedBy = [hintId, error ? errorId : null]
-    .filter(Boolean)
-    .join(' ');
+  const describedBy = [hintId, error ? errorId : null].filter(Boolean).join(' ');
 
   return (
     <fieldset
@@ -114,22 +107,27 @@ export function HandelsregisterInput({
             Registry court
           </Label>
           <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger render={
-              <Button
-                id={`${legendId}-court`}
-                type="button"
-                variant="outline"
-                role="combobox"
-                aria-label="Registry court"
-                aria-expanded={open}
-                aria-invalid={error ? 'true' : undefined}
-                className={cn('h-9 w-full justify-between font-normal', !selectedCourt && 'text-muted-foreground')}>
-                <span className="truncate">
-                  {selectedCourt ? selectedCourt.name : 'Select court...'}
-                </span>
-                <ChevronsUpDown className="ms-2 size-4 shrink-0 opacity-50" aria-hidden="true" />
-              </Button>
-            } />
+            <PopoverTrigger
+              render={
+                <Button
+                  id={`${legendId}-court`}
+                  type="button"
+                  variant="outline"
+                  role="combobox"
+                  aria-label="Registry court"
+                  aria-expanded={open}
+                  aria-invalid={error ? 'true' : undefined}
+                  className={cn(
+                    'h-9 w-full justify-between font-normal',
+                    !selectedCourt && 'text-muted-foreground',
+                  )}>
+                  <span className="truncate">
+                    {selectedCourt ? selectedCourt.name : 'Select court...'}
+                  </span>
+                  <ChevronsUpDown className="ms-2 size-4 shrink-0 opacity-50" aria-hidden="true" />
+                </Button>
+              }
+            />
             <PopoverContent className="p-0" align="start">
               <Command>
                 <CommandInput placeholder="Gericht suchen..." />

@@ -4,6 +4,7 @@ import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import * as E from '../errors.js';
 import { router } from '../init.js';
+import type { TenantScopedDb } from '../lib/tenant-db.js';
 import { requirePermission } from '../middleware/rbac.js';
 import { tenantProcedure } from '../middleware/tenant.js';
 import { requireTier } from '../middleware/tier.js';
@@ -24,8 +25,8 @@ interface TeamsConnectionConfig {
  * Loads the MICROSOFT_TEAMS IntegrationConnection for the current org.
  * Accepts CONNECTED status.
  */
-async function loadTeamsConnection(organizationId: string) {
-  const connection = await ctx.db.integrationConnection.findFirst({
+async function loadTeamsConnection(db: TenantScopedDb, organizationId: string) {
+  const connection = await db.integrationConnection.findFirst({
     where: {
       organizationId,
       provider: 'MICROSOFT_TEAMS',
@@ -99,7 +100,7 @@ export const teamsRouter = router({
    * Uses Graph API to list teams the bot has access to.
    */
   getTeams: tenantProcedure.query(async ({ ctx }) => {
-    const connection = await loadTeamsConnection(ctx.organizationId);
+    const connection = await loadTeamsConnection(ctx.db, ctx.organizationId);
     const accessToken = getTeamsAccessToken(connection.credentialsRef);
 
     const teams = await getJoinedTeams(accessToken);
@@ -113,7 +114,7 @@ export const teamsRouter = router({
   getChannels: tenantProcedure
     .input(z.object({ teamId: z.string() }))
     .query(async ({ ctx, input }) => {
-      const connection = await loadTeamsConnection(ctx.organizationId);
+      const connection = await loadTeamsConnection(ctx.db, ctx.organizationId);
       const accessToken = getTeamsAccessToken(connection.credentialsRef);
 
       const channels = await getTeamsChannels(accessToken, input.teamId);
@@ -125,7 +126,7 @@ export const teamsRouter = router({
    * Returns the mapping object or an empty object if not configured.
    */
   getChannelMapping: tenantProcedure.query(async ({ ctx }) => {
-    const connection = await loadTeamsConnection(ctx.organizationId);
+    const connection = await loadTeamsConnection(ctx.db, ctx.organizationId);
     const config = (connection.configJson as TeamsConnectionConfig) ?? {};
     return config.channelMapping ?? {};
   }),
@@ -139,7 +140,7 @@ export const teamsRouter = router({
     .use(requireTier('PRO'))
     .input(channelMappingSchema)
     .mutation(async ({ ctx, input }) => {
-      const connection = await loadTeamsConnection(ctx.organizationId);
+      const connection = await loadTeamsConnection(ctx.db, ctx.organizationId);
       const config = (connection.configJson as TeamsConnectionConfig) ?? {};
 
       await ctx.db.integrationConnection.update({

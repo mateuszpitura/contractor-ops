@@ -1,3 +1,4 @@
+import { workflowTaskSkipReason } from '@contractor-ops/validators';
 import { useMutation } from '@tanstack/react-query';
 import { render, screen, setup } from '@/test/test-utils';
 import { TaskCardRun } from '../task-card-run';
@@ -241,7 +242,7 @@ describe('TaskCardRun', () => {
         task={{
           ...mockTask,
           status: 'SKIPPED',
-          resultJson: { skipReason: 'condition_not_met' },
+          resultJson: { skipReason: workflowTaskSkipReason.conditionNotMet },
         }}
         runId="run-1"
         currentUserId="user-1"

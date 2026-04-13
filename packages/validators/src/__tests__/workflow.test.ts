@@ -29,18 +29,18 @@ describe('conditionRuleSchema', () => {
     expect(r.success).toBe(true);
   });
 
-  it('accepts snake_case operators', () => {
+  it('accepts notEquals and startsWith operators', () => {
     expect(
       conditionRuleSchema.safeParse({
         field: 'x',
-        operator: 'not_equals',
+        operator: 'notEquals',
         value: 'a',
       }).success,
     ).toBe(true);
     expect(
       conditionRuleSchema.safeParse({
         field: 'x',
-        operator: 'starts_with',
+        operator: 'startsWith',
         value: 'a',
       }).success,
     ).toBe(true);

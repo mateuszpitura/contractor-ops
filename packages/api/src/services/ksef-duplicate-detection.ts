@@ -1,4 +1,4 @@
-import type { PrismaClient } from '@contractor-ops/db';
+import type { DbClient } from './types.js';
 
 // ---------------------------------------------------------------------------
 // Cross-Source Duplicate Detection
@@ -12,7 +12,7 @@ import type { PrismaClient } from '@contractor-ops/db';
  * email/OCR) and is now being fetched from KSeF, or vice versa.
  * Case-insensitive match on invoiceNumber for robustness.
  *
- * @param prisma - Prisma client instance
+ * @param db - Regional tenant-scoped client
  * @param organizationId - Organization scope
  * @param invoiceNumber - Invoice number to check
  * @param sellerTaxId - Seller tax ID (NIP)
@@ -20,7 +20,7 @@ import type { PrismaClient } from '@contractor-ops/db';
  * @returns Duplicate check result with existing invoice info if found
  */
 export async function checkCrossSourceDuplicate(
-  prisma: PrismaClient,
+  db: DbClient,
   organizationId: string,
   invoiceNumber: string,
   sellerTaxId: string,
@@ -30,7 +30,7 @@ export async function checkCrossSourceDuplicate(
   existingInvoiceId: string | null;
   existingSource: string | null;
 }> {
-  const existing = await prisma.invoice.findFirst({
+  const existing = await db.invoice.findFirst({
     where: {
       organizationId,
       invoiceNumber: { equals: invoiceNumber, mode: 'insensitive' },
@@ -59,22 +59,22 @@ export async function checkCrossSourceDuplicate(
  * The KSeF invoice gets a reference to the manual invoice, and vice versa.
  * Preserves any existing flags in flagsJson.
  *
- * @param prisma - Prisma client instance
+ * @param db - Regional tenant-scoped client
  * @param ksefInvoiceId - The newly created KSeF invoice ID
  * @param manualInvoiceId - The existing manual/email/OCR invoice ID
  */
 export async function linkDuplicateInvoices(
-  prisma: PrismaClient,
+  db: DbClient,
   ksefInvoiceId: string,
   manualInvoiceId: string,
 ): Promise<void> {
   // Read existing flags for both invoices
   const [ksefInvoice, manualInvoice] = await Promise.all([
-    prisma.invoice.findUniqueOrThrow({
+    db.invoice.findUniqueOrThrow({
       where: { id: ksefInvoiceId },
       select: { flagsJson: true },
     }),
-    prisma.invoice.findUniqueOrThrow({
+    db.invoice.findUniqueOrThrow({
       where: { id: manualInvoiceId },
       select: { flagsJson: true },
     }),
@@ -85,7 +85,7 @@ export async function linkDuplicateInvoices(
 
   // Update both invoices with cross-references
   await Promise.all([
-    prisma.invoice.update({
+    db.invoice.update({
       where: { id: ksefInvoiceId },
       data: {
         flagsJson: {
@@ -95,7 +95,7 @@ export async function linkDuplicateInvoices(
         },
       },
     }),
-    prisma.invoice.update({
+    db.invoice.update({
       where: { id: manualInvoiceId },
       data: {
         flagsJson: {

@@ -21,10 +21,8 @@
 
 import { GovApiClient } from '../client.js';
 import { GovApiRateLimiter } from '../rate-limiter.js';
-import {
-  viesLookupResponseSchema,
-  type ViesLookupResponse,
-} from '../schemas/vies.schema.js';
+import type { ViesLookupResponse } from '../schemas/vies.schema.js';
+import { viesLookupResponseSchema } from '../schemas/vies.schema.js';
 import type { GovApiConfig, GovApiEnvironment } from '../types.js';
 
 // ---------------------------------------------------------------------------
@@ -52,7 +50,7 @@ function isValidUstIdNrInline(raw: string): boolean {
   const vat = raw.replace(/[\s-]/g, '').toUpperCase();
   const m = vat.match(/^DE(\d{9})$/);
   if (!m) return false;
-  const digits = m[1]!.split('').map(Number);
+  const digits = m[1]?.split('').map(Number);
   const body = digits.slice(0, 8);
   const check = digits[8]!;
   return mod11_10CheckDigit(body) === check;
@@ -124,7 +122,7 @@ export class ViesClient extends GovApiClient {
     opts: { organizationId: string; qualified?: boolean },
   ): Promise<ViesLookupResult> {
     // Qualified lookup requires requester identity up-front — fail before network.
-    if (opts.qualified && (!this.requesterMemberStateCode || !this.requesterNumber)) {
+    if (opts.qualified && !(this.requesterMemberStateCode && this.requesterNumber)) {
       throw new ViesApiError(
         'Qualified lookup requires requesterMemberStateCode+requesterNumber',
         400,
