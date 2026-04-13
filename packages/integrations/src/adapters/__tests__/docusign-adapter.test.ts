@@ -143,7 +143,7 @@ describe('DocuSignAdapter', () => {
     expect(out.refreshToken).toBe('rt');
     expect(out.tokenType).toBe('Bearer');
     expect(fetchMock).toHaveBeenCalled();
-    const [, init] = fetchMock.mock.calls[0]!;
+    const [, init] = fetchMock.mock.calls[0];
     expect((init as RequestInit).method).toBe('POST');
   });
 
@@ -175,7 +175,7 @@ describe('DocuSignAdapter', () => {
       scope: 'signature',
     });
 
-    const [, init] = fetchMock.mock.calls[0]!;
+    const [, init] = fetchMock.mock.calls[0];
     const body = new URLSearchParams((init as RequestInit).body as string);
     expect(body.get('grant_type')).toBe('refresh_token');
   });

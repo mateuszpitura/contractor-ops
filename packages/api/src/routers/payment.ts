@@ -63,6 +63,127 @@ if (typeof globalThis !== 'undefined') {
 }
 
 // ---------------------------------------------------------------------------
+// Payment run helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Generates the sequential run number for a payment run (e.g., PR-2026-001).
+ */
+// biome-ignore lint/suspicious/noExplicitAny: transaction client type not exported from Prisma
+async function generateRunNumber(tx: any, organizationId: string): Promise<string> {
+  const year = new Date().getFullYear();
+  const prefix = `PR-${year}-`;
+
+  const lastRun = await tx.paymentRun.findFirst({
+    where: { organizationId, runNumber: { startsWith: prefix } },
+    orderBy: { runNumber: 'desc' },
+    select: { runNumber: true },
+  });
+
+  const seq = lastRun?.runNumber
+    ? parseInt(lastRun.runNumber.replace(prefix, ''), 10) + 1
+    : 1;
+
+  return `${prefix}${String(seq).padStart(3, '0')}`;
+}
+
+/**
+ * Generates an export file buffer and extension based on the format.
+ */
+async function generateExportFileForFormat(
+  format: string,
+  exportItems: ExportItem[],
+  orgBank: OrgBankInfo,
+  runRef: string,
+): Promise<{ fileBuffer: Buffer; ext: string }> {
+  if (format === 'CSV') {
+    return { fileBuffer: await generateCsv(exportItems), ext: 'csv' };
+  }
+  if (format === 'BANK_FILE') {
+    return { fileBuffer: generateElixir(exportItems, orgBank), ext: 'txt' };
+  }
+  if (format === 'SWIFT_XML') {
+    return { fileBuffer: generateSwiftXml(exportItems, orgBank, runRef), ext: 'xml' };
+  }
+  return { fileBuffer: generateSepaXml(exportItems, orgBank, runRef), ext: 'xml' };
+}
+
+/**
+ * Checks if all items in a payment run are terminal and auto-completes the run.
+ */
+// biome-ignore lint/suspicious/noExplicitAny: transaction client type not exported from Prisma
+async function autoCompleteRunIfTerminal(tx: any, paymentRunId: string): Promise<void> {
+  const remaining = await tx.paymentRunItem.count({
+    where: { paymentRunId, status: { in: ['PENDING', 'EXPORTED'] } },
+  });
+
+  if (remaining > 0) return;
+
+  const failedCount = await tx.paymentRunItem.count({
+    where: { paymentRunId, status: 'FAILED' },
+  });
+
+  await tx.paymentRun.update({
+    where: { id: paymentRunId },
+    data: {
+      status: failedCount > 0 ? 'FAILED' : 'COMPLETED',
+      completedAt: new Date(),
+    },
+  });
+}
+
+/**
+ * Builds ExportItem array from payment run items with resolved transfer titles.
+ */
+function buildExportItems(
+  items: Array<{
+    amountMinor: number;
+    currency: string;
+    invoice: {
+      invoiceNumber: string | null;
+      dueDate: Date | null;
+      servicePeriodStart: Date | null;
+      servicePeriodEnd: Date | null;
+    };
+    contractor: { legalName: string; taxId: string | null };
+    billingProfile: {
+      bankAccountMasked: string | null;
+      swiftBic: string | null;
+      bankName: string | null;
+    } | null;
+  }>,
+  transferTitleTemplate: string,
+): ExportItem[] {
+  return items.map(item => {
+    const billingPeriod =
+      item.invoice.servicePeriodStart && item.invoice.servicePeriodEnd
+        ? `${item.invoice.servicePeriodStart.toISOString().slice(0, 10)} - ${item.invoice.servicePeriodEnd.toISOString().slice(0, 10)}`
+        : undefined;
+
+    const invoiceNumber = item.invoice.invoiceNumber ?? '';
+
+    const transferTitle = resolveTransferTitle(transferTitleTemplate, {
+      invoiceNumber,
+      billingPeriod,
+      contractorName: item.contractor.legalName,
+    });
+
+    return {
+      contractorName: item.contractor.legalName,
+      iban: item.billingProfile?.bankAccountMasked ?? '',
+      amountMinor: item.amountMinor,
+      currency: item.currency,
+      invoiceNumber,
+      taxId: item.contractor.taxId,
+      bankName: item.billingProfile?.bankName ?? null,
+      swiftBic: item.billingProfile?.swiftBic ?? null,
+      dueDate: item.invoice.dueDate,
+      transferTitle,
+    };
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Valid status transitions
 // ---------------------------------------------------------------------------
 
@@ -138,8 +259,8 @@ export const paymentRouter = router({
 
       let nextCursor: string | undefined;
       if (items.length > input.limit) {
-        const next = items.pop()!;
-        nextCursor = next.id;
+        const next = items.pop();
+        nextCursor = next?.id;
       }
 
       return plain({ items, nextCursor });
@@ -270,7 +391,7 @@ export const paymentRouter = router({
                 organizationId: ctx.organizationId,
                 paymentRunId: run.id,
                 invoiceId: inv.id,
-                contractorId: inv.contractorId!,
+                contractorId: inv.contractorId as string,
                 billingProfileId: inv.billingProfileId ?? null,
                 amountMinor: inv.amountToPayMinor,
                 currency: inv.currency,
@@ -430,8 +551,8 @@ export const paymentRouter = router({
 
       let nextCursor: string | undefined;
       if (items.length > input.limit) {
-        const next = items.pop()!;
-        nextCursor = next.id;
+        const next = items.pop();
+        nextCursor = next?.id;
       }
 
       return plain({ items, nextCursor });
@@ -964,29 +1085,7 @@ export const paymentRouter = router({
         }
 
         // Check if all items terminal -> auto-complete
-        const remaining = await tx.paymentRunItem.count({
-          where: {
-            paymentRunId: run.id,
-            status: { in: ['PENDING', 'EXPORTED'] },
-          },
-        });
-
-        if (remaining === 0) {
-          const failedCount = await tx.paymentRunItem.count({
-            where: {
-              paymentRunId: run.id,
-              status: 'FAILED',
-            },
-          });
-
-          await tx.paymentRun.update({
-            where: { id: run.id },
-            data: {
-              status: failedCount > 0 ? 'FAILED' : 'COMPLETED',
-              completedAt: now,
-            },
-          });
-        }
+        await autoCompleteRunIfTerminal(tx, run.id);
 
         // Return updated run
         const updatedRun = await tx.paymentRun.findUnique({

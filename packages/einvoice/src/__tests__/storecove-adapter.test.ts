@@ -162,7 +162,7 @@ describe('StorecoveAdapter', () => {
 
   it('verifyWebhookSignature accepts valid HMAC', () => {
     const body = JSON.stringify({ guid: 'wh-001', event: 'document_received' });
-    const signature = createHmac('sha256', TEST_CONFIG.webhookSecret!).update(body).digest('hex');
+    const signature = createHmac('sha256', TEST_CONFIG.webhookSecret).update(body).digest('hex');
 
     const result = adapter.verifyWebhookSignature(body, {
       'storecove-signature': signature,

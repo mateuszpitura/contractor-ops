@@ -17,6 +17,127 @@ import {
 } from '../services/import-processor.js';
 
 // ---------------------------------------------------------------------------
+// Commit helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Handles importing a single contractor row: skip, update, or create.
+ */
+async function commitContractorRow(
+  // biome-ignore lint/suspicious/noExplicitAny: transaction client type differs from TenantScopedDb
+  tx: any,
+  organizationId: string,
+  userId: string | undefined,
+  row: Record<string, unknown>,
+  duplicateAction: string | undefined,
+): Promise<'created' | 'updated' | 'skipped' | 'failed'> {
+  const taxId = String(row.taxId ?? row.contractorTaxId ?? '').trim();
+
+  if (duplicateAction === 'skip') return 'skipped';
+
+  if (duplicateAction === 'update') {
+    const existing = await tx.contractor.findFirst({
+      where: { organizationId, taxId, deletedAt: null },
+    });
+    if (!existing) return 'failed';
+
+    await tx.contractor.update({
+      where: { id: existing.id },
+      data: {
+        legalName: String(row.legalName ?? existing.legalName),
+        displayName: String(row.displayName ?? existing.displayName),
+        email: String(row.email ?? existing.email),
+        phone: row.phone ? String(row.phone) : existing.phone,
+        countryCode: String(row.countryCode ?? existing.countryCode),
+        currency: String(row.currency ?? existing.currency),
+      },
+    });
+    return 'updated';
+  }
+
+  // Create new contractor
+  try {
+    await tx.contractor.create({
+      data: {
+        organizationId,
+        legalName: String(row.legalName ?? ''),
+        displayName: String(row.displayName ?? row.legalName ?? ''),
+        type: String(row.type ?? 'COMPANY') as
+          | 'SOLE_TRADER'
+          | 'COMPANY'
+          | 'INDIVIDUAL_FREELANCER'
+          | 'OTHER',
+        taxId: String(row.taxId ?? ''),
+        vatId: row.vatId ? String(row.vatId) : null,
+        email: String(row.email ?? ''),
+        phone: row.phone ? String(row.phone) : null,
+        countryCode: String(row.countryCode ?? 'PL'),
+        currency: String(row.currency ?? 'PLN'),
+        status: 'ACTIVE',
+        lifecycleStage: 'ACTIVE',
+        ownerUserId: userId,
+      },
+    });
+    return 'created';
+  } catch {
+    return 'failed';
+  }
+}
+
+/**
+ * Handles importing a single contract row: resolve contractor and create.
+ */
+async function commitContractRow(
+  // biome-ignore lint/suspicious/noExplicitAny: transaction client type differs from TenantScopedDb
+  tx: any,
+  organizationId: string,
+  userId: string | undefined,
+  row: Record<string, unknown>,
+): Promise<'created' | 'failed'> {
+  let contractorId = row.contractorId ? String(row.contractorId) : null;
+
+  if (!contractorId) {
+    const contractor = await tx.contractor.findFirst({
+      where: {
+        organizationId,
+        taxId: String(row.contractorTaxId ?? ''),
+        deletedAt: null,
+      },
+      select: { id: true },
+    });
+    if (!contractor) return 'failed';
+    contractorId = contractor.id;
+  }
+
+  try {
+    await tx.contract.create({
+      data: {
+        organizationId,
+        contractorId,
+        title: String(row.title ?? ''),
+        type: String(row.type ?? 'OTHER') as
+          | 'B2B_MASTER_SERVICE'
+          | 'STATEMENT_OF_WORK'
+          | 'NDA'
+          | 'IP_ASSIGNMENT'
+          | 'DPA'
+          | 'OTHER',
+        startDate: new Date(String(row.startDate)),
+        endDate: row.endDate ? new Date(String(row.endDate)) : null,
+        currency: String(row.currency ?? 'PLN'),
+        billingModel: 'MONTHLY_RETAINER',
+        rateType: 'MONTHLY_FIXED',
+        status: 'DRAFT',
+        internalOwnerUserId: userId,
+      },
+    });
+    return 'created';
+  } catch {
+    return 'failed';
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Shared input schemas
 // ---------------------------------------------------------------------------
 
@@ -64,7 +185,7 @@ export const importRouter = router({
         });
       }
 
-      const headers = Object.keys(rows[0]!);
+      const headers = Object.keys(rows[0] ?? {});
       const suggestedMapping = autoMapColumns(headers, input.entityType);
       const sampleRows = rows.slice(0, 5);
 
@@ -134,115 +255,15 @@ export const importRouter = router({
             const duplicateAction = duplicateActions[taxId];
 
             if (entityType === 'contractor') {
-              if (duplicateAction === 'skip') {
-                skipped++;
-                continue;
-              }
-
-              if (duplicateAction === 'update') {
-                // Find existing contractor and update
-                const existing = await tx.contractor.findFirst({
-                  where: {
-                    organizationId: ctx.organizationId,
-                    taxId,
-                    deletedAt: null,
-                  },
-                });
-
-                if (!existing) {
-                  failed++;
-                  continue;
-                }
-
-                await tx.contractor.update({
-                  where: { id: existing.id },
-                  data: {
-                    legalName: String(row.legalName ?? existing.legalName),
-                    displayName: String(row.displayName ?? existing.displayName),
-                    email: String(row.email ?? existing.email),
-                    phone: row.phone ? String(row.phone) : existing.phone,
-                    countryCode: String(row.countryCode ?? existing.countryCode),
-                    currency: String(row.currency ?? existing.currency),
-                  },
-                });
-                updated++;
-                continue;
-              }
-
-              // Create new contractor
-              try {
-                await tx.contractor.create({
-                  data: {
-                    organizationId: ctx.organizationId,
-                    legalName: String(row.legalName ?? ''),
-                    displayName: String(row.displayName ?? row.legalName ?? ''),
-                    type: String(row.type ?? 'COMPANY') as
-                      | 'SOLE_TRADER'
-                      | 'COMPANY'
-                      | 'INDIVIDUAL_FREELANCER'
-                      | 'OTHER',
-                    taxId: String(row.taxId ?? ''),
-                    vatId: row.vatId ? String(row.vatId) : null,
-                    email: String(row.email ?? ''),
-                    phone: row.phone ? String(row.phone) : null,
-                    countryCode: String(row.countryCode ?? 'PL'),
-                    currency: String(row.currency ?? 'PLN'),
-                    status: 'ACTIVE',
-                    lifecycleStage: 'ACTIVE',
-                    ownerUserId: ctx.user?.id,
-                  },
-                });
-                created++;
-              } catch {
-                failed++;
-              }
+              const result = await commitContractorRow(tx, ctx.organizationId, ctx.user?.id, row, duplicateAction);
+              if (result === 'created') created++;
+              else if (result === 'updated') updated++;
+              else if (result === 'skipped') skipped++;
+              else failed++;
             } else {
-              // Contract import
-              const contractorId = row.contractorId ? String(row.contractorId) : null;
-
-              if (!contractorId) {
-                // Try resolving by taxId
-                const contractor = await tx.contractor.findFirst({
-                  where: {
-                    organizationId: ctx.organizationId,
-                    taxId: String(row.contractorTaxId ?? ''),
-                    deletedAt: null,
-                  },
-                  select: { id: true },
-                });
-                if (!contractor) {
-                  failed++;
-                  continue;
-                }
-                row.contractorId = contractor.id;
-              }
-
-              try {
-                await tx.contract.create({
-                  data: {
-                    organizationId: ctx.organizationId,
-                    contractorId: String(row.contractorId),
-                    title: String(row.title ?? ''),
-                    type: String(row.type ?? 'OTHER') as
-                      | 'B2B_MASTER_SERVICE'
-                      | 'STATEMENT_OF_WORK'
-                      | 'NDA'
-                      | 'IP_ASSIGNMENT'
-                      | 'DPA'
-                      | 'OTHER',
-                    startDate: new Date(String(row.startDate)),
-                    endDate: row.endDate ? new Date(String(row.endDate)) : null,
-                    currency: String(row.currency ?? 'PLN'),
-                    billingModel: 'MONTHLY_RETAINER',
-                    rateType: 'MONTHLY_FIXED',
-                    status: 'DRAFT',
-                    internalOwnerUserId: ctx.user?.id,
-                  },
-                });
-                created++;
-              } catch {
-                failed++;
-              }
+              const result = await commitContractRow(tx, ctx.organizationId, ctx.user?.id, row);
+              if (result === 'created') created++;
+              else failed++;
             }
           }
         });

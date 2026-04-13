@@ -110,8 +110,8 @@ export const auditRouter = router({
     return actors
       .filter(a => a.actorId !== null)
       .map(a => ({
-        id: a.actorId!,
-        name: a.actorName ?? a.actorId!,
+        id: a.actorId as string,
+        name: a.actorName ?? (a.actorId as string),
       }));
   }),
 

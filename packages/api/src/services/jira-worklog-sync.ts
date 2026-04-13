@@ -276,7 +276,7 @@ export async function syncJiraWorklogs(
         // Step C: Map worklogs to TimeEntry
         for (const worklog of userWorklogs) {
           const minutes = Math.round(worklog.timeSpentSeconds / 60);
-          const entryDate = worklog.started.split('T')[0]!;
+          const entryDate = worklog.started.split('T')[0] ?? '';
 
           // Skip zero-duration worklogs
           if (minutes === 0) {

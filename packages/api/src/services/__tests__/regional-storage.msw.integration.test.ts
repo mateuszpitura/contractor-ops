@@ -30,7 +30,7 @@ describe('regional-storage + MSW (R2)', () => {
 
     const client = createR2Client();
     const key = 'msw-integration/org/doc.txt';
-    const bucket = process.env.R2_BUCKET_NAME_EU!;
+    const bucket = process.env.R2_BUCKET_NAME_EU;
 
     await client.send(
       new PutObjectCommand({

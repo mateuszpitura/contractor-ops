@@ -48,7 +48,7 @@ function runRedisCommand(body: string[]): { result: unknown } {
 
   switch (command) {
     case 'GET': {
-      const key = body[1]!;
+      const key = body[1] ?? '';
       const entry = store.get(key);
       if (!entry || (entry.expiresAt && entry.expiresAt < Date.now())) {
         store.delete(key);
@@ -57,12 +57,12 @@ function runRedisCommand(body: string[]): { result: unknown } {
       return { result: entry.value };
     }
     case 'SET': {
-      const key = body[1]!;
+      const key = body[1] ?? '';
       const value = body[2];
       let expiresAt: number | undefined;
       const exIdx = body.findIndex(b => b.toUpperCase() === 'EX');
       if (exIdx !== -1 && body[exIdx + 1]) {
-        expiresAt = Date.now() + parseInt(body[exIdx + 1]!, 10) * 1000;
+        expiresAt = Date.now() + parseInt(body[exIdx + 1] ?? '0', 10) * 1000;
       }
       store.set(key, { value, expiresAt });
       return { result: 'OK' };

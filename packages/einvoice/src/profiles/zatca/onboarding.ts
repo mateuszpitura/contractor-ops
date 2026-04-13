@@ -225,7 +225,7 @@ const INITIAL_PIH = crypto.createHash('sha256').update('0').digest('hex');
  * @returns Array of 6 EInvoice objects ready for XML generation and signing
  */
 export function buildComplianceTestInvoices(taxDetails: ZatcaTaxDetails): EInvoice[] {
-  const issueDate = new Date().toISOString().split('T')[0]!;
+  const issueDate = new Date().toISOString().split('T')[0] ?? '';
   const formattedAddress = `${taxDetails.street}, ${taxDetails.district}, ${taxDetails.city} ${taxDetails.postalCode}`;
 
   return COMPLIANCE_INVOICE_SPECS.map((spec, index) => {

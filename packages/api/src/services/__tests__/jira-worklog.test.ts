@@ -45,7 +45,7 @@ function mockFetchResponses(
 ) {
   let callIndex = 0;
   return vi.fn().mockImplementation(() => {
-    const resp = responses[callIndex] ?? responses[responses.length - 1]!;
+    const resp = responses[callIndex] ?? responses[responses.length - 1];
     callIndex++;
     return Promise.resolve({
       ok: resp.status >= 200 && resp.status < 300,
@@ -124,9 +124,9 @@ describe('jira-worklog', () => {
 
       await syncJiraWorklogs(prisma, ...baseArgs);
 
-      const searchCall = fetchMock.mock.calls[0]!;
+      const searchCall = fetchMock.mock.calls[0];
       const url = new URL(searchCall[0] as string);
-      const jql = url.searchParams.get('jql')!;
+      const jql = url.searchParams.get('jql');
 
       expect(jql).toContain('worklogDate>="2024-01-01"');
       expect(jql).toContain('worklogDate<="2024-01-31"');
@@ -287,7 +287,7 @@ describe('jira-worklog', () => {
       await syncJiraWorklogs(prisma, ...baseArgs);
 
       // Verify second search call uses startAt=100
-      const secondSearchCall = fetchMock.mock.calls[1]!;
+      const secondSearchCall = fetchMock.mock.calls[1];
       const url = new URL(secondSearchCall[0] as string);
       expect(url.searchParams.get('startAt')).toBe('100');
     });

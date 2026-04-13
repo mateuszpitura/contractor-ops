@@ -80,7 +80,7 @@ export function validateNip(nip: string): { valid: boolean; formatted: string } 
   }
 
   const weights = [6, 5, 7, 2, 3, 4, 5, 6, 7];
-  const sum = weights.reduce((acc, w, i) => acc + w * parseInt(digits[i]!, 10), 0);
+  const sum = weights.reduce((acc, w, i) => acc + w * parseInt(digits[i] ?? '0', 10), 0);
   const checkDigit = sum % 11;
 
   // Remainder of 10 means invalid NIP
@@ -89,7 +89,7 @@ export function validateNip(nip: string): { valid: boolean; formatted: string } 
   }
 
   return {
-    valid: checkDigit === parseInt(digits[9]!, 10),
+    valid: checkDigit === parseInt(digits[9] ?? '0', 10),
     formatted: digits,
   };
 }

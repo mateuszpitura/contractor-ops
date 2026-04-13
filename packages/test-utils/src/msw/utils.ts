@@ -78,7 +78,7 @@ export class RequestCapture {
           `Captured URLs: ${this.requests.map(r => `${r.method} ${r.url}`).join(', ') || '(none)'}`,
       );
     }
-    return matches[0]!;
+    return matches[0] as CapturedRequest;
   }
 
   /** Assert no request was made matching the given criteria */

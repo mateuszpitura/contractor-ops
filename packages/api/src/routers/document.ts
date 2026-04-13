@@ -451,7 +451,8 @@ export const documentRouter = router({
       }
 
       // Find all documents linked to the same entity as this document
-      const firstLink = doc.links[0]!;
+      const firstLink = doc.links[0];
+      if (!firstLink) return plain([doc]);
       const relatedLinks = await ctx.db.documentLink.findMany({
         where: {
           organizationId: ctx.organizationId,

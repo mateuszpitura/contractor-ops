@@ -126,7 +126,7 @@ describe('onboarding', () => {
       const invoices = buildComplianceTestInvoices(testTaxDetails);
 
       for (let i = 0; i < invoices.length; i++) {
-        const inv = invoices[i]!;
+        const inv = invoices[i];
         const ext = inv.extensions as Record<string, unknown>;
 
         expect(ext).toBeDefined();

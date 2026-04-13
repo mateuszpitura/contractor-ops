@@ -152,7 +152,8 @@ function escapeXml(str: string): string {
 function computeDocDigest(xml: string): string {
   const { DOMParser } = getXmldom();
   const doc = new DOMParser().parseFromString(xml, 'text/xml');
-  const rootElement = doc.documentElement!;
+  const rootElement = doc.documentElement;
+  if (!rootElement) throw new Error('XML document has no root element');
 
   // Apply exclusive C14N (enveloped-sig is no-op on unsigned XML)
   const c14n = new ExclusiveCanonicalization();
@@ -168,7 +169,9 @@ function canonicalizeFragment(xmlStr: string): string {
   const { DOMParser } = getXmldom();
   const doc = new DOMParser().parseFromString(xmlStr, 'text/xml');
   const c14n = new ExclusiveCanonicalization();
-  return c14n.process(doc.documentElement!, {}).toString();
+  const fragmentRoot = doc.documentElement;
+  if (!fragmentRoot) throw new Error('XML fragment has no root element');
+  return c14n.process(fragmentRoot, {}).toString();
 }
 
 // ---------------------------------------------------------------------------

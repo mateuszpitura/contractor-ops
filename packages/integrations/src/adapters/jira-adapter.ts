@@ -303,7 +303,8 @@ export class JiraAdapter extends BaseAdapter {
       );
     }
 
-    const site = resources[0]!;
+    const site = resources[0];
+    if (!site) throw new Error('No accessible Jira Cloud sites found.');
     return {
       cloudId: site.id,
       siteName: site.name,

@@ -85,7 +85,7 @@ describe('GoogleWorkspaceAdapter', () => {
 
     expect(out.accessToken).toBe('at');
     expect(out.refreshToken).toBe('rt');
-    const [url, init] = fetchMock.mock.calls[0]!;
+    const [url, init] = fetchMock.mock.calls[0];
     expect(url).toBe('https://oauth2.googleapis.com/token');
     const body = JSON.parse((init as RequestInit).body as string);
     expect(body.grant_type).toBe('authorization_code');

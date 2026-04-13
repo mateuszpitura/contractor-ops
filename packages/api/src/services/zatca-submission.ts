@@ -352,7 +352,7 @@ function buildEInvoiceFromPrisma(
 
   return {
     id: invoice.invoiceNumber,
-    issueDate: invoice.issueDate.toISOString().split('T')[0]!,
+    issueDate: invoice.issueDate.toISOString().split('T')[0] ?? '',
     dueDate: invoice.dueDate ? invoice.dueDate.toISOString().split('T')[0] : undefined,
     invoiceTypeCode: '388',
     currencyCode: invoice.currency,

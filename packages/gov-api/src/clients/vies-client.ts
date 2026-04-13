@@ -52,7 +52,7 @@ function isValidUstIdNrInline(raw: string): boolean {
   if (!m) return false;
   const digits = m[1]?.split('').map(Number);
   const body = digits.slice(0, 8);
-  const check = digits[8]!;
+  const check = digits[8] ?? 0;
   return mod11_10CheckDigit(body) === check;
 }
 

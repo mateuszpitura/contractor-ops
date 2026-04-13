@@ -86,7 +86,7 @@ export function parseCsvStatement(content: string): ParsedTransaction[] {
   if (lines.length < 2) return [];
 
   // Detect delimiter (comma or semicolon)
-  const headerLine = lines[0]!;
+  const headerLine = lines[0] ?? '';
   const delimiter = headerLine.includes(';') ? ';' : ',';
 
   const headers = headerLine.split(delimiter).map(h =>
@@ -114,7 +114,7 @@ export function parseCsvStatement(content: string): ParsedTransaction[] {
   const transactions: ParsedTransaction[] = [];
 
   for (let i = 1; i < lines.length; i++) {
-    const cells = splitCsvLine(lines[i]!, delimiter);
+    const cells = splitCsvLine(lines[i] ?? '', delimiter);
 
     const rawAmount = cells[amountIdx]?.replace(/["']/g, '').trim() ?? '0';
     // Handle comma decimal separator (Polish format: "1 234,56")
@@ -184,7 +184,8 @@ export function matchStatementToRun(
   const matchedItemIds = new Set<string>();
 
   for (let txIdx = 0; txIdx < transactions.length; txIdx++) {
-    const tx = transactions[txIdx]!;
+    const tx = transactions[txIdx];
+    if (!tx) continue;
     const txIban = normalizeIban(tx.iban ?? '');
 
     let bestMatch: {
@@ -269,7 +270,7 @@ function splitCsvLine(line: string, delimiter: string): string[] {
   let inQuotes = false;
 
   for (let i = 0; i < line.length; i++) {
-    const ch = line[i]!;
+    const ch = line[i];
 
     if (ch === '"') {
       inQuotes = !inQuotes;

@@ -256,7 +256,8 @@ export class AutentiAdapter extends BaseAdapter implements ESignAdapter {
       throw new Error(`No signed documents found for process ${envelopeId}`);
     }
 
-    const firstFile = filesResponse[0]!;
+    const firstFile = filesResponse[0];
+    if (!firstFile) throw new Error(`No signed documents found for process ${envelopeId}`);
 
     // Download the signed file
     const fileData = (await this.autentiFetch(

@@ -175,7 +175,7 @@ export async function runAutoMatch(
 
     // If no contract has a rate, just use the first one
     if (!bestContract && contracts.length > 0) {
-      bestContract = contracts[0]!;
+      bestContract = contracts[0] ?? null;
     }
   }
 

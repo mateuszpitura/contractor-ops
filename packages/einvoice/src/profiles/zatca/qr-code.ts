@@ -60,7 +60,7 @@ export function decodeTLV(buffer: Buffer): Array<{ tag: number; value: Buffer }>
   while (offset < buffer.length) {
     if (offset + 1 >= buffer.length) break;
 
-    const tag = buffer[offset]!;
+    const tag = buffer[offset] ?? 0;
     offset += 1;
 
     const { length, bytesRead } = decodeLength(buffer, offset);
@@ -102,19 +102,19 @@ function encodeLength(length: number): Buffer {
  * Returns the decoded length and number of bytes consumed.
  */
 function decodeLength(buffer: Buffer, offset: number): { length: number; bytesRead: number } {
-  const firstByte = buffer[offset]!;
+  const firstByte = buffer[offset] ?? 0;
 
   if (firstByte < 128) {
     return { length: firstByte, bytesRead: 1 };
   }
 
   if (firstByte === 0x81) {
-    return { length: buffer[offset + 1]!, bytesRead: 2 };
+    return { length: buffer[offset + 1] ?? 0, bytesRead: 2 };
   }
 
   if (firstByte === 0x82) {
-    const high = buffer[offset + 1]!;
-    const low = buffer[offset + 2]!;
+    const high = buffer[offset + 1] ?? 0;
+    const low = buffer[offset + 2] ?? 0;
     return { length: (high << 8) | low, bytesRead: 3 };
   }
 

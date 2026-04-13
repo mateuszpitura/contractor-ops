@@ -65,7 +65,7 @@ describe('JiraAdapter', () => {
 
     expect(out.accessToken).toBe('at');
     expect(out.refreshToken).toBe('rt');
-    const [, opts] = fetchMock.mock.calls[0]!;
+    const [, opts] = fetchMock.mock.calls[0];
     expect((opts as { method: string }).method).toBe('POST');
   });
 

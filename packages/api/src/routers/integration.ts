@@ -440,8 +440,8 @@ export const integrationRouter = router({
 
     let nextCursor: string | null = null;
     if (items.length > input.limit) {
-      const lastItem = items.pop()!;
-      nextCursor = lastItem.id;
+      const lastItem = items.pop();
+      nextCursor = lastItem?.id ?? null;
     }
 
     return plain({ items, nextCursor });
@@ -472,8 +472,8 @@ export const integrationRouter = router({
 
     let nextCursor: string | null = null;
     if (items.length > input.limit) {
-      const lastItem = items.pop()!;
-      nextCursor = lastItem.id;
+      const lastItem = items.pop();
+      nextCursor = lastItem?.id ?? null;
     }
 
     return plain({ items, nextCursor });

@@ -73,7 +73,7 @@ describe('buildApprovalCard', () => {
   it('has Approve button with positive style and correct data', () => {
     const card = buildApprovalCard(params);
     const actions = card.actions as Record<string, unknown>[];
-    const approve = actions[0]!;
+    const approve = actions[0];
 
     expect(approve.title).toBe('Approve');
     expect(approve.style).toBe('positive');
@@ -87,7 +87,7 @@ describe('buildApprovalCard', () => {
   it('has Reject button with destructive style and msteams task/fetch', () => {
     const card = buildApprovalCard(params);
     const actions = card.actions as Record<string, unknown>[];
-    const reject = actions[1]!;
+    const reject = actions[1];
 
     expect(reject.title).toBe('Reject');
     expect(reject.style).toBe('destructive');
@@ -130,7 +130,7 @@ describe('buildApprovalResultCard', () => {
       viewUrl: 'https://app.example.com/invoices/123',
     });
     const body = card.body as Record<string, unknown>[];
-    const header = body[0]!;
+    const header = body[0];
     expect(header.text).toContain('\u2705');
     expect(header.text).toContain('Approved');
     expect(header.color).toBe('Good');
@@ -147,7 +147,7 @@ describe('buildApprovalResultCard', () => {
       viewUrl: 'https://app.example.com/invoices/123',
     });
     const body = card.body as Record<string, unknown>[];
-    const header = body[0]!;
+    const header = body[0];
     expect(header.text).toContain('\u274C');
     expect(header.text).toContain('Rejected');
     expect(header.color).toBe('Attention');
@@ -272,7 +272,7 @@ describe('buildApprovalReminderCard', () => {
   it('shows overdue days with Attention color', () => {
     const card = buildApprovalReminderCard(params);
     const body = card.body as Record<string, unknown>[];
-    const overdue = body[1]!;
+    const overdue = body[1];
     expect(overdue.text).toBe('3 days overdue');
     expect(overdue.color).toBe('Attention');
   });

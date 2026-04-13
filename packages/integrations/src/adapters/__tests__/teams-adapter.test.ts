@@ -65,7 +65,7 @@ describe('TeamsAdapter', () => {
     const out = await adapter.exchangeCodeForTokens('code', 'http://localhost/cb');
     expect(out.accessToken).toBe('at');
     expect(out.refreshToken).toBe('rt');
-    const [url] = fetchMock.mock.calls[0]!;
+    const [url] = fetchMock.mock.calls[0];
     expect(String(url)).toContain('token');
   });
 
@@ -92,7 +92,7 @@ describe('TeamsAdapter', () => {
     });
 
     expect(out.accessToken).toBe('new-at');
-    const [, opts] = fetchMock.mock.calls[0]!;
+    const [, opts] = fetchMock.mock.calls[0];
     expect((opts as { body: string }).body).toContain('grant_type=refresh_token');
     expect((opts as { body: string }).body).toContain('stored-refresh');
   });

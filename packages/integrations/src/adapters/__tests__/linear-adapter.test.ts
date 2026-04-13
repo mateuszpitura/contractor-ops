@@ -68,7 +68,7 @@ describe('LinearAdapter', () => {
 
       await adapter.exchangeCodeForTokens('code-123', 'http://localhost/callback');
 
-      const [, options] = fetchMock.mock.calls[0]!;
+      const [, options] = fetchMock.mock.calls[0];
       expect(options.headers['Content-Type']).toBe('application/x-www-form-urlencoded');
     });
   });
@@ -97,7 +97,7 @@ describe('LinearAdapter', () => {
       expect(result.tokenType).toBe('Bearer');
 
       // Verify the request body
-      const [url, options] = fetchMock.mock.calls[0]!;
+      const [url, options] = fetchMock.mock.calls[0];
       expect(url).toBe('https://api.linear.app/oauth/token');
       const body = new URLSearchParams(options.body as string);
       expect(body.get('grant_type')).toBe('authorization_code');
@@ -179,7 +179,7 @@ describe('LinearAdapter', () => {
 
       expect(result.accessToken).toBe('new-access-token');
 
-      const [, options] = fetchMock.mock.calls[0]!;
+      const [, options] = fetchMock.mock.calls[0];
       const body = new URLSearchParams(options.body as string);
       expect(body.get('grant_type')).toBe('refresh_token');
       expect(body.get('refresh_token')).toBe('old-rt');
@@ -374,7 +374,7 @@ describe('LinearAdapter', () => {
       const result = await adapter.discoverWorkspace('access-token-123');
 
       // Verify GraphQL request structure
-      const [url, options] = fetchMock.mock.calls[0]!;
+      const [url, options] = fetchMock.mock.calls[0];
       expect(url).toBe('https://api.linear.app/graphql');
       expect(options.method).toBe('POST');
       expect(options.headers.Authorization).toBe('Bearer access-token-123');

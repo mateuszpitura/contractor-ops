@@ -265,7 +265,7 @@ export function validatePolishNip(nip: string): boolean {
 
   const weights = [6, 5, 7, 2, 3, 4, 5, 6, 7];
   const digits = cleaned.split('').map(Number);
-  const checksum = weights.reduce((sum, w, i) => sum + w * digits[i]!, 0) % 11;
+  const checksum = weights.reduce((sum, w, i) => sum + w * (digits[i] ?? 0), 0) % 11;
 
   return checksum === digits[9];
 }

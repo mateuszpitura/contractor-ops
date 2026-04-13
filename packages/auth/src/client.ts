@@ -7,6 +7,6 @@ import { createAuthClient } from 'better-auth/react';
  * to match the server-side plugin configuration.
  */
 export const authClient = createAuthClient({
-  baseURL: process.env.NEXT_PUBLIC_APP_URL!,
+  baseURL: process.env.NEXT_PUBLIC_APP_URL ?? '',
   plugins: [organizationClient(), magicLinkClient()],
 });

@@ -261,7 +261,7 @@ describe('processKsefSync', () => {
 
       await processKsefSync({ organizationId: ORG_ID, connectionId: CONN_ID });
 
-      const queryCall = mockKsefClient.queryInvoices.mock.calls[0]!;
+      const queryCall = mockKsefClient.queryInvoices.mock.calls[0];
       const dateFrom = queryCall[1] as string;
       // 90 days before 2026-04-01 is 2026-01-01
       expect(dateFrom).toBe('2026-01-01');
@@ -279,7 +279,7 @@ describe('processKsefSync', () => {
 
     await processKsefSync({ organizationId: ORG_ID, connectionId: CONN_ID });
 
-    const queryCall = mockKsefClient.queryInvoices.mock.calls[0]!;
+    const queryCall = mockKsefClient.queryInvoices.mock.calls[0];
     const dateFrom = queryCall[1] as string;
     expect(dateFrom).toBe('2026-03-15');
   });

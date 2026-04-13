@@ -92,6 +92,194 @@ async function updateImportJob(
 }
 
 // ---------------------------------------------------------------------------
+// Project fetching helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Fetches Jira projects with their statuses for a given connection.
+ */
+async function fetchJiraProjects(
+  accessToken: string,
+  config: ConnectionConfig,
+): Promise<Array<{ sourceProvider: string; externalId: string; name: string; statuses: Array<{ id: string; name: string; color?: string }> }>> {
+  if (!config?.cloudId) return [];
+
+  const baseUrl = `https://api.atlassian.com/ex/jira/${config.cloudId}/rest/api/3`;
+  const headers = {
+    Authorization: `Bearer ${accessToken}`,
+    Accept: 'application/json',
+  };
+
+  const projResponse = await fetch(`${baseUrl}/project`, { headers });
+  if (!projResponse.ok) return [];
+
+  const jiraProjects = (await projResponse.json()) as Array<{
+    id: string;
+    key: string;
+    name: string;
+  }>;
+
+  const results: Array<{ sourceProvider: string; externalId: string; name: string; statuses: Array<{ id: string; name: string; color?: string }> }> = [];
+
+  for (const proj of jiraProjects) {
+    const statusResponse = await fetch(`${baseUrl}/project/${proj.id}/statuses`, { headers });
+    if (!statusResponse.ok) continue;
+
+    const statusData = (await statusResponse.json()) as Array<{
+      id: string;
+      statuses: Array<{
+        id: string;
+        name: string;
+        statusCategory?: { colorName?: string };
+      }>;
+    }>;
+
+    const statusMap = new Map<string, { id: string; name: string; color?: string }>();
+    for (const issueType of statusData) {
+      for (const status of issueType.statuses) {
+        if (!statusMap.has(status.id)) {
+          statusMap.set(status.id, {
+            id: status.id,
+            name: status.name,
+            color: status.statusCategory?.colorName,
+          });
+        }
+      }
+    }
+
+    results.push({
+      sourceProvider: 'JIRA',
+      externalId: proj.id,
+      name: proj.name,
+      statuses: [...statusMap.values()],
+    });
+  }
+
+  return results;
+}
+
+/**
+ * Fetches Linear teams with their workflow states for a given connection.
+ */
+async function fetchLinearProjects(
+  accessToken: string,
+): Promise<Array<{ sourceProvider: string; externalId: string; name: string; statuses: Array<{ id: string; name: string; color?: string }> }>> {
+  const data = await linearGraphQL<{
+    teams: {
+      nodes: Array<{
+        id: string;
+        name: string;
+        key: string;
+        states: {
+          nodes: Array<{
+            id: string;
+            name: string;
+            type: string;
+            color: string;
+            position: number;
+          }>;
+        };
+      }>;
+    };
+  }>(
+    accessToken,
+    `{
+      teams {
+        nodes {
+          id name key
+          states { nodes { id name type color position } }
+        }
+      }
+    }`,
+  );
+
+  return data.teams.nodes.map(team => ({
+    sourceProvider: 'LINEAR',
+    externalId: team.id,
+    name: team.name,
+    statuses: team.states.nodes.map(s => ({
+      id: s.id,
+      name: s.name,
+      color: s.color,
+    })),
+  }));
+}
+
+// ---------------------------------------------------------------------------
+// Import processing helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Processes people invitations and tracks results on the job object.
+ */
+async function processPeopleImport(
+  // biome-ignore lint/suspicious/noExplicitAny: Headers type from tRPC context
+  headers: any,
+  organizationId: string,
+  people: Array<{ email: string; role: string; skip?: boolean }>,
+  job: ImportJob,
+) {
+  const nonSkipped = people.filter(p => !p.skip);
+  for (const person of nonSkipped) {
+    try {
+      await authApi.createInvitation({
+        headers,
+        body: {
+          email: person.email,
+          role: person.role as
+            | 'admin'
+            | 'owner'
+            | 'finance_admin'
+            | 'ops_manager'
+            | 'team_manager'
+            | 'legal_compliance_viewer'
+            | 'it_admin'
+            | 'external_accountant'
+            | 'readonly',
+          organizationId,
+        },
+      });
+      job.completedItems++;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      job.failedItems.push({ email: person.email, error: message, role: person.role });
+    }
+  }
+}
+
+/**
+ * Processes project imports and tracks results on the job object.
+ */
+async function processProjectImport(
+  // biome-ignore lint/suspicious/noExplicitAny: project type from validator input schema
+  projects: any[],
+  organizationId: string,
+  createdByUserId: string | undefined,
+  job: ImportJob,
+) {
+  const nonSkipped = projects.filter((p: { skip?: boolean }) => !p.skip);
+  if (nonSkipped.length === 0) return;
+
+  try {
+    await createWorkflowTemplatesFromProjects({
+      projects: nonSkipped,
+      organizationId,
+      createdByUserId: createdByUserId ?? '',
+    });
+    job.completedItems += nonSkipped.length;
+  } catch (error) {
+    for (const proj of nonSkipped) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      job.failedItems.push({
+        email: `project:${proj.externalId}`,
+        error: message,
+        role: 'readonly',
+      });
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
 // onboardingImport Router
 // ---------------------------------------------------------------------------
 
@@ -208,106 +396,14 @@ export const onboardingImportRouter = router({
         );
 
         if (source === 'JIRA') {
-          const config = connection.configJson as ConnectionConfig;
-          if (!config?.cloudId) continue;
-
-          const baseUrl = `https://api.atlassian.com/ex/jira/${config.cloudId}/rest/api/3`;
-          const headers = {
-            Authorization: `Bearer ${credentials.accessToken}`,
-            Accept: 'application/json',
-          };
-
-          // Fetch projects
-          const projResponse = await fetch(`${baseUrl}/project`, { headers });
-          if (!projResponse.ok) continue;
-
-          const jiraProjects = (await projResponse.json()) as Array<{
-            id: string;
-            key: string;
-            name: string;
-          }>;
-
-          // Fetch statuses per project
-          for (const proj of jiraProjects) {
-            const statusResponse = await fetch(`${baseUrl}/project/${proj.id}/statuses`, {
-              headers,
-            });
-
-            if (!statusResponse.ok) continue;
-
-            const statusData = (await statusResponse.json()) as Array<{
-              id: string;
-              statuses: Array<{
-                id: string;
-                name: string;
-                statusCategory?: { colorName?: string };
-              }>;
-            }>;
-
-            // Flatten and deduplicate statuses across issue types
-            const statusMap = new Map<string, { id: string; name: string; color?: string }>();
-
-            for (const issueType of statusData) {
-              for (const status of issueType.statuses) {
-                if (!statusMap.has(status.id)) {
-                  statusMap.set(status.id, {
-                    id: status.id,
-                    name: status.name,
-                    color: status.statusCategory?.colorName,
-                  });
-                }
-              }
-            }
-
-            projects.push({
-              sourceProvider: 'JIRA',
-              externalId: proj.id,
-              name: proj.name,
-              statuses: [...statusMap.values()],
-            });
-          }
-        } else if (source === 'LINEAR') {
-          const data = await linearGraphQL<{
-            teams: {
-              nodes: Array<{
-                id: string;
-                name: string;
-                key: string;
-                states: {
-                  nodes: Array<{
-                    id: string;
-                    name: string;
-                    type: string;
-                    color: string;
-                    position: number;
-                  }>;
-                };
-              }>;
-            };
-          }>(
+          const jiraResults = await fetchJiraProjects(
             credentials.accessToken,
-            `{
-              teams {
-                nodes {
-                  id name key
-                  states { nodes { id name type color position } }
-                }
-              }
-            }`,
+            connection.configJson as ConnectionConfig,
           );
-
-          for (const team of data.teams.nodes) {
-            projects.push({
-              sourceProvider: 'LINEAR',
-              externalId: team.id,
-              name: team.name,
-              statuses: team.states.nodes.map(s => ({
-                id: s.id,
-                name: s.name,
-                color: s.color,
-              })),
-            });
-          }
+          projects.push(...jiraResults);
+        } else if (source === 'LINEAR') {
+          const linearResults = await fetchLinearProjects(credentials.accessToken);
+          projects.push(...linearResults);
         }
       }
 
@@ -339,54 +435,9 @@ export const onboardingImportRouter = router({
 
       await updateImportJob(ctx.db, ctx.organizationId, settings, job);
 
-      // Process people - create invitations
-      for (const person of nonSkippedPeople) {
-        try {
-          await authApi.createInvitation({
-            headers: ctx.headers,
-            body: {
-              email: person.email,
-              role: person.role as
-                | 'admin'
-                | 'owner'
-                | 'finance_admin'
-                | 'ops_manager'
-                | 'team_manager'
-                | 'legal_compliance_viewer'
-                | 'it_admin'
-                | 'external_accountant'
-                | 'readonly',
-              organizationId: ctx.organizationId,
-            },
-          });
-          job.completedItems++;
-        } catch (error) {
-          const message = error instanceof Error ? error.message : 'Unknown error';
-          job.failedItems.push({ email: person.email, error: message, role: person.role });
-        }
-      }
-
-      // Process projects - create workflow templates
-      if (nonSkippedProjects.length > 0) {
-        try {
-          await createWorkflowTemplatesFromProjects({
-            projects: nonSkippedProjects,
-            organizationId: ctx.organizationId,
-            createdByUserId: ctx.user?.id,
-          });
-          job.completedItems += nonSkippedProjects.length;
-        } catch (error) {
-          // Count project failures individually
-          for (const proj of nonSkippedProjects) {
-            const message = error instanceof Error ? error.message : 'Unknown error';
-            job.failedItems.push({
-              email: `project:${proj.externalId}`,
-              error: message,
-              role: 'readonly',
-            });
-          }
-        }
-      }
+      // Process people and projects
+      await processPeopleImport(ctx.headers, ctx.organizationId, input.people, job);
+      await processProjectImport(input.projects, ctx.organizationId, ctx.user?.id, job);
 
       // Determine final status
       if (job.failedItems.length === totalItems) {
@@ -450,7 +501,13 @@ export const onboardingImportRouter = router({
       }
 
       // Retry the invitation with the original role
-      const failedItem = job.failedItems[failedIndex]!;
+      const failedItem = job.failedItems[failedIndex];
+      if (!failedItem) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: `Failed item at index ${failedIndex} not found`,
+        });
+      }
       try {
         await authApi.createInvitation({
           headers: ctx.headers,
@@ -481,7 +538,8 @@ export const onboardingImportRouter = router({
         const message = error instanceof Error ? error.message : 'Unknown error';
 
         // Update the error message
-        job.failedItems[failedIndex]!.error = message;
+        const failedEntry = job.failedItems[failedIndex];
+        if (failedEntry) failedEntry.error = message;
         await updateImportJob(ctx.db, ctx.organizationId, settings, job);
 
         return { success: false, error: message };

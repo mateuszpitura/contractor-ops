@@ -96,7 +96,7 @@ export class ResendAdapter extends BaseAdapter {
 
 function parseOrgSlugFromEmail(toAddress: string): string | null {
   const bracketMatch = toAddress.match(/<([^>]+)>/);
-  const email = bracketMatch ? bracketMatch[1]! : toAddress.trim();
+  const email = bracketMatch ? (bracketMatch[1] ?? toAddress.trim()) : toAddress.trim();
 
   const atIndex = email.indexOf('@');
   if (atIndex === -1) return null;

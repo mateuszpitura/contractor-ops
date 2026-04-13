@@ -59,7 +59,7 @@ describe('ConfluenceAdapter', () => {
     const out = await adapter.exchangeCodeForTokens('code', 'http://localhost/cb');
 
     expect(out.accessToken).toBe('at');
-    const [, init] = fetchMock.mock.calls[0]!;
+    const [, init] = fetchMock.mock.calls[0];
     const body = JSON.parse((init as RequestInit).body as string);
     expect(body.grant_type).toBe('authorization_code');
     expect(body.client_id).toBe('cid');
@@ -118,7 +118,7 @@ describe('ConfluenceAdapter', () => {
       scope: 'x',
     });
 
-    const [, init] = fetchMock.mock.calls[0]!;
+    const [, init] = fetchMock.mock.calls[0];
     const body = JSON.parse((init as RequestInit).body as string);
     expect(body.grant_type).toBe('refresh_token');
   });

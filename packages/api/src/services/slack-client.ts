@@ -355,7 +355,7 @@ export async function syncWorkspaceUsers(
           entityType: 'ORGANIZATION',
           entityId: user.id,
           externalType: 'SLACK_USER',
-          externalId: member.id!,
+          externalId: member.id ?? '',
           metadataJson: {
             displayName: member.profile?.display_name ?? member.real_name ?? null,
           },

@@ -93,6 +93,43 @@ function deriveBaseUrl(headers: Headers): string {
 // Activity log types
 // ---------------------------------------------------------------------------
 
+/**
+ * Extracts the most recent status event from an invoice's timestamp fields.
+ */
+function extractLatestInvoiceEvent(inv: {
+  invoiceNumber: string | null;
+  receivedAt: Date | null;
+  reviewedAt: Date | null;
+  approvedAt: Date | null;
+  paidAt: Date | null;
+  rejectedAt: Date | null;
+  rejectionReason: string | null;
+}): ActivityEntry | null {
+  const events: { ts: Date; event: string; detail?: string | null }[] = [];
+
+  if (inv.paidAt)
+    events.push({ ts: inv.paidAt, event: `Invoice ${inv.invoiceNumber} - Payment completed` });
+  if (inv.rejectedAt)
+    events.push({
+      ts: inv.rejectedAt,
+      event: `Invoice ${inv.invoiceNumber} - Invoice rejected`,
+      detail: inv.rejectionReason,
+    });
+  if (inv.approvedAt)
+    events.push({ ts: inv.approvedAt, event: `Invoice ${inv.invoiceNumber} - Invoice approved` });
+  if (inv.reviewedAt)
+    events.push({ ts: inv.reviewedAt, event: `Invoice ${inv.invoiceNumber} - Under review` });
+  if (inv.receivedAt)
+    events.push({ ts: inv.receivedAt, event: `Invoice ${inv.invoiceNumber} - Invoice submitted` });
+
+  if (events.length === 0) return null;
+
+  events.sort((a, b) => b.ts.getTime() - a.ts.getTime());
+  const latest = events[0];
+  if (!latest) return null;
+  return { timestamp: latest.ts, event: latest.event, detail: latest.detail };
+}
+
 export interface ActivityEntry {
   timestamp: Date;
   event: string;
@@ -152,7 +189,8 @@ export const portalRouter = router({
 
       // Single org -- auto-create session
       if (contractors.length === 1) {
-        const c = contractors[0]!;
+        const c = contractors[0];
+        if (!c) throw new TRPCError({ code: 'NOT_FOUND' });
         const ipAddress = ctx.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? undefined;
         const userAgent = ctx.headers.get('user-agent') ?? undefined;
 
@@ -330,7 +368,7 @@ export const portalRouter = router({
     if (nextUnpaidInvoice?.dueDate) candidates.push(nextUnpaidInvoice.dueDate);
     if (nextExpiringContract?.endDate) candidates.push(nextExpiringContract.endDate);
     if (candidates.length > 0) {
-      upcomingDeadline = candidates.sort((a, b) => a.getTime() - b.getTime())[0]!;
+      upcomingDeadline = candidates.sort((a, b) => a.getTime() - b.getTime())[0] ?? null;
     }
 
     // Recent activity: last 5 invoices with their status-derived events
@@ -352,39 +390,8 @@ export const portalRouter = router({
 
     const recentActivity: ActivityEntry[] = [];
     for (const inv of recentInvoices) {
-      // Pick the most recent event for each invoice
-      const events: { ts: Date; event: string; detail?: string | null }[] = [];
-      if (inv.paidAt)
-        events.push({ ts: inv.paidAt, event: `Invoice ${inv.invoiceNumber} - Payment completed` });
-      if (inv.rejectedAt)
-        events.push({
-          ts: inv.rejectedAt,
-          event: `Invoice ${inv.invoiceNumber} - Invoice rejected`,
-          detail: inv.rejectionReason,
-        });
-      if (inv.approvedAt)
-        events.push({
-          ts: inv.approvedAt,
-          event: `Invoice ${inv.invoiceNumber} - Invoice approved`,
-        });
-      if (inv.reviewedAt)
-        events.push({ ts: inv.reviewedAt, event: `Invoice ${inv.invoiceNumber} - Under review` });
-      if (inv.receivedAt)
-        events.push({
-          ts: inv.receivedAt,
-          event: `Invoice ${inv.invoiceNumber} - Invoice submitted`,
-        });
-
-      // Take the most recent event per invoice
-      if (events.length > 0) {
-        events.sort((a, b) => b.ts.getTime() - a.ts.getTime());
-        const latest = events[0]!;
-        recentActivity.push({
-          timestamp: latest.ts,
-          event: latest.event,
-          detail: latest.detail,
-        });
-      }
+      const entry = extractLatestInvoiceEvent(inv);
+      if (entry) recentActivity.push(entry);
     }
 
     return plain({

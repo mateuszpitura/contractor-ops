@@ -60,7 +60,7 @@ export function isValidUstIdNr(raw: string): boolean {
   if (!m) return false;
   const digits = m[1]?.split('').map(Number);
   const body = digits.slice(0, 8);
-  const check = digits[8]!;
+  const check = digits[8] ?? 0;
   return mod11_10CheckDigit(body) === check;
 }
 
@@ -106,7 +106,7 @@ export function isValidSvNummer(raw: string): boolean {
   const expanded = (areaAndDob + expandedLetter + serialAndCheck.slice(0, 2)).split('').map(Number);
   const checkDigit = Number(serialAndCheck[2]);
 
-  const sum = SV_WEIGHTS.reduce((acc, w, i) => acc + digitSum(w * expanded[i]!), 0);
+  const sum = SV_WEIGHTS.reduce((acc, w, i) => acc + digitSum(w * (expanded[i] ?? 0)), 0);
 
   return sum % 10 === checkDigit;
 }

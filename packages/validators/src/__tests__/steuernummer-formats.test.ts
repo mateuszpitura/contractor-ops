@@ -160,7 +160,7 @@ describe('HANDELSREGISTER_COURTS', () => {
 
   it('is typed as readonly HandelsregisterCourt[]', () => {
     // Type-only assertion: array shape should include expected keys
-    const first: HandelsregisterCourt = HANDELSREGISTER_COURTS[0]!;
+    const first: HandelsregisterCourt = HANDELSREGISTER_COURTS[0];
     expect(first).toHaveProperty('code');
     expect(first).toHaveProperty('name');
     expect(first).toHaveProperty('state');

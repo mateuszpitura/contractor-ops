@@ -55,7 +55,7 @@ export async function createWhtCertificate(params: {
       paymentRunItemId,
       certificateNumber,
       grossAmountMinor: item.grossAmountMinor ?? item.amountMinor,
-      whtRate: item.whtRate!,
+      whtRate: item.whtRate ?? 0,
       whtAmountMinor: item.whtAmountMinor,
       netAmountMinor: item.amountMinor,
       currency: item.currency,

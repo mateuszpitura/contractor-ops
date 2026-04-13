@@ -11,7 +11,7 @@ function mockFetch(
   const fn = vi.fn();
   let i = 0;
   fn.mockImplementation(() => {
-    const r = responses[i] ?? responses[responses.length - 1]!;
+    const r = responses[i] ?? responses[responses.length - 1];
     i += 1;
     return Promise.resolve({
       ok: r.ok,
@@ -80,7 +80,7 @@ describe('GoogleWorkspaceAdapter', () => {
 
       expect(out.accessToken).toBe('at');
       expect(out.refreshToken).toBe('rt');
-      const [, init] = fetchMock.mock.calls[0]!;
+      const [, init] = fetchMock.mock.calls[0];
       const body = JSON.parse((init as RequestInit).body as string);
       expect(body.client_id).toBe('gw-id');
       expect(body.grant_type).toBe('authorization_code');
@@ -127,7 +127,7 @@ describe('GoogleWorkspaceAdapter', () => {
 
       expect(out.accessToken).toBe('new-at');
       expect(out.refreshToken).toBe('rt-keep');
-      const [, init] = fetchMock.mock.calls[0]!;
+      const [, init] = fetchMock.mock.calls[0];
       const body = JSON.parse((init as RequestInit).body as string);
       expect(body.grant_type).toBe('refresh_token');
     });

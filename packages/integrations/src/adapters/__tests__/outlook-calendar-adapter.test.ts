@@ -60,7 +60,7 @@ describe('OutlookCalendarAdapter', () => {
     const out = await adapter.exchangeCodeForTokens('code', 'http://localhost/cb');
 
     expect(out.accessToken).toBe('at');
-    const [, init] = fetchMock.mock.calls[0]!;
+    const [, init] = fetchMock.mock.calls[0];
     expect((init as RequestInit).headers).toMatchObject({
       'Content-Type': 'application/x-www-form-urlencoded',
     });
@@ -133,7 +133,7 @@ describe('OutlookCalendarAdapter', () => {
       scope: 'x',
     });
 
-    const [, init] = fetchMock.mock.calls[0]!;
+    const [, init] = fetchMock.mock.calls[0];
     const body = new URLSearchParams((init as RequestInit).body as string);
     expect(body.get('grant_type')).toBe('refresh_token');
   });
@@ -191,7 +191,7 @@ describe('OutlookCalendarAdapter', () => {
       attendees: ['x@example.com'],
     });
 
-    const [, init] = fetchMock.mock.calls[0]!;
+    const [, init] = fetchMock.mock.calls[0];
     const body = JSON.parse((init as RequestInit).body as string);
     expect(body.body).toEqual({
       contentType: 'HTML',
@@ -215,7 +215,7 @@ describe('OutlookCalendarAdapter', () => {
       endDateTime: '2026-04-04T11:00:00.000Z',
     });
 
-    const [, init] = fetchMock.mock.calls[0]!;
+    const [, init] = fetchMock.mock.calls[0];
     const body = JSON.parse((init as RequestInit).body as string);
     expect(body.start).toEqual({
       dateTime: '2026-04-04T10:00:00.000Z',
@@ -267,7 +267,7 @@ describe('OutlookCalendarAdapter', () => {
     const out = await adapter.updateEvent('tok', 'evt-upd', { subject: 'New title' });
 
     expect(out.eventId).toBe('evt-upd');
-    const [url, init] = fetchMock.mock.calls[0]!;
+    const [url, init] = fetchMock.mock.calls[0];
     expect(url).toBe('https://graph.microsoft.com/v1.0/me/calendar/events/evt-upd');
     expect((init as RequestInit).method).toBe('PATCH');
     const body = JSON.parse((init as RequestInit).body as string);
@@ -293,7 +293,7 @@ describe('OutlookCalendarAdapter', () => {
 
     await adapter.deleteEvent('tok', 'evt-to-delete');
 
-    const [url, init] = fetchMock.mock.calls[0]!;
+    const [url, init] = fetchMock.mock.calls[0];
     expect(url).toBe('https://graph.microsoft.com/v1.0/me/calendar/events/evt-to-delete');
     expect((init as RequestInit).method).toBe('DELETE');
   });

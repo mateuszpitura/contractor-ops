@@ -42,10 +42,10 @@ export function isValidUtr(raw: string): boolean {
   const utr = raw.replace(/[\s-]/g, '').replace(/K$/i, '');
   if (!/^\d{10}$/.test(utr)) return false;
   const digits = utr.split('').map(Number);
-  const checkDigit = digits[0]!;
-  const sum = UTR_WEIGHTS.reduce((acc, w, i) => acc + w * digits[i + 1]!, 0);
+  const checkDigit = digits[0] ?? 0;
+  const sum = UTR_WEIGHTS.reduce((acc, w, i) => acc + w * (digits[i + 1] ?? 0), 0);
   const remainder = sum % 11;
-  const expected = UTR_CHECK_LOOKUP[remainder]!;
+  const expected = UTR_CHECK_LOOKUP[remainder] ?? -1;
   return checkDigit === expected;
 }
 
@@ -86,10 +86,10 @@ export function isValidGbVat(raw: string): boolean {
   if (/^GBHA[0-4]\d{2}$/.test(vat)) return true;
   const match = vat.match(/^GB(\d{9})(?:\d{3})?$/);
   if (!match) return false;
-  const body = match[1]!;
+  const body = match[1] ?? '';
   const digits = body.split('').map(Number);
-  const check = digits[7]! * 10 + digits[8]!;
-  const weighted = VAT_WEIGHTS.reduce((sum, w, i) => sum + w * digits[i]!, 0);
+  const check = (digits[7] ?? 0) * 10 + (digits[8] ?? 0);
+  const weighted = VAT_WEIGHTS.reduce((sum, w, i) => sum + w * (digits[i] ?? 0), 0);
   const mod97 = (97 - (weighted % 97)) % 97;
   const mod9755 = (97 - ((weighted + 55) % 97)) % 97;
   return check === mod97 || check === mod9755;

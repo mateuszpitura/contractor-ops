@@ -61,7 +61,7 @@ describe('SlackAdapter', () => {
       expect(blob.accessToken).toBe('xoxb-123');
       expect(blob.extra).toMatchObject({ teamId: 'T1', teamName: 'Team' });
 
-      const [url, opts] = fetchMock.mock.calls[0]!;
+      const [url, opts] = fetchMock.mock.calls[0];
       expect(url).toBe('https://slack.com/api/oauth.v2.access');
       expect(opts.method).toBe('POST');
       const body = new URLSearchParams(opts.body as string);

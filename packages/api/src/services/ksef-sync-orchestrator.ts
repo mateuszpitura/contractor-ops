@@ -109,9 +109,9 @@ export async function processKsefSync(params: {
       // -----------------------------------------------------------------------
 
       const dateFrom = connection.lastSuccessAt
-        ? connection.lastSuccessAt.toISOString().split('T')[0]!
-        : new Date(Date.now() - 90 * 24 * 3600 * 1000).toISOString().split('T')[0]!;
-      const dateTo = new Date().toISOString().split('T')[0]!;
+        ? (connection.lastSuccessAt.toISOString().split('T')[0] ?? '')
+        : (new Date(Date.now() - 90 * 24 * 3600 * 1000).toISOString().split('T')[0] ?? '');
+      const dateTo = new Date().toISOString().split('T')[0] ?? '';
 
       // -----------------------------------------------------------------------
       // Step 5: Query invoices from KSeF
@@ -152,7 +152,7 @@ export async function processKsefSync(params: {
           // Compute duplicate check hash
           const hash = computeDuplicateCheckHash(
             fields.invoiceNumber,
-            fields.sellerTaxId!,
+            fields.sellerTaxId ?? '',
             fields.totalMinor,
           );
 
@@ -161,7 +161,7 @@ export async function processKsefSync(params: {
             db,
             params.organizationId,
             fields.invoiceNumber,
-            fields.sellerTaxId!,
+            fields.sellerTaxId ?? '',
           );
 
           // Create Invoice record

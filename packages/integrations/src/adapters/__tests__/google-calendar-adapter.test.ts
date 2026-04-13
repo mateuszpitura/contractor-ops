@@ -60,7 +60,7 @@ describe('GoogleCalendarAdapter', () => {
     const out = await adapter.exchangeCodeForTokens('code', 'http://localhost/cb');
 
     expect(out.accessToken).toBe('at');
-    const [url, init] = fetchMock.mock.calls[0]!;
+    const [url, init] = fetchMock.mock.calls[0];
     expect(url).toBe('https://oauth2.googleapis.com/token');
     expect((init as RequestInit).headers).toMatchObject({
       'Content-Type': 'application/json',
@@ -108,7 +108,7 @@ describe('GoogleCalendarAdapter', () => {
       scope: 'cal',
     });
 
-    const [, init] = fetchMock.mock.calls[0]!;
+    const [, init] = fetchMock.mock.calls[0];
     const body = JSON.parse((init as RequestInit).body as string);
     expect(body.grant_type).toBe('refresh_token');
     expect(body.refresh_token).toBe('rt');
@@ -203,7 +203,7 @@ describe('GoogleCalendarAdapter', () => {
       attendees: ['a@example.com', 'b@example.com'],
     });
 
-    const [, init] = fetchMock.mock.calls[0]!;
+    const [, init] = fetchMock.mock.calls[0];
     const parsed = JSON.parse((init as RequestInit).body as string);
     expect(parsed.attendees).toEqual([{ email: 'a@example.com' }, { email: 'b@example.com' }]);
   });
@@ -258,7 +258,7 @@ describe('GoogleCalendarAdapter', () => {
 
     await adapter.updateEvent('tok', 'evt-1', { summary: 'Updated' }, '"oldetag"');
 
-    const [, init] = fetchMock.mock.calls[0]!;
+    const [, init] = fetchMock.mock.calls[0];
     expect((init as RequestInit).method).toBe('PATCH');
     expect((init as RequestInit).headers).toMatchObject({
       'If-Match': '"oldetag"',
@@ -284,7 +284,7 @@ describe('GoogleCalendarAdapter', () => {
 
     await adapter.deleteEvent('tok', 'evt-del');
 
-    const [url, init] = fetchMock.mock.calls[0]!;
+    const [url, init] = fetchMock.mock.calls[0];
     expect(url).toBe('https://www.googleapis.com/calendar/v3/calendars/primary/events/evt-del');
     expect((init as RequestInit).method).toBe('DELETE');
   });

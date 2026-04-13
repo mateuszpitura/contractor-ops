@@ -366,7 +366,7 @@ async function softFail(args: SoftFailArgs): Promise<TaxIdValidationResult> {
         input,
         apiProvider,
         responseStatus: 'stale',
-        confirmationRef: prior!.confirmationRef,
+        confirmationRef: prior?.confirmationRef ?? null,
         responseBody,
         errorMessage,
         source: 'stale-cache',

@@ -113,7 +113,7 @@ describe('AutentiAdapter', () => {
       scope: 'x',
     });
 
-    const [, init] = fetchMock.mock.calls[0]!;
+    const [, init] = fetchMock.mock.calls[0];
     const body = new URLSearchParams((init as RequestInit).body as string);
     expect(body.get('grant_type')).toBe('refresh_token');
   });

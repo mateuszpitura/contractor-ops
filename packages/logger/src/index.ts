@@ -1,3 +1,4 @@
+// biome-ignore lint/performance/noBarrelFile: package entry point
 import type { DestinationStream, Logger, LoggerOptions } from 'pino';
 import pino from 'pino';
 import { PII_MASK_PATHS } from './pii-mask.js';
@@ -82,7 +83,7 @@ function createRootLogger(): Logger {
       const { createAxiomStream } = require('./axiom-stream.js');
       streams.push({
         level: baseOptions.level as pino.Level,
-        stream: createAxiomStream({ dataset: axiomDataset!, token: axiomToken! }),
+        stream: createAxiomStream({ dataset: axiomDataset as string, token: axiomToken as string }),
       });
     } catch {
       // Axiom stream failed to initialize — continue with stdout only.

@@ -38,6 +38,113 @@ import {
 } from './workflow-shared.js';
 
 // ---------------------------------------------------------------------------
+// Integration eligibility helpers
+// ---------------------------------------------------------------------------
+
+interface IntegrationEligibility {
+  jiraEligibleTaskRunIds: Set<string>;
+  linearEligibleTaskRuns: Map<string, { teamId: string; teamKey: string }>;
+  calendarConfigMap: Map<string, import('@contractor-ops/validators').CalendarTaskConfig>;
+  equipmentEligibleTaskRunIds: Set<string>;
+}
+
+/**
+ * Scans template tasks and builds maps of which task run IDs are eligible
+ * for Jira, Linear, Calendar, and Equipment integrations.
+ */
+function buildIntegrationEligibility(
+  templateTasks: Array<{
+    id: string;
+    taskType: string;
+    configJson: unknown;
+  }>,
+  taskIdMap: Map<string, string>,
+): IntegrationEligibility {
+  const jiraEligibleTaskRunIds = new Set<string>();
+  const linearEligibleTaskRuns = new Map<string, { teamId: string; teamKey: string }>();
+  const calendarConfigMap = new Map<string, import('@contractor-ops/validators').CalendarTaskConfig>();
+  const equipmentEligibleTaskRunIds = new Set<string>();
+
+  for (const taskTemplate of templateTasks) {
+    const runId = taskIdMap.get(taskTemplate.id);
+    if (!runId) continue;
+
+    // Jira
+    const jiraParsed = jiraTaskConfigSchema.safeParse(taskTemplate.configJson);
+    if (jiraParsed.success && jiraParsed.data.jiraEnabled) {
+      jiraEligibleTaskRunIds.add(runId);
+    }
+
+    // Linear
+    const linearParsed = linearTaskConfigSchema.safeParse(taskTemplate.configJson);
+    if (
+      linearParsed.success &&
+      linearParsed.data.linearEnabled &&
+      linearParsed.data.linearTeamId
+    ) {
+      linearEligibleTaskRuns.set(runId, {
+        teamId: linearParsed.data.linearTeamId,
+        teamKey: linearParsed.data.linearTeamKey ?? '',
+      });
+    }
+
+    // Calendar
+    const calParsed = calendarTaskConfigSchema.safeParse(taskTemplate.configJson);
+    if (calParsed.success && calParsed.data.calendarEnabled) {
+      calendarConfigMap.set(runId, calParsed.data);
+    }
+
+    // Equipment
+    if (taskTemplate.taskType === 'EQUIPMENT') {
+      const eqParsed = equipmentTaskConfigSchema.safeParse(taskTemplate.configJson);
+      if (!eqParsed.success || eqParsed.data.equipmentEnabled !== false) {
+        equipmentEligibleTaskRunIds.add(runId);
+      }
+    }
+  }
+
+  return { jiraEligibleTaskRunIds, linearEligibleTaskRuns, calendarConfigMap, equipmentEligibleTaskRunIds };
+}
+
+/**
+ * Fire-and-forget: syncs task status to external Jira and Linear integrations.
+ */
+function syncTaskToExternalSystems(
+  db: Parameters<typeof workflowExecutionRouter>[0] extends never ? never : any,
+  organizationId: string,
+  task: { id: string; externalRefType: string | null; externalRefId: string | null },
+  targetStatus: string,
+) {
+  if (task.externalRefType === 'JIRA_ISSUE' && task.externalRefId) {
+    void (async () => {
+      try {
+        const { transitionJiraIssue } = await import('../services/jira-issue-sync.js');
+        const connection = await db.integrationConnection.findFirst({
+          where: { organizationId, provider: 'JIRA', status: 'CONNECTED' },
+          select: { id: true },
+        });
+        if (connection) {
+          await transitionJiraIssue(db, organizationId, connection.id, task.id, targetStatus);
+        }
+      } catch (err) {
+        console.error(`[workflow] Outbound Jira transition failed for ${task.id}:`, err);
+      }
+    })();
+  }
+
+  if (task.externalRefType === 'LINEAR_ISSUE' && task.externalRefId) {
+    void (async () => {
+      try {
+        const { syncTaskStatusToLinear } = await import('../services/linear-issue-sync.js');
+        await syncTaskStatusToLinear(db, task.id, targetStatus);
+      } catch (err) {
+        console.error(`[workflow] Outbound Linear sync failed for ${task.id}:`, err);
+      }
+    })();
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Workflow Execution sub-router
 // ---------------------------------------------------------------------------
 
@@ -204,65 +311,13 @@ export const workflowExecutionRouter = router({
           },
         });
 
-        // Build set of task run IDs eligible for Jira issue creation
-        const jiraEligibleTaskRunIds = new Set<string>();
-        for (const taskTemplate of template.tasks) {
-          const parsed = jiraTaskConfigSchema.safeParse(taskTemplate.configJson);
-          if (parsed.success && parsed.data.jiraEnabled) {
-            const runId = taskIdMap.get(taskTemplate.id);
-            if (runId) {
-              jiraEligibleTaskRunIds.add(runId);
-            }
-          }
-        }
-
-        // Build map of task run IDs eligible for Linear issue creation
-        const linearEligibleTaskRuns = new Map<string, { teamId: string; teamKey: string }>();
-        for (const taskTemplate of template.tasks) {
-          const linearParsed = linearTaskConfigSchema.safeParse(taskTemplate.configJson);
-          if (
-            linearParsed.success &&
-            linearParsed.data.linearEnabled &&
-            linearParsed.data.linearTeamId
-          ) {
-            const runId = taskIdMap.get(taskTemplate.id);
-            if (runId) {
-              linearEligibleTaskRuns.set(runId, {
-                teamId: linearParsed.data.linearTeamId,
-                teamKey: linearParsed.data.linearTeamKey ?? '',
-              });
-            }
-          }
-        }
-
-        // Build map of task run IDs to their calendar config for calendar event creation
-        const calendarConfigMap = new Map<
-          string,
-          import('@contractor-ops/validators').CalendarTaskConfig
-        >();
-        for (const taskTemplate of template.tasks) {
-          const parsed = calendarTaskConfigSchema.safeParse(taskTemplate.configJson);
-          if (parsed.success && parsed.data.calendarEnabled) {
-            const runId = taskIdMap.get(taskTemplate.id);
-            if (runId) {
-              calendarConfigMap.set(runId, parsed.data);
-            }
-          }
-        }
-
-        // Build set of task run IDs eligible for equipment workflow hook
-        const equipmentEligibleTaskRunIds = new Set<string>();
-        for (const taskTemplate of template.tasks) {
-          if (taskTemplate.taskType === 'EQUIPMENT') {
-            const parsed = equipmentTaskConfigSchema.safeParse(taskTemplate.configJson);
-            if (!parsed.success || parsed.data.equipmentEnabled !== false) {
-              const runId = taskIdMap.get(taskTemplate.id);
-              if (runId) {
-                equipmentEligibleTaskRunIds.add(runId);
-              }
-            }
-          }
-        }
+        // Build integration eligibility maps for all task templates
+        const {
+          jiraEligibleTaskRunIds,
+          linearEligibleTaskRuns,
+          calendarConfigMap,
+          equipmentEligibleTaskRunIds,
+        } = buildIntegrationEligibility(template.tasks, taskIdMap);
 
         return {
           run: fullRun,
@@ -283,7 +338,7 @@ export const workflowExecutionRouter = router({
         dispatch({
           organizationId: ctx.organizationId,
           type: 'TASK_ASSIGNED',
-          recipientUserIds: [task.assigneeUserId!],
+          recipientUserIds: [task.assigneeUserId as string],
           title: `Task assigned: ${task.title}`,
           body: `Workflow: ${run.run.workflowTemplate.name} for ${run.contractorName}`,
           entityType: 'WORKFLOW_RUN',
@@ -483,47 +538,8 @@ export const workflowExecutionRouter = router({
       // Fire-and-forget outbound sync for cancelled tasks with external links
       // Per D-09/D-10: Linear and Jira always reflect real task state
       const cancelledTasks = run.tasks.filter(t => t.status === 'CANCELLED');
-
       for (const task of cancelledTasks) {
-        // Outbound Jira transition (same pattern as completeTask/skipTask)
-        if (task.externalRefType === 'JIRA_ISSUE' && task.externalRefId) {
-          void (async () => {
-            try {
-              const { transitionJiraIssue } = await import('../services/jira-issue-sync.js');
-              const connection = await ctx.db.integrationConnection.findFirst({
-                where: {
-                  organizationId: ctx.organizationId,
-                  provider: 'JIRA',
-                  status: 'CONNECTED',
-                },
-                select: { id: true },
-              });
-              if (connection) {
-                await transitionJiraIssue(
-                  ctx.db,
-                  ctx.organizationId,
-                  connection.id,
-                  task.id,
-                  'CANCELLED',
-                );
-              }
-            } catch (err) {
-              console.error('[workflow/cancelRun] Outbound Jira transition failed:', err);
-            }
-          })();
-        }
-
-        // Outbound Linear sync (same pattern as completeTask/skipTask)
-        if (task.externalRefType === 'LINEAR_ISSUE' && task.externalRefId) {
-          void (async () => {
-            try {
-              const { syncTaskStatusToLinear } = await import('../services/linear-issue-sync.js');
-              await syncTaskStatusToLinear(ctx.db, task.id, 'CANCELLED');
-            } catch (err) {
-              console.error('[workflow/cancelRun] Outbound Linear sync failed:', err);
-            }
-          })();
-        }
+        syncTaskToExternalSystems(ctx.db, ctx.organizationId, task, 'CANCELLED');
       }
 
       void invalidateByPrefix(CacheKeys.dashboardPrefix(ctx.organizationId));
@@ -800,43 +816,8 @@ export const workflowExecutionRouter = router({
         return updated;
       });
 
-      // Fire-and-forget outbound Jira transition (non-blocking)
-      if (result.externalRefType === 'JIRA_ISSUE' && result.externalRefId) {
-        void (async () => {
-          try {
-            const { transitionJiraIssue } = await import('../services/jira-issue-sync.js');
-            const connection = await ctx.db.integrationConnection.findFirst({
-              where: {
-                organizationId: ctx.organizationId,
-                provider: 'JIRA',
-                status: 'CONNECTED',
-              },
-              select: { id: true },
-            });
-            if (connection) {
-              await transitionJiraIssue(
-                ctx.db,
-                ctx.organizationId,
-                connection.id,
-                result.id,
-                'DONE',
-              );
-            }
-          } catch (err) {
-            console.error('[workflow/completeTask] Outbound Jira transition failed:', err);
-          }
-        })();
-      }
-
-      // Fire-and-forget outbound Linear sync (non-blocking)
-      void (async () => {
-        try {
-          const { syncTaskStatusToLinear } = await import('../services/linear-issue-sync.js');
-          await syncTaskStatusToLinear(ctx.db, result.id, 'DONE');
-        } catch (err) {
-          console.error('[workflow/completeTask] Outbound Linear sync failed:', err);
-        }
-      })();
+      // Fire-and-forget outbound sync to Jira and Linear
+      syncTaskToExternalSystems(ctx.db, ctx.organizationId, result, 'DONE');
 
       void invalidateByPrefix(CacheKeys.dashboardPrefix(ctx.organizationId));
 
@@ -911,43 +892,8 @@ export const workflowExecutionRouter = router({
         return updated;
       });
 
-      // Fire-and-forget outbound Jira transition (non-blocking)
-      if (result.externalRefType === 'JIRA_ISSUE' && result.externalRefId) {
-        void (async () => {
-          try {
-            const { transitionJiraIssue } = await import('../services/jira-issue-sync.js');
-            const connection = await ctx.db.integrationConnection.findFirst({
-              where: {
-                organizationId: ctx.organizationId,
-                provider: 'JIRA',
-                status: 'CONNECTED',
-              },
-              select: { id: true },
-            });
-            if (connection) {
-              await transitionJiraIssue(
-                ctx.db,
-                ctx.organizationId,
-                connection.id,
-                result.id,
-                'SKIPPED',
-              );
-            }
-          } catch (err) {
-            console.error('[workflow/skipTask] Outbound Jira transition failed:', err);
-          }
-        })();
-      }
-
-      // Fire-and-forget outbound Linear sync (non-blocking)
-      void (async () => {
-        try {
-          const { syncTaskStatusToLinear } = await import('../services/linear-issue-sync.js');
-          await syncTaskStatusToLinear(ctx.db, result.id, 'SKIPPED');
-        } catch (err) {
-          console.error('[workflow/skipTask] Outbound Linear sync failed:', err);
-        }
-      })();
+      // Fire-and-forget outbound sync to Jira and Linear
+      syncTaskToExternalSystems(ctx.db, ctx.organizationId, result, 'SKIPPED');
 
       void invalidateByPrefix(CacheKeys.dashboardPrefix(ctx.organizationId));
 

@@ -62,7 +62,7 @@ describe('NotionAdapter', () => {
     const out = await adapter.exchangeCodeForTokens('code', 'http://localhost/cb');
 
     expect(out.accessToken).toBe('secret_token');
-    const [, init] = fetchMock.mock.calls[0]!;
+    const [, init] = fetchMock.mock.calls[0];
     const headers = (init as RequestInit).headers as Record<string, string>;
     expect(headers.Authorization).toBe(`Basic ${Buffer.from('nid:nsec').toString('base64')}`);
     const body = JSON.parse((init as RequestInit).body as string);
@@ -86,7 +86,7 @@ describe('NotionAdapter', () => {
       tokenType: 'bearer',
     });
 
-    const [, init] = fetchMock.mock.calls[0]!;
+    const [, init] = fetchMock.mock.calls[0];
     const body = JSON.parse((init as RequestInit).body as string);
     expect(body.grant_type).toBe('refresh_token');
     expect(body.refresh_token).toBe('rt');
@@ -175,7 +175,7 @@ describe('NotionAdapter', () => {
     const rows = await adapter.searchPages('tok', 'invoice');
 
     expect(fetchMock.mock.calls[0]?.[0]).toBe('https://api.notion.com/v1/search');
-    const [, init] = fetchMock.mock.calls[0]!;
+    const [, init] = fetchMock.mock.calls[0];
     const headers = (init as RequestInit).headers as Record<string, string>;
     expect(headers['Notion-Version']).toBe('2022-06-28');
     const body = JSON.parse((init as RequestInit).body as string);

@@ -11,7 +11,7 @@ function mockFetchSequential(
   const fn = vi.fn();
   let i = 0;
   fn.mockImplementation(() => {
-    const r = responses[i]!;
+    const r = responses[i];
     if (!r) {
       throw new Error(`mockFetchSequential: no response at index ${i}`);
     }
