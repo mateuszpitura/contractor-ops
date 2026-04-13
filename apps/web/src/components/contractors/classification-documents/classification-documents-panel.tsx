@@ -7,6 +7,7 @@
 import { useTranslations } from 'next-intl';
 
 import { DocumentHistoryList } from './document-history-list';
+import { GenerateDrvBundleButton } from './generate-drv-bundle-button';
 import { GenerateSdsButton } from './generate-sds-button';
 
 interface ClassificationDocumentsPanelProps {
@@ -16,17 +17,27 @@ interface ClassificationDocumentsPanelProps {
   countryCode: string | null;
   /** Latest completed ClassificationAssessment id for this engagement, if any. */
   completedAssessmentId: string | null;
+  /** Whether the contractor has signed the other-client attestation (gates DRV bundle button). */
+  attestationSigned?: boolean;
 }
 
 export function ClassificationDocumentsPanel({
   engagementId,
   countryCode,
   completedAssessmentId,
+  attestationSigned,
 }: ClassificationDocumentsPanelProps) {
   const t = useTranslations('Classification.documents');
 
   const isGb = countryCode === 'GB';
+  const isDe = countryCode === 'DE';
   const canGenerateSds = Boolean(isGb && completedAssessmentId);
+  const canGenerateDrv = Boolean(isDe && completedAssessmentId && attestationSigned);
+  const drvDisabledReason = !completedAssessmentId
+    ? t('drvDisabledNeedAssessment')
+    : !attestationSigned
+      ? t('drvDisabledNeedAttestation')
+      : null;
 
   return (
     <section
@@ -41,27 +52,57 @@ export function ClassificationDocumentsPanel({
       </header>
 
       <div className="flex flex-col gap-4">
-        {canGenerateSds && completedAssessmentId ? (
-          <GenerateSdsButton classificationAssessmentId={completedAssessmentId} />
-        ) : (
-          <div>
-            <button
-              type="button"
-              disabled
-              aria-disabled="true"
-              aria-describedby="generate-sds-disabled-reason"
-              className="inline-flex items-center rounded-md border bg-muted px-4 py-2 text-sm text-muted-foreground"
-            >
-              {t('generateSds')}
-            </button>
-            <p
-              id="generate-sds-disabled-reason"
-              className="mt-2 text-xs text-muted-foreground"
-            >
-              {t('generateDisabled')}
-            </p>
-          </div>
-        )}
+        {isGb ? (
+          canGenerateSds && completedAssessmentId ? (
+            <GenerateSdsButton classificationAssessmentId={completedAssessmentId} />
+          ) : (
+            <div>
+              <button
+                type="button"
+                disabled
+                aria-disabled="true"
+                aria-describedby="generate-sds-disabled-reason"
+                className="inline-flex items-center rounded-md border bg-muted px-4 py-2 text-sm text-muted-foreground"
+              >
+                {t('generateSds')}
+              </button>
+              <p
+                id="generate-sds-disabled-reason"
+                className="mt-2 text-xs text-muted-foreground"
+              >
+                {t('generateDisabled')}
+              </p>
+            </div>
+          )
+        ) : null}
+
+        {isDe ? (
+          completedAssessmentId ? (
+            <GenerateDrvBundleButton
+              classificationAssessmentId={completedAssessmentId}
+              disabled={!canGenerateDrv}
+              disabledReason={drvDisabledReason ?? undefined}
+            />
+          ) : (
+            <div>
+              <button
+                type="button"
+                disabled
+                aria-disabled="true"
+                aria-describedby="generate-drv-disabled-reason"
+                className="inline-flex items-center rounded-md border bg-muted px-4 py-2 text-sm text-muted-foreground"
+              >
+                {t('generateDrvBundle')}
+              </button>
+              <p
+                id="generate-drv-disabled-reason"
+                className="mt-2 text-xs text-muted-foreground"
+              >
+                {t('drvDisabledNeedAssessment')}
+              </p>
+            </div>
+          )
+        ) : null}
 
         <DocumentHistoryList engagementId={engagementId} />
       </div>

@@ -18,6 +18,30 @@ vi.mock('../generate-sds-button', () => ({
   ),
 }));
 
+vi.mock('../generate-drv-bundle-button', () => ({
+  GenerateDrvBundleButton: ({
+    classificationAssessmentId,
+    disabled,
+    disabledReason,
+  }: {
+    classificationAssessmentId: string;
+    disabled?: boolean;
+    disabledReason?: string;
+  }) => (
+    <button
+      type="button"
+      data-testid="generate-drv-btn"
+      data-assessment={classificationAssessmentId}
+      data-disabled={disabled ? 'true' : 'false'}
+      aria-disabled={disabled}
+      aria-describedby={disabled && disabledReason ? 'drv-reason' : undefined}
+    >
+      Generate DRV bundle
+      {disabled && disabledReason ? <span id="drv-reason">{disabledReason}</span> : null}
+    </button>
+  ),
+}));
+
 vi.mock('../document-history-list', () => ({
   DocumentHistoryList: ({ engagementId }: { engagementId: string }) => (
     <div data-testid="history-list" data-engagement={engagementId}>
@@ -36,6 +60,9 @@ const messages = {
       subtitle: 'Generate the legally required documents.',
       generateSds: 'Generate SDS',
       generateDisabled: 'Complete an IR35 assessment first.',
+      generateDrvBundle: 'Generate DRV defence bundle',
+      drvDisabledNeedAssessment: 'Complete a Schein classification to generate a DRV bundle.',
+      drvDisabledNeedAttestation: 'Capture the other-clients attestation below first.',
       generating: 'Generating…',
       documentHistory: 'Document history',
       emptyState: 'No documents generated yet.',
@@ -54,6 +81,7 @@ function renderPanel(props: {
   engagementId: string;
   countryCode: string | null;
   completedAssessmentId: string | null;
+  attestationSigned?: boolean;
 }) {
   return render(
     <NextIntlClientProvider locale="en" messages={messages}>
@@ -73,16 +101,31 @@ describe('ClassificationDocumentsPanel', () => {
     expect(screen.getByTestId('generate-sds-btn').getAttribute('data-assessment')).toBe('ca_1');
   });
 
-  it('renders disabled button with reason when engagement is not GB', () => {
+  it('renders the DRV bundle button (disabled, needs attestation) for DE + completed assessment', () => {
     renderPanel({
       engagementId: 'cass_1',
       countryCode: 'DE',
       completedAssessmentId: 'ca_1',
+      attestationSigned: false,
     });
     expect(screen.queryByTestId('generate-sds-btn')).toBeNull();
-    const button = screen.getByRole('button', { name: 'Generate SDS' });
-    expect(button).toHaveAttribute('aria-disabled', 'true');
-    expect(screen.getByText('Complete an IR35 assessment first.')).toBeInTheDocument();
+    const drv = screen.getByTestId('generate-drv-btn');
+    expect(drv.getAttribute('data-assessment')).toBe('ca_1');
+    expect(drv.getAttribute('data-disabled')).toBe('true');
+    expect(
+      screen.getByText('Capture the other-clients attestation below first.'),
+    ).toBeInTheDocument();
+  });
+
+  it('enables the DRV bundle button when DE + completedAssessmentId + attestationSigned', () => {
+    renderPanel({
+      engagementId: 'cass_1',
+      countryCode: 'DE',
+      completedAssessmentId: 'ca_1',
+      attestationSigned: true,
+    });
+    const drv = screen.getByTestId('generate-drv-btn');
+    expect(drv.getAttribute('data-disabled')).toBe('false');
   });
 
   it('renders disabled button when no completed assessment exists (even for GB)', () => {
