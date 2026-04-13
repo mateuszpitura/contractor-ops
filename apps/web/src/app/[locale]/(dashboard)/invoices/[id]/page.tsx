@@ -177,64 +177,128 @@ function deriveInvoiceFlags(invoice: Record<string, any>) {
 }
 
 // ---------------------------------------------------------------------------
+// Integration banners sub-component (reduces conditional count in main render)
+// ---------------------------------------------------------------------------
+
+// biome-ignore lint/suspicious/noExplicitAny: invoice shape from tRPC
+function IntegrationBanners({ invoice, flags, peppolTransmission, zatcaSubmission, invoiceId, onInvalidate }: {
+  invoice: Record<string, any>;
+  flags: ReturnType<typeof deriveInvoiceFlags>;
+  peppolTransmission: PeppolTransmissionResult | undefined;
+  zatcaSubmission: ZatcaSubmissionResult | undefined;
+  invoiceId: string;
+  onInvalidate: () => void;
+}) {
+  const hasPeppolOutbound = peppolTransmission?.direction === 'OUTBOUND';
+
+  return (
+    <>
+      {!!flags.hasKsefDuplicate && !!flags.ksefDuplicateId && (
+        <KsefDuplicateBanner
+          duplicateInvoiceId={flags.ksefDuplicateId}
+          invoiceNumber={invoice.invoiceNumber}
+          sellerNip={invoice.sellerTaxId ?? ''}
+        />
+      )}
+      {flags.hasDuplicateFlag && (
+        <DuplicateWarning
+          invoiceId={invoice.id}
+          duplicateInvoiceId={flags.duplicateInvoiceId}
+          invoiceNumber={invoice.invoiceNumber}
+          onDismiss={onInvalidate}
+        />
+      )}
+      {!!flags.isKsefSource && !!flags.ksefReference && (
+        <KsefMetadataSection
+          ksefReference={flags.ksefReference}
+          upoReceipt={flags.ksefUpoReceipt}
+          fetchedAt={invoice.receivedAt ?? invoice.createdAt}
+          source={invoice.source}
+        />
+      )}
+      {!!flags.isPeppolSource && !!peppolTransmission && (
+        <PeppolInboundBanner
+          senderParticipantId={invoice.sellerTaxId ?? 'Unknown sender'}
+          senderName={invoice.sellerName ?? 'Unknown'}
+          documentType={peppolTransmission.documentTypeId ?? undefined}
+          receivedAt={new Date(peppolTransmission.createdAt)}
+        />
+      )}
+      {!!hasPeppolOutbound && (
+        <PeppolTransmissionStatus transmission={peppolTransmission} />
+      )}
+      {!!invoice.qrCodeBase64 && (flags.isPeppolSource || hasPeppolOutbound) && (
+        <PeppolQRDisplay
+          qrCodeBase64={invoice.qrCodeBase64}
+          invoiceNumber={invoice.invoiceNumber}
+        />
+      )}
+      {!!zatcaSubmission && (
+        <ZatcaSubmissionDetail submission={zatcaSubmission} invoiceId={invoiceId} />
+      )}
+    </>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Page
 // ---------------------------------------------------------------------------
+
+/** Aggregates all queries needed for the invoice detail page. */
+function useInvoiceDetailQueries(invoiceId: string) {
+  const invoiceQuery = useQuery(trpc.invoice.getById.queryOptions({ id: invoiceId }));
+  const invoice = invoiceQuery.data;
+
+  // PDF URL
+  const sourceFile = invoice?.files?.find(
+    (f: { role: string; document?: { id: string }; documentId?: string }) =>
+      f.role === 'SOURCE_ORIGINAL',
+  );
+  const documentId = sourceFile?.document?.id ?? sourceFile?.documentId;
+  const pdfUrlQuery = useQuery({
+    ...trpc.document.getDownloadUrl.queryOptions({ documentId: documentId ?? '' }),
+    enabled: !!documentId,
+  });
+
+  // Reconciliation
+  const reconciliationQuery = useQuery({
+    ...trpc.time.getInvoiceReconciliation.queryOptions({ invoiceId }),
+    enabled: !!invoice?.contractId,
+  });
+
+  // Peppol
+  const peppolTransmissionQuery = useQuery({
+    ...peppolTrpc.getTransmissionByInvoiceId.queryOptions({ invoiceId }),
+    enabled: !!invoice,
+  });
+
+  // ZATCA
+  const zatcaSubmissionQuery = useQuery({
+    ...zatcaTrpc.getStatus.queryOptions({ invoiceId }),
+    enabled: !!invoice,
+  });
+
+  return {
+    invoiceQuery,
+    invoice,
+    pdfUrl: pdfUrlQuery.data?.url ?? null,
+    reconciliation: reconciliationQuery.data,
+    peppolTransmission: peppolTransmissionQuery.data as PeppolTransmissionResult | undefined,
+    zatcaSubmission: zatcaSubmissionQuery.data as ZatcaSubmissionResult | undefined,
+  };
+}
 
 export default function InvoiceDetailPage() {
   const params = useParams<{ id: string }>();
   const t = useTranslations('Invoices');
   const queryClient = useQueryClient();
 
-  // Fetch invoice data
-  const invoiceQuery = useQuery(trpc.invoice.getById.queryOptions({ id: params.id }));
-
-  const invoice = invoiceQuery.data;
+  const {
+    invoiceQuery, invoice, pdfUrl,
+    reconciliation, peppolTransmission, zatcaSubmission,
+  } = useInvoiceDetailQueries(params.id);
 
   useBreadcrumbOverride(params.id, invoice?.invoiceNumber);
-
-  // Fetch PDF download URL for the first SOURCE_ORIGINAL file
-  const sourceFile = invoice?.files?.find(
-    (f: { role: string; document?: { id: string }; documentId?: string }) =>
-      f.role === 'SOURCE_ORIGINAL',
-  );
-  const documentId = sourceFile?.document?.id ?? sourceFile?.documentId;
-
-  const pdfUrlQuery = useQuery({
-    ...trpc.document.getDownloadUrl.queryOptions({
-      documentId: documentId ?? '',
-    }),
-    enabled: !!documentId,
-  });
-
-  const pdfUrl = pdfUrlQuery.data?.url ?? null;
-
-  // Time reconciliation query (Phase 18, D-16)
-  const reconciliationQuery = useQuery({
-    ...trpc.time.getInvoiceReconciliation.queryOptions({
-      invoiceId: params.id,
-    }),
-    enabled: !!invoice?.contractId,
-  });
-
-  const reconciliation = reconciliationQuery.data;
-
-  // Peppol transmission query (Phase 49 gap closure)
-  const peppolTransmissionQuery = useQuery({
-    ...peppolTrpc.getTransmissionByInvoiceId.queryOptions({
-      invoiceId: params.id,
-    }),
-    enabled: !!invoice,
-  });
-
-  const peppolTransmission = peppolTransmissionQuery.data as PeppolTransmissionResult | undefined;
-
-  // ZATCA submission query (Phase 48 gap closure)
-  const zatcaSubmissionQuery = useQuery({
-    ...zatcaTrpc.getStatus.queryOptions({ invoiceId: params.id }),
-    enabled: !!invoice,
-  });
-
-  const zatcaSubmission = zatcaSubmissionQuery.data as ZatcaSubmissionResult | undefined;
 
   // Submit for approval mutation
   const submitForApproval = useMutation(
@@ -289,22 +353,7 @@ export default function InvoiceDetailPage() {
   const SourceIcon = sourceIconMap[invoice.source] ?? Inbox;
 
   // Feature detection flags (extracted for readability)
-  const {
-    hasDuplicateFlag,
-    duplicateInvoiceId,
-    isKsefSource,
-    ksefReference,
-    ksefUpoReceipt,
-    isPeppolSource,
-    hasKsefDuplicate,
-    ksefDuplicateId,
-    hasApprovalFlow,
-    canSubmitForApproval,
-  } = deriveInvoiceFlags(invoice);
-
-  const hasZatcaSubmission = !!zatcaSubmission;
-  const hasPeppolOutboundTransmission =
-    peppolTransmission && peppolTransmission.direction === 'OUTBOUND';
+  const flags = deriveInvoiceFlags(invoice);
 
   return (
     <div className="space-y-6">
@@ -316,75 +365,28 @@ export default function InvoiceDetailPage() {
             {t(`status.${enumKey(statusConfig.label)}`)}
           </Badge>
         )}
-        {isKsefSource ? (
+        {flags.isKsefSource ? (
           <KsefSourceBadge fetchedAt={invoice.receivedAt} />
         ) : (
           <SourceIcon className="h-4 w-4 text-muted-foreground" />
         )}
         {/* ZATCA status badge (Phase 48) */}
-        {hasZatcaSubmission && (
+        {!!zatcaSubmission && (
           <ZatcaStatusBadge status={zatcaSubmission.zatcaStatus as ZatcaBadgeStatus} />
         )}
       </div>
 
       {/* Side-by-side layout */}
       <InvoiceDetailLayout pdfUrl={pdfUrl}>
-        {/* KSeF duplicate banner (manual invoice with KSeF duplicate) */}
-        {!!hasKsefDuplicate && !!ksefDuplicateId && (
-          <KsefDuplicateBanner
-            duplicateInvoiceId={ksefDuplicateId}
-            invoiceNumber={invoice.invoiceNumber}
-            sellerNip={invoice.sellerTaxId ?? ''}
-          />
-        )}
-
-        {/* Standard duplicate warning (conditional) */}
-        {hasDuplicateFlag && (
-          <DuplicateWarning
-            invoiceId={invoice.id}
-            duplicateInvoiceId={duplicateInvoiceId}
-            invoiceNumber={invoice.invoiceNumber}
-            onDismiss={handleInvoiceInvalidate}
-          />
-        )}
-
-        {/* KSeF metadata section (KSeF-sourced invoices) */}
-        {!!isKsefSource && !!ksefReference && (
-          <KsefMetadataSection
-            ksefReference={ksefReference}
-            upoReceipt={ksefUpoReceipt}
-            fetchedAt={invoice.receivedAt ?? invoice.createdAt}
-            source={invoice.source}
-          />
-        )}
-
-        {/* Peppol inbound banner (Phase 49) */}
-        {!!isPeppolSource && !!peppolTransmission && (
-          <PeppolInboundBanner
-            senderParticipantId={invoice.sellerTaxId ?? 'Unknown sender'}
-            senderName={invoice.sellerName ?? 'Unknown'}
-            documentType={peppolTransmission.documentTypeId ?? undefined}
-            receivedAt={new Date(peppolTransmission.createdAt)}
-          />
-        )}
-
-        {/* Peppol outbound transmission status (Phase 49) */}
-        {!!hasPeppolOutboundTransmission && (
-          <PeppolTransmissionStatus transmission={peppolTransmission} />
-        )}
-
-        {/* Peppol QR code (Phase 49) */}
-        {!!invoice.qrCodeBase64 && (isPeppolSource || hasPeppolOutboundTransmission) && (
-          <PeppolQRDisplay
-            qrCodeBase64={invoice.qrCodeBase64}
-            invoiceNumber={invoice.invoiceNumber}
-          />
-        )}
-
-        {/* ZATCA submission detail (Phase 48) */}
-        {hasZatcaSubmission && (
-          <ZatcaSubmissionDetail submission={zatcaSubmission} invoiceId={params.id} />
-        )}
+        {/* Integration banners (KSeF, Peppol, ZATCA) */}
+        <IntegrationBanners
+          invoice={invoice}
+          flags={flags}
+          peppolTransmission={peppolTransmission}
+          zatcaSubmission={zatcaSubmission}
+          invoiceId={params.id}
+          onInvalidate={handleInvoiceInvalidate}
+        />
 
         {/* Match card */}
         <MatchCard invoice={invoice} onMatchConfirmed={handleInvoiceInvalidate} />
@@ -410,7 +412,7 @@ export default function InvoiceDetailPage() {
         )}
 
         {/* Submit for approval button */}
-        {!!canSubmitForApproval && (
+        {!!flags.canSubmitForApproval && (
           <div className="flex justify-end">
             <Button onClick={handleSubmitForApproval} disabled={submitForApproval.isPending}>
               {submitForApproval.isPending
@@ -421,10 +423,10 @@ export default function InvoiceDetailPage() {
         )}
 
         {/* Chain tracker (per D-04) */}
-        {!!hasApprovalFlow && <ChainTracker invoiceId={invoice.id} />}
+        {!!flags.hasApprovalFlow && <ChainTracker invoiceId={invoice.id} />}
 
         {/* Audit timeline (per D-11, D-12, D-13) */}
-        {!!hasApprovalFlow && <AuditTimeline invoiceId={invoice.id} />}
+        {!!flags.hasApprovalFlow && <AuditTimeline invoiceId={invoice.id} />}
 
         {/* Metadata form */}
         <InvoiceMetadataForm invoice={invoice} onSubmittedForMatching={handleInvoiceInvalidate} />
