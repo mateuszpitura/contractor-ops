@@ -29,6 +29,98 @@ interface LinearConnectionConfig {
 }
 
 // ---------------------------------------------------------------------------
+// Sync log helper
+// ---------------------------------------------------------------------------
+
+/**
+ * Creates an inbound IntegrationSyncLog entry with common fields pre-filled.
+ */
+function logInboundSync(
+  prisma: PrismaClient,
+  organizationId: string,
+  connectionId: string,
+  syncType: string,
+  data: {
+    status?: string;
+    entityType?: string;
+    entityId?: string;
+    errorMessage?: string;
+    responsePayloadJson?: Record<string, unknown>;
+    requestPayloadJson?: Record<string, unknown>;
+  },
+) {
+  return prisma.integrationSyncLog.create({
+    data: {
+      organizationId,
+      integrationConnectionId: connectionId,
+      direction: 'INBOUND',
+      syncType,
+      status: data.status ?? 'SUCCESS',
+      completedAt: data.status === 'STARTED' ? undefined : new Date(),
+      entityType: data.entityType,
+      entityId: data.entityId,
+      errorMessage: data.errorMessage,
+      responsePayloadJson: data.responsePayloadJson,
+      requestPayloadJson: data.requestPayloadJson,
+    },
+  });
+}
+
+/**
+ * Checks if an ExternalLink was recently synced from our app (loop prevention).
+ */
+function isBounceBack(metadata: Record<string, unknown>, windowMs: number): boolean {
+  const origin = metadata.lastSyncOrigin as string | undefined;
+  const syncAt = metadata.lastSyncAt as string | undefined;
+  if (origin !== 'APP' || !syncAt) return false;
+  return Date.now() - new Date(syncAt).getTime() < windowMs;
+}
+
+/**
+ * Resolves a Linear workflow state name and type from the connection's cache
+ * or by querying the Linear API. Updates the cache on miss.
+ */
+async function resolveStateName(
+  prisma: PrismaClient,
+  connection: { id: string; credentialsRef: string; configJson: unknown },
+  teamId: string,
+  stateId: string,
+): Promise<{ stateName: string; stateType: string }> {
+  const config = (connection.configJson as LinearConnectionConfig) ?? {};
+  const cached = config.stateCache?.[teamId]?.[stateId];
+  if (cached?.name && cached?.type) {
+    return { stateName: cached.name, stateType: cached.type };
+  }
+
+  try {
+    const credentials = decryptCredentials(connection.credentialsRef, 'linear');
+    const result = await linearGraphQL<{
+      workflowState: { id: string; name: string; type: string };
+    }>(
+      credentials.accessToken,
+      `query GetState($id: String!) { workflowState(id: $id) { id name type } }`,
+      { id: stateId },
+    );
+
+    const { name, type } = result.workflowState;
+
+    // Update cache
+    const updatedConfig = { ...config };
+    if (!updatedConfig.stateCache) updatedConfig.stateCache = {};
+    if (!updatedConfig.stateCache[teamId]) updatedConfig.stateCache[teamId] = {};
+    updatedConfig.stateCache[teamId][stateId] = { name, type };
+    await prisma.integrationConnection.update({
+      where: { id: connection.id },
+      data: { configJson: updatedConfig },
+    });
+
+    return { stateName: name, stateType: type };
+  } catch {
+    return { stateName: 'Unknown', stateType: 'unstarted' };
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Process Inbound Webhook
 // ---------------------------------------------------------------------------
 
@@ -62,16 +154,9 @@ export async function processLinearWebhook(
   const parsed = linearWebhookPayloadSchema.safeParse(payload);
 
   if (!parsed.success) {
-    await prisma.integrationSyncLog.create({
-      data: {
-        organizationId,
-        integrationConnectionId: connectionId,
-        direction: 'INBOUND',
-        syncType: 'webhook-invalid',
-        status: 'FAILED',
-        completedAt: new Date(),
-        errorMessage: `Invalid Linear webhook payload: ${parsed.error.message}`,
-      },
+    await logInboundSync(prisma, organizationId, connectionId, 'webhook-invalid', {
+      status: 'FAILED',
+      errorMessage: `Invalid Linear webhook payload: ${parsed.error.message}`,
     });
     return;
   }
@@ -80,23 +165,13 @@ export async function processLinearWebhook(
 
   // 2. Only process state change updates
   if (webhookPayload.action !== 'update' || !webhookPayload.updatedFrom?.stateId) {
-    // Not a state change -- log and return early
-    await prisma.integrationSyncLog.create({
-      data: {
-        organizationId,
-        integrationConnectionId: connectionId,
-        direction: 'INBOUND',
-        syncType: 'webhook-ignored',
-        status: 'SUCCESS',
-        completedAt: new Date(),
-        responsePayloadJson: {
-          action: webhookPayload.action,
-          identifier: webhookPayload.data.identifier,
-          reason:
-            webhookPayload.action === 'update'
-              ? 'No state change detected (updatedFrom.stateId missing)'
-              : `Action '${webhookPayload.action}' not processed`,
-        },
+    await logInboundSync(prisma, organizationId, connectionId, 'webhook-ignored', {
+      responsePayloadJson: {
+        action: webhookPayload.action,
+        identifier: webhookPayload.data.identifier,
+        reason: webhookPayload.action === 'update'
+          ? 'No state change detected (updatedFrom.stateId missing)'
+          : `Action '${webhookPayload.action}' not processed`,
       },
     });
     return;
@@ -108,56 +183,25 @@ export async function processLinearWebhook(
 
   // 3. Find ExternalLink by issue identifier
   const externalLink = await prisma.externalLink.findFirst({
-    where: {
-      organizationId,
-      externalType: 'LINEAR_ISSUE',
-      externalId: issueIdentifier,
-    },
+    where: { organizationId, externalType: 'LINEAR_ISSUE', externalId: issueIdentifier },
   });
 
   if (!externalLink) {
-    // Issue not linked to any task -- normal per Pitfall 5
-    await prisma.integrationSyncLog.create({
-      data: {
-        organizationId,
-        integrationConnectionId: connectionId,
-        direction: 'INBOUND',
-        syncType: 'webhook-unlinked',
-        status: 'SUCCESS',
-        completedAt: new Date(),
-        responsePayloadJson: {
-          identifier: issueIdentifier,
-          reason: 'No ExternalLink found for this Linear issue',
-        },
-      },
+    await logInboundSync(prisma, organizationId, connectionId, 'webhook-unlinked', {
+      responsePayloadJson: { identifier: issueIdentifier, reason: 'No ExternalLink found for this Linear issue' },
     });
     return;
   }
 
   // 4. Loop prevention: Check if this is a bounce-back from our own outbound sync
   const metadata = (externalLink.metadataJson as Record<string, unknown>) ?? {};
-  const lastSyncOrigin = metadata.lastSyncOrigin as string | undefined;
-  const lastSyncAt = metadata.lastSyncAt as string | undefined;
 
-  if (lastSyncOrigin === 'APP' && lastSyncAt) {
-    const syncAge = Date.now() - new Date(lastSyncAt).getTime();
-    if (syncAge < LOOP_PREVENTION_WINDOW_MS) {
-      await prisma.integrationSyncLog.create({
-        data: {
-          organizationId,
-          integrationConnectionId: connectionId,
-          direction: 'INBOUND',
-          syncType: 'webhook-loop-suppressed',
-          status: 'SUCCESS',
-          completedAt: new Date(),
-          responsePayloadJson: {
-            identifier: issueIdentifier,
-            reason: `Suppressed bounce-back (origin=APP, age=${syncAge}ms)`,
-          },
-        },
-      });
-      return;
-    }
+  if (isBounceBack(metadata, LOOP_PREVENTION_WINDOW_MS)) {
+    const syncAge = Date.now() - new Date(metadata.lastSyncAt as string).getTime();
+    await logInboundSync(prisma, organizationId, connectionId, 'webhook-loop-suppressed', {
+      responsePayloadJson: { identifier: issueIdentifier, reason: `Suppressed bounce-back (origin=APP, age=${syncAge}ms)` },
+    });
+    return;
   }
 
   // 5. Deduplication: Check for duplicate webhook within 5s window
@@ -194,24 +238,10 @@ export async function processLinearWebhook(
   );
 
   if (!mappedWorkflowStatus) {
-    // No mapping for this Linear state -- log unmapped per D-04
-    await prisma.integrationSyncLog.create({
-      data: {
-        organizationId,
-        integrationConnectionId: connectionId,
-        direction: 'INBOUND',
-        syncType: 'webhook-status-unmapped',
-        entityType: 'WORKFLOW_TASK_RUN',
-        entityId: externalLink.entityId,
-        status: 'SUCCESS',
-        completedAt: new Date(),
-        responsePayloadJson: {
-          identifier: issueIdentifier,
-          stateId: newStateId,
-          teamId,
-          reason: 'No workflow status mapping found for this Linear state',
-        },
-      },
+    await logInboundSync(prisma, organizationId, connectionId, 'webhook-status-unmapped', {
+      entityType: 'WORKFLOW_TASK_RUN',
+      entityId: externalLink.entityId,
+      responsePayloadJson: { identifier: issueIdentifier, stateId: newStateId, teamId, reason: 'No workflow status mapping found for this Linear state' },
     });
     return;
   }
@@ -220,66 +250,20 @@ export async function processLinearWebhook(
   const connection = await prisma.integrationConnection.findUnique({
     where: { id: connectionId },
   });
-
   if (!connection) return;
 
-  const config = (connection.configJson as LinearConnectionConfig) ?? {};
-  let stateName = config.stateCache?.[teamId]?.[newStateId]?.name;
-  let stateType = config.stateCache?.[teamId]?.[newStateId]?.type;
-
-  if (!(stateName && stateType)) {
-    // Not in cache -- fetch from Linear API
-    try {
-      const credentials = decryptCredentials(connection.credentialsRef, 'linear');
-      const stateResult = await linearGraphQL<{
-        workflowState: { id: string; name: string; type: string };
-      }>(
-        credentials.accessToken,
-        `query GetState($id: String!) {
-          workflowState(id: $id) { id name type }
-        }`,
-        { id: newStateId },
-      );
-
-      stateName = stateResult.workflowState.name;
-      stateType = stateResult.workflowState.type;
-
-      // Update cache
-      const updatedConfig = { ...config };
-      if (!updatedConfig.stateCache) updatedConfig.stateCache = {};
-      if (!updatedConfig.stateCache[teamId]) updatedConfig.stateCache[teamId] = {};
-      updatedConfig.stateCache[teamId][newStateId] = {
-        name: stateName,
-        type: stateType,
-      };
-
-      await prisma.integrationConnection.update({
-        where: { id: connectionId },
-        data: { configJson: updatedConfig },
-      });
-    } catch {
-      // Use fallback values if API call fails
-      stateName = 'Unknown';
-      stateType = 'unstarted';
-    }
-  }
+  const { stateName, stateType } = await resolveStateName(prisma, connection, teamId, newStateId);
 
   // 8. Create sync log
-  const syncLog = await prisma.integrationSyncLog.create({
-    data: {
-      organizationId,
-      integrationConnectionId: connectionId,
-      direction: 'INBOUND',
-      syncType: 'issue-status-change',
-      entityType: 'WORKFLOW_TASK_RUN',
-      entityId: externalLink.entityId,
-      status: 'STARTED',
-      requestPayloadJson: {
-        identifier: issueIdentifier,
-        fromStateId: webhookPayload.updatedFrom.stateId,
-        toStateId: newStateId,
-        teamId,
-      },
+  const syncLog = await logInboundSync(prisma, organizationId, connectionId, 'issue-status-change', {
+    status: 'STARTED',
+    entityType: 'WORKFLOW_TASK_RUN',
+    entityId: externalLink.entityId,
+    requestPayloadJson: {
+      identifier: issueIdentifier,
+      fromStateId: webhookPayload.updatedFrom.stateId,
+      toStateId: newStateId,
+      teamId,
     },
   });
 

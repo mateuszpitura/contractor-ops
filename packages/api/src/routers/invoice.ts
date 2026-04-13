@@ -174,6 +174,123 @@ function recomputeDuplicateHash(
 }
 
 // ---------------------------------------------------------------------------
+// Tax pipeline helpers
+// ---------------------------------------------------------------------------
+
+type ContractorTaxSnapshot = {
+  id: string;
+  countryCode: string;
+  vatId: string | null;
+  type: string;
+  latestVatValidatedAt: Date | null;
+  latestVatValidationStatus: string | null;
+};
+
+/**
+ * Re-validates a contractor's VAT ID if the latest validation is stale (>90 days).
+ * Only fires for GB_VAT and DE_USTIDNR types. Soft-fails on upstream outage.
+ */
+async function revalidateStaleVatIfNeeded(
+  contractor: ContractorTaxSnapshot,
+  ctx: { organizationId: string; db: TenantScopedDb; userId: string },
+): Promise<void> {
+  if (!contractor.vatId) return;
+
+  const fresh = isValidationFresh(
+    contractor.latestVatValidatedAt
+      ? {
+          responseStatus: (contractor.latestVatValidationStatus ?? 'unavailable') as
+            | 'valid'
+            | 'invalid'
+            | 'stale'
+            | 'unavailable',
+          requestedAt: contractor.latestVatValidatedAt,
+        }
+      : null,
+  );
+  if (fresh) return;
+
+  const taxIdType: TaxIdType | null =
+    contractor.countryCode === 'GB'
+      ? 'GB_VAT'
+      : contractor.countryCode === 'DE'
+        ? 'DE_USTIDNR'
+        : null;
+  if (!taxIdType) return;
+
+  await validateTaxId(
+    {
+      organizationId: ctx.organizationId,
+      contractorId: contractor.id,
+      taxIdType,
+      taxIdValue: contractor.vatId,
+      actor: { userId: ctx.userId },
+    },
+    {
+      prisma: ctx.db,
+      hmrcClient: getHmrcVatClient(),
+      viesClient: getViesClient(),
+    },
+  );
+}
+
+/**
+ * Resolves the final reverse-charge flag considering auto-detection and user override.
+ */
+function resolveReverseCharge(
+  contractor: ContractorTaxSnapshot | null,
+  orgCountryCode: string | null,
+  serviceType: string | undefined,
+  userOverride: boolean | null | undefined,
+): boolean {
+  let rcShouldApply = false;
+  if (contractor && orgCountryCode) {
+    const rc = detectReverseCharge({
+      sellerCountry: contractor.countryCode,
+      buyerCountry: orgCountryCode,
+      buyerHasVatId: !!contractor.vatId,
+      isB2B: contractor.type === 'COMPANY' || contractor.type === 'SOLE_TRADER',
+      serviceType: serviceType as DE13bServiceType | undefined,
+    });
+    rcShouldApply = rc.shouldApply;
+  }
+  if (userOverride === true) return true;
+  if (userOverride === false) return false;
+  return rcShouldApply;
+}
+
+/**
+ * Resolves the effective VAT rate code, applying RC default, country default,
+ * and Kleinunternehmer override in order.
+ */
+async function resolveEffectiveVatRate(
+  suppliedRate: string | null | undefined,
+  isReverseCharge: boolean,
+  org: { countryCode: string | null; isKleinunternehmer: boolean },
+  db: TenantScopedDb,
+): Promise<string | null> {
+  let rate: string | null = suppliedRate ?? null;
+
+  if (!rate) {
+    if (isReverseCharge) {
+      rate = 'RC';
+    } else if (org.countryCode) {
+      rate = await getDefaultRateCode(org.countryCode, db);
+    }
+  }
+
+  if (org.countryCode) {
+    const ku = applyKleinunternehmerOverride(
+      { vatRate: rate },
+      { countryCode: org.countryCode, isKleinunternehmer: org.isKleinunternehmer },
+    );
+    rate = ku.vatRate || rate;
+  }
+
+  return rate;
+}
+
+// ---------------------------------------------------------------------------
 // Invoice router
 // ---------------------------------------------------------------------------
 
@@ -216,129 +333,35 @@ export const invoiceRouter = router({
       }
 
       // ---------------------------------------------------------------------
-      // Phase 57 · Plan 04 — invoice-line tax pipeline (D-07.2, D-10, D-11,
-      // D-12, D-13). Executes in strict order:
-      //   1. Load org + contractor snapshots (both tenant-scoped).
-      //   2. Staleness guard: if contractor's latest VAT validation is older
-      //      than 90 days AND they have a GB/DE VAT ID, revalidate inline
-      //      (soft-fail via orchestrator).
-      //   3. detectReverseCharge(...) — auto-flags when applicable.
-      //   4. Default-rate preselect: no user-supplied `vatRate` → pick `RC`
-      //      when shouldApply, else the country default from the TaxRate seed.
-      //   5. applyKleinunternehmerOverride — DE Kleinunternehmer orgs force
-      //      all non-RC lines to `KU` (§19 UStG). RC wins over KU precedence.
-      //   6. Override-with-reason audit: when user explicitly disables an
-      //      auto-detected RC flag, persist the justification to AuditLog.
+      // Phase 57 · Plan 04 — invoice-line tax pipeline
+      // Steps: load org/contractor, staleness revalidation, reverse-charge
+      // detection, default-rate preselect, Kleinunternehmer override.
       // ---------------------------------------------------------------------
       const org = await ctx.db.organization.findUniqueOrThrow({
         where: { id: ctx.organizationId },
         select: { countryCode: true, isKleinunternehmer: true },
       });
 
-      let contractor: {
-        id: string;
-        countryCode: string;
-        vatId: string | null;
-        type: string;
-        latestVatValidatedAt: Date | null;
-        latestVatValidationStatus: string | null;
-      } | null = null;
+      let contractor: ContractorTaxSnapshot | null = null;
       if (invoiceData.contractorId) {
         contractor = await ctx.db.contractor.findFirst({
-          where: {
-            id: invoiceData.contractorId,
-            organizationId: ctx.organizationId,
-            deletedAt: null,
-          },
-          select: {
-            id: true,
-            countryCode: true,
-            vatId: true,
-            type: true,
-            latestVatValidatedAt: true,
-            latestVatValidationStatus: true,
-          },
+          where: { id: invoiceData.contractorId, organizationId: ctx.organizationId, deletedAt: null },
+          select: { id: true, countryCode: true, vatId: true, type: true, latestVatValidatedAt: true, latestVatValidationStatus: true },
         });
 
-        // --- Step 2: Staleness-triggered inline revalidation (D-07 trigger 2)
-        if (contractor?.vatId) {
-          const fresh = isValidationFresh(
-            contractor.latestVatValidatedAt
-              ? {
-                  responseStatus: (contractor.latestVatValidationStatus ?? 'unavailable') as
-                    | 'valid'
-                    | 'invalid'
-                    | 'stale'
-                    | 'unavailable',
-                  requestedAt: contractor.latestVatValidatedAt,
-                }
-              : null,
-          );
-          if (!fresh) {
-            const taxIdType: TaxIdType | null =
-              contractor.countryCode === 'GB'
-                ? 'GB_VAT'
-                : contractor.countryCode === 'DE'
-                  ? 'DE_USTIDNR'
-                  : null;
-            if (taxIdType) {
-              await validateTaxId(
-                {
-                  organizationId: ctx.organizationId,
-                  contractorId: contractor.id,
-                  taxIdType,
-                  taxIdValue: contractor.vatId,
-                  actor: { userId: ctx.user.id },
-                },
-                {
-                  prisma: ctx.db,
-                  hmrcClient: getHmrcVatClient(),
-                  viesClient: getViesClient(),
-                },
-              );
-            }
-          }
+        if (contractor) {
+          await revalidateStaleVatIfNeeded(contractor, { organizationId: ctx.organizationId, db: ctx.db, userId: ctx.user.id });
         }
       }
 
-      // --- Step 3: Reverse-charge detection ---------------------------------
-      let rcShouldApply = false;
-      if (contractor && org.countryCode) {
-        const rc = detectReverseCharge({
-          sellerCountry: contractor.countryCode,
-          buyerCountry: org.countryCode,
-          buyerHasVatId: !!contractor.vatId,
-          isB2B: contractor.type === 'COMPANY' || contractor.type === 'SOLE_TRADER',
-          serviceType: invoiceData.serviceType as DE13bServiceType | undefined,
-        });
-        rcShouldApply = rc.shouldApply;
-      }
-      // Respect explicit user override on the auto-detection verdict.
-      const userOverride = invoiceData.reverseChargeOverride;
-      const finalIsReverseCharge =
-        userOverride === true ? true : userOverride === false ? false : rcShouldApply;
+      const finalIsReverseCharge = resolveReverseCharge(
+        contractor, org.countryCode, invoiceData.serviceType, invoiceData.reverseChargeOverride,
+      );
+      const rcShouldApply = resolveReverseCharge(contractor, org.countryCode, invoiceData.serviceType, undefined);
 
-      // --- Step 4: Default-rate preselect -----------------------------------
-      let effectiveVatRate: string | null = invoiceData.vatRate ?? null;
-      if (!effectiveVatRate) {
-        if (finalIsReverseCharge) {
-          effectiveVatRate = 'RC';
-        } else if (org.countryCode) {
-          effectiveVatRate = await getDefaultRateCode(org.countryCode, ctx.db);
-        }
-      }
-
-      // --- Step 5: Kleinunternehmer override --------------------------------
-      if (org.countryCode) {
-        const ku = applyKleinunternehmerOverride(
-          { vatRate: effectiveVatRate },
-          {
-            countryCode: org.countryCode,
-            isKleinunternehmer: org.isKleinunternehmer,
-          },
-        );
-        effectiveVatRate = ku.vatRate || effectiveVatRate;
-      }
+      const effectiveVatRate = await resolveEffectiveVatRate(
+        invoiceData.vatRate, finalIsReverseCharge, org, ctx.db,
+      );
       // ---------------------------------------------------------------------
 
       const invoice = await ctx.db.$transaction(async tx => {

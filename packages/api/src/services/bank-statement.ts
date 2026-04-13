@@ -73,6 +73,34 @@ export function parseMt940(content: string): ParsedTransaction[] {
 // CSV Statement Parser
 // ---------------------------------------------------------------------------
 
+/** Column name aliases for CSV header detection. */
+const CSV_COLUMN_ALIASES: Record<string, string[]> = {
+  amount: ['amount', 'kwota', 'value', 'suma'],
+  iban: ['iban', 'account', 'konto', 'rachunek', 'account number'],
+  date: ['date', 'data', 'booking date', 'data operacji'],
+  reference: ['reference', 'referencja', 'ref'],
+  description: ['description', 'opis', 'tytul', 'title', 'details'],
+};
+
+/**
+ * Detects column indices from normalized CSV headers using alias matching.
+ */
+function detectCsvColumns(headers: string[]): Record<string, number> {
+  const indices: Record<string, number> = {};
+  for (const [field, aliases] of Object.entries(CSV_COLUMN_ALIASES)) {
+    indices[field] = headers.findIndex(h => aliases.includes(h));
+  }
+  return indices;
+}
+
+/**
+ * Parses a raw amount string (supporting comma decimals and spaces) into minor units.
+ */
+function parseAmountMinor(raw: string): number {
+  const cleaned = raw.replace(/["']/g, '').trim().replace(/\s/g, '').replace(',', '.');
+  return Math.round(Math.abs(parseFloat(cleaned)) * 100);
+}
+
 /**
  * Parse a CSV bank statement.
  * Detects columns by header names and handles both dot and comma decimal separators.
@@ -85,48 +113,26 @@ export function parseCsvStatement(content: string): ParsedTransaction[] {
 
   if (lines.length < 2) return [];
 
-  // Detect delimiter (comma or semicolon)
   const headerLine = lines[0] ?? '';
   const delimiter = headerLine.includes(';') ? ';' : ',';
-
   const headers = headerLine.split(delimiter).map(h =>
-    h
-      .replace(/^["']|["']$/g, '')
-      .trim()
-      .toLowerCase(),
+    h.replace(/^["']|["']$/g, '').trim().toLowerCase(),
   );
 
-  // Find column indices by common header names
-  const amountIdx = headers.findIndex(h => ['amount', 'kwota', 'value', 'suma'].includes(h));
-  const ibanIdx = headers.findIndex(h =>
-    ['iban', 'account', 'konto', 'rachunek', 'account number'].includes(h),
-  );
-  const dateIdx = headers.findIndex(h =>
-    ['date', 'data', 'booking date', 'data operacji'].includes(h),
-  );
-  const refIdx = headers.findIndex(h => ['reference', 'referencja', 'ref'].includes(h));
-  const descIdx = headers.findIndex(h =>
-    ['description', 'opis', 'tytul', 'title', 'details'].includes(h),
-  );
-
-  if (amountIdx === -1) return [];
+  const col = detectCsvColumns(headers);
+  if (col.amount === -1) return [];
 
   const transactions: ParsedTransaction[] = [];
 
   for (let i = 1; i < lines.length; i++) {
     const cells = splitCsvLine(lines[i] ?? '', delimiter);
-
-    const rawAmount = cells[amountIdx]?.replace(/["']/g, '').trim() ?? '0';
-    // Handle comma decimal separator (Polish format: "1 234,56")
-    const normalizedAmount = rawAmount.replace(/\s/g, '').replace(',', '.');
-    const amount = Math.round(Math.abs(parseFloat(normalizedAmount)) * 100);
-
+    const amount = parseAmountMinor(cells[col.amount] ?? '0');
     if (Number.isNaN(amount) || amount === 0) continue;
 
-    const iban = ibanIdx >= 0 ? cells[ibanIdx]?.replace(/["'\s]/g, '').trim() : undefined;
-    const dateStr = dateIdx >= 0 ? cells[dateIdx]?.replace(/["']/g, '').trim() : undefined;
-    const reference = refIdx >= 0 ? cells[refIdx]?.replace(/["']/g, '').trim() : undefined;
-    const description = descIdx >= 0 ? (cells[descIdx]?.replace(/["']/g, '').trim() ?? '') : '';
+    const iban = col.iban >= 0 ? cells[col.iban]?.replace(/["'\s]/g, '').trim() : undefined;
+    const dateStr = col.date >= 0 ? cells[col.date]?.replace(/["']/g, '').trim() : undefined;
+    const reference = col.reference >= 0 ? cells[col.reference]?.replace(/["']/g, '').trim() : undefined;
+    const description = col.description >= 0 ? (cells[col.description]?.replace(/["']/g, '').trim() ?? '') : '';
 
     transactions.push({
       amount,
@@ -172,6 +178,63 @@ export function parseBankStatement(content: string, filename: string): ParsedTra
 // ---------------------------------------------------------------------------
 
 /**
+ * Scores a single transaction against a single payment run item.
+ * Returns null if no match, or a match descriptor with confidence level.
+ */
+function scoreTransactionItem(
+  txAmount: number,
+  txIban: string,
+  item: { id: string; amountMinor: number; iban: string },
+): { itemId: string; confidence: 'exact' | 'partial'; amountMatched: boolean; ibanMatched: boolean } | null {
+  const itemIban = normalizeIban(item.iban);
+  const ibanMatched =
+    txIban.length >= 10 && itemIban.length >= 10 && txIban.slice(-20) === itemIban.slice(-20);
+
+  const exactAmount = txAmount === item.amountMinor;
+  const closeAmount = Math.abs(txAmount - item.amountMinor) <= 1;
+
+  if (ibanMatched && exactAmount) {
+    return { itemId: item.id, confidence: 'exact', amountMatched: true, ibanMatched: true };
+  }
+  if (ibanMatched && closeAmount) {
+    return { itemId: item.id, confidence: 'partial', amountMatched: false, ibanMatched: true };
+  }
+  if (exactAmount) {
+    return { itemId: item.id, confidence: 'partial', amountMatched: true, ibanMatched: false };
+  }
+  return null;
+}
+
+/**
+ * Finds the best matching item for a transaction from a list of unmatched items.
+ */
+function findBestMatch(
+  txAmount: number,
+  txIban: string,
+  items: { id: string; amountMinor: number; iban: string }[],
+  matchedItemIds: Set<string>,
+): { itemId: string; confidence: 'exact' | 'partial'; amountMatched: boolean; ibanMatched: boolean } | null {
+  let bestMatch: ReturnType<typeof scoreTransactionItem> = null;
+
+  for (const item of items) {
+    if (matchedItemIds.has(item.id)) continue;
+
+    const scored = scoreTransactionItem(txAmount, txIban, item);
+    if (!scored) continue;
+
+    // Exact match — return immediately
+    if (scored.confidence === 'exact') return scored;
+
+    // Keep first partial match (IBAN-based takes precedence over amount-only)
+    if (!bestMatch || (scored.ibanMatched && !bestMatch.ibanMatched)) {
+      bestMatch = scored;
+    }
+  }
+
+  return bestMatch;
+}
+
+/**
  * Match bank statement transactions to payment run items by IBAN and amount.
  * Each item is matched at most once.
  * IBAN comparison uses last 20 characters for normalization.
@@ -186,59 +249,13 @@ export function matchStatementToRun(
   for (let txIdx = 0; txIdx < transactions.length; txIdx++) {
     const tx = transactions[txIdx];
     if (!tx) continue;
+
     const txIban = normalizeIban(tx.iban ?? '');
-
-    let bestMatch: {
-      itemId: string;
-      confidence: 'exact' | 'partial';
-      amountMatched: boolean;
-      ibanMatched: boolean;
-    } | null = null;
-
-    for (const item of items) {
-      if (matchedItemIds.has(item.id)) continue;
-
-      const itemIban = normalizeIban(item.iban);
-      const ibanMatched =
-        txIban.length >= 10 && itemIban.length >= 10 && txIban.slice(-20) === itemIban.slice(-20);
-
-      const exactAmount = tx.amount === item.amountMinor;
-      const closeAmount = Math.abs(tx.amount - item.amountMinor) <= 1;
-
-      if (ibanMatched && exactAmount) {
-        bestMatch = {
-          itemId: item.id,
-          confidence: 'exact',
-          amountMatched: true,
-          ibanMatched: true,
-        };
-        break; // Exact match, no need to search further
-      }
-
-      if (ibanMatched && closeAmount) {
-        bestMatch = {
-          itemId: item.id,
-          confidence: 'partial',
-          amountMatched: false,
-          ibanMatched: true,
-        };
-      } else if (exactAmount && !bestMatch) {
-        bestMatch = {
-          itemId: item.id,
-          confidence: 'partial',
-          amountMatched: true,
-          ibanMatched: false,
-        };
-      }
-    }
+    const bestMatch = findBestMatch(tx.amount, txIban, items, matchedItemIds);
 
     if (bestMatch) {
       matchedItemIds.add(bestMatch.itemId);
-      results.push({
-        transactionIndex: txIdx,
-        paymentRunItemId: bestMatch.itemId,
-        ...bestMatch,
-      });
+      results.push({ transactionIndex: txIdx, paymentRunItemId: bestMatch.itemId, ...bestMatch });
     } else {
       results.push({
         transactionIndex: txIdx,

@@ -64,6 +64,37 @@ export async function getOrCreateTimesheet(
   });
 }
 
+/**
+ * Updates an existing time entry after verifying ownership and MANUAL source.
+ */
+async function updateExistingEntry(
+  tx: TxClient,
+  entryId: string,
+  organizationId: string,
+  contractorId: string,
+  timesheetId: string,
+  entry: { contractId: string; entryDate: string; minutes: number; description?: string },
+): Promise<TimeEntry> {
+  const existing = await tx.timeEntry.findFirst({
+    where: { id: entryId, organizationId, contractorId, timesheetId },
+  });
+  if (!existing) {
+    throw new TRPCError({ code: 'NOT_FOUND', message: 'errors.timesheet.entryNotFound' });
+  }
+  if (existing.source !== 'MANUAL') {
+    throw new TRPCError({ code: 'PRECONDITION_FAILED', message: 'errors.timesheet.cannotEditImportedEntries' });
+  }
+  return tx.timeEntry.update({
+    where: { id: entryId },
+    data: {
+      contractId: entry.contractId,
+      entryDate: new Date(entry.entryDate),
+      minutes: entry.minutes,
+      description: entry.description ?? null,
+    },
+  });
+}
+
 // ---------------------------------------------------------------------------
 // saveDraftEntries
 // ---------------------------------------------------------------------------
@@ -104,54 +135,21 @@ export async function saveDraftEntries(
   const result = await db.$transaction(async (tx: TxClient) => {
     const upserted: TimeEntry[] = [];
     for (const entry of entries) {
-      if (entry.id) {
-        // Update existing — verify it's a MANUAL source entry
-        const existing = await tx.timeEntry.findFirst({
-          where: {
-            id: entry.id,
-            organizationId,
-            contractorId,
-            timesheetId,
-          },
-        });
-        if (!existing) {
-          throw new TRPCError({
-            code: 'NOT_FOUND',
-            message: 'errors.timesheet.entryNotFound',
+      const record = entry.id
+        ? await updateExistingEntry(tx, entry.id, organizationId, contractorId, timesheetId, entry)
+        : await tx.timeEntry.create({
+            data: {
+              organizationId,
+              timesheetId,
+              contractorId,
+              contractId: entry.contractId,
+              entryDate: new Date(entry.entryDate),
+              minutes: entry.minutes,
+              description: entry.description ?? null,
+              source: 'MANUAL',
+            },
           });
-        }
-        if (existing.source !== 'MANUAL') {
-          throw new TRPCError({
-            code: 'PRECONDITION_FAILED',
-            message: 'errors.timesheet.cannotEditImportedEntries',
-          });
-        }
-        const updated = await tx.timeEntry.update({
-          where: { id: entry.id },
-          data: {
-            contractId: entry.contractId,
-            entryDate: new Date(entry.entryDate),
-            minutes: entry.minutes,
-            description: entry.description ?? null,
-          },
-        });
-        upserted.push(updated);
-      } else {
-        // Create new manual entry
-        const created = await tx.timeEntry.create({
-          data: {
-            organizationId,
-            timesheetId,
-            contractorId,
-            contractId: entry.contractId,
-            entryDate: new Date(entry.entryDate),
-            minutes: entry.minutes,
-            description: entry.description ?? null,
-            source: 'MANUAL',
-          },
-        });
-        upserted.push(created);
-      }
+      upserted.push(record);
     }
 
     // Recalculate totalMinutes

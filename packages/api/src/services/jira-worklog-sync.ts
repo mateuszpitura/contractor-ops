@@ -80,6 +80,123 @@ function extractCommentText(comment: JiraWorklog['comment']): string | null {
 }
 
 // ---------------------------------------------------------------------------
+// Worklog fetch + upsert helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Fetches all worklogs for a given issue, filtered by author and date range.
+ * Handles pagination internally.
+ */
+async function fetchIssueWorklogs(
+  baseUrl: string,
+  authHeaders: Record<string, string>,
+  issueKey: string,
+  accountId: string,
+  startDateObj: Date,
+  endDateObj: Date,
+): Promise<JiraWorklog[]> {
+  const filtered: JiraWorklog[] = [];
+  let worklogStartAt = 0;
+  const worklogMaxResults = 1000;
+
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  while (true) {
+    const worklogUrl = new URL(`${baseUrl}/issue/${issueKey}/worklog`);
+    worklogUrl.searchParams.set('startAt', String(worklogStartAt));
+    worklogUrl.searchParams.set('maxResults', String(worklogMaxResults));
+
+    const worklogResponse = await fetch(worklogUrl.toString(), { headers: authHeaders });
+
+    if (!worklogResponse.ok) {
+      console.error(`Failed to fetch worklogs for issue ${issueKey}: ${worklogResponse.status}`);
+      break;
+    }
+
+    const worklogData = (await worklogResponse.json()) as JiraWorklogResponse;
+
+    for (const wl of worklogData.worklogs) {
+      if (wl.author.accountId !== accountId) continue;
+      const worklogDate = new Date(wl.started);
+      if (worklogDate >= startDateObj && worklogDate <= endDateObj) {
+        filtered.push(wl);
+      }
+    }
+
+    if (worklogStartAt + worklogData.worklogs.length >= worklogData.total) break;
+    worklogStartAt += worklogMaxResults;
+  }
+
+  return filtered;
+}
+
+/**
+ * Builds the metadataJson object for a Jira worklog time entry.
+ */
+function buildWorklogMetadata(issue: JiraIssue, worklog: JiraWorklog): Record<string, unknown> {
+  return {
+    issueKey: issue.key,
+    issueSummary: issue.fields.summary,
+    worklogId: worklog.id,
+    authorDisplayName: worklog.author.displayName,
+    timeSpentSeconds: worklog.timeSpentSeconds,
+  };
+}
+
+/**
+ * Upserts a single Jira worklog as a TimeEntry. Returns 'imported' for new
+ * entries, 'skipped' for zero-duration or updated entries.
+ */
+async function upsertWorklogEntry(
+  prisma: PrismaClient,
+  params: {
+    organizationId: string;
+    contractorId: string;
+    contractId: string;
+    timesheetId: string;
+    issue: JiraIssue;
+    worklog: JiraWorklog;
+  },
+): Promise<'imported' | 'skipped'> {
+  const { organizationId, contractorId, contractId, timesheetId, issue, worklog } = params;
+  const minutes = Math.round(worklog.timeSpentSeconds / 60);
+  if (minutes === 0) return 'skipped';
+
+  const entryDate = worklog.started.split('T')[0] ?? '';
+  const commentText = extractCommentText(worklog.comment);
+  const description = commentText ?? `${issue.key}: ${issue.fields.summary}`;
+  const metadataJson = buildWorklogMetadata(issue, worklog);
+
+  const existingEntry = await prisma.timeEntry.findFirst({
+    where: { organizationId, contractorId, source: 'JIRA', externalId: String(worklog.id) },
+    select: { id: true },
+  });
+
+  if (existingEntry) {
+    await prisma.timeEntry.update({
+      where: { id: existingEntry.id },
+      data: { minutes, description, metadataJson },
+    });
+    return 'skipped';
+  }
+
+  await prisma.timeEntry.create({
+    data: {
+      organizationId,
+      timesheetId,
+      contractorId,
+      contractId,
+      entryDate: new Date(entryDate),
+      minutes,
+      description,
+      source: 'JIRA',
+      externalId: String(worklog.id),
+      metadataJson,
+    },
+  });
+  return 'imported';
+}
+
+// ---------------------------------------------------------------------------
 // Jira Worklog Sync Service
 // ---------------------------------------------------------------------------
 
@@ -243,106 +360,15 @@ export async function syncJiraWorklogs(
     const endDateObj = new Date(`${endDate}T23:59:59Z`);
 
     for (const issue of allIssues) {
-      let worklogStartAt = 0;
-      const worklogMaxResults = 1000;
+      const worklogs = await fetchIssueWorklogs(baseUrl, authHeaders, issue.key, accountId, startDateObj, endDateObj);
 
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      while (true) {
-        const worklogUrl = new URL(`${baseUrl}/issue/${issue.key}/worklog`);
-        worklogUrl.searchParams.set('startAt', String(worklogStartAt));
-        worklogUrl.searchParams.set('maxResults', String(worklogMaxResults));
-
-        const worklogResponse = await fetch(worklogUrl.toString(), {
-          headers: authHeaders,
+      for (const worklog of worklogs) {
+        const result = await upsertWorklogEntry(prisma, {
+          organizationId, contractorId, contractId, timesheetId,
+          issue, worklog,
         });
-
-        if (!worklogResponse.ok) {
-          // Log but don't fail the entire sync for one issue
-          console.error(
-            `Failed to fetch worklogs for issue ${issue.key}: ${worklogResponse.status}`,
-          );
-          break;
-        }
-
-        const worklogData = (await worklogResponse.json()) as JiraWorklogResponse;
-
-        // Filter worklogs by author and date range
-        const userWorklogs = worklogData.worklogs.filter(wl => {
-          if (wl.author.accountId !== accountId) return false;
-          const worklogDate = new Date(wl.started);
-          return worklogDate >= startDateObj && worklogDate <= endDateObj;
-        });
-
-        // Step C: Map worklogs to TimeEntry
-        for (const worklog of userWorklogs) {
-          const minutes = Math.round(worklog.timeSpentSeconds / 60);
-          const entryDate = worklog.started.split('T')[0] ?? '';
-
-          // Skip zero-duration worklogs
-          if (minutes === 0) {
-            skipped++;
-            continue;
-          }
-
-          // Build description from comment or issue key + summary
-          const commentText = extractCommentText(worklog.comment);
-          const description = commentText ?? `${issue.key}: ${issue.fields.summary}`;
-
-          const existingEntry = await prisma.timeEntry.findFirst({
-            where: {
-              organizationId,
-              contractorId,
-              source: 'JIRA',
-              externalId: String(worklog.id),
-            },
-            select: { id: true },
-          });
-
-          if (existingEntry) {
-            // Update existing entry (duration may have changed in Jira)
-            await prisma.timeEntry.update({
-              where: { id: existingEntry.id },
-              data: {
-                minutes,
-                description,
-                metadataJson: {
-                  issueKey: issue.key,
-                  issueSummary: issue.fields.summary,
-                  worklogId: worklog.id,
-                  authorDisplayName: worklog.author.displayName,
-                  timeSpentSeconds: worklog.timeSpentSeconds,
-                },
-              },
-            });
-            skipped++;
-          } else {
-            await prisma.timeEntry.create({
-              data: {
-                organizationId,
-                timesheetId,
-                contractorId,
-                contractId,
-                entryDate: new Date(entryDate),
-                minutes,
-                description,
-                source: 'JIRA',
-                externalId: String(worklog.id),
-                metadataJson: {
-                  issueKey: issue.key,
-                  issueSummary: issue.fields.summary,
-                  worklogId: worklog.id,
-                  authorDisplayName: worklog.author.displayName,
-                  timeSpentSeconds: worklog.timeSpentSeconds,
-                },
-              },
-            });
-            imported++;
-          }
-        }
-
-        // Check if there are more worklog pages
-        if (worklogStartAt + worklogData.worklogs.length >= worklogData.total) break;
-        worklogStartAt += worklogMaxResults;
+        if (result === 'imported') imported++;
+        else skipped++;
       }
     }
 

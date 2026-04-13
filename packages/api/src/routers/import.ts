@@ -93,7 +93,7 @@ async function commitContractRow(
   organizationId: string,
   userId: string | undefined,
   row: Record<string, unknown>,
-): Promise<'created' | 'failed'> {
+): Promise<'created' | 'updated' | 'skipped' | 'failed'> {
   let contractorId = row.contractorId ? String(row.contractorId) : null;
 
   if (!contractorId) {
@@ -243,34 +243,16 @@ export const importRouter = router({
     )
     .mutation(async ({ input, ctx }) => {
       const { entityType, rows, duplicateActions } = input;
-      let created = 0;
-      let updated = 0;
-      let skipped = 0;
-      let failed = 0;
+      const counts = { created: 0, updated: 0, skipped: 0, failed: 0 };
 
       try {
         await ctx.db.$transaction(async tx => {
           for (const row of rows) {
             const taxId = String(row.taxId ?? row.contractorTaxId ?? '').trim();
-            const duplicateAction = duplicateActions[taxId];
-
-            if (entityType === 'contractor') {
-              const result = await commitContractorRow(
-                tx,
-                ctx.organizationId,
-                ctx.user?.id,
-                row,
-                duplicateAction,
-              );
-              if (result === 'created') created++;
-              else if (result === 'updated') updated++;
-              else if (result === 'skipped') skipped++;
-              else failed++;
-            } else {
-              const result = await commitContractRow(tx, ctx.organizationId, ctx.user?.id, row);
-              if (result === 'created') created++;
-              else failed++;
-            }
+            const result = entityType === 'contractor'
+              ? await commitContractorRow(tx, ctx.organizationId, ctx.user?.id, row, duplicateActions[taxId])
+              : await commitContractRow(tx, ctx.organizationId, ctx.user?.id, row);
+            counts[result]++;
           }
         });
       } catch (err) {
@@ -280,6 +262,6 @@ export const importRouter = router({
         });
       }
 
-      return { created, updated, skipped, failed };
+      return counts;
     }),
 });

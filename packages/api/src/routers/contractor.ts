@@ -210,6 +210,80 @@ function mergeCustomBillingFields(
   };
 }
 
+/**
+ * Resolves the TaxIdType for a contractor's country code, or null if unsupported.
+ */
+function resolveTaxIdType(countryCode: string): TaxIdType | null {
+  if (countryCode === 'GB') return 'GB_VAT';
+  if (countryCode === 'DE') return 'DE_USTIDNR';
+  return null;
+}
+
+/**
+ * Handles VAT ID change side-effects: validates new VAT IDs or clears
+ * summary fields when VAT ID is removed.
+ */
+async function handleVatIdChange(
+  db: Parameters<typeof validateTaxId>[1]['prisma'],
+  contractorId: string,
+  organizationId: string,
+  userId: string,
+  prior: { vatId: string | null },
+  updated: { vatId: string | null; countryCode: string },
+): Promise<void> {
+  const priorVatId = prior.vatId ?? null;
+  const nextVatId = updated.vatId ?? null;
+  if (priorVatId === nextVatId) return;
+
+  if (nextVatId) {
+    const taxIdType = resolveTaxIdType(updated.countryCode);
+    if (taxIdType) {
+      await validateTaxId(
+        { organizationId, contractorId, taxIdType, taxIdValue: nextVatId, actor: { userId } },
+        { prisma: db, hmrcClient: getHmrcVatClient(), viesClient: getViesClient() },
+      );
+    }
+  } else {
+    await db.contractor.update({
+      where: { id: contractorId },
+      data: { latestVatValidatedAt: null, latestVatValidationStatus: null },
+    });
+  }
+}
+
+/**
+ * Updates the contractor's default billing profile when bank account
+ * or payment terms change.
+ */
+async function updateBillingProfileIfNeeded(
+  db: Parameters<typeof validateTaxId>[1]['prisma'],
+  contractorId: string,
+  organizationId: string,
+  bankAccount: string | undefined | null,
+  paymentTermsDays: number | undefined | null,
+): Promise<void> {
+  if (bankAccount === undefined && paymentTermsDays === undefined) return;
+
+  const defaultProfile = await db.contractorBillingProfile.findFirst({
+    where: { contractorId, organizationId, isDefault: true },
+  });
+  if (!defaultProfile) return;
+
+  const profileUpdate: Prisma.ContractorBillingProfileUpdateInput = {};
+  if (bankAccount !== undefined) {
+    const cleaned = bankAccount ? bankAccount.replace(/\s/g, '') : null;
+    profileUpdate.bankAccountEncrypted = cleaned ? encryptBankAccount(cleaned) : null;
+    profileUpdate.bankAccountMasked = cleaned ? `****${cleaned.slice(-4)}` : null;
+  }
+  if (paymentTermsDays !== undefined) {
+    profileUpdate.paymentTermsDays = paymentTermsDays ?? null;
+  }
+  await db.contractorBillingProfile.update({
+    where: { id: defaultProfile.id },
+    data: profileUpdate,
+  });
+}
+
 // ---------------------------------------------------------------------------
 // Contractor router
 // ---------------------------------------------------------------------------
@@ -582,89 +656,11 @@ export const contractorRouter = router({
         data: updateData,
       });
 
-      // -----------------------------------------------------------------------
-      // Phase 57 · Plan 04 — D-07 trigger 1
-      //
-      // When the VAT-number field (stored on Contractor.vatId regardless of
-      // UK vatRegistrationNumber vs DE ustIdNr) changes, dispatch validation
-      // inline (awaited) so the profile save + validation complete in a
-      // single round-trip. The orchestrator soft-fails on HMRC/VIES outage
-      // (Plan 57-03 D-08) so the save is never hard-blocked.
-      //
-      // Scope guard: only VAT-number changes trigger. Unrelated field edits
-      // (phone, address) must NOT fire HMRC/VIES calls.
-      //
-      // Clear path: when the user nulls the VAT number, clear the summary
-      // fields without any API call and without writing a TaxIdValidation
-      // row.
-      // -----------------------------------------------------------------------
-      const priorVatId = existing.vatId ?? null;
-      const nextVatId = updated.vatId ?? null;
-      if (priorVatId !== nextVatId) {
-        if (nextVatId) {
-          const taxIdType: TaxIdType | null =
-            updated.countryCode === 'GB'
-              ? 'GB_VAT'
-              : updated.countryCode === 'DE'
-                ? 'DE_USTIDNR'
-                : null;
-          if (taxIdType) {
-            // Awaited inline: user expects fresh `latestVatValidationStatus`
-            // on the next profile render. Soft-fail handled by orchestrator.
-            await validateTaxId(
-              {
-                organizationId: ctx.organizationId,
-                contractorId: id,
-                taxIdType,
-                taxIdValue: nextVatId,
-                actor: { userId: ctx.user.id },
-              },
-              {
-                prisma: ctx.db,
-                hmrcClient: getHmrcVatClient(),
-                viesClient: getViesClient(),
-              },
-            );
-          }
-          // Unsupported countries: leave summary fields as-is; nothing to validate.
-        } else {
-          // User cleared VAT — null summary fields; no API call.
-          await ctx.db.contractor.update({
-            where: { id },
-            data: {
-              latestVatValidatedAt: null,
-              latestVatValidationStatus: null,
-            },
-          });
-        }
-      }
+      // D-07 trigger 1: validate or clear VAT ID on change
+      await handleVatIdChange(ctx.db, id, ctx.organizationId, ctx.user.id, existing, updated);
 
       // Update default billing profile if billing fields changed
-      if (bankAccount !== undefined || paymentTermsDays !== undefined) {
-        const defaultProfile = await ctx.db.contractorBillingProfile.findFirst({
-          where: {
-            contractorId: id,
-            organizationId: ctx.organizationId,
-            isDefault: true,
-          },
-        });
-
-        if (defaultProfile) {
-          const profileUpdate: Prisma.ContractorBillingProfileUpdateInput = {};
-          if (bankAccount !== undefined) {
-            const cleaned = bankAccount ? bankAccount.replace(/\s/g, '') : null;
-            profileUpdate.bankAccountEncrypted = cleaned ? encryptBankAccount(cleaned) : null;
-            profileUpdate.bankAccountMasked = cleaned ? `****${cleaned.slice(-4)}` : null;
-          }
-          if (paymentTermsDays !== undefined) {
-            profileUpdate.paymentTermsDays = paymentTermsDays ?? null;
-          }
-          await ctx.db.contractorBillingProfile.update({
-            where: { id: defaultProfile.id },
-            data: profileUpdate,
-          });
-        }
-      }
+      await updateBillingProfileIfNeeded(ctx.db, id, ctx.organizationId, bankAccount, paymentTermsDays);
 
       return plain(updated);
     }),

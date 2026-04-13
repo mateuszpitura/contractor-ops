@@ -37,6 +37,171 @@ export function computeDuplicateCheckHash(
 }
 
 // ---------------------------------------------------------------------------
+// Internal pipeline types
+// ---------------------------------------------------------------------------
+
+interface MatchState {
+  flags: string[];
+  score: number;
+  matchedContractorId: string | null;
+  matchedContractId: string | null;
+  expectedAmountMinor: number | null;
+  amountDeltaMinor: number | null;
+  amountDeltaPercent: number | null;
+  duplicateInvoiceId: string | null;
+}
+
+type InvoiceInput = {
+  id?: string;
+  sellerTaxId: string | null;
+  totalMinor: number;
+  currency: string;
+  duplicateCheckHash: string | null;
+  issueDate?: Date | null;
+  servicePeriodStart?: Date | null;
+  servicePeriodEnd?: Date | null;
+};
+
+// ---------------------------------------------------------------------------
+// Pipeline step helpers
+// ---------------------------------------------------------------------------
+
+const UNMATCHED_RESULT: MatchResult = {
+  matchStatus: 'UNMATCHED',
+  contractorId: null,
+  contractId: null,
+  score: 0,
+  expectedAmountMinor: null,
+  amountDeltaMinor: null,
+  amountDeltaPercent: null,
+  flags: [],
+  duplicateInvoiceId: null,
+};
+
+/**
+ * Selects the contract whose rate is closest to the invoice total.
+ * Falls back to the first contract if none have rates.
+ */
+function pickBestContract<T extends { rateValueMinor: number | null }>(
+  contracts: T[],
+  invoiceTotalMinor: number,
+): T | null {
+  let bestContract: T | null = null;
+  let bestDelta = Infinity;
+
+  for (const contract of contracts) {
+    const rateMinor = contract.rateValueMinor ?? 0;
+    if (rateMinor > 0) {
+      const delta = Math.abs(invoiceTotalMinor - rateMinor);
+      if (delta < bestDelta) {
+        bestDelta = delta;
+        bestContract = contract;
+      }
+    } else if (!bestContract) {
+      bestContract = contract;
+    }
+  }
+
+  return bestContract ?? contracts[0] ?? null;
+}
+
+/**
+ * Calculates amount deviation between invoice total and expected contract rate.
+ * Returns updated score increment and deviation values.
+ */
+function computeDeviation(
+  invoiceTotalMinor: number,
+  expectedAmount: number | null,
+  thresholdPercent: number,
+): { scoreIncrement: number; expectedAmountMinor: number | null; deltaMinor: number | null; deltaPercent: number | null } {
+  if (!expectedAmount || expectedAmount <= 0) {
+    return { scoreIncrement: 0, expectedAmountMinor: null, deltaMinor: null, deltaPercent: null };
+  }
+
+  const deltaMinor = invoiceTotalMinor - expectedAmount;
+  const deltaPercent = (deltaMinor / expectedAmount) * 100;
+  const scoreIncrement = Math.abs(deltaPercent) <= thresholdPercent ? 20 : 0;
+
+  return { scoreIncrement, expectedAmountMinor: expectedAmount, deltaMinor, deltaPercent };
+}
+
+/**
+ * Checks for time-based reconciliation deviation on hourly/daily contracts.
+ */
+async function checkTimeDeviation(
+  db: DbClient,
+  organizationId: string,
+  contract: { id: string; rateType: string },
+  invoice: InvoiceInput,
+): Promise<boolean> {
+  if (contract.rateType !== 'PER_HOUR' && contract.rateType !== 'PER_DAY') {
+    return false;
+  }
+
+  const anchor = invoice.servicePeriodStart ?? invoice.issueDate ?? new Date();
+  const periodStart =
+    invoice.servicePeriodStart ??
+    new Date(Date.UTC(anchor.getUTCFullYear(), anchor.getUTCMonth(), 1));
+  const periodEnd =
+    invoice.servicePeriodEnd ??
+    new Date(Date.UTC(anchor.getUTCFullYear(), anchor.getUTCMonth() + 1, 0));
+
+  const timeRecon = await computeTimeReconciliation(
+    db,
+    organizationId,
+    contract.id,
+    periodStart,
+    periodEnd,
+    invoice.totalMinor,
+  );
+
+  return timeRecon != null && !timeRecon.withinThreshold;
+}
+
+/**
+ * Checks for a duplicate invoice by hash, excluding the current invoice.
+ */
+async function findDuplicateInvoice(
+  db: DbClient,
+  organizationId: string,
+  duplicateCheckHash: string | null,
+  excludeId?: string,
+): Promise<string | null> {
+  if (!duplicateCheckHash) return null;
+
+  const duplicateWhere: Record<string, unknown> = {
+    duplicateCheckHash,
+    organizationId,
+  };
+  if (excludeId) {
+    duplicateWhere.id = { not: excludeId };
+  }
+
+  const duplicate = await db.invoice.findFirst({
+    where: duplicateWhere,
+    select: { id: true },
+  });
+
+  return duplicate?.id ?? null;
+}
+
+/**
+ * Derives the final match status from the accumulated score and deviation.
+ */
+function deriveMatchStatus(
+  score: number,
+  amountDeltaPercent: number | null,
+  thresholdPercent: number,
+): MatchResult['matchStatus'] {
+  if (amountDeltaPercent !== null && Math.abs(amountDeltaPercent) > thresholdPercent) {
+    return 'DISCREPANCY';
+  }
+  if (score >= 80) return 'MATCHED';
+  if (score >= 50) return 'PARTIAL';
+  return 'UNMATCHED';
+}
+
+// ---------------------------------------------------------------------------
 // Auto-matching engine
 // ---------------------------------------------------------------------------
 
@@ -52,237 +217,82 @@ export function computeDuplicateCheckHash(
 export async function runAutoMatch(
   db: DbClient,
   organizationId: string,
-  invoice: {
-    id?: string;
-    sellerTaxId: string | null;
-    totalMinor: number;
-    currency: string;
-    duplicateCheckHash: string | null;
-    issueDate?: Date | null;
-    servicePeriodStart?: Date | null;
-    servicePeriodEnd?: Date | null;
-  },
+  invoice: InvoiceInput,
   deviationThresholdPercent = 10,
 ): Promise<MatchResult> {
-  const flags: string[] = [];
-  let score = 0;
-  let matchedContractorId: string | null = null;
-  let matchedContractId: string | null = null;
-  let expectedAmountMinor: number | null = null;
-  let amountDeltaMinor: number | null = null;
-  let amountDeltaPercent: number | null = null;
-  let duplicateInvoiceId: string | null = null;
-
-  // -------------------------------------------------------------------------
   // Step 1: Match contractor by NIP
-  // -------------------------------------------------------------------------
-
-  if (!invoice.sellerTaxId) {
-    return {
-      matchStatus: 'UNMATCHED',
-      contractorId: null,
-      contractId: null,
-      score: 0,
-      expectedAmountMinor: null,
-      amountDeltaMinor: null,
-      amountDeltaPercent: null,
-      flags: [],
-      duplicateInvoiceId: null,
-    };
-  }
+  if (!invoice.sellerTaxId) return UNMATCHED_RESULT;
 
   const contractor = await db.contractor.findFirst({
-    where: {
-      taxId: invoice.sellerTaxId,
-      organizationId,
-      deletedAt: null,
-    },
+    where: { taxId: invoice.sellerTaxId, organizationId, deletedAt: null },
   });
+  if (!contractor) return UNMATCHED_RESULT;
 
-  if (!contractor) {
-    return {
-      matchStatus: 'UNMATCHED',
-      contractorId: null,
-      contractId: null,
-      score: 0,
-      expectedAmountMinor: null,
-      amountDeltaMinor: null,
-      amountDeltaPercent: null,
-      flags: [],
-      duplicateInvoiceId: null,
-    };
-  }
+  const state: MatchState = {
+    flags: [],
+    score: 50, // Exact NIP match: +50 points
+    matchedContractorId: contractor.id,
+    matchedContractId: null,
+    expectedAmountMinor: null,
+    amountDeltaMinor: null,
+    amountDeltaPercent: null,
+    duplicateInvoiceId: null,
+  };
 
-  // Exact NIP match: +50 points
-  matchedContractorId = contractor.id;
-  score += 50;
-
-  // -------------------------------------------------------------------------
   // Step 2: Find active contracts
-  // -------------------------------------------------------------------------
-
   const contracts = await db.contract.findMany({
-    where: {
-      contractorId: contractor.id,
-      organizationId,
-      status: { in: ['ACTIVE', 'EXPIRING'] },
-      deletedAt: null,
-    },
+    where: { contractorId: contractor.id, organizationId, status: { in: ['ACTIVE', 'EXPIRING'] }, deletedAt: null },
   });
 
   if (contracts.length === 0) {
-    flags.push('NO_ACTIVE_CONTRACT');
-
-    // Check for expired contracts as a hint
-    const expiredContract = await db.contract.findFirst({
-      where: {
-        contractorId: contractor.id,
-        organizationId,
-        status: 'EXPIRED',
-        deletedAt: null,
-      },
+    state.flags.push('NO_ACTIVE_CONTRACT');
+    const expired = await db.contract.findFirst({
+      where: { contractorId: contractor.id, organizationId, status: 'EXPIRED', deletedAt: null },
     });
-
-    if (expiredContract) {
-      flags.push('EXPIRED_CONTRACT');
-    }
+    if (expired) state.flags.push('EXPIRED_CONTRACT');
   }
 
-  // -------------------------------------------------------------------------
-  // Step 3: Score calculation — pick best contract
-  // -------------------------------------------------------------------------
-
-  let bestContract: (typeof contracts)[number] | null = null;
-  let bestDelta = Infinity;
-
+  // Step 3: Pick best contract and score
   if (contracts.length > 0) {
-    // Has active contract: +30 points
-    score += 30;
+    state.score += 30; // Has active contract: +30 points
+    const bestContract = pickBestContract(contracts, invoice.totalMinor);
 
-    for (const contract of contracts) {
-      const rateMinor = contract.rateValueMinor ?? 0;
-      if (rateMinor > 0) {
-        const delta = Math.abs(invoice.totalMinor - rateMinor);
-        if (delta < bestDelta) {
-          bestDelta = delta;
-          bestContract = contract;
-        }
-      } else if (!bestContract) {
-        // Use contract even without rate if it's the only option
-        bestContract = contract;
+    if (bestContract) {
+      state.matchedContractId = bestContract.id;
+
+      // Step 4: Deviation calculation
+      const deviation = computeDeviation(invoice.totalMinor, bestContract.rateValueMinor, deviationThresholdPercent);
+      state.score += deviation.scoreIncrement;
+      state.expectedAmountMinor = deviation.expectedAmountMinor;
+      state.amountDeltaMinor = deviation.deltaMinor;
+      state.amountDeltaPercent = deviation.deltaPercent;
+
+      // Step 5: Flag generation
+      if (bestContract.currency !== invoice.currency) {
+        state.flags.push('CURRENCY_MISMATCH');
       }
-    }
 
-    // If no contract has a rate, just use the first one
-    if (!bestContract && contracts.length > 0) {
-      bestContract = contracts[0] ?? null;
+      const hasTimeDeviation = await checkTimeDeviation(db, organizationId, bestContract, invoice);
+      if (hasTimeDeviation) state.flags.push('TIME_DEVIATION');
     }
   }
 
-  if (bestContract) {
-    matchedContractId = bestContract.id;
-
-    // -----------------------------------------------------------------------
-    // Step 4: Deviation calculation
-    // -----------------------------------------------------------------------
-
-    const expectedAmount = bestContract.rateValueMinor;
-    if (expectedAmount && expectedAmount > 0) {
-      expectedAmountMinor = expectedAmount;
-      amountDeltaMinor = invoice.totalMinor - expectedAmount;
-      amountDeltaPercent = (amountDeltaMinor / expectedAmount) * 100;
-
-      // Amount within threshold: +20 points
-      if (Math.abs(amountDeltaPercent) <= deviationThresholdPercent) {
-        score += 20;
-      }
-    }
-
-    // -----------------------------------------------------------------------
-    // Step 5: Flag generation
-    // -----------------------------------------------------------------------
-
-    if (bestContract.currency !== invoice.currency) {
-      flags.push('CURRENCY_MISMATCH');
-    }
-
-    // Time-based reconciliation (Phase 18 - D-13)
-    // Warning only: does NOT change matchStatus or block approval (D-15)
-    if (bestContract.rateType === 'PER_HOUR' || bestContract.rateType === 'PER_DAY') {
-      const anchor = invoice.servicePeriodStart ?? invoice.issueDate ?? new Date();
-      const periodStart =
-        invoice.servicePeriodStart ??
-        new Date(Date.UTC(anchor.getUTCFullYear(), anchor.getUTCMonth(), 1));
-      const periodEnd =
-        invoice.servicePeriodEnd ??
-        new Date(Date.UTC(anchor.getUTCFullYear(), anchor.getUTCMonth() + 1, 0));
-
-      const timeRecon = await computeTimeReconciliation(
-        db,
-        organizationId,
-        bestContract.id,
-        periodStart,
-        periodEnd,
-        invoice.totalMinor,
-      );
-
-      if (timeRecon && !timeRecon.withinThreshold) {
-        flags.push('TIME_DEVIATION');
-      }
-    }
-  }
-
-  // -------------------------------------------------------------------------
   // Step 6: Duplicate check
-  // -------------------------------------------------------------------------
-
-  if (invoice.duplicateCheckHash) {
-    const duplicateWhere: Record<string, unknown> = {
-      duplicateCheckHash: invoice.duplicateCheckHash,
-      organizationId,
-    };
-
-    if (invoice.id) {
-      duplicateWhere.id = { not: invoice.id };
-    }
-
-    const duplicate = await db.invoice.findFirst({
-      where: duplicateWhere,
-      select: { id: true },
-    });
-
-    if (duplicate) {
-      flags.push('DUPLICATE_SUSPECTED');
-      duplicateInvoiceId = duplicate.id;
-    }
-  }
-
-  // -------------------------------------------------------------------------
-  // Determine match status from score
-  // -------------------------------------------------------------------------
-
-  let matchStatus: MatchResult['matchStatus'];
-
-  // Check deviation override first
-  if (amountDeltaPercent !== null && Math.abs(amountDeltaPercent) > deviationThresholdPercent) {
-    matchStatus = 'DISCREPANCY';
-  } else if (score >= 80) {
-    matchStatus = 'MATCHED';
-  } else if (score >= 50) {
-    matchStatus = 'PARTIAL';
-  } else {
-    matchStatus = 'UNMATCHED';
+  const dupId = await findDuplicateInvoice(db, organizationId, invoice.duplicateCheckHash, invoice.id);
+  if (dupId) {
+    state.flags.push('DUPLICATE_SUSPECTED');
+    state.duplicateInvoiceId = dupId;
   }
 
   return {
-    matchStatus,
-    contractorId: matchedContractorId,
-    contractId: matchedContractId,
-    score,
-    expectedAmountMinor,
-    amountDeltaMinor,
-    amountDeltaPercent,
-    flags,
-    duplicateInvoiceId,
+    matchStatus: deriveMatchStatus(state.score, state.amountDeltaPercent, deviationThresholdPercent),
+    contractorId: state.matchedContractorId,
+    contractId: state.matchedContractId,
+    score: state.score,
+    expectedAmountMinor: state.expectedAmountMinor,
+    amountDeltaMinor: state.amountDeltaMinor,
+    amountDeltaPercent: state.amountDeltaPercent,
+    flags: state.flags,
+    duplicateInvoiceId: state.duplicateInvoiceId,
   };
 }

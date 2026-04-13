@@ -150,6 +150,242 @@ function syncTaskToExternalSystems(
 }
 
 // ---------------------------------------------------------------------------
+// Task instantiation helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Computes the latest due date across all template tasks based on offset days.
+ */
+function computeMaxDueDate(
+  tasks: Array<{ dueOffsetDays: number | null }>,
+  now: Date,
+): Date | null {
+  let maxDueDate: Date | null = null;
+  for (const task of tasks) {
+    if (!task.dueOffsetDays) continue;
+    const taskDue = addDays(now, task.dueOffsetDays);
+    if (!maxDueDate || taskDue > maxDueDate) maxDueDate = taskDue;
+  }
+  return maxDueDate;
+}
+
+/**
+ * Resolves the initial status and resultJson for a task run based on
+ * whether the condition was met and whether it has a dependency.
+ */
+function resolveTaskRunStatus(
+  conditionMet: boolean,
+  dependsOnRunId: string | null,
+): { status: 'TODO' | 'BLOCKED' | 'SKIPPED'; resultJson: Record<string, unknown> | null } {
+  if (!conditionMet) {
+    return { status: 'SKIPPED', resultJson: { skipReason: workflowTaskSkipReason.conditionNotMet } };
+  }
+  return { status: dependsOnRunId ? 'BLOCKED' : 'TODO', resultJson: null };
+}
+
+/**
+ * Computes the due date for a task run from offset days/hours.
+ */
+function computeTaskDueAt(
+  conditionMet: boolean,
+  dueOffsetDays: number | null,
+  dueOffsetHours: number | null,
+  now: Date,
+): Date | null {
+  if (!conditionMet) return null;
+  let dueAt: Date | null = null;
+  if (dueOffsetDays) dueAt = addDays(now, dueOffsetDays);
+  if (dueOffsetHours) dueAt = addHours(dueAt ?? now, dueOffsetHours);
+  return dueAt;
+}
+
+/**
+ * Instantiates WorkflowTaskRun records for each template task.
+ * Returns a map of template task ID -> run task ID.
+ */
+// biome-ignore lint/suspicious/noExplicitAny: transaction client type differs per Prisma version
+async function instantiateTaskRuns(
+  tx: any,
+  organizationId: string,
+  workflowRunId: string,
+  templateTasks: Array<{
+    id: string;
+    configJson: unknown;
+    title: string;
+    description: string | null;
+    taskType: string;
+    required: boolean;
+    assigneeMode: string;
+    assigneeRole: string | null;
+    assigneeUserId: string | null;
+    dueOffsetDays: number | null;
+    dueOffsetHours: number | null;
+    dependsOnTaskTemplateId: string | null;
+    sortOrder: number;
+  }>,
+  contractor: { id: string; [k: string]: unknown },
+  contract: { id: string; [k: string]: unknown } | null,
+  now: Date,
+): Promise<Map<string, string>> {
+  const taskIdMap = new Map<string, string>();
+
+  for (const taskTemplate of templateTasks) {
+    const condition = taskTemplate.configJson as ConditionGroup | null;
+    const conditionMet = evaluateCondition(condition, { contractor, contract });
+
+    const assigneeUserId = conditionMet
+      ? await resolveAssignee(taskTemplate, contractor, contract, organizationId, tx)
+      : null;
+
+    const dueAt = computeTaskDueAt(conditionMet, taskTemplate.dueOffsetDays, taskTemplate.dueOffsetHours, now);
+
+    const dependsOnRunId = taskTemplate.dependsOnTaskTemplateId
+      ? (taskIdMap.get(taskTemplate.dependsOnTaskTemplateId) ?? null)
+      : null;
+
+    const { status, resultJson } = resolveTaskRunStatus(conditionMet, dependsOnRunId);
+
+    const taskRun = await tx.workflowTaskRun.create({
+      data: {
+        organizationId,
+        workflowRunId,
+        workflowTaskTemplateId: taskTemplate.id,
+        title: taskTemplate.title,
+        description: taskTemplate.description,
+        taskType: taskTemplate.taskType,
+        required: taskTemplate.required,
+        assigneeUserId,
+        assigneeRole: taskTemplate.assigneeRole,
+        dueAt,
+        dependsOnTaskRunId: dependsOnRunId,
+        status,
+        resultJson,
+      },
+    });
+
+    taskIdMap.set(taskTemplate.id, taskRun.id);
+  }
+
+  return taskIdMap;
+}
+
+// ---------------------------------------------------------------------------
+// Post-start integration dispatch helpers (fire-and-forget)
+// ---------------------------------------------------------------------------
+
+type TaskRunLike = { id: string; status: string; title: string; description: string | null };
+
+/**
+ * Creates Jira issues for TODO tasks that are Jira-eligible.
+ */
+async function syncJiraTasksAfterStart(
+  db: DbClient,
+  organizationId: string,
+  tasks: TaskRunLike[],
+  eligibleIds: Set<string>,
+): Promise<void> {
+  const todoTasks = tasks.filter(t => t.status === 'TODO' && eligibleIds.has(t.id));
+  if (todoTasks.length === 0) return;
+
+  try {
+    const { createJiraIssue } = await import('../services/jira-issue-sync.js');
+    const connection = await db.integrationConnection.findFirst({
+      where: { organizationId, provider: 'JIRA', status: 'CONNECTED' },
+      select: { id: true },
+    });
+    if (!connection) return;
+
+    for (const task of todoTasks) {
+      createJiraIssue(db, organizationId, connection.id, task.id).catch(err =>
+        console.error(`[workflow/startRun] Jira issue creation failed for task ${task.id}:`, err),
+      );
+    }
+  } catch (err) {
+    console.error('[workflow/startRun] Jira issue creation setup failed:', err);
+  }
+}
+
+/**
+ * Creates Linear issues for TODO tasks that are Linear-eligible.
+ */
+async function syncLinearTasksAfterStart(
+  db: DbClient,
+  organizationId: string,
+  tasks: TaskRunLike[],
+  eligibleRuns: Map<string, { teamId: string; teamKey: string }>,
+): Promise<void> {
+  const todoTasks = tasks.filter(t => t.status === 'TODO' && eligibleRuns.has(t.id));
+  if (todoTasks.length === 0) return;
+
+  try {
+    const { createLinearIssue } = await import('../services/linear-issue-sync.js');
+    const linearConnection = await db.integrationConnection.findFirst({
+      where: { organizationId, provider: 'LINEAR', status: 'CONNECTED' },
+      select: { id: true },
+    });
+    if (!linearConnection) return;
+
+    for (const task of todoTasks) {
+      const linearConfig = eligibleRuns.get(task.id);
+      if (!linearConfig) continue;
+      createLinearIssue(db, {
+        organizationId,
+        connectionId: linearConnection.id,
+        taskRunId: task.id,
+        title: task.title,
+        description: task.description ?? task.title,
+        assigneeEmail: undefined,
+        teamId: linearConfig.teamId,
+        teamKey: linearConfig.teamKey,
+      }).catch(err =>
+        console.error(`[workflow/startRun] Linear issue creation failed for task ${task.id}:`, err),
+      );
+    }
+  } catch (err) {
+    console.error('[workflow/startRun] Linear issue creation setup failed:', err);
+  }
+}
+
+/**
+ * Creates calendar events for TODO tasks that are calendar-eligible.
+ */
+async function syncCalendarTasksAfterStart(
+  db: DbClient,
+  organizationId: string,
+  tasks: TaskRunLike[],
+  calendarConfigMap: Map<string, import('@contractor-ops/validators').CalendarTaskConfig>,
+  contractorName: string,
+  contractName: string,
+  userId?: string,
+): Promise<void> {
+  if (calendarConfigMap.size === 0) return;
+
+  const todoTasks = tasks.filter(t => t.status === 'TODO' && calendarConfigMap.has(t.id));
+  if (todoTasks.length === 0) return;
+
+  try {
+    const { createTaskCalendarEvent } = await import('../services/calendar-deadline-sync.js');
+    for (const task of todoTasks) {
+      const config = calendarConfigMap.get(task.id);
+      if (!config) continue;
+      createTaskCalendarEvent(db, {
+        organizationId,
+        workflowTaskRunId: task.id,
+        config,
+        contractorName,
+        contractName,
+        taskName: task.title,
+        userId,
+      }).catch(err =>
+        console.error(`[workflow/startRun] Calendar event creation failed for task ${task.id}:`, err),
+      );
+    }
+  } catch (err) {
+    console.error('[workflow/startRun] Calendar event creation setup failed:', err);
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Workflow Execution sub-router
 // ---------------------------------------------------------------------------
 
@@ -211,15 +447,7 @@ export const workflowExecutionRouter = router({
         const now = new Date();
 
         // Compute a global dueAt from the maximum task offset
-        let maxDueDate: Date | null = null;
-        for (const task of template.tasks) {
-          if (task.dueOffsetDays) {
-            const taskDue = addDays(now, task.dueOffsetDays);
-            if (!maxDueDate || taskDue > maxDueDate) {
-              maxDueDate = taskDue;
-            }
-          }
-        }
+        const maxDueDate = computeMaxDueDate(template.tasks, now);
 
         const workflowRun = await tx.workflowRun.create({
           data: {
@@ -236,66 +464,11 @@ export const workflowExecutionRouter = router({
           },
         });
 
-        // Map template task IDs to run task IDs for dependency resolution
-        const taskIdMap = new Map<string, string>();
-
-        for (const taskTemplate of template.tasks) {
-          const condition = taskTemplate.configJson as ConditionGroup | null;
-          const conditionMet = evaluateCondition(condition, {
-            contractor,
-            contract,
-          });
-
-          const assigneeUserId = conditionMet
-            ? await resolveAssignee(taskTemplate, contractor, contract, ctx.organizationId, tx)
-            : null;
-
-          let dueAt: Date | null = null;
-          if (conditionMet) {
-            if (taskTemplate.dueOffsetDays) {
-              dueAt = addDays(now, taskTemplate.dueOffsetDays);
-            }
-            if (taskTemplate.dueOffsetHours) {
-              dueAt = addHours(dueAt ?? now, taskTemplate.dueOffsetHours);
-            }
-          }
-
-          const dependsOnRunId = taskTemplate.dependsOnTaskTemplateId
-            ? (taskIdMap.get(taskTemplate.dependsOnTaskTemplateId) ?? null)
-            : null;
-
-          let resultJson: Record<string, unknown> | null = null;
-
-          const status = conditionMet
-            ? dependsOnRunId
-              ? ('BLOCKED' as const)
-              : ('TODO' as const)
-            : ('SKIPPED' as const);
-
-          if (!conditionMet) {
-            resultJson = { skipReason: workflowTaskSkipReason.conditionNotMet };
-          }
-
-          const taskRun = await tx.workflowTaskRun.create({
-            data: {
-              organizationId: ctx.organizationId,
-              workflowRunId: workflowRun.id,
-              workflowTaskTemplateId: taskTemplate.id,
-              title: taskTemplate.title,
-              description: taskTemplate.description,
-              taskType: taskTemplate.taskType,
-              required: taskTemplate.required,
-              assigneeUserId,
-              assigneeRole: taskTemplate.assigneeRole,
-              dueAt,
-              dependsOnTaskRunId: dependsOnRunId,
-              status,
-              resultJson,
-            },
-          });
-
-          taskIdMap.set(taskTemplate.id, taskRun.id);
-        }
+        // Instantiate all task runs from template tasks
+        const taskIdMap = await instantiateTaskRuns(
+          tx, ctx.organizationId, workflowRun.id, template.tasks,
+          contractor, contract, now,
+        );
 
         // Compute initial progress
         const allTasks = await tx.workflowTaskRun.findMany({
@@ -356,130 +529,21 @@ export const workflowExecutionRouter = router({
         }).catch(err => console.error('[workflow] dispatch TASK_ASSIGNED failed:', err));
       }
 
-      // Fire-and-forget: create Jira issues for jira-enabled tasks (non-blocking)
-      const todoJiraTasks = run.run.tasks.filter(
-        t => t.status === 'TODO' && run.jiraEligibleTaskRunIds.has(t.id),
-      );
-      if (todoJiraTasks.length > 0) {
-        void (async () => {
-          try {
-            const { createJiraIssue } = await import('../services/jira-issue-sync.js');
-            const connection = await ctx.db.integrationConnection.findFirst({
-              where: {
-                organizationId: ctx.organizationId,
-                provider: 'JIRA',
-                status: 'CONNECTED',
-              },
-              select: { id: true },
-            });
-            if (connection) {
-              for (const task of todoJiraTasks) {
-                createJiraIssue(ctx.db, ctx.organizationId, connection.id, task.id).catch(err =>
-                  console.error(
-                    `[workflow/startRun] Jira issue creation failed for task ${task.id}:`,
-                    err,
-                  ),
-                );
-              }
-            }
-          } catch (err) {
-            console.error('[workflow/startRun] Jira issue creation setup failed:', err);
-          }
-        })();
-      }
-
-      // Fire-and-forget: create Linear issues for linear-enabled tasks (non-blocking)
-      const todoLinearTasks = run.run.tasks.filter(
-        t => t.status === 'TODO' && run.linearEligibleTaskRuns.has(t.id),
-      );
-      if (todoLinearTasks.length > 0) {
-        void (async () => {
-          try {
-            const { createLinearIssue } = await import('../services/linear-issue-sync.js');
-            const linearConnection = await ctx.db.integrationConnection.findFirst({
-              where: {
-                organizationId: ctx.organizationId,
-                provider: 'LINEAR',
-                status: 'CONNECTED',
-              },
-              select: { id: true },
-            });
-            if (linearConnection) {
-              for (const task of todoLinearTasks) {
-                const linearConfig = run.linearEligibleTaskRuns.get(task.id);
-                if (linearConfig) {
-                  createLinearIssue(ctx.db, {
-                    organizationId: ctx.organizationId,
-                    connectionId: linearConnection.id,
-                    taskRunId: task.id,
-                    title: task.title,
-                    description: task.description ?? task.title,
-                    assigneeEmail: undefined, // Resolved separately if needed
-                    teamId: linearConfig.teamId,
-                    teamKey: linearConfig.teamKey,
-                  }).catch(err =>
-                    console.error(
-                      `[workflow/startRun] Linear issue creation failed for task ${task.id}:`,
-                      err,
-                    ),
-                  );
-                }
-              }
-            }
-          } catch (err) {
-            console.error('[workflow/startRun] Linear issue creation setup failed:', err);
-          }
-        })();
-      }
-
-      // Fire-and-forget: create calendar events for calendar-enabled tasks (non-blocking)
-      if (run.calendarConfigMap.size > 0) {
-        const todoCalendarTasks = run.run.tasks.filter(
-          t => t.status === 'TODO' && run.calendarConfigMap.has(t.id),
-        );
-        if (todoCalendarTasks.length > 0) {
-          void (async () => {
-            try {
-              const { createTaskCalendarEvent } = await import(
-                '../services/calendar-deadline-sync.js'
-              );
-              for (const task of todoCalendarTasks) {
-                const config = run.calendarConfigMap.get(task.id);
-                if (!config) continue;
-                createTaskCalendarEvent(ctx.db, {
-                  organizationId: ctx.organizationId,
-                  workflowTaskRunId: task.id,
-                  config,
-                  contractorName: run.contractorName,
-                  contractName: run.contractName,
-                  taskName: task.title,
-                  userId: ctx.user?.id,
-                }).catch(err =>
-                  console.error(
-                    `[workflow/startRun] Calendar event creation failed for task ${task.id}:`,
-                    err,
-                  ),
-                );
-              }
-            } catch (err) {
-              console.error('[workflow/startRun] Calendar event creation setup failed:', err);
-            }
-          })();
-        }
-      }
+      // Fire-and-forget: sync eligible tasks to external integrations
+      void syncJiraTasksAfterStart(ctx.db, ctx.organizationId, run.run.tasks, run.jiraEligibleTaskRunIds);
+      void syncLinearTasksAfterStart(ctx.db, ctx.organizationId, run.run.tasks, run.linearEligibleTaskRuns);
+      void syncCalendarTasksAfterStart(ctx.db, ctx.organizationId, run.run.tasks, run.calendarConfigMap, run.contractorName, run.contractName, ctx.user?.id);
 
       // Fire-and-forget: handle EQUIPMENT task integration hooks (Phase 30)
       const equipmentTasks = run.run.tasks.filter(
         t => t.status !== 'SKIPPED' && run.equipmentEligibleTaskRunIds.has(t.id),
       );
       for (const eqTask of equipmentTasks) {
-        void (async () => {
-          await handleEquipmentTaskStart(ctx.db, ctx.organizationId, eqTask, {
-            id: run.run.id,
-            contractorId: run.run.contractorId,
-            templateType: run.templateType,
-          });
-        })();
+        void handleEquipmentTaskStart(ctx.db, ctx.organizationId, eqTask, {
+          id: run.run.id,
+          contractorId: run.run.contractorId,
+          templateType: run.templateType,
+        });
       }
 
       void invalidateByPrefix(CacheKeys.dashboardPrefix(ctx.organizationId));

@@ -181,6 +181,77 @@ function _buildExportItems(
   });
 }
 
+/**
+ * Applies withholding tax calculations for Saudi organizations on cross-border payments.
+ */
+// biome-ignore lint/suspicious/noExplicitAny: transaction client type not exported from Prisma
+async function _applyWhtIfSaudi(tx: any, organizationId: string, paymentRunId: string): Promise<void> {
+  const org = await tx.organization.findUniqueOrThrow({
+    where: { id: organizationId },
+    select: { countryCode: true },
+  });
+
+  if (org.countryCode !== 'SA') return;
+
+  const items = await tx.paymentRunItem.findMany({
+    where: { paymentRunId },
+    include: { contractor: { select: { countryCode: true } } },
+  });
+
+  for (const item of items) {
+    const whtResult = await calculateWht(
+      org.countryCode,
+      item.contractor.countryCode,
+      'technical_services',
+      item.amountMinor,
+    );
+    if (!whtResult) continue;
+
+    await tx.paymentRunItem.update({
+      where: { id: item.id },
+      data: {
+        grossAmountMinor: item.amountMinor,
+        amountMinor: whtResult.netAmountMinor,
+        whtAmountMinor: whtResult.whtAmountMinor,
+        whtRate: whtResult.whtRate,
+        whtTreatyApplied: whtResult.treatyApplied,
+        whtTreatyReference: whtResult.treatyReference,
+        whtServiceType: 'technical_services',
+      },
+    });
+    await tx.invoice.update({
+      where: { id: item.invoiceId },
+      data: { withholdingMinor: whtResult.whtAmountMinor },
+    });
+  }
+}
+
+/**
+ * Resolves the organization's bank info and transfer title template from metadata.
+ */
+// biome-ignore lint/suspicious/noExplicitAny: transaction client type not exported from Prisma
+async function _resolveOrgBankInfo(tx: any, organizationId: string): Promise<{ orgBank: OrgBankInfo; transferTitleTemplate: string }> {
+  const org = await tx.organization.findUnique({
+    where: { id: organizationId },
+    select: { name: true, metadata: true },
+  });
+
+  const parsedMetadata = org?.metadata
+    ? (JSON.parse(org.metadata) as Record<string, unknown>)
+    : null;
+  const settingsJson = (parsedMetadata?.settingsJson ?? {}) as Record<string, unknown>;
+  const bankAccount = (settingsJson.bankAccount ?? {}) as Record<string, unknown>;
+
+  return {
+    transferTitleTemplate: (settingsJson.paymentTransferTitleTemplate as string | undefined) ?? '{invoice_number}',
+    orgBank: {
+      name: org?.name ?? '',
+      iban: (bankAccount.iban as string | undefined) ?? '',
+      bic: (bankAccount.bic as string | undefined) ?? '',
+    },
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Valid status transitions
 // ---------------------------------------------------------------------------
@@ -398,42 +469,7 @@ export const paymentRouter = router({
             });
 
             // Apply WHT calculations for Saudi orgs on cross-border payments
-            const org = await tx.organization.findUniqueOrThrow({
-              where: { id: ctx.organizationId },
-              select: { countryCode: true },
-            });
-            if (org.countryCode === 'SA') {
-              const items = await tx.paymentRunItem.findMany({
-                where: { paymentRunId: run.id },
-                include: { contractor: { select: { countryCode: true } } },
-              });
-              for (const item of items) {
-                const whtResult = await calculateWht(
-                  org.countryCode,
-                  item.contractor.countryCode,
-                  'technical_services',
-                  item.amountMinor,
-                );
-                if (whtResult) {
-                  await tx.paymentRunItem.update({
-                    where: { id: item.id },
-                    data: {
-                      grossAmountMinor: item.amountMinor,
-                      amountMinor: whtResult.netAmountMinor,
-                      whtAmountMinor: whtResult.whtAmountMinor,
-                      whtRate: whtResult.whtRate,
-                      whtTreatyApplied: whtResult.treatyApplied,
-                      whtTreatyReference: whtResult.treatyReference,
-                      whtServiceType: 'technical_services',
-                    },
-                  });
-                  await tx.invoice.update({
-                    where: { id: item.invoiceId },
-                    data: { withholdingMinor: whtResult.whtAmountMinor },
-                  });
-                }
-              }
-            }
+            await _applyWhtIfSaudi(tx, ctx.organizationId, run.id);
 
             await tx.invoice.updateMany({
               where: { id: { in: groupInvoices.map(inv => inv.id) } },
@@ -656,68 +692,16 @@ export const paymentRouter = router({
         const freshInvoiceCount = itemsAgg._count;
 
         // Fetch org settings for transfer title template and bank info
-        const org = await tx.organization.findUnique({
-          where: { id: ctx.organizationId },
-          select: { name: true, metadata: true },
-        });
+        const { orgBank, transferTitleTemplate } = await _resolveOrgBankInfo(tx, ctx.organizationId);
 
-        const parsedMetadata = org?.metadata
-          ? (JSON.parse(org.metadata) as Record<string, unknown>)
-          : null;
-        const settingsJson = (parsedMetadata?.settingsJson ?? {}) as Record<string, unknown>;
-        const bankAccount = (settingsJson.bankAccount ?? {}) as Record<string, unknown>;
-        const transferTitleTemplate =
-          (settingsJson.paymentTransferTitleTemplate as string | undefined) ?? '{invoice_number}';
-        const orgBank: OrgBankInfo = {
-          name: org?.name ?? '',
-          iban: (bankAccount.iban as string | undefined) ?? '',
-          bic: (bankAccount.bic as string | undefined) ?? '',
-        };
-
-        // Build ExportItems
-        const exportItems: ExportItem[] = run.items.map(item => {
-          const billingPeriod =
-            item.invoice.servicePeriodStart && item.invoice.servicePeriodEnd
-              ? `${item.invoice.servicePeriodStart.toISOString().slice(0, 10)} - ${item.invoice.servicePeriodEnd.toISOString().slice(0, 10)}`
-              : undefined;
-
-          const transferTitle = resolveTransferTitle(transferTitleTemplate, {
-            invoiceNumber: item.invoice.invoiceNumber,
-            billingPeriod,
-            contractorName: item.contractor.legalName,
-          });
-
-          return {
-            contractorName: item.contractor.legalName,
-            iban: item.billingProfile?.bankAccountMasked ?? '',
-            amountMinor: item.amountMinor,
-            currency: item.currency,
-            invoiceNumber: item.invoice.invoiceNumber,
-            taxId: item.contractor.taxId,
-            bankName: item.billingProfile?.bankName ?? null,
-            swiftBic: item.billingProfile?.swiftBic ?? null,
-            dueDate: item.invoice.dueDate,
-            transferTitle,
-          };
-        });
-
-        // Generate export file
-        let fileBuffer: Buffer;
-        let ext: string;
-
-        if (input.exportFormat === 'CSV') {
-          fileBuffer = await generateCsv(exportItems);
-          ext = 'csv';
-        } else if (input.exportFormat === 'BANK_FILE') {
-          fileBuffer = generateElixir(exportItems, orgBank);
-          ext = 'txt';
-        } else if (input.exportFormat === 'SWIFT_XML') {
-          fileBuffer = generateSwiftXml(exportItems, orgBank, run.runNumber ?? run.id);
-          ext = 'xml';
-        } else {
-          fileBuffer = generateSepaXml(exportItems, orgBank, run.runNumber ?? run.id);
-          ext = 'xml';
-        }
+        // Build ExportItems and generate export file
+        const exportItems = _buildExportItems(run.items, transferTitleTemplate);
+        const { fileBuffer, ext } = await _generateExportFileForFormat(
+          input.exportFormat,
+          exportItems,
+          orgBank,
+          run.runNumber ?? run.id,
+        );
 
         // Update run status to EXPORTED with fresh totals
         const updatedRun = await tx.paymentRun.update({
@@ -802,29 +786,7 @@ export const paymentRouter = router({
         }
 
         // Check if all items in run are terminal -> auto-complete
-        const remaining = await tx.paymentRunItem.count({
-          where: {
-            paymentRunId: item.paymentRunId,
-            status: { in: ['PENDING', 'EXPORTED'] },
-          },
-        });
-
-        if (remaining === 0) {
-          const failedCount = await tx.paymentRunItem.count({
-            where: {
-              paymentRunId: item.paymentRunId,
-              status: 'FAILED',
-            },
-          });
-
-          await tx.paymentRun.update({
-            where: { id: item.paymentRunId },
-            data: {
-              status: failedCount > 0 ? 'FAILED' : 'COMPLETED',
-              completedAt: new Date(),
-            },
-          });
-        }
+        await autoCompleteRunIfTerminal(tx, item.paymentRunId);
 
         return updatedItem;
       });
