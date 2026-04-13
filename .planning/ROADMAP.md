@@ -37,7 +37,7 @@ See .planning/milestones/v4.0/ for details.
 - [x] **Phase 56: Country Foundations & German i18n** - UK/DE contractor fields, German locale, GDPR compliance notices (completed 2026-04-12)
 - [ ] **Phase 57: Government API Clients** - HMRC VAT validation, VIES USt-IdNr validation, UK/DE VAT rates
 - [ ] **Phase 58: Classification Engine & Rule Sets** - Generic classification engine with IR35 and Scheinselbstandigkeit rule sets
-- [ ] **Phase 59: Classification Documents & Chain Tracking** - SDS generation, IR35 chain participants, DRV audit defense documentation
+- [x] **Phase 59: Classification Documents & Chain Tracking** - SDS generation, IR35 chain participants, DRV audit defense documentation (completed 2026-04-13)
 - [ ] **Phase 60: Classification Polish** - Economic dependency alerts, reassessment triggers, DRV tracking, compliance dashboard
 - [ ] **Phase 61: XRechnung E-Invoicing** - XRechnung CII XML generation, KoSIT validation, Leitweg-ID, Peppol UK
 - [ ] **Phase 62: ZUGFeRD E-Invoicing** - ZUGFeRD PDF/A-3 with embedded CII XML, inbound XRechnung/ZUGFeRD parsing
@@ -162,7 +162,7 @@ Phases execute in numeric order: 56 -> 57 -> 58 -> 59 -> 60 -> 61 -> 62 -> 63
 | 56. Country Foundations & German i18n | v5.0 | 8/8 | Complete   | 2026-04-12 |
 | 57. Government API Clients | v5.0 | 3/4 | In Progress|  |
 | 58. Classification Engine & Rule Sets | v5.0 | 4/5 | In Progress|  |
-| 59. Classification Documents & Chain Tracking | v5.0 | 3/4 | In Progress|  |
+| 59. Classification Documents & Chain Tracking | v5.0 | 4/4 | Complete   | 2026-04-13 |
 | 60. Classification Polish | v5.0 | 0/TBD | Not started | - |
 | 61. XRechnung E-Invoicing | v5.0 | 0/TBD | Not started | - |
 | 62. ZUGFeRD E-Invoicing | v5.0 | 0/TBD | Not started | - |
