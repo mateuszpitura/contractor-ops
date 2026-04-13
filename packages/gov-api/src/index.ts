@@ -8,3 +8,8 @@ export type {
   GovApiRateLimitConfig,
   GovApiRetryConfig,
 } from './types.js';
+
+// Phase 57 · Plan 02 — government VAT client implementations.
+export * from './clients/index.js';
+export * from './schemas/hmrc-vat.schema.js';
+export * from './schemas/vies.schema.js';
