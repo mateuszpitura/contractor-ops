@@ -325,8 +325,11 @@ export function CarrierShipmentForm({
                     onValueChange={val => val && setParcelSize(val as ParcelSize)}
                     className="flex gap-4">
                     {(['small', 'medium', 'large'] as const).map(size => (
-                      <label key={size} className="flex cursor-pointer items-center gap-2">
-                        <RadioGroupItem value={size} />
+                      <label
+                        key={size}
+                        htmlFor={`parcel-size-${size}`}
+                        className="flex cursor-pointer items-center gap-2">
+                        <RadioGroupItem id={`parcel-size-${size}`} value={size} />
                         <span className="text-sm">{t(size)}</span>
                       </label>
                     ))}
@@ -363,7 +366,7 @@ export function CarrierShipmentForm({
               {t('cancel')}
             </Button>
             <Button onClick={handleSubmit} disabled={!isFormValid || isPending}>
-              {isPending && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
+              {!!isPending && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
               {t('createShipment')}
             </Button>
           </DialogFooter>

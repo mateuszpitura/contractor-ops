@@ -104,7 +104,7 @@ describe('StepDuplicates', () => {
     );
 
     const updateRadios = screen.getAllByRole('radio', { name: 'Update existing' });
-    await user.click(updateRadios[1]!);
+    await user.click(updateRadios[1]);
 
     expect(onActionsChange).toHaveBeenCalledWith({
       '1': 'skip',

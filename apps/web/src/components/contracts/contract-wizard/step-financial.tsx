@@ -150,7 +150,7 @@ export function StepFinancial({ form, preFilledFields }: StepFinancialProps) {
         {isPreFilled('rateValueMinor') && (
           <p className="text-xs text-muted-foreground">{t('preFilled')}</p>
         )}
-        {errors.rateValueMinor && (
+        {!!errors.rateValueMinor && (
           <p className="text-sm text-destructive">{errors.rateValueMinor.message}</p>
         )}
       </div>
@@ -180,7 +180,7 @@ export function StepFinancial({ form, preFilledFields }: StepFinancialProps) {
         {isPreFilled('currency') && (
           <p className="text-xs text-muted-foreground">{t('preFilled')}</p>
         )}
-        {errors.currency && <p className="text-sm text-destructive">{errors.currency.message}</p>}
+        {!!errors.currency && <p className="text-sm text-destructive">{errors.currency.message}</p>}
       </div>
 
       {/* Billing model */}
@@ -209,7 +209,7 @@ export function StepFinancial({ form, preFilledFields }: StepFinancialProps) {
         {isPreFilled('billingModel') && (
           <p className="text-xs text-muted-foreground">{t('preFilled')}</p>
         )}
-        {errors.billingModel && (
+        {!!errors.billingModel && (
           <p className="text-sm text-destructive">{errors.billingModel.message}</p>
         )}
       </div>
@@ -237,7 +237,7 @@ export function StepFinancial({ form, preFilledFields }: StepFinancialProps) {
             ))}
           </SelectContent>
         </Select>
-        {errors.rateType && <p className="text-sm text-destructive">{errors.rateType.message}</p>}
+        {!!errors.rateType && <p className="text-sm text-destructive">{errors.rateType.message}</p>}
       </div>
 
       {/* Payment terms */}
@@ -252,7 +252,7 @@ export function StepFinancial({ form, preFilledFields }: StepFinancialProps) {
           placeholder="30"
           {...register('paymentTermsDays', { valueAsNumber: true })}
         />
-        {errors.paymentTermsDays && (
+        {!!errors.paymentTermsDays && (
           <p className="text-sm text-destructive">{errors.paymentTermsDays.message}</p>
         )}
       </div>
@@ -280,7 +280,7 @@ export function StepFinancial({ form, preFilledFields }: StepFinancialProps) {
             ))}
           </SelectContent>
         </Select>
-        {errors.invoiceCycle && (
+        {!!errors.invoiceCycle && (
           <p className="text-sm text-destructive">{errors.invoiceCycle.message}</p>
         )}
       </div>

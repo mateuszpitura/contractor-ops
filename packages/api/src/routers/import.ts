@@ -255,7 +255,13 @@ export const importRouter = router({
             const duplicateAction = duplicateActions[taxId];
 
             if (entityType === 'contractor') {
-              const result = await commitContractorRow(tx, ctx.organizationId, ctx.user?.id, row, duplicateAction);
+              const result = await commitContractorRow(
+                tx,
+                ctx.organizationId,
+                ctx.user?.id,
+                row,
+                duplicateAction,
+              );
               if (result === 'created') created++;
               else if (result === 'updated') updated++;
               else if (result === 'skipped') skipped++;

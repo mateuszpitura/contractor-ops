@@ -118,7 +118,7 @@ describe('StepCompany', () => {
   it('allows selecting a contractor type', async () => {
     const { user } = setup(<Wrapper />);
     const radios = screen.getAllByRole('radio');
-    await user.click(radios[1]!); // Click COMPANY option
+    await user.click(radios[1]); // Click COMPANY option
     // Radio should now be checked
     expect(radios[1]).toBeChecked();
   });

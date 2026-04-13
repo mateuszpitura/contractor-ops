@@ -11,10 +11,18 @@ function ksefEndpoints(baseUrl: string, net: HandlerOptions['network']) {
     http.get(`${baseUrl}/auth/public-key`, async () => {
       const err = await applyNetworkConditions(net);
       if (err) return err;
-      // Return a dummy RSA public key (PEM format)
+      // Return a valid RSA-2048 public key (PEM format) for RSA-OAEP encryption.
       return HttpResponse.json({
         publicKey:
-          '-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0Z3VS5JJcds3xfn/ygWe\nFsWlRNiDteIOPBWfR+oWpwAB8UHAgwBnz5dFz1VbMjCyQjLn1SZ+7+YhJfMPPB+\nVBOlq3GxB3mbBjYpK6Q1szDQ+IhLZoSjR/qB1A0+test+mock+key+AQAB\n-----END PUBLIC KEY-----',
+          '-----BEGIN PUBLIC KEY-----\n' +
+          'MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAypkXCVdmG2g2ZfYj8UGb\n' +
+          '4VsCLMiuPqsWd+hFh/5KqlOiDosVheZg1iWXHkKUcXzfeM2V2nPmW11k02s85OU+\n' +
+          'sw0yNJ9BJwXlr8zzFtt4cVVfNitWzdGKRml+oNORErNIbXGqHe+tN7rORe9iVps1\n' +
+          'vrHx7EOUuydNMvl7AAZjc6Y4gT3rIqZNQ6y7oYuUyAKJirohPaQ644NYkTu45rlE\n' +
+          'h05X3k49ok404A9kEzpoYVC6Vp4fyGhMDnsSVUqni21I//haCcdqZ+98+u3i8taq\n' +
+          'VYn6QWEtW36w9IHq2SfD9JjPedITXQE5vTzTNuRKH6s8Y+Np2ZWaN41GXfTgG6pM\n' +
+          'lQIDAQAB\n' +
+          '-----END PUBLIC KEY-----',
       });
     }),
 

@@ -116,7 +116,7 @@ export default function PortalLoginPage() {
                 disabled={requestMagicLink.isPending}
                 {...register('email')}
               />
-              {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
+              {!!errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
             </div>
 
             <Button type="submit" className="w-full" disabled={requestMagicLink.isPending}>

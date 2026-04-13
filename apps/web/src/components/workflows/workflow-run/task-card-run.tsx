@@ -273,7 +273,7 @@ export function TaskCardRun({ task, runId, currentUserId, dependencyTitle }: Tas
   const isOverdue = task.isOverdue;
   const statusConfig = isOverdue
     ? { icon: AlertCircle, className: 'text-destructive' }
-    : (statusIconMap[task.status] ?? statusIconMap.TODO!);
+    : (statusIconMap[task.status] ?? statusIconMap.TODO);
 
   const StatusIcon = statusConfig.icon;
   const TypeIcon = taskTypeIconMap[task.taskType] ?? ClipboardList;
@@ -330,10 +330,10 @@ export function TaskCardRun({ task, runId, currentUserId, dependencyTitle }: Tas
                   </Badge>
                 </div>
                 <div className="mt-1 flex items-center gap-3 text-[13px] text-muted-foreground">
-                  {task.assigneeUserId && (
+                  {!!task.assigneeUserId && (
                     <span>{t('assignedToLabel', { name: task.assigneeUserId })}</span>
                   )}
-                  {task.dueAt && (
+                  {!!task.dueAt && (
                     <span className={isOverdue ? 'text-destructive font-medium' : ''}>
                       {isOverdue ? t('overdue') : t('dueLabel', { date: formatDate(task.dueAt) })}
                     </span>
@@ -344,11 +344,12 @@ export function TaskCardRun({ task, runId, currentUserId, dependencyTitle }: Tas
               {/* Inline action buttons (stop propagation to not toggle collapse) */}
               <div
                 className="flex items-center gap-1 shrink-0"
+                role="presentation"
                 onClick={e => e.stopPropagation()}
                 onKeyDown={e => {
                   if (e.key === 'Enter' || e.key === ' ') e.stopPropagation();
                 }}>
-                {canAct && (
+                {!!canAct && (
                   <>
                     <Button
                       size="sm"
@@ -362,7 +363,7 @@ export function TaskCardRun({ task, runId, currentUserId, dependencyTitle }: Tas
                     <ReassignPopover taskRunId={task.id} runId={runId} />
                   </>
                 )}
-                {canReassignOnly && <ReassignPopover taskRunId={task.id} runId={runId} />}
+                {!!canReassignOnly && <ReassignPopover taskRunId={task.id} runId={runId} />}
                 {task.status === 'BLOCKED' && dependencyTitle && (
                   <TooltipProvider>
                     <Tooltip>
@@ -388,7 +389,7 @@ export function TaskCardRun({ task, runId, currentUserId, dependencyTitle }: Tas
         <CollapsibleContent>
           <div className="border-t px-4 pb-4 pt-3 space-y-4">
             {/* Description */}
-            {task.description && (
+            {!!task.description && (
               <p className="text-sm text-muted-foreground whitespace-pre-wrap">
                 {task.description}
               </p>
@@ -401,20 +402,20 @@ export function TaskCardRun({ task, runId, currentUserId, dependencyTitle }: Tas
                 {formatDateTime(task.completedAt)}
               </p>
             )}
-            {isUserSkipped && (
+            {!!isUserSkipped && (
               <p className="text-xs text-muted-foreground">
                 Skipped:{' '}
                 {((task.resultJson as Record<string, unknown>)?.skipReason as string) ??
                   'No reason provided'}
               </p>
             )}
-            {isConditionSkipped && (
+            {!!isConditionSkipped && (
               <p className="text-xs text-muted-foreground">{t('conditionSkipped')}</p>
             )}
 
             {/* Metadata */}
             <div className="flex items-center gap-4 text-xs text-muted-foreground">
-              {task.createdAt && <span>Created {formatDateTime(task.createdAt)}</span>}
+              {!!task.createdAt && <span>Created {formatDateTime(task.createdAt)}</span>}
             </div>
 
             {/* Attachments */}

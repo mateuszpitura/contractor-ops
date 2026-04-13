@@ -177,6 +177,7 @@ function TiltCard({
     <div
       ref={ref}
       className={`atelier-enter atelier-glass relative rounded-2xl p-5 transition-[transform] duration-[400ms] ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform ${className}`}
+      role="presentation"
       onMouseMove={onMove}
       onMouseLeave={onLeave}>
       {children}
@@ -251,7 +252,7 @@ function TaskCardV2({ index, task, form, allTasks, onRemove, dragHandleProps }: 
 
         {/* Badges */}
         <div className="hidden items-center gap-2 sm:flex">
-          {task.required && (
+          {!!task.required && (
             <span className="rounded-full bg-amber-500/10 px-2 py-0.5 text-[8px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
               Required
             </span>
@@ -261,7 +262,7 @@ function TaskCardV2({ index, task, form, allTasks, onRemove, dragHandleProps }: 
               <Clock className="h-3 w-3" /> {task.dueOffsetDays}d
             </span>
           )}
-          {task.dependsOnTaskTemplateId && (
+          {!!task.dependsOnTaskTemplateId && (
             <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground/40">
               <GitBranch className="h-3 w-3" /> Dep
             </span>
@@ -274,25 +275,33 @@ function TaskCardV2({ index, task, form, allTasks, onRemove, dragHandleProps }: 
       </button>
 
       {/* ── Expanded form ── */}
-      {expanded && (
+      {!!expanded && (
         <div className="space-y-4 border-t border-border/20 px-4 pb-4 pt-4">
           {/* Row 1: Title + Type */}
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
-              <label className="mb-1 block text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/50">
+              <label
+                htmlFor={`task-${index}-title`}
+                className="mb-1 block text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/50">
                 Title
               </label>
               <Input
+                id={`task-${index}-title`}
                 className="h-9 text-[13px]"
                 placeholder="e.g. Collect NDA..."
                 {...form.register(`tasks.${index}.title`)}
               />
             </div>
             <div>
-              <label className="mb-1 block text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/50">
+              <label
+                htmlFor={`task-${index}-type`}
+                className="mb-1 block text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/50">
                 Task Type
               </label>
-              <div className="grid grid-cols-5 gap-1">
+              <fieldset
+                id={`task-${index}-type`}
+                className="grid grid-cols-5 gap-1"
+                aria-label="Task Type">
                 {TASK_TYPES.map(tt => {
                   const TTIcon = tt.icon;
                   const active = task.taskType === tt.value;
@@ -313,16 +322,19 @@ function TaskCardV2({ index, task, form, allTasks, onRemove, dragHandleProps }: 
                     </button>
                   );
                 })}
-              </div>
+              </fieldset>
             </div>
           </div>
 
           {/* Row 2: Description */}
           <div>
-            <label className="mb-1 block text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/50">
+            <label
+              htmlFor={`task-${index}-description`}
+              className="mb-1 block text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/50">
               Description
             </label>
             <textarea
+              id={`task-${index}-description`}
               className="h-16 w-full resize-none rounded-lg border border-border/40 bg-transparent px-3 py-2 text-[12px] text-foreground placeholder:text-muted-foreground/30 focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/10"
               placeholder="Optional description..."
               {...form.register(`tasks.${index}.description`)}
@@ -333,10 +345,13 @@ function TaskCardV2({ index, task, form, allTasks, onRemove, dragHandleProps }: 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             {/* Assignee mode */}
             <div>
-              <label className="mb-1 flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/50">
+              <label
+                htmlFor={`task-${index}-assignee`}
+                className="mb-1 flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/50">
                 <UserCircle className="h-3 w-3" /> Assignee
               </label>
               <select
+                id={`task-${index}-assignee`}
                 className="h-9 w-full rounded-lg border border-border/40 bg-transparent px-2 text-[12px] focus:border-primary/40 focus:outline-none"
                 value={task.assigneeMode}
                 onChange={e =>
@@ -396,12 +411,15 @@ function TaskCardV2({ index, task, form, allTasks, onRemove, dragHandleProps }: 
 
             {/* Due offset */}
             <div>
-              <label className="mb-1 flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/50">
+              <label
+                htmlFor={`task-${index}-due-days`}
+                className="mb-1 flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/50">
                 <Clock className="h-3 w-3" /> Due After
               </label>
               <div className="flex gap-2">
                 <div className="relative flex-1">
                   <Input
+                    id={`task-${index}-due-days`}
                     type="number"
                     min={0}
                     className="h-9 pe-8 text-[12px]"
@@ -430,11 +448,14 @@ function TaskCardV2({ index, task, form, allTasks, onRemove, dragHandleProps }: 
             {/* Required + Dependency */}
             <div className="space-y-2">
               <div>
-                <label className="mb-1 block text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/50">
+                <label
+                  htmlFor={`task-${index}-required`}
+                  className="mb-1 block text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/50">
                   Required
                 </label>
                 <div className="flex h-9 items-center">
                   <Switch
+                    id={`task-${index}-required`}
                     checked={task.required}
                     onCheckedChange={v =>
                       form.setValue(`tasks.${index}.required`, !!v, { shouldDirty: true })
@@ -447,10 +468,13 @@ function TaskCardV2({ index, task, form, allTasks, onRemove, dragHandleProps }: 
               </div>
               {index > 0 && (
                 <div>
-                  <label className="mb-1 flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/50">
+                  <label
+                    htmlFor={`task-${index}-depends`}
+                    className="mb-1 flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/50">
                     <GitBranch className="h-3 w-3" /> Depends On
                   </label>
                   <select
+                    id={`task-${index}-depends`}
                     className="h-8 w-full rounded-lg border border-border/30 bg-transparent px-2 text-[11px] focus:border-primary/40 focus:outline-none"
                     value={task.dependsOnTaskTemplateId ?? ''}
                     onChange={e =>
@@ -462,6 +486,7 @@ function TaskCardV2({ index, task, form, allTasks, onRemove, dragHandleProps }: 
                     }>
                     <option value="">None</option>
                     {allTasks.slice(0, index).map((t, ti) => (
+                      // biome-ignore lint/suspicious/noArrayIndexKey: tasks may not have stable id yet
                       <option key={ti} value={t.id ?? `task-${ti}`}>
                         Step {ti + 1}: {t.title || 'Untitled'}
                       </option>
@@ -604,7 +629,7 @@ export default function NewWorkflowTemplatePage() {
                   className="w-full bg-transparent font-display text-[24px] font-black tracking-tight text-foreground placeholder:text-muted-foreground/25 focus:outline-none lg:text-[28px]"
                   {...form.register('name')}
                 />
-                {form.formState.errors.name && (
+                {!!form.formState.errors.name && (
                   <p className="text-[11px] text-destructive">
                     {t('validationTemplateNameRequired')}
                   </p>
@@ -612,10 +637,15 @@ export default function NewWorkflowTemplatePage() {
 
                 {/* Type selector — visual pills */}
                 <div>
-                  <label className="mb-1.5 block text-[9px] font-bold uppercase tracking-[0.15em] text-muted-foreground/40">
+                  <label
+                    htmlFor="workflow-type-group"
+                    className="mb-1.5 block text-[9px] font-bold uppercase tracking-[0.15em] text-muted-foreground/40">
                     Workflow Type
                   </label>
-                  <div className="flex flex-wrap gap-1.5">
+                  <fieldset
+                    id="workflow-type-group"
+                    className="flex flex-wrap gap-1.5"
+                    aria-label="Workflow Type">
                     {TEMPLATE_TYPES.map(tt => {
                       const TTIcon = tt.icon;
                       const active = form.watch('type') === tt.value;
@@ -634,7 +664,7 @@ export default function NewWorkflowTemplatePage() {
                         </button>
                       );
                     })}
-                  </div>
+                  </fieldset>
                 </div>
 
                 {/* Description */}
@@ -743,7 +773,7 @@ export default function NewWorkflowTemplatePage() {
                   size="sm"
                   className="text-xs"
                   disabled={createMutation.isPending}>
-                  {isDirty && (
+                  {!!isDirty && (
                     <span className="me-1.5 inline-block h-1.5 w-1.5 rounded-full bg-current" />
                   )}
                   <Save className="me-1 h-3.5 w-3.5" />

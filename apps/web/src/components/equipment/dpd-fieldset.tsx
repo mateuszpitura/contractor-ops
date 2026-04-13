@@ -89,8 +89,11 @@ export function DpdFieldset({
           onValueChange={val => val && onParcelSizeChange(val as ParcelSize)}
           className="flex gap-4">
           {(['small', 'medium', 'large'] as const).map(size => (
-            <label key={size} className="flex cursor-pointer items-center gap-2">
-              <RadioGroupItem value={size} />
+            <label
+              key={size}
+              htmlFor={`dpd-parcel-${size}`}
+              className="flex cursor-pointer items-center gap-2">
+              <RadioGroupItem id={`dpd-parcel-${size}`} value={size} />
               <span className="text-sm">{tCarrier(size)}</span>
             </label>
           ))}

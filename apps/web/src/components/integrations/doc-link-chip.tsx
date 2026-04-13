@@ -87,12 +87,13 @@ export function DocLinkChip({
               className={cn(
                 'group inline-flex items-center gap-1 rounded-md border border-border bg-muted/50 px-2 py-1 max-w-[220px] hover:bg-muted transition-colors duration-150',
                 className,
-              )}
-            />
+              )}>
+              <span className="sr-only">{`Open ${title} in ${providerLabel}`}</span>
+            </a>
           }>
           <ProviderIcon className="h-3.5 w-3.5 shrink-0" />
           <span className="text-xs font-medium text-foreground truncate">{title}</span>
-          {showRemove && (
+          {!!showRemove && (
             <button
               type="button"
               className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 text-muted-foreground hover:text-destructive ms-0.5 shrink-0"
@@ -109,7 +110,7 @@ export function DocLinkChip({
         <TooltipContent>{tooltipText}</TooltipContent>
       </Tooltip>
 
-      {showRemove && (
+      {!!showRemove && (
         <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
           <AlertDialogContent>
             <AlertDialogHeader>

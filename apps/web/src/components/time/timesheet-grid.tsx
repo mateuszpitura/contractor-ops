@@ -74,7 +74,7 @@ function hoursToMinutes(hours: string): number {
 }
 
 function toDateStr(d: string | Date): string {
-  if (typeof d === 'string') return d.split('T')[0]!;
+  if (typeof d === 'string') return d.split('T')[0] ?? d;
   return format(d, 'yyyy-MM-dd');
 }
 
@@ -106,7 +106,8 @@ export function TimesheetGrid({
       const dateStr = toDateStr(entry.entryDate);
       const contractId = entry.contractId;
       if (!map.has(contractId)) map.set(contractId, new Map());
-      const contractEntries = map.get(contractId)!; // guaranteed by set above
+      const contractEntries = map.get(contractId); // guaranteed by set above
+      if (!contractEntries) continue;
       // Find which day index this date corresponds to
       for (let i = 0; i < 7; i++) {
         if (getDateForDay(weekStartDate, i) === dateStr) {
@@ -129,7 +130,7 @@ export function TimesheetGrid({
 
   const getCellValue = (contractId: string, dayIndex: number): string => {
     const key = getCellKey(contractId, dayIndex);
-    if (key in localValues) return localValues[key]!;
+    if (key in localValues) return localValues[key] ?? '';
     const entry = entryMap.get(contractId)?.get(dayIndex);
     return entry ? minutesToHours(entry.minutes) : '';
   };
@@ -230,7 +231,7 @@ export function TimesheetGrid({
     for (let i = 0; i < 7; i++) {
       const key = getCellKey(contractId, i);
       if (key in localValues) {
-        total += hoursToMinutes(localValues[key]!);
+        total += hoursToMinutes(localValues[key] ?? '');
       } else {
         const entry = entryMap.get(contractId)?.get(i);
         total += entry?.minutes ?? 0;
@@ -244,7 +245,7 @@ export function TimesheetGrid({
     for (const contract of contracts) {
       const key = getCellKey(contract.id, dayIndex);
       if (key in localValues) {
-        total += hoursToMinutes(localValues[key]!);
+        total += hoursToMinutes(localValues[key] ?? '');
       } else {
         const entry = entryMap.get(contract.id)?.get(dayIndex);
         total += entry?.minutes ?? 0;
@@ -268,7 +269,7 @@ export function TimesheetGrid({
   return (
     <div className="space-y-3">
       {/* Rejection banner */}
-      {rejectionReason && (
+      {!!rejectionReason && (
         <div className="flex items-start gap-3 rounded-md border border-amber-300 bg-amber-50 px-4 py-3 dark:border-amber-700 dark:bg-amber-950/30">
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
           <p className="text-sm text-amber-800 dark:text-amber-300">
@@ -322,6 +323,7 @@ export function TimesheetGrid({
                         const cellDisabled = disabled || imported;
 
                         return (
+                          // biome-ignore lint/suspicious/noArrayIndexKey: fixed weekday columns
                           <td key={dayIdx} className={cn('px-1 py-1.5', imported && 'bg-muted/50')}>
                             <div className="relative">
                               <Input
@@ -370,6 +372,7 @@ export function TimesheetGrid({
                   {DAY_LABELS.map((_, dayIdx) => {
                     const colTotal = getColumnTotal(dayIdx);
                     return (
+                      // biome-ignore lint/suspicious/noArrayIndexKey: fixed weekday columns
                       <td key={dayIdx} className="px-1 py-3 text-center text-sm font-semibold">
                         {minutesToHours(colTotal) || '0'}
                       </td>

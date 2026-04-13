@@ -1,4 +1,8 @@
-import { isEventDuplicate, processShipmentStatusChange, TERMINAL_STATUSES } from './shipment-processing.js';
+import {
+  isEventDuplicate,
+  processShipmentStatusChange,
+  TERMINAL_STATUSES,
+} from './shipment-processing.js';
 import { UPSClient } from './ups-client.js';
 import { mapUpsStatus } from './ups-status-mapper.js';
 

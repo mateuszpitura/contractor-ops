@@ -140,7 +140,7 @@ export function AuditLogTable({
           return (
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium">{actorName ?? t('unknownActor')}</span>
-              {role && (
+              {!!role && (
                 <Badge variant="secondary" className="text-[11px]">
                   {role}
                 </Badge>
@@ -237,6 +237,7 @@ export function AuditLogTable({
           </TableHeader>
           <TableBody>
             {Array.from({ length: 10 }).map((_, i) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
               <TableRow key={`skeleton-${i}`}>
                 <TableCell>
                   <Skeleton className="h-4 w-24" />

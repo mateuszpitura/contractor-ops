@@ -9,9 +9,15 @@ import { vi } from 'vitest';
  */
 if (typeof globalThis.IntersectionObserver === 'undefined') {
   class IntersectionObserverStub {
-    observe(): void { /* no-op stub */ }
-    unobserve(): void { /* no-op stub */ }
-    disconnect(): void { /* no-op stub */ }
+    observe(): void {
+      /* no-op stub */
+    }
+    unobserve(): void {
+      /* no-op stub */
+    }
+    disconnect(): void {
+      /* no-op stub */
+    }
     takeRecords(): IntersectionObserverEntry[] {
       return [];
     }

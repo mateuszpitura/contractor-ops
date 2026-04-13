@@ -39,7 +39,7 @@ export function JiraProviderSection() {
           description="Connect Jira Cloud to sync workflow tasks with Jira issues."
         />
 
-        {isConnected && connection?.scopeExpansionNeeded && (
+        {!!isConnected && !!connection?.scopeExpansionNeeded && (
           <div className="flex items-center gap-2 rounded-md border border-warning/50 bg-warning/10 p-3">
             <AlertTriangle className="size-4 text-warning" />
             <span className="text-sm text-warning">
@@ -54,7 +54,7 @@ export function JiraProviderSection() {
           </Button>
         )}
 
-        {mappingDialogOpen && connection && (
+        {!!mappingDialogOpen && !!connection && (
           <JiraStatusMappingDialog
             open={mappingDialogOpen}
             onOpenChange={setMappingDialogOpen}

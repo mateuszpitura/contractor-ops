@@ -43,7 +43,7 @@ export function ConfidenceBadge({ confidence, showPercentage = true }: Confidenc
             variant={variant}
             aria-label={showPercentage ? undefined : `${confidence}% confidence`}>
             <Icon className="size-3.5" />
-            {showPercentage && <span className="tabular-nums">{confidence}%</span>}
+            {!!showPercentage && <span className="tabular-nums">{confidence}%</span>}
           </Badge>
         </TooltipTrigger>
         <TooltipContent>

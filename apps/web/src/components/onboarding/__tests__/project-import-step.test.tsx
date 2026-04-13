@@ -323,7 +323,7 @@ describe('ProjectImportStep', () => {
     const moveUpButtons = screen.getAllByLabelText('Move up');
     // Second step's move up should be enabled
     if (moveUpButtons.length > 1 && !moveUpButtons[1]?.hasAttribute('disabled')) {
-      await user.click(moveUpButtons[1]!);
+      await user.click(moveUpButtons[1]);
       expect(onSelectionsChange).toHaveBeenCalled();
     }
   });
@@ -342,8 +342,8 @@ describe('ProjectImportStep', () => {
     );
     await user.click(screen.getByText('Edit steps'));
     const inputs = screen.getAllByPlaceholderText(/Step \d+/);
-    await user.clear(inputs[0]!);
-    await user.type(inputs[0]!, 'Renamed Step');
+    await user.clear(inputs[0]);
+    await user.type(inputs[0], 'Renamed Step');
     expect(onSelectionsChange).toHaveBeenCalled();
   });
 

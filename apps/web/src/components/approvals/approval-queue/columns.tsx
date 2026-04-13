@@ -103,10 +103,11 @@ function RejectPopover({
         <div className="space-y-3">
           <h4 className="font-medium text-sm">{t('rejectPopover.heading')}</h4>
           <div className="space-y-1.5">
-            <label className="text-[12px] text-muted-foreground">
+            <label htmlFor="reject-comment" className="text-[12px] text-muted-foreground">
               {t('rejectPopover.commentLabel')}
             </label>
             <Textarea
+              id="reject-comment"
               value={comment}
               onChange={e => setComment(e.target.value)}
               placeholder={t('rejectPopover.commentPlaceholder')}
@@ -291,6 +292,7 @@ export function getColumns(
         return (
           <div
             className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
+            role="presentation"
             onClick={e => e.stopPropagation()}>
             <Button
               variant="ghost"

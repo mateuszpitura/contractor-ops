@@ -75,6 +75,7 @@ export function TaskComments({ runId, taskRunId }: TaskCommentsProps) {
       {commentsQuery.isLoading ? (
         <div className="space-y-3">
           {Array.from({ length: 2 }).map((_, i) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
             <div key={`skel-${i}`} className="flex items-start gap-2">
               <Skeleton className="size-6 rounded-full shrink-0" />
               <div className="space-y-1 flex-1">
@@ -91,7 +92,7 @@ export function TaskComments({ runId, taskRunId }: TaskCommentsProps) {
           {comments.map(comment => (
             <div key={comment.id} className="flex items-start gap-2">
               <Avatar className="size-6 shrink-0">
-                {comment.author?.image && (
+                {!!comment.author?.image && (
                   <AvatarImage src={comment.author.image} alt={comment.author?.name ?? ''} />
                 )}
                 <AvatarFallback className="text-xs">

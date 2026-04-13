@@ -261,7 +261,7 @@ export function UserMenu() {
                 {t('cancel')}
               </Button>
               <Button type="submit" disabled={nameSaving || !nameValue.trim()}>
-                {nameSaving && <Loader2 className="me-1.5 size-3.5 animate-spin" />}
+                {!!nameSaving && <Loader2 className="me-1.5 size-3.5 animate-spin" />}
                 {t('save')}
               </Button>
             </div>

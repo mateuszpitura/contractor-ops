@@ -131,8 +131,10 @@ export function ReportTable<TData>({
         <TableBody>
           {isLoading ? (
             Array.from({ length: 8 }).map((_, i) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
               <TableRow key={`skeleton-${i}`}>
                 {columns.map((_, colIdx) => (
+                  // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
                   <TableCell key={colIdx}>
                     <Skeleton className="h-4 w-full max-w-[120px]" />
                   </TableCell>
@@ -153,7 +155,7 @@ export function ReportTable<TData>({
                   ))}
                 </TableRow>
               ))}
-              {grandTotalLabel && grandTotalValue && (
+              {!!grandTotalLabel && !!grandTotalValue && (
                 <TableRow className="border-t-2">
                   <TableCell colSpan={columns.length - 1} className="text-[14px] font-semibold">
                     {grandTotalLabel}
@@ -167,7 +169,7 @@ export function ReportTable<TData>({
               <TableCell colSpan={columns.length} className="py-16 text-center">
                 {emptyIcon}
                 <h3 className="mt-3 text-[16px] font-medium">{emptyTitle ?? 'No data'}</h3>
-                {emptyDescription && (
+                {!!emptyDescription && (
                   <p className="mt-1 text-sm text-muted-foreground">{emptyDescription}</p>
                 )}
               </TableCell>

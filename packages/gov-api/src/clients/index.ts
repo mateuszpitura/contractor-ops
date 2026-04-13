@@ -3,6 +3,7 @@
 // Downstream (Plan 57-03 orchestrator) imports both clients from
 // `@contractor-ops/gov-api`.
 
+// biome-ignore lint/performance/noBarrelFile: package entry point for gov-api clients
 export {
   HmrcApiError,
   HmrcVatClient,

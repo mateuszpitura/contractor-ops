@@ -124,7 +124,7 @@ export function TransferTitleSettings() {
               {...register('template')}
             />
             <p className="text-xs text-muted-foreground">{t('templateHelper')}</p>
-            {errors.template && (
+            {!!errors.template && (
               <p className="text-xs text-destructive">{errors.template.message}</p>
             )}
           </div>

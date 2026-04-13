@@ -65,8 +65,8 @@ export function ProrationPreview({ newPriceId, onConfirm, onCancel }: ProrationP
 
         {/* Line items */}
         <ul className="space-y-2">
-          {data.lines.map((line: { description: string; amountMinor: number }, index: number) => (
-            <li key={`line-${index}`} className="flex items-center justify-between text-sm">
+          {data.lines.map((line: { description: string; amountMinor: number }) => (
+            <li key={line.description} className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">{line.description}</span>
               <span className="tabular-nums font-medium">
                 {(line.amountMinor / 100).toFixed(2)} PLN

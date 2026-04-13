@@ -20,23 +20,20 @@ export function computeSmartDefaultMappings(states: LinearStateInput[]): Record<
   const used = new Set<string>();
 
   // Pass 1: match by name keywords
+  const nameKeywordMapping: Array<{ keywords: string[]; status: string }> = [
+    { keywords: ['block'], status: 'BLOCKED' },
+    { keywords: ['done', 'complete'], status: 'DONE' },
+    { keywords: ['progress', 'review'], status: 'IN_PROGRESS' },
+    { keywords: ['cancel'], status: 'CANCELLED' },
+  ];
+
   for (const state of states) {
     const lower = state.name.toLowerCase();
-    let workflowStatus: string | null = null;
+    const match = nameKeywordMapping.find(m => m.keywords.some(kw => lower.includes(kw)));
 
-    if (lower.includes('block')) {
-      workflowStatus = 'BLOCKED';
-    } else if (lower.includes('done') || lower.includes('complete')) {
-      workflowStatus = 'DONE';
-    } else if (lower.includes('progress') || lower.includes('review')) {
-      workflowStatus = 'IN_PROGRESS';
-    } else if (lower.includes('cancel')) {
-      workflowStatus = 'CANCELLED';
-    }
-
-    if (workflowStatus && !used.has(workflowStatus)) {
-      used.add(workflowStatus);
-      result[workflowStatus] = state.name;
+    if (match && !used.has(match.status)) {
+      used.add(match.status);
+      result[match.status] = state.name;
     }
   }
 

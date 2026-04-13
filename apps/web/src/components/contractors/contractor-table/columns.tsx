@@ -91,7 +91,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<ContractorRow>[] {
       cell: ({ row }) => (
         <div className="min-w-[160px]">
           <div className="font-medium">{row.original.displayName ?? row.original.legalName}</div>
-          {row.original.displayName && (
+          {!!row.original.displayName && (
             <div className="text-xs text-muted-foreground">{row.original.legalName}</div>
           )}
         </div>
@@ -134,7 +134,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<ContractorRow>[] {
         return (
           <div className="flex items-center gap-2">
             <Avatar className="h-6 w-6">
-              {owner.image && <AvatarImage src={owner.image} alt="" />}
+              {!!owner.image && <AvatarImage src={owner.image} alt="" />}
               <AvatarFallback className="text-[10px]">
                 {getAvatarInitials(owner.name)}
               </AvatarFallback>

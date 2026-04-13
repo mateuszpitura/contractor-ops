@@ -287,9 +287,10 @@ export function CommandPalette() {
         <CommandEmpty>{t('noResults')}</CommandEmpty>
 
         {/* Loading state */}
-        {isLoading && (
+        {!!isLoading && (
           <div className="space-y-2 p-2">
             {Array.from({ length: 4 }).map((_, i) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
               <Skeleton key={`skel-${i}`} className="h-8 w-full rounded-md" />
             ))}
           </div>
@@ -422,10 +423,11 @@ export function CommandPalette() {
             )}
 
             {/* Doc search results */}
-            {docSearchQuery.isLoading && (
+            {!!docSearchQuery.isLoading && (
               <CommandGroup heading="Docs">
                 <div className="space-y-2 p-2">
                   {Array.from({ length: 3 }).map((_, i) => (
+                    // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
                     <Skeleton key={`skel-${i}`} className="h-8 w-full rounded-md" />
                   ))}
                 </div>

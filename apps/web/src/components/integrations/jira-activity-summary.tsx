@@ -73,6 +73,7 @@ export function JiraActivitySummary({ contractorId }: JiraActivitySummaryProps) 
           <Skeleton className="h-4 w-32" />
         </div>
         {Array.from({ length: 3 }).map((_, i) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
           <div key={`activity-${i}`} className="flex items-center gap-2">
             <Skeleton className="h-6 w-[120px] rounded-md" />
             <Skeleton className="h-4 w-[200px]" />

@@ -1,0 +1,84 @@
+import type { Context, Next } from 'hono';
+
+// ---------------------------------------------------------------------------
+// Rate limiter middleware for public API
+// ---------------------------------------------------------------------------
+
+const KEY_PREFIX = 'co_live_';
+
+// In-memory sliding window (simple but effective for single-instance deploys).
+// For multi-instance, replace with Upstash Ratelimit.
+const windowMs = 60_000; // 1 minute
+const maxRequestsPerKey = 100;
+
+const windows = new Map<string, { count: number; resetAt: number }>();
+
+/**
+ * Extracts a rate-limit key from the Authorization header.
+ * Uses the key prefix (first 8 chars after co_live_) to avoid
+ * storing full keys in memory.
+ */
+function extractRateLimitKey(c: Context): string | null {
+  const auth = c.req.header('authorization') ?? '';
+  if (!auth.startsWith(`Bearer ${KEY_PREFIX}`)) return null;
+
+  const random = auth.slice(`Bearer ${KEY_PREFIX}`.length);
+  return `rl:${random.slice(0, 8)}`;
+}
+
+/**
+ * Rate limiting middleware.
+ * Returns 429 with Retry-After header when limit is exceeded.
+ */
+export async function rateLimitMiddleware(c: Context, next: Next) {
+  const key = extractRateLimitKey(c);
+
+  // No key = will fail at auth anyway, skip rate limiting
+  if (!key) {
+    await next();
+    return;
+  }
+
+  const now = Date.now();
+  let window = windows.get(key);
+
+  if (!window || now >= window.resetAt) {
+    window = { count: 0, resetAt: now + windowMs };
+    windows.set(key, window);
+  }
+
+  window.count++;
+
+  // Set rate limit headers
+  const remaining = Math.max(0, maxRequestsPerKey - window.count);
+  c.header('X-RateLimit-Limit', String(maxRequestsPerKey));
+  c.header('X-RateLimit-Remaining', String(remaining));
+  c.header('X-RateLimit-Reset', String(Math.ceil(window.resetAt / 1000)));
+
+  if (window.count > maxRequestsPerKey) {
+    const retryAfter = Math.ceil((window.resetAt - now) / 1000);
+    c.header('Retry-After', String(retryAfter));
+    return c.json(
+      {
+        error: {
+          code: 'TOO_MANY_REQUESTS',
+          message: 'Rate limit exceeded. Please retry later.',
+          status: 429,
+        },
+      },
+      429,
+    );
+  }
+
+  await next();
+}
+
+// Periodic cleanup of expired windows (every 5 minutes)
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, window] of windows) {
+    if (now >= window.resetAt) {
+      windows.delete(key);
+    }
+  }
+}, 5 * 60_000).unref();

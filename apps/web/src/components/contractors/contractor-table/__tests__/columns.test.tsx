@@ -76,7 +76,7 @@ describe('getColumns', () => {
   });
 
   it('has compliance health as last data column', () => {
-    const lastCol = columns[columns.length - 1]!;
+    const lastCol = columns[columns.length - 1];
     expect((lastCol as unknown).accessorKey).toBe('complianceHealth');
   });
 

@@ -30,6 +30,47 @@ export async function getTaxRatesForCountry(
 }
 
 /**
+ * Phase 57 · Plan 04 — returns the `isDefault: true` VAT rate code for a
+ * country (e.g. GB → '20', DE → '19'). Used by invoice-line creation to
+ * pre-select the standard rate when the client omits `vatRate` (D-10).
+ *
+ * Falls back to any active zero rate if the seed lacks a default row (defensive
+ * — should never happen with the Plan 57-01 seed but keeps the pipeline from
+ * crashing on misconfiguration). Returns null only when no active rate exists
+ * at all for the country.
+ */
+export async function getDefaultRateCode(
+  countryCode: string,
+  // Accept a Prisma client for dependency injection in tests; defaults to the
+  // shared instance for production callers.
+  db: typeof prisma = prisma,
+  asOfDate: Date = new Date(),
+): Promise<string | null> {
+  const rate = await db.taxRate.findFirst({
+    where: {
+      countryCode,
+      isDefault: true,
+      effectiveFrom: { lte: asOfDate },
+      OR: [{ effectiveTo: null }, { effectiveTo: { gte: asOfDate } }],
+    },
+    select: { code: true },
+  });
+  if (rate) return rate.code;
+
+  // Defensive fallback — find any active zero rate for this country.
+  const fallback = await db.taxRate.findFirst({
+    where: {
+      countryCode,
+      ratePercent: 0,
+      effectiveFrom: { lte: asOfDate },
+      OR: [{ effectiveTo: null }, { effectiveTo: { gte: asOfDate } }],
+    },
+    select: { code: true },
+  });
+  return fallback?.code ?? null;
+}
+
+/**
  * Validate that a vatRate code exists for the given country.
  * Used during invoice creation to replace the old hardcoded enum check.
  */

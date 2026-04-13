@@ -120,6 +120,7 @@ export function ActivityTab({ contract }: ActivityTabProps) {
       {events.map((event, i) => {
         const Icon = event.icon;
         return (
+          // biome-ignore lint/suspicious/noArrayIndexKey: computed timeline events lack unique id
           <div key={`activity-${i}`} className="flex items-start gap-3">
             <div className="relative mt-0.5 flex size-6 shrink-0 items-center justify-center">
               <Icon className="size-3.5 text-muted-foreground" />

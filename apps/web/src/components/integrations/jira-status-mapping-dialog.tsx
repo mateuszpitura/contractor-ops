@@ -215,7 +215,7 @@ export function JiraStatusMappingDialog({
             onValueChange={v => setSelectedProjectId(v as string)}>
             <SelectTrigger className="w-full">
               <SelectValue placeholder={t('selectProject')}>
-                {projectsQuery.isLoading && <Loader2 className="size-3.5 animate-spin" />}
+                {!!projectsQuery.isLoading && <Loader2 className="size-3.5 animate-spin" />}
               </SelectValue>
             </SelectTrigger>
             <SelectContent>
@@ -229,7 +229,7 @@ export function JiraStatusMappingDialog({
         </div>
 
         {/* Status mapping table */}
-        {selectedProjectId && (
+        {!!selectedProjectId && (
           <ScrollArea className="max-h-[400px]">
             <Table>
               <TableHeader>
@@ -295,7 +295,7 @@ export function JiraStatusMappingDialog({
           <Button
             onClick={handleSave}
             disabled={!hasChanges || saveMutation.isPending || !selectedProjectId}>
-            {saveMutation.isPending && <Loader2 className="me-1.5 size-3.5 animate-spin" />}
+            {!!saveMutation.isPending && <Loader2 className="me-1.5 size-3.5 animate-spin" />}
             {t('saveMapping')}
           </Button>
         </DialogFooter>

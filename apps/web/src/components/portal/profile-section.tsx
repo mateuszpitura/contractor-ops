@@ -134,7 +134,7 @@ export function ProfileSection({
                   }`}
                 />
                 <span className="text-sm font-semibold">{title}</span>
-                {requiresApproval && <Badge variant="info">{t('requiresApproval')}</Badge>}
+                {!!requiresApproval && <Badge variant="info">{t('requiresApproval')}</Badge>}
               </button>
             )}
           />
@@ -154,7 +154,7 @@ export function ProfileSection({
         <CollapsibleContent>
           <div className="border-t px-4 pb-4 pt-3">
             {/* Pending change banner for financial section */}
-            {pendingChangeRequest && (
+            {!!pendingChangeRequest && (
               <div className="mb-4">
                 <PendingChangeBanner pendingChangeRequest={pendingChangeRequest} />
               </div>
@@ -173,7 +173,7 @@ export function ProfileSection({
                             <Lock className="h-3.5 w-3.5 text-muted-foreground" />
                             <span>{field.value || t('fallbackValue')}</span>
                           </div>
-                          {field.readOnlyCaption && (
+                          {!!field.readOnlyCaption && (
                             <p className="text-xs text-muted-foreground">{field.readOnlyCaption}</p>
                           )}
                         </div>
@@ -195,7 +195,7 @@ export function ProfileSection({
                   })}
 
                   {/* Financial section info banner */}
-                  {requiresApproval && (
+                  {!!requiresApproval && (
                     <div className="flex items-start gap-2 rounded-md bg-blue-500/10 p-3">
                       <Info className="mt-0.5 h-4 w-4 shrink-0 text-blue-700 dark:text-blue-400" />
                       <p className="text-sm text-blue-700 dark:text-blue-400">
@@ -227,10 +227,10 @@ export function ProfileSection({
                   <div key={field.key} className="space-y-1">
                     <dt className="text-sm text-muted-foreground">{field.label}</dt>
                     <dd className="flex items-center gap-2 text-sm">
-                      {field.readOnly && <Lock className="h-3.5 w-3.5 text-muted-foreground" />}
+                      {!!field.readOnly && <Lock className="h-3.5 w-3.5 text-muted-foreground" />}
                       <span>{field.value || t('fallbackValue')}</span>
                     </dd>
-                    {field.readOnly && field.readOnlyCaption && (
+                    {!!field.readOnly && !!field.readOnlyCaption && (
                       <p className="text-xs text-muted-foreground">{field.readOnlyCaption}</p>
                     )}
                   </div>

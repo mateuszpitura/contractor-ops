@@ -300,10 +300,7 @@ async function upsertTimeEntry(
 // Sync status helpers
 // ---------------------------------------------------------------------------
 
-async function recalculateTimesheetTotal(
-  prisma: PrismaClient,
-  timesheetId: string,
-): Promise<void> {
+async function recalculateTimesheetTotal(prisma: PrismaClient, timesheetId: string): Promise<void> {
   const totalResult = await prisma.timeEntry.aggregate({
     where: { timesheetId },
     _sum: { minutes: true },

@@ -391,7 +391,7 @@ describe('ProviderDetailSheet', () => {
     const { user } = setup(<ProviderDetailSheet {...defaultProps} />);
     const loadMoreButtons = screen.getAllByText('Load more');
     if (loadMoreButtons.length > 0) {
-      await user.click(loadMoreButtons[0]!);
+      await user.click(loadMoreButtons[0]);
     }
   });
 

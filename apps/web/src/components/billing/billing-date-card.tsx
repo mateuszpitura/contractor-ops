@@ -37,7 +37,7 @@ export function BillingDateCard({ date, isTrialing }: BillingDateCardProps) {
           <Calendar size={16} className="text-muted-foreground" aria-hidden="true" />
         </div>
         <div className="text-2xl font-semibold">{formattedDate ?? '\u2014'}</div>
-        {formattedDate && (
+        {!!formattedDate && (
           <span className="text-xs text-muted-foreground">
             {isTrialing ? t('trialEnds') : t('renewsOn')}
           </span>

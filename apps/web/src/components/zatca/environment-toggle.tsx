@@ -77,12 +77,13 @@ export function EnvironmentToggle({
           className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {/* Sandbox */}
           <label
+            htmlFor="zatca-env-sandbox"
             className={`relative flex cursor-pointer items-start gap-3 rounded-lg border-2 p-4 transition-all ${
               value === 'sandbox'
                 ? 'border-primary ring-2 ring-primary/20'
                 : 'border-border hover:border-muted-foreground/30'
             }`}>
-            <RadioGroupItem value="sandbox" className="mt-0.5" />
+            <RadioGroupItem id="zatca-env-sandbox" value="sandbox" className="mt-0.5" />
             <div className="space-y-1">
               <div className="flex items-center gap-1.5">
                 <TestTube className="h-4 w-4 text-amber-500" aria-hidden="true" />
@@ -96,6 +97,7 @@ export function EnvironmentToggle({
 
           {/* Production */}
           <label
+            htmlFor="zatca-env-production"
             className={`relative flex items-start gap-3 rounded-lg border-2 p-4 transition-all ${
               productionReady ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'
             } ${
@@ -103,7 +105,12 @@ export function EnvironmentToggle({
                 ? 'border-primary ring-2 ring-primary/20'
                 : 'border-border hover:border-muted-foreground/30'
             }`}>
-            <RadioGroupItem value="production" className="mt-0.5" disabled={!productionReady} />
+            <RadioGroupItem
+              id="zatca-env-production"
+              value="production"
+              className="mt-0.5"
+              disabled={!productionReady}
+            />
             <div className="space-y-1">
               <div className="flex items-center gap-1.5">
                 <Cloud className="h-4 w-4 text-green-600" aria-hidden="true" />

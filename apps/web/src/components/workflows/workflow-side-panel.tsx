@@ -80,6 +80,7 @@ function LinkedIssuesSection({ runId }: { runId: string }) {
           // Loading skeleton: 2 rows
           <div className="space-y-2">
             {Array.from({ length: 2 }).map((_, i) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
               <div key={`wf-step-${i}`} className="flex items-center gap-2">
                 <Skeleton className="h-4 w-[100px]" />
                 <Skeleton className="h-6 w-[120px] rounded-md" />
@@ -160,6 +161,7 @@ function LinkedLinearIssuesSection({ runId }: { runId: string }) {
         {issuesQuery.isLoading ? (
           <div className="space-y-2">
             {Array.from({ length: 2 }).map((_, i) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
               <div key={`wf-step-${i}`} className="flex items-center gap-2">
                 <Skeleton className="h-4 w-[100px]" />
                 <Skeleton className="h-6 w-[120px] rounded-md" />
@@ -278,7 +280,7 @@ export function WorkflowSidePanel({ runId, onClose }: WorkflowSidePanelProps) {
                     <Badge variant="secondary" className={statusBadgeColors[run.status] ?? ''}>
                       {t(`runStatus.${run.status}` as Parameters<typeof t>[0])}
                     </Badge>
-                    {run.workflowTemplate && (
+                    {!!run.workflowTemplate && (
                       <span className="text-sm text-muted-foreground">
                         {run.workflowTemplate.name}
                       </span>
@@ -321,7 +323,7 @@ export function WorkflowSidePanel({ runId, onClose }: WorkflowSidePanelProps) {
                 <Separator />
 
                 {/* Contractor */}
-                {run.contractor && (
+                {!!run.contractor && (
                   <>
                     <div className="space-y-2">
                       <h3 className="text-[13px] font-medium text-muted-foreground uppercase tracking-wider">
@@ -340,7 +342,7 @@ export function WorkflowSidePanel({ runId, onClose }: WorkflowSidePanelProps) {
 
                 {/* Started metadata */}
                 <div className="grid grid-cols-2 gap-3 text-sm">
-                  {run.startedAt && (
+                  {!!run.startedAt && (
                     <div className="space-y-1">
                       <dt className="text-[13px] text-muted-foreground">{ts('startedOn')}</dt>
                       <dd>{new Date(run.startedAt).toLocaleDateString('pl-PL')}</dd>

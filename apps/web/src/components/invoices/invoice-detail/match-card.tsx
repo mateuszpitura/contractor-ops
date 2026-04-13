@@ -170,7 +170,7 @@ export function MatchCard({ invoice, onMatchConfirmed }: MatchCardProps) {
         </div>
 
         {/* Matched contractor */}
-        {invoice.contractor && (
+        {!!invoice.contractor && (
           <div className="space-y-0.5">
             <span className="text-[13px] text-muted-foreground">{t('match.contractor')}</span>
             <div className="flex items-center gap-2">
@@ -179,7 +179,7 @@ export function MatchCard({ invoice, onMatchConfirmed }: MatchCardProps) {
                 className="text-sm text-primary hover:underline">
                 {invoice.contractor.legalName}
               </Link>
-              {invoice.contractor.taxId && (
+              {!!invoice.contractor.taxId && (
                 <span className="font-mono text-[13px] text-muted-foreground">
                   {showPii ? invoice.contractor.taxId : maskTaxId(invoice.contractor.taxId)}
                 </span>
@@ -189,7 +189,7 @@ export function MatchCard({ invoice, onMatchConfirmed }: MatchCardProps) {
         )}
 
         {/* Matched contract */}
-        {invoice.contract && (
+        {!!invoice.contract && (
           <div className="space-y-0.5">
             <span className="text-[13px] text-muted-foreground">{t('match.contract')}</span>
             <div className="flex items-center gap-2">
@@ -380,7 +380,7 @@ function UnmatchedCard({
                           <div className="flex flex-col gap-0.5">
                             <span className="text-sm">{contractor.legalName}</span>
                             <div className="flex items-center gap-2">
-                              {contractor.taxId && (
+                              {!!contractor.taxId && (
                                 <span className="font-mono text-xs text-muted-foreground">
                                   {contractor.taxId}
                                 </span>
@@ -401,7 +401,7 @@ function UnmatchedCard({
         </div>
 
         {/* Contract picker */}
-        {selectedContractorId && (
+        {!!selectedContractorId && (
           <div className="space-y-1.5">
             <span className="text-[13px] text-muted-foreground">{t('match.contract')}</span>
             {contractsQuery.isLoading ? (
@@ -439,7 +439,9 @@ function UnmatchedCard({
           onClick={handleConfirmMatch}
           disabled={!selectedContractorId || manualMatchMutation.isPending}
           className="w-full">
-          {manualMatchMutation.isPending && <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />}
+          {!!manualMatchMutation.isPending && (
+            <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />
+          )}
           {t('match.confirmMatch')}
         </Button>
       </CardContent>

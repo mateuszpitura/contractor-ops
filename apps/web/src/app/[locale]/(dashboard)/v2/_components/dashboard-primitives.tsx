@@ -83,6 +83,7 @@ export function TiltCard({
     <div
       ref={ref}
       className={classes}
+      role="presentation"
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}>
       {children}
@@ -158,7 +159,7 @@ export function Ring({
 
   return (
     <div className="relative">
-      <svg width={size} height={size} className="-rotate-90">
+      <svg width={size} height={size} className="-rotate-90" aria-hidden="true">
         <circle
           cx={size / 2}
           cy={size / 2}
@@ -179,7 +180,7 @@ export function Ring({
           strokeDashoffset={c * (1 - pct)}
         />
       </svg>
-      {children && (
+      {!!children && (
         <div className="absolute inset-0 flex items-center justify-center">{children}</div>
       )}
     </div>
@@ -215,7 +216,12 @@ export function Sparkline({
   const area = `0,${h} ${data.map((v, i) => `${i * step},${toY(v)}`).join(' ')} ${w},${h}`;
 
   return (
-    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} className="overflow-visible">
+    <svg
+      width={w}
+      height={h}
+      viewBox={`0 0 ${w} ${h}`}
+      className="overflow-visible"
+      aria-hidden="true">
       <defs>
         <linearGradient id={`${id}-g`} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor={color} stopOpacity={0.35} />
@@ -272,7 +278,7 @@ export function LiveClock() {
 export function PulseDot({ color: _color, pulse = false }: { color: string; pulse?: boolean }) {
   return (
     <span className="relative inline-flex h-2 w-2">
-      {pulse && <span className="absolute inset-0 rounded-full opacity-75" />}
+      {!!pulse && <span className="absolute inset-0 rounded-full opacity-75" />}
       <span className="relative inline-flex h-2 w-2 rounded-full" />
     </span>
   );
@@ -353,7 +359,7 @@ export function SectionLabel({
 }) {
   return (
     <div className="flex items-center gap-2.5 ps-1">
-      {Icon && (
+      {!!Icon && (
         <div className="flex h-5 w-5 items-center justify-center rounded-md bg-primary/8">
           <Icon className="h-3 w-3 text-primary" />
         </div>

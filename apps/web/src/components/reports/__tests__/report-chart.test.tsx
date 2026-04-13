@@ -4,7 +4,8 @@ import { render, screen, setup } from '@/test/test-utils';
 vi.mock('recharts', () => ({
   BarChart: ({ children }: any) => <div data-testid="bar-chart">{children}</div>,
   Bar: ({ children, onClick }: any) => (
-    <div
+    <button
+      type="button"
       data-testid="bar"
       onClick={() =>
         onClick?.({ id: 'segment-id', name: 'Row' }, 0, {
@@ -12,7 +13,7 @@ vi.mock('recharts', () => ({
         })
       }>
       {children}
-    </div>
+    </button>
   ),
   XAxis: () => <div data-testid="x-axis" />,
   YAxis: () => <div data-testid="y-axis" />,

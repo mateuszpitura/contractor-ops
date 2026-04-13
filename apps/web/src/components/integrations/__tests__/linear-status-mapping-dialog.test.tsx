@@ -434,7 +434,7 @@ describe('LinearStatusMappingDialog', () => {
     // Find the status selectors (excluding team combobox)
     const allComboboxes = screen.getAllByRole('combobox');
     // Click the second combobox (first status selector)
-    await user.click(allComboboxes[1]!);
+    await user.click(allComboboxes[1]);
     // Select a Linear state option
     await waitFor(() => {
       const options = screen.getAllByText('Triage');
@@ -472,7 +472,7 @@ describe('LinearStatusMappingDialog', () => {
       expect(screen.getByText('Workflow Status')).toBeInTheDocument();
     });
     // Switch to second team
-    const teamCombobox = screen.getAllByRole('combobox')[0]!;
+    const teamCombobox = screen.getAllByRole('combobox')[0];
     await user.click(teamCombobox);
     await waitFor(() => {
       expect(screen.getByText('Design (DES)')).toBeInTheDocument();

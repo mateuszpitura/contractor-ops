@@ -113,16 +113,22 @@ export function StepDuplicates({
                         handleActionChange(row.rowNumber, val as 'skip' | 'update' | 'create')
                       }
                       className="flex gap-3">
-                      <label className="flex cursor-pointer items-center gap-1.5 text-xs">
-                        <RadioGroupItem value="skip" />
+                      <label
+                        htmlFor={`dup-${row.rowNumber}-skip`}
+                        className="flex cursor-pointer items-center gap-1.5 text-xs">
+                        <RadioGroupItem id={`dup-${row.rowNumber}-skip`} value="skip" />
                         {t('duplicates.skip')}
                       </label>
-                      <label className="flex cursor-pointer items-center gap-1.5 text-xs">
-                        <RadioGroupItem value="update" />
+                      <label
+                        htmlFor={`dup-${row.rowNumber}-update`}
+                        className="flex cursor-pointer items-center gap-1.5 text-xs">
+                        <RadioGroupItem id={`dup-${row.rowNumber}-update`} value="update" />
                         {t('duplicates.update')}
                       </label>
-                      <label className="flex cursor-pointer items-center gap-1.5 text-xs">
-                        <RadioGroupItem value="create" />
+                      <label
+                        htmlFor={`dup-${row.rowNumber}-create`}
+                        className="flex cursor-pointer items-center gap-1.5 text-xs">
+                        <RadioGroupItem id={`dup-${row.rowNumber}-create`} value="create" />
                         {t('duplicates.create')}
                       </label>
                     </RadioGroup>

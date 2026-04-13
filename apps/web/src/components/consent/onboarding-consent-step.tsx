@@ -124,7 +124,7 @@ function ConsentStepContent({
   return (
     <div className="space-y-6">
       {/* Privacy Notice */}
-      {notice && <PrivacyNoticeDisplay notice={notice} />}
+      {!!notice && <PrivacyNoticeDisplay notice={notice} />}
 
       {/* Required Consents */}
       <div className="space-y-3">

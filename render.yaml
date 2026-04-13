@@ -1,0 +1,380 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Render Blueprint — contractor-ops
+#
+# Services:
+#   - web                 (Web Service, Docker, autoscaled, public)
+#   - landing             (Static Site, free, CDN, public)
+#   - worker              (Background Worker, Docker, single instance)
+#   - clamav              (Private Service, image, persistent disk)
+#   - cron-token-refresh  (Cron Job, every 15 min — calls web via private net)
+#   - cron-data-purge     (Cron Job, daily 03:00 UTC — calls web via private net)
+#
+# External (NOT managed by this Blueprint):
+#   Neon Postgres (multi-region EU+ME), Upstash Redis + QStash, Cloudflare R2,
+#   Resend, Sentry, Stripe, Cronitor.
+#
+# Web port: 3000 (NOT 10000 — Render blocks 10000 on the private network).
+# Region: frankfurt (closest EU). ME tenants use DATABASE_URL_ME via Neon.
+# ─────────────────────────────────────────────────────────────────────────────
+
+previews:
+  generation: automatic
+  expireAfterDays: 7
+
+# ── Shared environment variable groups ─────────────────────────────────────
+# All non-secret, non-region-specific envs live here. Secrets stay sync: false
+# on individual services and are filled in via Render dashboard.
+envVarGroups:
+  - name: app-shared
+    envVars:
+      # Runtime
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_TELEMETRY_DISABLED
+        value: '1'
+      - key: LOG_LEVEL
+        value: info
+      - key: DATA_HOSTING_REGION
+        value: EU
+      # Public app URLs — set after custom domain is bound in Render dashboard
+      - key: NEXT_PUBLIC_APP_URL
+        sync: false
+      - key: APP_URL
+        sync: false
+      - key: BETTER_AUTH_URL
+        sync: false
+      - key: PORTAL_BASE_DOMAIN
+        sync: false
+      # Auth
+      - key: BETTER_AUTH_SECRET
+        sync: false
+      # Database (Neon, multi-region)
+      - key: DATABASE_URL
+        sync: false
+      - key: DATABASE_URL_EU
+        sync: false
+      - key: DATABASE_URL_ME
+        sync: false
+      # Storage (Cloudflare R2)
+      - key: R2_ACCOUNT_ID
+        sync: false
+      - key: R2_ACCESS_KEY_ID
+        sync: false
+      - key: R2_SECRET_ACCESS_KEY
+        sync: false
+      - key: R2_BUCKET_NAME
+        sync: false
+      - key: R2_BUCKET_NAME_EU
+        sync: false
+      - key: R2_BUCKET_NAME_ME
+        sync: false
+      - key: R2_PUBLIC_URL
+        sync: false
+      # Email (Resend)
+      - key: RESEND_API_KEY
+        sync: false
+      - key: RESEND_WEBHOOK_SECRET
+        sync: false
+      - key: EMAIL_FROM
+        sync: false
+      # Upstash Redis (rate limiting + cache)
+      - key: UPSTASH_REDIS_REST_URL
+        sync: false
+      - key: UPSTASH_REDIS_REST_TOKEN
+        sync: false
+      # Upstash QStash (webhook queue)
+      - key: QSTASH_TOKEN
+        sync: false
+      - key: QSTASH_CURRENT_SIGNING_KEY
+        sync: false
+      - key: QSTASH_NEXT_SIGNING_KEY
+        sync: false
+      # OAuth providers
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: MICROSOFT_CLIENT_ID
+        sync: false
+      - key: MICROSOFT_CLIENT_SECRET
+        sync: false
+      # Stripe
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: STRIPE_PRICE_STARTER
+        sync: false
+      - key: STRIPE_PRICE_PRO
+        sync: false
+      - key: STRIPE_PRICE_ENTERPRISE
+        sync: false
+      - key: NEXT_PUBLIC_STRIPE_PRICE_TOPUP_10
+        sync: false
+      - key: NEXT_PUBLIC_STRIPE_PRICE_TOPUP_25
+        sync: false
+      - key: NEXT_PUBLIC_STRIPE_PRICE_TOPUP_50
+        sync: false
+      # Encryption (AES-256-GCM)
+      - key: BANK_ACCOUNT_ENCRYPTION_KEY
+        sync: false
+      - key: SLACK_TOKEN_ENCRYPTION_KEY
+        sync: false
+      # Government APIs
+      - key: HMRC_ENV
+        value: production
+      - key: VIES_ENV
+        value: production
+      - key: HMRC_PLATFORM_VRN
+        sync: false
+      - key: HMRC_CLIENT_ID_SECRET_PATH
+        value: hmrc/client_id
+      - key: HMRC_CLIENT_SECRET_SECRET_PATH
+        value: hmrc/client_secret
+      # OCR (Claude Vision)
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      # Secret store (Infisical)
+      - key: INFISICAL_SITE_URL
+        value: https://app.infisical.com
+      - key: INFISICAL_CLIENT_ID
+        sync: false
+      - key: INFISICAL_CLIENT_SECRET
+        sync: false
+      - key: INFISICAL_PROJECT_ID
+        sync: false
+      - key: INFISICAL_ENVIRONMENT
+        value: production
+      # Observability
+      - key: NEXT_PUBLIC_SENTRY_DSN
+        sync: false
+      - key: AXIOM_TOKEN
+        sync: false
+      - key: AXIOM_DATASET
+        value: contractor-ops
+      - key: CRONITOR_API_KEY
+        sync: false
+      # Integrations (optional — leave blank to disable)
+      - key: SLACK_CLIENT_ID
+        sync: false
+      - key: SLACK_CLIENT_SECRET
+        sync: false
+      - key: SLACK_SIGNING_SECRET
+        sync: false
+      - key: LINEAR_CLIENT_ID
+        sync: false
+      - key: LINEAR_CLIENT_SECRET
+        sync: false
+      - key: LINEAR_WEBHOOK_SECRET
+        sync: false
+      - key: JIRA_CLIENT_ID
+        sync: false
+      - key: JIRA_CLIENT_SECRET
+        sync: false
+      - key: NOTION_CLIENT_ID
+        sync: false
+      - key: NOTION_CLIENT_SECRET
+        sync: false
+      - key: CONFLUENCE_CLIENT_ID
+        sync: false
+      - key: CONFLUENCE_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_CALENDAR_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CALENDAR_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_WORKSPACE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_WORKSPACE_CLIENT_SECRET
+        sync: false
+      - key: OUTLOOK_CLIENT_ID
+        sync: false
+      - key: OUTLOOK_CLIENT_SECRET
+        sync: false
+      - key: OUTLOOK_CALENDAR_CLIENT_ID
+        sync: false
+      - key: OUTLOOK_CALENDAR_CLIENT_SECRET
+        sync: false
+      - key: DOCUSIGN_CLIENT_ID
+        sync: false
+      - key: DOCUSIGN_CLIENT_SECRET
+        sync: false
+      - key: DOCUSIGN_WEBHOOK_SECRET
+        sync: false
+      - key: AUTENTI_CLIENT_ID
+        sync: false
+      - key: AUTENTI_CLIENT_SECRET
+        sync: false
+      - key: AUTENTI_WEBHOOK_SECRET
+        sync: false
+      - key: AZURE_BOT_APP_ID
+        sync: false
+      - key: AZURE_BOT_APP_SECRET
+        sync: false
+
+  # Build-time only — Sentry source map upload (used in Docker build args).
+  - name: build-secrets
+    envVars:
+      - key: SENTRY_ORG
+        sync: false
+      - key: SENTRY_PROJECT
+        sync: false
+      - key: SENTRY_AUTH_TOKEN
+        sync: false
+
+services:
+  # ── Web Service: Next.js 15 standalone ──────────────────────────────────
+  - type: web
+    name: web
+    runtime: docker
+    region: frankfurt
+    plan: standard
+    branch: main
+    autoDeploy: true
+    dockerfilePath: ./apps/web/Dockerfile
+    dockerContext: .
+    dockerCommand: node apps/web/server.js
+    healthCheckPath: /api/health
+    scaling:
+      minInstances: 2
+      maxInstances: 8
+      targetMemoryPercent: 75
+      targetCPUPercent: 70
+    envVars:
+      - fromGroup: app-shared
+      - fromGroup: build-secrets
+      - key: PORT
+        value: '3000'
+      - key: HOSTNAME
+        value: 0.0.0.0
+      - key: CRON_SECRET
+        generateValue: true
+      - key: CLAMAV_HOST
+        fromService:
+          type: pserv
+          name: clamav
+          property: host
+      - key: CLAMAV_PORT
+        value: '3310'
+
+  # ── Static Site: marketing landing page ─────────────────────────────────
+  - type: web
+    name: landing
+    runtime: static
+    region: frankfurt
+    branch: main
+    autoDeploy: true
+    buildCommand: |
+      corepack enable && corepack prepare pnpm@10.33.0 --activate
+      pnpm install --frozen-lockfile --filter @contractor-ops/landing...
+      pnpm --filter @contractor-ops/landing build
+    staticPublishPath: ./apps/landing/out
+    pullRequestPreviewsEnabled: true
+    headers:
+      - path: /*
+        name: Strict-Transport-Security
+        value: max-age=63072000; includeSubDomains; preload
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
+
+  # ── Background Worker: node-cron scheduler (non-critical jobs) ──────────
+  - type: worker
+    name: worker
+    runtime: docker
+    region: frankfurt
+    plan: starter
+    branch: main
+    autoDeploy: true
+    dockerfilePath: ./apps/web/Dockerfile
+    dockerContext: .
+    dockerCommand: node apps/web/worker-cron.mjs
+    envVars:
+      - fromGroup: app-shared
+      # Worker shares CRON_SECRET with web — references web's generated value.
+      - key: CRON_SECRET
+        fromService:
+          type: web
+          name: web
+          envVarKey: CRON_SECRET
+      # Internal URL of the web service on Render's private network.
+      - key: WORKER_TARGET_URL
+        fromService:
+          type: web
+          name: web
+          property: hostport
+          # property "hostport" → e.g. "web-abc123:3000"; we wrap with http://
+          # prefix in worker-cron.mjs (TARGET is used as full URL prefix).
+          # If hostport is unsupported, set manually as http://<host>:3000
+          # using the host from `fromService.property: host`.
+
+  # ── Private Service: ClamAV virus scanner ───────────────────────────────
+  - type: pserv
+    name: clamav
+    runtime: image
+    region: frankfurt
+    plan: starter
+    image:
+      url: docker.io/clamav/clamav:stable
+    disk:
+      name: clamav-data
+      mountPath: /var/lib/clamav
+      sizeGB: 5
+    envVars:
+      - key: CLAMAV_NO_FRESHCLAMD
+        value: 'false'
+      - key: CLAMAV_NO_CLAMD
+        value: 'false'
+      - key: CLAMD_STARTUP_TIMEOUT
+        value: '180'
+
+  # ── Cron Job: OAuth token refresh (every 15 minutes) ────────────────────
+  - type: cron
+    name: cron-token-refresh
+    runtime: image
+    region: frankfurt
+    plan: starter
+    schedule: '*/15 * * * *'
+    image:
+      url: docker.io/curlimages/curl:8.11.1
+    dockerCommand: |
+      sh -c 'curl -fsS -m 600 -H "Authorization: Bearer $CRON_SECRET" "http://${WEB_HOST}:3000/api/cron/token-refresh"'
+    envVars:
+      - key: CRON_SECRET
+        fromService:
+          type: web
+          name: web
+          envVarKey: CRON_SECRET
+      - key: WEB_HOST
+        fromService:
+          type: web
+          name: web
+          property: host
+
+  # ── Cron Job: GDPR data purge (daily 03:00 UTC) ─────────────────────────
+  - type: cron
+    name: cron-data-purge
+    runtime: image
+    region: frankfurt
+    plan: starter
+    schedule: '0 3 * * *'
+    image:
+      url: docker.io/curlimages/curl:8.11.1
+    dockerCommand: |
+      sh -c 'curl -fsS -m 600 -H "Authorization: Bearer $CRON_SECRET" "http://${WEB_HOST}:3000/api/cron/data-purge"'
+    envVars:
+      - key: CRON_SECRET
+        fromService:
+          type: web
+          name: web
+          envVarKey: CRON_SECRET
+      - key: WEB_HOST
+        fromService:
+          type: web
+          name: web
+          property: host

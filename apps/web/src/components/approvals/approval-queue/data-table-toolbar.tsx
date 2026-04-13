@@ -185,7 +185,7 @@ export function ApprovalQueueToolbar({
             onChange={e => handleSearchInput(e.target.value)}
             className="h-9 ps-9 pe-8"
           />
-          {isSearching && (
+          {!!isSearching && (
             <Loader2 className="absolute end-2.5 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground" />
           )}
         </div>
@@ -199,7 +199,7 @@ export function ApprovalQueueToolbar({
               {t('bulk.selectedCount', { count })}
             </span>
             <Button size="sm" onClick={handleBulkApprove} disabled={bulkApproveMutation.isPending}>
-              {bulkApproveMutation.isPending && (
+              {!!bulkApproveMutation.isPending && (
                 <Loader2 className="me-1 h-3.5 w-3.5 animate-spin" />
               )}
               {t('bulk.approve', { count })}
@@ -222,10 +222,13 @@ export function ApprovalQueueToolbar({
             <DialogDescription>{t('bulkRejectDialog.description')}</DialogDescription>
           </DialogHeader>
           <div className="space-y-2">
-            <label className="text-[12px] font-medium text-muted-foreground">
+            <label
+              htmlFor="bulk-reject-comment"
+              className="text-[12px] font-medium text-muted-foreground">
               {t('bulkRejectDialog.commentLabel')}
             </label>
             <Textarea
+              id="bulk-reject-comment"
               value={bulkRejectComment}
               onChange={e => setBulkRejectComment(e.target.value)}
               placeholder={t('bulkRejectDialog.commentPlaceholder')}
@@ -248,7 +251,7 @@ export function ApprovalQueueToolbar({
               variant="destructive"
               disabled={bulkRejectComment.length < 10 || bulkRejectMutation.isPending}
               onClick={handleBulkReject}>
-              {bulkRejectMutation.isPending && (
+              {!!bulkRejectMutation.isPending && (
                 <Loader2 className="me-1 h-3.5 w-3.5 animate-spin" />
               )}
               {t('bulkRejectDialog.confirm', { count })}

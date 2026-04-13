@@ -324,7 +324,7 @@ export function OcrReviewPanel({
 
         {/* Right Panel: Form */}
         <Card className="relative bg-background">
-          {isProcessing && <OcrProcessingOverlay />}
+          {!!isProcessing && <OcrProcessingOverlay />}
 
           {!isProcessing && (
             <CardContent className="flex flex-col gap-6 p-6">

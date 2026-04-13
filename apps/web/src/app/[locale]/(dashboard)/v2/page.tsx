@@ -274,7 +274,7 @@ export default function DashboardV2Page() {
                     <div className="flex h-9 w-9 items-center justify-center rounded-xl transition-transform group-hover:scale-110">
                       <Icon className="h-4 w-4" />
                     </div>
-                    {'ring' in kpi && kpi.ring && (
+                    {'ring' in kpi && !!kpi.ring && (
                       <Ring
                         value={kpi.val}
                         max={Math.max(kpi.val, 8)}
@@ -417,7 +417,7 @@ export default function DashboardV2Page() {
                         <span className="font-mono text-[14px] font-black tabular-nums tracking-tight">
                           {fmtAmt(amt, cur)}
                         </span>
-                        {item.slaStatus && <SlaPill status={item.slaStatus.status} />}
+                        {!!item.slaStatus && <SlaPill status={item.slaStatus.status} />}
                       </div>
                     </div>
                   </TiltCard>

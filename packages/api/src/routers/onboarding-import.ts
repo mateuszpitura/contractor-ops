@@ -101,7 +101,14 @@ async function updateImportJob(
 async function fetchJiraProjects(
   accessToken: string,
   config: ConnectionConfig,
-): Promise<Array<{ sourceProvider: string; externalId: string; name: string; statuses: Array<{ id: string; name: string; color?: string }> }>> {
+): Promise<
+  Array<{
+    sourceProvider: string;
+    externalId: string;
+    name: string;
+    statuses: Array<{ id: string; name: string; color?: string }>;
+  }>
+> {
   if (!config?.cloudId) return [];
 
   const baseUrl = `https://api.atlassian.com/ex/jira/${config.cloudId}/rest/api/3`;
@@ -119,7 +126,12 @@ async function fetchJiraProjects(
     name: string;
   }>;
 
-  const results: Array<{ sourceProvider: string; externalId: string; name: string; statuses: Array<{ id: string; name: string; color?: string }> }> = [];
+  const results: Array<{
+    sourceProvider: string;
+    externalId: string;
+    name: string;
+    statuses: Array<{ id: string; name: string; color?: string }>;
+  }> = [];
 
   for (const proj of jiraProjects) {
     const statusResponse = await fetch(`${baseUrl}/project/${proj.id}/statuses`, { headers });
@@ -161,9 +173,14 @@ async function fetchJiraProjects(
 /**
  * Fetches Linear teams with their workflow states for a given connection.
  */
-async function fetchLinearProjects(
-  accessToken: string,
-): Promise<Array<{ sourceProvider: string; externalId: string; name: string; statuses: Array<{ id: string; name: string; color?: string }> }>> {
+async function fetchLinearProjects(accessToken: string): Promise<
+  Array<{
+    sourceProvider: string;
+    externalId: string;
+    name: string;
+    statuses: Array<{ id: string; name: string; color?: string }>;
+  }>
+> {
   const data = await linearGraphQL<{
     teams: {
       nodes: Array<{

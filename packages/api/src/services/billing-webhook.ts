@@ -10,8 +10,8 @@ import {
   TRIAL_CREDIT_ALLOWANCE,
 } from './billing-constants.js';
 import { CacheKeys, invalidate } from './cache.js';
-import { dispatch } from './notification-service.js';
 import type { NotificationEvent } from './notification-service.js';
+import { dispatch } from './notification-service.js';
 import { stripe } from './stripe-client.js';
 import type { DbClient } from './types.js';
 
@@ -340,10 +340,7 @@ async function handleSubscriptionUpdated(
   }
 }
 
-function buildSubscriptionData(
-  subscription: SubscriptionWithPeriod,
-  organizationId: string,
-) {
+function buildSubscriptionData(subscription: SubscriptionWithPeriod, organizationId: string) {
   const status = STRIPE_STATUS_MAP[subscription.status] ?? 'ACTIVE';
   const priceId = subscription.items.data[0]?.price?.id;
 
@@ -622,7 +619,10 @@ async function handlePaymentActionRequired(invoice: Stripe.Invoice, tx: TxClient
  */
 async function notifyBillingAdmins(
   tx: TxClient,
-  sub: { organizationId: string; organization?: { id: string; billingEmail: string | null } | null },
+  sub: {
+    organizationId: string;
+    organization?: { id: string; billingEmail: string | null } | null;
+  },
   notification: { type: string; title: string; body: string; emailSubject: string },
 ): Promise<void> {
   const adminMembers = await tx.member.findMany({

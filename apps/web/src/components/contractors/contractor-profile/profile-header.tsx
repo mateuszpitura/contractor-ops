@@ -42,6 +42,55 @@ const lifecycleBadgeStyles: Record<string, string> = {
 
 // Lifecycle labels are now served from translations: ContractorProfile.lifecycle.*
 
+type LifecycleMenuItem = {
+  target: LifecycleStage;
+  labelKey: string;
+  variant?: 'destructive';
+  isArchive?: boolean;
+};
+
+const LIFECYCLE_MENU_CONFIG: Record<LifecycleStage, LifecycleMenuItem[]> = {
+  DRAFT: [{ target: 'ONBOARDING', labelKey: 'actions.startOnboarding' }],
+  ONBOARDING: [{ target: 'ACTIVE', labelKey: 'actions.activate' }],
+  ACTIVE: [
+    { target: 'OFFBOARDING', labelKey: 'actions.startOffboarding' },
+    { target: 'ENDED', labelKey: 'actions.markInactive' },
+  ],
+  OFFBOARDING: [{ target: 'ENDED', labelKey: 'actions.completeOffboarding' }],
+  ENDED: [
+    { target: 'ENDED', labelKey: 'actions.archive', variant: 'destructive', isArchive: true },
+  ],
+};
+
+function LifecycleMenuItems({
+  stage,
+  isPending,
+  onLifecycleAction,
+  onArchive,
+  t,
+}: {
+  stage: LifecycleStage;
+  isPending: boolean;
+  onLifecycleAction: (target: LifecycleStage) => void;
+  onArchive: () => void;
+  t: (key: string) => string;
+}) {
+  const items = LIFECYCLE_MENU_CONFIG[stage] ?? [];
+  return (
+    <>
+      {items.map(item => (
+        <DropdownMenuItem
+          key={item.labelKey}
+          disabled={isPending}
+          variant={item.variant}
+          onSelect={() => (item.isArchive ? onArchive() : onLifecycleAction(item.target))}>
+          {t(item.labelKey)}
+        </DropdownMenuItem>
+      ))}
+    </>
+  );
+}
+
 export function ProfileHeader({ contractor }: ProfileHeaderProps) {
   const t = useTranslations('ContractorProfile');
   const tc = useTranslations('Contractors');
@@ -112,10 +161,10 @@ export function ProfileHeader({ contractor }: ProfileHeaderProps) {
               {tc(`type.${contractor.type}` as Parameters<typeof tc>[0])}
             </Badge>
           </div>
-          {contractor.owner && (
+          {!!contractor.owner && (
             <div className="mt-1 flex items-center gap-1.5">
               <Avatar size="sm">
-                {contractor.owner.image && (
+                {!!contractor.owner.image && (
                   <AvatarImage src={contractor.owner.image} alt={contractor.owner.name ?? ''} />
                 )}
                 <AvatarFallback>{getAvatarInitials(contractor.owner.name)}</AvatarFallback>
@@ -175,46 +224,13 @@ export function ProfileHeader({ contractor }: ProfileHeaderProps) {
             )}
           />
           <DropdownMenuContent align="end">
-            {stage === 'DRAFT' && (
-              <DropdownMenuItem
-                disabled={isPending}
-                onSelect={() => handleLifecycleAction('ONBOARDING')}>
-                {t('actions.startOnboarding')}
-              </DropdownMenuItem>
-            )}
-            {stage === 'ONBOARDING' && (
-              <DropdownMenuItem
-                disabled={isPending}
-                onSelect={() => handleLifecycleAction('ACTIVE')}>
-                {t('actions.activate')}
-              </DropdownMenuItem>
-            )}
-            {stage === 'ACTIVE' && (
-              <>
-                <DropdownMenuItem
-                  disabled={isPending}
-                  onSelect={() => handleLifecycleAction('OFFBOARDING')}>
-                  {t('actions.startOffboarding')}
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  disabled={isPending}
-                  onSelect={() => handleLifecycleAction('ENDED')}>
-                  {t('actions.markInactive')}
-                </DropdownMenuItem>
-              </>
-            )}
-            {stage === 'OFFBOARDING' && (
-              <DropdownMenuItem
-                disabled={isPending}
-                onSelect={() => handleLifecycleAction('ENDED')}>
-                {t('actions.completeOffboarding')}
-              </DropdownMenuItem>
-            )}
-            {stage === 'ENDED' && (
-              <DropdownMenuItem disabled={isPending} variant="destructive" onSelect={handleArchive}>
-                {t('actions.archive')}
-              </DropdownMenuItem>
-            )}
+            <LifecycleMenuItems
+              stage={stage}
+              isPending={isPending}
+              onLifecycleAction={handleLifecycleAction}
+              onArchive={handleArchive}
+              t={t}
+            />
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

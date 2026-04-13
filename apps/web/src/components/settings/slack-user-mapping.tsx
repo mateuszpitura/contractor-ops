@@ -173,6 +173,7 @@ export function SlackUserMapping() {
         </div>
         <div className="space-y-2">
           {Array.from({ length: 5 }).map((_, i) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
             <div key={`mapping-${i}`} className="flex items-center gap-4 py-3">
               <Skeleton className="size-8 rounded-full" />
               <Skeleton className="h-4 w-32" />

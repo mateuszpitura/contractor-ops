@@ -186,6 +186,7 @@ export function NotificationPreferences() {
         </div>
         <div className="space-y-2">
           {Array.from({ length: 6 }).map((_, i) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
             <div key={`pref-${i}`} className="flex items-center gap-4 py-3">
               <Skeleton className="size-8 rounded-full" />
               <Skeleton className="h-4 w-32" />
@@ -326,7 +327,7 @@ export function NotificationPreferences() {
 
         <div className="mt-4">
           <Button type="submit" disabled={!form.formState.isDirty || updateMutation.isPending}>
-            {updateMutation.isPending && <Loader2 className="me-1.5 size-3.5 animate-spin" />}
+            {!!updateMutation.isPending && <Loader2 className="me-1.5 size-3.5 animate-spin" />}
             {t('notifications.savePreferences')}
           </Button>
         </div>

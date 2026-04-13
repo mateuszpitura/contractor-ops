@@ -7,6 +7,7 @@ import { BillingTab } from '@/components/billing/billing-tab';
 import { ConsentManagementSection } from '@/components/consent/consent-management-section';
 import { EInvoiceComplianceDetail } from '@/components/einvoice/compliance-detail';
 import { AdminBrandingSection } from '@/components/settings/admin-branding-section';
+import { ApiKeysTab } from '@/components/settings/api-keys-tab';
 import { ApprovalChainsTab } from '@/components/settings/approval-chains-tab';
 import { AuditLogTab } from '@/components/settings/audit-log-tab';
 import { ExpiryReminderDefaults } from '@/components/settings/expiry-reminder-defaults';
@@ -60,6 +61,11 @@ function SettingsContent() {
             {canManageBilling && <TabsTrigger value="billing">{t('tabs.billing')}</TabsTrigger>}
             {canViewAuditLog && <TabsTrigger value="audit-log">{t('tabs.auditLog')}</TabsTrigger>}
             <TabsTrigger value="privacy">{t('tabs.privacy')}</TabsTrigger>
+            {canManageIntegrations && (
+              <TabsTrigger value="api-keys">
+                {t('tabs.apiKeys', { defaultMessage: 'API Keys' })}
+              </TabsTrigger>
+            )}
             <TabsTrigger value="members" onClick={() => router.push('/settings/members')}>
               {t('tabs.members')}
             </TabsTrigger>
@@ -104,6 +110,12 @@ function SettingsContent() {
           <TabsContent value="privacy" className="mt-6 space-y-6">
             <ConsentManagementSection />
           </TabsContent>
+
+          {canManageIntegrations && (
+            <TabsContent value="api-keys" className="mt-6">
+              <ApiKeysTab />
+            </TabsContent>
+          )}
         </Tabs>
       </AnimateIn>
     </div>

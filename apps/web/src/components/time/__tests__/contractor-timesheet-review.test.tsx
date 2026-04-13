@@ -24,7 +24,9 @@ vi.mock('../rejection-reason-dialog', () => ({
   }) =>
     open ? (
       <div data-testid="rejection-dialog">
-        <button onClick={() => onConfirm('reason text')}>confirm-reject</button>
+        <button type="button" onClick={() => onConfirm('reason text')}>
+          confirm-reject
+        </button>
       </div>
     ) : null,
 }));

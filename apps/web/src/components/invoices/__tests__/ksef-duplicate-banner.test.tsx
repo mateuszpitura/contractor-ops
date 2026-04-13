@@ -42,7 +42,7 @@ describe('KsefDuplicateBanner', () => {
     await user.click(screen.getByRole('button', { name: /Void This Invoice/i }));
 
     const confirmButtons = screen.getAllByRole('button', { name: /^Void Invoice$/i });
-    const confirm = confirmButtons[confirmButtons.length - 1]!;
+    const confirm = confirmButtons[confirmButtons.length - 1];
     await user.click(confirm);
 
     expect(onVoid).toHaveBeenCalledTimes(1);

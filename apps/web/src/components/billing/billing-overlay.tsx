@@ -71,7 +71,9 @@ export function BillingOverlay() {
 
   return (
     <>
-      {showTrialBanner && trialEnd && <TrialBanner trialEnd={trialEnd} onUpgrade={handleUpgrade} />}
+      {!!showTrialBanner && !!trialEnd && (
+        <TrialBanner trialEnd={trialEnd} onUpgrade={handleUpgrade} />
+      )}
       {isPastDue && <PastDueBanner onResolve={handleUpgrade} />}
       <SoftBlockModal isOpen={isTrialExpired || isBlocked} onSelectPlan={handleSelectPlan} />
     </>

@@ -162,7 +162,7 @@ export function DataTableFilters({ filters, onFiltersChange }: DataTableFiltersP
               />
             );
           })}
-          {filters.overdueOnly && (
+          {!!filters.overdueOnly && (
             <FilterBadge
               label={t('filterOverdueOnly')}
               onRemove={() => onFiltersChange({ overdueOnly: false })}
@@ -204,8 +204,10 @@ function FilterSection({
         {options.map(option => (
           <label
             key={option.value}
+            htmlFor={`wf-filter-${title}-${option.value}`}
             className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-accent">
             <Checkbox
+              id={`wf-filter-${title}-${option.value}`}
               checked={selected.includes(option.value)}
               onCheckedChange={() => onToggle(option.value)}
             />

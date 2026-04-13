@@ -16,6 +16,7 @@ import { workflowTemplatesRouter } from './workflow-templates.js';
 // Re-export shared utilities for external consumers (e.g., tests, services)
 // ---------------------------------------------------------------------------
 
+// biome-ignore lint/performance/noBarrelFile: re-exports shared utilities for external consumers
 export {
   calculateProgress,
   evaluateCondition,

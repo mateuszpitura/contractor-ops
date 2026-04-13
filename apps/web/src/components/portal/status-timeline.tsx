@@ -108,9 +108,9 @@ function DesktopTimeline({
 }) {
   const tAria = useTranslations('Common.aria');
   return (
-    <div className="hidden items-center md:flex" role="list" aria-label={tAria('statusTimeline')}>
+    <ol className="hidden items-center md:flex" aria-label={tAria('statusTimeline')}>
       {steps.map((step, i) => (
-        <div key={step.key} className="flex items-center" role="listitem">
+        <li key={step.key} className="flex items-center">
           <div className="flex flex-col items-center gap-1.5">
             <StepCircle index={i} activeIndex={activeIndex} rejected={rejected} />
             <span
@@ -136,9 +136,9 @@ function DesktopTimeline({
               )}
             />
           )}
-        </div>
+        </li>
       ))}
-    </div>
+    </ol>
   );
 }
 
@@ -157,9 +157,9 @@ function MobileTimeline({
 }) {
   const tAria = useTranslations('Common.aria');
   return (
-    <div className="flex flex-col md:hidden" role="list" aria-label={tAria('statusTimeline')}>
+    <ol className="flex flex-col md:hidden" aria-label={tAria('statusTimeline')}>
       {steps.map((step, i) => (
-        <div key={step.key} className="flex items-start" role="listitem">
+        <li key={step.key} className="flex items-start">
           <div className="flex flex-col items-center">
             <StepCircle index={i} activeIndex={activeIndex} rejected={rejected} />
             {/* Vertical connector line */}
@@ -182,9 +182,9 @@ function MobileTimeline({
             )}>
             {step.label}
           </span>
-        </div>
+        </li>
       ))}
-    </div>
+    </ol>
   );
 }
 
@@ -216,6 +216,7 @@ export function StatusTimelineSkeleton() {
       {/* Desktop skeleton */}
       <div className="hidden items-center gap-2 md:flex">
         {Array.from({ length: 5 }).map((_, i) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
           <div key={`timeline-${i}`} className="flex items-center gap-2">
             <div className="flex flex-col items-center gap-1.5">
               <Skeleton className="h-6 w-6 rounded-full" />
@@ -228,6 +229,7 @@ export function StatusTimelineSkeleton() {
       {/* Mobile skeleton */}
       <div className="flex flex-col gap-2 md:hidden">
         {Array.from({ length: 5 }).map((_, i) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
           <div key={`event-${i}`} className="flex items-center gap-3">
             <Skeleton className="h-6 w-6 rounded-full" />
             <Skeleton className="h-3 w-24" />

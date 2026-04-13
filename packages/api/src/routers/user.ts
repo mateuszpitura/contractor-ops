@@ -7,6 +7,125 @@ import { requirePermission } from '../middleware/rbac.js';
 import { sensitiveActionProcedure } from '../middleware/sensitive.js';
 import { tenantProcedure } from '../middleware/tenant.js';
 
+// ---------------------------------------------------------------------------
+// Deactivation helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Prevents deactivating the last admin/owner in an organization.
+ */
+async function guardLastAdmin(
+  // biome-ignore lint/suspicious/noExplicitAny: tenant-scoped db type not directly importable without circular ref
+  db: any,
+  organizationId: string,
+  userId: string,
+) {
+  const targetMember = await db.member.findFirst({
+    where: { organizationId, userId },
+    select: { role: true },
+  });
+
+  if (!targetMember || (targetMember.role !== 'owner' && targetMember.role !== 'admin')) {
+    return;
+  }
+
+  const adminCount = await db.member.count({
+    where: {
+      organizationId,
+      role: { in: ['owner', 'admin'] },
+      user: { banned: { not: true } },
+    },
+  });
+
+  if (adminCount <= 1) {
+    throw new TRPCError({
+      code: 'PRECONDITION_FAILED',
+      message: 'LAST_ADMIN_CANNOT_DEACTIVATE',
+    });
+  }
+}
+
+/**
+ * Reassigns pending approval steps from a deactivated user to another member
+ * with the same role, or clears the assignment.
+ */
+async function reassignPendingApprovalSteps(
+  db: any,
+  organizationId: string,
+  deactivatedUserId: string,
+) {
+  const pendingSteps = await db.approvalStep.findMany({
+    where: {
+      organizationId,
+      approverUserId: deactivatedUserId,
+      status: { in: ['NOT_STARTED', 'PENDING'] },
+    },
+    select: { id: true, approverRole: true },
+  });
+
+  for (const step of pendingSteps) {
+    let replacementUserId: string | null = null;
+
+    if (step.approverRole) {
+      const replacement = await db.member.findFirst({
+        where: {
+          organizationId,
+          role: step.approverRole,
+          userId: { not: deactivatedUserId },
+          user: { banned: { not: true } },
+        },
+        select: { userId: true },
+      });
+      replacementUserId = replacement?.userId ?? null;
+    }
+
+    await db.approvalStep.update({
+      where: { id: step.id },
+      data: { approverUserId: replacementUserId },
+    });
+  }
+}
+
+/**
+ * Transfers contractor ownership from a deactivated user to an admin,
+ * or clears ownership if no admin is available.
+ */
+async function transferContractorOwnership(
+  db: any,
+  organizationId: string,
+  deactivatedUserId: string,
+) {
+  const ownedContractors = await db.contractor.findMany({
+    where: {
+      organizationId,
+      ownerUserId: deactivatedUserId,
+      deletedAt: null,
+    },
+    select: { id: true },
+  });
+
+  if (ownedContractors.length === 0) return;
+
+  const replacement = await db.member.findFirst({
+    where: {
+      organizationId,
+      role: { in: ['owner', 'admin'] },
+      userId: { not: deactivatedUserId },
+      user: { banned: { not: true } },
+    },
+    select: { userId: true },
+  });
+
+  await db.contractor.updateMany({
+    where: { id: { in: ownedContractors.map((c: { id: string }) => c.id) } },
+    data: { ownerUserId: replacement?.userId ?? null },
+  });
+}
+
+// ---------------------------------------------------------------------------
+// User router
+// ---------------------------------------------------------------------------
+
 export const userRouter = router({
   /**
    * List all members of the current organization.
@@ -83,113 +202,16 @@ export const userRouter = router({
     .use(requirePermission({ member: ['delete'] }))
     .input(z.object({ userId: z.string().min(1) }))
     .mutation(async ({ ctx, input }) => {
-      // Prevent deactivating the last admin/owner in the organization
-      const targetMember = await ctx.db.member.findFirst({
-        where: {
-          organizationId: ctx.organizationId,
-          userId: input.userId,
-        },
-        select: { role: true },
-      });
-
-      if (targetMember && (targetMember.role === 'owner' || targetMember.role === 'admin')) {
-        const adminCount = await ctx.db.member.count({
-          where: {
-            organizationId: ctx.organizationId,
-            role: { in: ['owner', 'admin'] },
-            user: { banned: { not: true } },
-          },
-        });
-
-        if (adminCount <= 1) {
-          throw new TRPCError({
-            code: 'PRECONDITION_FAILED',
-            message: 'LAST_ADMIN_CANNOT_DEACTIVATE',
-          });
-        }
-      }
+      await guardLastAdmin(ctx.db, ctx.organizationId, input.userId);
 
       const result = await authApi.banUser({
         headers: ctx.headers,
         body: { userId: input.userId },
       });
 
-      // Reassign pending approval steps from deactivated user to another
-      // eligible user with the same role, or clear the assignment so the
-      // step can be picked up by any user with the matching role.
-      const pendingSteps = await ctx.db.approvalStep.findMany({
-        where: {
-          organizationId: ctx.organizationId,
-          approverUserId: input.userId,
-          status: { in: ['NOT_STARTED', 'PENDING'] },
-        },
-        select: { id: true, approverRole: true },
-      });
-
-      if (pendingSteps.length > 0) {
-        for (const step of pendingSteps) {
-          // Try to find a replacement with the same role
-          let replacementUserId: string | null = null;
-
-          if (step.approverRole) {
-            const replacement = await ctx.db.member.findFirst({
-              where: {
-                organizationId: ctx.organizationId,
-                role: step.approverRole,
-                userId: { not: input.userId },
-                user: { banned: { not: true } },
-              },
-              select: { userId: true },
-            });
-            replacementUserId = replacement?.userId ?? null;
-          }
-
-          await ctx.db.approvalStep.update({
-            where: { id: step.id },
-            data: { approverUserId: replacementUserId },
-          });
-        }
-      }
-
-      // Transfer contractor ownership from deactivated user to an admin
-      const ownedContractors = await ctx.db.contractor.findMany({
-        where: {
-          organizationId: ctx.organizationId,
-          ownerUserId: input.userId,
-          deletedAt: null,
-        },
-        select: { id: true },
-      });
-
-      if (ownedContractors.length > 0) {
-        // Find a replacement admin (prefer owner, then admin role)
-        const replacement = await ctx.db.member.findFirst({
-          where: {
-            organizationId: ctx.organizationId,
-            role: { in: ['owner', 'admin'] },
-            userId: { not: input.userId },
-            user: { banned: { not: true } },
-          },
-          select: { userId: true },
-        });
-
-        if (replacement) {
-          await ctx.db.contractor.updateMany({
-            where: {
-              id: { in: ownedContractors.map(c => c.id) },
-            },
-            data: { ownerUserId: replacement.userId },
-          });
-        } else {
-          // No admin available — clear ownership to prevent dangling reference
-          await ctx.db.contractor.updateMany({
-            where: {
-              id: { in: ownedContractors.map(c => c.id) },
-            },
-            data: { ownerUserId: null },
-          });
-        }
-      }
+      // Reassign pending approval steps and transfer contractor ownership
+      await reassignPendingApprovalSteps(ctx.db, ctx.organizationId, input.userId);
+      await transferContractorOwnership(ctx.db, ctx.organizationId, input.userId);
 
       return result;
     }),

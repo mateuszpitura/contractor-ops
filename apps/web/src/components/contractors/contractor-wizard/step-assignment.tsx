@@ -76,7 +76,7 @@ export function StepAssignment({ form }: StepAssignmentProps) {
             </Select>
           );
         })()}
-        {errors.ownerUserId && (
+        {!!errors.ownerUserId && (
           <p className="text-sm text-destructive">{errors.ownerUserId.message}</p>
         )}
       </div>

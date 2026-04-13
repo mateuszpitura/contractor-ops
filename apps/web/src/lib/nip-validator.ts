@@ -8,6 +8,6 @@ export function isValidNip(raw: string): boolean {
   const nip = raw.replace(/[\s-]/g, '');
   if (!/^\d{10}$/.test(nip)) return false;
   const digits = nip.split('').map(Number);
-  const checksum = NIP_WEIGHTS.reduce((sum, w, i) => sum + w * digits[i]!, 0) % 11;
+  const checksum = NIP_WEIGHTS.reduce((sum, w, i) => sum + w * (digits[i] ?? 0), 0) % 11;
   return checksum === digits[9];
 }

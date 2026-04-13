@@ -125,8 +125,8 @@ export function GdprPrivacyNoticeTemplate({
           <Text style={styles.versionLine}>{notice.legalReference}</Text>
         </View>
 
-        {notice.sections.map((section, index) => (
-          <View key={`${section.title}-${index}`} style={styles.section} wrap={false}>
+        {notice.sections.map(section => (
+          <View key={section.title} style={styles.section} wrap={false}>
             <Text style={styles.sectionTitle}>{section.title}</Text>
             <Text style={styles.sectionBody}>{section.content}</Text>
           </View>

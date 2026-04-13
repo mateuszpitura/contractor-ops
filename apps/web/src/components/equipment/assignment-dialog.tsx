@@ -160,7 +160,7 @@ export function AssignmentDialog({
           <Button
             onClick={handleAssign}
             disabled={!selectedContractorId || assignMutation.isPending}>
-            {assignMutation.isPending && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
+            {!!assignMutation.isPending && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
             {t('detail.assignToContractor')}
           </Button>
         </DialogFooter>

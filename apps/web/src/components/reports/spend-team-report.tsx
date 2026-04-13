@@ -170,7 +170,7 @@ export function SpendTeamReport({ dateFrom, dateTo }: SpendTeamReportProps) {
       <DrillDownBreadcrumb
         segments={[
           { label: t('all') },
-          ...(drillDownName ? [{ label: drillDownName, id: drillDownTeamId! }] : []),
+          ...(drillDownName ? [{ label: drillDownName, id: drillDownTeamId as string }] : []),
         ]}
         onClear={handleClearDrillDown}
       />

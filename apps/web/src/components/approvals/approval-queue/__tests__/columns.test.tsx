@@ -340,7 +340,7 @@ describe('getColumns', () => {
     const textarea = await screen.findByRole('textbox');
     await user.type(textarea, 'This invoice has incorrect amounts');
     const confirmBtn = screen.getByText('rejectPopover.confirm');
-    await user.click(confirmBtn.closest('button')!);
+    await user.click(confirmBtn.closest('button'));
     expect(onReject).toHaveBeenCalledWith('step-1', 'This invoice has incorrect amounts');
   });
 
@@ -437,7 +437,7 @@ describe('getColumns', () => {
       <TableWrapper data={[makeRow()]} onApprove={vi.fn()} onReject={vi.fn()} />,
     );
     const checkboxes = screen.getAllByRole('checkbox');
-    const rowCheckbox = checkboxes[1]!;
+    const rowCheckbox = checkboxes[1];
     await user.click(rowCheckbox);
   });
 });

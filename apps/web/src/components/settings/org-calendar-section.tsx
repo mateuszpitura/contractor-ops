@@ -100,13 +100,13 @@ function OrgCalendarProviderCard({
             <div className="space-y-3">
               <p className="text-sm text-muted-foreground">{t('orgCalendarDescription')}</p>
               <div className="space-y-1 text-sm">
-                {connection.displayName && (
+                {!!connection.displayName && (
                   <p>
                     <span className="text-muted-foreground">{t('connectedAccount')}:</span>{' '}
                     <span className="font-medium">{connection.displayName}</span>
                   </p>
                 )}
-                {connection.connectedAt && (
+                {!!connection.connectedAt && (
                   <p>
                     <span className="text-muted-foreground">{t('connectedOn')}:</span>{' '}
                     <span className="font-medium">
@@ -149,7 +149,7 @@ function OrgCalendarProviderCard({
                   setDisconnectDialogOpen(false);
                 }
               }}>
-              {isDisconnecting && <Loader2 className="me-1.5 size-3.5 animate-spin" />}
+              {!!isDisconnecting && <Loader2 className="me-1.5 size-3.5 animate-spin" />}
               {t('disconnectCalendar')}
             </AlertDialogAction>
           </AlertDialogFooter>

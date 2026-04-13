@@ -65,7 +65,9 @@ vi.mock('../brand-color-picker', () => ({
   BrandColorPicker: ({ value, onChange }: any) => (
     <div data-testid="color-picker">
       <span>Color: {value}</span>
-      <button onClick={() => onChange('#ff0000')}>Set red</button>
+      <button type="button" onClick={() => onChange('#ff0000')}>
+        Set red
+      </button>
     </div>
   ),
 }));

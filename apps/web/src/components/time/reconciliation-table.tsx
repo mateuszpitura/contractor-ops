@@ -88,6 +88,7 @@ function ReconciliationSkeleton() {
   return (
     <div className="space-y-3">
       {Array.from({ length: 5 }).map((_, i) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
         <div key={`skel-${i}`} className="flex items-center gap-4 rounded-lg border px-4 py-3">
           <Skeleton className="h-4 w-28" />
           <Skeleton className="h-4 w-24" />

@@ -59,7 +59,7 @@ export function CsrGeneration({ onSuccess, onBack }: CsrGenerationProps) {
       </div>
 
       {/* CSR Preview */}
-      {csrPem && (
+      {!!csrPem && (
         <div className="rounded-lg border bg-muted/30 p-4">
           <p className="mb-2 text-xs font-medium text-muted-foreground">{t('csrPreviewLabel')}</p>
           <pre className="overflow-x-auto whitespace-pre-wrap break-all font-mono text-xs text-foreground">
@@ -79,7 +79,7 @@ export function CsrGeneration({ onSuccess, onBack }: CsrGenerationProps) {
           <Button
             onClick={() => (generateMutation.mutate as () => void)()}
             disabled={generateMutation.isPending}>
-            {generateMutation.isPending && (
+            {!!generateMutation.isPending && (
               <Loader2
                 className="me-1.5 h-3.5 w-3.5 animate-spin"
                 aria-label="Loading"

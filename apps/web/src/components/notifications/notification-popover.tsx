@@ -21,6 +21,7 @@ function PopoverSkeletons() {
   return (
     <div className="flex flex-col gap-2 p-2">
       {Array.from({ length: 4 }).map((_, i) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
         <div key={`skel-${i}`} className="flex items-center gap-3 px-3 py-2">
           <Skeleton className="h-8 w-8 rounded-full" />
           <div className="flex flex-1 flex-col gap-1">

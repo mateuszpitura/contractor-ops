@@ -57,6 +57,7 @@ vi.mock('../directory-preview-table', () => ({
         <div key={u.primaryEmail}>
           <span>{u.name.fullName}</span>
           <button
+            type="button"
             onClick={() => {
               const next = new Set(selectedEmails);
               next.add(u.primaryEmail);
@@ -82,8 +83,12 @@ vi.mock('../import-confirm-step', () => ({
   ImportConfirmStep: ({ userCount, onBack, onConfirm }: any) => (
     <div data-testid="import-confirm">
       <span>{userCount} users to import</span>
-      <button onClick={onBack}>Back from confirm</button>
-      <button onClick={onConfirm}>Confirm import</button>
+      <button type="button" onClick={onBack}>
+        Back from confirm
+      </button>
+      <button type="button" onClick={onConfirm}>
+        Confirm import
+      </button>
     </div>
   ),
 }));

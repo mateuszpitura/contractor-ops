@@ -101,7 +101,7 @@ describe('Sheet', () => {
       <Sheet defaultOpen>
         <SheetContent>
           <SheetFooter className="custom-ftr">
-            <button>OK</button>
+            <button type="button">OK</button>
           </SheetFooter>
         </SheetContent>
       </Sheet>,

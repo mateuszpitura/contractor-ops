@@ -1,0 +1,104 @@
+import type { Prisma } from '@contractor-ops/db';
+import { TRPCError } from '@trpc/server';
+import { z } from 'zod';
+import * as E from '../../errors.js';
+import { router } from '../../init.js';
+import { apiKeyTenantProcedure } from '../../middleware/api-key-auth.js';
+import { requirePermission } from '../../middleware/rbac.js';
+import { createRegionalPresignedDownloadUrl } from '../../services/regional-storage.js';
+
+// ---------------------------------------------------------------------------
+// Input schemas
+// ---------------------------------------------------------------------------
+
+const listInput = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  pageSize: z.coerce.number().int().min(1).max(100).default(25),
+  entityType: z.enum(['CONTRACTOR', 'CONTRACT', 'INVOICE']).optional(),
+  entityId: z.string().optional(),
+  sortOrder: z.enum(['asc', 'desc']).default('desc'),
+});
+
+// ---------------------------------------------------------------------------
+// Public API document router
+// ---------------------------------------------------------------------------
+
+export const publicDocumentRouter = router({
+  list: apiKeyTenantProcedure
+    .use(requirePermission({ document: ['read'] }))
+    .input(listInput)
+    .query(async ({ ctx, input }) => {
+      const { page, pageSize, entityType, entityId, sortOrder } = input;
+
+      const where: Prisma.DocumentWhereInput = {
+        organizationId: ctx.organizationId,
+        deletedAt: null,
+      };
+
+      // Filter by entity link
+      if (entityType && entityId) {
+        const linkedDocIds = await ctx.db.documentLink.findMany({
+          where: {
+            organizationId: ctx.organizationId,
+            entityType,
+            entityId,
+          },
+          select: { documentId: true },
+        });
+        where.id = { in: linkedDocIds.map(l => l.documentId) };
+      }
+
+      const [items, total] = await Promise.all([
+        ctx.db.document.findMany({
+          where,
+          skip: (page - 1) * pageSize,
+          take: pageSize,
+          orderBy: { createdAt: sortOrder },
+          select: {
+            id: true,
+            originalFileName: true,
+            mimeType: true,
+            fileSizeBytes: true,
+            documentType: true,
+            status: true,
+            virusScanStatus: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        }),
+        ctx.db.document.count({ where }),
+      ]);
+
+      return { items, total, page, pageSize };
+    }),
+
+  getDownloadUrl: apiKeyTenantProcedure
+    .use(requirePermission({ document: ['read'] }))
+    .input(z.object({ id: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const doc = await ctx.db.document.findFirst({
+        where: {
+          id: input.id,
+          organizationId: ctx.organizationId,
+          deletedAt: null,
+        },
+      });
+
+      if (!doc) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: E.DOCUMENT_NOT_FOUND,
+        });
+      }
+
+      if (doc.virusScanStatus === 'INFECTED') {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: E.DOCUMENT_INFECTED,
+        });
+      }
+
+      const url = await createRegionalPresignedDownloadUrl(doc.storageKey, 900);
+      return { url, expiresIn: 900 };
+    }),
+});

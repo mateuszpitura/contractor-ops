@@ -50,6 +50,7 @@ function StepIndicator({ currentStep, totalSteps }: { currentStep: number; total
     <div className="flex items-center justify-center gap-2" aria-hidden="true">
       {Array.from({ length: totalSteps }).map((_, i) => (
         <div
+          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
           key={`step-${i}`}
           className={cn(
             'h-2 w-2 rounded-full transition-colors',
@@ -177,12 +178,12 @@ export function PortalReturnFlow({
                 {t('itemsToReturn', { count: equipmentItems.length })}
               </p>
               <ul className="space-y-1 text-sm">
-                {equipmentItems.map((item, i) => (
-                  <li key={`equipment-${i}`} className="flex items-center gap-2">
+                {equipmentItems.map(item => (
+                  <li key={item.name} className="flex items-center gap-2">
                     <Package className="h-3.5 w-3.5 text-muted-foreground" />
                     <span>
                       {item.name}
-                      {item.serialNumber && (
+                      {!!item.serialNumber && (
                         <span className="ms-1 font-mono text-xs text-muted-foreground">
                           ({item.serialNumber})
                         </span>
@@ -230,10 +231,10 @@ export function PortalReturnFlow({
                   </span>
                 </p>
                 <ul className="space-y-1 ps-4">
-                  {equipmentItems.map((item, i) => (
-                    <li key={`equipment-${i}`}>
+                  {equipmentItems.map(item => (
+                    <li key={item.name}>
                       {item.name}
-                      {item.serialNumber && (
+                      {!!item.serialNumber && (
                         <span className="ms-1 font-mono text-xs text-muted-foreground">
                           ({item.serialNumber})
                         </span>
@@ -241,7 +242,7 @@ export function PortalReturnFlow({
                     </li>
                   ))}
                 </ul>
-                {selectedPoint && (
+                {!!selectedPoint && (
                   <p className="text-muted-foreground">
                     {t('dropOffAt', { name: selectedPoint.name })}
                     <br />
@@ -261,7 +262,7 @@ export function PortalReturnFlow({
                 <Button
                   onClick={handleRequestReturn}
                   disabled={requestMutation.isPending || requestMutation.isSuccess}>
-                  {requestMutation.isPending && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
+                  {!!requestMutation.isPending && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
                   {t('requestReturn')}
                 </Button>
               </DialogFooter>
@@ -286,7 +287,7 @@ export function PortalReturnFlow({
                 </div>
               )}
 
-              {returnRequest?.targetPointName && (
+              {!!returnRequest?.targetPointName && (
                 <p className="text-center text-sm text-muted-foreground">
                   {t('dropOffAt', { name: returnRequest.targetPointName })}
                 </p>

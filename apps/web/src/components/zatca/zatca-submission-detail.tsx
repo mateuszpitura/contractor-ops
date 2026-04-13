@@ -2,6 +2,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ChevronDown, Copy, FileCode, Loader2, RefreshCw } from 'lucide-react';
+import Image from 'next/image';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
@@ -125,15 +126,9 @@ export function ZatcaSubmissionDetail({
           <div className="space-y-4">
             {/* Core fields */}
             <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-sm">
-              <dt className="text-muted-foreground" aria-label="Invoice UUID">
-                UUID
-              </dt>
+              <dt className="text-muted-foreground">UUID</dt>
               <dd className="flex items-center gap-1.5">
-                <span
-                  className="font-mono text-xs break-all"
-                  aria-label={`Invoice UUID: ${submission.zatcaUuid}`}>
-                  {submission.zatcaUuid}
-                </span>
+                <span className="font-mono text-xs break-all">{submission.zatcaUuid}</span>
                 <button
                   type="button"
                   onClick={() => copyToClipboard(submission.zatcaUuid, 'UUID')}
@@ -152,7 +147,7 @@ export function ZatcaSubmissionDetail({
                   status={submission.zatcaStatus as ZatcaBadgeStatus}
                   date={statusDate ? new Date(statusDate).toLocaleDateString() : undefined}
                 />
-                {statusDate && (
+                {!!statusDate && (
                   <span className="text-xs text-muted-foreground">
                     {new Date(statusDate).toLocaleDateString()}
                   </span>
@@ -164,15 +159,13 @@ export function ZatcaSubmissionDetail({
             </dl>
 
             {/* Hash Chain */}
-            {(submission.previousHash || submission.invoiceHash) && (
+            {!!(submission.previousHash || submission.invoiceHash) && (
               <div className="space-y-2">
                 <p className="text-sm font-medium">Hash Chain</p>
                 <div className="space-y-1 text-sm">
-                  {submission.previousHash && (
+                  {!!submission.previousHash && (
                     <div className="flex items-center gap-2">
-                      <span className="text-muted-foreground" aria-label="Previous hash">
-                        Previous Hash:
-                      </span>
+                      <span className="text-muted-foreground">Previous Hash:</span>
                       <span className="font-mono text-xs hidden md:inline">
                         {submission.previousHash}
                       </span>
@@ -181,18 +174,18 @@ export function ZatcaSubmissionDetail({
                       </span>
                       <button
                         type="button"
-                        onClick={() => copyToClipboard(submission.previousHash!, 'Previous hash')}
+                        onClick={() =>
+                          copyToClipboard(submission.previousHash ?? '', 'Previous hash')
+                        }
                         className="shrink-0 text-muted-foreground hover:text-foreground"
                         aria-label="Copy previous hash">
                         <Copy className="h-3 w-3" />
                       </button>
                     </div>
                   )}
-                  {submission.invoiceHash && (
+                  {!!submission.invoiceHash && (
                     <div className="flex items-center gap-2">
-                      <span className="text-muted-foreground" aria-label="Invoice hash">
-                        Invoice Hash:
-                      </span>
+                      <span className="text-muted-foreground">Invoice Hash:</span>
                       <span className="font-mono text-xs hidden md:inline">
                         {submission.invoiceHash}
                       </span>
@@ -201,7 +194,9 @@ export function ZatcaSubmissionDetail({
                       </span>
                       <button
                         type="button"
-                        onClick={() => copyToClipboard(submission.invoiceHash!, 'Invoice hash')}
+                        onClick={() =>
+                          copyToClipboard(submission.invoiceHash ?? '', 'Invoice hash')
+                        }
                         className="shrink-0 text-muted-foreground hover:text-foreground"
                         aria-label="Copy invoice hash">
                         <Copy className="h-3 w-3" />
@@ -213,16 +208,16 @@ export function ZatcaSubmissionDetail({
             )}
 
             {/* QR Code */}
-            {qrCodeBase64 && (
+            {!!qrCodeBase64 && (
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
                 <div className="shrink-0">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
+                  <Image
                     src={`data:image/png;base64,${qrCodeBase64}`}
                     alt="ZATCA QR code containing seller name, VAT number, invoice total, and VAT amount"
                     width={64}
                     height={64}
                     className="rounded border"
+                    unoptimized
                   />
                 </div>
                 <div className="text-xs text-muted-foreground space-y-0.5">
@@ -238,7 +233,7 @@ export function ZatcaSubmissionDetail({
             )}
 
             {/* Rejection reason */}
-            {isRejected && submission.rejectionReason && (
+            {!!isRejected && !!submission.rejectionReason && (
               <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm">
                 <p className="font-medium text-destructive">Rejection Reason</p>
                 <p className="mt-1 text-destructive/80">{submission.rejectionReason}</p>

@@ -111,14 +111,14 @@ describe('EquipmentTable', () => {
   it('renders empty state message and action button', () => {
     render(<EquipmentTable {...defaultProps} />);
     expect(screen.getByText(/no equipment/i)).toBeInTheDocument();
-    const addBtn = screen.getAllByRole('button', { name: /add equipment/i })[0]!;
+    const addBtn = screen.getAllByRole('button', { name: /add equipment/i })[0];
     expect(addBtn).toBeInTheDocument();
   });
 
   it('multiple calls to onAddEquipment work correctly', async () => {
     const onAddEquipment = vi.fn();
     const { user } = setup(<EquipmentTable {...defaultProps} onAddEquipment={onAddEquipment} />);
-    const addBtn = screen.getAllByRole('button', { name: /add equipment/i })[0]!;
+    const addBtn = screen.getAllByRole('button', { name: /add equipment/i })[0];
     await user.click(addBtn);
     await user.click(addBtn);
     expect(onAddEquipment).toHaveBeenCalledTimes(2);
@@ -217,7 +217,7 @@ describe('EquipmentTable', () => {
 
   it('handles search input changes', async () => {
     const { user } = setup(<EquipmentTable {...defaultProps} />);
-    const searchInput = document.querySelector('input')!;
+    const searchInput = document.querySelector('input');
     await user.type(searchInput, 'laptop');
     expect(searchInput).toHaveValue('laptop');
   });
@@ -282,7 +282,7 @@ describe('EquipmentTable', () => {
     } as unknown);
     const { user } = setup(<EquipmentTable {...defaultProps} />);
     expect(screen.getByText('Next')).toBeInTheDocument();
-    const nextBtn = screen.getByText('Next').closest('button')!;
+    const nextBtn = screen.getByText('Next').closest('button');
     expect(nextBtn).not.toBeDisabled();
     await user.click(nextBtn);
     // After clicking next, page state should advance
@@ -307,7 +307,7 @@ describe('EquipmentTable', () => {
       isFetching: false,
     } as unknown);
     render(<EquipmentTable {...defaultProps} />);
-    const nextBtn = screen.getByText('Next').closest('button')!;
+    const nextBtn = screen.getByText('Next').closest('button');
     expect(nextBtn).toBeDisabled();
   });
 
@@ -361,7 +361,7 @@ describe('EquipmentTable', () => {
     } as unknown);
     const { user } = setup(<EquipmentTable {...defaultProps} />);
     // Type in search to activate filters
-    const searchInput = document.querySelector('input')!;
+    const searchInput = document.querySelector('input');
     user.type(searchInput, 'nonexistent').then(() => {
       // After typing, if data is empty but search is active, "No results found" should show
     });
@@ -369,7 +369,7 @@ describe('EquipmentTable', () => {
 
   it('search input is interactive and updates on keystrokes', async () => {
     const { user } = setup(<EquipmentTable {...defaultProps} />);
-    const searchInput = document.querySelector('input')!;
+    const searchInput = document.querySelector('input');
     // The toolbar uses controlled input with onSearchChange callback
     await user.type(searchInput, 'x');
     // After typing, input should contain the typed character
@@ -394,7 +394,7 @@ describe('EquipmentTable', () => {
       isFetching: false,
     } as unknown);
     render(<EquipmentTable {...defaultProps} />);
-    const table = document.querySelector('table')!;
+    const table = document.querySelector('table');
     const headers = table.querySelectorAll('th');
     expect(headers.length).toBeGreaterThan(2);
   });
@@ -417,7 +417,7 @@ describe('EquipmentTable', () => {
       isFetching: false,
     } as unknown);
     render(<EquipmentTable {...defaultProps} />);
-    const table = document.querySelector('table')!;
+    const table = document.querySelector('table');
     const sortButtons = table.querySelectorAll('th button');
     expect(sortButtons.length).toBeGreaterThan(0);
   });
@@ -440,7 +440,7 @@ describe('EquipmentTable', () => {
       isFetching: false,
     } as unknown);
     const { user } = setup(<EquipmentTable {...defaultProps} />);
-    const table = document.querySelector('table')!;
+    const table = document.querySelector('table');
     const sortButtons = table.querySelectorAll('th button');
     if (sortButtons.length > 0) {
       await user.click(sortButtons[0] as HTMLElement);

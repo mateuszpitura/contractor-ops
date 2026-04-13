@@ -151,7 +151,7 @@ export function BankStatementDialog({ runId, open, onOpenChange }: BankStatement
     const matchesToConfirm = matches
       .filter(m => m.matched && selectedMatches.has(m.transactionIndex))
       .map(m => ({
-        itemId: m.itemId!,
+        itemId: m.itemId as string,
         transactionIndex: m.transactionIndex,
       }));
 
@@ -197,7 +197,16 @@ export function BankStatementDialog({ runId, open, onOpenChange }: BankStatement
           <div className="space-y-4">
             <div
               className="flex flex-col items-center justify-center gap-3 py-12 border-2 border-dashed rounded-lg cursor-pointer hover:border-primary/50 transition-colors"
+              role="button"
+              tabIndex={0}
+              aria-label={t('bankStatement.dropzoneText')}
               onClick={() => fileInputRef.current?.click()}
+              onKeyDown={e => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  fileInputRef.current?.click();
+                }
+              }}
               onDragOver={e => e.preventDefault()}
               onDrop={e => {
                 e.preventDefault();
@@ -261,7 +270,7 @@ export function BankStatementDialog({ runId, open, onOpenChange }: BankStatement
                       key={match.transactionIndex}
                       className={match.matched ? '' : 'bg-yellow-500/10'}>
                       <TableCell>
-                        {match.matched && (
+                        {!!match.matched && (
                           <Checkbox
                             checked={selectedMatches.has(match.transactionIndex)}
                             onCheckedChange={() => toggleMatch(match.transactionIndex)}

@@ -60,7 +60,7 @@ export function ZatcaStatusCard() {
     : state?.complianceCsidReceived
       ? 'compliance'
       : 'none';
-  const statusConfig = STATUS_CONFIG[certStatus] ?? STATUS_CONFIG.none!;
+  const statusConfig = STATUS_CONFIG[certStatus] ?? STATUS_CONFIG.none;
 
   function handleWizardComplete() {
     setWizardOpen(false);
@@ -93,7 +93,7 @@ export function ZatcaStatusCard() {
           </div>
         </Card>
 
-        {wizardOpen && (
+        {!!wizardOpen && (
           <div className="col-span-full">
             <OnboardingWizard
               onComplete={handleWizardComplete}
@@ -129,7 +129,7 @@ export function ZatcaStatusCard() {
           </div>
         </Card>
 
-        {wizardOpen && (
+        {!!wizardOpen && (
           <div className="col-span-full">
             <OnboardingWizard
               onComplete={handleWizardComplete}

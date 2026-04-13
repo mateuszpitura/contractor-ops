@@ -203,7 +203,7 @@ export function TemplatePicker({
         </div>
 
         {/* Type filter clear */}
-        {typeFilter && (
+        {!!typeFilter && (
           <div className="flex items-center gap-2">
             <Badge variant="secondary">
               {t(`templateType.${typeFilter}` as Parameters<typeof t>[0])}
@@ -222,6 +222,7 @@ export function TemplatePicker({
           {isLoading ? (
             <div className="space-y-2 p-1">
               {Array.from({ length: 4 }).map((_, i) => (
+                // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
                 <div key={`skel-${i}`} className="flex items-center gap-3 rounded-lg border p-3">
                   <div className="flex-1 space-y-2">
                     <Skeleton className="h-4 w-40" />
@@ -249,7 +250,7 @@ export function TemplatePicker({
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-medium truncate">{template.name}</p>
-                      {template.description && (
+                      {!!template.description && (
                         <p className="mt-0.5 text-[13px] text-muted-foreground line-clamp-2">
                           {template.description}
                         </p>

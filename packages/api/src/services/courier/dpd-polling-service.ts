@@ -1,6 +1,10 @@
 import { DPDClient } from './dpd-client.js';
 import { mapDpdStatus } from './dpd-status-mapper.js';
-import { isEventDuplicate, processShipmentStatusChange, TERMINAL_STATUSES } from './shipment-processing.js';
+import {
+  isEventDuplicate,
+  processShipmentStatusChange,
+  TERMINAL_STATUSES,
+} from './shipment-processing.js';
 
 // ---------------------------------------------------------------------------
 // DPD Polling Service

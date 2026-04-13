@@ -190,7 +190,8 @@ export function StepReview({
       {/* Invoice list grouped by currency */}
       <ScrollArea className="max-h-[300px]">
         {currencies.map(curr => {
-          const group = groupedByCurrency[curr]!;
+          const group = groupedByCurrency[curr];
+          if (!group) return null;
           return (
             <div key={curr} className="mb-4">
               <div className="flex items-center justify-between mb-2">

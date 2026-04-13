@@ -50,7 +50,7 @@ describe('SearchProvider', () => {
     });
     const stored = localStorage.getItem('contractor-ops:recent-items');
     expect(stored).toBeTruthy();
-    expect(JSON.parse(stored!)).toHaveLength(1);
+    expect(JSON.parse(stored)).toHaveLength(1);
   });
 
   it('throws when used without provider', () => {

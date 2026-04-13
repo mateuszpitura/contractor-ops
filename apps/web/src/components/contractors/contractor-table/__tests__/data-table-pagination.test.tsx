@@ -28,14 +28,14 @@ describe('DataTablePagination', () => {
 
   it('disables previous button on first page', () => {
     render(<DataTablePagination {...defaultProps} />);
-    const prevButton = screen.getAllByRole('button')[0]!;
+    const prevButton = screen.getAllByRole('button')[0];
     expect(prevButton).toBeDisabled();
   });
 
   it('disables next button on last page', () => {
     render(<DataTablePagination {...defaultProps} currentPage={4} />);
     const buttons = screen.getAllByRole('button');
-    const nextButton = buttons[buttons.length - 1]!;
+    const nextButton = buttons[buttons.length - 1];
     expect(nextButton).toBeDisabled();
   });
 
@@ -43,7 +43,7 @@ describe('DataTablePagination', () => {
     const onPageChange = vi.fn();
     const { user } = setup(<DataTablePagination {...defaultProps} onPageChange={onPageChange} />);
     const buttons = screen.getAllByRole('button');
-    const nextButton = buttons[buttons.length - 1]!;
+    const nextButton = buttons[buttons.length - 1];
     await user.click(nextButton);
     expect(onPageChange).toHaveBeenCalledWith(2);
   });

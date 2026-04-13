@@ -35,12 +35,12 @@ export function VatRegisteredToggle({ checked, onChange, label, id }: VatRegiste
   return (
     <div className="flex items-center gap-2">
       <Switch id={switchId} checked={checked} onCheckedChange={onChange} aria-labelledby={textId} />
-      <span
+      <label
         id={textId}
-        className="text-sm font-medium select-none"
-        onClick={() => onChange(!checked)}>
+        htmlFor={switchId}
+        className="text-sm font-medium select-none cursor-pointer">
         {label}
-      </span>
+      </label>
     </div>
   );
 }

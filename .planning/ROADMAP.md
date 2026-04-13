@@ -78,7 +78,7 @@ See .planning/milestones/v4.0/ for details.
 **Plans**: 4 plans
 - [x] 57-01-PLAN.md — Wave 0: schema (TaxIdValidation + fields) + GB/DE seed + locked phrases + MSW + Zod schemas + RED scaffolds + [BLOCKING] prisma db push
 - [x] 57-02-PLAN.md — Wave 1: HmrcVatClient (OAuth 2.0 client-credentials, 401-refresh, fraud-prevention headers) + ViesClient (simple + qualified + userError soft-fail)
-- [ ] 57-03-PLAN.md — Wave 2: tax-id-validation orchestrator ( + 90-day freshness + soft-fail/stale) + reverse-charge rules (gb_eu_post_brexit_b2b + de_domestic_13b_ustg) + Kleinunternehmer service
+- [x] 57-03-PLAN.md — Wave 2: tax-id-validation orchestrator ( + 90-day freshness + soft-fail/stale) + reverse-charge rules (gb_eu_post_brexit_b2b + de_domestic_13b_ustg) + Kleinunternehmer service
 - [ ] 57-04-PLAN.md — Wave 3: tRPC routers (validateVat/revalidateVat/setKleinunternehmer) + invoice pipeline (preselect+KU+RC+staleness) + UI (pill/button/toggles/footer notices) + human-verify checkpoint + VALIDATION.md sign-off
 
 ### Phase 58: Classification Engine & Rule Sets
@@ -160,7 +160,7 @@ Phases execute in numeric order: 56 -> 57 -> 58 -> 59 -> 60 -> 61 -> 62 -> 63
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 56. Country Foundations & German i18n | v5.0 | 8/8 | Complete   | 2026-04-12 |
-| 57. Government API Clients | v5.0 | 2/4 | In Progress|  |
+| 57. Government API Clients | v5.0 | 3/4 | In Progress|  |
 | 58. Classification Engine & Rule Sets | v5.0 | 0/5 | Planned | - |
 | 59. Classification Documents & Chain Tracking | v5.0 | 0/TBD | Not started | - |
 | 60. Classification Polish | v5.0 | 0/TBD | Not started | - |

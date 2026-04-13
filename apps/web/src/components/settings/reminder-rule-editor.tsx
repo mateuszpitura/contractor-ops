@@ -429,7 +429,7 @@ export function ReminderRuleEditor({ open, onOpenChange, rule }: ReminderRuleEdi
               placeholder={t('reminderRules.editor.ruleNamePlaceholder')}
               {...form.register('name')}
             />
-            {form.formState.errors.name && (
+            {!!form.formState.errors.name && (
               <p className="text-xs text-destructive">{form.formState.errors.name.message}</p>
             )}
           </div>
@@ -455,7 +455,7 @@ export function ReminderRuleEditor({ open, onOpenChange, rule }: ReminderRuleEdi
                 </Select>
               )}
             />
-            {form.formState.errors.triggerType && (
+            {!!form.formState.errors.triggerType && (
               <p className="text-xs text-destructive">
                 {form.formState.errors.triggerType.message}
               </p>
@@ -480,7 +480,7 @@ export function ReminderRuleEditor({ open, onOpenChange, rule }: ReminderRuleEdi
                   {t('reminderRules.editor.offsetDaysPlaceholder')}
                 </span>
               </div>
-              {form.formState.errors.offsetDays && (
+              {!!form.formState.errors.offsetDays && (
                 <p className="text-xs text-destructive">
                   {form.formState.errors.offsetDays.message}
                 </p>
@@ -535,7 +535,7 @@ export function ReminderRuleEditor({ open, onOpenChange, rule }: ReminderRuleEdi
                 </Select>
               )}
             />
-            {form.formState.errors.channel && (
+            {!!form.formState.errors.channel && (
               <p className="text-xs text-destructive">{form.formState.errors.channel.message}</p>
             )}
           </div>
@@ -561,7 +561,7 @@ export function ReminderRuleEditor({ open, onOpenChange, rule }: ReminderRuleEdi
                 </Select>
               )}
             />
-            {form.formState.errors.recipientMode && (
+            {!!form.formState.errors.recipientMode && (
               <p className="text-xs text-destructive">
                 {form.formState.errors.recipientMode.message}
               </p>
@@ -630,7 +630,7 @@ export function ReminderRuleEditor({ open, onOpenChange, rule }: ReminderRuleEdi
               {t('reminderRules.editor.discard')}
             </Button>
             <Button type="submit" disabled={isPending}>
-              {isPending && <Loader2 className="me-1.5 size-3.5 animate-spin" />}
+              {!!isPending && <Loader2 className="me-1.5 size-3.5 animate-spin" />}
               {t('reminderRules.editor.save')}
             </Button>
           </DialogFooter>

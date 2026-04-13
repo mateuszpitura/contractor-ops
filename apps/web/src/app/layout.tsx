@@ -3,6 +3,7 @@ import { Bricolage_Grotesque, JetBrains_Mono, Outfit } from 'next/font/google';
 import type { ReactNode } from 'react';
 
 // Sentry: instrument client-side route transitions for performance tracing
+// biome-ignore lint/performance/noBarrelFile: Next.js root layout must co-export route handlers
 export { onRouterTransitionStart } from '@/sentry.client.config';
 
 const outfit = Outfit({

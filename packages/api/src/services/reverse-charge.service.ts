@@ -53,14 +53,13 @@ export type DE13bServiceType =
   | 'GOLD' // § 13b Abs. 2 Nr. 9 UStG — Lieferungen von Gold
   | 'MOBILE_PHONES'; // § 13b Abs. 2 Nr. 10 UStG — Mobilfunkgeräte
 
-export const DE_13B_SERVICE_TYPES: ReadonlySet<DE13bServiceType> =
-  new Set<DE13bServiceType>([
-    'CONSTRUCTION',
-    'CLEANING_BUILDING',
-    'SCRAP_METALS',
-    'GOLD',
-    'MOBILE_PHONES',
-  ]);
+export const DE_13B_SERVICE_TYPES: ReadonlySet<DE13bServiceType> = new Set<DE13bServiceType>([
+  'CONSTRUCTION',
+  'CLEANING_BUILDING',
+  'SCRAP_METALS',
+  'GOLD',
+  'MOBILE_PHONES',
+]);
 
 export interface ReverseChargeResult {
   shouldApply: boolean;

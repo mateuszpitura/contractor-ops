@@ -34,11 +34,11 @@ const EVENT_ICONS: Record<string, typeof Circle> = {
 
 function getIcon(event: string) {
   const lower = event.toLowerCase();
-  if (lower.includes('submitted')) return EVENT_ICONS.submitted!;
-  if (lower.includes('review')) return EVENT_ICONS.review!;
-  if (lower.includes('approved')) return EVENT_ICONS.approved!;
-  if (lower.includes('rejected')) return EVENT_ICONS.rejected!;
-  if (lower.includes('paid') || lower.includes('payment')) return EVENT_ICONS.paid!;
+  if (lower.includes('submitted')) return EVENT_ICONS.submitted;
+  if (lower.includes('review')) return EVENT_ICONS.review;
+  if (lower.includes('approved')) return EVENT_ICONS.approved;
+  if (lower.includes('rejected')) return EVENT_ICONS.rejected;
+  if (lower.includes('paid') || lower.includes('payment')) return EVENT_ICONS.paid;
   return Circle;
 }
 
@@ -76,12 +76,13 @@ export function ActivityLog({ entries, maxHeight = '300px' }: ActivityLogProps) 
         {entries.map((entry, i) => {
           const Icon = getIcon(entry.event);
           return (
+            // biome-ignore lint/suspicious/noArrayIndexKey: activity entries lack unique id, event text may repeat
             <div key={`${entry.event}-${i}`}>
               <div className="flex items-start gap-3 py-3">
                 <Icon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
                 <div className="min-w-0 flex-1">
                   <p className="text-sm">{entry.event}</p>
-                  {entry.detail && (
+                  {!!entry.detail && (
                     <p className="mt-0.5 text-sm text-muted-foreground">{entry.detail}</p>
                   )}
                   <p className="mt-0.5 text-[13px] text-muted-foreground">

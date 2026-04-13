@@ -68,8 +68,9 @@ export function applyKleinunternehmerOverride(
  * into thinking the exemption is a rate; the only legally-clean output is
  * a missing breakdown plus the § 19 notice.
  */
-export function shouldSuppressVatBreakdown(
-  org: { countryCode: string | null; isKleinunternehmer: boolean },
-): boolean {
+export function shouldSuppressVatBreakdown(org: {
+  countryCode: string | null;
+  isKleinunternehmer: boolean;
+}): boolean {
   return org.countryCode === 'DE' && org.isKleinunternehmer === true;
 }

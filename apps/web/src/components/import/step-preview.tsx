@@ -155,7 +155,7 @@ export function StepPreview({ validRows, invalidRows, totalRows }: StepPreviewPr
                             <span className="truncate max-w-[160px] text-sm">
                               {String(row.data[col] ?? '')}
                             </span>
-                            {hasError && errMsg && (
+                            {!!hasError && !!errMsg && (
                               <Tooltip>
                                 <TooltipTrigger>
                                   <AlertCircle className="size-3.5 shrink-0 text-destructive" />

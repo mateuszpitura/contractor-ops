@@ -89,7 +89,6 @@ export function HandelsregisterInput({
     <fieldset
       aria-labelledby={legendId}
       aria-describedby={describedBy}
-      aria-required={required ? 'true' : undefined}
       className="space-y-2 rounded-lg border border-border p-3">
       <legend id={legendId} className="px-1 text-sm font-medium">
         {legend}
@@ -171,12 +170,24 @@ export function HandelsregisterInput({
             }}
             aria-label="Register type"
             className="grid-cols-2 sm:grid-cols-2">
-            <label className="flex cursor-pointer items-center gap-1 text-sm">
-              <RadioGroupItem value="HRB" aria-label="HRB (Handelsregister B)" />
+            <label
+              htmlFor={`${legendId}-hrb`}
+              className="flex cursor-pointer items-center gap-1 text-sm">
+              <RadioGroupItem
+                id={`${legendId}-hrb`}
+                value="HRB"
+                aria-label="HRB (Handelsregister B)"
+              />
               <span>HRB</span>
             </label>
-            <label className="flex cursor-pointer items-center gap-1 text-sm">
-              <RadioGroupItem value="HRA" aria-label="HRA (Handelsregister A)" />
+            <label
+              htmlFor={`${legendId}-hra`}
+              className="flex cursor-pointer items-center gap-1 text-sm">
+              <RadioGroupItem
+                id={`${legendId}-hra`}
+                value="HRA"
+                aria-label="HRA (Handelsregister A)"
+              />
               <span>HRA</span>
             </label>
           </RadioGroup>

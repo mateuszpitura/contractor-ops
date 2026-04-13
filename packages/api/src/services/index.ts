@@ -6,28 +6,26 @@
 // orchestration services for tRPC-router consumption in Plan 57-04.
 
 export {
+  applyKleinunternehmerOverride,
+  type KleinunternehmerOverrideResult,
+  shouldSuppressVatBreakdown,
+} from './kleinunternehmer.service.js';
+export {
+  applyReverseCharge,
+  DE_13B_SERVICE_TYPES,
+  type DE13bServiceType,
+  detectReverseCharge,
+  type ReverseChargeResult,
+} from './reverse-charge.service.js';
+export { maskTaxId } from './tax-id-pii.js';
+// biome-ignore lint/performance/noBarrelFile: package entry point for service-layer exports
+export {
   getLatestValidation,
   isValidationFresh,
-  NINETY_DAYS_MS,
-  validateTaxId,
   type LatestValidationRow,
+  NINETY_DAYS_MS,
   type TaxIdValidationDeps,
   type TaxIdValidationInput,
   type TaxIdValidationResult,
+  validateTaxId,
 } from './tax-id-validation.service.js';
-
-export { maskTaxId } from './tax-id-pii.js';
-
-export {
-  applyReverseCharge,
-  detectReverseCharge,
-  DE_13B_SERVICE_TYPES,
-  type DE13bServiceType,
-  type ReverseChargeResult,
-} from './reverse-charge.service.js';
-
-export {
-  applyKleinunternehmerOverride,
-  shouldSuppressVatBreakdown,
-  type KleinunternehmerOverrideResult,
-} from './kleinunternehmer.service.js';

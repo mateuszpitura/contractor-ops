@@ -23,7 +23,32 @@ function settingsTabFromSearch(searchParams: ReturnType<typeof useSearchParams>)
 /**
  * Sidebar active state must consider `?tab=` on /settings — usePathname() has no query string,
  * so hrefs like `/settings?tab=integrations` never matched and plain `/settings` always won.
+ *
+ * Special-case handlers per nav key are dispatched via a lookup map to reduce branching.
  */
+type ActiveChecker = (
+  pathname: string,
+  searchParams: ReturnType<typeof useSearchParams>,
+  basePath: string,
+) => boolean;
+
+const NAV_ACTIVE_OVERRIDES: Record<string, ActiveChecker> = {
+  notifications: (pathname, searchParams) => {
+    if (pathname === '/notifications' || pathname.startsWith('/notifications/')) return true;
+    if (pathname === '/settings') return settingsTabFromSearch(searchParams) === 'notifications';
+    return false;
+  },
+  settings: (pathname, searchParams) => {
+    const pathMatches = pathname === '/settings' || pathname.startsWith('/settings/');
+    if (!pathMatches) return false;
+    if (pathname === '/settings') {
+      const tab = settingsTabFromSearch(searchParams);
+      return tab !== 'integrations' && tab !== 'notifications';
+    }
+    return true;
+  },
+};
+
 function isNavItemActive(
   pathname: string,
   searchParams: ReturnType<typeof useSearchParams>,
@@ -32,31 +57,16 @@ function isNavItemActive(
   const [basePath, queryPart] = item.href.split('?');
   const tabFromHref = queryPart ? new URLSearchParams(queryPart).get('tab') : null;
 
+  // Settings tab-specific hrefs (e.g. /settings?tab=integrations)
   if (tabFromHref && basePath === '/settings') {
-    if (pathname !== '/settings') return false;
-    return settingsTabFromSearch(searchParams) === tabFromHref;
+    return pathname === '/settings' && settingsTabFromSearch(searchParams) === tabFromHref;
   }
 
-  if (item.key === 'notifications') {
-    if (pathname === '/notifications' || pathname.startsWith('/notifications/')) {
-      return true;
-    }
-    if (pathname === '/settings') {
-      return settingsTabFromSearch(searchParams) === 'notifications';
-    }
-    return false;
-  }
+  // Special-case nav items with custom active logic
+  const override = NAV_ACTIVE_OVERRIDES[item.key];
+  if (override) return override(pathname, searchParams, basePath);
 
-  if (item.key === 'settings') {
-    const pathMatches = pathname === '/settings' || pathname.startsWith('/settings/');
-    if (!pathMatches) return false;
-    if (pathname === '/settings') {
-      const tab = settingsTabFromSearch(searchParams);
-      if (tab === 'integrations' || tab === 'notifications') return false;
-    }
-    return true;
-  }
-
+  // Default: path prefix match
   return pathname === basePath || pathname.startsWith(`${basePath}/`);
 }
 

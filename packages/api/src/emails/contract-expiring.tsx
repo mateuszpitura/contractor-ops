@@ -38,16 +38,16 @@ export function ContractExpiringEmail({
     <BaseLayout ctaUrl={ctaUrl} preferencesUrl={preferencesUrl}>
       <Text style={{ fontSize: '20px', fontWeight: '600', color: '#1a1a1a' }}>{title}</Text>
       <Text style={{ fontSize: '14px', color: '#4a4a4a', lineHeight: '24px' }}>{body}</Text>
-      {contractTitle && (
+      {!!contractTitle && (
         <Text style={{ fontSize: '14px', color: '#6b7280' }}>
           <strong>{l.contract}:</strong> {contractTitle}
-          {contractorName && (
+          {!!contractorName && (
             <>
               <br />
               <strong>{l.contractor}:</strong> {contractorName}
             </>
           )}
-          {expiryDate && (
+          {!!expiryDate && (
             <>
               <br />
               <strong>{l.expires}:</strong> {expiryDate}

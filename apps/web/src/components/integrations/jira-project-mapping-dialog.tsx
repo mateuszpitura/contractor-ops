@@ -186,7 +186,7 @@ export function JiraProjectMappingDialog({
             <Select value={projectId} onValueChange={handleProjectChange}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select a project">
-                  {projectsQuery.isLoading && <Loader2 className="size-3.5 animate-spin" />}
+                  {!!projectsQuery.isLoading && <Loader2 className="size-3.5 animate-spin" />}
                 </SelectValue>
               </SelectTrigger>
               <SelectContent>
@@ -205,7 +205,7 @@ export function JiraProjectMappingDialog({
             <Select value={issueTypeId} onValueChange={handleIssueTypeChange} disabled={!projectId}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select an issue type">
-                  {issueTypesQuery.isLoading && <Loader2 className="size-3.5 animate-spin" />}
+                  {!!issueTypesQuery.isLoading && <Loader2 className="size-3.5 animate-spin" />}
                 </SelectValue>
               </SelectTrigger>
               <SelectContent>
@@ -236,7 +236,7 @@ export function JiraProjectMappingDialog({
             Discard Changes
           </Button>
           <Button onClick={handleSave} disabled={!hasChanges || saveMutation.isPending}>
-            {saveMutation.isPending && <Loader2 className="me-1.5 size-3.5 animate-spin" />}
+            {!!saveMutation.isPending && <Loader2 className="me-1.5 size-3.5 animate-spin" />}
             Save Mapping
           </Button>
         </DialogFooter>

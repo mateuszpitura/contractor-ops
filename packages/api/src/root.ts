@@ -1,4 +1,5 @@
 import { router } from './init.js';
+import { apiKeyRouter } from './routers/api-key.js';
 import { approvalRouter } from './routers/approval.js';
 import { auditRouter } from './routers/audit.js';
 import { billingRouter } from './routers/billing.js';
@@ -70,6 +71,7 @@ import { zatcaRouter } from './routers/zatca.js';
  * - equipment: CRUD, assignment, shipment tracking, status management, contractor equipment view
  */
 export const appRouter = router({
+  apiKey: apiKeyRouter, // apiKey: Enterprise API key management — create, list, update, revoke
   organization: organizationRouter,
   user: userRouter,
   settings: settingsRouter,

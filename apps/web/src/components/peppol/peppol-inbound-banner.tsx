@@ -37,7 +37,7 @@ export function PeppolInboundBanner({
           From: {senderParticipantId}
           {senderName ? ` (${senderName})` : ''}
         </p>
-        {documentType && (
+        {!!documentType && (
           <p className="text-sm text-muted-foreground">Document type: {documentType}</p>
         )}
         <p className="text-sm text-muted-foreground">Received: {receivedAt.toLocaleString()}</p>

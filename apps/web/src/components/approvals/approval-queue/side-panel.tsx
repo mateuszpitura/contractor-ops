@@ -92,6 +92,7 @@ function MiniChainTracker({ step }: { step: ApprovalQueueRow }) {
               <TooltipTrigger
                 render={props => (
                   <div {...props} className={circleClass}>
+                    {/* biome-ignore lint/nursery/noLeakedRender: order is intentionally rendered as text */}
                     {isPast ? <CheckCircle2 className="h-4 w-4" /> : order}
                   </div>
                 )}
@@ -103,6 +104,145 @@ function MiniChainTracker({ step }: { step: ApprovalQueueRow }) {
           </div>
         );
       })}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Extracted overlay sub-components
+// ---------------------------------------------------------------------------
+
+function ClarifyOverlay({
+  open: isOpen,
+  comment,
+  onCommentChange,
+  onClose,
+  onSubmit,
+  isPending,
+  t,
+}: {
+  open: boolean;
+  comment: string;
+  onCommentChange: (v: string) => void;
+  onClose: () => void;
+  onSubmit: () => void;
+  isPending: boolean;
+  t: (key: string) => string;
+}) {
+  if (!isOpen) return null;
+  return (
+    <div
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/10"
+      role="dialog"
+      aria-modal="true"
+      aria-label={t('clarifyPopover.heading')}
+      onClick={onClose}
+      onKeyDown={(e: React.KeyboardEvent) => {
+        if (e.key === 'Escape') onClose();
+      }}>
+      <div
+        className="w-96 rounded-xl bg-background p-4 shadow-lg ring-1 ring-border"
+        role="document"
+        onClick={e => e.stopPropagation()}
+        onKeyDown={e => e.stopPropagation()}>
+        <h4 className="font-medium text-sm mb-3">{t('clarifyPopover.heading')}</h4>
+        <div className="space-y-1.5 mb-3">
+          <label htmlFor="clarify-comment" className="text-[12px] text-muted-foreground">
+            {t('clarifyPopover.commentLabel')}
+          </label>
+          <Textarea
+            id="clarify-comment"
+            value={comment}
+            onChange={e => onCommentChange(e.target.value)}
+            placeholder={t('clarifyPopover.commentPlaceholder')}
+            className="min-h-[80px]"
+          />
+        </div>
+        <div className="flex items-center gap-2 justify-end">
+          <Button variant="ghost" size="sm" onClick={onClose}>
+            {t('clarifyPopover.dismiss')}
+          </Button>
+          <Button size="sm" disabled={comment.length < 1 || isPending} onClick={onSubmit}>
+            {t('clarifyPopover.confirm')}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DelegateOverlay({
+  open: isOpen,
+  userId,
+  note,
+  onUserIdChange,
+  onNoteChange,
+  onClose,
+  onSubmit,
+  isPending,
+  t,
+}: {
+  open: boolean;
+  userId: string;
+  note: string;
+  onUserIdChange: (v: string) => void;
+  onNoteChange: (v: string) => void;
+  onClose: () => void;
+  onSubmit: () => void;
+  isPending: boolean;
+  t: (key: string) => string;
+}) {
+  if (!isOpen) return null;
+  return (
+    <div
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/10"
+      role="dialog"
+      aria-modal="true"
+      aria-label={t('delegatePopover.heading')}
+      onClick={onClose}
+      onKeyDown={(e: React.KeyboardEvent) => {
+        if (e.key === 'Escape') onClose();
+      }}>
+      <div
+        className="w-96 rounded-xl bg-background p-4 shadow-lg ring-1 ring-border"
+        role="document"
+        onClick={e => e.stopPropagation()}
+        onKeyDown={e => e.stopPropagation()}>
+        <h4 className="font-medium text-sm mb-3">{t('delegatePopover.heading')}</h4>
+        <div className="space-y-3 mb-3">
+          <div className="space-y-1.5">
+            <label htmlFor="delegate-user-id" className="text-[12px] text-muted-foreground">
+              {t('delegatePopover.userLabel')}
+            </label>
+            <Input
+              id="delegate-user-id"
+              value={userId}
+              onChange={e => onUserIdChange(e.target.value)}
+              placeholder={t('delegatePopover.userPlaceholder')}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label htmlFor="delegate-note" className="text-[12px] text-muted-foreground">
+              {t('delegatePopover.noteLabel')}
+            </label>
+            <Textarea
+              id="delegate-note"
+              value={note}
+              onChange={e => onNoteChange(e.target.value)}
+              placeholder={t('delegatePopover.notePlaceholder')}
+              className="min-h-[60px]"
+            />
+          </div>
+        </div>
+        <div className="flex items-center gap-2 justify-end">
+          <Button variant="ghost" size="sm" onClick={onClose}>
+            {t('delegatePopover.dismiss')}
+          </Button>
+          <Button size="sm" disabled={!userId.trim() || isPending} onClick={onSubmit}>
+            {t('delegatePopover.confirm')}
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -183,7 +323,7 @@ export function ApprovalSidePanel({ step, open, onOpenChange }: ApprovalSidePane
           </div>
 
           {/* Contractor */}
-          {invoice?.contractor && (
+          {!!invoice?.contractor && (
             <div className="space-y-1">
               <h4 className="text-[12px] font-medium text-muted-foreground">
                 {t('sidePanel.contractor')}
@@ -197,7 +337,7 @@ export function ApprovalSidePanel({ step, open, onOpenChange }: ApprovalSidePane
           )}
 
           {/* Amounts */}
-          {invoice && (
+          {!!invoice && (
             <div className="space-y-1">
               <h4 className="text-[12px] font-medium text-muted-foreground">
                 {t('sidePanel.amount')}
@@ -209,7 +349,7 @@ export function ApprovalSidePanel({ step, open, onOpenChange }: ApprovalSidePane
           )}
 
           {/* Dates */}
-          {invoice && (
+          {!!invoice && (
             <div className="space-y-1">
               <h4 className="text-[12px] font-medium text-muted-foreground">
                 {t('sidePanel.submitted')}
@@ -225,7 +365,7 @@ export function ApprovalSidePanel({ step, open, onOpenChange }: ApprovalSidePane
           )}
 
           {/* Approver info */}
-          {step.approver && (
+          {!!step.approver && (
             <div className="space-y-1">
               <h4 className="text-[12px] font-medium text-muted-foreground">
                 {t('sidePanel.approver')}
@@ -258,10 +398,13 @@ export function ApprovalSidePanel({ step, open, onOpenChange }: ApprovalSidePane
                   <div className="space-y-3">
                     <h4 className="font-medium text-sm">{t('rejectPopover.heading')}</h4>
                     <div className="space-y-1.5">
-                      <label className="text-[12px] text-muted-foreground">
+                      <label
+                        htmlFor="side-reject-comment"
+                        className="text-[12px] text-muted-foreground">
                         {t('rejectPopover.commentLabel')}
                       </label>
                       <Textarea
+                        id="side-reject-comment"
                         value={rejectComment}
                         onChange={e => setRejectComment(e.target.value)}
                         placeholder={t('rejectPopover.commentPlaceholder')}
@@ -321,100 +464,34 @@ export function ApprovalSidePanel({ step, open, onOpenChange }: ApprovalSidePane
         )}
       </SheetContent>
 
-      {/* Clarification popover (rendered as separate popover/dialog) */}
-      {clarifyOpen && (
-        <div
-          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/10"
-          onClick={() => setClarifyOpen(false)}>
-          <div
-            className="w-96 rounded-xl bg-background p-4 shadow-lg ring-1 ring-border"
-            onClick={e => e.stopPropagation()}>
-            <h4 className="font-medium text-sm mb-3">{t('clarifyPopover.heading')}</h4>
-            <div className="space-y-1.5 mb-3">
-              <label className="text-[12px] text-muted-foreground">
-                {t('clarifyPopover.commentLabel')}
-              </label>
-              <Textarea
-                value={clarifyComment}
-                onChange={e => setClarifyComment(e.target.value)}
-                placeholder={t('clarifyPopover.commentPlaceholder')}
-                className="min-h-[80px]"
-              />
-            </div>
-            <div className="flex items-center gap-2 justify-end">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  setClarifyOpen(false);
-                  setClarifyComment('');
-                }}>
-                {t('clarifyPopover.dismiss')}
-              </Button>
-              <Button
-                size="sm"
-                disabled={clarifyComment.length < 1 || actionsPending}
-                onClick={() => clarifyAction(clarifyComment)}>
-                {t('clarifyPopover.confirm')}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ClarifyOverlay
+        open={clarifyOpen}
+        comment={clarifyComment}
+        onCommentChange={setClarifyComment}
+        onClose={() => {
+          setClarifyOpen(false);
+          setClarifyComment('');
+        }}
+        onSubmit={() => clarifyAction(clarifyComment)}
+        isPending={actionsPending}
+        t={t}
+      />
 
-      {/* Delegate popover */}
-      {delegateOpen && (
-        <div
-          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/10"
-          onClick={() => setDelegateOpen(false)}>
-          <div
-            className="w-96 rounded-xl bg-background p-4 shadow-lg ring-1 ring-border"
-            onClick={e => e.stopPropagation()}>
-            <h4 className="font-medium text-sm mb-3">{t('delegatePopover.heading')}</h4>
-            <div className="space-y-3 mb-3">
-              <div className="space-y-1.5">
-                <label className="text-[12px] text-muted-foreground">
-                  {t('delegatePopover.userLabel')}
-                </label>
-                <Input
-                  value={delegateUserId}
-                  onChange={e => setDelegateUserId(e.target.value)}
-                  placeholder={t('delegatePopover.userPlaceholder')}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-[12px] text-muted-foreground">
-                  {t('delegatePopover.noteLabel')}
-                </label>
-                <Textarea
-                  value={delegateNote}
-                  onChange={e => setDelegateNote(e.target.value)}
-                  placeholder={t('delegatePopover.notePlaceholder')}
-                  className="min-h-[60px]"
-                />
-              </div>
-            </div>
-            <div className="flex items-center gap-2 justify-end">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  setDelegateOpen(false);
-                  setDelegateUserId('');
-                  setDelegateNote('');
-                }}>
-                {t('delegatePopover.dismiss')}
-              </Button>
-              <Button
-                size="sm"
-                disabled={!delegateUserId.trim() || actionsPending}
-                onClick={() => delegateAction(delegateUserId, delegateNote)}>
-                {t('delegatePopover.confirm')}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <DelegateOverlay
+        open={delegateOpen}
+        userId={delegateUserId}
+        note={delegateNote}
+        onUserIdChange={setDelegateUserId}
+        onNoteChange={setDelegateNote}
+        onClose={() => {
+          setDelegateOpen(false);
+          setDelegateUserId('');
+          setDelegateNote('');
+        }}
+        onSubmit={() => delegateAction(delegateUserId, delegateNote)}
+        isPending={actionsPending}
+        t={t}
+      />
     </Sheet>
   );
 }

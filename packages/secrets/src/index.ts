@@ -1,3 +1,4 @@
+// biome-ignore lint/performance/noBarrelFile: package entry point
 export type { CachedStoreOptions } from './cached-store.js';
 export { CachedStore } from './cached-store.js';
 export { MemoryStore } from './memory-store.js';

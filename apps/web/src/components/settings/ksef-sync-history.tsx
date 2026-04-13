@@ -84,6 +84,7 @@ export function KsefSyncHistory({ connectionId }: KsefSyncHistoryProps) {
         {syncHistoryQuery.isLoading ? (
           <div className="space-y-2 py-2">
             {Array.from({ length: 3 }).map((_, i) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
               <div key={`skel-${i}`} className="flex items-center gap-3">
                 <Skeleton className="h-4 w-20" />
                 <Skeleton className="h-5 w-12" />
@@ -96,7 +97,7 @@ export function KsefSyncHistory({ connectionId }: KsefSyncHistoryProps) {
         ) : (
           <div className="divide-y">
             {logs.map(log => {
-              const statusStyle = SYNC_STATUS_STYLES[log.status] ?? SYNC_STATUS_STYLES.STARTED!;
+              const statusStyle = SYNC_STATUS_STYLES[log.status] ?? SYNC_STATUS_STYLES.STARTED;
 
               const payload = log.responsePayloadJson as Record<string, unknown> | null;
               const invoicesCreated = (payload?.invoicesCreated as number) ?? 0;

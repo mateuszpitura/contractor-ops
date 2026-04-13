@@ -5,12 +5,12 @@ describe('RadioGroup', () => {
   it('renders radio group with items', () => {
     render(
       <RadioGroup>
-        <label>
-          <RadioGroupItem value="a" />
+        <label htmlFor="rg-test-a">
+          <RadioGroupItem id="rg-test-a" value="a" />
           Option A
         </label>
-        <label>
-          <RadioGroupItem value="b" />
+        <label htmlFor="rg-test-b">
+          <RadioGroupItem id="rg-test-b" value="b" />
           Option B
         </label>
       </RadioGroup>,
@@ -62,18 +62,18 @@ describe('RadioGroup', () => {
   it('selects an item on click', async () => {
     const { user } = setup(
       <RadioGroup>
-        <label>
-          <RadioGroupItem value="a" />
+        <label htmlFor="rg-click-a">
+          <RadioGroupItem id="rg-click-a" value="a" />
           Option A
         </label>
-        <label>
-          <RadioGroupItem value="b" />
+        <label htmlFor="rg-click-b">
+          <RadioGroupItem id="rg-click-b" value="b" />
           Option B
         </label>
       </RadioGroup>,
     );
     const radios = screen.getAllByRole('radio');
-    await user.click(radios[0]!);
+    await user.click(radios[0]);
     expect(radios[0]).toBeChecked();
     expect(radios[1]).not.toBeChecked();
   });

@@ -185,7 +185,7 @@ export function ComplianceGapsReport({
       <DrillDownBreadcrumb
         segments={[
           { label: t('all') },
-          ...(drillDownLabel ? [{ label: drillDownLabel, id: drillDownHealth! }] : []),
+          ...(drillDownLabel ? [{ label: drillDownLabel, id: drillDownHealth as string }] : []),
         ]}
         onClear={handleClearDrillDown}
       />

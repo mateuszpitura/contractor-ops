@@ -201,7 +201,7 @@ export function StepDetails({ form, contractorId }: StepDetailsProps) {
             </PopoverContent>
           </Popover>
         )}
-        {errors.contractorId && (
+        {!!errors.contractorId && (
           <p className="text-sm text-destructive">{errors.contractorId.message}</p>
         )}
       </div>
@@ -212,7 +212,7 @@ export function StepDetails({ form, contractorId }: StepDetailsProps) {
           {t('fields.title')}
         </Label>
         <Input id="title" {...register('title')} />
-        {errors.title && <p className="text-sm text-destructive">{errors.title.message}</p>}
+        {!!errors.title && <p className="text-sm text-destructive">{errors.title.message}</p>}
       </div>
 
       {/* Contract type */}
@@ -238,7 +238,7 @@ export function StepDetails({ form, contractorId }: StepDetailsProps) {
             ))}
           </SelectContent>
         </Select>
-        {errors.type && <p className="text-sm text-destructive">{errors.type.message}</p>}
+        {!!errors.type && <p className="text-sm text-destructive">{errors.type.message}</p>}
       </div>
 
       {/* Start date */}
@@ -262,7 +262,9 @@ export function StepDetails({ form, contractorId }: StepDetailsProps) {
             />
           </PopoverContent>
         </Popover>
-        {errors.startDate && <p className="text-sm text-destructive">{errors.startDate.message}</p>}
+        {!!errors.startDate && (
+          <p className="text-sm text-destructive">{errors.startDate.message}</p>
+        )}
       </div>
 
       {/* End date (optional) */}
@@ -287,7 +289,7 @@ export function StepDetails({ form, contractorId }: StepDetailsProps) {
             />
           </PopoverContent>
         </Popover>
-        {errors.endDate && <p className="text-sm text-destructive">{errors.endDate.message}</p>}
+        {!!errors.endDate && <p className="text-sm text-destructive">{errors.endDate.message}</p>}
       </div>
 
       {/* Notice period */}
@@ -302,7 +304,7 @@ export function StepDetails({ form, contractorId }: StepDetailsProps) {
           placeholder="30"
           {...register('noticePeriodDays', { valueAsNumber: true })}
         />
-        {errors.noticePeriodDays && (
+        {!!errors.noticePeriodDays && (
           <p className="text-sm text-destructive">{errors.noticePeriodDays.message}</p>
         )}
       </div>

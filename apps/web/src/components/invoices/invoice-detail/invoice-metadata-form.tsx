@@ -300,7 +300,7 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
                 disabled={!isEditable}
                 {...register('invoiceNumber')}
               />
-              {errors.invoiceNumber && (
+              {!!errors.invoiceNumber && (
                 <p className="text-xs text-destructive">{errors.invoiceNumber.message}</p>
               )}
             </div>
@@ -315,7 +315,7 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
                   disabled={!isEditable}
                   pickDateLabel={tMeta('pickDate')}
                 />
-                {errors.issueDate && (
+                {!!errors.issueDate && (
                   <p className="text-xs text-destructive">{errors.issueDate.message}</p>
                 )}
               </div>
@@ -327,7 +327,7 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
                   disabled={!isEditable}
                   pickDateLabel={tMeta('pickDate')}
                 />
-                {errors.dueDate && (
+                {!!errors.dueDate && (
                   <p className="text-xs text-destructive">{errors.dueDate.message}</p>
                 )}
               </div>
@@ -377,7 +377,7 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
                   onChange={minor => setValue('subtotalMinor', minor)}
                   disabled={!isEditable}
                 />
-                {errors.subtotalMinor && (
+                {!!errors.subtotalMinor && (
                   <p className="text-xs text-destructive">{errors.subtotalMinor.message}</p>
                 )}
               </div>
@@ -410,7 +410,7 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
                   onChange={minor => setValue('totalMinor', minor)}
                   disabled={!isEditable}
                 />
-                {errors.totalMinor && (
+                {!!errors.totalMinor && (
                   <p className="text-xs text-destructive">{errors.totalMinor.message}</p>
                 )}
               </div>
@@ -482,7 +482,7 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
                       variant="outline"
                       disabled={isSubmitting}
                       onClick={handleSubmit(onSaveDraft)}>
-                      {saveDraftMutation.isPending && (
+                      {!!saveDraftMutation.isPending && (
                         <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />
                       )}
                       {t('detail.saveDraft')}
@@ -491,7 +491,7 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
                       type="button"
                       disabled={isSubmitting}
                       onClick={handleSubmit(onSubmitForMatching)}>
-                      {submitForMatchingMutation.isPending && (
+                      {!!submitForMatchingMutation.isPending && (
                         <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />
                       )}
                       {t('detail.submitForMatching')}
@@ -534,7 +534,7 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
                 voidMutation.mutate({ id: invoice.id });
                 setVoidDialogOpen(false);
               }}>
-              {voidMutation.isPending && <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />}
+              {!!voidMutation.isPending && <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />}
               {t('detail.voidInvoiceCta')}
             </AlertDialogAction>
           </AlertDialogFooter>

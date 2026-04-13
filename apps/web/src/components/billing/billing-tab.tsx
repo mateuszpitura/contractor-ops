@@ -92,7 +92,7 @@ export function BillingTab() {
       <UsageDashboard />
 
       {/* Proration preview (shown when upgrading/downgrading) */}
-      {selectedPriceId && (
+      {!!selectedPriceId && (
         <>
           <Separator />
           <ProrationPreview
@@ -106,9 +106,9 @@ export function BillingTab() {
       <Separator />
 
       {/* Manage Billing Portal */}
-      {subscription && (
+      {!!subscription && (
         <Button variant="outline" onClick={handlePortal} disabled={portalMutation.isPending}>
-          {portalMutation.isPending && <Loader2 className="animate-spin" aria-hidden="true" />}
+          {!!portalMutation.isPending && <Loader2 className="animate-spin" aria-hidden="true" />}
           Manage billing
         </Button>
       )}

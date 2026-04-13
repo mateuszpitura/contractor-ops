@@ -109,7 +109,7 @@ export function SingleEntryForm({
 
     onSubmit({
       contractId,
-      entryDate: format(date!, 'yyyy-MM-dd'),
+      entryDate: format(date as Date, 'yyyy-MM-dd'),
       minutes,
       description: description || undefined,
     });
@@ -161,7 +161,7 @@ export function SingleEntryForm({
                 />
               </PopoverContent>
             </Popover>
-            {errors.date && <p className="text-sm text-destructive">{errors.date}</p>}
+            {!!errors.date && <p className="text-sm text-destructive">{errors.date}</p>}
           </div>
 
           {/* Project select */}
@@ -179,7 +179,7 @@ export function SingleEntryForm({
                 ))}
               </SelectContent>
             </Select>
-            {errors.contractId && <p className="text-sm text-destructive">{errors.contractId}</p>}
+            {!!errors.contractId && <p className="text-sm text-destructive">{errors.contractId}</p>}
           </div>
 
           {/* Hours input */}
@@ -196,7 +196,7 @@ export function SingleEntryForm({
               onChange={e => setHours(e.target.value)}
               className="[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
             />
-            {errors.hours && <p className="text-sm text-destructive">{errors.hours}</p>}
+            {!!errors.hours && <p className="text-sm text-destructive">{errors.hours}</p>}
           </div>
 
           {/* Description textarea */}
@@ -212,7 +212,9 @@ export function SingleEntryForm({
               value={description}
               onChange={e => setDescription(e.target.value)}
             />
-            {errors.description && <p className="text-sm text-destructive">{errors.description}</p>}
+            {!!errors.description && (
+              <p className="text-sm text-destructive">{errors.description}</p>
+            )}
             {description.length > 0 && (
               <p className="text-xs text-muted-foreground text-end">{description.length}/500</p>
             )}

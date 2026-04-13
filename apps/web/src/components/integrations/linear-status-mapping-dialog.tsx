@@ -249,7 +249,7 @@ export function LinearStatusMappingDialog({ open, onOpenChange }: LinearStatusMa
           <Select value={selectedTeamId ?? undefined} onValueChange={v => setSelectedTeamId(v)}>
             <SelectTrigger className="w-full">
               <SelectValue placeholder={t('selectTeam')}>
-                {teamsQuery.isLoading && <Loader2 className="size-3.5 animate-spin" />}
+                {!!teamsQuery.isLoading && <Loader2 className="size-3.5 animate-spin" />}
               </SelectValue>
             </SelectTrigger>
             <SelectContent>
@@ -345,7 +345,7 @@ export function LinearStatusMappingDialog({ open, onOpenChange }: LinearStatusMa
           <Button
             onClick={handleSave}
             disabled={!hasChanges || saveMutation.isPending || !selectedTeamId}>
-            {saveMutation.isPending && <Loader2 className="me-1.5 size-3.5 animate-spin" />}
+            {!!saveMutation.isPending && <Loader2 className="me-1.5 size-3.5 animate-spin" />}
             {saveMutation.isPending ? t('saving') : t('save')}
           </Button>
         </DialogFooter>

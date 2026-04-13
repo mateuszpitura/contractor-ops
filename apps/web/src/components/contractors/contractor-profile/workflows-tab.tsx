@@ -104,7 +104,7 @@ function RunLinearChips({ runId }: { runId: string }) {
   const overflow = issues.length - 3;
 
   return (
-    <div className="flex items-center gap-1" onClick={e => e.preventDefault()}>
+    <div className="flex items-center gap-1" role="presentation" onClick={e => e.preventDefault()}>
       {visible.map(issue => (
         <LinearIssueChip
           key={issue.id}
@@ -150,7 +150,7 @@ function RunJiraChips({ runId }: { runId: string }) {
   const overflow = issues.length - 3;
 
   return (
-    <div className="flex items-center gap-1" onClick={e => e.preventDefault()}>
+    <div className="flex items-center gap-1" role="presentation" onClick={e => e.preventDefault()}>
       {visible.map(issue => (
         <JiraIssueChip
           key={issue.id}
@@ -211,6 +211,7 @@ export function WorkflowsTab({ contractorId }: WorkflowsTabProps) {
     return (
       <div className="space-y-3">
         {Array.from({ length: 5 }).map((_, i) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
           <div key={`skel-${i}`} className="flex items-center gap-4 px-4 py-3">
             <Skeleton className="h-4 w-40" />
             <Skeleton className="h-5 w-16 rounded-full" />
@@ -278,7 +279,7 @@ export function WorkflowsTab({ contractorId }: WorkflowsTabProps) {
             <span className="text-sm tabular-nums text-muted-foreground">
               {run.progress.done}/{run.progress.total}
             </span>
-            {run.startedAt && (
+            {!!run.startedAt && (
               <span className="text-sm text-muted-foreground">
                 {new Date(run.startedAt).toLocaleDateString('pl-PL')}
               </span>

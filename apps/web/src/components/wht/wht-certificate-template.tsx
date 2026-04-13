@@ -84,7 +84,7 @@ export function WhtCertificateTemplate({ data, branding }: WhtCertificateTemplat
     <Document>
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
-          {branding?.logoUrl && <Image src={branding.logoUrl} style={styles.logo} />}
+          {!!branding?.logoUrl && <Image src={branding.logoUrl} style={styles.logo} />}
           <Text style={styles.title}>Withholding Tax Certificate</Text>
           <Text style={styles.certNumber}>Certificate No: {data.certificateNumber}</Text>
         </View>
@@ -95,7 +95,7 @@ export function WhtCertificateTemplate({ data, branding }: WhtCertificateTemplat
             <Text style={styles.label}>Name</Text>
             <Text style={styles.value}>{data.organizationName}</Text>
           </View>
-          {data.organizationTaxId && (
+          {!!data.organizationTaxId && (
             <View style={styles.row}>
               <Text style={styles.label}>Tax ID</Text>
               <Text style={styles.value}>{data.organizationTaxId}</Text>
@@ -113,7 +113,7 @@ export function WhtCertificateTemplate({ data, branding }: WhtCertificateTemplat
             <Text style={styles.label}>Name</Text>
             <Text style={styles.value}>{data.contractorName}</Text>
           </View>
-          {data.contractorTaxId && (
+          {!!data.contractorTaxId && (
             <View style={styles.row}>
               <Text style={styles.label}>Tax ID</Text>
               <Text style={styles.value}>{data.contractorTaxId}</Text>
@@ -151,7 +151,7 @@ export function WhtCertificateTemplate({ data, branding }: WhtCertificateTemplat
           </View>
         </View>
 
-        {data.treatyApplied && data.treatyReference && (
+        {!!data.treatyApplied && !!data.treatyReference && (
           <View style={styles.treaty}>
             <Text style={styles.treatyText}>Treaty Applied: {data.treatyReference}</Text>
           </View>

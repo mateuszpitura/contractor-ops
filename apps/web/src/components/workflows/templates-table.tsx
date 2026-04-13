@@ -187,6 +187,7 @@ export function TemplatesTable() {
           </TableHeader>
           <TableBody>
             {Array.from({ length: 5 }).map((_, i) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
               <TableRow key={`skeleton-${i}`}>
                 <TableCell>
                   <Skeleton className="h-4 w-40" />

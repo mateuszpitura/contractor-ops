@@ -21,14 +21,18 @@ vi.mock('../step-upload', () => ({
     <div data-testid="step-upload">
       Upload step - entity: {props.entityType}, file: {props.fileName ?? 'none'}
       <button
+        type="button"
         data-testid="select-file"
         onClick={() => props.onFileSelected('base64data', 'test.csv')}>
         Select
       </button>
-      <button data-testid="remove-file" onClick={props.onFileRemoved}>
+      <button type="button" data-testid="remove-file" onClick={props.onFileRemoved}>
         Remove
       </button>
-      <button data-testid="change-entity" onClick={() => props.onEntityTypeChange('contract')}>
+      <button
+        type="button"
+        data-testid="change-entity"
+        onClick={() => props.onEntityTypeChange('contract')}>
         Change Entity
       </button>
     </div>
@@ -69,11 +73,11 @@ vi.mock('../step-confirm', () => ({
     <div data-testid="step-confirm">
       Confirm step - new: {props.counts.newRecords}, errors: {props.counts.skippedErrors}
       {!props.importResult && (
-        <button data-testid="trigger-import" onClick={props.onImport}>
+        <button type="button" data-testid="trigger-import" onClick={props.onImport}>
           Import
         </button>
       )}
-      {props.importResult && <span data-testid="import-done">Done</span>}
+      {!!props.importResult && <span data-testid="import-done">Done</span>}
     </div>
   ),
 }));
@@ -334,7 +338,7 @@ describe('ImportWizardDialog', () => {
     // the close button and the AlertDialog action button
     const discardBtns = screen.getAllByText('Discard');
     // The last one should be the AlertDialog action
-    await user.click(discardBtns[discardBtns.length - 1]!);
+    await user.click(discardBtns[discardBtns.length - 1]);
 
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });

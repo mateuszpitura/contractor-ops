@@ -98,6 +98,7 @@ export function ApprovalQueueWidget() {
         {isLoading ? (
           <div className="flex flex-col gap-2">
             {Array.from({ length: 5 }).map((_, i) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
               <Skeleton key={`skel-${i}`} className="h-10 w-full rounded-md" />
             ))}
           </div>
@@ -128,7 +129,7 @@ export function ApprovalQueueWidget() {
                     <span className="shrink-0 font-display text-sm font-semibold tabular-nums text-foreground">
                       {formatAmount(amount, currency)}
                     </span>
-                    {item.slaStatus && (
+                    {!!item.slaStatus && (
                       <Badge
                         variant={getSlaVariant(slaStatus)}
                         className={isBreached ? 'badge-glow' : ''}>

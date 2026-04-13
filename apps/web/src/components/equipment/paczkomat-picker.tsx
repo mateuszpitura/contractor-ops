@@ -155,7 +155,7 @@ export function PaczkomatPicker({
           )}
 
           {/* Selected locker info */}
-          {selectedPoint && (
+          {!!selectedPoint && (
             <div className="mt-3 rounded-md border bg-card p-3" aria-live="polite">
               <div className="flex items-center gap-2">
                 <MapPin className="h-4 w-4 shrink-0 text-primary" />

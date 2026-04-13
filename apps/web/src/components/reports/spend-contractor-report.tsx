@@ -179,7 +179,7 @@ export function SpendContractorReport({ dateFrom, dateTo }: SpendContractorRepor
       <DrillDownBreadcrumb
         segments={[
           { label: t('all') },
-          ...(drillDownName ? [{ label: drillDownName, id: drillDownContractorId! }] : []),
+          ...(drillDownName ? [{ label: drillDownName, id: drillDownContractorId as string }] : []),
         ]}
         onClear={handleClearDrillDown}
       />

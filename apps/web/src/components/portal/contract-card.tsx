@@ -114,7 +114,7 @@ export function ContractCard({ contract, className }: ContractCardProps) {
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
               <p className="text-sm font-semibold leading-snug truncate">{contract.title}</p>
-              {contract.contractNumber && (
+              {!!contract.contractNumber && (
                 <p className="text-[13px] text-muted-foreground">{contract.contractNumber}</p>
               )}
             </div>
@@ -124,7 +124,7 @@ export function ContractCard({ contract, className }: ContractCardProps) {
           </div>
           <div className="flex items-center justify-between text-[13px] text-muted-foreground">
             <span>{dateRange}</span>
-            {rate && <span className="font-medium text-foreground">{rate}</span>}
+            {!!rate && <span className="font-medium text-foreground">{rate}</span>}
           </div>
         </CardContent>
       </Card>

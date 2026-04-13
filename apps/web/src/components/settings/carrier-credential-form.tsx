@@ -189,8 +189,9 @@ export function CarrierCredentialForm({ carrier, carrierLabel }: CarrierCredenti
               value={dpdCreds.fid}
               onChange={v => setDpdCreds(prev => ({ ...prev, fid: v }))}
             />
-            <label className="flex cursor-pointer items-center gap-2">
+            <label htmlFor="dpd-sandbox" className="flex cursor-pointer items-center gap-2">
               <Checkbox
+                id="dpd-sandbox"
                 checked={dpdCreds.sandbox}
                 onCheckedChange={checked =>
                   setDpdCreds(prev => ({
@@ -219,8 +220,9 @@ export function CarrierCredentialForm({ carrier, carrierLabel }: CarrierCredenti
               value={upsCreds.accountNumber}
               onChange={v => setUpsCreds(prev => ({ ...prev, accountNumber: v }))}
             />
-            <label className="flex cursor-pointer items-center gap-2">
+            <label htmlFor="ups-sandbox" className="flex cursor-pointer items-center gap-2">
               <Checkbox
+                id="ups-sandbox"
                 checked={upsCreds.sandbox}
                 onCheckedChange={checked =>
                   setUpsCreds(prev => ({
@@ -236,11 +238,11 @@ export function CarrierCredentialForm({ carrier, carrierLabel }: CarrierCredenti
 
         <div className="flex justify-end gap-2 pt-2">
           <Button variant="outline" size="sm" onClick={handleTest} disabled={isPending}>
-            {testMutation.isPending && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
+            {!!testMutation.isPending && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
             {t('testConnection')}
           </Button>
           <Button size="sm" onClick={handleSave} disabled={isPending}>
-            {saveMutation.isPending && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
+            {!!saveMutation.isPending && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
             {t('saveCredentials')}
           </Button>
         </div>

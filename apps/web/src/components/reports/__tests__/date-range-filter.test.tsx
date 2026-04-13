@@ -86,8 +86,8 @@ describe('DateRangeFilter', () => {
         return b.hasAttribute('data-day') && !b.disabled;
       });
     expect(dayButtons.length).toBeGreaterThan(10);
-    await user.click(dayButtons[5]!);
-    await user.click(dayButtons[20]!);
+    await user.click(dayButtons[5]);
+    await user.click(dayButtons[20]);
     expect(onDateChange).toHaveBeenCalledTimes(1);
     await waitFor(() => {
       expect(screen.queryByLabelText('Previous month')).not.toBeInTheDocument();

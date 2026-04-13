@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 // Mocks — `teams` router uses `ctx.db` (tenant-scoped client), not root `prisma`.
 // ---------------------------------------------------------------------------
 
-const { teamCtxDb, mockFindFirst, mockFindMany, mockUpdate } = vi.hoisted(() => {
+const { teamCtxDb, mockFindFirst, mockUpdate } = vi.hoisted(() => {
   const mockFindFirst = vi.fn();
   const mockFindMany = vi.fn();
   const mockUpdate = vi.fn();

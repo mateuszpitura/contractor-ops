@@ -174,7 +174,7 @@ export function CreditsSection({ creditPacks }: { creditPacks: CreditPack[] }) {
                     ? 'border-accent-warm/40 bg-accent-warm/3 shadow-lg'
                     : 'border-border/50 bg-surface-1/70'
                 }`}>
-                {pack.popular && (
+                {!!pack.popular && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-accent-warm px-3 py-0.5 text-[10px] font-bold uppercase tracking-wider text-accent-warm-foreground shadow-sm">
                     Best value
                   </div>

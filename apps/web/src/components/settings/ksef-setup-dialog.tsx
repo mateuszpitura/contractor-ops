@@ -209,7 +209,7 @@ export function KsefSetupDialog({ open, onOpenChange, orgNip }: KsefSetupDialogP
             {t('discard')}
           </Button>
           <Button onClick={handleSave} disabled={isSaveDisabled}>
-            {connectMutation.isPending && (
+            {!!connectMutation.isPending && (
               <Loader2 className="me-1.5 size-3.5 animate-spin" aria-hidden="true" />
             )}
             {t('saveCredentials')}

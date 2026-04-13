@@ -101,6 +101,7 @@ export function PortalEquipmentTab() {
         <h1 className="text-xl font-semibold">{t('title')}</h1>
         <div className="space-y-3">
           {Array.from({ length: 3 }).map((_, i) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
             <Skeleton key={`skel-${i}`} className="h-24 w-full rounded-lg" />
           ))}
         </div>
@@ -195,10 +196,10 @@ export function PortalEquipmentTab() {
                   <EquipmentStatusBadge status={item.equipment.status} />
                 </div>
                 <div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
-                  {item.equipment.serialNumber && (
+                  {!!item.equipment.serialNumber && (
                     <span className="font-mono">{item.equipment.serialNumber}</span>
                   )}
-                  {item.latestShipment?.deliveredAt && (
+                  {!!item.latestShipment?.deliveredAt && (
                     <span>
                       {t('deliveredOn', {
                         date: format(new Date(item.latestShipment.deliveredAt), 'MMM d, yyyy'),
@@ -247,7 +248,9 @@ export function PortalEquipmentTab() {
                 }
               }}
               disabled={cancelMutation.isPending}>
-              {cancelMutation.isPending && <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />}
+              {!!cancelMutation.isPending && (
+                <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />
+              )}
               {tReturn('cancelConfirmTitle')}
             </AlertDialogAction>
           </AlertDialogFooter>

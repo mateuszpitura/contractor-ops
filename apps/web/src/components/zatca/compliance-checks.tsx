@@ -96,7 +96,7 @@ export function ComplianceChecks({ onSuccess, onBack }: ComplianceChecksProps) {
         <Button
           onClick={() => (checksMutation.mutate as () => void)()}
           disabled={checksMutation.isPending}>
-          {checksMutation.isPending && (
+          {!!checksMutation.isPending && (
             <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" aria-hidden="true" />
           )}
           {t('runChecks')}
@@ -105,17 +105,14 @@ export function ComplianceChecks({ onSuccess, onBack }: ComplianceChecksProps) {
 
       {/* Test Results */}
       {(results.length > 0 || checksMutation.isPending) && (
-        <div
-          className="space-y-3 rounded-lg border bg-muted/20 p-4"
-          role="list"
-          aria-label={t('resultsLabel')}>
+        <ol className="space-y-3 rounded-lg border bg-muted/20 p-4" aria-label={t('resultsLabel')}>
           {TEST_LABELS.map((label, i) => {
             const result = results[i];
             const isRunning = checksMutation.isPending && !result;
             const isPending = !(checksMutation.isPending || result);
 
             return (
-              <div key={label} className="flex items-center justify-between" role="listitem">
+              <li key={label} className="flex items-center justify-between">
                 <div className="flex items-center gap-2 text-sm">
                   {result ? (
                     result.status === 'CLEARED' || result.status === 'REPORTED' ? (
@@ -128,6 +125,7 @@ export function ComplianceChecks({ onSuccess, onBack }: ComplianceChecksProps) {
                   ) : isPending ? (
                     <span
                       className="h-4 w-4 rounded-full border-2 border-muted-foreground/30"
+                      role="img"
                       aria-label="Pending"
                     />
                   ) : null}
@@ -136,15 +134,15 @@ export function ComplianceChecks({ onSuccess, onBack }: ComplianceChecksProps) {
                   </span>
                 </div>
 
-                {result && (
+                {!!result && (
                   <Badge variant={STATUS_BADGE[result.status]?.variant ?? 'warning'}>
                     {STATUS_BADGE[result.status]?.label ?? result.status}
                   </Badge>
                 )}
-              </div>
+              </li>
             );
           })}
-        </div>
+        </ol>
       )}
 
       {/* Progress bar */}

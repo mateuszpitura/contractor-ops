@@ -129,7 +129,7 @@ export function InviteDialog({
               disabled={inviteMutation.isPending}
               {...register('email')}
             />
-            {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
+            {!!errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
           </div>
 
           <div className="space-y-2">

@@ -66,7 +66,7 @@ export function PdfPreview({ documentId, filename, open, onOpenChange }: PdfPrev
       <DialogContent className="sm:max-w-[960px] max-h-[80vh] flex flex-col">
         <DialogHeader className="flex flex-row items-center justify-between gap-4">
           <DialogTitle className="truncate">{filename}</DialogTitle>
-          {pdfUrl && (
+          {!!pdfUrl && (
             <Button variant="outline" size="sm" onClick={() => window.open(pdfUrl, '_blank')}>
               <Download className="me-1.5 size-3.5" />
               {t('download')}

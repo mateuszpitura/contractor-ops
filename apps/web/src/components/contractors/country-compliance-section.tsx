@@ -55,16 +55,13 @@ export function CountryComplianceSection({ contractorId }: CountryComplianceSect
   const existingFields = (fieldsQuery.data ?? {}) as Record<string, unknown>;
   const merged = { ...existingFields, ...formData };
 
-  const countryLabel =
-    countryCode === 'AE'
-      ? 'UAE'
-      : countryCode === 'SA'
-        ? 'Saudi Arabia'
-        : countryCode === 'GB'
-          ? 'United Kingdom'
-          : countryCode === 'DE'
-            ? 'Deutschland'
-            : countryCode;
+  const COUNTRY_LABELS: Record<string, string> = {
+    AE: 'UAE',
+    SA: 'Saudi Arabia',
+    GB: 'United Kingdom',
+    DE: 'Deutschland',
+  };
+  const countryLabel = COUNTRY_LABELS[countryCode] ?? countryCode;
 
   function handleSave() {
     if (!countryCode) return;

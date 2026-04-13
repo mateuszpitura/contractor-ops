@@ -156,8 +156,8 @@ export function InvoiceUploadArea({
 
         await createInvoiceMutation.mutateAsync({
           invoiceNumber: file.name.replace(/\.pdf$/i, ''),
-          issueDate: new Date().toISOString().split('T')[0]!,
-          dueDate: new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0]!,
+          issueDate: new Date().toISOString().split('T')[0] ?? '',
+          dueDate: new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0] ?? '',
           currency: 'PLN',
           subtotalMinor: 0,
           totalMinor: 0,
@@ -283,7 +283,7 @@ export function InvoiceUploadArea({
   return (
     <div className={`space-y-4 ${className ?? ''}`}>
       {/* Drop zone header with View PDF toggle */}
-      {extractionId && pdfUrl && (
+      {!!extractionId && !!pdfUrl && (
         <div className="flex items-center justify-end">
           <Button
             type="button"
@@ -324,7 +324,7 @@ export function InvoiceUploadArea({
       </div>
 
       {/* Credit exhaustion banner */}
-      {creditExhausted && (
+      {!!creditExhausted && (
         <CreditExhaustedInline
           onUpgrade={() => router.push('/settings?tab=billing')}
           onBuyCredits={() => router.push('/settings?tab=billing')}
@@ -375,7 +375,7 @@ export function InvoiceUploadArea({
       )}
 
       {/* OCR Review Panel */}
-      {showPdfReview && extractionId && pdfUrl && (
+      {!!showPdfReview && !!extractionId && !!pdfUrl && (
         <OcrReviewPanel
           pdfUrl={pdfUrl}
           extractionId={extractionId}

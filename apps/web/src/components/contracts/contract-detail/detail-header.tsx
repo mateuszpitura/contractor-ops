@@ -151,7 +151,7 @@ export function DetailHeader({ contract }: DetailHeaderProps) {
             {tEnum(`status.${contract.status}` as Parameters<typeof tEnum>[0])}
           </Badge>
         </div>
-        {contract.contractor && (
+        {!!contract.contractor && (
           <div className="mt-1">
             <Link
               href={`/contractors/${contract.contractor.id}`}
@@ -194,7 +194,7 @@ export function DetailHeader({ contract }: DetailHeaderProps) {
               {t('actions.uploadDocument')}
             </DropdownMenuItem>
 
-            {(canTerminate || canSupersede) && <DropdownMenuSeparator />}
+            {!!(canTerminate || canSupersede) && <DropdownMenuSeparator />}
 
             {canTerminate && (
               <DropdownMenuItem

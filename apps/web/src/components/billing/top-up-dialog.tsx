@@ -109,7 +109,9 @@ export function TopUpDialog({ open, onOpenChange }: TopUpDialogProps) {
             {t('cancel')}
           </Button>
           <Button onClick={handleConfirm} disabled={checkoutMutation.isPending}>
-            {checkoutMutation.isPending && <Loader2 className="animate-spin" aria-hidden="true" />}
+            {!!checkoutMutation.isPending && (
+              <Loader2 className="animate-spin" aria-hidden="true" />
+            )}
             {t('confirm')}
           </Button>
         </DialogFooter>

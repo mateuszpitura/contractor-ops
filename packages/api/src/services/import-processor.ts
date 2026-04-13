@@ -404,7 +404,9 @@ async function resolveContractorForeignKeys(
       invalidRows.push({
         ...row,
         status: 'invalid',
-        errors: [{ field: 'contractorTaxId', message: `No contractor found with tax ID: ${taxId}` }],
+        errors: [
+          { field: 'contractorTaxId', message: `No contractor found with tax ID: ${taxId}` },
+        ],
       });
     }
   }

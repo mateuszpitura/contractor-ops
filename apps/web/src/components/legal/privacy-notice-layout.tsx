@@ -42,11 +42,7 @@ export function PrivacyNoticeLayout({
       <div className="mx-auto w-full max-w-6xl px-6 py-12">
         <header className="mb-8 flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            {versionLabel ? (
-              <p className="text-sm text-muted-foreground" aria-label="Notice version">
-                {versionLabel}
-              </p>
-            ) : null}
+            {versionLabel ? <p className="text-sm text-muted-foreground">{versionLabel}</p> : null}
           </div>
           <PrivacyNoticePdfDownload jurisdiction={jurisdiction} />
         </header>

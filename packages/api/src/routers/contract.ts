@@ -43,6 +43,107 @@ function plain<T>(data: T): T {
 }
 
 // ---------------------------------------------------------------------------
+// Contract list helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Builds Prisma WHERE clause for contract list queries from input filters.
+ */
+function buildContractListWhere(
+  organizationId: string,
+  input: {
+    contractorId?: string | null;
+    filters?: {
+      status?: string[];
+      type?: string[];
+      billingModel?: string[];
+      ownerUserId?: string[];
+      complianceRiskLevel?: string[];
+      endDateFrom?: string;
+      endDateTo?: string;
+    } | null;
+  },
+) {
+  // biome-ignore lint/suspicious/noExplicitAny: dynamically built Prisma where clause requires flexible property assignment for nested filter operators (e.g. { gte, lte })
+  const where: Record<string, any> = {
+    organizationId,
+    deletedAt: null,
+  };
+
+  if (input.contractorId) {
+    where.contractorId = input.contractorId;
+  }
+
+  const filters = input.filters;
+  if (filters?.status?.length) {
+    where.status = { in: filters.status };
+  }
+  if (filters?.type?.length) {
+    where.type = { in: filters.type };
+  }
+  if (filters?.billingModel?.length) {
+    where.billingModel = { in: filters.billingModel };
+  }
+  if (filters?.ownerUserId?.length) {
+    where.internalOwnerUserId = { in: filters.ownerUserId };
+  }
+  if (filters?.complianceRiskLevel?.length) {
+    where.complianceRiskLevel = { in: filters.complianceRiskLevel };
+  }
+
+  if (filters?.endDateFrom || filters?.endDateTo) {
+    where.endDate = {};
+    if (filters?.endDateFrom) {
+      where.endDate.gte = new Date(filters.endDateFrom);
+    }
+    if (filters?.endDateTo) {
+      where.endDate.lte = new Date(filters.endDateTo);
+    }
+  }
+
+  return where;
+}
+
+/**
+ * Converts a search string into a PostgreSQL tsquery compatible terms string.
+ */
+function buildSearchTerms(search: string): string | null {
+  const terms = search
+    .trim()
+    .split(/\s+/)
+    .map(t => t.replace(/[^a-zA-Z0-9\u00C0-\u024F]/g, ''))
+    .filter(Boolean)
+    .map(t => `${t}:*`)
+    .join(' & ');
+
+  return terms || null;
+}
+
+// ---------------------------------------------------------------------------
+// Contract update helpers
+// ---------------------------------------------------------------------------
+
+function coerceDateFields(updateData: Record<string, unknown>) {
+  if (updateData.startDate) {
+    updateData.startDate = new Date(updateData.startDate as string);
+  }
+  if (updateData.endDate) {
+    updateData.endDate = new Date(updateData.endDate as string);
+  }
+}
+
+function validateDateOrder(updateData: Record<string, unknown>) {
+  if (updateData.endDate && updateData.startDate) {
+    if (updateData.endDate <= updateData.startDate) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: E.CONTRACT_END_DATE_BEFORE_START,
+      });
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Contract router
 // ---------------------------------------------------------------------------
 
@@ -176,23 +277,8 @@ export const contractRouter = router({
 
       const updateData: Record<string, unknown> = { ...input.data };
 
-      // Convert date strings to Date objects if present
-      if (updateData.startDate) {
-        updateData.startDate = new Date(updateData.startDate as string);
-      }
-      if (updateData.endDate) {
-        updateData.endDate = new Date(updateData.endDate as string);
-      }
-
-      // Validate endDate > startDate when both are being updated
-      if (updateData.endDate && updateData.startDate) {
-        if (updateData.endDate <= updateData.startDate) {
-          throw new TRPCError({
-            code: 'BAD_REQUEST',
-            message: E.CONTRACT_END_DATE_BEFORE_START,
-          });
-        }
-      }
+      coerceDateFields(updateData);
+      validateDateOrder(updateData);
 
       const updated = await ctx.db.contract.update({
         where: { id: input.id },
@@ -234,54 +320,11 @@ export const contractRouter = router({
     .query(async ({ ctx, input }) => {
       const { page, pageSize, search, sortBy, sortOrder, contractorId, filters } = input;
 
-      // biome-ignore lint/suspicious/noExplicitAny: dynamically built Prisma where clause requires flexible property assignment for nested filter operators (e.g. { gte, lte })
-      const where: Record<string, any> = {
-        organizationId: ctx.organizationId,
-        deletedAt: null,
-      };
-
-      // Filter by contractorId
-      if (contractorId) {
-        where.contractorId = contractorId;
-      }
-
-      // Apply filters
-      if (filters?.status?.length) {
-        where.status = { in: filters.status };
-      }
-      if (filters?.type?.length) {
-        where.type = { in: filters.type };
-      }
-      if (filters?.billingModel?.length) {
-        where.billingModel = { in: filters.billingModel };
-      }
-      if (filters?.ownerUserId?.length) {
-        where.internalOwnerUserId = { in: filters.ownerUserId };
-      }
-      if (filters?.complianceRiskLevel?.length) {
-        where.complianceRiskLevel = { in: filters.complianceRiskLevel };
-      }
-
-      // End date range filter
-      if (filters?.endDateFrom || filters?.endDateTo) {
-        where.endDate = {};
-        if (filters.endDateFrom) {
-          where.endDate.gte = new Date(filters.endDateFrom);
-        }
-        if (filters.endDateTo) {
-          where.endDate.lte = new Date(filters.endDateTo);
-        }
-      }
+      const where = buildContractListWhere(ctx.organizationId, { contractorId, filters });
 
       // Full-text search via PostgreSQL tsvector
       if (search && search.length >= 2) {
-        const terms = search
-          .trim()
-          .split(/\s+/)
-          .map(t => t.replace(/[^a-zA-Z0-9\u00C0-\u024F]/g, ''))
-          .filter(Boolean)
-          .map(t => `${t}:*`)
-          .join(' & ');
+        const terms = buildSearchTerms(search);
 
         if (terms) {
           const matchingIds: Array<{ id: string }> = await ctx.db.$queryRaw`

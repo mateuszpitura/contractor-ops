@@ -77,7 +77,7 @@ function TimelineStep({
       />
       <div className="flex-1">
         <p className="text-sm">{label}</p>
-        {timestamp && (
+        {!!timestamp && (
           <p className="font-mono text-xs text-muted-foreground">
             {new Date(timestamp).toLocaleString()}
           </p>
@@ -109,7 +109,7 @@ export function PeppolTransmissionStatus({ transmission }: PeppolTransmissionSta
     }),
   );
 
-  const statusInfo = TX_STATUS[transmission.status] ?? TX_STATUS.PENDING!;
+  const statusInfo = TX_STATUS[transmission.status] ?? TX_STATUS.PENDING;
   const isFailed = transmission.status === 'FAILED' || transmission.status === 'REJECTED';
 
   return (
@@ -139,19 +139,19 @@ export function PeppolTransmissionStatus({ transmission }: PeppolTransmissionSta
             </div>
 
             {/* Error message */}
-            {isFailed && transmission.errorMessage && (
+            {!!isFailed && !!transmission.errorMessage && (
               <p className="text-sm text-destructive">{transmission.errorMessage}</p>
             )}
 
             {/* ASP Reference */}
-            {transmission.aspTransmissionId && (
+            {!!transmission.aspTransmissionId && (
               <p className="font-mono text-xs text-muted-foreground">
                 {t('aspRef')} {transmission.aspTransmissionId}
               </p>
             )}
 
             {/* Retry button */}
-            {isFailed && (
+            {!!isFailed && (
               <Button
                 variant="outline"
                 size="sm"

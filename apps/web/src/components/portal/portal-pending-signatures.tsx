@@ -98,6 +98,7 @@ export function PortalPendingSignatures() {
         {pendingQuery.isPending ? (
           <div className="space-y-3">
             {Array.from({ length: 2 }).map((_, i) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
               <Card key={`skel-${i}`} className="p-4">
                 <div className="flex items-center justify-between">
                   <div className="space-y-2">
@@ -118,7 +119,7 @@ export function PortalPendingSignatures() {
                     <p className="truncate text-sm font-semibold">
                       Contract #{item.contractId?.slice(-6) ?? t('pendingSignatures.na')}
                     </p>
-                    {item.sentAt && (
+                    {!!item.sentAt && (
                       <p className="text-sm text-muted-foreground">
                         {t('pendingSignatures.sent', { time: formatRelativeTime(item.sentAt, t) })}
                       </p>
@@ -149,7 +150,7 @@ export function PortalPendingSignatures() {
       </div>
 
       {/* Embedded signing modal */}
-      {signingTarget && (
+      {!!signingTarget && (
         <EmbeddedSigningModal
           envelopeId={signingTarget.envelopeId}
           recipientEmail={signingTarget.recipientEmail}

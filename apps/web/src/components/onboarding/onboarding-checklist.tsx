@@ -133,13 +133,13 @@ function StepItem({
             )}>
             {title}
           </span>
-          {step.optional && (
+          {!!step.optional && (
             <span className="text-xs font-medium text-amber-600 dark:text-amber-400">
               ({t('optional')})
             </span>
           )}
         </div>
-        {current && (
+        {!!current && (
           <div className="mt-1.5">
             <p className="text-sm text-muted-foreground">{description}</p>
             <Button size="sm" className="mt-2" render={<Link href={step.ctaHref} />}>

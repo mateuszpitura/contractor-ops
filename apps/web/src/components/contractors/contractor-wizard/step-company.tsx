@@ -55,21 +55,19 @@ export function StepCompany({ form }: StepCompanyProps) {
       )) as Record<string, any>;
 
       if (data?.found) {
-        if (data.legalName) {
-          setValue('legalName', data.legalName, { shouldDirty: true });
-          setValue('displayName', data.legalName, { shouldDirty: true });
-        }
-        if (data.regon) {
-          setValue('registrationNumber', data.regon, { shouldDirty: true });
-        }
-        if (data.addressLine1) {
-          setValue('addressLine1', data.addressLine1, { shouldDirty: true });
-        }
-        if (data.city) {
-          setValue('city', data.city, { shouldDirty: true });
-        }
-        if (data.postalCode) {
-          setValue('postalCode', data.postalCode, { shouldDirty: true });
+        // Map GUS response fields to form fields
+        const gusFieldMap: [string, keyof WizardFormValues][] = [
+          ['legalName', 'legalName'],
+          ['legalName', 'displayName'],
+          ['regon', 'registrationNumber'],
+          ['addressLine1', 'addressLine1'],
+          ['city', 'city'],
+          ['postalCode', 'postalCode'],
+        ];
+        for (const [sourceKey, targetKey] of gusFieldMap) {
+          if (data[sourceKey]) {
+            setValue(targetKey, data[sourceKey], { shouldDirty: true });
+          }
         }
         toast.success(t('nipSuccess'));
       } else {
@@ -113,7 +111,7 @@ export function StepCompany({ form }: StepCompanyProps) {
             )}
           </Button>
         </div>
-        {errors.taxId && <p className="text-sm text-destructive">{errors.taxId.message}</p>}
+        {!!errors.taxId && <p className="text-sm text-destructive">{errors.taxId.message}</p>}
       </div>
 
       {/* Legal name */}
@@ -122,7 +120,9 @@ export function StepCompany({ form }: StepCompanyProps) {
           {t('legalName')}
         </Label>
         <Input id="legalName" {...register('legalName')} />
-        {errors.legalName && <p className="text-sm text-destructive">{errors.legalName.message}</p>}
+        {!!errors.legalName && (
+          <p className="text-sm text-destructive">{errors.legalName.message}</p>
+        )}
       </div>
 
       {/* Contractor type */}
@@ -139,13 +139,14 @@ export function StepCompany({ form }: StepCompanyProps) {
           {CONTRACTOR_TYPES.map(type => (
             <label
               key={type}
+              htmlFor={`contractor-type-${type}`}
               className="flex cursor-pointer items-center gap-3 rounded-md border px-3 py-2.5 text-sm hover:bg-accent/50 has-[[data-checked]]:border-primary has-[[data-checked]]:bg-primary/5">
-              <RadioGroupItem value={type} />
+              <RadioGroupItem id={`contractor-type-${type}`} value={type} />
               <span>{t(`typeOptions.${type}`)}</span>
             </label>
           ))}
         </RadioGroup>
-        {errors.type && <p className="text-sm text-destructive">{errors.type.message}</p>}
+        {!!errors.type && <p className="text-sm text-destructive">{errors.type.message}</p>}
       </div>
 
       {/* Contact email */}
@@ -154,7 +155,7 @@ export function StepCompany({ form }: StepCompanyProps) {
           {t('email')}
         </Label>
         <Input id="email" type="email" {...register('email')} />
-        {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
+        {!!errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
       </div>
 
       {/* VAT-EU (optional) */}

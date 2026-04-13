@@ -30,7 +30,7 @@ export function ShipmentCondensed({ shipment }: ShipmentCondensedProps) {
     <div className="flex items-center gap-2 text-sm">
       <span className="text-muted-foreground">{shipment.carrier}</span>
       <ShipmentStatusBadge status={shipment.currentStatus} />
-      {shipment.trackingNumber && (
+      {!!shipment.trackingNumber && (
         <span className="font-mono text-xs text-muted-foreground">{shipment.trackingNumber}</span>
       )}
     </div>

@@ -54,7 +54,7 @@ export function ImportConfirmStep({
           {t('back')}
         </Button>
         <Button onClick={onConfirm} disabled={isImporting}>
-          {isImporting && <Loader2 className="me-1.5 size-3.5 animate-spin" aria-hidden="true" />}
+          {!!isImporting && <Loader2 className="me-1.5 size-3.5 animate-spin" aria-hidden="true" />}
           {isImporting ? t('importing') : t('importCta', { count: userCount })}
         </Button>
       </div>

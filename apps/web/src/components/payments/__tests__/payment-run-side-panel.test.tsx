@@ -327,7 +327,7 @@ describe('PaymentRunSidePanel', () => {
     // The AlertDialog confirm button says "Cancel run"
     const dialogButtons = screen.getAllByText('Cancel run');
     // The last one is the confirm action inside the dialog
-    await user.click(dialogButtons[dialogButtons.length - 1]!);
+    await user.click(dialogButtons[dialogButtons.length - 1]);
     expect(mockMutate).toHaveBeenCalledWith({ runId: 'run-1' });
   });
 
@@ -344,11 +344,11 @@ describe('PaymentRunSidePanel', () => {
       ...baseRun,
       items: [
         {
-          ...baseRun.items[0]!,
+          ...baseRun.items[0],
           status: 'PAID',
           paymentReference: 'PAY-REF-999',
         },
-        baseRun.items[1]!,
+        baseRun.items[1],
       ],
     };
     render(<PaymentRunSidePanel runId="run-1" open={true} onOpenChange={onOpenChange} />);
@@ -394,7 +394,7 @@ describe('PaymentRunSidePanel', () => {
     );
     // The CancelRunButton renders "Cancel run" text for all statuses
     const cancelButtons = screen.getAllByText('Cancel run');
-    await user.click(cancelButtons[0]!);
+    await user.click(cancelButtons[0]);
     await waitFor(() => {
       // For EXPORTED status, dialog should show exported-specific title
       expect(screen.getByText('Cancel exported run?')).toBeInTheDocument();
@@ -567,7 +567,7 @@ describe('PaymentRunSidePanel', () => {
     });
     // Click the inline cancel button (there may be multiple "Cancel" texts)
     const cancelBtns = screen.getAllByText('Cancel');
-    await user.click(cancelBtns[cancelBtns.length - 1]!);
+    await user.click(cancelBtns[cancelBtns.length - 1]);
     await waitFor(() => {
       expect(screen.queryByText('Reference ID')).not.toBeInTheDocument();
     });
@@ -608,7 +608,7 @@ describe('PaymentRunSidePanel', () => {
     const textarea = screen.getByPlaceholderText(/reason/i);
     await user.type(textarea, 'Bank rejected');
     const confirmBtns = screen.getAllByText('Confirm');
-    await user.click(confirmBtns[confirmBtns.length - 1]!);
+    await user.click(confirmBtns[confirmBtns.length - 1]);
     expect(mockMutate).toHaveBeenCalled();
   });
 
@@ -645,7 +645,7 @@ describe('PaymentRunSidePanel', () => {
       expect(screen.getByText('Failure reason')).toBeInTheDocument();
     });
     const cancelBtns = screen.getAllByText('Cancel');
-    await user.click(cancelBtns[cancelBtns.length - 1]!);
+    await user.click(cancelBtns[cancelBtns.length - 1]);
     await waitFor(() => {
       expect(screen.queryByText('Failure reason')).not.toBeInTheDocument();
     });
@@ -656,11 +656,11 @@ describe('PaymentRunSidePanel', () => {
       ...baseRun,
       items: [
         {
-          ...baseRun.items[0]!,
+          ...baseRun.items[0],
           status: 'FAILED',
           failureReason: 'Insufficient funds',
         },
-        baseRun.items[1]!,
+        baseRun.items[1],
       ],
     };
     render(<PaymentRunSidePanel runId="run-1" open={true} onOpenChange={onOpenChange} />);
@@ -675,12 +675,12 @@ describe('PaymentRunSidePanel', () => {
       status: 'COMPLETED',
       items: [
         {
-          ...baseRun.items[0]!,
+          ...baseRun.items[0],
           status: 'PAID',
           paymentReference: 'REF-DONE',
         },
         {
-          ...baseRun.items[1]!,
+          ...baseRun.items[1],
           status: 'PAID',
           paymentReference: 'REF-DONE2',
         },

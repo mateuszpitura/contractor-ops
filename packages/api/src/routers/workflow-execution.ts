@@ -62,7 +62,10 @@ function buildIntegrationEligibility(
 ): IntegrationEligibility {
   const jiraEligibleTaskRunIds = new Set<string>();
   const linearEligibleTaskRuns = new Map<string, { teamId: string; teamKey: string }>();
-  const calendarConfigMap = new Map<string, import('@contractor-ops/validators').CalendarTaskConfig>();
+  const calendarConfigMap = new Map<
+    string,
+    import('@contractor-ops/validators').CalendarTaskConfig
+  >();
   const equipmentEligibleTaskRunIds = new Set<string>();
 
   for (const taskTemplate of templateTasks) {
@@ -77,11 +80,7 @@ function buildIntegrationEligibility(
 
     // Linear
     const linearParsed = linearTaskConfigSchema.safeParse(taskTemplate.configJson);
-    if (
-      linearParsed.success &&
-      linearParsed.data.linearEnabled &&
-      linearParsed.data.linearTeamId
-    ) {
+    if (linearParsed.success && linearParsed.data.linearEnabled && linearParsed.data.linearTeamId) {
       linearEligibleTaskRuns.set(runId, {
         teamId: linearParsed.data.linearTeamId,
         teamKey: linearParsed.data.linearTeamKey ?? '',
@@ -103,7 +102,12 @@ function buildIntegrationEligibility(
     }
   }
 
-  return { jiraEligibleTaskRunIds, linearEligibleTaskRuns, calendarConfigMap, equipmentEligibleTaskRunIds };
+  return {
+    jiraEligibleTaskRunIds,
+    linearEligibleTaskRuns,
+    calendarConfigMap,
+    equipmentEligibleTaskRunIds,
+  };
 }
 
 /**

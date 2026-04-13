@@ -127,6 +127,7 @@ function ContractorsLoading() {
         <div className="rounded-xl border bg-background">
           {Array.from({ length: 8 }).map((_, i) => (
             <div
+              // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
               key={`skel-${i}`}
               className="flex items-center gap-4 px-4 py-3 border-b last:border-b-0">
               <Skeleton className="h-4 w-4" />

@@ -251,7 +251,7 @@ describe('CarrierShipmentForm', () => {
     const checkedRadio = radios.find(r => r.getAttribute('aria-checked') === 'true');
     expect(checkedRadio).toBeTruthy();
     // The checked radio should be the medium one (second of three)
-    expect(radios.indexOf(checkedRadio!)).toBe(1);
+    expect(radios.indexOf(checkedRadio)).toBe(1);
   });
 
   it('shows carrier select trigger when multiple carriers configured', () => {
@@ -303,7 +303,7 @@ describe('CarrierShipmentForm', () => {
     );
     const radios = screen.getAllByRole('radio');
     // Click Large (third option)
-    await user.click(radios[2]!);
+    await user.click(radios[2]);
     expect(radios[2]).toHaveAttribute('aria-checked', 'true');
   });
 
@@ -325,7 +325,7 @@ describe('CarrierShipmentForm', () => {
       el => el.closest('button') && !el.closest('button')?.disabled,
     );
     expect(submitBtn).toBeTruthy();
-    await user.click(submitBtn!);
+    await user.click(submitBtn);
     expect(mockMutate).toHaveBeenCalledWith(
       expect.objectContaining({
         equipmentIds: ['eq-1', 'eq-2'],
@@ -369,7 +369,7 @@ describe('CarrierShipmentForm', () => {
     );
     const radios = screen.getAllByRole('radio');
     // Click Small (first option)
-    await user.click(radios[0]!);
+    await user.click(radios[0]);
     expect(radios[0]).toHaveAttribute('aria-checked', 'true');
   });
 
@@ -390,7 +390,7 @@ describe('CarrierShipmentForm', () => {
     const submitBtn = submitBtns.find(
       el => el.closest('button') && !el.closest('button')?.disabled,
     );
-    await user.click(submitBtn!);
+    await user.click(submitBtn);
     expect(mockMutate).toHaveBeenCalledWith(
       expect.objectContaining({
         parcelSize: 'medium',
@@ -415,12 +415,12 @@ describe('CarrierShipmentForm', () => {
     );
     // Change to Large
     const radios = screen.getAllByRole('radio');
-    await user.click(radios[2]!);
+    await user.click(radios[2]);
     const submitBtns = screen.getAllByText('Create shipment');
     const submitBtn = submitBtns.find(
       el => el.closest('button') && !el.closest('button')?.disabled,
     );
-    await user.click(submitBtn!);
+    await user.click(submitBtn);
     expect(mockMutate).toHaveBeenCalledWith(
       expect.objectContaining({
         parcelSize: 'large',

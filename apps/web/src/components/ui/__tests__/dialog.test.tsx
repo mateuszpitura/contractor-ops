@@ -87,7 +87,7 @@ describe('Dialog', () => {
       <Dialog defaultOpen>
         <DialogContent>
           <DialogFooter className="my-footer">
-            <button>OK</button>
+            <button type="button">OK</button>
           </DialogFooter>
         </DialogContent>
       </Dialog>,
@@ -126,7 +126,7 @@ describe('Dialog', () => {
       <Dialog defaultOpen>
         <DialogContent showCloseButton={false}>
           <DialogFooter showCloseButton>
-            <button>Save</button>
+            <button type="button">Save</button>
           </DialogFooter>
         </DialogContent>
       </Dialog>,

@@ -56,6 +56,93 @@ interface TeamsChannel {
 }
 
 // ---------------------------------------------------------------------------
+// Channel mapping content (extracted to reduce conditional nesting)
+// ---------------------------------------------------------------------------
+
+function ChannelMappingContent({
+  isLoading,
+  isError,
+  selectedTeamId,
+  channels,
+  localMapping,
+  onChannelSelect,
+  onSave,
+  isSaving,
+  t,
+}: {
+  isLoading: boolean;
+  isError: boolean;
+  selectedTeamId: string | null;
+  channels: TeamsChannel[];
+  localMapping: Record<string, string>;
+  onChannelSelect: (category: string, channelId: string) => void;
+  onSave: () => void;
+  isSaving: boolean;
+  t: ReturnType<typeof useTranslations>;
+}) {
+  if (isError) {
+    return <p className="text-sm text-destructive">{t('channelFetchError')}</p>;
+  }
+
+  if (isLoading) {
+    return (
+      <div className="space-y-3">
+        {NOTIFICATION_CATEGORIES.map(cat => (
+          <div
+            key={cat}
+            className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-9 w-full sm:w-64" />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (selectedTeamId && channels.length === 0) {
+    return <p className="text-sm text-muted-foreground">{t('noChannels')}</p>;
+  }
+
+  if (channels.length === 0) return null;
+
+  return (
+    <>
+      {NOTIFICATION_CATEGORIES.map(category => (
+        <div
+          key={category}
+          className="flex flex-col gap-2 py-2 sm:flex-row sm:items-center sm:justify-between">
+          <span className="text-sm font-semibold">
+            {t(CATEGORY_LABEL_KEYS[category] as Parameters<typeof t>[0])}
+          </span>
+          <Select
+            value={localMapping[category] ?? undefined}
+            onValueChange={v => v && onChannelSelect(category, v)}>
+            <SelectTrigger
+              className="w-full sm:w-64"
+              aria-label={`${t(CATEGORY_LABEL_KEYS[category] as Parameters<typeof t>[0])} notification channel`}>
+              <SelectValue placeholder={t('selectChannel')} />
+            </SelectTrigger>
+            <SelectContent>
+              {channels.map(ch => (
+                <SelectItem key={ch.id} value={ch.id}>
+                  {ch.displayName}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      ))}
+      <div className="flex justify-end pt-2">
+        <Button onClick={onSave} disabled={isSaving}>
+          {!!isSaving && <Loader2 className="me-1.5 size-3.5 animate-spin" />}
+          {t('saveMapping')}
+        </Button>
+      </div>
+    </>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
@@ -183,66 +270,17 @@ export function TeamsChannelMappingCard() {
             </Select>
           )}
 
-          {/* Error state */}
-          {isChannelError && <p className="text-sm text-destructive">{t('channelFetchError')}</p>}
-
-          {/* Loading state */}
-          {isLoadingChannels && !isChannelError && (
-            <div className="space-y-3">
-              {NOTIFICATION_CATEGORIES.map(cat => (
-                <div
-                  key={cat}
-                  className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                  <Skeleton className="h-4 w-24" />
-                  <Skeleton className="h-9 w-full sm:w-64" />
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Empty state */}
-          {!(isLoadingChannels || isChannelError) && selectedTeamId && channels.length === 0 && (
-            <p className="text-sm text-muted-foreground">{t('noChannels')}</p>
-          )}
-
-          {/* Channel mapping rows */}
-          {!(isLoadingChannels || isChannelError) &&
-            channels.length > 0 &&
-            NOTIFICATION_CATEGORIES.map(category => (
-              <div
-                key={category}
-                className="flex flex-col gap-2 py-2 sm:flex-row sm:items-center sm:justify-between">
-                <span className="text-sm font-semibold">
-                  {t(CATEGORY_LABEL_KEYS[category] as Parameters<typeof t>[0])}
-                </span>
-                <Select
-                  value={localMapping[category] ?? undefined}
-                  onValueChange={v => v && handleChannelSelect(category, v)}>
-                  <SelectTrigger
-                    className="w-full sm:w-64"
-                    aria-label={`${t(CATEGORY_LABEL_KEYS[category] as Parameters<typeof t>[0])} notification channel`}>
-                    <SelectValue placeholder={t('selectChannel')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {channels.map(ch => (
-                      <SelectItem key={ch.id} value={ch.id}>
-                        {ch.displayName}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            ))}
-
-          {/* Save button */}
-          {!(isLoadingChannels || isChannelError) && channels.length > 0 && (
-            <div className="flex justify-end pt-2">
-              <Button onClick={handleSave} disabled={saveMutation.isPending}>
-                {saveMutation.isPending && <Loader2 className="me-1.5 size-3.5 animate-spin" />}
-                {t('saveMapping')}
-              </Button>
-            </div>
-          )}
+          <ChannelMappingContent
+            isLoading={isLoadingChannels}
+            isError={isChannelError}
+            selectedTeamId={selectedTeamId}
+            channels={channels}
+            localMapping={localMapping}
+            onChannelSelect={handleChannelSelect}
+            onSave={handleSave}
+            isSaving={saveMutation.isPending}
+            t={t}
+          />
         </CardContent>
       </Card>
     </FeatureGate>

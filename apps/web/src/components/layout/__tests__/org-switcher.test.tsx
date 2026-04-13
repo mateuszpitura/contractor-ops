@@ -116,7 +116,7 @@ describe('OrgSwitcher', () => {
   // ---- Dropdown opens and shows org list ----
   it('shows org list items when dropdown opens', async () => {
     const { user } = setup(<OrgSwitcher />);
-    const trigger = screen.getAllByRole('button')[0]!;
+    const trigger = screen.getAllByRole('button')[0];
     await user.click(trigger);
     // Dropdown opens showing org items in portal
     await waitFor(() => {
@@ -126,7 +126,7 @@ describe('OrgSwitcher', () => {
 
   it('shows add organization option in dropdown', async () => {
     const { user } = setup(<OrgSwitcher />);
-    const trigger = screen.getAllByRole('button')[0]!;
+    const trigger = screen.getAllByRole('button')[0];
     await user.click(trigger);
     await waitFor(() => {
       expect(screen.getByText('Add organization')).toBeInTheDocument();
@@ -135,7 +135,7 @@ describe('OrgSwitcher', () => {
 
   it('shows organizations label in dropdown', async () => {
     const { user } = setup(<OrgSwitcher />);
-    const trigger = screen.getAllByRole('button')[0]!;
+    const trigger = screen.getAllByRole('button')[0];
     await user.click(trigger);
     await waitFor(() => {
       expect(screen.getByText('Organizations')).toBeInTheDocument();
@@ -145,7 +145,7 @@ describe('OrgSwitcher', () => {
   // ---- Create org dialog ----
   it('opens create org dialog when add organization is clicked', async () => {
     const { user } = setup(<OrgSwitcher />);
-    const trigger = screen.getAllByRole('button')[0]!;
+    const trigger = screen.getAllByRole('button')[0];
     await user.click(trigger);
     await waitFor(() => {
       expect(screen.getByText('Add organization')).toBeInTheDocument();
@@ -158,7 +158,7 @@ describe('OrgSwitcher', () => {
 
   it('renders name input in create dialog', async () => {
     const { user } = setup(<OrgSwitcher />);
-    const trigger = screen.getAllByRole('button')[0]!;
+    const trigger = screen.getAllByRole('button')[0];
     await user.click(trigger);
     await waitFor(() => {
       expect(screen.getByText('Add organization')).toBeInTheDocument();
@@ -171,7 +171,7 @@ describe('OrgSwitcher', () => {
 
   it('renders create and cancel buttons in create dialog', async () => {
     const { user } = setup(<OrgSwitcher />);
-    const trigger = screen.getAllByRole('button')[0]!;
+    const trigger = screen.getAllByRole('button')[0];
     await user.click(trigger);
     await waitFor(() => {
       expect(screen.getByText('Add organization')).toBeInTheDocument();
@@ -185,7 +185,7 @@ describe('OrgSwitcher', () => {
 
   it('create button is disabled when name is empty', async () => {
     const { user } = setup(<OrgSwitcher />);
-    const trigger = screen.getAllByRole('button')[0]!;
+    const trigger = screen.getAllByRole('button')[0];
     await user.click(trigger);
     await waitFor(() => {
       expect(screen.getByText('Add organization')).toBeInTheDocument();
@@ -199,7 +199,7 @@ describe('OrgSwitcher', () => {
 
   it('create button is enabled when name is typed', async () => {
     const { user } = setup(<OrgSwitcher />);
-    const trigger = screen.getAllByRole('button')[0]!;
+    const trigger = screen.getAllByRole('button')[0];
     await user.click(trigger);
     await waitFor(() => {
       expect(screen.getByText('Add organization')).toBeInTheDocument();
@@ -216,7 +216,7 @@ describe('OrgSwitcher', () => {
 
   it('closes create dialog when cancel is clicked', async () => {
     const { user } = setup(<OrgSwitcher />);
-    const trigger = screen.getAllByRole('button')[0]!;
+    const trigger = screen.getAllByRole('button')[0];
     await user.click(trigger);
     await waitFor(() => {
       expect(screen.getByText('Add organization')).toBeInTheDocument();
@@ -235,7 +235,7 @@ describe('OrgSwitcher', () => {
   it('calls setActive when an org is clicked in dropdown', async () => {
     const { authClient } = await import('@/lib/auth-client');
     const { user } = setup(<OrgSwitcher />);
-    const trigger = screen.getAllByRole('button')[0]!;
+    const trigger = screen.getAllByRole('button')[0];
     await user.click(trigger);
     await waitFor(() => {
       expect(screen.getByText('Other Org')).toBeInTheDocument();
@@ -246,7 +246,7 @@ describe('OrgSwitcher', () => {
 
   it('renders building icon for each org in dropdown', async () => {
     const { user } = setup(<OrgSwitcher />);
-    const trigger = screen.getAllByRole('button')[0]!;
+    const trigger = screen.getAllByRole('button')[0];
     await user.click(trigger);
     await waitFor(() => {
       expect(screen.getByText('Other Org')).toBeInTheDocument();
@@ -258,7 +258,7 @@ describe('OrgSwitcher', () => {
 
   it('renders plus icon for add org option in dropdown', async () => {
     const { user } = setup(<OrgSwitcher />);
-    const trigger = screen.getAllByRole('button')[0]!;
+    const trigger = screen.getAllByRole('button')[0];
     await user.click(trigger);
     await waitFor(() => {
       expect(screen.getByText('Add organization')).toBeInTheDocument();
@@ -267,7 +267,7 @@ describe('OrgSwitcher', () => {
 
   it('renders input placeholder in create dialog', async () => {
     const { user } = setup(<OrgSwitcher />);
-    const trigger = screen.getAllByRole('button')[0]!;
+    const trigger = screen.getAllByRole('button')[0];
     await user.click(trigger);
     await waitFor(() => {
       expect(screen.getByText('Add organization')).toBeInTheDocument();
@@ -282,7 +282,7 @@ describe('OrgSwitcher', () => {
   it('submits create org form with entered name', async () => {
     const { authClient } = await import('@/lib/auth-client');
     const { user } = setup(<OrgSwitcher />);
-    const trigger = screen.getAllByRole('button')[0]!;
+    const trigger = screen.getAllByRole('button')[0];
     await user.click(trigger);
     await waitFor(() => {
       expect(screen.getByText('Add organization')).toBeInTheDocument();

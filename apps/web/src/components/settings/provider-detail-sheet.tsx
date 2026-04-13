@@ -297,14 +297,14 @@ export function ProviderDetailSheet({
                   </Badge>
                 </dd>
 
-                {health?.connectedAt && (
+                {!!health?.connectedAt && (
                   <>
                     <dt className="text-muted-foreground">{t('provider.connectedOn')}</dt>
                     <dd>{new Date(health.connectedAt).toLocaleDateString()}</dd>
                   </>
                 )}
 
-                {health?.displayName && (
+                {!!health?.displayName && (
                   <>
                     <dt className="text-muted-foreground">{t('provider.connectedTo')}</dt>
                     <dd className="font-medium">{health.displayName}</dd>
@@ -316,7 +316,7 @@ export function ProviderDetailSheet({
                   <TokenExpiryDisplay expiresAt={health?.tokenExpiresAt} />
                 </dd>
 
-                {health?.lastSyncAt && (
+                {!!health?.lastSyncAt && (
                   <>
                     <dt className="text-muted-foreground">{t('provider.lastRefresh')}</dt>
                     <dd>{formatDistanceToNow(new Date(health.lastSyncAt))} ago</dd>
@@ -367,14 +367,14 @@ export function ProviderDetailSheet({
                       ))}
                     </TableBody>
                   </Table>
-                  {syncLogQuery.data?.nextCursor && (
+                  {!!syncLogQuery.data?.nextCursor && (
                     <div className="mt-2 flex justify-center">
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={handleLoadMoreSync}
                         disabled={syncLogQuery.isFetching}>
-                        {syncLogQuery.isFetching && (
+                        {!!syncLogQuery.isFetching && (
                           <Loader2 className="me-1.5 size-3.5 animate-spin" />
                         )}
                         {t('provider.loadMore')}
@@ -425,14 +425,14 @@ export function ProviderDetailSheet({
                       ))}
                     </TableBody>
                   </Table>
-                  {webhookLogQuery.data?.nextCursor && (
+                  {!!webhookLogQuery.data?.nextCursor && (
                     <div className="mt-2 flex justify-center">
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={handleLoadMoreWebhook}
                         disabled={webhookLogQuery.isFetching}>
-                        {webhookLogQuery.isFetching && (
+                        {!!webhookLogQuery.isFetching && (
                           <Loader2 className="me-1.5 size-3.5 animate-spin" />
                         )}
                         {t('provider.loadMore')}
@@ -463,7 +463,9 @@ export function ProviderDetailSheet({
               variant="destructive"
               disabled={disconnectMutation.isPending}
               onClick={() => disconnectMutation.mutate({ provider })}>
-              {disconnectMutation.isPending && <Loader2 className="me-1.5 size-3.5 animate-spin" />}
+              {!!disconnectMutation.isPending && (
+                <Loader2 className="me-1.5 size-3.5 animate-spin" />
+              )}
               {t('disconnectConfirmGeneric.confirm', {
                 provider: displayName,
               })}

@@ -242,6 +242,7 @@ export function PeopleReviewStep({
         <Skeleton className="h-8 w-64" />
         <Skeleton className="h-12 w-full" />
         {Array.from({ length: 5 }).map((_, i) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
           <Skeleton key={`skel-${i}`} className="h-14 w-full" />
         ))}
       </div>

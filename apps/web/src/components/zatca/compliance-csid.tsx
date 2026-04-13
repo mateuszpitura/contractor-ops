@@ -28,7 +28,7 @@ interface StatusItemProps {
 
 function StatusItem({ label, status }: StatusItemProps) {
   return (
-    <div className="flex items-center gap-2 text-sm" role="listitem">
+    <li className="flex items-center gap-2 text-sm">
       {status === 'loading' && (
         <Loader2 className="h-4 w-4 animate-spin text-primary" aria-label="Loading" />
       )}
@@ -36,13 +36,14 @@ function StatusItem({ label, status }: StatusItemProps) {
       {status === 'pending' && (
         <span
           className="h-4 w-4 rounded-full border-2 border-muted-foreground/30"
+          role="img"
           aria-label="Pending"
         />
       )}
       <span className={status === 'done' ? 'text-foreground' : 'text-muted-foreground'}>
         {label}
       </span>
-    </div>
+    </li>
   );
 }
 
@@ -95,7 +96,7 @@ export function ComplianceCsid({ onSuccess, onBack }: ComplianceCsidProps) {
         <Button
           onClick={() => (requestMutation.mutate as () => void)()}
           disabled={requestMutation.isPending}>
-          {requestMutation.isPending && (
+          {!!requestMutation.isPending && (
             <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" aria-hidden="true" />
           )}
           Request Compliance CSID
@@ -103,10 +104,9 @@ export function ComplianceCsid({ onSuccess, onBack }: ComplianceCsidProps) {
       )}
 
       {/* Status list */}
-      {csrSubmitted && (
-        <div
+      {!!csrSubmitted && (
+        <ol
           className="space-y-3 rounded-lg border bg-muted/20 p-4"
-          role="list"
           aria-label="Compliance CSID progress"
           aria-live="polite">
           <StatusItem
@@ -118,7 +118,7 @@ export function ComplianceCsid({ onSuccess, onBack }: ComplianceCsidProps) {
             label="Certificate stored securely"
             status={certStored ? 'done' : csidReceived ? 'loading' : 'pending'}
           />
-        </div>
+        </ol>
       )}
 
       {/* Actions */}

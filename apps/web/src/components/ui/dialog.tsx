@@ -57,7 +57,7 @@ function DialogContent({
         )}
         {...props}>
         {children}
-        {showCloseButton && (
+        {!!showCloseButton && (
           <DialogPrimitive.Close
             data-slot="dialog-close"
             render={
@@ -99,7 +99,7 @@ function DialogFooter({
       )}
       {...props}>
       {children}
-      {showCloseButton && (
+      {!!showCloseButton && (
         <DialogPrimitive.Close render={<Button variant="outline" />}>Close</DialogPrimitive.Close>
       )}
     </div>

@@ -60,7 +60,7 @@ function SheetContent({
         )}
         {...props}>
         {children}
-        {showCloseButton && (
+        {!!showCloseButton && (
           <SheetPrimitive.Close
             data-slot="sheet-close"
             render={

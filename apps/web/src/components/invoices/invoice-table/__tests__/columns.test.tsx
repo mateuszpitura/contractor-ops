@@ -41,7 +41,7 @@ function RowTable({ row }: { row: InvoiceRow }) {
     onRowSelectionChange: () => undefined,
   });
 
-  const first = table.getRowModel().rows[0]!;
+  const first = table.getRowModel().rows[0];
   return (
     <table>
       <tbody>

@@ -70,7 +70,7 @@ export function ProductionCertificate({ onSuccess, onBack }: ProductionCertifica
         <Button
           onClick={() => (exchangeMutation.mutate as () => void)()}
           disabled={exchangeMutation.isPending}>
-          {exchangeMutation.isPending && (
+          {!!exchangeMutation.isPending && (
             <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" aria-hidden="true" />
           )}
           Complete Onboarding
@@ -78,7 +78,7 @@ export function ProductionCertificate({ onSuccess, onBack }: ProductionCertifica
       )}
 
       {/* Certificate info card */}
-      {completed && (
+      {!!completed && (
         <div className="space-y-3 rounded-lg border bg-muted/20 p-4">
           <div className="flex items-center gap-2">
             <ShieldCheck className="h-5 w-5 text-green-600" />
@@ -105,7 +105,7 @@ export function ProductionCertificate({ onSuccess, onBack }: ProductionCertifica
         <Button type="button" variant="outline" onClick={onBack} disabled={completed}>
           Back
         </Button>
-        {completed && <Button onClick={onSuccess}>Complete</Button>}
+        {!!completed && <Button onClick={onSuccess}>Complete</Button>}
       </div>
     </div>
   );

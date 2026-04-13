@@ -90,15 +90,14 @@ export function EInvoiceComplianceWidget() {
   const statuses = data?.statuses ?? [];
 
   // Derive Peppol compliance state from connection status
+  const PEPPOL_STATUS_MAP: Record<string, string> = {
+    ACTIVE: 'active',
+    PENDING: 'onboarding',
+    REGISTERED: 'onboarding',
+    SUSPENDED: 'suspended',
+  };
   const peppolState = peppolStatus
-    ? peppolStatus.participant.status === 'ACTIVE'
-      ? 'active'
-      : peppolStatus.participant.status === 'PENDING' ||
-          peppolStatus.participant.status === 'REGISTERED'
-        ? 'onboarding'
-        : peppolStatus.participant.status === 'SUSPENDED'
-          ? 'suspended'
-          : 'error'
+    ? (PEPPOL_STATUS_MAP[peppolStatus.participant.status] ?? 'error')
     : null;
 
   if (statuses.length === 0 && !peppolState) {
@@ -133,7 +132,7 @@ export function EInvoiceComplianceWidget() {
             </Link>
           );
         })}
-        {peppolState && (
+        {!!peppolState && (
           <PeppolComplianceWidget
             status={{
               state: peppolState,

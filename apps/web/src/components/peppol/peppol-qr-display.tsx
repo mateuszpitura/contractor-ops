@@ -1,5 +1,7 @@
 'use client';
 
+import Image from 'next/image';
+
 // ---------------------------------------------------------------------------
 // Props
 // ---------------------------------------------------------------------------
@@ -22,13 +24,13 @@ export function PeppolQRDisplay({ qrCodeBase64, invoiceNumber }: PeppolQRDisplay
 
   return (
     <div className="inline-flex flex-col items-center gap-2 rounded-lg bg-muted/30 p-4">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
+      <Image
         src={qrCodeBase64}
         alt={`UAE FTA QR code for invoice ${invoiceNumber}`}
         width={200}
         height={200}
         className="rounded"
+        unoptimized
       />
       <p className="text-xs text-muted-foreground">UAE FTA QR Code — Scan to verify</p>
     </div>

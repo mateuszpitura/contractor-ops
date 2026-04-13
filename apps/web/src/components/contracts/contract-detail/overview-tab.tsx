@@ -234,7 +234,7 @@ export function OverviewTab({ contract }: OverviewTabProps) {
               })}
             />
           )}
-          {contract.renewalTerms && (
+          {!!contract.renewalTerms && (
             <FieldRow label={t('fields.renewalTerms')} value={contract.renewalTerms} />
           )}
           <FieldRow label={t('fields.notes')} value={contract.notes} />
@@ -303,13 +303,13 @@ export function OverviewTab({ contract }: OverviewTabProps) {
           <CardTitle>{t('keyDates')}</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-3">
-          {contract.startDate && (
+          {!!contract.startDate && (
             <FieldRow label={t('fields.startDate')} value={formatDate(contract.startDate)} />
           )}
-          {contract.endDate && (
+          {!!contract.endDate && (
             <FieldRow label={t('fields.endDate')} value={formatDate(contract.endDate)} />
           )}
-          {noticeDeadline && (
+          {!!noticeDeadline && (
             <FieldRow label={t('fields.noticeDeadline')} value={formatDate(noticeDeadline)} />
           )}
           {daysRemaining !== null && (

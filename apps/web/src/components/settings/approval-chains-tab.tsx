@@ -138,6 +138,7 @@ export function ApprovalChainsTab() {
           <Skeleton className="h-8 w-44" />
         </div>
         {Array.from({ length: 3 }).map((_, i) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
           <Card key={`skel-${i}`}>
             <CardHeader>
               <Skeleton className="h-4 w-48" />
@@ -195,7 +196,7 @@ export function ApprovalChainsTab() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-semibold">{chain.name}</span>
-                  {chain.isDefault && (
+                  {!!chain.isDefault && (
                     <Badge variant="secondary">{t('approvals.defaultBadge')}</Badge>
                   )}
                 </div>

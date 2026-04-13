@@ -50,7 +50,7 @@ export function TabInfo({ equipment, onEdit: _onEdit }: TabInfoProps) {
               <span className="flex items-center gap-1.5">
                 <EquipmentTypeIcon type={equipment.type} />
                 {t(`type.${equipment.type}` as Parameters<typeof t>[0])}
-                {equipment.customType && ` (${equipment.customType})`}
+                {!!equipment.customType && ` (${equipment.customType})`}
               </span>
             }
           />

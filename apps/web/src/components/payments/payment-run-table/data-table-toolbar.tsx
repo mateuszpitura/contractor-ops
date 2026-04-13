@@ -108,7 +108,7 @@ export function DataTableToolbar({
               <Calendar mode="single" selected={dateTo} onSelect={onDateToChange} />
             </div>
           </div>
-          {(dateFrom || dateTo) && (
+          {!!(dateFrom || dateTo) && (
             <div className="border-t px-3 py-2">
               <Button
                 variant="ghost"

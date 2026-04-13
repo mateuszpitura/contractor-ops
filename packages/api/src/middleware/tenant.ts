@@ -3,19 +3,50 @@ import { TRPCError } from '@trpc/server';
 import { t } from '../init.js';
 import { authedProcedure } from './auth.js';
 
+// ---------------------------------------------------------------------------
+// Shared tenant context setup — reusable across session & API key auth flows
+// ---------------------------------------------------------------------------
+
+/**
+ * Resolves an organization's data region, creates a tenant-scoped Prisma client,
+ * and runs the callback inside AsyncLocalStorage with the tenant context set.
+ *
+ * This is the shared core extracted from tenantMiddleware so that both
+ * session-based and API-key-based auth flows can establish tenant context
+ * without duplicating the region lookup + client setup logic.
+ */
+export async function runWithTenantContext<T>(
+  orgId: string,
+  fn: (ctx: {
+    organizationId: string;
+    region: string;
+    db: ReturnType<typeof createTenantClientFrom>;
+  }) => Promise<T>,
+): Promise<T> {
+  const org = await prisma.organization.findUnique({
+    where: { id: orgId },
+    select: { dataRegion: true },
+  });
+  const region = org?.dataRegion ?? 'EU';
+
+  const regionalPrisma = getRegionalClient(region);
+  const scopedClient = createTenantClientFrom(regionalPrisma);
+
+  return tenantStore.run({ organizationId: orgId, region }, () =>
+    fn({ organizationId: orgId, region, db: scopedClient }),
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Tenant middleware (session-based)
+// ---------------------------------------------------------------------------
+
 /**
  * Tenant middleware: enforces an active organization, resolves its data region,
  * and sets up the AsyncLocalStorage context with a region-aware Prisma client.
  *
  * Must be chained after auth middleware (session must exist in ctx).
  * Throws FORBIDDEN if no active organization is set in the session.
- *
- * Flow:
- * 1. Resolve orgId from session
- * 2. Look up org's dataRegion from primary (EU) database
- * 3. Get the regional PrismaClient for that region
- * 4. Apply tenant scope + soft-delete extensions
- * 5. Set regional client in context as ctx.db
  */
 const tenantMiddleware = t.middleware(async ({ ctx, next }) => {
   if (!(ctx.session && ctx.user)) {
@@ -31,23 +62,7 @@ const tenantMiddleware = t.middleware(async ({ ctx, next }) => {
     });
   }
 
-  // Look up org's data region from the primary (EU) database.
-  // Organization table always lives in the primary region — it's the routing table.
-  const org = await prisma.organization.findUnique({
-    where: { id: orgId },
-    select: { dataRegion: true },
-  });
-  const region = org?.dataRegion ?? 'EU';
-
-  // Get the regional Prisma client and apply tenant + soft-delete extensions
-  const regionalPrisma = getRegionalClient(region);
-  const scopedClient = createTenantClientFrom(regionalPrisma);
-
-  return tenantStore.run({ organizationId: orgId, region }, () =>
-    next({
-      ctx: { ...ctx, organizationId: orgId, region, db: scopedClient },
-    }),
-  );
+  return runWithTenantContext(orgId, async tenantCtx => next({ ctx: { ...ctx, ...tenantCtx } }));
 });
 
 /**

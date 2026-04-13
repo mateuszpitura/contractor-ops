@@ -79,6 +79,7 @@ export function DeadlinesWidget() {
         {isLoading ? (
           <div className="flex flex-col gap-2">
             {Array.from({ length: 5 }).map((_, i) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
               <Skeleton key={`skel-${i}`} className="h-10 w-full rounded-md" />
             ))}
           </div>

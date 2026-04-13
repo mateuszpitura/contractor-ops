@@ -272,7 +272,7 @@ export function DirectoryImportWizard({ open, onOpenChange }: DirectoryImportWiz
           {/* Step 1: Preview directory */}
           {step === 1 && (
             <div className="space-y-4">
-              {directoryQuery.isLoading && (
+              {!!directoryQuery.isLoading && (
                 <div className="space-y-3">
                   <Skeleton className="h-12 w-full" />
                   <Skeleton className="h-8 w-64" />
@@ -280,14 +280,14 @@ export function DirectoryImportWizard({ open, onOpenChange }: DirectoryImportWiz
                 </div>
               )}
 
-              {directoryQuery.isError && (
+              {!!directoryQuery.isError && (
                 <div className="flex items-center gap-3 rounded-lg border border-destructive/30 bg-destructive/5 p-4">
                   <AlertTriangle className="size-5 text-destructive" aria-hidden="true" />
                   <p className="text-sm text-destructive">{t('fetchError')}</p>
                 </div>
               )}
 
-              {directoryData && stats && (
+              {!!directoryData && !!stats && (
                 <>
                   {stats.total === 0 ? (
                     <div className="py-8 text-center">

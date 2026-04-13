@@ -140,13 +140,14 @@ export function UsersTable() {
               <TableHead>{t('columns.email')}</TableHead>
               <TableHead>{t('columns.role')}</TableHead>
               <TableHead>{t('columns.status')}</TableHead>
-              {(canManageMembers || canDeleteMembers) && (
+              {!!(canManageMembers || canDeleteMembers) && (
                 <TableHead className="text-end">{t('columns.actions')}</TableHead>
               )}
             </TableRow>
           </TableHeader>
           <TableBody>
             {Array.from({ length: 5 }).map((_, i) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
               <TableRow key={`skel-${i}`}>
                 <TableCell>
                   <Skeleton className="h-4 w-28" />
@@ -160,7 +161,7 @@ export function UsersTable() {
                 <TableCell>
                   <Skeleton className="h-5 w-16" />
                 </TableCell>
-                {(canManageMembers || canDeleteMembers) && (
+                {!!(canManageMembers || canDeleteMembers) && (
                   <TableCell>
                     <Skeleton className="h-8 w-20 ms-auto" />
                   </TableCell>
@@ -197,7 +198,7 @@ export function UsersTable() {
               <TableHead>{t('columns.email')}</TableHead>
               <TableHead>{t('columns.role')}</TableHead>
               <TableHead>{t('columns.status')}</TableHead>
-              {(canManageMembers || canDeleteMembers) && (
+              {!!(canManageMembers || canDeleteMembers) && (
                 <TableHead className="text-end">{t('columns.actions')}</TableHead>
               )}
             </TableRow>
@@ -253,7 +254,7 @@ export function UsersTable() {
                       {statusLabel(status)}
                     </Badge>
                   </TableCell>
-                  {(canManageMembers || canDeleteMembers) && (
+                  {!!(canManageMembers || canDeleteMembers) && (
                     <TableCell className="text-end">
                       {isDisabled && canManageMembers ? (
                         <Button
@@ -285,7 +286,7 @@ export function UsersTable() {
         </Table>
       </div>
 
-      {deactivateTarget && (
+      {!!deactivateTarget && (
         <DeactivateDialog
           open={!!deactivateTarget}
           onOpenChange={open => {

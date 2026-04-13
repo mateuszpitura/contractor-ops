@@ -216,7 +216,7 @@ export function ShipmentForm({
               {t('form.cancel')}
             </Button>
             <Button type="submit" disabled={createMutation.isPending}>
-              {createMutation.isPending && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
+              {!!createMutation.isPending && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
               {t('shipment.createTitle')}
             </Button>
           </DialogFooter>

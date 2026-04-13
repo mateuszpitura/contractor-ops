@@ -25,7 +25,7 @@ export function UsageKpiCard({ icon, label, value, subText }: UsageKpiCardProps)
           <span className="text-muted-foreground">{icon}</span>
         </div>
         <div className="text-2xl font-semibold">{value}</div>
-        {subText && <span className="text-xs text-muted-foreground">{subText}</span>}
+        {!!subText && <span className="text-xs text-muted-foreground">{subText}</span>}
       </CardContent>
     </Card>
   );

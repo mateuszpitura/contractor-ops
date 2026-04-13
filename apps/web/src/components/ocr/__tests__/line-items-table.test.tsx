@@ -279,7 +279,7 @@ describe('LineItemsTable', () => {
   it('calls onChange when single character is typed in description', async () => {
     const { user } = setup(<LineItemsTable items={[makeItem()]} onChange={onChange} />);
     const inputs = screen.getAllByRole('textbox');
-    const descInput = inputs[0]!;
+    const descInput = inputs[0];
     await user.type(descInput, 'X');
     expect(onChange).toHaveBeenCalled();
     // Last call should contain the item with updated description

@@ -107,7 +107,7 @@ export function StepBilling({ form }: StepBillingProps) {
             ))}
           </SelectContent>
         </Select>
-        {errors.billingModel && (
+        {!!errors.billingModel && (
           <p className="text-sm text-destructive">{errors.billingModel.message}</p>
         )}
       </div>
@@ -134,7 +134,7 @@ export function StepBilling({ form }: StepBillingProps) {
             ))}
           </SelectContent>
         </Select>
-        {errors.currency && <p className="text-sm text-destructive">{errors.currency.message}</p>}
+        {!!errors.currency && <p className="text-sm text-destructive">{errors.currency.message}</p>}
       </div>
 
       {/* Default rate (display as zloty, store as minor units) */}
@@ -157,7 +157,7 @@ export function StepBilling({ form }: StepBillingProps) {
             {watch('currency') ?? 'PLN'}
           </span>
         </div>
-        {errors.rateValueMinor && (
+        {!!errors.rateValueMinor && (
           <p className="text-sm text-destructive">{errors.rateValueMinor.message}</p>
         )}
       </div>
@@ -173,7 +173,7 @@ export function StepBilling({ form }: StepBillingProps) {
           placeholder="PL00 0000 0000 0000 0000 0000 0000"
           {...register('bankAccount')}
         />
-        {errors.bankAccount && (
+        {!!errors.bankAccount && (
           <p className="text-sm text-destructive">{errors.bankAccount.message}</p>
         )}
       </div>

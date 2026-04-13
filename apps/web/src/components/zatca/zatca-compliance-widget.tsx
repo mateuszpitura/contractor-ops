@@ -122,7 +122,7 @@ export function ZatcaComplianceWidget({
         )}
 
         {/* Period stats */}
-        {stats && (
+        {!!stats && (
           <div className="space-y-1.5 text-sm">
             <p className="font-medium text-muted-foreground">This Period</p>
             <div className="space-y-1 ps-2">

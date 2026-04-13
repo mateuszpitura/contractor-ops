@@ -95,7 +95,7 @@ export function ExtractionStatusBar({
               {errorMessage ||
                 'Extraction failed. You can re-run OCR or fill in the fields manually.'}
             </span>
-            {onRetry && (
+            {!!onRetry && (
               <Button variant="outline" size="sm" onClick={onRetry}>
                 Re-run OCR
               </Button>

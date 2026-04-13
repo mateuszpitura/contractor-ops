@@ -28,7 +28,7 @@ export function Footer() {
         <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
           {/* Brand column */}
           <div className="col-span-2 sm:col-span-1">
-            <a href="#" className="flex items-center gap-2.5">
+            <a href="/" className="flex items-center gap-2.5">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
                 <Layers className="h-4 w-4" />
               </div>

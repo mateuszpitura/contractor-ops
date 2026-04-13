@@ -19,7 +19,9 @@ vi.mock('../rejection-reason-dialog', () => ({
   }) =>
     open ? (
       <div data-testid="rejection-dialog">
-        <button onClick={() => onConfirm('too long')}>confirm-reject</button>
+        <button type="button" onClick={() => onConfirm('too long')}>
+          confirm-reject
+        </button>
       </div>
     ) : null,
 }));
@@ -75,14 +77,14 @@ describe('ApprovalQueueTable', () => {
     const onApprove = vi.fn();
     const { user } = setup(<ApprovalQueueTable {...defaultProps} onApprove={onApprove} />);
     const approveButtons = screen.getAllByText('Approve');
-    await user.click(approveButtons[0]!);
+    await user.click(approveButtons[0]);
     expect(onApprove).toHaveBeenCalledWith('1');
   });
 
   it('opens rejection dialog on Reject click', async () => {
     const { user } = setup(<ApprovalQueueTable {...defaultProps} />);
     const rejectButtons = screen.getAllByText('Reject');
-    await user.click(rejectButtons[0]!);
+    await user.click(rejectButtons[0]);
     expect(screen.getByTestId('rejection-dialog')).toBeInTheDocument();
   });
 
@@ -99,7 +101,7 @@ describe('ApprovalQueueTable', () => {
     const { user } = setup(<ApprovalQueueTable {...defaultProps} />);
     const checkboxes = screen.getAllByRole('checkbox');
     // First checkbox is "select all"
-    await user.click(checkboxes[0]!);
+    await user.click(checkboxes[0]);
     expect(screen.getByText(/2 timesheets selected/)).toBeInTheDocument();
     expect(screen.getByText('Approve All')).toBeInTheDocument();
     expect(screen.getByText('Reject All')).toBeInTheDocument();
@@ -108,9 +110,9 @@ describe('ApprovalQueueTable', () => {
   it('deselects all when select-all is toggled off', async () => {
     const { user } = setup(<ApprovalQueueTable {...defaultProps} />);
     const checkboxes = screen.getAllByRole('checkbox');
-    await user.click(checkboxes[0]!); // Select all
+    await user.click(checkboxes[0]); // Select all
     expect(screen.getByText(/2 timesheets selected/)).toBeInTheDocument();
-    await user.click(checkboxes[0]!); // Deselect all
+    await user.click(checkboxes[0]); // Deselect all
     expect(screen.queryByText(/selected/)).not.toBeInTheDocument();
   });
 
@@ -129,7 +131,7 @@ describe('ApprovalQueueTable', () => {
     const onReject = vi.fn();
     const { user } = setup(<ApprovalQueueTable {...defaultProps} onReject={onReject} />);
     const rejectButtons = screen.getAllByText('Reject');
-    await user.click(rejectButtons[0]!);
+    await user.click(rejectButtons[0]);
     // Confirm rejection in the mock dialog
     await user.click(screen.getByText('confirm-reject'));
     expect(onReject).toHaveBeenCalledWith('1', 'too long');
@@ -139,18 +141,18 @@ describe('ApprovalQueueTable', () => {
     const onBulkApprove = vi.fn();
     const { user } = setup(<ApprovalQueueTable {...defaultProps} onBulkApprove={onBulkApprove} />);
     const checkboxes = screen.getAllByRole('checkbox');
-    await user.click(checkboxes[0]!); // Select all
+    await user.click(checkboxes[0]); // Select all
     await user.click(screen.getByText('Approve All'));
     // Click confirm in the alert dialog
     const confirmBtn = screen.getAllByText('Approve All');
-    await user.click(confirmBtn[confirmBtn.length - 1]!);
+    await user.click(confirmBtn[confirmBtn.length - 1]);
     expect(onBulkApprove).toHaveBeenCalledWith(['1', '2']);
   });
 
   it('bulk reject opens rejection dialog', async () => {
     const { user } = setup(<ApprovalQueueTable {...defaultProps} />);
     const checkboxes = screen.getAllByRole('checkbox');
-    await user.click(checkboxes[0]!); // Select all
+    await user.click(checkboxes[0]); // Select all
     await user.click(screen.getByText('Reject All'));
     // The bulk rejection dialog should appear
     expect(screen.getAllByTestId('rejection-dialog').length).toBeGreaterThanOrEqual(1);
@@ -159,7 +161,7 @@ describe('ApprovalQueueTable', () => {
   it('clear button removes selection', async () => {
     const { user } = setup(<ApprovalQueueTable {...defaultProps} />);
     const checkboxes = screen.getAllByRole('checkbox');
-    await user.click(checkboxes[0]!); // Select all
+    await user.click(checkboxes[0]); // Select all
     expect(screen.getByText(/2 timesheets selected/)).toBeInTheDocument();
     await user.click(screen.getByText('Clear'));
     expect(screen.queryByText(/selected/)).not.toBeInTheDocument();

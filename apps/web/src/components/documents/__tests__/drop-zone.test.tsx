@@ -59,7 +59,7 @@ vi.mock('@/components/documents/upload-progress', () => ({
     <div data-testid="upload-progress">
       <span>{file.file.name}</span>
       <span>{file.status}</span>
-      <button onClick={onRemove} data-testid="remove-file">
+      <button type="button" onClick={onRemove} data-testid="remove-file">
         Remove
       </button>
     </div>

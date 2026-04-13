@@ -33,13 +33,13 @@ describe('OrgPicker', () => {
   });
 
   it('shows initial letter fallback when no logo', () => {
-    render(<OrgPicker orgs={[makeOrgs()[0]!]} email="jan@example.com" onSelect={vi.fn()} />);
+    render(<OrgPicker orgs={[makeOrgs()[0]]} email="jan@example.com" onSelect={vi.fn()} />);
 
     expect(screen.getByText('A')).toBeInTheDocument();
   });
 
   it('shows logo image when orgLogo is provided', () => {
-    render(<OrgPicker orgs={[makeOrgs()[1]!]} email="jan@example.com" onSelect={vi.fn()} />);
+    render(<OrgPicker orgs={[makeOrgs()[1]]} email="jan@example.com" onSelect={vi.fn()} />);
 
     const img = screen.getByRole('img', { name: 'Beta Inc' });
     expect(img).toHaveAttribute('src', 'https://example.com/logo.png');

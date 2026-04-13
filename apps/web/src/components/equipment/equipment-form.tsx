@@ -169,7 +169,7 @@ export function EquipmentForm({ open, onOpenChange, equipment }: EquipmentFormPr
               {...form.register('name')}
               aria-invalid={!!form.formState.errors.name}
             />
-            {form.formState.errors.name && (
+            {!!form.formState.errors.name && (
               <p className="text-xs text-destructive">{form.formState.errors.name.message}</p>
             )}
           </div>
@@ -248,7 +248,7 @@ export function EquipmentForm({ open, onOpenChange, equipment }: EquipmentFormPr
               {t('form.cancel')}
             </Button>
             <Button type="submit" disabled={isPending}>
-              {isPending && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
+              {!!isPending && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
               {t('form.save')}
             </Button>
           </DialogFooter>

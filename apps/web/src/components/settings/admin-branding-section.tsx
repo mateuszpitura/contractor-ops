@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Globe, Loader2, Upload } from 'lucide-react';
+import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
@@ -246,10 +247,13 @@ export function AdminBrandingSection() {
 
           {logoPreview ? (
             <div className="flex flex-col items-start gap-2">
-              <img
+              <Image
                 src={logoPreview}
                 alt={t('logoAlt')}
+                width={80}
+                height={80}
                 className="h-20 w-20 rounded-md border object-cover"
+                unoptimized
               />
               <button
                 type="button"
@@ -338,7 +342,7 @@ export function AdminBrandingSection() {
             </span>
           </div>
 
-          {subdomainError && (
+          {!!subdomainError && (
             <p id="subdomain-error" className="text-sm text-destructive" role="alert">
               {subdomainError}
             </p>

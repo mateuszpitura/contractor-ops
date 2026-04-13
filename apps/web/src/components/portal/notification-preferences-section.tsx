@@ -75,6 +75,7 @@ function PreferencesSkeleton() {
   return (
     <div className="space-y-1">
       {Array.from({ length: 5 }).map((_, i) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
         <div key={`pref-${i}`} className="flex min-h-[48px] items-center justify-between px-4 py-3">
           <div className="flex items-center gap-3">
             <Skeleton className="h-5 w-5 rounded" />
@@ -208,7 +209,7 @@ export function NotificationPreferencesSection() {
                           disabled={cat.locked}
                           aria-label={cat.label}
                         />
-                        {cat.locked && (
+                        {!!cat.locked && (
                           <p className="mt-1 text-end text-xs text-muted-foreground">
                             {t('securityLocked')}
                           </p>

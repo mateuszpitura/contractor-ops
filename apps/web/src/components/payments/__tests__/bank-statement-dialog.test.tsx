@@ -557,7 +557,7 @@ describe('BankStatementDialog', () => {
 
   it('handles drag over event on dropzone', async () => {
     render(<BankStatementDialog runId="run-1" open={true} onOpenChange={onOpenChange} />);
-    const dropzone = screen.getByText('Drop a bank statement file here').closest('div')!;
+    const dropzone = screen.getByText('Drop a bank statement file here').closest('div');
     fireEvent.dragOver(dropzone);
     // Should prevent default
     expect(dropzone).toBeInTheDocument();

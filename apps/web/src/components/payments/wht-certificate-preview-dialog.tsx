@@ -66,7 +66,7 @@ export function WhtCertificatePreviewDialog({
               <span className="font-medium">{certificate.orgName}</span>
               <span className="text-muted-foreground">Contractor</span>
               <span className="font-medium">{certificate.contractorName}</span>
-              {certificate.contractorTaxId && (
+              {!!certificate.contractorTaxId && (
                 <>
                   <span className="text-muted-foreground">Tax ID</span>
                   <span className="font-medium">{certificate.contractorTaxId}</span>
@@ -98,7 +98,7 @@ export function WhtCertificatePreviewDialog({
               </span>
             </div>
 
-            {certificate.treatyApplied && certificate.treatyReference && (
+            {!!certificate.treatyApplied && !!certificate.treatyReference && (
               <p className="text-xs italic text-muted-foreground">
                 Treaty: {certificate.treatyReference}
               </p>

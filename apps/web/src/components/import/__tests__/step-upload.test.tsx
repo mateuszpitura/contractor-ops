@@ -81,7 +81,7 @@ describe('StepUpload', () => {
     );
     const radios = screen.getAllByRole('radio');
     // Click on the "contract" radio (second one)
-    await user.click(radios[1]!);
+    await user.click(radios[1]);
     expect(onEntityTypeChange).toHaveBeenCalled();
   });
 

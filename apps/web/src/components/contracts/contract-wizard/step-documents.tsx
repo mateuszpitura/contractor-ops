@@ -196,7 +196,9 @@ export function StepDocuments({ onSkip, onDocumentsChange }: StepDocumentsProps)
           );
           // Update parent with all successful document IDs
           onDocumentsChange(
-            updated.filter(f => f.documentId && f.status !== 'error').map(f => f.documentId!),
+            updated
+              .filter(f => f.documentId && f.status !== 'error')
+              .map(f => f.documentId as string),
           );
           return updated;
         });
@@ -222,7 +224,7 @@ export function StepDocuments({ onSkip, onDocumentsChange }: StepDocumentsProps)
     setFiles(prev => {
       const updated = prev.filter(f => f.id !== fileId);
       onDocumentsChange(
-        updated.filter(f => f.documentId && f.status !== 'error').map(f => f.documentId!),
+        updated.filter(f => f.documentId && f.status !== 'error').map(f => f.documentId as string),
       );
       return updated;
     });

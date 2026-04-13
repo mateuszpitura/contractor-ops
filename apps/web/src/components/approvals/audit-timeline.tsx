@@ -182,7 +182,7 @@ function HumanEntry({ event, t }: { event: AuditEvent; t: TranslateFn }) {
     <div className="relative flex gap-3 ps-0">
       {/* Avatar */}
       <Avatar className="shrink-0">
-        {event.actor.image && <AvatarImage src={event.actor.image} />}
+        {!!event.actor.image && <AvatarImage src={event.actor.image} />}
         <AvatarFallback>{getAvatarInitials(event.actor.name, event.actor.email)}</AvatarFallback>
       </Avatar>
 
@@ -196,7 +196,7 @@ function HumanEntry({ event, t }: { event: AuditEvent; t: TranslateFn }) {
           </Badge>
         </div>
 
-        {event.comment && <CommentText text={event.comment} t={t} />}
+        {!!event.comment && <CommentText text={event.comment} t={t} />}
 
         <p className="text-[12px] text-muted-foreground">{getRelativeTime(event.timestamp)}</p>
       </div>
@@ -260,6 +260,7 @@ export function AuditTimeline({ invoiceId }: AuditTimelineProps) {
             <div className="absolute start-4 top-0 bottom-0 w-[2px] bg-border" />
 
             {events.map((event, idx) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: audit events may share label+timestamp
               <div key={`${event.label}-${event.timestamp}-${idx}`} className="relative">
                 {event.type === 'decision' ? (
                   <HumanEntry event={event} t={tFn} />

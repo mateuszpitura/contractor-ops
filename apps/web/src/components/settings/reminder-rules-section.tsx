@@ -171,6 +171,7 @@ export function ReminderRulesSection() {
           <Skeleton className="h-8 w-32" />
         </div>
         {Array.from({ length: 3 }).map((_, i) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
           <Card key={`skel-${i}`}>
             <CardHeader>
               <Skeleton className="h-4 w-48" />

@@ -27,7 +27,7 @@ describe('DataTablePagination (contracts)', () => {
 
   it('disables previous on first page', () => {
     render(<DataTablePagination {...defaultProps} />);
-    const prevButton = screen.getAllByRole('button')[0]!;
+    const prevButton = screen.getAllByRole('button')[0];
     expect(prevButton).toBeDisabled();
   });
 
@@ -35,7 +35,7 @@ describe('DataTablePagination (contracts)', () => {
     const onPageChange = vi.fn();
     const { user } = setup(<DataTablePagination {...defaultProps} onPageChange={onPageChange} />);
     const buttons = screen.getAllByRole('button');
-    await user.click(buttons[buttons.length - 1]!);
+    await user.click(buttons[buttons.length - 1]);
     expect(onPageChange).toHaveBeenCalledWith(2);
   });
 });

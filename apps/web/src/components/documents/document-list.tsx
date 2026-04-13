@@ -48,6 +48,7 @@ export function DocumentList({ entityType, entityId }: DocumentListProps) {
     return (
       <div className="space-y-3">
         {Array.from({ length: 3 }).map((_, i) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
           <div key={`skel-${i}`} className="flex items-start gap-4 rounded-lg border p-4">
             <Skeleton className="size-12 rounded-md" />
             <div className="flex-1 space-y-2">

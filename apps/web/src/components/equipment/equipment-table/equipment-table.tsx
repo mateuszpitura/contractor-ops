@@ -188,7 +188,7 @@ export function EquipmentTable({
       />
 
       <div className="relative rounded-xl border bg-background">
-        {isRefetching && (
+        {!!isRefetching && (
           <div className="absolute inset-0 z-10 flex items-start justify-center rounded-xl bg-background/60 pt-20">
             <Loader2 className="h-5 w-5 animate-spin text-primary" />
           </div>
@@ -238,6 +238,7 @@ export function EquipmentTable({
           <TableBody>
             {isLoading ? (
               Array.from({ length: 8 }).map((_, i) => (
+                // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
                 <TableRow key={`skeleton-${i}`}>
                   {table.getVisibleLeafColumns().map(col => (
                     <TableCell key={col.id}>

@@ -116,7 +116,7 @@ export function InviteAcceptForm({
               disabled={isLoading}
               {...register('password')}
             />
-            {errors.password && (
+            {!!errors.password && (
               <p className="text-sm text-destructive">{errors.password.message}</p>
             )}
           </div>

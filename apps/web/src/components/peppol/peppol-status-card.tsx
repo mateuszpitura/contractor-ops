@@ -101,7 +101,7 @@ export function PeppolStatusCard() {
   }
 
   const { participant, connection } = statusQuery.data;
-  const statusInfo = STATUS_VARIANTS[participant.status] ?? STATUS_VARIANTS.DEREGISTERED!;
+  const statusInfo = STATUS_VARIANTS[participant.status] ?? STATUS_VARIANTS.DEREGISTERED;
   const counts = participantQuery.data?._count;
 
   return (
@@ -129,7 +129,7 @@ export function PeppolStatusCard() {
             <span className="text-muted-foreground">{t('aspProvider')}</span>
             <span className="capitalize">{participant.aspProvider}</span>
           </div>
-          {connection?.lastSyncAt && (
+          {!!connection?.lastSyncAt && (
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">{t('lastSync')}</span>
               <span className="text-sm">{new Date(connection.lastSyncAt).toLocaleString()}</span>
@@ -138,7 +138,7 @@ export function PeppolStatusCard() {
         </div>
 
         {/* Metrics */}
-        {counts && (
+        {!!counts && (
           <div className="flex gap-6 rounded-lg bg-muted/30 p-3">
             <div className="text-center">
               <p className="font-mono text-sm font-medium">{counts.sentTransmissions}</p>

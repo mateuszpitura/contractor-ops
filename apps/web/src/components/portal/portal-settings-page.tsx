@@ -18,6 +18,7 @@ function SettingsSkeleton() {
   return (
     <div className="space-y-4">
       {Array.from({ length: 3 }).map((_, i) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
         <Card key={`skel-${i}`} className="p-4">
           <Skeleton className="mb-4 h-5 w-48" />
           <div className="space-y-3">

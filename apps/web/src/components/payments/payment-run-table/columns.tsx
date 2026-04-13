@@ -188,7 +188,7 @@ export function getColumns(
                   {t('actions.markAllPaid')}
                 </DropdownMenuItem>
               )}
-              {showCancel && (
+              {!!showCancel && (
                 <DropdownMenuItem
                   className="text-destructive"
                   onClick={e => {

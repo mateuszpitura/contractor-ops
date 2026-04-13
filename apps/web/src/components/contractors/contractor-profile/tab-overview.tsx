@@ -169,7 +169,7 @@ export function TabOverview({ contractor }: TabOverviewProps) {
           />
           <FieldRow label={t('fields.vatEu')} value={contractor.vatId} mono />
           <FieldRow label={t('fields.regon')} value={contractor.registrationNumber} mono />
-          {contractor.email && (
+          {!!contractor.email && (
             <div className="flex flex-col gap-0.5">
               <span className="text-xs text-muted-foreground">{t('fields.email')}</span>
               <a
@@ -226,7 +226,7 @@ export function TabOverview({ contractor }: TabOverviewProps) {
                   {activeContract.status}
                 </span>
               </div>
-              {activeContract.startDate && (
+              {!!activeContract.startDate && (
                 <span className="text-xs text-muted-foreground">
                   {formatDate(activeContract.startDate)}
                   {activeContract.endDate ? ` - ${formatDate(activeContract.endDate)}` : ''}

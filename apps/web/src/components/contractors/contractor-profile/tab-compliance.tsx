@@ -95,11 +95,11 @@ export function TabCompliance({ contractor }: TabComplianceProps) {
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium">{item.name}</span>
-                  {item.documentType && (
+                  {!!item.documentType && (
                     <span className="text-xs text-muted-foreground">({item.documentType})</span>
                   )}
                 </div>
-                {item.expiresAt && (
+                {!!item.expiresAt && (
                   <div className="mt-0.5 flex items-center gap-1">
                     <span className="text-xs text-muted-foreground">
                       {t('expires')}: {formatDate(item.expiresAt)}

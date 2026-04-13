@@ -332,6 +332,7 @@ export default function PortalTimePage() {
         {historyQuery.isPending ? (
           <div className="space-y-2">
             {Array.from({ length: 5 }).map((_, i) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
               <Skeleton key={`skel-${i}`} className="h-10 w-full" />
             ))}
           </div>

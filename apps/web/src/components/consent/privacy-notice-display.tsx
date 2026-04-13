@@ -62,8 +62,8 @@ export function PrivacyNoticeDisplay({ notice }: PrivacyNoticeDisplayProps) {
           {notice.controller.country})
         </div>
 
-        {notice.sections.map((section, index) => (
-          <Collapsible key={`section-${index}`}>
+        {notice.sections.map(section => (
+          <Collapsible key={section.title}>
             <CollapsibleTrigger className="flex w-full items-center justify-between rounded-md px-3 py-2 text-sm font-medium hover:bg-muted/50 transition-colors">
               <span>{section.title}</span>
               <span className="text-xs text-muted-foreground">{t('privacyNotice.expand')}</span>

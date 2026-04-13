@@ -200,13 +200,13 @@ export function ProviderConnectionCard({
           {isConnected && !isReauthRequired && (
             <div className="space-y-3">
               <div className="space-y-1 text-sm">
-                {health?.displayName && (
+                {!!health?.displayName && (
                   <p>
                     <span className="text-muted-foreground">{t('provider.connectedTo')}:</span>{' '}
                     <span className="font-medium">{health.displayName}</span>
                   </p>
                 )}
-                {health?.connectedAt && (
+                {!!health?.connectedAt && (
                   <p>
                     <span className="text-muted-foreground">{t('provider.connectedOn')}:</span>{' '}
                     <span className="font-medium">
@@ -214,7 +214,7 @@ export function ProviderConnectionCard({
                     </span>
                   </p>
                 )}
-                {health?.tokenExpiresAt && (
+                {!!health?.tokenExpiresAt && (
                   <p>
                     <span className="text-muted-foreground">{t('provider.tokenExpires')}:</span>{' '}
                     <TokenExpiryBadge expiresAt={health.tokenExpiresAt} />
@@ -236,7 +236,7 @@ export function ProviderConnectionCard({
           )}
 
           {/* Re-auth required state */}
-          {(isReauthRequired || isError) && (
+          {!!(isReauthRequired || isError) && (
             <div className="space-y-3">
               <p className="text-sm text-muted-foreground">
                 {isReauthRequired
@@ -297,7 +297,9 @@ export function ProviderConnectionCard({
               variant="destructive"
               disabled={disconnectMutation.isPending}
               onClick={() => disconnectMutation.mutate({ provider })}>
-              {disconnectMutation.isPending && <Loader2 className="me-1.5 size-3.5 animate-spin" />}
+              {!!disconnectMutation.isPending && (
+                <Loader2 className="me-1.5 size-3.5 animate-spin" />
+              )}
               {t('disconnectConfirmGeneric.confirm', {
                 provider: displayName,
               })}

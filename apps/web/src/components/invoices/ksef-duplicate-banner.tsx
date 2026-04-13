@@ -57,7 +57,7 @@ export function KsefDuplicateBanner({
                 className="text-sm text-primary hover:underline">
                 View KSeF Invoice
               </Link>
-              {onVoid && (
+              {!!onVoid && (
                 <Button variant="destructive" size="sm" onClick={() => setVoidDialogOpen(true)}>
                   Void This Invoice
                 </Button>

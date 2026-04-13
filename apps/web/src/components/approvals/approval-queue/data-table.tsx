@@ -128,8 +128,10 @@ export function ApprovalQueueTable({
             {isLoading
               ? // 8 skeleton loading rows per UI-SPEC
                 Array.from({ length: 8 }).map((_, i) => (
+                  // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
                   <TableRow key={`skeleton-${i}`}>
                     {columns.map((_, colIdx) => (
+                      // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
                       <TableCell key={colIdx}>
                         <Skeleton className="h-4 w-full max-w-[120px]" />
                       </TableCell>

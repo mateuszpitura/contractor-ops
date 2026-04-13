@@ -40,16 +40,16 @@ export function ApprovalRequestEmail({
     <BaseLayout ctaUrl={ctaUrl} ctaLabel={l.ctaButton} preferencesUrl={preferencesUrl}>
       <Text style={{ fontSize: '20px', fontWeight: '600', color: '#1a1a1a' }}>{title}</Text>
       <Text style={{ fontSize: '14px', color: '#4a4a4a', lineHeight: '24px' }}>{body}</Text>
-      {invoiceNumber && (
+      {!!invoiceNumber && (
         <Text style={{ fontSize: '14px', color: '#6b7280' }}>
           <strong>{l.invoice}:</strong> {invoiceNumber}
-          {contractorName && (
+          {!!contractorName && (
             <>
               <br />
               <strong>{l.contractor}:</strong> {contractorName}
             </>
           )}
-          {amount && (
+          {!!amount && (
             <>
               <br />
               <strong>{l.amount}:</strong> {amount}

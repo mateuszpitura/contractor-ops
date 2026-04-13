@@ -175,8 +175,10 @@ function FilterSection({
         {options.map(option => (
           <label
             key={option.value}
+            htmlFor={`inv-filter-${title}-${option.value}`}
             className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-accent">
             <Checkbox
+              id={`inv-filter-${title}-${option.value}`}
               checked={selected.includes(option.value)}
               onCheckedChange={() => onToggle(option.value)}
             />

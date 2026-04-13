@@ -33,6 +33,7 @@ vi.mock('@/components/settings/condition-builder', () => ({
     <div data-testid="condition-builder">
       <span data-testid="condition-count">{value?.length ?? 0}</span>
       <button
+        type="button"
         data-testid="add-condition"
         onClick={() =>
           onChange([...(value ?? []), { field: 'amount', operator: 'gt', value: 1000 }])

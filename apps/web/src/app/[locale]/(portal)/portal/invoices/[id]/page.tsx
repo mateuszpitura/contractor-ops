@@ -80,6 +80,7 @@ function DetailSkeleton() {
       <Card>
         <CardContent className="space-y-4 pt-4">
           {Array.from({ length: 5 }).map((_, i) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
             <div key={`skel-${i}`} className="flex items-center justify-between">
               <Skeleton className="h-4 w-24" />
               <Skeleton className="h-4 w-32" />
@@ -90,6 +91,7 @@ function DetailSkeleton() {
       <div className="space-y-3">
         <Skeleton className="h-6 w-20" />
         {Array.from({ length: 3 }).map((_, i) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
           <div key={`skel-${i}`} className="flex items-center gap-3">
             <Skeleton className="h-4 w-4 rounded-full" />
             <div className="space-y-1">
@@ -168,7 +170,7 @@ export default function PortalInvoiceDetailPage() {
       <div className="flex flex-wrap items-center gap-3">
         <h1 className="text-xl font-semibold">{invoice.invoiceNumber}</h1>
         <Badge variant={statusDisplay.variant}>{statusDisplay.label}</Badge>
-        {submittedDate && (
+        {!!submittedDate && (
           <span className="text-[13px] text-muted-foreground">
             {t('invoiceDetail.submitted', { date: formatDate(submittedDate) })}
           </span>
@@ -261,7 +263,7 @@ export default function PortalInvoiceDetailPage() {
       </Card>
 
       {/* Payment section (only when payment data exists) */}
-      {invoice.payment && (
+      {!!invoice.payment && (
         <Card>
           <CardHeader>
             <CardTitle>{t('invoiceDetail.payment')}</CardTitle>

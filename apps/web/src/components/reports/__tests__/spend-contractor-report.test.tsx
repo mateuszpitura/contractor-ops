@@ -55,7 +55,7 @@ vi.mock('../report-table', () => ({
         {data.map((row: unknown) => (
           <div key={row.contractorId}>{row.contractorName}</div>
         ))}
-        {grandTotalLabel && (
+        {!!grandTotalLabel && (
           <div data-testid="grand-total">
             {grandTotalLabel}: {grandTotalValue}
           </div>

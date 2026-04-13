@@ -228,7 +228,7 @@ describe('InvoiceSubmitForm', () => {
   });
 
   it('auto-selects contract when only one is available', async () => {
-    contractsData = [mockContracts[0]!];
+    contractsData = [mockContracts[0]];
     render(<InvoiceSubmitForm />);
     await waitFor(() => {
       expect(screen.getByText(/Expected:/)).toBeInTheDocument();
@@ -575,7 +575,7 @@ describe('InvoiceSubmitForm', () => {
   });
 
   it('renders expected amount hint after contract selection', async () => {
-    contractsData = [mockContracts[0]!];
+    contractsData = [mockContracts[0]];
     render(<InvoiceSubmitForm />);
     await waitFor(() => {
       expect(screen.getByText(/Expected:/)).toBeInTheDocument();
@@ -588,7 +588,7 @@ describe('InvoiceSubmitForm', () => {
   });
 
   it('renders review section with contract info when contract selected', async () => {
-    contractsData = [mockContracts[0]!];
+    contractsData = [mockContracts[0]];
     render(<InvoiceSubmitForm />);
     await waitFor(() => {
       expect(screen.getByText('Review')).toBeInTheDocument();

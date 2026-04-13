@@ -68,7 +68,7 @@ export function TemplateForm({ templateId }: TemplateFormProps) {
 
   // Fetch existing template when editing
   const templateQuery = useQuery(
-    trpc.workflow.getTemplate.queryOptions({ id: templateId! }, { enabled: isEditing }),
+    trpc.workflow.getTemplate.queryOptions({ id: templateId ?? '' }, { enabled: isEditing }),
   );
 
   const templateData = templateQuery.data;
@@ -178,7 +178,7 @@ export function TemplateForm({ templateId }: TemplateFormProps) {
       };
 
       if (isEditing) {
-        updateMutation.mutate({ id: templateId!, ...payload });
+        updateMutation.mutate({ id: templateId as string, ...payload });
       } else {
         createMutation.mutate(payload);
       }
@@ -229,7 +229,7 @@ export function TemplateForm({ templateId }: TemplateFormProps) {
           />
           <div className="flex shrink-0 flex-wrap gap-2">
             <Button type="submit" disabled={isSaving}>
-              {isDirty && <span className="me-1.5 inline-block size-2 rounded-full bg-current" />}
+              {!!isDirty && <span className="me-1.5 inline-block size-2 rounded-full bg-current" />}
               {t('saveTemplate')}
             </Button>
             {isEditing && templateStatus === 'DRAFT' && (
@@ -294,7 +294,7 @@ export function TemplateForm({ templateId }: TemplateFormProps) {
             )}
           </div>
         </div>
-        {form.formState.errors.name?.message && (
+        {!!form.formState.errors.name?.message && (
           <p className="text-sm text-destructive" role="alert">
             {t('validationTemplateNameRequired')}
           </p>

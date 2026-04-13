@@ -54,7 +54,7 @@ export function DuplicateWarning({
           <h3 className="text-sm font-medium">{t('duplicate.heading')}</h3>
           <p className="text-sm text-muted-foreground">{t('duplicate.body', { invoiceNumber })}</p>
           <div className="flex items-center gap-2 pt-1">
-            {duplicateInvoiceId && (
+            {!!duplicateInvoiceId && (
               <Link
                 href={`/invoices/${duplicateInvoiceId}`}
                 target="_blank"
@@ -67,7 +67,9 @@ export function DuplicateWarning({
               size="sm"
               onClick={() => dismissMutation.mutate({ id: invoiceId })}
               disabled={dismissMutation.isPending}>
-              {dismissMutation.isPending && <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />}
+              {!!dismissMutation.isPending && (
+                <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />
+              )}
               {t('duplicate.notDuplicate')}
             </Button>
           </div>

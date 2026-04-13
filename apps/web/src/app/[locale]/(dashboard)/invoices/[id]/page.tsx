@@ -103,6 +103,7 @@ function DetailSkeleton() {
         {/* Form fields skeleton */}
         <div className="space-y-3">
           {Array.from({ length: 8 }).map((_, i) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
             <div key={`skel-${i}`} className="space-y-1.5">
               <Skeleton className="h-4 w-24" />
               <Skeleton className="h-9 w-full" />
@@ -112,6 +113,65 @@ function DetailSkeleton() {
       </div>
     </div>
   );
+}
+
+// ---------------------------------------------------------------------------
+// Invoice feature flag derivation (reduces cognitive complexity in render)
+// ---------------------------------------------------------------------------
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function deriveInvoiceFlags(invoice: Record<string, any>) {
+  // Duplicate detection
+  const flagsArray: string[] = Array.isArray(invoice.flagsJson) ? invoice.flagsJson : [];
+  const hasDuplicateFlag = flagsArray.includes('DUPLICATE_SUSPECTED');
+
+  const latestMatchResult = invoice.matchResults?.[0];
+  const explanationJson = latestMatchResult?.explanationJson as Record<string, unknown> | null;
+  const duplicateInvoiceId = (explanationJson?.duplicateInvoiceId as string) ?? null;
+
+  // Source detection
+  const isKsefSource = invoice.source === 'KSEF';
+  const ksefReference = invoice.externalInvoiceId as string | null;
+  const ksefUpoReceipt = invoice.sourceReference as string | null;
+  const isPeppolSource = invoice.source === 'PEPPOL';
+
+  // KSeF duplicate detection (manual invoice with KSeF duplicate)
+  const flagsObj =
+    typeof invoice.flagsJson === 'object' &&
+    invoice.flagsJson !== null &&
+    !Array.isArray(invoice.flagsJson)
+      ? (invoice.flagsJson as Record<string, unknown>)
+      : null;
+  const hasKsefDuplicate = flagsObj?.duplicateSource === 'KSEF';
+  const ksefDuplicateId = (flagsObj?.duplicateOf as string) ?? null;
+
+  // Approval visibility
+  const APPROVAL_STATUSES = new Set(['APPROVAL_PENDING', 'APPROVED', 'REJECTED']);
+  const hasApprovalFlow = APPROVAL_STATUSES.has(invoice.status);
+
+  const SUBMIT_BLOCKED_STATUSES = new Set([
+    'APPROVAL_PENDING',
+    'APPROVED',
+    'REJECTED',
+    'READY_FOR_PAYMENT',
+    'PAID',
+  ]);
+  const canSubmitForApproval =
+    (invoice.matchStatus === 'MATCHED' || invoice.matchStatus === 'MANUALLY_CONFIRMED') &&
+    !SUBMIT_BLOCKED_STATUSES.has(invoice.status);
+
+  return {
+    hasDuplicateFlag,
+    duplicateInvoiceId,
+    isKsefSource,
+    ksefReference,
+    ksefUpoReceipt,
+    isPeppolSource,
+    hasKsefDuplicate,
+    ksefDuplicateId,
+    hasApprovalFlow,
+    canSubmitForApproval,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -213,58 +273,30 @@ export default function InvoiceDetailPage() {
   const statusConfig = statusBadgeConfig[invoice.status];
   const SourceIcon = sourceIconMap[invoice.source] ?? Inbox;
 
-  // Check for duplicate flag
-  const flags: string[] = Array.isArray(invoice.flagsJson) ? invoice.flagsJson : [];
-  const hasDuplicateFlag = flags.includes('DUPLICATE_SUSPECTED');
+  // Feature detection flags (extracted for readability)
+  const {
+    hasDuplicateFlag,
+    duplicateInvoiceId,
+    isKsefSource,
+    ksefReference,
+    ksefUpoReceipt,
+    isPeppolSource,
+    hasKsefDuplicate,
+    ksefDuplicateId,
+    hasApprovalFlow,
+    canSubmitForApproval,
+  } = deriveInvoiceFlags(invoice);
 
-  // Get duplicate invoice ID from latest match result
-  const latestMatchResult = invoice.matchResults?.[0];
-  const explanationJson = latestMatchResult?.explanationJson as Record<string, unknown> | null;
-  const duplicateInvoiceId = (explanationJson?.duplicateInvoiceId as string) ?? null;
-
-  // KSeF metadata detection
-  const isKsefSource = invoice.source === 'KSEF';
-  const ksefReference = invoice.externalInvoiceId as string | null;
-  const ksefUpoReceipt = invoice.sourceReference as string | null;
-
-  // ZATCA detection (Phase 48 gap closure)
   const hasZatcaSubmission = !!zatcaSubmission;
-
-  // Peppol detection
-  const isPeppolSource = invoice.source === 'PEPPOL';
   const hasPeppolOutboundTransmission =
     peppolTransmission && peppolTransmission.direction === 'OUTBOUND';
-
-  // KSeF duplicate detection (manual invoice with KSeF duplicate)
-  const flagsObj =
-    typeof invoice.flagsJson === 'object' &&
-    invoice.flagsJson !== null &&
-    !Array.isArray(invoice.flagsJson)
-      ? (invoice.flagsJson as Record<string, unknown>)
-      : null;
-  const hasKsefDuplicate = flagsObj?.duplicateSource === 'KSEF';
-  const ksefDuplicateId = (flagsObj?.duplicateOf as string) ?? null;
-
-  // Approval visibility conditions
-  const hasApprovalFlow =
-    invoice.status === 'APPROVAL_PENDING' ||
-    invoice.status === 'APPROVED' ||
-    invoice.status === 'REJECTED';
-
-  const canSubmitForApproval =
-    (invoice.matchStatus === 'MATCHED' || invoice.matchStatus === 'MANUALLY_CONFIRMED') &&
-    invoice.status !== 'APPROVAL_PENDING' &&
-    invoice.status !== 'APPROVED' &&
-    invoice.status !== 'REJECTED' &&
-    invoice.status !== 'READY_FOR_PAYMENT' &&
-    invoice.status !== 'PAID';
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
         <h1 className="text-xl font-semibold font-mono">{invoice.invoiceNumber}</h1>
-        {statusConfig && (
+        {!!statusConfig && (
           <Badge variant="secondary" className={`gap-1 ${statusConfig.className}`}>
             {t(`status.${statusConfig.label}`)}
           </Badge>
@@ -283,7 +315,7 @@ export default function InvoiceDetailPage() {
       {/* Side-by-side layout */}
       <InvoiceDetailLayout pdfUrl={pdfUrl}>
         {/* KSeF duplicate banner (manual invoice with KSeF duplicate) */}
-        {hasKsefDuplicate && ksefDuplicateId && (
+        {!!hasKsefDuplicate && !!ksefDuplicateId && (
           <KsefDuplicateBanner
             duplicateInvoiceId={ksefDuplicateId}
             invoiceNumber={invoice.invoiceNumber}
@@ -306,7 +338,7 @@ export default function InvoiceDetailPage() {
         )}
 
         {/* KSeF metadata section (KSeF-sourced invoices) */}
-        {isKsefSource && ksefReference && (
+        {!!isKsefSource && !!ksefReference && (
           <KsefMetadataSection
             ksefReference={ksefReference}
             upoReceipt={ksefUpoReceipt}
@@ -316,7 +348,7 @@ export default function InvoiceDetailPage() {
         )}
 
         {/* Peppol inbound banner (Phase 49) */}
-        {isPeppolSource && peppolTransmission && (
+        {!!isPeppolSource && !!peppolTransmission && (
           <PeppolInboundBanner
             senderParticipantId={invoice.sellerTaxId ?? 'Unknown sender'}
             senderName={invoice.sellerName ?? 'Unknown'}
@@ -326,12 +358,12 @@ export default function InvoiceDetailPage() {
         )}
 
         {/* Peppol outbound transmission status (Phase 49) */}
-        {hasPeppolOutboundTransmission && (
+        {!!hasPeppolOutboundTransmission && (
           <PeppolTransmissionStatus transmission={peppolTransmission} />
         )}
 
         {/* Peppol QR code (Phase 49) */}
-        {invoice.qrCodeBase64 && (isPeppolSource || hasPeppolOutboundTransmission) && (
+        {!!invoice.qrCodeBase64 && (isPeppolSource || hasPeppolOutboundTransmission) && (
           <PeppolQRDisplay
             qrCodeBase64={invoice.qrCodeBase64}
             invoiceNumber={invoice.invoiceNumber}
@@ -354,7 +386,7 @@ export default function InvoiceDetailPage() {
         />
 
         {/* Time reconciliation card (D-16) */}
-        {reconciliation && (
+        {!!reconciliation && (
           <ReconciliationCard
             reconciliation={
               reconciliation as unknown as Parameters<
@@ -365,7 +397,7 @@ export default function InvoiceDetailPage() {
         )}
 
         {/* Reverse charge banner (Phase 47) */}
-        {invoice.isReverseCharge && (
+        {!!invoice.isReverseCharge && (
           <ReverseChargeBanner
             invoiceId={invoice.id}
             isReverseCharge={invoice.isReverseCharge}
@@ -378,7 +410,7 @@ export default function InvoiceDetailPage() {
         )}
 
         {/* Submit for approval button */}
-        {canSubmitForApproval && (
+        {!!canSubmitForApproval && (
           <div className="flex justify-end">
             <Button
               onClick={() => submitForApproval.mutate({ invoiceId: invoice.id })}
@@ -391,10 +423,10 @@ export default function InvoiceDetailPage() {
         )}
 
         {/* Chain tracker (per D-04) */}
-        {hasApprovalFlow && <ChainTracker invoiceId={invoice.id} />}
+        {!!hasApprovalFlow && <ChainTracker invoiceId={invoice.id} />}
 
         {/* Audit timeline (per D-11, D-12, D-13) */}
-        {hasApprovalFlow && <AuditTimeline invoiceId={invoice.id} />}
+        {!!hasApprovalFlow && <AuditTimeline invoiceId={invoice.id} />}
 
         {/* Metadata form */}
         <InvoiceMetadataForm

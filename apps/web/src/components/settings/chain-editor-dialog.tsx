@@ -377,7 +377,7 @@ export function ChainEditorDialog({ open, onOpenChange, chainData }: ChainEditor
                 placeholder={t('approvals.editor.chainNamePlaceholder')}
                 {...form.register('name')}
               />
-              {form.formState.errors.name && (
+              {!!form.formState.errors.name && (
                 <p className="text-xs text-destructive">{form.formState.errors.name.message}</p>
               )}
             </div>
@@ -405,7 +405,7 @@ export function ChainEditorDialog({ open, onOpenChange, chainData }: ChainEditor
           <div className="space-y-3">
             <h4 className="text-sm font-semibold">{t('approvals.editor.levelsHeading')}</h4>
 
-            {form.formState.errors.steps?.root && (
+            {!!form.formState.errors.steps?.root && (
               <p className="text-xs text-destructive">{form.formState.errors.steps.root.message}</p>
             )}
 
@@ -438,7 +438,7 @@ export function ChainEditorDialog({ open, onOpenChange, chainData }: ChainEditor
                       placeholder={t('approvals.editor.levelNamePlaceholder')}
                       {...form.register(`steps.${index}.name`)}
                     />
-                    {form.formState.errors.steps?.[index]?.name && (
+                    {!!form.formState.errors.steps?.[index]?.name && (
                       <p className="text-xs text-destructive">
                         {form.formState.errors.steps[index].name?.message}
                       </p>
@@ -519,7 +519,7 @@ export function ChainEditorDialog({ open, onOpenChange, chainData }: ChainEditor
                       })}
                       className="max-w-[120px]"
                     />
-                    {form.formState.errors.steps?.[index]?.slaHours && (
+                    {!!form.formState.errors.steps?.[index]?.slaHours && (
                       <p className="text-xs text-destructive">
                         {form.formState.errors.steps[index].slaHours?.message}
                       </p>
@@ -594,7 +594,7 @@ export function ChainEditorDialog({ open, onOpenChange, chainData }: ChainEditor
               {t('approvals.editor.discard')}
             </Button>
             <Button type="submit" disabled={isPending}>
-              {isPending && <Loader2 className="me-1.5 size-3.5 animate-spin" />}
+              {!!isPending && <Loader2 className="me-1.5 size-3.5 animate-spin" />}
               {t('approvals.editor.save')}
             </Button>
           </DialogFooter>

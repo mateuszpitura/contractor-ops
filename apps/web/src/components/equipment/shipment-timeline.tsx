@@ -124,11 +124,13 @@ export function ShipmentTimeline({
       {!isTerminal && (
         <div className="flex items-end gap-2 rounded-lg border bg-card p-3">
           <div className="flex-1 space-y-1">
-            <label className="text-xs font-medium text-muted-foreground">
+            <label
+              htmlFor="shipment-new-status"
+              className="text-xs font-medium text-muted-foreground">
               {t('shipment.addStatusUpdate')}
             </label>
             <Select value={newStatus} onValueChange={val => val && setNewStatus(val)}>
-              <SelectTrigger className="w-full">
+              <SelectTrigger id="shipment-new-status" className="w-full">
                 <SelectValue placeholder="Select status..." />
               </SelectTrigger>
               <SelectContent>
@@ -141,10 +143,13 @@ export function ShipmentTimeline({
             </Select>
           </div>
           <div className="flex-1 space-y-1">
-            <label className="text-xs font-medium text-muted-foreground">
+            <label
+              htmlFor="shipment-new-notes"
+              className="text-xs font-medium text-muted-foreground">
               {t('shipment.notes')}
             </label>
             <Input
+              id="shipment-new-notes"
               value={newNotes}
               onChange={e => setNewNotes(e.target.value)}
               placeholder="Optional notes..."
@@ -154,14 +159,14 @@ export function ShipmentTimeline({
             size="sm"
             onClick={handleAddEvent}
             disabled={!newStatus || addEventMutation.isPending}>
-            {addEventMutation.isPending && <Loader2 className="me-1 h-3 w-3 animate-spin" />}
+            {!!addEventMutation.isPending && <Loader2 className="me-1 h-3 w-3 animate-spin" />}
             Add
           </Button>
         </div>
       )}
 
       {/* Timeline */}
-      <div role="list" className="relative space-y-0 ps-4">
+      <ol className="relative space-y-0 ps-4">
         {SHIPMENT_STATUS_ORDER.map((status, index) => {
           const event = eventByStatus.get(status);
           const isCompleted = index < currentIndex;
@@ -172,7 +177,7 @@ export function ShipmentTimeline({
           if (isTerminal && !event) return null;
 
           return (
-            <div key={status} role="listitem" className="relative pb-6 last:pb-0">
+            <li key={status} className="relative pb-6 last:pb-0">
               {/* Connector line */}
               {index < SHIPMENT_STATUS_ORDER.length - 1 && (
                 <div
@@ -215,7 +220,7 @@ export function ShipmentTimeline({
                       )}>
                       {t(`shipment.status.${status}`)}
                     </span>
-                    {event?.notes && (
+                    {!!event?.notes && (
                       <p className="mt-0.5 text-xs text-muted-foreground">{event.notes}</p>
                     )}
                   </div>
@@ -231,7 +236,7 @@ export function ShipmentTimeline({
                   )}
                 </div>
               </div>
-            </div>
+            </li>
           );
         })}
 
@@ -243,7 +248,7 @@ export function ShipmentTimeline({
               : undefined;
           if (!terminalEvent) return null;
           return (
-            <div role="listitem" className="relative pb-0">
+            <li className="relative pb-0">
               <div className="flex items-start gap-3">
                 <div className="relative z-10 mt-0.5 h-3 w-3 shrink-0 rounded-full border-2 border-primary bg-primary/20" />
                 <div className="flex flex-1 items-start justify-between gap-2 rounded-md bg-primary/5 px-2 py-1 -mx-2">
@@ -251,7 +256,7 @@ export function ShipmentTimeline({
                     <span className="text-sm font-medium text-primary">
                       {t(`shipment.status.${currentStatus}`)}
                     </span>
-                    {terminalEvent.notes && (
+                    {!!terminalEvent.notes && (
                       <p className="mt-0.5 text-xs text-muted-foreground">{terminalEvent.notes}</p>
                     )}
                   </div>
@@ -260,10 +265,10 @@ export function ShipmentTimeline({
                   </span>
                 </div>
               </div>
-            </div>
+            </li>
           );
         })()}
-      </div>
+      </ol>
     </div>
   );
 }

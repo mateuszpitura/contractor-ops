@@ -108,7 +108,7 @@ export function BaseLayout({
           <Text style={logo}>Contractor Ops</Text>
           <Section style={content}>
             {children}
-            {ctaUrl && (
+            {!!ctaUrl && (
               <Section style={{ textAlign: 'center', margin: '32px 0' }}>
                 <Button style={ctaButton} href={ctaUrl}>
                   {resolvedCtaLabel}
@@ -119,7 +119,7 @@ export function BaseLayout({
           <Hr style={hr} />
           <Section style={{ padding: '0 48px' }}>
             <Text style={footer}>
-              {preferencesUrl && (
+              {!!preferencesUrl && (
                 <>
                   <Link style={footerLink} href={preferencesUrl}>
                     {managePrefsLabel}

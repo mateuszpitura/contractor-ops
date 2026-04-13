@@ -49,7 +49,9 @@ vi.mock('../usage-dashboard', () => ({
 vi.mock('../proration-preview', () => ({
   ProrationPreview: ({ onCancel }: any) => (
     <div data-testid="proration-preview">
-      <button onClick={onCancel}>Cancel</button>
+      <button type="button" onClick={onCancel}>
+        Cancel
+      </button>
     </div>
   ),
 }));

@@ -108,8 +108,8 @@ vi.mock('../audit-log-table', () => ({
     <div data-testid="audit-log-table">
       <span data-testid="table-count">{props.totalCount}</span>
       <span data-testid="table-page">{props.page}</span>
-      {props.isLoading && <span data-testid="table-loading" />}
-      {props.isFetching && <span data-testid="table-fetching" />}
+      {!!props.isLoading && <span data-testid="table-loading" />}
+      {!!props.isFetching && <span data-testid="table-fetching" />}
     </div>
   ),
 }));
@@ -169,7 +169,7 @@ describe('AuditLogTab', () => {
   it('calls export mutation on export click', async () => {
     mockListData = { items: [{ id: '1' }], totalCount: 5 };
     const { user } = setup(<AuditLogTab />);
-    const exportBtn = screen.getByText('Export audit log').closest('button')!;
+    const exportBtn = screen.getByText('Export audit log').closest('button');
     await user.click(exportBtn);
     expect(mockExportMutate).toHaveBeenCalledTimes(1);
   });
@@ -366,7 +366,7 @@ describe('AuditLogTab', () => {
     queryStateValues.actionFilter = 'CREATE';
     mockListData = { items: [{ id: '1' }], totalCount: 5 };
     const { user } = setup(<AuditLogTab />);
-    const exportBtn = screen.getByText('Export audit log').closest('button')!;
+    const exportBtn = screen.getByText('Export audit log').closest('button');
     await user.click(exportBtn);
     expect(mockExportMutate).toHaveBeenCalledTimes(1);
   });
@@ -483,7 +483,7 @@ describe('AuditLogTab', () => {
     queryStateValues.dateTo = '2026-12-31';
     mockListData = { items: [{ id: '1' }], totalCount: 1 };
     const { user } = setup(<AuditLogTab />);
-    const exportBtn = screen.getByText('Export audit log').closest('button')!;
+    const exportBtn = screen.getByText('Export audit log').closest('button');
     await user.click(exportBtn);
     expect(mockExportMutate).toHaveBeenCalledTimes(1);
   });
@@ -514,7 +514,7 @@ describe('AuditLogTab', () => {
     render(<AuditLogTab />);
     const selects = screen.getAllByRole('combobox');
     // First combobox is actor filter
-    await user.click(selects[0]!);
+    await user.click(selects[0]);
     await waitFor(() => {
       expect(screen.getByText('Alice')).toBeInTheDocument();
     });
@@ -527,7 +527,7 @@ describe('AuditLogTab', () => {
     render(<AuditLogTab />);
     const selects = screen.getAllByRole('combobox');
     // Second combobox is action filter
-    await user.click(selects[1]!);
+    await user.click(selects[1]);
     await waitFor(() => {
       expect(screen.getByText('Created')).toBeInTheDocument();
     });
@@ -540,7 +540,7 @@ describe('AuditLogTab', () => {
     render(<AuditLogTab />);
     const selects = screen.getAllByRole('combobox');
     // Third combobox is resource type filter
-    await user.click(selects[2]!);
+    await user.click(selects[2]);
     await waitFor(() => {
       expect(screen.getByText('Invoice')).toBeInTheDocument();
     });
@@ -554,7 +554,7 @@ describe('AuditLogTab', () => {
     const user = userEvent.setup({ pointerEventsCheck: 0 });
     render(<AuditLogTab />);
     const selects = screen.getAllByRole('combobox');
-    await user.click(selects[0]!);
+    await user.click(selects[0]);
     await waitFor(() => {
       expect(screen.getByText('Alice')).toBeInTheDocument();
     });
@@ -567,7 +567,7 @@ describe('AuditLogTab', () => {
     const user = userEvent.setup({ pointerEventsCheck: 0 });
     render(<AuditLogTab />);
     const selects = screen.getAllByRole('combobox');
-    await user.click(selects[1]!);
+    await user.click(selects[1]);
     await waitFor(() => {
       expect(screen.getByText('Updated')).toBeInTheDocument();
     });
@@ -580,7 +580,7 @@ describe('AuditLogTab', () => {
     const user = userEvent.setup({ pointerEventsCheck: 0 });
     render(<AuditLogTab />);
     const selects = screen.getAllByRole('combobox');
-    await user.click(selects[2]!);
+    await user.click(selects[2]);
     await waitFor(() => {
       expect(screen.getByText('Contract')).toBeInTheDocument();
     });
@@ -600,7 +600,7 @@ describe('AuditLogTab', () => {
     const user = userEvent.setup({ pointerEventsCheck: 0 });
     render(<AuditLogTab />);
     const selects = screen.getAllByRole('combobox');
-    await user.click(selects[1]!);
+    await user.click(selects[1]);
     await waitFor(() => {
       expect(screen.getByText('Created')).toBeInTheDocument();
       expect(screen.getByText('Updated')).toBeInTheDocument();
@@ -612,7 +612,7 @@ describe('AuditLogTab', () => {
     const user = userEvent.setup({ pointerEventsCheck: 0 });
     render(<AuditLogTab />);
     const selects = screen.getAllByRole('combobox');
-    await user.click(selects[2]!);
+    await user.click(selects[2]);
     await waitFor(() => {
       expect(screen.getByText('Invoice')).toBeInTheDocument();
       expect(screen.getByText('Contractor')).toBeInTheDocument();

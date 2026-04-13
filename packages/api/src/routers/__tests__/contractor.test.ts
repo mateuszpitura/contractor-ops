@@ -236,6 +236,34 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
 }));
 
 // ---------------------------------------------------------------------------
+// Phase 57 · Plan 04 — gov-api + tax-id orchestrator mocks
+// ---------------------------------------------------------------------------
+
+const { mockHmrcClient, mockViesClient, validateTaxIdMock } = vi.hoisted(() => ({
+  mockHmrcClient: { checkVatNumber: vi.fn() },
+  mockViesClient: { checkVatNumber: vi.fn() },
+  validateTaxIdMock: vi.fn(async () => ({
+    responseStatus: 'valid' as const,
+    confirmationRef: null,
+    source: 'api' as const,
+    requestedAt: new Date('2026-04-13T10:00:00Z'),
+    taxIdValidationId: 'clval00000000000000000001',
+  })),
+}));
+
+vi.mock('../../gov-api-clients.js', () => ({
+  getHmrcVatClient: vi.fn(() => mockHmrcClient),
+  getViesClient: vi.fn(() => mockViesClient),
+}));
+
+vi.mock('../../services/tax-id-validation.service.js', () => ({
+  validateTaxId: validateTaxIdMock,
+  isValidationFresh: vi.fn(() => false),
+  NINETY_DAYS_MS: 90 * 24 * 60 * 60 * 1000,
+  getLatestValidation: vi.fn(async () => null),
+}));
+
+// ---------------------------------------------------------------------------
 // Imports (after mocks)
 // ---------------------------------------------------------------------------
 
@@ -712,12 +740,203 @@ describe('contractor router', () => {
 // Implemented in Plan 57-03.
 // ---------------------------------------------------------------------------
 
-describe('contractor.validateVat / revalidateVat (Phase 57 — RED scaffolds)', () => {
-  it('validateVat writes a TaxIdValidation row and updates Contractor.latestVatValidated* atomically', () => {
-    throw new Error('RED — Phase 57: implemented in Wave 2 Plan 57-03');
+describe('contractor.validateVat / revalidateVat (Phase 57 · Plan 04)', () => {
+  beforeEach(() => {
+    validateTaxIdMock.mockClear();
+    validateTaxIdMock.mockResolvedValue({
+      responseStatus: 'valid',
+      confirmationRef: 'ref-123',
+      source: 'api',
+      requestedAt: new Date('2026-04-13T10:00:00Z'),
+      taxIdValidationId: 'clval00000000000000000001',
+    });
   });
 
-  it('revalidateVat on HMRC 503 returns the latest valid row with stale flag (D-08)', () => {
-    throw new Error('RED — Phase 57: implemented in Wave 2 Plan 57-03');
+  it('validateVat dispatches GB_VAT for a UK contractor and returns the orchestrator result', async () => {
+    mockPrisma.contractor.findFirst.mockResolvedValueOnce({
+      id: CONTRACTOR_ID,
+      countryCode: 'GB',
+      vatId: 'GB193054661',
+    });
+
+    const result = await caller.contractor.validateVat({ contractorId: CONTRACTOR_ID });
+
+    expect(validateTaxIdMock).toHaveBeenCalledTimes(1);
+    expect(validateTaxIdMock.mock.calls[0]?.[0]).toMatchObject({
+      organizationId: ORG_ID,
+      contractorId: CONTRACTOR_ID,
+      taxIdType: 'GB_VAT',
+      taxIdValue: 'GB193054661',
+    });
+    expect(result).toMatchObject({
+      responseStatus: 'valid',
+      confirmationRef: 'ref-123',
+      source: 'api',
+    });
+  });
+
+  it('validateVat dispatches DE_USTIDNR for a DE contractor', async () => {
+    mockPrisma.contractor.findFirst.mockResolvedValueOnce({
+      id: CONTRACTOR_ID,
+      countryCode: 'DE',
+      vatId: 'DE123456789',
+    });
+
+    await caller.contractor.validateVat({ contractorId: CONTRACTOR_ID });
+
+    expect(validateTaxIdMock.mock.calls[0]?.[0]).toMatchObject({
+      taxIdType: 'DE_USTIDNR',
+    });
+  });
+
+  it('validateVat throws BAD_REQUEST for a non-GB/DE contractor', async () => {
+    mockPrisma.contractor.findFirst.mockResolvedValueOnce({
+      id: CONTRACTOR_ID,
+      countryCode: 'PL',
+      vatId: '1234567890',
+    });
+
+    await expect(
+      caller.contractor.validateVat({ contractorId: CONTRACTOR_ID }),
+    ).rejects.toMatchObject({ code: 'BAD_REQUEST' });
+    expect(validateTaxIdMock).not.toHaveBeenCalled();
+  });
+
+  it('validateVat throws NOT_FOUND for a contractor in another organization', async () => {
+    mockPrisma.contractor.findFirst.mockResolvedValueOnce(null);
+
+    await expect(
+      caller.contractor.validateVat({ contractorId: CONTRACTOR_ID }),
+    ).rejects.toMatchObject({ code: 'NOT_FOUND' });
+    expect(validateTaxIdMock).not.toHaveBeenCalled();
+  });
+
+  it('validateVat throws BAD_REQUEST when contractor has no VAT ID', async () => {
+    mockPrisma.contractor.findFirst.mockResolvedValueOnce({
+      id: CONTRACTOR_ID,
+      countryCode: 'GB',
+      vatId: null,
+    });
+
+    await expect(
+      caller.contractor.validateVat({ contractorId: CONTRACTOR_ID }),
+    ).rejects.toMatchObject({ code: 'BAD_REQUEST' });
+  });
+
+  it('revalidateVat routes to validateTaxId with the same payload as validateVat', async () => {
+    mockPrisma.contractor.findFirst.mockResolvedValueOnce({
+      id: CONTRACTOR_ID,
+      countryCode: 'GB',
+      vatId: 'GB193054661',
+    });
+
+    await caller.contractor.revalidateVat({ contractorId: CONTRACTOR_ID });
+
+    expect(validateTaxIdMock).toHaveBeenCalledTimes(1);
+    expect(validateTaxIdMock.mock.calls[0]?.[0]).toMatchObject({
+      organizationId: ORG_ID,
+      contractorId: CONTRACTOR_ID,
+      taxIdType: 'GB_VAT',
+    });
+  });
+
+  it('revalidateVat returns stale responseStatus when orchestrator soft-fails (D-08)', async () => {
+    validateTaxIdMock.mockResolvedValueOnce({
+      responseStatus: 'stale',
+      confirmationRef: 'prior-ref',
+      source: 'stale-cache',
+      requestedAt: new Date('2026-04-13T10:00:00Z'),
+      taxIdValidationId: 'clval00000000000000000002',
+    });
+    mockPrisma.contractor.findFirst.mockResolvedValueOnce({
+      id: CONTRACTOR_ID,
+      countryCode: 'GB',
+      vatId: 'GB193054661',
+    });
+
+    const result = await caller.contractor.revalidateVat({ contractorId: CONTRACTOR_ID });
+
+    expect(result.responseStatus).toBe('stale');
+    expect(result.source).toBe('stale-cache');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Phase 57 · Plan 04 — D-07 trigger 1: contractor.update VAT-number-change
+// ---------------------------------------------------------------------------
+
+describe('contractor.update — D-07 trigger 1 (VAT-number-change validation)', () => {
+  beforeEach(() => {
+    validateTaxIdMock.mockClear();
+    validateTaxIdMock.mockResolvedValue({
+      responseStatus: 'valid',
+      confirmationRef: 'ref-abc',
+      source: 'api',
+      requestedAt: new Date('2026-04-13T10:00:00Z'),
+      taxIdValidationId: 'clval00000000000000000010',
+    });
+  });
+
+  it('dispatches validateTaxId exactly once when a UK contractor VAT number changes', async () => {
+    const prior = makeContractor({ countryCode: 'GB', vatId: 'GB111111111' });
+    mockPrisma.contractor.findFirst.mockResolvedValueOnce(prior);
+    mockPrisma.contractor.update.mockResolvedValueOnce(
+      makeContractor({ ...prior, vatId: 'GB193054661' }),
+    );
+
+    await caller.contractor.update({
+      id: CONTRACTOR_ID,
+      vatId: 'GB193054661',
+    });
+
+    expect(validateTaxIdMock).toHaveBeenCalledTimes(1);
+    expect(validateTaxIdMock.mock.calls[0]?.[0]).toMatchObject({
+      organizationId: ORG_ID,
+      contractorId: CONTRACTOR_ID,
+      taxIdType: 'GB_VAT',
+      taxIdValue: 'GB193054661',
+    });
+  });
+
+  it('does NOT dispatch validateTaxId when the VAT number is unchanged (scope guard)', async () => {
+    const prior = makeContractor({ countryCode: 'DE', vatId: 'DE123456789' });
+    mockPrisma.contractor.findFirst.mockResolvedValueOnce(prior);
+    mockPrisma.contractor.update.mockResolvedValueOnce(
+      makeContractor({ ...prior, phone: '+49 30 123456' }),
+    );
+
+    await caller.contractor.update({
+      id: CONTRACTOR_ID,
+      phone: '+49 30 123456',
+    });
+
+    expect(validateTaxIdMock).not.toHaveBeenCalled();
+  });
+
+  it('clears summary fields without API call when VAT number is cleared', async () => {
+    const prior = makeContractor({ countryCode: 'GB', vatId: 'GB193054661' });
+    mockPrisma.contractor.findFirst.mockResolvedValueOnce(prior);
+    mockPrisma.contractor.update
+      .mockResolvedValueOnce(makeContractor({ ...prior, vatId: null }))
+      .mockResolvedValueOnce(
+        makeContractor({
+          ...prior,
+          vatId: null,
+          latestVatValidatedAt: null,
+          latestVatValidationStatus: null,
+        }),
+      );
+
+    await caller.contractor.update({
+      id: CONTRACTOR_ID,
+      vatId: null,
+    });
+
+    expect(validateTaxIdMock).not.toHaveBeenCalled();
+    const calls = mockPrisma.contractor.update.mock.calls as [{ data: Record<string, unknown> }][];
+    const summaryClearCall = calls.find(
+      ([opts]) => 'latestVatValidatedAt' in opts.data && opts.data.latestVatValidatedAt === null,
+    );
+    expect(summaryClearCall).toBeDefined();
   });
 });

@@ -1,3 +1,4 @@
+// biome-ignore lint/performance/noBarrelFile: package entry point for MSW handlers
 import type { HttpHandler } from 'msw';
 import type { HandlerOptions } from '../types.js';
 import { autentiHandlers } from './autenti.js';

@@ -1,6 +1,10 @@
 import { InPostClient } from './inpost-client.js';
 import { mapInPostStatus } from './inpost-status-mapper.js';
-import { isEventDuplicate, processShipmentStatusChange, TERMINAL_STATUSES } from './shipment-processing.js';
+import {
+  isEventDuplicate,
+  processShipmentStatusChange,
+  TERMINAL_STATUSES,
+} from './shipment-processing.js';
 
 // ---------------------------------------------------------------------------
 // InPost Polling Service

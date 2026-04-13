@@ -53,13 +53,15 @@ export function RoleAssignmentControls({
 
   return (
     <div className="space-y-2">
-      <label className="text-sm font-medium">{t('defaultRoleLabel')}</label>
+      <label htmlFor="gw-default-role" className="text-sm font-medium">
+        {t('defaultRoleLabel')}
+      </label>
       <Select
         value={defaultRole}
         onValueChange={val => {
           if (val) onDefaultRoleChange(val as DirectoryRole);
         }}>
-        <SelectTrigger className="w-60">
+        <SelectTrigger id="gw-default-role" className="w-60">
           <SelectValue>{ROLE_LABELS[defaultRole]}</SelectValue>
         </SelectTrigger>
         <SelectContent>

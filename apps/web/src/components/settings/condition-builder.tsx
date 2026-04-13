@@ -84,6 +84,7 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
   return (
     <div className="space-y-3">
       {value.map((condition, index) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: dynamic form array, conditions have no stable id
         <div key={`condition-${index}`} className="flex h-10 items-center gap-2">
           {/* Field select */}
           <Select

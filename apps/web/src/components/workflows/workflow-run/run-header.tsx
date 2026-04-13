@@ -162,14 +162,14 @@ export function RunHeader({ run }: RunHeaderProps) {
 
           {/* Template + contractor links */}
           <div className="flex items-center gap-3 flex-wrap text-sm">
-            {run.workflowTemplate && (
+            {!!run.workflowTemplate && (
               <Link
                 href={`/workflows/templates/${run.workflowTemplate.id}`}
                 className="text-primary hover:underline">
                 {run.workflowTemplate.name}
               </Link>
             )}
-            {run.contractor && (
+            {!!run.contractor && (
               <>
                 <span className="text-muted-foreground">&middot;</span>
                 <span className="text-muted-foreground">{t('contractorLabel')}</span>
@@ -184,7 +184,7 @@ export function RunHeader({ run }: RunHeaderProps) {
 
           {/* Metadata row */}
           <div className="flex items-center gap-3 flex-wrap text-[13px] text-muted-foreground">
-            {run.startedAt && (
+            {!!run.startedAt && (
               <span>
                 {t('startedByLabel', {
                   name: run.startedByUserId ?? 'Unknown',
@@ -192,7 +192,7 @@ export function RunHeader({ run }: RunHeaderProps) {
                 })}
               </span>
             )}
-            {run.dueAt && (
+            {!!run.dueAt && (
               <>
                 <span>&middot;</span>
                 {isOverdue ? (
@@ -208,7 +208,7 @@ export function RunHeader({ run }: RunHeaderProps) {
         </div>
 
         {/* Actions dropdown */}
-        {canCancel && (
+        {!!canCancel && (
           <AlertDialog open={cancelOpen} onOpenChange={setCancelOpen}>
             <DropdownMenu>
               <DropdownMenuTrigger

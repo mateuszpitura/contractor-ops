@@ -92,7 +92,7 @@ export function TabShipments({
   if (shipments.length === 0) {
     return (
       <div className="space-y-4">
-        {pendingReturn && <ReturnApprovalBanner returnRequest={pendingReturn} />}
+        {!!pendingReturn && <ReturnApprovalBanner returnRequest={pendingReturn} />}
         <div className="flex justify-end">
           <Button onClick={onCreateShipment}>
             <Truck className="me-1.5 size-3.5" />
@@ -112,7 +112,7 @@ export function TabShipments({
 
   return (
     <div className="space-y-4">
-      {pendingReturn && <ReturnApprovalBanner returnRequest={pendingReturn} />}
+      {!!pendingReturn && <ReturnApprovalBanner returnRequest={pendingReturn} />}
       <div className="flex justify-end">
         <Button onClick={onCreateShipment}>
           <Truck className="me-1.5 size-3.5" />
@@ -132,7 +132,7 @@ export function TabShipments({
                 </CardTitle>
                 <ShipmentStatusBadge status={shipment.currentStatus} />
                 <span className="text-sm text-muted-foreground">{shipment.carrier}</span>
-                {shipment.trackingNumber && (
+                {!!shipment.trackingNumber && (
                   <span className="font-mono text-xs text-muted-foreground">
                     {shipment.trackingNumber}
                   </span>

@@ -144,7 +144,7 @@ export function EInvoiceComplianceDetail() {
                       <span className="font-medium text-muted-foreground">Last Sync:</span>{' '}
                       {formatTimeAgo(status.lastSyncAt as Date | undefined)}
                     </div>
-                    {status.lastErrorMessage && (
+                    {!!status.lastErrorMessage && (
                       <div className="col-span-2 truncate text-destructive">
                         <span className="font-medium">Error:</span> {status.lastErrorMessage}
                       </div>

@@ -58,8 +58,9 @@ export function LinearIssueChip({
               'bg-[oklch(0.58_0.14_290/8%)] border-[oklch(0.58_0.14_290/20%)] hover:bg-[oklch(0.58_0.14_290/14%)]',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
               className,
-            )}
-          />
+            )}>
+            <span className="sr-only">{`Linear ${identifier}`}</span>
+          </a>
         }>
         {/* Status dot */}
         <span

@@ -355,7 +355,7 @@ describe('JiraStatusMappingDialog', () => {
     const allComboboxes = screen.getAllByRole('combobox');
     expect(allComboboxes.length).toBeGreaterThan(1);
     // Click the first status selector (To Do row)
-    await user.click(allComboboxes[1]!);
+    await user.click(allComboboxes[1]);
     await waitFor(() => {
       // Look for a Jira status option
       const options = screen.getAllByText('Open');
@@ -463,14 +463,14 @@ describe('JiraStatusMappingDialog', () => {
     });
     // Select a status for the first workflow status
     const allComboboxes = screen.getAllByRole('combobox');
-    await user.click(allComboboxes[1]!);
+    await user.click(allComboboxes[1]);
     await waitFor(() => {
       const options = screen.getAllByText('Open');
       expect(options.length).toBeGreaterThanOrEqual(1);
     });
     // Click the Open option in the dropdown
     const openOptions = screen.getAllByText('Open');
-    await user.click(openOptions[openOptions.length - 1]!);
+    await user.click(openOptions[openOptions.length - 1]);
     // Save button should be enabled now
     const saveBtn = screen.getByRole('button', { name: 'Save Mapping' });
     expect(saveBtn).not.toBeDisabled();
@@ -501,7 +501,7 @@ describe('JiraStatusMappingDialog', () => {
       expect(screen.getByText('Workflow Status')).toBeInTheDocument();
     });
     // Switch to second project
-    const projectCombobox = screen.getAllByRole('combobox')[0]!;
+    const projectCombobox = screen.getAllByRole('combobox')[0];
     await user.click(projectCombobox);
     await waitFor(() => {
       expect(screen.getByText('API — API Service')).toBeInTheDocument();

@@ -381,7 +381,7 @@ describe('ReminderRuleEditor', () => {
     const { user } = setup(<ReminderRuleEditor open={true} onOpenChange={vi.fn()} />);
     const nameInput = screen.getByLabelText('reminderRules.editor.ruleName');
     await user.type(nameInput, 'My Rule');
-    const saveBtn = screen.getByText('reminderRules.editor.save').closest('button')!;
+    const saveBtn = screen.getByText('reminderRules.editor.save').closest('button');
     await user.click(saveBtn);
     // Form submit attempt (validation may prevent mutation but code path is exercised)
   });
@@ -454,7 +454,7 @@ describe('ReminderRuleEditor', () => {
       offsetDays: 7,
     });
     const { user } = setup(<ReminderRuleEditor open={true} onOpenChange={vi.fn()} rule={rule} />);
-    const saveBtn = screen.getByText('reminderRules.editor.save').closest('button')!;
+    const saveBtn = screen.getByText('reminderRules.editor.save').closest('button');
     await user.click(saveBtn);
   });
 
@@ -467,7 +467,7 @@ describe('ReminderRuleEditor', () => {
       offsetDays: 30,
     });
     const { user } = setup(<ReminderRuleEditor open={true} onOpenChange={vi.fn()} rule={rule} />);
-    const saveBtn = screen.getByText('reminderRules.editor.save').closest('button')!;
+    const saveBtn = screen.getByText('reminderRules.editor.save').closest('button');
     await user.click(saveBtn);
   });
 
@@ -476,7 +476,7 @@ describe('ReminderRuleEditor', () => {
     const { user } = setup(<ReminderRuleEditor open={true} onOpenChange={vi.fn()} />);
     const nameInput = screen.getByLabelText('reminderRules.editor.ruleName');
     await user.type(nameInput, 'New Reminder Rule');
-    const saveBtn = screen.getByText('reminderRules.editor.save').closest('button')!;
+    const saveBtn = screen.getByText('reminderRules.editor.save').closest('button');
     await user.click(saveBtn);
   });
 
@@ -490,7 +490,7 @@ describe('ReminderRuleEditor', () => {
     const nameInput = screen.getByLabelText('reminderRules.editor.ruleName') as HTMLInputElement;
     await user.clear(nameInput);
     await user.type(nameInput, 'Updated Rule Name');
-    const saveBtn = screen.getByText('reminderRules.editor.save').closest('button')!;
+    const saveBtn = screen.getByText('reminderRules.editor.save').closest('button');
     await user.click(saveBtn);
   });
 
@@ -501,7 +501,7 @@ describe('ReminderRuleEditor', () => {
       offsetDays: null,
     });
     const { user } = setup(<ReminderRuleEditor open={true} onOpenChange={vi.fn()} rule={rule} />);
-    const saveBtn = screen.getByText('reminderRules.editor.save').closest('button')!;
+    const saveBtn = screen.getByText('reminderRules.editor.save').closest('button');
     await user.click(saveBtn);
   });
 

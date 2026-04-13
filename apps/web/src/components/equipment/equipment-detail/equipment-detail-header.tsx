@@ -124,7 +124,7 @@ export function EquipmentDetailHeader({
             <h1 className="text-2xl font-semibold">{equipment.name}</h1>
           </div>
           <div className="mt-1 flex items-center gap-2">
-            {equipment.serialNumber && (
+            {!!equipment.serialNumber && (
               <span className="font-mono text-sm text-muted-foreground">
                 {equipment.serialNumber}
               </span>

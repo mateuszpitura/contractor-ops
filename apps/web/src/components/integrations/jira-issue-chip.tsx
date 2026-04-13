@@ -48,8 +48,9 @@ export function JiraIssueChip({
             className={cn(
               'inline-flex items-center gap-1 rounded-md border border-border bg-muted/50 px-2 py-1 max-w-[200px] hover:bg-muted transition-colors duration-150',
               className,
-            )}
-          />
+            )}>
+            <span className="sr-only">{`Jira ${issueKey}`}</span>
+          </a>
         }>
         {/* Status dot */}
         <span

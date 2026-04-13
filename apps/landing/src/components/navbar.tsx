@@ -48,7 +48,7 @@ export function Navbar() {
         }`}>
         <nav className="mx-auto flex max-w-6xl items-center justify-between px-6">
           {/* Logo */}
-          <a href="#" className="flex items-center gap-2.5 group">
+          <a href="/" className="flex items-center gap-2.5 group">
             <div className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-md transition-transform group-hover:scale-105">
               <svg
                 viewBox="0 0 24 24"
@@ -84,7 +84,7 @@ export function Navbar() {
           {/* Desktop CTA */}
           <div className="hidden items-center gap-3 md:flex">
             <a
-              href="#"
+              href="/login"
               className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
               Log in
             </a>
@@ -108,7 +108,7 @@ export function Navbar() {
       </motion.header>
 
       {/* Mobile menu */}
-      {mobileOpen && (
+      {!!mobileOpen && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -127,7 +127,7 @@ export function Navbar() {
           </nav>
           <div className="mt-8 flex flex-col gap-3">
             <a
-              href="#"
+              href="/login"
               className="rounded-xl border border-border px-4 py-3 text-center text-base font-medium text-foreground">
               Log in
             </a>

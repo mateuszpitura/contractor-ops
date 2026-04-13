@@ -203,7 +203,7 @@ describe('TemplatesTable', () => {
   it('shows Edit and Duplicate in action menu for first template', async () => {
     const { user } = setup(<TemplatesTable />);
     const menuButtons = screen.getAllByRole('button', { name: 'Actions' });
-    await user.click(menuButtons[0]!);
+    await user.click(menuButtons[0]);
     expect(await screen.findByText('Edit')).toBeInTheDocument();
     expect(await screen.findByText('Duplicate')).toBeInTheDocument();
   });
@@ -211,14 +211,14 @@ describe('TemplatesTable', () => {
   it('shows Delete option in action menu for DRAFT template', async () => {
     const { user } = setup(<TemplatesTable />);
     const menuButtons = screen.getAllByRole('button', { name: 'Actions' });
-    await user.click(menuButtons[1]!);
+    await user.click(menuButtons[1]);
     expect(await screen.findByText('Delete')).toBeInTheDocument();
   });
 
   it('navigates to template detail on Edit click', async () => {
     const { user } = setup(<TemplatesTable />);
     const menuButtons = screen.getAllByRole('button', { name: 'Actions' });
-    await user.click(menuButtons[0]!);
+    await user.click(menuButtons[0]);
     const editItem = await screen.findByText('Edit');
     await user.click(editItem);
     expect(mockPush).toHaveBeenCalledWith('/workflows/templates/tpl-1');
@@ -227,21 +227,21 @@ describe('TemplatesTable', () => {
   it('shows Duplicate option in action menu for first template', async () => {
     const { user } = setup(<TemplatesTable />);
     const menuButtons = screen.getAllByRole('button', { name: 'Actions' });
-    await user.click(menuButtons[0]!);
+    await user.click(menuButtons[0]);
     expect(await screen.findByText('Duplicate')).toBeInTheDocument();
   });
 
   it('shows Activate in action menu for DRAFT template', async () => {
     const { user } = setup(<TemplatesTable />);
     const menuButtons = screen.getAllByRole('button', { name: 'Actions' });
-    await user.click(menuButtons[1]!);
+    await user.click(menuButtons[1]);
     expect(await screen.findByText('Activate')).toBeInTheDocument();
   });
 
   it('shows Archive in action menu for ACTIVE template', async () => {
     const { user } = setup(<TemplatesTable />);
     const menuButtons = screen.getAllByRole('button', { name: 'Actions' });
-    await user.click(menuButtons[0]!);
+    await user.click(menuButtons[0]);
     expect(await screen.findByText('Archive')).toBeInTheDocument();
   });
 
@@ -256,7 +256,7 @@ describe('TemplatesTable', () => {
   it('clicking Duplicate in menu calls mutation', async () => {
     const { user } = setup(<TemplatesTable />);
     const menuButtons = screen.getAllByRole('button', { name: 'Actions' });
-    await user.click(menuButtons[0]!);
+    await user.click(menuButtons[0]);
     const duplicateItem = await screen.findByText('Duplicate');
     await user.click(duplicateItem);
     // No error thrown = mutation called
@@ -266,7 +266,7 @@ describe('TemplatesTable', () => {
   it('clicking Archive in ACTIVE template menu calls mutation', async () => {
     const { user } = setup(<TemplatesTable />);
     const menuButtons = screen.getAllByRole('button', { name: 'Actions' });
-    await user.click(menuButtons[0]!); // ACTIVE template
+    await user.click(menuButtons[0]); // ACTIVE template
     const archiveItem = await screen.findByText('Archive');
     await user.click(archiveItem);
   });
@@ -275,7 +275,7 @@ describe('TemplatesTable', () => {
   it('clicking Activate in DRAFT template menu calls mutation', async () => {
     const { user } = setup(<TemplatesTable />);
     const menuButtons = screen.getAllByRole('button', { name: 'Actions' });
-    await user.click(menuButtons[1]!); // DRAFT template
+    await user.click(menuButtons[1]); // DRAFT template
     const activateItem = await screen.findByText('Activate');
     await user.click(activateItem);
   });
@@ -284,7 +284,7 @@ describe('TemplatesTable', () => {
   it('shows Delete option in DRAFT template action menu', async () => {
     const { user } = setup(<TemplatesTable />);
     const menuButtons = screen.getAllByRole('button', { name: 'Actions' });
-    await user.click(menuButtons[1]!); // DRAFT template
+    await user.click(menuButtons[1]); // DRAFT template
     const deleteItem = await screen.findByText('Delete');
     expect(deleteItem).toBeInTheDocument();
   });
@@ -304,7 +304,7 @@ describe('TemplatesTable', () => {
   it('does not show Delete option for ACTIVE template', async () => {
     const { user } = setup(<TemplatesTable />);
     const menuButtons = screen.getAllByRole('button', { name: 'Actions' });
-    await user.click(menuButtons[0]!); // ACTIVE template
+    await user.click(menuButtons[0]); // ACTIVE template
     await screen.findByText('Edit');
     expect(screen.queryByText('Delete')).not.toBeInTheDocument();
   });
@@ -313,7 +313,7 @@ describe('TemplatesTable', () => {
   it('does not show Activate option for ACTIVE template', async () => {
     const { user } = setup(<TemplatesTable />);
     const menuButtons = screen.getAllByRole('button', { name: 'Actions' });
-    await user.click(menuButtons[0]!);
+    await user.click(menuButtons[0]);
     await screen.findByText('Edit');
     expect(screen.queryByText('Activate')).not.toBeInTheDocument();
   });
@@ -322,7 +322,7 @@ describe('TemplatesTable', () => {
   it('does not show Archive option for DRAFT template', async () => {
     const { user } = setup(<TemplatesTable />);
     const menuButtons = screen.getAllByRole('button', { name: 'Actions' });
-    await user.click(menuButtons[1]!);
+    await user.click(menuButtons[1]);
     await screen.findByText('Activate');
     expect(screen.queryByText('Archive')).not.toBeInTheDocument();
   });
@@ -345,7 +345,7 @@ describe('TemplatesTable', () => {
   it('duplicate menu item is clickable without errors', async () => {
     const { user } = setup(<TemplatesTable />);
     const menuButtons = screen.getAllByRole('button', { name: 'Actions' });
-    await user.click(menuButtons[0]!);
+    await user.click(menuButtons[0]);
     const duplicateItem = await screen.findByText('Duplicate');
     await user.click(duplicateItem);
     // Menu closes after click - no error
@@ -354,7 +354,7 @@ describe('TemplatesTable', () => {
   it('archive menu item is clickable without errors', async () => {
     const { user } = setup(<TemplatesTable />);
     const menuButtons = screen.getAllByRole('button', { name: 'Actions' });
-    await user.click(menuButtons[0]!);
+    await user.click(menuButtons[0]);
     const archiveItem = await screen.findByText('Archive');
     await user.click(archiveItem);
     // Menu closes after click - no error
@@ -363,7 +363,7 @@ describe('TemplatesTable', () => {
   it('activate menu item is clickable without errors', async () => {
     const { user } = setup(<TemplatesTable />);
     const menuButtons = screen.getAllByRole('button', { name: 'Actions' });
-    await user.click(menuButtons[1]!);
+    await user.click(menuButtons[1]);
     const activateItem = await screen.findByText('Activate');
     await user.click(activateItem);
     // Menu closes after click - no error

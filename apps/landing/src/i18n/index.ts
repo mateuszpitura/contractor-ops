@@ -1,3 +1,4 @@
+// biome-ignore lint/performance/noBarrelFile: module public API entry point
 export type { Locale, LocaleConfig } from './config';
 export { defaultLocale, isRtl, isValidLocale, localeConfigs, locales } from './config';
 export type { TranslationMessages } from './get-translations';

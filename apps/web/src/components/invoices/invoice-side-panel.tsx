@@ -172,7 +172,7 @@ export function InvoiceSidePanel({ invoice, open, onOpenChange }: InvoiceSidePan
                   <span className="text-muted-foreground">&mdash;</span>
                 )}
               </div>
-              {invoice.contractor && (
+              {!!invoice.contractor && (
                 <Link
                   href={`/contractors/${invoice.contractor.id}`}
                   className="text-sm text-primary hover:underline">

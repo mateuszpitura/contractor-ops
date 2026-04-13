@@ -122,7 +122,7 @@ describe('ReminderRulesSection', () => {
   // ---- Toggle active switch ----
   it('clicking active toggle triggers mutation', async () => {
     const { user } = setup(<ReminderRulesSection />);
-    const switchEl = screen.getAllByRole('switch')[0]!;
+    const switchEl = screen.getAllByRole('switch')[0];
     await user.click(switchEl);
     // Mutation mock is called; no error thrown
   });

@@ -165,7 +165,7 @@ export function PeppolWizard({ open, onOpenChange }: PeppolWizardProps) {
                 />
                 <p className="text-sm text-muted-foreground">15-digit UAE TRN</p>
               </div>
-              {participantId && (
+              {!!participantId && (
                 <div className="rounded-lg bg-muted/50 p-3">
                   <p className="text-sm text-muted-foreground">Peppol Participant ID will be:</p>
                   <p className="font-mono text-sm font-medium">{participantId}</p>
@@ -226,12 +226,16 @@ export function PeppolWizard({ open, onOpenChange }: PeppolWizardProps) {
                   value={environment}
                   onValueChange={val => setEnvironment(val as 'sandbox' | 'production')}
                   className="flex gap-4">
-                  <label className="flex cursor-pointer items-center gap-2">
-                    <RadioGroupItem value="sandbox" />
+                  <label
+                    htmlFor="peppol-env-sandbox"
+                    className="flex cursor-pointer items-center gap-2">
+                    <RadioGroupItem id="peppol-env-sandbox" value="sandbox" />
                     <span className="text-sm">Sandbox (testing)</span>
                   </label>
-                  <label className="flex cursor-pointer items-center gap-2">
-                    <RadioGroupItem value="production" />
+                  <label
+                    htmlFor="peppol-env-production"
+                    className="flex cursor-pointer items-center gap-2">
+                    <RadioGroupItem id="peppol-env-production" value="production" />
                     <span className="text-sm">Production</span>
                   </label>
                 </RadioGroup>
@@ -258,7 +262,7 @@ export function PeppolWizard({ open, onOpenChange }: PeppolWizardProps) {
                 </div>
               </div>
 
-              {connectMutation.isPending && (
+              {!!connectMutation.isPending && (
                 <div className="space-y-3">
                   <Progress value={null} className="h-2" />
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -268,7 +272,7 @@ export function PeppolWizard({ open, onOpenChange }: PeppolWizardProps) {
                 </div>
               )}
 
-              {registrationError && (
+              {!!registrationError && (
                 <Alert variant="destructive">
                   <AlertTitle>Registration Failed</AlertTitle>
                   <AlertDescription>{registrationError}</AlertDescription>

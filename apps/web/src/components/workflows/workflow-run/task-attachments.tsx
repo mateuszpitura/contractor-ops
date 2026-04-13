@@ -59,6 +59,7 @@ export function TaskAttachments({ taskRunId }: TaskAttachmentsProps) {
       {docsQuery.isLoading ? (
         <div className="space-y-2">
           {Array.from({ length: 2 }).map((_, i) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
             <Skeleton key={`skel-${i}`} className="h-16 w-full rounded-lg" />
           ))}
         </div>
@@ -73,7 +74,7 @@ export function TaskAttachments({ taskRunId }: TaskAttachmentsProps) {
       )}
 
       {/* Upload drop zone */}
-      {showDropZone && <DropZone entityType="WORKFLOW_TASK_RUN" entityId={taskRunId} />}
+      {!!showDropZone && <DropZone entityType="WORKFLOW_TASK_RUN" entityId={taskRunId} />}
     </div>
   );
 }

@@ -112,6 +112,41 @@
       }
     }
   },
+  "overrides": [
+    {
+      "includes": ["apps/web/src/app/globals.css"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noDescendingSpecificity": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": [
+        "packages/*/src/index.ts",
+        "packages/*/src/*/index.ts",
+        "packages/test-utils/src/msw/*/index.ts",
+        "apps/landing/src/i18n/index.ts",
+        "apps/web/src/test/test-utils.tsx",
+        "apps/web/src/lib/auth-client.ts",
+        "apps/web/src/app/layout.tsx",
+        "apps/web/src/components/integrations/jira-logo.tsx",
+        "apps/web/src/components/integrations/linear-logo.tsx",
+        "apps/web/src/components/integrations/provider-icons.tsx",
+        "packages/api/src/routers/workflow.ts",
+        "packages/validators/src/zatca.ts"
+      ],
+      "linter": {
+        "rules": {
+          "performance": {
+            "noBarrelFile": "off"
+          }
+        }
+      }
+    }
+  ],
   "files": {
     "includes": [
       "**",

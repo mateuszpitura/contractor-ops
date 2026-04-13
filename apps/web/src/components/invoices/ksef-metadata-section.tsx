@@ -59,7 +59,7 @@ export function KsefMetadataSection({
           </div>
 
           {/* UPO Receipt */}
-          {upoReceipt && (
+          {!!upoReceipt && (
             <div className="space-y-1">
               <p className="text-sm font-semibold">UPO Receipt</p>
               <CopyableField value={upoReceipt} ariaLabel="Copy UPO receipt" />

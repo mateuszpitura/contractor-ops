@@ -283,6 +283,7 @@ export function OrgSettingsForm() {
         </CardHeader>
         <CardContent className="space-y-4">
           {Array.from({ length: 6 }).map((_, i) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
             <div key={`field-${i}`} className="space-y-2">
               <Skeleton className="h-4 w-24" />
               <Skeleton className="h-8 w-full max-w-lg" />
@@ -306,7 +307,7 @@ export function OrgSettingsForm() {
               {t('fields.orgName')}
             </Label>
             <Input id="name" disabled={updateMutation.isPending} {...register('name')} />
-            {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
+            {!!errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
           </div>
 
           {/* Legal name */}
@@ -456,7 +457,7 @@ export function OrgSettingsForm() {
               disabled={updateMutation.isPending}
               {...register('billingEmail')}
             />
-            {errors.billingEmail && (
+            {!!errors.billingEmail && (
               <p className="text-sm text-destructive">{errors.billingEmail.message}</p>
             )}
           </div>

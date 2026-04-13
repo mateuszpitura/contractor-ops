@@ -65,7 +65,7 @@ function minutesToHours(minutes: number): string {
 }
 
 function toDateStr(d: string | Date): string {
-  if (typeof d === 'string') return d.split('T')[0]!;
+  if (typeof d === 'string') return d.split('T')[0] ?? d;
   return format(d, 'yyyy-MM-dd');
 }
 
@@ -103,7 +103,8 @@ export function ContractorTimesheetReview({
       if (!map.has(contractId)) {
         map.set(contractId, { title, entries: new Map() });
       }
-      const contractData = map.get(contractId)!; // guaranteed by set above
+      const contractData = map.get(contractId); // guaranteed by set above
+      if (!contractData) continue;
       const dateStr = toDateStr(entry.entryDate);
       for (let i = 0; i < 7; i++) {
         if (getDateForDay(weekStart, i) === dateStr) {
@@ -189,6 +190,7 @@ export function ContractorTimesheetReview({
                         const mins = entry?.minutes ?? 0;
                         rowTotal += mins;
                         return (
+                          // biome-ignore lint/suspicious/noArrayIndexKey: fixed weekday columns
                           <td key={dayIdx} className="px-1 py-2 text-center text-sm">
                             <div className="relative inline-flex items-center justify-center">
                               <span className={mins > 0 ? 'font-medium' : 'text-muted-foreground'}>
@@ -222,6 +224,7 @@ export function ContractorTimesheetReview({
                       colTotal += entries.get(dayIdx)?.minutes ?? 0;
                     }
                     return (
+                      // biome-ignore lint/suspicious/noArrayIndexKey: fixed weekday columns
                       <td key={dayIdx} className="px-1 py-3 text-center text-sm font-semibold">
                         {minutesToHours(colTotal) || '0'}
                       </td>

@@ -63,10 +63,10 @@ export function EmptyState({
       <Icon className="h-12 w-12 text-muted-foreground" />
       <h2 className="mt-4 font-display text-[20px] font-semibold">{heading}</h2>
       <p className="mt-2 max-w-[420px] text-sm text-muted-foreground">{body}</p>
-      {(effectivePrimary || secondaryAction) && (
+      {!!(effectivePrimary || secondaryAction) && (
         <div className="mt-6 flex gap-3">
-          {effectivePrimary && <ActionButton action={effectivePrimary} />}
-          {secondaryAction && <ActionButton action={secondaryAction} variant="outline" />}
+          {!!effectivePrimary && <ActionButton action={effectivePrimary} />}
+          {!!secondaryAction && <ActionButton action={secondaryAction} variant="outline" />}
         </div>
       )}
     </div>

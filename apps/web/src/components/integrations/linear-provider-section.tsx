@@ -52,7 +52,7 @@ export function LinearProviderSection() {
           </div>
         )}
 
-        {(isConnected || isPendingMapping) && (
+        {!!(isConnected || isPendingMapping) && (
           <Button variant="outline" size="sm" onClick={() => setMappingOpen(true)}>
             {t('configureMapping')}
           </Button>

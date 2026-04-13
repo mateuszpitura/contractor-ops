@@ -36,7 +36,7 @@ vi.mock('../step-documents', () => ({
   }) => (
     <div data-testid="step-documents">
       Step Documents
-      <button data-testid="skip-docs" onClick={onSkip}>
+      <button type="button" data-testid="skip-docs" onClick={onSkip}>
         Skip
       </button>
     </div>

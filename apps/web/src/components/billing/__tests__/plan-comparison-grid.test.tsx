@@ -79,7 +79,7 @@ describe('PlanComparisonGrid', () => {
     const onSelectPlan = vi.fn();
     const { user } = setup(<PlanComparisonGrid onSelectPlan={onSelectPlan} />);
     const buttons = screen.getAllByRole('button', { name: /choose a plan/i });
-    await user.click(buttons[0]!);
+    await user.click(buttons[0]);
     expect(onSelectPlan).toHaveBeenCalledTimes(1);
   });
 
@@ -88,9 +88,9 @@ describe('PlanComparisonGrid', () => {
     const onSelectPlan = vi.fn();
     const { user } = setup(<PlanComparisonGrid onSelectPlan={onSelectPlan} />);
     const buttons = screen.getAllByRole('button', { name: /choose a plan/i });
-    await user.click(buttons[0]!);
-    await user.click(buttons[1]!);
-    await user.click(buttons[2]!);
+    await user.click(buttons[0]);
+    await user.click(buttons[1]);
+    await user.click(buttons[2]);
     expect(onSelectPlan).toHaveBeenCalledTimes(3);
   });
 

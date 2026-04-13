@@ -22,9 +22,9 @@ vi.mock('@/components/ui/tooltip', () => ({
 vi.mock('@/components/ui/select', () => ({
   Select: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   SelectTrigger: ({ children, ...props }: { children: React.ReactNode; 'aria-label'?: string }) => (
-    <div data-testid="select-trigger" aria-label={props['aria-label']}>
+    <button type="button" data-testid="select-trigger" aria-label={props['aria-label']}>
       {children}
-    </div>
+    </button>
   ),
   SelectContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   SelectItem: ({ children, value }: { children: React.ReactNode; value: string }) => (

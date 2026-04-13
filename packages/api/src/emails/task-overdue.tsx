@@ -38,16 +38,16 @@ export function TaskOverdueEmail({
     <BaseLayout ctaUrl={ctaUrl} preferencesUrl={preferencesUrl}>
       <Text style={{ fontSize: '20px', fontWeight: '600', color: '#1a1a1a' }}>{title}</Text>
       <Text style={{ fontSize: '14px', color: '#4a4a4a', lineHeight: '24px' }}>{body}</Text>
-      {taskName && (
+      {!!taskName && (
         <Text style={{ fontSize: '14px', color: '#6b7280' }}>
           <strong>{l.task}:</strong> {taskName}
-          {workflowName && (
+          {!!workflowName && (
             <>
               <br />
               <strong>{l.workflow}:</strong> {workflowName}
             </>
           )}
-          {dueDate && (
+          {!!dueDate && (
             <>
               <br />
               <strong>{l.wasDue}:</strong> {dueDate}

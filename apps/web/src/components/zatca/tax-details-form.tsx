@@ -90,7 +90,7 @@ export function TaxDetailsForm({ defaultValues, onSuccess, onCancel }: TaxDetail
           aria-invalid={!!errors.vatNumber}
           aria-describedby={errors.vatNumber ? 'vatNumber-error' : undefined}
         />
-        {errors.vatNumber && (
+        {!!errors.vatNumber && (
           <p id="vatNumber-error" className="text-xs text-destructive">
             {errors.vatNumber.message}
           </p>
@@ -111,7 +111,7 @@ export function TaxDetailsForm({ defaultValues, onSuccess, onCancel }: TaxDetail
           aria-invalid={!!errors.orgNameArabic}
           aria-describedby={errors.orgNameArabic ? 'orgNameArabic-error' : undefined}
         />
-        {errors.orgNameArabic && (
+        {!!errors.orgNameArabic && (
           <p id="orgNameArabic-error" className="text-xs text-destructive">
             {errors.orgNameArabic.message}
           </p>
@@ -125,20 +125,20 @@ export function TaxDetailsForm({ defaultValues, onSuccess, onCancel }: TaxDetail
         <div className="space-y-2">
           <Label htmlFor="street">Street</Label>
           <Input id="street" {...register('street')} aria-invalid={!!errors.street} />
-          {errors.street && <p className="text-xs text-destructive">{errors.street.message}</p>}
+          {!!errors.street && <p className="text-xs text-destructive">{errors.street.message}</p>}
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="space-y-2">
             <Label htmlFor="city">City</Label>
             <Input id="city" {...register('city')} aria-invalid={!!errors.city} />
-            {errors.city && <p className="text-xs text-destructive">{errors.city.message}</p>}
+            {!!errors.city && <p className="text-xs text-destructive">{errors.city.message}</p>}
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="district">District</Label>
             <Input id="district" {...register('district')} aria-invalid={!!errors.district} />
-            {errors.district && (
+            {!!errors.district && (
               <p className="text-xs text-destructive">{errors.district.message}</p>
             )}
           </div>
@@ -153,7 +153,7 @@ export function TaxDetailsForm({ defaultValues, onSuccess, onCancel }: TaxDetail
             {...register('postalCode')}
             aria-invalid={!!errors.postalCode}
           />
-          {errors.postalCode && (
+          {!!errors.postalCode && (
             <p className="text-xs text-destructive">{errors.postalCode.message}</p>
           )}
         </div>
@@ -168,8 +168,9 @@ export function TaxDetailsForm({ defaultValues, onSuccess, onCancel }: TaxDetail
           name="invoiceTypes"
           render={({ field }) => (
             <div className="space-y-2">
-              <label className="flex items-center gap-2 text-sm">
+              <label htmlFor="zatca-inv-standard" className="flex items-center gap-2 text-sm">
                 <Checkbox
+                  id="zatca-inv-standard"
                   checked={field.value?.includes('standard')}
                   onCheckedChange={checked => {
                     const current = field.value ?? [];
@@ -180,8 +181,9 @@ export function TaxDetailsForm({ defaultValues, onSuccess, onCancel }: TaxDetail
                 />
                 Standard Tax Invoices (B2B clearance)
               </label>
-              <label className="flex items-center gap-2 text-sm">
+              <label htmlFor="zatca-inv-simplified" className="flex items-center gap-2 text-sm">
                 <Checkbox
+                  id="zatca-inv-simplified"
                   checked={field.value?.includes('simplified')}
                   onCheckedChange={checked => {
                     const current = field.value ?? [];
@@ -197,7 +199,7 @@ export function TaxDetailsForm({ defaultValues, onSuccess, onCancel }: TaxDetail
             </div>
           )}
         />
-        {errors.invoiceTypes && (
+        {!!errors.invoiceTypes && (
           <p className="text-xs text-destructive">{errors.invoiceTypes.message}</p>
         )}
       </fieldset>
@@ -208,7 +210,7 @@ export function TaxDetailsForm({ defaultValues, onSuccess, onCancel }: TaxDetail
           Cancel
         </Button>
         <Button type="submit" disabled={saveMutation.isPending}>
-          {saveMutation.isPending && (
+          {!!saveMutation.isPending && (
             <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" aria-hidden="true" />
           )}
           Next

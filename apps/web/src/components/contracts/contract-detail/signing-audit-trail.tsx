@@ -100,6 +100,7 @@ export function SigningAuditTrail({ envelopeId, open, onOpenChange }: SigningAud
           {detailQuery.isPending ? (
             <div className="space-y-4">
               {Array.from({ length: 5 }).map((_, i) => (
+                // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
                 <div key={`audit-step-${i}`} className="flex items-start gap-3 py-2">
                   <Skeleton className="size-4 rounded-full" />
                   <div className="flex-1 space-y-1">
@@ -145,7 +146,7 @@ export function SigningAuditTrail({ envelopeId, open, onOpenChange }: SigningAud
                         </Tooltip>
                       </TooltipProvider>
                     </div>
-                    {event.actorName && (
+                    {!!event.actorName && (
                       <span className="shrink-0 text-sm text-muted-foreground">
                         {event.actorName}
                       </span>

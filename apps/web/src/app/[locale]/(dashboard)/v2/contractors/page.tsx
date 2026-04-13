@@ -101,9 +101,21 @@ function TiltCard({
     <div
       ref={ref}
       className={`atelier-enter atelier-glass group relative rounded-2xl p-5 transition-[transform,box-shadow] duration-[400ms] ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform hover:shadow-[0_12px_40px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_12px_40px_rgba(0,0,0,0.25)] ${className}`}
+      role={onClick ? 'button' : 'presentation'}
+      tabIndex={onClick ? 0 : undefined}
       onMouseMove={onMove}
       onMouseLeave={onLeave}
-      onClick={onClick}>
+      onClick={onClick}
+      onKeyDown={
+        onClick
+          ? (e: React.KeyboardEvent) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onClick(e as unknown as React.MouseEvent);
+              }
+            }
+          : undefined
+      }>
       {children}
     </div>
   );
@@ -319,7 +331,7 @@ function ContractorCard({ c, index }: { c: ContractorCardData; index: number }) 
               <span className="font-mono text-[12px] font-bold tabular-nums tracking-tight">
                 {fmtRate(rate, c.currency)}
               </span>
-              {billingModel && (
+              {!!billingModel && (
                 <span className="text-[9px] text-muted-foreground/40">
                   /{billingModel.toLowerCase().slice(0, 3)}
                 </span>
@@ -328,7 +340,7 @@ function ContractorCard({ c, index }: { c: ContractorCardData; index: number }) 
           )}
 
           {/* Email */}
-          {c.email && (
+          {!!c.email && (
             <div className="flex items-center gap-1.5 min-w-0">
               <Mail className="h-3 w-3 shrink-0 text-muted-foreground/40" />
               <span className="truncate text-[11px] text-muted-foreground/60">{c.email}</span>
@@ -336,7 +348,7 @@ function ContractorCard({ c, index }: { c: ContractorCardData; index: number }) 
           )}
 
           {/* Owner */}
-          {c.owner?.name && (
+          {!!c.owner?.name && (
             <div className="flex items-center gap-1.5">
               <User className="h-3 w-3 text-muted-foreground/40" />
               <span className="truncate text-[11px] text-muted-foreground/60">{c.owner.name}</span>
@@ -344,7 +356,7 @@ function ContractorCard({ c, index }: { c: ContractorCardData; index: number }) 
           )}
 
           {/* Team */}
-          {c.primaryTeam?.name && (
+          {!!c.primaryTeam?.name && (
             <div className="flex items-center gap-1.5">
               <Shield className="h-3 w-3 text-muted-foreground/40" />
               <span className="truncate text-[11px] text-muted-foreground/60">
@@ -355,7 +367,7 @@ function ContractorCard({ c, index }: { c: ContractorCardData; index: number }) 
         </div>
 
         {/* NIP / Tax ID subtle footer */}
-        {c.taxId && (
+        {!!c.taxId && (
           <div className="flex items-center gap-1.5">
             <Hash className="h-2.5 w-2.5 text-muted-foreground/25" />
             <span className="font-mono text-[10px] text-muted-foreground/30 tracking-wider">
@@ -522,6 +534,7 @@ function ContractorsV2Content() {
       {isLoading ? (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {Array.from({ length: 8 }).map((_, i) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
             <Skeleton key={`skel-${i}`} className="h-[220px] rounded-2xl" />
           ))}
         </div>
@@ -543,7 +556,7 @@ function ContractorsV2Content() {
       ) : (
         <>
           {/* Refetching indicator */}
-          {isRefetching && (
+          {!!isRefetching && (
             <div className="flex items-center gap-2 text-[10px] text-muted-foreground/50">
               <div className="h-3 w-3 animate-spin rounded-full border border-primary/20 border-t-primary" />
               {tv('updating')}
@@ -602,11 +615,13 @@ export default function ContractorsV2Page() {
               <Skeleton className="h-[140px] rounded-2xl" />
               <div className="flex gap-2">
                 {Array.from({ length: 5 }).map((_, i) => (
+                  // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
                   <Skeleton key={`skel-${i}`} className="h-8 w-20 rounded-full" />
                 ))}
               </div>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
                 {Array.from({ length: 8 }).map((_, i) => (
+                  // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
                   <Skeleton key={`skel-${i}`} className="h-[220px] rounded-2xl" />
                 ))}
               </div>

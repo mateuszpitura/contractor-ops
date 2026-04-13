@@ -1,11 +1,16 @@
 # ─────────────────────────────────────────────────────────────────────────────
-# Worker Dockerfile — runs the Next.js API routes + cron scheduler in Docker.
+# apps/web — multi-target Dockerfile (Render Blueprint)
 #
-# Handles: QStash callbacks, webhook processing, cron jobs, background tasks.
-# Does NOT serve the frontend to end-users (Vercel handles that).
+# Targets:
+#   - runner-web    → Next.js standalone server (HTTP, port 3000)
+#   - runner-worker → background worker running node-cron jobs (no HTTP)
 #
-# Build:  docker build -f apps/web/Dockerfile -t contractor-ops-worker .
-# Run:    docker run --env-file .env -p 3000:3000 contractor-ops-worker
+# Build (web):    docker build -f apps/web/Dockerfile --target runner-web -t web .
+# Build (worker): docker build -f apps/web/Dockerfile --target runner-worker -t worker .
+#
+# Render selects the target via `dockerTarget` in render.yaml.
+# Port 3000 is used (NOT 10000) because Render blocks port 10000 on the
+# private network for inter-service traffic.
 # ─────────────────────────────────────────────────────────────────────────────
 
 # ── Stage 1: base ───────────────────────────────────────────────────────────
@@ -17,7 +22,6 @@ RUN apk add --no-cache libc6-compat
 FROM base AS deps
 WORKDIR /app
 
-# Copy lockfile + workspace manifests first for layer caching
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json turbo.json ./
 COPY apps/web/package.json apps/web/
 COPY apps/landing/package.json apps/landing/
@@ -44,28 +48,26 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/apps/web/node_modules ./apps/web/node_modules
 COPY --from=deps /app/packages ./packages
 
-# Copy full source
 COPY . .
 
-# Generate Prisma client (needed before build)
 RUN pnpm --filter @contractor-ops/db exec prisma generate
 
-# Build shared packages first, then the web app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
-
-# Skip Sentry source map upload during Docker build
+# Skip Sentry source-map upload during local Docker builds. On Render the
+# SENTRY_AUTH_TOKEN env var (sync: false) re-enables uploads at build time.
 ENV SENTRY_AUTH_TOKEN=""
 ENV SENTRY_ORG=""
 ENV SENTRY_PROJECT=""
 
 RUN pnpm turbo build --filter=@contractor-ops/web
 
-# Install node-cron into standalone output for the cron scheduler
+# Install node-cron into standalone output for the worker target. The web
+# target also pulls this stage but never executes worker-cron.mjs.
 RUN cd apps/web/.next/standalone && pnpm init -y && pnpm add node-cron
 
-# ── Stage 4: runner — minimal production image ─────────────────────────────
-FROM node:24-alpine AS runner
+# ── Stage 4a: runner-base — minimal common runtime layer ───────────────────
+FROM node:24-alpine AS runner-base
 WORKDIR /app
 
 RUN addgroup --system --gid 1001 nodejs && \
@@ -76,25 +78,27 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
 
-# Copy standalone server + static assets
 COPY --from=builder --chown=nextjs:nodejs /app/apps/web/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/apps/web/.next/static ./apps/web/.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/apps/web/public ./apps/web/public
-
-# Copy cron scheduler
 COPY --from=builder --chown=nextjs:nodejs /app/apps/web/worker-cron.mjs ./apps/web/worker-cron.mjs
-
-# Copy Prisma generated client (custom output: packages/db/generated/prisma/client)
 COPY --from=builder --chown=nextjs:nodejs /app/packages/db/generated ./packages/db/generated
 COPY --from=builder --chown=nextjs:nodejs /app/packages/db/prisma ./packages/db/prisma
 
 USER nextjs
+
+# ── Stage 4b: runner-web — Next.js HTTP server ─────────────────────────────
+FROM runner-base AS runner-web
 
 EXPOSE 3000
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
   CMD wget -qO- http://127.0.0.1:3000/api/health || exit 1
 
-# Default: run as worker with cron scheduler.
-# Override with CMD ["node", "apps/web/server.js"] for API-only (no crons).
+CMD ["node", "apps/web/server.js"]
+
+# ── Stage 4c: runner-worker — background cron scheduler (no HTTP) ──────────
+FROM runner-base AS runner-worker
+
+# Worker has no listening port — it makes outbound HTTP calls to WORKER_TARGET_URL.
 CMD ["node", "apps/web/worker-cron.mjs"]

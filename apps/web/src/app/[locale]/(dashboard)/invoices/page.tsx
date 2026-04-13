@@ -119,7 +119,7 @@ function InvoicesContent() {
       </AnimateIn>
 
       {/* Upload area (collapsible) */}
-      {uploadOpen && (
+      {!!uploadOpen && (
         <div className="space-y-3">
           <InvoiceUploadArea onUploadComplete={() => setUploadOpen(false)} />
           {/* Email inbox tip */}
@@ -160,6 +160,7 @@ function InvoicesLoading() {
       {/* Chip bar skeleton */}
       <div className="flex items-center gap-2">
         {Array.from({ length: 7 }).map((_, i) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
           <Skeleton key={`skel-${i}`} className="h-8 w-24 rounded-full" />
         ))}
       </div>
@@ -172,6 +173,7 @@ function InvoicesLoading() {
         <div className="rounded-xl border bg-background">
           {Array.from({ length: 8 }).map((_, i) => (
             <div
+              // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
               key={`skel-${i}`}
               className="flex items-center gap-4 px-4 py-3 border-b last:border-b-0">
               <Skeleton className="h-4 w-4" />

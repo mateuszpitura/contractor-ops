@@ -76,6 +76,7 @@ export function TopBar() {
               const href = `/${segments.slice(0, index + 1).join('/')}`;
 
               return (
+                // biome-ignore lint/suspicious/noArrayIndexKey: URL path segments may repeat across levels
                 <span key={`${segment}-${index}`} className="contents">
                   {index > 0 && <BreadcrumbSeparator />}
                   <BreadcrumbItem>

@@ -298,6 +298,7 @@ export function WizardDialog({ open, onOpenChange }: WizardDialogProps) {
           {/* Step content — prevent Enter from advancing steps */}
           <div
             className="min-h-[320px] px-1"
+            role="presentation"
             onKeyDown={e => {
               if (e.key === 'Enter' && e.target instanceof HTMLInputElement) {
                 e.preventDefault();

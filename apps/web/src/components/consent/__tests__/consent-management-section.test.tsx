@@ -136,6 +136,7 @@ vi.mock('../consent-purpose-toggle', () => ({
   ConsentPurposeToggle: ({ purpose, required, granted, onToggle, disabled }: any) => (
     <div data-testid={`toggle-${purpose}`}>
       <button
+        type="button"
         data-testid={`switch-${purpose}`}
         role="switch"
         aria-checked={granted}

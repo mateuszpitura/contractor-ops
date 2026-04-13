@@ -65,7 +65,7 @@ export function PaymentRunSidePanel({
 
   // Fetch run data
   const runQuery = useQuery({
-    ...trpc.payment.get.queryOptions({ runId: runId! }),
+    ...trpc.payment.get.queryOptions({ runId: runId ?? '' }),
     enabled: !!runId && open,
   });
 
@@ -164,6 +164,7 @@ export function PaymentRunSidePanel({
         <SheetContent className="w-[400px] p-0">
           <div className="p-6 space-y-4">
             {Array.from({ length: 6 }).map((_, i) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
               <div key={`skel-${i}`} className="h-4 bg-muted animate-pulse rounded w-full" />
             ))}
           </div>
@@ -171,6 +172,10 @@ export function PaymentRunSidePanel({
       </Sheet>
     );
   }
+
+  // runId is guaranteed non-null here: query is only enabled when !!runId,
+  // and we returned early above when !run (which requires runId to be truthy).
+  const safeRunId = runId as string;
 
   const status = run.status as string;
   const items = (run.items ?? []) as unknown as Array<{
@@ -218,7 +223,7 @@ export function PaymentRunSidePanel({
                 value={formatMinorUnits(run.totalMinor, run.currency, locale)}
                 mono
               />
-              {run.completedAt && (
+              {!!run.completedAt && (
                 <DetailItem
                   label={t('sidePanel.completedDate')}
                   value={new Date(run.completedAt).toLocaleDateString('pl-PL')}
@@ -229,7 +234,7 @@ export function PaymentRunSidePanel({
             <Separator />
 
             {/* WHT Summary (Phase 47) */}
-            <WhtSummaryCard paymentRunId={runId!} items={items} />
+            <WhtSummaryCard paymentRunId={safeRunId} items={items} />
 
             {/* Action buttons */}
             <div className="flex flex-wrap gap-2">
@@ -237,7 +242,7 @@ export function PaymentRunSidePanel({
               {status === 'DRAFT' && (
                 <CancelRunButton
                   status={status}
-                  onConfirm={() => cancelMutation.mutate({ runId: runId! })}
+                  onConfirm={() => cancelMutation.mutate({ runId: safeRunId })}
                   isLoading={cancelMutation.isPending}
                   t={t}
                 />
@@ -264,7 +269,7 @@ export function PaymentRunSidePanel({
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => onImportStatement?.(runId!)}>
+                        onClick={() => onImportStatement?.(safeRunId)}>
                         <FileUp className="me-1.5 h-3.5 w-3.5" />
                         {t('sidePanel.importStatement')}
                       </Button>
@@ -272,7 +277,7 @@ export function PaymentRunSidePanel({
                   )}
                   <CancelRunButton
                     status={status}
-                    onConfirm={() => cancelMutation.mutate({ runId: runId! })}
+                    onConfirm={() => cancelMutation.mutate({ runId: safeRunId })}
                     isLoading={cancelMutation.isPending}
                     t={t}
                   />
@@ -311,7 +316,7 @@ export function PaymentRunSidePanel({
                     }
                     onRemoveFromRun={invoiceId =>
                       removeFromRunMutation.mutate({
-                        runId: runId!,
+                        runId: safeRunId,
                         invoiceId,
                       })
                     }
@@ -424,7 +429,7 @@ function PaymentRunItemRow({
           <p className="text-xs text-muted-foreground truncate">
             <Bdi>{item.contractor.legalName}</Bdi>
           </p>
-          {item.paymentReference && (
+          {!!item.paymentReference && (
             <p className="text-[12px] text-muted-foreground">Ref: {item.paymentReference}</p>
           )}
         </div>

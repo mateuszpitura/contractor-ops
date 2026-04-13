@@ -64,7 +64,7 @@ export function PeppolComplianceWidget({
           <div className={`h-2 w-2 rounded-full ${dotColor}`} />
           <span className="text-sm text-muted-foreground">{label}</span>
         </div>
-        {transmissionCounts && (
+        {!!transmissionCounts && (
           <span className="font-mono text-sm text-muted-foreground">
             {transmissionCounts.sent} sent, {transmissionCounts.received} rcvd
           </span>

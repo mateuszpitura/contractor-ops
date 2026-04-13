@@ -40,15 +40,12 @@
 //     matches T-57-03-05 — no cross-tenant read path exists.
 // ---------------------------------------------------------------------------
 
-import type { HmrcVatClient, ViesClient } from '@contractor-ops/gov-api';
 import type { Prisma, PrismaClient, TaxIdType, ValidationStatus } from '@contractor-ops/db';
-
-import { maskTaxId } from './tax-id-pii.js';
-
+import type { HmrcVatClient, ViesClient } from '@contractor-ops/gov-api';
 // Pre-flight validators — canonical Phase 56 implementations. These run
 // BEFORE any network I/O (RESEARCH Pattern 3).
-import { isValidGbVat } from '@contractor-ops/validators';
-import { isValidUstIdNr } from '@contractor-ops/validators';
+import { isValidGbVat, isValidUstIdNr } from '@contractor-ops/validators';
+import { maskTaxId } from './tax-id-pii.js';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -200,9 +197,10 @@ export async function validateTaxId(
           apiProvider: 'hmrc',
           responseStatus: result.status === 'valid' ? 'valid' : 'invalid',
           confirmationRef: result.status === 'valid' ? result.confirmationRef : null,
-          responseBody: (result.status === 'valid'
-            ? (result.raw as unknown as Prisma.InputJsonValue)
-            : ({ status: 'invalid' } as Prisma.InputJsonValue)),
+          responseBody:
+            result.status === 'valid'
+              ? (result.raw as unknown as Prisma.InputJsonValue)
+              : ({ status: 'invalid' } as Prisma.InputJsonValue),
           errorMessage: null,
           source: 'api',
           now,

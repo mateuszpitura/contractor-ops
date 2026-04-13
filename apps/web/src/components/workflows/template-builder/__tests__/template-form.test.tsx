@@ -226,7 +226,7 @@ describe('TemplateForm', () => {
   // ---- Form submit ----
   it('renders form element with submit button', () => {
     render(<TemplateForm />);
-    const saveBtn = screen.getByText('Save template').closest('button')!;
+    const saveBtn = screen.getByText('Save template').closest('button');
     expect(saveBtn).toHaveAttribute('type', 'submit');
   });
 
@@ -324,7 +324,7 @@ describe('TemplateForm', () => {
   it('does not show dirty indicator when form is not dirty', () => {
     render(<TemplateForm />);
     // isDirty is false in mock, so no dot indicator should appear
-    const saveBtn = screen.getByText('Save template').closest('button')!;
+    const saveBtn = screen.getByText('Save template').closest('button');
     const dot = saveBtn.querySelector('span.rounded-full');
     expect(dot).toBeNull();
   });
@@ -464,7 +464,7 @@ describe('TemplateForm', () => {
       isPending: false,
     } as unknown);
     const { user } = setup(<TemplateForm />);
-    const saveBtn = screen.getByText('Save template').closest('button')!;
+    const saveBtn = screen.getByText('Save template').closest('button');
     // Click submit - form handleSubmit is called via mock
     await user.click(saveBtn);
     // The form should still be visible after submit

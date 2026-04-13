@@ -194,7 +194,7 @@ export function DirectoryPreviewTable({
           const user = row.original;
           return (
             <Avatar>
-              {user.thumbnailPhotoUrl && (
+              {!!user.thumbnailPhotoUrl && (
                 <AvatarImage src={user.thumbnailPhotoUrl} alt={user.name.fullName} />
               )}
               <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
@@ -212,7 +212,7 @@ export function DirectoryPreviewTable({
           return (
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium">{user.name.fullName}</span>
-              {user.alreadyExists && (
+              {!!user.alreadyExists && (
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger

@@ -166,9 +166,9 @@ function StepCircle({
           <div className={cn('flex flex-col gap-0.5', isVertical ? 'items-start' : 'items-center')}>
             {/* Approver avatar + name */}
             <div className="flex items-center gap-1">
-              {step.approver && (
+              {!!step.approver && (
                 <Avatar size="sm">
-                  {step.approver.image && <AvatarImage src={step.approver.image} />}
+                  {!!step.approver.image && <AvatarImage src={step.approver.image} />}
                   <AvatarFallback>
                     {getAvatarInitials(step.approver.name, step.approver.email)}
                   </AvatarFallback>
@@ -270,7 +270,7 @@ export function ChainTracker({ invoiceId }: ChainTrackerProps) {
         </div>
 
         {/* Chain name */}
-        {flow.chainName && (
+        {!!flow.chainName && (
           <p className="text-[12px] text-muted-foreground">
             {t('chainTracker.chain', { chainName: flow.chainName })}
           </p>

@@ -24,7 +24,9 @@ export function WorkflowNavBadge() {
   return (
     <span
       className="absolute -end-1 -top-1 flex size-[18px] items-center justify-center rounded-full bg-destructive text-[10px] font-medium leading-none text-destructive-foreground"
+      role="status"
       aria-label={tAria('overdueTasks', { count })}>
+      {/* biome-ignore lint/nursery/noLeakedRender: count is intentionally rendered as text, and 0 is handled by early return */}
       {count > 9 ? '9+' : count}
     </span>
   );

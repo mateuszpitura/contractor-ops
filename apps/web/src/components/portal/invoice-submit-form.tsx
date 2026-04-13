@@ -471,7 +471,7 @@ export function InvoiceSubmitForm() {
               </SelectContent>
             </Select>
           )}
-          {errors.contractId && (
+          {!!errors.contractId && (
             <p className="text-sm text-destructive">{errors.contractId.message}</p>
           )}
           {selectedContract && (
@@ -529,7 +529,7 @@ export function InvoiceSubmitForm() {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              {pdfBlobUrl && (
+              {!!pdfBlobUrl && (
                 <Button
                   type="button"
                   variant="ghost"
@@ -554,7 +554,7 @@ export function InvoiceSubmitForm() {
         {upload.status === 'error' && <p className="text-sm text-destructive">{upload.message}</p>}
 
         {/* Credit exhaustion banner */}
-        {creditExhausted && (
+        {!!creditExhausted && (
           <CreditExhaustedInline
             onUpgrade={() => router.push('/settings?tab=billing')}
             onBuyCredits={() => router.push('/settings?tab=billing')}
@@ -575,7 +575,7 @@ export function InvoiceSubmitForm() {
       )}
 
       {/* OCR Pre-fill Banner */}
-      {ocrPopulated && (
+      {!!ocrPopulated && (
         <div className="flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-950/30">
           <Info className="mt-0.5 h-4 w-4 shrink-0 text-blue-600 dark:text-blue-400" />
           <p className="text-sm text-blue-800 dark:text-blue-200">{t('ocrPrefillBanner')}</p>
@@ -584,7 +584,7 @@ export function InvoiceSubmitForm() {
 
       {/* Section 3: Metadata (with OCR processing overlay) */}
       <div className="relative space-y-4">
-        {isOcrProcessing && <OcrProcessingOverlay />}
+        {!!isOcrProcessing && <OcrProcessingOverlay />}
 
         <h2 className="text-sm font-semibold">{t('details')}</h2>
 
@@ -593,7 +593,7 @@ export function InvoiceSubmitForm() {
             <Label htmlFor="invoiceNumber" className="text-[13px]">
               {t('invoiceNumber')}
             </Label>
-            {ocrPopulated && resultJson?.fields?.invoiceNumber && (
+            {!!ocrPopulated && !!resultJson?.fields?.invoiceNumber && (
               <ConfidenceBadge
                 confidence={getFieldConfidence(resultJson.fields, 'invoiceNumber')}
                 showPercentage={false}
@@ -606,7 +606,7 @@ export function InvoiceSubmitForm() {
             placeholder={t('invoicePlaceholder')}
             {...register('invoiceNumber')}
           />
-          {errors.invoiceNumber && (
+          {!!errors.invoiceNumber && (
             <p className="text-sm text-destructive">{errors.invoiceNumber.message}</p>
           )}
         </div>
@@ -617,7 +617,7 @@ export function InvoiceSubmitForm() {
               <Label htmlFor="issueDate" className="text-[13px]">
                 {t('issueDate')}
               </Label>
-              {ocrPopulated && resultJson?.fields?.issueDate && (
+              {!!ocrPopulated && !!resultJson?.fields?.issueDate && (
                 <ConfidenceBadge
                   confidence={getFieldConfidence(resultJson.fields, 'issueDate')}
                   showPercentage={false}
@@ -625,7 +625,7 @@ export function InvoiceSubmitForm() {
               )}
             </div>
             <Input id="issueDate" type="date" {...register('issueDate')} />
-            {errors.issueDate && (
+            {!!errors.issueDate && (
               <p className="text-sm text-destructive">{errors.issueDate.message}</p>
             )}
           </div>
@@ -634,7 +634,7 @@ export function InvoiceSubmitForm() {
               <Label htmlFor="dueDate" className="text-[13px]">
                 {t('dueDate')}
               </Label>
-              {ocrPopulated && resultJson?.fields?.dueDate && (
+              {!!ocrPopulated && !!resultJson?.fields?.dueDate && (
                 <ConfidenceBadge
                   confidence={getFieldConfidence(resultJson.fields, 'dueDate')}
                   showPercentage={false}
@@ -642,12 +642,14 @@ export function InvoiceSubmitForm() {
               )}
             </div>
             <Input id="dueDate" type="date" {...register('dueDate')} />
-            {errors.dueDate && <p className="text-sm text-destructive">{errors.dueDate.message}</p>}
+            {!!errors.dueDate && (
+              <p className="text-sm text-destructive">{errors.dueDate.message}</p>
+            )}
           </div>
         </div>
 
         {/* NIP fields shown when extraction provides them */}
-        {ocrPopulated && resultJson?.fields?.sellerNip && (
+        {!!ocrPopulated && !!resultJson?.fields?.sellerNip && (
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <div className="flex items-center gap-2">
@@ -666,7 +668,7 @@ export function InvoiceSubmitForm() {
                 <NipValidationBadge nip={getFieldValue(resultJson.fields, 'sellerNip')} />
               </div>
             </div>
-            {resultJson.fields.buyerNip && (
+            {!!resultJson.fields.buyerNip && (
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <Label className="text-[13px]">{t('buyerNip')}</Label>
@@ -695,7 +697,7 @@ export function InvoiceSubmitForm() {
                 {t('netAmount')}
                 {selectedContract ? ` (${selectedContract.currency})` : ''}
               </Label>
-              {ocrPopulated && resultJson?.fields?.totalNet && (
+              {!!ocrPopulated && !!resultJson?.fields?.totalNet && (
                 <ConfidenceBadge
                   confidence={getFieldConfidence(resultJson.fields, 'totalNet')}
                   showPercentage={false}
@@ -710,7 +712,7 @@ export function InvoiceSubmitForm() {
               placeholder={t('amountPlaceholder')}
               {...register('netAmount')}
             />
-            {errors.netAmount && (
+            {!!errors.netAmount && (
               <p className="text-sm text-destructive">{errors.netAmount.message}</p>
             )}
           </div>
@@ -720,7 +722,7 @@ export function InvoiceSubmitForm() {
                 {t('grossAmount')}
                 {selectedContract ? ` (${selectedContract.currency})` : ''}
               </Label>
-              {ocrPopulated && resultJson?.fields?.totalGross && (
+              {!!ocrPopulated && !!resultJson?.fields?.totalGross && (
                 <ConfidenceBadge
                   confidence={getFieldConfidence(resultJson.fields, 'totalGross')}
                   showPercentage={false}
@@ -735,7 +737,7 @@ export function InvoiceSubmitForm() {
               placeholder={t('amountPlaceholder')}
               {...register('grossAmount')}
             />
-            {errors.grossAmount && (
+            {!!errors.grossAmount && (
               <p className="text-sm text-destructive">{errors.grossAmount.message}</p>
             )}
           </div>
@@ -775,7 +777,7 @@ export function InvoiceSubmitForm() {
                 <span className="text-sm">{dueDate}</span>
               </div>
             )}
-            {netAmount && selectedContract && (
+            {!!netAmount && !!selectedContract && (
               <div className="flex items-center justify-between">
                 <span className="text-[13px] text-muted-foreground">{t('netAmount')}</span>
                 <span className="text-sm">
@@ -783,7 +785,7 @@ export function InvoiceSubmitForm() {
                 </span>
               </div>
             )}
-            {grossAmount && selectedContract && (
+            {!!grossAmount && !!selectedContract && (
               <div className="flex items-center justify-between">
                 <span className="text-[13px] text-muted-foreground">{t('grossAmount')}</span>
                 <span className="text-sm font-medium">

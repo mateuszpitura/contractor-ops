@@ -136,6 +136,7 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
   return (
     <div className="space-y-2">
       {value.rules.map((rule, index) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: dynamic form array, rules have no stable id
         <div key={`rule-${index}`}>
           {/* Combinator toggle between rows */}
           {index > 0 && (
@@ -250,7 +251,8 @@ export function getConditionSummary(
   if (!conditions || conditions.rules.length === 0) return null;
 
   if (conditions.rules.length === 1) {
-    const rule = conditions.rules[0]!;
+    const rule = conditions.rules[0];
+    if (!rule) return null;
     return t('conditionBadge', {
       summary: `${rule.field.split('.')[1] ?? rule.field} ${rule.operator} ${rule.value}`,
     });

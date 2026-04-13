@@ -1,4 +1,4 @@
-import type { Prisma } from '@contractor-ops/db';
+import type { Prisma, TaxIdType } from '@contractor-ops/db';
 import {
   invoiceCreateSchema,
   invoiceListSchema,
@@ -8,6 +8,7 @@ import {
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import * as E from '../errors.js';
+import { getHmrcVatClient, getViesClient } from '../gov-api-clients.js';
 import { router } from '../init.js';
 import type { TenantScopedDb } from '../lib/tenant-db.js';
 import { requirePermission } from '../middleware/rbac.js';
@@ -15,9 +16,13 @@ import { tenantProcedure } from '../middleware/tenant.js';
 import { CacheKeys, invalidateByPrefix } from '../services/cache.js';
 import { deleteCalendarEvent } from '../services/calendar-event-service.js';
 import { computeDuplicateCheckHash, runAutoMatch } from '../services/invoice-matching.js';
+import { applyKleinunternehmerOverride } from '../services/kleinunternehmer.service.js';
 import { dispatch } from '../services/notification-service.js';
-import { applyReverseCharge } from '../services/reverse-charge.service.js';
+import type { DE13bServiceType } from '../services/reverse-charge.service.js';
+import { applyReverseCharge, detectReverseCharge } from '../services/reverse-charge.service.js';
 import { sanitizeStrings } from '../services/sanitize.js';
+import { isValidationFresh, validateTaxId } from '../services/tax-id-validation.service.js';
+import { getDefaultRateCode } from '../services/tax-rate.service.js';
 
 // ---------------------------------------------------------------------------
 // Finance team helper
@@ -48,6 +53,124 @@ async function getFinanceTeamUserIds(db: TenantScopedDb, orgId: string): Promise
  */
 function plain<T>(data: T): T {
   return JSON.parse(JSON.stringify(data)) as T;
+}
+
+// ---------------------------------------------------------------------------
+// Invoice update helpers
+// ---------------------------------------------------------------------------
+
+const INVOICE_DATE_FIELDS = [
+  'issueDate',
+  'dueDate',
+  'servicePeriodStart',
+  'servicePeriodEnd',
+] as const;
+
+/**
+ * Converts date string fields to Date objects in-place.
+ */
+function coerceInvoiceDateFields(data: Record<string, unknown>) {
+  for (const field of INVOICE_DATE_FIELDS) {
+    if (data[field]) {
+      data[field] = new Date(data[field] as string);
+    }
+  }
+}
+
+/**
+ * Validates that the service period end is not before start,
+ * merging with existing values if only one is provided.
+ */
+function validateServicePeriod(
+  updateData: Record<string, unknown>,
+  existing: { servicePeriodStart: Date | null; servicePeriodEnd: Date | null },
+) {
+  const effectiveStart =
+    (updateData.servicePeriodStart as Date | undefined) ?? existing.servicePeriodStart;
+  const effectiveEnd =
+    (updateData.servicePeriodEnd as Date | undefined) ?? existing.servicePeriodEnd;
+
+  if (effectiveStart && effectiveEnd && effectiveEnd < effectiveStart) {
+    throw new TRPCError({
+      code: 'BAD_REQUEST',
+      message: 'Service period end date must be on or after the start date.',
+    });
+  }
+}
+
+/**
+ * Validates arithmetic consistency of invoice amounts.
+ * subtotal + vat - withholding = total, and amountToPay = total.
+ */
+function validateInvoiceAmounts(
+  updateData: Record<string, unknown>,
+  existing: {
+    subtotalMinor: number;
+    vatAmountMinor: number | null;
+    totalMinor: number;
+    withholdingMinor: number | null;
+    amountToPayMinor: number;
+  },
+) {
+  const hasAmountChange =
+    updateData.subtotalMinor !== undefined ||
+    updateData.vatAmountMinor !== undefined ||
+    updateData.totalMinor !== undefined ||
+    updateData.withholdingMinor !== undefined ||
+    updateData.amountToPayMinor !== undefined;
+
+  if (!hasAmountChange) return;
+
+  const effective = {
+    subtotalMinor: (updateData.subtotalMinor as number) ?? existing.subtotalMinor,
+    vatAmountMinor: (updateData.vatAmountMinor as number) ?? existing.vatAmountMinor ?? 0,
+    totalMinor: (updateData.totalMinor as number) ?? existing.totalMinor,
+    withholdingMinor: (updateData.withholdingMinor as number) ?? existing.withholdingMinor ?? 0,
+    amountToPayMinor: (updateData.amountToPayMinor as number) ?? existing.amountToPayMinor,
+  };
+
+  const expectedTotal =
+    effective.subtotalMinor + effective.vatAmountMinor - effective.withholdingMinor;
+
+  if (effective.totalMinor !== expectedTotal) {
+    throw new TRPCError({
+      code: 'BAD_REQUEST',
+      message: E.INVOICE_AMOUNT_MISMATCH,
+    });
+  }
+  if (effective.amountToPayMinor !== effective.totalMinor) {
+    throw new TRPCError({
+      code: 'BAD_REQUEST',
+      message: E.INVOICE_AMOUNT_MISMATCH,
+    });
+  }
+}
+
+/**
+ * Recomputes the duplicate check hash if relevant fields changed.
+ */
+function recomputeDuplicateHash(
+  updateData: Record<string, unknown>,
+  existing: { invoiceNumber: string | null; sellerTaxId: string | null; totalMinor: number },
+) {
+  if (
+    !(updateData.invoiceNumber || updateData.sellerTaxId) &&
+    updateData.totalMinor === undefined
+  ) {
+    return;
+  }
+
+  const effectiveNumber = (updateData.invoiceNumber as string) ?? existing.invoiceNumber;
+  const effectiveTaxId = (updateData.sellerTaxId as string) ?? existing.sellerTaxId;
+  const effectiveTotal = (updateData.totalMinor as number) ?? existing.totalMinor;
+
+  if (effectiveNumber && effectiveTaxId) {
+    updateData.duplicateCheckHash = computeDuplicateCheckHash(
+      effectiveNumber,
+      effectiveTaxId,
+      effectiveTotal,
+    );
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -92,6 +215,132 @@ export const invoiceRouter = router({
         }
       }
 
+      // ---------------------------------------------------------------------
+      // Phase 57 · Plan 04 — invoice-line tax pipeline (D-07.2, D-10, D-11,
+      // D-12, D-13). Executes in strict order:
+      //   1. Load org + contractor snapshots (both tenant-scoped).
+      //   2. Staleness guard: if contractor's latest VAT validation is older
+      //      than 90 days AND they have a GB/DE VAT ID, revalidate inline
+      //      (soft-fail via orchestrator).
+      //   3. detectReverseCharge(...) — auto-flags when applicable.
+      //   4. Default-rate preselect: no user-supplied `vatRate` → pick `RC`
+      //      when shouldApply, else the country default from the TaxRate seed.
+      //   5. applyKleinunternehmerOverride — DE Kleinunternehmer orgs force
+      //      all non-RC lines to `KU` (§19 UStG). RC wins over KU precedence.
+      //   6. Override-with-reason audit: when user explicitly disables an
+      //      auto-detected RC flag, persist the justification to AuditLog.
+      // ---------------------------------------------------------------------
+      const org = await ctx.db.organization.findUniqueOrThrow({
+        where: { id: ctx.organizationId },
+        select: { countryCode: true, isKleinunternehmer: true },
+      });
+
+      let contractor: {
+        id: string;
+        countryCode: string;
+        vatId: string | null;
+        type: string;
+        latestVatValidatedAt: Date | null;
+        latestVatValidationStatus: string | null;
+      } | null = null;
+      if (invoiceData.contractorId) {
+        contractor = await ctx.db.contractor.findFirst({
+          where: {
+            id: invoiceData.contractorId,
+            organizationId: ctx.organizationId,
+            deletedAt: null,
+          },
+          select: {
+            id: true,
+            countryCode: true,
+            vatId: true,
+            type: true,
+            latestVatValidatedAt: true,
+            latestVatValidationStatus: true,
+          },
+        });
+
+        // --- Step 2: Staleness-triggered inline revalidation (D-07 trigger 2)
+        if (contractor?.vatId) {
+          const fresh = isValidationFresh(
+            contractor.latestVatValidatedAt
+              ? {
+                  responseStatus: (contractor.latestVatValidationStatus ?? 'unavailable') as
+                    | 'valid'
+                    | 'invalid'
+                    | 'stale'
+                    | 'unavailable',
+                  requestedAt: contractor.latestVatValidatedAt,
+                }
+              : null,
+          );
+          if (!fresh) {
+            const taxIdType: TaxIdType | null =
+              contractor.countryCode === 'GB'
+                ? 'GB_VAT'
+                : contractor.countryCode === 'DE'
+                  ? 'DE_USTIDNR'
+                  : null;
+            if (taxIdType) {
+              await validateTaxId(
+                {
+                  organizationId: ctx.organizationId,
+                  contractorId: contractor.id,
+                  taxIdType,
+                  taxIdValue: contractor.vatId,
+                  actor: { userId: ctx.user.id },
+                },
+                {
+                  prisma: ctx.db,
+                  hmrcClient: getHmrcVatClient(),
+                  viesClient: getViesClient(),
+                },
+              );
+            }
+          }
+        }
+      }
+
+      // --- Step 3: Reverse-charge detection ---------------------------------
+      let rcShouldApply = false;
+      if (contractor && org.countryCode) {
+        const rc = detectReverseCharge({
+          sellerCountry: contractor.countryCode,
+          buyerCountry: org.countryCode,
+          buyerHasVatId: !!contractor.vatId,
+          isB2B: contractor.type === 'COMPANY' || contractor.type === 'SOLE_TRADER',
+          serviceType: invoiceData.serviceType as DE13bServiceType | undefined,
+        });
+        rcShouldApply = rc.shouldApply;
+      }
+      // Respect explicit user override on the auto-detection verdict.
+      const userOverride = invoiceData.reverseChargeOverride;
+      const finalIsReverseCharge =
+        userOverride === true ? true : userOverride === false ? false : rcShouldApply;
+
+      // --- Step 4: Default-rate preselect -----------------------------------
+      let effectiveVatRate: string | null = invoiceData.vatRate ?? null;
+      if (!effectiveVatRate) {
+        if (finalIsReverseCharge) {
+          effectiveVatRate = 'RC';
+        } else if (org.countryCode) {
+          effectiveVatRate = await getDefaultRateCode(org.countryCode, ctx.db);
+        }
+      }
+
+      // --- Step 5: Kleinunternehmer override --------------------------------
+      if (org.countryCode) {
+        const ku = applyKleinunternehmerOverride(
+          { vatRate: effectiveVatRate },
+          {
+            countryCode: org.countryCode,
+            isKleinunternehmer: org.isKleinunternehmer,
+          },
+        );
+        effectiveVatRate = ku.vatRate || effectiveVatRate;
+      }
+      // ---------------------------------------------------------------------
+
       const invoice = await ctx.db.$transaction(async tx => {
         // Create invoice record
         const inv = await tx.invoice.create({
@@ -108,7 +357,7 @@ export const invoiceRouter = router({
               : null,
             currency: invoiceData.currency,
             subtotalMinor: invoiceData.subtotalMinor,
-            vatRate: invoiceData.vatRate ?? null,
+            vatRate: effectiveVatRate,
             vatAmountMinor: invoiceData.vatAmountMinor ?? null,
             totalMinor: invoiceData.totalMinor,
             withholdingMinor: invoiceData.withholdingMinor ?? null,
@@ -116,14 +365,38 @@ export const invoiceRouter = router({
             sellerTaxId: invoiceData.sellerTaxId ?? null,
             sellerName: invoiceData.sellerName ?? null,
             sellerBankAccount: invoiceData.sellerBankAccount ?? null,
-            isReverseCharge: invoiceData.isReverseCharge ?? false,
+            isReverseCharge: finalIsReverseCharge,
             reverseChargeOverride: invoiceData.reverseChargeOverride ?? null,
+            contractorId: contractor?.id ?? null,
             status: 'RECEIVED',
             matchStatus: 'UNMATCHED',
             source: 'MANUAL_UPLOAD',
             duplicateCheckHash,
           },
         });
+
+        // --- Step 6: Override-with-reason audit (D-13) -----------------------
+        if (
+          invoiceData.reverseChargeOverride === false &&
+          rcShouldApply &&
+          invoiceData.reverseChargeOverrideReason
+        ) {
+          await tx.auditLog.create({
+            data: {
+              organizationId: ctx.organizationId,
+              actorType: 'USER',
+              actorId: ctx.user.id,
+              action: 'invoice.reverse-charge-override',
+              resourceType: 'INVOICE',
+              resourceId: inv.id,
+              metadataJson: {
+                reason: invoiceData.reverseChargeOverrideReason,
+                autoDetected: true,
+                userDisabled: true,
+              },
+            },
+          });
+        }
 
         // Create InvoiceFile records linking each document
         if (documentIds.length > 0) {
@@ -272,82 +545,10 @@ export const invoiceRouter = router({
       // Remove documentIds from update data — not a direct Invoice field
       delete updateData.documentIds;
 
-      // Convert date strings to Date objects
-      if (updateData.issueDate) {
-        updateData.issueDate = new Date(updateData.issueDate as string);
-      }
-      if (updateData.dueDate) {
-        updateData.dueDate = new Date(updateData.dueDate as string);
-      }
-      if (updateData.servicePeriodStart) {
-        updateData.servicePeriodStart = new Date(updateData.servicePeriodStart as string);
-      }
-      if (updateData.servicePeriodEnd) {
-        updateData.servicePeriodEnd = new Date(updateData.servicePeriodEnd as string);
-      }
-
-      // Validate service period: end must be >= start (merge with existing values)
-      const effectiveStart =
-        (updateData.servicePeriodStart as Date | undefined) ?? existing.servicePeriodStart;
-      const effectiveEnd =
-        (updateData.servicePeriodEnd as Date | undefined) ?? existing.servicePeriodEnd;
-      if (effectiveStart && effectiveEnd && effectiveEnd < effectiveStart) {
-        throw new TRPCError({
-          code: 'BAD_REQUEST',
-          message: 'Service period end date must be on or after the start date.',
-        });
-      }
-
-      // Validate arithmetic consistency when any amount field is updated
-      if (
-        updateData.subtotalMinor !== undefined ||
-        updateData.vatAmountMinor !== undefined ||
-        updateData.totalMinor !== undefined ||
-        updateData.withholdingMinor !== undefined ||
-        updateData.amountToPayMinor !== undefined
-      ) {
-        const effective = {
-          subtotalMinor: (updateData.subtotalMinor as number) ?? existing.subtotalMinor,
-          vatAmountMinor: (updateData.vatAmountMinor as number) ?? existing.vatAmountMinor ?? 0,
-          totalMinor: (updateData.totalMinor as number) ?? existing.totalMinor,
-          withholdingMinor:
-            (updateData.withholdingMinor as number) ?? existing.withholdingMinor ?? 0,
-          amountToPayMinor: (updateData.amountToPayMinor as number) ?? existing.amountToPayMinor,
-        };
-        const expectedTotal =
-          effective.subtotalMinor + effective.vatAmountMinor - effective.withholdingMinor;
-        if (effective.totalMinor !== expectedTotal) {
-          throw new TRPCError({
-            code: 'BAD_REQUEST',
-            message: E.INVOICE_AMOUNT_MISMATCH,
-          });
-        }
-        if (effective.amountToPayMinor !== effective.totalMinor) {
-          throw new TRPCError({
-            code: 'BAD_REQUEST',
-            message: E.INVOICE_AMOUNT_MISMATCH,
-          });
-        }
-      }
-
-      // Recompute duplicate check hash if relevant fields changed
-      if (
-        updateData.invoiceNumber ||
-        updateData.sellerTaxId ||
-        updateData.totalMinor !== undefined
-      ) {
-        const effectiveNumber = (updateData.invoiceNumber as string) ?? existing.invoiceNumber;
-        const effectiveTaxId = (updateData.sellerTaxId as string) ?? existing.sellerTaxId;
-        const effectiveTotal = (updateData.totalMinor as number) ?? existing.totalMinor;
-
-        if (effectiveNumber && effectiveTaxId) {
-          updateData.duplicateCheckHash = computeDuplicateCheckHash(
-            effectiveNumber,
-            effectiveTaxId,
-            effectiveTotal,
-          );
-        }
-      }
+      coerceInvoiceDateFields(updateData);
+      validateServicePeriod(updateData, existing);
+      validateInvoiceAmounts(updateData, existing);
+      recomputeDuplicateHash(updateData, existing);
 
       const updated = await ctx.db.invoice.update({
         where: { id: input.id },

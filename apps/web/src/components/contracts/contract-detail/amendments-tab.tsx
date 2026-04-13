@@ -117,8 +117,11 @@ function AddAmendmentDialog({
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium">{t('fields.title')}</label>
+            <label htmlFor="amendment-title" className="text-sm font-medium">
+              {t('fields.title')}
+            </label>
             <input
+              id="amendment-title"
               type="text"
               value={title}
               onChange={e => setTitle(e.target.value)}
@@ -128,8 +131,11 @@ function AddAmendmentDialog({
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium">{t('fields.effectiveDate')}</label>
+            <label htmlFor="amendment-effective-date" className="text-sm font-medium">
+              {t('fields.effectiveDate')}
+            </label>
             <input
+              id="amendment-effective-date"
               type="date"
               value={effectiveDate}
               onChange={e => setEffectiveDate(e.target.value)}
@@ -138,8 +144,11 @@ function AddAmendmentDialog({
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium">{t('fields.description')}</label>
+            <label htmlFor="amendment-description" className="text-sm font-medium">
+              {t('fields.description')}
+            </label>
             <textarea
+              id="amendment-description"
               value={description}
               onChange={e => setDescription(e.target.value)}
               className="w-full resize-none rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
@@ -217,9 +226,9 @@ function TimelineNode({
           </div>
         </button>
 
-        {expanded && (
+        {!!expanded && (
           <div className="mt-3 ms-5 space-y-2 rounded-md border bg-muted/50 p-3">
-            {amendment.description && <p className="text-sm">{amendment.description}</p>}
+            {!!amendment.description && <p className="text-sm">{amendment.description}</p>}
             <p className="text-xs text-muted-foreground">
               {t('created', { date: formatDate(amendment.createdAt) })}
             </p>
@@ -282,7 +291,7 @@ export function AmendmentsTab({ contract }: AmendmentsTabProps) {
             </div>
             <div className="min-w-0 flex-1 pb-2">
               <p className="text-sm text-muted-foreground">{t('originalContract')}</p>
-              {contract.startDate && (
+              {!!contract.startDate && (
                 <p className="text-xs text-muted-foreground/70">{formatDate(contract.startDate)}</p>
               )}
             </div>

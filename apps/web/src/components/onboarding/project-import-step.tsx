@@ -120,6 +120,7 @@ function ProjectCard({ project, selection, onSelectionChange }: ProjectCardProps
         {!expanded && (
           <div className="flex flex-wrap gap-1.5">
             {selection.steps.map((step, i) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: imported steps lack stable id before save
               <Badge key={`step-chip-${i}`} variant="secondary">
                 {step.name || `Step ${i + 1}`}
               </Badge>
@@ -131,6 +132,7 @@ function ProjectCard({ project, selection, onSelectionChange }: ProjectCardProps
         {expanded && !selection.skip && (
           <div className="space-y-2">
             {selection.steps.map((step, i) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: imported steps lack stable id before save
               <div key={`step-edit-${i}`} className="flex items-center gap-2">
                 <GripVertical className="size-4 text-muted-foreground" aria-hidden="true" />
                 <Input
@@ -244,6 +246,7 @@ export function ProjectImportStep({
       <div className="space-y-4">
         <Skeleton className="h-8 w-64" />
         {Array.from({ length: 3 }).map((_, i) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
           <Skeleton key={`skel-${i}`} className="h-32 w-full" />
         ))}
       </div>

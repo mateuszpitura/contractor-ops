@@ -17,12 +17,14 @@ function NotificationsLoading() {
       </div>
       <div className="flex items-center gap-2">
         {Array.from({ length: 5 }).map((_, i) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
           <Skeleton key={`skel-${i}`} className="h-7 w-20 rounded-full" />
         ))}
       </div>
       <div className="flex flex-col rounded-lg border">
         {Array.from({ length: 6 }).map((_, i) => (
           <div
+            // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
             key={`skel-${i}`}
             className="flex items-center gap-3 border-b px-4 py-3 last:border-b-0">
             <Skeleton className="h-8 w-8 rounded-full" />

@@ -106,7 +106,7 @@ export function RegisterForm() {
               aria-describedby={errors.orgName ? 'orgName-error' : undefined}
               {...register('orgName')}
             />
-            {errors.orgName && (
+            {!!errors.orgName && (
               <p id="orgName-error" role="alert" className="text-sm text-destructive">
                 {errors.orgName.message}
               </p>
@@ -126,7 +126,7 @@ export function RegisterForm() {
               aria-describedby={errors.email ? 'reg-email-error' : undefined}
               {...register('email')}
             />
-            {errors.email && (
+            {!!errors.email && (
               <p id="reg-email-error" role="alert" className="text-sm text-destructive">
                 {errors.email.message}
               </p>
@@ -147,7 +147,7 @@ export function RegisterForm() {
               aria-describedby={errors.password ? 'reg-password-error' : undefined}
               {...register('password')}
             />
-            {errors.password && (
+            {!!errors.password && (
               <p id="reg-password-error" role="alert" className="text-sm text-destructive">
                 {errors.password.message}
               </p>

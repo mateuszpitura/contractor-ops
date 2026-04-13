@@ -1264,16 +1264,16 @@ html.theme-transition *::after {
   font-size: 13px;
 }
 
-.density-compact table td,
-.density-compact table th {
-  padding: 8px;
-  height: 32px;
-}
-
 table td,
 table th {
   padding: 16px;
   height: 40px;
+}
+
+.density-compact table td,
+.density-compact table th {
+  padding: 8px;
+  height: 32px;
 }
 
 /* ─── Aurora Background — Animated Northern Lights ──────────────────── */

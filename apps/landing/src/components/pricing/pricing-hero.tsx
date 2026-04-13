@@ -48,7 +48,7 @@ export function PricingHero({ plans }: { plans: PricingPlan[] }) {
                 className={`card-glow relative flex h-full flex-col rounded-2xl border bg-surface-1/70 p-7 backdrop-blur-sm ${
                   plan.popular ? 'border-primary/40 shadow-lg' : 'border-border/50'
                 }`}>
-                {plan.popular && (
+                {!!plan.popular && (
                   <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-1 text-xs font-semibold text-primary-foreground shadow-md">
                     <Sparkles className="h-3 w-3" />
                     Most popular

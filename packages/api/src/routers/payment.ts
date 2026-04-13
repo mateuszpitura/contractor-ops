@@ -70,7 +70,7 @@ if (typeof globalThis !== 'undefined') {
  * Generates the sequential run number for a payment run (e.g., PR-2026-001).
  */
 // biome-ignore lint/suspicious/noExplicitAny: transaction client type not exported from Prisma
-async function generateRunNumber(tx: any, organizationId: string): Promise<string> {
+async function _generateRunNumber(tx: any, organizationId: string): Promise<string> {
   const year = new Date().getFullYear();
   const prefix = `PR-${year}-`;
 
@@ -80,9 +80,7 @@ async function generateRunNumber(tx: any, organizationId: string): Promise<strin
     select: { runNumber: true },
   });
 
-  const seq = lastRun?.runNumber
-    ? parseInt(lastRun.runNumber.replace(prefix, ''), 10) + 1
-    : 1;
+  const seq = lastRun?.runNumber ? parseInt(lastRun.runNumber.replace(prefix, ''), 10) + 1 : 1;
 
   return `${prefix}${String(seq).padStart(3, '0')}`;
 }
@@ -90,7 +88,7 @@ async function generateRunNumber(tx: any, organizationId: string): Promise<strin
 /**
  * Generates an export file buffer and extension based on the format.
  */
-async function generateExportFileForFormat(
+async function _generateExportFileForFormat(
   format: string,
   exportItems: ExportItem[],
   orgBank: OrgBankInfo,
@@ -135,7 +133,7 @@ async function autoCompleteRunIfTerminal(tx: any, paymentRunId: string): Promise
 /**
  * Builds ExportItem array from payment run items with resolved transfer titles.
  */
-function buildExportItems(
+function _buildExportItems(
   items: Array<{
     amountMinor: number;
     currency: string;

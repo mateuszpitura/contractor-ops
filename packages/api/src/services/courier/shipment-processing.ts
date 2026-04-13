@@ -1,7 +1,7 @@
 import { checkShipmentTaskCompletion } from '../equipment-workflow.js';
+import type { DbClient } from '../types.js';
 import { NOTIFICATION_STATUSES } from './inpost-status-mapper.js';
 import { dispatchShipmentNotification } from './shipment-notification.js';
-import type { DbClient } from '../types.js';
 
 // ---------------------------------------------------------------------------
 // Shared Shipment Processing

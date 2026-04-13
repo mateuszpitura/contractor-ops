@@ -347,7 +347,12 @@ export async function refreshDocMetadata(
   if (!connection) return link;
 
   try {
-    const updatedMetadata = await fetchFreshMetadata(link.externalType, link.externalId, connection, metadata);
+    const updatedMetadata = await fetchFreshMetadata(
+      link.externalType,
+      link.externalId,
+      connection,
+      metadata,
+    );
     if (updatedMetadata) {
       return prisma.externalLink.update({
         where: { id: externalLinkId },

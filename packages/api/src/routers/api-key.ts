@@ -3,8 +3,8 @@ import { z } from 'zod';
 import { router } from '../init.js';
 import { PUBLIC_API_SCOPES } from '../lib/scope-utils.js';
 import { requirePermission } from '../middleware/rbac.js';
-import { requireTier } from '../middleware/tier.js';
 import { tenantProcedure } from '../middleware/tenant.js';
+import { requireTier } from '../middleware/tier.js';
 import { generateApiKey } from '../services/api-key-service.js';
 
 // ---------------------------------------------------------------------------
@@ -40,37 +40,35 @@ export const apiKeyRouter = router({
    * Create a new API key.
    * Returns the plaintext key exactly once — it cannot be retrieved again.
    */
-  create: apiKeyAdminProcedure
-    .input(createInput)
-    .mutation(async ({ ctx, input }) => {
-      const { plaintext, prefix, hash } = await generateApiKey();
+  create: apiKeyAdminProcedure.input(createInput).mutation(async ({ ctx, input }) => {
+    const { plaintext, prefix, hash } = await generateApiKey();
 
-      const key = await ctx.db.organizationApiKey.create({
-        data: {
-          organizationId: ctx.organizationId,
-          name: input.name,
-          prefix,
-          hash,
-          scopes: input.scopes,
-          createdByUserId: ctx.user?.id ?? '',
-          expiresAt: input.expiresAt ?? null,
-        },
-        select: {
-          id: true,
-          name: true,
-          prefix: true,
-          scopes: true,
-          expiresAt: true,
-          createdAt: true,
-        },
-      });
+    const key = await ctx.db.organizationApiKey.create({
+      data: {
+        organizationId: ctx.organizationId,
+        name: input.name,
+        prefix,
+        hash,
+        scopes: input.scopes,
+        createdByUserId: ctx.user?.id ?? '',
+        expiresAt: input.expiresAt ?? null,
+      },
+      select: {
+        id: true,
+        name: true,
+        prefix: true,
+        scopes: true,
+        expiresAt: true,
+        createdAt: true,
+      },
+    });
 
-      return {
-        ...key,
-        // Plaintext returned only on creation
-        plaintext,
-      };
-    }),
+    return {
+      ...key,
+      // Plaintext returned only on creation
+      plaintext,
+    };
+  }),
 
   /**
    * List all API keys for the organization.
@@ -101,44 +99,42 @@ export const apiKeyRouter = router({
   /**
    * Update an API key's name or scopes.
    */
-  update: apiKeyAdminProcedure
-    .input(updateInput)
-    .mutation(async ({ ctx, input }) => {
-      const existing = await ctx.db.organizationApiKey.findFirst({
-        where: {
-          id: input.id,
-          organizationId: ctx.organizationId,
-        },
-      });
+  update: apiKeyAdminProcedure.input(updateInput).mutation(async ({ ctx, input }) => {
+    const existing = await ctx.db.organizationApiKey.findFirst({
+      where: {
+        id: input.id,
+        organizationId: ctx.organizationId,
+      },
+    });
 
-      if (!existing) {
-        throw new TRPCError({ code: 'NOT_FOUND', message: 'API_KEY_NOT_FOUND' });
-      }
+    if (!existing) {
+      throw new TRPCError({ code: 'NOT_FOUND', message: 'API_KEY_NOT_FOUND' });
+    }
 
-      if (existing.revokedAt) {
-        throw new TRPCError({ code: 'BAD_REQUEST', message: 'Cannot update a revoked key.' });
-      }
+    if (existing.revokedAt) {
+      throw new TRPCError({ code: 'BAD_REQUEST', message: 'Cannot update a revoked key.' });
+    }
 
-      const updated = await ctx.db.organizationApiKey.update({
-        where: { id: input.id },
-        data: {
-          ...(input.name !== undefined && { name: input.name }),
-          ...(input.scopes !== undefined && { scopes: input.scopes }),
-        },
-        select: {
-          id: true,
-          name: true,
-          prefix: true,
-          scopes: true,
-          lastUsedAt: true,
-          expiresAt: true,
-          createdAt: true,
-          updatedAt: true,
-        },
-      });
+    const updated = await ctx.db.organizationApiKey.update({
+      where: { id: input.id },
+      data: {
+        ...(input.name !== undefined && { name: input.name }),
+        ...(input.scopes !== undefined && { scopes: input.scopes }),
+      },
+      select: {
+        id: true,
+        name: true,
+        prefix: true,
+        scopes: true,
+        lastUsedAt: true,
+        expiresAt: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
 
-      return updated;
-    }),
+    return updated;
+  }),
 
   /**
    * Revoke an API key. Immediate and irreversible.

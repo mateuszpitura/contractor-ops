@@ -191,7 +191,7 @@ export function TaskCard({ index, onRemove, allTasks, form, dragHandleProps }: T
               {t(`taskType_${taskType}`)}
             </Badge>
 
-            {task?.assigneeMode && (
+            {!!task?.assigneeMode && (
               <span className="hidden text-xs text-muted-foreground sm:inline">
                 {t(`assigneeMode_${assigneeMode}`)}
               </span>
@@ -204,7 +204,7 @@ export function TaskCard({ index, onRemove, allTasks, form, dragHandleProps }: T
               </span>
             ) : null}
 
-            {task?.required && (
+            {!!task?.required && (
               <Badge variant="default" className="shrink-0 text-xs">
                 {t('requiredTask')}
               </Badge>
@@ -363,9 +363,8 @@ export function TaskCard({ index, onRemove, allTasks, form, dragHandleProps }: T
             {/* Due offset */}
             <div className="space-y-1.5">
               <Label id={`task-due-label-${index}`}>{t('dueOffset')}</Label>
-              <div
+              <fieldset
                 className="flex items-center gap-2"
-                role="group"
                 aria-labelledby={`task-due-label-${index}`}>
                 <Input
                   id={`task-due-days-${index}`}
@@ -391,7 +390,7 @@ export function TaskCard({ index, onRemove, allTasks, form, dragHandleProps }: T
                   aria-label={t('dueOffsetHours')}
                 />
                 <span className="text-sm text-muted-foreground">{t('dueOffsetHours')}</span>
-              </div>
+              </fieldset>
             </div>
 
             {/* Required toggle */}
@@ -452,13 +451,13 @@ export function TaskCard({ index, onRemove, allTasks, form, dragHandleProps }: T
             </div>
 
             {/* Jira integration — only for saved task templates */}
-            {task?.id && <JiraTaskConfig taskTemplateId={task.id} />}
+            {!!task?.id && <JiraTaskConfig taskTemplateId={task.id} />}
 
             {/* Linear integration — only for saved task templates (D-05) */}
-            {task?.id && <LinearTaskConfig taskTemplateId={task.id} />}
+            {!!task?.id && <LinearTaskConfig taskTemplateId={task.id} />}
 
             {/* Calendar integration — only for saved task templates */}
-            {task?.id && <CalendarTaskConfig taskTemplateId={task.id} />}
+            {!!task?.id && <CalendarTaskConfig taskTemplateId={task.id} />}
 
             {/* Actions */}
             <div className="flex items-center justify-between border-t pt-3">

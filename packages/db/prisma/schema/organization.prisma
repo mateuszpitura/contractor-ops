@@ -96,6 +96,7 @@ model Organization {
   govApiAuditLogs             GovApiAuditLog[]
   zatcaChainEntries           ZatcaInvoiceChain[]
   taxIdValidations            TaxIdValidation[]
+  apiKeys                     OrganizationApiKey[]
 }
 
 model Member {

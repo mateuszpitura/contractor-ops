@@ -90,7 +90,7 @@ function KsefControls() {
         size="sm"
         onClick={() => (syncMutation.mutate as () => void)()}
         disabled={syncMutation.isPending}>
-        {syncMutation.isPending && (
+        {!!syncMutation.isPending && (
           <Loader2 className="me-1.5 size-3.5 animate-spin" aria-hidden="true" />
         )}
         {syncMutation.isPending ? t('syncing') : t('syncNow')}

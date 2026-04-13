@@ -117,11 +117,15 @@ export function ReturnApprovalBanner({ returnRequest }: ReturnApprovalBannerProp
               size="sm"
               onClick={() => setRejectDialogOpen(true)}
               disabled={isPending}>
-              {rejectMutation.isPending && <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />}
+              {!!rejectMutation.isPending && (
+                <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />
+              )}
               {t('reject')}
             </Button>
             <Button size="sm" onClick={handleApprove} disabled={isPending}>
-              {approveMutation.isPending && <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />}
+              {!!approveMutation.isPending && (
+                <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />
+              )}
               {t('approve')}
             </Button>
           </div>
@@ -143,7 +147,9 @@ export function ReturnApprovalBanner({ returnRequest }: ReturnApprovalBannerProp
               variant="destructive"
               onClick={handleReject}
               disabled={rejectMutation.isPending}>
-              {rejectMutation.isPending && <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />}
+              {!!rejectMutation.isPending && (
+                <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />
+              )}
               {t('reject')}
             </AlertDialogAction>
           </AlertDialogFooter>

@@ -1,4 +1,4 @@
-import type { Prisma } from '@contractor-ops/db';
+import type { Prisma, TaxIdType } from '@contractor-ops/db';
 import {
   contractorCreateSchema,
   contractorLifecycleTransitionSchema,
@@ -11,6 +11,7 @@ import {
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import * as E from '../errors.js';
+import { getHmrcVatClient, getViesClient } from '../gov-api-clients.js';
 import { router } from '../init.js';
 import { requirePermission } from '../middleware/rbac.js';
 import { tenantProcedure } from '../middleware/tenant.js';
@@ -18,6 +19,7 @@ import { encryptBankAccount } from '../services/bank-account-crypto.js';
 import { syncSeatCountForOrg } from '../services/billing-service.js';
 import { CacheKeys, invalidateByPrefix } from '../services/cache.js';
 import { sanitizeStrings } from '../services/sanitize.js';
+import { validateTaxId } from '../services/tax-id-validation.service.js';
 
 // ---------------------------------------------------------------------------
 // Lifecycle transition map
@@ -149,6 +151,63 @@ function computeListHealthBadge(counts: {
  */
 function plain<T>(data: T): T {
   return JSON.parse(JSON.stringify(data)) as T;
+}
+
+// ---------------------------------------------------------------------------
+// Contractor update helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Builds a Prisma relation connect/disconnect object for optional relation fields.
+ */
+function relationUpdate(
+  id: string | undefined | null,
+): { connect: { id: string } } | { disconnect: true } | undefined {
+  if (id === undefined) return;
+  return id ? { connect: { id } } : { disconnect: true };
+}
+
+/**
+ * Builds the Prisma update data for contractor relation fields.
+ */
+function buildContractorRelationUpdates(input: {
+  ownerUserId?: string | null;
+  primaryTeamId?: string | null;
+  primaryProjectId?: string | null;
+  defaultCostCenterId?: string | null;
+}): Prisma.ContractorUpdateInput {
+  const updateData: Prisma.ContractorUpdateInput = {};
+
+  const ownerUpdate = relationUpdate(input.ownerUserId);
+  if (ownerUpdate) updateData.owner = ownerUpdate;
+
+  const teamUpdate = relationUpdate(input.primaryTeamId);
+  if (teamUpdate) updateData.primaryTeam = teamUpdate;
+
+  const projectUpdate = relationUpdate(input.primaryProjectId);
+  if (projectUpdate) updateData.primaryProject = projectUpdate;
+
+  const costCenterUpdate = relationUpdate(input.defaultCostCenterId);
+  if (costCenterUpdate) updateData.defaultCostCenter = costCenterUpdate;
+
+  return updateData;
+}
+
+/**
+ * Merges billing custom fields into the existing customFieldsJson.
+ */
+function mergeCustomBillingFields(
+  existing: Record<string, unknown>,
+  billingModel: unknown,
+  rateValueMinor: unknown,
+): Record<string, unknown> | undefined {
+  if (billingModel === undefined && rateValueMinor === undefined) return;
+
+  return {
+    ...existing,
+    ...(billingModel === undefined ? {} : { billingModel }),
+    ...(rateValueMinor === undefined ? {} : { rateValueMinor }),
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -500,41 +559,85 @@ export const contractorRouter = router({
 
       const updateData: Prisma.ContractorUpdateInput = {
         ...companyFields,
+        ...buildContractorRelationUpdates({
+          ownerUserId,
+          primaryTeamId,
+          primaryProjectId,
+          defaultCostCenterId,
+        }),
       };
 
-      if (ownerUserId !== undefined) {
-        updateData.owner = ownerUserId ? { connect: { id: ownerUserId } } : { disconnect: true };
-      }
-      if (primaryTeamId !== undefined) {
-        updateData.primaryTeam = primaryTeamId
-          ? { connect: { id: primaryTeamId } }
-          : { disconnect: true };
-      }
-      if (primaryProjectId !== undefined) {
-        updateData.primaryProject = primaryProjectId
-          ? { connect: { id: primaryProjectId } }
-          : { disconnect: true };
-      }
-      if (defaultCostCenterId !== undefined) {
-        updateData.defaultCostCenter = defaultCostCenterId
-          ? { connect: { id: defaultCostCenterId } }
-          : { disconnect: true };
-      }
-
       // Update customFieldsJson for billing fields
-      if (billingModel !== undefined || rateValueMinor !== undefined) {
-        const currentCustom = (existing.customFieldsJson as Record<string, unknown>) ?? {};
-        updateData.customFieldsJson = {
-          ...currentCustom,
-          ...(billingModel === undefined ? {} : { billingModel }),
-          ...(rateValueMinor === undefined ? {} : { rateValueMinor }),
-        };
+      const mergedCustomFields = mergeCustomBillingFields(
+        (existing.customFieldsJson as Record<string, unknown>) ?? {},
+        billingModel,
+        rateValueMinor,
+      );
+      if (mergedCustomFields) {
+        updateData.customFieldsJson = mergedCustomFields;
       }
 
       const updated = await ctx.db.contractor.update({
         where: { id },
         data: updateData,
       });
+
+      // -----------------------------------------------------------------------
+      // Phase 57 · Plan 04 — D-07 trigger 1
+      //
+      // When the VAT-number field (stored on Contractor.vatId regardless of
+      // UK vatRegistrationNumber vs DE ustIdNr) changes, dispatch validation
+      // inline (awaited) so the profile save + validation complete in a
+      // single round-trip. The orchestrator soft-fails on HMRC/VIES outage
+      // (Plan 57-03 D-08) so the save is never hard-blocked.
+      //
+      // Scope guard: only VAT-number changes trigger. Unrelated field edits
+      // (phone, address) must NOT fire HMRC/VIES calls.
+      //
+      // Clear path: when the user nulls the VAT number, clear the summary
+      // fields without any API call and without writing a TaxIdValidation
+      // row.
+      // -----------------------------------------------------------------------
+      const priorVatId = existing.vatId ?? null;
+      const nextVatId = updated.vatId ?? null;
+      if (priorVatId !== nextVatId) {
+        if (nextVatId) {
+          const taxIdType: TaxIdType | null =
+            updated.countryCode === 'GB'
+              ? 'GB_VAT'
+              : updated.countryCode === 'DE'
+                ? 'DE_USTIDNR'
+                : null;
+          if (taxIdType) {
+            // Awaited inline: user expects fresh `latestVatValidationStatus`
+            // on the next profile render. Soft-fail handled by orchestrator.
+            await validateTaxId(
+              {
+                organizationId: ctx.organizationId,
+                contractorId: id,
+                taxIdType,
+                taxIdValue: nextVatId,
+                actor: { userId: ctx.user.id },
+              },
+              {
+                prisma: ctx.db,
+                hmrcClient: getHmrcVatClient(),
+                viesClient: getViesClient(),
+              },
+            );
+          }
+          // Unsupported countries: leave summary fields as-is; nothing to validate.
+        } else {
+          // User cleared VAT — null summary fields; no API call.
+          await ctx.db.contractor.update({
+            where: { id },
+            data: {
+              latestVatValidatedAt: null,
+              latestVatValidationStatus: null,
+            },
+          });
+        }
+      }
 
       // Update default billing profile if billing fields changed
       if (bankAccount !== undefined || paymentTermsDays !== undefined) {
@@ -1065,5 +1168,131 @@ export const contractorRouter = router({
     .query(({ input }) => {
       const valid = validateTin(input.countryCode, input.tin);
       return { valid };
+    }),
+
+  // ---------------------------------------------------------------------------
+  // Phase 57 · Plan 04 — HMRC / VIES VAT-ID validation
+  // ---------------------------------------------------------------------------
+  //
+  // D-07 trigger 3 (`validateVat`) and explicit-revalidate (`revalidateVat`).
+  // Both mutations route through the Plan 57-03 orchestrator which handles
+  // pre-flight checksum, gov-api dispatch, atomic dual-write, and soft-fail.
+  //
+  // Tenant isolation: the contractor is loaded with `organizationId:
+  // ctx.organizationId` — cross-tenant calls surface as NOT_FOUND.
+  // ---------------------------------------------------------------------------
+
+  /** Validate a contractor's VAT / USt-IdNr against HMRC / VIES (D-07 trigger 3). */
+  validateVat: tenantProcedure
+    .use(requirePermission({ contractor: ['update'] }))
+    .input(z.object({ contractorId: z.string().min(1) }))
+    .mutation(async ({ ctx, input }) => {
+      const contractor = await ctx.db.contractor.findFirst({
+        where: {
+          id: input.contractorId,
+          organizationId: ctx.organizationId,
+          deletedAt: null,
+        },
+        select: { id: true, countryCode: true, vatId: true },
+      });
+      if (!contractor) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: E.CONTRACTOR_NOT_FOUND });
+      }
+      if (!contractor.vatId) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Contractor has no VAT ID to validate',
+        });
+      }
+      const taxIdType: TaxIdType | null =
+        contractor.countryCode === 'GB'
+          ? 'GB_VAT'
+          : contractor.countryCode === 'DE'
+            ? 'DE_USTIDNR'
+            : null;
+      if (!taxIdType) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'VAT validation not supported for this country',
+        });
+      }
+      const result = await validateTaxId(
+        {
+          organizationId: ctx.organizationId,
+          contractorId: contractor.id,
+          taxIdType,
+          taxIdValue: contractor.vatId,
+          actor: { userId: ctx.user.id },
+        },
+        {
+          prisma: ctx.db,
+          hmrcClient: getHmrcVatClient(),
+          viesClient: getViesClient(),
+        },
+      );
+      return {
+        responseStatus: result.responseStatus,
+        confirmationRef: result.confirmationRef,
+        validatedAt: result.requestedAt,
+        source: result.source,
+      };
+    }),
+
+  /** Re-validate on demand (same pipeline; distinguished by audit intent). */
+  revalidateVat: tenantProcedure
+    .use(requirePermission({ contractor: ['update'] }))
+    .input(z.object({ contractorId: z.string().min(1) }))
+    .mutation(async ({ ctx, input }) => {
+      const contractor = await ctx.db.contractor.findFirst({
+        where: {
+          id: input.contractorId,
+          organizationId: ctx.organizationId,
+          deletedAt: null,
+        },
+        select: { id: true, countryCode: true, vatId: true },
+      });
+      if (!contractor) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: E.CONTRACTOR_NOT_FOUND });
+      }
+      if (!contractor.vatId) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Contractor has no VAT ID to validate',
+        });
+      }
+      const taxIdType: TaxIdType | null =
+        contractor.countryCode === 'GB'
+          ? 'GB_VAT'
+          : contractor.countryCode === 'DE'
+            ? 'DE_USTIDNR'
+            : null;
+      if (!taxIdType) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'VAT validation not supported for this country',
+        });
+      }
+      const result = await validateTaxId(
+        {
+          organizationId: ctx.organizationId,
+          contractorId: contractor.id,
+          taxIdType,
+          taxIdValue: contractor.vatId,
+          // `intent` flows through to the orchestrator's logging / audit
+          // surface; the distinguishing mark from validateVat lives here.
+          actor: { userId: ctx.user.id },
+        },
+        {
+          prisma: ctx.db,
+          hmrcClient: getHmrcVatClient(),
+          viesClient: getViesClient(),
+        },
+      );
+      return {
+        responseStatus: result.responseStatus,
+        confirmationRef: result.confirmationRef,
+        validatedAt: result.requestedAt,
+        source: result.source,
+      };
     }),
 });

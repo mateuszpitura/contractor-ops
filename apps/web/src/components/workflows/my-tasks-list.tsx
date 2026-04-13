@@ -92,6 +92,7 @@ export function MyTasksList() {
     return (
       <div className="space-y-3">
         {Array.from({ length: 5 }).map((_, i) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
           <Card key={`skel-${i}`} className="flex items-center gap-4 p-4">
             <Skeleton className="h-5 w-5 rounded-full shrink-0" />
             <div className="flex-1 space-y-2">
@@ -159,7 +160,7 @@ export function MyTasksList() {
                 </div>
 
                 {/* Due date */}
-                {task.dueAt && (
+                {!!task.dueAt && (
                   <span
                     className={`text-[13px] shrink-0 ${
                       task.isOverdue ? 'text-destructive font-medium' : 'text-muted-foreground'

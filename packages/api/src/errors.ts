@@ -104,6 +104,11 @@ export const ESIGN_DOWNLOAD_FAILED = 'ESIGN_DOWNLOAD_FAILED';
 export const ESIGN_ENVELOPE_NOT_FOUND = 'ESIGN_ENVELOPE_NOT_FOUND';
 export const ESIGN_NO_EXTERNAL_ID = 'ESIGN_NO_EXTERNAL_ID';
 
+// ─── API Key ────────────────────────────────────────────────────
+export const INVALID_API_KEY = 'INVALID_API_KEY';
+export const API_KEY_REVOKED = 'API_KEY_REVOKED';
+export const API_KEY_EXPIRED = 'API_KEY_EXPIRED';
+
 // ─── Validation (import processor) ──────────────────────────────
 export const VALIDATION_LEGAL_NAME_REQUIRED = 'VALIDATION_LEGAL_NAME_REQUIRED';
 export const VALIDATION_TAX_ID_REQUIRED = 'VALIDATION_TAX_ID_REQUIRED';

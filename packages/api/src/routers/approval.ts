@@ -45,6 +45,222 @@ function plain<T>(data: T): T {
   return JSON.parse(JSON.stringify(data)) as T;
 }
 
+// ---------------------------------------------------------------------------
+// Step validation helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Validates that an approval step is PENDING and assigned to the given user.
+ * Throws appropriate TRPCErrors on failure. Caller is responsible for fetching
+ * the step with the desired include/select to preserve Prisma types.
+ */
+function validateStepForAction(
+  step: { status: string; approverUserId: string | null } | null,
+  userId: string | undefined,
+): asserts step is NonNullable<typeof step> {
+  if (!step) {
+    throw new TRPCError({ code: 'NOT_FOUND', message: E.APPROVAL_STEP_NOT_FOUND });
+  }
+
+  if (step.status !== 'PENDING') {
+    throw new TRPCError({ code: 'BAD_REQUEST', message: E.APPROVAL_STEP_NOT_PENDING });
+  }
+
+  if (step.approverUserId !== userId) {
+    throw new TRPCError({ code: 'FORBIDDEN', message: E.APPROVAL_NOT_ASSIGNED });
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Notification helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Dispatches an approval decision notification to the flow submitter.
+ */
+function dispatchDecisionNotification(
+  organizationId: string,
+  decision: 'approved' | 'rejected',
+  invoice: { id: string; invoiceNumber: string | null } | null,
+  submitterUserId: string | null | undefined,
+  approverName: string,
+  comment?: string,
+) {
+  if (!(submitterUserId && invoice)) return;
+
+  const title =
+    decision === 'approved'
+      ? `Invoice ${invoice.invoiceNumber} approved`
+      : `Invoice ${invoice.invoiceNumber} rejected`;
+
+  const body =
+    decision === 'approved'
+      ? `Approved by ${approverName}`
+      : `Rejected by ${approverName}: ${comment ?? ''}`;
+
+  dispatch({
+    organizationId,
+    type: 'APPROVAL_DECISION',
+    recipientUserIds: [submitterUserId],
+    title,
+    body,
+    entityType: 'INVOICE',
+    entityId: invoice.id,
+    metadata: {
+      invoiceNumber: invoice.invoiceNumber,
+      decision,
+      approverName,
+      ...(comment ? { comment } : {}),
+    },
+  }).catch(err =>
+    console.error(`[approval] dispatch APPROVAL_DECISION (${decision}) failed:`, err),
+  );
+}
+
+/**
+ * Dispatches an approval request notification to the next approver in a flow.
+ */
+async function dispatchNextApproverNotification(
+  db: TxClient,
+  organizationId: string,
+  invoice: {
+    id: string;
+    invoiceNumber: string | null;
+    totalMinor: number;
+    currency: string;
+    contractorId: string | null;
+  },
+  flowId: string,
+  nextStep: { approverUserId: string | null; slaDeadline: Date | null },
+) {
+  if (!nextStep.approverUserId) return;
+
+  const contractor = invoice.contractorId
+    ? await db.contractor.findUnique({
+        where: { id: invoice.contractorId },
+        select: { legalName: true },
+      })
+    : null;
+
+  const slaDeadline = nextStep.slaDeadline ? new Date(nextStep.slaDeadline).toISOString() : '';
+
+  dispatch({
+    organizationId,
+    type: 'APPROVAL_REQUEST',
+    recipientUserIds: [nextStep.approverUserId],
+    title: `Approval requested for ${invoice.invoiceNumber}`,
+    body: `${contractor?.legalName ?? 'Unknown'} - ${(invoice.totalMinor / 100).toFixed(2)} ${invoice.currency}`,
+    entityType: 'INVOICE',
+    entityId: invoice.id,
+    metadata: {
+      invoiceNumber: invoice.invoiceNumber,
+      contractorName: contractor?.legalName ?? 'Unknown',
+      amount: (invoice.totalMinor / 100).toFixed(2),
+      currency: invoice.currency,
+      slaDeadline,
+      invoiceId: invoice.id,
+      flowId,
+    },
+  }).catch(err => console.error('[approval] dispatch APPROVAL_REQUEST (next level) failed:', err));
+}
+
+// ---------------------------------------------------------------------------
+// Audit trail helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Builds the audit trail events array from a flow with steps and decisions.
+ */
+function buildAuditEvents(
+  flow: {
+    startedAt: Date;
+    completedAt: Date | null;
+    status: string;
+    chainConfigId: string | null;
+    steps: Array<{
+      name: string | null;
+      stepOrder: number;
+      status: string;
+      slaDeadline: Date | null;
+      actedAt: Date | null;
+      decisions: Array<{
+        decision: string;
+        comment: string | null;
+        createdAt: Date;
+        actor: { id: string; name: string | null; email: string; image: string | null } | null;
+      }>;
+    }>;
+  },
+  chainName: string | null,
+): Record<string, unknown>[] {
+  const events: Record<string, unknown>[] = [];
+
+  // System event: submitted
+  events.push({
+    type: 'system',
+    label: 'submitted',
+    timestamp: flow.startedAt.toISOString(),
+  });
+
+  // System event: routed to chain
+  if (flow.chainConfigId) {
+    events.push({
+      type: 'system',
+      label: 'routed',
+      chainName: chainName ?? 'Unknown chain',
+      timestamp: flow.startedAt.toISOString(),
+    });
+  }
+
+  // Human decisions and SLA breach events
+  for (const step of flow.steps) {
+    for (const decision of step.decisions) {
+      events.push({
+        type: 'decision',
+        label: decision.decision.toLowerCase(),
+        levelName: step.name,
+        stepOrder: step.stepOrder,
+        actor: decision.actor,
+        comment: decision.comment,
+        timestamp: decision.createdAt.toISOString(),
+      });
+    }
+
+    // SLA breach detection
+    if (step.slaDeadline) {
+      const now = new Date();
+      const breached =
+        (step.actedAt && step.actedAt > step.slaDeadline) ||
+        (step.status === 'PENDING' && now > step.slaDeadline);
+
+      if (breached) {
+        events.push({
+          type: 'system',
+          label: approvalAuditSystemLabel.slaBreached,
+          levelName: step.name,
+          timestamp: step.slaDeadline.toISOString(),
+        });
+      }
+    }
+  }
+
+  // Flow completion event
+  if (flow.completedAt) {
+    events.push({
+      type: 'system',
+      label: flow.status === 'APPROVED' ? 'approved' : 'rejected',
+      timestamp: flow.completedAt.toISOString(),
+    });
+  }
+
+  // Sort by timestamp DESC (most recent first)
+  events.sort(
+    (a, b) => new Date(b.timestamp as string).getTime() - new Date(a.timestamp as string).getTime(),
+  );
+
+  return events;
+}
+
 /** WHERE fragments for raw SQL — must stay aligned with `where` below. */
 function approvalQueueSqlConditions(
   organizationId: string,
@@ -451,35 +667,10 @@ export const approvalRouter = router({
     .mutation(async ({ ctx, input }) => {
       const result = await ctx.db.$transaction(async tx => {
         const step = await tx.approvalStep.findFirst({
-          where: {
-            id: input.stepId,
-            organizationId: ctx.organizationId,
-          },
-          include: {
-            approvalFlow: true,
-          },
+          where: { id: input.stepId, organizationId: ctx.organizationId },
+          include: { approvalFlow: true },
         });
-
-        if (!step) {
-          throw new TRPCError({
-            code: 'NOT_FOUND',
-            message: E.APPROVAL_STEP_NOT_FOUND,
-          });
-        }
-
-        if (step.status !== 'PENDING') {
-          throw new TRPCError({
-            code: 'BAD_REQUEST',
-            message: E.APPROVAL_STEP_NOT_PENDING,
-          });
-        }
-
-        if (step.approverUserId !== ctx.user?.id) {
-          throw new TRPCError({
-            code: 'FORBIDDEN',
-            message: E.APPROVAL_NOT_ASSIGNED,
-          });
-        }
+        validateStepForAction(step, ctx.user?.id);
 
         // Create decision record
         await tx.approvalDecision.create({
@@ -540,22 +731,13 @@ export const approvalRouter = router({
       });
 
       // Fire-and-forget: dispatch APPROVAL_DECISION to the user who submitted
-      if (result.flow?.createdByUserId && result.invoice) {
-        dispatch({
-          organizationId: ctx.organizationId,
-          type: 'APPROVAL_DECISION',
-          recipientUserIds: [result.flow.createdByUserId],
-          title: `Invoice ${result.invoice.invoiceNumber} approved`,
-          body: `Approved by ${ctx.user?.name ?? 'approver'}`,
-          entityType: 'INVOICE',
-          entityId: result.invoice.id,
-          metadata: {
-            invoiceNumber: result.invoice.invoiceNumber,
-            decision: 'approved',
-            approverName: ctx.user?.name ?? 'approver',
-          },
-        }).catch(err => console.error('[approval] dispatch APPROVAL_DECISION failed:', err));
-      }
+      dispatchDecisionNotification(
+        ctx.organizationId,
+        'approved',
+        result.invoice,
+        result.flow?.createdByUserId,
+        ctx.user?.name ?? 'approver',
+      );
 
       // If flow advanced to next step, dispatch APPROVAL_REQUEST to next approver
       if (
@@ -567,37 +749,13 @@ export const approvalRouter = router({
         const nextStep = result.flow.steps.find(
           s => s.stepOrder === result.advanceResult.nextStepOrder,
         );
-        if (nextStep?.approverUserId) {
-          const contractor = result.invoice.contractorId
-            ? await ctx.db.contractor.findUnique({
-                where: { id: result.invoice.contractorId },
-                select: { legalName: true },
-              })
-            : null;
-
-          const slaDeadline = nextStep.slaDeadline
-            ? new Date(nextStep.slaDeadline).toISOString()
-            : '';
-
-          dispatch({
-            organizationId: ctx.organizationId,
-            type: 'APPROVAL_REQUEST',
-            recipientUserIds: [nextStep.approverUserId],
-            title: `Approval requested for ${result.invoice.invoiceNumber}`,
-            body: `${contractor?.legalName ?? 'Unknown'} - ${(result.invoice.totalMinor / 100).toFixed(2)} ${result.invoice.currency}`,
-            entityType: 'INVOICE',
-            entityId: result.invoice.id,
-            metadata: {
-              invoiceNumber: result.invoice.invoiceNumber,
-              contractorName: contractor?.legalName ?? 'Unknown',
-              amount: (result.invoice.totalMinor / 100).toFixed(2),
-              currency: result.invoice.currency,
-              slaDeadline,
-              invoiceId: result.invoice.id,
-              flowId: result.flow.id,
-            },
-          }).catch(err =>
-            console.error('[approval] dispatch APPROVAL_REQUEST (next level) failed:', err),
+        if (nextStep) {
+          void dispatchNextApproverNotification(
+            ctx.db as unknown as TxClient,
+            ctx.organizationId,
+            result.invoice,
+            result.flow.id,
+            nextStep,
           );
         }
       }
@@ -636,35 +794,10 @@ export const approvalRouter = router({
     .mutation(async ({ ctx, input }) => {
       const result = await ctx.db.$transaction(async tx => {
         const step = await tx.approvalStep.findFirst({
-          where: {
-            id: input.stepId,
-            organizationId: ctx.organizationId,
-          },
-          include: {
-            approvalFlow: true,
-          },
+          where: { id: input.stepId, organizationId: ctx.organizationId },
+          include: { approvalFlow: true },
         });
-
-        if (!step) {
-          throw new TRPCError({
-            code: 'NOT_FOUND',
-            message: E.APPROVAL_STEP_NOT_FOUND,
-          });
-        }
-
-        if (step.status !== 'PENDING') {
-          throw new TRPCError({
-            code: 'BAD_REQUEST',
-            message: E.APPROVAL_STEP_NOT_PENDING,
-          });
-        }
-
-        if (step.approverUserId !== ctx.user?.id) {
-          throw new TRPCError({
-            code: 'FORBIDDEN',
-            message: E.APPROVAL_NOT_ASSIGNED,
-          });
-        }
+        validateStepForAction(step, ctx.user?.id);
 
         // Create decision record
         await tx.approvalDecision.create({
@@ -718,25 +851,14 @@ export const approvalRouter = router({
       });
 
       // Fire-and-forget: dispatch APPROVAL_DECISION (rejected) to submitter
-      if (result.flow?.createdByUserId && result.invoice) {
-        dispatch({
-          organizationId: ctx.organizationId,
-          type: 'APPROVAL_DECISION',
-          recipientUserIds: [result.flow.createdByUserId],
-          title: `Invoice ${result.invoice.invoiceNumber} rejected`,
-          body: `Rejected by ${ctx.user?.name ?? 'approver'}: ${input.comment}`,
-          entityType: 'INVOICE',
-          entityId: result.invoice.id,
-          metadata: {
-            invoiceNumber: result.invoice.invoiceNumber,
-            decision: 'rejected',
-            approverName: ctx.user?.name ?? 'approver',
-            comment: input.comment,
-          },
-        }).catch(err =>
-          console.error('[approval] dispatch APPROVAL_DECISION (reject) failed:', err),
-        );
-      }
+      dispatchDecisionNotification(
+        ctx.organizationId,
+        'rejected',
+        result.invoice,
+        result.flow?.createdByUserId,
+        ctx.user?.name ?? 'approver',
+        input.comment,
+      );
 
       return plain(result.updatedStep);
     }),
@@ -752,32 +874,9 @@ export const approvalRouter = router({
     .mutation(async ({ ctx, input }) => {
       const result = await ctx.db.$transaction(async tx => {
         const step = await tx.approvalStep.findFirst({
-          where: {
-            id: input.stepId,
-            organizationId: ctx.organizationId,
-          },
+          where: { id: input.stepId, organizationId: ctx.organizationId },
         });
-
-        if (!step) {
-          throw new TRPCError({
-            code: 'NOT_FOUND',
-            message: E.APPROVAL_STEP_NOT_FOUND,
-          });
-        }
-
-        if (step.status !== 'PENDING') {
-          throw new TRPCError({
-            code: 'BAD_REQUEST',
-            message: E.APPROVAL_STEP_NOT_PENDING,
-          });
-        }
-
-        if (step.approverUserId !== ctx.user?.id) {
-          throw new TRPCError({
-            code: 'FORBIDDEN',
-            message: E.APPROVAL_NOT_ASSIGNED,
-          });
-        }
+        validateStepForAction(step, ctx.user?.id);
 
         // Verify delegate user exists in the organization
         const delegateMember = await tx.member.findFirst({
@@ -831,32 +930,9 @@ export const approvalRouter = router({
     .mutation(async ({ ctx, input }) => {
       const result = await ctx.db.$transaction(async tx => {
         const step = await tx.approvalStep.findFirst({
-          where: {
-            id: input.stepId,
-            organizationId: ctx.organizationId,
-          },
+          where: { id: input.stepId, organizationId: ctx.organizationId },
         });
-
-        if (!step) {
-          throw new TRPCError({
-            code: 'NOT_FOUND',
-            message: E.APPROVAL_STEP_NOT_FOUND,
-          });
-        }
-
-        if (step.status !== 'PENDING') {
-          throw new TRPCError({
-            code: 'BAD_REQUEST',
-            message: E.APPROVAL_STEP_NOT_PENDING,
-          });
-        }
-
-        if (step.approverUserId !== ctx.user?.id) {
-          throw new TRPCError({
-            code: 'FORBIDDEN',
-            message: E.APPROVAL_NOT_ASSIGNED,
-          });
-        }
+        validateStepForAction(step, ctx.user?.id);
 
         // Create decision record
         await tx.approvalDecision.create({
@@ -1254,71 +1330,7 @@ export const approvalRouter = router({
         steps: resolvedSteps,
       };
 
-      const events: Record<string, unknown>[] = [];
-
-      // System event: submitted
-      events.push({
-        type: 'system',
-        label: 'submitted',
-        timestamp: flow.startedAt.toISOString(),
-      });
-
-      // System event: routed to chain
-      if (flow.chainConfigId) {
-        events.push({
-          type: 'system',
-          label: 'routed',
-          chainName: chainName ?? 'Unknown chain',
-          timestamp: flow.startedAt.toISOString(),
-        });
-      }
-
-      // Human decisions and SLA breach events
-      for (const step of flow.steps) {
-        for (const decision of step.decisions) {
-          events.push({
-            type: 'decision',
-            label: decision.decision.toLowerCase(),
-            levelName: step.name,
-            stepOrder: step.stepOrder,
-            actor: decision.actor,
-            comment: decision.comment,
-            timestamp: decision.createdAt.toISOString(),
-          });
-        }
-
-        // SLA breach detection
-        if (step.slaDeadline) {
-          const now = new Date();
-          const breached =
-            (step.actedAt && step.actedAt > step.slaDeadline) ||
-            (step.status === 'PENDING' && now > step.slaDeadline);
-
-          if (breached) {
-            events.push({
-              type: 'system',
-              label: approvalAuditSystemLabel.slaBreached,
-              levelName: step.name,
-              timestamp: step.slaDeadline.toISOString(),
-            });
-          }
-        }
-      }
-
-      // Flow completion event
-      if (flow.completedAt) {
-        events.push({
-          type: 'system',
-          label: flow.status === 'APPROVED' ? 'approved' : 'rejected',
-          timestamp: flow.completedAt.toISOString(),
-        });
-      }
-
-      // Sort by timestamp DESC (most recent first)
-      events.sort(
-        (a, b) =>
-          new Date(b.timestamp as string).getTime() - new Date(a.timestamp as string).getTime(),
-      );
+      const events = buildAuditEvents(flow, chainName);
 
       return plain({ events, flow: flowSummary });
     }),

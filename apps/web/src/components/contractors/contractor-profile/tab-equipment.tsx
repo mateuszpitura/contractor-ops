@@ -64,6 +64,7 @@ export function TabEquipment({ contractorId }: TabEquipmentProps) {
     return (
       <div className="space-y-3">
         {Array.from({ length: 3 }).map((_, i) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
           <div key={`skel-${i}`} className="flex items-center gap-4 py-2">
             <Skeleton className="h-4 w-4" />
             <Skeleton className="h-4 w-40" />

@@ -1,6 +1,7 @@
 'use client';
 
 import { Loader2 } from 'lucide-react';
+import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -80,10 +81,13 @@ export function OrgPicker({ orgs, email, onSelect, loading }: OrgPickerProps) {
               }}>
               <CardContent className="flex items-center gap-3 p-4">
                 {org.orgLogo ? (
-                  <img
+                  <Image
                     src={org.orgLogo}
                     alt={org.orgName}
+                    width={40}
+                    height={40}
                     className="h-10 w-10 shrink-0 rounded-md object-cover"
+                    unoptimized
                   />
                 ) : (
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-muted text-sm font-semibold text-muted-foreground">
@@ -91,7 +95,7 @@ export function OrgPicker({ orgs, email, onSelect, loading }: OrgPickerProps) {
                   </div>
                 )}
                 <span className="text-sm font-semibold">{org.orgName}</span>
-                {isSelected && loading && (
+                {!!isSelected && !!loading && (
                   <Loader2 className="ms-auto h-4 w-4 animate-spin text-muted-foreground" />
                 )}
               </CardContent>

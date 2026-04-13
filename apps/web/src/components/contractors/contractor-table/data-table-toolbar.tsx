@@ -130,7 +130,7 @@ export function DataTableToolbar({
             onChange={e => handleSearchInput(e.target.value)}
             className="h-9 ps-9 pe-8"
           />
-          {isSearching && (
+          {!!isSearching && (
             <Loader2 className="absolute end-2.5 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground" />
           )}
         </div>
@@ -210,7 +210,7 @@ export function DataTableToolbar({
         <div className="flex-1" />
 
         {/* Import CTA */}
-        {onImport && (
+        {!!onImport && (
           <Button size="lg" variant="outline" onClick={onImport}>
             {t('import')}
           </Button>
@@ -299,8 +299,10 @@ function FilterSection({
         {options.map(option => (
           <label
             key={option.value}
+            htmlFor={`filter-${title}-${option.value}`}
             className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-accent">
             <Checkbox
+              id={`filter-${title}-${option.value}`}
               checked={selected.includes(option.value)}
               onCheckedChange={() => onToggle(option.value)}
             />

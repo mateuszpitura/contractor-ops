@@ -16,7 +16,11 @@ vi.mock('@/components/layout/breadcrumb-context', () => ({
 }));
 
 vi.mock('@/components/ui/sidebar', () => ({
-  SidebarTrigger: () => <button data-testid="sidebar-trigger">Menu</button>,
+  SidebarTrigger: () => (
+    <button type="button" data-testid="sidebar-trigger">
+      Menu
+    </button>
+  ),
 }));
 
 vi.mock('@/components/contracts/contract-wizard/wizard-dialog', () => ({

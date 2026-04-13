@@ -116,6 +116,7 @@ export default function PortalContractDetailPage({ params }: { params: Promise<{
           <Card>
             <CardContent className="grid gap-4 p-6 sm:grid-cols-2">
               {Array.from({ length: 8 }).map((_, i) => (
+                // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
                 <div key={`skel-${i}`} className="space-y-1">
                   <Skeleton className="h-3 w-24" />
                   <Skeleton className="h-5 w-36" />
@@ -126,6 +127,7 @@ export default function PortalContractDetailPage({ params }: { params: Promise<{
           <div className="space-y-3">
             <Skeleton className="h-6 w-32" />
             {Array.from({ length: 3 }).map((_, i) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
               <Skeleton key={`skel-${i}`} className="h-10 w-full" />
             ))}
           </div>
@@ -223,8 +225,8 @@ export default function PortalContractDetailPage({ params }: { params: Promise<{
               </TableRow>
             </TableHeader>
             <TableBody>
-              {contract.ratePeriods.map((period, i) => (
-                <TableRow key={`skel-${i}`}>
+              {contract.ratePeriods.map(period => (
+                <TableRow key={`${period.validFrom}-${period.rateType}`}>
                   <TableCell>{formatAmount(period.rateValueMinor, period.currency)}</TableCell>
                   <TableCell>{formatContractType(period.rateType)}</TableCell>
                   <TableCell>{formatDate(period.validFrom)}</TableCell>

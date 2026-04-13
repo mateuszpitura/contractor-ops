@@ -72,7 +72,7 @@ function minutesToDisplay(minutes: number): string {
 }
 
 function toDateStr(d: string | Date): string {
-  if (typeof d === 'string') return d.split('T')[0]!;
+  if (typeof d === 'string') return d.split('T')[0] ?? d;
   return format(d, 'yyyy-MM-dd');
 }
 
@@ -154,6 +154,7 @@ export function ApprovalQueueTable({
     return (
       <div className="space-y-3">
         {Array.from({ length: 5 }).map((_, i) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
           <div key={`skel-${i}`} className="flex items-center gap-4 rounded-lg border px-4 py-3">
             <div className="h-4 w-4 animate-pulse rounded bg-muted" />
             <div className="h-4 w-32 animate-pulse rounded bg-muted" />

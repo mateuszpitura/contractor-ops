@@ -12,6 +12,7 @@ import {
   Receipt,
   Settings,
 } from 'lucide-react';
+import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
@@ -113,8 +114,15 @@ export function PortalTopBar({
       <div className="mx-auto flex h-14 max-w-[1200px] items-center gap-4 px-4">
         {/* Left: Org branding */}
         <div className="flex items-center gap-2 shrink-0">
-          {orgLogo && (
-            <img src={orgLogo} alt={orgName} className="h-8 w-8 rounded-md object-cover" />
+          {!!orgLogo && (
+            <Image
+              src={orgLogo}
+              alt={orgName}
+              width={32}
+              height={32}
+              className="h-8 w-8 rounded-md object-cover"
+              unoptimized
+            />
           )}
           <span className="text-sm font-semibold">{orgName}</span>
         </div>

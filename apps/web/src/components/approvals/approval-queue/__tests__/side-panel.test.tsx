@@ -356,7 +356,7 @@ describe('ApprovalSidePanel', () => {
       expect(screen.getByText('Reject invoice', { selector: 'h4' })).toBeInTheDocument();
     });
     // Type a short comment
-    const textarea = screen.getAllByRole('textbox')[0]!;
+    const textarea = screen.getAllByRole('textbox')[0];
     await user.type(textarea, 'short');
     // Should show min chars validation message
     await waitFor(() => {
@@ -372,12 +372,12 @@ describe('ApprovalSidePanel', () => {
     await waitFor(() => {
       expect(screen.getByText('Reject invoice', { selector: 'h4' })).toBeInTheDocument();
     });
-    const textarea = screen.getAllByRole('textbox')[0]!;
+    const textarea = screen.getAllByRole('textbox')[0];
     await user.type(textarea, 'This invoice has incorrect amounts and needs to be revised');
     // "Reject invoice" confirm button should not be disabled
     // The confirm button text is "Reject invoice" (from rejectPopover.confirm translation)
     const allRejectBtns = screen.getAllByRole('button', { name: /reject invoice/i });
-    const confirmBtn = allRejectBtns[allRejectBtns.length - 1]!;
+    const confirmBtn = allRejectBtns[allRejectBtns.length - 1];
     expect(confirmBtn).not.toBeDisabled();
   });
 
@@ -389,11 +389,11 @@ describe('ApprovalSidePanel', () => {
     await waitFor(() => {
       expect(screen.getByText('Reject invoice', { selector: 'h4' })).toBeInTheDocument();
     });
-    const textarea = screen.getAllByRole('textbox')[0]!;
+    const textarea = screen.getAllByRole('textbox')[0];
     await user.type(textarea, 'This invoice has incorrect amounts');
     // The confirm button text is "Reject invoice" (from rejectPopover.confirm translation)
     const allRejectBtns = screen.getAllByRole('button', { name: /reject invoice/i });
-    await user.click(allRejectBtns[allRejectBtns.length - 1]!);
+    await user.click(allRejectBtns[allRejectBtns.length - 1]);
     expect(mockMutate).toHaveBeenCalledWith({
       stepId: 'step-1',
       comment: 'This invoice has incorrect amounts',
@@ -474,7 +474,7 @@ describe('ApprovalSidePanel', () => {
     });
     // Type a clarification comment
     const textareas = document.querySelectorAll('textarea');
-    const clarifyTextarea = textareas[0]! as HTMLTextAreaElement;
+    const clarifyTextarea = textareas[0] as HTMLTextAreaElement;
     await user.type(clarifyTextarea, 'Please provide a breakdown of line items');
     await user.click(screen.getByText('Send request'));
     expect(mockMutate).toHaveBeenCalledWith(
@@ -534,16 +534,16 @@ describe('ApprovalSidePanel', () => {
     });
     // Fill in delegate user ID
     const inputs = document.querySelectorAll('input');
-    const userIdInput = inputs[0]! as HTMLInputElement;
+    const userIdInput = inputs[0] as HTMLInputElement;
     await user.type(userIdInput, 'user-delegate-99');
     // Fill in note
     const textareas = document.querySelectorAll('textarea');
-    const noteTextarea = textareas[0]! as HTMLTextAreaElement;
+    const noteTextarea = textareas[0] as HTMLTextAreaElement;
     await user.type(noteTextarea, 'Out of office, please review');
     // Click delegate confirm - find the button inside the delegate overlay
     const delegateBtns = screen.getAllByText('Delegate approval');
     const confirmBtn = delegateBtns[delegateBtns.length - 1]?.closest('button');
-    await user.click(confirmBtn!);
+    await user.click(confirmBtn);
     expect(mockMutate).toHaveBeenCalledWith(
       expect.objectContaining({
         stepId: 'step-1',
@@ -593,7 +593,7 @@ describe('ApprovalSidePanel', () => {
   it('does not render contractor section when contractor is null', () => {
     const stepNoContractor = {
       ...baseStep,
-      invoice: { ...baseStep.invoice!, contractor: null },
+      invoice: { ...baseStep.invoice, contractor: null },
     };
     render(<ApprovalSidePanel step={stepNoContractor} open={true} onOpenChange={onOpenChange} />);
     expect(screen.queryByText('Acme Corp')).not.toBeInTheDocument();

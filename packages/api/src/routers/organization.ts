@@ -3,6 +3,8 @@ import {
   createOrganizationSchema,
   updateOrganizationSettingsSchema,
 } from '@contractor-ops/validators';
+import { TRPCError } from '@trpc/server';
+import { z } from 'zod';
 import { publicProcedure, router } from '../init.js';
 import { adminProcedure } from '../middleware/rbac.js';
 import { tenantProcedure } from '../middleware/tenant.js';
@@ -89,5 +91,38 @@ export const organizationRouter = router({
       });
 
       return updated;
+    }),
+
+  // ---------------------------------------------------------------------------
+  // Phase 57 · Plan 04 — Kleinunternehmerregelung toggle (DE-only; D-11)
+  // ---------------------------------------------------------------------------
+  //
+  // Flipping this flag has material invoice-generation consequences
+  // (forced `KU` rate on all lines, suppressed VAT breakdown, `§ 19 UStG`
+  // footer notice). The UI wraps this mutation in an AlertDialog.
+  //
+  // Country gate: DE only. UK / other-country orgs attempting to call this
+  // receive FORBIDDEN — Kleinunternehmerregelung is a German-law construct
+  // with no analogue in other jurisdictions.
+  // ---------------------------------------------------------------------------
+  setKleinunternehmer: tenantProcedure
+    .input(z.object({ enabled: z.boolean() }))
+    .mutation(async ({ ctx, input }) => {
+      const org = await ctx.db.organization.findUniqueOrThrow({
+        where: { id: ctx.organizationId },
+        select: { countryCode: true },
+      });
+      if (org.countryCode !== 'DE') {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Kleinunternehmerregelung is only available for German organizations',
+        });
+      }
+      const updated = await ctx.db.organization.update({
+        where: { id: ctx.organizationId },
+        data: { isKleinunternehmer: input.enabled },
+        select: { isKleinunternehmer: true },
+      });
+      return { isKleinunternehmer: updated.isKleinunternehmer };
     }),
 });

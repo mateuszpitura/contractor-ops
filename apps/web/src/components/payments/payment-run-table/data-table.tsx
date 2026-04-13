@@ -76,6 +76,7 @@ export function PaymentRunDataTable({
           <TableBody>
             {isLoading
               ? Array.from({ length: 8 }).map((_, i) => (
+                  // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
                   <TableRow key={`skeleton-${i}`}>
                     {visibleColumns.map(col => (
                       <TableCell key={col.id}>

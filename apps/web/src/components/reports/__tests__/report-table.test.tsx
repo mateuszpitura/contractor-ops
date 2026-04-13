@@ -132,7 +132,7 @@ describe('ReportTable', () => {
     const { user } = setup(<ReportTable<TestRow> {...defaultProps} onSortChange={onSortChange} />);
     await user.click(screen.getByRole('button', { name: /sortBy.*Name/i }));
     expect(onSortChange).toHaveBeenCalled();
-    const [col, order] = onSortChange.mock.calls[0]!;
+    const [col, order] = onSortChange.mock.calls[0];
     expect(col).toBe('name');
     expect(order === 'asc' || order === 'desc').toBe(true);
   });

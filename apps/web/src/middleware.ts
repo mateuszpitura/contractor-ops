@@ -18,7 +18,7 @@ const hasRedis = Boolean(upstashUrl && upstashToken);
 function createLimiter(maxRequests: number, window: Parameters<typeof Ratelimit.slidingWindow>[1]) {
   if (!hasRedis) return null;
   return new Ratelimit({
-    redis: new Redis({ url: upstashUrl!, token: upstashToken! }),
+    redis: new Redis({ url: upstashUrl as string, token: upstashToken as string }),
     limiter: Ratelimit.slidingWindow(maxRequests, window),
     analytics: false,
   });
@@ -178,6 +178,69 @@ function isDashboardRoute(pathname: string): boolean {
 }
 
 // ---------------------------------------------------------------------------
+// Auth guard dispatcher (extracted to reduce middleware complexity)
+// ---------------------------------------------------------------------------
+
+function applyAuthGuards(request: NextRequest, pathname: string): NextResponse | null {
+  const hasSession = request.cookies.has('better-auth.session_token');
+  const localeMatch = pathname.match(/^\/([a-z]{2})(\/.*)?$/);
+  const locale = localeMatch?.[1] ?? 'en';
+  const pathWithoutLocale = localeMatch?.[2] ?? '/';
+
+  if (!hasSession && isDashboardRoute(pathname)) {
+    const url = request.nextUrl.clone();
+    url.pathname = `/${locale}/login`;
+    url.searchParams.set('redirectTo', pathWithoutLocale);
+    return NextResponse.redirect(url);
+  }
+
+  if (hasSession && isAuthRoute(pathname)) {
+    const url = request.nextUrl.clone();
+    const redirectTo = url.searchParams.get('redirectTo');
+    url.pathname = redirectTo ? `/${locale}${redirectTo}` : `/${locale}`;
+    url.search = '';
+    return NextResponse.redirect(url);
+  }
+
+  return null;
+}
+
+// ---------------------------------------------------------------------------
+// Rate limit dispatcher (extracted to reduce middleware complexity)
+// ---------------------------------------------------------------------------
+
+async function applyRateLimits(
+  pathname: string,
+  ip: string,
+  request: NextRequest,
+): Promise<NextResponse | null> {
+  if (pathname.startsWith('/api/auth')) {
+    const { allowed, remaining, limit, reset } = await checkLimit(authLimiter, ip, 'auth', 10);
+    if (!allowed) return rateLimitResponse(remaining, limit, reset);
+  }
+
+  if (pathname.startsWith('/api/portal')) {
+    const { allowed, remaining, limit, reset } = await checkLimit(portalLimiter, ip, 'portal', 10);
+    if (!allowed) return rateLimitResponse(remaining, limit, reset);
+  }
+
+  if (pathname.startsWith('/api/trpc') && !shouldSkipTrpcRateLimitForLoadTest(request)) {
+    const ipResult = await checkLimit(apiLimiter, ip, 'api', 60);
+    if (!ipResult.allowed)
+      return rateLimitResponse(ipResult.remaining, ipResult.limit, ipResult.reset);
+
+    const orgId = request.cookies.get('better-auth.active_organization')?.value;
+    if (orgId) {
+      const orgResult = await checkLimit(orgLimiter, orgId, 'org', 500);
+      if (!orgResult.allowed)
+        return rateLimitResponse(orgResult.remaining, orgResult.limit, orgResult.reset);
+    }
+  }
+
+  return null;
+}
+
+// ---------------------------------------------------------------------------
 // Combined middleware
 // ---------------------------------------------------------------------------
 
@@ -200,32 +263,8 @@ export default async function middleware(request: NextRequest) {
 
   // ── Rate limiting (API routes) ────────────────────────────────────────
 
-  if (pathname.startsWith('/api/auth')) {
-    const { allowed, remaining, limit, reset } = await checkLimit(authLimiter, ip, 'auth', 10);
-    if (!allowed) return rateLimitResponse(remaining, limit, reset);
-  }
-
-  if (pathname.startsWith('/api/portal')) {
-    const { allowed, remaining, limit, reset } = await checkLimit(portalLimiter, ip, 'portal', 10);
-    if (!allowed) return rateLimitResponse(remaining, limit, reset);
-  }
-
-  if (pathname.startsWith('/api/trpc')) {
-    if (!shouldSkipTrpcRateLimitForLoadTest(request)) {
-      // Per-IP rate limit
-      const ipResult = await checkLimit(apiLimiter, ip, 'api', 60);
-      if (!ipResult.allowed)
-        return rateLimitResponse(ipResult.remaining, ipResult.limit, ipResult.reset);
-
-      // Per-org rate limit (extract from session cookie → org cookie if available)
-      const orgId = request.cookies.get('better-auth.active_organization')?.value;
-      if (orgId) {
-        const orgResult = await checkLimit(orgLimiter, orgId, 'org', 500);
-        if (!orgResult.allowed)
-          return rateLimitResponse(orgResult.remaining, orgResult.limit, orgResult.reset);
-      }
-    }
-  }
+  const rateLimitResult = await applyRateLimits(pathname, ip, request);
+  if (rateLimitResult) return rateLimitResult;
 
   // ── Portal subdomain routing ──────────────────────────────────────────
 
@@ -259,26 +298,8 @@ export default async function middleware(request: NextRequest) {
 
   // ── Auth guards for non-portal routes ─────────────────────────────────
 
-  const hasSession = request.cookies.has('better-auth.session_token');
-
-  const localeMatch = pathname.match(/^\/([a-z]{2})(\/.*)?$/);
-  const locale = localeMatch?.[1] ?? 'en';
-  const pathWithoutLocale = localeMatch?.[2] ?? '/';
-
-  if (!hasSession && isDashboardRoute(pathname)) {
-    const url = request.nextUrl.clone();
-    url.pathname = `/${locale}/login`;
-    url.searchParams.set('redirectTo', pathWithoutLocale);
-    return NextResponse.redirect(url);
-  }
-
-  if (hasSession && isAuthRoute(pathname)) {
-    const url = request.nextUrl.clone();
-    const redirectTo = url.searchParams.get('redirectTo');
-    url.pathname = redirectTo ? `/${locale}${redirectTo}` : `/${locale}`;
-    url.search = '';
-    return NextResponse.redirect(url);
-  }
+  const authRedirect = applyAuthGuards(request, pathname);
+  if (authRedirect) return authRedirect;
 
   // Default: next-intl middleware for non-portal requests
   return intlMiddleware(request);

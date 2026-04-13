@@ -109,18 +109,24 @@ export function StepUpload({
     <div className="space-y-6">
       {/* Entity type selection */}
       <div className="space-y-3">
-        <label className="text-sm font-medium">{t('upload.entityType')}</label>
+        <label htmlFor="import-entity-contractor" className="text-sm font-medium">
+          {t('upload.entityType')}
+        </label>
         <RadioGroup
           value={entityType}
           onValueChange={val => onEntityTypeChange(val as EntityType)}
           aria-label={t('upload.entityType')}
           className="flex gap-4">
-          <label className="flex cursor-pointer items-center gap-2">
-            <RadioGroupItem value="contractor" />
+          <label
+            htmlFor="import-entity-contractor"
+            className="flex cursor-pointer items-center gap-2">
+            <RadioGroupItem id="import-entity-contractor" value="contractor" />
             <span className="text-sm">{t('upload.contractors')}</span>
           </label>
-          <label className="flex cursor-pointer items-center gap-2">
-            <RadioGroupItem value="contract" />
+          <label
+            htmlFor="import-entity-contract"
+            className="flex cursor-pointer items-center gap-2">
+            <RadioGroupItem id="import-entity-contract" value="contract" />
             <span className="text-sm">{t('upload.contracts')}</span>
           </label>
         </RadioGroup>

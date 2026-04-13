@@ -66,7 +66,7 @@ export function SyncStatusSection({ onImportClick }: SyncStatusSectionProps) {
     <Card>
       <CardContent className="flex flex-wrap items-center gap-4 py-3">
         <div className="flex-1 space-y-0.5 text-sm">
-          {lastSyncLabel && <p className="text-muted-foreground">{lastSyncLabel}</p>}
+          {!!lastSyncLabel && <p className="text-muted-foreground">{lastSyncLabel}</p>}
           <p className="text-muted-foreground">{t('nextSync')}</p>
         </div>
 
@@ -76,7 +76,7 @@ export function SyncStatusSection({ onImportClick }: SyncStatusSectionProps) {
             size="sm"
             onClick={() => (triggerSyncMutation.mutate as () => void)()}
             disabled={triggerSyncMutation.isPending}>
-            {triggerSyncMutation.isPending && (
+            {!!triggerSyncMutation.isPending && (
               <Loader2 className="me-1.5 size-3.5 animate-spin" aria-hidden="true" />
             )}
             {triggerSyncMutation.isPending ? t('syncing') : t('syncNow')}

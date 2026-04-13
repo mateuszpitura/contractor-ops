@@ -157,15 +157,16 @@ export default function PortalOverviewPage() {
         <div className="mt-4 space-y-3">
           {isLoading ? (
             Array.from({ length: 5 }).map((_, i) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
               <div key={`skel-${i}`} className="flex items-center justify-between">
                 <Skeleton className="h-4 w-64" />
                 <Skeleton className="h-3 w-16" />
               </div>
             ))
           ) : overview?.recentActivity && overview.recentActivity.length > 0 ? (
-            overview.recentActivity.map((entry, i) => (
+            overview.recentActivity.map(entry => (
               <div
-                key={`skel-${i}`}
+                key={`${entry.event}-${entry.timestamp}`}
                 className="flex items-start justify-between gap-4 border-b border-border/50 pb-3 last:border-0">
                 <p className="text-sm">{entry.event}</p>
                 <span className="shrink-0 text-[13px] text-muted-foreground">

@@ -101,9 +101,9 @@ function StepIndicator({
                 }`}
               />
             )}
-            <div
+            <span
               className="flex items-center gap-1.5"
-              role="listitem"
+              role="img"
               aria-label={tAria('wizardStep', { step: index + 1, label: step.label, status })}>
               <div
                 aria-hidden="true"
@@ -122,7 +122,7 @@ function StepIndicator({
                 }`}>
                 {step.label}
               </span>
-            </div>
+            </span>
           </div>
         );
       })}
