@@ -243,6 +243,12 @@ export {
 } from './google-workspace.js';
 export { optionalFk, optionalPositiveInt, optionalString } from './helpers.js';
 export type { LockedDePhraseKey } from './legal/de.js';
+export type { LockedEnPhraseKey } from './legal/en.js';
+export {
+  LOCKED_EN_PHRASES,
+  RESERVED_EN_LEGAL_KEYS,
+  TAX_UK_REVERSE_CHARGE_NOTICE,
+} from './legal/en.js';
 export type {
   PrivacyNoticeSection,
   PrivacyNoticeStructured,
@@ -261,8 +267,10 @@ export {
   RESERVED_LEGAL_KEYS,
   TAX_HANDELSREGISTER_LABEL,
   TAX_KLEINUNTERNEHMER_LABEL,
+  TAX_KLEINUNTERNEHMER_NOTICE,
   TAX_SOZIALVERSICHERUNGSNUMMER_LABEL,
   TAX_STEUERNUMMER_LABEL,
+  TAX_STEUERSCHULDNERSCHAFT,
   TAX_USTIDNR_LABEL,
 } from './legal/de.js';
 export type {

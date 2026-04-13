@@ -16,6 +16,7 @@ import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import { LOCKED_DE_PHRASES, RESERVED_LEGAL_KEYS } from '../legal/de.js';
+import { LOCKED_EN_PHRASES, RESERVED_EN_LEGAL_KEYS } from '../legal/en.js';
 
 const messagesDir = path.resolve(
   __dirname,
@@ -46,9 +47,13 @@ describe('Locked German legal phrases (D-05, D-06)', () => {
       if (messages === null) return; // locale file not yet created (Plan 05 adds de.json)
 
       const keys = flatKeys(messages);
+      const reserved = [
+        ...RESERVED_LEGAL_KEYS,
+        ...RESERVED_EN_LEGAL_KEYS,
+      ];
       const violations = keys.filter((k) =>
-        RESERVED_LEGAL_KEYS.some(
-          (reserved) => k === reserved || k.endsWith(`.${reserved}`),
+        reserved.some(
+          (r) => k === r || k.endsWith(`.${r}`),
         ),
       );
       expect(
@@ -68,7 +73,14 @@ describe('Locked German legal phrases (D-05, D-06)', () => {
 
     const dePrivacy = await import('../privacy-notices/de.js');
     const serialized = JSON.stringify(dePrivacy);
+    // Phase 57 (D-11, D-14) — invoice-footer phrases are rendered on invoices,
+    // NOT in privacy notices; exempt them from the privacy-notice content check.
+    const privacyScopedKeys = new Set([
+      'TAX_KLEINUNTERNEHMER_NOTICE',
+      'TAX_STEUERSCHULDNERSCHAFT',
+    ]);
     for (const [key, phrase] of Object.entries(LOCKED_DE_PHRASES)) {
+      if (privacyScopedKeys.has(key)) continue;
       expect(
         serialized,
         `Missing ${key}="${phrase}" in privacy-notices/de.ts`,
@@ -114,5 +126,40 @@ describe('Locked German legal phrases (D-05, D-06)', () => {
     expect(LOCKED_DE_PHRASES.TAX_KLEINUNTERNEHMER_LABEL).toBe(
       'Kleinunternehmer gemäß § 19 UStG',
     );
+  });
+});
+
+describe('DE locked tax-notice phrases (Phase 57 — D-11, D-14)', () => {
+  it('TAX_KLEINUNTERNEHMER_NOTICE matches the § 19 UStG canonical form', () => {
+    expect(LOCKED_DE_PHRASES.TAX_KLEINUNTERNEHMER_NOTICE).toBe(
+      'Gemäß § 19 UStG wird keine Umsatzsteuer ausgewiesen',
+    );
+  });
+
+  it('TAX_STEUERSCHULDNERSCHAFT matches the §13b UStG reverse-charge footer phrase', () => {
+    expect(LOCKED_DE_PHRASES.TAX_STEUERSCHULDNERSCHAFT).toBe(
+      'Steuerschuldnerschaft des Leistungsempfängers',
+    );
+  });
+});
+
+describe('UK locked phrases (Phase 57 — D-14)', () => {
+  it('TAX_UK_REVERSE_CHARGE_NOTICE matches the HMRC VAT Notice 741A phrasing', () => {
+    expect(LOCKED_EN_PHRASES.TAX_UK_REVERSE_CHARGE_NOTICE).toBe(
+      'Reverse charge: Customer to pay the VAT to HMRC',
+    );
+  });
+
+  it('RESERVED_EN_LEGAL_KEYS mirrors LOCKED_EN_PHRASES keys', () => {
+    expect([...RESERVED_EN_LEGAL_KEYS].sort()).toEqual(
+      Object.keys(LOCKED_EN_PHRASES).sort(),
+    );
+  });
+
+  it('every LOCKED_EN_PHRASES value is a non-empty string', () => {
+    for (const [key, value] of Object.entries(LOCKED_EN_PHRASES)) {
+      expect(typeof value, `${key} is not a string`).toBe('string');
+      expect(value.length, `${key} is empty`).toBeGreaterThan(0);
+    }
   });
 });

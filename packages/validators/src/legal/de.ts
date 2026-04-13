@@ -29,6 +29,12 @@ export const TAX_SOZIALVERSICHERUNGSNUMMER_LABEL =
 export const TAX_KLEINUNTERNEHMER_LABEL =
   'Kleinunternehmer gemäß § 19 UStG' as const;
 
+// Phase 57 (D-11, D-14) — invoice-footer tax notices.
+export const TAX_KLEINUNTERNEHMER_NOTICE =
+  'Gemäß § 19 UStG wird keine Umsatzsteuer ausgewiesen' as const;
+export const TAX_STEUERSCHULDNERSCHAFT =
+  'Steuerschuldnerschaft des Leistungsempfängers' as const;
+
 /**
  * Identifier names that the CI guard forbids in any `messages/*.json` file.
  * Keeping this list in sync with `LOCKED_DE_PHRASES` is enforced by the guard.
@@ -43,6 +49,8 @@ export const RESERVED_LEGAL_KEYS = [
   'TAX_HANDELSREGISTER_LABEL',
   'TAX_SOZIALVERSICHERUNGSNUMMER_LABEL',
   'TAX_KLEINUNTERNEHMER_LABEL',
+  'TAX_KLEINUNTERNEHMER_NOTICE',
+  'TAX_STEUERSCHULDNERSCHAFT',
 ] as const;
 
 /**
@@ -59,6 +67,8 @@ export const LOCKED_DE_PHRASES = {
   TAX_HANDELSREGISTER_LABEL,
   TAX_SOZIALVERSICHERUNGSNUMMER_LABEL,
   TAX_KLEINUNTERNEHMER_LABEL,
+  TAX_KLEINUNTERNEHMER_NOTICE,
+  TAX_STEUERSCHULDNERSCHAFT,
 } as const;
 
 /** Literal-union type of the 9 locked-phrase identifiers. */
