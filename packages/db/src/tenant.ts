@@ -20,6 +20,15 @@ type QueryHookParams = {
 };
 
 /**
+ * Models where insert is allowed but subsequent mutation is forbidden.
+ * Enforces append-only audit trail (Phase 59 D-06 — ClassificationDocument).
+ * Delete is allowed (not a content mutation); update / updateMany / upsert are blocked.
+ */
+const APPEND_ONLY_MODELS = new Set(['ClassificationDocument']);
+
+const APPEND_ONLY_BLOCKED_OPERATIONS = new Set(['update', 'updateMany', 'upsert']);
+
+/**
  * Global models that are NOT tenant-scoped.
  * These models do not have an organizationId field.
  */
@@ -116,6 +125,16 @@ export function withTenantScope<T extends PrismaExtensible>(prisma: T) {
         if (!ctx) {
           throw new Error(
             'Tenant context not initialized. Wrap your code in tenantStore.run({ organizationId }, callback).',
+          );
+        }
+
+        if (
+          model &&
+          APPEND_ONLY_MODELS.has(model) &&
+          APPEND_ONLY_BLOCKED_OPERATIONS.has(operation)
+        ) {
+          throw new Error(
+            `${model} is append-only; mutations after insert are forbidden (Phase 59 D-06).`,
           );
         }
 
