@@ -7,40 +7,40 @@
 // does not support generated columns. Query via $queryRaw.
 
 model Contractor {
-  id                  String                   @id @default(cuid())
-  organizationId      String
-  type                ContractorType
-  legalName           String
-  displayName         String
-  taxId               String?
-  vatId               String?
-  registrationNumber  String?
-  countryCode         String                   @db.Char(2)
-  currency            String                   @db.Char(3)
-  email               String?
-  phone               String?
-  website             String?
-  addressLine1        String?
-  addressLine2        String?
-  city                String?
-  postalCode          String?
-  status              ContractorStatus         @default(ACTIVE)
-  lifecycleStage      ContractorLifecycleStage @default(DRAFT)
-  ownerUserId         String?
-  primaryTeamId       String?
-  primaryProjectId    String?
-  defaultCostCenterId String?
-  notes               String?
-  isSensitive         Boolean                  @default(false)
-  customFieldsJson    Json?
-  countryFields       Json? // Country-specific compliance fields (validated by Zod per country)
+  id                        String                   @id @default(cuid())
+  organizationId            String
+  type                      ContractorType
+  legalName                 String
+  displayName               String
+  taxId                     String?
+  vatId                     String?
+  registrationNumber        String?
+  countryCode               String                   @db.Char(2)
+  currency                  String                   @db.Char(3)
+  email                     String?
+  phone                     String?
+  website                   String?
+  addressLine1              String?
+  addressLine2              String?
+  city                      String?
+  postalCode                String?
+  status                    ContractorStatus         @default(ACTIVE)
+  lifecycleStage            ContractorLifecycleStage @default(DRAFT)
+  ownerUserId               String?
+  primaryTeamId             String?
+  primaryProjectId          String?
+  defaultCostCenterId       String?
+  notes                     String?
+  isSensitive               Boolean                  @default(false)
+  customFieldsJson          Json?
+  countryFields             Json? // Country-specific compliance fields (validated by Zod per country)
   // Phase 57 (D-05) — denormalized VAT validation summary (source of truth = TaxIdValidation)
   latestVatValidatedAt      DateTime?
   latestVatValidationStatus ValidationStatus?
-  createdAt           DateTime                 @default(now())
-  updatedAt           DateTime                 @updatedAt
-  archivedAt          DateTime?
-  deletedAt           DateTime?
+  createdAt                 DateTime                 @default(now())
+  updatedAt                 DateTime                 @updatedAt
+  archivedAt                DateTime?
+  deletedAt                 DateTime?
 
   organization      Organization @relation(fields: [organizationId], references: [id])
   owner             User?        @relation("ContractorOwner", fields: [ownerUserId], references: [id])
@@ -154,6 +154,8 @@ model ContractorAssignment {
   team         Team?        @relation(fields: [teamId], references: [id])
   project      Project?     @relation(fields: [projectId], references: [id])
   costCenter   CostCenter?  @relation(fields: [costCenterId], references: [id])
+
+  classificationAssessments ClassificationAssessment[]
 
   @@index([organizationId])
   @@index([organizationId, contractorId, status])

@@ -1,0 +1,37 @@
+// ClassificationAssessment — per-engagement append-only (D-04, CLASS-11)
+// See .planning/phases/58-classification-engine-rule-sets/58-RESEARCH.md §Code Examples.
+//
+// NOTE (D-04): Single-draft-per-engagement is enforced at the application
+// layer (Plan 03 createDraft handler), NOT via @@unique([contractorAssignmentId, status]).
+// Prisma 7 lacks partial-unique filters, so a composite unique would
+// incorrectly block multiple `completed` rows — the schema must remain
+// append-only for the history of completed assessments per D-04.
+
+enum ClassificationAssessmentStatus {
+  draft
+  completed
+}
+
+model ClassificationAssessment {
+  id                       String                         @id @default(cuid())
+  organizationId           String
+  contractorAssignmentId   String
+  countryCode              String                         @db.Char(2)
+  ruleSetVersion           String
+  status                   ClassificationAssessmentStatus @default(draft)
+  questionsSnapshot        Json? // frozen on submit (D-08)
+  answers                  Json                           @default("{}")
+  outcome                  Json? // populated on submit
+  completedAt              DateTime?
+  disclaimerAcknowledgedAt DateTime?
+  immutableAfter           DateTime?
+  createdAt                DateTime                       @default(now())
+  updatedAt                DateTime                       @updatedAt
+
+  organization         Organization         @relation(fields: [organizationId], references: [id])
+  contractorAssignment ContractorAssignment @relation(fields: [contractorAssignmentId], references: [id])
+
+  @@index([organizationId])
+  @@index([organizationId, contractorAssignmentId, status], map: "CA_org_assign_status_idx")
+  @@index([organizationId, contractorAssignmentId, completedAt(sort: Desc)], map: "CA_org_assign_completedAt_idx")
+}

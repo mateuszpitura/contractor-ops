@@ -97,6 +97,7 @@ model Organization {
   zatcaChainEntries           ZatcaInvoiceChain[]
   taxIdValidations            TaxIdValidation[]
   apiKeys                     OrganizationApiKey[]
+  classificationAssessments   ClassificationAssessment[]
 }
 
 model Member {
