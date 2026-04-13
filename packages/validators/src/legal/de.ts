@@ -50,6 +50,44 @@ export const CLASSIFICATION_SCHEIN_DRV_REFERENCE_LABEL =
   'Hinweis der Deutschen Rentenversicherung' as const;
 export const CLASSIFICATION_SCHEIN_NOT_APPLICABLE = 'Nicht anwendbar' as const;
 
+// --- Phase 59 additions (D-18) ---------------------------------------------
+// Locked DRV audit defense bundle strings.
+// Sourced from DRV Rundschreiben RS 2022/1 and § 7a SGB IV.
+// PENDING Steuerberater sign-off (see Phase 59 Plan 59-01 Task 3 MANUAL-REVIEW checkpoint).
+
+export const DRV_DEFENSE_COVER_HEADER_DE =
+  'Statusfeststellungsverfahren nach § 7a SGB IV — Defensivdokumentation' as const;
+
+export const DRV_DEFENSE_SECTION_TITLES_DE = {
+  engagementStructure: 'Engagement-Struktur',
+  independenceIndicators: 'Selbständigkeitsindikatoren',
+  riskAssessmentHistory: 'Risikobewertungsverlauf',
+  otherClientAttestation: 'Attestierung weiterer Auftraggeber',
+} as const;
+
+export const DRV_DEFENSE_TABLE_HEADERS_DE = {
+  riskHistory: {
+    date: 'Bewertungsdatum',
+    ruleSetVersion: 'Regelwerk-Version',
+    totalScore: 'Gesamtpunktzahl',
+    verdict: 'Einstufung',
+    delta: 'Veränderung',
+  },
+  crossReference: {
+    client: 'Auftraggeber',
+    role: 'Tätigkeit',
+    startDate: 'Beginn',
+    endDate: 'Ende',
+  },
+} as const;
+
+export const DRV_DEFENSE_ATTESTATION_FOOTER_DE =
+  'Datum: __________________   Unterschrift: __________________' as const;
+
+export const DRV_DEFENSE_CROSS_REFERENCE_FOOTER_DE =
+  'Diese Übersicht zeigt nur Engagements, die von Ihrer Organisation auf dieser Plattform ' +
+  'erfasst wurden. Sie ist nicht erschöpfend.';
+
 /**
  * Identifier names that the CI guard forbids in any `messages/*.json` file.
  * Keeping this list in sync with `LOCKED_DE_PHRASES` is enforced by the guard.
@@ -76,6 +114,12 @@ export const RESERVED_LEGAL_KEYS = [
   'CLASSIFICATION_SCHEIN_ECONOMIC_DEP',
   'CLASSIFICATION_SCHEIN_DRV_REFERENCE_LABEL',
   'CLASSIFICATION_SCHEIN_NOT_APPLICABLE',
+  // Phase 59 — DRV defense bundle (D-18)
+  'DRV_DEFENSE_COVER_HEADER_DE',
+  'DRV_DEFENSE_SECTION_TITLES_DE',
+  'DRV_DEFENSE_TABLE_HEADERS_DE',
+  'DRV_DEFENSE_ATTESTATION_FOOTER_DE',
+  'DRV_DEFENSE_CROSS_REFERENCE_FOOTER_DE',
 ] as const;
 
 /**
@@ -104,6 +148,12 @@ export const LOCKED_DE_PHRASES = {
   CLASSIFICATION_SCHEIN_ECONOMIC_DEP,
   CLASSIFICATION_SCHEIN_DRV_REFERENCE_LABEL,
   CLASSIFICATION_SCHEIN_NOT_APPLICABLE,
+  // Phase 59 — DRV defense bundle (D-18)
+  DRV_DEFENSE_COVER_HEADER_DE,
+  DRV_DEFENSE_SECTION_TITLES_DE,
+  DRV_DEFENSE_TABLE_HEADERS_DE,
+  DRV_DEFENSE_ATTESTATION_FOOTER_DE,
+  DRV_DEFENSE_CROSS_REFERENCE_FOOTER_DE,
 } as const;
 
 /** Literal-union type of the locked-phrase identifiers. */

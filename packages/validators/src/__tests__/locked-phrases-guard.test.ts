@@ -60,6 +60,8 @@ describe('Locked German legal phrases (D-05, D-06)', () => {
     // NOT in privacy notices; exempt them from the privacy-notice content check.
     // Phase 58 (D-07) — classification criteria titles live in classification
     // rule sets (packages/classification), not in privacy notices.
+    // Phase 59 (D-18) — DRV defense bundle strings live in the DRV PDF template
+    // (packages/api/src/pdf-templates/drv-defense-bundle.tsx), not in privacy notices.
     const privacyScopedKeys = new Set([
       'TAX_KLEINUNTERNEHMER_NOTICE',
       'TAX_STEUERSCHULDNERSCHAFT',
@@ -72,9 +74,15 @@ describe('Locked German legal phrases (D-05, D-06)', () => {
       'CLASSIFICATION_SCHEIN_ECONOMIC_DEP',
       'CLASSIFICATION_SCHEIN_DRV_REFERENCE_LABEL',
       'CLASSIFICATION_SCHEIN_NOT_APPLICABLE',
+      'DRV_DEFENSE_COVER_HEADER_DE',
+      'DRV_DEFENSE_SECTION_TITLES_DE',
+      'DRV_DEFENSE_TABLE_HEADERS_DE',
+      'DRV_DEFENSE_ATTESTATION_FOOTER_DE',
+      'DRV_DEFENSE_CROSS_REFERENCE_FOOTER_DE',
     ]);
     for (const [key, phrase] of Object.entries(LOCKED_DE_PHRASES)) {
       if (privacyScopedKeys.has(key)) continue;
+      if (typeof phrase !== 'string') continue;
       expect(serialized, `Missing ${key}="${phrase}" in privacy-notices/de.ts`).toContain(phrase);
     }
   });
@@ -97,10 +105,21 @@ describe('Locked German legal phrases (D-05, D-06)', () => {
     expect([...RESERVED_LEGAL_KEYS].sort()).toEqual(Object.keys(LOCKED_DE_PHRASES).sort());
   });
 
-  it('every LOCKED_DE_PHRASES value is a non-empty string', () => {
+  it('every LOCKED_DE_PHRASES value is a non-empty string (or object with non-empty string leaves)', () => {
+    function assertAllStringLeavesNonEmpty(key: string, v: unknown): void {
+      if (typeof v === 'string') {
+        expect(v.length, `${key} is empty`).toBeGreaterThan(0);
+        return;
+      }
+      // Phase 59 — DRV_DEFENSE_SECTION_TITLES_DE / DRV_DEFENSE_TABLE_HEADERS_DE
+      // are nested objects of locked strings.
+      expect(v, `${key} is neither string nor object`).toBeTypeOf('object');
+      for (const [childKey, childValue] of Object.entries(v as Record<string, unknown>)) {
+        assertAllStringLeavesNonEmpty(`${key}.${childKey}`, childValue);
+      }
+    }
     for (const [key, value] of Object.entries(LOCKED_DE_PHRASES)) {
-      expect(typeof value, `${key} is not a string`).toBe('string');
-      expect(value.length, `${key} is empty`).toBeGreaterThan(0);
+      assertAllStringLeavesNonEmpty(key, value);
     }
   });
 
