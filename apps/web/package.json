@@ -16,12 +16,15 @@
     "e2e:integration": "playwright test -c playwright.integration.config.ts",
     "e2e:integration:install": "playwright install chromium",
     "e2e:rtl": "playwright test -c playwright.rtl.config.ts",
-    "e2e:rtl:install": "playwright install chromium"
+    "e2e:rtl:install": "playwright install chromium",
+    "e2e:functional": "playwright test -c playwright.functional.config.ts",
+    "e2e:functional:install": "playwright install chromium"
   },
   "dependencies": {
     "@base-ui/react": "^1.3.0",
     "@contractor-ops/api": "workspace:*",
     "@contractor-ops/auth": "workspace:*",
+    "@contractor-ops/classification": "workspace:*",
     "@contractor-ops/db": "workspace:^",
     "@contractor-ops/einvoice": "workspace:*",
     "@contractor-ops/integrations": "workspace:*",

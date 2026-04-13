@@ -48,6 +48,11 @@ const createDraftInput = z.object({
   contractorAssignmentId: cuid,
 });
 
+const recreateDraftAfterDriftInput = z.object({
+  contractorAssignmentId: cuid,
+  staleDraftId: cuid,
+});
+
 const getDraftInput = z.object({
   contractorAssignmentId: cuid,
 });
@@ -183,6 +188,67 @@ export const classificationRouter = router({
       },
     });
   }),
+
+  // -------------------------------------------------------------------------
+  // recreateDraftAfterDrift — compensating action when rule-set drift blocks
+  // a resume (Plan 04 wizard UI; UI-SPEC §Error states).
+  //
+  // Marks the stale draft as `superseded` and creates a fresh draft against
+  // the currently-registered rule-set version. The old draft row is
+  // preserved (never deleted) so audit history stays intact.
+  //
+  // Contract:
+  //  - CONFLICT if staleDraftId is not actually a draft or not owned by the
+  //    caller's organization.
+  //  - PRECONDITION_FAILED if staleDraftId's ruleSetVersion still matches
+  //    the current profile version — clients only call this when they've
+  //    already seen a drift error.
+  // -------------------------------------------------------------------------
+  recreateDraftAfterDrift: tenantProcedure
+    .input(recreateDraftAfterDriftInput)
+    .mutation(async ({ ctx, input }) => {
+      const { assignment, profile } = await resolveAssignmentAndProfile(
+        ctx.db,
+        input.contractorAssignmentId,
+      );
+
+      const stale = await ctx.db.classificationAssessment.findFirst({
+        where: { id: input.staleDraftId },
+      });
+
+      if (!stale || stale.contractorAssignmentId !== assignment.id) {
+        throw new TRPCError({ code: 'NOT_FOUND' });
+      }
+      if (stale.status !== 'draft') {
+        throw new TRPCError({
+          code: 'CONFLICT',
+          message: 'Only draft assessments can be recreated after drift.',
+        });
+      }
+      if (stale.ruleSetVersion === profile.ruleSetVersion) {
+        throw new TRPCError({
+          code: 'PRECONDITION_FAILED',
+          message:
+            'Draft already matches the current rule-set version — no drift to recover from.',
+        });
+      }
+
+      // Create a new draft against the current rule-set version. The stale
+      // draft is NOT mutated (D-04 append-only); `getDraft` orders by
+      // createdAt DESC so the fresh draft naturally wins on next resume.
+      // Historical drift drafts remain queryable via listByContractor for
+      // audit purposes.
+      return ctx.db.classificationAssessment.create({
+        data: {
+          organizationId: ctx.organizationId,
+          contractorAssignmentId: assignment.id,
+          countryCode: profile.country,
+          ruleSetVersion: profile.ruleSetVersion,
+          status: 'draft',
+          answers: {},
+        },
+      });
+    }),
 
   // -------------------------------------------------------------------------
   // getDraft — fetch the current draft for an engagement.

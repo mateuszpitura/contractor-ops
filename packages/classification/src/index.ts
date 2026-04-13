@@ -2,12 +2,30 @@
 // @contractor-ops/classification — Pluggable Classification Engine
 // ---------------------------------------------------------------------------
 
-// biome-ignore lint/performance/noBarrelFile: package entry point
-
 // Profile registrations (side-effect imports — must run before the registry is consulted).
 // IR35 (GB) and Scheinselbständigkeit (DE) register themselves on first load.
 import './profiles/ir35/index.js';
 import './profiles/scheinselbstandigkeit/index.js';
+
+// Client-safe rule-set re-exports (Plan 04 wizard UI consumes these).
+// NOTE: Scoring functions from profiles/*/scoring are NEVER re-exported
+// here — they are server-only (Pitfall 2 / T-58-11). Client code that
+// needs scoring calls `trpc.classification.submit` instead.
+export {
+  IR35_QUESTIONS,
+  IR35_RULE_SET,
+  IR35_YES_DIRECTION,
+  RULE_SET_VERSION as IR35_RULE_SET_VERSION,
+} from './profiles/ir35/rule-set.js';
+export {
+  CATEGORY_TITLES,
+  CATEGORY_WEIGHTS,
+  NOT_APPLICABLE_LABEL,
+  SCHEIN_QUESTIONS,
+  SCHEIN_RULE_SET,
+  THRESHOLDS as SCHEIN_THRESHOLDS,
+  RULE_SET_VERSION as SCHEIN_RULE_SET_VERSION,
+} from './profiles/scheinselbstandigkeit/rule-set.js';
 
 // Registry
 export {
