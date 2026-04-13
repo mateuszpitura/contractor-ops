@@ -252,3 +252,30 @@ describe('UK locked phrases (Phase 57 — D-14)', () => {
     }
   });
 });
+
+// -----------------------------------------------------------------------------
+// Phase 59 · D-18 — prefix-based CI guard for IR35 SDS + DRV defense strings.
+// See .planning/phases/59-classification-documents-chain-tracking/59-RESEARCH.md §Pattern 5.
+// -----------------------------------------------------------------------------
+
+const RESERVED_PHASE_59_PREFIXES = ['IR35_DISPUTE_', 'SDS_', 'DRV_DEFENSE_'] as const;
+
+describe('Locked phrase prefixes (Phase 59 · D-18)', () => {
+  it.each(locales)(
+    'messages/%s.json does not contain any key with prefix IR35_DISPUTE_ / SDS_ / DRV_DEFENSE_',
+    locale => {
+      const messages = loadMessages(locale);
+      if (messages === null) return;
+
+      const flattenedKeys = flatKeys(messages);
+      const leaks = flattenedKeys.filter(key =>
+        RESERVED_PHASE_59_PREFIXES.some(prefix => key.includes(prefix)),
+      );
+
+      expect(
+        leaks,
+        `Reserved Phase 59 prefix keys leaked into ${locale}.json: ${leaks.join(', ')}`,
+      ).toEqual([]);
+    },
+  );
+});
