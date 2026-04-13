@@ -4,14 +4,14 @@ milestone: v5.0
 milestone_name: UK & Germany Expansion
 status: executing
 stopped_at: Phase 59 context gathered
-last_updated: "2026-04-13T21:33:29.368Z"
-last_activity: 2026-04-13 -- Phase 58 execution started
+last_updated: "2026-04-13T22:00:46.628Z"
+last_activity: 2026-04-13 -- Phase 59 execution started
 progress:
   total_phases: 8
   completed_phases: 2
   total_plans: 21
-  completed_plans: 15
-  percent: 71
+  completed_plans: 16
+  percent: 76
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-12)
 
 **Core value:** The invoice-to-payment flow must work end-to-end: invoice arrives, gets matched to contract, routed through approval, and batched for payment — with full audit trail.
-**Current focus:** Phase 58 — classification-engine-rule-sets
+**Current focus:** Phase 59 — classification-documents-chain-tracking
 
 ## Current Position
 
-Phase: 58 (classification-engine-rule-sets) — EXECUTING
-Plan: 1 of 5
-Status: Executing Phase 58
-Last activity: 2026-04-13 -- Phase 58 execution started
+Phase: 59 (classification-documents-chain-tracking) — EXECUTING
+Plan: 1 of 4
+Status: Executing Phase 59
+Last activity: 2026-04-13 -- Phase 59 execution started
 
 Progress: [███████░░░] 71% (v5.0) — 12 / 17 plans shipped
 
@@ -47,6 +47,12 @@ Progress: [███████░░░] 71% (v5.0) — 12 / 17 plans shipped
 *Updated after each plan completion*
 
 ## Accumulated Context
+
+### Standing Project Constraints
+
+- **Deployment status: LOCAL-ONLY.** The application is still in local development and has not been deployed to production. No external users, no regulated customers, no live data flows.
+- **Legal/regulatory verification is DEFERRED.** Any feature that ordinarily requires sign-off from an external legal entity (UK tax adviser for IR35 / ITEPA wording, German Steuerberater for DRV / Scheinselbständigkeit / SGB terminology, Polish doradca podatkowy for JPK, Arabic legal counsel for PDPL, etc.) should be marked as "Needs verification by legal entity before production deploy" in the relevant SUMMARY.md / VALIDATION.md / plan checkpoint, but must NOT hard-block the build, the CI pipeline, or local execution. There is no point running approval workflows pre-deploy.
+- **Default behaviour for legal-review checkpoints:** treat the plan-provided legal wording as the working copy, ship it, and record the outstanding legal sign-off as a post-merge item in the phase SUMMARY under "Manual-Only Verifications" or an equivalent section. Do NOT write STATE.md blockers for missing legal sign-off unless the plan explicitly hard-stops on it.
 
 ### Decisions
 
