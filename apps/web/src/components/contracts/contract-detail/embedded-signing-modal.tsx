@@ -25,6 +25,129 @@ type EmbeddedSigningModalProps = {
 };
 
 // ---------------------------------------------------------------------------
+// DocuSign event helpers
+// ---------------------------------------------------------------------------
+
+const TRUSTED_DOCUSIGN_ORIGINS = [
+  'https://app.docusign.com',
+  'https://apps-d.docusign.com',
+  'https://demo.docusign.net',
+  'https://app-d.docusign.com',
+];
+
+type SigningEvent = 'signing_complete' | 'decline' | 'exception' | null;
+
+/** Extract a signing event name from a DocuSign postMessage payload. */
+function parseSigningEvent(data: unknown): SigningEvent {
+  if (typeof data === 'string') {
+    if (data === 'signing_complete' || data.includes('signing_complete')) return 'signing_complete';
+    if (data === 'decline' || data.includes('decline')) return 'decline';
+    if (data === 'exception' || data.includes('exception')) return 'exception';
+  }
+  if (typeof data === 'object' && data !== null) {
+    const obj = data as { type?: string; event?: string };
+    if ((obj.type ?? obj.event) === 'signing_complete') return 'signing_complete';
+  }
+  return null;
+}
+
+/** Map signing events to toast + callback actions. */
+const SIGNING_EVENT_ACTIONS: Record<
+  Exclude<SigningEvent, null>,
+  { toastKey: string; toastFn: 'success' | 'error'; triggerComplete: boolean }
+> = {
+  signing_complete: { toastKey: 'signedSuccess', toastFn: 'success', triggerComplete: true },
+  decline: { toastKey: 'signingDeclined', toastFn: 'error', triggerComplete: false },
+  exception: { toastKey: 'signingFailed', toastFn: 'error', triggerComplete: false },
+};
+
+// ---------------------------------------------------------------------------
+// Signing body content sub-component
+// ---------------------------------------------------------------------------
+
+function SigningBody({
+  isPending,
+  signingData,
+  provider,
+  documentTitle,
+  iframeRef,
+  onOpenChange,
+  t,
+}: {
+  isPending: boolean;
+  signingData: { embedded: boolean; url?: string } | undefined;
+  provider: 'DOCUSIGN' | 'AUTENTI';
+  documentTitle: string;
+  iframeRef: React.RefObject<HTMLIFrameElement | null>;
+  onOpenChange: (open: boolean) => void;
+  t: (key: string, values?: Record<string, string>) => string;
+}) {
+  if (isPending) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="size-8 animate-spin text-muted-foreground" />
+          <p className="text-sm text-muted-foreground">{t('preparing')}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (signingData?.embedded && signingData.url) {
+    return (
+      <iframe
+        ref={iframeRef}
+        src={signingData.url}
+        className="h-full w-full border-0"
+        title={t('signTitle', { title: documentTitle })}
+        allow="camera; microphone"
+      />
+    );
+  }
+
+  if (signingData?.url) {
+    const providerLabel = provider === 'AUTENTI' ? 'Autenti' : provider;
+    return (
+      <div className="flex h-full items-center justify-center">
+        <Card className="max-w-[480px]">
+          <CardContent className="flex flex-col items-center gap-4 p-6 text-center">
+            <p className="text-lg font-semibold">
+              {provider === 'AUTENTI' ? 'Autenti' : t('completeSigning')}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              {t('redirectMessage', { provider: providerLabel })}
+            </p>
+            <div className="flex gap-3">
+              {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+              <Button onClick={() => window.open(signingData.url, '_blank')}>
+                <ExternalLink className="me-1.5 size-4" />
+                {t('continueToProvider', { provider: providerLabel })}
+              </Button>
+              {/* biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler */}
+              <Button variant="outline" onClick={() => onOpenChange(false)}>
+                {t('returnToContract')}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex h-full items-center justify-center">
+      <div className="flex flex-col items-center gap-3 text-center">
+        <p className="text-sm text-muted-foreground">{t('loadError')}</p>
+        {/* biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler */}
+        <Button variant="outline" onClick={() => onOpenChange(false)}>
+          {t('returnToContract')}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
@@ -66,40 +189,15 @@ export function EmbeddedSigningModal({
   // Listen for postMessage from DocuSign iframe
   const handleMessage = useCallback(
     (event: MessageEvent) => {
-      // Only accept messages from DocuSign origins to prevent spoofing
-      const trustedOrigins = [
-        'https://app.docusign.com',
-        'https://apps-d.docusign.com',
-        'https://demo.docusign.net',
-        'https://app-d.docusign.com',
-      ];
-      if (!trustedOrigins.some(o => event.origin.startsWith(o))) return;
+      if (!TRUSTED_DOCUSIGN_ORIGINS.some(o => event.origin.startsWith(o))) return;
 
-      // DocuSign embedded signing events
-      if (typeof event.data === 'string') {
-        if (event.data === 'signing_complete' || event.data.includes('signing_complete')) {
-          toast.success(tToast('signedSuccess'));
-          onComplete();
-          onOpenChange(false);
-        } else if (event.data === 'decline' || event.data.includes('decline')) {
-          toast.error(tToast('signingDeclined'));
-          onOpenChange(false);
-        } else if (event.data === 'exception' || event.data.includes('exception')) {
-          toast.error(tToast('signingFailed'));
-          onOpenChange(false);
-        }
-      }
+      const signingEvent = parseSigningEvent(event.data);
+      if (!signingEvent) return;
 
-      // DocuSign may also send object-type messages
-      if (typeof event.data === 'object' && event.data !== null) {
-        const data = event.data as { type?: string; event?: string };
-        const eventType = data.type ?? data.event;
-        if (eventType === 'signing_complete') {
-          toast.success(tToast('signedSuccess'));
-          onComplete();
-          onOpenChange(false);
-        }
-      }
+      const action = SIGNING_EVENT_ACTIONS[signingEvent];
+      toast[action.toastFn](tToast(action.toastKey as Parameters<typeof tToast>[0]));
+      if (action.triggerComplete) onComplete();
+      onOpenChange(false);
     },
     [onComplete, onOpenChange, tToast],
   );
@@ -142,64 +240,15 @@ export function EmbeddedSigningModal({
 
       {/* Body */}
       <div className="h-[calc(100dvh-56px)]">
-        {signingUrlQuery.isPending ? (
-          /* Loading state */
-          <div className="flex h-full items-center justify-center">
-            <div className="flex flex-col items-center gap-3">
-              <Loader2 className="size-8 animate-spin text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">{t('preparing')}</p>
-            </div>
-          </div>
-        ) : signingData?.embedded && signingData.url ? (
-          /* Embedded iframe (DocuSign) */
-          <iframe
-            ref={iframeRef}
-            src={signingData.url}
-            className="h-full w-full border-0"
-            title={t('signTitle', { title: documentTitle })}
-            allow="camera; microphone"
-          />
-        ) : signingData?.url ? (
-          /* Redirect fallback (Autenti) */
-          <div className="flex h-full items-center justify-center">
-            <Card className="max-w-[480px]">
-              <CardContent className="flex flex-col items-center gap-4 p-6 text-center">
-                <p className="text-lg font-semibold">
-                  {provider === 'AUTENTI' ? 'Autenti' : t('completeSigning')}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {t('redirectMessage', {
-                    provider: provider === 'AUTENTI' ? 'Autenti' : provider,
-                  })}
-                </p>
-                <div className="flex gap-3">
-                  {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
-                  <Button onClick={() => window.open(signingData.url, '_blank')}>
-                    <ExternalLink className="me-1.5 size-4" />
-                    {t('continueToProvider', {
-                      provider: provider === 'AUTENTI' ? 'Autenti' : provider,
-                    })}
-                  </Button>
-                  {/* biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler */}
-                  <Button variant="outline" onClick={() => onOpenChange(false)}>
-                    {t('returnToContract')}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        ) : (
-          /* Error state */
-          <div className="flex h-full items-center justify-center">
-            <div className="flex flex-col items-center gap-3 text-center">
-              <p className="text-sm text-muted-foreground">{t('loadError')}</p>
-              {/* biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler */}
-              <Button variant="outline" onClick={() => onOpenChange(false)}>
-                {t('returnToContract')}
-              </Button>
-            </div>
-          </div>
-        )}
+        <SigningBody
+          isPending={signingUrlQuery.isPending}
+          signingData={signingData}
+          provider={provider}
+          documentTitle={documentTitle}
+          iframeRef={iframeRef}
+          onOpenChange={onOpenChange}
+          t={t}
+        />
       </div>
     </div>
   );

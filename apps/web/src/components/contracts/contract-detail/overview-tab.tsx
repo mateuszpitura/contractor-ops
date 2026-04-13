@@ -178,6 +178,32 @@ function ExpiryRemindersEditor({
 }
 
 // ---------------------------------------------------------------------------
+// Helpers for OverviewTab
+// ---------------------------------------------------------------------------
+
+function getDaysRemainingColor(days: number | null): string {
+  if (days === null) return '';
+  if (days > 60) return 'text-green-600 dark:text-green-400';
+  if (days > 30) return 'text-amber-600 dark:text-amber-400';
+  return 'text-red-500 dark:text-red-400';
+}
+
+function getNoticeDeadline(endDate: string | Date | null, noticeDays: number | null): Date | null {
+  if (!endDate || !noticeDays) return null;
+  const end = typeof endDate === 'string' ? new Date(endDate) : endDate;
+  return new Date(end.getTime() - noticeDays * 24 * 60 * 60 * 1000);
+}
+
+/** Translate an enum value via the Contracts namespace, returning null if empty. */
+function translateEnum(
+  value: string | null | undefined,
+  prefix: string,
+  tEnum: (key: string) => string,
+): string | null {
+  return value ? tEnum(`${prefix}.${value}` as string) : null;
+}
+
+// ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
@@ -190,27 +216,8 @@ export function OverviewTab({ contract }: OverviewTabProps) {
   const reminderDaysBefore = (metadata.reminderDaysBefore as number[]) ?? [];
 
   const daysRemaining = contract.endDate ? getDaysRemaining(contract.endDate) : null;
-
-  const daysColor =
-    daysRemaining === null
-      ? ''
-      : daysRemaining > 60
-        ? 'text-green-600 dark:text-green-400'
-        : daysRemaining > 30
-          ? 'text-amber-600 dark:text-amber-400'
-          : 'text-red-500 dark:text-red-400';
-
-  const noticeDays = contract.noticePeriodDays;
-  const noticeDeadline =
-    contract.endDate && noticeDays
-      ? new Date(
-          (typeof contract.endDate === 'string'
-            ? new Date(contract.endDate)
-            : contract.endDate
-          ).getTime() -
-            noticeDays * 24 * 60 * 60 * 1000,
-        )
-      : null;
+  const daysColor = getDaysRemainingColor(daysRemaining);
+  const noticeDeadline = getNoticeDeadline(contract.endDate, contract.noticePeriodDays);
 
   return (
     <div className="grid gap-4 xl:grid-cols-2">
@@ -222,9 +229,7 @@ export function OverviewTab({ contract }: OverviewTabProps) {
         <CardContent className="grid gap-3">
           <FieldRow
             label={t('fields.type')}
-            value={
-              contract.type ? tEnum(`type.${contract.type}` as Parameters<typeof tEnum>[0]) : null
-            }
+            value={translateEnum(contract.type, 'type', tEnum as (key: string) => string)}
           />
           <FieldRow
             label={t('fields.autoRenewal')}
@@ -261,19 +266,11 @@ export function OverviewTab({ contract }: OverviewTabProps) {
           <FieldRow label={t('fields.currency')} value={contract.currency} />
           <FieldRow
             label={t('fields.billingModel')}
-            value={
-              contract.billingModel
-                ? tEnum(`billingModel.${contract.billingModel}` as Parameters<typeof tEnum>[0])
-                : null
-            }
+            value={translateEnum(contract.billingModel, 'billingModel', tEnum as (key: string) => string)}
           />
           <FieldRow
             label={t('fields.rateType')}
-            value={
-              contract.rateType
-                ? tEnum(`rateType.${contract.rateType}` as Parameters<typeof tEnum>[0])
-                : null
-            }
+            value={translateEnum(contract.rateType, 'rateType', tEnum as (key: string) => string)}
           />
           {contract.paymentTermsDays != null && (
             <FieldRow
@@ -285,11 +282,7 @@ export function OverviewTab({ contract }: OverviewTabProps) {
           )}
           <FieldRow
             label={t('fields.invoiceCycle')}
-            value={
-              contract.invoiceCycle
-                ? tEnum(`invoiceCycle.${contract.invoiceCycle}` as Parameters<typeof tEnum>[0])
-                : null
-            }
+            value={translateEnum(contract.invoiceCycle, 'invoiceCycle', tEnum as (key: string) => string)}
           />
           {contract.retainerAmountMinor != null && (
             <FieldRow
