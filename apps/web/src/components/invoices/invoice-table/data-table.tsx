@@ -2,17 +2,14 @@
 
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import type { ColumnDef } from '@tanstack/react-table';
-import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
-import { ArrowDown, ArrowUp, ArrowUpDown, FileText, Loader2 } from 'lucide-react';
+import { getCoreRowModel, useReactTable } from '@tanstack/react-table';
+import { FileText, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useMemo, useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
+import { DataTableBody } from '@/components/shared/data-table-body';
+import { SortableTableHead } from '@/components/shared/sortable-table-head';
 import {
   Table,
-  TableBody,
-  TableCell,
-  TableHead,
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
@@ -248,107 +245,36 @@ export function InvoiceDataTable({ onRowClick, onUpload }: InvoiceDataTableProps
             {table.getHeaderGroups().map(headerGroup => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map(header => (
-                  <TableHead
+                  <SortableTableHead
                     key={header.id}
-                    style={
-                      header.column.getSize() === 150
-                        ? undefined
-                        : { width: header.column.getSize() }
-                    }
-                    aria-sort={
-                      header.column.getIsSorted() === 'asc'
-                        ? 'ascending'
-                        : header.column.getIsSorted() === 'desc'
-                          ? 'descending'
-                          : undefined
-                    }>
-                    {header.isPlaceholder ? null : header.column.getCanSort() ? (
-                      <button
-                        type="button"
-                        className="flex items-center gap-1 uppercase hover:text-foreground"
-                        onClick={header.column.getToggleSortingHandler()}
-                        aria-label={tAria('sortBy', {
-                          column:
-                            typeof header.column.columnDef.header === 'string'
-                              ? header.column.columnDef.header
-                              : header.id,
-                        })}>
-                        {flexRender(header.column.columnDef.header, header.getContext())}
-                        {header.column.getIsSorted() === 'asc' ? (
-                          <ArrowUp className="h-3 w-3" />
-                        ) : header.column.getIsSorted() === 'desc' ? (
-                          <ArrowDown className="h-3 w-3" />
-                        ) : (
-                          <ArrowUpDown className="h-3 w-3 opacity-40" />
-                        )}
-                      </button>
-                    ) : (
-                      flexRender(header.column.columnDef.header, header.getContext())
-                    )}
-                  </TableHead>
+                    header={header}
+                    sortAriaLabel={tAria('sortBy', {
+                      column:
+                        typeof header.column.columnDef.header === 'string'
+                          ? header.column.columnDef.header
+                          : header.id,
+                    })}
+                  />
                 ))}
               </TableRow>
             ))}
           </TableHeader>
-          <TableBody>
-            {isLoading ? (
-              // Skeleton loading rows
-              Array.from({ length: 8 }).map((_, i) => (
-                // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-                <TableRow key={`skeleton-${i}`}>
-                  {table.getVisibleLeafColumns().map(col => (
-                    <TableCell key={col.id}>
-                      <Skeleton className="h-4 w-full max-w-[120px]" />
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : table.getRowModel().rows.length > 0 ? (
-              table.getRowModel().rows.map(row => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() ? 'selected' : undefined}
-                  className={`cursor-pointer ${
-                    isRowOverdue(row.original) ? 'bg-destructive/5' : ''
-                  }`}
-                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                  onClick={() => onRowClick(row.original)}>
-                  {row.getVisibleCells().map(cell => (
-                    <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : hasFiltersOrSearch ? (
-              // No search results
-              <TableRow>
-                <TableCell
-                  colSpan={table.getVisibleLeafColumns().length}
-                  className="py-16 text-center">
-                  <h3 className="text-[16px] font-medium">{t('noResults.heading')}</h3>
-                  <p className="mt-1 text-sm text-muted-foreground">{t('noResults.body')}</p>
-                  <Button variant="outline" className="mt-4" onClick={clearFilters}>
-                    {t('noResults.cta')}
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ) : (
-              // Empty state
-              <TableRow>
-                <TableCell
-                  colSpan={table.getVisibleLeafColumns().length}
-                  className="py-16 text-center">
-                  <FileText className="mx-auto h-10 w-10 text-muted-foreground/50" />
-                  <h3 className="mt-3 text-[16px] font-medium">{t('empty.heading')}</h3>
-                  <p className="mt-1 text-sm text-muted-foreground">{t('empty.body')}</p>
-                  <Button className="mt-4" onClick={onUpload}>
-                    {t('empty.cta')}
-                  </Button>
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
+          <DataTableBody
+            table={table}
+            isLoading={isLoading}
+            hasFiltersOrSearch={hasFiltersOrSearch}
+            onRowClick={onRowClick}
+            rowClassName={row => (isRowOverdue(row) ? 'bg-destructive/5' : '')}
+            emptyIcon={<FileText className="mx-auto h-10 w-10 text-muted-foreground/50" />}
+            emptyTitle={t('empty.heading')}
+            emptyDescription={t('empty.body')}
+            emptyCta={t('empty.cta')}
+            onEmptyCta={onUpload}
+            noResultsTitle={t('noResults.heading')}
+            noResultsDescription={t('noResults.body')}
+            noResultsCta={t('noResults.cta')}
+            onClearFilters={clearFilters}
+          />
         </Table>
 
         {/* Pagination */}

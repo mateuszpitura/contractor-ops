@@ -1,17 +1,15 @@
 'use client';
 
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
-import { ArrowDown, ArrowUp, ArrowUpDown, Loader2, Package } from 'lucide-react';
+import { getCoreRowModel, useReactTable } from '@tanstack/react-table';
+import { Loader2, Package } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useMemo, useState } from 'react';
+import { DataTableBody } from '@/components/shared/data-table-body';
+import { SortableTableHead } from '@/components/shared/sortable-table-head';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
-  TableBody,
-  TableCell,
-  TableHead,
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
@@ -199,93 +197,25 @@ export function EquipmentTable({
             {table.getHeaderGroups().map(headerGroup => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map(header => (
-                  <TableHead
-                    key={header.id}
-                    aria-sort={
-                      header.column.getIsSorted() === 'asc'
-                        ? 'ascending'
-                        : header.column.getIsSorted() === 'desc'
-                          ? 'descending'
-                          : undefined
-                    }
-                    style={
-                      header.column.getSize() === 150
-                        ? undefined
-                        : { width: header.column.getSize() }
-                    }>
-                    {header.isPlaceholder ? null : header.column.getCanSort() ? (
-                      <button
-                        type="button"
-                        className="flex items-center gap-1 uppercase hover:text-foreground"
-                        onClick={header.column.getToggleSortingHandler()}>
-                        {flexRender(header.column.columnDef.header, header.getContext())}
-                        {header.column.getIsSorted() === 'asc' ? (
-                          <ArrowUp className="h-3 w-3" />
-                        ) : header.column.getIsSorted() === 'desc' ? (
-                          <ArrowDown className="h-3 w-3" />
-                        ) : (
-                          <ArrowUpDown className="h-3 w-3 opacity-40" />
-                        )}
-                      </button>
-                    ) : (
-                      flexRender(header.column.columnDef.header, header.getContext())
-                    )}
-                  </TableHead>
+                  <SortableTableHead key={header.id} header={header} />
                 ))}
               </TableRow>
             ))}
           </TableHeader>
-          <TableBody>
-            {isLoading ? (
-              Array.from({ length: 8 }).map((_, i) => (
-                // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-                <TableRow key={`skeleton-${i}`}>
-                  {table.getVisibleLeafColumns().map(col => (
-                    <TableCell key={col.id}>
-                      <Skeleton className="h-4 w-full max-w-[120px]" />
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : table.getRowModel().rows.length > 0 ? (
-              table.getRowModel().rows.map(row => (
-                <TableRow key={row.id}>
-                  {row.getVisibleCells().map(cell => (
-                    <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : hasFiltersOrSearch ? (
-              <TableRow>
-                <TableCell
-                  colSpan={table.getVisibleLeafColumns().length}
-                  className="py-16 text-center">
-                  <h3 className="text-[16px] font-medium">No results found</h3>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    Try adjusting your search or filters.
-                  </p>
-                  <Button variant="outline" className="mt-4" onClick={clearFilters}>
-                    Clear filters
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={table.getVisibleLeafColumns().length}
-                  className="py-16 text-center">
-                  <Package className="mx-auto h-10 w-10 text-muted-foreground/50" />
-                  <h3 className="mt-3 text-[16px] font-medium">{t('list.emptyTitle')}</h3>
-                  <p className="mt-1 text-sm text-muted-foreground">{t('list.emptyDescription')}</p>
-                  <Button className="mt-4" onClick={onAddEquipment}>
-                    {t('addEquipment')}
-                  </Button>
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
+          <DataTableBody
+            table={table}
+            isLoading={isLoading}
+            hasFiltersOrSearch={hasFiltersOrSearch}
+            emptyIcon={<Package className="mx-auto h-10 w-10 text-muted-foreground/50" />}
+            emptyTitle={t('list.emptyTitle')}
+            emptyDescription={t('list.emptyDescription')}
+            emptyCta={t('addEquipment')}
+            onEmptyCta={onAddEquipment}
+            noResultsTitle="No results found"
+            noResultsDescription="Try adjusting your search or filters."
+            noResultsCta="Clear filters"
+            onClearFilters={clearFilters}
+          />
         </Table>
 
         {/* Pagination */}

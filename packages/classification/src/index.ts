@@ -4,6 +4,10 @@
 
 // biome-ignore lint/performance/noBarrelFile: package entry point
 
+// Profile registrations (side-effect imports — must run before the registry is consulted).
+// IR35 (GB) registers on first load.
+import './profiles/ir35/index.js';
+
 // Registry
 export {
   clearProfiles,

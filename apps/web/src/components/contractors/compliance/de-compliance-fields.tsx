@@ -9,7 +9,7 @@ import {
   TAX_STEUERNUMMER_LABEL,
   TAX_USTIDNR_LABEL,
 } from '@contractor-ops/validators';
-import { useCallback, useState } from 'react';
+import { useCallback, useId, useState } from 'react';
 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -82,23 +82,37 @@ export interface DeComplianceFieldsProps {
  * as a string literal. The CI guard (Plan 03) will fail the build if any of
  * these identifiers appears in `messages/*.json`.
  */
+/** Merge shorthand props into a partial record, skipping undefined values. */
+function collectShorthandProps(props: DeComplianceFieldsProps): Partial<DeCountryFields> {
+  const result: Partial<DeCountryFields> = {};
+  if (props.entityType !== undefined) result.entityType = props.entityType;
+  if (props.bundesland !== undefined) result.bundesland = props.bundesland;
+  if (props.isVatRegistered !== undefined) result.isVatRegistered = props.isVatRegistered;
+  if (props.isKleinunternehmer !== undefined) result.isKleinunternehmer = props.isKleinunternehmer;
+  if (props.steuernummer !== undefined) result.steuernummer = props.steuernummer;
+  if (props.ustIdNr !== undefined) result.ustIdNr = props.ustIdNr;
+  if (props.handelsregister !== undefined) result.handelsregister = props.handelsregister;
+  if (props.sozialversicherungsnummer !== undefined) result.sozialversicherungsnummer = props.sozialversicherungsnummer;
+  return result;
+}
+
+/** Inline field error with ARIA attributes. */
+function FieldError({ id, message }: { id: string; message: string | undefined }) {
+  if (!message) return null;
+  return (
+    <p id={id} role="alert" aria-live="polite" className="text-xs text-destructive">
+      {message}
+    </p>
+  );
+}
+
 export function DeComplianceFields(props: DeComplianceFieldsProps) {
+  const id = useId();
   const [internal, setInternal] = useState<Partial<DeCountryFields>>({});
 
   const merged: Partial<DeCountryFields> = {
     ...internal,
-    ...(props.entityType === undefined ? {} : { entityType: props.entityType }),
-    ...(props.bundesland === undefined ? {} : { bundesland: props.bundesland }),
-    ...(props.isVatRegistered === undefined ? {} : { isVatRegistered: props.isVatRegistered }),
-    ...(props.isKleinunternehmer === undefined
-      ? {}
-      : { isKleinunternehmer: props.isKleinunternehmer }),
-    ...(props.steuernummer === undefined ? {} : { steuernummer: props.steuernummer }),
-    ...(props.ustIdNr === undefined ? {} : { ustIdNr: props.ustIdNr }),
-    ...(props.handelsregister === undefined ? {} : { handelsregister: props.handelsregister }),
-    ...(props.sozialversicherungsnummer === undefined
-      ? {}
-      : { sozialversicherungsnummer: props.sozialversicherungsnummer }),
+    ...collectShorthandProps(props),
     ...(props.values ?? {}),
   };
 
@@ -183,31 +197,23 @@ export function DeComplianceFields(props: DeComplianceFieldsProps) {
 
       {showUstId ? (
         <div className="space-y-2">
-          <Label htmlFor="de-ust-id" className="text-sm font-medium">
+          <Label htmlFor={`${id}-ust-id`} className="text-sm font-medium">
             {TAX_USTIDNR_LABEL}
             <span aria-hidden="true" className="ms-1 text-destructive">
               *
             </span>
           </Label>
           <Input
-            id="de-ust-id"
+            id={`${id}-ust-id`}
             aria-required="true"
             aria-invalid={errors.ustIdNr ? 'true' : undefined}
-            aria-describedby={errors.ustIdNr ? 'de-ust-id-error' : undefined}
+            aria-describedby={errors.ustIdNr ? `${id}-ust-id-error` : undefined}
             placeholder="DE123456789"
             value={merged.ustIdNr ?? ''}
             // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
             onChange={e => handleChange('ustIdNr', e.target.value || undefined)}
           />
-          {errors.ustIdNr ? (
-            <p
-              id="de-ust-id-error"
-              role="alert"
-              aria-live="polite"
-              className="text-xs text-destructive">
-              {errors.ustIdNr}
-            </p>
-          ) : null}
+          <FieldError id={`${id}-ust-id-error`} message={errors.ustIdNr} />
         </div>
       ) : null}
 
@@ -223,23 +229,19 @@ export function DeComplianceFields(props: DeComplianceFieldsProps) {
       ) : null}
 
       <div className="space-y-2">
-        <Label htmlFor="de-sv" className="text-sm font-medium">
+        <Label htmlFor={`${id}-sv`} className="text-sm font-medium">
           {TAX_SOZIALVERSICHERUNGSNUMMER_LABEL}
         </Label>
         <Input
-          id="de-sv"
+          id={`${id}-sv`}
           aria-invalid={errors.sozialversicherungsnummer ? 'true' : undefined}
-          aria-describedby={errors.sozialversicherungsnummer ? 'de-sv-error' : undefined}
+          aria-describedby={errors.sozialversicherungsnummer ? `${id}-sv-error` : undefined}
           placeholder="12 345678 A 901"
           value={merged.sozialversicherungsnummer ?? ''}
           // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
           onChange={e => handleChange('sozialversicherungsnummer', e.target.value || undefined)}
         />
-        {errors.sozialversicherungsnummer ? (
-          <p id="de-sv-error" role="alert" aria-live="polite" className="text-xs text-destructive">
-            {errors.sozialversicherungsnummer}
-          </p>
-        ) : null}
+        <FieldError id={`${id}-sv-error`} message={errors.sozialversicherungsnummer} />
       </div>
     </div>
   );

@@ -30,6 +30,8 @@ export interface Ir35AreaResult {
   readonly verdict: Ir35AreaVerdict;
   readonly rationaleKey?: string;
   readonly caseLawCitations: readonly string[];
+  /** Up to 3 question IDs that most drove this area's verdict (D-13). */
+  readonly drivingQuestionIds?: readonly string[];
 }
 
 /** IR35 outcome — 5-area composite per D-13. */

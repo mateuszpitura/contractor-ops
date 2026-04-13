@@ -2,7 +2,7 @@
 
 import type { UkCountryFields } from '@contractor-ops/validators';
 import { ukEntityTypeEnum } from '@contractor-ops/validators';
-import { useCallback, useState } from 'react';
+import { useCallback, useId, useState } from 'react';
 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -29,7 +29,7 @@ const UK_ENTITY_LABELS: Record<UkEntityType, string> = {
 export interface UkComplianceFieldsProps {
   /**
    * Form state. When a `values` record is provided, its keys take precedence
-   * over the individual shorthand props (`entityType`, `isVatRegistered`, …).
+   * over the individual shorthand props (`entityType`, `isVatRegistered`, ...).
    * The component is fully controlled when `onChange` is supplied; when
    * `onChange` is omitted, an internal state store is used so the component is
    * also usable in isolation (primarily for scaffold tests and Storybook).
@@ -53,29 +53,53 @@ export interface UkComplianceFieldsProps {
  * UK contractor compliance field group (FOUND-01 / D-14).
  *
  * Composes the generic primitives in this folder into the UK field matrix
- * described in UI-SPEC §Interaction 1:
- *   - SOLE_TRADER  → UTR required, Companies House hidden
- *   - LTD / LLP    → Companies House required, UTR optional
- *   - isVatRegistered=true in any case → VAT registration number required
+ * described in UI-SPEC Interaction 1:
+ *   - SOLE_TRADER  -> UTR required, Companies House hidden
+ *   - LTD / LLP    -> Companies House required, UTR optional
+ *   - isVatRegistered=true in any case -> VAT registration number required
  *
  * Required fields render a destructive asterisk next to their label and set
  * `aria-required="true"` on the underlying control. The Zod schema re-asserts
  * the same rules server-side (`ukCountryFieldsSchema.superRefine`), so the UI
  * markers are strictly a usability signal.
  */
+/** Merge shorthand props into a partial record, skipping undefined values. */
+function collectShorthandProps(props: UkComplianceFieldsProps): Partial<UkCountryFields> {
+  const result: Partial<UkCountryFields> = {};
+  if (props.entityType !== undefined) result.entityType = props.entityType;
+  if (props.isVatRegistered !== undefined) result.isVatRegistered = props.isVatRegistered;
+  if (props.utr !== undefined) result.utr = props.utr;
+  if (props.companiesHouseNumber !== undefined) result.companiesHouseNumber = props.companiesHouseNumber;
+  if (props.vatRegistrationNumber !== undefined) result.vatRegistrationNumber = props.vatRegistrationNumber;
+  return result;
+}
+
+/** Required-field label with optional asterisk. */
+function RequiredLabel({ htmlFor, children, required }: { htmlFor: string; children: React.ReactNode; required: boolean }) {
+  return (
+    <Label htmlFor={htmlFor} className="text-sm font-medium">
+      {children}
+      {required ? <span aria-hidden="true" className="ms-1 text-destructive">*</span> : null}
+    </Label>
+  );
+}
+
+/** Inline field error with ARIA attributes. */
+function FieldError({ id, message }: { id: string; message: string | undefined }) {
+  if (!message) return null;
+  return (
+    <p id={id} role="alert" aria-live="polite" className="text-xs text-destructive">
+      {message}
+    </p>
+  );
+}
+
 export function UkComplianceFields(props: UkComplianceFieldsProps) {
+  const id = useId();
   const [internal, setInternal] = useState<Partial<UkCountryFields>>({});
   const merged: Partial<UkCountryFields> = {
     ...internal,
-    ...(props.entityType === undefined ? {} : { entityType: props.entityType }),
-    ...(props.isVatRegistered === undefined ? {} : { isVatRegistered: props.isVatRegistered }),
-    ...(props.utr === undefined ? {} : { utr: props.utr }),
-    ...(props.companiesHouseNumber === undefined
-      ? {}
-      : { companiesHouseNumber: props.companiesHouseNumber }),
-    ...(props.vatRegistrationNumber === undefined
-      ? {}
-      : { vatRegistrationNumber: props.vatRegistrationNumber }),
+    ...collectShorthandProps(props),
     ...(props.values ?? {}),
   };
 
@@ -94,9 +118,8 @@ export function UkComplianceFields(props: UkComplianceFieldsProps) {
   const isVatRegistered = merged.isVatRegistered ?? false;
   const errors = props.errors ?? {};
 
-  const isSoleTrader = entityType === 'SOLE_TRADER';
   const isLtdOrLlp = entityType === 'LTD' || entityType === 'LLP';
-  const utrRequired = isSoleTrader;
+  const utrRequired = entityType === 'SOLE_TRADER';
   const chRequired = isLtdOrLlp;
   const vatRequired = isVatRegistered;
 
@@ -124,63 +147,37 @@ export function UkComplianceFields(props: UkComplianceFieldsProps) {
       />
 
       <div className="space-y-2">
-        <Label htmlFor="uk-utr" className="text-sm font-medium">
-          UTR
-          {utrRequired ? (
-            <span aria-hidden="true" className="ms-1 text-destructive">
-              *
-            </span>
-          ) : null}
-        </Label>
+        <RequiredLabel htmlFor={`${id}-utr`} required={utrRequired}>UTR</RequiredLabel>
         <Input
-          id="uk-utr"
+          id={`${id}-utr`}
           inputMode="numeric"
           maxLength={10}
           aria-required={utrRequired ? 'true' : undefined}
           aria-invalid={errors.utr ? 'true' : undefined}
-          aria-describedby={errors.utr ? 'uk-utr-error' : undefined}
+          aria-describedby={errors.utr ? `${id}-utr-error` : undefined}
           placeholder="10-digit UTR"
           value={merged.utr ?? ''}
           // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
           onChange={e => handleChange('utr', e.target.value || undefined)}
         />
-        {errors.utr ? (
-          <p id="uk-utr-error" role="alert" aria-live="polite" className="text-xs text-destructive">
-            {errors.utr}
-          </p>
-        ) : null}
+        <FieldError id={`${id}-utr-error`} message={errors.utr} />
       </div>
 
       {isLtdOrLlp ? (
         <div className="space-y-2">
-          <Label htmlFor="uk-ch" className="text-sm font-medium">
-            Companies House number
-            {chRequired ? (
-              <span aria-hidden="true" className="ms-1 text-destructive">
-                *
-              </span>
-            ) : null}
-          </Label>
+          <RequiredLabel htmlFor={`${id}-ch`} required={chRequired}>Companies House number</RequiredLabel>
           <Input
-            id="uk-ch"
+            id={`${id}-ch`}
             maxLength={8}
             aria-required={chRequired ? 'true' : undefined}
             aria-invalid={errors.companiesHouseNumber ? 'true' : undefined}
-            aria-describedby={errors.companiesHouseNumber ? 'uk-ch-error' : undefined}
+            aria-describedby={errors.companiesHouseNumber ? `${id}-ch-error` : undefined}
             placeholder="e.g. 12345678 or SC123456"
             value={merged.companiesHouseNumber ?? ''}
             // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
             onChange={e => handleChange('companiesHouseNumber', e.target.value || undefined)}
           />
-          {errors.companiesHouseNumber ? (
-            <p
-              id="uk-ch-error"
-              role="alert"
-              aria-live="polite"
-              className="text-xs text-destructive">
-              {errors.companiesHouseNumber}
-            </p>
-          ) : null}
+          <FieldError id={`${id}-ch-error`} message={errors.companiesHouseNumber} />
         </div>
       ) : null}
 
@@ -193,33 +190,18 @@ export function UkComplianceFields(props: UkComplianceFieldsProps) {
 
       {isVatRegistered ? (
         <div className="space-y-2">
-          <Label htmlFor="uk-vat" className="text-sm font-medium">
-            VAT registration number
-            {vatRequired ? (
-              <span aria-hidden="true" className="ms-1 text-destructive">
-                *
-              </span>
-            ) : null}
-          </Label>
+          <RequiredLabel htmlFor={`${id}-vat`} required={vatRequired}>VAT registration number</RequiredLabel>
           <Input
-            id="uk-vat"
+            id={`${id}-vat`}
             aria-required={vatRequired ? 'true' : undefined}
             aria-invalid={errors.vatRegistrationNumber ? 'true' : undefined}
-            aria-describedby={errors.vatRegistrationNumber ? 'uk-vat-error' : undefined}
+            aria-describedby={errors.vatRegistrationNumber ? `${id}-vat-error` : undefined}
             placeholder="GB123456789"
             value={merged.vatRegistrationNumber ?? ''}
             // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
             onChange={e => handleChange('vatRegistrationNumber', e.target.value || undefined)}
           />
-          {errors.vatRegistrationNumber ? (
-            <p
-              id="uk-vat-error"
-              role="alert"
-              aria-live="polite"
-              className="text-xs text-destructive">
-              {errors.vatRegistrationNumber}
-            </p>
-          ) : null}
+          <FieldError id={`${id}-vat-error`} message={errors.vatRegistrationNumber} />
         </div>
       ) : null}
     </div>

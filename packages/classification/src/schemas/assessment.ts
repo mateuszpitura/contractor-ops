@@ -30,6 +30,7 @@ export const ir35AreaResultSchema = z.object({
   verdict: ir35AreaVerdictSchema,
   rationaleKey: z.string().optional(),
   caseLawCitations: z.array(z.string()).readonly(),
+  drivingQuestionIds: z.array(z.string()).max(3).readonly().optional(),
 });
 
 export const ir35VerdictSchema = z.enum(['outside', 'inside', 'indeterminate']);

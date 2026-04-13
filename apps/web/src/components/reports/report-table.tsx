@@ -2,10 +2,11 @@
 
 import type { ColumnDef } from '@tanstack/react-table';
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
-import { ArrowDown, ArrowUp, ArrowUpDown, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 
+import { SortableTableHead } from '@/components/shared/sortable-table-head';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -91,39 +92,16 @@ export function ReportTable<TData>({
           {table.getHeaderGroups().map(headerGroup => (
             <TableRow key={headerGroup.id}>
               {headerGroup.headers.map(header => (
-                <TableHead
+                <SortableTableHead
                   key={header.id}
-                  aria-sort={
-                    header.column.getIsSorted() === 'asc'
-                      ? 'ascending'
-                      : header.column.getIsSorted() === 'desc'
-                        ? 'descending'
-                        : undefined
-                  }>
-                  {header.isPlaceholder ? null : header.column.getCanSort() ? (
-                    <button
-                      type="button"
-                      className="flex items-center gap-1 uppercase hover:text-foreground"
-                      onClick={header.column.getToggleSortingHandler()}
-                      aria-label={tAria('sortBy', {
-                        column:
-                          typeof header.column.columnDef.header === 'string'
-                            ? header.column.columnDef.header
-                            : header.id,
-                      })}>
-                      {flexRender(header.column.columnDef.header, header.getContext())}
-                      {header.column.getIsSorted() === 'asc' ? (
-                        <ArrowUp className="h-3 w-3" />
-                      ) : header.column.getIsSorted() === 'desc' ? (
-                        <ArrowDown className="h-3 w-3" />
-                      ) : (
-                        <ArrowUpDown className="h-3 w-3 opacity-40" />
-                      )}
-                    </button>
-                  ) : (
-                    flexRender(header.column.columnDef.header, header.getContext())
-                  )}
-                </TableHead>
+                  header={header}
+                  sortAriaLabel={tAria('sortBy', {
+                    column:
+                      typeof header.column.columnDef.header === 'string'
+                        ? header.column.columnDef.header
+                        : header.id,
+                  })}
+                />
               ))}
             </TableRow>
           ))}

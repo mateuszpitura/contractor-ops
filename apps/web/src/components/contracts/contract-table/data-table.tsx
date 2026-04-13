@@ -2,17 +2,14 @@
 
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import type { ColumnDef, VisibilityState } from '@tanstack/react-table';
-import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
-import { ArrowDown, ArrowUp, ArrowUpDown, FileText, Loader2 } from 'lucide-react';
+import { getCoreRowModel, useReactTable } from '@tanstack/react-table';
+import { FileText, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
+import { DataTableBody } from '@/components/shared/data-table-body';
+import { SortableTableHead } from '@/components/shared/sortable-table-head';
 import {
   Table,
-  TableBody,
-  TableCell,
-  TableHead,
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
@@ -26,6 +23,21 @@ import { DataTableToolbar } from './data-table-toolbar';
 import { useContractFilters } from './use-contract-filters';
 
 const STORAGE_KEY = 'contract-table-columns';
+
+/** Convert a filter array to a typed array or undefined (reduces ternary nesting). */
+function asFilterArray<T extends string>(arr: string[]): T[] | undefined {
+  return arr.length ? (arr as T[]) : undefined;
+}
+
+/** Convert a non-empty string to itself or undefined. */
+function asFilterString(val: string): string | undefined {
+  return val || undefined;
+}
+
+/** Convert a date string filter to ISO string or undefined. */
+function asDateFilter(val: string): string | undefined {
+  return val ? new Date(val).toISOString() : undefined;
+}
 
 interface ContractDataTableProps {
   onRowClick: (contract: ContractRow) => void;
@@ -73,40 +85,19 @@ export function ContractDataTable({ onRowClick, onNewContract, onImport }: Contr
     () => ({
       page: filters.page,
       pageSize: filters.pageSize,
-      search: filters.search || undefined,
+      search: asFilterString(filters.search),
       sortBy:
         (filters.sortBy as 'createdAt' | 'title' | 'status' | 'endDate' | 'startDate' | 'type') ||
         'endDate',
       sortOrder: (filters.sortOrder as 'asc' | 'desc') || 'asc',
       filters: {
-        status: filters.status.length
-          ? (filters.status as Array<
-              | 'DRAFT'
-              | 'PENDING_SIGNATURE'
-              | 'ACTIVE'
-              | 'EXPIRING'
-              | 'EXPIRED'
-              | 'TERMINATED'
-              | 'SUPERSEDED'
-              | 'ARCHIVED'
-            >)
-          : undefined,
-        type: filters.type.length
-          ? (filters.type as Array<
-              'B2B_MASTER_SERVICE' | 'STATEMENT_OF_WORK' | 'NDA' | 'IP_ASSIGNMENT' | 'DPA' | 'OTHER'
-            >)
-          : undefined,
-        billingModel: filters.billingModel.length
-          ? (filters.billingModel as Array<
-              'MONTHLY_RETAINER' | 'HOURLY' | 'DAILY' | 'MILESTONE' | 'DELIVERABLE_BASED' | 'MIXED'
-            >)
-          : undefined,
-        ownerUserId: filters.ownerUserId.length ? filters.ownerUserId : undefined,
-        endDateFrom: filters.endDateFrom ? new Date(filters.endDateFrom).toISOString() : undefined,
-        endDateTo: filters.endDateTo ? new Date(filters.endDateTo).toISOString() : undefined,
-        complianceRiskLevel: filters.complianceRiskLevel.length
-          ? (filters.complianceRiskLevel as Array<'LOW' | 'MEDIUM' | 'HIGH'>)
-          : undefined,
+        status: asFilterArray<'DRAFT' | 'PENDING_SIGNATURE' | 'ACTIVE' | 'EXPIRING' | 'EXPIRED' | 'TERMINATED' | 'SUPERSEDED' | 'ARCHIVED'>(filters.status),
+        type: asFilterArray<'B2B_MASTER_SERVICE' | 'STATEMENT_OF_WORK' | 'NDA' | 'IP_ASSIGNMENT' | 'DPA' | 'OTHER'>(filters.type),
+        billingModel: asFilterArray<'MONTHLY_RETAINER' | 'HOURLY' | 'DAILY' | 'MILESTONE' | 'DELIVERABLE_BASED' | 'MIXED'>(filters.billingModel),
+        ownerUserId: asFilterArray(filters.ownerUserId),
+        endDateFrom: asDateFilter(filters.endDateFrom),
+        endDateTo: asDateFilter(filters.endDateTo),
+        complianceRiskLevel: asFilterArray<'LOW' | 'MEDIUM' | 'HIGH'>(filters.complianceRiskLevel),
       },
     }),
     [filters],
@@ -287,105 +278,35 @@ export function ContractDataTable({ onRowClick, onNewContract, onImport }: Contr
             {table.getHeaderGroups().map(headerGroup => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map(header => (
-                  <TableHead
+                  <SortableTableHead
                     key={header.id}
-                    style={
-                      header.column.getSize() === 150
-                        ? undefined
-                        : { width: header.column.getSize() }
-                    }
-                    aria-sort={
-                      header.column.getIsSorted() === 'asc'
-                        ? 'ascending'
-                        : header.column.getIsSorted() === 'desc'
-                          ? 'descending'
-                          : undefined
-                    }>
-                    {header.isPlaceholder ? null : header.column.getCanSort() ? (
-                      <button
-                        type="button"
-                        className="flex items-center gap-1 uppercase hover:text-foreground"
-                        onClick={header.column.getToggleSortingHandler()}
-                        aria-label={tAria('sortBy', {
-                          column:
-                            typeof header.column.columnDef.header === 'string'
-                              ? header.column.columnDef.header
-                              : header.id,
-                        })}>
-                        {flexRender(header.column.columnDef.header, header.getContext())}
-                        {header.column.getIsSorted() === 'asc' ? (
-                          <ArrowUp className="h-3 w-3" />
-                        ) : header.column.getIsSorted() === 'desc' ? (
-                          <ArrowDown className="h-3 w-3" />
-                        ) : (
-                          <ArrowUpDown className="h-3 w-3 opacity-40" />
-                        )}
-                      </button>
-                    ) : (
-                      flexRender(header.column.columnDef.header, header.getContext())
-                    )}
-                  </TableHead>
+                    header={header}
+                    sortAriaLabel={tAria('sortBy', {
+                      column:
+                        typeof header.column.columnDef.header === 'string'
+                          ? header.column.columnDef.header
+                          : header.id,
+                    })}
+                  />
                 ))}
               </TableRow>
             ))}
           </TableHeader>
-          <TableBody>
-            {isLoading ? (
-              // Skeleton loading rows
-              Array.from({ length: 8 }).map((_, i) => (
-                // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-                <TableRow key={`skeleton-${i}`}>
-                  {table.getVisibleLeafColumns().map(col => (
-                    <TableCell key={col.id}>
-                      <Skeleton className="h-4 w-full max-w-[120px]" />
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : table.getRowModel().rows.length > 0 ? (
-              table.getRowModel().rows.map(row => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() ? 'selected' : undefined}
-                  className="cursor-pointer"
-                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                  onClick={() => onRowClick(row.original)}>
-                  {row.getVisibleCells().map(cell => (
-                    <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : hasFiltersOrSearch ? (
-              // No search results
-              <TableRow>
-                <TableCell
-                  colSpan={table.getVisibleLeafColumns().length}
-                  className="py-16 text-center">
-                  <h3 className="text-[16px] font-medium">{t('noResults.heading')}</h3>
-                  <p className="mt-1 text-sm text-muted-foreground">{t('noResults.body')}</p>
-                  <Button variant="outline" className="mt-4" onClick={clearFilters}>
-                    {t('noResults.cta')}
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ) : (
-              // Empty state
-              <TableRow>
-                <TableCell
-                  colSpan={table.getVisibleLeafColumns().length}
-                  className="py-16 text-center">
-                  <FileText className="mx-auto h-10 w-10 text-muted-foreground/50" />
-                  <h3 className="mt-3 text-[16px] font-medium">{t('empty.heading')}</h3>
-                  <p className="mt-1 text-sm text-muted-foreground">{t('empty.body')}</p>
-                  <Button className="mt-4" onClick={onNewContract}>
-                    {t('empty.cta')}
-                  </Button>
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
+          <DataTableBody
+            table={table}
+            isLoading={isLoading}
+            hasFiltersOrSearch={hasFiltersOrSearch}
+            onRowClick={onRowClick}
+            emptyIcon={<FileText className="mx-auto h-10 w-10 text-muted-foreground/50" />}
+            emptyTitle={t('empty.heading')}
+            emptyDescription={t('empty.body')}
+            emptyCta={t('empty.cta')}
+            onEmptyCta={onNewContract}
+            noResultsTitle={t('noResults.heading')}
+            noResultsDescription={t('noResults.body')}
+            noResultsCta={t('noResults.cta')}
+            onClearFilters={clearFilters}
+          />
         </Table>
 
         {/* Pagination */}
