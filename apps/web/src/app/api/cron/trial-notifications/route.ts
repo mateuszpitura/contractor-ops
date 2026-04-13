@@ -42,6 +42,63 @@ export async function GET(request: NextRequest) {
   );
 }
 
+// ---------------------------------------------------------------------------
+// Notification templates by days-until-expiry
+// ---------------------------------------------------------------------------
+
+interface TrialTemplate {
+  title: string;
+  body: string;
+  emailSubject: string;
+  emailBody: string;
+}
+
+const TRIAL_NOTIFICATION_TEMPLATES: Record<number, TrialTemplate> = {
+  7: {
+    title: 'Trial ending in 7 days',
+    body: 'Your trial ends in 7 days. Upgrade to keep your data and full access.',
+    emailSubject: 'Your Contractor Ops trial ends in 7 days',
+    emailBody: 'Your trial ends in 7 days. Upgrade to keep your data and full access.',
+  },
+  1: {
+    title: 'Trial ending tomorrow',
+    body: 'Your trial ends tomorrow. Upgrade now to avoid losing access to features.',
+    emailSubject: 'Your Contractor Ops trial ends tomorrow',
+    emailBody: 'Your trial ends tomorrow. Upgrade now to avoid losing access to features.',
+  },
+};
+
+async function sendTrialNotification(
+  organization: { id: string; billingEmail: string | null },
+  adminUserIds: string[],
+  template: TrialTemplate,
+): Promise<void> {
+  if (adminUserIds.length > 0) {
+    await dispatch({
+      organizationId: organization.id,
+      type: 'TRIAL_ENDING',
+      recipientUserIds: adminUserIds,
+      title: template.title,
+      body: template.body,
+      entityType: 'ORGANIZATION',
+      entityId: organization.id,
+    });
+  }
+
+  if (organization.billingEmail) {
+    try {
+      await sendAppEmail({
+        from: 'Contractor Ops <notifications@contractorhub.io>',
+        to: organization.billingEmail,
+        subject: template.emailSubject,
+        html: `<p>${template.emailBody}</p><p><a href="${buildBillingUrl()}">Go to billing settings</a></p>`,
+      });
+    } catch (error) {
+      log.error({ err: error }, 'email send failed');
+    }
+  }
+}
+
 async function handleTrialNotifications() {
   let notificationCount = 0;
 
@@ -74,67 +131,13 @@ async function handleTrialNotifications() {
         (sub.trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
       );
 
+      const template = TRIAL_NOTIFICATION_TEMPLATES[daysUntilTrialEnd];
+      if (!template) continue;
+
       const adminUserIds = sub.organization.members.map((m: { userId: string }) => m.userId);
 
-      if (daysUntilTrialEnd === 7) {
-        // 7-day notification
-        if (adminUserIds.length > 0) {
-          await dispatch({
-            organizationId: sub.organization.id,
-            type: 'TRIAL_ENDING',
-            recipientUserIds: adminUserIds,
-            title: 'Trial ending in 7 days',
-            body: 'Your trial ends in 7 days. Upgrade to keep your data and full access.',
-            entityType: 'ORGANIZATION',
-            entityId: sub.organization.id,
-          });
-        }
-
-        if (sub.organization.billingEmail) {
-          try {
-            await sendAppEmail({
-              from: 'Contractor Ops <notifications@contractorhub.io>',
-              to: sub.organization.billingEmail,
-              subject: 'Your Contractor Ops trial ends in 7 days',
-              html: `<p>Your trial ends in 7 days. Upgrade to keep your data and full access.</p><p><a href="${buildBillingUrl()}">Go to billing settings</a></p>`,
-            });
-          } catch (error) {
-            log.error({ err: error }, 'email send failed');
-          }
-        }
-
-        notificationCount++;
-      }
-
-      if (daysUntilTrialEnd === 1) {
-        // 1-day notification
-        if (adminUserIds.length > 0) {
-          await dispatch({
-            organizationId: sub.organization.id,
-            type: 'TRIAL_ENDING',
-            recipientUserIds: adminUserIds,
-            title: 'Trial ending tomorrow',
-            body: 'Your trial ends tomorrow. Upgrade now to avoid losing access to features.',
-            entityType: 'ORGANIZATION',
-            entityId: sub.organization.id,
-          });
-        }
-
-        if (sub.organization.billingEmail) {
-          try {
-            await sendAppEmail({
-              from: 'Contractor Ops <notifications@contractorhub.io>',
-              to: sub.organization.billingEmail,
-              subject: 'Your Contractor Ops trial ends tomorrow',
-              html: `<p>Your trial ends tomorrow. Upgrade now to avoid losing access to features.</p><p><a href="${buildBillingUrl()}">Go to billing settings</a></p>`,
-            });
-          } catch (error) {
-            log.error({ err: error }, 'email send failed');
-          }
-        }
-
-        notificationCount++;
-      }
+      await sendTrialNotification(sub.organization, adminUserIds, template);
+      notificationCount++;
     }
 
     log.info(

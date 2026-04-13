@@ -37,6 +37,69 @@ const globalModels = new Set([
   'Invitation',
 ]);
 
+/** Operations that filter by `where.organizationId`. */
+const READ_OPERATIONS = new Set([
+  'findMany',
+  'findFirst',
+  'findUnique',
+  'findFirstOrThrow',
+  'findUniqueOrThrow',
+  'count',
+  'aggregate',
+  'groupBy',
+]);
+
+/** Operations that filter by `where.organizationId` (mutations). */
+const MUTATION_WHERE_OPERATIONS = new Set(['update', 'updateMany', 'delete', 'deleteMany']);
+
+function injectWhere(argsObj: Record<string, unknown>, organizationId: string): void {
+  const where = (argsObj.where ?? {}) as Record<string, unknown>;
+  argsObj.where = { ...where, organizationId };
+}
+
+function injectData(argsObj: Record<string, unknown>, organizationId: string): void {
+  const data = (argsObj.data ?? {}) as Record<string, unknown>;
+  argsObj.data = { ...data, organizationId };
+}
+
+function injectCreateManyData(argsObj: Record<string, unknown>, organizationId: string): void {
+  const data = argsObj.data;
+  if (Array.isArray(data)) {
+    argsObj.data = data.map(item => ({
+      ...(item as Record<string, unknown>),
+      organizationId,
+    }));
+  } else {
+    injectData(argsObj, organizationId);
+  }
+}
+
+function injectUpsert(argsObj: Record<string, unknown>, organizationId: string): void {
+  injectWhere(argsObj, organizationId);
+
+  const create = (argsObj.create ?? {}) as Record<string, unknown>;
+  argsObj.create = { ...create, organizationId };
+
+  const update = (argsObj.update ?? {}) as Record<string, unknown>;
+  argsObj.update = { ...update, organizationId };
+}
+
+function applyTenantScope(
+  operation: string,
+  argsObj: Record<string, unknown>,
+  orgId: string,
+): void {
+  if (READ_OPERATIONS.has(operation) || MUTATION_WHERE_OPERATIONS.has(operation)) {
+    injectWhere(argsObj, orgId);
+  } else if (operation === 'create') {
+    injectData(argsObj, orgId);
+  } else if (operation === 'createMany' || operation === 'createManyAndReturn') {
+    injectCreateManyData(argsObj, orgId);
+  } else if (operation === 'upsert') {
+    injectUpsert(argsObj, orgId);
+  }
+}
+
 /**
  * Wraps a PrismaClient with automatic tenant scoping.
  * All queries on tenant-scoped models will automatically include
@@ -56,7 +119,6 @@ export function withTenantScope<T extends PrismaExtensible>(prisma: T) {
           );
         }
 
-        // Skip global models
         if (model && globalModels.has(model)) {
           return await query(args);
         }
@@ -66,61 +128,7 @@ export function withTenantScope<T extends PrismaExtensible>(prisma: T) {
         }
 
         const argsObj = args as Record<string, unknown>;
-
-        // Read operations — inject organizationId into where clause
-        if (
-          [
-            'findMany',
-            'findFirst',
-            'findUnique',
-            'findFirstOrThrow',
-            'findUniqueOrThrow',
-            'count',
-            'aggregate',
-            'groupBy',
-          ].includes(operation)
-        ) {
-          const where = (argsObj.where ?? {}) as Record<string, unknown>;
-          argsObj.where = { ...where, organizationId: ctx.organizationId };
-        }
-
-        // Create operations — inject organizationId into data
-        if (operation === 'create') {
-          const data = (argsObj.data ?? {}) as Record<string, unknown>;
-          argsObj.data = { ...data, organizationId: ctx.organizationId };
-        }
-
-        if (operation === 'createMany' || operation === 'createManyAndReturn') {
-          const data = argsObj.data;
-          if (Array.isArray(data)) {
-            argsObj.data = data.map(item => ({
-              ...(item as Record<string, unknown>),
-              organizationId: ctx.organizationId,
-            }));
-          } else {
-            const dataObj = (data ?? {}) as Record<string, unknown>;
-            argsObj.data = { ...dataObj, organizationId: ctx.organizationId };
-          }
-        }
-
-        // Update/delete operations — inject organizationId into where clause
-        if (['update', 'updateMany', 'delete', 'deleteMany'].includes(operation)) {
-          const where = (argsObj.where ?? {}) as Record<string, unknown>;
-          argsObj.where = { ...where, organizationId: ctx.organizationId };
-        }
-
-        // Upsert — inject organizationId into where, create, and update
-        if (operation === 'upsert') {
-          const where = (argsObj.where ?? {}) as Record<string, unknown>;
-          argsObj.where = { ...where, organizationId: ctx.organizationId };
-
-          const create = (argsObj.create ?? {}) as Record<string, unknown>;
-          argsObj.create = { ...create, organizationId: ctx.organizationId };
-
-          const update = (argsObj.update ?? {}) as Record<string, unknown>;
-          argsObj.update = { ...update, organizationId: ctx.organizationId };
-        }
-
+        applyTenantScope(operation, argsObj, ctx.organizationId);
         return await query(argsObj);
       },
     },

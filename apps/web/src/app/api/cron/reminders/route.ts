@@ -42,6 +42,137 @@ function startOfDay(date: Date): Date {
 // Reminder rule evaluation
 // ---------------------------------------------------------------------------
 
+interface ReminderEntity {
+  id: string;
+  label: string;
+  contractorId: string | null;
+  organizationId: string;
+}
+
+type ReminderNotificationType = 'CONTRACT_EXPIRING' | 'INVOICE_RECEIVED';
+
+interface ReminderDispatchParams {
+  notificationType: ReminderNotificationType;
+  title: string;
+  body: string;
+  entityType: 'CONTRACT' | 'INVOICE';
+}
+
+/**
+ * Processes a batch of matched entities for a single rule:
+ * dedup check, create instance, resolve recipients, dispatch, mark sent.
+ */
+async function processRuleEntities(
+  rule: { id: string; organizationId: string; recipientMode: string; configJson: unknown },
+  entities: ReminderEntity[],
+  dispatchParams: ReminderDispatchParams,
+  now: Date,
+  today: Date,
+): Promise<number> {
+  let sent = 0;
+  const scheduledFor = startOfDay(today);
+
+  for (const entity of entities) {
+    const existing = await prisma.reminderInstance.findFirst({
+      where: {
+        reminderRuleId: rule.id,
+        entityId: entity.id,
+        entityType: dispatchParams.entityType,
+        scheduledFor,
+      },
+    });
+    if (existing) continue;
+
+    await prisma.reminderInstance.create({
+      data: {
+        organizationId: rule.organizationId,
+        reminderRuleId: rule.id,
+        entityType: dispatchParams.entityType,
+        entityId: entity.id,
+        scheduledFor,
+        status: 'PENDING',
+      },
+    });
+
+    const recipientIds = await resolveRecipients(
+      rule.organizationId,
+      rule.recipientMode,
+      rule.configJson as Record<string, unknown> | null,
+      entity.contractorId,
+    );
+
+    if (recipientIds.length > 0) {
+      await dispatch({
+        organizationId: rule.organizationId,
+        type: dispatchParams.notificationType,
+        recipientUserIds: recipientIds,
+        title: dispatchParams.title.replace('{label}', entity.label),
+        body: dispatchParams.body,
+        entityType: dispatchParams.entityType,
+        entityId: entity.id,
+      });
+      sent++;
+    }
+
+    await prisma.reminderInstance.updateMany({
+      where: {
+        reminderRuleId: rule.id,
+        entityId: entity.id,
+        entityType: dispatchParams.entityType,
+        scheduledFor,
+        status: 'PENDING',
+      },
+      data: { status: 'SENT', sentAt: now },
+    });
+  }
+
+  return sent;
+}
+
+async function findMatchingContracts(
+  organizationId: string,
+  today: Date,
+  offsetDays: number,
+): Promise<ReminderEntity[]> {
+  const targetDate = addDays(today, offsetDays);
+  const contracts = await prisma.contract.findMany({
+    where: {
+      organizationId,
+      endDate: { lte: targetDate, gt: today },
+      status: { not: 'TERMINATED' },
+      deletedAt: null,
+    },
+    select: { id: true, title: true, contractorId: true, organizationId: true },
+  });
+  return contracts.map(c => ({
+    id: c.id,
+    label: c.title,
+    contractorId: c.contractorId,
+    organizationId: c.organizationId,
+  }));
+}
+
+async function findMatchingInvoices(
+  organizationId: string,
+  where: { dueDate: Record<string, unknown> },
+): Promise<ReminderEntity[]> {
+  const invoices = await prisma.invoice.findMany({
+    where: {
+      organizationId,
+      dueDate: where.dueDate,
+      status: { notIn: ['PAID', 'VOID'] },
+      deletedAt: null,
+    },
+    select: { id: true, invoiceNumber: true, organizationId: true, contractorId: true },
+  });
+  return invoices.map(inv => ({
+    id: inv.id,
+    label: inv.invoiceNumber,
+    contractorId: inv.contractorId,
+    organizationId: inv.organizationId,
+  }));
+}
+
 async function evaluateReminderRules(): Promise<{
   processed: number;
   sent: number;
@@ -59,224 +190,58 @@ async function evaluateReminderRules(): Promise<{
     processed++;
     const offsetDays = rule.offsetDays ?? 0;
 
-    // Determine which entities match based on triggerType
     if (rule.triggerType === 'BEFORE_CONTRACT_END' && rule.entityType === 'CONTRACT') {
-      const targetDate = addDays(today, offsetDays);
-      const contracts = await prisma.contract.findMany({
-        where: {
-          organizationId: rule.organizationId,
-          endDate: { lte: targetDate, gt: today },
-          status: { not: 'TERMINATED' },
-          deletedAt: null,
+      const entities = await findMatchingContracts(rule.organizationId, today, offsetDays);
+      sent += await processRuleEntities(
+        rule,
+        entities,
+        {
+          notificationType: 'CONTRACT_EXPIRING',
+          title: 'Contract expiring soon: {label}',
+          body: 'A contract is approaching its end date.',
+          entityType: 'CONTRACT',
         },
-        select: { id: true, title: true, contractorId: true, organizationId: true },
-      });
-
-      for (const contract of contracts) {
-        const scheduledFor = startOfDay(today);
-
-        // Dedup check (pitfall 7)
-        const existing = await prisma.reminderInstance.findFirst({
-          where: {
-            reminderRuleId: rule.id,
-            entityId: contract.id,
-            entityType: 'CONTRACT',
-            scheduledFor,
-          },
-        });
-        if (existing) continue;
-
-        // Create instance
-        await prisma.reminderInstance.create({
-          data: {
-            organizationId: rule.organizationId,
-            reminderRuleId: rule.id,
-            entityType: 'CONTRACT',
-            entityId: contract.id,
-            scheduledFor,
-            status: 'PENDING',
-          },
-        });
-
-        // Resolve recipients
-        const recipientIds = await resolveRecipients(
-          rule.organizationId,
-          rule.recipientMode,
-          rule.configJson as Record<string, unknown> | null,
-          contract.contractorId,
-        );
-
-        if (recipientIds.length > 0) {
-          await dispatch({
-            organizationId: rule.organizationId,
-            type: 'CONTRACT_EXPIRING',
-            recipientUserIds: recipientIds,
-            title: `Contract expiring soon: ${contract.title}`,
-            body: `A contract is approaching its end date.`,
-            entityType: 'CONTRACT',
-            entityId: contract.id,
-          });
-          sent++;
-        }
-
-        // Update instance status
-        await prisma.reminderInstance.updateMany({
-          where: {
-            reminderRuleId: rule.id,
-            entityId: contract.id,
-            entityType: 'CONTRACT',
-            scheduledFor,
-            status: 'PENDING',
-          },
-          data: { status: 'SENT', sentAt: now },
-        });
-      }
+        now,
+        today,
+      );
     }
 
     if (rule.triggerType === 'BEFORE_DUE_DATE' && rule.entityType === 'INVOICE') {
       const targetDate = addDays(today, offsetDays);
-      const invoices = await prisma.invoice.findMany({
-        where: {
-          organizationId: rule.organizationId,
-          dueDate: { lte: targetDate, gt: today },
-          status: { notIn: ['PAID', 'VOID'] },
-          deletedAt: null,
-        },
-        select: {
-          id: true,
-          invoiceNumber: true,
-          organizationId: true,
-          contractorId: true,
-        },
+      const entities = await findMatchingInvoices(rule.organizationId, {
+        dueDate: { lte: targetDate, gt: today },
       });
-
-      for (const invoice of invoices) {
-        const scheduledFor = startOfDay(today);
-        const existing = await prisma.reminderInstance.findFirst({
-          where: {
-            reminderRuleId: rule.id,
-            entityId: invoice.id,
-            entityType: 'INVOICE',
-            scheduledFor,
-          },
-        });
-        if (existing) continue;
-
-        await prisma.reminderInstance.create({
-          data: {
-            organizationId: rule.organizationId,
-            reminderRuleId: rule.id,
-            entityType: 'INVOICE',
-            entityId: invoice.id,
-            scheduledFor,
-            status: 'PENDING',
-          },
-        });
-
-        const recipientIds = await resolveRecipients(
-          rule.organizationId,
-          rule.recipientMode,
-          rule.configJson as Record<string, unknown> | null,
-          invoice.contractorId,
-        );
-
-        if (recipientIds.length > 0) {
-          await dispatch({
-            organizationId: rule.organizationId,
-            type: 'INVOICE_RECEIVED',
-            recipientUserIds: recipientIds,
-            title: `Invoice due soon: ${invoice.invoiceNumber}`,
-            body: `An invoice is approaching its due date.`,
-            entityType: 'INVOICE',
-            entityId: invoice.id,
-          });
-          sent++;
-        }
-
-        await prisma.reminderInstance.updateMany({
-          where: {
-            reminderRuleId: rule.id,
-            entityId: invoice.id,
-            entityType: 'INVOICE',
-            scheduledFor,
-            status: 'PENDING',
-          },
-          data: { status: 'SENT', sentAt: now },
-        });
-      }
+      sent += await processRuleEntities(
+        rule,
+        entities,
+        {
+          notificationType: 'INVOICE_RECEIVED',
+          title: 'Invoice due soon: {label}',
+          body: 'An invoice is approaching its due date.',
+          entityType: 'INVOICE',
+        },
+        now,
+        today,
+      );
     }
 
     if (rule.triggerType === 'AFTER_DUE_DATE' && rule.entityType === 'INVOICE') {
       const targetDate = addDays(today, -offsetDays);
-      const invoices = await prisma.invoice.findMany({
-        where: {
-          organizationId: rule.organizationId,
-          dueDate: { lte: targetDate },
-          status: { notIn: ['PAID', 'VOID'] },
-          deletedAt: null,
-        },
-        select: {
-          id: true,
-          invoiceNumber: true,
-          organizationId: true,
-          contractorId: true,
-        },
+      const entities = await findMatchingInvoices(rule.organizationId, {
+        dueDate: { lte: targetDate },
       });
-
-      for (const invoice of invoices) {
-        const scheduledFor = startOfDay(today);
-        const existing = await prisma.reminderInstance.findFirst({
-          where: {
-            reminderRuleId: rule.id,
-            entityId: invoice.id,
-            entityType: 'INVOICE',
-            scheduledFor,
-          },
-        });
-        if (existing) continue;
-
-        await prisma.reminderInstance.create({
-          data: {
-            organizationId: rule.organizationId,
-            reminderRuleId: rule.id,
-            entityType: 'INVOICE',
-            entityId: invoice.id,
-            scheduledFor,
-            status: 'PENDING',
-          },
-        });
-
-        const recipientIds = await resolveRecipients(
-          rule.organizationId,
-          rule.recipientMode,
-          rule.configJson as Record<string, unknown> | null,
-          invoice.contractorId,
-        );
-
-        if (recipientIds.length > 0) {
-          await dispatch({
-            organizationId: rule.organizationId,
-            type: 'INVOICE_RECEIVED',
-            recipientUserIds: recipientIds,
-            title: `Invoice overdue: ${invoice.invoiceNumber}`,
-            body: `An invoice is past its due date.`,
-            entityType: 'INVOICE',
-            entityId: invoice.id,
-          });
-          sent++;
-        }
-
-        await prisma.reminderInstance.updateMany({
-          where: {
-            reminderRuleId: rule.id,
-            entityId: invoice.id,
-            entityType: 'INVOICE',
-            scheduledFor,
-            status: 'PENDING',
-          },
-          data: { status: 'SENT', sentAt: now },
-        });
-      }
+      sent += await processRuleEntities(
+        rule,
+        entities,
+        {
+          notificationType: 'INVOICE_RECEIVED',
+          title: 'Invoice overdue: {label}',
+          body: 'An invoice is past its due date.',
+          entityType: 'INVOICE',
+        },
+        now,
+        today,
+      );
     }
   }
 

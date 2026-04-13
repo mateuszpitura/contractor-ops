@@ -17,6 +17,48 @@ interface CourierConfigJson {
   webhookSecret?: string;
 }
 
+function matchOrgBySignature(
+  configs: Array<{ organizationId: string; configJson: unknown }>,
+  rawBody: string,
+  headers: Record<string, string>,
+): string | null {
+  for (const config of configs) {
+    const configJson = config.configJson as CourierConfigJson;
+    const secret = configJson.webhookSecret ?? '';
+    if (verifyInPostSignature(rawBody, headers, secret)) {
+      return config.organizationId;
+    }
+  }
+  return null;
+}
+
+async function matchOrgByShipmentPayload(rawBody: string): Promise<string | null> {
+  let payload: { shipment_id?: string; tracking_number?: string };
+  try {
+    payload = JSON.parse(rawBody);
+  } catch {
+    return null;
+  }
+
+  if (payload.shipment_id) {
+    const shipment = await prisma.shipment.findFirst({
+      where: { externalId: String(payload.shipment_id), carrier: 'InPost' },
+      select: { organizationId: true },
+    });
+    if (shipment) return shipment.organizationId;
+  }
+
+  if (payload.tracking_number) {
+    const shipment = await prisma.shipment.findFirst({
+      where: { trackingNumber: payload.tracking_number, carrier: 'InPost' },
+      select: { organizationId: true },
+    });
+    if (shipment) return shipment.organizationId;
+  }
+
+  return null;
+}
+
 /**
  * Receive InPost ShipX webhook events and route to handler.
  *
@@ -58,57 +100,11 @@ export async function POST(request: NextRequest) {
   }
 
   // Try to verify signature against each org's webhook secret
-  let matchedOrgId: string | null = null;
-
-  for (const config of configs) {
-    const configJson = config.configJson as CourierConfigJson;
-    const secret = configJson.webhookSecret ?? '';
-
-    if (verifyInPostSignature(rawBody, headers, secret)) {
-      matchedOrgId = config.organizationId;
-      break;
-    }
-  }
+  const matchedOrgId =
+    matchOrgBySignature(configs, rawBody, headers) ?? (await matchOrgByShipmentPayload(rawBody));
 
   if (!matchedOrgId) {
-    // If no signature matched but we have configs without secrets, try payload-based matching
-    let payload: { shipment_id?: string; tracking_number?: string };
-    try {
-      payload = JSON.parse(rawBody);
-    } catch {
-      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
-    }
-
-    // Try to match shipment by externalId or trackingNumber
-    if (payload.shipment_id) {
-      const shipment = await prisma.shipment.findFirst({
-        where: {
-          externalId: String(payload.shipment_id),
-          carrier: 'InPost',
-        },
-        select: { organizationId: true },
-      });
-      if (shipment) {
-        matchedOrgId = shipment.organizationId;
-      }
-    }
-
-    if (!matchedOrgId && payload.tracking_number) {
-      const shipment = await prisma.shipment.findFirst({
-        where: {
-          trackingNumber: payload.tracking_number,
-          carrier: 'InPost',
-        },
-        select: { organizationId: true },
-      });
-      if (shipment) {
-        matchedOrgId = shipment.organizationId;
-      }
-    }
-
-    if (!matchedOrgId) {
-      return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
-    }
+    return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
   }
 
   // Parse JSON body for the handler

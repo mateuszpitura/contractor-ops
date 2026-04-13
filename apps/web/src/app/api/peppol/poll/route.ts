@@ -10,6 +10,66 @@ import { NextResponse } from 'next/server';
 // POST /api/peppol/poll
 // ---------------------------------------------------------------------------
 
+async function pollParticipant(
+  organizationId: string,
+): Promise<{ organizationId: string; processed: number } | null> {
+  try {
+    const connection = await prisma.integrationConnection.findFirst({
+      where: { organizationId, provider: 'PEPPOL', status: 'CONNECTED' },
+    });
+
+    if (!connection) return null;
+
+    const credentials = await getCredentials(connection.credentialsRef, 'peppol');
+    const config = (connection.configJson as Record<string, unknown>) ?? {};
+    const environment = config.environment as string;
+
+    const adapter = new StorecoveAdapter({
+      apiKey: credentials.accessToken,
+      baseUrl:
+        environment === 'production'
+          ? 'https://api.storecove.com/api/v2'
+          : 'https://api-sandbox.storecove.com/api/v2',
+    });
+
+    const orchestrator = new PeppolOrchestrator(adapter);
+    const processed = await orchestrator.pollAndProcessInbound(organizationId);
+
+    await prisma.integrationConnection.update({
+      where: { id: connection.id },
+      data: { lastSyncAt: new Date(), lastSuccessAt: new Date() },
+    });
+
+    return { organizationId, processed };
+  } catch (error) {
+    console.error(`[peppol/poll] Failed for org ${organizationId}:`, error);
+
+    await recordPollError(organizationId, error);
+    return null;
+  }
+}
+
+async function recordPollError(organizationId: string, error: unknown): Promise<void> {
+  const connection = await prisma.integrationConnection.findFirst({
+    where: { organizationId, provider: 'PEPPOL' },
+  });
+
+  if (connection) {
+    await prisma.integrationConnection
+      .update({
+        where: { id: connection.id },
+        data: {
+          lastSyncAt: new Date(),
+          lastErrorAt: new Date(),
+          lastErrorMessage: error instanceof Error ? error.message : 'Poll failed',
+        },
+      })
+      .catch(() => {
+        /* ignored */
+      });
+  }
+}
+
 /**
  * QStash CRON endpoint for polling inbound Peppol invoices.
  *
@@ -37,70 +97,9 @@ async function handler(request: NextRequest) {
     }> = [];
 
     for (const participant of participants) {
-      try {
-        const connection = await prisma.integrationConnection.findFirst({
-          where: {
-            organizationId: participant.organizationId,
-            provider: 'PEPPOL',
-            status: 'CONNECTED',
-          },
-        });
-
-        if (!connection) continue;
-
-        const credentials = await getCredentials(connection.credentialsRef, 'peppol');
-        const config = (connection.configJson as Record<string, unknown>) ?? {};
-        const environment = config.environment as string;
-
-        const adapter = new StorecoveAdapter({
-          apiKey: credentials.accessToken,
-          baseUrl:
-            environment === 'production'
-              ? 'https://api.storecove.com/api/v2'
-              : 'https://api-sandbox.storecove.com/api/v2',
-        });
-
-        const orchestrator = new PeppolOrchestrator(adapter);
-        const processed = await orchestrator.pollAndProcessInbound(participant.organizationId);
-
-        // Update last sync time
-        await prisma.integrationConnection.update({
-          where: { id: connection.id },
-          data: {
-            lastSyncAt: new Date(),
-            lastSuccessAt: new Date(),
-          },
-        });
-
-        results.push({
-          organizationId: participant.organizationId,
-          processed,
-        });
-      } catch (error) {
-        console.error(`[peppol/poll] Failed for org ${participant.organizationId}:`, error);
-
-        // Update error state but continue with other orgs
-        const connection = await prisma.integrationConnection.findFirst({
-          where: {
-            organizationId: participant.organizationId,
-            provider: 'PEPPOL',
-          },
-        });
-
-        if (connection) {
-          await prisma.integrationConnection
-            .update({
-              where: { id: connection.id },
-              data: {
-                lastSyncAt: new Date(),
-                lastErrorAt: new Date(),
-                lastErrorMessage: error instanceof Error ? error.message : 'Poll failed',
-              },
-            })
-            .catch(() => {
-              /* ignored */
-            });
-        }
+      const result = await pollParticipant(participant.organizationId);
+      if (result) {
+        results.push(result);
       }
     }
 

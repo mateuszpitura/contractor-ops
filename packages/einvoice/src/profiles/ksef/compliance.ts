@@ -20,6 +20,18 @@ export interface KsefConnectionData {
   recentSyncStatuses: string[];
 }
 
+function deriveComplianceState(
+  connection: KsefConnectionData,
+  config: Record<string, unknown>,
+): ComplianceState {
+  if (connection.status === 'DISCONNECTED') return 'suspended';
+  if (connection.status === 'ERROR' || connection.status === 'REAUTH_REQUIRED') return 'error';
+  if (config.environment === 'test') return 'sandbox';
+
+  const hasRecentErrors = connection.recentSyncStatuses.some(s => s === 'FAILED');
+  return hasRecentErrors ? 'degraded' : 'active';
+}
+
 /**
  * Compute compliance status for a KSeF connection.
  * Pure function — no database access. Data is provided by the caller.
@@ -46,31 +58,7 @@ export function computeKsefComplianceStatus(
   }
 
   const config = (connection.configJson ?? {}) as Record<string, unknown>;
-  const isSandbox = config.environment === 'test';
-
-  let state: ComplianceState;
-
-  if (connection.status === 'DISCONNECTED') {
-    state = 'suspended';
-  } else if (connection.status === 'ERROR' || connection.status === 'REAUTH_REQUIRED') {
-    state = 'error';
-  } else if (isSandbox) {
-    state = 'sandbox';
-  } else {
-    // CONNECTED status — check recent sync health
-    const hasRecentErrors = connection.recentSyncStatuses.some(s => s === 'FAILED');
-    const allFailed =
-      connection.recentSyncStatuses.length > 0 &&
-      connection.recentSyncStatuses.every(s => s === 'FAILED');
-
-    if (allFailed) {
-      state = 'degraded';
-    } else if (hasRecentErrors) {
-      state = 'degraded';
-    } else {
-      state = 'active';
-    }
-  }
+  const state = deriveComplianceState(connection, config);
 
   // Health score: percentage of recent syncs that succeeded
   const successCount = connection.recentSyncStatuses.filter(s => s === 'SUCCESS').length;

@@ -17,6 +17,44 @@ const log = createCronLogger('data-purge');
 const RETENTION_DAYS = 90;
 
 // ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+async function purgeR2Files(
+  docs: Array<{ id: string; storageKey: string | null }>,
+): Promise<{ failedR2DocIds: Set<string>; r2Deleted: number; skippedNoKey: number }> {
+  const failedR2DocIds = new Set<string>();
+  let r2Deleted = 0;
+  let skippedNoKey = 0;
+
+  if (docs.length === 0) {
+    return { failedR2DocIds, r2Deleted, skippedNoKey };
+  }
+
+  const { deleteObject } = await import('@contractor-ops/api/services/r2');
+
+  for (const doc of docs) {
+    if (!doc.storageKey) {
+      skippedNoKey++;
+      continue;
+    }
+
+    try {
+      await deleteObject(doc.storageKey);
+      r2Deleted++;
+    } catch (err) {
+      log.warn(
+        { storageKey: doc.storageKey, documentId: doc.id, err },
+        'failed to delete R2 object — excluding from DB purge',
+      );
+      failedR2DocIds.add(doc.id);
+    }
+  }
+
+  return { failedR2DocIds, r2Deleted, skippedNoKey };
+}
+
+// ---------------------------------------------------------------------------
 // GET /api/cron/data-purge
 // ---------------------------------------------------------------------------
 
@@ -68,39 +106,16 @@ export async function GET(request: NextRequest) {
 
           // 2. Delete R2 files BEFORE DB records — if R2 fails we can retry
           //    because the DB records still reference the storage keys.
-          // Track documents whose R2 deletion failed so we skip them in the DB purge
-          const failedR2DocIds = new Set<string>();
+          const { failedR2DocIds, r2Deleted, skippedNoKey } = await purgeR2Files(expiredDocs);
 
-          if (expiredDocs.length > 0) {
-            const { deleteObject } = await import('@contractor-ops/api/services/r2');
-
-            let r2Deleted = 0;
-            let purgeSkippedR2KeyMissing = 0;
-            for (const doc of expiredDocs) {
-              if (doc.storageKey) {
-                try {
-                  await deleteObject(doc.storageKey);
-                  r2Deleted++;
-                } catch (err) {
-                  log.warn(
-                    { storageKey: doc.storageKey, documentId: doc.id, err },
-                    'failed to delete R2 object — excluding from DB purge',
-                  );
-                  failedR2DocIds.add(doc.id);
-                }
-              } else {
-                purgeSkippedR2KeyMissing++;
-              }
-            }
-            if (purgeSkippedR2KeyMissing > 0) {
-              log.info(
-                { count: purgeSkippedR2KeyMissing },
-                'documents with null storageKey skipped during R2 cleanup',
-              );
-            }
-            results.r2Files = r2Deleted;
-            results.purgeSkippedR2KeyMissing = purgeSkippedR2KeyMissing;
+          if (skippedNoKey > 0) {
+            log.info(
+              { count: skippedNoKey },
+              'documents with null storageKey skipped during R2 cleanup',
+            );
           }
+          results.r2Files = r2Deleted;
+          results.purgeSkippedR2KeyMissing = skippedNoKey;
 
           // Exclude documents whose R2 files failed to delete so we can retry next run
           const safeDocIds = docIds.filter(id => !failedR2DocIds.has(id));

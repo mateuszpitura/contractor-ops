@@ -99,91 +99,15 @@ export async function handleSigningWebhook(params: {
 
   // d. Process the event in a transaction
   await prisma.$transaction(async tx => {
-    // Create SigningEvent record
-    await tx.signingEvent.create({
-      data: {
-        organizationId,
-        signingEnvelopeId: envelope.id,
-        eventType: event.eventType as never,
-        actorName: event.actorName ?? null,
-        actorEmail: event.actorEmail ?? null,
-        description: event.description,
-        providerEventId: event.providerEventId ?? null,
-        occurredAt: event.occurredAt,
-      },
-    });
+    await createSigningEvent(tx, organizationId, envelope.id, event);
 
-    // Update recipient status if event has recipientEmail
     if (event.recipientEmail && event.recipientStatus) {
-      const recipientStatus = RECIPIENT_STATUS_MAP[event.recipientStatus] ?? event.recipientStatus;
-
-      const recipientUpdate: Prisma.SigningRecipientUpdateInput = {
-        status: recipientStatus as SigningRecipientStatus,
-      };
-
-      if (event.eventType === 'RECIPIENT_SIGNED') {
-        recipientUpdate.signedAt = event.occurredAt;
-      }
-      if (event.eventType === 'RECIPIENT_DECLINED') {
-        recipientUpdate.declinedAt = event.occurredAt;
-      }
-      if (event.eventType === 'RECIPIENT_VIEWED') {
-        recipientUpdate.viewedAt = event.occurredAt;
-      }
-
-      // Update the matching recipient by envelope + email
-      const recipient = await tx.signingRecipient.findFirst({
-        where: {
-          signingEnvelopeId: envelope.id,
-          email: event.recipientEmail,
-        },
-      });
-
-      if (recipient) {
-        await tx.signingRecipient.update({
-          where: { id: recipient.id },
-          data: recipientUpdate,
-        });
-      }
+      await updateRecipientStatus(tx, envelope.id, event);
     }
 
-    // Update envelope status if event has envelopeStatus
     if (event.envelopeStatus) {
-      const envelopeStatus = ENVELOPE_STATUS_MAP[event.envelopeStatus] ?? event.envelopeStatus;
-
-      const envelopeUpdate: Prisma.SigningEnvelopeUpdateInput = {
-        status: envelopeStatus as SigningEnvelopeStatus,
-      };
-
-      if (event.envelopeStatus === 'COMPLETED') {
-        envelopeUpdate.completedAt = event.occurredAt;
-      }
-      if (event.envelopeStatus === 'VOIDED') {
-        envelopeUpdate.voidedAt = event.occurredAt;
-      }
-
-      await tx.signingEnvelope.update({
-        where: { id: envelope.id },
-        data: envelopeUpdate,
-      });
-
-      // Update contract status for terminal envelope states
-      if (envelope.contractId && CONTRACT_STATUS_MAP[event.envelopeStatus]) {
-        const contractStatus = CONTRACT_STATUS_MAP[event.envelopeStatus]!;
-
-        const contractUpdate: Prisma.ContractUpdateInput = {
-          status: contractStatus as ContractStatus,
-        };
-
-        if (event.envelopeStatus === 'COMPLETED') {
-          contractUpdate.signedAt = event.occurredAt;
-        }
-
-        await tx.contract.update({
-          where: { id: envelope.contractId },
-          data: contractUpdate,
-        });
-      }
+      await updateEnvelopeStatus(tx, envelope.id, event);
+      await updateContractStatusIfTerminal(tx, envelope.contractId, event);
     }
   });
 
@@ -191,4 +115,127 @@ export async function handleSigningWebhook(params: {
   const isCompleted = event.envelopeStatus === 'COMPLETED';
 
   return { envelopeId: envelope.id, completed: isCompleted };
+}
+
+// ---------------------------------------------------------------------------
+// Transaction helpers
+// ---------------------------------------------------------------------------
+
+type TxClient = Parameters<Parameters<typeof prisma.$transaction>[0]>[0];
+
+interface NormalizedEvent {
+  eventType: string;
+  externalEnvelopeId: string;
+  actorName?: string | null;
+  actorEmail?: string | null;
+  description: string;
+  providerEventId?: string | null;
+  occurredAt: Date;
+  recipientEmail?: string | null;
+  recipientStatus?: string | null;
+  envelopeStatus?: string | null;
+}
+
+async function createSigningEvent(
+  tx: TxClient,
+  organizationId: string,
+  envelopeId: string,
+  event: NormalizedEvent,
+): Promise<void> {
+  await tx.signingEvent.create({
+    data: {
+      organizationId,
+      signingEnvelopeId: envelopeId,
+      eventType: event.eventType as never,
+      actorName: event.actorName ?? null,
+      actorEmail: event.actorEmail ?? null,
+      description: event.description,
+      providerEventId: event.providerEventId ?? null,
+      occurredAt: event.occurredAt,
+    },
+  });
+}
+
+/** Maps event types to the recipient timestamp field they update. */
+const RECIPIENT_TIMESTAMP_FIELD: Record<string, string> = {
+  RECIPIENT_SIGNED: 'signedAt',
+  RECIPIENT_DECLINED: 'declinedAt',
+  RECIPIENT_VIEWED: 'viewedAt',
+};
+
+async function updateRecipientStatus(
+  tx: TxClient,
+  envelopeId: string,
+  event: NormalizedEvent,
+): Promise<void> {
+  const rawStatus = event.recipientStatus ?? '';
+  const recipientStatus = RECIPIENT_STATUS_MAP[rawStatus] ?? rawStatus;
+
+  const recipientUpdate: Prisma.SigningRecipientUpdateInput = {
+    status: recipientStatus as SigningRecipientStatus,
+  };
+
+  const timestampField = RECIPIENT_TIMESTAMP_FIELD[event.eventType];
+  if (timestampField) {
+    (recipientUpdate as Record<string, unknown>)[timestampField] = event.occurredAt;
+  }
+
+  const recipient = await tx.signingRecipient.findFirst({
+    where: { signingEnvelopeId: envelopeId, email: event.recipientEmail ?? '' },
+  });
+
+  if (recipient) {
+    await tx.signingRecipient.update({
+      where: { id: recipient.id },
+      data: recipientUpdate,
+    });
+  }
+}
+
+async function updateEnvelopeStatus(
+  tx: TxClient,
+  envelopeId: string,
+  event: NormalizedEvent,
+): Promise<void> {
+  const rawEnvStatus = event.envelopeStatus ?? '';
+  const envelopeStatus = ENVELOPE_STATUS_MAP[rawEnvStatus] ?? rawEnvStatus;
+
+  const envelopeUpdate: Prisma.SigningEnvelopeUpdateInput = {
+    status: envelopeStatus as SigningEnvelopeStatus,
+  };
+
+  if (event.envelopeStatus === 'COMPLETED') {
+    envelopeUpdate.completedAt = event.occurredAt;
+  }
+  if (event.envelopeStatus === 'VOIDED') {
+    envelopeUpdate.voidedAt = event.occurredAt;
+  }
+
+  await tx.signingEnvelope.update({
+    where: { id: envelopeId },
+    data: envelopeUpdate,
+  });
+}
+
+async function updateContractStatusIfTerminal(
+  tx: TxClient,
+  contractId: string | null,
+  event: NormalizedEvent,
+): Promise<void> {
+  const envelopeStatus = event.envelopeStatus ?? '';
+  const contractStatus = CONTRACT_STATUS_MAP[envelopeStatus];
+  if (!(contractId && contractStatus)) return;
+
+  const contractUpdate: Prisma.ContractUpdateInput = {
+    status: contractStatus as ContractStatus,
+  };
+
+  if (event.envelopeStatus === 'COMPLETED') {
+    contractUpdate.signedAt = event.occurredAt;
+  }
+
+  await tx.contract.update({
+    where: { id: contractId },
+    data: contractUpdate,
+  });
 }

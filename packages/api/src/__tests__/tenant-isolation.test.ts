@@ -209,47 +209,26 @@ const { mockPrisma } = vi.hoisted(() => {
   const orgBRecord: Rec = { id: ORG_B, dataRegion: 'EU' };
 
   // -- Where-clause filter --
+  type OperatorCheck = (itemValue: unknown, operand: unknown) => boolean;
+
+  const OPERATOR_CHECKS: Record<string, OperatorCheck> = {
+    in: (v, op) => Array.isArray(op) && op.includes(v),
+    notIn: (v, op) => !(Array.isArray(op) && op.includes(v)),
+    not: (v, op) => v !== op,
+    contains: (v, op) => typeof v === 'string' && v.includes(op as string),
+    startsWith: (v, op) => typeof v === 'string' && v.startsWith(op as string),
+    endsWith: (v, op) => typeof v === 'string' && v.endsWith(op as string),
+    gt: (v, op) => typeof v === 'number' && v > (op as number),
+    gte: (v, op) => typeof v === 'number' && v >= (op as number),
+    lt: (v, op) => typeof v === 'number' && v < (op as number),
+    lte: (v, op) => typeof v === 'number' && v <= (op as number),
+    equals: (v, op) => v === op,
+  };
+
   function matchesOperator(itemValue: unknown, operator: Rec): boolean {
     for (const [op, operand] of Object.entries(operator)) {
-      switch (op) {
-        case 'in':
-          if (!(Array.isArray(operand) && operand.includes(itemValue))) return false;
-          break;
-        case 'notIn':
-          if (Array.isArray(operand) && operand.includes(itemValue)) return false;
-          break;
-        case 'not':
-          if (itemValue === operand) return false;
-          break;
-        case 'contains':
-          if (typeof itemValue !== 'string' || !itemValue.includes(operand as string)) return false;
-          break;
-        case 'startsWith':
-          if (typeof itemValue !== 'string' || !itemValue.startsWith(operand as string))
-            return false;
-          break;
-        case 'endsWith':
-          if (typeof itemValue !== 'string' || !itemValue.endsWith(operand as string)) return false;
-          break;
-        case 'gt':
-          if (typeof itemValue !== 'number' || itemValue <= (operand as number)) return false;
-          break;
-        case 'gte':
-          if (typeof itemValue !== 'number' || itemValue < (operand as number)) return false;
-          break;
-        case 'lt':
-          if (typeof itemValue !== 'number' || itemValue >= (operand as number)) return false;
-          break;
-        case 'lte':
-          if (typeof itemValue !== 'number' || itemValue > (operand as number)) return false;
-          break;
-        case 'equals':
-          if (itemValue !== operand) return false;
-          break;
-        default:
-          // Unknown operator — skip
-          break;
-      }
+      const check = OPERATOR_CHECKS[op];
+      if (check && !check(itemValue, operand)) return false;
     }
     return true;
   }

@@ -198,6 +198,33 @@ const REQUIRED_FIELDS = [
 // Max PDF size: 30MB
 const MAX_PDF_SIZE_BYTES = 30 * 1024 * 1024;
 
+function deriveExtractionStatus(
+  fields: Record<string, OcrExtractionField>,
+): 'EXTRACTED' | 'PARTIAL' | 'FAILED' {
+  const extractedRequiredCount = REQUIRED_FIELDS.filter(key => fields[key]?.value != null).length;
+  const requiredRatio = extractedRequiredCount / REQUIRED_FIELDS.length;
+  return requiredRatio < 0.5 ? 'PARTIAL' : 'EXTRACTED';
+}
+
+function computeOverallConfidence(
+  fields: Record<string, OcrExtractionField>,
+  lineItems: OcrLineItem[],
+): number {
+  const allConfidences: number[] = [];
+  for (const field of Object.values(fields)) {
+    if (field.value != null) {
+      allConfidences.push(field.confidence);
+    }
+  }
+  for (const item of lineItems) {
+    allConfidences.push(item.confidence);
+  }
+
+  return allConfidences.length > 0
+    ? Math.round(allConfidences.reduce((sum, c) => sum + c, 0) / allConfidences.length)
+    : 0;
+}
+
 // ---------------------------------------------------------------------------
 // Claude OCR Adapter
 // ---------------------------------------------------------------------------
@@ -376,32 +403,8 @@ export class ClaudeOcrAdapter implements OcrAdapter {
       confidence: item.confidence ?? 0,
     }));
 
-    // Determine extraction status
-    const extractedRequiredCount = REQUIRED_FIELDS.filter(key => fields[key]?.value != null).length;
-    const requiredRatio = extractedRequiredCount / REQUIRED_FIELDS.length;
-
-    let status: 'EXTRACTED' | 'PARTIAL' | 'FAILED';
-    if (requiredRatio < 0.5) {
-      status = 'PARTIAL';
-    } else {
-      status = 'EXTRACTED';
-    }
-
-    // Compute overall confidence as weighted average
-    const allConfidences: number[] = [];
-    for (const field of Object.values(fields)) {
-      if (field.value != null) {
-        allConfidences.push(field.confidence);
-      }
-    }
-    for (const item of lineItems) {
-      allConfidences.push(item.confidence);
-    }
-
-    const overallConfidence =
-      allConfidences.length > 0
-        ? Math.round(allConfidences.reduce((sum, c) => sum + c, 0) / allConfidences.length)
-        : 0;
+    const status = deriveExtractionStatus(fields);
+    const overallConfidence = computeOverallConfidence(fields, lineItems);
 
     const result: OcrExtractionResult = {
       status,
