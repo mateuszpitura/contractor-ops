@@ -4777,6 +4777,22 @@
         "personalDep": "Personal dependency",
         "economicDep": "Economic dependency"
       }
+    },
+    "documents": {
+      "title": "Classification documents",
+      "subtitle": "Generate the legally required status determination statement and audit defence bundle.",
+      "generateSds": "Generate SDS",
+      "generateDisabled": "Complete an IR35 classification assessment to generate an SDS.",
+      "generating": "Generating…",
+      "documentHistory": "Document history",
+      "emptyState": "No documents generated yet.",
+      "download": "Download",
+      "generatedOn": "Generated on {date}",
+      "byteSize": "{kb} KB",
+      "toastSdsGenerated": "SDS generated — opening download…",
+      "errorGenericTitle": "Could not generate document",
+      "kindSds": "Status Determination Statement",
+      "kindDrvDefenseBundle": "DRV audit defence bundle"
     }
   }
 }

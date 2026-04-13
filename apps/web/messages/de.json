@@ -4919,6 +4919,22 @@
         "personalDep": "Persönliche Bindung",
         "economicDep": "Wirtschaftliche Bindung"
       }
+    },
+    "documents": {
+      "title": "Klassifizierungsdokumente",
+      "subtitle": "Erzeugen Sie die gesetzlich erforderliche Statusfeststellung und das Verteidigungsdossier für die Betriebsprüfung.",
+      "generateSds": "SDS erzeugen",
+      "generateDisabled": "Schließen Sie eine IR35-Klassifizierung ab, um eine SDS zu erzeugen.",
+      "generating": "Wird erstellt…",
+      "documentHistory": "Dokumentenhistorie",
+      "emptyState": "Noch keine Dokumente erzeugt.",
+      "download": "Herunterladen",
+      "generatedOn": "Erstellt am {date}",
+      "byteSize": "{kb} KB",
+      "toastSdsGenerated": "SDS erstellt – Download wird geöffnet…",
+      "errorGenericTitle": "Dokument konnte nicht erstellt werden",
+      "kindSds": "Status Determination Statement",
+      "kindDrvDefenseBundle": "DRV-Defensivdokumentation"
     }
   }
 }
