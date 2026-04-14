@@ -544,6 +544,16 @@ export const invoiceRouter = router({
           matchResults: {
             orderBy: { createdAt: 'desc' },
           },
+          // Plan 61-08 — per-invoice E-invoice tab consumes lifecycle +
+          // append-only event log in one query, avoiding a second roundtrip.
+          eInvoiceLifecycle: {
+            include: {
+              events: {
+                orderBy: { createdAt: 'desc' },
+                take: 50,
+              },
+            },
+          },
         },
       });
 

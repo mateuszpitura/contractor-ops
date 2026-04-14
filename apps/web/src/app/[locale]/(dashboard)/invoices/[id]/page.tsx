@@ -6,6 +6,7 @@ import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useCallback } from 'react';
 import { toast } from 'sonner';
+import { InvoiceDetailTabs } from '@/app/[locale]/(dashboard)/invoices/[id]/_components/invoice-detail-tabs';
 import { AuditTimeline } from '@/components/approvals/audit-timeline';
 import { ChainTracker } from '@/components/approvals/chain-tracker';
 import { DuplicateWarning } from '@/components/invoices/invoice-detail/duplicate-warning';
@@ -400,61 +401,76 @@ export default function InvoiceDetailPage() {
         )}
       </div>
 
-      {/* Side-by-side layout */}
-      <InvoiceDetailLayout pdfUrl={pdfUrl}>
-        {/* Integration banners (KSeF, Peppol, ZATCA) */}
-        <IntegrationBanners
-          invoice={invoice}
-          flags={flags}
-          peppolTransmission={peppolTransmission}
-          zatcaSubmission={zatcaSubmission}
-          invoiceId={params.id}
-          onInvalidate={handleInvoiceInvalidate}
-        />
+      {/*
+        Phase 61 · Plan 61-08 — wrap the existing detail content in tabs so
+        the E-invoice surface can live alongside it. ?tab=e-invoice
+        pre-selects the second tab for deep-links from the invoices list
+        compliance column.
+      */}
+      <InvoiceDetailTabs
+        invoiceId={params.id}
+        details={
+          <InvoiceDetailLayout pdfUrl={pdfUrl}>
+            {/* Integration banners (KSeF, Peppol, ZATCA) */}
+            <IntegrationBanners
+              invoice={invoice}
+              flags={flags}
+              peppolTransmission={peppolTransmission}
+              zatcaSubmission={zatcaSubmission}
+              invoiceId={params.id}
+              onInvalidate={handleInvoiceInvalidate}
+            />
 
-        {/* Match card */}
-        <MatchCard invoice={invoice} onMatchConfirmed={handleInvoiceInvalidate} />
+            {/* Match card */}
+            <MatchCard invoice={invoice} onMatchConfirmed={handleInvoiceInvalidate} />
 
-        {/* Time reconciliation card (D-16) */}
-        {!!reconciliation && (
-          <ReconciliationCard
-            reconciliation={
-              reconciliation as unknown as Parameters<
-                typeof ReconciliationCard
-              >[0]['reconciliation']
-            }
-          />
-        )}
+            {/* Time reconciliation card (D-16) */}
+            {!!reconciliation && (
+              <ReconciliationCard
+                reconciliation={
+                  reconciliation as unknown as Parameters<
+                    typeof ReconciliationCard
+                  >[0]['reconciliation']
+                }
+              />
+            )}
 
-        {/* Reverse charge banner (Phase 47) */}
-        {!!invoice.isReverseCharge && (
-          <ReverseChargeBanner
-            invoiceId={invoice.id}
-            isReverseCharge={invoice.isReverseCharge}
-            onToggle={handleInvoiceInvalidate}
-          />
-        )}
+            {/* Reverse charge banner (Phase 47) */}
+            {!!invoice.isReverseCharge && (
+              <ReverseChargeBanner
+                invoiceId={invoice.id}
+                isReverseCharge={invoice.isReverseCharge}
+                onToggle={handleInvoiceInvalidate}
+              />
+            )}
 
-        {/* Submit for approval button */}
-        {!!flags.canSubmitForApproval && (
-          <div className="flex justify-end">
-            <Button onClick={handleSubmitForApproval} disabled={submitForApproval.isPending}>
-              {submitForApproval.isPending
-                ? t('detail.submittingForApproval')
-                : t('detail.submitForApproval')}
-            </Button>
-          </div>
-        )}
+            {/* Submit for approval button */}
+            {!!flags.canSubmitForApproval && (
+              <div className="flex justify-end">
+                <Button
+                  onClick={handleSubmitForApproval}
+                  disabled={submitForApproval.isPending}>
+                  {submitForApproval.isPending
+                    ? t('detail.submittingForApproval')
+                    : t('detail.submitForApproval')}
+                </Button>
+              </div>
+            )}
 
-        {/* Chain tracker (per D-04) */}
-        {!!flags.hasApprovalFlow && <ChainTracker invoiceId={invoice.id} />}
+            {/* Chain tracker (per D-04) */}
+            {!!flags.hasApprovalFlow && <ChainTracker invoiceId={invoice.id} />}
 
-        {/* Audit timeline (per D-11, D-12, D-13) */}
-        {!!flags.hasApprovalFlow && <AuditTimeline invoiceId={invoice.id} />}
+            {/* Audit timeline (per D-11, D-12, D-13) */}
+            {!!flags.hasApprovalFlow && <AuditTimeline invoiceId={invoice.id} />}
 
-        {/* Metadata form */}
-        <InvoiceMetadataForm invoice={invoice} onSubmittedForMatching={handleInvoiceInvalidate} />
-      </InvoiceDetailLayout>
+            {/* Metadata form */}
+            <InvoiceMetadataForm
+              invoice={invoice}
+              onSubmittedForMatching={handleInvoiceInvalidate}
+            />
+          </InvoiceDetailLayout>
+        }
+      />
     </div>
   );
 }

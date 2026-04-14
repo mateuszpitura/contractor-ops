@@ -44,9 +44,10 @@ export type InvoiceRow = {
   } | null;
   /**
    * EInvoiceLifecycle projection, selected by `invoice.list` for the
-   * Phase 61 compliance column. `null` → "not generated" bucket.
+   * Phase 61 compliance column. `null` / `undefined` → "not generated" bucket.
+   * Optional so existing row fixtures (tests pre-dating Plan 61-08) keep working.
    */
-  eInvoiceLifecycle: {
+  eInvoiceLifecycle?: {
     validationStatus: 'NOT_VALIDATED' | 'VALID' | 'WARNINGS' | 'INVALID';
     transmissionStatus: 'NOT_SENT' | 'QUEUED' | 'SENT' | 'DELIVERED' | 'FAILED';
   } | null;
