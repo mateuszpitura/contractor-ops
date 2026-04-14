@@ -22,9 +22,11 @@
   "dependencies": {
     "@contractor-ops/gov-api": "workspace:*",
     "@contractor-ops/logger": "workspace:*",
+    "@react-pdf/renderer": "^4.4.1",
     "fast-xml-parser": "^5.5.11",
     "libxmljs2": "^0.37.0",
     "node-forge": "^1.4.0",
+    "pdf-lib": "^1.17.1",
     "qrcode": "^1.5.4",
     "saxon-js": "^2.7.0",
     "xml-crypto": "^6.1.2",
