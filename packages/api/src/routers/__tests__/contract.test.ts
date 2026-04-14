@@ -65,6 +65,9 @@ const { mockPrisma } = vi.hoisted(() => {
     documentLink: {
       count: vi.fn(async () => 0),
     },
+    auditLog: {
+      create: vi.fn(async (opts: { data: Rec }) => ({ id: 'aud_mock', ...opts.data })),
+    },
     member: {
       findFirst: vi.fn(async () => ({ role: 'admin' })),
     },
@@ -696,6 +699,432 @@ describe('contract router', () => {
           entityId: CONTRACT_ID,
         }),
       );
+    });
+
+    it('throws NOT_FOUND when contract does not exist', async () => {
+      mockPrisma.contract.findFirst.mockResolvedValueOnce(null);
+
+      await expect(caller.contract.delete({ id: 'nonexistent' })).rejects.toMatchObject({
+        code: 'NOT_FOUND',
+      });
+    });
+
+    it('throws BAD_REQUEST when contract is not DRAFT', async () => {
+      const contract = makeContract({ status: 'ACTIVE' });
+      mockPrisma.contract.findFirst.mockResolvedValueOnce(contract);
+
+      await expect(caller.contract.delete({ id: CONTRACT_ID })).rejects.toMatchObject({
+        code: 'BAD_REQUEST',
+      });
+
+      expect(mockPrisma.contract.update).not.toHaveBeenCalled();
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // transitionStatus — NOT_FOUND
+  // -------------------------------------------------------------------------
+  describe('transitionStatus — NOT_FOUND', () => {
+    it('throws NOT_FOUND when contract does not exist', async () => {
+      mockPrisma.contract.findFirst.mockResolvedValueOnce(null);
+
+      await expect(
+        caller.contract.transitionStatus({ id: 'nonexistent', targetStatus: 'ACTIVE' }),
+      ).rejects.toMatchObject({ code: 'NOT_FOUND' });
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // transitionStatus — additional valid transitions
+  // -------------------------------------------------------------------------
+  describe('transitionStatus — additional transitions', () => {
+    it('allows PENDING_SIGNATURE -> ACTIVE', async () => {
+      const contract = makeContract({ status: 'PENDING_SIGNATURE' });
+      mockPrisma.contract.findFirst.mockResolvedValueOnce(contract);
+      mockPrisma.contract.update.mockResolvedValueOnce(makeContract({ status: 'ACTIVE' }));
+
+      const result = await caller.contract.transitionStatus({
+        id: CONTRACT_ID,
+        targetStatus: 'ACTIVE',
+      });
+
+      expect(result).toMatchObject({ status: 'ACTIVE' });
+    });
+
+    it('allows ACTIVE -> EXPIRING', async () => {
+      const contract = makeContract({ status: 'ACTIVE' });
+      mockPrisma.contract.findFirst.mockResolvedValueOnce(contract);
+      mockPrisma.contract.update.mockResolvedValueOnce(makeContract({ status: 'EXPIRING' }));
+
+      const result = await caller.contract.transitionStatus({
+        id: CONTRACT_ID,
+        targetStatus: 'EXPIRING',
+      });
+
+      expect(result).toMatchObject({ status: 'EXPIRING' });
+    });
+
+    it('allows EXPIRING -> EXPIRED', async () => {
+      const contract = makeContract({ status: 'EXPIRING' });
+      mockPrisma.contract.findFirst.mockResolvedValueOnce(contract);
+      mockPrisma.contract.update.mockResolvedValueOnce(makeContract({ status: 'EXPIRED' }));
+
+      const result = await caller.contract.transitionStatus({
+        id: CONTRACT_ID,
+        targetStatus: 'EXPIRED',
+      });
+
+      expect(result).toMatchObject({ status: 'EXPIRED' });
+    });
+
+    it('rejects SUPERSEDED -> ACTIVE (no outbound transitions)', async () => {
+      const contract = makeContract({ status: 'SUPERSEDED' });
+      mockPrisma.contract.findFirst.mockResolvedValueOnce(contract);
+
+      await expect(
+        caller.contract.transitionStatus({ id: CONTRACT_ID, targetStatus: 'ACTIVE' }),
+      ).rejects.toMatchObject({ code: 'BAD_REQUEST' });
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // createAmendment — NOT_FOUND
+  // -------------------------------------------------------------------------
+  describe('createAmendment — error paths', () => {
+    it('throws NOT_FOUND when contract does not exist', async () => {
+      mockPrisma.contract.findFirst.mockResolvedValueOnce(null);
+
+      await expect(
+        caller.contract.createAmendment({
+          contractId: 'nonexistent',
+          title: 'Test Amendment',
+          effectiveDate: '2025-06-01T00:00:00.000Z',
+          changesSummaryJson: {},
+        }),
+      ).rejects.toMatchObject({ code: 'NOT_FOUND' });
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // listAmendments
+  // -------------------------------------------------------------------------
+  describe('listAmendments', () => {
+    it('returns amendments scoped to org and contract', async () => {
+      mockPrisma.contractAmendment.findMany.mockResolvedValueOnce([
+        { id: AMENDMENT_ID, amendmentNumber: 'AME-1', title: 'Rate change' },
+      ]);
+
+      const result = await caller.contract.listAmendments({ contractId: CONTRACT_ID });
+
+      expect(result).toHaveLength(1);
+      expect(result[0]).toMatchObject({ id: AMENDMENT_ID });
+
+      const call = mockPrisma.contractAmendment.findMany.mock.calls[0]?.[0];
+      expect(call.where).toMatchObject({
+        contractId: CONTRACT_ID,
+        organizationId: ORG_ID,
+      });
+      expect(call.orderBy).toEqual({ effectiveDate: 'desc' });
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // updateExpiryReminders
+  // -------------------------------------------------------------------------
+  describe('updateExpiryReminders', () => {
+    it('updates metadataJson with reminderDaysBefore', async () => {
+      const contract = makeContract({ metadataJson: { someKey: 'value' } });
+      mockPrisma.contract.findFirst.mockResolvedValueOnce(contract);
+      mockPrisma.contract.update.mockResolvedValueOnce({
+        ...contract,
+        metadataJson: { someKey: 'value', reminderDaysBefore: [30, 7] },
+      });
+
+      const result = await caller.contract.updateExpiryReminders({
+        contractId: CONTRACT_ID,
+        reminderDaysBefore: [30, 7],
+      });
+
+      const updateCall = mockPrisma.contract.update.mock.calls[0]?.[0];
+      expect(updateCall.data.metadataJson).toMatchObject({
+        someKey: 'value',
+        reminderDaysBefore: [30, 7],
+      });
+      expect(result).toHaveProperty('metadataJson');
+    });
+
+    it('throws NOT_FOUND when contract does not exist', async () => {
+      mockPrisma.contract.findFirst.mockResolvedValueOnce(null);
+
+      await expect(
+        caller.contract.updateExpiryReminders({
+          contractId: 'nonexistent',
+          reminderDaysBefore: [14],
+        }),
+      ).rejects.toMatchObject({ code: 'NOT_FOUND' });
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // update — calendar sync
+  // -------------------------------------------------------------------------
+  describe('update — calendar sync', () => {
+    it('syncs contract expiry deadline when endDate is updated', async () => {
+      const contract = makeContract();
+      mockPrisma.contract.findFirst.mockResolvedValueOnce(contract);
+      mockPrisma.contract.update.mockResolvedValueOnce({
+        ...contract,
+        endDate: new Date('2026-12-31'),
+        contractorId: CONTRACTOR_ID,
+        title: 'Updated Agreement',
+      });
+      mockPrisma.contractor.findUnique.mockResolvedValueOnce({
+        displayName: 'Acme Corp',
+      });
+
+      await caller.contract.update({
+        id: CONTRACT_ID,
+        data: { endDate: '2026-12-31T00:00:00.000Z' },
+      });
+
+      await new Promise(r => setTimeout(r, 10));
+
+      expect(syncContractExpiryDeadline).toHaveBeenCalled();
+    });
+
+    it('deletes calendar event when endDate is cleared', async () => {
+      const contract = makeContract({ endDate: new Date('2025-12-31') });
+      mockPrisma.contract.findFirst.mockResolvedValueOnce(contract);
+      mockPrisma.contract.update.mockResolvedValueOnce({
+        ...contract,
+        endDate: null,
+        contractorId: CONTRACTOR_ID,
+      });
+
+      await caller.contract.update({
+        id: CONTRACT_ID,
+        data: { endDate: null },
+      });
+
+      await new Promise(r => setTimeout(r, 10));
+
+      expect(deleteCalendarEvent).toHaveBeenCalledWith(
+        mockPrisma,
+        expect.objectContaining({
+          organizationId: ORG_ID,
+          entityType: 'CONTRACT',
+          entityId: CONTRACT_ID,
+        }),
+      );
+    });
+
+    it('throws NOT_FOUND when contract does not exist', async () => {
+      mockPrisma.contract.findFirst.mockResolvedValueOnce(null);
+
+      await expect(
+        caller.contract.update({ id: 'nonexistent', data: { title: 'X' } }),
+      ).rejects.toMatchObject({ code: 'NOT_FOUND' });
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // bulkTransition
+  // -------------------------------------------------------------------------
+  describe('bulkTransition', () => {
+    it('transitions valid contracts and reports failures', async () => {
+      mockPrisma.contract.findMany.mockResolvedValueOnce([
+        { id: CONTRACT_ID, status: 'DRAFT' },
+        { id: _CONTRACT_ID_2, status: 'TERMINATED' },
+      ]);
+      mockPrisma.contract.updateMany.mockResolvedValueOnce({ count: 1 });
+
+      const result = await caller.contract.bulkTransition({
+        ids: [CONTRACT_ID, _CONTRACT_ID_2],
+        targetStatus: 'ACTIVE',
+      });
+
+      expect(result.updated).toBe(1);
+      expect(result.failed).toContain(_CONTRACT_ID_2);
+    });
+
+    it('includes not-found IDs in failed list', async () => {
+      mockPrisma.contract.findMany.mockResolvedValueOnce([
+        { id: CONTRACT_ID, status: 'DRAFT' },
+      ]);
+      mockPrisma.contract.updateMany.mockResolvedValueOnce({ count: 1 });
+
+      const result = await caller.contract.bulkTransition({
+        ids: [CONTRACT_ID, 'nonexistent-id'],
+        targetStatus: 'ACTIVE',
+      });
+
+      expect(result.updated).toBe(1);
+      expect(result.failed).toContain('nonexistent-id');
+    });
+
+    it('sets terminatedAt for bulk TERMINATED transitions', async () => {
+      mockPrisma.contract.findMany.mockResolvedValueOnce([
+        { id: CONTRACT_ID, status: 'ACTIVE' },
+      ]);
+      mockPrisma.contract.updateMany.mockResolvedValueOnce({ count: 1 });
+
+      await caller.contract.bulkTransition({
+        ids: [CONTRACT_ID],
+        targetStatus: 'TERMINATED',
+      });
+
+      const txFn = mockPrisma.$transaction.mock.calls[0]?.[0];
+      // The transaction was called, verify updateMany was called
+      expect(mockPrisma.contract.updateMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            status: 'TERMINATED',
+            terminatedAt: expect.any(Date),
+          }),
+        }),
+      );
+    });
+
+    it('skips update when no valid contracts found', async () => {
+      mockPrisma.contract.findMany.mockResolvedValueOnce([
+        { id: CONTRACT_ID, status: 'TERMINATED' },
+      ]);
+
+      const result = await caller.contract.bulkTransition({
+        ids: [CONTRACT_ID],
+        targetStatus: 'ACTIVE',
+      });
+
+      expect(result.updated).toBe(0);
+      expect(result.failed).toContain(CONTRACT_ID);
+      // $transaction is not called for updateMany when no valid IDs
+      expect(mockPrisma.contract.updateMany).not.toHaveBeenCalled();
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // list — search with no results
+  // -------------------------------------------------------------------------
+  describe('list — search edge cases', () => {
+    it('returns empty results when FTS search finds no matching IDs', async () => {
+      mockPrisma.$queryRaw.mockResolvedValueOnce([]);
+
+      const result = await caller.contract.list({
+        page: 1,
+        pageSize: 25,
+        sortBy: 'createdAt',
+        sortOrder: 'desc',
+        search: 'nonexistent',
+      });
+
+      expect(result.items).toEqual([]);
+      expect(result.totalCount).toBe(0);
+      // findMany should NOT be called when queryRaw returns empty
+      expect(mockPrisma.contract.findMany).not.toHaveBeenCalled();
+    });
+
+    it('applies status and type filters', async () => {
+      mockPrisma.contract.findMany.mockResolvedValueOnce([]);
+      mockPrisma.contract.count.mockResolvedValueOnce(0);
+
+      await caller.contract.list({
+        page: 1,
+        pageSize: 25,
+        sortBy: 'createdAt',
+        sortOrder: 'desc',
+        filters: {
+          status: ['ACTIVE', 'EXPIRING'],
+          type: ['B2B_MASTER_SERVICE'],
+        },
+      });
+
+      const call = mockPrisma.contract.findMany.mock.calls[0]?.[0];
+      expect(call.where.status).toEqual({ in: ['ACTIVE', 'EXPIRING'] });
+      expect(call.where.type).toEqual({ in: ['B2B_MASTER_SERVICE'] });
+    });
+
+    it('applies endDate range filter', async () => {
+      mockPrisma.contract.findMany.mockResolvedValueOnce([]);
+      mockPrisma.contract.count.mockResolvedValueOnce(0);
+
+      await caller.contract.list({
+        page: 1,
+        pageSize: 25,
+        sortBy: 'createdAt',
+        sortOrder: 'desc',
+        filters: {
+          endDateFrom: '2025-01-01T00:00:00.000Z',
+          endDateTo: '2025-12-31T00:00:00.000Z',
+        },
+      });
+
+      const call = mockPrisma.contract.findMany.mock.calls[0]?.[0];
+      expect(call.where.endDate).toBeDefined();
+      expect(call.where.endDate.gte).toBeInstanceOf(Date);
+      expect(call.where.endDate.lte).toBeInstanceOf(Date);
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // Phase 60 CLASS-08 — AuditLog write-through (resolves Open Question #1).
+  // ---------------------------------------------------------------------------
+
+  describe('contract.update writes AuditLog', () => {
+    it('emits a CONTRACT/UPDATE audit row capturing changed fields', async () => {
+      const before = makeContract({ status: 'DRAFT', rateValueMinor: 10000 });
+      mockPrisma.contract.findFirst.mockResolvedValueOnce(before);
+      mockPrisma.contract.update.mockResolvedValueOnce({ ...before, rateValueMinor: 12500 });
+      mockPrisma.auditLog.create.mockClear();
+
+      await caller.contract.update({
+        id: CONTRACT_ID,
+        data: { rateValueMinor: 12500 } as never,
+      });
+
+      expect(mockPrisma.auditLog.create).toHaveBeenCalledTimes(1);
+      const args = mockPrisma.auditLog.create.mock.calls[0]?.[0] as {
+        data: Record<string, unknown>;
+      };
+      expect(args.data.resourceType).toBe('CONTRACT');
+      expect(args.data.resourceId).toBe(CONTRACT_ID);
+      expect(args.data.action).toBe('UPDATE');
+      const oldValues = args.data.oldValuesJson as Record<string, unknown>;
+      const newValues = args.data.newValuesJson as Record<string, unknown>;
+      expect(oldValues.rateValueMinor).toBe(10000);
+      expect(newValues.rateValueMinor).toBe(12500);
+    });
+  });
+
+  describe('contract.create writes AuditLog', () => {
+    it('emits a CONTRACT/CREATE audit row', async () => {
+      mockPrisma.contract.create.mockResolvedValueOnce({
+        ...makeContract(),
+        contractor: { id: CONTRACTOR_ID, legalName: 'Acme', displayName: 'Acme', status: 'ACTIVE' },
+      });
+      mockPrisma.auditLog.create.mockClear();
+
+      await caller.contract.create({
+        contractorId: CONTRACTOR_ID,
+        title: 'Service Agreement 2025',
+        type: 'B2B_MASTER_SERVICE',
+        startDate: '2025-01-01T00:00:00.000Z',
+        endDate: '2025-12-31T00:00:00.000Z',
+        currency: 'PLN',
+        billingModel: 'MONTHLY_RETAINER',
+        rateType: 'MONTHLY_FIXED',
+        autoRenewal: false,
+        expenseReimbursementAllowed: false,
+        requiresTimesheet: false,
+        requiresDeliverableAcceptance: false,
+      } as never);
+
+      expect(mockPrisma.auditLog.create).toHaveBeenCalledTimes(1);
+      const args = mockPrisma.auditLog.create.mock.calls[0]?.[0] as {
+        data: Record<string, unknown>;
+      };
+      expect(args.data.resourceType).toBe('CONTRACT');
+      expect(args.data.action).toBe('CREATE');
+      expect(args.data.oldValuesJson).toBeUndefined();
     });
   });
 });

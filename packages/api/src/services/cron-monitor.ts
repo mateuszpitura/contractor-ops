@@ -22,6 +22,8 @@ export const CronMonitors = {
   JOB_HEALTH: 'job-health',
   // Phase 60 · CLASS-07 — daily economic-dependency scan (§2 SGB VI early warning).
   CLASSIFICATION_ECONOMIC_DEPENDENCY: 'classification-economic-dependency',
+  // Phase 60 · CLASS-08 — daily IR35 reassessment trigger scan (audit-log driven).
+  CLASSIFICATION_REASSESSMENT_TRIGGERS: 'classification-reassessment-triggers',
 } as const;
 
 export type CronMonitorKey = (typeof CronMonitors)[keyof typeof CronMonitors];

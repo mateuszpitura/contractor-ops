@@ -135,6 +135,21 @@
       "types": "./src/services/rbac-recipients.ts",
       "import": "./src/services/rbac-recipients.ts",
       "default": "./src/services/rbac-recipients.ts"
+    },
+    "./services/audit-writer": {
+      "types": "./src/services/audit-writer.ts",
+      "import": "./src/services/audit-writer.ts",
+      "default": "./src/services/audit-writer.ts"
+    },
+    "./services/reassessment-trigger-scan": {
+      "types": "./src/services/reassessment-trigger-scan.ts",
+      "import": "./src/services/reassessment-trigger-scan.ts",
+      "default": "./src/services/reassessment-trigger-scan.ts"
+    },
+    "./schemas/reassessment-trigger-reason": {
+      "types": "./src/schemas/reassessment-trigger-reason.ts",
+      "import": "./src/schemas/reassessment-trigger-reason.ts",
+      "default": "./src/schemas/reassessment-trigger-reason.ts"
     }
   },
   "scripts": {

@@ -165,6 +165,7 @@ model ContractorAssignment {
   ir35ChainParticipants        Ir35ChainParticipant[]
   ir35OtherClientAttestation   Ir35OtherClientAttestation?
   economicDependencyAlertState EconomicDependencyAlertState?
+  reassessmentTriggers         ReassessmentTrigger[]
 
   @@index([organizationId])
   @@index([organizationId, contractorId, status])

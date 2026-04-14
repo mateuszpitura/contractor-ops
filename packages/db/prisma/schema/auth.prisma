@@ -80,6 +80,10 @@ model User {
 
   // Phase 59 — Classification documents (D-06)
   generatedClassificationDocuments ClassificationDocument[]
+
+  // Phase 60 — CLASS-08 reassessment triggers
+  acknowledgedReassessmentTriggers ReassessmentTrigger[] @relation("ReassessmentTriggerAck")
+  dismissedReassessmentTriggers    ReassessmentTrigger[] @relation("ReassessmentTriggerDismiss")
 }
 
 model Session {

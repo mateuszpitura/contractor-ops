@@ -13,8 +13,47 @@ import * as E from '../errors.js';
 import { router } from '../init.js';
 import { requirePermission } from '../middleware/rbac.js';
 import { tenantProcedure } from '../middleware/tenant.js';
+import { writeAuditLog } from '../services/audit-writer.js';
 import { syncContractExpiryDeadline } from '../services/calendar-deadline-sync.js';
 import { deleteCalendarEvent } from '../services/calendar-event-service.js';
+
+/**
+ * Phase 60 CLASS-08 — contract fields the reassessment scan treats as
+ * material (per D-07 allowlist + identity fields). Only diffs are emitted
+ * to keep the audit payload focused.
+ */
+const CONTRACT_AUDIT_FIELDS = [
+  'rateValueMinor',
+  'rateType',
+  'billingModel',
+  'startDate',
+  'endDate',
+  'scope',
+  'description',
+  'status',
+  'title',
+  'contractNumber',
+] as const;
+
+function diffContractFields(
+  existing: Record<string, unknown>,
+  updateData: Record<string, unknown>,
+): { oldValues: Record<string, unknown>; newValues: Record<string, unknown> } {
+  const oldValues: Record<string, unknown> = {};
+  const newValues: Record<string, unknown> = {};
+  for (const field of CONTRACT_AUDIT_FIELDS) {
+    if (field in updateData && existing[field] !== updateData[field]) {
+      oldValues[field] = serialiseForAudit(existing[field]);
+      newValues[field] = serialiseForAudit(updateData[field]);
+    }
+  }
+  return { oldValues, newValues };
+}
+
+function serialiseForAudit(v: unknown): unknown {
+  if (v instanceof Date) return v.toISOString();
+  return v ?? null;
+}
 
 // ---------------------------------------------------------------------------
 // Contract status transition map
@@ -220,6 +259,31 @@ export const contractRouter = router({
         },
       });
 
+      // Phase 60 CLASS-08 — audit contract creation so the reassessment-
+      // trigger scan can walk the AuditLog.
+      await writeAuditLog({
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user?.id ?? null,
+        action: 'CREATE',
+        resourceType: 'CONTRACT',
+        resourceId: contract.id,
+        resourceName: contract.title,
+        oldValues: null,
+        newValues: {
+          status: contract.status,
+          startDate:
+            contract.startDate instanceof Date
+              ? contract.startDate.toISOString()
+              : contract.startDate,
+          endDate:
+            contract.endDate instanceof Date ? contract.endDate.toISOString() : contract.endDate,
+          rateValueMinor: contract.rateValueMinor,
+          rateType: contract.rateType,
+          billingModel: contract.billingModel,
+        },
+      });
+
       // Calendar auto-push: sync contract expiry deadline (D-06)
       if (contract.endDate) {
         void syncContractExpiryDeadline(ctx.db, {
@@ -315,6 +379,23 @@ export const contractRouter = router({
       const updated = await ctx.db.contract.update({
         where: { id: input.id },
         data: updateData,
+      });
+
+      // Phase 60 CLASS-08 — audit contract update; scan reads the diff.
+      const diff = diffContractFields(
+        existing as unknown as Record<string, unknown>,
+        updateData as Record<string, unknown>,
+      );
+      await writeAuditLog({
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user?.id ?? null,
+        action: 'UPDATE',
+        resourceType: 'CONTRACT',
+        resourceId: updated.id,
+        resourceName: updated.title,
+        oldValues: diff.oldValues,
+        newValues: diff.newValues,
       });
 
       // Calendar auto-push: sync or cleanup contract expiry deadline (D-06, D-08)
@@ -580,6 +661,19 @@ export const contractRouter = router({
       await ctx.db.contract.update({
         where: { id: input.id },
         data: { deletedAt: new Date() },
+      });
+
+      // Phase 60 CLASS-08 — audit contract soft-delete.
+      await writeAuditLog({
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user?.id ?? null,
+        action: 'DELETE',
+        resourceType: 'CONTRACT',
+        resourceId: input.id,
+        resourceName: contract.title,
+        oldValues: { status: contract.status, deletedAt: null },
+        newValues: { deletedAt: new Date().toISOString() },
       });
 
       // Calendar cleanup: remove contract expiry event (D-08)

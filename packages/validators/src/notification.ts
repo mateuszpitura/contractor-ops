@@ -26,6 +26,8 @@ export const NOTIFICATION_TYPES = [
   // Phase 60 uses dot-notation per CONTEXT.md D-05; existing SCREAMING_SNAKE_CASE types remain unchanged.
   'classification.economic_dependency_warning',
   'classification.economic_dependency_critical',
+  // Phase 60 CLASS-08 — reassessment trigger (material change detected on GB engagement with prior IR35 SDS)
+  'classification.reassessment_trigger',
 ] as const;
 
 export const notificationTypeEnum = z.enum(NOTIFICATION_TYPES);

@@ -78,6 +78,9 @@ const { mockPrisma } = vi.hoisted(() => {
     contractorChangeRequest: {
       updateMany: vi.fn(async () => ({ count: 0 })),
     },
+    auditLog: {
+      create: vi.fn(async (opts: { data: Rec }) => ({ id: 'aud_mock', ...opts.data })),
+    },
     member: {
       findFirst: vi.fn(async () => ({ role: 'admin' })),
     },
@@ -951,5 +954,82 @@ describe('contractor.update — D-07 trigger 1 (VAT-number-change validation)', 
     expect(validateTaxIdMock).not.toHaveBeenCalled();
     // Clear path invokes a SECOND `contractor.update` to null summary fields.
     expect(updateCallCount).toBeGreaterThanOrEqual(2);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Phase 60 CLASS-08 — AuditLog write-through (resolves Open Question #1).
+// ---------------------------------------------------------------------------
+
+describe('Contractor mutations write AuditLog', () => {
+  beforeEach(() => {
+    mockPrisma.auditLog.create.mockClear();
+    mockPrisma.contractor.findFirst.mockReset();
+    mockPrisma.contractor.update.mockReset();
+    mockPrisma.contractor.create.mockReset();
+    mockPrisma.invoice.count.mockResolvedValue(0);
+    mockPrisma.workflowRun.count.mockResolvedValue(0);
+    mockPrisma.contract.count.mockResolvedValue(0);
+  });
+
+  it('contractor.create emits a CONTRACTOR/CREATE audit row', async () => {
+    mockPrisma.contractor.create.mockResolvedValueOnce(
+      makeContractor({ id: 'new-contractor-id', legalName: 'Audited Corp' }),
+    );
+
+    await caller.contractor.create({
+      legalName: 'Audited Corp',
+      displayName: 'Audited Corp',
+      type: 'COMPANY',
+      countryCode: 'PL',
+      currency: 'PLN',
+    } as never);
+
+    expect(mockPrisma.auditLog.create).toHaveBeenCalled();
+    const args = mockPrisma.auditLog.create.mock.calls[0]?.[0] as {
+      data: Record<string, unknown>;
+    };
+    expect(args.data.resourceType).toBe('CONTRACTOR');
+    expect(args.data.action).toBe('CREATE');
+    expect(args.data.resourceId).toBe('new-contractor-id');
+  });
+
+  it('contractor.update emits a CONTRACTOR/UPDATE audit row with diff', async () => {
+    const prior = makeContractor({ countryCode: 'GB', displayName: 'Before', ownerUserId: null });
+    const after = { ...prior, displayName: 'After' };
+    mockPrisma.contractor.findFirst.mockImplementation(async () => prior);
+    mockPrisma.contractor.update.mockImplementation(async () => after);
+
+    await caller.contractor.update({ id: CONTRACTOR_ID, displayName: 'After' });
+
+    const auditCalls = mockPrisma.auditLog.create.mock.calls.filter((c: unknown[]) => {
+      const call = c[0] as { data: Record<string, unknown> };
+      return call.data.resourceType === 'CONTRACTOR';
+    });
+    expect(auditCalls.length).toBeGreaterThanOrEqual(1);
+    const firstCall = auditCalls[0]?.[0] as { data: Record<string, unknown> };
+    expect(firstCall.data.action).toBe('UPDATE');
+    expect(firstCall.data.resourceId).toBe(CONTRACTOR_ID);
+  });
+
+  it('contractor.archive emits a CONTRACTOR/DELETE audit row', async () => {
+    const prior = makeContractor({
+      status: 'ACTIVE',
+      lifecycleStage: 'ACTIVE',
+    });
+    mockPrisma.contractor.findFirst.mockImplementation(async () => prior);
+    mockPrisma.contractor.update.mockImplementation(async () => ({
+      ...prior,
+      status: 'ARCHIVED',
+      lifecycleStage: 'ENDED',
+    }));
+
+    await caller.contractor.archive({ id: CONTRACTOR_ID });
+
+    const auditCalls = mockPrisma.auditLog.create.mock.calls.filter((c: unknown[]) => {
+      const call = c[0] as { data: Record<string, unknown> };
+      return call.data.resourceType === 'CONTRACTOR' && call.data.action === 'DELETE';
+    });
+    expect(auditCalls).toHaveLength(1);
   });
 });

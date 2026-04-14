@@ -15,6 +15,7 @@ import { getHmrcVatClient, getViesClient } from '../gov-api-clients.js';
 import { router } from '../init.js';
 import { requirePermission } from '../middleware/rbac.js';
 import { tenantProcedure } from '../middleware/tenant.js';
+import { writeAuditLog } from '../services/audit-writer.js';
 import { encryptBankAccount } from '../services/bank-account-crypto.js';
 import { syncSeatCountForOrg } from '../services/billing-service.js';
 import { CacheKeys, invalidateByPrefix } from '../services/cache.js';
@@ -282,6 +283,39 @@ async function updateBillingProfileIfNeeded(
     where: { id: defaultProfile.id },
     data: profileUpdate,
   });
+}
+
+/**
+ * Phase 60 CLASS-08 — picks the contractor fields the reassessment scan
+ * treats as "material" (+ denormalised status/lifecycle) and diffs old/new
+ * values for the audit payload. Keeps the audit row small and targeted so
+ * the scan doesn't have to re-filter irrelevant noise.
+ */
+function diffContractorFields(
+  existing: Record<string, unknown>,
+  updateData: Record<string, unknown>,
+): { oldValues: Record<string, unknown>; newValues: Record<string, unknown> } {
+  const WATCHED = [
+    'countryCode',
+    'status',
+    'lifecycleStage',
+    'legalName',
+    'displayName',
+    'vatId',
+    'taxId',
+    'ownerUserId',
+    'primaryTeamId',
+    'primaryProjectId',
+  ] as const;
+  const oldValues: Record<string, unknown> = {};
+  const newValues: Record<string, unknown> = {};
+  for (const field of WATCHED) {
+    if (field in updateData && existing[field] !== updateData[field]) {
+      oldValues[field] = existing[field] ?? null;
+      newValues[field] = updateData[field] ?? null;
+    }
+  }
+  return { oldValues, newValues };
 }
 
 // ---------------------------------------------------------------------------
@@ -584,6 +618,27 @@ export const contractorRouter = router({
           },
         });
 
+        // Phase 60 CLASS-08 — audit the contractor creation so the
+        // reassessment-trigger scan has a deterministic event stream.
+        await writeAuditLog({
+          organizationId: ctx.organizationId,
+          actorType: 'USER',
+          actorId: ctx.user.id,
+          action: 'CREATE',
+          resourceType: 'CONTRACTOR',
+          resourceId: created.id,
+          resourceName: created.displayName,
+          oldValues: null,
+          newValues: {
+            legalName: created.legalName,
+            displayName: created.displayName,
+            countryCode: created.countryCode,
+            status: created.status,
+            lifecycleStage: created.lifecycleStage,
+          },
+          tx,
+        });
+
         return created;
       });
 
@@ -654,6 +709,19 @@ export const contractorRouter = router({
       const updated = await ctx.db.contractor.update({
         where: { id },
         data: updateData,
+      });
+
+      // Phase 60 CLASS-08 — audit row for reassessment-trigger scan.
+      await writeAuditLog({
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user.id,
+        action: 'UPDATE',
+        resourceType: 'CONTRACTOR',
+        resourceId: id,
+        resourceName: updated.displayName,
+        oldValues: diffContractorFields(existing, updateData).oldValues,
+        newValues: diffContractorFields(existing, updateData).newValues,
       });
 
       // D-07 trigger 1: validate or clear VAT ID on change
@@ -834,6 +902,25 @@ export const contractorRouter = router({
           status: 'ARCHIVED',
           lifecycleStage: 'ENDED',
           archivedAt: new Date(),
+        },
+      });
+
+      // Phase 60 CLASS-08 — audit archive as a DELETE-equivalent transition.
+      await writeAuditLog({
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user.id,
+        action: 'DELETE',
+        resourceType: 'CONTRACTOR',
+        resourceId: input.id,
+        resourceName: updated.displayName,
+        oldValues: {
+          status: contractor.status,
+          lifecycleStage: contractor.lifecycleStage,
+        },
+        newValues: {
+          status: 'ARCHIVED',
+          lifecycleStage: 'ENDED',
         },
       });
 

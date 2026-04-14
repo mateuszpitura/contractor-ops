@@ -31,6 +31,7 @@ model ClassificationAssessment {
   organization            Organization             @relation(fields: [organizationId], references: [id])
   contractorAssignment    ContractorAssignment     @relation(fields: [contractorAssignmentId], references: [id])
   classificationDocuments ClassificationDocument[]
+  reassessmentTriggers    ReassessmentTrigger[]    @relation("ReassessmentTriggerPriorAssessment")
 
   @@index([organizationId])
   @@index([organizationId, contractorAssignmentId, status], map: "CA_org_assign_status_idx")
@@ -65,6 +66,7 @@ model ClassificationDocument {
   organization             Organization             @relation(fields: [organizationId], references: [id])
   classificationAssessment ClassificationAssessment @relation(fields: [classificationAssessmentId], references: [id])
   generatedBy              User                     @relation(fields: [generatedByUserId], references: [id])
+  reassessmentTriggers     ReassessmentTrigger[]
   // Append-only (D-06) — enforced by APPEND_ONLY_MODELS guard in packages/db/src/tenant.ts.
 
   @@index([organizationId, classificationAssessmentId, kind])
@@ -166,4 +168,64 @@ model EconomicDependencyAlertState {
   @@index([organizationId], map: "EDAS_org_idx")
   @@index([organizationId, currentBand], map: "EDAS_org_band_idx")
   @@index([organizationId, lastScannedAt], map: "EDAS_org_scanned_idx")
+}
+
+// ---------------------------------------------------------------------------
+// Phase 60 · CLASS-08 — reassessment triggers (material-change detector).
+// See .planning/phases/60-classification-polish/60-02-PLAN.md.
+//
+// Daily cron (/api/cron/classification-reassessment-triggers) scans the
+// AuditLog for material changes on ContractorAssignment + Contract rows
+// attached to GB engagements that have a completed IR35 assessment. Each
+// material change appends a TriggerReason entry to an OPEN/ACKNOWLEDGED
+// trigger (or creates a new OPEN row). classification.submit flips matching
+// OPEN/ACKNOWLEDGED triggers to RESOLVED.
+// ---------------------------------------------------------------------------
+
+enum ReassessmentTriggerStatus {
+  OPEN
+  ACKNOWLEDGED
+  RESOLVED
+  DISMISSED
+}
+
+model ReassessmentTrigger {
+  id                     String                    @id @default(cuid())
+  organizationId         String
+  contractorAssignmentId String
+  priorAssessmentId      String
+  priorSdsDocumentId     String?
+  triggeredAt            DateTime                  @default(now())
+  triggerReasons         Json
+  status                 ReassessmentTriggerStatus @default(OPEN)
+  acknowledgedByUserId   String?
+  acknowledgedAt         DateTime?
+  resolvedAt             DateTime?
+  dismissedByUserId      String?
+  dismissedAt            DateTime?
+  dismissedReason        String?                   @db.VarChar(1000)
+  createdAt              DateTime                  @default(now())
+  updatedAt              DateTime                  @updatedAt
+
+  organization         Organization             @relation(fields: [organizationId], references: [id])
+  contractorAssignment ContractorAssignment     @relation(fields: [contractorAssignmentId], references: [id])
+  priorAssessment      ClassificationAssessment @relation("ReassessmentTriggerPriorAssessment", fields: [priorAssessmentId], references: [id])
+  priorSdsDocument     ClassificationDocument?  @relation(fields: [priorSdsDocumentId], references: [id])
+  acknowledgedByUser   User?                    @relation("ReassessmentTriggerAck", fields: [acknowledgedByUserId], references: [id])
+  dismissedByUser      User?                    @relation("ReassessmentTriggerDismiss", fields: [dismissedByUserId], references: [id])
+
+  @@index([organizationId, contractorAssignmentId, status], map: "RT_org_assign_status_idx")
+  @@index([organizationId, triggeredAt], map: "RT_org_triggeredAt_idx")
+}
+
+// ---------------------------------------------------------------------------
+// CronScanState — singleton per scan name, tracks last-run cursor for
+// incremental audit-based scans. Seeded at deploy time so historical audits
+// are NOT replayed.
+// ---------------------------------------------------------------------------
+
+model CronScanState {
+  name                String   @id @db.VarChar(100)
+  lastScanCompletedAt DateTime
+  updatedAt           DateTime @updatedAt
 }
