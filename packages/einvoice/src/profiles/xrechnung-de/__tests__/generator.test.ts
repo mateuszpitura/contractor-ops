@@ -10,17 +10,15 @@
 
 import libxmljs from 'libxmljs2';
 import { describe, expect, it } from 'vitest';
-import {
-  TAX_KLEINUNTERNEHMER_NOTICE,
-  TAX_STEUERSCHULDNERSCHAFT,
-} from '../../../../../validators/src/legal/de.js';
 import type { EInvoice } from '../../../types/invoice.js';
 import {
   RAM_NS,
   RSM_NS,
   XRECHNUNG_CUSTOMIZATION_ID,
   XRECHNUNG_DE_PROFILE_ID,
+  XRECHNUNG_KLEINUNTERNEHMER_REASON,
   XRECHNUNG_PROFILE_ID,
+  XRECHNUNG_REVERSE_CHARGE_REASON,
 } from '../constants.js';
 import { generateXRechnungCii } from '../generator.js';
 
@@ -177,7 +175,7 @@ describe('generateXRechnungCii — minimal valid invoice produces parseable CII'
       '/rsm:CrossIndustryInvoice/rsm:ExchangedDocument/ram:ID',
       ns,
     );
-    expect(idNode?.text()).toBe('INV-42');
+    expect((idNode as libxmljs.Element | null)?.text()).toBe('INV-42');
   });
 
   it('formats the issue date as YYYYMMDD with format="102"', () => {
@@ -206,7 +204,7 @@ describe('generateXRechnungCii — Leitweg-ID embedding (BT-10)', () => {
       '/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:BuyerReference',
       { rsm: RSM_NS, ram: RAM_NS },
     );
-    expect(node?.text()).toBe(leitwegId);
+    expect((node as libxmljs.Element | null)?.text()).toBe(leitwegId);
   });
 
   it('does not transform the Leitweg-ID value (exact string round-trip)', () => {
@@ -217,7 +215,7 @@ describe('generateXRechnungCii — Leitweg-ID embedding (BT-10)', () => {
       '/rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:BuyerReference',
       { rsm: RSM_NS, ram: RAM_NS },
     );
-    expect(node?.text()).toBe(leitwegId);
+    expect((node as libxmljs.Element | null)?.text()).toBe(leitwegId);
   });
 });
 
@@ -242,14 +240,14 @@ describe('generateXRechnungCii — reverse-charge (§13b UStG)', () => {
 
     expect(xml).toContain('<ram:CategoryCode>AE</ram:CategoryCode>');
     expect(xml).toContain(
-      `<ram:ExemptionReason>${TAX_STEUERSCHULDNERSCHAFT}</ram:ExemptionReason>`,
+      `<ram:ExemptionReason>${XRECHNUNG_REVERSE_CHARGE_REASON}</ram:ExemptionReason>`,
     );
   });
 
   it('uses the exact Phase-56 constant value (no string-literal drift)', () => {
     const xml = generateXRechnungCii(makeReverseChargeInvoice(), null);
     // The constant MUST be the source of truth — any deviation breaks BR-DE.
-    expect(xml).toContain(TAX_STEUERSCHULDNERSCHAFT);
+    expect(xml).toContain(XRECHNUNG_REVERSE_CHARGE_REASON);
   });
 });
 
@@ -263,18 +261,18 @@ describe('generateXRechnungCii — Kleinunternehmer (§19 UStG)', () => {
 
     expect(xml).toContain('<ram:CategoryCode>E</ram:CategoryCode>');
     expect(xml).toContain(
-      `<ram:ExemptionReason>${TAX_KLEINUNTERNEHMER_NOTICE}</ram:ExemptionReason>`,
+      `<ram:ExemptionReason>${XRECHNUNG_KLEINUNTERNEHMER_REASON}</ram:ExemptionReason>`,
     );
   });
 
   it('imports the §19 phrase from the validators legal module (no hard-coded German)', () => {
-    // Documents the invariant: TAX_KLEINUNTERNEHMER_NOTICE is imported at the
+    // Documents the invariant: XRECHNUNG_KLEINUNTERNEHMER_REASON is imported at the
     // top of this file from the Phase-56 constants module.
-    expect(TAX_KLEINUNTERNEHMER_NOTICE).toBe(
+    expect(XRECHNUNG_KLEINUNTERNEHMER_REASON).toBe(
       'Gemäß § 19 UStG wird keine Umsatzsteuer ausgewiesen',
     );
     const xml = generateXRechnungCii(makeKleinunternehmerInvoice(), null);
-    expect(xml).toContain(TAX_KLEINUNTERNEHMER_NOTICE);
+    expect(xml).toContain(XRECHNUNG_KLEINUNTERNEHMER_REASON);
   });
 });
 
@@ -292,8 +290,8 @@ describe('generateXRechnungCii — standard VAT row', () => {
   it('does not emit ExemptionReason for standard-VAT rows', () => {
     const xml = generateXRechnungCii(makeMinimalInvoice(), null);
     // Standard rows must NOT carry the §13b/§19 phrases.
-    expect(xml).not.toContain(TAX_STEUERSCHULDNERSCHAFT);
-    expect(xml).not.toContain(TAX_KLEINUNTERNEHMER_NOTICE);
+    expect(xml).not.toContain(XRECHNUNG_REVERSE_CHARGE_REASON);
+    expect(xml).not.toContain(XRECHNUNG_KLEINUNTERNEHMER_REASON);
   });
 });
 

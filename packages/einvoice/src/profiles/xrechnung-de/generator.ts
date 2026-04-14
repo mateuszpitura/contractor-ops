@@ -24,10 +24,6 @@
 // envelope layer (no precision retrieved == no precision emitted).
 
 import { XMLBuilder } from 'fast-xml-parser';
-import {
-  TAX_KLEINUNTERNEHMER_NOTICE,
-  TAX_STEUERSCHULDNERSCHAFT,
-} from '../../../../validators/src/legal/de.js';
 import type { EInvoice, EInvoiceLine, EInvoiceTaxSubtotal } from '../../types/invoice.js';
 import {
   CII_DOCUMENT_TYPE_COMMERCIAL_INVOICE,
@@ -36,7 +32,9 @@ import {
   RSM_NS,
   UDT_NS,
   XRECHNUNG_CUSTOMIZATION_ID,
+  XRECHNUNG_KLEINUNTERNEHMER_REASON,
   XRECHNUNG_PROFILE_ID,
+  XRECHNUNG_REVERSE_CHARGE_REASON,
 } from './constants.js';
 import { embedLeitwegIdIntoCii } from './leitweg-id-embed.js';
 
@@ -155,10 +153,10 @@ function toCiiTax(tax: EInvoiceTaxSubtotal, currencyCode: string): CiiTradeTax {
 
   switch (tax.taxCategory) {
     case 'AE':
-      base['ram:ExemptionReason'] = TAX_STEUERSCHULDNERSCHAFT;
+      base['ram:ExemptionReason'] = XRECHNUNG_REVERSE_CHARGE_REASON;
       break;
     case 'E':
-      base['ram:ExemptionReason'] = TAX_KLEINUNTERNEHMER_NOTICE;
+      base['ram:ExemptionReason'] = XRECHNUNG_KLEINUNTERNEHMER_REASON;
       break;
     case 'S':
     case 'Z':
