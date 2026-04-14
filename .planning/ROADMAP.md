@@ -6,7 +6,8 @@
 - v2.0 Platform Expansion - Phases 12-27 (shipped 2026-04-01)
 - v3.0 Enterprise & Monetization - Phases 28-44 (shipped 2026-04-10)
 - v4.0 International Foundation & Gulf Expansion - Phases 45-55 (shipped 2026-04-12)
-- v5.0 UK & Germany Expansion - Phases 56-63 (in progress)
+- v5.0 UK & Germany Expansion - Phases 56-64 (in progress)
+- v6.0 Platform Maturity & Operational Hardening - Phases 65-68 (planned)
 
 ## Phases
 
@@ -161,13 +162,20 @@ See .planning/milestones/v4.0/ for details.
   1. User can export UK contractor payments as a BACS Standard 18 Direct Credit file with correct fixed-width formatting, sort code validation, and ASCII transliteration
   2. User sees automatically calculated late payment interest on overdue UK invoices per the Late Payment of Commercial Debts Act (BoE base rate + 8% plus fixed compensation tiers)
   3. User can configure Skonto early payment discount terms on German invoices with discount percentage, discount period, and automatic discounted amount calculation with eligibility tracking
-**Plans**: TBD
+**Plans**: 7 plans
+- [ ] 63-01-PLAN.md — Wave 1: All Prisma schema additions (8 new models + enum extensions + UK bank fields + BACS submitter fields) + [BLOCKING] prisma db push + BoE rate seed data + BACS validators (modulus check) + locked phrases (GB LPCDA + DE Skonto) + feature flags (PAY_BACS/LATE_INTEREST/SKONTO) + i18n Payments namespace
+- [ ] 63-02-PLAN.md — Wave 2: ASCII transliteration utility + BACS Std 18 generator (fixed-width file with VOL/HDR/detail/trailer records) + format auto-detection (GBP+UK -> BACS_STD18)
+- [ ] 63-03-PLAN.md — Wave 2: Late payment interest calculation service (LPCDA-compliant: statutory period rate + simple interest + compensation tiers + partial payments + waivers) + BoE rate poller + cron route
+- [ ] 63-04-PLAN.md — Wave 3: BACS tRPC router (preview/generate/validate/saveSubmitter) + settings page (/settings/payments/) + BACS preview Card + UK bank fields on billing profile
+- [ ] 63-05-PLAN.md — Wave 3: Late interest tRPC router (get/waive/revoke/claim/download) + claim PDF (React-PDF) + admin BoE rate router + admin shell + /admin/boe-rate/ page
+- [ ] 63-06-PLAN.md — Wave 3: Skonto eligibility service + tRPC router (upsert/delete for invoice+profile) + XRechnung BG-20 Payment Terms extension (#SKONTO#TAGE=n#PROZENT=n#)
+- [ ] 63-07-PLAN.md — Wave 4: All UI surfaces (late interest card + claim/waive/revoke dialogs + dashboard tile + Skonto form/banner/checkbox + invoice list columns) + human-verify checkpoint
 **UI hint**: yes
 
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 56 -> 57 -> 58 -> 59 -> 60 -> 61 -> 62 -> 63
+Phases execute in numeric order: 56 -> 57 -> 58 -> 59 -> 60 -> 61 -> 62 -> 63 -> 64
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -177,5 +185,36 @@ Phases execute in numeric order: 56 -> 57 -> 58 -> 59 -> 60 -> 61 -> 62 -> 63
 | 59. Classification Documents & Chain Tracking | v5.0 | 4/4 | Complete    | 2026-04-13 |
 | 60. Classification Polish | v5.0 | 4/4 | Complete    | 2026-04-14 |
 | 61. XRechnung E-Invoicing | v5.0 | 8/8 | Complete   | 2026-04-14 |
-| 62. ZUGFeRD E-Invoicing | v5.0 | 0/TBD | Not started | - |
-| 63. UK Payments & Financial Features | v5.0 | 0/TBD | Not started | - |
+| 62. ZUGFeRD E-Invoicing | v5.0 | 2/7 | In Progress|  |
+| 63. UK Payments & Financial Features | v5.0 | 0/7 | Not started | - |
+| 64. Legal Compliance Hardening | v5.0 | 0/TBD | Not started | - |
+
+### Phase 64: Legal Compliance Hardening
+**Goal**: Classification features (Phases 58-60) are completely inaccessible when the feature flag is disabled — no routes, no sidebar entries, no API endpoints, no data leakage — and when enabled after legal sign-off, all screens clearly communicate advisory-only status with escalation paths
+**Depends on**: Phase 58 (classification engine), Phase 59 (SDS + DRV documents), Phase 60 (economic dependency alerts, compliance dashboard)
+**Requirements**: LEGAL-01, LEGAL-02, LEGAL-03, LEGAL-04, LEGAL-05, LEGAL-06, LEGAL-07, LEGAL-08, LEGAL-09, LEGAL-10
+**Success Criteria** (what must be TRUE):
+  1. A feature flag `classification-engine` in Unleash gates ALL classification functionality — when disabled, the feature is completely invisible and inaccessible as if it does not exist
+  2. When FF is OFF: classification sidebar nav items, contractor profile classification tabs/tiles, classification assessment wizard routes, compliance health dashboard classification sections, and economic dependency alert UI are all removed from the render tree (not hidden with CSS — not rendered at all)
+  3. When FF is OFF: all classification tRPC procedures (createDraft, getDraft, saveAnswer, submit, acknowledgeDisclaimer, getLatest, getById, listByContractor, and any Phase 60 procedures) return FORBIDDEN or are unregistered, preventing API-level access even if someone crafts a direct request
+  4. When FF is OFF: SDS generation, DRV defense bundle generation, and all classification document endpoints are inaccessible — no PDF generation, no R2 storage writes for classification documents
+  5. When FF is OFF: economic dependency cron job skips execution entirely, no background processing occurs for classification features
+  6. CI pipeline fails if any locked disclaimer constant in packages/validators/src/legal/ contains the string "PENDING" when targeting production deployment
+  7. All classification outcome pages display a persistent, non-dismissible advisory banner above the verdict stating the result is guidance only and recommending professional consultation
+  8. Undetermined/amber classification outcomes show a "Get Expert Help" CTA linking to adviser referral with logged escalation event
+  9. SDS PDF cover page includes client name, date, approval statement, and a confirmation checkbox that the client reviewed and approved the SDS before issuing
+  10. DRV Statusfeststellungsverfahren tracking panel displays an unverified-entry disclaimer and supports R2 document upload for proof of DRV decision letter
+  11. Platform Terms of Service include explicit "software not legal/tax advice" language covering all classification, e-invoicing, and payment features
+**Plans**: TBD
+**UI hint**: yes
+
+---
+
+### v6.0 Platform Maturity & Operational Hardening (Planned)
+
+**Milestone Goal:** Make the platform production-grade across all supported markets (PL, UK, DE, UAE, SA) by closing critical operational gaps — compliance document lifecycle, automated access deprovisioning, Gulf operational polish, and offboarding hardening. No new market entry; focus on reliability and security for real users.
+
+- [ ] **Phase 65: Compliance Document Lifecycle Engine** - Per-country required document definitions, automated expiry tracking with 90/60/30/15/7-day alerts, hard payment blocking on expired critical documents, automated contractor reminders via email/portal, compliance dashboard with at-risk contractor count
+- [ ] **Phase 66: Identity Provider Deprovisioning** - Google Workspace auto-suspend, Azure AD/Entra ID auto-disable, Okta SSO revocation, GitHub org member removal, Slack workspace deactivation on offboarding, full audit trail of access revocation per contractor
+- [ ] **Phase 67: Gulf Operational Polish** - UAE free zone entity tracking with permitted activity scope per zone and license expiry monitoring; Saudization workforce composition dashboard with nationality tracking (visibility only, not Nitaqat band simulation or advisory)
+- [ ] **Phase 68: Offboarding Hardening** - Structured knowledge transfer checklist templates per role type, IP assignment verification workflow blocking offboarding completion, documentation handover task with repo/wiki/credential links, contract clause health check flagging missing IP assignment language
