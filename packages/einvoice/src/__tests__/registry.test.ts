@@ -160,15 +160,15 @@ describe('Profile Registry — XRechnung-DE', () => {
     );
   });
 
-  it('XRechnungDEProfile.validate() returns a stub ValidationResult (Plan 03 replaces)', async () => {
+  it('XRechnungDEProfile.validate() returns a ValidationResult for invalid input', async () => {
     const { XRechnungDEProfile } = await import('../profiles/xrechnung-de/index.js');
     registerProfile(new XRechnungDEProfile());
 
     const profile = getProfile('xrechnung-de');
     const result = await profile.validate('<irrelevant/>');
-    expect(result.valid).toBe(true);
+    expect(result.valid).toBe(false);
     expect(result.profileId).toBe('xrechnung-de');
-    expect(result.errors).toEqual([]);
+    expect(result.errors.length).toBeGreaterThan(0);
   });
 
   it('XRechnungDEProfile.getComplianceStatus() reports active state + KoSIT rule-set version', async () => {

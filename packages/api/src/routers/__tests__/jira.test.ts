@@ -105,6 +105,7 @@ vi.mock('@contractor-ops/logger', () => ({
     warn: vi.fn(),
     error: vi.fn(),
   })),
+  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
 }));
 
 vi.mock('@contractor-ops/logger/metrics', () => ({

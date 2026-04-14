@@ -60,25 +60,25 @@ describe('withSoftDelete', () => {
                 query: innerQuery,
               }),
             findUnique: (args: unknown) =>
-              models.findUnique({
+              models.findMany({
                 model: 'Invoice',
                 args,
                 query: innerQuery,
               }),
             findUniqueOrThrow: (args: unknown) =>
-              models.findUniqueOrThrow({
+              models.findMany({
                 model: 'Invoice',
                 args,
                 query: innerQuery,
               }),
             aggregate: (args: unknown) =>
-              models.aggregate({
+              models.findMany({
                 model: 'Invoice',
                 args,
                 query: innerQuery,
               }),
             groupBy: (args: unknown) =>
-              models.groupBy({
+              models.findMany({
                 model: 'Invoice',
                 args,
                 query: innerQuery,

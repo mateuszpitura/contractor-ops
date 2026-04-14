@@ -472,3 +472,210 @@ describe('billing.getProrationPreview', () => {
     expect(mockGetProrationPreview).not.toHaveBeenCalled();
   });
 });
+
+// ===========================================================================
+// billing.createTopUpCheckout
+// ===========================================================================
+
+describe('billing.createTopUpCheckout', () => {
+  it('rejects unknown top-up price IDs', async () => {
+    await expect(
+      caller.billing.createTopUpCheckout({ priceId: 'price_fake_topup' }),
+    ).rejects.toThrow('Invalid top-up price ID');
+
+    expect(mockCreateTopUpCheckoutSession).not.toHaveBeenCalled();
+  });
+
+  it('throws NOT_FOUND when no subscription exists', async () => {
+    mockGetSubscription.mockResolvedValueOnce(null);
+
+    await expect(
+      caller.billing.createTopUpCheckout({ priceId: 'price_topup_10' }),
+    ).rejects.toThrow('No active subscription found');
+
+    expect(mockCreateTopUpCheckoutSession).not.toHaveBeenCalled();
+  });
+
+  it('delegates to createTopUpCheckoutSession with correct params', async () => {
+    mockGetSubscription.mockResolvedValueOnce({
+      stripeCustomerId: STRIPE_CUSTOMER_ID,
+      stripeSubscriptionId: STRIPE_SUB_ID,
+    } as unknown);
+
+    await caller.billing.createTopUpCheckout({ priceId: 'price_topup_10' });
+
+    expect(mockCreateTopUpCheckoutSession).toHaveBeenCalledWith(
+      expect.objectContaining({
+        organizationId: ORG_ID,
+        priceId: 'price_topup_10',
+        stripeCustomerId: STRIPE_CUSTOMER_ID,
+        successUrl: expect.stringContaining('/settings?tab=billing&topup=success'),
+        cancelUrl: expect.stringContaining('/settings?tab=billing'),
+      }),
+    );
+  });
+});
+
+// ===========================================================================
+// billing.syncSeatCount
+// ===========================================================================
+
+describe('billing.syncSeatCount', () => {
+  it('throws NOT_FOUND when no subscription with item ID exists', async () => {
+    mockGetSubscription.mockResolvedValueOnce(null);
+
+    await expect(caller.billing.syncSeatCount()).rejects.toThrow(
+      'No active subscription with a subscription item found',
+    );
+  });
+
+  it('throws PRECONDITION_FAILED when subscription is not active or trialing', async () => {
+    mockGetSubscription.mockResolvedValueOnce({
+      stripeCustomerId: STRIPE_CUSTOMER_ID,
+      stripeSubscriptionId: STRIPE_SUB_ID,
+      stripeSubscriptionItemId: STRIPE_ITEM_ID,
+      status: 'CANCELED',
+      seatCount: 5,
+    } as unknown);
+
+    await expect(caller.billing.syncSeatCount()).rejects.toThrow(
+      'Subscription is not active',
+    );
+  });
+
+  it('returns updated:false when seat count matches', async () => {
+    mockGetSubscription.mockResolvedValueOnce({
+      stripeCustomerId: STRIPE_CUSTOMER_ID,
+      stripeSubscriptionId: STRIPE_SUB_ID,
+      stripeSubscriptionItemId: STRIPE_ITEM_ID,
+      status: 'ACTIVE',
+      seatCount: 5,
+    } as unknown);
+    mockPrisma.contractor.count.mockResolvedValueOnce(5);
+
+    const result = await caller.billing.syncSeatCount();
+
+    expect(result).toEqual({ updated: false, seatCount: 5 });
+    expect(mockUpdateSubscriptionSeatCount).not.toHaveBeenCalled();
+  });
+
+  it('updates seat count when contractor count differs', async () => {
+    mockGetSubscription.mockResolvedValueOnce({
+      stripeCustomerId: STRIPE_CUSTOMER_ID,
+      stripeSubscriptionId: STRIPE_SUB_ID,
+      stripeSubscriptionItemId: STRIPE_ITEM_ID,
+      status: 'ACTIVE',
+      seatCount: 5,
+    } as unknown);
+    mockPrisma.contractor.count.mockResolvedValueOnce(8);
+
+    const result = await caller.billing.syncSeatCount();
+
+    expect(result).toEqual({ updated: true, seatCount: 8 });
+    expect(mockUpdateSubscriptionSeatCount).toHaveBeenCalledWith({
+      stripeSubscriptionId: STRIPE_SUB_ID,
+      stripeSubscriptionItemId: STRIPE_ITEM_ID,
+      newQuantity: 8,
+    });
+  });
+
+  it('ensures minimum seat count of 1 even with zero contractors', async () => {
+    mockGetSubscription.mockResolvedValueOnce({
+      stripeCustomerId: STRIPE_CUSTOMER_ID,
+      stripeSubscriptionId: STRIPE_SUB_ID,
+      stripeSubscriptionItemId: STRIPE_ITEM_ID,
+      status: 'TRIALING',
+      seatCount: 5,
+    } as unknown);
+    mockPrisma.contractor.count.mockResolvedValueOnce(0);
+
+    const result = await caller.billing.syncSeatCount();
+
+    expect(result).toEqual({ updated: true, seatCount: 1 });
+    expect(mockUpdateSubscriptionSeatCount).toHaveBeenCalledWith(
+      expect.objectContaining({ newQuantity: 1 }),
+    );
+  });
+});
+
+// ===========================================================================
+// billing.getCreditBalance
+// ===========================================================================
+
+describe('billing.getCreditBalance', () => {
+  it('returns credit balance for the organization', async () => {
+    const result = await caller.billing.getCreditBalance();
+
+    expect(result).toEqual({ credits: 42 });
+  });
+});
+
+// ===========================================================================
+// billing.getPlanConfig
+// ===========================================================================
+
+describe('billing.getPlanConfig', () => {
+  it('returns static plan configuration', async () => {
+    const result = await caller.billing.getPlanConfig();
+
+    expect(result).toHaveProperty('tiers');
+    expect(result.tiers).toHaveLength(3);
+    expect(result.tiers[0]).toHaveProperty('id', 'STARTER');
+    expect(result.tiers[1]).toHaveProperty('id', 'PRO');
+    expect(result.tiers[2]).toHaveProperty('id', 'ENTERPRISE');
+    expect(result).toHaveProperty('trialDays', 14);
+    expect(result).toHaveProperty('currency', 'PLN');
+  });
+});
+
+// ===========================================================================
+// billing.getUsageDashboard
+// ===========================================================================
+
+describe('billing.getUsageDashboard', () => {
+  it('aggregates subscription, credits, and contractor data', async () => {
+    mockGetSubscription.mockResolvedValueOnce({
+      id: 'sub-1',
+      tier: 'STARTER',
+      stripeCustomerId: STRIPE_CUSTOMER_ID,
+      status: 'ACTIVE',
+    } as unknown);
+    mockPrisma.contractor.count.mockResolvedValueOnce(10);
+
+    const result = await caller.billing.getUsageDashboard();
+
+    expect(result).toHaveProperty('subscription');
+    expect(result).toHaveProperty('credits');
+    expect(result).toHaveProperty('activeContractors', 10);
+    expect(result).toHaveProperty('includedSeats');
+    expect(result).toHaveProperty('planConfig');
+    expect(result.planConfig.tiers).toHaveLength(3);
+  });
+
+  it('returns zero included seats when no subscription exists', async () => {
+    mockGetSubscription.mockResolvedValueOnce(null);
+    mockPrisma.contractor.count.mockResolvedValueOnce(0);
+
+    const result = await caller.billing.getUsageDashboard();
+
+    expect(result.subscription).toBeNull();
+    expect(result.includedSeats).toBe(0);
+  });
+});
+
+// ===========================================================================
+// billing.createCheckoutSession — org not found
+// ===========================================================================
+
+describe('billing.createCheckoutSession — org not found', () => {
+  it('throws NOT_FOUND when organization does not exist', async () => {
+    // First findUnique returns region, second returns null for the org lookup
+    mockPrisma.organization.findUnique
+      .mockResolvedValueOnce({ dataRegion: 'EU' })
+      .mockResolvedValueOnce(null);
+
+    await expect(
+      caller.billing.createCheckoutSession({ priceId: PRICE_ID }),
+    ).rejects.toThrow('Organization not found');
+  });
+});

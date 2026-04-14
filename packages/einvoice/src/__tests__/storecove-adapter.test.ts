@@ -341,4 +341,266 @@ describe('StorecoveAdapter', () => {
       ).rejects.toThrow();
     });
   });
+
+  // -----------------------------------------------------------------------
+  // verifyWebhookSignature — additional edge cases
+  // -----------------------------------------------------------------------
+
+  it('verifyWebhookSignature returns false when no webhook secret configured', () => {
+    const adapterNoSecret = new StorecoveAdapter({
+      apiKey: 'test-api-key',
+      baseUrl: 'https://api-sandbox.storecove.com/api/v2',
+    });
+    const body = JSON.stringify({ guid: 'wh-001', event: 'test' });
+    const result = adapterNoSecret.verifyWebhookSignature(body, {
+      'storecove-signature': 'anything',
+    });
+    expect(result.valid).toBe(false);
+  });
+
+  it('verifyWebhookSignature returns false when signature header missing', () => {
+    const body = JSON.stringify({ guid: 'wh-001', event: 'test' });
+    const result = adapter.verifyWebhookSignature(body, {});
+    expect(result.valid).toBe(false);
+  });
+
+  it('verifyWebhookSignature accepts Storecove-Signature header (capitalized)', () => {
+    const body = JSON.stringify({ guid: 'wh-001', event: 'document_received' });
+    const signature = createHmac('sha256', TEST_CONFIG.webhookSecret).update(body).digest('hex');
+    const result = adapter.verifyWebhookSignature(body, {
+      'Storecove-Signature': signature,
+    });
+    expect(result.valid).toBe(true);
+    expect(result.eventType).toBe('document_received');
+  });
+
+  it('verifyWebhookSignature returns valid:true without eventType for invalid JSON', () => {
+    const body = 'not-json-at-all';
+    const signature = createHmac('sha256', TEST_CONFIG.webhookSecret).update(body).digest('hex');
+    const result = adapter.verifyWebhookSignature(body, {
+      'storecove-signature': signature,
+    });
+    expect(result.valid).toBe(true);
+    expect(result.eventType).toBeUndefined();
+  });
+
+  // -----------------------------------------------------------------------
+  // getParticipantStatus
+  // -----------------------------------------------------------------------
+
+  it('getParticipantStatus returns active', async () => {
+    const result = await adapter.getParticipantStatus('0192:123456789012345');
+    expect(result.participantId).toBe('0192:123456789012345');
+    expect(result.status).toBe('active');
+  });
+
+  // -----------------------------------------------------------------------
+  // getTransmissionStatus — delivered and failed details
+  // -----------------------------------------------------------------------
+
+  it('getTransmissionStatus returns deliveredAt for delivered status', async () => {
+    mockFetch.mockResolvedValueOnce(
+      jsonResponse({
+        guid: 'tx-001',
+        status: 'delivered',
+        created_at: '2026-04-11T10:00:00Z',
+      }),
+    );
+    const result = await adapter.getTransmissionStatus('tx-001');
+    expect(result.status).toBe('delivered');
+    expect(result.deliveredAt).toBeInstanceOf(Date);
+  });
+
+  it('getTransmissionStatus returns failureReason for failed status', async () => {
+    mockFetch.mockResolvedValueOnce(
+      jsonResponse({
+        guid: 'tx-001',
+        status: 'failed',
+        created_at: '2026-04-11T10:00:00Z',
+      }),
+    );
+    const result = await adapter.getTransmissionStatus('tx-001');
+    expect(result.status).toBe('failed');
+    expect(result.failureReason).toContain('Storecove status: failed');
+  });
+
+  // -----------------------------------------------------------------------
+  // transmitInvoice — non-422 error rethrow
+  // -----------------------------------------------------------------------
+
+  it('transmitInvoice rethrows non-422 API errors', async () => {
+    mockFetch.mockResolvedValueOnce(
+      new Response('Internal Server Error', {
+        status: 500,
+        headers: { 'Content-Type': 'text/plain' },
+      }),
+    );
+
+    await expect(
+      adapter.transmitInvoice({
+        xml: '<Invoice/>',
+        senderParticipantId: '0192:111111111111111',
+        receiverParticipantId: '0192:222222222222222',
+        documentTypeId: 'urn:oasis:names:specification:ubl:schema:xsd:Invoice-2',
+      }),
+    ).rejects.toThrow();
+  });
+
+  // -----------------------------------------------------------------------
+  // registerParticipant — error handling
+  // -----------------------------------------------------------------------
+
+  it('registerParticipant rethrows API errors', async () => {
+    mockFetch.mockResolvedValueOnce(
+      new Response('Forbidden', {
+        status: 403,
+        headers: { 'Content-Type': 'text/plain' },
+      }),
+    );
+
+    await expect(
+      adapter.registerParticipant({
+        participantId: '0192:123456789012345',
+        schemeId: '0192',
+        identifierValue: '123456789012345',
+        organizationName: 'Test Corp',
+      }),
+    ).rejects.toThrow();
+  });
+
+  // -----------------------------------------------------------------------
+  // parseWebhookPayload — uses guid when document_guid is missing
+  // -----------------------------------------------------------------------
+
+  it('parseWebhookPayload falls back to guid when document_guid is missing', async () => {
+    const body = JSON.stringify({
+      guid: 'wh-001',
+      event: 'document_received',
+      document: '<Invoice/>',
+    });
+    const result = await adapter.parseWebhookPayload(body, {});
+    expect(result.documentId).toBe('wh-001');
+  });
+
+  // -----------------------------------------------------------------------
+  // checkHealth
+  // -----------------------------------------------------------------------
+
+  it('checkHealth returns healthy when API responds with 404', async () => {
+    mockFetch.mockResolvedValueOnce(
+      new Response('Not Found', { status: 404, headers: { 'Content-Type': 'text/plain' } }),
+    );
+    const result = await adapter.checkHealth();
+    expect(result.healthy).toBe(true);
+    expect(result.latencyMs).toBeDefined();
+  });
+
+  it('checkHealth returns healthy on successful response', async () => {
+    mockFetch.mockResolvedValueOnce(
+      jsonResponse({ id: 0, party_name: 'test', peppol_identifiers: [] }),
+    );
+    const result = await adapter.checkHealth();
+    expect(result.healthy).toBe(true);
+  });
+
+  it('checkHealth returns unhealthy on network error', async () => {
+    mockFetch.mockRejectedValueOnce(new Error('Network error'));
+    const result = await adapter.checkHealth();
+    expect(result.healthy).toBe(false);
+    expect(result.error).toBe('Network error');
+  });
+
+  // -----------------------------------------------------------------------
+  // Rate limiting and audit logging
+  // -----------------------------------------------------------------------
+
+  it('checks rate limit on transmitInvoice when organizationId provided', async () => {
+    const checkLimit = vi.fn().mockResolvedValue({ allowed: true, remaining: 10, resetMs: 1000 });
+    const log = vi.fn().mockResolvedValue(undefined);
+
+    const adapterWithDeps = new StorecoveAdapter(TEST_CONFIG, {
+      rateLimiter: { checkLimit },
+      auditLogger: { log },
+    });
+
+    mockFetch.mockResolvedValueOnce(
+      jsonResponse({
+        guid: 'tx-guid-002',
+        status: 'sent',
+        created_at: '2026-04-11T10:00:00Z',
+      }),
+    );
+
+    await adapterWithDeps.transmitInvoice({
+      xml: '<Invoice/>',
+      senderParticipantId: '0192:111111111111111',
+      receiverParticipantId: '0192:222222222222222',
+      documentTypeId: 'urn:oasis:names:specification:ubl:schema:xsd:Invoice-2',
+      organizationId: 'org-1',
+    });
+
+    expect(checkLimit).toHaveBeenCalledWith('org-1');
+    expect(log).toHaveBeenCalled();
+  });
+
+  it('throws when rate limit exceeded', async () => {
+    const checkLimit = vi.fn().mockResolvedValue({ allowed: false, remaining: 0, resetMs: 5000 });
+    const adapterWithDeps = new StorecoveAdapter(TEST_CONFIG, {
+      rateLimiter: { checkLimit },
+    });
+
+    await expect(
+      adapterWithDeps.transmitInvoice({
+        xml: '<Invoice/>',
+        senderParticipantId: '0192:111111111111111',
+        receiverParticipantId: '0192:222222222222222',
+        documentTypeId: 'urn:oasis:names:specification:ubl:schema:xsd:Invoice-2',
+        organizationId: 'org-1',
+      }),
+    ).rejects.toThrow('rate limit exceeded');
+  });
+
+  // -----------------------------------------------------------------------
+  // pollInboundInvoices with organizationId
+  // -----------------------------------------------------------------------
+
+  it('pollInboundInvoices checks rate limit and emits audit when organizationId provided', async () => {
+    const checkLimit = vi.fn().mockResolvedValue({ allowed: true, remaining: 10, resetMs: 1000 });
+    const log = vi.fn().mockResolvedValue(undefined);
+
+    const adapterWithDeps = new StorecoveAdapter(TEST_CONFIG, {
+      rateLimiter: { checkLimit },
+      auditLogger: { log },
+    });
+
+    mockFetch.mockResolvedValueOnce(jsonResponse([]));
+
+    await adapterWithDeps.pollInboundInvoices(new Date(), 'org-1');
+
+    expect(checkLimit).toHaveBeenCalledWith('org-1');
+    expect(log).toHaveBeenCalled();
+  });
+
+  // -----------------------------------------------------------------------
+  // transmitInvoice — 422 with non-array error body
+  // -----------------------------------------------------------------------
+
+  it('transmitInvoice parses 422 with non-array error body', async () => {
+    mockFetch.mockResolvedValueOnce(
+      new Response('plain error text', {
+        status: 422,
+        headers: { 'Content-Type': 'text/plain' },
+      }),
+    );
+
+    const result = await adapter.transmitInvoice({
+      xml: '<Invoice/>',
+      senderParticipantId: '0192:111111111111111',
+      receiverParticipantId: '0192:222222222222222',
+      documentTypeId: 'urn:oasis:names:specification:ubl:schema:xsd:Invoice-2',
+    });
+
+    expect(result.status).toBe('rejected');
+    expect(result.errors?.[0]?.code).toBe('VALIDATION_ERROR');
+  });
 });

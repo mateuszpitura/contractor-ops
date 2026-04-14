@@ -155,6 +155,7 @@ vi.mock('@sentry/nextjs', () => {
 
 vi.mock('@contractor-ops/logger', () => ({
   createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
+  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
 }));
 
 vi.mock('@contractor-ops/logger/metrics', () => ({
@@ -676,6 +677,299 @@ describe('workflowExecutionRouter', () => {
       const result = await caller.overdueCount();
 
       expect(result).toEqual({ count: 0 });
+    });
+  });
+
+  // =========================================================================
+  // startRun
+  // =========================================================================
+
+  describe('startRun', () => {
+    it('throws NOT_FOUND when template does not exist', async () => {
+      mockPrisma.workflowTemplate.findFirst.mockResolvedValueOnce(null);
+
+      await expect(
+        caller.startRun({ templateId: 'nonexistent', contractorId: CONTRACTOR_ID }),
+      ).rejects.toThrow(TRPCError);
+    });
+
+    it('throws NOT_FOUND when contractor does not exist', async () => {
+      mockPrisma.workflowTemplate.findFirst.mockResolvedValueOnce({
+        id: TEMPLATE_ID,
+        organizationId: ORG_ID,
+        status: 'ACTIVE',
+        type: 'ONBOARDING',
+        tasks: [],
+      });
+      mockPrisma.contractor.findFirst.mockResolvedValueOnce(null);
+
+      await expect(
+        caller.startRun({ templateId: TEMPLATE_ID, contractorId: 'nonexistent' }),
+      ).rejects.toThrow(TRPCError);
+    });
+
+    it('creates a workflow run with tasks and returns it', async () => {
+      const now = new Date();
+      mockPrisma.workflowTemplate.findFirst.mockResolvedValueOnce({
+        id: TEMPLATE_ID,
+        organizationId: ORG_ID,
+        status: 'ACTIVE',
+        type: 'ONBOARDING',
+        name: 'Onboarding',
+        tasks: [
+          {
+            id: 'tmpl-task-1',
+            title: 'Setup Access',
+            description: null,
+            taskType: 'STANDARD',
+            required: true,
+            assigneeMode: 'MANUAL',
+            assigneeRole: null,
+            assigneeUserId: USER_ID,
+            dueOffsetDays: 3,
+            dueOffsetHours: null,
+            dependsOnTaskTemplateId: null,
+            sortOrder: 1,
+            configJson: null,
+          },
+        ],
+      });
+      mockPrisma.contractor.findFirst.mockResolvedValueOnce({
+        id: CONTRACTOR_ID,
+        organizationId: ORG_ID,
+        legalName: 'Test Corp',
+        displayName: null,
+        deletedAt: null,
+      });
+      mockPrisma.workflowRun.create.mockResolvedValueOnce({
+        id: RUN_ID,
+        organizationId: ORG_ID,
+        status: 'IN_PROGRESS',
+        contractorId: CONTRACTOR_ID,
+      });
+      mockPrisma.workflowTaskRun.create.mockResolvedValueOnce({
+        id: TASK_RUN_ID,
+        status: 'TODO',
+        title: 'Setup Access',
+        description: null,
+        assigneeUserId: USER_ID,
+      });
+      mockPrisma.workflowTaskRun.findMany.mockResolvedValueOnce([
+        { status: 'TODO', resultJson: null },
+      ]);
+      mockPrisma.workflowRun.update.mockResolvedValueOnce({});
+      mockPrisma.workflowRun.findUniqueOrThrow.mockResolvedValueOnce({
+        id: RUN_ID,
+        status: 'IN_PROGRESS',
+        contractorId: CONTRACTOR_ID,
+        workflowTemplate: { name: 'Onboarding', type: 'ONBOARDING' },
+        tasks: [
+          {
+            id: TASK_RUN_ID,
+            status: 'TODO',
+            title: 'Setup Access',
+            assigneeUserId: USER_ID,
+            externalRefType: null,
+            externalRefId: null,
+          },
+        ],
+      });
+
+      const result = await caller.startRun({
+        templateId: TEMPLATE_ID,
+        contractorId: CONTRACTOR_ID,
+      });
+
+      expect(result).toMatchObject({ id: RUN_ID, status: 'IN_PROGRESS' });
+      expect(mockPrisma.workflowRun.create).toHaveBeenCalled();
+      expect(mockPrisma.workflowTaskRun.create).toHaveBeenCalled();
+    });
+  });
+
+  // =========================================================================
+  // completeTask — auto-complete run
+  // =========================================================================
+
+  describe('completeTask — run auto-completion', () => {
+    it('marks the run as COMPLETED when all tasks are done', async () => {
+      mockPrisma.workflowTaskRun.findFirst.mockResolvedValueOnce({
+        id: TASK_RUN_ID,
+        organizationId: ORG_ID,
+        status: 'IN_PROGRESS',
+        startedAt: new Date(),
+        externalRefType: null,
+        externalRefId: null,
+        workflowRun: { id: RUN_ID, status: 'IN_PROGRESS' },
+      });
+      mockPrisma.workflowTaskRun.update.mockResolvedValueOnce({
+        id: TASK_RUN_ID,
+        status: 'DONE',
+        externalRefType: null,
+        externalRefId: null,
+      });
+      mockPrisma.workflowTaskRun.updateMany.mockResolvedValueOnce({ count: 0 });
+      // All tasks are DONE — triggers auto-completion
+      mockPrisma.workflowTaskRun.findMany.mockResolvedValueOnce([
+        { status: 'DONE', resultJson: null },
+        { status: 'DONE', resultJson: null },
+      ]);
+      mockPrisma.workflowRun.update.mockResolvedValueOnce({});
+
+      await caller.completeTask({ taskRunId: TASK_RUN_ID });
+
+      const runUpdateCall = mockPrisma.workflowRun.update.mock.calls[0]?.[0];
+      expect(runUpdateCall.data).toMatchObject({
+        status: 'COMPLETED',
+        completedAt: expect.any(Date),
+      });
+    });
+  });
+
+  // =========================================================================
+  // skipTask — invalid status
+  // =========================================================================
+
+  describe('skipTask — invalid status', () => {
+    it('throws BAD_REQUEST when task is already DONE', async () => {
+      mockPrisma.workflowTaskRun.findFirst.mockResolvedValueOnce({
+        id: TASK_RUN_ID,
+        organizationId: ORG_ID,
+        status: 'DONE',
+        workflowRun: { id: RUN_ID, status: 'IN_PROGRESS' },
+      });
+
+      await expect(
+        caller.skipTask({ taskRunId: TASK_RUN_ID, reason: 'test' }),
+      ).rejects.toThrow(TRPCError);
+    });
+  });
+
+  // =========================================================================
+  // reassignTask — terminal task
+  // =========================================================================
+
+  describe('reassignTask — terminal task', () => {
+    it('allows reassigning a TODO task', async () => {
+      mockPrisma.workflowTaskRun.findFirst.mockResolvedValueOnce({
+        id: TASK_RUN_ID,
+        organizationId: ORG_ID,
+        status: 'TODO',
+      });
+      mockPrisma.workflowTaskRun.update.mockResolvedValueOnce({
+        id: TASK_RUN_ID,
+        title: 'Setup IT Access',
+        assigneeUserId: 'new-user-2',
+        workflowRun: {
+          id: RUN_ID,
+          workflowTemplate: { name: 'Onboarding' },
+          contractor: { legalName: 'Test Corp', displayName: null },
+        },
+      });
+
+      const result = await caller.reassignTask({
+        taskRunId: TASK_RUN_ID,
+        newAssigneeUserId: 'new-user-2',
+      });
+
+      expect(result).toMatchObject({ id: TASK_RUN_ID, assigneeUserId: 'new-user-2' });
+    });
+  });
+
+  // =========================================================================
+  // listRuns — search and overdue filter
+  // =========================================================================
+
+  describe('listRuns — additional filters', () => {
+    it('applies templateId filter', async () => {
+      mockPrisma.workflowRun.findMany.mockResolvedValueOnce([]);
+      mockPrisma.workflowRun.count.mockResolvedValueOnce(0);
+
+      await caller.listRuns({
+        page: 1,
+        pageSize: 20,
+        filters: { templateId: [TEMPLATE_ID] },
+      });
+
+      const findCall = mockPrisma.workflowRun.findMany.mock.calls[0]?.[0];
+      expect(findCall.where.workflowTemplateId).toEqual({ in: [TEMPLATE_ID] });
+    });
+
+    it('applies search filter via OR clause', async () => {
+      mockPrisma.workflowRun.findMany.mockResolvedValueOnce([]);
+      mockPrisma.workflowRun.count.mockResolvedValueOnce(0);
+
+      await caller.listRuns({ page: 1, pageSize: 20, search: 'Acme' });
+
+      const findCall = mockPrisma.workflowRun.findMany.mock.calls[0]?.[0];
+      expect(findCall.where.OR).toBeDefined();
+      expect(findCall.where.OR).toHaveLength(3);
+    });
+
+    it('applies overdueOnly filter', async () => {
+      mockPrisma.workflowRun.findMany.mockResolvedValueOnce([]);
+      mockPrisma.workflowRun.count.mockResolvedValueOnce(0);
+
+      await caller.listRuns({
+        page: 1,
+        pageSize: 20,
+        filters: { overdueOnly: true },
+      });
+
+      const findCall = mockPrisma.workflowRun.findMany.mock.calls[0]?.[0];
+      expect(findCall.where.tasks).toBeDefined();
+      expect(findCall.where.tasks.some.status).toEqual({ in: ['TODO', 'IN_PROGRESS'] });
+    });
+
+    it('computes progress for each run in the response', async () => {
+      mockPrisma.workflowRun.findMany.mockResolvedValueOnce([
+        {
+          id: RUN_ID,
+          status: 'IN_PROGRESS',
+          workflowTemplate: { name: 'Onboarding', type: 'ONBOARDING' },
+          contractor: { id: CONTRACTOR_ID, legalName: 'Test', displayName: null },
+          tasks: [
+            { status: 'DONE', resultJson: null },
+            { status: 'TODO', resultJson: null },
+          ],
+        },
+      ]);
+      mockPrisma.workflowRun.count.mockResolvedValueOnce(1);
+
+      const result = await caller.listRuns({ page: 1, pageSize: 20 });
+
+      expect(result.items[0]).toHaveProperty('progress');
+      expect(result.items[0].progress).toHaveProperty('percent');
+    });
+  });
+
+  // =========================================================================
+  // addComment — with taskRunId
+  // =========================================================================
+
+  describe('addComment — with taskRunId', () => {
+    it('creates a comment linked to a specific task', async () => {
+      mockPrisma.workflowRun.findFirst.mockResolvedValueOnce({
+        id: RUN_ID,
+        organizationId: ORG_ID,
+      });
+      mockPrisma.workflowComment.create.mockResolvedValueOnce({
+        id: 'comment-2',
+        workflowRunId: RUN_ID,
+        workflowTaskRunId: TASK_RUN_ID,
+        body: 'Task-level comment',
+        author: { id: USER_ID, name: 'Test User', image: null },
+      });
+
+      const result = await caller.addComment({
+        workflowRunId: RUN_ID,
+        workflowTaskRunId: TASK_RUN_ID,
+        body: 'Task-level comment',
+      });
+
+      expect(result).toMatchObject({ id: 'comment-2', workflowTaskRunId: TASK_RUN_ID });
+
+      const createCall = mockPrisma.workflowComment.create.mock.calls[0]?.[0];
+      expect(createCall.data.workflowTaskRunId).toBe(TASK_RUN_ID);
     });
   });
 });

@@ -1,5 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { generateStorageKey, signExistingDownload } from '../r2.js';
+import {
+  createPresignedDownloadUrl,
+  createPresignedUploadUrl,
+  deleteObject,
+  generateStorageKey,
+  headObject,
+  putObjectAndSignDownload,
+  signExistingDownload,
+} from '../r2.js';
 
 describe('r2 generateStorageKey', () => {
   it('builds org-scoped path with extension', () => {
@@ -120,5 +128,201 @@ describe('signExistingDownload (Phase 59 D-05)', () => {
     await signExistingDownload('classification-documents/org_1/ca_1/sds-v2-abc.pdf');
     const lastGet = getObjectCalls.at(-1);
     expect(lastGet?.input.ResponseContentDisposition).toBe('attachment');
+  });
+
+  it('includes downloadFilename in disposition when provided', async () => {
+    await signExistingDownload('key.pdf', 300, 'my-report.pdf');
+    const lastGet = getObjectCalls.at(-1);
+    expect(lastGet?.input.ResponseContentDisposition).toBe(
+      'attachment; filename="my-report.pdf"',
+    );
+  });
+
+  it('strips double quotes from downloadFilename for security', async () => {
+    await signExistingDownload('key.pdf', 300, 'file"name.pdf');
+    const lastGet = getObjectCalls.at(-1);
+    expect(lastGet?.input.ResponseContentDisposition).toBe(
+      'attachment; filename="filename.pdf"',
+    );
+  });
+});
+
+// -----------------------------------------------------------------------------
+// createPresignedUploadUrl
+// -----------------------------------------------------------------------------
+
+describe('createPresignedUploadUrl', () => {
+  beforeEach(() => {
+    getObjectCalls.length = 0;
+    putObjectCalls.length = 0;
+    signedUrlCalls.length = 0;
+  });
+
+  it('returns a signed URL for PUT with correct content type', async () => {
+    const url = await createPresignedUploadUrl('orgs/o1/documents/d1.pdf', 'application/pdf');
+    expect(url).toContain(encodeURIComponent('orgs/o1/documents/d1.pdf'));
+  });
+
+  it('uses default expiry of 300 seconds', async () => {
+    await createPresignedUploadUrl('key.pdf', 'application/pdf');
+    const lastCall = signedUrlCalls.at(-1);
+    expect(lastCall?.expiresIn).toBe(300);
+  });
+
+  it('accepts custom expiry', async () => {
+    await createPresignedUploadUrl('key.pdf', 'application/pdf', 600);
+    const lastCall = signedUrlCalls.at(-1);
+    expect(lastCall?.expiresIn).toBe(600);
+  });
+});
+
+// -----------------------------------------------------------------------------
+// createPresignedDownloadUrl
+// -----------------------------------------------------------------------------
+
+describe('createPresignedDownloadUrl', () => {
+  beforeEach(() => {
+    getObjectCalls.length = 0;
+    putObjectCalls.length = 0;
+    signedUrlCalls.length = 0;
+  });
+
+  it('returns a signed URL for GET', async () => {
+    const url = await createPresignedDownloadUrl('orgs/o1/documents/d1.pdf');
+    expect(url).toContain(encodeURIComponent('orgs/o1/documents/d1.pdf'));
+  });
+
+  it('uses default expiry of 900 seconds', async () => {
+    await createPresignedDownloadUrl('key.pdf');
+    const lastCall = signedUrlCalls.at(-1);
+    expect(lastCall?.expiresIn).toBe(900);
+  });
+
+  it('accepts custom expiry', async () => {
+    await createPresignedDownloadUrl('key.pdf', 120);
+    const lastCall = signedUrlCalls.at(-1);
+    expect(lastCall?.expiresIn).toBe(120);
+  });
+
+  it('sets ResponseContentDisposition to attachment', async () => {
+    await createPresignedDownloadUrl('key.pdf');
+    const lastGet = getObjectCalls.at(-1);
+    expect(lastGet?.input.ResponseContentDisposition).toBe('attachment');
+  });
+});
+
+// -----------------------------------------------------------------------------
+// putObjectAndSignDownload
+// -----------------------------------------------------------------------------
+
+describe('putObjectAndSignDownload', () => {
+  beforeEach(() => {
+    getObjectCalls.length = 0;
+    putObjectCalls.length = 0;
+    signedUrlCalls.length = 0;
+  });
+
+  it('uploads the body and returns a signed download URL', async () => {
+    const body = Buffer.from('test content');
+    const result = await putObjectAndSignDownload({
+      key: 'orgs/o1/docs/cert.pdf',
+      body,
+      contentType: 'application/pdf',
+    });
+
+    expect(result.signedUrl).toContain(encodeURIComponent('orgs/o1/docs/cert.pdf'));
+    expect(result.expiresInSeconds).toBe(300);
+  });
+
+  it('uses custom ttlSeconds', async () => {
+    const result = await putObjectAndSignDownload({
+      key: 'key.pdf',
+      body: Buffer.from('x'),
+      contentType: 'application/pdf',
+      ttlSeconds: 600,
+    });
+
+    expect(result.expiresInSeconds).toBe(600);
+    const lastCall = signedUrlCalls.at(-1);
+    expect(lastCall?.expiresIn).toBe(600);
+  });
+
+  it('includes downloadFilename in disposition', async () => {
+    await putObjectAndSignDownload({
+      key: 'key.pdf',
+      body: Buffer.from('x'),
+      contentType: 'application/pdf',
+      downloadFilename: 'report-2024.pdf',
+    });
+
+    const lastGet = getObjectCalls.at(-1);
+    expect(lastGet?.input.ResponseContentDisposition).toBe(
+      'attachment; filename="report-2024.pdf"',
+    );
+  });
+
+  it('defaults disposition to attachment when no downloadFilename', async () => {
+    await putObjectAndSignDownload({
+      key: 'key.pdf',
+      body: Buffer.from('x'),
+      contentType: 'application/pdf',
+    });
+
+    const lastGet = getObjectCalls.at(-1);
+    expect(lastGet?.input.ResponseContentDisposition).toBe('attachment');
+  });
+});
+
+// -----------------------------------------------------------------------------
+// headObject and deleteObject
+// -----------------------------------------------------------------------------
+
+describe('headObject', () => {
+  it('sends HeadObjectCommand to the correct bucket and key', async () => {
+    // headObject calls client.send() which returns undefined in mock
+    const result = await headObject('orgs/o1/documents/d1.pdf');
+    expect(result).toBeUndefined();
+  });
+});
+
+describe('deleteObject', () => {
+  it('sends DeleteObjectCommand to the correct bucket and key', async () => {
+    const result = await deleteObject('orgs/o1/documents/d1.pdf');
+    expect(result).toBeUndefined();
+  });
+});
+
+// -----------------------------------------------------------------------------
+// generateStorageKey - additional edge cases
+// -----------------------------------------------------------------------------
+
+describe('generateStorageKey - additional edge cases', () => {
+  it('handles path traversal attempts in filename', () => {
+    expect(generateStorageKey('o', 'd', '../../etc/passwd')).toBe('orgs/o/documents/d');
+  });
+
+  it('strips non-alphanumeric characters from extension before matching allowlist', () => {
+    // p-d_f -> pdf after stripping non-alphanumeric chars, which matches the allowlist
+    expect(generateStorageKey('o', 'd', 'file.p-d_f')).toBe('orgs/o/documents/d.pdf');
+    // x-y-z -> xyz which is NOT in the allowlist, so it's stripped entirely
+    expect(generateStorageKey('o', 'd', 'file.x-y-z')).toBe('orgs/o/documents/d');
+  });
+
+  it('handles allowed extensions case-insensitively', () => {
+    expect(generateStorageKey('o', 'd', 'file.PDF')).toBe('orgs/o/documents/d.pdf');
+  });
+
+  it('handles multiple dots, uses last segment as extension', () => {
+    expect(generateStorageKey('o', 'd', 'archive.backup.pdf')).toBe('orgs/o/documents/d.pdf');
+  });
+
+  it('handles empty filename', () => {
+    expect(generateStorageKey('o', 'd', '')).toBe('orgs/o/documents/d');
+  });
+
+  it('supports all common document extensions', () => {
+    for (const ext of ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'csv', 'png', 'jpg', 'xml', 'json']) {
+      expect(generateStorageKey('o', 'd', `file.${ext}`)).toBe(`orgs/o/documents/d.${ext}`);
+    }
   });
 });

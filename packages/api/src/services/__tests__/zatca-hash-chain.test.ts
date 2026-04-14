@@ -1,7 +1,10 @@
 import crypto from 'node:crypto';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-// Mock prisma
+// ---------------------------------------------------------------------------
+// Mocks
+// ---------------------------------------------------------------------------
+
 const mockExecuteRawUnsafe = vi.fn();
 const mockFindFirst = vi.fn();
 const mockCreate = vi.fn();
@@ -14,79 +17,155 @@ const mockPrisma = {
   },
 };
 
-describe('zatca-hash-chain', () => {
+import { acquireChainLock, getNextChainEntry, recordChainEntry } from '../zatca-hash-chain.js';
+import type { ChainEntry, PrismaLike, RecordChainData } from '../zatca-hash-chain.js';
+
+// ---------------------------------------------------------------------------
+// Tests
+// ---------------------------------------------------------------------------
+
+describe('acquireChainLock', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it("getNextChainEntry returns icv=1, PIH=SHA-256('0') for first invoice", async () => {
-    const { getNextChainEntry } = await import('../zatca-hash-chain.js');
-
-    // No existing chain entries
-    mockFindFirst.mockResolvedValue(null);
-
-    const entry = await getNextChainEntry(mockPrisma as unknown, 'org_test123');
-
-    expect(entry.icv).toBe(1);
-    // SHA-256 of literal string "0"
-    const expectedPih = crypto.createHash('sha256').update('0').digest('hex');
-    expect(entry.pih).toBe(expectedPih);
-  });
-
-  it('getNextChainEntry returns icv=N+1, PIH=last hash for subsequent', async () => {
-    const { getNextChainEntry } = await import('../zatca-hash-chain.js');
-
-    const lastHash = 'abc123def456';
-    mockFindFirst.mockResolvedValue({
-      icv: 5,
-      invoiceHash: lastHash,
-    });
-
-    const entry = await getNextChainEntry(mockPrisma as unknown, 'org_test123');
-
-    expect(entry.icv).toBe(6);
-    expect(entry.pih).toBe(lastHash);
-  });
-
-  it('acquireChainLock uses pg_advisory_xact_lock', async () => {
-    const { acquireChainLock } = await import('../zatca-hash-chain.js');
-
+  it('executes pg_advisory_xact_lock with the organizationId', async () => {
     mockExecuteRawUnsafe.mockResolvedValue(undefined);
 
-    await acquireChainLock(mockPrisma as unknown, 'org_test123');
+    await acquireChainLock(mockPrisma as unknown as PrismaLike, 'org_test');
 
+    expect(mockExecuteRawUnsafe).toHaveBeenCalledTimes(1);
     expect(mockExecuteRawUnsafe).toHaveBeenCalledWith(
-      expect.stringContaining('pg_advisory_xact_lock'),
-      'org_test123',
+      'SELECT pg_advisory_xact_lock(hashtext($1))',
+      'org_test',
     );
   });
 
-  it('recordChainEntry creates a ZatcaInvoiceChain with PENDING status', async () => {
-    const { recordChainEntry } = await import('../zatca-hash-chain.js');
+  it('propagates database errors', async () => {
+    mockExecuteRawUnsafe.mockRejectedValue(new Error('DB connection failed'));
 
-    mockCreate.mockResolvedValue({ id: 'chain_1' });
+    await expect(
+      acquireChainLock(mockPrisma as unknown as PrismaLike, 'org_test'),
+    ).rejects.toThrow('DB connection failed');
+  });
+});
 
-    const data = {
-      organizationId: 'org_test123',
-      icv: 1,
-      invoiceId: 'inv_1',
-      invoiceHash: 'hash123',
-      previousHash: 'prev_hash',
-      zatcaUuid: 'uuid-v4-here',
+describe('getNextChainEntry', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  const GENESIS_PIH = crypto.createHash('sha256').update('0').digest('hex');
+
+  it('returns icv=1 and PIH=SHA-256("0") for the first invoice', async () => {
+    mockFindFirst.mockResolvedValue(null);
+
+    const entry: ChainEntry = await getNextChainEntry(
+      mockPrisma as unknown as PrismaLike,
+      'org_new',
+    );
+
+    expect(entry.icv).toBe(1);
+    expect(entry.pih).toBe(GENESIS_PIH);
+    expect(entry.pih).toHaveLength(64); // SHA-256 hex
+  });
+
+  it('returns icv=N+1 and PIH=last hash for subsequent invoices', async () => {
+    const lastHash = 'abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890';
+    mockFindFirst.mockResolvedValue({ icv: 42, invoiceHash: lastHash });
+
+    const entry = await getNextChainEntry(mockPrisma as unknown as PrismaLike, 'org_existing');
+
+    expect(entry.icv).toBe(43);
+    expect(entry.pih).toBe(lastHash);
+  });
+
+  it('queries with correct orderBy descending icv', async () => {
+    mockFindFirst.mockResolvedValue(null);
+
+    await getNextChainEntry(mockPrisma as unknown as PrismaLike, 'org_test');
+
+    expect(mockFindFirst).toHaveBeenCalledWith({
+      where: { organizationId: 'org_test' },
+      orderBy: { icv: 'desc' },
+      select: { icv: true, invoiceHash: true },
+    });
+  });
+
+  it('genesis PIH is deterministic', async () => {
+    mockFindFirst.mockResolvedValue(null);
+
+    const entry1 = await getNextChainEntry(mockPrisma as unknown as PrismaLike, 'org_a');
+    const entry2 = await getNextChainEntry(mockPrisma as unknown as PrismaLike, 'org_b');
+
+    expect(entry1.pih).toBe(entry2.pih);
+    expect(entry1.pih).toBe(GENESIS_PIH);
+  });
+});
+
+describe('recordChainEntry', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('creates a ZatcaInvoiceChain record with PENDING status', async () => {
+    mockCreate.mockResolvedValue({ id: 'chain_abc' });
+
+    const data: RecordChainData = {
+      organizationId: 'org_test',
+      icv: 5,
+      invoiceId: 'inv_42',
+      invoiceHash: 'hash-of-signed-xml',
+      previousHash: 'hash-of-previous',
+      zatcaUuid: 'uuid-v4-value',
     };
 
-    await recordChainEntry(mockPrisma as unknown, data);
+    const result = await recordChainEntry(mockPrisma as unknown as PrismaLike, data);
 
+    expect(result).toEqual({ id: 'chain_abc' });
     expect(mockCreate).toHaveBeenCalledWith({
-      data: expect.objectContaining({
-        organizationId: 'org_test123',
-        icv: 1,
-        invoiceId: 'inv_1',
-        invoiceHash: 'hash123',
-        previousHash: 'prev_hash',
-        zatcaUuid: 'uuid-v4-here',
+      data: {
+        organizationId: 'org_test',
+        icv: 5,
+        invoiceId: 'inv_42',
+        invoiceHash: 'hash-of-signed-xml',
+        previousHash: 'hash-of-previous',
+        zatcaUuid: 'uuid-v4-value',
         zatcaStatus: 'PENDING',
-      }),
+      },
     });
+  });
+
+  it('returns the created record id', async () => {
+    mockCreate.mockResolvedValue({ id: 'chain_xyz' });
+
+    const data: RecordChainData = {
+      organizationId: 'org_1',
+      icv: 1,
+      invoiceId: 'inv_1',
+      invoiceHash: 'h1',
+      previousHash: 'h0',
+      zatcaUuid: 'uuid-1',
+    };
+
+    const result = await recordChainEntry(mockPrisma as unknown as PrismaLike, data);
+    expect(result.id).toBe('chain_xyz');
+  });
+
+  it('propagates create errors', async () => {
+    mockCreate.mockRejectedValue(new Error('Unique constraint violation'));
+
+    const data: RecordChainData = {
+      organizationId: 'org_1',
+      icv: 1,
+      invoiceId: 'inv_1',
+      invoiceHash: 'h1',
+      previousHash: 'h0',
+      zatcaUuid: 'uuid-1',
+    };
+
+    await expect(
+      recordChainEntry(mockPrisma as unknown as PrismaLike, data),
+    ).rejects.toThrow('Unique constraint violation');
   });
 });

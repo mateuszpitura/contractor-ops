@@ -80,4 +80,21 @@ describe('UsersTable', () => {
     render(<UsersTable />);
     expect(screen.getAllByText('Deactivate').length).toBeGreaterThan(0);
   });
+
+  it('renders role badges for each user', () => {
+    render(<UsersTable />);
+    expect(screen.getByText('Admin')).toBeInTheDocument();
+    expect(screen.getByText('Read Only')).toBeInTheDocument();
+  });
+
+  it('renders status badges for each user', () => {
+    render(<UsersTable />);
+    expect(screen.getByText('Active')).toBeInTheDocument();
+    expect(screen.getByText('Invited')).toBeInTheDocument();
+  });
+
+  it('renders actions column header when user has permissions', () => {
+    render(<UsersTable />);
+    expect(screen.getByText('Actions')).toBeInTheDocument();
+  });
 });

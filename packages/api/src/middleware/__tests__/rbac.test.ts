@@ -58,7 +58,7 @@ vi.mock('@contractor-ops/db', () => ({
 }));
 
 import * as E from '../../errors.js';
-import { t } from '../../init.js';
+import { publicProcedure, t } from '../../init.js';
 import { adminProcedure, requirePermission } from '../rbac.js';
 import { tenantProcedure } from '../tenant.js';
 
@@ -148,5 +148,99 @@ describe('adminProcedure', () => {
       headers: expect.any(Headers),
       body: { permissions: { organization: ['update'] } },
     });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// API key auth path for requirePermission
+// ---------------------------------------------------------------------------
+
+function apiKeyCtx(
+  overrides?: Partial<{
+    authMode: 'apiKey';
+    apiKeyId: string | undefined;
+    apiKeyScopes: string[] | undefined;
+    organizationId: string;
+    region: string;
+  }>,
+) {
+  return {
+    headers: new Headers(),
+    authMode: 'apiKey' as const,
+    apiKeyId: 'key_test_123',
+    apiKeyScopes: ['contractor:read', 'contractor:update'],
+    session: null,
+    user: null,
+    organizationId: 'org_rbac',
+    region: 'EU',
+    ...overrides,
+  };
+}
+
+describe('requirePermission — API key auth', () => {
+  // Use publicProcedure (bypasses session-based auth/tenant chain) to isolate
+  // the requirePermission middleware's API-key branch.
+  const router = t.router({
+    contractorReadUpdate: publicProcedure
+      .use(requirePermission({ contractor: ['read', 'update'] }))
+      .query(() => 'ok'),
+  });
+  const createCaller = t.createCallerFactory(router);
+
+  it('passes through when API key has exactly the required scopes', async () => {
+    const result = await createCaller(apiKeyCtx() as never).contractorReadUpdate();
+    expect(result).toBe('ok');
+  });
+
+  it('passes through when API key has a superset of required scopes', async () => {
+    const ctx = apiKeyCtx({
+      apiKeyScopes: ['contractor:read', 'contractor:update', 'invoice:read', 'invoice:create'],
+    });
+    const result = await createCaller(ctx as never).contractorReadUpdate();
+    expect(result).toBe('ok');
+  });
+
+  it('throws FORBIDDEN when apiKeyId is undefined', async () => {
+    const ctx = apiKeyCtx({ apiKeyId: undefined });
+    try {
+      await createCaller(ctx as never).contractorReadUpdate();
+      expect.fail('expected throw');
+    } catch (e) {
+      expect(e).toBeInstanceOf(TRPCError);
+      expect((e as TRPCError).code).toBe('FORBIDDEN');
+      expect((e as TRPCError).message).toBe(E.PERMISSION_DENIED);
+    }
+  });
+
+  it('throws FORBIDDEN when apiKeyScopes is undefined', async () => {
+    const ctx = apiKeyCtx({ apiKeyScopes: undefined });
+    try {
+      await createCaller(ctx as never).contractorReadUpdate();
+      expect.fail('expected throw');
+    } catch (e) {
+      expect(e).toBeInstanceOf(TRPCError);
+      expect((e as TRPCError).code).toBe('FORBIDDEN');
+      expect((e as TRPCError).message).toBe(E.PERMISSION_DENIED);
+    }
+  });
+
+  it('throws FORBIDDEN when API key has only partial scopes', async () => {
+    const ctx = apiKeyCtx({
+      apiKeyScopes: ['contractor:read'], // missing contractor:update
+    });
+    try {
+      await createCaller(ctx as never).contractorReadUpdate();
+      expect.fail('expected throw');
+    } catch (e) {
+      expect(e).toBeInstanceOf(TRPCError);
+      expect((e as TRPCError).code).toBe('FORBIDDEN');
+      expect((e as TRPCError).message).toBe(E.PERMISSION_DENIED);
+    }
+  });
+
+  it('does not call hasPermission for API key auth mode', async () => {
+    mockHasPermission.mockReset();
+    await createCaller(apiKeyCtx() as never).contractorReadUpdate();
+    expect(mockHasPermission).not.toHaveBeenCalled();
   });
 });

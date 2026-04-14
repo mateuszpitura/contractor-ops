@@ -140,6 +140,7 @@ vi.mock('@contractor-ops/logger', () => ({
     warn: vi.fn(),
     error: vi.fn(),
   })),
+  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
 }));
 
 vi.mock('@contractor-ops/logger/metrics', () => ({
@@ -158,7 +159,12 @@ vi.mock('../../services/r2.js', () => ({
   deleteObject: vi.fn(async () => undefined),
 }));
 
+vi.mock('../../services/regional-storage.js', () => ({
+  deleteRegionalObject: vi.fn(async () => undefined),
+}));
+
 import { createCallerFactory } from '../../init.js';
+import { deleteRegionalObject } from '../../services/regional-storage.js';
 import { gdprRouter } from '../gdpr.js';
 
 const createCaller = createCallerFactory(gdprRouter);
@@ -366,5 +372,65 @@ describe('gdprRouter', () => {
     // Financial records must be preserved when retainFinancialRecords is true
     expect(mockPrisma.invoice.updateMany).not.toHaveBeenCalled();
     expect(mockPrisma.invoice.deleteMany).not.toHaveBeenCalled();
+  });
+
+  describe('requestErasure R2 cleanup', () => {
+    const mockDeleteRegionalObject = vi.mocked(deleteRegionalObject);
+
+    it('calls deleteRegionalObject for each document with a storageKey', async () => {
+      mockPrisma.document.findMany.mockResolvedValue([
+        { storageKey: 'eu/doc-001.pdf' },
+        { storageKey: 'eu/doc-002.pdf' },
+        { storageKey: null },
+        { storageKey: 'eu/doc-003.pdf' },
+      ]);
+
+      const out = await caller.requestErasure({
+        confirmPhrase: 'DELETE ALL DATA',
+        retainFinancialRecords: true,
+      });
+
+      expect(mockDeleteRegionalObject).toHaveBeenCalledTimes(3);
+      expect(mockDeleteRegionalObject).toHaveBeenCalledWith('eu/doc-001.pdf');
+      expect(mockDeleteRegionalObject).toHaveBeenCalledWith('eu/doc-002.pdf');
+      expect(mockDeleteRegionalObject).toHaveBeenCalledWith('eu/doc-003.pdf');
+      expect(out.summary.r2ObjectsCleaned).toBe(3);
+    });
+
+    it('continues cleaning remaining documents when deleteRegionalObject throws for one', async () => {
+      mockPrisma.document.findMany.mockResolvedValue([
+        { storageKey: 'eu/doc-a.pdf' },
+        { storageKey: 'eu/doc-b.pdf' },
+        { storageKey: 'eu/doc-c.pdf' },
+      ]);
+
+      mockDeleteRegionalObject
+        .mockResolvedValueOnce(undefined)
+        .mockRejectedValueOnce(new Error('R2 network timeout'))
+        .mockResolvedValueOnce(undefined);
+
+      const out = await caller.requestErasure({
+        confirmPhrase: 'DELETE ALL DATA',
+        retainFinancialRecords: true,
+      });
+
+      expect(mockDeleteRegionalObject).toHaveBeenCalledTimes(3);
+      expect(out.summary.r2ObjectsCleaned).toBe(2);
+    });
+
+    it('reports r2ObjectsCleaned as 0 when no documents have storageKeys', async () => {
+      mockPrisma.document.findMany.mockResolvedValue([
+        { storageKey: null },
+        { storageKey: null },
+      ]);
+
+      const out = await caller.requestErasure({
+        confirmPhrase: 'DELETE ALL DATA',
+        retainFinancialRecords: true,
+      });
+
+      expect(mockDeleteRegionalObject).not.toHaveBeenCalled();
+      expect(out.summary.r2ObjectsCleaned).toBe(0);
+    });
   });
 });

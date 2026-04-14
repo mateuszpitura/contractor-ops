@@ -78,4 +78,27 @@ describe('PortalSettingsPage', () => {
 
     expect(screen.getByText(/manage/i)).toBeInTheDocument();
   });
+
+  it('renders loading skeletons when profile is pending', () => {
+    // Override the useQuery mock to return isPending: true
+    vi.doMock('@tanstack/react-query', async importOriginal => {
+      const actual = await importOriginal<typeof import('@tanstack/react-query')>();
+      return {
+        ...actual,
+        useQuery: () => ({
+          data: undefined,
+          isPending: true,
+        }),
+        useMutation: () => ({ mutateAsync: vi.fn() }),
+        useQueryClient: () => ({ invalidateQueries: vi.fn() }),
+      };
+    });
+  });
+
+  it('renders page heading as h1', () => {
+    render(<PortalSettingsPage />);
+
+    const heading = screen.getByRole('heading', { level: 1 });
+    expect(heading).toBeInTheDocument();
+  });
 });

@@ -87,8 +87,11 @@ describe('StatusfeststellungsverfahrenPanel', () => {
 
   it('exposes an accessible panel heading via aria-labelledby', () => {
     render(<StatusfeststellungsverfahrenPanel engagementId="ca-1" />);
-    const heading = screen.getByRole('heading', { name: /Statusfeststellungsverfahren/i });
-    expect(heading).toBeInTheDocument();
+    // CardTitle renders as a div[data-slot="card-title"], not an h* element
+    const title = screen.getByText(/Statusfeststellungsverfahren \(DRV clearance\)/i);
+    expect(title).toBeInTheDocument();
+    expect(title.id).toBeTruthy();
+    expect(title.closest('[aria-labelledby]')?.getAttribute('aria-labelledby')).toBe(title.id);
   });
 
   it('opens the create dialog when the primary CTA is activated', async () => {

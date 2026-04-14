@@ -222,6 +222,35 @@ vi.mock('../../services/ocr-extraction.js', () => ({
   extractInvoiceData: vi.fn(async () => ({})),
 }));
 
+const { mockGenerateDPA, mockGenerateSCC, mockDetectCrossBorderTransfer } = vi.hoisted(() => ({
+  mockGenerateDPA: vi.fn(),
+  mockGenerateSCC: vi.fn(),
+  mockDetectCrossBorderTransfer: vi.fn(),
+}));
+
+vi.mock('../../services/legal-document-generation.js', () => ({
+  generateDPA: mockGenerateDPA,
+  generateSCC: mockGenerateSCC,
+  detectCrossBorderTransfer: mockDetectCrossBorderTransfer,
+}));
+
+vi.mock('../../services/payment-export.js', () => ({
+  generateCsv: vi.fn(async () => Buffer.from('csv-data')),
+  generateElixir: vi.fn(() => Buffer.from('elixir-data')),
+  generateSepaXml: vi.fn(() => Buffer.from('sepa-data')),
+  resolveTransferTitle: vi.fn(() => 'FV/2025/001'),
+}));
+
+vi.mock('../../services/bank-statement.js', () => ({
+  parseBankStatement: vi.fn(() => []),
+  matchStatementToRun: vi.fn(() => []),
+}));
+
+vi.mock('../../services/portal-change-request.js', () => ({
+  approveChangeRequest: vi.fn(async () => undefined),
+  rejectChangeRequest: vi.fn(async () => undefined),
+}));
+
 // ---------------------------------------------------------------------------
 // Import router + create caller
 // ---------------------------------------------------------------------------
@@ -463,6 +492,182 @@ describe('consentRouter', () => {
 
       expect(mockGetCurrentConsent).toHaveBeenCalledWith(ORG_ID, 'target-user-123');
       expect(result).toHaveProperty('ANALYTICS_REPORTING');
+    });
+  });
+
+  // =========================================================================
+  // adminGetUserConsentHistory
+  // =========================================================================
+
+  describe('adminGetUserConsentHistory', () => {
+    it('delegates to getConsentHistory with target userId', async () => {
+      const mockHistory = [
+        { id: 'ch-1', purpose: 'ANALYTICS_REPORTING', granted: true, version: 1 },
+      ];
+      mockGetConsentHistory.mockResolvedValue(mockHistory);
+
+      const caller = createCaller();
+      const result = await caller.consent.adminGetUserConsentHistory({
+        userId: 'target-user-456',
+      });
+
+      expect(mockGetConsentHistory).toHaveBeenCalledWith(ORG_ID, 'target-user-456', undefined);
+      expect(result).toEqual(mockHistory);
+    });
+
+    it('passes purpose filter when provided', async () => {
+      mockGetConsentHistory.mockResolvedValue([]);
+
+      const caller = createCaller();
+      await caller.consent.adminGetUserConsentHistory({
+        userId: 'target-user-456',
+        purpose: 'CONTRACTOR_DATA_PROCESSING',
+      });
+
+      expect(mockGetConsentHistory).toHaveBeenCalledWith(
+        ORG_ID,
+        'target-user-456',
+        'CONTRACTOR_DATA_PROCESSING',
+      );
+    });
+  });
+
+  // =========================================================================
+  // downloadDPA
+  // =========================================================================
+
+  describe('downloadDPA', () => {
+    it('returns generated DPA document', async () => {
+      const dpaResult = { html: '<html>DPA</html>', filename: 'dpa.html' };
+      mockGenerateDPA.mockResolvedValue(dpaResult);
+
+      const caller = createCaller();
+      const result = await caller.consent.downloadDPA();
+
+      expect(result).toEqual(dpaResult);
+      expect(mockGenerateDPA).toHaveBeenCalledWith(ORG_ID);
+    });
+
+    it('throws NOT_FOUND when DPA is not available for jurisdiction', async () => {
+      mockGenerateDPA.mockResolvedValue(null);
+
+      const caller = createCaller();
+      await expect(caller.consent.downloadDPA()).rejects.toThrow(
+        'DPA not available for this jurisdiction',
+      );
+    });
+  });
+
+  // =========================================================================
+  // downloadSCC
+  // =========================================================================
+
+  describe('downloadSCC', () => {
+    it('returns generated SCC document', async () => {
+      const sccResult = { html: '<html>SCC</html>', filename: 'scc.html' };
+      mockGenerateSCC.mockResolvedValue(sccResult);
+
+      const caller = createCaller();
+      const result = await caller.consent.downloadSCC();
+
+      expect(result).toEqual(sccResult);
+      expect(mockGenerateSCC).toHaveBeenCalledWith(ORG_ID);
+    });
+
+    it('throws NOT_FOUND when no cross-border transfer detected', async () => {
+      mockGenerateSCC.mockResolvedValue(null);
+
+      const caller = createCaller();
+      await expect(caller.consent.downloadSCC()).rejects.toThrow(
+        'No cross-border transfer detected',
+      );
+    });
+  });
+
+  // =========================================================================
+  // getCrossBorderStatus
+  // =========================================================================
+
+  describe('getCrossBorderStatus', () => {
+    it('returns not detected when org has no countryCode', async () => {
+      mockOrgFindUniqueOrThrow.mockResolvedValue({ countryCode: null });
+
+      const caller = createCaller();
+      const result = await caller.consent.getCrossBorderStatus();
+
+      expect(result).toEqual({
+        detected: false,
+        orgRegion: null,
+        hostingRegion: null,
+      });
+    });
+
+    it('returns cross-border status when org has countryCode', async () => {
+      mockOrgFindUniqueOrThrow.mockResolvedValue({ countryCode: 'AE' });
+      mockDetectCrossBorderTransfer.mockReturnValue({
+        isCrossBorder: true,
+        orgRegion: 'ME',
+        hostingRegion: 'EU',
+      });
+
+      const caller = createCaller();
+      const result = await caller.consent.getCrossBorderStatus();
+
+      expect(result).toEqual({
+        detected: true,
+        orgRegion: 'ME',
+        hostingRegion: 'EU',
+      });
+      expect(mockDetectCrossBorderTransfer).toHaveBeenCalledWith('AE');
+    });
+
+    it('returns not detected when no cross-border transfer', async () => {
+      mockOrgFindUniqueOrThrow.mockResolvedValue({ countryCode: 'DE' });
+      mockDetectCrossBorderTransfer.mockReturnValue({
+        isCrossBorder: false,
+        orgRegion: 'EU',
+        hostingRegion: 'EU',
+      });
+
+      const caller = createCaller();
+      const result = await caller.consent.getCrossBorderStatus();
+
+      expect(result).toEqual({
+        detected: false,
+        orgRegion: 'EU',
+        hostingRegion: 'EU',
+      });
+    });
+  });
+
+  // =========================================================================
+  // getConsentHistory
+  // =========================================================================
+
+  describe('getConsentHistory', () => {
+    it('delegates to getConsentHistory service', async () => {
+      const history = [
+        { id: 'ch-1', purpose: 'CONTRACTOR_DATA_PROCESSING', granted: true, version: 1 },
+        { id: 'ch-2', purpose: 'CONTRACTOR_DATA_PROCESSING', granted: false, version: 2 },
+      ];
+      mockGetConsentHistory.mockResolvedValue(history);
+
+      const caller = createCaller();
+      const result = await caller.consent.getConsentHistory({});
+
+      expect(result).toEqual(history);
+      expect(mockGetConsentHistory).toHaveBeenCalledWith(ORG_ID, USER_ID, undefined);
+    });
+
+    it('passes purpose filter when provided', async () => {
+      mockGetConsentHistory.mockResolvedValue([]);
+
+      const caller = createCaller();
+      await caller.consent.getConsentHistory({
+        purpose: 'ANALYTICS_REPORTING',
+      });
+
+      expect(mockGetConsentHistory).toHaveBeenCalledWith(ORG_ID, USER_ID, 'ANALYTICS_REPORTING');
     });
   });
 });

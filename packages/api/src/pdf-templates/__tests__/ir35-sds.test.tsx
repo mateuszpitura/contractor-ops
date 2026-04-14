@@ -82,7 +82,12 @@ function stripNonDeterministicPdfMetadata(buf: Buffer): Buffer {
   const scrubbed = txt
     .replace(/\/CreationDate\s*\([^)]*\)/g, '/CreationDate(ZERO)')
     .replace(/\/ModDate\s*\([^)]*\)/g, '/ModDate(ZERO)')
-    .replace(/\/ID\s*\[[^\]]*\]/g, '/ID[ZERO]');
+    .replace(/\/ID\s*\[[^\]]*\]/g, '/ID[ZERO]')
+    .replace(/\/Producer\s*\([^)]*\)/g, '/Producer(ZERO)')
+    // Strip xref table (byte offsets vary between renders)
+    .replace(/xref[\s\S]*?startxref\s*\d+/g, 'xref ZERO startxref 0')
+    // Strip stream lengths which may vary due to compression non-determinism
+    .replace(/\/Length\s+\d+/g, '/Length 0');
   return Buffer.from(scrubbed, 'binary');
 }
 

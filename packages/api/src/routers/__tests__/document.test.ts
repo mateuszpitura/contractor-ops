@@ -618,4 +618,272 @@ describe('document.delete', () => {
       },
     });
   });
+
+  it('throws NOT_FOUND when document does not exist', async () => {
+    mockPrisma.document.findFirst.mockResolvedValue(null);
+
+    await expect(caller.document.delete({ documentId: 'nonexistent' })).rejects.toMatchObject({
+      code: 'NOT_FOUND',
+    });
+
+    expect(deleteObject).not.toHaveBeenCalled();
+  });
+});
+
+// ===========================================================================
+// document.linkToEntity
+// ===========================================================================
+
+describe('document.linkToEntity', () => {
+  it('creates a document link scoped to organization', async () => {
+    const doc = makeDocument();
+    mockPrisma.document.findFirst.mockResolvedValue(doc);
+
+    const result = await caller.document.linkToEntity({
+      documentId: DOC_ID,
+      entityType: 'CONTRACTOR',
+      entityId: 'contractor-1',
+      linkRole: 'PRIMARY',
+    });
+
+    expect(result).toMatchObject({
+      documentId: DOC_ID,
+      entityType: 'CONTRACTOR',
+      entityId: 'contractor-1',
+      linkRole: 'PRIMARY',
+    });
+
+    expect(mockPrisma.documentLink.create).toHaveBeenCalledWith({
+      data: {
+        organizationId: ORG_ID,
+        documentId: DOC_ID,
+        entityType: 'CONTRACTOR',
+        entityId: 'contractor-1',
+        linkRole: 'PRIMARY',
+      },
+    });
+  });
+
+  it('throws NOT_FOUND when document does not exist', async () => {
+    mockPrisma.document.findFirst.mockResolvedValue(null);
+
+    await expect(
+      caller.document.linkToEntity({
+        documentId: 'nonexistent',
+        entityType: 'CONTRACT',
+        entityId: 'contract-1',
+        linkRole: 'SUPPORTING',
+      }),
+    ).rejects.toMatchObject({ code: 'NOT_FOUND' });
+
+    expect(mockPrisma.documentLink.create).not.toHaveBeenCalled();
+  });
+});
+
+// ===========================================================================
+// document.getDownloadUrl — NOT_FOUND
+// ===========================================================================
+
+describe('document.getDownloadUrl — NOT_FOUND', () => {
+  it('throws NOT_FOUND when document does not exist', async () => {
+    mockPrisma.document.findFirst.mockResolvedValue(null);
+
+    await expect(
+      caller.document.getDownloadUrl({ documentId: 'nonexistent' }),
+    ).rejects.toMatchObject({ code: 'NOT_FOUND' });
+
+    expect(createPresignedDownloadUrl).not.toHaveBeenCalled();
+  });
+});
+
+// ===========================================================================
+// document.confirmUpload — error paths
+// ===========================================================================
+
+describe('document.confirmUpload — error paths', () => {
+  it('throws NOT_FOUND when document does not exist', async () => {
+    mockPrisma.document.findFirst.mockResolvedValue(null);
+
+    await expect(
+      caller.document.confirmUpload({ documentId: 'nonexistent' }),
+    ).rejects.toMatchObject({ code: 'NOT_FOUND' });
+  });
+
+  it('throws NOT_FOUND when object is missing from R2', async () => {
+    const doc = makeDocument();
+    mockPrisma.document.findFirst.mockResolvedValue(doc);
+    vi.mocked(headObject).mockRejectedValueOnce(new Error('NoSuchKey'));
+
+    await expect(
+      caller.document.confirmUpload({ documentId: DOC_ID }),
+    ).rejects.toMatchObject({ code: 'NOT_FOUND' });
+  });
+});
+
+// ===========================================================================
+// document.requestUpload — with entity link
+// ===========================================================================
+
+describe('document.requestUpload — with entity link', () => {
+  it('creates entity link when entityType and entityId are provided', async () => {
+    mockPrisma.document.create.mockResolvedValue(makeDocument());
+
+    await caller.document.requestUpload({
+      filename: 'contract.pdf',
+      mimeType: 'application/pdf',
+      fileSizeBytes: 4096,
+      documentType: 'MASTER_CONTRACT' as const,
+      entityType: 'CONTRACTOR',
+      entityId: 'contractor-1',
+      linkRole: 'PRIMARY',
+    });
+
+    expect(mockPrisma.documentLink.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        organizationId: ORG_ID,
+        documentId: DOC_ID,
+        entityType: 'CONTRACTOR',
+        entityId: 'contractor-1',
+        linkRole: 'PRIMARY',
+      }),
+    });
+  });
+});
+
+// ===========================================================================
+// document.uploadNewVersion — error paths
+// ===========================================================================
+
+describe('document.uploadNewVersion — error paths', () => {
+  it('throws NOT_FOUND when existing document does not exist', async () => {
+    mockPrisma.document.findFirst.mockResolvedValue(null);
+
+    await expect(
+      caller.document.uploadNewVersion({
+        existingDocumentId: 'nonexistent',
+        filename: 'v2.pdf',
+        mimeType: 'application/pdf',
+        fileSizeBytes: 1024,
+      }),
+    ).rejects.toMatchObject({ code: 'NOT_FOUND' });
+  });
+
+  it('throws BAD_REQUEST when existing document is not ACTIVE', async () => {
+    mockPrisma.document.findFirst.mockResolvedValue(
+      makeDocument({ status: 'SUPERSEDED' }),
+    );
+
+    await expect(
+      caller.document.uploadNewVersion({
+        existingDocumentId: DOC_ID,
+        filename: 'v2.pdf',
+        mimeType: 'application/pdf',
+        fileSizeBytes: 1024,
+      }),
+    ).rejects.toMatchObject({ code: 'BAD_REQUEST' });
+  });
+
+  it('rejects disallowed MIME types', async () => {
+    vi.mocked(isAllowedMimeType).mockReturnValueOnce(false);
+
+    await expect(
+      caller.document.uploadNewVersion({
+        existingDocumentId: DOC_ID,
+        filename: 'malware.exe',
+        mimeType: 'application/x-executable',
+        fileSizeBytes: 1024,
+      }),
+    ).rejects.toMatchObject({ code: 'BAD_REQUEST' });
+  });
+});
+
+// ===========================================================================
+// document.getVersionHistory
+// ===========================================================================
+
+describe('document.getVersionHistory', () => {
+  it('returns single document when no links exist', async () => {
+    const doc = makeDocument({ links: [] });
+    mockPrisma.document.findFirst.mockResolvedValue(doc);
+
+    const result = await caller.document.getVersionHistory({ documentId: DOC_ID });
+
+    expect(result).toHaveLength(1);
+    expect(result[0]).toMatchObject({ id: DOC_ID });
+  });
+
+  it('throws NOT_FOUND when document does not exist', async () => {
+    mockPrisma.document.findFirst.mockResolvedValue(null);
+
+    await expect(
+      caller.document.getVersionHistory({ documentId: 'nonexistent' }),
+    ).rejects.toMatchObject({ code: 'NOT_FOUND' });
+  });
+
+  it('returns related documents when links exist', async () => {
+    const doc = makeDocument({
+      links: [
+        { id: 'link-1', entityType: 'CONTRACTOR', entityId: 'c-1', linkRole: 'PRIMARY' },
+      ],
+    });
+    mockPrisma.document.findFirst.mockResolvedValue(doc);
+    mockPrisma.documentLink.findMany.mockResolvedValue([
+      { documentId: DOC_ID },
+      { documentId: DOC_ID_NEW },
+    ]);
+    mockPrisma.document.findMany.mockResolvedValue([
+      makeDocument({ id: DOC_ID }),
+      makeDocument({ id: DOC_ID_NEW, status: 'SUPERSEDED' }),
+    ]);
+
+    const result = await caller.document.getVersionHistory({ documentId: DOC_ID });
+
+    expect(result).toHaveLength(2);
+  });
+});
+
+// ===========================================================================
+// document.list — additional filters
+// ===========================================================================
+
+describe('document.list — additional filters', () => {
+  it('applies entity type and entity id filter via documentLink join', async () => {
+    mockPrisma.documentLink.findMany.mockResolvedValue([{ documentId: DOC_ID }]);
+    mockPrisma.document.findMany.mockResolvedValue([]);
+    mockPrisma.document.count.mockResolvedValue(0);
+
+    await caller.document.list({
+      page: 1,
+      pageSize: 20,
+      entityType: 'CONTRACTOR',
+      entityId: 'contractor-1',
+    });
+
+    expect(mockPrisma.documentLink.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          organizationId: ORG_ID,
+          entityType: 'CONTRACTOR',
+          entityId: 'contractor-1',
+        }),
+      }),
+    );
+
+    const findManyCall = mockPrisma.document.findMany.mock.calls[0]?.[0];
+    expect(findManyCall.where.id).toEqual({ in: [DOC_ID] });
+  });
+
+  it('applies documentType filter', async () => {
+    mockPrisma.document.findMany.mockResolvedValue([]);
+    mockPrisma.document.count.mockResolvedValue(0);
+
+    await caller.document.list({
+      page: 1,
+      pageSize: 20,
+      documentType: ['INVOICE'],
+    });
+
+    const findManyCall = mockPrisma.document.findMany.mock.calls[0]?.[0];
+    expect(findManyCall.where.documentType).toEqual({ in: ['INVOICE'] });
+  });
 });

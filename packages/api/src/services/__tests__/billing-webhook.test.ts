@@ -749,5 +749,515 @@ describe('billing-webhook', () => {
         }),
       );
     });
+
+    it('skips when no subscription ID in invoice', async () => {
+      const event = makeEvent(
+        'invoice.payment_failed',
+        makeInvoice({ parent: null }),
+      );
+
+      await routeStripeEvent(event, tx);
+
+      expect(tx.subscription.findUnique).not.toHaveBeenCalled();
+      expect(tx.subscription.update).not.toHaveBeenCalled();
+    });
+
+    it('skips when subscription not found in DB', async () => {
+      tx.subscription.findUnique.mockResolvedValue(null);
+
+      const event = makeEvent('invoice.payment_failed', makeInvoice());
+
+      await routeStripeEvent(event, tx);
+
+      expect(tx.subscription.update).not.toHaveBeenCalled();
+      expect(mockDispatch).not.toHaveBeenCalled();
+    });
+
+    it('skips email when billingEmail is null', async () => {
+      tx.subscription.findUnique.mockResolvedValue({
+        organizationId: 'org_1',
+        organization: { id: 'org_1', billingEmail: null },
+      });
+      tx.member.findMany.mockResolvedValue([{ userId: 'usr_1' }]);
+
+      const event = makeEvent('invoice.payment_failed', makeInvoice());
+
+      await routeStripeEvent(event, tx);
+
+      expect(mockDispatch).toHaveBeenCalled();
+      expect(mockEmailSend).not.toHaveBeenCalled();
+    });
+  });
+
+  // =========================================================================
+  // handleInvoicePaid - edge cases
+  // =========================================================================
+
+  describe('handleInvoicePaid - edge cases', () => {
+    it('skips when invoice has no subscription ID', async () => {
+      const event = makeEvent(
+        'invoice.paid',
+        makeInvoice({ parent: null }),
+      );
+
+      await routeStripeEvent(event, tx);
+
+      expect(tx.ocrCreditLedger.create).not.toHaveBeenCalled();
+    });
+
+    it('skips when subscription not found in DB', async () => {
+      tx.ocrCreditLedger.findFirst.mockResolvedValue(null);
+      tx.subscription.findUnique.mockResolvedValue(null);
+
+      const event = makeEvent('invoice.paid', makeInvoice());
+
+      await routeStripeEvent(event, tx);
+
+      expect(tx.ocrCreditLedger.create).not.toHaveBeenCalled();
+    });
+
+    it('skips when subscription has no stripePriceId', async () => {
+      tx.ocrCreditLedger.findFirst.mockResolvedValue(null);
+      tx.subscription.findUnique.mockResolvedValue({
+        organizationId: 'org_1',
+        stripePriceId: null,
+      });
+
+      const event = makeEvent('invoice.paid', makeInvoice());
+
+      await routeStripeEvent(event, tx);
+
+      expect(tx.ocrCreditLedger.create).not.toHaveBeenCalled();
+    });
+
+    it('skips when resolveTierFromPriceId throws', async () => {
+      tx.ocrCreditLedger.findFirst.mockResolvedValue(null);
+      tx.subscription.findUnique.mockResolvedValue({
+        organizationId: 'org_1',
+        stripePriceId: 'price_unknown',
+      });
+      mockResolveTierFromPriceId.mockImplementation(() => {
+        throw new Error('Unknown price');
+      });
+
+      const event = makeEvent('invoice.paid', makeInvoice());
+
+      await routeStripeEvent(event, tx);
+
+      expect(tx.ocrCreditLedger.create).not.toHaveBeenCalled();
+    });
+  });
+
+  // =========================================================================
+  // handleTopUpCompleted
+  // =========================================================================
+
+  describe('handleTopUpCompleted', () => {
+    it('allocates top-up credits from checkout session metadata', async () => {
+      mockResolveTopUpCredits.mockReturnValue(50);
+      tx.ocrCreditLedger.findFirst.mockResolvedValue(null);
+      tx.subscription.findUnique.mockResolvedValue({
+        organizationId: 'org_1',
+        currentPeriodStart: new Date('2024-01-01'),
+        currentPeriodEnd: new Date('2024-02-01'),
+      });
+
+      const event = makeEvent(
+        'checkout.session.completed',
+        makeCheckoutSession({
+          id: 'cs_topup_1',
+          mode: 'payment',
+          subscription: null,
+          metadata: { type: 'top_up', organizationId: 'org_1', priceId: 'price_topup_50' },
+        }),
+      );
+
+      await routeStripeEvent(event, tx);
+
+      expect(tx.ocrCreditLedger.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          organizationId: 'org_1',
+          credits: 50,
+          reason: 'TOP_UP',
+          stripeEventId: 'cs_topup_1',
+        }),
+      });
+      expect(mockInvalidate).toHaveBeenCalled();
+    });
+
+    it('skips when organizationId missing from metadata', async () => {
+      const event = makeEvent(
+        'checkout.session.completed',
+        makeCheckoutSession({
+          mode: 'payment',
+          subscription: null,
+          metadata: { type: 'top_up', priceId: 'price_topup_50' },
+        }),
+      );
+
+      await routeStripeEvent(event, tx);
+
+      expect(tx.ocrCreditLedger.create).not.toHaveBeenCalled();
+    });
+
+    it('skips when priceId missing from metadata', async () => {
+      const event = makeEvent(
+        'checkout.session.completed',
+        makeCheckoutSession({
+          mode: 'payment',
+          subscription: null,
+          metadata: { type: 'top_up', organizationId: 'org_1' },
+        }),
+      );
+
+      await routeStripeEvent(event, tx);
+
+      expect(tx.ocrCreditLedger.create).not.toHaveBeenCalled();
+    });
+
+    it('skips when resolveTopUpCredits returns null', async () => {
+      mockResolveTopUpCredits.mockReturnValue(null);
+
+      const event = makeEvent(
+        'checkout.session.completed',
+        makeCheckoutSession({
+          mode: 'payment',
+          subscription: null,
+          metadata: { type: 'top_up', organizationId: 'org_1', priceId: 'price_bad' },
+        }),
+      );
+
+      await routeStripeEvent(event, tx);
+
+      expect(tx.ocrCreditLedger.create).not.toHaveBeenCalled();
+    });
+
+    it('deduplicates by session ID', async () => {
+      mockResolveTopUpCredits.mockReturnValue(50);
+      tx.ocrCreditLedger.findFirst.mockResolvedValue({ id: 'existing' });
+
+      const event = makeEvent(
+        'checkout.session.completed',
+        makeCheckoutSession({
+          id: 'cs_dup',
+          mode: 'payment',
+          subscription: null,
+          metadata: { type: 'top_up', organizationId: 'org_1', priceId: 'price_topup_50' },
+        }),
+      );
+
+      await routeStripeEvent(event, tx);
+
+      expect(tx.ocrCreditLedger.create).not.toHaveBeenCalled();
+    });
+
+    it('skips when no subscription found for org', async () => {
+      mockResolveTopUpCredits.mockReturnValue(50);
+      tx.ocrCreditLedger.findFirst.mockResolvedValue(null);
+      tx.subscription.findUnique.mockResolvedValue(null);
+
+      const event = makeEvent(
+        'checkout.session.completed',
+        makeCheckoutSession({
+          mode: 'payment',
+          subscription: null,
+          metadata: { type: 'top_up', organizationId: 'org_1', priceId: 'price_topup_50' },
+        }),
+      );
+
+      await routeStripeEvent(event, tx);
+
+      expect(tx.ocrCreditLedger.create).not.toHaveBeenCalled();
+    });
+  });
+
+  // =========================================================================
+  // handlePaymentActionRequired
+  // =========================================================================
+
+  describe('handlePaymentActionRequired', () => {
+    it('dispatches PAYMENT_ACTION_REQUIRED notification to admins', async () => {
+      tx.subscription.findUnique.mockResolvedValue({
+        organizationId: 'org_1',
+        organization: { id: 'org_1', billingEmail: 'billing@co.com' },
+      });
+      tx.member.findMany.mockResolvedValue([{ userId: 'usr_1' }]);
+
+      const event = makeEvent('invoice.payment_action_required', makeInvoice());
+
+      await routeStripeEvent(event, tx);
+
+      expect(mockDispatch).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'PAYMENT_ACTION_REQUIRED',
+          title: 'Payment verification required',
+        }),
+      );
+      expect(mockEmailSend).toHaveBeenCalledWith(
+        expect.objectContaining({
+          to: 'billing@co.com',
+          subject: 'Payment verification required',
+        }),
+      );
+    });
+
+    it('skips when no subscription ID in invoice', async () => {
+      const event = makeEvent(
+        'invoice.payment_action_required',
+        makeInvoice({ parent: null }),
+      );
+
+      await routeStripeEvent(event, tx);
+
+      expect(tx.subscription.findUnique).not.toHaveBeenCalled();
+    });
+  });
+
+  // =========================================================================
+  // handleSubscriptionPaused
+  // =========================================================================
+
+  describe('handleSubscriptionPaused', () => {
+    it('sets status to PAUSED on existing subscription', async () => {
+      tx.subscription.findUnique.mockResolvedValue({ id: 'db_sub_1' });
+      tx.subscription.update.mockResolvedValue({ organizationId: 'org_1' });
+
+      const event = makeEvent('customer.subscription.paused', makeSubscription());
+
+      await routeStripeEvent(event, tx);
+
+      expect(tx.subscription.update).toHaveBeenCalledWith({
+        where: { stripeSubscriptionId: 'sub_123' },
+        data: { status: 'PAUSED' },
+      });
+      expect(mockInvalidate).toHaveBeenCalled();
+    });
+
+    it('skips when subscription not found in DB', async () => {
+      tx.subscription.findUnique.mockResolvedValue(null);
+
+      const event = makeEvent('customer.subscription.paused', makeSubscription());
+
+      await routeStripeEvent(event, tx);
+
+      expect(tx.subscription.update).not.toHaveBeenCalled();
+    });
+  });
+
+  // =========================================================================
+  // handleChargeRefunded
+  // =========================================================================
+
+  describe('handleChargeRefunded', () => {
+    it('creates audit ledger entry with 0 credits', async () => {
+      tx.subscription.findFirst.mockResolvedValue({
+        organizationId: 'org_1',
+        currentPeriodStart: new Date('2024-01-01'),
+        currentPeriodEnd: new Date('2024-02-01'),
+      });
+      tx.ocrCreditLedger.findFirst.mockResolvedValue(null);
+
+      const event = makeEvent('charge.refunded', {
+        id: 'ch_123',
+        amount_refunded: 1500,
+        customer: 'cus_abc',
+        payment_intent: 'pi_123',
+      });
+
+      await routeStripeEvent(event, tx);
+
+      expect(tx.ocrCreditLedger.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          organizationId: 'org_1',
+          credits: 0,
+          reason: 'REFUND_AUDIT',
+          stripeEventId: 'refund_ch_123',
+        }),
+      });
+    });
+
+    it('skips when customer ID is missing', async () => {
+      const event = makeEvent('charge.refunded', {
+        id: 'ch_no_cust',
+        amount_refunded: 500,
+        customer: null,
+        payment_intent: null,
+      });
+
+      await routeStripeEvent(event, tx);
+
+      expect(tx.subscription.findFirst).not.toHaveBeenCalled();
+      expect(tx.ocrCreditLedger.create).not.toHaveBeenCalled();
+    });
+
+    it('skips when no subscription found for customer', async () => {
+      tx.subscription.findFirst.mockResolvedValue(null);
+
+      const event = makeEvent('charge.refunded', {
+        id: 'ch_orphan',
+        amount_refunded: 500,
+        customer: 'cus_orphan',
+        payment_intent: null,
+      });
+
+      await routeStripeEvent(event, tx);
+
+      expect(tx.ocrCreditLedger.create).not.toHaveBeenCalled();
+    });
+
+    it('deduplicates refund audit entries by chargeId', async () => {
+      tx.subscription.findFirst.mockResolvedValue({
+        organizationId: 'org_1',
+        currentPeriodStart: new Date('2024-01-01'),
+        currentPeriodEnd: new Date('2024-02-01'),
+      });
+      tx.ocrCreditLedger.findFirst.mockResolvedValue({ id: 'existing' });
+
+      const event = makeEvent('charge.refunded', {
+        id: 'ch_dup',
+        amount_refunded: 1500,
+        customer: 'cus_abc',
+        payment_intent: null,
+      });
+
+      await routeStripeEvent(event, tx);
+
+      expect(tx.ocrCreditLedger.create).not.toHaveBeenCalled();
+    });
+
+    it('extracts customer ID from object form', async () => {
+      tx.subscription.findFirst.mockResolvedValue({
+        organizationId: 'org_1',
+        currentPeriodStart: new Date('2024-01-01'),
+        currentPeriodEnd: new Date('2024-02-01'),
+      });
+      tx.ocrCreditLedger.findFirst.mockResolvedValue(null);
+
+      const event = makeEvent('charge.refunded', {
+        id: 'ch_obj',
+        amount_refunded: 500,
+        customer: { id: 'cus_obj_id' },
+        payment_intent: null,
+      });
+
+      await routeStripeEvent(event, tx);
+
+      expect(tx.subscription.findFirst).toHaveBeenCalledWith({
+        where: { stripeCustomerId: 'cus_obj_id' },
+        select: expect.any(Object),
+      });
+    });
+  });
+
+  // =========================================================================
+  // handleSubscriptionUpdated - tier change notification
+  // =========================================================================
+
+  describe('handleSubscriptionUpdated - tier change', () => {
+    it('dispatches notification when tier changes', async () => {
+      tx.subscription.findUnique.mockResolvedValue({ tier: 'STARTER' });
+      tx.member.findMany.mockResolvedValue([{ userId: 'usr_1' }]);
+      mockResolveTierFromPriceId.mockReturnValue('PRO');
+
+      const event = makeEvent('customer.subscription.updated', makeSubscription());
+
+      await routeStripeEvent(event, tx);
+
+      expect(mockDispatch).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'SUBSCRIPTION_CHANGED',
+          body: expect.stringContaining('STARTER'),
+        }),
+      );
+    });
+
+    it('does not dispatch notification when tier stays the same', async () => {
+      tx.subscription.findUnique.mockResolvedValue({ tier: 'PRO' });
+      mockResolveTierFromPriceId.mockReturnValue('PRO');
+
+      const event = makeEvent('customer.subscription.updated', makeSubscription());
+
+      await routeStripeEvent(event, tx);
+
+      expect(mockDispatch).not.toHaveBeenCalled();
+    });
+
+    it('extracts customer ID from object form', async () => {
+      tx.subscription.findUnique.mockResolvedValue(null);
+      const sub = makeSubscription({ customer: { id: 'cus_obj' } });
+      const event = makeEvent('customer.subscription.updated', sub);
+
+      await routeStripeEvent(event, tx);
+
+      expect(tx.subscription.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          update: expect.objectContaining({
+            stripeCustomerId: 'cus_obj',
+          }),
+        }),
+      );
+    });
+  });
+
+  // =========================================================================
+  // handleCheckoutCompleted - missing subscription ID
+  // =========================================================================
+
+  describe('handleCheckoutCompleted - edge cases', () => {
+    it('returns early when session has no subscription ID', async () => {
+      const event = makeEvent(
+        'checkout.session.completed',
+        makeCheckoutSession({ subscription: null }),
+      );
+
+      await routeStripeEvent(event, tx);
+
+      expect(mockStripeSubscriptionsRetrieve).not.toHaveBeenCalled();
+    });
+
+    it('returns early when organizationId missing from subscription metadata', async () => {
+      mockStripeSubscriptionsRetrieve.mockResolvedValue(
+        makeSubscription({ status: 'trialing', metadata: {} }),
+      );
+      tx.subscription.findUnique.mockResolvedValue(null);
+
+      const event = makeEvent('checkout.session.completed', makeCheckoutSession());
+
+      await routeStripeEvent(event, tx);
+
+      expect(tx.ocrCreditLedger.create).not.toHaveBeenCalled();
+    });
+  });
+
+  // =========================================================================
+  // handleTrialWillEnd - edge cases
+  // =========================================================================
+
+  describe('handleTrialWillEnd - edge cases', () => {
+    it('returns early when subscription not found in DB', async () => {
+      tx.subscription.findUnique.mockResolvedValue(null);
+
+      const event = makeEvent('customer.subscription.trial_will_end', makeSubscription());
+
+      await routeStripeEvent(event, tx);
+
+      expect(mockDispatch).not.toHaveBeenCalled();
+      expect(mockEmailSend).not.toHaveBeenCalled();
+    });
+
+    it('skips dispatch when no admin members found', async () => {
+      tx.subscription.findUnique.mockResolvedValue({
+        organization: { id: 'org_1', billingEmail: 'billing@test.com' },
+      });
+      tx.member.findMany.mockResolvedValue([]);
+
+      const event = makeEvent('customer.subscription.trial_will_end', makeSubscription());
+
+      await routeStripeEvent(event, tx);
+
+      expect(mockDispatch).not.toHaveBeenCalled();
+      // email should still be sent
+      expect(mockEmailSend).toHaveBeenCalled();
+    });
   });
 });

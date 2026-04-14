@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { render, screen } from '@/test/test-utils';
+import { render, screen, setup } from '@/test/test-utils';
 import { KleinunternehmerToggle } from '../kleinunternehmer-toggle';
 
 vi.mock('@/trpc/init', () => ({
@@ -68,5 +68,61 @@ describe('KleinunternehmerToggle', () => {
     render(<KleinunternehmerToggle orgCountryCode="DE" isKleinunternehmer={false} />);
     const toggle = screen.getByRole('switch');
     expect(toggle).toHaveAttribute('aria-checked', 'false');
+  });
+
+  it('renders nothing when orgCountryCode is undefined', () => {
+    const { container } = render(
+      <KleinunternehmerToggle orgCountryCode={undefined} isKleinunternehmer={false} />,
+    );
+    expect(container.innerHTML).toBe('');
+  });
+
+  it('opens confirmation dialog when switch is toggled', async () => {
+    const { user } = setup(
+      <KleinunternehmerToggle orgCountryCode="DE" isKleinunternehmer={false} />,
+    );
+    const toggle = screen.getByRole('switch');
+    await user.click(toggle);
+    // Dialog should show enable confirmation title
+    expect(screen.getByText('Enable Kleinunternehmerregelung?')).toBeInTheDocument();
+  });
+
+  it('shows disable confirmation when toggling off', async () => {
+    const { user } = setup(
+      <KleinunternehmerToggle orgCountryCode="DE" isKleinunternehmer={true} />,
+    );
+    const toggle = screen.getByRole('switch');
+    await user.click(toggle);
+    expect(screen.getByText('Disable Kleinunternehmerregelung?')).toBeInTheDocument();
+    expect(
+      screen.getByText(/Future invoices will resume standard German VAT handling/),
+    ).toBeInTheDocument();
+  });
+
+  it('shows enable description when enabling', async () => {
+    const { user } = setup(
+      <KleinunternehmerToggle orgCountryCode="DE" isKleinunternehmer={false} />,
+    );
+    await user.click(screen.getByRole('switch'));
+    expect(
+      screen.getByText(/All new invoice lines will be billed at 0% VAT/),
+    ).toBeInTheDocument();
+  });
+
+  it('renders Cancel button in confirmation dialog', async () => {
+    const { user } = setup(
+      <KleinunternehmerToggle orgCountryCode="DE" isKleinunternehmer={false} />,
+    );
+    await user.click(screen.getByRole('switch'));
+    expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument();
+  });
+
+  it('renders Confirm button in dialog', async () => {
+    const { user } = setup(
+      <KleinunternehmerToggle orgCountryCode="DE" isKleinunternehmer={false} />,
+    );
+    await user.click(screen.getByRole('switch'));
+    expect(screen.getByTestId('kleinunternehmer-confirm')).toBeInTheDocument();
+    expect(screen.getByTestId('kleinunternehmer-confirm')).toHaveTextContent('Confirm');
   });
 });

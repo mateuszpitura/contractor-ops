@@ -22,6 +22,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   EInvoiceAlreadyFinalizedError,
   EInvoiceInvoiceNotFoundError,
+  FINALIZE_MAX_XML_BYTES,
   finalizeEInvoice,
   type R2Service,
 } from '../einvoice-finalize.js';
@@ -635,5 +636,64 @@ describe('finalizeEInvoice — cross-tenant + missing invoice', () => {
         },
       ),
     ).rejects.toThrow(EInvoiceInvoiceNotFoundError);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Edge cases — XML size guard + R2 failure propagation
+// ---------------------------------------------------------------------------
+
+describe('einvoice-finalize — edge cases', () => {
+  it('throws when generated XML exceeds FINALIZE_MAX_XML_BYTES (5 MiB)', async () => {
+    const invoice = makeInvoice();
+    const db = makeDb({ invoice });
+    const r2 = makeR2();
+    const oversizedXml = 'x'.repeat(6 * 1024 * 1024); // 6 MiB > 5 MiB limit
+    const profile = makeProfile({ xml: oversizedXml });
+    const logger = makeLogger();
+
+    await expect(
+      finalizeEInvoice(
+        { db: db as never, r2, profile: profile as never, logger, now: () => new Date('2026-04-14T12:00:00Z') },
+        { organizationId: ORG_A, invoiceId: INVOICE_1, actorUserId: USER_1 },
+      ),
+    ).rejects.toThrow(/XRechnung XML exceeds/);
+
+    // Verify the error message includes the byte counts
+    await expect(
+      finalizeEInvoice(
+        { db: db as never, r2, profile: profile as never, logger, now: () => new Date('2026-04-14T12:00:00Z') },
+        { organizationId: ORG_A, invoiceId: INVOICE_1, actorUserId: USER_1 },
+      ),
+    ).rejects.toThrow(`${FINALIZE_MAX_XML_BYTES} bytes`);
+
+    // R2 should never have been called — the guard fires before persistence
+    expect(r2.putCalls).toHaveLength(0);
+
+    // Logger.error should have been called
+    expect(logger.error).toHaveBeenCalled();
+  });
+
+  it('propagates R2 putObject failure as-is', async () => {
+    const invoice = makeInvoice();
+    const db = makeDb({ invoice });
+    const r2 = makeR2();
+    const r2Error = new Error('R2 connection timeout');
+    r2.putObject = vi.fn().mockRejectedValue(r2Error);
+    const profile = makeProfile();
+    const logger = makeLogger();
+
+    await expect(
+      finalizeEInvoice(
+        { db: db as never, r2, profile: profile as never, logger, now: () => new Date('2026-04-14T12:00:00Z') },
+        { organizationId: ORG_A, invoiceId: INVOICE_1, actorUserId: USER_1 },
+      ),
+    ).rejects.toThrow('R2 connection timeout');
+
+    // putObject was called exactly once before it threw
+    expect(r2.putObject).toHaveBeenCalledOnce();
+
+    // signDownloadUrl should NOT have been called since putObject failed first
+    expect(r2.signCalls).toHaveLength(0);
   });
 });

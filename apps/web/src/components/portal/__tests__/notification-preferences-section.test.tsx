@@ -1,4 +1,4 @@
-import { render, screen } from '@/test/test-utils';
+import { render, screen, setup } from '@/test/test-utils';
 import { NotificationPreferencesSection } from '../notification-preferences-section';
 
 vi.mock('@tanstack/react-query', async importOriginal => {
@@ -59,5 +59,33 @@ describe('NotificationPreferencesSection', () => {
     render(<NotificationPreferencesSection />);
 
     expect(screen.getByText(/notification/i)).toBeInTheDocument();
+  });
+
+  it('renders category labels for all 5 categories', () => {
+    render(<NotificationPreferencesSection />);
+    expect(screen.getAllByText(/invoice updates/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/payment confirmations/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/contract changes/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/document uploads/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/security alerts/i).length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('renders category descriptions', () => {
+    render(<NotificationPreferencesSection />);
+    // Each category should have a description paragraph
+    const muted = document.querySelectorAll('.text-muted-foreground');
+    expect(muted.length).toBeGreaterThanOrEqual(5);
+  });
+
+  it('shows locked text for security alerts category', () => {
+    render(<NotificationPreferencesSection />);
+    expect(screen.getByText(/cannot be disabled/i)).toBeInTheDocument();
+  });
+
+  it('renders category description text for each preference', () => {
+    render(<NotificationPreferencesSection />);
+    // Each category has a description — verify at least one is visible
+    const descriptions = document.querySelectorAll('.text-muted-foreground');
+    expect(descriptions.length).toBeGreaterThanOrEqual(5);
   });
 });

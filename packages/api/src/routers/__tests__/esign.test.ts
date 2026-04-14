@@ -384,3 +384,201 @@ describe('esign.resendToRecipient', () => {
     );
   });
 });
+
+// ===========================================================================
+// getSigningUrl
+// ===========================================================================
+
+describe('esign.getSigningUrl', () => {
+  it('delegates to getSigningUrl orchestrator with org scope', async () => {
+    mockGetSigningUrl.mockResolvedValue({ url: 'https://docusign.test/embed' });
+
+    const result = await tenantCaller.esign.getSigningUrl({
+      envelopeId: 'env-sign-1',
+      recipientEmail: 'signer@test.com',
+      returnUrl: 'https://app.test/done',
+    });
+
+    expect(result.url).toBe('https://docusign.test/embed');
+    expect(mockGetSigningUrl).toHaveBeenCalledWith({
+      organizationId: ORG_ID,
+      envelopeId: 'env-sign-1',
+      recipientEmail: 'signer@test.com',
+      returnUrl: 'https://app.test/done',
+    });
+  });
+});
+
+// ===========================================================================
+// listConnections
+// ===========================================================================
+
+describe('esign.listConnections', () => {
+  it('returns connected e-sign providers scoped to organization', async () => {
+    mockPrisma.integrationConnection.findMany.mockResolvedValue([
+      { id: 'conn-1', provider: 'DOCUSIGN', status: 'CONNECTED', displayName: 'DocuSign' },
+    ]);
+
+    const result = await tenantCaller.esign.listConnections();
+
+    expect(result).toHaveLength(1);
+    expect(result[0]).toMatchObject({ provider: 'DOCUSIGN', status: 'CONNECTED' });
+
+    const findCall = mockPrisma.integrationConnection.findMany.mock.calls[0][0];
+    expect(findCall.where).toMatchObject({
+      organizationId: ORG_ID,
+      provider: { in: ['DOCUSIGN', 'AUTENTI'] },
+      status: 'CONNECTED',
+    });
+  });
+
+  it('returns empty array when no connections exist', async () => {
+    mockPrisma.integrationConnection.findMany.mockResolvedValue([]);
+
+    const result = await tenantCaller.esign.listConnections();
+
+    expect(result).toEqual([]);
+  });
+});
+
+// ===========================================================================
+// listEnvelopes
+// ===========================================================================
+
+describe('esign.listEnvelopes', () => {
+  it('returns envelopes with recipient summary scoped to contract', async () => {
+    mockPrisma.signingEnvelope.findMany.mockResolvedValue([
+      {
+        id: 'env-list-1',
+        contractId: 'contract-1',
+        organizationId: ORG_ID,
+        status: 'COMPLETED',
+        createdAt: new Date(),
+        recipients: [
+          { id: 'r1', name: 'Signer A', email: 'a@test.com', status: 'SIGNED' },
+          { id: 'r2', name: 'Signer B', email: 'b@test.com', status: 'SIGNED' },
+        ],
+        sentBy: { id: USER_ID, name: 'User' },
+      },
+      {
+        id: 'env-list-2',
+        contractId: 'contract-1',
+        organizationId: ORG_ID,
+        status: 'SENT',
+        createdAt: new Date(),
+        recipients: [
+          { id: 'r3', name: 'Signer C', email: 'c@test.com', status: 'PENDING' },
+          { id: 'r4', name: 'Signer D', email: 'd@test.com', status: 'SIGNED' },
+        ],
+        sentBy: { id: USER_ID, name: 'User' },
+      },
+    ]);
+
+    const result = await tenantCaller.esign.listEnvelopes({ contractId: 'contract-1' });
+
+    expect(result).toHaveLength(2);
+    expect(result[0].recipientSummary).toEqual({ signed: 2, total: 2 });
+    expect(result[1].recipientSummary).toEqual({ signed: 1, total: 2 });
+
+    const findCall = mockPrisma.signingEnvelope.findMany.mock.calls[0][0];
+    expect(findCall.where).toMatchObject({
+      contractId: 'contract-1',
+      organizationId: ORG_ID,
+    });
+  });
+
+  it('returns empty array when no envelopes exist', async () => {
+    mockPrisma.signingEnvelope.findMany.mockResolvedValue([]);
+
+    const result = await tenantCaller.esign.listEnvelopes({ contractId: 'contract-none' });
+
+    expect(result).toEqual([]);
+  });
+});
+
+// ===========================================================================
+// getEnvelopeDetail — null case
+// ===========================================================================
+
+describe('esign.getEnvelopeDetail — not found', () => {
+  it('returns null when envelope does not exist', async () => {
+    mockPrisma.signingEnvelope.findFirst.mockResolvedValue(null);
+
+    const result = await tenantCaller.esign.getEnvelopeDetail({
+      envelopeId: 'nonexistent',
+    });
+
+    expect(result).toBeNull();
+  });
+});
+
+// ===========================================================================
+// sendForSignature — with optional fields
+// ===========================================================================
+
+describe('esign.sendForSignature — optional fields', () => {
+  it('passes contractId and message when provided', async () => {
+    mockSendForSignature.mockResolvedValue({
+      id: 'env-opt-1',
+      status: 'SENT',
+      contractId: 'contract-1',
+    });
+
+    await tenantCaller.esign.sendForSignature({
+      contractId: 'contract-1',
+      documentId: 'doc-1',
+      connectionId: 'conn-1',
+      provider: 'AUTENTI',
+      signers: [{ name: 'Signer', email: 'signer@test.com', role: 'signer', routingOrder: 1 }],
+      message: 'Please sign this contract',
+      expiresInDays: 30,
+      reminderIntervalDays: 7,
+    });
+
+    expect(mockSendForSignature).toHaveBeenCalledWith(
+      expect.objectContaining({
+        contractId: 'contract-1',
+        provider: 'AUTENTI',
+        message: 'Please sign this contract',
+        expiresInDays: 30,
+        reminderIntervalDays: 7,
+      }),
+    );
+  });
+});
+
+// ===========================================================================
+// listPendingForContractor
+// ===========================================================================
+
+describe('esign.listPendingForContractor', () => {
+  it('returns pending envelopes for contractor email', async () => {
+    mockPrisma.signingRecipient.findMany.mockResolvedValue([
+      {
+        id: 'rec-1',
+        name: 'Signer',
+        email: 'signer@test.com',
+        status: 'PENDING',
+        signingEnvelope: {
+          id: 'env-pending-1',
+          contractId: 'contract-1',
+          status: 'SENT',
+          message: 'Sign please',
+          expiresAt: new Date('2026-01-01'),
+          sentAt: new Date(),
+          createdAt: new Date(),
+        },
+      },
+    ]);
+
+    const result = await portalCaller.esign.listPendingForContractor();
+
+    expect(result).toHaveLength(1);
+    expect(result[0]).toMatchObject({
+      envelopeId: 'env-pending-1',
+      recipientEmail: 'signer@test.com',
+      recipientStatus: 'PENDING',
+      envelopeStatus: 'SENT',
+    });
+  });
+});

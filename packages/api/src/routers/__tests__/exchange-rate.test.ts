@@ -455,4 +455,94 @@ describe('exchangeRate.fetchDaily', () => {
 
     await expect(badCaller.exchangeRate.fetchDaily()).rejects.toThrow();
   });
+
+  it('collects per-region errors from fetchAndStoreRates result', async () => {
+    mockFetchAndStoreRates
+      .mockResolvedValueOnce({ stored: 5, errors: ['EUR/GBP stale'] })
+      .mockResolvedValueOnce({ stored: 3, errors: ['EUR/JPY stale'] });
+    const cronCaller = makeCronCaller();
+
+    const result = await cronCaller.exchangeRate.fetchDaily();
+
+    expect(result.stored).toBe(8);
+    expect(result.errors).toHaveLength(2);
+    expect(result.errors[0]).toContain('[EU]');
+    expect(result.errors[1]).toContain('[US]');
+  });
+
+  it('handles all regions failing gracefully', async () => {
+    mockFetchAndStoreRates
+      .mockRejectedValueOnce(new Error('EU down'))
+      .mockRejectedValueOnce(new Error('US down'));
+    const cronCaller = makeCronCaller();
+
+    const result = await cronCaller.exchangeRate.fetchDaily();
+
+    expect(result.stored).toBe(0);
+    expect(result.errors).toHaveLength(2);
+    expect(result.errors[0]).toContain('EU down');
+    expect(result.errors[1]).toContain('US down');
+  });
+
+  it('handles non-Error thrown values', async () => {
+    mockFetchAndStoreRates
+      .mockRejectedValueOnce('string error')
+      .mockResolvedValueOnce({ stored: 5, errors: [] });
+    const cronCaller = makeCronCaller();
+
+    const result = await cronCaller.exchangeRate.fetchDaily();
+
+    expect(result.stored).toBe(5);
+    expect(result.errors).toHaveLength(1);
+    expect(result.errors[0]).toContain('string error');
+  });
+});
+
+// ===========================================================================
+// exchangeRate.convert — additional edge cases
+// ===========================================================================
+
+describe('exchangeRate.convert (additional)', () => {
+  it('passes optional date to convertAmount service', async () => {
+    mockConvertAmount.mockResolvedValueOnce({
+      convertedAmountMinor: 21750,
+      rate: 4.35,
+      source: 'ECB',
+    });
+
+    await caller.exchangeRate.convert({
+      amountMinor: 5000,
+      from: 'EUR',
+      to: 'PLN',
+      date: '2026-03-10',
+    });
+
+    expect(mockConvertAmount).toHaveBeenCalledWith(
+      mockPrisma,
+      5000,
+      'EUR',
+      'PLN',
+      new Date('2026-03-10'),
+    );
+  });
+});
+
+// ===========================================================================
+// exchangeRate.query — additional edge cases
+// ===========================================================================
+
+describe('exchangeRate.query (additional)', () => {
+  it('queries without dateTo when only dateFrom is provided', async () => {
+    mockPrisma.exchangeRate.findMany.mockResolvedValueOnce([]);
+
+    await caller.exchangeRate.query({
+      base: 'EUR',
+      target: 'GBP',
+      dateFrom: new Date('2026-01-01'),
+    });
+
+    const call = mockPrisma.exchangeRate.findMany.mock.calls[0]?.[0];
+    expect(call.where.date.gte).toEqual(new Date('2026-01-01'));
+    expect(call.where.date).not.toHaveProperty('lte');
+  });
 });

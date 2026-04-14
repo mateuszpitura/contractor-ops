@@ -557,4 +557,225 @@ describe('time router', () => {
       expect(result).toEqual({ count: 2 });
     });
   });
+
+  // =========================================================================
+  // approve — additional coverage
+  // =========================================================================
+
+  describe('approve (additional)', () => {
+    it('returns the approved timesheet result from service', async () => {
+      mockApproveTimesheet.mockResolvedValueOnce({
+        id: TIMESHEET_ID_1,
+        status: 'APPROVED',
+        approvedAt: new Date('2026-04-01'),
+        approvedBy: USER_ID,
+      });
+
+      const result = await caller.time.approve({ timesheetId: TIMESHEET_ID_1 });
+
+      expect(result).toMatchObject({ id: TIMESHEET_ID_1, status: 'APPROVED' });
+    });
+
+    it('propagates service errors', async () => {
+      mockApproveTimesheet.mockRejectedValueOnce(new Error('Timesheet already approved'));
+
+      await expect(caller.time.approve({ timesheetId: TIMESHEET_ID_1 })).rejects.toThrow(
+        'Timesheet already approved',
+      );
+    });
+  });
+
+  // =========================================================================
+  // reject — additional coverage
+  // =========================================================================
+
+  describe('reject (additional)', () => {
+    it('returns the rejected timesheet result from service', async () => {
+      mockRejectTimesheet.mockResolvedValueOnce({
+        id: TIMESHEET_ID_1,
+        status: 'REJECTED',
+        rejectionReason: 'Incorrect hours',
+      });
+
+      const result = await caller.time.reject({
+        timesheetId: TIMESHEET_ID_1,
+        reason: 'Incorrect hours',
+      });
+
+      expect(result).toMatchObject({ id: TIMESHEET_ID_1, status: 'REJECTED' });
+    });
+
+    it('propagates service errors', async () => {
+      mockRejectTimesheet.mockRejectedValueOnce(new Error('Timesheet not in SUBMITTED state'));
+
+      await expect(
+        caller.time.reject({ timesheetId: TIMESHEET_ID_1, reason: 'Timesheet not in SUBMITTED state - rejecting' }),
+      ).rejects.toThrow('Timesheet not in SUBMITTED state');
+    });
+  });
+
+  // =========================================================================
+  // bulkApprove — additional coverage
+  // =========================================================================
+
+  describe('bulkApprove (additional)', () => {
+    it('returns count from service', async () => {
+      mockBulkApproveTimesheets.mockResolvedValueOnce({ count: 5 });
+
+      const result = await caller.time.bulkApprove({
+        timesheetIds: ['t1', 't2', 't3', 't4', 't5'],
+      });
+
+      expect(result).toEqual({ count: 5 });
+    });
+
+    it('propagates service errors on bulk approve', async () => {
+      mockBulkApproveTimesheets.mockRejectedValueOnce(new Error('Some timesheets invalid'));
+
+      await expect(
+        caller.time.bulkApprove({ timesheetIds: [TIMESHEET_ID_1] }),
+      ).rejects.toThrow('Some timesheets invalid');
+    });
+  });
+
+  // =========================================================================
+  // bulkReject — additional coverage
+  // =========================================================================
+
+  describe('bulkReject (additional)', () => {
+    it('propagates service errors on bulk reject', async () => {
+      mockBulkRejectTimesheets.mockRejectedValueOnce(new Error('No timesheets found'));
+
+      await expect(
+        caller.time.bulkReject({
+          timesheetIds: [TIMESHEET_ID_1],
+          reason: 'Invalid timesheet entries detected',
+        }),
+      ).rejects.toThrow('No timesheets found');
+    });
+  });
+
+  // =========================================================================
+  // listContractors
+  // =========================================================================
+
+  describe('listContractors', () => {
+    it('returns contractors with pending counts and monthly stats', async () => {
+      mockPrisma.contractor.findMany.mockResolvedValueOnce([
+        { id: CONTRACTOR_ID, legalName: 'Acme', email: 'acme@test.com' },
+      ]);
+      mockPrisma.timesheet.groupBy
+        .mockResolvedValueOnce([{ contractorId: CONTRACTOR_ID, _count: 3 }]) // pending
+        .mockResolvedValueOnce([{ contractorId: CONTRACTOR_ID }]) // has timesheets
+        .mockResolvedValueOnce([
+          { contractorId: CONTRACTOR_ID, _sum: { totalMinutes: 4800 } },
+        ]); // monthly
+
+      const result = await caller.time.listContractors();
+
+      expect(result).toHaveLength(1);
+      expect(result[0]).toMatchObject({
+        id: CONTRACTOR_ID,
+        pendingCount: 3,
+        approvedMinutesThisMonth: 4800,
+      });
+    });
+
+    it('filters out contractors without any timesheets', async () => {
+      mockPrisma.contractor.findMany.mockResolvedValueOnce([
+        { id: CONTRACTOR_ID, legalName: 'Acme', email: 'acme@test.com' },
+        { id: 'c-no-ts', legalName: 'NoTS', email: 'nots@test.com' },
+      ]);
+      mockPrisma.timesheet.groupBy
+        .mockResolvedValueOnce([]) // pending
+        .mockResolvedValueOnce([{ contractorId: CONTRACTOR_ID }]) // has timesheets — only CONTRACTOR_ID
+        .mockResolvedValueOnce([]); // monthly
+
+      const result = await caller.time.listContractors();
+
+      expect(result).toHaveLength(1);
+      expect(result[0].id).toBe(CONTRACTOR_ID);
+    });
+
+    it('returns empty when no contractors have timesheets', async () => {
+      mockPrisma.contractor.findMany.mockResolvedValueOnce([
+        { id: CONTRACTOR_ID, legalName: 'Acme', email: 'acme@test.com' },
+      ]);
+      mockPrisma.timesheet.groupBy
+        .mockResolvedValueOnce([])
+        .mockResolvedValueOnce([])
+        .mockResolvedValueOnce([]);
+
+      const result = await caller.time.listContractors();
+
+      expect(result).toHaveLength(0);
+    });
+  });
+
+  // =========================================================================
+  // getReconciliation
+  // =========================================================================
+
+  describe('getReconciliation', () => {
+    it('delegates to computeTimeReconciliation', async () => {
+      const { computeTimeReconciliation } = await import(
+        '../../services/time-reconciliation.js'
+      );
+      vi.mocked(computeTimeReconciliation).mockResolvedValueOnce({
+        expectedAmountMinor: 100000,
+        approvedMinutes: 4800,
+        rateValueMinor: 5000,
+        rateType: 'PER_HOUR',
+        deviationPercent: 5.2,
+        deviationAmountMinor: 5200,
+      } as never);
+
+      const result = await caller.time.getReconciliation({
+        contractId: 'contract-1',
+        periodStart: '2026-01-01',
+        periodEnd: '2026-01-31',
+        invoicedAmountMinor: 105200,
+      });
+
+      expect(result).toMatchObject({ deviationPercent: 5.2 });
+      expect(computeTimeReconciliation).toHaveBeenCalledWith(
+        mockPrisma,
+        ORG_ID,
+        'contract-1',
+        new Date('2026-01-01'),
+        new Date('2026-01-31'),
+        105200,
+      );
+    });
+  });
+
+  // =========================================================================
+  // getInvoiceReconciliation
+  // =========================================================================
+
+  describe('getInvoiceReconciliation', () => {
+    it('returns null when invoice has no contractId', async () => {
+      mockPrisma.invoice.findFirst.mockResolvedValueOnce({
+        contractId: null,
+        totalMinor: 10000,
+        issueDate: new Date(),
+      });
+
+      const result = await caller.time.getInvoiceReconciliation({
+        invoiceId: 'inv-1',
+      });
+
+      expect(result).toBeNull();
+    });
+
+    it('returns null when invoice not found', async () => {
+      mockPrisma.invoice.findFirst.mockResolvedValueOnce(null);
+
+      const result = await caller.time.getInvoiceReconciliation({
+        invoiceId: 'nonexistent',
+      });
+
+      expect(result).toBeNull();
+    });
+  });
 });

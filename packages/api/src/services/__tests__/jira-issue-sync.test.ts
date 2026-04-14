@@ -456,6 +456,332 @@ describe('jira-issue-sync', () => {
   });
 
   // =========================================================================
+  // createJiraIssue - additional error/edge cases
+  // =========================================================================
+
+  describe('createJiraIssue - error handling', () => {
+    it('throws BAD_REQUEST when jira is not enabled in task template config', async () => {
+      const prisma = createMockPrisma();
+      prisma.workflowTaskRun.findUnique.mockResolvedValue(mockTaskRun());
+      prisma.workflowTaskTemplate.findUnique.mockResolvedValue({
+        configJson: { jiraEnabled: false },
+      });
+      mockJiraConfigParse.mockReturnValue({
+        success: true,
+        data: { jiraEnabled: false, jiraProjectId: null, jiraIssueTypeId: null },
+      } as unknown);
+
+      await expect(createJiraIssue(prisma, ORG_ID, CONNECTION_ID, TASK_RUN_ID)).rejects.toThrow(
+        expect.objectContaining({
+          code: 'BAD_REQUEST',
+        }),
+      );
+    });
+
+    it('throws BAD_REQUEST when jiraTaskConfigSchema parse fails', async () => {
+      const prisma = createMockPrisma();
+      prisma.workflowTaskRun.findUnique.mockResolvedValue(mockTaskRun());
+      prisma.workflowTaskTemplate.findUnique.mockResolvedValue({
+        configJson: { invalid: true },
+      });
+      mockJiraConfigParse.mockReturnValue({ success: false } as unknown);
+
+      await expect(createJiraIssue(prisma, ORG_ID, CONNECTION_ID, TASK_RUN_ID)).rejects.toThrow(
+        expect.objectContaining({
+          code: 'BAD_REQUEST',
+        }),
+      );
+    });
+
+    it('throws BAD_REQUEST when taskRun has no workflowTaskTemplateId', async () => {
+      const prisma = createMockPrisma();
+      prisma.workflowTaskRun.findUnique.mockResolvedValue(
+        mockTaskRun({ workflowTaskTemplateId: null }),
+      );
+
+      await expect(createJiraIssue(prisma, ORG_ID, CONNECTION_ID, TASK_RUN_ID)).rejects.toThrow(
+        expect.objectContaining({
+          code: 'BAD_REQUEST',
+        }),
+      );
+    });
+
+    it('wraps non-200 Jira response as INTERNAL_SERVER_ERROR and updates sync log to FAILED', async () => {
+      const prisma = createMockPrisma();
+      setupCreateMocks(prisma, {
+        fetchResponse: new Response('Bad Request body', { status: 400 }),
+      });
+
+      await expect(createJiraIssue(prisma, ORG_ID, CONNECTION_ID, TASK_RUN_ID)).rejects.toThrow(
+        expect.objectContaining({
+          code: 'INTERNAL_SERVER_ERROR',
+        }),
+      );
+
+      expect(prisma.integrationSyncLog.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            status: 'FAILED',
+            errorMessage: expect.stringContaining('400'),
+          }),
+        }),
+      );
+    });
+
+    it('updates sync log to FAILED on UNAUTHORIZED error', async () => {
+      const prisma = createMockPrisma();
+      setupCreateMocks(prisma, {
+        fetchResponse: new Response('Unauthorized', { status: 401 }),
+      });
+
+      await expect(createJiraIssue(prisma, ORG_ID, CONNECTION_ID, TASK_RUN_ID)).rejects.toThrow(
+        expect.objectContaining({ code: 'UNAUTHORIZED' }),
+      );
+
+      expect(prisma.integrationSyncLog.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            status: 'FAILED',
+          }),
+        }),
+      );
+    });
+
+    it('uses task title as description when description is null', async () => {
+      const prisma = createMockPrisma();
+      setupCreateMocks(prisma, {
+        taskRun: mockTaskRun({ description: null }),
+      });
+
+      await createJiraIssue(prisma, ORG_ID, CONNECTION_ID, TASK_RUN_ID);
+
+      const body = JSON.parse(mockFetch.mock.calls[0][1]?.body as string);
+      expect(body.fields.description.content[0].content[0].text).toBe('Review deliverables');
+    });
+
+    it('falls back to siteName-based URL when siteUrl is absent', async () => {
+      const prisma = createMockPrisma();
+      setupCreateMocks(prisma, {
+        connection: mockConnection({
+          configJson: { cloudId: CLOUD_ID, siteName: 'mycompany' },
+        }),
+      });
+
+      await createJiraIssue(prisma, ORG_ID, CONNECTION_ID, TASK_RUN_ID);
+
+      expect(prisma.externalLink.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          externalUrl: 'https://mycompany.atlassian.net/browse/PROJ-42',
+        }),
+      });
+    });
+
+    it('uses empty issueUrl when neither siteUrl nor siteName available', async () => {
+      const prisma = createMockPrisma();
+      setupCreateMocks(prisma, {
+        connection: mockConnection({
+          configJson: { cloudId: CLOUD_ID },
+        }),
+      });
+
+      await createJiraIssue(prisma, ORG_ID, CONNECTION_ID, TASK_RUN_ID);
+
+      expect(prisma.externalLink.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          externalUrl: '',
+        }),
+      });
+    });
+
+    it('updates sync log to SUCCESS with issue details on success', async () => {
+      const prisma = createMockPrisma();
+      setupCreateMocks(prisma, {
+        fetchResponse: mockCreateIssueResponse('PROJ-99', '55555'),
+      });
+
+      const result = await createJiraIssue(prisma, ORG_ID, CONNECTION_ID, TASK_RUN_ID);
+
+      expect(result).toEqual({ issueKey: 'PROJ-99', issueId: '55555' });
+      expect(prisma.integrationSyncLog.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            status: 'SUCCESS',
+            responsePayloadJson: expect.objectContaining({
+              issueKey: 'PROJ-99',
+              issueId: '55555',
+            }),
+          }),
+        }),
+      );
+    });
+  });
+
+  // =========================================================================
+  // transitionJiraIssue - additional error/edge cases
+  // =========================================================================
+
+  describe('transitionJiraIssue - error handling', () => {
+    function setupTransitionMocks(prisma: ReturnType<typeof createMockPrisma>) {
+      prisma.externalLink.findFirst.mockResolvedValue({
+        id: 'link-1',
+        externalId: 'PROJ-42',
+        entityId: TASK_RUN_ID,
+        metadataJson: { key: 'PROJ-42', status: 'To Do', lastSyncOrigin: 'JIRA' },
+      });
+      prisma.workflowTaskRun.findUnique.mockResolvedValue({
+        id: TASK_RUN_ID,
+        workflowTaskTemplateId: 'tmpl-1',
+      });
+      prisma.workflowTaskTemplate.findUnique.mockResolvedValue({
+        configJson: { jiraProjectId: '10000' },
+      });
+      mockJiraConfigParse.mockReturnValue({
+        success: true,
+        data: { jiraProjectId: '10000' },
+      } as unknown);
+      mockLookupTransition.mockResolvedValue({
+        transitionId: '21',
+        targetStatusName: 'In Progress',
+        targetStatusCategory: 'indeterminate',
+      });
+      prisma.integrationConnection.findUnique.mockResolvedValue(mockConnection());
+      mockFetch.mockResolvedValue(new Response(null, { status: 204 }));
+    }
+
+    it('throws UNAUTHORIZED on 401 response and updates sync log + connection error', async () => {
+      const prisma = createMockPrisma();
+      setupTransitionMocks(prisma);
+      mockFetch.mockResolvedValue(new Response('Unauthorized', { status: 401 }));
+
+      await expect(
+        transitionJiraIssue(prisma, ORG_ID, CONNECTION_ID, TASK_RUN_ID, 'IN_PROGRESS'),
+      ).rejects.toThrow(
+        expect.objectContaining({ code: 'UNAUTHORIZED' }),
+      );
+
+      expect(prisma.integrationSyncLog.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ status: 'FAILED' }),
+        }),
+      );
+      expect(prisma.integrationConnection.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            lastErrorAt: expect.any(Date),
+          }),
+        }),
+      );
+    });
+
+    it('wraps non-OK Jira response as INTERNAL_SERVER_ERROR', async () => {
+      const prisma = createMockPrisma();
+      setupTransitionMocks(prisma);
+      mockFetch.mockResolvedValue(new Response('Server Error', { status: 500 }));
+
+      await expect(
+        transitionJiraIssue(prisma, ORG_ID, CONNECTION_ID, TASK_RUN_ID, 'IN_PROGRESS'),
+      ).rejects.toThrow(
+        expect.objectContaining({ code: 'INTERNAL_SERVER_ERROR' }),
+      );
+    });
+
+    it('logs FAILED sync when projectId cannot be determined', async () => {
+      const prisma = createMockPrisma();
+      prisma.externalLink.findFirst.mockResolvedValue({
+        id: 'link-1',
+        externalId: 'PROJ-42',
+        entityId: TASK_RUN_ID,
+        metadataJson: {},
+      });
+      prisma.workflowTaskRun.findUnique.mockResolvedValue({
+        id: TASK_RUN_ID,
+        workflowTaskTemplateId: 'tmpl-1',
+      });
+      prisma.workflowTaskTemplate.findUnique.mockResolvedValue({
+        configJson: {},
+      });
+      mockJiraConfigParse.mockReturnValue({
+        success: false,
+      } as unknown);
+
+      await transitionJiraIssue(prisma, ORG_ID, CONNECTION_ID, TASK_RUN_ID, 'IN_PROGRESS');
+
+      expect(prisma.integrationSyncLog.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          syncType: 'issue-transition-unmapped',
+          status: 'FAILED',
+          errorMessage: expect.stringContaining('Cannot determine Jira project ID'),
+        }),
+      });
+      expect(mockFetch).not.toHaveBeenCalled();
+    });
+
+    it('silently returns when connection is not CONNECTED', async () => {
+      const prisma = createMockPrisma();
+      prisma.externalLink.findFirst.mockResolvedValue({
+        id: 'link-1',
+        externalId: 'PROJ-42',
+        entityId: TASK_RUN_ID,
+        metadataJson: {},
+      });
+      prisma.workflowTaskRun.findUnique.mockResolvedValue({
+        id: TASK_RUN_ID,
+        workflowTaskTemplateId: 'tmpl-1',
+      });
+      prisma.workflowTaskTemplate.findUnique.mockResolvedValue({
+        configJson: { jiraProjectId: '10000' },
+      });
+      mockJiraConfigParse.mockReturnValue({
+        success: true,
+        data: { jiraProjectId: '10000' },
+      } as unknown);
+      mockLookupTransition.mockResolvedValue({
+        transitionId: '21',
+        targetStatusName: 'Done',
+        targetStatusCategory: 'done',
+      });
+      prisma.integrationConnection.findUnique.mockResolvedValue(
+        mockConnection({ status: 'DISCONNECTED' }),
+      );
+
+      await transitionJiraIssue(prisma, ORG_ID, CONNECTION_ID, TASK_RUN_ID, 'DONE');
+
+      expect(mockFetch).not.toHaveBeenCalled();
+    });
+
+    it('silently returns when connection is null', async () => {
+      const prisma = createMockPrisma();
+      prisma.externalLink.findFirst.mockResolvedValue({
+        id: 'link-1',
+        externalId: 'PROJ-42',
+        entityId: TASK_RUN_ID,
+        metadataJson: {},
+      });
+      prisma.workflowTaskRun.findUnique.mockResolvedValue({
+        id: TASK_RUN_ID,
+        workflowTaskTemplateId: 'tmpl-1',
+      });
+      prisma.workflowTaskTemplate.findUnique.mockResolvedValue({
+        configJson: { jiraProjectId: '10000' },
+      });
+      mockJiraConfigParse.mockReturnValue({
+        success: true,
+        data: { jiraProjectId: '10000' },
+      } as unknown);
+      mockLookupTransition.mockResolvedValue({
+        transitionId: '21',
+        targetStatusName: 'Done',
+        targetStatusCategory: 'done',
+      });
+      prisma.integrationConnection.findUnique.mockResolvedValue(null);
+
+      await transitionJiraIssue(prisma, ORG_ID, CONNECTION_ID, TASK_RUN_ID, 'DONE');
+
+      expect(mockFetch).not.toHaveBeenCalled();
+    });
+  });
+
+  // =========================================================================
   // detectScopeExpansionNeeded
   // =========================================================================
 
@@ -473,6 +799,15 @@ describe('jira-issue-sync', () => {
     it('returns false when all required scopes present', () => {
       const scope = 'read:jira-work write:jira-work manage:jira-webhook offline_access';
       expect(detectScopeExpansionNeeded(scope)).toBe(false);
+    });
+
+    it('returns true when both required scopes are missing', () => {
+      const scope = 'read:jira-work offline_access';
+      expect(detectScopeExpansionNeeded(scope)).toBe(true);
+    });
+
+    it('returns true when scope string is empty', () => {
+      expect(detectScopeExpansionNeeded('')).toBe(true);
     });
   });
 });

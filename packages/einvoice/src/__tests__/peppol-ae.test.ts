@@ -276,3 +276,96 @@ describe('Peppol Schemas', () => {
     expect(peppolParticipantIdSchema.safeParse('invalid').success).toBe(false);
   });
 });
+
+// ---------------------------------------------------------------------------
+// PINT-AE Validator — additional branch coverage
+// ---------------------------------------------------------------------------
+
+describe('PINT-AE Validator — extra branches', () => {
+  it('rejects XML without Invoice root element', () => {
+    const result = validatePintAeXml('<Root><Other/></Root>');
+    expect(result.valid).toBe(false);
+    expect(result.errors[0]?.code).toBe('MISSING_ROOT');
+  });
+
+  it('rejects XML with wrong CustomizationID', () => {
+    const invoice = createTestInvoice();
+    const xml = generatePintAeXml(invoice);
+    const xmlWrongId = xml.replace(PINT_AE_CUSTOMIZATION_ID, 'wrong-customization-id');
+    const result = validatePintAeXml(xmlWrongId);
+    expect(result.valid).toBe(false);
+    expect(result.errors.some(e => e.code === 'WRONG_CUSTOMIZATION_ID')).toBe(true);
+  });
+
+  it('rejects XML missing DocumentCurrencyCode', () => {
+    const invoice = createTestInvoice();
+    const xml = generatePintAeXml(invoice);
+    const xmlNoCurrency = xml.replace(
+      /<cbc:DocumentCurrencyCode>[^<]*<\/cbc:DocumentCurrencyCode>/,
+      '',
+    );
+    const result = validatePintAeXml(xmlNoCurrency);
+    expect(result.valid).toBe(false);
+    expect(result.errors.some(e => e.code === 'MISSING_CURRENCY_CODE')).toBe(true);
+  });
+
+  it('rejects XML missing TaxSubtotal', () => {
+    const invoice = createTestInvoice();
+    const xml = generatePintAeXml(invoice);
+    // Remove all TaxSubtotal elements
+    const xmlNoTax = xml.replace(/<cac:TaxSubtotal>[\s\S]*?<\/cac:TaxSubtotal>/g, '');
+    const result = validatePintAeXml(xmlNoTax);
+    expect(result.valid).toBe(false);
+    expect(result.errors.some(e => e.code === 'MISSING_TAX_SUBTOTAL')).toBe(true);
+  });
+
+  it('rejects XML with missing line amounts', () => {
+    const invoice = createTestInvoice();
+    const xml = generatePintAeXml(invoice);
+    // Remove LineExtensionAmount from lines
+    const xmlNoAmount = xml.replace(
+      /<cbc:LineExtensionAmount[^>]*>[^<]*<\/cbc:LineExtensionAmount>/g,
+      '',
+    );
+    const result = validatePintAeXml(xmlNoAmount);
+    expect(result.errors.some(e => e.code === 'MISSING_LINE_AMOUNT')).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// PeppolAEProfile — generate/parse/validate integration
+// ---------------------------------------------------------------------------
+
+describe('PeppolAEProfile integration', () => {
+  it('generate() produces valid PINT-AE XML', async () => {
+    const profile = new PeppolAEProfile();
+    const invoice = createTestInvoice();
+    const xml = await profile.generate(invoice);
+    expect(xml).toContain(PINT_AE_CUSTOMIZATION_ID);
+    expect(xml).toContain('Invoice');
+  });
+
+  it('parse() converts XML back to EInvoice', async () => {
+    const profile = new PeppolAEProfile();
+    const invoice = createTestInvoice();
+    const xml = await profile.generate(invoice);
+    const parsed = await profile.parse(xml);
+    expect(parsed.id).toBe('INV-2026-001');
+    expect(parsed.profileId).toBe('peppol-ae');
+  });
+
+  it('validate() returns valid for correct XML', async () => {
+    const profile = new PeppolAEProfile();
+    const invoice = createTestInvoice();
+    const xml = await profile.generate(invoice);
+    const result = await profile.validate(xml);
+    expect(result.valid).toBe(true);
+  });
+
+  it('validate() returns errors for malformed XML', async () => {
+    const profile = new PeppolAEProfile();
+    const result = await profile.validate('<broken>>>');
+    expect(result.valid).toBe(false);
+    expect(result.errors.length).toBeGreaterThan(0);
+  });
+});

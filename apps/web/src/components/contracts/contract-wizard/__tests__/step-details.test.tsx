@@ -82,4 +82,45 @@ describe('StepDetails', () => {
     const readOnly = screen.getByDisplayValue('ctr-locked');
     expect(readOnly).toHaveAttribute('readonly');
   });
+
+  it('renders contractor picker combobox when contractorId is not provided', () => {
+    render(<StepDetailsHarness />);
+    const comboboxes = screen.getAllByRole('combobox');
+    expect(comboboxes.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('renders auto-renewal checkbox', () => {
+    render(<StepDetailsHarness />);
+    const checkbox = screen.getByRole('checkbox', { name: /auto-renewal/i });
+    expect(checkbox).toBeInTheDocument();
+    expect(checkbox).not.toBeChecked();
+  });
+
+  it('renders start date and end date picker triggers', () => {
+    render(<StepDetailsHarness />);
+    const buttons = screen.getAllByRole('button');
+    // Start date button should show formatted date since default has startDate
+    const dateButtons = buttons.filter(
+      b => b.querySelector('svg') !== null && b.className.includes('justify-start'),
+    );
+    expect(dateButtons.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('renders notice period input with number type', () => {
+    render(<StepDetailsHarness />);
+    const noticePeriod = screen.getByLabelText(/notice period/i);
+    expect(noticePeriod).toHaveAttribute('type', 'number');
+    expect(noticePeriod).toHaveAttribute('min', '1');
+  });
+
+  it('shows contractor display name in readonly input when contractorId matches a loaded contractor', () => {
+    render(<StepDetailsHarness contractorId="ctr-1" />);
+    const readOnly = screen.getByDisplayValue('Acme Contractor');
+    expect(readOnly).toHaveAttribute('readonly');
+  });
+
+  it('renders contract type select', () => {
+    render(<StepDetailsHarness />);
+    expect(screen.getByText(/contract type/i)).toBeInTheDocument();
+  });
 });

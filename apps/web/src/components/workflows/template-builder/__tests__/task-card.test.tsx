@@ -1,4 +1,4 @@
-import { render, screen } from '@/test/test-utils';
+import { render, screen, setup } from '@/test/test-utils';
 import { TaskCard } from '../task-card';
 
 vi.mock('@tanstack/react-query', async () => {
@@ -107,5 +107,34 @@ describe('TaskCard', () => {
       />,
     );
     expect(screen.getByText('Required task')).toBeInTheDocument();
+  });
+
+  it('renders drag handle and collapsible trigger buttons', () => {
+    render(
+      <TaskCard index={0} allTasks={[]} form={createMockForm()} onRemove={vi.fn()} />,
+    );
+    const buttons = screen.getAllByRole('button');
+    // At minimum: drag handle button exists
+    expect(buttons.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('renders condition builder placeholder in collapsed state', () => {
+    render(
+      <TaskCard index={0} allTasks={[]} form={createMockForm()} onRemove={vi.fn()} />,
+    );
+    // ConditionBuilder is mocked, but the summary is null so no badge shows
+    expect(screen.queryByText('ConditionBuilder')).not.toBeInTheDocument();
+  });
+
+  it('renders with empty allTasks and index=0 without dependency options', () => {
+    render(
+      <TaskCard
+        index={0}
+        allTasks={[]}
+        form={createMockForm({ title: 'First Task' })}
+        onRemove={vi.fn()}
+      />,
+    );
+    expect(screen.getByText('First Task')).toBeInTheDocument();
   });
 });

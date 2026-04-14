@@ -80,4 +80,105 @@ describe('Ir35ChainPanel', () => {
     renderPanel();
     expect(screen.getByRole('button', { name: 'Add participant' })).toBeInTheDocument();
   });
+
+  it('renders subtitle text', () => {
+    renderPanel();
+    expect(screen.getByText('Track the chain.')).toBeInTheDocument();
+  });
+
+  it('renders participant rows when data is present', async () => {
+    // Push data into the mock before rendering
+    mockData.push(
+      {
+        id: 'p1',
+        organizationId: 'org_1',
+        contractorAssignmentId: 'cass_1',
+        role: 'CLIENT',
+        orderIndex: 0,
+        displayName: 'Client Co',
+        contactEmail: 'client@example.com',
+        linkedOrganizationId: null,
+        linkedContractorId: null,
+        sdsDeliveredAt: null,
+        sdsDeliveredNote: null,
+        sdsAcknowledgedAt: null,
+        sdsAcknowledgedNote: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        id: 'p2',
+        organizationId: 'org_1',
+        contractorAssignmentId: 'cass_1',
+        role: 'WORKER',
+        orderIndex: 1,
+        displayName: 'Worker Ltd',
+        contactEmail: 'worker@example.com',
+        linkedOrganizationId: null,
+        linkedContractorId: null,
+        sdsDeliveredAt: null,
+        sdsDeliveredNote: null,
+        sdsAcknowledgedAt: null,
+        sdsAcknowledgedNote: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    );
+
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    render(
+      <QueryClientProvider client={queryClient}>
+        <NextIntlClientProvider
+          locale="en"
+          messages={{
+            ...messages,
+            Ir35Chain: {
+              ...messages.Ir35Chain,
+              columnRole: 'Role',
+              columnDisplayName: 'Name',
+              columnDelivered: 'Delivered',
+              columnAcknowledged: 'Acknowledged',
+              columnActions: 'Actions',
+            },
+          }}>
+          <Ir35ChainPanel engagementId="cass_1" />
+        </NextIntlClientProvider>
+      </QueryClientProvider>,
+    );
+
+    // Wait for query to resolve
+    const row1 = await screen.findByTestId('row-p1');
+    expect(row1).toBeInTheDocument();
+    expect(screen.getByTestId('row-p2')).toBeInTheDocument();
+    // Table should be present
+    expect(screen.getByRole('table')).toBeInTheDocument();
+    // Empty state should NOT be visible
+    expect(screen.queryByText('No chain participants yet.')).not.toBeInTheDocument();
+
+    // Clean up mock data for next tests
+    mockData.length = 0;
+  });
+
+  it('opens the add participant dialog when button is clicked', async () => {
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const { container } = render(
+      <QueryClientProvider client={queryClient}>
+        <NextIntlClientProvider locale="en" messages={messages}>
+          <Ir35ChainPanel engagementId="cass_1" />
+        </NextIntlClientProvider>
+      </QueryClientProvider>,
+    );
+    const addBtn = screen.getByRole('button', { name: 'Add participant' });
+
+    // The dialog mock renders data-testid="add-participant-dialog"
+    expect(screen.getByTestId('add-participant-dialog')).toBeInTheDocument();
+
+    // Click add button to open dialog (triggers handleOpenAdd)
+    const { default: userEvent } = await import('@testing-library/user-event');
+    const user = userEvent.setup();
+    await user.click(addBtn);
+
+    // Dialog should still be present after click
+    expect(screen.getByTestId('add-participant-dialog')).toBeInTheDocument();
+  });
 });

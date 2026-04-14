@@ -74,4 +74,48 @@ describe('DetailHeader', () => {
     const buttons = screen.getAllByRole('button');
     expect(buttons.length).toBeGreaterThan(0);
   });
+
+  it('renders untitled fallback when title is null', () => {
+    render(<DetailHeader contract={{ ...baseContract, title: null }} />);
+    expect(screen.getByText('Untitled contract')).toBeInTheDocument();
+  });
+
+  it('does not render contractor link when contractor is null', () => {
+    render(<DetailHeader contract={{ ...baseContract, contractor: null }} />);
+    expect(screen.queryByText('ACME')).not.toBeInTheDocument();
+  });
+
+  it('renders status badge with DRAFT status', () => {
+    render(<DetailHeader contract={{ ...baseContract, status: 'DRAFT' }} />);
+    expect(screen.getByText('Draft')).toBeInTheDocument();
+  });
+
+  it('renders terminate action for DRAFT status', () => {
+    render(<DetailHeader contract={{ ...baseContract, status: 'DRAFT' }} />);
+    // Terminate should be available for DRAFT contracts
+    const buttons = screen.getAllByRole('button');
+    expect(buttons.length).toBeGreaterThan(0);
+  });
+
+  it('does not render terminate for TERMINATED status', () => {
+    render(<DetailHeader contract={{ ...baseContract, status: 'TERMINATED' }} />);
+    // TERMINATED is not in canTerminate list
+    expect(screen.queryByText('ContractDetail.actions.terminate')).not.toBeInTheDocument();
+  });
+
+  it('does not render supersede for DRAFT status', () => {
+    render(<DetailHeader contract={{ ...baseContract, status: 'DRAFT' }} />);
+    // DRAFT is not in canSupersede list
+    expect(screen.queryByText('ContractDetail.actions.supersede')).not.toBeInTheDocument();
+  });
+
+  it('renders status badge for EXPIRED contract', () => {
+    render(<DetailHeader contract={{ ...baseContract, status: 'EXPIRED' }} />);
+    expect(screen.getByText('Expired')).toBeInTheDocument();
+  });
+
+  it('renders with PENDING_SIGNATURE status', () => {
+    render(<DetailHeader contract={{ ...baseContract, status: 'PENDING_SIGNATURE' }} />);
+    expect(screen.getByText('Pending signature')).toBeInTheDocument();
+  });
 });

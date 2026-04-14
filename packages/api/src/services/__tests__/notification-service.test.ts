@@ -347,4 +347,189 @@ describe('dispatch', () => {
 
     expect(mockCreate).not.toHaveBeenCalled();
   });
+
+  it('skips email when channelEmail is false', async () => {
+    mockPrefFindFirst.mockResolvedValue({
+      ...defaultPrefs,
+      channelEmail: false,
+    });
+
+    await dispatch(makeEvent());
+
+    // IN_APP should still be created
+    expect(mockCreate).toHaveBeenCalled();
+    // Email should not be sent
+    expect(mockSendAppEmail).not.toHaveBeenCalled();
+  });
+
+  it('sends email when channelEmail is true and user has email', async () => {
+    mockPrefFindFirst.mockResolvedValue(defaultPrefs);
+    mockUserFindUnique.mockResolvedValue({ email: 'user@test.com' });
+
+    await dispatch(makeEvent());
+
+    expect(mockSendAppEmail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        to: 'user@test.com',
+        from: expect.stringContaining('notifications@'),
+      }),
+    );
+  });
+
+  it('skips email silently when user has no email', async () => {
+    mockPrefFindFirst.mockResolvedValue(defaultPrefs);
+    mockUserFindUnique.mockResolvedValue({ email: null });
+
+    await expect(dispatch(makeEvent())).resolves.toBeUndefined();
+    expect(mockSendAppEmail).not.toHaveBeenCalled();
+    // IN_APP should still be created
+    expect(mockCreate).toHaveBeenCalled();
+  });
+
+  it('dispatches to multiple recipients independently', async () => {
+    mockPrefFindFirst.mockResolvedValue(defaultPrefs);
+    mockFindFirst.mockResolvedValue(null);
+
+    await dispatch(
+      makeEvent({
+        recipientUserIds: ['user_1', 'user_2', 'user_3'],
+      }),
+    );
+
+    expect(mockCreate).toHaveBeenCalledTimes(3);
+    // Preferences should be checked for each user
+    expect(mockPrefFindFirst).toHaveBeenCalledTimes(3);
+  });
+
+  it('creates preferences with correct notificationType', async () => {
+    mockPrefFindFirst.mockResolvedValue(null);
+    mockPrefCreate.mockResolvedValue(defaultPrefs);
+
+    await dispatch(
+      makeEvent({
+        type: 'CONTRACT_EXPIRING' as NotificationEvent['type'],
+      }),
+    );
+
+    expect(mockPrefCreate).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        notificationType: 'CONTRACT_EXPIRING',
+      }),
+    });
+  });
+
+  it('dispatches channel alert for APPROVAL_REQUEST to approvals channel', async () => {
+    mockPrefFindFirst.mockResolvedValue(defaultPrefs);
+    const mockSendChannelAlert = vi.fn().mockResolvedValue(undefined);
+
+    mockConnectionFindMany
+      .mockResolvedValueOnce([]) // per-recipient
+      .mockResolvedValueOnce([{ provider: 'MICROSOFT_TEAMS' }]); // channel alert
+
+    const { TeamsMessagingProvider } = await import(
+      '../../services/messaging/teams-messaging-provider.js'
+    );
+    vi.spyOn(TeamsMessagingProvider.prototype, 'sendChannelAlert').mockImplementation(
+      mockSendChannelAlert,
+    );
+
+    mockConnectionFindFirst.mockResolvedValueOnce({
+      configJson: { channelMapping: { approvals: 'C-APPROVALS-1' } },
+    });
+
+    await dispatch(
+      makeEvent({
+        type: 'APPROVAL_REQUEST' as NotificationEvent['type'],
+        recipientUserIds: ['user_1'],
+      }),
+    );
+
+    expect(mockSendChannelAlert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        channelId: 'C-APPROVALS-1',
+      }),
+    );
+  });
+
+  it('dispatches channel alert for TASK_ASSIGNED to tasks channel', async () => {
+    mockPrefFindFirst.mockResolvedValue(defaultPrefs);
+    const mockSendChannelAlert = vi.fn().mockResolvedValue(undefined);
+
+    mockConnectionFindMany
+      .mockResolvedValueOnce([]) // per-recipient
+      .mockResolvedValueOnce([{ provider: 'MICROSOFT_TEAMS' }]); // channel alert
+
+    const { TeamsMessagingProvider } = await import(
+      '../../services/messaging/teams-messaging-provider.js'
+    );
+    vi.spyOn(TeamsMessagingProvider.prototype, 'sendChannelAlert').mockImplementation(
+      mockSendChannelAlert,
+    );
+
+    mockConnectionFindFirst.mockResolvedValueOnce({
+      configJson: { channelMapping: { tasks: 'C-TASKS-1' } },
+    });
+
+    await dispatch(
+      makeEvent({
+        type: 'TASK_ASSIGNED' as NotificationEvent['type'],
+        recipientUserIds: ['user_1'],
+        entityType: 'WORKFLOW_TASK_RUN',
+      }),
+    );
+
+    expect(mockSendChannelAlert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        channelId: 'C-TASKS-1',
+      }),
+    );
+  });
+
+  it('skips channel alert when no messaging providers connected', async () => {
+    mockPrefFindFirst.mockResolvedValue(defaultPrefs);
+
+    mockConnectionFindMany
+      .mockResolvedValueOnce([]) // per-recipient
+      .mockResolvedValueOnce([]); // channel alert - no providers
+
+    await dispatch(
+      makeEvent({
+        type: 'INVOICE_RECEIVED' as NotificationEvent['type'],
+        recipientUserIds: ['user_1'],
+      }),
+    );
+
+    // No providers means no channel alert attempt
+    expect(mockConnectionFindFirst).not.toHaveBeenCalled();
+  });
+
+  it('does not dispatch channel alert when channel ID resolves to null', async () => {
+    mockPrefFindFirst.mockResolvedValue(defaultPrefs);
+    const mockSendChannelAlert = vi.fn().mockResolvedValue(undefined);
+
+    mockConnectionFindMany
+      .mockResolvedValueOnce([]) // per-recipient
+      .mockResolvedValueOnce([{ provider: 'MICROSOFT_TEAMS' }]); // channel alert
+
+    const { TeamsMessagingProvider } = await import(
+      '../../services/messaging/teams-messaging-provider.js'
+    );
+    vi.spyOn(TeamsMessagingProvider.prototype, 'sendChannelAlert').mockImplementation(
+      mockSendChannelAlert,
+    );
+
+    // channelMapping exists but doesn't have the category
+    mockConnectionFindFirst.mockResolvedValueOnce({
+      configJson: { channelMapping: { contracts: 'C-CONTRACTS-1' } },
+    });
+
+    await dispatch(
+      makeEvent({
+        type: 'INVOICE_RECEIVED' as NotificationEvent['type'],
+        recipientUserIds: ['user_1'],
+      }),
+    );
+
+    expect(mockSendChannelAlert).not.toHaveBeenCalled();
+  });
 });

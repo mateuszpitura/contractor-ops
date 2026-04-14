@@ -335,3 +335,312 @@ describe('integration.getOAuthUrlGeneric', () => {
     expect(url.searchParams.get('scope')).toBe('Calendars.ReadWrite offline_access');
   });
 });
+
+// ===========================================================================
+// disconnect (Slack)
+// ===========================================================================
+
+describe('integration.disconnect', () => {
+  it('disconnects an existing Slack connection', async () => {
+    mockPrisma.integrationConnection.findFirst.mockResolvedValueOnce({
+      id: 'conn-1',
+      organizationId: ORG_ID,
+      provider: 'SLACK',
+      status: 'CONNECTED',
+    });
+    mockPrisma.integrationConnection.update.mockResolvedValueOnce({
+      id: 'conn-1',
+      status: 'DISCONNECTED',
+      credentialsRef: '',
+    });
+
+    const result = await caller.integration.disconnect();
+
+    expect(result).toEqual({ success: true });
+    expect(mockPrisma.integrationConnection.update).toHaveBeenCalledWith({
+      where: { id: 'conn-1' },
+      data: { status: 'DISCONNECTED', credentialsRef: '' },
+    });
+  });
+
+  it('throws NOT_FOUND when no Slack connection exists', async () => {
+    mockPrisma.integrationConnection.findFirst.mockResolvedValueOnce(null);
+
+    await expect(caller.integration.disconnect()).rejects.toThrow('integrationNotFound');
+  });
+});
+
+// ===========================================================================
+// disconnectGeneric
+// ===========================================================================
+
+describe('integration.disconnectGeneric', () => {
+  it('disconnects a generic provider connection', async () => {
+    mockPrisma.integrationConnection.findFirst.mockResolvedValueOnce({
+      id: 'conn-g1',
+      organizationId: ORG_ID,
+      provider: 'GOOGLE_CALENDAR',
+      status: 'CONNECTED',
+    });
+    mockPrisma.integrationConnection.update.mockResolvedValueOnce({
+      id: 'conn-g1',
+      status: 'DISCONNECTED',
+      credentialsRef: '',
+    });
+
+    const result = await caller.integration.disconnectGeneric({
+      provider: 'google_calendar',
+    });
+
+    expect(result).toEqual({ success: true });
+    expect(mockPrisma.integrationConnection.update).toHaveBeenCalledWith({
+      where: { id: 'conn-g1' },
+      data: { status: 'DISCONNECTED', credentialsRef: '' },
+    });
+  });
+
+  it('throws NOT_FOUND when provider connection does not exist', async () => {
+    mockPrisma.integrationConnection.findFirst.mockResolvedValueOnce(null);
+
+    await expect(
+      caller.integration.disconnectGeneric({ provider: 'google_calendar' }),
+    ).rejects.toThrow('integrationNotFound');
+  });
+});
+
+// ===========================================================================
+// getSyncLog
+// ===========================================================================
+
+describe('integration.getSyncLog', () => {
+  it('returns empty items when no connection exists', async () => {
+    mockPrisma.integrationConnection.findFirst.mockResolvedValueOnce(null);
+
+    const result = await caller.integration.getSyncLog({
+      provider: 'slack',
+      limit: 10,
+    });
+
+    expect(result).toEqual({ items: [], nextCursor: null });
+  });
+
+  it('returns paginated sync log entries', async () => {
+    mockPrisma.integrationConnection.findFirst.mockResolvedValueOnce({
+      id: 'conn-sync',
+    });
+    const logEntries = Array.from({ length: 11 }, (_, i) => ({
+      id: `log-${i}`,
+      syncType: 'FULL',
+      status: 'SUCCESS',
+      direction: 'INBOUND',
+      errorMessage: null,
+      startedAt: new Date(),
+      completedAt: new Date(),
+    }));
+    mockPrisma.integrationSyncLog.findMany.mockResolvedValueOnce(logEntries);
+
+    const result = await caller.integration.getSyncLog({
+      provider: 'slack',
+      limit: 10,
+    });
+
+    expect(result.items).toHaveLength(10);
+    expect(result.nextCursor).toBe('log-10');
+  });
+
+  it('returns null nextCursor when fewer items than limit', async () => {
+    mockPrisma.integrationConnection.findFirst.mockResolvedValueOnce({
+      id: 'conn-sync',
+    });
+    mockPrisma.integrationSyncLog.findMany.mockResolvedValueOnce([
+      {
+        id: 'log-0',
+        syncType: 'FULL',
+        status: 'SUCCESS',
+        direction: 'INBOUND',
+        errorMessage: null,
+        startedAt: new Date(),
+        completedAt: new Date(),
+      },
+    ]);
+
+    const result = await caller.integration.getSyncLog({
+      provider: 'slack',
+      limit: 10,
+    });
+
+    expect(result.items).toHaveLength(1);
+    expect(result.nextCursor).toBeNull();
+  });
+});
+
+// ===========================================================================
+// getWebhookLog
+// ===========================================================================
+
+describe('integration.getWebhookLog', () => {
+  it('returns paginated webhook delivery entries', async () => {
+    const deliveries = Array.from({ length: 11 }, (_, i) => ({
+      id: `wh-${i}`,
+      eventType: 'message',
+      deliveryStatus: 'SUCCESS',
+      receivedAt: new Date(),
+      processedAt: new Date(),
+      errorMessage: null,
+    }));
+    mockPrisma.webhookDelivery.findMany.mockResolvedValueOnce(deliveries);
+
+    const result = await caller.integration.getWebhookLog({
+      provider: 'slack',
+      limit: 10,
+    });
+
+    expect(result.items).toHaveLength(10);
+    expect(result.nextCursor).toBe('wh-10');
+  });
+
+  it('returns null nextCursor when fewer items than limit', async () => {
+    mockPrisma.webhookDelivery.findMany.mockResolvedValueOnce([
+      {
+        id: 'wh-0',
+        eventType: 'message',
+        deliveryStatus: 'SUCCESS',
+        receivedAt: new Date(),
+        processedAt: new Date(),
+        errorMessage: null,
+      },
+    ]);
+
+    const result = await caller.integration.getWebhookLog({
+      provider: 'slack',
+      limit: 10,
+    });
+
+    expect(result.items).toHaveLength(1);
+    expect(result.nextCursor).toBeNull();
+  });
+});
+
+// ===========================================================================
+// linkUser
+// ===========================================================================
+
+describe('integration.linkUser', () => {
+  it('creates an external link when connection exists', async () => {
+    mockPrisma.integrationConnection.findFirst.mockResolvedValueOnce({
+      id: 'conn-link',
+      organizationId: ORG_ID,
+      provider: 'SLACK',
+    });
+    const mockLink = {
+      id: 'el-1',
+      organizationId: ORG_ID,
+      integrationConnectionId: 'conn-link',
+      entityType: 'CONTRACTOR',
+      entityId: 'user-target',
+      externalType: 'SLACK_USER',
+      externalId: 'U12345',
+    };
+    mockPrisma.externalLink.create.mockResolvedValueOnce(mockLink);
+
+    const result = await caller.integration.linkUser({
+      userId: 'user-target',
+      externalId: 'U12345',
+    });
+
+    expect(result).toMatchObject({ id: 'el-1', externalId: 'U12345' });
+  });
+
+  it('throws PRECONDITION_FAILED when no Slack connection', async () => {
+    mockPrisma.integrationConnection.findFirst.mockResolvedValueOnce(null);
+
+    await expect(
+      caller.integration.linkUser({ userId: 'user-target', externalId: 'U12345' }),
+    ).rejects.toThrow('integrationNotConnected');
+  });
+});
+
+// ===========================================================================
+// unlinkUser
+// ===========================================================================
+
+describe('integration.unlinkUser', () => {
+  it('deletes the external link when it exists', async () => {
+    mockPrisma.externalLink.findFirst.mockResolvedValueOnce({
+      id: 'el-unlink',
+      organizationId: ORG_ID,
+    });
+    mockPrisma.externalLink.delete.mockResolvedValueOnce({});
+
+    const result = await caller.integration.unlinkUser({
+      externalLinkId: 'el-unlink',
+    });
+
+    expect(result).toEqual({ success: true });
+    expect(mockPrisma.externalLink.delete).toHaveBeenCalledWith({
+      where: { id: 'el-unlink' },
+    });
+  });
+
+  it('throws NOT_FOUND when external link does not exist', async () => {
+    mockPrisma.externalLink.findFirst.mockResolvedValueOnce(null);
+
+    await expect(
+      caller.integration.unlinkUser({ externalLinkId: 'nonexistent' }),
+    ).rejects.toThrow('integrationLinkNotFound');
+  });
+});
+
+// ===========================================================================
+// listUserMappings
+// ===========================================================================
+
+describe('integration.listUserMappings', () => {
+  it('returns empty mappings when no connection exists', async () => {
+    mockPrisma.integrationConnection.findFirst.mockResolvedValueOnce(null);
+
+    const result = await caller.integration.listUserMappings();
+
+    expect(result).toEqual({ mappings: [], connectionId: null });
+  });
+
+  it('returns mappings with linked and unlinked status', async () => {
+    mockPrisma.integrationConnection.findFirst.mockResolvedValueOnce({
+      id: 'conn-map',
+    });
+    mockPrisma.externalLink.findMany.mockResolvedValueOnce([
+      {
+        id: 'el-1',
+        entityId: 'user-a',
+        externalId: 'U111',
+        externalUrl: null,
+        metadataJson: null,
+      },
+    ]);
+    mockPrisma.member.findMany.mockResolvedValueOnce([
+      {
+        userId: 'user-a',
+        role: 'admin',
+        user: { id: 'user-a', name: 'Alice', email: 'alice@test.com', image: null },
+      },
+      {
+        userId: 'user-b',
+        role: 'member',
+        user: { id: 'user-b', name: 'Bob', email: 'bob@test.com', image: null },
+      },
+    ]);
+
+    const result = await caller.integration.listUserMappings();
+
+    expect(result.connectionId).toBe('conn-map');
+    expect(result.mappings).toHaveLength(2);
+
+    const linked = result.mappings.find((m: { userId: string }) => m.userId === 'user-a');
+    expect(linked?.status).toBe('linked');
+    expect(linked?.slackLink?.externalId).toBe('U111');
+
+    const unlinked = result.mappings.find((m: { userId: string }) => m.userId === 'user-b');
+    expect(unlinked?.status).toBe('unlinked');
+    expect(unlinked?.slackLink).toBeNull();
+  });
+});

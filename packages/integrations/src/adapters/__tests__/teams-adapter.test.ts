@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { TeamsAdapter } from '../teams-adapter.js';
 
 vi.mock('../../services/credential-service.js', () => ({
-  getCredentials: vi.fn(async () => ({
+  decryptCredentials: vi.fn(() => ({
     accessToken: 'enc',
     refreshToken: 'stored-refresh',
   })),

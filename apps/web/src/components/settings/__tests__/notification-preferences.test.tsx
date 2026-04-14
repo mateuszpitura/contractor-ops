@@ -59,4 +59,27 @@ describe('NotificationPreferences', () => {
     render(<NotificationPreferences />);
     expect(screen.getByText('Save preferences')).toBeInTheDocument();
   });
+
+  it('renders all 6 notification event type rows', () => {
+    render(<NotificationPreferences />);
+    expect(screen.getByText('Approval requested')).toBeInTheDocument();
+    expect(screen.getByText('Approval decision')).toBeInTheDocument();
+    expect(screen.getByText('Task assigned')).toBeInTheDocument();
+    expect(screen.getByText('Task overdue')).toBeInTheDocument();
+    expect(screen.getByText('Contract expiring')).toBeInTheDocument();
+    expect(screen.getByText('Invoice received')).toBeInTheDocument();
+  });
+
+  it('renders multiple switch controls for notification channels', () => {
+    render(<NotificationPreferences />);
+    const switches = screen.getAllByRole('switch');
+    // 6 event types x (in-app + email + slack/teams) = many switches
+    expect(switches.length).toBeGreaterThanOrEqual(12);
+  });
+
+  it('renders save button as disabled when form is not dirty', () => {
+    render(<NotificationPreferences />);
+    const saveBtn = screen.getByRole('button', { name: /save preferences/i });
+    expect(saveBtn).toBeDisabled();
+  });
 });

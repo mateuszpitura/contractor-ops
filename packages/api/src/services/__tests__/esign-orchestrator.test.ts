@@ -226,4 +226,191 @@ describe('sendForSignature', () => {
       }),
     );
   });
+
+  it('creates recipients with correct role mapping (countersigner -> COUNTERSIGNER)', async () => {
+    await sendForSignature({
+      organizationId: 'org_1',
+      userId: 'user_1',
+      documentId: 'doc_1',
+      connectionId: 'conn_1',
+      provider: 'DOCUSIGN',
+      signers: [
+        {
+          name: 'Signer',
+          email: 'signer@example.com',
+          role: 'signer',
+          routingOrder: 1,
+        },
+        {
+          name: 'Counter',
+          email: 'counter@example.com',
+          role: 'countersigner',
+          routingOrder: 2,
+        },
+      ],
+    });
+
+    expect(mockTx.signingRecipient.create).toHaveBeenCalledTimes(2);
+    expect(mockTx.signingRecipient.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          email: 'signer@example.com',
+          role: 'SIGNER',
+        }),
+      }),
+    );
+    expect(mockTx.signingRecipient.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          email: 'counter@example.com',
+          role: 'COUNTERSIGNER',
+        }),
+      }),
+    );
+  });
+
+  it('passes custom message, expiresInDays, and reminderIntervalDays to provider', async () => {
+    await sendForSignature({
+      organizationId: 'org_1',
+      userId: 'user_1',
+      documentId: 'doc_1',
+      connectionId: 'conn_1',
+      provider: 'AUTENTI',
+      signers: [
+        { name: 'S', email: 's@e.com', role: 'signer', routingOrder: 1 },
+      ],
+      message: 'Please sign this document',
+      expiresInDays: 30,
+      reminderIntervalDays: 7,
+    });
+
+    expect(mockCreateSigningEnvelope).toHaveBeenCalledWith(
+      expect.objectContaining({
+        provider: 'AUTENTI',
+        request: expect.objectContaining({
+          message: 'Please sign this document',
+          expiresInDays: 30,
+          reminderIntervalDays: 7,
+        }),
+      }),
+    );
+    expect(mockTx.signingEnvelope.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          message: 'Please sign this document',
+          reminderIntervalDays: 7,
+        }),
+      }),
+    );
+  });
+
+  it('uses default expiresInDays of 14 when not provided', async () => {
+    await sendForSignature({
+      organizationId: 'org_1',
+      userId: 'user_1',
+      documentId: 'doc_1',
+      connectionId: 'conn_1',
+      provider: 'DOCUSIGN',
+      signers: [
+        { name: 'S', email: 's@e.com', role: 'signer', routingOrder: 1 },
+      ],
+    });
+
+    expect(mockCreateSigningEnvelope).toHaveBeenCalledWith(
+      expect.objectContaining({
+        request: expect.objectContaining({
+          expiresInDays: 14,
+        }),
+      }),
+    );
+  });
+
+  it('handles signer with no matching externalRecipientId gracefully', async () => {
+    mockCreateSigningEnvelope.mockResolvedValue({
+      externalEnvelopeId: 'ext-env-1',
+      status: 'SENT',
+      signers: [], // no matching signers returned
+    });
+
+    await sendForSignature({
+      organizationId: 'org_1',
+      userId: 'user_1',
+      documentId: 'doc_1',
+      connectionId: 'conn_1',
+      provider: 'DOCUSIGN',
+      signers: [
+        { name: 'S', email: 's@e.com', role: 'signer', routingOrder: 1 },
+      ],
+    });
+
+    expect(mockTx.signingRecipient.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          externalRecipientId: null,
+        }),
+      }),
+    );
+  });
+
+  it('creates ENVELOPE_SENT event with first signer by routingOrder', async () => {
+    await sendForSignature({
+      organizationId: 'org_1',
+      userId: 'user_1',
+      documentId: 'doc_1',
+      connectionId: 'conn_1',
+      provider: 'DOCUSIGN',
+      signers: [
+        { name: 'Second', email: 'second@e.com', role: 'countersigner', routingOrder: 2 },
+        { name: 'First', email: 'first@e.com', role: 'signer', routingOrder: 1 },
+      ],
+    });
+
+    const sentEventCall = mockTx.signingEvent.create.mock.calls.find(
+      (call: unknown[]) => (call[0] as { data: { eventType: string } }).data.eventType === 'ENVELOPE_SENT',
+    );
+    expect(sentEventCall).toBeDefined();
+    expect(sentEventCall[0].data.description).toContain('First');
+  });
+
+  it('sets externalType to DOCUSIGN_ENVELOPE for DocuSign provider', async () => {
+    await sendForSignature({
+      organizationId: 'org_1',
+      userId: 'user_1',
+      documentId: 'doc_1',
+      connectionId: 'conn_1',
+      provider: 'DOCUSIGN',
+      signers: [
+        { name: 'S', email: 's@e.com', role: 'signer', routingOrder: 1 },
+      ],
+    });
+
+    expect(mockTx.externalLink.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          externalType: 'DOCUSIGN_ENVELOPE',
+        }),
+      }),
+    );
+  });
+
+  it('sets externalType to AUTENTI_ENVELOPE for Autenti provider', async () => {
+    await sendForSignature({
+      organizationId: 'org_1',
+      userId: 'user_1',
+      documentId: 'doc_1',
+      connectionId: 'conn_1',
+      provider: 'AUTENTI',
+      signers: [
+        { name: 'S', email: 's@e.com', role: 'signer', routingOrder: 1 },
+      ],
+    });
+
+    expect(mockTx.externalLink.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          externalType: 'AUTENTI_ENVELOPE',
+        }),
+      }),
+    );
+  });
 });

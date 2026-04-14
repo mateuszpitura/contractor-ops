@@ -42,6 +42,18 @@ vi.mock('@contractor-ops/db', () => ({
       findFirst: mockNotificationFindFirst,
     },
   },
+  prismaRaw: {
+    statusfeststellungsverfahren: {
+      findMany: vi.fn().mockResolvedValue([]),
+    },
+    notification: {
+      findFirst: vi.fn().mockResolvedValue(null),
+    },
+  },
+}));
+
+vi.mock('@contractor-ops/api/services/rbac-recipients', () => ({
+  resolveRbacRecipients: vi.fn().mockResolvedValue([]),
 }));
 
 vi.mock('@contractor-ops/api/services/notification-service', () => ({
@@ -119,11 +131,13 @@ describe('GET /api/cron/reminders', () => {
       processed: number;
       sent: number;
       overdueTasksNotified: number;
+      drvExpiriesNotified: number;
     };
     expect(json).toMatchObject({
       processed: 0,
       sent: 0,
       overdueTasksNotified: 0,
+      drvExpiriesNotified: 0,
     });
   });
 
