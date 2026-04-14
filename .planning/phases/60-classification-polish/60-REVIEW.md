@@ -1,13 +1,9 @@
 ---
 phase: 60-classification-polish
-reviewed: 2026-04-14T00:00:00Z
+reviewed: 2026-04-14T17:30:00Z
 depth: standard
-files_reviewed: 75
+files_reviewed: 74
 files_reviewed_list:
-  - apps/web/messages/ar.json
-  - apps/web/messages/de.json
-  - apps/web/messages/en.json
-  - apps/web/messages/pl.json
   - apps/web/src/app/[locale]/(dashboard)/classification/__tests__/a11y.test.tsx
   - apps/web/src/app/[locale]/(dashboard)/classification/__tests__/page.test.tsx
   - apps/web/src/app/[locale]/(dashboard)/classification/page.tsx
@@ -79,192 +75,179 @@ files_reviewed_list:
   - packages/validators/src/__tests__/locked-phrases-guard.test.ts
   - packages/validators/src/legal/de.ts
   - packages/validators/src/notification.ts
+  - apps/web/messages/ar.json
+  - apps/web/messages/de.json
+  - apps/web/messages/en.json
+  - apps/web/messages/pl.json
 findings:
   critical: 0
-  warning: 5
-  info: 4
-  total: 9
+  warning: 3
+  info: 2
+  total: 5
 status: issues_found
 ---
 
-# Phase 60: Code Review Report
+# Phase 60: Code Review Report (Iteration 2)
 
-**Reviewed:** 2026-04-14
+**Reviewed:** 2026-04-14T17:30:00Z
 **Depth:** standard
-**Files Reviewed:** 75
+**Files Reviewed:** 74
 **Status:** issues_found
 
 ## Summary
 
-Phase 60 delivers the classification compliance dashboard, DRV clearance CRUD, economic-dependency scan, and reassessment-trigger scan. The overall security posture is solid: every new tRPC procedure is gated through `tenantProcedure` (auto-scoping via `withTenantScope`), RBAC permissions are correctly wired for reads (`contractor:read`) and mutations (`contractor:update`), all cross-org cron reads are confined to the `prismaRaw` client and tagged with the `PHASE-60-CROSS-ORG-AGGREGATE` sentinel, CSV injection is handled via the `FORMULA_PREFIXES` set, cron routes are guarded by `verifyCronSecret`, and Sentry + Cronitor monitors are wired for both new cron endpoints.
+This is the second pass review for Phase 60 (classification polish). The four warnings raised in iteration 1 (WR-01 through WR-04) were all confirmed as fixed in the iteration 1 fix report:
 
-Five warnings and four info items were found. The most impactful are: (1) `console.error` calls in fire-and-forget calendar-sync `.catch` chains inside `contract.ts` — a project-wide violation of the no-`console.*` rule that the Phase 60 diff introduced; (2) `activeAlertsByMarket` for GB has no country-code filter on the `reassessmentTrigger.count`, so it counts triggers from DE engagements too; (3) `overdueByMarket` for GB has no country-code filter on its `reassessmentTrigger.findMany` query, same problem; (4) `updateBandState` writes to `EconomicDependencyAlertState` via `prismaRaw.upsert` without passing `organizationId` in the `update` branch data, only in `create` — this is not a functional bug because the row already has the correct `organizationId`, but it means a compromised scan could silently shift state without the org guard in the write path; (5) the `contract.transitionStatus` and `contract.bulkTransition` mutations do not emit audit log entries, breaking the assumption the reassessment scan relies upon.
+- WR-01: `console.*` in contract router — FIXED, `createLogger`/`log.error` used throughout.
+- WR-02: `activeAlertsByMarket` GB path missing `countryCode: 'GB'` scoping — FIXED.
+- WR-03: `overdueByMarket` GB path missing `countryCode: 'GB'` scoping — FIXED.
+- WR-04: `transitionStatus` and `bulkTransition` missing `writeAuditLog` — FIXED, including correct `tx` propagation in `bulkTransition`.
 
-No critical (injection, auth bypass, credential exposure, or hard crash) issues were found.
+No regressions were introduced by the fixes. Three new warnings and two info items are recorded below. None are in the paths fixed by iteration 1.
 
 ---
 
 ## Warnings
 
-### WR-01: `console.error` in fire-and-forget calendar sync chains (contract router)
+### WR-01: `activeAlertsByMarket` DE path counts economic-dependency alerts without contractor country scoping
 
-**File:** `packages/api/src/routers/contract.ts:296` (also lines 414, 421, 684)
-**Issue:** Four `.catch(err => console.error(...))` calls were introduced in this phase inside `contract.create`, `contract.update`, and `contract.delete`. The project rule from `CLAUDE.md` is explicit: no `console.*` in source; use `@contractor-ops/logger` instead. The audit and cron services in the same package correctly use Pino via `createLogger`/`createCronLogger`.
+**File:** `packages/api/src/routers/classification-dashboard.ts:544-552`
+
+**Issue:** In the DE branch of `activeAlertsByMarket`, the counts for `economicDependencyAlertState` (lines 545-546) filter only on `currentBand` with no join to verify the assignment belongs to a DE contractor. The `tenantProcedure` auto-scopes by `organizationId`, but within one org there can be both GB and DE contractors. If an `EconomicDependencyAlertState` row exists for a GB assignment (possible via direct DB writes, data migration errors, or future code changes that extend the scan to GB), it would be silently counted in the DE dashboard tile.
+
+The daily scan (`runEconomicDependencyScan`) does filter for `countryCode: 'DE'` before upserting states, so in normal operation no GB rows should exist. However the dashboard aggregate has no defensive filter and would silently miscount if invariant is violated.
+
 **Fix:**
 ```typescript
-import { createLogger } from '@contractor-ops/logger';
-const log = createLogger('contract-router');
-
-// Replace:
-.catch(err => console.error('[contract] calendar sync on create failed:', err));
-// With:
-.catch(err => log.error({ err }, 'calendar sync on create failed'));
+// In activeAlertsByMarket DE branch:
+const [warning, critical, drvExpiringWithin90d] = await Promise.all([
+  db.economicDependencyAlertState.count({
+    where: {
+      currentBand: 'warning',
+      contractorAssignment: { contractor: { countryCode: 'DE' } },
+    },
+  }),
+  db.economicDependencyAlertState.count({
+    where: {
+      currentBand: 'critical',
+      contractorAssignment: { contractor: { countryCode: 'DE' } },
+    },
+  }),
+  db.statusfeststellungsverfahren.count({
+    where: {
+      validTo: { gte: now, lte: windowEnd },
+      outcome: { in: ['SELBSTANDIG', 'ABHANGIG'] },
+      contractorAssignment: { contractor: { countryCode: 'DE' } },
+    },
+  }),
+]);
 ```
-Apply the same replacement at lines 414, 421, and 684.
 
 ---
 
-### WR-02: `activeAlertsByMarket` GB path counts reassessment triggers without country-code scoping
+### WR-02: `addDays` helper in `reminders/route.ts` uses local-time `setDate` instead of UTC
 
-**File:** `packages/api/src/routers/classification-dashboard.ts:531-533`
-**Issue:** The GB branch queries `reassessmentTrigger.count` with only `{ status: { in: ['OPEN', 'ACKNOWLEDGED'] } }`. The tenant extension provides org-scoping, but there is no `countryCode: 'GB'` filter. If the tenant has DE contractors with OPEN/ACKNOWLEDGED triggers (which should not happen under current data, but is possible during mixed-market roll-out or data migrations), those rows inflate the GB alert count.
-```typescript
-// Current (line 531-533):
-const openReassessmentTriggers = await db.reassessmentTrigger.count({
-  where: { status: { in: ['OPEN', 'ACKNOWLEDGED'] } },
-});
-```
+**File:** `apps/web/src/app/api/cron/reminders/route.ts:30-34`
+
+**Issue:** The `addDays` function uses `result.setDate(result.getDate() + days)` which operates in the server's **local timezone**. The cron route is scheduled in UTC (Sentry schedule `timezone: 'UTC'`), but if the Node.js process is ever started in a non-UTC timezone (e.g., a Render region that inherits a system TZ), the day arithmetic will produce wrong dates around DST transitions. This affects `findMatchingContracts` (contract-expiry reminder window) and `findMatchingInvoices` (invoice due-date window).
+
+The `detectDrvClearanceExpiries` function that was added in this phase correctly uses `setUTCDate` and `setUTCHours`, making the inconsistency more visible.
+
 **Fix:**
 ```typescript
-const openReassessmentTriggers = await db.reassessmentTrigger.count({
-  where: {
-    status: { in: ['OPEN', 'ACKNOWLEDGED'] },
-    contractorAssignment: { contractor: { countryCode: 'GB' } },
-  },
-});
+// Replace the existing addDays helper (line 30-34):
+function addDays(date: Date, days: number): Date {
+  const result = new Date(date);
+  result.setUTCDate(result.getUTCDate() + days);
+  return result;
+}
+
+// Also update startOfDay to use UTC:
+function startOfDay(date: Date): Date {
+  const result = new Date(date);
+  result.setUTCHours(0, 0, 0, 0);
+  return result;
+}
 ```
 
 ---
 
-### WR-03: `overdueByMarket` GB path returns reassessment triggers regardless of contractor country
+### WR-03: `DownloadCsvButton` anchor element missing `download` attribute; comment contradicts implementation
 
-**File:** `packages/api/src/routers/classification-dashboard.ts:459-466`
-**Issue:** Same category as WR-02. The `findMany` on `reassessmentTrigger` for the GB path does not filter `contractorAssignment.contractor.countryCode = 'GB'`. The client post-filters by checking `t.contractorAssignment?.contractor != null` (line 470) but does not verify `countryCode`, so DE triggers can appear in the GB overdue list.
+**File:** `apps/web/src/components/contractors/classification/dashboard/download-csv-button.tsx:26-37`
+
+**Issue:** The comment at line 27 states "an anchor with `download` hints the browser to save the signed URL to disk", but the anchor element created at line 30 does not set `anchor.download`. The `download` attribute is the mechanism that triggers a save-as dialog; without it, the browser decides how to handle the response based solely on the `Content-Disposition` header returned by R2. `target="_self"` means a wrong Content-Type from R2 would cause a page navigation instead of a file download.
+
+In practice the R2 put sets `Content-Disposition: attachment; filename=...` via `downloadFilename` in `putObjectAndSignDownload`, so most browsers will save the file. But the code contradicts its own comment, `download` is missing, and the `target="_self"` is confusing (it has no effect on signed R2 cross-origin URLs, and cross-origin `download` attributes are also ignored — the anchor can be simplified).
+
 **Fix:**
 ```typescript
-const triggers = await db.reassessmentTrigger.findMany({
-  where: {
-    status: { in: ['OPEN', 'ACKNOWLEDGED'] },
-    contractorAssignment: { contractor: { countryCode: 'GB' } },
-  },
-  // ... include, take remain the same
-});
+const anchor = document.createElement('a');
+anchor.href = result.url;
+// `download` only works same-origin; R2 signed URLs are cross-origin so the
+// browser relies on Content-Disposition: attachment from R2. Remove the
+// misleading comment and target="_self" — just click and let the header drive.
+document.body.appendChild(anchor);
+anchor.click();
+anchor.remove();
 ```
-The post-filter `filter(t => t.contractorAssignment?.contractor != null)` at line 470 can also be removed once the query filter is in place.
-
----
-
-### WR-04: `contract.transitionStatus` and `contract.bulkTransition` do not emit audit log entries
-
-**File:** `packages/api/src/routers/contract.ts:488-527` (transitionStatus) and `731-747` (bulkTransition)
-**Issue:** The reassessment-trigger scan reads `AuditLog` rows for CONTRACT resource type and specifically watches the `status` field in `CONTRACT_MATERIAL_FIELDS`. The `contract.create`, `contract.update`, and `contract.delete` mutations all call `writeAuditLog`, but `transitionStatus` and `bulkTransition` silently update `status` without emitting an audit row. A status transition from `ACTIVE` → `TERMINATED` is therefore invisible to the scan, creating a false-negative — IR35 triggers that should be created after a termination will be missed.
-**Fix:** Add `writeAuditLog` calls after the Prisma updates in both procedures, following the same pattern as `contract.update`. For `transitionStatus`:
-```typescript
-await writeAuditLog({
-  organizationId: ctx.organizationId,
-  actorType: 'USER',
-  actorId: ctx.user?.id ?? null,
-  action: 'STATUS_TRANSITION',
-  resourceType: 'CONTRACT',
-  resourceId: updated.id,
-  resourceName: updated.title,
-  oldValues: { status: contract.status },
-  newValues: { status: updated.status },
-});
-```
-For `bulkTransition`, emit one `writeAuditLog` per transitioned contract id (inside the `$transaction` callback so they roll back atomically).
-
----
-
-### WR-05: `updateBandState` omits `organizationId` from the `update` branch of the upsert
-
-**File:** `packages/api/src/services/economic-dependency-scan.ts:230-237`
-**Issue:** The upsert's `update` branch in `prismaRaw.economicDependencyAlertState.upsert` spreads `data`, which is constructed without an `organizationId` field. The `create` branch correctly includes `organizationId` (set in `data.organizationId`), but the `update` branch omits it. `data` is built at line 221 and does not include `organizationId` — only the `create` spread adds it via `{ contractorAssignmentId: assignment.id, ...data }`. While the raw client does not enforce it, and the row already has the correct `organizationId`, silently updating a row without re-asserting the org boundary means a subtle logic bug (wrong `assignment.organizationId` passed in) would go undetected.
-
-```typescript
-// Current — data object (lines 221-228):
-const data = {
-  organizationId: assignment.organizationId,  // <-- actually IS included
-  currentBand: nextBand,
-  ...
-};
-```
-
-On re-reading: `organizationId` IS included in `data` (line 222). This warning is downgraded — the code is correct. *Retracted as a warning; see info item IN-04 below for a lower-severity observation instead.*
-
----
-
-## Warnings (revised count: 4)
-
-The WR-05 retraction above reduces warnings to 4. The YAML frontmatter has been updated accordingly.
+Remove the misleading comment and `target="_self"` / `rel` attributes that don't apply to cross-origin downloads. If same-origin download is ever needed, add `anchor.download = downloadFilename`.
 
 ---
 
 ## Info
 
-### IN-01: `CoverageTile` computes `ratio` redundantly after a zero-total guard
+### IN-01: `overdueByMarket` DE path selects the oldest assessment per engagement, not the most recent
 
-**File:** `apps/web/src/components/contractors/classification/dashboard/coverage-tile.tsx:31`
-**Issue:** The function already returns early when `total === 0` (line 22), but then recomputes `const ratio = total === 0 ? 0 : completed / total` (line 31), which is dead code for the `total === 0` branch. Minor clarity issue.
-**Fix:** Remove the ternary guard since the early return already ensures `total > 0` by this point:
-```typescript
-const ratio = completed / total;
-```
+**File:** `packages/api/src/routers/classification-dashboard.ts:484-513`
 
----
+**Issue:** The DE overdue path queries `classificationAssessment` ordered `completedAt: 'asc'` (oldest first). The dedup map at lines 501-505 keeps the first occurrence per `contractorAssignmentId` — which, given the ascending sort, is the **oldest** completed assessment for each engagement, not the most recent. The comment "picking the freshest ASC since all are overdue" is incorrect: ASC returns oldest first.
 
-### IN-02: `DownloadCsvButton` toast `onError` passes the button label key, not an error message key
+The practical impact is limited because `contractorName` is sourced from the contractor relation (same regardless of which assessment row is selected), and all selected rows are overdue (older than 12 months). However the field `contractorAssignmentId` and any future use of assessment-level data would be from an old assessment row.
 
-**File:** `apps/web/src/components/contractors/classification/dashboard/download-csv-button.tsx:40`
-**Issue:** `toast.error(t('downloadCsv'))` passes the same translation key used for the button label ("Download CSV") as the error message text. The user sees "Download CSV" as the error description, which is confusing. A dedicated error key should be used.
 **Fix:**
 ```typescript
-onError: () => {
-  toast.error(t('downloadCsvError'));
-},
+// Change the orderBy to 'desc' to pick the most recent per engagement:
+const rows = await db.classificationAssessment.findMany({
+  where: {
+    status: 'completed',
+    countryCode: 'DE',
+    completedAt: { lt: cutoff },
+  },
+  include: { ... },
+  orderBy: { completedAt: 'desc' },  // <-- was 'asc'
+  take: DETAIL_ROW_TAKE,
+});
+// The dedup map then naturally keeps the most recent per engagement.
 ```
-Add `downloadCsvError` (e.g. "CSV export failed. Please try again.") to all four locale message files.
+Update the comment to match.
 
 ---
 
-### IN-03: `reassessment-trigger-scan.ts` imports `prisma` but the tenant-scoped binding is never used
+### IN-02: `ReassessmentTriggerDismissDialog` does not reset `attempted` state when dialog is closed via `onOpenChange`
 
-**File:** `packages/api/src/services/reassessment-trigger-scan.ts:388`
-**Issue:** `import { prisma, prismaRaw } from '@contractor-ops/db'` at line 19 brings in `prisma`, which is re-exported at line 388 as `_tenantScopedPrisma` with a comment stating it is kept for possible future use. All actual queries use `prismaRaw`. This is dead code that keeps an unused import alive via an intentional re-export, which is an unusual pattern that could confuse future readers about which client to use.
-**Fix:** If no tenant-scoped reads are planned for this service in the immediate near-term, remove the `prisma` import and the `_tenantScopedPrisma` export. When needed, it can be re-added with a targeted comment.
+**File:** `apps/web/src/components/contractors/classification/reassessment-trigger/dismiss-dialog.tsx:42-50`
 
----
+**Issue:** The `attempted` flag (line 43) is only reset inside `handleConfirm` on a successful submit. If the user types a short reason, clicks Confirm (which sets `attempted = true` and shows the error), then closes the dialog via the Cancel button or Escape key, the `reason` state is cleared via `onOpenChange` closing the dialog — but `attempted` remains `true` if the parent reopens the same dialog instance (e.g., dismissing a different trigger). On next open the error message would flash momentarily until the user types enough characters.
 
-### IN-04: `verifyCronSecret` is copy-pasted across three cron route files
-
-**File:** `apps/web/src/app/api/cron/classification-economic-dependency/route.ts:24-30`, `apps/web/src/app/api/cron/classification-reassessment-triggers/route.ts:22-29`, `apps/web/src/app/api/cron/reminders/route.ts:17-24`
-**Issue:** The `verifyCronSecret` function is identical across all three files. This violates DRY and means a future change to the auth logic must be applied in three places.
-**Fix:** Extract to a shared `apps/web/src/lib/cron-auth.ts` module:
+**Fix:**
 ```typescript
-import type { NextRequest } from 'next/server';
-
-export function verifyCronSecret(request: NextRequest): boolean {
-  const cronSecret = process.env.CRON_SECRET;
-  if (!cronSecret) return false;
-  const authHeader = request.headers.get('authorization') ?? '';
-  const token = authHeader.replace(/^Bearer\s+/i, '');
-  return token === cronSecret;
-}
+// Reset both states when the dialog closes:
+<Dialog
+  open={open}
+  onOpenChange={next => {
+    if (!next) {
+      setReason('');
+      setAttempted(false);
+    }
+    onOpenChange(next);
+  }}
+>
 ```
-Then import it in each route file.
 
 ---
 
-_Reviewed: 2026-04-14_
+_Reviewed: 2026-04-14T17:30:00Z_
 _Reviewer: Claude (gsd-code-reviewer)_
 _Depth: standard_
+_Iteration: 2_
