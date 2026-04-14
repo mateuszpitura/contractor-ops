@@ -1,4 +1,5 @@
 import type { Prisma } from '@contractor-ops/db/generated/prisma/client';
+import { createLogger } from '@contractor-ops/logger';
 import {
   amendmentCreateSchema,
   contractCreateSchema,
@@ -16,6 +17,8 @@ import { tenantProcedure } from '../middleware/tenant.js';
 import { writeAuditLog } from '../services/audit-writer.js';
 import { syncContractExpiryDeadline } from '../services/calendar-deadline-sync.js';
 import { deleteCalendarEvent } from '../services/calendar-event-service.js';
+
+const log = createLogger('contract-router');
 
 /**
  * Phase 60 CLASS-08 — contract fields the reassessment scan treats as
@@ -293,7 +296,7 @@ export const contractRouter = router({
           contractorName: contract.contractor?.displayName ?? 'Unknown',
           expiryDate: contract.endDate,
           userId: ctx.user?.id,
-        }).catch(err => console.error('[contract] calendar sync on create failed:', err));
+        }).catch(err => log.error({ err }, 'calendar sync on create failed'));
       }
 
       return plain(contract);
@@ -411,14 +414,14 @@ export const contractRouter = router({
           contractorName: contractor?.displayName ?? 'Unknown',
           expiryDate: updated.endDate,
           userId: ctx.user?.id,
-        }).catch(err => console.error('[contract] calendar sync on update failed:', err));
+        }).catch(err => log.error({ err }, 'calendar sync on update failed'));
       } else if (!updated.endDate && existing.endDate) {
         // endDate was cleared -- delete calendar event (D-08)
         void deleteCalendarEvent(ctx.db, {
           organizationId: ctx.organizationId,
           entityType: 'CONTRACT',
           entityId: updated.id,
-        }).catch(err => console.error('[contract] calendar event cleanup failed:', err));
+        }).catch(err => log.error({ err }, 'calendar event cleanup failed'));
       }
 
       return plain(updated);
@@ -681,7 +684,7 @@ export const contractRouter = router({
         organizationId: ctx.organizationId,
         entityType: 'CONTRACT',
         entityId: input.id,
-      }).catch(err => console.error('[contract] calendar event cleanup on delete failed:', err));
+      }).catch(err => log.error({ err }, 'calendar event cleanup on delete failed'));
 
       return { success: true };
     }),
