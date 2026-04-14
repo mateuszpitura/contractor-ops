@@ -4858,6 +4858,18 @@
       "open": "Otwórz",
       "resume": "Wznów",
       "notCompleted": "—"
+    },
+    "polish": {
+      "economicDependency": {
+        "bandSafe": "W granicach progów",
+        "bandWarning": "Ostrzeżenie — 70% udziału w fakturach",
+        "bandCritical": "Krytyczne — 83% udziału w fakturach",
+        "notificationTitleWarning": "Ostrzeżenie o zależności ekonomicznej: {contractorName}",
+        "notificationBodyWarning": "Udział w fakturowaniu wynosi {percent}% z Twojej organizacji w ciągu ostatnich 12 miesięcy — powyżej progu 70% §2 SGB VI.",
+        "notificationTitleCritical": "Krytyczna zależność ekonomiczna: {contractorName}",
+        "notificationBodyCritical": "Udział w fakturowaniu wynosi {percent}% — powyżej progu 83,33% §2 SGB VI dla arbeitnehmerähnliche Selbständige. Przejrzyj zaangażowanie.",
+        "notificationTitleResolved": "Zależność ekonomiczna rozwiązana: {contractorName}"
+      }
     }
   },
   "EInvoice": {

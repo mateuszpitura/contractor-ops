@@ -4921,6 +4921,18 @@
       "open": "Open",
       "resume": "Resume",
       "notCompleted": "—"
+    },
+    "polish": {
+      "economicDependency": {
+        "bandSafe": "Within thresholds",
+        "bandWarning": "Warning — 70% billing share",
+        "bandCritical": "Critical — 83% billing share",
+        "notificationTitleWarning": "Economic-dependency warning: {contractorName}",
+        "notificationBodyWarning": "Billing share is {percent}% from your organisation over the last 12 months — above the 70% §2 SGB VI warning threshold.",
+        "notificationTitleCritical": "Critical economic dependency: {contractorName}",
+        "notificationBodyCritical": "Billing share is {percent}% — above the 83.33% §2 SGB VI threshold for arbeitnehmerähnliche Selbständige. Review the engagement.",
+        "notificationTitleResolved": "Economic dependency resolved: {contractorName}"
+      }
     }
   },
   "EInvoice": {

@@ -5063,6 +5063,18 @@
       "open": "Öffnen",
       "resume": "Fortsetzen",
       "notCompleted": "—"
+    },
+    "polish": {
+      "economicDependency": {
+        "bandSafe": "Innerhalb der Schwellenwerte",
+        "bandWarning": "Warnung — 70 % Umsatzanteil",
+        "bandCritical": "Kritisch — 83 % Umsatzanteil",
+        "notificationTitleWarning": "Warnung zur wirtschaftlichen Abhängigkeit: {contractorName}",
+        "notificationBodyWarning": "Der Umsatzanteil beträgt {percent}% aus Ihrem Unternehmen über die letzten 12 Monate — über der 70-%-Warnschwelle nach §2 SGB VI.",
+        "notificationTitleCritical": "Kritische wirtschaftliche Abhängigkeit: {contractorName}",
+        "notificationBodyCritical": "Der Umsatzanteil beträgt {percent}% — über der 83,33-%-Schwelle nach §2 SGB VI für arbeitnehmerähnliche Selbständige. Bitte prüfen.",
+        "notificationTitleResolved": "Wirtschaftliche Abhängigkeit aufgelöst: {contractorName}"
+      }
     }
   },
   "EInvoice": {

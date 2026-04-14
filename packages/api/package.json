@@ -125,6 +125,16 @@
       "types": "./src/services/courier/inpost-webhook-handler.ts",
       "import": "./src/services/courier/inpost-webhook-handler.ts",
       "default": "./src/services/courier/inpost-webhook-handler.ts"
+    },
+    "./services/economic-dependency-scan": {
+      "types": "./src/services/economic-dependency-scan.ts",
+      "import": "./src/services/economic-dependency-scan.ts",
+      "default": "./src/services/economic-dependency-scan.ts"
+    },
+    "./services/rbac-recipients": {
+      "types": "./src/services/rbac-recipients.ts",
+      "import": "./src/services/rbac-recipients.ts",
+      "default": "./src/services/rbac-recipients.ts"
     }
   },
   "scripts": {

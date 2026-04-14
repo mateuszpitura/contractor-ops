@@ -4858,6 +4858,18 @@
       "open": "فتح",
       "resume": "استئناف",
       "notCompleted": "—"
+    },
+    "polish": {
+      "economicDependency": {
+        "bandSafe": "ضمن الحدود",
+        "bandWarning": "تحذير — 70% من حصة الفوترة",
+        "bandCritical": "حرج — 83% من حصة الفوترة",
+        "notificationTitleWarning": "تحذير تبعية اقتصادية: {contractorName}",
+        "notificationBodyWarning": "حصة الفوترة {percent}% من مؤسستك خلال الـ 12 شهرًا الماضية — فوق عتبة 70% وفق §2 SGB VI.",
+        "notificationTitleCritical": "تبعية اقتصادية حرجة: {contractorName}",
+        "notificationBodyCritical": "حصة الفوترة {percent}% — فوق عتبة 83.33% وفق §2 SGB VI. راجع الارتباط.",
+        "notificationTitleResolved": "تمت تسوية التبعية الاقتصادية: {contractorName}"
+      }
     }
   },
   "EInvoice": {

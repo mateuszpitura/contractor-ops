@@ -11,6 +11,7 @@ import { contractRouter } from './routers/contract.js';
 import { contractorRouter } from './routers/contractor.js';
 import { dashboardRouter } from './routers/dashboard.js';
 import { docsRouter } from './routers/docs.js';
+import { economicDependencyAlertRouter } from './routers/economic-dependency-alert.js';
 import { documentRouter } from './routers/document.js';
 import { einvoiceRouter } from './routers/einvoice.js';
 import { equipmentRouter } from './routers/equipment.js';
@@ -123,6 +124,7 @@ export const appRouter = router({
   classificationDocument: classificationDocumentRouter, // classificationDocument: IR35 SDS + DRV defense bundle PDFs — append-only, content-addressed R2 (Phase 59)
   ir35Chain: ir35ChainRouter, // ir35Chain: IR35 chain participant tracking + SDS delivery / acknowledgement (Phase 59 CLASS-04)
   ir35Attestation: ir35AttestationRouter, // ir35Attestation: contractor other-client attestation + same-tenant cross-reference for DRV defense bundle (Phase 59 CLASS-06)
+  economicDependencyAlert: economicDependencyAlertRouter, // economicDependencyAlert: per-assignment billing-share band (safe/warning/critical) written by the daily §2 SGB VI scan (Phase 60 CLASS-07)
 });
 
 /** Type-safe router type for client consumption */
