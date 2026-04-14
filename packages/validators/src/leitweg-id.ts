@@ -110,3 +110,44 @@ export const leitwegIdSchema = z
   );
 
 export type LeitwegId = z.infer<typeof leitwegIdSchema>;
+
+// ---------------------------------------------------------------------------
+// Peppol participant pair constraint — Phase 61 Plan 04 (D-11).
+// ---------------------------------------------------------------------------
+//
+// `Contractor.peppolSchemeId` and `Contractor.peppolParticipantValue` are
+// strictly paired: either BOTH are set (the contractor is registered on the
+// Peppol SML) or BOTH are null (no Peppol routing known yet). Persisting a
+// half-set pair would break the capability lookup (Plan 05) and the pre-send
+// SML call (Plan 06) with opaque errors; the Zod refine catches it at the
+// tRPC boundary so the DB never sees an inconsistent state.
+//
+// The scheme-id regex mirrors Peppol's ICD list (0060 Companies House, 0088
+// GLN, 0106 DUNS, 0192 OrgNr, 0208 BE, 9957 DE, …) — always exactly 4 digits.
+// Participant values are capped at 64 chars (Storecove's documented max).
+
+const PEPPOL_SCHEME_ID_RE = /^\d{4}$/;
+
+export const peppolParticipantPairSchema = z
+  .object({
+    peppolSchemeId: z
+      .string()
+      .regex(PEPPOL_SCHEME_ID_RE, 'Peppol schemeId must be 4 digits')
+      .nullable(),
+    peppolParticipantValue: z
+      .string()
+      .min(1, 'Peppol participant value cannot be empty')
+      .max(64, 'Peppol participant value too long')
+      .nullable(),
+  })
+  .refine(
+    (d) =>
+      (d.peppolSchemeId === null && d.peppolParticipantValue === null) ||
+      (d.peppolSchemeId !== null && d.peppolParticipantValue !== null),
+    {
+      message: 'peppolSchemeId and peppolParticipantValue must both be set or both be null',
+      path: ['peppolParticipantValue'],
+    },
+  );
+
+export type PeppolParticipantPair = z.infer<typeof peppolParticipantPairSchema>;

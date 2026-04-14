@@ -8,6 +8,7 @@ import { describe, expect, it } from 'vitest';
 import {
   computeLeitwegCheckDigit,
   leitwegIdSchema,
+  peppolParticipantPairSchema,
   validateLeitwegCheckDigit,
 } from '../leitweg-id.js';
 import {
@@ -75,5 +76,86 @@ describe('validateLeitwegCheckDigit', () => {
     const result = validateLeitwegCheckDigit('99-', '00');
     expect(result.valid).toBe(false);
     expect(result.expected).toBe('??');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// peppolParticipantPairSchema — Phase 61 Plan 04 (D-11)
+// ---------------------------------------------------------------------------
+
+describe('peppolParticipantPairSchema', () => {
+  it('accepts both null (contractor has no Peppol routing yet)', () => {
+    const result = peppolParticipantPairSchema.safeParse({
+      peppolSchemeId: null,
+      peppolParticipantValue: null,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('accepts both set (registered on SML)', () => {
+    const result = peppolParticipantPairSchema.safeParse({
+      peppolSchemeId: '0060',
+      peppolParticipantValue: '123456789',
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('rejects only scheme set (value null)', () => {
+    const result = peppolParticipantPairSchema.safeParse({
+      peppolSchemeId: '0060',
+      peppolParticipantValue: null,
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(JSON.stringify(result.error.issues)).toMatch(/both be set or both be null/);
+    }
+  });
+
+  it('rejects only value set (scheme null)', () => {
+    const result = peppolParticipantPairSchema.safeParse({
+      peppolSchemeId: null,
+      peppolParticipantValue: '123456789',
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('rejects scheme with non-4-digit format (3 digits)', () => {
+    const result = peppolParticipantPairSchema.safeParse({
+      peppolSchemeId: '006',
+      peppolParticipantValue: '123456789',
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('rejects scheme with non-4-digit format (5 digits)', () => {
+    const result = peppolParticipantPairSchema.safeParse({
+      peppolSchemeId: '00600',
+      peppolParticipantValue: '123456789',
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('rejects scheme with non-digit characters', () => {
+    const result = peppolParticipantPairSchema.safeParse({
+      peppolSchemeId: '00AB',
+      peppolParticipantValue: '123456789',
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('rejects empty participant value when paired', () => {
+    const result = peppolParticipantPairSchema.safeParse({
+      peppolSchemeId: '0060',
+      peppolParticipantValue: '',
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('rejects participant value over 64 chars', () => {
+    const result = peppolParticipantPairSchema.safeParse({
+      peppolSchemeId: '0060',
+      peppolParticipantValue: 'A'.repeat(65),
+    });
+    expect(result.success).toBe(false);
   });
 });

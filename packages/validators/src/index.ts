@@ -518,9 +518,10 @@ export {
 export {
   computeLeitwegCheckDigit,
   leitwegIdSchema,
+  peppolParticipantPairSchema,
   validateLeitwegCheckDigit,
 } from './leitweg-id.js';
-export type { LeitwegId } from './leitweg-id.js';
+export type { LeitwegId, PeppolParticipantPair } from './leitweg-id.js';
 export {
   isValidCompaniesHouseNumber,
   isValidGbVat,
