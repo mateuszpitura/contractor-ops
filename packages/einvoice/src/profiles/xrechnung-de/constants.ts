@@ -79,3 +79,38 @@ export const XRECHNUNG_BUSINESS_PROCESS_TYPE =
 
 /** BT-24 invoice document type — commercial invoice code. */
 export const CII_DOCUMENT_TYPE_COMMERCIAL_INVOICE = '380' as const;
+
+// ---------------------------------------------------------------------------
+// Locked German legal phrases used in CII <ram:ExemptionReason>
+// ---------------------------------------------------------------------------
+//
+// These MIRROR the Phase-56 locked-phrase constants in
+// `packages/validators/src/legal/de.ts`:
+//   - TAX_STEUERSCHULDNERSCHAFT       → XRECHNUNG_REVERSE_CHARGE_REASON
+//   - TAX_KLEINUNTERNEHMER_NOTICE     → XRECHNUNG_KLEINUNTERNEHMER_REASON
+//
+// They are duplicated here (not relative-imported) because a reverse
+// `@contractor-ops/validators` workspace dep would collide with the existing
+// `validators -> einvoice` arc (zatca re-exports). TypeScript's `rootDir`
+// boundary forbids cross-package relative imports.
+//
+// Drift invariant: `__tests__/locked-phrase-parity.test.ts` imports BOTH
+// modules and asserts byte-equality. CI fails if Phase 56 ever edits the
+// canonical string without touching this file — satisfying threat
+// T-61-02-02 (locked-phrase drift).
+
+/**
+ * CII ExemptionReason text for §13b UStG reverse-charge (category code AE).
+ * MIRROR of `TAX_STEUERSCHULDNERSCHAFT` from
+ * `@contractor-ops/validators` (Phase 56 locked phrases).
+ */
+export const XRECHNUNG_REVERSE_CHARGE_REASON =
+  'Steuerschuldnerschaft des Leistungsempfängers' as const;
+
+/**
+ * CII ExemptionReason text for §19 UStG Kleinunternehmer (category code E).
+ * MIRROR of `TAX_KLEINUNTERNEHMER_NOTICE` from
+ * `@contractor-ops/validators` (Phase 56 locked phrases).
+ */
+export const XRECHNUNG_KLEINUNTERNEHMER_REASON =
+  'Gemäß § 19 UStG wird keine Umsatzsteuer ausgewiesen' as const;
