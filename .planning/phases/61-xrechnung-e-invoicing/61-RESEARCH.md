@@ -701,31 +701,38 @@ export interface TransmitInvoiceParams {
 | A5 | Storecove's `/api/v2/discovery/receives` endpoint returns the full documentTypes list for a participant. My evidence is from an excerpt of the docs; the response shape isn't verified. | §Don't Hand-Roll | Low — worst case, planner adds a capability-list-type normaliser. |
 | A6 | The existing `PeppolParticipant` table can be extended with XRechnung-specific fields without breaking existing peppol-ae flows. I verified the schema exists but didn't fully trace all existing callers. | §Collision | Medium — planner must trace `peppolRouter.connect` flow before the migration. |
 
-## Open Questions
+## Open Questions (RESOLVED)
+
+All five questions below were resolved during Phase 61 planning. Resolutions are surfaced inline so downstream agents and reviewers do not need to reconstruct them from plan diffs.
 
 1. **Exact Storecove document_type_id for XRechnung CII.**
    - What we know: Storecove supports XRechnung in both UBL and CII (marketing page). A `document_type_id` is the discriminator on `/document_submissions`.
    - What's unclear: The literal string value. Likely follows the pattern `urn:cen.eu:en16931:2017#compliant#urn:xoev-de:kosit:standard:xrechnung_3.0:...` but needs confirmation.
    - Recommendation: Wave-0 task — submit a known-good XRechnung-CII to Storecove sandbox, log the accepted `document_type_id`, check into `constants.ts`.
+   - **RESOLVED:** Plan 01 includes an explicit Wave-0 sandbox probe task that submits a canonical XRechnung-CII sample to the Storecove sandbox, captures the accepted `document_type_id` literal, and pins it into `packages/einvoice/src/profiles/xrechnung-de/constants.ts` as `STORECOVE_CII_XRECHNUNG_DOC_TYPE_ID`. Plan 06 consumes this constant in the `send` mutation. No downstream task proceeds without the captured literal.
 
 2. **Whether UK Peppol recipients (NHS / CCS) register CII receive capability in SMP.**
    - What we know: Peppol BIS Billing 3.0 makes CII optional; UK public sector is Peppol-enabled.
    - What's unclear: Empirically, how many NHS trusts register CII vs UBL-only. If most are UBL-only, "one XML for both markets" is misleading.
    - Recommendation: Treat as Pitfall 1; gate the send on per-recipient capability lookup every time (D-11 is load-bearing). Separate future phase to add UBL transformation for UBL-only recipients.
+   - **RESOLVED:** Treated as a per-recipient runtime check, not a design-time assumption. Plan 05 implements `assertReceiverAcceptsXRechnung` + `PeppolCapabilityCache` (6h TTL); Plan 06's `send` mutation hard-gates transmission on a positive capability lookup and throws `PARTICIPANT_NOT_REACHABLE` otherwise. UBL transformation for UBL-only recipients is explicitly deferred to a future phase per CONTEXT.md Deferred Ideas.
 
 3. **Which pre-built artifacts the KoSIT release zip contains (SEF JSON vs XSLT vs SCH).**
    - What we know: The repo `itplr-kosit/validator-configuration-xrechnung` builds distributions with XSLT.
    - What's unclear: Whether SEF JSON (saxon-js's native format) is in the zip or whether we must re-compile `.xslt` → `.sef.json` ourselves.
    - Recommendation: Assume we compile SEF from XSLT in `scripts/recompile-kosit-schematron.ts` using `xslt3 -xsl:… -export:…`. [ASSUMED: A7 — verify by downloading the 2026-01-31 release and listing contents; 10-minute task.]
+   - **RESOLVED:** Plan 01 ships `scripts/recompile-kosit-schematron.ts` that compiles SEF from XSLT unconditionally (does not rely on pre-built SEF in the zip). Plan 03 Task 1 extracts the zip's `.xsl` + XSD artifacts, runs the compile script to produce `EN16931-CII-validation.sef.json` + `XRechnung-CII-validation.sef.json`, and locks them in-repo via `checksums.txt`. The SEF shape question is rendered moot by always compiling from XSLT.
 
 4. **Reconciliation of `Organization.peppolParticipantId` (CONTEXT.md D-10) vs existing `PeppolParticipant` table.**
    - What we know: Both cannot coexist cleanly.
    - Recommendation: Planner must pick Option A, B, or C (§Collision) and update CONTEXT.md / plan-files accordingly. Recommend Option A.
+   - **RESOLVED:** Option A selected — extend the existing `PeppolParticipant` table with XRechnung-specific capability fields (`supportsXRechnungCii`, `lastCapabilityCheckAt`) rather than duplicate participant identity onto `Organization`. Rationale: `PeppolParticipant` already models participant identity + status; duplicating on `Organization` would create dual sources of truth and require dual-write consistency. CONTEXT.md D-10 carries an AMENDMENT note documenting this reconciliation; Plan 01 Task 1 lands the Prisma migration; all downstream send-gate logic (Plan 05 + Plan 06) reads from `PeppolParticipant`.
 
 5. **Storecove webhook event names for transmission status.**
    - What we know: `parseWebhookPayload` handles `event` + `document_guid` + `guid` fields; `storecoveWebhookPayloadSchema` documents available events.
    - What's unclear: Specific event names for "transmitted", "delivered", "failed".
    - Recommendation: Read `packages/einvoice/src/asp/storecove/schemas.ts` during planning; the set is already defined there.
+   - **RESOLVED:** Plan 05 authoritatively maps to the three event names surfaced by `packages/einvoice/src/asp/storecove/schemas.ts`: `invoice.transmission.success` → `DELIVERY_ACK`, `invoice.transmission.delivered` → `DELIVERY_ACK` (idempotent with success), `invoice.transmission.failed` → `DELIVERY_FAILED`. Plan 06 Task 2's Storecove webhook handler consumes these literal event names; unknown events are no-op-logged.
 
 ## Environment Availability
 
