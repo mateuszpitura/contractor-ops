@@ -52,6 +52,7 @@ model Contract {
   workflowRuns    WorkflowRun[]
   timeEntries     TimeEntry[]
   leitwegIds      LeitwegId[]
+  intakes         InvoiceIntakeRequest[]     @relation("InvoiceIntakeMatchedContract")
 
   @@index([organizationId])
   @@index([organizationId, contractorId, status])

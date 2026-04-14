@@ -71,6 +71,7 @@ model Contractor {
   taxIdValidations          TaxIdValidation[]
   ir35ChainParticipantLinks Ir35ChainParticipant[]
   leitwegIds                LeitwegId[]
+  intakes                   InvoiceIntakeRequest[] @relation("InvoiceIntakeMatchedContractor")
 
   // InPost preferred Paczkomat (D-03)
   preferredPaczkomatId      String?

@@ -109,6 +109,7 @@ model Organization {
   eInvoiceLifecycles             EInvoiceLifecycle[]
   eInvoiceLifecycleEvents        EInvoiceLifecycleEvent[]
   peppolCapabilityCache          PeppolCapabilityCache[]
+  invoiceIntakes                 InvoiceIntakeRequest[]
 }
 
 model Member {

@@ -84,6 +84,10 @@ model User {
   // Phase 60 — CLASS-08 reassessment triggers
   acknowledgedReassessmentTriggers ReassessmentTrigger[] @relation("ReassessmentTriggerAck")
   dismissedReassessmentTriggers    ReassessmentTrigger[] @relation("ReassessmentTriggerDismiss")
+
+  // Phase 62 — Invoice intake (D-09) — uploads + validation acknowledgements
+  uploadedIntakes     InvoiceIntakeRequest[] @relation("InvoiceIntakeUploadedBy")
+  acknowledgedIntakes InvoiceIntakeRequest[] @relation("InvoiceIntakeValidationAckBy")
 }
 
 model Session {

@@ -58,6 +58,7 @@ model Invoice {
   paymentRunItems   PaymentRunItem[]
   zatcaChainEntry   ZatcaInvoiceChain?
   eInvoiceLifecycle EInvoiceLifecycle?
+  intake            InvoiceIntakeRequest? @relation("InvoiceIntakeConvertedInvoice")
 
   @@unique([organizationId, duplicateCheckHash])
   @@index([organizationId])
@@ -177,4 +178,78 @@ enum MatchBy {
   MANUAL
   INTEGRATION
   OCR_EXTRACTION
+}
+
+// Phase 62 — Inbound e-invoice intake staging (D-09 / D-10 / D-12)
+// Mutable-parent tier; lifecycle events on EInvoiceLifecycle cover append-only audit.
+// Multi-tenant scoped via Prisma client extension (same pattern as EInvoiceLifecycle).
+
+model InvoiceIntakeRequest {
+  id                             String                        @id @default(cuid())
+  organizationId                 String
+  uploadedByUserId               String
+  sourceKind                     InvoiceIntakeSourceKind
+  rawFileKey                     String
+  rawFileSha256                  String                        @db.VarChar(64)
+  rawFileMime                    String                        @db.VarChar(64)
+  rawFileSizeBytes               Int
+  extractedXmlKey                String?
+  validationReportKey            String?
+  profileLevel                   InvoiceIntakeProfileLevel
+  parsedInvoiceJson              Json
+  extractedSupplierName          String?
+  extractedSupplierVatId         String?
+  extractedSupplierLeitwegId     String?
+  extractedInvoiceNumber         String?
+  extractedInvoiceDate           DateTime?
+  extractedTotalMinor            BigInt?
+  extractedCurrency              String?                       @db.Char(3)
+  matchedContractorId            String?
+  matchedContractId              String?
+  convertedInvoiceId             String?                       @unique
+  status                         InvoiceIntakeStatus           @default(PARSED)
+  validationStatus               InvoiceIntakeValidationStatus @default(VALID)
+  validationAcknowledgedAt       DateTime?
+  validationAcknowledgedByUserId String?
+  rejectionReason                String?
+  unmappedFieldsJson             Json?
+  createdAt                      DateTime                      @default(now())
+  updatedAt                      DateTime                      @updatedAt
+
+  organization             Organization @relation(fields: [organizationId], references: [id])
+  uploadedBy               User         @relation("InvoiceIntakeUploadedBy", fields: [uploadedByUserId], references: [id])
+  matchedContractor        Contractor?  @relation("InvoiceIntakeMatchedContractor", fields: [matchedContractorId], references: [id])
+  matchedContract          Contract?    @relation("InvoiceIntakeMatchedContract", fields: [matchedContractId], references: [id])
+  convertedInvoice         Invoice?     @relation("InvoiceIntakeConvertedInvoice", fields: [convertedInvoiceId], references: [id])
+  validationAcknowledgedBy User?        @relation("InvoiceIntakeValidationAckBy", fields: [validationAcknowledgedByUserId], references: [id])
+
+  @@unique([organizationId, rawFileSha256], map: "invoice_intake_org_sha_uniq")
+  @@index([organizationId, status], map: "invoice_intake_org_status_idx")
+  @@index([organizationId, extractedSupplierVatId], map: "invoice_intake_org_vat_idx")
+  @@index([organizationId, createdAt], map: "invoice_intake_org_created_idx")
+}
+
+enum InvoiceIntakeSourceKind {
+  UPLOAD_XML
+  UPLOAD_PDF
+}
+
+enum InvoiceIntakeStatus {
+  PARSED
+  NEEDS_REVIEW
+  MATCHED
+  CONVERTED
+  REJECTED
+}
+
+enum InvoiceIntakeValidationStatus {
+  VALID
+  WARNINGS
+  INVALID
+}
+
+enum InvoiceIntakeProfileLevel {
+  COMFORT
+  XRECHNUNG
+  EXTENDED
 }
