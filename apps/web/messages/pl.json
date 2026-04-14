@@ -4859,5 +4859,134 @@
       "resume": "Wznów",
       "notCompleted": "—"
     }
+  },
+  "EInvoice": {
+    "_NOTE": "AI-first-pass translation pending review",
+    "Settings": {
+      "_NOTE": "AI-first-pass translation pending review",
+      "h1": "E-invoicing",
+      "subline": "Manage your Peppol participant registration, Leitweg-IDs for German public-sector invoicing, and e-invoice compliance settings.",
+      "PeppolCard": {
+        "ctaNotRegistered": "Register Peppol participant",
+        "ctaRegistered": "Manage participant",
+        "emptyHeading": "Not registered on Peppol",
+        "emptyBody": "Register your organisation once to send XRechnung e-invoices to UK public-sector buyers and receive delivery acknowledgements."
+      },
+      "LeitwegIdCard": {
+        "ctaCreate": "Create Leitweg-ID",
+        "emptyHeading": "No Leitweg-IDs registered",
+        "emptyBody": "Add a Leitweg-ID for each German public-sector buyer you invoice. You can set defaults per contractor and per-contract overrides."
+      }
+    },
+    "InvoicesList": {
+      "_NOTE": "AI-first-pass translation pending review",
+      "SummaryTile": {
+        "heading": "E-invoicing compliance",
+        "bodyPattern": "{validCount} of {totalCount} invoices are EN 16931 compliant.",
+        "ctaNeedsAttention": "Review {needsAttentionCount} invoice(s)"
+      },
+      "Filter": {
+        "label": "Filter by compliance",
+        "all": "All",
+        "notGenerated": "Not generated",
+        "valid": "Valid",
+        "warnings": "Warnings",
+        "invalid": "Invalid",
+        "transmitted": "Transmitted",
+        "failed": "Failed"
+      },
+      "Cell": {
+        "columnHeader": "E-invoice",
+        "notGenerated": "Not generated",
+        "valid": "Valid",
+        "warnings": "Warnings",
+        "invalid": "Invalid",
+        "transmitted": "Transmitted",
+        "failed": "Failed"
+      },
+      "Empty": {
+        "heading": "No invoices in this state",
+        "body": "Try a different filter or clear filters to see all invoices."
+      }
+    },
+    "InvoiceTab": {
+      "_NOTE": "AI-first-pass translation pending review",
+      "tabLabel": "E-invoice",
+      "generationHeading": "Generation",
+      "generationNotGeneratedBody": "No XRechnung XML has been generated for this invoice yet.",
+      "generateCta": "Generate XML",
+      "finalizeCta": "Finalize + validate",
+      "generationCaptionPattern": "Generated {relativeTime} · Rule set {ruleSetVersion} · SHA-256 {hashPrefix8}…",
+      "downloadXmlButton": "Download XML",
+      "downloadXmlHelper": "Expires in 5 minutes — generate a fresh link if needed.",
+      "validationHeading": "Validation",
+      "validationNotValidatedBody": "Validation has not run yet. Finalize the invoice to validate against KoSIT.",
+      "validationCta": "Validate now",
+      "layer1Label": "Layer 1 — XSD schema",
+      "layer2Label": "Layer 2 — EN 16931 Schematron",
+      "layer3Label": "Layer 3 — XRechnung CIUS Schematron",
+      "layerResultPass": "Passed",
+      "layerResultWarningsPattern": "{count} warning(s)",
+      "layerResultFailPattern": "{count} error(s)",
+      "svrlIssueListHeading": "Issues",
+      "svrlIssueRowPattern": "[{severity}] {ruleId} — {message} at {xpath}",
+      "downloadReportButton": "Download full report",
+      "downloadReportHelper": "Opens the full KoSIT HTML report with rule highlighting.",
+      "transmissionHeading": "Transmission",
+      "transmissionNotSentBody": "This e-invoice has not been transmitted.",
+      "sendCta": "Send via Peppol",
+      "transmittedCaptionPattern": "Transmitted {relativeTime} · Message {transmissionId}",
+      "deliveryAckPattern": "Delivered {relativeTime}",
+      "transmissionHistoryHeading": "Transmission history",
+      "transmissionEventPattern": "{occurredAt} — {eventType} {detailsOneLiner}",
+      "leitwegResolvedPattern": "Resolved Leitweg-ID: {leitwegIdValue} ({source})",
+      "leitwegSourceContract": "from contract override",
+      "leitwegSourceContractorDefault": "from contractor default",
+      "leitwegMissingWarningHeading": "Leitweg-ID missing for German public-sector buyer",
+      "leitwegMissingWarningBody": "This buyer is marked as public-sector. Add a Leitweg-ID to this contractor or contract before sending."
+    },
+    "LeitwegIdDialog": {
+      "_NOTE": "AI-first-pass translation pending review",
+      "headingCreate": "Create Leitweg-ID",
+      "headingEdit": "Edit Leitweg-ID",
+      "valueLabel": "Leitweg-ID",
+      "valueHelper": "Format: coarse digits (2–12) + optional refinement (up to 30 uppercase alphanumerics) + 2-digit check digit. Example: 1234567890-AGENCY-56.",
+      "descriptionLabel": "Description (optional)",
+      "descriptionHelper": "Internal label — e.g. “Bundesministerium für Finanzen, Abt. IV”.",
+      "contractorLabel": "Assign to contractor",
+      "contractLabel": "Or assign to a specific contract (overrides contractor default)",
+      "defaultToggle": "Set as default for this contractor",
+      "validFromLabel": "Valid from (optional)",
+      "validToLabel": "Valid until (optional)",
+      "notesLabel": "Notes (optional)",
+      "saveButton": "Save Leitweg-ID",
+      "errorInvalidCheckDigit": "This Leitweg-ID's check digit doesn't match the coarse + refinement parts. Please double-check with your public-sector buyer.",
+      "errorInvalidFormat": "Leitweg-ID must be 2–12 digits, optionally followed by `-<up to 30 uppercase alphanumerics>`, then `-<2-digit check digit>`.",
+      "errorDuplicate": "This Leitweg-ID is already registered in your organisation."
+    },
+    "PeppolDialog": {
+      "_NOTE": "AI-first-pass translation pending review",
+      "registerHeading": "Register Peppol participant",
+      "registerBody": "Registering enables sending XRechnung e-invoices to UK public-sector buyers via Peppol. Your participant ID will be listed in the Peppol SML.",
+      "schemeLabel": "Identifier scheme",
+      "schemeHelper": "`0060` = UK Companies House, `0088` = GLN, `0106` = Dun & Bradstreet.",
+      "valueLabel": "Identifier value",
+      "valueHelper": "Companies House number, GLN, or DUNS — whatever your scheme requires.",
+      "registerButton": "Register participant",
+      "pendingHeading": "Registration pending",
+      "pendingBody": "Storecove is registering your participant with the Peppol SML. This typically takes a few minutes. We'll update the status automatically.",
+      "activeHeading": "Registered on Peppol",
+      "activeBodyPattern": "Participant {schemeId}:{value} · Status {status} · Registered {relativeTime}",
+      "deregisterButton": "Deregister participant"
+    },
+    "Errors": {
+      "_NOTE": "AI-first-pass translation pending review",
+      "LEITWEG_ID_MISSING": "Leitweg-ID missing for this German public-sector buyer. Add one to the contractor or contract before sending via Peppol.",
+      "PARTICIPANT_NOT_REACHABLE": "The recipient isn't registered on Peppol or doesn't support XRechnung. Confirm the buyer's Peppol ID and try again.",
+      "KOSIT_VALIDATION_FAILED": "This e-invoice didn't pass KoSIT validation. Review the validation report and re-finalize after correcting the invoice data.",
+      "PEPPOL_PARTICIPANT_NOT_ACTIVE": "Register your organisation on Peppol before sending e-invoices. Go to Settings → E-invoicing to start.",
+      "STORECOVE_TRANSMISSION_FAILED": "Peppol transmission failed. We'll retry automatically — you can also retry manually from the E-invoice tab.",
+      "Generic": "Something went wrong. Try refreshing or contact support if this persists."
+    }
   }
 }

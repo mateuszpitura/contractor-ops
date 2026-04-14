@@ -5064,5 +5064,127 @@
       "resume": "Fortsetzen",
       "notCompleted": "—"
     }
+  },
+  "EInvoice": {
+    "Settings": {
+      "h1": "E-Rechnung",
+      "subline": "Verwalten Sie Ihre Peppol-Teilnehmerregistrierung, Leitweg-IDs für den deutschen öffentlichen Auftraggeber und die Konformitätseinstellungen für E-Rechnungen.",
+      "PeppolCard": {
+        "ctaNotRegistered": "Peppol-Teilnehmer registrieren",
+        "ctaRegistered": "Teilnehmer verwalten",
+        "emptyHeading": "Nicht auf Peppol registriert",
+        "emptyBody": "Registrieren Sie Ihre Organisation einmalig, um XRechnung-E-Rechnungen an britische Behörden zu versenden und Zustellbestätigungen zu empfangen."
+      },
+      "LeitwegIdCard": {
+        "ctaCreate": "Leitweg-ID anlegen",
+        "emptyHeading": "Keine Leitweg-IDs registriert",
+        "emptyBody": "Fügen Sie für jeden deutschen öffentlichen Auftraggeber eine Leitweg-ID hinzu. Sie können Standardwerte pro Auftragnehmer und Überschreibungen pro Vertrag festlegen."
+      }
+    },
+    "InvoicesList": {
+      "SummaryTile": {
+        "heading": "E-Rechnung-Konformität",
+        "bodyPattern": "{validCount} von {totalCount} Rechnungen sind EN 16931-konform.",
+        "ctaNeedsAttention": "{needsAttentionCount} Rechnung(en) prüfen"
+      },
+      "Filter": {
+        "label": "Nach Konformität filtern",
+        "all": "Alle",
+        "notGenerated": "Nicht erzeugt",
+        "valid": "Gültig",
+        "warnings": "Warnungen",
+        "invalid": "Ungültig",
+        "transmitted": "Übermittelt",
+        "failed": "Fehlgeschlagen"
+      },
+      "Cell": {
+        "columnHeader": "E-Rechnung",
+        "notGenerated": "Nicht erzeugt",
+        "valid": "Gültig",
+        "warnings": "Warnungen",
+        "invalid": "Ungültig",
+        "transmitted": "Übermittelt",
+        "failed": "Fehlgeschlagen"
+      },
+      "Empty": {
+        "heading": "Keine Rechnungen in diesem Status",
+        "body": "Probieren Sie einen anderen Filter oder setzen Sie die Filter zurück, um alle Rechnungen zu sehen."
+      }
+    },
+    "InvoiceTab": {
+      "tabLabel": "E-Rechnung",
+      "generationHeading": "Erzeugung",
+      "generationNotGeneratedBody": "Für diese Rechnung wurde noch kein XRechnung-XML erzeugt.",
+      "generateCta": "XML erzeugen",
+      "finalizeCta": "Finalisieren + validieren",
+      "generationCaptionPattern": "Erzeugt {relativeTime} · Regelwerk {ruleSetVersion} · SHA-256 {hashPrefix8}…",
+      "downloadXmlButton": "XML herunterladen",
+      "downloadXmlHelper": "Der Link läuft in 5 Minuten ab — erzeugen Sie bei Bedarf einen neuen.",
+      "validationHeading": "Validierung",
+      "validationNotValidatedBody": "Die Validierung wurde noch nicht ausgeführt. Finalisieren Sie die Rechnung, um sie gegen KoSIT zu prüfen.",
+      "validationCta": "Jetzt validieren",
+      "layer1Label": "Ebene 1 — XSD-Schema",
+      "layer2Label": "Ebene 2 — EN 16931 Schematron",
+      "layer3Label": "Ebene 3 — XRechnung CIUS Schematron",
+      "layerResultPass": "Bestanden",
+      "layerResultWarningsPattern": "{count} Warnung(en)",
+      "layerResultFailPattern": "{count} Fehler",
+      "svrlIssueListHeading": "Probleme",
+      "svrlIssueRowPattern": "[{severity}] {ruleId} — {message} bei {xpath}",
+      "downloadReportButton": "Vollständigen Bericht herunterladen",
+      "downloadReportHelper": "Öffnet den vollständigen KoSIT-HTML-Bericht mit Regel-Hervorhebung.",
+      "transmissionHeading": "Übermittlung",
+      "transmissionNotSentBody": "Diese E-Rechnung wurde noch nicht übermittelt.",
+      "sendCta": "Via Peppol senden",
+      "transmittedCaptionPattern": "Übermittelt {relativeTime} · Nachricht {transmissionId}",
+      "deliveryAckPattern": "Zugestellt {relativeTime}",
+      "transmissionHistoryHeading": "Übermittlungshistorie",
+      "transmissionEventPattern": "{occurredAt} — {eventType} {detailsOneLiner}",
+      "leitwegResolvedPattern": "Aufgelöste Leitweg-ID: {leitwegIdValue} ({source})",
+      "leitwegSourceContract": "aus Vertragsüberschreibung",
+      "leitwegSourceContractorDefault": "aus Auftragnehmer-Standard",
+      "leitwegMissingWarningHeading": "Leitweg-ID für deutschen öffentlichen Auftraggeber fehlt",
+      "leitwegMissingWarningBody": "Dieser Käufer ist als öffentlicher Auftraggeber gekennzeichnet. Fügen Sie eine Leitweg-ID zum Auftragnehmer oder Vertrag hinzu, bevor Sie senden."
+    },
+    "LeitwegIdDialog": {
+      "headingCreate": "Leitweg-ID anlegen",
+      "headingEdit": "Leitweg-ID bearbeiten",
+      "valueLabel": "Leitweg-ID",
+      "valueHelper": "Format: Grobadresse (2–12 Ziffern) + optionale Feinadresse (bis zu 30 Großbuchstaben/Ziffern) + 2-stellige Prüfziffer. Beispiel: 1234567890-AGENCY-56.",
+      "descriptionLabel": "Beschreibung (optional)",
+      "descriptionHelper": "Interne Bezeichnung — z. B. „Bundesministerium für Finanzen, Abt. IV“.",
+      "contractorLabel": "Auftragnehmer zuweisen",
+      "contractLabel": "Oder einem bestimmten Vertrag zuweisen (überschreibt den Auftragnehmer-Standard)",
+      "defaultToggle": "Als Standard für diesen Auftragnehmer festlegen",
+      "validFromLabel": "Gültig ab (optional)",
+      "validToLabel": "Gültig bis (optional)",
+      "notesLabel": "Notizen (optional)",
+      "saveButton": "Leitweg-ID speichern",
+      "errorInvalidCheckDigit": "Die Prüfziffer dieser Leitweg-ID passt nicht zu Grob- und Feinadresse. Bitte prüfen Sie die Angaben mit Ihrem öffentlichen Auftraggeber.",
+      "errorInvalidFormat": "Die Leitweg-ID muss aus 2–12 Ziffern bestehen, optional gefolgt von `-<bis zu 30 Großbuchstaben/Ziffern>`, dann `-<2-stellige Prüfziffer>`.",
+      "errorDuplicate": "Diese Leitweg-ID ist bereits in Ihrer Organisation registriert."
+    },
+    "PeppolDialog": {
+      "registerHeading": "Peppol-Teilnehmer registrieren",
+      "registerBody": "Die Registrierung ermöglicht den Versand von XRechnung-E-Rechnungen an britische Behörden über Peppol. Ihre Teilnehmer-ID wird im Peppol SML eingetragen.",
+      "schemeLabel": "Kennung-Schema",
+      "schemeHelper": "`0060` = UK Companies House, `0088` = GLN, `0106` = Dun & Bradstreet.",
+      "valueLabel": "Kennungswert",
+      "valueHelper": "Companies-House-Nummer, GLN oder DUNS — je nach gewähltem Schema.",
+      "registerButton": "Teilnehmer registrieren",
+      "pendingHeading": "Registrierung läuft",
+      "pendingBody": "Storecove registriert Ihren Teilnehmer im Peppol SML. Dies dauert in der Regel einige Minuten. Wir aktualisieren den Status automatisch.",
+      "activeHeading": "Auf Peppol registriert",
+      "activeBodyPattern": "Teilnehmer {schemeId}:{value} · Status {status} · Registriert {relativeTime}",
+      "deregisterButton": "Teilnehmer abmelden"
+    },
+    "Errors": {
+      "LEITWEG_ID_MISSING": "Leitweg-ID fehlt für diesen deutschen öffentlichen Auftraggeber. Fügen Sie eine dem Auftragnehmer oder Vertrag hinzu, bevor Sie über Peppol senden.",
+      "PARTICIPANT_NOT_REACHABLE": "Der Empfänger ist nicht auf Peppol registriert oder unterstützt XRechnung nicht. Prüfen Sie die Peppol-ID des Käufers und versuchen Sie es erneut.",
+      "KOSIT_VALIDATION_FAILED": "Diese E-Rechnung hat die KoSIT-Validierung nicht bestanden. Prüfen Sie den Validierungsbericht und finalisieren Sie die Rechnung nach Korrektur erneut.",
+      "PEPPOL_PARTICIPANT_NOT_ACTIVE": "Registrieren Sie Ihre Organisation auf Peppol, bevor Sie E-Rechnungen senden. Öffnen Sie dazu Einstellungen → E-Rechnung.",
+      "STORECOVE_TRANSMISSION_FAILED": "Die Peppol-Übermittlung ist fehlgeschlagen. Wir versuchen es automatisch erneut — Sie können auch manuell aus dem E-Rechnungs-Tab erneut senden.",
+      "Generic": "Etwas ist schiefgelaufen. Versuchen Sie es erneut oder kontaktieren Sie den Support, falls das Problem bestehen bleibt."
+    }
   }
 }

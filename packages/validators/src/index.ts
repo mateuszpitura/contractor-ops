@@ -516,6 +516,12 @@ export {
   timeReconciliationSchema,
 } from './time-tracking.js';
 export {
+  computeLeitwegCheckDigit,
+  leitwegIdSchema,
+  validateLeitwegCheckDigit,
+} from './leitweg-id.js';
+export type { LeitwegId } from './leitweg-id.js';
+export {
   isValidCompaniesHouseNumber,
   isValidGbVat,
   isValidUtr,
