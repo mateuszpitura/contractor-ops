@@ -21,7 +21,13 @@ const USER_ID = 'clyyyyyyyyyyyyyyyyyyyyyyyy';
 // Mock Prisma + services (hoisted)
 // ---------------------------------------------------------------------------
 
-const { mockPrisma, mockStoreCredentials, mockGetQStashClient } = vi.hoisted(() => {
+const {
+  mockPrisma,
+  mockStoreCredentials,
+  mockGetQStashClient,
+  mockBuildStorecoveAdapter,
+  mockAdapter,
+} = vi.hoisted(() => {
   type Rec = Record<string, unknown>;
 
   const mockSchedules = {
@@ -39,8 +45,13 @@ const { mockPrisma, mockStoreCredentials, mockGetQStashClient } = vi.hoisted(() 
     },
     peppolParticipant: {
       findFirst: vi.fn(),
+      findMany: vi.fn(async () => []),
       create: vi.fn(),
       update: vi.fn(),
+    },
+    peppolCapabilityCache: {
+      findUnique: vi.fn(),
+      upsert: vi.fn(),
     },
     integrationConnection: {
       findFirst: vi.fn(),
@@ -58,10 +69,16 @@ const { mockPrisma, mockStoreCredentials, mockGetQStashClient } = vi.hoisted(() 
     $transaction: vi.fn(async (fn: (tx: Rec) => Promise<unknown>) => fn(mockPrisma)),
   };
 
+  const mockAdapter = {
+    lookupParticipantCapabilities: vi.fn(),
+  };
+
   return {
     mockPrisma,
     mockStoreCredentials: vi.fn(async () => 'cred-ref-123'),
     mockGetQStashClient: vi.fn(() => ({ schedules: mockSchedules })),
+    mockBuildStorecoveAdapter: vi.fn(async () => mockAdapter),
+    mockAdapter,
   };
 });
 
@@ -117,6 +134,10 @@ vi.mock('@contractor-ops/validators', async importOriginal => {
     })),
   };
 });
+
+vi.mock('../../services/peppol-adapter-factory.js', () => ({
+  buildStorecoveAdapterForOrg: mockBuildStorecoveAdapter,
+}));
 
 vi.mock('../../services/cache.js', () => ({
   cached: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
@@ -547,5 +568,116 @@ describe('peppol.retryTransmission', () => {
     await expect(
       caller.peppol.retryTransmission({ transmissionId: 'clxxxxxxxxxxxxxxxxxnoext' }),
     ).rejects.toThrow('Failed transmission not found');
+  });
+});
+
+// ===========================================================================
+// Phase 61 · Plan 61-05 — lookupCapabilities + listParticipants
+// ===========================================================================
+
+const STORECOVE_CII_DOC_TYPE_ID =
+  'urn:cen.eu:en16931:2017::CrossIndustryInvoice##urn:cen.eu:en16931:2017#compliant#urn:xoev-de:kosit:standard:xrechnung_3.0::2.1';
+
+describe('peppol.lookupCapabilities (Plan 61-05)', () => {
+  beforeEach(() => {
+    mockBuildStorecoveAdapter.mockResolvedValue(mockAdapter);
+    mockPrisma.peppolCapabilityCache.findUnique.mockResolvedValue(null);
+    mockPrisma.peppolCapabilityCache.upsert.mockResolvedValue(undefined);
+    mockPrisma.peppolParticipant.findFirst.mockResolvedValue(null);
+  });
+
+  it('returns supportsXRechnungCii: true when Storecove advertises the doc type', async () => {
+    mockAdapter.lookupParticipantCapabilities.mockResolvedValueOnce({
+      schemeId: '0060',
+      value: 'GB123',
+      documentTypes: [STORECOVE_CII_DOC_TYPE_ID, 'urn:peppol:bis:3'],
+      fetchedAt: new Date(),
+    });
+
+    const result = await caller.peppol.lookupCapabilities({
+      schemeId: '0060',
+      value: 'GB123',
+    });
+
+    expect(result.supportsXRechnungCii).toBe(true);
+    expect(result.documentTypes).toContain(STORECOVE_CII_DOC_TYPE_ID);
+    expect(result.fromCache).toBe(false);
+    expect(mockAdapter.lookupParticipantCapabilities).toHaveBeenCalledWith(
+      expect.objectContaining({ schemeId: '0060', value: 'GB123' }),
+    );
+  });
+
+  it('returns supportsXRechnungCii: false for a UBL-only participant', async () => {
+    mockAdapter.lookupParticipantCapabilities.mockResolvedValueOnce({
+      schemeId: '0060',
+      value: 'GB-ubl-only',
+      documentTypes: ['urn:peppol:bis:3'],
+      fetchedAt: new Date(),
+    });
+
+    const result = await caller.peppol.lookupCapabilities({
+      schemeId: '0060',
+      value: 'GB-ubl-only',
+    });
+
+    expect(result.supportsXRechnungCii).toBe(false);
+    expect(result.documentTypes).not.toContain(STORECOVE_CII_DOC_TYPE_ID);
+  });
+
+  it('throws FAILED_PRECONDITION when org has no Peppol connection', async () => {
+    mockBuildStorecoveAdapter.mockResolvedValueOnce(null);
+
+    await expect(
+      caller.peppol.lookupCapabilities({ schemeId: '0060', value: 'GB123' }),
+    ).rejects.toThrow('PEPPOL_NOT_CONNECTED');
+  });
+
+  it('mirrors capability to own PeppolParticipant when identifier matches org row', async () => {
+    mockAdapter.lookupParticipantCapabilities.mockResolvedValueOnce({
+      schemeId: '0192',
+      value: '123456789012345',
+      documentTypes: [STORECOVE_CII_DOC_TYPE_ID],
+      fetchedAt: new Date(),
+    });
+    mockPrisma.peppolParticipant.findFirst.mockResolvedValueOnce({ id: 'part-own-1' });
+
+    await caller.peppol.lookupCapabilities({
+      schemeId: '0192',
+      value: '123456789012345',
+    });
+
+    expect(mockPrisma.peppolParticipant.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'part-own-1' },
+        data: expect.objectContaining({
+          supportsXRechnungCii: true,
+          lastCapabilityCheckAt: expect.any(Date),
+        }),
+      }),
+    );
+  });
+});
+
+describe('peppol.listParticipants (Plan 61-05)', () => {
+  it('returns participant rows scoped to the current org', async () => {
+    mockPrisma.peppolParticipant.findMany.mockResolvedValueOnce([
+      {
+        id: 'part-1',
+        organizationId: ORG_ID,
+        participantId: '0192:123456789012345',
+        supportsXRechnungCii: true,
+        lastCapabilityCheckAt: new Date(),
+      },
+    ]);
+
+    const result = await caller.peppol.listParticipants();
+
+    expect(result).toHaveLength(1);
+    expect(result[0]?.participantId).toBe('0192:123456789012345');
+    expect(mockPrisma.peppolParticipant.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { organizationId: ORG_ID },
+      }),
+    );
   });
 });

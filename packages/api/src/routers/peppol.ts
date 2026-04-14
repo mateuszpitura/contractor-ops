@@ -6,6 +6,7 @@ import {
   getServerEnv,
   getTransmissionByInvoiceIdSchema,
   getTransmissionsSchema,
+  peppolLookupCapabilitiesSchema,
   retryTransmissionSchema,
 } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
@@ -13,6 +14,11 @@ import * as E from '../errors.js';
 import { router } from '../init.js';
 import { requirePermission } from '../middleware/rbac.js';
 import { tenantProcedure } from '../middleware/tenant.js';
+import { buildStorecoveAdapterForOrg } from '../services/peppol-adapter-factory.js';
+import {
+  getCapabilitiesWithCache,
+  supportsXRechnungCii,
+} from '../services/peppol-capability.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -399,5 +405,96 @@ export const peppolRouter = router({
       });
 
       return plain(updated);
+    }),
+
+  // -------------------------------------------------------------------------
+  // Phase 61 · Plan 61-05 — XRechnung capability lookup + participant listing
+  // -------------------------------------------------------------------------
+
+  /**
+   * Lookup a Peppol participant's SMP-registered document-type capabilities
+   * via the Storecove discovery endpoint. Results are cached per-org for
+   * 6h in `PeppolCapabilityCache` (CONTEXT D-11); callers can bypass the
+   * cache with `forceRefresh: true`.
+   *
+   * Surface semantics:
+   *  - Always returns the capability list + a computed `supportsXRechnungCii`
+   *    flag so the Settings UI can render the send-gate pill without a
+   *    second call.
+   *  - Side effect: when the looked-up participant matches the org's OWN
+   *    registered PeppolParticipant, updates `supportsXRechnungCii` +
+   *    `lastCapabilityCheckAt` on the participant row.
+   */
+  lookupCapabilities: tenantProcedure
+    .use(requirePermission({ settings: ['read'] }))
+    .input(peppolLookupCapabilitiesSchema)
+    .query(async ({ ctx, input }) => {
+      const adapter = await buildStorecoveAdapterForOrg(
+        ctx.db as never,
+        ctx.organizationId,
+      );
+      if (!adapter) {
+        throw new TRPCError({
+          code: 'PRECONDITION_FAILED',
+          message: 'PEPPOL_NOT_CONNECTED',
+        });
+      }
+
+      const capability = await getCapabilitiesWithCache(
+        ctx.db as never,
+        adapter,
+        ctx.organizationId,
+        input.schemeId,
+        input.value,
+        { forceRefresh: input.forceRefresh },
+      );
+
+      const hasXRechnungCii = supportsXRechnungCii(capability.documentTypes);
+
+      // Side-effect: if this lookup matches the org's own participant row,
+      // mirror the capability + last-check timestamp so the Settings UI
+      // and the send-gate both read from the same source of truth.
+      const ownParticipant = await ctx.db.peppolParticipant.findFirst({
+        where: {
+          organizationId: ctx.organizationId,
+          schemeId: input.schemeId,
+          identifierValue: input.value,
+        },
+        select: { id: true },
+      });
+      if (ownParticipant) {
+        await ctx.db.peppolParticipant.update({
+          where: { id: ownParticipant.id },
+          data: {
+            supportsXRechnungCii: hasXRechnungCii,
+            lastCapabilityCheckAt: new Date(),
+          },
+        });
+      }
+
+      return plain({
+        schemeId: capability.schemeId,
+        value: capability.value,
+        documentTypes: capability.documentTypes,
+        fetchedAt: capability.fetchedAt,
+        expiresAt: capability.expiresAt,
+        fromCache: capability.fromCache,
+        supportsXRechnungCii: hasXRechnungCii,
+      });
+    }),
+
+  /**
+   * List every PeppolParticipant row for the current org, including the
+   * XRechnung-CII capability flag + last-check timestamp (RESEARCH Option A
+   * — single source of truth).  Consumed by the Plan 07 Settings page.
+   */
+  listParticipants: tenantProcedure
+    .use(requirePermission({ settings: ['read'] }))
+    .query(async ({ ctx }) => {
+      const participants = await ctx.db.peppolParticipant.findMany({
+        where: { organizationId: ctx.organizationId },
+        orderBy: { createdAt: 'desc' },
+      });
+      return plain(participants);
     }),
 });
