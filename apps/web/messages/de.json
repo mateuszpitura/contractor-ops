@@ -5074,6 +5074,24 @@
         "notificationTitleCritical": "Kritische wirtschaftliche Abhängigkeit: {contractorName}",
         "notificationBodyCritical": "Der Umsatzanteil beträgt {percent}% — über der 83,33-%-Schwelle nach §2 SGB VI für arbeitnehmerähnliche Selbständige. Bitte prüfen.",
         "notificationTitleResolved": "Wirtschaftliche Abhängigkeit aufgelöst: {contractorName}"
+      },
+      "reassessmentTrigger": {
+        "chipLabel": "Neubewertung empfohlen",
+        "chipTooltip": "Seit dem letzten IR35 Status Determination Statement wurden wesentliche Änderungen festgestellt.",
+        "ctaPrimary": "Neue Bewertung starten",
+        "ctaSecondary": "Vorheriges SDS anzeigen",
+        "reasonLine": "{field} wurde am {date} von {oldValue} auf {newValue} geändert",
+        "notificationTitle": "Neubewertung empfohlen: {engagementName}",
+        "notificationBody": "{N} wesentliche Änderung(en) festgestellt. Das vorherige SDS wurde am {priorDate} abgeschlossen. Bitte Engagement prüfen.",
+        "dismissAction": "Auslöser verwerfen",
+        "dismissHeading": "Diesen Neubewertungs-Auslöser verwerfen?",
+        "dismissBody": "Das System löst bei diesen Feldänderungen nicht erneut aus. Eine manuelle Neubewertung ist weiterhin möglich.",
+        "dismissReasonLabel": "Begründung für das Verwerfen (erforderlich)",
+        "dismissReasonMinLength": "Die Begründung muss mindestens 10 Zeichen lang sein.",
+        "dismissConfirm": "Verwerfen",
+        "dismissCancel": "Abbrechen",
+        "emptyHeading": "Keine Neubewertungs-Auslöser",
+        "emptyBody": "Alle UK-Engagements mit einem Status Determination Statement stimmen noch mit den erfassten Fakten überein."
       }
     }
   },

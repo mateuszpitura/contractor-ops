@@ -38,6 +38,7 @@ import { paymentRouter } from './routers/payment.js';
 import { peppolRouter } from './routers/peppol.js';
 import { portalRouter } from './routers/portal.js';
 import { portalTimeRouter } from './routers/portal-time.js';
+import { reassessmentTriggerRouter } from './routers/reassessment-trigger.js';
 import { reminderRouter } from './routers/reminder.js';
 import { reportRouter } from './routers/report.js';
 import { searchRouter } from './routers/search.js';
@@ -127,6 +128,7 @@ export const appRouter = router({
   ir35Chain: ir35ChainRouter, // ir35Chain: IR35 chain participant tracking + SDS delivery / acknowledgement (Phase 59 CLASS-04)
   ir35Attestation: ir35AttestationRouter, // ir35Attestation: contractor other-client attestation + same-tenant cross-reference for DRV defense bundle (Phase 59 CLASS-06)
   economicDependencyAlert: economicDependencyAlertRouter, // economicDependencyAlert: per-assignment billing-share band (safe/warning/critical) written by the daily §2 SGB VI scan (Phase 60 CLASS-07)
+  reassessmentTrigger: reassessmentTriggerRouter, // reassessmentTrigger: IR35 SDS reassessment triggers — AuditLog-driven material-change detection + acknowledge/dismiss (Phase 60 CLASS-08)
 });
 
 /** Type-safe router type for client consumption */

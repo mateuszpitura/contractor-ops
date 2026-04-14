@@ -4869,6 +4869,24 @@
         "notificationTitleCritical": "Krytyczna zależność ekonomiczna: {contractorName}",
         "notificationBodyCritical": "Udział w fakturowaniu wynosi {percent}% — powyżej progu 83,33% §2 SGB VI dla arbeitnehmerähnliche Selbständige. Przejrzyj zaangażowanie.",
         "notificationTitleResolved": "Zależność ekonomiczna rozwiązana: {contractorName}"
+      },
+      "reassessmentTrigger": {
+        "chipLabel": "Zalecana ponowna ocena",
+        "chipTooltip": "Wykryto istotne zmiany od ostatniego oświadczenia IR35 (SDS).",
+        "ctaPrimary": "Rozpocznij nową ocenę",
+        "ctaSecondary": "Pokaż poprzednie SDS",
+        "reasonLine": "{field} zmieniono z {oldValue} na {newValue} dnia {date}",
+        "notificationTitle": "Zalecana ponowna ocena: {engagementName}",
+        "notificationBody": "Wykryto {N} istotną(-ych) zmianę(-y). Poprzednie SDS zostało zakończone {priorDate}. Otwórz zaangażowanie, aby przejrzeć.",
+        "dismissAction": "Odrzuć wyzwalacz",
+        "dismissHeading": "Odrzucić ten wyzwalacz ponownej oceny?",
+        "dismissBody": "System nie uruchomi się ponownie dla tych zmian. Nadal możesz ręcznie rozpocząć nową ocenę.",
+        "dismissReasonLabel": "Powód odrzucenia (wymagane)",
+        "dismissReasonMinLength": "Powód musi mieć co najmniej 10 znaków.",
+        "dismissConfirm": "Odrzuć",
+        "dismissCancel": "Anuluj",
+        "emptyHeading": "Brak wyzwalaczy ponownej oceny",
+        "emptyBody": "Wszystkie brytyjskie zaangażowania z oświadczeniem SDS są nadal zgodne z zapisanymi faktami."
       }
     }
   },

@@ -143,6 +143,9 @@ const {
         return assignments.get(args.where.id) ?? null;
       }),
     },
+    reassessmentTrigger: {
+      updateMany: vi.fn(async () => ({ count: 0 })),
+    },
     organization: {
       findUnique: vi.fn(async () => ({ dataRegion: 'EU' })),
       findUniqueOrThrow: vi.fn(async () => ({ countryCode: 'GB' })),
@@ -763,6 +766,34 @@ describe('classification.submit', () => {
 
     const result = await caller.classification.submit({ assessmentId: DRAFT_ID_A });
     expect(result.outcome).toMatchObject({ kind: 'IR35', verdict: 'inside' });
+  });
+
+  // Phase 60 CLASS-08 (60-02-05) — auto-resolve OPEN/ACKNOWLEDGED triggers on
+  // the same engagement after a fresh IR35 assessment is submitted.
+  it('SB-6 (60-02-05): auto-RESOLVES matching reassessment triggers on GB submit', async () => {
+    seedOrgAAssignmentGB();
+    seedDraft(DRAFT_ID_A);
+    const caller = makeCaller(ORG_A_ID);
+
+    mockScoreIr35.mockReturnValue({
+      kind: 'IR35',
+      ruleSetVersion: '1.0.0',
+      verdict: 'outside',
+      areas: [],
+      computedAt: new Date().toISOString(),
+    });
+
+    await caller.classification.submit({ assessmentId: DRAFT_ID_A });
+
+    expect(mockPrisma.reassessmentTrigger.updateMany).toHaveBeenCalledTimes(1);
+    const args = mockPrisma.reassessmentTrigger.updateMany.mock.calls[0]?.[0] as {
+      where: Record<string, unknown>;
+      data: Record<string, unknown>;
+    };
+    expect(args.where.contractorAssignmentId).toBe(ASSIGNMENT_GB);
+    expect((args.where.status as { in?: string[] }).in).toEqual(['OPEN', 'ACKNOWLEDGED']);
+    expect(args.data.status).toBe('RESOLVED');
+    expect(args.data.resolvedAt).toBeInstanceOf(Date);
   });
 });
 

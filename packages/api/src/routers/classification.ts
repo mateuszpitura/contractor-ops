@@ -410,7 +410,7 @@ export const classificationRouter = router({
     });
 
     const now = new Date();
-    return ctx.db.classificationAssessment.update({
+    const updated = await ctx.db.classificationAssessment.update({
       where: { id: row.id },
       data: {
         status: 'completed',
@@ -421,6 +421,21 @@ export const classificationRouter = router({
         immutableAfter: new Date(now),
       },
     });
+
+    // Phase 60 · CLASS-08 — auto-resolve any OPEN/ACKNOWLEDGED reassessment
+    // triggers on this engagement once a fresh GB IR35 assessment has been
+    // submitted. Tenant-scoped client keeps cross-org rows untouched.
+    if (row.countryCode === 'GB') {
+      await ctx.db.reassessmentTrigger.updateMany({
+        where: {
+          contractorAssignmentId: row.contractorAssignmentId,
+          status: { in: ['OPEN', 'ACKNOWLEDGED'] },
+        },
+        data: { status: 'RESOLVED', resolvedAt: now },
+      });
+    }
+
+    return updated;
   }),
 
   // -------------------------------------------------------------------------

@@ -86,35 +86,55 @@ mockPrismaRaw.auditLog = {
   }),
 };
 mockPrismaRaw.contractorAssignment = {
+  findFirst: vi.fn(async (args: { where?: { id?: string } }) => {
+    const id = args?.where?.id;
+    return id ? (state.assignments.get(id) ?? null) : null;
+  }),
   findMany: vi.fn(async (args: { where?: { id?: { in?: string[] } } }) => {
     const ids = args?.where?.id?.in ?? [];
     return ids.map(id => state.assignments.get(id)).filter(Boolean);
   }),
 };
 mockPrismaRaw.contract = {
+  findFirst: vi.fn(async (args: { where?: { id?: string } }) => {
+    const id = args?.where?.id;
+    return id ? (state.contracts.get(id) ?? null) : null;
+  }),
   findMany: vi.fn(async (args: { where?: { id?: { in?: string[] } } }) => {
     const ids = args?.where?.id?.in ?? [];
     return ids.map(id => state.contracts.get(id)).filter(Boolean);
   }),
 };
 mockPrismaRaw.classificationAssessment = {
-  findMany: vi.fn(
+  findFirst: vi.fn(
     async (args: {
-      where?: {
-        contractorAssignmentId?: { in?: string[] };
-        countryCode?: string;
-        status?: string;
-      };
+      where?: { contractorAssignmentId?: string; countryCode?: string; status?: string };
     }) => {
-      const ids = args?.where?.contractorAssignmentId?.in ?? [];
-      return state.assessments
-        .filter(a => ids.includes(a.contractorAssignmentId))
+      const assignId = args?.where?.contractorAssignmentId;
+      const matches = state.assessments
+        .filter(a => !assignId || a.contractorAssignmentId === assignId)
         .filter(a => !args?.where?.countryCode || a.countryCode === args.where.countryCode)
         .filter(a => !args?.where?.status || a.status === args.where.status);
+      return matches[0] ?? null;
     },
   ),
+  findMany: vi.fn(async () => []),
 };
 mockPrismaRaw.reassessmentTrigger = {
+  findFirst: vi.fn(async (args: { where?: Record<string, unknown> }) => {
+    const w = args?.where ?? {};
+    return (
+      Array.from(state.triggers.values()).find(t => {
+        if (w.organizationId && w.organizationId !== t.organizationId) return false;
+        if (w.contractorAssignmentId && w.contractorAssignmentId !== t.contractorAssignmentId)
+          return false;
+        if (w.priorAssessmentId && w.priorAssessmentId !== t.priorAssessmentId) return false;
+        const statusIn = (w.status as { in?: string[] })?.in;
+        if (statusIn && !statusIn.includes(t.status)) return false;
+        return true;
+      }) ?? null
+    );
+  }),
   findMany: vi.fn(async (args: { where?: Record<string, unknown> }) => {
     return Array.from(state.triggers.values()).filter(t => {
       const w = args?.where ?? {};
@@ -340,7 +360,11 @@ describe('runReassessmentTriggerScan — material-fields allowlist (60-02-02)', 
     state.contracts.set('con-3', {
       id: 'con-3',
       organizationId: 'org-a',
-      contractor: { countryCode: 'GB' },
+      contractor: {
+        countryCode: 'GB',
+        // Service expects contract.contractor.assignments[0].id
+        assignments: [{ id: 'asg-3' }],
+      } as unknown as ContractRow['contractor'],
       assignments: [state.assignments.get('asg-3')!],
     });
     state.audits.push({

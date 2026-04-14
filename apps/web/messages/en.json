@@ -4932,6 +4932,24 @@
         "notificationTitleCritical": "Critical economic dependency: {contractorName}",
         "notificationBodyCritical": "Billing share is {percent}% — above the 83.33% §2 SGB VI threshold for arbeitnehmerähnliche Selbständige. Review the engagement.",
         "notificationTitleResolved": "Economic dependency resolved: {contractorName}"
+      },
+      "reassessmentTrigger": {
+        "chipLabel": "Reassessment recommended",
+        "chipTooltip": "Material changes were detected since the last IR35 Status Determination Statement.",
+        "ctaPrimary": "Start new assessment",
+        "ctaSecondary": "View prior SDS",
+        "reasonLine": "{field} changed from {oldValue} to {newValue} on {date}",
+        "notificationTitle": "Reassessment recommended: {engagementName}",
+        "notificationBody": "{N} material change(s) detected. The prior SDS was completed on {priorDate}. Open the engagement to review.",
+        "dismissAction": "Dismiss trigger",
+        "dismissHeading": "Dismiss this reassessment trigger?",
+        "dismissBody": "The system will not re-fire on these field changes. You can still start a new assessment manually.",
+        "dismissReasonLabel": "Reason for dismissing (required)",
+        "dismissReasonMinLength": "Reason must be at least 10 characters.",
+        "dismissConfirm": "Dismiss",
+        "dismissCancel": "Cancel",
+        "emptyHeading": "No reassessment triggers",
+        "emptyBody": "All UK engagements with a Status Determination Statement are still aligned with their captured facts."
       }
     }
   },

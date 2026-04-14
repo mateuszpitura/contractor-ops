@@ -4869,6 +4869,24 @@
         "notificationTitleCritical": "تبعية اقتصادية حرجة: {contractorName}",
         "notificationBodyCritical": "حصة الفوترة {percent}% — فوق عتبة 83.33% وفق §2 SGB VI. راجع الارتباط.",
         "notificationTitleResolved": "تمت تسوية التبعية الاقتصادية: {contractorName}"
+      },
+      "reassessmentTrigger": {
+        "chipLabel": "يوصى بإعادة التقييم",
+        "chipTooltip": "تم رصد تغييرات جوهرية منذ بيان تحديد الحالة IR35 الأخير.",
+        "ctaPrimary": "بدء تقييم جديد",
+        "ctaSecondary": "عرض SDS السابق",
+        "reasonLine": "تم تغيير {field} من {oldValue} إلى {newValue} في {date}",
+        "notificationTitle": "يوصى بإعادة التقييم: {engagementName}",
+        "notificationBody": "تم رصد {N} تغيير(ات) جوهرية. تم إكمال بيان SDS السابق في {priorDate}. افتح الارتباط للمراجعة.",
+        "dismissAction": "تجاهل المشغل",
+        "dismissHeading": "هل تريد تجاهل مشغل إعادة التقييم هذا؟",
+        "dismissBody": "لن يعيد النظام إطلاق التنبيه لهذه التغييرات. يمكنك دائمًا بدء تقييم جديد يدويًا.",
+        "dismissReasonLabel": "سبب التجاهل (مطلوب)",
+        "dismissReasonMinLength": "يجب ألا يقل السبب عن 10 أحرف.",
+        "dismissConfirm": "تجاهل",
+        "dismissCancel": "إلغاء",
+        "emptyHeading": "لا توجد مشغلات إعادة تقييم",
+        "emptyBody": "جميع ارتباطات المملكة المتحدة التي تحتوي على SDS لا تزال متوافقة مع الحقائق المسجلة."
       }
     }
   },

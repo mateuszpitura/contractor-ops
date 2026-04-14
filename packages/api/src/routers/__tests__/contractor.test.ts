@@ -981,8 +981,12 @@ describe('Contractor mutations write AuditLog', () => {
       legalName: 'Audited Corp',
       displayName: 'Audited Corp',
       type: 'COMPANY',
-      countryCode: 'PL',
-      currency: 'PLN',
+      taxId: '1234563218',
+      email: 'contact@audited.pl',
+      billingModel: 'MONTHLY',
+      rateValueMinor: 50000,
+      ownerUserId: 'usr_abc123',
+      bankAccount: 'PL61109010140000071219812874',
     } as never);
 
     expect(mockPrisma.auditLog.create).toHaveBeenCalled();
