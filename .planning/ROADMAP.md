@@ -38,8 +38,8 @@ See .planning/milestones/v4.0/ for details.
 - [ ] **Phase 57: Government API Clients** - HMRC VAT validation, VIES USt-IdNr validation, UK/DE VAT rates
 - [x] **Phase 58: Classification Engine & Rule Sets** - Generic classification engine with IR35 and Scheinselbstandigkeit rule sets (completed 2026-04-13)
 - [x] **Phase 59: Classification Documents & Chain Tracking** - SDS generation, IR35 chain participants, DRV audit defense documentation (completed 2026-04-13)
-- [ ] **Phase 60: Classification Polish** - Economic dependency alerts, reassessment triggers, DRV tracking, compliance dashboard
-- [ ] **Phase 61: XRechnung E-Invoicing** - XRechnung CII XML generation, KoSIT validation, Leitweg-ID, Peppol UK
+- [x] **Phase 60: Classification Polish** - Economic dependency alerts, reassessment triggers, DRV tracking, compliance dashboard (completed 2026-04-14)
+- [x] **Phase 61: XRechnung E-Invoicing** - XRechnung CII XML generation, KoSIT validation, Leitweg-ID, Peppol UK (completed 2026-04-14)
 - [ ] **Phase 62: ZUGFeRD E-Invoicing** - ZUGFeRD PDF/A-3 with embedded CII XML, inbound XRechnung/ZUGFeRD parsing
 - [ ] **Phase 63: UK Payments & Financial Features** - BACS Standard 18 export, late payment interest, Skonto discounts
 
@@ -118,10 +118,10 @@ See .planning/milestones/v4.0/ for details.
   3. User can track Statusfeststellungsverfahren (DRV clearance procedure) applications with filing date, DRV reference, outcome, validity period, and expiry reminders
   4. User can view a per-market compliance health dashboard showing IR35 assessment coverage, Scheinselbstandigkeit risk distribution, overdue reassessments, and economic dependency alerts
 **Plans**: 4 plans
-- [ ] 60-01-PLAN.md — Wave 1: Economic dependency alerts (CLASS-07) — EconomicDependencyAlertState model + prismaRaw cross-org client + rbac-recipients helper + billing-share scan service + band state machine + daily cron (`0 2 * * *` UTC) + tRPC read router + notification types + band-chip UI
-- [ ] 60-02-PLAN.md — Wave 1: Reassessment triggers (CLASS-08) — ReassessmentTrigger + CronScanState models + audit-writer wiring on ContractorAssignment/Contract mutations (resolves Open Question #1) + AuditLog scan service + daily cron (`0 3 * * *` UTC) + tRPC acknowledge/dismiss router + classification.submit auto-resolve + UI chip/CTA/dismiss-dialog
-- [ ] 60-03-PLAN.md — Wave 2: Statusfeststellungsverfahren tracking (CLASS-09) — Statusfeststellungsverfahren model + CRUD tRPC router + 90/30/7-day expiry helper piggybacked on existing /api/cron/reminders + engagement-page panel + optional DRV_CLEARANCE_* locked phrases
-- [ ] 60-04-PLAN.md — Wave 3: Compliance health dashboard (CLASS-10) — escapeCsvField formula-injection hardening + classificationDashboard tRPC router (8 procedures) + CSV export (signed R2 URL, 300s TTL) + /[locale]/(dashboard)/classification/page.tsx + 7 React components (native-flex stacked bar, no chart lib)
+- [x] 60-01-PLAN.md — Wave 1: Economic dependency alerts (CLASS-07) — EconomicDependencyAlertState model + prismaRaw cross-org client + rbac-recipients helper + billing-share scan service + band state machine + daily cron (`0 2 * * *` UTC) + tRPC read router + notification types + band-chip UI
+- [x] 60-02-PLAN.md — Wave 1: Reassessment triggers (CLASS-08) — ReassessmentTrigger + CronScanState models + audit-writer wiring on ContractorAssignment/Contract mutations (resolves Open Question #1) + AuditLog scan service + daily cron (`0 3 * * *` UTC) + tRPC acknowledge/dismiss router + classification.submit auto-resolve + UI chip/CTA/dismiss-dialog
+- [x] 60-03-PLAN.md — Wave 2: Statusfeststellungsverfahren tracking (CLASS-09) — Statusfeststellungsverfahren model + CRUD tRPC router + 90/30/7-day expiry helper piggybacked on existing /api/cron/reminders + engagement-page panel + optional DRV_CLEARANCE_* locked phrases
+- [x] 60-04-PLAN.md — Wave 3: Compliance health dashboard (CLASS-10) — escapeCsvField formula-injection hardening + classificationDashboard tRPC router (8 procedures) + CSV export (signed R2 URL, 300s TTL) + /[locale]/(dashboard)/classification/page.tsx + 7 React components (native-flex stacked bar, no chart lib)
 **UI hint**: yes
 
 ### Phase 61: XRechnung E-Invoicing
@@ -134,14 +134,14 @@ See .planning/milestones/v4.0/ for details.
   3. User can send e-invoices to UK public sector recipients via Peppol BIS Billing 3.0 through the existing Storecove ASP integration
   4. User can view e-invoicing compliance status per organization showing which invoices are EN 16931 compliant and which need attention
 **Plans**: 8 plans
-- [ ] 61-01-PLAN.md — Wave 0: deps install (saxon-js, libxmljs2, xslt3) + all Prisma schemas (LeitwegId, EInvoiceLifecycle*, PeppolCapabilityCache) + PeppolParticipant extension (supportsXRechnungCii) + Contractor additions + [BLOCKING] prisma db push + Leitweg-ID Zod with KoSIT fixtures + Storecove sandbox document_type_id probe + 11 RED test scaffolds + 4-locale EInvoice i18n namespace
-- [ ] 61-02-PLAN.md — Wave 1: XRechnung 3.0.2 CII generator (D-01, D-02) + BT-10 Leitweg-ID embed helper + §13b/§19 UStG locked-phrase integration + XRechnungDEProfile class + registry registration + package re-exports + parser stub (Phase 62)
-- [ ] 61-03-PLAN.md — Wave 2: validator-bundle population (KoSIT release-2026-01-31 SEF + CII D16B XSD + checksums) + three-layer validator (XSD via libxmljs2 + EN16931/XRechnung Schematron via saxon-js) + SVRL normalizer + XXE/SSRF mitigations + 4 fixture integration tests + profile .validate() wiring
-- [ ] 61-04-PLAN.md — Wave 1: leitweg-id-resolver service (D-06 contract-override → contractor-default → null) + leitwegIdRouter (7 procedures) + tRPC input Zod schemas + peppolParticipantPairSchema (both-or-neither constraint) + 11 multi-tenant leak tests
-- [ ] 61-05-PLAN.md — Wave 2: Storecove adapter format discriminator (D-09 cii-xrechnung variant) + lookupParticipantCapabilities method + PeppolCapabilityCache service (6h TTL) + peppolRouter extensions (lookupCapabilities, listParticipants) + pre-flight helpers (assertSenderParticipantActive, assertReceiverAcceptsXRechnung)
-- [ ] 61-06-PLAN.md — Wave 3: EInvoiceLifecycle FSM (validation + transmission tables) + einvoice-finalize service (generator + validator + R2 + atomic event write) + einvoice router extensions (finalize/revalidate/downloadXml/downloadReport/send/listByOrg/summaryForOrg) + Storecove webhook handler (DELIVERY_ACK + idempotency)
-- [ ] 61-07-PLAN.md — Wave 4: Settings → E-invoicing page + PeppolParticipantCard + register/deregister dialogs + status pill + LeitwegIdListCard + row + create/edit/delete dialogs + LeitwegIdInlineSelector + PeppolIdentifierFields (pair-constraint form) + contractor-profile wiring
-- [ ] 61-08-PLAN.md — Wave 4: Invoice list compliance column + 7 filter chips + summary tile + URL-query-param binding + InvoiceDetailTabs + full E-invoice tab (Generation/Validation/Transmission sections + ValidationLayerRow + SvrlIssueList + TransmissionEventRow + LeitwegIdResolvedInline) + all CTA wiring + human-verify checkpoint (autonomous: false)
+- [x] 61-01-PLAN.md — Wave 0: deps install (saxon-js, libxmljs2, xslt3) + all Prisma schemas (LeitwegId, EInvoiceLifecycle*, PeppolCapabilityCache) + PeppolParticipant extension (supportsXRechnungCii) + Contractor additions + [BLOCKING] prisma db push + Leitweg-ID Zod with KoSIT fixtures + Storecove sandbox document_type_id probe + 11 RED test scaffolds + 4-locale EInvoice i18n namespace
+- [x] 61-02-PLAN.md — Wave 1: XRechnung 3.0.2 CII generator (D-01, D-02) + BT-10 Leitweg-ID embed helper + §13b/§19 UStG locked-phrase integration + XRechnungDEProfile class + registry registration + package re-exports + parser stub (Phase 62)
+- [x] 61-03-PLAN.md — Wave 2: validator-bundle population (KoSIT release-2026-01-31 SEF + CII D16B XSD + checksums) + three-layer validator (XSD via libxmljs2 + EN16931/XRechnung Schematron via saxon-js) + SVRL normalizer + XXE/SSRF mitigations + 4 fixture integration tests + profile .validate() wiring
+- [x] 61-04-PLAN.md — Wave 1: leitweg-id-resolver service (D-06 contract-override → contractor-default → null) + leitwegIdRouter (7 procedures) + tRPC input Zod schemas + peppolParticipantPairSchema (both-or-neither constraint) + 11 multi-tenant leak tests
+- [x] 61-05-PLAN.md — Wave 2: Storecove adapter format discriminator (D-09 cii-xrechnung variant) + lookupParticipantCapabilities method + PeppolCapabilityCache service (6h TTL) + peppolRouter extensions (lookupCapabilities, listParticipants) + pre-flight helpers (assertSenderParticipantActive, assertReceiverAcceptsXRechnung)
+- [x] 61-06-PLAN.md — Wave 3: EInvoiceLifecycle FSM (validation + transmission tables) + einvoice-finalize service (generator + validator + R2 + atomic event write) + einvoice router extensions (finalize/revalidate/downloadXml/downloadReport/send/listByOrg/summaryForOrg) + Storecove webhook handler (DELIVERY_ACK + idempotency)
+- [x] 61-07-PLAN.md — Wave 4: Settings → E-invoicing page + PeppolParticipantCard + register/deregister dialogs + status pill + LeitwegIdListCard + row + create/edit/delete dialogs + LeitwegIdInlineSelector + PeppolIdentifierFields (pair-constraint form) + contractor-profile wiring
+- [x] 61-08-PLAN.md — Wave 4: Invoice list compliance column + 7 filter chips + summary tile + URL-query-param binding + InvoiceDetailTabs + full E-invoice tab (Generation/Validation/Transmission sections + ValidationLayerRow + SvrlIssueList + TransmissionEventRow + LeitwegIdResolvedInline) + all CTA wiring + human-verify checkpoint (autonomous: false)
 **UI hint**: yes
 
 ### Phase 62: ZUGFeRD E-Invoicing
@@ -175,7 +175,7 @@ Phases execute in numeric order: 56 -> 57 -> 58 -> 59 -> 60 -> 61 -> 62 -> 63
 | 57. Government API Clients | v5.0 | 3/4 | In Progress|  |
 | 58. Classification Engine & Rule Sets | v5.0 | 5/5 | Complete    | 2026-04-13 |
 | 59. Classification Documents & Chain Tracking | v5.0 | 4/4 | Complete    | 2026-04-13 |
-| 60. Classification Polish | v5.0 | 0/4 | Planned     | - |
-| 61. XRechnung E-Invoicing | v5.0 | 0/8 | Planned     | - |
+| 60. Classification Polish | v5.0 | 4/4 | Complete    | 2026-04-14 |
+| 61. XRechnung E-Invoicing | v5.0 | 8/8 | Complete   | 2026-04-14 |
 | 62. ZUGFeRD E-Invoicing | v5.0 | 0/TBD | Not started | - |
 | 63. UK Payments & Financial Features | v5.0 | 0/TBD | Not started | - |

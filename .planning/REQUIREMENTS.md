@@ -50,6 +50,19 @@ Requirements for UK & Germany market expansion. Each maps to roadmap phases.
 - [ ] **PAY-06**: User sees automatically calculated late payment interest on overdue UK invoices per the Late Payment of Commercial Debts Act (BoE base rate + 8% + fixed compensation of £40/£70/£100)
 - [ ] **PAY-07**: User can configure Skonto (early payment discount) terms on German invoices with discount percentage and discount period, with automatic discounted amount calculation and eligibility tracking based on payment date
 
+### Legal Compliance Hardening
+
+- [ ] **LEGAL-01**: Classification features (IR35 assessment, Scheinselbständigkeit assessment, SDS generation, DRV defense bundle) are gated behind a feature flag that prevents production access until all locked disclaimer constants are updated from PENDING to APPROVED status
+- [ ] **LEGAL-02**: CI pipeline includes a deployment gate that fails the production build if any locked disclaimer constant in packages/validators/src/legal/ contains "PENDING"
+- [ ] **LEGAL-03**: All classification outcome pages display a persistent, non-dismissible advisory banner above the verdict recommending consultation with a qualified UK tax adviser (IR35) or Steuerberater (Scheinselbständigkeit) before making business decisions
+- [ ] **LEGAL-04**: Undetermined or amber classification outcomes display a "Get Expert Help" call-to-action with adviser referral, and the platform logs an escalation event for audit trail
+- [ ] **LEGAL-05**: SDS PDF includes a cover page with client name, date, approval statement, and confirmation that the client reviewed and approved the determination before issuing it to HMRC or chain participants
+- [ ] **LEGAL-06**: DRV Statusfeststellungsverfahren tracking panel displays an unverified-entry disclaimer for manually entered records and supports R2 document upload for proof of the actual DRV decision letter
+- [ ] **LEGAL-07**: Platform Terms of Service include explicit "software not legal or tax advice" language covering classification assessments, e-invoicing generation, payment file exports, and interest calculations
+- [ ] **LEGAL-08**: When the `classification-engine` feature flag is OFF, all classification UI is completely removed from the render tree — no sidebar nav items, no contractor profile classification tabs/tiles, no wizard routes, no compliance dashboard classification sections, no economic dependency alert UI — the feature is invisible as if it does not exist
+- [ ] **LEGAL-09**: When the `classification-engine` feature flag is OFF, all classification tRPC procedures return FORBIDDEN or are unregistered, all classification document generation endpoints are inaccessible, and no background processing (economic dependency cron) executes — zero API-level access even via direct requests
+- [ ] **LEGAL-10**: When the `classification-engine` feature flag is ON, it requires that all locked disclaimer constants have been updated from PENDING to APPROVED — the flag cannot be enabled while disclaimers are unsigned
+
 ## v5.x Requirements
 
 Deferred to future release. Tracked but not in current roadmap.
@@ -79,6 +92,8 @@ Deferred to future release. Tracked but not in current roadmap.
 | Become KoSIT XRechnung validator | Use their open-source validator; don't maintain rule updates |
 | Faster Payments (v5.0) | Research showed medium complexity; BACS covers batch payments — defer to v5.x |
 | Multi-country consolidated assessment | UK and Germany are separate legal frameworks; combined assessment would be legally meaningless |
+| France market expansion (Factur-X, PDP, URSSAF, French i18n, salariat déguisé, e-reporting) | Requires certified PDP partner (12-18 month certification); no partner signed — non-deliverable until partnership secured |
+| Cross-border EU compliance (A1 certs, PE risk, multi-jurisdiction reverse charge automation) | Serves subset of pan-EU clients; not a market-entry requirement — revisit after UK+DE customers |
 
 ## Traceability
 
@@ -115,12 +130,22 @@ Deferred to future release. Tracked but not in current roadmap.
 | PAY-05 | Phase 57 | Pending |
 | PAY-06 | Phase 63 | Pending |
 | PAY-07 | Phase 63 | Pending |
+| LEGAL-01 | Phase 64 | Pending |
+| LEGAL-02 | Phase 64 | Pending |
+| LEGAL-03 | Phase 64 | Pending |
+| LEGAL-04 | Phase 64 | Pending |
+| LEGAL-05 | Phase 64 | Pending |
+| LEGAL-06 | Phase 64 | Pending |
+| LEGAL-07 | Phase 64 | Pending |
+| LEGAL-08 | Phase 64 | Pending |
+| LEGAL-09 | Phase 64 | Pending |
+| LEGAL-10 | Phase 64 | Pending |
 
 **Coverage:**
-- v5.0 requirements: 31 total
-- Mapped to phases: 31/31
+- v5.0 requirements: 41 total
+- Mapped to phases: 41/41
 - Unmapped: 0
 
 ---
 *Requirements defined: 2026-04-12*
-*Last updated: 2026-04-12 after roadmap creation (all 31 requirements mapped to phases 56-63)*
+*Last updated: 2026-04-14 after Phase 64 (Legal Compliance Hardening) added to v5.0 milestone*
