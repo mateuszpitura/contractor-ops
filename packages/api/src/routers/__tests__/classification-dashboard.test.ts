@@ -51,6 +51,7 @@ const {
     currentBand: 'safe' | 'warning' | 'critical';
     lastBillingShare: number;
     lastScannedAt: Date;
+    contractorAssignment?: { contractor?: { countryCode: 'GB' | 'DE' } };
   };
   type Trigger = {
     id: string;
@@ -68,6 +69,7 @@ const {
     outcome: 'PENDING' | 'SELBSTANDIG' | 'ABHANGIG' | 'WITHDRAWN';
     validTo: Date | null;
     filedAt: Date;
+    contractorAssignment?: { contractor?: { countryCode: 'GB' | 'DE' } };
   };
 
   const fixtures = {
@@ -670,6 +672,7 @@ describe('classificationDashboard.activeAlertsByMarket (60-04-04)', () => {
         currentBand: 'warning',
         lastBillingShare: 0.75,
         lastScannedAt: new Date(),
+        contractorAssignment: { contractor: { countryCode: 'DE' } },
       },
       {
         id: 'e2',
@@ -678,6 +681,7 @@ describe('classificationDashboard.activeAlertsByMarket (60-04-04)', () => {
         currentBand: 'critical',
         lastBillingShare: 0.9,
         lastScannedAt: new Date(),
+        contractorAssignment: { contractor: { countryCode: 'DE' } },
       },
       {
         id: 'e3',
@@ -686,6 +690,7 @@ describe('classificationDashboard.activeAlertsByMarket (60-04-04)', () => {
         currentBand: 'safe',
         lastBillingShare: 0.2,
         lastScannedAt: new Date(),
+        contractorAssignment: { contractor: { countryCode: 'DE' } },
       },
     ];
     fixtures.drv = [
@@ -696,6 +701,7 @@ describe('classificationDashboard.activeAlertsByMarket (60-04-04)', () => {
         outcome: 'SELBSTANDIG',
         validTo: in60days,
         filedAt: new Date('2024-01-01'),
+        contractorAssignment: { contractor: { countryCode: 'DE' } },
       },
       {
         id: 'd-far-future',
@@ -704,6 +710,7 @@ describe('classificationDashboard.activeAlertsByMarket (60-04-04)', () => {
         outcome: 'SELBSTANDIG',
         validTo: in200days,
         filedAt: new Date('2024-01-01'),
+        contractorAssignment: { contractor: { countryCode: 'DE' } },
       },
     ];
     const caller = makeCaller(ORG_A);

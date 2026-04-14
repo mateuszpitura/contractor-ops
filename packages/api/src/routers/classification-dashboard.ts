@@ -542,12 +542,23 @@ export const classificationDashboardRouter = router({
       const windowEnd = new Date(now.getTime() + DRV_EXPIRY_WINDOW_DAYS * 86_400_000);
 
       const [warning, critical, drvExpiringWithin90d] = await Promise.all([
-        db.economicDependencyAlertState.count({ where: { currentBand: 'warning' } }),
-        db.economicDependencyAlertState.count({ where: { currentBand: 'critical' } }),
+        db.economicDependencyAlertState.count({
+          where: {
+            currentBand: 'warning',
+            contractorAssignment: { contractor: { countryCode: 'DE' } },
+          },
+        }),
+        db.economicDependencyAlertState.count({
+          where: {
+            currentBand: 'critical',
+            contractorAssignment: { contractor: { countryCode: 'DE' } },
+          },
+        }),
         db.statusfeststellungsverfahren.count({
           where: {
             validTo: { gte: now, lte: windowEnd },
             outcome: { in: ['SELBSTANDIG', 'ABHANGIG'] },
+            contractorAssignment: { contractor: { countryCode: 'DE' } },
           },
         }),
       ]);
