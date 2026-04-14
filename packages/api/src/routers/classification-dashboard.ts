@@ -529,7 +529,10 @@ export const classificationDashboardRouter = router({
 
       if (input.market === 'GB') {
         const openReassessmentTriggers = await db.reassessmentTrigger.count({
-          where: { status: { in: ['OPEN', 'ACKNOWLEDGED'] } },
+          where: {
+            status: { in: ['OPEN', 'ACKNOWLEDGED'] },
+            contractorAssignment: { contractor: { countryCode: 'GB' } },
+          },
         });
         return { openReassessmentTriggers };
       }
