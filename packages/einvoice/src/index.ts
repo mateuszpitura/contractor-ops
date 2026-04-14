@@ -231,6 +231,19 @@ export {
   eInvoiceFormatSchema,
   finalizeEInvoiceInputSchema,
 } from './profiles/xrechnung-de/schemas.js';
+// XRechnung-DE three-layer KoSIT validator (Plan 61-03)
+export { normaliseSvrl } from './profiles/xrechnung-de/svrl-normalizer.js';
+export type {
+  NormalisedSvrl,
+  ValidationIssue as XRechnungValidationIssue,
+} from './profiles/xrechnung-de/svrl-normalizer.js';
+export { validateXRechnungCii } from './profiles/xrechnung-de/validator.js';
+export type {
+  ValidationLayerName,
+  ValidationLayerReport,
+  ValidationLayerStatus,
+  XRechnungValidationReport,
+} from './profiles/xrechnung-de/validator.js';
 
 // Convenience: register KSeF profile
 export function registerKsefProfile(options?: ConstructorParameters<typeof _KsefProfile>[0]): void {

@@ -17,13 +17,18 @@ import type { ComplianceStatus } from '../../types/compliance.js';
 import { complianceState } from '../../types/compliance.js';
 import type { EInvoice } from '../../types/invoice.js';
 import type { EInvoiceProfile } from '../../types/profile.js';
-import type { ValidationResult } from '../../types/validation.js';
+import type { ValidationError, ValidationResult } from '../../types/validation.js';
 import {
   KOSIT_RULE_SET_VERSION,
   XRECHNUNG_DE_PROFILE_ID,
 } from './constants.js';
 import { generateXRechnungCii } from './generator.js';
 import { parseXRechnungCii } from './parser.js';
+import {
+  type ValidationIssue,
+  type XRechnungValidationReport,
+  validateXRechnungCii,
+} from './validator.js';
 
 /** Optional extras accepted by `generate()` — Leitweg-ID is the only one today. */
 export interface XRechnungGenerateOptions {
@@ -56,19 +61,39 @@ export class XRechnungDEProfile implements EInvoiceProfile {
   }
 
   /**
-   * Validation stub — Plan 61-03 implements the full three-layer KoSIT
-   * pipeline (libxmljs2 XSD + saxon-js EN16931 Schematron + XRechnung CIUS
-   * Schematron). Returning `valid: true` here is a DELIBERATE Plan-02 stub:
-   * callers in Plans 04/06 invoke the profile's `validate` only AFTER Plan 03
-   * lands. Callers before then must route through the generator directly.
+   * Validate an XRechnung CII XML against the bundled KoSIT three-layer
+   * pipeline (libxmljs2 XSD + saxon-js EN 16931 Schematron + saxon-js
+   * XRechnung CIUS Schematron) and project the typed report onto the engine's
+   * generic `ValidationResult` shape.
+   *
+   * For the FULL per-layer report (used by Plan 61-06's finalize router and
+   * the EInvoice tab UI), call `validateRich` instead.
    */
-  async validate(_xml: string): Promise<ValidationResult> {
-    return {
-      valid: true,
-      errors: [],
-      warnings: [],
-      profileId: this.profileId,
-    };
+  async validate(xml: string): Promise<ValidationResult> {
+    const report = await validateXRechnungCii(xml);
+    return projectReport(report, this.profileId);
+  }
+
+  /**
+   * Generate XRechnung CII XML, then validate it in one round-trip. Used by
+   * Plan 61-06's `finalizeEInvoice` mutation to atomically build + KoSIT-check
+   * an invoice before persisting to `EInvoiceLifecycle`.
+   */
+  async generateAndValidate(
+    invoice: EInvoice,
+    opts?: XRechnungGenerateOptions,
+  ): Promise<{ xml: string; report: XRechnungValidationReport }> {
+    const xml = await this.generate(invoice, opts);
+    const report = await validateXRechnungCii(xml);
+    return { xml, report };
+  }
+
+  /**
+   * Returns the full typed three-layer report (per-layer status + bucketed
+   * issues) without lossy projection. Plan 61-06 / Plan 61-08 consume this.
+   */
+  async validateRich(xml: string): Promise<XRechnungValidationReport> {
+    return validateXRechnungCii(xml);
   }
 
   /**
@@ -92,4 +117,48 @@ export class XRechnungDEProfile implements EInvoiceProfile {
       },
     };
   }
+}
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Project the typed `XRechnungValidationReport` onto the engine's generic
+ * `ValidationResult` shape. Lossy: `fatal` collapses into the engine's
+ * `error` severity, and `info` is dropped (callers that need full fidelity
+ * call `validateRich` instead).
+ */
+function projectReport(
+  report: XRechnungValidationReport,
+  profileId: string,
+): ValidationResult {
+  const errors: ValidationError[] = [];
+  const warnings: ValidationError[] = [];
+
+  for (const layer of report.layers) {
+    for (const issue of layer.errors) errors.push(toEngineIssue(issue, layer.layer));
+    for (const issue of layer.warnings) warnings.push(toEngineIssue(issue, layer.layer));
+  }
+
+  return {
+    valid: report.status === 'VALID' || report.status === 'WARNINGS',
+    errors,
+    warnings,
+    profileId,
+  };
+}
+
+function toEngineIssue(
+  issue: ValidationIssue,
+  layer: XRechnungValidationReport['layers'][number]['layer'],
+): ValidationError {
+  const severity: ValidationError['severity'] =
+    issue.severity === 'warning' || issue.severity === 'info' ? 'warning' : 'error';
+  return {
+    code: `${layer}:${issue.ruleId}`,
+    message: issue.message,
+    path: issue.xpath || undefined,
+    severity,
+  };
 }
