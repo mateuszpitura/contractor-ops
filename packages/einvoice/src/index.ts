@@ -189,6 +189,40 @@ export type {
 } from './profiles/zatca/types.js';
 export { ZatcaTlvTag } from './profiles/zatca/types.js';
 
+// XRechnung-DE profile
+import { XRechnungDEProfile as _XRechnungDEProfile } from './profiles/xrechnung-de/index.js';
+
+// XRechnung-DE constants
+export {
+  CII_DOCUMENT_TYPE_COMMERCIAL_INVOICE,
+  KOSIT_RULE_SET_VERSION,
+  QDT_NS as XRECHNUNG_QDT_NS,
+  RAM_NS as XRECHNUNG_RAM_NS,
+  RSM_NS as XRECHNUNG_RSM_NS,
+  STORECOVE_CII_XRECHNUNG_DOC_TYPE_ID,
+  UDT_NS as XRECHNUNG_UDT_NS,
+  XRECHNUNG_BUSINESS_PROCESS_TYPE,
+  XRECHNUNG_CUSTOMIZATION_ID,
+  XRECHNUNG_DE_PROFILE_ID,
+  XRECHNUNG_PROFILE_ID,
+  XRECHNUNG_VERSION,
+} from './profiles/xrechnung-de/constants.js';
+export { generateXRechnungCii } from './profiles/xrechnung-de/generator.js';
+export type { CiiDocShape } from './profiles/xrechnung-de/generator.js';
+export { XRechnungDEProfile } from './profiles/xrechnung-de/index.js';
+export type { XRechnungGenerateOptions } from './profiles/xrechnung-de/index.js';
+export { embedLeitwegIdIntoCii } from './profiles/xrechnung-de/leitweg-id-embed.js';
+export { parseXRechnungCii } from './profiles/xrechnung-de/parser.js';
+// XRechnung-DE schemas
+export type {
+  EInvoiceFormat,
+  FinalizeEInvoiceInput,
+} from './profiles/xrechnung-de/schemas.js';
+export {
+  eInvoiceFormatSchema,
+  finalizeEInvoiceInputSchema,
+} from './profiles/xrechnung-de/schemas.js';
+
 // Convenience: register KSeF profile
 export function registerKsefProfile(options?: ConstructorParameters<typeof _KsefProfile>[0]): void {
   const profile = new _KsefProfile(options);
@@ -208,5 +242,11 @@ export function registerZatcaProfile(
   options?: ConstructorParameters<typeof _ZatcaProfile>[0],
 ): void {
   const profile = new _ZatcaProfile(options);
+  _registerProfile(profile);
+}
+
+// Convenience: register XRechnung-DE profile
+export function registerXRechnungDEProfile(): void {
+  const profile = new _XRechnungDEProfile();
   _registerProfile(profile);
 }
