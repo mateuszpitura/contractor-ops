@@ -28,6 +28,7 @@ import { ir35AttestationRouter } from './routers/ir35-other-client-attestation.j
 import { jiraRouter } from './routers/jira.js';
 import { ksefRouter } from './routers/ksef.js';
 import { legalRouter } from './routers/legal.js';
+import { leitwegIdRouter } from './routers/leitweg-id.js';
 import { linearRouter } from './routers/linear.js';
 import { notificationRouter } from './routers/notification.js';
 import { ocrRouter } from './routers/ocr.js';
@@ -114,6 +115,7 @@ export const appRouter = router({
   teams: teamsRouter, // Microsoft Teams integration -- channel discovery, channel mapping, connection status
   onboardingImport: onboardingImportRouter, // onboardingImport: Cross-tool import wizard -- source discovery, user merge, project import, async progress
   einvoice: einvoiceRouter, // einvoice: E-invoicing compliance statuses per country profile
+  leitwegId: leitwegIdRouter, // leitwegId: German public-sector Leitweg-ID CRUD + contractor/contract default resolution (Phase 61 EINV-05)
   exchangeRate: exchangeRateRouter, // exchangeRate: Daily ECB exchange rates — query, convert, cron fetch
   featureFlags: featureFlagsRouter, // featureFlags: Self-hosted Unleash-backed flag introspection for the web dashboard
   consent: consentRouter, // consent: PDPL consent management — privacy notices, per-purpose consent, admin audit
