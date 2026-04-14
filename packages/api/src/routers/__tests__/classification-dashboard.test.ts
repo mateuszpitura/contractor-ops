@@ -548,24 +548,28 @@ describe('classificationDashboard.overdueByMarket (60-04-03)', () => {
         organizationId: ORG_A,
         contractorAssignmentId: 'gb-asgn-0',
         status: 'OPEN',
+        contractorAssignment: { contractor: { name: 'GB Contractor 0', countryCode: 'GB' } },
       },
       {
         id: 't-ack',
         organizationId: ORG_A,
         contractorAssignmentId: 'gb-asgn-1',
         status: 'ACKNOWLEDGED',
+        contractorAssignment: { contractor: { name: 'GB Contractor 1', countryCode: 'GB' } },
       },
       {
         id: 't-resolved',
         organizationId: ORG_A,
         contractorAssignmentId: 'gb-asgn-2',
         status: 'RESOLVED',
+        contractorAssignment: { contractor: { name: 'GB Contractor 2', countryCode: 'GB' } },
       },
       {
         id: 't-dismissed',
         organizationId: ORG_A,
         contractorAssignmentId: 'gb-asgn-3',
         status: 'DISMISSED',
+        contractorAssignment: { contractor: { name: 'GB Contractor 3', countryCode: 'GB' } },
       },
     ];
     const caller = makeCaller(ORG_A);
@@ -632,18 +636,21 @@ describe('classificationDashboard.activeAlertsByMarket (60-04-04)', () => {
         organizationId: ORG_A,
         contractorAssignmentId: 'gb-1',
         status: 'OPEN',
+        contractorAssignment: { contractor: { name: 'GB Contractor 1', countryCode: 'GB' } },
       },
       {
         id: 't2',
         organizationId: ORG_A,
         contractorAssignmentId: 'gb-2',
         status: 'ACKNOWLEDGED',
+        contractorAssignment: { contractor: { name: 'GB Contractor 2', countryCode: 'GB' } },
       },
       {
         id: 't3',
         organizationId: ORG_A,
         contractorAssignmentId: 'gb-3',
         status: 'RESOLVED',
+        contractorAssignment: { contractor: { name: 'GB Contractor 3', countryCode: 'GB' } },
       },
     ];
     const caller = makeCaller(ORG_A);
