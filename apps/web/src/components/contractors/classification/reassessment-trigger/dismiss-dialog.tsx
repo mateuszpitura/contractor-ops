@@ -52,7 +52,16 @@ export function ReassessmentTriggerDismissDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog
+      open={open}
+      onOpenChange={next => {
+        if (!next) {
+          setReason('');
+          setAttempted(false);
+        }
+        onOpenChange(next);
+      }}
+    >
       <DialogContent data-slot="reassessment-trigger-dismiss-dialog">
         <DialogHeader>
           <DialogTitle>{t('dismissHeading')}</DialogTitle>
