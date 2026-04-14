@@ -88,6 +88,15 @@ export const DRV_DEFENSE_CROSS_REFERENCE_FOOTER_DE =
   'Diese Übersicht zeigt nur Engagements, die von Ihrer Organisation auf dieser Plattform ' +
   'erfasst wurden. Sie ist nicht erschöpfend.';
 
+// --- Phase 60 additions (CLASS-09) -----------------------------------------
+// Locked DRV Statusfeststellungsverfahren panel phrasing.
+// Sourced from § 7a SGB IV and DRV Clearingstelle terminology.
+// PENDING Steuerberater sign-off — flagged under Manual-Only Verifications.
+
+export const DRV_CLEARANCE_PANEL_HEADER_DE =
+  'Statusfeststellungsverfahren (§ 7a SGB IV)' as const;
+export const DRV_CLEARANCE_SECTION_REFERENCE_DE = '§ 7a SGB IV' as const;
+
 /**
  * Identifier names that the CI guard forbids in any `messages/*.json` file.
  * Keeping this list in sync with `LOCKED_DE_PHRASES` is enforced by the guard.
@@ -120,6 +129,9 @@ export const RESERVED_LEGAL_KEYS = [
   'DRV_DEFENSE_TABLE_HEADERS_DE',
   'DRV_DEFENSE_ATTESTATION_FOOTER_DE',
   'DRV_DEFENSE_CROSS_REFERENCE_FOOTER_DE',
+  // Phase 60 — DRV Statusfeststellungsverfahren clearance panel (CLASS-09)
+  'DRV_CLEARANCE_PANEL_HEADER_DE',
+  'DRV_CLEARANCE_SECTION_REFERENCE_DE',
 ] as const;
 
 /**
@@ -154,6 +166,9 @@ export const LOCKED_DE_PHRASES = {
   DRV_DEFENSE_TABLE_HEADERS_DE,
   DRV_DEFENSE_ATTESTATION_FOOTER_DE,
   DRV_DEFENSE_CROSS_REFERENCE_FOOTER_DE,
+  // Phase 60 — DRV clearance panel (CLASS-09)
+  DRV_CLEARANCE_PANEL_HEADER_DE,
+  DRV_CLEARANCE_SECTION_REFERENCE_DE,
 } as const;
 
 /** Literal-union type of the locked-phrase identifiers. */

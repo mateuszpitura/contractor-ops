@@ -166,6 +166,7 @@ model ContractorAssignment {
   ir35OtherClientAttestation   Ir35OtherClientAttestation?
   economicDependencyAlertState EconomicDependencyAlertState?
   reassessmentTriggers         ReassessmentTrigger[]
+  statusfeststellungsverfahren Statusfeststellungsverfahren[]
 
   @@index([organizationId])
   @@index([organizationId, contractorId, status])

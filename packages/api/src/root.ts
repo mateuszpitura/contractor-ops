@@ -40,6 +40,7 @@ import { portalRouter } from './routers/portal.js';
 import { portalTimeRouter } from './routers/portal-time.js';
 import { reassessmentTriggerRouter } from './routers/reassessment-trigger.js';
 import { reminderRouter } from './routers/reminder.js';
+import { statusfeststellungsverfahrenRouter } from './routers/statusfeststellungsverfahren.js';
 import { reportRouter } from './routers/report.js';
 import { searchRouter } from './routers/search.js';
 import { settingsRouter } from './routers/settings.js';
@@ -129,6 +130,7 @@ export const appRouter = router({
   ir35Attestation: ir35AttestationRouter, // ir35Attestation: contractor other-client attestation + same-tenant cross-reference for DRV defense bundle (Phase 59 CLASS-06)
   economicDependencyAlert: economicDependencyAlertRouter, // economicDependencyAlert: per-assignment billing-share band (safe/warning/critical) written by the daily §2 SGB VI scan (Phase 60 CLASS-07)
   reassessmentTrigger: reassessmentTriggerRouter, // reassessmentTrigger: IR35 SDS reassessment triggers — AuditLog-driven material-change detection + acknowledge/dismiss (Phase 60 CLASS-08)
+  statusfeststellungsverfahren: statusfeststellungsverfahrenRouter, // statusfeststellungsverfahren: DRV § 7a SGB IV clearance procedure CRUD + 90/30/7-day expiry reminders (Phase 60 CLASS-09)
 });
 
 /** Type-safe router type for client consumption */
