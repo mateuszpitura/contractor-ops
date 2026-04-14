@@ -3,6 +3,7 @@
 import { ShieldCheck, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useId } from 'react';
+import { ContractorEInvoicingSection } from '@/components/contractors/contractor-e-invoicing-section';
 import { CountryComplianceSection } from '@/components/contractors/country-compliance-section';
 import { DocumentList } from '@/components/documents/document-list';
 import { DropZone } from '@/components/documents/drop-zone';
@@ -60,6 +61,7 @@ export function TabCompliance({ contractor }: TabComplianceProps) {
       <div className="space-y-6">
         {/* Country-specific compliance fields (Phase 47) */}
         <CountryComplianceSection contractorId={contractor.id} />
+        <ContractorEInvoicingSection contractorId={contractor.id} />
 
         <div className="flex min-h-[300px] w-full flex-col items-center justify-center gap-3 px-4">
           <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-muted">
