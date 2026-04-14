@@ -683,6 +683,12 @@ export const invoiceRouter = router({
             contractor: {
               select: { id: true, legalName: true },
             },
+            // Plan 61-08 — compliance column on invoices-list needs per-row
+            // lifecycle status. `null` when no XRechnung XML has been
+            // generated (maps to the `notGenerated` compliance bucket).
+            eInvoiceLifecycle: {
+              select: { validationStatus: true, transmissionStatus: true },
+            },
           },
         }),
         ctx.db.invoice.count({ where }),

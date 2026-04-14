@@ -13,6 +13,10 @@ import {
   Upload,
   XCircle,
 } from 'lucide-react';
+import {
+  type EInvoiceComplianceStatus,
+  EInvoiceStatusCell,
+} from '@/components/invoices/einvoice-status-cell';
 import { KsefSourceBadge } from '@/components/invoices/ksef-badge';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -38,7 +42,37 @@ export type InvoiceRow = {
     id: string;
     legalName: string;
   } | null;
+  /**
+   * EInvoiceLifecycle projection, selected by `invoice.list` for the
+   * Phase 61 compliance column. `null` → "not generated" bucket.
+   */
+  eInvoiceLifecycle: {
+    validationStatus: 'NOT_VALIDATED' | 'VALID' | 'WARNINGS' | 'INVALID';
+    transmissionStatus: 'NOT_SENT' | 'QUEUED' | 'SENT' | 'DELIVERED' | 'FAILED';
+  } | null;
 };
+
+/**
+ * Maps the joined lifecycle row to the public compliance-status enum used
+ * by the filter chips + summary tile. Mirrors the server-side bucket logic
+ * in `einvoice.listByOrg`. Kept client-side too so the cell renders
+ * consistently with the chip filter without an extra round-trip.
+ */
+export function deriveComplianceStatus(
+  lifecycle: InvoiceRow['eInvoiceLifecycle'],
+): EInvoiceComplianceStatus {
+  if (!lifecycle) return 'notGenerated';
+  if (lifecycle.transmissionStatus === 'FAILED') return 'failed';
+  if (
+    lifecycle.transmissionStatus === 'SENT' ||
+    lifecycle.transmissionStatus === 'DELIVERED'
+  )
+    return 'transmitted';
+  if (lifecycle.validationStatus === 'INVALID') return 'invalid';
+  if (lifecycle.validationStatus === 'WARNINGS') return 'warnings';
+  if (lifecycle.validationStatus === 'VALID') return 'valid';
+  return 'notGenerated';
+}
 
 // ---------------------------------------------------------------------------
 // Invoice status badge colors per UI-SPEC
@@ -317,6 +351,25 @@ export function getColumns(t: TranslateFunction): ColumnDef<InvoiceRow>[] {
           return <Mail className="h-4 w-4 text-muted-foreground" />;
         }
         return <span className="text-muted-foreground">&mdash;</span>;
+      },
+      enableSorting: false,
+    },
+
+    // 12. E-invoice compliance (Phase 61 · Plan 61-08)
+    {
+      id: 'einvoiceCompliance',
+      accessorFn: row => deriveComplianceStatus(row.eInvoiceLifecycle),
+      header: t('columns.einvoiceCompliance'),
+      cell: ({ row }) => {
+        const status = deriveComplianceStatus(row.original.eInvoiceLifecycle);
+        return (
+          <EInvoiceStatusCell
+            status={status}
+            invoiceId={row.original.id}
+            // biome-ignore lint/nursery/noJsxPropsBind: stopPropagation to avoid opening side panel
+            className="inline-flex"
+          />
+        );
       },
       enableSorting: false,
     },

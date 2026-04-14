@@ -5,6 +5,8 @@ import { Check, Copy, Receipt } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { parseAsString, useQueryState } from 'nuqs';
 import { Suspense, useCallback, useEffect, useState } from 'react';
+import { EInvoiceComplianceFilterChips } from '@/components/invoices/einvoice-compliance-filter-chips';
+import { EInvoiceComplianceSummaryTile } from '@/components/invoices/einvoice-compliance-summary-tile';
 import { InvoiceSidePanel } from '@/components/invoices/invoice-side-panel';
 import type { InvoiceRow } from '@/components/invoices/invoice-table/columns';
 import { InvoiceDataTable } from '@/components/invoices/invoice-table/data-table';
@@ -110,6 +112,18 @@ function InvoicesContent() {
     );
   }
 
+  const handleComplianceReview = useCallback(() => {
+    // "Review N invoice(s)" CTA → multi-select invalid + failed. Updates
+    // URL via next/navigation so chips pick up the state declaratively.
+    const params = new URLSearchParams(window.location.search);
+    params.set('einvoiceStatus', 'invalid,failed');
+    window.history.replaceState(null, '', `?${params.toString()}`);
+    // Scroll the invoices table into view so the filtered set is visible.
+    document
+      .querySelector('[data-slot=invoices-table-region]')
+      ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, []);
+
   return (
     <div className="space-y-6">
       {/* Page header */}
@@ -117,8 +131,16 @@ function InvoicesContent() {
         <PageHeader title={t('pageTitle')} description={t('pageDescription')} />
       </AnimateIn>
 
-      {/* Status chip bar */}
+      {/* Phase 61 · Plan 61-08 — compliance summary tile + filter chips */}
       <AnimateIn delay={1}>
+        <EInvoiceComplianceSummaryTile onReviewFilterRequested={handleComplianceReview} />
+      </AnimateIn>
+      <AnimateIn delay={2}>
+        <EInvoiceComplianceFilterChips />
+      </AnimateIn>
+
+      {/* Status chip bar */}
+      <AnimateIn delay={3}>
         <StatusChipBar activeStatus={filters.matchStatus} onStatusChange={handleStatusChange} />
       </AnimateIn>
 
@@ -141,7 +163,9 @@ function InvoicesContent() {
       )}
 
       {/* Data table */}
-      <InvoiceDataTable onRowClick={handleRowClick} onUpload={handleUpload} />
+      <div data-slot="invoices-table-region">
+        <InvoiceDataTable onRowClick={handleRowClick} onUpload={handleUpload} />
+      </div>
 
       {/* Side panel */}
       <InvoiceSidePanel

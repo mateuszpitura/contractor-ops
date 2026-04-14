@@ -5,15 +5,17 @@ import userEvent from '@testing-library/user-event';
 import { NextIntlClientProvider } from 'next-intl';
 import type { ReactElement, ReactNode } from 'react';
 
+import deMessages from '../../messages/de.json' with { type: 'json' };
 import enMessages from '../../messages/en.json' with { type: 'json' };
 import plMessages from '../../messages/pl.json' with { type: 'json' };
 
 const messages: Record<string, typeof enMessages> = {
   en: enMessages,
   pl: plMessages,
+  de: deMessages as typeof enMessages,
 };
 
-type Locale = 'en' | 'pl';
+type Locale = 'en' | 'pl' | 'de';
 
 interface WrapperOptions {
   locale?: Locale;

@@ -2208,7 +2208,8 @@
       "currency": "Währung",
       "status": "Status",
       "matchStatus": "Match status",
-      "source": "Source"
+      "source": "Source",
+      "einvoiceCompliance": "E-Rechnung"
     },
     "status": {
       "received": "Received",

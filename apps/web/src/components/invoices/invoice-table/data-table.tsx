@@ -5,13 +5,15 @@ import type { ColumnDef } from '@tanstack/react-table';
 import { getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { FileText, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { useSearchParams } from 'next/navigation';
 import { useCallback, useMemo, useState } from 'react';
+import { parseFilterParam } from '@/components/invoices/einvoice-compliance-filter-chips';
 import { DataTableBody } from '@/components/shared/data-table-body';
 import { SortableTableHead } from '@/components/shared/sortable-table-head';
 import { Table, TableHeader, TableRow } from '@/components/ui/table';
 import { trpc } from '@/trpc/init';
 import type { InvoiceRow } from './columns';
-import { getColumns } from './columns';
+import { deriveComplianceStatus, getColumns } from './columns';
 import { DataTablePagination } from './data-table-pagination';
 import { DataTableToolbar } from './data-table-toolbar';
 import { useInvoiceFilters } from './use-invoice-filters';
@@ -100,15 +102,37 @@ export function InvoiceDataTable({ onRowClick, onUpload }: InvoiceDataTableProps
     placeholderData: keepPreviousData,
   });
 
+  // Phase 61 · Plan 61-08 — client-side compliance filter derived from the
+  // URL chip state (`?einvoiceStatus=invalid` or `invalid,failed`). Server
+  // has no EInvoiceLifecycle filter on invoice.list yet, so we narrow the
+  // loaded page client-side. Server-side filter would require extending
+  // invoice.list's input shape — tracked as a deferred item.
+  const searchParams = useSearchParams();
+  const complianceFilters = useMemo(
+    () => parseFilterParam(searchParams?.get('einvoiceStatus') ?? null),
+    [searchParams],
+  );
+  const isComplianceFilterActive =
+    complianceFilters.length > 0 && !complianceFilters.includes('all');
+
   const data = useMemo(() => {
     const result = invoicesQuery.data as { items: InvoiceRow[]; totalCount: number } | undefined;
-    return result?.items ?? [];
-  }, [invoicesQuery.data]);
+    const rows = result?.items ?? [];
+    if (!isComplianceFilterActive) return rows;
+    const allowed = new Set(complianceFilters);
+    return rows.filter(row =>
+      allowed.has(deriveComplianceStatus(row.eInvoiceLifecycle)),
+    );
+  }, [invoicesQuery.data, complianceFilters, isComplianceFilterActive]);
 
   const totalRows = useMemo(() => {
     const result = invoicesQuery.data as { items: unknown[]; totalCount: number } | undefined;
+    // When a compliance filter is active we can't report the server's
+    // totalCount (it doesn't know about EInvoiceLifecycle). Report the
+    // client-filtered page size so pagination reflects what's visible.
+    if (isComplianceFilterActive) return data.length;
     return result?.totalCount ?? 0;
-  }, [invoicesQuery.data]);
+  }, [invoicesQuery.data, isComplianceFilterActive, data.length]);
 
   // Column definitions
   const columns: ColumnDef<InvoiceRow>[] = useMemo(

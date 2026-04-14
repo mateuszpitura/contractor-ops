@@ -2066,7 +2066,8 @@
       "currency": "Waluta",
       "status": "Status",
       "matchStatus": "Status dopasowania",
-      "source": "Źródło"
+      "source": "Źródło",
+      "einvoiceCompliance": "E-faktura"
     },
     "status": {
       "received": "Otrzymana",

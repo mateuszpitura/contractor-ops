@@ -2066,7 +2066,8 @@
       "currency": "العملة",
       "status": "الحالة",
       "matchStatus": "Match status",
-      "source": "Source"
+      "source": "Source",
+      "einvoiceCompliance": "E-invoice"
     },
     "status": {
       "received": "مستلمة",
