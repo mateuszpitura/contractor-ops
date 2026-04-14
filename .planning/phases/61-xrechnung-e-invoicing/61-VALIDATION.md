@@ -3,7 +3,7 @@ phase: 61
 slug: xrechnung-e-invoicing
 status: draft
 nyquist_compliant: false
-wave_0_complete: false
+wave_0_complete: true
 created: 2026-04-14
 updated: 2026-04-14
 ---
