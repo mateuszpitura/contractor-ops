@@ -29,13 +29,13 @@ function verifyCronSecret(request: NextRequest): boolean {
 
 function addDays(date: Date, days: number): Date {
   const result = new Date(date);
-  result.setDate(result.getDate() + days);
+  result.setUTCDate(result.getUTCDate() + days);
   return result;
 }
 
 function startOfDay(date: Date): Date {
   const result = new Date(date);
-  result.setHours(0, 0, 0, 0);
+  result.setUTCHours(0, 0, 0, 0);
   return result;
 }
 
