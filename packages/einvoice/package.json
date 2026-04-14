@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "@contractor-ops/gov-api": "workspace:*",
+    "@contractor-ops/logger": "workspace:*",
     "fast-xml-parser": "^5.5.11",
     "libxmljs2": "^0.37.0",
     "node-forge": "^1.4.0",

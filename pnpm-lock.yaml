@@ -580,6 +580,9 @@ importers:
       '@contractor-ops/gov-api':
         specifier: workspace:*
         version: link:../gov-api
+      '@contractor-ops/logger':
+        specifier: workspace:*
+        version: link:../logger
       fast-xml-parser:
         specifier: ^5.5.11
         version: 5.5.12
