@@ -5,6 +5,7 @@ import { auditRouter } from './routers/audit.js';
 import { billingRouter } from './routers/billing.js';
 import { calendarRouter } from './routers/calendar.js';
 import { classificationRouter } from './routers/classification.js';
+import { classificationDashboardRouter } from './routers/classification-dashboard.js';
 import { classificationDocumentRouter } from './routers/classification-document.js';
 import { consentRouter } from './routers/consent.js';
 import { contractRouter } from './routers/contract.js';
@@ -125,6 +126,7 @@ export const appRouter = router({
   tax: taxRouter, // tax: Tax rate lookup, VAT validation, WHT calculation, WHT certificates, tax summary dashboard
   zatca: zatcaRouter, // zatca: ZATCA device onboarding — tax details, CSR generation, compliance CSID, compliance checks, production cert
   classification: classificationRouter, // classification: IR35 + Scheinselbständigkeit engagement classification — draft/autosave/submit/outcome (Phase 58)
+  classificationDashboard: classificationDashboardRouter, // classificationDashboard: per-market compliance health dashboard aggregating Phase-58 assessments + Phase-60 alerts/triggers/DRV clearances (Phase 60 CLASS-10)
   classificationDocument: classificationDocumentRouter, // classificationDocument: IR35 SDS + DRV defense bundle PDFs — append-only, content-addressed R2 (Phase 59)
   ir35Chain: ir35ChainRouter, // ir35Chain: IR35 chain participant tracking + SDS delivery / acknowledgement (Phase 59 CLASS-04)
   ir35Attestation: ir35AttestationRouter, // ir35Attestation: contractor other-client attestation + same-tenant cross-reference for DRV defense bundle (Phase 59 CLASS-06)
