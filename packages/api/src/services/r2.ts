@@ -226,6 +226,53 @@ export async function deleteObject(key: string) {
 }
 
 /**
+ * Upload a string body (e.g. serialized XML) to R2 at a caller-owned key.
+ * Used by Phase 61's `finalizeEInvoice` to persist the canonical XRechnung
+ * CII XML at a content-addressed key.  Caller MUST scope keys by
+ * organizationId to prevent cross-tenant access (Phase 56 · D-09 + ASVS V4).
+ */
+export async function putObjectString(params: {
+  key: string;
+  body: string;
+  contentType: string;
+}): Promise<void> {
+  const client = createR2Client();
+  await client.send(
+    new PutObjectCommand({
+      Bucket: getDefaultBucket(),
+      Key: params.key,
+      Body: params.body,
+      ContentType: params.contentType,
+    }),
+  );
+}
+
+/**
+ * Read an R2 object into a UTF-8 string.  Consumed by Phase 61 `einvoice.send`
+ * when it rehydrates the canonical XRechnung XML for transmission.
+ *
+ * `key` is trusted — callers MUST have verified the caller owns the
+ * referenced lifecycle / document row before invoking this helper.
+ */
+export async function getObjectAsString(key: string): Promise<string> {
+  const client = createR2Client();
+  const response = await client.send(
+    new GetObjectCommand({
+      Bucket: getDefaultBucket(),
+      Key: key,
+    }),
+  );
+  // AWS SDK v3's Body is a stream; transformToString is a built-in helper.
+  const body = response.Body as
+    | { transformToString(encoding?: string): Promise<string> }
+    | undefined;
+  if (!body || typeof body.transformToString !== 'function') {
+    throw new Error(`R2 getObjectAsString(${key}): empty / unreadable body`);
+  }
+  return body.transformToString('utf-8');
+}
+
+/**
  * Sign a GET URL for an existing R2 object WITHOUT uploading anything.
  * Used by Phase 59 `classificationDocument.getDownloadUrl` query — the PDF bytes
  * were persisted by an earlier `generateSds` / `generateDrvDefenseBundle` mutation,
