@@ -37,6 +37,10 @@ model Contractor {
   // Phase 57 (D-05) — denormalized VAT validation summary (source of truth = TaxIdValidation)
   latestVatValidatedAt      DateTime?
   latestVatValidationStatus ValidationStatus?
+  // Phase 61 (D-08 / D-11) — German public-sector Leitweg-ID flag + Peppol ID pair
+  isPublicSectorBuyer       Boolean                  @default(false)
+  peppolSchemeId            String?                  @db.VarChar(4)
+  peppolParticipantValue    String?                  @db.VarChar(64)
   createdAt                 DateTime                 @default(now())
   updatedAt                 DateTime                 @updatedAt
   archivedAt                DateTime?
@@ -66,6 +70,7 @@ model Contractor {
   returnRequests            ReturnRequest[]
   taxIdValidations          TaxIdValidation[]
   ir35ChainParticipantLinks Ir35ChainParticipant[]
+  leitwegIds                LeitwegId[]
 
   // InPost preferred Paczkomat (D-03)
   preferredPaczkomatId      String?
@@ -156,9 +161,10 @@ model ContractorAssignment {
   project      Project?     @relation(fields: [projectId], references: [id])
   costCenter   CostCenter?  @relation(fields: [costCenterId], references: [id])
 
-  classificationAssessments  ClassificationAssessment[]
-  ir35ChainParticipants      Ir35ChainParticipant[]
-  ir35OtherClientAttestation Ir35OtherClientAttestation?
+  classificationAssessments    ClassificationAssessment[]
+  ir35ChainParticipants        Ir35ChainParticipant[]
+  ir35OtherClientAttestation   Ir35OtherClientAttestation?
+  economicDependencyAlertState EconomicDependencyAlertState?
 
   @@index([organizationId])
   @@index([organizationId, contractorId, status])

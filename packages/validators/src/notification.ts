@@ -23,6 +23,9 @@ export const NOTIFICATION_TYPES = [
   'EQUIPMENT_RETURN_REJECTED',
   'EQUIPMENT_RETURN_REQUESTED',
   'SHIPMENT_STATUS_CHANGE',
+  // Phase 60 uses dot-notation per CONTEXT.md D-05; existing SCREAMING_SNAKE_CASE types remain unchanged.
+  'classification.economic_dependency_warning',
+  'classification.economic_dependency_critical',
 ] as const;
 
 export const notificationTypeEnum = z.enum(NOTIFICATION_TYPES);

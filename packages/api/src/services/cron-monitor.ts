@@ -20,6 +20,8 @@ export const CronMonitors = {
   TOKEN_REFRESH: 'token-refresh',
   TRIAL_NOTIFICATIONS: 'trial-notifications',
   JOB_HEALTH: 'job-health',
+  // Phase 60 · CLASS-07 — daily economic-dependency scan (§2 SGB VI early warning).
+  CLASSIFICATION_ECONOMIC_DEPENDENCY: 'classification-economic-dependency',
 } as const;
 
 export type CronMonitorKey = (typeof CronMonitors)[keyof typeof CronMonitors];

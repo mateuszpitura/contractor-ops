@@ -129,3 +129,41 @@ model Ir35OtherClientAttestation {
 
   @@index([organizationId, contractorAssignmentId])
 }
+
+// ---------------------------------------------------------------------------
+// Phase 60 · CLASS-07 — economic-dependency alert state machine (§2 SGB VI)
+// See .planning/phases/60-classification-polish/60-01-PLAN.md.
+//
+// Per-assignment state row written exclusively by the daily cron
+// (packages/api/src/services/economic-dependency-scan.ts). The cron computes
+// the contractor's platform billing share over a rolling 12 months and
+// transitions through safe/warning/critical bands per §2 SGB VI thresholds
+// (70% warning, 83.33% critical). Up-crossings fire a notification; same-band
+// stays re-fire only when 30+ days have elapsed (lastReminderAt).
+// ---------------------------------------------------------------------------
+
+enum EconomicDependencyBand {
+  safe
+  warning
+  critical
+}
+
+model EconomicDependencyAlertState {
+  id                     String                 @id @default(cuid())
+  organizationId         String
+  contractorAssignmentId String                 @unique
+  currentBand            EconomicDependencyBand @default(safe)
+  lastBillingShare       Decimal                @db.Decimal(5, 4)
+  lastScannedAt          DateTime
+  lastCrossedAt          DateTime?
+  lastReminderAt         DateTime?
+  createdAt              DateTime               @default(now())
+  updatedAt              DateTime               @updatedAt
+
+  organization         Organization         @relation(fields: [organizationId], references: [id])
+  contractorAssignment ContractorAssignment @relation(fields: [contractorAssignmentId], references: [id])
+
+  @@index([organizationId], map: "EDAS_org_idx")
+  @@index([organizationId, currentBand], map: "EDAS_org_band_idx")
+  @@index([organizationId, lastScannedAt], map: "EDAS_org_scanned_idx")
+}

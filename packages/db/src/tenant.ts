@@ -1,6 +1,12 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
 import type { Prisma } from '../generated/prisma/client/index.js';
 
+// PHASE-60-CROSS-ORG-AGGREGATE: raw (non-tenant-scoped) client re-exported
+// from tenant.ts so consumers can import the "tenant context family" from a
+// single module. Use ONLY in cron cross-org aggregations — never in request
+// handlers (see raw.ts for full rationale).
+export { prismaRaw } from './raw.js';
+
 interface TenantContext {
   organizationId: string;
   region: string;

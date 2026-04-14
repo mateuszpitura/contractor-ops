@@ -102,6 +102,11 @@ model Organization {
   ir35ChainParticipants          Ir35ChainParticipant[]
   ir35ChainParticipantLinkedOrgs Ir35ChainParticipant[]             @relation("Ir35ChainParticipantLinkedOrg")
   ir35OtherClientAttestations    Ir35OtherClientAttestation[]
+  economicDependencyAlertStates  EconomicDependencyAlertState[]
+  leitwegIds                     LeitwegId[]
+  eInvoiceLifecycles             EInvoiceLifecycle[]
+  eInvoiceLifecycleEvents        EInvoiceLifecycleEvent[]
+  peppolCapabilityCache          PeppolCapabilityCache[]
 }
 
 model Member {

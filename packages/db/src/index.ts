@@ -1,5 +1,7 @@
 export type { Prisma } from '../generated/prisma/client/index.js';
 export { createPrismaClientForUrl, PrismaClient, prisma } from './client.js';
+// PHASE-60-CROSS-ORG-AGGREGATE: raw (non-tenant-scoped) client for cron-only cross-org aggregates.
+export { prismaRaw } from './raw.js';
 export type { DataRegion } from './region.js';
 export { getRegionalClient, preWarmRegionalClients, SUPPORTED_REGIONS } from './region.js';
 export type { RlsContext } from './rls.js';
