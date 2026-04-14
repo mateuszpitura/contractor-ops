@@ -527,6 +527,20 @@ export const contractRouter = router({
         data: updateData,
       });
 
+      // Phase 60 CLASS-08 — audit status transition so the reassessment scan
+      // can detect ACTIVE → TERMINATED and similar IR35-relevant events.
+      await writeAuditLog({
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user?.id ?? null,
+        action: 'STATUS_TRANSITION',
+        resourceType: 'CONTRACT',
+        resourceId: updated.id,
+        resourceName: updated.title,
+        oldValues: { status: contract.status },
+        newValues: { status: updated.status },
+      });
+
       return plain(updated);
     }),
 
@@ -707,7 +721,7 @@ export const contractRouter = router({
           organizationId: ctx.organizationId,
           deletedAt: null,
         },
-        select: { id: true, status: true },
+        select: { id: true, status: true, title: true },
       });
 
       const valid: string[] = [];
@@ -731,6 +745,9 @@ export const contractRouter = router({
       }
 
       if (valid.length > 0) {
+        // Build a lookup of old status by id for audit log entries.
+        const oldStatusById = new Map(contracts.map(c => [c.id, c]));
+
         await ctx.db.$transaction(async tx => {
           const updateData: Record<string, unknown> = {
             status: input.targetStatus,
@@ -744,6 +761,25 @@ export const contractRouter = router({
             where: { id: { in: valid } },
             data: updateData,
           });
+
+          // Phase 60 CLASS-08 — emit one audit row per transitioned contract so
+          // the reassessment scan can detect each status change individually.
+          const auditWriterTx = tx as unknown as import('../services/audit-writer.js').AuditWriterClient;
+          for (const id of valid) {
+            const prev = oldStatusById.get(id);
+            await writeAuditLog({
+              organizationId: ctx.organizationId,
+              actorType: 'USER',
+              actorId: ctx.user?.id ?? null,
+              action: 'STATUS_TRANSITION',
+              resourceType: 'CONTRACT',
+              resourceId: id,
+              resourceName: prev?.title ?? null,
+              oldValues: { status: prev?.status ?? null },
+              newValues: { status: input.targetStatus },
+              tx: auditWriterTx,
+            });
+          }
         });
       }
 
