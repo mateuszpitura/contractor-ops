@@ -493,12 +493,12 @@ export const classificationDashboardRouter = router({
             include: { contractor: { select: { name: true, countryCode: true } } },
           },
         },
-        orderBy: { completedAt: 'asc' },
+        orderBy: { completedAt: 'desc' },
         take: DETAIL_ROW_TAKE,
       });
 
-      // Keep latest per engagement (already sorted ASC of completedAt per engagement —
-      // collapse to one row per engagement, picking the freshest ASC since all are overdue).
+      // Keep latest per engagement (sorted DESC so first occurrence per assignment
+      // is the most recent overdue assessment — dedup to one row per engagement).
       const latestByAssignment = new Map<string, (typeof rows)[number]>();
       for (const r of rows) {
         if (!latestByAssignment.has(r.contractorAssignmentId))
