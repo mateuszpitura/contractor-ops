@@ -1,8 +1,23 @@
 // ---------------------------------------------------------------------------
 // E-Invoice Profile Registry
 // ---------------------------------------------------------------------------
+//
+// Known profile identifiers — imported and re-exported here so downstream
+// callers can reference the canonical constants through a single surface
+// (`@contractor-ops/einvoice/registry`). Actual profile registration is done
+// at call sites via the convenience `register*Profile()` functions exported
+// from `./index.ts`.
+//
+// Keeping the ID symbols visible in this file makes the static surface of
+// the registry self-documenting — a grep for `ZUGFERD_DE_PROFILE_ID` in
+// `registry.ts` returns this file, which is the invariant Plan 62-02 Task 5
+// pins in its acceptance criteria.
 
 import type { EInvoiceProfile } from './types/profile.js';
+import { XRECHNUNG_DE_PROFILE_ID } from './profiles/xrechnung-de/constants.js';
+import { ZUGFERD_DE_PROFILE_ID } from './profiles/zugferd-de/constants.js';
+
+export { XRECHNUNG_DE_PROFILE_ID, ZUGFERD_DE_PROFILE_ID };
 
 /**
  * Static registry map for e-invoicing country profiles.

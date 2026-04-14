@@ -150,14 +150,48 @@ describe('Profile Registry — XRechnung-DE', () => {
     expect(xml).toContain('<rsm:CrossIndustryInvoice');
   });
 
-  it('parse() on XRechnung profile throws (Phase 62 feature)', async () => {
+  it('parse() on XRechnung profile round-trips through generator output (Phase 62)', async () => {
+    // Phase 62 Plan 62-02 Task 4 implemented the real CII parser; this test
+    // now asserts the round-trip invariant rather than the former stub's
+    // "throws Phase 62" message.
     const { XRechnungDEProfile } = await import('../profiles/xrechnung-de/index.js');
+    const { generateXRechnungCii } = await import(
+      '../profiles/xrechnung-de/generator.js'
+    );
     registerProfile(new XRechnungDEProfile());
 
     const profile = getProfile('xrechnung-de');
-    await expect(profile.parse('<rsm:CrossIndustryInvoice/>')).rejects.toThrow(
-      /Phase 62/,
-    );
+    const invoice = {
+      id: 'RT-0001',
+      issueDate: '2026-04-14',
+      invoiceTypeCode: '380',
+      currencyCode: 'EUR',
+      profileId: 'xrechnung-de',
+      supplier: { id: 'DE111111111', name: 'Seller GmbH', country: 'DE' },
+      customer: { id: 'DE222222222', name: 'Buyer GmbH', country: 'DE' },
+      lines: [
+        {
+          lineNumber: 1,
+          description: 'Roundtrip item',
+          quantity: 1,
+          unit: 'C62',
+          unitPriceMinor: 1000,
+          netAmountMinor: 1000,
+          vatRate: '19',
+        },
+      ],
+      taxExclusiveAmount: 1000,
+      taxInclusiveAmount: 1190,
+      payableAmount: 1190,
+      taxBreakdown: [
+        { taxableAmountMinor: 1000, taxAmountMinor: 190, taxCategory: 'S', percent: 19 },
+      ],
+    };
+    const xml = generateXRechnungCii(invoice, null);
+    const parsed = await profile.parse(xml);
+    expect(parsed.id).toBe('RT-0001');
+    expect(parsed.currencyCode).toBe('EUR');
+    expect(parsed.profileId).toBe('xrechnung-de');
   });
 
   it('XRechnungDEProfile.validate() returns a ValidationResult for invalid input', async () => {
@@ -182,6 +216,6 @@ describe('Profile Registry — XRechnung-DE', () => {
     expect(status.country).toBe('DE');
     expect(status.displayName).toContain(KOSIT_RULE_SET_VERSION);
     expect(status.capabilities.canGenerate).toBe(true);
-    expect(status.capabilities.canParse).toBe(false); // Phase 62
+    expect(status.capabilities.canParse).toBe(true); // wired in Phase 62 Plan 02
   });
 });

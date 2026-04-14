@@ -272,3 +272,61 @@ export function registerXRechnungDEProfile(): void {
   const profile = new _XRechnungDEProfile();
   _registerProfile(profile);
 }
+
+// ---------------------------------------------------------------------------
+// ZUGFeRD-DE profile (Phase 62 — hybrid PDF/A-3 + embedded CII)
+// ---------------------------------------------------------------------------
+
+import { ZugferdDEProfile as _ZugferdDEProfile } from './profiles/zugferd-de/index.js';
+
+// ZUGFeRD-DE constants + types
+export {
+  GUIDELINE_URN_TO_LEVEL,
+  PDFA_ID_CONFORMANCE,
+  PDFA_ID_NAMESPACE,
+  PDFA_ID_PART,
+  UNSUPPORTED_GUIDELINE_URNS,
+  ZUGFERD_AF_RELATIONSHIP,
+  ZUGFERD_ATTACHMENT_FILENAME,
+  ZUGFERD_ATTACHMENT_MIME,
+  ZUGFERD_DE_PROFILE_ID,
+  ZUGFERD_XMP_DOCUMENT_FILE_NAME,
+  ZUGFERD_XMP_DOCUMENT_TYPE,
+  ZUGFERD_XMP_NAMESPACE,
+  ZUGFERD_XMP_PREFIX,
+  ZUGFERD_XMP_VERSION,
+} from './profiles/zugferd-de/constants.js';
+export type { ZugferdConformanceLevel } from './profiles/zugferd-de/constants.js';
+
+// ZUGFeRD-DE parser + delegate validator
+export { parseZugferdPdf } from './profiles/zugferd-de/parser.js';
+export type {
+  ParsedZugferd,
+  ZugferdParserError,
+} from './profiles/zugferd-de/parser.js';
+export { validateZugferdEmbeddedXml } from './profiles/zugferd-de/validator.js';
+
+// ZUGFeRD-DE upload schema (Plan 05 intake route)
+export {
+  ZugferdPdfUploadSchema,
+} from './profiles/zugferd-de/schemas.js';
+export type { ZugferdPdfUpload } from './profiles/zugferd-de/schemas.js';
+
+// ZUGFeRD-DE profile class
+export { ZugferdDEProfile } from './profiles/zugferd-de/index.js';
+
+// XRechnung inbound parser — Phase-62 fully implemented.
+// Named export is the richer typed parser (ParsedXrechnung), separate from
+// the Phase-61 back-compat `parseXRechnungCii` already exported above.
+export { parseXrechnungCii } from './profiles/xrechnung-de/parser.js';
+export type {
+  ParsedXrechnung,
+  ParserError as XRechnungParserError,
+  ParserWarning as XRechnungParserWarning,
+} from './profiles/xrechnung-de/parser.js';
+
+// Convenience: register ZUGFeRD-DE profile
+export function registerZugferdDEProfile(): void {
+  const profile = new _ZugferdDEProfile();
+  _registerProfile(profile);
+}

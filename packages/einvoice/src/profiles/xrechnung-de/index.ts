@@ -111,7 +111,7 @@ export class XRechnungDEProfile implements EInvoiceProfile {
       healthScore: 100,
       capabilities: {
         canGenerate: true,
-        canParse: false, // inbound parsing is Phase 62
+        canParse: true, // inbound parsing wired in Phase 62 Plan 02 Task 4
         canSign: false,
         canQRCode: false,
       },
