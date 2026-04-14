@@ -7,6 +7,7 @@ import { openApiSpec } from './openapi.js';
 import contractors from './routes/contractors.js';
 import contracts from './routes/contracts.js';
 import documents from './routes/documents.js';
+import featureFlags from './routes/feature-flags.js';
 import invoices from './routes/invoices.js';
 
 // ---------------------------------------------------------------------------
@@ -25,6 +26,7 @@ app.route('/contractors', contractors);
 app.route('/invoices', invoices);
 app.route('/contracts', contracts);
 app.route('/documents', documents);
+app.route('/feature-flags', featureFlags);
 
 // --- Health check (outside auth) ---
 app.get('/health', c => c.json({ status: 'ok' }));

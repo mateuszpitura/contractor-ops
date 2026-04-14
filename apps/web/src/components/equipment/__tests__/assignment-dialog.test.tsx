@@ -23,19 +23,22 @@ let mockContractors: Array<{ id: string; displayName: string | null; legalName: 
 let mockIsLoading = false;
 let mockIsPending = false;
 
-vi.mock('@tanstack/react-query', () => ({
-  useQuery: () => ({
-    data: mockContractors.length > 0 ? { items: mockContractors } : undefined,
-    isLoading: mockIsLoading,
-  }),
-  useMutation: (opts: Record<string, unknown>) => ({
-    mutate: mockMutate,
-    isPending: mockIsPending,
-    ...opts,
-  }),
-  useQueryClient: () => ({ invalidateQueries: vi.fn() }),
-}));
-
+vi.mock('@tanstack/react-query', async importOriginal => {
+  const actual = await importOriginal<typeof import('@tanstack/react-query')>();
+  return {
+    ...actual,
+    useQuery: () => ({
+      data: mockContractors.length > 0 ? { items: mockContractors } : undefined,
+      isLoading: mockIsLoading,
+    }),
+    useMutation: (opts: Record<string, unknown>) => ({
+      mutate: mockMutate,
+      isPending: mockIsPending,
+      ...opts,
+    }),
+    useQueryClient: () => ({ invalidateQueries: vi.fn() }),
+  };
+});
 vi.mock('@/trpc/init', () => ({
   trpc: {
     contractor: { list: { queryOptions: () => ({ queryKey: ['contractor.list'] }) } },

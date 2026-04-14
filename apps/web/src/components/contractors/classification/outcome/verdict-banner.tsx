@@ -4,17 +4,9 @@
 // Renders the colour + icon + text "semantic triad" (WCAG 1.4.1 — never
 // communicate by colour alone). Used by both IR35 and DRV outcome variants.
 
-import {
-  CircleCheck,
-  ShieldAlert,
-  ShieldX,
-  ShieldQuestion,
-  type LucideIcon,
-} from 'lucide-react';
-
 import type { Ir35Outcome, ScheinselbstandigkeitOutcome } from '@contractor-ops/classification';
-
-type Kind = 'ir35' | 'drv';
+import type { LucideIcon } from 'lucide-react';
+import { CircleCheck, ShieldAlert, ShieldQuestion, ShieldX } from 'lucide-react';
 
 type SemanticTone = 'success' | 'warning' | 'destructive' | 'neutral';
 

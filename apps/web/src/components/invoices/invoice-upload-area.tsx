@@ -95,6 +95,32 @@ export function InvoiceUploadArea({
 
   const ocrRetriggerMutation = useMutation(trpc.ocr.retrigger.mutationOptions({}));
 
+  const triggerOcrForPdf = useCallback(
+    async (file: File, documentId: string, storageKey: string) => {
+      try {
+        const ocrResult = await ocrTriggerMutation.mutateAsync({
+          documentId,
+          storageKey,
+        });
+        setExtractionId(ocrResult.extractionId);
+        setPdfUrl(URL.createObjectURL(file));
+        setShowPdfReview(true);
+      } catch (error) {
+        if (
+          error instanceof TRPCClientError &&
+          error.data?.code === 'PRECONDITION_FAILED' &&
+          error.message === 'OCR credits exhausted'
+        ) {
+          setCreditExhausted(true);
+        } else {
+          // OCR trigger failure is non-blocking
+          console.warn('OCR trigger failed, manual entry available');
+        }
+      }
+    },
+    [ocrTriggerMutation],
+  );
+
   const uploadFile = useCallback(
     async (file: File) => {
       const fileId = `${file.name}-${Date.now()}`;
@@ -171,27 +197,7 @@ export function InvoiceUploadArea({
 
         // Step 5: Trigger OCR if file is PDF
         if (isPdfFile(file) && storageKey) {
-          try {
-            const ocrResult = await ocrTriggerMutation.mutateAsync({
-              documentId,
-              storageKey,
-            });
-            setExtractionId(ocrResult.extractionId);
-            // Create a blob URL for the PDF preview
-            setPdfUrl(URL.createObjectURL(file));
-            setShowPdfReview(true);
-          } catch (error) {
-            if (
-              error instanceof TRPCClientError &&
-              error.data?.code === 'PRECONDITION_FAILED' &&
-              error.message === 'OCR credits exhausted'
-            ) {
-              setCreditExhausted(true);
-            } else {
-              // OCR trigger failure is non-blocking
-              console.warn('OCR trigger failed, manual entry available');
-            }
-          }
+          await triggerOcrForPdf(file, documentId, storageKey);
         }
       } catch {
         setFiles(prev =>
@@ -199,7 +205,7 @@ export function InvoiceUploadArea({
         );
       }
     },
-    [requestUploadMutation, confirmUploadMutation, createInvoiceMutation, ocrTriggerMutation],
+    [requestUploadMutation, confirmUploadMutation, createInvoiceMutation, triggerOcrForPdf],
   );
 
   const retryFile = useCallback(

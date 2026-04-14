@@ -1,3 +1,4 @@
+import userEvent from '@testing-library/user-event';
 import { render, screen, setup, waitFor, within } from '@/test/test-utils';
 import { DateRangeFilter } from '../date-range-filter';
 
@@ -72,7 +73,10 @@ describe('DateRangeFilter', () => {
 
   it('calls onDateChange and closes the popover after selecting a full date range in the calendar', async () => {
     const onDateChange = vi.fn();
-    const { user } = setup(<DateRangeFilter {...defaultProps} onDateChange={onDateChange} />);
+    // pointerEventsCheck=0 disables the jsdom pointer-events: none check that
+    // triggers on base-ui Calendar day buttons when not focused.
+    const user = userEvent.setup({ pointerEventsCheck: 0 });
+    render(<DateRangeFilter {...defaultProps} onDateChange={onDateChange} />);
     await user.click(screen.getByText('Custom'));
     const calendar = await waitFor(() => {
       const el = document.querySelector('[data-slot="calendar"]');

@@ -143,6 +143,62 @@ function validateDateOrder(updateData: Record<string, unknown>) {
   }
 }
 
+/**
+ * Builds the Prisma `data` payload for contract creation from validated input.
+ */
+function buildContractCreateData(
+  organizationId: string,
+  input: {
+    contractorId: string;
+    title: string;
+    type: string;
+    startDate: string;
+    endDate?: string | null;
+    noticePeriodDays?: number | null;
+    autoRenewal: boolean;
+    renewalTerms?: string | null;
+    currency: string;
+    billingModel: string;
+    rateType: string;
+    rateValueMinor?: number | null;
+    retainerAmountMinor?: number | null;
+    expectedHoursPerPeriod?: number | null;
+    paymentTermsDays?: number | null;
+    invoiceCycle?: string | null;
+    internalOwnerUserId?: string | null;
+    teamId?: string | null;
+    projectId?: string | null;
+    costCenterId?: string | null;
+    notes?: string | null;
+  },
+) {
+  return {
+    organizationId,
+    contractorId: input.contractorId,
+    title: input.title,
+    type: input.type,
+    startDate: new Date(input.startDate),
+    endDate: input.endDate ? new Date(input.endDate) : null,
+    noticePeriodDays: input.noticePeriodDays ?? null,
+    autoRenewal: input.autoRenewal,
+    renewalTerms: input.renewalTerms ?? null,
+    currency: input.currency,
+    billingModel: input.billingModel,
+    rateType: input.rateType,
+    rateValueMinor: input.rateValueMinor ?? null,
+    retainerAmountMinor: input.retainerAmountMinor ?? null,
+    expectedHoursPerPeriod: input.expectedHoursPerPeriod ?? null,
+    paymentTermsDays: input.paymentTermsDays ?? null,
+    invoiceCycle: input.invoiceCycle ?? null,
+    internalOwnerUserId: input.internalOwnerUserId ?? null,
+    teamId: input.teamId ?? null,
+    projectId: input.projectId ?? null,
+    costCenterId: input.costCenterId ?? null,
+    notes: input.notes ?? null,
+    status: 'DRAFT' as const,
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Contract router
 // ---------------------------------------------------------------------------
@@ -156,31 +212,7 @@ export const contractRouter = router({
     .input(contractCreateSchema)
     .mutation(async ({ ctx, input }) => {
       const contract = await ctx.db.contract.create({
-        data: {
-          organizationId: ctx.organizationId,
-          contractorId: input.contractorId,
-          title: input.title,
-          type: input.type,
-          startDate: new Date(input.startDate),
-          endDate: input.endDate ? new Date(input.endDate) : null,
-          noticePeriodDays: input.noticePeriodDays ?? null,
-          autoRenewal: input.autoRenewal,
-          renewalTerms: input.renewalTerms ?? null,
-          currency: input.currency,
-          billingModel: input.billingModel,
-          rateType: input.rateType,
-          rateValueMinor: input.rateValueMinor ?? null,
-          retainerAmountMinor: input.retainerAmountMinor ?? null,
-          expectedHoursPerPeriod: input.expectedHoursPerPeriod ?? null,
-          paymentTermsDays: input.paymentTermsDays ?? null,
-          invoiceCycle: input.invoiceCycle ?? null,
-          internalOwnerUserId: input.internalOwnerUserId ?? null,
-          teamId: input.teamId ?? null,
-          projectId: input.projectId ?? null,
-          costCenterId: input.costCenterId ?? null,
-          notes: input.notes ?? null,
-          status: 'DRAFT',
-        },
+        data: buildContractCreateData(ctx.organizationId, input),
         include: {
           contractor: {
             select: { id: true, legalName: true, displayName: true, status: true },

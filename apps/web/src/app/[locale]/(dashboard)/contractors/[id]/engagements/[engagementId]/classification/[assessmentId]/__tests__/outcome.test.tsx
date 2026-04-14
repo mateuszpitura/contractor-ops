@@ -3,7 +3,7 @@
 // OC-1/2 IR35 variant, OC-3/4/5 DRV variant, OC-6 snapshot-not-live (Pitfall 1
 // — LOAD-BEARING), OC-7 disclaimer gate, OC-8 IDOR fallback.
 
-import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mockAssessment: { current: unknown } = { current: null };
 
@@ -13,13 +13,9 @@ vi.mock('next/navigation', () => ({
 
 vi.mock('@/i18n/navigation', () => ({
   useRouter: () => ({ push: vi.fn() }),
-  Link: ({
-    href,
-    children,
-  }: {
-    href: string;
-    children: React.ReactNode;
-  }) => <a href={href}>{children}</a>,
+  Link: ({ href, children }: { href: string; children: React.ReactNode }) => (
+    <a href={href}>{children}</a>
+  ),
 }));
 
 vi.mock('@/trpc/init', () => ({
@@ -43,9 +39,7 @@ vi.mock('sonner', () => ({ toast: { error: vi.fn(), success: vi.fn() } }));
 // Mock the live rule-set constant. TEST OC-6 later flips this value; the
 // outcome page must continue to render the snapshotted prompt, NOT this.
 vi.mock('@contractor-ops/classification', async () => {
-  const actual = await vi.importActual<Record<string, unknown>>(
-    '@contractor-ops/classification',
-  );
+  const actual = await vi.importActual<Record<string, unknown>>('@contractor-ops/classification');
   return {
     ...actual,
     IR35_QUESTIONS: [

@@ -25,19 +25,22 @@ vi.mock('react-dropzone', () => ({
   },
 }));
 
-vi.mock('@tanstack/react-query', () => ({
-  useMutation: () => ({
-    mutateAsync: vi
-      .fn()
-      .mockResolvedValue({ documentId: 'doc-1', uploadUrl: 'https://example.com/upload' }),
-    mutate: vi.fn(),
-    isPending: false,
-  }),
-  useQueryClient: () => ({
-    invalidateQueries: vi.fn(),
-  }),
-}));
-
+vi.mock('@tanstack/react-query', async importOriginal => {
+  const actual = await importOriginal<typeof import('@tanstack/react-query')>();
+  return {
+    ...actual,
+    useMutation: () => ({
+      mutateAsync: vi
+        .fn()
+        .mockResolvedValue({ documentId: 'doc-1', uploadUrl: 'https://example.com/upload' }),
+      mutate: vi.fn(),
+      isPending: false,
+    }),
+    useQueryClient: () => ({
+      invalidateQueries: vi.fn(),
+    }),
+  };
+});
 vi.mock('@/trpc/init', () => ({
   trpc: {
     document: {

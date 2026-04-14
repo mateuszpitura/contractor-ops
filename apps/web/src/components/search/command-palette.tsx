@@ -138,6 +138,185 @@ function entityDetailUrl(type: string, id: string): string {
 }
 
 // ---------------------------------------------------------------------------
+// Sub-components (stable onSelect/onClick — avoids inline arrows in .map())
+// ---------------------------------------------------------------------------
+
+function RecentCommandItem({
+  item,
+  onSelect,
+  tTime,
+}: {
+  item: RecentItem;
+  onSelect: (item: RecentItem) => void;
+  tTime: (key: string, params?: Record<string, number>) => string;
+}) {
+  const handleSelect = useCallback(() => onSelect(item), [onSelect, item]);
+  const { key, params } = formatRelativeTimeData(item.viewedAt);
+
+  return (
+    <CommandItem key={`recent-${item.type}-${item.id}`} onSelect={handleSelect}>
+      <Clock className="h-4 w-4 text-muted-foreground" />
+      <span className="flex-1 truncate text-sm font-medium">{item.name}</span>
+      {item.type !== 'page' && (
+        <Badge variant="secondary" className={TYPE_BADGE_CLASSES[item.type] ?? ''}>
+          {item.type}
+        </Badge>
+      )}
+      <span className="text-xs text-muted-foreground">
+        {tTime(key as Parameters<typeof tTime>[0], params)}
+      </span>
+    </CommandItem>
+  );
+}
+
+function PinnedCommandItem({
+  item,
+  navigate,
+}: {
+  item: PinnedItem;
+  navigate: (href: string) => void;
+}) {
+  const handleSelect = useCallback(
+    () => navigate(entityDetailUrl(item.type, item.id)),
+    [navigate, item.type, item.id],
+  );
+
+  return (
+    <CommandItem key={`pinned-${item.type}-${item.id}`} onSelect={handleSelect}>
+      <Star className="h-4 w-4 text-warning" />
+      <span className="flex-1 truncate text-sm font-medium">{item.name}</span>
+      <Badge variant="secondary" className={TYPE_BADGE_CLASSES[item.type] ?? ''}>
+        {item.type}
+      </Badge>
+    </CommandItem>
+  );
+}
+
+function QuickActionCommandItem({
+  action,
+  navigate,
+  label,
+}: {
+  action: (typeof QUICK_ACTIONS)[number];
+  navigate: (href: string) => void;
+  label: string;
+}) {
+  const handleSelect = useCallback(() => navigate(action.href), [navigate, action.href]);
+
+  return (
+    <CommandItem key={action.key} onSelect={handleSelect}>
+      <action.icon className="h-4 w-4 text-muted-foreground" />
+      <span className="text-sm">{label}</span>
+    </CommandItem>
+  );
+}
+
+function PageNavigationCommandItem({
+  item,
+  navigate,
+  addRecentItem,
+}: {
+  item: (typeof navigationItems)[number];
+  navigate: (href: string) => void;
+  addRecentItem: (item: Omit<RecentItem, 'viewedAt'>) => void;
+}) {
+  const handleSelect = useCallback(() => {
+    addRecentItem({
+      id: item.href,
+      type: 'page',
+      name: item.label,
+    });
+    navigate(item.href);
+  }, [addRecentItem, navigate, item.href, item.label]);
+
+  return (
+    <CommandItem key={`page-${item.key}`} onSelect={handleSelect}>
+      <item.icon className="h-4 w-4 text-muted-foreground" />
+      <span className="text-sm">{item.label}</span>
+    </CommandItem>
+  );
+}
+
+function SearchResultCommandItem({
+  item,
+  onEntityClick,
+  togglePin,
+  isPinned,
+  pinLabel,
+  unpinLabel,
+}: {
+  item: SearchResultItem;
+  onEntityClick: (item: SearchResultItem) => void;
+  togglePin: (item: { type: string; id: string; name: string }) => void;
+  isPinned: boolean;
+  pinLabel: string;
+  unpinLabel: string;
+}) {
+  const handleSelect = useCallback(() => onEntityClick(item), [onEntityClick, item]);
+  const handlePinClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      togglePin({ type: item.type, id: item.id, name: item.name });
+    },
+    [togglePin, item.type, item.id, item.name],
+  );
+
+  return (
+    <CommandItem key={`result-${item.type}-${item.id}`} onSelect={handleSelect} className="group">
+      <Badge variant="secondary" className={TYPE_BADGE_CLASSES[item.type] ?? ''}>
+        {item.type}
+      </Badge>
+      <div className="flex flex-1 flex-col gap-0.5 overflow-hidden">
+        <span className="truncate text-sm font-semibold">{item.name}</span>
+        <span className="truncate text-sm text-muted-foreground">{item.subtitle}</span>
+      </div>
+      <button
+        type="button"
+        className="opacity-0 transition-opacity group-hover:opacity-100"
+        onClick={handlePinClick}
+        aria-label={isPinned ? unpinLabel : pinLabel}>
+        <Star
+          className={`h-4 w-4 ${isPinned ? 'fill-warning text-warning' : 'text-muted-foreground'}`}
+        />
+      </button>
+    </CommandItem>
+  );
+}
+
+function DocResultCommandItem({ result }: { result: DocSearchResultItem }) {
+  const handleSelect = useCallback(() => window.open(result.url, '_blank'), [result.url]);
+  const ProviderIcon = result.provider === 'notion' ? NotionIcon : ConfluenceIcon;
+
+  return (
+    <CommandItem key={`doc-${result.provider}-${result.id}`} onSelect={handleSelect}>
+      <ProviderIcon className="h-3.5 w-3.5 shrink-0" />
+      <span className="flex-1 truncate text-sm font-medium">{result.title}</span>
+      <span className="text-xs text-muted-foreground shrink-0">{result.subtitle}</span>
+      <Badge variant="secondary" className={TYPE_BADGE_CLASSES.doc}>
+        doc
+      </Badge>
+    </CommandItem>
+  );
+}
+
+function MatchedPageCommandItem({
+  item,
+  navigate,
+}: {
+  item: (typeof navigationItems)[number];
+  navigate: (href: string) => void;
+}) {
+  const handleSelect = useCallback(() => navigate(item.href), [navigate, item.href]);
+
+  return (
+    <CommandItem key={`page-${item.key}`} onSelect={handleSelect}>
+      <ArrowRight className="h-4 w-4 text-muted-foreground" />
+      <span className="text-sm">{item.label}</span>
+    </CommandItem>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
@@ -303,23 +482,12 @@ export function CommandPalette() {
             {recentItems.length > 0 && (
               <CommandGroup heading={t('sections.recent')}>
                 {recentItems.map(item => (
-                  <CommandItem
+                  <RecentCommandItem
                     key={`recent-${item.type}-${item.id}`}
-                    onSelect={() => handleRecentClick(item)}>
-                    <Clock className="h-4 w-4 text-muted-foreground" />
-                    <span className="flex-1 truncate text-sm font-medium">{item.name}</span>
-                    {item.type !== 'page' && (
-                      <Badge variant="secondary" className={TYPE_BADGE_CLASSES[item.type] ?? ''}>
-                        {item.type}
-                      </Badge>
-                    )}
-                    <span className="text-xs text-muted-foreground">
-                      {(() => {
-                        const { key, params } = formatRelativeTimeData(item.viewedAt);
-                        return tTime(key as Parameters<typeof tTime>[0], params);
-                      })()}
-                    </span>
-                  </CommandItem>
+                    item={item}
+                    onSelect={handleRecentClick}
+                    tTime={tTime}
+                  />
                 ))}
               </CommandGroup>
             )}
@@ -330,15 +498,11 @@ export function CommandPalette() {
                 <CommandSeparator />
                 <CommandGroup heading={t('sections.pinned')}>
                   {pinnedItems.map(item => (
-                    <CommandItem
+                    <PinnedCommandItem
                       key={`pinned-${item.type}-${item.id}`}
-                      onSelect={() => navigate(entityDetailUrl(item.type, item.id))}>
-                      <Star className="h-4 w-4 text-warning" />
-                      <span className="flex-1 truncate text-sm font-medium">{item.name}</span>
-                      <Badge variant="secondary" className={TYPE_BADGE_CLASSES[item.type] ?? ''}>
-                        {item.type}
-                      </Badge>
-                    </CommandItem>
+                      item={item}
+                      navigate={navigate}
+                    />
                   ))}
                 </CommandGroup>
               </>
@@ -348,10 +512,12 @@ export function CommandPalette() {
             <CommandSeparator />
             <CommandGroup heading={t('sections.actions')}>
               {QUICK_ACTIONS.map(action => (
-                <CommandItem key={action.key} onSelect={() => navigate(action.href)}>
-                  <action.icon className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">{t(action.labelKey as Parameters<typeof t>[0])}</span>
-                </CommandItem>
+                <QuickActionCommandItem
+                  key={action.key}
+                  action={action}
+                  navigate={navigate}
+                  label={t(action.labelKey as Parameters<typeof t>[0])}
+                />
               ))}
             </CommandGroup>
 
@@ -359,19 +525,12 @@ export function CommandPalette() {
             <CommandSeparator />
             <CommandGroup heading={t('sections.pages')}>
               {navigationItems.map(item => (
-                <CommandItem
+                <PageNavigationCommandItem
                   key={`page-${item.key}`}
-                  onSelect={() => {
-                    addRecentItem({
-                      id: item.href,
-                      type: 'page',
-                      name: item.label,
-                    });
-                    navigate(item.href);
-                  }}>
-                  <item.icon className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">{item.label}</span>
-                </CommandItem>
+                  item={item}
+                  navigate={navigate}
+                  addRecentItem={addRecentItem}
+                />
               ))}
             </CommandGroup>
           </>
@@ -384,40 +543,15 @@ export function CommandPalette() {
             {searchResults.length > 0 && (
               <CommandGroup heading={t('sections.results')}>
                 {searchResults.map(item => (
-                  <CommandItem
+                  <SearchResultCommandItem
                     key={`result-${item.type}-${item.id}`}
-                    onSelect={() => handleEntityClick(item)}
-                    className="group">
-                    <Badge variant="secondary" className={TYPE_BADGE_CLASSES[item.type] ?? ''}>
-                      {item.type}
-                    </Badge>
-                    <div className="flex flex-1 flex-col gap-0.5 overflow-hidden">
-                      <span className="truncate text-sm font-semibold">{item.name}</span>
-                      <span className="truncate text-sm text-muted-foreground">
-                        {item.subtitle}
-                      </span>
-                    </div>
-                    <button
-                      type="button"
-                      className="opacity-0 transition-opacity group-hover:opacity-100"
-                      onClick={e => {
-                        e.stopPropagation();
-                        togglePin({
-                          type: item.type,
-                          id: item.id,
-                          name: item.name,
-                        });
-                      }}
-                      aria-label={isPinned(item.type, item.id) ? t('unpin') : t('pin')}>
-                      <Star
-                        className={`h-4 w-4 ${
-                          isPinned(item.type, item.id)
-                            ? 'fill-warning text-warning'
-                            : 'text-muted-foreground'
-                        }`}
-                      />
-                    </button>
-                  </CommandItem>
+                    item={item}
+                    onEntityClick={handleEntityClick}
+                    togglePin={togglePin}
+                    isPinned={isPinned(item.type, item.id)}
+                    pinLabel={t('pin')}
+                    unpinLabel={t('unpin')}
+                  />
                 ))}
               </CommandGroup>
             )}
@@ -437,24 +571,12 @@ export function CommandPalette() {
               <>
                 <CommandSeparator />
                 <CommandGroup heading="Docs">
-                  {docResults.map(result => {
-                    const ProviderIcon = result.provider === 'notion' ? NotionIcon : ConfluenceIcon;
-
-                    return (
-                      <CommandItem
-                        key={`doc-${result.provider}-${result.id}`}
-                        onSelect={() => window.open(result.url, '_blank')}>
-                        <ProviderIcon className="h-3.5 w-3.5 shrink-0" />
-                        <span className="flex-1 truncate text-sm font-medium">{result.title}</span>
-                        <span className="text-xs text-muted-foreground shrink-0">
-                          {result.subtitle}
-                        </span>
-                        <Badge variant="secondary" className={TYPE_BADGE_CLASSES.doc}>
-                          doc
-                        </Badge>
-                      </CommandItem>
-                    );
-                  })}
+                  {docResults.map(result => (
+                    <DocResultCommandItem
+                      key={`doc-${result.provider}-${result.id}`}
+                      result={result}
+                    />
+                  ))}
                 </CommandGroup>
               </>
             )}
@@ -465,10 +587,11 @@ export function CommandPalette() {
                 <CommandSeparator />
                 <CommandGroup heading={t('sections.pages')}>
                   {matchedPages.map(item => (
-                    <CommandItem key={`page-${item.key}`} onSelect={() => navigate(item.href)}>
-                      <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm">{item.label}</span>
-                    </CommandItem>
+                    <MatchedPageCommandItem
+                      key={`page-${item.key}`}
+                      item={item}
+                      navigate={navigate}
+                    />
                   ))}
                 </CommandGroup>
               </>
@@ -480,12 +603,12 @@ export function CommandPalette() {
                 <CommandSeparator />
                 <CommandGroup heading={t('sections.actions')}>
                   {matchedActions.map(action => (
-                    <CommandItem key={action.key} onSelect={() => navigate(action.href)}>
-                      <action.icon className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm">
-                        {t(action.labelKey as Parameters<typeof t>[0])}
-                      </span>
-                    </CommandItem>
+                    <QuickActionCommandItem
+                      key={action.key}
+                      action={action}
+                      navigate={navigate}
+                      label={t(action.labelKey as Parameters<typeof t>[0])}
+                    />
                   ))}
                 </CommandGroup>
               </>

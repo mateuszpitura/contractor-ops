@@ -14,7 +14,17 @@ const listInput = z.object({
   page: z.coerce.number().int().min(1).default(1),
   pageSize: z.coerce.number().int().min(1).max(100).default(25),
   status: z
-    .enum(['RECEIVED', 'UNDER_REVIEW', 'APPROVED', 'SCHEDULED', 'PAID', 'VOID', 'REJECTED'])
+    .enum([
+      'RECEIVED',
+      'UNDER_REVIEW',
+      'APPROVAL_PENDING',
+      'APPROVED',
+      'REJECTED',
+      'READY_FOR_PAYMENT',
+      'PARTIALLY_PAID',
+      'PAID',
+      'VOID',
+    ])
     .optional(),
   contractorId: z.string().optional(),
   sortBy: z.enum(['issueDate', 'dueDate', 'createdAt', 'totalMinor']).default('createdAt'),

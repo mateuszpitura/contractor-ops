@@ -63,8 +63,7 @@ export const ir35AttestationRouter = router({
 
     if (existing) {
       const unchanged =
-        existing.statementText === input.statementText &&
-        existing.signedName === input.signedName;
+        existing.statementText === input.statementText && existing.signedName === input.signedName;
       return ctx.db.ir35OtherClientAttestation.update({
         where: { id: existing.id },
         data: {
@@ -98,14 +97,12 @@ export const ir35AttestationRouter = router({
     .input(crossReferenceInput)
     .query(async ({ input, ctx }) => {
       // Verify the contractor exists in this tenant before returning assignments.
-      await ctx.db.contractor
-        .findUniqueOrThrow({ where: { id: input.contractorId } })
-        .catch(() => {
-          throw new TRPCError({
-            code: 'NOT_FOUND',
-            message: 'Contractor not found.',
-          });
+      await ctx.db.contractor.findUniqueOrThrow({ where: { id: input.contractorId } }).catch(() => {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Contractor not found.',
         });
+      });
 
       const assignments = await ctx.db.contractorAssignment.findMany({
         where: {

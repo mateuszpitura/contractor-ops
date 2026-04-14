@@ -107,6 +107,80 @@ function FieldError({ id, message }: { id: string; message: string | undefined }
   );
 }
 
+type HandleChange = <K extends keyof DeCountryFields>(
+  key: K,
+  val: DeCountryFields[K] | undefined,
+) => void;
+
+/** USt-IdNr field, only rendered when VAT-registered and not Kleinunternehmer. */
+function UstIdField({
+  id,
+  show,
+  value,
+  error,
+  onChange,
+}: {
+  id: string;
+  show: boolean;
+  value: string | undefined;
+  error: string | undefined;
+  onChange: HandleChange;
+}) {
+  if (!show) return null;
+  return (
+    <div className="space-y-2">
+      <Label htmlFor={`${id}-ust-id`} className="text-sm font-medium">
+        {TAX_USTIDNR_LABEL}
+        <span aria-hidden="true" className="ms-1 text-destructive">
+          *
+        </span>
+      </Label>
+      <Input
+        id={`${id}-ust-id`}
+        aria-required="true"
+        aria-invalid={error ? 'true' : undefined}
+        aria-describedby={error ? `${id}-ust-id-error` : undefined}
+        placeholder="DE123456789"
+        value={value ?? ''}
+        // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
+        onChange={e => onChange('ustIdNr', e.target.value || undefined)}
+      />
+      <FieldError id={`${id}-ust-id-error`} message={error} />
+    </div>
+  );
+}
+
+/** Sozialversicherungsnummer field — always visible, optional. */
+function SozialversicherungField({
+  id,
+  value,
+  error,
+  onChange,
+}: {
+  id: string;
+  value: string | undefined;
+  error: string | undefined;
+  onChange: HandleChange;
+}) {
+  return (
+    <div className="space-y-2">
+      <Label htmlFor={`${id}-sv`} className="text-sm font-medium">
+        {TAX_SOZIALVERSICHERUNGSNUMMER_LABEL}
+      </Label>
+      <Input
+        id={`${id}-sv`}
+        aria-invalid={error ? 'true' : undefined}
+        aria-describedby={error ? `${id}-sv-error` : undefined}
+        placeholder="12 345678 A 901"
+        value={value ?? ''}
+        // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
+        onChange={e => onChange('sozialversicherungsnummer', e.target.value || undefined)}
+      />
+      <FieldError id={`${id}-sv-error`} message={error} />
+    </div>
+  );
+}
+
 export function DeComplianceFields(props: DeComplianceFieldsProps) {
   const id = useId();
   const [internal, setInternal] = useState<Partial<DeCountryFields>>({});
@@ -196,27 +270,13 @@ export function DeComplianceFields(props: DeComplianceFieldsProps) {
         label={TAX_KLEINUNTERNEHMER_LABEL}
       />
 
-      {showUstId ? (
-        <div className="space-y-2">
-          <Label htmlFor={`${id}-ust-id`} className="text-sm font-medium">
-            {TAX_USTIDNR_LABEL}
-            <span aria-hidden="true" className="ms-1 text-destructive">
-              *
-            </span>
-          </Label>
-          <Input
-            id={`${id}-ust-id`}
-            aria-required="true"
-            aria-invalid={errors.ustIdNr ? 'true' : undefined}
-            aria-describedby={errors.ustIdNr ? `${id}-ust-id-error` : undefined}
-            placeholder="DE123456789"
-            value={merged.ustIdNr ?? ''}
-            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-            onChange={e => handleChange('ustIdNr', e.target.value || undefined)}
-          />
-          <FieldError id={`${id}-ust-id-error`} message={errors.ustIdNr} />
-        </div>
-      ) : null}
+      <UstIdField
+        id={id}
+        show={showUstId}
+        value={merged.ustIdNr}
+        error={errors.ustIdNr}
+        onChange={handleChange}
+      />
 
       {showHandelsregister ? (
         <HandelsregisterInput
@@ -229,21 +289,12 @@ export function DeComplianceFields(props: DeComplianceFieldsProps) {
         />
       ) : null}
 
-      <div className="space-y-2">
-        <Label htmlFor={`${id}-sv`} className="text-sm font-medium">
-          {TAX_SOZIALVERSICHERUNGSNUMMER_LABEL}
-        </Label>
-        <Input
-          id={`${id}-sv`}
-          aria-invalid={errors.sozialversicherungsnummer ? 'true' : undefined}
-          aria-describedby={errors.sozialversicherungsnummer ? `${id}-sv-error` : undefined}
-          placeholder="12 345678 A 901"
-          value={merged.sozialversicherungsnummer ?? ''}
-          // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-          onChange={e => handleChange('sozialversicherungsnummer', e.target.value || undefined)}
-        />
-        <FieldError id={`${id}-sv-error`} message={errors.sozialversicherungsnummer} />
-      </div>
+      <SozialversicherungField
+        id={id}
+        value={merged.sozialversicherungsnummer}
+        error={errors.sozialversicherungsnummer}
+        onChange={handleChange}
+      />
     </div>
   );
 }

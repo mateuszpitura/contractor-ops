@@ -1,4 +1,3 @@
-// biome-ignore lint/performance/noBarrelFile: package entry point
 import type { DestinationStream, Logger, LoggerOptions } from 'pino';
 import pino from 'pino';
 import { PII_MASK_PATHS } from './pii-mask.js';

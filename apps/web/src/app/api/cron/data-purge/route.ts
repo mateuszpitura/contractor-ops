@@ -124,7 +124,11 @@ export async function GET(request: NextRequest) {
           //    Order: children first (document links, invoice files), then
           //    documents, invoices, contracts, contractors.
           const txResults = await prisma.$transaction(async tx => {
-            const txRes: Record<string, number> = {};
+            const txRes: Record<string, number> = {
+              documentLinks: 0,
+              invoiceFiles: 0,
+              documents: 0,
+            };
 
             if (safeDocIds.length > 0) {
               const linkResult = await tx.documentLink.deleteMany({

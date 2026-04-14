@@ -1,17 +1,22 @@
 import { render, screen } from '@/test/test-utils';
 import { WorkflowsTab } from '../workflows-tab';
 
-const mockUseQuery = vi.fn(() => ({
-  data: null,
-  isLoading: false,
-  isFetching: false,
-  isPending: false,
+const { mockUseQuery } = vi.hoisted(() => ({
+  mockUseQuery: vi.fn(() => ({
+    data: null,
+    isLoading: false,
+    isFetching: false,
+    isPending: false,
+  })),
 }));
 
-vi.mock('@tanstack/react-query', () => ({
-  useQuery: mockUseQuery,
-}));
-
+vi.mock('@tanstack/react-query', async importOriginal => {
+  const actual = await importOriginal<typeof import('@tanstack/react-query')>();
+  return {
+    ...actual,
+    useQuery: mockUseQuery,
+  };
+});
 vi.mock('@/trpc/init', () => ({
   trpc: {
     workflow: {

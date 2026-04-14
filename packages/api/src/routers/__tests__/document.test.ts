@@ -109,6 +109,18 @@ vi.mock('../../services/r2.js', () => ({
   })),
 }));
 
+vi.mock('../../services/regional-storage.js', () => ({
+  createRegionalPresignedUploadUrl: vi.fn(
+    async (key: string) => `https://r2.example.com/upload/${key}?sig=abc`,
+  ),
+  createRegionalPresignedDownloadUrl: vi.fn(
+    async (key: string) => `https://r2.example.com/download/${key}?sig=xyz`,
+  ),
+  headRegionalObject: vi.fn(async () => ({ ContentLength: 2048 })),
+  deleteRegionalObject: vi.fn(async () => undefined),
+  getRegionalObject: vi.fn(async () => ({ Body: new Uint8Array(100) })),
+}));
+
 vi.mock('../../services/mime-validator.js', () => ({
   isAllowedMimeType: vi.fn(() => true),
   validateMimeType: vi.fn(async () => ({ valid: true })),
@@ -213,7 +225,22 @@ vi.mock('@sentry/nextjs', () => {
 });
 
 vi.mock('@contractor-ops/logger', () => ({
-  createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
+  createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
+  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
+  createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
+  createWebhookLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+  })),
+  createIntegrationLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+  })),
+  logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() },
 }));
 
 vi.mock('@contractor-ops/logger/metrics', () => ({
@@ -227,12 +254,13 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
 import { createCallerFactory } from '../../init.js';
 import { appRouter } from '../../root.js';
 import { isAllowedMimeType } from '../../services/mime-validator.js';
+import { generateStorageKey } from '../../services/r2.js';
 import {
-  createPresignedDownloadUrl,
-  createPresignedUploadUrl,
-  deleteObject,
-  generateStorageKey,
-} from '../../services/r2.js';
+  createRegionalPresignedDownloadUrl as createPresignedDownloadUrl,
+  createRegionalPresignedUploadUrl as createPresignedUploadUrl,
+  deleteRegionalObject as deleteObject,
+  headRegionalObject as headObject,
+} from '../../services/regional-storage.js';
 
 // ---------------------------------------------------------------------------
 // Caller helper
@@ -369,7 +397,6 @@ describe('document.confirmUpload', () => {
     await caller.document.confirmUpload({ documentId: DOC_ID });
 
     // Verify head check on storage
-    const { headObject } = await import('../../services/r2.js');
     expect(headObject).toHaveBeenCalledWith(STORAGE_KEY);
 
     // Verify document update with actual file size from R2

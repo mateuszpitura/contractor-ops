@@ -15,28 +15,26 @@
 // (Pitfall 1). The outcome.test.tsx OC-6 test mocks the live rule-set constant
 // post-snapshot and asserts rendered prompts are unchanged.
 
-import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type {
   Ir35Outcome,
   QuestionsSnapshot,
   ScheinselbstandigkeitOutcome,
 } from '@contractor-ops/classification';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { useFormatter, useLocale, useTranslations } from 'next-intl';
-import { useCallback, useMemo, useState } from 'react';
-
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Link, useRouter } from '@/i18n/navigation';
-import { trpc } from '@/trpc/init';
-
+import { useCallback, useState } from 'react';
 import { ClassificationDisclaimerDialog } from '@/components/contractors/classification/classification-disclaimer-dialog';
 import { DrvCategoryBar } from '@/components/contractors/classification/outcome/drv-category-bar';
 import { Ir35AreaCard } from '@/components/contractors/classification/outcome/ir35-area-card';
 import { OutcomePrintLayout } from '@/components/contractors/classification/outcome/outcome-print-layout';
 import { VerdictBanner } from '@/components/contractors/classification/outcome/verdict-banner';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Link, useRouter } from '@/i18n/navigation';
+import { trpc } from '@/trpc/init';
 
 interface RouteParams extends Record<string, string> {
   id: string;
@@ -123,7 +121,7 @@ export default function ClassificationOutcomePage() {
   }
 
   const countryCode = assessment.countryCode?.toUpperCase();
-  if (!countryCode || !SUPPORTED_COUNTRIES.has(countryCode)) {
+  if (!(countryCode && SUPPORTED_COUNTRIES.has(countryCode))) {
     return (
       <Alert>
         <AlertTitle>{t('emptyState.notSupported')}</AlertTitle>
@@ -138,7 +136,7 @@ export default function ClassificationOutcomePage() {
   const snapshot = assessment.questionsSnapshot as QuestionsSnapshot | null;
   const answers = (assessment.answers as Record<string, unknown>) ?? {};
 
-  if (!outcome || !snapshot) {
+  if (!(outcome && snapshot)) {
     return (
       <Alert>
         <AlertTitle>{t('outcome.notFound')}</AlertTitle>
@@ -154,9 +152,7 @@ export default function ClassificationOutcomePage() {
       : assessment.completedAt
         ? new Date(assessment.completedAt)
         : null;
-  const completedDateStr = completedDate
-    ? format.dateTime(completedDate, 'short')
-    : '—';
+  const completedDateStr = completedDate ? format.dateTime(completedDate, 'short') : '—';
 
   return (
     <OutcomePrintLayout
@@ -228,12 +224,7 @@ function OutcomeBody(props: OutcomeBodyProps) {
     const label = t(`outcome.ir35.verdict.${assessment.outcome.verdict}`);
     return (
       <>
-        <VerdictBanner
-          kind="ir35"
-          outcome={assessment.outcome}
-          label={label}
-          subline={subline}
-        />
+        <VerdictBanner kind="ir35" outcome={assessment.outcome} label={label} subline={subline} />
         <div
           className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3"
           data-testid="ir35-area-grid">

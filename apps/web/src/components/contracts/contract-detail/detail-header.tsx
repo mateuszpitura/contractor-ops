@@ -25,6 +25,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Link } from '@/i18n/navigation';
+import { enumKey } from '@/lib/enum-key';
 import { trpc } from '@/trpc/init';
 import { SendForSignatureButton } from './send-for-signature-button';
 
@@ -148,7 +149,7 @@ export function DetailHeader({ contract }: DetailHeaderProps) {
             {contract.title ?? t('untitled')}
           </h1>
           <Badge variant="secondary" className={statusBadgeStyles[contract.status] ?? ''}>
-            {tEnum(`status.${contract.status}` as Parameters<typeof tEnum>[0])}
+            {tEnum(`status.${enumKey(contract.status)}` as Parameters<typeof tEnum>[0])}
           </Badge>
         </div>
         {!!contract.contractor && (

@@ -2,7 +2,6 @@
 // @contractor-ops/einvoice — Pluggable E-Invoicing Engine
 // ---------------------------------------------------------------------------
 
-// biome-ignore lint/performance/noBarrelFile: package entry point
 // Zod schemas
 export {
   eInvoiceLineSchema,

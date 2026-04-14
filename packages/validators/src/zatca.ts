@@ -1,6 +1,5 @@
 // ZATCA schemas — re-exported from @contractor-ops/einvoice
 
-// biome-ignore lint/performance/noBarrelFile: re-export module for validators package consumers
 export type {
   ZatcaConnectionConfig,
   ZatcaCsrAttributes,

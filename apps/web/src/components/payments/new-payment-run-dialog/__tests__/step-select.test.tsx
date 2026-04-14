@@ -1,13 +1,16 @@
 import { render, screen } from '@/test/test-utils';
 import { StepSelect } from '../step-select';
 
-vi.mock('@tanstack/react-query', () => ({
-  useQuery: () => ({
-    data: { items: [] },
-    isLoading: false,
-  }),
-}));
-
+vi.mock('@tanstack/react-query', async importOriginal => {
+  const actual = await importOriginal<typeof import('@tanstack/react-query')>();
+  return {
+    ...actual,
+    useQuery: () => ({
+      data: { items: [] },
+      isLoading: false,
+    }),
+  };
+});
 vi.mock('@/trpc/init', () => ({
   trpc: {
     payment: {

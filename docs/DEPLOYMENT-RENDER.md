@@ -8,8 +8,12 @@ Production deployment guide for `contractor-ops` on [Render](https://render.com)
 |---|---|---|---|
 | `web` | Web Service (Docker) | `standard` × 2..8 | Next.js 15 standalone, port 3000, public, autoscaling |
 | `landing` | Static Site | free | `apps/landing/out`, CDN, public |
+| `public-api` | Web Service (Docker) | `standard` × 2..6 | Hono REST API (Enterprise), port 3000, public, autoscaling, OpenAPI at `/api/v1/docs` |
 | `worker` | Background Worker (Docker) | `starter` × 1 | node-cron: reminders, trial-notifications, job-health |
-| `clamav` | Private Service (image) | `starter` | clamav/clamav:stable, persistent disk 5GB |
+| `clamav` | Private Service (image) | `standard` | clamav/clamav:stable, persistent disk 5GB (signatures need ≥1GB RAM) |
+| `unleash-eu` | Private Service (image) | `starter` | Self-hosted Unleash (feature flags, EU). Private-only; admin UI via cloudflared |
+| `unleash-me` | Private Service (image) | `starter` | Self-hosted Unleash (feature flags, ME). Private-only; admin UI via cloudflared |
+| `cloudflared` | Private Service (image) | `starter` | Zero Trust tunnel for Unleash admin UIs. **Suspend by default** — resume on-demand (~$0.30/mc at 1h/day) |
 | `cron-token-refresh` | Cron Job | `starter` | `*/15 * * * *` → web/api/cron/token-refresh |
 | `cron-data-purge` | Cron Job | `starter` | `0 3 * * *` → web/api/cron/data-purge |
 
@@ -20,6 +24,14 @@ Region: `frankfurt`. ME-residency tenants still hit Neon ME via `DATABASE_URL_ME
 ---
 
 ## First-time setup
+
+### 0. Prerequisites
+
+- **Render workspace tier: Professional or higher ($19/user/month)** — autoscaling (`scaling` block on `web`) is only available on Professional+. Starter/Hobby workspaces will reject the Blueprint.
+- GitHub connection authorized for the repo.
+- Neon project provisioned (EU + ME regions) with pooled connection string for `DATABASE_URL`.
+- Upstash Redis + QStash, Cloudflare R2 buckets, Resend domain, Sentry project — all created before first Blueprint apply.
+- `pnpm-lock.yaml` must match `package.json`. Run `pnpm install` and commit before pushing to `main` if you've added/removed workspace packages, otherwise the Docker build fails with `ERR_PNPM_LOCKFILE_CONFIG_MISMATCH`.
 
 ### 1. Create the Blueprint Instance
 
@@ -42,6 +54,7 @@ After services exist, open each service → **Environment** tab → fill blanks.
 - `STRIPE_*` keys + `STRIPE_WEBHOOK_SECRET` (set once Stripe webhook endpoint is created — see step 5).
 - `BANK_ACCOUNT_ENCRYPTION_KEY` — `openssl rand -hex 32`.
 - `SLACK_TOKEN_ENCRYPTION_KEY` — `openssl rand -hex 32`.
+- `API_KEY_HMAC_SECRET` — Enterprise REST API (`public-api`) HMAC secret for API-key hashes. `openssl rand -hex 32`.
 - `ANTHROPIC_API_KEY`.
 - `CRONITOR_API_KEY`, `AXIOM_TOKEN`, `NEXT_PUBLIC_SENTRY_DSN`.
 - `INFISICAL_*` (if using Infisical secret store; otherwise leave blank — falls back to MemoryStore).
@@ -62,6 +75,7 @@ For the `build-secrets` group (build-time only, used in the Docker build):
    - `BETTER_AUTH_URL=https://app.contractor-ops.com`
    - `PORTAL_BASE_DOMAIN=portal.contractor-ops.com` (and add wildcard `*.portal.contractor-ops.com` on the `web` service's Custom Domains).
 5. Repeat for `landing` (e.g. `contractor-ops.com` apex + `www`).
+6. Repeat for `public-api` on a dedicated subdomain: `api.contractor-ops.com`. This service is only used by Enterprise customers via API key — keep it on a separate domain so rate limits, audit logs, and WAF rules are scoped independently of `web`.
 
 ### 4. Allowlist Render egress IPs
 
@@ -91,6 +105,11 @@ curl -fsS https://app.contractor-ops.com/ | grep '<title>'
 
 # Cron Jobs — trigger manually from Render Dashboard ("Trigger Run")
 # and tail logs of `web` to confirm /api/cron/token-refresh returned 200.
+
+# Public REST API (Enterprise)
+curl -fsS https://api.contractor-ops.com/api/v1/health
+# Open https://api.contractor-ops.com/api/v1/docs for OpenAPI reference (Scalar).
+# Authenticated endpoints expect: Authorization: Bearer <api_key>
 ```
 
 Run k6 smoke against the new domain:
@@ -128,8 +147,66 @@ BASE_URL=https://app.contractor-ops.com pnpm load:stress
 ### Scale up
 
 - `web` → Settings → Scaling → adjust `minInstances` / `maxInstances` or upgrade plan to `pro`/`pro plus` for more RAM/CPU per instance.
+- `public-api` → same autoscaling model as `web`; default 2..6 on `standard`. Enterprise API traffic is typically more predictable than `web` — tune thresholds based on observed load.
 - `worker` → fixed at 1 instance (node-cron is single-process). To scale workers, migrate to BullMQ — see `docs/TECH-DEBT.md`.
 - `clamav` → fixed at 1 instance (persistent disk does not allow multi-instance).
+
+### Feature flags — Unleash (EU + ME)
+
+Two private Unleash instances (`unleash-eu`, `unleash-me`) run on Render's private network. Neither is reachable from the public internet — `apps/web` and `apps/public-api` talk to them by hostname only.
+
+First-time setup:
+
+1. Provision two dedicated Postgres databases (separate Neon projects recommended — keep them isolated from the main app DB so Unleash's auto-migrations never touch app schemas).
+2. Fill `DATABASE_URL` on both `unleash-eu` and `unleash-me` services.
+3. Fill `INIT_ADMIN_API_TOKENS` on each (format: `*:*.<64-hex-chars>` — one-shot bootstrap, rotate via UI after first boot).
+4. After services are live, grab the private hostnames (Dashboard → service → "Internal Address"). Update `app-shared`:
+   - `UNLEASH_URL_EU=http://unleash-eu-XXXX:4242/api/`
+   - `UNLEASH_URL_ME=http://unleash-me-XXXX:4242/api/`
+5. Create server-side tokens in each Unleash UI (Admin → API access → "server-side") and set `UNLEASH_API_TOKEN_EU` / `UNLEASH_API_TOKEN_ME`.
+
+Admin UI access is via the `cloudflared` tunnel (see below) — by design there is no public URL.
+
+### Cloudflare Tunnel (on-demand)
+
+The `cloudflared` pserv fronts both Unleash admin UIs with Cloudflare Zero Trust Access (Google Workspace SSO + MFA). Cloudflare Tunnel is free; Access is free up to 50 users; the only recurring Render cost is this one pserv — and it only bills while running.
+
+**Setup (one-time):**
+
+1. Cloudflare Zero Trust dashboard → **Networks** → **Tunnels** → **Create a tunnel** → type `Cloudflared` → name e.g. `contractor-ops-admin`.
+2. Copy the tunnel **token** (one line starting with `ey…`) → paste into `cloudflared` service env `TUNNEL_TOKEN`.
+3. In the tunnel's **Public Hostnames** tab, add two routes:
+   - `unleash-eu.internal.contractor-ops.com` → `http://unleash-eu-XXXX:4242` (use the private hostname from Render)
+   - `unleash-me.internal.contractor-ops.com` → `http://unleash-me-XXXX:4242`
+4. Cloudflare Zero Trust → **Access** → **Applications** → **Add an application** → type `Self-hosted` → cover both hostnames → policy: `Include` → `Emails ending in @contractor-ops.com` (or an explicit allowlist) → require Google Workspace identity provider + MFA.
+
+**Runbook — on-demand access:**
+
+Save Render API key (Dashboard → Account Settings → API Keys) and the `cloudflared` service ID locally:
+
+```bash
+export RENDER_API_KEY=rnd_...
+export CLOUDFLARED_SVC=srv-...  # from Dashboard URL or `render services`
+
+# Resume (starts billing, ~15s cold start)
+curl -sS -X POST \
+  -H "Authorization: Bearer $RENDER_API_KEY" \
+  "https://api.render.com/v1/services/$CLOUDFLARED_SVC/resume"
+
+# Browse to https://unleash-eu.internal.contractor-ops.com (SSO prompt)
+# …do admin work…
+
+# Suspend (billing stops)
+curl -sS -X POST \
+  -H "Authorization: Bearer $RENDER_API_KEY" \
+  "https://api.render.com/v1/services/$CLOUDFLARED_SVC/suspend"
+```
+
+Suggested wrapper as `pnpm unleash:open` / `pnpm unleash:close` (add to root `package.json` when convenient). Optional: auto-suspend after N minutes via a local `at`/`launchd` scheduler — avoids "left running overnight" bills.
+
+**Cost model** — starter pserv is ~$7/mc if left on; on-demand (1h/day ≈ 30h/mc) is ~$0.30/mc. Suspended = $0.
+
+**Why not Access IP allowlist on a public web service instead?** That path needs Render's Enterprise tier. On Professional, private pserv + tunnel is the only Zero-Trust-grade option.
 
 ### Preview environments
 
@@ -151,4 +228,4 @@ Render publishes an MCP server (`render-oss/render-mcp-server`) for log inspecti
 
 **Sentry source maps not uploading** — `SENTRY_AUTH_TOKEN` must be in `build-secrets` env group AND service must reference it via `fromGroup: build-secrets`. Check the build log for `> Uploading source maps to Sentry`.
 
-**Better Auth cookies rejected on portal subdomain** — set `BETTER_AUTH_URL` to apex (e.g. `https://contractor-ops.com`) and configure `cookieDomain: '.contractor-ops.com'` in `packages/auth/src/config.ts`.
+**Better Auth cookies rejected on portal subdomain** — the current `packages/auth/src/config.ts` does not configure cross-subdomain cookies. If the portal subdomain flow needs shared sessions, add Better Auth's `advanced.crossSubDomainCookies` option (see Better Auth docs) and set `BETTER_AUTH_URL` to the apex domain. Treat this as a separate task — it is not required for first deploy.

@@ -70,6 +70,14 @@ const { mockPrisma } = vi.hoisted(() => {
     workflowRun: {
       count: vi.fn(async () => 0),
     },
+    contract: {
+      count: vi.fn(async () => 0),
+      updateMany: vi.fn(async () => ({ count: 0 })),
+      groupBy: vi.fn(async () => []),
+    },
+    contractorChangeRequest: {
+      updateMany: vi.fn(async () => ({ count: 0 })),
+    },
     member: {
       findFirst: vi.fn(async () => ({ role: 'admin' })),
     },
@@ -228,7 +236,22 @@ vi.mock('@sentry/nextjs', () => {
 });
 
 vi.mock('@contractor-ops/logger', () => ({
-  createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
+  createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
+  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
+  createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
+  createWebhookLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+  })),
+  createIntegrationLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+  })),
+  logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() },
 }));
 
 vi.mock('@contractor-ops/logger/metrics', () => ({

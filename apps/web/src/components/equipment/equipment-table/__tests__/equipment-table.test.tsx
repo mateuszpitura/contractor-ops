@@ -18,15 +18,18 @@ vi.mock('@/i18n/navigation', () => ({
   ),
 }));
 
-vi.mock('@tanstack/react-query', () => ({
-  useQuery: vi.fn().mockReturnValue({
-    data: { items: [], total: 0 },
-    isPending: false,
-    isFetching: false,
-  }),
-  keepPreviousData: undefined,
-}));
-
+vi.mock('@tanstack/react-query', async importOriginal => {
+  const actual = await importOriginal<typeof import('@tanstack/react-query')>();
+  return {
+    ...actual,
+    useQuery: vi.fn().mockReturnValue({
+      data: { items: [], total: 0 },
+      isPending: false,
+      isFetching: false,
+    }),
+    keepPreviousData: undefined,
+  };
+});
 vi.mock('@/trpc/init', () => ({
   trpc: {
     equipment: {

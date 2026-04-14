@@ -89,7 +89,7 @@ describe('POST /api/slack/interactivity', () => {
     });
     mockUserFindUnique.mockResolvedValue({ id: 'user-1', name: 'Test User' });
     mockUpdateMessageToResult.mockResolvedValue(undefined);
-    mockTransaction.mockImplementation(async (fn: Function) => {
+    mockTransaction.mockImplementation(async (fn: (...args: unknown[]) => unknown) => {
       const tx = {
         approvalFlow: {
           findUniqueOrThrow: mockApprovalFlowFindUniqueOrThrow,

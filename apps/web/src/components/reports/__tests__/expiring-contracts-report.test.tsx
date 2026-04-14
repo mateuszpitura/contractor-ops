@@ -9,14 +9,17 @@ vi.mock('next-intl', async importOriginal => {
   };
 });
 
-vi.mock('@tanstack/react-query', () => ({
-  useQuery: vi.fn(),
-  useMutation: () => ({
-    mutate: vi.fn(),
-    isPending: false,
-  }),
-}));
-
+vi.mock('@tanstack/react-query', async importOriginal => {
+  const actual = await importOriginal<typeof import('@tanstack/react-query')>();
+  return {
+    ...actual,
+    useQuery: vi.fn(),
+    useMutation: () => ({
+      mutate: vi.fn(),
+      isPending: false,
+    }),
+  };
+});
 vi.mock('@/trpc/init', () => ({
   trpc: {
     report: {

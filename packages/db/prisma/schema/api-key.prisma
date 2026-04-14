@@ -17,6 +17,6 @@ model OrganizationApiKey {
   organization Organization @relation(fields: [organizationId], references: [id])
   createdBy    User         @relation(fields: [createdByUserId], references: [id])
 
-  @@index([prefix])
+  @@index([prefix, revokedAt])
   @@index([organizationId, revokedAt])
 }

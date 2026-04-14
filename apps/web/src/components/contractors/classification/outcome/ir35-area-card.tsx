@@ -15,16 +15,12 @@ import type {
   QuestionsSnapshot,
   RuleSetQuestion,
 } from '@contractor-ops/classification';
-import { useTranslations } from 'next-intl';
 import { ChevronDown } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 type Locale = 'en' | 'pl' | 'de' | 'ar';
 
@@ -65,10 +61,7 @@ function TonePill({
     neutral: 'bg-muted text-foreground border-border',
   };
   return (
-    <Badge
-      variant="outline"
-      data-tone={tone}
-      className={classes[tone]}>
+    <Badge variant="outline" data-tone={tone} className={classes[tone]}>
       {children}
     </Badge>
   );
@@ -79,7 +72,7 @@ function readPrompt(question: RuleSetQuestion, locale: Locale): string {
   return question.prompt[locale] ?? question.prompt.en;
 }
 
-function readAnswerSummary(raw: unknown, locale: Locale, t: (key: string) => string): string {
+function readAnswerSummary(raw: unknown, _locale: Locale, t: (key: string) => string): string {
   if (raw === undefined || raw === null) return t('outcome.drv.answerMissing');
   if (raw === 'yes' || raw === 'no') {
     return raw === 'yes' ? t('yesNo.yes') : t('yesNo.no');

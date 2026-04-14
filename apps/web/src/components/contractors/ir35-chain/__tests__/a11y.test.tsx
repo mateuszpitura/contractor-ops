@@ -9,5 +9,7 @@ describe('Ir35ChainPanel a11y (Phase 59 · WCAG AA)', () => {
   describe.todo('mark-delivered button reflects state via aria-pressed or aria-describedby');
   describe.todo('drag handle has keyboard-accessible reorder via arrow keys + Home/End');
   describe.todo('axe reports zero violations on default panel render');
-  describe.todo('Add Participant dialog has role=dialog, aria-labelledby, initial focus on first input');
+  describe.todo(
+    'Add Participant dialog has role=dialog, aria-labelledby, initial focus on first input',
+  );
 });

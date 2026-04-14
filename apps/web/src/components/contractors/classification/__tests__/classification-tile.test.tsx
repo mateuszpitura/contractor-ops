@@ -3,7 +3,7 @@
 // CT-1 loading skeleton, CT-2 empty state + CTA, CT-3 completed (verdict pill
 // + relative date + view-details + re-run).
 
-import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mockLatest: { current: { isPending: boolean; data: unknown } } = {
   current: { isPending: false, data: null },
@@ -19,14 +19,7 @@ vi.mock('@tanstack/react-query', async () => {
 
 vi.mock('@/i18n/navigation', () => ({
   useRouter: () => ({ push: vi.fn() }),
-  Link: ({
-    href,
-    children,
-    ...rest
-  }: {
-    href: string;
-    children: React.ReactNode;
-  }) => (
+  Link: ({ href, children, ...rest }: { href: string; children: React.ReactNode }) => (
     <a href={href} {...rest}>
       {children}
     </a>

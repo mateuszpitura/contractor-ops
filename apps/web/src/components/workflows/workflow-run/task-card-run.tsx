@@ -21,7 +21,7 @@ import {
   XCircle,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 import { DocLinksSection } from '@/components/integrations/doc-links-section';
 import { Badge } from '@/components/ui/badge';
@@ -269,6 +269,121 @@ function ReassignPopover({ taskRunId, runId }: { taskRunId: string; runId: strin
 }
 
 // ---------------------------------------------------------------------------
+// Extracted sub-components
+// ---------------------------------------------------------------------------
+
+function TaskActionToolbar({
+  canAct,
+  canReassignOnly,
+  task,
+  runId,
+  dependencyTitle,
+  completeMutation,
+  t,
+}: {
+  canAct: boolean;
+  canReassignOnly: boolean;
+  task: TaskCardRunProps['task'];
+  runId: string;
+  dependencyTitle?: string;
+  completeMutation: ReturnType<typeof useMutation<void, Error, { taskRunId: string }>>;
+  t: ReturnType<typeof useTranslations<'Workflows'>>;
+}) {
+  return (
+    <>
+      {!!canAct && (
+        <>
+          <Button
+            size="sm"
+            disabled={completeMutation.isPending}
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+            onClick={() => {
+              completeMutation.mutate({ taskRunId: task.id });
+            }}>
+            {t('taskActionComplete')}
+          </Button>
+          <SkipPopover taskRunId={task.id} runId={runId} />
+          <ReassignPopover taskRunId={task.id} runId={runId} />
+        </>
+      )}
+      {!!canReassignOnly && <ReassignPopover taskRunId={task.id} runId={runId} />}
+      {task.status === 'BLOCKED' && dependencyTitle && (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger
+              // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
+              render={props => (
+                <span {...props} className="text-xs text-muted-foreground cursor-default">
+                  <Lock className="size-3.5 text-amber-600 dark:text-amber-400" />
+                </span>
+              )}
+            />
+            <TooltipContent>{t('blockedTooltip', { title: dependencyTitle })}</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      )}
+    </>
+  );
+}
+
+function TaskExpandedDetails({
+  task,
+  runId,
+  isUserSkipped,
+  isConditionSkipped,
+  t,
+}: {
+  task: TaskCardRunProps['task'];
+  runId: string;
+  isUserSkipped: boolean;
+  isConditionSkipped: boolean;
+  t: ReturnType<typeof useTranslations<'Workflows'>>;
+}) {
+  return (
+    <div className="border-t px-4 pb-4 pt-3 space-y-4">
+      {/* Description */}
+      {!!task.description && (
+        <p className="text-sm text-muted-foreground whitespace-pre-wrap">{task.description}</p>
+      )}
+
+      {/* Status-specific info */}
+      {task.status === 'DONE' && task.completedAt && (
+        <p className="text-xs text-muted-foreground">
+          Completed by {task.completedByUserId ?? 'unknown'} on {formatDateTime(task.completedAt)}
+        </p>
+      )}
+      {!!isUserSkipped && (
+        <p className="text-xs text-muted-foreground">
+          Skipped:{' '}
+          {((task.resultJson as Record<string, unknown>)?.skipReason as string) ??
+            'No reason provided'}
+        </p>
+      )}
+      {!!isConditionSkipped && (
+        <p className="text-xs text-muted-foreground">{t('conditionSkipped')}</p>
+      )}
+
+      {/* Metadata */}
+      <div className="flex items-center gap-4 text-xs text-muted-foreground">
+        {!!task.createdAt && <span>Created {formatDateTime(task.createdAt)}</span>}
+      </div>
+
+      {/* Attachments */}
+      <TaskAttachments runId={runId} taskRunId={task.id} />
+
+      {/* Document links */}
+      <DocLinksSection
+        workflowTaskRunId={task.id}
+        readOnly={['DONE', 'SKIPPED', 'CANCELLED'].includes(task.status)}
+      />
+
+      {/* Comments */}
+      <TaskComments runId={runId} taskRunId={task.id} />
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
@@ -276,6 +391,11 @@ export function TaskCardRun({ task, runId, currentUserId, dependencyTitle }: Tas
   const t = useTranslations('Workflows');
   const queryClient = useQueryClient();
   const [expanded, setExpanded] = useState(false);
+
+  const stopPropagation = useCallback((e: React.MouseEvent) => e.stopPropagation(), []);
+  const stopKeyPropagation = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') e.stopPropagation();
+  }, []);
 
   const isOverdue = task.isOverdue;
   const statusConfig = isOverdue
@@ -352,46 +472,18 @@ export function TaskCardRun({ task, runId, currentUserId, dependencyTitle }: Tas
               {/* Inline action buttons (stop propagation to not toggle collapse) */}
               <div
                 className="flex items-center gap-1 shrink-0"
-                role="presentation"
-                // biome-ignore lint/nursery/noJsxPropsBind: stopPropagation handler
-                onClick={e => e.stopPropagation()}
-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                onKeyDown={e => {
-                  if (e.key === 'Enter' || e.key === ' ') e.stopPropagation();
-                }}>
-                {!!canAct && (
-                  <>
-                    <Button
-                      size="sm"
-                      disabled={completeMutation.isPending}
-                      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                      onClick={() => {
-                        completeMutation.mutate({ taskRunId: task.id });
-                      }}>
-                      {t('taskActionComplete')}
-                    </Button>
-                    <SkipPopover taskRunId={task.id} runId={runId} />
-                    <ReassignPopover taskRunId={task.id} runId={runId} />
-                  </>
-                )}
-                {!!canReassignOnly && <ReassignPopover taskRunId={task.id} runId={runId} />}
-                {task.status === 'BLOCKED' && dependencyTitle && (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger
-                        // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
-                        render={props => (
-                          <span {...props} className="text-xs text-muted-foreground cursor-default">
-                            <Lock className="size-3.5 text-amber-600 dark:text-amber-400" />
-                          </span>
-                        )}
-                      />
-                      <TooltipContent>
-                        {t('blockedTooltip', { title: dependencyTitle })}
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                )}
+                role="toolbar"
+                onClick={stopPropagation}
+                onKeyDown={stopKeyPropagation}>
+                <TaskActionToolbar
+                  canAct={canAct}
+                  canReassignOnly={canReassignOnly}
+                  task={task}
+                  runId={runId}
+                  dependencyTitle={dependencyTitle}
+                  completeMutation={completeMutation}
+                  t={t}
+                />
               </div>
             </button>
           )}
@@ -399,49 +491,13 @@ export function TaskCardRun({ task, runId, currentUserId, dependencyTitle }: Tas
 
         {/* Expanded view */}
         <CollapsibleContent>
-          <div className="border-t px-4 pb-4 pt-3 space-y-4">
-            {/* Description */}
-            {!!task.description && (
-              <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                {task.description}
-              </p>
-            )}
-
-            {/* Status-specific info */}
-            {task.status === 'DONE' && task.completedAt && (
-              <p className="text-xs text-muted-foreground">
-                Completed by {task.completedByUserId ?? 'unknown'} on{' '}
-                {formatDateTime(task.completedAt)}
-              </p>
-            )}
-            {!!isUserSkipped && (
-              <p className="text-xs text-muted-foreground">
-                Skipped:{' '}
-                {((task.resultJson as Record<string, unknown>)?.skipReason as string) ??
-                  'No reason provided'}
-              </p>
-            )}
-            {!!isConditionSkipped && (
-              <p className="text-xs text-muted-foreground">{t('conditionSkipped')}</p>
-            )}
-
-            {/* Metadata */}
-            <div className="flex items-center gap-4 text-xs text-muted-foreground">
-              {!!task.createdAt && <span>Created {formatDateTime(task.createdAt)}</span>}
-            </div>
-
-            {/* Attachments */}
-            <TaskAttachments runId={runId} taskRunId={task.id} />
-
-            {/* Document links */}
-            <DocLinksSection
-              workflowTaskRunId={task.id}
-              readOnly={['DONE', 'SKIPPED', 'CANCELLED'].includes(task.status)}
-            />
-
-            {/* Comments */}
-            <TaskComments runId={runId} taskRunId={task.id} />
-          </div>
+          <TaskExpandedDetails
+            task={task}
+            runId={runId}
+            isUserSkipped={isUserSkipped}
+            isConditionSkipped={isConditionSkipped}
+            t={t}
+          />
         </CollapsibleContent>
       </div>
     </Collapsible>

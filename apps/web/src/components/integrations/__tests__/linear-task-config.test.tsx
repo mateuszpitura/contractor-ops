@@ -81,7 +81,7 @@ describe('LinearTaskConfig', () => {
 
   it('renders Not configured when no team is selected', () => {
     render(<LinearTaskConfig taskTemplateId="tt-1" />);
-    expect(screen.getByText('Not configured')).toBeInTheDocument();
+    expect(screen.getByText('notConfigured')).toBeInTheDocument();
   });
 
   it('renders team select trigger (combobox)', () => {
@@ -124,7 +124,7 @@ describe('LinearTaskConfig', () => {
     });
     render(<LinearTaskConfig taskTemplateId="tt-1" />);
     expect(screen.getByRole('combobox')).toBeInTheDocument();
-    expect(screen.getByText('Not configured')).toBeInTheDocument();
+    expect(screen.getByText('notConfigured')).toBeInTheDocument();
   });
 
   it('renders with existing task config and shows team name', () => {

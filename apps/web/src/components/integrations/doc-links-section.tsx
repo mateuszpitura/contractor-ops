@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { FileText } from 'lucide-react';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -61,9 +61,16 @@ export function DocLinksSection({ workflowTaskRunId, readOnly }: DocLinksSection
     },
   });
 
-  const handleRemove = (externalLinkId: string) => {
-    detachMutation.mutate({ externalLinkId });
-  };
+  const handleRemove = useCallback(
+    (externalLinkId: string) => {
+      detachMutation.mutate({ externalLinkId });
+    },
+    [detachMutation],
+  );
+
+  const openAttachDialog = useCallback(() => {
+    setAttachOpen(true);
+  }, []);
 
   const docLinks = (listQuery.data ?? []) as DocLink[];
 
@@ -76,7 +83,7 @@ export function DocLinksSection({ workflowTaskRunId, readOnly }: DocLinksSection
           <span className="text-sm font-semibold">Documents</span>
         </div>
         {!readOnly && (
-          <Button variant="ghost" size="sm" onClick={() => setAttachOpen(true)}>
+          <Button variant="ghost" size="sm" onClick={openAttachDialog}>
             Attach Document
           </Button>
         )}

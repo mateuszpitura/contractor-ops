@@ -71,6 +71,54 @@ export interface ReverseChargeResult {
     | 'not_applicable';
 }
 
+/** Post-Brexit UK ↔ EU B2B reverse charge detection (D-12.1). */
+function detectUkEuReverseCharge(
+  sellerCountry: string,
+  buyerCountry: string,
+  buyerHasVatId: boolean,
+): ReverseChargeResult | null {
+  const isUkEuDirection =
+    (sellerCountry === 'GB' && EU_MEMBER_STATES.has(buyerCountry)) ||
+    (EU_MEMBER_STATES.has(sellerCountry) && buyerCountry === 'GB');
+  if (!isUkEuDirection) return null;
+
+  if (buyerHasVatId) {
+    return {
+      shouldApply: true,
+      reason: `UK↔EU post-Brexit B2B reverse charge: ${sellerCountry} -> ${buyerCountry}`,
+      rule: 'gb_eu_post_brexit_b2b',
+    };
+  }
+  return {
+    shouldApply: false,
+    reason: 'UK↔EU B2B but buyer has no VAT ID - standard VAT applies',
+    rule: 'not_applicable',
+  };
+}
+
+/** EU cross-border B2B reverse charge detection (D-12.2). */
+function detectEuCrossBorderReverseCharge(
+  sellerCountry: string,
+  buyerCountry: string,
+  buyerHasVatId: boolean,
+): ReverseChargeResult | null {
+  const isEuCrossBorder = EU_MEMBER_STATES.has(sellerCountry) && EU_MEMBER_STATES.has(buyerCountry);
+  if (!isEuCrossBorder) return null;
+
+  if (buyerHasVatId) {
+    return {
+      shouldApply: true,
+      reason: `EU cross-border B2B: ${sellerCountry} -> ${buyerCountry} with valid buyer VAT ID`,
+      rule: 'eu_cross_border_b2b',
+    };
+  }
+  return {
+    shouldApply: false,
+    reason: 'EU cross-border but buyer has no VAT ID - standard VAT applies',
+    rule: 'not_applicable',
+  };
+}
+
 /**
  * Determine if reverse charge should apply to an invoice.
  *
@@ -122,41 +170,12 @@ export function detectReverseCharge(params: {
   // Rule 3 (D-12.1): Post-Brexit UK ↔ EU B2B (symmetric). Takes precedence
   // over the generic EU-cross-border rule when GB is on either side of the
   // transaction, so audit logs surface the correct legal basis.
-  const isUkEuDirection =
-    (sellerCountry === 'GB' && EU_MEMBER_STATES.has(buyerCountry)) ||
-    (EU_MEMBER_STATES.has(sellerCountry) && buyerCountry === 'GB');
-  if (isUkEuDirection && buyerHasVatId) {
-    return {
-      shouldApply: true,
-      reason: `UK↔EU post-Brexit B2B reverse charge: ${sellerCountry} -> ${buyerCountry}`,
-      rule: 'gb_eu_post_brexit_b2b',
-    };
-  }
-  if (isUkEuDirection && !buyerHasVatId) {
-    return {
-      shouldApply: false,
-      reason: 'UK↔EU B2B but buyer has no VAT ID - standard VAT applies',
-      rule: 'not_applicable',
-    };
-  }
+  const ukEuResult = detectUkEuReverseCharge(sellerCountry, buyerCountry, buyerHasVatId);
+  if (ukEuResult) return ukEuResult;
 
-  // Rule 4 (D-12.2): EU cross-border B2B with valid buyer VAT ID.
-  if (EU_MEMBER_STATES.has(sellerCountry) && EU_MEMBER_STATES.has(buyerCountry) && buyerHasVatId) {
-    return {
-      shouldApply: true,
-      reason: `EU cross-border B2B: ${sellerCountry} -> ${buyerCountry} with valid buyer VAT ID`,
-      rule: 'eu_cross_border_b2b',
-    };
-  }
-
-  // Rule 5: EU cross-border but no buyer VAT ID → standard VAT applies.
-  if (EU_MEMBER_STATES.has(sellerCountry) && EU_MEMBER_STATES.has(buyerCountry) && !buyerHasVatId) {
-    return {
-      shouldApply: false,
-      reason: 'EU cross-border but buyer has no VAT ID - standard VAT applies',
-      rule: 'not_applicable',
-    };
-  }
+  // Rules 4-5 (D-12.2): EU cross-border B2B.
+  const euResult = detectEuCrossBorderReverseCharge(sellerCountry, buyerCountry, buyerHasVatId);
+  if (euResult) return euResult;
 
   // GCC: No standardized reverse charge between GCC states yet.
   if (GCC_MEMBER_STATES.has(sellerCountry) && GCC_MEMBER_STATES.has(buyerCountry)) {

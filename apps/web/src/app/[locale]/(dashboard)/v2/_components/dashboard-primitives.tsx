@@ -80,6 +80,7 @@ export function TiltCard({
     .join(' ');
 
   const inner = (
+    // biome-ignore lint/a11y/noStaticElementInteractions: mouse handlers for visual tilt effect only, not interactive
     <div
       ref={ref}
       className={classes}

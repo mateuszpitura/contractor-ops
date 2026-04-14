@@ -97,10 +97,17 @@ vi.mock('@contractor-ops/db', () => ({
   getRegionalClient: vi.fn(() => mockPrisma),
 }));
 
-const mockApproveTimesheet = vi.fn(async () => ({ id: TIMESHEET_ID_1, status: 'APPROVED' }));
-const mockRejectTimesheet = vi.fn(async () => ({ id: TIMESHEET_ID_1, status: 'REJECTED' }));
-const mockBulkApproveTimesheets = vi.fn(async () => ({ count: 2 }));
-const mockBulkRejectTimesheets = vi.fn(async () => ({ count: 2 }));
+const {
+  mockApproveTimesheet,
+  mockRejectTimesheet,
+  mockBulkApproveTimesheets,
+  mockBulkRejectTimesheets,
+} = vi.hoisted(() => ({
+  mockApproveTimesheet: vi.fn(async () => ({ id: 'clts00000000000000000001', status: 'APPROVED' })),
+  mockRejectTimesheet: vi.fn(async () => ({ id: 'clts00000000000000000001', status: 'REJECTED' })),
+  mockBulkApproveTimesheets: vi.fn(async () => ({ count: 2 })),
+  mockBulkRejectTimesheets: vi.fn(async () => ({ count: 2 })),
+}));
 
 vi.mock('../../services/time-entry.js', () => ({
   approveTimesheet: mockApproveTimesheet,
@@ -238,7 +245,22 @@ vi.mock('@sentry/nextjs', () => {
 });
 
 vi.mock('@contractor-ops/logger', () => ({
-  createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
+  createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
+  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
+  createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
+  createWebhookLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+  })),
+  createIntegrationLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+  })),
+  logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() },
 }));
 
 vi.mock('@contractor-ops/logger/metrics', () => ({

@@ -75,6 +75,7 @@ const RISK_LEVELS = ['LOW', 'MEDIUM', 'HIGH'] as const;
  */
 export function DataTableFilters({ filters, onFiltersChange }: DataTableFiltersProps) {
   const t = useTranslations('Contracts');
+  const id = useId();
 
   // Fetch users for owner filter
   const usersQuery = useQuery(trpc.user.list.queryOptions());
@@ -353,7 +354,6 @@ function FilterSection({
   selected: string[];
   onToggle: (value: string) => void;
 }) {
-  const _id = useId();
   const filterId = useId();
   if (options.length === 0) return null;
 

@@ -113,13 +113,17 @@ const LOAD_TEST_HEADER = 'x-load-test-secret';
 /**
  * When LOAD_TEST_BYPASS=1 and LOAD_TEST_SECRET match the request header, skip
  * per-IP and per-org rate limits for /api/trpc (k6 / staging load tests).
- * Blocked on Vercel production. Never enable LOAD_TEST_BYPASS on public prod.
+ * Hard-blocked on production hosts (Vercel prod, Render non-preview). Never
+ * enable LOAD_TEST_BYPASS on a public production service.
  */
 function shouldSkipTrpcRateLimitForLoadTest(request: NextRequest): boolean {
   if (process.env.LOAD_TEST_BYPASS !== '1') return false;
   const secret = process.env.LOAD_TEST_SECRET?.trim();
   if (!secret) return false;
   if (process.env.VERCEL_ENV === 'production') return false;
+  // Render sets RENDER=true on every service; IS_PULL_REQUEST=false on the
+  // non-preview (production) branch. Block bypass there.
+  if (process.env.RENDER === 'true' && process.env.IS_PULL_REQUEST !== 'true') return false;
   const header = request.headers.get(LOAD_TEST_HEADER);
   return header === secret;
 }

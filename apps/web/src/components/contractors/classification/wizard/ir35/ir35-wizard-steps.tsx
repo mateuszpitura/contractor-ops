@@ -7,11 +7,10 @@
 // set and groups them by `area`. Renders only the CURRENT step's questions
 // (the shell controls `currentStep`).
 
-import { useTranslations } from 'next-intl';
-import { useMemo } from 'react';
-
 import type { Ir35Area, RuleSetQuestion } from '@contractor-ops/classification';
 import { IR35_QUESTIONS } from '@contractor-ops/classification';
+import { useTranslations } from 'next-intl';
+import { useCallback, useMemo } from 'react';
 
 import type { RuleSetLocale, WizardAnswerValue } from '../wizard-question';
 import { WizardQuestion } from '../wizard-question';
@@ -82,15 +81,44 @@ export function Ir35StepContent({
   return (
     <div className="flex flex-col gap-4">
       {step.questions.map(question => (
-        <WizardQuestion
+        <Ir35QuestionItem
           key={question.id}
           question={question}
           locale={locale}
           value={answers[question.id]}
-          onChange={next => onAnswerChange(question.id, next)}
+          onAnswerChange={onAnswerChange}
           disabled={disabled}
         />
       ))}
     </div>
+  );
+}
+
+function Ir35QuestionItem({
+  question,
+  locale,
+  value,
+  onAnswerChange,
+  disabled,
+}: {
+  question: RuleSetQuestion;
+  locale: RuleSetLocale;
+  value: WizardAnswerValue | undefined;
+  onAnswerChange: (questionId: string, value: WizardAnswerValue) => void;
+  disabled?: boolean;
+}) {
+  const handleChange = useCallback(
+    (next: WizardAnswerValue) => onAnswerChange(question.id, next),
+    [onAnswerChange, question.id],
+  );
+
+  return (
+    <WizardQuestion
+      question={question}
+      locale={locale}
+      value={value}
+      onChange={handleChange}
+      disabled={disabled}
+    />
   );
 }

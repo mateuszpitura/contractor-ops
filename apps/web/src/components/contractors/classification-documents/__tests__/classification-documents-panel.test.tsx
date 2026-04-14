@@ -12,7 +12,10 @@ import { describe, expect, it, vi } from 'vitest';
 // — is what we verify here.
 vi.mock('../generate-sds-button', () => ({
   GenerateSdsButton: ({ classificationAssessmentId }: { classificationAssessmentId: string }) => (
-    <button type="button" data-testid="generate-sds-btn" data-assessment={classificationAssessmentId}>
+    <button
+      type="button"
+      data-testid="generate-sds-btn"
+      data-assessment={classificationAssessmentId}>
       Generate SDS
     </button>
   ),
@@ -34,10 +37,10 @@ vi.mock('../generate-drv-bundle-button', () => ({
       data-assessment={classificationAssessmentId}
       data-disabled={disabled ? 'true' : 'false'}
       aria-disabled={disabled}
-      aria-describedby={disabled && disabledReason ? 'drv-reason' : undefined}
-    >
+      aria-describedby={disabled && disabledReason ? 'mock-drv-reason' : undefined}>
       Generate DRV bundle
-      {disabled && disabledReason ? <span id="drv-reason">{disabledReason}</span> : null}
+      {/* biome-ignore lint/correctness/useUniqueElementIds: test mock — not a real component */}
+      {disabled && disabledReason ? <span id="mock-drv-reason">{disabledReason}</span> : null}
     </button>
   ),
 }));
@@ -146,7 +149,9 @@ describe('ClassificationDocumentsPanel', () => {
       completedAssessmentId: 'ca_1',
     });
     const heading = screen.getByRole('heading', { name: 'Classification documents' });
-    expect(heading.id).toBe('classification-documents-heading');
+    expect(heading.id).toBeTruthy();
+    const section = heading.closest('section');
+    expect(section?.getAttribute('aria-labelledby')).toBe(heading.id);
   });
 
   it('always renders the DocumentHistoryList with the engagement id', () => {

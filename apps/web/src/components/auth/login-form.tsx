@@ -196,7 +196,6 @@ export function LoginForm() {
                 variant="outline"
                 className="w-full"
                 disabled={magicLinkLoading || isLoading}
-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 onClick={handleMagicLink}>
                 {magicLinkLoading ? (
                   <>

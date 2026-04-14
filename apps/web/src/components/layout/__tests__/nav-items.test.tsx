@@ -46,6 +46,11 @@ vi.mock('@/components/workflows/workflow-nav-badge', () => ({
   WorkflowNavBadge: () => null,
 }));
 
+vi.mock('@/components/layout/feature-flag-context', () => ({
+  useFlagBag: () => ({}),
+  FeatureFlagProvider: ({ children }: { children: React.ReactNode }) => children,
+}));
+
 vi.mock('@/components/ui/sidebar', () => ({
   SidebarGroup: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   SidebarGroupLabel: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,

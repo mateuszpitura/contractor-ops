@@ -8,8 +8,8 @@
 // `Intl.RelativeTimeFormat` with the current locale.
 
 import { Check, CircleAlert, Loader2 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
+import { useEffect, useMemo, useState } from 'react';
 
 import { cn } from '@/lib/utils';
 

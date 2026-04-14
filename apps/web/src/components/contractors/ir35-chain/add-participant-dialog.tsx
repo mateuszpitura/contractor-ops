@@ -6,7 +6,8 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
-import { useEffect, useId, useRef, useState } from 'react';
+import type { ChangeEvent, FormEvent } from 'react';
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
 
 import { trpc } from '@/trpc/init';
 
@@ -36,6 +37,23 @@ export function AddParticipantDialog({
   const [contactEmail, setContactEmail] = useState('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  const handleDisplayNameChange = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => setDisplayName(event.target.value),
+    [],
+  );
+
+  const handleRoleChange = useCallback(
+    (event: ChangeEvent<HTMLSelectElement>) => setRole(event.target.value as Role),
+    [],
+  );
+
+  const handleContactEmailChange = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => setContactEmail(event.target.value),
+    [],
+  );
+
+  const handleCancel = useCallback(() => onOpenChange(false), [onOpenChange]);
+
   useEffect(() => {
     if (open) {
       firstFieldRef.current?.focus();
@@ -55,6 +73,20 @@ export function AddParticipantDialog({
     }),
   );
 
+  const handleSubmit = useCallback(
+    (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      mutation.mutate({
+        contractorAssignmentId: engagementId,
+        role,
+        orderIndex: nextOrderIndex,
+        displayName,
+        contactEmail: contactEmail.trim() === '' ? null : contactEmail,
+      });
+    },
+    [mutation, engagementId, role, nextOrderIndex, displayName, contactEmail],
+  );
+
   if (!open) return null;
 
   return (
@@ -63,8 +95,7 @@ export function AddParticipantDialog({
       aria-modal="true"
       aria-labelledby={titleId}
       aria-describedby={descriptionId}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
-    >
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
       <div className="w-full max-w-md rounded-lg bg-background p-6 shadow-lg">
         <header className="mb-4">
           <h3 id={titleId} className="text-base font-semibold">
@@ -75,19 +106,7 @@ export function AddParticipantDialog({
           </p>
         </header>
 
-        <form
-          onSubmit={event => {
-            event.preventDefault();
-            mutation.mutate({
-              contractorAssignmentId: engagementId,
-              role,
-              orderIndex: nextOrderIndex,
-              displayName,
-              contactEmail: contactEmail.trim() === '' ? null : contactEmail,
-            });
-          }}
-          className="flex flex-col gap-3"
-        >
+        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
           <label className="flex flex-col gap-1 text-sm">
             <span className="font-medium">{t('displayName')}</span>
             <input
@@ -95,7 +114,7 @@ export function AddParticipantDialog({
               required
               type="text"
               value={displayName}
-              onChange={event => setDisplayName(event.target.value)}
+              onChange={handleDisplayNameChange}
               className="rounded-md border px-2 py-1.5"
               maxLength={200}
             />
@@ -105,9 +124,8 @@ export function AddParticipantDialog({
             <span className="font-medium">{t('roleLabel')}</span>
             <select
               value={role}
-              onChange={event => setRole(event.target.value as Role)}
-              className="rounded-md border px-2 py-1.5"
-            >
+              onChange={handleRoleChange}
+              className="rounded-md border px-2 py-1.5">
               <option value="AGENCY">{t('role.AGENCY')}</option>
               <option value="PSC">{t('role.PSC')}</option>
             </select>
@@ -118,7 +136,7 @@ export function AddParticipantDialog({
             <input
               type="email"
               value={contactEmail}
-              onChange={event => setContactEmail(event.target.value)}
+              onChange={handleContactEmailChange}
               className="rounded-md border px-2 py-1.5"
               maxLength={320}
             />
@@ -133,16 +151,14 @@ export function AddParticipantDialog({
           <div className="mt-2 flex justify-end gap-2">
             <button
               type="button"
-              onClick={() => onOpenChange(false)}
-              className="rounded-md border px-3 py-1.5 text-sm"
-            >
+              onClick={handleCancel}
+              className="rounded-md border px-3 py-1.5 text-sm">
               {t('cancel')}
             </button>
             <button
               type="submit"
               disabled={mutation.isPending}
-              className="rounded-md bg-primary px-3 py-1.5 text-sm text-primary-foreground disabled:opacity-60"
-            >
+              className="rounded-md bg-primary px-3 py-1.5 text-sm text-primary-foreground disabled:opacity-60">
               {mutation.isPending ? t('saving') : t('save')}
             </button>
           </div>

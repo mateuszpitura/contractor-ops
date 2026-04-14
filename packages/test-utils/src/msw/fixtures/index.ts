@@ -1,4 +1,3 @@
-// biome-ignore lint/performance/noBarrelFile: fixture barrel for test convenience
 export { replayWebhook, webhookPayloads } from '../scenarios/webhook-replay.js';
 
 // Re-export fixture factories organized by provider.

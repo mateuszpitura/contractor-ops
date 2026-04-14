@@ -1,10 +1,13 @@
 import { render, screen, setup } from '@/test/test-utils';
 import { VoidEnvelopeDialog } from '../void-envelope-dialog';
 
-vi.mock('@tanstack/react-query', () => ({
-  useMutation: () => ({ mutate: vi.fn(), isPending: false }),
-}));
-
+vi.mock('@tanstack/react-query', async importOriginal => {
+  const actual = await importOriginal<typeof import('@tanstack/react-query')>();
+  return {
+    ...actual,
+    useMutation: () => ({ mutate: vi.fn(), isPending: false }),
+  };
+});
 vi.mock('@/trpc/init', () => ({
   trpc: {
     esign: {

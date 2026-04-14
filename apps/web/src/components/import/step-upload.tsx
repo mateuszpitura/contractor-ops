@@ -156,10 +156,9 @@ export function StepUpload({
           </Button>
         </div>
       ) : (
-        <div
+        <button
+          type="button"
           {...getRootProps()}
-          role="button"
-          tabIndex={0}
           aria-label={t('upload.dropHeading')}
           className={`flex min-h-[200px] cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-6 transition-colors focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none ${
             isDragActive
@@ -177,7 +176,7 @@ export function StepUpload({
           <Button variant="secondary" size="sm" className="mt-4" type="button">
             {t('upload.browse')}
           </Button>
-        </div>
+        </button>
       )}
     </div>
   );

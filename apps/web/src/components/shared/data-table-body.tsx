@@ -145,7 +145,6 @@ function DataRows<TData>({
           key={row.id}
           data-state={row.getIsSelected() ? 'selected' : undefined}
           className={`${onRowClick ? 'cursor-pointer' : ''} ${rowClassName?.(row.original) ?? ''}`}
-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
           onClick={onRowClick ? () => onRowClick(row.original) : undefined}>
           {row.getVisibleCells().map(cell => (
             <TableCell key={cell.id}>

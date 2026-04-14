@@ -1,30 +1,33 @@
 import { render, screen } from '@/test/test-utils';
 import { StepReview } from '../step-review';
 
-vi.mock('@tanstack/react-query', () => ({
-  useQuery: () => ({
-    data: {
-      items: [
-        {
-          id: 'inv-1',
-          invoiceNumber: 'FV/001',
-          amountToPayMinor: 100000,
-          currency: 'PLN',
-          contractor: { legalName: 'Acme' },
-        },
-        {
-          id: 'inv-2',
-          invoiceNumber: 'FV/002',
-          amountToPayMinor: 200000,
-          currency: 'PLN',
-          contractor: { legalName: 'Beta' },
-        },
-      ],
-    },
-  }),
-  useMutation: () => ({ mutateAsync: vi.fn() }),
-}));
-
+vi.mock('@tanstack/react-query', async importOriginal => {
+  const actual = await importOriginal<typeof import('@tanstack/react-query')>();
+  return {
+    ...actual,
+    useQuery: () => ({
+      data: {
+        items: [
+          {
+            id: 'inv-1',
+            invoiceNumber: 'FV/001',
+            amountToPayMinor: 100000,
+            currency: 'PLN',
+            contractor: { legalName: 'Acme' },
+          },
+          {
+            id: 'inv-2',
+            invoiceNumber: 'FV/002',
+            amountToPayMinor: 200000,
+            currency: 'PLN',
+            contractor: { legalName: 'Beta' },
+          },
+        ],
+      },
+    }),
+    useMutation: () => ({ mutateAsync: vi.fn() }),
+  };
+});
 vi.mock('@/trpc/init', () => ({
   trpc: {
     payment: {

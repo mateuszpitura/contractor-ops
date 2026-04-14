@@ -160,7 +160,7 @@ export function ProfileHeader({ contractor }: ProfileHeaderProps) {
               {t(`lifecycle.${enumKey(stage)}` as Parameters<typeof t>[0]) ?? stage}
             </Badge>
             <Badge variant="secondary" className="bg-secondary text-secondary-foreground">
-              {tc(`type.${contractor.type}` as Parameters<typeof tc>[0])}
+              {tc(`type.${enumKey(contractor.type)}` as Parameters<typeof tc>[0])}
             </Badge>
           </div>
           {!!contractor.owner && (

@@ -8,14 +8,17 @@ import { StepDocuments } from '../step-documents';
 let requestUploadMock = vi.fn();
 let _confirmUploadMock = vi.fn();
 
-vi.mock('@tanstack/react-query', () => ({
-  useMutation: () => ({
-    mutate: vi.fn(),
-    mutateAsync: requestUploadMock,
-    isPending: false,
-  }),
-}));
-
+vi.mock('@tanstack/react-query', async importOriginal => {
+  const actual = await importOriginal<typeof import('@tanstack/react-query')>();
+  return {
+    ...actual,
+    useMutation: () => ({
+      mutate: vi.fn(),
+      mutateAsync: requestUploadMock,
+      isPending: false,
+    }),
+  };
+});
 vi.mock('@/trpc/init', () => ({
   trpc: {
     document: {

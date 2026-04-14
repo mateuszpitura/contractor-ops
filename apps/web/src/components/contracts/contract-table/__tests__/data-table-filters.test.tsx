@@ -2,15 +2,18 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, setup } from '@/test/test-utils';
 import { DataTableFilters } from '../data-table-filters';
 
-vi.mock('@tanstack/react-query', () => ({
-  useQuery: () => ({
-    data: [
-      { id: 'u1', name: 'Alice', email: 'alice@test.com' },
-      { id: 'u2', name: 'Bob', email: 'bob@test.com' },
-    ],
-  }),
-}));
-
+vi.mock('@tanstack/react-query', async importOriginal => {
+  const actual = await importOriginal<typeof import('@tanstack/react-query')>();
+  return {
+    ...actual,
+    useQuery: () => ({
+      data: [
+        { id: 'u1', name: 'Alice', email: 'alice@test.com' },
+        { id: 'u2', name: 'Bob', email: 'bob@test.com' },
+      ],
+    }),
+  };
+});
 vi.mock('@/trpc/init', () => ({
   trpc: {
     user: {

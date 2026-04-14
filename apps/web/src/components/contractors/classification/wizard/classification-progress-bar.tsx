@@ -10,8 +10,8 @@
 // Live region (`<span aria-live="polite">`) announces only when the step
 // index changes, NOT on every answer change — prevents chatty readback.
 
-import { useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
+import { useEffect, useRef } from 'react';
 
 import { cn } from '@/lib/utils';
 
@@ -36,10 +36,10 @@ export function ClassificationProgressBar({
   const t = useTranslations('Classification.progress');
 
   // aria-valuenow: integer part = completed steps, fraction = within-step.
-  const valueNow = (currentStep - 1) + Math.min(Math.max(currentStepCompletion, 0), 1);
+  const valueNow = currentStep - 1 + Math.min(Math.max(currentStepCompletion, 0), 1);
 
   // Percentage for the visual fill (0..100).
-  const percent = (valueNow / totalSteps) * 100;
+  const _percent = (valueNow / totalSteps) * 100;
 
   // Live region ref — only announce when step index changes (not on
   // every answer change).
@@ -66,10 +66,7 @@ export function ClassificationProgressBar({
         aria-valuemax={totalSteps}
         aria-label={t('ariaLabel', { current: currentStep, total: totalSteps })}
         className="h-1 w-full overflow-hidden rounded-full bg-muted">
-        <div
-          className="h-full bg-primary transition-[width] duration-200 motion-reduce:transition-none"
-          style={{ width: `${percent}%` }}
-        />
+        <div className="h-full bg-primary transition-[width] duration-200 motion-reduce:transition-none" />
       </div>
       <span ref={liveRef} aria-live="polite" aria-atomic="true" className="sr-only" />
     </div>

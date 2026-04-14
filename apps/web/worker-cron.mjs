@@ -8,11 +8,13 @@
  *   - trial-notifications  (daily 09:00 UTC)
  *   - job-health           (every 30 min — Cronitor heartbeat)
  *
- * The worker process makes outbound HTTP calls to the web service via
- * WORKER_TARGET_URL (e.g. http://web-XXXX:3000 on Render's private network,
- * or http://127.0.0.1:3000 locally with `docker compose --profile worker`).
+ * The worker makes outbound HTTP calls to the web service. The target is
+ * supplied as `host:port` via WORKER_TARGET_HOSTPORT (set from render.yaml
+ * fromService.property: hostport, e.g. "web-abc:3000"), or as a full URL
+ * via WORKER_TARGET_URL for local use.
  *
- * Env: WORKER_TARGET_URL (required), CRON_SECRET (required).
+ * Env: WORKER_TARGET_HOSTPORT or WORKER_TARGET_URL (one required),
+ *      CRON_SECRET (required).
  */
 
 import cron from 'node-cron';
@@ -32,11 +34,15 @@ const log = pino({
   base: { service: 'worker-cron' },
 });
 
-const TARGET = process.env.WORKER_TARGET_URL;
+// Accept either a hostport (Render private network) or a full URL (local dev).
+// If the value lacks a scheme we default to http:// since Render's private
+// network is plaintext-only between services in the same region.
+const rawTarget = process.env.WORKER_TARGET_HOSTPORT ?? process.env.WORKER_TARGET_URL;
+const TARGET = rawTarget?.match(/^https?:\/\//) ? rawTarget : `http://${rawTarget}`;
 const CRON_SECRET = process.env.CRON_SECRET;
 
-if (!TARGET) {
-  log.fatal('WORKER_TARGET_URL is required (e.g. http://web-XXXX:3000)');
+if (!rawTarget) {
+  log.fatal('WORKER_TARGET_HOSTPORT or WORKER_TARGET_URL is required');
   process.exit(1);
 }
 if (!CRON_SECRET) {

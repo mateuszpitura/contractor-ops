@@ -3,9 +3,9 @@
 // tRPC mutations are mocked at the trpc/init level. Each test covers one
 // behavioural contract from PLAN.md §behavior.
 
-import { describe, expect, it, vi } from 'vitest';
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { describe, expect, it, vi } from 'vitest';
 
 import { render } from '@/test/test-utils';
 
@@ -19,13 +19,11 @@ const { saveAnswerMutateMock, submitMutateMock } = vi.hoisted(() => ({
 }));
 
 vi.mock('@/trpc/init', () => {
-  const makeMutationOptions =
-    (mutate: (input: unknown) => unknown) =>
-    () => ({
-      mutationFn: async (input: unknown) => mutate(input),
-      onSuccess: undefined,
-      onError: undefined,
-    });
+  const makeMutationOptions = (mutate: (input: unknown) => unknown) => () => ({
+    mutationFn: async (input: unknown) => mutate(input),
+    onSuccess: undefined,
+    onError: undefined,
+  });
   return {
     trpc: {
       classification: {
@@ -116,13 +114,7 @@ describe('ClassificationWizardShell — IR35 flow', () => {
 
 describe('ClassificationWizardShell — unsupported country', () => {
   it('renders the not-supported empty state for unknown countryCode', () => {
-    render(
-      <ClassificationWizardShell
-        {...BASE_PROPS}
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        countryCode={'FR' as any}
-      />,
-    );
+    render(<ClassificationWizardShell {...BASE_PROPS} countryCode={'FR' as 'GB' | 'DE'} />);
     expect(
       screen.getAllByText(/Classification not available|Classification rule sets/i).length,
     ).toBeGreaterThan(0);

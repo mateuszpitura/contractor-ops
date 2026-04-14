@@ -7,7 +7,8 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
+import type { ChangeEvent, FormEvent } from 'react';
+import { useCallback, useEffect, useId, useState } from 'react';
 
 import { trpc } from '@/trpc/init';
 
@@ -18,6 +19,8 @@ interface OtherClientAttestationFormProps {
 export function OtherClientAttestationForm({ engagementId }: OtherClientAttestationFormProps) {
   const t = useTranslations('OtherClientAttestation');
   const queryClient = useQueryClient();
+  const headingId = useId();
+  const statementHintId = useId();
 
   const [statementText, setStatementText] = useState('');
   const [signedName, setSignedName] = useState('');
@@ -46,41 +49,50 @@ export function OtherClientAttestationForm({ engagementId }: OtherClientAttestat
     }),
   );
 
+  const handleSubmit = useCallback(
+    (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      mutation.mutate({
+        contractorAssignmentId: engagementId,
+        statementText,
+        signedName,
+      });
+    },
+    [mutation, engagementId, statementText, signedName],
+  );
+
+  const handleStatementChange = useCallback(
+    (event: ChangeEvent<HTMLTextAreaElement>) => setStatementText(event.target.value),
+    [],
+  );
+
+  const handleSignedNameChange = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => setSignedName(event.target.value),
+    [],
+  );
+
   return (
-    <section
-      aria-labelledby="other-client-attestation-heading"
-      className="rounded-lg border bg-card p-6"
-    >
+    <section aria-labelledby={headingId} className="rounded-lg border bg-card p-6">
       <header className="mb-4">
-        <h2 id="other-client-attestation-heading" className="text-lg font-semibold">
+        <h2 id={headingId} className="text-lg font-semibold">
           {t('title')}
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">{t('subtitle')}</p>
       </header>
 
-      <form
-        onSubmit={event => {
-          event.preventDefault();
-          mutation.mutate({
-            contractorAssignmentId: engagementId,
-            statementText,
-            signedName,
-          });
-        }}
-        className="flex flex-col gap-3"
-      >
+      <form onSubmit={handleSubmit} className="flex flex-col gap-3">
         <label className="flex flex-col gap-1 text-sm">
           <span className="font-medium">{t('statementLabel')}</span>
           <textarea
             required
             value={statementText}
-            onChange={event => setStatementText(event.target.value)}
+            onChange={handleStatementChange}
             maxLength={4000}
             rows={6}
             className="rounded-md border px-2 py-1.5"
-            aria-describedby="statement-hint"
+            aria-describedby={statementHintId}
           />
-          <span id="statement-hint" className="text-xs text-muted-foreground">
+          <span id={statementHintId} className="text-xs text-muted-foreground">
             {t('statementHint', { max: 4000 })}
           </span>
         </label>
@@ -91,7 +103,7 @@ export function OtherClientAttestationForm({ engagementId }: OtherClientAttestat
             required
             type="text"
             value={signedName}
-            onChange={event => setSignedName(event.target.value)}
+            onChange={handleSignedNameChange}
             maxLength={200}
             className="rounded-md border px-2 py-1.5"
           />
@@ -107,8 +119,7 @@ export function OtherClientAttestationForm({ engagementId }: OtherClientAttestat
           <button
             type="submit"
             disabled={mutation.isPending}
-            className="rounded-md bg-primary px-3 py-1.5 text-sm text-primary-foreground disabled:opacity-60"
-          >
+            className="rounded-md bg-primary px-3 py-1.5 text-sm text-primary-foreground disabled:opacity-60">
             {mutation.isPending ? t('saving') : existingQuery.data ? t('update') : t('submit')}
           </button>
         </div>

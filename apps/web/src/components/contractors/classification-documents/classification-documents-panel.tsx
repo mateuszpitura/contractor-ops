@@ -5,6 +5,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import { useId } from 'react';
 
 import { DocumentHistoryList } from './document-history-list';
 import { GenerateDrvBundleButton } from './generate-drv-bundle-button';
@@ -28,24 +29,24 @@ export function ClassificationDocumentsPanel({
   attestationSigned,
 }: ClassificationDocumentsPanelProps) {
   const t = useTranslations('Classification.documents');
+  const headingId = useId();
+  const sdsDisabledId = useId();
+  const drvDisabledId = useId();
 
   const isGb = countryCode === 'GB';
   const isDe = countryCode === 'DE';
   const canGenerateSds = Boolean(isGb && completedAssessmentId);
   const canGenerateDrv = Boolean(isDe && completedAssessmentId && attestationSigned);
-  const drvDisabledReason = !completedAssessmentId
-    ? t('drvDisabledNeedAssessment')
-    : !attestationSigned
-      ? t('drvDisabledNeedAttestation')
-      : null;
+  const drvDisabledReason = completedAssessmentId
+    ? attestationSigned
+      ? null
+      : t('drvDisabledNeedAttestation')
+    : t('drvDisabledNeedAssessment');
 
   return (
-    <section
-      aria-labelledby="classification-documents-heading"
-      className="rounded-lg border bg-card p-6"
-    >
+    <section aria-labelledby={headingId} className="rounded-lg border bg-card p-6">
       <header className="mb-4">
-        <h2 id="classification-documents-heading" className="text-lg font-semibold">
+        <h2 id={headingId} className="text-lg font-semibold">
           {t('title')}
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">{t('subtitle')}</p>
@@ -61,15 +62,11 @@ export function ClassificationDocumentsPanel({
                 type="button"
                 disabled
                 aria-disabled="true"
-                aria-describedby="generate-sds-disabled-reason"
-                className="inline-flex items-center rounded-md border bg-muted px-4 py-2 text-sm text-muted-foreground"
-              >
+                aria-describedby={sdsDisabledId}
+                className="inline-flex items-center rounded-md border bg-muted px-4 py-2 text-sm text-muted-foreground">
                 {t('generateSds')}
               </button>
-              <p
-                id="generate-sds-disabled-reason"
-                className="mt-2 text-xs text-muted-foreground"
-              >
+              <p id={sdsDisabledId} className="mt-2 text-xs text-muted-foreground">
                 {t('generateDisabled')}
               </p>
             </div>
@@ -89,15 +86,11 @@ export function ClassificationDocumentsPanel({
                 type="button"
                 disabled
                 aria-disabled="true"
-                aria-describedby="generate-drv-disabled-reason"
-                className="inline-flex items-center rounded-md border bg-muted px-4 py-2 text-sm text-muted-foreground"
-              >
+                aria-describedby={drvDisabledId}
+                className="inline-flex items-center rounded-md border bg-muted px-4 py-2 text-sm text-muted-foreground">
                 {t('generateDrvBundle')}
               </button>
-              <p
-                id="generate-drv-disabled-reason"
-                className="mt-2 text-xs text-muted-foreground"
-              >
+              <p id={drvDisabledId} className="mt-2 text-xs text-muted-foreground">
                 {t('drvDisabledNeedAssessment')}
               </p>
             </div>

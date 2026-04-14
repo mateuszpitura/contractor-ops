@@ -21,8 +21,6 @@ const {
   mockReminderInstanceUpdateMany: vi.fn(),
 }));
 
-const mockDispatch = vi.fn();
-
 vi.mock('@contractor-ops/db', () => ({
   prisma: {
     reminderRule: {
@@ -72,6 +70,10 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
 }));
 
 import { GET } from '../route';
+
+const { mockDispatch } = vi.hoisted(() => ({
+  mockDispatch: vi.fn(),
+}));
 
 describe('GET /api/cron/reminders', () => {
   beforeEach(() => {

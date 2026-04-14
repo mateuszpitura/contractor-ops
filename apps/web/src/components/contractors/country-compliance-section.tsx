@@ -95,34 +95,12 @@ export function CountryComplianceSection({ contractorId }: CountryComplianceSect
         )}
       </CardHeader>
       <CardContent className="space-y-4">
-        {countryCode === 'AE' && (
-          <UaeFields
-            values={merged}
-            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-            onChange={(key, val) => setFormData(prev => ({ ...prev, [key]: val }))}
-          />
-        )}
-        {countryCode === 'SA' && (
-          <SaudiFields
-            values={merged}
-            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-            onChange={(key, val) => setFormData(prev => ({ ...prev, [key]: val }))}
-          />
-        )}
-        {countryCode === 'GB' && (
-          <UkComplianceFields
-            values={merged as Partial<UkCountryFields>}
-            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-            onChange={(key, val) => setFormData(prev => ({ ...prev, [key]: val }))}
-          />
-        )}
-        {countryCode === 'DE' && (
-          <DeComplianceFields
-            values={merged as Partial<DeCountryFields>}
-            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-            onChange={(key, val) => setFormData(prev => ({ ...prev, [key]: val }))}
-          />
-        )}
+        <CountryFieldsDispatch
+          countryCode={countryCode}
+          values={merged}
+          // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
+          onChange={(key, val) => setFormData(prev => ({ ...prev, [key]: val }))}
+        />
         {(countryCode === 'GB' || countryCode === 'DE') && (
           <div
             className="flex flex-wrap items-center gap-3 rounded-md border bg-muted/30 p-3"
@@ -214,6 +192,29 @@ function ClassificationEngagementsBlock({ contractorId }: { contractorId: string
       </div>
     </section>
   );
+}
+
+function CountryFieldsDispatch({
+  countryCode,
+  values,
+  onChange,
+}: {
+  countryCode: string;
+  values: Record<string, unknown>;
+  onChange: (key: string, val: unknown) => void;
+}) {
+  switch (countryCode) {
+    case 'AE':
+      return <UaeFields values={values} onChange={onChange} />;
+    case 'SA':
+      return <SaudiFields values={values} onChange={onChange} />;
+    case 'GB':
+      return <UkComplianceFields values={values as Partial<UkCountryFields>} onChange={onChange} />;
+    case 'DE':
+      return <DeComplianceFields values={values as Partial<DeCountryFields>} onChange={onChange} />;
+    default:
+      return null;
+  }
 }
 
 function UaeFields({

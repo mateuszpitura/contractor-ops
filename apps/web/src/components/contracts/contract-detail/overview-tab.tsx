@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Link } from '@/i18n/navigation';
+import { enumKey } from '@/lib/enum-key';
 import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
@@ -358,7 +359,9 @@ export function OverviewTab({ contract }: OverviewTabProps) {
                 </span>
                 <Badge variant="secondary" className="w-fit">
                   {tContractor(
-                    `lifecycle.${contract.contractor.status}` as Parameters<typeof tContractor>[0],
+                    `lifecycle.${enumKey(contract.contractor.status)}` as Parameters<
+                      typeof tContractor
+                    >[0],
                   )}
                 </Badge>
               </div>

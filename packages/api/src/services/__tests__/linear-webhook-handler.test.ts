@@ -59,6 +59,13 @@ const { mockPrisma, mockResolveInternalStatus, mockLinearGraphQL } = vi.hoisted(
 
 vi.mock('@contractor-ops/integrations/services/credential-service', () => ({
   getCredentials: vi.fn(async () => ({ accessToken: 'linear-token' })),
+  decryptCredentials: vi.fn(async () => ({ accessToken: 'linear-token' })),
+  encryptCredentials: vi.fn(async (v: unknown) => ({
+    ciphertext: 'enc',
+    iv: 'iv',
+    keyVersion: 1,
+    data: v,
+  })),
 }));
 
 vi.mock('../linear-status-mapping.js', () => ({

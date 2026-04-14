@@ -88,7 +88,7 @@ export function ReverseChargeLineToggle({
         aria-label="Apply reverse charge to this line"
       />
       <Label className="text-sm">Reverse charge</Label>
-      {isReverseCharge && (
+      {!!isReverseCharge && (
         <Badge variant="info" data-testid="reverse-charge-chip">
           <AlertCircle className="size-3" aria-hidden />
           <span>{ruleLabel ?? 'RC auto-detected'}</span>

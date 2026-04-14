@@ -309,6 +309,7 @@ export function WizardDialog({ open, onOpenChange }: WizardDialogProps) {
           <StepIndicator steps={stepLabels} currentStep={currentStep} />
 
           {/* Step content — prevent Enter from advancing steps */}
+          {/* biome-ignore lint/a11y/noStaticElementInteractions: onKeyDown only prevents Enter on inputs, not interactive */}
           <div
             className="min-h-[320px] px-1"
             role="presentation"

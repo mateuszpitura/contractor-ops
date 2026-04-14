@@ -39,7 +39,29 @@ function readPrompt(question: RuleSetQuestion, locale: Locale): string {
   return question.prompt[locale] ?? question.prompt.en;
 }
 
-function readAnswer(raw: unknown, t: (key: string) => string): { label: string; score: string } {
+type AnswerResult = { label: string; score: string };
+
+function readNotApplicableAnswer(
+  raw: { rawScore?: number; isNotApplicable?: boolean },
+  t: (key: string) => string,
+): AnswerResult {
+  if (raw.isNotApplicable) {
+    return { label: t('outcome.drv.answerNotApplicable'), score: '—' };
+  }
+  return {
+    label: String(raw.rawScore ?? '—'),
+    score: String(raw.rawScore ?? '—'),
+  };
+}
+
+function readValueAnswer(raw: { value: unknown }): AnswerResult | undefined {
+  const v = raw.value;
+  if (typeof v === 'number') return { label: `${v}%`, score: String(v) };
+  if (typeof v === 'string') return { label: v, score: '—' };
+  return;
+}
+
+function readAnswer(raw: unknown, t: (key: string) => string): AnswerResult {
   if (raw === undefined || raw === null) {
     return { label: t('outcome.drv.answerMissing'), score: '—' };
   }
@@ -47,19 +69,15 @@ function readAnswer(raw: unknown, t: (key: string) => string): { label: string; 
   if (raw === 'no') return { label: t('yesNo.no'), score: '—' };
   if (typeof raw === 'number') return { label: String(raw), score: String(raw) };
   if (typeof raw === 'object' && 'isNotApplicable' in raw) {
-    const payload = raw as { rawScore?: number; isNotApplicable?: boolean };
-    if (payload.isNotApplicable) {
-      return { label: t('outcome.drv.answerNotApplicable'), score: '—' };
-    }
-    return {
-      label: String(payload.rawScore ?? '—'),
-      score: String(payload.rawScore ?? '—'),
-    };
+    return readNotApplicableAnswer(raw as { rawScore?: number; isNotApplicable?: boolean }, t);
   }
   if (typeof raw === 'object' && 'value' in raw) {
-    const v = (raw as { value: unknown }).value;
-    if (typeof v === 'number') return { label: `${v}%`, score: String(v) };
-    if (typeof v === 'string') return { label: v, score: '—' };
+    return (
+      readValueAnswer(raw as { value: unknown }) ?? {
+        label: t('outcome.drv.answerMissing'),
+        score: '—',
+      }
+    );
   }
   return { label: t('outcome.drv.answerMissing'), score: '—' };
 }
@@ -91,9 +109,7 @@ export function DrvCriterionBreakdownList(props: DrvCriterionBreakdownListProps)
               <TableCell className="align-top text-sm">
                 <span className="font-medium">{readPrompt(q, locale)}</span>
                 {q.drvReference ? (
-                  <span className="mt-1 block text-xs text-muted-foreground">
-                    {q.drvReference}
-                  </span>
+                  <span className="mt-1 block text-xs text-muted-foreground">{q.drvReference}</span>
                 ) : null}
               </TableCell>
               <TableCell className="align-top text-sm">{answer.label}</TableCell>

@@ -1,12 +1,15 @@
 import { render, screen } from '@/test/test-utils';
 import { AmendmentsTab } from '../amendments-tab';
 
-vi.mock('@tanstack/react-query', () => ({
-  useQuery: () => ({ data: null }),
-  useMutation: () => ({ mutate: vi.fn(), isPending: false }),
-  useQueryClient: () => ({ invalidateQueries: vi.fn() }),
-}));
-
+vi.mock('@tanstack/react-query', async importOriginal => {
+  const actual = await importOriginal<typeof import('@tanstack/react-query')>();
+  return {
+    ...actual,
+    useQuery: () => ({ data: null }),
+    useMutation: () => ({ mutate: vi.fn(), isPending: false }),
+    useQueryClient: () => ({ invalidateQueries: vi.fn() }),
+  };
+});
 vi.mock('@/trpc/init', () => ({
   trpc: {
     contract: {

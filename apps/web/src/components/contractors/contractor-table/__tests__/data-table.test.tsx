@@ -3,18 +3,21 @@ import { render, screen, setup } from '@/test/test-utils';
 import type { ContractorRow } from '../columns';
 import { ContractorDataTable } from '../data-table';
 
-vi.mock('@tanstack/react-query', () => ({
-  useQuery: vi.fn(() => ({
-    data: { items: [], total: 0 },
-    isLoading: false,
-    isFetching: false,
-    isPending: false,
-  })),
-  useMutation: () => ({ mutate: vi.fn(), isPending: false }),
-  useQueryClient: () => ({ invalidateQueries: vi.fn() }),
-  keepPreviousData: undefined,
-}));
-
+vi.mock('@tanstack/react-query', async importOriginal => {
+  const actual = await importOriginal<typeof import('@tanstack/react-query')>();
+  return {
+    ...actual,
+    useQuery: vi.fn(() => ({
+      data: { items: [], total: 0 },
+      isLoading: false,
+      isFetching: false,
+      isPending: false,
+    })),
+    useMutation: () => ({ mutate: vi.fn(), isPending: false }),
+    useQueryClient: () => ({ invalidateQueries: vi.fn() }),
+    keepPreviousData: undefined,
+  };
+});
 vi.mock('@/trpc/init', () => ({
   trpc: {
     contractor: {

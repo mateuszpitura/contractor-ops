@@ -67,10 +67,10 @@ export function OutcomePrintLayout(props: OutcomePrintLayoutProps) {
     <div
       className="classification-outcome-print-layout flex flex-col gap-6"
       data-testid={props['data-testid'] ?? 'outcome-print-layout'}>
-      <style dangerouslySetInnerHTML={{ __html: PRINT_STYLES }} />
-      {header ? <div className="outcome-print-only border-b pb-3">{header}</div> : null}
+      <style>{PRINT_STYLES}</style>
+      {header == null ? null : <div className="outcome-print-only border-b pb-3">{header}</div>}
       <div className="flex flex-col gap-6">{children}</div>
-      {footer ? <div className="outcome-print-only border-t pt-3">{footer}</div> : null}
+      {footer == null ? null : <div className="outcome-print-only border-t pt-3">{footer}</div>}
     </div>
   );
 }

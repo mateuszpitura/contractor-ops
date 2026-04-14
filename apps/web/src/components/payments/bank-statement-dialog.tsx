@@ -195,20 +195,12 @@ export function BankStatementDialog({ runId, open, onOpenChange }: BankStatement
         {/* Step 1: Upload */}
         {step === 'upload' && (
           <div className="space-y-4">
-            <div
-              className="flex flex-col items-center justify-center gap-3 py-12 border-2 border-dashed rounded-lg cursor-pointer hover:border-primary/50 transition-colors"
-              role="button"
-              tabIndex={0}
+            <button
+              type="button"
+              className="flex flex-col items-center justify-center gap-3 py-12 border-2 border-dashed rounded-lg cursor-pointer hover:border-primary/50 transition-colors w-full"
               aria-label={t('bankStatement.dropzoneText')}
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => fileInputRef.current?.click()}
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              onKeyDown={e => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  fileInputRef.current?.click();
-                }
-              }}
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onDragOver={e => e.preventDefault()}
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
@@ -227,7 +219,7 @@ export function BankStatementDialog({ runId, open, onOpenChange }: BankStatement
                 {t('bankStatement.dropzoneText')}
               </p>
               <p className="text-xs text-muted-foreground">{t('bankStatement.dropzoneFormats')}</p>
-            </div>
+            </button>
             <input
               ref={fileInputRef}
               type="file"

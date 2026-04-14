@@ -12,17 +12,20 @@ const { mockCheckoutMutate, mockPortalMutate } = vi.hoisted(() => ({
 }));
 let portalPending = false;
 
-vi.mock('@tanstack/react-query', () => ({
-  useQuery: () => ({ data: subscriptionData, isLoading: false }),
-  useMutation: (opts: Record<string, unknown>) => {
-    // Differentiate checkout vs portal by checking options shape
-    if (opts?.onError?.toString().includes('checkout')) {
-      return { mutate: mockCheckoutMutate, isPending: false };
-    }
-    return { mutate: mockPortalMutate, isPending: portalPending };
-  },
-}));
-
+vi.mock('@tanstack/react-query', async importOriginal => {
+  const actual = await importOriginal<typeof import('@tanstack/react-query')>();
+  return {
+    ...actual,
+    useQuery: () => ({ data: subscriptionData, isLoading: false }),
+    useMutation: (opts: Record<string, unknown>) => {
+      // Differentiate checkout vs portal by checking options shape
+      if (opts?.onError?.toString().includes('checkout')) {
+        return { mutate: mockCheckoutMutate, isPending: false };
+      }
+      return { mutate: mockPortalMutate, isPending: portalPending };
+    },
+  };
+});
 vi.mock('@/trpc/init', () => ({
   trpc: {
     billing: {

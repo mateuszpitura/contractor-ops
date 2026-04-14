@@ -4,8 +4,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 // Mocks
 // ---------------------------------------------------------------------------
 
-vi.mock('@contractor-ops/db', () => ({
-  prisma: {
+vi.mock('@contractor-ops/db', () => {
+  const prisma = {
     integrationSyncLog: { create: vi.fn(), update: vi.fn() },
     integrationConnection: { findUniqueOrThrow: vi.fn(), update: vi.fn() },
     organization: { findUniqueOrThrow: vi.fn() },
@@ -13,8 +13,19 @@ vi.mock('@contractor-ops/db', () => ({
     ocrCreditLedger: { create: vi.fn() },
     matchResult: { create: vi.fn() },
     member: { findMany: vi.fn() },
-  },
-}));
+  };
+  return {
+    prisma,
+    createTenantClient: vi.fn(() => prisma),
+    createTenantClientFrom: vi.fn(() => prisma),
+    getRegionalClient: vi.fn(() => prisma),
+    tenantStore: {
+      getStore: vi.fn(() => ({ organizationId: 'org-1', region: 'EU' })),
+      run: vi.fn((_ctx: unknown, fn: () => unknown) => fn()),
+    },
+    withTenantScope: vi.fn((_ctx: unknown, fn: () => unknown) => fn()),
+  };
+});
 
 const mockKsefClient = {
   authenticate: vi.fn(),
@@ -24,7 +35,11 @@ const mockKsefClient = {
   terminateSession: vi.fn(),
 };
 
-vi.mock('@contractor-ops/integrations', () => {
+vi.mock('@contractor-ops/integrations', () => ({
+  decryptCredentials: vi.fn().mockReturnValue({ accessToken: 'token' }),
+}));
+
+vi.mock('@contractor-ops/einvoice', () => {
   const MockKsefApiClient = vi.fn().mockImplementation(function (this: typeof mockKsefClient) {
     Object.assign(this, mockKsefClient);
   });
@@ -44,7 +59,9 @@ vi.mock('@contractor-ops/integrations', () => {
       },
       lines: [{ description: 'Service', netMinor: 8130, vatMinor: 1870 }],
     }),
-    decryptCredentials: vi.fn().mockReturnValue({ accessToken: 'token' }),
+    ksefConnectionConfigSchema: {
+      parse: vi.fn().mockReturnValue({ environment: 'prod', authMethod: 'token' }),
+    },
   };
 });
 
@@ -309,15 +326,15 @@ describe('processKsefSync', () => {
     expect(mockKsefClient.terminateSession).toHaveBeenCalledOnce();
   });
 
-  it('updates sync log to FAILED on unhandled error', async () => {
+  it('updates sync log to FAILED on unhandled error inside tenant scope', async () => {
     setupSuccessfulSync();
-    db.organization.findUniqueOrThrow.mockRejectedValue(new Error('unexpected failure'));
+    // Fail after syncLog has been created — inside the tenantStore.run block.
+    db.integrationConnection.findUniqueOrThrow.mockRejectedValue(new Error('unexpected failure'));
 
     await expect(
       processKsefSync({ organizationId: ORG_ID, connectionId: CONN_ID }),
     ).rejects.toThrow('unexpected failure');
 
-    // Sync log should be updated to FAILED
     const updateCall = db.integrationSyncLog.update.mock.calls[0]?.[0];
     expect(updateCall.data.status).toBe('FAILED');
     expect(updateCall.data.errorMessage).toBe('unexpected failure');

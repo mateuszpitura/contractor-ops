@@ -2,12 +2,8 @@
 //
 // Verifies locked-phrase verbatim rendering, bypass-resistance, and focus.
 
+import { DISCLAIMER_IR35_BODY, DISCLAIMER_SCHEIN_BODY } from '@contractor-ops/validators';
 import { describe, expect, it, vi } from 'vitest';
-
-import {
-  DISCLAIMER_IR35_BODY,
-  DISCLAIMER_SCHEIN_BODY,
-} from '@contractor-ops/validators';
 
 // Mock tRPC BEFORE importing the SUT so the mutationOptions path is stubbed.
 const mutateSpy = vi.fn();

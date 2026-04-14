@@ -63,8 +63,9 @@ describe('SCHEIN rule-set inventory', () => {
   });
 
   it('Inventory-8: DRV-ECO-01 answerType === "billing-ratio"', () => {
-    const q = SCHEIN_QUESTIONS.find(x => x.id === 'DRV-ECO-01')!;
-    expect(q.answerType).toBe('billing-ratio');
+    const q = SCHEIN_QUESTIONS.find(x => x.id === 'DRV-ECO-01');
+    expect(q).toBeDefined();
+    expect(q?.answerType).toBe('billing-ratio');
   });
 
   it('Inventory-9: profile identity', () => {

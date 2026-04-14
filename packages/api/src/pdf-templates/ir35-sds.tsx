@@ -168,6 +168,10 @@ function formatIsoDate(d: Date | null | undefined): string {
   return d.toISOString().slice(0, 10);
 }
 
+function renderPageNumber({ pageNumber, totalPages }: { pageNumber: number; totalPages: number }) {
+  return `${pageNumber} / ${totalPages}`;
+}
+
 function formatAnswer(
   answer:
     | {
@@ -269,11 +273,7 @@ export function IR35SDSDocument({
         <Text style={styles.footer} fixed>
           Status Determination Statement · {organization.name} · Rendered {renderedAtLabel}
         </Text>
-        <Text
-          style={styles.pageNumber}
-          fixed
-          render={({ pageNumber, totalPages }) => `${pageNumber} / ${totalPages}`}
-        />
+        <Text style={styles.pageNumber} fixed render={renderPageNumber} />
       </Page>
 
       {/* Page 2 — per-area evidence */}
@@ -322,11 +322,7 @@ export function IR35SDSDocument({
         <Text style={styles.footer} fixed>
           Status Determination Statement · {organization.name} · Rendered {renderedAtLabel}
         </Text>
-        <Text
-          style={styles.pageNumber}
-          fixed
-          render={({ pageNumber, totalPages }) => `${pageNumber} / ${totalPages}`}
-        />
+        <Text style={styles.pageNumber} fixed render={renderPageNumber} />
       </Page>
 
       {/* Final page — dispute + disclaimer */}
@@ -339,11 +335,7 @@ export function IR35SDSDocument({
         <Text style={styles.footer} fixed>
           Status Determination Statement · {organization.name} · Rendered {renderedAtLabel}
         </Text>
-        <Text
-          style={styles.pageNumber}
-          fixed
-          render={({ pageNumber, totalPages }) => `${pageNumber} / ${totalPages}`}
-        />
+        <Text style={styles.pageNumber} fixed render={renderPageNumber} />
       </Page>
     </Document>
   );

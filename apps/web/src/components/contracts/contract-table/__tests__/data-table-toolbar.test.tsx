@@ -1,10 +1,13 @@
 import { render, screen } from '@/test/test-utils';
 import { DataTableToolbar } from '../data-table-toolbar';
 
-vi.mock('@tanstack/react-query', () => ({
-  useQuery: () => ({ data: [] }),
-}));
-
+vi.mock('@tanstack/react-query', async importOriginal => {
+  const actual = await importOriginal<typeof import('@tanstack/react-query')>();
+  return {
+    ...actual,
+    useQuery: () => ({ data: [] }),
+  };
+});
 vi.mock('@/trpc/init', () => ({
   trpc: {
     user: {

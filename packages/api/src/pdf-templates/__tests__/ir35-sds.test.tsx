@@ -12,17 +12,17 @@ import path from 'node:path';
 
 import { IR35_DISPUTE_PROCESS_EN, SDS_DISCLAIMER_EN } from '@contractor-ops/validators';
 import { renderToBuffer } from '@react-pdf/renderer';
-import { describe, expect, it } from 'vitest';
 import type { ReactElement, ReactNode } from 'react';
+import { describe, expect, it } from 'vitest';
 
 import {
+  fixtureIr35Indeterminate,
+  fixtureIr35Inside,
+  fixtureIr35Outside,
   SDS_FIXTURE_CONTRACTOR,
   SDS_FIXTURE_ENGAGEMENT,
   SDS_FIXTURE_ORGANIZATION,
   SDS_FIXTURE_RENDERED_AT,
-  fixtureIr35Indeterminate,
-  fixtureIr35Inside,
-  fixtureIr35Outside,
 } from '../__fixtures__/sds-fixtures.js';
 import { IR35SDSDocument, RENDERER_SLUG, TEMPLATE_VERSION } from '../ir35-sds.js';
 

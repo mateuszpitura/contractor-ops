@@ -211,8 +211,9 @@ describe('scoreSchein — Nicht anwendbar (Pitfall 5)', () => {
     });
     const { outcome } = scoreSchein(answers);
     expect(outcome.totalScore).toBe(0);
-    const integration = outcome.categories.find(c => c.category === 'integration')!;
-    expect(integration.rawScore).toBe(0);
+    const integration = outcome.categories.find(c => c.category === 'integration');
+    expect(integration).toBeDefined();
+    expect(integration?.rawScore).toBe(0);
   });
 
   it('NotApplicable-2: missing answer for a required criterion throws MissingAnswerError', () => {

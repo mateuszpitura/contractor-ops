@@ -78,6 +78,5 @@ function setup(ui: ReactElement, options?: CustomRenderOptions) {
   return { user, ...result };
 }
 
-// biome-ignore lint/performance/noBarrelFile: test utility re-exports for convenience
 export { act, screen, waitFor, within } from '@testing-library/react';
 export { createWrapper, customRender as render, setup };

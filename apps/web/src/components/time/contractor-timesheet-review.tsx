@@ -69,6 +69,20 @@ function toDateStr(d: string | Date): string {
   return format(d, 'yyyy-MM-dd');
 }
 
+/**
+ * Resolves a time entry's weekday index (0=Mon .. 6=Sun) within the given week,
+ * or -1 if it falls outside the week.
+ */
+function resolveDayIndex(entry: TimeEntry, weekStart: Date): number {
+  const dateStr = toDateStr(entry.entryDate);
+  for (let i = 0; i < 7; i++) {
+    if (getDateForDay(weekStart, i) === dateStr) {
+      return i;
+    }
+  }
+  return -1;
+}
+
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
@@ -105,12 +119,9 @@ export function ContractorTimesheetReview({
       }
       const contractData = map.get(contractId); // guaranteed by set above
       if (!contractData) continue;
-      const dateStr = toDateStr(entry.entryDate);
-      for (let i = 0; i < 7; i++) {
-        if (getDateForDay(weekStart, i) === dateStr) {
-          contractData.entries.set(i, entry);
-          break;
-        }
+      const dayIdx = resolveDayIndex(entry, weekStart);
+      if (dayIdx >= 0) {
+        contractData.entries.set(dayIdx, entry);
       }
     }
     return map;

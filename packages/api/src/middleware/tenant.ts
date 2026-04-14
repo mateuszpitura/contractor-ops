@@ -22,12 +22,18 @@ export async function runWithTenantContext<T>(
     region: string;
     db: ReturnType<typeof createTenantClientFrom>;
   }) => Promise<T>,
+  /** Pre-resolved data region — skips the DB lookup when available. */
+  knownRegion?: string,
 ): Promise<T> {
-  const org = await prisma.organization.findUnique({
-    where: { id: orgId },
-    select: { dataRegion: true },
-  });
-  const region = org?.dataRegion ?? 'EU';
+  let region = knownRegion;
+
+  if (!region) {
+    const org = await prisma.organization.findUnique({
+      where: { id: orgId },
+      select: { dataRegion: true },
+    });
+    region = org?.dataRegion ?? 'EU';
+  }
 
   const regionalPrisma = getRegionalClient(region);
   const scopedClient = createTenantClientFrom(regionalPrisma);

@@ -71,14 +71,7 @@ vi.mock('@/trpc/init', () => ({
 
 vi.mock('@/i18n/navigation', () => ({
   useRouter: () => ({ push: vi.fn() }),
-  Link: ({
-    href,
-    children,
-    ...rest
-  }: {
-    href: string;
-    children: React.ReactNode;
-  }) => (
+  Link: ({ href, children, ...rest }: { href: string; children: React.ReactNode }) => (
     <a href={href} {...rest}>
       {children}
     </a>

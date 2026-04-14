@@ -44,9 +44,19 @@ export async function rateLimitMiddleware(c: Context, next: Next) {
   let window = windows.get(key);
 
   if (!window || now >= window.resetAt) {
-    // Safety cap: clear all windows if map grows too large (DoS protection)
+    // Safety cap: evict expired windows if map grows too large
     if (windows.size >= MAX_WINDOWS) {
-      windows.clear();
+      for (const [k, w] of windows) {
+        if (now >= w.resetAt) windows.delete(k);
+      }
+      // If still over limit after eviction, drop oldest 10% (array copy for safe iteration)
+      if (windows.size >= MAX_WINDOWS) {
+        const toEvict = Math.ceil(MAX_WINDOWS * 0.1);
+        const keysToEvict = Array.from(windows.keys()).slice(0, toEvict);
+        for (const k of keysToEvict) {
+          windows.delete(k);
+        }
+      }
     }
     window = { count: 0, resetAt: now + windowMs };
     windows.set(key, window);

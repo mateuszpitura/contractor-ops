@@ -192,6 +192,11 @@ export function InvoiceDataTable({ onRowClick, onUpload }: InvoiceDataTableProps
     [setFilters],
   );
 
+  const rowClassName = useCallback(
+    (row: InvoiceRow) => (isRowOverdue(row) ? 'bg-destructive/5' : ''),
+    [],
+  );
+
   // Clear filters for "no results" CTA
   const clearFilters = useCallback(() => {
     void setFilters({
@@ -260,7 +265,7 @@ export function InvoiceDataTable({ onRowClick, onUpload }: InvoiceDataTableProps
             isLoading={isLoading}
             hasFiltersOrSearch={hasFiltersOrSearch}
             onRowClick={onRowClick}
-            rowClassName={row => (isRowOverdue(row) ? 'bg-destructive/5' : '')}
+            rowClassName={rowClassName}
             emptyIcon={<FileText className="mx-auto h-10 w-10 text-muted-foreground/50" />}
             emptyTitle={t('empty.heading')}
             emptyDescription={t('empty.body')}

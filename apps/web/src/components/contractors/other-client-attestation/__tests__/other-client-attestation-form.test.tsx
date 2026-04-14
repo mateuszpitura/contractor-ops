@@ -49,7 +49,11 @@ describe('OtherClientAttestationForm', () => {
   it('renders a labelled section with the attestation heading', () => {
     renderForm();
     const heading = screen.getByRole('heading', { name: 'Other clients attestation' });
-    expect(heading.id).toBe('other-client-attestation-heading');
+    // Section aria-labelledby links to heading.id via useId — check the link works,
+    // not the specific generated id string.
+    expect(heading.id).toBeTruthy();
+    const section = heading.closest('section');
+    expect(section?.getAttribute('aria-labelledby')).toBe(heading.id);
   });
 
   it('renders statement + signed-name inputs with labels', () => {

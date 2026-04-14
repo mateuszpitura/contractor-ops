@@ -35,6 +35,29 @@ import { peppolTrpc } from '@/lib/peppol-trpc';
 import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
+// Lightweight shape covering the invoice fields accessed by helper functions.
+// Avoids coupling to the full Prisma model while eliminating `any`.
+// ---------------------------------------------------------------------------
+
+interface InvoiceShape {
+  id: string;
+  invoiceNumber: string;
+  status: string;
+  source: string;
+  matchStatus: string | null;
+  externalInvoiceId: string | null;
+  sourceReference: string | null;
+  sellerTaxId: string | null;
+  sellerName: string | null;
+  receivedAt: Date | string | null;
+  createdAt: Date | string;
+  qrCodeBase64: string | null;
+  flagsJson: unknown;
+  matchResults?: Array<{ explanationJson: unknown }>;
+  [key: string]: unknown;
+}
+
+// ---------------------------------------------------------------------------
 // Status badge config (reuse from columns.tsx pattern)
 // ---------------------------------------------------------------------------
 
@@ -121,8 +144,7 @@ function DetailSkeleton() {
 // Invoice feature flag derivation (reduces cognitive complexity in render)
 // ---------------------------------------------------------------------------
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function deriveInvoiceFlags(invoice: Record<string, any>) {
+function deriveInvoiceFlags(invoice: InvoiceShape) {
   // Duplicate detection
   const flagsArray: string[] = Array.isArray(invoice.flagsJson) ? invoice.flagsJson : [];
   const hasDuplicateFlag = flagsArray.includes('DUPLICATE_SUSPECTED');
@@ -180,7 +202,6 @@ function deriveInvoiceFlags(invoice: Record<string, any>) {
 // Integration banners sub-component (reduces conditional count in main render)
 // ---------------------------------------------------------------------------
 
-// biome-ignore lint/suspicious/noExplicitAny: invoice shape from tRPC
 function IntegrationBanners({
   invoice,
   flags,
@@ -189,7 +210,7 @@ function IntegrationBanners({
   invoiceId,
   onInvalidate,
 }: {
-  invoice: Record<string, any>;
+  invoice: InvoiceShape;
   flags: ReturnType<typeof deriveInvoiceFlags>;
   peppolTransmission: PeppolTransmissionResult | undefined;
   zatcaSubmission: ZatcaSubmissionResult | undefined;
@@ -207,7 +228,7 @@ function IntegrationBanners({
           sellerNip={invoice.sellerTaxId ?? ''}
         />
       )}
-      {flags.hasDuplicateFlag && (
+      {!!flags.hasDuplicateFlag && (
         <DuplicateWarning
           invoiceId={invoice.id}
           duplicateInvoiceId={flags.duplicateInvoiceId}

@@ -15,32 +15,35 @@ const { mockMutate, mockMutateAsync } = vi.hoisted(() => ({
 
 let queryCallIndex = 0;
 
-vi.mock('@tanstack/react-query', () => ({
-  useQuery: (opts: Record<string, unknown>) => {
-    const idx = queryCallIndex++;
-    // First useQuery = getBranding, second = getPortalDomain
-    const isBranding = idx % 2 === 0;
-    const data = isBranding ? brandingData : portalDomainData;
-    const loading = isBranding ? brandingLoading : false;
+vi.mock('@tanstack/react-query', async importOriginal => {
+  const actual = await importOriginal<typeof import('@tanstack/react-query')>();
+  return {
+    ...actual,
+    useQuery: (opts: Record<string, unknown>) => {
+      const idx = queryCallIndex++;
+      // First useQuery = getBranding, second = getPortalDomain
+      const isBranding = idx % 2 === 0;
+      const data = isBranding ? brandingData : portalDomainData;
+      const loading = isBranding ? brandingLoading : false;
 
-    // Call select to trigger state initialization
-    if (opts?.select && data) {
-      opts.select(data);
-    }
+      // Call select to trigger state initialization
+      if (opts?.select && data) {
+        opts.select(data);
+      }
 
-    return { data, isLoading: loading };
-  },
-  useMutation: (opts: Record<string, unknown>) => ({
-    mutate: (...args: unknown[]) => {
-      mockMutate(...(args as Parameters<typeof mockMutate>));
-      opts?.onSuccess?.();
+      return { data, isLoading: loading };
     },
-    mutateAsync: mockMutateAsync,
-    isPending: false,
-  }),
-  useQueryClient: () => ({ invalidateQueries: vi.fn() }),
-}));
-
+    useMutation: (opts: Record<string, unknown>) => ({
+      mutate: (...args: unknown[]) => {
+        mockMutate(...(args as Parameters<typeof mockMutate>));
+        opts?.onSuccess?.();
+      },
+      mutateAsync: mockMutateAsync,
+      isPending: false,
+    }),
+    useQueryClient: () => ({ invalidateQueries: vi.fn() }),
+  };
+});
 vi.mock('@/trpc/init', () => ({
   trpc: {
     settings: {

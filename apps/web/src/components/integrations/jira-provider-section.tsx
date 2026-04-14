@@ -2,7 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { AlertTriangle } from 'lucide-react';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { FeatureGate } from '@/components/billing/feature-gate';
 import { ProviderConnectionCard } from '@/components/settings/provider-connection-card';
 import { Button } from '@/components/ui/button';
@@ -16,6 +16,10 @@ import { JiraStatusMappingDialog } from './jira-status-mapping-dialog';
 
 export function JiraProviderSection() {
   const [mappingDialogOpen, setMappingDialogOpen] = useState(false);
+
+  const openMappingDialog = useCallback(() => {
+    setMappingDialogOpen(true);
+  }, []);
 
   const connectionQuery = useQuery(trpc.jira.connectionStatus.queryOptions());
   const connection = connectionQuery.data as
@@ -49,7 +53,7 @@ export function JiraProviderSection() {
         )}
 
         {isConnected && !connection?.scopeExpansionNeeded && (
-          <Button variant="outline" size="sm" onClick={() => setMappingDialogOpen(true)}>
+          <Button variant="outline" size="sm" onClick={openMappingDialog}>
             Configure Status Mapping
           </Button>
         )}

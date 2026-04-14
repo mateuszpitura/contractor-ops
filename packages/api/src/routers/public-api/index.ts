@@ -2,6 +2,7 @@ import { router } from '../../init.js';
 import { publicContractRouter } from './contract.js';
 import { publicContractorRouter } from './contractor.js';
 import { publicDocumentRouter } from './document.js';
+import { publicFeatureFlagsRouter } from './feature-flags.js';
 import { publicInvoiceRouter } from './invoice.js';
 
 /**
@@ -13,6 +14,7 @@ export const publicApiRouter = router({
   invoice: publicInvoiceRouter,
   contract: publicContractRouter,
   document: publicDocumentRouter,
+  featureFlags: publicFeatureFlagsRouter,
 });
 
 export type PublicApiRouter = typeof publicApiRouter;

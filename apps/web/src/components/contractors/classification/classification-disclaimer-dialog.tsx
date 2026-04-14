@@ -114,10 +114,7 @@ export function ClassificationDisclaimerDialog(props: ClassificationDisclaimerDi
   // As defence in depth we also call preventDefault() on any Escape keydown
   // that bubbles up through the Popup — onEscapeKeyDown equivalent.
   const handleOpenChange = useCallback(
-    (
-      _nextOpen: boolean,
-      eventDetails: { preventDefault?: () => void; reason?: string },
-    ) => {
+    (_nextOpen: boolean, eventDetails: { preventDefault?: () => void; reason?: string }) => {
       // Any attempted close arising from escape-key or outside interaction is
       // swallowed: the dialog stays open until the explicit confirm or cancel
       // button is clicked. `preventDefault` is provided by base-ui on the
@@ -157,9 +154,7 @@ export function ClassificationDisclaimerDialog(props: ClassificationDisclaimerDi
             onCheckedChange={handleCheckboxChange}
             aria-describedby={descId}
           />
-          <Label
-            htmlFor={checkboxId}
-            className="cursor-pointer text-sm font-normal leading-snug">
+          <Label htmlFor={checkboxId} className="cursor-pointer text-sm font-normal leading-snug">
             {copy.acknowledgement}
           </Label>
         </div>

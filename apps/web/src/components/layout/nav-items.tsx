@@ -3,6 +3,7 @@
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Suspense } from 'react';
+import { useFlagBag } from '@/components/layout/feature-flag-context';
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -79,13 +80,15 @@ function NavItemsContent() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { can } = usePermissions();
+  const flagBag = useFlagBag();
   const t = useTranslations('Navigation');
 
   return (
     <>
       {navigationGroups.map(group => {
-        // Filter items by permission
+        // Filter items by permission AND feature flag (both must pass).
         const visibleItems = group.items.filter(item => {
+          if (item.flag && !flagBag[item.flag]) return false;
           if (!item.permission) return true;
           return can(item.permission.resource, item.permission.actions);
         });

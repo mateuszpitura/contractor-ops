@@ -232,8 +232,7 @@ export const classificationRouter = router({
       if (stale.ruleSetVersion === profile.ruleSetVersion) {
         throw new TRPCError({
           code: 'PRECONDITION_FAILED',
-          message:
-            'Draft already matches the current rule-set version — no drift to recover from.',
+          message: 'Draft already matches the current rule-set version — no drift to recover from.',
         });
       }
 

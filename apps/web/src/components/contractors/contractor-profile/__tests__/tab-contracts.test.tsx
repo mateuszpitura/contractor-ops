@@ -1,18 +1,23 @@
 import { render, screen } from '@/test/test-utils';
 import { TabContracts } from '../tab-contracts';
 
-const mockUseQuery = vi.fn(() => ({
-  data: null,
-  isLoading: false,
-  isFetching: false,
-  isPending: false,
+const { mockUseQuery } = vi.hoisted(() => ({
+  mockUseQuery: vi.fn(() => ({
+    data: null,
+    isLoading: false,
+    isFetching: false,
+    isPending: false,
+  })),
 }));
 
-vi.mock('@tanstack/react-query', () => ({
-  useQuery: mockUseQuery,
-  useQueryClient: () => ({ invalidateQueries: vi.fn() }),
-}));
-
+vi.mock('@tanstack/react-query', async importOriginal => {
+  const actual = await importOriginal<typeof import('@tanstack/react-query')>();
+  return {
+    ...actual,
+    useQuery: mockUseQuery,
+    useQueryClient: () => ({ invalidateQueries: vi.fn() }),
+  };
+});
 vi.mock('@/trpc/init', () => ({
   trpc: {
     contract: {

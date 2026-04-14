@@ -7,7 +7,6 @@
 
 import { describe, expect, it, vi } from 'vitest';
 import { render } from '@/test/test-utils';
-// biome-ignore lint/correctness/noUnresolvedImports: Plan 07 creates this module
 // @ts-expect-error Plan 07 creates this module
 import DePrivacyPage from '../(content)/de.mdx';
 

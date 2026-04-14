@@ -8,8 +8,8 @@
 // renders the UI-SPEC error copy without silently discarding the user's
 // value (error reads back to them, they can correct in place).
 
-import { useCallback, useId, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { useCallback, useId, useState } from 'react';
 
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
 import { Label } from '@/components/ui/label';
@@ -36,7 +36,7 @@ export function EconomicDependencyInput({
   const errorId = useId();
   const helpId = useId();
 
-  const [draft, setDraft] = useState<string>(value != null ? String(value) : '');
+  const [draft, setDraft] = useState<string>(value == null ? '' : String(value));
   const [error, setError] = useState<string | null>(null);
 
   const handleBlur = useCallback(() => {
@@ -47,7 +47,7 @@ export function EconomicDependencyInput({
     }
 
     const parsed = Number(trimmed);
-    if (!Number.isFinite(parsed) || !Number.isInteger(parsed)) {
+    if (!(Number.isFinite(parsed) && Number.isInteger(parsed))) {
       setError(tError('nonNumeric'));
       return;
     }
@@ -59,6 +59,11 @@ export function EconomicDependencyInput({
     setError(null);
     onCommit(parsed);
   }, [draft, onCommit, tError]);
+
+  const handleChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => setDraft(event.target.value),
+    [],
+  );
 
   return (
     <div className="flex flex-col gap-1.5">
@@ -78,7 +83,7 @@ export function EconomicDependencyInput({
           disabled={disabled}
           aria-invalid={error != null}
           aria-describedby={`${helpId}${error ? ` ${errorId}` : ''}`}
-          onChange={event => setDraft(event.target.value)}
+          onChange={handleChange}
           onBlur={handleBlur}
         />
         <InputGroupAddon align="inline-end" aria-hidden="true">

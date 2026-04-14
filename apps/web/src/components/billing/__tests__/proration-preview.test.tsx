@@ -9,10 +9,13 @@ let prorationData: unknown = null;
 let isLoading = false;
 let isError = false;
 
-vi.mock('@tanstack/react-query', () => ({
-  useQuery: () => ({ data: prorationData, isLoading, isError }),
-}));
-
+vi.mock('@tanstack/react-query', async importOriginal => {
+  const actual = await importOriginal<typeof import('@tanstack/react-query')>();
+  return {
+    ...actual,
+    useQuery: () => ({ data: prorationData, isLoading, isError }),
+  };
+});
 vi.mock('@/trpc/init', () => ({
   trpc: {
     billing: {

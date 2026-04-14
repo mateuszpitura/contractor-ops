@@ -7,11 +7,10 @@
 // (economic-dep) renders the EconomicDependencyInput for DRV-ECO-01 via the
 // default dispatcher's 'billing-ratio' branch — no override needed here.
 
-import { useTranslations } from 'next-intl';
-import { useMemo } from 'react';
-
 import type { RuleSetQuestion, ScheinCategory } from '@contractor-ops/classification';
 import { CATEGORY_WEIGHTS, SCHEIN_QUESTIONS } from '@contractor-ops/classification';
+import { useTranslations } from 'next-intl';
+import { useCallback, useMemo } from 'react';
 
 import type { RuleSetLocale, WizardAnswerValue } from '../wizard-question';
 import { WizardQuestion } from '../wizard-question';
@@ -82,15 +81,44 @@ export function ScheinStepContent({
   return (
     <div className="flex flex-col gap-4">
       {step.questions.map(question => (
-        <WizardQuestion
+        <ScheinQuestionItem
           key={question.id}
           question={question}
           locale={locale}
           value={answers[question.id]}
-          onChange={next => onAnswerChange(question.id, next)}
+          onAnswerChange={onAnswerChange}
           disabled={disabled}
         />
       ))}
     </div>
+  );
+}
+
+function ScheinQuestionItem({
+  question,
+  locale,
+  value,
+  onAnswerChange,
+  disabled,
+}: {
+  question: RuleSetQuestion;
+  locale: RuleSetLocale;
+  value: WizardAnswerValue | undefined;
+  onAnswerChange: (questionId: string, value: WizardAnswerValue) => void;
+  disabled?: boolean;
+}) {
+  const handleChange = useCallback(
+    (next: WizardAnswerValue) => onAnswerChange(question.id, next),
+    [onAnswerChange, question.id],
+  );
+
+  return (
+    <WizardQuestion
+      question={question}
+      locale={locale}
+      value={value}
+      onChange={handleChange}
+      disabled={disabled}
+    />
   );
 }

@@ -9,10 +9,13 @@ import { EInvoiceComplianceDetail } from '../compliance-detail';
 let queryData: unknown = null;
 let queryLoading = false;
 
-vi.mock('@tanstack/react-query', () => ({
-  useQuery: () => ({ data: queryData, isLoading: queryLoading }),
-}));
-
+vi.mock('@tanstack/react-query', async importOriginal => {
+  const actual = await importOriginal<typeof import('@tanstack/react-query')>();
+  return {
+    ...actual,
+    useQuery: () => ({ data: queryData, isLoading: queryLoading }),
+  };
+});
 vi.mock('@/trpc/init', () => ({
   trpc: {
     einvoice: {
@@ -303,10 +306,10 @@ describe('EInvoiceComplianceDetail', () => {
     expect(screen.getByText('20%')).toBeInTheDocument();
   });
 
-  it("renders section with id='einvoice'", () => {
+  it('renders section with id ending in -einvoice', () => {
     queryData = { statuses: [] };
     const { container } = render(<EInvoiceComplianceDetail />);
-    expect(container.querySelector('#einvoice')).toBeInTheDocument();
+    expect(container.querySelector('[id$="-einvoice"]')).toBeInTheDocument();
   });
 
   it('renders Last Sync label', () => {

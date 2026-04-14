@@ -160,6 +160,7 @@
       "includes": [
         "packages/*/src/index.ts",
         "packages/*/src/*/index.ts",
+        "packages/*/src/*/*/index.ts",
         "packages/test-utils/src/msw/*/index.ts",
         "apps/landing/src/i18n/index.ts",
         "apps/web/src/test/test-utils.tsx",
@@ -169,12 +170,41 @@
         "apps/web/src/components/integrations/linear-logo.tsx",
         "apps/web/src/components/integrations/provider-icons.tsx",
         "packages/api/src/routers/workflow.ts",
-        "packages/validators/src/zatca.ts"
+        "packages/validators/src/zatca.ts",
+        "apps/web/src/components/contractors/classification-documents/index.ts",
+        "apps/web/src/components/contractors/ir35-chain/index.ts",
+        "apps/web/src/components/contractors/other-client-attestation/index.ts"
       ],
       "linter": {
         "rules": {
           "performance": {
             "noBarrelFile": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": [
+        "**/__tests__/**",
+        "**/*.test.ts",
+        "**/*.test.tsx",
+        "**/*.spec.ts",
+        "**/*.spec.tsx"
+      ],
+      "linter": {
+        "rules": {
+          "performance": {
+            "noImgElement": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["scripts/**", "load-tests/**"],
+      "linter": {
+        "rules": {
+          "correctness": {
+            "noUndeclaredDependencies": "off"
           }
         }
       }
@@ -190,6 +220,7 @@
       "!**/dist",
       "!**/.turbo",
       "!**/.claude",
+      "!**/.planning",
       "!**/out",
       "!**/coverage",
       "!**/playwright-report"

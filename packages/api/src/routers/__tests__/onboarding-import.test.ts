@@ -34,6 +34,7 @@ const {
     },
     organization: {
       findFirst: vi.fn(),
+      findUnique: vi.fn(async () => ({ id: 'org-1', dataRegion: 'EU' })),
       update: vi.fn(),
     },
     workflowTemplate: {
@@ -81,7 +82,10 @@ vi.mock('@contractor-ops/auth', () => ({
     },
   },
   authApi: {
+    getSession: vi.fn(),
     hasPermission: vi.fn().mockResolvedValue({ success: true }),
+    createInvitation: mockCreateInvitation,
+    getFullOrganization: mockGetFullOrganization,
   },
 }));
 

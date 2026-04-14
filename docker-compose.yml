@@ -165,6 +165,52 @@ services:
     ports:
       - "127.0.0.1:${DEV_PORTAL_PORT:-8888}:80"
 
+  # ── Unleash — self-hosted feature flag server (local dev) ───────────────────
+  # docker compose --profile unleash up -d
+  # UI: http://localhost:${UNLEASH_PORT:-4242}
+  # First run: log in with admin/unleash4all, create an API token under
+  # Admin → API access (type: "Server-side"), paste into UNLEASH_API_TOKEN_EU
+  # and UNLEASH_API_TOKEN_ME (same instance for local dev).
+  unleash:
+    profiles: [unleash]
+    image: unleashorg/unleash-server:6
+    container_name: contractor-ops-unleash
+    restart: unless-stopped
+    depends_on:
+      unleash-db:
+        condition: service_healthy
+    environment:
+      DATABASE_HOST: unleash-db
+      DATABASE_NAME: unleash
+      DATABASE_USERNAME: unleash
+      DATABASE_PASSWORD: unleash
+      DATABASE_SSL: "false"
+      LOG_LEVEL: info
+      INIT_ADMIN_API_TOKENS: ${UNLEASH_INIT_ADMIN_TOKEN:-}
+    ports:
+      - "127.0.0.1:${UNLEASH_PORT:-4242}:4242"
+    networks:
+      - unleash
+
+  unleash-db:
+    profiles: [unleash]
+    image: postgres:17-alpine
+    container_name: contractor-ops-unleash-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: unleash
+      POSTGRES_PASSWORD: unleash
+      POSTGRES_DB: unleash
+    volumes:
+      - unleash_pg_data:/var/lib/postgresql/data
+    networks:
+      - unleash
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U unleash -d unleash"]
+      interval: 5s
+      timeout: 10s
+      retries: 10
+
   # ── Worker — background jobs, cron, QStash callbacks, webhooks ──────────────
   # Build: docker compose --profile worker build worker
   # Run:   docker compose --profile worker up -d worker
@@ -194,6 +240,7 @@ services:
 
 networks:
   infisical:
+  unleash:
 
 volumes:
   clamav-db:
@@ -201,3 +248,4 @@ volumes:
   infisical_redis_data:
   minio_data:
   cloudbeaver_workspace:
+  unleash_pg_data:

@@ -321,9 +321,6 @@ export function ImportWizardDialog({
     parseMutation,
     validateMutation,
     commitMutation,
-    validateResult.validRows.map,
-    validateResult.duplicateRows.filter,
-    validateResult.duplicateRows,
     validateResult,
   ]);
 

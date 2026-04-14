@@ -5,15 +5,13 @@ describe('RadioGroup', () => {
   it('renders radio group with items', () => {
     render(
       <RadioGroup>
-        {/* biome-ignore lint/correctness/useUniqueElementIds: test render */}
         <label htmlFor="rg-test-a">
-          {/* biome-ignore lint/correctness/useUniqueElementIds: test render */}
+          {/* biome-ignore lint/correctness/useUniqueElementIds: single-render test fixture */}
           <RadioGroupItem id="rg-test-a" value="a" />
           Option A
         </label>
-        {/* biome-ignore lint/correctness/useUniqueElementIds: test render */}
         <label htmlFor="rg-test-b">
-          {/* biome-ignore lint/correctness/useUniqueElementIds: test render */}
+          {/* biome-ignore lint/correctness/useUniqueElementIds: single-render test fixture */}
           <RadioGroupItem id="rg-test-b" value="b" />
           Option B
         </label>
@@ -66,15 +64,13 @@ describe('RadioGroup', () => {
   it('selects an item on click', async () => {
     const { user } = setup(
       <RadioGroup>
-        {/* biome-ignore lint/correctness/useUniqueElementIds: test render */}
         <label htmlFor="rg-click-a">
-          {/* biome-ignore lint/correctness/useUniqueElementIds: test render */}
+          {/* biome-ignore lint/correctness/useUniqueElementIds: single-render test fixture */}
           <RadioGroupItem id="rg-click-a" value="a" />
           Option A
         </label>
-        {/* biome-ignore lint/correctness/useUniqueElementIds: test render */}
         <label htmlFor="rg-click-b">
-          {/* biome-ignore lint/correctness/useUniqueElementIds: test render */}
+          {/* biome-ignore lint/correctness/useUniqueElementIds: single-render test fixture */}
           <RadioGroupItem id="rg-click-b" value="b" />
           Option B
         </label>

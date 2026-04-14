@@ -333,6 +333,11 @@ vi.mock('@contractor-ops/auth', () => ({
       hasPermission: vi.fn().mockResolvedValue({ success: true }),
     },
   },
+  authApi: {
+    getSession: vi.fn(),
+    hasPermission: vi.fn().mockResolvedValue({ success: true }),
+    getFullOrganization: vi.fn(),
+  },
 }));
 
 vi.mock('@contractor-ops/db', () => ({
@@ -359,6 +364,14 @@ vi.mock('../services/r2.js', () => ({
   generateStorageKey: vi.fn(() => 'mock-storage-key'),
   headObject: vi.fn(async () => ({ ContentLength: 1024 })),
   deleteObject: vi.fn(async () => undefined),
+}));
+
+vi.mock('../services/regional-storage.js', () => ({
+  createRegionalPresignedUploadUrl: vi.fn(async () => 'https://r2.example.com/upload'),
+  createRegionalPresignedDownloadUrl: vi.fn(async () => 'https://r2.example.com/download'),
+  headRegionalObject: vi.fn(async () => ({ ContentLength: 1024 })),
+  deleteRegionalObject: vi.fn(async () => undefined),
+  getRegionalObject: vi.fn(async () => ({ Body: new Uint8Array(100) })),
 }));
 
 vi.mock('../services/notification-service.js', () => ({
@@ -456,7 +469,22 @@ vi.mock('@sentry/nextjs', () => {
 });
 
 vi.mock('@contractor-ops/logger', () => ({
-  createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
+  createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
+  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
+  createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
+  createWebhookLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+  })),
+  createIntegrationLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+  })),
+  logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() },
 }));
 
 vi.mock('@contractor-ops/logger/metrics', () => ({

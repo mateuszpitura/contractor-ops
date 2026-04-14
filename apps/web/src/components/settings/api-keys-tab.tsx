@@ -268,7 +268,7 @@ function CreateKeyDialog({
             // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={handleCreate}
             disabled={!name.trim() || scopes.length === 0 || createMutation.isPending}>
-            {createMutation.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
+            {!!createMutation.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
             Create Key
           </Button>
         </DialogFooter>
@@ -327,7 +327,7 @@ function RevokeDialog({
             // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={() => revokeMutation.mutate({ id: keyId })}
             disabled={revokeMutation.isPending}>
-            {revokeMutation.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
+            {!!revokeMutation.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
             Revoke Key
           </AlertDialogAction>
         </AlertDialogFooter>
@@ -466,7 +466,7 @@ export function ApiKeysTab() {
 
         <CreateKeyDialog open={createOpen} onOpenChange={setCreateOpen} />
 
-        {revokeTarget && (
+        {revokeTarget != null && (
           <RevokeDialog
             keyId={revokeTarget.id}
             keyName={revokeTarget.name}

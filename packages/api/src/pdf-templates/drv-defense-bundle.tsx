@@ -107,7 +107,13 @@ const styles = StyleSheet.create({
   historyMeta: { flex: 1, paddingRight: 12 },
   historyDelta: { width: 180, textAlign: 'right', fontSize: 10 },
   tableRow: { flexDirection: 'row', borderBottom: `1px solid ${GREY_RULE}`, paddingVertical: 4 },
-  tableHeaderCell: { flex: 1, fontSize: 9, fontWeight: 'bold', color: GREY_MUTED, textTransform: 'uppercase' },
+  tableHeaderCell: {
+    flex: 1,
+    fontSize: 9,
+    fontWeight: 'bold',
+    color: GREY_MUTED,
+    textTransform: 'uppercase',
+  },
   tableCell: { flex: 1, fontSize: 10 },
   attestationText: {
     marginTop: 16,
@@ -196,6 +202,10 @@ function formatDate(d: Date | null | undefined): string {
   return d.toISOString().slice(0, 10);
 }
 
+function renderPageNumber({ pageNumber, totalPages }: { pageNumber: number; totalPages: number }) {
+  return `${pageNumber} / ${totalPages}`;
+}
+
 function formatDelta(current: number, previous: number): string {
   const diff = current - previous;
   const sign = diff > 0 ? '+' : diff < 0 ? '−' : '±';
@@ -224,7 +234,10 @@ export function DRVDefenseBundleDocument({
   }
 
   const outcome = assessment.outcome;
-  const questionsByCategory = new Map<string, typeof assessment.questionsSnapshot.questions[number][]>();
+  const questionsByCategory = new Map<
+    string,
+    (typeof assessment.questionsSnapshot.questions)[number][]
+  >();
   for (const q of assessment.questionsSnapshot.questions) {
     if (!q.category) continue;
     const list = questionsByCategory.get(q.category) ?? [];
@@ -276,11 +289,7 @@ export function DRVDefenseBundleDocument({
         <Text style={styles.footer} fixed>
           DRV Defensivdokumentation · {organization.name} · {renderedAtLabel}
         </Text>
-        <Text
-          style={styles.pageNumber}
-          fixed
-          render={({ pageNumber, totalPages }) => `${pageNumber} / ${totalPages}`}
-        />
+        <Text style={styles.pageNumber} fixed render={renderPageNumber} />
       </Page>
 
       {/* Table of contents */}
@@ -306,11 +315,7 @@ export function DRVDefenseBundleDocument({
         <Text style={styles.footer} fixed>
           DRV Defensivdokumentation · {organization.name} · {renderedAtLabel}
         </Text>
-        <Text
-          style={styles.pageNumber}
-          fixed
-          render={({ pageNumber, totalPages }) => `${pageNumber} / ${totalPages}`}
-        />
+        <Text style={styles.pageNumber} fixed render={renderPageNumber} />
       </Page>
 
       {/* Section 1: engagement structure */}
@@ -346,11 +351,7 @@ export function DRVDefenseBundleDocument({
         <Text style={styles.footer} fixed>
           DRV Defensivdokumentation · {organization.name} · {renderedAtLabel}
         </Text>
-        <Text
-          style={styles.pageNumber}
-          fixed
-          render={({ pageNumber, totalPages }) => `${pageNumber} / ${totalPages}`}
-        />
+        <Text style={styles.pageNumber} fixed render={renderPageNumber} />
       </Page>
 
       {/* Section 2: independence indicators */}
@@ -373,16 +374,15 @@ export function DRVDefenseBundleDocument({
               </Text>
               {questions.map(q => {
                 const answer = assessment.answers[q.id];
-                const answerText =
-                  answer?.isNotApplicable
-                    ? 'Nicht anwendbar'
-                    : typeof answer?.value === 'string'
-                      ? answer.value
-                      : typeof answer?.value === 'number'
-                        ? String(answer.value)
-                        : typeof answer?.rawScore === 'number'
-                          ? `Score ${answer.rawScore}`
-                          : '—';
+                const answerText = answer?.isNotApplicable
+                  ? 'Nicht anwendbar'
+                  : typeof answer?.value === 'string'
+                    ? answer.value
+                    : typeof answer?.value === 'number'
+                      ? String(answer.value)
+                      : typeof answer?.rawScore === 'number'
+                        ? `Score ${answer.rawScore}`
+                        : '—';
                 return (
                   <Text key={q.id} style={styles.evidenceQ}>
                     {q.prompt.de} — <Text style={{ color: TEAL_ACCENT }}>{answerText}</Text>
@@ -399,11 +399,7 @@ export function DRVDefenseBundleDocument({
         <Text style={styles.footer} fixed>
           DRV Defensivdokumentation · {organization.name} · {renderedAtLabel}
         </Text>
-        <Text
-          style={styles.pageNumber}
-          fixed
-          render={({ pageNumber, totalPages }) => `${pageNumber} / ${totalPages}`}
-        />
+        <Text style={styles.pageNumber} fixed render={renderPageNumber} />
       </Page>
 
       {/* Section 3: risk history */}
@@ -437,11 +433,7 @@ export function DRVDefenseBundleDocument({
         <Text style={styles.footer} fixed>
           DRV Defensivdokumentation · {organization.name} · {renderedAtLabel}
         </Text>
-        <Text
-          style={styles.pageNumber}
-          fixed
-          render={({ pageNumber, totalPages }) => `${pageNumber} / ${totalPages}`}
-        />
+        <Text style={styles.pageNumber} fixed render={renderPageNumber} />
       </Page>
 
       {/* Section 4: attestation + cross-reference */}
@@ -455,14 +447,18 @@ export function DRVDefenseBundleDocument({
           <Text style={styles.tableHeaderCell}>{tableHeaders.endDate}</Text>
         </View>
         {crossReference.length === 0 ? (
-          <Text style={styles.scoreLine}>Keine weiteren Engagements auf dieser Plattform erfasst.</Text>
+          <Text style={styles.scoreLine}>
+            Keine weiteren Engagements auf dieser Plattform erfasst.
+          </Text>
         ) : (
           crossReference.map(row => (
             <View key={row.id} style={styles.tableRow} wrap={false}>
               <Text style={styles.tableCell}>{row.organization.name}</Text>
               <Text style={styles.tableCell}>{row.project?.name ?? '—'}</Text>
               <Text style={styles.tableCell}>{formatDate(row.activeFrom)}</Text>
-              <Text style={styles.tableCell}>{row.activeTo ? formatDate(row.activeTo) : 'Laufend'}</Text>
+              <Text style={styles.tableCell}>
+                {row.activeTo ? formatDate(row.activeTo) : 'Laufend'}
+              </Text>
             </View>
           ))
         )}
@@ -480,11 +476,7 @@ export function DRVDefenseBundleDocument({
         <Text style={styles.footer} fixed>
           DRV Defensivdokumentation · {organization.name} · {renderedAtLabel}
         </Text>
-        <Text
-          style={styles.pageNumber}
-          fixed
-          render={({ pageNumber, totalPages }) => `${pageNumber} / ${totalPages}`}
-        />
+        <Text style={styles.pageNumber} fixed render={renderPageNumber} />
       </Page>
 
       {/* Disclaimer */}
@@ -495,11 +487,7 @@ export function DRVDefenseBundleDocument({
         <Text style={styles.footer} fixed>
           DRV Defensivdokumentation · {organization.name} · {renderedAtLabel}
         </Text>
-        <Text
-          style={styles.pageNumber}
-          fixed
-          render={({ pageNumber, totalPages }) => `${pageNumber} / ${totalPages}`}
-        />
+        <Text style={styles.pageNumber} fixed render={renderPageNumber} />
       </Page>
     </Document>
   );

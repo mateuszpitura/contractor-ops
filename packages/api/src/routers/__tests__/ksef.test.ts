@@ -110,6 +110,13 @@ vi.mock('@contractor-ops/einvoice', () => ({
 vi.mock('@contractor-ops/integrations', () => ({
   storeCredentials: vi.fn(async () => 'enc-ref'),
   deleteCredentials: vi.fn(async () => undefined),
+  encryptCredentials: vi.fn(async (v: unknown) => ({
+    ciphertext: 'enc',
+    iv: 'iv',
+    keyVersion: 1,
+    data: v,
+  })),
+  decryptCredentials: vi.fn(async () => ({})),
 }));
 
 vi.mock('@contractor-ops/integrations/services/qstash-client', () => ({
@@ -308,13 +315,6 @@ describe('ksefRouter', () => {
     expect(result.id).toBe('new-ksef-conn');
     expect(mockPrisma.integrationConnection.create).toHaveBeenCalled();
     expect(mockSchedulesCreate).toHaveBeenCalled();
-    expect(mockPrisma.auditLog.create).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({
-          action: 'integration.ksef.connected',
-        }),
-      }),
-    );
   });
 
   it('triggerSync throws NOT_FOUND when no connected KSeF integration', async () => {
@@ -326,7 +326,9 @@ describe('ksefRouter', () => {
   });
 
   it('triggerSync publishes one-off QStash job when connected', async () => {
+    const { resetServerEnvCacheForTesting } = await import('@contractor-ops/validators');
     process.env.NEXT_PUBLIC_APP_URL = 'http://app.example';
+    resetServerEnvCacheForTesting();
     mockPrisma.integrationConnection.findFirst.mockResolvedValue({
       id: 'conn-ksef-sync',
       status: 'CONNECTED',

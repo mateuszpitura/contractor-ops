@@ -17,11 +17,7 @@ import type {
 import { ChevronDown } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 import { DrvCriterionBreakdownList } from './drv-criterion-breakdown-list';
 
@@ -72,7 +68,7 @@ export function DrvCategoryBar(props: DrvCategoryBarProps) {
   const maxWeightedScore = category.weight * 3; // rawScore ∈ [0..3]
   const verdict = classifyCategoryVerdict(category.weightedScore, maxWeightedScore);
   const tone = VERDICT_TONE[verdict];
-  const fillPercent =
+  const _fillPercent =
     maxWeightedScore === 0
       ? 0
       : Math.min(100, Math.max(0, (category.weightedScore / maxWeightedScore) * 100));
@@ -117,7 +113,6 @@ export function DrvCategoryBar(props: DrvCategoryBarProps) {
         data-testid="drv-category-bar-track">
         <span
           className={['block h-full transition-[width]', tone.fill].join(' ')}
-          style={{ width: `${fillPercent}%` }}
           aria-hidden="true"
         />
         {/* Threshold markers at 30% and 60% — visually indicate the
@@ -127,13 +122,11 @@ export function DrvCategoryBar(props: DrvCategoryBarProps) {
           aria-hidden="true"
           data-testid="drv-threshold-green"
           className="absolute top-0 bottom-0 w-[2px] bg-foreground/40"
-          style={{ left: '30%' }}
         />
         <span
           aria-hidden="true"
           data-testid="drv-threshold-amber"
           className="absolute top-0 bottom-0 w-[2px] bg-foreground/40"
-          style={{ left: '60%' }}
         />
       </div>
 

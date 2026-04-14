@@ -6,11 +6,10 @@
 // See UI-SPEC §Interaction 3 and §Typography. Labels translated via
 // `Classification.likert.*`.
 
-import { useId } from 'react';
 import { useTranslations } from 'next-intl';
-
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { useCallback, useId } from 'react';
 import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { cn } from '@/lib/utils';
 
 export type LikertValue = 1 | 2 | 3 | 4 | 5;
@@ -46,11 +45,16 @@ export function LikertAnswer({
 }: LikertAnswerProps) {
   const t = useTranslations('Classification.likert');
 
+  const handleValueChange = useCallback(
+    (next: string) => onChange(Number(next) as LikertValue),
+    [onChange],
+  );
+
   return (
     <RadioGroup
       name={name}
-      value={value != null ? String(value) : null}
-      onValueChange={next => onChange(Number(next) as LikertValue)}
+      value={value == null ? null : String(value)}
+      onValueChange={handleValueChange}
       disabled={disabled}
       aria-labelledby={ariaLabelledBy}
       aria-describedby={ariaDescribedBy}
@@ -90,8 +94,7 @@ function LikertOption({
           : 'border-input hover:bg-accent/50',
       )}>
       <RadioGroupItem id={inputId} value={String(optionValue)} />
-      <span
-        className={cn('text-xs', emphasis ? 'font-semibold' : 'text-muted-foreground')}>
+      <span className={cn('text-xs', emphasis ? 'font-semibold' : 'text-muted-foreground')}>
         {label}
       </span>
     </Label>

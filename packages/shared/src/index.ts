@@ -1,5 +1,3 @@
-// biome-ignore lint/performance/noBarrelFile: package entry point
-
 export type { Dinero, DineroCurrency } from './money.js';
 export {
   addMoney,

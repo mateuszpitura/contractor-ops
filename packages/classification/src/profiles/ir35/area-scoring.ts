@@ -73,6 +73,21 @@ export interface AreaScoreResult {
   readonly drivingQuestionIds: readonly string[];
 }
 
+/** Derive the area verdict from collected non-neutral signals. */
+function deriveVerdict(signals: ReadonlyArray<{ signal: AnsweredSignal }>): Ir35AreaVerdict {
+  const hasStrongInside = signals.some(s => s.signal === 'inside-strong');
+  if (hasStrongInside) return 'strong-inside';
+
+  const hasStrongOutside = signals.some(s => s.signal === 'outside-strong');
+  if (hasStrongOutside) return 'strong-outside';
+
+  const leaningInside = signals.filter(s => s.signal === 'inside-leaning').length;
+  const leaningOutside = signals.filter(s => s.signal === 'outside-leaning').length;
+  if (leaningInside >= 2 && leaningOutside === 0) return 'leaning-inside';
+  if (leaningOutside >= 2 && leaningInside === 0) return 'leaning-outside';
+  return 'neutral';
+}
+
 /**
  * Score a single IR35 area from the raw answers.
  * Pure: no IO, no side effects. Safe to call server-side only.
@@ -93,21 +108,7 @@ export function scoreIr35Area(area: Ir35Area, answers: AnswerMap): AreaScoreResu
     }
   }
 
-  const hasStrongInside = signals.some(s => s.signal === 'inside-strong');
-  const hasStrongOutside = signals.some(s => s.signal === 'outside-strong');
-
-  let verdict: Ir35AreaVerdict;
-  if (hasStrongInside) {
-    verdict = 'strong-inside';
-  } else if (hasStrongOutside) {
-    verdict = 'strong-outside';
-  } else {
-    const leaningInside = signals.filter(s => s.signal === 'inside-leaning').length;
-    const leaningOutside = signals.filter(s => s.signal === 'outside-leaning').length;
-    if (leaningInside >= 2 && leaningOutside === 0) verdict = 'leaning-inside';
-    else if (leaningOutside >= 2 && leaningInside === 0) verdict = 'leaning-outside';
-    else verdict = 'neutral';
-  }
+  const verdict = deriveVerdict(signals);
 
   // Drivers: top-3 by magnitude, ties broken by declaration order.
   const drivers = signals

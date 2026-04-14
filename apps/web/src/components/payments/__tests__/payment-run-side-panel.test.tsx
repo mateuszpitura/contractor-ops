@@ -198,7 +198,9 @@ describe('PaymentRunSidePanel', () => {
   });
 
   it('renders formatted amounts for items', () => {
-    render(<PaymentRunSidePanel runId="run-1" open={true} onOpenChange={onOpenChange} />);
+    render(<PaymentRunSidePanel runId="run-1" open={true} onOpenChange={onOpenChange} />, {
+      locale: 'pl',
+    });
     // 300000 minor = 3000.00 PLN, 200000 = 2000.00 PLN
     expect(screen.getByText(/3[\s\u00a0]?000,00 PLN/)).toBeInTheDocument();
     expect(screen.getByText(/2[\s\u00a0]?000,00 PLN/)).toBeInTheDocument();
@@ -367,7 +369,9 @@ describe('PaymentRunSidePanel', () => {
   });
 
   it('shows total amount formatted', () => {
-    render(<PaymentRunSidePanel runId="run-1" open={true} onOpenChange={onOpenChange} />);
+    render(<PaymentRunSidePanel runId="run-1" open={true} onOpenChange={onOpenChange} />, {
+      locale: 'pl',
+    });
     // 500000 minor = 5000.00 PLN
     expect(screen.getByText(/5[\s\u00a0]?000,00 PLN/)).toBeInTheDocument();
   });
@@ -436,7 +440,9 @@ describe('PaymentRunSidePanel', () => {
 
   it('formats currency with correct label when currency differs', () => {
     runData = { ...baseRun, currency: 'EUR', totalMinor: 100000 };
-    render(<PaymentRunSidePanel runId="run-1" open={true} onOpenChange={onOpenChange} />);
+    render(<PaymentRunSidePanel runId="run-1" open={true} onOpenChange={onOpenChange} />, {
+      locale: 'pl',
+    });
     expect(screen.getByText(/1[\s\u00a0]?000,00 EUR/)).toBeInTheDocument();
   });
 

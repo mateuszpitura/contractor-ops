@@ -10,10 +10,7 @@
 // The API already returns rows sorted draft-first then completedAt DESC
 // (see classification.ts `listByContractor`).
 
-import type {
-  Ir35Outcome,
-  ScheinselbstandigkeitOutcome,
-} from '@contractor-ops/classification';
+import type { Ir35Outcome, ScheinselbstandigkeitOutcome } from '@contractor-ops/classification';
 import { useQuery } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
 import { useFormatter, useTranslations } from 'next-intl';

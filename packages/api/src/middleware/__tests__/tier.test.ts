@@ -1,15 +1,13 @@
 import { TRPCError } from '@trpc/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const mockGetSubscription = vi.fn();
-
-const { mockPrisma } = vi.hoisted(() => {
+const { mockPrisma, mockGetSubscription } = vi.hoisted(() => {
   const mockPrisma = {
     organization: {
       findUnique: vi.fn().mockResolvedValue({ dataRegion: 'EU' }),
     },
   };
-  return { mockPrisma };
+  return { mockPrisma, mockGetSubscription: vi.fn() };
 });
 
 vi.mock('../../services/billing-service.js', () => ({

@@ -37,6 +37,32 @@ interface PaczkomatPickerProps {
 
 const GEOWIDGET_ORIGIN = 'https://geowidget.inpost.pl';
 
+/** Parse a Geowidget postMessage payload into a PaczkomatPoint, or null. */
+function parseGeowidgetMessage(event: MessageEvent): PaczkomatPoint | null {
+  if (event.origin !== GEOWIDGET_ORIGIN) return null;
+
+  try {
+    const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+    if (!data?.name) return null;
+
+    if (data.address?.line1) {
+      return {
+        id: data.name,
+        name: data.name,
+        address: [data.address.line1, data.address.line2].filter(Boolean).join(', '),
+      };
+    }
+
+    return {
+      id: data.name,
+      name: data.name,
+      address: data.address ?? '',
+    };
+  } catch {
+    return null;
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
@@ -71,28 +97,8 @@ export function PaczkomatPicker({
     if (!open) return;
 
     const handler = (event: MessageEvent) => {
-      // Security: only accept messages from the Geowidget origin
-      if (event.origin !== GEOWIDGET_ORIGIN) return;
-
-      try {
-        const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
-
-        if (data?.name && data?.address?.line1) {
-          setSelectedPoint({
-            id: data.name,
-            name: data.name,
-            address: [data.address.line1, data.address.line2].filter(Boolean).join(', '),
-          });
-        } else if (data?.name) {
-          setSelectedPoint({
-            id: data.name,
-            name: data.name,
-            address: data.address ?? '',
-          });
-        }
-      } catch {
-        // Silently ignore unparseable messages
-      }
+      const point = parseGeowidgetMessage(event);
+      if (point) setSelectedPoint(point);
     };
 
     window.addEventListener('message', handler);

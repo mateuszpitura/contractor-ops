@@ -41,7 +41,18 @@ export const apiKeyRouter = router({
    * Returns the plaintext key exactly once — it cannot be retrieved again.
    */
   create: apiKeyAdminProcedure.input(createInput).mutation(async ({ ctx, input }) => {
-    const { plaintext, prefix, hash } = await generateApiKey();
+    const MAX_KEYS_PER_ORG = 50;
+    const keyCount = await ctx.db.organizationApiKey.count({
+      where: { organizationId: ctx.organizationId, revokedAt: null },
+    });
+    if (keyCount >= MAX_KEYS_PER_ORG) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: `Maximum ${MAX_KEYS_PER_ORG} active API keys per organization.`,
+      });
+    }
+
+    const { plaintext, prefix, hash } = generateApiKey();
 
     const key = await ctx.db.organizationApiKey.create({
       data: {

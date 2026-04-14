@@ -2,7 +2,7 @@
 
 import { FilePlus, Search, Upload, UserPlus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { ContractWizardDialog } from '@/components/contracts/contract-wizard/wizard-dialog';
 import { useBreadcrumbContext } from '@/components/layout/breadcrumb-context';
 import { NotificationPopover } from '@/components/notifications/notification-popover';
@@ -23,6 +23,14 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Link, usePathname, useRouter } from '@/i18n/navigation';
 
+// ---------------------------------------------------------------------------
+// BreadcrumbLinkRenderer — avoids inline arrow in render prop per iteration
+// ---------------------------------------------------------------------------
+
+function BreadcrumbLinkRenderer({ href, ...props }: { href: string } & Record<string, unknown>) {
+  return <Link {...props} href={href} />;
+}
+
 /**
  * Top bar above main content area.
  * Left: SidebarTrigger (hamburger) + Breadcrumb (current page path)
@@ -35,6 +43,22 @@ export function TopBar() {
   const { setOpen: setSearchOpen } = useSearch();
 
   const [contractWizardOpen, setContractWizardOpen] = useState(false);
+
+  const navigateToNewContractor = useCallback(() => {
+    router.push('/contractors?action=new');
+  }, [router]);
+
+  const openContractWizard = useCallback(() => {
+    setContractWizardOpen(true);
+  }, []);
+
+  const navigateToUploadInvoice = useCallback(() => {
+    router.push('/invoices?action=upload');
+  }, [router]);
+
+  const openSearch = useCallback(() => {
+    setSearchOpen(true);
+  }, [setSearchOpen]);
 
   const { overrides } = useBreadcrumbContext();
   const tNav = useTranslations('Navigation');
@@ -85,7 +109,7 @@ export function TopBar() {
                     ) : isLast ? (
                       <BreadcrumbPage>{label}</BreadcrumbPage>
                     ) : (
-                      <BreadcrumbLink render={props => <Link {...props} href={href} />}>
+                      <BreadcrumbLink render={<BreadcrumbLinkRenderer href={href} />}>
                         {label}
                       </BreadcrumbLink>
                     )}
@@ -108,7 +132,7 @@ export function TopBar() {
                   variant="ghost"
                   size="icon"
                   className="h-8 w-8"
-                  onClick={() => router.push('/contractors?action=new')}
+                  onClick={navigateToNewContractor}
                 />
               }>
               <UserPlus className="h-4 w-4" />
@@ -124,7 +148,7 @@ export function TopBar() {
                   variant="ghost"
                   size="icon"
                   className="h-8 w-8"
-                  onClick={() => setContractWizardOpen(true)}
+                  onClick={openContractWizard}
                 />
               }>
               <FilePlus className="h-4 w-4" />
@@ -140,7 +164,7 @@ export function TopBar() {
                   variant="ghost"
                   size="icon"
                   className="h-8 w-8"
-                  onClick={() => router.push('/invoices?action=upload')}
+                  onClick={navigateToUploadInvoice}
                 />
               }>
               <Upload className="h-4 w-4" />
@@ -152,7 +176,7 @@ export function TopBar() {
           {/* Search bar trigger */}
           <button
             type="button"
-            onClick={() => setSearchOpen(true)}
+            onClick={openSearch}
             className="search-trigger hidden md:flex h-9 w-[240px] items-center gap-2 rounded-lg border bg-background px-3 text-sm text-muted-foreground">
             <Search className="h-4 w-4" />
             <span>{t('search')}...</span>
@@ -169,7 +193,7 @@ export function TopBar() {
                   variant="ghost"
                   size="icon"
                   className="h-8 w-8 md:hidden"
-                  onClick={() => setSearchOpen(true)}
+                  onClick={openSearch}
                 />
               }>
               <Search className="h-4 w-4" />

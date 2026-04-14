@@ -17,11 +17,13 @@ invoices.get('/', async c => {
     status: query.status as
       | 'RECEIVED'
       | 'UNDER_REVIEW'
+      | 'APPROVAL_PENDING'
       | 'APPROVED'
-      | 'SCHEDULED'
+      | 'REJECTED'
+      | 'READY_FOR_PAYMENT'
+      | 'PARTIALLY_PAID'
       | 'PAID'
       | 'VOID'
-      | 'REJECTED'
       | undefined,
     contractorId: query.contractorId,
     sortBy: query.sortBy as 'issueDate' | 'dueDate' | 'createdAt' | 'totalMinor' | undefined,

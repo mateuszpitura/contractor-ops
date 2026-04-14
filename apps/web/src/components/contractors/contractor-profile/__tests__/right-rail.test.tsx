@@ -1,11 +1,14 @@
 import { render, screen, setup } from '@/test/test-utils';
 import { ActivityTimeline, RightRail } from '../right-rail';
 
-vi.mock('@tanstack/react-query', () => ({
-  useMutation: () => ({ mutate: vi.fn(), isPending: false }),
-  useQueryClient: () => ({ invalidateQueries: vi.fn() }),
-}));
-
+vi.mock('@tanstack/react-query', async importOriginal => {
+  const actual = await importOriginal<typeof import('@tanstack/react-query')>();
+  return {
+    ...actual,
+    useMutation: () => ({ mutate: vi.fn(), isPending: false }),
+    useQueryClient: () => ({ invalidateQueries: vi.fn() }),
+  };
+});
 vi.mock('@/trpc/init', () => ({
   trpc: {
     contractor: {

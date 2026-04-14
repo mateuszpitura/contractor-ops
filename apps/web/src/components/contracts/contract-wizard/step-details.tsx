@@ -58,6 +58,26 @@ const CONTRACT_TYPES = [
 ] as const;
 
 // ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+/** Renders a contractor's tax ID, masked or unmasked depending on PII visibility. */
+function ContractorTaxLabel({ taxId, showPii }: { taxId: string | null; showPii: boolean }) {
+  if (!taxId) return null;
+  return (
+    <span className="ms-auto text-xs text-muted-foreground font-mono">
+      {showPii ? String(taxId) : maskTaxId(String(taxId))}
+    </span>
+  );
+}
+
+/** Formats an ISO date string for display in a date picker trigger, or returns a placeholder. */
+function formatDateOrPlaceholder(isoDate: string | undefined, placeholder: string) {
+  if (isoDate) return format(new Date(isoDate), 'PPP');
+  return <span className="text-muted-foreground">{placeholder}</span>;
+}
+
+// ---------------------------------------------------------------------------
 // Props
 // ---------------------------------------------------------------------------
 
@@ -189,13 +209,7 @@ export function StepDetails({ form, contractorId }: StepDetailsProps) {
                           setContractorSearch('');
                         }}>
                         <span>{contractor.displayName}</span>
-                        {contractor.taxId ? (
-                          <span className="ms-auto text-xs text-muted-foreground font-mono">
-                            {showPii
-                              ? String(contractor.taxId)
-                              : maskTaxId(String(contractor.taxId))}
-                          </span>
-                        ) : null}
+                        <ContractorTaxLabel taxId={contractor.taxId} showPii={showPii} />
                       </CommandItem>
                     ))}
                   </CommandGroup>
@@ -252,11 +266,7 @@ export function StepDetails({ form, contractorId }: StepDetailsProps) {
           <PopoverTrigger
             render={<Button variant="outline" className="w-full justify-start font-normal" />}>
             <CalendarIcon className="me-2 h-4 w-4" />
-            {startDate ? (
-              format(new Date(startDate), 'PPP')
-            ) : (
-              <span className="text-muted-foreground">{t('fields.selectDate')}</span>
-            )}
+            {formatDateOrPlaceholder(startDate, t('fields.selectDate'))}
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="start">
             <Calendar
@@ -279,11 +289,7 @@ export function StepDetails({ form, contractorId }: StepDetailsProps) {
           <PopoverTrigger
             render={<Button variant="outline" className="w-full justify-start font-normal" />}>
             <CalendarIcon className="me-2 h-4 w-4" />
-            {endDate ? (
-              format(new Date(endDate), 'PPP')
-            ) : (
-              <span className="text-muted-foreground">{t('fields.selectDate')}</span>
-            )}
+            {formatDateOrPlaceholder(endDate, t('fields.selectDate'))}
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="start">
             <Calendar

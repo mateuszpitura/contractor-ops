@@ -98,6 +98,7 @@ function TiltCard({
   }, []);
 
   const inner = (
+    // biome-ignore lint/a11y/noStaticElementInteractions: conditionally interactive — role/tabIndex/keyboard set when onClick present
     <div
       ref={ref}
       className={`atelier-enter atelier-glass group relative rounded-2xl p-5 transition-[transform,box-shadow] duration-[400ms] ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform hover:shadow-[0_12px_40px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_12px_40px_rgba(0,0,0,0.25)] ${className}`}

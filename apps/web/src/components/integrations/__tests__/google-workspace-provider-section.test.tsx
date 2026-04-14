@@ -9,12 +9,15 @@ const { useQueryMock } = vi.hoisted(() => ({
   useQueryMock: vi.fn(),
 }));
 
-vi.mock('@tanstack/react-query', () => ({
-  useQuery: useQueryMock,
-  QueryClient: vi.fn(),
-  QueryClientProvider: ({ children }: { children: React.ReactNode }) => children,
-}));
-
+vi.mock('@tanstack/react-query', async importOriginal => {
+  const actual = await importOriginal<typeof import('@tanstack/react-query')>();
+  return {
+    ...actual,
+    useQuery: useQueryMock,
+    QueryClient: vi.fn(),
+    QueryClientProvider: ({ children }: { children: React.ReactNode }) => children,
+  };
+});
 vi.mock('next-intl', () => ({
   useTranslations: () => (key: string, values?: Record<string, string>) => {
     if (values) return `${key}:${JSON.stringify(values)}`;

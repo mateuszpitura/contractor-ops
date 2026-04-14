@@ -2,17 +2,20 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, setup, waitFor } from '@/test/test-utils';
 import { DataTableBulkActions } from '../data-table-bulk-actions';
 
-vi.mock('@tanstack/react-query', () => ({
-  useMutation: () => ({ mutate: vi.fn(), isPending: false }),
-  useQuery: () => ({
-    data: [
-      { id: 'u1', name: 'Alice', email: 'alice@test.com' },
-      { id: 'u2', name: 'Bob', email: 'bob@test.com' },
-    ],
-  }),
-  useQueryClient: () => ({ invalidateQueries: vi.fn() }),
-}));
-
+vi.mock('@tanstack/react-query', async importOriginal => {
+  const actual = await importOriginal<typeof import('@tanstack/react-query')>();
+  return {
+    ...actual,
+    useMutation: () => ({ mutate: vi.fn(), isPending: false }),
+    useQuery: () => ({
+      data: [
+        { id: 'u1', name: 'Alice', email: 'alice@test.com' },
+        { id: 'u2', name: 'Bob', email: 'bob@test.com' },
+      ],
+    }),
+    useQueryClient: () => ({ invalidateQueries: vi.fn() }),
+  };
+});
 vi.mock('@/trpc/init', () => ({
   trpc: {
     contractor: {

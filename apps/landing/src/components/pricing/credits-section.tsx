@@ -121,7 +121,6 @@ export function CreditsSection({ creditPacks }: { creditPacks: CreditPack[] }) {
                   <span className="text-xs text-muted-foreground">500 contractors</span>
                 </div>
                 <input
-                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                   type="range"
                   min={0}
                   max={sliderStops.length - 1}

@@ -92,6 +92,47 @@ function WizardStepIndicator({
 }
 
 // ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+/** Check whether any conflict person has unresolved field conflicts. */
+function checkUnresolvedConflicts(
+  people: MergedPerson[],
+  selections: Map<string, PersonSelection>,
+): boolean {
+  for (const person of people) {
+    if (person.status !== 'conflict') continue;
+    const sel = selections.get(person.email);
+    if (!sel || sel.skip) continue;
+    for (const conflict of person.conflicts ?? []) {
+      if (!sel.resolvedConflicts[conflict.field]) return true;
+    }
+  }
+  return false;
+}
+
+/** Determine whether the user can advance from the current step. */
+function computeCanContinue(
+  currentStep: WizardStep,
+  selectedSourceCount: number,
+  hasUnresolved: boolean,
+  jobId: string | null,
+): boolean {
+  switch (currentStep) {
+    case 1:
+      return selectedSourceCount > 0;
+    case 2:
+      return !hasUnresolved;
+    case 3:
+      return true;
+    case 4:
+      return !jobId;
+    default:
+      return false;
+  }
+}
+
+// ---------------------------------------------------------------------------
 // ImportWizard
 // ---------------------------------------------------------------------------
 
@@ -118,34 +159,16 @@ export function ImportWizard() {
   const [jobId, setJobId] = useState<string | null>(null);
 
   // Derived: check for unresolved conflicts
-  const hasUnresolvedConflicts = useMemo(() => {
-    for (const person of mergedPeople) {
-      if (person.status !== 'conflict') continue;
-      const sel = personSelections.get(person.email);
-      if (!sel || sel.skip) continue;
-      for (const conflict of person.conflicts ?? []) {
-        const resolved = sel.resolvedConflicts[conflict.field];
-        if (!resolved) return true;
-      }
-    }
-    return false;
-  }, [mergedPeople, personSelections]);
+  const hasUnresolvedConflicts = useMemo(
+    () => checkUnresolvedConflicts(mergedPeople, personSelections),
+    [mergedPeople, personSelections],
+  );
 
   // Derived: can continue
-  const canContinue = useMemo(() => {
-    switch (step) {
-      case 1:
-        return selectedSources.length > 0;
-      case 2:
-        return !hasUnresolvedConflicts;
-      case 3:
-        return true;
-      case 4:
-        return !jobId; // Cannot press Continue once import started
-      default:
-        return false;
-    }
-  }, [step, selectedSources.length, hasUnresolvedConflicts, jobId]);
+  const canContinue = useMemo(
+    () => computeCanContinue(step, selectedSources.length, hasUnresolvedConflicts, jobId),
+    [step, selectedSources.length, hasUnresolvedConflicts, jobId],
+  );
 
   // Navigation handlers
   const handleBack = useCallback(() => {

@@ -63,6 +63,7 @@ const { mockPrisma } = vi.hoisted(() => {
         id: ITEM_ID,
         ...opts.data,
       })),
+      createMany: vi.fn(async () => ({ count: 0 })),
       update: vi.fn(async (opts: { where: Rec; data: Rec }) => ({
         id: opts.where.id,
         ...opts.data,
@@ -70,6 +71,7 @@ const { mockPrisma } = vi.hoisted(() => {
       delete: vi.fn(async () => ({})),
       updateMany: vi.fn(async () => ({ count: 0 })),
       count: vi.fn(async () => 0),
+      aggregate: vi.fn(async () => ({ _sum: { amountMinor: 0 } })),
     },
     paymentExport: {
       create: vi.fn(async (opts: { data: Rec }) => ({
@@ -80,11 +82,20 @@ const { mockPrisma } = vi.hoisted(() => {
     organization: {
       findUnique: vi.fn(async () => ({
         name: 'Test Org',
-        metadata: {
+        metadata: JSON.stringify({
           settingsJson: {
             paymentTransferTitleTemplate: '{invoice_number}',
             bankAccount: { iban: 'PL00000000000000000000000000', bic: 'BREXPLPW' },
           },
+        }),
+      })),
+      findUniqueOrThrow: vi.fn(async () => ({
+        id: 'org-1',
+        name: 'Test Org',
+        dataRegion: 'EU',
+        settingsJson: {
+          paymentTransferTitleTemplate: '{invoice_number}',
+          bankAccount: { iban: 'PL00000000000000000000000000', bic: 'BREXPLPW' },
         },
       })),
     },
@@ -246,7 +257,22 @@ vi.mock('@sentry/nextjs', () => {
 });
 
 vi.mock('@contractor-ops/logger', () => ({
-  createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
+  createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
+  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
+  createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
+  createWebhookLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+  })),
+  createIntegrationLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+  })),
+  logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() },
 }));
 
 vi.mock('@contractor-ops/logger/metrics', () => ({
@@ -443,11 +469,10 @@ describe('payment router', () => {
         invoiceCount: 2,
       });
 
-      // Verify invoices updated to IN_RUN
-      const invoiceUpdates = mockPrisma.invoice.update.mock.calls;
-      expect(invoiceUpdates).toHaveLength(2);
-      expect(invoiceUpdates[0][0].data).toMatchObject({ paymentStatus: 'IN_RUN' });
-      expect(invoiceUpdates[1][0].data).toMatchObject({ paymentStatus: 'IN_RUN' });
+      // Verify invoices updated to IN_RUN via updateMany
+      const updateManyCall = mockPrisma.invoice.updateMany.mock.calls[0]?.[0];
+      expect(updateManyCall.data).toMatchObject({ paymentStatus: 'IN_RUN' });
+      expect(updateManyCall.where.id.in).toEqual(expect.arrayContaining([INVOICE_ID_1, INVOICE_ID_2]));
     });
 
     it('generates run number with year prefix PR-{year}-{seq}', async () => {
@@ -470,7 +495,7 @@ describe('payment router', () => {
 
       await expect(caller.payment.create({ invoiceIds: [INVOICE_ID_1] })).rejects.toMatchObject({
         code: 'BAD_REQUEST',
-        message: 'PAYMENT_INVOICES_NOT_READY',
+        message: 'paymentInvoicesNotReady',
       });
     });
 
@@ -513,7 +538,10 @@ describe('payment router', () => {
       const item = makeItem();
       mockPrisma.paymentRun.findFirst.mockResolvedValueOnce(run);
       mockPrisma.paymentRunItem.findFirst.mockResolvedValueOnce(item);
-      mockPrisma.paymentRunItem.findMany.mockResolvedValueOnce([{ amountMinor: 200000 }]);
+      mockPrisma.paymentRunItem.aggregate.mockResolvedValueOnce({
+        _sum: { amountMinor: 200000 },
+        _count: 1,
+      });
 
       await caller.payment.removeFromRun({
         runId: RUN_ID,
@@ -549,7 +577,7 @@ describe('payment router', () => {
         }),
       ).rejects.toMatchObject({
         code: 'BAD_REQUEST',
-        message: 'PAYMENT_RUN_NOT_DRAFT',
+        message: 'paymentRunNotDraft',
       });
     });
 
@@ -558,7 +586,10 @@ describe('payment router', () => {
       const item = makeItem();
       mockPrisma.paymentRun.findFirst.mockResolvedValueOnce(run);
       mockPrisma.paymentRunItem.findFirst.mockResolvedValueOnce(item);
-      mockPrisma.paymentRunItem.findMany.mockResolvedValueOnce([]); // no remaining items
+      mockPrisma.paymentRunItem.aggregate.mockResolvedValueOnce({
+        _sum: { amountMinor: 0 },
+        _count: 0,
+      });
 
       await caller.payment.removeFromRun({
         runId: RUN_ID,
@@ -643,7 +674,7 @@ describe('payment router', () => {
         }),
       ).rejects.toMatchObject({
         code: 'BAD_REQUEST',
-        message: 'PAYMENT_RUN_INVALID_STATUS',
+        message: 'paymentRunInvalidStatus',
       });
     });
   });
@@ -820,7 +851,7 @@ describe('payment router', () => {
 
       await expect(caller.payment.cancel({ runId: RUN_ID })).rejects.toMatchObject({
         code: 'BAD_REQUEST',
-        message: 'PAYMENT_RUN_INVALID_STATUS',
+        message: 'paymentRunInvalidStatus',
       });
     });
   });
@@ -894,6 +925,9 @@ describe('payment router', () => {
 
       mockPrisma.paymentRun.findFirst.mockResolvedValueOnce(run);
       mockPrisma.paymentRunItem.findFirst.mockResolvedValueOnce(item);
+      mockPrisma.paymentRunItem.findMany.mockResolvedValueOnce([
+        { id: ITEM_ID, invoiceId: INVOICE_ID_1 },
+      ]);
       // After marking paid: 0 remaining -> auto-complete
       mockPrisma.paymentRunItem.count
         .mockResolvedValueOnce(0) // remaining pending/exported
@@ -909,13 +943,13 @@ describe('payment router', () => {
         matches: [{ itemId: ITEM_ID, transactionIndex: 0 }],
       });
 
-      // Item updated to PAID
-      const itemUpdate = mockPrisma.paymentRunItem.update.mock.calls[0][0];
+      // Item batch-updated to PAID
+      const itemUpdate = mockPrisma.paymentRunItem.updateMany.mock.calls[0]?.[0];
       expect(itemUpdate.data).toMatchObject({ status: 'PAID' });
       expect(itemUpdate.data.markedPaidAt).toBeInstanceOf(Date);
 
-      // Invoice updated to PAID
-      const invoiceUpdate = mockPrisma.invoice.update.mock.calls[0][0];
+      // Invoice batch-updated to PAID
+      const invoiceUpdate = mockPrisma.invoice.updateMany.mock.calls[0]?.[0];
       expect(invoiceUpdate.data).toMatchObject({ paymentStatus: 'PAID' });
     });
 

@@ -194,6 +194,10 @@ function UploadSection({
   tc: (key: string, values?: Record<string, string | number | Date>) => string;
   tAria: (key: string) => string;
 }) {
+  const openPdfPreview = useCallback(() => {
+    if (pdfBlobUrl) window.open(pdfBlobUrl, '_blank');
+  }, [pdfBlobUrl]);
+
   return (
     <div className="space-y-4">
       <h2 className="text-sm font-semibold">{t('invoicePdf')}</h2>
@@ -236,12 +240,7 @@ function UploadSection({
           </div>
           <div className="flex items-center gap-2">
             {!!pdfBlobUrl && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                onClick={() => window.open(pdfBlobUrl, '_blank')}>
+              <Button type="button" variant="ghost" size="sm" onClick={openPdfPreview}>
                 <ExternalLink className="me-1 h-3.5 w-3.5" />
                 {t('viewPdf')}
               </Button>
@@ -250,7 +249,6 @@ function UploadSection({
               type="button"
               variant="ghost"
               size="icon"
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={removeFile}
               aria-label={tAria('removeFile')}>
               <X className="h-4 w-4" />
@@ -262,12 +260,7 @@ function UploadSection({
       {upload.status === 'error' && <p className="text-sm text-destructive">{upload.message}</p>}
 
       {!!creditExhausted && (
-        <CreditExhaustedInline
-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-          onUpgrade={onNavigateBilling}
-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-          onBuyCredits={onNavigateBilling}
-        />
+        <CreditExhaustedInline onUpgrade={onNavigateBilling} onBuyCredits={onNavigateBilling} />
       )}
     </div>
   );
@@ -679,6 +672,17 @@ export function InvoiceSubmitForm() {
   // Selected contract info
   const selectedContract = contracts?.find(c => c.id === selectedContractId);
 
+  const navigateToBilling = useCallback(() => {
+    router.push('/settings?tab=billing');
+  }, [router]);
+
+  const handleContractChange = useCallback(
+    (val: string | null) => {
+      setValue('contractId', val ?? '', { shouldValidate: true });
+    },
+    [setValue],
+  );
+
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: { 'application/pdf': ['.pdf'] },
@@ -746,8 +750,7 @@ export function InvoiceSubmitForm() {
           ) : (
             <Select
               value={selectedContractId}
-              // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-              onValueChange={val => setValue('contractId', val ?? '', { shouldValidate: true })}
+              onValueChange={handleContractChange}
               items={contractItems}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder={t('contractPlaceholder')} />
@@ -787,7 +790,7 @@ export function InvoiceSubmitForm() {
         pdfBlobUrl={pdfBlobUrl}
         removeFile={removeFile}
         creditExhausted={creditExhausted}
-        onNavigateBilling={() => router.push('/settings?tab=billing')}
+        onNavigateBilling={navigateToBilling}
         t={t}
         tc={tc}
         tAria={tAria}

@@ -7,6 +7,10 @@
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import * as E from '../errors.js';
+import type { DbClient } from '../services/types.js';
+
+type TxClient = Parameters<Parameters<DbClient['$transaction']>[0]>[0];
+
 import { router } from '../init.js';
 import { requirePermission } from '../middleware/rbac.js';
 import { tenantProcedure } from '../middleware/tenant.js';
@@ -24,8 +28,7 @@ import {
  * Handles importing a single contractor row: skip, update, or create.
  */
 async function commitContractorRow(
-  // biome-ignore lint/suspicious/noExplicitAny: transaction client type differs from TenantScopedDb
-  tx: any,
+  tx: TxClient,
   organizationId: string,
   userId: string | undefined,
   row: Record<string, unknown>,
@@ -88,8 +91,7 @@ async function commitContractorRow(
  * Handles importing a single contract row: resolve contractor and create.
  */
 async function commitContractRow(
-  // biome-ignore lint/suspicious/noExplicitAny: transaction client type differs from TenantScopedDb
-  tx: any,
+  tx: TxClient,
   organizationId: string,
   userId: string | undefined,
   row: Record<string, unknown>,

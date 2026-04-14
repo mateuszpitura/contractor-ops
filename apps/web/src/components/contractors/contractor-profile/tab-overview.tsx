@@ -7,6 +7,7 @@ import { useCallback } from 'react';
 import { ComplianceHealthBadge } from '@/components/contractors/compliance-health-badge';
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { usePermissions } from '@/hooks/use-permissions';
+import { enumKey } from '@/lib/enum-key';
 import { canViewSensitivePii, maskTaxId } from '@/lib/mask-pii';
 
 type HealthFactor = {
@@ -160,7 +161,7 @@ export function TabOverview({ contractor }: TabOverviewProps) {
           <FieldRow label={t('fields.displayName')} value={contractor.displayName} />
           <FieldRow
             label={t('fields.type')}
-            value={tc(`type.${contractor.type}` as Parameters<typeof tc>[0])}
+            value={tc(`type.${enumKey(contractor.type)}` as Parameters<typeof tc>[0])}
           />
           <FieldRow
             label={t('fields.nip')}

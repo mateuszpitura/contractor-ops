@@ -5,8 +5,8 @@
 // dependency for this plan — the manual assertions cover every axe rule
 // the plan enumerates, and keep the CI runtime lean).
 
-import { describe, expect, it, vi } from 'vitest';
 import { screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 
 import { render } from '@/test/test-utils';
 

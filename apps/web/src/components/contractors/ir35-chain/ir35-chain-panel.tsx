@@ -5,7 +5,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useCallback, useId, useState } from 'react';
 
 import { trpc } from '@/trpc/init';
 
@@ -19,6 +19,7 @@ interface Ir35ChainPanelProps {
 export function Ir35ChainPanel({ engagementId }: Ir35ChainPanelProps) {
   const t = useTranslations('Ir35Chain');
   const queryClient = useQueryClient();
+  const headingId = useId();
   const [isAddOpen, setIsAddOpen] = useState(false);
 
   const listQuery = useQuery(
@@ -49,22 +50,23 @@ export function Ir35ChainPanel({ engagementId }: Ir35ChainPanelProps) {
     }),
   );
 
+  const handleOpenAdd = useCallback(() => setIsAddOpen(true), []);
+
   const rows = listQuery.data ?? [];
 
   return (
-    <section aria-labelledby="ir35-chain-heading" className="rounded-lg border bg-card p-6">
+    <section aria-labelledby={headingId} className="rounded-lg border bg-card p-6">
       <header className="mb-4 flex items-center justify-between">
         <div>
-          <h2 id="ir35-chain-heading" className="text-lg font-semibold">
+          <h2 id={headingId} className="text-lg font-semibold">
             {t('title')}
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">{t('subtitle')}</p>
         </div>
         <button
           type="button"
-          onClick={() => setIsAddOpen(true)}
-          className="inline-flex items-center rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-        >
+          onClick={handleOpenAdd}
+          className="inline-flex items-center rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90">
           {t('addParticipant')}
         </button>
       </header>
@@ -94,14 +96,12 @@ export function Ir35ChainPanel({ engagementId }: Ir35ChainPanelProps) {
           </thead>
           <tbody>
             {rows.map(row => (
-              <ChainParticipantRow
+              <ConnectedParticipantRow
                 key={row.id}
                 row={row}
-                onMarkDelivered={note => markDelivered.mutate({ id: row.id, note })}
-                onMarkAcknowledged={note =>
-                  markAcknowledged.mutate({ id: row.id, note })
-                }
-                onRemove={() => removeParticipant.mutate({ id: row.id })}
+                markDelivered={markDelivered}
+                markAcknowledged={markAcknowledged}
+                removeParticipant={removeParticipant}
               />
             ))}
           </tbody>
@@ -115,6 +115,42 @@ export function Ir35ChainPanel({ engagementId }: Ir35ChainPanelProps) {
         nextOrderIndex={rows.length}
       />
     </section>
+  );
+}
+
+interface ConnectedParticipantRowProps {
+  row: Ir35ChainParticipantRow;
+  markDelivered: { mutate: (vars: { id: string; note: string | null }) => void };
+  markAcknowledged: { mutate: (vars: { id: string; note: string | null }) => void };
+  removeParticipant: { mutate: (vars: { id: string }) => void };
+}
+
+function ConnectedParticipantRow({
+  row,
+  markDelivered,
+  markAcknowledged,
+  removeParticipant,
+}: ConnectedParticipantRowProps) {
+  const handleMarkDelivered = useCallback(
+    (note: string | null) => markDelivered.mutate({ id: row.id, note }),
+    [markDelivered, row.id],
+  );
+  const handleMarkAcknowledged = useCallback(
+    (note: string | null) => markAcknowledged.mutate({ id: row.id, note }),
+    [markAcknowledged, row.id],
+  );
+  const handleRemove = useCallback(
+    () => removeParticipant.mutate({ id: row.id }),
+    [removeParticipant, row.id],
+  );
+
+  return (
+    <ChainParticipantRow
+      row={row}
+      onMarkDelivered={handleMarkDelivered}
+      onMarkAcknowledged={handleMarkAcknowledged}
+      onRemove={handleRemove}
+    />
   );
 }
 

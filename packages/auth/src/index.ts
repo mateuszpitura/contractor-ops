@@ -1,4 +1,3 @@
-// biome-ignore lint/performance/noBarrelFile: package entry point
 export { authClient } from './client.js';
 export type { AuthServerAPI, Session } from './config.js';
 export { auth, authApi } from './config.js';

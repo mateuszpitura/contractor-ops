@@ -1,4 +1,3 @@
-// biome-ignore lint/performance/noBarrelFile: package entry point
 export type { Prisma } from '../generated/prisma/client/index.js';
 export { createPrismaClientForUrl, PrismaClient, prisma } from './client.js';
 export type { DataRegion } from './region.js';

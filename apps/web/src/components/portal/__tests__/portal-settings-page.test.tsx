@@ -1,31 +1,34 @@
 import { render, screen } from '@/test/test-utils';
 import { PortalSettingsPage } from '../portal-settings-page';
 
-vi.mock('@tanstack/react-query', () => ({
-  useQuery: () => ({
-    data: {
-      displayName: 'Jan Kowalski',
-      email: 'jan@example.com',
-      phone: '+48 123',
-      addressLine1: null,
-      addressLine2: null,
-      city: null,
-      postalCode: null,
-      countryCode: 'PL',
-      billingProfile: {
-        bankAccountMasked: '****1234',
-        bankName: 'mBank',
-        swiftBic: 'BREXPLPW',
-        taxId: '1234567890',
+vi.mock('@tanstack/react-query', async importOriginal => {
+  const actual = await importOriginal<typeof import('@tanstack/react-query')>();
+  return {
+    ...actual,
+    useQuery: () => ({
+      data: {
+        displayName: 'Jan Kowalski',
+        email: 'jan@example.com',
+        phone: '+48 123',
+        addressLine1: null,
+        addressLine2: null,
+        city: null,
+        postalCode: null,
+        countryCode: 'PL',
+        billingProfile: {
+          bankAccountMasked: '****1234',
+          bankName: 'mBank',
+          swiftBic: 'BREXPLPW',
+          taxId: '1234567890',
+        },
+        pendingChangeRequest: null,
       },
-      pendingChangeRequest: null,
-    },
-    isPending: false,
-  }),
-  useMutation: () => ({ mutateAsync: vi.fn() }),
-  useQueryClient: () => ({ invalidateQueries: vi.fn() }),
-}));
-
+      isPending: false,
+    }),
+    useMutation: () => ({ mutateAsync: vi.fn() }),
+    useQueryClient: () => ({ invalidateQueries: vi.fn() }),
+  };
+});
 vi.mock('@/trpc/init', () => ({
   trpc: {
     portal: {

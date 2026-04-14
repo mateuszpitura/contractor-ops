@@ -135,7 +135,9 @@ describe('ApprovalSidePanel', () => {
   });
 
   it('renders formatted amount', () => {
-    render(<ApprovalSidePanel step={baseStep} open={true} onOpenChange={onOpenChange} />);
+    render(<ApprovalSidePanel step={baseStep} open={true} onOpenChange={onOpenChange} />, {
+      locale: 'pl',
+    });
     // 500000 minor / 100 = 5000.00 PLN
     expect(screen.getByText(/5[\s\u00a0]?000,00 PLN/)).toBeInTheDocument();
   });

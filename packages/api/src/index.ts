@@ -1,4 +1,3 @@
-// biome-ignore lint/performance/noBarrelFile: package entry point
 export type { AuthMode, Context } from './context.js';
 export { createApiKeyContext, createContext } from './context.js';
 export { createCallerFactory } from './init.js';

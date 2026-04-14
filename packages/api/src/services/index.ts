@@ -18,7 +18,6 @@ export {
   type ReverseChargeResult,
 } from './reverse-charge.service.js';
 export { maskTaxId } from './tax-id-pii.js';
-// biome-ignore lint/performance/noBarrelFile: package entry point for service-layer exports
 export {
   getLatestValidation,
   isValidationFresh,

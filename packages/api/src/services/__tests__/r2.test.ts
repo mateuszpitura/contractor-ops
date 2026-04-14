@@ -6,12 +6,13 @@ describe('r2 generateStorageKey', () => {
     expect(generateStorageKey('org-1', 'doc-2', 'file.pdf')).toBe('orgs/org-1/documents/doc-2.pdf');
   });
 
-  it('uses the substring after the last dot as the extension', () => {
-    expect(generateStorageKey('o', 'd', 'archive.tar.gz')).toBe('orgs/o/documents/d.gz');
+  it('strips unknown/unsafe extensions (security allowlist)', () => {
+    // .gz not in ALLOWED_EXTENSIONS — stripped for path-traversal protection
+    expect(generateStorageKey('o', 'd', 'archive.tar.gz')).toBe('orgs/o/documents/d');
   });
 
-  it('when filename has no dot, treats the whole name as the extension segment', () => {
-    expect(generateStorageKey('o', 'd', 'readme')).toBe('orgs/o/documents/d.readme');
+  it('strips non-allowlisted extension-like segments when no known extension found', () => {
+    expect(generateStorageKey('o', 'd', 'readme')).toBe('orgs/o/documents/d');
   });
 });
 
@@ -37,7 +38,7 @@ const { getObjectCalls, putObjectCalls, signedUrlCalls } = mockState;
 vi.mock('@aws-sdk/client-s3', () => ({
   S3Client: class {
     async send() {
-      return undefined;
+      return;
     }
   },
   GetObjectCommand: class {
@@ -61,13 +62,19 @@ vi.mock('@aws-sdk/client-s3', () => ({
 }));
 
 vi.mock('@aws-sdk/s3-request-presigner', () => ({
-  getSignedUrl: vi.fn(async (_client: unknown, command: { input: { Key: unknown } }, opts?: { expiresIn?: number }) => {
-    mockState.signedUrlCalls.push({
-      command: command as unknown as MockCommand,
-      expiresIn: opts?.expiresIn,
-    });
-    return `https://r2.mock.test/${encodeURIComponent(String(command.input.Key))}?X-Amz-Expires=${opts?.expiresIn ?? 'default'}`;
-  }),
+  getSignedUrl: vi.fn(
+    async (
+      _client: unknown,
+      command: { input: { Key: unknown } },
+      opts?: { expiresIn?: number },
+    ) => {
+      mockState.signedUrlCalls.push({
+        command: command as unknown as MockCommand,
+        expiresIn: opts?.expiresIn,
+      });
+      return `https://r2.mock.test/${encodeURIComponent(String(command.input.Key))}?X-Amz-Expires=${opts?.expiresIn ?? 'default'}`;
+    },
+  ),
 }));
 
 vi.mock('@contractor-ops/validators', () => ({
@@ -95,10 +102,7 @@ describe('signExistingDownload (Phase 59 D-05)', () => {
   });
 
   it('does not call PutObjectCommand', async () => {
-    await signExistingDownload(
-      'classification-documents/org_1/ca_1/sds-ir35-v2-abc123.pdf',
-      300,
-    );
+    await signExistingDownload('classification-documents/org_1/ca_1/sds-ir35-v2-abc123.pdf', 300);
     expect(putObjectCalls).toHaveLength(0);
     expect(getObjectCalls.length).toBeGreaterThanOrEqual(1);
   });

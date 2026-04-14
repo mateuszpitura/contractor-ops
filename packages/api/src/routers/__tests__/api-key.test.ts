@@ -30,6 +30,7 @@ const { mockPrisma, mockGenerateApiKey } = vi.hoisted(() => {
       findMany: vi.fn(),
       findFirst: vi.fn(),
       update: vi.fn(),
+      count: vi.fn(async () => 0),
     },
     organization: {
       findUnique: vi.fn(async () => ({
@@ -45,7 +46,7 @@ const { mockPrisma, mockGenerateApiKey } = vi.hoisted(() => {
 
   return {
     mockPrisma,
-    mockGenerateApiKey: vi.fn(async () => ({
+    mockGenerateApiKey: vi.fn(() => ({
       plaintext: 'co_live_abc123secret',
       prefix: 'co_live_abc',
       hash: 'hashed_value',

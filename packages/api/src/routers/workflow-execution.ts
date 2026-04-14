@@ -38,6 +38,9 @@ import {
   validateTransition,
 } from './workflow-shared.js';
 
+/** Transaction client derived from the tenant-scoped DbClient. */
+type TxClient = Parameters<Parameters<DbClient['$transaction']>[0]>[0];
+
 // ---------------------------------------------------------------------------
 // Integration eligibility helpers
 // ---------------------------------------------------------------------------
@@ -203,9 +206,8 @@ function computeTaskDueAt(
  * Instantiates WorkflowTaskRun records for each template task.
  * Returns a map of template task ID -> run task ID.
  */
-// biome-ignore lint/suspicious/noExplicitAny: transaction client type differs per Prisma version
 async function instantiateTaskRuns(
-  tx: any,
+  tx: TxClient,
   organizationId: string,
   workflowRunId: string,
   templateTasks: Array<{

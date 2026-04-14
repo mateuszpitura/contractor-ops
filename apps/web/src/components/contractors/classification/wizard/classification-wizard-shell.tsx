@@ -9,42 +9,23 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocale, useTranslations } from 'next-intl';
-import {
-  useCallback,
-  useEffect,
-  useId,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Link, useRouter } from '@/i18n/navigation';
 import { trpc } from '@/trpc/init';
-
-import {
-  ClassificationAutosaveIndicator,
-  type AutosaveStatus,
-} from './classification-autosave-indicator';
+import type { AutosaveStatus } from './classification-autosave-indicator';
+import { ClassificationAutosaveIndicator } from './classification-autosave-indicator';
 import { ClassificationProgressBar } from './classification-progress-bar';
-import {
-  ClassificationStepIndicator,
-  type ClassificationStepIndicatorStep,
-} from './classification-step-indicator';
+import type { ClassificationStepIndicatorStep } from './classification-step-indicator';
+import { ClassificationStepIndicator } from './classification-step-indicator';
+import type { Ir35StepDefinition } from './ir35/ir35-wizard-steps';
+import { Ir35StepContent, useIr35Steps } from './ir35/ir35-wizard-steps';
+import type { ScheinStepDefinition } from './schein/schein-wizard-steps';
+import { ScheinStepContent, useScheinSteps } from './schein/schein-wizard-steps';
 import type { RuleSetLocale, WizardAnswerValue } from './wizard-question';
-
-import {
-  Ir35StepContent,
-  useIr35Steps,
-  type Ir35StepDefinition,
-} from './ir35/ir35-wizard-steps';
-import {
-  ScheinStepContent,
-  useScheinSteps,
-  type ScheinStepDefinition,
-} from './schein/schein-wizard-steps';
 
 const RATIONALE_DEBOUNCE_MS = 500;
 const SUPPORTED_COUNTRIES = new Set(['GB', 'DE']);
@@ -73,8 +54,7 @@ export function ClassificationWizardShell({
   initialAnswers = {},
 }: ClassificationWizardShellProps) {
   const locale = useLocale();
-  const ruleSetLocale: RuleSetLocale =
-    locale === 'de' || locale === 'pl' ? locale : 'en';
+  const ruleSetLocale: RuleSetLocale = locale === 'de' || locale === 'pl' ? locale : 'en';
   const t = useTranslations('Classification');
   const tError = useTranslations('Classification.error');
   const router = useRouter();
@@ -83,12 +63,11 @@ export function ClassificationWizardShell({
 
   const ir35Steps = useIr35Steps();
   const scheinSteps = useScheinSteps();
-  const steps: readonly WizardStepDefinition[] =
-    countryCode === 'GB' ? ir35Steps : scheinSteps;
+  const steps: readonly WizardStepDefinition[] = countryCode === 'GB' ? ir35Steps : scheinSteps;
 
-  const [answers, setAnswers] = useState<Record<string, WizardAnswerValue | undefined>>(
-    () => ({ ...initialAnswers }),
-  );
+  const [answers, setAnswers] = useState<Record<string, WizardAnswerValue | undefined>>(() => ({
+    ...initialAnswers,
+  }));
   const [currentStep, setCurrentStep] = useState(1);
   const [autosaveStatus, setAutosaveStatus] = useState<AutosaveStatus>('idle');
   const [lastSavedAt, setLastSavedAt] = useState<number | null>(null);
@@ -155,10 +134,7 @@ export function ClassificationWizardShell({
       saveAnswerMutation.mutate({
         assessmentId,
         questionId,
-        answer:
-          value.type === 'billing-ratio'
-            ? { value: value.value }
-            : value.value,
+        answer: value.type === 'billing-ratio' ? { value: value.value } : value.value,
         expectedUpdatedAt: new Date(expectedUpdatedAtRef.current),
       });
     },
@@ -241,10 +217,7 @@ export function ClassificationWizardShell({
               {t('stepCounter', { current: currentStep, total: steps.length })}
             </p>
           </div>
-          <ClassificationAutosaveIndicator
-            status={autosaveStatus}
-            lastSavedAt={lastSavedAt}
-          />
+          <ClassificationAutosaveIndicator status={autosaveStatus} lastSavedAt={lastSavedAt} />
         </div>
         <ClassificationProgressBar
           currentStep={currentStep}
@@ -252,10 +225,7 @@ export function ClassificationWizardShell({
           currentStepCompletion={currentStepCompletion}
           currentStepLabel={currentStepDef?.label ?? ''}
         />
-        <ClassificationStepIndicator
-          steps={indicatorSteps}
-          currentStep={currentStep}
-        />
+        <ClassificationStepIndicator steps={indicatorSteps} currentStep={currentStep} />
       </header>
 
       {currentStepDef ? (

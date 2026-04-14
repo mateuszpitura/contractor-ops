@@ -18,6 +18,11 @@ vi.mock('@/trpc/init', () => ({
       get: { queryOptions: () => ({ queryKey: ['settings', 'get'] }) },
       update: { mutationOptions: () => ({}) },
     },
+    consent: {
+      hasRequiredConsents: {
+        queryOptions: () => ({ queryKey: ['consent', 'hasRequiredConsents'] }),
+      },
+    },
   },
 }));
 

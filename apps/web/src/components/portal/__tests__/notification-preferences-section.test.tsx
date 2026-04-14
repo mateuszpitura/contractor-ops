@@ -1,25 +1,28 @@
 import { render, screen } from '@/test/test-utils';
 import { NotificationPreferencesSection } from '../notification-preferences-section';
 
-vi.mock('@tanstack/react-query', () => ({
-  useQuery: () => ({
-    data: [
-      { category: 'INVOICE_UPDATES', emailEnabled: true },
-      { category: 'PAYMENT_CONFIRMATIONS', emailEnabled: false },
-      { category: 'CONTRACT_CHANGES', emailEnabled: true },
-      { category: 'DOCUMENT_UPLOADS', emailEnabled: true },
-      { category: 'SECURITY_ALERTS', emailEnabled: true },
-    ],
-    isPending: false,
-  }),
-  useMutation: () => ({ mutate: vi.fn() }),
-  useQueryClient: () => ({
-    cancelQueries: vi.fn(),
-    setQueryData: vi.fn(),
-    invalidateQueries: vi.fn(),
-  }),
-}));
-
+vi.mock('@tanstack/react-query', async importOriginal => {
+  const actual = await importOriginal<typeof import('@tanstack/react-query')>();
+  return {
+    ...actual,
+    useQuery: () => ({
+      data: [
+        { category: 'INVOICE_UPDATES', emailEnabled: true },
+        { category: 'PAYMENT_CONFIRMATIONS', emailEnabled: false },
+        { category: 'CONTRACT_CHANGES', emailEnabled: true },
+        { category: 'DOCUMENT_UPLOADS', emailEnabled: true },
+        { category: 'SECURITY_ALERTS', emailEnabled: true },
+      ],
+      isPending: false,
+    }),
+    useMutation: () => ({ mutate: vi.fn() }),
+    useQueryClient: () => ({
+      cancelQueries: vi.fn(),
+      setQueryData: vi.fn(),
+      invalidateQueries: vi.fn(),
+    }),
+  };
+});
 vi.mock('@/trpc/init', () => ({
   trpc: {
     portal: {

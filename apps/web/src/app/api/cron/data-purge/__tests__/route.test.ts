@@ -23,8 +23,8 @@ const {
   mockDeleteObject: vi.fn(),
 }));
 
-vi.mock('@contractor-ops/db', () => ({
-  prisma: {
+vi.mock('@contractor-ops/db', () => {
+  const tx = {
     document: {
       findMany: mockDocumentFindMany,
       deleteMany: mockDocumentDeleteMany,
@@ -44,8 +44,14 @@ vi.mock('@contractor-ops/db', () => ({
     contractor: {
       deleteMany: mockContractorDeleteMany,
     },
-  },
-}));
+  };
+  return {
+    prisma: {
+      ...tx,
+      $transaction: (fn: (tx: typeof tx) => Promise<unknown>) => fn(tx),
+    },
+  };
+});
 
 vi.mock('@sentry/nextjs', () => ({
   withMonitor: vi.fn((_name: string, fn: () => Promise<Response>) => fn()),

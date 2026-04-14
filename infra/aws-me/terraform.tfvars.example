@@ -1,0 +1,37 @@
+# Copy to terraform.tfvars (gitignored) and fill in real values before apply.
+
+region      = "me-south-1"      # Bahrain. Use "me-central-1" only if contract mandates UAE.
+environment = "production"
+
+domain_name   = "me.contractor-ops.com"
+app_subdomain = "app"
+api_subdomain = "api"
+
+# Set to the commit SHA that has been baked on Render EU for at least 24h.
+# Never deploy a commit to ME that hasn't been observed on EU first.
+image_tag = "sha-REPLACE_WITH_COMMIT"
+
+# Keep ECR repo names in sync with the names used by the CI mirror workflow
+# (.github/workflows/ecr-mirror.yml). Default values match the EU image naming.
+# ecr_repo_web        = "contractor-ops/web"
+# ecr_repo_public_api = "contractor-ops/public-api"
+# ecr_repo_worker     = "contractor-ops/web"
+
+# Compute sizing — defaults are conservative for the first ME tenant. Bump
+# after observing a week of real traffic.
+# web_cpu              = 1024
+# web_memory           = 2048
+# web_desired_count    = 2
+# public_api_cpu       = 512
+# public_api_memory    = 1024
+# public_api_desired_count = 2
+# worker_cpu           = 512
+# worker_memory        = 1024
+
+# Database — Aurora Serverless v2 ACU bounds.
+# db_min_capacity = 0.5
+# db_max_capacity = 4
+# db_backup_retention_days = 30
+
+# Observability — Sentry DSN with ME environment tag. Required for prod.
+sentry_dsn = ""

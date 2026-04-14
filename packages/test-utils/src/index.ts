@@ -1,4 +1,3 @@
-// biome-ignore lint/performance/noBarrelFile: package entry point
 // Main entry point for @contractor-ops/test-utils
 
 /** For `server.use` overrides in integration tests (package may not depend on `msw` directly). */

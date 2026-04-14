@@ -8,7 +8,8 @@ describe('renderNotificationEmail', () => {
       ctaUrl: 'https://example.com',
       preferencesUrl: 'https://example.com/prefs',
     });
-    expect(subject).toContain('INV-42');
+    expect(subject.key).toBe('email.subject.approvalRequest');
+    expect(subject.params.invoiceNumber).toBe('INV-42');
     expect(react).toBeDefined();
   });
 

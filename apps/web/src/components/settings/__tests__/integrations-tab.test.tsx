@@ -79,6 +79,16 @@ vi.mock('@/trpc/init', () => ({
       },
       disconnect: { mutationOptions: vi.fn((o: object) => o) },
     },
+    zatca: {
+      getOnboardingState: {
+        queryOptions: vi.fn(() => ({ queryKey: ['zatca', 'getOnboardingState'] })),
+        queryKey: vi.fn(() => ['zatca', 'getOnboardingState']),
+      },
+      getComplianceStats: {
+        queryOptions: vi.fn(() => ({ queryKey: ['zatca', 'getComplianceStats'] })),
+        queryKey: vi.fn(() => ['zatca', 'getComplianceStats']),
+      },
+    },
   },
 }));
 

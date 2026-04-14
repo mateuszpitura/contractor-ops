@@ -78,7 +78,7 @@ describe('getOrCreateTimesheet', () => {
     const tuesday = new Date('2025-01-07T00:00:00.000Z');
 
     await expect(getOrCreateTimesheet(mockPrisma, ORG_ID, CONTRACTOR_ID, tuesday)).rejects.toThrow(
-      'weekStartDate must be a Monday',
+      'errors.timesheet.weekStartDateMustBeMonday',
     );
 
     expect(mockPrisma.timesheet.upsert).not.toHaveBeenCalled();
@@ -88,7 +88,7 @@ describe('getOrCreateTimesheet', () => {
     const sunday = new Date('2025-01-05T00:00:00.000Z');
 
     await expect(getOrCreateTimesheet(mockPrisma, ORG_ID, CONTRACTOR_ID, sunday)).rejects.toThrow(
-      'weekStartDate must be a Monday',
+      'errors.timesheet.weekStartDateMustBeMonday',
     );
 
     expect(mockPrisma.timesheet.upsert).not.toHaveBeenCalled();
@@ -98,7 +98,7 @@ describe('getOrCreateTimesheet', () => {
     const saturday = new Date('2025-01-04T00:00:00.000Z');
 
     await expect(getOrCreateTimesheet(mockPrisma, ORG_ID, CONTRACTOR_ID, saturday)).rejects.toThrow(
-      'weekStartDate must be a Monday',
+      'errors.timesheet.weekStartDateMustBeMonday',
     );
   });
 
@@ -118,7 +118,7 @@ describe('getOrCreateTimesheet', () => {
 
     await expect(
       getOrCreateTimesheet(mockPrisma, ORG_ID, CONTRACTOR_ID, wednesday),
-    ).rejects.toThrow('weekStartDate must be a Monday');
+    ).rejects.toThrow('errors.timesheet.weekStartDateMustBeMonday');
   });
 });
 
@@ -231,7 +231,7 @@ describe('submitTimesheet', () => {
     mockPrisma.timesheet.updateMany.mockResolvedValue({ count: 0 });
 
     await expect(submitTimesheet(mockPrisma, ORG_ID, CONTRACTOR_ID, TIMESHEET_ID)).rejects.toThrow(
-      'Timesheet cannot be submitted',
+      'errors.timesheet.cannotSubmit',
     );
 
     // findUniqueOrThrow should NOT be called when update fails

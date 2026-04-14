@@ -1,17 +1,22 @@
 import { render, screen } from '@/test/test-utils';
 import { TabDocuments } from '../tab-documents';
 
-const mockUseQuery = vi.fn(() => ({
-  data: null,
-  isLoading: false,
-  isFetching: false,
-  isPending: false,
+const { mockUseQuery } = vi.hoisted(() => ({
+  mockUseQuery: vi.fn(() => ({
+    data: null,
+    isLoading: false,
+    isFetching: false,
+    isPending: false,
+  })),
 }));
 
-vi.mock('@tanstack/react-query', () => ({
-  useQuery: mockUseQuery,
-}));
-
+vi.mock('@tanstack/react-query', async importOriginal => {
+  const actual = await importOriginal<typeof import('@tanstack/react-query')>();
+  return {
+    ...actual,
+    useQuery: mockUseQuery,
+  };
+});
 vi.mock('@/trpc/init', () => ({
   trpc: {
     document: {
@@ -27,7 +32,9 @@ vi.mock('@/components/documents/drop-zone', () => ({
 }));
 
 vi.mock('@/components/documents/document-card', () => ({
-  DocumentCard: ({ document }: any) => <div data-testid="document-card">{document.id}</div>,
+  DocumentCard: ({ document }: { document: { id: string } }) => (
+    <div data-testid="document-card">{document.id}</div>
+  ),
 }));
 
 describe('TabDocuments', () => {

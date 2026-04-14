@@ -1,3 +1,4 @@
+import type { FlagKey } from '@contractor-ops/feature-flags';
 import type { LucideIcon } from 'lucide-react';
 import {
   Banknote,
@@ -26,6 +27,12 @@ export interface NavItem {
   icon: LucideIcon;
   /** Permission required to see this item. Null means always visible. */
   permission: { resource: string; actions: string[] } | null;
+  /**
+   * Feature flag required to see this item. When set, the nav item is hidden
+   * unless the flag resolves to `true` for the current user/org. Stack with
+   * `permission` — both must pass for the item to appear.
+   */
+  flag?: FlagKey;
 }
 
 /**

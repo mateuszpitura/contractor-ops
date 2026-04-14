@@ -303,6 +303,7 @@ export function getColumns(
         if (step.status !== 'PENDING') return null;
 
         return (
+          // biome-ignore lint/a11y/noStaticElementInteractions: onClick only stops propagation to prevent row click
           <div
             className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
             role="presentation"

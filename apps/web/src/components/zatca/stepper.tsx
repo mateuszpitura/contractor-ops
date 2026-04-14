@@ -1,6 +1,7 @@
 'use client';
 
 import { Check } from 'lucide-react';
+import { useCallback } from 'react';
 import { cn } from '@/lib/utils';
 
 // ---------------------------------------------------------------------------
@@ -34,27 +35,29 @@ interface StepperProps {
  * - ARIA: role="tablist", aria-current="step" for active
  */
 export function Stepper({ steps, currentStep, onStepClick, className }: StepperProps) {
-  function handleKeyDown(e: React.KeyboardEvent) {
-    if (!onStepClick) return;
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (!onStepClick) return;
 
-    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-      e.preventDefault();
-      const next = Math.min(currentStep + 1, steps.length - 1);
-      if (next < currentStep) return;
-      onStepClick(next);
-    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-      e.preventDefault();
-      const prev = Math.max(currentStep - 1, 0);
-      onStepClick(prev);
-    }
-  }
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+        e.preventDefault();
+        const next = Math.min(currentStep + 1, steps.length - 1);
+        if (next < currentStep) return;
+        onStepClick(next);
+      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        const prev = Math.max(currentStep - 1, 0);
+        onStepClick(prev);
+      }
+    },
+    [onStepClick, currentStep, steps.length],
+  );
 
   return (
     <div
       role="tablist"
       aria-label="Onboarding progress"
       className={cn('flex flex-col gap-2 md:flex-row md:items-center md:gap-0', className)}
-      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
       onKeyDown={handleKeyDown}>
       {steps.map((step, index) => {
         const isCompleted = index < currentStep;

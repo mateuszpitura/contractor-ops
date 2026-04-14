@@ -174,11 +174,11 @@ export function WorkflowRunsDataTable({ onRowClick, onStartWorkflow }: WorkflowR
   /**
    * Determine if a row is overdue for background highlighting.
    */
-  const isRowOverdue = (row: WorkflowRunRow) => {
-    if (row.status === 'COMPLETED' || row.status === 'CANCELLED') return false;
-    if (!row.dueAt) return false;
-    return new Date(row.dueAt) < new Date();
-  };
+  const rowClassName = useCallback((row: WorkflowRunRow) => {
+    if (row.status === 'COMPLETED' || row.status === 'CANCELLED') return '';
+    if (!row.dueAt) return '';
+    return new Date(row.dueAt) < new Date() ? 'bg-destructive/5' : '';
+  }, []);
 
   return (
     <div className="space-y-4">
@@ -232,7 +232,7 @@ export function WorkflowRunsDataTable({ onRowClick, onStartWorkflow }: WorkflowR
             isLoading={isLoading}
             hasFiltersOrSearch={hasFiltersOrSearch}
             onRowClick={onRowClick}
-            rowClassName={row => (isRowOverdue(row) ? 'bg-destructive/5' : '')}
+            rowClassName={rowClassName}
             emptyIcon={<GitBranch className="mx-auto h-10 w-10 text-muted-foreground/50" />}
             emptyTitle={t('empty.heading')}
             emptyDescription={t('empty.body')}

@@ -2,15 +2,18 @@ import { useForm } from 'react-hook-form';
 import { render, screen } from '@/test/test-utils';
 import { StepAssignment } from '../step-assignment';
 
-vi.mock('@tanstack/react-query', () => ({
-  useQuery: () => ({
-    data: [
-      { id: 'u1', name: 'Jan Kowalski', email: 'jan@test.com' },
-      { id: 'u2', name: 'Anna Nowak', email: 'anna@test.com' },
-    ],
-  }),
-}));
-
+vi.mock('@tanstack/react-query', async importOriginal => {
+  const actual = await importOriginal<typeof import('@tanstack/react-query')>();
+  return {
+    ...actual,
+    useQuery: () => ({
+      data: [
+        { id: 'u1', name: 'Jan Kowalski', email: 'jan@test.com' },
+        { id: 'u2', name: 'Anna Nowak', email: 'anna@test.com' },
+      ],
+    }),
+  };
+});
 vi.mock('@/trpc/init', () => ({
   trpc: {
     user: {

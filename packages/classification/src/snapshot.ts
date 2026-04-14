@@ -15,8 +15,7 @@ function deepFreeze<T>(value: T): T {
   if (Object.isFrozen(value)) return value;
 
   for (const key of Object.keys(value as object)) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const child = (value as any)[key];
+    const child = (value as Record<string, unknown>)[key];
     if (child && typeof child === 'object' && !Object.isFrozen(child)) {
       deepFreeze(child);
     }

@@ -23,6 +23,7 @@ export default defineConfig({
       'packages/logger',
       'packages/validators',
       'packages/einvoice',
+      'packages/feature-flags',
       'packages/gov-api',
       /** Test-only harness (MSW, fixtures) — not in root coverage; run via `pnpm --filter @contractor-ops/test-utils test` */
     ],
@@ -39,6 +40,7 @@ export default defineConfig({
         'packages/logger/src/**/*.ts',
         'packages/validators/src/**/*.ts',
         'packages/gov-api/src/**/*.ts',
+        'packages/feature-flags/src/**/*.ts',
       ],
       exclude: [
         '**/node_modules/**',

@@ -3,7 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { AlertTriangle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { FeatureGate } from '@/components/billing/feature-gate';
 import { ProviderConnectionCard } from '@/components/settings/provider-connection-card';
 import { Button } from '@/components/ui/button';
@@ -18,6 +18,10 @@ import { LinearStatusMappingDialog } from './linear-status-mapping-dialog';
 export function LinearProviderSection() {
   const t = useTranslations('Settings.integrations.linear');
   const [mappingOpen, setMappingOpen] = useState(false);
+
+  const openMappingDialog = useCallback(() => {
+    setMappingOpen(true);
+  }, []);
 
   const healthQuery = useQuery(trpc.integration.getHealth.queryOptions({ provider: 'linear' }));
   const health = healthQuery.data as { status: string; connectionId?: string } | null | undefined;
@@ -53,7 +57,7 @@ export function LinearProviderSection() {
         )}
 
         {!!(isConnected || isPendingMapping) && (
-          <Button variant="outline" size="sm" onClick={() => setMappingOpen(true)}>
+          <Button variant="outline" size="sm" onClick={openMappingDialog}>
             {t('configureMapping')}
           </Button>
         )}

@@ -8,10 +8,13 @@ import { FeatureGate } from '../feature-gate';
 let subscriptionData: unknown = null;
 let isLoading = false;
 
-vi.mock('@tanstack/react-query', () => ({
-  useQuery: () => ({ data: subscriptionData, isLoading }),
-}));
-
+vi.mock('@tanstack/react-query', async importOriginal => {
+  const actual = await importOriginal<typeof import('@tanstack/react-query')>();
+  return {
+    ...actual,
+    useQuery: () => ({ data: subscriptionData, isLoading }),
+  };
+});
 vi.mock('@/trpc/init', () => ({
   trpc: {
     billing: {

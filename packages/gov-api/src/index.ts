@@ -1,4 +1,3 @@
-// biome-ignore lint/performance/noBarrelFile: package entry point
 export { GovApiAuditLogger } from './audit-logger.js';
 export { GovApiClient } from './client.js';
 // Phase 57 · Plan 02 — government VAT client implementations.

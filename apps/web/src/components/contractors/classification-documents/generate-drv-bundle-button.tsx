@@ -5,7 +5,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useCallback, useId, useState } from 'react';
 
 import { trpc } from '@/trpc/init';
 
@@ -22,6 +22,7 @@ export function GenerateDrvBundleButton({
 }: GenerateDrvBundleButtonProps) {
   const t = useTranslations('Classification.documents');
   const queryClient = useQueryClient();
+  const disabledReasonId = useId();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const mutation = useMutation(
@@ -40,31 +41,32 @@ export function GenerateDrvBundleButton({
   const isPending = mutation.isPending;
   const isDisabled = Boolean(disabled) || isPending;
 
+  const handleClick = useCallback(
+    () => mutation.mutate({ classificationAssessmentId }),
+    [mutation, classificationAssessmentId],
+  );
+
   return (
     <div>
       <button
         type="button"
-        onClick={() => mutation.mutate({ classificationAssessmentId })}
+        onClick={handleClick}
         disabled={isDisabled}
         aria-disabled={isDisabled}
-        aria-describedby={
-          disabled && disabledReason ? 'drv-bundle-disabled-reason' : undefined
-        }
+        aria-describedby={disabled && disabledReason ? disabledReasonId : undefined}
         aria-busy={isPending}
-        className="inline-flex items-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary/90 disabled:opacity-60"
-      >
+        className="inline-flex items-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary/90 disabled:opacity-60">
         {isPending ? t('generating') : t('generateDrvBundle')}
       </button>
       {disabled && disabledReason ? (
-        <p id="drv-bundle-disabled-reason" className="mt-2 text-xs text-muted-foreground">
+        <p id={disabledReasonId} className="mt-2 text-xs text-muted-foreground">
           {disabledReason}
         </p>
       ) : null}
       {errorMessage ? (
         <div
           role="alert"
-          className="mt-3 rounded-md border border-destructive bg-destructive/10 p-3 text-sm text-destructive"
-        >
+          className="mt-3 rounded-md border border-destructive bg-destructive/10 p-3 text-sm text-destructive">
           <p className="font-medium">{t('errorGenericTitle')}</p>
           <p className="mt-1">{errorMessage}</p>
         </div>

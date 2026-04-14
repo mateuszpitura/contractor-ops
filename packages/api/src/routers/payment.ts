@@ -26,6 +26,10 @@ import {
   resolveTransferTitle,
 } from '../services/payment-export.js';
 import { calculateWht } from '../services/tax-rate.service.js';
+import type { DbClient } from '../services/types.js';
+
+/** Transaction client derived from the tenant-scoped DbClient. */
+type TxClient = Parameters<Parameters<DbClient['$transaction']>[0]>[0];
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -69,8 +73,7 @@ if (typeof globalThis !== 'undefined') {
 /**
  * Generates the sequential run number for a payment run (e.g., PR-2026-001).
  */
-// biome-ignore lint/suspicious/noExplicitAny: transaction client type not exported from Prisma
-async function _generateRunNumber(tx: any, organizationId: string): Promise<string> {
+async function _generateRunNumber(tx: TxClient, organizationId: string): Promise<string> {
   const year = new Date().getFullYear();
   const prefix = `PR-${year}-`;
 
@@ -109,8 +112,7 @@ async function _generateExportFileForFormat(
 /**
  * Checks if all items in a payment run are terminal and auto-completes the run.
  */
-// biome-ignore lint/suspicious/noExplicitAny: transaction client type not exported from Prisma
-async function autoCompleteRunIfTerminal(tx: any, paymentRunId: string): Promise<void> {
+async function autoCompleteRunIfTerminal(tx: TxClient, paymentRunId: string): Promise<void> {
   const remaining = await tx.paymentRunItem.count({
     where: { paymentRunId, status: { in: ['PENDING', 'EXPORTED'] } },
   });
@@ -184,9 +186,8 @@ function _buildExportItems(
 /**
  * Applies withholding tax calculations for Saudi organizations on cross-border payments.
  */
-// biome-ignore lint/suspicious/noExplicitAny: transaction client type not exported from Prisma
 async function _applyWhtIfSaudi(
-  tx: any,
+  tx: TxClient,
   organizationId: string,
   paymentRunId: string,
 ): Promise<void> {
@@ -233,9 +234,8 @@ async function _applyWhtIfSaudi(
 /**
  * Resolves the organization's bank info and transfer title template from metadata.
  */
-// biome-ignore lint/suspicious/noExplicitAny: transaction client type not exported from Prisma
 async function _resolveOrgBankInfo(
-  tx: any,
+  tx: TxClient,
   organizationId: string,
 ): Promise<{ orgBank: OrgBankInfo; transferTitleTemplate: string }> {
   const org = await tx.organization.findUnique({

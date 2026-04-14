@@ -7,8 +7,8 @@
 // The counter is aria-describedby'd to the textarea so assistive tech
 // announces remaining character budget.
 
-import { useCallback, useId, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
+import { useCallback, useId, useMemo } from 'react';
 
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';

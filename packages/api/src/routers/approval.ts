@@ -169,6 +169,22 @@ async function dispatchNextApproverNotification(
 // ---------------------------------------------------------------------------
 
 /**
+ * Checks whether an approval step has breached its SLA deadline.
+ */
+function isSlaBreach(step: {
+  slaDeadline: Date | null;
+  actedAt: Date | null;
+  status: string;
+}): boolean {
+  if (!step.slaDeadline) return false;
+  const now = new Date();
+  return (
+    (step.actedAt != null && step.actedAt > step.slaDeadline) ||
+    (step.status === 'PENDING' && now > step.slaDeadline)
+  );
+}
+
+/**
  * Builds the audit trail events array from a flow with steps and decisions.
  */
 function buildAuditEvents(
@@ -227,20 +243,13 @@ function buildAuditEvents(
     }
 
     // SLA breach detection
-    if (step.slaDeadline) {
-      const now = new Date();
-      const breached =
-        (step.actedAt && step.actedAt > step.slaDeadline) ||
-        (step.status === 'PENDING' && now > step.slaDeadline);
-
-      if (breached) {
-        events.push({
-          type: 'system',
-          label: approvalAuditSystemLabel.slaBreached,
-          levelName: step.name,
-          timestamp: step.slaDeadline.toISOString(),
-        });
-      }
+    if (isSlaBreach(step)) {
+      events.push({
+        type: 'system',
+        label: approvalAuditSystemLabel.slaBreached,
+        levelName: step.name,
+        timestamp: (step.slaDeadline as Date).toISOString(),
+      });
     }
   }
 
@@ -283,6 +292,52 @@ function approvalQueueSqlConditions(
     conditions.push(PrismaClient.sql`s."status" = 'REJECTED'::"ApprovalStatus"`);
   }
   return conditions;
+}
+
+/**
+ * After an approval flow completes, mark the invoice as approved and sync the
+ * payment-due calendar deadline (D-07). Extracted to reduce cognitive complexity
+ * of bulk-approve / single-approve handlers.
+ */
+async function finalizeApprovedInvoice(
+  tx: TxClient,
+  opts: {
+    resourceId: string;
+    organizationId: string;
+    db: TxClient;
+    userId: string | undefined;
+  },
+) {
+  await tx.invoice.update({
+    where: { id: opts.resourceId },
+    data: {
+      status: 'APPROVED',
+      paymentStatus: 'READY',
+      readyForPaymentAt: new Date(),
+    },
+  });
+
+  const invoice = await tx.invoice.findUnique({
+    where: { id: opts.resourceId },
+    select: { id: true, invoiceNumber: true, dueDate: true, contractorId: true },
+  });
+  if (!invoice?.dueDate) return;
+
+  const contractor = invoice.contractorId
+    ? await opts.db.contractor.findUnique({
+        where: { id: invoice.contractorId },
+        select: { displayName: true },
+      })
+    : null;
+
+  void syncPaymentDueDeadline(opts.db, {
+    organizationId: opts.organizationId,
+    invoiceId: invoice.id,
+    invoiceNumber: invoice.invoiceNumber ?? `INV-${invoice.id.slice(-6)}`,
+    contractorName: contractor?.displayName ?? 'Unknown',
+    dueDate: new Date(invoice.dueDate),
+    userId: opts.userId,
+  }).catch(err => console.error('[approval] payment deadline sync failed:', err));
 }
 
 // ---------------------------------------------------------------------------
@@ -1002,38 +1057,12 @@ export const approvalRouter = router({
             const advanceResult = await advanceFlow(tx as TxClient, step.approvalFlowId);
 
             if (advanceResult.completed) {
-              await tx.invoice.update({
-                where: { id: step.approvalFlow.resourceId },
-                data: {
-                  status: 'APPROVED',
-                  paymentStatus: 'READY',
-                  readyForPaymentAt: new Date(),
-                },
+              await finalizeApprovedInvoice(tx as TxClient, {
+                resourceId: step.approvalFlow.resourceId,
+                organizationId: ctx.organizationId,
+                db: ctx.db as unknown as TxClient,
+                userId: ctx.user?.id,
               });
-
-              // Calendar auto-push: sync payment deadline for bulk-approved invoice (D-07)
-              const invoice = await tx.invoice.findUnique({
-                where: { id: step.approvalFlow.resourceId },
-                select: { id: true, invoiceNumber: true, dueDate: true, contractorId: true },
-              });
-              if (invoice?.dueDate) {
-                const contractor = invoice.contractorId
-                  ? await ctx.db.contractor.findUnique({
-                      where: { id: invoice.contractorId },
-                      select: { displayName: true },
-                    })
-                  : null;
-                void syncPaymentDueDeadline(ctx.db, {
-                  organizationId: ctx.organizationId,
-                  invoiceId: invoice.id,
-                  invoiceNumber: invoice.invoiceNumber ?? `INV-${invoice.id.slice(-6)}`,
-                  contractorName: contractor?.displayName ?? 'Unknown',
-                  dueDate: new Date(invoice.dueDate),
-                  userId: ctx.user?.id,
-                }).catch(err =>
-                  console.error('[approval] bulk payment deadline sync failed:', err),
-                );
-              }
             }
           });
         }),

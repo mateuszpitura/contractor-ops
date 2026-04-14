@@ -172,7 +172,7 @@ export function ActivityFeed() {
                           <div className="mt-0.5 flex items-center gap-2">
                             <Badge variant="secondary" className="text-[10px]">
                               {t(
-                                `activity.resources.${item.resourceType}` as Parameters<
+                                `activity.resources.${enumKey(item.resourceType)}` as Parameters<
                                   typeof t
                                 >[0],
                               )}

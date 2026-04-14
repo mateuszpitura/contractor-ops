@@ -6,12 +6,15 @@ const { mockedUseQuery } = vi.hoisted(() => ({
   mockedUseQuery: vi.fn(),
 }));
 
-vi.mock('@tanstack/react-query', () => ({
-  useQuery: mockedUseQuery,
-  useMutation: () => ({ mutate: vi.fn(), isPending: false }),
-  useQueryClient: () => ({ invalidateQueries: vi.fn() }),
-}));
-
+vi.mock('@tanstack/react-query', async importOriginal => {
+  const actual = await importOriginal<typeof import('@tanstack/react-query')>();
+  return {
+    ...actual,
+    useQuery: mockedUseQuery,
+    useMutation: () => ({ mutate: vi.fn(), isPending: false }),
+    useQueryClient: () => ({ invalidateQueries: vi.fn() }),
+  };
+});
 vi.mock('@/trpc/init', () => ({
   trpc: {
     esign: {

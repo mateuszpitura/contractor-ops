@@ -5,12 +5,15 @@ vi.mock('@/components/equipment/shipment-label-view', () => ({
   LabelDisplay: () => <div data-testid="label-display">Label</div>,
 }));
 
-vi.mock('@tanstack/react-query', () => ({
-  useMutation: () => ({ mutate: vi.fn(), isPending: false, isSuccess: false }),
-  useQuery: () => ({ data: undefined, isPending: false }),
-  useQueryClient: () => ({ invalidateQueries: vi.fn() }),
-}));
-
+vi.mock('@tanstack/react-query', async importOriginal => {
+  const actual = await importOriginal<typeof import('@tanstack/react-query')>();
+  return {
+    ...actual,
+    useMutation: () => ({ mutate: vi.fn(), isPending: false, isSuccess: false }),
+    useQuery: () => ({ data: undefined, isPending: false }),
+    useQueryClient: () => ({ invalidateQueries: vi.fn() }),
+  };
+});
 vi.mock('@/trpc/init', () => ({
   trpc: {
     portal: {

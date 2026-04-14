@@ -112,35 +112,38 @@ export function TemplatePicker({
   const isBulk = contractorIds && contractorIds.length > 0;
   const effectiveContractorId = contractorId ?? contractorIds?.[0];
 
+  const executeRuns = useCallback(
+    async (templateId: string): Promise<number> => {
+      if (isBulk && contractorIds) {
+        const results = await Promise.all(
+          contractorIds.map(cId =>
+            startRunMutation.mutateAsync({ templateId, contractorId: cId, contractId }),
+          ),
+        );
+        let total = 0;
+        for (const r of results) {
+          total += (r as { calendarTaskCount?: number }).calendarTaskCount ?? 0;
+        }
+        return total;
+      }
+      if (effectiveContractorId) {
+        const result = (await startRunMutation.mutateAsync({
+          templateId,
+          contractorId: effectiveContractorId,
+          contractId,
+        })) as { calendarTaskCount?: number };
+        return result.calendarTaskCount ?? 0;
+      }
+      return 0;
+    },
+    [isBulk, contractorIds, effectiveContractorId, contractId, startRunMutation],
+  );
+
   const handleStart = useCallback(async () => {
     if (!selectedId) return;
 
     try {
-      let totalCalendarTasks = 0;
-
-      if (isBulk && contractorIds) {
-        // Bulk: create one run per contractor
-        const results = await Promise.all(
-          contractorIds.map(cId =>
-            startRunMutation.mutateAsync({
-              templateId: selectedId,
-              contractorId: cId,
-              contractId,
-            }),
-          ),
-        );
-        for (const r of results) {
-          const result = r as { calendarTaskCount?: number };
-          totalCalendarTasks += result.calendarTaskCount ?? 0;
-        }
-      } else if (effectiveContractorId) {
-        const result = (await startRunMutation.mutateAsync({
-          templateId: selectedId,
-          contractorId: effectiveContractorId,
-          contractId,
-        })) as { calendarTaskCount?: number };
-        totalCalendarTasks = result.calendarTaskCount ?? 0;
-      }
+      const totalCalendarTasks = await executeRuns(selectedId);
 
       toast.success(t('toast.workflowStarted'));
 
@@ -158,17 +161,7 @@ export function TemplatePicker({
     } catch {
       toast.error(t('errors.failedToStartWorkflow'));
     }
-  }, [
-    selectedId,
-    isBulk,
-    contractorIds,
-    effectiveContractorId,
-    contractId,
-    startRunMutation,
-    onOpenChange,
-    queryClient,
-    t,
-  ]);
+  }, [selectedId, executeRuns, onOpenChange, queryClient, t]);
 
   const handleOpenChange = useCallback(
     (isOpen: boolean) => {

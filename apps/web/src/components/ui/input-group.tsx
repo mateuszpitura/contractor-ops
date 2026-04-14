@@ -54,6 +54,7 @@ function InputGroupAddon({
   }, []);
 
   return (
+    // biome-ignore lint/a11y/noStaticElementInteractions: onClick delegates focus to sibling input, not interactive
     <div
       role="presentation"
       data-slot="input-group-addon"

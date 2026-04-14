@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { Badge } from '@/components/ui/badge';
+import { enumKey } from '@/lib/enum-key';
 
 type ShipmentStatus =
   | 'CREATED'
@@ -38,7 +39,7 @@ interface ShipmentStatusBadgeProps {
 export function ShipmentStatusBadge({ status, className }: ShipmentStatusBadgeProps) {
   const t = useTranslations('Equipment.shipment.status');
   const variant = STATUS_VARIANT_MAP[status as ShipmentStatus] ?? 'secondary';
-  const label = t(status as Parameters<typeof t>[0]);
+  const label = t(enumKey(status) as Parameters<typeof t>[0]);
 
   return (
     <Badge variant={variant} className={className} aria-label={label}>

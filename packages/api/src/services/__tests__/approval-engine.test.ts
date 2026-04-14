@@ -109,23 +109,23 @@ describe('evaluateConditions', () => {
     });
   });
 
-  describe('contractor_type field', () => {
+  describe('contractorType field', () => {
     it('eq operator matches contractor type', () => {
       expect(
-        evaluateConditions([{ field: 'contractor_type', operator: 'eq', value: 'B2B' }], invoice),
+        evaluateConditions([{ field: 'contractorType', operator: 'eq', value: 'B2B' }], invoice),
       ).toBe(true);
     });
 
     it('eq operator does not match different type', () => {
       expect(
-        evaluateConditions([{ field: 'contractor_type', operator: 'eq', value: 'UoP' }], invoice),
+        evaluateConditions([{ field: 'contractorType', operator: 'eq', value: 'UoP' }], invoice),
       ).toBe(false);
     });
 
-    it('returns false for unknown contractor_type operator', () => {
+    it('returns false for unknown contractorType operator', () => {
       expect(
         evaluateConditions(
-          [{ field: 'contractor_type', operator: 'contains', value: 'B2B' }],
+          [{ field: 'contractorType', operator: 'contains', value: 'B2B' }],
           invoice,
         ),
       ).toBe(false);
@@ -138,7 +138,7 @@ describe('evaluateConditions', () => {
         evaluateConditions(
           [
             { field: 'amount', operator: 'gt', value: 100 },
-            { field: 'contractor_type', operator: 'eq', value: 'B2B' },
+            { field: 'contractorType', operator: 'eq', value: 'B2B' },
           ],
           invoice,
         ),
@@ -150,7 +150,7 @@ describe('evaluateConditions', () => {
         evaluateConditions(
           [
             { field: 'amount', operator: 'gt', value: 100 },
-            { field: 'contractor_type', operator: 'eq', value: 'UoP' },
+            { field: 'contractorType', operator: 'eq', value: 'UoP' },
           ],
           invoice,
         ),
@@ -162,7 +162,7 @@ describe('evaluateConditions', () => {
         evaluateConditions(
           [
             { field: 'amount', operator: 'gt', value: 200 },
-            { field: 'contractor_type', operator: 'eq', value: 'UoP' },
+            { field: 'contractorType', operator: 'eq', value: 'UoP' },
           ],
           invoice,
         ),
@@ -276,12 +276,12 @@ describe('routeToChain', () => {
     expect(result).toBeNull();
   });
 
-  it('evaluates multi-field conditions (amount AND contractor_type)', async () => {
+  it('evaluates multi-field conditions (amount AND contractorType)', async () => {
     const b2bOnlyChain = {
       id: 'chain-b2b',
       conditionsJson: [
         { field: 'amount', operator: 'gt', value: 100 },
-        { field: 'contractor_type', operator: 'eq', value: 'B2B' },
+        { field: 'contractorType', operator: 'eq', value: 'B2B' },
       ],
       isDefault: false,
     };
@@ -466,7 +466,7 @@ describe('createApprovalFlow', () => {
     mockTx.member.findFirst.mockResolvedValue(null);
 
     await expect(createApprovalFlow(mockTx as unknown, params)).rejects.toThrow(
-      'No user with role LEGAL_VIEWER found',
+      'errors.approval.noUserWithRole',
     );
   });
 

@@ -174,6 +174,7 @@ function TiltCard({
   }, []);
 
   return (
+    // biome-ignore lint/a11y/noStaticElementInteractions: mouse handlers for visual tilt effect only, not interactive
     <div
       ref={ref}
       className={`atelier-enter atelier-glass relative rounded-2xl p-5 transition-[transform] duration-[400ms] ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform ${className}`}
@@ -194,6 +195,114 @@ function PipelineConnector() {
     <div className="relative ms-6 flex h-6 items-center">
       <div className="absolute start-0 h-full w-[2px] rounded-full" />
       <div className="ms-4 h-px flex-1 bg-gradient-to-r from-border/40 to-transparent" />
+    </div>
+  );
+}
+
+// =============================================================================
+// TASK CARD V2 — extracted sub-components
+// =============================================================================
+
+function TaskBadges({ task }: { task: TaskFormValues }) {
+  return (
+    <div className="hidden items-center gap-2 sm:flex">
+      {!!task.required && (
+        <span className="rounded-full bg-amber-500/10 px-2 py-0.5 text-[8px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
+          Required
+        </span>
+      )}
+      {task.dueOffsetDays != null && task.dueOffsetDays > 0 && (
+        <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground/40">
+          <Clock className="h-3 w-3" /> {task.dueOffsetDays}d
+        </span>
+      )}
+      {!!task.dependsOnTaskTemplateId && (
+        <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground/40">
+          <GitBranch className="h-3 w-3" /> Dep
+        </span>
+      )}
+    </div>
+  );
+}
+
+function AssigneeField({
+  index,
+  task,
+  form,
+  users,
+}: {
+  index: number;
+  task: TaskFormValues;
+  form: ReturnType<typeof useTemplateForm>['form'];
+  users: Array<{ id: string; name: string | null }> | undefined;
+}) {
+  return (
+    <div>
+      <label
+        htmlFor={`task-${index}-assignee`}
+        className="mb-1 flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/50">
+        <UserCircle className="h-3 w-3" /> Assignee
+      </label>
+      <select
+        id={`task-${index}-assignee`}
+        className="h-9 w-full rounded-lg border border-border/40 bg-transparent px-2 text-[12px] focus:border-primary/40 focus:outline-none"
+        value={task.assigneeMode}
+        // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
+        onChange={e =>
+          form.setValue(
+            `tasks.${index}.assigneeMode`,
+            e.target.value as TaskFormValues['assigneeMode'],
+            { shouldDirty: true },
+          )
+        }>
+        {ASSIGNEE_MODES.map(m => (
+          <option key={m.value} value={m.value}>
+            {m.label}
+          </option>
+        ))}
+      </select>
+
+      {/* Conditional: role select */}
+      {task.assigneeMode === 'ROLE_BASED' && (
+        <select
+          className="mt-1.5 h-8 w-full rounded-lg border border-border/30 bg-transparent px-2 text-[11px] focus:border-primary/40 focus:outline-none"
+          value={task.assigneeRole ?? ''}
+          // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
+          onChange={e =>
+            form.setValue(
+              `tasks.${index}.assigneeRole`,
+              e.target.value as TaskFormValues['assigneeRole'],
+              { shouldDirty: true },
+            )
+          }>
+          <option value="">Select role...</option>
+          {ROLES.map(r => (
+            <option key={r} value={r}>
+              {r.replace(/_/g, ' ')}
+            </option>
+          ))}
+        </select>
+      )}
+
+      {/* Conditional: user select */}
+      {task.assigneeMode === 'FIXED_USER' && (
+        <select
+          className="mt-1.5 h-8 w-full rounded-lg border border-border/30 bg-transparent px-2 text-[11px] focus:border-primary/40 focus:outline-none"
+          value={task.assigneeUserId ?? ''}
+          // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
+          onChange={e =>
+            form.setValue(`tasks.${index}.assigneeUserId`, e.target.value, {
+              shouldDirty: true,
+            })
+          }>
+          <option value="">Select user...</option>
+          {users?.map(u => (
+            <option key={u.id} value={u.id}>
+              {u.name ?? u.id}
+            </option>
+          ))}
+        </select>
+      )}
     </div>
   );
 }
@@ -252,23 +361,7 @@ function TaskCardV2({ index, task, form, allTasks, onRemove, dragHandleProps }: 
         </div>
 
         {/* Badges */}
-        <div className="hidden items-center gap-2 sm:flex">
-          {!!task.required && (
-            <span className="rounded-full bg-amber-500/10 px-2 py-0.5 text-[8px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
-              Required
-            </span>
-          )}
-          {task.dueOffsetDays != null && task.dueOffsetDays > 0 && (
-            <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground/40">
-              <Clock className="h-3 w-3" /> {task.dueOffsetDays}d
-            </span>
-          )}
-          {!!task.dependsOnTaskTemplateId && (
-            <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground/40">
-              <GitBranch className="h-3 w-3" /> Dep
-            </span>
-          )}
-        </div>
+        <TaskBadges task={task} />
 
         <span className="text-muted-foreground/30">
           {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
@@ -346,73 +439,12 @@ function TaskCardV2({ index, task, form, allTasks, onRemove, dragHandleProps }: 
           {/* Row 3: Assignee + Due + Required */}
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             {/* Assignee mode */}
-            <div>
-              <label
-                htmlFor={`task-${index}-assignee`}
-                className="mb-1 flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/50">
-                <UserCircle className="h-3 w-3" /> Assignee
-              </label>
-              <select
-                id={`task-${index}-assignee`}
-                className="h-9 w-full rounded-lg border border-border/40 bg-transparent px-2 text-[12px] focus:border-primary/40 focus:outline-none"
-                value={task.assigneeMode}
-                // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-                onChange={e =>
-                  form.setValue(
-                    `tasks.${index}.assigneeMode`,
-                    e.target.value as TaskFormValues['assigneeMode'],
-                    { shouldDirty: true },
-                  )
-                }>
-                {ASSIGNEE_MODES.map(m => (
-                  <option key={m.value} value={m.value}>
-                    {m.label}
-                  </option>
-                ))}
-              </select>
-
-              {/* Conditional: role select */}
-              {task.assigneeMode === 'ROLE_BASED' && (
-                <select
-                  className="mt-1.5 h-8 w-full rounded-lg border border-border/30 bg-transparent px-2 text-[11px] focus:border-primary/40 focus:outline-none"
-                  value={task.assigneeRole ?? ''}
-                  // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-                  onChange={e =>
-                    form.setValue(
-                      `tasks.${index}.assigneeRole`,
-                      e.target.value as TaskFormValues['assigneeRole'],
-                      { shouldDirty: true },
-                    )
-                  }>
-                  <option value="">Select role...</option>
-                  {ROLES.map(r => (
-                    <option key={r} value={r}>
-                      {r.replace(/_/g, ' ')}
-                    </option>
-                  ))}
-                </select>
-              )}
-
-              {/* Conditional: user select */}
-              {task.assigneeMode === 'FIXED_USER' && (
-                <select
-                  className="mt-1.5 h-8 w-full rounded-lg border border-border/30 bg-transparent px-2 text-[11px] focus:border-primary/40 focus:outline-none"
-                  value={task.assigneeUserId ?? ''}
-                  // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-                  onChange={e =>
-                    form.setValue(`tasks.${index}.assigneeUserId`, e.target.value, {
-                      shouldDirty: true,
-                    })
-                  }>
-                  <option value="">Select user...</option>
-                  {(users as Array<{ id: string; name: string | null }> | undefined)?.map(u => (
-                    <option key={u.id} value={u.id}>
-                      {u.name ?? u.id}
-                    </option>
-                  ))}
-                </select>
-              )}
-            </div>
+            <AssigneeField
+              index={index}
+              task={task}
+              form={form}
+              users={users as Array<{ id: string; name: string | null }> | undefined}
+            />
 
             {/* Due offset */}
             <div>

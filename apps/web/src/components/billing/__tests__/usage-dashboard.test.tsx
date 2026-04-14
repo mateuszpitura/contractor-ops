@@ -12,15 +12,18 @@ const { mockRefetch } = vi.hoisted(() => ({
   mockRefetch: vi.fn(),
 }));
 
-vi.mock('@tanstack/react-query', () => ({
-  useQuery: () => ({
-    data: dashboardData,
-    isLoading,
-    isError,
-    refetch: mockRefetch,
-  }),
-}));
-
+vi.mock('@tanstack/react-query', async importOriginal => {
+  const actual = await importOriginal<typeof import('@tanstack/react-query')>();
+  return {
+    ...actual,
+    useQuery: () => ({
+      data: dashboardData,
+      isLoading,
+      isError,
+      refetch: mockRefetch,
+    }),
+  };
+});
 vi.mock('@/trpc/init', () => ({
   trpc: {
     billing: {

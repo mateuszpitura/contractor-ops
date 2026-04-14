@@ -5,11 +5,10 @@
 // ---------------------------------------------------------------------------
 // See UI-SPEC §Interaction 3 (answer input patterns) + §Accessibility Contract.
 
-import { useId } from 'react';
 import { useTranslations } from 'next-intl';
-
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { useCallback, useId } from 'react';
 import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { cn } from '@/lib/utils';
 
 export type YesNoValue = 'yes' | 'no';
@@ -37,27 +36,19 @@ export function YesNoAnswer({
   const yesId = useId();
   const noId = useId();
 
+  const handleValueChange = useCallback((next: string) => onChange(next as YesNoValue), [onChange]);
+
   return (
     <RadioGroup
       name={name}
       value={value ?? null}
-      onValueChange={next => onChange(next as YesNoValue)}
+      onValueChange={handleValueChange}
       disabled={disabled}
       aria-labelledby={ariaLabelledBy}
       aria-describedby={ariaDescribedBy}
       className="flex flex-col gap-2 sm:grid sm:grid-cols-2 sm:gap-3">
-      <OptionCard
-        inputId={yesId}
-        optionValue="yes"
-        selected={value === 'yes'}
-        label={t('yes')}
-      />
-      <OptionCard
-        inputId={noId}
-        optionValue="no"
-        selected={value === 'no'}
-        label={t('no')}
-      />
+      <OptionCard inputId={yesId} optionValue="yes" selected={value === 'yes'} label={t('yes')} />
+      <OptionCard inputId={noId} optionValue="no" selected={value === 'no'} label={t('no')} />
     </RadioGroup>
   );
 }

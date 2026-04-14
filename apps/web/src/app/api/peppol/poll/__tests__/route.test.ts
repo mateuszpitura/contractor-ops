@@ -37,7 +37,7 @@ vi.mock('@contractor-ops/api/services/peppol-orchestrator', () => ({
 }));
 
 vi.mock('@upstash/qstash/nextjs', () => ({
-  verifySignatureAppRouter: (handler: Function) => handler,
+  verifySignatureAppRouter: (handler: (...args: unknown[]) => unknown) => handler,
 }));
 
 import { POST } from '../route';

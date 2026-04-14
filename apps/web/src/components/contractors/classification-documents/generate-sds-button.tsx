@@ -6,7 +6,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { trpc } from '@/trpc/init';
 
@@ -36,22 +36,25 @@ export function GenerateSdsButton({ classificationAssessmentId }: GenerateSdsBut
 
   const isPending = mutation.isPending;
 
+  const handleClick = useCallback(
+    () => mutation.mutate({ classificationAssessmentId }),
+    [mutation, classificationAssessmentId],
+  );
+
   return (
     <div>
       <button
         type="button"
-        onClick={() => mutation.mutate({ classificationAssessmentId })}
+        onClick={handleClick}
         disabled={isPending}
         aria-busy={isPending}
-        className="inline-flex items-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary/90 disabled:opacity-60"
-      >
+        className="inline-flex items-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary/90 disabled:opacity-60">
         {isPending ? t('generating') : t('generateSds')}
       </button>
       {errorMessage ? (
         <div
           role="alert"
-          className="mt-3 rounded-md border border-destructive bg-destructive/10 p-3 text-sm text-destructive"
-        >
+          className="mt-3 rounded-md border border-destructive bg-destructive/10 p-3 text-sm text-destructive">
           <p className="font-medium">{t('errorGenericTitle')}</p>
           <p className="mt-1">{errorMessage}</p>
         </div>

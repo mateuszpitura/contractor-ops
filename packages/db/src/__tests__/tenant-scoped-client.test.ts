@@ -23,22 +23,18 @@ function createMockClient() {
   const innerQuery = vi.fn(async (args: unknown) => args);
   const base = {
     $extends: (ext: { query: { $allOperations: AllOps } }) => {
-      const $allOps = ext.query.$allOperations;
+      const allOps = ext.query.$allOperations;
       const make = (model: string) => ({
-        create: (args: unknown) =>
-          $allOps({ operation: 'create', model, args, query: innerQuery }),
+        create: (args: unknown) => allOps({ operation: 'create', model, args, query: innerQuery }),
         findMany: (args: unknown) =>
-          $allOps({ operation: 'findMany', model, args, query: innerQuery }),
+          allOps({ operation: 'findMany', model, args, query: innerQuery }),
         findUnique: (args: unknown) =>
-          $allOps({ operation: 'findUnique', model, args, query: innerQuery }),
-        update: (args: unknown) =>
-          $allOps({ operation: 'update', model, args, query: innerQuery }),
+          allOps({ operation: 'findUnique', model, args, query: innerQuery }),
+        update: (args: unknown) => allOps({ operation: 'update', model, args, query: innerQuery }),
         updateMany: (args: unknown) =>
-          $allOps({ operation: 'updateMany', model, args, query: innerQuery }),
-        upsert: (args: unknown) =>
-          $allOps({ operation: 'upsert', model, args, query: innerQuery }),
-        delete: (args: unknown) =>
-          $allOps({ operation: 'delete', model, args, query: innerQuery }),
+          allOps({ operation: 'updateMany', model, args, query: innerQuery }),
+        upsert: (args: unknown) => allOps({ operation: 'upsert', model, args, query: innerQuery }),
+        delete: (args: unknown) => allOps({ operation: 'delete', model, args, query: innerQuery }),
       });
       return {
         classificationDocument: make('ClassificationDocument'),

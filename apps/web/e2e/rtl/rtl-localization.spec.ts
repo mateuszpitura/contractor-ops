@@ -72,7 +72,6 @@ test.describe('L10N-02 — RTL layout rendering', () => {
   test('authenticated arabic dashboard renders sidebar on right side', async ({ page }) => {
     const didLogin = await loginAndNavigate(page, '/ar/v2');
     if (!didLogin) {
-      // biome-ignore lint/suspicious/noSkippedTests: conditional skip based on credentials — not a disabled test
       test.skip(true, 'E2E_EMAIL / E2E_PASSWORD not set — skipping authenticated RTL layout test');
       return;
     }
@@ -120,7 +119,6 @@ test.describe('L10N-03 — Bidi text isolation', () => {
   }) => {
     const didLogin = await loginAndNavigate(page, '/ar/v2');
     if (!didLogin) {
-      // biome-ignore lint/suspicious/noSkippedTests: conditional skip based on credentials — not a disabled test
       test.skip(true, 'E2E_EMAIL / E2E_PASSWORD not set — skipping Bdi element presence test');
       return;
     }
@@ -144,7 +142,6 @@ test.describe('L10N-03 — Bidi text isolation', () => {
   }) => {
     const didLogin = await loginAndNavigate(page, '/ar/v2');
     if (!didLogin) {
-      // biome-ignore lint/suspicious/noSkippedTests: conditional skip based on credentials — not a disabled test
       test.skip(true, 'E2E_EMAIL / E2E_PASSWORD not set — skipping Bdi attribute test');
       return;
     }
@@ -173,7 +170,6 @@ test.describe('L10N-04 — Chart axis mirroring in RTL', () => {
   test('spend chart renders in arabic locale dashboard', async ({ page }) => {
     const didLogin = await loginAndNavigate(page, '/ar/v2');
     if (!didLogin) {
-      // biome-ignore lint/suspicious/noSkippedTests: conditional skip based on credentials — not a disabled test
       test.skip(true, 'E2E_EMAIL / E2E_PASSWORD not set — skipping chart RTL test');
       return;
     }
@@ -191,7 +187,6 @@ test.describe('L10N-04 — Chart axis mirroring in RTL', () => {
   test('spend chart SVG in arabic locale has rtl direction applied', async ({ page }) => {
     const didLogin = await loginAndNavigate(page, '/ar/v2');
     if (!didLogin) {
-      // biome-ignore lint/suspicious/noSkippedTests: conditional skip based on credentials — not a disabled test
       test.skip(true, 'E2E_EMAIL / E2E_PASSWORD not set — skipping chart RTL direction test');
       return;
     }
@@ -204,7 +199,6 @@ test.describe('L10N-04 — Chart axis mirroring in RTL', () => {
     // If no data exists, the chart won't render — skip gracefully
     const isVisible = await rechartsContainer.isVisible({ timeout: 15_000 }).catch(() => false);
     if (!isVisible) {
-      // biome-ignore lint/suspicious/noSkippedTests: conditional skip based on data availability — not a disabled test
       test.skip(
         true,
         'No chart data available — spend chart empty state shown, skipping SVG direction check',
@@ -235,7 +229,6 @@ test.describe('L10N-01 — Locale switcher cycles through all three locales', ()
   test('locale switcher button is present in user menu', async ({ page }) => {
     const didLogin = await loginAndNavigate(page, '/en/v2');
     if (!didLogin) {
-      // biome-ignore lint/suspicious/noSkippedTests: conditional skip based on credentials — not a disabled test
       test.skip(true, 'E2E_EMAIL / E2E_PASSWORD not set — skipping locale switcher test');
       return;
     }
@@ -262,7 +255,6 @@ test.describe('L10N-01 — Locale switcher cycles through all three locales', ()
   test('clicking locale switcher from english navigates to arabic locale url', async ({ page }) => {
     const didLogin = await loginAndNavigate(page, '/en/v2');
     if (!didLogin) {
-      // biome-ignore lint/suspicious/noSkippedTests: conditional skip based on credentials — not a disabled test
       test.skip(true, 'E2E_EMAIL / E2E_PASSWORD not set — skipping locale switch navigation test');
       return;
     }
@@ -290,7 +282,6 @@ test.describe('L10N-01 — Locale switcher cycles through all three locales', ()
   }) => {
     const didLogin = await loginAndNavigate(page, '/en/v2');
     if (!didLogin) {
-      // biome-ignore lint/suspicious/noSkippedTests: conditional skip based on credentials — not a disabled test
       test.skip(true, 'E2E_EMAIL / E2E_PASSWORD not set — skipping locale cycle test');
       return;
     }

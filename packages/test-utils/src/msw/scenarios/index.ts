@@ -1,4 +1,3 @@
-// biome-ignore lint/performance/noBarrelFile: package entry point for MSW scenarios
 // --- Core scenarios ---
 
 export { degradedHandlers } from './degraded.js';

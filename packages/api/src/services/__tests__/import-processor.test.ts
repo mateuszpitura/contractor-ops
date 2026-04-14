@@ -1,5 +1,5 @@
-import ExcelJS from 'exceljs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import XLSX from 'xlsx';
 import * as E from '../../errors.js';
 import {
   autoMapColumns,
@@ -106,12 +106,11 @@ describe('processImportFile', () => {
     mockContractorFindMany.mockResolvedValue([]);
   });
 
-  async function buildXlsxBuffer(headers: string[], row: string[]) {
-    const wb = new ExcelJS.Workbook();
-    const ws = wb.addWorksheet('Sheet1');
-    ws.addRow(headers);
-    ws.addRow(row);
-    return Buffer.from(await wb.xlsx.writeBuffer());
+  function buildXlsxBuffer(headers: string[], row: string[]) {
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet([headers, row]);
+    XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+    return XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' }) as Buffer;
   }
 
   it('returns one valid contractor row when mapping matches sheet', async () => {

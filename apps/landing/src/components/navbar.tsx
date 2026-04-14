@@ -29,6 +29,10 @@ export function Navbar() {
 
   const toggleMobileMenu = useCallback(() => setMobileOpen(prev => !prev), []);
   const closeMobileMenu = useCallback(() => setMobileOpen(false), []);
+  const scrollToCta = useCallback(() => {
+    setMobileOpen(false);
+    document.querySelector('#cta')?.scrollIntoView({ behavior: 'smooth' });
+  }, []);
 
   // Close mobile menu on Escape key
   useEffect(() => {
@@ -122,7 +126,6 @@ export function Navbar() {
               <a
                 key={link.href}
                 href={link.href}
-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 onClick={closeMobileMenu}
                 className="rounded-xl px-4 py-3.5 text-lg font-medium text-foreground transition-colors hover:bg-muted/50">
                 {link.label}
@@ -135,13 +138,12 @@ export function Navbar() {
               className="rounded-xl border border-border px-4 py-3 text-center text-base font-medium text-foreground">
               Log in
             </a>
-            <a
-              href="#cta"
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              onClick={closeMobileMenu}
+            <button
+              type="button"
+              onClick={scrollToCta}
               className="rounded-xl bg-primary px-4 py-3 text-center text-base font-semibold text-primary-foreground shadow-md">
               Get started free
-            </a>
+            </button>
           </div>
         </motion.div>
       )}

@@ -30,15 +30,18 @@ vi.mock('@/i18n/navigation', () => ({
 
 let subscriptionData: unknown = null;
 
-vi.mock('@tanstack/react-query', () => ({
-  useQuery: () => ({ data: subscriptionData }),
-  useMutation: (opts: Record<string, unknown>) => ({
-    mutate: mockMutate,
-    isPending: false,
-    ...opts,
-  }),
-}));
-
+vi.mock('@tanstack/react-query', async importOriginal => {
+  const actual = await importOriginal<typeof import('@tanstack/react-query')>();
+  return {
+    ...actual,
+    useQuery: () => ({ data: subscriptionData }),
+    useMutation: (opts: Record<string, unknown>) => ({
+      mutate: mockMutate,
+      isPending: false,
+      ...opts,
+    }),
+  };
+});
 vi.mock('@/trpc/init', () => ({
   trpc: {
     billing: {

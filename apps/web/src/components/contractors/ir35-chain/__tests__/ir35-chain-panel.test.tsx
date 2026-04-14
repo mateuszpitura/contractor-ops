@@ -66,7 +66,9 @@ describe('Ir35ChainPanel', () => {
   it('renders as a labelled section with the chain heading', () => {
     renderPanel();
     const heading = screen.getByRole('heading', { name: 'IR35 chain' });
-    expect(heading.id).toBe('ir35-chain-heading');
+    expect(heading.id).toBeTruthy();
+    const section = heading.closest('section');
+    expect(section?.getAttribute('aria-labelledby')).toBe(heading.id);
   });
 
   it('shows empty state copy when there are no participants (initial render)', () => {

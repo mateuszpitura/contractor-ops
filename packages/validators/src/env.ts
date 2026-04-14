@@ -212,6 +212,20 @@ const infrastructureSchema = z.object({
   SLACK_TOKEN_ENCRYPTION_KEY: hex32.optional(),
 });
 
+// ── Feature Flags (Unleash OSS, per region) ─────────────────────────────────
+// Optional at all times: when unset, the feature-flag package falls back to
+// stub clients and code-declared defaults (graceful degradation). Set in
+// production for real flag evaluation.
+
+const featureFlagsSchema = z.object({
+  UNLEASH_URL_EU: z.string().url().optional(),
+  UNLEASH_API_TOKEN_EU: z.string().optional(),
+  UNLEASH_URL_ME: z.string().url().optional(),
+  UNLEASH_API_TOKEN_ME: z.string().optional(),
+  UNLEASH_APP_NAME: z.string().default('contractor-ops'),
+  UNLEASH_ENVIRONMENT: z.string().default('development'),
+});
+
 // ── OAuth env names used by specific adapters only (optional when unused) ──
 // e.g. Google Workspace Directory import, Outlook Calendar (Microsoft identity vars).
 
@@ -248,7 +262,8 @@ export const serverEnvSchema = coreSchema
   .merge(portalSchema)
   .merge(observabilitySchema)
   .merge(oauthAliasSchema)
-  .merge(infrastructureSchema);
+  .merge(infrastructureSchema)
+  .merge(featureFlagsSchema);
 
 // ── Client env (NEXT_PUBLIC_ only) ──────────────────────────────────────────
 

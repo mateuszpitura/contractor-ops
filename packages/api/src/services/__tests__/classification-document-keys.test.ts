@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
 import {
-  CLASSIFICATION_DOCUMENT_KEY_REGEX,
   buildClassificationDocumentKey,
+  CLASSIFICATION_DOCUMENT_KEY_REGEX,
 } from '../classification-document-keys.js';
 
 const VALID_SHA = 'a1b2c3d4e5f6789001a2b3c4d5e6f70811223344556677889900aabbccddeeff';
@@ -16,9 +16,7 @@ describe('buildClassificationDocumentKey (Phase 59 D-07)', () => {
       ruleSetVersion: 'ir35-v2',
       sha256: VALID_SHA,
     });
-    expect(key).toBe(
-      'classification-documents/org_abc/ca_xyz/sds-ir35-v2-a1b2c3d4e5f67890.pdf',
-    );
+    expect(key).toBe('classification-documents/org_abc/ca_xyz/sds-ir35-v2-a1b2c3d4e5f67890.pdf');
     expect(CLASSIFICATION_DOCUMENT_KEY_REGEX.test(key)).toBe(true);
   });
 

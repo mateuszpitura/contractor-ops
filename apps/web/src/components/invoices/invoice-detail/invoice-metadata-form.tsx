@@ -122,6 +122,7 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
   const t = useTranslations('Invoices');
   const tMeta = useTranslations('Invoices.metadata');
   const tv = useTranslations('Validation.invoice');
+  const id = useId();
   const queryClient = useQueryClient();
   const isEditable = invoice.status === 'RECEIVED';
 
@@ -572,7 +573,6 @@ function DatePicker({
   disabled?: boolean;
   pickDateLabel?: string;
 }) {
-  const _id = useId();
   const parsed = value ? new Date(value) : undefined;
   const isValid = parsed && !Number.isNaN(parsed.getTime());
 

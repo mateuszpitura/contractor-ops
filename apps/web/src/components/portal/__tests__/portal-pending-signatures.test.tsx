@@ -19,10 +19,13 @@ const { mockUseQuery } = vi.hoisted(() => ({
   mockUseQuery: vi.fn(),
 }));
 
-vi.mock('@tanstack/react-query', () => ({
-  useQuery: mockUseQuery,
-}));
-
+vi.mock('@tanstack/react-query', async importOriginal => {
+  const actual = await importOriginal<typeof import('@tanstack/react-query')>();
+  return {
+    ...actual,
+    useQuery: mockUseQuery,
+  };
+});
 describe('PortalPendingSignatures', () => {
   it('returns null when no pending items', () => {
     mockUseQuery.mockReturnValue({

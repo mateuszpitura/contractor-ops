@@ -111,7 +111,12 @@ vi.mock('@contractor-ops/auth', () => ({
     },
   },
   authApi: {
+    getSession: vi.fn(),
     hasPermission: vi.fn().mockResolvedValue({ success: true }),
+    getFullOrganization: vi.fn(async () => ({
+      members: [{ user: { email: 'member@example.com' } }],
+    })),
+    createInvitation: vi.fn(async () => ({ id: 'inv-1' })),
   },
 }));
 

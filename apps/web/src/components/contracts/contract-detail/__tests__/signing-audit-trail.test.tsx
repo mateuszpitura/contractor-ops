@@ -1,16 +1,21 @@
 import { render, screen } from '@/test/test-utils';
 import { SigningAuditTrail } from '../signing-audit-trail';
 
-const mockUseQuery = vi.fn(() => ({
-  data: null,
-  isPending: false,
-  isLoading: false,
+const { mockUseQuery } = vi.hoisted(() => ({
+  mockUseQuery: vi.fn(() => ({
+    data: null,
+    isPending: false,
+    isLoading: false,
+  })),
 }));
 
-vi.mock('@tanstack/react-query', () => ({
-  useQuery: mockUseQuery,
-}));
-
+vi.mock('@tanstack/react-query', async importOriginal => {
+  const actual = await importOriginal<typeof import('@tanstack/react-query')>();
+  return {
+    ...actual,
+    useQuery: mockUseQuery,
+  };
+});
 vi.mock('@/trpc/init', () => ({
   trpc: {
     esign: {

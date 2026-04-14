@@ -87,7 +87,7 @@ const BASE_ASSESSMENT = {
   },
   answers: {
     'q-sub-1': { value: 'yes' },
-    'q-ctrl-1': { rawScore: 3 },
+    'q-ctrl-1': { rawScore: 3 as const },
     'q-fin-1': { value: 'yes' },
     'q-pnp-1': { value: 'no' },
     'q-moo-1': { value: 'no' },
@@ -108,9 +108,12 @@ export const fixtureIr35Outside: Assessment = {
     verdict: 'outside',
     computedAt: '2026-04-10T10:00:00.000Z',
     areas: [
-      areaResult('substitution', 'strong-outside', ['q-sub-1'], [
-        'Ready Mixed Concrete v MPNI [1968] 2 QB 497',
-      ]),
+      areaResult(
+        'substitution',
+        'strong-outside',
+        ['q-sub-1'],
+        ['Ready Mixed Concrete v MPNI [1968] 2 QB 497'],
+      ),
       areaResult('control', 'leaning-outside', ['q-ctrl-1'], ['Hall v Lorimer [1994] STC 23']),
       areaResult('financial-risk', 'leaning-outside', ['q-fin-1'], []),
       areaResult('part-and-parcel', 'neutral', ['q-pnp-1'], []),
@@ -125,7 +128,7 @@ export const fixtureIr35Inside: Assessment = {
   id: 'ca_fixture_inside',
   answers: {
     'q-sub-1': { value: 'no' },
-    'q-ctrl-1': { rawScore: 0 },
+    'q-ctrl-1': { rawScore: 0 as const },
     'q-fin-1': { value: 'no' },
     'q-pnp-1': { value: 'yes' },
     'q-moo-1': { value: 'yes' },
@@ -151,7 +154,7 @@ export const fixtureIr35Indeterminate: Assessment = {
   id: 'ca_fixture_indeterminate',
   answers: {
     'q-sub-1': { isNotApplicable: true },
-    'q-ctrl-1': { rawScore: 1 },
+    'q-ctrl-1': { rawScore: 1 as const },
     'q-fin-1': { value: 'no' },
     'q-pnp-1': { value: 'no' },
     'q-moo-1': { value: 'no' },

@@ -13,18 +13,14 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useEffect, useMemo, useState } from 'react';
-
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import type { WizardCountryCode } from '@/components/contractors/classification/wizard/classification-wizard-shell';
+import { ClassificationWizardShell } from '@/components/contractors/classification/wizard/classification-wizard-shell';
+import type { WizardAnswerValue } from '@/components/contractors/classification/wizard/wizard-question';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { trpc } from '@/trpc/init';
-
-import {
-  ClassificationWizardShell,
-  type WizardCountryCode,
-} from '@/components/contractors/classification/wizard/classification-wizard-shell';
-import type { WizardAnswerValue } from '@/components/contractors/classification/wizard/wizard-question';
 
 interface RouteParams extends Record<string, string> {
   id: string;
@@ -113,9 +109,18 @@ export default function ClassificationWizardPage() {
   const countrySupported = countryCode !== '' && SUPPORTED_COUNTRIES.has(countryCode);
 
   const initialAnswers = useMemo<Record<string, WizardAnswerValue> | undefined>(() => {
-    if (!draft?.answers) return undefined;
+    if (!draft?.answers) return;
     return reifyAnswers(draft.answers as Record<string, unknown>);
   }, [draft?.answers]);
+
+  const handleRecreateDraft = useCallback(() => {
+    if (!draftQuery.data) return;
+    setShowDriftRecovery(true);
+    recreateDraftMutation.mutate({
+      contractorAssignmentId: params.engagementId,
+      staleDraftId: draftQuery.data.id,
+    });
+  }, [draftQuery.data, recreateDraftMutation, params.engagementId]);
 
   // Rule-set drift — render the blocked UI with the start-new CTA.
   if (driftError) {
@@ -133,14 +138,7 @@ export default function ClassificationWizardPage() {
         </Alert>
         <div>
           <Button
-            onClick={() => {
-              if (!draftQuery.data) return;
-              setShowDriftRecovery(true);
-              recreateDraftMutation.mutate({
-                contractorAssignmentId: params.engagementId,
-                staleDraftId: draftQuery.data.id,
-              });
-            }}
+            onClick={handleRecreateDraft}
             disabled={recreateDraftMutation.isPending || !draftQuery.data}>
             {t('error.startNew')}
           </Button>

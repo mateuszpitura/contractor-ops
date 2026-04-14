@@ -1,4 +1,3 @@
-// biome-ignore lint/performance/noBarrelFile: package entry point
 // Types
 
 export { AutentiAdapter } from './adapters/autenti-adapter.js';

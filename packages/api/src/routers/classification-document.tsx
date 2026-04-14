@@ -21,9 +21,9 @@ import { z } from 'zod';
 import { router } from '../init.js';
 import { tenantProcedure } from '../middleware/tenant.js';
 import {
-  DRVDefenseBundleDocument,
   RENDERER_SLUG as DRV_RENDERER_SLUG,
   TEMPLATE_VERSION as DRV_TEMPLATE_VERSION,
+  DRVDefenseBundleDocument,
 } from '../pdf-templates/drv-defense-bundle.js';
 import {
   IR35SDSDocument,
@@ -78,132 +78,130 @@ export const classificationDocumentRouter = router({
    * - Byte stability: renderedAt = assessment.completedAt (stable across re-renders).
    * - Rollback: on row-insert failure, deletes the R2 object before rethrowing.
    */
-  generateSds: tenantProcedure
-    .input(generateSdsInputSchema)
-    .mutation(async ({ input, ctx }) => {
-      // tenant middleware asserts session+user are non-null and throws UNAUTHORIZED otherwise.
-      // Re-narrowing here keeps TS happy without `!` non-null assertions.
-      if (!ctx.session?.user?.id) {
-        throw new TRPCError({ code: 'UNAUTHORIZED' });
-      }
-      const userId = ctx.session.user.id;
+  generateSds: tenantProcedure.input(generateSdsInputSchema).mutation(async ({ input, ctx }) => {
+    // tenant middleware asserts session+user are non-null and throws UNAUTHORIZED otherwise.
+    // Re-narrowing here keeps TS happy without `!` non-null assertions.
+    if (!ctx.session?.user?.id) {
+      throw new TRPCError({ code: 'UNAUTHORIZED' });
+    }
+    const userId = ctx.session.user.id;
 
-      // 1. Load assessment with related engagement + contractor + organization.
-      //    Tenant scope is injected by the Prisma client extension.
-      const assessment = await ctx.db.classificationAssessment
-        .findUniqueOrThrow({
-          where: { id: input.classificationAssessmentId },
-          include: {
-            contractorAssignment: {
-              include: {
-                contractor: true,
-                organization: true,
-              },
+    // 1. Load assessment with related engagement + contractor + organization.
+    //    Tenant scope is injected by the Prisma client extension.
+    const assessment = await ctx.db.classificationAssessment
+      .findUniqueOrThrow({
+        where: { id: input.classificationAssessmentId },
+        include: {
+          contractorAssignment: {
+            include: {
+              contractor: true,
+              organization: true,
             },
           },
-        })
-        .catch(() => {
-          throw new TRPCError({
-            code: 'NOT_FOUND',
-            message: 'Classification assessment not found.',
-          });
-        });
-
-      // 2. Preconditions (D-04, D-06).
-      if (assessment.status !== 'completed' || assessment.questionsSnapshot === null) {
+        },
+      })
+      .catch(() => {
         throw new TRPCError({
-          code: 'PRECONDITION_FAILED',
-          message:
-            'Assessment must be completed with a captured questions snapshot before generating an SDS.',
+          code: 'NOT_FOUND',
+          message: 'Classification assessment not found.',
         });
-      }
-      const outcome = assessment.outcome as { kind?: string } | null;
-      if (!outcome || outcome.kind !== 'IR35') {
-        throw new TRPCError({
-          code: 'PRECONDITION_FAILED',
-          message: 'generateSds only applies to IR35 (GB) classification assessments.',
-        });
-      }
-
-      // 3. Render PDF bytes. `renderedAt` is set to assessment.completedAt so
-      //    repeated renders for the same assessment produce byte-identical
-      //    content (apart from PDF Info timestamps, handled below).
-      const renderedAt = assessment.completedAt ?? new Date(0);
-      const engagement = assessment.contractorAssignment;
-      const contractor = engagement.contractor;
-      const organization = engagement.organization;
-
-      const buf = await renderToBuffer(
-        <IR35SDSDocument
-          // Cast is required because the Prisma row's `outcome` + `answers` are
-          // Json columns — the template validates their shape at runtime.
-          assessment={assessment as unknown as Parameters<typeof IR35SDSDocument>[0]['assessment']}
-          engagement={{
-            id: engagement.id,
-            displayName: contractor.displayName,
-            activeFrom: engagement.activeFrom,
-            activeTo: engagement.activeTo,
-          }}
-          contractor={{ id: contractor.id, displayName: contractor.displayName }}
-          organization={{
-            id: organization.id,
-            name: organization.name,
-            countryCode: organization.countryCode,
-          }}
-          renderedAt={renderedAt}
-        />,
-      );
-
-      // 4. Content-addressed R2 key + rendererVersion.
-      const sha256Hash = createHash('sha256').update(buf).digest('hex');
-      const key = buildClassificationDocumentKey({
-        organizationId: ctx.organizationId,
-        classificationAssessmentId: assessment.id,
-        kind: 'SDS',
-        ruleSetVersion: assessment.ruleSetVersion,
-        sha256: sha256Hash,
-      });
-      const rendererVersion = `@react-pdf/renderer@${REACT_PDF_VERSION}+${SDS_RENDERER_SLUG}@${SDS_TEMPLATE_VERSION}`;
-
-      // 5. Upload + presign download URL.
-      const downloadFilename = sanitizeFilename(`SDS-${contractor.displayName}-${engagement.id}.pdf`);
-      const { signedUrl, expiresInSeconds } = await putObjectAndSignDownload({
-        key,
-        body: buf,
-        contentType: 'application/pdf',
-        ttlSeconds: PDF_TTL_SECONDS,
-        downloadFilename,
       });
 
-      // 6. Insert row — rollback R2 on failure.
-      try {
-        const row = await ctx.db.classificationDocument.create({
-          data: {
-            organizationId: ctx.organizationId,
-            classificationAssessmentId: assessment.id,
-            kind: 'SDS',
-            pdfKey: key,
-            sha256Hash,
-            byteSize: buf.byteLength,
-            rendererVersion,
-            ruleSetVersion: assessment.ruleSetVersion,
-            generatedByUserId: userId,
-          },
-        });
+    // 2. Preconditions (D-04, D-06).
+    if (assessment.status !== 'completed' || assessment.questionsSnapshot === null) {
+      throw new TRPCError({
+        code: 'PRECONDITION_FAILED',
+        message:
+          'Assessment must be completed with a captured questions snapshot before generating an SDS.',
+      });
+    }
+    const outcome = assessment.outcome as { kind?: string } | null;
+    if (!outcome || outcome.kind !== 'IR35') {
+      throw new TRPCError({
+        code: 'PRECONDITION_FAILED',
+        message: 'generateSds only applies to IR35 (GB) classification assessments.',
+      });
+    }
 
-        return {
-          url: signedUrl,
-          expiresInSeconds,
-          documentId: row.id,
-          byteSize: buf.byteLength,
+    // 3. Render PDF bytes. `renderedAt` is set to assessment.completedAt so
+    //    repeated renders for the same assessment produce byte-identical
+    //    content (apart from PDF Info timestamps, handled below).
+    const renderedAt = assessment.completedAt ?? new Date(0);
+    const engagement = assessment.contractorAssignment;
+    const contractor = engagement.contractor;
+    const organization = engagement.organization;
+
+    const buf = await renderToBuffer(
+      <IR35SDSDocument
+        // Cast is required because the Prisma row's `outcome` + `answers` are
+        // Json columns — the template validates their shape at runtime.
+        assessment={assessment as unknown as Parameters<typeof IR35SDSDocument>[0]['assessment']}
+        engagement={{
+          id: engagement.id,
+          displayName: contractor.displayName,
+          activeFrom: engagement.activeFrom,
+          activeTo: engagement.activeTo,
+        }}
+        contractor={{ id: contractor.id, displayName: contractor.displayName }}
+        organization={{
+          id: organization.id,
+          name: organization.name,
+          countryCode: organization.countryCode,
+        }}
+        renderedAt={renderedAt}
+      />,
+    );
+
+    // 4. Content-addressed R2 key + rendererVersion.
+    const sha256Hash = createHash('sha256').update(buf).digest('hex');
+    const key = buildClassificationDocumentKey({
+      organizationId: ctx.organizationId,
+      classificationAssessmentId: assessment.id,
+      kind: 'SDS',
+      ruleSetVersion: assessment.ruleSetVersion,
+      sha256: sha256Hash,
+    });
+    const rendererVersion = `@react-pdf/renderer@${REACT_PDF_VERSION}+${SDS_RENDERER_SLUG}@${SDS_TEMPLATE_VERSION}`;
+
+    // 5. Upload + presign download URL.
+    const downloadFilename = sanitizeFilename(`SDS-${contractor.displayName}-${engagement.id}.pdf`);
+    const { signedUrl, expiresInSeconds } = await putObjectAndSignDownload({
+      key,
+      body: buf,
+      contentType: 'application/pdf',
+      ttlSeconds: PDF_TTL_SECONDS,
+      downloadFilename,
+    });
+
+    // 6. Insert row — rollback R2 on failure.
+    try {
+      const row = await ctx.db.classificationDocument.create({
+        data: {
+          organizationId: ctx.organizationId,
+          classificationAssessmentId: assessment.id,
+          kind: 'SDS',
+          pdfKey: key,
           sha256Hash,
-        };
-      } catch (err) {
-        // Best-effort R2 rollback so we don't leak orphan objects (T-59-10).
-        await deleteObject(key).catch(() => undefined);
-        throw err;
-      }
-    }),
+          byteSize: buf.byteLength,
+          rendererVersion,
+          ruleSetVersion: assessment.ruleSetVersion,
+          generatedByUserId: userId,
+        },
+      });
+
+      return {
+        url: signedUrl,
+        expiresInSeconds,
+        documentId: row.id,
+        byteSize: buf.byteLength,
+        sha256Hash,
+      };
+    } catch (err) {
+      // Best-effort R2 rollback so we don't leak orphan objects (T-59-10).
+      await deleteObject(key).catch(() => undefined);
+      throw err;
+    }
+  }),
 
   /**
    * Generate a DRV audit defense bundle PDF for a completed Schein assessment.
@@ -266,7 +264,7 @@ export const classificationDocumentRouter = router({
       const attestation = await ctx.db.ir35OtherClientAttestation.findUnique({
         where: { contractorAssignmentId: assessment.contractorAssignmentId },
       });
-      if (!attestation || !attestation.signedAt) {
+      if (!attestation?.signedAt) {
         throw new TRPCError({
           code: 'PRECONDITION_FAILED',
           message:
@@ -299,8 +297,14 @@ export const classificationDocumentRouter = router({
 
       const buf = await renderToBuffer(
         <DRVDefenseBundleDocument
-          assessment={assessment as unknown as Parameters<typeof DRVDefenseBundleDocument>[0]['assessment']}
-          priorAssessments={priorAssessments as unknown as Parameters<typeof DRVDefenseBundleDocument>[0]['priorAssessments']}
+          assessment={
+            assessment as unknown as Parameters<typeof DRVDefenseBundleDocument>[0]['assessment']
+          }
+          priorAssessments={
+            priorAssessments as unknown as Parameters<
+              typeof DRVDefenseBundleDocument
+            >[0]['priorAssessments']
+          }
           engagement={{
             id: engagement.id,
             displayName: contractor.displayName,
@@ -383,47 +387,44 @@ export const classificationDocumentRouter = router({
    * Re-sign an existing ClassificationDocument for download. Does NOT
    * re-upload — bytes remain byte-exact (D-05).
    */
-  getDownloadUrl: tenantProcedure
-    .input(getDownloadUrlInputSchema)
-    .query(async ({ input, ctx }) => {
-      const doc = await ctx.db.classificationDocument
-        .findUniqueOrThrow({
-          where: { id: input.classificationDocumentId },
-          include: {
-            classificationAssessment: {
-              include: {
-                contractorAssignment: { include: { contractor: true } },
-              },
+  getDownloadUrl: tenantProcedure.input(getDownloadUrlInputSchema).query(async ({ input, ctx }) => {
+    const doc = await ctx.db.classificationDocument
+      .findUniqueOrThrow({
+        where: { id: input.classificationDocumentId },
+        include: {
+          classificationAssessment: {
+            include: {
+              contractorAssignment: { include: { contractor: true } },
             },
           },
-        })
-        .catch(() => {
-          throw new TRPCError({
-            code: 'NOT_FOUND',
-            message: 'Document not found.',
-          });
+        },
+      })
+      .catch(() => {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Document not found.',
         });
+      });
 
-      const contractorName =
-        doc.classificationAssessment.contractorAssignment.contractor.displayName;
-      const kindLabel = doc.kind === 'SDS' ? 'SDS' : 'DRV-Defense';
-      const downloadFilename = sanitizeFilename(`${kindLabel}-${contractorName}.pdf`);
+    const contractorName = doc.classificationAssessment.contractorAssignment.contractor.displayName;
+    const kindLabel = doc.kind === 'SDS' ? 'SDS' : 'DRV-Defense';
+    const downloadFilename = sanitizeFilename(`${kindLabel}-${contractorName}.pdf`);
 
-      const { signedUrl, expiresInSeconds } = await signExistingDownload(
-        doc.pdfKey,
-        PDF_TTL_SECONDS,
-        downloadFilename,
-      );
+    const { signedUrl, expiresInSeconds } = await signExistingDownload(
+      doc.pdfKey,
+      PDF_TTL_SECONDS,
+      downloadFilename,
+    );
 
-      return {
-        url: signedUrl,
-        expiresInSeconds,
-        kind: doc.kind,
-        generatedAt: doc.generatedAt,
-        byteSize: doc.byteSize,
-        sha256Hash: doc.sha256Hash,
-      };
-    }),
+    return {
+      url: signedUrl,
+      expiresInSeconds,
+      kind: doc.kind,
+      generatedAt: doc.generatedAt,
+      byteSize: doc.byteSize,
+      sha256Hash: doc.sha256Hash,
+    };
+  }),
 
   /**
    * List ClassificationDocument rows for a ContractorAssignment via the

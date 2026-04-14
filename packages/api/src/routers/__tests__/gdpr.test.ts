@@ -30,8 +30,13 @@ const { ORG_ID, USER_ID, mockPrisma } = vi.hoisted(() => {
     invoice: {
       findMany: vi.fn(async () => []),
       updateMany: vi.fn(async () => ({ count: 0 })),
+      deleteMany: vi.fn(async () => ({ count: 0 })),
       count: vi.fn(async () => 0),
     },
+    invoiceLine: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+    invoiceMatchResult: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+    invoiceFile: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+    documentLink: { deleteMany: vi.fn(async () => ({ count: 0 })) },
     notification: {
       deleteMany: vi.fn(async () => ({ count: 0 })),
     },
@@ -42,7 +47,54 @@ const { ORG_ID, USER_ID, mockPrisma } = vi.hoisted(() => {
     },
     member: {
       findMany: vi.fn(async () => []),
+      deleteMany: vi.fn(async () => ({ count: 0 })),
     },
+    timeEntry: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+    timesheet: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+    paymentExport: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+    paymentRunItem: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+    paymentRun: {
+      deleteMany: vi.fn(async () => ({ count: 0 })),
+      count: vi.fn(async () => 0),
+    },
+    shipmentEvent: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+    returnRequest: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+    shipment: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+    equipmentAssignment: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+    equipment: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+    courierConfig: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+    approvalDecision: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+    approvalStep: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+    approvalFlow: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+    approvalChainConfig: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+    comment: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+    complianceRequirementTemplate: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+    contractorAssignment: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+    contractorBillingProfile: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+    contractorChangeRequest: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+    contractorComplianceItem: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+    contractorContact: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+    contractorNotificationPreference: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+    contractorTag: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+    externalLink: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+    integrationConnection: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+    integrationSyncLog: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+    ocrExtraction: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+    portalMagicToken: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+    portalSession: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+    reminderInstance: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+    reminderRule: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+    signingEnvelope: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+    signingEvent: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+    signingRecipient: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+    userNotificationPreference: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+    webhookDelivery: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+    workflowAttachment: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+    workflowComment: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+    workflowRun: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+    workflowTaskRun: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+    workflowTaskTemplate: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+    workflowTemplate: { deleteMany: vi.fn(async () => ({ count: 0 })) },
     $transaction: vi.fn(async (fn: (tx: Rec) => Promise<unknown>) => fn(mockPrisma)),
   };
 
@@ -313,6 +365,6 @@ describe('gdprRouter', () => {
 
     // Financial records must be preserved when retainFinancialRecords is true
     expect(mockPrisma.invoice.updateMany).not.toHaveBeenCalled();
-    expect(mockPrisma.invoice.deleteMany).toBeUndefined();
+    expect(mockPrisma.invoice.deleteMany).not.toHaveBeenCalled();
   });
 });

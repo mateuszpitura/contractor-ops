@@ -10,18 +10,10 @@
 //   - Verdict pill (semantic triad — colour + icon + text) + completedAt
 //     relative date + "View details" + "Re-run assessment" when present.
 
-import type {
-  Ir35Outcome,
-  ScheinselbstandigkeitOutcome,
-} from '@contractor-ops/classification';
+import type { Ir35Outcome, ScheinselbstandigkeitOutcome } from '@contractor-ops/classification';
 import { useQuery } from '@tanstack/react-query';
-import {
-  CircleCheck,
-  ShieldAlert,
-  ShieldQuestion,
-  ShieldX,
-  type LucideIcon,
-} from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+import { CircleCheck, ShieldAlert, ShieldQuestion, ShieldX } from 'lucide-react';
 import { useFormatter, useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 
@@ -48,9 +40,10 @@ export interface ClassificationTileProps {
 
 type Tone = 'success' | 'warning' | 'destructive' | 'neutral';
 
-function toneForOutcome(
-  outcome: Ir35Outcome | ScheinselbstandigkeitOutcome,
-): { tone: Tone; Icon: LucideIcon } {
+function toneForOutcome(outcome: Ir35Outcome | ScheinselbstandigkeitOutcome): {
+  tone: Tone;
+  Icon: LucideIcon;
+} {
   if (outcome.kind === 'IR35') {
     switch (outcome.verdict) {
       case 'outside':
@@ -99,13 +92,8 @@ export function ClassificationTile(props: ClassificationTileProps) {
 
   if (latestQuery.isPending) {
     return (
-      <Card
-        data-testid="classification-tile"
-        aria-busy="true"
-        className="flex flex-col gap-3 p-4">
-        <div
-          data-testid="classification-tile-skeleton"
-          className="flex flex-col gap-2">
+      <Card data-testid="classification-tile" aria-busy="true" className="flex flex-col gap-3 p-4">
+        <div data-testid="classification-tile-skeleton" className="flex flex-col gap-2">
           <Skeleton className="h-4 w-2/3" />
           <Skeleton className="h-4 w-1/3" />
           <Skeleton className="h-8 w-24" />
@@ -116,7 +104,7 @@ export function ClassificationTile(props: ClassificationTileProps) {
 
   const latest = latestQuery.data;
 
-  if (!latest || !latest.outcome) {
+  if (!latest?.outcome) {
     return (
       <Card data-testid="classification-tile" className="flex flex-col">
         <CardHeader className="pb-2">

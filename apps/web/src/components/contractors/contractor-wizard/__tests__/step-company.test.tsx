@@ -7,12 +7,15 @@ vi.mock('sonner', () => ({
   toast: { error: vi.fn(), success: vi.fn() },
 }));
 
-vi.mock('@tanstack/react-query', () => ({
-  useQueryClient: () => ({
-    fetchQuery: vi.fn().mockResolvedValue({ found: false }),
-  }),
-}));
-
+vi.mock('@tanstack/react-query', async importOriginal => {
+  const actual = await importOriginal<typeof import('@tanstack/react-query')>();
+  return {
+    ...actual,
+    useQueryClient: () => ({
+      fetchQuery: vi.fn().mockResolvedValue({ found: false }),
+    }),
+  };
+});
 vi.mock('@/trpc/init', () => ({
   trpc: {
     contractor: {
@@ -56,7 +59,7 @@ describe('StepCompany', () => {
 
   it('renders legal name input', () => {
     render(<Wrapper />);
-    const legalNameInput = document.getElementById('legalName');
+    const legalNameInput = document.querySelector('[id$="-legalName"]');
     expect(legalNameInput).toBeInTheDocument();
   });
 
@@ -68,7 +71,7 @@ describe('StepCompany', () => {
 
   it('renders email input', () => {
     render(<Wrapper />);
-    const emailInput = document.getElementById('email');
+    const emailInput = document.querySelector('[id$="-email"]');
     expect(emailInput).toBeInTheDocument();
   });
 
@@ -80,7 +83,7 @@ describe('StepCompany', () => {
 
   it('renders VAT-EU input', () => {
     render(<Wrapper />);
-    const vatInput = document.getElementById('vatId');
+    const vatInput = document.querySelector('[id$="-vatId"]');
     expect(vatInput).toBeInTheDocument();
   });
 
@@ -110,7 +113,7 @@ describe('StepCompany', () => {
 
   it('allows typing in email input', async () => {
     const { user } = setup(<Wrapper />);
-    const emailInput = document.getElementById('email') as HTMLInputElement;
+    const emailInput = document.querySelector('[id$="-email"]') as HTMLInputElement;
     await user.type(emailInput, 'test@example.com');
     expect(emailInput).toHaveValue('test@example.com');
   });

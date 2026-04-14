@@ -4,8 +4,14 @@
 # Services:
 #   - web                 (Web Service, Docker, autoscaled, public)
 #   - landing             (Static Site, free, CDN, public)
+#   - public-api          (Web Service, Docker, autoscaled, public — Enterprise)
 #   - worker              (Background Worker, Docker, single instance)
 #   - clamav              (Private Service, image, persistent disk)
+#   - unleash-eu          (Private Service, image — feature flags, EU region)
+#   - unleash-me          (Private Service, image — feature flags, ME region)
+#   - cloudflared         (Private Service, image — on-demand Zero Trust tunnel
+#                          for Unleash admin UIs; SUSPEND by default, resume
+#                          only when an operator needs access)
 #   - cron-token-refresh  (Cron Job, every 15 min — calls web via private net)
 #   - cron-data-purge     (Cron Job, daily 03:00 UTC — calls web via private net)
 #
@@ -47,6 +53,9 @@ envVarGroups:
         sync: false
       # Auth
       - key: BETTER_AUTH_SECRET
+        sync: false
+      # Public REST API (Enterprise) — HMAC secret used to derive API key hashes
+      - key: API_KEY_HMAC_SECRET
         sync: false
       # Database (Neon, multi-region)
       - key: DATABASE_URL
@@ -213,6 +222,22 @@ envVarGroups:
         sync: false
       - key: AZURE_BOT_APP_SECRET
         sync: false
+      # Feature flags (self-hosted Unleash, per region — see services below).
+      # URLs use Render private-network hostnames; fill after first provisioning
+      # with "http://<service>-XXXX:4242/api/". Tokens are created in Unleash
+      # UI (Admin → API access → "server-side" token).
+      - key: UNLEASH_URL_EU
+        sync: false
+      - key: UNLEASH_API_TOKEN_EU
+        sync: false
+      - key: UNLEASH_URL_ME
+        sync: false
+      - key: UNLEASH_API_TOKEN_ME
+        sync: false
+      - key: UNLEASH_APP_NAME
+        value: contractor-ops
+      - key: UNLEASH_ENVIRONMENT
+        value: production
 
   # Build-time only — Sentry source map upload (used in Docker build args).
   - name: build-secrets
@@ -271,7 +296,6 @@ services:
       pnpm install --frozen-lockfile --filter @contractor-ops/landing...
       pnpm --filter @contractor-ops/landing build
     staticPublishPath: ./apps/landing/out
-    pullRequestPreviewsEnabled: true
     headers:
       - path: /*
         name: Strict-Transport-Security
@@ -282,6 +306,36 @@ services:
       - path: /*
         name: Referrer-Policy
         value: strict-origin-when-cross-origin
+
+  # ── Web Service: Public REST API (Enterprise) ──────────────────────────
+  # Hono + tRPC caller, OpenAPI at /api/v1/docs, scoped API-key auth.
+  # Mount on a dedicated subdomain (e.g. api.contractor-ops.com) — bind that
+  # custom domain on this service, not on `web`.
+  - type: web
+    name: public-api
+    runtime: docker
+    region: frankfurt
+    plan: standard
+    branch: main
+    autoDeploy: true
+    dockerfilePath: ./apps/public-api/Dockerfile
+    dockerContext: .
+    dockerCommand: node apps/public-api/dist/index.js
+    healthCheckPath: /api/v1/health
+    scaling:
+      minInstances: 2
+      maxInstances: 6
+      targetMemoryPercent: 75
+      targetCPUPercent: 70
+    envVars:
+      - fromGroup: app-shared
+      - fromGroup: build-secrets
+      - key: PORT
+        value: '3000'
+      - key: HOSTNAME
+        value: 0.0.0.0
+      - key: PUBLIC_API_PORT
+        value: '3000'
 
   # ── Background Worker: node-cron scheduler (non-critical jobs) ──────────
   - type: worker
@@ -302,23 +356,29 @@ services:
           type: web
           name: web
           envVarKey: CRON_SECRET
-      # Internal URL of the web service on Render's private network.
-      - key: WORKER_TARGET_URL
+      # Internal host:port of the web service on Render's private network.
+      # Format: "web-abc123:3000" — worker-cron.mjs prepends "http://".
+      - key: WORKER_TARGET_HOSTPORT
         fromService:
           type: web
           name: web
           property: hostport
-          # property "hostport" → e.g. "web-abc123:3000"; we wrap with http://
-          # prefix in worker-cron.mjs (TARGET is used as full URL prefix).
-          # If hostport is unsupported, set manually as http://<host>:3000
-          # using the host from `fromService.property: host`.
 
   # ── Private Service: ClamAV virus scanner ───────────────────────────────
+  # plan: standard — ClamAV needs ~1GB RAM to load signatures into memory;
+  # starter (512MB) OOMs once the signature DB hits typical size (~300MB on
+  # disk + ~700MB loaded). See https://docs.clamav.net/manual/Installing/Packages.html
   - type: pserv
     name: clamav
     runtime: image
     region: frankfurt
-    plan: starter
+    plan: standard
+    # Disable PR previews — provisioning a ClamAV instance per PR is wasteful
+    # (stateful, slow signature download, costs money). Preview envs can
+    # reach the production clamav over Render's private network or use a
+    # feature flag to skip scanning in preview envs.
+    previews:
+      generation: off
     image:
       url: docker.io/clamav/clamav:stable
     disk:
@@ -333,16 +393,113 @@ services:
       - key: CLAMD_STARTUP_TIMEOUT
         value: '180'
 
+  # ── Private Service: Unleash (EU region — feature flags) ───────────────
+  # Self-hosted Unleash OSS. Reachable only over Render's private network —
+  # apps/web and apps/public-api call it by hostname (UNLEASH_URL_EU in
+  # app-shared). Admin UI (root path) is reached via the cloudflared tunnel
+  # below, which is suspended by default.
+  #
+  # DATABASE_URL must be a dedicated Postgres (separate Neon DB recommended —
+  # does NOT share schema with the main app DB). Unleash manages its own
+  # migrations on startup.
+  - type: pserv
+    name: unleash-eu
+    runtime: image
+    region: frankfurt
+    plan: starter
+    previews:
+      generation: off
+    image:
+      url: docker.io/unleashorg/unleash-server:7
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: DATABASE_SSL
+        value: 'true'
+      - key: LOG_LEVEL
+        value: info
+      # Bootstrap token — create via `openssl rand -hex 32 | sed 's/^/*:*./'`
+      # (format: "<env>:<project>.<secret>"). Only used on the very first boot
+      # to seed a root admin API token; rotate via Unleash UI after that.
+      - key: INIT_ADMIN_API_TOKENS
+        sync: false
+
+  # ── Private Service: Unleash (ME region — feature flags) ───────────────
+  # Separate instance so ME-tenant flag evaluations never leave an EU-local
+  # wrapper's short-circuit. Deployed in frankfurt (Render has no ME region);
+  # data-residency is enforced at the DB layer (Neon ME) + code short-circuit
+  # (see packages/api jurisdiction guard in the feature-flag wrapper).
+  - type: pserv
+    name: unleash-me
+    runtime: image
+    region: frankfurt
+    plan: starter
+    previews:
+      generation: off
+    image:
+      url: docker.io/unleashorg/unleash-server:7
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: DATABASE_SSL
+        value: 'true'
+      - key: LOG_LEVEL
+        value: info
+      - key: INIT_ADMIN_API_TOKENS
+        sync: false
+
+  # ── Private Service: Cloudflare Tunnel (on-demand admin UI access) ─────
+  # Zero Trust tunnel exposing the Unleash admin UIs behind Cloudflare Access
+  # (Google Workspace SSO + MFA). NOT exposed to the public internet — only
+  # users on the Access application policy reach the hostnames configured
+  # in the tunnel (e.g. unleash-eu.internal.contractor-ops.com).
+  #
+  # On-demand billing pattern:
+  #   1. Tunnel config (Cloudflare dashboard) maps hostnames →
+  #      http://unleash-eu:4242 and http://unleash-me:4242 over Render's
+  #      private network.
+  #   2. This service is SUSPENDED by default. While suspended = $0 billing.
+  #   3. When an operator needs admin access: resume via Render Dashboard
+  #      or API (`POST /v1/services/<id>/resume`). ~15s cold start.
+  #   4. Suspend again after use.
+  # See docs/DEPLOYMENT-RENDER.md §"Cloudflare Tunnel (on-demand)".
+  #
+  # Cloudflare Tunnel itself is free. Cloudflare Access free tier covers
+  # up to 50 users. Cost = only the Render starter pserv while running.
+  - type: pserv
+    name: cloudflared
+    runtime: image
+    region: frankfurt
+    plan: starter
+    previews:
+      generation: off
+    image:
+      # Pin exact version — bump manually after reviewing changelog at
+      # https://github.com/cloudflare/cloudflared/releases. Never use `latest`
+      # on security-critical ingress.
+      url: docker.io/cloudflare/cloudflared:2026.3.0
+    dockerCommand: tunnel --no-autoupdate --metrics 0.0.0.0:2000 run
+    envVars:
+      # Generate in Cloudflare Zero Trust dashboard:
+      #   Networks → Tunnels → Create a tunnel → choose "Cloudflared" →
+      #   copy the token (single line starting with "ey..."). Paste here.
+      - key: TUNNEL_TOKEN
+        sync: false
+
   # ── Cron Job: OAuth token refresh (every 15 minutes) ────────────────────
+  # Cron jobs with `runtime: image` use `startCommand` (not dockerCommand —
+  # that's for runtime: docker with a Dockerfile build).
   - type: cron
     name: cron-token-refresh
     runtime: image
     region: frankfurt
     plan: starter
     schedule: '*/15 * * * *'
+    previews:
+      generation: off
     image:
-      url: docker.io/curlimages/curl:8.11.1
-    dockerCommand: |
+      url: docker.io/curlimages/curl:8.19.0
+    startCommand: |
       sh -c 'curl -fsS -m 600 -H "Authorization: Bearer $CRON_SECRET" "http://${WEB_HOST}:3000/api/cron/token-refresh"'
     envVars:
       - key: CRON_SECRET
@@ -363,9 +520,11 @@ services:
     region: frankfurt
     plan: starter
     schedule: '0 3 * * *'
+    previews:
+      generation: off
     image:
-      url: docker.io/curlimages/curl:8.11.1
-    dockerCommand: |
+      url: docker.io/curlimages/curl:8.19.0
+    startCommand: |
       sh -c 'curl -fsS -m 600 -H "Authorization: Bearer $CRON_SECRET" "http://${WEB_HOST}:3000/api/cron/data-purge"'
     envVars:
       - key: CRON_SECRET

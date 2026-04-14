@@ -27,6 +27,7 @@ COPY apps/web/package.json apps/web/
 COPY apps/landing/package.json apps/landing/
 COPY packages/api/package.json packages/api/
 COPY packages/auth/package.json packages/auth/
+COPY packages/classification/package.json packages/classification/
 COPY packages/db/package.json packages/db/
 COPY packages/einvoice/package.json packages/einvoice/
 COPY packages/gov-api/package.json packages/gov-api/

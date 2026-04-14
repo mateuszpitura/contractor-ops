@@ -11,6 +11,7 @@ describe('invoiceCreateSchema', () => {
     issueDate: '2026-03-01',
     dueDate: '2026-03-31',
     subtotalMinor: 100000,
+    vatAmountMinor: 23000,
     totalMinor: 123000,
     amountToPayMinor: 123000,
     documentIds: ['doc_abc'],

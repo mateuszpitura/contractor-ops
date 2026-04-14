@@ -3,6 +3,7 @@
 'use client';
 
 import { useFormatter, useTranslations } from 'next-intl';
+import { useCallback } from 'react';
 
 import type { Ir35ChainParticipantRow } from './ir35-chain-panel';
 
@@ -23,6 +24,9 @@ export function ChainParticipantRow({
   const formatter = useFormatter();
   const isAutoPopulated = row.role === 'CLIENT' || row.role === 'WORKER';
 
+  const handleMarkDelivered = useCallback(() => onMarkDelivered(null), [onMarkDelivered]);
+  const handleMarkAcknowledged = useCallback(() => onMarkAcknowledged(null), [onMarkAcknowledged]);
+
   const deliveredLabel = row.sdsDeliveredAt
     ? formatter.dateTime(new Date(row.sdsDeliveredAt), { dateStyle: 'medium' })
     : t('notDelivered');
@@ -35,41 +39,36 @@ export function ChainParticipantRow({
       <td className="py-2 pr-2 font-medium">{t(`role.${row.role}`)}</td>
       <td className="py-2 pr-2">{row.displayName}</td>
       <td className="py-2 pr-2">
-        <span aria-label={`${t('columnDelivered')}: ${deliveredLabel}`}>{deliveredLabel}</span>
+        <span>{deliveredLabel}</span>
       </td>
       <td className="py-2 pr-2">
-        <span aria-label={`${t('columnAcknowledged')}: ${acknowledgedLabel}`}>
-          {acknowledgedLabel}
-        </span>
+        <span>{acknowledgedLabel}</span>
       </td>
       <td className="py-2 pr-2 text-right">
         <div className="inline-flex gap-2">
           <button
             type="button"
-            onClick={() => onMarkDelivered(null)}
+            onClick={handleMarkDelivered}
             aria-pressed={Boolean(row.sdsDeliveredAt)}
-            className="rounded-md border px-2 py-1 text-xs hover:bg-accent"
-          >
+            className="rounded-md border px-2 py-1 text-xs hover:bg-accent">
             {t('markDelivered')}
           </button>
           <button
             type="button"
-            onClick={() => onMarkAcknowledged(null)}
+            onClick={handleMarkAcknowledged}
             aria-pressed={Boolean(row.sdsAcknowledgedAt)}
-            className="rounded-md border px-2 py-1 text-xs hover:bg-accent"
-          >
+            className="rounded-md border px-2 py-1 text-xs hover:bg-accent">
             {t('markAcknowledged')}
           </button>
-          {!isAutoPopulated ? (
+          {isAutoPopulated ? null : (
             <button
               type="button"
               onClick={onRemove}
               aria-label={`${t('remove')} — ${row.displayName}`}
-              className="rounded-md border border-destructive px-2 py-1 text-xs text-destructive hover:bg-destructive/10"
-            >
+              className="rounded-md border border-destructive px-2 py-1 text-xs text-destructive hover:bg-destructive/10">
               {t('remove')}
             </button>
-          ) : null}
+          )}
         </div>
       </td>
     </tr>

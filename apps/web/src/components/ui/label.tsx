@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 
 function Label({ className, htmlFor, ...props }: React.ComponentProps<'label'>) {
   return (
+    // biome-ignore lint/a11y/noLabelWithoutControl: generic reusable label — htmlFor is passed dynamically by consumers
     <label
       data-slot="label"
       htmlFor={htmlFor}

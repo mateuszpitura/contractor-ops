@@ -27,6 +27,12 @@ export interface ClassificationStepIndicatorProps {
   className?: string;
 }
 
+function getStepDotClass(visited: boolean, current: boolean): string {
+  if (current) return 'border-primary bg-primary text-primary-foreground ring-2 ring-primary/30';
+  if (visited) return 'border-primary bg-primary text-primary-foreground';
+  return 'border-input text-muted-foreground';
+}
+
 export function ClassificationStepIndicator({
   steps,
   currentStep,
@@ -36,14 +42,12 @@ export function ClassificationStepIndicator({
 
   return (
     <ol
-      role="list"
       aria-label={t('ariaLabel', { current: currentStep, total: steps.length })}
       className={cn('flex items-center gap-2 overflow-x-auto', className)}>
       {steps.map((step, index) => {
         const position = index + 1;
         const visited = position < currentStep;
         const current = position === currentStep;
-        const isLabelVisible = current; // always-visible label only for current on <640
         const srFull = t('announce', {
           current: position,
           total: steps.length,
@@ -59,9 +63,7 @@ export function ClassificationStepIndicator({
               aria-hidden="true"
               className={cn(
                 'flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-xs font-semibold tabular-nums',
-                current && 'border-primary bg-primary text-primary-foreground ring-2 ring-primary/30',
-                visited && !current && 'border-primary bg-primary text-primary-foreground',
-                !visited && !current && 'border-input text-muted-foreground',
+                getStepDotClass(visited, current),
               )}>
               {position}
             </span>
@@ -70,13 +72,11 @@ export function ClassificationStepIndicator({
                 'text-xs',
                 current && 'font-semibold text-foreground',
                 !current && 'text-muted-foreground',
-                !isLabelVisible && 'hidden sm:inline',
+                !current && 'hidden sm:inline',
               )}>
               {step.label}
               {step.subtitle ? (
-                <span className="ms-1 text-[11px] text-muted-foreground">
-                  ({step.subtitle})
-                </span>
+                <span className="ms-1 text-[11px] text-muted-foreground">({step.subtitle})</span>
               ) : null}
             </span>
             <span className="sr-only">{srFull}</span>

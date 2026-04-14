@@ -10,13 +10,11 @@
 // payload { rawScore: 0, isNotApplicable: true } for N/A so the scoring
 // engine can distinguish "not applicable" from "missing".
 
-import { useId } from 'react';
-import { useLocale, useTranslations } from 'next-intl';
-
 import { CLASSIFICATION_SCHEIN_NOT_APPLICABLE } from '@contractor-ops/validators';
-
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { useLocale, useTranslations } from 'next-intl';
+import { useCallback, useId } from 'react';
 import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { cn } from '@/lib/utils';
 
 export type Score03Value = {
@@ -72,14 +70,19 @@ export function Score03Answer({
         ? '0'
         : (String(value.rawScore) as '1' | '2' | '3');
 
+  const handleValueChange = useCallback(
+    (next: string) => {
+      const picked = OPTIONS.find(o => o.transport === next);
+      if (picked) onChange(picked.payload);
+    },
+    [onChange],
+  );
+
   return (
     <RadioGroup
       name={name}
       value={currentTransport}
-      onValueChange={next => {
-        const picked = OPTIONS.find(o => o.transport === next);
-        if (picked) onChange(picked.payload);
-      }}
+      onValueChange={handleValueChange}
       disabled={disabled}
       aria-labelledby={ariaLabelledBy}
       aria-describedby={ariaDescribedBy}
@@ -125,9 +128,7 @@ function Score03Option({
           : 'border-input hover:bg-accent/50',
       )}>
       <RadioGroupItem id={inputId} value={transport} />
-      <span className="tabular-nums text-xs font-semibold text-muted-foreground">
-        {transport}
-      </span>
+      <span className="tabular-nums text-xs font-semibold text-muted-foreground">{transport}</span>
       <span className="text-sm">{label}</span>
     </Label>
   );

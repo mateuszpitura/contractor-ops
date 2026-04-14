@@ -7,14 +7,29 @@ import { prisma } from '@contractor-ops/db';
 
 const KEY_PREFIX = 'co_live_';
 const RANDOM_BYTES = 32;
-const PREFIX_LENGTH = 12;
-/**
- * Server-side secret for HMAC key hashing. Generated once at startup.
- * API keys are high-entropy (256 bits) so HMAC-SHA256 is sufficient —
- * scrypt/bcrypt are only needed for low-entropy passwords.
- */
-const HMAC_SECRET = process.env.API_KEY_HMAC_SECRET ?? '';
+export const PREFIX_LENGTH = 12;
+// 12-char base64url prefix → ~2.8e21 combinations.
+// Birthday-bound collision after ~2^36 keys — capped at 3 for safety.
 const MAX_PREFIX_CANDIDATES = 3;
+
+/**
+ * Returns the HMAC secret, throwing at first use if not configured.
+ * Lazy init avoids module-load-order issues while guaranteeing the secret
+ * is validated before any crypto operation.
+ */
+let hmacSecret: string | undefined;
+function getHmacSecret(): string {
+  if (!hmacSecret) {
+    const secret = process.env.API_KEY_HMAC_SECRET;
+    if (!secret || secret.length < 32) {
+      throw new Error(
+        'API_KEY_HMAC_SECRET must be set (min 32 chars). Generate with: openssl rand -hex 32',
+      );
+    }
+    hmacSecret = secret;
+  }
+  return hmacSecret;
+}
 
 // ---------------------------------------------------------------------------
 // Key generation
@@ -55,7 +70,7 @@ export function generateApiKey(): {
  * add ~100ms latency per request without security benefit.
  */
 function hashKey(plaintext: string): string {
-  return createHmac('sha256', HMAC_SECRET).update(plaintext).digest('hex');
+  return createHmac('sha256', getHmacSecret()).update(plaintext).digest('hex');
 }
 
 /**
@@ -125,9 +140,19 @@ async function resolveByPrefix(plaintext: string, prefix: string) {
 
 /**
  * Updates the `lastUsedAt` timestamp for an API key.
- * Fire-and-forget — errors are logged but don't fail the request.
+ * Debounced: writes at most once per 5 minutes per key to avoid
+ * write storms under high traffic. Fire-and-forget.
  */
+const TOUCH_DEBOUNCE_MS = 5 * 60_000;
+const lastTouchedAt = new Map<string, number>();
+
 export function touchLastUsed(keyId: string): void {
+  const now = Date.now();
+  const last = lastTouchedAt.get(keyId) ?? 0;
+
+  if (now - last < TOUCH_DEBOUNCE_MS) return;
+  lastTouchedAt.set(keyId, now);
+
   prisma.organizationApiKey
     .update({
       where: { id: keyId },
@@ -137,3 +162,13 @@ export function touchLastUsed(keyId: string): void {
       console.error('[api-key] Failed to update lastUsedAt:', keyId, err);
     });
 }
+
+// Cleanup stale debounce entries every 10 minutes
+setInterval(() => {
+  const now = Date.now();
+  for (const [keyId, timestamp] of lastTouchedAt) {
+    if (now - timestamp > TOUCH_DEBOUNCE_MS * 2) {
+      lastTouchedAt.delete(keyId);
+    }
+  }
+}, 10 * 60_000).unref();

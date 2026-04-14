@@ -105,6 +105,7 @@ function RunLinearChips({ runId }: { runId: string }) {
   const overflow = issues.length - 3;
 
   return (
+    // biome-ignore lint/a11y/noStaticElementInteractions: onClick only prevents default on wrapper, not interactive
     // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
     <div className="flex items-center gap-1" role="presentation" onClick={e => e.preventDefault()}>
       {visible.map(issue => (
@@ -152,6 +153,7 @@ function RunJiraChips({ runId }: { runId: string }) {
   const overflow = issues.length - 3;
 
   return (
+    // biome-ignore lint/a11y/noStaticElementInteractions: onClick only prevents default on wrapper, not interactive
     // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
     <div className="flex items-center gap-1" role="presentation" onClick={e => e.preventDefault()}>
       {visible.map(issue => (

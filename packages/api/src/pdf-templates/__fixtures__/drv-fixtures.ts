@@ -12,7 +12,11 @@ const SCHEIN_QUESTIONS: RuleSetQuestion[] = [
   {
     id: 'scq-int-1',
     category: 'integration',
-    prompt: { en: '', pl: '', de: 'Arbeiten Sie weisungsgebunden in den Räumen des Auftraggebers?' },
+    prompt: {
+      en: '',
+      pl: '',
+      de: 'Arbeiten Sie weisungsgebunden in den Räumen des Auftraggebers?',
+    },
     helpText: { en: '', pl: '', de: '' },
     answerType: 'score-0-3',
     required: true,
@@ -42,7 +46,11 @@ const SCHEIN_QUESTIONS: RuleSetQuestion[] = [
   {
     id: 'scq-ed-1',
     category: 'economic-dep',
-    prompt: { en: '', pl: '', de: 'Wie hoch ist der Anteil dieses Auftraggebers an Ihrem Gesamtumsatz?' },
+    prompt: {
+      en: '',
+      pl: '',
+      de: 'Wie hoch ist der Anteil dieses Auftraggebers an Ihrem Gesamtumsatz?',
+    },
     helpText: { en: '', pl: '', de: '' },
     answerType: 'billing-ratio',
     required: true,
@@ -54,7 +62,7 @@ function cat(
   weight: number,
   rawScore: number,
   verdict: ScheinCategoryResult['verdict'],
-  drivingQuestionIds: readonly string[],
+  _drivingQuestionIds: readonly string[],
   drvReferences: readonly string[] = [],
 ): ScheinCategoryResult {
   return {
