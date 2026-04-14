@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v5.0
 milestone_name: UK & Germany Expansion
 status: executing
-stopped_at: Phase 60 UI-SPEC approved
-last_updated: "2026-04-14T09:24:10.159Z"
+stopped_at: Phase 61 context gathered
+last_updated: "2026-04-14T09:32:34.605Z"
 last_activity: 2026-04-13
 progress:
   total_phases: 8
@@ -92,6 +92,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-14T09:24:10.148Z
-Stopped at: Phase 60 UI-SPEC approved
-Resume file: .planning/phases/60-classification-polish/60-UI-SPEC.md
+Last session: 2026-04-14T09:32:34.602Z
+Stopped at: Phase 61 context gathered
+Resume file: .planning/phases/61-xrechnung-e-invoicing/61-CONTEXT.md
