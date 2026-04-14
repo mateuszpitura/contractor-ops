@@ -15,6 +15,46 @@ export const peppolParticipantIdSchema = z
 export type PeppolParticipantId = z.infer<typeof peppolParticipantIdSchema>;
 
 // ---------------------------------------------------------------------------
+// Peppol scheme-id + value primitives (Phase 61 Plan 05)
+// ---------------------------------------------------------------------------
+//
+// The Peppol ICD (Issuing Code List) registers every jurisdiction's
+// scheme-id as a 4-digit code (0060 UK Companies House, 0088 GLN, 0106 DUNS,
+// 0192 Norway orgnr, 9930 DE Leitweg, 9957 DE Steuernummer, …).
+// Participant values are capped at 64 chars per Storecove's documented limit.
+//
+// Consumed by Plan 05 UI forms (Settings → E-invoicing) and by the
+// capability-lookup tRPC procedure. The paired refinement
+// (`peppolParticipantPairSchema`) lives in `./leitweg-id.ts` to colocate
+// with Contractor boundary validation; re-exported from the package root.
+
+export const peppolSchemeIdSchema = z
+  .string()
+  .regex(/^\d{4}$/, 'Peppol schemeId must be 4 digits');
+
+export const peppolParticipantValueSchema = z
+  .string()
+  .min(1, 'Peppol participant value cannot be empty')
+  .max(64, 'Peppol participant value too long');
+
+// ---------------------------------------------------------------------------
+// Capability lookup (Phase 61 Plan 05 — D-11)
+// ---------------------------------------------------------------------------
+
+/**
+ * Input to the `peppol.lookupCapabilities` tRPC query. Resolves to a cached
+ * or fresh list of doc-type IDs the Peppol participant advertises, plus a
+ * computed `supportsXRechnungCii` boolean for the UI's send-gate badge.
+ */
+export const peppolLookupCapabilitiesSchema = z.object({
+  schemeId: peppolSchemeIdSchema,
+  value: peppolParticipantValueSchema,
+  forceRefresh: z.boolean().optional().default(false),
+});
+
+export type PeppolLookupCapabilitiesInput = z.infer<typeof peppolLookupCapabilitiesSchema>;
+
+// ---------------------------------------------------------------------------
 // Connect to Peppol
 // ---------------------------------------------------------------------------
 

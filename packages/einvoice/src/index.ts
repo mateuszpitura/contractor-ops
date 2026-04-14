@@ -66,7 +66,10 @@ export type { StorecoveConfig } from './asp/storecove/types.js';
 export type {
   ASPAdapter,
   ASPHealthStatus,
+  EInvoiceFormat as AspEInvoiceFormat,
   InboundInvoicePayload,
+  LookupParticipantCapabilitiesParams,
+  ParticipantCapabilityResult,
   ParticipantRegistration,
   ParticipantStatus,
   RegisterParticipantParams,
@@ -75,6 +78,12 @@ export type {
   TransmitInvoiceParams,
   WebhookVerification,
 } from './asp/types.js';
+// ASP storecove schemas (Plan 61-05)
+export {
+  extractDocumentTypes,
+  storecoveDiscoveryResponseSchema,
+} from './asp/storecove/schemas.js';
+export type { StorecoveDiscoveryResponse } from './asp/storecove/schemas.js';
 export type {
   KsefInvoiceMetadata,
   KsefQueryResult,

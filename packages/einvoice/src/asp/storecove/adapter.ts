@@ -1,9 +1,15 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import type { GovApiAuditLogger, GovApiRateLimiter } from '@contractor-ops/gov-api';
+import {
+  PINT_AE_DOCUMENT_TYPE_ID,
+} from '../../profiles/peppol-ae/constants.js';
+import { STORECOVE_CII_XRECHNUNG_DOC_TYPE_ID } from '../../profiles/xrechnung-de/constants.js';
 import type {
   ASPAdapter,
   ASPHealthStatus,
   InboundInvoicePayload,
+  LookupParticipantCapabilitiesParams,
+  ParticipantCapabilityResult,
   ParticipantRegistration,
   ParticipantStatus,
   RegisterParticipantParams,
@@ -13,8 +19,38 @@ import type {
   WebhookVerification,
 } from '../types.js';
 import { StorecoveApiError, StorecoveClient } from './client.js';
-import { storecoveWebhookPayloadSchema } from './schemas.js';
+import {
+  extractDocumentTypes,
+  storecoveDiscoveryResponseSchema,
+  storecoveWebhookPayloadSchema,
+} from './schemas.js';
 import type { StorecoveConfig } from './types.js';
+
+/**
+ * Peppol BIS Billing 3.0 `document_type_id` (UBL Invoice-2 + BIS Billing 3).
+ * Forwarded verbatim to Storecove when `format.kind === 'ubl-peppol-bis-3'`.
+ */
+const UBL_PEPPOL_BIS_3_DOC_TYPE_ID =
+  'urn:oasis:names:specification:ubl:schema:xsd:Invoice-2::Invoice##urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0::2.1' as const;
+
+/**
+ * Phase 61 Plan 05 (D-09) — map the EInvoiceFormat discriminator to the
+ * Storecove `document_type_id` that drives routing on the Peppol network.
+ *
+ * When `format` is undefined (legacy caller), the caller-supplied
+ * `documentTypeId` is used as-is to preserve peppol-ae zero-regression.
+ */
+function resolveDocumentTypeId(params: TransmitInvoiceParams): string {
+  if (!params.format) return params.documentTypeId;
+  switch (params.format.kind) {
+    case 'cii-xrechnung':
+      return STORECOVE_CII_XRECHNUNG_DOC_TYPE_ID;
+    case 'ubl-pint-ae':
+      return PINT_AE_DOCUMENT_TYPE_ID;
+    case 'ubl-peppol-bis-3':
+      return UBL_PEPPOL_BIS_3_DOC_TYPE_ID;
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Dependency injection for gov-api framework
@@ -181,7 +217,7 @@ export class StorecoveAdapter implements ASPAdapter {
         senderLegalEntityId: 0, // Caller should resolve this from participant data
         receiverIdentifier: receiverIdentifier ?? params.receiverParticipantId,
         receiverScheme: receiverScheme ?? '0192',
-        documentType: params.documentTypeId,
+        documentType: resolveDocumentTypeId(params),
       });
 
       this.emitAudit(orgId, '/document_submissions', 'POST', 200, Date.now() - startMs);
@@ -208,6 +244,63 @@ export class StorecoveAdapter implements ASPAdapter {
             status: 'rejected',
             timestamp: new Date(),
             errors: this.parseValidationErrors(error.responseBody),
+          };
+        }
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Phase 61 Plan 05 (D-11) — probe a Peppol participant's SMP-registered
+   * document types. Results are cached by the API-layer service
+   * (`packages/api/src/services/peppol-capability.ts`) with a 6h TTL to
+   * stay under the Storecove rate budget.
+   *
+   * - Happy path: normalises the response to a flat `documentTypes: string[]`.
+   * - 404: participant is not registered on the Peppol SML → returns an
+   *   empty `documentTypes: []`. Callers translate empty to
+   *   `PARTICIPANT_NOT_REACHABLE`.
+   * - Other errors (5xx, network): propagate as-is for retry-at-caller.
+   */
+  async lookupParticipantCapabilities(
+    params: LookupParticipantCapabilitiesParams,
+  ): Promise<ParticipantCapabilityResult> {
+    const orgId = params.organizationId ?? 'unknown';
+    await this.checkRateLimit(orgId);
+
+    const startMs = Date.now();
+    try {
+      const raw = await this.client.getDiscoveryReceives({
+        schemeId: params.schemeId,
+        identifier: params.value,
+      });
+      this.emitAudit(orgId, '/discovery/receives', 'GET', 200, Date.now() - startMs);
+
+      const parsed = storecoveDiscoveryResponseSchema.parse(raw);
+      return {
+        schemeId: params.schemeId,
+        value: params.value,
+        documentTypes: extractDocumentTypes(parsed),
+        fetchedAt: new Date(),
+      };
+    } catch (error) {
+      if (error instanceof StorecoveApiError) {
+        this.emitAudit(
+          orgId,
+          '/discovery/receives',
+          'GET',
+          error.statusCode,
+          Date.now() - startMs,
+          error.message,
+        );
+        if (error.statusCode === 404) {
+          // Participant not registered on the Peppol SML — empty capabilities.
+          return {
+            schemeId: params.schemeId,
+            value: params.value,
+            documentTypes: [],
+            fetchedAt: new Date(),
           };
         }
       }

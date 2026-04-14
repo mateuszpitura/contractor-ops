@@ -432,6 +432,7 @@ export type {
   ConnectPeppolInput,
   GetTransmissionByInvoiceIdInput,
   GetTransmissionsInput,
+  PeppolLookupCapabilitiesInput,
   PeppolParticipantId,
   RetryTransmissionInput,
   TransmitInvoiceInput,
@@ -440,7 +441,10 @@ export {
   connectPeppolSchema,
   getTransmissionByInvoiceIdSchema,
   getTransmissionsSchema,
+  peppolLookupCapabilitiesSchema,
   peppolParticipantIdSchema,
+  peppolParticipantValueSchema,
+  peppolSchemeIdSchema,
   retryTransmissionSchema,
   transmitInvoiceSchema,
 } from './peppol.js';

@@ -125,6 +125,37 @@ export class StorecoveClient {
   }
 
   /**
+   * Phase 61 Plan 05 (D-11) — probe a Peppol participant's SMP capabilities.
+   *
+   * Returns the raw JSON body (unparsed) so the adapter layer can own the
+   * Zod normalisation step — keeps the discovery-shape uncertainty (per
+   * 61-RESEARCH.md §Open Questions #5) out of the HTTP client.
+   *
+   * Throws `StorecoveApiError` on non-2xx; adapter-level caller handles 404
+   * (participant not registered → empty capabilities).
+   *
+   * SSRF-safety: path + query values are appended to the pinned `baseUrl`
+   * via `URLSearchParams`. Scheme / identifier values are URL-encoded so an
+   * upstream accidentally forwarding user input cannot break out of the
+   * path segment.
+   */
+  async getDiscoveryReceives(params: {
+    schemeId: string;
+    identifier: string;
+  }): Promise<unknown> {
+    const query = new URLSearchParams({
+      scheme_id: params.schemeId,
+      identifier: params.identifier,
+    });
+    const response = await fetch(`${this.baseUrl}/discovery/receives?${query.toString()}`, {
+      method: 'GET',
+      headers: this.headers,
+      signal: AbortSignal.timeout(30_000),
+    });
+    return this.parseResponse(response);
+  }
+
+  /**
    * Get received documents (inbound invoices) since a given date.
    */
   async getReceivedDocuments(since: Date): Promise<StorecoveReceivedDocument[]> {
