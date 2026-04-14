@@ -24,7 +24,7 @@
 
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 
 const REPO_ROOT = path.resolve(new URL('..', import.meta.url).pathname);
@@ -66,7 +66,66 @@ function sha256(filePath: string): string {
   return hash.digest('hex');
 }
 
-function main(): void {
+function assertCheckCommand(): void {
+  // Mode: assert existing artefacts match checked-in checksums.txt.
+  // This is the CI path — NEVER re-fetch from upstream, NEVER re-compile.
+  const checksumsPath = path.join(BUNDLE, 'checksums.txt');
+  if (!existsSync(checksumsPath)) {
+    fail(
+      `Missing checksums.txt at ${checksumsPath}. Run this script without --check to generate it after a fresh KoSIT release pin.`,
+      2,
+    );
+  }
+  const raw = readFileSync(checksumsPath, 'utf8').trim();
+  if (!raw) fail(`Empty checksums.txt — bundle is not pinned. Aborting.`, 2);
+
+  const lines = raw.split('\n').filter(Boolean);
+  const failures: string[] = [];
+  for (const line of lines) {
+    const match = /^([0-9a-f]{64})\s{2}(.+)$/.exec(line);
+    if (!match) {
+      failures.push(`Malformed checksum line: ${line}`);
+      continue;
+    }
+    const [, expected, relPath] = match;
+    const absPath = path.join(BUNDLE, relPath);
+    if (!existsSync(absPath)) {
+      failures.push(`Missing artefact: ${relPath}`);
+      continue;
+    }
+    const actual = sha256(absPath);
+    if (actual !== expected) {
+      failures.push(
+        `Checksum mismatch: ${relPath}\n    expected ${expected}\n    actual   ${actual}`,
+      );
+    }
+  }
+
+  if (failures.length > 0) {
+    fail(
+      `Validator-bundle integrity check FAILED (${failures.length} issue(s)):\n` +
+        failures.map(f => `  - ${f}`).join('\n') +
+        '\n\nThis usually means the KoSIT validator-bundle was modified locally. ' +
+        'CI MUST abort here — do NOT re-fetch from upstream. Re-pin via the recompile ' +
+        'script from a trusted workstation instead.',
+      1,
+    );
+  }
+
+  process.stdout.write(`[recompile-kosit-schematron] ✓ ${lines.length} artefact(s) verified against checksums.txt\n`);
+}
+
+function walkXsdFiles(dir: string): string[] {
+  const out: string[] = [];
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const next = path.join(dir, entry.name);
+    if (entry.isDirectory()) out.push(...walkXsdFiles(next));
+    else if (entry.isFile() && entry.name.endsWith('.xsd')) out.push(next);
+  }
+  return out;
+}
+
+function compileAndWriteChecksums(): void {
   assertXslt3Available();
 
   const checksumLines: string[] = [];
@@ -91,8 +150,27 @@ function main(): void {
     checksumLines.push(`${digest}  ${job.out}`);
   }
 
+  // Include CII D16B XSDs in the checksum manifest so the layer-1 schema is
+  // pinned end-to-end (Plan 61-03 invariant).
+  const xsdDir = path.join(BUNDLE, 'CII-D16B-schema');
+  if (existsSync(xsdDir)) {
+    for (const xsdPath of walkXsdFiles(xsdDir)) {
+      const rel = path.relative(BUNDLE, xsdPath);
+      checksumLines.push(`${sha256(xsdPath)}  ${rel}`);
+    }
+  }
+
   const checksumsPath = path.join(BUNDLE, 'checksums.txt');
   writeFileSync(checksumsPath, checksumLines.join('\n') + '\n', 'utf8');
+  process.stdout.write(
+    `[recompile-kosit-schematron] Wrote ${checksumLines.length} checksum line(s) to ${checksumsPath}\n`,
+  );
+}
+
+function main(): void {
+  const mode = process.argv.includes('--check') ? 'check' : 'compile';
+  if (mode === 'check') assertCheckCommand();
+  else compileAndWriteChecksums();
 }
 
 main();
