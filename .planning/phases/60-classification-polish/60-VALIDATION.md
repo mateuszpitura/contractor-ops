@@ -1,10 +1,11 @@
 ---
 phase: 60
 slug: classification-polish
-status: draft
+status: approved
 nyquist_compliant: false
 wave_0_complete: false
 created: 2026-04-14
+approved_at: 2026-04-14
 ---
 
 # Phase 60 — Validation Strategy
