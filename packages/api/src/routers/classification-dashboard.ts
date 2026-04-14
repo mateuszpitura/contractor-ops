@@ -457,7 +457,10 @@ export const classificationDashboardRouter = router({
 
       if (input.market === 'GB') {
         const triggers = await db.reassessmentTrigger.findMany({
-          where: { status: { in: ['OPEN', 'ACKNOWLEDGED'] } },
+          where: {
+            status: { in: ['OPEN', 'ACKNOWLEDGED'] },
+            contractorAssignment: { contractor: { countryCode: 'GB' } },
+          },
           include: {
             contractorAssignment: {
               include: { contractor: { select: { name: true, countryCode: true } } },
@@ -466,13 +469,11 @@ export const classificationDashboardRouter = router({
           take: DETAIL_ROW_TAKE,
         });
 
-        const items = triggers
-          .filter(t => t.contractorAssignment?.contractor && t.contractorAssignment.contractor != null)
-          .map(t => ({
-            contractorAssignmentId: t.contractorAssignmentId,
-            contractorName: t.contractorAssignment?.contractor?.name ?? '',
-            reason: 'reassessment-trigger',
-          }));
+        const items = triggers.map(t => ({
+          contractorAssignmentId: t.contractorAssignmentId,
+          contractorName: t.contractorAssignment?.contractor?.name ?? '',
+          reason: 'reassessment-trigger',
+        }));
 
         return { count: items.length, items: items.slice(0, 5) };
       }
