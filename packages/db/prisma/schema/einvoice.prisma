@@ -50,6 +50,10 @@ model EInvoiceLifecycle {
   deliveredAt             DateTime?
   deliveryAckJson         Json?
   lastErrorJson           Json?
+  // Phase 62 (D-17) — ZUGFeRD on-demand PDF/A-3 generation
+  zugferdPdfKey           String?
+  zugferdPdfSha256        String?                    @db.VarChar(64)
+  zugferdGeneratedAt      DateTime?
   createdAt               DateTime                   @default(now())
   updatedAt               DateTime                   @updatedAt
 
@@ -119,4 +123,5 @@ enum EInvoiceLifecycleEventType {
   DELIVERY_FAILED
   RE_VALIDATED
   RE_TRANSMITTED
+  ZUGFERD_GENERATED
 }
