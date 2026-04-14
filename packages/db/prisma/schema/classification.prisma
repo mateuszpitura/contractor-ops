@@ -229,3 +229,40 @@ model CronScanState {
   lastScanCompletedAt DateTime
   updatedAt           DateTime @updatedAt
 }
+
+// ---------------------------------------------------------------------------
+// Phase 60 · CLASS-09 — Statusfeststellungsverfahren (DRV clearance procedure).
+// See .planning/phases/60-classification-polish/60-03-PLAN.md.
+//
+// Tracks a contractor's DRV § 7a SGB IV clearance procedure application per
+// engagement. The daily /api/cron/reminders cron scans validTo boundaries and
+// fires 90d / 30d / 7d lead-time notifications (one-shot dedup via the
+// Notification table) for rows with outcome in SELBSTANDIG/ABHANGIG.
+// ---------------------------------------------------------------------------
+
+enum StatusfeststellungsverfahrenOutcome {
+  PENDING
+  SELBSTANDIG
+  ABHANGIG
+  WITHDRAWN
+}
+
+model Statusfeststellungsverfahren {
+  id                     String                              @id @default(cuid())
+  organizationId         String
+  contractorAssignmentId String
+  filedAt                DateTime                            @db.Date
+  drvReference           String                              @db.VarChar(100)
+  outcome                StatusfeststellungsverfahrenOutcome @default(PENDING)
+  validFrom              DateTime?                           @db.Date
+  validTo                DateTime?                           @db.Date
+  notes                  String?                             @db.Text
+  createdAt              DateTime                            @default(now())
+  updatedAt              DateTime                            @updatedAt
+
+  organization         Organization         @relation(fields: [organizationId], references: [id])
+  contractorAssignment ContractorAssignment @relation(fields: [contractorAssignmentId], references: [id])
+
+  @@index([organizationId, contractorAssignmentId], map: "SFV_org_assign_idx")
+  @@index([organizationId, validTo], map: "SFV_org_validTo_idx")
+}

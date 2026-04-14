@@ -79,6 +79,10 @@ describe('Locked German legal phrases (D-05, D-06)', () => {
       'DRV_DEFENSE_TABLE_HEADERS_DE',
       'DRV_DEFENSE_ATTESTATION_FOOTER_DE',
       'DRV_DEFENSE_CROSS_REFERENCE_FOOTER_DE',
+      // Phase 60 (CLASS-09) — DRV clearance panel phrases live on the engagement page,
+      // not in privacy notices.
+      'DRV_CLEARANCE_PANEL_HEADER_DE',
+      'DRV_CLEARANCE_SECTION_REFERENCE_DE',
     ]);
     for (const [key, phrase] of Object.entries(LOCKED_DE_PHRASES)) {
       if (privacyScopedKeys.has(key)) continue;
@@ -276,5 +280,41 @@ describe('Locked phrase prefixes (Phase 59 · D-18)', () => {
       leaks,
       `Reserved Phase 59 prefix keys leaked into ${locale}.json: ${leaks.join(', ')}`,
     ).toEqual([]);
+  });
+});
+
+// -----------------------------------------------------------------------------
+// Phase 60 · CLASS-09 — prefix-based CI guard for DRV clearance panel strings.
+// See .planning/phases/60-classification-polish/60-03-PLAN.md.
+// -----------------------------------------------------------------------------
+
+const RESERVED_PHASE_60_PREFIXES = ['DRV_CLEARANCE_'] as const;
+
+describe('Locked phrase prefixes (Phase 60 · CLASS-09)', () => {
+  it.each(
+    locales,
+  )('messages/%s.json does not contain any key with prefix DRV_CLEARANCE_', locale => {
+    const messages = loadMessages(locale);
+    if (messages === null) return;
+
+    const flattenedKeys = flatKeys(messages);
+    const leaks = flattenedKeys.filter(key =>
+      RESERVED_PHASE_60_PREFIXES.some(prefix => key.includes(prefix)),
+    );
+
+    expect(
+      leaks,
+      `Reserved Phase 60 prefix keys leaked into ${locale}.json: ${leaks.join(', ')}`,
+    ).toEqual([]);
+  });
+
+  it('DRV_CLEARANCE_PANEL_HEADER_DE contains the § 7a SGB IV statutory reference', () => {
+    expect(LOCKED_DE_PHRASES.DRV_CLEARANCE_PANEL_HEADER_DE).toContain('§ 7a SGB IV');
+  });
+
+  it('DRV_CLEARANCE_PANEL_HEADER_DE uses Statusfeststellungsverfahren canonical form', () => {
+    expect(LOCKED_DE_PHRASES.DRV_CLEARANCE_PANEL_HEADER_DE).toContain(
+      'Statusfeststellungsverfahren',
+    );
   });
 });

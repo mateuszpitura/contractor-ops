@@ -11,6 +11,7 @@ import { Loader2 } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
+import { StatusfeststellungsverfahrenPanel } from '@/components/contractors/classification/drv-clearance';
 import { ClassificationDocumentsPanel } from '@/components/contractors/classification-documents';
 import { Ir35ChainPanel } from '@/components/contractors/ir35-chain';
 import { OtherClientAttestationForm } from '@/components/contractors/other-client-attestation';
@@ -66,7 +67,10 @@ export default function EngagementDetailPage() {
       {countryCode === 'GB' ? <Ir35ChainPanel engagementId={params.engagementId} /> : null}
 
       {countryCode === 'DE' ? (
-        <OtherClientAttestationForm engagementId={params.engagementId} />
+        <>
+          <StatusfeststellungsverfahrenPanel engagementId={params.engagementId} />
+          <OtherClientAttestationForm engagementId={params.engagementId} />
+        </>
       ) : null}
     </div>
   );

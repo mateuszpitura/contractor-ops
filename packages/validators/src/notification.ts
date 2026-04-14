@@ -28,6 +28,10 @@ export const NOTIFICATION_TYPES = [
   'classification.economic_dependency_critical',
   // Phase 60 CLASS-08 — reassessment trigger (material change detected on GB engagement with prior IR35 SDS)
   'classification.reassessment_trigger',
+  // Phase 60 CLASS-09 — DRV § 7a SGB IV clearance expiry reminders (90/30/7 days before validTo)
+  'classification.drv_expiry_90d',
+  'classification.drv_expiry_30d',
+  'classification.drv_expiry_7d',
 ] as const;
 
 export const notificationTypeEnum = z.enum(NOTIFICATION_TYPES);

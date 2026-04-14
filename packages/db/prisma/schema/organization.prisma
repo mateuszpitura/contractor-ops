@@ -104,6 +104,7 @@ model Organization {
   ir35OtherClientAttestations    Ir35OtherClientAttestation[]
   economicDependencyAlertStates  EconomicDependencyAlertState[]
   reassessmentTriggers           ReassessmentTrigger[]
+  statusfeststellungsverfahren   Statusfeststellungsverfahren[]
   leitwegIds                     LeitwegId[]
   eInvoiceLifecycles             EInvoiceLifecycle[]
   eInvoiceLifecycleEvents        EInvoiceLifecycleEvent[]
