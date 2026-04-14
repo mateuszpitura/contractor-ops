@@ -1,6 +1,7 @@
 import { createHmac } from 'node:crypto';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { StorecoveAdapter } from '../asp/storecove/adapter.js';
+import { STORECOVE_CII_XRECHNUNG_DOC_TYPE_ID } from '../profiles/xrechnung-de/constants.js';
 
 // ---------------------------------------------------------------------------
 // Mock fetch for all tests
@@ -223,5 +224,121 @@ describe('StorecoveAdapter', () => {
     expect(results).toHaveLength(2);
     expect(results[0]?.senderParticipantId).toBe('0192:111111111111111');
     expect(results[1]?.documentId).toBe('recv-002');
+  });
+
+  // -----------------------------------------------------------------------
+  // Plan 61-05 — Format discriminator (D-09)
+  // -----------------------------------------------------------------------
+
+  describe('transmitInvoice — format discriminator (Plan 61-05)', () => {
+    it('maps cii-xrechnung format to STORECOVE_CII_XRECHNUNG_DOC_TYPE_ID', async () => {
+      mockFetch.mockResolvedValueOnce(
+        jsonResponse({
+          guid: 'tx-cii-001',
+          status: 'sent',
+          created_at: '2026-04-11T10:00:00Z',
+        }),
+      );
+
+      await adapter.transmitInvoice({
+        xml: '<rsm:CrossIndustryInvoice/>',
+        senderParticipantId: '0192:111111111111111',
+        receiverParticipantId: '0060:GB123456',
+        documentTypeId: 'ignored-when-format-set',
+        format: {
+          kind: 'cii-xrechnung',
+          customizationId:
+            'urn:cen.eu:en16931:2017#compliant#urn:xoev-de:kosit:standard:xrechnung_3.0',
+          profileId: 'urn:fdc:peppol.eu:2017:poacc:billing:01:1.0',
+        },
+      });
+
+      const [, options] = mockFetch.mock.calls[0] as [string, RequestInit];
+      const body = JSON.parse(options.body as string);
+      expect(body.document.document_type).toBe(STORECOVE_CII_XRECHNUNG_DOC_TYPE_ID);
+    });
+
+    it('honours legacy documentTypeId when format is omitted (peppol-ae zero regression)', async () => {
+      mockFetch.mockResolvedValueOnce(
+        jsonResponse({
+          guid: 'tx-ae-001',
+          status: 'sent',
+          created_at: '2026-04-11T10:00:00Z',
+        }),
+      );
+
+      await adapter.transmitInvoice({
+        xml: '<Invoice/>',
+        senderParticipantId: '0192:111111111111111',
+        receiverParticipantId: '0192:222222222222222',
+        documentTypeId: 'urn:peppol:ae-pint',
+      });
+
+      const [, options] = mockFetch.mock.calls[0] as [string, RequestInit];
+      const body = JSON.parse(options.body as string);
+      expect(body.document.document_type).toBe('urn:peppol:ae-pint');
+    });
+  });
+
+  // -----------------------------------------------------------------------
+  // Plan 61-05 — lookupParticipantCapabilities (D-11)
+  // -----------------------------------------------------------------------
+
+  describe('lookupParticipantCapabilities (Plan 61-05)', () => {
+    it('normalises a Storecove discovery payload to a flat documentTypes array', async () => {
+      mockFetch.mockResolvedValueOnce(
+        jsonResponse({
+          processes: [
+            {
+              documentTypes: [
+                STORECOVE_CII_XRECHNUNG_DOC_TYPE_ID,
+                'urn:oasis:names:specification:ubl:schema:xsd:Invoice-2::Invoice',
+              ],
+            },
+          ],
+        }),
+      );
+
+      const result = await adapter.lookupParticipantCapabilities({
+        schemeId: '0060',
+        value: 'GB123456',
+      });
+
+      expect(result.schemeId).toBe('0060');
+      expect(result.value).toBe('GB123456');
+      expect(result.documentTypes).toContain(STORECOVE_CII_XRECHNUNG_DOC_TYPE_ID);
+      expect(result.fetchedAt).toBeInstanceOf(Date);
+
+      // URL must be the pinned base with query params (SSRF safety).
+      const url = mockFetch.mock.calls[0]?.[0] as string;
+      expect(url).toContain('https://api-sandbox.storecove.com/api/v2');
+      expect(url).toContain('/discovery/receives');
+      expect(url).toContain('scheme_id=0060');
+      expect(url).toContain('identifier=GB123456');
+    });
+
+    it('returns empty documentTypes on 404 participant-not-found', async () => {
+      mockFetch.mockResolvedValueOnce(new Response('Not Found', { status: 404 }));
+
+      const result = await adapter.lookupParticipantCapabilities({
+        schemeId: '0060',
+        value: 'GB-nonexistent',
+      });
+
+      expect(result.documentTypes).toEqual([]);
+      expect(result.schemeId).toBe('0060');
+      expect(result.value).toBe('GB-nonexistent');
+    });
+
+    it('propagates 5xx as a thrown error (retryable upstream failure)', async () => {
+      mockFetch.mockResolvedValueOnce(new Response('Internal Server Error', { status: 500 }));
+
+      await expect(
+        adapter.lookupParticipantCapabilities({
+          schemeId: '0060',
+          value: 'GB-tx-fail',
+        }),
+      ).rejects.toThrow();
+    });
   });
 });
