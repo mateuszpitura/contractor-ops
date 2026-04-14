@@ -1,10 +1,11 @@
 ---
 phase: 61
 slug: xrechnung-e-invoicing
-status: draft
+status: approved
 shadcn_initialized: true
 preset: base-nova
 created: 2026-04-14
+reviewed_at: 2026-04-14
 ---
 
 # Phase 61 — UI Design Contract
