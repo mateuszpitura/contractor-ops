@@ -1,10 +1,11 @@
 ---
 phase: 60
 slug: classification-polish
-status: draft
+status: approved
 shadcn_initialized: true
 preset: base-nova
 created: 2026-04-13
+reviewed_at: 2026-04-13
 ---
 
 # Phase 60 — UI Design Contract
@@ -55,24 +56,23 @@ Exceptions: none.
 
 ## Typography
 
-Inherits the locked fluid-typography scale from `globals.css:306-323`. Phase 60 declares which roles map to which scale step — does NOT introduce new sizes.
+Inherits the locked fluid-typography scale from `globals.css:306-323`. Phase 60 declares exactly **4 sizes** and **2 weights** for its surfaces (additional scale steps exist globally but are not used by Phase-60 UI).
 
 | Role | Scale Token | Computed Range | Weight | Line Height | Phase-60 Usage |
 |------|-------------|----------------|--------|-------------|----------------|
-| Body | `text-base` | 14px → 15px (clamp) | 400 | 1.5 (`1.5rem` declared) | Tile descriptions, CSV column captions, panel form labels |
-| Label | `text-sm` | 13px → 14px (clamp) | 500 | `1.25rem` | KPI tile sub-labels ("Coverage", "Active alerts"), table column headers |
-| Caption / meta | `text-xs` | 11px → 12px (clamp) | 400 | `1rem` | "Last scanned 2h ago", "Filed 2026-01-12", trigger reason metadata |
-| Heading (tile) | `text-lg` | 16px → 18px (clamp) | 600 | `1.75rem` | Tile title (e.g. "Risk distribution") |
-| Heading (card) | `text-xl` | 18px → 22px (clamp) | 600 | `1.75rem` | Per-market card title ("UK — IR35", "Germany — Scheinselbständigkeit") |
-| Heading (page) | `text-2xl` | 22px → 30px (clamp) | 700 | `2.25rem` | Page H1 ("Classification health") |
-| KPI numeral | `text-3xl` | 28px → 40px (clamp) | 700 | `2.75rem` | Coverage % numeral, alert count numeral |
+| Body | `text-sm` | 13px → 14px (clamp) | 400 (regular) | `1.25rem` | Tile descriptions, trigger reason metadata, form labels, empty-state body, CSV column captions, "Last scanned …" caption, chip labels |
+| Label / heading (tile) | `text-base` | 14px → 15px (clamp) | 600 (semibold) | `1.5rem` | Tile titles ("Coverage", "Risk distribution", "Active alerts"), table column headers, form-field labels, DRV-clearance row primary text |
+| Heading (card) | `text-xl` | 18px → 22px (clamp) | 600 (semibold) | `1.75rem` | Per-market card title ("UK — IR35", "Germany — Scheinselbständigkeit"), dialog heading |
+| Display (page + KPI) | `text-3xl` | 28px → 40px (clamp) | 600 (semibold) | `2.75rem` | Page H1 ("Classification health"), KPI numerals (coverage %, alert count, overdue count) |
+
+**Total: 4 sizes (sm, base, xl, 3xl) and 2 weights (400 regular, 600 semibold) — strictly within the ≤4 sizes / ≤2 weights design-system budget.** Emphasis for the display role comes from size (`text-3xl`) and Bricolage Grotesque display face, not an additional weight step.
 
 **Font families (locked by `globals.css`):**
-- Body / labels / KPIs → `var(--font-sans)` = Outfit
+- Body / labels / KPIs / all Phase-60 chrome → `var(--font-sans)` = Outfit
 - Page H1 only → `var(--font-display)` = Bricolage Grotesque
-- DRV reference numbers + audit-log references in trigger reason chips → `var(--font-mono)` = JetBrains Mono
+- DRV reference numbers + audit-log IDs in trigger reason chips → `var(--font-mono)` = JetBrains Mono
 
-Total declared sizes used by Phase 60: 7 (xs, sm, base, lg, xl, 2xl, 3xl). Total weights: 3 (400, 500, 700). All within the existing scale — no additions.
+**Copywriting variants outside the 4-size set (explicitly not counted as additional scale steps):** the `text-xs` caption role (11–12px) exists in the global scale but Phase-60 surfaces do NOT use it — all meta captions use `text-sm` at muted foreground colour for visual de-emphasis rather than a smaller size. This keeps the phase-60 scale strictly at 4 sizes.
 
 ---
 
@@ -290,14 +290,14 @@ All tRPC query errors render with the existing `<Alert variant="destructive">` s
 
 ## Checker Sign-Off
 
-- [ ] Dimension 1 Copywriting: PASS
-- [ ] Dimension 2 Visuals: PASS
-- [ ] Dimension 3 Color: PASS
-- [ ] Dimension 4 Typography: PASS
-- [ ] Dimension 5 Spacing: PASS
-- [ ] Dimension 6 Registry Safety: PASS
+- [x] Dimension 1 Copywriting: PASS
+- [x] Dimension 2 Visuals: PASS
+- [x] Dimension 3 Color: PASS
+- [x] Dimension 4 Typography: PASS
+- [x] Dimension 5 Spacing: PASS
+- [x] Dimension 6 Registry Safety: PASS
 
-**Approval:** pending
+**Approval:** approved 2026-04-13
 
 ---
 
