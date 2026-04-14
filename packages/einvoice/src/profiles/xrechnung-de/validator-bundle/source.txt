@@ -1,0 +1,2 @@
+itplr-kosit/validator-configuration-xrechnung release-2026-01-31
+sha256:pending-download-verification

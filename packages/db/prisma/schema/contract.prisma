@@ -51,6 +51,7 @@ model Contract {
   invoices        Invoice[]
   workflowRuns    WorkflowRun[]
   timeEntries     TimeEntry[]
+  leitwegIds      LeitwegId[]
 
   @@index([organizationId])
   @@index([organizationId, contractorId, status])

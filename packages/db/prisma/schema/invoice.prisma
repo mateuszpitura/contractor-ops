@@ -52,11 +52,12 @@ model Invoice {
   contract       Contract?                 @relation(fields: [contractId], references: [id])
   billingProfile ContractorBillingProfile? @relation(fields: [billingProfileId], references: [id])
 
-  files           InvoiceFile[]
-  lines           InvoiceLine[]
-  matchResults    InvoiceMatchResult[]
-  paymentRunItems PaymentRunItem[]
-  zatcaChainEntry ZatcaInvoiceChain?
+  files             InvoiceFile[]
+  lines             InvoiceLine[]
+  matchResults      InvoiceMatchResult[]
+  paymentRunItems   PaymentRunItem[]
+  zatcaChainEntry   ZatcaInvoiceChain?
+  eInvoiceLifecycle EInvoiceLifecycle?
 
   @@unique([organizationId, duplicateCheckHash])
   @@index([organizationId])

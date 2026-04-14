@@ -1,17 +1,20 @@
 // Peppol Participant registration and transmission tracking
 
 model PeppolParticipant {
-  id                String                  @id @default(cuid())
-  organizationId    String
-  participantId     String // e.g., "0192:123456789012345"
-  schemeId          String // e.g., "0192"
-  identifierValue   String // e.g., "123456789012345" (TRN)
-  aspProvider       String // "storecove" etc.
-  aspRegistrationId String? // External ID from ASP
-  status            PeppolParticipantStatus @default(PENDING)
-  registeredAt      DateTime?
-  createdAt         DateTime                @default(now())
-  updatedAt         DateTime                @updatedAt
+  id                    String                  @id @default(cuid())
+  organizationId        String
+  participantId         String // e.g., "0192:123456789012345"
+  schemeId              String // e.g., "0192"
+  identifierValue       String // e.g., "123456789012345" (TRN)
+  aspProvider           String // "storecove" etc.
+  aspRegistrationId     String? // External ID from ASP
+  status                PeppolParticipantStatus @default(PENDING)
+  registeredAt          DateTime?
+  // Phase 61 (D-10 AMENDMENT — Option A) — per-participant XRechnung capability
+  supportsXRechnungCii  Boolean                 @default(false)
+  lastCapabilityCheckAt DateTime?
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime                @updatedAt
 
   organization  Organization         @relation(fields: [organizationId], references: [id])
   transmissions PeppolTransmission[]
