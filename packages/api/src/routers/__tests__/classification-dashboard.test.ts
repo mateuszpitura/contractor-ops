@@ -714,7 +714,7 @@ describe('classificationDashboard.activeAlertsByMarket (60-04-04)', () => {
 // ---------------------------------------------------------------------------
 
 describe('classificationDashboard.exportMarketCsv (60-04-05, 60-04-06)', () => {
-  it('neutralises formula-prefix contractor names (=cmd|/C calc!A1 → prefixed with `\\'`)', async () => {
+  it('neutralises formula-prefix contractor names (leading = becomes leading single-quote)', async () => {
     fixtures.assignments = [
       {
         id: 'gb-evil',
@@ -733,9 +733,29 @@ describe('classificationDashboard.exportMarketCsv (60-04-05, 60-04-06)', () => {
     const body = call.body as Buffer;
     // Strip BOM + decode
     const text = body.subarray(3).toString('utf-8');
-    // The neutralised cell should begin with `'=` and since it contains commas/quotes
-    // in the payload, the cell is wrapped in double quotes.
-    expect(text).toContain(`"'=cmd|'/C calc'!A1"`);
+    // The neutralised cell starts with `'=` so a spreadsheet treats it as text.
+    // No comma or quote in the payload → plain (un-wrapped) cell.
+    expect(text).toContain(`'=cmd|'/C calc'!A1`);
+    expect(text).not.toMatch(/^[^']=cmd/m); // ensure no un-prefixed `=cmd` at start of any cell
+  });
+
+  it('neutralises contractor names with leading = + internal comma (wraps in quotes)', async () => {
+    fixtures.assignments = [
+      {
+        id: 'gb-evil-2',
+        organizationId: ORG_A,
+        status: 'ACTIVE',
+        contractorId: 'c-evil-2',
+        contractor: { id: 'c-evil-2', name: `=HYPERLINK("http://evil","click")`, countryCode: 'GB' },
+      },
+    ];
+    const caller = makeCaller(ORG_A);
+    await caller.classificationDashboard.exportMarketCsv({ market: 'GB' });
+    const call = mockR2PutObjectAndSignDownload.mock.calls[0]![0];
+    const body = call.body as Buffer;
+    const text = body.subarray(3).toString('utf-8');
+    // Leading `=` + internal `"` triggers both neutralisation and quote-wrap.
+    expect(text).toContain(`"'=HYPERLINK(""http://evil"",""click"")"`);
   });
 
   it('outputs UTF-8 BOM + correct column headers in CSV body', async () => {
