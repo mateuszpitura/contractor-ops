@@ -94,8 +94,11 @@ describe('PDF/A-3b identification constants', () => {
 });
 
 describe('GUIDELINE_URN_TO_LEVEL mapping', () => {
-  it('has exactly five entries (COMFORT / XRECHNUNG / EXTENDED spread)', () => {
-    expect(Object.keys(GUIDELINE_URN_TO_LEVEL)).toHaveLength(5);
+  it('has exactly six entries (COMFORT / XRECHNUNG / EXTENDED spread)', () => {
+    // Two XRECHNUNG entries: legacy xoev-de URN + canonical xeinkauf.de URN
+    // (the KoSIT validator-configuration-xrechnung release-2026-01-31 emits
+    // the xeinkauf.de form; older documents still carry the xoev-de form).
+    expect(Object.keys(GUIDELINE_URN_TO_LEVEL)).toHaveLength(6);
   });
 
   it('every key maps to a valid ZugferdConformanceLevel', () => {
@@ -118,10 +121,18 @@ describe('GUIDELINE_URN_TO_LEVEL mapping', () => {
     expect(GUIDELINE_URN_TO_LEVEL['urn:factur-x.eu:1p0:en16931']).toBe('COMFORT');
   });
 
-  it('XRechnung compliance URN resolves to XRECHNUNG', () => {
+  it('XRechnung compliance URN (legacy xoev-de form) resolves to XRECHNUNG', () => {
     expect(
       GUIDELINE_URN_TO_LEVEL[
         'urn:cen.eu:en16931:2017#compliant#urn:xoev-de:kosit:standard:xrechnung_3.0'
+      ],
+    ).toBe('XRECHNUNG');
+  });
+
+  it('XRechnung compliance URN (canonical xeinkauf.de form) resolves to XRECHNUNG', () => {
+    expect(
+      GUIDELINE_URN_TO_LEVEL[
+        'urn:cen.eu:en16931:2017#compliant#urn:xeinkauf.de:kosit:xrechnung_3.0'
       ],
     ).toBe('XRECHNUNG');
   });
