@@ -23,14 +23,12 @@ export function DownloadCsvButton({ market }: DownloadCsvButtonProps) {
 
   const mutation = trpc.classificationDashboard.exportMarketCsv.useMutation({
     onSuccess: result => {
-      // Trigger a browser download via a temporary anchor. Using window.location
-      // directly would navigate the tab; an anchor with `download` hints the
-      // browser to save the signed URL to disk.
+      // Trigger a browser download via a temporary anchor. R2 signed URLs are
+      // cross-origin so `download` and `target` have no effect; the browser
+      // relies on the Content-Disposition: attachment header set by R2.
       if (typeof window !== 'undefined') {
         const anchor = document.createElement('a');
         anchor.href = result.url;
-        anchor.rel = 'noopener noreferrer';
-        anchor.target = '_self';
         document.body.appendChild(anchor);
         anchor.click();
         anchor.remove();
