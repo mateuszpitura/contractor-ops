@@ -5,8 +5,9 @@
     "lib": ["ES2022", "DOM"],
     "tsBuildInfoFile": "node_modules/.cache/tsc/tsconfig.tsbuildinfo",
     "outDir": "dist",
-    "rootDir": "src"
+    "rootDir": "src",
+    "jsx": "react-jsx"
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
   "exclude": ["node_modules", "dist"]
 }

@@ -7,7 +7,7 @@ export default defineConfig({
     name: vitestProject.einvoice.name,
     globals: true,
     environment: 'node',
-    include: ['src/**/__tests__/**/*.test.ts'],
+    include: ['src/**/__tests__/**/*.test.ts', 'src/**/__tests__/**/*.test.tsx'],
     sequence: {
       groupOrder: vitestProject.einvoice.groupOrder,
     },
