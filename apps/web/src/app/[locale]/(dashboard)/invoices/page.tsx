@@ -7,6 +7,7 @@ import { parseAsString, useQueryState } from 'nuqs';
 import { Suspense, useCallback, useEffect, useState } from 'react';
 import { EInvoiceComplianceFilterChips } from '@/components/invoices/einvoice-compliance-filter-chips';
 import { EInvoiceComplianceSummaryTile } from '@/components/invoices/einvoice-compliance-summary-tile';
+import { ImportSplitButton } from '@/components/invoices/intake/import-split-button';
 import { InvoiceSidePanel } from '@/components/invoices/invoice-side-panel';
 import type { InvoiceRow } from '@/components/invoices/invoice-table/columns';
 import { InvoiceDataTable } from '@/components/invoices/invoice-table/data-table';
@@ -126,9 +127,15 @@ function InvoicesContent() {
 
   return (
     <div className="space-y-6">
-      {/* Page header */}
+      {/* Page header — Phase 62 adds the ImportSplitButton which, when the
+          einvoice.import-enabled flag is on, surfaces 'Import e-invoice' as
+          a secondary dropdown item alongside the primary '+ New invoice' CTA. */}
       <AnimateIn delay={0}>
-        <PageHeader title={t('pageTitle')} description={t('pageDescription')} />
+        <PageHeader
+          title={t('pageTitle')}
+          description={t('pageDescription')}
+          actions={<ImportSplitButton onCreateNewClick={handleUpload} />}
+        />
       </AnimateIn>
 
       {/* Phase 61 · Plan 61-08 — compliance summary tile + filter chips */}

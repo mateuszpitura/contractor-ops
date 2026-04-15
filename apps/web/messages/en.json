@@ -63,6 +63,7 @@
     "contracts": "Contracts",
     "workflows": "Workflows",
     "invoices": "Invoices",
+    "imports": "Imports",
     "approvals": "Approvals",
     "payments": "Payments",
     "reports": "Reports",

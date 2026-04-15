@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import { trpc } from '@/trpc/init';
+import { DownloadZugferdPdfButton } from './download-zugferd-pdf-button';
 import { GenerationSection } from './generation-section';
 import { LeitwegIdResolvedInline } from './leitweg-id-resolved-inline';
 import { TransmissionSection } from './transmission-section';
@@ -250,6 +251,49 @@ export function EInvoiceTab({ data, invoiceId }: EInvoiceTabProps) {
         isSendPending={sendMutation.isPending}
         onSend={handleSend}
       />
+
+      {/* Phase 62 — outbound ZUGFeRD section. Always available wherever the
+          e-invoice tab is rendered (no feature-flag gating per D-14). */}
+      <ZugferdSection
+        invoiceId={invoiceId}
+        lifecycle={tabData.lifecycle}
+      />
     </div>
+  );
+}
+
+interface ZugferdSectionProps {
+  invoiceId: string;
+  lifecycle: InvoiceTabData['lifecycle'];
+}
+
+function ZugferdSection({ invoiceId, lifecycle }: ZugferdSectionProps) {
+  const t = useTranslations('EInvoice.intake');
+  const generated = (lifecycle as { zugferdPdfKey?: string | null } | null)?.zugferdPdfKey;
+  const generatedAt = (lifecycle as { zugferdGeneratedAt?: Date | string | null } | null)
+    ?.zugferdGeneratedAt;
+
+  return (
+    <section
+      aria-labelledby="zugferd-section-heading"
+      data-slot="einvoice-tab-zugferd-section"
+      className="space-y-3">
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <h3
+            id="zugferd-section-heading"
+            className="font-display text-xl font-semibold">
+            {t('zugferdSectionHeading')}
+          </h3>
+          <p className="text-sm text-muted-foreground">{t('zugferdSectionBody')}</p>
+        </div>
+        <DownloadZugferdPdfButton invoiceId={invoiceId} />
+      </div>
+      <p className="text-xs text-muted-foreground">
+        {generated && generatedAt
+          ? t('generatedOnPattern', { date: String(generatedAt) })
+          : t('notYetGenerated')}
+      </p>
+    </section>
   );
 }
