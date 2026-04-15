@@ -59,6 +59,14 @@ model Invoice {
   zatcaChainEntry   ZatcaInvoiceChain?
   eInvoiceLifecycle EInvoiceLifecycle?
   intake            InvoiceIntakeRequest? @relation("InvoiceIntakeConvertedInvoice")
+  // Phase 63 — UK Payments & Financial Features
+  payments              InvoicePayment[]
+  interestCompensation  InvoiceInterestCompensation?
+  interestWaivers       InvoiceInterestWaiver[]
+  interestClaims        InvoiceInterestClaim[]
+  interestClaimsAsSecondary InvoiceInterestClaim[] @relation("InterestClaimSecondaryInvoice")
+  skontoTerms           SkontoTerm[]
+  skontoSnapshot        SkontoSnapshot?
 
   @@unique([organizationId, duplicateCheckHash])
   @@index([organizationId])
@@ -144,6 +152,7 @@ enum InvoiceSource {
   API
   PORTAL
   PEPPOL
+  LATE_INTEREST_CLAIM
 }
 
 enum InvoiceStatus {
@@ -252,4 +261,94 @@ enum InvoiceIntakeProfileLevel {
   COMFORT
   XRECHNUNG
   EXTENDED
+}
+
+// ---------------------------------------------------------------------------
+// Phase 63 — UK Payments & Financial Features: Invoice payment + interest models
+// ---------------------------------------------------------------------------
+
+enum InvoicePaymentSourceKind {
+  MANUAL
+  PAYMENT_RUN
+  BANK_STATEMENT
+}
+
+model InvoicePayment {
+  id                     String                   @id @default(cuid())
+  organizationId         String
+  organization           Organization             @relation(fields: [organizationId], references: [id])
+  invoiceId              String
+  invoice                Invoice                  @relation(fields: [invoiceId], references: [id])
+  amountMinor            Int
+  paidAt                 DateTime
+  sourceKind             InvoicePaymentSourceKind
+  sourcePaymentRunItemId String?
+  sourcePaymentRunItem   PaymentRunItem?          @relation(fields: [sourcePaymentRunItemId], references: [id])
+  notes                  String?
+  createdByUserId        String?
+  createdAt              DateTime                 @default(now())
+
+  @@index([organizationId, invoiceId])
+  @@map("invoice_payment")
+}
+
+model InvoiceInterestCompensation {
+  id                         String       @id @default(cuid())
+  organizationId             String
+  organization               Organization @relation(fields: [organizationId], references: [id])
+  invoiceId                  String       @unique
+  invoice                    Invoice      @relation(fields: [invoiceId], references: [id])
+  tierMinor                  Int
+  invoiceTotalAtOverdueMinor Int
+  firstOverdueDate           DateTime     @db.Date
+  createdAt                  DateTime     @default(now())
+
+  @@index([organizationId])
+  @@map("invoice_interest_compensation")
+}
+
+enum InterestWaiveType {
+  STATUTORY_INTEREST
+  COMPENSATION
+  BOTH
+}
+
+model InvoiceInterestWaiver {
+  id              String           @id @default(cuid())
+  organizationId  String
+  organization    Organization     @relation(fields: [organizationId], references: [id])
+  invoiceId       String
+  invoice         Invoice          @relation(fields: [invoiceId], references: [id])
+  waiveType       InterestWaiveType
+  reason          String           @db.Text
+  waivedByUserId  String
+  waivedAt        DateTime         @default(now())
+  revokedAt       DateTime?
+  revokedByUserId String?
+  revokeReason    String?          @db.Text
+  createdAt       DateTime         @default(now())
+
+  @@index([organizationId, invoiceId])
+  @@map("invoice_interest_waiver")
+}
+
+model InvoiceInterestClaim {
+  id                        String       @id @default(cuid())
+  organizationId            String
+  organization              Organization @relation(fields: [organizationId], references: [id])
+  invoiceId                 String
+  invoice                   Invoice      @relation(fields: [invoiceId], references: [id])
+  claimedByUserId           String
+  claimedAt                 DateTime     @default(now())
+  snapshotInterestMinor     Int
+  snapshotCompensationMinor Int
+  snapshotRateUsed          Decimal      @db.Decimal(5, 2)
+  snapshotDaysOverdue       Int
+  pdfKey                    String
+  secondaryInvoiceId        String?
+  secondaryInvoice          Invoice?     @relation("InterestClaimSecondaryInvoice", fields: [secondaryInvoiceId], references: [id])
+  createdAt                 DateTime     @default(now())
+
+  @@index([organizationId, invoiceId])
+  @@map("invoice_interest_claim")
 }

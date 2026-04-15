@@ -41,6 +41,8 @@ model Contractor {
   isPublicSectorBuyer       Boolean                  @default(false)
   peppolSchemeId            String?                  @db.VarChar(4)
   peppolParticipantValue    String?                  @db.VarChar(64)
+  // Phase 63 (D-11) — B2B customer flag for LPCDA late payment interest eligibility
+  isBusinessCustomer        Boolean                  @default(true)
   createdAt                 DateTime                 @default(now())
   updatedAt                 DateTime                 @updatedAt
   archivedAt                DateTime?
@@ -133,8 +135,15 @@ model ContractorBillingProfile {
   organization Organization @relation(fields: [organizationId], references: [id])
   contractor   Contractor   @relation(fields: [contractorId], references: [id])
 
+  // Phase 63 (D-01) — UK BACS bank account fields (encrypted + masked pairs)
+  ukSortCodeEncrypted       String?
+  ukSortCodeMasked          String?
+  ukAccountNumberEncrypted  String?
+  ukAccountNumberMasked     String?
+
   invoices        Invoice[]
   paymentRunItems PaymentRunItem[]
+  skontoTerms     SkontoTerm[]
 
   @@index([organizationId])
   @@index([organizationId, contractorId])

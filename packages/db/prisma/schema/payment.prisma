@@ -59,6 +59,9 @@ model PaymentRunItem {
   contractor     Contractor                @relation(fields: [contractorId], references: [id])
   billingProfile ContractorBillingProfile? @relation(fields: [billingProfileId], references: [id])
 
+  invoicePayments    InvoicePayment[]
+  skontoApplication  SkontoApplication?
+
   @@unique([paymentRunId, invoiceId])
   @@index([organizationId])
   @@index([organizationId, status])
@@ -121,6 +124,7 @@ enum PaymentExportFormat {
   MT940
   XML
   API_PUSH
+  BACS_STD18
 }
 
 enum ExportStatus {

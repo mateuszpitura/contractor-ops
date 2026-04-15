@@ -1,0 +1,23 @@
+[
+  { "effectiveFrom": "2021-01-01", "ratePercent": "0.10" },
+  { "effectiveFrom": "2021-12-16", "ratePercent": "0.25" },
+  { "effectiveFrom": "2022-02-03", "ratePercent": "0.50" },
+  { "effectiveFrom": "2022-03-17", "ratePercent": "0.75" },
+  { "effectiveFrom": "2022-05-05", "ratePercent": "1.00" },
+  { "effectiveFrom": "2022-06-16", "ratePercent": "1.25" },
+  { "effectiveFrom": "2022-08-04", "ratePercent": "1.75" },
+  { "effectiveFrom": "2022-09-22", "ratePercent": "2.25" },
+  { "effectiveFrom": "2022-11-03", "ratePercent": "3.00" },
+  { "effectiveFrom": "2022-12-15", "ratePercent": "3.50" },
+  { "effectiveFrom": "2023-02-02", "ratePercent": "4.00" },
+  { "effectiveFrom": "2023-03-23", "ratePercent": "4.25" },
+  { "effectiveFrom": "2023-05-11", "ratePercent": "4.50" },
+  { "effectiveFrom": "2023-06-22", "ratePercent": "5.00" },
+  { "effectiveFrom": "2023-08-03", "ratePercent": "5.25" },
+  { "effectiveFrom": "2024-08-01", "ratePercent": "5.00" },
+  { "effectiveFrom": "2024-11-07", "ratePercent": "4.75" },
+  { "effectiveFrom": "2025-02-06", "ratePercent": "4.50" },
+  { "effectiveFrom": "2025-05-08", "ratePercent": "4.25" },
+  { "effectiveFrom": "2025-08-07", "ratePercent": "4.00" },
+  { "effectiveFrom": "2025-11-06", "ratePercent": "3.75" }
+]

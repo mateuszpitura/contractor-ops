@@ -21,6 +21,14 @@ model Organization {
   // Phase 57 (D-11) — Kleinunternehmerregelung §19 UStG toggle (DE orgs only)
   isKleinunternehmer   Boolean            @default(false)
   billingEmail         String?
+  // Phase 63 (D-02) — BACS submitter credentials (encrypted + masked pairs)
+  bacsServiceUserNumberEncrypted    String?
+  bacsServiceUserNumberMasked       String?
+  bacsSubmitterSortCodeEncrypted    String?
+  bacsSubmitterSortCodeMasked       String?
+  bacsSubmitterAccountNumberEncrypted String?
+  bacsSubmitterAccountNumberMasked  String?
+  bacsSubmitterName                 String?  @db.VarChar(18)
   settingsJson         Json?
   portalSubdomain      String?            @unique
   portalCustomDomain   String?            @unique
@@ -110,6 +118,14 @@ model Organization {
   eInvoiceLifecycleEvents        EInvoiceLifecycleEvent[]
   peppolCapabilityCache          PeppolCapabilityCache[]
   invoiceIntakes                 InvoiceIntakeRequest[]
+  // Phase 63 — UK Payments & Financial Features
+  invoicePayments                InvoicePayment[]
+  invoiceInterestCompensations   InvoiceInterestCompensation[]
+  invoiceInterestWaivers         InvoiceInterestWaiver[]
+  invoiceInterestClaims          InvoiceInterestClaim[]
+  skontoTerms                    SkontoTerm[]
+  skontoSnapshots                SkontoSnapshot[]
+  skontoApplications             SkontoApplication[]
 }
 
 model Member {
