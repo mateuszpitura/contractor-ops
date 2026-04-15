@@ -9,7 +9,7 @@
 // call `parseZugferdPdf` directly instead of going through the profile
 // interface.
 //
-// `generate()` throws until Plan 62-03 wires the PDF/A-3 wrapping pipeline.
+// `generate()` delegates to the PDF/A-3 pipeline shipped by Plan 62-03.
 
 import type { ComplianceStatus } from '../../types/compliance.js';
 import { complianceState } from '../../types/compliance.js';
@@ -17,6 +17,7 @@ import type { EInvoice } from '../../types/invoice.js';
 import type { EInvoiceProfile } from '../../types/profile.js';
 import type { ValidationResult } from '../../types/validation.js';
 import { ZUGFERD_DE_PROFILE_ID } from './constants.js';
+import { generateZugferdPdf } from './generator.js';
 import { parseZugferdPdf } from './parser.js';
 import { validateZugferdEmbeddedXml } from './validator.js';
 
@@ -36,10 +37,15 @@ export class ZugferdDEProfile implements EInvoiceProfile {
   /** ZUGFeRD does not require invoice QR codes. */
   readonly qrCode = undefined;
 
-  async generate(_invoice: EInvoice): Promise<string> {
-    throw new Error(
-      'ZUGFeRD generator not yet wired — see Phase 62 Plan 03 (PDF/A-3 wrapping pipeline)',
-    );
+  /**
+   * Generate a ZUGFeRD hybrid PDF/A-3 B document from the canonical
+   * `EInvoice` envelope. Returns a base64-encoded PDF string to satisfy
+   * the `EInvoiceProfile.generate(): Promise<string>` contract — callers
+   * that need the raw bytes should call `generateZugferdPdf` directly.
+   */
+  async generate(invoice: EInvoice): Promise<string> {
+    const bytes = await generateZugferdPdf({ invoice });
+    return Buffer.from(bytes).toString('base64');
   }
 
   /**
@@ -92,7 +98,7 @@ export class ZugferdDEProfile implements EInvoiceProfile {
       displayName: this.displayName,
       healthScore: 100,
       capabilities: {
-        canGenerate: false, // Plan 03 wires the generator
+        canGenerate: true, // Plan 62-03 wired the PDF/A-3 pipeline
         canParse: true,
         canSign: false,
         canQRCode: false,

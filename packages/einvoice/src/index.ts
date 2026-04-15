@@ -315,6 +315,18 @@ export type { ZugferdPdfUpload } from './profiles/zugferd-de/schemas.js';
 // ZUGFeRD-DE profile class
 export { ZugferdDEProfile } from './profiles/zugferd-de/index.js';
 
+// ZUGFeRD-DE outbound pipeline (Plan 62-03)
+export {
+  generateZugferdPdf,
+  ZugferdLevelUnsupportedForOutput,
+} from './profiles/zugferd-de/generator.js';
+export type { GenerateZugferdInput } from './profiles/zugferd-de/generator.js';
+export {
+  assertZugferdStructure,
+  ZugferdWrappingError,
+} from './profiles/zugferd-de/zugferd-structural-check.js';
+export type { StructuralCheckSubcode } from './profiles/zugferd-de/zugferd-structural-check.js';
+
 // XRechnung inbound parser — Phase-62 fully implemented.
 // Named export is the richer typed parser (ParsedXrechnung), separate from
 // the Phase-61 back-compat `parseXRechnungCii` already exported above.

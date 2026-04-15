@@ -1,0 +1,55 @@
+{
+  "id": "INV-2026-002",
+  "issueDate": "2026-01-15",
+  "dueDate": "2026-02-14",
+  "invoiceTypeCode": "380",
+  "currencyCode": "EUR",
+  "profileId": "zugferd-de",
+  "supplier": {
+    "id": "DE123456789",
+    "name": "Acme Beratung GmbH",
+    "address": "Hauptstraße 1, 10115 Berlin",
+    "country": "DE"
+  },
+  "customer": {
+    "id": "DE246813579",
+    "name": "Bundesministerium für Digitales",
+    "address": "Invalidenstraße 44, 10115 Berlin",
+    "country": "DE"
+  },
+  "lines": [
+    {
+      "lineNumber": 1,
+      "description": "IT-Beratung §13b UStG reverse charge",
+      "quantity": 20,
+      "unit": "HUR",
+      "unitPriceMinor": 15000,
+      "netAmountMinor": 300000,
+      "vatRate": "0",
+      "vatAmountMinor": 0,
+      "grossAmountMinor": 300000
+    }
+  ],
+  "taxExclusiveAmount": 300000,
+  "taxInclusiveAmount": 300000,
+  "payableAmount": 300000,
+  "taxBreakdown": [
+    {
+      "taxableAmountMinor": 300000,
+      "taxAmountMinor": 0,
+      "taxCategory": "AE",
+      "percent": 0
+    }
+  ],
+  "paymentMeans": {
+    "code": "58",
+    "dueDate": "2026-02-14",
+    "bankAccount": "DE89370400440532013000",
+    "bankName": "Commerzbank",
+    "paymentReference": "INV-2026-002"
+  },
+  "extensions": {
+    "isReverseCharge": true,
+    "supplierLeitwegId": "04011000-12345-33"
+  }
+}
