@@ -17,6 +17,8 @@ import { enumKey } from '@/lib/enum-key';
 interface FilterState {
   status: string[];
   source: string[];
+  /** Phase 63 — when true, show only overdue invoices (status != PAID && dueDate < now). */
+  overdue?: boolean;
 }
 
 interface DataTableFiltersProps {
@@ -53,15 +55,21 @@ export function DataTableFilters({ filters, onFiltersChange }: DataTableFiltersP
   const t = useTranslations('Invoices');
 
   // Active filter count for badge
-  const activeFilterCount = filters.status.length + filters.source.length;
+  const activeFilterCount =
+    filters.status.length + filters.source.length + (filters.overdue ? 1 : 0);
   const hasActiveFilters = activeFilterCount > 0;
 
   const clearAllFilters = useCallback(() => {
     onFiltersChange({
       status: [],
       source: [],
+      overdue: false,
     });
   }, [onFiltersChange]);
+
+  const toggleOverdue = useCallback(() => {
+    onFiltersChange({ overdue: !filters.overdue });
+  }, [filters.overdue, onFiltersChange]);
 
   const toggleFilterValue = useCallback(
     (key: 'status' | 'source', value: string) => {
@@ -81,6 +89,16 @@ export function DataTableFilters({ filters, onFiltersChange }: DataTableFiltersP
 
   return (
     <>
+      {/* Overdue filter chip (Phase 63 — PAY-06) */}
+      <Button
+        variant={filters.overdue ? 'default' : 'outline'}
+        size="lg"
+        onClick={toggleOverdue}
+        className={filters.overdue ? 'bg-primary text-primary-foreground' : ''}
+      >
+        {t('overdueFilter')}
+      </Button>
+
       {/* Filter popover button */}
       <Popover>
         <PopoverTrigger
@@ -129,6 +147,12 @@ export function DataTableFilters({ filters, onFiltersChange }: DataTableFiltersP
       {/* Active filter badges */}
       {hasActiveFilters && (
         <div className="flex flex-wrap items-center gap-1.5">
+          {filters.overdue && (
+            <FilterBadge
+              label={t('overdueFilter')}
+              onRemove={toggleOverdue}
+            />
+          )}
           {filters.status.map(s => (
             <FilterBadge
               key={`status-${s}`}
