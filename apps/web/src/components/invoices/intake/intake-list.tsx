@@ -37,7 +37,7 @@ interface IntakeRow {
   extractedSupplierName: string | null;
   extractedInvoiceNumber: string | null;
   extractedInvoiceDate: string | Date | null;
-  extractedTotalAmountMinor: number | null | string;
+  extractedTotalMinor: number | null | string;
   extractedCurrency: string | null;
   extractedProfileLevel: ProfileLevel | null;
   status: IntakeStatus;
@@ -158,7 +158,7 @@ export function IntakeList({ initialStatus }: IntakeListProps) {
             </TableHeader>
             <TableBody>
               {rows.map(row => {
-                const total = formatTotalMinor(row.extractedTotalAmountMinor, row.extractedCurrency);
+                const total = formatTotalMinor(row.extractedTotalMinor, row.extractedCurrency);
                 const dateStr = row.extractedInvoiceDate
                   ? format.dateTime(new Date(row.extractedInvoiceDate), 'short')
                   : '—';
