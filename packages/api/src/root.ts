@@ -1,4 +1,5 @@
 import { router } from './init.js';
+import { adminBoeRateRouter } from './routers/admin-boe-rate.js';
 import { apiKeyRouter } from './routers/api-key.js';
 import { approvalRouter } from './routers/approval.js';
 import { auditRouter } from './routers/audit.js';
@@ -29,6 +30,7 @@ import { ir35ChainRouter } from './routers/ir35-chain.js';
 import { ir35AttestationRouter } from './routers/ir35-other-client-attestation.js';
 import { jiraRouter } from './routers/jira.js';
 import { ksefRouter } from './routers/ksef.js';
+import { latePaymentInterestRouter } from './routers/late-payment-interest.js';
 import { legalRouter } from './routers/legal.js';
 import { leitwegIdRouter } from './routers/leitweg-id.js';
 import { linearRouter } from './routers/linear.js';
@@ -82,6 +84,7 @@ import { zatcaRouter } from './routers/zatca.js';
  * - equipment: CRUD, assignment, shipment tracking, status management, contractor equipment view
  */
 export const appRouter = router({
+  adminBoeRate: adminBoeRateRouter, // adminBoeRate: Super-admin BoE base rate CRUD — list, insert, update, delete (Phase 63 D-10)
   apiKey: apiKeyRouter, // apiKey: Enterprise API key management — create, list, update, revoke
   organization: organizationRouter,
   user: userRouter,
@@ -106,6 +109,7 @@ export const appRouter = router({
   esign: esignRouter,
   ocr: ocrRouter,
   ksef: ksefRouter,
+  latePaymentInterest: latePaymentInterestRouter, // latePaymentInterest: LPCDA statutory interest — getForInvoice, getForOrg, waive, revokeWaiver, claim, downloadClaim (Phase 63 D-27)
   legal: legalRouter, // legal: GDPR privacy notice PDF downloads (IDOR-safe, session-derived jurisdiction)
   portalTime: portalTimeRouter,
   time: timeRouter,

@@ -50,6 +50,8 @@ const globalModels = new Set([
   'Organization',
   'Member',
   'Invitation',
+  // Phase 63 — Global reference data (no organizationId)
+  'BoEBaseRateHistory',
 ]);
 
 /** Operations that filter by `where.organizationId`. */
