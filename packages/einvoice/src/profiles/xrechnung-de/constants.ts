@@ -114,3 +114,20 @@ export const XRECHNUNG_REVERSE_CHARGE_REASON =
  */
 export const XRECHNUNG_KLEINUNTERNEHMER_REASON =
   'Gemäß § 19 UStG wird keine Umsatzsteuer ausgewiesen' as const;
+
+// ---------------------------------------------------------------------------
+// Skonto description template — BG-20 Payment Terms (Phase 63 D-22)
+// ---------------------------------------------------------------------------
+//
+// MIRROR of `SKONTO_DESCRIPTION_TEMPLATE_DE` from
+// `@contractor-ops/validators` (Phase 63 locked phrases).
+//
+// Drift invariant: `__tests__/locked-phrase-parity.test.ts` guards
+// byte-equality with the canonical source.
+
+/**
+ * German Skonto description template for BG-20 Payment Terms.
+ * Placeholders: {percent}, {discountDays}, {netDays}.
+ */
+export const XRECHNUNG_SKONTO_DESCRIPTION_TEMPLATE =
+  '{percent}% Skonto bei Zahlung innerhalb von {discountDays} Tagen, sonst netto {netDays} Tage' as const;

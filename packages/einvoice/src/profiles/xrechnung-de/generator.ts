@@ -35,8 +35,19 @@ import {
   XRECHNUNG_KLEINUNTERNEHMER_REASON,
   XRECHNUNG_PROFILE_ID,
   XRECHNUNG_REVERSE_CHARGE_REASON,
+  XRECHNUNG_SKONTO_DESCRIPTION_TEMPLATE,
 } from './constants.js';
 import { embedLeitwegIdIntoCii } from './leitweg-id-embed.js';
+
+// ---------------------------------------------------------------------------
+// Skonto term type (mirrors the service type — no cross-package import needed)
+// ---------------------------------------------------------------------------
+
+export interface SkontoTermInput {
+  discountPercent: number;
+  discountPeriodDays: number;
+  netPeriodDays: number;
+}
 
 // ---------------------------------------------------------------------------
 // Structural type used by fast-xml-parser builder + the embed helper.
@@ -250,6 +261,81 @@ function buildCiiParty(party: EInvoice['supplier']): Record<string, unknown> {
 }
 
 // ---------------------------------------------------------------------------
+// BG-20 Payment Terms — with optional Skonto extension (XRechnung 3.0.2 Anhang E)
+// ---------------------------------------------------------------------------
+
+/**
+ * Build the `ram:SpecifiedTradePaymentTerms` block.
+ *
+ * When a Skonto term is provided, the Description contains:
+ *   1. Human-readable German text from the locked phrase template
+ *   2. Structured Skonto string per XRechnung 3.0.2 Anhang E:
+ *      `#SKONTO#TAGE={days}#PROZENT={pct}#BASISBETRAG={amount}#`
+ *
+ * The structured string goes in the TEXT content of `ram:Description` via
+ * fast-xml-parser's `#text` property — NOT in an XML attribute. This ensures
+ * `#` and decimal numbers appear literally without XML escaping issues
+ * (per Pitfall 6 from RESEARCH).
+ *
+ * Due date is set to `issueDate + netPeriodDays` when Skonto is present.
+ */
+function buildPaymentTerms(
+  invoice: EInvoice,
+  skontoTerm?: SkontoTermInput | null,
+): Record<string, unknown> {
+  if (skontoTerm) {
+    // Compute due date from issue date + net period
+    const issueDateParsed = new Date(invoice.issueDate);
+    const dueDate = new Date(issueDateParsed);
+    dueDate.setDate(dueDate.getDate() + skontoTerm.netPeriodDays);
+    const dueDateCii = `${dueDate.getFullYear()}${String(dueDate.getMonth() + 1).padStart(2, '0')}${String(dueDate.getDate()).padStart(2, '0')}`;
+
+    // Human-readable German description from mirrored locked phrase template
+    const germanDescription = XRECHNUNG_SKONTO_DESCRIPTION_TEMPLATE
+      .replace('{percent}', skontoTerm.discountPercent.toFixed(2))
+      .replace('{discountDays}', String(skontoTerm.discountPeriodDays))
+      .replace('{netDays}', String(skontoTerm.netPeriodDays));
+
+    // Structured Skonto extension per XRechnung 3.0.2 Anhang E
+    const basisBetrag = fromMinor(invoice.payableAmount);
+    const structuredSkonto =
+      `#SKONTO#TAGE=${skontoTerm.discountPeriodDays}` +
+      `#PROZENT=${skontoTerm.discountPercent.toFixed(2)}` +
+      `#BASISBETRAG=${basisBetrag}#`;
+
+    return {
+      'ram:SpecifiedTradePaymentTerms': {
+        'ram:Description': {
+          '#text': `${germanDescription}\n${structuredSkonto}`,
+        },
+        'ram:DueDateDateTime': {
+          'udt:DateTimeString': {
+            '@_format': '102',
+            '#text': dueDateCii,
+          },
+        },
+      },
+    };
+  }
+
+  // No Skonto — emit standard due date if present
+  if (invoice.dueDate) {
+    return {
+      'ram:SpecifiedTradePaymentTerms': {
+        'ram:DueDateDateTime': {
+          'udt:DateTimeString': {
+            '@_format': '102',
+            '#text': toCiiDate(invoice.dueDate),
+          },
+        },
+      },
+    };
+  }
+
+  return {};
+}
+
+// ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------
 
@@ -260,9 +346,15 @@ function buildCiiParty(party: EInvoice['supplier']): Record<string, unknown> {
  * @param invoice   Canonical EInvoice envelope (lines + taxBreakdown + parties).
  * @param leitwegId Resolved BT-10 value, or `null` to omit `<ram:BuyerReference>`
  *                  entirely (soft-gate path — Plan 04 resolver decides).
+ * @param skontoTerm Optional Skonto term for BG-20 structured payment terms
+ *                   per XRechnung 3.0.2 Anhang E.
  * @returns         UTF-8 CII XML, always prefixed with `<?xml ... ?>`.
  */
-export function generateXRechnungCii(invoice: EInvoice, leitwegId: string | null): string {
+export function generateXRechnungCii(
+  invoice: EInvoice,
+  leitwegId: string | null,
+  skontoTerm?: SkontoTermInput | null,
+): string {
   const { currencyCode } = invoice;
 
   const doc: CiiDocShape = {
@@ -301,18 +393,7 @@ export function generateXRechnungCii(invoice: EInvoice, leitwegId: string | null
         'ram:ApplicableHeaderTradeSettlement': {
           'ram:InvoiceCurrencyCode': currencyCode,
           'ram:ApplicableTradeTax': invoice.taxBreakdown.map(t => toCiiTax(t, currencyCode)),
-          ...(invoice.dueDate
-            ? {
-                'ram:SpecifiedTradePaymentTerms': {
-                  'ram:DueDateDateTime': {
-                    'udt:DateTimeString': {
-                      '@_format': '102',
-                      '#text': toCiiDate(invoice.dueDate),
-                    },
-                  },
-                },
-              }
-            : {}),
+          ...buildPaymentTerms(invoice, skontoTerm),
           'ram:SpecifiedTradeSettlementHeaderMonetarySummation':
             buildMonetarySummation(invoice),
         },

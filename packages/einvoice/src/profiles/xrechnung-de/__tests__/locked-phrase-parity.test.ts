@@ -22,6 +22,7 @@ import { describe, expect, it } from 'vitest';
 import {
   XRECHNUNG_KLEINUNTERNEHMER_REASON,
   XRECHNUNG_REVERSE_CHARGE_REASON,
+  XRECHNUNG_SKONTO_DESCRIPTION_TEMPLATE,
 } from '../constants.js';
 
 // The canonical source is `packages/validators/src/legal/de.ts`. We cannot
@@ -32,11 +33,13 @@ import {
 async function loadCanonical(): Promise<{
   TAX_STEUERSCHULDNERSCHAFT: string;
   TAX_KLEINUNTERNEHMER_NOTICE: string;
+  SKONTO_DESCRIPTION_TEMPLATE_DE: string;
 }> {
   // @ts-expect-error — cross-package source path, intentional for parity check
   const mod = (await import('../../../../../validators/src/legal/de.ts')) as {
     TAX_STEUERSCHULDNERSCHAFT: string;
     TAX_KLEINUNTERNEHMER_NOTICE: string;
+    SKONTO_DESCRIPTION_TEMPLATE_DE: string;
   };
   return mod;
 }
@@ -50,5 +53,10 @@ describe('XRechnung locked-phrase parity with @contractor-ops/validators (Phase 
   it('XRECHNUNG_KLEINUNTERNEHMER_REASON mirrors TAX_KLEINUNTERNEHMER_NOTICE (§19 UStG)', async () => {
     const { TAX_KLEINUNTERNEHMER_NOTICE } = await loadCanonical();
     expect(XRECHNUNG_KLEINUNTERNEHMER_REASON).toBe(TAX_KLEINUNTERNEHMER_NOTICE);
+  });
+
+  it('XRECHNUNG_SKONTO_DESCRIPTION_TEMPLATE mirrors SKONTO_DESCRIPTION_TEMPLATE_DE (Phase 63 D-22)', async () => {
+    const { SKONTO_DESCRIPTION_TEMPLATE_DE } = await loadCanonical();
+    expect(XRECHNUNG_SKONTO_DESCRIPTION_TEMPLATE).toBe(SKONTO_DESCRIPTION_TEMPLATE_DE);
   });
 });

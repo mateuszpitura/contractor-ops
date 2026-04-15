@@ -339,3 +339,76 @@ describe('generateXRechnungCii — monetary summation', () => {
     expect(xml).toContain('9999999.99');
   });
 });
+
+// ---------------------------------------------------------------------------
+// BG-20 Skonto Payment Terms (Phase 63 · Plan 06)
+// ---------------------------------------------------------------------------
+
+describe('XRechnung CII generator — Skonto BG-20 Payment Terms', () => {
+  const skontoTerm = {
+    discountPercent: 3,
+    discountPeriodDays: 7,
+    netPeriodDays: 30,
+  };
+
+  it('emits structured Skonto string in ram:Description when skontoTerm is provided', () => {
+    const invoice = makeMinimalInvoice();
+    const xml = generateXRechnungCii(invoice, null, skontoTerm);
+
+    // Structured Skonto per XRechnung 3.0.2 Anhang E
+    expect(xml).toContain('#SKONTO#TAGE=7#PROZENT=3.00#BASISBETRAG=');
+  });
+
+  it('emits human-readable German description with Skonto parameters', () => {
+    const invoice = makeMinimalInvoice();
+    const xml = generateXRechnungCii(invoice, null, skontoTerm);
+
+    expect(xml).toContain('3.00% Skonto bei Zahlung innerhalb von 7 Tagen, sonst netto 30 Tage');
+  });
+
+  it('emits BASISBETRAG from payableAmount', () => {
+    const invoice = makeMinimalInvoice({ payableAmount: 119000 });
+    const xml = generateXRechnungCii(invoice, null, skontoTerm);
+
+    expect(xml).toContain('#BASISBETRAG=1190.00#');
+  });
+
+  it('emits due date as issueDate + netPeriodDays when Skonto is present', () => {
+    // issueDate = 2026-04-14, netPeriodDays = 30 => due 2026-05-14
+    const invoice = makeMinimalInvoice({ issueDate: '2026-04-14' });
+    const xml = generateXRechnungCii(invoice, null, skontoTerm);
+
+    expect(xml).toContain('20260514');
+  });
+
+  it('does NOT emit #SKONTO# for non-Skonto invoice', () => {
+    const invoice = makeMinimalInvoice();
+    const xml = generateXRechnungCii(invoice, null);
+
+    expect(xml).not.toContain('#SKONTO#');
+  });
+
+  it('does NOT emit #SKONTO# when skontoTerm is null', () => {
+    const invoice = makeMinimalInvoice();
+    const xml = generateXRechnungCii(invoice, null, null);
+
+    expect(xml).not.toContain('#SKONTO#');
+  });
+
+  it('emits ram:SpecifiedTradePaymentTerms with Skonto', () => {
+    const invoice = makeMinimalInvoice();
+    const xml = generateXRechnungCii(invoice, null, skontoTerm);
+
+    expect(xml).toContain('ram:SpecifiedTradePaymentTerms');
+    expect(xml).toContain('ram:Description');
+  });
+
+  it('handles non-round discount percentages correctly', () => {
+    const term = { discountPercent: 2.5, discountPeriodDays: 14, netPeriodDays: 60 };
+    const invoice = makeMinimalInvoice();
+    const xml = generateXRechnungCii(invoice, null, term);
+
+    expect(xml).toContain('#PROZENT=2.50#');
+    expect(xml).toContain('2.50% Skonto bei Zahlung innerhalb von 14 Tagen, sonst netto 60 Tage');
+  });
+});
