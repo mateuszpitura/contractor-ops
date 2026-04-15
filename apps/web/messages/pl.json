@@ -5095,6 +5095,7 @@
     },
     "intake": {
       "_NOTE": "AI-first-pass translation pending review — EN placeholders",
+      "splitButtonPrimary": "+ New invoice",
       "splitButtonImport": "Import e-invoice",
       "sidebarImports": "Imports",
       "pageTitle": "Invoice imports",

@@ -5366,6 +5366,7 @@
       "Generic": "Etwas ist schiefgelaufen. Versuchen Sie es erneut oder kontaktieren Sie den Support, falls das Problem bestehen bleibt."
     },
     "intake": {
+      "splitButtonPrimary": "+ Neue Rechnung",
       "splitButtonImport": "E-Rechnung importieren",
       "sidebarImports": "Importe",
       "pageTitle": "Rechnungsimporte",

@@ -5247,6 +5247,7 @@
       "Generic": "Something went wrong. Try refreshing or contact support if this persists."
     },
     "intake": {
+      "splitButtonPrimary": "+ New invoice",
       "splitButtonImport": "Import e-invoice",
       "sidebarImports": "Imports",
       "pageTitle": "Invoice imports",
