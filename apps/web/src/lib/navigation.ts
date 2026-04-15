@@ -8,6 +8,7 @@ import {
   Clock,
   FileText,
   GitBranch,
+  Inbox,
   LayoutDashboard,
   Package,
   Plug,
@@ -99,6 +100,14 @@ export const navigationGroups: NavGroup[] = [
         href: '/invoices',
         icon: Receipt,
         permission: { resource: 'invoice', actions: ['read'] },
+      },
+      {
+        key: 'imports',
+        label: 'Imports',
+        href: '/invoices/intake',
+        icon: Inbox,
+        permission: { resource: 'invoice', actions: ['read'] },
+        flag: 'einvoice.import-enabled',
       },
       {
         key: 'approvals',

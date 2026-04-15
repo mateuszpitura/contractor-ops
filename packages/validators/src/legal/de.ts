@@ -92,6 +92,25 @@ export const DRV_DEFENSE_CROSS_REFERENCE_FOOTER_DE =
 export const SKONTO_DESCRIPTION_TEMPLATE_DE =
   '{percent}% Skonto bei Zahlung innerhalb von {discountDays} Tagen, sonst netto {netDays} Tage' as const;
 
+// --- Phase 62 additions (EINV-02, EINV-03) — Inbound e-invoice intake --------
+// Canonical DE error-text forms surfaced in the upload dialog when inbound
+// XRechnung / ZUGFeRD validation fails at the CII-XSD layer or the profile
+// level is too low to preserve line-item data. Phrased per Phase 62 UI spec
+// § Copywriting Contract; statutory meaning lies in the reference to the
+// CII schema + ZUGFeRD profile semantics.
+//
+// Kept in legal/de.ts (not messages/de.json) so the CI guard locks them
+// against accidental paraphrase. messages/de.json carries the same text as
+// VALUES (allowed) — only reserved key identifiers are forbidden there.
+export const EINVOICE_INTAKE_XSD_REJECT_DE =
+  'Die XML entspricht nicht dem CII-Schema — bitten Sie den Absender, erneut auszustellen.' as const;
+
+export const EINVOICE_INTAKE_LEVEL_TOO_LOW_DE =
+  'Diese Rechnung verwendet das ZUGFeRD-Profil {level}, dem die Positionsdaten fehlen. Bitten Sie den Absender um ein COMFORT- oder XRECHNUNG-Profil.' as const;
+
+export const EINVOICE_INTAKE_EXTENDED_BEST_EFFORT_DE =
+  'Diese Rechnung verwendet das EXTENDED-ZUGFeRD-Profil. Einige absenderspezifische Felder konnten nicht zugeordnet werden. Prüfen Sie die Daten sorgfältig vor der Übernahme.' as const;
+
 // --- Phase 60 additions (CLASS-09) -----------------------------------------
 // Locked DRV Statusfeststellungsverfahren panel phrasing.
 // Sourced from § 7a SGB IV and DRV Clearingstelle terminology.
@@ -138,6 +157,10 @@ export const RESERVED_LEGAL_KEYS = [
   'DRV_CLEARANCE_SECTION_REFERENCE_DE',
   // Phase 63 — Skonto description template (D-22)
   'SKONTO_DESCRIPTION_TEMPLATE_DE',
+  // Phase 62 — Inbound e-invoice intake (EINV-02, EINV-03)
+  'EINVOICE_INTAKE_XSD_REJECT_DE',
+  'EINVOICE_INTAKE_LEVEL_TOO_LOW_DE',
+  'EINVOICE_INTAKE_EXTENDED_BEST_EFFORT_DE',
 ] as const;
 
 /**
@@ -177,6 +200,10 @@ export const LOCKED_DE_PHRASES = {
   DRV_CLEARANCE_SECTION_REFERENCE_DE,
   // Phase 63 — Skonto description template (D-22)
   SKONTO_DESCRIPTION_TEMPLATE_DE,
+  // Phase 62 — Inbound e-invoice intake (EINV-02, EINV-03)
+  EINVOICE_INTAKE_XSD_REJECT_DE,
+  EINVOICE_INTAKE_LEVEL_TOO_LOW_DE,
+  EINVOICE_INTAKE_EXTENDED_BEST_EFFORT_DE,
 } as const;
 
 /** Literal-union type of the locked-phrase identifiers. */

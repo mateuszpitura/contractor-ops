@@ -94,11 +94,44 @@ export const FLAGS = deepFreeze({
     jurisdiction: 'EU',
     owner: 'payments',
   },
+  // Phase 62 — ZUGFeRD / XRechnung inbound e-invoice intake (EINV-02, EINV-03).
+  //
+  // When enabled:
+  //   - "Imports" sidebar entry is visible.
+  //   - "Import e-invoice" secondary item appears on the invoices-page split-button.
+  //   - /invoices/intake/* routes resolve (404 otherwise).
+  //
+  // Outbound ZUGFeRD PDF generation ("Download ZUGFeRD PDF" button on the
+  // invoice detail e-invoice tab) is intentionally NOT gated by this flag —
+  // outbound generation is available wherever Phase-61 e-invoicing is.
+  //
+  // Jurisdiction is EU because the entire XRechnung + ZUGFeRD surface is a
+  // DE/EU public-sector invoicing requirement; ME orgs never see this flag
+  // evaluate to true regardless of Unleash.
+  'einvoice.import-enabled': {
+    key: 'einvoice.import-enabled',
+    description:
+      'Inbound invoice intake: XRechnung XML + ZUGFeRD PDF upload, intake list/detail routes, and the sidebar Imports entry. Outbound ZUGFeRD PDF generation is NOT flag-gated.',
+    default: false,
+    category: 'module',
+    jurisdiction: 'EU',
+    owner: 'einvoice',
+  },
 } as const satisfies Record<string, FlagDefinition>);
 
 export type FlagKey = keyof typeof FLAGS;
 
 export const FLAG_KEYS = Object.keys(FLAGS) as FlagKey[];
+
+/**
+ * Ergonomic alias for the Phase 62 inbound e-invoice intake flag. Referenced
+ * throughout the web app (sidebar, split-button, intake routes). Kept as a
+ * typed constant — not a string literal — so renames propagate via tsc.
+ *
+ * The underlying flag key (`einvoice.import-enabled`) conforms to the
+ * lowercase dot-namespaced kebab-case regex enforced by `flagDefinitionSchema`.
+ */
+export const EINVOICE_IMPORT_ENABLED = 'einvoice.import-enabled' as const satisfies FlagKey;
 
 export function getFlagDefinition<K extends FlagKey>(key: K): (typeof FLAGS)[K] {
   return FLAGS[key];

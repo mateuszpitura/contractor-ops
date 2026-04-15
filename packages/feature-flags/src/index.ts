@@ -19,6 +19,7 @@ export {
   lazyFlagBag,
 } from './flag-bag.js';
 export {
+  EINVOICE_IMPORT_ENABLED,
   FLAG_KEYS,
   FLAGS,
   type FlagKey,
