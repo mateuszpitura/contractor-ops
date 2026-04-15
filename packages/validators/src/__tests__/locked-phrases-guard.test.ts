@@ -15,7 +15,14 @@ import path from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { LOCKED_DE_PHRASES, RESERVED_LEGAL_KEYS, SKONTO_DESCRIPTION_TEMPLATE_DE } from '../legal/de.js';
+import {
+  EINVOICE_INTAKE_EXTENDED_BEST_EFFORT_DE,
+  EINVOICE_INTAKE_LEVEL_TOO_LOW_DE,
+  EINVOICE_INTAKE_XSD_REJECT_DE,
+  LOCKED_DE_PHRASES,
+  RESERVED_LEGAL_KEYS,
+  SKONTO_DESCRIPTION_TEMPLATE_DE,
+} from '../legal/de.js';
 import { LOCKED_DISCLAIMERS, RESERVED_DISCLAIMER_KEYS } from '../legal/disclaimers.js';
 import { LOCKED_EN_PHRASES, RESERVED_EN_LEGAL_KEYS } from '../legal/en.js';
 import {
@@ -94,6 +101,11 @@ describe('Locked German legal phrases (D-05, D-06)', () => {
       // Phase 63 (D-22) — Skonto description template lives on invoice detail,
       // not in privacy notices.
       'SKONTO_DESCRIPTION_TEMPLATE_DE',
+      // Phase 62 (EINV-02, EINV-03) — intake error phrases render in the
+      // upload dialog + detail action bar, not in privacy notices.
+      'EINVOICE_INTAKE_XSD_REJECT_DE',
+      'EINVOICE_INTAKE_LEVEL_TOO_LOW_DE',
+      'EINVOICE_INTAKE_EXTENDED_BEST_EFFORT_DE',
     ]);
     for (const [key, phrase] of Object.entries(LOCKED_DE_PHRASES)) {
       if (privacyScopedKeys.has(key)) continue;
@@ -403,5 +415,67 @@ describe('Phase 63 — DE Skonto locked phrase', () => {
 
   it('RESERVED_LEGAL_KEYS includes SKONTO_DESCRIPTION_TEMPLATE_DE', () => {
     expect(RESERVED_LEGAL_KEYS).toContain('SKONTO_DESCRIPTION_TEMPLATE_DE');
+  });
+});
+
+// -----------------------------------------------------------------------------
+// Phase 62 — DE intake locked phrases (EINV-02, EINV-03)
+// -----------------------------------------------------------------------------
+
+describe('Phase 62 — DE intake locked phrases', () => {
+  it('EINVOICE_INTAKE_XSD_REJECT_DE matches the canonical CII-XSD reject form', () => {
+    expect(EINVOICE_INTAKE_XSD_REJECT_DE).toBe(
+      'Die XML entspricht nicht dem CII-Schema — bitten Sie den Absender, erneut auszustellen.',
+    );
+  });
+
+  it('EINVOICE_INTAKE_LEVEL_TOO_LOW_DE mentions the ZUGFeRD profile placeholder', () => {
+    expect(EINVOICE_INTAKE_LEVEL_TOO_LOW_DE).toContain('ZUGFeRD-Profil {level}');
+    expect(EINVOICE_INTAKE_LEVEL_TOO_LOW_DE).toContain('COMFORT- oder XRECHNUNG-Profil');
+  });
+
+  it('EINVOICE_INTAKE_EXTENDED_BEST_EFFORT_DE mentions the EXTENDED profile banner', () => {
+    expect(EINVOICE_INTAKE_EXTENDED_BEST_EFFORT_DE).toContain('EXTENDED-ZUGFeRD-Profil');
+    expect(EINVOICE_INTAKE_EXTENDED_BEST_EFFORT_DE).toContain('absenderspezifische Felder');
+  });
+
+  it('all three constants are registered in LOCKED_DE_PHRASES', () => {
+    expect(LOCKED_DE_PHRASES.EINVOICE_INTAKE_XSD_REJECT_DE).toBe(EINVOICE_INTAKE_XSD_REJECT_DE);
+    expect(LOCKED_DE_PHRASES.EINVOICE_INTAKE_LEVEL_TOO_LOW_DE).toBe(
+      EINVOICE_INTAKE_LEVEL_TOO_LOW_DE,
+    );
+    expect(LOCKED_DE_PHRASES.EINVOICE_INTAKE_EXTENDED_BEST_EFFORT_DE).toBe(
+      EINVOICE_INTAKE_EXTENDED_BEST_EFFORT_DE,
+    );
+  });
+
+  it('RESERVED_LEGAL_KEYS includes all three Phase 62 identifiers', () => {
+    expect(RESERVED_LEGAL_KEYS).toContain('EINVOICE_INTAKE_XSD_REJECT_DE');
+    expect(RESERVED_LEGAL_KEYS).toContain('EINVOICE_INTAKE_LEVEL_TOO_LOW_DE');
+    expect(RESERVED_LEGAL_KEYS).toContain('EINVOICE_INTAKE_EXTENDED_BEST_EFFORT_DE');
+  });
+
+  it('messages/de.json carries the XSD reject phrase verbatim as a VALUE (parity)', () => {
+    const dePath = path.join(messagesDir, 'de.json');
+    if (!fs.existsSync(dePath)) return;
+    const raw = fs.readFileSync(dePath, 'utf8');
+    // The intake.errorXsdReject value extends the locked phrase with the
+    // ": First errors {errors}" suffix. Assert the locked phrase appears as
+    // a substring so any paraphrase of the canonical form fails the guard.
+    expect(raw).toContain(EINVOICE_INTAKE_XSD_REJECT_DE);
+  });
+
+  it('messages/de.json carries the level-too-low phrase verbatim as a VALUE (parity)', () => {
+    const dePath = path.join(messagesDir, 'de.json');
+    if (!fs.existsSync(dePath)) return;
+    const raw = fs.readFileSync(dePath, 'utf8');
+    expect(raw).toContain(EINVOICE_INTAKE_LEVEL_TOO_LOW_DE);
+  });
+
+  it('messages/de.json carries the EXTENDED best-effort banner verbatim as a VALUE (parity)', () => {
+    const dePath = path.join(messagesDir, 'de.json');
+    if (!fs.existsSync(dePath)) return;
+    const raw = fs.readFileSync(dePath, 'utf8');
+    expect(raw).toContain(EINVOICE_INTAKE_EXTENDED_BEST_EFFORT_DE);
   });
 });
