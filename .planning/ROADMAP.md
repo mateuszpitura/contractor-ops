@@ -163,12 +163,12 @@ See .planning/milestones/v4.0/ for details.
   2. User sees automatically calculated late payment interest on overdue UK invoices per the Late Payment of Commercial Debts Act (BoE base rate + 8% plus fixed compensation tiers)
   3. User can configure Skonto early payment discount terms on German invoices with discount percentage, discount period, and automatic discounted amount calculation with eligibility tracking
 **Plans**: 7 plans
-- [ ] 63-01-PLAN.md — Wave 1: All Prisma schema additions (8 new models + enum extensions + UK bank fields + BACS submitter fields) + [BLOCKING] prisma db push + BoE rate seed data + BACS validators (modulus check) + locked phrases (GB LPCDA + DE Skonto) + feature flags (PAY_BACS/LATE_INTEREST/SKONTO) + i18n Payments namespace
+- [x] 63-01-PLAN.md — Wave 1: All Prisma schema additions (8 new models + enum extensions + UK bank fields + BACS submitter fields) + [BLOCKING] prisma db push + BoE rate seed data + BACS validators (modulus check) + locked phrases (GB LPCDA + DE Skonto) + feature flags (PAY_BACS/LATE_INTEREST/SKONTO) + i18n Payments namespace
 - [ ] 63-02-PLAN.md — Wave 2: ASCII transliteration utility + BACS Std 18 generator (fixed-width file with VOL/HDR/detail/trailer records) + format auto-detection (GBP+UK -> BACS_STD18)
 - [ ] 63-03-PLAN.md — Wave 2: Late payment interest calculation service (LPCDA-compliant: statutory period rate + simple interest + compensation tiers + partial payments + waivers) + BoE rate poller + cron route
 - [ ] 63-04-PLAN.md — Wave 3: BACS tRPC router (preview/generate/validate/saveSubmitter) + settings page (/settings/payments/) + BACS preview Card + UK bank fields on billing profile
-- [ ] 63-05-PLAN.md — Wave 3: Late interest tRPC router (get/waive/revoke/claim/download) + claim PDF (React-PDF) + admin BoE rate router + admin shell + /admin/boe-rate/ page
-- [ ] 63-06-PLAN.md — Wave 3: Skonto eligibility service + tRPC router (upsert/delete for invoice+profile) + XRechnung BG-20 Payment Terms extension (#SKONTO#TAGE=n#PROZENT=n#)
+- [x] 63-05-PLAN.md — Wave 3: Late interest tRPC router (get/waive/revoke/claim/download) + claim PDF (React-PDF) + admin BoE rate router + admin shell + /admin/boe-rate/ page
+- [x] 63-06-PLAN.md — Wave 3: Skonto eligibility service + tRPC router (upsert/delete for invoice+profile) + XRechnung BG-20 Payment Terms extension (#SKONTO#TAGE=n#PROZENT=n#)
 - [ ] 63-07-PLAN.md — Wave 4: All UI surfaces (late interest card + claim/waive/revoke dialogs + dashboard tile + Skonto form/banner/checkbox + invoice list columns) + human-verify checkpoint
 **UI hint**: yes
 
@@ -185,8 +185,8 @@ Phases execute in numeric order: 56 -> 57 -> 58 -> 59 -> 60 -> 61 -> 62 -> 63 ->
 | 59. Classification Documents & Chain Tracking | v5.0 | 4/4 | Complete    | 2026-04-13 |
 | 60. Classification Polish | v5.0 | 4/4 | Complete    | 2026-04-14 |
 | 61. XRechnung E-Invoicing | v5.0 | 8/8 | Complete   | 2026-04-14 |
-| 62. ZUGFeRD E-Invoicing | v5.0 | 2/7 | In Progress|  |
-| 63. UK Payments & Financial Features | v5.0 | 0/7 | Not started | - |
+| 62. ZUGFeRD E-Invoicing | v5.0 | 6/7 | In Progress|  |
+| 63. UK Payments & Financial Features | v5.0 | 3/7 | In Progress|  |
 | 64. Legal Compliance Hardening | v5.0 | 0/TBD | Not started | - |
 
 ### Phase 64: Legal Compliance Hardening
