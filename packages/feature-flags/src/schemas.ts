@@ -11,6 +11,7 @@ export const flagCategorySchema = z.enum([
   'ops',
   'ui',
   'billing',
+  'payments',
 ]);
 export type FlagCategory = z.infer<typeof flagCategorySchema>;
 

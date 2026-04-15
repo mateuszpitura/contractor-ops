@@ -69,6 +69,31 @@ export const FLAGS = deepFreeze({
     jurisdiction: 'ANY',
     owner: 'ops',
   },
+  // Phase 63 — UK Payments & Financial Features
+  'payments.bacs-enabled': {
+    key: 'payments.bacs-enabled',
+    description: 'BACS Standard 18 Direct Credit export for UK GBP payments',
+    default: false,
+    category: 'payments',
+    jurisdiction: 'EU',
+    owner: 'payments',
+  },
+  'payments.late-interest-enabled': {
+    key: 'payments.late-interest-enabled',
+    description: 'Statutory late payment interest per LPCDA for UK B2B invoices',
+    default: false,
+    category: 'payments',
+    jurisdiction: 'EU',
+    owner: 'payments',
+  },
+  'payments.skonto-enabled': {
+    key: 'payments.skonto-enabled',
+    description: 'Skonto early payment discount for German invoices',
+    default: false,
+    category: 'payments',
+    jurisdiction: 'EU',
+    owner: 'payments',
+  },
 } as const satisfies Record<string, FlagDefinition>);
 
 export type FlagKey = keyof typeof FLAGS;

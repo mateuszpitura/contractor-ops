@@ -2815,7 +2815,104 @@
       "completed": "Completed",
       "cancelled": "Cancelled"
     },
-    "newPaymentRun": "New payment run"
+    "newPaymentRun": "New payment run",
+    "bacs": {
+      "settingsPageTitle": "Payment export settings",
+      "settingsPageSubtitle": "Configure UK BACS and EU SEPA submitter details used when exporting payment runs",
+      "sectionHeading": "UK BACS Standard 18 submitter",
+      "sunLabel": "Service user number (SUN)",
+      "sunHelper": "6-digit BACS Service User Number issued by your sponsor bank",
+      "sortCodeLabel": "Originating sort code",
+      "accountNumberLabel": "Originating account number",
+      "submitterNameLabel": "Submitter name (max 18 ASCII chars)",
+      "saveSubmitter": "Save submitter details",
+      "savedToast": "BACS submitter details saved",
+      "featureFlagOffBanner": "BACS export is disabled. Enable it in feature flags to use BACS Std 18.",
+      "previewCardTitle": "BACS Std 18 preview",
+      "previewAction": "Preview BACS file",
+      "downloadAction": "Download BACS file",
+      "transliterationWarning": "{count} character(s) transliterated to BACS character set. Review the preview before downloading.",
+      "unmappableError": "{count} character(s) could not be transliterated — BACS will reject this file. Edit the contractor name(s) and try again.",
+      "modulusWarningTitle": "Sort-code checks",
+      "emptyState": "No BACS-eligible items in this run. Add UK contractors with GBP invoices to generate a BACS file.",
+      "submitterNotConfigured": "BACS submitter details are required. Configure them in Settings → Payments.",
+      "generateFailure": "BACS generation failed. Please try again or contact support if the problem persists."
+    },
+    "ukBank": {
+      "sortCodeLabel": "UK sort code",
+      "sortCodeHelper": "6 digits, hyphens added automatically",
+      "accountNumberLabel": "UK account number",
+      "accountNumberHelper": "8 digits",
+      "validateButton": "Validate sort code",
+      "validationSuccess": "Sort code passed modulus check",
+      "validationWarn": "Sort code is in an exception range — modulus check not decisive. Continue if your bank confirms this account.",
+      "validationFail": "Sort code format invalid — 6 digits required"
+    },
+    "lateInterest": {
+      "sectionHeading": "Statutory late-payment interest",
+      "explanationTooltip": "Calculated under the Late Payment of Commercial Debts (Interest) Act 1998. Rate = Bank of England base rate + 8%, fixed on the last day of the preceding 6-month statutory period (30 June or 31 December).",
+      "b2cBanner": "Statutory interest not applicable (B2C transaction).",
+      "principalOutstanding": "Principal outstanding",
+      "daysOverdue": "Days overdue",
+      "rateUsed": "Rate used",
+      "dailyAccrual": "Daily accrual",
+      "interestAccrued": "Interest accrued",
+      "fixedCompensation": "Fixed compensation",
+      "totalStatutoryClaim": "Total statutory claim",
+      "claimCta": "Claim statutory interest",
+      "claimSecondaryOption": "Issue claim as a secondary invoice",
+      "claimDialogTitle": "Claim statutory interest?",
+      "claimDialogBody": "This will snapshot the current interest + compensation amounts, generate a PDF claim letter, and (optionally) issue a secondary invoice for the claim amount. The snapshot is immutable — further accrual will not be added.",
+      "downloadClaimPdf": "Download claim letter",
+      "claimedBanner": "Claim snapshot taken {date} — £{amount}. Further interest does not accrue on this claim.",
+      "waiveCta": "Waive interest",
+      "waiveDialogTitle": "Waive statutory interest?",
+      "waiveReasonPlaceholder": "Reason (required, min 10 chars) — e.g., customer negotiated settlement, goodwill gesture, admin error",
+      "waiveTypeInterestOnly": "Interest only",
+      "waiveTypeCompensationOnly": "Compensation only",
+      "waiveTypeBoth": "Both",
+      "waiveConfirm": "Waive interest",
+      "waivedBanner": "Interest waived on {date} by {name}. {revokeLink}",
+      "revokeWaiverCta": "Revoke waiver",
+      "revokeReasonPlaceholder": "Reason for revoking (required) — e.g., customer refused settlement"
+    },
+    "overdueInterest": {
+      "columnHeader": "Overdue interest",
+      "filterChip": "Overdue",
+      "emptyState": "No overdue UK B2B invoices"
+    },
+    "dashboardTile": {
+      "title": "Overdue receivables (UK)",
+      "subline": "{principal} outstanding — +{interest} interest accrued",
+      "clickThrough": "View overdue invoices →"
+    },
+    "skonto": {
+      "sectionHeading": "Early-payment discount (Skonto)",
+      "useDefaultPill": "Using contractor default: {percent}% / {discountDays} days / net {netDays} days",
+      "customizeToggle": "Customize for this invoice",
+      "discountPercentLabel": "Discount %",
+      "discountPeriodLabel": "Discount period (days)",
+      "netPeriodLabel": "Net period (days)",
+      "previewLineEn": "{percent}% discount if paid within {discountDays} days, otherwise net {netDays} days",
+      "saveTerm": "Save Skonto term",
+      "deleteInvoiceSpecific": "Reset to contractor default",
+      "validationPercentRange": "Discount must be between 0 and 50%",
+      "validationDaysOrdering": "Discount period must be shorter than net period",
+      "eligibleBanner": "Save {discountAmount} if paid by {date} — discounted total {discountedTotal}",
+      "windowExpiredBanner": "Discount window expired on {date}",
+      "takenBanner": "Skonto applied at payment: {discountAmount} saved on {paidDate}",
+      "notTakenBanner": "Paid after discount window — no Skonto applied",
+      "defaultSectionHeading": "Default early-payment discount",
+      "defaultHelper": "Applied automatically to new DE invoices for this contractor. Can be overridden per invoice.",
+      "saveDefault": "Save default Skonto",
+      "clearDefault": "Remove default Skonto",
+      "lineCheckboxLabel": "Apply {percent}% Skonto — save {discountAmount}",
+      "outsideWindowHelper": "Discount window expired ({date}) — full amount applies",
+      "snapshotToast": "Skonto applied to run — {count} invoice(s) discounted, {totalSavings} saved",
+      "columnHeader": "Skonto",
+      "emptyCell": "—",
+      "cellFormat": "{percent}% {discountDays}/{netDays}"
+    }
   },
   "Reports": {
     "title": "Reports",
@@ -5148,6 +5245,26 @@
       "PEPPOL_PARTICIPANT_NOT_ACTIVE": "Register your organisation on Peppol before sending e-invoices. Go to Settings → E-invoicing to start.",
       "STORECOVE_TRANSMISSION_FAILED": "Peppol transmission failed. We'll retry automatically — you can also retry manually from the E-invoice tab.",
       "Generic": "Something went wrong. Try refreshing or contact support if this persists."
+    }
+  },
+  "Admin": {
+    "BoeRate": {
+      "pageTitle": "Bank of England base-rate history",
+      "pageSubtitle": "Reference data powering UK statutory late-payment interest calculations",
+      "colEffectiveFrom": "Effective from",
+      "colRatePercent": "Rate %",
+      "colSource": "Source",
+      "colRecordedBy": "Recorded by",
+      "colRecordedAt": "Recorded at",
+      "colNotes": "Notes",
+      "sourceBoeApi": "BOE API",
+      "sourceManual": "Manual",
+      "addCta": "+ Add rate",
+      "addDialogTitle": "Add BoE base-rate entry",
+      "deleteDialogTitle": "Delete BoE rate entry?",
+      "deleteDialogBody": "Deleting a historical rate changes interest calculations for any invoices that fell overdue during its validity period. Proceed only if this entry was entered in error.",
+      "pollerSuccess": "Last BoE API poll: {date} — rate unchanged / new rate {percent}% recorded",
+      "pollerFailure": "Last BoE API poll failed on {date}. Manual entry still possible; poller will retry at the next scheduled run."
     }
   }
 }

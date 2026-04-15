@@ -315,6 +315,9 @@ export {
   TAX_STEUERNUMMER_LABEL,
   TAX_STEUERSCHULDNERSCHAFT,
   TAX_USTIDNR_LABEL,
+  SKONTO_DESCRIPTION_TEMPLATE_DE,
+  DRV_CLEARANCE_PANEL_HEADER_DE,
+  DRV_CLEARANCE_SECTION_REFERENCE_DE,
 } from './legal/de.js';
 export type { LockedDisclaimerKey } from './legal/disclaimers.js';
 export {
@@ -334,6 +337,28 @@ export {
   RESERVED_EN_LEGAL_KEYS,
   TAX_UK_REVERSE_CHARGE_NOTICE,
 } from './legal/en.js';
+export type { LockedGbPhraseKey } from './legal/gb.js';
+export {
+  LOCKED_GB_PHRASES,
+  LPCDA_CLAIM_FOOTER,
+  LPCDA_COMPENSATION_LABEL,
+  LPCDA_SECTION_REF,
+  LPCDA_STATUTORY_RATE_LABEL,
+  RESERVED_GB_LEGAL_KEYS,
+} from './legal/gb.js';
+export type { ModulusCheckResult, ModulusCheckType, ModulusEntry } from './bacs.js';
+export {
+  accountNumberSchema,
+  bacsSubmitterNameSchema,
+  modulusCheck,
+  serviceUserNumberSchema,
+  sortCodeSchema,
+} from './bacs.js';
+export {
+  VOCALINK_MODULUS_TABLE_V840,
+  VOCALINK_TABLE_SOURCE,
+  VOCALINK_TABLE_VERSION,
+} from './bacs-modulus-tables.js';
 export type {
   LinearIssueMetadata,
   LinearStateType,

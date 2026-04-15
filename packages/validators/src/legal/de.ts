@@ -88,6 +88,10 @@ export const DRV_DEFENSE_CROSS_REFERENCE_FOOTER_DE =
   'Diese Übersicht zeigt nur Engagements, die von Ihrer Organisation auf dieser Plattform ' +
   'erfasst wurden. Sie ist nicht erschöpfend.';
 
+// --- Phase 63 additions (D-22) — Skonto description template ----------------
+export const SKONTO_DESCRIPTION_TEMPLATE_DE =
+  '{percent}% Skonto bei Zahlung innerhalb von {discountDays} Tagen, sonst netto {netDays} Tage' as const;
+
 // --- Phase 60 additions (CLASS-09) -----------------------------------------
 // Locked DRV Statusfeststellungsverfahren panel phrasing.
 // Sourced from § 7a SGB IV and DRV Clearingstelle terminology.
@@ -132,6 +136,8 @@ export const RESERVED_LEGAL_KEYS = [
   // Phase 60 — DRV Statusfeststellungsverfahren clearance panel (CLASS-09)
   'DRV_CLEARANCE_PANEL_HEADER_DE',
   'DRV_CLEARANCE_SECTION_REFERENCE_DE',
+  // Phase 63 — Skonto description template (D-22)
+  'SKONTO_DESCRIPTION_TEMPLATE_DE',
 ] as const;
 
 /**
@@ -169,6 +175,8 @@ export const LOCKED_DE_PHRASES = {
   // Phase 60 — DRV clearance panel (CLASS-09)
   DRV_CLEARANCE_PANEL_HEADER_DE,
   DRV_CLEARANCE_SECTION_REFERENCE_DE,
+  // Phase 63 — Skonto description template (D-22)
+  SKONTO_DESCRIPTION_TEMPLATE_DE,
 } as const;
 
 /** Literal-union type of the locked-phrase identifiers. */

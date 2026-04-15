@@ -2957,7 +2957,81 @@
       "completed": "Abgeschlossen",
       "cancelled": "Storniert"
     },
-    "newPaymentRun": "New payment run"
+    "newPaymentRun": "New payment run",
+    "bacs": {
+      "settingsPageTitle": "Einstellungen für Zahlungsexporte",
+      "settingsPageSubtitle": "UK-BACS- und EU-SEPA-Absenderdaten konfigurieren, die beim Export von Zahlungsläufen verwendet werden",
+      "sectionHeading": "UK-BACS-Std-18-Absender",
+      "sunLabel": "Service User Number (SUN)",
+      "sunHelper": "6-stellige BACS Service User Number, ausgestellt von Ihrer Sponsorbank",
+      "sortCodeLabel": "Absender-Sort-Code",
+      "accountNumberLabel": "Absender-Kontonummer",
+      "submitterNameLabel": "Absendername (max. 18 ASCII-Zeichen)",
+      "saveSubmitter": "Absenderdaten speichern",
+      "savedToast": "BACS-Absenderdaten gespeichert",
+      "featureFlagOffBanner": "BACS-Export ist deaktiviert. Aktivieren Sie ihn in den Feature Flags, um BACS Std 18 zu verwenden.",
+      "previewCardTitle": "BACS-Std-18-Vorschau",
+      "previewAction": "BACS-Datei-Vorschau",
+      "downloadAction": "BACS-Datei herunterladen",
+      "transliterationWarning": "{count} Zeichen in den BACS-Zeichensatz umgewandelt. Prüfen Sie die Vorschau vor dem Download.",
+      "unmappableError": "{count} Zeichen konnten nicht umgewandelt werden — BACS lehnt diese Datei ab. Passen Sie den/die Auftragnehmer-Name(n) an und versuchen Sie es erneut.",
+      "modulusWarningTitle": "Sort-Code-Prüfungen",
+      "emptyState": "Keine BACS-fähigen Posten in diesem Lauf. UK-Auftragnehmer mit GBP-Rechnungen hinzufügen, um eine BACS-Datei zu erzeugen.",
+      "submitterNotConfigured": "BACS-Absenderdaten sind erforderlich. Konfigurieren Sie diese unter Einstellungen → Zahlungen.",
+      "generateFailure": "BACS-Erstellung fehlgeschlagen. Bitte erneut versuchen oder den Support kontaktieren, falls das Problem weiterhin besteht."
+    },
+    "ukBank": {
+      "sortCodeLabel": "UK-Sort-Code",
+      "sortCodeHelper": "6 Ziffern, Bindestriche werden automatisch hinzugefügt",
+      "accountNumberLabel": "UK-Kontonummer",
+      "accountNumberHelper": "8 Ziffern",
+      "validateButton": "Sort-Code prüfen",
+      "validationSuccess": "Sort-Code hat die Modulo-Prüfung bestanden",
+      "validationWarn": "Sort-Code liegt in einem Ausnahmebereich — Modulo-Prüfung nicht eindeutig. Fortfahren, wenn Ihre Bank das Konto bestätigt.",
+      "validationFail": "Sort-Code-Format ungültig — 6 Ziffern erforderlich"
+    },
+    "lateInterest": {
+      "sectionHeading": "Statutory late-payment interest",
+      "overdueInterestColumn": "Verzugszinsen",
+      "overdueFilterChip": "Überfällig",
+      "emptyOverdue": "Keine überfälligen UK-B2B-Rechnungen"
+    },
+    "overdueInterest": {
+      "columnHeader": "Verzugszinsen",
+      "filterChip": "Überfällig",
+      "emptyState": "Keine überfälligen UK-B2B-Rechnungen"
+    },
+    "dashboardTile": {
+      "title": "Überfällige Forderungen (UK)",
+      "subline": "{principal} ausstehend — +{interest} Zinsen aufgelaufen",
+      "clickThrough": "Überfällige Rechnungen ansehen →"
+    },
+    "skonto": {
+      "sectionHeading": "Skonto",
+      "useDefaultPill": "Auftragnehmer-Voreinstellung: {percent}% / {discountDays} Tage / netto {netDays} Tage",
+      "customizeToggle": "Für diese Rechnung anpassen",
+      "discountPercentLabel": "Skonto-Prozentsatz",
+      "discountPeriodLabel": "Skonto-Frist (Tage)",
+      "netPeriodLabel": "Netto-Frist (Tage)",
+      "saveTerm": "Skonto-Bedingung speichern",
+      "deleteInvoiceSpecific": "Auf Auftragnehmer-Voreinstellung zurücksetzen",
+      "validationPercentRange": "Skonto muss zwischen 0 und 50% liegen",
+      "validationDaysOrdering": "Skonto-Frist muss kürzer als Netto-Frist sein",
+      "eligibleBanner": "{discountAmount} sparen bei Zahlung bis {date} — Rechnungsbetrag mit Skonto {discountedTotal}",
+      "windowExpiredBanner": "Skonto-Frist am {date} abgelaufen",
+      "takenBanner": "Skonto bei Zahlung angewendet: {discountAmount} gespart am {paidDate}",
+      "notTakenBanner": "Nach Skonto-Frist bezahlt — kein Skonto angewendet",
+      "defaultSectionHeading": "Standard-Skonto",
+      "defaultHelper": "Wird automatisch auf neue DE-Rechnungen für diesen Auftragnehmer angewendet. Kann pro Rechnung überschrieben werden.",
+      "saveDefault": "Standard-Skonto speichern",
+      "clearDefault": "Standard-Skonto entfernen",
+      "lineCheckboxLabel": "{percent}% Skonto anwenden — {discountAmount} sparen",
+      "outsideWindowHelper": "Skonto-Frist abgelaufen ({date}) — voller Betrag fällig",
+      "snapshotToast": "Skonto auf Lauf angewendet — {count} Rechnung(en) rabattiert, {totalSavings} gespart",
+      "columnHeader": "Skonto",
+      "emptyCell": "—",
+      "cellFormat": "{percent}% {discountDays}/{netDays}"
+    }
   },
   "Reports": {
     "title": "Berichte",
@@ -5290,6 +5364,26 @@
       "PEPPOL_PARTICIPANT_NOT_ACTIVE": "Registrieren Sie Ihre Organisation auf Peppol, bevor Sie E-Rechnungen senden. Öffnen Sie dazu Einstellungen → E-Rechnung.",
       "STORECOVE_TRANSMISSION_FAILED": "Die Peppol-Übermittlung ist fehlgeschlagen. Wir versuchen es automatisch erneut — Sie können auch manuell aus dem E-Rechnungs-Tab erneut senden.",
       "Generic": "Etwas ist schiefgelaufen. Versuchen Sie es erneut oder kontaktieren Sie den Support, falls das Problem bestehen bleibt."
+    }
+  },
+  "Admin": {
+    "BoeRate": {
+      "pageTitle": "Bank of England Leitzinshistorie",
+      "pageSubtitle": "Referenzdaten für die Berechnung der gesetzlichen Verzugszinsen (UK)",
+      "colEffectiveFrom": "Gültig ab",
+      "colRatePercent": "Zinssatz %",
+      "colSource": "Quelle",
+      "colRecordedBy": "Erfasst von",
+      "colRecordedAt": "Erfasst am",
+      "colNotes": "Hinweise",
+      "sourceBoeApi": "BoE-API",
+      "sourceManual": "Manuell",
+      "addCta": "+ Zinssatz hinzufügen",
+      "addDialogTitle": "BoE-Zinssatz-Eintrag hinzufügen",
+      "deleteDialogTitle": "BoE-Zinssatz-Eintrag löschen?",
+      "deleteDialogBody": "Das Löschen eines historischen Zinssatzes ändert die Zinsberechnung für alle Rechnungen, die in seinem Gültigkeitszeitraum überfällig wurden. Nur fortfahren, wenn dieser Eintrag fehlerhaft erfasst wurde.",
+      "pollerSuccess": "Letzter BoE-API-Abruf: {date} — Zinssatz unverändert / neuer Zinssatz {percent}% erfasst",
+      "pollerFailure": "Letzter BoE-API-Abruf am {date} fehlgeschlagen. Manuelle Erfassung weiterhin möglich; der Abruf wird beim nächsten geplanten Lauf erneut versucht."
     }
   }
 }

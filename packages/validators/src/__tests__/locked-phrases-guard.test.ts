@@ -15,9 +15,17 @@ import path from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { LOCKED_DE_PHRASES, RESERVED_LEGAL_KEYS } from '../legal/de.js';
+import { LOCKED_DE_PHRASES, RESERVED_LEGAL_KEYS, SKONTO_DESCRIPTION_TEMPLATE_DE } from '../legal/de.js';
 import { LOCKED_DISCLAIMERS, RESERVED_DISCLAIMER_KEYS } from '../legal/disclaimers.js';
 import { LOCKED_EN_PHRASES, RESERVED_EN_LEGAL_KEYS } from '../legal/en.js';
+import {
+  LOCKED_GB_PHRASES,
+  LPCDA_CLAIM_FOOTER,
+  LPCDA_COMPENSATION_LABEL,
+  LPCDA_SECTION_REF,
+  LPCDA_STATUTORY_RATE_LABEL,
+  RESERVED_GB_LEGAL_KEYS,
+} from '../legal/gb.js';
 
 const messagesDir = path.resolve(__dirname, '../../../../apps/web/messages');
 const locales = ['en', 'pl', 'ar', 'de'] as const;
@@ -41,7 +49,7 @@ describe('Locked German legal phrases (D-05, D-06)', () => {
     if (messages === null) return; // locale file not yet created (Plan 05 adds de.json)
 
     const keys = flatKeys(messages);
-    const reserved = [...RESERVED_LEGAL_KEYS, ...RESERVED_EN_LEGAL_KEYS];
+    const reserved = [...RESERVED_LEGAL_KEYS, ...RESERVED_EN_LEGAL_KEYS, ...RESERVED_GB_LEGAL_KEYS];
     const violations = keys.filter(k => reserved.some(r => k === r || k.endsWith(`.${r}`)));
     expect(
       violations,
@@ -83,6 +91,9 @@ describe('Locked German legal phrases (D-05, D-06)', () => {
       // not in privacy notices.
       'DRV_CLEARANCE_PANEL_HEADER_DE',
       'DRV_CLEARANCE_SECTION_REFERENCE_DE',
+      // Phase 63 (D-22) — Skonto description template lives on invoice detail,
+      // not in privacy notices.
+      'SKONTO_DESCRIPTION_TEMPLATE_DE',
     ]);
     for (const [key, phrase] of Object.entries(LOCKED_DE_PHRASES)) {
       if (privacyScopedKeys.has(key)) continue;
@@ -316,5 +327,81 @@ describe('Locked phrase prefixes (Phase 60 · CLASS-09)', () => {
     expect(LOCKED_DE_PHRASES.DRV_CLEARANCE_PANEL_HEADER_DE).toContain(
       'Statusfeststellungsverfahren',
     );
+  });
+});
+
+// -----------------------------------------------------------------------------
+// Phase 63 — GB locked phrases (LPCDA claim letter, D-17)
+// -----------------------------------------------------------------------------
+
+describe('Phase 63 — GB locked phrases', () => {
+  it('LPCDA_CLAIM_FOOTER matches the statutory reference verbatim', () => {
+    expect(LPCDA_CLAIM_FOOTER).toBe(
+      'This claim is made under the Late Payment of Commercial Debts (Interest) Act 1998 as amended by the Late Payment of Commercial Debts Regulations 2013.',
+    );
+  });
+
+  it('LPCDA_STATUTORY_RATE_LABEL matches the BoE + 8% description', () => {
+    expect(LPCDA_STATUTORY_RATE_LABEL).toBe(
+      'Bank of England base rate plus 8 percentage points',
+    );
+  });
+
+  it('LPCDA_COMPENSATION_LABEL matches Section 5A reference', () => {
+    expect(LPCDA_COMPENSATION_LABEL).toBe(
+      'Fixed sum compensation under Section 5A',
+    );
+  });
+
+  it('LPCDA_SECTION_REF matches Sections 3, 4, and 5A reference', () => {
+    expect(LPCDA_SECTION_REF).toBe(
+      'Late Payment of Commercial Debts (Interest) Act 1998, Sections 3, 4, and 5A',
+    );
+  });
+
+  it('RESERVED_GB_LEGAL_KEYS mirrors LOCKED_GB_PHRASES keys', () => {
+    expect([...RESERVED_GB_LEGAL_KEYS].sort()).toEqual(Object.keys(LOCKED_GB_PHRASES).sort());
+  });
+
+  it('every LOCKED_GB_PHRASES value is a non-empty string', () => {
+    for (const [key, value] of Object.entries(LOCKED_GB_PHRASES)) {
+      expect(typeof value, `${key} is not a string`).toBe('string');
+      expect(value.length, `${key} is empty`).toBeGreaterThan(0);
+    }
+  });
+
+  it.each(
+    locales,
+  )('messages/%s.json does not define any LPCDA_* key as a (nested) property', locale => {
+    const messages = loadMessages(locale);
+    if (messages === null) return;
+    const keys = flatKeys(messages);
+    const violations = keys.filter(k =>
+      RESERVED_GB_LEGAL_KEYS.some(r => k === r || k.endsWith(`.${r}`)),
+    );
+    expect(
+      violations,
+      `LPCDA_* keys leaked into ${locale}.json: ${violations.join(', ')}`,
+    ).toEqual([]);
+  });
+});
+
+// -----------------------------------------------------------------------------
+// Phase 63 — DE Skonto locked phrase (D-22)
+// -----------------------------------------------------------------------------
+
+describe('Phase 63 — DE Skonto locked phrase', () => {
+  it('SKONTO_DESCRIPTION_TEMPLATE_DE matches the canonical German Skonto template', () => {
+    expect(SKONTO_DESCRIPTION_TEMPLATE_DE).toBe(
+      '{percent}% Skonto bei Zahlung innerhalb von {discountDays} Tagen, sonst netto {netDays} Tage',
+    );
+  });
+
+  it('SKONTO_DESCRIPTION_TEMPLATE_DE is present in LOCKED_DE_PHRASES', () => {
+    expect(LOCKED_DE_PHRASES.SKONTO_DESCRIPTION_TEMPLATE_DE).toBe(SKONTO_DESCRIPTION_TEMPLATE_DE);
+  });
+
+  it('RESERVED_LEGAL_KEYS includes SKONTO_DESCRIPTION_TEMPLATE_DE', () => {
+    expect(RESERVED_LEGAL_KEYS).toContain('SKONTO_DESCRIPTION_TEMPLATE_DE');
   });
 });
