@@ -25,6 +25,11 @@ import {
   generateSwiftXml,
   resolveTransferTitle,
 } from '../services/payment-export.js';
+import { detectFormat } from '../services/payment-format-detection.js';
+import {
+  evaluateSkontoEligibility,
+  resolveSkontoTerm,
+} from '../services/skonto.js';
 import { calculateWht } from '../services/tax-rate.service.js';
 import type { DbClient } from '../services/types.js';
 
@@ -1190,5 +1195,171 @@ export const paymentRouter = router({
       });
 
       return plain(items);
+    }),
+
+  // =========================================================================
+  // applySkontoToItem — apply early payment discount to a payment run item
+  // =========================================================================
+
+  applySkontoToItem: tenantProcedure
+    .use(requirePermission({ payment: ['update'] }))
+    .input(z.object({ paymentRunItemId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const item = await ctx.db.paymentRunItem.findFirst({
+        where: {
+          id: input.paymentRunItemId,
+          organizationId: ctx.organizationId,
+        },
+        include: {
+          invoice: {
+            include: {
+              skontoTerm: true,
+              contractor: {
+                include: {
+                  billingProfile: {
+                    include: { skontoTerm: true },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (!item || !item.invoice) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Payment run item not found',
+        });
+      }
+
+      const { invoice } = item;
+
+      // Resolve effective skonto term via cascade
+      const invoiceTerm = invoice.skontoTerm
+        ? {
+            discountPercent: Number(invoice.skontoTerm.discountPercent),
+            discountPeriodDays: invoice.skontoTerm.discountPeriodDays,
+            netPeriodDays: invoice.skontoTerm.netPeriodDays,
+          }
+        : null;
+
+      const profileTerm = invoice.contractor?.billingProfile?.skontoTerm
+        ? {
+            discountPercent: Number(
+              invoice.contractor.billingProfile.skontoTerm.discountPercent,
+            ),
+            discountPeriodDays:
+              invoice.contractor.billingProfile.skontoTerm.discountPeriodDays,
+            netPeriodDays:
+              invoice.contractor.billingProfile.skontoTerm.netPeriodDays,
+          }
+        : null;
+
+      const effectiveTerm = resolveSkontoTerm(invoiceTerm, profileTerm);
+
+      const eligibility = evaluateSkontoEligibility({
+        invoiceTotalMinor: invoice.amountMinor,
+        invoiceIssueDate: invoice.issueDate,
+        skontoTerm: effectiveTerm,
+        paidAt: invoice.paidAt,
+        asOf: new Date(),
+      });
+
+      if (!eligibility.eligible) {
+        throw new TRPCError({
+          code: 'PRECONDITION_FAILED',
+          message: 'Invoice not eligible for Skonto discount',
+        });
+      }
+
+      // Find the effective skonto term record for the FK
+      const skontoTermRecord = invoice.skontoTerm
+        ?? invoice.contractor?.billingProfile?.skontoTerm;
+
+      if (!skontoTermRecord || !effectiveTerm) {
+        throw new TRPCError({
+          code: 'PRECONDITION_FAILED',
+          message: 'No Skonto term record found',
+        });
+      }
+
+      const result = await ctx.db.$transaction(async (tx) => {
+        // Update payment run item amount to discounted amount
+        const updatedItem = await tx.paymentRunItem.update({
+          where: { id: input.paymentRunItemId },
+          data: { amountMinor: eligibility.discountedAmountMinor },
+        });
+
+        // Create SkontoApplication record
+        await tx.skontoApplication.create({
+          data: {
+            organizationId: ctx.organizationId,
+            paymentRunItemId: input.paymentRunItemId,
+            skontoTermId: skontoTermRecord.id,
+            discountPercentApplied: effectiveTerm.discountPercent,
+            discountAmountMinor: eligibility.discountAmountMinor,
+          },
+        });
+
+        return updatedItem;
+      });
+
+      return plain(result);
+    }),
+
+  // =========================================================================
+  // getFormatDetection — detect payment format for items in a run
+  // =========================================================================
+
+  getFormatDetection: tenantProcedure
+    .use(requirePermission({ payment: ['read'] }))
+    .input(z.object({ paymentRunId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const run = await ctx.db.paymentRun.findFirst({
+        where: {
+          id: input.paymentRunId,
+          organizationId: ctx.organizationId,
+        },
+        include: {
+          items: {
+            include: {
+              invoice: {
+                select: { currency: true },
+              },
+              contractor: {
+                include: {
+                  billingProfile: {
+                    select: { iban: true },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (!run) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Payment run not found',
+        });
+      }
+
+      const detections = run.items.map((item) => {
+        const currency = item.invoice?.currency ?? run.currency;
+        const iban = item.contractor?.billingProfile?.iban ?? '';
+        const format = detectFormat(currency, iban);
+
+        return {
+          paymentRunItemId: item.id,
+          contractorId: item.contractorId,
+          currency,
+          iban,
+          format,
+        };
+      });
+
+      return detections;
     }),
 });

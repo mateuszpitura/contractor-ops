@@ -47,6 +47,7 @@ import { reminderRouter } from './routers/reminder.js';
 import { statusfeststellungsverfahrenRouter } from './routers/statusfeststellungsverfahren.js';
 import { reportRouter } from './routers/report.js';
 import { searchRouter } from './routers/search.js';
+import { skontoRouter } from './routers/skonto.js';
 import { settingsRouter } from './routers/settings.js';
 import { taxRouter } from './routers/tax.js';
 import { teamsRouter } from './routers/teams.js';
@@ -105,6 +106,7 @@ export const appRouter = router({
   audit: auditRouter,
   import: importRouter,
   search: searchRouter,
+  skonto: skontoRouter, // skonto: German early payment discount CRUD + eligibility evaluation (Phase 63 D-21/D-24)
   portal: portalRouter,
   esign: esignRouter,
   ocr: ocrRouter,
