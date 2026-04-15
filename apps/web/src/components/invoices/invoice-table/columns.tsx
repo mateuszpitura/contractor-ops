@@ -41,6 +41,8 @@ export type InvoiceRow = {
   contractor: {
     id: string;
     legalName: string;
+    countryCode?: string;
+    isBusinessCustomer?: boolean;
   } | null;
   /**
    * EInvoiceLifecycle projection, selected by `invoice.list` for the
@@ -50,6 +52,20 @@ export type InvoiceRow = {
   eInvoiceLifecycle?: {
     validationStatus: 'NOT_VALIDATED' | 'VALID' | 'WARNINGS' | 'INVALID';
     transmissionStatus: 'NOT_SENT' | 'QUEUED' | 'SENT' | 'DELIVERED' | 'FAILED';
+  } | null;
+  /**
+   * Phase 63 — late-payment interest computed total for GB B2B invoices.
+   * Minor units (pence). `null` → not applicable.
+   */
+  overdueInterestMinor?: number | null;
+  /**
+   * Phase 63 — Skonto term summary for DE invoices.
+   * `null` → no Skonto configured.
+   */
+  skontoTerm?: {
+    discountPercent: number;
+    discountDays: number;
+    netDays: number;
   } | null;
 };
 
@@ -373,6 +389,44 @@ export function getColumns(t: TranslateFunction): ColumnDef<InvoiceRow>[] {
         );
       },
       enableSorting: false,
+    },
+
+    // 13. Overdue interest (Phase 63 · Plan 63-07 — PAY-06)
+    {
+      id: 'overdueInterest',
+      accessorFn: row => row.overdueInterestMinor ?? null,
+      header: () => <span className="text-end block">{t('columns.overdueInterest')}</span>,
+      cell: ({ row }) => {
+        const amount = row.original.overdueInterestMinor;
+        if (amount == null) {
+          return <span className="text-muted-foreground text-end block">&mdash;</span>;
+        }
+        return (
+          <span className="font-mono text-sm tabular-nums text-end block text-amber-700 dark:text-amber-400">
+            {formatMinorUnits(amount)}
+          </span>
+        );
+      },
+      enableSorting: true,
+    },
+
+    // 14. Skonto (Phase 63 · Plan 63-07 — PAY-07)
+    {
+      id: 'skonto',
+      accessorFn: row => row.skontoTerm?.discountPercent ?? null,
+      header: t('columns.skonto'),
+      cell: ({ row }) => {
+        const term = row.original.skontoTerm;
+        if (!term) {
+          return <span className="text-muted-foreground">&mdash;</span>;
+        }
+        return (
+          <span className="text-sm tabular-nums">
+            {term.discountPercent}% {term.discountDays}/{term.netDays}
+          </span>
+        );
+      },
+      enableSorting: true,
     },
   ];
 }
