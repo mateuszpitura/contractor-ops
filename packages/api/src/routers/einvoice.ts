@@ -1,11 +1,15 @@
+import { createHash } from 'node:crypto';
+
 import type { ComplianceStatus } from '@contractor-ops/einvoice';
 import {
   computeKsefComplianceStatus,
+  generateZugferdPdf,
   listProfiles,
   STORECOVE_CII_XRECHNUNG_DOC_TYPE_ID,
   XRECHNUNG_CUSTOMIZATION_ID,
   XRECHNUNG_PROFILE_ID,
   XRechnungDEProfile,
+  ZugferdLevelUnsupportedForOutput,
 } from '@contractor-ops/einvoice';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
@@ -16,6 +20,7 @@ import {
   EInvoiceAlreadyFinalizedError,
   EInvoiceInvoiceNotFoundError,
   finalizeEInvoice,
+  mapPrismaInvoiceToEInvoice,
   type FinalizeResult,
   type R2Service,
 } from '../services/einvoice-finalize.js';
@@ -32,6 +37,7 @@ import {
 } from '../services/peppol-capability.js';
 import {
   getObjectAsString,
+  putObjectAndSignDownload,
   putObjectString,
   signExistingDownload,
 } from '../services/r2.js';
@@ -213,6 +219,194 @@ export const einvoiceRouter = router({
       }
 
       return { statuses };
+    }),
+
+  // -------------------------------------------------------------------------
+  // Phase 62 · Plan 62-05 Task 2 — outbound ZUGFeRD PDF/A-3 generation
+  // -------------------------------------------------------------------------
+
+  /**
+   * Generate a ZUGFeRD (Factur-X) PDF/A-3 B hybrid invoice from an existing
+   * Invoice row. The PDF embeds the same CII XML the XRechnung pipeline
+   * produces (single source of truth — no fork).
+   *
+   * Idempotent: if an existing `EInvoiceLifecycle.zugferdPdfSha256` matches
+   * the newly-computed SHA-256, we short-circuit and re-sign the existing
+   * key without writing a second `ZUGFERD_GENERATED` event.
+   *
+   * Writes are transactional: lifecycle upsert + event insert happen inside
+   * `db.$transaction` so a partial failure never leaves orphaned rows.
+   */
+  generateZugferdPdf: tenantProcedure
+    .use(requirePermission({ invoice: ['update'] }))
+    .input(z.object({ invoiceId: z.string().cuid() }))
+    .mutation(async ({ ctx, input }) => {
+      const logger = await getLogger();
+
+      // 1. Load invoice (org-scoped) + its existing lifecycle row.
+      const invoice = (await (
+        ctx.db.invoice.findFirst as (args: unknown) => Promise<unknown>
+      )({
+        where: {
+          id: input.invoiceId,
+          organizationId: ctx.organizationId,
+        },
+        include: {
+          lines: { orderBy: { lineNumber: 'asc' } },
+          contractor: true,
+          contract: true,
+          organization: true,
+          eInvoiceLifecycle: true,
+        },
+      })) as
+        | (Record<string, unknown> & {
+            id: string;
+            eInvoiceLifecycle: {
+              id: string;
+              zugferdPdfKey: string | null;
+              zugferdPdfSha256: string | null;
+              zugferdGeneratedAt: Date | null;
+            } | null;
+          })
+        | null;
+
+      if (!invoice) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'EINVOICE_INVOICE_NOT_FOUND',
+        });
+      }
+
+      // 2. Build the canonical EInvoice envelope (same helper the XRechnung
+      //    finalize path uses — single source of CII truth).
+      const envelope = mapPrismaInvoiceToEInvoice(
+        invoice as Parameters<typeof mapPrismaInvoiceToEInvoice>[0],
+      );
+
+      // 3. Generate the ZUGFeRD PDF bytes.
+      let pdfBytes: Uint8Array;
+      try {
+        pdfBytes = await generateZugferdPdf({ invoice: envelope });
+      } catch (err) {
+        if (err instanceof ZugferdLevelUnsupportedForOutput) {
+          throw new TRPCError({
+            code: 'UNPROCESSABLE_CONTENT',
+            message: 'ZUGFERD_LEVEL_UNSUPPORTED_FOR_OUTPUT',
+          });
+        }
+        logger.error(
+          {
+            invoiceId: input.invoiceId,
+            organizationId: ctx.organizationId,
+            err: err instanceof Error ? err.message : String(err),
+          },
+          'ZUGFeRD generation failed',
+        );
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'ZUGFERD_WRAPPING_FAILED',
+        });
+      }
+
+      // 4. Content-addressed idempotency — if the lifecycle already has a
+      //    matching sha, re-sign the existing object and return. Append no
+      //    second event.
+      const sha = createHash('sha256')
+        .update(Buffer.from(pdfBytes))
+        .digest('hex');
+      const key = `einvoice-pdf/${ctx.organizationId}/${input.invoiceId}/${sha.slice(0, 16)}.pdf`;
+
+      const existing = invoice.eInvoiceLifecycle;
+      if (
+        existing?.zugferdPdfSha256 === sha &&
+        existing.zugferdPdfKey &&
+        existing.zugferdGeneratedAt
+      ) {
+        const { signedUrl, expiresInSeconds } = await signExistingDownload(
+          existing.zugferdPdfKey,
+          300,
+        );
+        return {
+          pdfKey: existing.zugferdPdfKey,
+          signedUrl,
+          expiresInSeconds,
+          generatedAt: existing.zugferdGeneratedAt,
+          reused: true,
+        };
+      }
+
+      // 5. Upload to R2 and pre-sign a 300 s download URL.
+      const { signedUrl, expiresInSeconds } = await putObjectAndSignDownload({
+        key,
+        body: Buffer.from(pdfBytes),
+        contentType: 'application/pdf',
+        ttlSeconds: 300,
+      });
+
+      // 6. Upsert lifecycle + append ZUGFERD_GENERATED event atomically.
+      const now = new Date();
+      await (ctx.db as never as { $transaction: TxRunner }).$transaction(
+        async tx => {
+          const txDb = tx as unknown as LifecycleTx & {
+            eInvoiceLifecycle: {
+              upsert: (args: {
+                where: Record<string, unknown>;
+                create: Record<string, unknown>;
+                update: Record<string, unknown>;
+              }) => Promise<{ id: string }>;
+            };
+          };
+          const upserted = await txDb.eInvoiceLifecycle.upsert({
+            where: {
+              organizationId_invoiceId: {
+                organizationId: ctx.organizationId,
+                invoiceId: input.invoiceId,
+              },
+            },
+            create: {
+              organizationId: ctx.organizationId,
+              invoiceId: input.invoiceId,
+              profileId: 'zugferd-de',
+              zugferdPdfKey: key,
+              zugferdPdfSha256: sha,
+              zugferdGeneratedAt: now,
+            },
+            update: {
+              zugferdPdfKey: key,
+              zugferdPdfSha256: sha,
+              zugferdGeneratedAt: now,
+            },
+          });
+          await txDb.eInvoiceLifecycleEvent.create({
+            data: {
+              organizationId: ctx.organizationId,
+              lifecycleId: upserted.id,
+              eventType: 'ZUGFERD_GENERATED',
+              occurredAt: now,
+              actorUserId: ctx.user?.id ?? null,
+              detailsJson: { sha256: sha, pdfKey: key, byteLength: pdfBytes.length },
+            },
+          });
+        },
+      );
+
+      logger.info(
+        {
+          invoiceId: input.invoiceId,
+          organizationId: ctx.organizationId,
+          sha256: sha,
+          byteLength: pdfBytes.length,
+        },
+        'ZUGFeRD PDF generated',
+      );
+
+      return {
+        pdfKey: key,
+        signedUrl,
+        expiresInSeconds,
+        generatedAt: now,
+        reused: false,
+      };
     }),
 
   // -------------------------------------------------------------------------

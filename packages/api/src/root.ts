@@ -24,6 +24,7 @@ import { googleWorkspaceRouter } from './routers/google-workspace.js';
 import { importRouter } from './routers/import.js';
 import { integrationRouter } from './routers/integration.js';
 import { invoiceRouter } from './routers/invoice.js';
+import { invoiceIntakeRouter } from './routers/invoice-intake.js';
 import { ir35ChainRouter } from './routers/ir35-chain.js';
 import { ir35AttestationRouter } from './routers/ir35-other-client-attestation.js';
 import { jiraRouter } from './routers/jira.js';
@@ -90,6 +91,7 @@ export const appRouter = router({
   document: documentRouter,
   workflow: workflowRouter,
   invoice: invoiceRouter,
+  invoiceIntake: invoiceIntakeRouter, // invoiceIntake: inbound XRechnung/ZUGFeRD intake pipeline — upload, parse, match, convert (Phase 62 EINV-03)
   approval: approvalRouter,
   notification: notificationRouter,
   reminder: reminderRouter,
