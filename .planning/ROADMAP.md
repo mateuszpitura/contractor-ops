@@ -41,7 +41,7 @@ See .planning/milestones/v4.0/ for details.
 - [x] **Phase 59: Classification Documents & Chain Tracking** - SDS generation, IR35 chain participants, DRV audit defense documentation (completed 2026-04-13)
 - [x] **Phase 60: Classification Polish** - Economic dependency alerts, reassessment triggers, DRV tracking, compliance dashboard (completed 2026-04-14)
 - [x] **Phase 61: XRechnung E-Invoicing** - XRechnung CII XML generation, KoSIT validation, Leitweg-ID, Peppol UK (completed 2026-04-14)
-- [ ] **Phase 62: ZUGFeRD E-Invoicing** - ZUGFeRD PDF/A-3 with embedded CII XML, inbound XRechnung/ZUGFeRD parsing
+- [x] **Phase 62: ZUGFeRD E-Invoicing** - ZUGFeRD PDF/A-3 with embedded CII XML, inbound XRechnung/ZUGFeRD parsing (completed 2026-04-16)
 - [ ] **Phase 63: UK Payments & Financial Features** - BACS Standard 18 export, late payment interest, Skonto discounts
 
 ## Phase Details
@@ -169,7 +169,7 @@ See .planning/milestones/v4.0/ for details.
 - [ ] 63-04-PLAN.md — Wave 3: BACS tRPC router (preview/generate/validate/saveSubmitter) + settings page (/settings/payments/) + BACS preview Card + UK bank fields on billing profile
 - [x] 63-05-PLAN.md — Wave 3: Late interest tRPC router (get/waive/revoke/claim/download) + claim PDF (React-PDF) + admin BoE rate router + admin shell + /admin/boe-rate/ page
 - [x] 63-06-PLAN.md — Wave 3: Skonto eligibility service + tRPC router (upsert/delete for invoice+profile) + XRechnung BG-20 Payment Terms extension (#SKONTO#TAGE=n#PROZENT=n#)
-- [ ] 63-07-PLAN.md — Wave 4: All UI surfaces (late interest card + claim/waive/revoke dialogs + dashboard tile + Skonto form/banner/checkbox + invoice list columns) + human-verify checkpoint
+- [x] 63-07-PLAN.md — Wave 4: All UI surfaces (late interest card + claim/waive/revoke dialogs + dashboard tile + Skonto form/banner/checkbox + invoice list columns) + human-verify checkpoint
 **UI hint**: yes
 
 ## Progress
@@ -185,8 +185,8 @@ Phases execute in numeric order: 56 -> 57 -> 58 -> 59 -> 60 -> 61 -> 62 -> 63 ->
 | 59. Classification Documents & Chain Tracking | v5.0 | 4/4 | Complete    | 2026-04-13 |
 | 60. Classification Polish | v5.0 | 4/4 | Complete    | 2026-04-14 |
 | 61. XRechnung E-Invoicing | v5.0 | 8/8 | Complete   | 2026-04-14 |
-| 62. ZUGFeRD E-Invoicing | v5.0 | 6/7 | In Progress|  |
-| 63. UK Payments & Financial Features | v5.0 | 3/7 | In Progress|  |
+| 62. ZUGFeRD E-Invoicing | v5.0 | 7/7 | Complete    | 2026-04-16 |
+| 63. UK Payments & Financial Features | v5.0 | 4/7 | In Progress|  |
 | 64. Legal Compliance Hardening | v5.0 | 0/TBD | Not started | - |
 
 ### Phase 64: Legal Compliance Hardening
