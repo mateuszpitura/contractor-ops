@@ -16,6 +16,7 @@ export default defineConfig({
   test: {
     projects: [
       'apps/web',
+      'apps/public-api',
       'packages/api',
       'packages/auth',
       'packages/db',
@@ -33,6 +34,7 @@ export default defineConfig({
       reportsDirectory: './coverage',
       include: [
         'apps/web/src/**/*.{ts,tsx}',
+        'apps/public-api/src/**/*.ts',
         'packages/api/src/**/*.ts',
         'packages/auth/src/**/*.ts',
         'packages/db/src/**/*.ts',

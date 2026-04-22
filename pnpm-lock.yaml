@@ -51,6 +51,9 @@ importers:
 
   apps/landing:
     dependencies:
+      '@contractor-ops/logger':
+        specifier: workspace:*
+        version: link:../../packages/logger
       '@posthog/react':
         specifier: ^1.9.0
         version: 1.9.0(@types/react@19.2.14)(posthog-js@1.367.0)(react@19.2.5)
@@ -137,6 +140,9 @@ importers:
         specifier: '>=4.12.4'
         version: 4.12.12
     devDependencies:
+      '@contractor-ops/test-utils':
+        specifier: workspace:*
+        version: link:../../packages/test-utils
       tsx:
         specifier: ^4.21.0
         version: 4.21.0
@@ -339,9 +345,6 @@ importers:
         specifier: ^5.0.12
         version: 5.0.12(@types/react@19.2.14)(immer@11.1.4)(react@19.2.5)(use-sync-external-store@1.6.0(react@19.2.5))
     devDependencies:
-      '@axe-core/playwright':
-        specifier: ^4.11.1
-        version: 4.11.1(playwright-core@1.59.1)
       '@mdx-js/rollup':
         specifier: ^3.1.1
         version: 3.1.1(rollup@4.60.1)
@@ -567,6 +570,9 @@ importers:
       dotenv:
         specifier: ^17.4.1
         version: 17.4.1
+      pino:
+        specifier: ^9.14.0
+        version: 9.14.0
       prisma:
         specifier: ^7.7.0
         version: 7.7.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(typescript@5.9.3)
@@ -607,6 +613,9 @@ importers:
       qrcode:
         specifier: ^1.5.4
         version: 1.5.4
+      react:
+        specifier: ^19.2.5
+        version: 19.2.5
       saxon-js:
         specifier: ^2.7.0
         version: 2.7.0
@@ -623,6 +632,9 @@ importers:
       '@types/qrcode':
         specifier: ^1.5.6
         version: 1.5.6
+      '@types/react':
+        specifier: ^19.2.14
+        version: 19.2.14
       '@vitest/coverage-v8':
         specifier: ^4.1.4
         version: 4.1.4(vitest@4.1.4)
@@ -663,6 +675,9 @@ importers:
       '@contractor-ops/db':
         specifier: workspace:*
         version: link:../db
+      '@contractor-ops/logger':
+        specifier: workspace:*
+        version: link:../logger
       '@contractor-ops/secrets':
         specifier: workspace:*
         version: link:../secrets
@@ -697,6 +712,9 @@ importers:
       '@contractor-ops/einvoice':
         specifier: workspace:*
         version: link:../einvoice
+      '@contractor-ops/logger':
+        specifier: workspace:*
+        version: link:../logger
       '@contractor-ops/secrets':
         specifier: workspace:*
         version: link:../secrets
@@ -761,6 +779,10 @@ importers:
         version: 4.1.4(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.4)(jsdom@29.0.2(@noble/hashes@2.0.1))(msw@2.13.2(@types/node@25.6.0)(typescript@5.9.3))(vite@8.0.1(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.0)(@types/node@25.6.0)(esbuild@0.27.7)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   packages/secrets:
+    dependencies:
+      '@contractor-ops/logger':
+        specifier: workspace:*
+        version: link:../logger
     devDependencies:
       typescript:
         specifier: ^5.9.3
@@ -1173,11 +1195,6 @@ packages:
   '@aws/lambda-invoke-store@0.2.4':
     resolution: {integrity: sha512-iY8yvjE0y651BixKNPgmv1WrQc+GZ142sb0z4gYnChDDY2YqI4P/jsSopBWrKfAt7LOJAkOXt7rC/hms+WclQQ==}
     engines: {node: '>=18.0.0'}
-
-  '@axe-core/playwright@4.11.1':
-    resolution: {integrity: sha512-mKEfoUIB1MkVTht0BGZFXtSAEKXMJoDkyV5YZ9jbBmZCcWDz71tegNsdTkIN8zc/yMi5Gm2kx7Z5YQ9PfWNAWw==}
-    peerDependencies:
-      playwright-core: '>= 1.0.0'
 
   '@axiomhq/js@1.6.0':
     resolution: {integrity: sha512-qm0ObduIpI6PJUOYwakH5WV3E7IF0qXE/wh5N1JWGAzxKtCZryk+YwA0aW3lPZSGPQeLHyEzN+9pXsOIjoPiRg==}
@@ -4684,10 +4701,6 @@ packages:
   aws-ssl-profiles@1.1.2:
     resolution: {integrity: sha512-NZKeq9AfyQvEeNlN0zSYAaWrmBffJh3IELMZfRpJVWgrpEbtEpnjvzqBPf+mxoI287JohRDoa+/nsfqqiZmF6g==}
     engines: {node: '>= 6.0.0'}
-
-  axe-core@4.11.3:
-    resolution: {integrity: sha512-zBQouZixDTbo3jMGqHKyePxYxr1e5W8UdTmBQ7sNtaA9M2bE32daxxPLS/jojhKOHxQ7LWwPjfiwf/fhaJWzlg==}
-    engines: {node: '>=4'}
 
   axios@1.15.0:
     resolution: {integrity: sha512-wWyJDlAatxk30ZJer+GeCWS209sA42X+N5jU2jy6oHTp7ufw8uzUTVFBX9+wTfAlhiJXGS0Bq7X6efruWjuK9Q==}
@@ -9835,11 +9848,6 @@ snapshots:
 
   '@aws/lambda-invoke-store@0.2.4': {}
 
-  '@axe-core/playwright@4.11.1(playwright-core@1.59.1)':
-    dependencies:
-      axe-core: 4.11.3
-      playwright-core: 1.59.1
-
   '@axiomhq/js@1.6.0':
     dependencies:
       fetch-retry: 6.0.0
@@ -13652,8 +13660,6 @@ snapshots:
       xml2js: 0.4.19
 
   aws-ssl-profiles@1.1.2: {}
-
-  axe-core@4.11.3: {}
 
   axios@1.15.0:
     dependencies:
