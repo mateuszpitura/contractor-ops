@@ -66,6 +66,28 @@ Higher ramp (stages up to 40 VUs). Same env vars as API read:
 pnpm load:stress
 ```
 
+## API write load (tRPC mutations)
+
+Sends `POST /api/trpc/<proc>` with a SuperJSON body (non-batched `httpLink` shape). Same auth/bypass conventions as the read path.
+
+Default target is `notification.markAllRead` — idempotent-ish (bulk UPDATE, never creates rows).
+
+```bash
+pnpm load:writes              # 5 VUs × 60s against the default proc
+pnpm load:writes:stress       # ramp to 25 VUs
+```
+
+Target a different mutation via env:
+
+```bash
+PROC_NAME=reassessment-trigger.dismiss \
+PROC_INPUT='{"triggerId":"trg_xxx","reason":"load test"}' \
+SESSION_COOKIE="$SESSION_COOKIE" \
+k6 run load-tests/api-write.js
+```
+
+`PROC_INPUT` must be valid JSON. It is wrapped as `{ json: <PROC_INPUT> }` before POST (SuperJSON non-batched shape). Do **not** target procedures that create rows unless you plan to clean up afterward.
+
 ## Safety
 
 - Do **not** point high-VU tests at production.
