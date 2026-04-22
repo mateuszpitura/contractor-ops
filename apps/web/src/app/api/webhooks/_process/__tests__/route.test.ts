@@ -89,7 +89,7 @@ describe('POST /api/webhooks/_process', () => {
     const res = await POST(postJson({ deliveryId: 'd1' }));
     expect(res.status).toBe(400);
     const json = (await res.json()) as { error: string };
-    expect(json.error).toContain('Missing');
+    expect(json.error).toContain('Invalid');
   });
 
   it('returns 404 when adapter has no handleWebhook', async () => {
@@ -326,5 +326,180 @@ describe('POST /api/webhooks/_process', () => {
 
     expect(res.status).toBe(200);
     expect(mockHandleSigningCompletion).not.toHaveBeenCalled();
+  });
+
+  describe('retry and dedup', () => {
+    it('re-runs the adapter when delivery is already PROCESSED (no dedup guard)', async () => {
+      // The handler has no early-exit for deliveryStatus — a second QStash delivery
+      // will invoke the adapter again and overwrite the status. This documents the
+      // current (non-idempotent) behaviour. A dedup guard would need to be added to
+      // the source if this becomes a problem.
+      const handleWebhook = vi.fn(async () => ({ ok: true }));
+
+      mockGetAdapter.mockReturnValue({ handleWebhook });
+      mockFindUnique.mockResolvedValue({
+        id: 'del-already-processed',
+        organizationId: 'org-1',
+        integrationConnectionId: null,
+        deliveryStatus: 'PROCESSED',
+        payloadJson: { type: 'test' },
+      });
+
+      const res = await POST(postJson({ deliveryId: 'del-already-processed', provider: 'stripe' }));
+
+      // Handler succeeds — no short-circuit on PROCESSED status
+      expect(res.status).toBe(200);
+      const json = (await res.json()) as { processed: boolean };
+      expect(json.processed).toBe(true);
+
+      // Adapter was called again — NOT idempotent
+      expect(handleWebhook).toHaveBeenCalledTimes(1);
+      expect(mockUpdate).toHaveBeenCalledWith({
+        where: { id: 'del-already-processed' },
+        data: expect.objectContaining({ deliveryStatus: 'PROCESSED' }),
+      });
+    });
+
+    it('re-runs the adapter when delivery is already FAILED (retry allowed)', async () => {
+      // FAILED deliveries also have no guard — QStash retries or manual re-queues
+      // will attempt the adapter again. Documents current permissive behaviour.
+      const handleWebhook = vi.fn(async () => ({ ok: true }));
+
+      mockGetAdapter.mockReturnValue({ handleWebhook });
+      mockFindUnique.mockResolvedValue({
+        id: 'del-already-failed',
+        organizationId: 'org-1',
+        integrationConnectionId: null,
+        deliveryStatus: 'FAILED',
+        payloadJson: { type: 'test' },
+      });
+
+      const res = await POST(postJson({ deliveryId: 'del-already-failed', provider: 'stripe' }));
+
+      expect(res.status).toBe(200);
+      expect(handleWebhook).toHaveBeenCalledTimes(1);
+      expect(mockUpdate).toHaveBeenCalledWith({
+        where: { id: 'del-already-failed' },
+        data: expect.objectContaining({ deliveryStatus: 'PROCESSED' }),
+      });
+    });
+
+    it('re-runs the adapter on every call — N identical requests produce N adapter invocations', async () => {
+      const handleWebhook = vi.fn(async () => ({ ok: true }));
+
+      mockGetAdapter.mockReturnValue({ handleWebhook });
+      mockFindUnique.mockResolvedValue({
+        id: 'del-idem',
+        organizationId: 'org-1',
+        integrationConnectionId: null,
+        payloadJson: { type: 'test' },
+      });
+
+      for (let i = 0; i < 3; i++) {
+        const res = await POST(postJson({ deliveryId: 'del-idem', provider: 'stripe' }));
+        expect(res.status).toBe(200);
+      }
+
+      // Without a dedup guard the adapter is called once per request
+      expect(handleWebhook).toHaveBeenCalledTimes(3);
+    });
+
+    it('marks FAILED with missingOrganizationId reason for jira when no org can be resolved', async () => {
+      const handleWebhook = vi.fn(async () => ({ ok: true }));
+
+      mockGetAdapter.mockReturnValue({ handleWebhook });
+      // Delivery has no organizationId and no integrationConnectionId to backfill from
+      mockFindUnique.mockResolvedValue({
+        id: 'del-jira-no-org',
+        organizationId: '',
+        integrationConnectionId: null,
+        payloadJson: { issue: { key: 'PROJ-99' } },
+      });
+
+      const res = await POST(postJson({ deliveryId: 'del-jira-no-org', provider: 'jira' }));
+
+      // Returns 200 with processed: false (not a 4xx/5xx)
+      expect(res.status).toBe(200);
+      const json = (await res.json()) as { processed: boolean; reason: string };
+      expect(json.processed).toBe(false);
+      expect(json.reason).toBe('missingOrganizationId');
+
+      // Adapter is never called
+      expect(handleWebhook).not.toHaveBeenCalled();
+
+      // Delivery is marked FAILED with the canonical error message
+      expect(mockUpdate).toHaveBeenCalledWith({
+        where: { id: 'del-jira-no-org' },
+        data: expect.objectContaining({
+          deliveryStatus: 'FAILED',
+          errorMessage: expect.stringContaining('Missing organizationId'),
+        }),
+      });
+    });
+
+    it('marks FAILED with missingOrganizationId reason for linear when no org can be resolved', async () => {
+      const handleWebhook = vi.fn(async () => ({ ok: true }));
+
+      mockGetAdapter.mockReturnValue({ handleWebhook });
+      mockFindUnique.mockResolvedValue({
+        id: 'del-linear-no-org',
+        organizationId: null,
+        integrationConnectionId: null,
+        payloadJson: { action: 'create', type: 'Issue' },
+      });
+
+      const res = await POST(postJson({ deliveryId: 'del-linear-no-org', provider: 'linear' }));
+
+      expect(res.status).toBe(200);
+      const json = (await res.json()) as { processed: boolean; reason: string };
+      expect(json.processed).toBe(false);
+      expect(json.reason).toBe('missingOrganizationId');
+
+      expect(handleWebhook).not.toHaveBeenCalled();
+      expect(mockUpdate).toHaveBeenCalledWith({
+        where: { id: 'del-linear-no-org' },
+        data: expect.objectContaining({
+          deliveryStatus: 'FAILED',
+          errorMessage: expect.stringContaining('Missing organizationId'),
+        }),
+      });
+    });
+
+    it('proceeds normally for non-jira/linear providers when organizationId is missing', async () => {
+      // Only jira and linear have the strict org-required gate; other providers proceed
+      // with an empty effectiveOrgId.
+      const handleWebhook = vi.fn(async () => ({ ok: true }));
+
+      mockGetAdapter.mockReturnValue({ handleWebhook });
+      mockFindUnique.mockResolvedValue({
+        id: 'del-stripe-no-org',
+        organizationId: '',
+        integrationConnectionId: null,
+        payloadJson: { type: 'charge.succeeded' },
+      });
+
+      const res = await POST(postJson({ deliveryId: 'del-stripe-no-org', provider: 'stripe' }));
+
+      expect(res.status).toBe(200);
+      const json = (await res.json()) as { processed: boolean };
+      expect(json.processed).toBe(true);
+      expect(handleWebhook).toHaveBeenCalledWith({ type: 'charge.succeeded' }, '', '');
+    });
+
+    it('returns 400 when body is missing both deliveryId and provider', async () => {
+      const res = await POST(postJson({}));
+      expect(res.status).toBe(400);
+    });
+
+    it('returns 400 when body is entirely invalid (not an object)', async () => {
+      const res = await POST(
+        new NextRequest('http://localhost/api/webhooks/_process', {
+          method: 'POST',
+          body: 'not-json',
+          headers: { 'content-type': 'text/plain' },
+        }),
+      );
+      expect(res.status).toBe(400);
+    });
   });
 });
