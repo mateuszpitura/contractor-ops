@@ -12,10 +12,18 @@
  *   TEST_DATABASE_URL=postgresql://user:pass@host/db \
  *     pnpm --filter @contractor-ops/db test -- rls-integration.test.ts
  *
- * The Neon adapter is used, so TEST_DATABASE_URL must point to a Neon DB (or a
- * Neon-compatible endpoint, e.g. a Neon branch). A plain postgresql:// URL to a
- * standard postgres host will NOT work because the @neondatabase/serverless driver
- * communicates over WebSocket and requires a Neon endpoint.
+ * The Neon adapter is used deliberately — production runs on Neon, so the
+ * test exercises the same driver-level behaviour as prod. TEST_DATABASE_URL
+ * must therefore point to a Neon endpoint (a free Neon branch works fine).
+ * A plain postgresql:// URL to a local postgres host will NOT work because
+ * @neondatabase/serverless communicates over WebSocket.
+ *
+ * Plain-Postgres alternative (NOT enabled by default, to keep deps lean):
+ * add `@prisma/adapter-pg` to packages/db devDependencies and swap
+ * `PrismaNeon` + `connectionString` for `PrismaPg` + `connectionString` in
+ * createTestClient below. The diff is two lines. Left to the team's call
+ * whether the marginal value of plain-PG testing justifies the extra dep;
+ * Neon branches are the path of least resistance given the prod stack.
  *
  * If TEST_DATABASE_URL is absent the entire suite is skipped automatically so
  * CI machines without a real DB remain green.
@@ -27,7 +35,7 @@
 import { PrismaNeon } from '@prisma/adapter-neon';
 import { afterAll, describe, expect, it } from 'vitest';
 
-import { PrismaClient, Prisma } from '../../generated/prisma/client/index.js';
+import { Prisma, PrismaClient } from '../../generated/prisma/client/index.js';
 import { withRlsSession } from '../rls.js';
 
 // ---------------------------------------------------------------------------
@@ -77,7 +85,7 @@ describe.skipIf(!hasDb)('withRlsSession — real Postgres integration', () => {
     const orgId = 'test-org-001';
     const userId = 'test-user-001';
 
-    const result = await client.$transaction(async (tx) => {
+    const result = await client.$transaction(async tx => {
       await withRlsSession(tx, { organizationId: orgId, userId });
       return queryOrgId(tx);
     });
@@ -92,7 +100,7 @@ describe.skipIf(!hasDb)('withRlsSession — real Postgres integration', () => {
     const orgId = 'test-org-002';
     const userId = 'test-user-002';
 
-    const result = await client.$transaction(async (tx) => {
+    const result = await client.$transaction(async tx => {
       await withRlsSession(tx, { organizationId: orgId, userId });
       return queryUserId(tx);
     });
@@ -114,7 +122,7 @@ describe.skipIf(!hasDb)('withRlsSession — real Postgres integration', () => {
     const userId = 'test-user-leak';
 
     // Run a transaction that writes the session var, then let it commit.
-    await client.$transaction(async (tx) => {
+    await client.$transaction(async tx => {
       await withRlsSession(tx, { organizationId: orgId, userId });
     });
 
@@ -147,15 +155,15 @@ describe.skipIf(!hasDb)('withRlsSession — real Postgres integration', () => {
 
     // Run both transactions concurrently.
     const [resultA, resultB] = await Promise.all([
-      client.$transaction(async (tx) => {
+      client.$transaction(async tx => {
         await withRlsSession(tx, { organizationId: orgA, userId: userA });
         // Small pause to increase chance of overlap with the other transaction.
-        await new Promise<void>((resolve) => setTimeout(resolve, 10));
+        await new Promise<void>(resolve => setTimeout(resolve, 10));
         return queryOrgId(tx);
       }),
-      client.$transaction(async (tx) => {
+      client.$transaction(async tx => {
         await withRlsSession(tx, { organizationId: orgB, userId: userB });
-        await new Promise<void>((resolve) => setTimeout(resolve, 10));
+        await new Promise<void>(resolve => setTimeout(resolve, 10));
         return queryOrgId(tx);
       }),
     ]);
@@ -173,7 +181,7 @@ describe.skipIf(!hasDb)('withRlsSession — real Postgres integration', () => {
   // so a future caller can decide whether to add a guard at the call site.
   // -------------------------------------------------------------------------
   it('empty string orgId is stored verbatim (no runtime error)', async () => {
-    const result = await client.$transaction(async (tx) => {
+    const result = await client.$transaction(async tx => {
       // Should not throw.
       await withRlsSession(tx, { organizationId: '', userId: 'user-empty' });
       return queryOrgId(tx);
@@ -194,7 +202,7 @@ describe.skipIf(!hasDb)('withRlsSession — real Postgres integration', () => {
   it('SQL-injection attempt is stored verbatim without executing', async () => {
     const maliciousOrgId = `'; DROP TABLE x; --`;
 
-    const result = await client.$transaction(async (tx) => {
+    const result = await client.$transaction(async tx => {
       await withRlsSession(tx, { organizationId: maliciousOrgId, userId: 'user-inject' });
       return queryOrgId(tx);
     });
