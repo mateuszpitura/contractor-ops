@@ -18,6 +18,7 @@ import {
   PDFHexString,
   PDFName,
   PDFRawStream,
+  PDFStream,
   PDFString,
   decodePDFRawStream,
 } from 'pdf-lib';
@@ -118,7 +119,7 @@ describe('wrapToPdfA3', () => {
     const items = arr.asArray ? arr.asArray() : [];
     const first = wrappedDoc.context.lookup(items[0] as never, PDFDict);
     const profileRef = first.get(PDFName.of('DestOutputProfile'));
-    const profileStream = wrappedDoc.context.lookup(profileRef!, PDFRawStream);
+    const profileStream = wrappedDoc.context.lookup(profileRef!, PDFStream) as unknown as PDFRawStream;
     const profileBytes = decodePDFRawStream(profileStream).decode();
     expect(sha256(profileBytes)).toBe(iccSha);
   });

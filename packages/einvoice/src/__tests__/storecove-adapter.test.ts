@@ -1,5 +1,6 @@
 import { createHmac } from 'node:crypto';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { GovApiAuditLogger, GovApiRateLimiter } from '@contractor-ops/gov-api';
 import { StorecoveAdapter } from '../asp/storecove/adapter.js';
 import { STORECOVE_CII_XRECHNUNG_DOC_TYPE_ID } from '../profiles/xrechnung-de/constants.js';
 
@@ -519,8 +520,8 @@ describe('StorecoveAdapter', () => {
     const log = vi.fn().mockResolvedValue(undefined);
 
     const adapterWithDeps = new StorecoveAdapter(TEST_CONFIG, {
-      rateLimiter: { checkLimit },
-      auditLogger: { log },
+      rateLimiter: { checkLimit } as unknown as GovApiRateLimiter,
+      auditLogger: { log } as unknown as GovApiAuditLogger,
     });
 
     mockFetch.mockResolvedValueOnce(
@@ -546,7 +547,7 @@ describe('StorecoveAdapter', () => {
   it('throws when rate limit exceeded', async () => {
     const checkLimit = vi.fn().mockResolvedValue({ allowed: false, remaining: 0, resetMs: 5000 });
     const adapterWithDeps = new StorecoveAdapter(TEST_CONFIG, {
-      rateLimiter: { checkLimit },
+      rateLimiter: { checkLimit } as unknown as GovApiRateLimiter,
     });
 
     await expect(
@@ -569,8 +570,8 @@ describe('StorecoveAdapter', () => {
     const log = vi.fn().mockResolvedValue(undefined);
 
     const adapterWithDeps = new StorecoveAdapter(TEST_CONFIG, {
-      rateLimiter: { checkLimit },
-      auditLogger: { log },
+      rateLimiter: { checkLimit } as unknown as GovApiRateLimiter,
+      auditLogger: { log } as unknown as GovApiAuditLogger,
     });
 
     mockFetch.mockResolvedValueOnce(jsonResponse([]));
