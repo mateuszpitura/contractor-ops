@@ -418,7 +418,9 @@ export function ProviderDetailSheet({
                                 ? 'Delivered'
                                 : item.deliveryStatus === 'FAILED'
                                   ? 'Failed'
-                                  : 'Received'}
+                                  : item.deliveryStatus === 'PROCESSING'
+                                    ? 'Processing'
+                                    : 'Received'}
                             </span>
                           </TableCell>
                           <TableCell className="text-xs">

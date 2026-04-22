@@ -143,6 +143,7 @@ enum SyncStatus {
 
 enum WebhookDeliveryStatus {
   RECEIVED
+  PROCESSING
   PROCESSED
   FAILED
 }

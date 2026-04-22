@@ -9,7 +9,11 @@ import { NextResponse } from 'next/server';
 
 const log = createCronLogger('job-health');
 
-/** Webhook deliveries stuck in RECEIVED longer than this are considered stale. */
+/**
+ * Webhook deliveries stuck in RECEIVED or PROCESSING longer than this are
+ * considered stale. RECEIVED = QStash never picked it up; PROCESSING = a
+ * worker claimed it but crashed before finishing.
+ */
 const STALE_THRESHOLD_MIN = 15;
 
 /** Alert threshold: fire a Sentry alert when recent failure count exceeds this. */
@@ -46,10 +50,14 @@ export async function GET(request: NextRequest) {
           const staleCutoff = new Date(now.getTime() - STALE_THRESHOLD_MIN * 60_000);
           const oneHourAgo = new Date(now.getTime() - 60 * 60_000);
 
-          // 1. Find stale webhook deliveries (stuck in RECEIVED)
+          // 1. Find stale webhook deliveries (stuck in RECEIVED or PROCESSING).
+          //    RECEIVED stale = QStash never delivered it to _process.
+          //    PROCESSING stale = a worker claimed the row but crashed before
+          //    finishing (no PROCESSED/FAILED transition). Both are dead-letter
+          //    candidates at the same threshold.
           const staleDeliveries = await prisma.webhookDelivery.findMany({
             where: {
-              deliveryStatus: 'RECEIVED',
+              deliveryStatus: { in: ['RECEIVED', 'PROCESSING'] },
               receivedAt: { lt: staleCutoff },
             },
             select: {
@@ -58,6 +66,7 @@ export async function GET(request: NextRequest) {
               organizationId: true,
               eventType: true,
               receivedAt: true,
+              deliveryStatus: true,
             },
           });
 
@@ -71,7 +80,7 @@ export async function GET(request: NextRequest) {
                 deliveryStatus: 'FAILED',
                 processedAt: now,
                 errorMessage: JSON.stringify({
-                  reason: `Stale: stuck in RECEIVED for >${STALE_THRESHOLD_MIN} minutes`,
+                  reason: `Stale: stuck in RECEIVED/PROCESSING for >${STALE_THRESHOLD_MIN} minutes`,
                   failedByHealthCheck: true,
                   failedAt: now.toISOString(),
                 }),
@@ -100,10 +109,10 @@ export async function GET(request: NextRequest) {
             },
           });
 
-          // 4. Count pending (queue depth)
+          // 4. Count pending (queue depth) — both waiting-for-pickup and in-flight
           const pendingCount = await prisma.webhookDelivery.count({
             where: {
-              deliveryStatus: 'RECEIVED',
+              deliveryStatus: { in: ['RECEIVED', 'PROCESSING'] },
             },
           });
 

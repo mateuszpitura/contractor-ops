@@ -7,12 +7,14 @@ const {
   mockGetAdapter,
   mockFindUnique,
   mockUpdate,
+  mockUpdateMany,
   mockIntegrationConnectionFindUnique,
   mockProcessResendWebhookDelivery,
 } = vi.hoisted(() => ({
   mockGetAdapter: vi.fn(),
   mockFindUnique: vi.fn(),
   mockUpdate: vi.fn(),
+  mockUpdateMany: vi.fn(),
   mockIntegrationConnectionFindUnique: vi.fn(),
   mockProcessResendWebhookDelivery: vi.fn(async () => ({ processedCount: 0 })),
 }));
@@ -34,6 +36,7 @@ vi.mock('@contractor-ops/db', () => ({
     webhookDelivery: {
       findUnique: mockFindUnique,
       update: mockUpdate,
+      updateMany: mockUpdateMany,
     },
     integrationConnection: {
       findUnique: mockIntegrationConnectionFindUnique,
@@ -82,6 +85,9 @@ describe('POST /api/webhooks/_process', () => {
     mockGetAdapter.mockReturnValue(null);
     mockFindUnique.mockResolvedValue(null);
     mockUpdate.mockResolvedValue({});
+    /** Default: atomic claim succeeds (count=1). Tests that exercise the
+     * "already claimed by another worker" path override to { count: 0 }. */
+    mockUpdateMany.mockResolvedValue({ count: 1 });
     mockIntegrationConnectionFindUnique.mockResolvedValue(null);
   });
 
@@ -329,11 +335,7 @@ describe('POST /api/webhooks/_process', () => {
   });
 
   describe('retry and dedup', () => {
-    it('re-runs the adapter when delivery is already PROCESSED (no dedup guard)', async () => {
-      // The handler has no early-exit for deliveryStatus — a second QStash delivery
-      // will invoke the adapter again and overwrite the status. This documents the
-      // current (non-idempotent) behaviour. A dedup guard would need to be added to
-      // the source if this becomes a problem.
+    it('short-circuits when delivery is already PROCESSED (QStash at-least-once dedup)', async () => {
       const handleWebhook = vi.fn(async () => ({ ok: true }));
 
       mockGetAdapter.mockReturnValue({ handleWebhook });
@@ -347,22 +349,17 @@ describe('POST /api/webhooks/_process', () => {
 
       const res = await POST(postJson({ deliveryId: 'del-already-processed', provider: 'stripe' }));
 
-      // Handler succeeds — no short-circuit on PROCESSED status
       expect(res.status).toBe(200);
-      const json = (await res.json()) as { processed: boolean };
-      expect(json.processed).toBe(true);
+      const json = (await res.json()) as { skipped: boolean; reason: string };
+      expect(json).toEqual({ skipped: true, reason: 'already-processed' });
 
-      // Adapter was called again — NOT idempotent
-      expect(handleWebhook).toHaveBeenCalledTimes(1);
-      expect(mockUpdate).toHaveBeenCalledWith({
-        where: { id: 'del-already-processed' },
-        data: expect.objectContaining({ deliveryStatus: 'PROCESSED' }),
-      });
+      // Adapter is NOT re-invoked; no atomic claim attempted; no status mutation.
+      expect(handleWebhook).not.toHaveBeenCalled();
+      expect(mockUpdateMany).not.toHaveBeenCalled();
+      expect(mockUpdate).not.toHaveBeenCalled();
     });
 
-    it('re-runs the adapter when delivery is already FAILED (retry allowed)', async () => {
-      // FAILED deliveries also have no guard — QStash retries or manual re-queues
-      // will attempt the adapter again. Documents current permissive behaviour.
+    it('allows FAILED delivery to be retried via atomic claim', async () => {
       const handleWebhook = vi.fn(async () => ({ ok: true }));
 
       mockGetAdapter.mockReturnValue({ handleWebhook });
@@ -377,6 +374,15 @@ describe('POST /api/webhooks/_process', () => {
       const res = await POST(postJson({ deliveryId: 'del-already-failed', provider: 'stripe' }));
 
       expect(res.status).toBe(200);
+
+      // Atomic claim was attempted with RECEIVED or FAILED eligibility
+      expect(mockUpdateMany).toHaveBeenCalledWith({
+        where: {
+          id: 'del-already-failed',
+          deliveryStatus: { in: ['RECEIVED', 'FAILED'] },
+        },
+        data: { deliveryStatus: 'PROCESSING' },
+      });
       expect(handleWebhook).toHaveBeenCalledTimes(1);
       expect(mockUpdate).toHaveBeenCalledWith({
         where: { id: 'del-already-failed' },
@@ -384,7 +390,31 @@ describe('POST /api/webhooks/_process', () => {
       });
     });
 
-    it('re-runs the adapter on every call — N identical requests produce N adapter invocations', async () => {
+    it('skips when the row is already claimed by another worker (claim count=0)', async () => {
+      const handleWebhook = vi.fn(async () => ({ ok: true }));
+
+      mockGetAdapter.mockReturnValue({ handleWebhook });
+      mockFindUnique.mockResolvedValue({
+        id: 'del-contended',
+        organizationId: 'org-1',
+        integrationConnectionId: null,
+        deliveryStatus: 'RECEIVED',
+        payloadJson: { type: 'test' },
+      });
+      /** Another worker already flipped RECEIVED -> PROCESSING between our
+       * findUnique and updateMany — the CAS matches no rows. */
+      mockUpdateMany.mockResolvedValueOnce({ count: 0 });
+
+      const res = await POST(postJson({ deliveryId: 'del-contended', provider: 'stripe' }));
+
+      expect(res.status).toBe(200);
+      const json = (await res.json()) as { skipped: boolean; reason: string };
+      expect(json).toEqual({ skipped: true, reason: 'already-claimed' });
+      expect(handleWebhook).not.toHaveBeenCalled();
+      expect(mockUpdate).not.toHaveBeenCalled();
+    });
+
+    it('three identical POSTs on an already-PROCESSED delivery invoke the adapter zero times', async () => {
       const handleWebhook = vi.fn(async () => ({ ok: true }));
 
       mockGetAdapter.mockReturnValue({ handleWebhook });
@@ -392,6 +422,7 @@ describe('POST /api/webhooks/_process', () => {
         id: 'del-idem',
         organizationId: 'org-1',
         integrationConnectionId: null,
+        deliveryStatus: 'PROCESSED',
         payloadJson: { type: 'test' },
       });
 
@@ -400,8 +431,9 @@ describe('POST /api/webhooks/_process', () => {
         expect(res.status).toBe(200);
       }
 
-      // Without a dedup guard the adapter is called once per request
-      expect(handleWebhook).toHaveBeenCalledTimes(3);
+      expect(handleWebhook).toHaveBeenCalledTimes(0);
+      expect(mockUpdateMany).not.toHaveBeenCalled();
+      expect(mockUpdate).not.toHaveBeenCalled();
     });
 
     it('marks FAILED with missingOrganizationId reason for jira when no org can be resolved', async () => {
