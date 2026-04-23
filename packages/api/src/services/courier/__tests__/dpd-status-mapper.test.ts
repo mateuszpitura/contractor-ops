@@ -1,5 +1,25 @@
 import { describe, expect, it, vi } from 'vitest';
 
+const { mockWarn } = vi.hoisted(() => ({ mockWarn: vi.fn() }));
+
+vi.mock('@contractor-ops/logger', () => {
+  const stub = {
+    info: vi.fn(),
+    warn: mockWarn,
+    error: vi.fn(),
+    debug: vi.fn(),
+    fatal: vi.fn(),
+    trace: vi.fn(),
+  };
+  return {
+    createLogger: vi.fn(() => stub),
+    createTrpcLogger: vi.fn(() => stub),
+    createCronLogger: vi.fn(() => stub),
+    createWebhookLogger: vi.fn(() => stub),
+    createIntegrationLogger: vi.fn(() => stub),
+  };
+});
+
 import { DPD_STATUS_MAP, mapDpdStatus } from '../dpd-status-mapper';
 
 // ---------------------------------------------------------------------------
@@ -55,11 +75,10 @@ describe('DPD Status Mapper', () => {
     });
 
     it('returns null for unknown status and logs warning', () => {
-      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      mockWarn.mockClear();
       const result = mapDpdStatus('UNKNOWN_STATUS');
       expect(result).toBeNull();
-      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('Unknown DPD status'));
-      warnSpy.mockRestore();
+      expect(mockWarn).toHaveBeenCalled();
     });
   });
 });

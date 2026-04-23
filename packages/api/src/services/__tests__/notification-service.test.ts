@@ -13,6 +13,8 @@ const {
   mockConnectionFindMany,
   mockConnectionFindFirst,
   mockSendAppEmail,
+  mockLogError,
+  mockLogWarn,
 } = vi.hoisted(() => ({
   mockFindFirst: vi.fn(),
   mockCreate: vi.fn(),
@@ -22,7 +24,27 @@ const {
   mockConnectionFindMany: vi.fn(),
   mockConnectionFindFirst: vi.fn(),
   mockSendAppEmail: vi.fn().mockResolvedValue(undefined),
+  mockLogError: vi.fn(),
+  mockLogWarn: vi.fn(),
 }));
+
+vi.mock('@contractor-ops/logger', () => {
+  const stub = {
+    info: vi.fn(),
+    warn: mockLogWarn,
+    error: mockLogError,
+    debug: vi.fn(),
+    fatal: vi.fn(),
+    trace: vi.fn(),
+  };
+  return {
+    createLogger: vi.fn(() => stub),
+    createTrpcLogger: vi.fn(() => stub),
+    createCronLogger: vi.fn(() => stub),
+    createWebhookLogger: vi.fn(() => stub),
+    createIntegrationLogger: vi.fn(() => stub),
+  };
+});
 
 vi.mock('@contractor-ops/db', () => ({
   prisma: {
@@ -301,7 +323,7 @@ describe('dispatch', () => {
 
   it('channel alert failure does not throw', async () => {
     mockPrefFindFirst.mockResolvedValue(defaultPrefs);
-    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    mockLogError.mockClear();
 
     mockConnectionFindMany
       .mockResolvedValueOnce([]) // per-recipient
@@ -327,12 +349,10 @@ describe('dispatch', () => {
       ),
     ).resolves.toBeUndefined();
 
-    expect(consoleSpy).toHaveBeenCalledWith(
+    expect(mockLogError).toHaveBeenCalledWith(
+      expect.objectContaining({ err: expect.any(Error) }),
       expect.stringContaining('channel alert failed'),
-      expect.any(Error),
     );
-
-    consoleSpy.mockRestore();
   });
 
   it('skips IN_APP creation when channelInApp is false', async () => {

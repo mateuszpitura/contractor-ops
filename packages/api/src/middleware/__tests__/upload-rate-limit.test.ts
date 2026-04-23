@@ -1,5 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+// Force the in-memory fallback path by clearing Upstash env BEFORE the
+// middleware module is evaluated (its `hasRedis` flag is module-scoped).
+vi.hoisted(() => {
+  delete process.env.UPSTASH_REDIS_REST_URL;
+  delete process.env.UPSTASH_REDIS_REST_TOKEN;
+});
+
 vi.mock('@sentry/nextjs', () => {
   const mockSpan = {
     setStatus: vi.fn(),
@@ -26,7 +33,7 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
 
 import { t } from '../../init.js';
 import { authedProcedure } from '../auth.js';
-import { uploadRateLimitMiddleware } from '../upload-rate-limit.js';
+import { __resetUploadRateLimitForTests, uploadRateLimitMiddleware } from '../upload-rate-limit.js';
 
 function ctxForUser(userId: string) {
   const session = {
@@ -71,12 +78,12 @@ describe('uploadRateLimitMiddleware', () => {
   const createCaller = t.createCallerFactory(router);
 
   beforeEach(() => {
-    vi.useFakeTimers();
-    vi.setSystemTime(new Date('2026-04-04T12:00:00.000Z'));
+    __resetUploadRateLimitForTests();
+    vi.restoreAllMocks();
   });
 
   afterEach(() => {
-    vi.useRealTimers();
+    vi.restoreAllMocks();
   });
 
   it('throws UNAUTHORIZED when user id is missing', async () => {
@@ -112,13 +119,18 @@ describe('uploadRateLimitMiddleware', () => {
   it('allows uploads again after the window expires', async () => {
     const uid = `u-win-${Math.random().toString(36).slice(2)}`;
     const c = createCaller(ctxForUser(uid));
+    const baseTime = Date.now();
+    let fakeNow = baseTime;
+    vi.spyOn(Date, 'now').mockImplementation(() => fakeNow);
+
     for (let i = 0; i < 10; i++) {
       await c.upload();
     }
     await expect(c.upload()).rejects.toMatchObject({
       code: 'TOO_MANY_REQUESTS',
     });
-    vi.advanceTimersByTime(61_000);
+    // Advance 61 seconds past the window — all timestamps now expire
+    fakeNow = baseTime + 61_000;
     const r = await c.upload();
     expect(r.remaining).toBe(9);
   });

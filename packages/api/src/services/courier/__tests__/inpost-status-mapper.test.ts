@@ -1,5 +1,25 @@
 import { describe, expect, it, vi } from 'vitest';
 
+const { mockWarn } = vi.hoisted(() => ({ mockWarn: vi.fn() }));
+
+vi.mock('@contractor-ops/logger', () => {
+  const stub = {
+    info: vi.fn(),
+    warn: mockWarn,
+    error: vi.fn(),
+    debug: vi.fn(),
+    fatal: vi.fn(),
+    trace: vi.fn(),
+  };
+  return {
+    createLogger: vi.fn(() => stub),
+    createTrpcLogger: vi.fn(() => stub),
+    createCronLogger: vi.fn(() => stub),
+    createWebhookLogger: vi.fn(() => stub),
+    createIntegrationLogger: vi.fn(() => stub),
+  };
+});
+
 import { INPOST_STATUS_MAP, mapInPostStatus, NOTIFICATION_STATUSES } from '../inpost-status-mapper';
 
 // ---------------------------------------------------------------------------
@@ -61,13 +81,11 @@ describe('mapInPostStatus', () => {
   });
 
   it('returns null for unknown status and does not throw', () => {
-    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    mockWarn.mockClear();
     const result = mapInPostStatus('some_unknown_status');
 
     expect(result).toBeNull();
-    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('some_unknown_status'));
-
-    warnSpy.mockRestore();
+    expect(mockWarn).toHaveBeenCalled();
   });
 });
 

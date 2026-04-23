@@ -3,6 +3,27 @@
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+const { mockLogWarn } = vi.hoisted(() => ({ mockLogWarn: vi.fn() }));
+
+vi.mock('@contractor-ops/logger', () => {
+  const stub = {
+    info: vi.fn(),
+    warn: mockLogWarn,
+    error: vi.fn(),
+    debug: vi.fn(),
+    fatal: vi.fn(),
+    trace: vi.fn(),
+  };
+  return {
+    createLogger: vi.fn(() => stub),
+    createTrpcLogger: vi.fn(() => stub),
+    createCronLogger: vi.fn(() => stub),
+    createWebhookLogger: vi.fn(() => stub),
+    createIntegrationLogger: vi.fn(() => stub),
+  };
+});
+
 import { checkShipmentTaskCompletion, handleEquipmentTaskStart } from '../equipment-workflow.js';
 
 const ORG_ID = 'org-eq-001';
@@ -242,9 +263,7 @@ function buildFullTxMock(
 describe('autoCreateInPostReturnShipment (via handleEquipmentTaskStart)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.spyOn(console, 'info').mockImplementation(() => undefined);
-    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
-    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    mockLogWarn.mockClear();
   });
 
   it('skips auto-shipment when org has no InPost courier config', async () => {
@@ -299,7 +318,10 @@ describe('autoCreateInPostReturnShipment (via handleEquipmentTaskStart)', () => 
     );
 
     expect(tx.shipment.create).not.toHaveBeenCalled();
-    expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('no preferred Paczkomat'));
+    expect(mockLogWarn).toHaveBeenCalledWith(
+      expect.objectContaining({ contractorId: CONTRACTOR_ID }),
+      expect.stringContaining('no preferred Paczkomat'),
+    );
   });
 
   it('creates shipment, shipment events, and return request on happy path', async () => {

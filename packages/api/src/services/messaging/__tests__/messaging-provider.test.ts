@@ -7,6 +7,26 @@ import type { MessagingProvider } from '../types.js';
 // Mock dependencies
 // ---------------------------------------------------------------------------
 
+const { mockLogWarn } = vi.hoisted(() => ({ mockLogWarn: vi.fn() }));
+
+vi.mock('@contractor-ops/logger', () => {
+  const stub = {
+    info: vi.fn(),
+    warn: mockLogWarn,
+    error: vi.fn(),
+    debug: vi.fn(),
+    fatal: vi.fn(),
+    trace: vi.fn(),
+  };
+  return {
+    createLogger: vi.fn(() => stub),
+    createTrpcLogger: vi.fn(() => stub),
+    createCronLogger: vi.fn(() => stub),
+    createWebhookLogger: vi.fn(() => stub),
+    createIntegrationLogger: vi.fn(() => stub),
+  };
+});
+
 vi.mock('@contractor-ops/db', () => ({
   prisma: {
     integrationConnection: {
@@ -254,7 +274,7 @@ describe('TeamsMessagingProvider.sendChannelAlert', () => {
       },
     } as never);
 
-    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    mockLogWarn.mockClear();
 
     await teamsProvider.sendChannelAlert({
       organizationId: 'org-1',
@@ -267,20 +287,17 @@ describe('TeamsMessagingProvider.sendChannelAlert', () => {
       viewUrl: 'https://example.com',
     });
 
-    expect(warnSpy).toHaveBeenCalledWith(
-      expect.stringContaining(
-        'No ConversationReference for channel 19:missing-channel@thread.tacv2',
-      ),
+    expect(mockLogWarn).toHaveBeenCalledWith(
+      expect.objectContaining({ channelId: '19:missing-channel@thread.tacv2' }),
+      expect.stringContaining('no ConversationReference for channel'),
     );
-
-    warnSpy.mockRestore();
   });
 
   it('returns early when no MICROSOFT_TEAMS connection exists', async () => {
     const { prisma } = await import('@contractor-ops/db');
     vi.mocked(prisma.integrationConnection.findFirst).mockResolvedValue(null);
 
-    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    mockLogWarn.mockClear();
 
     await teamsProvider.sendChannelAlert({
       organizationId: 'org-1',
@@ -293,11 +310,10 @@ describe('TeamsMessagingProvider.sendChannelAlert', () => {
       viewUrl: 'https://example.com',
     });
 
-    expect(warnSpy).toHaveBeenCalledWith(
-      expect.stringContaining('No MICROSOFT_TEAMS connection for org org-1'),
+    expect(mockLogWarn).toHaveBeenCalledWith(
+      expect.objectContaining({ organizationId: 'org-1' }),
+      expect.stringContaining('no MICROSOFT_TEAMS connection for org'),
     );
-
-    warnSpy.mockRestore();
   });
 });
 

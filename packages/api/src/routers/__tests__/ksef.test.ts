@@ -80,13 +80,23 @@ vi.mock('@sentry/nextjs', () => {
   };
 });
 
-vi.mock('@contractor-ops/logger', () => ({
-  createTrpcLogger: vi.fn(() => ({
+vi.mock('@contractor-ops/logger', () => {
+  const stub = {
     info: vi.fn(),
     warn: vi.fn(),
     error: vi.fn(),
-  })),
-}));
+    debug: vi.fn(),
+    fatal: vi.fn(),
+    trace: vi.fn(),
+  };
+  return {
+    createTrpcLogger: vi.fn(() => stub),
+    createLogger: vi.fn(() => stub),
+    createCronLogger: vi.fn(() => stub),
+    createWebhookLogger: vi.fn(() => stub),
+    createIntegrationLogger: vi.fn(() => stub),
+  };
+});
 
 vi.mock('@contractor-ops/logger/metrics', () => ({
   metrics: { increment: vi.fn(), distribution: vi.fn(), histogram: vi.fn() },
