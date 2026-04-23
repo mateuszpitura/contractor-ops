@@ -35,16 +35,13 @@
 //       to run on rows whose validationStatus is still VALID.
 
 import { createHash } from 'node:crypto';
-
-import { logger } from '@contractor-ops/logger';
-
 import type { PrismaClient } from '@contractor-ops/db';
-import {
-  Prisma,
-  type InvoiceIntakeProfileLevel,
-  type InvoiceIntakeStatus,
-  type InvoiceIntakeValidationStatus,
+import type {
+  InvoiceIntakeProfileLevel,
+  InvoiceIntakeStatus,
+  InvoiceIntakeValidationStatus,
 } from '@contractor-ops/db/generated/prisma/client';
+import { Prisma } from '@contractor-ops/db/generated/prisma/client';
 import type {
   ParsedXrechnung,
   ParsedZugferd,
@@ -56,6 +53,7 @@ import {
   parseZugferdPdf,
   validateZugferdEmbeddedXml,
 } from '@contractor-ops/einvoice';
+import { createLogger } from '@contractor-ops/logger';
 
 import { putObjectAndSignDownload, putObjectString } from './r2.js';
 
@@ -122,7 +120,7 @@ export interface IntakeServiceDeps {
   now?: () => Date;
 }
 
-const log = logger.child({ module: 'invoice-intake-service' });
+const log = createLogger({ module: 'invoice-intake-service' });
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -152,12 +150,10 @@ function makeError(
   message: string,
   details?: unknown,
 ): IntakeServiceError {
-  return details !== undefined ? { code, message, details } : { code, message };
+  return details === undefined ? { code, message } : { code, message, details };
 }
 
-function mapConformanceToProfileLevel(
-  level: ZugferdConformanceLevel,
-): InvoiceIntakeProfileLevel {
+function mapConformanceToProfileLevel(level: ZugferdConformanceLevel): InvoiceIntakeProfileLevel {
   // The DB enum exposes COMFORT / XRECHNUNG / EXTENDED; the parser may
   // return the same three, so this map is almost identity but keeps the
   // Prisma-typed column shielded from einvoice package enum drift.
@@ -211,9 +207,7 @@ function flattenWarnings(report: XRechnungValidationReport): string[] {
   return out;
 }
 
-function deriveValidationStatus(
-  report: XRechnungValidationReport,
-): InvoiceIntakeValidationStatus {
+function deriveValidationStatus(report: XRechnungValidationReport): InvoiceIntakeValidationStatus {
   switch (report.status) {
     case 'VALID':
       return 'VALID';
@@ -303,11 +297,9 @@ export async function uploadAndPersist(
   // ── 6. KoSIT validation (3-layer) ────────────────────────────────────────
   const report = await validate(extractedXml);
   if (isXsdFailure(report)) {
-    throw makeError(
-      'CII_XSD_INVALID',
-      'Embedded XML failed XSD (layer-1) validation',
-      { errors: firstXsdErrors(report, 5) },
-    );
+    throw makeError('CII_XSD_INVALID', 'Embedded XML failed XSD (layer-1) validation', {
+      errors: firstXsdErrors(report, 5),
+    });
   }
 
   const validationStatus = deriveValidationStatus(report);
@@ -317,8 +309,7 @@ export async function uploadAndPersist(
   const shaPrefix = rawSha.slice(0, 16);
   const keyBase = `einvoice-intake/${input.orgId}`;
   const rawKey = `${keyBase}/${shaPrefix}.${input.fileKind === 'pdf' ? 'pdf' : 'xml'}`;
-  const extractedKey =
-    input.fileKind === 'pdf' ? `${keyBase}/${shaPrefix}-extracted.xml` : rawKey;
+  const extractedKey = input.fileKind === 'pdf' ? `${keyBase}/${shaPrefix}-extracted.xml` : rawKey;
   const reportKey = `${keyBase}/${shaPrefix}-${report.ruleSetVersion}-report.html`;
 
   await r2.putObjectAndSignDownload({
@@ -352,9 +343,7 @@ export async function uploadAndPersist(
   const invoiceNumber = invoice.id || null;
   const invoiceDate = invoice.issueDate ? new Date(invoice.issueDate) : null;
   const totalMinor =
-    typeof invoice.taxInclusiveAmount === 'number'
-      ? BigInt(invoice.taxInclusiveAmount)
-      : null;
+    typeof invoice.taxInclusiveAmount === 'number' ? BigInt(invoice.taxInclusiveAmount) : null;
   const currency = invoice.currencyCode || null;
 
   try {
@@ -413,10 +402,7 @@ export async function uploadAndPersist(
         select: { id: true },
       });
       if (raced) {
-        log.info(
-          { orgId: input.orgId, intakeId: raced.id },
-          'intake dedup hit (race)',
-        );
+        log.info({ orgId: input.orgId, intakeId: raced.id }, 'intake dedup hit (race)');
         return { kind: 'DEDUP_RETURNED', intakeId: raced.id };
       }
     }
@@ -447,10 +433,7 @@ export interface ConfirmMatchInput {
  * be matched; re-matching a row that is already MATCHED is a precondition
  * error (callers should reject first).
  */
-export async function confirmMatch(
-  db: PrismaClient,
-  input: ConfirmMatchInput,
-): Promise<void> {
+export async function confirmMatch(db: PrismaClient, input: ConfirmMatchInput): Promise<void> {
   const intake = await db.invoiceIntakeRequest.findUnique({
     where: { id: input.intakeId },
     select: {
@@ -511,10 +494,7 @@ export async function acknowledgeValidation(
   if (!intake || intake.organizationId !== input.orgId) {
     throw makeError('NOT_FOUND', `Intake ${input.intakeId} not found`);
   }
-  if (
-    intake.validationStatus !== 'WARNINGS' &&
-    intake.validationStatus !== 'INVALID'
-  ) {
+  if (intake.validationStatus !== 'WARNINGS' && intake.validationStatus !== 'INVALID') {
     throw makeError(
       'VALIDATION_NOT_REQUIRED',
       `Intake ${input.intakeId} validationStatus=${intake.validationStatus} requires no acknowledgement`,
@@ -615,9 +595,7 @@ export async function convertToInvoice(
     taxBreakdown?: Array<{ taxAmountMinor?: number }>;
   };
 
-  const issueDate = parsed.issueDate
-    ? new Date(parsed.issueDate)
-    : now();
+  const issueDate = parsed.issueDate ? new Date(parsed.issueDate) : now();
   const dueDate = parsed.dueDate ? new Date(parsed.dueDate) : issueDate;
   const currency = (parsed.currencyCode ?? 'EUR').toUpperCase();
   const subtotalMinor = parsed.taxExclusiveAmount ?? 0;
@@ -625,10 +603,7 @@ export async function convertToInvoice(
   const amountToPayMinor = parsed.payableAmount ?? totalMinor;
   const vatAmountMinor =
     parsed.taxBreakdown && parsed.taxBreakdown.length > 0
-      ? parsed.taxBreakdown.reduce(
-          (acc, row) => acc + (row.taxAmountMinor ?? 0),
-          0,
-        )
+      ? parsed.taxBreakdown.reduce((acc, row) => acc + (row.taxAmountMinor ?? 0), 0)
       : totalMinor - subtotalMinor;
 
   const invoiceNumber = parsed.id || intake.extractedInvoiceNumber || `INTAKE-${intake.id}`;
@@ -641,7 +616,7 @@ export async function convertToInvoice(
     organizationId: input.orgId,
     lineNumber: line.lineNumber ?? idx + 1,
     description: line.description ?? '',
-    quantity: line.quantity != null ? line.quantity : null,
+    quantity: line.quantity == null ? null : line.quantity,
     unit: line.unit ?? null,
     unitPriceMinor: line.unitPriceMinor ?? null,
     netAmountMinor: line.netAmountMinor ?? null,
@@ -707,15 +682,9 @@ export interface RejectInput {
  * Close an intake with a human-supplied reason. Blocked on already-CONVERTED
  * rows — those must be cancelled at the Invoice layer, not the intake layer.
  */
-export async function reject(
-  db: PrismaClient,
-  input: RejectInput,
-): Promise<void> {
+export async function reject(db: PrismaClient, input: RejectInput): Promise<void> {
   if (input.reason.trim().length < 3) {
-    throw makeError(
-      'REASON_TOO_SHORT',
-      `Rejection reason must be at least 3 characters`,
-    );
+    throw makeError('REASON_TOO_SHORT', `Rejection reason must be at least 3 characters`);
   }
 
   const intake = await db.invoiceIntakeRequest.findUnique({
@@ -726,10 +695,7 @@ export async function reject(
     throw makeError('NOT_FOUND', `Intake ${input.intakeId} not found`);
   }
   if (intake.status === 'CONVERTED') {
-    throw makeError(
-      'INVALID_STATE_TRANSITION',
-      `Cannot reject intake in status ${intake.status}`,
-    );
+    throw makeError('INVALID_STATE_TRANSITION', `Cannot reject intake in status ${intake.status}`);
   }
 
   await db.invoiceIntakeRequest.update({
@@ -740,4 +706,3 @@ export async function reject(
     },
   });
 }
-

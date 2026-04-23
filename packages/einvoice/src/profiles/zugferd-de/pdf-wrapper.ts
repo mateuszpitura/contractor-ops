@@ -31,21 +31,10 @@
 import fs from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 
-import { logger } from '@contractor-ops/logger';
-import {
-  AFRelationship,
-  PDFDocument,
-  PDFHexString,
-  PDFName,
-  PDFNumber,
-  PDFString,
-} from 'pdf-lib';
-
-import {
-  type ZugferdConformanceLevel,
-  ZUGFERD_ATTACHMENT_FILENAME,
-  ZUGFERD_ATTACHMENT_MIME,
-} from './constants.js';
+import { createLogger } from '@contractor-ops/logger';
+import { AFRelationship, PDFDocument, PDFHexString, PDFName, PDFNumber, PDFString } from 'pdf-lib';
+import type { ZugferdConformanceLevel } from './constants.js';
+import { ZUGFERD_ATTACHMENT_FILENAME, ZUGFERD_ATTACHMENT_MIME } from './constants.js';
 import { buildZugferdXmpPacket } from './xmp-template.js';
 
 // Path resolves at module-load via import.meta.url so the helper works from
@@ -78,7 +67,7 @@ export async function wrapToPdfA3(
   ciiXml: string,
   opts: WrapOpts,
 ): Promise<Uint8Array> {
-  const log = logger.child({ module: 'zugferd-de/pdf-wrapper' });
+  const log = createLogger({ module: 'zugferd-de/pdf-wrapper' });
 
   // 1. Load base PDF, disabling pdf-lib's auto-metadata refresh so our
   //    Info-dict writes later aren't stomped.
@@ -151,10 +140,7 @@ export async function wrapToPdfA3(
   //    producedAt + title to seed a 16-byte synthetic ID.
   const idSeed = `${opts.documentTitle}|${opts.producedAt.toISOString()}`;
   const idHex = hashTo16Bytes(idSeed);
-  const idArray = doc.context.obj([
-    PDFHexString.of(idHex),
-    PDFHexString.of(idHex),
-  ]);
+  const idArray = doc.context.obj([PDFHexString.of(idHex), PDFHexString.of(idHex)]);
   doc.context.trailerInfo.ID = idArray;
 
   // 7. Save. useObjectStreams=false because PDF/A-3 rejects several object
@@ -162,10 +148,7 @@ export async function wrapToPdfA3(
   //    globally is the safest default. addDefaultPage=false avoids pdf-lib
   //    appending a blank page on empty-doc edge cases.
   const out = await doc.save({ useObjectStreams: false, addDefaultPage: false });
-  log.debug(
-    { bytes: out.length, conformanceLevel: opts.conformanceLevel },
-    'wrapped PDF/A-3',
-  );
+  log.debug({ bytes: out.length, conformanceLevel: opts.conformanceLevel }, 'wrapped PDF/A-3');
   return out;
 }
 
@@ -182,8 +165,8 @@ export async function wrapToPdfA3(
 function hashTo16Bytes(seed: string): string {
   // Simple FNV-1a 64-bit hash, repeated twice (suffixing the counter) to
   // get 128 bits. Byte-stable because JS string ops are deterministic.
-  let h0 = fnv1a64(seed + ':0');
-  let h1 = fnv1a64(seed + ':1');
+  const h0 = fnv1a64(seed + ':0');
+  const h1 = fnv1a64(seed + ':1');
   const toHex = (n: bigint): string => n.toString(16).padStart(16, '0');
   return toHex(h0) + toHex(h1);
 }

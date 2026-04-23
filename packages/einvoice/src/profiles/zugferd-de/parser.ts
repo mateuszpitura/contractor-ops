@@ -25,7 +25,9 @@
 //
 // Logging uses the shared Pino root logger via `.child({ module })`.
 
+import { createLogger } from '@contractor-ops/logger';
 import {
+  decodePDFRawStream,
   PDFArray,
   PDFDict,
   PDFDocument,
@@ -34,19 +36,10 @@ import {
   PDFRawStream,
   PDFStream,
   PDFString,
-  decodePDFRawStream,
 } from 'pdf-lib';
-
-import { logger } from '@contractor-ops/logger';
-
-import {
-  type ParsedXrechnung,
-  parseXrechnungCii,
-} from '../xrechnung-de/parser.js';
-import {
-  ZUGFERD_AF_RELATIONSHIP,
-  ZUGFERD_ATTACHMENT_FILENAME,
-} from './constants.js';
+import type { ParsedXrechnung } from '../xrechnung-de/parser.js';
+import { parseXrechnungCii } from '../xrechnung-de/parser.js';
+import { ZUGFERD_AF_RELATIONSHIP, ZUGFERD_ATTACHMENT_FILENAME } from './constants.js';
 
 // ---------------------------------------------------------------------------
 // Public types
@@ -69,7 +62,7 @@ export type ZugferdParserError =
   | { code: 'ZUGFERD_PDF_UNREADABLE'; message: string }
   | { code: 'ZUGFERD_NO_XML_ATTACHMENT'; message: string };
 
-const log = logger.child({ module: 'zugferd-de/parser' });
+const log = createLogger({ module: 'zugferd-de/parser' });
 
 // ---------------------------------------------------------------------------
 // Public API
@@ -80,9 +73,7 @@ const log = logger.child({ module: 'zugferd-de/parser' });
  * delegate to the XRechnung CII parser, and return the parsed envelope plus
  * the raw bytes + extracted XML for persistence.
  */
-export async function parseZugferdPdf(
-  bytes: Uint8Array,
-): Promise<ParsedZugferd> {
+export async function parseZugferdPdf(bytes: Uint8Array): Promise<ParsedZugferd> {
   let doc: PDFDocument;
   try {
     doc = await PDFDocument.load(bytes, {
@@ -251,8 +242,7 @@ function extractStreamFromFileSpec(spec: PDFDict): Uint8Array | null {
   // (Flate-encoded) stream, but this guard means we fail gracefully rather
   // than crash on exotic writers.
   const rawStream =
-    ef.lookupMaybe(PDFName.of('F'), PDFStream) ??
-    ef.lookupMaybe(PDFName.of('UF'), PDFStream);
+    ef.lookupMaybe(PDFName.of('F'), PDFStream) ?? ef.lookupMaybe(PDFName.of('UF'), PDFStream);
   if (!rawStream) return null;
   if (!(rawStream instanceof PDFRawStream)) {
     log.warn(

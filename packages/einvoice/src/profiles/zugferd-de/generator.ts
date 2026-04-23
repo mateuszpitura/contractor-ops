@@ -16,10 +16,9 @@
 // / EXTENDED are accepted at the type-level for future use but currently
 // rejected as well (belt-and-braces).
 
-import { logger } from '@contractor-ops/logger';
-
-import { generateXRechnungCii } from '../xrechnung-de/generator.js';
+import { createLogger } from '@contractor-ops/logger';
 import type { EInvoice } from '../../types/invoice.js';
+import { generateXRechnungCii } from '../xrechnung-de/generator.js';
 
 import type { ZugferdConformanceLevel } from './constants.js';
 import { renderInvoiceToPdfBuffer } from './invoice-template.js';
@@ -66,10 +65,8 @@ export class ZugferdLevelUnsupportedForOutput extends Error {
  * embedded CII XML. Returns the final byte stream ready to stream back
  * to the caller or upload to R2.
  */
-export async function generateZugferdPdf(
-  input: GenerateZugferdInput,
-): Promise<Uint8Array> {
-  const log = logger.child({
+export async function generateZugferdPdf(input: GenerateZugferdInput): Promise<Uint8Array> {
+  const log = createLogger({
     module: 'zugferd-de/generator',
     invoiceId: input.invoice.id,
   });
@@ -98,9 +95,6 @@ export async function generateZugferdPdf(
   log.debug('structural sanity check');
   await assertZugferdStructure(wrapped);
 
-  log.info(
-    { bytes: wrapped.length, invoiceId: input.invoice.id },
-    'ZUGFeRD PDF/A-3 generated',
-  );
+  log.info({ bytes: wrapped.length, invoiceId: input.invoice.id }, 'ZUGFeRD PDF/A-3 generated');
   return wrapped;
 }

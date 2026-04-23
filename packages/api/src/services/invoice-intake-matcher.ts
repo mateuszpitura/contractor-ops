@@ -37,9 +37,8 @@
 //     supplier VAT-ID because it is a business identifier, not personal
 //     data. We NEVER log the supplier name or extracted normalised name.
 
-import { logger } from '@contractor-ops/logger';
-
 import type { PrismaClient } from '@contractor-ops/db';
+import { createLogger } from '@contractor-ops/logger';
 
 // ---------------------------------------------------------------------------
 // Public types
@@ -62,7 +61,7 @@ export interface ExtractedSupplier {
   supplierName: string;
 }
 
-const log = logger.child({ module: 'invoice-intake-matcher' });
+const log = createLogger({ module: 'invoice-intake-matcher' });
 
 // ---------------------------------------------------------------------------
 // Scoring constants (exported for test assertions)
@@ -81,25 +80,26 @@ export const MAX_CANDIDATES = 5;
 
 // Common corporate-form suffixes stripped during normalisation. Uses a
 // non-capturing word-boundary group so "Alpha GmbH" becomes "alpha".
-const CORP_FORM_RE =
-  /\b(GmbH|UG|AG|Ltd\.?|Limited|Inc\.?|KG|OHG|GbR|e\.V\.|SE)\b/gi;
+const CORP_FORM_RE = /\b(GmbH|UG|AG|Ltd\.?|Limited|Inc\.?|KG|OHG|GbR|e\.V\.|SE)\b/gi;
 
 /**
  * Lowercase, collapse inner whitespace, strip common corporate-form suffixes,
  * and trim. Idempotent and deterministic for stable fuzzy comparison.
  */
 export function normaliseContractorName(raw: string): string {
-  return raw
-    .toLowerCase()
-    .trim()
-    .replace(/\s+/g, ' ')
-    .replace(CORP_FORM_RE, '')
-    // Drop trailing punctuation left behind when a corporate-form token with
-    // an optional period was stripped (e.g. "Ltd." loses "Ltd" via \b match,
-    // leaving a stray "."). Also strips stray commas.
-    .replace(/[.,]+\s*$/g, '')
-    .replace(/\s+/g, ' ')
-    .trim();
+  return (
+    raw
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, ' ')
+      .replace(CORP_FORM_RE, '')
+      // Drop trailing punctuation left behind when a corporate-form token with
+      // an optional period was stripped (e.g. "Ltd." loses "Ltd" via \b match,
+      // leaving a stray "."). Also strips stray commas.
+      .replace(/[.,]+\s*$/g, '')
+      .replace(/\s+/g, ' ')
+      .trim()
+  );
 }
 
 /**
@@ -320,9 +320,7 @@ export async function rankIntakeCandidates(
             displayName: contractor.displayName,
             vatIdentifier: contractor.vatId,
             score: SCORE_FUZZY_BASE - distance * 5,
-            reasons: [
-              { reason: 'FUZZY_NAME', detail: `distance ${distance}` },
-            ],
+            reasons: [{ reason: 'FUZZY_NAME', detail: `distance ${distance}` }],
           });
         }
       }

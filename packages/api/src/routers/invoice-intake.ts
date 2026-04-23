@@ -17,7 +17,7 @@
 // `invoice-intake-service.ts`. We translate each `code` to the appropriate
 // tRPC error code at the boundary.
 
-import { logger } from '@contractor-ops/logger';
+import { createLogger } from '@contractor-ops/logger';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 
@@ -25,18 +25,15 @@ import { router } from '../init.js';
 import { requirePermission } from '../middleware/rbac.js';
 import { tenantProcedure } from '../middleware/tenant.js';
 import { uploadRateLimitMiddleware } from '../middleware/upload-rate-limit.js';
-import {
-  rankIntakeCandidates,
-  type MatchCandidate,
-} from '../services/invoice-intake-matcher.js';
+import type { MatchCandidate } from '../services/invoice-intake-matcher.js';
+import { rankIntakeCandidates } from '../services/invoice-intake-matcher.js';
+import type { IntakeServiceErrorCode, UploadResult } from '../services/invoice-intake-service.js';
 import {
   acknowledgeValidation as svcAcknowledgeValidation,
   confirmMatch as svcConfirmMatch,
   convertToInvoice as svcConvertToInvoice,
   reject as svcReject,
   uploadAndPersist,
-  type IntakeServiceErrorCode,
-  type UploadResult,
 } from '../services/invoice-intake-service.js';
 import { signExistingDownload } from '../services/r2.js';
 
@@ -46,13 +43,7 @@ import { signExistingDownload } from '../services/r2.js';
 
 const intakeIdInput = z.object({ intakeId: z.string().cuid() });
 
-const listStatusValues = [
-  'PARSED',
-  'NEEDS_REVIEW',
-  'MATCHED',
-  'CONVERTED',
-  'REJECTED',
-] as const;
+const listStatusValues = ['PARSED', 'NEEDS_REVIEW', 'MATCHED', 'CONVERTED', 'REJECTED'] as const;
 
 const listByOrgInput = z.object({
   status: z.enum(listStatusValues).optional(),
@@ -108,9 +99,7 @@ function isIntakeServiceError(
  * validator (ZUGFeRD_*, CII_*, etc). The parser throws
  * `{ code: string, ... }` shapes without an Error prototype.
  */
-function hasStringCode(
-  err: unknown,
-): err is { code: string; message?: string } {
+function hasStringCode(err: unknown): err is { code: string; message?: string } {
   if (err === null || typeof err !== 'object') return false;
   return typeof (err as { code?: unknown }).code === 'string';
 }
@@ -192,9 +181,7 @@ async function loadIntakeScoped(
   intakeId: string,
   organizationId: string,
 ): Promise<IntakeRowSummary | null> {
-  const row = (await (
-    db.invoiceIntakeRequest.findUnique as (args: unknown) => Promise<unknown>
-  )({
+  const row = (await (db.invoiceIntakeRequest.findUnique as (args: unknown) => Promise<unknown>)({
     where: { id: intakeId },
     select: {
       id: true,
@@ -232,7 +219,7 @@ export const invoiceIntakeRouter = router({
     .use(uploadRateLimitMiddleware)
     .input(uploadInput)
     .mutation(async ({ ctx, input }): Promise<UploadResult> => {
-      const log = logger.child({
+      const log = createLogger({
         module: 'invoice-intake-router',
         procedure: 'upload',
         orgId: ctx.organizationId,
@@ -249,10 +236,7 @@ export const invoiceIntakeRouter = router({
       } catch (err) {
         const trpcErr = mapIntakeErrorToTrpc(err);
         if (trpcErr.code === 'INTERNAL_SERVER_ERROR') {
-          log.error(
-            { err: err instanceof Error ? err.message : String(err) },
-            'upload failed',
-          );
+          log.error({ err: err instanceof Error ? err.message : String(err) }, 'upload failed');
         }
         throw trpcErr;
       }
@@ -429,18 +413,11 @@ export const invoiceIntakeRouter = router({
     .use(requirePermission({ invoice: ['read'] }))
     .input(intakeIdInput)
     .query(async ({ ctx, input }) => {
-      const intake = await loadIntakeScoped(
-        ctx.db as never,
-        input.intakeId,
-        ctx.organizationId,
-      );
-      if (!intake || !intake.rawFileKey) {
+      const intake = await loadIntakeScoped(ctx.db as never, input.intakeId, ctx.organizationId);
+      if (!(intake && intake.rawFileKey)) {
         throw new TRPCError({ code: 'NOT_FOUND', message: 'NOT_FOUND' });
       }
-      const { signedUrl, expiresInSeconds } = await signExistingDownload(
-        intake.rawFileKey,
-        300,
-      );
+      const { signedUrl, expiresInSeconds } = await signExistingDownload(intake.rawFileKey, 300);
       return { url: signedUrl, expiresInSeconds };
     }),
 
@@ -452,11 +429,7 @@ export const invoiceIntakeRouter = router({
     .use(requirePermission({ invoice: ['read'] }))
     .input(intakeIdInput)
     .query(async ({ ctx, input }) => {
-      const intake = await loadIntakeScoped(
-        ctx.db as never,
-        input.intakeId,
-        ctx.organizationId,
-      );
+      const intake = await loadIntakeScoped(ctx.db as never, input.intakeId, ctx.organizationId);
       if (!intake) {
         throw new TRPCError({ code: 'NOT_FOUND', message: 'NOT_FOUND' });
       }
@@ -476,11 +449,7 @@ export const invoiceIntakeRouter = router({
     .use(requirePermission({ invoice: ['read'] }))
     .input(intakeIdInput)
     .query(async ({ ctx, input }) => {
-      const intake = await loadIntakeScoped(
-        ctx.db as never,
-        input.intakeId,
-        ctx.organizationId,
-      );
+      const intake = await loadIntakeScoped(ctx.db as never, input.intakeId, ctx.organizationId);
       if (!intake) {
         throw new TRPCError({ code: 'NOT_FOUND', message: 'NOT_FOUND' });
       }

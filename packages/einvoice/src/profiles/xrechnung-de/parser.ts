@@ -35,9 +35,8 @@
 //   * T-62-02-02 (unsupported-level passthrough): hard throw + typed error.
 //   * T-62-02-03 (BOM parse failure): UTF-8 BOM is stripped before parsing.
 
+import { createLogger } from '@contractor-ops/logger';
 import { XMLParser } from 'fast-xml-parser';
-
-import { logger } from '@contractor-ops/logger';
 
 import type {
   EInvoice,
@@ -45,11 +44,11 @@ import type {
   EInvoiceParty,
   EInvoiceTaxSubtotal,
 } from '../../types/invoice.js';
+import type { ZugferdConformanceLevel } from '../zugferd-de/constants.js';
 import {
   GUIDELINE_URN_TO_LEVEL,
   UNSUPPORTED_GUIDELINE_URNS,
   ZUGFERD_DE_PROFILE_ID,
-  type ZugferdConformanceLevel,
 } from '../zugferd-de/constants.js';
 import { XRECHNUNG_DE_PROFILE_ID } from './constants.js';
 
@@ -95,14 +94,11 @@ const xmlParser = new XMLParser({
   // CII allows 1..N IncludedSupplyChainTradeLineItem and 0..N ApplicableTradeTax;
   // fast-xml-parser otherwise collapses a single child into a scalar object.
   isArray: (name: string) => {
-    return (
-      name === 'ram:IncludedSupplyChainTradeLineItem' ||
-      name === 'ram:ApplicableTradeTax'
-    );
+    return name === 'ram:IncludedSupplyChainTradeLineItem' || name === 'ram:ApplicableTradeTax';
   },
 });
 
-const log = logger.child({ module: 'xrechnung-de/parser' });
+const log = createLogger({ module: 'xrechnung-de/parser' });
 
 // ---------------------------------------------------------------------------
 // Small helpers
@@ -162,7 +158,7 @@ function fromCiiDate(value: unknown): string {
  * aggregate that wraps its text in `#text` (when attributes are present).
  */
 function nodeText(value: unknown): string | undefined {
-  if (value == null) return undefined;
+  if (value == null) return;
   if (typeof value === 'string') return value;
   if (typeof value === 'number') return String(value);
   if (typeof value === 'object') {
@@ -170,16 +166,16 @@ function nodeText(value: unknown): string | undefined {
     if (typeof rec['#text'] === 'string') return rec['#text'];
     if (typeof rec['#text'] === 'number') return String(rec['#text']);
   }
-  return undefined;
+  return;
 }
 
 /** Read `udt:DateTimeString` inside a date wrapper element. */
 function readDate(wrapper: Record<string, unknown> | undefined): string | undefined {
-  if (!wrapper) return undefined;
+  if (!wrapper) return;
   const udt = wrapper['udt:DateTimeString'];
-  if (!udt) return undefined;
+  if (!udt) return;
   const text = nodeText(udt);
-  if (text == null) return undefined;
+  if (text == null) return;
   return fromCiiDate(text);
 }
 
@@ -196,9 +192,7 @@ function parseParty(
     return { id: '', name: '' };
   }
   const name = nodeText(raw['ram:Name']) ?? '';
-  const legalOrg = raw['ram:SpecifiedLegalOrganization'] as
-    | Record<string, unknown>
-    | undefined;
+  const legalOrg = raw['ram:SpecifiedLegalOrganization'] as Record<string, unknown> | undefined;
   const id = nodeText(legalOrg?.['ram:ID']) ?? '';
 
   const postal = raw['ram:PostalTradeAddress'] as Record<string, unknown> | undefined;
@@ -222,8 +216,8 @@ function parseParty(
   return {
     id,
     name,
-    ...(address != null ? { address } : {}),
-    ...(country != null ? { country } : {}),
+    ...(address == null ? {} : { address }),
+    ...(country == null ? {} : { country }),
   };
 }
 
@@ -236,11 +230,9 @@ function parseLine(
   unmapped: Set<string>,
   basePath: string,
 ): EInvoiceLine {
-  const assoc = raw['ram:AssociatedDocumentLineDocument'] as
-    | Record<string, unknown>
-    | undefined;
+  const assoc = raw['ram:AssociatedDocumentLineDocument'] as Record<string, unknown> | undefined;
   const lineIdText = nodeText(assoc?.['ram:LineID']);
-  const lineNumber = lineIdText != null ? Number(lineIdText) : 0;
+  const lineNumber = lineIdText == null ? 0 : Number(lineIdText);
 
   const product = raw['ram:SpecifiedTradeProduct'] as Record<string, unknown> | undefined;
   const description = nodeText(product?.['ram:Name']) ?? '';
@@ -252,11 +244,9 @@ function parseLine(
     | Record<string, unknown>
     | undefined;
   const unitPriceText = netPrice ? nodeText(netPrice['ram:ChargeAmount']) : undefined;
-  const unitPriceMinor = unitPriceText != null ? toMinorUnits(unitPriceText) : undefined;
+  const unitPriceMinor = unitPriceText == null ? undefined : toMinorUnits(unitPriceText);
 
-  const lineDelivery = raw['ram:SpecifiedLineTradeDelivery'] as
-    | Record<string, unknown>
-    | undefined;
+  const lineDelivery = raw['ram:SpecifiedLineTradeDelivery'] as Record<string, unknown> | undefined;
   const billedQty = lineDelivery?.['ram:BilledQuantity'] as
     | Record<string, unknown>
     | string
@@ -282,13 +272,11 @@ function parseLine(
   const firstTax = Array.isArray(tradeTax) ? tradeTax[0] : tradeTax;
   const vatRate = firstTax ? nodeText(firstTax['ram:RateApplicablePercent']) : undefined;
 
-  const lineMonSum = lineSettlement?.[
-    'ram:SpecifiedTradeSettlementLineMonetarySummation'
-  ] as Record<string, unknown> | undefined;
-  const lineTotalText = lineMonSum
-    ? nodeText(lineMonSum['ram:LineTotalAmount'])
-    : undefined;
-  const netAmountMinor = lineTotalText != null ? toMinorUnits(lineTotalText) : undefined;
+  const lineMonSum = lineSettlement?.['ram:SpecifiedTradeSettlementLineMonetarySummation'] as
+    | Record<string, unknown>
+    | undefined;
+  const lineTotalText = lineMonSum ? nodeText(lineMonSum['ram:LineTotalAmount']) : undefined;
+  const netAmountMinor = lineTotalText == null ? undefined : toMinorUnits(lineTotalText);
 
   // Record unmapped sibling paths for downstream surface.
   const mappedTopKeys = new Set([
@@ -305,11 +293,11 @@ function parseLine(
   return {
     lineNumber,
     description,
-    ...(quantity != null ? { quantity } : {}),
-    ...(unit != null ? { unit } : {}),
-    ...(unitPriceMinor != null ? { unitPriceMinor } : {}),
-    ...(netAmountMinor != null ? { netAmountMinor } : {}),
-    ...(vatRate != null ? { vatRate } : {}),
+    ...(quantity == null ? {} : { quantity }),
+    ...(unit == null ? {} : { unit }),
+    ...(unitPriceMinor == null ? {} : { unitPriceMinor }),
+    ...(netAmountMinor == null ? {} : { netAmountMinor }),
+    ...(vatRate == null ? {} : { vatRate }),
   };
 }
 
@@ -317,17 +305,15 @@ function parseLine(
 // Tax breakdown mapping
 // ---------------------------------------------------------------------------
 
-function parseTaxSubtotal(
-  raw: Record<string, unknown>,
-): EInvoiceTaxSubtotal {
+function parseTaxSubtotal(raw: Record<string, unknown>): EInvoiceTaxSubtotal {
   const taxableText = nodeText(raw['ram:BasisAmount']);
   const taxText = nodeText(raw['ram:CalculatedAmount']);
   const categoryCode = nodeText(raw['ram:CategoryCode']) ?? 'S';
   const percentText = nodeText(raw['ram:RateApplicablePercent']);
 
   const base: EInvoiceTaxSubtotal = {
-    taxableAmountMinor: taxableText != null ? toMinorUnits(taxableText) : 0,
-    taxAmountMinor: taxText != null ? toMinorUnits(taxText) : 0,
+    taxableAmountMinor: taxableText == null ? 0 : toMinorUnits(taxableText),
+    taxAmountMinor: taxText == null ? 0 : toMinorUnits(taxText),
     taxCategory: categoryCode,
   };
 
@@ -405,9 +391,7 @@ export function parseXrechnungCii(xml: string): ParsedXrechnung {
   }
 
   // --- Context: guideline URN → profile level -----------------------------
-  const context = root['rsm:ExchangedDocumentContext'] as
-    | Record<string, unknown>
-    | undefined;
+  const context = root['rsm:ExchangedDocumentContext'] as Record<string, unknown> | undefined;
   const guideline = context?.['ram:GuidelineSpecifiedDocumentContextParameter'] as
     | Record<string, unknown>
     | undefined;
@@ -440,9 +424,7 @@ export function parseXrechnungCii(xml: string): ParsedXrechnung {
   }
 
   // --- Trade transaction --------------------------------------------------
-  const trade = root['rsm:SupplyChainTradeTransaction'] as
-    | Record<string, unknown>
-    | undefined;
+  const trade = root['rsm:SupplyChainTradeTransaction'] as Record<string, unknown> | undefined;
   if (!trade) {
     throw {
       code: 'CII_PARSE_FAILED',
@@ -453,12 +435,8 @@ export function parseXrechnungCii(xml: string): ParsedXrechnung {
   const agreement = trade['ram:ApplicableHeaderTradeAgreement'] as
     | Record<string, unknown>
     | undefined;
-  const supplierRaw = agreement?.['ram:SellerTradeParty'] as
-    | Record<string, unknown>
-    | undefined;
-  const customerRaw = agreement?.['ram:BuyerTradeParty'] as
-    | Record<string, unknown>
-    | undefined;
+  const supplierRaw = agreement?.['ram:SellerTradeParty'] as Record<string, unknown> | undefined;
+  const customerRaw = agreement?.['ram:BuyerTradeParty'] as Record<string, unknown> | undefined;
 
   const supplier = parseParty(
     supplierRaw,
@@ -501,18 +479,16 @@ export function parseXrechnungCii(xml: string): ParsedXrechnung {
     paymentTerms?.['ram:DueDateDateTime'] as Record<string, unknown> | undefined,
   );
 
-  const monSum = settlement[
-    'ram:SpecifiedTradeSettlementHeaderMonetarySummation'
-  ] as Record<string, unknown> | undefined;
+  const monSum = settlement['ram:SpecifiedTradeSettlementHeaderMonetarySummation'] as
+    | Record<string, unknown>
+    | undefined;
   const taxExclusiveAmount = monSum
     ? toMinorUnits(nodeText(monSum['ram:TaxBasisTotalAmount']) ?? '0')
     : 0;
   const taxInclusiveAmount = monSum
     ? toMinorUnits(nodeText(monSum['ram:GrandTotalAmount']) ?? '0')
     : 0;
-  const payableAmount = monSum
-    ? toMinorUnits(nodeText(monSum['ram:DuePayableAmount']) ?? '0')
-    : 0;
+  const payableAmount = monSum ? toMinorUnits(nodeText(monSum['ram:DuePayableAmount']) ?? '0') : 0;
 
   // --- Lines --------------------------------------------------------------
   const rawLines = trade['ram:IncludedSupplyChainTradeLineItem'] as
@@ -544,7 +520,7 @@ export function parseXrechnungCii(xml: string): ParsedXrechnung {
   const invoice: EInvoice = {
     id: invoiceId,
     issueDate,
-    ...(dueDate != null ? { dueDate } : {}),
+    ...(dueDate == null ? {} : { dueDate }),
     invoiceTypeCode,
     currencyCode,
     supplier,
@@ -554,8 +530,7 @@ export function parseXrechnungCii(xml: string): ParsedXrechnung {
     taxInclusiveAmount,
     payableAmount,
     taxBreakdown,
-    profileId:
-      profileLevel === 'XRECHNUNG' ? XRECHNUNG_DE_PROFILE_ID : ZUGFERD_DE_PROFILE_ID,
+    profileId: profileLevel === 'XRECHNUNG' ? XRECHNUNG_DE_PROFILE_ID : ZUGFERD_DE_PROFILE_ID,
   };
 
   return {
