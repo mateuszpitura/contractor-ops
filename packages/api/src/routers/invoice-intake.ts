@@ -261,11 +261,15 @@ export const invoiceIntakeRouter = router({
       };
       if (input.status) where.status = input.status;
 
+      // Stable cursor pagination needs a deterministic tiebreaker: createdAt
+      // has millisecond resolution and two rows created in the same tick
+      // would otherwise flicker across page boundaries. Order + cursor on
+      // id so the cursor unambiguously picks a single row.
       const rows = (await (
         ctx.db.invoiceIntakeRequest.findMany as (args: unknown) => Promise<unknown>
       )({
         where,
-        orderBy: { createdAt: 'desc' },
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
         take: input.limit + 1,
         ...(input.cursor ? { cursor: { id: input.cursor }, skip: 1 } : {}),
       })) as Array<{ id: string }>;
