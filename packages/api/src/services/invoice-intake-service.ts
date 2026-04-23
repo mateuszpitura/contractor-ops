@@ -90,7 +90,8 @@ export type IntakeServiceErrorCode =
   | 'INVALID_STATE_TRANSITION'
   | 'NOT_FOUND'
   | 'VALIDATION_NOT_REQUIRED'
-  | 'REASON_TOO_SHORT';
+  | 'REASON_TOO_SHORT'
+  | 'DUPLICATE_INVOICE_NUMBER';
 
 export interface IntakeServiceError {
   code: IntakeServiceErrorCode;
@@ -452,6 +453,33 @@ export async function confirmMatch(db: PrismaClient, input: ConfirmMatchInput): 
     );
   }
 
+  // Cross-tenant FK guard (defense-in-depth): Prisma's tenant extension
+  // scopes top-level where/data, but relation-level `include` loads are
+  // not re-scoped. Pre-check both FK targets live in the caller's org so
+  // a forged contractorId/contractId cannot cross tenant boundaries via
+  // later nested reads.
+  const contractor = await db.contractor.findFirst({
+    where: { id: input.contractorId, organizationId: input.orgId },
+    select: { id: true },
+  });
+  if (!contractor) {
+    throw makeError('NOT_FOUND', `Contractor ${input.contractorId} not found`);
+  }
+
+  if (input.contractId) {
+    const contract = await db.contract.findFirst({
+      where: {
+        id: input.contractId,
+        organizationId: input.orgId,
+        contractorId: input.contractorId,
+      },
+      select: { id: true },
+    });
+    if (!contract) {
+      throw makeError('NOT_FOUND', `Contract ${input.contractId} not found`);
+    }
+  }
+
   await db.invoiceIntakeRequest.update({
     where: { id: input.intakeId },
     data: {
@@ -626,34 +654,51 @@ export async function convertToInvoice(
   }));
 
   return db.$transaction(async tx => {
-    const invoice = await tx.invoice.create({
-      data: {
-        organizationId: input.orgId,
-        contractorId: intake.matchedContractorId,
-        contractId: intake.matchedContractId,
-        invoiceNumber,
-        source: 'PEPPOL',
-        sourceReference: `intake:${intake.id}`,
-        issueDate,
-        dueDate,
-        currency,
-        subtotalMinor,
-        vatAmountMinor: Number.isFinite(vatAmountMinor) ? vatAmountMinor : null,
-        totalMinor,
-        amountToPayMinor,
-        sellerTaxId,
-        sellerName,
-        buyerTaxId,
-        duplicateCheckHash,
-        lines: {
-          create: linesData.map(({ organizationId: _omit, ...rest }) => ({
-            organizationId: input.orgId,
-            ...rest,
-          })),
+    let invoice: { id: string };
+    try {
+      invoice = await tx.invoice.create({
+        data: {
+          organizationId: input.orgId,
+          contractorId: intake.matchedContractorId,
+          contractId: intake.matchedContractId,
+          invoiceNumber,
+          source: 'PEPPOL',
+          sourceReference: `intake:${intake.id}`,
+          issueDate,
+          dueDate,
+          currency,
+          subtotalMinor,
+          vatAmountMinor: Number.isFinite(vatAmountMinor) ? vatAmountMinor : null,
+          totalMinor,
+          amountToPayMinor,
+          sellerTaxId,
+          sellerName,
+          buyerTaxId,
+          duplicateCheckHash,
+          lines: {
+            create: linesData.map(({ organizationId: _omit, ...rest }) => ({
+              organizationId: input.orgId,
+              ...rest,
+            })),
+          },
         },
-      },
-      select: { id: true },
-    });
+        select: { id: true },
+      });
+    } catch (err) {
+      // Finding #5: GoBD requires that two intakes carrying the same
+      // supplier-issued invoice number cannot both produce real Invoice
+      // rows. The (organizationId, contractorId, invoiceNumber) unique
+      // index is the authoritative guard; surface it as a typed error
+      // so the router can map to CONFLICT rather than 500.
+      if (isUniqueConstraintViolation(err)) {
+        throw makeError(
+          'DUPLICATE_INVOICE_NUMBER',
+          `Invoice ${invoiceNumber} already exists for this contractor`,
+          { invoiceNumber },
+        );
+      }
+      throw err;
+    }
 
     await tx.invoiceIntakeRequest.update({
       where: { id: intake.id },

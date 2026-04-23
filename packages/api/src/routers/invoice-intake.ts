@@ -90,7 +90,8 @@ function isIntakeServiceError(
     code === 'INVALID_STATE_TRANSITION' ||
     code === 'NOT_FOUND' ||
     code === 'VALIDATION_NOT_REQUIRED' ||
-    code === 'REASON_TOO_SHORT'
+    code === 'REASON_TOO_SHORT' ||
+    code === 'DUPLICATE_INVOICE_NUMBER'
   );
 }
 
@@ -138,6 +139,11 @@ function mapIntakeErrorToTrpc(err: unknown): TRPCError {
         return new TRPCError({
           code: 'BAD_REQUEST',
           message: 'REASON_TOO_SHORT',
+        });
+      case 'DUPLICATE_INVOICE_NUMBER':
+        return new TRPCError({
+          code: 'CONFLICT',
+          message: 'DUPLICATE_INVOICE_NUMBER',
         });
     }
   }
