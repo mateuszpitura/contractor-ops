@@ -12,6 +12,7 @@
 
 import { CronMonitors, withCronMonitor } from '@contractor-ops/api/services/cron-monitor';
 import { runReassessmentTriggerScan } from '@contractor-ops/api/services/reassessment-trigger-scan';
+import { evaluate } from '@contractor-ops/feature-flags';
 import { createCronLogger } from '@contractor-ops/logger';
 import * as Sentry from '@sentry/nextjs';
 import type { NextRequest } from 'next/server';
@@ -31,6 +32,23 @@ function verifyCronSecret(request: NextRequest): boolean {
 export async function GET(request: NextRequest) {
   if (!verifyCronSecret(request)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  // Phase 64 D-08 — flag-off early return
+  const flagResult = evaluate('module.classification-engine', {
+    organizationId: 'CRON',
+    region: 'EU', // jurisdiction='ANY' — region doesn't affect evaluation
+  });
+  if (!flagResult.enabled) {
+    log.info(
+      {
+        event: 'CRON_SKIPPED_FLAG_OFF',
+        endpoint: 'classification-reassessment-triggers',
+        skippedAt: new Date().toISOString(),
+      },
+      'classification-reassessment-triggers cron skipped: flag disabled',
+    );
+    return NextResponse.json({ skipped: true, reason: 'FLAG_OFF' });
   }
 
   return Sentry.withMonitor(

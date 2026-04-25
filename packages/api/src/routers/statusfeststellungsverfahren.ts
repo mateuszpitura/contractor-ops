@@ -19,15 +19,15 @@ import { z } from 'zod';
 
 import { router } from '../init.js';
 import { requirePermission } from '../middleware/rbac.js';
-import { tenantProcedure } from '../middleware/tenant.js';
+import { classificationProcedure } from '../middleware/require-classification-flag.js';
 import { writeAuditLog } from '../services/audit-writer.js';
 
 const cuid = z.string().min(1);
 
-const contractorReadProcedure = tenantProcedure.use(
+const contractorReadProcedure = classificationProcedure.use(
   requirePermission({ contractor: ['read'] }),
 );
-const contractorUpdateProcedure = tenantProcedure.use(
+const contractorUpdateProcedure = classificationProcedure.use(
   requirePermission({ contractor: ['update'] }),
 );
 
@@ -59,16 +59,15 @@ const createInput = z
     },
   );
 
-const updateInput = z
-  .object({
-    id: cuid,
-    filedAt: z.coerce.date().optional(),
-    drvReference: z.string().min(1).max(100).optional(),
-    outcome: outcomeEnum.optional(),
-    validFrom: z.coerce.date().nullable().optional(),
-    validTo: z.coerce.date().nullable().optional(),
-    notes: z.string().max(2000).nullable().optional(),
-  });
+const updateInput = z.object({
+  id: cuid,
+  filedAt: z.coerce.date().optional(),
+  drvReference: z.string().min(1).max(100).optional(),
+  outcome: outcomeEnum.optional(),
+  validFrom: z.coerce.date().nullable().optional(),
+  validTo: z.coerce.date().nullable().optional(),
+  notes: z.string().max(2000).nullable().optional(),
+});
 
 const listInput = z.object({
   limit: z.number().int().min(1).max(100).default(50),
@@ -144,8 +143,7 @@ export const statusfeststellungsverfahrenRouter = router({
     // Cross-field validation after merge — reject updates that would leave a
     // SELBSTANDIG/ABHANGIG row without validFrom/validTo.
     const nextOutcome = input.outcome ?? existing.outcome;
-    const nextValidFrom =
-      input.validFrom === undefined ? existing.validFrom : input.validFrom;
+    const nextValidFrom = input.validFrom === undefined ? existing.validFrom : input.validFrom;
     const nextValidTo = input.validTo === undefined ? existing.validTo : input.validTo;
     if (
       (nextOutcome === 'SELBSTANDIG' || nextOutcome === 'ABHANGIG') &&

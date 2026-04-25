@@ -117,6 +117,25 @@ export const FLAGS = deepFreeze({
     jurisdiction: 'EU',
     owner: 'einvoice',
   },
+  // Phase 64 — Legal Compliance Hardening (LEGAL-08, LEGAL-09, LEGAL-10).
+  //
+  // Kill-switch for all classification features (IR35 + Scheinselbständigkeit).
+  // Default: false (ship dark — classification invisible until every disclaimer
+  // in packages/validators/src/legal/signoff-registry.json is APPROVED and the
+  // operator explicitly enables the toggle in Unleash per org).
+  //
+  // The app-side evaluator (evaluator.ts) overrides even a true Unleash result
+  // to false while any disclaimer has status 'PENDING' — preventing accidental
+  // exposure before legal sign-off (D-10).
+  'module.classification-engine': {
+    key: 'module.classification-engine',
+    description:
+      'Classification engine (IR35 + Scheinselbständigkeit assessments, SDS generation, DRV defense bundle, economic dependency scan). Ship dark — requires all disclaimer PENDING→APPROVED before enabling per-org.',
+    default: false,
+    category: 'module',
+    jurisdiction: 'ANY',
+    owner: 'legal-platform',
+  },
 } as const satisfies Record<string, FlagDefinition>);
 
 export type FlagKey = keyof typeof FLAGS;
@@ -132,6 +151,14 @@ export const FLAG_KEYS = Object.keys(FLAGS) as FlagKey[];
  * lowercase dot-namespaced kebab-case regex enforced by `flagDefinitionSchema`.
  */
 export const EINVOICE_IMPORT_ENABLED = 'einvoice.import-enabled' as const satisfies FlagKey;
+
+/**
+ * Typed alias for the classification-engine kill-switch flag. Referenced
+ * in layout.tsx gates, the requireClassificationFlag middleware, and the
+ * cron early-return guard. Use the constant rather than the string literal
+ * so renames propagate via tsc.
+ */
+export const CLASSIFICATION_ENGINE_FLAG = 'module.classification-engine' as const satisfies FlagKey;
 
 export function getFlagDefinition<K extends FlagKey>(key: K): (typeof FLAGS)[K] {
   return FLAGS[key];

@@ -12,7 +12,7 @@ import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 
 import { router } from '../init.js';
-import { tenantProcedure } from '../middleware/tenant.js';
+import { classificationProcedure } from '../middleware/require-classification-flag.js';
 
 const attestationSelect = {
   id: true,
@@ -42,7 +42,7 @@ const crossReferenceInput = z.object({
 
 export const ir35AttestationRouter = router({
   /** Return the attestation row for an engagement (if any). */
-  getForEngagement: tenantProcedure.input(getInput).query(async ({ input, ctx }) => {
+  getForEngagement: classificationProcedure.input(getInput).query(async ({ input, ctx }) => {
     const row = await ctx.db.ir35OtherClientAttestation.findUnique({
       where: { contractorAssignmentId: input.contractorAssignmentId },
       select: attestationSelect,
@@ -54,7 +54,7 @@ export const ir35AttestationRouter = router({
    * Upsert attestation for an engagement. `signedAt` is set server-side whenever
    * statementText or signedName changes to ensure the signature timestamp is trusted.
    */
-  upsert: tenantProcedure.input(upsertInput).mutation(async ({ input, ctx }) => {
+  upsert: classificationProcedure.input(upsertInput).mutation(async ({ input, ctx }) => {
     const now = new Date();
     const existing = await ctx.db.ir35OtherClientAttestation.findUnique({
       where: { contractorAssignmentId: input.contractorAssignmentId },
@@ -93,7 +93,7 @@ export const ir35AttestationRouter = router({
    * Never returns cross-tenant data — tenant scope is enforced by the Prisma
    * extension, and we additionally explicit-filter on ctx.organizationId below.
    */
-  getPlatformCrossReference: tenantProcedure
+  getPlatformCrossReference: classificationProcedure
     .input(crossReferenceInput)
     .query(async ({ input, ctx }) => {
       // Verify the contractor exists in this tenant before returning assignments.

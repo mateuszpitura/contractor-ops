@@ -15,11 +15,13 @@
 import { z } from 'zod';
 import { router } from '../init.js';
 import { requirePermission } from '../middleware/rbac.js';
-import { tenantProcedure } from '../middleware/tenant.js';
+import { classificationProcedure } from '../middleware/require-classification-flag.js';
 
 const cuid = z.string().min(1);
 
-const contractorReadProcedure = tenantProcedure.use(requirePermission({ contractor: ['read'] }));
+const contractorReadProcedure = classificationProcedure.use(
+  requirePermission({ contractor: ['read'] }),
+);
 
 const listInput = z.object({
   limit: z.number().int().min(1).max(100).default(50),

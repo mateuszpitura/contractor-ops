@@ -10,12 +10,14 @@ import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { router } from '../init.js';
 import { requirePermission } from '../middleware/rbac.js';
-import { tenantProcedure } from '../middleware/tenant.js';
+import { classificationProcedure } from '../middleware/require-classification-flag.js';
 
 const cuid = z.string().min(1);
 
-const contractorReadProcedure = tenantProcedure.use(requirePermission({ contractor: ['read'] }));
-const contractorUpdateProcedure = tenantProcedure.use(
+const contractorReadProcedure = classificationProcedure.use(
+  requirePermission({ contractor: ['read'] }),
+);
+const contractorUpdateProcedure = classificationProcedure.use(
   requirePermission({ contractor: ['update'] }),
 );
 
@@ -75,26 +77,28 @@ export const reassessmentTriggerRouter = router({
       return rows;
     }),
 
-  acknowledge: contractorUpdateProcedure.input(acknowledgeInput).mutation(async ({ ctx, input }) => {
-    const row = await ctx.db.reassessmentTrigger.findFirst({ where: { id: input.id } });
-    if (!row) {
-      throw new TRPCError({ code: 'NOT_FOUND', message: 'Reassessment trigger not found.' });
-    }
-    if (row.status !== 'OPEN') {
-      throw new TRPCError({
-        code: 'BAD_REQUEST',
-        message: 'Only OPEN triggers can be acknowledged.',
+  acknowledge: contractorUpdateProcedure
+    .input(acknowledgeInput)
+    .mutation(async ({ ctx, input }) => {
+      const row = await ctx.db.reassessmentTrigger.findFirst({ where: { id: input.id } });
+      if (!row) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Reassessment trigger not found.' });
+      }
+      if (row.status !== 'OPEN') {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Only OPEN triggers can be acknowledged.',
+        });
+      }
+      return ctx.db.reassessmentTrigger.update({
+        where: { id: input.id },
+        data: {
+          status: 'ACKNOWLEDGED',
+          acknowledgedByUserId: ctx.user.id,
+          acknowledgedAt: new Date(),
+        },
       });
-    }
-    return ctx.db.reassessmentTrigger.update({
-      where: { id: input.id },
-      data: {
-        status: 'ACKNOWLEDGED',
-        acknowledgedByUserId: ctx.user.id,
-        acknowledgedAt: new Date(),
-      },
-    });
-  }),
+    }),
 
   dismiss: contractorUpdateProcedure.input(dismissInput).mutation(async ({ ctx, input }) => {
     const row = await ctx.db.reassessmentTrigger.findFirst({ where: { id: input.id } });

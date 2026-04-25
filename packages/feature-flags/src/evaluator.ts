@@ -7,6 +7,30 @@ import type { EvalContext, FlagDefinition } from './schemas.js';
 
 const log = createLogger({ service: 'feature-flags' });
 
+// ---------------------------------------------------------------------------
+// Phase 64 D-10 — app-side override: even when Unleash returns true for
+// 'module.classification-engine', the app refuses to enable classification
+// if any disclaimer is still PENDING in the signoff registry.
+//
+// Implemented as a callback registered at app boot to avoid adding a
+// compile-time dependency from packages/feature-flags → packages/validators
+// (which would risk a circular dep). The callback is null by default —
+// safe fallback is no override (flag resolves to Unleash value).
+// ---------------------------------------------------------------------------
+
+let ClassificationDisclaimerGate: (() => boolean) | null = null;
+
+/**
+ * Register a disclaimer-gate callback. Called once at app startup from
+ * apps/web/src/lib/feature-flags-init.ts. Returns true when all classification
+ * disclaimers are APPROVED, preventing operator enabling before sign-off.
+ *
+ * @param fn - Returns true when all classification disclaimers are APPROVED.
+ */
+export function registerClassificationDisclaimerGate(fn: () => boolean): void {
+  ClassificationDisclaimerGate = fn;
+}
+
 export type EvalReason = 'jurisdiction-mismatch' | 'unleash' | 'client-error';
 
 export interface EvalResult {
@@ -76,5 +100,23 @@ export function evaluateAgainst(
 export function evaluate(key: FlagKey, ctx: EvalContext): EvalResult {
   const def = FLAGS[key];
   const client = getFlagClient(ctx.region);
-  return evaluateAgainst(def, ctx, client);
+  const base = evaluateAgainst(def, ctx, client);
+
+  // Phase 64 D-10 — classification disclaimer gate override
+  if (
+    key === 'module.classification-engine' &&
+    base.enabled &&
+    ClassificationDisclaimerGate !== null
+  ) {
+    const allApproved = ClassificationDisclaimerGate();
+    if (!allApproved) {
+      log.warn(
+        { organizationId: ctx.organizationId, flag: key },
+        'classification-engine flag overridden to false: disclaimer(s) PENDING',
+      );
+      return { enabled: false, reason: base.reason };
+    }
+  }
+
+  return base;
 }

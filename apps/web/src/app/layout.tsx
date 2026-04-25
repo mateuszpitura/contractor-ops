@@ -2,6 +2,9 @@ import type { Metadata } from 'next';
 import { Bricolage_Grotesque, JetBrains_Mono, Outfit } from 'next/font/google';
 import type { ReactNode } from 'react';
 
+// Phase 64 D-10 — register classification disclaimer gate at app boot
+import '@/lib/feature-flags-init';
+
 // Sentry: instrument client-side route transitions for performance tracing
 export { onRouterTransitionStart } from '@/sentry.client.config';
 

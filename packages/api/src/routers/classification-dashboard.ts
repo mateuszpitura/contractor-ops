@@ -20,11 +20,10 @@
 //     `ctx.db` (tenant extension) suffices. prismaRaw is NOT imported here.
 
 import { z } from 'zod';
-
-import { encodeCsvUtf8Bom, escapeCsvField, UTF8_BOM } from '../lib/csv.js';
 import { router } from '../init.js';
+import { encodeCsvUtf8Bom, escapeCsvField, UTF8_BOM } from '../lib/csv.js';
 import { requirePermission } from '../middleware/rbac.js';
-import { tenantProcedure } from '../middleware/tenant.js';
+import { classificationProcedure } from '../middleware/require-classification-flag.js';
 import { putObjectAndSignDownload } from '../services/r2.js';
 
 // ---------------------------------------------------------------------------
@@ -40,7 +39,7 @@ const marketInput = z.object({
 // (T-60-20 — dashboard must not bypass RBAC).
 // ---------------------------------------------------------------------------
 
-const contractorReadProcedure = tenantProcedure.use(
+const contractorReadProcedure = classificationProcedure.use(
   requirePermission({ contractor: ['read'] }),
 );
 
@@ -264,8 +263,12 @@ async function buildDashboardRows(ctx: DbCtx, market: 'GB' | 'DE'): Promise<Dash
 
     const verdict =
       market === 'GB'
-        ? (latest ? readIr35Verdict(latest.outcome) : null)
-        : (latest ? readDrvVerdict(latest.outcome) : null);
+        ? latest
+          ? readIr35Verdict(latest.outcome)
+          : null
+        : latest
+          ? readDrvVerdict(latest.outcome)
+          : null;
 
     return {
       engagementId: assignmentId,
@@ -274,17 +277,11 @@ async function buildDashboardRows(ctx: DbCtx, market: 'GB' | 'DE'): Promise<Dash
       latestVerdict: verdict,
       latestCompletedAt: (latest?.completedAt as Date) ?? null,
       latestScore: market === 'DE' && latest ? readDrvScore(latest.outcome) : null,
-      economicBand:
-        market === 'DE' && alert ? ((alert.currentBand as string) ?? null) : null,
-      billingShare:
-        market === 'DE' && alert
-          ? Number(alert.lastBillingShare ?? 0)
-          : null,
+      economicBand: market === 'DE' && alert ? ((alert.currentBand as string) ?? null) : null,
+      billingShare: market === 'DE' && alert ? Number(alert.lastBillingShare ?? 0) : null,
       openTrigger: triggerByAssignment.has(assignmentId),
-      drvOutcome:
-        market === 'DE' && drv ? ((drv.outcome as string) ?? null) : null,
-      drvValidTo:
-        market === 'DE' && drv ? ((drv.validTo as Date | null) ?? null) : null,
+      drvOutcome: market === 'DE' && drv ? ((drv.outcome as string) ?? null) : null,
+      drvValidTo: market === 'DE' && drv ? ((drv.validTo as Date | null) ?? null) : null,
     };
   });
 
@@ -346,30 +343,28 @@ export const classificationDashboardRouter = router({
    * this market. Completed = engagements with ≥1 classification assessment
    * of `status='completed'` (Pitfall 8 — drafts excluded).
    */
-  coverageByMarket: contractorReadProcedure
-    .input(marketInput)
-    .query(async ({ ctx, input }) => {
-      const db = ctx.db as {
-        contractorAssignment: { count: (args?: unknown) => Promise<number> };
-        classificationAssessment: {
-          findMany: (args: unknown) => Promise<Array<{ contractorAssignmentId: string }>>;
-        };
+  coverageByMarket: contractorReadProcedure.input(marketInput).query(async ({ ctx, input }) => {
+    const db = ctx.db as {
+      contractorAssignment: { count: (args?: unknown) => Promise<number> };
+      classificationAssessment: {
+        findMany: (args: unknown) => Promise<Array<{ contractorAssignmentId: string }>>;
       };
+    };
 
-      const [total, completedAssessments] = await Promise.all([
-        db.contractorAssignment.count({
-          where: { status: 'ACTIVE', contractor: { countryCode: input.market } },
-        }),
-        db.classificationAssessment.findMany({
-          where: { status: 'completed', countryCode: input.market },
-          select: { contractorAssignmentId: true },
-          distinct: ['contractorAssignmentId'],
-          take: DETAIL_ROW_TAKE,
-        }),
-      ]);
+    const [total, completedAssessments] = await Promise.all([
+      db.contractorAssignment.count({
+        where: { status: 'ACTIVE', contractor: { countryCode: input.market } },
+      }),
+      db.classificationAssessment.findMany({
+        where: { status: 'completed', countryCode: input.market },
+        select: { contractorAssignmentId: true },
+        distinct: ['contractorAssignmentId'],
+        take: DETAIL_ROW_TAKE,
+      }),
+    ]);
 
-      return { completed: completedAssessments.length, total };
-    }),
+    return { completed: completedAssessments.length, total };
+  }),
 
   /**
    * Risk-distribution tile — counts of completed assessments per bucket
@@ -431,143 +426,139 @@ export const classificationDashboardRouter = router({
    *   - DE: completed DE assessments whose latest completedAt is older than
    *         12 months (configurable via OVERDUE_DE_MONTHS).
    */
-  overdueByMarket: contractorReadProcedure
-    .input(marketInput)
-    .query(async ({ ctx, input }) => {
-      const db = ctx.db as {
-        reassessmentTrigger: {
-          findMany: (args: unknown) => Promise<
-            Array<{
-              id: string;
-              contractorAssignmentId: string;
-              contractorAssignment?: { contractor?: { name?: string | null } | null } | null;
-            }>
-          >;
-        };
-        classificationAssessment: {
-          findMany: (args: unknown) => Promise<
-            Array<{
-              contractorAssignmentId: string;
-              completedAt: Date | null;
-              contractorAssignment?: { contractor?: { name?: string | null } | null } | null;
-            }>
-          >;
-        };
+  overdueByMarket: contractorReadProcedure.input(marketInput).query(async ({ ctx, input }) => {
+    const db = ctx.db as {
+      reassessmentTrigger: {
+        findMany: (args: unknown) => Promise<
+          Array<{
+            id: string;
+            contractorAssignmentId: string;
+            contractorAssignment?: { contractor?: { name?: string | null } | null } | null;
+          }>
+        >;
       };
+      classificationAssessment: {
+        findMany: (args: unknown) => Promise<
+          Array<{
+            contractorAssignmentId: string;
+            completedAt: Date | null;
+            contractorAssignment?: { contractor?: { name?: string | null } | null } | null;
+          }>
+        >;
+      };
+    };
 
-      if (input.market === 'GB') {
-        const triggers = await db.reassessmentTrigger.findMany({
-          where: {
-            status: { in: ['OPEN', 'ACKNOWLEDGED'] },
-            contractorAssignment: { contractor: { countryCode: 'GB' } },
-          },
-          include: {
-            contractorAssignment: {
-              include: { contractor: { select: { name: true, countryCode: true } } },
-            },
-          },
-          take: DETAIL_ROW_TAKE,
-        });
-
-        const items = triggers.map(t => ({
-          contractorAssignmentId: t.contractorAssignmentId,
-          contractorName: t.contractorAssignment?.contractor?.name ?? '',
-          reason: 'reassessment-trigger',
-        }));
-
-        return { count: items.length, items: items.slice(0, 5) };
-      }
-
-      // DE — assessments older than N months.
-      const cutoff = new Date();
-      cutoff.setMonth(cutoff.getMonth() - OVERDUE_DE_MONTHS);
-
-      const rows = await db.classificationAssessment.findMany({
+    if (input.market === 'GB') {
+      const triggers = await db.reassessmentTrigger.findMany({
         where: {
-          status: 'completed',
-          countryCode: 'DE',
-          completedAt: { lt: cutoff },
+          status: { in: ['OPEN', 'ACKNOWLEDGED'] },
+          contractorAssignment: { contractor: { countryCode: 'GB' } },
         },
         include: {
           contractorAssignment: {
             include: { contractor: { select: { name: true, countryCode: true } } },
           },
         },
-        orderBy: { completedAt: 'desc' },
         take: DETAIL_ROW_TAKE,
       });
 
-      // Keep latest per engagement (sorted DESC so first occurrence per assignment
-      // is the most recent overdue assessment — dedup to one row per engagement).
-      const latestByAssignment = new Map<string, (typeof rows)[number]>();
-      for (const r of rows) {
-        if (!latestByAssignment.has(r.contractorAssignmentId))
-          latestByAssignment.set(r.contractorAssignmentId, r);
-      }
-
-      const items = [...latestByAssignment.values()].map(r => ({
-        contractorAssignmentId: r.contractorAssignmentId,
-        contractorName: r.contractorAssignment?.contractor?.name ?? '',
-        reason: 'over-12-months',
+      const items = triggers.map(t => ({
+        contractorAssignmentId: t.contractorAssignmentId,
+        contractorName: t.contractorAssignment?.contractor?.name ?? '',
+        reason: 'reassessment-trigger',
       }));
 
       return { count: items.length, items: items.slice(0, 5) };
-    }),
+    }
+
+    // DE — assessments older than N months.
+    const cutoff = new Date();
+    cutoff.setMonth(cutoff.getMonth() - OVERDUE_DE_MONTHS);
+
+    const rows = await db.classificationAssessment.findMany({
+      where: {
+        status: 'completed',
+        countryCode: 'DE',
+        completedAt: { lt: cutoff },
+      },
+      include: {
+        contractorAssignment: {
+          include: { contractor: { select: { name: true, countryCode: true } } },
+        },
+      },
+      orderBy: { completedAt: 'desc' },
+      take: DETAIL_ROW_TAKE,
+    });
+
+    // Keep latest per engagement (sorted DESC so first occurrence per assignment
+    // is the most recent overdue assessment — dedup to one row per engagement).
+    const latestByAssignment = new Map<string, (typeof rows)[number]>();
+    for (const r of rows) {
+      if (!latestByAssignment.has(r.contractorAssignmentId))
+        latestByAssignment.set(r.contractorAssignmentId, r);
+    }
+
+    const items = [...latestByAssignment.values()].map(r => ({
+      contractorAssignmentId: r.contractorAssignmentId,
+      contractorName: r.contractorAssignment?.contractor?.name ?? '',
+      reason: 'over-12-months',
+    }));
+
+    return { count: items.length, items: items.slice(0, 5) };
+  }),
 
   /**
    * Active-alerts tile — market-dispatched:
    *   - GB: count of open/acknowledged reassessment triggers.
    *   - DE: economicBands (warning + critical) + DRV clearances expiring in ≤90 days.
    */
-  activeAlertsByMarket: contractorReadProcedure
-    .input(marketInput)
-    .query(async ({ ctx, input }) => {
-      const db = ctx.db as {
-        reassessmentTrigger: { count: (args: unknown) => Promise<number> };
-        economicDependencyAlertState: { count: (args: unknown) => Promise<number> };
-        statusfeststellungsverfahren: { count: (args: unknown) => Promise<number> };
-      };
+  activeAlertsByMarket: contractorReadProcedure.input(marketInput).query(async ({ ctx, input }) => {
+    const db = ctx.db as {
+      reassessmentTrigger: { count: (args: unknown) => Promise<number> };
+      economicDependencyAlertState: { count: (args: unknown) => Promise<number> };
+      statusfeststellungsverfahren: { count: (args: unknown) => Promise<number> };
+    };
 
-      if (input.market === 'GB') {
-        const openReassessmentTriggers = await db.reassessmentTrigger.count({
-          where: {
-            status: { in: ['OPEN', 'ACKNOWLEDGED'] },
-            contractorAssignment: { contractor: { countryCode: 'GB' } },
-          },
-        });
-        return { openReassessmentTriggers };
-      }
+    if (input.market === 'GB') {
+      const openReassessmentTriggers = await db.reassessmentTrigger.count({
+        where: {
+          status: { in: ['OPEN', 'ACKNOWLEDGED'] },
+          contractorAssignment: { contractor: { countryCode: 'GB' } },
+        },
+      });
+      return { openReassessmentTriggers };
+    }
 
-      const now = new Date();
-      const windowEnd = new Date(now.getTime() + DRV_EXPIRY_WINDOW_DAYS * 86_400_000);
+    const now = new Date();
+    const windowEnd = new Date(now.getTime() + DRV_EXPIRY_WINDOW_DAYS * 86_400_000);
 
-      const [warning, critical, drvExpiringWithin90d] = await Promise.all([
-        db.economicDependencyAlertState.count({
-          where: {
-            currentBand: 'warning',
-            contractorAssignment: { contractor: { countryCode: 'DE' } },
-          },
-        }),
-        db.economicDependencyAlertState.count({
-          where: {
-            currentBand: 'critical',
-            contractorAssignment: { contractor: { countryCode: 'DE' } },
-          },
-        }),
-        db.statusfeststellungsverfahren.count({
-          where: {
-            validTo: { gte: now, lte: windowEnd },
-            outcome: { in: ['SELBSTANDIG', 'ABHANGIG'] },
-            contractorAssignment: { contractor: { countryCode: 'DE' } },
-          },
-        }),
-      ]);
+    const [warning, critical, drvExpiringWithin90d] = await Promise.all([
+      db.economicDependencyAlertState.count({
+        where: {
+          currentBand: 'warning',
+          contractorAssignment: { contractor: { countryCode: 'DE' } },
+        },
+      }),
+      db.economicDependencyAlertState.count({
+        where: {
+          currentBand: 'critical',
+          contractorAssignment: { contractor: { countryCode: 'DE' } },
+        },
+      }),
+      db.statusfeststellungsverfahren.count({
+        where: {
+          validTo: { gte: now, lte: windowEnd },
+          outcome: { in: ['SELBSTANDIG', 'ABHANGIG'] },
+          contractorAssignment: { contractor: { countryCode: 'DE' } },
+        },
+      }),
+    ]);
 
-      return {
-        economicBands: { warning, critical },
-        drvExpiringWithin90d,
-      };
-    }),
+    return {
+      economicBands: { warning, critical },
+      drvExpiringWithin90d,
+    };
+  }),
 
   /**
    * Per-market CSV export. Writes a UTF-8-BOM CSV (RFC 4180) to R2 under an
@@ -575,48 +566,46 @@ export const classificationDashboardRouter = router({
    * field passes through escapeCsvField which also neutralises formula
    * prefixes (=/+/-/@) — closes research gap A11 (T-60-15).
    */
-  exportMarketCsv: contractorReadProcedure
-    .input(marketInput)
-    .mutation(async ({ ctx, input }) => {
-      const rows = await buildDashboardRows(ctx, input.market);
+  exportMarketCsv: contractorReadProcedure.input(marketInput).mutation(async ({ ctx, input }) => {
+    const rows = await buildDashboardRows(ctx, input.market);
 
-      const csvRows = rows.map(r => ({
-        engagementId: r.engagementId,
-        contractorName: r.contractorName,
-        country: r.country,
-        latestVerdict: r.latestVerdict ?? '',
-        latestCompletedAt: toIsoDate(r.latestCompletedAt),
-        latestScore: r.latestScore ?? '',
-        economicBand: r.economicBand ?? '',
-        billingShare: r.billingShare ?? '',
-        openReassessmentTrigger: r.openTrigger ? 'Y' : 'N',
-        drvOutcome: r.drvOutcome ?? '',
-        drvValidTo: toIsoDate(r.drvValidTo),
-      }));
+    const csvRows = rows.map(r => ({
+      engagementId: r.engagementId,
+      contractorName: r.contractorName,
+      country: r.country,
+      latestVerdict: r.latestVerdict ?? '',
+      latestCompletedAt: toIsoDate(r.latestCompletedAt),
+      latestScore: r.latestScore ?? '',
+      economicBand: r.economicBand ?? '',
+      billingShare: r.billingShare ?? '',
+      openReassessmentTrigger: r.openTrigger ? 'Y' : 'N',
+      drvOutcome: r.drvOutcome ?? '',
+      drvValidTo: toIsoDate(r.drvValidTo),
+    }));
 
-      const buf = encodeCsvUtf8Bom([...CSV_COLUMNS], csvRows);
-      // Invariant: encodeCsvUtf8Bom output always starts with the UTF-8 BOM
-      // (0xEF 0xBB 0xBF). Asserting the constant here keeps the import live
-      // even when TS tree-shaking reshuffles — the byte-level test lives in
-      // csv.test.ts. (Defence-in-depth for the documented UTF-8 BOM contract.)
-      void UTF8_BOM;
+    const buf = encodeCsvUtf8Bom([...CSV_COLUMNS], csvRows);
+    // Invariant: encodeCsvUtf8Bom output always starts with the UTF-8 BOM
+    // (0xEF 0xBB 0xBF). Asserting the constant here keeps the import live
+    // even when TS tree-shaking reshuffles — the byte-level test lives in
+    // csv.test.ts. (Defence-in-depth for the documented UTF-8 BOM contract.)
+    void UTF8_BOM;
 
-      const orgId = (ctx as { organizationId: string }).organizationId;
-      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-      const key = `classification-dashboard-exports/${orgId}/${input.market}-${timestamp}.csv`;
-      const dateOnly = new Date().toISOString().slice(0, 10);
-      const downloadFilename = `classification-${input.market}-${dateOnly}.csv`;
+    const orgId = (ctx as { organizationId: string }).organizationId;
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const key = `classification-dashboard-exports/${orgId}/${input.market}-${timestamp}.csv`;
+    const dateOnly = new Date().toISOString().slice(0, 10);
+    const downloadFilename = `classification-${input.market}-${dateOnly}.csv`;
 
-      const { signedUrl, expiresInSeconds } = await putObjectAndSignDownload({
-        key,
-        body: buf,
-        contentType: 'text/csv; charset=utf-8',
-        downloadFilename,
-        ttlSeconds: CSV_TTL_SECONDS,
-      });
+    const { signedUrl, expiresInSeconds } = await putObjectAndSignDownload({
+      key,
+      body: buf,
+      contentType: 'text/csv; charset=utf-8',
+      downloadFilename,
+      ttlSeconds: CSV_TTL_SECONDS,
+    });
 
-      return { url: signedUrl, expiresInSeconds };
-    }),
+    return { url: signedUrl, expiresInSeconds };
+  }),
 });
 
 // Re-export the escape helper name in the router module so grep acceptance

@@ -36,7 +36,7 @@ import { z } from 'zod';
 import { router } from '../init.js';
 import { classificationSaveAnswerRateLimit } from '../middleware/classification-rate-limit.js';
 import { requirePermission } from '../middleware/rbac.js';
-import { tenantProcedure } from '../middleware/tenant.js';
+import { classificationProcedure } from '../middleware/require-classification-flag.js';
 
 // ---------------------------------------------------------------------------
 // Input schemas
@@ -91,7 +91,7 @@ const listByContractorInput = z.object({
 // Gated procedures — write ops require contractor:update (T-58-09)
 // ---------------------------------------------------------------------------
 
-const contractorUpdateProcedure = tenantProcedure.use(
+const contractorUpdateProcedure = classificationProcedure.use(
   requirePermission({ contractor: ['update'] }),
 );
 
@@ -165,7 +165,7 @@ export const classificationRouter = router({
   // rather than creating a duplicate (D-04 append-only invariant +
   // single-draft-per-engagement app-layer guard).
   // -------------------------------------------------------------------------
-  createDraft: tenantProcedure.input(createDraftInput).mutation(async ({ ctx, input }) => {
+  createDraft: classificationProcedure.input(createDraftInput).mutation(async ({ ctx, input }) => {
     const { assignment, profile } = await resolveAssignmentAndProfile(
       ctx.db,
       input.contractorAssignmentId,
@@ -208,7 +208,7 @@ export const classificationRouter = router({
   //    the current profile version — clients only call this when they've
   //    already seen a drift error.
   // -------------------------------------------------------------------------
-  recreateDraftAfterDrift: tenantProcedure
+  recreateDraftAfterDrift: classificationProcedure
     .input(recreateDraftAfterDriftInput)
     .mutation(async ({ ctx, input }) => {
       const { assignment, profile } = await resolveAssignmentAndProfile(
@@ -260,7 +260,7 @@ export const classificationRouter = router({
   // matches the currently-registered profile (T-58-16 / Pitfall 7). The UI
   // surfaces this as "start a new assessment".
   // -------------------------------------------------------------------------
-  getDraft: tenantProcedure.input(getDraftInput).query(async ({ ctx, input }) => {
+  getDraft: classificationProcedure.input(getDraftInput).query(async ({ ctx, input }) => {
     const { assignment, profile } = await resolveAssignmentAndProfile(
       ctx.db,
       input.contractorAssignmentId,
@@ -296,7 +296,7 @@ export const classificationRouter = router({
   //  - Answer payload is Zod-validated against the question's answerType
   //    before any write (T-58-10 / ASVS V5).
   // -------------------------------------------------------------------------
-  saveAnswer: tenantProcedure
+  saveAnswer: classificationProcedure
     .input(saveAnswerInput)
     .use(classificationSaveAnswerRateLimit)
     .mutation(async ({ ctx, input }) => {
@@ -469,7 +469,7 @@ export const classificationRouter = router({
   // -------------------------------------------------------------------------
   // getLatest — most recent completed assessment for a given engagement.
   // -------------------------------------------------------------------------
-  getLatest: tenantProcedure.input(getLatestInput).query(async ({ ctx, input }) => {
+  getLatest: classificationProcedure.input(getLatestInput).query(async ({ ctx, input }) => {
     const row = await ctx.db.classificationAssessment.findFirst({
       where: {
         contractorAssignmentId: input.contractorAssignmentId,
@@ -497,7 +497,7 @@ export const classificationRouter = router({
   // outcome page can surface the same "not found" UX without leaking
   // cross-tenant existence (V7).
   // -------------------------------------------------------------------------
-  getById: tenantProcedure.input(getByIdInput).query(async ({ ctx, input }) => {
+  getById: classificationProcedure.input(getByIdInput).query(async ({ ctx, input }) => {
     const row = await ctx.db.classificationAssessment.findFirst({
       where: { id: input.assessmentId },
     });
@@ -519,16 +519,18 @@ export const classificationRouter = router({
   // Prisma's enum ordering on `status` is alphabetical (`completed` sorts
   // before `draft`), which is the opposite of what the wizard wants.
   // -------------------------------------------------------------------------
-  listByContractor: tenantProcedure.input(listByContractorInput).query(async ({ ctx, input }) => {
-    const rows = await ctx.db.classificationAssessment.findMany({
-      where: {
-        contractorAssignment: { contractorId: input.contractorId },
-      },
-      orderBy: [{ completedAt: 'desc' }, { createdAt: 'desc' }],
-    });
+  listByContractor: classificationProcedure
+    .input(listByContractorInput)
+    .query(async ({ ctx, input }) => {
+      const rows = await ctx.db.classificationAssessment.findMany({
+        where: {
+          contractorAssignment: { contractorId: input.contractorId },
+        },
+        orderBy: [{ completedAt: 'desc' }, { createdAt: 'desc' }],
+      });
 
-    const drafts = rows.filter((r: { status: string }) => r.status === 'draft');
-    const completed = rows.filter((r: { status: string }) => r.status === 'completed');
-    return [...drafts, ...completed];
-  }),
+      const drafts = rows.filter((r: { status: string }) => r.status === 'draft');
+      const completed = rows.filter((r: { status: string }) => r.status === 'completed');
+      return [...drafts, ...completed];
+    }),
 });

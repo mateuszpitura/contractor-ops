@@ -10,6 +10,7 @@ export {
   type EvalResult,
   evaluate,
   evaluateAgainst,
+  registerClassificationDisclaimerGate,
 } from './evaluator.js';
 export {
   buildFlagBag,
@@ -19,6 +20,7 @@ export {
   lazyFlagBag,
 } from './flag-bag.js';
 export {
+  CLASSIFICATION_ENGINE_FLAG,
   EINVOICE_IMPORT_ENABLED,
   FLAG_KEYS,
   FLAGS,
