@@ -6,8 +6,8 @@
 - v2.0 Platform Expansion - Phases 12-27 (shipped 2026-04-01)
 - v3.0 Enterprise & Monetization - Phases 28-44 (shipped 2026-04-10)
 - v4.0 International Foundation & Gulf Expansion - Phases 45-55 (shipped 2026-04-12)
-- v5.0 UK & Germany Expansion - Phases 56-64 (in progress)
-- v6.0 Platform Maturity & Operational Hardening - Phases 65-68 (planned)
+- v5.0 UK & Germany Expansion - Phases 56-67 (in progress)
+- v6.0 Platform Maturity & Operational Hardening - Phases 68-71 (planned)
 
 ## Phases
 
@@ -42,7 +42,10 @@ See .planning/milestones/v4.0/ for details.
 - [x] **Phase 60: Classification Polish** - Economic dependency alerts, reassessment triggers, DRV tracking, compliance dashboard (completed 2026-04-14)
 - [x] **Phase 61: XRechnung E-Invoicing** - XRechnung CII XML generation, KoSIT validation, Leitweg-ID, Peppol UK (completed 2026-04-14)
 - [x] **Phase 62: ZUGFeRD E-Invoicing** - ZUGFeRD PDF/A-3 with embedded CII XML, inbound XRechnung/ZUGFeRD parsing (completed 2026-04-16)
-- [ ] **Phase 63: UK Payments & Financial Features** - BACS Standard 18 export, late payment interest, Skonto discounts
+- [x] **Phase 63: UK Payments & Financial Features** - BACS Standard 18 export, late payment interest, Skonto discounts (completed 2026-04-25)
+- [ ] **Phase 65: Phase 63 Critical Bug Fixes** - Fix late-payment-interest flag key (PAY-06), Skonto amountMinor field (PAY-07), admin-boe-rate permission (CR-03), daysOverdue calculation (WR-02)
+- [ ] **Phase 66: Phase 57 Completion & Verification** - Execute 57-04 plan (VAT tRPC routers, invoice pipeline, UI), produce Phase 57 VERIFICATION.md
+- [ ] **Phase 67: Phase 56 & 58 Verification** - Produce Phase 56 VERIFICATION.md (country foundations), produce Phase 58 VERIFICATION.md (classification engine)
 
 ## Phase Details
 
@@ -175,7 +178,7 @@ See .planning/milestones/v4.0/ for details.
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 56 -> 57 -> 58 -> 59 -> 60 -> 61 -> 62 -> 63 -> 64
+Phases execute in numeric order: 56 -> 57 -> 58 -> 59 -> 60 -> 61 -> 62 -> 63 -> 64 -> 65 -> 66 -> 67
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -186,8 +189,11 @@ Phases execute in numeric order: 56 -> 57 -> 58 -> 59 -> 60 -> 61 -> 62 -> 63 ->
 | 60. Classification Polish | v5.0 | 4/4 | Complete    | 2026-04-14 |
 | 61. XRechnung E-Invoicing | v5.0 | 8/8 | Complete   | 2026-04-14 |
 | 62. ZUGFeRD E-Invoicing | v5.0 | 7/7 | Complete    | 2026-04-16 |
-| 63. UK Payments & Financial Features | v5.0 | 5/7 | In Progress|  |
-| 64. Legal Compliance Hardening | v5.0 | 0/TBD | Not started | - |
+| 63. UK Payments & Financial Features | v5.0 | 7/7 | Complete | 2026-04-25 |
+| 64. Legal Compliance Hardening | v5.0 | 9/9 | Complete | 2026-04-25 |
+| 65. Phase 63 Critical Bug Fixes | v5.0 | 0/1 | Not started | - |
+| 66. Phase 57 Completion & Verification | v5.0 | 0/2 | Not started | - |
+| 67. Phase 56 & 58 Verification | v5.0 | 0/2 | Not started | - |
 
 ### Phase 64: Legal Compliance Hardening
 **Goal**: Classification features (Phases 58-60) are completely inaccessible when the feature flag is disabled — no routes, no sidebar entries, no API endpoints, no data leakage — and when enabled after legal sign-off, all screens clearly communicate advisory-only status with escalation paths
@@ -208,13 +214,45 @@ Phases execute in numeric order: 56 -> 57 -> 58 -> 59 -> 60 -> 61 -> 62 -> 63 ->
 **Plans**: TBD
 **UI hint**: yes
 
+### Phase 65: Phase 63 Critical Bug Fixes
+**Goal**: All Phase 63 tRPC routers compile and function correctly — late payment interest procedures use the correct feature flag key, Skonto monetary calculations use the correct Invoice field, and the admin BoE rate router has a registered permission
+**Depends on**: Phase 63 (late-payment-interest, skonto, admin-boe-rate routers)
+**Requirements**: PAY-06, PAY-07
+**Gap Closure**: Closes gaps from v5.0 audit
+**Success Criteria** (what must be TRUE):
+  1. `late-payment-interest.ts` compiles without TypeScript errors — all 6 procedures use `requireFeatureFlag('payments.late-interest-enabled')`
+  2. Skonto monetary calculations produce correct GBP/EUR amounts — `skonto.ts` line 287 uses `invoice.amountToPayMinor`
+  3. `admin-boe-rate.ts` permission check is type-safe — `'admin:boe-rate'` is registered in `accessControlStatement`
+  4. `daysOverdue` in late-payment-interest service is computed from `overdueStartMs` (not `dueDateMs`) for LPCDA-correct claim letters
+**Plans**: TBD
+
+### Phase 66: Phase 57 Completion & Verification
+**Goal**: Government API client tRPC surface is complete and all Phase 57 requirements are formally verified
+**Depends on**: Phase 57 (HmrcVatClient, ViesClient, tax-id-validation orchestrator)
+**Requirements**: PAY-02, PAY-03, PAY-04, PAY-05
+**Gap Closure**: Closes gaps from v5.0 audit
+**Success Criteria** (what must be TRUE):
+  1. `57-04-PLAN.md` is fully executed — validateVat/revalidateVat/setKleinunternehmer tRPC mutations exist, invoice pipeline applies VAT rates and KU override, UI shows validation pill/button/toggles/footer notices
+  2. `57-VERIFICATION.md` exists and confirms PAY-02 (UK VAT rates), PAY-03 (HMRC validation), PAY-04 (DE VAT + Kleinunternehmer), PAY-05 (VIES validation) are all satisfied
+**Plans**: TBD
+
+### Phase 67: Phase 56 & 58 Verification
+**Goal**: Country foundations (Phase 56) and classification engine (Phase 58) requirements are formally verified with VERIFICATION.md files
+**Depends on**: Phase 56 (UK/DE fields, German i18n, privacy pages), Phase 58 (classification engine, IR35/DRV rule sets)
+**Requirements**: FOUND-01, FOUND-02, FOUND-03, FOUND-04, FOUND-05, FOUND-06, CLASS-01, CLASS-02, CLASS-05, CLASS-11
+**Gap Closure**: Closes gaps from v5.0 audit
+**Success Criteria** (what must be TRUE):
+  1. `56-VERIFICATION.md` exists and confirms FOUND-01..06 are all satisfied — UK/DE contractor fields validate correctly, German i18n routing works, privacy notices render for correct jurisdiction
+  2. `58-VERIFICATION.md` exists and confirms CLASS-01/02/05/11 are all satisfied — classification engine accepts UK/DE rule sets, IR35 5-area scoring and DRV 20-criteria scoring produce correct outcomes, per-engagement model stores assessments independently
+**Plans**: TBD
+
 ---
 
 ### v6.0 Platform Maturity & Operational Hardening (Planned)
 
 **Milestone Goal:** Make the platform production-grade across all supported markets (PL, UK, DE, UAE, SA) by closing critical operational gaps — compliance document lifecycle, automated access deprovisioning, Gulf operational polish, and offboarding hardening. No new market entry; focus on reliability and security for real users.
 
-- [ ] **Phase 65: Compliance Document Lifecycle Engine** - Per-country required document definitions, automated expiry tracking with 90/60/30/15/7-day alerts, hard payment blocking on expired critical documents, automated contractor reminders via email/portal, compliance dashboard with at-risk contractor count
-- [ ] **Phase 66: Identity Provider Deprovisioning** - Google Workspace auto-suspend, Azure AD/Entra ID auto-disable, Okta SSO revocation, GitHub org member removal, Slack workspace deactivation on offboarding, full audit trail of access revocation per contractor
-- [ ] **Phase 67: Gulf Operational Polish** - UAE free zone entity tracking with permitted activity scope per zone and license expiry monitoring; Saudization workforce composition dashboard with nationality tracking (visibility only, not Nitaqat band simulation or advisory)
-- [ ] **Phase 68: Offboarding Hardening** - Structured knowledge transfer checklist templates per role type, IP assignment verification workflow blocking offboarding completion, documentation handover task with repo/wiki/credential links, contract clause health check flagging missing IP assignment language
+- [ ] **Phase 68: Compliance Document Lifecycle Engine** - Per-country required document definitions, automated expiry tracking with 90/60/30/15/7-day alerts, hard payment blocking on expired critical documents, automated contractor reminders via email/portal, compliance dashboard with at-risk contractor count
+- [ ] **Phase 69: Identity Provider Deprovisioning** - Google Workspace auto-suspend, Azure AD/Entra ID auto-disable, Okta SSO revocation, GitHub org member removal, Slack workspace deactivation on offboarding, full audit trail of access revocation per contractor
+- [ ] **Phase 70: Gulf Operational Polish** - UAE free zone entity tracking with permitted activity scope per zone and license expiry monitoring; Saudization workforce composition dashboard with nationality tracking (visibility only, not Nitaqat band simulation or advisory)
+- [ ] **Phase 71: Offboarding Hardening** - Structured knowledge transfer checklist templates per role type, IP assignment verification workflow blocking offboarding completion, documentation handover task with repo/wiki/credential links, contract clause health check flagging missing IP assignment language

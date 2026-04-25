@@ -18,11 +18,11 @@ Requirements for UK & Germany market expansion. Each maps to roadmap phases.
 
 ### Contractor Classification
 
-- [x] **CLASS-01**: User can run a contractor classification risk assessment using a generic pluggable engine that supports multiple country rule sets
-- [x] **CLASS-02**: User can assess IR35 status for a UK contractor engagement using CEST-aligned questions across 5 assessment areas (substitution, control, financial risk, part-and-parcel, mutuality of obligation) with inside/outside/undetermined outcomes
+- [ ] **CLASS-01**: User can run a contractor classification risk assessment using a generic pluggable engine that supports multiple country rule sets
+- [ ] **CLASS-02**: User can assess IR35 status for a UK contractor engagement using CEST-aligned questions across 5 assessment areas (substitution, control, financial risk, part-and-parcel, mutuality of obligation) with inside/outside/undetermined outcomes
 - [x] **CLASS-03**: User can generate a Status Determination Statement (SDS) PDF containing determination outcome, reasoning per assessment area, engagement details, and dispute process
 - [x] **CLASS-04**: User can track IR35 chain participants (client → agency/intermediary → contractor PSC → worker) and SDS delivery timestamps per engagement
-- [x] **CLASS-05**: User can assess Scheinselbständigkeit risk for a German contractor engagement using ~20 DRV criteria across 4 categories (integration, entrepreneurial independence, personal dependency, economic dependency) with weighted risk scoring
+- [ ] **CLASS-05**: User can assess Scheinselbständigkeit risk for a German contractor engagement using ~20 DRV criteria across 4 categories (integration, entrepreneurial independence, personal dependency, economic dependency) with weighted risk scoring
 - [x] **CLASS-06**: User can generate DRV audit defense documentation as an exportable PDF bundle (engagement structure summary, independence indicators, risk assessment history, other-client attestation)
 - [ ] **CLASS-07**: User receives automated alerts when a German contractor's billing exceeds 70% (warning) or 83.33% (critical) from a single client, indicating economic dependency under Section 2 SGB VI
 - [ ] **CLASS-08**: User receives automated reassessment triggers when a UK engagement materially changes (contract amendment, rate change, scope change, extension) linking to previous SDS for comparison
@@ -99,23 +99,23 @@ Deferred to future release. Tracked but not in current roadmap.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| FOUND-01 | Phase 56 | Pending |
-| FOUND-02 | Phase 56 | Pending |
-| FOUND-03 | Phase 56 | Pending |
-| FOUND-04 | Phase 56 | Pending |
-| FOUND-05 | Phase 56 | Pending |
-| FOUND-06 | Phase 56 | Pending |
-| CLASS-01 | Phase 58 | Complete |
-| CLASS-02 | Phase 58 | Complete |
+| FOUND-01 | Phase 67 | Pending |
+| FOUND-02 | Phase 67 | Pending |
+| FOUND-03 | Phase 67 | Pending |
+| FOUND-04 | Phase 67 | Pending |
+| FOUND-05 | Phase 67 | Pending |
+| FOUND-06 | Phase 67 | Pending |
+| CLASS-01 | Phase 67 | Pending |
+| CLASS-02 | Phase 67 | Pending |
 | CLASS-03 | Phase 59 | Complete |
 | CLASS-04 | Phase 59 | Complete |
-| CLASS-05 | Phase 58 | Complete |
+| CLASS-05 | Phase 67 | Pending |
 | CLASS-06 | Phase 59 | Complete |
 | CLASS-07 | Phase 60 | Pending |
 | CLASS-08 | Phase 60 | Pending |
 | CLASS-09 | Phase 60 | Pending |
 | CLASS-10 | Phase 60 | Pending |
-| CLASS-11 | Phase 58 | Pending |
+| CLASS-11 | Phase 67 | Pending |
 | EINV-01 | Phase 61 | Pending |
 | EINV-02 | Phase 62 | Pending |
 | EINV-03 | Phase 62 | Pending |
@@ -124,12 +124,12 @@ Deferred to future release. Tracked but not in current roadmap.
 | EINV-06 | Phase 61 | Pending |
 | EINV-07 | Phase 61 | Pending |
 | PAY-01 | Phase 63 | Pending |
-| PAY-02 | Phase 57 | Pending |
-| PAY-03 | Phase 57 | Pending |
-| PAY-04 | Phase 57 | Pending |
-| PAY-05 | Phase 57 | Pending |
-| PAY-06 | Phase 63 | Pending |
-| PAY-07 | Phase 63 | Pending |
+| PAY-02 | Phase 66 | Pending |
+| PAY-03 | Phase 66 | Pending |
+| PAY-04 | Phase 66 | Pending |
+| PAY-05 | Phase 66 | Pending |
+| PAY-06 | Phase 65 | Pending |
+| PAY-07 | Phase 65 | Pending |
 | LEGAL-01 | Phase 64 | Pending |
 | LEGAL-02 | Phase 64 | Pending |
 | LEGAL-03 | Phase 64 | Pending |
@@ -148,4 +148,4 @@ Deferred to future release. Tracked but not in current roadmap.
 
 ---
 *Requirements defined: 2026-04-12*
-*Last updated: 2026-04-14 after Phase 64 (Legal Compliance Hardening) added to v5.0 milestone*
+*Last updated: 2026-04-26 after gap closure phases 65-67 added; CLASS-01/02/05 reset from Complete to Pending (orphaned — no VERIFICATION.md); FOUND/CLASS/PAY traceability updated to gap closure phases*
