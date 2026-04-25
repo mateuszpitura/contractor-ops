@@ -88,6 +88,11 @@ model User {
   // Phase 62 — Invoice intake (D-09) — uploads + validation acknowledgements
   uploadedIntakes     InvoiceIntakeRequest[] @relation("InvoiceIntakeUploadedBy")
   acknowledgedIntakes InvoiceIntakeRequest[] @relation("InvoiceIntakeValidationAckBy")
+
+  // Phase 64 — Legal Compliance Hardening
+  classificationEscalationEvents ClassificationEscalationEvent[] @relation("UserEscalationEvents")
+  sdsApprovals                   SdsApproval[]                   @relation("UserSdsApprovals")
+  consentEvents                  ConsentEvent[]                  @relation("UserConsentEvents")
 }
 
 model Session {

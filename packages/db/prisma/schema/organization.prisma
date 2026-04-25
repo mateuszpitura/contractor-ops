@@ -10,30 +10,34 @@ model Organization {
   createdAt DateTime @default(now())
 
   // Custom fields from db-schema.md
-  legalName            String?
-  countryCode          String?            @db.Char(2)
-  dataRegion           DataRegion         @default(EU)
-  defaultCurrency      String?            @db.Char(3)
-  timezone             String?
-  language             String?
-  fiscalYearStartMonth Int?               @default(1)
-  status               OrganizationStatus @default(ACTIVE)
+  legalName                           String?
+  countryCode                         String?            @db.Char(2)
+  dataRegion                          DataRegion         @default(EU)
+  defaultCurrency                     String?            @db.Char(3)
+  timezone                            String?
+  language                            String?
+  fiscalYearStartMonth                Int?               @default(1)
+  status                              OrganizationStatus @default(ACTIVE)
   // Phase 57 (D-11) — Kleinunternehmerregelung §19 UStG toggle (DE orgs only)
-  isKleinunternehmer   Boolean            @default(false)
-  billingEmail         String?
+  isKleinunternehmer                  Boolean            @default(false)
+  billingEmail                        String?
   // Phase 63 (D-02) — BACS submitter credentials (encrypted + masked pairs)
-  bacsServiceUserNumberEncrypted    String?
-  bacsServiceUserNumberMasked       String?
-  bacsSubmitterSortCodeEncrypted    String?
-  bacsSubmitterSortCodeMasked       String?
+  bacsServiceUserNumberEncrypted      String?
+  bacsServiceUserNumberMasked         String?
+  bacsSubmitterSortCodeEncrypted      String?
+  bacsSubmitterSortCodeMasked         String?
   bacsSubmitterAccountNumberEncrypted String?
-  bacsSubmitterAccountNumberMasked  String?
-  bacsSubmitterName                 String?  @db.VarChar(18)
-  settingsJson         Json?
-  portalSubdomain      String?            @unique
-  portalCustomDomain   String?            @unique
-  updatedAt            DateTime           @updatedAt
-  deletedAt            DateTime?
+  bacsSubmitterAccountNumberMasked    String?
+  bacsSubmitterName                   String?            @db.VarChar(18)
+  settingsJson                        Json?
+  // Phase 64 D-20 — Opt-in expert referral email for the Get Expert Help page.
+  // When set, an additional "Contact our adviser" card is shown in the classification
+  // expert-help referral page with a mailto: link to this address.
+  expertReferralEmail                 String? // Nullable — no referral card if absent
+  portalSubdomain                     String?            @unique
+  portalCustomDomain                  String?            @unique
+  updatedAt                           DateTime           @updatedAt
+  deletedAt                           DateTime?
 
   // Relations
   members                        Member[]
@@ -126,6 +130,10 @@ model Organization {
   skontoTerms                    SkontoTerm[]
   skontoSnapshots                SkontoSnapshot[]
   skontoApplications             SkontoApplication[]
+  // Phase 64 — Legal Compliance Hardening
+  classificationEscalationEvents ClassificationEscalationEvent[]
+  sdsApprovals                   SdsApproval[]
+  consentEvents                  ConsentEvent[]                     @relation("OrganizationConsentEvents")
 }
 
 model Member {

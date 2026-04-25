@@ -45,3 +45,38 @@ enum ConsentPurpose {
   INTEGRATION_DATA_SHARING
   COMMUNICATION_NOTIFICATIONS
 }
+
+// ---------------------------------------------------------------------------
+// Phase 64 · LEGAL-07 — Terms of Service acceptance events (D-30)
+//
+// Distinct from ConsentRecord (PDPL per-purpose consent — Phase 51).
+// ConsentEvent records a user's explicit acceptance of the platform ToS.
+// Used to enforce re-acceptance when the ToS version is bumped.
+//
+// Multi-tenant scoped: each org tracks its users' acceptance state.
+// Append-only: no update or delete procedures.
+// ---------------------------------------------------------------------------
+
+enum ConsentEventScope {
+  TOS // Terms of Service acceptance
+}
+
+model ConsentEvent {
+  id             String            @id @default(cuid())
+  organizationId String
+  userId         String
+  scope          ConsentEventScope
+  version        String // e.g. "2026.1.0" — must match TOS_CURRENT_VERSION
+  acceptedAt     DateTime
+  ipAddress      String?
+  userAgent      String?           @db.Text
+  createdAt      DateTime          @default(now())
+
+  organization Organization @relation("OrganizationConsentEvents", fields: [organizationId], references: [id])
+  user         User         @relation("UserConsentEvents", fields: [userId], references: [id])
+
+  // Append-only — no updatedAt.
+
+  @@index([organizationId, userId, scope], map: "CE_org_user_scope_idx")
+  @@index([organizationId, scope, createdAt], map: "CE_org_scope_createdAt_idx")
+}

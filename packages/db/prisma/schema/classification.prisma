@@ -28,10 +28,12 @@ model ClassificationAssessment {
   createdAt                DateTime                       @default(now())
   updatedAt                DateTime                       @updatedAt
 
-  organization            Organization             @relation(fields: [organizationId], references: [id])
-  contractorAssignment    ContractorAssignment     @relation(fields: [contractorAssignmentId], references: [id])
+  organization            Organization                    @relation(fields: [organizationId], references: [id])
+  contractorAssignment    ContractorAssignment            @relation(fields: [contractorAssignmentId], references: [id])
   classificationDocuments ClassificationDocument[]
-  reassessmentTriggers    ReassessmentTrigger[]    @relation("ReassessmentTriggerPriorAssessment")
+  reassessmentTriggers    ReassessmentTrigger[]           @relation("ReassessmentTriggerPriorAssessment")
+  escalationEvents        ClassificationEscalationEvent[]
+  sdsApproval             SdsApproval?
 
   @@index([organizationId])
   @@index([organizationId, contractorAssignmentId, status], map: "CA_org_assign_status_idx")
@@ -46,6 +48,7 @@ model ClassificationAssessment {
 enum ClassificationDocumentKind {
   SDS
   DRV_DEFENSE_BUNDLE
+  DRV_DECISION_LETTER // Phase 64 D-25 — uploaded proof of DRV Statusfeststellungsverfahren outcome
 }
 
 model ClassificationDocument {
@@ -265,4 +268,73 @@ model Statusfeststellungsverfahren {
 
   @@index([organizationId, contractorAssignmentId], map: "SFV_org_assign_idx")
   @@index([organizationId, validTo], map: "SFV_org_validTo_idx")
+}
+
+// ---------------------------------------------------------------------------
+// Phase 64 · LEGAL-03/04 — escalation event audit trail (D-18)
+// Append-only: logs both amber-verdict auto-fires and user Get Expert Help clicks.
+// Indexed for compliance reporting by org + date and org + assessment.
+// ---------------------------------------------------------------------------
+
+enum EscalationVerdict {
+  IR35_OUTSIDE
+  IR35_INSIDE
+  IR35_INDETERMINATE
+  SCHEIN_SELFEMPLOYED
+  SCHEIN_EMPLOYED
+  SCHEIN_UNCLEAR
+}
+
+enum EscalationTriggerKind {
+  AMBER_VERDICT_AUTO // Fired automatically on amber/indeterminate verdict render
+  GET_EXPERT_HELP_CLICK // Fired on user clicking "Get Expert Help" CTA
+  MANUAL_FLAG // Operator-flagged escalation (reserved for future use)
+}
+
+model ClassificationEscalationEvent {
+  id             String                @id @default(cuid())
+  organizationId String
+  userId         String
+  contractorId   String? // Nullable: amber auto-log may precede contractor context
+  assessmentId   String
+  verdict        EscalationVerdict
+  triggerKind    EscalationTriggerKind
+  referralTarget String // URL path, external URL, or 'INTERNAL_PAGE' sentinel
+  ipAddress      String?
+  userAgent      String?               @db.Text
+  createdAt      DateTime              @default(now())
+
+  organization Organization             @relation(fields: [organizationId], references: [id])
+  user         User                     @relation("UserEscalationEvents", fields: [userId], references: [id])
+  assessment   ClassificationAssessment @relation(fields: [assessmentId], references: [id])
+
+  // Append-only — no updatedAt. Enforced by APPEND_ONLY_MODELS guard.
+
+  @@index([organizationId, createdAt], map: "CEE_org_createdAt_idx")
+  @@index([organizationId, assessmentId], map: "CEE_org_assessment_idx")
+}
+
+// ---------------------------------------------------------------------------
+// Phase 64 · LEGAL-05 — in-app SDS approval gate (D-21)
+// One approval per assessment (@unique on assessmentId).
+// approvalStatementSnapshot frozen at approval time (avoids retroactive drift
+// if the locked phrase constant is later updated).
+// ---------------------------------------------------------------------------
+
+model SdsApproval {
+  id                        String   @id @default(cuid())
+  organizationId            String
+  assessmentId              String   @unique // One approval per assessment
+  approvedByUserId          String
+  approvedAt                DateTime
+  clientName                String // Snapshot of end-hirer legal name at approval time
+  approvalStatementSnapshot String   @db.Text // Frozen copy of SDS_APPROVAL_STATEMENT_EN at approval time
+  createdAt                 DateTime @default(now())
+
+  organization Organization             @relation(fields: [organizationId], references: [id])
+  assessment   ClassificationAssessment @relation(fields: [assessmentId], references: [id])
+  approvedBy   User                     @relation("UserSdsApprovals", fields: [approvedByUserId], references: [id])
+
+  @@index([organizationId], map: "SDS_org_idx")
+  @@index([organizationId, assessmentId], map: "SDS_org_assessment_idx")
 }
