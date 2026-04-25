@@ -50,3 +50,48 @@ jobs:
       - name: Dependency audit (informational)
         run: pnpm audit --audit-level moderate
         continue-on-error: true
+
+  legal-gate-production:
+    name: Legal Gate — production deploy (LEGAL-02)
+    runs-on: ubuntu-latest
+    # Only blocks production deploys on main. PRs and non-main branches
+    # can have PENDING disclaimers without failing CI.
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: [ci]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Assert no PENDING disclaimers (LEGAL-02)
+        run: |
+          node --input-type=module << 'EOF'
+          import { getAllPending } from './packages/validators/src/legal/signoff-registry.js';
+          const pending = getAllPending();
+          if (pending.length > 0) {
+            console.error('');
+            console.error('╔══════════════════════════════════════════════════════════════╗');
+            console.error('║  LEGAL-02: Production deploy BLOCKED                         ║');
+            console.error('╚══════════════════════════════════════════════════════════════╝');
+            console.error('');
+            console.error('The following disclaimer keys have status PENDING:');
+            pending.forEach(k => console.error(`  - ${k}`));
+            console.error('');
+            console.error('To unblock: submit a PR updating signoff-registry.json to set');
+            console.error('each key to APPROVED with approvedBy + approvedAt + approverRole.');
+            console.error('The PR requires @contractor-ops/legal-platform review (CODEOWNERS).');
+            process.exit(1);
+          }
+          console.log(`Legal gate: all ${pending.length === 0 ? Object.keys(await import('./packages/validators/src/legal/signoff-registry.json', {with:{type:"json"}}).then(m=>m.default)).length : pending.length} disclaimers APPROVED ✓`);
+          EOF

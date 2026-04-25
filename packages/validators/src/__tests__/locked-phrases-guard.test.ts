@@ -23,7 +23,15 @@ import {
   RESERVED_LEGAL_KEYS,
   SKONTO_DESCRIPTION_TEMPLATE_DE,
 } from '../legal/de.js';
-import { LOCKED_DISCLAIMERS, RESERVED_DISCLAIMER_KEYS } from '../legal/disclaimers.js';
+import {
+  BANNER_IR35_ADVISORY_EN,
+  BANNER_SCHEIN_ADVISORY_DE,
+  DRV_UNVERIFIED_ENTRY_DISCLAIMER_DE,
+  LOCKED_DISCLAIMERS,
+  RESERVED_DISCLAIMER_KEYS,
+  SDS_APPROVAL_STATEMENT_EN,
+  SOFTWARE_NOT_LEGAL_ADVICE_EN,
+} from '../legal/disclaimers.js';
 import { LOCKED_EN_PHRASES, RESERVED_EN_LEGAL_KEYS } from '../legal/en.js';
 import {
   LOCKED_GB_PHRASES,
@@ -33,6 +41,9 @@ import {
   LPCDA_STATUTORY_RATE_LABEL,
   RESERVED_GB_LEGAL_KEYS,
 } from '../legal/gb.js';
+import { getAllPending, getRegistry, isAllApproved } from '../legal/signoff-registry.js';
+import rawRegistry from '../legal/signoff-registry.json' with { type: 'json' };
+import { SignoffRegistrySchema } from '../legal/signoff-registry-schema.js';
 
 const messagesDir = path.resolve(__dirname, '../../../../apps/web/messages');
 const locales = ['en', 'pl', 'ar', 'de'] as const;
@@ -354,15 +365,11 @@ describe('Phase 63 — GB locked phrases', () => {
   });
 
   it('LPCDA_STATUTORY_RATE_LABEL matches the BoE + 8% description', () => {
-    expect(LPCDA_STATUTORY_RATE_LABEL).toBe(
-      'Bank of England base rate plus 8 percentage points',
-    );
+    expect(LPCDA_STATUTORY_RATE_LABEL).toBe('Bank of England base rate plus 8 percentage points');
   });
 
   it('LPCDA_COMPENSATION_LABEL matches Section 5A reference', () => {
-    expect(LPCDA_COMPENSATION_LABEL).toBe(
-      'Fixed sum compensation under Section 5A',
-    );
+    expect(LPCDA_COMPENSATION_LABEL).toBe('Fixed sum compensation under Section 5A');
   });
 
   it('LPCDA_SECTION_REF matches Sections 3, 4, and 5A reference', () => {
@@ -391,10 +398,9 @@ describe('Phase 63 — GB locked phrases', () => {
     const violations = keys.filter(k =>
       RESERVED_GB_LEGAL_KEYS.some(r => k === r || k.endsWith(`.${r}`)),
     );
-    expect(
-      violations,
-      `LPCDA_* keys leaked into ${locale}.json: ${violations.join(', ')}`,
-    ).toEqual([]);
+    expect(violations, `LPCDA_* keys leaked into ${locale}.json: ${violations.join(', ')}`).toEqual(
+      [],
+    );
   });
 });
 
@@ -477,5 +483,107 @@ describe('Phase 62 — DE intake locked phrases', () => {
     if (!fs.existsSync(dePath)) return;
     const raw = fs.readFileSync(dePath, 'utf8');
     expect(raw).toContain(EINVOICE_INTAKE_EXTENDED_BEST_EFFORT_DE);
+  });
+});
+
+// -----------------------------------------------------------------------------
+// Phase 64 · D-14 (Layer 1) — signoff registry CI guard.
+// Asserts structural invariants on every PR (always-run).
+// Layer 2 (production PENDING block) is in .github/workflows/ci.yml.
+// -----------------------------------------------------------------------------
+
+describe('Phase 64 — Signoff registry CI guard (D-14 Layer 1)', () => {
+  it('signoff-registry.json parses against SignoffRegistrySchema without errors', () => {
+    expect(() => SignoffRegistrySchema.parse(rawRegistry)).not.toThrow();
+  });
+
+  it('every key in LOCKED_DISCLAIMERS has a corresponding signoff-registry entry', () => {
+    const registry = getRegistry();
+    for (const key of Object.keys(LOCKED_DISCLAIMERS)) {
+      expect(
+        registry[key],
+        `Disclaimer key "${key}" missing from signoff-registry.json — add a PENDING entry`,
+      ).toBeDefined();
+    }
+  });
+
+  it('APPROVED entries have required fields (approvedBy, approvedAt, approverRole)', () => {
+    const registry = getRegistry();
+    for (const [key, entry] of Object.entries(registry)) {
+      if (entry.status === 'APPROVED') {
+        expect(entry.approvedBy, `${key}: APPROVED entry missing approvedBy`).toBeTruthy();
+        expect(entry.approvedAt, `${key}: APPROVED entry missing approvedAt`).toBeTruthy();
+        expect(entry.approverRole, `${key}: APPROVED entry missing approverRole`).toBeTruthy();
+      }
+    }
+  });
+
+  it.each(
+    locales,
+  )('messages/%s.json does not define any BANNER_* / SDS_APPROVAL_* / DRV_UNVERIFIED_* / SOFTWARE_NOT_LEGAL_ADVICE_* key', locale => {
+    const messages = loadMessages(locale);
+    if (messages === null) return;
+    const keys = flatKeys(messages);
+    const PHASE_64_PREFIXES = [
+      'BANNER_IR35_ADVISORY',
+      'BANNER_SCHEIN_ADVISORY',
+      'SDS_APPROVAL_STATEMENT',
+      'DRV_UNVERIFIED_ENTRY',
+      'SOFTWARE_NOT_LEGAL_ADVICE',
+    ] as const;
+    const leaks = keys.filter(k => PHASE_64_PREFIXES.some(prefix => k.includes(prefix)));
+    expect(
+      leaks,
+      `Phase 64 locked phrase prefix leaked into ${locale}.json: ${leaks.join(', ')}`,
+    ).toEqual([]);
+  });
+
+  it('BANNER_IR35_ADVISORY_EN references IR35 and UK tax adviser', () => {
+    expect(BANNER_IR35_ADVISORY_EN).toContain('IR35');
+    expect(BANNER_IR35_ADVISORY_EN).toContain('tax adviser');
+  });
+
+  it('BANNER_SCHEIN_ADVISORY_DE references § 7a SGB IV and Statusfeststellungsverfahren', () => {
+    expect(BANNER_SCHEIN_ADVISORY_DE).toContain('§ 7a SGB IV');
+    expect(BANNER_SCHEIN_ADVISORY_DE).toContain('Statusfeststellungsverfahren');
+  });
+
+  it('SDS_APPROVAL_STATEMENT_EN references Chapter 10 ITEPA 2003', () => {
+    expect(SDS_APPROVAL_STATEMENT_EN).toContain('Chapter 10 ITEPA 2003');
+  });
+
+  it('SOFTWARE_NOT_LEGAL_ADVICE_EN covers classification, e-invoicing, payments, and interest', () => {
+    expect(SOFTWARE_NOT_LEGAL_ADVICE_EN).toContain('Classification');
+    expect(SOFTWARE_NOT_LEGAL_ADVICE_EN).toContain('invoicing');
+    expect(SOFTWARE_NOT_LEGAL_ADVICE_EN).toContain('Payment');
+    expect(SOFTWARE_NOT_LEGAL_ADVICE_EN).toContain('interest');
+  });
+
+  it('RESERVED_DISCLAIMER_KEYS includes all 6 Phase 64 new keys', () => {
+    const phase64Keys = [
+      'BANNER_IR35_ADVISORY_EN',
+      'BANNER_SCHEIN_ADVISORY_DE',
+      'SDS_APPROVAL_STATEMENT_EN',
+      'DRV_UNVERIFIED_ENTRY_DISCLAIMER_DE',
+      'SOFTWARE_NOT_LEGAL_ADVICE_EN',
+      'SOFTWARE_NOT_LEGAL_ADVICE_DE',
+    ];
+    for (const key of phase64Keys) {
+      expect(RESERVED_DISCLAIMER_KEYS).toContain(key);
+    }
+  });
+
+  it('getAllPending() returns 12 keys initially (all PENDING)', () => {
+    const pending = getAllPending();
+    expect(pending).toHaveLength(12);
+  });
+
+  it('isAllApproved() returns false when all entries are PENDING', () => {
+    expect(isAllApproved()).toBe(false);
+  });
+
+  it('DRV_UNVERIFIED_ENTRY_DISCLAIMER_DE references DRV and Bescheid', () => {
+    expect(DRV_UNVERIFIED_ENTRY_DISCLAIMER_DE).toContain('DRV');
+    expect(DRV_UNVERIFIED_ENTRY_DISCLAIMER_DE).toContain('Bescheid');
   });
 });

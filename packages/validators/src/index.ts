@@ -20,6 +20,19 @@ export {
   requestClarificationSchema,
   stepConfigSchema,
 } from './approval.js';
+export type { ModulusCheckResult, ModulusCheckType, ModulusEntry } from './bacs.js';
+export {
+  accountNumberSchema,
+  bacsSubmitterNameSchema,
+  modulusCheck,
+  serviceUserNumberSchema,
+  sortCodeSchema,
+} from './bacs.js';
+export {
+  VOCALINK_MODULUS_TABLE_V840,
+  VOCALINK_TABLE_SOURCE,
+  VOCALINK_TABLE_VERSION,
+} from './bacs-modulus-tables.js';
 export type { BillingCreditDenialReason } from './billing-credits.js';
 export { billingCreditDenialReason } from './billing-credits.js';
 export type {
@@ -297,6 +310,8 @@ export {
   CLASSIFICATION_SCHEIN_NOT_APPLICABLE,
   CLASSIFICATION_SCHEIN_PERSONAL_DEP,
   CLASSIFICATION_SCHEIN_TITLE,
+  DRV_CLEARANCE_PANEL_HEADER_DE,
+  DRV_CLEARANCE_SECTION_REFERENCE_DE,
   DRV_DEFENSE_ATTESTATION_FOOTER_DE,
   DRV_DEFENSE_COVER_HEADER_DE,
   DRV_DEFENSE_CROSS_REFERENCE_FOOTER_DE,
@@ -308,6 +323,7 @@ export {
   GDPR_RIGHTS_HEADING,
   LOCKED_DE_PHRASES,
   RESERVED_LEGAL_KEYS,
+  SKONTO_DESCRIPTION_TEMPLATE_DE,
   TAX_HANDELSREGISTER_LABEL,
   TAX_KLEINUNTERNEHMER_LABEL,
   TAX_KLEINUNTERNEHMER_NOTICE,
@@ -315,20 +331,23 @@ export {
   TAX_STEUERNUMMER_LABEL,
   TAX_STEUERSCHULDNERSCHAFT,
   TAX_USTIDNR_LABEL,
-  SKONTO_DESCRIPTION_TEMPLATE_DE,
-  DRV_CLEARANCE_PANEL_HEADER_DE,
-  DRV_CLEARANCE_SECTION_REFERENCE_DE,
 } from './legal/de.js';
 export type { LockedDisclaimerKey } from './legal/disclaimers.js';
 export {
+  BANNER_IR35_ADVISORY_EN,
+  BANNER_SCHEIN_ADVISORY_DE,
   DISCLAIMER_IR35_ACKNOWLEDGEMENT,
   DISCLAIMER_IR35_BODY,
   DISCLAIMER_SCHEIN_ACKNOWLEDGEMENT,
   DISCLAIMER_SCHEIN_BODY,
   DRV_DEFENSE_DISCLAIMER_DE,
+  DRV_UNVERIFIED_ENTRY_DISCLAIMER_DE,
   LOCKED_DISCLAIMERS,
   RESERVED_DISCLAIMER_KEYS,
+  SDS_APPROVAL_STATEMENT_EN,
   SDS_DISCLAIMER_EN,
+  SOFTWARE_NOT_LEGAL_ADVICE_DE,
+  SOFTWARE_NOT_LEGAL_ADVICE_EN,
 } from './legal/disclaimers.js';
 export type { LockedEnPhraseKey } from './legal/en.js';
 export {
@@ -346,19 +365,24 @@ export {
   LPCDA_STATUTORY_RATE_LABEL,
   RESERVED_GB_LEGAL_KEYS,
 } from './legal/gb.js';
-export type { ModulusCheckResult, ModulusCheckType, ModulusEntry } from './bacs.js';
 export {
-  accountNumberSchema,
-  bacsSubmitterNameSchema,
-  modulusCheck,
-  serviceUserNumberSchema,
-  sortCodeSchema,
-} from './bacs.js';
+  getAllPending,
+  getDisclaimerStatus,
+  getRegistry,
+  isAllApproved,
+} from './legal/signoff-registry.js';
+export type {
+  SignoffEntry,
+  SignoffRegistry,
+  SignoffStatus,
+} from './legal/signoff-registry-schema.js';
+export type { LeitwegId, PeppolParticipantPair } from './leitweg-id.js';
 export {
-  VOCALINK_MODULUS_TABLE_V840,
-  VOCALINK_TABLE_SOURCE,
-  VOCALINK_TABLE_VERSION,
-} from './bacs-modulus-tables.js';
+  computeLeitwegCheckDigit,
+  leitwegIdSchema,
+  peppolParticipantPairSchema,
+  validateLeitwegCheckDigit,
+} from './leitweg-id.js';
 export type {
   LinearIssueMetadata,
   LinearStateType,
@@ -544,13 +568,6 @@ export {
   syncExternalEntriesSchema,
   timeReconciliationSchema,
 } from './time-tracking.js';
-export {
-  computeLeitwegCheckDigit,
-  leitwegIdSchema,
-  peppolParticipantPairSchema,
-  validateLeitwegCheckDigit,
-} from './leitweg-id.js';
-export type { LeitwegId, PeppolParticipantPair } from './leitweg-id.js';
 export {
   isValidCompaniesHouseNumber,
   isValidGbVat,
