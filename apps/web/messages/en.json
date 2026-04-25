@@ -5436,6 +5436,14 @@
       "deleteDialogBody": "Deleting a historical rate changes interest calculations for any invoices that fell overdue during its validity period. Proceed only if this entry was entered in error.",
       "pollerSuccess": "Last BoE API poll: {date} — rate unchanged / new rate {percent}% recorded",
       "pollerFailure": "Last BoE API poll failed on {date}. Manual entry still possible; poller will retry at the next scheduled run."
+    },
+    "ClassificationEngineFlag": {
+      "title": "Classification Engine Flag Status",
+      "subtitle": "module.classification-engine kill-switch status and disclaimer signoff registry.",
+      "appSideValue": "App-side value (what users see)",
+      "signoffRegistry": "Signoff registry",
+      "pendingGate": "Flag ON in Unleash but app-gated — {count} disclaimer(s) PENDING.",
+      "pendingGateResolution": "Resolve by submitting a PR updating packages/validators/src/legal/signoff-registry.json"
     }
   }
 }
