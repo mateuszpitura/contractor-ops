@@ -3,6 +3,7 @@ import { adminBoeRateRouter } from './routers/admin-boe-rate.js';
 import { apiKeyRouter } from './routers/api-key.js';
 import { approvalRouter } from './routers/approval.js';
 import { auditRouter } from './routers/audit.js';
+import { bacsRouter } from './routers/bacs.js';
 import { billingRouter } from './routers/billing.js';
 import { calendarRouter } from './routers/calendar.js';
 import { classificationRouter } from './routers/classification.js';
@@ -13,8 +14,8 @@ import { contractRouter } from './routers/contract.js';
 import { contractorRouter } from './routers/contractor.js';
 import { dashboardRouter } from './routers/dashboard.js';
 import { docsRouter } from './routers/docs.js';
-import { economicDependencyAlertRouter } from './routers/economic-dependency-alert.js';
 import { documentRouter } from './routers/document.js';
+import { economicDependencyAlertRouter } from './routers/economic-dependency-alert.js';
 import { einvoiceRouter } from './routers/einvoice.js';
 import { equipmentRouter } from './routers/equipment.js';
 import { esignRouter } from './routers/esign.js';
@@ -44,11 +45,11 @@ import { portalRouter } from './routers/portal.js';
 import { portalTimeRouter } from './routers/portal-time.js';
 import { reassessmentTriggerRouter } from './routers/reassessment-trigger.js';
 import { reminderRouter } from './routers/reminder.js';
-import { statusfeststellungsverfahrenRouter } from './routers/statusfeststellungsverfahren.js';
 import { reportRouter } from './routers/report.js';
 import { searchRouter } from './routers/search.js';
-import { skontoRouter } from './routers/skonto.js';
 import { settingsRouter } from './routers/settings.js';
+import { skontoRouter } from './routers/skonto.js';
+import { statusfeststellungsverfahrenRouter } from './routers/statusfeststellungsverfahren.js';
 import { taxRouter } from './routers/tax.js';
 import { teamsRouter } from './routers/teams.js';
 import { timeRouter } from './routers/time.js';
@@ -87,6 +88,7 @@ import { zatcaRouter } from './routers/zatca.js';
 export const appRouter = router({
   adminBoeRate: adminBoeRateRouter, // adminBoeRate: Super-admin BoE base rate CRUD — list, insert, update, delete (Phase 63 D-10)
   apiKey: apiKeyRouter, // apiKey: Enterprise API key management — create, list, update, revoke
+  bacs: bacsRouter, // bacs: BACS Std 18 file generation — getSubmitterMasks, previewExport, generateExport, validateSortCode, saveSubmitterConfig (Phase 63 D-27)
   organization: organizationRouter,
   user: userRouter,
   settings: settingsRouter,
