@@ -404,4 +404,42 @@ describe('bacsRouter.previewExport / generateExport', () => {
     expect(mockPrisma.document.create).not.toHaveBeenCalled();
     expect(mockPrisma.paymentExport.create).not.toHaveBeenCalled();
   });
+
+  it('generateExport: rejects non-GBP payment runs (CR-02)', async () => {
+    // CR-02 regression: BACS Standard 18 has no currency field — the entire
+    // file is implicitly GBP. A €1000 invoice (amountMinor=100000) would
+    // otherwise be misread by the recipient bank as £1000. The router MUST
+    // refuse the run before reaching the generator.
+    mockPrisma.organization.findUnique = vi.fn().mockResolvedValue({
+      bacsServiceUserNumberEncrypted: 'enc:123456',
+      bacsSubmitterSortCodeEncrypted: 'enc:112233',
+      bacsSubmitterAccountNumberEncrypted: 'enc:12345678',
+      bacsSubmitterName: 'ACME LTD',
+      name: 'Acme Ltd',
+    });
+    mockPrisma.paymentRun.findFirst = vi.fn().mockResolvedValue({
+      id: RUN_ID,
+      runNumber: 'PR-EUR-001',
+      organizationId: ORG_ID,
+      status: 'LOCKED',
+      currency: 'EUR',
+      items: [
+        {
+          amountMinor: 100_000,
+          currency: 'EUR',
+          status: 'PENDING',
+          paymentReference: 'INV-EUR-001',
+          invoice: { invoiceNumber: 'INV-EUR-001' },
+          contractor: { legalName: 'EU GMBH' },
+          billingProfile: {
+            ukSortCodeEncrypted: 'enc:123456',
+            ukAccountNumberEncrypted: 'enc:87654321',
+          },
+        },
+      ],
+    });
+
+    await expect(caller.generateExport({ paymentRunId: RUN_ID })).rejects.toThrow(/GBP/);
+    expect(mockPutAndSign).not.toHaveBeenCalled();
+  });
 });

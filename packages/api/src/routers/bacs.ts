@@ -170,6 +170,7 @@ async function loadRunWithBacsItems(
 
   const items = run.items as Array<{
     amountMinor: number;
+    currency: string | null;
     paymentReference: string | null;
     invoice: { invoiceNumber: string | null };
     contractor: { legalName: string };
@@ -180,6 +181,29 @@ async function loadRunWithBacsItems(
   }>;
 
   const runRef = (run.runNumber as string | null) ?? run.id;
+
+  // BACS Standard 18 has no currency field — the entire file is implicitly
+  // GBP. Refuse non-GBP runs at the router boundary so foreign-currency
+  // minor units cannot be misinterpreted as pence by the recipient bank.
+  // The format-detection layer already gates on currency upstream, but the
+  // router must re-verify here as defence-in-depth: a misuse of
+  // bacs.previewExport / bacs.generateExport against a non-GBP or mixed run
+  // would otherwise generate a file BACS will accept and process — paying
+  // contractors the wrong amount in the wrong currency.
+  const runCurrency = (run as { currency?: string | null }).currency ?? null;
+  if (runCurrency !== null && runCurrency !== 'GBP') {
+    throw new TRPCError({
+      code: 'PRECONDITION_FAILED',
+      message: `BACS Standard 18 requires GBP; payment run currency is ${runCurrency}`,
+    });
+  }
+  const nonGbp = items.find(item => item.currency !== 'GBP');
+  if (nonGbp) {
+    throw new TRPCError({
+      code: 'PRECONDITION_FAILED',
+      message: `BACS Standard 18 requires GBP; payment run includes ${nonGbp.currency ?? 'unknown'} item for ${nonGbp.contractor.legalName}`,
+    });
+  }
 
   const bacsItems: BacsExportItem[] = items.map(item => {
     if (
