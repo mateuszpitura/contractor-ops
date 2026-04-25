@@ -4109,6 +4109,10 @@
         "contact": {
           "heading": "10. Contact",
           "body": "For questions about these Terms, contact us at legal@contractorops.com."
+        },
+        "softwareNotLegalAdvice": {
+          "heading": "Software — Not Legal or Professional Advice",
+          "subheading": "Important limitations on the nature of this platform's outputs"
         }
       }
     },
@@ -4263,6 +4267,14 @@
       "uploadedAt": "Uploaded {date} by {user}",
       "downloadLetter": "Download decision letter",
       "fileTooLarge": "File too large (max 10 MB)"
+    },
+    "TermsModal": {
+      "title": "Updated Terms of Service",
+      "description": "Our Terms of Service have been updated (version {version}). Please review and accept to continue using the platform.",
+      "readFull": "Read the full",
+      "termsLink": "Terms of Service",
+      "accept": "I accept the Terms of Service",
+      "accepting": "Recording acceptance..."
     }
   },
   "Consent": {

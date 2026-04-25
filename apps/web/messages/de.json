@@ -4228,6 +4228,10 @@
         "contact": {
           "heading": "10. Contact",
           "body": "For questions about these Terms, contact us at legal@contractorops.com."
+        },
+        "softwareNotLegalAdvice": {
+          "heading": "Software — Keine Rechts- oder Steuerberatung",
+          "subheading": "Wichtige Einschränkungen der Ausgaben dieser Plattform"
         }
       }
     },
@@ -4382,6 +4386,14 @@
       "uploadedAt": "Hochgeladen am {date} von {user}",
       "downloadLetter": "Bescheid herunterladen",
       "fileTooLarge": "Datei zu groß (max. 10 MB)"
+    },
+    "TermsModal": {
+      "title": "Aktualisierte Nutzungsbedingungen",
+      "description": "Unsere Nutzungsbedingungen wurden aktualisiert (Version {version}). Bitte lesen und akzeptieren Sie diese, um die Plattform weiterhin nutzen zu können.",
+      "readFull": "Die vollständigen",
+      "termsLink": "Nutzungsbedingungen lesen",
+      "accept": "Ich akzeptiere die Nutzungsbedingungen",
+      "accepting": "Akzeptanz wird gespeichert..."
     }
   },
   "Consent": {

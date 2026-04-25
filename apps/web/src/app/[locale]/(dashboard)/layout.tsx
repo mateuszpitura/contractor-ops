@@ -5,6 +5,7 @@ import { buildFlagBag, emptyFlagBag } from '@contractor-ops/feature-flags';
 import { createLogger } from '@contractor-ops/logger';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { getLocale } from 'next-intl/server';
 import type { ReactNode } from 'react';
 import { BillingOverlay } from '@/components/billing/billing-overlay';
 import { AppFooter } from '@/components/layout/app-footer';
@@ -15,7 +16,9 @@ import { FeatureFlagProvider } from '@/components/layout/feature-flag-context';
 import { AppSidebar } from '@/components/layout/sidebar';
 import { TopBar } from '@/components/layout/top-bar';
 import { SearchProvider } from '@/components/search/search-provider';
+import { TosReacceptanceModal } from '@/components/tos-reacceptance-modal';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
+import { TOS_CURRENT_VERSION } from '@/lib/tos';
 
 /**
  * Dashboard layout (server component).
@@ -29,7 +32,7 @@ import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
  *    so client components render immediately without loading flashes.
  */
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
-  const reqHeaders = await headers();
+  const [reqHeaders, locale] = await Promise.all([headers(), getLocale()]);
   const session = await auth.api.getSession({ headers: reqHeaders });
 
   if (!session) {
@@ -111,34 +114,55 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   // no-org user cannot accidentally expose a gated feature.
   const resolvedFlagBag: FlagValues = flagBag ?? emptyFlagBag().values;
 
+  // Phase 64 D-30 — ToS re-acceptance check
+  const latestTosConsent = activeOrgId
+    ? await prisma.consentEvent.findFirst({
+        where: {
+          userId: session.user.id,
+          organizationId: activeOrgId,
+          scope: 'TOS',
+          version: TOS_CURRENT_VERSION,
+        },
+        select: { id: true },
+        orderBy: { acceptedAt: 'desc' },
+      })
+    : null;
+  const needsTosAcceptance = !latestTosConsent;
+
   return (
-    <DashboardProvider activeOrg={activeOrg} userRole={userRole}>
-      <FeatureFlagProvider bag={resolvedFlagBag}>
-        <BreadcrumbProvider>
-          <SearchProvider>
-            <SidebarProvider>
-              {/* Skip to content link — visible on focus for keyboard users */}
-              <a
-                href="#main-content"
-                className="fixed start-4 top-4 z-[100] -translate-y-16 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-lg transition-transform focus:translate-y-0">
-                Skip to content
-              </a>
-              <AppSidebar />
-              <SidebarInset>
-                <TopBar />
-                <BillingOverlay />
-                {/* biome-ignore lint/correctness/useUniqueElementIds: skip-link anchor target — singleton layout */}
-                <main
-                  id="main-content"
-                  className="mesh-bg grain-overlay min-w-0 flex-1 overflow-x-hidden p-6">
-                  {children}
-                  <AppFooter />
-                </main>
-              </SidebarInset>
-            </SidebarProvider>
-          </SearchProvider>
-        </BreadcrumbProvider>
-      </FeatureFlagProvider>
-    </DashboardProvider>
+    <>
+      {/* Phase 64 D-30 — ToS re-acceptance modal (non-dismissible) */}
+      {needsTosAcceptance && (
+        <TosReacceptanceModal currentVersion={TOS_CURRENT_VERSION} locale={locale} />
+      )}
+      <DashboardProvider activeOrg={activeOrg} userRole={userRole}>
+        <FeatureFlagProvider bag={resolvedFlagBag}>
+          <BreadcrumbProvider>
+            <SearchProvider>
+              <SidebarProvider>
+                {/* Skip to content link — visible on focus for keyboard users */}
+                <a
+                  href="#main-content"
+                  className="fixed start-4 top-4 z-[100] -translate-y-16 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-lg transition-transform focus:translate-y-0">
+                  Skip to content
+                </a>
+                <AppSidebar />
+                <SidebarInset>
+                  <TopBar />
+                  <BillingOverlay />
+                  {/* biome-ignore lint/correctness/useUniqueElementIds: skip-link anchor target — singleton layout */}
+                  <main
+                    id="main-content"
+                    className="mesh-bg grain-overlay min-w-0 flex-1 overflow-x-hidden p-6">
+                    {children}
+                    <AppFooter />
+                  </main>
+                </SidebarInset>
+              </SidebarProvider>
+            </SearchProvider>
+          </BreadcrumbProvider>
+        </FeatureFlagProvider>
+      </DashboardProvider>
+    </>
   );
 }
