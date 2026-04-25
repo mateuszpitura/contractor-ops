@@ -7,15 +7,21 @@
 // belongs to Plan 63-03; this is the minimal production implementation
 // required by the router.
 
-import type { Decimal } from '@contractor-ops/db/generated/prisma/client/runtime/library';
-
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
+/**
+ * Structural type for rate values. Mirrors `BoeRateRow.ratePercent` from
+ * `boe-rate-cache.ts` so callers can pass Prisma `Decimal` instances, plain
+ * numbers, or numeric strings without a hard import dependency on
+ * `@prisma/client-runtime-utils`.
+ */
+type RateValue = number | { toNumber(): number } | string;
+
 export interface RateHistoryEntry {
   effectiveFrom: Date;
-  ratePercent: Decimal | number;
+  ratePercent: RateValue;
 }
 
 export interface InvoicePaymentEntry {
