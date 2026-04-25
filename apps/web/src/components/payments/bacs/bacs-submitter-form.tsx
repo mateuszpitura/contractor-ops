@@ -85,8 +85,14 @@ export function BacsSubmitterForm({ featureEnabled }: BacsSubmitterFormProps) {
   // When masks load, sync the (non-secret) submitter name into the form so the
   // user can edit it in place. Encrypted fields stay blank — the masked
   // preview lives in the helper text above each input.
+  //
+  // Only reset while the form is pristine. Without the `isDirty` guard, a
+  // late-arriving masks query (slow first load, no React-Query cache) would
+  // wipe any field the user has already typed into. The post-save refetch
+  // also fires this effect; the pristine guard makes 'success-clears-form'
+  // a deliberate no-op rather than an accidental side effect of the refetch.
   useEffect(() => {
-    if (masks?.submitterName) {
+    if (masks?.submitterName && !isDirty) {
       reset({
         serviceUserNumber: '',
         submitterSortCode: '',
@@ -94,7 +100,7 @@ export function BacsSubmitterForm({ featureEnabled }: BacsSubmitterFormProps) {
         submitterName: masks.submitterName,
       });
     }
-  }, [masks?.submitterName, reset]);
+  }, [masks?.submitterName, reset, isDirty]);
 
   const saveMutation = useMutation(
     trpc.bacs.saveSubmitterConfig.mutationOptions({
