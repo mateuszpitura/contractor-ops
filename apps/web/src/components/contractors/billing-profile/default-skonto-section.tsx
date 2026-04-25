@@ -5,11 +5,7 @@ import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { trpc } from '@/trpc/init';
@@ -64,7 +60,7 @@ export function DefaultSkontoSection({
       toast.success(t('savedToast'));
       void utils.skonto.invalidate();
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(error.message);
     },
   });
@@ -75,7 +71,7 @@ export function DefaultSkontoSection({
       setForm({ discountPercent: '', discountDays: '', netDays: '' });
       void utils.skonto.invalidate();
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(error.message);
     },
   });
@@ -93,7 +89,7 @@ export function DefaultSkontoSection({
           return t('validation.invalidDays');
         }
       }
-      return undefined;
+      return;
     },
     [t],
   );
@@ -106,21 +102,21 @@ export function DefaultSkontoSection({
 
     const dd = Number(form.discountDays);
     const nd = Number(form.netDays);
-    if (!Number.isNaN(dd) && !Number.isNaN(nd) && dd >= nd) {
+    if (!(Number.isNaN(dd) || Number.isNaN(nd)) && dd >= nd) {
       newErrors.discountDays = t('validation.daysOrdering');
     }
 
     setErrors(newErrors);
-    return !newErrors.discountPercent && !newErrors.discountDays && !newErrors.netDays;
+    return !(newErrors.discountPercent || newErrors.discountDays || newErrors.netDays);
   }, [form, validateField, t]);
 
   const handleBlur = (name: keyof FormState) => {
     const error = validateField(name, form[name]);
-    setErrors((prev) => ({ ...prev, [name]: error }));
+    setErrors(prev => ({ ...prev, [name]: error }));
   };
 
   const handleChange = (name: keyof FormState, value: string) => {
-    setForm((prev) => ({ ...prev, [name]: value }));
+    setForm(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSave = () => {
@@ -157,7 +153,7 @@ export function DefaultSkontoSection({
               max="50"
               step="0.01"
               value={form.discountPercent}
-              onChange={(e) => handleChange('discountPercent', e.target.value)}
+              onChange={e => handleChange('discountPercent', e.target.value)}
               onBlur={() => handleBlur('discountPercent')}
               className="tabular-nums"
               aria-invalid={!!errors.discountPercent}
@@ -175,7 +171,7 @@ export function DefaultSkontoSection({
               min="1"
               step="1"
               value={form.discountDays}
-              onChange={(e) => handleChange('discountDays', e.target.value)}
+              onChange={e => handleChange('discountDays', e.target.value)}
               onBlur={() => handleBlur('discountDays')}
               className="tabular-nums"
               aria-invalid={!!errors.discountDays}
@@ -193,23 +189,17 @@ export function DefaultSkontoSection({
               min="1"
               step="1"
               value={form.netDays}
-              onChange={(e) => handleChange('netDays', e.target.value)}
+              onChange={e => handleChange('netDays', e.target.value)}
               onBlur={() => handleBlur('netDays')}
               className="tabular-nums"
               aria-invalid={!!errors.netDays}
             />
-            {errors.netDays && (
-              <p className="text-xs text-destructive">{errors.netDays}</p>
-            )}
+            {errors.netDays && <p className="text-xs text-destructive">{errors.netDays}</p>}
           </div>
         </div>
 
         <div className="flex items-center gap-2">
-          <Button
-            onClick={handleSave}
-            size="sm"
-            disabled={upsertMutation.isPending}
-          >
+          <Button onClick={handleSave} size="sm" disabled={upsertMutation.isPending}>
             {upsertMutation.isPending ? t('saving') : t('saveTerm')}
           </Button>
 
@@ -219,8 +209,7 @@ export function DefaultSkontoSection({
               size="sm"
               onClick={handleDelete}
               disabled={deleteMutation.isPending}
-              className="text-destructive hover:text-destructive"
-            >
+              className="text-destructive hover:text-destructive">
               {t('removeDefault')}
             </Button>
           )}
