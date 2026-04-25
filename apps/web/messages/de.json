@@ -5243,6 +5243,42 @@
         "emptyNoAssessmentsHeading": "Noch keine abgeschlossenen Bewertungen",
         "emptyNoAssessmentsBody": "Führen Sie eine IR35- oder Scheinselbständigkeits-Bewertung für einen Einsatz durch, um diese Ansicht zu befüllen."
       }
+    },
+    "AdvisoryBanner": {
+      "label": "Rechtlicher Hinweis"
+    },
+    "ExpertHelp": {
+      "title": "Expertenberatung anfordern",
+      "subtitle": "Verbinden Sie sich mit qualifizierten Beratern für Ihre Klassifizierungsfragen.",
+      "orgAdviser": {
+        "title": "Ihr Unternehmensberater",
+        "description": "Ihr Unternehmen hat einen Berater für Klassifizierungsanfragen bestimmt.",
+        "contact": "Berater kontaktieren"
+      },
+      "gb": {
+        "title": "UK IR35 Berater",
+        "description": "CIOT- oder ATT-akkreditierte Steuerberater für IR35.",
+        "ciot": {
+          "title": "CIOT — Steuerberatersuche",
+          "description": "Verzeichnis der Chartered Institute of Taxation Mitglieder"
+        },
+        "hmrc": {
+          "title": "HMRC Employment Status Manual",
+          "description": "Offizielle HMRC-Richtlinien zu IR35"
+        }
+      },
+      "de": {
+        "title": "Steuerberater für Scheinselbständigkeit",
+        "description": "Spezialisierte Beratung zur Scheinselbständigkeit und DRV-Statusfeststellung.",
+        "steuerberater": {
+          "title": "Steuerberaterkammer — Mitgliedssuche",
+          "description": "Regionale Steuerberaterkammern der Bundessteuerberaterkammer"
+        },
+        "drv": {
+          "title": "DRV Statusfeststellungsverfahren",
+          "description": "Offizielle DRV-Informationen zum Statusfeststellungsverfahren nach § 7a SGB IV"
+        }
+      }
     }
   },
   "EInvoice": {

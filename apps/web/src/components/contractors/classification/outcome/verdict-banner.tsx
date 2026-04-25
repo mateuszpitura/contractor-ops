@@ -3,10 +3,17 @@
 // ---------------------------------------------------------------------------
 // Renders the colour + icon + text "semantic triad" (WCAG 1.4.1 — never
 // communicate by colour alone). Used by both IR35 and DRV outcome variants.
+//
+// Phase 64 · D-19 — When `onAmberVerdictMounted` is provided, the banner fires
+// the callback (exactly once, via ref guard) when the tone is 'warning'. The
+// outcome page uses this to trigger logEscalation for amber/indeterminate verdicts.
+
+'use client';
 
 import type { Ir35Outcome, ScheinselbstandigkeitOutcome } from '@contractor-ops/classification';
 import type { LucideIcon } from 'lucide-react';
 import { CircleCheck, ShieldAlert, ShieldQuestion, ShieldX } from 'lucide-react';
+import { useEffect, useRef } from 'react';
 
 type SemanticTone = 'success' | 'warning' | 'destructive' | 'neutral';
 
@@ -17,12 +24,15 @@ export type VerdictBannerProps =
       label: string;
       /** Optional subline e.g. rule-set version + completion date. */
       subline?: string;
+      /** Phase 64 D-19 — fired once on mount when verdict is amber/indeterminate */
+      onAmberVerdictMounted?: () => void;
     }
   | {
       kind: 'drv';
       outcome: ScheinselbstandigkeitOutcome;
       label: string;
       subline?: string;
+      onAmberVerdictMounted?: () => void;
     };
 
 const TONE_STYLES: Record<SemanticTone, { container: string; icon: string; border: string }> = {
@@ -103,6 +113,17 @@ export function VerdictBanner(props: VerdictBannerProps) {
   const tone = kind === 'ir35' ? toneForIr35(props.outcome) : toneForDrv(props.outcome);
   const Icon = kind === 'ir35' ? iconForIr35(props.outcome) : iconForDrv(props.outcome);
   const styles = TONE_STYLES[tone];
+
+  // Phase 64 D-19 — fire logEscalation once on mount when verdict is amber/indeterminate.
+  // Ref guard prevents double-fire on StrictMode double-mount in development.
+  const escalationFiredRef = useRef(false);
+  const onAmberVerdictMounted = props.onAmberVerdictMounted;
+  useEffect(() => {
+    if (tone === 'warning' && onAmberVerdictMounted && !escalationFiredRef.current) {
+      escalationFiredRef.current = true;
+      onAmberVerdictMounted();
+    }
+  }, [tone, onAmberVerdictMounted]);
 
   return (
     <div
