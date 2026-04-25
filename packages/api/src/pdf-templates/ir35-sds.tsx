@@ -13,7 +13,11 @@ import type {
   Ir35AreaVerdict,
   Ir35Verdict,
 } from '@contractor-ops/classification';
-import { IR35_DISPUTE_PROCESS_EN, SDS_DISCLAIMER_EN } from '@contractor-ops/validators';
+import {
+  IR35_DISPUTE_PROCESS_EN,
+  SDS_APPROVAL_STATEMENT_EN,
+  SDS_DISCLAIMER_EN,
+} from '@contractor-ops/validators';
 import { Document, Page, StyleSheet, Text, View } from '@react-pdf/renderer';
 
 export const TEMPLATE_VERSION = 1 as const;
@@ -150,6 +154,114 @@ export interface SdsOrganization {
   countryCode: string | null;
 }
 
+// Phase 64 · D-21 — SDS approval data for cover page
+interface SdsApprovalData {
+  clientName: string;
+  approvedAt: Date;
+  approvedByName: string;
+  approvalStatementSnapshot: string;
+}
+
+const coverStyles = StyleSheet.create({
+  coverPage: {
+    fontFamily: 'Helvetica',
+    fontSize: 10,
+    lineHeight: 1.5,
+    color: GREY_BODY,
+    padding: 56,
+    paddingBottom: 72,
+  },
+  coverHeader: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: TEAL_ACCENT,
+    marginBottom: 4,
+  },
+  coverSubtitle: {
+    fontSize: 9,
+    color: GREY_MUTED,
+    marginBottom: 32,
+  },
+  coverSection: {
+    marginBottom: 20,
+  },
+  coverLabel: {
+    fontSize: 8,
+    fontWeight: 'bold',
+    color: GREY_MUTED,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 4,
+  },
+  coverValue: {
+    fontSize: 11,
+    color: GREY_BODY,
+  },
+  coverStatement: {
+    fontSize: 9,
+    color: GREY_BODY,
+    lineHeight: 1.6,
+    padding: 12,
+    backgroundColor: '#f9fafb',
+    borderRadius: 4,
+    marginTop: 8,
+  },
+  coverFooter: {
+    position: 'absolute',
+    bottom: 40,
+    left: 56,
+    right: 56,
+    fontSize: 8,
+    color: GREY_MUTED,
+    borderTop: `1px solid ${GREY_RULE}`,
+    paddingTop: 8,
+  },
+});
+
+function CoverPage({ approvalData }: { approvalData: SdsApprovalData }) {
+  return (
+    <Page style={coverStyles.coverPage}>
+      <View style={coverStyles.coverSection}>
+        <Text style={coverStyles.coverHeader}>Status Determination Statement</Text>
+        <Text style={coverStyles.coverSubtitle}>Approval Record — Chapter 10 ITEPA 2003</Text>
+      </View>
+
+      <View style={coverStyles.coverSection}>
+        <Text style={coverStyles.coverLabel}>Client / End-Hirer</Text>
+        <Text style={coverStyles.coverValue}>{approvalData.clientName}</Text>
+      </View>
+
+      <View style={coverStyles.coverSection}>
+        <Text style={coverStyles.coverLabel}>Approved By</Text>
+        <Text style={coverStyles.coverValue}>{approvalData.approvedByName}</Text>
+      </View>
+
+      <View style={coverStyles.coverSection}>
+        <Text style={coverStyles.coverLabel}>Approved At</Text>
+        <Text style={coverStyles.coverValue}>
+          {approvalData.approvedAt.toLocaleDateString('en-GB', {
+            day: '2-digit',
+            month: 'long',
+            year: 'numeric',
+          })}
+        </Text>
+      </View>
+
+      <View style={coverStyles.coverSection}>
+        <Text style={coverStyles.coverLabel}>Approval Statement</Text>
+        <Text style={coverStyles.coverStatement}>{approvalData.approvalStatementSnapshot}</Text>
+      </View>
+
+      <View style={coverStyles.coverFooter} fixed>
+        <Text>
+          Approval recorded in-app on {approvalData.approvedAt.toLocaleDateString('en-GB')} • This
+          cover page is generated from the approval record stored by Contractor Ops
+        </Text>
+      </View>
+    </Page>
+  );
+}
+
 export interface IR35SDSDocumentProps {
   assessment: Assessment;
   engagement: SdsEngagement;
@@ -157,6 +269,8 @@ export interface IR35SDSDocumentProps {
   organization: SdsOrganization;
   /** Stable timestamp for byte-equal re-renders — typically assessment.completedAt. */
   renderedAt: Date;
+  /** Phase 64 D-21 — optional SDS approval data for cover page */
+  approvalData?: SdsApprovalData | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -203,6 +317,7 @@ export function IR35SDSDocument({
   contractor,
   organization,
   renderedAt,
+  approvalData,
 }: IR35SDSDocumentProps) {
   if (assessment.outcome?.kind !== 'IR35') {
     throw new Error('IR35SDSDocument: assessment.outcome must be of kind IR35');
@@ -218,6 +333,8 @@ export function IR35SDSDocument({
 
   return (
     <Document title={`SDS — ${contractor.displayName} — ${engagement.displayName}`}>
+      {/* Phase 64 D-21 — cover page when approval data is present */}
+      {approvalData != null && <CoverPage approvalData={approvalData} />}
       {/* Page 1 — verdict + engagement details */}
       <Page size="A4" style={styles.page} wrap>
         <View style={styles.header}>

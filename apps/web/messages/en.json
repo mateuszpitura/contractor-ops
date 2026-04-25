@@ -4248,6 +4248,21 @@
           "body": "To report a suspected data breach or for questions about this procedure, contact our security team at security@contractorops.com. For general privacy inquiries, contact privacy@contractorops.com."
         }
       }
+    },
+    "SdsApproval": {
+      "gateTitle": "Client approval required before generating SDS",
+      "clientNameLabel": "Client name",
+      "clientNamePlaceholder": "Enter the end-hirer company name",
+      "confirmApproval": "Confirm approval and proceed",
+      "confirmingApproval": "Confirming...",
+      "approved": "Approved — you can now generate the SDS"
+    },
+    "DrvUpload": {
+      "uploadDecisionLetter": "Upload DRV decision letter",
+      "uploading": "Uploading...",
+      "uploadedAt": "Uploaded {date} by {user}",
+      "downloadLetter": "Download decision letter",
+      "fileTooLarge": "File too large (max 10 MB)"
     }
   },
   "Consent": {
