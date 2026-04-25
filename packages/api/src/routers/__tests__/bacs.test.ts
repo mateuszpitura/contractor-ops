@@ -442,4 +442,44 @@ describe('bacsRouter.previewExport / generateExport', () => {
     await expect(caller.generateExport({ paymentRunId: RUN_ID })).rejects.toThrow(/GBP/);
     expect(mockPutAndSign).not.toHaveBeenCalled();
   });
+
+  it('generateExport: rejects DRAFT payment runs (WR-05)', async () => {
+    // WR-05 regression: a DRAFT run is still mutable — the recipient list
+    // could change between BACS file download and submission, and the
+    // Document audit row would point to a 'version' of the run that no
+    // longer exists. The router must require LOCKED+ for generateExport.
+    mockPrisma.organization.findUnique = vi.fn().mockResolvedValue({
+      bacsServiceUserNumberEncrypted: 'enc:123456',
+      bacsSubmitterSortCodeEncrypted: 'enc:112233',
+      bacsSubmitterAccountNumberEncrypted: 'enc:12345678',
+      bacsSubmitterName: 'ACME LTD',
+      name: 'Acme Ltd',
+    });
+    mockPrisma.paymentRun.findFirst = vi.fn().mockResolvedValue({
+      id: RUN_ID,
+      runNumber: 'PR-DRAFT-001',
+      organizationId: ORG_ID,
+      status: 'DRAFT',
+      currency: 'GBP',
+      items: [
+        {
+          amountMinor: 50_000,
+          currency: 'GBP',
+          status: 'PENDING',
+          paymentReference: 'INV-DRAFT-001',
+          invoice: { invoiceNumber: 'INV-DRAFT-001' },
+          contractor: { legalName: 'CONTRACTOR LTD' },
+          billingProfile: {
+            ukSortCodeEncrypted: 'enc:123456',
+            ukAccountNumberEncrypted: 'enc:87654321',
+          },
+        },
+      ],
+    });
+
+    await expect(caller.generateExport({ paymentRunId: RUN_ID })).rejects.toThrow(
+      /must be locked/i,
+    );
+    expect(mockPutAndSign).not.toHaveBeenCalled();
+  });
 });

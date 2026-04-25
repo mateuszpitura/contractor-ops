@@ -156,6 +156,13 @@ async function loadRunWithBacsItems(
   paymentRunId: string,
 ): Promise<{
   runNumber: string;
+  /**
+   * Run lifecycle status — exposed so the caller can gate hot operations
+   * (e.g. generateExport requires LOCKED+ to prevent DRAFT runs from
+   * producing a downloadable file with an audit row that points to a
+   * preview state that may still mutate). previewExport accepts any status.
+   */
+  status: string;
   bacsItems: BacsExportItem[];
 }> {
   const run = await db.paymentRun.findFirst({
@@ -237,7 +244,7 @@ async function loadRunWithBacsItems(
     };
   });
 
-  return { runNumber: runRef, bacsItems };
+  return { runNumber: runRef, status: run.status, bacsItems };
 }
 
 // ---------------------------------------------------------------------------
@@ -324,11 +331,26 @@ export const bacsRouter = router({
         });
       }
 
-      const { runNumber, bacsItems } = await loadRunWithBacsItems(
+      const { runNumber, status, bacsItems } = await loadRunWithBacsItems(
         db,
         ctx.organizationId,
         input.paymentRunId,
       );
+
+      // Refuse to generate a downloadable file from a run that is still
+      // mutable (DRAFT) or already terminal (COMPLETED / FAILED / CANCELLED).
+      // Per the payment-run state machine, BACS export must operate on a
+      // locked snapshot — otherwise the recipient list could change between
+      // download and submission, and the Document audit row would point to
+      // a "version" of the run that no longer exists. EXPORTED is allowed
+      // so re-downloading a previously exported run is permitted (idempotent
+      // export per the payment router's lock-and-export contract).
+      if (!(status === 'LOCKED' || status === 'EXPORTED')) {
+        throw new TRPCError({
+          code: 'PRECONDITION_FAILED',
+          message: `Payment run must be locked before BACS export (current status: ${status})`,
+        });
+      }
 
       const generatedAt = new Date();
       const result = generateBacsStandard18(bacsItems, submitter, runNumber, generatedAt);
