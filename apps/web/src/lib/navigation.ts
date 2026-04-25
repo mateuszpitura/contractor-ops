@@ -14,6 +14,7 @@ import {
   Plug,
   Receipt,
   Settings,
+  ShieldCheck,
   Users,
 } from 'lucide-react';
 
@@ -88,6 +89,15 @@ export const navigationGroups: NavGroup[] = [
         href: '/equipment',
         icon: Package,
         permission: { resource: 'equipment', actions: ['read'] },
+      },
+      // Phase 64 D-03 — Classification nav item (LEGAL-08). Hidden when flag is off.
+      {
+        key: 'classification',
+        label: 'Classification',
+        href: '/classification',
+        icon: ShieldCheck,
+        permission: { resource: 'contractor', actions: ['read'] },
+        flag: 'module.classification-engine' as const satisfies FlagKey,
       },
     ],
   },
