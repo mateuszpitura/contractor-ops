@@ -1,11 +1,16 @@
 /**
  * Pure-function export generators for payment run files.
  * Supports CSV (via xlsx), Polish Elixir flat file, SEPA XML pain.001.001.03,
- * and SWIFT XML pain.001.001.09 (Phase 46).
+ * SWIFT XML pain.001.001.09 (Phase 46), and BACS Standard 18 Direct Credit
+ * (Phase 63 — UK GBP transfers).
  */
 
-import { minorToDecimalStr } from '@contractor-ops/shared';
+import { createLogger } from '@contractor-ops/logger';
+import { minorToDecimalStr, transliterateToBacs } from '@contractor-ops/shared';
+import { modulusCheck, VOCALINK_MODULUS_TABLE_V840 } from '@contractor-ops/validators';
 import { getPurposeCode } from './purpose-codes.js';
+
+const log = createLogger({ service: 'payment-export' });
 
 // ---------------------------------------------------------------------------
 // Types
@@ -187,8 +192,9 @@ export function generateElixir(items: ExportItem[], sender: OrgBankInfo): Buffer
 
     const taxId = item.taxId ?? '';
     if (!taxId) {
-      console.warn(
-        `[payment-export] Missing taxId (NIP) for contractor "${item.contractorName}" in Elixir export — using empty value`,
+      log.warn(
+        { contractorName: item.contractorName },
+        'missing taxId (NIP) for contractor in Elixir export — using empty value',
       );
     }
 
@@ -365,4 +371,297 @@ function stripCountryPrefix(iban: string): string {
     return cleaned.substring(2);
   }
   return cleaned;
+}
+
+// ---------------------------------------------------------------------------
+// BACS Standard 18 Direct Credit (Phase 63 — PAY-01)
+// ---------------------------------------------------------------------------
+
+/**
+ * Per-payment input for BACS Std 18 Direct Credit generation.
+ * Sort code and account number are decrypted by the caller (the tRPC router)
+ * BEFORE invoking the generator — the generator never touches encrypted blobs.
+ */
+export interface BacsExportItem {
+  /** Beneficiary name as it should appear on the bank statement (max 18 BACS-safe ASCII chars after transliteration). */
+  contractorName: string;
+  /** UK sort code: 6 digits, no hyphens. */
+  sortCode: string;
+  /** UK account number: 8 digits. */
+  accountNumber: string;
+  /** Payment amount in pence. Must be < 100_000_000_000 (11-digit pence overflow). */
+  amountMinor: number;
+  /** Payment reference shown on the recipient's statement (max 18 BACS-safe chars after transliteration). */
+  paymentReference: string;
+}
+
+/**
+ * Submitter (originator) bank details for the BACS file. Configured per
+ * organization on the `Settings -> Payments` admin page (D-02).
+ */
+export interface BacsOrgBankInfo {
+  /** Service User Number — 6-digit identifier issued by Bacs to the submitting org. */
+  serviceUserNumber: string;
+  /** Submitter's UK sort code: 6 digits. */
+  submitterSortCode: string;
+  /** Submitter's UK account number: 8 digits. */
+  submitterAccountNumber: string;
+  /** Submitter name (max 18 chars BACS-safe ASCII; appears in detail records' originator-name field). */
+  submitterName: string;
+}
+
+/**
+ * Result of {@link generateBacsStandard18}.
+ *
+ * `transliterationWarnings` and `modulusWarnings` are aggregated for UI
+ * display BEFORE the file is downloaded. Per D-01, modulus-invalid entries
+ * warn but do not block (some exception-category sort codes are known-invalid
+ * per the VocaLink spec). Per the threat model, the UI MUST block download
+ * when any `replaced` entries are present.
+ */
+export interface BacsGenerateResult {
+  fileBuffer: Buffer;
+  ext: 'txt';
+  transliterationWarnings: Array<{ contractorName: string; replaced: string[] }>;
+  modulusWarnings: Array<{ contractorName: string; sortCode: string; warnings: string[] }>;
+}
+
+/** Maximum amount in pence representable in 11 digits: 999,999,999.99 GBP. */
+const BACS_MAX_AMOUNT_PENCE = 100_000_000_000; // exclusive upper bound
+
+/** Width of BACS detail records (Direct Credit). */
+const BACS_DETAIL_RECORD_LEN = 106;
+
+/** Width of BACS label records (VOL1, HDR1, HDR2, UHL1, EOF1, EOF2, UTL1). */
+const BACS_LABEL_RECORD_LEN = 80;
+
+/**
+ * Convert a date to BACS YYDDD Julian format.
+ * - YY = last 2 digits of UTC year, zero-padded
+ * - DDD = day-of-year (1-366), zero-padded to 3 digits
+ *
+ * Uses UTC to avoid timezone-driven drift when the same input date is
+ * processed from different regions.
+ */
+function toJulianDate(date: Date): string {
+  const yy = String(date.getUTCFullYear() % 100).padStart(2, '0');
+  const startOfYear = Date.UTC(date.getUTCFullYear(), 0, 1);
+  const ms = date.getTime() - startOfYear;
+  const dayOfYear = Math.floor(ms / 86_400_000) + 1;
+  const ddd = String(dayOfYear).padStart(3, '0');
+  return `${yy}${ddd}`;
+}
+
+/**
+ * Pad a string to exactly `len` characters with trailing spaces, truncating
+ * if longer than `len`.
+ */
+function padField(value: string, len: number): string {
+  return value.padEnd(len, ' ').slice(0, len);
+}
+
+/** Pad to exactly `len` characters with leading zeros. Throws if numeric value too large. */
+function padZero(value: string, len: number): string {
+  return value.padStart(len, '0');
+}
+
+/**
+ * Transliterate a name/reference to BACS-safe uppercase ASCII, padded/truncated
+ * to `len` characters. Returns the formatted field plus the list of unmappable
+ * characters that were replaced with `?` so the caller can aggregate warnings.
+ */
+function bacsField(raw: string, len: number): { field: string; replaced: string[] } {
+  const { output, replaced } = transliterateToBacs(raw);
+  return { field: padField(output, len), replaced };
+}
+
+/**
+ * Generate a BACS Standard 18 Direct Credit fixed-width file.
+ *
+ * File layout (per D-03 + Pay.UK Standard 18 spec):
+ *
+ *   VOL1<76 spaces>                      80
+ *   HDR1A<SUN><...>                      80
+ *   HDR2F0200000100<65 spaces>           80
+ *   UHL1<YYDDD><spaces>                  80
+ *   <Detail record 1>                   106
+ *   ...
+ *   <Detail record N>                   106
+ *   EOF1A<SUN><spaces>                   80
+ *   EOF2F0200000100<spaces>              80
+ *   UTL1<total amount, 11 digits>...     80
+ *
+ * Each detail record (Direct Credit, transaction code '99') has 12 fields
+ * totalling exactly 106 chars; see {@link buildDetailRecord}.
+ *
+ * Lines are joined with CR/LF, no UTF-8 BOM (BACS files are pure ASCII).
+ *
+ * Throws when any item's `amountMinor` exceeds the 11-digit pence limit.
+ */
+export function generateBacsStandard18(
+  items: BacsExportItem[],
+  orgBank: BacsOrgBankInfo,
+  _runRef: string,
+  processingDate: Date,
+): BacsGenerateResult {
+  const julian = toJulianDate(processingDate);
+  const transliterationWarnings: BacsGenerateResult['transliterationWarnings'] = [];
+  const modulusWarnings: BacsGenerateResult['modulusWarnings'] = [];
+
+  // --- Build originator name field once (same for every detail row) -------
+  const { field: originatorNameField, replaced: orgNameReplaced } = bacsField(
+    orgBank.submitterName,
+    18,
+  );
+  if (orgNameReplaced.length > 0) {
+    transliterationWarnings.push({
+      contractorName: orgBank.submitterName,
+      replaced: orgNameReplaced,
+    });
+  }
+
+  // --- Headers ------------------------------------------------------------
+  const vol1 = padField('VOL1', BACS_LABEL_RECORD_LEN);
+  const hdr1 = padField(
+    `HDR1A${orgBank.serviceUserNumber}S  001  001 ${julian} ${julian}000000`,
+    BACS_LABEL_RECORD_LEN,
+  );
+  const hdr2 = padField('HDR2F0200000100', BACS_LABEL_RECORD_LEN);
+  const uhl1 = padField(`UHL1${julian}`, BACS_LABEL_RECORD_LEN);
+
+  // --- Detail records -----------------------------------------------------
+  let totalAmount = 0;
+  const detailLines: string[] = [];
+
+  for (const item of items) {
+    if (item.amountMinor < 0 || item.amountMinor >= BACS_MAX_AMOUNT_PENCE) {
+      throw new Error(
+        `BACS Std 18: amount overflow — amountMinor=${item.amountMinor} exceeds 11-digit pence limit (max ${BACS_MAX_AMOUNT_PENCE - 1})`,
+      );
+    }
+    totalAmount += item.amountMinor;
+
+    // Transliterate destination name and aggregate any replacements as warnings.
+    const { field: destNameField, replaced: destNameReplaced } = bacsField(item.contractorName, 18);
+    if (destNameReplaced.length > 0) {
+      transliterationWarnings.push({
+        contractorName: item.contractorName,
+        replaced: destNameReplaced,
+      });
+    }
+
+    // Transliterate user reference (paymentReference) — no separate warning entry
+    // since the contractorName covers the per-item warning surface for UI display.
+    const { field: userRefField } = bacsField(item.paymentReference, 18);
+
+    // Modulus check on destination sort code + account.
+    const mc = modulusCheck(item.sortCode, item.accountNumber, VOCALINK_MODULUS_TABLE_V840);
+    if (!mc.valid || mc.warnings.length > 0) {
+      modulusWarnings.push({
+        contractorName: item.contractorName,
+        sortCode: item.sortCode,
+        warnings: mc.warnings.length > 0 ? mc.warnings : ['Modulus check failed'],
+      });
+    }
+
+    const detail = buildDetailRecord({
+      destSortCode: item.sortCode,
+      destAccount: item.accountNumber,
+      origSortCode: orgBank.submitterSortCode,
+      origAccount: orgBank.submitterAccountNumber,
+      amountPence: item.amountMinor,
+      originatorRef: originatorNameField, // already 18 chars, BACS-safe
+      userRef: userRefField, // already 18 chars, BACS-safe
+      destName: destNameField, // already 18 chars, BACS-safe
+      processingDateJulian: julian,
+    });
+
+    if (detail.length !== BACS_DETAIL_RECORD_LEN) {
+      // Hard guard — should never trigger if buildDetailRecord is correct.
+      throw new Error(
+        `BACS Std 18: detail record length mismatch — got ${detail.length}, expected ${BACS_DETAIL_RECORD_LEN}`,
+      );
+    }
+
+    detailLines.push(detail);
+  }
+
+  // --- Trailers -----------------------------------------------------------
+  const eof1 = padField(`EOF1A${orgBank.serviceUserNumber}`, BACS_LABEL_RECORD_LEN);
+  const eof2 = padField('EOF2F0200000100', BACS_LABEL_RECORD_LEN);
+  const utl1 = padField(`UTL1${padZero(String(totalAmount), 11)}`, BACS_LABEL_RECORD_LEN);
+
+  // --- Assemble ------------------------------------------------------------
+  const allLines = [vol1, hdr1, hdr2, uhl1, ...detailLines, eof1, eof2, utl1];
+  const fileBuffer = Buffer.from(allLines.join('\r\n'), 'ascii');
+
+  if (transliterationWarnings.length > 0) {
+    log.warn(
+      { count: transliterationWarnings.length },
+      'BACS Std 18: unmappable characters were replaced with "?" — UI must block download until resolved',
+    );
+  }
+  if (modulusWarnings.length > 0) {
+    log.warn(
+      { count: modulusWarnings.length },
+      'BACS Std 18: modulus check warnings present — review before submission',
+    );
+  }
+
+  return {
+    fileBuffer,
+    ext: 'txt',
+    transliterationWarnings,
+    modulusWarnings,
+  };
+}
+
+/**
+ * Build one BACS Std 18 Direct Credit detail record (exactly 106 chars).
+ * Field layout per Pay.UK Standard 18 spec:
+ *
+ *   Pos 1-6     Destination sort code (6 digits)
+ *   Pos 7-14    Destination account number (8 digits)
+ *   Pos 15      Type of account (space = default)
+ *   Pos 16-17   Transaction code ("99" = Direct Credit)
+ *   Pos 18-23   Originator sort code (6 digits)
+ *   Pos 24-31   Originator account number (8 digits)
+ *   Pos 32-35   Free (4 spaces)
+ *   Pos 36-46   Amount in pence (11 digits, zero-padded)
+ *   Pos 47-64   Originator name/ref (18 chars, BACS-safe ASCII, space-padded)
+ *   Pos 65-82   User reference (18 chars, BACS-safe ASCII, space-padded)
+ *   Pos 83-100  Destination account name (18 chars, BACS-safe ASCII, space-padded)
+ *   Pos 101-106 Processing date YYDDD Julian (5 chars + 1 space) or 6 spaces
+ *
+ *   Total: 6 + 8 + 1 + 2 + 6 + 8 + 4 + 11 + 18 + 18 + 18 + 6 = 106
+ */
+function buildDetailRecord(input: {
+  destSortCode: string;
+  destAccount: string;
+  origSortCode: string;
+  origAccount: string;
+  amountPence: number;
+  /** Already 18 chars BACS-safe. */
+  originatorRef: string;
+  /** Already 18 chars BACS-safe. */
+  userRef: string;
+  /** Already 18 chars BACS-safe. */
+  destName: string;
+  /** YYDDD (5 chars). */
+  processingDateJulian: string;
+}): string {
+  return [
+    padField(input.destSortCode, 6),
+    padField(input.destAccount, 8),
+    ' ', // type of account
+    '99', // transaction code: Direct Credit
+    padField(input.origSortCode, 6),
+    padField(input.origAccount, 8),
+    '    ', // free
+    padZero(String(input.amountPence), 11),
+    input.originatorRef, // 18 chars
+    input.userRef, // 18 chars
+    input.destName, // 18 chars
+    padField(input.processingDateJulian, 6),
+  ].join('');
 }

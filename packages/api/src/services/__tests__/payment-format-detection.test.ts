@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import type { ExportItem } from '../payment-export.js';
+import type { Destination } from '../payment-format-detection.js';
 import {
   detectFormat,
+  detectFormatForDestination,
   EU_IBAN_COUNTRIES,
   groupItemsByFormat,
 } from '../payment-format-detection.js';
@@ -101,5 +103,85 @@ describe('groupItemsByFormat', () => {
     const groups = groupItemsByFormat(items);
     expect(groups.get('BANK_FILE')?.length).toBe(1);
     expect(groups.get('SEPA_XML')?.length).toBe(1);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// detectFormatForDestination — BACS_STD18 routing for GBP+UK accounts (D-04)
+// ---------------------------------------------------------------------------
+
+describe('detectFormatForDestination', () => {
+  function makeDest(overrides: Partial<Destination> = {}): Destination {
+    return {
+      iban: null,
+      ukSortCodeEncrypted: null,
+      ukAccountNumberEncrypted: null,
+      ...overrides,
+    };
+  }
+
+  it('routes GBP + UK sort code/account to BACS_STD18', () => {
+    const dest = makeDest({
+      ukSortCodeEncrypted: 'enc:abc123',
+      ukAccountNumberEncrypted: 'enc:def456',
+    });
+    expect(detectFormatForDestination('GBP', dest)).toBe('BACS_STD18');
+  });
+
+  it('routes GBP + UK account BEFORE checking IBAN (BACS takes precedence)', () => {
+    // Even if a GB IBAN is present, UK account fields should win.
+    const dest = makeDest({
+      iban: 'GB29NWBK60161331926819',
+      ukSortCodeEncrypted: 'enc:abc',
+      ukAccountNumberEncrypted: 'enc:def',
+    });
+    expect(detectFormatForDestination('GBP', dest)).toBe('BACS_STD18');
+  });
+
+  it('routes GBP + IBAN (no UK account) to SWIFT_XML (unchanged behavior)', () => {
+    const dest = makeDest({ iban: 'GB29NWBK60161331926819' });
+    expect(detectFormatForDestination('GBP', dest)).toBe('SWIFT_XML');
+  });
+
+  it('routes EUR + DE IBAN to SEPA_XML (unchanged behavior)', () => {
+    const dest = makeDest({ iban: 'DE89370400440532013000' });
+    expect(detectFormatForDestination('EUR', dest)).toBe('SEPA_XML');
+  });
+
+  it('routes PLN + PL IBAN to BANK_FILE (unchanged behavior)', () => {
+    const dest = makeDest({ iban: 'PL61109010140000071219812874' });
+    expect(detectFormatForDestination('PLN', dest)).toBe('BANK_FILE');
+  });
+
+  it('does NOT route to BACS_STD18 when only sort code is present (account number missing)', () => {
+    const dest = makeDest({
+      iban: 'GB29NWBK60161331926819',
+      ukSortCodeEncrypted: 'enc:abc',
+      // ukAccountNumberEncrypted missing
+    });
+    expect(detectFormatForDestination('GBP', dest)).toBe('SWIFT_XML');
+  });
+
+  it('does NOT route to BACS_STD18 when only account number is present (sort code missing)', () => {
+    const dest = makeDest({
+      iban: 'GB29NWBK60161331926819',
+      ukAccountNumberEncrypted: 'enc:def',
+      // ukSortCodeEncrypted missing
+    });
+    expect(detectFormatForDestination('GBP', dest)).toBe('SWIFT_XML');
+  });
+
+  it('does NOT route non-GBP currency to BACS_STD18 even with UK account fields', () => {
+    const dest = makeDest({
+      iban: 'GB29NWBK60161331926819',
+      ukSortCodeEncrypted: 'enc:abc',
+      ukAccountNumberEncrypted: 'enc:def',
+    });
+    expect(detectFormatForDestination('EUR', dest)).toBe('SWIFT_XML');
+  });
+
+  it('falls back to SWIFT_XML when neither IBAN nor UK account fields are present', () => {
+    const dest = makeDest();
+    expect(detectFormatForDestination('USD', dest)).toBe('SWIFT_XML');
   });
 });

@@ -54,7 +54,27 @@ export const EU_IBAN_COUNTRIES = new Set([
 // Types
 // ---------------------------------------------------------------------------
 
-type ExportFormat = 'SEPA_XML' | 'SWIFT_XML' | 'BANK_FILE' | 'CSV';
+/**
+ * Available payment export formats.
+ *
+ * - `SEPA_XML`: pain.001.001.03 SEPA credit transfer (EUR + EU/EEA IBAN)
+ * - `SWIFT_XML`: pain.001.001.09 SWIFT international credit transfer
+ * - `BANK_FILE`: Polish Elixir type 110 flat file (PLN + PL IBAN)
+ * - `CSV`: Generic CSV with org-defined column mapping
+ * - `BACS_STD18`: UK BACS Standard 18 Direct Credit fixed-width file (D-04)
+ */
+export type ExportFormat = 'SEPA_XML' | 'SWIFT_XML' | 'BANK_FILE' | 'CSV' | 'BACS_STD18';
+
+/**
+ * Destination identity for routing decisions. UK accounts use sort code +
+ * account number (no IBAN); EU accounts use IBAN. Both may be present for a
+ * UK account that also has a GB IBAN — in that case BACS_STD18 wins per D-04.
+ */
+export interface Destination {
+  iban: string | null;
+  ukSortCodeEncrypted: string | null;
+  ukAccountNumberEncrypted: string | null;
+}
 
 // ---------------------------------------------------------------------------
 // Detection
@@ -67,6 +87,10 @@ type ExportFormat = 'SEPA_XML' | 'SWIFT_XML' | 'BANK_FILE' | 'CSV';
  * 1. PLN + Polish IBAN -> BANK_FILE (Elixir domestic)
  * 2. EUR + EU/EEA IBAN -> SEPA_XML
  * 3. Everything else -> SWIFT_XML (international)
+ *
+ * Note: this currency+IBAN form does not surface UK account routing; use
+ * {@link detectFormatForDestination} when the destination has UK sort
+ * code/account fields populated.
  */
 export function detectFormat(currency: string, iban: string): ExportFormat {
   const ibanCountry = iban.replace(/\s/g, '').substring(0, 2).toUpperCase();
@@ -82,6 +106,40 @@ export function detectFormat(currency: string, iban: string): ExportFormat {
   }
 
   // Everything else: SWIFT international
+  return 'SWIFT_XML';
+}
+
+/**
+ * Detect the appropriate payment export format for a destination that may
+ * carry either UK sort code + account number OR a SEPA/IBAN identifier.
+ *
+ * Rules (per D-04):
+ * 1. **GBP + UK sort code + UK account number -> BACS_STD18** (checked BEFORE IBAN)
+ * 2. PLN + Polish IBAN -> BANK_FILE
+ * 3. EUR + EU/EEA IBAN -> SEPA_XML
+ * 4. Everything else -> SWIFT_XML
+ *
+ * The BACS check runs first because a UK payee may carry a GB IBAN AND UK
+ * account fields — for GBP transfers BACS Std 18 is preferred over SWIFT.
+ */
+export function detectFormatForDestination(
+  currency: string,
+  destination: Destination,
+): ExportFormat {
+  // 1. GBP + UK sort code + account -> BACS Standard 18 (per D-04)
+  if (
+    currency === 'GBP' &&
+    destination.ukSortCodeEncrypted &&
+    destination.ukAccountNumberEncrypted
+  ) {
+    return 'BACS_STD18';
+  }
+
+  // Fallback: legacy IBAN-based routing.
+  if (destination.iban) {
+    return detectFormat(currency, destination.iban);
+  }
+
   return 'SWIFT_XML';
 }
 
