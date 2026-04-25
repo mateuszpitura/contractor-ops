@@ -251,6 +251,15 @@ describe('bacsRouter.getSubmitterMasks', () => {
     expect(result.accountNumber).toBe('XXXX5678');
     expect(result.submitterName).toBe('ACME LTD');
   });
+
+  it('throws NOT_FOUND when the organization row is absent (WR-06)', async () => {
+    // WR-06 regression: a missing org row is a tenancy/region invariant
+    // violation, NOT a 'submitter not configured' empty state. Returning
+    // configured=false silently masked the failure mode and produced a
+    // confusing UX (empty form -> save -> opaque error). Surface NOT_FOUND.
+    mockPrisma.organization.findUnique = vi.fn().mockResolvedValue(null);
+    await expect(caller.getSubmitterMasks()).rejects.toThrow(/Organization not found/i);
+  });
 });
 
 // ===========================================================================

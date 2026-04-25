@@ -596,13 +596,17 @@ export async function getBacsSubmitterMasks(
   });
 
   if (!org) {
-    return {
-      configured: false,
-      sun: null,
-      sortCode: null,
-      accountNumber: null,
-      submitterName: null,
-    };
+    // Treat a missing organization row as a hard tenancy/region invariant
+    // violation rather than masking it as 'submitter not configured'. The
+    // empty-state UI would otherwise lead the user to fill in the form, only
+    // to fail with a much less actionable error on the subsequent update
+    // call. Surfacing NOT_FOUND lets the client show an explicit error and
+    // gives ops a structured log to trace.
+    log.error({ organizationId }, 'getBacsSubmitterMasks: organization row not found in tenant DB');
+    throw new TRPCError({
+      code: 'NOT_FOUND',
+      message: 'Organization not found',
+    });
   }
 
   const configured = Boolean(
