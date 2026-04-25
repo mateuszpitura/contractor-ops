@@ -1,3 +1,4 @@
+import { buildFlagBag } from '@contractor-ops/feature-flags';
 import { router } from './init.js';
 import { adminBoeRateRouter } from './routers/admin-boe-rate.js';
 import { apiKeyRouter } from './routers/api-key.js';
@@ -85,6 +86,22 @@ import { zatcaRouter } from './routers/zatca.js';
  * - billing: Stripe subscription management, checkout, portal, plan config
  * - equipment: CRUD, assignment, shipment tracking, status management, contractor equipment view
  */
+
+// Phase 64 D-05 — Module-level evaluation of the classification kill-switch.
+// This represents the global platform baseline. Per-org / per-request enforcement
+// is handled by classificationProcedure middleware (D-06, Plan 64-01).
+// Default is false (ship dark) — classification routers are absent from appRouter
+// until the flag is enabled in Unleash.
+//
+// NOTE: This evaluation happens at module load. Changes to Unleash state require
+// a server restart to take effect at the appRouter level. The classificationProcedure
+// middleware handles hot-path per-request evaluation.
+const ClassificationFlagBag = buildFlagBag({
+  organizationId: 'ROOT',
+  region: 'EU', // jurisdiction='ANY' — region value doesn't affect evaluation
+});
+const CLASSIFICATION_ENABLED = ClassificationFlagBag.isEnabled('module.classification-engine');
+
 export const appRouter = router({
   adminBoeRate: adminBoeRateRouter, // adminBoeRate: Super-admin BoE base rate CRUD — list, insert, update, delete (Phase 63 D-10)
   apiKey: apiKeyRouter, // apiKey: Enterprise API key management — create, list, update, revoke
@@ -135,14 +152,21 @@ export const appRouter = router({
   peppol: peppolRouter, // peppol: Peppol network integration — participant registration, transmission tracking, ASP management
   tax: taxRouter, // tax: Tax rate lookup, VAT validation, WHT calculation, WHT certificates, tax summary dashboard
   zatca: zatcaRouter, // zatca: ZATCA device onboarding — tax details, CSR generation, compliance CSID, compliance checks, production cert
-  classification: classificationRouter, // classification: IR35 + Scheinselbständigkeit engagement classification — draft/autosave/submit/outcome (Phase 58)
-  classificationDashboard: classificationDashboardRouter, // classificationDashboard: per-market compliance health dashboard aggregating Phase-58 assessments + Phase-60 alerts/triggers/DRV clearances (Phase 60 CLASS-10)
-  classificationDocument: classificationDocumentRouter, // classificationDocument: IR35 SDS + DRV defense bundle PDFs — append-only, content-addressed R2 (Phase 59)
-  ir35Chain: ir35ChainRouter, // ir35Chain: IR35 chain participant tracking + SDS delivery / acknowledgement (Phase 59 CLASS-04)
-  ir35Attestation: ir35AttestationRouter, // ir35Attestation: contractor other-client attestation + same-tenant cross-reference for DRV defense bundle (Phase 59 CLASS-06)
-  economicDependencyAlert: economicDependencyAlertRouter, // economicDependencyAlert: per-assignment billing-share band (safe/warning/critical) written by the daily §2 SGB VI scan (Phase 60 CLASS-07)
-  reassessmentTrigger: reassessmentTriggerRouter, // reassessmentTrigger: IR35 SDS reassessment triggers — AuditLog-driven material-change detection + acknowledge/dismiss (Phase 60 CLASS-08)
-  statusfeststellungsverfahren: statusfeststellungsverfahrenRouter, // statusfeststellungsverfahren: DRV § 7a SGB IV clearance procedure CRUD + 90/30/7-day expiry reminders (Phase 60 CLASS-09)
+  // Phase 64 D-05 — Classification routers conditionally registered based on flag.
+  // When OFF: procedures are absent from appRouter — clients receive METHOD_NOT_FOUND.
+  // Defense-in-depth: classificationProcedure middleware (D-06) also blocks per-request.
+  ...(CLASSIFICATION_ENABLED
+    ? {
+        classification: classificationRouter, // classification: IR35 + Scheinselbständigkeit engagement classification — draft/autosave/submit/outcome (Phase 58)
+        classificationDashboard: classificationDashboardRouter, // classificationDashboard: per-market compliance health dashboard aggregating Phase-58 assessments + Phase-60 alerts/triggers/DRV clearances (Phase 60 CLASS-10)
+        classificationDocument: classificationDocumentRouter, // classificationDocument: IR35 SDS + DRV defense bundle PDFs — append-only, content-addressed R2 (Phase 59)
+        ir35Chain: ir35ChainRouter, // ir35Chain: IR35 chain participant tracking + SDS delivery / acknowledgement (Phase 59 CLASS-04)
+        ir35Attestation: ir35AttestationRouter, // ir35Attestation: contractor other-client attestation + same-tenant cross-reference for DRV defense bundle (Phase 59 CLASS-06)
+        economicDependencyAlert: economicDependencyAlertRouter, // economicDependencyAlert: per-assignment billing-share band (safe/warning/critical) written by the daily §2 SGB VI scan (Phase 60 CLASS-07)
+        reassessmentTrigger: reassessmentTriggerRouter, // reassessmentTrigger: IR35 SDS reassessment triggers — AuditLog-driven material-change detection + acknowledge/dismiss (Phase 60 CLASS-08)
+        statusfeststellungsverfahren: statusfeststellungsverfahrenRouter, // statusfeststellungsverfahren: DRV § 7a SGB IV clearance procedure CRUD + 90/30/7-day expiry reminders (Phase 60 CLASS-09)
+      }
+    : {}),
 });
 
 /** Type-safe router type for client consumption */

@@ -19,6 +19,7 @@ import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 
 import { router } from '../init.js';
+import { requirePermission } from '../middleware/rbac.js';
 import { classificationProcedure } from '../middleware/require-classification-flag.js';
 import {
   RENDERER_SLUG as DRV_RENDERER_SLUG,
@@ -48,6 +49,19 @@ const generateSdsInputSchema = z.object({
 
 const getDownloadUrlInputSchema = z.object({
   classificationDocumentId: z.string().min(1),
+});
+
+// Phase 64 D-26 — DRV decision letter upload schema
+const uploadDrvDecisionLetterInputSchema = z.object({
+  classificationAssessmentId: z.string().min(1),
+  fileBase64: z.string().min(1),
+  fileName: z.string().min(1).max(255),
+  mimeType: z.enum(['application/pdf', 'image/jpeg', 'image/png']),
+  fileSizeBytes: z
+    .number()
+    .int()
+    .min(1)
+    .max(10 * 1024 * 1024), // 10MB cap
 });
 
 const listByEngagementInputSchema = z.object({
@@ -122,6 +136,25 @@ export const classificationDocumentRouter = router({
         throw new TRPCError({
           code: 'PRECONDITION_FAILED',
           message: 'generateSds only applies to IR35 (GB) classification assessments.',
+        });
+      }
+
+      // Phase 64 D-22 — Require SdsApproval before generating SDS (LEGAL-05)
+      const sdsApproval = await ctx.db.sdsApproval.findUnique({
+        where: { assessmentId: input.classificationAssessmentId },
+        select: {
+          id: true,
+          clientName: true,
+          approvedAt: true,
+          approvedByUserId: true,
+          approvalStatementSnapshot: true,
+        },
+      });
+      if (!sdsApproval) {
+        throw new TRPCError({
+          code: 'PRECONDITION_FAILED',
+          message: 'SDS_NOT_APPROVED',
+          cause: { hint: 'Call classification.approveSds before generating the SDS PDF' },
         });
       }
 
@@ -459,5 +492,102 @@ export const classificationDocumentRouter = router({
         },
       });
       return docs;
+    }),
+
+  // ---------------------------------------------------------------------------
+  // Phase 64 · LEGAL-06 — uploadDrvDecisionLetter (D-26)
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Upload a DRV Statusfeststellungsverfahren decision letter.
+   * Creates a ClassificationDocument row with kind=DRV_DECISION_LETTER.
+   * File cap: 10MB. Accepted types: PDF, JPEG, PNG.
+   * Content-addressed R2 with 300s signed download URL.
+   */
+  uploadDrvDecisionLetter: classificationProcedure
+    .use(requirePermission({ contractor: ['update'] }))
+    .input(uploadDrvDecisionLetterInputSchema)
+    .mutation(async ({ ctx, input }) => {
+      if (!ctx.session?.user?.id) {
+        throw new TRPCError({ code: 'UNAUTHORIZED' });
+      }
+      const userId = ctx.session.user.id;
+
+      const assessment = await ctx.db.classificationAssessment.findFirst({
+        where: { id: input.classificationAssessmentId },
+        select: { id: true, countryCode: true },
+      });
+      if (!assessment) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Assessment not found' });
+      }
+      if (assessment.countryCode !== 'DE') {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'DRV decision letters are only applicable to DE assessments',
+        });
+      }
+
+      const fileBuffer = Buffer.from(input.fileBase64, 'base64');
+      if (fileBuffer.byteLength !== input.fileSizeBytes) {
+        throw new TRPCError({ code: 'BAD_REQUEST', message: 'File size mismatch' });
+      }
+
+      // Magic byte validation
+      const magicBytes = fileBuffer.slice(0, 4);
+      const isPdf = magicBytes.toString('hex').startsWith('25504446'); // %PDF
+      const isJpeg = magicBytes.slice(0, 2).toString('hex') === 'ffd8';
+      const isPng = magicBytes.toString('hex') === '89504e47';
+      const mimeValid =
+        (input.mimeType === 'application/pdf' && isPdf) ||
+        (input.mimeType === 'image/jpeg' && isJpeg) ||
+        (input.mimeType === 'image/png' && isPng);
+      if (!mimeValid) {
+        throw new TRPCError({ code: 'BAD_REQUEST', message: 'MIME_MAGIC_BYTE_MISMATCH' });
+      }
+
+      const sha256Hash = createHash('sha256').update(fileBuffer).digest('hex');
+      const r2Key = buildClassificationDocumentKey({
+        organizationId: ctx.organizationId,
+        classificationAssessmentId: input.classificationAssessmentId,
+        kind: 'DRV_DECISION_LETTER',
+        ruleSetVersion: 'user-upload',
+        sha256: sha256Hash,
+      });
+
+      let signedUrl: string;
+      try {
+        const result = await putObjectAndSignDownload({
+          key: r2Key,
+          body: fileBuffer,
+          contentType: input.mimeType,
+          ttlSeconds: PDF_TTL_SECONDS,
+        });
+        signedUrl = result.signedUrl;
+      } catch {
+        throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'R2_UPLOAD_FAILED' });
+      }
+
+      let doc: { id: string };
+      try {
+        doc = await ctx.db.classificationDocument.create({
+          data: {
+            organizationId: ctx.organizationId,
+            classificationAssessmentId: input.classificationAssessmentId,
+            kind: 'DRV_DECISION_LETTER',
+            pdfKey: r2Key,
+            sha256Hash,
+            byteSize: fileBuffer.byteLength,
+            rendererVersion: 'user-upload',
+            ruleSetVersion: 'N/A',
+            generatedByUserId: userId,
+          },
+          select: { id: true },
+        });
+      } catch (err) {
+        await deleteObject(r2Key).catch(() => undefined);
+        throw err;
+      }
+
+      return { documentId: doc.id, downloadUrl: signedUrl };
     }),
 });

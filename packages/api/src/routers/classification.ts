@@ -31,6 +31,7 @@ import {
   getProfileForCountry,
   outcomeSchema,
 } from '@contractor-ops/classification';
+import { SDS_APPROVAL_STATEMENT_EN } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { router } from '../init.js';
@@ -85,6 +86,27 @@ const getByIdInput = z.object({
 
 const listByContractorInput = z.object({
   contractorId: cuid,
+});
+
+// Phase 64 — new input schemas
+const logEscalationInput = z.object({
+  assessmentId: cuid,
+  triggerKind: z.enum(['AMBER_VERDICT_AUTO', 'GET_EXPERT_HELP_CLICK', 'MANUAL_FLAG']),
+  referralTarget: z.string().min(1).max(500),
+  verdict: z.enum([
+    'IR35_OUTSIDE',
+    'IR35_INSIDE',
+    'IR35_INDETERMINATE',
+    'SCHEIN_SELFEMPLOYED',
+    'SCHEIN_EMPLOYED',
+    'SCHEIN_UNCLEAR',
+  ]),
+  contractorId: cuid.optional(),
+});
+
+const approveSdsInput = z.object({
+  assessmentId: cuid,
+  clientName: z.string().min(1).max(500),
 });
 
 // ---------------------------------------------------------------------------
@@ -532,5 +554,106 @@ export const classificationRouter = router({
       const drafts = rows.filter((r: { status: string }) => r.status === 'draft');
       const completed = rows.filter((r: { status: string }) => r.status === 'completed');
       return [...drafts, ...completed];
+    }),
+
+  // ---------------------------------------------------------------------------
+  // Phase 64 · LEGAL-03/04 — logEscalation (D-19)
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Log a classification advisory escalation event.
+   * Fired automatically on amber/indeterminate verdict render (AMBER_VERDICT_AUTO)
+   * and on "Get Expert Help" CTA click (GET_EXPERT_HELP_CLICK).
+   * Append-only — no update or delete.
+   */
+  logEscalation: classificationProcedure
+    .input(logEscalationInput)
+    .mutation(async ({ ctx, input }) => {
+      const assessment = await ctx.db.classificationAssessment.findFirst({
+        where: { id: input.assessmentId },
+        select: { id: true },
+      });
+      if (!assessment) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Assessment not found' });
+      }
+
+      const headers = (ctx as { req?: { headers?: { get?: (k: string) => string | null } } }).req
+        ?.headers;
+      const ipAddress =
+        headers?.get?.('x-forwarded-for')?.split(',')[0]?.trim() ??
+        headers?.get?.('x-real-ip') ??
+        null;
+      const userAgent = headers?.get?.('user-agent') ?? null;
+
+      const event = await ctx.db.classificationEscalationEvent.create({
+        data: {
+          organizationId: ctx.organizationId,
+          userId: ctx.user?.id ?? '',
+          assessmentId: input.assessmentId,
+          contractorId: input.contractorId ?? null,
+          verdict: input.verdict,
+          triggerKind: input.triggerKind,
+          referralTarget: input.referralTarget,
+          ipAddress,
+          userAgent,
+        },
+        select: { id: true },
+      });
+
+      return { eventId: event.id };
+    }),
+
+  // ---------------------------------------------------------------------------
+  // Phase 64 · LEGAL-05 — approveSds (D-22)
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Record in-app SDS approval gate.
+   * Creates an SdsApproval row — required before generateSds can proceed.
+   * Snapshots SDS_APPROVAL_STATEMENT_EN at approval time.
+   * Throws CONFLICT if approval already exists for this assessment.
+   */
+  approveSds: classificationProcedure
+    .use(requirePermission({ contractor: ['update'] }))
+    .input(approveSdsInput)
+    .mutation(async ({ ctx, input }) => {
+      const assessment = await ctx.db.classificationAssessment.findFirst({
+        where: { id: input.assessmentId, status: 'completed' },
+        select: { id: true, countryCode: true },
+      });
+      if (!assessment) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Completed assessment not found' });
+      }
+      if (assessment.countryCode !== 'GB') {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'SDS approval is only required for IR35 (GB) assessments',
+        });
+      }
+
+      try {
+        const approval = await ctx.db.sdsApproval.create({
+          data: {
+            organizationId: ctx.organizationId,
+            assessmentId: input.assessmentId,
+            approvedByUserId: ctx.user?.id ?? '',
+            approvedAt: new Date(),
+            clientName: input.clientName,
+            approvalStatementSnapshot: SDS_APPROVAL_STATEMENT_EN, // Snapshot at approval time (D-21)
+          },
+          select: { id: true },
+        });
+        return { approvalId: approval.id };
+      } catch (err: unknown) {
+        if (
+          err &&
+          typeof err === 'object' &&
+          'code' in err &&
+          (err as { code: string }).code === 'P2002'
+        ) {
+          throw new TRPCError({ code: 'CONFLICT', message: 'SDS_APPROVAL_ALREADY_EXISTS' });
+        }
+        throw err;
+      }
     }),
 });

@@ -202,4 +202,46 @@ export const consentRouter = router({
       hostingRegion: result.hostingRegion,
     };
   }),
+
+  // ---------------------------------------------------------------------------
+  // Phase 64 · LEGAL-07 — recordToS (D-30)
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Record Terms of Service acceptance.
+   * Creates a ConsentEvent row with scope='TOS'.
+   * Called by <TosReacceptanceModal> on "I accept" click.
+   * Validates version is a YYYY.N.N format string.
+   */
+  recordToS: tenantProcedure
+    .input(z.object({ version: z.string().min(1).max(50) }))
+    .mutation(async ({ ctx, input }) => {
+      const semverPattern = /^\d{4}\.\d+\.\d+$/;
+      if (!semverPattern.test(input.version)) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Invalid ToS version format. Expected: YYYY.N.N',
+        });
+      }
+
+      // IP/UA extraction: tenantProcedure ctx does not expose raw request headers.
+      // These fields are nullable in the ConsentEvent schema.
+      const ipAddress: string | null = null;
+      const userAgent: string | null = null;
+
+      const event = await ctx.db.consentEvent.create({
+        data: {
+          organizationId: ctx.organizationId,
+          userId: ctx.user?.id ?? '',
+          scope: 'TOS',
+          version: input.version,
+          acceptedAt: new Date(),
+          ipAddress,
+          userAgent,
+        },
+        select: { id: true },
+      });
+
+      return { eventId: event.id };
+    }),
 });

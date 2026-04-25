@@ -8,6 +8,7 @@ import type { ClassificationDocumentKind } from '@contractor-ops/db/generated/pr
 const KIND_PATH_SEGMENT: Record<ClassificationDocumentKind, string> = {
   SDS: 'sds',
   DRV_DEFENSE_BUNDLE: 'drv-defense-bundle',
+  DRV_DECISION_LETTER: 'drv-decision-letter', // Phase 64 D-25
 };
 
 const SHA256_PREFIX_LENGTH = 16;
