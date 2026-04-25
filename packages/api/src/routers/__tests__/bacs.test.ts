@@ -358,4 +358,50 @@ describe('bacsRouter.previewExport / generateExport', () => {
       /not configured/i,
     );
   });
+
+  it('generateExport: blocks download when contractor name contains unmappable CJK chars', async () => {
+    // CR-01 regression: `transliterateToBacs.replaced` carries the ORIGINAL
+    // unmappable Unicode character (e.g. '日'), never the literal '?'. The
+    // server-side defensive guard MUST therefore key on `replaced.length > 0`,
+    // not `replaced.includes('?')`. Before this fix, a CJK contractor name
+    // would silently produce a BACS-rejecting file and a signed download URL.
+    mockPrisma.organization.findUnique = vi.fn().mockResolvedValue({
+      bacsServiceUserNumberEncrypted: 'enc:123456',
+      bacsSubmitterSortCodeEncrypted: 'enc:112233',
+      bacsSubmitterAccountNumberEncrypted: 'enc:12345678',
+      bacsSubmitterName: 'ACME LTD',
+      name: 'Acme Ltd',
+    });
+    mockPrisma.paymentRun.findFirst = vi.fn().mockResolvedValue({
+      id: RUN_ID,
+      runNumber: 'PR-CJK-001',
+      organizationId: ORG_ID,
+      status: 'LOCKED',
+      currency: 'GBP',
+      items: [
+        {
+          amountMinor: 10_000,
+          currency: 'GBP',
+          status: 'PENDING',
+          paymentReference: 'INV-001',
+          invoice: { invoiceNumber: 'INV-001' },
+          contractor: { legalName: '日本商事' }, // unmappable CJK chars
+          billingProfile: {
+            ukSortCodeEncrypted: 'enc:123456',
+            ukAccountNumberEncrypted: 'enc:87654321',
+          },
+        },
+      ],
+    });
+
+    await expect(caller.generateExport({ paymentRunId: RUN_ID })).rejects.toThrow(
+      /unmappable characters/i,
+    );
+
+    // Defense-in-depth: the file must NOT be uploaded to R2 when blocked.
+    expect(mockPutAndSign).not.toHaveBeenCalled();
+    // And no Document / PaymentExport audit rows should be written.
+    expect(mockPrisma.document.create).not.toHaveBeenCalled();
+    expect(mockPrisma.paymentExport.create).not.toHaveBeenCalled();
+  });
 });

@@ -297,7 +297,13 @@ export const bacsRouter = router({
 
       // Refuse to upload a file that contains unmappable `?` placeholders
       // (BACS would reject it; defensive guard duplicating the UI gate).
-      const hasUnmappable = result.transliterationWarnings.some(w => w.replaced.includes('?'));
+      //
+      // `transliterateToBacs` records the ORIGINAL unmappable Unicode character
+      // (e.g. '日', '🎉') in `replaced` — never the literal '?' substitute.
+      // The presence of any entry in `replaced` therefore signals an unmappable
+      // substitution occurred. Checking `includes('?')` would be a false signal
+      // (the literal '?' is BACS-allowed and never recorded as unmappable).
+      const hasUnmappable = result.transliterationWarnings.some(w => w.replaced.length > 0);
       if (hasUnmappable) {
         throw new TRPCError({
           code: 'BAD_REQUEST',

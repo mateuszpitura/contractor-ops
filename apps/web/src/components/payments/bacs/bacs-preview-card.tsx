@@ -112,7 +112,10 @@ export function BacsPreviewCard({ paymentRunId }: BacsPreviewCardProps) {
   const data = previewQuery.data;
   const transliterationWarnings = (data?.transliterationWarnings ?? []) as TransliterationWarning[];
   const modulusWarnings = (data?.modulusWarnings ?? []) as ModulusWarning[];
-  const hasUnmappable = transliterationWarnings.some(w => w.replaced.includes('?'));
+  // `transliterateToBacs` records the ORIGINAL unmappable Unicode character in
+  // `replaced` (never the literal '?'). Any entry signals an unmappable
+  // substitution occurred; the file would be rejected by BACS.
+  const hasUnmappable = transliterationWarnings.some(w => w.replaced.length > 0);
 
   return (
     <Card data-testid="bacs-preview-card">
