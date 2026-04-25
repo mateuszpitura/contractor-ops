@@ -17,6 +17,7 @@
 //   - Guessable download URLs -> R2 signed URL, TTL 300s, content-addressed key.
 
 import { createHash } from 'node:crypto';
+import type { PrismaClient } from '@contractor-ops/db';
 import { createLogger } from '@contractor-ops/logger';
 import {
   accountNumberSchema,
@@ -40,6 +41,29 @@ import { generateBacsStandard18 } from '../services/payment-export.js';
 import { deleteObject, putObjectAndSignDownload } from '../services/r2.js';
 
 const log = createLogger({ service: 'bacs-router' });
+
+// ---------------------------------------------------------------------------
+// Typed DB adapter
+// ---------------------------------------------------------------------------
+
+/**
+ * Minimal typed surface of the tenant-scoped Prisma client used by this
+ * router's helpers. Avoids the historical `ctx.db as any` pattern that hid
+ * typos in encrypted-field accessors (e.g. a misspelled
+ * `bacsSubmitterAccountNumberEncrypted` would silently return `undefined`,
+ * masking misconfiguration as "submitter not configured").
+ *
+ * The tenant client is a Prisma extension, so we narrow to only the model
+ * accessors actually needed here. `$transaction` is included because
+ * generateExport opens a transaction for the audit-trail writes.
+ */
+type BacsTenantDb = Pick<
+  PrismaClient,
+  'organization' | 'paymentRun' | 'document' | 'paymentExport' | '$transaction'
+>;
+
+/** Transaction client subset used inside generateExport's $transaction body. */
+type BacsTenantTx = Pick<PrismaClient, 'document' | 'paymentExport'>;
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -85,12 +109,10 @@ function sanitizeSegment(input: string): string {
  * only — the plaintext NEVER leaves this function.
  */
 async function loadDecryptedSubmitterConfig(
-  db: unknown,
+  db: BacsTenantDb,
   organizationId: string,
 ): Promise<BacsOrgBankInfo | null> {
-  // biome-ignore lint/suspicious/noExplicitAny: tenant client typing varies
-  const dbAny = db as any;
-  const org = await dbAny.organization.findUnique({
+  const org = await db.organization.findUnique({
     where: { id: organizationId },
     select: {
       bacsServiceUserNumberEncrypted: true,
@@ -129,16 +151,14 @@ async function loadDecryptedSubmitterConfig(
  * Throws FAILED_PRECONDITION when an item is missing UK bank details.
  */
 async function loadRunWithBacsItems(
-  db: unknown,
+  db: BacsTenantDb,
   organizationId: string,
   paymentRunId: string,
 ): Promise<{
   runNumber: string;
   bacsItems: BacsExportItem[];
 }> {
-  // biome-ignore lint/suspicious/noExplicitAny: tenant client typing varies
-  const dbAny = db as any;
-  const run = await dbAny.paymentRun.findFirst({
+  const run = await db.paymentRun.findFirst({
     where: { id: paymentRunId, organizationId },
     include: {
       items: {
@@ -168,19 +188,8 @@ async function loadRunWithBacsItems(
     });
   }
 
-  const items = run.items as Array<{
-    amountMinor: number;
-    currency: string | null;
-    paymentReference: string | null;
-    invoice: { invoiceNumber: string | null };
-    contractor: { legalName: string };
-    billingProfile: {
-      ukSortCodeEncrypted: string | null;
-      ukAccountNumberEncrypted: string | null;
-    } | null;
-  }>;
-
-  const runRef = (run.runNumber as string | null) ?? run.id;
+  const items = run.items;
+  const runRef = run.runNumber ?? run.id;
 
   // BACS Standard 18 has no currency field — the entire file is implicitly
   // GBP. Refuse non-GBP runs at the router boundary so foreign-currency
@@ -190,7 +199,7 @@ async function loadRunWithBacsItems(
   // bacs.previewExport / bacs.generateExport against a non-GBP or mixed run
   // would otherwise generate a file BACS will accept and process — paying
   // contractors the wrong amount in the wrong currency.
-  const runCurrency = (run as { currency?: string | null }).currency ?? null;
+  const runCurrency = run.currency ?? null;
   if (runCurrency !== null && runCurrency !== 'GBP') {
     throw new TRPCError({
       code: 'PRECONDITION_FAILED',
@@ -247,7 +256,10 @@ export const bacsRouter = router({
   getSubmitterMasks: tenantProcedure
     .use(requirePermission({ settings: ['read'] }))
     .query(async ({ ctx }) => {
-      const masks = await getBacsSubmitterMasks(ctx.db, ctx.organizationId);
+      const masks = await getBacsSubmitterMasks(
+        ctx.db as unknown as BacsTenantDb,
+        ctx.organizationId,
+      );
       return plain(masks);
     }),
 
@@ -267,7 +279,8 @@ export const bacsRouter = router({
     .use(requirePermission({ payment: ['export'] }))
     .input(z.object({ paymentRunId: z.string() }))
     .query(async ({ ctx, input }) => {
-      const submitter = await loadDecryptedSubmitterConfig(ctx.db, ctx.organizationId);
+      const db = ctx.db as unknown as BacsTenantDb;
+      const submitter = await loadDecryptedSubmitterConfig(db, ctx.organizationId);
       if (!submitter) {
         throw new TRPCError({
           code: 'PRECONDITION_FAILED',
@@ -276,7 +289,7 @@ export const bacsRouter = router({
       }
 
       const { runNumber, bacsItems } = await loadRunWithBacsItems(
-        ctx.db,
+        db,
         ctx.organizationId,
         input.paymentRunId,
       );
@@ -302,7 +315,8 @@ export const bacsRouter = router({
     .use(requirePermission({ payment: ['export'] }))
     .input(z.object({ paymentRunId: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const submitter = await loadDecryptedSubmitterConfig(ctx.db, ctx.organizationId);
+      const db = ctx.db as unknown as BacsTenantDb;
+      const submitter = await loadDecryptedSubmitterConfig(db, ctx.organizationId);
       if (!submitter) {
         throw new TRPCError({
           code: 'PRECONDITION_FAILED',
@@ -311,7 +325,7 @@ export const bacsRouter = router({
       }
 
       const { runNumber, bacsItems } = await loadRunWithBacsItems(
-        ctx.db,
+        db,
         ctx.organizationId,
         input.paymentRunId,
       );
@@ -343,9 +357,7 @@ export const bacsRouter = router({
       // guessable URLs (any change in input bytes changes the key).
       const r2Key = `payment-exports/${ctx.organizationId}/${input.paymentRunId}/BACS-${sanitizeSegment(runNumber)}-${sha256Prefix}.txt`;
 
-      // biome-ignore lint/suspicious/noExplicitAny: tenant client typing varies
-      const dbAny = ctx.db as any;
-      const org = await dbAny.organization.findUnique({
+      const org = await db.organization.findUnique({
         where: { id: ctx.organizationId },
         select: { name: true },
       });
@@ -366,10 +378,9 @@ export const bacsRouter = router({
       // unreferenced files (and don't leave the caller with a signed URL that
       // points to a file the system has no audit record of).
       try {
-        await ctx.db.$transaction(async (tx: unknown) => {
-          // biome-ignore lint/suspicious/noExplicitAny: tx typing varies
-          const txAny = tx as any;
-          const document = await txAny.document.create({
+        await db.$transaction(async tx => {
+          const txTyped = tx as unknown as BacsTenantTx;
+          const document = await txTyped.document.create({
             data: {
               organizationId: ctx.organizationId,
               storageKey: r2Key,
@@ -385,7 +396,7 @@ export const bacsRouter = router({
             select: { id: true },
           });
 
-          await txAny.paymentExport.create({
+          await txTyped.paymentExport.create({
             data: {
               organizationId: ctx.organizationId,
               paymentRunId: input.paymentRunId,
@@ -489,9 +500,8 @@ export const bacsRouter = router({
       const sortCodeMasked = maskSortCode(input.submitterSortCode);
       const accountMasked = maskAccountNumber(input.submitterAccountNumber);
 
-      // biome-ignore lint/suspicious/noExplicitAny: tenant client typing varies
-      const dbAny = ctx.db as any;
-      await dbAny.organization.update({
+      const db = ctx.db as unknown as BacsTenantDb;
+      await db.organization.update({
         where: { id: ctx.organizationId },
         data: {
           bacsServiceUserNumberEncrypted: encryptBankAccount(input.serviceUserNumber),
@@ -544,7 +554,7 @@ export const bacsRouter = router({
  * submitter" empty state. Reads only masked fields — never decrypts.
  */
 export async function getBacsSubmitterMasks(
-  db: unknown,
+  db: BacsTenantDb,
   organizationId: string,
 ): Promise<{
   configured: boolean;
@@ -553,9 +563,7 @@ export async function getBacsSubmitterMasks(
   accountNumber: string | null;
   submitterName: string | null;
 }> {
-  // biome-ignore lint/suspicious/noExplicitAny: tenant client typing varies
-  const dbAny = db as any;
-  const org = await dbAny.organization.findUnique({
+  const org = await db.organization.findUnique({
     where: { id: organizationId },
     select: {
       bacsServiceUserNumberMasked: true,
