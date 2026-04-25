@@ -93,6 +93,11 @@
       "types": "./dist/adapters/google-workspace-adapter.d.ts",
       "import": "./dist/adapters/google-workspace-adapter.js",
       "default": "./dist/adapters/google-workspace-adapter.js"
+    },
+    "./services/boe-base-rate-poller": {
+      "types": "./dist/services/boe-base-rate-poller.d.ts",
+      "import": "./dist/services/boe-base-rate-poller.js",
+      "default": "./dist/services/boe-base-rate-poller.js"
     }
   },
   "scripts": {
@@ -103,6 +108,7 @@
     "@anthropic-ai/sdk": "^0.80.0",
     "@contractor-ops/db": "workspace:*",
     "@contractor-ops/einvoice": "workspace:*",
+    "@contractor-ops/logger": "workspace:*",
     "@contractor-ops/secrets": "workspace:*",
     "@contractor-ops/validators": "workspace:^",
     "@infisical/sdk": "^3.0.91",

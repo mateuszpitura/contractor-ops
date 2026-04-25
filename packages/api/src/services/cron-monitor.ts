@@ -24,6 +24,8 @@ export const CronMonitors = {
   CLASSIFICATION_ECONOMIC_DEPENDENCY: 'classification-economic-dependency',
   // Phase 60 · CLASS-08 — daily IR35 reassessment trigger scan (audit-log driven).
   CLASSIFICATION_REASSESSMENT_TRIGGERS: 'classification-reassessment-triggers',
+  // Phase 63 · Plan 03 — daily Bank of England base rate polling (LPCDA §4(1)).
+  BOE_RATE_POLL: 'boe-rate-poll',
 } as const;
 
 export type CronMonitorKey = (typeof CronMonitors)[keyof typeof CronMonitors];
