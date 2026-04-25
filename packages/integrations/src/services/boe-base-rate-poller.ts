@@ -338,14 +338,21 @@ export async function pollBoeBaseRate(deps: PollDeps = {}): Promise<PollBoeBaseR
     return { updated: false, currentRate: fetchedRate };
   }
 
-  // Different rate → insert a new history row keyed by today's UTC date.
-  const todayUtc = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  // Different rate → insert a new history row keyed by the rate's actual
+  // BoE-published `effectiveFrom` date (NOT the day the cron ran). The
+  // MPC-published date is the legally-significant key for LPCDA §4(1)
+  // reference-date lookups; using the cron-run day would distort the
+  // historical record whenever a poll is delayed (e.g. cron skipped, or the
+  // change is observed the morning after publication). A 1-day error around
+  // 30 Jun / 31 Dec would pick the wrong rate for an entire 6-month
+  // statutory window.
+  const effectiveFrom = latest.date;
 
   try {
     await db.boEBaseRateHistory.upsert({
-      where: { effectiveFrom: todayUtc },
+      where: { effectiveFrom },
       create: {
-        effectiveFrom: todayUtc,
+        effectiveFrom,
         ratePercent: fetchedRate,
         source: 'BOE_API',
       },
@@ -360,6 +367,9 @@ export async function pollBoeBaseRate(deps: PollDeps = {}): Promise<PollBoeBaseR
     return { updated: false, currentRate: fetchedRate, error: message };
   }
 
-  log.info({ fetchedRate, storedRate, effectiveFrom: todayUtc.toISOString() }, 'BoE rate updated');
+  log.info(
+    { fetchedRate, storedRate, effectiveFrom: effectiveFrom.toISOString() },
+    'BoE rate updated',
+  );
   return { updated: true, currentRate: fetchedRate };
 }
