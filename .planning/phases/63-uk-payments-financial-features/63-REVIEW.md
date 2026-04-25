@@ -1,410 +1,342 @@
 ---
-phase: 63
-slug: uk-payments-financial-features
-status: issues_found
+phase: 63-uk-payments-financial-features
+reviewed: 2026-04-25T00:00:00Z
 depth: standard
-files_reviewed: 47
+files_reviewed: 24
+files_reviewed_list:
+  - packages/shared/src/ascii-transliterate.ts
+  - packages/shared/src/ascii-transliterate-table.ts
+  - packages/shared/src/index.ts
+  - packages/shared/src/__tests__/ascii-transliterate.test.ts
+  - packages/api/src/services/payment-export.ts
+  - packages/api/src/services/payment-format-detection.ts
+  - packages/api/src/services/__tests__/payment-export.test.ts
+  - packages/api/src/services/__tests__/payment-format-detection.test.ts
+  - packages/api/src/services/__tests__/late-payment-interest.test.ts
+  - packages/api/src/services/cron-monitor.ts
+  - packages/api/src/routers/bacs.ts
+  - packages/api/src/routers/__tests__/bacs.test.ts
+  - packages/api/src/root.ts
+  - packages/integrations/src/services/boe-base-rate-poller.ts
+  - apps/web/src/app/api/cron/boe-rate-poll/route.ts
+  - apps/web/src/app/[locale]/(dashboard)/settings/payments/page.tsx
+  - apps/web/src/components/payments/bacs/bacs-submitter-form.tsx
+  - apps/web/src/components/payments/bacs/bacs-preview-card.tsx
+  - apps/web/src/components/payments/bacs/bacs-preview-pre.tsx
+  - apps/web/src/components/payments/bacs/modulus-check-warning-list.tsx
+  - apps/web/src/components/payments/bacs/transliteration-warning-banner.tsx
+  - apps/web/src/components/payments/bacs/__tests__/bacs-submitter-form.test.tsx
+  - apps/web/src/components/contractors/billing-profile/sort-code-validator.tsx
+  - apps/web/src/components/contractors/billing-profile/uk-bank-fields-section.tsx
 findings:
-  critical: 3
-  warning: 7
-  info: 5
-  total: 15
-reviewed: 2026-04-15
+  critical: 2
+  warning: 8
+  info: 6
+  total: 16
+status: issues_found
 ---
 
-# Phase 63 — UK Payments & Financial Features: Code Review
+# Phase 63: Code Review Report
+
+**Reviewed:** 2026-04-25
+**Depth:** standard
+**Files Reviewed:** 24
+**Status:** issues_found
 
 ## Summary
 
-Phase 63 adds BACS Standard 18 file export, VocaLink modulus checking, LPCDA late payment
-interest calculation, Skonto early payment discount, BoE base rate history management, and
-associated DB models. The core business logic (interest calculation, skonto eligibility, BACS
-format detection) is sound. Three critical issues were found: a feature flag key mismatch that
-would cause TypeScript build failures, an undefined field reference that would produce a
-runtime error in the Skonto evaluation router, and a permission resource that is not registered
-in the access control statement. Several lower-severity issues are documented below.
+The Phase 63 v2 re-execution (Plans 63-02, 63-03, 63-04) lands a substantial slice of the BACS Std 18 export pipeline plus the BoE base-rate poller. Code quality is overall high — pure-function generators, append-only audit shape, encrypted-plus-masked fields, structured Pino logging, no `console.*` violations, decent a11y on the preview surfaces, and the LPCDA statutory-rate test suite correctly encodes the §4(1) reference-date rule.
+
+Two **critical** correctness defects undermine the BACS download safety net: the unmappable-character guards on both server (`bacsRouter.generateExport`) and client (`BacsPreviewCard`) check `replaced.includes('?')` but `transliterateToBacs.replaced` carries the **original** Unicode characters (e.g. `['日','本']`), never the literal `'?'`. The intended defense-in-depth blocker therefore never fires for non-ASCII names — a user with a CJK/Arabic contractor name would be allowed to download a BACS-rejecting file.
+
+Other notable concerns: the R2 upload happens **before** the Document/PaymentExport transaction (orphaned-blob risk on transaction failure); `loadRunWithBacsItems` does not gate on payment run currency or status (a non-GBP run could be exported as BACS treating the amount as pence); `pollBoeBaseRate` keys upserts on `todayUtc` rather than the rate's actual `effectiveFrom` (correct rate, wrong date if a published change is observed late); and several `as any` escape hatches in the BACS router weaken the type contract at exactly the boundary that handles encrypted columns.
+
+UI components are solid: the preview `<pre>` is keyboard-scrollable with proper `aria-label`, the destructive transliteration banner uses `role="alert"`, and encrypted fields are never shown in plaintext on the client. A few low-severity polish items (race condition on rapid validate clicks, an `useEffect` that wipes user input, missing `aria-live` on the preview, and pervasive `as any` on Prisma access) round out the warning list.
+
+## Critical Issues
+
+### CR-01: Defense-in-depth unmappable-character guard never fires (server + client)
+
+**File:** `packages/api/src/routers/bacs.ts:300`
+**Also affects:** `apps/web/src/components/payments/bacs/bacs-preview-card.tsx:115`
+**Issue:** The server's mutation explicitly states it "duplicat[es] the UI gate" against unmappable characters that BACS would reject:
+
+```typescript
+const hasUnmappable = result.transliterationWarnings.some(w => w.replaced.includes('?'));
+```
+
+But `transliterateToBacs` in `packages/shared/src/ascii-transliterate.ts:104-106` pushes the **original** unmappable character into `replaced`, never the literal `'?'`:
+
+```typescript
+// 5. Unmappable — record and emit `?`.
+replaced.push(char);   // pushes '日', '🎉', etc.
+output += '?';
+```
+
+Tests at `packages/shared/src/__tests__/ascii-transliterate.test.ts:99,106,112,118` confirm this: `replaced` is e.g. `['日','本']`, never contains `'?'`. The router-level guard therefore evaluates to `false` for every realistic non-ASCII name, allowing the malformed BACS file to be uploaded to R2 and signed for download. The client-side gate in `BacsPreviewCard` has the identical bug, so neither layer of the documented defense-in-depth ever activates. A literal `?` in the input would be in the BACS-allowed character set and pass through unchanged — the only way the current code blocks download is if the user types `?` themselves, which is a false positive, not the intended protection.
+
+This contradicts the threat model in `payment-export.ts:419-421` ("UI MUST block download when any `replaced` entries are present") and the plan's own threat documentation in `63-02-SUMMARY.md:128`.
+
+**Fix:** Use `replaced.length > 0` (the real signal that an unmappable substitution happened) on both layers:
+
+```typescript
+// packages/api/src/routers/bacs.ts
+const hasUnmappable = result.transliterationWarnings.some(w => w.replaced.length > 0);
+
+// apps/web/src/components/payments/bacs/bacs-preview-card.tsx
+const hasUnmappable = transliterationWarnings.some(w => w.replaced.length > 0);
+```
+
+Add a regression test in `packages/api/src/routers/__tests__/bacs.test.ts` covering `generateExport` with a CJK/Arabic contractor name and asserting `BAD_REQUEST` is thrown before `putObjectAndSignDownload` is called.
 
 ---
 
-## Critical Findings
+### CR-02: BACS export ignores payment run currency — non-GBP items can be exported as BACS
 
-### CR-01 — Feature flag key mismatch: `'PAY_LATE_INTEREST_ENABLED'` not in registry
+**File:** `packages/api/src/routers/bacs.ts:131-208`
+**Issue:** `loadRunWithBacsItems` selects `paymentRun.items` without filtering on or asserting `currency === 'GBP'`. The downstream `BacsExportItem` carries `amountMinor` only; `generateBacsStandard18` then writes that integer into the 11-digit pence field. If the payment run mixes currencies — or is entirely non-GBP — the file will be assembled with foreign-currency minor units misinterpreted as pence by the recipient bank. BACS Std 18 has no currency field; the entire file is implicitly GBP. A €1000 invoice (`amountMinor=100000`) would produce a £1000 GBP detail record.
 
-**File:** `packages/api/src/routers/late-payment-interest.ts`
-**Lines:** 53, 182, 285, 345, 390, 560
+This is a financial correctness defect: a misuse of `bacs.previewExport` / `bacs.generateExport` against a non-GBP run, or a mixed run, generates a file that BACS will accept and process — paying contractors the wrong amount in the wrong currency. The format-detection layer (`detectFormatForDestination`) does check `currency === 'GBP'` before routing, but the BACS router does not re-verify this at the boundary.
 
-The router uses `requireFeatureFlag('PAY_LATE_INTEREST_ENABLED')` throughout, but the flag
-registry in `packages/feature-flags/src/registry.ts` defines the key as
-`'payments.late-interest-enabled'`. `requireFeatureFlag` is typed as
-`requireFeatureFlag<K extends FlagKey>(key: K)` where `FlagKey = keyof typeof FLAGS`. Since
-`'PAY_LATE_INTEREST_ENABLED'` does not exist in `FLAGS`, every call is a TypeScript type error
-and will fail to compile.
-
-**Impact:** All six late-payment-interest procedures are unreachable at runtime; the build would
-fail unless `tsconfig` is running with errors ignored.
-
-**Suggested fix:**
-```typescript
-// Replace every occurrence of:
-.use(requireFeatureFlag('PAY_LATE_INTEREST_ENABLED'))
-// with:
-.use(requireFeatureFlag('payments.late-interest-enabled'))
-```
-
----
-
-### CR-02 — `invoice.amountMinor` does not exist on the `Invoice` model
-
-**File:** `packages/api/src/routers/skonto.ts`
-**Line:** 284
+**Fix:** Refuse non-GBP items at the router boundary before invoking the generator. Select `currency` (and the run-level currency if present on `PaymentRun`) in the Prisma include and assert in the loop:
 
 ```typescript
-invoiceTotalMinor: invoice.amountMinor,
-```
-
-The Prisma `Invoice` model (`packages/db/prisma/schema/invoice.prisma`) does not have an
-`amountMinor` field. The fields are `subtotalMinor`, `totalMinor`, and `amountToPayMinor`.
-`amountMinor` belongs to the `InvoicePayment` model. At runtime this produces `undefined`,
-causing `evaluateSkontoEligibility` to receive `NaN` for all monetary calculations (discount
-amount, discounted amount). TypeScript would flag this as a property-not-found error.
-
-**Suggested fix:** Use `invoice.amountToPayMinor` (the net payable amount after WHT, which is
-the correct base for discount eligibility) or `invoice.totalMinor` if gross total is intended:
-```typescript
-invoiceTotalMinor: invoice.amountToPayMinor,
-```
-
----
-
-### CR-03 — `'admin:boe-rate'` is not a registered permission resource; `settings.write` does not exist
-
-**Files:**
-- `packages/api/src/routers/admin-boe-rate.ts` (lines 33, 46, 94, 136)
-- `packages/api/src/routers/bacs.ts` (line 352)
-
-The `accessControlStatement` in `packages/auth/src/permissions.ts` defines the complete set of
-valid resources: `organization`, `member`, `invitation`, `contractor`, `contract`, `document`,
-`invoice`, `workflow`, `payment`, `report`, `settings`, `integration`, `time`, `equipment`.
-
-1. `requirePermission({ 'admin:boe-rate': ['write'] })` — `'admin:boe-rate'` is not a key in
-   `accessControlStatement`. The `Permission` type is derived as `{ [R in Resource]?: ... }` so
-   this is a TypeScript type error. At runtime Better Auth's `hasPermission` will receive an
-   unknown resource and may return `false` (locked out) or silently succeed depending on
-   implementation.
-
-2. `requirePermission({ settings: ['write'] })` (bacs.ts:352) — `settings` is valid but its
-   allowed actions are `['read', 'update']`. There is no `'write'` action, making this another
-   type error. Effective behavior: all settings mutations in the BACS submitter config are
-   blocked for every role.
-
-**Suggested fixes:**
-```typescript
-// admin-boe-rate.ts: use an existing resource or add 'admin:boe-rate' to accessControlStatement
-// Simplest short-term fix — gate on organization:update (owners only):
-.use(requirePermission({ organization: ['update'] }))
-
-// bacs.ts saveSubmitterConfig: use the correct action name
-.use(requirePermission({ settings: ['update'] }))
-```
-
-Longer term, add `'admin:boe-rate': ['read', 'write']` to `accessControlStatement` and assign
-it to the `owner` role in `roles.ts`.
-
----
-
-## Warning Findings
-
-### WR-01 — `console.warn` in `payment-export.ts` violates project logging policy
-
-**File:** `packages/api/src/services/payment-export.ts`
-**Lines:** 190–193
-
-```typescript
-console.warn(
-  `[payment-export] Missing taxId (NIP) for contractor "${item.contractorName}" in Elixir export — using empty value`,
-);
-```
-
-Project memory explicitly forbids `console.*` in source files; the `@contractor-ops/logger`
-factory must be used instead.
-
-**Suggested fix:**
-```typescript
-import { createLogger } from '@contractor-ops/logger';
-const log = createLogger({ service: 'payment-export' });
-// ...
-log.warn(
-  { contractorName: item.contractorName },
-  'Missing taxId (NIP) for contractor in Elixir export — using empty value',
-);
-```
-
----
-
-### WR-02 — `daysOverdue` calculation off-by-one relative to `overdueStartMs`
-
-**File:** `packages/api/src/services/late-payment-interest.ts`
-**Lines:** 190, 207
-
-```typescript
-const dueDateMs = new Date(invoiceDueDate).getTime();
-const overdueStartMs = dueDateMs + 24 * 60 * 60 * 1000; // +1 day — correctly starts day after due
-// ...
-const daysOverdue = Math.floor((endDateMs - dueDateMs) / (24 * 60 * 60 * 1000)); // counts from due date
-```
-
-`overdueStartMs` is computed correctly (interest starts the day _after_ due date, per LPCDA).
-However, `daysOverdue` is computed from `dueDateMs`, not `overdueStartMs`. This means a debt
-paid exactly 1 day late shows `daysOverdue = 1` but with `accruedInterest = dailyInterest * 1`.
-The math happens to be consistent because it produces the same total, but semantically
-`daysOverdue` should be the number of days of actual interest accrual (i.e., counted from
-`overdueStartMs`). The claim PDF shows `daysOverdue` as a labelled quantity to the debtor, so
-the label mismatch could be contested legally.
-
-**Suggested fix:** Compute `daysOverdue` from `overdueStartMs`:
-```typescript
-const daysOverdue = Math.floor((endDateMs - overdueStartMs) / (24 * 60 * 60 * 1000));
-```
-Ensure tests are updated accordingly. Net interest total is unchanged.
-
----
-
-### WR-03 — SkontoTerm XOR constraint not enforced at DB level
-
-**File:** `packages/db/prisma/schema/financial.prisma`
-**Lines:** 32–36
-
-`SkontoTerm` has `invoiceId String? @unique` and `billingProfileId String? @unique`. Both are
-nullable, which means a row where both are `NULL` is currently valid (an orphan term). Prisma
-does not support `CHECK` constraints natively. There is no migration-level constraint preventing
-a `SkontoTerm` with neither `invoiceId` nor `billingProfileId` set, and the upsert router
-procedures explicitly set the unused FK to `null`. An orphan row would accumulate silently and
-waste space but, more critically, a future migration that adds a NOT-NULL constraint would fail.
-
-**Suggested fix:** Add a raw `CHECK` constraint in the next migration:
-```sql
-ALTER TABLE skonto_term
-  ADD CONSTRAINT skonto_term_xor_fk
-  CHECK (
-    (invoice_id IS NOT NULL AND billing_profile_id IS NULL)
-    OR
-    (invoice_id IS NULL AND billing_profile_id IS NOT NULL)
-  );
-```
-Document in schema comments that Prisma cannot express this constraint.
-
----
-
-### WR-04 — SEPA XML `CtrlSum` hard-codes `'EUR'` regardless of actual currency
-
-**File:** `packages/api/src/services/payment-export.ts`
-**Lines:** 256, 263
-
-```typescript
-<CtrlSum>${minorToDecimal(totalAmount, 'EUR')}</CtrlSum>
-```
-
-`generateSepaXml` hard-codes `'EUR'` for the `CtrlSum` decimal formatting even though SEPA
-technically only applies to EUR transfers. The issue arises if `minorToDecimalStr` uses the
-ISO 4217 exponent for decimal placement: for 2-decimal currencies this is fine, but for
-zero-decimal currencies (e.g. JPY) a future extension could silently misprice amounts by a
-factor of 100. This is a latent risk rather than an immediate bug, but `EUR` should be derived
-from the actual payment currency or asserted.
-
-**Suggested fix:** Pass `items[0]?.currency ?? 'EUR'` (consistent with the SWIFT variant) or
-add an assertion that all items are EUR.
-
----
-
-### WR-05 — VocaLink modulus table is a partial stub; missing ~1,050 sort-code ranges
-
-**File:** `packages/validators/src/bacs-modulus-tables.ts`
-
-The file explicitly documents: _"The full VocaLink table contains ~1100 entries. This file
-encodes a representative subset…"_. With only ~34 range entries covering the largest banks,
-the vast majority of UK sort codes fall through `matches.length === 0` and return
-`{ valid: true }` (pass-through default). This means the modulus check is effectively a no-op
-for ~95% of sort codes, defeating its purpose as a fraud/error filter.
-
-**Suggested fix:** Import the complete `valacdos.txt` from VocaLink and parse it at build time
-into the table. VocaLink publishes updates semi-annually; this should be a cron-refreshed asset
-or a checked-in parsed JSON. The stub is appropriate for a v1 MVP but should be replaced before
-production BACS submissions.
-
----
-
-### WR-06 — `claim` mutation uses low-entropy ID for R2 key
-
-**File:** `packages/api/src/routers/late-payment-interest.ts`
-**Line:** 470
-
-```typescript
-const claimId = `claim-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-```
-
-`Math.random()` is not cryptographically secure. The 6-character base-36 suffix provides only
-~30.7 bits of entropy. Combined with a predictable millisecond timestamp, this could allow an
-attacker who knows a claim was recently created to enumerate the R2 key and attempt to access
-the signed PDF URL (if the URL somehow leaks). The proper approach is `crypto.randomUUID()` or
-`randomBytes`.
-
-**Suggested fix:**
-```typescript
-import { randomBytes } from 'node:crypto';
-const claimId = `claim-${Date.now()}-${randomBytes(12).toString('hex')}`;
-```
-
----
-
-### WR-07 — Admin layout uses `prismaRaw` (non-tenant-scoped) client for membership lookup
-
-**File:** `apps/web/src/app/admin/layout.tsx`
-**Lines:** 7–8, 27–33
-
-The layout imports `prisma` from `@contractor-ops/db` and queries `member` directly without
-tenant scoping. Since `Member` is in the `globalModels` set (intentionally, for auth flows), the
-Prisma client extension will pass through without injecting `organizationId`. The query does
-include `organizationId: activeOrgId` in the `where` clause, so this is functionally correct.
-However, using the raw `prisma` client (rather than a tenant-scoped client) in a server
-component means any accidental query on a non-global model would bypass RLS. Prefer using the
-auth-scoped db instance consistently.
-
-This is a minor pattern inconsistency rather than an exploitable bug, but it creates a footgun
-for future developers who extend this layout.
-
----
-
-## Info Findings
-
-### IR-01 — `resolveStatutoryRate` returns `0` silently when rate history is empty
-
-**File:** `packages/api/src/services/late-payment-interest.ts`
-**Lines:** 110–111
-
-```typescript
-// If no rate found, return 0 (should not happen with seeded data)
-return 0;
-```
-
-Returning `0` causes the statutory rate to be `0 + 8 = 8%` (the +8 pp surcharge alone). This
-is incorrect — the LPCDA base rate cannot be determined without BoE data. The comment
-acknowledges this should not happen, but there is no observability hook. If the `BoEBaseRateHistory`
-table is empty (fresh deployment, data corruption), claims would be computed with 8% instead
-of the correct rate with no logging to alert operators.
-
-**Suggested fix:** Add a `log.warn` or `log.error` call before returning `0`:
-```typescript
-log.error({ debtPeriodStart }, 'No BoE rate found for statutory period — defaulting to 0');
-return 0;
-```
-
----
-
-### IR-02 — `SkontoTerm` in `Invoice` Prisma relation is named `skontoTerms` (plural) but schema has `@unique` FK
-
-**File:** `packages/db/prisma/schema/invoice.prisma` (line 68), `financial.prisma` (line 32)
-
-The `Invoice` relation is declared as `skontoTerms SkontoTerm[]` (array), but `SkontoTerm.invoiceId`
-has `@unique`. Prisma allows this but the array type is misleading — only one `SkontoTerm` per
-invoice can ever exist. The router correctly uses `skontoTerm: true` (singular) in its include,
-but `invoice.skontoTerms` in a generic include would return an array. Consider renaming to
-`skontoTerm SkontoTerm?` in the Invoice and ContractorBillingProfile relations for clarity and
-to match the `@unique` constraint semantics.
-
----
-
-### IR-03 — `skonto.evaluateForInvoice` fetches `invoice.amountMinor` (after CR-02 fix: `amountToPayMinor`) without specifying `select`
-
-**File:** `packages/api/src/routers/skonto.ts`
-**Lines:** 236–248
-
-The `invoice.findFirst` includes the full `contractor` with nested `billingProfile` and
-`skontoTerm`, loading more data than needed. The invoice itself is fetched with all fields. A
-`select` clause scoping to `{ amountToPayMinor, issueDate, paidAt, skontoTerm, contractor: { ... } }`
-would reduce payload. Minor performance issue only.
-
----
-
-### IR-04 — `bacsSubmitterNameSchema` allows empty string
-
-**File:** `packages/validators/src/bacs.ts`
-**Lines:** 27–32**
-
-```typescript
-export const bacsSubmitterNameSchema = z
-  .string()
-  .max(18)
-  .regex(/^[A-Z0-9 \-\.\'\/&\(\)\+,\:;\?=@"]*$/, ...)
-```
-
-The schema has no `.min(1)`, so an empty string passes validation. BACS Standard 18 requires a
-non-empty submitter name. The form UI enforces a placeholder but does not add a required rule
-beyond Zod at the API layer.
-
-**Suggested fix:** Add `.min(1, 'Submitter name is required')`.
-
----
-
-### IR-05 — `late-interest-card.tsx` renders a dead branch (B2C banner is unreachable)
-
-**File:** `apps/web/src/components/invoices/late-interest/late-interest-card.tsx`
-**Lines:** 104–111
-
-```typescript
-if (!isApplicable) return null;           // line 104
-
-// B2C banner
-if (isApplicable && !isBusinessCustomer) { // line 107 — always false (isApplicable already checks isBusinessCustomer)
-  return ...
+const nonGbp = items.find(i => (i as { currency?: string }).currency !== 'GBP');
+if (nonGbp) {
+  throw new TRPCError({
+    code: 'PRECONDITION_FAILED',
+    message: `BACS Std 18 requires GBP; payment run includes ${(nonGbp as { currency?: string }).currency ?? 'unknown'} items`,
+  });
 }
 ```
 
-`isApplicable` is `featureEnabled && countryCode === 'GB' && isBusinessCustomer && currency === 'GBP'`.
-The second guard `if (isApplicable && !isBusinessCustomer)` can never be `true` because
-`isApplicable` requires `isBusinessCustomer === true`. The B2C banner is dead code.
+Add a unit test in `bacs.test.ts` for an EUR run rejected with `PRECONDITION_FAILED`.
 
-**Suggested fix:** Remove the dead branch and rely solely on the `!isApplicable` early return,
-or restructure the gate logic to show the B2C banner for GB GBP invoices that fail only the
-`isBusinessCustomer` check.
+## Warnings
 
----
+### WR-01: R2 upload happens before DB transaction — failed transaction leaves orphan blobs
 
-## Files Not Found in Working Tree
+**File:** `packages/api/src/routers/bacs.ts:325-364`
+**Issue:** `generateExport` uploads the file to R2 via `putObjectAndSignDownload(...)` (line 325) and only then opens `ctx.db.$transaction(...)` to write the `Document` + `PaymentExport` rows. If the DB transaction fails (constraint violation, connectivity blip, retry exhaustion) the R2 object remains, with no `Document` row referencing it, no GC path, and a signed URL already returned to the caller before the failure surfaces. Over time this accumulates unreferenced blobs and (worse) the caller may successfully download a file the system has no audit record of.
 
-The following files listed in the review spec exist only in the
-`agent-af1af2f4` sparse worktree and were reviewed from that location. They are not committed
-to the current `v2` branch at the time of review:
-
-- `packages/shared/src/ascii-transliterate.ts`
-- `packages/shared/src/ascii-transliterate-table.ts`
-- `packages/integrations/src/services/boe-base-rate-poller.ts`
-- `apps/web/src/app/api/cron/boe-rate-poll/route.ts`
-- `apps/web/src/components/payments/bacs/*.tsx` (5 files — reviewed from worktree)
-- `apps/web/src/components/contractors/billing-profile/uk-bank-fields-section.tsx`
-- `apps/web/src/components/contractors/billing-profile/sort-code-validator.tsx`
-- `apps/web/src/app/[locale]/(dashboard)/settings/payments/page.tsx`
-
-The BACS router (`packages/api/src/routers/bacs.ts`) also lives only in `agent-af1af2f4`.
-All three critical findings affected files that are in the main repo.
+**Fix:** Either (a) write Document + PaymentExport rows first with `status: 'PENDING'` then upload, then mark `GENERATED` in a final update; or (b) implement a compensating delete on transaction failure:
+```typescript
+try {
+  await ctx.db.$transaction(async tx => { /* writes */ });
+} catch (err) {
+  // Best-effort cleanup; do not let cleanup failure mask the original error.
+  void deleteR2Object(r2Key).catch(e => log.warn({ err: e, r2Key }, 'BACS export cleanup failed'));
+  throw err;
+}
+```
+A nightly reaper of orphaned `payment-exports/{org}/{run}/...` keys without a matching `Document` would also be acceptable but is more infrastructure.
 
 ---
 
-## Findings Summary Table
+### WR-02: BoE poller upserts under `todayUtc` instead of the rate's actual `effectiveFrom`
 
-| ID    | Severity | File                                              | Issue                                                                         |
-|-------|----------|---------------------------------------------------|-------------------------------------------------------------------------------|
-| CR-01 | Critical | routers/late-payment-interest.ts                  | Feature flag key `'PAY_LATE_INTEREST_ENABLED'` not in registry → build error  |
-| CR-02 | Critical | routers/skonto.ts:284                             | `invoice.amountMinor` does not exist on Invoice model → runtime undefined     |
-| CR-03 | Critical | routers/admin-boe-rate.ts, routers/bacs.ts        | `'admin:boe-rate'` not a valid permission resource; `settings.write` invalid  |
-| WR-01 | Warning  | services/payment-export.ts:190                    | `console.warn` violates project logging policy                                |
-| WR-02 | Warning  | services/late-payment-interest.ts:207             | `daysOverdue` off-by-one relative to interest accrual start date              |
-| WR-03 | Warning  | prisma/schema/financial.prisma                    | SkontoTerm XOR FK constraint not enforced at DB level                         |
-| WR-04 | Warning  | services/payment-export.ts:256,263                | SEPA `CtrlSum` hard-codes `'EUR'` regardless of actual currency               |
-| WR-05 | Warning  | validators/src/bacs-modulus-tables.ts             | Modulus table is a stub covering ~3% of UK sort codes                         |
-| WR-06 | Warning  | routers/late-payment-interest.ts:470              | Low-entropy `Math.random()` for R2 claim key                                  |
-| WR-07 | Warning  | apps/web/src/app/admin/layout.tsx                 | Uses raw `prisma` client in server component — footgun for future devs        |
-| IR-01 | Info     | services/late-payment-interest.ts:110             | Silent `return 0` with no logging when rate history empty                     |
-| IR-02 | Info     | prisma/schema/invoice.prisma:68                   | `skontoTerms[]` relation name misleading given `@unique` FK                   |
-| IR-03 | Info     | routers/skonto.ts                                 | Missing `select` on invoice fetch causes overfetching                         |
-| IR-04 | Info     | validators/src/bacs.ts:27                         | `bacsSubmitterNameSchema` allows empty string — no `.min(1)`                  |
-| IR-05 | Info     | components/invoices/late-interest/late-interest-card.tsx:107 | Dead branch: B2C banner unreachable after `!isApplicable` early return |
+**File:** `packages/integrations/src/services/boe-base-rate-poller.ts:341-356`
+**Issue:** When a new rate is observed, the upsert keys on `todayUtc` (the day the cron ran), not on `latest.date` (the day BoE published the change). The MPC-published `effectiveFrom` is the legally-significant date for LPCDA §4(1) lookups; using the cron-run day distorts the historical record whenever a poll is delayed (e.g. cron skipped for a day, or the rate change is observed the morning after publication). Example: BoE publishes a rate change effective `2026-02-06`; if the cron runs at 06:00 UTC on `2026-02-07`, `BoEBaseRateHistory` records `effectiveFrom=2026-02-07` instead of `2026-02-06`.
+
+The downstream `resolveStatutoryRate` lookup (exercised by tests in `late-payment-interest.test.ts`) compares `entry.effectiveFrom <= referenceDate`. A 1-day error around 30 Jun / 31 Dec is enough to pick the wrong rate for an entire 6-month statutory window.
+
+**Fix:** Key the upsert on `latest.date`:
+```typescript
+await db.boEBaseRateHistory.upsert({
+  where: { effectiveFrom: latest.date },
+  create: { effectiveFrom: latest.date, ratePercent: fetchedRate, source: 'BOE_API' },
+  update: { ratePercent: fetchedRate, source: 'BOE_API' },
+});
+```
+Also add a unit test pinning the behaviour: when CSV reports a rate effective 2 days before `now`, the inserted row carries that same `effectiveFrom`, not `now`.
+
+---
+
+### WR-03: BoE poller's update branch silently overwrites a manually-entered rate
+
+**File:** `packages/integrations/src/services/boe-base-rate-poller.ts:344-356`
+**Issue:** Combined with WR-02 (or even on its own — if a cron runs twice on the same UTC day, or if an admin manually inserted a row for today), the poller's `upsert.update` block unconditionally rewrites `ratePercent` and forces `source: 'BOE_API'`. Per D-10, the admin manual-edit endpoint is explicitly the override path; a cron should not stomp on it. A super-admin who corrects a typo at 09:00 will see their fix reverted at 06:00 UTC the next day.
+
+**Fix:** Make the upsert insert-only — when a row already exists for the target `effectiveFrom`, log and skip:
+```typescript
+const existing = await db.boEBaseRateHistory.findUnique({ where: { effectiveFrom: latest.date } });
+if (existing) {
+  log.info(
+    { effectiveFrom: latest.date, existingSource: existing.source },
+    'BoE rate row exists — skipping (manual override preserved)',
+  );
+  return { updated: false, currentRate: fetchedRate };
+}
+await db.boEBaseRateHistory.create({
+  data: { effectiveFrom: latest.date, ratePercent: fetchedRate, source: 'BOE_API' },
+});
+```
+
+---
+
+### WR-04: Pervasive `as any` casts on the encrypted-field boundary
+
+**File:** `packages/api/src/routers/bacs.ts:91-92, 139-140, 316-317, 335-337, 503-504`
+**Issue:** Every Prisma access in this router goes through `db as any`, including the reads that pull `bacsServiceUserNumberEncrypted`, `ukSortCodeEncrypted`, etc. The biome ignores (`// biome-ignore lint/suspicious/noExplicitAny: tenant client typing varies`) acknowledge the type-safety hole but choose to live with it. CLAUDE.md mandates strong typing and avoiding unsafe shortcuts, and the encrypted-bank-fields surface is exactly where you most want a typed contract — a typo in `bacsSubmitterAccountNumberEncrypted` would silently return `undefined` and `loadDecryptedSubmitterConfig` would short-circuit to `null`, masking misconfiguration as "submitter not configured".
+
+**Fix:** Either type the tenant client properly (the project already has `createTenantClient`/`getRegionalClient` in `@contractor-ops/db`; expose its `Prisma.PrismaClient`-derived type) or extract a typed adapter:
+```typescript
+type BacsTenantDb = Pick<Prisma.PrismaClient, 'organization' | 'paymentRun' | 'document' | 'paymentExport' | '$transaction'>;
+// then accept BacsTenantDb where currently `unknown` + `as any` is used
+```
+This also replaces the `tx as any` cast at line 336.
+
+---
+
+### WR-05: `loadRunWithBacsItems` does not check payment run status (DRAFT runs can be exported)
+
+**File:** `packages/api/src/routers/bacs.ts:141-208`
+**Issue:** The query `paymentRun.findFirst({ where: { id, organizationId } })` returns the run regardless of `status`. The existing payment-run domain typically requires runs to be `LOCKED` or `EXPORTING` before export operations. Allowing a DRAFT run to produce a downloadable file lets a user generate and submit a file based on an unreviewed item set — the recipient list could change between preview and BACS submission. The `Document` audit row would point to a "version" that no longer exists in the payment-run state.
+
+**Fix:** Inspect existing payment-run state machine (`packages/api/src/services/payment-run-state.ts` or similar) and gate `previewExport` to permit DRAFT for live previews while gating `generateExport` to require LOCKED+:
+```typescript
+if (run.status !== 'LOCKED' && run.status !== 'EXPORTED') {
+  throw new TRPCError({
+    code: 'PRECONDITION_FAILED',
+    message: `Payment run must be locked before BACS export (current status: ${run.status})`,
+  });
+}
+```
+
+---
+
+### WR-06: `getBacsSubmitterMasks` returns `configured: false` when the row is missing — masking the absence as "not configured"
+
+**File:** `packages/api/src/routers/bacs.ts:514-523`
+**Issue:** `findUnique({ where: { id: organizationId } })` returns `null` when the org row literally does not exist (e.g. soft-deleted, mid-deletion, or a tenant-context bug pointing at the wrong region). The fallback returns `{ configured: false, ... }` with no log line. From the UI's perspective this is indistinguishable from "submitter not configured" — the user sees the empty-state form, fills it in, and the subsequent `update` call fails with a much less actionable error. A missing organization row is a serious tenancy/region invariant violation and should surface as an error, not a silent empty state.
+
+**Fix:**
+```typescript
+if (!org) {
+  log.error({ organizationId }, 'getBacsSubmitterMasks: organization row not found');
+  throw new TRPCError({ code: 'NOT_FOUND', message: 'Organization not found' });
+}
+```
+
+---
+
+### WR-07: Race condition on rapid sort-code validation clicks
+
+**File:** `apps/web/src/components/contractors/billing-profile/sort-code-validator.tsx:47-62`
+**Issue:** `handleValidate` is `async`, sets `pending=true`, awaits `queryClient.fetchQuery(...)`, and finally sets `outcome`. Pressing the button twice in quick succession (or paste-then-click then immediately edit) will fire two parallel queries; the slower one wins and overwrites the outcome of the more-recent input. The button is disabled while `pending` so the failure mode is bounded but still possible (clicks queued before disabled state is committed; fast double-click within React's batched update window).
+
+**Fix:** Use a request-id ratchet to ignore stale responses:
+```typescript
+const requestIdRef = useRef(0);
+const handleValidate = async () => {
+  const myId = ++requestIdRef.current;
+  setOutcome(null);
+  setPending(true);
+  try {
+    const data = await queryClient.fetchQuery(/* ... */);
+    if (myId === requestIdRef.current) setOutcome(data as ValidationOutcome);
+  } catch (err) {
+    if (myId === requestIdRef.current) setOutcome({ status: 'INVALID', warnings: [/* ... */] });
+  } finally {
+    if (myId === requestIdRef.current) setPending(false);
+  }
+};
+```
+
+---
+
+### WR-08: `BacsSubmitterForm` resets the entire form when the submitterName mask loads — wipes user edits
+
+**File:** `apps/web/src/components/payments/bacs/bacs-submitter-form.tsx:88-97`
+**Issue:** The `useEffect` calls `reset({ ..., submitterName: masks.submitterName })` whenever `masks.submitterName` changes. If the masks query is in flight when the user has already typed into any of the three encrypted fields (SUN / sort code / account number) before the response lands, those edits are wiped to empty strings. React-Query caches will usually have it instantly on revisit, but on first load (no cache) the timing is observable. Worse: invalidating `getSubmitterMasks` after `saveSubmitterConfig` succeeds will trigger this effect again on a refetch, re-clearing inputs every save — which may or may not be the intent (success-clears-form is a reasonable UX, but deserves to be intentional rather than a side effect of the load gate).
+
+**Fix:** Only reset when the form is pristine, or use `defaultValues` from a ready-state prop:
+```typescript
+useEffect(() => {
+  if (masks?.submitterName && !isDirty) {
+    reset({
+      serviceUserNumber: '',
+      submitterSortCode: '',
+      submitterAccountNumber: '',
+      submitterName: masks.submitterName,
+    });
+  }
+}, [masks?.submitterName, reset, isDirty]);
+```
+Better: split the form into a wrapper that suspends until masks resolve, then renders `<BacsSubmitterForm initialName={masks.submitterName ?? ''} />` with `defaultValues` set once.
+
+## Info
+
+### IN-01: `BacsExportItem.amountMinor` typed `number` — no compile-time non-negative guarantee
+
+**File:** `packages/api/src/services/payment-export.ts:537-541`
+**Issue:** Runtime check throws on negative `amountMinor`, which is correct (BACS Direct Credit is positive amounts). The upstream router takes the value from `paymentRun.items[].amountMinor`, which Prisma types as `number`; nothing on the path forbids a negative refund-style amount, and the only protection is the throw. Also the combined error message conflates negative-amount and overflow into one cause.
+
+**Fix:** Tighten the type via Zod at the router boundary or split the message:
+```typescript
+if (item.amountMinor < 0) throw new Error('BACS Std 18: negative amounts not supported');
+if (item.amountMinor >= BACS_MAX_AMOUNT_PENCE) throw new Error(/* current message */);
+```
+
+### IN-02: `toJulianDate` produces wrong day-of-year if caller passes a local-TZ `Date`
+
+**File:** `packages/api/src/services/payment-export.ts:446-453`
+**Issue:** The function correctly uses `getUTCFullYear()` and `Date.UTC(...)` for the start-of-year baseline, but `date.getTime()` is a UTC-anchored ms value, while the intent is "the calendar day this Date represents". A `new Date(2026, 3, 15)` (local-TZ midnight) on a +05:00 host yields 23:00 UTC on 2026-04-14 → Julian `26104` instead of `26105`. Current callers (`bacs.ts:260,296`) use `new Date()` (UTC instant) and tests pass `Date.UTC(...)` constants, so the in-tree call sites are safe — but the contract is brittle for downstream callers.
+
+**Fix:** Either rename the parameter and document the contract (`processingDate` must be a UTC-anchored instant), or normalise inside the function:
+```typescript
+function toJulianDate(date: Date): string {
+  const utcMidnight = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+  // ... compute from utcMidnight
+}
+```
+
+### IN-03: `parseBoeCsv` silently skips unparseable rows — no telemetry on garbled responses
+
+**File:** `packages/integrations/src/services/boe-base-rate-poller.ts:96-136`
+**Issue:** Per the comment, BoE occasionally emits empty rows or footnotes; skipping them is correct. However, if every row is unparseable (BoE redesigns the CSV, breaks the `DD Mon YYYY` format, or returns HTML behind a 200), `parseBoeCsv` returns `[]` and the caller logs "No parseable rows" — but there is no count of *how many rows were attempted vs. parsed*, which would distinguish "BoE returned nothing for this date range" from "BoE format changed and we silently lost everything".
+
+**Fix:** Return a richer structure:
+```typescript
+return { rows, attempted: lines.length - dataStartIndex, parsed: rows.length };
+```
+Surface `attempted - parsed` in the warning log. Bonus: alarm in Sentry when `attempted > 0 && parsed === 0`.
+
+### IN-04: Late-interest test does not pin day-counting timezone semantics at boundaries
+
+**File:** `packages/api/src/services/__tests__/late-payment-interest.test.ts:46-58, 217-247`
+**Issue:** The test asserts `daysOverdue === 30` when `dueDate=2026-02-13` and `asOf=2026-03-15`. By calendar-day counting in 2026 (non-leap, Feb has 28 days): 13 → 28 = 15 days, +15 days of March = 30. This is correct, but the test does not pin down whether `daysOverdue` is "midnight-to-midnight calendar days" or "ms-floored 86_400_000-second buckets" — a UTC-vs-local-TZ subtlety the late-interest service must get right (the service is not in scope of this review, but the tests are).
+
+**Fix:** Add a test asserting the day-counting boundary explicitly:
+```typescript
+it('counts a calendar day exactly once across midnight UTC', () => {
+  const result = calculateLateInterest(
+    makeInput({
+      invoiceDueDate: new Date(Date.UTC(2026, 1, 13, 23, 59, 59)),
+      asOf:           new Date(Date.UTC(2026, 1, 14, 0,  0,  1)),
+    }),
+  );
+  expect(result.daysOverdue).toBe(1); // not 0, not 2
+});
+```
+Document in the service whether the count is calendar-day-inclusive of `asOf` or exclusive.
+
+### IN-05: `BacsPreviewPre` lacks `aria-busy` while loading and `aria-live` for content updates
+
+**File:** `apps/web/src/components/payments/bacs/bacs-preview-pre.tsx`
+**Issue:** Screen-reader users will not be notified when the preview content arrives or when it changes after a re-fetch (e.g. submitter config saved between visits). The `<section aria-label="...">` is good but static.
+
+**Fix:** Add `aria-live="polite"` to the section so that the content changes are announced when the preview transitions from skeleton to text. Pair with `aria-busy={previewQuery.isFetching}` on the parent card (`BacsPreviewCard`) for the loading transitional state.
+
+### IN-06: `formatSortCode` in `ModulusCheckWarningList` returns the input unchanged when length ≠ 6 — no warning on malformed data
+
+**File:** `apps/web/src/components/payments/bacs/modulus-check-warning-list.tsx:30-33`
+**Issue:** Defensive but silent: a 5-digit sort code (which would mean an upstream Zod failure leaked into the UI) renders as raw digits with no visual indicator. Low impact because Zod gates upstream, but if it ever happens it's a UX puzzle.
+
+**Fix:** Either render the malformed value with a destructive badge, or surface a warning via the project's structured logger from a UI-side telemetry helper. Visual minimum: flag malformed sort codes with a subtle outline so QA notices.
+
+---
+
+_Reviewed: 2026-04-25_
+_Reviewer: Claude (gsd-code-reviewer)_
+_Depth: standard_
