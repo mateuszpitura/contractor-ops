@@ -15,7 +15,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { CheckCircle2, ShieldAlert, XCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -40,24 +40,43 @@ export function SortCodeValidator({ sortCode, accountNumber }: SortCodeValidator
   const queryClient = useQueryClient();
   const [outcome, setOutcome] = useState<ValidationOutcome | null>(null);
   const [pending, setPending] = useState(false);
+  /**
+   * Monotonic request-id ratchet. Each invocation captures its own id; the
+   * UI only reflects the most recent invocation's outcome. Without this,
+   * a fast double-click (or paste-then-click + immediate input edit) could
+   * fire two parallel queries and let the slower one win — overwriting the
+   * outcome of the more-recent input. The button is disabled while pending,
+   * but clicks queued before React commits the disabled state still slip
+   * through inside a single batched update window.
+   */
+  const requestIdRef = useRef(0);
 
   // validateSortCode is a tRPC `query` — not a mutation. We invoke it
   // imperatively via the React Query cache (fetchQuery) so validation only
   // runs when the user clicks the button, not on every keystroke.
   const handleValidate = async () => {
+    const myId = requestIdRef.current + 1;
+    requestIdRef.current = myId;
+
     setOutcome(null);
     setPending(true);
     try {
       const data = await queryClient.fetchQuery(
         trpc.bacs.validateSortCode.queryOptions({ sortCode, accountNumber }),
       );
-      setOutcome(data as ValidationOutcome);
+      if (myId === requestIdRef.current) {
+        setOutcome(data as ValidationOutcome);
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Validation failed';
       // Format-level errors (5-digit sort code etc.) bubble up via Zod.
-      setOutcome({ status: 'INVALID', warnings: [message] });
+      if (myId === requestIdRef.current) {
+        setOutcome({ status: 'INVALID', warnings: [message] });
+      }
     } finally {
-      setPending(false);
+      if (myId === requestIdRef.current) {
+        setPending(false);
+      }
     }
   };
 
