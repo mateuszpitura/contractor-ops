@@ -1,3 +1,5 @@
+'use client';
+
 // ---------------------------------------------------------------------------
 // Shared verdict banner — Phase 58 Plan 05 Task 1.
 // ---------------------------------------------------------------------------
@@ -7,8 +9,6 @@
 // Phase 64 · D-19 — When `onAmberVerdictMounted` is provided, the banner fires
 // the callback (exactly once, via ref guard) when the tone is 'warning'. The
 // outcome page uses this to trigger logEscalation for amber/indeterminate verdicts.
-
-'use client';
 
 import type { Ir35Outcome, ScheinselbstandigkeitOutcome } from '@contractor-ops/classification';
 import type { LucideIcon } from 'lucide-react';
