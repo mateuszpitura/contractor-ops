@@ -63,10 +63,12 @@ const {
     mockPrisma,
     mockCalculateLateInterest: vi.fn(),
     mockGetCompensationTier: vi.fn().mockReturnValue(7_000),
-    mockLoadBoeRateHistory: vi.fn().mockResolvedValue([
-      { effectiveFrom: new Date('2023-01-01'), ratePercent: 5.25 },
-    ]),
-    mockSignExistingDownload: vi.fn().mockResolvedValue({ signedUrl: 'https://r2.example.com/signed' }),
+    mockLoadBoeRateHistory: vi
+      .fn()
+      .mockResolvedValue([{ effectiveFrom: new Date('2023-01-01'), ratePercent: 5.25 }]),
+    mockSignExistingDownload: vi
+      .fn()
+      .mockResolvedValue({ signedUrl: 'https://r2.example.com/signed' }),
   };
 });
 
@@ -99,7 +101,7 @@ vi.mock('@contractor-ops/db', () => ({
   getRegionalClient: vi.fn(() => mockPrisma),
 }));
 
-vi.mock('@contractor-ops/feature-flags', async (importOriginal) => {
+vi.mock('@contractor-ops/feature-flags', async importOriginal => {
   const actual = await importOriginal<typeof import('@contractor-ops/feature-flags')>();
   return {
     ...actual,
@@ -110,12 +112,19 @@ vi.mock('@contractor-ops/feature-flags', async (importOriginal) => {
   };
 });
 
-vi.mock('@contractor-ops/validators', async (importOriginal) => ({
+vi.mock('@contractor-ops/validators', async importOriginal => ({
   ...(await importOriginal()),
 }));
 
 vi.mock('@contractor-ops/logger', () => {
-  const stub = { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), fatal: vi.fn(), trace: vi.fn() };
+  const stub = {
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+    fatal: vi.fn(),
+    trace: vi.fn(),
+  };
   const loggerStub = { ...stub, child: vi.fn(() => ({ ...stub, child: vi.fn(() => stub) })) };
   return {
     logger: loggerStub,
@@ -273,7 +282,6 @@ beforeEach(() => {
 // ===========================================================================
 
 describe('latePaymentInterestRouter', () => {
-
   // =========================================================================
   // getForInvoice
   // =========================================================================
@@ -301,9 +309,7 @@ describe('latePaymentInterestRouter', () => {
     });
 
     it('returns applicable=false when contractor is missing', async () => {
-      mockPrisma.invoice.findFirst.mockResolvedValueOnce(
-        makeGbInvoice({ contractor: null }),
-      );
+      mockPrisma.invoice.findFirst.mockResolvedValueOnce(makeGbInvoice({ contractor: null }));
 
       const result = await caller.getForInvoice({ invoiceId: INVOICE_ID });
 
@@ -331,9 +337,7 @@ describe('latePaymentInterestRouter', () => {
     });
 
     it('returns applicable=false for non-GBP currency', async () => {
-      mockPrisma.invoice.findFirst.mockResolvedValueOnce(
-        makeGbInvoice({ currency: 'EUR' }),
-      );
+      mockPrisma.invoice.findFirst.mockResolvedValueOnce(makeGbInvoice({ currency: 'EUR' }));
 
       const result = await caller.getForInvoice({ invoiceId: INVOICE_ID });
 
@@ -398,7 +402,13 @@ describe('latePaymentInterestRouter', () => {
       mockPrisma.invoice.findFirst.mockResolvedValueOnce(
         makeGbInvoice({
           interestWaivers: [
-            { id: WAIVER_ID, waiveType: 'STATUTORY_INTEREST', reason: 'goodwill', waivedAt: new Date(), revokedAt: null },
+            {
+              id: WAIVER_ID,
+              waiveType: 'STATUTORY_INTEREST',
+              reason: 'goodwill',
+              waivedAt: new Date(),
+              revokedAt: null,
+            },
           ],
         }),
       );
@@ -434,9 +444,7 @@ describe('latePaymentInterestRouter', () => {
 
     it('passes payments array to calculateLateInterest', async () => {
       const pmt = { amountMinor: 100_000, paidAt: new Date('2024-06-01') };
-      mockPrisma.invoice.findFirst.mockResolvedValueOnce(
-        makeGbInvoice({ payments: [pmt] }),
-      );
+      mockPrisma.invoice.findFirst.mockResolvedValueOnce(makeGbInvoice({ payments: [pmt] }));
 
       await caller.getForInvoice({ invoiceId: INVOICE_ID });
 
@@ -481,7 +489,11 @@ describe('latePaymentInterestRouter', () => {
 
     it('returns nextCursor when more items exist', async () => {
       const invoices = Array.from({ length: 21 }, (_, i) =>
-        makeGbInvoice({ id: `inv-${i}`, invoiceNumber: `INV-${i}`, dueDate: new Date('2023-06-01') }),
+        makeGbInvoice({
+          id: `inv-${i}`,
+          invoiceNumber: `INV-${i}`,
+          dueDate: new Date('2023-06-01'),
+        }),
       );
       mockPrisma.invoice.findMany.mockResolvedValueOnce(invoices);
 
@@ -718,7 +730,7 @@ describe('latePaymentInterestRouter', () => {
       ).rejects.toMatchObject({ code: 'CONFLICT' });
     });
 
-    it('throws FAILED_PRECONDITION when calculateLateInterest returns applicable=false', async () => {
+    it('throws PRECONDITION_FAILED when calculateLateInterest returns applicable=false', async () => {
       mockPrisma.invoice.findFirst.mockResolvedValueOnce(makeGbInvoice());
       mockCalculateLateInterest.mockReturnValueOnce({
         applicable: false,
@@ -728,16 +740,16 @@ describe('latePaymentInterestRouter', () => {
 
       await expect(
         caller.claim({ invoiceId: INVOICE_ID, issueAsSecondaryInvoice: false }),
-      ).rejects.toMatchObject({ code: 'FAILED_PRECONDITION' });
+      ).rejects.toMatchObject({ code: 'PRECONDITION_FAILED' });
     });
 
-    it('throws FAILED_PRECONDITION when totalClaimMinor is zero', async () => {
+    it('throws PRECONDITION_FAILED when totalClaimMinor is zero', async () => {
       mockPrisma.invoice.findFirst.mockResolvedValueOnce(makeGbInvoice());
       mockCalculateLateInterest.mockReturnValueOnce(makeApplicableResult({ totalClaimMinor: 0 }));
 
       await expect(
         caller.claim({ invoiceId: INVOICE_ID, issueAsSecondaryInvoice: false }),
-      ).rejects.toMatchObject({ code: 'FAILED_PRECONDITION' });
+      ).rejects.toMatchObject({ code: 'PRECONDITION_FAILED' });
     });
 
     it('creates secondary invoice when issueAsSecondaryInvoice=true', async () => {
@@ -862,7 +874,11 @@ describe('latePaymentInterestRouter', () => {
 
       const result = await caller.downloadClaim({ claimId: CLAIM_ID });
 
-      expect(result).toMatchObject({ pdfStatus: 'FAILED', pdfError: 'Render timeout', downloadUrl: null });
+      expect(result).toMatchObject({
+        pdfStatus: 'FAILED',
+        pdfError: 'Render timeout',
+        downloadUrl: null,
+      });
     });
 
     it('calls signExistingDownload with correct key and filename', async () => {

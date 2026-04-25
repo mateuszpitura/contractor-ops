@@ -3,8 +3,10 @@
 // Phase 63 · Plan 05 · D-27 — Late payment interest tRPC router.
 // Provides: getForInvoice, getForOrg, waive, revokeWaiver, claim, downloadClaim.
 //
-// All procedures are tenant-scoped. Feature-flagged via PAY_LATE_INTEREST_ENABLED.
+// All procedures are tenant-scoped. Feature-flagged via the canonical
+// 'payments.late-interest-enabled' flag key.
 
+import type { PrismaClient } from '@contractor-ops/db';
 import { createLogger } from '@contractor-ops/logger';
 import {
   LPCDA_CLAIM_FOOTER,
@@ -15,24 +17,18 @@ import {
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { router } from '../init.js';
+import { plain } from '../lib/plain.js';
+import { requireFeatureFlag, tenantFlaggedProcedure } from '../middleware/feature-flag.js';
 import { requirePermission } from '../middleware/rbac.js';
-import { tenantFlaggedProcedure } from '../middleware/feature-flag.js';
-import { requireFeatureFlag } from '../middleware/feature-flag.js';
-import {
-  calculateLateInterest,
-  getCompensationTier,
-} from '../services/late-payment-interest.js';
-import { putObjectAndSignDownload, signExistingDownload } from '../services/r2.js';
+import { loadBoeRateHistory } from '../services/boe-rate-cache.js';
+import { calculateLateInterest, getCompensationTier } from '../services/late-payment-interest.js';
+import { signExistingDownload } from '../services/r2.js';
 
 const log = createLogger({ service: 'late-payment-interest-router' });
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-function plain<T>(data: T): T {
-  return JSON.parse(JSON.stringify(data)) as T;
-}
 
 /** Format minor units to a decimal string for PDF display. */
 function formatGbp(minor: number): string {
@@ -50,7 +46,7 @@ export const latePaymentInterestRouter = router({
    * Checks feature flag, scope gates, creates compensation tier if needed.
    */
   getForInvoice: tenantFlaggedProcedure
-    .use(requireFeatureFlag('PAY_LATE_INTEREST_ENABLED'))
+    .use(requireFeatureFlag('payments.late-interest-enabled'))
     .use(requirePermission({ invoice: ['read'] }))
     .input(z.object({ invoiceId: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -75,10 +71,10 @@ export const latePaymentInterestRouter = router({
         throw new TRPCError({ code: 'NOT_FOUND', message: 'Invoice not found' });
       }
 
-      // Load BoE rate history (global, not tenant-scoped)
-      const rateHistory = await ctx.db.boEBaseRateHistory.findMany({
-        orderBy: { effectiveFrom: 'desc' },
-      });
+      // Load BoE rate history (global, not tenant-scoped) via cache.
+      const rateHistory = await loadBoeRateHistory(
+        ctx.db as unknown as Pick<PrismaClient, 'boEBaseRateHistory'>,
+      );
 
       // Scope gates
       if (!invoice.contractor) {
@@ -147,13 +143,10 @@ export const latePaymentInterestRouter = router({
 
       // Determine waiver and claim status
       const activeWaivers = invoice.interestWaivers.filter(w => w.revokedAt === null);
-      const waiverStatus = activeWaivers.length > 0
-        ? ('WAIVED' as const)
-        : ('NONE' as const);
+      const waiverStatus = activeWaivers.length > 0 ? ('WAIVED' as const) : ('NONE' as const);
 
-      const claimStatus = invoice.interestClaims.length > 0
-        ? ('CLAIMED' as const)
-        : ('NONE' as const);
+      const claimStatus =
+        invoice.interestClaims.length > 0 ? ('CLAIMED' as const) : ('NONE' as const);
 
       return plain({
         ...result,
@@ -171,6 +164,9 @@ export const latePaymentInterestRouter = router({
           claimedAt: c.claimedAt,
           snapshotInterestMinor: c.snapshotInterestMinor,
           snapshotCompensationMinor: c.snapshotCompensationMinor,
+          pdfStatus: c.pdfStatus,
+          pdfReadyAt: c.pdfReadyAt,
+          pdfError: c.pdfError,
         })),
       });
     }),
@@ -179,7 +175,7 @@ export const latePaymentInterestRouter = router({
    * Paginated list of overdue GB B2B invoices with computed interest for the org.
    */
   getForOrg: tenantFlaggedProcedure
-    .use(requireFeatureFlag('PAY_LATE_INTEREST_ENABLED'))
+    .use(requireFeatureFlag('payments.late-interest-enabled'))
     .use(requirePermission({ invoice: ['read'] }))
     .input(
       z.object({
@@ -190,7 +186,9 @@ export const latePaymentInterestRouter = router({
     .query(async ({ ctx, input }) => {
       const pageSize = 20;
 
-      // Find overdue GB B2B invoices
+      // Find overdue GB B2B invoices. Compound order `(dueDate, id)` so
+      // the cursor has a deterministic anchor even when multiple invoices
+      // share a dueDate.
       const invoices = await ctx.db.invoice.findMany({
         where: {
           organizationId: ctx.organizationId,
@@ -212,7 +210,7 @@ export const latePaymentInterestRouter = router({
           interestWaivers: true,
           interestClaims: true,
         },
-        orderBy: { dueDate: 'asc' },
+        orderBy: [{ dueDate: 'asc' }, { id: 'asc' }],
         take: pageSize + 1,
         ...(input.cursor ? { cursor: { id: input.cursor }, skip: 1 } : {}),
       });
@@ -220,10 +218,10 @@ export const latePaymentInterestRouter = router({
       const hasMore = invoices.length > pageSize;
       const items = invoices.slice(0, pageSize);
 
-      // Load BoE rate history once
-      const rateHistory = await ctx.db.boEBaseRateHistory.findMany({
-        orderBy: { effectiveFrom: 'desc' },
-      });
+      // Load BoE rate history once (cached, invalidated on admin writes).
+      const rateHistory = await loadBoeRateHistory(
+        ctx.db as unknown as Pick<PrismaClient, 'boEBaseRateHistory'>,
+      );
 
       const results = items.map(invoice => {
         const result = calculateLateInterest({
@@ -282,7 +280,7 @@ export const latePaymentInterestRouter = router({
    * Requires a reason of at least 10 characters for audit trail.
    */
   waive: tenantFlaggedProcedure
-    .use(requireFeatureFlag('PAY_LATE_INTEREST_ENABLED'))
+    .use(requireFeatureFlag('payments.late-interest-enabled'))
     .use(requirePermission({ invoice: ['update'] }))
     .input(
       z.object({
@@ -342,7 +340,7 @@ export const latePaymentInterestRouter = router({
    * Revoke an existing interest waiver.
    */
   revokeWaiver: tenantFlaggedProcedure
-    .use(requireFeatureFlag('PAY_LATE_INTEREST_ENABLED'))
+    .use(requireFeatureFlag('payments.late-interest-enabled'))
     .use(requirePermission({ invoice: ['update'] }))
     .input(
       z.object({
@@ -387,7 +385,7 @@ export const latePaymentInterestRouter = router({
    * Create a statutory interest claim with PDF letter and optional secondary invoice.
    */
   claim: tenantFlaggedProcedure
-    .use(requireFeatureFlag('PAY_LATE_INTEREST_ENABLED'))
+    .use(requireFeatureFlag('payments.late-interest-enabled'))
     .use(requirePermission({ invoice: ['update'] }))
     .input(
       z.object({
@@ -412,6 +410,7 @@ export const latePaymentInterestRouter = router({
           payments: true,
           interestCompensation: true,
           interestWaivers: true,
+          interestClaims: { select: { id: true } },
         },
       });
 
@@ -419,10 +418,21 @@ export const latePaymentInterestRouter = router({
         throw new TRPCError({ code: 'NOT_FOUND', message: 'Invoice not found' });
       }
 
-      // Load BoE rate history
-      const rateHistory = await ctx.db.boEBaseRateHistory.findMany({
-        orderBy: { effectiveFrom: 'desc' },
-      });
+      // Duplicate-claim guard: `calculateLateInterest` does not subtract
+      // previously claimed amounts, so without this check a caller could
+      // fire `claim` repeatedly — producing multiple PDFs and, with
+      // issueAsSecondaryInvoice=true, `LPC-*` invoice-number collisions.
+      if (invoice.interestClaims.length > 0) {
+        throw new TRPCError({
+          code: 'CONFLICT',
+          message: 'Interest has already been claimed on this invoice',
+        });
+      }
+
+      // Load BoE rate history (cached).
+      const rateHistory = await loadBoeRateHistory(
+        ctx.db as unknown as Pick<PrismaClient, 'boEBaseRateHistory'>,
+      );
 
       // Compute current interest
       const result = calculateLateInterest({
@@ -449,54 +459,25 @@ export const latePaymentInterestRouter = router({
 
       if (!result.applicable) {
         throw new TRPCError({
-          code: 'FAILED_PRECONDITION',
+          code: 'PRECONDITION_FAILED',
           message: `Cannot claim interest: ${result.reason}`,
         });
       }
 
       if (result.totalClaimMinor <= 0) {
         throw new TRPCError({
-          code: 'FAILED_PRECONDITION',
+          code: 'PRECONDITION_FAILED',
           message: 'No interest or compensation to claim',
         });
       }
 
-      // Generate claim PDF using React-PDF
-      const { renderToBuffer } = await import('@react-pdf/renderer');
-      const { LatePaymentClaimTemplate } = await import(
-        '../pdf-templates/late-payment-claim.js'
-      );
-
-      const claimId = `claim-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-
-      const pdfBuffer = await renderToBuffer(
-        LatePaymentClaimTemplate({
-          organizationName: invoice.organization.name,
-          invoiceNumber: invoice.invoiceNumber,
-          invoiceDueDate: invoice.dueDate,
-          daysOverdue: result.daysOverdue,
-          principalOutstandingMinor: result.principalOutstandingMinor,
-          rateUsed: result.rateUsed,
-          dailyInterestMinor: result.dailyInterestMinor,
-          accruedInterestMinor: result.accruedInterestMinor,
-          compensationTierMinor: result.compensationTierMinor,
-          totalClaimMinor: result.totalClaimMinor,
-          claimedAt: new Date(),
-        }),
-      );
-
-      // Upload PDF to R2
-      const pdfKey = `late-interest-claims/${ctx.organizationId}/${input.invoiceId}/${claimId}.pdf`;
-
-      const { signedUrl } = await putObjectAndSignDownload({
-        key: pdfKey,
-        body: pdfBuffer,
-        contentType: 'application/pdf',
-        downloadFilename: `late-payment-claim-${invoice.invoiceNumber}.pdf`,
-        ttlSeconds: 300,
-      });
-
-      // Create claim record
+      // Create claim record synchronously with pdfStatus=PENDING_RENDER.
+      // The actual PDF render + R2 upload runs in a QStash worker (see
+      // apps/web/src/app/api/late-interest/_render-claim-pdf). This keeps
+      // the mutation latency bounded — React-PDF + R2 upload can take
+      // several seconds on non-trivial claims, which pushed the request
+      // against the 30s tRPC timeout. Clients poll `downloadClaim` or
+      // watch `pdfStatus` on `getForInvoice`.
       let secondaryInvoiceId: string | null = null;
 
       if (input.issueAsSecondaryInvoice) {
@@ -531,10 +512,35 @@ export const latePaymentInterestRouter = router({
           snapshotCompensationMinor: result.compensationTierMinor,
           snapshotRateUsed: result.rateUsed,
           snapshotDaysOverdue: result.daysOverdue,
-          pdfKey,
+          // pdfKey is null until the worker uploads — the downloadClaim
+          // procedure gates on pdfStatus=READY before signing a URL.
+          pdfKey: null,
+          pdfStatus: 'PENDING_RENDER',
           secondaryInvoiceId,
         },
       });
+
+      // Enqueue the render job. We use dynamic imports so that tests /
+      // tooling that load this router without Upstash env vars don't
+      // explode at module-load time. Errors here are non-fatal: the claim
+      // row is durable and can be re-enqueued manually if needed.
+      try {
+        const [{ getQStashClient }, { getServerEnv }] = await Promise.all([
+          import('@contractor-ops/integrations/services/qstash-client'),
+          import('@contractor-ops/validators'),
+        ]);
+        await getQStashClient().publishJSON({
+          url: `${getServerEnv().NEXT_PUBLIC_APP_URL}/api/late-interest/_render-claim-pdf`,
+          body: { claimId: claim.id, organizationId: ctx.organizationId },
+          retries: 3,
+          timeout: '60s',
+        });
+      } catch (err) {
+        log.error(
+          { err: err instanceof Error ? err.message : String(err), claimId: claim.id },
+          'Failed to enqueue claim PDF render job — claim is still persisted',
+        );
+      }
 
       log.info(
         {
@@ -543,12 +549,13 @@ export const latePaymentInterestRouter = router({
           totalClaimMinor: result.totalClaimMinor,
           secondaryInvoiceId,
         },
-        'Late payment interest claim created',
+        'Late payment interest claim created (PDF render queued)',
       );
 
       return plain({
         claimId: claim.id,
-        pdfUrl: signedUrl,
+        pdfStatus: 'PENDING_RENDER' as const,
+        pdfUrl: null,
         secondaryInvoiceId,
       });
     }),
@@ -557,7 +564,7 @@ export const latePaymentInterestRouter = router({
    * Download a previously generated claim PDF.
    */
   downloadClaim: tenantFlaggedProcedure
-    .use(requireFeatureFlag('PAY_LATE_INTEREST_ENABLED'))
+    .use(requireFeatureFlag('payments.late-interest-enabled'))
     .use(requirePermission({ invoice: ['read'] }))
     .input(z.object({ claimId: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -575,12 +582,27 @@ export const latePaymentInterestRouter = router({
         throw new TRPCError({ code: 'NOT_FOUND', message: 'Claim not found' });
       }
 
+      // PDF is rendered asynchronously by a QStash worker. The client is
+      // expected to poll this procedure; we surface the status verbatim so
+      // the UI can show "Generating PDF…" / "Failed" / a download link.
+      if (claim.pdfStatus !== 'READY' || !claim.pdfKey) {
+        return plain({
+          pdfStatus: claim.pdfStatus,
+          pdfError: claim.pdfError,
+          downloadUrl: null as string | null,
+        });
+      }
+
       const { signedUrl } = await signExistingDownload(
         claim.pdfKey,
         300,
         `late-payment-claim-${claim.invoice.invoiceNumber}.pdf`,
       );
 
-      return plain({ downloadUrl: signedUrl });
+      return plain({
+        pdfStatus: claim.pdfStatus,
+        pdfError: null as string | null,
+        downloadUrl: signedUrl as string | null,
+      });
     }),
 });
