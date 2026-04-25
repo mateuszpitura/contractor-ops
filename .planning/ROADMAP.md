@@ -165,7 +165,7 @@ See .planning/milestones/v4.0/ for details.
 **Plans**: 7 plans
 - [x] 63-01-PLAN.md — Wave 1: All Prisma schema additions (8 new models + enum extensions + UK bank fields + BACS submitter fields) + [BLOCKING] prisma db push + BoE rate seed data + BACS validators (modulus check) + locked phrases (GB LPCDA + DE Skonto) + feature flags (PAY_BACS/LATE_INTEREST/SKONTO) + i18n Payments namespace
 - [x] 63-02-PLAN.md — Wave 2: ASCII transliteration utility + BACS Std 18 generator (fixed-width file with VOL/HDR/detail/trailer records) + format auto-detection (GBP+UK -> BACS_STD18)
-- [ ] 63-03-PLAN.md — Wave 2: Late payment interest calculation service (LPCDA-compliant: statutory period rate + simple interest + compensation tiers + partial payments + waivers) + BoE rate poller + cron route
+- [x] 63-03-PLAN.md — Wave 2: Late payment interest calculation service (LPCDA-compliant: statutory period rate + simple interest + compensation tiers + partial payments + waivers) + BoE rate poller + cron route
 - [ ] 63-04-PLAN.md — Wave 3: BACS tRPC router (preview/generate/validate/saveSubmitter) + settings page (/settings/payments/) + BACS preview Card + UK bank fields on billing profile
 - [x] 63-05-PLAN.md — Wave 3: Late interest tRPC router (get/waive/revoke/claim/download) + claim PDF (React-PDF) + admin BoE rate router + admin shell + /admin/boe-rate/ page
 - [x] 63-06-PLAN.md — Wave 3: Skonto eligibility service + tRPC router (upsert/delete for invoice+profile) + XRechnung BG-20 Payment Terms extension (#SKONTO#TAGE=n#PROZENT=n#)
