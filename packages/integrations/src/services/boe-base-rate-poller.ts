@@ -348,22 +348,46 @@ export async function pollBoeBaseRate(deps: PollDeps = {}): Promise<PollBoeBaseR
   // statutory window.
   const effectiveFrom = latest.date;
 
+  // Insert-only: if a row already exists for this `effectiveFrom` (cron ran
+  // twice on the same UTC day, OR an admin manually entered the rate via the
+  // override path per D-10), preserve it and skip. The manual-edit endpoint
+  // is the documented override path; a scheduled cron must NOT stomp on a
+  // human correction the next time it runs.
+  let existing: { source: string } | null;
   try {
-    await db.boEBaseRateHistory.upsert({
+    existing = (await db.boEBaseRateHistory.findUnique({
       where: { effectiveFrom },
-      create: {
-        effectiveFrom,
-        ratePercent: fetchedRate,
-        source: 'BOE_API',
+      select: { source: true },
+    })) as typeof existing;
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    log.warn({ err: message, fetchedRate, storedRate }, 'BoE rate poll existence check failed');
+    return { updated: false, currentRate: fetchedRate, error: message };
+  }
+
+  if (existing) {
+    log.info(
+      {
+        effectiveFrom: effectiveFrom.toISOString(),
+        existingSource: existing.source,
+        fetchedRate,
       },
-      update: {
+      'BoE rate row already exists for effectiveFrom — preserving (manual override safe)',
+    );
+    return { updated: false, currentRate: fetchedRate };
+  }
+
+  try {
+    await db.boEBaseRateHistory.create({
+      data: {
+        effectiveFrom,
         ratePercent: fetchedRate,
         source: 'BOE_API',
       },
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    log.warn({ err: message, fetchedRate, storedRate }, 'BoE rate poll upsert failed');
+    log.warn({ err: message, fetchedRate, storedRate }, 'BoE rate poll insert failed');
     return { updated: false, currentRate: fetchedRate, error: message };
   }
 
