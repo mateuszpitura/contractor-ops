@@ -37,7 +37,7 @@ import { writeAuditLog } from '../services/audit-writer.js';
 import { decryptBankAccount, encryptBankAccount } from '../services/bank-account-crypto.js';
 import type { BacsExportItem, BacsOrgBankInfo } from '../services/payment-export.js';
 import { generateBacsStandard18 } from '../services/payment-export.js';
-import { putObjectAndSignDownload } from '../services/r2.js';
+import { deleteObject, putObjectAndSignDownload } from '../services/r2.js';
 
 const log = createLogger({ service: 'bacs-router' });
 
@@ -361,37 +361,60 @@ export const bacsRouter = router({
       });
 
       // Record Document + PaymentExport in a transaction so the audit trail is
-      // consistent even if the export row write fails.
-      await ctx.db.$transaction(async (tx: unknown) => {
-        // biome-ignore lint/suspicious/noExplicitAny: tx typing varies
-        const txAny = tx as any;
-        const document = await txAny.document.create({
-          data: {
-            organizationId: ctx.organizationId,
-            storageKey: r2Key,
-            originalFileName: filename,
-            mimeType: 'text/plain; charset=us-ascii',
-            fileSizeBytes: BigInt(result.fileBuffer.length),
-            checksumSha256: sha256Hex,
-            documentType: 'PAYMENT_EXPORT',
-            source: 'GENERATED',
-            uploadedByUserId: ctx.user?.id ?? null,
-            virusScanStatus: 'CLEAN',
-          },
-          select: { id: true },
-        });
+      // consistent even if the export row write fails. If the transaction
+      // fails, best-effort delete the orphan R2 blob so we don't accumulate
+      // unreferenced files (and don't leave the caller with a signed URL that
+      // points to a file the system has no audit record of).
+      try {
+        await ctx.db.$transaction(async (tx: unknown) => {
+          // biome-ignore lint/suspicious/noExplicitAny: tx typing varies
+          const txAny = tx as any;
+          const document = await txAny.document.create({
+            data: {
+              organizationId: ctx.organizationId,
+              storageKey: r2Key,
+              originalFileName: filename,
+              mimeType: 'text/plain; charset=us-ascii',
+              fileSizeBytes: BigInt(result.fileBuffer.length),
+              checksumSha256: sha256Hex,
+              documentType: 'PAYMENT_EXPORT',
+              source: 'GENERATED',
+              uploadedByUserId: ctx.user?.id ?? null,
+              virusScanStatus: 'CLEAN',
+            },
+            select: { id: true },
+          });
 
-        await txAny.paymentExport.create({
-          data: {
-            organizationId: ctx.organizationId,
-            paymentRunId: input.paymentRunId,
-            documentId: document.id,
-            format: 'BACS_STD18',
-            status: 'GENERATED',
-            generatedByUserId: ctx.user?.id ?? '',
-          },
+          await txAny.paymentExport.create({
+            data: {
+              organizationId: ctx.organizationId,
+              paymentRunId: input.paymentRunId,
+              documentId: document.id,
+              format: 'BACS_STD18',
+              status: 'GENERATED',
+              generatedByUserId: ctx.user?.id ?? '',
+            },
+          });
         });
-      });
+      } catch (txErr) {
+        // Best-effort cleanup. We deliberately do NOT await on the cleanup
+        // path's error: a failure to delete the R2 blob must never mask the
+        // original transaction error surfaced to the caller. A nightly reaper
+        // can pick up any orphaned `payment-exports/{org}/{run}/...` keys
+        // without a matching Document as a backstop.
+        void deleteObject(r2Key).catch(cleanupErr => {
+          log.warn(
+            {
+              err: cleanupErr instanceof Error ? cleanupErr.message : String(cleanupErr),
+              r2Key,
+              organizationId: ctx.organizationId,
+              paymentRunId: input.paymentRunId,
+            },
+            'bacs.generateExport: orphan R2 cleanup failed after transaction failure',
+          );
+        });
+        throw txErr;
+      }
 
       log.info(
         {
