@@ -208,6 +208,41 @@ describe('calculateLateInterest — pre-overdue', () => {
     expect(result.daysOverdue).toBe(0);
     expect(result.accruedInterestMinor).toBe(0);
   });
+
+  it('endDateMs exactly on overdueStartMs → 0 days overdue (B-05 boundary regression)', () => {
+    // Boundary case: asOf is exactly the start of the first overdue day
+    // (dueDate + 24h). Per LPCDA inclusive-elapsed semantics, no FULL
+    // overdue day has elapsed yet at this instant — daysOverdue must be 0.
+    // The pre-fix formula `(endDateMs - dueDateMs) / day` would have
+    // returned 1 here, overstating the claim. This test locks the
+    // corrected boundary against future regression.
+    const dueDate = new Date(Date.UTC(2026, 4, 1));
+    const overdueStart = new Date(Date.UTC(2026, 4, 2)); // dueDate + 1 day
+    const result = calculateLateInterest(
+      makeInput({
+        invoiceDueDate: dueDate,
+        asOf: overdueStart,
+      }),
+    );
+    expect(result.applicable).toBe(true);
+    expect(result.daysOverdue).toBe(0);
+    expect(result.accruedInterestMinor).toBe(0);
+  });
+
+  it('endDateMs exactly one day past overdueStartMs → 1 day overdue (B-05 boundary regression)', () => {
+    // Boundary case: asOf is exactly 24h past overdueStartMs. One full
+    // overdue day has elapsed → daysOverdue = 1.
+    const dueDate = new Date(Date.UTC(2026, 4, 1));
+    const oneDayPastOverdueStart = new Date(Date.UTC(2026, 4, 3)); // dueDate + 2 days
+    const result = calculateLateInterest(
+      makeInput({
+        invoiceDueDate: dueDate,
+        asOf: oneDayPastOverdueStart,
+      }),
+    );
+    expect(result.applicable).toBe(true);
+    expect(result.daysOverdue).toBe(1);
+  });
 });
 
 // ===========================================================================
@@ -215,35 +250,42 @@ describe('calculateLateInterest — pre-overdue', () => {
 // ===========================================================================
 
 describe('calculateLateInterest — simple interest formula', () => {
-  it('30 days overdue, £5,000 principal, BoE 3.75% → 11.75% statutory rate', () => {
+  it('29 days overdue (Feb-13-due → Mar-15-asOf), £5,000 principal, BoE 3.75% → 11.75% statutory rate', () => {
+    // LPCDA-correct (B-05): days overdue counted from overdueStartMs
+    // (Feb 14) through endDateMs (Mar 15) → 29 days, NOT 30.
+    // Pre-fix this asserted 30; that was the off-by-one bug from CR-05 in
+    // 63-VERIFICATION.md (counting the dueDate itself as overdue).
+    //
     // Debt overdue 2026-02-13 → reference 2025-12-31 → 3.75%
     // statutoryRate = 3.75 + 8 = 11.75%
     // dailyInterest = 500_000 * 11.75/100 / 365 = 160.96 → 161 pence
-    // accruedInterest = 161 * 30 = 4830 pence (rounded from 4828.77)
+    // accruedInterest = round(500_000 * 11.75/100 / 365 * 29) = round(4667.808) = 4668
     const result = calculateLateInterest(makeInput());
     expect(result.applicable).toBe(true);
-    expect(result.daysOverdue).toBe(30);
+    expect(result.daysOverdue).toBe(29);
     expect(result.rateUsed).toBe(11.75);
     expect(result.principalOutstandingMinor).toBe(500_000);
-    // Daily interest rounded
+    // Daily interest unchanged (rate * principal / 365)
     expect(result.dailyInterestMinor).toBe(161);
-    // Total accrued: round(500_000 * 11.75/100 / 365 * 30) = round(4828.767) = 4829
-    expect(result.accruedInterestMinor).toBe(4_829);
+    // Total accrued: round(500_000 * 11.75/100 / 365 * 29) = round(4667.808) = 4668
+    expect(result.accruedInterestMinor).toBe(4_668);
   });
 
   it('does NOT compound interest — verify formula is principal * rate / 365 * days', () => {
     const result = calculateLateInterest(makeInput({ asOf: new Date(Date.UTC(2026, 3, 14)) }));
-    // 60 days overdue (2026-02-13 → 2026-04-14)
-    expect(result.daysOverdue).toBe(60);
-    // Linear scaling: doubling days exactly doubles interest (modulo rounding)
-    const expected = Math.round(((500_000 * 11.75) / 100 / 365) * 60);
+    // LPCDA-correct (B-05): 59 days, not 60 — overdueStartMs = Feb 14;
+    // (Apr 14 - Feb 14) = 59. Pre-fix this asserted 60.
+    expect(result.daysOverdue).toBe(59);
+    // Linear scaling: same days→interest formula, just with the corrected day count.
+    const expected = Math.round(((500_000 * 11.75) / 100 / 365) * 59);
     expect(result.accruedInterestMinor).toBe(expected);
-    // Confirm linear: 60-day result is ~2x the 30-day result
-    const thirtyDayResult = calculateLateInterest(makeInput());
-    // Compounding would inflate the 60-day result above 2x; simple keeps it at 2x ± rounding
-    const ratio = result.accruedInterestMinor / thirtyDayResult.accruedInterestMinor;
-    expect(ratio).toBeGreaterThan(1.99);
-    expect(ratio).toBeLessThan(2.01);
+    // Confirm linear: 59-day result is ~(59/29)x ≈ 2.034x the baseline 29-day result.
+    // Compounding would inflate the result above the linear ratio; simple holds.
+    const baseline29DayResult = calculateLateInterest(makeInput());
+    const ratio = result.accruedInterestMinor / baseline29DayResult.accruedInterestMinor;
+    const expectedRatio = 59 / 29; // ≈ 2.0345
+    expect(ratio).toBeGreaterThan(expectedRatio - 0.02);
+    expect(ratio).toBeLessThan(expectedRatio + 0.02);
   });
 });
 
@@ -262,8 +304,9 @@ describe('calculateLateInterest — partial payments', () => {
     expect(result.principalOutstandingMinor).toBe(300_000);
     // dailyInterest = 300_000 * 11.75 / 100 / 365 = 96.575 → 97 pence
     expect(result.dailyInterestMinor).toBe(97);
-    // accrued = round(300_000 * 11.75/100 / 365 * 30) = round(2897.26) = 2897
-    expect(result.accruedInterestMinor).toBe(2_897);
+    // LPCDA-correct (B-05): 29 days, not 30 (overdueStartMs = Feb 14).
+    // accrued = round(300_000 * 11.75/100 / 365 * 29) = round(2800.685) = 2801
+    expect(result.accruedInterestMinor).toBe(2_801);
   });
 
   it('multiple partial payments are summed', () => {
@@ -316,9 +359,10 @@ describe('calculateLateInterest — waivers', () => {
       }),
     );
     expect(result.waiverApplied).toBe(true);
-    expect(result.accruedInterestMinor).toBe(4_829); // unchanged
+    // LPCDA-correct (B-05): 29 days, not 30. accrued = round(500_000 * 11.75/100 / 365 * 29) = 4668
+    expect(result.accruedInterestMinor).toBe(4_668);
     expect(result.compensationTierMinor).toBe(0);
-    expect(result.totalClaimMinor).toBe(4_829);
+    expect(result.totalClaimMinor).toBe(4_668);
   });
 
   it('BOTH waiver zeros both accrued interest and compensation', () => {
@@ -342,9 +386,11 @@ describe('calculateLateInterest — waivers', () => {
       }),
     );
     expect(result.waiverApplied).toBe(false);
-    expect(result.accruedInterestMinor).toBe(4_829);
+    // LPCDA-correct (B-05): 29 days, not 30. accrued = round(500_000 * 11.75/100 / 365 * 29) = 4668
+    expect(result.accruedInterestMinor).toBe(4_668);
     expect(result.compensationTierMinor).toBe(7_000);
-    expect(result.totalClaimMinor).toBe(11_829);
+    // total = 4_668 + 7_000 = 11_668
+    expect(result.totalClaimMinor).toBe(11_668);
   });
 
   it('multiple waivers — at least one active applies', () => {
@@ -402,7 +448,9 @@ describe('calculateLateInterest — fully paid', () => {
         asOf: new Date(Date.UTC(2026, 3, 30)), // 30 Apr — checking later
       }),
     );
-    // Interest stops accruing on paidAt, not asOf
-    expect(result.daysOverdue).toBe(30); // Feb 13 → Mar 15
+    // Interest stops accruing on paidAt, not asOf.
+    // LPCDA-correct (B-05): 29 days, not 30 — overdueStartMs = Feb 14;
+    // (Mar 15 - Feb 14) = 29. Pre-fix this asserted 30.
+    expect(result.daysOverdue).toBe(29); // Feb 14 (overdueStartMs) → Mar 15
   });
 });

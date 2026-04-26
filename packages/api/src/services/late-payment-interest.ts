@@ -196,7 +196,14 @@ export function calculateLateInterest(input: LateInterestInput): LateInterestRes
   const overdueStartMs = dueDateMs + 24 * 60 * 60 * 1000;
   const endDateMs = paidAt ? new Date(paidAt).getTime() : now.getTime();
 
-  if (endDateMs <= dueDateMs) {
+  // Cover the entire grace period (up to but not including overdueStartMs)
+  // so the post-guard daysOverdue formula can never return a negative value
+  // when endDateMs lands inside the same calendar day as dueDateMs. The pre-fix
+  // guard (`endDateMs <= dueDateMs`) was a strict subset of this range — for
+  // @db.Date columns at midnight UTC the boundary `endDateMs == overdueStartMs`
+  // (= dueDate + 24h) now correctly falls THROUGH to the formula and yields
+  // daysOverdue=0 (no full overdue day elapsed yet).
+  if (endDateMs < overdueStartMs) {
     return {
       applicable: true,
       daysOverdue: 0,
@@ -210,7 +217,14 @@ export function calculateLateInterest(input: LateInterestInput): LateInterestRes
     };
   }
 
-  const daysOverdue = Math.floor((endDateMs - dueDateMs) / (24 * 60 * 60 * 1000));
+  // LPCDA Section 4(1): interest accrues from the day AFTER due date
+  // (overdueStartMs). daysOverdue counts the number of full days that have
+  // ELAPSED since overdueStartMs — partial days don't accrue a full day's
+  // interest. Fixes B-05 (Phase 65 CONTEXT.md decision D-03 /
+  // .planning/phases/63-uk-payments-financial-features/63-VERIFICATION.md).
+  // DO NOT revert to (endDateMs - dueDateMs) — that overstates by one day
+  // because it counts the grace-period day (= dueDate itself) as overdue.
+  const daysOverdue = Math.floor((endDateMs - overdueStartMs) / (24 * 60 * 60 * 1000));
 
   // Calculate principal outstanding (invoice total - sum of payments)
   const totalPaid = payments.reduce((sum, p) => sum + p.amountMinor, 0);
