@@ -21,11 +21,7 @@ const SKONTO_TERM_ID = 'term-skonto-001';
 // Mock services via vi.hoisted
 // ---------------------------------------------------------------------------
 
-const {
-  mockPrisma,
-  mockEvaluateSkontoEligibility,
-  mockResolveSkontoTerm,
-} = vi.hoisted(() => {
+const { mockPrisma, mockEvaluateSkontoEligibility, mockResolveSkontoTerm } = vi.hoisted(() => {
   type Rec = Record<string, unknown>;
 
   const mockPrisma: Rec = {
@@ -127,7 +123,14 @@ vi.mock('@sentry/nextjs', () => {
 });
 
 vi.mock('@contractor-ops/logger', () => {
-  const stub = { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), fatal: vi.fn(), trace: vi.fn() };
+  const stub = {
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+    fatal: vi.fn(),
+    trace: vi.fn(),
+  };
   const loggerStub = { ...stub, child: vi.fn(() => ({ ...stub, child: vi.fn(() => stub) })) };
   return {
     logger: loggerStub,
@@ -235,7 +238,10 @@ describe('skontoRouter', () => {
     const input = { invoiceId: INVOICE_ID, ...validTermInput };
 
     it('upserts skonto term when invoice belongs to tenant', async () => {
-      mockPrisma.invoice.findFirst.mockResolvedValueOnce({ id: INVOICE_ID, organizationId: ORG_ID });
+      mockPrisma.invoice.findFirst.mockResolvedValueOnce({
+        id: INVOICE_ID,
+        organizationId: ORG_ID,
+      });
       mockPrisma.skontoTerm.upsert.mockResolvedValueOnce(mockTerm);
 
       const result = await caller.upsertForInvoice(input);
@@ -244,7 +250,10 @@ describe('skontoRouter', () => {
     });
 
     it('passes correct where clause to skontoTerm.upsert', async () => {
-      mockPrisma.invoice.findFirst.mockResolvedValueOnce({ id: INVOICE_ID, organizationId: ORG_ID });
+      mockPrisma.invoice.findFirst.mockResolvedValueOnce({
+        id: INVOICE_ID,
+        organizationId: ORG_ID,
+      });
       mockPrisma.skontoTerm.upsert.mockResolvedValueOnce(mockTerm);
 
       await caller.upsertForInvoice(input);
@@ -268,19 +277,34 @@ describe('skontoRouter', () => {
 
     it('rejects when discountDays equals netDays', async () => {
       await expect(
-        caller.upsertForInvoice({ invoiceId: INVOICE_ID, percent: 2, discountDays: 30, netDays: 30 }),
+        caller.upsertForInvoice({
+          invoiceId: INVOICE_ID,
+          percent: 2,
+          discountDays: 30,
+          netDays: 30,
+        }),
       ).rejects.toThrow();
     });
 
     it('rejects when discountDays is greater than netDays', async () => {
       await expect(
-        caller.upsertForInvoice({ invoiceId: INVOICE_ID, percent: 2, discountDays: 31, netDays: 30 }),
+        caller.upsertForInvoice({
+          invoiceId: INVOICE_ID,
+          percent: 2,
+          discountDays: 31,
+          netDays: 30,
+        }),
       ).rejects.toThrow();
     });
 
     it('rejects percent above 50', async () => {
       await expect(
-        caller.upsertForInvoice({ invoiceId: INVOICE_ID, percent: 51, discountDays: 10, netDays: 30 }),
+        caller.upsertForInvoice({
+          invoiceId: INVOICE_ID,
+          percent: 51,
+          discountDays: 10,
+          netDays: 30,
+        }),
       ).rejects.toThrow();
     });
   });
@@ -431,24 +455,26 @@ describe('skontoRouter', () => {
     const mockInvoiceWithTerm = {
       id: INVOICE_ID,
       organizationId: ORG_ID,
-      amountMinor: 100_000,
+      totalMinor: 100_000,
       issueDate,
       paidAt: null,
-      skontoTerm: {
-        discountPercent: 2,
-        discountPeriodDays: 10,
-        netPeriodDays: 30,
-      },
+      skontoTerms: [
+        {
+          discountPercent: 2,
+          discountPeriodDays: 10,
+          netPeriodDays: 30,
+        },
+      ],
       contractor: null,
     };
 
     const mockInvoiceNoTerm = {
       id: INVOICE_ID,
       organizationId: ORG_ID,
-      amountMinor: 100_000,
+      totalMinor: 100_000,
       issueDate,
       paidAt: null,
-      skontoTerm: null,
+      skontoTerms: [],
       contractor: null,
     };
 
@@ -517,9 +543,11 @@ describe('skontoRouter', () => {
       const invoiceWithProfileTerm = {
         ...mockInvoiceNoTerm,
         contractor: {
-          billingProfile: {
-            skontoTerm: profileSkontoTerm,
-          },
+          billingProfiles: [
+            {
+              skontoTerms: [profileSkontoTerm],
+            },
+          ],
         },
       };
       mockPrisma.invoice.findFirst.mockResolvedValueOnce(invoiceWithProfileTerm);

@@ -10,14 +10,11 @@ import { createLogger } from '@contractor-ops/logger';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { router } from '../init.js';
-import { tenantFlaggedProcedure } from '../middleware/feature-flag.js';
-import { requireFeatureFlag } from '../middleware/feature-flag.js';
+import { plain } from '../lib/plain.js';
+import { requireFeatureFlag, tenantFlaggedProcedure } from '../middleware/feature-flag.js';
 import { requirePermission } from '../middleware/rbac.js';
-import {
-  evaluateSkontoEligibility,
-  resolveSkontoTerm,
-  type SkontoTermData,
-} from '../services/skonto.js';
+import type { SkontoTermData } from '../services/skonto.js';
+import { evaluateSkontoEligibility, resolveSkontoTerm } from '../services/skonto.js';
 
 const log = createLogger({ service: 'skonto-router' });
 
@@ -31,17 +28,13 @@ const skontoTermInputSchema = z
     discountDays: z.number().int().gte(1),
     netDays: z.number().int().lte(180),
   })
-  .refine((d) => d.discountDays < d.netDays, {
+  .refine(d => d.discountDays < d.netDays, {
     message: 'Discount period must be shorter than net period',
   });
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-function plain<T>(data: T): T {
-  return JSON.parse(JSON.stringify(data)) as T;
-}
 
 // ---------------------------------------------------------------------------
 // Router
@@ -92,10 +85,7 @@ export const skontoRouter = router({
         },
       });
 
-      log.info(
-        { invoiceId: input.invoiceId, termId: term.id },
-        'upserted skonto term for invoice',
-      );
+      log.info({ invoiceId: input.invoiceId, termId: term.id }, 'upserted skonto term for invoice');
 
       return plain(term);
     }),
@@ -124,10 +114,7 @@ export const skontoRouter = router({
 
       await ctx.db.skontoTerm.delete({ where: { id: existing.id } });
 
-      log.info(
-        { invoiceId: input.invoiceId },
-        'deleted skonto term for invoice',
-      );
+      log.info({ invoiceId: input.invoiceId }, 'deleted skonto term for invoice');
 
       return { success: true };
     }),
@@ -222,6 +209,12 @@ export const skontoRouter = router({
    * Evaluate Skonto eligibility for a specific invoice.
    * Resolves the effective term (invoice-level then profile default) and
    * evaluates eligibility based on payment date vs discount window.
+   *
+   * `asOf` is intentionally NOT accepted from the client — any downstream
+   * decision (auto-applied discount on a payment run, a contractor's
+   * claim) must be based on server clock. A client-supplied `asOf` would
+   * let a caller coerce the server into reporting "eligible" for a date
+   * outside the real discount window.
    */
   evaluateForInvoice: tenantFlaggedProcedure
     .use(requireFeatureFlag('payments.skonto-enabled'))
@@ -229,7 +222,6 @@ export const skontoRouter = router({
     .input(
       z.object({
         invoiceId: z.string(),
-        asOf: z.date().optional(),
       }),
     )
     .query(async ({ ctx, input }) => {
@@ -238,12 +230,14 @@ export const skontoRouter = router({
         include: {
           contractor: {
             include: {
-              billingProfile: {
-                include: { skontoTerm: true },
+              billingProfiles: {
+                where: { isDefault: true },
+                include: { skontoTerms: true },
+                take: 1,
               },
             },
           },
-          skontoTerm: true,
+          skontoTerms: true,
         },
       });
 
@@ -254,38 +248,40 @@ export const skontoRouter = router({
         });
       }
 
-      // Resolve effective skonto term via cascade
-      const invoiceTerm = invoice.skontoTerm
+      // Resolve effective skonto term via cascade.
+      //
+      // Schema note: `Invoice.skontoTerms` and `BillingProfile.skontoTerms`
+      // are declared as arrays in Prisma, but `SkontoTerm.invoiceId` and
+      // `SkontoTerm.billingProfileId` are both `@unique` — so the
+      // cardinality on the SkontoTerm side is at most one. We index `[0]`
+      // to recover the singular logical relationship.
+      const invoiceSkontoTerm = invoice.skontoTerms[0] ?? null;
+      const invoiceTerm = invoiceSkontoTerm
         ? {
-            discountPercent: Number(invoice.skontoTerm.discountPercent),
-            discountPeriodDays: invoice.skontoTerm.discountPeriodDays,
-            netPeriodDays: invoice.skontoTerm.netPeriodDays,
+            discountPercent: Number(invoiceSkontoTerm.discountPercent),
+            discountPeriodDays: invoiceSkontoTerm.discountPeriodDays,
+            netPeriodDays: invoiceSkontoTerm.netPeriodDays,
           }
         : null;
 
-      const profileTerm = invoice.contractor?.billingProfile?.skontoTerm
+      const defaultProfile = invoice.contractor?.billingProfiles?.[0] ?? null;
+      const profileSkontoTerm = defaultProfile?.skontoTerms?.[0] ?? null;
+      const profileTerm = profileSkontoTerm
         ? {
-            discountPercent: Number(
-              invoice.contractor.billingProfile.skontoTerm.discountPercent,
-            ),
-            discountPeriodDays:
-              invoice.contractor.billingProfile.skontoTerm.discountPeriodDays,
-            netPeriodDays:
-              invoice.contractor.billingProfile.skontoTerm.netPeriodDays,
+            discountPercent: Number(profileSkontoTerm.discountPercent),
+            discountPeriodDays: profileSkontoTerm.discountPeriodDays,
+            netPeriodDays: profileSkontoTerm.netPeriodDays,
           }
         : null;
 
-      const effectiveTerm = resolveSkontoTerm(
-        invoiceTerm,
-        profileTerm,
-      ) as SkontoTermData | null;
+      const effectiveTerm = resolveSkontoTerm(invoiceTerm, profileTerm) as SkontoTermData | null;
 
       const result = evaluateSkontoEligibility({
-        invoiceTotalMinor: invoice.amountMinor,
+        invoiceTotalMinor: invoice.totalMinor,
         invoiceIssueDate: invoice.issueDate,
         skontoTerm: effectiveTerm,
         paidAt: invoice.paidAt,
-        asOf: input.asOf ?? new Date(),
+        asOf: new Date(),
       });
 
       return result;
