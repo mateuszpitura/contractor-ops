@@ -45,14 +45,14 @@ function renderCell(columnId: string, row: ContractorRow) {
     c => ('accessorKey' in c && c.accessorKey === columnId) || c.id === columnId,
   );
   if (!col?.cell) throw new Error(`No cell for column ${columnId}`);
-  const cellFn = col.cell as (info: unknown) => unknown;
+  const cellFn = col.cell as (info: unknown) => React.ReactElement;
   const result = cellFn({
     row: {
       original: row,
       getIsSelected: () => false,
       toggleSelected: vi.fn(),
     },
-    getValue: () => (row as unknown)[columnId],
+    getValue: () => (row as Record<string, unknown>)[columnId],
   });
   const { container } = render(result);
   return container;
@@ -71,7 +71,7 @@ describe('getColumns', () => {
   });
 
   it('has displayName as non-hideable column', () => {
-    const nameCol = columns.find(c => (c as unknown).accessorKey === 'displayName');
+    const nameCol = columns.find(c => (c as { accessorKey: string }).accessorKey === 'displayName');
     expect(nameCol).toBeDefined();
     expect(nameCol?.enableHiding).toBe(false);
   });
@@ -82,7 +82,7 @@ describe('getColumns', () => {
   });
 
   it('disables sorting on owner column', () => {
-    const ownerCol = columns.find(c => (c as unknown).accessorKey === 'owner');
+    const ownerCol = columns.find(c => (c as { accessorKey: string }).accessorKey === 'owner');
     expect(ownerCol?.enableSorting).toBe(false);
   });
 });
@@ -112,8 +112,10 @@ describe('getColumns cell renderers', () => {
         (() => {
           const t = (key: string) => key;
           const cols = getColumns(t);
-          const col = cols.find(c => (c as unknown).accessorKey === 'lifecycleStage');
-          const cellFn = col?.cell as (info: unknown) => unknown;
+          const col = cols.find(
+            c => (c as { accessorKey: string }).accessorKey === 'lifecycleStage',
+          );
+          const cellFn = col?.cell as (info: unknown) => React.ReactElement;
           return cellFn({
             row: {
               original: makeRow({ lifecycleStage: stage }),

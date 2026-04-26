@@ -35,14 +35,14 @@ function renderCell(columnId: string, row: ContractRow) {
     c => ('accessorKey' in c && c.accessorKey === columnId) || c.id === columnId,
   );
   if (!col?.cell) throw new Error(`No cell for column ${columnId}`);
-  const cellFn = col.cell as (info: unknown) => unknown;
+  const cellFn = col.cell as (info: unknown) => React.ReactElement;
   const result = cellFn({
     row: {
       original: row,
       getIsSelected: () => false,
       toggleSelected: vi.fn(),
     },
-    getValue: () => (row as unknown)[columnId],
+    getValue: () => (row as Record<string, unknown>)[columnId],
   });
   const { container } = render(result);
   return container;
@@ -61,7 +61,7 @@ describe('getColumns (contracts)', () => {
   });
 
   it('has title as non-hideable column', () => {
-    const titleCol = columns.find(c => (c as unknown).accessorKey === 'title');
+    const titleCol = columns.find(c => (c as { accessorKey: string }).accessorKey === 'title');
     expect(titleCol).toBeDefined();
     expect(titleCol?.enableHiding).toBe(false);
   });
@@ -72,12 +72,16 @@ describe('getColumns (contracts)', () => {
   });
 
   it('has compliance risk column', () => {
-    const col = columns.find(c => (c as unknown).accessorKey === 'complianceRiskLevel');
+    const col = columns.find(
+      c => (c as { accessorKey: string }).accessorKey === 'complianceRiskLevel',
+    );
     expect(col).toBeDefined();
   });
 
   it('disables sorting on rate column', () => {
-    const rateCol = columns.find(c => (c as unknown).accessorKey === 'rateValueMinor');
+    const rateCol = columns.find(
+      c => (c as { accessorKey: string }).accessorKey === 'rateValueMinor',
+    );
     expect(rateCol?.enableSorting).toBe(false);
   });
 });
@@ -114,8 +118,8 @@ describe('getColumns cell renderers (contracts)', () => {
         (() => {
           const t = (key: string) => key;
           const cols = getColumns(t);
-          const col = cols.find(c => (c as unknown).accessorKey === 'status');
-          return (col?.cell as unknown)({
+          const col = cols.find(c => (c as { accessorKey: string }).accessorKey === 'status');
+          return (col?.cell as (info: unknown) => React.ReactElement)({
             row: {
               original: makeRow({ status }),
               getIsSelected: () => false,
@@ -187,8 +191,10 @@ describe('getColumns cell renderers (contracts)', () => {
         (() => {
           const t = (key: string) => key;
           const cols = getColumns(t);
-          const col = cols.find(c => (c as unknown).accessorKey === 'complianceRiskLevel');
-          return (col?.cell as unknown)({
+          const col = cols.find(
+            c => (c as { accessorKey: string }).accessorKey === 'complianceRiskLevel',
+          );
+          return (col?.cell as (info: unknown) => React.ReactElement)({
             row: {
               original: makeRow({ complianceRiskLevel: risk }),
               getIsSelected: () => false,

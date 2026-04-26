@@ -31,10 +31,10 @@ function renderCell(columnId: string, row: PaymentRunRow) {
     c => ('accessorKey' in c && c.accessorKey === columnId) || c.id === columnId,
   );
   if (!col?.cell) throw new Error(`No cell for column ${columnId}`);
-  const cellFn = col.cell as (info: unknown) => unknown;
+  const cellFn = col.cell as (info: unknown) => React.ReactElement;
   const result = cellFn({
     row: { original: row, getIsSelected: () => false, toggleSelected: vi.fn() },
-    getValue: () => (row as unknown)[columnId],
+    getValue: () => (row as Record<string, unknown>)[columnId],
   });
   if (result === null) return null;
   const { container } = render(result);

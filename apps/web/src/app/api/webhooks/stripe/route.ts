@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
         });
 
         // Route to appropriate handler
-        await routeStripeEvent(event, tx);
+        await routeStripeEvent(event, tx as unknown as Parameters<typeof routeStripeEvent>[1]);
 
         // Mark as processed (still inside the same transaction)
         await tx.stripeEvent.update({

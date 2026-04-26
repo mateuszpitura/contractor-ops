@@ -135,7 +135,7 @@ async function handler(request: NextRequest) {
         '@contractor-ops/api/services/jira-webhook-handler'
       );
       await processJiraWebhook(
-        prisma,
+        prisma as unknown as Parameters<typeof processJiraWebhook>[0],
         effectiveOrgId,
         delivery.integrationConnectionId ?? '',
         delivery.payloadJson,
@@ -147,7 +147,7 @@ async function handler(request: NextRequest) {
         '@contractor-ops/api/services/linear-webhook-handler'
       );
       await processLinearWebhook(
-        prisma,
+        prisma as unknown as Parameters<typeof processLinearWebhook>[0],
         effectiveOrgId,
         delivery.integrationConnectionId ?? '',
         delivery.payloadJson,
@@ -155,11 +155,14 @@ async function handler(request: NextRequest) {
     }
 
     if (provider === 'resend') {
-      await processResendWebhookDelivery(prisma, {
-        organizationId: effectiveOrgId,
-        eventType: delivery.eventType,
-        payloadJson: delivery.payloadJson,
-      });
+      await processResendWebhookDelivery(
+        prisma as unknown as Parameters<typeof processResendWebhookDelivery>[0],
+        {
+          organizationId: effectiveOrgId,
+          eventType: delivery.eventType,
+          payloadJson: delivery.payloadJson,
+        },
+      );
     }
 
     const isESignProvider = provider === 'docusign' || provider === 'autenti';

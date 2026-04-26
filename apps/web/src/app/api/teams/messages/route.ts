@@ -100,13 +100,20 @@ export async function POST(request: Request): Promise<Response> {
     const res = createResponseShim();
 
     // Process the activity through the adapter and bot handler
-    await getAdapter().process(
-      req as unknown as IncomingMessage,
-      res as unknown as ServerResponse,
-      async context => {
-        await bot.run(context);
-      },
-    );
+    // The Bot Framework's `process` overloads use Response/Request shim
+    // types that don't structurally match Node's IncomingMessage /
+    // ServerResponse. The shims we construct above satisfy the runtime
+    // contract; cast at the boundary so TS picks the matching overload.
+    type AdapterProcess = ReturnType<typeof getAdapter>['process'];
+    await (
+      getAdapter().process as unknown as (
+        req: unknown,
+        res: unknown,
+        logic: Parameters<AdapterProcess>[2],
+      ) => Promise<void>
+    )(req, res, async context => {
+      await bot.run(context);
+    });
 
     // Return the response
     const responseBody =

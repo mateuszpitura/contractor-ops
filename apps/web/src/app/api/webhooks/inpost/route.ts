@@ -116,9 +116,11 @@ export async function POST(request: NextRequest) {
   }
 
   // Fire-and-forget: process webhook event
-  void handleInPostWebhook(prisma, matchedOrgId, payload).catch(err =>
-    console.error(`[inpost-webhook] Processing failed for org=${matchedOrgId}:`, err),
-  );
+  void handleInPostWebhook(
+    prisma as unknown as Parameters<typeof handleInPostWebhook>[0],
+    matchedOrgId,
+    payload,
+  ).catch(err => console.error(`[inpost-webhook] Processing failed for org=${matchedOrgId}:`, err));
 
   return NextResponse.json({ received: true });
 }
