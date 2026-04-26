@@ -65,8 +65,23 @@ export interface EInvoiceProfile {
   /** Human-readable name (e.g., "KSeF (Poland)") */
   readonly displayName: string;
 
-  /** Generate country-specific XML from canonical EInvoice */
-  generate(invoice: EInvoice): Promise<string>;
+  /**
+   * Generate country-specific XML from canonical EInvoice.
+   *
+   * `opts` is intentionally `unknown` at the shared-interface level: each
+   * country profile narrows it to its own domain-specific options type at
+   * the implementation signature (e.g. `XRechnungGenerateOptions`,
+   * `GenerateZugferdInput` shape). Callers working through the
+   * `EInvoiceProfile` reference must type-assert before passing options;
+   * direct callers (`new XRechnungDEProfile().generate(invoice, { ... })`)
+   * get full type-safety from the narrowed signature.
+   *
+   * Per Phase 68 D-07 — widened from `(invoice) => Promise<string>` so
+   * Plan 02 (XRechnung Skonto opts) and Plan 04 (ZUGFeRD Skonto opts) can
+   * extend their own opts types without forcing every other profile
+   * (KSeF / ZATCA / Peppol-AE) to acknowledge a Skonto-shaped param.
+   */
+  generate(invoice: EInvoice, opts?: unknown): Promise<string>;
   /** Parse country-specific XML into canonical EInvoice */
   parse(xml: string, metadata?: Record<string, unknown>): Promise<EInvoice>;
   /** Validate XML against country-specific rules */
