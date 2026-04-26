@@ -1,212 +1,220 @@
-# Project Research Summary
+# Project Research Summary — v6.0 Platform Maturity & Operational Hardening
 
-**Project:** v5.0 UK & Germany Market Expansion
-**Domain:** UK IR35 compliance, German Scheinselbstaendigkeit, EN 16931 e-invoicing (XRechnung/ZUGFeRD), BACS payments, HMRC/VIES VAT validation, German i18n
-**Researched:** 2026-04-12
-**Confidence:** MEDIUM (codebase analysis HIGH; external regulatory API specifics and 2026 standard versions MEDIUM; VIES REST availability LOW)
+**Project:** Contractor Ops — v6.0 Platform Maturity & Operational Hardening
+**Domain:** B2B contractor operations SaaS (multi-tenant, multi-jurisdiction PL/UK/DE/UAE/SA), maturity milestone — no new market entry, four cross-cutting capability additions on a production-grade Turborepo monorepo
+**Researched:** 2026-04-26
+**Confidence:** HIGH — every recommendation verified against existing v1.0–v5.0 precedents (file-level extension points), official SDK / regulator documentation, or both. MEDIUM only on (a) Saudization Nitaqat threshold values, (b) UAE permitted-activity catalogues, (c) exact Werkvertrag IP-clause wording. All MEDIUM areas have a documented "Needs verification by legal entity before production deploy" post-deploy checkpoint per LOCAL-ONLY / legal-sign-off-DEFERRED constraint.
 
 ## Executive Summary
 
-v5.0 is a compliance-heavy market expansion that adds two new jurisdictions — UK and Germany — to the existing multi-market contractor operations platform. The defining architectural investment is a generic contractor classification engine (analogous to the v4.0 e-invoicing engine) that treats IR35 and Scheinselbstaendigkeit as pluggable rule sets. This pattern is already proven in the codebase: the e-invoicing engine's `EInvoiceProfile` interface, the gov-api `GovApiClient` base class, and the country-fields JSON/Zod pattern all extend naturally to the new domains with minimal friction. Crucially, the JS/TS ecosystem has no mature libraries for XRechnung, ZUGFeRD, BACS Standard 18, IR35 determination, or Scheinselbstaendigkeit — everything must be built from specification. Only one new runtime dependency (`pdf-lib`) is required for the entire milestone.
+v6.0 is a **maturity milestone**, not a market-entry milestone. It closes four operational gaps that v1.0–v5.0 surfaced but deliberately deferred: (1) per-jurisdiction compliance-document lifecycle with hard payment-block on critical expiry, (2) IdP deprovisioning across Google Workspace / Entra ID / Okta / GitHub / Slack, (3) Gulf operational polish (UAE free-zone tracking + Saudization with the new 2026-04-15 Qiwa-auth requirement), and (4) offboarding hardening (KT templates, IP-assignment verification, contract clause health check, structured credential-rotation tracking). Across all four areas, research converges on a single architectural posture: **extend existing primitives, do not duplicate them**. Of ~15 dependencies a naive plan would add, research keeps **at most three** (`@okta/okta-sdk-nodejs`, `date-fns`, conditionally `octokit`); every other capability composes on existing infrastructure (QStash crons, AES-256-GCM per-provider credential store, `IntegrationProviderAdapter`, Claude Vision OCR with tool_use, R2 + ClamAV + DocumentLink, Unleash flags with PENDING→APPROVED CI gate, Better Auth org RBAC, AsyncLocalStorage tenant scoping, locked-phrases guard).
 
-The highest-risk work is the ZUGFeRD PDF/A-3 pipeline (embedding EN 16931-compliant CII XML into a PDF/A-3 archival container is a strict compliance requirement with limited Node.js tooling) and the classification engines (which carry existential legal liability if framed incorrectly — the tools must present risk assessments with mandatory disclaimers, never binding determinations). UK case law (Atholl House 2022, PGMOL 2024) and DRV audit precedent are unambiguous on this point. Both require careful design decisions before implementation begins. XRechnung, BACS, and German i18n are all extensions of proven patterns and carry substantially lower execution risk.
+The recommended approach is **foundation-first**: a new Phase 70 closes cross-cutting CI guards (multi-tenant schema-lint, Pino redaction enumeration, message-key parity per-PR, Unleash signoff CI gate, OAuth scope-capability framework) BEFORE any feature work. This reconciles a real conflict between ARCHITECTURE (F1 first) and PITFALLS (foundation guards first) — see Roadmap Decision Points. F1 (Compliance Document Lifecycle Engine) lands second because two later features compose on it: F3 UAE free-zone license expiry reuses F1's `ContractorComplianceItem` + reminder cron, and F4 IP-clause health check writes findings as `ContractorComplianceItem` rows of severity STANDARD. F4 (Offboarding Hardening) ships before F2 (IdP Deprovisioning) so the 14-day cooldown gate has the final-invoice state machine to reference. F2 ships in two sub-phases: GWS+Slack first (~95% SMB target market, narrowest scope expansion), then Entra+Okta+GitHub (the wedge vs Deel/Rippling). F3 ships last (depends on F1 expiry engine).
 
-The recommended build order starts with country field foundations and i18n (zero external dependencies), then government API clients (start HMRC developer hub registration immediately — approval takes weeks), then the classification engine (the key v5.0 differentiator), then e-invoicing profiles (XRechnung first, ZUGFeRD second), then payment export. Legal disclaimer design and German legal terminology review by a Steuerberater must happen before any user-facing implementation — not as polish at the end.
+The dominant risks are well-understood with v1.0–v5.0 precedents for mitigation. Three milestone-wide patterns warrant promotion: (a) the **drift escape hatch** pattern (mirrors v5.0 `recreateDraftAfterDrift`) reused 3x — for compliance requirement-set drift, Saudization Nitaqat threshold drift, and offboarding role-taxonomy drift; (b) the **locked-phrases guard** (78 phrases in v5.0 → 78+N) extended for every legally-defined document name, jurisdiction-specific clause, and Saudi/UAE Arabic statutory term; (c) the **detect-and-prompt re-OAuth** pattern from v2.0 Jira reused for every IdP whose existing OAuth scope set is read-only and needs write. The single highest-blast-radius pitfall is "deprovisioning runs before final invoice paid" (Pitfall 7) — the cooldown gate is mandatory, not a polish item, and foundation-first ordering is what makes it possible.
 
 ## Key Findings
 
-### Recommended Stack
+### Recommended Stack (HIGH confidence)
 
-The project needs only one new runtime dependency: `pdf-lib@^1.17.1` for ZUGFeRD PDF/A-3 generation. Every other capability is satisfied by existing packages (`fast-xml-parser`, `xml-crypto`, `zod`, `next-intl`, `node-forge`) or direct HTTP calls via `fetch` (HMRC VAT API, VIES REST). A new workspace package `@contractor-ops/classification` is required for the classification engine; its only dependency is `zod` (already in the workspace). `soap@^1.1.0` is a conditional second dependency, added only if VIES REST API proves unreliable in production.
+Stack research converges on a "do NOT add new infra" stance. Every capability has an existing primitive in v1.0–v5.0; the work is composition, not import.
 
-The `pdf-lib` PDF/A-3b capabilities must be verified during implementation with a proof-of-concept — the library can manipulate PDFs but PDF/A-3 compliance (XMP metadata, ICC color profiles, Associated Files mechanism) may require manual `PDFDict`/`PDFArray` work. If `pdf-lib` cannot meet requirements, the fallback is Apache PDFBox called as a child process.
+**New dependencies (at most three):**
+- `@okta/okta-sdk-nodejs@8.0.0` — namespaced `client.userApi.deactivateUser` / `revokeUserSessions`
+- `date-fns@4.1.0` — cascade-window arithmetic, tree-shake aggressively
+- `octokit@5.0.5` (conditional — only if `@octokit/rest` is not already in tree)
 
-**Core technologies:**
-- `fast-xml-parser@^5.5.9`: UBL 2.1 XML for XRechnung and CII XML for ZUGFeRD — already installed, same pattern as Peppol-AE and ZATCA generators
-- `xml-crypto@^6.0.0`: XAdES-BES digital signatures for XRechnung — already installed, adapt ZATCA signer from ECDSA-SHA256 to RSA-SHA256
-- `pdf-lib@^1.17.1` (NEW): PDF/A-3b generation for ZUGFeRD — pure JS, Vercel-compatible, the only viable Node.js option for PDF/A-3 with AF support
-- `zod@^3.23.0`: IR35 questionnaire, Scheinselbstaendigkeit assessment, BACS format, UK/DE country fields — already installed everywhere
-- `next-intl@^4.8.3`: German `de` locale requires only a config change and `de.json` translation file — no version bump needed
-- Direct `fetch` + `GovApiClient`: HMRC VAT API and VIES REST; no SDK exists for either; both fit the existing retry/rate-limit/audit-logging pattern
+**Existing infra reused (NOT new):**
+- `googleapis@171.4.0` — GWS Admin SDK (v3.0)
+- `@microsoft/microsoft-graph-client@3.0.7` + `@azure/identity@4.13.1` — Entra ID (v3.0 Teams + Outlook)
+- `@slack/web-api@7.15.1` + raw `fetch` for SCIM (`scim:write` org-token)
+- QStash, Pino via `@contractor-ops/logger`, Unleash OSS, Anthropic SDK with `ClaudeOcrAdapter`, Prisma 7, R2 + ClamAV, Better Auth org RBAC, `requireTier` Stripe middleware
 
-### Expected Features
+**Explicitly NOT added:** BullMQ / Agenda / node-cron, `pdf-parse` / `pdfjs-dist` / `unpdf`, `@microsoft/msgraph-sdk` Kiota preview, generic secret-share packages, specialised compliance/Saudization npm packages.
 
-**Must have (P0 table stakes for v5.0 launch):**
-- Generic contractor classification engine — abstract framework for IR35 and Scheinselbstaendigkeit rule sets; the architectural investment of v5.0, enabling future France URSSAF and Netherlands DBA as incremental additions
-- IR35 rule set — CEST-aligned assessment (5 areas: personal service, control, financial risk, part-and-parcel, MOO), risk scoring, inside/outside/undetermined outcomes with mandatory human sign-off
-- Status Determination Statement (SDS) generation + chain participant tracking — legal requirement under UK off-payroll rules; must include reasoning per assessment area, dispute process, and delivery timestamps
-- Scheinselbstaendigkeit rule set — DRV-aligned assessment (~20 criteria, 4 categories), weighted risk scoring, traffic-light outcomes
-- DRV audit defense documentation — exportable PDF bundle with assessment history, independence indicators, contractor revenue attestation
-- Economic dependency monitoring — billing concentration tracking with 70%/83.33% threshold alerts (5/6 rule per Section 2 SGB VI)
-- XRechnung e-invoicing profile — EN 16931 + BR-DE-* business rules, Leitweg-ID handling (B2G only, private sector uses order reference in BT-10), KoSIT Schematron validation
-- ZUGFeRD e-invoicing profile — PDF/A-3b with embedded CII XML (`factur-x.xml`), EN 16931 COMFORT level target, veraPDF-validated output
-- BACS Standard 18 export — fixed-width ASCII payment file for UK domestic batch payments
-- UK + German VAT rates and validation — UK (20%/5%/0%) via HMRC API; German (19%/7%/0%) via VIES
-- UK + German contractor profile fields — UTR, Companies House number (UK); Steuernummer, Handelsregister, USt-IdNr (DE)
-- German i18n — full `de` locale with locked legal terminology constants (tax law phrases must never be in translatable strings)
+**Static seed tables (no library exists):** UAE free-zone catalogue (~25 zones); Saudization Nitaqat 2026–2028 phase rules (~50 sectors × 3 years × 5 size bands). Both with admin-editable override tables and post-deploy legal sign-off checkpoints.
 
-**Should have (P1 competitive differentiators, add after market validation):**
-- IR35 reassessment triggers — auto-detect material changes from contract amendments, rate changes, extensions
-- UK late payment interest calculator — statutory interest (BoE base rate + 8%) plus fixed compensation tiers under Late Payment of Commercial Debts Act 1998
-- German Skonto support — early payment discount terms (2%/10 days, net 30 is German B2B standard)
-- Statusfeststellungsverfahren tracking — DRV clearance procedure application status management
-- Compliance health dashboard (UK/DE) — aggregated classification coverage, e-invoicing status, overdue reassessments, economic dependency alerts
-- Peppol BIS UK profile — low marginal effort given existing Peppol PINT-AE; trigger: NHS/government contract customer
+**Minimum-privilege OAuth scopes:** GWS `admin.directory.user` (write), Entra `User.EnableDisableAccount.All` + `User.RevokeSessions.All`, GitHub `admin:org`, Slack `admin.users.session:write` + `scim:write` (org-token), Okta "User Admin" role.
 
-**Defer to v6+:**
-- Faster Payments API — requires banking partnership; BACS covers the MVP
-- France URSSAF / Netherlands DBA classification rule sets — prove the engine pattern with UK+DE first
-- MTD VAT bridging — accounting software territory (Xero, FreeAgent)
-- Automated Statusfeststellungsverfahren DRV submission — no public API; pre-filled form generation is the correct alternative
+### Expected Features (HIGH confidence)
 
-**Anti-features (explicitly do not build):**
-- Definitive IR35 determination — platform cannot carry legal liability for determinations; always frame as risk assessment requiring human sign-off
-- German payroll processing for reclassified contractors — DATEV/Personio territory; generate a handoff package instead
-- KoSIT XRechnung validator rebuilt in-house — use KoSIT's open-source Java validator; tracking Schematron changes across releases is significant ongoing burden
-- CIS (Construction Industry Scheme) deductions — niche construction payroll, out of scope
+**Must have (table stakes):**
+- F1: per-jurisdiction policy registry (UTR, A1-Bescheinigung 24mo, Aufenthaltstitel, §48b EStG, Iqama 1yr, Emirates ID, free-zone trade license, RTW share code 90d); 90/60/30/15/7-day reminder cascade; hard-block on payment-run for EXPIRED CRITICAL with structured per-contractor reason; contractor self-service upload from existing v2.0 portal; admin compliance dashboard
+- F2: manual approval gate with per-IdP preview; GWS suspend + OAuth grant revoke + sign-out (the Nudge/Torii finding); Slack `admin.users.session.invalidate` + SCIM `active=false`; per-step audit trail with request/response hashes (SOC2); pre-flight scope check; partial-failure manual reconcile queue
+- F3: UAE free-zone enum (10-zone seed: DIFC, DMCC, IFZA, Dubai Internet City, Dubai Media City, Meydan FZ, JAFZA, SHAMS, RAKEZ, ADGM + Mainland) with `licenseCategory` + `permittedActivitiesText` + `licenseExpiresAt`; Saudization dashboard (manual band entry — we don't compute); `qiwaContractAuthenticated` boolean (2026-04-15 reg); pre-offboarding impact banner; Iqama/work permit expiry roll-up reused from F1; Arabic + RTL via CSS logical properties
+- F4: 4 role-typed KT seed templates (Software Engineer / Designer / PM / Generic Consultant); IP-assignment verification with e-sign-backed ratification (existing v2.0 DocuSign + Autenti); hard-block on offboarding-complete for unverified IP; contract clause regex scanner (UK + DE + PL + KSA + UAE + US); structured credential-rotation tasks — **`CredentialReference` only, never actual credentials**; OWNER-role override path for unresponsive contractors
 
-### Architecture Approach
+**Should have (differentiators vs Deel / Rippling / Worksuite):**
+- Payment hard-block per-invoice with specific document reason (vs Deel "no notify on expiry", Rippling holistic block)
+- Conditional documents (§48b EStG construction-only, A1 cross-border-only) — reduces false-positive reminders
+- Pre-flight Conditional Access conflict detection for Entra (silent-failure mode in MS shops)
+- OAuth grant enumeration UI before deprovision (shadow-IT discovery side-effect)
+- Werkvertrag-specific Schöpferprinzip + Nutzungsrechte distinction (DE wedge — UK boilerplate "hereby assigns" is INSUFFICIENT under §7 UrhG)
+- Saudization-band trajectory chart with offboarding-impact preview
+- Qiwa-auth coverage gap surfacing (2026-04-15 reg first-mover advantage)
 
-The v5.0 architecture is entirely additive. Existing patterns — country profile plugins, capability interfaces, format detection routing, and country fields JSON/Zod — absorb all new domains without engine changes. The only structural addition is the new `packages/classification` workspace package, which mirrors the `packages/einvoice` pattern exactly. The e-invoicing pipeline requires one surgical enhancement: an optional `Embeddable` capability interface for ZUGFeRD's PDF/A-3 embed step, following the same pattern as the existing `Signable` and `QRCodeable` capabilities. Classification is stored per engagement (not per contractor) — a single contractor can have independent IR35 (UK) and Scheinselbstaendigkeit (DE) assessments for different engagements.
+**Defer to v6.x or v7+:** time-delayed/immediate IdP deprovisioning modes, vacation-responder configuration, Drive ownership transfer, Slack DM export, 1Password/Bitwarden actual-rotation integration, additional IdP adapters (1Password SaaS Manager, Jamf, JumpCloud), free-zone NOC drafting, Saudization band auto-compute (likely never), embedding-similarity contract-clause matching, department-based per-doc-policy overrides.
+
+**Anti-features (explicit NO):** OCR auto-extraction of expiry dates, auto-generate documents (EOR territory), compliance score gamification, block invoice intake on expired docs, AI-suggested document policies, full SCIM provisioning, auto-detect orphaned accounts, delete-by-default (vs suspend), mailbox auto-forward, full free-zone activity catalog, auto-compute Saudization band, store actual credentials, auto-rotate API keys, auto-generate IP language, block offboarding on KT incompleteness, AI-generated KT documentation, "reactivate contractor" button.
+
+### Architecture Approach (HIGH confidence — extension points file-verified)
 
 **Major components:**
-1. `packages/classification` (NEW) — generic `ClassificationEngine` with pluggable `ClassificationRuleSet` interface; IR35 and Scheinselbstaendigkeit are the first two rule sets; SDS/DRV document generators and `ClassificationAssessment` DB model live here
-2. `packages/einvoice` (EXTEND) — new `xrechnung/` and `zugferd/` country profiles; `Embeddable` capability interface added to pipeline; `pdf-embedder.ts` for ZUGFeRD PDF/A-3
-3. `packages/gov-api` (EXTEND) — `HmrcVatClient` and `ViesClient` subclassing `GovApiClient`; async validation pattern, 30-day result caching, manual override for VIES downtime
-4. `packages/api/services/payment-export` (EXTEND) — `generateBacsStd18()` with ASCII transliteration, 18-char truncation, banking day calendar; BACS format detection rule (GBP + GB IBAN -> `BACS_STD18`)
-5. `packages/validators` (EXTEND) — `GB` and `DE` schemas added to `countryFieldsSchemaMap`; UK/DE TIN validators (UTR checksum, Steuernummer regional format, USt-IdNr check digit)
-6. `packages/db` (EXTEND) — new `classification.prisma`; `BACS_STD18` enum value; UK/DE VAT rate seed data
-7. `apps/web/messages/de.json` (NEW) — German translations with locked legal terminology constants (non-translatable tax law phrases stored as code constants, not in the translation file)
+1. **`packages/compliance-policy` (NEW thin package)** — per-country profile modules, pure-function `resolveRequirements`; mirrors einvoice + classification country-profile pattern; classification outcome is INPUT, never policy itself
+2. **F1 Compliance Document Engine** — extends `ContractorComplianceItem` (NOT a parallel model); reminder cron at `compliance-expiry-scan.ts` (port of `economic-dependency-scan.ts`); two payment-block hooks (paymentRouter primary at `payment.ts:352` + approval-engine condition operator secondary defence-in-depth); reuses existing `Notification` + `NotificationCronDedup` for idempotency
+3. **F2 IdP Deprovisioning** — `Deprovisionable` capability mixin on existing `IntegrationProviderAdapter`; `DeprovisioningRun` + `DeprovisioningStep` saga state models with idempotent retry (NOT global compensation — re-provisioning offboarded contractor is unsafe); workflow-task driven via `WorkflowTaskType.ACCESS_REVOKE` (already exists in `workflow.prisma:173`); per-provider QStash jobs (NOT `Promise.allSettled`); `PARTIAL_COMPLETE` aggregate state surfaces in admin reconcile UI
+4. **F3 Gulf Polish** — `packages/gulf-regulatory` package with `src/profiles/uae/free-zones.ts` + `src/profiles/sa/nitaqat.ts`; `UaeFreeZone` global ref table + `FreeZoneAssignment` per-org; `SaudizationConfig` (denormalised band+rate, indexable — NOT JSON blob); daily `saudization-recompute.ts` cron + event-triggered fire-and-forget
+5. **F4 Offboarding Hardening** — new `WorkflowTaskType.IP_VERIFICATION` + `CONTRACT_HEALTH_CHECK` enum values (NOT a parallel BlockingTaskType); `Contract.complianceFlagsJson` + `complianceFlagsCheckedAt` + `complianceFlagsModelVer`; reused `ClaudeOcrAdapter` with new `contract-health-tools.ts` tool_use schema (model-version stored for replay); 4 role-typed KT seed templates via existing v1.0 template builder; new `workflow:override_blocking_task` permission with required reason text + RBAC OWNER role
+6. **Cross-cutting CI guards (FOUNDATION)** — schema-lint enforcing `organizationId` OR explicit global-lookup-list registration; `LOG_BODY_EXCLUDE_PREFIXES` opt-in body logging (stricter default); message-key parity per-PR; Unleash legal-sensitive flag PENDING→APPROVED gate; `IntegrationConnection.scopeCapabilities` JSONB with detect-and-prompt re-auth
 
-### Critical Pitfalls
+**Where existing patterns are limiting:** country-profile pattern is pure-data — F2 needs `IntegrationProviderAdapter` (stateful); `WorkflowTaskRun.status=BLOCKED` is informational — F4 IP_VERIFICATION needs `overrideBlockingTask` mutation; `ComplianceRequirementTemplate` lacks severity/country — extend additively (do NOT fork); `Organization.settingsJson` JSON blob fine for low-frequency — F3 Saudization promotes band+rate to first-class indexable columns.
 
-1. **IR35 tool presented as legally binding** — Never show "IS inside/outside IR35." Always frame as risk assessment with indicators consistent with a status. Require acknowledgement disclaimers before each determination, store full questionnaire evidence in the SDS (not just the result), and version-stamp with regulatory rules version. Even HMRC's CEST tool is not binding; Atholl House 2022 and PGMOL 2024 both overturned CEST-aligned determinations.
+### Critical Pitfalls (HIGH confidence — 31 pitfalls catalogued)
 
-2. **ZUGFeRD PDF/A-3 embedding done incorrectly** — Attaching XML to a PDF is not ZUGFeRD compliance. The PDF must be ISO 19005-3 (PDF/A-3b), the XML must use the Associated Files (AF) mechanism in the document catalog, the filename must be exactly `factur-x.xml`, and XMP metadata must declare the ZUGFeRD profile and conformance level. Validate all output with veraPDF before shipping.
+Top 5 critical:
+1. **Mid-payment-batch document expiry race (P1)** — two-phase expiry gate (selection + export atomic, same Postgres `current_timestamp`); immutable `PaymentRunComplianceCheck` audit row in same transaction as bank-file export
+2. **IdP deprovisioning vs final-invoice race (P7)** — 14-day cooldown gate before deprovisioning; portal magic-link enforced as non-IdP-dependent email
+3. **Refresh-token semantic drift across IdPs (P8)** — `IdpDeprovisioningAdapter` interface MUST require BOTH `suspendAccount()` AND `revokeAllSessions()`; per-provider integration test asserts revocation within 5 minutes
+4. **Re-OAuth breaks v3.0 GWS read-only (P9)** — detect-and-prompt pattern (mirrors v2.0 Jira); per-org `scopeCapabilities` JSONB; NEVER force global re-OAuth
+5. **Rule-set drift mass-flagging contractors (P5/P17/P24)** — milestone-wide drift escape hatch pattern: `RULE_SET_VERSION` constant + `complianceRequirementSetVersionSnapshot` field + `recreateComplianceAssessment(reason)` admin mutation mirrors v5.0 `recreateDraftAfterDrift`
 
-3. **EN 16931 Schematron validation incomplete** — XSD schema validation is not sufficient. EN 16931 has ~170 Schematron business rules (BR-XX) plus ~26 German-specific rules (BR-DE-XX). Invoices that appear valid locally will be rejected by receiving systems and government portals. Run all three validation layers: XSD schema + EN 16931 Schematron + XRechnung CIUS Schematron. Use KoSIT reference invoices for the test suite.
-
-4. **Scheinselbstaendigkeit tool creating false security** — DRV audits are holistic assessments, not checklists. The 5/6 rule (83.33% income concentration) is a hard automatic alert that must be monitored in real time from billing data — it is the single most common DRV audit trigger. A "LOW risk" score does not constitute legal compliance. Include a German-language legal disclaimer: "Diese Risikobewertung ersetzt keine rechtliche Beratung."
-
-5. **BACS character encoding and field constraints** — BACS Standard 18 accepts only ASCII (0x20-0x7E). Contractor names with umlauts, Polish diacritics, or apostrophes cause full-file rejection. Implement `stripDiacritics()` + `.toUpperCase()`, truncate names to 18 characters with an audit trail showing original vs truncated, validate sort codes against EISCD structure, and calculate processing dates on banking days only (exclude weekends and UK bank holidays). Include contra record in every batch.
-
-6. **VIES treated as a reliable real-time service** — VIES has approximately 95% availability. Never block user flows on VIES validation. Validate German USt-IdNr format locally first (DE + 9 digits + check digit algorithm), then validate asynchronously, cache results for 30 days, and allow manual override when VIES is unavailable. HMRC API validates UK VAT numbers separately — never send UK numbers to VIES.
-
-7. **German legal terminology translated informally** — Tax law phrases like "Steuerschuldnerschaft des Leistungsempfaengers" (reverse charge, Section 14a(5) UStG) must appear verbatim on invoices. These are legal citations, not UI copy. Store them as locked constants in `packages/i18n/glossary/de-legal.ts`, not in `de.json` where translators could edit them. Use formal "Sie" consistently. Have a German Steuerberater review all tax-related strings before launch.
-
-8. **HMRC OAuth and fraud prevention headers** — HMRC requires fraud prevention headers (Gov-Client-Public-IP, Gov-Client-Timezone, etc.) on every API call. OAuth access tokens expire after 4 hours. Sandbox behaves differently from production. Register on HMRC developer hub early — the approval process can take weeks.
+Other notable: reminder fatigue cascade (P2 — daily digest before per-doc cron); TZ drift (P3 — `@db.Date` not `DateTime`, store `expiry_jurisdiction_tz`); document-type conflation (P4 — country-profile pattern); i18n locked-phrase leakage (P6); partial-failure saga (P10 — per-provider QStash jobs, NEVER `Promise.allSettled`); reactivation resurrects access (P11 — no "reactivate" button, only "new engagement"); Pino over-redacting audit fields (P12 — separate child logger with allow-list); webhook self-trigger loop (P13 — `IdpChangeProvenance` filters own writes); Azure CA override (P14 — verify post-revoke via `signInActivity`); UAE permitted-activity scope (P15 — ISIC code field, not free text); three-clock conflation (P16); GCC partial-credit (P18); regional-routing default drift (P19); RTL drift (P20 — ESLint banning `ml-`/`mr-`); credential vault stores secrets (P21 — `CredentialReference` schema, content-validation regex rejecting AKIA*/PATs/JWT-shape/hex≥32); IP-clause false-negative (P22 — tristate verdict + operator-confirmation gate); IP-clause false-positive at upload (P23 — heuristic only at offboarding); hard-block on unresponsive contractor (P25 — OWNER override with required reason); PTO manager spam (P26 — OOO-aware routing). Cross-cutting: missing tenantId (P27), PII in Pino (P28), message-key parity drift (P29), feature flag without signoff (P30), OAuth scope cohabitation (P31).
 
 ## Implications for Roadmap
 
-Based on the dependency graph identified in ARCHITECTURE.md, combined with feature priorities from FEATURES.md and pitfall phase mappings from PITFALLS.md, a 6-phase structure is recommended. Each phase delivers standalone value while satisfying prerequisites for the next.
+### Roadmap Decision Points (cross-source conflicts requiring synthesis)
 
-### Phase 1: Country Field Foundations + i18n
-**Rationale:** Zero external dependencies. Country fields, VAT rates, and i18n are prerequisites for classification, e-invoicing, and payment export. Fastest path to a testable foundation. German legal terminology must be locked before any invoice generation begins — this phase is the correct place to do it.
-**Delivers:** UK/DE contractor profile fields (UTR, Companies House, Steuernummer, Handelsregister, USt-IdNr), UK/DE VAT rates in TaxRate table, German `de` locale in next-intl, locked German legal terminology constants (`de-legal.ts`), Zod validators for UK/DE tax identifiers (UTR checksum, Steuernummer regional formats, GB IBAN structure), DB migration for `classification.prisma` (structure ready for Phase 3). Commission German Steuerberater review during this phase.
-**Addresses:** UK/DE contractor profile fields, German i18n, UK/DE VAT rates (P0 table stakes)
-**Avoids:** German legal terminology pitfall — lock phrases before any German invoice or compliance document is generated
+**Decision 1 — Foundation phase before F1, or F1 first?**
+- ARCHITECTURE proposes Phase 70 = F1 Foundation
+- PITFALLS argues for separate v6.0 Foundation phase BEFORE F1 (P27, P28, P29, P30, P31)
+- **Synthesis: PITFALLS wins. Foundation first.** Each cross-cutting CI guard prevents a class of bug whose recovery cost is CRITICAL (cross-tenant leak, regulator-grade PII exposure, unsigned legal copy ships, breaking v3.0 customers). Pattern mirrors v5.0 Phase 56 establishing locked-phrases guard before any locked phrases were added.
 
-### Phase 2: Government API Clients (HMRC + VIES)
-**Rationale:** Needed by Phase 3 (classification validates contractor tax IDs before assessment) and Phase 4 (e-invoicing validates VAT numbers on invoices). No dependencies beyond Phase 1 country fields. HMRC developer hub registration must be initiated during Phase 1 planning — do not wait until Phase 2 starts.
-**Delivers:** `HmrcVatClient` extending `GovApiClient` (UK VAT validation, OAuth 2.0, fraud prevention headers, 2 req/s rate limiting), `ViesClient` extending `GovApiClient` (EU USt-IdNr async-only validation, 30-day caching, manual override when unavailable), `tax.validateUkVat` and `tax.validateEuVat` tRPC procedures.
-**Uses:** `GovApiClient` base class (retry, rate limiting, audit logging), `zod` response schemas, existing encrypted credential store for OAuth tokens
-**Avoids:** HMRC OAuth/fraud-prevention-header pitfall; VIES reliability pitfall (async validation, never block flows)
+**Decision 2 — F2 phase ordering: GWS+Slack first or last?**
+- FEATURES recommends GWS+Slack first (P1 in v6.0 MVP) — narrowest scope, highest customer overlap
+- ARCHITECTURE puts F2 last (phases 77-79)
+- **Synthesis: ARCHITECTURE wins on overall position (F2 ships after F4 — Pitfall 7 cooldown gate dependency), BUT split F2 into two sub-phases per FEATURES — GWS+Slack as the wedge, Entra+Okta+GitHub as the differentiator (same milestone).**
 
-### Phase 3: Contractor Classification Engine
-**Rationale:** The key v5.0 differentiator. Architecturally independent of e-invoicing, so it ships marketable value early. The generic engine design is the architectural investment that enables France URSSAF and Netherlands DBA as low-cost future additions. Must be designed as a risk assessment framework from the first design document — retrofitting disclaimers and human-sign-off flows after implementation is much harder.
-**Delivers:** `packages/classification` new package — `ClassificationEngine`, `ClassificationRuleSet` interface, IR35 rule set (CEST-aligned, 5 areas, ~25 questions, mandatory disclaimer + acknowledgement), SDS generation with chain participant tracking and delivery timestamps, Scheinselbstaendigkeit rule set (DRV-aligned, ~20 criteria, 4 categories), DRV audit defense documentation bundle, economic dependency monitoring (5/6 rule with real-time billing alerts), `ClassificationAssessment` DB model (per-engagement, not per-contractor), contractor profile risk badge and compliance item integration, reassessment notification hooks.
-**Avoids:** IR35 legal liability pitfall (risk assessment framing, disclaimers, human sign-off, full evidence storage); Scheinselbstaendigkeit false security pitfall (5/6 rule as hard real-time alert, holistic scoring); dual classification confusion pitfall (per-engagement data model, jurisdiction-separated UI)
+### Standing Constraints (apply to every v6.0 phase)
 
-### Phase 4: EN 16931 E-Invoicing (XRechnung + ZUGFeRD)
-**Rationale:** Depends on Phase 1 (VAT rates, country fields), Phase 2 (VAT number validation on invoices). The most technically complex phase. Build XRechnung first (pure UBL 2.1 XML — a familiar pattern from Peppol-AE) and fully validate it before starting ZUGFeRD. ZUGFeRD (new CII syntax + PDF/A-3 tooling uncertainty) is the hardest work in the milestone; beginning it with a pdf-lib proof-of-concept reduces risk significantly.
-**Delivers:** `Embeddable` capability interface in einvoice pipeline types; XRechnung profile (UBL 2.1 generator adapted from Peppol-AE, BR-DE-* validation, conditional Leitweg-ID for B2G vs order reference for B2B, XAdES-BES RSA-SHA256 signer adapted from ZATCA signer); ZUGFeRD profile (CII XML generator — new syntax, EN 16931 COMFORT level, PDF/A-3b embedding via pdf-lib, `factur-x.xml` AF attachment, veraPDF-validated output); three-layer validation (XSD + EN 16931 Schematron + XRechnung CIUS Schematron); KoSIT reference invoice test suite.
-**Uses:** `fast-xml-parser` (both UBL and CII XML), `xml-crypto` (XRechnung XAdES-BES), `pdf-lib` (ZUGFeRD PDF/A-3b)
-**Avoids:** Incomplete Schematron validation pitfall; ZUGFeRD AF mechanism pitfall; Leitweg-ID misuse pitfall (B2G/B2B distinction)
+- App is **LOCAL-ONLY**; legal sign-off **DEFERRED**. Every locked legal phrase needs the v5.0 `locked-phrases-guard` pattern + post-deploy "Needs verification by legal entity" note.
+- No `console.*` in source — `@contractor-ops/logger` factories or raw `pino` only.
+- Feature flags = self-hosted Unleash OSS + thin code wrapper. Every legal-sensitive v6.0 capability gets a flag in `compliance-*` / `idp-deprovisioning` / `gulf-*` / `offboarding-ip-*` namespace, registered PENDING in code-side signoff registry, gated by CI.
+- **Stripe tier gating recommendation (lock at requirements):** GWS+Slack deprovisioning at Starter (the wedge); Entra+Okta+GitHub at Pro (the differentiator); auto-enforcement / hard-payment-block at Enterprise (cost-of-fines tier — UAE permitted-activity hard-block in particular). F1 advisory dashboard at Starter; F1 hard-block at Pro+. F4 KT templates all tiers; F4 IP-clause scanner + hard-block at Pro+.
 
-### Phase 5: UK Payment Infrastructure (BACS)
-**Rationale:** Depends only on Phase 1 (GBP currency and GB country code). Follows the proven Elixir generator pattern. Low-risk and fast to ship. Does not block Phase 3 or Phase 4, so it can proceed in parallel if team capacity allows.
-**Delivers:** `generateBacsStd18()` in `payment-export.ts` (VOL1/HDR1/HDR2/UHL1/data records/EOF1/EOF2/UTL1 structure, ASCII transliteration, 18-char name truncation with audit trail, contra record, banking day calendar for processing dates), BACS format detection rule (GBP + GB IBAN -> `BACS_STD18`), `PaymentExportFormat.BACS_STD18` enum value, pre-validation step with per-field error messages, BACS bureau sandbox test submission.
-**Avoids:** BACS character encoding and field constraint pitfall (ASCII-only, strict column positions, contra records, banking day calendar)
+### Milestone-Wide Patterns (promote in roadmap)
 
-### Phase 6: Compliance Polish + v5.x Features
-**Rationale:** Requires all previous phases to be functional. Compliance health dashboard aggregates data that only exists once Phases 3 and 4 are live. IR35 reassessment triggers require the classification engine to have real assessments against which to detect material changes.
-**Delivers:** UK/DE compliance health dashboard (classification coverage %, e-invoicing compliance status, overdue reassessments, economic dependency alerts), IR35 reassessment triggers (material change detection from contract amendments, rate period changes, extensions), UK late payment interest calculator (BoE base rate + 8%, GBP 40/70/100 fixed compensation tiers), German Skonto support (early payment discount terms on invoices, payment date eligibility tracking), Statusfeststellungsverfahren tracking (DRV clearance application status, validity period reminders), UK GDPR and German BDSG compliance adaptations.
-**Addresses:** P1 differentiator features from FEATURES.md
+- **Drift escape hatch (3x reuse)** — mirrors v5.0 `recreateDraftAfterDrift`. Required for: (a) F1 compliance requirement-set drift, (b) F3 Saudization Nitaqat threshold drift, (c) F4 offboarding role-taxonomy drift. Every drift handler emits an opt-in admin mutation + audit log + PDF watermark.
+- **Locked-phrases guard extension** (78 → 78+N) — F1 jurisdiction-specific document type names; F3 UAE free-zone authority + Arabic Saudization band labels; F4 Werkvertrag IP-clause canonical wordings. CI count grows monotonically.
+- **Detect-and-prompt re-OAuth** — F2 GWS scope upgrade, F2 Slack SCIM scope, F2 Entra session-revoke; future-proofs Jira/Teams/Calendar v7+.
+- **Two-step suspend + revoke contract** — F2 adapter interface MUST require both methods; per-provider integration test asserts token-revoked-within-5-min.
+
+### Phase Structure (suggested — phases continue from v5.0 Phase 69)
+
+**Phase 70: v6.0 Foundation — Cross-Cutting CI Guards & Observability Baseline**
+- Schema-lint CI script (model has `organizationId` OR global-lookup-list); `LOG_BODY_EXCLUDE_PREFIXES` opt-in body logging; message-key parity per-PR; Unleash legal-sensitive flag PENDING→APPROVED CI gate; per-org `IntegrationConnection.scopeCapabilities` JSONB with backfill migration; child-logger pattern documented
+- Addresses: P27, P28, P29, P30, P31
+- Research flag: STANDARD pattern (mirrors v5.0 locked-phrases-guard)
+
+**Phase 71: F1 Compliance Document Engine — Foundation**
+- `packages/compliance-policy` package with per-jurisdiction profile modules; pure-function `resolveRequirements`; schema delta (`severity`, `appliesToCountry`, `policyRuleId`, `lastReminderBand`, `blocksPaymentAt`, `expiry_jurisdiction_tz`); `@db.Date` not `DateTime` for expiry; fire-and-forget reconcile-on-classification hook
+- Addresses: P3, P4, P5
+- **Research flag: NEEDS RESEARCH** — per-jurisdiction document seed data dense (Border Security Act 2025, A1 24mo, §48b EStG, Iqama+Qiwa-auth)
+
+**Phase 72: F1 Compliance Document Engine — Reminder Cascade + Payment Block**
+- `compliance-expiry-scan.ts` band-state-machine cron (port of `economic-dependency-scan.ts`); `complianceReminderDigest` cron BEFORE per-doc cron; `requireValidCompliance` tRPC middleware at `paymentRouter.create`; `complianceCritical(EXPIRED)` condition operator in approval engine; immutable `PaymentRunComplianceCheck` audit row in same transaction as bank-file export; per-recipient throttle Redis SETNX max 1/24h
+- Addresses: P1, P2, P6
+- Research flag: STANDARD (port of v5.0 `economic-dependency-scan.ts`)
+
+**Phase 73: F1 Compliance Document Engine — UI + i18n + Self-Service Portal**
+- Admin compliance dashboard (at-risk count + renewals + blocked-payments queue + coverage matrix); contractor portal compliance tab; per-doc upload-replacement flow; manual override (audited); en/pl/de/ar parity
+- Addresses: P16, P20, P29
+- Research flag: STANDARD
+
+**Phase 74: F4 Offboarding Hardening — Workflow Foundation + KT Templates**
+- `WorkflowTaskType.IP_VERIFICATION` + `CONTRACT_HEALTH_CHECK` enum additions; `workflow:override_blocking_task` permission OWNER-only; required reason text + acknowledgement on override; 4 role-typed KT seed templates (Software Engineer / Designer / PM / Generic Consultant); per-org `WorkflowRole` model with editable templates; OOO-aware task routing + delegate fallback
+- Addresses: P24, P25, P26
+- Research flag: STANDARD (extends v1.0 template builder)
+
+**Phase 75: F4 Offboarding Hardening — Contract Health Check + IP Verification + Credential Vault**
+- `Contract.complianceFlagsJson` + `complianceFlagsCheckedAt` + `complianceFlagsModelVer`; reused `ClaudeOcrAdapter` with `contract-health-tools.ts` tool_use schema; tristate verdict `LIKELY_PRESENT` / `LIKELY_MISSING` / `MANUAL_REVIEW_REQUIRED`; per-jurisdiction phrase library (UK + DE + PL + KSA + UAE + US; Werkvertrag Schöpferprinzip + Nutzungsrechte detection); IP-assignment ratification via existing v2.0 e-sign; hard-block on offboarding-complete for unverified IP; `CredentialReference` schema (NEVER `Credential`); content-validation regex rejecting AKIA*/PATs/JWT-shape/hex≥32; structured credential-rotation tasks with successor-user-id required
+- Addresses: P21, P22, P23
+- **Research flag: NEEDS RESEARCH** — Werkvertrag wording lawyer-dependent; Claude Vision tool_use schema needs Context7 validation
+
+**Phase 76: F2 IdP Deprovisioning — Schema + Capability Mixin + GWS Scope Migration**
+- `Deprovisionable` capability mixin on `IntegrationProviderAdapter`; `DeprovisioningRun` + `DeprovisioningStep` saga models; new `IntegrationProvider` enum members `ENTRA_ID` + `OKTA`; detect-and-prompt re-OAuth UI flow with `prompt=consent`; backfill migration `['directory.read']`; `IdpChangeProvenance` short-TTL table for webhook-loop guard; separate Pino child logger with allow-list; 14-day cooldown gate referencing F4 final-invoice-paid event
+- Addresses: P7, P9, P11, P12, P13
+- Research flag: STANDARD (mirrors v2.0 Jira scope-expansion + v2.0 webhook pipeline + v5.0 saga model)
+
+**Phase 77: F2 IdP Deprovisioning — GWS + Slack Adapter Implementations (the wedge)**
+- `GoogleWorkspaceDeprovisionAdapter` extending v3.0 GWS with `users.update({ suspended: true })` + `directory.tokens.list` → `tokens.delete` + `users.signOut`; `SlackDeprovisionAdapter` extending v1.0 Slack with `admin.users.session.invalidate` + SCIM `PATCH active=false` (raw `fetch`); per-IdP preview UI; manual approval gate; per-step audit trail with request/response hashes; per-provider QStash jobs (NEVER `Promise.allSettled`); `PARTIAL_COMPLETE` aggregate state with admin reconcile UI; `LIKELY_GONE` idempotent semantic
+- Addresses: P8, P10
+- **Research flag: NEEDS RESEARCH** — GWS `tokens.delete` behaviour, Slack SCIM `scim:write` org-token requirement, current rate-limits via Context7
+
+**Phase 78: F2 IdP Deprovisioning — Entra ID + Okta + GitHub Adapter Implementations (the differentiator)**
+- `EntraIdDeprovisionAdapter` extending v3.0 Teams Graph adapter with `accountEnabled: false` + `revokeSignInSessions`; pre-flight Conditional Access enumeration with admin-action banner; hybrid-AD detection with hard warning; post-revoke verification via `signInActivity`; `OktaDeprovisionAdapter` (NEW `@okta/okta-sdk-nodejs@8.0.0`); `GitHubDeprovisionAdapter` with `octokit.rest.orgs.removeMember` + per-PAT explicit revoke + SAML credential-authorization revocation; outside-collab repos as manual-task with link
+- Addresses: P14
+- **Research flag: NEEDS RESEARCH** — Entra `revokeSignInSessions` CA interaction, Okta 8.x namespaced API, GitHub SAML credential-authorization endpoint via Context7
+
+**Phase 79: F3 Gulf Polish — UAE Free-Zone Tracking + Saudization Dashboard**
+- `packages/gulf-regulatory` package with UAE free-zones static catalogue + Saudization band thresholds + GCC sector-specific multiplier matrix; `UaeFreeZone` global + `FreeZoneAssignment` per-org + `UaeFreeZoneOverride` admin-editable; `SaudizationConfig` (denormalised, indexable) + `SaudiHeadcount` per-engagement nationality; `qiwaContractAuthenticated` boolean; schema-lint annotation classifying every new model tenant-scoped or global-lookup; manual self-reported band entry with quarterly cadence reminder; trajectory chart; pre-offboarding impact banner; free-zone trade license participates in F1 reminder cascade; permitted-activity scope-mismatch advisory + NOC required-doc auto-add; en/pl/de/ar parity with `ms-`/`me-`/`ps-`/`pe-` only; locked-phrase registry extension for UAE/KSA Arabic terms
+- Addresses: P15, P16, P17, P18, P19, P20
+- **Research flag: NEEDS RESEARCH** — Saudization Nitaqat 2026–2028 rates verified against Qiwa portal at seed time; UAE free-zone permitted-activity lists cross-referenced against each authority's portal; Dubai Law No. 7/2025 contracting framework; Qiwa-auth 2026-04-15 requirement
+
+**Phase 80: v6.0 Verification + Hardening + Manual UAT**
+- Cross-feature integration tests (F1 + F3 + F4 composition); manual-UAT checkpoints document (mirrors v5.0 `63-HUMAN-UAT.md`); post-deploy legal sign-off list (Steuerberater for §48b EStG/A1/Aufenthaltstitel/Werkvertrag IP wording; Saudi MOL/HRSD for Saudization rates; UAE legal for free-zone permitted-activity; UK legal for Border Security Act; KSA legal for Iqama+Qiwa-auth flow); v6.0 retrospective
+- Research flag: STANDARD (mirrors v5.0 phase 69)
 
 ### Phase Ordering Rationale
 
-- Phase 1 first: Country fields, VAT rates, and i18n have zero external dependencies and unblock every subsequent phase. German terminology review should be commissioned here to avoid a last-minute scramble before Phase 4.
-- Phase 2 early: HMRC developer hub registration (initiated in Phase 1 planning) has an approval lag of weeks. Delivering the client in Phase 2 prevents it from blocking Phase 4. VIES reliability design decisions must be made here to establish the async-only pattern.
-- Phase 3 before Phase 4: Classification is the primary market differentiator and architecturally independent of e-invoicing. Shipping it first demonstrates market value and proves the new package pattern before tackling the more complex e-invoicing work.
-- Phase 4 internally ordered: XRechnung (familiar UBL pattern, low risk) must be implemented and validated before ZUGFeRD (new CII syntax, PDF/A-3 tooling uncertainty). Do not parallelize these two profiles within Phase 4.
-- Phase 5 parallel-eligible: BACS is a straightforward extension with no dependency on classification or e-invoicing. If team capacity allows, it can run in parallel with Phase 3 or Phase 4.
-- Phase 6 last: Compliance polish and v5.x features depend on all functional pieces being in place. Reassessment triggers cannot be tested without real classification assessments.
+1. **Foundation before features (70 → 71+)** — reconciles ARCHITECTURE-vs-PITFALLS in favour of PITFALLS; CI guards prevent CRITICAL-recovery-cost bugs
+2. **F1 before F3 + F4** — hard schema dependency; both compose on `ContractorComplianceItem` + reminder cron
+3. **F4 before F2** — hard workflow dependency; Pitfall 7 cooldown gate evaluates F4's final-invoice-paid state
+4. **F2 GWS+Slack before F2 Entra+Okta+GitHub** — maximises wedge speed; ~95% SMB market with narrowest scope expansion
 
 ### Research Flags
 
-Phases likely needing `/gsd:research-phase` during planning:
-
-- **Phase 3 (Classification Engine):** Legal liability framing for IR35 tools is nuanced and case-law-driven. Recommend a focused research sprint on CEST question bank alignment (all 5 assessment areas, ~25 questions), DRV Betriebspruefung documentation requirements, and SDS statutory content requirements before implementation begins. The distinction between advisory tool and binding determination must be designed in from the first wireframe.
-- **Phase 4 (EN 16931 E-Invoicing — ZUGFeRD sub-phase):** Before committing to `pdf-lib` for PDF/A-3b, run a proof-of-concept that creates a minimal PDF/A-3b document with an Associated File entry and validates it with veraPDF. If this fails, the fallback path (Apache PDFBox as child process, or commercial PDF/A service) needs to be selected before implementation begins. Also confirm the exact XRechnung CIUS version in effect in 2026 from KoSIT artifacts — the `customizationID` URI is version-specific.
-- **Phase 2 (HMRC Client):** Verify whether the VAT number validation endpoint uses server-token (application-level) or user-restricted OAuth before building the auth flow. HMRC documentation is spread across multiple portals and is frequently outdated; sandbox verification is mandatory.
-
-Phases with standard patterns (skip research-phase):
-
-- **Phase 1 (Country Fields + i18n):** Adding `GB`/`DE` Zod schemas and a `de.json` locale file are mechanical extensions of confirmed existing patterns. No research needed beyond confirming tax identifier formats (UTR, Steuernummer) from official sources.
-- **Phase 5 (BACS):** Fixed-width format generation follows the existing Elixir generator pattern. The main risk (character encoding) is well-understood and has a clear mitigation strategy. No research phase needed — implement against the BACS Standard 18 spec with careful testing against the bureau sandbox.
+- **NEEDS RESEARCH (5 phases):** 71, 75, 77, 78, 79
+- **STANDARD pattern (6 phases):** 70, 72, 73, 74, 76, 80
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | One new dependency (pdf-lib). All other libraries confirmed present in codebase. pdf-lib PDF/A-3b AF mechanism capabilities need implementation-time proof-of-concept verification. |
-| Features | MEDIUM | IR35 and Scheinselbstaendigkeit regulatory frameworks are well-documented. XRechnung version (3.0.x) and ZUGFeRD version (2.3.x) specifics could not be verified against live KoSIT/ZUGFeRD.de sources in 2026. |
-| Architecture | HIGH | Based on direct codebase analysis. Extension points (EInvoiceProfile, GovApiClient, payment-export generators, country-fields map) are confirmed existing patterns. New package structure mirrors proven einvoice layout. |
-| Pitfalls | MEDIUM | Legal pitfalls (IR35 liability, German terminology) are grounded in case law and statute. Technical pitfalls (BACS format, VIES reliability) based on training data without live 2026 verification. HMRC OAuth flow type needs sandbox confirmation. |
+| Stack | HIGH | SDK choices verified via Context7 + npm registry (2026-04-26). MEDIUM only on Saudization + UAE free-zone reference data — no maintained npm packages exist; static seed tables + admin overrides + post-deploy legal sign-off is the only viable path. |
+| Features | HIGH | IdP, compliance lifecycle, Saudization Qiwa-auth, IP-assignment patterns verified across ~50 sources. MEDIUM only on UAE NOC under Dubai Law 7/2025 (mid-2026 regulator clarifications expected) and Werkvertrag wording (lawyer-dependent). |
+| Architecture | HIGH | All extension points verified at file-level (`contractor.prisma:209-285`, `payment.ts:352`, `workflow.prisma:173-220`, `IntegrationProviderAdapter` interface, `economic-dependency-scan.ts`, `equipment-workflow.ts`). MEDIUM on per-IdP implementation details (Context7 verification needed before each adapter build). |
+| Pitfalls | HIGH | All 31 pitfalls grounded in concrete v1.0–v5.0 precedents. Where docs need verification (Google `tokens.delete`, Okta session semantics, Azure CA interaction), recommendation is Context7 at implementation time, not training data. |
 
-**Overall confidence:** MEDIUM-HIGH. Architecture and stack decisions are high-confidence (codebase-driven). Feature and regulatory specifics are MEDIUM — implementation must include a verification step against live HMRC developer docs, KoSIT validator artifacts, and ZUGFeRD specification documents before building.
+**Overall confidence: HIGH**
 
-### Gaps to Address
+### Gaps to Address (Open Questions for Requirements Definer)
 
-- **VIES REST API production availability:** Confirm `https://ec.europa.eu/taxation_customs/vies/rest-api/check-vat-number` is production-stable in 2026. Decision gate: add `soap@^1.1.0` if REST is beta-only or unreliable. Verify at Phase 2 start before building the client.
-- **pdf-lib PDF/A-3b compliance:** Run a proof-of-concept at Phase 4 start verifying that pdf-lib can set `pdfaid:part=3` / `pdfaid:conformance=B` XMP metadata, embed an ICC output intent profile, and create AF (Associated Files) entries via low-level `PDFDict`/`PDFArray` APIs. If it cannot, select fallback (Apache PDFBox child process or commercial PDF/A service) before implementation.
-- **XRechnung CIUS version (2026):** The exact minor version and its Schematron rule set must be confirmed from KoSIT artifacts (github.com/itplr-kosit/validator-configuration-xrechnung) at Phase 4 start. The `customizationID` URI is version-specific and must not be hardcoded without a version config.
-- **HMRC developer hub registration timeline:** OAuth app approval can take weeks. Registration must be initiated during Phase 1 planning to avoid blocking Phase 2 delivery.
-- **BACS Standard 18 specification access:** The full spec is not freely available online — Vocalink/Pay.UK charges for it. Must be obtained through the client's BACS bureau or sponsoring bank before Phase 5 implementation begins.
-- **German Steuerberater review:** German tax law phrases must be reviewed by a qualified German tax professional before any German-language invoice or compliance document is generated. Commission this review during Phase 1 and complete before Phase 4 begins.
+- **Per-org policy customization scope (F1)** — admin override of severity per-jurisdiction? Lock during requirements definition.
+- **Regex-vs-ML for clause scanner (F4)** — recommendation: regex first, Claude Vision tool_use as MANUAL_REVIEW_REQUIRED escape only. Confirm during requirements.
+- **Arabic localization scope** — recommendation: F3 surfaces ship FULL AR + RTL (KSA/UAE customer-facing); other v6.0 surfaces en/pl/de only with AR added in v6.x. Lock during requirements.
+- **GCC counting weighting matrix (F3)** — per-sector multiplier matrix in `gulf-regulatory/profiles/sa/nitaqat.ts`; values are seed data with annual review per Standing Constraints. Lock during requirements + Phase 79 manual UAT checkpoint.
+- **Stripe tier gating exact mapping** — recommendation locked above; requirements definer to confirm with billing/product strategy.
+- **Anthropic SDK tool_use schema for Phase 75** — Phase 75 plan-phase research-needs flag set.
+- **Per-IdP deprovisioning APIs for Phase 77 + 78** — Context7 lookup mandatory before each adapter implementation.
+- **Manual UAT checkpoint capture for legal sign-off** — Phase 80 generates consolidated post-deploy legal sign-off list.
 
 ## Sources
 
-### Primary (HIGH confidence — codebase analysis)
-- `packages/einvoice/src/types/profile.ts` — EInvoiceProfile interface and capability interface pattern
-- `packages/einvoice/src/engine/pipeline.ts` — existing pipeline structure and Embeddable hook point
-- `packages/einvoice/src/profiles/zatca/signer.ts` — XAdES-BES implementation (RSA-SHA256 adaptation for XRechnung)
-- `packages/einvoice/src/profiles/peppol-ae/generator.ts` — UBL 2.1 generator pattern (direct XRechnung template)
-- `packages/gov-api/src/client.ts` — GovApiClient base class (retry, rate limiting, audit logging)
-- `packages/api/src/services/payment-export.ts` — payment generator pattern (BACS follows Elixir generator)
-- `packages/api/src/services/payment-format-detection.ts` — format detection routing (BACS rule addition point)
-- `packages/validators/src/country-fields.ts` — countryFieldsSchemaMap pattern (GB/DE schemas slot in here)
-- `apps/web/src/i18n/routing.ts` — next-intl locale configuration (add `de` to locales array)
-- `packages/db/prisma/schema/payment.prisma` — PaymentExportFormat enum (add BACS_STD18)
+### Primary (HIGH confidence)
+**Context7 / official SDK docs:** `googleapis_dev_nodejs_googleapis`, `microsoftgraph/microsoft-graph-docs-contrib`, `okta/okta-sdk-nodejs`, `octokit/octokit.js`, `slack_dev_reference_methods`, `date-fns/date-fns@v3.5.0`
 
-### Secondary (MEDIUM confidence — training data, established standards)
-- EN 16931 / XRechnung 3.0.x / ZUGFeRD 2.3.x standard specifications
-- HMRC CEST assessment criteria (5 areas: personal service, control, financial risk, part-and-parcel, mutuality of obligation)
-- DRV Scheinselbstaendigkeit assessment criteria (~20 criteria, 4 categories: integration, independence, personal dependency, economic dependency)
-- BACS Standard 18 fixed-width format specification (VOL1/HDR1/HDR2/UHL1/data/UTL1/EOF structure)
-- HMRC VAT validation REST API (`/organisations/vat/check-vat-number/lookup/{vatNumber}`)
-- IR35 case law: Atholl House Productions Ltd v HMRC [2022] CSIH 3; PGMOL v HMRC [2024] UKSC 29
-- Section 2 SGB VI (5/6 economic dependency rule)
-- Section 14a(5) UStG (reverse charge mandatory phrase: Steuerschuldnerschaft des Leistungsempfaengers)
-- Chapter 10 ITEPA 2003 (UK off-payroll working rules, IR35 reform April 2021)
+**Official documentation:** Microsoft Graph `revokeSignInSessions` API, Microsoft Graph SDK overview, Slack SCIM API, GitHub REST `Remove an organization member`, Okta Lifecycle Management, GOV.UK Right to Work Share Code, Bundesportal A1 certificate, ZUS A1 confirmation, MHRSD Nitaqat Mutawar Program, Saudi Gazette Qiwa Saudization update, Cooley GO contractor agreements, comp-lex IP-Übertragungsvertrag, Kraus-Ghendler Freier Mitarbeiter Vertrag, it-recht-kanzlei Nutzungsrechte, Google OAuth 2.0 token revocation, Microsoft Learn Entra ID emergency revoke, Slack Deactivate member, u.ae verify business licences
 
-### Tertiary (LOW confidence — requires live verification)
-- VIES REST API availability at `https://ec.europa.eu/taxation_customs/vies/rest-api/check-vat-number` in 2026
-- pdf-lib PDF/A-3b Associated Files (AF) mechanism capabilities with current library version
-- Exact XRechnung CIUS version in effect April 2026 and its Schematron rule set from KoSIT
-- HMRC OAuth token type (server-token vs user-restricted) for VAT number check endpoint
-- BACS Standard 18 any 2025/2026 specification updates from Vocalink/Pay.UK
+**Internal precedents:** `.planning/PROJECT.md`, `.planning/MILESTONES.md`, `contractor.prisma:209-285`, `workflow.prisma:173-220`, `payment.ts:352`, `packages/integrations/src/types/provider.ts`, `economic-dependency-scan.ts`, `equipment-workflow.ts`
 
----
-*Research completed: 2026-04-12*
-*Ready for roadmap: yes*
+### Secondary (MEDIUM confidence)
+Nudge Security OAuth-Risks, Torii GWS Deactivation, Stitchflow Okta SSO-vs-Provisioning, Topedia Entra Revoke Sessions, Worksuite Compliance, VettingHub Right-to-Work 2026 (Border Security Act 2025), premote A1 24-month, Henry Club / SetupUAE / RIZ MONA UAE free zones, HCM Global / Qureos / SCPL Nitaqat, Sprintlaw UK Consultant Contracts, Enboarder + FutureCode Knowledge Transfer, ContractEval LLMs Clause-Level (Aug 2025), Anthropic Legal summarization guide, Bayanat UAE Open Data Portal
+
+### Tertiary (LOW confidence — needs validation)
+Vertix UAE free zones list, RSBM zone comparison, Jisr HRMS Nitaqat calculator (reference UI only), Thrivea Deel-vs-Rippling competitive comparison
+
+### Internal references
+- `.planning/research/STACK.md`
+- `.planning/research/FEATURES.md`
+- `.planning/research/ARCHITECTURE.md`
+- `.planning/research/PITFALLS.md`

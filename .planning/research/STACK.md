@@ -1,430 +1,358 @@
-# Stack Research: v5.0 UK & Germany Market Expansion
+# Stack Research — v6.0 Platform Maturity & Operational Hardening
 
-**Domain:** UK IR35 compliance, German Scheinselbstaendigkeit, EN 16931 e-invoicing (XRechnung/ZUGFeRD), BACS payments, German localization, HMRC/VIES VAT validation
-**Researched:** 2026-04-12
-**Confidence:** MEDIUM (web search tools unavailable; recommendations based on thorough codebase analysis of existing patterns and training data knowledge of standards/APIs)
-
-## Key Finding: Build From Spec, Not From Libraries
-
-The JS/TS ecosystem for EU e-invoicing is extremely thin. Unlike the Java/.NET world (which has Mustang, ZUGFeRD-csharp, etc.), Node.js has no mature, maintained libraries for XRechnung, ZUGFeRD, or EN 16931. The existing codebase already uses the right approach: `fast-xml-parser` for XML generation + `xml-crypto` for digital signatures, building country profiles that implement the `EInvoiceProfile` interface. **The new profiles (XRechnung, ZUGFeRD) follow this same pattern with zero engine changes.**
-
-Similarly, no meaningful npm packages exist for BACS Standard 18, IR35 determination, or Scheinselbstaendigkeit risk assessment. These are all build-from-spec domains.
+**Domain:** B2B contractor-ops platform — incremental additions for IdP deprovisioning, compliance document expiry, Gulf operational data, IP-clause detection on contract intake
+**Researched:** 2026-04-26
+**Confidence:** HIGH for IdP SDK choices and date-fns; MEDIUM for Saudization / UAE free-zone reference data (no maintained libraries — must build static + admin-editable tables); HIGH for "do NOT add new infra" decisions (QStash, Pino, Unleash, Claude Vision OCR all reused)
 
 ---
 
-## What We Already Have (DO NOT Add)
+## Executive Decision Summary
 
-| Capability | Existing Package | Version | Notes |
-|------------|------------------|---------|-------|
-| XML generation | fast-xml-parser | ^5.5.9 | Used by ZATCA + Peppol-AE generators. Same `XMLBuilder`/`XMLParser` for XRechnung UBL and ZUGFeRD CII. |
-| XAdES digital signatures | xml-crypto | ^6.0.0 | Used by `ZatcaXAdESSigner`. Same `SignedXml` + `ExclusiveCanonicalization` for XRechnung XAdES. |
-| XML DOM | @xmldom/xmldom | 0.8.12 | Peer dependency of xml-crypto. Already installed. |
-| E-invoice profile architecture | @contractor-ops/einvoice | workspace | `EInvoiceProfile` interface, `Signable` capability, `registerProfile()` registry. New profiles slot in with zero engine changes. |
-| Payment export framework | payment-export.ts | -- | `generateCsv()`, `generateElixir()`, `generateSepaXml()`, `generateSwiftXml()`. BACS is another generator alongside these. |
-| Payment format detection | payment-format-detection.ts | -- | `detectFormat()` routes by currency + IBAN country. Add BACS rule for GBP + GB. |
-| Government API framework | @contractor-ops/gov-api | workspace | Cert auth, retry, rate limiting, audit logging. HMRC + VIES clients fit this pattern. |
-| i18n framework | next-intl | ^4.8.3 | Routing, pluralization, ICU MessageFormat. Adding `de` locale is config + translation file. |
-| Locale-aware formatting | date-fns + Intl | ^4.1.0 | German `de-DE` locale supported out of the box by both. |
-| Schema validation | zod | ^3.23.0 | Extend for IR35 questionnaire, Scheinselbstaendigkeit assessment, BACS format validation. |
-| Certificate handling | node-forge + crypto | ^1.3.1 | Node.js crypto module handles RSA-SHA256 for XRechnung (ZATCA uses ECDSA-SHA256). |
-| QR code generation | qrcode | ^1.5.4 | Already installed. Potentially useful for German invoice QR codes. |
+| v6.0 Capability | Existing infra reused | Genuinely new dependency |
+|-----------------|------------------------|--------------------------|
+| IdP deprovisioning — Google Workspace | `googleapis` (already in repo for v3.0 GWS directory import); existing `IntegrationProviderAdapter` + AES-256-GCM credential store | None — extend existing GWS adapter with `users.update({ suspended: true })` |
+| IdP deprovisioning — Azure AD/Entra ID | `@microsoft/microsoft-graph-client` (already in repo for v3.0 Teams + Outlook Calendar); `@azure/identity` already installed | None — extend Teams/Calendar provider's credential store; add a new `EntraDeprovisionProvider` adapter sharing the same `MSALConfidentialClient` instance |
+| IdP deprovisioning — Okta | — | **NEW** `@okta/okta-sdk-nodejs@8.0.0` |
+| IdP deprovisioning — GitHub | `@octokit/rest` may already be present from prior work — verify; if not, add | **MAYBE NEW** `octokit@5.0.5` (or keep `@octokit/rest@22.0.1` — both fine; pick one) |
+| IdP deprovisioning — Slack | `@slack/web-api@7.15.1` already in repo for v1.0 Slack messaging | None — add SCIM token credential type to existing Slack adapter; SCIM is raw REST (no SDK methods on `@slack/web-api`) |
+| Document expiry engine | QStash (cron + async retries), Prisma 7, Pino logger, Unleash flags, existing `Notification` model + dispatch service | **NEW** `date-fns@4.1.0` for cascade-window arithmetic (lightweight, tree-shakeable, ~13KB) |
+| Hard payment block on expired CRITICAL doc | Existing payment-run guard pattern from v1.0 + v3.0 `requireTier` middleware | None — new `requireValidCompliance` tRPC middleware composable with existing chain |
+| UAE free-zone registry | Prisma 7, Unleash flag for SA/UAE jurisdiction short-circuit | None — **build static seed table** (~25 zones) committed to repo; Bayanat / official zone portals scraped manually at seed time. No maintained npm package exists. |
+| Saudization Nitaqat dashboard | Prisma 7, existing classification engine pattern from v5.0 | None — **build static rule table per Nitaqat 2026–2028 phase** + admin-editable override; logarithmic-formula evaluator in TS. No maintained npm package exists. |
+| IP-clause detection on contract upload | Existing Claude Vision OCR adapter (v2.0) + Anthropic SDK already wired; QStash for async classification job; document storage in R2 | None — **reuse `ClaudeOcrAdapter` with a second tool-use schema** (extract clauses + classify presence of IP assignment language). Do NOT add `pdfjs-dist`/`unpdf`/`pdf-parse` for this — Claude Vision handles native PDFs and scanned PDFs uniformly. |
+| Knowledge transfer / credential vault | Existing R2 presigned-URL store + portalSession magic-link auth (v2.0) + Better Auth org RBAC + Pino audit log | None — build domain UI on existing primitives. Do NOT introduce a third-party secret-share library. |
 
-## Recommended Stack Additions
-
-### New Libraries to Add
-
-| Library | Version | Package Target | Purpose | Why Recommended |
-|---------|---------|----------------|---------|-----------------|
-| pdf-lib | ^1.17.1 | @contractor-ops/einvoice | PDF/A-3 generation for ZUGFeRD (embed CII XML in PDF) | Pure JS, no native dependencies, works on Vercel. Supports PDF modification: file attachments (AF array), XMP metadata, output intent. The only mature JS library capable of producing PDF/A-3b compliant output with embedded XML. react-pdf (already installed) is for viewing -- pdf-lib is for generation/modification. |
-
-That is the only new dependency. Everything else is build-from-spec using existing libraries.
-
-### Libraries NOT to Add
-
-| Avoid | Why | Use Instead |
-|-------|-----|-------------|
-| Any npm `zugferd` package | No mature, maintained packages in JS/TS. What exists is experimental or abandoned. | Build CII XML with `fast-xml-parser` following existing ZATCA/Peppol generator pattern. |
-| Any npm `xrechnung` package | Same situation -- no viable JS packages. | Build XRechnung UBL XML with `fast-xml-parser`, structurally identical to Peppol-AE generator. |
-| Any npm `bacs` package | Nothing exists. BACS Standard 18 is fixed-width text, simpler than the Elixir format already built. | `generateBacs()` function in `payment-export.ts` (~100-150 lines). |
-| `hmrc-client` or `hmrc-mtd-api` | No official HMRC npm SDK. Existing packages are unmaintained. | Direct `fetch` to HMRC REST API + Zod response validation. Fits existing gov-api pattern. |
-| `soap` for VIES | EU VIES now has a REST API alongside SOAP. Avoid adding a SOAP dependency. | Direct `fetch` to VIES REST endpoint (`/rest-api/check-vat-number`). Fall back to SOAP only if REST proves unreliable. |
-| Any "IR35 calculator" library | Does not exist. IR35 determination is a rules engine based on public CEST criteria. | Build questionnaire-driven weighted rules engine. |
-| `mustangserver` (Java ZUGFeRD) | Wrong ecosystem -- requires JVM. | Build natively in TypeScript. |
-| `pdfkit` | No PDF/A-3 support, no file embedding API for ZUGFeRD compliance. | `pdf-lib` |
-| `libxmljs` / `libxmljs2` | Native C++ bindings, breaks on Vercel/Edge. | `fast-xml-parser` (pure JS, already installed). |
-| `xrechnung-visualization` | For rendering XRechnung as HTML, not for generation. | Our UI already renders invoices. |
+**Bottom line:** v6.0 adds **at most three new top-level dependencies** to the monorepo: `@okta/okta-sdk-nodejs`, `date-fns`, and (conditionally, only if `@octokit/rest` is not already present) `octokit`. Everything else is wiring on existing v1.0–v5.0 infrastructure.
 
 ---
 
-## Detailed Analysis by Domain
+## Recommended Stack — Identity Provider Deprovisioning
 
-### 1. EN 16931 E-Invoicing: XRechnung (UBL 2.1)
+### Core SDKs / API access pattern
 
-**Confidence: HIGH** -- existing Peppol-AE UBL 2.1 generator is structurally identical.
+| Provider | Library / version | SDK vs raw REST | Why |
+|----------|-------------------|------------------|-----|
+| Google Workspace | `googleapis@171.4.0` (already installed v3.0) — service `admin('directory_v1').users.update` | **SDK** | Already used by `GoogleWorkspaceAdapter` for directory import; auth helpers (`google.auth.OAuth2`, `GoogleAuth` for service-account domain-wide delegation) are reused; `users.update({ userKey, requestBody: { suspended: true } })` is one method call. Raw REST would duplicate OAuth2 token-refresh logic that `googleapis` already handles. |
+| Azure AD / Entra ID | `@microsoft/microsoft-graph-client@3.0.7` + `@azure/identity@4.13.1` (already installed v3.0 Teams + Outlook) | **SDK** for the disable-account `PATCH /users/{id}` and **raw REST POST** for `/users/{id}/revokeSignInSessions` (no fluent method on the v3 client) | The 3.x JS client is the stable production SDK as of 2026-04. The Kiota-generated `@microsoft/msgraph-sdk` (`1.0.0-preview.80`) is **still in preview** — not production-grade. Use `client.api('/users/{id}').update({ accountEnabled: false })` for the disable, and `client.api('/users/{id}/revokeSignInSessions').post({})` for session revocation. |
+| Okta | `@okta/okta-sdk-nodejs@8.0.0` (NEW) | **SDK** | The 7.x → 8.x line moved every operation to namespaced `client.userApi.*` (`userApi.deactivateUser({ userId })`, `userApi.revokeUserSessions({ userId })`, `userApi.clearUserSessions({ userId })`). Direct REST would mean reimplementing Okta's API token + DPoP request signing, plus rate-limit headers. SDK is small, well-maintained, and matches our existing adapter pattern. |
+| GitHub | `octokit@5.0.5` (recommended) **OR** `@octokit/rest@22.0.1` if already in tree | **SDK** | `octokit.rest.orgs.removeMember({ org, username })` is a one-liner. Both packages are first-party and current; `octokit` is the umbrella SDK and is the one Octokit's docs now lead with — pick `octokit` for new code, keep `@octokit/rest` if it's already wired. |
+| Slack | `@slack/web-api@7.15.1` (already installed v1.0) for `admin.users.session.reset` + `admin.users.session.invalidate`; **raw REST + `fetch`** for SCIM `PATCH /scim/v1/Users/{id}` with `active=false` | **Hybrid** | The Web API client covers `admin.*` Enterprise Grid methods. SCIM is **not** modelled on `@slack/web-api` — it's a separate `https://api.slack.com/scim/v1/Users/{id}` endpoint that takes a SCIM-shaped JSON Patch body and uses a different OAuth scope (`scim:write`). Implement as a thin `fetch` wrapper inside the existing Slack adapter — no new dependency. |
 
-XRechnung is Germany's CIUS (Core Invoice Usage Specification) of EN 16931 using UBL 2.1 syntax. The existing `generatePintAeXml()` in `packages/einvoice/src/profiles/peppol-ae/generator.ts` is the direct template:
+### Required OAuth scopes / API permissions (minimum-privilege)
 
-- Same `XMLBuilder` from fast-xml-parser
-- Same UBL namespaces (`urn:oasis:names:specification:ubl:schema:xsd:Invoice-2`, `cac:`, `cbc:`)
-- Different `CustomizationID`: `urn:cen.eu:en16931:2017#compliant#urn:xoev-de:kosit:standard:xrechnung_3.0`
-- Different `ProfileID`: `urn:fdc:peppol.eu:2017:poacc:billing:01:1.0`
-- Mandatory German fields: `BuyerReference` (Leitweg-ID for B2G), `PaymentTerms` (Skonto)
+| Provider | Scope / permission | Justification |
+|----------|--------------------|---------------|
+| Google Workspace | `https://www.googleapis.com/auth/admin.directory.user` (read+write); domain-wide-delegation service account or OAuth admin token | Required to call `users.update` with `suspended: true`. The narrower read-only scope `admin.directory.user.readonly` (used in v3.0 directory import) is **insufficient** — must request the read-write scope at v6.0 connect time and trigger re-consent for existing tenants. |
+| Azure AD / Entra ID | `User.EnableDisableAccount.All` (least-privileged for `accountEnabled: false`) **+** `User.RevokeSessions.All` (for `revokeSignInSessions`) | Microsoft published these reduced-privilege scopes specifically for this scenario. Do NOT request `User.ReadWrite.All` — it's broader than needed. Both are **application** permissions (admin-consent required) to allow non-interactive deprovisioning from a cron context. |
+| Okta | API token with admin role (or OAuth `okta.users.manage`) — call `userApi.deactivateUser` | The deactivate operation requires user-management privilege. Token must have at minimum the "User Admin" role — not "Group Admin" or read-only. |
+| GitHub | OAuth `admin:org` scope — required by `DELETE /orgs/{org}/members/{username}` | `admin:org` is the documented minimum. `repo` scope is insufficient. If using a GitHub App instead of OAuth, request the org `Members: write` permission. |
+| Slack | `admin.users.session:write` (Enterprise Grid) for session reset/invalidate **+** `scim:write` (SCIM token from app installation on org, not workspace) for SCIM deactivate | SCIM deactivation requires the org-level OAuth token, not a workspace token. Note: SCIM users cannot be permanently deleted — only deactivated. |
 
-**Key difference from Peppol-AE:** XRechnung requires German-specific business rules (BR-DE-1 through BR-DE-26). These are Schematron validation rules, not XML structure differences. Implementation: add a `validate()` method that checks these rules.
+### Auth-layer integration points (existing infra — do NOT duplicate)
 
-**New profile structure:**
-```
-packages/einvoice/src/profiles/xrechnung/
-  index.ts          -- XRechnungProfile implementing EInvoiceProfile
-  generator.ts      -- UBL 2.1 XML generation (adapt from peppol-ae/generator.ts)
-  parser.ts         -- UBL 2.1 XML parsing
-  validator.ts      -- BR-DE-* business rule validation
-  signer.ts         -- XAdES-BES with RSA-SHA256 (adapt from zatca/signer.ts)
-  constants.ts      -- XRechnung-specific IDs, namespaces
-  schemas.ts        -- Zod schemas for XRechnung extensions
-```
+- **Credential storage:** add a new `IntegrationProvider` slug per IdP (`okta`, `azure_ad_deprovision`, `github_deprovision`) into the existing AES-256-GCM per-provider credential store. Microsoft Graph and Google credentials are **shared with v3.0** entries — extend the existing `googleAdminDirectory` and `microsoftGraph` provider records with additional scope grants rather than creating duplicates.
+- **OAuth callback:** reuse v2.0's generic OAuth callback with HMAC-signed cross-provider CSRF state.
+- **Token refresh:** reuse v2.0's proactive token-refresh cron with distributed lock.
+- **Audit log:** every revocation step (per-provider success/failure, scopes, timestamp, user-agent of admin who triggered it) flows through existing `AuditLog` Prisma model + Pino logger — no new table.
+- **Webhook pipeline:** **not used** for deprovisioning (operations are admin-initiated, fire-and-forget through QStash, then poll for completion if SDK call is asynchronous — Okta has eventual consistency on session revocation).
 
-### 2. EN 16931 E-Invoicing: ZUGFeRD (CII + PDF/A-3)
+---
 
-**Confidence: MEDIUM** -- CII syntax is new to the codebase; pdf-lib PDF/A-3 capabilities should be verified during implementation.
+## Recommended Stack — Compliance Document Expiry Engine
 
-ZUGFeRD 2.2+ (also Factur-X in France) uses UN/CEFACT CII (Cross-Industry Invoice) XML syntax. This is a different XML structure from UBL but maps to the same `EInvoice` canonical model.
+### Core libraries
 
-**CII vs UBL key differences:**
-- Different root element: `rsm:CrossIndustryInvoice` (not `Invoice`)
-- Different namespaces: `urn:un:unece:uncefact:data:standard:CrossIndustryInvoice:100`
-- Different element names: `ram:SellerTradeParty` (not `cac:AccountingSupplierParty`)
-- Same semantic content, different XML vocabulary
+| Library | Version | Purpose | Why |
+|---------|---------|---------|-----|
+| `date-fns` | `4.1.0` | Reminder-cascade arithmetic (90/60/30/15/7-day windows), `differenceInDays`, `addDays`, `isBefore` for "is in cascade window" checks | Modular tree-shakeable functions; ~13KB after tree-shaking; pure functions are easy to unit-test (no Date mocking needed); the v4 line is current and stable. The maintenance-status warning in some 2026 articles is misleading — v4.1.0 was published recently and the API surface used here (`addDays`, `differenceInDays`, `isAfter`, `isBefore`) is rock-solid. **Tree-shake aggressively** — `import { addDays, differenceInDays } from 'date-fns'` only. |
+| Prisma 7 (existing) | — | `ComplianceDocument`, `ComplianceDocumentDefinition` (per-country + per-role required-doc registry), `ComplianceReminderEvent` models | Reuse v1.0 multi-tenant + soft-delete client extensions. |
+| QStash (existing) | — | Daily cron at 06:00 org-local that scans `ComplianceDocument WHERE expiresAt - now() ∈ {90d, 60d, 30d, 15d, 7d, 0d, overdue}` and dispatches reminders idempotently (use `(documentId, milestone)` as dedup key into existing `Notification.dedupKey` field) | **Do NOT add BullMQ, Agenda, node-cron, or temporal.io** — QStash already handles cron + retry + signature verification + at-least-once with our `WebhookDelivery` audit trail. |
+| Pino logger (existing `@contractor-ops/logger`) | — | Structured event emission per cascade tick | per memory `feedback_logging.md` — never `console.*`. |
+| Unleash OSS (existing) | — | Per-jurisdiction feature gate (`compliance-doc-engine-pl`, `…-uk`, `…-de`, `…-uae`, `…-sa`) so a country's required-doc set can be turned off without code changes | per memory `project_feature_flags_strategy.md` — already-decided strategy. |
+| `requireTier` middleware (existing v3.0) | — | Gate compliance dashboard behind PRO; gate auto-enforcement (hard payment block) behind ENTERPRISE | Reuse the existing pattern. |
 
-**ZUGFeRD profiles** (conformance levels):
-- MINIMUM -- basic metadata only
-- BASIC WL -- no line items
-- BASIC -- with line items
-- EN 16931 (COMFORT) -- full EN 16931 compliance (recommended for contractor invoices)
-- EXTENDED -- additional German-specific fields
+### What we explicitly DO NOT add
 
-**PDF/A-3 workflow:**
-1. Generate CII XML from `EInvoice` canonical model
-2. Take the contractor's submitted invoice PDF (or generate one)
-3. Convert to PDF/A-3b: embed sRGB ICC profile, add XMP metadata with `pdfaid:part=3` and `pdfaid:conformance=B`
-4. Attach CII XML as `factur-x.xml` with AFRelationship `Data` and MIME type `text/xml`
-5. Add the file to the catalog's AF (Associated Files) array
+| Rejected option | Reason |
+|------------------|--------|
+| BullMQ | Would duplicate QStash's queue + retry + scheduling. v2.0 / v3.0 already standardised on QStash for `_process` async pipelines. |
+| Agenda / node-cron / Bree | Same reason — QStash schedules handle this natively. |
+| `cron-parser` standalone | Not needed — QStash schedules accept cron strings directly. |
+| temporal.io workflows | Massive over-engineering for a 5-step linear cascade. We have no other Temporal workflows. |
+| Specialised "compliance document" SaaS (Drata, Vanta) | Out of scope — those are SOC 2 / ISO 27001 attestation tools, not contractor-document expiry. |
+| `js-joda` / `Temporal` polyfill | Premature. Native `Date` + `date-fns` is sufficient — none of the cascade math touches sub-day precision or DST-sensitive operations. |
+| Standalone "document expiry tracker" npm packages (e.g. `expiry-tracker`, `date-expiry`) | None are maintained / production-grade. The logic is ~150 lines; building it on Prisma + QStash is faster than vetting a half-maintained dependency. |
 
-**pdf-lib** handles steps 2-5. Step 1 uses fast-xml-parser.
+### Hard-block payment guard — composition with existing middleware
 
-**New profile structure:**
-```
-packages/einvoice/src/profiles/zugferd/
-  index.ts          -- ZUGFeRDProfile implementing EInvoiceProfile
-  generator.ts      -- CII XML generation (NEW syntax, new builder)
-  parser.ts         -- CII XML parsing
-  validator.ts      -- ZUGFeRD profile conformance validation
-  pdf-embedder.ts   -- PDF/A-3b creation with XML attachment (uses pdf-lib)
-  constants.ts      -- CII namespaces, ZUGFeRD profile identifiers
-  schemas.ts        -- Zod schemas for ZUGFeRD extensions
-```
+```ts
+// Sketch — compose on top of existing tRPC middleware chain
+const requireValidCompliance = createMiddleware(async ({ ctx, next, input }) => {
+  const blockers = await ctx.prisma.complianceDocument.findMany({
+    where: {
+      contractorId: input.contractorId,
+      definition: { criticalityForPayment: 'HARD_BLOCK' },
+      OR: [{ expiresAt: { lt: new Date() } }, { status: 'MISSING' }],
+      orgId: getTenantOrgId(),  // existing AsyncLocalStorage tenant scope
+    },
+    select: { id: true, definitionCode: true, expiresAt: true },
+  });
+  if (blockers.length) {
+    throw new TRPCError({
+      code: 'FORBIDDEN',
+      message: 'PAYMENT_BLOCKED_EXPIRED_COMPLIANCE_DOC',
+      cause: { blockers },  // surfaced in admin UI, never in portal
+    });
+  }
+  return next();
+});
 
-**ZUGFeRD does NOT need XML digital signatures.** The PDF can optionally be signed (PAdES), but the XML itself is unsigned. This is a key difference from XRechnung.
-
-### 3. BACS Standard 18 File Format
-
-**Confidence: HIGH** -- simpler than Elixir format already implemented.
-
-BACS Standard 18 is the UK domestic payment file format. Fixed-width flat file with:
-
-- **VOL1** header (80 chars) -- volume label
-- **HDR1/HDR2** headers -- file identification, processing date
-- **UHL1** user header -- service/originator codes, processing date
-- **Data records** (100 chars) -- destination sort code (6), account number (8), transaction type (2 = credit), amount in pence (11), originator sort code (6), account number (8), free text ref (18), originator name (18)
-- **EOF1/EOF2** file trailers
-- **UTL1** user trailer -- debit/credit totals, record count
-
-**Implementation:** Add `generateBacs()` to `packages/api/src/services/payment-export.ts` alongside existing generators. The function signature matches the existing pattern:
-
-```typescript
-export function generateBacs(items: ExportItem[], org: OrgBankInfo): Buffer
+// Wired into existing payment.markRunReady + payment.executeRun procedures
 ```
 
-**Payment format detection changes** in `payment-format-detection.ts`:
-- Add `'BACS'` to `ExportFormat` type
-- Add rule: GBP + GB IBAN -> `BACS`
-- Note: UK sort codes (6 digits) and account numbers (8 digits) can be extracted from GB IBANs (positions 9-14 and 15-22 respectively after the `GB` country code and 2-digit check)
+---
 
-**Important BACS specifics:**
-- Amounts in pence (minor units) -- already the project standard
-- All text must be uppercase ASCII -- reuse `stripDiacritics()` helper + `.toUpperCase()`
-- Transaction code 99 = credit transfer (the payment type we need)
-- File must end with CRLF line endings -- same as Elixir
+## Recommended Stack — Gulf Operational Polish
 
-### 4. HMRC VAT Number Validation
+### UAE free-zone registry
 
-**Confidence: MEDIUM** -- API exists and is REST-based; verify exact endpoint URLs during implementation.
+**Verdict:** No maintained npm package exists. The UAE Bayanat open data portal has *individual* free-zone datasets (Dubai Customs free-zone companies CSV, RAK Maritime city port operating-license charges) but **no consolidated machine-readable list of free-zone authority codes + permitted-activity scope per zone**. Each authority publishes its activity list in a different format (DIFC: rulebooks PDF, ADGM: PDF + dynamic web pages, DMCC: searchable web app, IFZA: PDF, RAKEZ: PDF, JAFZA: PDF, SAIF/DAFZA: PDF). UAE business activities are **broadly** ISIC-aligned but each zone publishes its own permitted-activity subset — no canonical mapping.
 
-HMRC provides a REST API for VAT number validation (no authentication needed for basic lookup):
+**Recommended approach:**
 
-```
-GET https://api.service.hmrc.gov.uk/organisations/vat/check-vat-number/lookup/{vatNumber}
-```
+| Step | What to do | Why |
+|------|-----------|-----|
+| 1. Static seed table in repo | New `packages/db/prisma/seeds/uae-free-zones.ts` with ~25 zones (DIFC, ADGM, JAFZA, DMCC, IFZA, RAKEZ, DAFZA, SAIF, SHAMS, DWTC, DSO, DAFZ, KIZAD, twofour54, DHCC, DIC, DMC, DEZ, FFZ, HFZA, etc.) — code, official Arabic + English name, regulatory body, license-renewal cadence, ISIC top-level categories permitted | One-time research effort; the list is stable on the year-scale. Source from the Federal Tax Authority "Designated Zones" list + each zone's official portal as of seed date. |
+| 2. Admin-editable override table | `UaeFreeZoneOverride` Prisma model with org-scoped customisation (per-tenant adjustments + custom zones for clients in zones we haven't seeded) | Avoids needing a code release to add a new zone; supports tenants that operate in non-listed zones. |
+| 3. License-expiry scan | Hook into the v6.0 Compliance Document Expiry Engine — the free-zone trade license is just a `ComplianceDocument` with `definitionCode: 'UAE_FREE_ZONE_TRADE_LICENSE'` and `criticalityForPayment: 'SOFT_WARN'` (or HARD_BLOCK depending on tenant policy) | Reuse, don't duplicate. |
+| 4. Permitted-activity validator | Free-form text per contractor engagement + admin-editable conflict-warning rules; **do NOT** try to build an exhaustive ISIC-code matcher in v6.0 | The admin-validation pattern matches how v4.0 + v5.0 country-specific validators work (UTR mod-11, Steuernummer regex map). |
 
-Returns JSON:
-```json
-{
-  "target": {
-    "name": "ACME LTD",
-    "vatNumber": "123456789",
-    "address": { "line1": "...", "postcode": "..." }
+**Sources:** [Bayanat UAE Open Data Portal](https://bayanat.ae/), [List of Free Zones in UAE 2026 - Vertix](https://www.vertixauditing.ae/free-zones-in-uae/), [Free Zones in the UAE comparison - RSBM](https://rsbm.ae/tpost/mnn3dx3j11-free-zones-in-the-uae-a-comparative-guid). All MEDIUM confidence — verify each zone's permitted-activity list directly with the authority's portal at seed time. Mark "Needs verification by UAE legal counsel before production deploy" per Standing Project Constraints.
+
+### Saudi Saudization (Nitaqat) tracking
+
+**Verdict:** No maintained npm package exists. The official **Qiwa** platform calculator is the source of truth — it requires a Saudi MOL credential that we don't ship with. The Nitaqat formula transitioned away from fixed company-size bands to a **logarithmic localization-rate formula** with three-year rolling phases; the 2026–2028 phase is published by the Ministry of Human Resources & Social Development (MHRSD).
+
+**Recommended approach:**
+
+| Step | What to do | Why |
+|------|-----------|-----|
+| 1. Static rule table in repo | `packages/db/prisma/seeds/saudization-rules-2026-2028.ts` keyed by `(sector, companySize, calendarYear)` → required Saudization rate; sector list from the official Nitaqat 2026–2028 announcement | The table is small (~50 sectors × 3 years × 5 size bands) and changes annually — fits in a code-managed seed file with one PR per phase update. |
+| 2. Logarithmic-formula evaluator | Pure TS function `computeNitaqatBand({ sector, totalHeadcount, saudiHeadcount, year }) → { band: 'PLATINUM' \| 'GREEN_HIGH' \| ... ; targetRate; gapToNext }` | Mirrors v5.0 IR35 / DRV scoring engines. |
+| 3. Workforce composition dashboard | Reuse v5.0 compliance-health-dashboard component pattern (7-component native-flex visualisation, no chart library) — add a "Saudi vs non-Saudi" stacked bar by sector | Reuse, don't duplicate. |
+| 4. Nationality field on contractor | Reuse v4.0 country-specific contractor fields infrastructure — add `nationalityIso3` to contractor profile with admin-only edit | One Prisma column. |
+| 5. Annual rule-table refresh | Phase-update PR in Q4 of each year — admin gets a banner if the table is older than the current year |  |
+| 6. Mark "Needs verification by Saudi legal/HR counsel" | Per Standing Project Constraints — DO NOT hard-block | LOCAL-ONLY posture preserved. |
+
+**Sources:** [Nitaqat Mutawar Program - MHRSD](https://www.hrsd.gov.sa/en/knowledge-centre/decisions-and-regulations/regulation-and-procedures/832742), [New Phase of the Nitaqat Saudization Program (2026–2028)](https://ahysp.com/new-phase-of-the-nitaqat-saudization-program-2026-2028-what-businesses-in-saudi-arabia-need-to-know/), [Jisr HRMS Nitaqat calculator (reference UI)](https://www.jisr.net/en/hr-tools/nitaqat-calculator). MEDIUM confidence on rate values — must be verified against Qiwa portal at seed time and re-verified annually.
+
+---
+
+## Recommended Stack — Offboarding Hardening (IP-clause Detection + Knowledge Transfer)
+
+### IP-assignment clause detection on contract intake
+
+**Verdict:** Reuse the existing v2.0 `ClaudeOcrAdapter` (Claude Vision via Anthropic SDK with native PDF support and `tool_use` for structured extraction). Do **not** add `pdf-parse`, `pdfjs-dist`, `unpdf`, Spark NLP for Legal, or any specialised contract-analysis SaaS.
+
+**Why Claude Vision wins for this:**
+
+1. Already wired — credential store, AI-credit metering (v3.0), confidence scoring, async QStash processing, retry, audit log all exist.
+2. Handles native PDFs and scanned PDFs uniformly. `pdf-parse`/`pdfjs-dist` only extract text from native PDFs — they fail on scanned/image-based contracts (which are common, especially in DE/PL where contracts are often scan-imaged after wet-signing). Adding one of those libraries would require a second pipeline branch for OCR fallback that we already have.
+3. Tool-use schema gives us structured JSON output (`{ has_ip_assignment_clause: bool, clause_text: string|null, confidence: 0-1, suggested_remediation: string|null }`) — directly maps to a Prisma field on `Contract`.
+4. Public benchmark data (ContractEval, Aug 2025) shows Claude Sonnet 4 has Jaccard ≥ 0.45 and a low 0.025 false-no-clause rate on commercial contract clause-level legal-risk identification — best-in-class among the LLMs evaluated for this exact task.
+5. Costs are predictable — each contract upload is one ClaudeVision call (we already have credit metering with hard-block).
+
+**Implementation pattern (extend existing adapter):**
+
+```ts
+// In ClaudeOcrAdapter — add a second tool definition alongside invoice extraction
+const ipClauseTool = {
+  name: 'extract_ip_assignment_clause',
+  description: 'Identify IP-assignment language in a contractor agreement.',
+  input_schema: {
+    type: 'object',
+    properties: {
+      has_ip_assignment_clause: { type: 'boolean' },
+      clause_excerpt: { type: 'string', description: 'Verbatim excerpt of the IP clause, or null if absent.' },
+      jurisdiction_specific_concerns: {
+        type: 'array',
+        items: { type: 'string', enum: ['DE_URHEBERRECHT_INALIENABLE', 'UK_PRE_EXISTING_IP', 'PL_AUTHOR_PROPERTY_RIGHTS', 'UAE_MOH_REGISTRATION', 'SA_NEED_NOTARIZATION'] },
+      },
+      confidence: { type: 'number', minimum: 0, maximum: 1 },
+      suggested_remediation: { type: 'string' },
+    },
+    required: ['has_ip_assignment_clause', 'confidence'],
   },
-  "processingDate": "2026-04-12"
-}
+};
+
+// Triggered by contract.uploadDocument fire-and-forget; result lands on Contract.ipClauseHealth field
+// Offboarding workflow checks Contract.ipClauseHealth.status before allowing completion
 ```
 
-**Implementation:** Add `hmrc-vat.ts` client in `packages/gov-api/src/` following the existing client pattern (fetch + Zod response validation + retry + rate limiting).
+**What NOT to use:**
 
-**No new dependency needed.** Direct HTTP fetch with Zod response schema.
+| Rejected | Reason |
+|----------|--------|
+| `pdf-parse@1.1.1` | Only handles native PDFs; output is unstructured raw text that we'd then have to send to an LLM anyway. Skip the middle step. |
+| `pdfjs-dist@5.6.205` | Same. Excellent library for in-browser preview rendering — irrelevant for server-side clause classification. |
+| `unpdf@1.6.0` | Better at edge runtime than `pdf-parse` but same fundamental limitation. |
+| Spark NLP for Legal | JVM-only. Heavy. Doesn't fit our Node monorepo. |
+| LawGeex / Spellbook / Kira-Systems APIs | Closed-source, expensive, English-only, separate vendor relationship for one feature |
+| Custom regex on extracted text | Brittle — IP-assignment language varies enormously across PL/UK/DE/UAE/SA legal traditions and Polish + German + Arabic translations. Regex will produce false negatives at unacceptable rates. |
 
-**UK VAT number format:** `GB` + 9 digits (or 12 for government departments). Validate with regex before API call.
+### Knowledge-transfer checklist + credential vault UX
 
-### 5. VIES USt-IdNr (VAT ID) Validation
+**Verdict:** Build domain UI on existing primitives. Do **not** introduce a third-party "secret-share" library (e.g. `onetimesecret`, `privatebin`, `react-share-secret`). The risk profile of those libraries — many are unmaintained one-person hobby projects — is unacceptable for credential handling.
 
-**Confidence: LOW** -- VIES REST API availability needs verification during implementation.
+**Building blocks (all already in repo):**
 
-The EU VIES service validates EU VAT numbers. Two endpoints exist:
+| Existing primitive | v6.0 use |
+|---------------------|-----------|
+| R2 presigned URLs (v1.0) | Knowledge-transfer doc handover (architecture diagrams, runbooks) — exactly the same as contract-document storage |
+| Document virus scan (ClamAV magic-byte, v1.0) | Same — applied transparently |
+| Workflow engine + template builder (v1.0) | Per-role offboarding-checklist templates (engineer / designer / PM / ops) — pure data, no new code |
+| `requireTier` middleware (v3.0) | Gate offboarding hardening behind PRO |
+| `portalSession` magic-link (v2.0) | Outgoing contractor reads handover materials via portal — already secure |
+| Better Auth org RBAC (v1.0) | Receiving teammate reads via internal app with role-scoped access |
+| Pino structured logging | Audit trail of every credential-vault read |
+| AES-256-GCM credential encryption (v2.0 integration framework) | Reuse the per-resource encryption pattern for "credentials-to-hand-over" rows: encrypt at rest, decrypt at read with audit-log row, expire after 30 days |
 
-1. **SOAP** (legacy, guaranteed available): WSDL at `https://ec.europa.eu/taxation_customs/vies/checkVatService.wsdl`
-2. **REST** (newer, verify availability): `POST https://ec.europa.eu/taxation_customs/vies/rest-api/check-vat-number`
+**What "credential vault" means here (scoped narrowly):**
 
-**Recommendation:** Try REST first (no new dependency). Request body: `{ "countryCode": "DE", "vatNumber": "123456789" }`. If REST is unreliable or in beta, fall back to SOAP (add `soap` package).
+1. Outgoing contractor uploads a free-form Markdown handover note + optional file attachments to R2 (existing flow).
+2. Outgoing contractor lists "credentials to hand over" — name (e.g. "AWS staging IAM role"), pointer (e.g. "rotated 2026-04-26, request from CTO"), expiry. **No actual secret values ever stored** — we are a coordination layer, not a password manager. If the customer needs a real password manager they should use 1Password / Bitwarden.
+3. Receiving teammate ticks off each row when handover is confirmed; structured `AuditLog` row per tick.
 
-**German USt-IdNr format:** `DE` + 9 digits. VIES validates against Bundeszentralamt fuer Steuern (BZSt) records.
-
-**Implementation:** Add `vies.ts` client in `packages/gov-api/src/`. Use qualified confirmation requests (provides name/address match) for KYC compliance.
-
-**Validation flag:** VIES REST API stability MUST be verified before implementation. If unavailable, add `soap@^1.1.0` as dependency.
-
-### 6. IR35 Determination Engine
-
-**Confidence: HIGH** -- well-documented public criteria, build-from-spec.
-
-No npm library or commercial API exists for IR35 determination. HMRC's CEST (Check Employment Status for Tax) tool is web-only with no public API.
-
-**Build a generic classification engine** with pluggable rule sets:
-
-```
-packages/classification/    (NEW package)
-  src/
-    engine.ts               -- Generic weighted questionnaire evaluator
-    types.ts                -- RuleSet, Question, Answer, RiskAssessment interfaces
-    rulesets/
-      ir35.ts               -- UK IR35 rule set (~20 weighted questions)
-      scheinselbst.ts       -- German Scheinselbstaendigkeit rule set
-    generators/
-      sds.ts                -- UK Status Determination Statement (PDF)
-      drv-defense.ts        -- German DRV audit defense documentation
-```
-
-**IR35 assessment factors** (from case law + CEST):
-1. Personal service / substitution rights
-2. Mutuality of obligation
-3. Control (how, when, where)
-4. Financial risk (own equipment, insurance, bad debt)
-5. Part of the organization (integration)
-6. Provision of equipment
-7. Right of dismissal / engagement length
-8. Employee-type benefits (holiday pay, pension)
-
-**Output:** INSIDE IR35 / OUTSIDE IR35 / INDETERMINATE with per-factor weighted scores and reasoning text.
-
-**SDS generation:** UK law requires medium/large companies to issue a Status Determination Statement. Template-driven document using assessment results.
-
-### 7. Scheinselbstaendigkeit Risk Engine
-
-**Confidence: HIGH** -- well-established German case law criteria.
-
-Same architecture as IR35 -- uses the generic classification engine with a different rule set.
-
-**DRV (Deutsche Rentenversicherung) assessment criteria:**
-1. Weisungsgebundenheit (bound by instructions)
-2. Eingliederung (organizational integration)
-3. Eigenes Unternehmerrisiko (own business risk)
-4. Eigene Arbeitsmittel (own work equipment)
-5. Mehrere Auftraggeber (multiple clients)
-6. Eigene Mitarbeiter (own employees)
-7. Marktauftritt (market presence)
-8. Keine Arbeitnehmeraehnliche Verguetung (not employee-like compensation)
-
-**Output:** HIGH RISK / MEDIUM RISK / LOW RISK with per-factor assessment and German-language reasoning for DRV audit defense.
-
-**DRV Statusfeststellungsverfahren** documentation: Generate structured defense documents that can be submitted to DRV if audited.
-
-### 8. German i18n with next-intl
-
-**Confidence: HIGH** -- next-intl handles German with zero issues.
-
-**Changes needed:**
-
-1. **Routing:** Add `'de'` to `locales` array in `apps/web/src/i18n/routing.ts`:
-   ```typescript
-   locales: ['en', 'pl', 'ar', 'de'] as const
-   ```
-
-2. **Messages:** Create `apps/web/messages/de.json` translation file (copy structure from `en.json`, translate)
-
-3. **No library changes.**
-
-**German-specific formatting handled by existing Intl APIs:**
-- Numbers: `1.234,56` (comma decimal, period thousands) -- `Intl.NumberFormat('de-DE')`
-- Dates: `12.04.2026` (DD.MM.YYYY) -- `Intl.DateTimeFormat('de-DE')`
-- Currency: `1.234,56 EUR` -- `Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' })`
-
-**German-specific field formats (validation with Zod, not i18n):**
-- Handelsregister: `HR[AB]\s?\d+` (e.g., "HRB 12345")
-- Steuernummer: varies by Bundesland, 10-11 digits with slashes (e.g., "123/456/78901")
-- USt-IdNr: `DE\d{9}` (e.g., "DE123456789")
-- Skonto terms: display string like "2% Skonto bei Zahlung innerhalb von 10 Tagen" -- translation key with ICU placeholders
-
-**UI layout note:** German compound words are long (Rechnungsstellungsdatum, Zahlungsbedingungen, Umsatzsteuervoranmeldung). Ensure:
-- Flexible column widths in tables (already using TanStack Table with auto-sizing)
-- `hyphens: auto` with `lang="de"` on `<html>` element for line breaking
-- Test all UI views with German translations for overflow
-
-### 9. XAdES Digital Signatures for XRechnung
-
-**Confidence: HIGH** -- existing ZATCA XAdES-BES signer is directly reusable.
-
-XRechnung requires XAdES-BES enveloped signatures when submitted to German public sector portals (ZRE -- Zentrale Rechnungseingangsplattform, OZG-RE).
-
-**Existing infrastructure in `packages/einvoice/src/profiles/zatca/signer.ts`:**
-- `ZatcaXAdESSigner` implements `Signable` interface
-- Uses `xml-crypto` for canonicalization + `crypto` for signing
-- Builds XAdES-BES SignedProperties manually
-- Full sign + verify flow
-
-**Key adaptation for XRechnung:**
-- ZATCA: ECDSA-SHA256 (secp256k1 curve) -- `dsaEncoding: 'ieee-p1363'`
-- XRechnung: RSA-SHA256 -- standard RSA signing, simpler
-- Algorithm URI: `http://www.w3.org/2001/04/xmldsig-more#rsa-sha256`
-- Certificate: Standard X.509 RSA certificate (not ECDSA)
-
-**Create `XRechnungSigner` class** adapting `ZatcaXAdESSigner`:
-- Change algorithm from ECDSA-SHA256 to RSA-SHA256
-- Remove ECDSA-specific `dsaEncoding` option
-- Same XAdES-BES structure (SignedProperties, CertDigest, IssuerSerial)
-- Same enveloped signature injection pattern
-
-**No new library needed.** `xml-crypto@^6.0.0` + Node.js `crypto` handles RSA-SHA256 natively.
+**Mark "Needs verification by IT-security contact before production deploy"** per Standing Project Constraints — this section touches sensitive data flows.
 
 ---
 
 ## Installation
 
 ```bash
-# The ONLY new dependency for the entire v5.0 milestone
-pnpm --filter @contractor-ops/einvoice add pdf-lib@^1.17.1
-```
+# IdP deprovisioning — only Okta is genuinely new
+pnpm --filter @contractor-ops/integrations add @okta/okta-sdk-nodejs@^8.0.0
 
-**Conditional (only if VIES REST API proves unreliable):**
-```bash
-pnpm --filter @contractor-ops/gov-api add soap@^1.1.0
-```
+# Document expiry engine — only date-fns is genuinely new
+pnpm --filter @contractor-ops/api add date-fns@^4.1.0
 
----
+# (Conditional) GitHub deprovisioning — only if @octokit/rest not already present
+pnpm --filter @contractor-ops/integrations add octokit@^5.0.5
+# OR keep using existing @octokit/rest@^22 if already installed
 
-## New Package: @contractor-ops/classification
-
-A new workspace package for the contractor classification engine:
-
-```bash
-# Create new package
-mkdir -p packages/classification/src
-```
-
-**Dependencies:** Only `zod` (already in workspace). No external libraries.
-
-**package.json:**
-```json
-{
-  "name": "@contractor-ops/classification",
-  "version": "0.0.0",
-  "private": true,
-  "type": "module",
-  "dependencies": {
-    "zod": "^3.23.0"
-  }
-}
+# Already in repo — no install needed:
+# googleapis@^171.4.0   (v3.0 GWS directory import)
+# @microsoft/microsoft-graph-client@^3.0.7  (v3.0 Teams + v2.0 Outlook Calendar)
+# @azure/identity@^4.13.1                   (v3.0 Teams)
+# @slack/web-api@^7.15.1                    (v1.0 Slack)
+# QStash, Pino, Unleash, Anthropic SDK, Prisma 7, pdf-lib, react-pdf — all v1.0–v5.0
 ```
 
 ---
 
 ## Alternatives Considered
 
-| Recommended | Alternative | When to Use Alternative |
+| Recommended | Alternative | When to use alternative |
 |-------------|-------------|-------------------------|
-| pdf-lib (PDF/A-3) | puppeteer/playwright | If pixel-perfect HTML-to-PDF rendering needed. Not our case -- we need PDF metadata control for ZUGFeRD compliance. Also, puppeteer requires browser binary (breaks Vercel). |
-| pdf-lib (PDF/A-3) | @react-pdf/renderer | If generating PDFs from React components. Lacks PDF/A-3 metadata control and file embedding needed for ZUGFeRD. |
-| Direct fetch (HMRC) | Any `hmrc-*` npm package | Never. All are unmaintained; the API is simple REST. |
-| Direct fetch (VIES REST) | soap package (VIES SOAP) | Only if VIES REST API is unreliable or undocumented. Verify REST first. |
-| Build BACS from spec | N/A | No alternatives exist. Simple fixed-width format. |
-| Build IR35 engine | Commercial API (IR35 Shield, Kingsbridge) | If legal liability for determination is a concern. Commercial APIs cost $$$, add vendor lock-in, and CEST criteria are public. Build own engine, consider commercial validation as optional premium feature later. |
-| Build Scheinselbstaendigkeit engine | N/A | No APIs or libraries exist for this. |
-| CII XML with fast-xml-parser | Dedicated CII library | No maintained CII library exists in JS/TS. fast-xml-parser handles arbitrary XML generation. |
+| `@microsoft/microsoft-graph-client@3.0.7` (3 years stale but stable) | `@microsoft/msgraph-sdk@1.0.0-preview.80` (Kiota-generated) | Only when the Kiota line GAs (currently preview). Migration is breaking; defer until v7.x or later. |
+| `octokit@5.0.5` umbrella SDK | `@octokit/rest@22.0.1` standalone | Either works. Pick `octokit` for new greenfield code, `@octokit/rest` if it's already in the dependency tree to avoid version skew. |
+| Reuse `googleapis@171.4.0` for GWS suspend | Direct Admin SDK REST via `fetch` | Only if we wanted to drop the entire `googleapis` dependency to shave bundle — not relevant for a server-side monorepo. |
+| Claude Vision OCR for IP-clause detection | `pdfjs-dist` + custom regex/LLM pipeline | If we wanted on-device extraction with no LLM call (e.g. for self-hosted-by-customer EU deployments where Anthropic API access is restricted). Defer until that customer request lands. |
+| Build static UAE free-zone seed table | Scrape Bayanat datasets nightly | Only if/when Bayanat publishes a consolidated zone-list dataset. As of 2026-04 only fragmentary per-zone CSVs exist. |
+| Build static Saudization rule table | Pull live from Qiwa portal | Qiwa requires Saudi MOL employer credentials we cannot obtain as a SaaS vendor; static + admin-editable is the only viable path. |
+| `date-fns@4.1.0` | `dayjs@1.11.x` / native `Temporal` | `date-fns` is what v1.0 already uses for invoice / contract / deadline date math. Switching would cause a tree-wide refactor. Native `Temporal` is still Stage-3 not yet shipped in Node LTS as of 2026-04. |
+
+---
+
+## What NOT to Use
+
+| Avoid | Why | Use instead |
+|-------|-----|-------------|
+| BullMQ / Agenda / node-cron / Bree for the expiry engine | We already have QStash for cron + retry + idempotency + audit; second queue layer would create state-of-truth ambiguity | Existing QStash schedules |
+| `pdfjs-dist` / `pdf-parse` / `unpdf` for IP-clause detection | Only extracts text; we'd still need an LLM for classification; fails on scanned PDFs | Existing `ClaudeOcrAdapter` with new tool-use schema |
+| `@microsoft/msgraph-sdk` (Kiota preview) | Still in preview as of 2026-04; breaking changes between preview releases | `@microsoft/microsoft-graph-client@3.0.7` (already installed) |
+| Generic "secret share" npm packages (`onetimesecret`, `privatebin`, etc.) | Most are unmaintained or single-maintainer; unacceptable risk profile for credential UX | Build narrow domain UI on existing R2 + AES-256-GCM + AuditLog primitives |
+| LawGeex / Spellbook / Kira-Systems for clause detection | Closed-source SaaS; vendor-lock for one feature; English-only or limited multilingual support | Claude Vision (Anthropic SDK already integrated) |
+| Spark NLP for Legal | JVM-only; doesn't fit Node monorepo | Claude Vision |
+| Standalone "Saudization" or "UAE free-zone" npm packages | None exist that are maintained / production-grade | Static seed tables + admin-editable overrides in Prisma |
+| Adding a second feature-flag system | Existing self-hosted Unleash OSS + thin code wrapper covers per-jurisdiction gating | Existing wrapper (per memory `project_feature_flags_strategy.md`) |
+| `console.*` anywhere in v6.0 code | Per memory `feedback_logging.md` and Standing Project Constraints | `@contractor-ops/logger` factories or raw `pino` in standalone scripts |
+
+---
+
+## Stack Patterns by Variant
+
+**If a customer's IdP is not in our supported list (e.g. JumpCloud, OneLogin):**
+- Defer. v6.0 covers Google Workspace + Azure AD/Entra + Okta + GitHub + Slack — those cover ~95% of the SMB tech-company target market.
+- Document the gap; suggest manual deprovisioning checklist as fallback workflow item.
+
+**If the customer is on Slack Free / Pro (not Enterprise Grid):**
+- `admin.users.*` methods all return `not_allowed` on non-Grid plans.
+- Detect plan tier on Slack adapter connect; surface a banner: "Slack deprovisioning available on Enterprise Grid only — falls back to manual removal task in offboarding workflow."
+
+**If the customer wants us to integrate with their password manager (1Password / Bitwarden) for actual secret handover:**
+- Out of scope for v6.0. Plumbing into vendor-specific password-manager APIs is a v7+ capability.
+- v6.0 credential vault is a "pointer + audit trail" only — actual secrets stay in the customer's password manager.
+
+**If the customer requires Steuerberater / Saudi legal / UAE legal sign-off on the rule tables before deploy:**
+- Per Standing Project Constraints — code ships, sign-off is recorded as a post-deploy item in the relevant phase SUMMARY's "Manual-Only Verifications" section. LOCAL-ONLY posture preserved.
 
 ---
 
 ## Version Compatibility
 
-| Package | Compatible With | Notes |
-|---------|-----------------|-------|
-| pdf-lib@^1.17.1 | Node.js 18+, Vercel serverless | Pure JS, zero native deps. No conflict with existing react-pdf (different purpose). |
-| fast-xml-parser@^5.5.9 | pdf-lib (no conflict) | Already installed. Generates both UBL (XRechnung) and CII (ZUGFeRD) XML. |
-| xml-crypto@^6.0.0 | RSA-SHA256 + ECDSA-SHA256 | Already installed. Supports both algorithm families needed. |
-| next-intl@^4.8.3 | German `de` locale | No version change. ICU MessageFormat handles German pluralization (2 forms: singular/plural). |
-| zod@^3.23.0 | All new schemas | Already installed everywhere. Classification engine uses it for questionnaire validation. |
-
----
-
-## Integration Summary
-
-| Domain | Approach | New Deps | Effort Estimate |
-|--------|----------|----------|-----------------|
-| XRechnung (UBL 2.1) | New einvoice profile, adapt Peppol-AE generator | None | Medium -- familiar pattern |
-| ZUGFeRD (CII + PDF/A-3) | New einvoice profile + PDF embedding | pdf-lib | High -- new XML syntax + PDF/A-3 |
-| BACS Standard 18 | Add generator to payment-export.ts | None | Low -- simpler than Elixir |
-| HMRC VAT validation | Add client to gov-api | None | Low -- simple REST call |
-| VIES validation | Add client to gov-api | None (maybe soap) | Low-Medium -- depends on REST availability |
-| IR35 engine | New classification package | None | Medium-High -- rules engine + SDS generation |
-| Scheinselbstaendigkeit | Rule set in classification package | None | Medium -- follows IR35 pattern |
-| German i18n | Config change + translation file | None | Low (translation effort is content, not code) |
-| XRechnung XAdES | Adapt ZATCA signer for RSA | None | Low -- algorithm swap only |
-
-**Total new runtime dependencies: 1 (pdf-lib)**
-
----
-
-## Validation Flags (MUST Verify During Implementation)
-
-1. **VIES REST API** -- Confirm `https://ec.europa.eu/taxation_customs/vies/rest-api/check-vat-number` is production-ready. If beta-only, add `soap@^1.1.0`.
-2. **pdf-lib PDF/A-3b compliance** -- Verify pdf-lib can set required XMP metadata (`pdfaid:part=3`, `pdfaid:conformance=B`), embed ICC output intent profile, and create AF (Associated Files) entries. May need manual `PDFDict`/`PDFArray` manipulation.
-3. **XRechnung CIUS version** -- Confirm current version (expected 3.0.x in 2026). Schematron rules change between versions.
-4. **ZUGFeRD version** -- Confirm current version (expected 2.3.x). Verify Factur-X alignment still maintained.
-5. **HMRC VAT API** -- Verify exact endpoint URLs and rate limits.
-6. **BACS Standard 18** -- Verify if any 2025/2026 spec updates exist (format is stable but check).
+| Package | Compatible with | Notes |
+|---------|------------------|-------|
+| `@okta/okta-sdk-nodejs@8.0.0` | Node 18+ | 7.x → 8.x is breaking — operations moved to namespaced `client.userApi.*`, `groupApi.*` etc. We are on a clean install so no migration cost. |
+| `@microsoft/microsoft-graph-client@3.0.7` | `@azure/identity@4.x`, Node 18+ | If running Node 18, pass `--no-experimental-fetch` per Microsoft's recommendation, or pin to `node@20`+ which is our Render baseline. |
+| `googleapis@171.4.0` | `google-auth-library@9.x` (transitive) | We're already on 171.x for v3.0 — no change. Major version bumps are frequent (typically every 1-2 weeks) but binary-compatible within a major; keep in caret range `^171`. |
+| `octokit@5.0.5` | Node 20+ (ESM-only) | If we still have CommonJS builds in any package, we must use the ESM-preserving import pattern (`await import('octokit')`) or migrate the consuming package to ESM. |
+| `@slack/web-api@7.15.1` | Node 18+ | SCIM endpoints are NOT exposed by the SDK — implement via `fetch` in the existing Slack adapter. |
+| `date-fns@4.1.0` | TypeScript 5.x, ESM + CJS | The v3 → v4 jump dropped IE11 + CommonJS-only patterns, but our tooling is fine. |
+| Prisma 7 (existing) | `@prisma/adapter-neon` (existing) | New v6.0 models add only forward migrations — no schema breakage. |
 
 ---
 
 ## Sources
 
-- Codebase analysis: `packages/einvoice/` profile architecture (HIGH confidence)
-- Codebase analysis: `packages/api/src/services/payment-export.ts` payment generators (HIGH confidence)
-- Codebase analysis: `packages/einvoice/src/profiles/zatca/signer.ts` XAdES implementation (HIGH confidence)
-- Codebase analysis: `apps/web/src/i18n/routing.ts` locale configuration (HIGH confidence)
-- EN 16931 / XRechnung / ZUGFeRD standard knowledge (training data) -- MEDIUM confidence
-- BACS Standard 18 specification (training data) -- HIGH confidence, well-established format
-- HMRC VAT API (training data) -- MEDIUM confidence, verify endpoints
-- VIES API (training data) -- LOW confidence, verify REST availability
-- pdf-lib capabilities (training data) -- MEDIUM confidence, verify PDF/A-3b specifics
-- IR35 CEST criteria (training data) -- HIGH confidence, publicly documented
-- Scheinselbstaendigkeit DRV criteria (training data) -- HIGH confidence, established case law
+### Context7 / official docs (HIGH confidence)
+
+- `/websites/googleapis_dev_nodejs_googleapis` — `directory_v1` users.update, OAuth2 scopes, GoogleAuth keyFile patterns
+- `/microsoftgraph/microsoft-graph-docs-contrib` — `POST /users/{id}/revokeSignInSessions` (204 No Content), `PATCH /users/{id}` with `accountEnabled: false`, `User.EnableDisableAccount.All` reduced-privilege scope
+- `/okta/okta-sdk-nodejs` — `client.userApi.deactivateUser({ userId })`, `client.userApi.revokeUserSessions({ userId })`, 7.x → 8.x breaking-change diff
+- `/octokit/octokit.js` — `octokit.rest.*` namespaced endpoint methods, `DELETE /orgs/{org}/members/{username}`, OAuth `admin:org` scope
+- `/websites/slack_dev_reference_methods` — `admin.users.session.invalidate`, `admin.users.session.reset`, SCIM `/scim/v1/Users/{id}` PATCH active=false
+- `/date-fns/date-fns@v3.5.0` — `differenceInDays`, `addDays`, `isBefore`, `compareAsc` reference (4.x is API-compatible for the functions used)
+
+### Official documentation (HIGH confidence)
+
+- [Microsoft Graph: revokeSignInSessions API reference](https://learn.microsoft.com/en-us/graph/api/user-revokesigninsessions) — minimum-privilege permissions
+- [Microsoft Graph: SDK overview (3.x stable vs Kiota preview)](https://learn.microsoft.com/en-us/graph/sdks/sdks-overview)
+- [Slack: Using the SCIM API](https://docs.slack.dev/admins/scim-api/) — `scim:write` scope, org-token requirement, deactivate-only (no permanent delete)
+- [Slack: Manage members with SCIM provisioning](https://slack.com/help/articles/212572638-Manage-members-with-SCIM-provisioning)
+- [GitHub REST: Remove an organization member](https://docs.github.com/en/rest/orgs/members#remove-an-organization-member) — `admin:org` scope
+- [Okta: Lifecycle Management](https://developer.okta.com/docs/reference/api/users/#lifecycle-operations) — deactivate, clear sessions, revoke sessions
+- [date-fns documentation](https://date-fns.org/) — current API + v4 release notes
+
+### Web research (MEDIUM confidence — verified against multiple sources)
+
+- [Bayanat UAE Open Data Portal](https://bayanat.ae/) — confirms no consolidated free-zone activity dataset
+- [List of Free Zones in UAE 2026 - Vertix](https://www.vertixauditing.ae/free-zones-in-uae/) — secondary cross-reference for zone list
+- [Free Zones in the UAE: comparative guide DMCC, RAKEZ, IFZA, DAFZA, ADGM - RSBM](https://rsbm.ae/tpost/mnn3dx3j11-free-zones-in-the-uae-a-comparative-guid)
+- [MHRSD Nitaqat Mutawar Program](https://www.hrsd.gov.sa/en/knowledge-centre/decisions-and-regulations/regulation-and-procedures/832742) — official Saudi MOL source
+- [New Phase of the Nitaqat Saudization Program (2026–2028) - AHYSP](https://ahysp.com/new-phase-of-the-nitaqat-saudization-program-2026-2028-what-businesses-in-saudi-arabia-need-to-know/) — 2026–2028 phase changes
+- [Mondaq: New Phase Of The Nitaqat Saudization Program (2026-2028)](https://www.mondaq.com/saudiarabia/contracts-and-commercial-law/1754286/new-phase-of-the-nitaqat-saudization-program-20262028-what-businesses-in-saudi-arabia-need-to-know)
+- [Jisr HRMS Nitaqat calculator](https://www.jisr.net/en/hr-tools/nitaqat-calculator) — reference UI / formula behaviour
+- [ContractEval: LLMs for Clause-Level Legal Risk Identification (Aug 2025)](https://arxiv.org/pdf/2508.03080) — Claude Sonnet 4 Jaccard ≥ 0.45, false-no-clause rate 0.025
+- [Anthropic: Legal summarization use-case guide](https://platform.claude.com/docs/en/about-claude/use-case-guides/legal-summarization) — confirms Claude's clause-extraction capability
+- [PkgPulse: unpdf vs pdf-parse vs pdfjs-dist (2026)](https://www.pkgpulse.com/blog/unpdf-vs-pdf-parse-vs-pdfjs-dist-pdf-parsing-extraction-nodejs-2026) — confirms structural-extraction tradeoffs we explicitly avoid
+
+### npm registry version verification (HIGH confidence — fetched 2026-04-26)
+
+- `googleapis@171.4.0`, `@microsoft/microsoft-graph-client@3.0.7`, `@azure/identity@4.13.1`, `@okta/okta-sdk-nodejs@8.0.0`, `octokit@5.0.5`, `@octokit/rest@22.0.1`, `@slack/web-api@7.15.1`, `date-fns@4.1.0`, `unpdf@1.6.0`, `pdfjs-dist@5.6.205`, `@microsoft/msgraph-sdk@1.0.0-preview.80` — all checked via `npm view <pkg> version` directly.
 
 ---
-*Stack research for: v5.0 UK & Germany Market Expansion*
-*Researched: 2026-04-12*
+
+*Stack research for: v6.0 Platform Maturity & Operational Hardening*
+*Researched: 2026-04-26*
+*Confidence: HIGH on SDK choices and "do not add" decisions; MEDIUM on Saudization + UAE free-zone reference data (no maintained libraries — static seed tables + admin overrides + post-deploy legal sign-off).*
