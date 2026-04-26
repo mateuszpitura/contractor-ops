@@ -106,7 +106,7 @@ describe('ExpiringContractsReport', () => {
         totalCount: 1,
       },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
   });
 
   it('renders days selector buttons', () => {
@@ -143,7 +143,7 @@ describe('ExpiringContractsReport', () => {
     mockUseQuery.mockReturnValue({
       data: { items: [], totalCount: 0 },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<ExpiringContractsReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByTestId('empty')).toBeInTheDocument();
     expect(screen.getByText('emptyExpiringContracts')).toBeInTheDocument();

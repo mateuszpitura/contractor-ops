@@ -57,7 +57,7 @@ const mockRun = {
 
 describe('RunHeader', () => {
   beforeEach(() => {
-    mockedUseMutation.mockReturnValue({ mutate: vi.fn(), isPending: false } as unknown);
+    mockedUseMutation.mockReturnValue({ mutate: vi.fn(), isPending: false } as unknown as never);
   });
 
   it('renders workflow template name', () => {

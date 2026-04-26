@@ -19,25 +19,25 @@ const mockedUseQuery = vi.mocked(useQuery);
 
 describe('WorkflowNavBadge', () => {
   it('renders nothing when count is 0', () => {
-    mockedUseQuery.mockReturnValue({ data: { count: 0 } } as unknown);
+    mockedUseQuery.mockReturnValue({ data: { count: 0 } } as unknown as never);
     const { container } = render(<WorkflowNavBadge />);
     expect(container.innerHTML).toBe('');
   });
 
   it('renders count when there are overdue tasks', () => {
-    mockedUseQuery.mockReturnValue({ data: { count: 5 } } as unknown);
+    mockedUseQuery.mockReturnValue({ data: { count: 5 } } as unknown as never);
     render(<WorkflowNavBadge />);
     expect(screen.getByText('5')).toBeInTheDocument();
   });
 
   it('renders 9+ when count exceeds 9', () => {
-    mockedUseQuery.mockReturnValue({ data: { count: 15 } } as unknown);
+    mockedUseQuery.mockReturnValue({ data: { count: 15 } } as unknown as never);
     render(<WorkflowNavBadge />);
     expect(screen.getByText('9+')).toBeInTheDocument();
   });
 
   it('has aria-label for accessibility', () => {
-    mockedUseQuery.mockReturnValue({ data: { count: 3 } } as unknown);
+    mockedUseQuery.mockReturnValue({ data: { count: 3 } } as unknown as never);
     render(<WorkflowNavBadge />);
     const badge = screen.getByText('3');
     expect(badge).toHaveAttribute('aria-label');

@@ -95,7 +95,7 @@ describe('ContractDataTable', () => {
       isLoading: false,
       isFetching: false,
       isPending: false,
-    } as unknown);
+    } as unknown as never);
 
     render(<ContractDataTable onRowClick={vi.fn()} onNewContract={vi.fn()} />);
     expect(screen.getByText('Service Agreement')).toBeInTheDocument();
@@ -123,7 +123,7 @@ describe('ContractDataTable', () => {
       isLoading: false,
       isFetching: false,
       isPending: false,
-    } as unknown);
+    } as unknown as never);
 
     const onRowClick = vi.fn();
     const { user } = setup(<ContractDataTable onRowClick={onRowClick} onNewContract={vi.fn()} />);
@@ -140,7 +140,7 @@ describe('ContractDataTable', () => {
       isLoading: true,
       isFetching: true,
       isPending: true,
-    } as unknown);
+    } as unknown as never);
 
     render(<ContractDataTable onRowClick={vi.fn()} onNewContract={vi.fn()} />);
     const skeletons = document.querySelectorAll("[data-slot='skeleton']");
@@ -153,7 +153,7 @@ describe('ContractDataTable', () => {
       isLoading: false,
       isFetching: true,
       isPending: false,
-    } as unknown);
+    } as unknown as never);
 
     render(<ContractDataTable onRowClick={vi.fn()} onNewContract={vi.fn()} />);
     const spinner = document.querySelector('.animate-spin');

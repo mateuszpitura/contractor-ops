@@ -29,14 +29,14 @@ const mockedUseQuery = vi.mocked(useQuery);
 
 describe('TaskAttachments', () => {
   it('renders heading and add button', () => {
-    mockedUseQuery.mockReturnValue({ data: { items: [] }, isLoading: false } as unknown);
+    mockedUseQuery.mockReturnValue({ data: { items: [] }, isLoading: false } as unknown as never);
     render(<TaskAttachments runId="run-1" taskRunId="task-1" />);
     expect(screen.getByText('Attachments')).toBeInTheDocument();
     expect(screen.getByText('Add attachment')).toBeInTheDocument();
   });
 
   it('shows no attachments message when empty', () => {
-    mockedUseQuery.mockReturnValue({ data: { items: [] }, isLoading: false } as unknown);
+    mockedUseQuery.mockReturnValue({ data: { items: [] }, isLoading: false } as unknown as never);
     render(<TaskAttachments runId="run-1" taskRunId="task-1" />);
     expect(screen.getByText('No attachments.')).toBeInTheDocument();
   });
@@ -45,13 +45,13 @@ describe('TaskAttachments', () => {
     mockedUseQuery.mockReturnValue({
       data: { items: [{ id: 'd1', name: 'file.pdf' }] },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<TaskAttachments runId="run-1" taskRunId="task-1" />);
     expect(screen.getByText('file.pdf')).toBeInTheDocument();
   });
 
   it('toggles drop zone on add button click', async () => {
-    mockedUseQuery.mockReturnValue({ data: { items: [] }, isLoading: false } as unknown);
+    mockedUseQuery.mockReturnValue({ data: { items: [] }, isLoading: false } as unknown as never);
     const { user } = setup(<TaskAttachments runId="run-1" taskRunId="task-1" />);
     await user.click(screen.getByText('Add attachment'));
     expect(screen.getByTestId('drop-zone')).toBeInTheDocument();

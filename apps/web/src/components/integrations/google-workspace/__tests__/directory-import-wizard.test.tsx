@@ -161,7 +161,7 @@ function setupDirectoryMock(
     isLoading,
     isError,
     data: { users, stats },
-  } as unknown);
+  } as unknown as never);
 }
 
 // ---------------------------------------------------------------------------
@@ -222,7 +222,7 @@ describe('DirectoryImportWizard', () => {
       isLoading: false,
       isError: true,
       data: undefined,
-    } as unknown);
+    } as unknown as never);
     render(<DirectoryImportWizard open={true} onOpenChange={vi.fn()} />);
     expect(screen.getByText(/Could not load the directory/)).toBeInTheDocument();
   });
@@ -236,7 +236,7 @@ describe('DirectoryImportWizard', () => {
       isLoading: true,
       isError: false,
       data: undefined,
-    } as unknown);
+    } as unknown as never);
     render(<DirectoryImportWizard open={true} onOpenChange={vi.fn()} />);
     expect(screen.getByText('Import Google Workspace Users')).toBeInTheDocument();
   });

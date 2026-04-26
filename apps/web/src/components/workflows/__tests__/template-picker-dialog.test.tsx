@@ -78,7 +78,7 @@ describe('TemplatePicker', () => {
       mutate: vi.fn(),
       mutateAsync: vi.fn(),
       isPending: false,
-    } as unknown);
+    } as unknown as never);
   });
 
   // ---- Visibility ----
@@ -86,7 +86,7 @@ describe('TemplatePicker', () => {
     mockedUseQuery.mockReturnValue({
       data: undefined,
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     const { container } = render(
       <TemplatePicker open={false} onOpenChange={vi.fn()} contractorId="c1" />,
     );
@@ -98,7 +98,7 @@ describe('TemplatePicker', () => {
     mockedUseQuery.mockReturnValue({
       data: { items: mockTemplates },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<TemplatePicker open={true} onOpenChange={vi.fn()} contractorId="c1" />);
     expect(screen.getByText('Onboarding Flow')).toBeInTheDocument();
     expect(screen.getByText('Offboarding Flow')).toBeInTheDocument();
@@ -109,7 +109,7 @@ describe('TemplatePicker', () => {
     mockedUseQuery.mockReturnValue({
       data: { items: mockTemplates },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<TemplatePicker open={true} onOpenChange={vi.fn()} contractorId="c1" />);
     expect(screen.getByText('Standard onboarding')).toBeInTheDocument();
     expect(screen.getByText('Collect required documents')).toBeInTheDocument();
@@ -119,7 +119,7 @@ describe('TemplatePicker', () => {
     mockedUseQuery.mockReturnValue({
       data: { items: [mockTemplates[0]] },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<TemplatePicker open={true} onOpenChange={vi.fn()} contractorId="c1" />);
     expect(screen.getByText(/5 tasks/i)).toBeInTheDocument();
   });
@@ -129,7 +129,7 @@ describe('TemplatePicker', () => {
     mockedUseQuery.mockReturnValue({
       data: { items: [] },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<TemplatePicker open={true} onOpenChange={vi.fn()} contractorId="c1" />);
     expect(screen.getByText('No templates available')).toBeInTheDocument();
   });
@@ -138,7 +138,7 @@ describe('TemplatePicker', () => {
     mockedUseQuery.mockReturnValue({
       data: { items: [] },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<TemplatePicker open={true} onOpenChange={vi.fn()} contractorId="c1" />);
     expect(screen.getByText(/Ask your admin/i)).toBeInTheDocument();
   });
@@ -148,7 +148,7 @@ describe('TemplatePicker', () => {
     mockedUseQuery.mockReturnValue({
       data: { items: mockTemplates },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<TemplatePicker open={true} onOpenChange={vi.fn()} contractorId="c1" />);
     expect(screen.getByPlaceholderText('Search templates...')).toBeInTheDocument();
   });
@@ -157,7 +157,7 @@ describe('TemplatePicker', () => {
     mockedUseQuery.mockReturnValue({
       data: { items: mockTemplates },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     const { user } = setup(<TemplatePicker open={true} onOpenChange={vi.fn()} contractorId="c1" />);
     const input = screen.getByPlaceholderText('Search templates...');
     await user.type(input, 'onboard');
@@ -169,7 +169,7 @@ describe('TemplatePicker', () => {
     mockedUseQuery.mockReturnValue({
       data: { items: mockTemplates },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<TemplatePicker open={true} onOpenChange={vi.fn()} contractorId="c1" />);
     const startBtn = screen.getByText('Start');
     expect(startBtn.closest('button')).toBeDisabled();
@@ -179,7 +179,7 @@ describe('TemplatePicker', () => {
     mockedUseQuery.mockReturnValue({
       data: { items: mockTemplates },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     const { user } = setup(<TemplatePicker open={true} onOpenChange={vi.fn()} contractorId="c1" />);
     await user.click(screen.getByText('Onboarding Flow'));
     const startBtn = screen.getByText('Start');
@@ -191,7 +191,7 @@ describe('TemplatePicker', () => {
     mockedUseQuery.mockReturnValue({
       data: { items: mockTemplates },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(
       <TemplatePicker open={true} onOpenChange={vi.fn()} contractorIds={['c1', 'c2', 'c3']} />,
     );
@@ -203,7 +203,7 @@ describe('TemplatePicker', () => {
     mockedUseQuery.mockReturnValue({
       data: { items: mockTemplates },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<TemplatePicker open={true} onOpenChange={vi.fn()} contractorId="c1" />);
     expect(screen.getByText('Close')).toBeInTheDocument();
   });
@@ -212,7 +212,7 @@ describe('TemplatePicker', () => {
     mockedUseQuery.mockReturnValue({
       data: { items: mockTemplates },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     const onOpenChange = vi.fn();
     const { user } = setup(
       <TemplatePicker open={true} onOpenChange={onOpenChange} contractorId="c1" />,
@@ -226,7 +226,7 @@ describe('TemplatePicker', () => {
     mockedUseQuery.mockReturnValue({
       data: undefined,
       isLoading: true,
-    } as unknown);
+    } as unknown as never);
     render(<TemplatePicker open={true} onOpenChange={vi.fn()} contractorId="c1" />);
     // Loading state should not show templates or empty state
     expect(screen.queryByText('No templates available')).not.toBeInTheDocument();
@@ -237,7 +237,7 @@ describe('TemplatePicker', () => {
     mockedUseQuery.mockReturnValue({
       data: { items: [mockTemplates[0]] },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<TemplatePicker open={true} onOpenChange={vi.fn()} contractorId="c1" />);
     expect(screen.getAllByText('Onboarding').length).toBeGreaterThanOrEqual(1);
   });
@@ -247,7 +247,7 @@ describe('TemplatePicker', () => {
     mockedUseQuery.mockReturnValue({
       data: { items: mockTemplates },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     const { user } = setup(<TemplatePicker open={true} onOpenChange={vi.fn()} contractorId="c1" />);
     const input = screen.getByPlaceholderText('Search templates...');
     await user.type(input, 'Onboard');
@@ -259,7 +259,7 @@ describe('TemplatePicker', () => {
     mockedUseQuery.mockReturnValue({
       data: { items: mockTemplates },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     const { user } = setup(<TemplatePicker open={true} onOpenChange={vi.fn()} contractorId="c1" />);
     await user.click(screen.getByText('Onboarding Flow'));
     expect(screen.getByText('Start').closest('button')).not.toBeDisabled();
@@ -273,7 +273,7 @@ describe('TemplatePicker', () => {
     mockedUseQuery.mockReturnValue({
       data: { items: [mockTemplates[1]] },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<TemplatePicker open={true} onOpenChange={vi.fn()} contractorId="c1" />);
     expect(screen.getByText(/3 tasks/i)).toBeInTheDocument();
   });
@@ -282,7 +282,7 @@ describe('TemplatePicker', () => {
     mockedUseQuery.mockReturnValue({
       data: { items: [mockTemplates[2]] },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<TemplatePicker open={true} onOpenChange={vi.fn()} contractorId="c1" />);
     expect(screen.getByText(/2 tasks/i)).toBeInTheDocument();
   });
@@ -292,7 +292,7 @@ describe('TemplatePicker', () => {
     mockedUseQuery.mockReturnValue({
       data: { items: mockTemplates },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<TemplatePicker open={true} onOpenChange={vi.fn()} contractorId="c1" />);
     const headings = screen.getAllByRole('heading');
     expect(headings.length).toBeGreaterThan(0);
@@ -303,7 +303,7 @@ describe('TemplatePicker', () => {
     mockedUseQuery.mockReturnValue({
       data: { items: mockTemplates },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<TemplatePicker open={true} onOpenChange={vi.fn()} contractorIds={['c1']} />);
     expect(screen.getByText(/1 contractor/i)).toBeInTheDocument();
   });
@@ -313,7 +313,7 @@ describe('TemplatePicker', () => {
     mockedUseQuery.mockReturnValue({
       data: { items: mockTemplates },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     const { user } = setup(<TemplatePicker open={true} onOpenChange={vi.fn()} contractorId="c1" />);
     await user.click(screen.getByText('Onboarding Flow'));
     const btn = screen.getByText('Onboarding Flow').closest('button');
@@ -327,11 +327,11 @@ describe('TemplatePicker', () => {
       mutate: vi.fn(),
       mutateAsync: mockMutateAsync,
       isPending: false,
-    } as unknown);
+    } as unknown as never);
     mockedUseQuery.mockReturnValue({
       data: { items: mockTemplates },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     const onOpenChange = vi.fn();
     const { user } = setup(
       <TemplatePicker open={true} onOpenChange={onOpenChange} contractorId="c1" />,
@@ -351,7 +351,7 @@ describe('TemplatePicker', () => {
     mockedUseQuery.mockReturnValue({
       data: { items: mockTemplates },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     const { user } = setup(<TemplatePicker open={true} onOpenChange={vi.fn()} contractorId="c1" />);
     await user.click(screen.getByText('Onboarding Flow'));
     expect(screen.getByText('Onboarding Flow').closest('button')?.className).toContain('ring-2');
@@ -368,7 +368,7 @@ describe('TemplatePicker', () => {
     mockedUseQuery.mockReturnValue({
       data: { items: mockTemplates },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(
       <TemplatePicker
         open={true}
@@ -388,7 +388,7 @@ describe('TemplatePicker', () => {
     mockedUseQuery.mockReturnValue({
       data: { items: mockTemplates },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     const { user } = setup(
       <TemplatePicker
         open={true}
@@ -407,7 +407,7 @@ describe('TemplatePicker', () => {
     mockedUseQuery.mockReturnValue({
       data: { items: mockTemplates },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<TemplatePicker open={true} onOpenChange={vi.fn()} />);
     const startBtn = screen.getByText('Start').closest('button');
     expect(startBtn).toBeDisabled();
@@ -420,11 +420,11 @@ describe('TemplatePicker', () => {
       mutate: vi.fn(),
       mutateAsync: mockMutateAsync,
       isPending: false,
-    } as unknown);
+    } as unknown as never);
     mockedUseQuery.mockReturnValue({
       data: { items: mockTemplates },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     const onOpenChange = vi.fn();
     const { user } = setup(
       <TemplatePicker open={true} onOpenChange={onOpenChange} contractorIds={['c1', 'c2']} />,
@@ -442,11 +442,11 @@ describe('TemplatePicker', () => {
       mutate: vi.fn(),
       mutateAsync: mockMutateAsync,
       isPending: false,
-    } as unknown);
+    } as unknown as never);
     mockedUseQuery.mockReturnValue({
       data: { items: mockTemplates },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     const { user } = setup(<TemplatePicker open={true} onOpenChange={vi.fn()} contractorId="c1" />);
     await user.click(screen.getByText('Onboarding Flow'));
     await user.click(screen.getByText('Start'));
@@ -461,11 +461,11 @@ describe('TemplatePicker', () => {
       mutate: vi.fn(),
       mutateAsync: mockMutateAsync,
       isPending: false,
-    } as unknown);
+    } as unknown as never);
     mockedUseQuery.mockReturnValue({
       data: { items: mockTemplates },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     const { user } = setup(<TemplatePicker open={true} onOpenChange={vi.fn()} contractorId="c1" />);
     await user.click(screen.getByText('Onboarding Flow'));
     await user.click(screen.getByText('Start'));
@@ -478,7 +478,7 @@ describe('TemplatePicker', () => {
     mockedUseQuery.mockReturnValue({
       data: { items: mockTemplates },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     const onOpenChange = vi.fn();
     const { user } = setup(
       <TemplatePicker open={true} onOpenChange={onOpenChange} contractorId="c1" />,
@@ -497,11 +497,11 @@ describe('TemplatePicker', () => {
       mutate: vi.fn(),
       mutateAsync: mockMutateAsync,
       isPending: false,
-    } as unknown);
+    } as unknown as never);
     mockedUseQuery.mockReturnValue({
       data: { items: mockTemplates },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     const { user } = setup(
       <TemplatePicker
         open={true}

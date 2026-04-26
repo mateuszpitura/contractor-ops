@@ -35,7 +35,7 @@ const mockedUseQuery = vi.mocked(useQuery);
 
 describe('ActivityFeed', () => {
   it('shows loading skeletons', () => {
-    mockedUseQuery.mockReturnValue({ data: undefined, isLoading: true } as unknown);
+    mockedUseQuery.mockReturnValue({ data: undefined, isLoading: true } as unknown as never);
     const { container } = render(<ActivityFeed />);
     expect(container.querySelectorAll("[data-slot='skeleton']").length).toBeGreaterThan(0);
   });
@@ -44,7 +44,7 @@ describe('ActivityFeed', () => {
     mockedUseQuery.mockReturnValue({
       data: { items: [] },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<ActivityFeed />);
     expect(screen.getByText('No recent activity')).toBeInTheDocument();
   });
@@ -53,7 +53,7 @@ describe('ActivityFeed', () => {
     mockedUseQuery.mockReturnValue({
       data: { items: [] },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<ActivityFeed />);
     expect(screen.getByText('Recent activity')).toBeInTheDocument();
   });
@@ -62,7 +62,7 @@ describe('ActivityFeed', () => {
     mockedUseQuery.mockReturnValue({
       data: { items: [] },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<ActivityFeed />);
     const seeAll = screen.getByText('See all activity').closest('a');
     expect(seeAll?.getAttribute('href')).toBe('/settings?tab=audit-log');
@@ -86,7 +86,7 @@ describe('ActivityFeed', () => {
         ],
       },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<ActivityFeed />);
     expect(screen.getByText('Jan')).toBeInTheDocument();
     expect(screen.getByText('Acme')).toBeInTheDocument();
@@ -110,7 +110,7 @@ describe('ActivityFeed', () => {
         ],
       },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<ActivityFeed />);
     expect(screen.getByText('System')).toBeInTheDocument();
   });
@@ -133,7 +133,7 @@ describe('ActivityFeed', () => {
         ],
       },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<ActivityFeed />);
     const link = screen.getByRole('link', { name: 'FV/1' });
     expect(link.getAttribute('href')).toBe('/invoices/inv-7');
@@ -157,7 +157,7 @@ describe('ActivityFeed', () => {
         ],
       },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<ActivityFeed />);
     expect(screen.getByText('Today')).toBeInTheDocument();
   });
@@ -182,7 +182,7 @@ describe('ActivityFeed', () => {
         ],
       },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<ActivityFeed />);
     expect(screen.getByText('Yesterday')).toBeInTheDocument();
   });
@@ -206,7 +206,7 @@ describe('ActivityFeed', () => {
         ],
       },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<ActivityFeed />);
     expect(screen.getByText('Earlier')).toBeInTheDocument();
   });
@@ -229,7 +229,7 @@ describe('ActivityFeed', () => {
         ],
       },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<ActivityFeed />);
     const link = screen.getByRole('link', { name: 'SOW' });
     expect(link.getAttribute('href')).toBe('/contracts/ct-5');
@@ -253,7 +253,7 @@ describe('ActivityFeed', () => {
         ],
       },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<ActivityFeed />);
     const link = screen.getByRole('link', { name: 'Onboarding' });
     expect(link.getAttribute('href')).toBe('/workflows');
@@ -277,7 +277,7 @@ describe('ActivityFeed', () => {
         ],
       },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<ActivityFeed />);
     const link = screen.getByRole('link', { name: 'March batch' });
     expect(link.getAttribute('href')).toBe('/payments');
@@ -301,7 +301,7 @@ describe('ActivityFeed', () => {
         ],
       },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<ActivityFeed />);
     expect(screen.getByText('c99')).toBeInTheDocument();
   });
@@ -324,7 +324,7 @@ describe('ActivityFeed', () => {
         ],
       },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<ActivityFeed />);
     const link = screen.getByRole('link', { name: 'NDA.pdf' });
     expect(link.getAttribute('href')).toBe('/documents');
@@ -348,7 +348,7 @@ describe('ActivityFeed', () => {
         ],
       },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<ActivityFeed />);
     const link = screen.getByRole('link', { name: 'Gamma LLC' });
     expect(link.getAttribute('href')).toBe('/contractors/c55');
@@ -382,7 +382,7 @@ describe('ActivityFeed', () => {
         ],
       },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<ActivityFeed />);
     expect(screen.getByText('Alpha')).toBeInTheDocument();
     expect(screen.getByText('Beta Contract')).toBeInTheDocument();
@@ -407,7 +407,7 @@ describe('ActivityFeed', () => {
         ],
       },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<ActivityFeed />);
     expect(screen.getByText('Admin')).toBeInTheDocument();
   });

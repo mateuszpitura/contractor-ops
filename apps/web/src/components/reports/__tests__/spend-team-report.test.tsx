@@ -114,7 +114,7 @@ describe('SpendTeamReport', () => {
       .mockReturnValueOnce({
         data: [{ teamId: 't-1', teamName: 'Engineering', totalMinor: 4800000 }],
         isLoading: false,
-      } as unknown);
+      } as unknown as never);
   });
 
   it('renders chart', () => {
@@ -152,7 +152,7 @@ describe('SpendTeamReport', () => {
       .mockReturnValueOnce({
         data: [],
         isLoading: false,
-      } as unknown);
+      } as unknown as never);
     render(<SpendTeamReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByTestId('empty')).toBeInTheDocument();
   });
@@ -167,7 +167,7 @@ describe('SpendTeamReport', () => {
       .mockReturnValueOnce({
         data: [],
         isLoading: false,
-      } as unknown);
+      } as unknown as never);
     render(<SpendTeamReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByTestId('loading')).toBeInTheDocument();
   });
@@ -193,7 +193,7 @@ describe('SpendTeamReport', () => {
       .mockReturnValueOnce({
         data: undefined,
         isLoading: true,
-      } as unknown);
+      } as unknown as never);
     render(<SpendTeamReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByTestId('chart-loading')).toBeInTheDocument();
     expect(screen.getByText('Engineering')).toBeInTheDocument();

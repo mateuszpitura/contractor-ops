@@ -23,7 +23,7 @@ const mockedUseMutation = vi.mocked(useMutation);
 
 describe('ConfirmImportStep', () => {
   beforeEach(() => {
-    mockedUseMutation.mockReturnValue({ mutate: vi.fn(), isPending: false } as unknown);
+    mockedUseMutation.mockReturnValue({ mutate: vi.fn(), isPending: false } as unknown as never);
   });
 
   const people = [

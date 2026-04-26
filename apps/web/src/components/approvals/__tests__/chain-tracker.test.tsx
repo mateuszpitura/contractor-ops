@@ -45,7 +45,7 @@ describe('ChainTracker', () => {
     mockUseQuery.mockReturnValue({
       data: undefined,
       isLoading: true,
-    } as unknown);
+    } as unknown as never);
     const { container } = render(<ChainTracker invoiceId="inv-1" />);
     expect(container.querySelector("[data-slot='skeleton']")).toBeTruthy();
   });
@@ -54,7 +54,7 @@ describe('ChainTracker', () => {
     mockUseQuery.mockReturnValue({
       data: { flow: { steps: [] } },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     const { container } = render(<ChainTracker invoiceId="inv-1" />);
     expect(container.innerHTML).toBe('');
   });
@@ -63,7 +63,7 @@ describe('ChainTracker', () => {
     mockUseQuery.mockReturnValue({
       data: {},
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     const { container } = render(<ChainTracker invoiceId="inv-1" />);
     expect(container.innerHTML).toBe('');
   });
@@ -107,7 +107,7 @@ describe('ChainTracker', () => {
         },
       },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<ChainTracker invoiceId="inv-1" />);
     expect(screen.getByText('chainTracker.heading')).toBeInTheDocument();
     // APPROVED step shows icon (not number), PENDING step shows "2"
@@ -139,7 +139,7 @@ describe('ChainTracker', () => {
         },
       },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<ChainTracker invoiceId="inv-1" />);
     expect(screen.getByTestId('sla-badge')).toBeInTheDocument();
   });
@@ -177,7 +177,7 @@ describe('ChainTracker', () => {
         },
       },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     const { container } = render(<ChainTracker invoiceId="inv-1" />);
     // The second step should use muted styling (bg-muted)
     const circles = container.querySelectorAll('.rounded-full');

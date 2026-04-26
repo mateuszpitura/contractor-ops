@@ -118,7 +118,7 @@ describe('SpendContractorReport', () => {
         totalCount: 1,
       },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
   });
 
   it('renders chart', () => {
@@ -150,7 +150,7 @@ describe('SpendContractorReport', () => {
     mockUseQuery.mockReturnValue({
       data: { items: [], totalCount: 0 },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<SpendContractorReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByTestId('empty')).toBeInTheDocument();
   });
@@ -180,7 +180,7 @@ describe('SpendContractorReport', () => {
         grandTotalMinor: 80000,
       },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<SpendContractorReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByText('Alpha')).toBeInTheDocument();
     expect(screen.getByText('Beta')).toBeInTheDocument();
@@ -216,7 +216,7 @@ describe('SpendContractorReport', () => {
     mockUseQuery.mockReturnValue({
       data: { items, totalCount: 20, grandTotalMinor: 2100000 },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<SpendContractorReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByText('Contractor 0')).toBeInTheDocument();
     expect(screen.getByText('Contractor 19')).toBeInTheDocument();
@@ -247,7 +247,7 @@ describe('SpendContractorReport', () => {
         totalCount: 2,
       },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<SpendContractorReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByTestId('grand-total')).toBeInTheDocument();
   });
@@ -257,7 +257,7 @@ describe('SpendContractorReport', () => {
     mockUseQuery.mockReturnValue({
       data: undefined,
       isLoading: true,
-    } as unknown);
+    } as unknown as never);
     render(<SpendContractorReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByTestId('loading')).toBeInTheDocument();
   });
@@ -279,7 +279,7 @@ describe('SpendContractorReport', () => {
         totalCount: 1,
       },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<SpendContractorReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByTestId('breadcrumb')).toBeInTheDocument();
   });
@@ -327,7 +327,7 @@ describe('SpendContractorReport', () => {
         totalCount: 1,
       },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<SpendContractorReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByText('Solo Inc')).toBeInTheDocument();
   });
@@ -349,7 +349,7 @@ describe('SpendContractorReport', () => {
         totalCount: 1,
       },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<SpendContractorReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByTestId('report-table')).toBeInTheDocument();
   });
@@ -371,7 +371,7 @@ describe('SpendContractorReport', () => {
         totalCount: 1,
       },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<SpendContractorReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByText('NullDate')).toBeInTheDocument();
   });
@@ -410,7 +410,7 @@ describe('SpendContractorReport', () => {
         totalCount: 2,
       },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<SpendContractorReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByText('High Vol')).toBeInTheDocument();
     expect(screen.getByText('Low Vol')).toBeInTheDocument();

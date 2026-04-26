@@ -51,11 +51,11 @@ const mockedUseMutation = vi.mocked(useMutation);
 
 describe('OnboardingChecklist', () => {
   beforeEach(() => {
-    mockedUseMutation.mockReturnValue({ mutate: vi.fn(), isPending: false } as unknown);
+    mockedUseMutation.mockReturnValue({ mutate: vi.fn(), isPending: false } as unknown as never);
   });
 
   it('returns null when loading', () => {
-    mockedUseQuery.mockReturnValue({ data: undefined, isLoading: true } as unknown);
+    mockedUseQuery.mockReturnValue({ data: undefined, isLoading: true } as unknown as never);
     const { container } = render(<OnboardingChecklist />);
     expect(container.innerHTML).toBe('');
   });
@@ -66,7 +66,7 @@ describe('OnboardingChecklist', () => {
         metadata: { onboardingCompletedSteps: ['org-details'], onboardingDismissed: false },
       },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<OnboardingChecklist />);
     expect(screen.getByText('Setup guide')).toBeInTheDocument();
   });
@@ -86,7 +86,7 @@ describe('OnboardingChecklist', () => {
         },
       },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     const { container } = render(<OnboardingChecklist />);
     expect(container.innerHTML).toBe('');
   });
@@ -97,7 +97,7 @@ describe('OnboardingChecklist', () => {
         metadata: { onboardingCompletedSteps: [], onboardingDismissed: false },
       },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<OnboardingChecklist />);
     expect(screen.getByText('Dismiss')).toBeInTheDocument();
   });

@@ -68,7 +68,7 @@ const mockTasks = [
 
 describe('MyTasksList', () => {
   it('shows skeletons when loading', () => {
-    mockedUseQuery.mockReturnValue({ data: undefined, isLoading: true } as unknown);
+    mockedUseQuery.mockReturnValue({ data: undefined, isLoading: true } as unknown as never);
     render(<MyTasksList />);
     expect(screen.queryByText('Collect NDA')).not.toBeInTheDocument();
   });
@@ -77,7 +77,7 @@ describe('MyTasksList', () => {
     mockedUseQuery.mockReturnValue({
       data: { items: [], total: 0 },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<MyTasksList />);
     expect(screen.getByText('No tasks assigned')).toBeInTheDocument();
     expect(screen.getByText(/You have no pending workflow tasks/)).toBeInTheDocument();
@@ -87,7 +87,7 @@ describe('MyTasksList', () => {
     mockedUseQuery.mockReturnValue({
       data: { items: mockTasks, total: 2 },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<MyTasksList />);
     expect(screen.getByText('Collect NDA')).toBeInTheDocument();
     expect(screen.getByText('Setup VPN')).toBeInTheDocument();
@@ -99,7 +99,7 @@ describe('MyTasksList', () => {
     mockedUseQuery.mockReturnValue({
       data: { items: mockTasks, total: 2 },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<MyTasksList />);
     const links = screen.getAllByRole('link');
     expect(links[0]).toHaveAttribute('href', '/workflows/run-1');
@@ -110,7 +110,7 @@ describe('MyTasksList', () => {
     mockedUseQuery.mockReturnValue({
       data: { items: mockTasks, total: 2 },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<MyTasksList />);
     expect(screen.getByText('Overdue only')).toBeInTheDocument();
   });

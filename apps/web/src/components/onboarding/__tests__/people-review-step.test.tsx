@@ -67,7 +67,7 @@ describe('PeopleReviewStep', () => {
   // -------------------------------------------------------------------------
 
   it('shows loading skeletons', () => {
-    mockedUseQuery.mockReturnValue({ data: undefined, isLoading: true } as unknown);
+    mockedUseQuery.mockReturnValue({ data: undefined, isLoading: true } as unknown as never);
     const { container } = render(
       <PeopleReviewStep
         selectedSources={['JIRA']}
@@ -85,7 +85,7 @@ describe('PeopleReviewStep', () => {
   // -------------------------------------------------------------------------
 
   it('shows empty state when no people', () => {
-    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown);
+    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown as never);
     render(
       <PeopleReviewStep
         selectedSources={['JIRA']}
@@ -103,7 +103,7 @@ describe('PeopleReviewStep', () => {
   // -------------------------------------------------------------------------
 
   it('renders table with people when data exists', () => {
-    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown);
+    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown as never);
     const people = [makePerson()];
     render(
       <PeopleReviewStep
@@ -119,7 +119,7 @@ describe('PeopleReviewStep', () => {
   });
 
   it('renders column headers', () => {
-    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown);
+    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown as never);
     const people = [makePerson()];
     render(
       <PeopleReviewStep
@@ -142,7 +142,7 @@ describe('PeopleReviewStep', () => {
   // -------------------------------------------------------------------------
 
   it('renders summary counts for new, conflict, existing', () => {
-    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown);
+    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown as never);
     const people = [
       makePerson({ email: 'a@t.com', name: 'A', status: 'new' }),
       makePerson({
@@ -180,7 +180,7 @@ describe('PeopleReviewStep', () => {
   // -------------------------------------------------------------------------
 
   it('renders filter tabs', () => {
-    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown);
+    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown as never);
     const people = [makePerson()];
     render(
       <PeopleReviewStep
@@ -199,7 +199,7 @@ describe('PeopleReviewStep', () => {
   // -------------------------------------------------------------------------
 
   it("renders 'New' badge for new people", () => {
-    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown);
+    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown as never);
     const people = [makePerson({ status: 'new' })];
     render(
       <PeopleReviewStep
@@ -216,7 +216,7 @@ describe('PeopleReviewStep', () => {
   });
 
   it("renders 'Exists' badge for existing people", () => {
-    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown);
+    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown as never);
     const people = [
       makePerson({ email: 'existing@t.com', name: 'Existing User', status: 'exists' }),
     ];
@@ -237,7 +237,7 @@ describe('PeopleReviewStep', () => {
   // -------------------------------------------------------------------------
 
   it('renders conflict popover for conflict status people', () => {
-    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown);
+    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown as never);
     const people = [
       makePerson({
         email: 'conflict@t.com',
@@ -263,7 +263,7 @@ describe('PeopleReviewStep', () => {
   // -------------------------------------------------------------------------
 
   it('renders source badges', () => {
-    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown);
+    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown as never);
     const people = [
       makePerson({
         sources: [
@@ -290,7 +290,7 @@ describe('PeopleReviewStep', () => {
   // -------------------------------------------------------------------------
 
   it('renders skip button for non-existing people', () => {
-    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown);
+    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown as never);
     const people = [makePerson()];
     render(
       <PeopleReviewStep
@@ -305,7 +305,7 @@ describe('PeopleReviewStep', () => {
   });
 
   it('calls onPersonSelectionsChange when skip is clicked', async () => {
-    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown);
+    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown as never);
     const people = [makePerson()];
     const onPersonSelectionsChange = vi.fn();
     const { user } = setup(
@@ -326,7 +326,7 @@ describe('PeopleReviewStep', () => {
   // -------------------------------------------------------------------------
 
   it('renders checkbox for new people', () => {
-    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown);
+    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown as never);
     const people = [makePerson()];
     render(
       <PeopleReviewStep
@@ -343,7 +343,7 @@ describe('PeopleReviewStep', () => {
   });
 
   it('renders existing people row with name visible', () => {
-    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown);
+    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown as never);
     const people = [makePerson({ email: 'exist@t.com', name: 'Existing User', status: 'exists' })];
     render(
       <PeopleReviewStep
@@ -363,7 +363,7 @@ describe('PeopleReviewStep', () => {
   // -------------------------------------------------------------------------
 
   it('shows batch toolbar when items are checked', async () => {
-    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown);
+    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown as never);
     const people = [makePerson()];
     const { user } = setup(
       <PeopleReviewStep
@@ -390,7 +390,7 @@ describe('PeopleReviewStep', () => {
   // -------------------------------------------------------------------------
 
   it('renders heading and subtitle', () => {
-    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown);
+    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown as never);
     const people = [makePerson()];
     render(
       <PeopleReviewStep
@@ -409,7 +409,7 @@ describe('PeopleReviewStep', () => {
   // -------------------------------------------------------------------------
 
   it('select all toggles all selectable people', async () => {
-    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown);
+    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown as never);
     const people = [
       makePerson({ email: 'a@t.com', name: 'A', status: 'new' }),
       makePerson({ email: 'b@t.com', name: 'B', status: 'new' }),
@@ -438,7 +438,7 @@ describe('PeopleReviewStep', () => {
   // -------------------------------------------------------------------------
 
   it('toggle individual row checkbox', async () => {
-    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown);
+    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown as never);
     const people = [
       makePerson({ email: 'a@t.com', name: 'A', status: 'new' }),
       makePerson({ email: 'b@t.com', name: 'B', status: 'new' }),
@@ -466,7 +466,7 @@ describe('PeopleReviewStep', () => {
   // -------------------------------------------------------------------------
 
   it('batch import calls onPersonSelectionsChange and clears selection', async () => {
-    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown);
+    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown as never);
     const people = [makePerson({ email: 'a@t.com', name: 'A', status: 'new' })];
     const onPersonSelectionsChange = vi.fn();
     const { user } = setup(
@@ -486,7 +486,7 @@ describe('PeopleReviewStep', () => {
   });
 
   it('batch skip calls onPersonSelectionsChange with skip=true', async () => {
-    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown);
+    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown as never);
     const people = [makePerson({ email: 'a@t.com', name: 'A', status: 'new' })];
     const onPersonSelectionsChange = vi.fn();
     const { user } = setup(
@@ -508,7 +508,7 @@ describe('PeopleReviewStep', () => {
   // -------------------------------------------------------------------------
 
   it('calls onPersonSelectionsChange when role is changed', async () => {
-    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown);
+    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown as never);
     const people = [makePerson({ email: 'a@t.com', name: 'A', status: 'new' })];
     const onPersonSelectionsChange = vi.fn();
     setup(
@@ -533,7 +533,7 @@ describe('PeopleReviewStep', () => {
     const onMergedPeopleChange = vi.fn();
     const onPersonSelectionsChange = vi.fn();
     const apiPeople = [makePerson({ email: 'fetched@t.com', name: 'Fetched' })];
-    mockedUseQuery.mockReturnValue({ data: apiPeople, isLoading: false } as unknown);
+    mockedUseQuery.mockReturnValue({ data: apiPeople, isLoading: false } as unknown as never);
 
     render(
       <PeopleReviewStep
@@ -554,7 +554,7 @@ describe('PeopleReviewStep', () => {
   // -------------------------------------------------------------------------
 
   it("filters by 'new' tab", async () => {
-    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown);
+    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown as never);
     const people = [
       makePerson({ email: 'a@t.com', name: 'New User', status: 'new' }),
       makePerson({ email: 'b@t.com', name: 'Existing User', status: 'exists' }),
@@ -579,7 +579,7 @@ describe('PeopleReviewStep', () => {
   // -------------------------------------------------------------------------
 
   it('renders GWS and Slack source badges', () => {
-    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown);
+    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown as never);
     const people = [
       makePerson({
         sources: [
@@ -606,7 +606,7 @@ describe('PeopleReviewStep', () => {
   // -------------------------------------------------------------------------
 
   it('existing person has disabled checkbox and no skip button', () => {
-    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown);
+    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown as never);
     const people = [makePerson({ email: 'e@t.com', name: 'Exists', status: 'exists' })];
     render(
       <PeopleReviewStep

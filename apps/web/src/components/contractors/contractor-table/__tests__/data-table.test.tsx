@@ -120,7 +120,7 @@ describe('ContractorDataTable', () => {
       isLoading: false,
       isFetching: false,
       isPending: false,
-    } as unknown);
+    } as unknown as never);
 
     render(<ContractorDataTable onRowClick={vi.fn()} onAddContractor={vi.fn()} />);
     expect(screen.getByText('ACME')).toBeInTheDocument();
@@ -151,7 +151,7 @@ describe('ContractorDataTable', () => {
       isLoading: false,
       isFetching: false,
       isPending: false,
-    } as unknown);
+    } as unknown as never);
 
     const onRowClick = vi.fn();
     const { user } = setup(
@@ -171,7 +171,7 @@ describe('ContractorDataTable', () => {
       isLoading: true,
       isFetching: true,
       isPending: true,
-    } as unknown);
+    } as unknown as never);
 
     render(<ContractorDataTable onRowClick={vi.fn()} onAddContractor={vi.fn()} />);
     // Skeleton rows produce Skeleton components
@@ -185,7 +185,7 @@ describe('ContractorDataTable', () => {
       isLoading: false,
       isFetching: true,
       isPending: false,
-    } as unknown);
+    } as unknown as never);
 
     render(<ContractorDataTable onRowClick={vi.fn()} onAddContractor={vi.fn()} />);
     // Refetch overlay has a spinner

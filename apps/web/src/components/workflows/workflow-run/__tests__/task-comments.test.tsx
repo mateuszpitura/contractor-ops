@@ -35,17 +35,17 @@ const mockedUseMutation = vi.mocked(useMutation);
 
 describe('TaskComments', () => {
   beforeEach(() => {
-    mockedUseMutation.mockReturnValue({ mutate: vi.fn(), isPending: false } as unknown);
+    mockedUseMutation.mockReturnValue({ mutate: vi.fn(), isPending: false } as unknown as never);
   });
 
   it('renders heading', () => {
-    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown);
+    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown as never);
     render(<TaskComments runId="run-1" taskRunId="task-1" />);
     expect(screen.getByText('Comments')).toBeInTheDocument();
   });
 
   it('shows no comments message when empty', () => {
-    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown);
+    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown as never);
     render(<TaskComments runId="run-1" taskRunId="task-1" />);
     expect(screen.getByText('No comments yet.')).toBeInTheDocument();
   });
@@ -61,27 +61,27 @@ describe('TaskComments', () => {
         },
       ],
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<TaskComments runId="run-1" taskRunId="task-1" />);
     expect(screen.getByText('John')).toBeInTheDocument();
     expect(screen.getByText('Looks good!')).toBeInTheDocument();
   });
 
   it('renders post button disabled when input is empty', () => {
-    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown);
+    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown as never);
     render(<TaskComments runId="run-1" taskRunId="task-1" />);
     const postBtn = screen.getByText('Post');
     expect(postBtn.closest('button')).toBeDisabled();
   });
 
   it('shows loading skeletons when isLoading', () => {
-    mockedUseQuery.mockReturnValue({ data: undefined, isLoading: true } as unknown);
+    mockedUseQuery.mockReturnValue({ data: undefined, isLoading: true } as unknown as never);
     const { container } = render(<TaskComments runId="run-1" taskRunId="task-1" />);
     expect(container.querySelectorAll("[data-slot='skeleton']").length).toBeGreaterThan(0);
   });
 
   it('enables post button when text is entered', async () => {
-    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown);
+    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown as never);
     const { user } = setup(<TaskComments runId="run-1" taskRunId="task-1" />);
     const textarea = screen.getByPlaceholderText(/comment/i);
     await user.type(textarea, 'Hello');
@@ -100,7 +100,7 @@ describe('TaskComments', () => {
         },
       ],
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<TaskComments runId="run-1" taskRunId="task-1" />);
     expect(screen.getByText('Great work!')).toBeInTheDocument();
     expect(screen.getByText('AB')).toBeInTheDocument(); // from mocked getAvatarInitials
@@ -117,14 +117,14 @@ describe('TaskComments', () => {
         },
       ],
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<TaskComments runId="run-1" taskRunId="task-1" />);
     expect(screen.getByText('Unknown')).toBeInTheDocument();
   });
 
   it('disables post button when mutation is pending', () => {
-    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown);
-    mockedUseMutation.mockReturnValue({ mutate: vi.fn(), isPending: true } as unknown);
+    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown as never);
+    mockedUseMutation.mockReturnValue({ mutate: vi.fn(), isPending: true } as unknown as never);
     render(<TaskComments runId="run-1" taskRunId="task-1" />);
     const postBtn = screen.getByText('Post');
     expect(postBtn.closest('button')).toBeDisabled();
@@ -147,7 +147,7 @@ describe('TaskComments', () => {
         },
       ],
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<TaskComments runId="run-1" taskRunId="task-1" />);
     expect(screen.getByText('Comment one')).toBeInTheDocument();
     expect(screen.getByText('Comment two')).toBeInTheDocument();

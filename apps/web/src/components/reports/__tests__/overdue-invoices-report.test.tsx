@@ -103,7 +103,7 @@ describe('OverdueInvoicesReport', () => {
         totalCount: 1,
       },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
   });
 
   it('renders table with data', () => {
@@ -120,7 +120,7 @@ describe('OverdueInvoicesReport', () => {
     mockUseQuery.mockReturnValue({
       data: { items: [], totalCount: 0 },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<OverdueInvoicesReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByTestId('empty')).toBeInTheDocument();
     expect(screen.getByText('emptyOverdueInvoices')).toBeInTheDocument();
@@ -130,7 +130,7 @@ describe('OverdueInvoicesReport', () => {
     mockUseQuery.mockReturnValue({
       data: undefined,
       isLoading: true,
-    } as unknown);
+    } as unknown as never);
     render(<OverdueInvoicesReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByTestId('loading')).toBeInTheDocument();
   });

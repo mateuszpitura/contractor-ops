@@ -78,7 +78,7 @@ const mockTask = {
 
 describe('TaskCardRun', () => {
   beforeEach(() => {
-    mockedUseMutation.mockReturnValue({ mutate: vi.fn(), isPending: false } as unknown);
+    mockedUseMutation.mockReturnValue({ mutate: vi.fn(), isPending: false } as unknown as never);
   });
 
   it('renders task title and type badge', () => {
@@ -293,7 +293,7 @@ describe('TaskCardRun', () => {
   // ---- Complete button click triggers mutation ----
   it('clicking complete button triggers mutation', async () => {
     const mockMutate = vi.fn();
-    mockedUseMutation.mockReturnValue({ mutate: mockMutate, isPending: false } as unknown);
+    mockedUseMutation.mockReturnValue({ mutate: mockMutate, isPending: false } as unknown as never);
     const { user } = setup(<TaskCardRun task={mockTask} runId="run-1" currentUserId="user-1" />);
     await user.click(screen.getByText('Complete'));
     expect(mockMutate).toHaveBeenCalledWith(expect.objectContaining({ taskRunId: 'task-1' }));

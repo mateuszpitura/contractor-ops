@@ -70,12 +70,12 @@ beforeEach(() => {
 
   vi.mocked(useQueryClient).mockReturnValue({
     invalidateQueries: mockInvalidateQueries,
-  } as unknown);
+  } as unknown as never);
 
   vi.mocked(useMutation).mockReturnValue({
     mutate: mockMutate,
     isPending: false,
-  } as unknown);
+  } as unknown as never);
 
   vi.mocked(useQuery).mockImplementation(() => {
     return { data: connectionsData, isLoading: connectionsLoading, refetch: vi.fn() } as unknown;

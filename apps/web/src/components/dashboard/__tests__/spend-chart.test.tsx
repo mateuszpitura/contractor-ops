@@ -47,25 +47,25 @@ describe('SpendChart', () => {
   });
 
   it('shows loading skeleton', () => {
-    mockedUseQuery.mockReturnValue({ data: undefined, isLoading: true } as unknown);
+    mockedUseQuery.mockReturnValue({ data: undefined, isLoading: true } as unknown as never);
     const { container } = renderWithProviders(<SpendChart />);
     expect(container.querySelectorAll("[data-slot='skeleton']").length).toBeGreaterThan(0);
   });
 
   it('shows empty state when no data', () => {
-    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown);
+    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown as never);
     renderWithProviders(<SpendChart />);
     expect(screen.getByText('No spend data for this period')).toBeInTheDocument();
   });
 
   it('renders chart title', () => {
-    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown);
+    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown as never);
     renderWithProviders(<SpendChart />);
     expect(screen.getByText('Monthly spend')).toBeInTheDocument();
   });
 
   it('renders range toggle buttons', () => {
-    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown);
+    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown as never);
     renderWithProviders(<SpendChart />);
     expect(screen.getByText('6 months')).toBeInTheDocument();
     expect(screen.getByText('12 months')).toBeInTheDocument();
@@ -79,7 +79,7 @@ describe('SpendChart', () => {
         { month: '2026-02-01', currency: 'PLN', totalMinor: 750000 },
       ],
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     renderWithProviders(<SpendChart />);
     expect(screen.getByTestId('area-chart')).toBeInTheDocument();
     expect(screen.getByTestId('area-PLN')).toBeInTheDocument();
@@ -92,21 +92,21 @@ describe('SpendChart', () => {
         { month: '2026-01-01', currency: 'EUR', totalMinor: 120000 },
       ],
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     renderWithProviders(<SpendChart />);
     expect(screen.getByTestId('area-PLN')).toBeInTheDocument();
     expect(screen.getByTestId('area-EUR')).toBeInTheDocument();
   });
 
   it('calls spend range setter when selecting 12 months', () => {
-    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown);
+    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown as never);
     renderWithProviders(<SpendChart />);
     fireEvent.click(screen.getByText('12 months'));
     expect(mockSetSpendRange).toHaveBeenCalledWith('12');
   });
 
   it('calls spend range setter when selecting YTD', () => {
-    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown);
+    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown as never);
     renderWithProviders(<SpendChart />);
     fireEvent.click(screen.getByText('Year to date'));
     expect(mockSetSpendRange).toHaveBeenCalledWith('ytd');
@@ -116,7 +116,7 @@ describe('SpendChart', () => {
     mockedUseQuery.mockReturnValue({
       data: [{ month: '2026-01-01', currency: 'PLN', totalMinor: 500000 }],
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     renderWithProviders(<SpendChart />);
     expect(screen.getByTestId('area-PLN')).toBeInTheDocument();
     expect(screen.queryByTestId('area-EUR')).not.toBeInTheDocument();
@@ -130,13 +130,13 @@ describe('SpendChart', () => {
         { month: '2026-03-01', currency: 'PLN', totalMinor: 300000 },
       ],
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     renderWithProviders(<SpendChart />);
     expect(screen.getByTestId('area-chart')).toBeInTheDocument();
   });
 
   it('calls spend range setter when selecting 6 months', () => {
-    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown);
+    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown as never);
     renderWithProviders(<SpendChart />);
     fireEvent.click(screen.getByText('6 months'));
     expect(mockSetSpendRange).toHaveBeenCalledWith('6');
@@ -149,7 +149,7 @@ describe('SpendChart', () => {
         { month: '2026-02-01', currency: 'PLN', totalMinor: 600000 },
       ],
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     renderWithProviders(<SpendChart />);
     expect(screen.getByTestId('area-chart')).toBeInTheDocument();
     expect(screen.getByTestId('area-PLN')).toBeInTheDocument();
@@ -159,14 +159,14 @@ describe('SpendChart', () => {
     mockedUseQuery.mockReturnValue({
       data: [{ month: '2026-03-01', currency: 'PLN', totalMinor: 999999 }],
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     renderWithProviders(<SpendChart />);
     expect(screen.getByTestId('area-chart')).toBeInTheDocument();
     expect(screen.getByTestId('area-PLN')).toBeInTheDocument();
   });
 
   it('renders three range toggle buttons', () => {
-    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown);
+    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown as never);
     renderWithProviders(<SpendChart />);
     const buttons = screen.getAllByRole('button');
     expect(buttons.length).toBeGreaterThanOrEqual(3);

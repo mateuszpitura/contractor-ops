@@ -56,7 +56,7 @@ describe('EquipmentTable', () => {
       data: { items: [], total: 0 },
       isPending: false,
       isFetching: false,
-    } as unknown);
+    } as unknown as never);
   });
 
   it('renders empty state when no data', () => {
@@ -155,7 +155,7 @@ describe('EquipmentTable', () => {
       },
       isPending: false,
       isFetching: false,
-    } as unknown);
+    } as unknown as never);
     render(<EquipmentTable {...defaultProps} />);
     expect(screen.getByText('Previous')).toBeInTheDocument();
     expect(screen.getByText('Next')).toBeInTheDocument();
@@ -167,7 +167,7 @@ describe('EquipmentTable', () => {
       data: undefined,
       isPending: true,
       isFetching: true,
-    } as unknown);
+    } as unknown as never);
     render(<EquipmentTable {...defaultProps} />);
     // Should not show empty state, should show loading skeletons
     expect(screen.queryByText(/no equipment/i)).not.toBeInTheDocument();
@@ -196,7 +196,7 @@ describe('EquipmentTable', () => {
       },
       isPending: false,
       isFetching: false,
-    } as unknown);
+    } as unknown as never);
     render(<EquipmentTable {...defaultProps} />);
     // Should not show empty state
     expect(screen.queryByText(/no equipment/i)).not.toBeInTheDocument();
@@ -220,7 +220,7 @@ describe('EquipmentTable', () => {
       },
       isPending: false,
       isFetching: false,
-    } as unknown);
+    } as unknown as never);
     render(<EquipmentTable {...defaultProps} />);
     const prevBtn = screen.getByText('Previous');
     expect(prevBtn.closest('button')).toBeDisabled();
@@ -249,7 +249,7 @@ describe('EquipmentTable', () => {
       },
       isPending: false,
       isFetching: false,
-    } as unknown);
+    } as unknown as never);
     render(<EquipmentTable {...defaultProps} />);
     expect(screen.getByText('1 item')).toBeInTheDocument();
   });
@@ -270,7 +270,7 @@ describe('EquipmentTable', () => {
       },
       isPending: false,
       isFetching: true,
-    } as unknown);
+    } as unknown as never);
     render(<EquipmentTable {...defaultProps} />);
     // Refetching overlay should be present
     expect(screen.queryByText(/no equipment/i)).not.toBeInTheDocument();
@@ -290,7 +290,7 @@ describe('EquipmentTable', () => {
       },
       isPending: false,
       isFetching: false,
-    } as unknown);
+    } as unknown as never);
     const { user } = setup(<EquipmentTable {...defaultProps} />);
     expect(screen.getByText('Next')).toBeInTheDocument();
     const nextBtn = screen.getByText('Next').closest('button');
@@ -316,7 +316,7 @@ describe('EquipmentTable', () => {
       },
       isPending: false,
       isFetching: false,
-    } as unknown);
+    } as unknown as never);
     render(<EquipmentTable {...defaultProps} />);
     const nextBtn = screen.getByText('Next').closest('button');
     expect(nextBtn).toBeDisabled();
@@ -338,7 +338,7 @@ describe('EquipmentTable', () => {
       },
       isPending: false,
       isFetching: false,
-    } as unknown);
+    } as unknown as never);
     render(<EquipmentTable {...defaultProps} />);
     expect(screen.getByText('1 / 2')).toBeInTheDocument();
   });
@@ -359,7 +359,7 @@ describe('EquipmentTable', () => {
       },
       isPending: false,
       isFetching: false,
-    } as unknown);
+    } as unknown as never);
     render(<EquipmentTable {...defaultProps} />);
     expect(screen.getByText('50 items')).toBeInTheDocument();
   });
@@ -369,7 +369,7 @@ describe('EquipmentTable', () => {
       data: { items: [], total: 0 },
       isPending: false,
       isFetching: false,
-    } as unknown);
+    } as unknown as never);
     const { user } = setup(<EquipmentTable {...defaultProps} />);
     // Type in search to activate filters
     const searchInput = document.querySelector('input');
@@ -403,7 +403,7 @@ describe('EquipmentTable', () => {
       },
       isPending: false,
       isFetching: false,
-    } as unknown);
+    } as unknown as never);
     render(<EquipmentTable {...defaultProps} />);
     const table = document.querySelector('table');
     const headers = table.querySelectorAll('th');
@@ -426,7 +426,7 @@ describe('EquipmentTable', () => {
       },
       isPending: false,
       isFetching: false,
-    } as unknown);
+    } as unknown as never);
     render(<EquipmentTable {...defaultProps} />);
     const table = document.querySelector('table');
     const sortButtons = table.querySelectorAll('th button');
@@ -449,7 +449,7 @@ describe('EquipmentTable', () => {
       },
       isPending: false,
       isFetching: false,
-    } as unknown);
+    } as unknown as never);
     const { user } = setup(<EquipmentTable {...defaultProps} />);
     const table = document.querySelector('table');
     const sortButtons = table.querySelectorAll('th button');

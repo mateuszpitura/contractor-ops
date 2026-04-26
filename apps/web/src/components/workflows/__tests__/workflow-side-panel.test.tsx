@@ -52,7 +52,7 @@ const mockedUseQuery = vi.mocked(useQuery);
 
 describe('WorkflowSidePanel', () => {
   it('renders nothing visually when runId is null', () => {
-    mockedUseQuery.mockReturnValue({ data: undefined, isLoading: false } as unknown);
+    mockedUseQuery.mockReturnValue({ data: undefined, isLoading: false } as unknown as never);
     render(<WorkflowSidePanel runId={null} onClose={vi.fn()} />);
     // Sheet is closed when runId is null
     expect(screen.queryByText('Open workflow')).not.toBeInTheDocument();
@@ -78,13 +78,13 @@ describe('WorkflowSidePanel', () => {
       }
       // jira/linear connection status
       return { data: null, isLoading: false };
-    }) as unknown);
+    }) as unknown as never);
     render(<WorkflowSidePanel runId="run-1" onClose={vi.fn()} />);
     expect(screen.getAllByText('Onboarding').length).toBeGreaterThan(0);
   });
 
   it('does not show run details when query is loading', () => {
-    mockedUseQuery.mockReturnValue({ data: undefined, isLoading: true } as unknown);
+    mockedUseQuery.mockReturnValue({ data: undefined, isLoading: true } as unknown as never);
     render(<WorkflowSidePanel runId="run-1" onClose={vi.fn()} />);
     expect(screen.queryByText('Open workflow')).not.toBeInTheDocument();
   });
@@ -110,7 +110,7 @@ describe('WorkflowSidePanel', () => {
         };
       }
       return { data: null, isLoading: false };
-    }) as unknown);
+    }) as unknown as never);
     render(<WorkflowSidePanel runId="run-1" onClose={vi.fn()} />);
     expect(screen.getByText('2 of 4 tasks complete')).toBeInTheDocument();
   });
@@ -131,7 +131,7 @@ describe('WorkflowSidePanel', () => {
         };
       }
       return { data: null, isLoading: false };
-    }) as unknown);
+    }) as unknown as never);
     render(<WorkflowSidePanel runId="run-1" onClose={vi.fn()} />);
     expect(screen.getByText('Open workflow')).toBeInTheDocument();
   });
@@ -152,7 +152,7 @@ describe('WorkflowSidePanel', () => {
         };
       }
       return { data: null, isLoading: false };
-    }) as unknown);
+    }) as unknown as never);
     render(<WorkflowSidePanel runId="run-1" onClose={vi.fn()} />);
     expect(screen.getByText('Acme')).toBeInTheDocument();
   });
@@ -181,7 +181,7 @@ describe('WorkflowSidePanel', () => {
         };
       }
       return { data: null, isLoading: false };
-    }) as unknown);
+    }) as unknown as never);
     render(<WorkflowSidePanel runId="run-1" onClose={vi.fn()} />);
     // 1 DONE of 2 active tasks (condition-skipped excluded)
     expect(screen.getByText('1 of 2 tasks complete')).toBeInTheDocument();

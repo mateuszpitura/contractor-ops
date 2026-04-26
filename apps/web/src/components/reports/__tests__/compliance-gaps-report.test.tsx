@@ -109,7 +109,7 @@ describe('ComplianceGapsReport', () => {
         totalCount: 1,
       },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
   });
 
   it('renders chart component', () => {
@@ -137,7 +137,7 @@ describe('ComplianceGapsReport', () => {
     mockUseQuery.mockReturnValue({
       data: { items: [], totalCount: 0 },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<ComplianceGapsReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByTestId('empty')).toBeInTheDocument();
   });
@@ -180,7 +180,7 @@ describe('ComplianceGapsReport', () => {
         totalCount: 2,
       },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<ComplianceGapsReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByText('Acme')).toBeInTheDocument();
     expect(screen.getByText('Beta Corp')).toBeInTheDocument();
@@ -191,7 +191,7 @@ describe('ComplianceGapsReport', () => {
     mockUseQuery.mockReturnValue({
       data: { items: [], totalCount: 0 },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<ComplianceGapsReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByTestId('report-chart')).toBeInTheDocument();
   });
@@ -201,7 +201,7 @@ describe('ComplianceGapsReport', () => {
     mockUseQuery.mockReturnValue({
       data: { items: [], totalCount: 0 },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<ComplianceGapsReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByTestId('breadcrumb')).toBeInTheDocument();
   });
@@ -211,7 +211,7 @@ describe('ComplianceGapsReport', () => {
     mockUseQuery.mockReturnValue({
       data: { items: [], totalCount: 0 },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<ComplianceGapsReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByTestId('export-buttons')).toBeInTheDocument();
   });
@@ -253,7 +253,7 @@ describe('ComplianceGapsReport', () => {
         totalCount: 50,
       },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<ComplianceGapsReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByTestId('report-table')).toBeInTheDocument();
   });
@@ -291,7 +291,7 @@ describe('ComplianceGapsReport', () => {
         totalCount: 3,
       },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<ComplianceGapsReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByText('Red Co')).toBeInTheDocument();
     expect(screen.getByText('Yellow Co')).toBeInTheDocument();
@@ -303,7 +303,7 @@ describe('ComplianceGapsReport', () => {
     mockUseQuery.mockReturnValue({
       data: undefined,
       isLoading: true,
-    } as unknown);
+    } as unknown as never);
     render(<ComplianceGapsReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByTestId('loading')).toBeInTheDocument();
   });
@@ -335,7 +335,7 @@ describe('ComplianceGapsReport', () => {
     mockUseQuery.mockReturnValue({
       data: { items, totalCount: 20 },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<ComplianceGapsReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByText('Company 0')).toBeInTheDocument();
     expect(screen.getByText('Company 19')).toBeInTheDocument();
@@ -358,7 +358,7 @@ describe('ComplianceGapsReport', () => {
         totalCount: 1,
       },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<ComplianceGapsReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByText('Solo LLC')).toBeInTheDocument();
   });
@@ -408,7 +408,7 @@ describe('ComplianceGapsReport', () => {
         totalCount: 2,
       },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<ComplianceGapsReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     // Both contractors are shown initially
     expect(screen.getByText('Red Co')).toBeInTheDocument();
@@ -432,7 +432,7 @@ describe('ComplianceGapsReport', () => {
         totalCount: 1,
       },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<ComplianceGapsReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByTestId('breadcrumb')).toBeInTheDocument();
   });
@@ -462,7 +462,7 @@ describe('ComplianceGapsReport', () => {
         totalCount: 2,
       },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<ComplianceGapsReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByTestId('report-table')).toBeInTheDocument();
   });
@@ -498,7 +498,7 @@ describe('ComplianceGapsReport', () => {
         totalCount: 1,
       },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<ComplianceGapsReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByText('NavTarget')).toBeInTheDocument();
   });

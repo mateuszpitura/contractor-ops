@@ -68,7 +68,7 @@ describe('SourceSelectionStep', () => {
     mockedUseQuery.mockReturnValue({
       data: [{ provider: 'JIRA', connected: true }],
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<SourceSelectionStep selectedSources={[]} onSourcesChange={vi.fn()} />);
     expect(screen.getByText(/Where do you manage/)).toBeInTheDocument();
   });
@@ -80,7 +80,7 @@ describe('SourceSelectionStep', () => {
         { provider: 'LINEAR', connected: false },
       ],
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<SourceSelectionStep selectedSources={[]} onSourcesChange={vi.fn()} />);
     // One connected, one not connected
     expect(screen.getByText('Connected')).toBeInTheDocument();
@@ -88,13 +88,13 @@ describe('SourceSelectionStep', () => {
   });
 
   it('renders skip link', () => {
-    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown);
+    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown as never);
     render(<SourceSelectionStep selectedSources={[]} onSourcesChange={vi.fn()} />);
     expect(screen.getByText(/Skip/)).toBeInTheDocument();
   });
 
   it('renders loading skeletons when query is loading', () => {
-    mockedUseQuery.mockReturnValue({ data: undefined, isLoading: true } as unknown);
+    mockedUseQuery.mockReturnValue({ data: undefined, isLoading: true } as unknown as never);
     const { container } = render(
       <SourceSelectionStep selectedSources={[]} onSourcesChange={vi.fn()} />,
     );
@@ -104,7 +104,7 @@ describe('SourceSelectionStep', () => {
   });
 
   it('renders subtitle text', () => {
-    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown);
+    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown as never);
     render(<SourceSelectionStep selectedSources={[]} onSourcesChange={vi.fn()} />);
     // Subtitle is present below heading
     const heading = screen.getByText(/Where do you manage/);
@@ -120,7 +120,7 @@ describe('SourceSelectionStep', () => {
         { provider: 'SLACK', connected: false },
       ],
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<SourceSelectionStep selectedSources={[]} onSourcesChange={vi.fn()} />);
     // Connected and Connect buttons should be visible
     const connectedBadges = screen.getAllByText('Connected');
@@ -130,14 +130,14 @@ describe('SourceSelectionStep', () => {
   });
 
   it('shows no source cards when data is empty', () => {
-    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown);
+    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown as never);
     render(<SourceSelectionStep selectedSources={[]} onSourcesChange={vi.fn()} />);
     expect(screen.queryByText('Connected')).not.toBeInTheDocument();
     expect(screen.queryByText('Connect')).not.toBeInTheDocument();
   });
 
   it('renders heading and skip even when no sources available', () => {
-    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown);
+    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown as never);
     render(<SourceSelectionStep selectedSources={[]} onSourcesChange={vi.fn()} />);
     expect(screen.getByText(/Where do you manage/)).toBeInTheDocument();
     expect(screen.getByText(/Skip/)).toBeInTheDocument();
@@ -150,7 +150,7 @@ describe('SourceSelectionStep', () => {
         { provider: 'LINEAR', connected: true },
       ],
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<SourceSelectionStep selectedSources={['JIRA']} onSourcesChange={vi.fn()} />);
     // Both should show as connected
     const connectedBadges = screen.getAllByText('Connected');
@@ -164,7 +164,7 @@ describe('SourceSelectionStep', () => {
         { provider: 'LINEAR', connected: true },
       ],
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     const onSourcesChange = vi.fn();
     const { user } = setup(
       <SourceSelectionStep selectedSources={[]} onSourcesChange={onSourcesChange} />,
@@ -187,7 +187,7 @@ describe('SourceSelectionStep', () => {
     mockedUseQuery.mockReturnValue({
       data: [{ provider: 'LINEAR', connected: false }],
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     const { user } = setup(<SourceSelectionStep selectedSources={[]} onSourcesChange={vi.fn()} />);
     await user.click(screen.getByText('Connect'));
     await waitFor(() => {
@@ -199,7 +199,7 @@ describe('SourceSelectionStep', () => {
     mockedUseQuery.mockReturnValue({
       data: [{ provider: 'JIRA', connected: true }],
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     const onSourcesChange = vi.fn();
     const { user } = setup(
       <SourceSelectionStep selectedSources={['JIRA']} onSourcesChange={onSourcesChange} />,
@@ -210,7 +210,7 @@ describe('SourceSelectionStep', () => {
   });
 
   it('navigates to settings when skip is clicked', async () => {
-    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown);
+    mockedUseQuery.mockReturnValue({ data: [], isLoading: false } as unknown as never);
     const { user } = setup(<SourceSelectionStep selectedSources={[]} onSourcesChange={vi.fn()} />);
     await user.click(screen.getByText(/Skip/));
     // router.push should have been called

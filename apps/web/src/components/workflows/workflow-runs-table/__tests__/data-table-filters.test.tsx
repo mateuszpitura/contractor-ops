@@ -19,7 +19,7 @@ const mockedUseQuery = vi.mocked(useQuery);
 
 describe('DataTableFilters', () => {
   beforeEach(() => {
-    mockedUseQuery.mockReturnValue({ data: { items: [] }, isLoading: false } as unknown);
+    mockedUseQuery.mockReturnValue({ data: { items: [] }, isLoading: false } as unknown as never);
   });
 
   it('renders filter button', () => {
@@ -87,7 +87,7 @@ describe('DataTableFilters', () => {
     mockedUseQuery.mockReturnValue({
       data: { items: [{ id: 't-1', name: 'Onboarding Flow' }] },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(
       <DataTableFilters
         filters={{ status: [], templateId: ['t-1'], overdueOnly: false }}
@@ -101,7 +101,7 @@ describe('DataTableFilters', () => {
     mockedUseQuery.mockReturnValue({
       data: { items: [] },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(
       <DataTableFilters
         filters={{ status: [], templateId: ['unknown-id'], overdueOnly: false }}

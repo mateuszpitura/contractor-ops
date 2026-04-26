@@ -79,12 +79,12 @@ beforeEach(() => {
   vi.mocked(useQueryClient).mockReturnValue({
     invalidateQueries: mockInvalidateQueries,
     fetchQuery: mockFetchQuery,
-  } as unknown);
+  } as unknown as never);
 
   vi.mocked(useMutation).mockReturnValue({
     mutate: mockMutate,
     isPending: false,
-  } as unknown);
+  } as unknown as never);
 
   vi.mocked(useQuery).mockImplementation((opts: Record<string, unknown>) => {
     // Distinguish between connections and events queries

@@ -42,7 +42,7 @@ describe('AuditTimeline', () => {
     mockUseQuery.mockReturnValue({
       data: undefined,
       isLoading: true,
-    } as unknown);
+    } as unknown as never);
     const { container } = render(<AuditTimeline invoiceId="inv-1" />);
     // Skeleton renders Card with Skeleton children
     expect(container.querySelector("[data-slot='skeleton']")).toBeTruthy();
@@ -52,7 +52,7 @@ describe('AuditTimeline', () => {
     mockUseQuery.mockReturnValue({
       data: { events: [] },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<AuditTimeline invoiceId="inv-1" />);
     expect(screen.getByText('auditTrail.empty')).toBeInTheDocument();
   });
@@ -61,7 +61,7 @@ describe('AuditTimeline', () => {
     mockUseQuery.mockReturnValue({
       data: { events: [] },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<AuditTimeline invoiceId="inv-1" />);
     expect(screen.getByText('auditTrail.heading')).toBeInTheDocument();
   });
@@ -78,7 +78,7 @@ describe('AuditTimeline', () => {
         ],
       },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<AuditTimeline invoiceId="inv-1" />);
     expect(screen.getByText('auditTrail.submitted')).toBeInTheDocument();
   });
@@ -102,7 +102,7 @@ describe('AuditTimeline', () => {
         ],
       },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<AuditTimeline invoiceId="inv-1" />);
     expect(screen.getByText('Jan Kowalski')).toBeInTheDocument();
     expect(screen.getByText('auditTrail.decisionApproved')).toBeInTheDocument();
@@ -127,7 +127,7 @@ describe('AuditTimeline', () => {
         ],
       },
       isLoading: false,
-    } as unknown);
+    } as unknown as never);
     render(<AuditTimeline invoiceId="inv-1" />);
     expect(screen.getByText('Missing attachments')).toBeInTheDocument();
   });
