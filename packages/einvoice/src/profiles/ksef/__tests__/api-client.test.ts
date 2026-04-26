@@ -281,7 +281,7 @@ describe('KsefApiClient', () => {
   describe('static helpers', () => {
     it('backoffMs caps at 10 seconds', () => {
       // Access private static via bracket notation for white-box testing
-      const backoff = (KsefApiClient as unknown as Record<string, unknown>)['backoffMs'] as
+      const backoff = (KsefApiClient as unknown as Record<string, unknown>).backoffMs as
         | ((n: number) => number)
         | undefined;
       if (backoff) {
@@ -293,9 +293,9 @@ describe('KsefApiClient', () => {
     });
 
     it('classifies non-retryable API errors correctly', () => {
-      const check = (KsefApiClient as unknown as Record<string, unknown>)[
-        'isNonRetryableApiError'
-      ] as ((e: unknown) => boolean) | undefined;
+      const check = (KsefApiClient as unknown as Record<string, unknown>).isNonRetryableApiError as
+        | ((e: unknown) => boolean)
+        | undefined;
       if (check) {
         expect(check(new Error('KSeF API error 400: bad request'))).toBe(true);
         expect(check(new Error('Network error'))).toBe(false);

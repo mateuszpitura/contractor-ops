@@ -67,7 +67,7 @@ export const adminBoeRateRouter = router({
           effectiveFrom: input.effectiveFrom,
           ratePercent: input.ratePercent,
           source: 'MANUAL',
-          recordedByUserId: ctx.user!.id,
+          recordedByUserId: ctx.user?.id,
           notes: input.notes ?? null,
         },
       });
@@ -114,7 +114,7 @@ export const adminBoeRateRouter = router({
         data: {
           ratePercent: input.ratePercent,
           notes: input.notes ?? existing.notes,
-          recordedByUserId: ctx.user!.id,
+          recordedByUserId: ctx.user?.id,
         },
       });
 

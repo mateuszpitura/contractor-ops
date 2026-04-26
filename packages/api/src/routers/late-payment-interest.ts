@@ -8,12 +8,7 @@
 
 import type { PrismaClient } from '@contractor-ops/db';
 import { createLogger } from '@contractor-ops/logger';
-import {
-  LPCDA_CLAIM_FOOTER,
-  LPCDA_COMPENSATION_LABEL,
-  LPCDA_SECTION_REF,
-  LPCDA_STATUTORY_RATE_LABEL,
-} from '@contractor-ops/validators';
+import { LPCDA_SECTION_REF } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { router } from '../init.js';
@@ -31,7 +26,7 @@ const log = createLogger({ service: 'late-payment-interest-router' });
 // ---------------------------------------------------------------------------
 
 /** Format minor units to a decimal string for PDF display. */
-function formatGbp(minor: number): string {
+function _formatGbp(minor: number): string {
   const pounds = (minor / 100).toFixed(2);
   return `£${pounds}`;
 }
@@ -323,7 +318,7 @@ export const latePaymentInterestRouter = router({
           invoiceId: input.invoiceId,
           waiveType: input.waiveType,
           reason: input.reason,
-          waivedByUserId: ctx.user!.id,
+          waivedByUserId: ctx.user?.id,
           waivedAt: new Date(),
         },
       });
@@ -368,7 +363,7 @@ export const latePaymentInterestRouter = router({
         where: { id: input.waiverId },
         data: {
           revokedAt: new Date(),
-          revokedByUserId: ctx.user!.id,
+          revokedByUserId: ctx.user?.id,
           revokeReason: input.revokeReason,
         },
       });
@@ -506,7 +501,7 @@ export const latePaymentInterestRouter = router({
         data: {
           organizationId: ctx.organizationId,
           invoiceId: input.invoiceId,
-          claimedByUserId: ctx.user!.id,
+          claimedByUserId: ctx.user?.id,
           claimedAt: new Date(),
           snapshotInterestMinor: result.accruedInterestMinor,
           snapshotCompensationMinor: result.compensationTierMinor,

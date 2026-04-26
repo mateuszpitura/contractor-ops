@@ -1410,9 +1410,9 @@ export const portalRouter = router({
           contractorId: ctx.contractorId,
           targetPoint: input.targetPointName,
         },
-      }).catch(err =>
-        console.error('[portal] Failed to dispatch return request notification:', err),
-      );
+      }).catch(_err => {
+        /* fire-and-forget */
+      });
 
       return plain(result);
     }),

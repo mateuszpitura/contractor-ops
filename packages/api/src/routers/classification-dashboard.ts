@@ -176,19 +176,19 @@ type DbCtx = { db: Record<string, unknown> };
 async function buildDashboardRows(ctx: DbCtx, market: 'GB' | 'DE'): Promise<DashboardRow[]> {
   const db = ctx.db as {
     contractorAssignment: {
-      findMany: (args: unknown) => Promise<Array<Record<string, unknown>>>;
+      findMany: (args: unknown) => Promise<Record<string, unknown>[]>;
     };
     classificationAssessment: {
-      findMany: (args: unknown) => Promise<Array<Record<string, unknown>>>;
+      findMany: (args: unknown) => Promise<Record<string, unknown>[]>;
     };
     economicDependencyAlertState: {
-      findMany: (args: unknown) => Promise<Array<Record<string, unknown>>>;
+      findMany: (args: unknown) => Promise<Record<string, unknown>[]>;
     };
     reassessmentTrigger: {
-      findMany: (args: unknown) => Promise<Array<Record<string, unknown>>>;
+      findMany: (args: unknown) => Promise<Record<string, unknown>[]>;
     };
     statusfeststellungsverfahren: {
-      findMany: (args: unknown) => Promise<Array<Record<string, unknown>>>;
+      findMany: (args: unknown) => Promise<Record<string, unknown>[]>;
     };
   };
 

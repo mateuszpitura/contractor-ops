@@ -1,5 +1,4 @@
 import { expect, test } from '@playwright/test';
-import { navigateToDashboard, skipIfUnauthenticated } from './helpers';
 
 /**
  * Portal invoice flow — unauthenticated tests.

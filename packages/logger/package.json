@@ -25,8 +25,7 @@
     "lint": "biome check .",
     "test": "vitest run",
     "lint:fix": "biome check --write .",
-    "typecheck": "tsc --noEmit",
-    "build": "tsc"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@axiomhq/js": "^1.6.0",

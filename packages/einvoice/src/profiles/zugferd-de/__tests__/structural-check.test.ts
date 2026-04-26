@@ -113,8 +113,8 @@ describe('assertZugferdStructure', () => {
     const fresh = await PDFDocument.create();
     fresh.addPage([595, 842]);
     // Copy XMP + OutputIntents from wrapped to fresh.
-    const origMeta = doc.catalog.get(PDFName.of('Metadata'));
-    const origOi = doc.catalog.get(PDFName.of('OutputIntents'));
+    const _origMeta = doc.catalog.get(PDFName.of('Metadata'));
+    const _origOi = doc.catalog.get(PDFName.of('OutputIntents'));
     // Simple path: attach `invoice.xml` (wrong name) + copy metadata stream.
     await fresh.attach(new TextEncoder().encode(TRIVIAL_CII), 'invoice.xml', {
       afRelationship: AFRelationship.Alternative,

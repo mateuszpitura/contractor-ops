@@ -46,10 +46,7 @@ export function CoverageTile({ completed, total }: CoverageTileProps) {
         </span>
       </div>
       <div className="h-2 w-full overflow-hidden rounded-full bg-muted" aria-hidden="true">
-        <div
-          className={`h-full transition-all ${isHealthy ? 'bg-[--success]' : 'bg-primary'}`}
-          style={{ width: `${percentRounded}%` }}
-        />
+        <div className={`h-full transition-all ${isHealthy ? 'bg-[--success]' : 'bg-primary'}`} />
       </div>
     </div>
   );

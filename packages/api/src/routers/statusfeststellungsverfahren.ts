@@ -114,7 +114,7 @@ export const statusfeststellungsverfahrenRouter = router({
     await writeAuditLog({
       organizationId: ctx.organizationId,
       actorType: 'USER',
-      actorId: ctx.user!.id,
+      actorId: ctx.user?.id,
       action: 'STATUSFESTSTELLUNGSVERFAHREN_CREATE',
       resourceType: 'CONTRACTOR',
       resourceId: input.contractorAssignmentId,
@@ -170,7 +170,7 @@ export const statusfeststellungsverfahrenRouter = router({
     await writeAuditLog({
       organizationId: ctx.organizationId,
       actorType: 'USER',
-      actorId: ctx.user!.id,
+      actorId: ctx.user?.id,
       action: 'STATUSFESTSTELLUNGSVERFAHREN_UPDATE',
       resourceType: 'CONTRACTOR',
       resourceId: existing.contractorAssignmentId,
@@ -199,7 +199,7 @@ export const statusfeststellungsverfahrenRouter = router({
     await writeAuditLog({
       organizationId: ctx.organizationId,
       actorType: 'USER',
-      actorId: ctx.user!.id,
+      actorId: ctx.user?.id,
       action: 'STATUSFESTSTELLUNGSVERFAHREN_DELETE',
       resourceType: 'CONTRACTOR',
       resourceId: existing.contractorAssignmentId,

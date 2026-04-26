@@ -94,8 +94,8 @@ export function isMaterialChange(row: AuditRow): { material: boolean; fields: st
   for (const key of keys) {
     if (IGNORED_FIELDS.has(key)) continue;
     if (!allowlist.has(key)) continue;
-    const oldV = (row.oldValuesJson ?? {})[key];
-    const newV = (row.newValuesJson ?? {})[key];
+    const oldV = row.oldValuesJson?.[key];
+    const newV = row.newValuesJson?.[key];
     if (JSON.stringify(oldV) !== JSON.stringify(newV)) {
       changed.push(key);
     }
@@ -106,8 +106,8 @@ export function isMaterialChange(row: AuditRow): { material: boolean; fields: st
 export function reasonsFromAuditRow(row: AuditRow, fields: string[]): TriggerReason[] {
   return fields.map(field => ({
     field,
-    oldValue: (row.oldValuesJson ?? {})[field] ?? undefined,
-    newValue: (row.newValuesJson ?? {})[field] ?? undefined,
+    oldValue: row.oldValuesJson?.[field] ?? undefined,
+    newValue: row.newValuesJson?.[field] ?? undefined,
     auditLogId: row.id,
     resourceType: row.resourceType === 'CONTRACT' ? ('CONTRACT' as const) : ('CONTRACTOR' as const),
     changedAt: row.createdAt,

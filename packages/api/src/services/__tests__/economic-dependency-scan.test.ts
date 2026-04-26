@@ -131,7 +131,7 @@ import {
 } from '../economic-dependency-scan.js';
 
 const ORG_A = 'clorgaaaaaaaaaaaaaaaaaaaaaa';
-const ORG_B = 'clorgbbbbbbbbbbbbbbbbbbbbbb';
+const _ORG_B = 'clorgbbbbbbbbbbbbbbbbbbbbbb';
 const CONTRACTOR = 'clcontractor0000000000000';
 const ASSIGNMENT_A = 'clasgnmentaaaaaaaaaaaaaaaa';
 

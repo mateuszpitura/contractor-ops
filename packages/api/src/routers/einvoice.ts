@@ -458,7 +458,7 @@ export const einvoiceRouter = router({
         xmlKey: string | null;
         xmlSha256: string | null;
       } | null;
-      if (!(lifecycle && lifecycle.xmlKey)) {
+      if (!lifecycle?.xmlKey) {
         throw new TRPCError({
           code: 'NOT_FOUND',
           message: 'EINVOICE_LIFECYCLE_NOT_FOUND',
@@ -535,7 +535,7 @@ export const einvoiceRouter = router({
         ctx.organizationId,
         input.lifecycleId,
       )) as { id: string; xmlKey: string | null } | null;
-      if (!(lifecycle && lifecycle.xmlKey)) {
+      if (!lifecycle?.xmlKey) {
         throw new TRPCError({
           code: 'NOT_FOUND',
           message: 'EINVOICE_XML_NOT_FOUND',
@@ -605,7 +605,7 @@ export const einvoiceRouter = router({
         } | null;
       } | null;
 
-      if (!(invoice && invoice.eInvoiceLifecycle && invoice.eInvoiceLifecycle.xmlKey)) {
+      if (!invoice?.eInvoiceLifecycle?.xmlKey) {
         throw new TRPCError({
           code: 'NOT_FOUND',
           message: 'EINVOICE_LIFECYCLE_NOT_FOUND',
@@ -847,8 +847,6 @@ export const einvoiceRouter = router({
         case 'failed':
           where.eInvoiceLifecycle = { is: { transmissionStatus: 'FAILED' } };
           break;
-        case 'all':
-        case undefined:
         default:
           // no filter
           break;

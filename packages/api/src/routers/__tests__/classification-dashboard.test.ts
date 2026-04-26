@@ -776,7 +776,7 @@ describe('classificationDashboard.exportMarketCsv (60-04-05, 60-04-06)', () => {
     expect(result.expiresInSeconds).toBe(300);
 
     expect(mockR2PutObjectAndSignDownload).toHaveBeenCalledTimes(1);
-    const call = mockR2PutObjectAndSignDownload.mock.calls[0]![0];
+    const call = mockR2PutObjectAndSignDownload.mock.calls[0]?.[0];
     const body = call.body as Buffer;
     // Strip BOM + decode
     const text = body.subarray(3).toString('utf-8');
@@ -802,7 +802,7 @@ describe('classificationDashboard.exportMarketCsv (60-04-05, 60-04-06)', () => {
     ];
     const caller = makeCaller(ORG_A);
     await caller.classificationDashboard.exportMarketCsv({ market: 'GB' });
-    const call = mockR2PutObjectAndSignDownload.mock.calls[0]![0];
+    const call = mockR2PutObjectAndSignDownload.mock.calls[0]?.[0];
     const body = call.body as Buffer;
     const text = body.subarray(3).toString('utf-8');
     // Leading `=` + internal `"` triggers both neutralisation and quote-wrap.
@@ -821,7 +821,7 @@ describe('classificationDashboard.exportMarketCsv (60-04-05, 60-04-06)', () => {
     ];
     const caller = makeCaller(ORG_A);
     await caller.classificationDashboard.exportMarketCsv({ market: 'GB' });
-    const call = mockR2PutObjectAndSignDownload.mock.calls[0]![0];
+    const call = mockR2PutObjectAndSignDownload.mock.calls[0]?.[0];
     const body = call.body as Buffer;
     expect(body[0]).toBe(0xef);
     expect(body[1]).toBe(0xbb);
@@ -851,7 +851,7 @@ describe('classificationDashboard.exportMarketCsv (60-04-05, 60-04-06)', () => {
   it('scopes the R2 key by organizationId (tenant isolation — T-60-16)', async () => {
     const caller = makeCaller(ORG_A);
     await caller.classificationDashboard.exportMarketCsv({ market: 'GB' });
-    const call = mockR2PutObjectAndSignDownload.mock.calls[0]![0];
+    const call = mockR2PutObjectAndSignDownload.mock.calls[0]?.[0];
     expect(call.key).toContain(`classification-dashboard-exports/${ORG_A}/`);
     expect(call.key).toMatch(/\/GB-.*\.csv$/);
   });
@@ -960,7 +960,7 @@ describe('classificationDashboard — cross-org isolation (T-60-16)', () => {
     // we instead assert the router called `contractorAssignment.count` with
     // the correct market filter (organization-level isolation is covered by
     // the dedicated tenant-extension tests).
-    const call = mockPrisma.contractorAssignment.count.mock.calls.at(-1)![0];
+    const call = mockPrisma.contractorAssignment.count.mock.calls.at(-1)?.[0];
     expect(call?.where?.status).toBe('ACTIVE');
     expect(call?.where?.contractor).toEqual({ countryCode: 'GB' });
   });

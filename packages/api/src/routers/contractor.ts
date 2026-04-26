@@ -624,7 +624,7 @@ export const contractorRouter = router({
         await writeAuditLog({
           organizationId: ctx.organizationId,
           actorType: 'USER',
-          actorId: ctx.user!.id,
+          actorId: ctx.user?.id,
           action: 'CREATE',
           resourceType: 'CONTRACTOR',
           resourceId: created.id,
@@ -716,7 +716,7 @@ export const contractorRouter = router({
       await writeAuditLog({
         organizationId: ctx.organizationId,
         actorType: 'USER',
-        actorId: ctx.user!.id,
+        actorId: ctx.user?.id,
         action: 'UPDATE',
         resourceType: 'CONTRACTOR',
         resourceId: id,
@@ -726,7 +726,7 @@ export const contractorRouter = router({
       });
 
       // D-07 trigger 1: validate or clear VAT ID on change
-      await handleVatIdChange(ctx.db, id, ctx.organizationId, ctx.user!.id, existing, updated);
+      await handleVatIdChange(ctx.db, id, ctx.organizationId, ctx.user?.id, existing, updated);
 
       // Update default billing profile if billing fields changed
       await updateBillingProfileIfNeeded(
@@ -910,7 +910,7 @@ export const contractorRouter = router({
       await writeAuditLog({
         organizationId: ctx.organizationId,
         actorType: 'USER',
-        actorId: ctx.user!.id,
+        actorId: ctx.user?.id,
         action: 'DELETE',
         resourceType: 'CONTRACTOR',
         resourceId: input.id,
@@ -1345,7 +1345,7 @@ export const contractorRouter = router({
           contractorId: contractor.id,
           taxIdType,
           taxIdValue: contractor.vatId,
-          actor: { userId: ctx.user!.id },
+          actor: { userId: ctx.user?.id },
         },
         {
           db: ctx.db,
@@ -1403,7 +1403,7 @@ export const contractorRouter = router({
           taxIdValue: contractor.vatId,
           // `intent` flows through to the orchestrator's logging / audit
           // surface; the distinguishing mark from validateVat lives here.
-          actor: { userId: ctx.user!.id },
+          actor: { userId: ctx.user?.id },
         },
         {
           db: ctx.db,

@@ -10,7 +10,7 @@
  *    inside the test body so the env change is visible at module-load time.
  */
 
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 // ---------------------------------------------------------------------------
 // Hoisted stubs — defined before vi.mock() hoisting resolves them.

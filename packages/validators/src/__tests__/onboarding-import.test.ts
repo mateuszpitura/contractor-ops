@@ -3,7 +3,6 @@ import {
   batchImportInputSchema,
   conflictSchema,
   fetchPeopleInputSchema,
-  fetchPeopleOutputSchema,
   importedProjectSchema,
   importProgressOutputSchema,
   importProjectInputSchema,

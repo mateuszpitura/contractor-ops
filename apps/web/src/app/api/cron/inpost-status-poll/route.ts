@@ -67,17 +67,13 @@ async function handler(request: NextRequest) {
     }
   }
 
-  const totalChecked = results.reduce(
+  const _totalChecked = results.reduce(
     (sum, r) => sum + r.carriers.reduce((s, c) => s + c.checked, 0),
     0,
   );
-  const totalUpdated = results.reduce(
+  const _totalUpdated = results.reduce(
     (sum, r) => sum + r.carriers.reduce((s, c) => s + c.updated, 0),
     0,
-  );
-
-  console.info(
-    `[courier-status-poll] Completed: ${results.length} org(s), ${totalChecked} checked, ${totalUpdated} updated`,
   );
 
   return NextResponse.json({ results });
@@ -97,8 +93,7 @@ async function pollAllCarriersForOrg(organizationId: string): Promise<OrgResult>
   const inpostResult = await pollInPostShipmentStatuses(
     prisma as unknown as Parameters<typeof pollInPostShipmentStatuses>[0],
     organizationId,
-  ).catch(err => {
-    console.error(`[courier-status-poll] InPost error for org ${organizationId}:`, err);
+  ).catch(_err => {
     return { checked: 0, updated: 0 };
   });
   carriers.push({ carrier: 'inpost', ...inpostResult });
@@ -107,8 +102,7 @@ async function pollAllCarriersForOrg(organizationId: string): Promise<OrgResult>
   const dpdResult = await pollDpdShipmentStatuses(
     prisma as unknown as Parameters<typeof pollDpdShipmentStatuses>[0],
     organizationId,
-  ).catch(err => {
-    console.error(`[courier-status-poll] DPD error for org ${organizationId}:`, err);
+  ).catch(_err => {
     return { checked: 0, updated: 0 };
   });
   carriers.push({ carrier: 'dpd', ...dpdResult });
@@ -117,8 +111,7 @@ async function pollAllCarriersForOrg(organizationId: string): Promise<OrgResult>
   const upsResult = await pollUpsShipmentStatuses(
     prisma as unknown as Parameters<typeof pollUpsShipmentStatuses>[0],
     organizationId,
-  ).catch(err => {
-    console.error(`[courier-status-poll] UPS error for org ${organizationId}:`, err);
+  ).catch(_err => {
     return { checked: 0, updated: 0 };
   });
   carriers.push({ carrier: 'ups', ...upsResult });

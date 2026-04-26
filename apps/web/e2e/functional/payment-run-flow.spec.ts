@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-import { expectPageHeading, navigateToDashboard, skipIfUnauthenticated } from './helpers';
+import { navigateToDashboard, skipIfUnauthenticated } from './helpers';
 
 test.describe('Payment run flow', () => {
   test.beforeEach(async ({ page }) => {

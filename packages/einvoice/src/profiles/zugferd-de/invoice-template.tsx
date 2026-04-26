@@ -271,7 +271,7 @@ function TotalsBlock({ invoice }: { invoice: EInvoice }) {
         <Text style={styles.totalValue}>{fmtMinor(taxExclusiveAmount, currencyCode)}</Text>
       </View>
       {invoice.taxBreakdown.map((t: EInvoiceTaxSubtotal) => (
-        <View key={t.taxCategory + '-' + (t.percent ?? 'x')} style={styles.totalRow}>
+        <View key={`${t.taxCategory}-${t.percent ?? 'x'}`} style={styles.totalRow}>
           <Text style={styles.totalLabel}>
             VAT {t.taxCategory}
             {t.percent === undefined ? '' : ` (${t.percent}%)`}

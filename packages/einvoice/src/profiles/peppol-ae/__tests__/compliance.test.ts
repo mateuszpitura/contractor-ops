@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import type { PeppolConnectionData } from '../index.js';
 import { computePeppolComplianceStatus } from '../index.js';
 
 describe('computePeppolComplianceStatus', () => {

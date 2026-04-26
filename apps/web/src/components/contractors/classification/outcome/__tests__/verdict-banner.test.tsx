@@ -1,4 +1,4 @@
-import type { Ir35Outcome, ScheinselbstandigkeitOutcome } from '@contractor-ops/classification';
+import type { Ir35Outcome } from '@contractor-ops/classification';
 import { describe, expect, it } from 'vitest';
 
 import { render, screen } from '@/test/test-utils';

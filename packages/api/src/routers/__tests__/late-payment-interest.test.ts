@@ -394,7 +394,7 @@ describe('latePaymentInterestRouter', () => {
         isBusinessCustomer: true,
       });
       expect(args.rateHistory).toEqual([
-        { effectiveFrom: rateHistory[0]!.effectiveFrom, ratePercent: 5.25 },
+        { effectiveFrom: rateHistory[0]?.effectiveFrom, ratePercent: 5.25 },
       ]);
     });
 

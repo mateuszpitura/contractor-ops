@@ -141,7 +141,7 @@ function compileAndWriteChecksums(): void {
       );
     }
 
-    execFileSync('xslt3', ['-xsl:' + src, '-export:' + dst, '-t'], {
+    execFileSync('xslt3', [`-xsl:${src}`, `-export:${dst}`, '-t'], {
       stdio: 'inherit',
     });
 
@@ -160,7 +160,7 @@ function compileAndWriteChecksums(): void {
   }
 
   const checksumsPath = path.join(BUNDLE, 'checksums.txt');
-  writeFileSync(checksumsPath, checksumLines.join('\n') + '\n', 'utf8');
+  writeFileSync(checksumsPath, `${checksumLines.join('\n')}\n`, 'utf8');
   process.stdout.write(
     `[recompile-kosit-schematron] Wrote ${checksumLines.length} checksum line(s) to ${checksumsPath}\n`,
   );

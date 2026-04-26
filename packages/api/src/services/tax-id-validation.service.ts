@@ -169,7 +169,7 @@ export async function validateTaxId(
   deps: TaxIdValidationDeps,
 ): Promise<TaxIdValidationResult> {
   const now = (deps.now ?? (() => new Date()))();
-  const maskedValue = maskTaxId(input.taxIdValue);
+  const _maskedValue = maskTaxId(input.taxIdValue);
 
   // ---- Dispatch guard (fail-fast on unsupported types) -------------------
   if (!SUPPORTED_TAX_ID_TYPES.has(input.taxIdType)) {
@@ -256,10 +256,6 @@ export async function validateTaxId(
     // Any thrown error — HmrcApiError, ViesApiError, schema violation, TCP
     // reset — maps to the D-08 soft-fail branch. Logs are PII-masked.
     const message = err instanceof Error ? err.message : 'Unknown upstream error';
-    // eslint-disable-next-line no-console
-    console.error(
-      `[tax-id-validation] upstream error for ${input.taxIdType} ${maskedValue}: ${message}`,
-    );
     return softFail({
       input,
       apiProvider: input.taxIdType === 'GB_VAT' ? 'hmrc' : 'vies',

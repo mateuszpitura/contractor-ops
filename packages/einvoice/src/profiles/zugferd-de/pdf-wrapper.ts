@@ -165,8 +165,8 @@ export async function wrapToPdfA3(
 function hashTo16Bytes(seed: string): string {
   // Simple FNV-1a 64-bit hash, repeated twice (suffixing the counter) to
   // get 128 bits. Byte-stable because JS string ops are deterministic.
-  const h0 = fnv1a64(seed + ':0');
-  const h1 = fnv1a64(seed + ':1');
+  const h0 = fnv1a64(`${seed}:0`);
+  const h1 = fnv1a64(`${seed}:1`);
   const toHex = (n: bigint): string => n.toString(16).padStart(16, '0');
   return toHex(h0) + toHex(h1);
 }

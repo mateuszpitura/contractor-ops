@@ -5,7 +5,6 @@
 // Phase 63 · Plan 05 · D-10 — BoE base rate history table.
 // Sorted by effectiveFrom DESC. Columns: date, rate, source, recorded by, notes, actions.
 
-import { useQueryClient } from '@tanstack/react-query';
 import { PencilIcon, TrashIcon } from 'lucide-react';
 import { useState } from 'react';
 import { DeleteBoeRateDialog } from '@/components/admin/boe-rate/delete-boe-rate-dialog';

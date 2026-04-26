@@ -46,7 +46,7 @@ describe('ReassessmentTriggerDismissDialog', () => {
     const confirm = screen.getByRole('button', { name: /Dismiss$/i });
     fireEvent.click(confirm);
     expect(onConfirm).toHaveBeenCalledTimes(1);
-    expect(onConfirm.mock.calls[0]![0]).toContain('material');
+    expect(onConfirm.mock.calls[0]?.[0]).toContain('material');
   });
 
   it('surfaces the min-length error with role="alert" after a rejected submit', () => {

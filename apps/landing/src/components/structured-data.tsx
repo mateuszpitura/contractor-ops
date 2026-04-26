@@ -70,7 +70,7 @@ export function StructuredData({
     <>
       {schemas.map(schema => (
         <script
-          key={(schema as { ['@type']?: string })['@type'] ?? JSON.stringify(schema).slice(0, 32)}
+          key={(schema as { '@type'?: string })['@type'] ?? JSON.stringify(schema).slice(0, 32)}
           type="application/ld+json"
           // biome-ignore lint/security/noDangerouslySetInnerHtml: JSON-LD structured data from static schema objects
           dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}

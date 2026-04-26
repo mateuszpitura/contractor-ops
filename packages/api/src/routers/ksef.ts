@@ -160,8 +160,7 @@ export const ksefRouter = router({
             },
           },
         });
-      } catch (error) {
-        console.error('[ksef.connect] Failed to create QStash schedule:', error);
+      } catch (_error) {
         // Don't fail the connection — schedule can be retried
       }
 
@@ -197,8 +196,8 @@ export const ksefRouter = router({
         try {
           const qstash = getQStashClient();
           await qstash.schedules.delete(scheduleId);
-        } catch (error) {
-          console.error('[ksef.disconnect] Failed to delete QStash schedule:', error);
+        } catch (_error) {
+          /* fire-and-forget */
         }
       }
 

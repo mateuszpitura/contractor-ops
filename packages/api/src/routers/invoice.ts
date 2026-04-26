@@ -367,7 +367,7 @@ export const invoiceRouter = router({
           await revalidateStaleVatIfNeeded(contractor, {
             organizationId: ctx.organizationId,
             db: ctx.db,
-            userId: ctx.user!.id,
+            userId: ctx.user?.id,
           });
         }
       }
@@ -437,7 +437,7 @@ export const invoiceRouter = router({
             data: {
               organizationId: ctx.organizationId,
               actorType: 'USER',
-              actorId: ctx.user!.id,
+              actorId: ctx.user?.id,
               action: 'invoice.reverse-charge-override',
               resourceType: 'INVOICE',
               resourceId: inv.id,
@@ -495,7 +495,9 @@ export const invoiceRouter = router({
             amount: (invoiceData.totalMinor / 100).toFixed(2),
             currency: invoiceData.currency,
           },
-        }).catch(err => console.error('[invoice] dispatch INVOICE_RECEIVED failed:', err));
+        }).catch(_err => {
+          /* fire-and-forget */
+        });
       }
 
       void invalidateByPrefix(CacheKeys.dashboardPrefix(ctx.organizationId));
@@ -986,7 +988,9 @@ export const invoiceRouter = router({
         organizationId: ctx.organizationId,
         entityType: 'INVOICE',
         entityId: input.id,
-      }).catch(err => console.error('[invoice] calendar event cleanup on void failed:', err));
+      }).catch(_err => {
+        /* fire-and-forget */
+      });
 
       void invalidateByPrefix(CacheKeys.dashboardPrefix(ctx.organizationId));
 

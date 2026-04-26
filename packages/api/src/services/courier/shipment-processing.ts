@@ -1,8 +1,11 @@
 import type { Prisma } from '@contractor-ops/db';
+import { createLogger } from '@contractor-ops/logger';
 import { checkShipmentTaskCompletion } from '../equipment-workflow.js';
 import type { DbClient } from '../types.js';
 import { NOTIFICATION_STATUSES } from './inpost-status-mapper.js';
 import { dispatchShipmentNotification } from './shipment-notification.js';
+
+const log = createLogger({ service: 'shipment-processing' });
 
 // ---------------------------------------------------------------------------
 // Shared Shipment Processing
@@ -116,7 +119,9 @@ export async function processShipmentStatusChange(
     workflowTaskRunId: shipment.workflowTaskRunId,
     direction: shipment.direction as 'OUTBOUND' | 'RETURN',
     currentStatus: mappedStatus,
-  }).catch(console.error);
+  }).catch(err => {
+    log.error({ err, shipmentId: shipment.id }, 'checkShipmentTaskCompletion failed');
+  });
 
   // 5. Auto-advance equipment status
   await tryAdvanceEquipmentStatus(db, shipment.equipmentId, mappedStatus, shipment.direction);

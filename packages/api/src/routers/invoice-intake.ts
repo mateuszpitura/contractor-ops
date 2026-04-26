@@ -424,7 +424,7 @@ export const invoiceIntakeRouter = router({
     .input(intakeIdInput)
     .query(async ({ ctx, input }) => {
       const intake = await loadIntakeScoped(ctx.db as never, input.intakeId, ctx.organizationId);
-      if (!(intake && intake.rawFileKey)) {
+      if (!intake?.rawFileKey) {
         throw new TRPCError({ code: 'NOT_FOUND', message: 'NOT_FOUND' });
       }
       const { signedUrl, expiresInSeconds } = await signExistingDownload(intake.rawFileKey, 300);

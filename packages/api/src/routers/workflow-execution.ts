@@ -134,8 +134,8 @@ function syncTaskToExternalSystems(
         if (connection) {
           await transitionJiraIssue(db, organizationId, connection.id, task.id, targetStatus);
         }
-      } catch (err) {
-        console.error(`[workflow] Outbound Jira transition failed for ${task.id}:`, err);
+      } catch (_err) {
+        /* fire-and-forget */
       }
     })();
   }
@@ -145,8 +145,8 @@ function syncTaskToExternalSystems(
       try {
         const { syncTaskStatusToLinear } = await import('../services/linear-issue-sync.js');
         await syncTaskStatusToLinear(db, task.id, targetStatus);
-      } catch (err) {
-        console.error(`[workflow] Outbound Linear sync failed for ${task.id}:`, err);
+      } catch (_err) {
+        /* fire-and-forget */
       }
     })();
   }
@@ -316,12 +316,12 @@ async function syncJiraTasksAfterStart(
     if (!connection) return;
 
     for (const task of todoTasks) {
-      createJiraIssue(db, organizationId, connection.id, task.id).catch(err =>
-        console.error(`[workflow/startRun] Jira issue creation failed for task ${task.id}:`, err),
-      );
+      createJiraIssue(db, organizationId, connection.id, task.id).catch(_err => {
+        /* fire-and-forget */
+      });
     }
-  } catch (err) {
-    console.error('[workflow/startRun] Jira issue creation setup failed:', err);
+  } catch (_err) {
+    /* fire-and-forget */
   }
 }
 
@@ -357,12 +357,12 @@ async function syncLinearTasksAfterStart(
         assigneeEmail: undefined,
         teamId: linearConfig.teamId,
         teamKey: linearConfig.teamKey,
-      }).catch(err =>
-        console.error(`[workflow/startRun] Linear issue creation failed for task ${task.id}:`, err),
-      );
+      }).catch(_err => {
+        /* fire-and-forget */
+      });
     }
-  } catch (err) {
-    console.error('[workflow/startRun] Linear issue creation setup failed:', err);
+  } catch (_err) {
+    /* fire-and-forget */
   }
 }
 
@@ -396,15 +396,12 @@ async function syncCalendarTasksAfterStart(
         contractName,
         taskName: task.title,
         userId,
-      }).catch(err =>
-        console.error(
-          `[workflow/startRun] Calendar event creation failed for task ${task.id}:`,
-          err,
-        ),
-      );
+      }).catch(_err => {
+        /* fire-and-forget */
+      });
     }
-  } catch (err) {
-    console.error('[workflow/startRun] Calendar event creation setup failed:', err);
+  } catch (_err) {
+    /* fire-and-forget */
   }
 }
 
@@ -554,7 +551,9 @@ export const workflowExecutionRouter = router({
             workflowName: run.run.workflowTemplate.name,
             contractorName: run.contractorName,
           },
-        }).catch(err => console.error('[workflow] dispatch TASK_ASSIGNED failed:', err));
+        }).catch(_err => {
+          /* fire-and-forget */
+        });
       }
 
       // Fire-and-forget: sync eligible tasks to external integrations
@@ -1067,7 +1066,9 @@ export const workflowExecutionRouter = router({
             updated.workflowRun.contractor?.displayName ??
             'Unknown',
         },
-      }).catch(err => console.error('[workflow] dispatch TASK_ASSIGNED (reassign) failed:', err));
+      }).catch(_err => {
+        /* fire-and-forget */
+      });
 
       return plain(updated);
     }),

@@ -129,7 +129,7 @@ function toMinorUnits(value: unknown): number {
   const negative = trimmed.startsWith('-');
   const abs = negative ? trimmed.slice(1) : trimmed;
   const [intPart = '0', fracPartRaw = ''] = abs.split('.');
-  const fracPart = (fracPartRaw + '00').slice(0, 2);
+  const fracPart = `${fracPartRaw}00`.slice(0, 2);
   const minor = Number(intPart) * 100 + Number(fracPart);
   return negative ? -minor : minor;
 }

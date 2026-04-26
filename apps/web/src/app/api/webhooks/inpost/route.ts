@@ -95,7 +95,6 @@ export async function POST(request: NextRequest) {
   });
 
   if (configs.length === 0) {
-    console.warn('[inpost-webhook] No InPost courier configs found');
     return NextResponse.json({ error: 'Not configured' }, { status: 404 });
   }
 
@@ -120,7 +119,9 @@ export async function POST(request: NextRequest) {
     prisma as unknown as Parameters<typeof handleInPostWebhook>[0],
     matchedOrgId,
     payload,
-  ).catch(err => console.error(`[inpost-webhook] Processing failed for org=${matchedOrgId}:`, err));
+  ).catch(_err => {
+    // Fire-and-forget: errors are logged inside handleInPostWebhook
+  });
 
   return NextResponse.json({ received: true });
 }

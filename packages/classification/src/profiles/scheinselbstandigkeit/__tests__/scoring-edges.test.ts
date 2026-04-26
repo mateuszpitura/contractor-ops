@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { AnswerMap } from '../../../types/assessment.js';
-import { CATEGORY_WEIGHTS, SCHEIN_QUESTIONS } from '../rule-set.js';
+import { SCHEIN_QUESTIONS } from '../rule-set.js';
 import { billingRatioToScore, MissingAnswerError, scoreSchein } from '../scoring.js';
 
 /** Build a full answer map with all scores at 0 (green baseline). */
@@ -82,7 +82,7 @@ describe("per-category 'integration' verdict", () => {
     const result = scoreSchein(baseAnswers(overrides));
     const integrationCategory = result.outcome.categories.find(c => c.category === 'integration');
     expect(integrationCategory).toBeDefined();
-    expect(integrationCategory!.verdict).toBe('red');
+    expect(integrationCategory?.verdict).toBe('red');
   });
 
   it("returns 'green' when all integration criteria score 0", () => {
@@ -90,6 +90,6 @@ describe("per-category 'integration' verdict", () => {
     const result = scoreSchein(baseAnswers());
     const integrationCategory = result.outcome.categories.find(c => c.category === 'integration');
     expect(integrationCategory).toBeDefined();
-    expect(integrationCategory!.verdict).toBe('green');
+    expect(integrationCategory?.verdict).toBe('green');
   });
 });

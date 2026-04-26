@@ -3,6 +3,7 @@
  * creation, courier config management, connection testing, and label retrieval.
  */
 import type { Prisma, Shipment } from '@contractor-ops/db/generated/prisma/client';
+import { createLogger } from '@contractor-ops/logger';
 import {
   dpdConfigSchema,
   dpdShipmentCreateSchema,
@@ -35,6 +36,8 @@ import {
 // ---------------------------------------------------------------------------
 // Equipment Couriers sub-router
 // ---------------------------------------------------------------------------
+
+const log = createLogger({ service: 'equipment-couriers-router' });
 
 export const equipmentCouriersRouter = router({
   // ─── InPost Integration ─────────────────────────────────────────────
@@ -413,7 +416,9 @@ export const equipmentCouriersRouter = router({
           workflowTaskRunId: input.workflowTaskRunId,
           direction: input.direction,
           currentStatus: 'CREATED',
-        }).catch(console.error);
+        }).catch(err => {
+          log.error({ err }, 'checkShipmentTaskCompletion failed');
+        });
       }
 
       // Fetch created shipments with events
@@ -600,7 +605,9 @@ export const equipmentCouriersRouter = router({
           workflowTaskRunId: input.workflowTaskRunId,
           direction: input.direction,
           currentStatus: 'CREATED',
-        }).catch(console.error);
+        }).catch(err => {
+          log.error({ err }, 'checkShipmentTaskCompletion failed');
+        });
       }
 
       // Fetch created shipments with events

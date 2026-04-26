@@ -2,8 +2,11 @@ import type { Prisma, PrismaClient } from '@contractor-ops/db';
 import { GoogleCalendarAdapter } from '@contractor-ops/integrations/adapters/google-calendar-adapter';
 import { OutlookCalendarAdapter } from '@contractor-ops/integrations/adapters/outlook-calendar-adapter';
 import { decryptCredentials } from '@contractor-ops/integrations/services/credential-service';
+import { createLogger } from '@contractor-ops/logger';
 import type { CalendarEventMetadata } from '@contractor-ops/validators';
 import type { CalendarPrismaClient } from './types.js';
+
+const log = createLogger({ service: 'calendar-event-service' });
 
 /** Union calendar clients are not a single callable delegate; narrow for model access. */
 function calendarOrm(prisma: CalendarPrismaClient): PrismaClient {
@@ -139,8 +142,8 @@ export async function createCalendarEvent(
     );
 
     logRejected(results, 'create');
-  } catch (error) {
-    console.error('[calendar-event-service] Unexpected error in createCalendarEvent:', error);
+  } catch (_error) {
+    /* fire-and-forget */
   }
 }
 
@@ -236,8 +239,8 @@ export async function updateCalendarEvent(
     );
 
     logRejected(results, 'update');
-  } catch (error) {
-    console.error('[calendar-event-service] Unexpected error in updateCalendarEvent:', error);
+  } catch (_error) {
+    /* fire-and-forget */
   }
 }
 
@@ -260,8 +263,8 @@ export async function deleteCalendarEvent(
     );
 
     logRejected(results, 'delete');
-  } catch (error) {
-    console.error('[calendar-event-service] Unexpected error in deleteCalendarEvent:', error);
+  } catch (_error) {
+    /* fire-and-forget */
   }
 }
 
@@ -400,8 +403,8 @@ async function deleteEventForLink(
         await outlookAdapter.deleteEvent(credentials.accessToken, link.externalId);
       }
     }
-  } catch (deleteError) {
-    console.error('[calendar-event-service] Failed to delete provider event:', deleteError);
+  } catch (_deleteError) {
+    // fire-and-forget
   }
 
   // Always clean up the ExternalLink
@@ -418,10 +421,7 @@ async function deleteEventForLink(
 function logRejected(results: PromiseSettledResult<unknown>[], operation: string): void {
   for (const result of results) {
     if (result.status === 'rejected') {
-      console.error(
-        `[calendar-event-service] Failed to ${operation} calendar event:`,
-        result.reason,
-      );
+      log.warn({ err: result.reason, operation }, 'calendar event operation rejected');
     }
   }
 }

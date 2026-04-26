@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { render, screen, setup } from '@/test/test-utils';
+import { render, screen } from '@/test/test-utils';
 import { NotificationPopover } from '../notification-popover';
 
 const { mockUseQuery, mockUseMutation, mockPush } = vi.hoisted(() => ({

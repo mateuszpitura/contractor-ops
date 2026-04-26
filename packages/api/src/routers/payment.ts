@@ -1224,7 +1224,7 @@ export const paymentRouter = router({
         },
       });
 
-      if (!(item && item.invoice)) {
+      if (!item?.invoice) {
         throw new TRPCError({
           code: 'NOT_FOUND',
           message: 'Payment run item not found',

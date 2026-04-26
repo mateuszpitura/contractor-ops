@@ -169,8 +169,6 @@ function toCiiTax(tax: EInvoiceTaxSubtotal, currencyCode: string): CiiTradeTax {
     case 'E':
       base['ram:ExemptionReason'] = XRECHNUNG_KLEINUNTERNEHMER_REASON;
       break;
-    case 'S':
-    case 'Z':
     default:
       if (tax.percent != null) {
         base['ram:RateApplicablePercent'] = String(tax.percent);

@@ -283,7 +283,7 @@ export const contractRouter = router({
             (contract as { contractor?: { displayName: string } }).contractor?.displayName ??
             'Unknown',
           expiryDate: contract.endDate,
-          userId: ctx.user!.id,
+          userId: ctx.user?.id,
         }).catch(err => log.error({ err }, 'calendar sync on create failed'));
       }
 

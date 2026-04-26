@@ -204,9 +204,9 @@ export const equipmentReturnsRouter = router({
           trackingNumber: shipmentResult.trackingNumber,
           targetPoint: returnRequest.targetPointName,
         },
-      }).catch(err =>
-        console.error('[equipment] Failed to dispatch return approval notification:', err),
-      );
+      }).catch(_err => {
+        /* fire-and-forget */
+      });
 
       // Audit log
       await ctx.db.auditLog.create({
@@ -307,9 +307,9 @@ export const equipmentReturnsRouter = router({
           contractorId: returnRequest.contractorId,
           reason: input.reason,
         },
-      }).catch(err =>
-        console.error('[equipment] Failed to dispatch return rejection notification:', err),
-      );
+      }).catch(_err => {
+        /* fire-and-forget */
+      });
 
       // Audit log
       await ctx.db.auditLog.create({

@@ -103,7 +103,7 @@ describe('renderInvoiceToPdfBuffer', () => {
     const doc = await PDFDocument.load(out);
     const producer = doc.getProducer();
     expect(producer).toBeTruthy();
-    expect(producer!.length).toBeGreaterThan(0);
+    expect(producer?.length).toBeGreaterThan(0);
   });
 
   it('Kleinunternehmer fixture contains locked §19 UStG phrase', async () => {

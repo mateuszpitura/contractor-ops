@@ -455,6 +455,6 @@ describe('runReassessmentTriggerScan — since-last-run (CronScanState)', () => 
     expect(result2.triggersCreated).toBe(0);
     const cursor = state.scanState.get('classification-reassessment-triggers');
     expect(cursor).toBeDefined();
-    expect(cursor!.lastScanCompletedAt).toBeInstanceOf(Date);
+    expect(cursor?.lastScanCompletedAt).toBeInstanceOf(Date);
   });
 });

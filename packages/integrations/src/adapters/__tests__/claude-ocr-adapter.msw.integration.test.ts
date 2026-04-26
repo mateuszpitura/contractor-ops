@@ -21,7 +21,6 @@ describe('ClaudeOcrAdapter MSW integration', () => {
 
     const result = await adapter.extractInvoice({
       pdfBase64: minimalPdfBase64,
-      fileName: 'faktura.pdf',
       pageCount: 1,
       fileName: 'test-invoice.pdf',
     });

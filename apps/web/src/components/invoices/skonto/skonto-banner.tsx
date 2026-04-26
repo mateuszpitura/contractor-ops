@@ -4,7 +4,6 @@ import { CheckCircle2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { Skeleton } from '@/components/ui/skeleton';
-import { cn } from '@/lib/utils';
 import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------

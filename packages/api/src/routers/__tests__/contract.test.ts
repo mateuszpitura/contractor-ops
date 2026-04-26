@@ -969,7 +969,7 @@ describe('contract router', () => {
         targetStatus: 'TERMINATED',
       });
 
-      const txFn = mockPrisma.$transaction.mock.calls[0]?.[0];
+      const _txFn = mockPrisma.$transaction.mock.calls[0]?.[0];
       // The transaction was called, verify updateMany was called
       expect(mockPrisma.contract.updateMany).toHaveBeenCalledWith(
         expect.objectContaining({

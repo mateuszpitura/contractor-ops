@@ -45,7 +45,7 @@ test.describe('Peppol inbound (Storecove webhook) smoke', () => {
     expect([401, 500]).toContain(res.status());
     const json = (await res.json()) as { error?: string };
     expect(typeof json.error).toBe('string');
-    expect(json.error!.length).toBeGreaterThan(0);
+    expect(json.error?.length).toBeGreaterThan(0);
   });
 
   // -------------------------------------------------------------------------

@@ -1,4 +1,4 @@
-import { render, screen, setup } from '@/test/test-utils';
+import { render, screen } from '@/test/test-utils';
 import { NotificationPreferencesSection } from '../notification-preferences-section';
 
 vi.mock('@tanstack/react-query', async importOriginal => {

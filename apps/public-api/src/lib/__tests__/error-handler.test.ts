@@ -58,7 +58,7 @@ function makeContext() {
 
 describe('handleError', () => {
   describe('TRPCError → HTTP status mapping', () => {
-    const cases: Array<[string, number]> = [
+    const cases: [string, number][] = [
       ['PARSE_ERROR', 422],
       ['BAD_REQUEST', 400],
       ['UNAUTHORIZED', 401],

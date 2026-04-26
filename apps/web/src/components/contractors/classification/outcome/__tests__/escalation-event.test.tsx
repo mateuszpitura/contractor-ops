@@ -4,7 +4,6 @@
 // when the verdict tone is warning (amber/indeterminate), and is NOT
 // called for non-amber verdicts.
 
-import type { Ir35Outcome, ScheinselbstandigkeitOutcome } from '@contractor-ops/classification';
 import { render } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { VerdictBanner } from '../verdict-banner';

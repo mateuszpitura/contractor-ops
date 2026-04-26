@@ -73,37 +73,37 @@ describe('TERMINAL_STATUSES', () => {
 
 describe('SHIPMENT_TO_EQUIPMENT_STATUS', () => {
   it('maps DELIVERED + OUTBOUND to DELIVERED', () => {
-    expect(SHIPMENT_TO_EQUIPMENT_STATUS['DELIVERED']?.['OUTBOUND']).toBe('DELIVERED');
+    expect(SHIPMENT_TO_EQUIPMENT_STATUS.DELIVERED?.OUTBOUND).toBe('DELIVERED');
   });
 
   it('maps DELIVERED + RETURN to RETURNED', () => {
-    expect(SHIPMENT_TO_EQUIPMENT_STATUS['DELIVERED']?.['RETURN']).toBe('RETURNED');
+    expect(SHIPMENT_TO_EQUIPMENT_STATUS.DELIVERED?.RETURN).toBe('RETURNED');
   });
 
   it('maps RETURNED + RETURN to RETURNED', () => {
-    expect(SHIPMENT_TO_EQUIPMENT_STATUS['RETURNED']?.['RETURN']).toBe('RETURNED');
+    expect(SHIPMENT_TO_EQUIPMENT_STATUS.RETURNED?.RETURN).toBe('RETURNED');
   });
 
   it('returns undefined for RETURNED + OUTBOUND', () => {
-    expect(SHIPMENT_TO_EQUIPMENT_STATUS['RETURNED']?.['OUTBOUND']).toBeUndefined();
+    expect(SHIPMENT_TO_EQUIPMENT_STATUS.RETURNED?.OUTBOUND).toBeUndefined();
   });
 
   it('returns undefined for unmapped status', () => {
-    expect(SHIPMENT_TO_EQUIPMENT_STATUS['IN_TRANSIT']).toBeUndefined();
+    expect(SHIPMENT_TO_EQUIPMENT_STATUS.IN_TRANSIT).toBeUndefined();
   });
 });
 
 describe('EQUIPMENT_STATUS_TRANSITIONS', () => {
   it('allows IN_TRANSIT -> DELIVERED', () => {
-    expect(EQUIPMENT_STATUS_TRANSITIONS['IN_TRANSIT']).toContain('DELIVERED');
+    expect(EQUIPMENT_STATUS_TRANSITIONS.IN_TRANSIT).toContain('DELIVERED');
   });
 
   it('does not allow RETIRED -> anything', () => {
-    expect(EQUIPMENT_STATUS_TRANSITIONS['RETIRED']).toEqual([]);
+    expect(EQUIPMENT_STATUS_TRANSITIONS.RETIRED).toEqual([]);
   });
 
   it('allows RETURN_IN_TRANSIT -> RETURNED', () => {
-    expect(EQUIPMENT_STATUS_TRANSITIONS['RETURN_IN_TRANSIT']).toContain('RETURNED');
+    expect(EQUIPMENT_STATUS_TRANSITIONS.RETURN_IN_TRANSIT).toContain('RETURNED');
   });
 });
 

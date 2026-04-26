@@ -125,7 +125,6 @@ async function sendNotificationEmail(userId: string, event: NotificationEvent): 
   });
 
   if (!user?.email) {
-    console.warn(`[notification-service] No email for user=${userId}, skipping email`);
     return;
   }
 
@@ -240,8 +239,8 @@ async function dispatchToUser(
   if (prefs.channelEmail) {
     try {
       await sendNotificationEmail(userId, event);
-    } catch (error) {
-      console.error(`[notification-service] Email send failed for user=${userId}:`, error);
+    } catch (_error) {
+      /* fire-and-forget */
     }
   }
 
@@ -269,11 +268,8 @@ async function dispatchToMessagingProviders(
       if (!recipientId) continue;
 
       await sendProviderMessage(provider, event, recipientId);
-    } catch (error) {
-      console.error(
-        `[notification-service] ${provider.platform} send failed for user=${userId}:`,
-        error,
-      );
+    } catch (_error) {
+      /* fire-and-forget */
     }
   }
 }
@@ -330,8 +326,8 @@ async function dispatchChannelAlerts(event: NotificationEvent): Promise<void> {
         details: [],
         viewUrl: buildEntityUrl(event.entityType ?? 'unknown', event.entityId ?? ''),
       });
-    } catch (error) {
-      console.error(`[notification-service] ${provider.platform} channel alert failed:`, error);
+    } catch (_error) {
+      /* fire-and-forget */
     }
   }
 }

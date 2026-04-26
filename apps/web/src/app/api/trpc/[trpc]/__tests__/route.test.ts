@@ -97,7 +97,7 @@ describe('tRPC route handler', () => {
     expect(res.status).toBe(200);
     expect(mockFetchRequestHandler).toHaveBeenCalledTimes(1);
 
-    const call = mockFetchRequestHandler.mock.calls[0]![0];
+    const call = mockFetchRequestHandler.mock.calls[0]?.[0];
     expect(call.endpoint).toBe('/api/trpc');
     expect(call.req).toBe(req);
   });
@@ -109,7 +109,7 @@ describe('tRPC route handler', () => {
     expect(res).toBeInstanceOf(Response);
     expect(mockFetchRequestHandler).toHaveBeenCalledTimes(1);
 
-    const call = mockFetchRequestHandler.mock.calls[0]![0];
+    const call = mockFetchRequestHandler.mock.calls[0]?.[0];
     expect(call.req).toBe(req);
   });
 
@@ -123,7 +123,7 @@ describe('tRPC route handler', () => {
   it('passes createContext that forwards request headers', async () => {
     await POST(makeRequest('POST'));
 
-    const call = mockFetchRequestHandler.mock.calls[0]![0];
+    const call = mockFetchRequestHandler.mock.calls[0]?.[0];
     expect(call.createContext).toBeTypeOf('function');
 
     // Invoke the createContext to verify it calls our mock
@@ -134,7 +134,7 @@ describe('tRPC route handler', () => {
   it('provides onError callback that calls Sentry.captureException', async () => {
     await GET(makeRequest('GET'));
 
-    const call = mockFetchRequestHandler.mock.calls[0]![0];
+    const call = mockFetchRequestHandler.mock.calls[0]?.[0];
     expect(call.onError).toBeTypeOf('function');
 
     // Simulate an error

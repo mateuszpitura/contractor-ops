@@ -709,7 +709,7 @@ describe('workflowExecutionRouter', () => {
     });
 
     it('creates a workflow run with tasks and returns it', async () => {
-      const now = new Date();
+      const _now = new Date();
       mockPrisma.workflowTemplate.findFirst.mockResolvedValueOnce({
         id: TEMPLATE_ID,
         organizationId: ORG_ID,

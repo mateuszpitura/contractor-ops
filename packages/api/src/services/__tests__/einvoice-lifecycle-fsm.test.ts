@@ -58,9 +58,11 @@ describe('transitionValidation — legal edges', () => {
     ['INVALID', 'validate_complete_valid', 'VALID'],
     ['INVALID', 'validate_complete_warnings', 'WARNINGS'],
     ['INVALID', 'validate_complete_invalid', 'INVALID'],
-  ] as Array<
-    [EInvoiceValidationStatus, ValidationEvent, EInvoiceValidationStatus]
-  >)('transitionValidation(%s, %s) → %s', (current, event, expected) => {
+  ] as [
+    EInvoiceValidationStatus,
+    ValidationEvent,
+    EInvoiceValidationStatus,
+  ][])('transitionValidation(%s, %s) → %s', (current, event, expected) => {
     expect(transitionValidation(current, event)).toBe(expected);
   });
 });
@@ -75,9 +77,11 @@ describe('transitionTransmission — legal edges', () => {
     ['FAILED', 'retry', 'QUEUED'],
     // Idempotent webhook re-delivery — DELIVERED is a terminal sink.
     ['DELIVERED', 'delivery_ack', 'DELIVERED'],
-  ] as Array<
-    [EInvoiceTransmissionStatus, TransmissionEvent, EInvoiceTransmissionStatus]
-  >)('transitionTransmission(%s, %s) → %s', (current, event, expected) => {
+  ] as [
+    EInvoiceTransmissionStatus,
+    TransmissionEvent,
+    EInvoiceTransmissionStatus,
+  ][])('transitionTransmission(%s, %s) → %s', (current, event, expected) => {
     expect(transitionTransmission(current, event)).toBe(expected);
   });
 });

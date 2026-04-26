@@ -57,7 +57,7 @@ export function AddBoeRateDialog({ open, onOpenChange }: AddBoeRateDialogProps) 
     e.preventDefault();
 
     const rate = parseFloat(ratePercent);
-    if (isNaN(rate) || rate < 0 || rate > 99.99) {
+    if (Number.isNaN(rate) || rate < 0 || rate > 99.99) {
       toast.error('Validation error', {
         description: 'Rate must be between 0 and 99.99.',
       });

@@ -406,7 +406,7 @@ describe('EquipmentTable', () => {
     } as unknown as never);
     render(<EquipmentTable {...defaultProps} />);
     const table = document.querySelector('table');
-    const headers = table!.querySelectorAll('th');
+    const headers = table?.querySelectorAll('th');
     expect(headers.length).toBeGreaterThan(2);
   });
 
@@ -429,7 +429,7 @@ describe('EquipmentTable', () => {
     } as unknown as never);
     render(<EquipmentTable {...defaultProps} />);
     const table = document.querySelector('table');
-    const sortButtons = table!.querySelectorAll('th button');
+    const sortButtons = table?.querySelectorAll('th button');
     expect(sortButtons.length).toBeGreaterThan(0);
   });
 
@@ -452,7 +452,7 @@ describe('EquipmentTable', () => {
     } as unknown as never);
     const { user } = setup(<EquipmentTable {...defaultProps} />);
     const table = document.querySelector('table');
-    const sortButtons = table!.querySelectorAll('th button');
+    const sortButtons = table?.querySelectorAll('th button');
     if (sortButtons.length > 0) {
       await user.click(sortButtons[0] as HTMLElement);
       // Sort state should change

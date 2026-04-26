@@ -125,8 +125,7 @@ async function loadDecryptedSubmitterConfig(
 
   if (
     !(
-      org &&
-      org.bacsServiceUserNumberEncrypted &&
+      org?.bacsServiceUserNumberEncrypted &&
       org.bacsSubmitterSortCodeEncrypted &&
       org.bacsSubmitterAccountNumberEncrypted &&
       org.bacsSubmitterName
@@ -223,11 +222,7 @@ async function loadRunWithBacsItems(
 
   const bacsItems: BacsExportItem[] = items.map(item => {
     if (
-      !(
-        item.billingProfile &&
-        item.billingProfile.ukSortCodeEncrypted &&
-        item.billingProfile.ukAccountNumberEncrypted
-      )
+      !(item.billingProfile?.ukSortCodeEncrypted && item.billingProfile.ukAccountNumberEncrypted)
     ) {
       throw new TRPCError({
         code: 'PRECONDITION_FAILED',

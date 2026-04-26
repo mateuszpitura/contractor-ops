@@ -24,7 +24,7 @@ import { navigateToDashboard, skipIfUnauthenticated } from './helpers';
 // skips gracefully when the authenticated org has no invoices.
 // ---------------------------------------------------------------------------
 
-const currentDir = dirname(fileURLToPath(import.meta.url));
+const _currentDir = dirname(fileURLToPath(import.meta.url));
 
 test.describe('Phase 62 outbound ZUGFeRD download', () => {
   test.beforeEach(async ({ page }) => {

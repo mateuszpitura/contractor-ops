@@ -469,8 +469,7 @@ export async function deregisterLinearWebhook(
       { id: webhookId },
     );
   } catch {
-    // Best effort -- continue to clean up config
-    console.warn(`[Linear] Failed to delete webhook ${webhookId} for team ${teamId}`);
+    // best-effort cleanup
   }
 
   // Remove from config

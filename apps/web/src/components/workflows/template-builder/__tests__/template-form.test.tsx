@@ -333,7 +333,7 @@ describe('TemplateForm', () => {
     render(<TemplateForm />);
     // isDirty is false in mock, so no dot indicator should appear
     const saveBtn = screen.getByText('Save template').closest('button');
-    const dot = saveBtn!.querySelector('span.rounded-full');
+    const dot = saveBtn?.querySelector('span.rounded-full');
     expect(dot).toBeNull();
   });
 

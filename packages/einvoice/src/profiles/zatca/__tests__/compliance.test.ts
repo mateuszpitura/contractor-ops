@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import type { ZatcaConnectionData } from '../compliance.js';
 import { computeZatcaComplianceStatus } from '../compliance.js';
 
 describe('computeZatcaComplianceStatus', () => {

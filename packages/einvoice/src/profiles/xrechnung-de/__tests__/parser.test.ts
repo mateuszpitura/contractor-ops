@@ -296,7 +296,7 @@ describe('parseXrechnungCii — UTF-8 BOM stripping', () => {
   it('parses a BOM-prefixed CII XML successfully', () => {
     const original = makeMinimalInvoice();
     const xml = generateXRechnungCii(original, null);
-    const withBom = '\uFEFF' + xml;
+    const withBom = `\uFEFF${xml}`;
     const { invoice, profileLevel } = parseXrechnungCii(withBom);
 
     expect(profileLevel).toBe('XRECHNUNG');

@@ -13,11 +13,7 @@ import type {
   Ir35AreaVerdict,
   Ir35Verdict,
 } from '@contractor-ops/classification';
-import {
-  IR35_DISPUTE_PROCESS_EN,
-  SDS_APPROVAL_STATEMENT_EN,
-  SDS_DISCLAIMER_EN,
-} from '@contractor-ops/validators';
+import { IR35_DISPUTE_PROCESS_EN, SDS_DISCLAIMER_EN } from '@contractor-ops/validators';
 import { Document, Page, StyleSheet, Text, View } from '@react-pdf/renderer';
 
 export const TEMPLATE_VERSION = 1 as const;
