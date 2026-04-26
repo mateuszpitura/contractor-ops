@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v6.0
 milestone_name: Platform Maturity & Operational Hardening
-status: Waves 0–2 shipped GREEN. Plan 70-09 requires human review before Prisma schema + multi-region backfill.
-stopped_at: Phase 76 context gathered
-last_updated: "2026-04-26T23:29:43.453Z"
-last_activity: 2026-04-26 — Phase 70 Waves 0–2 verified
+status: Phase 70 Waves 0–2 shipped GREEN; Phase 71 planned (7 plans across 4 waves; 2 marked autonomous:false for multi-region work). Phase 70 Plan 09 + 71-03 + 71-07 require human-supervised sessions.
+stopped_at: Phase 71 planned
+last_updated: "2026-04-27T01:43:00.000Z"
+last_activity: 2026-04-27 — Phase 71 planned
 progress:
   percent: 9
 ---
@@ -23,12 +23,34 @@ See: .planning/PROJECT.md (updated 2026-04-26 — v6.0 milestone started)
 
 Phase: 70 — Wave 0–2 complete (8/10 plans). CHECKPOINT at Plan 70-09.
 Plan: 70-09 (multi-region migration — `autonomous: false`)
-Status: Waves 0–2 shipped GREEN. Plan 70-09 requires human review before Prisma schema + multi-region backfill.
-Last activity: 2026-04-26 — Phase 70 Waves 0–2 verified
+Status: Waves 0–2 shipped GREEN. Plan 70-09 requires human review. Phase 71 fully planned (7 plans, ready to execute after Phase 70 closes).
+Last activity: 2026-04-27 — Phase 71 planned
 
-Progress: [█░░░░░░░░░] 9% (v6.0 — 0/11 phases complete; Phase 70 at 8/10 plans)
+Progress: [█░░░░░░░░░] 9% (v6.0 — 0/11 phases complete; Phase 70 at 8/10 plans; Phase 71 planned)
 
 **Active Phase:** 70 (v6.0 Foundation) — 8/10 plans landed, paused at multi-region checkpoint
+**Next Phase:** 71 (F1 Compliance — Policy Package + Schema + Classification Reconcile) — planned, ready to execute
+
+## Phase 71 Planned (2026-04-27)
+
+7 plans across 4 waves; 2 marked `autonomous: false` (Plans 71-03 schema migration + 71-07 backfill — both follow Phase 70 Plan 09 multi-region precedent):
+
+| Wave | Plan | Title | autonomous | Requirements |
+|------|------|-------|------------|--------------|
+| 0 | 71-01 | Failing test scaffolds + new `@contractor-ops/compliance-policy` package skeleton | true | All 4 (RED state) |
+| 1 | 71-02 | 13-rule policy registry seeds (5 jurisdictions) + 13 PENDING signoff entries + TZ-aware isExpired helper | true | COMPL-08, COMPL-09 |
+| 2 | 71-03 | Schema migration — 4 cols + 2 enums + 1 col on ClassificationAssessment + drift index | **false** | COMPL-08 |
+| 2 | 71-04 | `submit` transactional refactor + supersession-on-outcome-change + materialiseFromPolicy/supersedeAndMaterialise helpers | true | COMPL-02 |
+| 3 | 71-05 | `recreateComplianceAssessment` admin tRPC mutation + idempotency guard + single audit-log emission | true | COMPL-10 |
+| 3 | 71-06 | Recompute UI button + bulk action + 4-locale i18n strings | true | COMPL-10 |
+| 3 | 71-07 | Idempotent backfill script + multi-region run docs | **false** | COMPL-08 |
+
+**Plan-checker verdict:** PASSED. All 16 LOCKED CONTEXT decisions (D-01..D-16) addressed; every COMPL-{02,08,09,10} requirement covered; Standing Constraint LOCAL-ONLY honoured (legal review DEFERRED, multi-region manual). Threat models, validation strategy (Nyquist), and Phase 70 dependency hooks (`signoff-registry-flags.json`, `lint:schema`/`lint:logs`/`i18n:parity` regression checks) all present.
+
+**Phase 71 plan artefacts:**
+- `71-RESEARCH.md` — pinned per-jurisdiction document specifics + draft legal text + library choice (`@date-fns/tz` v4)
+- `71-PATTERNS.md` — analog files: feature-flags signoff registry, classification recreateDraftAfterDrift, audit-writer, push-all-regions, revalidate-vat-button
+- `71-VALIDATION.md` — 36 verification entries across 7 plans; 5 manual-only (multi-region apply, visual SQL review, admin UI, legal text approval)
 
 ## Phase 70 Checkpoint — needs human review (Plan 70-09)
 
