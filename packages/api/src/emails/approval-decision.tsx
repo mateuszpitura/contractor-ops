@@ -1,5 +1,11 @@
-import { Text } from "@react-email/components";
-import { BaseLayout } from "./base-layout.js";
+import { Text } from '@react-email/components';
+import { BaseLayout } from './base-layout.js';
+
+interface ApprovalDecisionLabels {
+  decision?: string;
+  by?: string;
+  comment?: string;
+}
 
 interface ApprovalDecisionEmailProps {
   title: string;
@@ -9,6 +15,7 @@ interface ApprovalDecisionEmailProps {
   comment?: string;
   ctaUrl: string;
   preferencesUrl: string;
+  labels?: ApprovalDecisionLabels;
 }
 
 export function ApprovalDecisionEmail({
@@ -19,20 +26,33 @@ export function ApprovalDecisionEmail({
   comment,
   ctaUrl,
   preferencesUrl,
+  labels,
 }: ApprovalDecisionEmailProps) {
+  const l = {
+    decision: labels?.decision ?? 'Decision',
+    by: labels?.by ?? 'By',
+    comment: labels?.comment ?? 'Comment',
+  };
+
   return (
     <BaseLayout ctaUrl={ctaUrl} preferencesUrl={preferencesUrl}>
-      <Text style={{ fontSize: "20px", fontWeight: "600", color: "#1a1a1a" }}>
-        {title}
-      </Text>
-      <Text style={{ fontSize: "14px", color: "#4a4a4a", lineHeight: "24px" }}>
-        {body}
-      </Text>
-      {decision && (
-        <Text style={{ fontSize: "14px", color: "#6b7280" }}>
-          <strong>Decision:</strong> {decision}
-          {approverName && <><br /><strong>By:</strong> {approverName}</>}
-          {comment && <><br /><strong>Comment:</strong> {comment}</>}
+      <Text style={{ fontSize: '20px', fontWeight: '600', color: '#1a1a1a' }}>{title}</Text>
+      <Text style={{ fontSize: '14px', color: '#4a4a4a', lineHeight: '24px' }}>{body}</Text>
+      {!!decision && (
+        <Text style={{ fontSize: '14px', color: '#6b7280' }}>
+          <strong>{l.decision}:</strong> {decision}
+          {!!approverName && (
+            <>
+              <br />
+              <strong>{l.by}:</strong> {approverName}
+            </>
+          )}
+          {!!comment && (
+            <>
+              <br />
+              <strong>{l.comment}:</strong> {comment}
+            </>
+          )}
         </Text>
       )}
     </BaseLayout>

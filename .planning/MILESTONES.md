@@ -1,5 +1,153 @@
 # Milestones
 
+## v5.0 UK & Germany Expansion (Shipped: 2026-04-26)
+
+**Phases completed:** 14 phases (56-69), 70 plans
+
+**Key accomplishments:**
+
+- Generic contractor classification engine with UK IR35 (CEST-aligned, 25 questions, dispositive scoring per Atholl House + PGMOL) and German Scheinselbständigkeit (DRV 30/30/25/15 weighted criteria) rule sets, stored per-engagement
+- Status Determination Statement (SDS) PDF generation, IR35 chain participants tracking with delivery timestamps, DRV audit defense PDF bundle for compliance evidence
+- Automated economic-dependency alerts (70% / 83.33% thresholds) with daily band state-machine cron, reassessment triggers wired to AuditLog scans, Statusfeststellungsverfahren tracking with 90/30/7-day expiry reminders
+- Per-market compliance health dashboard with 8 tRPC procedures, CSV export with formula-injection neutralization, and 7-component native-flex visualisation (no chart library)
+- XRechnung 3.0.2 CII XML generator with KoSIT 3-layer validation (libxmljs2 XSD + saxon-js EN 16931 + saxon-js XRechnung CIUS Schematron), Leitweg-ID lifecycle (per-contractor / per-contract resolution), Peppol BIS 3.0 transmission via Storecove with capability cache
+- ZUGFeRD PDF/A-3 hybrid generator using pdf-lib, structural-check assertions, XMP metadata, and Phase 61 CII generator reuse for embedded XML
+- BACS Standard 18 Direct Credit export with VocaLink modulus-check sort-code validation, ASCII transliteration utility, and per-org submitter configuration
+- LPCDA-compliant statutory late-payment interest with BoE base-rate poller cron, claim PDF (React-PDF), waiver/revoke flow, and admin BoE-rate management page
+- German Skonto early-payment-discount cascade (invoice-level → billing-profile default) with structured BG-20 XRechnung Payment Terms emission per Anhang E (`#SKONTO#TAGE=n#PROZENT=n#BASISBETRAG=n#`) — wired through both XRechnung CII and ZUGFeRD embedded CII (closes audit I-1)
+- HMRC VAT validation (OAuth 2.0 client-credentials with 401-refresh and fraud-prevention headers) and VIES qualified USt-IdNr confirmation with graceful soft-fail
+- Tax-id-validation orchestrator with 90-day freshness window, reverse-charge rules (gb_eu_post_brexit_b2b + de_domestic_13b_ustg), and Kleinunternehmer service
+- German i18n at full message-key parity (4,281 leaf keys) in formal-Sie register, locked DSGVO/tax phrases as compile-time constants (78/78 CI guard), Datenschutzerklärung MDX with BfDI-aligned content, IDOR-safe React-PDF privacy notice download
+- UK GDPR privacy notice MDX page + React-PDF template + jurisdiction resolver
+- Country-specific contractor profile fields with HMRC-grade validators (UTR mod-11, GB VAT mod-97/9755, Companies House) and German validators (USt-IdNr ISO 7064, SV-Nummer DRV-spec, 16-Bundesland Steuernummer regex map, ~120-court Handelsregister list)
+- Legal compliance hardening: Unleash feature-flag wrapper with deployment-time signoff registry (PENDING → APPROVED CI gate), advisory banner component on classification outcomes, escalation logging, ToS reacceptance modal
+- When `classification-engine` flag OFF: classification UI fully removed from render tree, tRPC procedures FORBIDDEN/unregistered, document endpoints inaccessible, economic-dependency cron skips execution
+- Closed audit I-1 cross-phase wiring defect (Phase 68: 5 plans, 3 waves, 4-layer test coverage proves XRechnung XML + ZUGFeRD embedded CII both emit BG-20)
+- Closed FOUND-03 i18n parity gap (Phase 69: 32 missing DE translations authored in formal-Sie register; LPCDA copy uses German with parenthetical English on first occurrence to avoid BGB Verzugszinsen statutory framework confusion)
+- Phase 67 produced VERIFICATION.md for Phases 56 + 58 retroactively, surfacing GAP-67-01-01 which Phase 69 then closed
+- Phase 65 fixed 4 critical Phase 63 bugs (wrong feature flag key, wrong amount field, missing permission registration, daysOverdue calculation source)
+- Phase 66 executed Phase 57's outstanding plan 04 (VAT tRPC routers + invoice pipeline + UI) and produced 57-VERIFICATION.md
+- Audit gap-closure trio (65, 66, 67) plus follow-up phases (68, 69) all PASSED verifier — every audit-flagged gap closed before milestone close
+
+Known deferred items at close: 10 (see STATE.md Deferred Items) — all manual UI UAT (post-deploy) or VERIFICATION.md `gaps_found` files whose underlying issues were addressed by gap-closure phases.
+
+---
+
+## v3.0 Enterprise & Monetization (Shipped: 2026-04-10)
+
+**Phases completed:** 17 phases, 47 plans, 91 tasks
+
+**Key accomplishments:**
+
+- Stripe billing backend with subscription schema, idempotent webhook processing, trial credits, trial notification cron, and tRPC billing router
+- Atomic OCR credit deduction with Serializable isolation, trial-aware allowances (5 credits per D-08), Stripe Meter reporting, and hard-block on credit exhaustion
+- Complete billing UI with Settings tab, 3-tier plan comparison grid (199/449/849 PLN), trial banner, soft-block modal, credit usage with progress bar, and Stripe Checkout integration via tRPC
+- Wire getCreditBalance through tRPC so CreditUsageCard displays real OCR credit consumption from the ledger
+- LinearAdapter with OAuth + HMAC-SHA256 webhook verification, Zod validators, PENDING_MAPPING status flow, and 6-procedure tRPC router for Linear issue sync foundation
+- Bidirectional Linear sync with status mapping (PENDING_MAPPING->CONNECTED D-03), GraphQL issue creation with email assignee lookup, inbound webhook processing, and workflow router integration for auto-issue creation and outbound status sync
+- Linear provider section with post-OAuth mandatory mapping flow, status mapping dialog with smart defaults, workflow template team selector, issue chips on workflow task views, and full EN/PL i18n
+- Prisma schema with 4 models and 4 enums, Zod validators, RBAC permissions, and 13-endpoint tRPC router for equipment tracking
+- Equipment list/detail pages with TanStack Table, CRUD/assignment/shipment dialogs, shipment timeline, contractor profile Equipment tab, and full EN/PL i18n
+- Equipment workflow service wiring EQUIPMENT tasks into onboarding/offboarding workflows with shipment-driven auto-completion and multi-shipment gate
+- 49 vitest todo stubs across 4 test files covering all GOOG requirements (OAuth, Directory API, sync detection, bulk import, Zod validators)
+- Google Workspace Admin SDK adapter with directory/group listing, tRPC router with 5 procedures including server-side RBAC group re-fetch, and QStash daily sync cron
+- Complete Google Workspace directory import UI: 9 components with 3-step wizard, TanStack Table with selection/search/filter, role assignment with group mapping, and en/pl i18n
+- Directory sync orchestrator with QStash endpoint that detects Google Workspace new hires and departures via email snapshot diffing, dispatching admin notifications without auto-modifying users
+- Fixed 3 provider slug string literals from hyphen to underscore, unblocking OAuth connect, health check, disconnect, and post-OAuth wizard auto-open
+- MessagingProvider abstraction over Slack with provider iteration in dispatch(), Prisma schema for MICROSOFT_TEAMS/TEAMS/channelTeams, and SlackMessagingProvider delegating to existing slack-client.ts
+- TeamsAdapter with Azure AD OAuth, 5 Adaptive Card templates for approval workflow, and Graph API client for channel discovery
+- TeamsBotHandler with Zod-validated card actions, TeamsMessagingProvider for proactive messaging, Bot Framework endpoint, tRPC channel router, and Azure Bot Service setup guide
+- Teams provider section with channel mapping card, notification preferences Teams column, and full en/pl i18n
+- CourierClient interface with InPostClient ShipX wrapper, webhook handler with event deduplication, polling fallback service, and 44 passing tests
+- tRPC equipment/portal router extensions with InPost shipment creation, return approval workflow, webhook/cron endpoints, and offboarding auto-shipment
+- Complete InPost courier UI: Paczkomat picker with Geowidget iframe, shipment creation form, label viewer with download/print, admin return approval banner, portal equipment tab, and contractor 3-step return flow with en/pl i18n
+- Cross-tool onboarding import API with Jira/Linear/Google Workspace/Slack user fetch, email-based merge/dedup with conflict detection, project-to-workflow template conversion, and per-item retry
+- 4-step full-page wizard with source selection, merged people review with conflict resolution, project import with editable steps, and async progress tracker with per-item retry
+- requireTier tRPC middleware with TIER_RANK gating and getUsageDashboard endpoint aggregating subscription, credits, seats, and plan config
+- DPD and UPS courier clients with OAuth token caching, status mappers, polling services, carrier factory, and Zod validators -- all following InPost's CourierClient pattern
+- DPD and UPS shipment creation procedures with PRO tier gating, courier config CRUD, and multi-carrier polling cron
+- FeatureGate wrapper with tier-based inline upgrade banners and 4-card usage dashboard (plan, seats, credits, billing date) with green/yellow/red credit progress bar
+- Unified carrier shipment form with dynamic DPD/UPS/InPost fieldsets, credential setup cards with test/save, and default return carrier selector
+- testCourierConnection tRPC procedure closing CarrierCredentialForm verification gap, with getStatus probe and structured success/failure response
+- Bidirectional Linear sync wired via QStash webhook dispatch and outbound CANCELLED status sync in cancelRun for both Linear and Jira
+- DPD and UPS integration cards mounted in Settings with credential dialogs, and CarrierShipmentForm wired to equipment detail page with carrier-configured visibility gate
+- requireTier middleware applied to 10 integration/OCR/audit mutations with global TIER_REQUIRED upgrade toast in QueryClient
+- Fire-and-forget checkShipmentTaskCompletion wired into all 4 courier status update paths (InPost webhook, InPost/DPD/UPS polling) with unit and integration tests
+- requireTier("PRO") added to 10 ungated procedures across Teams, GWS, and Onboarding Import routers with STARTER-rejection tests
+- Extracted generic BaseShipmentParams from InPost-specific CreateShipmentParams, making CourierClient interface carrier-agnostic
+- FeatureGate wrapping on 3 PRO-only components (Teams mapping, GWS import, onboarding wizard) for defense-in-depth tier gating
+- sendChannelAlert wired into notification-service dispatch loop for 9 activity notification types with channelMapping lookup from integrationConnection configJson
+- CreditExhaustedInline mounted in OCR-triggering upload components with TRPCClientError PRECONDITION_FAILED detection and /settings?tab=billing navigation
+- FeatureGate wrapping on Linear, Google Workspace, and Teams OAuth sections — STARTER users see upgrade prompt instead of connect buttons
+- FeatureGate PRO-tier wrappers on Jira/Calendar sections + ShipmentParams union type fix enabling clean API dist build
+- Removed all 13 (trpc as any) proxy workarounds, restoring full type safety across billing, teams, equipment, portal, and settings components
+- Fixed ConversationReference key mismatch from tenantId to conversation.id so Teams channel alerts resolve stored refs correctly
+- Replaced broken hardcoded /api/oauth URL in onboarding wizard with tRPC getOAuthUrlGeneric call for working OAuth connect flow
+- Shared dispatchShipmentNotification helper wired into DPD, UPS, and InPost polling services for terminal status notifications
+
+---
+
+## v2.0 Platform Expansion (Shipped: 2026-04-01)
+
+**Phases completed:** 16 phases, 52 plans, 103 tasks
+
+**Key accomplishments:**
+
+- AES-256-GCM credential encryption with per-provider keys, IntegrationProviderAdapter contract, provider registry, and Prisma schema extension for token expiry tracking
+- Unified webhook ingestion pipeline with Slack HMAC-SHA256 and Resend Svix adapters, QStash async processing, and WebhookDelivery audit logging
+- Generic OAuth callback with HMAC-signed cross-provider CSRF state, proactive token refresh cron with distributed lock, and lazy refresh fallback
+- Health monitoring service with provider card grid, detail sheet (sync log + webhook deliveries), and 30-second polling via TanStack Query
+- Wired IntegrationsTab into settings, documented all env vars, and marked legacy Slack/Resend routes deprecated with backward-compat migration path
+- PortalSession and PortalMagicToken Prisma models with SHA-256 hashed session service (7-day expiry) and single-use magic link service (15-min expiry, Resend email)
+- portalProcedure middleware with cookie auth + 15-endpoint portal tRPC router covering magic link auth, contracts, invoices, documents, payments, and invoice submission
+- Portal layout with top bar navigation (5 links + org branding + profile dropdown), magic link login page, token verification with org picker for multi-org contractors, and httpOnly session cookie management via API routes
+- Overview dashboard with 4 summary cards and activity log, contracts list/detail with document downloads, documents table, and payments table -- all consuming portal tRPC router with loading skeletons and empty states
+- Invoice list with status badges, detail page with 3-layer status tracking (StatusTimeline + ActivityLog), submission form with contract picker and presigned PDF upload, and success confirmation page
+- Two Prisma models (change request + notification prefs), change request service with transactional approval, 6 portal endpoints, and 3 admin endpoints for contractor self-service and org branding
+- Portal settings page with collapsible profile sections (immediate contact edit + approval-flow financial edit), notification preference toggles with optimistic updates, and Settings nav link in portal navigation
+- Portal CSS custom property brand injection, admin branding section with 8-swatch color picker + logo upload, and change request diff cards with approve/reject in approvals tab
+- End-to-end portal subdomain routing via Next.js middleware with x-portal-org-subdomain header flow, admin subdomain config UI, and branded unauthenticated portal shell
+- 21 it.todo() test stubs across 4 files covering all Phase 14 API behaviors: change request service CRUD, portal profile endpoints, notification preference defaults with SECURITY_ALERTS guard, and branding hex validation
+- Prisma signing models (envelope/recipient/event), ESignAdapter interface with 7 operations, and 23 Wave 0 test stubs for DocuSign, Autenti, router, and webhook handler
+- DocuSign and Autenti adapters implementing ESignAdapter interface with provider-agnostic orchestration service
+- Complete server-side signing lifecycle: tRPC router with 7 procedures, orchestrator for envelope creation/void/completion with R2 PDF storage, and webhook handler with idempotency and contract status mapping
+- Complete e-sign UI: SendForSignature dialog with dnd-kit signer reorder and provider picker, signing progress bar with per-signer step indicators, embedded signing modal with DocuSign iframe and Autenti redirect fallback, audit trail sheet, void dialog, and portal pending signatures section
+- Claude Vision OCR pipeline with native PDF extraction, NIP checksum validation, confidence scoring, async QStash processing, and tRPC endpoints for admin and portal
+- Seven composable OCR review components: react-pdf viewer with zoom/navigation, confidence badges with D-07 thresholds, NIP modulo-11 validation, extraction status bar, processing overlay, and editable line items table with grosze formatting
+- OcrReviewPanel split view with PDF + pre-filled form, admin upload auto-trigger, and portal form OCR pre-fill with confidence indicators
+- KSeF API client with RSA-OAEP auth, FA(3) XML parser with Zod-validated grosze conversion, and adapter registered in integration registry
+- KSeF sync orchestrator with hourly QStash cron, cross-source duplicate detection by invoiceNumber+sellerTaxId, tRPC router with connect/disconnect/triggerSync, and KSEF_SYNC_COMPLETE notification
+- 6 KSeF UI components: setup dialog with token/cert auth, provider card with sync controls, invoice table badge, detail metadata section with copyable fields, and cross-source duplicate banner
+- 76 vitest it.todo stubs across 6 files covering time entry CRUD, timesheet lifecycle, approval flow, Clockify sync, Jira worklog import, and invoice reconciliation
+- Timesheet/TimeEntry Prisma models with DRAFT->SUBMITTED->APPROVED/REJECTED status machine, 12 Zod validators, and core service layer using optimistic locking
+- Clockify and Jira adapters with on-demand sync services for external time entry import via API key and OAuth 2.0 3LO
+- Portal time tRPC router with 8 endpoints and full contractor UI: weekly timesheet grid with auto-save, single entry dialog, Clockify/Jira sync buttons, and week navigation
+- Admin time tRPC router with 8 procedures, manager approval queue with batch operations, per-contractor timesheet review, and rejection dialog with 10-char minimum validation
+- Time-vs-invoice reconciliation service with configurable deviation threshold, DeviationFlag badge, ReconciliationCard on invoice detail, and ReconciliationTable in admin time section
+- 60 it.todo behavioral contract entries across 4 test stub files for Jira issue sync, webhook handling, status mapping, and adapter webhooks
+- Extended JiraAdapter with write/webhook scopes, built issue sync with ADF descriptions, inbound webhook handler with loop prevention and deduplication, and per-project bidirectional status mapping
+- Jira tRPC router with 11 procedures (connection status, project/issue type listing, status mapping CRUD, task config, linked issues, recent activity, disconnect), webhook dispatch in _process route, and outbound Jira transitions from workflow task completion
+- Jira provider card with OAuth connect, scope expansion detection, status mapping dialog with per-project two-column table, and project/issue type mapping dialog for task templates
+- JiraIssueChip, JiraActivitySummary, and JiraTaskConfig components wired into contractor Workflows tab and workflow side panel with status-colored chips and overflow handling
+- Mounted orphaned JiraTaskConfig in task-card.tsx and hardened siteUrl derivation removing 'your-site' placeholder fallback
+- 43 it.todo test stubs across 6 files covering Notion, Confluence, Google Calendar, Outlook Calendar adapters plus doc-link and calendar-sync services
+- Four OAuth adapters (Notion, Confluence, Google Calendar, Outlook Calendar) with Prisma schema changes, Zod validators, and per-user connection support
+- Doc link service and tRPC router for attaching/detaching Notion and Confluence pages to workflow steps, with multi-provider search proxy
+- Calendar event lifecycle service with Google/Outlook dual-push, 3 deadline sync watchers, task event creation, and 7-procedure tRPC router
+- Doc link chips, attach dialog with search, doc links section for workflow task cards, and Cmd+K Docs search group with provider icons
+- My Calendar settings page with Google/Outlook provider cards, per-task calendar event config dialog, org calendar section, and Notion/Confluence cards in integrations tab
+- Added 4 adapter subpath exports to integrations, registered time permission resource, and restored validators helpers for clean package compilation
+- Fixed 4 API source files (calendar, docs, doc-link-service, time-entry) eliminating ~20 TypeScript errors from ctx.userId, ctx.prisma, CredentialBlob cast, and PrismaClient transaction type issues
+- Mounted DocLinksSection in workflow run task card and CalendarTaskConfig in template builder task card with correct prop wiring and section ordering
+- Fire-and-forget calendar sync hooks wired into 8 contract/approval/invoice lifecycle mutations using void + .catch() pattern
+- Restored ClaudeOcrAdapter registry resolution by adding missing slug property and re-registering in registerAllAdapters()
+- Wire createJiraIssue fire-and-forget into startRun so TODO tasks with jiraEnabled templates automatically create Jira issues
+- Portal signing URL endpoint via portalProcedure with recipient verification and conditional auth switching in EmbeddedSigningModal
+- Fixed OAuth URL construction (space scopes, response_type=code, extraAuthParams) and wired createTaskCalendarEvent fire-and-forget into startRun with calendarTaskCount response toast
+- registerAllAdapters() added to OAuth callback route + react-pdf CSS converted to dynamic imports for Next.js build compatibility
+
+---
+
 ## v1.0 MVP (Shipped: 2026-03-23)
 
 **Phases completed:** 11 phases, 51 plans, 98 tasks

@@ -1,12 +1,12 @@
-import { TRPCError } from "@trpc/server";
-import type { PrismaClient } from "@contractor-ops/db";
+import type { Prisma, PrismaClient } from '@contractor-ops/db';
+import { TRPCError } from '@trpc/server';
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
-/** Prisma transaction client type (subset of PrismaClient) */
-type TxClient = Parameters<Parameters<PrismaClient["$transaction"]>[0]>[0];
+/** Prisma interactive transaction client (subset of PrismaClient). */
+export type TxClient = Parameters<Parameters<PrismaClient['$transaction']>[0]>[0];
 
 interface StepConfig {
   name: string;
@@ -23,7 +23,7 @@ interface Condition {
 }
 
 export interface SlaStatus {
-  status: "green" | "yellow" | "red" | "overdue";
+  status: 'green' | 'yellow' | 'red' | 'overdue';
   remainingMs: number;
   label: string;
 }
@@ -62,9 +62,9 @@ function addHours(date: Date, hours: number): Date {
  */
 export function evaluateConditions(
   conditionsJson: unknown,
-  invoice: { totalGrosze: number; contractorType?: string },
+  invoice: { totalMinor: number; contractorType?: string },
 ): boolean {
-  if (!conditionsJson || !Array.isArray(conditionsJson)) {
+  if (!(conditionsJson && Array.isArray(conditionsJson))) {
     return false;
   }
 
@@ -74,29 +74,27 @@ export function evaluateConditions(
 
   const conditions = conditionsJson as Condition[];
 
-  return conditions.every((condition) => {
-    if (condition.field === "amount") {
-      const thresholdGrosze =
-        typeof condition.value === "number"
-          ? condition.value * 100
-          : Number(condition.value) * 100;
+  return conditions.every(condition => {
+    if (condition.field === 'amount') {
+      const thresholdMinor =
+        typeof condition.value === 'number' ? condition.value * 100 : Number(condition.value) * 100;
 
       switch (condition.operator) {
-        case "gt":
-          return invoice.totalGrosze > thresholdGrosze;
-        case "lt":
-          return invoice.totalGrosze < thresholdGrosze;
-        case "eq":
-          return invoice.totalGrosze === thresholdGrosze;
+        case 'gt':
+          return invoice.totalMinor > thresholdMinor;
+        case 'lt':
+          return invoice.totalMinor < thresholdMinor;
+        case 'eq':
+          return invoice.totalMinor === thresholdMinor;
         default:
           return false;
       }
     }
 
-    if (condition.field === "contractorType") {
+    if (condition.field === 'contractorType') {
       const target = String(condition.value);
       switch (condition.operator) {
-        case "eq":
+        case 'eq':
           return invoice.contractorType === target;
         default:
           return false;
@@ -122,15 +120,15 @@ export function evaluateConditions(
 export async function routeToChain(
   tx: TxClient,
   organizationId: string,
-  invoice: { totalGrosze: number; contractorType?: string },
+  invoice: { totalMinor: number; contractorType?: string },
 ) {
   const chains = await tx.approvalChainConfig.findMany({
     where: {
       organizationId,
-      resourceType: "INVOICE",
+      resourceType: 'INVOICE',
       isActive: true,
     },
-    orderBy: { createdAt: "asc" },
+    orderBy: { createdAt: 'asc' },
   });
 
   // First-match: evaluate conditions for each chain
@@ -141,7 +139,7 @@ export async function routeToChain(
   }
 
   // Fallback: return the default chain
-  const defaultChain = chains.find((c) => c.isDefault);
+  const defaultChain = chains.find(c => c.isDefault);
   return defaultChain ?? null;
 }
 
@@ -158,15 +156,13 @@ export async function createApprovalFlow(
   tx: TxClient,
   params: {
     organizationId: string;
-    resourceType: "INVOICE";
+    resourceType: 'INVOICE';
     resourceId: string;
     chainConfig: { id: string; stepsJson: unknown };
     createdByUserId: string;
   },
 ) {
-  const steps = JSON.parse(
-    JSON.stringify(params.chainConfig.stepsJson),
-  ) as StepConfig[];
+  const steps = JSON.parse(JSON.stringify(params.chainConfig.stepsJson)) as StepConfig[];
 
   // Resolve role-based approvers
   for (const step of steps) {
@@ -181,8 +177,8 @@ export async function createApprovalFlow(
 
       if (!member) {
         throw new TRPCError({
-          code: "PRECONDITION_FAILED",
-          message: `No user with role ${step.approverRole} found`,
+          code: 'PRECONDITION_FAILED',
+          message: 'errors.approval.noUserWithRole',
         });
       }
 
@@ -198,7 +194,7 @@ export async function createApprovalFlow(
       resourceType: params.resourceType,
       resourceId: params.resourceId,
       chainConfigId: params.chainConfig.id,
-      status: "PENDING",
+      status: 'PENDING',
       currentStepOrder: 1,
       startedAt: now,
       createdByUserId: params.createdByUserId,
@@ -209,24 +205,23 @@ export async function createApprovalFlow(
           name: step.name,
           approverUserId: step.approverUserId ?? null,
           approverRole: step.approverRole as
-            | "ORG_ADMIN"
-            | "FINANCE_ADMIN"
-            | "OPS_MANAGER"
-            | "TEAM_MANAGER"
-            | "LEGAL_VIEWER"
-            | "IT_ADMIN"
-            | "ACCOUNTANT"
-            | "READ_ONLY"
+            | 'ORG_ADMIN'
+            | 'FINANCE_ADMIN'
+            | 'OPS_MANAGER'
+            | 'TEAM_MANAGER'
+            | 'LEGAL_VIEWER'
+            | 'IT_ADMIN'
+            | 'ACCOUNTANT'
+            | 'READ_ONLY'
             | null,
-          status: index === 0 ? "PENDING" : "NOT_STARTED",
+          status: index === 0 ? 'PENDING' : 'NOT_STARTED',
           required: step.required,
-          slaDeadline:
-            index === 0 ? addHours(now, step.slaHours) : null,
-        })),
+          slaDeadline: index === 0 ? addHours(now, step.slaHours) : null,
+        })) as unknown as Prisma.ApprovalStepCreateWithoutApprovalFlowInput[],
       },
     },
     include: {
-      steps: { orderBy: { stepOrder: "asc" } },
+      steps: { orderBy: { stepOrder: 'asc' } },
     },
   });
 
@@ -243,14 +238,11 @@ export async function createApprovalFlow(
  *
  * @returns Whether the flow is completed and the next step order (if any).
  */
-export async function advanceFlow(
-  tx: TxClient,
-  flowId: string,
-): Promise<AdvanceFlowResult> {
+export async function advanceFlow(tx: TxClient, flowId: string): Promise<AdvanceFlowResult> {
   const flow = await tx.approvalFlow.findUniqueOrThrow({
     where: { id: flowId },
     include: {
-      steps: { orderBy: { stepOrder: "asc" } },
+      steps: { orderBy: { stepOrder: 'asc' } },
     },
   });
 
@@ -267,21 +259,19 @@ export async function advanceFlow(
   }
 
   const currentOrder = flow.currentStepOrder ?? 0;
-  const nextStep = flow.steps.find(
-    (s) => s.status === "NOT_STARTED" && s.stepOrder > currentOrder,
-  );
+  const nextStep = flow.steps.find(s => s.status === 'NOT_STARTED' && s.stepOrder > currentOrder);
 
   if (!nextStep) {
     // All steps complete — mark flow as APPROVED
     await tx.approvalFlow.update({
       where: { id: flowId },
       data: {
-        status: "APPROVED",
+        status: 'APPROVED',
         completedAt: new Date(),
       },
     });
 
-    return { completed: true, flowStatus: "APPROVED" };
+    return { completed: true, flowStatus: 'APPROVED' };
   }
 
   // Activate next step
@@ -292,7 +282,7 @@ export async function advanceFlow(
   await tx.approvalStep.update({
     where: { id: nextStep.id },
     data: {
-      status: "PENDING",
+      status: 'PENDING',
       slaDeadline: addHours(now, slaHours),
     },
   });
@@ -322,7 +312,7 @@ export function computeSlaStatus(
   status: string,
   slaHours?: number,
 ): SlaStatus | null {
-  if (!slaDeadline || status !== "PENDING") {
+  if (!slaDeadline || status !== 'PENDING') {
     return null;
   }
 
@@ -332,7 +322,7 @@ export function computeSlaStatus(
   if (remainingMs <= 0) {
     const overdueHours = Math.ceil(Math.abs(remainingMs) / (60 * 60 * 1000));
     return {
-      status: "overdue",
+      status: 'overdue',
       remainingMs,
       label: `OVERDUE ${overdueHours}h`,
     };
@@ -346,13 +336,13 @@ export function computeSlaStatus(
 
   const hoursLeft = Math.ceil(remainingMs / (60 * 60 * 1000));
 
-  let slaStatus: "green" | "yellow" | "red";
+  let slaStatus: 'green' | 'yellow' | 'red';
   if (percentRemaining > 50) {
-    slaStatus = "green";
+    slaStatus = 'green';
   } else if (percentRemaining > 25) {
-    slaStatus = "yellow";
+    slaStatus = 'yellow';
   } else {
-    slaStatus = "red";
+    slaStatus = 'red';
   }
 
   return {

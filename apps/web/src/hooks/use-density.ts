@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
-type Density = "comfortable" | "compact";
+type Density = 'comfortable' | 'compact';
 
 interface DensityState {
   density: Density;
@@ -18,29 +18,29 @@ interface DensityState {
 const useDensityStore = create<DensityState>()(
   persist(
     (set, get) => ({
-      density: "comfortable",
+      density: 'comfortable',
       setDensity: (density: Density) => {
         set({ density });
-        if (typeof document !== "undefined") {
-          if (density === "compact") {
-            document.documentElement.classList.add("density-compact");
+        if (typeof document !== 'undefined') {
+          if (density === 'compact') {
+            document.documentElement.classList.add('density-compact');
           } else {
-            document.documentElement.classList.remove("density-compact");
+            document.documentElement.classList.remove('density-compact');
           }
         }
       },
       toggleDensity: () => {
         const current = get().density;
-        const next = current === "comfortable" ? "compact" : "comfortable";
+        const next = current === 'comfortable' ? 'compact' : 'comfortable';
         get().setDensity(next);
       },
     }),
     {
-      name: "density",
-      onRehydrateStorage: () => (state) => {
+      name: 'density',
+      onRehydrateStorage: () => state => {
         // Sync DOM class on rehydration
-        if (state?.density === "compact" && typeof document !== "undefined") {
-          document.documentElement.classList.add("density-compact");
+        if (state?.density === 'compact' && typeof document !== 'undefined') {
+          document.documentElement.classList.add('density-compact');
         }
       },
     },
@@ -48,8 +48,8 @@ const useDensityStore = create<DensityState>()(
 );
 
 export function useDensity() {
-  const density = useDensityStore((s) => s.density);
-  const setDensity = useDensityStore((s) => s.setDensity);
-  const toggleDensity = useDensityStore((s) => s.toggleDensity);
+  const density = useDensityStore(s => s.density);
+  const setDensity = useDensityStore(s => s.setDensity);
+  const toggleDensity = useDensityStore(s => s.toggleDensity);
   return { density, setDensity, toggleDensity };
 }

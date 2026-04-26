@@ -1,0 +1,85 @@
+// ---------------------------------------------------------------------------
+// Phase 63 — UK Payments & Financial Features: BoE rates + Skonto models
+// ---------------------------------------------------------------------------
+
+// BoE Base Rate History — NOT multi-tenant (global reference data per D-08)
+
+enum BoERateSource {
+  BOE_API
+  MANUAL
+}
+
+model BoEBaseRateHistory {
+  id               String        @id @default(cuid())
+  effectiveFrom    DateTime      @unique @db.Date
+  ratePercent      Decimal       @db.Decimal(5, 2)
+  source           BoERateSource
+  recordedAt       DateTime      @default(now())
+  recordedByUserId String?
+  notes            String?       @db.Text
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  @@map("boe_base_rate_history")
+}
+
+// Skonto (early payment discount) models — multi-tenant
+
+model SkontoTerm {
+  id                 String                    @id @default(cuid())
+  organizationId     String
+  organization       Organization              @relation(fields: [organizationId], references: [id])
+  invoiceId          String?                   @unique
+  invoice            Invoice?                  @relation(fields: [invoiceId], references: [id])
+  billingProfileId   String?                   @unique
+  billingProfile     ContractorBillingProfile? @relation(fields: [billingProfileId], references: [id])
+  discountPercent    Decimal                   @db.Decimal(5, 2)
+  discountPeriodDays Int
+  netPeriodDays      Int
+  createdAt          DateTime                  @default(now())
+  updatedAt          DateTime                  @updatedAt
+
+  skontoSnapshots    SkontoSnapshot[]
+  skontoApplications SkontoApplication[]
+
+  @@index([organizationId])
+  @@map("skonto_term")
+}
+
+enum SkontoEligibility {
+  ELIGIBLE
+  NOT_ELIGIBLE
+}
+
+model SkontoSnapshot {
+  id                   String            @id @default(cuid())
+  organizationId       String
+  organization         Organization      @relation(fields: [organizationId], references: [id])
+  invoiceId            String            @unique
+  invoice              Invoice           @relation(fields: [invoiceId], references: [id])
+  skontoTermId         String
+  skontoTerm           SkontoTerm        @relation(fields: [skontoTermId], references: [id])
+  eligibilityAtPayment SkontoEligibility
+  discountAppliedMinor Int
+  effectivePaymentDate DateTime          @db.Date
+  createdAt            DateTime          @default(now())
+
+  @@index([organizationId])
+  @@map("skonto_snapshot")
+}
+
+model SkontoApplication {
+  id                     String         @id @default(cuid())
+  organizationId         String
+  organization           Organization   @relation(fields: [organizationId], references: [id])
+  paymentRunItemId       String         @unique
+  paymentRunItem         PaymentRunItem @relation(fields: [paymentRunItemId], references: [id])
+  skontoTermId           String
+  skontoTerm             SkontoTerm     @relation(fields: [skontoTermId], references: [id])
+  discountPercentApplied Decimal        @db.Decimal(5, 2)
+  discountAmountMinor    Int
+  createdAt              DateTime       @default(now())
+
+  @@index([organizationId])
+  @@map("skonto_application")
+}

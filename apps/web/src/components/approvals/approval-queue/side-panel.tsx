@@ -1,49 +1,33 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  CheckCircle2,
-  HelpCircle,
-  MoreHorizontal,
-  UserPlus,
-  XCircle,
-} from "lucide-react";
-import { useTranslations } from "next-intl";
-import { toast } from "sonner";
-
-import { trpc } from "@/trpc/init";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { CheckCircle2, HelpCircle, MoreHorizontal, UserPlus, XCircle } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
+import { useId, useState } from 'react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+} from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   Sheet,
   SheetContent,
+  SheetDescription,
   SheetHeader,
   SheetTitle,
-  SheetDescription,
-} from "@/components/ui/sheet";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { Link } from "@/i18n/navigation";
+} from '@/components/ui/sheet';
+import { Textarea } from '@/components/ui/textarea';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { useApprovalActions } from '@/hooks/use-approval-actions';
+import { Link } from '@/i18n/navigation';
 
-import { SlaBadge } from "../sla-badge";
-import type { ApprovalQueueRow } from "./columns";
+import { formatAmount } from '@/lib/format-currency';
+import { SlaBadge } from '../sla-badge';
+import type { ApprovalQueueRow } from './columns';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -60,11 +44,11 @@ interface ApprovalSidePanelProps {
 // ---------------------------------------------------------------------------
 
 const statusBadgeColors: Record<string, string> = {
-  NOT_STARTED: "bg-muted text-muted-foreground",
-  PENDING: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
-  APPROVED: "bg-green-500/10 text-green-600 dark:text-green-400",
-  REJECTED: "bg-red-500/10 text-red-600 dark:text-red-400",
-  CANCELLED: "bg-muted text-muted-foreground",
+  NOT_STARTED: 'bg-muted text-muted-foreground',
+  PENDING: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
+  APPROVED: 'bg-green-500/10 text-green-600 dark:text-green-400',
+  REJECTED: 'bg-red-500/10 text-red-600 dark:text-red-400',
+  CANCELLED: 'bg-muted text-muted-foreground',
 };
 
 // ---------------------------------------------------------------------------
@@ -86,15 +70,13 @@ function MiniChainTracker({ step }: { step: ApprovalQueueRow }) {
         const isPast = order < currentOrder;
 
         let circleClass =
-          "h-8 w-8 rounded-full flex items-center justify-center text-xs font-medium border transition-colors";
+          'h-8 w-8 rounded-full flex items-center justify-center text-xs font-medium border transition-colors';
         if (isCurrent) {
-          circleClass += " bg-primary text-primary-foreground border-primary";
+          circleClass += ' bg-primary text-primary-foreground border-primary';
         } else if (isPast) {
-          circleClass +=
-            " bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/30";
+          circleClass += ' bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/30';
         } else {
-          circleClass +=
-            " bg-muted text-muted-foreground border-border";
+          circleClass += ' bg-muted text-muted-foreground border-border';
         }
 
         return (
@@ -102,23 +84,17 @@ function MiniChainTracker({ step }: { step: ApprovalQueueRow }) {
             {i > 0 && (
               <div
                 className={`h-0.5 w-3 ${
-                  isPast
-                    ? "bg-green-500"
-                    : isCurrent
-                      ? "bg-border"
-                      : "bg-border border-dashed"
+                  isPast ? 'bg-green-500' : isCurrent ? 'bg-border' : 'bg-border border-dashed'
                 }`}
               />
             )}
             <Tooltip>
               <TooltipTrigger
-                render={(props) => (
+                // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
+                render={props => (
                   <div {...props} className={circleClass}>
-                    {isPast ? (
-                      <CheckCircle2 className="h-4 w-4" />
-                    ) : (
-                      order
-                    )}
+                    {/* biome-ignore lint/nursery/noLeakedRender: order is intentionally rendered as text */}
+                    {isPast ? <CheckCircle2 className="h-4 w-4" /> : order}
                   </div>
                 )}
               />
@@ -134,6 +110,162 @@ function MiniChainTracker({ step }: { step: ApprovalQueueRow }) {
 }
 
 // ---------------------------------------------------------------------------
+// Extracted overlay sub-components
+// ---------------------------------------------------------------------------
+
+function ClarifyOverlay({
+  open: isOpen,
+  comment,
+  onCommentChange,
+  onClose,
+  onSubmit,
+  isPending,
+  t,
+}: {
+  open: boolean;
+  comment: string;
+  onCommentChange: (v: string) => void;
+  onClose: () => void;
+  onSubmit: () => void;
+  isPending: boolean;
+  t: (key: string) => string;
+}) {
+  const reactId = useId();
+  if (!isOpen) return null;
+  return (
+    <div
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/10"
+      role="dialog"
+      aria-modal="true"
+      aria-label={t('clarifyPopover.heading')}
+      onClick={onClose}
+      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+      onKeyDown={(e: React.KeyboardEvent) => {
+        if (e.key === 'Escape') onClose();
+      }}>
+      <div
+        className="w-96 rounded-xl bg-background p-4 shadow-lg ring-1 ring-border"
+        role="document"
+        // biome-ignore lint/nursery/noJsxPropsBind: stopPropagation handler
+        onClick={e => e.stopPropagation()}
+        // biome-ignore lint/nursery/noJsxPropsBind: stopPropagation handler
+        onKeyDown={e => e.stopPropagation()}>
+        <h4 className="font-medium text-sm mb-3">{t('clarifyPopover.heading')}</h4>
+        <div className="space-y-1.5 mb-3">
+          <label
+            htmlFor={`${reactId}-clarify-comment`}
+            className="text-[12px] text-muted-foreground">
+            {t('clarifyPopover.commentLabel')}
+          </label>
+          <Textarea
+            id={`${reactId}-clarify-comment`}
+            value={comment}
+            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
+            onChange={e => onCommentChange(e.target.value)}
+            placeholder={t('clarifyPopover.commentPlaceholder')}
+            className="min-h-[80px]"
+          />
+        </div>
+        <div className="flex items-center gap-2 justify-end">
+          <Button variant="ghost" size="sm" onClick={onClose}>
+            {t('clarifyPopover.dismiss')}
+          </Button>
+          <Button size="sm" disabled={comment.length < 1 || isPending} onClick={onSubmit}>
+            {t('clarifyPopover.confirm')}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DelegateOverlay({
+  open: isOpen,
+  userId,
+  note,
+  onUserIdChange,
+  onNoteChange,
+  onClose,
+  onSubmit,
+  isPending,
+  t,
+}: {
+  open: boolean;
+  userId: string;
+  note: string;
+  onUserIdChange: (v: string) => void;
+  onNoteChange: (v: string) => void;
+  onClose: () => void;
+  onSubmit: () => void;
+  isPending: boolean;
+  t: (key: string) => string;
+}) {
+  const reactId = useId();
+  if (!isOpen) return null;
+  return (
+    <div
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/10"
+      role="dialog"
+      aria-modal="true"
+      aria-label={t('delegatePopover.heading')}
+      onClick={onClose}
+      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+      onKeyDown={(e: React.KeyboardEvent) => {
+        if (e.key === 'Escape') onClose();
+      }}>
+      <div
+        className="w-96 rounded-xl bg-background p-4 shadow-lg ring-1 ring-border"
+        role="document"
+        // biome-ignore lint/nursery/noJsxPropsBind: stopPropagation handler
+        onClick={e => e.stopPropagation()}
+        // biome-ignore lint/nursery/noJsxPropsBind: stopPropagation handler
+        onKeyDown={e => e.stopPropagation()}>
+        <h4 className="font-medium text-sm mb-3">{t('delegatePopover.heading')}</h4>
+        <div className="space-y-3 mb-3">
+          <div className="space-y-1.5">
+            <label
+              htmlFor={`${reactId}-delegate-user-id`}
+              className="text-[12px] text-muted-foreground">
+              {t('delegatePopover.userLabel')}
+            </label>
+            <Input
+              id={`${reactId}-delegate-user-id`}
+              value={userId}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
+              onChange={e => onUserIdChange(e.target.value)}
+              placeholder={t('delegatePopover.userPlaceholder')}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label
+              htmlFor={`${reactId}-delegate-note`}
+              className="text-[12px] text-muted-foreground">
+              {t('delegatePopover.noteLabel')}
+            </label>
+            <Textarea
+              id={`${reactId}-delegate-note`}
+              value={note}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
+              onChange={e => onNoteChange(e.target.value)}
+              placeholder={t('delegatePopover.notePlaceholder')}
+              className="min-h-[60px]"
+            />
+          </div>
+        </div>
+        <div className="flex items-center gap-2 justify-end">
+          <Button variant="ghost" size="sm" onClick={onClose}>
+            {t('delegatePopover.dismiss')}
+          </Button>
+          <Button size="sm" disabled={!userId.trim() || isPending} onClick={onSubmit}>
+            {t('delegatePopover.confirm')}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
@@ -141,198 +273,123 @@ function MiniChainTracker({ step }: { step: ApprovalQueueRow }) {
  * Side panel for viewing and acting on an approval step.
  * Opens on row click from the approval queue table.
  */
-export function ApprovalSidePanel({
-  step,
-  open,
-  onOpenChange,
-}: ApprovalSidePanelProps) {
-  const t = useTranslations("Approvals");
-  const queryClient = useQueryClient();
+export function ApprovalSidePanel({ step, open, onOpenChange }: ApprovalSidePanelProps) {
+  const t = useTranslations('Approvals');
+  const locale = useLocale();
+  const reactId = useId();
 
-  // Approve mutation
-  const approveMutation = useMutation(
-    trpc.approval.approve.mutationOptions({
-      onSuccess: () => {
-        toast.success(t("toast.approved"));
-        onOpenChange(false);
-        void queryClient.invalidateQueries({
-          queryKey: [["approval", "listPending"]],
-        });
-      },
-      onError: () => {
-        toast.error(t("errors.failedToApprove"));
-      },
-    }),
-  );
+  // Approval action mutations (extracted hook)
+  const {
+    approve: approveAction,
+    reject: rejectAction,
+    delegate: delegateAction,
+    requestClarification: clarifyAction,
+    isPending: actionsPending,
+  } = useApprovalActions(step?.id ?? '', () => {
+    setRejectComment('');
+    setRejectOpen(false);
+    setClarifyComment('');
+    setClarifyOpen(false);
+    setDelegateUserId('');
+    setDelegateNote('');
+    setDelegateOpen(false);
+    onOpenChange(false);
+  });
 
-  // Reject state and mutation
-  const [rejectComment, setRejectComment] = useState("");
+  // Reject UI state
+  const [rejectComment, setRejectComment] = useState('');
   const [rejectOpen, setRejectOpen] = useState(false);
 
-  const rejectMutation = useMutation(
-    trpc.approval.reject.mutationOptions({
-      onSuccess: () => {
-        toast.success(t("toast.rejected"));
-        setRejectComment("");
-        setRejectOpen(false);
-        onOpenChange(false);
-        void queryClient.invalidateQueries({
-          queryKey: [["approval", "listPending"]],
-        });
-      },
-      onError: () => {
-        toast.error(t("errors.failedToReject"));
-      },
-    }),
-  );
-
-  // Clarification state and mutation
-  const [clarifyComment, setClarifyComment] = useState("");
+  // Clarification UI state
+  const [clarifyComment, setClarifyComment] = useState('');
   const [clarifyOpen, setClarifyOpen] = useState(false);
 
-  const clarifyMutation = useMutation(
-    trpc.approval.requestClarification.mutationOptions({
-      onSuccess: () => {
-        toast.success(t("toast.clarificationRequested"));
-        setClarifyComment("");
-        setClarifyOpen(false);
-        onOpenChange(false);
-        void queryClient.invalidateQueries({
-          queryKey: [["approval", "listPending"]],
-        });
-      },
-      onError: () => {
-        toast.error(t("errors.failedToDelegate"));
-      },
-    }),
-  );
-
-  // Delegate state and mutation
-  const [delegateUserId, setDelegateUserId] = useState("");
-  const [delegateNote, setDelegateNote] = useState("");
+  // Delegate UI state
+  const [delegateUserId, setDelegateUserId] = useState('');
+  const [delegateNote, setDelegateNote] = useState('');
   const [delegateOpen, setDelegateOpen] = useState(false);
-
-  const delegateMutation = useMutation(
-    trpc.approval.delegate.mutationOptions({
-      onSuccess: () => {
-        toast.success(t("toast.delegated"));
-        setDelegateUserId("");
-        setDelegateNote("");
-        setDelegateOpen(false);
-        onOpenChange(false);
-        void queryClient.invalidateQueries({
-          queryKey: [["approval", "listPending"]],
-        });
-      },
-      onError: () => {
-        toast.error(t("errors.failedToDelegate"));
-      },
-    }),
-  );
 
   if (!step) return null;
 
   const invoice = step.invoice;
-  const isPending = step.status === "PENDING";
-
-  const formatAmount = (grosze: number, currency: string) => {
-    const formatted = new Intl.NumberFormat("pl-PL", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(grosze / 100);
-    return `${formatted} ${currency}`;
-  };
+  const isPending = step.status === 'PENDING';
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent
-        side="right"
-        className="w-[480px] sm:max-w-[480px] overflow-y-auto"
-      >
+      <SheetContent side="right" className="w-[480px] sm:max-w-[480px] overflow-y-auto">
         <SheetHeader>
           <SheetTitle className="font-mono text-xl">
-            {invoice?.invoiceNumber ?? t("sidePanel.unknownInvoice")}
+            {invoice?.invoiceNumber ?? t('sidePanel.unknownInvoice')}
           </SheetTitle>
-          <SheetDescription className="sr-only">
-            {t("sidePanel.description")}
-          </SheetDescription>
+          <SheetDescription className="sr-only">{t('sidePanel.description')}</SheetDescription>
         </SheetHeader>
 
         <div className="space-y-6 px-4 pb-4">
           {/* Status and SLA */}
           <div className="flex items-center gap-2">
-            <Badge
-              variant="secondary"
-              className={statusBadgeColors[step.status] ?? ""}
-            >
+            <Badge variant="secondary" className={statusBadgeColors[step.status] ?? ''}>
               {step.status}
             </Badge>
-            <SlaBadge
-              slaDeadline={step.slaDeadline}
-              status={step.status}
-            />
+            <SlaBadge slaDeadline={step.slaDeadline} status={step.status} />
           </div>
 
           {/* Mini chain tracker */}
           <div className="space-y-2">
             <h4 className="text-[12px] font-medium text-muted-foreground">
-              {t("sidePanel.approvalChain")}
+              {t('sidePanel.approvalChain')}
             </h4>
             <MiniChainTracker step={step} />
           </div>
 
           {/* Contractor */}
-          {invoice?.contractor && (
+          {!!invoice?.contractor && (
             <div className="space-y-1">
               <h4 className="text-[12px] font-medium text-muted-foreground">
-                {t("sidePanel.contractor")}
+                {t('sidePanel.contractor')}
               </h4>
               <Link
                 href={`/contractors/${invoice.contractor.id}`}
-                className="text-sm text-primary hover:underline"
-              >
+                className="text-sm text-primary hover:underline">
                 {invoice.contractor.legalName}
               </Link>
             </div>
           )}
 
           {/* Amounts */}
-          {invoice && (
+          {!!invoice && (
             <div className="space-y-1">
               <h4 className="text-[12px] font-medium text-muted-foreground">
-                {t("sidePanel.amount")}
+                {t('sidePanel.amount')}
               </h4>
               <p className="font-mono text-sm tabular-nums">
-                {formatAmount(invoice.totalGrosze, invoice.currency)}
+                {formatAmount(invoice.totalMinor, invoice.currency, locale)}
               </p>
             </div>
           )}
 
           {/* Dates */}
-          {invoice && (
+          {!!invoice && (
             <div className="space-y-1">
               <h4 className="text-[12px] font-medium text-muted-foreground">
-                {t("sidePanel.submitted")}
+                {t('sidePanel.submitted')}
               </h4>
               <p className="text-sm text-muted-foreground">
-                {new Date(invoice.createdAt).toLocaleDateString("pl-PL", {
-                  day: "numeric",
-                  month: "long",
-                  year: "numeric",
+                {new Date(invoice.createdAt).toLocaleDateString('pl-PL', {
+                  day: 'numeric',
+                  month: 'long',
+                  year: 'numeric',
                 })}
               </p>
             </div>
           )}
 
           {/* Approver info */}
-          {step.approver && (
+          {!!step.approver && (
             <div className="space-y-1">
               <h4 className="text-[12px] font-medium text-muted-foreground">
-                {t("sidePanel.approver")}
+                {t('sidePanel.approver')}
               </h4>
-              <p className="text-sm">
-                {step.approver.name ?? step.approver.email}
-              </p>
+              <p className="text-sm">{step.approver.name ?? step.approver.email}</p>
             </div>
           )}
         </div>
@@ -341,79 +398,64 @@ export function ApprovalSidePanel({
         {isPending && (
           <div className="border-t p-4 space-y-2">
             <div className="flex items-center gap-2">
-              <Button
-                className="flex-1"
-                onClick={() =>
-                  approveMutation.mutate({ stepId: step.id })
-                }
-                disabled={approveMutation.isPending}
-              >
-                <CheckCircle2 className="mr-1.5 h-4 w-4" />
-                {t("sidePanel.approve")}
+              {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+              <Button className="flex-1" onClick={() => approveAction()} disabled={actionsPending}>
+                <CheckCircle2 className="me-1.5 h-4 w-4" />
+                {t('sidePanel.approve')}
               </Button>
 
               {/* Reject popover */}
               <Popover open={rejectOpen} onOpenChange={setRejectOpen}>
                 <PopoverTrigger
-                  render={(props) => (
-                    <Button
-                      {...props}
-                      variant="destructive"
-                      className="flex-1"
-                    >
-                      <XCircle className="mr-1.5 h-4 w-4" />
-                      {t("sidePanel.reject")}
+                  // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
+                  render={props => (
+                    <Button {...props} variant="destructive" className="flex-1">
+                      <XCircle className="me-1.5 h-4 w-4" />
+                      {t('sidePanel.reject')}
                     </Button>
                   )}
                 />
                 <PopoverContent className="w-80 p-4" align="end">
                   <div className="space-y-3">
-                    <h4 className="font-medium text-sm">
-                      {t("rejectPopover.heading")}
-                    </h4>
+                    <h4 className="font-medium text-sm">{t('rejectPopover.heading')}</h4>
                     <div className="space-y-1.5">
-                      <label className="text-[12px] text-muted-foreground">
-                        {t("rejectPopover.commentLabel")}
+                      <label
+                        htmlFor={`${reactId}-side-reject-comment`}
+                        className="text-[12px] text-muted-foreground">
+                        {t('rejectPopover.commentLabel')}
                       </label>
                       <Textarea
+                        id={`${reactId}-side-reject-comment`}
                         value={rejectComment}
-                        onChange={(e) => setRejectComment(e.target.value)}
-                        placeholder={t("rejectPopover.commentPlaceholder")}
+                        // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
+                        onChange={e => setRejectComment(e.target.value)}
+                        placeholder={t('rejectPopover.commentPlaceholder')}
                         className="min-h-[80px]"
                       />
-                      {rejectComment.length > 0 &&
-                        rejectComment.length < 10 && (
-                          <p className="text-[12px] text-destructive">
-                            {t("rejectPopover.minChars")}
-                          </p>
-                        )}
+                      {rejectComment.length > 0 && rejectComment.length < 10 && (
+                        <p className="text-[12px] text-destructive">
+                          {t('rejectPopover.minChars')}
+                        </p>
+                      )}
                     </div>
                     <div className="flex items-center gap-2 justify-end">
                       <Button
                         variant="ghost"
                         size="sm"
+                        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                         onClick={() => {
                           setRejectOpen(false);
-                          setRejectComment("");
-                        }}
-                      >
-                        {t("rejectPopover.dismiss")}
+                          setRejectComment('');
+                        }}>
+                        {t('rejectPopover.dismiss')}
                       </Button>
                       <Button
                         variant="destructive"
                         size="sm"
-                        disabled={
-                          rejectComment.length < 10 ||
-                          rejectMutation.isPending
-                        }
-                        onClick={() =>
-                          rejectMutation.mutate({
-                            stepId: step.id,
-                            comment: rejectComment,
-                          })
-                        }
-                      >
-                        {t("rejectPopover.confirm")}
+                        disabled={rejectComment.length < 10 || actionsPending}
+                        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+                        onClick={() => rejectAction(rejectComment)}>
+                        {t('rejectPopover.confirm')}
                       </Button>
                     </div>
                   </div>
@@ -424,30 +466,24 @@ export function ApprovalSidePanel({
             {/* More dropdown: clarify + delegate */}
             <DropdownMenu>
               <DropdownMenuTrigger
-                render={(props) => (
-                  <Button
-                    {...props}
-                    variant="outline"
-                    size="sm"
-                    className="w-full"
-                  >
-                    <MoreHorizontal className="mr-1.5 h-4 w-4" />
-                    {t("sidePanel.more")}
+                // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
+                render={props => (
+                  <Button {...props} variant="outline" size="sm" className="w-full">
+                    <MoreHorizontal className="me-1.5 h-4 w-4" />
+                    {t('sidePanel.more')}
                   </Button>
                 )}
               />
               <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem
-                  onClick={() => setClarifyOpen(true)}
-                >
-                  <HelpCircle className="mr-2 h-4 w-4" />
-                  {t("sidePanel.requestClarification")}
+                {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+                <DropdownMenuItem onClick={() => setClarifyOpen(true)}>
+                  <HelpCircle className="me-2 h-4 w-4" />
+                  {t('sidePanel.requestClarification')}
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => setDelegateOpen(true)}
-                >
-                  <UserPlus className="mr-2 h-4 w-4" />
-                  {t("sidePanel.delegateApproval")}
+                {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+                <DropdownMenuItem onClick={() => setDelegateOpen(true)}>
+                  <UserPlus className="me-2 h-4 w-4" />
+                  {t('sidePanel.delegateApproval')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -455,127 +491,38 @@ export function ApprovalSidePanel({
         )}
       </SheetContent>
 
-      {/* Clarification popover (rendered as separate popover/dialog) */}
-      {clarifyOpen && (
-        <div
-          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/10"
-          onClick={() => setClarifyOpen(false)}
-        >
-          <div
-            className="w-96 rounded-xl bg-background p-4 shadow-lg ring-1 ring-border"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h4 className="font-medium text-sm mb-3">
-              {t("clarifyPopover.heading")}
-            </h4>
-            <div className="space-y-1.5 mb-3">
-              <label className="text-[12px] text-muted-foreground">
-                {t("clarifyPopover.commentLabel")}
-              </label>
-              <Textarea
-                value={clarifyComment}
-                onChange={(e) => setClarifyComment(e.target.value)}
-                placeholder={t("clarifyPopover.commentPlaceholder")}
-                className="min-h-[80px]"
-              />
-            </div>
-            <div className="flex items-center gap-2 justify-end">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  setClarifyOpen(false);
-                  setClarifyComment("");
-                }}
-              >
-                {t("clarifyPopover.dismiss")}
-              </Button>
-              <Button
-                size="sm"
-                disabled={
-                  clarifyComment.length < 1 || clarifyMutation.isPending
-                }
-                onClick={() =>
-                  clarifyMutation.mutate({
-                    stepId: step.id,
-                    comment: clarifyComment,
-                  })
-                }
-              >
-                {t("clarifyPopover.confirm")}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ClarifyOverlay
+        open={clarifyOpen}
+        comment={clarifyComment}
+        onCommentChange={setClarifyComment}
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+        onClose={() => {
+          setClarifyOpen(false);
+          setClarifyComment('');
+        }}
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+        onSubmit={() => clarifyAction(clarifyComment)}
+        isPending={actionsPending}
+        t={t}
+      />
 
-      {/* Delegate popover */}
-      {delegateOpen && (
-        <div
-          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/10"
-          onClick={() => setDelegateOpen(false)}
-        >
-          <div
-            className="w-96 rounded-xl bg-background p-4 shadow-lg ring-1 ring-border"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h4 className="font-medium text-sm mb-3">
-              {t("delegatePopover.heading")}
-            </h4>
-            <div className="space-y-3 mb-3">
-              <div className="space-y-1.5">
-                <label className="text-[12px] text-muted-foreground">
-                  {t("delegatePopover.userLabel")}
-                </label>
-                <Input
-                  value={delegateUserId}
-                  onChange={(e) => setDelegateUserId(e.target.value)}
-                  placeholder={t("delegatePopover.userPlaceholder")}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-[12px] text-muted-foreground">
-                  {t("delegatePopover.noteLabel")}
-                </label>
-                <Textarea
-                  value={delegateNote}
-                  onChange={(e) => setDelegateNote(e.target.value)}
-                  placeholder={t("delegatePopover.notePlaceholder")}
-                  className="min-h-[60px]"
-                />
-              </div>
-            </div>
-            <div className="flex items-center gap-2 justify-end">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  setDelegateOpen(false);
-                  setDelegateUserId("");
-                  setDelegateNote("");
-                }}
-              >
-                {t("delegatePopover.dismiss")}
-              </Button>
-              <Button
-                size="sm"
-                disabled={
-                  !delegateUserId.trim() || delegateMutation.isPending
-                }
-                onClick={() =>
-                  delegateMutation.mutate({
-                    stepId: step.id,
-                    delegateToUserId: delegateUserId,
-                    comment: delegateNote || undefined,
-                  })
-                }
-              >
-                {t("delegatePopover.confirm")}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <DelegateOverlay
+        open={delegateOpen}
+        userId={delegateUserId}
+        note={delegateNote}
+        onUserIdChange={setDelegateUserId}
+        onNoteChange={setDelegateNote}
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+        onClose={() => {
+          setDelegateOpen(false);
+          setDelegateUserId('');
+          setDelegateNote('');
+        }}
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+        onSubmit={() => delegateAction(delegateUserId, delegateNote)}
+        isPending={actionsPending}
+        t={t}
+      />
     </Sheet>
   );
 }

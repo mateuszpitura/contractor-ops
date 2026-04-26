@@ -1,0 +1,68 @@
+import { render, screen } from '@/test/test-utils';
+import { SigningAuditTrail } from '../signing-audit-trail';
+
+const { mockUseQuery } = vi.hoisted(() => ({
+  mockUseQuery: vi.fn<() => Record<string, unknown>>(() => ({
+    data: null,
+    isLoading: false,
+    isFetching: false,
+    isPending: false,
+  })),
+}));
+
+vi.mock('@tanstack/react-query', async importOriginal => {
+  const actual = await importOriginal<typeof import('@tanstack/react-query')>();
+  return {
+    ...actual,
+    useQuery: mockUseQuery,
+  };
+});
+vi.mock('@/trpc/init', () => ({
+  trpc: {
+    esign: {
+      getEnvelopeDetail: {
+        queryOptions: (input: unknown, opts?: Record<string, unknown>) => ({
+          queryKey: ['esign', 'detail', input],
+          ...opts,
+        }),
+      },
+    },
+  },
+}));
+
+describe('SigningAuditTrail', () => {
+  beforeEach(() => {
+    mockUseQuery.mockReturnValue({
+      data: null,
+      isPending: false,
+      isLoading: false,
+    });
+  });
+
+  it('renders empty state when no events', () => {
+    render(<SigningAuditTrail envelopeId="env1" open={true} onOpenChange={vi.fn()} />);
+    expect(screen.getByText('No Signing History')).toBeInTheDocument();
+  });
+
+  it('renders events when data is available', () => {
+    mockUseQuery.mockReturnValue({
+      data: {
+        events: [
+          {
+            id: 'e1',
+            eventType: 'ENVELOPE_SENT',
+            description: 'Envelope sent to signer',
+            actorName: 'Jan',
+            occurredAt: new Date().toISOString(),
+          },
+        ],
+      },
+      isPending: false,
+      isLoading: false,
+    });
+
+    render(<SigningAuditTrail envelopeId="env1" open={true} onOpenChange={vi.fn()} />);
+    expect(screen.getByText('Envelope sent to signer')).toBeInTheDocument();
+    expect(screen.getByText('Jan')).toBeInTheDocument();
+  });
+});

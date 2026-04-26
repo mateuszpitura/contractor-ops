@@ -1,9 +1,10 @@
-"use client";
+'use client';
 
-import { useTranslations } from "next-intl";
+import { workflowTaskSkipReason } from '@contractor-ops/validators';
+import { useTranslations } from 'next-intl';
 
-import { Skeleton } from "@/components/ui/skeleton";
-import { TaskCardRun } from "./task-card-run";
+import { Skeleton } from '@/components/ui/skeleton';
+import { TaskCardRun } from './task-card-run';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -45,7 +46,8 @@ function TaskChecklistSkeleton() {
   return (
     <div className="space-y-3">
       {Array.from({ length: 5 }).map((_, i) => (
-        <div key={i} className="flex items-center gap-3 rounded-lg border bg-card p-4">
+        // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
+        <div key={`skel-${i}`} className="flex items-center gap-3 rounded-lg border bg-card p-4">
           <Skeleton className="size-5 shrink-0 rounded-full" />
           <div className="flex-1 space-y-2">
             <Skeleton className="h-4 w-48" />
@@ -69,19 +71,15 @@ export function TaskChecklist({
   isLoading,
   taskTitleMap,
 }: TaskChecklistProps) {
-  const t = useTranslations("Workflows");
+  const t = useTranslations('Workflows');
 
   // Build task title map for dependency tooltips if not provided
-  const titleMap =
-    taskTitleMap ??
-    new Map(tasks.map((task) => [task.id, task.title]));
+  const titleMap = taskTitleMap ?? new Map(tasks.map(task => [task.id, task.title]));
 
   if (isLoading) {
     return (
       <div className="space-y-4">
-        <h2 className="text-[20px] font-semibold leading-[1.2]">
-          {t("tasksHeading")}
-        </h2>
+        <h2 className="text-[20px] font-semibold leading-[1.2]">{t('tasksHeading')}</h2>
         <TaskChecklistSkeleton />
       </div>
     );
@@ -89,28 +87,23 @@ export function TaskChecklist({
 
   return (
     <div className="space-y-4">
-      <h2 className="text-[20px] font-semibold leading-[1.2]">
-        {t("tasksHeading")}
-      </h2>
+      <h2 className="text-[20px] font-semibold leading-[1.2]">{t('tasksHeading')}</h2>
       <div className="space-y-3">
-        {tasks.map((task) => {
+        {tasks.map(task => {
           const isConditionSkipped =
-            task.status === "SKIPPED" &&
+            task.status === 'SKIPPED' &&
             (task.resultJson as Record<string, unknown>)?.skipReason ===
-              "condition_not_met";
+              workflowTaskSkipReason.conditionNotMet;
 
           return (
-            <div
-              key={task.id}
-              className={isConditionSkipped ? "opacity-50" : undefined}
-            >
+            <div key={task.id} className={isConditionSkipped ? 'opacity-50' : undefined}>
               <TaskCardRun
                 task={task}
                 runId={runId}
                 currentUserId={currentUserId}
                 dependencyTitle={
                   task.dependsOnTaskRunId
-                    ? titleMap.get(task.dependsOnTaskRunId) ?? undefined
+                    ? (titleMap.get(task.dependsOnTaskRunId) ?? undefined)
                     : undefined
                 }
               />

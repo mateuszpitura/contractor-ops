@@ -1,40 +1,30 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 // ---------------------------------------------------------------------------
 // Prisma enum mirrors (string unions — validators package has no Prisma dep)
 // ---------------------------------------------------------------------------
 
 const documentTypeEnum = z.enum([
-  "MASTER_CONTRACT",
-  "AMENDMENT",
-  "NDA",
-  "IP_ASSIGNMENT",
-  "DPA",
-  "TAX_CERTIFICATE",
-  "BUSINESS_REGISTRATION",
-  "INVOICE",
-  "TIMESHEET",
-  "DELIVERABLE_ACCEPTANCE",
-  "PAYMENT_EXPORT",
-  "INSURANCE",
-  "OTHER",
+  'MASTER_CONTRACT',
+  'AMENDMENT',
+  'NDA',
+  'IP_ASSIGNMENT',
+  'DPA',
+  'TAX_CERTIFICATE',
+  'BUSINESS_REGISTRATION',
+  'INVOICE',
+  'TIMESHEET',
+  'DELIVERABLE_ACCEPTANCE',
+  'PAYMENT_EXPORT',
+  'INSURANCE',
+  'OTHER',
 ]);
 
-const documentStatusEnum = z.enum([
-  "ACTIVE",
-  "SUPERSEDED",
-  "EXPIRED",
-  "ARCHIVED",
-]);
+const documentStatusEnum = z.enum(['ACTIVE', 'SUPERSEDED', 'EXPIRED', 'ARCHIVED']);
 
-const documentLinkEntityTypeEnum = z.enum(["CONTRACTOR", "CONTRACT"]);
+const documentLinkEntityTypeEnum = z.enum(['CONTRACTOR', 'CONTRACT']);
 
-const documentLinkRoleEnum = z.enum([
-  "PRIMARY",
-  "SUPPORTING",
-  "GENERATED_OUTPUT",
-  "SIGNED_COPY",
-]);
+const documentLinkRoleEnum = z.enum(['PRIMARY', 'SUPPORTING', 'GENERATED_OUTPUT', 'SIGNED_COPY']);
 
 /** Maximum allowed file size: 25 MB */
 const MAX_FILE_SIZE_BYTES = 25 * 1024 * 1024;
@@ -48,43 +38,39 @@ const MAX_FILE_SIZE_BYTES = 25 * 1024 * 1024;
  * Creates a Document record and returns upload URL + storage key.
  */
 export const documentRequestUploadSchema = z.object({
-  filename: z.string().min(1, "Filename is required"),
-  mimeType: z.string().min(1, "MIME type is required"),
+  filename: z.string().min(1, 'Filename is required'),
+  mimeType: z.string().min(1, 'MIME type is required'),
   fileSizeBytes: z
     .number()
     .int()
-    .positive("File size must be positive")
-    .max(MAX_FILE_SIZE_BYTES, "File exceeds 25 MB limit"),
+    .positive('File size must be positive')
+    .max(MAX_FILE_SIZE_BYTES, 'File exceeds 25 MB limit'),
   documentType: documentTypeEnum,
   entityType: documentLinkEntityTypeEnum.optional(),
   entityId: z.string().optional(),
-  linkRole: documentLinkRoleEnum.default("PRIMARY"),
+  linkRole: documentLinkRoleEnum.default('PRIMARY'),
 });
 
-export type DocumentRequestUploadInput = z.infer<
-  typeof documentRequestUploadSchema
->;
+export type DocumentRequestUploadInput = z.infer<typeof documentRequestUploadSchema>;
 
 /**
  * Schema for confirming that a file was uploaded to R2.
  * Triggers virus scan and MIME validation.
  */
 export const documentConfirmUploadSchema = z.object({
-  documentId: z.string().min(1, "Document ID is required"),
+  documentId: z.string().min(1, 'Document ID is required'),
 });
 
-export type DocumentConfirmUploadInput = z.infer<
-  typeof documentConfirmUploadSchema
->;
+export type DocumentConfirmUploadInput = z.infer<typeof documentConfirmUploadSchema>;
 
 /**
  * Schema for linking a document to a contractor or contract entity.
  */
 export const documentLinkSchema = z.object({
-  documentId: z.string().min(1, "Document ID is required"),
+  documentId: z.string().min(1, 'Document ID is required'),
   entityType: documentLinkEntityTypeEnum,
-  entityId: z.string().min(1, "Entity ID is required"),
-  linkRole: documentLinkRoleEnum.default("PRIMARY"),
+  entityId: z.string().min(1, 'Entity ID is required'),
+  linkRole: documentLinkRoleEnum.default('PRIMARY'),
 });
 
 export type DocumentLinkInput = z.infer<typeof documentLinkSchema>;
@@ -108,16 +94,14 @@ export type DocumentListInput = z.infer<typeof documentListSchema>;
  * Marks the existing document as SUPERSEDED and creates a new one.
  */
 export const documentVersionUploadSchema = z.object({
-  existingDocumentId: z.string().min(1, "Existing document ID is required"),
-  filename: z.string().min(1, "Filename is required"),
-  mimeType: z.string().min(1, "MIME type is required"),
+  existingDocumentId: z.string().min(1, 'Existing document ID is required'),
+  filename: z.string().min(1, 'Filename is required'),
+  mimeType: z.string().min(1, 'MIME type is required'),
   fileSizeBytes: z
     .number()
     .int()
-    .positive("File size must be positive")
-    .max(MAX_FILE_SIZE_BYTES, "File exceeds 25 MB limit"),
+    .positive('File size must be positive')
+    .max(MAX_FILE_SIZE_BYTES, 'File exceeds 25 MB limit'),
 });
 
-export type DocumentVersionUploadInput = z.infer<
-  typeof documentVersionUploadSchema
->;
+export type DocumentVersionUploadInput = z.infer<typeof documentVersionUploadSchema>;

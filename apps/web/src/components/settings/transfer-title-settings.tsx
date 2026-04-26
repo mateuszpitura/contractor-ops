@@ -1,24 +1,17 @@
-"use client";
+'use client';
 
-import { useEffect, useMemo } from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
-import { toast } from "sonner";
-import { Loader2, Save } from "lucide-react";
-
-import { trpc } from "@/trpc/init";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from "@/components/ui/card";
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Loader2, Save } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useEffect, useId, useMemo } from 'react';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import { z } from 'zod';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Schema
@@ -35,10 +28,10 @@ type TransferTitleFormValues = z.infer<typeof transferTitleSchema>;
 // ---------------------------------------------------------------------------
 
 const EXAMPLE_VALUES: Record<string, string> = {
-  invoice_number: "FV/2026/03/001",
-  billing_period: "2026-03",
-  contractor_name: "Acme Sp. z o.o.",
-  contract_number: "C-001",
+  invoice_number: 'FV/2026/03/001',
+  billing_period: '2026-03',
+  contractor_name: 'Acme Sp. z o.o.',
+  contract_number: 'C-001',
 };
 
 function resolvePreview(template: string): string {
@@ -52,17 +45,17 @@ function resolvePreview(template: string): string {
 // ---------------------------------------------------------------------------
 
 export function TransferTitleSettings() {
-  const t = useTranslations("Payments");
+  const id = useId();
+  const t = useTranslations('Payments');
   const queryClient = useQueryClient();
 
   // Load current settings
   const settingsQuery = useQuery(trpc.settings.get.queryOptions());
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const orgData = settingsQuery.data as any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const settingsJson = (orgData?.metadata as any)?.settingsJson ?? {};
+  const orgData = settingsQuery.data;
+  const metadata = orgData?.metadata as Record<string, unknown> | undefined;
+  const settingsJson = (metadata?.settingsJson as Record<string, unknown>) ?? {};
   const currentTemplate: string =
-    settingsJson.paymentTransferTitleTemplate ?? "{invoice_number}";
+    (settingsJson.paymentTransferTitleTemplate as string) ?? '{invoice_number}';
 
   const {
     register,
@@ -73,7 +66,7 @@ export function TransferTitleSettings() {
   } = useForm<TransferTitleFormValues>({
     resolver: zodResolver(transferTitleSchema),
     defaultValues: {
-      template: "{invoice_number}",
+      template: '{invoice_number}',
     },
   });
 
@@ -84,19 +77,19 @@ export function TransferTitleSettings() {
     }
   }, [currentTemplate, reset]);
 
-  const watchTemplate = watch("template");
+  const watchTemplate = watch('template');
   const preview = useMemo(() => resolvePreview(watchTemplate), [watchTemplate]);
 
   const updateMutation = useMutation(
     trpc.settings.update.mutationOptions({
       onSuccess: () => {
-        toast.success(t("toastTransferTitleSaved"));
+        toast.success(t('toastTransferTitleSaved'));
         queryClient.invalidateQueries({
           queryKey: trpc.settings.get.queryKey(),
         });
       },
       onError: () => {
-        toast.error(t("errorExport"));
+        toast.error(t('errorExport'));
       },
     }),
   );
@@ -117,46 +110,36 @@ export function TransferTitleSettings() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{t("settingsHeading")}</CardTitle>
-        <CardDescription>{t("settingsDescription")}</CardDescription>
+        <CardTitle>{t('settingsHeading')}</CardTitle>
+        <CardDescription>{t('settingsDescription')}</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
-            <label htmlFor="transfer-title-template" className="text-sm font-medium">
-              {t("templateLabel")}
+            <label htmlFor={`${id}-transfer-title-template`} className="text-sm font-medium">
+              {t('templateLabel')}
             </label>
             <Input
-              id="transfer-title-template"
-              placeholder={t("templatePlaceholder")}
-              {...register("template")}
+              id={`${id}-transfer-title-template`}
+              placeholder={t('templatePlaceholder')}
+              {...register('template')}
             />
-            <p className="text-xs text-muted-foreground">
-              {t("templateHelper")}
-            </p>
-            {errors.template && (
-              <p className="text-xs text-destructive">
-                {errors.template.message}
-              </p>
+            <p className="text-xs text-muted-foreground">{t('templateHelper')}</p>
+            {!!errors.template && (
+              <p className="text-xs text-destructive">{errors.template.message}</p>
             )}
           </div>
 
           {/* Live preview */}
-          <p className="text-xs text-muted-foreground">
-            {t("preview", { value: preview })}
-          </p>
+          <p className="text-xs text-muted-foreground">{t('preview', { value: preview })}</p>
 
-          <Button
-            type="submit"
-            size="sm"
-            disabled={!isDirty || updateMutation.isPending}
-          >
+          <Button type="submit" size="sm" disabled={!isDirty || updateMutation.isPending}>
             {updateMutation.isPending ? (
-              <Loader2 className="mr-1.5 size-3.5 animate-spin" />
+              <Loader2 className="me-1.5 size-3.5 animate-spin" />
             ) : (
-              <Save className="mr-1.5 size-3.5" />
+              <Save className="me-1.5 size-3.5" />
             )}
-            {t("save")}
+            {t('save')}
           </Button>
         </form>
       </CardContent>

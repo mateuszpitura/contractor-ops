@@ -1,35 +1,34 @@
-"use client";
+'use client';
 
-import { useState, useCallback } from "react";
-import { useDropzone } from "react-dropzone";
-import { useMutation } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
+import { useMutation } from '@tanstack/react-query';
 import {
-  UploadCloud,
   FileText,
-  X,
   Loader2,
-  ShieldCheck,
   ShieldAlert,
+  ShieldCheck,
   ShieldQuestion,
-} from "lucide-react";
-
-import { trpc } from "@/trpc/init";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
+  UploadCloud,
+  X,
+} from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useCallback, useState } from 'react';
+import { useDropzone } from 'react-dropzone';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
 type UploadStatus =
-  | "uploading"
-  | "confirming"
-  | "scanning"
-  | "clean"
-  | "infected"
-  | "failed"
-  | "error";
+  | 'uploading'
+  | 'confirming'
+  | 'scanning'
+  | 'clean'
+  | 'infected'
+  | 'failed'
+  | 'error';
 
 interface UploadingFile {
   id: string;
@@ -51,23 +50,19 @@ interface StepDocumentsProps {
 // ---------------------------------------------------------------------------
 
 const ACCEPTED_TYPES: Record<string, string[]> = {
-  "application/pdf": [".pdf"],
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document": [
-    ".docx",
-  ],
-  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [
-    ".xlsx",
-  ],
-  "image/png": [".png"],
-  "image/jpeg": [".jpg", ".jpeg"],
+  'application/pdf': ['.pdf'],
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
+  'image/png': ['.png'],
+  'image/jpeg': ['.jpg', '.jpeg'],
 };
 
 const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25 MB
 
-function formatFileSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+function formatFileSizeData(bytes: number): { key: string; size: string } {
+  if (bytes < 1024) return { key: 'bytes', size: String(bytes) };
+  if (bytes < 1024 * 1024) return { key: 'kilobytes', size: (bytes / 1024).toFixed(1) };
+  return { key: 'megabytes', size: (bytes / (1024 * 1024)).toFixed(1) };
 }
 
 // ---------------------------------------------------------------------------
@@ -75,36 +70,36 @@ function formatFileSize(bytes: number): string {
 // ---------------------------------------------------------------------------
 
 function ScanStatusBadge({ status }: { status: UploadStatus }) {
-  const t = useTranslations("Contracts.wizard");
+  const t = useTranslations('Contracts.wizard');
 
   switch (status) {
-    case "scanning":
-    case "confirming":
+    case 'scanning':
+    case 'confirming':
       return (
         <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
           <Loader2 className="h-3 w-3 animate-spin" />
-          {t("scan.scanning")}
+          {t('scan.scanning')}
         </span>
       );
-    case "clean":
+    case 'clean':
       return (
         <span className="inline-flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
           <ShieldCheck className="h-3 w-3" />
-          {t("scan.clean")}
+          {t('scan.clean')}
         </span>
       );
-    case "infected":
+    case 'infected':
       return (
         <span className="inline-flex items-center gap-1 text-xs text-destructive">
           <ShieldAlert className="h-3 w-3" />
-          {t("scan.infected")}
+          {t('scan.infected')}
         </span>
       );
-    case "failed":
+    case 'failed':
       return (
         <span className="inline-flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400">
           <ShieldQuestion className="h-3 w-3" />
-          {t("scan.failed")}
+          {t('scan.failed')}
         </span>
       );
     default:
@@ -121,69 +116,54 @@ function ScanStatusBadge({ status }: { status: UploadStatus }) {
  * Drag-and-drop zone using react-dropzone with immediate upload via
  * presigned URLs (requestUpload + PUT to R2 + confirmUpload).
  */
-export function StepDocuments({
-  onSkip,
-  onDocumentsChange,
-}: StepDocumentsProps) {
-  const t = useTranslations("Contracts.wizard");
+export function StepDocuments({ onSkip, onDocumentsChange }: StepDocumentsProps) {
+  const t = useTranslations('Contracts.wizard');
+  const tCommon = useTranslations('Common');
   const [files, setFiles] = useState<UploadingFile[]>([]);
 
-  const requestUploadMutation = useMutation(
-    trpc.document.requestUpload.mutationOptions({}),
-  );
+  const requestUploadMutation = useMutation(trpc.document.requestUpload.mutationOptions({}));
 
-  const confirmUploadMutation = useMutation(
-    trpc.document.confirmUpload.mutationOptions({}),
-  );
+  const confirmUploadMutation = useMutation(trpc.document.confirmUpload.mutationOptions({}));
 
   const uploadFile = useCallback(
     async (file: File) => {
       const fileId = `${file.name}-${Date.now()}`;
 
-      setFiles((prev) => [
+      setFiles(prev => [
         ...prev,
         {
           id: fileId,
           file,
-          status: "uploading" as const,
+          status: 'uploading' as const,
           progress: 0,
         },
       ]);
 
       try {
         // Step 1: Request presigned upload URL
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const result: any = await requestUploadMutation.mutateAsync({
+        const result = await requestUploadMutation.mutateAsync({
           filename: file.name,
           mimeType: file.type,
           fileSizeBytes: file.size,
+          documentType: 'MASTER_CONTRACT',
         } as Parameters<typeof requestUploadMutation.mutateAsync>[0]);
 
-        const documentId = result.documentId as string;
-        const uploadUrl = result.uploadUrl as string;
+        const uploadResult = result as Record<string, unknown>;
+        const documentId = uploadResult.documentId as string;
+        const uploadUrl = uploadResult.uploadUrl as string;
 
-        setFiles((prev) =>
-          prev.map((f) =>
-            f.id === fileId ? { ...f, documentId, progress: 10 } : f,
-          ),
-        );
+        setFiles(prev => prev.map(f => (f.id === fileId ? { ...f, documentId, progress: 10 } : f)));
 
         // Step 2: Upload directly to R2 via presigned URL with progress tracking
         await new Promise<void>((resolve, reject) => {
           const xhr = new XMLHttpRequest();
-          xhr.open("PUT", uploadUrl);
-          xhr.setRequestHeader("Content-Type", file.type);
+          xhr.open('PUT', uploadUrl);
+          xhr.setRequestHeader('Content-Type', file.type);
 
-          xhr.upload.onprogress = (event) => {
+          xhr.upload.onprogress = event => {
             if (event.lengthComputable) {
-              const percent = Math.round(
-                10 + (event.loaded / event.total) * 80,
-              );
-              setFiles((prev) =>
-                prev.map((f) =>
-                  f.id === fileId ? { ...f, progress: percent } : f,
-                ),
-              );
+              const percent = Math.round(10 + (event.loaded / event.total) * 80);
+              setFiles(prev => prev.map(f => (f.id === fileId ? { ...f, progress: percent } : f)));
             }
           };
 
@@ -194,16 +174,14 @@ export function StepDocuments({
               reject(new Error(`Upload failed with status ${xhr.status}`));
             }
           };
-          xhr.onerror = () => reject(new Error("Upload failed"));
+          xhr.onerror = () => reject(new Error('Upload failed'));
           xhr.send(file);
         });
 
         // Step 3: Confirm upload
-        setFiles((prev) =>
-          prev.map((f) =>
-            f.id === fileId
-              ? { ...f, status: "confirming" as const, progress: 95 }
-              : f,
+        setFiles(prev =>
+          prev.map(f =>
+            f.id === fileId ? { ...f, status: 'confirming' as const, progress: 95 } : f,
           ),
         );
 
@@ -212,27 +190,21 @@ export function StepDocuments({
         } as Parameters<typeof confirmUploadMutation.mutateAsync>[0]);
 
         // Upload confirmed, scan running async
-        setFiles((prev) => {
-          const updated = prev.map((f) =>
-            f.id === fileId
-              ? { ...f, status: "scanning" as const, progress: 100 }
-              : f,
+        setFiles(prev => {
+          const updated = prev.map(f =>
+            f.id === fileId ? { ...f, status: 'scanning' as const, progress: 100 } : f,
           );
           // Update parent with all successful document IDs
           onDocumentsChange(
             updated
-              .filter((f) => f.documentId && f.status !== "error")
-              .map((f) => f.documentId!),
+              .filter(f => f.documentId && f.status !== 'error')
+              .map(f => f.documentId as string),
           );
           return updated;
         });
       } catch {
-        setFiles((prev) =>
-          prev.map((f) =>
-            f.id === fileId
-              ? { ...f, status: "error" as const, progress: 0 }
-              : f,
-          ),
+        setFiles(prev =>
+          prev.map(f => (f.id === fileId ? { ...f, status: 'error' as const, progress: 0 } : f)),
         );
       }
     },
@@ -249,12 +221,10 @@ export function StepDocuments({
   );
 
   const removeFile = (fileId: string) => {
-    setFiles((prev) => {
-      const updated = prev.filter((f) => f.id !== fileId);
+    setFiles(prev => {
+      const updated = prev.filter(f => f.id !== fileId);
       onDocumentsChange(
-        updated
-          .filter((f) => f.documentId && f.status !== "error")
-          .map((f) => f.documentId!),
+        updated.filter(f => f.documentId && f.status !== 'error').map(f => f.documentId as string),
       );
       return updated;
     });
@@ -273,48 +243,38 @@ export function StepDocuments({
       <div
         {...getRootProps()}
         className={`flex min-h-[160px] flex-col items-center justify-center rounded-lg border-2 border-dashed p-6 transition-colors cursor-pointer ${
-          isDragActive
-            ? "border-primary bg-primary/[0.03]"
-            : "border-border bg-muted/50"
-        }`}
-      >
+          isDragActive ? 'border-primary bg-primary/[0.03]' : 'border-border bg-muted/50'
+        }`}>
         <input {...getInputProps()} />
         <UploadCloud
           className={`mb-3 h-8 w-8 text-muted-foreground transition-transform ${
-            isDragActive ? "scale-110 text-primary" : ""
+            isDragActive ? 'scale-110 text-primary' : ''
           }`}
         />
         <p className="text-sm text-center text-muted-foreground">
-          {t("dropZone.body")}{" "}
-          <span className="text-primary font-medium cursor-pointer">
-            {t("dropZone.browse")}
-          </span>
+          {t('dropZone.body')}{' '}
+          <span className="text-primary font-medium cursor-pointer">{t('dropZone.browse')}</span>
         </p>
-        <p className="mt-1 text-xs text-muted-foreground">
-          {t("dropZone.accepted")}
-        </p>
+        <p className="mt-1 text-xs text-muted-foreground">{t('dropZone.accepted')}</p>
       </div>
 
       {/* Uploaded files list */}
       {files.length > 0 && (
         <div className="space-y-2">
-          {files.map((item) => (
-            <div
-              key={item.id}
-              className="flex items-center gap-3 rounded-md border px-3 py-2"
-            >
+          {files.map(item => (
+            <div key={item.id} className="flex items-center gap-3 rounded-md border px-3 py-2">
               <FileText className="h-5 w-5 shrink-0 text-muted-foreground" />
               <div className="flex-1 min-w-0">
                 <p className="text-sm truncate">{item.file.name}</p>
                 <div className="flex items-center gap-2 mt-0.5">
                   <span className="text-xs text-muted-foreground">
-                    {formatFileSize(item.file.size)}
+                    {(() => {
+                      const { key, size } = formatFileSizeData(item.file.size);
+                      return tCommon(`fileSize.${key}` as Parameters<typeof tCommon>[0], { size });
+                    })()}
                   </span>
-                  {item.status === "uploading" ? (
-                    <Progress
-                      value={item.progress}
-                      className="h-1.5 flex-1 max-w-[120px]"
-                    />
+                  {item.status === 'uploading' ? (
+                    <Progress value={item.progress} className="h-1.5 flex-1 max-w-[120px]" />
                   ) : (
                     <ScanStatusBadge status={item.status} />
                   )}
@@ -325,10 +285,10 @@ export function StepDocuments({
                 variant="ghost"
                 size="icon"
                 className="h-6 w-6 shrink-0"
-                onClick={() => removeFile(item.id)}
-              >
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+                onClick={() => removeFile(item.id)}>
                 <X className="h-3.5 w-3.5" />
-                <span className="sr-only">Remove</span>
+                <span className="sr-only">{tCommon('srOnly.remove')}</span>
               </Button>
             </div>
           ))}
@@ -340,9 +300,8 @@ export function StepDocuments({
         <button
           type="button"
           className="text-sm text-muted-foreground hover:text-foreground underline-offset-4 hover:underline transition-colors"
-          onClick={onSkip}
-        >
-          {t("skipDocuments")}
+          onClick={onSkip}>
+          {t('skipDocuments')}
         </button>
       </div>
     </div>

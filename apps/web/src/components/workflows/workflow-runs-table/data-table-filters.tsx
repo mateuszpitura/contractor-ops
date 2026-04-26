@@ -1,21 +1,17 @@
-"use client";
+'use client';
 
-import { useCallback } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Filter, X } from "lucide-react";
-import { useTranslations } from "next-intl";
-
-import { trpc } from "@/trpc/init";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
+import { useQuery } from '@tanstack/react-query';
+import { Filter, X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useCallback, useId } from 'react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Switch } from '@/components/ui/switch';
+import { enumKey } from '@/lib/enum-key';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -36,13 +32,7 @@ interface DataTableFiltersProps {
 // Filter option sets
 // ---------------------------------------------------------------------------
 
-const RUN_STATUSES = [
-  "NOT_STARTED",
-  "IN_PROGRESS",
-  "COMPLETED",
-  "CANCELLED",
-  "BLOCKED",
-] as const;
+const RUN_STATUSES = ['NOT_STARTED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED', 'BLOCKED'] as const;
 
 // ---------------------------------------------------------------------------
 // Component
@@ -51,11 +41,9 @@ const RUN_STATUSES = [
 /**
  * Filter popover and active filter badges for the workflow runs data table.
  */
-export function DataTableFilters({
-  filters,
-  onFiltersChange,
-}: DataTableFiltersProps) {
-  const t = useTranslations("Workflows");
+export function DataTableFilters({ filters, onFiltersChange }: DataTableFiltersProps) {
+  const t = useTranslations('Workflows');
+  const reactId = useId();
 
   // Fetch templates for template filter
   const templatesQuery = useQuery(
@@ -64,17 +52,13 @@ export function DataTableFilters({
       pageSize: 50,
     }),
   );
-  const templates = (
-    templatesQuery.data as
-      | { items: Array<{ id: string; name: string }> }
-      | undefined
-  )?.items ?? [];
+  const templates =
+    (templatesQuery.data as { items: Array<{ id: string; name: string }> } | undefined)?.items ??
+    [];
 
   // Active filter count for badge
   const activeFilterCount =
-    filters.status.length +
-    filters.templateId.length +
-    (filters.overdueOnly ? 1 : 0);
+    filters.status.length + filters.templateId.length + (filters.overdueOnly ? 1 : 0);
 
   const hasActiveFilters = activeFilterCount > 0;
 
@@ -87,19 +71,17 @@ export function DataTableFilters({
   }, [onFiltersChange]);
 
   const toggleFilterValue = useCallback(
-    (key: "status" | "templateId", value: string) => {
+    (key: 'status' | 'templateId', value: string) => {
       const current = filters[key];
-      const next = current.includes(value)
-        ? current.filter((v) => v !== value)
-        : [...current, value];
+      const next = current.includes(value) ? current.filter(v => v !== value) : [...current, value];
       onFiltersChange({ [key]: next });
     },
     [filters, onFiltersChange],
   );
 
   const removeFilter = useCallback(
-    (key: "status" | "templateId", value: string) => {
-      onFiltersChange({ [key]: filters[key].filter((v) => v !== value) });
+    (key: 'status' | 'templateId', value: string) => {
+      onFiltersChange({ [key]: filters[key].filter(v => v !== value) });
     },
     [filters, onFiltersChange],
   );
@@ -110,20 +92,13 @@ export function DataTableFilters({
       <div className="flex items-center gap-2">
         <Popover>
           <PopoverTrigger
-            render={(props) => (
-              <Button
-                {...props}
-                variant="outline"
-                size="sm"
-                className="h-9 gap-1.5"
-              >
+            // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
+            render={props => (
+              <Button {...props} variant="outline" size="lg">
                 <Filter className="h-3.5 w-3.5" />
-                {t("filters")}
+                {t('filters')}
                 {hasActiveFilters && (
-                  <Badge
-                    variant="secondary"
-                    className="ml-1 h-5 w-5 rounded-full p-0 text-[10px]"
-                  >
+                  <Badge variant="secondary" className="ms-1 h-5 w-5 rounded-full p-0 text-[10px]">
                     {activeFilterCount}
                   </Badge>
                 )}
@@ -134,40 +109,40 @@ export function DataTableFilters({
             <div className="max-h-[460px] overflow-y-auto p-4 space-y-4">
               {/* Status */}
               <FilterSection
-                title={t("columns.status")}
-                options={RUN_STATUSES.map((s) => ({
+                title={t('columns.status')}
+                options={RUN_STATUSES.map(s => ({
                   value: s,
-                  label: t(`runStatus.${s}` as Parameters<typeof t>[0]),
+                  label: t(`runStatus.${enumKey(s)}` as Parameters<typeof t>[0]),
                 }))}
                 selected={filters.status}
-                onToggle={(value) => toggleFilterValue("status", value)}
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+                onToggle={value => toggleFilterValue('status', value)}
               />
 
               {/* Template */}
               <FilterSection
-                title={t("filterTemplate")}
-                options={templates.map((tmpl) => ({
+                title={t('filterTemplate')}
+                options={templates.map(tmpl => ({
                   value: tmpl.id,
                   label: tmpl.name,
                 }))}
                 selected={filters.templateId}
-                onToggle={(value) => toggleFilterValue("templateId", value)}
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+                onToggle={value => toggleFilterValue('templateId', value)}
               />
 
               {/* Overdue only toggle */}
               <div className="flex items-center justify-between">
                 <Label
-                  htmlFor="overdue-toggle"
-                  className="text-[13px] font-medium text-foreground"
-                >
-                  {t("filterOverdueOnly")}
+                  htmlFor={`${reactId}-overdue-toggle`}
+                  className="text-[13px] font-medium text-foreground">
+                  {t('filterOverdueOnly')}
                 </Label>
                 <Switch
-                  id="overdue-toggle"
+                  id={`${reactId}-overdue-toggle`}
                   checked={filters.overdueOnly}
-                  onCheckedChange={(checked) =>
-                    onFiltersChange({ overdueOnly: checked === true })
-                  }
+                  // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
+                  onCheckedChange={checked => onFiltersChange({ overdueOnly: checked === true })}
                 />
               </div>
             </div>
@@ -178,35 +153,37 @@ export function DataTableFilters({
       {/* Active filter badges */}
       {hasActiveFilters && (
         <div className="flex flex-wrap items-center gap-1.5">
-          {filters.status.map((s) => (
+          {filters.status.map(s => (
             <FilterBadge
               key={`status-${s}`}
-              label={t(`runStatus.${s}` as Parameters<typeof t>[0])}
-              onRemove={() => removeFilter("status", s)}
+              label={t(`runStatus.${enumKey(s)}` as Parameters<typeof t>[0])}
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+              onRemove={() => removeFilter('status', s)}
             />
           ))}
-          {filters.templateId.map((tmplId) => {
-            const tmpl = templates.find((t) => t.id === tmplId);
+          {filters.templateId.map(tmplId => {
+            const tmpl = templates.find(t => t.id === tmplId);
             return (
               <FilterBadge
                 key={`template-${tmplId}`}
                 label={tmpl?.name ?? tmplId}
-                onRemove={() => removeFilter("templateId", tmplId)}
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+                onRemove={() => removeFilter('templateId', tmplId)}
               />
             );
           })}
-          {filters.overdueOnly && (
+          {!!filters.overdueOnly && (
             <FilterBadge
-              label={t("filterOverdueOnly")}
+              label={t('filterOverdueOnly')}
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onRemove={() => onFiltersChange({ overdueOnly: false })}
             />
           )}
           <button
             type="button"
-            className="ml-1 text-xs text-muted-foreground hover:text-foreground underline"
-            onClick={clearAllFilters}
-          >
-            {t("clearAll")}
+            className="ms-1 text-xs text-muted-foreground hover:text-foreground underline"
+            onClick={clearAllFilters}>
+            {t('clearAll')}
           </button>
         </div>
       )}
@@ -229,19 +206,22 @@ function FilterSection({
   selected: string[];
   onToggle: (value: string) => void;
 }) {
+  const filterSectionId = useId();
   if (options.length === 0) return null;
 
   return (
     <div className="space-y-2">
       <h4 className="text-[13px] font-medium text-foreground">{title}</h4>
       <div className="space-y-1">
-        {options.map((option) => (
+        {options.map(option => (
           <label
             key={option.value}
-            className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-accent"
-          >
+            htmlFor={`${filterSectionId}-${option.value}`}
+            className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-accent">
             <Checkbox
+              id={`${filterSectionId}-${option.value}`}
               checked={selected.includes(option.value)}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
               onCheckedChange={() => onToggle(option.value)}
             />
             <span>{option.label}</span>
@@ -252,22 +232,17 @@ function FilterSection({
   );
 }
 
-function FilterBadge({
-  label,
-  onRemove,
-}: {
-  label: string;
-  onRemove: () => void;
-}) {
+function FilterBadge({ label, onRemove }: { label: string; onRemove: () => void }) {
+  const tAria = useTranslations('Common.aria');
+
   return (
-    <Badge variant="secondary" className="gap-1 pl-2 pr-1 py-0.5">
+    <Badge variant="secondary" className="gap-1 ps-2 pe-1 py-0.5">
       <span className="text-xs">{label}</span>
       <button
         type="button"
-        className="ml-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20"
+        className="ms-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20"
         onClick={onRemove}
-        aria-label={`Remove filter: ${label}`}
-      >
+        aria-label={tAria('removeFilter', { label })}>
         <X className="h-3 w-3" />
       </button>
     </Badge>

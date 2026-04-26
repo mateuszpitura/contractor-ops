@@ -1,43 +1,41 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useCallback } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
-import { toast } from "sonner";
-import { Loader2, Save, ClipboardCopy } from "lucide-react";
-
-import { trpc } from "@/trpc/init";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { ClipboardCopy, Loader2, Save } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useCallback, useEffect, useId, useState } from 'react';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
 import {
   Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
-  CardDescription,
-  CardContent,
-} from "@/components/ui/card";
+} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
 export function InvoiceMatchingSettings() {
-  const t = useTranslations("Settings");
+  const id = useId();
+  const t = useTranslations('Settings');
+  const tToast = useTranslations('Settings.toast');
   const queryClient = useQueryClient();
 
   // Load org data for slug (email address)
   const settingsQuery = useQuery(trpc.settings.get.queryOptions());
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const orgData = settingsQuery.data as any;
-  const orgSlug = orgData?.slug ?? "org";
+  const orgData = settingsQuery.data;
+  const orgSlug = orgData?.slug ?? 'org';
   const emailAddress = `invoices@${orgSlug}.contractorhub.io`;
 
   // Load current deviation threshold
-  const invoiceSettingsQuery = useQuery(
-    trpc.settings.getInvoiceSettings.queryOptions(),
-  );
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const invoiceData = invoiceSettingsQuery.data as any;
+  const invoiceSettingsQuery = useQuery(trpc.settings.getInvoiceSettings.queryOptions());
+  const invoiceData = invoiceSettingsQuery.data;
 
   const [threshold, setThreshold] = useState(10);
 
@@ -50,13 +48,13 @@ export function InvoiceMatchingSettings() {
   const updateMutation = useMutation(
     trpc.settings.updateInvoiceSettings.mutationOptions({
       onSuccess: () => {
-        toast.success(t("invoiceSettingsSaved"));
+        toast.success(t('invoiceSettingsSaved'));
         queryClient.invalidateQueries({
           queryKey: trpc.settings.getInvoiceSettings.queryKey(),
         });
       },
       onError: () => {
-        toast.error("Failed to update invoice settings");
+        toast.error(tToast('invoiceSettingsFailed'));
       },
     }),
   );
@@ -64,7 +62,7 @@ export function InvoiceMatchingSettings() {
   const handleCopyEmail = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(emailAddress);
-      toast.success(t("emailCopied"));
+      toast.success(t('emailCopied'));
     } catch {
       // Fallback: select text for manual copy
     }
@@ -80,18 +78,18 @@ export function InvoiceMatchingSettings() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{t("invoiceEmailInbox")}</CardTitle>
-        <CardDescription>{t("invoiceEmailBody")}</CardDescription>
+        <CardTitle>{t('invoiceEmailInbox')}</CardTitle>
+        <CardDescription>{t('invoiceEmailBody')}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Email inbox address */}
         <div className="space-y-2">
-          <label htmlFor="invoice-email" className="text-sm font-medium">
-            {t("invoiceEmailInbox")}
+          <label htmlFor={`${id}-invoice-email`} className="text-sm font-medium">
+            {t('invoiceEmailInbox')}
           </label>
           <div className="flex items-center gap-2">
             <Input
-              id="invoice-email"
+              id={`${id}-invoice-email`}
               value={emailAddress}
               readOnly
               className="font-mono text-sm"
@@ -101,49 +99,42 @@ export function InvoiceMatchingSettings() {
               variant="outline"
               size="icon"
               onClick={handleCopyEmail}
-              aria-label={t("copyEmail")}
-            >
+              aria-label={t('copyEmail')}>
               <ClipboardCopy className="size-4" />
             </Button>
           </div>
-          <p className="text-xs text-muted-foreground">
-            {t("invoiceEmailBody")}
-          </p>
+          <p className="text-xs text-muted-foreground">{t('invoiceEmailBody')}</p>
         </div>
 
         {/* Deviation threshold */}
         <div className="space-y-2">
-          <label htmlFor="deviation-threshold" className="text-sm font-medium">
-            {t("deviationThreshold")}
+          <label htmlFor={`${id}-deviation-threshold`} className="text-sm font-medium">
+            {t('deviationThreshold')}
           </label>
           <Input
-            id="deviation-threshold"
+            id={`${id}-deviation-threshold`}
             type="number"
             min={1}
             max={100}
             value={threshold}
-            onChange={(e) => setThreshold(Number(e.target.value))}
+            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
+            onChange={e => setThreshold(Number(e.target.value))}
             className="max-w-[120px]"
           />
-          <p className="text-xs text-muted-foreground">
-            {t("deviationThresholdHelp")}
-          </p>
+          <p className="text-xs text-muted-foreground">{t('deviationThresholdHelp')}</p>
         </div>
-
-        <Button
-          size="sm"
-          variant="secondary"
-          onClick={handleSave}
-          disabled={updateMutation.isPending}
-        >
-          {updateMutation.isPending ? (
-            <Loader2 className="mr-1.5 size-3.5 animate-spin" />
-          ) : (
-            <Save className="mr-1.5 size-3.5" />
-          )}
-          {t("saveCta")}
-        </Button>
       </CardContent>
+      <CardFooter>
+        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+        <Button size="sm" onClick={handleSave} disabled={updateMutation.isPending}>
+          {updateMutation.isPending ? (
+            <Loader2 className="me-1.5 size-3.5 animate-spin" />
+          ) : (
+            <Save className="me-1.5 size-3.5" />
+          )}
+          {t('saveCta')}
+        </Button>
+      </CardFooter>
     </Card>
   );
 }

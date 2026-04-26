@@ -1,13 +1,7 @@
-"use client";
+'use client';
 
-import { useTranslations } from "next-intl";
-import {
-  FileText,
-  FilePlus,
-  RefreshCw,
-  Clock,
-  Upload,
-} from "lucide-react";
+import { FilePlus, FileText, RefreshCw, Upload } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -35,7 +29,7 @@ type ActivityTabProps = {
 // ---------------------------------------------------------------------------
 
 function formatRelativeTime(date: string | Date): string {
-  const d = typeof date === "string" ? new Date(date) : date;
+  const d = typeof date === 'string' ? new Date(date) : date;
   const now = new Date();
   const diff = now.getTime() - d.getTime();
   const seconds = Math.floor(diff / 1000);
@@ -44,16 +38,16 @@ function formatRelativeTime(date: string | Date): string {
   const days = Math.floor(hours / 24);
 
   if (days > 30) {
-    return d.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
+    return d.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
     });
   }
   if (days > 0) return `${days}d ago`;
   if (hours > 0) return `${hours}h ago`;
   if (minutes > 0) return `${minutes}m ago`;
-  return "just now";
+  return 'just now';
 }
 
 // ---------------------------------------------------------------------------
@@ -61,7 +55,7 @@ function formatRelativeTime(date: string | Date): string {
 // ---------------------------------------------------------------------------
 
 export function ActivityTab({ contract }: ActivityTabProps) {
-  const t = useTranslations("ContractDetail.activity");
+  const t = useTranslations('ContractDetail.activity');
 
   // Build events from contract data
   const events: Array<{
@@ -72,24 +66,20 @@ export function ActivityTab({ contract }: ActivityTabProps) {
 
   // Contract created
   const createdAt =
-    typeof contract.createdAt === "string"
-      ? new Date(contract.createdAt)
-      : contract.createdAt;
+    typeof contract.createdAt === 'string' ? new Date(contract.createdAt) : contract.createdAt;
   events.push({
     icon: FileText,
-    text: t("contractCreated"),
+    text: t('contractCreated'),
     time: createdAt,
   });
 
   // Status changed (if updated differs from created significantly)
   const updatedAt =
-    typeof contract.updatedAt === "string"
-      ? new Date(contract.updatedAt)
-      : contract.updatedAt;
+    typeof contract.updatedAt === 'string' ? new Date(contract.updatedAt) : contract.updatedAt;
   if (Math.abs(updatedAt.getTime() - createdAt.getTime()) > 60000) {
     events.push({
       icon: RefreshCw,
-      text: t("statusChanged", { status: contract.status }),
+      text: t('statusChanged', { status: contract.status }),
       time: updatedAt,
     });
   }
@@ -97,12 +87,10 @@ export function ActivityTab({ contract }: ActivityTabProps) {
   // Amendments
   for (const amendment of contract.amendments ?? []) {
     const amendmentDate =
-      typeof amendment.createdAt === "string"
-        ? new Date(amendment.createdAt)
-        : amendment.createdAt;
+      typeof amendment.createdAt === 'string' ? new Date(amendment.createdAt) : amendment.createdAt;
     events.push({
       icon: FilePlus,
-      text: t("amendmentAdded", { title: amendment.title }),
+      text: t('amendmentAdded', { title: amendment.title }),
       time: amendmentDate,
     });
   }
@@ -111,7 +99,7 @@ export function ActivityTab({ contract }: ActivityTabProps) {
   if (contract.documentCount && contract.documentCount > 0) {
     events.push({
       icon: Upload,
-      text: t("documentsUploaded", { count: contract.documentCount }),
+      text: t('documentsUploaded', { count: contract.documentCount }),
       time: updatedAt,
     });
   }
@@ -122,7 +110,7 @@ export function ActivityTab({ contract }: ActivityTabProps) {
   if (events.length === 0) {
     return (
       <div className="flex min-h-[200px] items-center justify-center">
-        <p className="text-sm text-muted-foreground">{t("noActivity")}</p>
+        <p className="text-sm text-muted-foreground">{t('noActivity')}</p>
       </div>
     );
   }
@@ -132,7 +120,8 @@ export function ActivityTab({ contract }: ActivityTabProps) {
       {events.map((event, i) => {
         const Icon = event.icon;
         return (
-          <div key={i} className="flex items-start gap-3">
+          // biome-ignore lint/suspicious/noArrayIndexKey: computed timeline events lack unique id
+          <div key={`activity-${i}`} className="flex items-start gap-3">
             <div className="relative mt-0.5 flex size-6 shrink-0 items-center justify-center">
               <Icon className="size-3.5 text-muted-foreground" />
               {i < events.length - 1 && (
@@ -141,9 +130,7 @@ export function ActivityTab({ contract }: ActivityTabProps) {
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-sm">{event.text}</p>
-              <p className="text-xs text-muted-foreground">
-                {formatRelativeTime(event.time)}
-              </p>
+              <p className="text-xs text-muted-foreground">{formatRelativeTime(event.time)}</p>
             </div>
           </div>
         );

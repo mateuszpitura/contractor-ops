@@ -1,30 +1,14 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import type { UseFormReturn } from "react-hook-form";
-import { useTranslations } from "next-intl";
-import { useQuery } from "@tanstack/react-query";
-import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
-
-import { trpc } from "@/trpc/init";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
+import { useQuery } from '@tanstack/react-query';
+import { format } from 'date-fns';
+import { CalendarIcon } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useEffect, useId, useState } from 'react';
+import type { UseFormReturn } from 'react-hook-form';
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Command,
   CommandEmpty,
@@ -32,9 +16,22 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/ui/command";
-
-import type { ContractWizardFormValues } from "./wizard-dialog";
+} from '@/components/ui/command';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { usePermissions } from '@/hooks/use-permissions';
+import { enumKey } from '@/lib/enum-key';
+import { canViewSensitivePii, maskTaxId } from '@/lib/mask-pii';
+import { trpc } from '@/trpc/init';
+import type { ContractWizardFormValues } from './wizard-dialog';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -52,13 +49,33 @@ interface ContractorListItem {
 // ---------------------------------------------------------------------------
 
 const CONTRACT_TYPES = [
-  "B2B_MASTER_SERVICE",
-  "STATEMENT_OF_WORK",
-  "NDA",
-  "IP_ASSIGNMENT",
-  "DPA",
-  "OTHER",
+  'B2B_MASTER_SERVICE',
+  'STATEMENT_OF_WORK',
+  'NDA',
+  'IP_ASSIGNMENT',
+  'DPA',
+  'OTHER',
 ] as const;
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+/** Renders a contractor's tax ID, masked or unmasked depending on PII visibility. */
+function ContractorTaxLabel({ taxId, showPii }: { taxId: string | null; showPii: boolean }) {
+  if (!taxId) return null;
+  return (
+    <span className="ms-auto text-xs text-muted-foreground font-mono">
+      {showPii ? String(taxId) : maskTaxId(String(taxId))}
+    </span>
+  );
+}
+
+/** Formats an ISO date string for display in a date picker trigger, or returns a placeholder. */
+function formatDateOrPlaceholder(isoDate: string | undefined, placeholder: string) {
+  if (isoDate) return format(new Date(isoDate), 'PPP');
+  return <span className="text-muted-foreground">{placeholder}</span>;
+}
 
 // ---------------------------------------------------------------------------
 // Props
@@ -75,8 +92,11 @@ interface StepDetailsProps {
  * notice period, auto-renewal.
  */
 export function StepDetails({ form, contractorId }: StepDetailsProps) {
-  const t = useTranslations("Contracts.wizard");
-  const [contractorSearch, setContractorSearch] = useState("");
+  const id = useId();
+  const t = useTranslations('Contracts.wizard');
+  const { role } = usePermissions();
+  const showPii = canViewSensitivePii(role);
+  const [contractorSearch, setContractorSearch] = useState('');
   const [contractorPopoverOpen, setContractorPopoverOpen] = useState(false);
   const [startDateOpen, setStartDateOpen] = useState(false);
   const [endDateOpen, setEndDateOpen] = useState(false);
@@ -88,10 +108,10 @@ export function StepDetails({ form, contractorId }: StepDetailsProps) {
     formState: { errors },
   } = form;
 
-  const selectedContractorId = watch("contractorId");
-  const startDate = watch("startDate");
-  const endDate = watch("endDate");
-  const autoRenewal = watch("autoRenewal");
+  const selectedContractorId = watch('contractorId');
+  const startDate = watch('startDate');
+  const endDate = watch('endDate');
+  const autoRenewal = watch('autoRenewal');
 
   // Fetch contractors for picker
   const { data: contractorsData } = useQuery(
@@ -103,20 +123,23 @@ export function StepDetails({ form, contractorId }: StepDetailsProps) {
   );
 
   const contractors = (contractorsData?.items ?? []) as ContractorListItem[];
-  const selectedContractor = contractors.find(
-    (c) => c.id === selectedContractorId,
-  );
+  const selectedContractor = contractors.find(c => c.id === selectedContractorId);
 
   // If contractorId prop provided, auto-set and lock
   useEffect(() => {
     if (contractorId && !selectedContractorId) {
-      setValue("contractorId", contractorId, { shouldDirty: false });
+      setValue('contractorId', contractorId, { shouldDirty: false });
     }
   }, [contractorId, selectedContractorId, setValue]);
 
+  const contractTypeItems = CONTRACT_TYPES.map(type => ({
+    value: type,
+    label: t(`typeOptions.${enumKey(type)}`),
+  }));
+
   const handleStartDateSelect = (date: Date | undefined) => {
     if (date) {
-      setValue("startDate", date.toISOString(), {
+      setValue('startDate', date.toISOString(), {
         shouldDirty: true,
         shouldValidate: true,
       });
@@ -126,12 +149,12 @@ export function StepDetails({ form, contractorId }: StepDetailsProps) {
 
   const handleEndDateSelect = (date: Date | undefined) => {
     if (date) {
-      setValue("endDate", date.toISOString(), {
+      setValue('endDate', date.toISOString(), {
         shouldDirty: true,
         shouldValidate: true,
       });
     } else {
-      setValue("endDate", undefined, { shouldDirty: true });
+      setValue('endDate', undefined, { shouldDirty: true });
     }
     setEndDateOpen(false);
   };
@@ -140,7 +163,7 @@ export function StepDetails({ form, contractorId }: StepDetailsProps) {
     <div className="space-y-4">
       {/* Contractor picker */}
       <div className="space-y-2">
-        <Label className="text-[13px]">{t("fields.contractor")}</Label>
+        <Label className="text-[13px]">{t('fields.contractor')}</Label>
         {contractorId ? (
           <Input
             value={selectedContractor?.displayName ?? contractorId}
@@ -157,43 +180,36 @@ export function StepDetails({ form, contractorId }: StepDetailsProps) {
                   role="combobox"
                   aria-expanded={contractorPopoverOpen}
                 />
-              }
-            >
+              }>
               {selectedContractor?.displayName ?? (
-                <span className="text-muted-foreground">
-                  {t("fields.contractorPlaceholder")}
-                </span>
+                <span className="text-muted-foreground">{t('fields.contractorPlaceholder')}</span>
               )}
             </PopoverTrigger>
             <PopoverContent className="w-[--anchor-width] p-0" align="start">
               <Command shouldFilter={false}>
                 <CommandInput
-                  placeholder={t("fields.contractorPlaceholder")}
+                  placeholder={t('fields.contractorPlaceholder')}
                   value={contractorSearch}
                   onValueChange={setContractorSearch}
                 />
                 <CommandList>
-                  <CommandEmpty>{t("fields.noContractors")}</CommandEmpty>
+                  <CommandEmpty>{t('fields.noContractors')}</CommandEmpty>
                   <CommandGroup>
-                    {contractors.map((contractor) => (
+                    {contractors.map(contractor => (
                       <CommandItem
                         key={contractor.id}
                         value={contractor.id}
+                        // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
                         onSelect={() => {
-                          setValue("contractorId", contractor.id, {
+                          setValue('contractorId', contractor.id, {
                             shouldDirty: true,
                             shouldValidate: true,
                           });
                           setContractorPopoverOpen(false);
-                          setContractorSearch("");
-                        }}
-                      >
+                          setContractorSearch('');
+                        }}>
                         <span>{contractor.displayName}</span>
-                        {contractor.taxId ? (
-                          <span className="ml-auto text-xs text-muted-foreground font-mono">
-                            {String(contractor.taxId)}
-                          </span>
-                        ) : null}
+                        <ContractorTaxLabel taxId={contractor.taxId} showPii={showPii} />
                       </CommandItem>
                     ))}
                   </CommandGroup>
@@ -202,156 +218,122 @@ export function StepDetails({ form, contractorId }: StepDetailsProps) {
             </PopoverContent>
           </Popover>
         )}
-        {errors.contractorId && (
-          <p className="text-sm text-destructive">
-            {errors.contractorId.message}
-          </p>
+        {!!errors.contractorId && (
+          <p className="text-sm text-destructive">{errors.contractorId.message}</p>
         )}
       </div>
 
       {/* Contract title */}
       <div className="space-y-2">
-        <Label htmlFor="title" className="text-[13px]">
-          {t("fields.title")}
+        <Label htmlFor={`${id}-title`} className="text-[13px]">
+          {t('fields.title')}
         </Label>
-        <Input id="title" {...register("title")} />
-        {errors.title && (
-          <p className="text-sm text-destructive">{errors.title.message}</p>
-        )}
+        <Input id={`${id}-title`} {...register('title')} />
+        {!!errors.title && <p className="text-sm text-destructive">{errors.title.message}</p>}
       </div>
 
       {/* Contract type */}
       <div className="space-y-2">
-        <Label className="text-[13px]">{t("fields.type")}</Label>
+        <Label className="text-[13px]">{t('fields.type')}</Label>
         <Select
-          value={watch("type") ?? ""}
-          onValueChange={(value) =>
-            setValue(
-              "type",
-              (value ?? "") as ContractWizardFormValues["type"],
-              { shouldDirty: true, shouldValidate: true },
-            )
+          value={watch('type') ?? ''}
+          // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
+          onValueChange={value =>
+            setValue('type', (value ?? '') as ContractWizardFormValues['type'], {
+              shouldDirty: true,
+              shouldValidate: true,
+            })
           }
-        >
+          items={contractTypeItems}>
           <SelectTrigger className="w-full">
-            <SelectValue placeholder={t("fields.typePlaceholder")} />
+            <SelectValue placeholder={t('fields.typePlaceholder')} />
           </SelectTrigger>
           <SelectContent>
-            {CONTRACT_TYPES.map((type) => (
-              <SelectItem key={type} value={type}>
-                {t(`typeOptions.${type}`)}
+            {contractTypeItems.map(item => (
+              <SelectItem key={item.value} value={item.value}>
+                {item.label}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
-        {errors.type && (
-          <p className="text-sm text-destructive">{errors.type.message}</p>
-        )}
+        {!!errors.type && <p className="text-sm text-destructive">{errors.type.message}</p>}
       </div>
 
       {/* Start date */}
       <div className="space-y-2">
-        <Label className="text-[13px]">{t("fields.startDate")}</Label>
+        <Label className="text-[13px]">{t('fields.startDate')}</Label>
         <Popover open={startDateOpen} onOpenChange={setStartDateOpen}>
           <PopoverTrigger
-            render={
-              <Button
-                variant="outline"
-                className="w-full justify-start font-normal"
-              />
-            }
-          >
-            <CalendarIcon className="mr-2 h-4 w-4" />
-            {startDate ? (
-              format(new Date(startDate), "PPP")
-            ) : (
-              <span className="text-muted-foreground">
-                {t("fields.selectDate")}
-              </span>
-            )}
+            render={<Button variant="outline" className="w-full justify-start font-normal" />}>
+            <CalendarIcon className="me-2 h-4 w-4" />
+            {formatDateOrPlaceholder(startDate, t('fields.selectDate'))}
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="start">
             <Calendar
               mode="single"
               selected={startDate ? new Date(startDate) : undefined}
+              // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
               onSelect={handleStartDateSelect}
             />
           </PopoverContent>
         </Popover>
-        {errors.startDate && (
-          <p className="text-sm text-destructive">
-            {errors.startDate.message}
-          </p>
+        {!!errors.startDate && (
+          <p className="text-sm text-destructive">{errors.startDate.message}</p>
         )}
       </div>
 
       {/* End date (optional) */}
       <div className="space-y-2">
-        <Label className="text-[13px]">{t("fields.endDate")}</Label>
+        <Label className="text-[13px]">{t('fields.endDate')}</Label>
         <Popover open={endDateOpen} onOpenChange={setEndDateOpen}>
           <PopoverTrigger
-            render={
-              <Button
-                variant="outline"
-                className="w-full justify-start font-normal"
-              />
-            }
-          >
-            <CalendarIcon className="mr-2 h-4 w-4" />
-            {endDate ? (
-              format(new Date(endDate), "PPP")
-            ) : (
-              <span className="text-muted-foreground">
-                {t("fields.selectDate")}
-              </span>
-            )}
+            render={<Button variant="outline" className="w-full justify-start font-normal" />}>
+            <CalendarIcon className="me-2 h-4 w-4" />
+            {formatDateOrPlaceholder(endDate, t('fields.selectDate'))}
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="start">
             <Calendar
               mode="single"
               selected={endDate ? new Date(endDate) : undefined}
+              // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
               onSelect={handleEndDateSelect}
-              disabled={(date) =>
-                startDate ? date < new Date(startDate) : false
-              }
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+              disabled={date => (startDate ? date < new Date(startDate) : false)}
             />
           </PopoverContent>
         </Popover>
-        {errors.endDate && (
-          <p className="text-sm text-destructive">{errors.endDate.message}</p>
-        )}
+        {!!errors.endDate && <p className="text-sm text-destructive">{errors.endDate.message}</p>}
       </div>
 
       {/* Notice period */}
       <div className="space-y-2">
-        <Label htmlFor="noticePeriodDays" className="text-[13px]">
-          {t("fields.noticePeriod")}
+        <Label htmlFor={`${id}-noticePeriodDays`} className="text-[13px]">
+          {t('fields.noticePeriod')}
         </Label>
         <Input
-          id="noticePeriodDays"
+          id={`${id}-noticePeriodDays`}
           type="number"
           min="1"
           placeholder="30"
-          {...register("noticePeriodDays", { valueAsNumber: true })}
+          {...register('noticePeriodDays', { valueAsNumber: true })}
         />
-        {errors.noticePeriodDays && (
-          <p className="text-sm text-destructive">
-            {errors.noticePeriodDays.message}
-          </p>
+        {!!errors.noticePeriodDays && (
+          <p className="text-sm text-destructive">{errors.noticePeriodDays.message}</p>
         )}
       </div>
 
       {/* Auto-renewal */}
       <div className="flex items-center gap-2">
         <Checkbox
-          id="autoRenewal"
+          id={`${id}-autoRenewal`}
           checked={autoRenewal}
-          onCheckedChange={(checked) =>
-            setValue("autoRenewal", checked === true, { shouldDirty: true })
+          // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
+          onCheckedChange={checked =>
+            setValue('autoRenewal', checked === true, { shouldDirty: true })
           }
         />
-        <Label htmlFor="autoRenewal" className="text-[13px] cursor-pointer">
-          {t("fields.autoRenewal")}
+        <Label htmlFor={`${id}-autoRenewal`} className="text-[13px] cursor-pointer">
+          {t('fields.autoRenewal')}
         </Label>
       </div>
     </div>

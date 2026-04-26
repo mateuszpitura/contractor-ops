@@ -1,0 +1,107 @@
+// SigningEnvelope, SigningRecipient, SigningEvent — e-sign integration models
+
+model SigningEnvelope {
+  id                      String                @id @default(cuid())
+  organizationId          String
+  integrationConnectionId String
+  provider                IntegrationProvider
+  externalEnvelopeId      String?
+  contractId              String?
+  documentId              String?
+  status                  SigningEnvelopeStatus @default(CREATED)
+  message                 String?
+  expiresAt               DateTime?
+  reminderIntervalDays    Int?
+  sentByUserId            String
+  sentAt                  DateTime?
+  completedAt             DateTime?
+  voidedAt                DateTime?
+  voidReason              String?
+  createdAt               DateTime              @default(now())
+  updatedAt               DateTime              @updatedAt
+
+  organization Organization       @relation(fields: [organizationId], references: [id])
+  sentBy       User               @relation("SigningEnvelopeSender", fields: [sentByUserId], references: [id])
+  recipients   SigningRecipient[]
+  events       SigningEvent[]
+
+  @@index([organizationId])
+  @@index([organizationId, contractId])
+  @@index([organizationId, status])
+  @@index([externalEnvelopeId])
+}
+
+model SigningRecipient {
+  id                  String                 @id @default(cuid())
+  signingEnvelopeId   String
+  externalRecipientId String?
+  name                String
+  email               String
+  role                SigningRecipientRole
+  routingOrder        Int
+  status              SigningRecipientStatus @default(PENDING)
+  signedAt            DateTime?
+  declinedAt          DateTime?
+  declineReason       String?
+  viewedAt            DateTime?
+
+  signingEnvelope SigningEnvelope @relation(fields: [signingEnvelopeId], references: [id])
+
+  @@index([signingEnvelopeId])
+}
+
+model SigningEvent {
+  id                String           @id @default(cuid())
+  organizationId    String
+  signingEnvelopeId String
+  eventType         SigningEventType
+  actorName         String?
+  actorEmail        String?
+  description       String
+  providerEventId   String?
+  occurredAt        DateTime
+  createdAt         DateTime         @default(now())
+
+  organization    Organization    @relation(fields: [organizationId], references: [id])
+  signingEnvelope SigningEnvelope @relation(fields: [signingEnvelopeId], references: [id])
+
+  @@index([organizationId, signingEnvelopeId, occurredAt])
+}
+
+// --- Enums ---
+
+enum SigningEnvelopeStatus {
+  CREATED
+  SENT
+  DELIVERED
+  COMPLETED
+  DECLINED
+  VOIDED
+  EXPIRED
+}
+
+enum SigningRecipientRole {
+  SIGNER
+  COUNTERSIGNER
+}
+
+enum SigningRecipientStatus {
+  PENDING
+  SENT
+  DELIVERED
+  VIEWED
+  SIGNED
+  DECLINED
+}
+
+enum SigningEventType {
+  ENVELOPE_CREATED
+  ENVELOPE_SENT
+  RECIPIENT_VIEWED
+  RECIPIENT_SIGNED
+  RECIPIENT_DECLINED
+  ENVELOPE_COMPLETED
+  ENVELOPE_VOIDED
+  ENVELOPE_EXPIRED
+  SIGNED_PDF_SAVED
+}

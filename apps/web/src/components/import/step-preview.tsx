@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useState, useMemo } from "react";
-import { CheckCircle2, AlertCircle } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { AlertCircle, CheckCircle2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useMemo, useState } from 'react';
 
-import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Table,
   TableBody,
@@ -13,15 +13,10 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-  TooltipProvider,
-} from "@/components/ui/tooltip";
+} from '@/components/ui/table';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
-import type { ImportRow } from "./import-wizard-dialog";
+import type { ImportRow } from './import-wizard-dialog';
 
 // ---------------------------------------------------------------------------
 // Component
@@ -33,20 +28,13 @@ interface StepPreviewProps {
   totalRows: number;
 }
 
-export function StepPreview({
-  validRows,
-  invalidRows,
-  totalRows,
-}: StepPreviewProps) {
-  const t = useTranslations("Import");
+export function StepPreview({ validRows, invalidRows, totalRows }: StepPreviewProps) {
+  const t = useTranslations('Import');
   const [showErrorsOnly, setShowErrorsOnly] = useState(false);
 
   const allRows = useMemo(
-    () =>
-      [...validRows, ...invalidRows].sort(
-        (a, b) => a.rowNumber - b.rowNumber
-      ),
-    [validRows, invalidRows]
+    () => [...validRows, ...invalidRows].sort((a, b) => a.rowNumber - b.rowNumber),
+    [validRows, invalidRows],
   );
 
   const displayRows = showErrorsOnly ? invalidRows : allRows;
@@ -91,13 +79,13 @@ export function StepPreview({
       {/* Stats bar */}
       <div className="flex items-center gap-4 text-sm">
         <span className="font-semibold text-emerald-600">
-          {t("preview.validRows", { count: validRows.length })}
+          {t('preview.validRows', { count: validRows.length })}
         </span>
         <span className="font-semibold text-destructive">
-          {t("preview.invalidRows", { count: invalidRows.length })}
+          {t('preview.invalidRows', { count: invalidRows.length })}
         </span>
         <span className="text-muted-foreground">
-          {t("preview.totalRows", { count: totalRows })}
+          {t('preview.totalRows', { count: totalRows })}
         </span>
       </div>
 
@@ -105,30 +93,35 @@ export function StepPreview({
       {!hasNoInvalidRows && (
         <div className="flex gap-2">
           <Button
-            variant={!showErrorsOnly ? "default" : "outline"}
+            variant={showErrorsOnly ? 'outline' : 'default'}
             size="sm"
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={() => setShowErrorsOnly(false)}
-            type="button"
-          >
-            {t("preview.showAll")}
+            type="button">
+            {t('preview.showAll')}
           </Button>
           <Button
-            variant={showErrorsOnly ? "default" : "outline"}
+            variant={showErrorsOnly ? 'default' : 'outline'}
             size="sm"
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={() => setShowErrorsOnly(true)}
-            type="button"
-          >
-            {t("preview.showErrors")}
+            type="button">
+            {t('preview.showErrors')}
           </Button>
         </div>
       )}
 
       {/* All valid message */}
-      {hasNoInvalidRows && (
+      {hasNoInvalidRows && validRows.length > 0 && (
         <div className="flex items-center gap-2 text-sm text-emerald-600">
           <CheckCircle2 className="size-4" />
-          <span>{t("preview.allValid", { count: validRows.length })}</span>
+          <span>{t('preview.allValid', { count: validRows.length })}</span>
         </div>
+      )}
+
+      {/* Empty state */}
+      {totalRows === 0 && (
+        <div className="text-sm text-muted-foreground">{t('preview.noRows')}</div>
       )}
 
       {/* Data table */}
@@ -138,23 +131,20 @@ export function StepPreview({
             <TableHeader>
               <TableRow>
                 <TableHead className="w-16">#</TableHead>
-                {columns.map((col) => (
+                {columns.map(col => (
                   <TableHead key={col}>{col}</TableHead>
                 ))}
               </TableRow>
             </TableHeader>
             <TableBody>
-              {displayRows.map((row) => {
-                const isInvalid = row.status === "invalid";
+              {displayRows.map(row => {
+                const isInvalid = row.status === 'invalid';
                 return (
-                  <TableRow
-                    key={row.rowNumber}
-                    className={isInvalid ? "bg-destructive/5" : ""}
-                  >
+                  <TableRow key={row.rowNumber} className={isInvalid ? 'bg-destructive/5' : ''}>
                     <TableCell className="font-mono text-xs text-muted-foreground">
                       {row.rowNumber}
                     </TableCell>
-                    {columns.map((col) => {
+                    {columns.map(col => {
                       const cellKey = `${row.rowNumber}:${col}`;
                       const hasError = errorCells.has(cellKey);
                       const errMsg = errorMessages.get(cellKey);
@@ -162,17 +152,12 @@ export function StepPreview({
                       return (
                         <TableCell
                           key={col}
-                          className={
-                            hasError
-                              ? "border-l-2 border-destructive"
-                              : ""
-                          }
-                        >
+                          className={hasError ? 'border-l-2 border-destructive' : ''}>
                           <div className="flex items-center gap-1">
                             <span className="truncate max-w-[160px] text-sm">
-                              {String(row.data[col] ?? "")}
+                              {String(row.data[col] ?? '')}
                             </span>
-                            {hasError && errMsg && (
+                            {!!hasError && !!errMsg && (
                               <Tooltip>
                                 <TooltipTrigger>
                                   <AlertCircle className="size-3.5 shrink-0 text-destructive" />

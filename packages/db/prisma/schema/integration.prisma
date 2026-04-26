@@ -1,30 +1,36 @@
 // IntegrationConnection, IntegrationSyncLog, ExternalLink, WebhookDelivery
 
 model IntegrationConnection {
-  id                String            @id @default(cuid())
+  id                String              @id @default(cuid())
   organizationId    String
   provider          IntegrationProvider
-  status            IntegrationStatus @default(DISCONNECTED)
+  status            IntegrationStatus   @default(DISCONNECTED)
   displayName       String?
   configJson        Json?
   credentialsRef    String
   connectedByUserId String
-  connectedAt       DateTime          @default(now())
+  userId            String? // null = org-level, set = per-user personal connection (D-12, D-14)
+  connectedAt       DateTime            @default(now())
   lastSyncAt        DateTime?
   lastSuccessAt     DateTime?
   lastErrorAt       DateTime?
   lastErrorMessage  String?
-  createdAt         DateTime          @default(now())
-  updatedAt         DateTime          @updatedAt
+  tokenExpiresAt    DateTime? // When access token expires (for proactive refresh)
+  refreshLockedAt   DateTime? // Distributed lock timestamp for refresh race condition prevention
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
 
-  organization      Organization @relation(fields: [organizationId], references: [id])
-  connectedBy       User         @relation(fields: [connectedByUserId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
+  connectedBy  User         @relation(fields: [connectedByUserId], references: [id])
+  user         User?        @relation("personalConnections", fields: [userId], references: [id])
 
-  externalLinks     ExternalLink[]
-  syncLogs          IntegrationSyncLog[]
+  externalLinks ExternalLink[]
+  syncLogs      IntegrationSyncLog[]
 
   @@index([organizationId])
   @@index([organizationId, provider, status])
+  @@index([organizationId, userId, provider])
+  @@index([status, tokenExpiresAt])
 }
 
 model ExternalLink {
@@ -40,8 +46,8 @@ model ExternalLink {
   createdAt               DateTime   @default(now())
   updatedAt               DateTime   @updatedAt
 
-  organization            Organization          @relation(fields: [organizationId], references: [id])
-  integrationConnection   IntegrationConnection @relation(fields: [integrationConnectionId], references: [id])
+  organization          Organization          @relation(fields: [organizationId], references: [id])
+  integrationConnection IntegrationConnection @relation(fields: [integrationConnectionId], references: [id])
 
   @@index([organizationId])
   @@index([organizationId, entityType, entityId])
@@ -49,7 +55,7 @@ model ExternalLink {
 }
 
 model IntegrationSyncLog {
-  id                      String      @id @default(cuid())
+  id                      String        @id @default(cuid())
   organizationId          String
   integrationConnectionId String
   direction               SyncDirection
@@ -60,11 +66,11 @@ model IntegrationSyncLog {
   requestPayloadJson      Json?
   responsePayloadJson     Json?
   errorMessage            String?
-  startedAt               DateTime    @default(now())
+  startedAt               DateTime      @default(now())
   completedAt             DateTime?
 
-  organization            Organization          @relation(fields: [organizationId], references: [id])
-  integrationConnection   IntegrationConnection @relation(fields: [integrationConnectionId], references: [id])
+  organization          Organization          @relation(fields: [organizationId], references: [id])
+  integrationConnection IntegrationConnection @relation(fields: [integrationConnectionId], references: [id])
 
   @@index([organizationId])
   @@index([organizationId, integrationConnectionId, startedAt])
@@ -84,7 +90,7 @@ model WebhookDelivery {
   processedAt             DateTime?
   errorMessage            String?
 
-  organization            Organization @relation(fields: [organizationId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
 
   @@index([organizationId])
   @@index([organizationId, provider, receivedAt])
@@ -94,15 +100,26 @@ model WebhookDelivery {
 
 enum IntegrationProvider {
   SLACK
+  RESEND
   GOOGLE_WORKSPACE
   MICROSOFT_365
   JIRA
-  ESIGN
+  DOCUSIGN
+  AUTENTI
   KSEF
   ACCOUNTING
   OPEN_BANKING
   GITHUB
   GITLAB
+  CLOCKIFY
+  NOTION
+  CONFLUENCE
+  GOOGLE_CALENDAR
+  OUTLOOK_CALENDAR
+  LINEAR
+  MICROSOFT_TEAMS
+  PEPPOL
+  ZATCA
 }
 
 enum IntegrationStatus {
@@ -110,6 +127,7 @@ enum IntegrationStatus {
   DISCONNECTED
   ERROR
   REAUTH_REQUIRED
+  PENDING_MAPPING
 }
 
 enum SyncDirection {
@@ -125,6 +143,7 @@ enum SyncStatus {
 
 enum WebhookDeliveryStatus {
   RECEIVED
+  PROCESSING
   PROCESSED
   FAILED
 }

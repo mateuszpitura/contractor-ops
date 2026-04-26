@@ -1,33 +1,29 @@
-"use client";
+'use client';
 
-import { useState, useCallback } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { isPdplJurisdiction } from '@contractor-ops/validators';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { LucideIcon } from 'lucide-react';
 import {
   Building2,
-  UserPlus,
-  Users,
-  CheckCircle,
-  MessageSquare,
   Check,
+  CheckCircle,
   ChevronDown,
   ChevronUp,
-} from "lucide-react";
-import type { LucideIcon } from "lucide-react";
-import { useTranslations } from "next-intl";
-
-import { trpc } from "@/trpc/init";
-import { usePermissions } from "@/hooks/use-permissions";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-  CardFooter,
-} from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { Button } from "@/components/ui/button";
-import { Link } from "@/i18n/navigation";
-import { cn } from "@/lib/utils";
+  MessageSquare,
+  Shield,
+  UserPlus,
+  Users,
+} from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useCallback, useState } from 'react';
+import { OnboardingConsentStep } from '@/components/consent/onboarding-consent-step';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
+import { usePermissions } from '@/hooks/use-permissions';
+import { Link } from '@/i18n/navigation';
+import { cn } from '@/lib/utils';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Step definitions
@@ -44,39 +40,46 @@ type OnboardingStep = {
 
 const ONBOARDING_STEPS: OnboardingStep[] = [
   {
-    id: "org-details",
+    id: 'org-details',
     icon: Building2,
     optional: false,
-    stepKey: "orgDetails",
-    ctaHref: "/settings",
+    stepKey: 'orgDetails',
+    ctaHref: '/settings',
   },
   {
-    id: "invite-team",
+    id: 'privacy-consent',
+    icon: Shield,
+    optional: false,
+    stepKey: 'privacyConsent',
+    ctaHref: '/settings?tab=privacy',
+  },
+  {
+    id: 'invite-team',
     icon: UserPlus,
     optional: false,
-    stepKey: "inviteTeam",
-    ctaHref: "/settings?tab=members",
+    stepKey: 'inviteTeam',
+    ctaHref: '/onboarding/import',
   },
   {
-    id: "add-contractor",
+    id: 'add-contractor',
     icon: Users,
     optional: false,
-    stepKey: "addContractor",
-    ctaHref: "/contractors?action=new",
+    stepKey: 'addContractor',
+    ctaHref: '/contractors?action=new',
   },
   {
-    id: "configure-approvals",
+    id: 'configure-approvals',
     icon: CheckCircle,
     optional: true,
-    stepKey: "configureApprovals",
-    ctaHref: "/settings?tab=approvals",
+    stepKey: 'configureApprovals',
+    ctaHref: '/settings?tab=approvals',
   },
   {
-    id: "connect-slack",
+    id: 'connect-slack',
     icon: MessageSquare,
     optional: true,
-    stepKey: "connectSlack",
-    ctaHref: "/settings?tab=integrations",
+    stepKey: 'connectSlack',
+    ctaHref: '/settings?tab=integrations',
   },
 ] as const;
 
@@ -84,13 +87,7 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
 // Step item component
 // ---------------------------------------------------------------------------
 
-function StepIndicator({
-  completed,
-  current,
-}: {
-  completed: boolean;
-  current: boolean;
-}) {
+function StepIndicator({ completed, current }: { completed: boolean; current: boolean }) {
   if (completed) {
     return (
       <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary">
@@ -100,14 +97,10 @@ function StepIndicator({
   }
 
   if (current) {
-    return (
-      <div className="h-6 w-6 shrink-0 rounded-full ring-2 ring-primary" />
-    );
+    return <div className="step-current-ring h-6 w-6 shrink-0 rounded-full ring-2 ring-primary" />;
   }
 
-  return (
-    <div className="h-6 w-6 shrink-0 rounded-full ring-2 ring-border" />
-  );
+  return <div className="h-6 w-6 shrink-0 rounded-full ring-2 ring-border" />;
 }
 
 function StepItem({
@@ -119,7 +112,7 @@ function StepItem({
   step: OnboardingStep;
   completed: boolean;
   current: boolean;
-  t: ReturnType<typeof useTranslations<"Onboarding">>;
+  t: ReturnType<typeof useTranslations<'Onboarding'>>;
 }) {
   const title = t(`steps.${step.stepKey}.title` as Parameters<typeof t>[0]);
   const description = t(`steps.${step.stepKey}.description` as Parameters<typeof t>[0]);
@@ -134,29 +127,22 @@ function StepItem({
         <div className="flex items-center gap-2">
           <span
             className={cn(
-              "text-sm",
-              completed && "text-muted-foreground line-through",
-              current && "font-semibold",
-            )}
-          >
+              'text-sm',
+              completed && 'text-muted-foreground line-through',
+              current && 'font-semibold',
+            )}>
             {title}
           </span>
-          {step.optional && (
+          {!!step.optional && (
             <span className="text-xs font-medium text-amber-600 dark:text-amber-400">
-              ({t("optional")})
+              ({t('optional')})
             </span>
           )}
         </div>
-        {current && (
+        {!!current && (
           <div className="mt-1.5">
-            <p className="text-sm text-muted-foreground">
-              {description}
-            </p>
-            <Button
-              size="sm"
-              className="mt-2"
-              render={<Link href={step.ctaHref} />}
-            >
+            <p className="text-sm text-muted-foreground">{description}</p>
+            <Button size="sm" className="mt-2" render={<Link href={step.ctaHref} />}>
               {cta}
             </Button>
           </div>
@@ -179,16 +165,16 @@ function CollapsedBar({
   completedCount: number;
   totalCount: number;
   onExpand: () => void;
-  t: ReturnType<typeof useTranslations<"Onboarding">>;
+  t: ReturnType<typeof useTranslations<'Onboarding'>>;
 }) {
   return (
     <Card size="sm">
       <CardContent>
         <div className="flex items-center justify-between">
           <span className="text-sm">
-            {t("collapsed")} &mdash;{" "}
+            {t('collapsed')} &mdash;{' '}
             <span className="font-semibold text-primary">
-              {t("progress", { completed: completedCount, total: totalCount })}
+              {t('progress', { completed: completedCount, total: totalCount })}
             </span>
           </span>
           <Button variant="ghost" size="icon-sm" onClick={onExpand}>
@@ -205,14 +191,12 @@ function CollapsedBar({
 // ---------------------------------------------------------------------------
 
 export function OnboardingChecklist() {
-  const t = useTranslations("Onboarding");
+  const t = useTranslations('Onboarding');
   const { can, isLoading: permissionsLoading } = usePermissions();
   const queryClient = useQueryClient();
 
   // Fetch settings for onboarding state
-  const { data: settings, isLoading: settingsLoading } = useQuery(
-    trpc.settings.get.queryOptions(),
-  );
+  const { data: settings, isLoading: settingsLoading } = useQuery(trpc.settings.get.queryOptions());
 
   // Local UI state for collapse toggle
   const [localDismissed, setLocalDismissed] = useState<boolean | null>(null);
@@ -223,7 +207,20 @@ export function OnboardingChecklist() {
   const serverDismissed = (metadata.onboardingDismissed as boolean) ?? false;
   const isDismissed = localDismissed ?? serverDismissed;
 
-  const totalCount = ONBOARDING_STEPS.length;
+  // Filter steps: privacy-consent only shows for PDPL jurisdictions (UAE, Saudi)
+  const orgCountryCode = (metadata.countryCode as string) ?? null;
+  const isPdpl = isPdplJurisdiction(orgCountryCode);
+  const visibleSteps = isPdpl
+    ? ONBOARDING_STEPS
+    : ONBOARDING_STEPS.filter(s => s.id !== 'privacy-consent');
+
+  // Server-side consent validation for gating the privacy-consent step
+  const { data: hasConsents } = useQuery({
+    ...trpc.consent.hasRequiredConsents.queryOptions(),
+    enabled: isPdpl,
+  });
+
+  const totalCount = visibleSteps.length;
   const completedCount = completedSteps.length;
 
   // Settings update mutation
@@ -238,15 +235,23 @@ export function OnboardingChecklist() {
   );
 
   // Mark a step as complete
+  // skipValidation: true when called from OnboardingConsentStep.onComplete
+  // (which only fires after successful server-side bulkGrant mutation)
   const completeStep = useCallback(
-    (stepId: string) => {
+    (stepId: string, skipValidation = false) => {
       if (completedSteps.includes(stepId)) return;
+
+      // Server-side consent validation for privacy-consent step (D-03 belt-and-suspenders)
+      if (stepId === 'privacy-consent' && !skipValidation && !hasConsents) {
+        return; // Block completion until server confirms consents
+      }
+
       const newSteps = [...completedSteps, stepId];
       updateMutation.mutate({
         onboardingCompletedSteps: newSteps,
       });
     },
-    [completedSteps, updateMutation],
+    [completedSteps, updateMutation, hasConsents],
   );
 
   // Dismiss / expand toggle
@@ -262,7 +267,7 @@ export function OnboardingChecklist() {
 
   // Visibility: only show for admins when setup is incomplete and not loading
   if (permissionsLoading || settingsLoading) return null;
-  if (!can("settings", ["write"])) return null;
+  if (!can('settings', ['write'])) return null;
   if (completedCount >= totalCount) return null;
 
   // Collapsed state
@@ -278,40 +283,49 @@ export function OnboardingChecklist() {
   }
 
   // Determine current step (first non-completed)
-  const currentStepId = ONBOARDING_STEPS.find(
-    (s) => !completedSteps.includes(s.id),
-  )?.id;
+  const currentStepId = visibleSteps.find(s => !completedSteps.includes(s.id))?.id;
 
   return (
-    <Card>
+    <Card className="iridescent neon-card">
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="text-[20px] font-semibold">
-            {t("widgetTitle")}
-          </CardTitle>
+          <CardTitle className="gradient-text text-[20px] font-bold">{t('widgetTitle')}</CardTitle>
           <span className="text-xs font-semibold text-primary">
-            {t("progress", { completed: completedCount, total: totalCount })}
+            {t('progress', { completed: completedCount, total: totalCount })}
           </span>
         </div>
         <Progress value={(completedCount / totalCount) * 100} />
       </CardHeader>
       <CardContent>
         <div className="flex flex-col gap-3">
-          {ONBOARDING_STEPS.map((step) => (
-            <StepItem
-              key={step.id}
-              step={step}
-              completed={completedSteps.includes(step.id)}
-              current={step.id === currentStepId}
-              t={t}
-            />
+          {visibleSteps.map(step => (
+            <div key={step.id}>
+              <StepItem
+                step={step}
+                completed={completedSteps.includes(step.id)}
+                current={step.id === currentStepId}
+                t={t}
+              />
+              {/* Inline consent step for PDPL jurisdictions */}
+              {step.id === 'privacy-consent' &&
+                step.id === currentStepId &&
+                !completedSteps.includes(step.id) && (
+                  <div className="ms-9 mt-2">
+                    <OnboardingConsentStep
+                      orgCountryCode={orgCountryCode}
+                      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+                      onComplete={() => completeStep('privacy-consent', true)}
+                    />
+                  </div>
+                )}
+            </div>
           ))}
         </div>
       </CardContent>
       <CardFooter>
         <Button variant="ghost" size="sm" onClick={handleDismiss}>
-          <ChevronUp className="mr-1 h-3.5 w-3.5" />
-          {t("dismiss")}
+          <ChevronUp className="me-1 h-3.5 w-3.5" />
+          {t('dismiss')}
         </Button>
       </CardFooter>
     </Card>

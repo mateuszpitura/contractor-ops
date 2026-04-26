@@ -1,61 +1,71 @@
-"use client";
+'use client';
 
-import { useQuery } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
-
-import { trpc } from "@/trpc/init";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardAction,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Link } from "@/i18n/navigation";
+import { useQuery } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Link } from '@/i18n/navigation';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
-const currencyFormatter = new Intl.NumberFormat("pl-PL", {
-  style: "currency",
-  currency: "PLN",
+const currencyFormatter = new Intl.NumberFormat('pl-PL', {
+  style: 'currency',
+  currency: 'PLN',
   minimumFractionDigits: 0,
   maximumFractionDigits: 2,
 });
 
-function formatAmount(grosze: number, currency: string): string {
-  if (currency !== "PLN") {
-    return new Intl.NumberFormat("pl-PL", {
-      style: "currency",
+function formatAmount(minor: number, currency: string): string {
+  if (currency !== 'PLN') {
+    return new Intl.NumberFormat('pl-PL', {
+      style: 'currency',
       currency,
       minimumFractionDigits: 0,
       maximumFractionDigits: 2,
-    }).format(grosze / 100);
+    }).format(minor / 100);
   }
-  return currencyFormatter.format(grosze / 100);
+  return currencyFormatter.format(minor / 100);
 }
 
-function getSlaClassName(status: string): string {
+function getSlaVariant(status: string): 'success' | 'warning' | 'destructive' | 'secondary' {
   switch (status) {
-    case "ON_TRACK":
-      return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400";
-    case "APPROACHING":
-      return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400";
-    case "BREACHED":
-      return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400";
+    case 'green':
+      return 'success';
+    case 'yellow':
+      return 'warning';
+    case 'red':
+    case 'overdue':
+      return 'destructive';
     default:
-      return "bg-muted text-muted-foreground";
+      return 'secondary';
+  }
+}
+
+/** Left border accent color per SLA status */
+function getSlaAccent(status: string): string {
+  switch (status) {
+    case 'green':
+      return 'border-s-success';
+    case 'yellow':
+      return 'border-s-warning';
+    case 'red':
+    case 'overdue':
+      return 'border-s-destructive';
+    default:
+      return 'border-s-muted-foreground/30';
   }
 }
 
 const SLA_LABEL_KEYS: Record<string, string> = {
-  ON_TRACK: "approvals.slaOnTrack",
-  APPROACHING: "approvals.slaApproaching",
-  BREACHED: "approvals.slaBreached",
+  green: 'approvals.slaOnTrack',
+  yellow: 'approvals.slaApproaching',
+  red: 'approvals.slaBreached',
+  overdue: 'approvals.slaBreached',
 };
 
 // ---------------------------------------------------------------------------
@@ -64,10 +74,10 @@ const SLA_LABEL_KEYS: Record<string, string> = {
 
 /**
  * Approval queue widget showing top 5 pending approvals with SLA badges.
- * Reuses the existing approval.listPending tRPC procedure.
+ * Color-coded left border per SLA status. Glowing badges on breached items.
  */
 export function ApprovalQueueWidget() {
-  const t = useTranslations("Dashboard");
+  const t = useTranslations('Dashboard');
   const { data, isLoading } = useQuery(
     trpc.approval.listPending.queryOptions({ page: 1, pageSize: 5 }),
   );
@@ -75,17 +85,12 @@ export function ApprovalQueueWidget() {
   const items = data?.items ?? [];
 
   return (
-    <Card>
+    <Card className="neon-card">
       <CardHeader>
-        <CardTitle className="text-[20px] font-semibold">
-          {t("approvals.title")}
-        </CardTitle>
+        <CardTitle className="font-display text-lg font-semibold">{t('approvals.title')}</CardTitle>
         <CardAction>
-          <Link
-            href="/approvals"
-            className="text-sm text-primary hover:underline"
-          >
-            {t("approvals.seeAll")}
+          <Link href="/approvals" className="text-sm text-primary hover:underline">
+            {t('approvals.seeAll')}
           </Link>
         </CardAction>
       </CardHeader>
@@ -93,42 +98,42 @@ export function ApprovalQueueWidget() {
         {isLoading ? (
           <div className="flex flex-col gap-2">
             {Array.from({ length: 5 }).map((_, i) => (
-              <Skeleton key={i} className="h-10 w-full rounded-md" />
+              // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
+              <Skeleton key={`skel-${i}`} className="h-10 w-full rounded-md" />
             ))}
           </div>
         ) : items.length === 0 ? (
-          <p className="py-8 text-center text-sm text-muted-foreground">
-            {t("approvals.empty")}
-          </p>
+          <p className="py-8 text-center text-sm text-muted-foreground">{t('approvals.empty')}</p>
         ) : (
-          <ScrollArea className="max-h-[280px]">
+          <ScrollArea className="scroll-fade-bottom max-h-[280px]">
             <div className="flex flex-col gap-2">
-              {items.map((item) => {
+              {items.map(item => {
                 const invoice = item.invoice;
                 const contractorName =
-                  invoice?.contractor?.legalName ?? invoice?.sellerName ?? "---";
-                const amount = invoice?.totalGrosze ?? 0;
-                const currency = invoice?.currency ?? "PLN";
+                  invoice?.contractor?.legalName ?? invoice?.sellerName ?? '---';
+                const amount = invoice?.totalMinor ?? 0;
+                const currency = invoice?.currency ?? 'PLN';
                 const invoiceId = item.approvalFlow?.resourceId;
+                const slaStatus = item.slaStatus?.status ?? '';
+                const accent = getSlaAccent(slaStatus);
+                const isBreached = slaStatus === 'red' || slaStatus === 'overdue';
 
                 return (
                   <Link
                     key={item.id}
-                    href={invoiceId ? `/invoices/${invoiceId}` : "/approvals"}
-                    className="flex items-center gap-3 rounded-md px-2 py-2 transition-colors hover:bg-muted/50"
-                  >
+                    href={invoiceId ? `/invoices/${invoiceId}` : '/approvals'}
+                    className={`flex items-center gap-3 rounded-lg border-s-2 ${accent} ps-3 pe-2.5 py-2.5 transition-all duration-200 hover:bg-surface-2 hover:ps-3.5`}>
                     <span className="min-w-0 flex-1 truncate text-sm font-medium">
                       {contractorName}
                     </span>
-                    <span className="shrink-0 text-sm tabular-nums text-muted-foreground">
+                    <span className="shrink-0 font-display text-sm font-semibold tabular-nums text-foreground">
                       {formatAmount(amount, currency)}
                     </span>
-                    {item.slaStatus && (
+                    {!!item.slaStatus && (
                       <Badge
-                        variant="secondary"
-                        className={getSlaClassName(item.slaStatus.status)}
-                      >
-                        {t((SLA_LABEL_KEYS[item.slaStatus.status] ?? item.slaStatus.status) as Parameters<typeof t>[0])}
+                        variant={getSlaVariant(slaStatus)}
+                        className={isBreached ? 'badge-glow' : ''}>
+                        {t((SLA_LABEL_KEYS[slaStatus] ?? slaStatus) as Parameters<typeof t>[0])}
                       </Badge>
                     )}
                   </Link>

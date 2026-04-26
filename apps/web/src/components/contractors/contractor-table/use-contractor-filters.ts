@@ -1,9 +1,4 @@
-import {
-  parseAsInteger,
-  parseAsString,
-  parseAsArrayOf,
-  useQueryStates,
-} from "nuqs";
+import { parseAsArrayOf, parseAsInteger, parseAsString, useQueryStates } from 'nuqs';
 
 /**
  * URL state management for contractor list filters.
@@ -14,9 +9,9 @@ export function useContractorFilters() {
   return useQueryStates({
     page: parseAsInteger.withDefault(1),
     pageSize: parseAsInteger.withDefault(25),
-    search: parseAsString.withDefault(""),
-    sortBy: parseAsString.withDefault("createdAt"),
-    sortOrder: parseAsString.withDefault("desc"),
+    search: parseAsString.withDefault(''),
+    sortBy: parseAsString.withDefault('createdAt'),
+    sortOrder: parseAsString.withDefault('desc'),
     status: parseAsArrayOf(parseAsString).withDefault([]),
     lifecycleStage: parseAsArrayOf(parseAsString).withDefault([]),
     owner: parseAsArrayOf(parseAsString).withDefault([]),

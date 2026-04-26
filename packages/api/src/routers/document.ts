@@ -1,65 +1,74 @@
-import { z } from "zod";
-import { TRPCError } from "@trpc/server";
-import { prisma } from "@contractor-ops/db";
+import type { HeadObjectCommandOutput } from '@aws-sdk/client-s3';
+import type { Prisma } from '@contractor-ops/db';
+import { createLogger } from '@contractor-ops/logger';
 import {
-  documentRequestUploadSchema,
   documentConfirmUploadSchema,
   documentLinkSchema,
   documentListSchema,
+  documentRequestUploadSchema,
   documentVersionUploadSchema,
-} from "@contractor-ops/validators";
-import { router } from "../init.js";
-import { tenantProcedure } from "../middleware/tenant.js";
-import { requirePermission } from "../middleware/rbac.js";
+} from '@contractor-ops/validators';
+import { TRPCError } from '@trpc/server';
+import { z } from 'zod';
+import * as E from '../errors.js';
+import { router } from '../init.js';
+import { plain } from '../lib/plain.js';
+import { requirePermission } from '../middleware/rbac.js';
+import { tenantProcedure } from '../middleware/tenant.js';
+import { uploadRateLimitMiddleware } from '../middleware/upload-rate-limit.js';
+import { isAllowedMimeType, validateMimeType } from '../services/mime-validator.js';
+import { generateStorageKey, getR2BucketName } from '../services/r2.js';
 import {
-  createPresignedUploadUrl,
-  createPresignedDownloadUrl,
-  generateStorageKey,
-  headObject,
-  deleteObject,
-} from "../services/r2.js";
-import { isAllowedMimeType, validateMimeType } from "../services/mime-validator.js";
-import { isClamAvailable, scanBuffer } from "../services/virus-scanner.js";
+  createRegionalPresignedDownloadUrl,
+  createRegionalPresignedUploadUrl,
+  deleteRegionalObject,
+  headRegionalObject,
+} from '../services/regional-storage.js';
+import { isClamAvailable, scanBuffer } from '../services/virus-scanner.js';
+
+const log = createLogger({ service: 'document-router' });
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
 /**
- * Strips Prisma class prototype from query results, producing plain
- * JSON-serializable objects so that inferred tRPC router types do NOT
- * reference the generated Prisma client module (avoids TS2742).
- */
-function plain<T>(data: T): T {
-  return JSON.parse(JSON.stringify(data)) as T;
-}
-
-/**
  * Async fire-and-forget: validates MIME type and scans for viruses.
  * Updates document virusScanStatus accordingly.
  * Never throws — all errors are caught and logged.
  */
-async function scanAndUpdate(documentId: string, storageKey: string): Promise<void> {
+/** Prisma-like client for document updates (regional or global). */
+type DocumentDb = {
+  document: {
+    update: (args: { where: { id: string }; data: Record<string, unknown> }) => Promise<unknown>;
+  };
+};
+
+async function scanAndUpdate(
+  db: DocumentDb,
+  documentId: string,
+  storageKey: string,
+): Promise<void> {
   try {
     // Fetch first 4100 bytes for MIME validation (magic bytes are in the header)
-    const { GetObjectCommand } = await import("@aws-sdk/client-s3");
-    const { createR2Client } = await import("../services/r2.js");
+    const { GetObjectCommand } = await import('@aws-sdk/client-s3');
+    const { createR2Client } = await import('../services/r2.js');
     const client = createR2Client();
 
     const getCmd = new GetObjectCommand({
-      Bucket: process.env.R2_BUCKET_NAME!,
+      Bucket: getR2BucketName(),
       Key: storageKey,
-      Range: "bytes=0-4099",
+      Range: 'bytes=0-4099',
     });
 
     const response = await client.send(getCmd);
     const bodyBytes = await response.Body?.transformToByteArray();
 
     if (!bodyBytes) {
-      console.error("[document-scan] Could not read object body for:", storageKey);
-      await prisma.document.update({
+      log.error({ storageKey }, 'could not read object body');
+      await db.document.update({
         where: { id: documentId },
-        data: { virusScanStatus: "FAILED" },
+        data: { virusScanStatus: 'FAILED' },
       });
       return;
     }
@@ -69,12 +78,13 @@ async function scanAndUpdate(documentId: string, storageKey: string): Promise<vo
     // Step 1: MIME validation via magic bytes
     const mimeResult = await validateMimeType(buffer);
     if (!mimeResult.valid) {
-      console.warn(
-        `[document-scan] Invalid MIME type for ${documentId}: detected ${mimeResult.detectedMime ?? "unknown"}`,
+      log.warn(
+        { documentId, detectedMime: mimeResult.detectedMime ?? 'unknown' },
+        'invalid mime type',
       );
-      await prisma.document.update({
+      await db.document.update({
         where: { id: documentId },
-        data: { virusScanStatus: "FAILED" },
+        data: { virusScanStatus: 'FAILED' },
       });
       return;
     }
@@ -82,37 +92,35 @@ async function scanAndUpdate(documentId: string, storageKey: string): Promise<vo
     // Step 2: Virus scan via ClamAV
     const clamReady = await isClamAvailable();
     if (!clamReady) {
-      console.error("[document-scan] ClamAV not available — marking FAILED");
-      await prisma.document.update({
+      log.error({}, 'clamav not available — marking failed');
+      await db.document.update({
         where: { id: documentId },
-        data: { virusScanStatus: "FAILED" },
+        data: { virusScanStatus: 'FAILED' },
       });
       return;
     }
 
     const scanResult = await scanBuffer(buffer);
     if (scanResult.isClean) {
-      await prisma.document.update({
+      await db.document.update({
         where: { id: documentId },
-        data: { virusScanStatus: "CLEAN" },
+        data: { virusScanStatus: 'CLEAN' },
       });
     } else {
-      console.warn(
-        `[document-scan] Virus detected in ${documentId}: ${scanResult.virusName ?? "unknown"}`,
-      );
-      await prisma.document.update({
+      log.warn({ documentId, virusName: scanResult.virusName ?? 'unknown' }, 'virus detected');
+      await db.document.update({
         where: { id: documentId },
-        data: { virusScanStatus: "INFECTED" },
+        data: { virusScanStatus: 'INFECTED' },
       });
     }
   } catch (error) {
-    console.error("[document-scan] Scan pipeline failed for:", documentId, error);
-    await prisma.document
+    log.error({ err: error, documentId }, 'scan pipeline failed');
+    await db.document
       .update({
         where: { id: documentId },
-        data: { virusScanStatus: "FAILED" },
+        data: { virusScanStatus: 'FAILED' },
       })
-      .catch((e) => console.error("[document-scan] Failed to update status:", e));
+      .catch(e => log.error({ err: e }, 'failed to update status'));
   }
 }
 
@@ -126,47 +134,48 @@ export const documentRouter = router({
    * the upload URL + storage key for direct client-to-R2 upload.
    */
   requestUpload: tenantProcedure
-    .use(requirePermission({ document: ["create"] }))
+    .use(requirePermission({ document: ['create'] }))
+    .use(uploadRateLimitMiddleware)
     .input(documentRequestUploadSchema)
     .mutation(async ({ ctx, input }) => {
       // Validate MIME type before creating record
       if (!isAllowedMimeType(input.mimeType)) {
         throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: `File type "${input.mimeType}" is not allowed. Accepted: PDF, DOCX, XLSX, PNG, JPG.`,
+          code: 'BAD_REQUEST',
+          message: E.DOCUMENT_FILE_TYPE_NOT_ALLOWED,
         });
       }
 
       // Create Document record
-      const doc = await prisma.document.create({
+      const doc = await ctx.db.document.create({
         data: {
           organizationId: ctx.organizationId,
-          storageKey: "", // Placeholder — updated below
+          storageKey: '', // Placeholder — updated below
           originalFileName: input.filename,
           mimeType: input.mimeType,
           fileSizeBytes: input.fileSizeBytes,
-          checksumSha256: "", // Placeholder until confirmUpload
+          checksumSha256: '', // Placeholder until confirmUpload
           documentType: input.documentType,
-          status: "ACTIVE",
-          virusScanStatus: "PENDING",
-          source: "USER_UPLOAD",
-          uploadedByUserId: ctx.user!.id,
+          status: 'ACTIVE',
+          virusScanStatus: 'PENDING',
+          source: 'USER_UPLOAD',
+          uploadedByUserId: ctx.user?.id,
         },
       });
 
       // Generate and persist storage key
       const storageKey = generateStorageKey(ctx.organizationId, doc.id, input.filename);
-      await prisma.document.update({
+      await ctx.db.document.update({
         where: { id: doc.id },
         data: { storageKey },
       });
 
       // Generate presigned upload URL (5-minute expiry)
-      const uploadUrl = await createPresignedUploadUrl(storageKey, input.mimeType, 300);
+      const uploadUrl = await createRegionalPresignedUploadUrl(storageKey, input.mimeType, 300);
 
       // Create entity link if provided
       if (input.entityType && input.entityId) {
-        await prisma.documentLink.create({
+        await ctx.db.documentLink.create({
           data: {
             organizationId: ctx.organizationId,
             documentId: doc.id,
@@ -185,10 +194,10 @@ export const documentRouter = router({
    * and triggers async virus scanning + MIME validation.
    */
   confirmUpload: tenantProcedure
-    .use(requirePermission({ document: ["create"] }))
+    .use(requirePermission({ document: ['create'] }))
     .input(documentConfirmUploadSchema)
     .mutation(async ({ ctx, input }) => {
-      const doc = await prisma.document.findFirst({
+      const doc = await ctx.db.document.findFirst({
         where: {
           id: input.documentId,
           organizationId: ctx.organizationId,
@@ -197,24 +206,24 @@ export const documentRouter = router({
 
       if (!doc) {
         throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Document not found",
+          code: 'NOT_FOUND',
+          message: E.DOCUMENT_NOT_FOUND,
         });
       }
 
       // Verify object exists in R2
-      let headResponse;
+      let headResponse: HeadObjectCommandOutput;
       try {
-        headResponse = await headObject(doc.storageKey);
+        headResponse = await headRegionalObject(doc.storageKey);
       } catch {
         throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Uploaded file not found in storage. Please try uploading again.",
+          code: 'NOT_FOUND',
+          message: E.DOCUMENT_NOT_IN_STORAGE,
         });
       }
 
       // Update file size from actual R2 object
-      const updated = await prisma.document.update({
+      const updated = await ctx.db.document.update({
         where: { id: doc.id },
         data: {
           fileSizeBytes: headResponse.ContentLength ?? doc.fileSizeBytes,
@@ -222,7 +231,7 @@ export const documentRouter = router({
       });
 
       // Fire-and-forget async scan pipeline
-      void scanAndUpdate(doc.id, doc.storageKey);
+      void scanAndUpdate(ctx.db, doc.id, doc.storageKey);
 
       return plain(updated);
     }),
@@ -232,10 +241,10 @@ export const documentRouter = router({
    * Blocks downloads of infected files.
    */
   getDownloadUrl: tenantProcedure
-    .use(requirePermission({ document: ["read"] }))
+    .use(requirePermission({ document: ['read'] }))
     .input(z.object({ documentId: z.string() }))
     .query(async ({ ctx, input }) => {
-      const doc = await prisma.document.findFirst({
+      const doc = await ctx.db.document.findFirst({
         where: {
           id: input.documentId,
           organizationId: ctx.organizationId,
@@ -245,19 +254,19 @@ export const documentRouter = router({
 
       if (!doc) {
         throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Document not found",
+          code: 'NOT_FOUND',
+          message: E.DOCUMENT_NOT_FOUND,
         });
       }
 
-      if (doc.virusScanStatus === "INFECTED") {
+      if (doc.virusScanStatus === 'INFECTED') {
         throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "This document has been flagged as infected and cannot be downloaded.",
+          code: 'FORBIDDEN',
+          message: E.DOCUMENT_INFECTED,
         });
       }
 
-      const url = await createPresignedDownloadUrl(doc.storageKey, 900);
+      const url = await createRegionalPresignedDownloadUrl(doc.storageKey, 900);
       return { url, expiresIn: 900 };
     }),
 
@@ -266,20 +275,19 @@ export const documentRouter = router({
    * Supports filtering by entity link (contractor/contract), document type, and status.
    */
   list: tenantProcedure
-    .use(requirePermission({ document: ["read"] }))
+    .use(requirePermission({ document: ['read'] }))
     .input(documentListSchema)
     .query(async ({ ctx, input }) => {
       const { page, pageSize, entityType, entityId, documentType, status } = input;
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const where: Record<string, any> = {
+      const where: Prisma.DocumentWhereInput = {
         organizationId: ctx.organizationId,
         deletedAt: null,
       };
 
       // Filter by entity link (join through DocumentLink)
       if (entityType && entityId) {
-        const linkedDocIds = await prisma.documentLink.findMany({
+        const linkedDocIds = await ctx.db.documentLink.findMany({
           where: {
             organizationId: ctx.organizationId,
             entityType,
@@ -287,7 +295,7 @@ export const documentRouter = router({
           },
           select: { documentId: true },
         });
-        where.id = { in: linkedDocIds.map((l) => l.documentId) };
+        where.id = { in: linkedDocIds.map(l => l.documentId) };
       }
 
       if (documentType?.length) {
@@ -299,16 +307,16 @@ export const documentRouter = router({
       }
 
       const [documents, totalCount] = await Promise.all([
-        prisma.document.findMany({
+        ctx.db.document.findMany({
           where,
           skip: (page - 1) * pageSize,
           take: pageSize,
-          orderBy: { createdAt: "desc" },
+          orderBy: { createdAt: 'desc' },
           include: {
             links: true,
           },
         }),
-        prisma.document.count({ where }),
+        ctx.db.document.count({ where }),
       ]);
 
       return { items: plain(documents), totalCount, page, pageSize };
@@ -319,18 +327,19 @@ export const documentRouter = router({
    * Marks the old document as SUPERSEDED and copies all entity links.
    */
   uploadNewVersion: tenantProcedure
-    .use(requirePermission({ document: ["create"] }))
+    .use(requirePermission({ document: ['create'] }))
+    .use(uploadRateLimitMiddleware)
     .input(documentVersionUploadSchema)
     .mutation(async ({ ctx, input }) => {
       // Validate MIME type
       if (!isAllowedMimeType(input.mimeType)) {
         throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: `File type "${input.mimeType}" is not allowed. Accepted: PDF, DOCX, XLSX, PNG, JPG.`,
+          code: 'BAD_REQUEST',
+          message: E.DOCUMENT_FILE_TYPE_NOT_ALLOWED,
         });
       }
 
-      const result = await prisma.$transaction(async (tx) => {
+      const result = await ctx.db.$transaction(async tx => {
         // Find existing document
         const existing = await tx.document.findFirst({
           where: {
@@ -343,48 +352,44 @@ export const documentRouter = router({
 
         if (!existing) {
           throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Document not found",
+            code: 'NOT_FOUND',
+            message: E.DOCUMENT_NOT_FOUND,
           });
         }
 
-        if (existing.status !== "ACTIVE") {
+        if (existing.status !== 'ACTIVE') {
           throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "Only active documents can be versioned.",
+            code: 'BAD_REQUEST',
+            message: E.DOCUMENT_NOT_ACTIVE,
           });
         }
 
         // Mark existing document as SUPERSEDED
         await tx.document.update({
           where: { id: existing.id },
-          data: { status: "SUPERSEDED" },
+          data: { status: 'SUPERSEDED' },
         });
 
         // Create new document record
         const newDoc = await tx.document.create({
           data: {
             organizationId: ctx.organizationId,
-            storageKey: "", // Placeholder
+            storageKey: '', // Placeholder
             originalFileName: input.filename,
             mimeType: input.mimeType,
             fileSizeBytes: input.fileSizeBytes,
-            checksumSha256: "",
+            checksumSha256: '',
             documentType: existing.documentType,
-            status: "ACTIVE",
+            status: 'ACTIVE',
             visibility: existing.visibility,
-            virusScanStatus: "PENDING",
+            virusScanStatus: 'PENDING',
             source: existing.source,
-            uploadedByUserId: ctx.user!.id,
+            uploadedByUserId: ctx.user?.id,
           },
         });
 
         // Generate storage key and update
-        const storageKey = generateStorageKey(
-          ctx.organizationId,
-          newDoc.id,
-          input.filename,
-        );
+        const storageKey = generateStorageKey(ctx.organizationId, newDoc.id, input.filename);
         await tx.document.update({
           where: { id: newDoc.id },
           data: { storageKey },
@@ -393,7 +398,7 @@ export const documentRouter = router({
         // Copy all document links from old to new
         if (existing.links.length > 0) {
           await tx.documentLink.createMany({
-            data: existing.links.map((link) => ({
+            data: existing.links.map(link => ({
               organizationId: ctx.organizationId,
               documentId: newDoc.id,
               entityType: link.entityType,
@@ -404,11 +409,7 @@ export const documentRouter = router({
         }
 
         // Generate presigned upload URL
-        const uploadUrl = await createPresignedUploadUrl(
-          storageKey,
-          input.mimeType,
-          300,
-        );
+        const uploadUrl = await createRegionalPresignedUploadUrl(storageKey, input.mimeType, 300);
 
         return { documentId: newDoc.id, uploadUrl, storageKey };
       });
@@ -421,10 +422,10 @@ export const documentRouter = router({
    * linked to the same entities.
    */
   getVersionHistory: tenantProcedure
-    .use(requirePermission({ document: ["read"] }))
+    .use(requirePermission({ document: ['read'] }))
     .input(z.object({ documentId: z.string() }))
     .query(async ({ ctx, input }) => {
-      const doc = await prisma.document.findFirst({
+      const doc = await ctx.db.document.findFirst({
         where: {
           id: input.documentId,
           organizationId: ctx.organizationId,
@@ -434,8 +435,8 @@ export const documentRouter = router({
 
       if (!doc) {
         throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Document not found",
+          code: 'NOT_FOUND',
+          message: E.DOCUMENT_NOT_FOUND,
         });
       }
 
@@ -444,8 +445,9 @@ export const documentRouter = router({
       }
 
       // Find all documents linked to the same entity as this document
-      const firstLink = doc.links[0]!;
-      const relatedLinks = await prisma.documentLink.findMany({
+      const firstLink = doc.links[0];
+      if (!firstLink) return plain([doc]);
+      const relatedLinks = await ctx.db.documentLink.findMany({
         where: {
           organizationId: ctx.organizationId,
           entityType: firstLink.entityType,
@@ -454,15 +456,15 @@ export const documentRouter = router({
         select: { documentId: true },
       });
 
-      const relatedDocIds = [...new Set(relatedLinks.map((l) => l.documentId))];
+      const relatedDocIds = [...new Set(relatedLinks.map(l => l.documentId))];
 
-      const documents = await prisma.document.findMany({
+      const documents = await ctx.db.document.findMany({
         where: {
           id: { in: relatedDocIds },
           organizationId: ctx.organizationId,
           documentType: doc.documentType, // Same type for version chain
         },
-        orderBy: { createdAt: "desc" },
+        orderBy: { createdAt: 'desc' },
       });
 
       return plain(documents);
@@ -472,10 +474,10 @@ export const documentRouter = router({
    * Soft-delete a document and clean up storage + links.
    */
   delete: tenantProcedure
-    .use(requirePermission({ document: ["delete"] }))
+    .use(requirePermission({ document: ['delete'] }))
     .input(z.object({ documentId: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const doc = await prisma.document.findFirst({
+      const doc = await ctx.db.document.findFirst({
         where: {
           id: input.documentId,
           organizationId: ctx.organizationId,
@@ -485,26 +487,26 @@ export const documentRouter = router({
 
       if (!doc) {
         throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Document not found",
+          code: 'NOT_FOUND',
+          message: E.DOCUMENT_NOT_FOUND,
         });
       }
 
       // Soft-delete the document
-      await prisma.document.update({
+      await ctx.db.document.update({
         where: { id: doc.id },
         data: { deletedAt: new Date() },
       });
 
       // Remove R2 object
       try {
-        await deleteObject(doc.storageKey);
+        await deleteRegionalObject(doc.storageKey);
       } catch (error) {
-        console.error("[document-delete] Failed to delete R2 object:", doc.storageKey, error);
+        log.error({ err: error, storageKey: doc.storageKey }, 'failed to delete r2 object');
       }
 
       // Remove associated document links
-      await prisma.documentLink.deleteMany({
+      await ctx.db.documentLink.deleteMany({
         where: {
           documentId: doc.id,
           organizationId: ctx.organizationId,
@@ -518,11 +520,11 @@ export const documentRouter = router({
    * Link a document to a contractor or contract entity.
    */
   linkToEntity: tenantProcedure
-    .use(requirePermission({ document: ["create"] }))
+    .use(requirePermission({ document: ['create'] }))
     .input(documentLinkSchema)
     .mutation(async ({ ctx, input }) => {
       // Verify document belongs to org
-      const doc = await prisma.document.findFirst({
+      const doc = await ctx.db.document.findFirst({
         where: {
           id: input.documentId,
           organizationId: ctx.organizationId,
@@ -532,12 +534,12 @@ export const documentRouter = router({
 
       if (!doc) {
         throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Document not found",
+          code: 'NOT_FOUND',
+          message: E.DOCUMENT_NOT_FOUND,
         });
       }
 
-      const link = await prisma.documentLink.create({
+      const link = await ctx.db.documentLink.create({
         data: {
           organizationId: ctx.organizationId,
           documentId: input.documentId,

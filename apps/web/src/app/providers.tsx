@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { NuqsAdapter } from "nuqs/adapters/next/app";
-import { TRPCProvider } from "@/trpc/client";
+import { NuqsAdapter } from 'nuqs/adapters/next/app';
+import { TRPCProvider } from '@/trpc/client';
 
 /**
  * Root providers component.

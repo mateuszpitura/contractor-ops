@@ -1,31 +1,24 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useTranslations } from "next-intl";
 import {
-  FileText,
-  FileSpreadsheet,
-  Image,
   Download,
   Eye,
-  Upload,
+  FileSpreadsheet,
+  FileText,
+  Image,
   Loader2,
-  ShieldCheck,
   ShieldAlert,
+  ShieldCheck,
   ShieldQuestion,
-} from "lucide-react";
-
-import { trpc } from "@/trpc/init";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipTrigger,
-  TooltipContent,
-  TooltipProvider,
-} from "@/components/ui/tooltip";
-import { PdfPreview } from "./pdf-preview";
-import { VersionHistory } from "./version-history";
+  Upload,
+} from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { PdfPreview } from './pdf-preview';
+import { VersionHistory } from './version-history';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -52,18 +45,17 @@ type DocumentCardProps = {
 // ---------------------------------------------------------------------------
 
 function getFileIcon(mimeType: string) {
-  if (mimeType.startsWith("image/")) return Image;
-  if (mimeType.includes("spreadsheet") || mimeType.includes("xlsx"))
-    return FileSpreadsheet;
+  if (mimeType.startsWith('image/')) return Image;
+  if (mimeType.includes('spreadsheet') || mimeType.includes('xlsx')) return FileSpreadsheet;
   return FileText;
 }
 
 function formatDate(date: string | Date): string {
-  const d = typeof date === "string" ? new Date(date) : date;
-  return d.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
+  const d = typeof date === 'string' ? new Date(date) : date;
+  return d.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
   });
 }
 
@@ -78,35 +70,35 @@ function formatFileSize(bytes: number): string {
 // ---------------------------------------------------------------------------
 
 function ScanStatusBadge({ status }: { status: string }) {
-  const t = useTranslations("Documents.scan");
+  const t = useTranslations('Documents.scan');
 
   switch (status) {
-    case "PENDING":
+    case 'PENDING':
       return (
         <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
           <Loader2 className="size-3 animate-spin" />
-          {t("scanning")}
+          {t('scanning')}
         </span>
       );
-    case "CLEAN":
+    case 'CLEAN':
       return (
         <span className="inline-flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
           <ShieldCheck className="size-3" />
-          {t("clean")}
+          {t('clean')}
         </span>
       );
-    case "INFECTED":
+    case 'INFECTED':
       return (
         <span className="inline-flex items-center gap-1 text-xs text-destructive">
           <ShieldAlert className="size-3" />
-          {t("infected")}
+          {t('infected')}
         </span>
       );
-    case "FAILED":
+    case 'FAILED':
       return (
         <span className="inline-flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400">
           <ShieldQuestion className="size-3" />
-          {t("failed")}
+          {t('failed')}
         </span>
       );
     default:
@@ -123,25 +115,25 @@ export function DocumentCard({
   versionNumber,
   onUploadNewVersion,
 }: DocumentCardProps) {
-  const t = useTranslations("Documents");
+  const t = useTranslations('Documents');
   const [previewOpen, setPreviewOpen] = useState(false);
 
   const FileIcon = getFileIcon(doc.mimeType);
-  const isPdf = doc.mimeType === "application/pdf";
-  const isInfected = doc.virusScanStatus === "INFECTED";
+  const isPdf = doc.mimeType === 'application/pdf';
+  const isInfected = doc.virusScanStatus === 'INFECTED';
 
   async function handleDownload() {
     try {
       // Use fetch to call the download URL query
       const result = await fetch(
         `/api/trpc/document.getDownloadUrl?input=${encodeURIComponent(
-          JSON.stringify({ documentId: doc.id })
-        )}`
+          JSON.stringify({ documentId: doc.id }),
+        )}`,
       );
       const data = await result.json();
       const url = data?.result?.data?.url;
       if (url) {
-        window.open(url, "_blank");
+        window.open(url, '_blank');
       }
     } catch {
       // Silently fail for download
@@ -158,22 +150,16 @@ export function DocumentCard({
       {/* Content */}
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <p className="truncate text-sm font-medium">
-            {doc.originalFileName}
-          </p>
+          <p className="truncate text-sm font-medium">{doc.originalFileName}</p>
           {versionNumber != null && (
             <Badge variant="secondary" className="shrink-0">
-              {t("version", { n: versionNumber })}
+              {t('version', { n: versionNumber })}
             </Badge>
           )}
         </div>
         <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
-          <span className="text-xs text-muted-foreground">
-            {formatDate(doc.createdAt)}
-          </span>
-          <span className="text-xs text-muted-foreground">
-            {formatFileSize(doc.fileSizeBytes)}
-          </span>
+          <span className="text-xs text-muted-foreground">{formatDate(doc.createdAt)}</span>
+          <span className="text-xs text-muted-foreground">{formatFileSize(doc.fileSizeBytes)}</span>
           <ScanStatusBadge status={doc.virusScanStatus} />
         </div>
 
@@ -184,13 +170,10 @@ export function DocumentCard({
       {/* Actions */}
       <div className="flex shrink-0 items-center gap-1">
         {isPdf && !isInfected && (
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            onClick={() => setPreviewOpen(true)}
-          >
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+          <Button variant="ghost" size="icon-sm" onClick={() => setPreviewOpen(true)}>
             <Eye className="size-3.5" />
-            <span className="sr-only">{t("preview")}</span>
+            <span className="sr-only">{t('preview')}</span>
           </Button>
         )}
 
@@ -198,35 +181,30 @@ export function DocumentCard({
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger
-                render={(props) => (
+                // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
+                render={props => (
                   <Button {...props} variant="ghost" size="icon-sm" disabled>
                     <Download className="size-3.5" />
-                    <span className="sr-only">{t("download")}</span>
+                    <span className="sr-only">{t('download')}</span>
                   </Button>
                 )}
               />
-              <TooltipContent>{t("threatDetected")}</TooltipContent>
+              <TooltipContent>{t('threatDetected')}</TooltipContent>
             </Tooltip>
           </TooltipProvider>
         ) : (
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            onClick={handleDownload}
-          >
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+          <Button variant="ghost" size="icon-sm" onClick={handleDownload}>
             <Download className="size-3.5" />
-            <span className="sr-only">{t("download")}</span>
+            <span className="sr-only">{t('download')}</span>
           </Button>
         )}
 
-        {onUploadNewVersion && doc.status === "ACTIVE" && (
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            onClick={() => onUploadNewVersion(doc.id)}
-          >
+        {onUploadNewVersion && doc.status === 'ACTIVE' && (
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+          <Button variant="ghost" size="icon-sm" onClick={() => onUploadNewVersion(doc.id)}>
             <Upload className="size-3.5" />
-            <span className="sr-only">{t("uploadNewVersion")}</span>
+            <span className="sr-only">{t('uploadNewVersion')}</span>
           </Button>
         )}
       </div>

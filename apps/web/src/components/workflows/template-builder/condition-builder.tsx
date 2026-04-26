@@ -1,18 +1,18 @@
-"use client";
+'use client';
 
-import { useTranslations } from "next-intl";
-import { Plus, X } from "lucide-react";
-
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Plus, X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
+} from '@/components/ui/select';
+import { enumKey } from '@/lib/enum-key';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -20,12 +20,12 @@ import { Badge } from "@/components/ui/badge";
 
 interface ConditionRule {
   field: string;
-  operator: "equals" | "notEquals" | "contains" | "startsWith";
+  operator: 'equals' | 'notEquals' | 'contains' | 'startsWith';
   value: string;
 }
 
 interface ConditionGroup {
-  combinator: "AND" | "OR";
+  combinator: 'AND' | 'OR';
   rules: ConditionRule[];
 }
 
@@ -39,42 +39,42 @@ interface ConditionBuilderProps {
 // ---------------------------------------------------------------------------
 
 const CONDITION_FIELDS = [
-  "contractor.type",
-  "contractor.status",
-  "contractor.billingModel",
-  "contractor.team",
-  "contractor.complianceRiskLevel",
-  "contract.type",
-  "contract.status",
-  "contract.currency",
+  'contractor.type',
+  'contractor.status',
+  'contractor.billingModel',
+  'contractor.team',
+  'contractor.complianceRiskLevel',
+  'contract.type',
+  'contract.status',
+  'contract.currency',
 ] as const;
 
-const OPERATORS = ["equals", "notEquals", "contains", "startsWith"] as const;
+const OPERATORS = ['equals', 'notEquals', 'contains', 'startsWith'] as const;
 
 // Fields that use enum selects for values
 const ENUM_VALUE_FIELDS: Record<string, string[]> = {
-  "contractor.type": ["SOLE_TRADER", "COMPANY", "INDIVIDUAL_FREELANCER", "OTHER"],
-  "contractor.status": ["DRAFT", "ONBOARDING", "ACTIVE", "OFFBOARDING", "ENDED"],
-  "contractor.complianceRiskLevel": ["LOW", "MEDIUM", "HIGH"],
-  "contract.type": [
-    "B2B_MASTER_SERVICE",
-    "STATEMENT_OF_WORK",
-    "NDA",
-    "IP_ASSIGNMENT",
-    "DPA",
-    "OTHER",
+  'contractor.type': ['SOLE_TRADER', 'COMPANY', 'INDIVIDUAL_FREELANCER', 'OTHER'],
+  'contractor.status': ['DRAFT', 'ONBOARDING', 'ACTIVE', 'OFFBOARDING', 'ENDED'],
+  'contractor.complianceRiskLevel': ['LOW', 'MEDIUM', 'HIGH'],
+  'contract.type': [
+    'B2B_MASTER_SERVICE',
+    'STATEMENT_OF_WORK',
+    'NDA',
+    'IP_ASSIGNMENT',
+    'DPA',
+    'OTHER',
   ],
-  "contract.status": [
-    "DRAFT",
-    "PENDING_SIGNATURE",
-    "ACTIVE",
-    "EXPIRING",
-    "EXPIRED",
-    "TERMINATED",
-    "SUPERSEDED",
-    "ARCHIVED",
+  'contract.status': [
+    'DRAFT',
+    'PENDING_SIGNATURE',
+    'ACTIVE',
+    'EXPIRING',
+    'EXPIRED',
+    'TERMINATED',
+    'SUPERSEDED',
+    'ARCHIVED',
   ],
-  "contract.currency": ["PLN", "EUR", "USD", "GBP", "CHF", "CZK"],
+  'contract.currency': ['PLN', 'EUR', 'USD', 'GBP', 'CHF', 'CZK'],
 };
 
 // ---------------------------------------------------------------------------
@@ -82,18 +82,18 @@ const ENUM_VALUE_FIELDS: Record<string, string[]> = {
 // ---------------------------------------------------------------------------
 
 export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
-  const t = useTranslations("Workflows");
+  const t = useTranslations('Workflows');
 
   const addRule = () => {
-    if (!value) {
+    if (value) {
       onChange({
-        combinator: "AND",
-        rules: [{ field: "", operator: "equals", value: "" }],
+        ...value,
+        rules: [...value.rules, { field: '', operator: 'equals', value: '' }],
       });
     } else {
       onChange({
-        ...value,
-        rules: [...value.rules, { field: "", operator: "equals", value: "" }],
+        combinator: 'AND',
+        rules: [{ field: '', operator: 'equals', value: '' }],
       });
     }
   };
@@ -110,9 +110,7 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
 
   const updateRule = (index: number, partial: Partial<ConditionRule>) => {
     if (!value) return;
-    const newRules = value.rules.map((rule, i) =>
-      i === index ? { ...rule, ...partial } : rule,
-    );
+    const newRules = value.rules.map((rule, i) => (i === index ? { ...rule, ...partial } : rule));
     onChange({ ...value, rules: newRules });
   };
 
@@ -120,19 +118,18 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
     if (!value) return;
     onChange({
       ...value,
-      combinator: value.combinator === "AND" ? "OR" : "AND",
+      combinator: value.combinator === 'AND' ? 'OR' : 'AND',
     });
   };
 
   if (!value || value.rules.length === 0) {
     return (
       <div className="space-y-2">
-        <p className="text-sm text-muted-foreground">
-          {t("noConditions")}
-        </p>
+        <p className="text-sm text-muted-foreground">{t('noConditions')}</p>
+        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
         <Button type="button" variant="outline" size="sm" onClick={addRule}>
-          <Plus className="mr-1.5 size-3.5" />
-          {t("addCondition")}
+          <Plus className="me-1.5 size-3.5" />
+          {t('addCondition')}
         </Button>
       </div>
     );
@@ -141,7 +138,8 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
   return (
     <div className="space-y-2">
       {value.rules.map((rule, index) => (
-        <div key={index}>
+        // biome-ignore lint/suspicious/noArrayIndexKey: dynamic form array, rules have no stable id
+        <div key={`rule-${index}`}>
           {/* Combinator toggle between rows */}
           {index > 0 && (
             <div className="flex items-center justify-center py-1">
@@ -150,12 +148,10 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
                 variant="ghost"
                 size="sm"
                 className="h-6 px-2 text-xs font-medium"
-                onClick={toggleCombinator}
-              >
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+                onClick={toggleCombinator}>
                 <Badge variant="outline" className="cursor-pointer text-xs">
-                  {value.combinator === "AND"
-                    ? t("conditionAnd")
-                    : t("conditionOr")}
+                  {value.combinator === 'AND' ? t('conditionAnd') : t('conditionOr')}
                 </Badge>
               </Button>
             </div>
@@ -166,17 +162,15 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
             {/* Field select */}
             <Select
               value={rule.field}
-              onValueChange={(val) =>
-                updateRule(index, { field: val as string, value: "" })
-              }
-            >
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
+              onValueChange={val => updateRule(index, { field: val as string, value: '' })}>
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder={t("conditionFieldPlaceholder")} />
+                <SelectValue placeholder={t('conditionFieldPlaceholder')} />
               </SelectTrigger>
               <SelectContent>
-                {CONDITION_FIELDS.map((field) => (
+                {CONDITION_FIELDS.map(field => (
                   <SelectItem key={field} value={field}>
-                    {t(`conditionField_${field.replace(".", "_")}`)}
+                    {t(`conditionField.${field}` as Parameters<typeof t>[0])}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -185,19 +179,19 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
             {/* Operator select */}
             <Select
               value={rule.operator}
-              onValueChange={(val) =>
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
+              onValueChange={val =>
                 updateRule(index, {
-                  operator: val as ConditionRule["operator"],
+                  operator: val as ConditionRule['operator'],
                 })
-              }
-            >
+              }>
               <SelectTrigger className="w-[140px]">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {OPERATORS.map((op) => (
+                {OPERATORS.map(op => (
                   <SelectItem key={op} value={op}>
-                    {t(`operator_${op}`)}
+                    {t(`operator.${enumKey(op)}` as Parameters<typeof t>[0])}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -207,15 +201,13 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
             {rule.field && ENUM_VALUE_FIELDS[rule.field] ? (
               <Select
                 value={rule.value}
-                onValueChange={(val) =>
-                  updateRule(index, { value: val as string })
-                }
-              >
+                // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
+                onValueChange={val => updateRule(index, { value: val as string })}>
                 <SelectTrigger className="w-[160px]">
-                  <SelectValue placeholder={t("conditionValuePlaceholder")} />
+                  <SelectValue placeholder={t('conditionValuePlaceholder')} />
                 </SelectTrigger>
                 <SelectContent>
-                  {ENUM_VALUE_FIELDS[rule.field]!.map((v) => (
+                  {ENUM_VALUE_FIELDS[rule.field]?.map(v => (
                     <SelectItem key={v} value={v}>
                       {v}
                     </SelectItem>
@@ -225,11 +217,10 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
             ) : (
               <Input
                 className="w-[160px]"
-                placeholder={t("conditionValuePlaceholder")}
+                placeholder={t('conditionValuePlaceholder')}
                 value={rule.value}
-                onChange={(e) =>
-                  updateRule(index, { value: e.target.value })
-                }
+                // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
+                onChange={e => updateRule(index, { value: e.target.value })}
               />
             )}
 
@@ -239,19 +230,20 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
               variant="ghost"
               size="sm"
               className="size-8 p-0 text-muted-foreground hover:text-destructive"
-              onClick={() => removeRule(index)}
-            >
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+              onClick={() => removeRule(index)}>
               <X className="size-3.5" />
-              <span className="sr-only">{t("removeCondition")}</span>
+              <span className="sr-only">{t('removeCondition')}</span>
             </Button>
           </div>
         </div>
       ))}
 
       {/* Add condition button */}
+      {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
       <Button type="button" variant="outline" size="sm" onClick={addRule}>
-        <Plus className="mr-1.5 size-3.5" />
-        {t("addCondition")}
+        <Plus className="me-1.5 size-3.5" />
+        {t('addCondition')}
       </Button>
     </div>
   );
@@ -268,13 +260,14 @@ export function getConditionSummary(
   if (!conditions || conditions.rules.length === 0) return null;
 
   if (conditions.rules.length === 1) {
-    const rule = conditions.rules[0]!;
-    return t("conditionBadge", {
-      summary: `${rule.field.split(".")[1] ?? rule.field} ${rule.operator} ${rule.value}`,
+    const rule = conditions.rules[0];
+    if (!rule) return null;
+    return t('conditionBadge', {
+      summary: `${rule.field.split('.')[1] ?? rule.field} ${rule.operator} ${rule.value}`,
     });
   }
 
-  return t("conditionBadgeMulti", {
+  return t('conditionBadgeMulti', {
     count: conditions.rules.length,
   });
 }

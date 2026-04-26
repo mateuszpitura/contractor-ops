@@ -1,0 +1,158 @@
+{
+  "meta": {
+    "title": "Contractor Ops — B2B Contractor Management for EU Companies",
+    "description": "Contracts, onboarding, invoices, approvals, payments and offboarding — all in one place. Built for companies managing 5-50 B2B contractors.",
+    "ogTitle": "Contractor Ops — B2B Contractor Management",
+    "ogDescription": "Stop juggling Excel, Slack, email and bank transfers. One system for your entire contractor lifecycle."
+  },
+  "nav": {
+    "features": "Features",
+    "howItWorks": "How it works",
+    "pricing": "Pricing",
+    "login": "Log in",
+    "getStarted": "Get started"
+  },
+  "hero": {
+    "badge": "KSeF-ready since April 2026",
+    "headline": "Stop managing contractors in",
+    "headlineHighlight": "spreadsheets",
+    "subheadline": "Contracts, invoices, approvals and payments for your B2B contractors — one system, zero chaos. Built for EU companies.",
+    "ctaPrimary": "Start free trial",
+    "ctaSecondary": "See how it works",
+    "metricSaved": "saved per week",
+    "metricAccuracy": "invoice accuracy",
+    "metricOnboarding": "onboarding time"
+  },
+  "logoBar": {
+    "title": "Trusted by teams across the EU"
+  },
+  "problem": {
+    "label": "The problem",
+    "headline": "Your contractor ops live in",
+    "headlineHighlight": "six different tools",
+    "description": "Every company with 5-50 B2B contractors knows this pain. You're stitching together tools that were never designed to work together.",
+    "tools": {
+      "excel": "Excel / Sheets",
+      "email": "Email / Slack",
+      "slack": "Slack DM",
+      "drive": "Google Drive",
+      "bank": "Bank transfers",
+      "nowhere": "Nowhere"
+    },
+    "pains": {
+      "excel": "Contractor list & rates scattered across multiple spreadsheets nobody owns",
+      "email": "Invoices buried in inboxes — lost, duplicated, or sitting unmatched for weeks",
+      "slack": "\"Who was supposed to approve this?\" — no ownership, no audit trail",
+      "drive": "Contracts, NDAs and IP docs scattered — nothing linked, nothing enforced",
+      "bank": "Manual payments — missed deadlines, duplicate wires, zero reconciliation",
+      "nowhere": "Offboarding doesn't exist — access stays open, IP docs never signed"
+    }
+  },
+  "features": {
+    "label": "Features",
+    "headline": "One system for your entire",
+    "headlineHighlight": "contractor lifecycle",
+    "description": "From the first contract signature to the final offboarding checklist. Every step tracked, every approval audited, every payment reconciled.",
+    "items": {
+      "contracts": {
+        "title": "Contracts & docs",
+        "description": "Template-driven contracts with e-sign, version tracking, and automatic renewal alerts. Every document linked to the contractor profile."
+      },
+      "onboarding": {
+        "title": "Automated onboarding",
+        "description": "Configurable checklists with ownership, deadlines, and compliance gates. Contractors self-serve. You just approve."
+      },
+      "invoices": {
+        "title": "Invoice matching",
+        "description": "Auto-pull invoices, match to contracts and rates, flag discrepancies. No more hunting through email."
+      },
+      "approvals": {
+        "title": "Approval workflows",
+        "description": "Multi-step approval chains with clear ownership, SLA tracking, and full audit trail. No more 'who approved this?'"
+      },
+      "payments": {
+        "title": "Batch payments",
+        "description": "Export approved invoices as batch payment files. Reconcile automatically. One click, all contractors paid."
+      },
+      "offboarding": {
+        "title": "Clean offboarding",
+        "description": "Structured exit flow — NDA sign-off, IP transfer, access revocation checklists. Nothing falls through the cracks."
+      },
+      "compliance": {
+        "title": "Compliance & audit",
+        "description": "Every action timestamped and attributed. Full audit trail for internal reviews, inspections, and legal requirements."
+      },
+      "analytics": {
+        "title": "Spend analytics",
+        "description": "Real-time dashboards showing contractor spend, budget burn rate, and cost breakdowns by team, project, or period."
+      }
+    }
+  },
+  "howItWorks": {
+    "label": "How it works",
+    "headline": "Five steps from",
+    "headlineHighlight": "chaos to control",
+    "description": "Replace six disconnected tools with one unified flow. Each step feeds the next — no copy-pasting, no dropped balls.",
+    "steps": {
+      "onboard": {
+        "title": "Onboard",
+        "description": "Add a contractor, assign a checklist. They self-serve their data, upload docs, and sign contracts via e-sign."
+      },
+      "contract": {
+        "title": "Contract",
+        "description": "Generate contracts from templates. Automatic renewal tracking, amendment history, and version control."
+      },
+      "invoice": {
+        "title": "Invoice",
+        "description": "Invoices pulled automatically. Matched to contracts and rate cards. Discrepancies flagged instantly."
+      },
+      "approve": {
+        "title": "Approve",
+        "description": "Route invoices through your approval chain. Every action logged with timestamp and approver identity."
+      },
+      "pay": {
+        "title": "Pay",
+        "description": "Batch-export approved invoices for payment. Automatic reconciliation when payments clear. Done."
+      }
+    }
+  },
+  "socialProof": {
+    "label": "Trusted by teams",
+    "headline": "Teams that switched",
+    "headlineHighlight": "never looked back",
+    "stats": {
+      "processing": { "value": "92%", "label": "less time on invoice processing" },
+      "auditTrail": { "value": "100%", "label": "audit trail coverage" },
+      "approvalTime": { "value": "< 2min", "label": "average approval time" },
+      "offboarding": { "value": "0", "label": "missed offboarding steps" }
+    }
+  },
+  "pricing": {
+    "label": "Pricing",
+    "headline": "Simple pricing,",
+    "headlineHighlight": "serious value",
+    "description": "Start free with up to 5 contractors. Scale as you grow. No hidden fees, no per-seat surprises.",
+    "perContractor": "per contractor / month",
+    "upTo5": "up to 5 contractors",
+    "startFree": "Start free",
+    "startTrial": "Start 14-day trial",
+    "talkToSales": "Talk to sales",
+    "detailedLink": "See detailed pricing, credits & pay-as-you-go options"
+  },
+  "cta": {
+    "headline": "Ready to take",
+    "headlineHighlight": "control",
+    "description": "Join companies that replaced spreadsheet chaos with a single system for their entire contractor lifecycle. Free for up to 5 contractors.",
+    "ctaPrimary": "Start your free trial",
+    "ctaSecondary": "Book a demo instead",
+    "trust": "No credit card required \u00b7 14-day Pro trial \u00b7 Cancel anytime"
+  },
+  "footer": {
+    "description": "B2B contractor management built for EU companies. Contracts, invoices, approvals, payments — one system.",
+    "product": "Product",
+    "company": "Company",
+    "legal": "Legal",
+    "copyright": "\u00a9 2026 Contractor Ops. All rights reserved.",
+    "madeIn": "Made in Poland for global businesses"
+  }
+}

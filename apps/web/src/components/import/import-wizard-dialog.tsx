@@ -1,19 +1,10 @@
-"use client";
+'use client';
 
-import { useState, useCallback } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Check, Loader2 } from "lucide-react";
-import { toast } from "sonner";
-import { useTranslations } from "next-intl";
-
-import { trpc } from "@/trpc/init";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Check, Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useCallback, useState } from 'react';
+import { toast } from 'sonner';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,24 +14,26 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-
-import { StepUpload } from "./step-upload";
-import { StepMapping } from "./step-mapping";
-import { StepPreview } from "./step-preview";
-import { StepDuplicates } from "./step-duplicates";
-import { StepConfirm } from "./step-confirm";
+} from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { trpc } from '@/trpc/init';
+import { StepConfirm } from './step-confirm';
+import { StepDuplicates } from './step-duplicates';
+import { StepMapping } from './step-mapping';
+import { StepPreview } from './step-preview';
+import { StepUpload } from './step-upload';
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
-type EntityType = "contractor" | "contract";
+type EntityType = 'contractor' | 'contract';
 
 interface ImportRow {
   rowNumber: number;
   data: Record<string, unknown>;
-  status: "valid" | "invalid" | "duplicate";
+  status: 'valid' | 'invalid' | 'duplicate';
   errors: Array<{ field: string; message: string }>;
   duplicateOf?: string;
 }
@@ -67,7 +60,7 @@ interface CommitResult {
   failed: number;
 }
 
-export type { ImportRow, ParseResult, ImportResult, CommitResult, EntityType };
+export type { CommitResult, EntityType, ImportResult, ImportRow, ParseResult };
 
 // ---------------------------------------------------------------------------
 // Step indicator
@@ -80,56 +73,60 @@ function StepIndicator({
   steps: Array<{ label: string; visible: boolean }>;
   currentStep: number;
 }) {
-  const visibleSteps = steps.filter((s) => s.visible);
+  const tAria = useTranslations('Common.aria');
+  const visibleSteps = steps.filter(s => s.visible);
   const visibleIndex = visibleSteps.findIndex(
-    (s) => s === steps.filter((_, i) => i <= currentStep).findLast((s2) => s2.visible)
+    s => s === steps.filter((_, i) => i <= currentStep).findLast(s2 => s2.visible),
   );
 
   return (
-    <div className="flex items-center justify-center gap-0 px-4 py-3">
+    <nav
+      aria-label={tAria('wizardProgress')}
+      className="flex items-center justify-center gap-0 py-3">
       {visibleSteps.map((step, index) => {
         const isCompleted = index < visibleIndex;
         const isCurrent = index === visibleIndex;
+        const status = isCompleted ? 'completed' : isCurrent ? 'current' : 'upcoming';
 
         return (
-          <div key={step.label} className="flex items-center">
+          <div
+            key={step.label}
+            className="flex items-center"
+            aria-current={isCurrent ? 'step' : undefined}>
             {index > 0 && (
               <div
-                className={`mx-2 h-px w-8 ${
-                  index <= visibleIndex ? "bg-primary" : "bg-border"
+                aria-hidden="true"
+                className={`mx-1.5 h-px w-6 sm:mx-2 sm:w-8 ${
+                  index <= visibleIndex ? 'bg-primary' : 'bg-border'
                 }`}
               />
             )}
-            <div className="flex items-center gap-2">
+            <span
+              className="flex items-center gap-1.5"
+              role="img"
+              aria-label={tAria('wizardStep', { step: index + 1, label: step.label, status })}>
               <div
-                className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-medium transition-colors ${
+                aria-hidden="true"
+                className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold transition-colors ${
                   isCompleted
-                    ? "bg-primary text-primary-foreground"
+                    ? 'bg-primary text-primary-foreground'
                     : isCurrent
-                      ? "border-2 border-primary text-primary"
-                      : "border border-border text-muted-foreground"
-                }`}
-              >
-                {isCompleted ? (
-                  <Check className="h-3.5 w-3.5" />
-                ) : (
-                  index + 1
-                )}
+                      ? 'bg-primary/10 text-primary ring-1 ring-primary'
+                      : 'bg-muted text-muted-foreground ring-1 ring-border'
+                }`}>
+                {isCompleted ? <Check className="h-3 w-3" /> : index + 1}
               </div>
               <span
-                className={`text-[13px] ${
-                  isCurrent
-                    ? "font-medium text-foreground"
-                    : "text-muted-foreground"
-                }`}
-              >
+                className={`hidden whitespace-nowrap text-[13px] sm:inline ${
+                  isCurrent ? 'font-medium text-foreground' : 'text-muted-foreground'
+                }`}>
                 {step.label}
               </span>
-            </div>
+            </span>
           </div>
         );
       })}
-    </div>
+    </nav>
   );
 }
 
@@ -146,9 +143,10 @@ interface ImportWizardDialogProps {
 export function ImportWizardDialog({
   open,
   onOpenChange,
-  defaultEntityType = "contractor",
+  defaultEntityType = 'contractor',
 }: ImportWizardDialogProps) {
-  const t = useTranslations("Import");
+  const t = useTranslations('Import');
+  const _tAria = useTranslations('Common.aria');
   const queryClient = useQueryClient();
 
   // Wizard state
@@ -163,57 +161,55 @@ export function ImportWizardDialog({
   const [columnMapping, setColumnMapping] = useState<Record<string, string | null>>({});
   const [validateResult, setValidateResult] = useState<ImportResult | null>(null);
   const [duplicateActions, setDuplicateActions] = useState<
-    Record<string, "skip" | "update" | "create">
+    Record<string, 'skip' | 'update' | 'create'>
   >({});
   const [importResult, setImportResult] = useState<CommitResult | null>(null);
 
   // Mutations
   const parseMutation = useMutation(
     trpc.import.parse.mutationOptions({
-      onSuccess: (data) => {
+      onSuccess: data => {
         const result = data as unknown as ParseResult;
         setParseResult(result);
         setColumnMapping(result.suggestedMapping);
         setCurrentStep(1);
       },
       onError: () => {
-        toast.error(t("parseError"));
+        toast.error(t('parseError'));
       },
-    })
+    }),
   );
 
   const validateMutation = useMutation(
     trpc.import.validate.mutationOptions({
-      onSuccess: (data) => {
+      onSuccess: data => {
         const result = data as unknown as ImportResult;
         setValidateResult(result);
         setCurrentStep(2);
       },
       onError: () => {
-        toast.error(t("validateError"));
+        toast.error(t('validateError'));
       },
-    })
+    }),
   );
 
   const commitMutation = useMutation(
     trpc.import.commit.mutationOptions({
-      onSuccess: (data) => {
+      onSuccess: data => {
         const result = data as unknown as CommitResult;
         setImportResult(result);
         queryClient.invalidateQueries({
-          queryKey: [entityType === "contractor" ? "contractor" : "contract"],
+          queryKey: [entityType === 'contractor' ? 'contractor' : 'contract'],
         });
       },
       onError: () => {
-        toast.error(t("importError"));
+        toast.error(t('importError'));
       },
-    })
+    }),
   );
 
   const isProcessing =
-    parseMutation.isPending ||
-    validateMutation.isPending ||
-    commitMutation.isPending;
+    parseMutation.isPending || validateMutation.isPending || commitMutation.isPending;
 
   const hasDuplicates = (validateResult?.duplicateRows?.length ?? 0) > 0;
 
@@ -221,13 +217,10 @@ export function ImportWizardDialog({
   // Handlers
   // -----------------------------------------------------------------------
 
-  const handleFileSelected = useCallback(
-    (base64: string, name: string) => {
-      setFileBase64(base64);
-      setFileName(name);
-    },
-    []
-  );
+  const handleFileSelected = useCallback((base64: string, name: string) => {
+    setFileBase64(base64);
+    setFileName(name);
+  }, []);
 
   const resetWizard = useCallback(() => {
     setCurrentStep(0);
@@ -252,7 +245,7 @@ export function ImportWizardDialog({
       resetWizard();
       onOpenChange(false);
     },
-    [fileBase64, parseResult, resetWizard, onOpenChange]
+    [fileBase64, parseResult, resetWizard, onOpenChange],
   );
 
   const handleDiscard = useCallback(() => {
@@ -292,16 +285,31 @@ export function ImportWizardDialog({
         // Duplicates -> confirm
         setCurrentStep(4);
         break;
-      case 4:
+      case 4: {
         // Confirm -> commit
-        if (!fileBase64) return;
+        if (!validateResult) return;
+        // Remap duplicateActions from rowNumber keys to taxId keys
+        // (backend looks up action by taxId, UI stores by rowNumber)
+        const taxIdActions: Record<string, 'skip' | 'update' | 'create'> = {};
+        for (const row of validateResult.duplicateRows) {
+          const action = duplicateActions[String(row.rowNumber)];
+          if (action) {
+            const taxId = String(row.data.taxId ?? row.data.contractorTaxId ?? '');
+            if (taxId) taxIdActions[taxId] = action;
+          }
+        }
         commitMutation.mutate({
-          fileBase64,
           entityType,
-          columnMapping,
-          duplicateActions,
-        } as Parameters<typeof commitMutation.mutate>[0]);
+          rows: [
+            ...validateResult.validRows.map(r => r.data),
+            ...validateResult.duplicateRows
+              .filter(r => duplicateActions[String(r.rowNumber)] !== 'skip')
+              .map(r => r.data),
+          ],
+          duplicateActions: taxIdActions,
+        });
         break;
+      }
     }
   }, [
     currentStep,
@@ -313,24 +321,25 @@ export function ImportWizardDialog({
     parseMutation,
     validateMutation,
     commitMutation,
+    validateResult,
   ]);
 
   const handleBack = useCallback(() => {
     if (currentStep === 4 && !hasDuplicates) {
       setCurrentStep(2);
     } else if (currentStep > 0) {
-      setCurrentStep((s) => s - 1);
+      setCurrentStep(s => s - 1);
     }
   }, [currentStep, hasDuplicates]);
 
   // Check if required mappings are complete for next button
-  const requiredContractorFields = ["legalName", "taxId", "email"];
-  const requiredContractFields = ["title", "type", "startDate", "contractorTaxId"];
+  const requiredContractorFields = ['legalName', 'taxId', 'email'];
+  const requiredContractFields = ['title', 'type', 'startDate', 'contractorTaxId'];
   const requiredFields =
-    entityType === "contractor" ? requiredContractorFields : requiredContractFields;
+    entityType === 'contractor' ? requiredContractorFields : requiredContractFields;
 
   const mappedTargets = Object.values(columnMapping).filter(Boolean);
-  const allRequiredMapped = requiredFields.every((f) => mappedTargets.includes(f));
+  const allRequiredMapped = requiredFields.every(f => mappedTargets.includes(f));
 
   const canProceed = (() => {
     switch (currentStep) {
@@ -351,24 +360,24 @@ export function ImportWizardDialog({
 
   // Step configuration
   const stepLabels = [
-    { label: t("steps.upload"), visible: true },
-    { label: t("steps.mapping"), visible: true },
-    { label: t("steps.preview"), visible: true },
-    { label: t("steps.duplicates"), visible: hasDuplicates },
-    { label: t("steps.confirm"), visible: true },
+    { label: t('steps.upload'), visible: true },
+    { label: t('steps.mapping'), visible: true },
+    { label: t('steps.preview'), visible: true },
+    { label: t('steps.duplicates'), visible: hasDuplicates },
+    { label: t('steps.confirm'), visible: true },
   ];
 
   const getNextLabel = () => {
-    if (currentStep === 4) return t("actions.import");
-    return t("actions.next");
+    if (currentStep === 4) return t('actions.import');
+    return t('actions.next');
   };
 
   // Compute confirm step counts
   const confirmCounts = {
     newRecords: validateResult?.validRows?.length ?? 0,
-    updates: Object.values(duplicateActions).filter((a) => a === "update").length,
+    updates: Object.values(duplicateActions).filter(a => a === 'update').length,
     skippedDuplicates:
-      Object.values(duplicateActions).filter((a) => a === "skip").length +
+      Object.values(duplicateActions).filter(a => a === 'skip').length +
       (validateResult?.duplicateRows?.length ?? 0) -
       Object.keys(duplicateActions).length,
     skippedErrors: validateResult?.invalidRows?.length ?? 0,
@@ -376,23 +385,25 @@ export function ImportWizardDialog({
 
   return (
     <>
-      <Dialog open={open} onOpenChange={(o) => !o && handleClose()}>
-        <DialogContent className="max-w-[720px]" showCloseButton={false}>
+      {/* biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler */}
+      <Dialog open={open} onOpenChange={o => !o && handleClose()}>
+        <DialogContent className="sm:max-w-[720px]" showCloseButton={false}>
           <DialogHeader>
-            <DialogTitle>{t("title")}</DialogTitle>
+            <DialogTitle>{t('title')}</DialogTitle>
           </DialogHeader>
 
           {/* Step indicator */}
           <StepIndicator steps={stepLabels} currentStep={currentStep} />
 
           {/* Step content */}
-          <div className="min-h-[360px] px-1">
+          <div className="min-h-[360px]">
             {currentStep === 0 && (
               <StepUpload
                 entityType={entityType}
                 onEntityTypeChange={setEntityType}
                 onFileSelected={handleFileSelected}
                 fileName={fileName}
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 onFileRemoved={() => {
                   setFileBase64(null);
                   setFileName(null);
@@ -427,6 +438,7 @@ export function ImportWizardDialog({
               <StepConfirm
                 entityType={entityType}
                 counts={confirmCounts}
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 onImport={async () => handleNext()}
                 importResult={importResult}
                 isImporting={commitMutation.isPending}
@@ -443,30 +455,22 @@ export function ImportWizardDialog({
                     type="button"
                     variant="outline"
                     onClick={handleBack}
-                    disabled={isProcessing}
-                  >
-                    {t("actions.back")}
+                    disabled={isProcessing}>
+                    {t('actions.back')}
                   </Button>
                 ) : (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    onClick={() => handleClose()}
-                  >
-                    {fileBase64 ? t("actions.discard") : t("actions.close")}
+                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+                  <Button type="button" variant="ghost" onClick={() => handleClose()}>
+                    {fileBase64 ? t('actions.discard') : t('actions.close')}
                   </Button>
                 )}
               </div>
               {currentStep < 4 && (
-                <Button
-                  type="button"
-                  onClick={handleNext}
-                  disabled={!canProceed || isProcessing}
-                >
+                <Button type="button" onClick={handleNext} disabled={!canProceed || isProcessing}>
                   {isProcessing ? (
                     <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      {t("actions.processing")}
+                      <Loader2 className="me-2 h-4 w-4 animate-spin" />
+                      {t('actions.processing')}
                     </>
                   ) : (
                     getNextLabel()
@@ -479,24 +483,16 @@ export function ImportWizardDialog({
       </Dialog>
 
       {/* Discard confirmation */}
-      <AlertDialog
-        open={showDiscardDialog}
-        onOpenChange={setShowDiscardDialog}
-      >
+      <AlertDialog open={showDiscardDialog} onOpenChange={setShowDiscardDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t("discard.title")}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t("discard.description")}
-            </AlertDialogDescription>
+            <AlertDialogTitle>{t('discard.title')}</AlertDialogTitle>
+            <AlertDialogDescription>{t('discard.description')}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{t("discard.keep")}</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDiscard}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {t("discard.discard")}
+            <AlertDialogCancel>{t('discard.keep')}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDiscard} variant="destructive">
+              {t('discard.discard')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -1,0 +1,131 @@
+{
+  "name": "@contractor-ops/integrations",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./services/credential-service": {
+      "types": "./dist/services/credential-service.d.ts",
+      "import": "./dist/services/credential-service.js",
+      "default": "./dist/services/credential-service.js"
+    },
+    "./registry": {
+      "types": "./dist/registry.d.ts",
+      "import": "./dist/registry.js",
+      "default": "./dist/registry.js"
+    },
+    "./types": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/types/index.js",
+      "default": "./dist/types/index.js"
+    },
+    "./services/qstash-client": {
+      "types": "./dist/services/qstash-client.d.ts",
+      "import": "./dist/services/qstash-client.js",
+      "default": "./dist/services/qstash-client.js"
+    },
+    "./services/webhook-dispatcher": {
+      "types": "./dist/services/webhook-dispatcher.d.ts",
+      "import": "./dist/services/webhook-dispatcher.js",
+      "default": "./dist/services/webhook-dispatcher.js"
+    },
+    "./adapters/register-all": {
+      "types": "./dist/adapters/register-all.d.ts",
+      "import": "./dist/adapters/register-all.js",
+      "default": "./dist/adapters/register-all.js"
+    },
+    "./services/esign-service": {
+      "types": "./dist/services/esign-service.d.ts",
+      "import": "./dist/services/esign-service.js",
+      "default": "./dist/services/esign-service.js"
+    },
+    "./services/ocr-service": {
+      "types": "./dist/services/ocr-service.d.ts",
+      "import": "./dist/services/ocr-service.js",
+      "default": "./dist/services/ocr-service.js"
+    },
+    "./types/ocr": {
+      "types": "./dist/types/ocr.d.ts",
+      "import": "./dist/types/ocr.js",
+      "default": "./dist/types/ocr.js"
+    },
+    "./adapters/clockify-adapter": {
+      "types": "./dist/adapters/clockify-adapter.d.ts",
+      "import": "./dist/adapters/clockify-adapter.js",
+      "default": "./dist/adapters/clockify-adapter.js"
+    },
+    "./adapters/jira-adapter": {
+      "types": "./dist/adapters/jira-adapter.d.ts",
+      "import": "./dist/adapters/jira-adapter.js",
+      "default": "./dist/adapters/jira-adapter.js"
+    },
+    "./adapters/notion-adapter": {
+      "types": "./dist/adapters/notion-adapter.d.ts",
+      "import": "./dist/adapters/notion-adapter.js",
+      "default": "./dist/adapters/notion-adapter.js"
+    },
+    "./adapters/confluence-adapter": {
+      "types": "./dist/adapters/confluence-adapter.d.ts",
+      "import": "./dist/adapters/confluence-adapter.js",
+      "default": "./dist/adapters/confluence-adapter.js"
+    },
+    "./adapters/google-calendar-adapter": {
+      "types": "./dist/adapters/google-calendar-adapter.d.ts",
+      "import": "./dist/adapters/google-calendar-adapter.js",
+      "default": "./dist/adapters/google-calendar-adapter.js"
+    },
+    "./adapters/outlook-calendar-adapter": {
+      "types": "./dist/adapters/outlook-calendar-adapter.d.ts",
+      "import": "./dist/adapters/outlook-calendar-adapter.js",
+      "default": "./dist/adapters/outlook-calendar-adapter.js"
+    },
+    "./adapters/google-workspace-adapter": {
+      "types": "./dist/adapters/google-workspace-adapter.d.ts",
+      "import": "./dist/adapters/google-workspace-adapter.js",
+      "default": "./dist/adapters/google-workspace-adapter.js"
+    },
+    "./services/boe-base-rate-poller": {
+      "types": "./dist/services/boe-base-rate-poller.d.ts",
+      "import": "./dist/services/boe-base-rate-poller.js",
+      "default": "./dist/services/boe-base-rate-poller.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.80.0",
+    "@contractor-ops/db": "workspace:*",
+    "@contractor-ops/einvoice": "workspace:*",
+    "@contractor-ops/logger": "workspace:*",
+    "@contractor-ops/secrets": "workspace:*",
+    "@contractor-ops/validators": "workspace:^",
+    "@infisical/sdk": "^3.0.91",
+    "@upstash/qstash": "^2.10.1",
+    "@upstash/redis": "^1.37.0",
+    "docusign-esign": "8.7.0",
+    "fast-xml-parser": "^5.5.11",
+    "resend": "^6.10.0",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@contractor-ops/test-utils": "workspace:*",
+    "@vitest/coverage-v8": "^4.1.4",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.4"
+  }
+}

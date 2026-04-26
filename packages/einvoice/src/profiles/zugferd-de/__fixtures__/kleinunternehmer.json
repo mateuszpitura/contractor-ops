@@ -1,0 +1,54 @@
+{
+  "id": "INV-2026-003",
+  "issueDate": "2026-01-15",
+  "dueDate": "2026-02-14",
+  "invoiceTypeCode": "380",
+  "currencyCode": "EUR",
+  "profileId": "zugferd-de",
+  "supplier": {
+    "id": "DE555444333",
+    "name": "Solo Developer (Kleinunternehmer)",
+    "address": "Musterstraße 10, 80331 München",
+    "country": "DE"
+  },
+  "customer": {
+    "id": "DE987654321",
+    "name": "Muster Kunde AG",
+    "address": "Marktplatz 5, 80331 München",
+    "country": "DE"
+  },
+  "lines": [
+    {
+      "lineNumber": 1,
+      "description": "Freelance-Entwicklung — §19 UStG Kleinunternehmer",
+      "quantity": 1,
+      "unit": "C62",
+      "unitPriceMinor": 80000,
+      "netAmountMinor": 80000,
+      "vatRate": "0",
+      "vatAmountMinor": 0,
+      "grossAmountMinor": 80000
+    }
+  ],
+  "taxExclusiveAmount": 80000,
+  "taxInclusiveAmount": 80000,
+  "payableAmount": 80000,
+  "taxBreakdown": [
+    {
+      "taxableAmountMinor": 80000,
+      "taxAmountMinor": 0,
+      "taxCategory": "E",
+      "percent": 0
+    }
+  ],
+  "paymentMeans": {
+    "code": "58",
+    "dueDate": "2026-02-14",
+    "bankAccount": "DE89370400440532013000",
+    "bankName": "Sparkasse München",
+    "paymentReference": "INV-2026-003"
+  },
+  "extensions": {
+    "kleinunternehmer": true
+  }
+}

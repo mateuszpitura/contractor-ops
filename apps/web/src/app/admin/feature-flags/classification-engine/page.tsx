@@ -1,0 +1,180 @@
+// apps/web/src/app/admin/feature-flags/classification-engine/page.tsx
+//
+// Phase 64 · D-11 — Super-admin classification engine flag status page.
+//
+// Shows:
+//   1. App-side evaluated value (may differ due to disclaimer gate D-10)
+//   2. Signoff registry overview (PENDING count vs total)
+//   3. Per-disclaimer signoff registry table (PENDING / APPROVED)
+//   4. Actionable copy when flag is overridden by PENDING disclaimers
+//
+// Read-only — no Unleash toggle flipping from UI (that's in Unleash console).
+// Accessible only via the admin layout (super-admin / owner role required).
+
+import { auth } from '@contractor-ops/auth';
+import { prisma } from '@contractor-ops/db';
+import { evaluate } from '@contractor-ops/feature-flags';
+import { getAllPending, getRegistry, LOCKED_DISCLAIMERS } from '@contractor-ops/validators';
+import { AlertCircle, CheckCircle, XCircle } from 'lucide-react';
+import type { Metadata } from 'next';
+import { headers } from 'next/headers';
+import { notFound } from 'next/navigation';
+import { Badge } from '@/components/ui/badge';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+
+export const metadata: Metadata = {
+  title: 'Classification Engine Flag Status — Admin',
+};
+
+export default async function ClassificationEngineFlagPage() {
+  const reqHeaders = await headers();
+  const session = await auth.api.getSession({ headers: reqHeaders });
+  if (!session?.session.activeOrganizationId) notFound();
+
+  const org = await prisma.organization.findFirst({
+    where: { id: session.session.activeOrganizationId },
+    select: { countryCode: true, dataRegion: true },
+  });
+
+  const region = org?.dataRegion === 'ME' ? ('ME' as const) : ('EU' as const);
+
+  // Evaluate with the disclaimer gate active (this reflects what users actually see)
+  const evaluated = evaluate('module.classification-engine', {
+    organizationId: session.session.activeOrganizationId,
+    region,
+  });
+
+  const registry = getRegistry();
+  const pendingKeys = getAllPending();
+  const allDisclaimerKeys = Object.keys(LOCKED_DISCLAIMERS);
+
+  // Flag is overridden when app-side is disabled due to PENDING disclaimers
+  const isOverridden = !evaluated.enabled && pendingKeys.length > 0;
+
+  return (
+    <div className="space-y-8 p-6">
+      <div>
+        <h1 className="text-2xl font-semibold tracking-tight">module.classification-engine</h1>
+        <p className="mt-1 text-muted-foreground">
+          Classification engine kill-switch. Read-only — toggle in Unleash console.
+        </p>
+      </div>
+
+      {/* Flag state summary */}
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="rounded-lg border p-4">
+          <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            App-side value (what users see)
+          </div>
+          <div className="mt-2 flex items-center gap-2">
+            {evaluated.enabled ? (
+              <>
+                <CheckCircle className="h-5 w-5 text-green-600" aria-hidden />
+                <span className="font-semibold text-green-700">ENABLED</span>
+              </>
+            ) : (
+              <>
+                <XCircle className="h-5 w-5 text-red-600" aria-hidden />
+                <span className="font-semibold text-red-700">DISABLED</span>
+              </>
+            )}
+          </div>
+        </div>
+
+        <div className="rounded-lg border p-4">
+          <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            Signoff registry
+          </div>
+          <div className="mt-2 flex items-center gap-2">
+            {pendingKeys.length === 0 ? (
+              <>
+                <CheckCircle className="h-5 w-5 text-green-600" aria-hidden />
+                <span className="font-semibold text-green-700">
+                  All {allDisclaimerKeys.length} APPROVED
+                </span>
+              </>
+            ) : (
+              <>
+                <AlertCircle className="h-5 w-5 text-amber-600" aria-hidden />
+                <span className="font-semibold text-amber-700">
+                  {pendingKeys.length} of {allDisclaimerKeys.length} PENDING
+                </span>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Override explanation */}
+      {isOverridden && (
+        <div className="rounded-lg border border-amber-300 bg-amber-50 p-4">
+          <p className="text-sm font-medium text-amber-900">
+            Flag ON in Unleash but app-gated — {pendingKeys.length} disclaimer
+            {pendingKeys.length === 1 ? '' : 's'} PENDING.
+          </p>
+          <p className="mt-1 text-xs text-amber-700">
+            Resolve by submitting a PR updating{' '}
+            <code className="font-mono">packages/validators/src/legal/signoff-registry.json</code>{' '}
+            to set each PENDING key to APPROVED with approvedBy + approvedAt + approverRole. The PR
+            requires @contractor-ops/legal-platform review (CODEOWNERS).
+          </p>
+        </div>
+      )}
+
+      {/* Signoff registry table */}
+      <div>
+        <h2 className="text-lg font-semibold">Disclaimer Signoff Registry</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          All keys must be APPROVED before the flag can be enabled in production.
+        </p>
+        <div className="mt-4 rounded-lg border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Disclaimer Key</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Approved By</TableHead>
+                <TableHead>Approved At</TableHead>
+                <TableHead>Approver Role</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {allDisclaimerKeys.map(key => {
+                const entry = registry[key];
+                const isPending = !entry || entry.status === 'PENDING';
+                return (
+                  <TableRow key={key}>
+                    <TableCell className="font-mono text-xs">{key}</TableCell>
+                    <TableCell>
+                      <Badge variant={isPending ? 'destructive' : 'default'}>
+                        {entry?.status ?? 'MISSING'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {entry?.approvedBy ?? '—'}
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {entry?.approvedAt
+                        ? new Date(entry.approvedAt).toLocaleDateString('en-GB')
+                        : '—'}
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {entry?.approverRole ?? '—'}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </div>
+      </div>
+    </div>
+  );
+}

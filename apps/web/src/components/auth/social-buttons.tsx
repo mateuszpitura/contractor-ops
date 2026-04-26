@@ -1,30 +1,36 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useTranslations } from "next-intl";
-import { Button } from "@/components/ui/button";
-import { authClient } from "@/lib/auth-client";
-import { Loader2 } from "lucide-react";
+import { Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useCallback, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { authClient } from '@/lib/auth-client';
 
 /**
  * Social OAuth buttons for Google and Microsoft.
  * Shared between login, register, and invite accept forms.
  */
 export function SocialButtons() {
-  const t = useTranslations("Auth.register");
+  const t = useTranslations('Auth.register');
   const [loadingProvider, setLoadingProvider] = useState<string | null>(null);
 
-  const handleSocialLogin = async (provider: "google" | "microsoft") => {
+  const handleSocialLogin = useCallback(async (provider: 'google' | 'microsoft') => {
     setLoadingProvider(provider);
     try {
       await authClient.signIn.social({
         provider,
-        callbackURL: "/",
+        callbackURL: '/',
       });
     } catch {
       setLoadingProvider(null);
     }
-  };
+  }, []);
+
+  const handleGoogleLogin = useCallback(() => handleSocialLogin('google'), [handleSocialLogin]);
+  const handleMicrosoftLogin = useCallback(
+    () => handleSocialLogin('microsoft'),
+    [handleSocialLogin],
+  );
 
   return (
     <div className="space-y-3">
@@ -33,9 +39,7 @@ export function SocialButtons() {
           <span className="w-full border-t" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-background px-2 text-muted-foreground">
-            {t("socialDivider")}
-          </span>
+          <span className="bg-card px-2 text-muted-foreground">{t('socialDivider')}</span>
         </div>
       </div>
 
@@ -44,13 +48,12 @@ export function SocialButtons() {
           variant="outline"
           type="button"
           disabled={loadingProvider !== null}
-          onClick={() => handleSocialLogin("google")}
-          className="w-full"
-        >
-          {loadingProvider === "google" ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          onClick={handleGoogleLogin}
+          className="w-full">
+          {loadingProvider === 'google' ? (
+            <Loader2 className="me-2 h-4 w-4 animate-spin" />
           ) : (
-            <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
+            <svg className="me-2 h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
               <path
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"
                 fill="#4285F4"
@@ -69,27 +72,26 @@ export function SocialButtons() {
               />
             </svg>
           )}
-          {t("googleButton")}
+          {t('googleButton')}
         </Button>
 
         <Button
           variant="outline"
           type="button"
           disabled={loadingProvider !== null}
-          onClick={() => handleSocialLogin("microsoft")}
-          className="w-full"
-        >
-          {loadingProvider === "microsoft" ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          onClick={handleMicrosoftLogin}
+          className="w-full">
+          {loadingProvider === 'microsoft' ? (
+            <Loader2 className="me-2 h-4 w-4 animate-spin" />
           ) : (
-            <svg className="mr-2 h-4 w-4" viewBox="0 0 21 21">
+            <svg className="me-2 h-4 w-4" viewBox="0 0 21 21" aria-hidden="true">
               <rect x="1" y="1" width="9" height="9" fill="#F25022" />
               <rect x="11" y="1" width="9" height="9" fill="#7FBA00" />
               <rect x="1" y="11" width="9" height="9" fill="#00A4EF" />
               <rect x="11" y="11" width="9" height="9" fill="#FFB900" />
             </svg>
           )}
-          {t("microsoftButton")}
+          {t('microsoftButton')}
         </Button>
       </div>
     </div>

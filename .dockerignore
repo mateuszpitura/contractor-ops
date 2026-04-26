@@ -1,0 +1,36 @@
+# Dependencies (reinstalled in Docker)
+node_modules
+**/node_modules
+
+# Build artifacts
+**/.next
+**/dist
+**/out
+
+# Dev / CI
+.git
+.github
+.claude
+.planning
+.env
+.env.*
+!.env.example
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/vitest.config.*
+**/playwright.*
+**/e2e
+**/load-tests
+**/__tests__
+# test-utils is a workspace package referenced as a devDependency by api,
+# integrations, and gov-api — turbo's `^build` forces it to compile during
+# the web build, so we must keep its source in the build context.
+packages/test-utils/dist
+packages/test-utils/__tests__
+**/coverage
+
+# Docker internals
+**/Dockerfile
+docker-compose.yml
+docker/

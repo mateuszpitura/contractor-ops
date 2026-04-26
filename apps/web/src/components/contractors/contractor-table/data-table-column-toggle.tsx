@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import type { Table } from "@tanstack/react-table";
-import { SlidersHorizontal } from "lucide-react";
-import { useTranslations } from "next-intl";
+import type { Table } from '@tanstack/react-table';
+import { SlidersHorizontal } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from '@/components/ui/dropdown-menu';
 
 interface DataTableColumnToggleProps<TData> {
   table: Table<TData>;
@@ -20,18 +20,17 @@ interface DataTableColumnToggleProps<TData> {
  * Column visibility dropdown for the contractor data table.
  * Persists visibility state to localStorage.
  */
-export function DataTableColumnToggle<TData>({
-  table,
-}: DataTableColumnToggleProps<TData>) {
-  const t = useTranslations("Contractors");
+export function DataTableColumnToggle<TData>({ table }: DataTableColumnToggleProps<TData>) {
+  const t = useTranslations('Contractors');
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        render={(props) => (
+        // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
+        render={props => (
           <Button {...props} variant="outline" size="icon" className="h-9 w-9">
             <SlidersHorizontal className="h-4 w-4" />
-            <span className="sr-only">{t("filters")}</span>
+            <span className="sr-only">{t('filters')}</span>
           </Button>
         )}
       />
@@ -39,17 +38,17 @@ export function DataTableColumnToggle<TData>({
         {table
           .getAllColumns()
           .filter(
-            (column) =>
-              typeof column.accessorFn !== "undefined" ||
-              (column.id !== "select" && column.getCanHide()),
+            column =>
+              typeof column.accessorFn !== 'undefined' ||
+              (column.id !== 'select' && column.getCanHide()),
           )
-          .map((column) => (
+          .map(column => (
             <DropdownMenuCheckboxItem
               key={column.id}
               checked={column.getIsVisible()}
-              onCheckedChange={(value) => column.toggleVisibility(!!value)}
-              className="capitalize"
-            >
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
+              onCheckedChange={value => column.toggleVisibility(!!value)}
+              className="capitalize">
               {t(`columns.${column.id}` as Parameters<typeof t>[0])}
             </DropdownMenuCheckboxItem>
           ))}

@@ -1,33 +1,60 @@
-import { TRPCError } from "@trpc/server";
-import { auth } from "@contractor-ops/auth";
-import type { Permission } from "@contractor-ops/auth";
-import { t } from "../init.js";
-import { tenantProcedure } from "./tenant.js";
+import type { Permission } from '@contractor-ops/auth';
+import { authApi } from '@contractor-ops/auth';
+import { TRPCError } from '@trpc/server';
+import * as E from '../errors.js';
+import { t } from '../init.js';
+import { permissionToScopes } from '../lib/scope-utils.js';
+import { tenantProcedure } from './tenant.js';
 
 /**
  * RBAC middleware factory: creates a middleware that checks if the current
- * user has the specified permission in their active organization.
+ * user/key has the specified permission in their active organization.
  *
- * Uses Better Auth's hasPermission API endpoint for server-side checks.
+ * - **Session auth**: delegates to Better Auth's `hasPermission` API.
+ * - **API key auth**: checks the key's `scopes` array against required permissions.
  *
  * @param permission - Object mapping resources to required actions
  * @example requirePermission({ contractor: ["read", "update"] })
  */
 export function requirePermission(permission: Permission) {
   const middleware = t.middleware(async ({ ctx, next }) => {
-    const hasPermission = await auth.api.hasPermission({
+    // API key auth: check scopes instead of Better Auth session
+    if (ctx.authMode === 'apiKey') {
+      if (!(ctx.apiKeyId && ctx.apiKeyScopes)) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: E.PERMISSION_DENIED,
+        });
+      }
+
+      const required = permissionToScopes(permission);
+      const granted = new Set(ctx.apiKeyScopes);
+      const missing = required.filter(s => !granted.has(s));
+
+      if (missing.length > 0) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: E.PERMISSION_DENIED,
+        });
+      }
+
+      return next();
+    }
+
+    // Session auth: delegate to Better Auth
+    const hasPermission = await authApi.hasPermission({
       headers: ctx.headers,
       body: { permissions: permission },
     });
 
     if (!hasPermission?.success) {
       throw new TRPCError({
-        code: "FORBIDDEN",
-        message: "You do not have permission to perform this action.",
+        code: 'FORBIDDEN',
+        message: E.PERMISSION_DENIED,
       });
     }
 
-    return next({ ctx });
+    return next({ ctx: { ...ctx } });
   });
 
   return middleware;
@@ -37,6 +64,4 @@ export function requirePermission(permission: Permission) {
  * Procedure that requires admin-level organization permissions.
  * Chain: auth -> tenant -> rbac(organization.update) -> handler
  */
-export const adminProcedure = tenantProcedure.use(
-  requirePermission({ organization: ["update"] }),
-);
+export const adminProcedure = tenantProcedure.use(requirePermission({ organization: ['update'] }));

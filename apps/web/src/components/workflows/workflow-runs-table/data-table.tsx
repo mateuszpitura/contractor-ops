@@ -1,33 +1,21 @@
-"use client";
+'use client';
 
-import { useCallback, useMemo, useState } from "react";
-import {
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
-  type ColumnDef,
-} from "@tanstack/react-table";
-import { useQuery } from "@tanstack/react-query";
-import { GitBranch } from "lucide-react";
-import { useTranslations } from "next-intl";
-
-import { trpc } from "@/trpc/init";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-
-import { getColumns, type WorkflowRunRow } from "./columns";
-import { DataTableToolbar } from "./data-table-toolbar";
-import { DataTableFilters } from "./data-table-filters";
-import { DataTablePagination } from "./data-table-pagination";
-import { useWorkflowFilters } from "./use-workflow-filters";
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import type { ColumnDef } from '@tanstack/react-table';
+import { getCoreRowModel, useReactTable } from '@tanstack/react-table';
+import { GitBranch, Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useCallback, useMemo, useState } from 'react';
+import { DataTableBody } from '@/components/shared/data-table-body';
+import { SortableTableHead } from '@/components/shared/sortable-table-head';
+import { Table, TableHeader, TableRow } from '@/components/ui/table';
+import { trpc } from '@/trpc/init';
+import type { WorkflowRunRow } from './columns';
+import { getColumns } from './columns';
+import { DataTableFilters } from './data-table-filters';
+import { DataTablePagination } from './data-table-pagination';
+import { DataTableToolbar } from './data-table-toolbar';
+import { useWorkflowFilters } from './use-workflow-filters';
 
 interface WorkflowRunsDataTableProps {
   onRowClick: (run: WorkflowRunRow) => void;
@@ -39,11 +27,9 @@ interface WorkflowRunsDataTableProps {
  * Uses server-side pagination, sorting, and filtering via tRPC.
  * URL state is managed by nuqs for shareable filtered views.
  */
-export function WorkflowRunsDataTable({
-  onRowClick,
-  onStartWorkflow,
-}: WorkflowRunsDataTableProps) {
-  const t = useTranslations("Workflows");
+export function WorkflowRunsDataTable({ onRowClick, onStartWorkflow }: WorkflowRunsDataTableProps) {
+  const t = useTranslations('Workflows');
+  const tAria = useTranslations('Common.aria');
 
   // URL-synced filter state
   const [filters, setFilters] = useWorkflowFilters();
@@ -57,15 +43,11 @@ export function WorkflowRunsDataTable({
       page: filters.page,
       pageSize: filters.pageSize,
       search: filters.search || undefined,
-      sortBy:
-        (filters.sortBy as "createdAt" | "dueAt" | "status" | "startedAt") ||
-        "dueAt",
-      sortOrder: (filters.sortOrder as "asc" | "desc") || "asc",
+      sortBy: (filters.sortBy as 'createdAt' | 'dueAt' | 'status' | 'startedAt') || 'dueAt',
+      sortOrder: (filters.sortOrder as 'asc' | 'desc') || 'asc',
       filters: {
         status: filters.status.length ? filters.status : undefined,
-        templateId: filters.templateId.length
-          ? filters.templateId
-          : undefined,
+        templateId: filters.templateId.length ? filters.templateId : undefined,
         overdueOnly: filters.overdueOnly || undefined,
       },
     }),
@@ -73,19 +55,18 @@ export function WorkflowRunsDataTable({
   );
 
   // Fetch data via tRPC
-  const runsQuery = useQuery(trpc.workflow.listRuns.queryOptions(queryInput));
+  const runsQuery = useQuery({
+    ...trpc.workflow.listRuns.queryOptions(queryInput),
+    placeholderData: keepPreviousData,
+  });
 
   const data = useMemo(() => {
-    const result = runsQuery.data as
-      | { items: WorkflowRunRow[]; total: number }
-      | undefined;
+    const result = runsQuery.data as { items: WorkflowRunRow[]; total: number } | undefined;
     return result?.items ?? [];
   }, [runsQuery.data]);
 
   const totalRows = useMemo(() => {
-    const result = runsQuery.data as
-      | { items: unknown[]; total: number }
-      | undefined;
+    const result = runsQuery.data as { items: unknown[]; total: number } | undefined;
     return result?.total ?? 0;
   }, [runsQuery.data]);
 
@@ -105,32 +86,35 @@ export function WorkflowRunsDataTable({
       sorting: [
         {
           id: filters.sortBy,
-          desc: filters.sortOrder === "desc",
+          desc: filters.sortOrder === 'desc',
         },
       ],
     },
     onRowSelectionChange: setRowSelection,
-    onSortingChange: (updater) => {
+    onSortingChange: updater => {
       const next =
-        typeof updater === "function"
-          ? updater([
-              { id: filters.sortBy, desc: filters.sortOrder === "desc" },
-            ])
+        typeof updater === 'function'
+          ? updater([{ id: filters.sortBy, desc: filters.sortOrder === 'desc' }])
           : updater;
-      if (next.length > 0) {
+      const first = next[0];
+      if (first) {
         void setFilters({
-          sortBy: next[0]!.id,
-          sortOrder: next[0]!.desc ? "desc" : "asc",
+          sortBy: first.id,
+          sortOrder: first.desc ? 'desc' : 'asc',
           page: 1,
         });
+      } else {
+        // Sort removed — reset to default
+        void setFilters({ sortBy: 'dueAt', sortOrder: 'asc', page: 1 });
       }
     },
+    enableSortingRemoval: true,
     getCoreRowModel: getCoreRowModel(),
     manualPagination: true,
     manualSorting: true,
     manualFiltering: true,
     enableRowSelection: true,
-    getRowId: (row) => row.id,
+    getRowId: row => row.id,
   });
 
   // Filter change handler
@@ -171,7 +155,7 @@ export function WorkflowRunsDataTable({
   // Clear filters for "no results" CTA
   const clearFilters = useCallback(() => {
     void setFilters({
-      search: "",
+      search: '',
       status: [],
       templateId: [],
       overdueOnly: false,
@@ -179,8 +163,8 @@ export function WorkflowRunsDataTable({
     });
   }, [setFilters]);
 
-  const isLoading = runsQuery.isLoading;
-  const isSearching = runsQuery.isFetching && !isLoading;
+  const isLoading = runsQuery.isPending && !runsQuery.data;
+  const isRefetching = runsQuery.isFetching && !isLoading;
   const hasFiltersOrSearch =
     filters.search.length > 0 ||
     filters.status.length > 0 ||
@@ -190,15 +174,11 @@ export function WorkflowRunsDataTable({
   /**
    * Determine if a row is overdue for background highlighting.
    */
-  const isRowOverdue = (row: WorkflowRunRow) => {
-    if (
-      row.status === "COMPLETED" ||
-      row.status === "CANCELLED"
-    )
-      return false;
-    if (!row.dueAt) return false;
-    return new Date(row.dueAt) < new Date();
-  };
+  const rowClassName = useCallback((row: WorkflowRunRow) => {
+    if (row.status === 'COMPLETED' || row.status === 'CANCELLED') return '';
+    if (!row.dueAt) return '';
+    return new Date(row.dueAt) < new Date() ? 'bg-destructive/5' : '';
+  }, []);
 
   return (
     <div className="space-y-4">
@@ -206,7 +186,7 @@ export function WorkflowRunsDataTable({
       <DataTableToolbar
         search={filters.search}
         onSearchChange={handleSearchChange}
-        isSearching={isSearching}
+        isSearching={isRefetching}
         onStartWorkflow={onStartWorkflow}
       />
 
@@ -221,122 +201,48 @@ export function WorkflowRunsDataTable({
       />
 
       {/* Table */}
-      <div className="rounded-xl border bg-background">
+      <div className="relative rounded-xl border bg-background">
+        {/* Refetch overlay */}
+        {!!isRefetching && (
+          <div className="absolute inset-0 z-10 flex items-start justify-center rounded-xl bg-background/60 pt-20">
+            <Loader2 className="h-5 w-5 animate-spin text-primary" />
+          </div>
+        )}
         <Table>
           <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
+            {table.getHeaderGroups().map(headerGroup => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <TableHead
+                {headerGroup.headers.map(header => (
+                  <SortableTableHead
                     key={header.id}
-                    className="whitespace-nowrap text-[13px]"
-                    style={
-                      header.column.getSize() !== 150
-                        ? { width: header.column.getSize() }
-                        : undefined
-                    }
-                  >
-                    {header.isPlaceholder ? null : header.column.getCanSort() ? (
-                      <button
-                        type="button"
-                        className="flex items-center gap-1 hover:text-foreground"
-                        onClick={header.column.getToggleSortingHandler()}
-                      >
-                        {flexRender(
-                          header.column.columnDef.header,
-                          header.getContext(),
-                        )}
-                      </button>
-                    ) : (
-                      flexRender(
-                        header.column.columnDef.header,
-                        header.getContext(),
-                      )
-                    )}
-                  </TableHead>
+                    header={header}
+                    sortAriaLabel={tAria('sortBy', {
+                      column:
+                        typeof header.column.columnDef.header === 'string'
+                          ? header.column.columnDef.header
+                          : header.id,
+                    })}
+                  />
                 ))}
               </TableRow>
             ))}
           </TableHeader>
-          <TableBody>
-            {isLoading ? (
-              // Skeleton loading rows
-              Array.from({ length: 8 }).map((_, i) => (
-                <TableRow key={`skeleton-${i}`}>
-                  {table
-                    .getVisibleLeafColumns()
-                    .map((col) => (
-                      <TableCell key={col.id}>
-                        <Skeleton className="h-4 w-full max-w-[120px]" />
-                      </TableCell>
-                    ))}
-                </TableRow>
-              ))
-            ) : table.getRowModel().rows.length > 0 ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() ? "selected" : undefined}
-                  className={`cursor-pointer ${
-                    isRowOverdue(row.original)
-                      ? "bg-destructive/5"
-                      : ""
-                  }`}
-                  onClick={() => onRowClick(row.original)}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : hasFiltersOrSearch ? (
-              // No search results
-              <TableRow>
-                <TableCell
-                  colSpan={table.getVisibleLeafColumns().length}
-                  className="py-16 text-center"
-                >
-                  <h3 className="text-[16px] font-medium">
-                    {t("noResults.heading")}
-                  </h3>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {t("noResults.body")}
-                  </p>
-                  <Button
-                    variant="outline"
-                    className="mt-4"
-                    onClick={clearFilters}
-                  >
-                    {t("noResults.cta")}
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ) : (
-              // Empty state
-              <TableRow>
-                <TableCell
-                  colSpan={table.getVisibleLeafColumns().length}
-                  className="py-16 text-center"
-                >
-                  <GitBranch className="mx-auto h-10 w-10 text-muted-foreground/50" />
-                  <h3 className="mt-3 text-[16px] font-medium">
-                    {t("empty.heading")}
-                  </h3>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {t("empty.body")}
-                  </p>
-                  <Button className="mt-4" onClick={onStartWorkflow}>
-                    {t("empty.cta")}
-                  </Button>
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
+          <DataTableBody
+            table={table}
+            isLoading={isLoading}
+            hasFiltersOrSearch={hasFiltersOrSearch}
+            onRowClick={onRowClick}
+            rowClassName={rowClassName}
+            emptyIcon={<GitBranch className="mx-auto h-10 w-10 text-muted-foreground/50" />}
+            emptyTitle={t('empty.heading')}
+            emptyDescription={t('empty.body')}
+            emptyCta={t('empty.cta')}
+            onEmptyCta={onStartWorkflow}
+            noResultsTitle={t('noResults.heading')}
+            noResultsDescription={t('noResults.body')}
+            noResultsCta={t('noResults.cta')}
+            onClearFilters={clearFilters}
+          />
         </Table>
 
         {/* Pagination */}

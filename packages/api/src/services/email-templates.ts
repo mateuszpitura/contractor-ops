@@ -1,29 +1,64 @@
-import type { ReactElement } from "react";
-import { createElement } from "react";
-import { ApprovalRequestEmail } from "../emails/approval-request.js";
-import { ApprovalDecisionEmail } from "../emails/approval-decision.js";
-import { TaskAssignedEmail } from "../emails/task-assigned.js";
-import { TaskOverdueEmail } from "../emails/task-overdue.js";
-import { ContractExpiringEmail } from "../emails/contract-expiring.js";
-import { InvoiceReceivedEmail } from "../emails/invoice-received.js";
+import type { ReactElement } from 'react';
+import { createElement } from 'react';
+import { ApprovalDecisionEmail } from '../emails/approval-decision.js';
+import { ApprovalRequestEmail } from '../emails/approval-request.js';
+import { ContractExpiringEmail } from '../emails/contract-expiring.js';
+import { InvoiceReceivedEmail } from '../emails/invoice-received.js';
+import { TaskAssignedEmail } from '../emails/task-assigned.js';
+import { TaskOverdueEmail } from '../emails/task-overdue.js';
 
 // ---------------------------------------------------------------------------
-// Subject lines (from UI-SPEC copywriting contract)
+// i18n subject key constants
 // ---------------------------------------------------------------------------
 
-const SUBJECT_LINES: Record<string, (data: Record<string, unknown>) => string> = {
-  APPROVAL_REQUEST: (data) =>
-    `Action required: Approve invoice ${(data.invoiceNumber as string) ?? ""}`.trim(),
-  APPROVAL_DECISION: (data) =>
-    `Invoice ${(data.invoiceNumber as string) ?? ""} ${(data.decision as string)?.toLowerCase() ?? "processed"}`.trim(),
-  TASK_ASSIGNED: (data) =>
-    `New task assigned: ${(data.taskName as string) ?? ""}`.trim(),
-  TASK_OVERDUE: (data) =>
-    `Overdue: ${(data.taskName as string) ?? "Task"} is past due`.trim(),
-  CONTRACT_EXPIRING: (data) =>
-    `Contract expiring soon: ${(data.contractTitle as string) ?? ""}`.trim(),
-  INVOICE_RECEIVED: (data) =>
-    `New invoice received from ${(data.contractorName as string) ?? "contractor"}`.trim(),
+export const EMAIL_SUBJECT_KEYS = {
+  approvalRequest: 'email.subject.approvalRequest',
+  approvalDecision: 'email.subject.approvalDecision',
+  taskAssigned: 'email.subject.taskAssigned',
+  taskOverdue: 'email.subject.taskOverdue',
+  contractExpiring: 'email.subject.contractExpiring',
+  invoiceReceived: 'email.subject.invoiceReceived',
+} as const;
+
+// ---------------------------------------------------------------------------
+// Subject lines — return i18n keys with interpolation params
+// ---------------------------------------------------------------------------
+
+interface EmailSubject {
+  /** The i18n key for the subject line */
+  key: string;
+  /** Interpolation parameters for the frontend to resolve */
+  params: Record<string, string>;
+}
+
+const SUBJECT_LINES: Record<string, (data: Record<string, unknown>) => EmailSubject> = {
+  APPROVAL_REQUEST: data => ({
+    key: EMAIL_SUBJECT_KEYS.approvalRequest,
+    params: { invoiceNumber: (data.invoiceNumber as string) ?? '' },
+  }),
+  APPROVAL_DECISION: data => ({
+    key: EMAIL_SUBJECT_KEYS.approvalDecision,
+    params: {
+      invoiceNumber: (data.invoiceNumber as string) ?? '',
+      decision: (data.decision as string)?.toLowerCase() ?? 'processed',
+    },
+  }),
+  TASK_ASSIGNED: data => ({
+    key: EMAIL_SUBJECT_KEYS.taskAssigned,
+    params: { taskName: (data.taskName as string) ?? '' },
+  }),
+  TASK_OVERDUE: data => ({
+    key: EMAIL_SUBJECT_KEYS.taskOverdue,
+    params: { taskName: (data.taskName as string) ?? 'Task' },
+  }),
+  CONTRACT_EXPIRING: data => ({
+    key: EMAIL_SUBJECT_KEYS.contractExpiring,
+    params: { contractTitle: (data.contractTitle as string) ?? '' },
+  }),
+  INVOICE_RECEIVED: data => ({
+    key: EMAIL_SUBJECT_KEYS.invoiceReceived,
+    params: { contractorName: (data.contractorName as string) ?? 'contractor' },
+  }),
 };
 
 // ---------------------------------------------------------------------------
@@ -57,11 +92,11 @@ const TEMPLATE_MAP: Record<string, TemplateComponent> = {
 export function renderNotificationEmail(
   type: string,
   data: Record<string, unknown>,
-): { subject: string; react: ReactElement } {
+): { subject: EmailSubject; react: ReactElement } {
   const Component = TEMPLATE_MAP[type];
   const getSubject = SUBJECT_LINES[type];
 
-  if (!Component || !getSubject) {
+  if (Component === undefined || getSubject === undefined) {
     throw new Error(`Unknown notification type: ${type}`);
   }
 

@@ -1,31 +1,42 @@
-import type { Metadata } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
-import type { ReactNode } from "react";
+import type { Metadata } from 'next';
+import { Bricolage_Grotesque, JetBrains_Mono, Outfit } from 'next/font/google';
+import type { ReactNode } from 'react';
 
-const inter = Inter({
-  subsets: ["latin", "latin-ext"],
-  variable: "--font-sans",
+// Phase 64 D-10 — register classification disclaimer gate at app boot
+import '@/lib/feature-flags-init';
+
+const outfit = Outfit({
+  subsets: ['latin', 'latin-ext'],
+  variable: '--font-sans',
+});
+
+const bricolageGrotesque = Bricolage_Grotesque({
+  subsets: ['latin', 'latin-ext'],
+  variable: '--font-display',
 });
 
 const jetbrainsMono = JetBrains_Mono({
-  subsets: ["latin"],
-  variable: "--font-mono",
+  subsets: ['latin'],
+  variable: '--font-mono',
 });
 
 export const metadata: Metadata = {
-  title: "Contractor Ops",
-  description: "Contractor management and invoice processing platform",
+  title: 'Contractor Ops',
+  description: 'Contractor management and invoice processing platform',
+  icons: {
+    icon: '/favicon.svg',
+  },
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${jetbrainsMono.variable} font-sans`}
-      suppressHydrationWarning
-    >
+      className={`${outfit.variable} ${bricolageGrotesque.variable} ${jetbrainsMono.variable} font-sans`}
+      suppressHydrationWarning>
       <head>
         <script
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: server-rendered theme script with no user input
           dangerouslySetInnerHTML={{
             __html: `
               try {

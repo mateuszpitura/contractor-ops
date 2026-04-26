@@ -1,0 +1,87 @@
+// Phase 56 · Plan 07 — German Datenschutzerklärung content (FOUND-06).
+//
+// Legally vetted (BfDI-aligned) German-language privacy notice. MUST import
+// from `../legal/de.js` so every value of `LOCKED_DE_PHRASES` appears
+// verbatim in the serialised export — the locked-phrases-guard test
+// (`src/__tests__/locked-phrases-guard.test.ts`) stringifies the export and
+// asserts every locked phrase is present.
+//
+// Invariants (enforced by tests + `/gsd:verify`):
+//   1. All 9 LOCKED_DE_PHRASES values appear verbatim (output-level D-06).
+//   2. Register stays formal ("Sie") — no Du / Dir / Dein…
+//   3. Citations preserve Unicode: §, ä, ß, DSGVO round-trip without mojibake.
+
+import {
+  GDPR_COMPLAINT_HEADING,
+  GDPR_CONTROLLER_LABEL,
+  GDPR_DPO_LABEL,
+  GDPR_RIGHTS_HEADING,
+  TAX_HANDELSREGISTER_LABEL,
+  TAX_KLEINUNTERNEHMER_LABEL,
+  TAX_SOZIALVERSICHERUNGSNUMMER_LABEL,
+  TAX_STEUERNUMMER_LABEL,
+  TAX_USTIDNR_LABEL,
+} from '../legal/de.js';
+import type { PrivacyNoticeStructured } from './types.js';
+
+export const dePrivacyNotice: PrivacyNoticeStructured = {
+  jurisdiction: 'DE',
+  legalReference:
+    'Datenschutz-Grundverordnung (DSGVO, Verordnung (EU) 2016/679) und Bundesdatenschutzgesetz (BDSG)',
+  sections: [
+    {
+      title: GDPR_CONTROLLER_LABEL,
+      content:
+        'Die in dieser Datenschutzerklärung genannte Organisation ist Verantwortlicher im Sinne der DSGVO für die Verarbeitung Ihrer personenbezogenen Daten. Kontaktdaten des Verantwortlichen werden Ihnen von Ihrem Organisations-Administrator zur Verfügung gestellt. Anfragen zum Datenschutz richten Sie bitte an privacy@contractorops.com.',
+    },
+    {
+      title: GDPR_DPO_LABEL,
+      content:
+        'Unser Datenschutzbeauftragter ist unter der E-Mail-Adresse dpo@contractorops.com erreichbar. Für formelle Korrespondenz wenden Sie sich bitte über Ihren Organisations-Administrator an den Verantwortlichen.',
+    },
+    {
+      title: 'Verarbeitungszwecke',
+      content:
+        'Wir verarbeiten Ihre personenbezogenen Daten zur Erfüllung des Vertrags mit Ihrer Organisation (Art. 6 Abs. 1 lit. b DSGVO), zur Wahrung berechtigter Interessen wie IT-Sicherheit und Plattformverbesserung (Art. 6 Abs. 1 lit. f DSGVO), zur Erfüllung gesetzlicher Aufbewahrungspflichten (Art. 6 Abs. 1 lit. c DSGVO) sowie – soweit erforderlich – auf Grundlage Ihrer Einwilligung (Art. 6 Abs. 1 lit. a DSGVO).',
+    },
+    {
+      title: 'Rechtsgrundlagen',
+      content:
+        'Die Rechtsgrundlagen der Verarbeitung ergeben sich aus Art. 6 Abs. 1 DSGVO in Verbindung mit den ergänzenden Vorschriften des BDSG. Eine erteilte Einwilligung können Sie jederzeit mit Wirkung für die Zukunft widerrufen, ohne dass die Rechtmäßigkeit der aufgrund der Einwilligung bis zum Widerruf erfolgten Verarbeitung berührt wird.',
+    },
+    {
+      title: 'Datenkategorien',
+      content: `Bei Selbstständigen und Auftragnehmern verarbeiten wir insbesondere Ihre ${TAX_STEUERNUMMER_LABEL}, die ${TAX_USTIDNR_LABEL}, die ${TAX_HANDELSREGISTER_LABEL}, die ${TAX_SOZIALVERSICHERUNGSNUMMER_LABEL} sowie Ihren Status als ${TAX_KLEINUNTERNEHMER_LABEL}. Darüber hinaus verarbeiten wir Stammdaten (Name, Anschrift, E-Mail-Adresse), Bankverbindungsdaten, Rechnungsdaten und technische Nutzungsdaten.`,
+    },
+    {
+      title: 'Übermittlung in Drittländer',
+      content:
+        'Eine Übermittlung personenbezogener Daten in Drittländer außerhalb des Europäischen Wirtschaftsraums findet nur statt, soweit dies zur Vertragserfüllung erforderlich ist. In diesen Fällen stützen wir die Übermittlung auf einen Angemessenheitsbeschluss der Europäischen Kommission oder auf Standardvertragsklauseln gemäß Art. 46 Abs. 2 lit. c DSGVO.',
+    },
+    {
+      title: 'Empfänger',
+      content:
+        'Empfänger Ihrer Daten sind ausschließlich sorgfältig ausgewählte Auftragsverarbeiter gemäß Art. 28 DSGVO (Hosting: Vercel; Datenbank: Neon; Speicher: Cloudflare R2; Abrechnung: Stripe; Transaktions-E-Mail: Resend; Fehlerüberwachung: Sentry; Protokollierung: Axiom). Mit jedem Auftragsverarbeiter ist ein schriftlicher Vertrag zur Auftragsverarbeitung geschlossen.',
+    },
+    {
+      title: 'Aufbewahrungsfristen',
+      content:
+        'Wir speichern Ihre personenbezogenen Daten für die Dauer der Geschäftsbeziehung zuzüglich der gesetzlichen Aufbewahrungsfristen. Rechnungs- und Steuerunterlagen werden gemäß § 147 AO und § 257 HGB zehn Jahre aufbewahrt. Nicht gesetzlich aufbewahrungspflichtige Daten werden nach Beendigung der Geschäftsbeziehung gelöscht.',
+    },
+    {
+      title: GDPR_RIGHTS_HEADING,
+      content:
+        'Sie haben nach Art. 15–22 DSGVO das Recht auf Auskunft über die Sie betreffenden personenbezogenen Daten, auf Berichtigung unrichtiger Daten, auf Löschung („Recht auf Vergessenwerden"), auf Einschränkung der Verarbeitung, auf Datenübertragbarkeit sowie auf Widerspruch gegen die Verarbeitung. Ein erteilter Widerspruch gegen eine auf Art. 6 Abs. 1 lit. f DSGVO gestützte Verarbeitung wird umgehend umgesetzt.',
+    },
+    {
+      title: GDPR_COMPLAINT_HEADING,
+      content:
+        'Unbeschadet eines anderweitigen verwaltungsrechtlichen oder gerichtlichen Rechtsbehelfs steht Ihnen nach Art. 77 DSGVO das Recht zu, sich bei einer Aufsichtsbehörde – insbesondere beim Bundesbeauftragten für den Datenschutz und die Informationsfreiheit (BfDI) oder der für Ihren gewöhnlichen Aufenthaltsort zuständigen Landesdatenschutzbehörde – zu beschweren.',
+    },
+    {
+      title: 'Kontakt',
+      content:
+        'Für datenschutzrechtliche Anfragen, zur Ausübung Ihrer Rechte oder zur Kontaktaufnahme mit unserem Datenschutzbeauftragten wenden Sie sich bitte an privacy@contractorops.com. Wir bearbeiten Ihre Anfrage unverzüglich, spätestens innerhalb eines Monats nach Eingang.',
+    },
+  ],
+} as const;

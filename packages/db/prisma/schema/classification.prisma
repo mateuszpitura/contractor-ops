@@ -1,0 +1,340 @@
+// ClassificationAssessment — per-engagement append-only (D-04, CLASS-11)
+// See .planning/phases/58-classification-engine-rule-sets/58-RESEARCH.md §Code Examples.
+//
+// NOTE (D-04): Single-draft-per-engagement is enforced at the application
+// layer (Plan 03 createDraft handler), NOT via @@unique([contractorAssignmentId, status]).
+// Prisma 7 lacks partial-unique filters, so a composite unique would
+// incorrectly block multiple `completed` rows — the schema must remain
+// append-only for the history of completed assessments per D-04.
+
+enum ClassificationAssessmentStatus {
+  draft
+  completed
+}
+
+model ClassificationAssessment {
+  id                       String                         @id @default(cuid())
+  organizationId           String
+  contractorAssignmentId   String
+  countryCode              String                         @db.Char(2)
+  ruleSetVersion           String
+  status                   ClassificationAssessmentStatus @default(draft)
+  questionsSnapshot        Json? // frozen on submit (D-08)
+  answers                  Json                           @default("{}")
+  outcome                  Json? // populated on submit
+  completedAt              DateTime?
+  disclaimerAcknowledgedAt DateTime?
+  immutableAfter           DateTime?
+  createdAt                DateTime                       @default(now())
+  updatedAt                DateTime                       @updatedAt
+
+  organization            Organization                    @relation(fields: [organizationId], references: [id])
+  contractorAssignment    ContractorAssignment            @relation(fields: [contractorAssignmentId], references: [id])
+  classificationDocuments ClassificationDocument[]
+  reassessmentTriggers    ReassessmentTrigger[]           @relation("ReassessmentTriggerPriorAssessment")
+  escalationEvents        ClassificationEscalationEvent[]
+  sdsApproval             SdsApproval?
+
+  @@index([organizationId])
+  @@index([organizationId, contractorAssignmentId, status], map: "CA_org_assign_status_idx")
+  @@index([organizationId, contractorAssignmentId, completedAt(sort: Desc)], map: "CA_org_assign_completedAt_idx")
+}
+
+// ---------------------------------------------------------------------------
+// Phase 59 · CLASS-03 — persisted immutable classification documents (SDS, DRV bundle)
+// See .planning/phases/59-classification-documents-chain-tracking/59-CONTEXT.md D-06.
+// ---------------------------------------------------------------------------
+
+enum ClassificationDocumentKind {
+  SDS
+  DRV_DEFENSE_BUNDLE
+  DRV_DECISION_LETTER // Phase 64 D-25 — uploaded proof of DRV Statusfeststellungsverfahren outcome
+}
+
+model ClassificationDocument {
+  id                         String                     @id @default(cuid())
+  organizationId             String
+  classificationAssessmentId String
+  kind                       ClassificationDocumentKind
+  pdfKey                     String
+  sha256Hash                 String                     @db.Char(64)
+  byteSize                   Int
+  rendererVersion            String
+  ruleSetVersion             String
+  generatedAt                DateTime                   @default(now())
+  generatedByUserId          String
+  createdAt                  DateTime                   @default(now())
+  updatedAt                  DateTime                   @updatedAt
+
+  organization             Organization             @relation(fields: [organizationId], references: [id])
+  classificationAssessment ClassificationAssessment @relation(fields: [classificationAssessmentId], references: [id])
+  generatedBy              User                     @relation(fields: [generatedByUserId], references: [id])
+  reassessmentTriggers     ReassessmentTrigger[]
+  // Append-only (D-06) — enforced by APPEND_ONLY_MODELS guard in packages/db/src/tenant.ts.
+
+  @@index([organizationId, classificationAssessmentId, kind])
+  @@index([organizationId, generatedAt(sort: Desc)])
+}
+
+// ---------------------------------------------------------------------------
+// Phase 59 · CLASS-04 — IR35 chain participants + per-link SDS delivery tracking
+// See .planning/phases/59-classification-documents-chain-tracking/59-CONTEXT.md D-10..D-13.
+// ---------------------------------------------------------------------------
+
+enum Ir35ChainRole {
+  CLIENT
+  AGENCY
+  PSC
+  WORKER
+}
+
+model Ir35ChainParticipant {
+  id                     String        @id @default(cuid())
+  organizationId         String
+  contractorAssignmentId String
+  role                   Ir35ChainRole
+  orderIndex             Int
+  displayName            String
+  contactEmail           String?
+  linkedOrganizationId   String?
+  linkedContractorId     String?
+  sdsDeliveredAt         DateTime?
+  sdsDeliveredNote       String?       @db.VarChar(500)
+  sdsAcknowledgedAt      DateTime?
+  sdsAcknowledgedNote    String?       @db.VarChar(500)
+  createdAt              DateTime      @default(now())
+  updatedAt              DateTime      @updatedAt
+
+  organization         Organization         @relation(fields: [organizationId], references: [id])
+  contractorAssignment ContractorAssignment @relation(fields: [contractorAssignmentId], references: [id])
+  linkedOrganization   Organization?        @relation("Ir35ChainParticipantLinkedOrg", fields: [linkedOrganizationId], references: [id])
+  linkedContractor     Contractor?          @relation(fields: [linkedContractorId], references: [id])
+
+  @@index([organizationId, contractorAssignmentId, orderIndex])
+  @@index([organizationId, linkedOrganizationId])
+}
+
+// ---------------------------------------------------------------------------
+// Phase 59 · CLASS-06 — DRV defense bundle: contractor's "other clients" attestation
+// See .planning/phases/59-classification-documents-chain-tracking/59-CONTEXT.md D-17.
+// ---------------------------------------------------------------------------
+
+model Ir35OtherClientAttestation {
+  id                     String    @id @default(cuid())
+  organizationId         String
+  contractorAssignmentId String    @unique
+  statementText          String    @db.VarChar(4000)
+  signedName             String
+  signedAt               DateTime?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  organization         Organization         @relation(fields: [organizationId], references: [id])
+  contractorAssignment ContractorAssignment @relation(fields: [contractorAssignmentId], references: [id])
+
+  @@index([organizationId, contractorAssignmentId])
+}
+
+// ---------------------------------------------------------------------------
+// Phase 60 · CLASS-07 — economic-dependency alert state machine (§2 SGB VI)
+// See .planning/phases/60-classification-polish/60-01-PLAN.md.
+//
+// Per-assignment state row written exclusively by the daily cron
+// (packages/api/src/services/economic-dependency-scan.ts). The cron computes
+// the contractor's platform billing share over a rolling 12 months and
+// transitions through safe/warning/critical bands per §2 SGB VI thresholds
+// (70% warning, 83.33% critical). Up-crossings fire a notification; same-band
+// stays re-fire only when 30+ days have elapsed (lastReminderAt).
+// ---------------------------------------------------------------------------
+
+enum EconomicDependencyBand {
+  safe
+  warning
+  critical
+}
+
+model EconomicDependencyAlertState {
+  id                     String                 @id @default(cuid())
+  organizationId         String
+  contractorAssignmentId String                 @unique
+  currentBand            EconomicDependencyBand @default(safe)
+  lastBillingShare       Decimal                @db.Decimal(5, 4)
+  lastScannedAt          DateTime
+  lastCrossedAt          DateTime?
+  lastReminderAt         DateTime?
+  createdAt              DateTime               @default(now())
+  updatedAt              DateTime               @updatedAt
+
+  organization         Organization         @relation(fields: [organizationId], references: [id])
+  contractorAssignment ContractorAssignment @relation(fields: [contractorAssignmentId], references: [id])
+
+  @@index([organizationId], map: "EDAS_org_idx")
+  @@index([organizationId, currentBand], map: "EDAS_org_band_idx")
+  @@index([organizationId, lastScannedAt], map: "EDAS_org_scanned_idx")
+}
+
+// ---------------------------------------------------------------------------
+// Phase 60 · CLASS-08 — reassessment triggers (material-change detector).
+// See .planning/phases/60-classification-polish/60-02-PLAN.md.
+//
+// Daily cron (/api/cron/classification-reassessment-triggers) scans the
+// AuditLog for material changes on ContractorAssignment + Contract rows
+// attached to GB engagements that have a completed IR35 assessment. Each
+// material change appends a TriggerReason entry to an OPEN/ACKNOWLEDGED
+// trigger (or creates a new OPEN row). classification.submit flips matching
+// OPEN/ACKNOWLEDGED triggers to RESOLVED.
+// ---------------------------------------------------------------------------
+
+enum ReassessmentTriggerStatus {
+  OPEN
+  ACKNOWLEDGED
+  RESOLVED
+  DISMISSED
+}
+
+model ReassessmentTrigger {
+  id                     String                    @id @default(cuid())
+  organizationId         String
+  contractorAssignmentId String
+  priorAssessmentId      String
+  priorSdsDocumentId     String?
+  triggeredAt            DateTime                  @default(now())
+  triggerReasons         Json
+  status                 ReassessmentTriggerStatus @default(OPEN)
+  acknowledgedByUserId   String?
+  acknowledgedAt         DateTime?
+  resolvedAt             DateTime?
+  dismissedByUserId      String?
+  dismissedAt            DateTime?
+  dismissedReason        String?                   @db.VarChar(1000)
+  createdAt              DateTime                  @default(now())
+  updatedAt              DateTime                  @updatedAt
+
+  organization         Organization             @relation(fields: [organizationId], references: [id])
+  contractorAssignment ContractorAssignment     @relation(fields: [contractorAssignmentId], references: [id])
+  priorAssessment      ClassificationAssessment @relation("ReassessmentTriggerPriorAssessment", fields: [priorAssessmentId], references: [id])
+  priorSdsDocument     ClassificationDocument?  @relation(fields: [priorSdsDocumentId], references: [id])
+  acknowledgedByUser   User?                    @relation("ReassessmentTriggerAck", fields: [acknowledgedByUserId], references: [id])
+  dismissedByUser      User?                    @relation("ReassessmentTriggerDismiss", fields: [dismissedByUserId], references: [id])
+
+  @@index([organizationId, contractorAssignmentId, status], map: "RT_org_assign_status_idx")
+  @@index([organizationId, triggeredAt], map: "RT_org_triggeredAt_idx")
+}
+
+// ---------------------------------------------------------------------------
+// CronScanState — singleton per scan name, tracks last-run cursor for
+// incremental audit-based scans. Seeded at deploy time so historical audits
+// are NOT replayed.
+// ---------------------------------------------------------------------------
+
+model CronScanState {
+  name                String   @id @db.VarChar(100)
+  lastScanCompletedAt DateTime
+  updatedAt           DateTime @updatedAt
+}
+
+// ---------------------------------------------------------------------------
+// Phase 60 · CLASS-09 — Statusfeststellungsverfahren (DRV clearance procedure).
+// See .planning/phases/60-classification-polish/60-03-PLAN.md.
+//
+// Tracks a contractor's DRV § 7a SGB IV clearance procedure application per
+// engagement. The daily /api/cron/reminders cron scans validTo boundaries and
+// fires 90d / 30d / 7d lead-time notifications (one-shot dedup via the
+// Notification table) for rows with outcome in SELBSTANDIG/ABHANGIG.
+// ---------------------------------------------------------------------------
+
+enum StatusfeststellungsverfahrenOutcome {
+  PENDING
+  SELBSTANDIG
+  ABHANGIG
+  WITHDRAWN
+}
+
+model Statusfeststellungsverfahren {
+  id                     String                              @id @default(cuid())
+  organizationId         String
+  contractorAssignmentId String
+  filedAt                DateTime                            @db.Date
+  drvReference           String                              @db.VarChar(100)
+  outcome                StatusfeststellungsverfahrenOutcome @default(PENDING)
+  validFrom              DateTime?                           @db.Date
+  validTo                DateTime?                           @db.Date
+  notes                  String?                             @db.Text
+  createdAt              DateTime                            @default(now())
+  updatedAt              DateTime                            @updatedAt
+
+  organization         Organization         @relation(fields: [organizationId], references: [id])
+  contractorAssignment ContractorAssignment @relation(fields: [contractorAssignmentId], references: [id])
+
+  @@index([organizationId, contractorAssignmentId], map: "SFV_org_assign_idx")
+  @@index([organizationId, validTo], map: "SFV_org_validTo_idx")
+}
+
+// ---------------------------------------------------------------------------
+// Phase 64 · LEGAL-03/04 — escalation event audit trail (D-18)
+// Append-only: logs both amber-verdict auto-fires and user Get Expert Help clicks.
+// Indexed for compliance reporting by org + date and org + assessment.
+// ---------------------------------------------------------------------------
+
+enum EscalationVerdict {
+  IR35_OUTSIDE
+  IR35_INSIDE
+  IR35_INDETERMINATE
+  SCHEIN_SELFEMPLOYED
+  SCHEIN_EMPLOYED
+  SCHEIN_UNCLEAR
+}
+
+enum EscalationTriggerKind {
+  AMBER_VERDICT_AUTO // Fired automatically on amber/indeterminate verdict render
+  GET_EXPERT_HELP_CLICK // Fired on user clicking "Get Expert Help" CTA
+  MANUAL_FLAG // Operator-flagged escalation (reserved for future use)
+}
+
+model ClassificationEscalationEvent {
+  id             String                @id @default(cuid())
+  organizationId String
+  userId         String
+  contractorId   String? // Nullable: amber auto-log may precede contractor context
+  assessmentId   String
+  verdict        EscalationVerdict
+  triggerKind    EscalationTriggerKind
+  referralTarget String // URL path, external URL, or 'INTERNAL_PAGE' sentinel
+  ipAddress      String?
+  userAgent      String?               @db.Text
+  createdAt      DateTime              @default(now())
+
+  organization Organization             @relation(fields: [organizationId], references: [id])
+  user         User                     @relation("UserEscalationEvents", fields: [userId], references: [id])
+  assessment   ClassificationAssessment @relation(fields: [assessmentId], references: [id])
+
+  // Append-only — no updatedAt. Enforced by APPEND_ONLY_MODELS guard.
+
+  @@index([organizationId, createdAt], map: "CEE_org_createdAt_idx")
+  @@index([organizationId, assessmentId], map: "CEE_org_assessment_idx")
+}
+
+// ---------------------------------------------------------------------------
+// Phase 64 · LEGAL-05 — in-app SDS approval gate (D-21)
+// One approval per assessment (@unique on assessmentId).
+// approvalStatementSnapshot frozen at approval time (avoids retroactive drift
+// if the locked phrase constant is later updated).
+// ---------------------------------------------------------------------------
+
+model SdsApproval {
+  id                        String   @id @default(cuid())
+  organizationId            String
+  assessmentId              String   @unique // One approval per assessment
+  approvedByUserId          String
+  approvedAt                DateTime
+  clientName                String // Snapshot of end-hirer legal name at approval time
+  approvalStatementSnapshot String   @db.Text // Frozen copy of SDS_APPROVAL_STATEMENT_EN at approval time
+  createdAt                 DateTime @default(now())
+
+  organization Organization             @relation(fields: [organizationId], references: [id])
+  assessment   ClassificationAssessment @relation(fields: [assessmentId], references: [id])
+  approvedBy   User                     @relation("UserSdsApprovals", fields: [approvedByUserId], references: [id])
+
+  @@index([organizationId], map: "SDS_org_idx")
+  @@index([organizationId, assessmentId], map: "SDS_org_assessment_idx")
+}

@@ -1,34 +1,28 @@
-"use client";
+'use client';
 
-import { Suspense } from "react";
-import { useParams } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
-
-import { trpc } from "@/trpc/init";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { useQuery } from '@tanstack/react-query';
+import { useParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import { Suspense, useCallback } from 'react';
+import { ProfileHeader } from '@/components/contractors/contractor-profile/profile-header';
+import { ProfileTabs } from '@/components/contractors/contractor-profile/profile-tabs';
 import {
-  Breadcrumb,
-  BreadcrumbList,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbSeparator,
-  BreadcrumbPage,
-} from "@/components/ui/breadcrumb";
-import { Link } from "@/i18n/navigation";
-
-import { ProfileHeader } from "@/components/contractors/contractor-profile/profile-header";
-import { ProfileTabs } from "@/components/contractors/contractor-profile/profile-tabs";
-import { TabOverview } from "@/components/contractors/contractor-profile/tab-overview";
-import { TabCompliance } from "@/components/contractors/contractor-profile/tab-compliance";
-import { TabContracts } from "@/components/contractors/contractor-profile/tab-contracts";
-import { TabDocuments } from "@/components/contractors/contractor-profile/tab-documents";
-import { WorkflowsTab } from "@/components/contractors/contractor-profile/workflows-tab";
-import { InvoicesTab } from "@/components/contractors/contractor-profile/tabs/invoices-tab";
-import { TabPayments } from "@/components/contractors/contractor-profile/tab-payments";
-import { RightRail } from "@/components/contractors/contractor-profile/right-rail";
-import { ActivityTimeline } from "@/components/contractors/contractor-profile/right-rail";
+  ActivityTimeline,
+  RightRail,
+} from '@/components/contractors/contractor-profile/right-rail';
+import { TabCompliance } from '@/components/contractors/contractor-profile/tab-compliance';
+import { TabContracts } from '@/components/contractors/contractor-profile/tab-contracts';
+import { TabDocuments } from '@/components/contractors/contractor-profile/tab-documents';
+import { TabEquipment } from '@/components/contractors/contractor-profile/tab-equipment';
+import { TabOverview } from '@/components/contractors/contractor-profile/tab-overview';
+import { TabPayments } from '@/components/contractors/contractor-profile/tab-payments';
+import { InvoicesTab } from '@/components/contractors/contractor-profile/tabs/invoices-tab';
+import { WorkflowsTab } from '@/components/contractors/contractor-profile/workflows-tab';
+import { useBreadcrumbOverride } from '@/components/layout/breadcrumb-context';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Link } from '@/i18n/navigation';
+import { trpc } from '@/trpc/init';
 
 function ProfileHeaderSkeleton() {
   return (
@@ -59,7 +53,8 @@ function TabContentSkeleton() {
   return (
     <div className="grid gap-4 lg:grid-cols-2">
       {Array.from({ length: 4 }).map((_, i) => (
-        <div key={i} className="rounded-xl border bg-card p-4">
+        // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
+        <div key={`skel-${i}`} className="rounded-xl border bg-card p-4">
           <Skeleton className="mb-3 h-5 w-32" />
           <div className="space-y-2">
             <Skeleton className="h-4 w-full" />
@@ -74,28 +69,29 @@ function TabContentSkeleton() {
 
 export default function ContractorProfilePage() {
   const params = useParams<{ id: string }>();
-  const t = useTranslations("ContractorProfile");
+  const t = useTranslations('ContractorProfile');
 
-  const contractorQuery = useQuery(
-    trpc.contractor.getById.queryOptions({ id: params.id })
-  );
+  const contractorQuery = useQuery(trpc.contractor.getById.queryOptions({ id: params.id }));
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const contractor = contractorQuery.data as any;
+  const contractor = contractorQuery.data;
+
+  // Set breadcrumb label for this detail page
+  useBreadcrumbOverride(params.id, contractor?.displayName);
+
+  const handleRetry = useCallback(() => contractorQuery.refetch(), [contractorQuery]);
 
   // Error state
   if (contractorQuery.isError) {
     const isNotFound =
-      contractorQuery.error?.message?.includes("not found") ||
-      (contractorQuery.error as { data?: { code?: string } })?.data?.code ===
-        "NOT_FOUND";
+      contractorQuery.error?.message?.includes('not found') ||
+      (contractorQuery.error as { data?: { code?: string } })?.data?.code === 'NOT_FOUND';
 
     if (isNotFound) {
       return (
         <div className="flex min-h-[400px] flex-col items-center justify-center gap-3 text-center">
-          <h2 className="text-lg font-medium">{t("error.notFound")}</h2>
+          <h2 className="text-lg font-medium">{t('error.notFound')}</h2>
           <Button variant="outline" render={<Link href="/contractors" />}>
-            {t("error.backToList")}
+            {t('error.backToList')}
           </Button>
         </div>
       );
@@ -103,12 +99,9 @@ export default function ContractorProfilePage() {
 
     return (
       <div className="flex min-h-[400px] flex-col items-center justify-center gap-3 text-center">
-        <h2 className="text-lg font-medium">{t("error.loadFailed")}</h2>
-        <Button
-          variant="outline"
-          onClick={() => contractorQuery.refetch()}
-        >
-          {t("error.retry")}
+        <h2 className="text-lg font-medium">{t('error.loadFailed')}</h2>
+        <Button variant="outline" onClick={handleRetry}>
+          {t('error.retry')}
         </Button>
       </div>
     );
@@ -116,23 +109,6 @@ export default function ContractorProfilePage() {
 
   return (
     <div className="space-y-6">
-      {/* Breadcrumb */}
-      <Breadcrumb>
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink render={(props) => <Link {...props} href="/contractors" />}>
-              {t("breadcrumb")}
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage>
-              {contractor?.displayName ?? <Skeleton className="inline-block h-4 w-32" />}
-            </BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
-
       {/* Header */}
       {contractorQuery.isLoading || !contractor ? (
         <ProfileHeaderSkeleton />
@@ -148,7 +124,8 @@ export default function ContractorProfilePage() {
               {/* Tab bar skeleton */}
               <div className="mb-4 flex gap-2 border-b pb-2">
                 {Array.from({ length: 8 }).map((_, i) => (
-                  <Skeleton key={i} className="h-7 w-20" />
+                  // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
+                  <Skeleton key={`skel-${i}`} className="h-7 w-20" />
                 ))}
               </div>
               <TabContentSkeleton />
@@ -163,6 +140,7 @@ export default function ContractorProfilePage() {
                 workflowsContent={<WorkflowsTab contractorId={params.id} />}
                 invoicesContent={<InvoicesTab contractorId={params.id} />}
                 paymentsContent={<TabPayments contractorId={params.id} />}
+                equipmentContent={<TabEquipment contractorId={params.id} />}
                 activityContent={
                   <ActivityTimeline
                     createdAt={String(contractor.createdAt)}

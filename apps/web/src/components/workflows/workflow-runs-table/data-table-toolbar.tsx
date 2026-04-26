@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { Loader2, Search } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { Loader2, Search } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -31,7 +31,7 @@ export function DataTableToolbar({
   isSearching,
   onStartWorkflow,
 }: DataTableToolbarProps) {
-  const t = useTranslations("Workflows");
+  const t = useTranslations('Workflows');
 
   // Debounced search
   const [localSearch, setLocalSearch] = useState(search);
@@ -46,7 +46,7 @@ export function DataTableToolbar({
       setLocalSearch(value);
       clearTimeout(debounceRef.current);
       debounceRef.current = setTimeout(() => {
-        onSearchChange(value.length >= 2 ? value : "");
+        onSearchChange(value.length >= 2 ? value : '');
       }, 300);
     },
     [onSearchChange],
@@ -56,15 +56,16 @@ export function DataTableToolbar({
     <div className="flex items-center gap-2">
       {/* Search */}
       <div className="relative flex-1 max-w-sm">
-        <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Search className="absolute start-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
-          placeholder={t("searchPlaceholder")}
+          placeholder={t('searchPlaceholder')}
           value={localSearch}
-          onChange={(e) => handleSearchInput(e.target.value)}
-          className="h-9 pl-9 pr-8"
+          // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
+          onChange={e => handleSearchInput(e.target.value)}
+          className="h-9 ps-9 pe-8"
         />
-        {isSearching && (
-          <Loader2 className="absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground" />
+        {!!isSearching && (
+          <Loader2 className="absolute end-2.5 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground" />
         )}
       </div>
 
@@ -72,8 +73,8 @@ export function DataTableToolbar({
       <div className="flex-1" />
 
       {/* Start workflow CTA */}
-      <Button size="sm" className="h-9" onClick={onStartWorkflow}>
-        {t("startWorkflow")}
+      <Button size="lg" onClick={onStartWorkflow}>
+        {t('startWorkflow')}
       </Button>
     </div>
   );

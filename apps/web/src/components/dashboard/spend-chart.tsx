@@ -1,22 +1,22 @@
-"use client";
+'use client';
 
-import { useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
-import { parseAsString, useQueryState } from "nuqs";
+import { useQuery } from '@tanstack/react-query';
+import { useLocale, useTranslations } from 'next-intl';
+import { parseAsString, useQueryState } from 'nuqs';
+import { useId, useMemo } from 'react';
 import {
-  AreaChart,
   Area,
+  AreaChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
-
-import { trpc } from "@/trpc/init";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+} from 'recharts';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useRtlChartConfig } from '@/hooks/use-rtl-chart-config';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -32,20 +32,13 @@ interface ChartDataPoint {
 // Helpers
 // ---------------------------------------------------------------------------
 
-const currencyFormatter = new Intl.NumberFormat("pl-PL", {
-  style: "currency",
-  currency: "PLN",
-  minimumFractionDigits: 0,
-  maximumFractionDigits: 0,
-});
-
 function formatMonthLabel(isoString: string): string {
   const date = new Date(isoString);
-  return date.toLocaleDateString("en-US", { month: "short", year: "numeric" });
+  return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
 }
 
 // ---------------------------------------------------------------------------
-// Toggle buttons (inline -- no toggle-group UI primitive needed)
+// Toggle buttons
 // ---------------------------------------------------------------------------
 
 interface RangeToggleProps {
@@ -55,25 +48,25 @@ interface RangeToggleProps {
 }
 
 const RANGES = [
-  { value: "6", labelKey: "spend.range6m" },
-  { value: "12", labelKey: "spend.range12m" },
-  { value: "ytd", labelKey: "spend.rangeYtd" },
+  { value: '6', labelKey: 'spend.range6m' },
+  { value: '12', labelKey: 'spend.range12m' },
+  { value: 'ytd', labelKey: 'spend.rangeYtd' },
 ] as const;
 
 function RangeToggle({ value, onChange, t }: RangeToggleProps) {
   return (
-    <div className="flex items-center gap-1 rounded-lg bg-muted p-0.5">
-      {RANGES.map((range) => (
+    <div className="flex items-center gap-0.5 rounded-lg bg-surface-3 p-0.5">
+      {RANGES.map(range => (
         <button
           key={range.value}
           type="button"
+          // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
           onClick={() => onChange(range.value)}
-          className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
+          className={`rounded-md px-2.5 py-1 text-xs font-medium transition-all duration-200 ${
             value === range.value
-              ? "bg-background text-foreground shadow-sm"
-              : "text-muted-foreground hover:text-foreground"
-          }`}
-        >
+              ? 'bg-surface-1 text-foreground shadow-sm ring-1 ring-foreground/[0.06]'
+              : 'text-muted-foreground hover:text-foreground hover:bg-surface-2'
+          }`}>
           {t(range.labelKey as Parameters<typeof t>[0])}
         </button>
       ))}
@@ -82,27 +75,37 @@ function RangeToggle({ value, onChange, t }: RangeToggleProps) {
 }
 
 // ---------------------------------------------------------------------------
-// Custom tooltip
+// Custom tooltip — glass morphism with accent line
 // ---------------------------------------------------------------------------
 
 function ChartTooltip({
   active,
   payload,
   label,
+  formatter,
 }: {
   active?: boolean;
   payload?: Array<{ name: string; value: number; color: string }>;
   label?: string;
+  formatter: Intl.NumberFormat;
 }) {
-  if (!active || !payload?.length) return null;
+  if (!(active && payload?.length)) return null;
 
   return (
-    <div className="rounded-lg border bg-background p-3 shadow-md">
-      <p className="mb-1 text-xs font-medium text-muted-foreground">{label}</p>
-      {payload.map((entry) => (
-        <p key={entry.name} className="text-sm font-semibold" style={{ color: entry.color }}>
-          {entry.name}: {currencyFormatter.format(entry.value / 100)}
-        </p>
+    <div className="glass-medium relative overflow-hidden rounded-xl border border-border/40 p-3 shadow-lg">
+      {/* Top accent line */}
+      <div className="accent-line absolute top-0 end-0 start-0 rounded-t-xl" />
+      <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground/60">
+        {label}
+      </p>
+      {payload.map(entry => (
+        <div key={entry.name} className="flex items-baseline gap-2">
+          <span className="inline-block h-2 w-2 shrink-0 rounded-full" />
+          <span className="text-xs text-muted-foreground">{entry.name}</span>
+          <span className="ms-auto font-display text-sm font-bold tabular-nums">
+            {formatter.format(entry.value / 100)}
+          </span>
+        </div>
       ))}
     </div>
   );
@@ -115,17 +118,36 @@ function ChartTooltip({
 /**
  * Recharts AreaChart showing monthly spend with 6m/12m/YTD toggle.
  * Supports multi-currency stacking (PLN + EUR).
+ * Enhanced with gradient fills and glow-line strokes.
  */
 export function SpendChart() {
-  const t = useTranslations("Dashboard");
-  const [spendRange, setSpendRange] = useQueryState(
-    "spend",
-    parseAsString.withDefault("6"),
+  const t = useTranslations('Dashboard');
+  const locale = useLocale();
+  const { xAxisProps, yAxisProps, chartStyle } = useRtlChartConfig();
+  const reactId = useId();
+  const gradPlnId = `${reactId}-gradPLN`;
+  const gradEurId = `${reactId}-gradEUR`;
+  const glowPlnId = `${reactId}-glowPLN`;
+
+  const currencyFormatter = useMemo(
+    () =>
+      new Intl.NumberFormat(
+        locale === 'ar' ? 'ar-SA-u-nu-latn' : locale === 'pl' ? 'pl-PL' : 'en-US',
+        {
+          style: 'currency',
+          currency: locale === 'ar' ? 'AED' : 'PLN',
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0,
+        },
+      ),
+    [locale],
   );
+
+  const [spendRange, setSpendRange] = useQueryState('spend', parseAsString.withDefault('6'));
 
   const { data, isLoading } = useQuery(
     trpc.dashboard.spendTrend.queryOptions({
-      months: spendRange as "6" | "12" | "ytd",
+      months: spendRange as '6' | '12' | 'ytd',
     }),
   );
 
@@ -138,10 +160,10 @@ export function SpendChart() {
     for (const row of data) {
       const label = formatMonthLabel(row.month);
       const existing = monthMap.get(label) ?? { month: label, PLN: 0, EUR: 0 };
-      if (row.currency === "PLN") {
-        existing.PLN = row.totalGrosze;
-      } else if (row.currency === "EUR") {
-        existing.EUR = row.totalGrosze;
+      if (row.currency === 'PLN') {
+        existing.PLN = row.totalMinor;
+      } else if (row.currency === 'EUR') {
+        existing.EUR = row.totalMinor;
       }
       monthMap.set(label, existing);
     }
@@ -149,56 +171,104 @@ export function SpendChart() {
     return Array.from(monthMap.values());
   }, [data]);
 
-  const hasEur = chartData.some((d) => d.EUR > 0);
+  const hasEur = chartData.some(d => d.EUR > 0);
 
   return (
-    <Card>
+    <Card className="iridescent neon-card">
       <CardHeader className="flex-row items-center justify-between">
-        <CardTitle className="text-[20px] font-semibold">
-          {t("spend.title")}
-        </CardTitle>
+        <CardTitle className="font-display text-lg font-semibold">{t('spend.title')}</CardTitle>
         <RangeToggle value={spendRange} onChange={setSpendRange} t={t} />
       </CardHeader>
       <CardContent>
         {isLoading ? (
           <Skeleton className="h-[280px] w-full rounded-lg" />
         ) : chartData.length === 0 ? (
-          <div className="flex h-[280px] items-center justify-center text-sm text-muted-foreground">
-            {t("spend.empty")}
+          <div className="corner-marks flex h-[280px] items-center justify-center text-sm text-muted-foreground">
+            {t('spend.empty')}
           </div>
         ) : (
           <ResponsiveContainer width="100%" height={280}>
-            <AreaChart data={chartData}>
+            <AreaChart data={chartData} style={chartStyle}>
+              <defs>
+                <linearGradient id={gradPlnId} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="oklch(0.65 0.145 178)" stopOpacity={0.35} />
+                  <stop offset="50%" stopColor="oklch(0.55 0.15 178)" stopOpacity={0.12} />
+                  <stop offset="100%" stopColor="oklch(0.55 0.15 178)" stopOpacity={0.02} />
+                </linearGradient>
+                <linearGradient id={gradEurId} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="oklch(0.72 0.14 65)" stopOpacity={0.3} />
+                  <stop offset="50%" stopColor="oklch(0.72 0.14 65)" stopOpacity={0.1} />
+                  <stop offset="100%" stopColor="oklch(0.72 0.14 65)" stopOpacity={0.02} />
+                </linearGradient>
+                {/* Glow filter for stroke lines */}
+                <filter id={glowPlnId} x="-20%" y="-20%" width="140%" height="140%">
+                  <feGaussianBlur stdDeviation="3" result="blur" />
+                  <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                </filter>
+              </defs>
               <CartesianGrid
                 strokeDasharray="3 3"
-                stroke="hsl(var(--muted-foreground) / 0.15)"
+                stroke="color-mix(in oklch, var(--color-muted-foreground) 10%, transparent)"
+                vertical={false}
               />
-              <XAxis dataKey="month" fontSize={12} tickLine={false} axisLine={false} />
-              <YAxis
-                fontSize={12}
+              <XAxis
+                dataKey="month"
+                fontSize={11}
                 tickLine={false}
                 axisLine={false}
-                tickFormatter={(val: number) =>
-                  currencyFormatter.format(val / 100)
-                }
+                tick={{ fill: 'var(--color-muted-foreground)' }}
+                {...xAxisProps}
               />
-              <Tooltip content={<ChartTooltip />} />
+              <YAxis
+                fontSize={11}
+                tickLine={false}
+                axisLine={false}
+                tick={{ fill: 'var(--color-muted-foreground)' }}
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+                tickFormatter={(val: number) => currencyFormatter.format(val / 100)}
+                width={70}
+                {...yAxisProps}
+              />
+              <Tooltip
+                content={<ChartTooltip formatter={currencyFormatter} />}
+                cursor={{
+                  stroke: 'var(--color-primary)',
+                  strokeWidth: 1,
+                  strokeDasharray: '4 4',
+                  strokeOpacity: 0.3,
+                }}
+              />
               <Area
                 type="monotone"
                 dataKey="PLN"
                 stackId="1"
-                stroke="hsl(var(--primary))"
-                fill="hsl(var(--primary) / 0.2)"
-                strokeWidth={2}
+                stroke="var(--color-viz-1)"
+                fill={`url(#${gradPlnId})`}
+                strokeWidth={2.5}
+                filter={`url(#${glowPlnId})`}
+                dot={false}
+                activeDot={{
+                  r: 5,
+                  fill: 'var(--color-viz-1)',
+                  stroke: 'var(--color-surface-1)',
+                  strokeWidth: 2,
+                }}
               />
               {hasEur && (
                 <Area
                   type="monotone"
                   dataKey="EUR"
                   stackId="1"
-                  stroke="hsl(220 70% 55%)"
-                  fill="hsl(220 70% 55% / 0.2)"
+                  stroke="var(--color-viz-2)"
+                  fill={`url(#${gradEurId})`}
                   strokeWidth={2}
+                  dot={false}
+                  activeDot={{
+                    r: 4,
+                    fill: 'var(--color-viz-2)',
+                    stroke: 'var(--color-surface-1)',
+                    strokeWidth: 2,
+                  }}
                 />
               )}
             </AreaChart>

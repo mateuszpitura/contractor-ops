@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { Download, Loader2 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { Download, Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
 
 interface ExportButtonsProps {
   onExportPage: () => void;
@@ -15,11 +15,7 @@ interface ExportButtonsProps {
  * Triggers a browser download from a base64-encoded data string.
  * Used across all report exports for CSV file delivery.
  */
-export function downloadBase64File(
-  base64Data: string,
-  filename: string,
-  mimeType: string,
-): void {
+export function downloadBase64File(base64Data: string, filename: string, mimeType: string): void {
   const binaryStr = atob(base64Data);
   const bytes = new Uint8Array(binaryStr.length);
   for (let i = 0; i < binaryStr.length; i++) {
@@ -27,19 +23,15 @@ export function downloadBase64File(
   }
   const blob = new Blob([bytes], { type: mimeType });
   const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
+  const a = document.createElement('a');
   a.href = url;
   a.download = filename;
   a.click();
   URL.revokeObjectURL(url);
 }
 
-export function ExportButtons({
-  onExportPage,
-  onExportAll,
-  isExporting,
-}: ExportButtonsProps) {
-  const t = useTranslations("Reports");
+export function ExportButtons({ onExportPage, onExportAll, isExporting }: ExportButtonsProps) {
+  const t = useTranslations('Reports');
 
   return (
     <div className="flex items-center gap-2">
@@ -48,27 +40,21 @@ export function ExportButtons({
         size="sm"
         onClick={onExportPage}
         disabled={isExporting}
-        className="h-8 gap-1.5"
-      >
+        className="h-8 gap-1.5">
         {isExporting ? (
           <Loader2 className="h-3.5 w-3.5 animate-spin" />
         ) : (
           <Download className="h-3.5 w-3.5" />
         )}
-        {t("exportPage")}
+        {t('exportPage')}
       </Button>
-      <Button
-        size="sm"
-        onClick={onExportAll}
-        disabled={isExporting}
-        className="h-8 gap-1.5"
-      >
+      <Button size="sm" onClick={onExportAll} disabled={isExporting} className="h-8 gap-1.5">
         {isExporting ? (
           <Loader2 className="h-3.5 w-3.5 animate-spin" />
         ) : (
           <Download className="h-3.5 w-3.5" />
         )}
-        {t("exportAll")}
+        {t('exportAll')}
       </Button>
     </div>
   );

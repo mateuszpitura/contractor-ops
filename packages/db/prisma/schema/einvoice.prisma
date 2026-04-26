@@ -1,0 +1,127 @@
+// Phase 61 — XRechnung e-invoicing lifecycle, Leitweg-ID data model,
+// Peppol capability cache.
+//
+// Decisions:
+// - D-05 / D-12 / D-13 / D-14 (CONTEXT.md) — entity shapes
+// - D-10 AMENDMENT (Option A): Peppol participant identity + status stay on
+//   PeppolParticipant (see peppol.prisma); here we only add per-org XRechnung
+//   lifecycle + capability-cache tables.
+// - All models multi-tenant via organizationId FK.
+// - All @@index / @@unique have explicit map: names ≤63 chars (Neon Postgres).
+
+model LeitwegId {
+  id                     String    @id @default(cuid())
+  organizationId         String
+  value                  String    @db.VarChar(46)
+  description            String?
+  contractorId           String?
+  contractId             String?
+  isDefaultForContractor Boolean   @default(false)
+  validFrom              DateTime?
+  validTo                DateTime?
+  notes                  String?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  contractor   Contractor?  @relation(fields: [contractorId], references: [id])
+  contract     Contract?    @relation(fields: [contractId], references: [id])
+
+  @@unique([organizationId, value], map: "leitweg_id_org_value_uniq")
+  @@index([organizationId, contractorId], map: "leitweg_id_org_contractor_idx")
+  @@index([organizationId, contractId], map: "leitweg_id_org_contract_idx")
+}
+
+model EInvoiceLifecycle {
+  id                      String                     @id @default(cuid())
+  organizationId          String
+  invoiceId               String                     @unique
+  profileId               String // 'xrechnung-de', 'peppol-ae-pint', ...
+  xmlKey                  String? // R2 object key
+  xmlSha256               String?                    @db.VarChar(64)
+  ruleSetVersion          String?
+  validatedAt             DateTime?
+  validationStatus        EInvoiceValidationStatus   @default(NOT_VALIDATED)
+  validationReportSummary Json?
+  validationReportFullKey String?
+  transmittedAt           DateTime?
+  transmissionId          String? // Storecove message ID
+  transmissionStatus      EInvoiceTransmissionStatus @default(NOT_SENT)
+  deliveredAt             DateTime?
+  deliveryAckJson         Json?
+  lastErrorJson           Json?
+  // Phase 62 (D-17) — ZUGFeRD on-demand PDF/A-3 generation
+  zugferdPdfKey           String?
+  zugferdPdfSha256        String?                    @db.VarChar(64)
+  zugferdGeneratedAt      DateTime?
+  createdAt               DateTime                   @default(now())
+  updatedAt               DateTime                   @updatedAt
+
+  organization Organization             @relation(fields: [organizationId], references: [id])
+  invoice      Invoice                  @relation(fields: [invoiceId], references: [id])
+  events       EInvoiceLifecycleEvent[]
+
+  @@unique([organizationId, invoiceId], map: "einvoice_lifecycle_org_invoice_uniq")
+  @@index([organizationId, validationStatus], map: "einvoice_lifecycle_org_val_idx")
+  @@index([organizationId, transmissionStatus], map: "einvoice_lifecycle_org_tx_idx")
+}
+
+model EInvoiceLifecycleEvent {
+  id             String                     @id @default(cuid())
+  organizationId String
+  lifecycleId    String
+  eventType      EInvoiceLifecycleEventType
+  occurredAt     DateTime                   @default(now())
+  actorUserId    String?
+  detailsJson    Json?
+  createdAt      DateTime                   @default(now())
+
+  lifecycle    EInvoiceLifecycle @relation(fields: [lifecycleId], references: [id])
+  organization Organization      @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId, lifecycleId], map: "einvoice_lifecycle_event_org_lc_idx")
+  @@index([organizationId, eventType], map: "einvoice_lifecycle_event_org_type_idx")
+}
+
+model PeppolCapabilityCache {
+  id             String   @id @default(cuid())
+  organizationId String
+  schemeId       String
+  value          String
+  documentTypes  Json // array of doc-type IDs the participant accepts
+  cachedAt       DateTime @default(now())
+  expiresAt      DateTime
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@unique([organizationId, schemeId, value], map: "peppol_capability_cache_org_scheme_value_uniq")
+  @@index([organizationId, expiresAt], map: "peppol_capability_cache_org_expiry_idx")
+}
+
+// --- Enums ---
+
+enum EInvoiceValidationStatus {
+  NOT_VALIDATED
+  VALID
+  INVALID
+  WARNINGS
+}
+
+enum EInvoiceTransmissionStatus {
+  NOT_SENT
+  QUEUED
+  SENT
+  DELIVERED
+  FAILED
+}
+
+enum EInvoiceLifecycleEventType {
+  GENERATED
+  VALIDATED
+  TRANSMITTED
+  DELIVERY_ACK
+  DELIVERY_FAILED
+  RE_VALIDATED
+  RE_TRANSMITTED
+  ZUGFERD_GENERATED
+}

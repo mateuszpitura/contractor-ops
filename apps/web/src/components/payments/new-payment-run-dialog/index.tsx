@@ -1,19 +1,13 @@
-"use client";
+'use client';
 
-import { useCallback, useState } from "react";
-import { useTranslations } from "next-intl";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
+import { useCallback, useState } from 'react';
 
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-
-import { StepSelect } from "./step-select";
-import { StepReview } from "./step-review";
-import { StepConfirmation } from "./step-confirmation";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { StepConfirmation } from './step-confirmation';
+import { StepReview } from './step-review';
+import { StepSelect } from './step-select';
 
 // ---------------------------------------------------------------------------
 // Step indicator
@@ -22,11 +16,11 @@ import { StepConfirmation } from "./step-confirmation";
 function StepIndicator({ currentStep }: { currentStep: number }) {
   return (
     <div className="flex items-center justify-center gap-4 mt-2">
-      {[1, 2, 3].map((step) => (
+      {[1, 2, 3].map(step => (
         <div
           key={step}
           className={`h-2 w-2 rounded-full transition-colors ${
-            step <= currentStep ? "bg-primary" : "bg-muted"
+            step <= currentStep ? 'bg-primary' : 'bg-muted'
           }`}
         />
       ))}
@@ -48,12 +42,8 @@ interface NewPaymentRunDialogProps {
 // Component
 // ---------------------------------------------------------------------------
 
-export function NewPaymentRunDialog({
-  open,
-  onOpenChange,
-  onViewRun,
-}: NewPaymentRunDialogProps) {
-  const t = useTranslations("Payments");
+export function NewPaymentRunDialog({ open, onOpenChange, onViewRun }: NewPaymentRunDialogProps) {
+  const t = useTranslations('Payments');
   const queryClient = useQueryClient();
 
   // Step state
@@ -69,7 +59,7 @@ export function NewPaymentRunDialog({
     fileBase64: string;
     fileName: string;
     invoiceCount: number;
-    totalGrosze: number;
+    totalMinor: number;
     currency: string;
     exportFormat: string;
   } | null>(null);
@@ -97,7 +87,7 @@ export function NewPaymentRunDialog({
       setStep(3);
       // Invalidate payment queries to refresh the list
       void queryClient.invalidateQueries({
-        queryKey: [["payment"]],
+        queryKey: [['payment']],
       });
     },
     [queryClient],
@@ -110,7 +100,7 @@ export function NewPaymentRunDialog({
         // Prevent close during locking (Step 2 handles this internally)
       >
         <DialogHeader>
-          <DialogTitle>{t("dialog.title")}</DialogTitle>
+          <DialogTitle>{t('dialog.title')}</DialogTitle>
           <StepIndicator currentStep={step} />
         </DialogHeader>
 
@@ -120,7 +110,9 @@ export function NewPaymentRunDialog({
             onSelectionChange={setSelectedInvoiceIds}
             groupByCurrency={groupByCurrency}
             onGroupByCurrencyChange={setGroupByCurrency}
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onCancel={() => handleOpenChange(false)}
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onNext={() => setStep(2)}
           />
         )}
@@ -129,6 +121,7 @@ export function NewPaymentRunDialog({
           <StepReview
             selectedInvoiceIds={selectedInvoiceIds}
             groupByCurrency={groupByCurrency}
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onBack={() => setStep(1)}
             onComplete={handleComplete}
           />
@@ -137,11 +130,13 @@ export function NewPaymentRunDialog({
         {step === 3 && confirmationData && (
           <StepConfirmation
             {...confirmationData}
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onViewRun={() => {
               handleOpenChange(false);
               // Could trigger side panel open via onViewRun callback
               onViewRun?.(confirmationData.runNumber);
             }}
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClose={() => handleOpenChange(false)}
           />
         )}

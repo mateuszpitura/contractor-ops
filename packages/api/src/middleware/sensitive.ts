@@ -1,6 +1,6 @@
-import { TRPCError } from "@trpc/server";
-import { t } from "../init.js";
-import { tenantProcedure } from "./tenant.js";
+import { TRPCError } from '@trpc/server';
+import { t } from '../init.js';
+import { tenantProcedure } from './tenant.js';
 
 const SENSITIVE_ACTION_MAX_AGE_MS = 5 * 60 * 1000; // 5 minutes
 
@@ -16,8 +16,8 @@ const SENSITIVE_ACTION_MAX_AGE_MS = 5 * 60 * 1000; // 5 minutes
  * payment runs — any operation where a stale session poses a security risk.
  */
 export const sensitiveActionMiddleware = t.middleware(async ({ ctx, next }) => {
-  if (!ctx.session) {
-    throw new TRPCError({ code: "UNAUTHORIZED" });
+  if (!(ctx.session && ctx.user)) {
+    throw new TRPCError({ code: 'UNAUTHORIZED' });
   }
 
   const sessionCreatedAt = new Date(ctx.session.session.createdAt).getTime();
@@ -25,14 +25,17 @@ export const sensitiveActionMiddleware = t.middleware(async ({ ctx, next }) => {
 
   if (now - sessionCreatedAt > SENSITIVE_ACTION_MAX_AGE_MS) {
     throw new TRPCError({
-      code: "FORBIDDEN",
-      message:
-        "This action requires re-authentication. Please sign in again to continue.",
-      cause: "REAUTH_REQUIRED",
+      code: 'FORBIDDEN',
+      message: 'This action requires re-authentication. Please sign in again to continue.',
+      cause: 'REAUTH_REQUIRED',
     });
   }
 
-  return next({ ctx });
+  // Preserve narrowed session/user types from the upstream auth/tenant middleware.
+  const session = ctx.session;
+  const user = ctx.user;
+
+  return next({ ctx: { ...ctx, session, user } });
 });
 
 /**
@@ -40,6 +43,4 @@ export const sensitiveActionMiddleware = t.middleware(async ({ ctx, next }) => {
  * Use for: role changes, user deactivation, settings updates.
  * Chain: auth -> tenant -> sensitive -> handler
  */
-export const sensitiveActionProcedure = tenantProcedure.use(
-  sensitiveActionMiddleware,
-);
+export const sensitiveActionProcedure = tenantProcedure.use(sensitiveActionMiddleware);

@@ -1,25 +1,25 @@
-"use client";
+'use client';
 
-import { useState, useMemo } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { type ColumnDef } from "@tanstack/react-table";
-import { useTranslations } from "next-intl";
-import { toast } from "sonner";
-import { UsersRound } from "lucide-react";
+import { useMutation, useQuery } from '@tanstack/react-query';
+import type { ColumnDef } from '@tanstack/react-table';
+import { UsersRound } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useMemo, useState } from 'react';
+import { toast } from 'sonner';
 
-import { trpc } from "@/trpc/init";
-import { ReportChart } from "./report-chart";
-import { ReportTable } from "./report-table";
-import { DrillDownBreadcrumb } from "./drill-down-breadcrumb";
-import { ExportButtons, downloadBase64File } from "./export-buttons";
+import { trpc } from '@/trpc/init';
+import { DrillDownBreadcrumb } from './drill-down-breadcrumb';
+import { downloadBase64File, ExportButtons } from './export-buttons';
+import { ReportChart } from './report-chart';
+import { ReportTable } from './report-table';
 
-function formatCurrency(grosze: number): string {
-  return new Intl.NumberFormat("pl-PL", {
-    style: "currency",
-    currency: "PLN",
+function formatCurrency(minor: number): string {
+  return new Intl.NumberFormat('pl-PL', {
+    style: 'currency',
+    currency: 'PLN',
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  }).format(grosze / 100);
+  }).format(minor / 100);
 }
 
 interface SpendTeamReportProps {
@@ -29,18 +29,18 @@ interface SpendTeamReportProps {
 
 type TeamSpendRow = {
   teamId: string | null;
-  teamName: string;
+  teamName: string | null;
   contractorCount: number;
   invoiceCount: number;
-  totalGrosze: number;
+  totalMinor: number;
 };
 
 export function SpendTeamReport({ dateFrom, dateTo }: SpendTeamReportProps) {
-  const t = useTranslations("Reports");
+  const t = useTranslations('Reports');
 
   const [page, setPage] = useState(1);
-  const [sortBy, setSortBy] = useState("totalSpend");
-  const [sortOrder, setSortOrder] = useState("desc");
+  const [sortBy, setSortBy] = useState('totalSpend');
+  const [sortOrder, setSortOrder] = useState('desc');
   const [drillDownTeamId, setDrillDownTeamId] = useState<string | null>(null);
 
   const tableQuery = useQuery(
@@ -49,91 +49,90 @@ export function SpendTeamReport({ dateFrom, dateTo }: SpendTeamReportProps) {
       dateTo,
       page,
       pageSize: 20,
-      sortBy: sortBy as "totalSpend" | "invoiceCount" | "teamName",
-      sortOrder: sortOrder as "asc" | "desc",
+      sortBy: sortBy as 'totalSpend' | 'invoiceCount' | 'teamName',
+      sortOrder: sortOrder as 'asc' | 'desc',
     }),
   );
 
-  const chartQuery = useQuery(
-    trpc.report.spendByTeamChart.queryOptions({ dateFrom, dateTo }),
-  );
+  const chartQuery = useQuery(trpc.report.spendByTeamChart.queryOptions({ dateFrom, dateTo }));
 
   const exportMutation = useMutation(
     trpc.report.exportSpendByTeam.mutationOptions({
-      onSuccess: (data) => {
+      onSuccess: data => {
         const result = data as {
           data: string;
           filename: string;
           mimeType: string;
         };
         downloadBase64File(result.data, result.filename, result.mimeType);
-        toast.success(t("exportSuccess", { count: tableData.length }));
+        toast.success(t('exportSuccess', { count: tableData.length }));
       },
       onError: () => {
-        toast.error(t("exportError"));
+        toast.error(t('exportError'));
       },
     }),
   );
 
   const tableData = useMemo(() => {
-    const result = tableQuery.data as
-      | { items: TeamSpendRow[]; totalCount: number }
-      | undefined;
+    const result = tableQuery.data as { items: TeamSpendRow[]; totalCount: number } | undefined;
     return result?.items ?? [];
   }, [tableQuery.data]);
 
   const totalCount = useMemo(() => {
-    const result = tableQuery.data as
-      | { items: TeamSpendRow[]; totalCount: number }
-      | undefined;
+    const result = tableQuery.data as { items: TeamSpendRow[]; totalCount: number } | undefined;
     return result?.totalCount ?? 0;
   }, [tableQuery.data]);
 
   const chartData = useMemo(() => {
-    return (chartQuery.data ?? []) as Array<{
+    const raw = (chartQuery.data ?? []) as Array<{
       teamId: string | null;
-      teamName: string;
-      totalGrosze: number;
+      teamName: string | null;
+      totalMinor: number;
     }>;
-  }, [chartQuery.data]);
+    return raw.map(item => ({
+      ...item,
+      teamName: item.teamName ?? t('unassignedTeam'),
+    }));
+  }, [chartQuery.data, t]);
 
   const drillDownName = useMemo(() => {
     if (!drillDownTeamId) return null;
-    const item = chartData.find((d) => d.teamId === drillDownTeamId);
-    return item?.teamName ?? drillDownTeamId;
-  }, [drillDownTeamId, chartData]);
+    const item = tableData.find(d => d.teamId === drillDownTeamId);
+    return item?.teamName ?? t('unassignedTeam');
+  }, [drillDownTeamId, tableData, t]);
 
   const grandTotal = useMemo(() => {
-    return tableData.reduce((sum, row) => sum + row.totalGrosze, 0);
+    return tableData.reduce((sum, row) => sum + row.totalMinor, 0);
   }, [tableData]);
 
   const columns: ColumnDef<TeamSpendRow>[] = useMemo(
     () => [
       {
-        accessorKey: "teamName",
-        header: t("team"),
+        accessorKey: 'teamName',
+        header: t('team'),
         enableSorting: true,
+        cell: ({ getValue }) => getValue<string | null>() ?? t('unassignedTeam'),
       },
       {
-        accessorKey: "contractorCount",
-        header: t("contractors"),
+        accessorKey: 'contractorCount',
+        header: t('contractors'),
         enableSorting: false,
       },
       {
-        accessorKey: "invoiceCount",
-        header: t("invoices"),
+        accessorKey: 'invoiceCount',
+        header: t('invoices'),
         enableSorting: true,
       },
       {
-        accessorKey: "totalGrosze",
-        header: t("totalSpend"),
+        accessorKey: 'totalMinor',
+        header: t('totalSpend'),
         enableSorting: true,
         cell: ({ getValue }) => formatCurrency(getValue<number>()),
       },
       {
-        id: "budgetPercent",
-        header: t("budgetPercent"),
-        cell: () => "-",
+        id: 'budgetPercent',
+        header: t('budgetPercent'),
+        cell: () => '-',
       },
     ],
     [t],
@@ -160,21 +159,21 @@ export function SpendTeamReport({ dateFrom, dateTo }: SpendTeamReportProps) {
       <ReportChart
         type="bar-horizontal"
         data={chartData}
-        dataKey="totalGrosze"
+        dataKey="totalMinor"
         nameKey="teamName"
         idKey="teamId"
         activeId={drillDownTeamId ?? undefined}
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onSegmentClick={handleDrillDown}
         isLoading={chartQuery.isLoading}
       />
 
       <DrillDownBreadcrumb
         segments={[
-          { label: t("all") },
-          ...(drillDownName
-            ? [{ label: drillDownName, id: drillDownTeamId! }]
-            : []),
+          { label: t('all') },
+          ...(drillDownName ? [{ label: drillDownName, id: drillDownTeamId as string }] : []),
         ]}
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onClear={handleClearDrillDown}
       />
 
@@ -185,21 +184,22 @@ export function SpendTeamReport({ dateFrom, dateTo }: SpendTeamReportProps) {
         page={page}
         pageSize={20}
         onPageChange={setPage}
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onSortChange={handleSortChange}
         sortBy={sortBy}
         sortOrder={sortOrder}
         isLoading={tableQuery.isLoading}
-        emptyIcon={
-          <UsersRound className="mx-auto h-10 w-10 text-muted-foreground/50" />
-        }
-        emptyTitle={t("emptySpendTeam")}
-        emptyDescription={t("emptySpendTeamBody")}
-        grandTotalLabel={t("grandTotal")}
+        emptyIcon={<UsersRound className="mx-auto h-10 w-10 text-muted-foreground/50" />}
+        emptyTitle={t('emptySpendTeam')}
+        emptyDescription={t('emptySpendTeamBody')}
+        grandTotalLabel={t('grandTotal')}
         grandTotalValue={formatCurrency(grandTotal)}
       />
 
       <ExportButtons
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onExportPage={() => exportMutation.mutate({ dateFrom, dateTo })}
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onExportAll={() => exportMutation.mutate({ dateFrom, dateTo })}
         isExporting={exportMutation.isPending}
       />

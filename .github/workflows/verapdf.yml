@@ -1,0 +1,84 @@
+name: veraPDF ZUGFeRD conformance
+
+# Gates PRs that touch the einvoice package (specifically the ZUGFeRD
+# outbound pipeline) on PDF/A-3 B conformance. The job generates the
+# three ZUGFeRD fixture PDFs via `scripts/generate-zugferd-fixtures.ts`
+# (deterministic; `producedAt` pinned to 2026-01-15T10:00:00Z) and runs
+# them through the veraPDF Docker CLI image pinned at 1.26 — the same
+# version canonical in Phase 62 CONTEXT D-05.
+
+on:
+  pull_request:
+    paths:
+      - "packages/einvoice/**"
+      - ".github/workflows/verapdf.yml"
+  push:
+    branches: [main, v2]
+    paths:
+      - "packages/einvoice/**"
+      - ".github/workflows/verapdf.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  TURBO_TELEMETRY_DISABLED: 1
+  SKIP_ENV_VALIDATION: true
+
+jobs:
+  verapdf:
+    name: ZUGFeRD PDF/A-3 B Conformance
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate ZUGFeRD fixture PDFs
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/tmp/zugferd-fixtures"
+          pnpm --filter @contractor-ops/einvoice exec tsx \
+            scripts/generate-zugferd-fixtures.ts \
+            --out-dir "$GITHUB_WORKSPACE/tmp/zugferd-fixtures"
+
+      - name: Run veraPDF against fixtures
+        id: verapdf
+        run: |
+          set -o pipefail
+          docker run --rm \
+            -v "$GITHUB_WORKSPACE/tmp/zugferd-fixtures:/pdfs" \
+            verapdf/cli:1.26 \
+            --format xml --flavour 3b --recurse /pdfs \
+            > verapdf-report.xml
+          # veraPDF exits 0 even when it finds non-compliance — we must
+          # grep the XML report for isCompliant="false" and fail the job.
+          if grep -q 'isCompliant="false"' verapdf-report.xml; then
+            echo "::error::veraPDF reported PDF/A-3 B non-compliance. First 200 lines of failing rules:"
+            grep -B1 -A4 'status="failed"' verapdf-report.xml | head -n 200
+            exit 1
+          fi
+          echo "All ZUGFeRD fixtures pass PDF/A-3 B conformance."
+
+      - name: Upload veraPDF report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: verapdf-report
+          path: verapdf-report.xml
+          retention-days: 30

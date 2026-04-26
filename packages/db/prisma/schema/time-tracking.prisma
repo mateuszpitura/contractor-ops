@@ -1,0 +1,67 @@
+// Timesheet, TimeEntry — time tracking models
+
+model Timesheet {
+  id               String          @id @default(cuid())
+  organizationId   String
+  contractorId     String
+  weekStartDate    DateTime        @db.Date // Always ISO Monday
+  status           TimesheetStatus @default(DRAFT)
+  totalMinutes     Int             @default(0)
+  submittedAt      DateTime?
+  reviewedAt       DateTime?
+  reviewedByUserId String?
+  rejectionReason  String?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  contractor   Contractor   @relation(fields: [contractorId], references: [id])
+  reviewedBy   User?        @relation("TimesheetReviewer", fields: [reviewedByUserId], references: [id])
+  entries      TimeEntry[]
+
+  @@unique([organizationId, contractorId, weekStartDate])
+  @@index([organizationId])
+  @@index([organizationId, status])
+  @@index([organizationId, contractorId])
+  @@index([organizationId, contractorId, weekStartDate])
+}
+
+model TimeEntry {
+  id             String          @id @default(cuid())
+  organizationId String
+  timesheetId    String
+  contractorId   String
+  contractId     String
+  entryDate      DateTime        @db.Date
+  minutes        Int
+  description    String?
+  source         TimeEntrySource @default(MANUAL)
+  externalId     String?
+  metadataJson   Json?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  timesheet    Timesheet    @relation(fields: [timesheetId], references: [id])
+  contractor   Contractor   @relation(fields: [contractorId], references: [id])
+  contract     Contract     @relation(fields: [contractId], references: [id])
+
+  @@unique([organizationId, contractorId, source, externalId])
+  @@index([organizationId])
+  @@index([organizationId, timesheetId])
+  @@index([organizationId, contractorId, entryDate])
+  @@index([organizationId, contractId, entryDate])
+}
+
+enum TimesheetStatus {
+  DRAFT
+  SUBMITTED
+  APPROVED
+  REJECTED
+}
+
+enum TimeEntrySource {
+  MANUAL
+  CLOCKIFY
+  JIRA
+}

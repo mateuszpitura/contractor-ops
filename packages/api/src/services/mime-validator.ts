@@ -1,25 +1,18 @@
-import { fileTypeFromBuffer } from "file-type";
+import { fileTypeFromBuffer } from 'file-type';
 
 // ---------------------------------------------------------------------------
 // Allowed MIME types and extensions for document uploads
 // ---------------------------------------------------------------------------
 
 export const ALLOWED_MIMES = new Set([
-  "application/pdf",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document", // DOCX
-  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", // XLSX
-  "image/png",
-  "image/jpeg",
+  'application/pdf',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // DOCX
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // XLSX
+  'image/png',
+  'image/jpeg',
 ]);
 
-export const ALLOWED_EXTENSIONS = new Set([
-  "pdf",
-  "docx",
-  "xlsx",
-  "png",
-  "jpg",
-  "jpeg",
-]);
+export const ALLOWED_EXTENSIONS = new Set(['pdf', 'docx', 'xlsx', 'png', 'jpg', 'jpeg']);
 
 /** Maximum allowed file size: 25 MB */
 export const MAX_FILE_SIZE_BYTES = 25 * 1024 * 1024;

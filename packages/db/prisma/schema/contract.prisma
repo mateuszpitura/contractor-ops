@@ -1,29 +1,29 @@
 // Contract, ContractAmendment, ContractRatePeriod, Document, DocumentLink
 
 model Contract {
-  id                            String              @id @default(cuid())
+  id                            String               @id @default(cuid())
   organizationId                String
   contractorId                  String
   contractNumber                String?
   title                         String
   type                          ContractType
-  status                        ContractStatus      @default(DRAFT)
-  startDate                     DateTime            @db.Date
-  endDate                       DateTime?           @db.Date
+  status                        ContractStatus       @default(DRAFT)
+  startDate                     DateTime             @db.Date
+  endDate                       DateTime?            @db.Date
   noticePeriodDays              Int?
-  autoRenewal                   Boolean             @default(false)
+  autoRenewal                   Boolean              @default(false)
   renewalTerms                  String?
-  currency                      String              @db.Char(3)
+  currency                      String               @db.Char(3)
   billingModel                  BillingModel
   rateType                      RateType
-  rateValueGrosze               Int?
-  expectedHoursPerPeriod        Decimal?            @db.Decimal(10, 2)
-  retainerAmountGrosze          Int?
+  rateValueMinor                Int?
+  expectedHoursPerPeriod        Decimal?             @db.Decimal(10, 2)
+  retainerAmountMinor           Int?
   paymentTermsDays              Int?
   invoiceCycle                  InvoiceCycle?
-  expenseReimbursementAllowed   Boolean             @default(false)
-  requiresTimesheet             Boolean             @default(false)
-  requiresDeliverableAcceptance Boolean             @default(false)
+  expenseReimbursementAllowed   Boolean              @default(false)
+  requiresTimesheet             Boolean              @default(false)
+  requiresDeliverableAcceptance Boolean              @default(false)
   internalOwnerUserId           String?
   teamId                        String?
   projectId                     String?
@@ -34,22 +34,25 @@ model Contract {
   terminatedAt                  DateTime?
   terminationReason             String?
   metadataJson                  Json?
-  createdAt                     DateTime            @default(now())
-  updatedAt                     DateTime            @updatedAt
+  createdAt                     DateTime             @default(now())
+  updatedAt                     DateTime             @updatedAt
   deletedAt                     DateTime?
 
-  organization                  Organization @relation(fields: [organizationId], references: [id])
-  contractor                    Contractor   @relation(fields: [contractorId], references: [id])
-  internalOwner                 User?        @relation("ContractOwner", fields: [internalOwnerUserId], references: [id])
-  team                          Team?        @relation(fields: [teamId], references: [id])
-  project                       Project?     @relation(fields: [projectId], references: [id])
-  costCenter                    CostCenter?  @relation(fields: [costCenterId], references: [id])
+  organization  Organization @relation(fields: [organizationId], references: [id])
+  contractor    Contractor   @relation(fields: [contractorId], references: [id])
+  internalOwner User?        @relation("ContractOwner", fields: [internalOwnerUserId], references: [id])
+  team          Team?        @relation(fields: [teamId], references: [id])
+  project       Project?     @relation(fields: [projectId], references: [id])
+  costCenter    CostCenter?  @relation(fields: [costCenterId], references: [id])
 
-  amendments                    ContractAmendment[]
-  ratePeriods                   ContractRatePeriod[]
-  complianceItems               ContractorComplianceItem[]
-  invoices                      Invoice[]
-  workflowRuns                  WorkflowRun[]
+  amendments      ContractAmendment[]
+  ratePeriods     ContractRatePeriod[]
+  complianceItems ContractorComplianceItem[]
+  invoices        Invoice[]
+  workflowRuns    WorkflowRun[]
+  timeEntries     TimeEntry[]
+  leitwegIds      LeitwegId[]
+  intakes         InvoiceIntakeRequest[]     @relation("InvoiceIntakeMatchedContract")
 
   @@index([organizationId])
   @@index([organizationId, contractorId, status])
@@ -73,26 +76,26 @@ model ContractAmendment {
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 
-  organization       Organization @relation(fields: [organizationId], references: [id])
-  contract           Contract     @relation(fields: [contractId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
+  contract     Contract     @relation(fields: [contractId], references: [id])
 
   @@index([organizationId])
   @@index([organizationId, contractId])
 }
 
 model ContractRatePeriod {
-  id             String   @id @default(cuid())
+  id             String    @id @default(cuid())
   organizationId String
   contractId     String
   rateType       RateType
-  rateValueGrosze Int
-  currency       String   @db.Char(3)
-  validFrom      DateTime @db.Date
+  rateValueMinor Int
+  currency       String    @db.Char(3)
+  validFrom      DateTime  @db.Date
   validTo        DateTime? @db.Date
-  createdAt      DateTime @default(now())
+  createdAt      DateTime  @default(now())
 
-  organization   Organization @relation(fields: [organizationId], references: [id])
-  contract       Contract     @relation(fields: [contractId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
+  contract     Contract     @relation(fields: [contractId], references: [id])
 
   @@index([organizationId])
   @@index([organizationId, contractId])
@@ -100,29 +103,29 @@ model ContractRatePeriod {
 }
 
 model Document {
-  id                String             @id @default(cuid())
-  organizationId    String
-  storageKey        String
-  originalFileName  String
-  mimeType          String
-  fileSizeBytes     BigInt
-  checksumSha256    String             @db.VarChar(64)
-  documentType      DocumentType
-  status            DocumentStatus     @default(ACTIVE)
-  visibility        DocumentVisibility @default(PRIVATE)
-  uploadedByUserId  String?
-  source            DocumentSource
-  virusScanStatus   VirusScanStatus    @default(PENDING)
-  encrypted         Boolean            @default(false)
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-  deletedAt         DateTime?
+  id               String             @id @default(cuid())
+  organizationId   String
+  storageKey       String
+  originalFileName String
+  mimeType         String
+  fileSizeBytes    BigInt
+  checksumSha256   String             @db.VarChar(64)
+  documentType     DocumentType
+  status           DocumentStatus     @default(ACTIVE)
+  visibility       DocumentVisibility @default(PRIVATE)
+  uploadedByUserId String?
+  source           DocumentSource
+  virusScanStatus  VirusScanStatus    @default(PENDING)
+  encrypted        Boolean            @default(false)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  deletedAt        DateTime?
 
-  organization      Organization @relation(fields: [organizationId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
 
-  links             DocumentLink[]
-  invoiceFiles      InvoiceFile[]
-  paymentExports    PaymentExport[]
+  links               DocumentLink[]
+  invoiceFiles        InvoiceFile[]
+  paymentExports      PaymentExport[]
   workflowAttachments WorkflowAttachment[]
 
   @@index([organizationId])
@@ -139,8 +142,8 @@ model DocumentLink {
   linkRole       DocumentLinkRole
   createdAt      DateTime         @default(now())
 
-  organization   Organization @relation(fields: [organizationId], references: [id])
-  document       Document     @relation(fields: [documentId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
+  document     Document     @relation(fields: [documentId], references: [id])
 
   @@index([organizationId])
   @@index([organizationId, entityType, entityId])
@@ -161,6 +164,8 @@ enum ContractType {
 enum ContractStatus {
   DRAFT
   PENDING_SIGNATURE
+  SIGNATURE_DECLINED
+  SIGNATURE_EXPIRED
   ACTIVE
   EXPIRING
   EXPIRED
@@ -257,6 +262,11 @@ enum EntityType {
   PROJECT
   TEAM
   APPROVAL_FLOW
+  TIMESHEET
+  EQUIPMENT
+  SHIPMENT
+  USER
+  RETURN_REQUEST
 }
 
 enum DocumentLinkRole {

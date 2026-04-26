@@ -1,29 +1,29 @@
-"use client";
+'use client';
 
-import { useCallback } from "react";
-import { useTranslations } from "next-intl";
+import type { DragEndEvent } from '@dnd-kit/core';
 import {
-  DndContext,
   closestCenter,
-  type DragEndEvent,
-  PointerSensor,
+  DndContext,
   KeyboardSensor,
+  PointerSensor,
   useSensor,
   useSensors,
-} from "@dnd-kit/core";
+} from '@dnd-kit/core';
 import {
   SortableContext,
-  verticalListSortingStrategy,
-  useSortable,
   sortableKeyboardCoordinates,
-} from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
-import { Plus } from "lucide-react";
-import type { UseFormReturn } from "react-hook-form";
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { Plus } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useCallback } from 'react';
+import type { UseFormReturn } from 'react-hook-form';
 
-import { Button } from "@/components/ui/button";
-import { TaskCard } from "./task-card";
-import type { TemplateFormValues, TaskFormValues } from "./use-template-form";
+import { Button } from '@/components/ui/button';
+import { TaskCard } from './task-card';
+import type { TaskFormValues, TemplateFormValues } from './use-template-form';
 
 // ---------------------------------------------------------------------------
 // Sortable wrapper
@@ -38,16 +38,11 @@ interface SortableItemProps {
 }
 
 function SortableItem({ id, index, allTasks, form, onRemove }: SortableItemProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id,
+  });
 
-  const style = {
+  const _style = {
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1,
@@ -55,13 +50,16 @@ function SortableItem({ id, index, allTasks, form, onRemove }: SortableItemProps
   };
 
   return (
-    <div ref={setNodeRef} style={style}>
+    <div ref={setNodeRef}>
       <TaskCard
         index={index}
         allTasks={allTasks}
         form={form}
         onRemove={onRemove}
-        dragHandleProps={{ attributes: attributes as unknown as Record<string, unknown>, listeners: (listeners ?? {}) as Record<string, unknown> }}
+        dragHandleProps={{
+          attributes: attributes as unknown as Record<string, unknown>,
+          listeners: (listeners ?? {}) as Record<string, unknown>,
+        }}
       />
     </div>
   );
@@ -88,7 +86,7 @@ export function SortableTaskList({
   onRemove,
   onAdd,
 }: SortableTaskListProps) {
-  const t = useTranslations("Workflows");
+  const t = useTranslations('Workflows');
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -99,7 +97,7 @@ export function SortableTaskList({
     }),
   );
 
-  const taskIds = fields.map((f) => f.id);
+  const taskIds = fields.map(f => f.id);
 
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
@@ -118,10 +116,10 @@ export function SortableTaskList({
   if (fields.length === 0) {
     return (
       <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed py-12 text-center">
-        <p className="text-sm text-muted-foreground">{t("noTasksYet")}</p>
+        <p className="text-sm text-muted-foreground">{t('noTasksYet')}</p>
         <Button type="button" variant="secondary" onClick={onAdd}>
-          <Plus className="mr-1.5 size-4" />
-          {t("addTask")}
+          <Plus className="me-1.5 size-4" />
+          {t('addTask')}
         </Button>
       </div>
     );
@@ -129,11 +127,7 @@ export function SortableTaskList({
 
   return (
     <div className="space-y-3">
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragEnd={handleDragEnd}
-      >
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
           {fields.map((field, index) => (
             <SortableItem
@@ -149,8 +143,8 @@ export function SortableTaskList({
       </DndContext>
 
       <Button type="button" variant="secondary" onClick={onAdd}>
-        <Plus className="mr-1.5 size-4" />
-        {t("addTask")}
+        <Plus className="me-1.5 size-4" />
+        {t('addTask')}
       </Button>
     </div>
   );

@@ -1,26 +1,11 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import type { Table } from "@tanstack/react-table";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Download, UserCheck, Archive, Zap, Loader2 } from "lucide-react";
-import { toast } from "sonner";
-import { useTranslations } from "next-intl";
-
-import { trpc } from "@/trpc/init";
-import { TemplatePicker } from "@/components/workflows/template-picker-dialog";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { Table } from '@tanstack/react-table';
+import { Archive, Download, Loader2, UserCheck, Zap } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+import { toast } from 'sonner';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,9 +15,19 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+} from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { TemplatePicker } from '@/components/workflows/template-picker-dialog';
+import { trpc } from '@/trpc/init';
 // Tooltip imports removed - Launch workflow is no longer disabled
-import type { ContractorRow } from "./columns";
+import type { ContractorRow } from './columns';
 
 interface DataTableBulkActionsProps {
   table: Table<ContractorRow>;
@@ -43,9 +38,9 @@ interface DataTableBulkActionsProps {
  * Includes assign owner, export CSV/XLSX, archive, and launch workflow.
  */
 export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
-  const t = useTranslations("Contractors.bulkActions");
-  const ta = useTranslations("Contractors.archive");
-  const tc = useTranslations("Contractors");
+  const t = useTranslations('Contractors.bulkActions');
+  const ta = useTranslations('Contractors.archive');
+  const tc = useTranslations('Contractors');
   const queryClient = useQueryClient();
 
   const [showArchiveDialog, setShowArchiveDialog] = useState(false);
@@ -53,46 +48,46 @@ export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
   const [workflowPickerOpen, setWorkflowPickerOpen] = useState(false);
 
   const selectedRows = table.getFilteredSelectedRowModel().rows;
-  const selectedIds = selectedRows.map((row) => row.original.id);
+  const selectedIds = selectedRows.map(row => row.original.id);
   const count = selectedIds.length;
 
   const usersQuery = useQuery(trpc.user.list.queryOptions());
   const users = Array.isArray(usersQuery.data) ? usersQuery.data : [];
 
   const invalidateAndDeselect = () => {
-    queryClient.invalidateQueries({ queryKey: ["contractor"] });
+    queryClient.invalidateQueries({ queryKey: ['contractor'] });
     table.toggleAllPageRowsSelected(false);
   };
 
   const bulkArchiveMutation = useMutation(
     trpc.contractor.bulkArchive.mutationOptions({
-      onSuccess: (data) => {
-        toast.success(tc("archived", { count: (data as { count: number }).count }));
+      onSuccess: data => {
+        toast.success(tc('archived', { count: (data as { count: number }).count }));
         invalidateAndDeselect();
         setShowArchiveDialog(false);
       },
       onError: () => {
-        toast.error(tc("error.loadFailed"));
+        toast.error(tc('error.loadFailed'));
       },
     }),
   );
 
   const bulkAssignOwnerMutation = useMutation(
     trpc.contractor.bulkAssignOwner.mutationOptions({
-      onSuccess: (data) => {
-        toast.success(tc("ownerAssigned", { count: (data as { count: number }).count }));
+      onSuccess: data => {
+        toast.success(tc('ownerAssigned', { count: (data as { count: number }).count }));
         invalidateAndDeselect();
         setOwnerPopoverOpen(false);
       },
       onError: () => {
-        toast.error(tc("error.loadFailed"));
+        toast.error(tc('error.loadFailed'));
       },
     }),
   );
 
   const exportMutation = useMutation(
     trpc.contractor.export.mutationOptions({
-      onSuccess: (data) => {
+      onSuccess: data => {
         const result = data as {
           data: string;
           filename: string;
@@ -106,17 +101,17 @@ export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
         }
         const blob = new Blob([bytes], { type: result.mimeType });
         const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
+        const a = document.createElement('a');
         a.href = url;
         a.download = result.filename;
         a.click();
         URL.revokeObjectURL(url);
 
-        toast.success(tc("exported", { count }));
+        toast.success(tc('exported', { count }));
         table.toggleAllPageRowsSelected(false);
       },
       onError: () => {
-        toast.error(tc("error.loadFailed"));
+        toast.error(tc('error.loadFailed'));
       },
     }),
   );
@@ -126,45 +121,47 @@ export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
   return (
     <>
       <div className="flex items-center gap-2 rounded-lg border bg-muted/50 px-3 py-2">
-        <span className="text-sm font-medium">
-          {t("selected", { count })}
-        </span>
+        <span className="text-sm font-medium">{t('selected', { count })}</span>
 
         {/* Assign owner */}
         <Popover open={ownerPopoverOpen} onOpenChange={setOwnerPopoverOpen}>
           <PopoverTrigger
-            render={(props) => (
+            // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
+            render={props => (
               <Button {...props} variant="outline" size="sm" className="h-8 gap-1.5">
                 <UserCheck className="h-3.5 w-3.5" />
-                {t("assignOwner")}
+                {t('assignOwner')}
               </Button>
             )}
           />
           <PopoverContent className="w-56 p-2" align="start">
             <div className="space-y-1">
-              {(users as Array<{ id?: string; userId?: string; name?: string | null; email?: string | null }>).map(
-                (user) => {
-                  const userId = user.id ?? user.userId ?? "";
-                  return (
-                    <button
-                      key={userId}
-                      type="button"
-                      className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm hover:bg-accent"
-                      onClick={() =>
-                        bulkAssignOwnerMutation.mutate({
-                          ids: selectedIds,
-                          ownerUserId: userId,
-                        })
-                      }
-                      disabled={bulkAssignOwnerMutation.isPending}
-                    >
-                      <span className="truncate">
-                        {user.name ?? user.email ?? userId}
-                      </span>
-                    </button>
-                  );
-                },
-              )}
+              {(
+                users as Array<{
+                  id?: string;
+                  userId?: string;
+                  name?: string | null;
+                  email?: string | null;
+                }>
+              ).map(user => {
+                const userId = user.id ?? user.userId ?? '';
+                return (
+                  <button
+                    key={userId}
+                    type="button"
+                    className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-start text-sm hover:bg-accent"
+                    // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+                    onClick={() =>
+                      bulkAssignOwnerMutation.mutate({
+                        ids: selectedIds,
+                        ownerUserId: userId,
+                      })
+                    }
+                    disabled={bulkAssignOwnerMutation.isPending}>
+                    <span className="truncate">{user.name ?? user.email ?? userId}</span>
+                  </button>
+                );
+              })}
             </div>
           </PopoverContent>
         </Popover>
@@ -172,33 +169,30 @@ export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
         {/* Export */}
         <DropdownMenu>
           <DropdownMenuTrigger
-            render={(props) => (
+            // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
+            render={props => (
               <Button {...props} variant="outline" size="sm" className="h-8 gap-1.5">
                 {exportMutation.isPending ? (
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />
                 ) : (
                   <Download className="h-3.5 w-3.5" />
                 )}
-                {t("export")}
+                {t('export')}
               </Button>
             )}
           />
           <DropdownMenuContent align="start">
             <DropdownMenuItem
-              onClick={() =>
-                exportMutation.mutate({ ids: selectedIds, format: "csv" })
-              }
-              disabled={exportMutation.isPending}
-            >
-              {t("exportCsv")}
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+              onClick={() => exportMutation.mutate({ ids: selectedIds, format: 'csv' })}
+              disabled={exportMutation.isPending}>
+              {t('exportCsv')}
             </DropdownMenuItem>
             <DropdownMenuItem
-              onClick={() =>
-                exportMutation.mutate({ ids: selectedIds, format: "xlsx" })
-              }
-              disabled={exportMutation.isPending}
-            >
-              {t("exportXlsx")}
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+              onClick={() => exportMutation.mutate({ ids: selectedIds, format: 'xlsx' })}
+              disabled={exportMutation.isPending}>
+              {t('exportXlsx')}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -208,10 +202,10 @@ export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
           variant="outline"
           size="sm"
           className="h-8 gap-1.5 text-destructive hover:text-destructive"
-          onClick={() => setShowArchiveDialog(true)}
-        >
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+          onClick={() => setShowArchiveDialog(true)}>
           <Archive className="h-3.5 w-3.5" />
-          {t("archive")}
+          {t('archive')}
         </Button>
 
         {/* Launch workflow */}
@@ -219,10 +213,10 @@ export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
           variant="outline"
           size="sm"
           className="h-8 gap-1.5"
-          onClick={() => setWorkflowPickerOpen(true)}
-        >
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+          onClick={() => setWorkflowPickerOpen(true)}>
           <Zap className="h-3.5 w-3.5" />
-          {t("launchWorkflow")}
+          {t('launchWorkflow')}
         </Button>
       </div>
 
@@ -238,26 +232,20 @@ export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
       <AlertDialog open={showArchiveDialog} onOpenChange={setShowArchiveDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>
-              {ta("titleBulk", { count })}
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              {ta("bodyBulk")}
-            </AlertDialogDescription>
+            <AlertDialogTitle>{ta('titleBulk', { count })}</AlertDialogTitle>
+            <AlertDialogDescription>{ta('bodyBulk')}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() =>
-                bulkArchiveMutation.mutate({ ids: selectedIds })
-              }
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+              onClick={() => bulkArchiveMutation.mutate({ ids: selectedIds })}
               disabled={bulkArchiveMutation.isPending}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
+              variant="destructive">
               {bulkArchiveMutation.isPending ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="me-2 h-4 w-4 animate-spin" />
               ) : null}
-              {ta("ctaBulk", { count })}
+              {ta('ctaBulk', { count })}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

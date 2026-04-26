@@ -1,22 +1,13 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Check, Loader2 } from "lucide-react";
-import { toast } from "sonner";
-import { useTranslations } from "next-intl";
-
-import { trpc } from "@/trpc/init";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Check, Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useCallback, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import { z } from 'zod';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,59 +17,105 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-
-import { StepCompany } from "./step-company";
-import { StepBilling } from "./step-billing";
-import { StepAssignment } from "./step-assignment";
+} from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useWizardSteps } from '@/hooks/use-wizard-steps';
+import { trpc } from '@/trpc/init';
+import { StepAssignment } from './step-assignment';
+import { StepBilling } from './step-billing';
+import { StepCompany } from './step-company';
 
 // ---------------------------------------------------------------------------
 // Wizard form schema (mirrors contractorCreateSchema from validators package)
-// Defined locally to avoid cross-package dependency from web -> validators
 // ---------------------------------------------------------------------------
 
+import { isValidNip } from '@/lib/nip-validator';
+
 const wizardSchema = z.object({
-  legalName: z.string().min(1, "Legal name is required").max(255),
-  displayName: z.string().min(1).max(255),
-  type: z.enum(["SOLE_TRADER", "COMPANY", "INDIVIDUAL_FREELANCER", "OTHER"]),
-  taxId: z.string().min(1, "NIP is required"),
-  vatId: z.string().optional(),
-  registrationNumber: z.string().optional(),
-  email: z.string().email("Invalid email address"),
-  phone: z.string().optional(),
+  legalName: z.string().min(1, 'Legal name is required').max(255),
+  displayName: z.string().max(255),
+  type: z.enum(['SOLE_TRADER', 'COMPANY', 'INDIVIDUAL_FREELANCER', 'OTHER']),
+  taxId: z
+    .string()
+    .min(1, 'NIP is required')
+    .refine(v => isValidNip(v), { message: 'Invalid NIP number' }),
+  vatId: z
+    .string()
+    .transform(v => (v === '' ? undefined : v))
+    .pipe(z.string().optional()),
+  registrationNumber: z
+    .string()
+    .transform(v => (v === '' ? undefined : v))
+    .pipe(z.string().optional()),
+  email: z.string().email('Invalid email address'),
+  phone: z
+    .string()
+    .transform(v => (v === '' ? undefined : v))
+    .pipe(z.string().optional()),
   countryCode: z.string().length(2),
   currency: z.string().length(3),
-  addressLine1: z.string().optional(),
-  addressLine2: z.string().optional(),
-  city: z.string().optional(),
-  postalCode: z.string().optional(),
-  billingModel: z.string().min(1, "Billing model is required"),
-  rateValueGrosze: z.number().int().positive("Rate must be positive"),
-  bankAccount: z.string().optional(),
-  paymentTermsDays: z.number().int().positive().optional(),
-  ownerUserId: z.string().min(1, "Owner is required"),
-  primaryTeamId: z.string().optional(),
-  primaryProjectId: z.string().optional(),
-  defaultCostCenterId: z.string().optional(),
+  addressLine1: z
+    .string()
+    .transform(v => (v === '' ? undefined : v))
+    .pipe(z.string().optional()),
+  addressLine2: z
+    .string()
+    .transform(v => (v === '' ? undefined : v))
+    .pipe(z.string().optional()),
+  city: z
+    .string()
+    .transform(v => (v === '' ? undefined : v))
+    .pipe(z.string().optional()),
+  postalCode: z
+    .string()
+    .transform(v => (v === '' ? undefined : v))
+    .pipe(z.string().optional()),
+  billingModel: z.string().min(1, 'Billing model is required'),
+  rateValueMinor: z.number().int().positive('Rate must be positive'),
+  bankAccount: z
+    .string()
+    .transform(v => (v === '' ? undefined : v))
+    .pipe(z.string().optional()),
+  paymentTermsDays: z.preprocess(
+    v =>
+      v === '' || v === undefined || (typeof v === 'number' && Number.isNaN(v)) ? undefined : v,
+    z.number().int().positive().optional(),
+  ),
+  ownerUserId: z.string().min(1, 'Owner is required'),
+  primaryTeamId: z
+    .string()
+    .transform(v => (v === '' ? undefined : v))
+    .pipe(z.string().min(1).optional()),
+  primaryProjectId: z
+    .string()
+    .transform(v => (v === '' ? undefined : v))
+    .pipe(z.string().min(1).optional()),
+  defaultCostCenterId: z
+    .string()
+    .transform(v => (v === '' ? undefined : v))
+    .pipe(z.string().min(1).optional()),
 });
 
 export type WizardFormValues = z.infer<typeof wizardSchema>;
 
 // Per-step validation schemas
 const stepSchemas = [
-  // Step 1: Company details
+  // Step 1: Company details (displayName auto-syncs from legalName)
   z.object({
     legalName: z.string().min(1),
-    displayName: z.string().min(1),
-    type: z.enum(["SOLE_TRADER", "COMPANY", "INDIVIDUAL_FREELANCER", "OTHER"]),
-    taxId: z.string().min(1),
+    type: z.enum(['SOLE_TRADER', 'COMPANY', 'INDIVIDUAL_FREELANCER', 'OTHER']),
+    taxId: z
+      .string()
+      .min(1)
+      .refine(v => isValidNip(v), { message: 'Invalid NIP number' }),
     email: z.string().email(),
   }),
   // Step 2: Billing
   z.object({
     billingModel: z.string().min(1),
     currency: z.string().length(3),
-    rateValueGrosze: z.number().positive(),
+    rateValueMinor: z.number().positive(),
   }),
   // Step 3: Assignment
   z.object({
@@ -90,13 +127,7 @@ const stepSchemas = [
 // Step indicator
 // ---------------------------------------------------------------------------
 
-function StepIndicator({
-  steps,
-  currentStep,
-}: {
-  steps: string[];
-  currentStep: number;
-}) {
+function StepIndicator({ steps, currentStep }: { steps: string[]; currentStep: number }) {
   return (
     <div className="flex items-center justify-center gap-0 px-4 py-3">
       {steps.map((label, index) => {
@@ -107,34 +138,24 @@ function StepIndicator({
           <div key={label} className="flex items-center">
             {index > 0 && (
               <div
-                className={`mx-2 h-px w-8 ${
-                  index <= currentStep ? "bg-primary" : "bg-border"
-                }`}
+                className={`mx-2 h-px w-8 ${index <= currentStep ? 'bg-primary' : 'bg-border'}`}
               />
             )}
             <div className="flex items-center gap-2">
               <div
                 className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-medium transition-colors ${
                   isCompleted
-                    ? "bg-primary text-primary-foreground"
+                    ? 'bg-primary text-primary-foreground'
                     : isCurrent
-                      ? "border-2 border-primary text-primary"
-                      : "border border-border text-muted-foreground"
-                }`}
-              >
-                {isCompleted ? (
-                  <Check className="h-3.5 w-3.5" />
-                ) : (
-                  index + 1
-                )}
+                      ? 'border-2 border-primary text-primary'
+                      : 'border border-border text-muted-foreground'
+                }`}>
+                {isCompleted ? <Check className="h-3.5 w-3.5" /> : index + 1}
               </div>
               <span
                 className={`text-[13px] ${
-                  isCurrent
-                    ? "font-medium text-foreground"
-                    : "text-muted-foreground"
-                }`}
-              >
+                  isCurrent ? 'font-medium text-foreground' : 'text-muted-foreground'
+                }`}>
                 {label}
               </span>
             </div>
@@ -160,72 +181,79 @@ interface WizardDialogProps {
  * Validates per-step on "Next" click using step-specific schema picks.
  */
 export function WizardDialog({ open, onOpenChange }: WizardDialogProps) {
-  const t = useTranslations("ContractorWizard");
+  const t = useTranslations('ContractorWizard');
   const queryClient = useQueryClient();
 
-  const [currentStep, setCurrentStep] = useState(0);
+  const { currentStep, goNext, goBack, reset: resetSteps } = useWizardSteps(3);
   const [showDiscardDialog, setShowDiscardDialog] = useState(false);
 
   const form = useForm<WizardFormValues>({
     resolver: zodResolver(wizardSchema),
     defaultValues: {
-      legalName: "",
-      displayName: "",
+      legalName: '',
+      displayName: '',
       type: undefined,
-      taxId: "",
-      vatId: "",
-      registrationNumber: "",
-      email: "",
-      phone: "",
-      countryCode: "PL",
-      currency: "PLN",
-      addressLine1: "",
-      addressLine2: "",
-      city: "",
-      postalCode: "",
-      billingModel: "",
-      rateValueGrosze: 0,
-      bankAccount: "",
+      taxId: '',
+      vatId: undefined,
+      registrationNumber: undefined,
+      email: '',
+      phone: undefined,
+      countryCode: 'PL',
+      currency: 'PLN',
+      addressLine1: undefined,
+      addressLine2: undefined,
+      city: undefined,
+      postalCode: undefined,
+      billingModel: '',
+      rateValueMinor: 0,
+      bankAccount: undefined,
       paymentTermsDays: undefined,
-      ownerUserId: "",
-      primaryTeamId: "",
-      primaryProjectId: "",
-      defaultCostCenterId: "",
+      ownerUserId: '',
+      primaryTeamId: undefined,
+      primaryProjectId: undefined,
+      defaultCostCenterId: undefined,
     },
   });
 
   const createMutation = useMutation(
     trpc.contractor.create.mutationOptions({
       onSuccess: () => {
-        toast.success(t("success"));
-        queryClient.invalidateQueries({ queryKey: ["contractor"] });
+        toast.success(t('success'));
+        queryClient.invalidateQueries({ queryKey: ['contractor'] });
         handleClose(true);
       },
-      onError: () => {
-        toast.error(t("error"));
+      onError: (error: unknown) => {
+        const message =
+          typeof error === 'object' && error && 'message' in error
+            ? String((error as { message?: unknown }).message ?? '')
+            : '';
+        toast.error(message || t('error'));
       },
     }),
   );
 
-  const stepLabels = [t("step1"), t("step2"), t("step3")];
-  const nextLabels = [t("next1"), t("next2"), t("submit")];
+  const stepLabels = [t('step1'), t('step2'), t('step3')];
+  const nextLabels = [t('next1'), t('next2'), t('submit')];
 
   const isDirty = form.formState.isDirty;
 
-  const handleClose = (force = false) => {
-    if (!force && isDirty) {
-      setShowDiscardDialog(true);
-      return;
-    }
-    form.reset();
-    setCurrentStep(0);
-    onOpenChange(false);
-  };
+  const handleClose = useCallback(
+    (force = false) => {
+      if (!force && isDirty) {
+        setShowDiscardDialog(true);
+        return;
+      }
+      form.reset();
+      resetSteps();
+      onOpenChange(false);
+    },
+    [isDirty, form, resetSteps, onOpenChange],
+  );
 
   const handleDiscard = () => {
     setShowDiscardDialog(false);
     form.reset();
-    setCurrentStep(0);
+    resetSteps();
     onOpenChange(false);
   };
 
@@ -234,50 +262,63 @@ export function WizardDialog({ open, onOpenChange }: WizardDialogProps) {
     if (!schema) return;
 
     // Validate only the current step's fields
-    const stepFields = Object.keys(schema.shape) as Array<
-      keyof WizardFormValues
-    >;
+    const stepFields = Object.keys(schema.shape) as Array<keyof WizardFormValues>;
     const isValid = await form.trigger(stepFields);
 
     if (!isValid) return;
 
     if (currentStep < 2) {
-      setCurrentStep((s) => s + 1);
+      // Auto-sync displayName from legalName if not set (no dedicated UI field)
+      if (currentStep === 0 && !form.getValues('displayName')) {
+        form.setValue('displayName', form.getValues('legalName'));
+      }
+      goNext();
     } else {
-      // Final step — submit
-      form.handleSubmit((data) => {
-        // Ensure displayName defaults to legalName if empty
-        const submitData = {
-          ...data,
-          displayName: data.displayName || data.legalName,
-        };
-        createMutation.mutate(submitData);
-      })();
+      // Final step — all steps validated, submit directly
+      const data = form.getValues();
+      createMutation.mutate({
+        ...data,
+        displayName: data.displayName || data.legalName,
+      });
     }
   };
 
   const handleBack = () => {
-    if (currentStep > 0) {
-      setCurrentStep((s) => s - 1);
-    }
+    goBack();
   };
+
+  const handleDialogOpenChange = useCallback(
+    (o: boolean) => {
+      if (!o) handleClose();
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [handleClose],
+  );
+
+  const _handleCloseButton = useCallback(() => handleClose(), [handleClose]);
 
   return (
     <>
-      <Dialog open={open} onOpenChange={(o) => !o && handleClose()}>
-        <DialogContent
-          className="sm:max-w-[640px]"
-          showCloseButton={false}
-        >
+      <Dialog open={open} onOpenChange={handleDialogOpenChange}>
+        <DialogContent className="sm:max-w-[640px]" showCloseButton={false}>
           <DialogHeader>
-            <DialogTitle>{t("title")}</DialogTitle>
+            <DialogTitle>{t('title')}</DialogTitle>
           </DialogHeader>
 
           {/* Step indicator */}
           <StepIndicator steps={stepLabels} currentStep={currentStep} />
 
-          {/* Step content */}
-          <div className="min-h-[320px] px-1">
+          {/* Step content — prevent Enter from advancing steps */}
+          {/* biome-ignore lint/a11y/noStaticElementInteractions: onKeyDown only prevents Enter on inputs, not interactive */}
+          <div
+            className="min-h-[320px] px-1"
+            role="presentation"
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+            onKeyDown={e => {
+              if (e.key === 'Enter' && e.target instanceof HTMLInputElement) {
+                e.preventDefault();
+              }
+            }}>
             {currentStep === 0 && <StepCompany form={form} />}
             {currentStep === 1 && <StepBilling form={form} />}
             {currentStep === 2 && <StepAssignment form={form} />}
@@ -287,32 +328,23 @@ export function WizardDialog({ open, onOpenChange }: WizardDialogProps) {
           <div className="flex items-center justify-between border-t pt-4 mt-2">
             <div>
               {currentStep > 0 ? (
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleBack}
-                >
-                  {t("back")}
+                // biome-ignore lint/nursery/noJsxPropsBind: inline callback
+                <Button type="button" variant="outline" onClick={handleBack}>
+                  {t('back')}
                 </Button>
               ) : (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={() => handleClose()}
-                >
-                  {isDirty ? t("discardChanges") : t("close")}
+                // biome-ignore lint/nursery/noJsxPropsBind: callback wrapping named handler
+                <Button type="button" variant="ghost" onClick={() => handleClose()}>
+                  {isDirty ? t('discardChanges') : t('close')}
                 </Button>
               )}
             </div>
-            <Button
-              type="button"
-              onClick={handleNext}
-              disabled={createMutation.isPending}
-            >
+            {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+            <Button type="button" onClick={handleNext} disabled={createMutation.isPending}>
               {createMutation.isPending ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {t("submit")}
+                  <Loader2 className="me-2 h-4 w-4 animate-spin" />
+                  {t('submit')}
                 </>
               ) : (
                 nextLabels[currentStep]
@@ -321,32 +353,23 @@ export function WizardDialog({ open, onOpenChange }: WizardDialogProps) {
           </div>
         </DialogContent>
       </Dialog>
-
       {/* Discard confirmation */}
-      <AlertDialog
-        open={showDiscardDialog}
-        onOpenChange={setShowDiscardDialog}
-      >
+      <AlertDialog open={showDiscardDialog} onOpenChange={setShowDiscardDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>
-              {t("discardConfirm.title")}
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              {t("discardConfirm.body")}
-            </AlertDialogDescription>
+            <AlertDialogTitle>{t('discardConfirm.title')}</AlertDialogTitle>
+            <AlertDialogDescription>{t('discardConfirm.body')}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{t("discardConfirm.keep")}</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDiscard}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {t("discardConfirm.discard")}
+            <AlertDialogCancel>{t('discardConfirm.keep')}</AlertDialogCancel>
+            {/* biome-ignore lint/nursery/noJsxPropsBind: inline callback */}
+            <AlertDialogAction onClick={handleDiscard} variant="destructive">
+              {t('discardConfirm.discard')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      ;
     </>
   );
 }

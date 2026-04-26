@@ -1,8 +1,9 @@
-"use client";
+'use client';
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
 
-import { trpc } from "@/trpc/init";
+import { trpc } from '@/trpc/init';
 
 /**
  * Overdue count badge for the sidebar Workflows nav item.
@@ -10,6 +11,7 @@ import { trpc } from "@/trpc/init";
  * Renders nothing if count is 0.
  */
 export function WorkflowNavBadge() {
+  const tAria = useTranslations('Common.aria');
   const overdueQuery = useQuery({
     ...trpc.workflow.overdueCount.queryOptions(),
     refetchInterval: 60_000,
@@ -21,10 +23,11 @@ export function WorkflowNavBadge() {
 
   return (
     <span
-      className="absolute -right-1 -top-1 flex size-[18px] items-center justify-center rounded-full bg-destructive text-[10px] font-medium leading-none text-destructive-foreground"
-      aria-label={`${count} overdue tasks`}
-    >
-      {count > 9 ? "9+" : count}
+      className="absolute -end-1 -top-1 flex size-[18px] items-center justify-center rounded-full bg-destructive text-[10px] font-medium leading-none text-destructive-foreground"
+      role="status"
+      aria-label={tAria('overdueTasks', { count })}>
+      {/* biome-ignore lint/nursery/noLeakedRender: count is intentionally rendered as text, and 0 is handled by early return */}
+      {count > 9 ? '9+' : count}
     </span>
   );
 }

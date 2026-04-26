@@ -1,12 +1,9 @@
-import { prisma } from "@contractor-ops/db";
-import { Resend } from "resend";
-import type { NOTIFICATION_TYPES } from "@contractor-ops/validators";
-import { renderNotificationEmail } from "./email-templates.js";
-import {
-  getSlackUserIdForUser,
-  sendApprovalCard,
-  sendReminderDM,
-} from "./slack-client.js";
+import { prisma } from '@contractor-ops/db';
+import type { NOTIFICATION_TYPES } from '@contractor-ops/validators';
+import { getServerEnv } from '@contractor-ops/validators';
+import { sendAppEmail } from './app-email.js';
+import { renderNotificationEmail } from './email-templates.js';
+import { getConnectedMessagingProviders } from './messaging/index.js';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -15,17 +12,20 @@ import {
 type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 
 type EntityType =
-  | "ORGANIZATION"
-  | "CONTRACTOR"
-  | "CONTRACT"
-  | "DOCUMENT"
-  | "INVOICE"
-  | "WORKFLOW_RUN"
-  | "WORKFLOW_TASK_RUN"
-  | "PAYMENT_RUN"
-  | "PROJECT"
-  | "TEAM"
-  | "APPROVAL_FLOW";
+  | 'ORGANIZATION'
+  | 'CONTRACTOR'
+  | 'CONTRACT'
+  | 'DOCUMENT'
+  | 'INVOICE'
+  | 'WORKFLOW_RUN'
+  | 'WORKFLOW_TASK_RUN'
+  | 'PAYMENT_RUN'
+  | 'PROJECT'
+  | 'TEAM'
+  | 'APPROVAL_FLOW'
+  | 'USER'
+  | 'RETURN_REQUEST'
+  | 'SHIPMENT';
 
 export interface NotificationEvent {
   organizationId: string;
@@ -39,40 +39,27 @@ export interface NotificationEvent {
 }
 
 // ---------------------------------------------------------------------------
-// Resend client (lazy init)
-// ---------------------------------------------------------------------------
-
-let resendClient: Resend | null = null;
-
-function getResend(): Resend {
-  if (!resendClient) {
-    resendClient = new Resend(process.env.RESEND_API_KEY);
-  }
-  return resendClient;
-}
-
-// ---------------------------------------------------------------------------
 // Entity URL helper
 // ---------------------------------------------------------------------------
 
 const ENTITY_ROUTES: Record<string, string> = {
-  INVOICE: "/invoices",
-  CONTRACT: "/contracts",
-  CONTRACTOR: "/contractors",
-  WORKFLOW_RUN: "/workflows",
-  WORKFLOW_TASK_RUN: "/workflows",
-  APPROVAL_FLOW: "/approvals",
-  DOCUMENT: "/documents",
+  INVOICE: '/invoices',
+  CONTRACT: '/contracts',
+  CONTRACTOR: '/contractors',
+  WORKFLOW_RUN: '/workflows',
+  WORKFLOW_TASK_RUN: '/workflows',
+  APPROVAL_FLOW: '/approvals',
+  DOCUMENT: '/documents',
 };
 
 function buildEntityUrl(entityType: string, entityId: string): string {
-  const base = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
-  const route = ENTITY_ROUTES[entityType] ?? "";
+  const base = getServerEnv().NEXT_PUBLIC_APP_URL;
+  const route = ENTITY_ROUTES[entityType] ?? '';
   return `${base}${route}/${entityId}`;
 }
 
 function buildPreferencesUrl(): string {
-  const base = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const base = getServerEnv().NEXT_PUBLIC_APP_URL;
   return `${base}/settings?tab=notifications`;
 }
 
@@ -114,6 +101,7 @@ export async function getOrCreatePreferences(
       notificationType,
       channelEmail: true,
       channelSlack: true,
+      channelTeams: false,
       channelInApp: true,
       digestMode: false,
     },
@@ -130,19 +118,13 @@ export async function getOrCreatePreferences(
  * Sends a notification email via Resend with React Email templates.
  * Looks up user email, renders the template, and sends via Resend.
  */
-async function sendNotificationEmail(
-  userId: string,
-  event: NotificationEvent,
-): Promise<void> {
+async function sendNotificationEmail(userId: string, event: NotificationEvent): Promise<void> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: { email: true },
   });
 
   if (!user?.email) {
-    console.warn(
-      `[notification-service] No email for user=${userId}, skipping email`,
-    );
     return;
   }
 
@@ -157,63 +139,33 @@ async function sendNotificationEmail(
     body: event.body,
   });
 
-  const resend = getResend();
-
-  await resend.emails.send({
-    from: "Contractor Ops <notifications@contractorhub.io>",
+  await sendAppEmail({
+    from: 'Contractor Ops <notifications@contractorhub.io>',
     to: user.email,
-    subject,
+    subject: String(subject),
     react,
     headers: {
-      "List-Unsubscribe": `<${preferencesUrl}>`,
+      'List-Unsubscribe': `<${preferencesUrl}>`,
+      'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
     },
   });
 }
 
 // ---------------------------------------------------------------------------
-// Real Slack DM sender (replaces placeholder)
+// Channel alert category mapping
 // ---------------------------------------------------------------------------
 
-/**
- * Sends a Slack DM for a notification event.
- * For APPROVAL_REQUEST: sends a Block Kit approval card.
- * For other types: sends a text-based reminder DM.
- */
-async function sendSlackDM(
-  userId: string,
-  event: NotificationEvent,
-): Promise<void> {
-  const slackUserId = await getSlackUserIdForUser(
-    event.organizationId,
-    userId,
-  );
-
-  if (!slackUserId) {
-    // User not mapped to Slack — skip silently
-    return;
-  }
-
-  if (event.type === "APPROVAL_REQUEST") {
-    const meta = event.metadata ?? {};
-    await sendApprovalCard({
-      organizationId: event.organizationId,
-      slackUserId,
-      invoiceNumber: (meta.invoiceNumber as string) ?? "",
-      contractorName: (meta.contractorName as string) ?? "",
-      amount: String(meta.amount ?? ""),
-      currency: (meta.currency as string) ?? "",
-      slaDeadline: (meta.slaDeadline as string) ?? "",
-      invoiceId: (meta.invoiceId as string) ?? "",
-      flowId: (meta.flowId as string) ?? "",
-    });
-  } else {
-    await sendReminderDM({
-      organizationId: event.organizationId,
-      slackUserId,
-      text: `*${event.title}*\n${event.body}`,
-    });
-  }
-}
+const NOTIFICATION_TYPE_TO_CHANNEL_CATEGORY: Partial<Record<NotificationType, string>> = {
+  APPROVAL_REQUEST: 'approvals',
+  APPROVAL_DECISION: 'approvals',
+  INVOICE_RECEIVED: 'invoices',
+  CONTRACT_EXPIRING: 'contracts',
+  TASK_ASSIGNED: 'tasks',
+  TASK_OVERDUE: 'tasks',
+  EQUIPMENT_RETURN_REQUESTED: 'equipment',
+  EQUIPMENT_RETURN_APPROVED: 'equipment',
+  EQUIPMENT_RETURN_REJECTED: 'equipment',
+};
 
 // ---------------------------------------------------------------------------
 // Dispatch
@@ -234,66 +186,168 @@ export async function dispatch(event: NotificationEvent): Promise<void> {
   const dedupCutoff = new Date(now.getTime() - DEDUP_WINDOW_MS);
 
   for (const userId of event.recipientUserIds) {
-    const prefs = await getOrCreatePreferences(
-      userId,
-      event.organizationId,
-      event.type,
-    );
+    await dispatchToUser(userId, event, now, dedupCutoff);
+  }
 
-    // Deduplication: skip if same notification was sent recently
-    const duplicate = await prisma.notification.findFirst({
-      where: {
+  // Channel alert dispatch (org-level, not per-user)
+  await dispatchChannelAlerts(event);
+}
+
+// ---------------------------------------------------------------------------
+// Per-user dispatch
+// ---------------------------------------------------------------------------
+
+async function dispatchToUser(
+  userId: string,
+  event: NotificationEvent,
+  now: Date,
+  dedupCutoff: Date,
+): Promise<void> {
+  const prefs = await getOrCreatePreferences(userId, event.organizationId, event.type);
+
+  // Deduplication: skip if same notification was sent recently
+  const duplicate = await prisma.notification.findFirst({
+    where: {
+      userId,
+      type: event.type,
+      entityId: event.entityId,
+      createdAt: { gte: dedupCutoff },
+    },
+  });
+
+  if (duplicate) return;
+
+  // IN_APP notification (always created -- channelInApp is always true)
+  if (prefs.channelInApp) {
+    await prisma.notification.create({
+      data: {
+        organizationId: event.organizationId,
         userId,
+        channel: 'IN_APP',
         type: event.type,
+        title: event.title,
+        body: event.body,
+        entityType: event.entityType,
         entityId: event.entityId,
-        createdAt: { gte: dedupCutoff },
+        status: 'SENT',
+        sentAt: now,
       },
     });
+  }
 
-    if (duplicate) {
-      continue;
-    }
-
-    // IN_APP notification (always created — channelInApp is always true)
-    if (prefs.channelInApp) {
-      await prisma.notification.create({
-        data: {
-          organizationId: event.organizationId,
-          userId,
-          channel: "IN_APP",
-          type: event.type,
-          title: event.title,
-          body: event.body,
-          entityType: event.entityType,
-          entityId: event.entityId,
-          status: "SENT",
-          sentAt: now,
-        },
-      });
-    }
-
-    // Email notification (preference-gated, try/catch wrapped)
-    if (prefs.channelEmail) {
-      try {
-        await sendNotificationEmail(userId, event);
-      } catch (error) {
-        console.error(
-          `[notification-service] Email send failed for user=${userId}:`,
-          error,
-        );
-      }
-    }
-
-    // Slack notification (preference-gated, try/catch wrapped)
-    if (prefs.channelSlack) {
-      try {
-        await sendSlackDM(userId, event);
-      } catch (error) {
-        console.error(
-          `[notification-service] Slack DM send failed for user=${userId}:`,
-          error,
-        );
-      }
+  // Email notification (preference-gated)
+  if (prefs.channelEmail) {
+    try {
+      await sendNotificationEmail(userId, event);
+    } catch (_error) {
+      /* fire-and-forget */
     }
   }
+
+  // Messaging provider dispatch (Slack, Teams, future platforms)
+  await dispatchToMessagingProviders(userId, event, prefs);
+}
+
+// ---------------------------------------------------------------------------
+// Messaging provider dispatch (per-user DMs)
+// ---------------------------------------------------------------------------
+
+async function dispatchToMessagingProviders(
+  userId: string,
+  event: NotificationEvent,
+  prefs: Awaited<ReturnType<typeof getOrCreatePreferences>>,
+): Promise<void> {
+  const providers = await getConnectedMessagingProviders(event.organizationId);
+
+  for (const provider of providers) {
+    const prefKey = provider.platform === 'slack' ? 'channelSlack' : 'channelTeams';
+    if (!prefs[prefKey]) continue;
+
+    try {
+      const recipientId = await provider.getUserId(event.organizationId, userId);
+      if (!recipientId) continue;
+
+      await sendProviderMessage(provider, event, recipientId);
+    } catch (_error) {
+      /* fire-and-forget */
+    }
+  }
+}
+
+async function sendProviderMessage(
+  provider: Awaited<ReturnType<typeof getConnectedMessagingProviders>>[number],
+  event: NotificationEvent,
+  recipientId: string,
+): Promise<void> {
+  if (event.type === 'APPROVAL_REQUEST') {
+    const meta = event.metadata ?? {};
+    await provider.sendApprovalCard({
+      organizationId: event.organizationId,
+      recipientId,
+      invoiceNumber: (meta.invoiceNumber as string) ?? '',
+      contractorName: (meta.contractorName as string) ?? '',
+      amount: String(meta.amount ?? ''),
+      currency: (meta.currency as string) ?? '',
+      dueDate: (meta.slaDeadline as string) ?? '',
+      invoiceId: (meta.invoiceId as string) ?? '',
+      flowId: (meta.flowId as string) ?? '',
+    });
+  } else {
+    await provider.sendReminderDM({
+      organizationId: event.organizationId,
+      recipientId,
+      text: `*${event.title}*\n${event.body}`,
+    });
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Channel alert dispatch (org-level, not per-user)
+// ---------------------------------------------------------------------------
+
+async function dispatchChannelAlerts(event: NotificationEvent): Promise<void> {
+  const category = NOTIFICATION_TYPE_TO_CHANNEL_CATEGORY[event.type];
+  if (!category) return;
+
+  const providers = await getConnectedMessagingProviders(event.organizationId);
+
+  for (const provider of providers) {
+    try {
+      const channelId = await resolveChannelId(event.organizationId, provider.platform, category);
+      if (!channelId) continue;
+
+      await provider.sendChannelAlert({
+        organizationId: event.organizationId,
+        channelId,
+        title: event.title,
+        body: event.body,
+        entityType: event.entityType ?? 'unknown',
+        entityId: event.entityId ?? '',
+        details: [],
+        viewUrl: buildEntityUrl(event.entityType ?? 'unknown', event.entityId ?? ''),
+      });
+    } catch (_error) {
+      /* fire-and-forget */
+    }
+  }
+}
+
+async function resolveChannelId(
+  organizationId: string,
+  platform: string,
+  category: string,
+): Promise<string | null> {
+  const providerKey = platform === 'teams' ? 'MICROSOFT_TEAMS' : 'SLACK';
+  const connection = await prisma.integrationConnection.findFirst({
+    where: {
+      organizationId,
+      provider: providerKey,
+      status: 'CONNECTED',
+    },
+    select: { configJson: true },
+  });
+
+  const config = (connection?.configJson as Record<string, unknown>) ?? {};
+  const channelMapping = (config.channelMapping as Record<string, string>) ?? {};
+  return channelMapping[category] ?? null;
 }

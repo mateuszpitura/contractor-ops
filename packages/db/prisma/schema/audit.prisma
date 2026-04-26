@@ -1,7 +1,7 @@
 // AuditLog, OutboxEvent
 
 model AuditLog {
-  id             String    @id @default(cuid())
+  id             String     @id @default(cuid())
   organizationId String
   actorType      ActorType
   actorId        String?
@@ -15,9 +15,9 @@ model AuditLog {
   metadataJson   Json?
   ipAddress      String?
   userAgent      String?
-  createdAt      DateTime  @default(now())
+  createdAt      DateTime   @default(now())
 
-  organization   Organization @relation(fields: [organizationId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
 
   // No updatedAt — audit logs are immutable
   @@index([organizationId])
@@ -38,7 +38,7 @@ model OutboxEvent {
   publishedAt    DateTime?
   createdAt      DateTime     @default(now())
 
-  organization   Organization @relation(fields: [organizationId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
 
   @@index([organizationId])
   @@index([organizationId, status, availableAt])
@@ -51,6 +51,7 @@ enum ActorType {
   SYSTEM
   INTEGRATION
   API_KEY
+  CONTRACTOR
 }
 
 enum OutboxStatus {

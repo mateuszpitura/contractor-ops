@@ -1,0 +1,38 @@
+{
+  "name": "@contractor-ops/gov-api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@contractor-ops/db": "workspace:*",
+    "@contractor-ops/logger": "workspace:*",
+    "@contractor-ops/secrets": "workspace:*",
+    "@upstash/ratelimit": "^2.0.8",
+    "@upstash/redis": "^1.37.0",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@contractor-ops/test-utils": "workspace:*",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.4"
+  }
+}

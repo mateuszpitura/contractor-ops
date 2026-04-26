@@ -1,20 +1,19 @@
-"use client";
+'use client';
 
-import type { UseFormReturn } from "react-hook-form";
-import { useQuery } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
-
-import { trpc } from "@/trpc/init";
-import { Label } from "@/components/ui/label";
+import { useQuery } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
+import type { UseFormReturn } from 'react-hook-form';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
+import { trpc } from '@/trpc/init';
 
-import type { WizardFormValues } from "./wizard-dialog";
+import type { WizardFormValues } from './wizard-dialog';
 
 interface StepAssignmentProps {
   form: UseFormReturn<WizardFormValues>;
@@ -25,7 +24,7 @@ interface StepAssignmentProps {
  * Owner is required; team, project, and cost center are optional placeholders.
  */
 export function StepAssignment({ form }: StepAssignmentProps) {
-  const t = useTranslations("ContractorWizard.fields");
+  const t = useTranslations('ContractorWizard.fields');
 
   const {
     setValue,
@@ -40,82 +39,79 @@ export function StepAssignment({ form }: StepAssignmentProps) {
     <div className="space-y-4">
       {/* Owner (required) */}
       <div className="space-y-2">
-        <Label className="text-[13px]">{t("owner")}</Label>
-        <Select
-          value={watch("ownerUserId") ?? ""}
-          onValueChange={(value) =>
-            setValue("ownerUserId", value ?? "", {
-              shouldDirty: true,
-              shouldValidate: true,
-            })
-          }
-        >
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder={t("owner")} />
-          </SelectTrigger>
-          <SelectContent>
-            {(users as Array<{ id?: string; userId?: string; name?: string | null; email?: string | null }>).map(
-              (user) => {
-                const userId = user.id ?? user.userId ?? "";
-                return (
-                  <SelectItem key={userId} value={userId}>
-                    <div className="flex flex-col">
-                      <span>{user.name ?? user.email ?? userId}</span>
-                      {user.name && user.email && (
-                        <span className="text-xs text-muted-foreground">
-                          {user.email}
-                        </span>
-                      )}
-                    </div>
+        <Label className="text-[13px]">{t('owner')}</Label>
+        {(() => {
+          const ownerItems = (
+            users as unknown as Array<{
+              id?: string;
+              userId?: string;
+              role?: string;
+              user?: { id: string; name: string | null; email: string; image?: string | null };
+            }>
+          ).map(member => {
+            const userId = member.userId ?? member.user?.id ?? member.id ?? '';
+            const label = member.user?.name ?? member.user?.email ?? userId;
+            return { value: userId, label };
+          });
+          return (
+            <Select
+              value={watch('ownerUserId') ?? ''}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
+              onValueChange={value =>
+                setValue('ownerUserId', value ?? '', {
+                  shouldDirty: true,
+                  shouldValidate: true,
+                })
+              }
+              items={ownerItems}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder={t('owner')} />
+              </SelectTrigger>
+              <SelectContent>
+                {ownerItems.map(item => (
+                  <SelectItem key={item.value} value={item.value}>
+                    {item.label}
                   </SelectItem>
-                );
-              },
-            )}
-          </SelectContent>
-        </Select>
-        {errors.ownerUserId && (
-          <p className="text-sm text-destructive">
-            {errors.ownerUserId.message}
-          </p>
+                ))}
+              </SelectContent>
+            </Select>
+          );
+        })()}
+        {!!errors.ownerUserId && (
+          <p className="text-sm text-destructive">{errors.ownerUserId.message}</p>
         )}
       </div>
 
       {/* Team (optional, placeholder) */}
       <div className="space-y-2">
-        <Label className="text-[13px]">{t("team")}</Label>
+        <Label className="text-[13px]">{t('team')}</Label>
         <Select disabled>
           <SelectTrigger className="w-full">
-            <SelectValue placeholder={t("team")} />
+            <SelectValue placeholder={t('team')} />
           </SelectTrigger>
-          <SelectContent>
-            {/* Teams not yet queryable */}
-          </SelectContent>
+          <SelectContent>{/* Teams not yet queryable */}</SelectContent>
         </Select>
       </div>
 
       {/* Project (optional, placeholder) */}
       <div className="space-y-2">
-        <Label className="text-[13px]">{t("project")}</Label>
+        <Label className="text-[13px]">{t('project')}</Label>
         <Select disabled>
           <SelectTrigger className="w-full">
-            <SelectValue placeholder={t("project")} />
+            <SelectValue placeholder={t('project')} />
           </SelectTrigger>
-          <SelectContent>
-            {/* Projects not yet queryable */}
-          </SelectContent>
+          <SelectContent>{/* Projects not yet queryable */}</SelectContent>
         </Select>
       </div>
 
       {/* Cost center (optional, placeholder) */}
       <div className="space-y-2">
-        <Label className="text-[13px]">{t("costCenter")}</Label>
+        <Label className="text-[13px]">{t('costCenter')}</Label>
         <Select disabled>
           <SelectTrigger className="w-full">
-            <SelectValue placeholder={t("costCenter")} />
+            <SelectValue placeholder={t('costCenter')} />
           </SelectTrigger>
-          <SelectContent>
-            {/* Cost centers not yet queryable */}
-          </SelectContent>
+          <SelectContent>{/* Cost centers not yet queryable */}</SelectContent>
         </Select>
       </div>
     </div>

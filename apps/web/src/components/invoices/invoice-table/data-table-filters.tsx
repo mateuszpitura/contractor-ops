@@ -1,17 +1,14 @@
-"use client";
+'use client';
 
-import { useCallback } from "react";
-import { Filter, X } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { Filter, X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useCallback } from 'react';
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { enumKey } from '@/lib/enum-key';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -20,6 +17,8 @@ import {
 interface FilterState {
   status: string[];
   source: string[];
+  /** Phase 63 — when true, show only overdue invoices (status != PAID && dueDate < now). */
+  overdue?: boolean;
 }
 
 interface DataTableFiltersProps {
@@ -32,18 +31,18 @@ interface DataTableFiltersProps {
 // ---------------------------------------------------------------------------
 
 const INVOICE_STATUSES = [
-  "RECEIVED",
-  "UNDER_REVIEW",
-  "APPROVAL_PENDING",
-  "APPROVED",
-  "REJECTED",
-  "READY_FOR_PAYMENT",
-  "PARTIALLY_PAID",
-  "PAID",
-  "VOID",
+  'RECEIVED',
+  'UNDER_REVIEW',
+  'APPROVAL_PENDING',
+  'APPROVED',
+  'REJECTED',
+  'READY_FOR_PAYMENT',
+  'PARTIALLY_PAID',
+  'PAID',
+  'VOID',
 ] as const;
 
-const INVOICE_SOURCES = ["MANUAL_UPLOAD", "EMAIL_INTAKE"] as const;
+const INVOICE_SOURCES = ['MANUAL_UPLOAD', 'EMAIL_INTAKE'] as const;
 
 // ---------------------------------------------------------------------------
 // Component
@@ -52,60 +51,63 @@ const INVOICE_SOURCES = ["MANUAL_UPLOAD", "EMAIL_INTAKE"] as const;
 /**
  * Filter popover and active filter badges for the invoice data table.
  */
-export function DataTableFilters({
-  filters,
-  onFiltersChange,
-}: DataTableFiltersProps) {
-  const t = useTranslations("Invoices");
+export function DataTableFilters({ filters, onFiltersChange }: DataTableFiltersProps) {
+  const t = useTranslations('Invoices');
 
   // Active filter count for badge
-  const activeFilterCount = filters.status.length + filters.source.length;
+  const activeFilterCount =
+    filters.status.length + filters.source.length + (filters.overdue ? 1 : 0);
   const hasActiveFilters = activeFilterCount > 0;
 
   const clearAllFilters = useCallback(() => {
     onFiltersChange({
       status: [],
       source: [],
+      overdue: false,
     });
   }, [onFiltersChange]);
 
+  const toggleOverdue = useCallback(() => {
+    onFiltersChange({ overdue: !filters.overdue });
+  }, [filters.overdue, onFiltersChange]);
+
   const toggleFilterValue = useCallback(
-    (key: "status" | "source", value: string) => {
+    (key: 'status' | 'source', value: string) => {
       const current = filters[key];
-      const next = current.includes(value)
-        ? current.filter((v) => v !== value)
-        : [...current, value];
+      const next = current.includes(value) ? current.filter(v => v !== value) : [...current, value];
       onFiltersChange({ [key]: next });
     },
     [filters, onFiltersChange],
   );
 
   const removeFilter = useCallback(
-    (key: "status" | "source", value: string) => {
-      onFiltersChange({ [key]: filters[key].filter((v) => v !== value) });
+    (key: 'status' | 'source', value: string) => {
+      onFiltersChange({ [key]: filters[key].filter(v => v !== value) });
     },
     [filters, onFiltersChange],
   );
 
   return (
     <>
+      {/* Overdue filter chip (Phase 63 — PAY-06) */}
+      <Button
+        variant={filters.overdue ? 'default' : 'outline'}
+        size="lg"
+        onClick={toggleOverdue}
+        className={filters.overdue ? 'bg-primary text-primary-foreground' : ''}>
+        {t('overdueFilter')}
+      </Button>
+
       {/* Filter popover button */}
       <Popover>
         <PopoverTrigger
-          render={(props) => (
-            <Button
-              {...props}
-              variant="outline"
-              size="sm"
-              className="h-9 gap-1.5"
-            >
+          // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
+          render={props => (
+            <Button {...props} variant="outline" size="lg">
               <Filter className="h-3.5 w-3.5" />
-              {t("filters")}
+              {t('filters')}
               {hasActiveFilters && (
-                <Badge
-                  variant="secondary"
-                  className="ml-1 h-5 w-5 rounded-full p-0 text-[10px]"
-                >
+                <Badge variant="secondary" className="ms-1 h-5 w-5 rounded-full p-0 text-[10px]">
                   {activeFilterCount}
                 </Badge>
               )}
@@ -116,24 +118,26 @@ export function DataTableFilters({
           <div className="max-h-[400px] overflow-y-auto p-4 space-y-4">
             {/* Status */}
             <FilterSection
-              title={t("columns.status")}
-              options={INVOICE_STATUSES.map((s) => ({
+              title={t('columns.status')}
+              options={INVOICE_STATUSES.map(s => ({
                 value: s,
-                label: t(`status.${s}`),
+                label: t(`status.${enumKey(s)}`),
               }))}
               selected={filters.status}
-              onToggle={(value) => toggleFilterValue("status", value)}
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+              onToggle={value => toggleFilterValue('status', value)}
             />
 
             {/* Source */}
             <FilterSection
-              title={t("columns.source")}
-              options={INVOICE_SOURCES.map((s) => ({
+              title={t('columns.source')}
+              options={INVOICE_SOURCES.map(s => ({
                 value: s,
-                label: t(`source.${s}`),
+                label: t(`source.${enumKey(s)}`),
               }))}
               selected={filters.source}
-              onToggle={(value) => toggleFilterValue("source", value)}
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+              onToggle={value => toggleFilterValue('source', value)}
             />
           </div>
         </PopoverContent>
@@ -142,26 +146,28 @@ export function DataTableFilters({
       {/* Active filter badges */}
       {hasActiveFilters && (
         <div className="flex flex-wrap items-center gap-1.5">
-          {filters.status.map((s) => (
+          {filters.overdue && <FilterBadge label={t('overdueFilter')} onRemove={toggleOverdue} />}
+          {filters.status.map(s => (
             <FilterBadge
               key={`status-${s}`}
-              label={t(`status.${s}` as Parameters<typeof t>[0])}
-              onRemove={() => removeFilter("status", s)}
+              label={t(`status.${enumKey(s)}` as Parameters<typeof t>[0])}
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+              onRemove={() => removeFilter('status', s)}
             />
           ))}
-          {filters.source.map((s) => (
+          {filters.source.map(s => (
             <FilterBadge
               key={`source-${s}`}
-              label={t(`source.${s}` as Parameters<typeof t>[0])}
-              onRemove={() => removeFilter("source", s)}
+              label={t(`source.${enumKey(s)}` as Parameters<typeof t>[0])}
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+              onRemove={() => removeFilter('source', s)}
             />
           ))}
           <button
             type="button"
-            className="ml-1 text-xs text-muted-foreground hover:text-foreground underline"
-            onClick={clearAllFilters}
-          >
-            {t("clearAll")}
+            className="ms-1 text-xs text-muted-foreground hover:text-foreground underline"
+            onClick={clearAllFilters}>
+            {t('clearAll')}
           </button>
         </div>
       )}
@@ -190,13 +196,15 @@ function FilterSection({
     <div className="space-y-2">
       <h4 className="text-[13px] font-medium text-foreground">{title}</h4>
       <div className="space-y-1">
-        {options.map((option) => (
+        {options.map(option => (
           <label
             key={option.value}
-            className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-accent"
-          >
+            htmlFor={`inv-filter-${title}-${option.value}`}
+            className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-accent">
             <Checkbox
+              id={`inv-filter-${title}-${option.value}`}
               checked={selected.includes(option.value)}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
               onCheckedChange={() => onToggle(option.value)}
             />
             <span>{option.label}</span>
@@ -207,22 +215,17 @@ function FilterSection({
   );
 }
 
-function FilterBadge({
-  label,
-  onRemove,
-}: {
-  label: string;
-  onRemove: () => void;
-}) {
+function FilterBadge({ label, onRemove }: { label: string; onRemove: () => void }) {
+  const tAria = useTranslations('Common.aria');
+
   return (
-    <Badge variant="secondary" className="gap-1 pl-2 pr-1 py-0.5">
+    <Badge variant="secondary" className="gap-1 ps-2 pe-1 py-0.5">
       <span className="text-xs">{label}</span>
       <button
         type="button"
-        className="ml-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20"
+        className="ms-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20"
         onClick={onRemove}
-        aria-label={`Remove filter: ${label}`}
-      >
+        aria-label={tAria('removeFilter', { label })}>
         <X className="h-3 w-3" />
       </button>
     </Badge>

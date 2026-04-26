@@ -1,34 +1,33 @@
-"use client";
+'use client';
 
-import { useState, useMemo } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { type ColumnDef } from "@tanstack/react-table";
-import { useTranslations } from "next-intl";
-import { toast } from "sonner";
-import { DollarSign } from "lucide-react";
+import { useMutation, useQuery } from '@tanstack/react-query';
+import type { ColumnDef } from '@tanstack/react-table';
+import { DollarSign } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useMemo, useState } from 'react';
+import { toast } from 'sonner';
+import { useRouter } from '@/i18n/navigation';
+import { trpc } from '@/trpc/init';
+import { DrillDownBreadcrumb } from './drill-down-breadcrumb';
+import { downloadBase64File, ExportButtons } from './export-buttons';
+import { ReportChart } from './report-chart';
+import { ReportTable } from './report-table';
 
-import { trpc } from "@/trpc/init";
-import { useRouter } from "@/i18n/navigation";
-import { ReportChart } from "./report-chart";
-import { ReportTable } from "./report-table";
-import { DrillDownBreadcrumb } from "./drill-down-breadcrumb";
-import { ExportButtons, downloadBase64File } from "./export-buttons";
-
-function formatCurrency(grosze: number): string {
-  return new Intl.NumberFormat("pl-PL", {
-    style: "currency",
-    currency: "PLN",
+function formatCurrency(minor: number): string {
+  return new Intl.NumberFormat('pl-PL', {
+    style: 'currency',
+    currency: 'PLN',
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  }).format(grosze / 100);
+  }).format(minor / 100);
 }
 
 function formatDate(iso: string | null): string {
-  if (!iso) return "-";
-  return new Intl.DateTimeFormat("pl-PL", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
+  if (!iso) return '-';
+  return new Intl.DateTimeFormat('pl-PL', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
   }).format(new Date(iso));
 }
 
@@ -41,24 +40,19 @@ type SpendRow = {
   contractorId: string;
   contractorName: string;
   invoiceCount: number;
-  totalGrosze: number;
-  avgGrosze: number;
+  totalMinor: number;
+  avgMinor: number;
   lastPaidAt: string | null;
 };
 
-export function SpendContractorReport({
-  dateFrom,
-  dateTo,
-}: SpendContractorReportProps) {
-  const t = useTranslations("Reports");
+export function SpendContractorReport({ dateFrom, dateTo }: SpendContractorReportProps) {
+  const t = useTranslations('Reports');
   const router = useRouter();
 
   const [page, setPage] = useState(1);
-  const [sortBy, setSortBy] = useState("totalSpend");
-  const [sortOrder, setSortOrder] = useState("desc");
-  const [drillDownContractorId, setDrillDownContractorId] = useState<
-    string | null
-  >(null);
+  const [sortBy, setSortBy] = useState('totalSpend');
+  const [sortOrder, setSortOrder] = useState('desc');
+  const [drillDownContractorId, setDrillDownContractorId] = useState<string | null>(null);
 
   const tableQuery = useQuery(
     trpc.report.spendByContractor.queryOptions({
@@ -66,8 +60,8 @@ export function SpendContractorReport({
       dateTo,
       page,
       pageSize: 20,
-      sortBy: sortBy as "totalSpend" | "invoiceCount" | "contractorName",
-      sortOrder: sortOrder as "asc" | "desc",
+      sortBy: sortBy as 'totalSpend' | 'invoiceCount' | 'contractorName',
+      sortOrder: sortOrder as 'asc' | 'desc',
       contractorId: drillDownContractorId ?? undefined,
     }),
   );
@@ -78,32 +72,28 @@ export function SpendContractorReport({
 
   const exportMutation = useMutation(
     trpc.report.exportSpendByContractor.mutationOptions({
-      onSuccess: (data) => {
+      onSuccess: data => {
         const result = data as {
           data: string;
           filename: string;
           mimeType: string;
         };
         downloadBase64File(result.data, result.filename, result.mimeType);
-        toast.success(t("exportSuccess", { count: tableData.length }));
+        toast.success(t('exportSuccess', { count: tableData.length }));
       },
       onError: () => {
-        toast.error(t("exportError"));
+        toast.error(t('exportError'));
       },
     }),
   );
 
   const tableData = useMemo(() => {
-    const result = tableQuery.data as
-      | { items: SpendRow[]; totalCount: number }
-      | undefined;
+    const result = tableQuery.data as { items: SpendRow[]; totalCount: number } | undefined;
     return result?.items ?? [];
   }, [tableQuery.data]);
 
   const totalCount = useMemo(() => {
-    const result = tableQuery.data as
-      | { items: SpendRow[]; totalCount: number }
-      | undefined;
+    const result = tableQuery.data as { items: SpendRow[]; totalCount: number } | undefined;
     return result?.totalCount ?? 0;
   }, [tableQuery.data]);
 
@@ -111,48 +101,46 @@ export function SpendContractorReport({
     return (chartQuery.data ?? []) as Array<{
       contractorId: string;
       contractorName: string;
-      totalGrosze: number;
+      totalMinor: number;
     }>;
   }, [chartQuery.data]);
 
   const drillDownName = useMemo(() => {
     if (!drillDownContractorId) return null;
-    const item = chartData.find(
-      (d) => d.contractorId === drillDownContractorId,
-    );
+    const item = chartData.find(d => d.contractorId === drillDownContractorId);
     return item?.contractorName ?? drillDownContractorId;
   }, [drillDownContractorId, chartData]);
 
   const grandTotal = useMemo(() => {
-    return tableData.reduce((sum, row) => sum + row.totalGrosze, 0);
+    return tableData.reduce((sum, row) => sum + row.totalMinor, 0);
   }, [tableData]);
 
   const columns: ColumnDef<SpendRow>[] = useMemo(
     () => [
       {
-        accessorKey: "contractorName",
-        header: t("contractor"),
+        accessorKey: 'contractorName',
+        header: t('contractor'),
         enableSorting: true,
       },
       {
-        accessorKey: "invoiceCount",
-        header: t("invoices"),
+        accessorKey: 'invoiceCount',
+        header: t('invoices'),
         enableSorting: true,
       },
       {
-        accessorKey: "totalGrosze",
-        header: t("totalSpend"),
+        accessorKey: 'totalMinor',
+        header: t('totalSpend'),
         enableSorting: true,
         cell: ({ getValue }) => formatCurrency(getValue<number>()),
       },
       {
-        accessorKey: "avgGrosze",
-        header: t("avgInvoice"),
+        accessorKey: 'avgMinor',
+        header: t('avgInvoice'),
         cell: ({ getValue }) => formatCurrency(getValue<number>()),
       },
       {
-        accessorKey: "lastPaidAt",
-        header: t("lastPayment"),
+        accessorKey: 'lastPaidAt',
+        header: t('lastPayment'),
         cell: ({ getValue }) => formatDate(getValue<string | null>()),
       },
     ],
@@ -166,9 +154,7 @@ export function SpendContractorReport({
   };
 
   const handleDrillDown = (contractorId: string) => {
-    setDrillDownContractorId(
-      contractorId === drillDownContractorId ? null : contractorId,
-    );
+    setDrillDownContractorId(contractorId === drillDownContractorId ? null : contractorId);
     setPage(1);
   };
 
@@ -182,21 +168,21 @@ export function SpendContractorReport({
       <ReportChart
         type="bar-horizontal"
         data={chartData}
-        dataKey="totalGrosze"
+        dataKey="totalMinor"
         nameKey="contractorName"
         idKey="contractorId"
         activeId={drillDownContractorId ?? undefined}
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onSegmentClick={handleDrillDown}
         isLoading={chartQuery.isLoading}
       />
 
       <DrillDownBreadcrumb
         segments={[
-          { label: t("all") },
-          ...(drillDownName
-            ? [{ label: drillDownName, id: drillDownContractorId! }]
-            : []),
+          { label: t('all') },
+          ...(drillDownName ? [{ label: drillDownName, id: drillDownContractorId as string }] : []),
         ]}
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onClear={handleClearDrillDown}
       />
 
@@ -207,21 +193,22 @@ export function SpendContractorReport({
         page={page}
         pageSize={20}
         onPageChange={setPage}
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onSortChange={handleSortChange}
         sortBy={sortBy}
         sortOrder={sortOrder}
-        onRowClick={(row) => router.push(`/contractors/${row.contractorId}`)}
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+        onRowClick={row => router.push(`/contractors/${row.contractorId}`)}
         isLoading={tableQuery.isLoading}
-        emptyIcon={
-          <DollarSign className="mx-auto h-10 w-10 text-muted-foreground/50" />
-        }
-        emptyTitle={t("emptySpendContractor")}
-        emptyDescription={t("emptySpendContractorBody")}
-        grandTotalLabel={t("grandTotal")}
+        emptyIcon={<DollarSign className="mx-auto h-10 w-10 text-muted-foreground/50" />}
+        emptyTitle={t('emptySpendContractor')}
+        emptyDescription={t('emptySpendContractorBody')}
+        grandTotalLabel={t('grandTotal')}
         grandTotalValue={formatCurrency(grandTotal)}
       />
 
       <ExportButtons
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onExportPage={() =>
           exportMutation.mutate({
             dateFrom,
@@ -229,9 +216,8 @@ export function SpendContractorReport({
             contractorId: drillDownContractorId ?? undefined,
           })
         }
-        onExportAll={() =>
-          exportMutation.mutate({ dateFrom, dateTo })
-        }
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+        onExportAll={() => exportMutation.mutate({ dateFrom, dateTo })}
         isExporting={exportMutation.isPending}
       />
     </div>

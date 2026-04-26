@@ -1,25 +1,17 @@
-"use client";
+'use client';
 
-import { Suspense } from "react";
-import { useParams } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
-
-import { trpc } from "@/trpc/init";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Breadcrumb,
-  BreadcrumbList,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbSeparator,
-  BreadcrumbPage,
-} from "@/components/ui/breadcrumb";
-import { Link } from "@/i18n/navigation";
-
-import { DetailHeader } from "@/components/contracts/contract-detail/detail-header";
-import { ContractDetailTabs } from "@/components/contracts/contract-detail/contract-detail-tabs";
+import { useQuery } from '@tanstack/react-query';
+import { useParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import { Suspense, useCallback } from 'react';
+import { ContractDetailTabs } from '@/components/contracts/contract-detail/contract-detail-tabs';
+import { DetailHeader } from '@/components/contracts/contract-detail/detail-header';
+import { SigningProgressBar } from '@/components/contracts/contract-detail/signing-progress-bar';
+import { useBreadcrumbOverride } from '@/components/layout/breadcrumb-context';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Link } from '@/i18n/navigation';
+import { trpc } from '@/trpc/init';
 
 function HeaderSkeleton() {
   return (
@@ -47,7 +39,8 @@ function TabContentSkeleton() {
   return (
     <div className="grid gap-4 lg:grid-cols-2">
       {Array.from({ length: 4 }).map((_, i) => (
-        <div key={i} className="rounded-xl border bg-card p-4">
+        // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
+        <div key={`skel-${i}`} className="rounded-xl border bg-card p-4">
           <Skeleton className="mb-3 h-5 w-32" />
           <div className="space-y-2">
             <Skeleton className="h-4 w-full" />
@@ -62,27 +55,39 @@ function TabContentSkeleton() {
 
 export default function ContractDetailPage() {
   const params = useParams<{ id: string }>();
-  const t = useTranslations("ContractDetail");
+  const t = useTranslations('ContractDetail');
 
-  const contractQuery = useQuery(
-    trpc.contract.getById.queryOptions({ id: params.id })
+  const contractQuery = useQuery(trpc.contract.getById.queryOptions({ id: params.id }));
+
+  const contract = contractQuery.data;
+
+  // Set breadcrumb label for this detail page
+  useBreadcrumbOverride(params.id, contract?.title);
+
+  const handleRetry = useCallback(() => contractQuery.refetch(), [contractQuery]);
+
+  // E-sign: check for connected providers
+  const connectionsQuery = useQuery(trpc.esign.listConnections.queryOptions());
+  const esignConnections = connectionsQuery.data ?? [];
+
+  // E-sign: fetch signing envelopes for this contract
+  const envelopesQuery = useQuery(
+    trpc.esign.listEnvelopes.queryOptions({ contractId: params.id }, { enabled: !!params.id }),
   );
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const contract = contractQuery.data as any;
+  const envelopes = envelopesQuery.data ?? [];
+  const activeEnvelope = envelopes.find(e => ['SENT', 'DELIVERED', 'CREATED'].includes(e.status));
 
   if (contractQuery.isError) {
     const isNotFound =
-      contractQuery.error?.message?.includes("not found") ||
-      (contractQuery.error as { data?: { code?: string } })?.data?.code ===
-        "NOT_FOUND";
+      contractQuery.error?.message?.includes('not found') ||
+      (contractQuery.error as { data?: { code?: string } })?.data?.code === 'NOT_FOUND';
 
     if (isNotFound) {
       return (
         <div className="flex min-h-[400px] flex-col items-center justify-center gap-3 text-center">
-          <h2 className="text-lg font-medium">{t("error.notFound")}</h2>
+          <h2 className="text-lg font-medium">{t('error.notFound')}</h2>
           <Button variant="outline" render={<Link href="/contracts" />}>
-            {t("error.backToList")}
+            {t('error.backToList')}
           </Button>
         </div>
       );
@@ -90,9 +95,9 @@ export default function ContractDetailPage() {
 
     return (
       <div className="flex min-h-[400px] flex-col items-center justify-center gap-3 text-center">
-        <h2 className="text-lg font-medium">{t("error.loadFailed")}</h2>
-        <Button variant="outline" onClick={() => contractQuery.refetch()}>
-          {t("error.retry")}
+        <h2 className="text-lg font-medium">{t('error.loadFailed')}</h2>
+        <Button variant="outline" onClick={handleRetry}>
+          {t('error.retry')}
         </Button>
       </div>
     );
@@ -100,32 +105,36 @@ export default function ContractDetailPage() {
 
   return (
     <div className="space-y-6">
-      {/* Breadcrumb */}
-      <Breadcrumb>
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink
-              render={(props) => <Link {...props} href="/contracts" />}
-            >
-              {t("breadcrumb")}
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage>
-              {contract?.title ?? (
-                <Skeleton className="inline-block h-4 w-32" />
-              )}
-            </BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
-
       {/* Header */}
       {contractQuery.isLoading || !contract ? (
         <HeaderSkeleton />
       ) : (
-        <DetailHeader contract={contract} />
+        <DetailHeader
+          contract={{
+            ...contract,
+            _documentCount: contract.documentCount ?? 0,
+            _hasConnectedProvider: esignConnections.length > 0,
+            _contractParties: contract.contractor
+              ? [
+                  {
+                    name: contract.contractor.displayName,
+                    email: '',
+                    role: 'signer' as const,
+                  },
+                ]
+              : [],
+            _firstDocumentId: undefined,
+          }}
+        />
+      )}
+
+      {/* Signing progress (between header and tabs) */}
+      {activeEnvelope && (
+        <SigningProgressBar
+          envelope={
+            activeEnvelope as unknown as Parameters<typeof SigningProgressBar>[0]['envelope']
+          }
+        />
       )}
 
       {/* Tabs */}
@@ -133,7 +142,8 @@ export default function ContractDetailPage() {
         <>
           <div className="mb-4 flex gap-2 border-b pb-2">
             {Array.from({ length: 4 }).map((_, i) => (
-              <Skeleton key={i} className="h-7 w-24" />
+              // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
+              <Skeleton key={`skel-${i}`} className="h-7 w-24" />
             ))}
           </div>
           <TabContentSkeleton />

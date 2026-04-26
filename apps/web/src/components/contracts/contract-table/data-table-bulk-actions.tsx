@@ -1,20 +1,11 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import type { Table } from "@tanstack/react-table";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Download, Loader2, XCircle } from "lucide-react";
-import { toast } from "sonner";
-import { useTranslations } from "next-intl";
-
-import { trpc } from "@/trpc/init";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import type { Table } from '@tanstack/react-table';
+import { Download, Loader2, XCircle } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+import { toast } from 'sonner';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,8 +15,16 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import type { ContractRow } from "./columns";
+} from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { trpc } from '@/trpc/init';
+import type { ContractRow } from './columns';
 
 interface DataTableBulkActionsProps {
   table: Table<ContractRow>;
@@ -36,34 +35,32 @@ interface DataTableBulkActionsProps {
  * Includes export (CSV/XLSX) and terminate actions.
  */
 export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
-  const t = useTranslations("Contracts.bulkActions");
-  const tc = useTranslations("Contracts");
-  const td = useTranslations("Contracts.terminate");
+  const t = useTranslations('Contracts.bulkActions');
+  const tc = useTranslations('Contracts');
+  const td = useTranslations('Contracts.terminate');
   const queryClient = useQueryClient();
 
   const [showTerminateDialog, setShowTerminateDialog] = useState(false);
 
   const selectedRows = table.getFilteredSelectedRowModel().rows;
-  const selectedIds = selectedRows.map((row) => row.original.id);
+  const selectedIds = selectedRows.map(row => row.original.id);
   const count = selectedIds.length;
 
   const invalidateAndDeselect = () => {
-    queryClient.invalidateQueries({ queryKey: ["contract"] });
+    queryClient.invalidateQueries({ queryKey: ['contract'] });
     table.toggleAllPageRowsSelected(false);
   };
 
   const bulkTransitionMutation = useMutation(
     trpc.contract.bulkTransition.mutationOptions({
-      onSuccess: (data) => {
+      onSuccess: data => {
         const result = data as { updated: number; failed: string[] };
-        toast.success(
-          tc("terminated", { count: result.updated }),
-        );
+        toast.success(tc('terminated', { count: result.updated }));
         invalidateAndDeselect();
         setShowTerminateDialog(false);
       },
       onError: () => {
-        toast.error(tc("error.loadFailed"));
+        toast.error(tc('error.loadFailed'));
       },
     }),
   );
@@ -73,34 +70,33 @@ export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
   return (
     <>
       <div className="flex items-center gap-2 rounded-lg border bg-muted/50 px-3 py-2">
-        <span className="text-sm font-medium">
-          {t("selected", { count })}
-        </span>
+        <span className="text-sm font-medium">{t('selected', { count })}</span>
 
         {/* Export — placeholder for now, actual export router is not yet implemented */}
         <DropdownMenu>
           <DropdownMenuTrigger
-            render={(props) => (
+            // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
+            render={props => (
               <Button {...props} variant="outline" size="sm" className="h-8 gap-1.5">
                 <Download className="h-3.5 w-3.5" />
-                {t("export")}
+                {t('export')}
               </Button>
             )}
           />
           <DropdownMenuContent align="start">
             <DropdownMenuItem
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => {
-                toast.info(tc("exportComingSoon"));
-              }}
-            >
-              {t("exportCsv")}
+                toast.info(tc('exportComingSoon'));
+              }}>
+              {t('exportCsv')}
             </DropdownMenuItem>
             <DropdownMenuItem
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => {
-                toast.info(tc("exportComingSoon"));
-              }}
-            >
-              {t("exportXlsx")}
+                toast.info(tc('exportComingSoon'));
+              }}>
+              {t('exportXlsx')}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -110,10 +106,10 @@ export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
           variant="outline"
           size="sm"
           className="h-8 gap-1.5 text-destructive hover:text-destructive"
-          onClick={() => setShowTerminateDialog(true)}
-        >
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+          onClick={() => setShowTerminateDialog(true)}>
           <XCircle className="h-3.5 w-3.5" />
-          {t("terminate")}
+          {t('terminate')}
         </Button>
       </div>
 
@@ -121,29 +117,25 @@ export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
       <AlertDialog open={showTerminateDialog} onOpenChange={setShowTerminateDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>
-              {td("titleBulk", { count })}
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              {td("bodyBulk")}
-            </AlertDialogDescription>
+            <AlertDialogTitle>{td('titleBulk', { count })}</AlertDialogTitle>
+            <AlertDialogDescription>{td('bodyBulk')}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{tc("cancel")}</AlertDialogCancel>
+            <AlertDialogCancel>{tc('cancel')}</AlertDialogCancel>
             <AlertDialogAction
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() =>
                 bulkTransitionMutation.mutate({
                   ids: selectedIds,
-                  targetStatus: "TERMINATED",
+                  targetStatus: 'TERMINATED',
                 })
               }
               disabled={bulkTransitionMutation.isPending}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
+              variant="destructive">
               {bulkTransitionMutation.isPending ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="me-2 h-4 w-4 animate-spin" />
               ) : null}
-              {td("ctaBulk", { count })}
+              {td('ctaBulk', { count })}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

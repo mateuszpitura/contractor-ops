@@ -1,272 +1,151 @@
 # Requirements: Contractor Ops
 
-**Defined:** 2026-03-18
+**Defined:** 2026-04-12
 **Core Value:** The invoice-to-payment flow must work end-to-end: invoice arrives, gets matched to contract, routed through approval, and batched for payment — with full audit trail.
 
-## v1 Requirements
+## v5.0 Requirements
 
-Requirements for initial release. Each maps to roadmap phases.
+Requirements for UK & Germany market expansion. Each maps to roadmap phases.
 
-### Organization & Access
+### Country Foundations
 
-- [x] **ORG-01**: User can create a new organization with name, country, default currency, and timezone
-- [x] **ORG-02**: Admin can configure organization settings (branding, fiscal year, notification defaults)
-- [x] **ORG-03**: Admin can invite users by email with a specific role assignment
-- [x] **ORG-04**: Invited user can accept invitation and create their account
-- [x] **ORG-05**: Admin can deactivate a user, immediately revoking their access
-- [x] **ORG-06**: System enforces RBAC with 8 roles: admin, finance admin, ops manager, team manager, legal/compliance viewer, IT admin, external accountant, readonly
-- [x] **ORG-07**: All data access is scoped to the user's organization with no cross-tenant leakage
-- [x] **ORG-08**: Admin can configure approval chain templates (default chains, amount thresholds)
-- [x] **ORG-09**: Admin can manage workflow templates (create, edit, activate/deactivate)
-- [x] **ORG-10**: Admin can view searchable, filterable, exportable audit log of all critical actions
+- [x] **FOUND-01**: User can add UK-specific contractor fields (UTR, Companies House number, VAT registration number) to contractor profiles for UK-based organizations
+- [x] **FOUND-02**: User can add German-specific contractor fields (Steuernummer, Handelsregister number, USt-IdNr, Sozialversicherungsnummer) to contractor profiles for German-based organizations
+- [x] **FOUND-03**: User can switch the platform UI to German (full i18n as third language alongside Polish and English)
+- [x] **FOUND-04**: User sees German-localized legal terminology with correct formal register (Sie, mandatory tax phrases like "Steuerschuldnerschaft des Leistungsempfängers")
+- [x] **FOUND-05**: User can view UK GDPR-compliant privacy notices and data processing information
+- [x] **FOUND-06**: User can view German GDPR-compliant privacy notices (Datenschutzerklärung) with BfDI-aligned language
 
-### Contractors
+### Contractor Classification
 
-- [x] **CONT-01**: User can add a contractor with company details (legal name, NIP, VAT-EU, address, type)
-- [x] **CONT-02**: User can set contractor billing details (bank account, currency, billing model, default rate)
-- [x] **CONT-03**: User can assign a contractor to an internal owner, team, project, and cost center
-- [x] **CONT-04**: User can search contractors with full-text search across name, company, NIP, email
-- [x] **CONT-05**: User can filter contractors by status, owner, team, billing model, contract end date, compliance health
-- [x] **CONT-06**: User can perform bulk actions on contractors (assign owner, export, archive, launch workflow)
-- [x] **CONT-07**: User can view contractor profile with tabs: overview, contracts, documents, workflows, invoices, payments, activity, compliance
-- [x] **CONT-08**: System calculates and displays compliance health score (green/yellow/red) based on required documents, contract status, and overdue tasks
-- [x] **CONT-09**: Contractor status follows lifecycle: draft → onboarding → active → offboarding → inactive → archived
+- [ ] **CLASS-01**: User can run a contractor classification risk assessment using a generic pluggable engine that supports multiple country rule sets
+- [x] **CLASS-02**: User can assess IR35 status for a UK contractor engagement using CEST-aligned questions across 5 assessment areas (substitution, control, financial risk, part-and-parcel, mutuality of obligation) with inside/outside/undetermined outcomes
+- [x] **CLASS-03**: User can generate a Status Determination Statement (SDS) PDF containing determination outcome, reasoning per assessment area, engagement details, and dispute process
+- [x] **CLASS-04**: User can track IR35 chain participants (client → agency/intermediary → contractor PSC → worker) and SDS delivery timestamps per engagement
+- [x] **CLASS-05**: User can assess Scheinselbständigkeit risk for a German contractor engagement using ~20 DRV criteria across 4 categories (integration, entrepreneurial independence, personal dependency, economic dependency) with weighted risk scoring
+- [x] **CLASS-06**: User can generate DRV audit defense documentation as an exportable PDF bundle (engagement structure summary, independence indicators, risk assessment history, other-client attestation)
+- [ ] **CLASS-07**: User receives automated alerts when a German contractor's billing exceeds 70% (warning) or 83.33% (critical) from a single client, indicating economic dependency under Section 2 SGB VI
+- [ ] **CLASS-08**: User receives automated reassessment triggers when a UK engagement materially changes (contract amendment, rate change, scope change, extension) linking to previous SDS for comparison
+- [ ] **CLASS-09**: User can track Statusfeststellungsverfahren (DRV clearance procedure) applications with filing date, DRV reference, outcome, validity period, and expiry reminders
+- [ ] **CLASS-10**: User can view a per-market compliance health dashboard showing IR35 assessment coverage, Scheinselbständigkeit risk distribution, overdue reassessments, and economic dependency alerts
+- [ ] **CLASS-11**: Classification assessments are stored per-engagement (not per-contractor), supporting contractors with multiple concurrent engagements having independent assessments
 
-### Contracts & Documents
+### E-Invoicing
 
-- [x] **CNTR-01**: User can create a contract with metadata (type, dates, notice period, rate, currency, billing cycle, payment terms)
-- [x] **CNTR-02**: User can upload contract documents (PDF, DOCX) with versioning
-- [x] **CNTR-03**: System tracks contract statuses: draft → active → expiring → expired → terminated → superseded
-- [x] **CNTR-04**: System sends configurable reminders before contract expiration (30/60/90 days)
-- [x] **CNTR-05**: User can add amendments to existing contracts
-- [x] **DOCS-01**: User can upload documents and link them to contractors and/or contracts
-- [x] **DOCS-02**: User can download documents via short-lived signed URLs
-- [x] **DOCS-03**: System validates file type (MIME content) and scans uploads for malware
-- [x] **DOCS-04**: System tracks document versions and maintains upload history
+- [x] **EINV-01**: User can generate XRechnung-compliant e-invoices (EN 16931 with German CIUS rules) in CII XML syntax
+- [x] **EINV-02**: User can generate ZUGFeRD e-invoices as PDF/A-3 documents with embedded CII XML at EN 16931 (COMFORT) profile level
+- [ ] **EINV-03**: User can receive and parse incoming XRechnung and ZUGFeRD invoices, extracting structured data into the invoice intake flow
+- [x] **EINV-04**: User can validate generated e-invoices against KoSIT's three-layer validation (XSD schema, EN 16931 Schematron, XRechnung-specific Schematron)
+- [ ] **EINV-05**: User can manage Leitweg-IDs for German B2G (public sector) invoicing with per-contractor or per-contract Leitweg-ID storage
+- [ ] **EINV-06**: User can send e-invoices to UK public sector recipients via Peppol BIS Billing 3.0, reusing the existing Storecove ASP integration
+- [ ] **EINV-07**: User can view e-invoicing compliance status per organization showing which invoices are EN 16931 compliant and which need attention
 
-### Workflow Engine
+### Payments & Financial
 
-- [x] **WKFL-01**: Admin can create workflow templates (onboarding, offboarding, document collection, custom)
-- [x] **WKFL-02**: Admin can define tasks within templates with: title, type, description, due date offset, assignee role, required flag
-- [x] **WKFL-03**: Admin can define task dependencies (task B blocked until task A completes)
-- [x] **WKFL-04**: Admin can add conditional logic (e.g., include task only if contractor type = JDG)
-- [x] **WKFL-05**: User can start a workflow run from a template for a specific contractor
-- [x] **WKFL-06**: System resolves role-based task assignments to specific users at runtime
-- [x] **WKFL-07**: Assigned user can complete, skip, or reassign tasks
-- [x] **WKFL-08**: User can add comments and attachments to workflow tasks
-- [x] **WKFL-09**: System detects and flags overdue tasks with notifications
-- [x] **WKFL-10**: User can view workflow progress (X/Y tasks complete, timeline)
+- [x] **PAY-01**: User can export UK contractor payments as BACS Standard 18 Direct Credit files with correct fixed-width formatting, sort code validation, and ASCII transliteration for non-ASCII characters
+- [x] **PAY-02**: User can apply UK VAT rates (20% standard, 5% reduced, 0% zero-rated) to invoices for UK-based organizations
+- [x] **PAY-03**: User can validate UK VAT registration numbers via HMRC API
+- [x] **PAY-04**: User can apply German VAT rates (19% standard, 7% reduced) with Kleinunternehmerregelung exemption flag and reverse charge labeling ("Steuerschuldnerschaft des Leistungsempfängers")
+- [x] **PAY-05**: User can validate German USt-IdNr via VIES API with qualified confirmation response
+- [x] **PAY-06**: User sees automatically calculated late payment interest on overdue UK invoices per the Late Payment of Commercial Debts Act (BoE base rate + 8% + fixed compensation of £40/£70/£100)
+- [x] **PAY-07**: User can configure Skonto (early payment discount) terms on German invoices with discount percentage and discount period, with automatic discounted amount calculation and eligibility tracking based on payment date
 
-### Invoice Pipeline
+### Legal Compliance Hardening
 
-- [x] **INV-01**: User can upload invoices via drag & drop (single or multi-file)
-- [x] **INV-02**: System receives invoices via dedicated email inbox per organization
-- [x] **INV-03**: User can enter/edit invoice metadata (number, dates, amounts, NIP, bank account, billing period)
-- [x] **INV-04**: System auto-matches invoices to contractors by NIP
-- [x] **INV-05**: System auto-matches invoices to active contracts and calculates expected vs actual amount
-- [x] **INV-06**: System flags deviations above configurable threshold (amount, missing contract, expired contract)
-- [x] **INV-07**: System detects duplicate invoices by invoice number + contractor + amount
-- [x] **INV-08**: Invoice follows status flow: received → matched/unmatched/discrepancy → pending approval → approved/rejected → ready for payment → paid
-- [x] **INV-09**: User can manually match unmatched invoices to a contractor and contract
-- [x] **INV-10**: User can view invoice detail with linked contractor, contract, approval chain, comments, and embedded PDF viewer
+- [ ] **LEGAL-01**: Classification features (IR35 assessment, Scheinselbständigkeit assessment, SDS generation, DRV defense bundle) are gated behind a feature flag that prevents production access until all locked disclaimer constants are updated from PENDING to APPROVED status
+- [ ] **LEGAL-02**: CI pipeline includes a deployment gate that fails the production build if any locked disclaimer constant in packages/validators/src/legal/ contains "PENDING"
+- [ ] **LEGAL-03**: All classification outcome pages display a persistent, non-dismissible advisory banner above the verdict recommending consultation with a qualified UK tax adviser (IR35) or Steuerberater (Scheinselbständigkeit) before making business decisions
+- [ ] **LEGAL-04**: Undetermined or amber classification outcomes display a "Get Expert Help" call-to-action with adviser referral, and the platform logs an escalation event for audit trail
+- [ ] **LEGAL-05**: SDS PDF includes a cover page with client name, date, approval statement, and confirmation that the client reviewed and approved the determination before issuing it to HMRC or chain participants
+- [ ] **LEGAL-06**: DRV Statusfeststellungsverfahren tracking panel displays an unverified-entry disclaimer for manually entered records and supports R2 document upload for proof of the actual DRV decision letter
+- [ ] **LEGAL-07**: Platform Terms of Service include explicit "software not legal or tax advice" language covering classification assessments, e-invoicing generation, payment file exports, and interest calculations
+- [ ] **LEGAL-08**: When the `classification-engine` feature flag is OFF, all classification UI is completely removed from the render tree — no sidebar nav items, no contractor profile classification tabs/tiles, no wizard routes, no compliance dashboard classification sections, no economic dependency alert UI — the feature is invisible as if it does not exist
+- [ ] **LEGAL-09**: When the `classification-engine` feature flag is OFF, all classification tRPC procedures return FORBIDDEN or are unregistered, all classification document generation endpoints are inaccessible, and no background processing (economic dependency cron) executes — zero API-level access even via direct requests
+- [ ] **LEGAL-10**: When the `classification-engine` feature flag is ON, it requires that all locked disclaimer constants have been updated from PENDING to APPROVED — the flag cannot be enabled while disclaimers are unsigned
 
-### Approvals
-
-- [x] **APPR-01**: System routes invoices through configurable approval chains (1-3 levels)
-- [x] **APPR-02**: Approver can approve, reject (with mandatory comment), request clarification, or delegate
-- [x] **APPR-03**: User can view their personal approval queue sorted by priority (overdue first, then by due date)
-- [x] **APPR-04**: User can bulk approve/reject selected items from the queue
-- [x] **APPR-05**: System tracks SLA timers per approval level with visual indicators (green/yellow/red)
-- [x] **APPR-06**: System sends escalation notifications when SLA is breached
-- [x] **APPR-07**: Approver can delegate to another user when absent
-- [x] **APPR-08**: System snapshots the approval chain at submission time (chain changes don't affect in-flight approvals)
-- [x] **APPR-09**: Full audit trail for every approval decision with actor, timestamp, and comment
-
-### Payments
-
-- [x] **PAY-01**: Finance user can view all approved invoices ready for payment
-- [x] **PAY-02**: Finance user can select invoices for a payment run (all, by currency, by due date, manual pick)
-- [x] **PAY-03**: Finance user can export payment run as CSV or bank file format
-- [x] **PAY-04**: Finance user can mark individual items or entire run as paid/failed
-- [x] **PAY-05**: System tracks payment reference IDs and prevents duplicate payment runs (idempotency)
-- [x] **PAY-06**: User can view payment run history with summary (total, count, by currency)
-
-### Notifications & Integrations
-
-- [x] **NOTF-01**: System sends in-app notifications for: approval requests, approval decisions, task assignments, task overdue, contract expiring, invoice received
-- [x] **NOTF-02**: System sends email notifications for the same events (configurable per user)
-- [x] **NOTF-03**: User can view and manage their notifications (mark read, mark all read)
-- [x] **SLCK-01**: System sends Slack DMs to approvers with approve/reject action buttons
-- [x] **SLCK-02**: Approver can approve/reject invoices directly from Slack
-- [x] **SLCK-03**: System sends Slack reminders for overdue approvals and expiring contracts
-
-### Dashboard & Reports
-
-- [x] **DASH-01**: User sees KPI cards: active contractors, invoices awaiting approval, ready-to-pay total, contracts expiring in 30 days, open tasks
-- [x] **DASH-02**: User sees month-over-month spend chart
-- [x] **DASH-03**: User sees upcoming deadlines (contract expirations, overdue tasks, due invoices)
-- [x] **DASH-04**: User sees approval queue widget (top pending approvals)
-- [x] **DASH-05**: User sees recent activity feed
-- [x] **RPT-01**: User can view spend report by contractor (trend + totals)
-- [x] **RPT-02**: User can view spend report by team/project/cost center
-- [x] **RPT-03**: User can view contracts expiring in 30/60/90 days
-- [x] **RPT-04**: User can view overdue invoices report
-- [x] **RPT-05**: User can view compliance gaps report (missing documents)
-- [x] **RPT-06**: User can filter reports by date range and export to CSV
-
-### Onboarding & Polish
-
-- [x] **IMP-01**: User can import contractors from CSV/XLSX with column mapping wizard
-- [x] **IMP-02**: System validates imported data and shows preview before committing
-- [x] **IMP-03**: User can import contracts from CSV/XLSX with basic metadata
-- [x] **I18N-01**: All UI strings are externalized and available in Polish and English
-- [x] **I18N-02**: Dates, numbers, and currency are formatted according to user locale
-- [x] **ONBD-01**: New org sees guided setup wizard (org details → invite team → add/import contractor → configure approvals → connect Slack)
-- [x] **ONBD-02**: Empty states show contextual call-to-action on every view
-- [x] **SRCH-01**: User can search across contractors, contracts, invoices from global search bar
-- [x] **SRCH-02**: User can use command palette (Cmd+K) for search + quick actions + navigation
-
-## v2 Requirements
+## v5.x Requirements
 
 Deferred to future release. Tracked but not in current roadmap.
 
-### Contractor Portal
+### UK Advanced Payments
 
-- **PORTAL-01**: Contractor can view their own profile, contracts, and documents
-- **PORTAL-02**: Contractor can submit invoices through self-service portal
-- **PORTAL-03**: Contractor can view payment status for their invoices
+- **PAY-F01**: User can submit UK payments via Faster Payments (ISO 20022) for same-day settlement
 
-### Advanced Integrations
+### Construction Industry
 
-- **KSEF-01**: System pulls invoices from KSeF API by NIP
-- **KSEF-02**: System extracts structured data from KSeF XML
-- **ESIGN-01**: User can send contracts for e-signature (Autenti/DocuSign)
-- **ESIGN-02**: Signed documents auto-attach to contractor record
+- **PAY-F02**: User can flag UK construction industry contractors for CIS deduction tracking
 
-### Advanced Features
+### Extended Classification
 
-- **ADV-01**: OCR/AI metadata extraction from uploaded invoice PDFs
-- **ADV-02**: Multi-currency support (EUR, USD) with exchange rate awareness
-- **ADV-03**: Custom fields per contractor, contract, and invoice
-- **ADV-04**: Advanced reporting with drill-down and PDF export
+- **CLASS-F01**: User can request pre-filled Statusfeststellungsverfahren application forms for manual submission to DRV
+- **CLASS-F02**: User can view consolidated classification status across multiple jurisdictions for contractors operating in both UK and Germany
 
 ## Out of Scope
 
 | Feature | Reason |
 |---------|--------|
-| Payroll for employees | Not an HR tool — contractor ops only |
-| EOR/AOR | Local contractors only, not employer of record |
-| Performance reviews / recruiting | Not HR scope |
-| Contractor marketplace / directory | Completely different product, dilutes focus |
-| Full accounting suite | Coordination layer, not accounting replacement |
-| Notion/Jira replacement | Execution layer, not knowledge base or project management |
-| Mobile native app | Desktop-first, responsive web for approval on mobile |
-| Real-time WebSockets | Polling with TanStack Query sufficient for 5-50 contractor orgs |
-| SSO/SCIM | v3 — target market rarely requires it |
-| Open banking / payment initiation | v2+ — bank file export sufficient for v1 |
-| Public API + webhooks | v2 — no external integration demand at launch |
+| Binding IR35 determinations | Legal liability — tool assists decision-making, not replaces legal advice |
+| Automated DRV submission | No public API; requires personal authentication and wet signatures |
+| MTD VAT filing | Accounting software territory (Xero, QuickBooks) — we validate and export |
+| German payroll processing | Full payroll is DATEV/Personio territory — we flag risk and hand off |
+| CIS deduction processing | Construction niche, significant complexity for small segment — defer |
+| Become KoSIT XRechnung validator | Use their open-source validator; don't maintain rule updates |
+| Faster Payments (v5.0) | Research showed medium complexity; BACS covers batch payments — defer to v5.x |
+| Multi-country consolidated assessment | UK and Germany are separate legal frameworks; combined assessment would be legally meaningless |
+| France market expansion (Factur-X, PDP, URSSAF, French i18n, salariat déguisé, e-reporting) | Requires certified PDP partner (12-18 month certification); no partner signed — non-deliverable until partnership secured |
+| Cross-border EU compliance (A1 certs, PE risk, multi-jurisdiction reverse charge automation) | Serves subset of pan-EU clients; not a market-entry requirement — revisit after UK+DE customers |
 
 ## Traceability
 
-Which phases cover which requirements. Updated during roadmap creation.
-
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| ORG-01 | Phase 1 | Complete |
-| ORG-02 | Phase 1 | Complete |
-| ORG-03 | Phase 1 | Complete |
-| ORG-04 | Phase 1 | Complete |
-| ORG-05 | Phase 1 | Complete |
-| ORG-06 | Phase 1 | Complete |
-| ORG-07 | Phase 1 | Complete |
-| ORG-08 | Phase 6 | Complete |
-| ORG-09 | Phase 4 | Complete |
-| ORG-10 | Phase 9 | Complete |
-| CONT-01 | Phase 2 | Complete |
-| CONT-02 | Phase 2 | Complete |
-| CONT-03 | Phase 2 | Complete |
-| CONT-04 | Phase 2 | Complete |
-| CONT-05 | Phase 2 | Complete |
-| CONT-06 | Phase 2 | Complete |
-| CONT-07 | Phase 2 | Complete |
-| CONT-08 | Phase 2 | Complete |
-| CONT-09 | Phase 2 | Complete |
-| CNTR-01 | Phase 3 | Complete |
-| CNTR-02 | Phase 3 | Complete |
-| CNTR-03 | Phase 3 | Complete |
-| CNTR-04 | Phase 3 | Complete |
-| CNTR-05 | Phase 3 | Complete |
-| DOCS-01 | Phase 3 | Complete |
-| DOCS-02 | Phase 3 | Complete |
-| DOCS-03 | Phase 3 | Complete |
-| DOCS-04 | Phase 3 | Complete |
-| WKFL-01 | Phase 4 | Complete |
-| WKFL-02 | Phase 4 | Complete |
-| WKFL-03 | Phase 4 | Complete |
-| WKFL-04 | Phase 4 | Complete |
-| WKFL-05 | Phase 4 | Complete |
-| WKFL-06 | Phase 4 | Complete |
-| WKFL-07 | Phase 4 | Complete |
-| WKFL-08 | Phase 4 | Complete |
-| WKFL-09 | Phase 4 | Complete |
-| WKFL-10 | Phase 4 | Complete |
-| INV-01 | Phase 5 | Complete |
-| INV-02 | Phase 5 | Complete |
-| INV-03 | Phase 5 | Complete |
-| INV-04 | Phase 5 | Complete |
-| INV-05 | Phase 5 | Complete |
-| INV-06 | Phase 5 | Complete |
-| INV-07 | Phase 5 | Complete |
-| INV-08 | Phase 5 | Complete |
-| INV-09 | Phase 5 | Complete |
-| INV-10 | Phase 5 | Complete |
-| APPR-01 | Phase 6 | Complete |
-| APPR-02 | Phase 6 | Complete |
-| APPR-03 | Phase 6 | Complete |
-| APPR-04 | Phase 6 | Complete |
-| APPR-05 | Phase 6 | Complete |
-| APPR-06 | Phase 6 | Complete |
-| APPR-07 | Phase 6 | Complete |
-| APPR-08 | Phase 6 | Complete |
-| APPR-09 | Phase 6 | Complete |
-| PAY-01 | Phase 8 | Complete |
-| PAY-02 | Phase 8 | Complete |
-| PAY-03 | Phase 8 | Complete |
-| PAY-04 | Phase 8 | Complete |
-| PAY-05 | Phase 8 | Complete |
-| PAY-06 | Phase 8 | Complete |
-| NOTF-01 | Phase 7 | Complete |
-| NOTF-02 | Phase 7 | Complete |
-| NOTF-03 | Phase 7 | Complete |
-| SLCK-01 | Phase 7 | Complete |
-| SLCK-02 | Phase 7 | Complete |
-| SLCK-03 | Phase 7 | Complete |
-| DASH-01 | Phase 9 | Complete |
-| DASH-02 | Phase 9 | Complete |
-| DASH-03 | Phase 9 | Complete |
-| DASH-04 | Phase 9 | Complete |
-| DASH-05 | Phase 9 | Complete |
-| RPT-01 | Phase 9 | Complete |
-| RPT-02 | Phase 9 | Complete |
-| RPT-03 | Phase 9 | Complete |
-| RPT-04 | Phase 9 | Complete |
-| RPT-05 | Phase 9 | Complete |
-| RPT-06 | Phase 9 | Complete |
-| IMP-01 | Phase 10 | Complete |
-| IMP-02 | Phase 10 | Complete |
-| IMP-03 | Phase 10 | Complete |
-| I18N-01 | Phase 1 | Complete |
-| I18N-02 | Phase 1 | Complete |
-| ONBD-01 | Phase 10 | Complete |
-| ONBD-02 | Phase 10 | Complete |
-| SRCH-01 | Phase 10 | Complete |
-| SRCH-02 | Phase 10 | Complete |
+| FOUND-01 | Phase 67 | Complete |
+| FOUND-02 | Phase 67 | Complete |
+| FOUND-03 | Phase 69 | Complete |
+| FOUND-04 | Phase 67 | Complete |
+| FOUND-05 | Phase 67 | Complete |
+| FOUND-06 | Phase 67 | Complete |
+| CLASS-01 | Phase 67 | Pending |
+| CLASS-02 | Phase 67 | Complete |
+| CLASS-03 | Phase 59 | Complete |
+| CLASS-04 | Phase 59 | Complete |
+| CLASS-05 | Phase 67 | Complete |
+| CLASS-06 | Phase 59 | Complete |
+| CLASS-07 | Phase 60 | Pending |
+| CLASS-08 | Phase 60 | Pending |
+| CLASS-09 | Phase 60 | Pending |
+| CLASS-10 | Phase 60 | Pending |
+| CLASS-11 | Phase 67 | Pending |
+| EINV-01 | Phase 68 | Complete |
+| EINV-02 | Phase 68 | Complete |
+| EINV-03 | Phase 62 | Pending |
+| EINV-04 | Phase 68 | Complete |
+| EINV-05 | Phase 61 | Pending |
+| EINV-06 | Phase 61 | Pending |
+| EINV-07 | Phase 61 | Pending |
+| PAY-01 | Phase 63 | Complete |
+| PAY-02 | Phase 66 | Complete |
+| PAY-03 | Phase 66 | Complete |
+| PAY-04 | Phase 68 | Complete |
+| PAY-05 | Phase 66 | Complete |
+| PAY-06 | Phase 65 | Complete |
+| PAY-07 | Phase 65 | Complete |
+| LEGAL-01 | Phase 64 | Pending |
+| LEGAL-02 | Phase 64 | Pending |
+| LEGAL-03 | Phase 64 | Pending |
+| LEGAL-04 | Phase 64 | Pending |
+| LEGAL-05 | Phase 64 | Pending |
+| LEGAL-06 | Phase 64 | Pending |
+| LEGAL-07 | Phase 64 | Pending |
+| LEGAL-08 | Phase 64 | Pending |
+| LEGAL-09 | Phase 64 | Pending |
+| LEGAL-10 | Phase 64 | Pending |
 
 **Coverage:**
-- v1 requirements: 89 total
-- Mapped to phases: 89
+- v5.0 requirements: 41 total
+- Mapped to phases: 41/41
 - Unmapped: 0
 
 ---
-*Requirements defined: 2026-03-18*
-*Last updated: 2026-03-18 after roadmap creation*
+*Requirements defined: 2026-04-12*
+*Last updated: 2026-04-26 after gap closure phases 68-69 added per v5.0 milestone audit; PAY-04 reset from Complete to Pending (Skonto BG-20 emission gap I-1); EINV-01/02/04 + PAY-04 reassigned to Phase 68; FOUND-03 reassigned to Phase 69*

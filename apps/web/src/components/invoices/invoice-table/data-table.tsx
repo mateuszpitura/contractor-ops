@@ -1,38 +1,28 @@
-"use client";
+'use client';
 
-import { useCallback, useMemo, useState } from "react";
-import {
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
-  type ColumnDef,
-} from "@tanstack/react-table";
-import { useQuery } from "@tanstack/react-query";
-import { FileText } from "lucide-react";
-import { useTranslations } from "next-intl";
-
-import { trpc } from "@/trpc/init";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-
-import { getColumns, type InvoiceRow } from "./columns";
-import { DataTableToolbar } from "./data-table-toolbar";
-import { DataTablePagination } from "./data-table-pagination";
-import { useInvoiceFilters } from "./use-invoice-filters";
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import type { ColumnDef } from '@tanstack/react-table';
+import { getCoreRowModel, useReactTable } from '@tanstack/react-table';
+import { FileText, Loader2 } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import { useCallback, useMemo, useState } from 'react';
+import { parseFilterParam } from '@/components/invoices/einvoice-compliance-filter-chips';
+import { DataTableBody } from '@/components/shared/data-table-body';
+import { SortableTableHead } from '@/components/shared/sortable-table-head';
+import { Table, TableHeader, TableRow } from '@/components/ui/table';
+import { trpc } from '@/trpc/init';
+import type { InvoiceRow } from './columns';
+import { deriveComplianceStatus, getColumns } from './columns';
+import { DataTablePagination } from './data-table-pagination';
+import { DataTableToolbar } from './data-table-toolbar';
+import { useInvoiceFilters } from './use-invoice-filters';
 
 // ---------------------------------------------------------------------------
 // Overdue row detection
 // ---------------------------------------------------------------------------
 
-const NON_OVERDUE_STATUSES = new Set(["PAID", "VOID"]);
+const NON_OVERDUE_STATUSES = new Set(['PAID', 'VOID']);
 
 function isRowOverdue(row: InvoiceRow): boolean {
   if (!row.dueDate || NON_OVERDUE_STATUSES.has(row.status)) return false;
@@ -53,11 +43,9 @@ interface InvoiceDataTableProps {
  * Uses server-side pagination, sorting, and filtering via tRPC.
  * URL state is managed by nuqs for shareable filtered views.
  */
-export function InvoiceDataTable({
-  onRowClick,
-  onUpload,
-}: InvoiceDataTableProps) {
-  const t = useTranslations("Invoices");
+export function InvoiceDataTable({ onRowClick, onUpload }: InvoiceDataTableProps) {
+  const t = useTranslations('Invoices');
+  const tAria = useTranslations('Common.aria');
 
   // URL-synced filter state
   const [filters, setFilters] = useInvoiceFilters();
@@ -73,40 +61,34 @@ export function InvoiceDataTable({
       search: filters.search || undefined,
       sortBy:
         (filters.sortBy as
-          | "receivedAt"
-          | "invoiceNumber"
-          | "issueDate"
-          | "dueDate"
-          | "totalGrosze"
-          | "status") || "receivedAt",
-      sortOrder: (filters.sortOrder as "asc" | "desc") || "desc",
+          | 'receivedAt'
+          | 'invoiceNumber'
+          | 'issueDate'
+          | 'dueDate'
+          | 'totalMinor'
+          | 'status') || 'receivedAt',
+      sortOrder: (filters.sortOrder as 'asc' | 'desc') || 'desc',
       filters: {
         status: filters.status.length
           ? (filters.status as Array<
-              | "RECEIVED"
-              | "UNDER_REVIEW"
-              | "APPROVAL_PENDING"
-              | "APPROVED"
-              | "REJECTED"
-              | "READY_FOR_PAYMENT"
-              | "PARTIALLY_PAID"
-              | "PAID"
-              | "VOID"
+              | 'RECEIVED'
+              | 'UNDER_REVIEW'
+              | 'APPROVAL_PENDING'
+              | 'APPROVED'
+              | 'REJECTED'
+              | 'READY_FOR_PAYMENT'
+              | 'PARTIALLY_PAID'
+              | 'PAID'
+              | 'VOID'
             >)
           : undefined,
         matchStatus: filters.matchStatus
           ? ([filters.matchStatus] as Array<
-              | "UNMATCHED"
-              | "PARTIAL"
-              | "MATCHED"
-              | "DISCREPANCY"
-              | "MANUALLY_CONFIRMED"
+              'UNMATCHED' | 'PARTIAL' | 'MATCHED' | 'DISCREPANCY' | 'MANUALLY_CONFIRMED'
             >)
           : undefined,
         source: filters.source.length
-          ? (filters.source as Array<
-              "MANUAL_UPLOAD" | "EMAIL_INTAKE" | "KSEF" | "API"
-            >)
+          ? (filters.source as Array<'MANUAL_UPLOAD' | 'EMAIL_INTAKE' | 'KSEF' | 'API'>)
           : undefined,
         contractorId: filters.contractorId || undefined,
       },
@@ -115,23 +97,40 @@ export function InvoiceDataTable({
   );
 
   // Fetch data via tRPC
-  const invoicesQuery = useQuery(
-    trpc.invoice.list.queryOptions(queryInput),
+  const invoicesQuery = useQuery({
+    ...trpc.invoice.list.queryOptions(queryInput),
+    placeholderData: keepPreviousData,
+  });
+
+  // Phase 61 · Plan 61-08 — client-side compliance filter derived from the
+  // URL chip state (`?einvoiceStatus=invalid` or `invalid,failed`). Server
+  // has no EInvoiceLifecycle filter on invoice.list yet, so we narrow the
+  // loaded page client-side. Server-side filter would require extending
+  // invoice.list's input shape — tracked as a deferred item.
+  const searchParams = useSearchParams();
+  const complianceFilters = useMemo(
+    () => parseFilterParam(searchParams?.get('einvoiceStatus') ?? null),
+    [searchParams],
   );
+  const isComplianceFilterActive =
+    complianceFilters.length > 0 && !complianceFilters.includes('all');
 
   const data = useMemo(() => {
-    const result = invoicesQuery.data as
-      | { items: InvoiceRow[]; totalCount: number }
-      | undefined;
-    return result?.items ?? [];
-  }, [invoicesQuery.data]);
+    const result = invoicesQuery.data as { items: InvoiceRow[]; totalCount: number } | undefined;
+    const rows = result?.items ?? [];
+    if (!isComplianceFilterActive) return rows;
+    const allowed = new Set(complianceFilters);
+    return rows.filter(row => allowed.has(deriveComplianceStatus(row.eInvoiceLifecycle)));
+  }, [invoicesQuery.data, complianceFilters, isComplianceFilterActive]);
 
   const totalRows = useMemo(() => {
-    const result = invoicesQuery.data as
-      | { items: unknown[]; totalCount: number }
-      | undefined;
+    const result = invoicesQuery.data as { items: unknown[]; totalCount: number } | undefined;
+    // When a compliance filter is active we can't report the server's
+    // totalCount (it doesn't know about EInvoiceLifecycle). Report the
+    // client-filtered page size so pagination reflects what's visible.
+    if (isComplianceFilterActive) return data.length;
     return result?.totalCount ?? 0;
-  }, [invoicesQuery.data]);
+  }, [invoicesQuery.data, isComplianceFilterActive, data.length]);
 
   // Column definitions
   const columns: ColumnDef<InvoiceRow>[] = useMemo(
@@ -149,32 +148,35 @@ export function InvoiceDataTable({
       sorting: [
         {
           id: filters.sortBy,
-          desc: filters.sortOrder === "desc",
+          desc: filters.sortOrder === 'desc',
         },
       ],
     },
     onRowSelectionChange: setRowSelection,
-    onSortingChange: (updater) => {
+    onSortingChange: updater => {
       const next =
-        typeof updater === "function"
-          ? updater([
-              { id: filters.sortBy, desc: filters.sortOrder === "desc" },
-            ])
+        typeof updater === 'function'
+          ? updater([{ id: filters.sortBy, desc: filters.sortOrder === 'desc' }])
           : updater;
-      if (next.length > 0) {
+      const first = next[0];
+      if (first) {
         void setFilters({
-          sortBy: next[0]!.id,
-          sortOrder: next[0]!.desc ? "desc" : "asc",
+          sortBy: first.id,
+          sortOrder: first.desc ? 'desc' : 'asc',
           page: 1,
         });
+      } else {
+        // Sort removed — reset to default
+        void setFilters({ sortBy: 'receivedAt', sortOrder: 'desc', page: 1 });
       }
     },
+    enableSortingRemoval: true,
     getCoreRowModel: getCoreRowModel(),
     manualPagination: true,
     manualSorting: true,
     manualFiltering: true,
     enableRowSelection: true,
-    getRowId: (row) => row.id,
+    getRowId: row => row.id,
   });
 
   // Filter change handler
@@ -212,20 +214,25 @@ export function InvoiceDataTable({
     [setFilters],
   );
 
+  const rowClassName = useCallback(
+    (row: InvoiceRow) => (isRowOverdue(row) ? 'bg-destructive/5' : ''),
+    [],
+  );
+
   // Clear filters for "no results" CTA
   const clearFilters = useCallback(() => {
     void setFilters({
-      search: "",
+      search: '',
       status: [],
-      matchStatus: "",
+      matchStatus: '',
       source: [],
-      contractorId: "",
+      contractorId: '',
       page: 1,
     });
   }, [setFilters]);
 
-  const isLoading = invoicesQuery.isLoading;
-  const isSearching = invoicesQuery.isFetching && !isLoading;
+  const isLoading = invoicesQuery.isPending && !invoicesQuery.data;
+  const isRefetching = invoicesQuery.isFetching && !isLoading;
   const hasFiltersOrSearch =
     filters.search.length > 0 ||
     filters.status.length > 0 ||
@@ -244,125 +251,53 @@ export function InvoiceDataTable({
           source: filters.source,
         }}
         onFiltersChange={handleFiltersChange}
-        isSearching={isSearching}
+        isSearching={isRefetching}
         onUpload={onUpload}
       />
 
       {/* Table */}
-      <div className="rounded-xl border bg-background">
+      <div className="relative rounded-xl border bg-background">
+        {/* Refetch overlay */}
+        {!!isRefetching && (
+          <div className="absolute inset-0 z-10 flex items-start justify-center rounded-xl bg-background/60 pt-20">
+            <Loader2 className="h-5 w-5 animate-spin text-primary" />
+          </div>
+        )}
         <Table>
           <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
+            {table.getHeaderGroups().map(headerGroup => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <TableHead
+                {headerGroup.headers.map(header => (
+                  <SortableTableHead
                     key={header.id}
-                    className="whitespace-nowrap text-[13px]"
-                    style={
-                      header.column.getSize() !== 150
-                        ? { width: header.column.getSize() }
-                        : undefined
-                    }
-                  >
-                    {header.isPlaceholder ? null : header.column.getCanSort() ? (
-                      <button
-                        type="button"
-                        className="flex items-center gap-1 hover:text-foreground"
-                        onClick={header.column.getToggleSortingHandler()}
-                      >
-                        {flexRender(
-                          header.column.columnDef.header,
-                          header.getContext(),
-                        )}
-                      </button>
-                    ) : (
-                      flexRender(
-                        header.column.columnDef.header,
-                        header.getContext(),
-                      )
-                    )}
-                  </TableHead>
+                    header={header}
+                    sortAriaLabel={tAria('sortBy', {
+                      column:
+                        typeof header.column.columnDef.header === 'string'
+                          ? header.column.columnDef.header
+                          : header.id,
+                    })}
+                  />
                 ))}
               </TableRow>
             ))}
           </TableHeader>
-          <TableBody>
-            {isLoading ? (
-              // Skeleton loading rows
-              Array.from({ length: 8 }).map((_, i) => (
-                <TableRow key={`skeleton-${i}`}>
-                  {table
-                    .getVisibleLeafColumns()
-                    .map((col) => (
-                      <TableCell key={col.id}>
-                        <Skeleton className="h-4 w-full max-w-[120px]" />
-                      </TableCell>
-                    ))}
-                </TableRow>
-              ))
-            ) : table.getRowModel().rows.length > 0 ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() ? "selected" : undefined}
-                  className={`cursor-pointer ${
-                    isRowOverdue(row.original) ? "bg-destructive/5" : ""
-                  }`}
-                  onClick={() => onRowClick(row.original)}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : hasFiltersOrSearch ? (
-              // No search results
-              <TableRow>
-                <TableCell
-                  colSpan={table.getVisibleLeafColumns().length}
-                  className="py-16 text-center"
-                >
-                  <h3 className="text-[16px] font-medium">
-                    {t("noResults.heading")}
-                  </h3>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {t("noResults.body")}
-                  </p>
-                  <Button
-                    variant="outline"
-                    className="mt-4"
-                    onClick={clearFilters}
-                  >
-                    {t("noResults.cta")}
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ) : (
-              // Empty state
-              <TableRow>
-                <TableCell
-                  colSpan={table.getVisibleLeafColumns().length}
-                  className="py-16 text-center"
-                >
-                  <FileText className="mx-auto h-10 w-10 text-muted-foreground/50" />
-                  <h3 className="mt-3 text-[16px] font-medium">
-                    {t("empty.heading")}
-                  </h3>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {t("empty.body")}
-                  </p>
-                  <Button className="mt-4" onClick={onUpload}>
-                    {t("empty.cta")}
-                  </Button>
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
+          <DataTableBody
+            table={table}
+            isLoading={isLoading}
+            hasFiltersOrSearch={hasFiltersOrSearch}
+            onRowClick={onRowClick}
+            rowClassName={rowClassName}
+            emptyIcon={<FileText className="mx-auto h-10 w-10 text-muted-foreground/50" />}
+            emptyTitle={t('empty.heading')}
+            emptyDescription={t('empty.body')}
+            emptyCta={t('empty.cta')}
+            onEmptyCta={onUpload}
+            noResultsTitle={t('noResults.heading')}
+            noResultsDescription={t('noResults.body')}
+            noResultsCta={t('noResults.cta')}
+            onClearFilters={clearFilters}
+          />
         </Table>
 
         {/* Pagination */}

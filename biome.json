@@ -1,7 +1,10 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.0.0/schema.json",
-  "organizeImports": {
-    "enabled": true
+  "$schema": "https://biomejs.dev/schemas/2.4.11/schema.json",
+  "assist": { "actions": { "source": { "organizeImports": "on" } } },
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
+    }
   },
   "formatter": {
     "enabled": true,
@@ -9,13 +12,225 @@
     "indentWidth": 2,
     "lineWidth": 100
   },
-  "linter": {
-    "enabled": true,
-    "rules": {
-      "recommended": true
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single",
+      "jsxQuoteStyle": "double",
+      "trailingCommas": "all",
+      "semicolons": "always",
+      "arrowParentheses": "asNeeded",
+      "bracketSpacing": true,
+      "bracketSameLine": true,
+      "quoteProperties": "asNeeded"
     }
   },
+  "linter": {
+    "enabled": true,
+    "domains": {
+      "react": "recommended",
+      "next": "recommended",
+      "test": "recommended",
+      "project": "recommended",
+      "types": "recommended"
+    },
+    "rules": {
+      "recommended": true,
+      "suspicious": {
+        "noConsole": {
+          "level": "error",
+          "options": { "allow": [] }
+        },
+        "noArrayIndexKey": "warn",
+        "noEmptyBlockStatements": "error",
+        "noEvolvingTypes": "error"
+      },
+      "style": {
+        "useImportType": {
+          "level": "error",
+          "options": {
+            "style": "separatedType"
+          }
+        },
+        "useThrowNewError": "error",
+        "useConsistentArrayType": {
+          "level": "warn",
+          "options": { "syntax": "shorthand" }
+        },
+        "noParameterAssign": "error",
+        "useExponentiationOperator": "error",
+        "noNegationElse": "warn",
+        "useNodejsImportProtocol": "error",
+        "noNonNullAssertion": "warn",
+        "useNamingConvention": {
+          "level": "error",
+          "options": {
+            "strictCase": false,
+            "requireAscii": true,
+            "conventions": [
+              {
+                "selector": { "kind": "objectLiteralProperty" },
+                "match": ".*"
+              },
+              {
+                "selector": { "kind": "typeProperty" },
+                "match": ".*"
+              },
+              {
+                "selector": { "kind": "enumMember" },
+                "formats": ["CONSTANT_CASE", "PascalCase", "camelCase"]
+              },
+              {
+                "selector": { "kind": "const" },
+                "formats": ["camelCase", "PascalCase", "CONSTANT_CASE"]
+              },
+              {
+                "selector": { "kind": "let" },
+                "formats": ["camelCase", "PascalCase"]
+              },
+              {
+                "selector": { "kind": "var" },
+                "formats": ["camelCase", "PascalCase", "CONSTANT_CASE"]
+              }
+            ]
+          }
+        }
+      },
+      "correctness": {
+        "useImportExtensions": "off",
+        "noUnresolvedImports": "off",
+        "useUniqueElementIds": "warn",
+        "noUndeclaredDependencies": "warn"
+      },
+      "performance": {
+        "noAccumulatingSpread": "error",
+        "noBarrelFile": "warn",
+        "noReExportAll": "warn"
+      },
+      "complexity": {
+        "noUselessUndefined": "error",
+        "noExcessiveCognitiveComplexity": "warn",
+        "noForEach": "error",
+        "useDateNow": "error",
+        "useSimplifiedLogicExpression": "warn"
+      },
+      "a11y": {
+        "noLabelWithoutControl": "warn",
+        "useButtonType": "warn",
+        "useSemanticElements": "warn",
+        "noStaticElementInteractions": "warn",
+        "useKeyWithClickEvents": "warn",
+        "useAriaPropsSupportedByRole": "warn",
+        "useValidAnchor": "warn",
+        "noSvgWithoutTitle": "warn",
+        "useAnchorContent": "warn",
+        "useFocusableInteractive": "warn",
+        "noRedundantRoles": "warn"
+      },
+      "nursery": {
+        "noNestedPromises": "error",
+        "noLeakedRender": "warn",
+        "noFloatingPromises": "error",
+        "noMisusedPromises": "error",
+        "noDuplicateEnumValues": "error",
+        "noImpliedEval": "error",
+        "noMultiAssign": "error",
+        "noForIn": "error",
+        "noMultiStr": "error",
+        "noInlineStyles": "warn",
+        "noJsxPropsBind": "warn",
+        "noPlaywrightMissingAwait": "error",
+        "noPlaywrightForceOption": "warn",
+        "noPlaywrightElementHandle": "warn",
+        "noPlaywrightEval": "warn"
+      }
+    }
+  },
+  "overrides": [
+    {
+      "includes": ["apps/web/src/app/globals.css"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noDescendingSpecificity": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": [
+        "packages/*/src/index.ts",
+        "packages/*/src/*/index.ts",
+        "packages/*/src/*/*/index.ts",
+        "packages/test-utils/src/msw/*/index.ts",
+        "apps/landing/src/i18n/index.ts",
+        "apps/web/src/test/test-utils.tsx",
+        "apps/web/src/lib/auth-client.ts",
+        "apps/web/src/app/layout.tsx",
+        "apps/web/src/components/integrations/jira-logo.tsx",
+        "apps/web/src/components/integrations/linear-logo.tsx",
+        "apps/web/src/components/integrations/provider-icons.tsx",
+        "packages/api/src/routers/workflow.ts",
+        "packages/validators/src/zatca.ts",
+        "apps/web/src/components/contractors/classification-documents/index.ts",
+        "apps/web/src/components/contractors/ir35-chain/index.ts",
+        "apps/web/src/components/contractors/other-client-attestation/index.ts"
+      ],
+      "linter": {
+        "rules": {
+          "performance": {
+            "noBarrelFile": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": [
+        "**/__tests__/**",
+        "**/*.test.ts",
+        "**/*.test.tsx",
+        "**/*.spec.ts",
+        "**/*.spec.tsx",
+        "**/e2e/**"
+      ],
+      "linter": {
+        "rules": {
+          "performance": {
+            "noImgElement": "off"
+          },
+          "suspicious": {
+            "noConsole": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["scripts/**", "load-tests/**"],
+      "linter": {
+        "rules": {
+          "correctness": {
+            "noUndeclaredDependencies": "off"
+          },
+          "suspicious": {
+            "noConsole": "off"
+          }
+        }
+      }
+    }
+  ],
   "files": {
-    "ignore": ["node_modules", ".next", "generated", "prisma/migrations", "dist", ".turbo"]
+    "includes": [
+      "**",
+      "!**/node_modules",
+      "!**/.next",
+      "!**/generated",
+      "!**/prisma/migrations",
+      "!**/dist",
+      "!**/.turbo",
+      "!**/.claude",
+      "!**/.planning",
+      "!**/out",
+      "!**/coverage",
+      "!**/playwright-report"
+    ]
   }
 }

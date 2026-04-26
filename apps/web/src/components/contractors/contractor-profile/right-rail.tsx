@@ -1,14 +1,13 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { useTranslations } from "next-intl";
-import { Clock, UserPlus, RefreshCw } from "lucide-react";
-
-import { trpc } from "@/trpc/init";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Clock, RefreshCw, UserPlus } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
+import { trpc } from '@/trpc/init';
 
 type RightRailProps = {
   contractor: {
@@ -21,7 +20,7 @@ type RightRailProps = {
 };
 
 function formatRelativeTime(date: string | Date): string {
-  const d = typeof date === "string" ? new Date(date) : date;
+  const d = typeof date === 'string' ? new Date(date) : date;
   const now = new Date();
   const diff = now.getTime() - d.getTime();
   const seconds = Math.floor(diff / 1000);
@@ -30,16 +29,16 @@ function formatRelativeTime(date: string | Date): string {
   const days = Math.floor(hours / 24);
 
   if (days > 30) {
-    return d.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
+    return d.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
     });
   }
   if (days > 0) return `${days}d ago`;
   if (hours > 0) return `${hours}h ago`;
   if (minutes > 0) return `${minutes}m ago`;
-  return "just now";
+  return 'just now';
 }
 
 export function ActivityTimeline({
@@ -51,14 +50,11 @@ export function ActivityTimeline({
   updatedAt: string | Date;
   lifecycleStage: string;
 }) {
-  const t = useTranslations("ContractorProfile.rightRail");
+  const t = useTranslations('ContractorProfile.rightRail');
 
-  const created =
-    typeof createdAt === "string" ? new Date(createdAt) : createdAt;
-  const updated =
-    typeof updatedAt === "string" ? new Date(updatedAt) : updatedAt;
-  const hasUpdate =
-    Math.abs(updated.getTime() - created.getTime()) > 60000;
+  const created = typeof createdAt === 'string' ? new Date(createdAt) : createdAt;
+  const updated = typeof updatedAt === 'string' ? new Date(updatedAt) : updatedAt;
+  const hasUpdate = Math.abs(updated.getTime() - created.getTime()) > 60000;
 
   const events: Array<{
     icon: typeof UserPlus;
@@ -68,30 +64,28 @@ export function ActivityTimeline({
 
   events.push({
     icon: UserPlus,
-    text: t("created"),
+    text: t('created'),
     time: created,
   });
 
   if (hasUpdate) {
     events.push({
       icon: RefreshCw,
-      text: t("profileUpdated"),
+      text: t('profileUpdated'),
       time: updated,
     });
   }
 
   events.push({
     icon: Clock,
-    text: t("lifecycleStage", { stage: lifecycleStage }),
+    text: t('lifecycleStage', { stage: lifecycleStage }),
     time: updated,
   });
 
   events.sort((a, b) => b.time.getTime() - a.time.getTime());
 
   if (events.length === 0) {
-    return (
-      <p className="text-sm text-muted-foreground">{t("noActivity")}</p>
-    );
+    return <p className="text-sm text-muted-foreground">{t('noActivity')}</p>;
   }
 
   return (
@@ -99,7 +93,8 @@ export function ActivityTimeline({
       {events.map((event, i) => {
         const Icon = event.icon;
         return (
-          <div key={i} className="flex items-start gap-3">
+          // biome-ignore lint/suspicious/noArrayIndexKey: computed timeline events lack unique id
+          <div key={`skel-${i}`} className="flex items-start gap-3">
             <div className="relative mt-0.5 flex size-6 shrink-0 items-center justify-center">
               <Icon className="size-3.5 text-muted-foreground" />
               {i < events.length - 1 && (
@@ -108,9 +103,7 @@ export function ActivityTimeline({
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-sm">{event.text}</p>
-              <p className="text-xs text-muted-foreground">
-                {formatRelativeTime(event.time)}
-              </p>
+              <p className="text-xs text-muted-foreground">{formatRelativeTime(event.time)}</p>
             </div>
           </div>
         );
@@ -120,16 +113,16 @@ export function ActivityTimeline({
 }
 
 export function RightRail({ contractor }: RightRailProps) {
-  const t = useTranslations("ContractorProfile.rightRail");
+  const t = useTranslations('ContractorProfile.rightRail');
+  const tToast = useTranslations('ContractorProfile.toast');
   const queryClient = useQueryClient();
-  const [notes, setNotes] = useState(contractor.notes ?? "");
+  const [notes, setNotes] = useState(contractor.notes ?? '');
   const [isDirty, setIsDirty] = useState(false);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const noteSaveMutation = useMutation(
     trpc.contractor.update.mutationOptions({
       onSuccess: () => {
-        toast.success(t("saved"));
+        toast.success(t('saved'));
         setIsDirty(false);
         queryClient.invalidateQueries({
           queryKey: trpc.contractor.getById.queryKey(),
@@ -137,25 +130,23 @@ export function RightRail({ contractor }: RightRailProps) {
       },
       onError: (error: unknown) => {
         const message =
-          typeof error === "object" && error && "message" in error
-            ? String((error as { message?: unknown }).message ?? "")
-            : "";
-        toast.error(message || "Failed to save note");
+          typeof error === 'object' && error && 'message' in error
+            ? String((error as { message?: unknown }).message ?? '')
+            : '';
+        toast.error(message || tToast('noteFailed'));
       },
-    })
+    }),
   );
 
   function handleSaveNotes() {
-    // The notes field was added to contractorUpdateSchema in validators
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (noteSaveMutation as any).mutate({ id: contractor.id, notes });
+    noteSaveMutation.mutate({ id: contractor.id, notes });
   }
 
   return (
     <div className="sticky top-[80px] space-y-0 rounded-xl border bg-card">
       {/* Activity section */}
       <div className="p-4">
-        <h4 className="mb-3 text-sm font-medium">{t("activity")}</h4>
+        <h4 className="mb-3 text-sm font-medium">{t('activity')}</h4>
         <ActivityTimeline
           createdAt={contractor.createdAt}
           updatedAt={contractor.updatedAt}
@@ -167,26 +158,27 @@ export function RightRail({ contractor }: RightRailProps) {
 
       {/* Quick notes section */}
       <div className="p-4">
-        <h4 className="mb-3 text-sm font-medium">{t("notes")}</h4>
+        <h4 className="mb-3 text-sm font-medium">{t('notes')}</h4>
         <textarea
           className="w-full resize-none rounded-md border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1"
           rows={3}
-          placeholder={t("notesPlaceholder")}
+          placeholder={t('notesPlaceholder')}
           value={notes}
-          onChange={(e) => {
+          // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
+          onChange={e => {
             setNotes(e.target.value);
             setIsDirty(true);
           }}
         />
-        {isDirty && (
+        {!!isDirty && (
           <Button
             size="sm"
             variant="outline"
             className="mt-2 w-full"
             disabled={noteSaveMutation.isPending}
-            onClick={handleSaveNotes}
-          >
-            {noteSaveMutation.isPending ? t("saving") : t("save")}
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+            onClick={handleSaveNotes}>
+            {noteSaveMutation.isPending ? t('saving') : t('save')}
           </Button>
         )}
       </div>
@@ -195,8 +187,8 @@ export function RightRail({ contractor }: RightRailProps) {
 
       {/* Reminders section */}
       <div className="p-4">
-        <h4 className="mb-3 text-sm font-medium">{t("reminders")}</h4>
-        <p className="text-sm text-muted-foreground">{t("noReminders")}</p>
+        <h4 className="mb-3 text-sm font-medium">{t('reminders')}</h4>
+        <p className="text-sm text-muted-foreground">{t('noReminders')}</p>
       </div>
     </div>
   );

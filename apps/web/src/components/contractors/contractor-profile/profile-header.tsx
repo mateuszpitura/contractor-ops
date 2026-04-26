@@ -1,31 +1,26 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { useTranslations } from "next-intl";
-import { MoreHorizontal, Pencil, FilePlus, Upload, Play } from "lucide-react";
-
-import { trpc } from "@/trpc/init";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { FilePlus, MoreHorizontal, Pencil, Play } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { ContractWizardDialog } from '@/components/contracts/contract-wizard/wizard-dialog';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
-  DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
-import { ContractWizardDialog } from "@/components/contracts/contract-wizard/wizard-dialog";
-import { TemplatePicker } from "@/components/workflows/template-picker-dialog";
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { TemplatePicker } from '@/components/workflows/template-picker-dialog';
+import { getAvatarInitials } from '@/lib/avatar-initials';
+import { enumKey } from '@/lib/enum-key';
+import { trpc } from '@/trpc/init';
 
-type LifecycleStage =
-  | "DRAFT"
-  | "ONBOARDING"
-  | "ACTIVE"
-  | "OFFBOARDING"
-  | "ENDED";
+type LifecycleStage = 'DRAFT' | 'ONBOARDING' | 'ACTIVE' | 'OFFBOARDING' | 'ENDED';
 
 type ProfileHeaderProps = {
   contractor: {
@@ -39,34 +34,70 @@ type ProfileHeaderProps = {
 };
 
 const lifecycleBadgeStyles: Record<string, string> = {
-  DRAFT: "bg-muted text-muted-foreground border-border",
-  ONBOARDING: "bg-blue-500/10 text-blue-500",
-  ACTIVE: "bg-green-600/10 text-green-600",
-  OFFBOARDING: "bg-amber-500/10 text-amber-600",
-  ENDED: "bg-muted text-muted-foreground border-border",
+  DRAFT: 'bg-muted text-muted-foreground border-border',
+  ONBOARDING: 'bg-blue-500/10 text-blue-500',
+  ACTIVE: 'bg-green-600/10 text-green-600',
+  OFFBOARDING: 'bg-amber-500/10 text-amber-600',
+  ENDED: 'bg-muted text-muted-foreground border-border',
 };
 
-const lifecycleLabels: Record<string, string> = {
-  DRAFT: "Draft",
-  ONBOARDING: "Onboarding",
-  ACTIVE: "Active",
-  OFFBOARDING: "Offboarding",
-  ENDED: "Ended",
+// Lifecycle labels are now served from translations: ContractorProfile.lifecycle.*
+
+type LifecycleMenuItem = {
+  target: LifecycleStage;
+  labelKey: string;
+  variant?: 'destructive';
+  isArchive?: boolean;
 };
 
-function getOwnerInitials(name: string | null): string {
-  if (!name) return "?";
-  return name
-    .split(" ")
-    .map((n) => n[0])
-    .filter(Boolean)
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
+const LIFECYCLE_MENU_CONFIG: Record<LifecycleStage, LifecycleMenuItem[]> = {
+  DRAFT: [{ target: 'ONBOARDING', labelKey: 'actions.startOnboarding' }],
+  ONBOARDING: [{ target: 'ACTIVE', labelKey: 'actions.activate' }],
+  ACTIVE: [
+    { target: 'OFFBOARDING', labelKey: 'actions.startOffboarding' },
+    { target: 'ENDED', labelKey: 'actions.markInactive' },
+  ],
+  OFFBOARDING: [{ target: 'ENDED', labelKey: 'actions.completeOffboarding' }],
+  ENDED: [
+    { target: 'ENDED', labelKey: 'actions.archive', variant: 'destructive', isArchive: true },
+  ],
+};
+
+function LifecycleMenuItems({
+  stage,
+  isPending,
+  onLifecycleAction,
+  onArchive,
+  t,
+}: {
+  stage: LifecycleStage;
+  isPending: boolean;
+  onLifecycleAction: (target: LifecycleStage) => void;
+  onArchive: () => void;
+  t: (key: string) => string;
+}) {
+  const items = LIFECYCLE_MENU_CONFIG[stage] ?? [];
+  return (
+    <>
+      {items.map(item => (
+        <DropdownMenuItem
+          key={item.labelKey}
+          disabled={isPending}
+          variant={item.variant}
+          // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
+          onSelect={() => (item.isArchive ? onArchive() : onLifecycleAction(item.target))}>
+          {t(item.labelKey)}
+        </DropdownMenuItem>
+      ))}
+    </>
+  );
 }
 
 export function ProfileHeader({ contractor }: ProfileHeaderProps) {
-  const t = useTranslations("ContractorProfile");
+  const t = useTranslations('ContractorProfile');
+  const tc = useTranslations('Contractors');
+  const tToast = useTranslations('ContractorProfile.toast');
+  const tCommon = useTranslations('Common');
   const queryClient = useQueryClient();
   const [wizardOpen, setWizardOpen] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -75,39 +106,37 @@ export function ProfileHeader({ contractor }: ProfileHeaderProps) {
   const lifecycleMutation = useMutation(
     trpc.contractor.updateLifecycleStage.mutationOptions({
       onSuccess: (_data, variables) => {
-        toast.success(
-          t("lifecycle.transitioned", { stage: variables.stage })
-        );
+        toast.success(t('lifecycle.transitioned', { stage: variables.stage }));
         queryClient.invalidateQueries({
           queryKey: trpc.contractor.getById.queryKey(),
         });
       },
       onError: (error: unknown) => {
         const message =
-          typeof error === "object" && error && "message" in error
-            ? String((error as { message?: unknown }).message ?? "")
-            : "";
-        toast.error(message || "Failed to update status");
+          typeof error === 'object' && error && 'message' in error
+            ? String((error as { message?: unknown }).message ?? '')
+            : '';
+        toast.error(message || tToast('statusFailed'));
       },
-    })
+    }),
   );
 
   const archiveMutation = useMutation(
     trpc.contractor.archive.mutationOptions({
       onSuccess: () => {
-        toast.success(t("lifecycle.archived"));
+        toast.success(t('lifecycle.archived'));
         queryClient.invalidateQueries({
           queryKey: trpc.contractor.getById.queryKey(),
         });
       },
       onError: (error: unknown) => {
         const message =
-          typeof error === "object" && error && "message" in error
-            ? String((error as { message?: unknown }).message ?? "")
-            : "";
-        toast.error(message || "Failed to archive contractor");
+          typeof error === 'object' && error && 'message' in error
+            ? String((error as { message?: unknown }).message ?? '')
+            : '';
+        toast.error(message || tToast('archiveFailed'));
       },
-    })
+    }),
   );
 
   const stage = contractor.lifecycleStage as LifecycleStage;
@@ -126,31 +155,24 @@ export function ProfileHeader({ contractor }: ProfileHeaderProps) {
       <div className="flex items-center gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-[20px] font-semibold leading-tight">
-              {contractor.displayName}
-            </h1>
-            <Badge
-              variant="secondary"
-              className={lifecycleBadgeStyles[stage] ?? ""}
-            >
-              {lifecycleLabels[stage] ?? stage}
+            <h1 className="text-[20px] font-semibold leading-tight">{contractor.displayName}</h1>
+            <Badge variant="secondary" className={lifecycleBadgeStyles[stage] ?? ''}>
+              {t(`lifecycle.${enumKey(stage)}` as Parameters<typeof t>[0]) ?? stage}
             </Badge>
             <Badge variant="secondary" className="bg-secondary text-secondary-foreground">
-              {contractor.type}
+              {tc(`type.${enumKey(contractor.type)}` as Parameters<typeof tc>[0])}
             </Badge>
           </div>
-          {contractor.owner && (
+          {!!contractor.owner && (
             <div className="mt-1 flex items-center gap-1.5">
               <Avatar size="sm">
-                {contractor.owner.image && (
-                  <AvatarImage src={contractor.owner.image} alt={contractor.owner.name ?? ""} />
+                {!!contractor.owner.image && (
+                  <AvatarImage src={contractor.owner.image} alt={contractor.owner.name ?? ''} />
                 )}
-                <AvatarFallback>
-                  {getOwnerInitials(contractor.owner.name)}
-                </AvatarFallback>
+                <AvatarFallback>{getAvatarInitials(contractor.owner.name)}</AvatarFallback>
               </Avatar>
               <span className="text-sm text-muted-foreground">
-                {contractor.owner.name ?? "Unknown"}
+                {contractor.owner.name ?? t('unknown')}
               </span>
             </div>
           )}
@@ -158,112 +180,66 @@ export function ProfileHeader({ contractor }: ProfileHeaderProps) {
       </div>
 
       <div className="flex items-center gap-2">
-        <Button variant="outline" size="sm">
-          <Pencil className="mr-1.5 size-3.5" />
-          {t("actions.edit")}
+        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+        <Button variant="outline" size="sm" onClick={() => toast.info(t('actions.editComingSoon'))}>
+          <Pencil className="me-1.5 size-3.5" />
+          {t('actions.edit')}
         </Button>
 
+        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
         <Button variant="outline" size="sm" onClick={() => setWizardOpen(true)}>
-          <FilePlus className="mr-1.5 size-3.5" />
-          {t("actions.addContract")}
+          <FilePlus className="me-1.5 size-3.5" />
+          {t('actions.addContract')}
         </Button>
 
-        {(stage === "DRAFT" || stage === "ONBOARDING") && (
+        {(stage === 'DRAFT' || stage === 'ONBOARDING') && (
           <Button
             variant="outline"
             size="sm"
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={() => {
-              setPickerType("ONBOARDING");
+              setPickerType('ONBOARDING');
               setPickerOpen(true);
-            }}
-          >
-            <Play className="mr-1.5 size-3.5" />
-            {t("actions.startOnboarding")}
+            }}>
+            <Play className="me-1.5 size-3.5" />
+            {t('actions.startOnboarding')}
           </Button>
         )}
 
-        {(stage === "ACTIVE" || stage === "OFFBOARDING") && (
+        {(stage === 'ACTIVE' || stage === 'OFFBOARDING') && (
           <Button
             variant="outline"
             size="sm"
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={() => {
-              setPickerType("OFFBOARDING");
+              setPickerType('OFFBOARDING');
               setPickerOpen(true);
-            }}
-          >
-            <Play className="mr-1.5 size-3.5" />
-            {t("actions.startOffboarding")}
+            }}>
+            <Play className="me-1.5 size-3.5" />
+            {t('actions.startOffboarding')}
           </Button>
         )}
 
         <DropdownMenu>
           <DropdownMenuTrigger
-            render={(props) => (
+            // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
+            render={props => (
               <Button {...props} variant="outline" size="icon-sm">
                 <MoreHorizontal className="size-4" />
-                <span className="sr-only">More actions</span>
+                <span className="sr-only">{tCommon('srOnly.moreActions')}</span>
               </Button>
             )}
           />
           <DropdownMenuContent align="end">
-            <DropdownMenuItem disabled>
-              <Upload className="mr-2 size-3.5" />
-              {t("actions.uploadInvoice")}
-              <span className="ml-auto text-xs text-muted-foreground">
-                Phase 5
-              </span>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-
-            {stage === "DRAFT" && (
-              <DropdownMenuItem
-                disabled={isPending}
-                onSelect={() => handleLifecycleAction("ONBOARDING")}
-              >
-                {t("actions.startOnboarding")}
-              </DropdownMenuItem>
-            )}
-            {stage === "ONBOARDING" && (
-              <DropdownMenuItem
-                disabled={isPending}
-                onSelect={() => handleLifecycleAction("ACTIVE")}
-              >
-                {t("actions.activate")}
-              </DropdownMenuItem>
-            )}
-            {stage === "ACTIVE" && (
-              <>
-                <DropdownMenuItem
-                  disabled={isPending}
-                  onSelect={() => handleLifecycleAction("OFFBOARDING")}
-                >
-                  {t("actions.startOffboarding")}
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  disabled={isPending}
-                  onSelect={() => handleLifecycleAction("ENDED")}
-                >
-                  {t("actions.markInactive")}
-                </DropdownMenuItem>
-              </>
-            )}
-            {stage === "OFFBOARDING" && (
-              <DropdownMenuItem
-                disabled={isPending}
-                onSelect={() => handleLifecycleAction("ENDED")}
-              >
-                {t("actions.completeOffboarding")}
-              </DropdownMenuItem>
-            )}
-            {stage === "ENDED" && (
-              <DropdownMenuItem
-                disabled={isPending}
-                variant="destructive"
-                onSelect={handleArchive}
-              >
-                {t("actions.archive")}
-              </DropdownMenuItem>
-            )}
+            <LifecycleMenuItems
+              stage={stage}
+              isPending={isPending}
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+              onLifecycleAction={handleLifecycleAction}
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+              onArchive={handleArchive}
+              t={t}
+            />
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

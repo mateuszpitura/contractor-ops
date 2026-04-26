@@ -1,59 +1,74 @@
 // Invoice, InvoiceFile, InvoiceLine, InvoiceMatchResult
 
 model Invoice {
-  id                  String             @id @default(cuid())
-  organizationId      String
-  contractorId        String?
-  contractId          String?
-  billingProfileId    String?
-  invoiceNumber       String
-  externalInvoiceId   String?
-  source              InvoiceSource
-  sourceReference     String?
-  issueDate           DateTime           @db.Date
-  servicePeriodStart  DateTime?          @db.Date
-  servicePeriodEnd    DateTime?          @db.Date
-  dueDate             DateTime           @db.Date
-  currency            String             @db.Char(3)
-  subtotalGrosze      Int
-  vatRate             String?
-  vatAmountGrosze     Int?
-  totalGrosze         Int
-  withholdingGrosze   Int?
-  amountToPayGrosze   Int
-  sellerTaxId         String?            @db.VarChar(50)
-  sellerName          String?            @db.VarChar(500)
-  sellerBankAccount   String?            @db.VarChar(34)
-  buyerTaxId          String?            @db.VarChar(50)
-  status              InvoiceStatus      @default(RECEIVED)
-  matchStatus         InvoiceMatchStatus @default(UNMATCHED)
-  approvalStatus      ApprovalStatus     @default(NOT_STARTED)
-  paymentStatus       PaymentStatus      @default(NOT_READY)
-  duplicateCheckHash  String?            @db.VarChar(64)
-  receivedAt          DateTime           @default(now())
-  reviewedAt          DateTime?
-  approvedAt          DateTime?
-  readyForPaymentAt   DateTime?
-  paidAt              DateTime?
-  rejectedAt          DateTime?
-  rejectionReason     String?
-  submittedByEmail    String?
-  notes               String?
-  flagsJson           Json?
-  createdAt           DateTime           @default(now())
-  updatedAt           DateTime           @updatedAt
-  deletedAt           DateTime?
+  id                    String             @id @default(cuid())
+  organizationId        String
+  contractorId          String?
+  contractId            String?
+  billingProfileId      String?
+  invoiceNumber         String
+  externalInvoiceId     String?
+  source                InvoiceSource
+  sourceReference       String?
+  issueDate             DateTime           @db.Date
+  servicePeriodStart    DateTime?          @db.Date
+  servicePeriodEnd      DateTime?          @db.Date
+  dueDate               DateTime           @db.Date
+  currency              String             @db.Char(3)
+  subtotalMinor         Int
+  vatRate               String?
+  vatAmountMinor        Int?
+  totalMinor            Int
+  withholdingMinor      Int?
+  isReverseCharge       Boolean            @default(false)
+  reverseChargeOverride Boolean? // null = auto-detected, true/false = manually set
+  amountToPayMinor      Int
+  sellerTaxId           String?            @db.VarChar(50)
+  sellerName            String?            @db.VarChar(500)
+  sellerBankAccount     String?            @db.VarChar(34)
+  buyerTaxId            String?            @db.VarChar(50)
+  status                InvoiceStatus      @default(RECEIVED)
+  matchStatus           InvoiceMatchStatus @default(UNMATCHED)
+  approvalStatus        ApprovalStatus     @default(NOT_STARTED)
+  paymentStatus         PaymentStatus      @default(NOT_READY)
+  duplicateCheckHash    String?            @db.VarChar(64)
+  receivedAt            DateTime           @default(now())
+  reviewedAt            DateTime?
+  approvedAt            DateTime?
+  readyForPaymentAt     DateTime?
+  paidAt                DateTime?
+  rejectedAt            DateTime?
+  rejectionReason       String?
+  submittedByEmail      String?
+  notes                 String?
+  flagsJson             Json?
+  qrCodeBase64          String?            @db.Text
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+  deletedAt             DateTime?
 
-  organization        Organization              @relation(fields: [organizationId], references: [id])
-  contractor          Contractor?               @relation(fields: [contractorId], references: [id])
-  contract            Contract?                 @relation(fields: [contractId], references: [id])
-  billingProfile      ContractorBillingProfile? @relation(fields: [billingProfileId], references: [id])
+  organization   Organization              @relation(fields: [organizationId], references: [id])
+  contractor     Contractor?               @relation(fields: [contractorId], references: [id])
+  contract       Contract?                 @relation(fields: [contractId], references: [id])
+  billingProfile ContractorBillingProfile? @relation(fields: [billingProfileId], references: [id])
 
-  files               InvoiceFile[]
-  lines               InvoiceLine[]
-  matchResults        InvoiceMatchResult[]
-  paymentRunItems     PaymentRunItem[]
+  files                     InvoiceFile[]
+  lines                     InvoiceLine[]
+  matchResults              InvoiceMatchResult[]
+  paymentRunItems           PaymentRunItem[]
+  zatcaChainEntry           ZatcaInvoiceChain?
+  eInvoiceLifecycle         EInvoiceLifecycle?
+  intake                    InvoiceIntakeRequest?        @relation("InvoiceIntakeConvertedInvoice")
+  // Phase 63 — UK Payments & Financial Features
+  payments                  InvoicePayment[]
+  interestCompensation      InvoiceInterestCompensation?
+  interestWaivers           InvoiceInterestWaiver[]
+  interestClaims            InvoiceInterestClaim[]
+  interestClaimsAsSecondary InvoiceInterestClaim[]       @relation("InterestClaimSecondaryInvoice")
+  skontoTerms               SkontoTerm[]
+  skontoSnapshot            SkontoSnapshot?
 
+  @@unique([organizationId, duplicateCheckHash])
   @@index([organizationId])
   @@index([organizationId, status])
   @@index([organizationId, approvalStatus])
@@ -62,8 +77,8 @@ model Invoice {
   @@index([organizationId, contractorId])
   @@index([organizationId, contractId])
   @@index([organizationId, receivedAt])
-  @@index([organizationId, duplicateCheckHash])
   @@index([organizationId, sellerTaxId])
+  @@index([organizationId, matchStatus])
 }
 
 model InvoiceFile {
@@ -74,55 +89,55 @@ model InvoiceFile {
   role           InvoiceFileRole
   createdAt      DateTime        @default(now())
 
-  organization   Organization @relation(fields: [organizationId], references: [id])
-  invoice        Invoice      @relation(fields: [invoiceId], references: [id])
-  document       Document     @relation(fields: [documentId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
+  invoice      Invoice      @relation(fields: [invoiceId], references: [id])
+  document     Document     @relation(fields: [documentId], references: [id])
 
   @@index([organizationId])
   @@index([organizationId, invoiceId])
 }
 
 model InvoiceLine {
-  id                String   @id @default(cuid())
-  organizationId    String
-  invoiceId         String
-  lineNumber        Int
-  description       String
-  quantity          Decimal? @db.Decimal(18, 4)
-  unit              String?
-  unitPriceGrosze   Int?
-  netAmountGrosze   Int?
-  vatRate           String?
-  vatAmountGrosze   Int?
-  grossAmountGrosze Int?
-  createdAt         DateTime @default(now())
+  id               String   @id @default(cuid())
+  organizationId   String
+  invoiceId        String
+  lineNumber       Int
+  description      String
+  quantity         Decimal? @db.Decimal(18, 4)
+  unit             String?
+  unitPriceMinor   Int?
+  netAmountMinor   Int?
+  vatRate          String?
+  vatAmountMinor   Int?
+  grossAmountMinor Int?
+  createdAt        DateTime @default(now())
 
-  organization      Organization @relation(fields: [organizationId], references: [id])
-  invoice           Invoice      @relation(fields: [invoiceId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
+  invoice      Invoice      @relation(fields: [invoiceId], references: [id])
 
   @@index([organizationId])
   @@index([organizationId, invoiceId])
 }
 
 model InvoiceMatchResult {
-  id                   String             @id @default(cuid())
-  organizationId       String
-  invoiceId            String
-  matchedContractId    String?
-  matchedContractorId  String?
-  matchScore           Decimal?           @db.Decimal(5, 2)
-  expectedAmountGrosze Int?
-  expectedCurrency     String?            @db.Char(3)
-  amountDeltaGrosze    Int?
-  amountDeltaPercent   Decimal?           @db.Decimal(8, 4)
-  matchedBy            MatchBy
-  status               InvoiceMatchStatus
-  explanationJson      Json?
-  createdAt            DateTime           @default(now())
-  createdByUserId      String?
+  id                  String             @id @default(cuid())
+  organizationId      String
+  invoiceId           String
+  matchedContractId   String?
+  matchedContractorId String?
+  matchScore          Decimal?           @db.Decimal(5, 2)
+  expectedAmountMinor Int?
+  expectedCurrency    String?            @db.Char(3)
+  amountDeltaMinor    Int?
+  amountDeltaPercent  Decimal?           @db.Decimal(8, 4)
+  matchedBy           MatchBy
+  status              InvoiceMatchStatus
+  explanationJson     Json?
+  createdAt           DateTime           @default(now())
+  createdByUserId     String?
 
-  organization         Organization @relation(fields: [organizationId], references: [id])
-  invoice              Invoice      @relation(fields: [invoiceId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
+  invoice      Invoice      @relation(fields: [invoiceId], references: [id])
 
   @@index([organizationId])
   @@index([organizationId, invoiceId])
@@ -135,6 +150,9 @@ enum InvoiceSource {
   EMAIL_INTAKE
   KSEF
   API
+  PORTAL
+  PEPPOL
+  LATE_INTEREST_CLAIM
 }
 
 enum InvoiceStatus {
@@ -169,4 +187,183 @@ enum MatchBy {
   MANUAL
   INTEGRATION
   OCR_EXTRACTION
+}
+
+// Phase 62 — Inbound e-invoice intake staging (D-09 / D-10 / D-12)
+// Mutable-parent tier; lifecycle events on EInvoiceLifecycle cover append-only audit.
+// Multi-tenant scoped via Prisma client extension (same pattern as EInvoiceLifecycle).
+
+model InvoiceIntakeRequest {
+  id                             String                        @id @default(cuid())
+  organizationId                 String
+  uploadedByUserId               String
+  sourceKind                     InvoiceIntakeSourceKind
+  rawFileKey                     String
+  rawFileSha256                  String                        @db.VarChar(64)
+  rawFileMime                    String                        @db.VarChar(64)
+  rawFileSizeBytes               Int
+  extractedXmlKey                String?
+  validationReportKey            String?
+  profileLevel                   InvoiceIntakeProfileLevel
+  parsedInvoiceJson              Json
+  extractedSupplierName          String?
+  extractedSupplierVatId         String?
+  extractedSupplierLeitwegId     String?
+  extractedInvoiceNumber         String?
+  extractedInvoiceDate           DateTime?
+  extractedTotalMinor            BigInt?
+  extractedCurrency              String?                       @db.Char(3)
+  matchedContractorId            String?
+  matchedContractId              String?
+  convertedInvoiceId             String?                       @unique
+  status                         InvoiceIntakeStatus           @default(PARSED)
+  validationStatus               InvoiceIntakeValidationStatus @default(VALID)
+  validationAcknowledgedAt       DateTime?
+  validationAcknowledgedByUserId String?
+  rejectionReason                String?
+  unmappedFieldsJson             Json?
+  createdAt                      DateTime                      @default(now())
+  updatedAt                      DateTime                      @updatedAt
+
+  organization             Organization @relation(fields: [organizationId], references: [id])
+  uploadedBy               User         @relation("InvoiceIntakeUploadedBy", fields: [uploadedByUserId], references: [id])
+  matchedContractor        Contractor?  @relation("InvoiceIntakeMatchedContractor", fields: [matchedContractorId], references: [id])
+  matchedContract          Contract?    @relation("InvoiceIntakeMatchedContract", fields: [matchedContractId], references: [id])
+  convertedInvoice         Invoice?     @relation("InvoiceIntakeConvertedInvoice", fields: [convertedInvoiceId], references: [id])
+  validationAcknowledgedBy User?        @relation("InvoiceIntakeValidationAckBy", fields: [validationAcknowledgedByUserId], references: [id])
+
+  @@unique([organizationId, rawFileSha256], map: "invoice_intake_org_sha_uniq")
+  @@index([organizationId, status], map: "invoice_intake_org_status_idx")
+  @@index([organizationId, extractedSupplierVatId], map: "invoice_intake_org_vat_idx")
+  @@index([organizationId, createdAt], map: "invoice_intake_org_created_idx")
+}
+
+enum InvoiceIntakeSourceKind {
+  UPLOAD_XML
+  UPLOAD_PDF
+}
+
+enum InvoiceIntakeStatus {
+  PARSED
+  NEEDS_REVIEW
+  MATCHED
+  CONVERTED
+  REJECTED
+}
+
+enum InvoiceIntakeValidationStatus {
+  VALID
+  WARNINGS
+  INVALID
+}
+
+enum InvoiceIntakeProfileLevel {
+  COMFORT
+  XRECHNUNG
+  EXTENDED
+}
+
+// ---------------------------------------------------------------------------
+// Phase 63 — UK Payments & Financial Features: Invoice payment + interest models
+// ---------------------------------------------------------------------------
+
+enum InvoicePaymentSourceKind {
+  MANUAL
+  PAYMENT_RUN
+  BANK_STATEMENT
+}
+
+model InvoicePayment {
+  id                     String                   @id @default(cuid())
+  organizationId         String
+  organization           Organization             @relation(fields: [organizationId], references: [id])
+  invoiceId              String
+  invoice                Invoice                  @relation(fields: [invoiceId], references: [id])
+  amountMinor            Int
+  paidAt                 DateTime
+  sourceKind             InvoicePaymentSourceKind
+  sourcePaymentRunItemId String?
+  sourcePaymentRunItem   PaymentRunItem?          @relation(fields: [sourcePaymentRunItemId], references: [id])
+  notes                  String?
+  createdByUserId        String?
+  createdAt              DateTime                 @default(now())
+
+  @@index([organizationId, invoiceId])
+  @@map("invoice_payment")
+}
+
+model InvoiceInterestCompensation {
+  id                         String       @id @default(cuid())
+  organizationId             String
+  organization               Organization @relation(fields: [organizationId], references: [id])
+  invoiceId                  String       @unique
+  invoice                    Invoice      @relation(fields: [invoiceId], references: [id])
+  tierMinor                  Int
+  invoiceTotalAtOverdueMinor Int
+  firstOverdueDate           DateTime     @db.Date
+  createdAt                  DateTime     @default(now())
+
+  @@index([organizationId])
+  @@map("invoice_interest_compensation")
+}
+
+enum InterestWaiveType {
+  STATUTORY_INTEREST
+  COMPENSATION
+  BOTH
+}
+
+model InvoiceInterestWaiver {
+  id              String            @id @default(cuid())
+  organizationId  String
+  organization    Organization      @relation(fields: [organizationId], references: [id])
+  invoiceId       String
+  invoice         Invoice           @relation(fields: [invoiceId], references: [id])
+  waiveType       InterestWaiveType
+  reason          String            @db.Text
+  waivedByUserId  String
+  waivedAt        DateTime          @default(now())
+  revokedAt       DateTime?
+  revokedByUserId String?
+  revokeReason    String?           @db.Text
+  createdAt       DateTime          @default(now())
+
+  @@index([organizationId, invoiceId])
+  @@map("invoice_interest_waiver")
+}
+
+model InvoiceInterestClaim {
+  id                        String                        @id @default(cuid())
+  organizationId            String
+  organization              Organization                  @relation(fields: [organizationId], references: [id])
+  invoiceId                 String
+  invoice                   Invoice                       @relation(fields: [invoiceId], references: [id])
+  claimedByUserId           String
+  claimedAt                 DateTime                      @default(now())
+  snapshotInterestMinor     Int
+  snapshotCompensationMinor Int
+  snapshotRateUsed          Decimal                       @db.Decimal(5, 2)
+  snapshotDaysOverdue       Int
+  // pdfKey is nullable: the claim row lands synchronously, and a QStash
+  // worker renders and uploads the PDF asynchronously. Status:
+  //   PENDING_RENDER  — job queued, pdfKey still null
+  //   READY           — pdfKey populated, client can download
+  //   FAILED          — render failed (see pdfError)
+  pdfKey                    String?
+  pdfStatus                 InvoiceInterestClaimPdfStatus @default(PENDING_RENDER)
+  pdfError                  String?
+  pdfReadyAt                DateTime?
+  secondaryInvoiceId        String?
+  secondaryInvoice          Invoice?                      @relation("InterestClaimSecondaryInvoice", fields: [secondaryInvoiceId], references: [id])
+  createdAt                 DateTime                      @default(now())
+
+  @@index([organizationId, invoiceId])
+  @@index([pdfStatus, createdAt])
+  @@map("invoice_interest_claim")
+}
+
+enum InvoiceInterestClaimPdfStatus {
+  PENDING_RENDER
+  READY
+  FAILED
 }

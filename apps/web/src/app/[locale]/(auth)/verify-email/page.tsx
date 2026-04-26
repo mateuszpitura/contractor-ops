@@ -1,7 +1,7 @@
-import { useTranslations } from "next-intl";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Link } from "@/i18n/navigation";
+import { useTranslations } from 'next-intl';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Link } from '@/i18n/navigation';
 
 /**
  * Email verification page shown after registration.
@@ -9,7 +9,7 @@ import { Link } from "@/i18n/navigation";
  * via Better Auth verification callback.
  */
 export default function VerifyEmailPage() {
-  const t = useTranslations("Auth.verifyEmail");
+  const t = useTranslations('Auth.verifyEmail');
 
   return (
     <Card>
@@ -22,7 +22,7 @@ export default function VerifyEmailPage() {
               viewBox="0 0 24 24"
               strokeWidth="1.5"
               stroke="currentColor"
-            >
+              aria-hidden="true">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -30,17 +30,13 @@ export default function VerifyEmailPage() {
               />
             </svg>
           </div>
-          <h2 className="text-[20px] font-semibold">{t("title")}</h2>
-          <p className="text-sm text-muted-foreground">
-            {t("message")}
-          </p>
-          <p className="text-xs text-muted-foreground">
-            {t("redirect")}
-          </p>
+          <h2 className="text-[20px] font-semibold">{t('title')}</h2>
+          <p className="text-sm text-muted-foreground">{t('message')}</p>
+          <p className="text-xs text-muted-foreground">{t('redirect')}</p>
         </div>
         <div className="mt-6">
           <Button variant="ghost" render={<Link href="/login" />}>
-            {t("backToSignIn")}
+            {t('backToSignIn')}
           </Button>
         </div>
       </CardContent>

@@ -1,25 +1,16 @@
-"use client";
+'use client';
 
-import { useParams } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
-
-import { trpc } from "@/trpc/init";
-import { authClient } from "@/lib/auth-client";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Breadcrumb,
-  BreadcrumbList,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbSeparator,
-  BreadcrumbPage,
-} from "@/components/ui/breadcrumb";
-import { Link } from "@/i18n/navigation";
-
-import { RunHeader } from "@/components/workflows/workflow-run/run-header";
-import { TaskChecklist } from "@/components/workflows/workflow-run/task-checklist";
+import { useQuery } from '@tanstack/react-query';
+import { useParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import { useBreadcrumbOverride } from '@/components/layout/breadcrumb-context';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { RunHeader } from '@/components/workflows/workflow-run/run-header';
+import { TaskChecklist } from '@/components/workflows/workflow-run/task-checklist';
+import { Link } from '@/i18n/navigation';
+import { authClient } from '@/lib/auth-client';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Skeleton
@@ -41,7 +32,8 @@ function RunDetailSkeleton() {
       <div className="space-y-3">
         <Skeleton className="h-6 w-16" />
         {Array.from({ length: 5 }).map((_, i) => (
-          <div key={i} className="flex items-center gap-3 rounded-lg border bg-card p-4">
+          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
+          <div key={`skel-${i}`} className="flex items-center gap-3 rounded-lg border bg-card p-4">
             <Skeleton className="size-5 shrink-0 rounded-full" />
             <div className="flex-1 space-y-2">
               <Skeleton className="h-4 w-48" />
@@ -61,31 +53,29 @@ function RunDetailSkeleton() {
 
 export default function WorkflowRunDetailPage() {
   const params = useParams<{ id: string }>();
-  const t = useTranslations("Workflows");
+  const t = useTranslations('Workflows');
 
   const session = authClient.useSession();
   const currentUserId = session?.data?.user?.id ?? null;
 
-  const runQuery = useQuery(
-    trpc.workflow.getRun.queryOptions({ id: params.id }),
-  );
+  const runQuery = useQuery(trpc.workflow.getRun.queryOptions({ id: params.id }));
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const run = runQuery.data as any;
+  const run = runQuery.data;
+
+  useBreadcrumbOverride(params.id, run?.workflowTemplate?.name);
 
   // Error states
   if (runQuery.isError) {
     const isNotFound =
-      runQuery.error?.message?.includes("not found") ||
-      (runQuery.error as { data?: { code?: string } })?.data?.code ===
-        "NOT_FOUND";
+      runQuery.error?.message?.includes('not found') ||
+      (runQuery.error as { data?: { code?: string } })?.data?.code === 'NOT_FOUND';
 
     if (isNotFound) {
       return (
         <div className="flex min-h-[400px] flex-col items-center justify-center gap-3 text-center">
-          <h2 className="text-lg font-medium">Workflow not found</h2>
+          <h2 className="text-lg font-medium">{t('notFound')}</h2>
           <Button variant="outline" render={<Link href="/workflows" />}>
-            Back to Workflows
+            {t('backToWorkflows')}
           </Button>
         </div>
       );
@@ -93,11 +83,10 @@ export default function WorkflowRunDetailPage() {
 
     return (
       <div className="flex min-h-[400px] flex-col items-center justify-center gap-3 text-center">
-        <h2 className="text-lg font-medium">
-          {t("errors.failedToLoadWorkflowDetail")}
-        </h2>
+        <h2 className="text-lg font-medium">{t('errors.failedToLoadWorkflowDetail')}</h2>
+        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
         <Button variant="outline" onClick={() => runQuery.refetch()}>
-          {t("errors.retry")}
+          {t('errors.retry')}
         </Button>
       </div>
     );
@@ -105,38 +94,13 @@ export default function WorkflowRunDetailPage() {
 
   return (
     <div className="space-y-6">
-      {/* Breadcrumb */}
-      <Breadcrumb>
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink
-              render={(props) => <Link {...props} href="/workflows" />}
-            >
-              {t("pageTitle")}
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage>
-              {run?.workflowTemplate?.name ?? (
-                <Skeleton className="inline-block h-4 w-32" />
-              )}
-            </BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
-
       {/* Content */}
       {runQuery.isLoading || !run ? (
         <RunDetailSkeleton />
       ) : (
         <>
           <RunHeader run={run} />
-          <TaskChecklist
-            tasks={run.tasks}
-            runId={run.id}
-            currentUserId={currentUserId}
-          />
+          <TaskChecklist tasks={run.tasks} runId={run.id} currentUserId={currentUserId} />
         </>
       )}
     </div>

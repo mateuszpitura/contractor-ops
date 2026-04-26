@@ -232,14 +232,14 @@ IntegrationConnection 1:N IntegrationSyncLogs
 
 ### 4.3 USER_ROLE_ASSIGNMENT
 
-Jeden user może mieć wiele ról (np. OPS_MANAGER + TEAM_MANAGER dla konkretnego teamu).
+Jeden user może mieć wiele ról (np. ops_manager + team_manager dla konkretnego teamu).
 
 | Field           | Type           | Notes                                                                                              |
 | --------------- | -------------- | -------------------------------------------------------------------------------------------------- |
 | id              | UUID PK        |                                                                                                    |
 | organization_id | UUID FK        |                                                                                                    |
 | user_id         | UUID FK → User |                                                                                                    |
-| role            | ENUM           | ORG_ADMIN, FINANCE_ADMIN, OPS_MANAGER, TEAM_MANAGER, LEGAL_VIEWER, IT_ADMIN, ACCOUNTANT, READ_ONLY |
+| role            | ENUM           | admin, finance_admin, ops_manager, team_manager, legal_compliance_viewer, it_admin, external_accountant, readonly |
 | scope_type      | ENUM?          | ORGANIZATION, TEAM, PROJECT, COST_CENTER                                                           |
 | scope_id        | UUID?          | FK to scoped entity (when scope_type is set)                                                       |
 | created_at      | TIMESTAMPTZ    |                                                                                                    |
@@ -511,7 +511,7 @@ Uniwersalny file storage entity.
 | checksum_sha256     | VARCHAR(64)           |                                                        |
 | document_type       | ENUM                  |                                                        |
 | status              | ENUM                  | ACTIVE, SUPERSEDED, EXPIRED, ARCHIVED                  |
-| visibility          | ENUM                  | PRIVATE, INTERNAL, SHARED_WITH_ACCOUNTANT              |
+| visibility          | ENUM                  | PRIVATE, INTERNAL, SHARED_WITH_external_accountant              |
 | uploaded_by_user_id | UUID? FK → User       |                                                        |
 | source              | ENUM                  | USER_UPLOAD, EMAIL_INTAKE, ESIGN, KSEF, API, GENERATED |
 | virus_scan_status   | ENUM                  | PENDING, CLEAN, INFECTED, FAILED                       |
@@ -656,7 +656,7 @@ Konfiguracja ścieżki akceptacji (template). Oryginał miał tylko runtime inst
 | is_default      | BOOLEAN default false |                                                                          |
 | is_active       | BOOLEAN default true  |                                                                          |
 | conditions_json | JSONB?                | `{"amount_gte": 5000, "contractor_type": "COMPANY"}`                     |
-| steps_json      | JSONB                 | `[{"order":1,"role":"TEAM_MANAGER"},{"order":2,"role":"FINANCE_ADMIN"}]` |
+| steps_json      | JSONB                 | `[{"order":1,"role":"team_manager"},{"order":2,"role":"finance_admin"}]` |
 | created_at      | TIMESTAMPTZ           |                                                                          |
 | updated_at      | TIMESTAMPTZ           |                                                                          |
 
@@ -729,8 +729,8 @@ Poniżej pełna lista z naniesionymi korektami:
 ```
 OrganizationStatus:      ACTIVE | SUSPENDED | TRIAL | ARCHIVED
 UserStatus:              INVITED | ACTIVE | DISABLED | ARCHIVED
-UserRole:                ORG_ADMIN | FINANCE_ADMIN | OPS_MANAGER | TEAM_MANAGER |
-                         LEGAL_VIEWER | IT_ADMIN | ACCOUNTANT | READ_ONLY
+UserRole:                admin | finance_admin | ops_manager | team_manager |
+                         legal_compliance_viewer | it_admin | external_accountant | readonly
 ScopeType:               ORGANIZATION | TEAM | PROJECT | COST_CENTER
 SimpleStatus:            ACTIVE | INACTIVE | ARCHIVED
 
@@ -759,7 +759,7 @@ DocumentType:            MASTER_CONTRACT | AMENDMENT | NDA | IP_ASSIGNMENT | DPA
                          ▲ INSURANCE dodane — przydatne dla compliance
 
 DocumentStatus:          ACTIVE | SUPERSEDED | EXPIRED | ARCHIVED
-DocumentVisibility:      PRIVATE | INTERNAL | SHARED_WITH_ACCOUNTANT
+DocumentVisibility:      PRIVATE | INTERNAL | SHARED_WITH_external_accountant
 DocumentSource:          USER_UPLOAD | EMAIL_INTAKE | ESIGN | KSEF | API | GENERATED
 VirusScanStatus:         PENDING | CLEAN | INFECTED | FAILED
 
@@ -2095,14 +2095,14 @@ enum UserStatus {
 }
 
 enum UserRole {
-  ORG_ADMIN
-  FINANCE_ADMIN
-  OPS_MANAGER
-  TEAM_MANAGER
-  LEGAL_VIEWER
-  IT_ADMIN
-  ACCOUNTANT
-  READ_ONLY
+  admin
+  finance_admin
+  ops_manager
+  team_manager
+  legal_compliance_viewer
+  it_admin
+  external_accountant
+  readonly
 }
 
 enum ScopeType {
@@ -2222,7 +2222,7 @@ enum DocumentStatus {
 enum DocumentVisibility {
   PRIVATE
   INTERNAL
-  SHARED_WITH_ACCOUNTANT
+  SHARED_WITH_external_accountant
 }
 
 enum DocumentSource {

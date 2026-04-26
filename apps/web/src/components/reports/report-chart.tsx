@@ -1,26 +1,27 @@
-"use client";
+'use client';
 
-import { useMemo } from "react";
+import { useLocale } from 'next-intl';
+import { useMemo } from 'react';
 import {
-  BarChart,
   Bar,
+  BarChart,
+  Cell,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-} from "recharts";
+} from 'recharts';
 
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from '@/components/ui/skeleton';
+import { useRtlChartConfig } from '@/hooks/use-rtl-chart-config';
 
-type ChartType = "bar-horizontal" | "bar-grouped" | "pie";
+type ChartType = 'bar-horizontal' | 'bar-grouped' | 'pie';
 
 interface ReportChartProps {
   type: ChartType;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  data: any[];
+  data: Record<string, unknown>[];
   dataKey: string;
   nameKey: string;
   activeId?: string;
@@ -29,22 +30,13 @@ interface ReportChartProps {
   idKey?: string;
 }
 
-const CHART_HEIGHT = 240;
+const _CHART_HEIGHT = 240;
 
 const PIE_COLORS: Record<string, string> = {
-  critical: "var(--color-destructive)",
-  warning: "var(--color-warning, #f59e0b)",
-  ok: "var(--color-success, #22c55e)",
+  critical: 'var(--color-destructive)',
+  warning: 'var(--color-warning, #f59e0b)',
+  ok: 'var(--color-success, #22c55e)',
 };
-
-function formatCurrency(value: number): string {
-  return new Intl.NumberFormat("pl-PL", {
-    style: "currency",
-    currency: "PLN",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(value / 100);
-}
 
 export function ReportChart({
   type,
@@ -54,30 +46,44 @@ export function ReportChart({
   activeId,
   onSegmentClick,
   isLoading,
-  idKey = "id",
+  idKey = 'id',
 }: ReportChartProps) {
+  const locale = useLocale();
+  const { xAxisProps, yAxisProps, chartStyle } = useRtlChartConfig();
+
+  const formatCurrency = useMemo(() => {
+    const fmt = new Intl.NumberFormat(
+      locale === 'ar' ? 'ar-SA-u-nu-latn' : locale === 'pl' ? 'pl-PL' : 'en-US',
+      {
+        style: 'currency',
+        currency: locale === 'ar' ? 'AED' : 'PLN',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+      },
+    );
+    return (value: number) => fmt.format(value / 100);
+  }, [locale]);
+
   const sortedData = useMemo(() => {
-    if (type === "bar-horizontal") {
-      return [...data]
-        .sort((a, b) => (b[dataKey] as number) - (a[dataKey] as number))
-        .slice(0, 10);
+    if (type === 'bar-horizontal') {
+      return [...data].sort((a, b) => (b[dataKey] as number) - (a[dataKey] as number)).slice(0, 10);
     }
     return data;
   }, [data, dataKey, type]);
 
   // Pie chart data transformation (must be called unconditionally for hooks rules)
   const pieData = useMemo(() => {
-    if (type !== "pie") return [];
-    if (Array.isArray(data) && data.length > 0 && "name" in data[0]) {
+    if (type !== 'pie') return [];
+    if (Array.isArray(data) && data.length > 0 && 'name' in data[0]) {
       return data as Array<{ name: string; value: number; id?: string }>;
     }
     // Transform { critical, warning, ok } to array
     const obj = (data[0] ?? {}) as Record<string, number>;
     return [
-      { name: "Critical", value: obj.critical ?? 0, id: "critical" },
-      { name: "Warning", value: obj.warning ?? 0, id: "warning" },
-      { name: "OK", value: obj.ok ?? 0, id: "ok" },
-    ].filter((d) => d.value > 0);
+      { name: 'Critical', value: obj.critical ?? 0, id: 'critical' },
+      { name: 'Warning', value: obj.warning ?? 0, id: 'warning' },
+      { name: 'OK', value: obj.ok ?? 0, id: 'ok' },
+    ].filter(d => d.value > 0);
   }, [data, type]);
 
   if (isLoading) {
@@ -88,52 +94,53 @@ export function ReportChart({
     return null;
   }
 
-  if (type === "bar-horizontal") {
+  if (type === 'bar-horizontal') {
     return (
-      <div style={{ height: CHART_HEIGHT }}>
+      <div>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
             data={sortedData}
             layout="vertical"
             margin={{ top: 0, right: 20, bottom: 0, left: 0 }}
-          >
+            style={chartStyle}>
             <XAxis
               type="number"
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               tickFormatter={(v: number) => formatCurrency(v)}
               tick={{ fontSize: 12 }}
+              {...xAxisProps}
             />
             <YAxis
               type="category"
               dataKey={nameKey}
               width={150}
               tick={{ fontSize: 12 }}
+              {...yAxisProps}
             />
             <Tooltip
-              formatter={(value) => formatCurrency(Number(value))}
-              cursor={{ fill: "var(--color-muted)", opacity: 0.3 }}
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+              formatter={value => formatCurrency(Number(value))}
+              cursor={{ fill: 'var(--color-muted)', opacity: 0.3 }}
             />
             <Bar
               dataKey={dataKey}
               radius={[0, 4, 4, 0]}
               cursor="pointer"
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={(_data, _index, e) => {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const payload = (e as any)?.payload ?? _data;
+                const payload =
+                  ((e as unknown as Record<string, unknown>)?.payload as Record<string, unknown>) ??
+                  _data;
                 const id = payload?.[idKey] as string;
                 if (id) onSegmentClick(id);
-              }}
-            >
-              {sortedData.map((entry) => {
+              }}>
+              {sortedData.map(entry => {
                 const entryId = entry[idKey] as string;
                 const isActive = !activeId || entryId === activeId;
                 return (
                   <Cell
                     key={entryId}
-                    fill={
-                      isActive
-                        ? "var(--color-primary)"
-                        : "var(--color-muted-foreground)"
-                    }
+                    fill={isActive ? 'var(--color-primary)' : 'var(--color-muted-foreground)'}
                     opacity={isActive ? 1 : 0.3}
                   />
                 );
@@ -145,28 +152,27 @@ export function ReportChart({
     );
   }
 
-  if (type === "bar-grouped") {
+  if (type === 'bar-grouped') {
     return (
-      <div style={{ height: CHART_HEIGHT }}>
+      <div>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
             data={sortedData}
             margin={{ top: 0, right: 20, bottom: 0, left: 0 }}
-          >
-            <XAxis
-              dataKey={nameKey}
-              tick={{ fontSize: 12 }}
-            />
-            <YAxis tick={{ fontSize: 12 }} />
-            <Tooltip cursor={{ fill: "var(--color-muted)", opacity: 0.3 }} />
+            style={chartStyle}>
+            <XAxis dataKey={nameKey} tick={{ fontSize: 12 }} {...xAxisProps} />
+            <YAxis tick={{ fontSize: 12 }} {...yAxisProps} />
+            <Tooltip cursor={{ fill: 'var(--color-muted)', opacity: 0.3 }} />
             <Bar
               dataKey={dataKey}
               fill="var(--color-primary)"
               radius={[4, 4, 0, 0]}
               cursor="pointer"
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={(_data, _index, e) => {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const payload = (e as any)?.payload ?? _data;
+                const payload =
+                  ((e as unknown as Record<string, unknown>)?.payload as Record<string, unknown>) ??
+                  _data;
                 const id = payload?.[idKey] as string;
                 if (id) onSegmentClick(id);
               }}
@@ -177,9 +183,9 @@ export function ReportChart({
     );
   }
 
-  if (type === "pie") {
+  if (type === 'pie') {
     return (
-      <div style={{ height: CHART_HEIGHT }}>
+      <div>
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
@@ -190,28 +196,28 @@ export function ReportChart({
               cy="50%"
               outerRadius={80}
               cursor="pointer"
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={(_data, _index, e) => {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const payload = (e as any)?.payload ?? _data;
-                const id = (payload?.id ?? payload?.name?.toLowerCase()) as string;
+                const payload =
+                  ((e as unknown as Record<string, unknown>)?.payload as Record<string, unknown>) ??
+                  (_data as unknown as Record<string, unknown>);
+                const id = (payload?.id ??
+                  (payload?.name as string | undefined)?.toLowerCase()) as string;
                 if (id) onSegmentClick(id);
               }}
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               label={({ name, value }: { name?: string; value?: number }) =>
-                `${name ?? ""}: ${value ?? 0}`
-              }
-            >
-              {pieData.map((entry) => (
+                `${name ?? ''}: ${value ?? 0}`
+              }>
+              {pieData.map(entry => (
                 <Cell
                   key={entry.id ?? entry.name}
                   fill={
-                    PIE_COLORS[(entry.id ?? entry.name ?? "").toLowerCase()] ??
-                    "var(--color-primary)"
+                    PIE_COLORS[(entry.id ?? entry.name ?? '').toLowerCase()] ??
+                    'var(--color-primary)'
                   }
                   opacity={
-                    !activeId ||
-                    (entry.id ?? entry.name ?? "").toLowerCase() === activeId
-                      ? 1
-                      : 0.3
+                    !activeId || (entry.id ?? entry.name ?? '').toLowerCase() === activeId ? 1 : 0.3
                   }
                 />
               ))}

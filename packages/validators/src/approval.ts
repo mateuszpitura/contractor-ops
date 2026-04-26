@@ -1,55 +1,41 @@
-import { z } from "zod";
+import { z } from 'zod';
+import { workflowAssignableRoleEnum } from './roles.js';
 
 // ---------------------------------------------------------------------------
 // Prisma enum mirrors (string unions — validators package has no Prisma dep)
 // ---------------------------------------------------------------------------
 
 export const approvalStatusEnum = z.enum([
-  "NOT_STARTED",
-  "PENDING",
-  "APPROVED",
-  "REJECTED",
-  "CANCELLED",
+  'NOT_STARTED',
+  'PENDING',
+  'APPROVED',
+  'REJECTED',
+  'CANCELLED',
 ]);
 
 export const approvalDecisionTypeEnum = z.enum([
-  "APPROVE",
-  "REJECT",
-  "REQUEST_CHANGES",
-  "DELEGATE",
+  'APPROVE',
+  'REJECT',
+  'REQUEST_CHANGES',
+  'DELEGATE',
 ]);
 
-export const approvalResourceTypeEnum = z.enum([
-  "INVOICE",
-  "DOCUMENT",
-  "CONTRACT",
-]);
+export const approvalResourceTypeEnum = z.enum(['INVOICE', 'DOCUMENT', 'CONTRACT']);
 
 // ---------------------------------------------------------------------------
 // Condition and step config schemas
 // ---------------------------------------------------------------------------
 
 export const conditionSchema = z.object({
-  field: z.enum(["amount", "contractorType"]),
-  operator: z.enum(["gt", "lt", "eq"]),
+  field: z.enum(['amount', 'contractorType']),
+  operator: z.enum(['gt', 'lt', 'eq']),
   value: z.union([z.number(), z.string()]),
 });
 
 export const stepConfigSchema = z.object({
   name: z.string().min(1).max(100),
   approverUserId: z.string().nullish(),
-  approverRole: z
-    .enum([
-      "ORG_ADMIN",
-      "FINANCE_ADMIN",
-      "OPS_MANAGER",
-      "TEAM_MANAGER",
-      "LEGAL_VIEWER",
-      "IT_ADMIN",
-      "ACCOUNTANT",
-      "READ_ONLY",
-    ])
-    .nullish(),
+  approverRole: workflowAssignableRoleEnum.nullish(),
   slaHours: z.number().int().min(1).max(720),
   required: z.boolean().default(true),
 });
@@ -79,17 +65,13 @@ export type ApprovalChainUpdate = z.infer<typeof approvalChainUpdateSchema>;
 // ---------------------------------------------------------------------------
 
 export const approvalQueueSchema = z.object({
-  tab: z.enum(["my", "all"]).default("my"),
-  status: z
-    .enum(["all", "pending", "overdue", "approved", "rejected"])
-    .default("all"),
+  tab: z.enum(['my', 'all']).default('my'),
+  status: z.enum(['all', 'pending', 'overdue', 'approved', 'rejected']).default('all'),
   search: z.string().optional(),
   page: z.number().int().min(1).default(1),
-  pageSize: z.number().int().min(10).max(50).default(10),
-  sortBy: z
-    .enum(["slaDeadline", "submitted", "amount"])
-    .default("slaDeadline"),
-  sortOrder: z.enum(["asc", "desc"]).default("asc"),
+  pageSize: z.number().int().min(1).max(50).default(10),
+  sortBy: z.enum(['slaDeadline', 'submitted', 'amount']).default('slaDeadline'),
+  sortOrder: z.enum(['asc', 'desc']).default('asc'),
 });
 
 export type ApprovalQueue = z.infer<typeof approvalQueueSchema>;
@@ -127,3 +109,8 @@ export const bulkRejectSchema = z.object({
   stepIds: z.array(z.string()).min(1).max(50),
   comment: z.string().min(10),
 });
+
+/** Labels for synthetic system rows in approval audit trail (camelCase tokens). */
+export const approvalAuditSystemLabel = {
+  slaBreached: 'slaBreached',
+} as const;

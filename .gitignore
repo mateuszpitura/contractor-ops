@@ -17,9 +17,16 @@ generated
 
 # Build output
 dist
+out
+apps/*/out
 
 # Test coverage
 coverage
+
+# Playwright (auth state, reports, test results)
+apps/web/e2e/perf/.auth/
+apps/web/e2e/perf/results/
+test-results
 
 # TypeScript
 *.tsbuildinfo

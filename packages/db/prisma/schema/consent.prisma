@@ -1,0 +1,82 @@
+// ConsentRecord, PrivacyNotice — PDPL compliance (Phase 51)
+
+model ConsentRecord {
+  id             String         @id @default(cuid())
+  organizationId String
+  userId         String
+  purpose        ConsentPurpose
+  granted        Boolean
+  version        Int            @default(1)
+  grantedAt      DateTime?
+  revokedAt      DateTime?
+  ipAddress      String?
+  userAgent      String?
+  createdAt      DateTime       @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation("UserConsentRecords", fields: [userId], references: [id], onDelete: Cascade)
+
+  // Immutable — no updatedAt (per D-02, matches AuditLog pattern)
+  @@index([organizationId])
+  @@index([organizationId, userId, purpose])
+  @@index([organizationId, purpose, createdAt])
+}
+
+model PrivacyNotice {
+  id             String   @id @default(cuid())
+  organizationId String
+  jurisdiction   String   @db.Char(2)
+  version        Int      @default(1)
+  contentJson    Json
+  effectiveFrom  DateTime
+  createdAt      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, jurisdiction, version])
+  @@index([organizationId, jurisdiction])
+}
+
+enum ConsentPurpose {
+  CONTRACTOR_DATA_PROCESSING
+  INVOICE_PAYMENT_PROCESSING
+  ANALYTICS_REPORTING
+  CROSS_BORDER_TRANSFER
+  INTEGRATION_DATA_SHARING
+  COMMUNICATION_NOTIFICATIONS
+}
+
+// ---------------------------------------------------------------------------
+// Phase 64 · LEGAL-07 — Terms of Service acceptance events (D-30)
+//
+// Distinct from ConsentRecord (PDPL per-purpose consent — Phase 51).
+// ConsentEvent records a user's explicit acceptance of the platform ToS.
+// Used to enforce re-acceptance when the ToS version is bumped.
+//
+// Multi-tenant scoped: each org tracks its users' acceptance state.
+// Append-only: no update or delete procedures.
+// ---------------------------------------------------------------------------
+
+enum ConsentEventScope {
+  TOS // Terms of Service acceptance
+}
+
+model ConsentEvent {
+  id             String            @id @default(cuid())
+  organizationId String
+  userId         String
+  scope          ConsentEventScope
+  version        String // e.g. "2026.1.0" — must match TOS_CURRENT_VERSION
+  acceptedAt     DateTime
+  ipAddress      String?
+  userAgent      String?           @db.Text
+  createdAt      DateTime          @default(now())
+
+  organization Organization @relation("OrganizationConsentEvents", fields: [organizationId], references: [id])
+  user         User         @relation("UserConsentEvents", fields: [userId], references: [id])
+
+  // Append-only — no updatedAt.
+
+  @@index([organizationId, userId, scope], map: "CE_org_user_scope_idx")
+  @@index([organizationId, scope, createdAt], map: "CE_org_scope_createdAt_idx")
+}

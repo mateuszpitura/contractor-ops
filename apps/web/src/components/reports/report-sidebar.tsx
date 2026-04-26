@@ -1,27 +1,21 @@
-"use client";
+'use client';
 
-import {
-  Users,
-  UsersRound,
-  FileWarning,
-  Clock,
-  ShieldAlert,
-  type LucideIcon,
-} from "lucide-react";
-import { useTranslations } from "next-intl";
+import type { LucideIcon } from 'lucide-react';
+import { Clock, FileWarning, ShieldAlert, Users, UsersRound } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
-import { cn } from "@/lib/utils";
+import { cn } from '@/lib/utils';
 
 const REPORT_TYPES: Array<{
   id: string;
   icon: LucideIcon;
   labelKey: string;
 }> = [
-  { id: "spend-contractor", icon: Users, labelKey: "spendByContractor" },
-  { id: "spend-team", icon: UsersRound, labelKey: "spendByTeam" },
-  { id: "expiring-contracts", icon: FileWarning, labelKey: "expiringContracts" },
-  { id: "overdue-invoices", icon: Clock, labelKey: "overdueInvoices" },
-  { id: "compliance-gaps", icon: ShieldAlert, labelKey: "complianceGaps" },
+  { id: 'spend-contractor', icon: Users, labelKey: 'spendByContractor' },
+  { id: 'spend-team', icon: UsersRound, labelKey: 'spendByTeam' },
+  { id: 'expiring-contracts', icon: FileWarning, labelKey: 'expiringContracts' },
+  { id: 'overdue-invoices', icon: Clock, labelKey: 'overdueInvoices' },
+  { id: 'compliance-gaps', icon: ShieldAlert, labelKey: 'complianceGaps' },
 ];
 
 interface ReportSidebarProps {
@@ -30,14 +24,14 @@ interface ReportSidebarProps {
 }
 
 export function ReportSidebar({ activeReport, onSelect }: ReportSidebarProps) {
-  const t = useTranslations("Reports");
+  const t = useTranslations('Reports');
 
   return (
     <>
       {/* Desktop: vertical sidebar */}
       <nav className="hidden w-[220px] shrink-0 lg:block">
         <ul className="space-y-0.5">
-          {REPORT_TYPES.map((report) => {
+          {REPORT_TYPES.map(report => {
             const Icon = report.icon;
             const isActive = activeReport === report.id;
 
@@ -45,18 +39,16 @@ export function ReportSidebar({ activeReport, onSelect }: ReportSidebarProps) {
               <li key={report.id}>
                 <button
                   type="button"
+                  // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
                   onClick={() => onSelect(report.id)}
                   className={cn(
-                    "flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors",
+                    'flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors',
                     isActive
-                      ? "border-l-[3px] border-primary bg-primary/5 text-primary"
-                      : "text-muted-foreground hover:bg-muted",
-                  )}
-                >
+                      ? 'border-l-[3px] border-primary bg-primary/5 text-primary'
+                      : 'text-muted-foreground hover:bg-muted',
+                  )}>
                   <Icon className="h-4 w-4 shrink-0" />
-                  <span className="truncate">
-                    {t(report.labelKey as Parameters<typeof t>[0])}
-                  </span>
+                  <span className="truncate">{t(report.labelKey as Parameters<typeof t>[0])}</span>
                 </button>
               </li>
             );
@@ -67,7 +59,7 @@ export function ReportSidebar({ activeReport, onSelect }: ReportSidebarProps) {
       {/* Mobile: horizontal scrollable pill bar */}
       <nav className="lg:hidden">
         <div className="flex gap-2 overflow-x-auto pb-2">
-          {REPORT_TYPES.map((report) => {
+          {REPORT_TYPES.map(report => {
             const Icon = report.icon;
             const isActive = activeReport === report.id;
 
@@ -75,14 +67,14 @@ export function ReportSidebar({ activeReport, onSelect }: ReportSidebarProps) {
               <button
                 key={report.id}
                 type="button"
+                // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
                 onClick={() => onSelect(report.id)}
                 className={cn(
-                  "flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-sm transition-colors",
+                  'flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-sm transition-colors',
                   isActive
-                    ? "bg-primary/10 text-primary"
-                    : "bg-muted text-muted-foreground hover:bg-muted/80",
-                )}
-              >
+                    ? 'bg-primary/10 text-primary'
+                    : 'bg-muted text-muted-foreground hover:bg-muted/80',
+                )}>
                 <Icon className="h-3.5 w-3.5" />
                 <span>{t(report.labelKey as Parameters<typeof t>[0])}</span>
               </button>

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Faktura xmlns="http://crd.gov.pl/wzor/2024/06/20/13386/">
+  <Podmiot1>
+    <DaneIdentyfikacyjne>
+      <NIP>5261040828</NIP>
+      <Nazwa>Test Seller Sp. z o.o.</Nazwa>
+    </DaneIdentyfikacyjne>
+    <Adres>
+      <KodPocztowy>00-001</KodPocztowy>
+      <Miejscowosc>Warszawa</Miejscowosc>
+      <Ulica>Marszalkowska</Ulica>
+      <NrDomu>1</NrDomu>
+    </Adres>
+  </Podmiot1>
+  <Podmiot2>
+    <DaneIdentyfikacyjne>
+      <NIP>9876543210</NIP>
+      <Nazwa>Test Buyer S.A.</Nazwa>
+    </DaneIdentyfikacyjne>
+  </Podmiot2>
+  <Fa>
+    <KodWaluty>PLN</KodWaluty>
+    <P_1>2026-03-15</P_1>
+    <P_2>FV/2026/03/001</P_2>
+    <RodzajFaktury>VAT</RodzajFaktury>
+    <FaWiersz>
+      <NrWierszaFa>1</NrWierszaFa>
+      <P_7>Uslugi programistyczne</P_7>
+      <P_8B>160</P_8B>
+      <P_8A>godz</P_8A>
+      <P_9A>150.00</P_9A>
+      <P_11>24000.00</P_11>
+      <P_12>23</P_12>
+      <P_11A>5520.00</P_11A>
+    </FaWiersz>
+    <FaWiersz>
+      <NrWierszaFa>2</NrWierszaFa>
+      <P_7>Licencja oprogramowania</P_7>
+      <P_8B>1</P_8B>
+      <P_8A>szt</P_8A>
+      <P_9A>5000.00</P_9A>
+      <P_11>5000.00</P_11>
+      <P_12>23</P_12>
+      <P_11A>1150.00</P_11A>
+    </FaWiersz>
+    <P_13_1>29000.00</P_13_1>
+    <P_14_1>6670.00</P_14_1>
+    <P_15>35670.00</P_15>
+    <Platnosc>
+      <TerminPlatnosci>2026-04-15</TerminPlatnosci>
+      <NrRB>PL61109010140000071219812874</NrRB>
+      <FormaPlatnosci>przelew</FormaPlatnosci>
+    </Platnosc>
+  </Fa>
+</Faktura>

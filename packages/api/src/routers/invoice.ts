@@ -1,20 +1,28 @@
-import { z } from "zod";
-import { TRPCError } from "@trpc/server";
-import { prisma } from "@contractor-ops/db";
+import type { Prisma, TaxIdType } from '@contractor-ops/db';
 import {
   invoiceCreateSchema,
-  invoiceUpdateSchema,
   invoiceListSchema,
   invoiceManualMatchSchema,
-} from "@contractor-ops/validators";
-import { router } from "../init.js";
-import { tenantProcedure } from "../middleware/tenant.js";
-import { requirePermission } from "../middleware/rbac.js";
-import {
-  computeDuplicateCheckHash,
-  runAutoMatch,
-} from "../services/invoice-matching.js";
-import { dispatch } from "../services/notification-service.js";
+  invoiceUpdateSchema,
+} from '@contractor-ops/validators';
+import { TRPCError } from '@trpc/server';
+import { z } from 'zod';
+import * as E from '../errors.js';
+import { getHmrcVatClient, getViesClient } from '../gov-api-clients.js';
+import { router } from '../init.js';
+import type { TenantScopedDb } from '../lib/tenant-db.js';
+import { requirePermission } from '../middleware/rbac.js';
+import { tenantProcedure } from '../middleware/tenant.js';
+import { CacheKeys, invalidateByPrefix } from '../services/cache.js';
+import { deleteCalendarEvent } from '../services/calendar-event-service.js';
+import { computeDuplicateCheckHash, runAutoMatch } from '../services/invoice-matching.js';
+import { applyKleinunternehmerOverride } from '../services/kleinunternehmer.service.js';
+import { dispatch } from '../services/notification-service.js';
+import type { DE13bServiceType } from '../services/reverse-charge.service.js';
+import { applyReverseCharge, detectReverseCharge } from '../services/reverse-charge.service.js';
+import { sanitizeStrings } from '../services/sanitize.js';
+import { isValidationFresh, validateTaxId } from '../services/tax-id-validation.service.js';
+import { getDefaultRateCode } from '../services/tax-rate.service.js';
 
 // ---------------------------------------------------------------------------
 // Finance team helper
@@ -23,15 +31,15 @@ import { dispatch } from "../services/notification-service.js";
 /**
  * Queries organization members with FINANCE_ADMIN role and returns their user IDs.
  */
-async function getFinanceTeamUserIds(orgId: string): Promise<string[]> {
-  const members = await prisma.member.findMany({
+async function getFinanceTeamUserIds(db: TenantScopedDb, orgId: string): Promise<string[]> {
+  const members = await db.member.findMany({
     where: {
       organizationId: orgId,
-      role: "FINANCE_ADMIN",
+      role: 'FINANCE_ADMIN',
     },
     select: { userId: true },
   });
-  return members.map((m) => m.userId);
+  return members.map((m: { userId: string }) => m.userId);
 }
 
 // ---------------------------------------------------------------------------
@@ -48,6 +56,244 @@ function plain<T>(data: T): T {
 }
 
 // ---------------------------------------------------------------------------
+// Invoice update helpers
+// ---------------------------------------------------------------------------
+
+const INVOICE_DATE_FIELDS = [
+  'issueDate',
+  'dueDate',
+  'servicePeriodStart',
+  'servicePeriodEnd',
+] as const;
+
+/**
+ * Converts date string fields to Date objects in-place.
+ */
+function coerceInvoiceDateFields(data: Record<string, unknown>) {
+  for (const field of INVOICE_DATE_FIELDS) {
+    if (data[field]) {
+      data[field] = new Date(data[field] as string);
+    }
+  }
+}
+
+/**
+ * Validates that the service period end is not before start,
+ * merging with existing values if only one is provided.
+ */
+function validateServicePeriod(
+  updateData: Record<string, unknown>,
+  existing: { servicePeriodStart: Date | null; servicePeriodEnd: Date | null },
+) {
+  const effectiveStart =
+    (updateData.servicePeriodStart as Date | undefined) ?? existing.servicePeriodStart;
+  const effectiveEnd =
+    (updateData.servicePeriodEnd as Date | undefined) ?? existing.servicePeriodEnd;
+
+  if (effectiveStart && effectiveEnd && effectiveEnd < effectiveStart) {
+    throw new TRPCError({
+      code: 'BAD_REQUEST',
+      message: 'Service period end date must be on or after the start date.',
+    });
+  }
+}
+
+/**
+ * Validates arithmetic consistency of invoice amounts.
+ * subtotal + vat - withholding = total, and amountToPay = total.
+ */
+function validateInvoiceAmounts(
+  updateData: Record<string, unknown>,
+  existing: {
+    subtotalMinor: number;
+    vatAmountMinor: number | null;
+    totalMinor: number;
+    withholdingMinor: number | null;
+    amountToPayMinor: number;
+  },
+) {
+  const hasAmountChange =
+    updateData.subtotalMinor !== undefined ||
+    updateData.vatAmountMinor !== undefined ||
+    updateData.totalMinor !== undefined ||
+    updateData.withholdingMinor !== undefined ||
+    updateData.amountToPayMinor !== undefined;
+
+  if (!hasAmountChange) return;
+
+  const effective = {
+    subtotalMinor: (updateData.subtotalMinor as number) ?? existing.subtotalMinor,
+    vatAmountMinor: (updateData.vatAmountMinor as number) ?? existing.vatAmountMinor ?? 0,
+    totalMinor: (updateData.totalMinor as number) ?? existing.totalMinor,
+    withholdingMinor: (updateData.withholdingMinor as number) ?? existing.withholdingMinor ?? 0,
+    amountToPayMinor: (updateData.amountToPayMinor as number) ?? existing.amountToPayMinor,
+  };
+
+  const expectedTotal =
+    effective.subtotalMinor + effective.vatAmountMinor - effective.withholdingMinor;
+
+  if (effective.totalMinor !== expectedTotal) {
+    throw new TRPCError({
+      code: 'BAD_REQUEST',
+      message: E.INVOICE_AMOUNT_MISMATCH,
+    });
+  }
+  if (effective.amountToPayMinor !== effective.totalMinor) {
+    throw new TRPCError({
+      code: 'BAD_REQUEST',
+      message: E.INVOICE_AMOUNT_MISMATCH,
+    });
+  }
+}
+
+/**
+ * Recomputes the duplicate check hash if relevant fields changed.
+ */
+function recomputeDuplicateHash(
+  updateData: Record<string, unknown>,
+  existing: { invoiceNumber: string | null; sellerTaxId: string | null; totalMinor: number },
+) {
+  if (
+    !(updateData.invoiceNumber || updateData.sellerTaxId) &&
+    updateData.totalMinor === undefined
+  ) {
+    return;
+  }
+
+  const effectiveNumber = (updateData.invoiceNumber as string) ?? existing.invoiceNumber;
+  const effectiveTaxId = (updateData.sellerTaxId as string) ?? existing.sellerTaxId;
+  const effectiveTotal = (updateData.totalMinor as number) ?? existing.totalMinor;
+
+  if (effectiveNumber && effectiveTaxId) {
+    updateData.duplicateCheckHash = computeDuplicateCheckHash(
+      effectiveNumber,
+      effectiveTaxId,
+      effectiveTotal,
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Tax pipeline helpers
+// ---------------------------------------------------------------------------
+
+type ContractorTaxSnapshot = {
+  id: string;
+  countryCode: string;
+  vatId: string | null;
+  type: string;
+  latestVatValidatedAt: Date | null;
+  latestVatValidationStatus: string | null;
+};
+
+/**
+ * Re-validates a contractor's VAT ID if the latest validation is stale (>90 days).
+ * Only fires for GB_VAT and DE_USTIDNR types. Soft-fails on upstream outage.
+ */
+async function revalidateStaleVatIfNeeded(
+  contractor: ContractorTaxSnapshot,
+  ctx: { organizationId: string; db: TenantScopedDb; userId: string },
+): Promise<void> {
+  if (!contractor.vatId) return;
+
+  const fresh = isValidationFresh(
+    contractor.latestVatValidatedAt
+      ? {
+          responseStatus: (contractor.latestVatValidationStatus ?? 'unavailable') as
+            | 'valid'
+            | 'invalid'
+            | 'stale'
+            | 'unavailable',
+          requestedAt: contractor.latestVatValidatedAt,
+        }
+      : null,
+  );
+  if (fresh) return;
+
+  const taxIdType: TaxIdType | null =
+    contractor.countryCode === 'GB'
+      ? 'GB_VAT'
+      : contractor.countryCode === 'DE'
+        ? 'DE_USTIDNR'
+        : null;
+  if (!taxIdType) return;
+
+  await validateTaxId(
+    {
+      organizationId: ctx.organizationId,
+      contractorId: contractor.id,
+      taxIdType,
+      taxIdValue: contractor.vatId,
+      actor: { userId: ctx.userId },
+    },
+    {
+      db: ctx.db,
+      hmrcClient: getHmrcVatClient(),
+      viesClient: getViesClient(),
+    },
+  );
+}
+
+/**
+ * Resolves the final reverse-charge flag considering auto-detection and user override.
+ */
+function resolveReverseCharge(
+  contractor: ContractorTaxSnapshot | null,
+  orgCountryCode: string | null,
+  serviceType: string | undefined,
+  userOverride: boolean | null | undefined,
+): boolean {
+  let rcShouldApply = false;
+  if (contractor && orgCountryCode) {
+    const rc = detectReverseCharge({
+      sellerCountry: contractor.countryCode,
+      buyerCountry: orgCountryCode,
+      buyerHasVatId: !!contractor.vatId,
+      isB2B: contractor.type === 'COMPANY' || contractor.type === 'SOLE_TRADER',
+      serviceType: serviceType as DE13bServiceType | undefined,
+    });
+    rcShouldApply = rc.shouldApply;
+  }
+  if (userOverride === true) return true;
+  if (userOverride === false) return false;
+  return rcShouldApply;
+}
+
+/**
+ * Resolves the effective VAT rate code, applying RC default, country default,
+ * and Kleinunternehmer override in order.
+ */
+async function resolveEffectiveVatRate(
+  suppliedRate: string | null | undefined,
+  isReverseCharge: boolean,
+  org: { countryCode: string | null; isKleinunternehmer: boolean },
+  db: TenantScopedDb,
+): Promise<string | null> {
+  let rate: string | null = suppliedRate ?? null;
+
+  if (!rate) {
+    if (isReverseCharge) {
+      rate = 'RC';
+    } else if (org.countryCode) {
+      rate = await getDefaultRateCode(
+        org.countryCode,
+        db as unknown as Parameters<typeof getDefaultRateCode>[1],
+      );
+    }
+  }
+
+  if (org.countryCode) {
+    const ku = applyKleinunternehmerOverride(
+      { vatRate: rate },
+      { countryCode: org.countryCode, isKleinunternehmer: org.isKleinunternehmer },
+    );
+    rate = ku.vatRate || rate;
+  }
+
+  return rate;
+}
+
+// ---------------------------------------------------------------------------
 // Invoice router
 // ---------------------------------------------------------------------------
 
@@ -58,22 +304,96 @@ export const invoiceRouter = router({
    * Computes duplicate check hash when sellerTaxId is available.
    */
   create: tenantProcedure
-    .use(requirePermission({ invoice: ["create"] }))
+    .use(requirePermission({ invoice: ['create'] }))
     .input(invoiceCreateSchema)
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ ctx, input: rawInput }) => {
+      const input = sanitizeStrings(rawInput);
       const { documentIds, ...invoiceData } = input;
 
-      // Compute duplicate check hash if seller info available
+      // Check for duplicate before creating
       let duplicateCheckHash: string | null = null;
       if (invoiceData.sellerTaxId && invoiceData.invoiceNumber) {
         duplicateCheckHash = computeDuplicateCheckHash(
           invoiceData.invoiceNumber,
           invoiceData.sellerTaxId,
-          invoiceData.totalGrosze,
+          invoiceData.totalMinor,
         );
+
+        const existing = await ctx.db.invoice.findFirst({
+          where: {
+            organizationId: ctx.organizationId,
+            duplicateCheckHash,
+          },
+          select: { id: true, invoiceNumber: true },
+        });
+
+        if (existing) {
+          throw new TRPCError({
+            code: 'CONFLICT',
+            message: E.INVOICE_DUPLICATE,
+          });
+        }
       }
 
-      const invoice = await prisma.$transaction(async (tx) => {
+      // ---------------------------------------------------------------------
+      // Phase 57 · Plan 04 — invoice-line tax pipeline
+      // Steps: load org/contractor, staleness revalidation, reverse-charge
+      // detection, default-rate preselect, Kleinunternehmer override.
+      // ---------------------------------------------------------------------
+      const org = await ctx.db.organization.findUniqueOrThrow({
+        where: { id: ctx.organizationId },
+        select: { countryCode: true, isKleinunternehmer: true },
+      });
+
+      let contractor: ContractorTaxSnapshot | null = null;
+      if (invoiceData.contractorId) {
+        contractor = await ctx.db.contractor.findFirst({
+          where: {
+            id: invoiceData.contractorId,
+            organizationId: ctx.organizationId,
+            deletedAt: null,
+          },
+          select: {
+            id: true,
+            countryCode: true,
+            vatId: true,
+            type: true,
+            latestVatValidatedAt: true,
+            latestVatValidationStatus: true,
+          },
+        });
+
+        if (contractor) {
+          await revalidateStaleVatIfNeeded(contractor, {
+            organizationId: ctx.organizationId,
+            db: ctx.db,
+            userId: ctx.user?.id,
+          });
+        }
+      }
+
+      const finalIsReverseCharge = resolveReverseCharge(
+        contractor,
+        org.countryCode,
+        invoiceData.serviceType,
+        invoiceData.reverseChargeOverride,
+      );
+      const rcShouldApply = resolveReverseCharge(
+        contractor,
+        org.countryCode,
+        invoiceData.serviceType,
+        undefined,
+      );
+
+      const effectiveVatRate = await resolveEffectiveVatRate(
+        invoiceData.vatRate,
+        finalIsReverseCharge,
+        org,
+        ctx.db,
+      );
+      // ---------------------------------------------------------------------
+
+      const invoice = await ctx.db.$transaction(async tx => {
         // Create invoice record
         const inv = await tx.invoice.create({
           data: {
@@ -88,30 +408,56 @@ export const invoiceRouter = router({
               ? new Date(invoiceData.servicePeriodEnd)
               : null,
             currency: invoiceData.currency,
-            subtotalGrosze: invoiceData.subtotalGrosze,
-            vatRate: invoiceData.vatRate ?? null,
-            vatAmountGrosze: invoiceData.vatAmountGrosze ?? null,
-            totalGrosze: invoiceData.totalGrosze,
-            withholdingGrosze: invoiceData.withholdingGrosze ?? null,
-            amountToPayGrosze: invoiceData.amountToPayGrosze,
+            subtotalMinor: invoiceData.subtotalMinor,
+            vatRate: effectiveVatRate,
+            vatAmountMinor: invoiceData.vatAmountMinor ?? null,
+            totalMinor: invoiceData.totalMinor,
+            withholdingMinor: invoiceData.withholdingMinor ?? null,
+            amountToPayMinor: invoiceData.amountToPayMinor,
             sellerTaxId: invoiceData.sellerTaxId ?? null,
             sellerName: invoiceData.sellerName ?? null,
             sellerBankAccount: invoiceData.sellerBankAccount ?? null,
-            status: "RECEIVED",
-            matchStatus: "UNMATCHED",
-            source: "MANUAL_UPLOAD",
+            isReverseCharge: finalIsReverseCharge,
+            reverseChargeOverride: invoiceData.reverseChargeOverride ?? null,
+            contractorId: contractor?.id ?? null,
+            status: 'RECEIVED',
+            matchStatus: 'UNMATCHED',
+            source: 'MANUAL_UPLOAD',
             duplicateCheckHash,
           },
         });
 
+        // --- Step 6: Override-with-reason audit (D-13) -----------------------
+        if (
+          invoiceData.reverseChargeOverride === false &&
+          rcShouldApply &&
+          invoiceData.reverseChargeOverrideReason
+        ) {
+          await tx.auditLog.create({
+            data: {
+              organizationId: ctx.organizationId,
+              actorType: 'USER',
+              actorId: ctx.user?.id,
+              action: 'invoice.reverse-charge-override',
+              resourceType: 'INVOICE',
+              resourceId: inv.id,
+              metadataJson: {
+                reason: invoiceData.reverseChargeOverrideReason,
+                autoDetected: true,
+                userDisabled: true,
+              },
+            },
+          });
+        }
+
         // Create InvoiceFile records linking each document
         if (documentIds.length > 0) {
           await tx.invoiceFile.createMany({
-            data: documentIds.map((documentId) => ({
+            data: documentIds.map(documentId => ({
               organizationId: ctx.organizationId,
               invoiceId: inv.id,
               documentId,
-              role: "SOURCE_ORIGINAL" as const,
+              role: 'SOURCE_ORIGINAL' as const,
             })),
           });
         }
@@ -119,12 +465,12 @@ export const invoiceRouter = router({
         // Create DocumentLink records with entityType INVOICE
         if (documentIds.length > 0) {
           await tx.documentLink.createMany({
-            data: documentIds.map((documentId) => ({
+            data: documentIds.map(documentId => ({
               organizationId: ctx.organizationId,
               documentId,
-              entityType: "INVOICE" as const,
+              entityType: 'INVOICE' as const,
               entityId: inv.id,
-              linkRole: "PRIMARY" as const,
+              linkRole: 'PRIMARY' as const,
             })),
           });
         }
@@ -133,26 +479,28 @@ export const invoiceRouter = router({
       });
 
       // Fire-and-forget: dispatch INVOICE_RECEIVED to finance team
-      const financeUserIds = await getFinanceTeamUserIds(ctx.organizationId);
+      const financeUserIds = await getFinanceTeamUserIds(ctx.db, ctx.organizationId);
       if (financeUserIds.length > 0) {
         dispatch({
           organizationId: ctx.organizationId,
-          type: "INVOICE_RECEIVED",
+          type: 'INVOICE_RECEIVED',
           recipientUserIds: financeUserIds,
           title: `New invoice received: ${invoice.invoiceNumber}`,
-          body: `From ${invoiceData.sellerName ?? "Unknown"} - ${(invoiceData.totalGrosze / 100).toFixed(2)} ${invoiceData.currency}`,
-          entityType: "INVOICE",
+          body: `From ${invoiceData.sellerName ?? 'Unknown'} - ${(invoiceData.totalMinor / 100).toFixed(2)} ${invoiceData.currency}`,
+          entityType: 'INVOICE',
           entityId: invoice.id,
           metadata: {
             invoiceNumber: invoice.invoiceNumber,
-            contractorName: invoiceData.sellerName ?? "Unknown",
-            amount: (invoiceData.totalGrosze / 100).toFixed(2),
+            contractorName: invoiceData.sellerName ?? 'Unknown',
+            amount: (invoiceData.totalMinor / 100).toFixed(2),
             currency: invoiceData.currency,
           },
-        }).catch((err) =>
-          console.error("[invoice] dispatch INVOICE_RECEIVED failed:", err),
-        );
+        }).catch(_err => {
+          /* fire-and-forget */
+        });
       }
+
+      void invalidateByPrefix(CacheKeys.dashboardPrefix(ctx.organizationId));
 
       return plain(invoice);
     }),
@@ -161,10 +509,10 @@ export const invoiceRouter = router({
    * Get an invoice by ID with full relations (contractor, contract, files, match results).
    */
   getById: tenantProcedure
-    .use(requirePermission({ invoice: ["read"] }))
+    .use(requirePermission({ invoice: ['read'] }))
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
-      const invoice = await prisma.invoice.findFirst({
+      const invoice = await ctx.db.invoice.findFirst({
         where: {
           id: input.id,
           organizationId: ctx.organizationId,
@@ -180,25 +528,44 @@ export const invoiceRouter = router({
               title: true,
               type: true,
               status: true,
-              rateValueGrosze: true,
+              rateValueMinor: true,
               currency: true,
             },
           },
           files: {
             include: {
-              document: true,
+              document: {
+                select: {
+                  id: true,
+                  originalFileName: true,
+                  mimeType: true,
+                  fileSizeBytes: true,
+                  createdAt: true,
+                  virusScanStatus: true,
+                },
+              },
             },
           },
           matchResults: {
-            orderBy: { createdAt: "desc" },
+            orderBy: { createdAt: 'desc' },
+          },
+          // Plan 61-08 — per-invoice E-invoice tab consumes lifecycle +
+          // append-only event log in one query, avoiding a second roundtrip.
+          eInvoiceLifecycle: {
+            include: {
+              events: {
+                orderBy: { createdAt: 'desc' },
+                take: 50,
+              },
+            },
           },
         },
       });
 
       if (!invoice) {
         throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Invoice not found",
+          code: 'NOT_FOUND',
+          message: E.INVOICE_NOT_FOUND,
         });
       }
 
@@ -211,10 +578,11 @@ export const invoiceRouter = router({
    * Recomputes duplicate check hash on relevant field changes.
    */
   update: tenantProcedure
-    .use(requirePermission({ invoice: ["update"] }))
+    .use(requirePermission({ invoice: ['update'] }))
     .input(z.object({ id: z.string(), data: invoiceUpdateSchema }))
-    .mutation(async ({ ctx, input }) => {
-      const existing = await prisma.invoice.findFirst({
+    .mutation(async ({ ctx, input: rawInput }) => {
+      const input = sanitizeStrings(rawInput);
+      const existing = await ctx.db.invoice.findFirst({
         where: {
           id: input.id,
           organizationId: ctx.organizationId,
@@ -224,68 +592,56 @@ export const invoiceRouter = router({
 
       if (!existing) {
         throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Invoice not found",
+          code: 'NOT_FOUND',
+          message: E.INVOICE_NOT_FOUND,
         });
       }
 
-      if (existing.status !== "RECEIVED") {
+      if (existing.status !== 'RECEIVED') {
         throw new TRPCError({
-          code: "BAD_REQUEST",
-          message:
-            "Invoice can only be updated while in RECEIVED status.",
+          code: 'BAD_REQUEST',
+          message: E.INVOICE_NOT_RECEIVED_STATUS,
         });
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const updateData: Record<string, any> = { ...input.data };
+      const updateData: Record<string, unknown> = { ...input.data };
 
       // Remove documentIds from update data — not a direct Invoice field
       delete updateData.documentIds;
 
-      // Convert date strings to Date objects
-      if (updateData.issueDate) {
-        updateData.issueDate = new Date(updateData.issueDate as string);
-      }
-      if (updateData.dueDate) {
-        updateData.dueDate = new Date(updateData.dueDate as string);
-      }
-      if (updateData.servicePeriodStart) {
-        updateData.servicePeriodStart = new Date(
-          updateData.servicePeriodStart as string,
-        );
-      }
-      if (updateData.servicePeriodEnd) {
-        updateData.servicePeriodEnd = new Date(
-          updateData.servicePeriodEnd as string,
-        );
-      }
+      coerceInvoiceDateFields(updateData);
+      validateServicePeriod(updateData, existing);
+      validateInvoiceAmounts(updateData, existing);
+      recomputeDuplicateHash(updateData, existing);
 
-      // Recompute duplicate check hash if relevant fields changed
-      const invoiceNumber =
-        (updateData.invoiceNumber as string) ?? existing.invoiceNumber;
-      const sellerTaxId =
-        (updateData.sellerTaxId as string) ?? existing.sellerTaxId;
-      const totalGrosze =
-        (updateData.totalGrosze as number) ?? existing.totalGrosze;
-
-      if (
-        sellerTaxId &&
-        invoiceNumber &&
-        (updateData.invoiceNumber ||
-          updateData.sellerTaxId ||
-          updateData.totalGrosze !== undefined)
-      ) {
-        updateData.duplicateCheckHash = computeDuplicateCheckHash(
-          invoiceNumber,
-          sellerTaxId,
-          totalGrosze,
-        );
-      }
-
-      const updated = await prisma.invoice.update({
+      const updated = await ctx.db.invoice.update({
         where: { id: input.id },
         data: updateData,
+        select: {
+          id: true,
+          organizationId: true,
+          invoiceNumber: true,
+          issueDate: true,
+          dueDate: true,
+          servicePeriodStart: true,
+          servicePeriodEnd: true,
+          currency: true,
+          subtotalMinor: true,
+          vatRate: true,
+          vatAmountMinor: true,
+          totalMinor: true,
+          withholdingMinor: true,
+          amountToPayMinor: true,
+          sellerTaxId: true,
+          sellerName: true,
+          status: true,
+          matchStatus: true,
+          source: true,
+          contractorId: true,
+          contractId: true,
+          createdAt: true,
+          updatedAt: true,
+        },
       });
 
       return plain(updated);
@@ -296,13 +652,12 @@ export const invoiceRouter = router({
    * Search covers invoiceNumber and contractor legalName (case-insensitive).
    */
   list: tenantProcedure
-    .use(requirePermission({ invoice: ["read"] }))
+    .use(requirePermission({ invoice: ['read'] }))
     .input(invoiceListSchema)
     .query(async ({ ctx, input }) => {
       const { page, pageSize, search, sortBy, sortOrder, filters } = input;
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const where: Record<string, any> = {
+      const where: Prisma.InvoiceWhereInput = {
         organizationId: ctx.organizationId,
         deletedAt: null,
       };
@@ -324,17 +679,17 @@ export const invoiceRouter = router({
       // Search via invoiceNumber OR contractor legalName (case-insensitive)
       if (search && search.length >= 1) {
         where.OR = [
-          { invoiceNumber: { contains: search, mode: "insensitive" } },
+          { invoiceNumber: { contains: search, mode: 'insensitive' } },
           {
             contractor: {
-              legalName: { contains: search, mode: "insensitive" },
+              legalName: { contains: search, mode: 'insensitive' },
             },
           },
         ];
       }
 
       const [invoices, totalCount] = await Promise.all([
-        prisma.invoice.findMany({
+        ctx.db.invoice.findMany({
           where,
           skip: (page - 1) * pageSize,
           take: pageSize,
@@ -343,9 +698,15 @@ export const invoiceRouter = router({
             contractor: {
               select: { id: true, legalName: true },
             },
+            // Plan 61-08 — compliance column on invoices-list needs per-row
+            // lifecycle status. `null` when no XRechnung XML has been
+            // generated (maps to the `notGenerated` compliance bucket).
+            eInvoiceLifecycle: {
+              select: { validationStatus: true, transmissionStatus: true },
+            },
           },
         }),
-        prisma.invoice.count({ where }),
+        ctx.db.invoice.count({ where }),
       ]);
 
       return { items: plain(invoices), totalCount, page, pageSize };
@@ -356,19 +717,19 @@ export const invoiceRouter = router({
    * Returns grouped counts for dashboard widgets.
    */
   statusCounts: tenantProcedure
-    .use(requirePermission({ invoice: ["read"] }))
+    .use(requirePermission({ invoice: ['read'] }))
     .query(async ({ ctx }) => {
       const [statusGroups, matchStatusGroups] = await Promise.all([
-        prisma.invoice.groupBy({
-          by: ["status"],
+        ctx.db.invoice.groupBy({
+          by: ['status'],
           where: {
             organizationId: ctx.organizationId,
             deletedAt: null,
           },
           _count: { id: true },
         }),
-        prisma.invoice.groupBy({
-          by: ["matchStatus"],
+        ctx.db.invoice.groupBy({
+          by: ['matchStatus'],
           where: {
             organizationId: ctx.organizationId,
             deletedAt: null,
@@ -397,10 +758,10 @@ export const invoiceRouter = router({
    * Uses a transaction for atomicity.
    */
   submitForMatching: tenantProcedure
-    .use(requirePermission({ invoice: ["update"] }))
+    .use(requirePermission({ invoice: ['update'] }))
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const invoice = await prisma.invoice.findFirst({
+      const invoice = await ctx.db.invoice.findFirst({
         where: {
           id: input.id,
           organizationId: ctx.organizationId,
@@ -410,45 +771,57 @@ export const invoiceRouter = router({
 
       if (!invoice) {
         throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Invoice not found",
+          code: 'NOT_FOUND',
+          message: E.INVOICE_NOT_FOUND,
         });
       }
 
-      if (invoice.status !== "RECEIVED") {
+      if (invoice.status !== 'RECEIVED') {
         throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Invoice must be in RECEIVED status to submit for matching.",
+          code: 'BAD_REQUEST',
+          message: E.INVOICE_NOT_RECEIVED_STATUS,
         });
       }
 
       // Read org settings for deviation threshold
-      const org = await prisma.organization.findUnique({
+      const org = await ctx.db.organization.findUnique({
         where: { id: ctx.organizationId },
         select: { settingsJson: true },
       });
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const settings = (org?.settingsJson as Record<string, any>) ?? {};
-      const deviationThreshold =
-        (settings.invoiceDeviationThresholdPercent as number) ?? 10;
+      const settings = (org?.settingsJson as Record<string, unknown>) ?? {};
+      const deviationThreshold = (settings.invoiceDeviationThresholdPercent as number) ?? 10;
 
       // Run auto-match
       const matchResult = await runAutoMatch(
-        prisma,
+        ctx.db,
         ctx.organizationId,
         {
           id: invoice.id,
           sellerTaxId: invoice.sellerTaxId,
-          totalGrosze: invoice.totalGrosze,
+          totalMinor: invoice.totalMinor,
           currency: invoice.currency,
           duplicateCheckHash: invoice.duplicateCheckHash,
+          issueDate: invoice.issueDate,
+          servicePeriodStart: invoice.servicePeriodStart,
+          servicePeriodEnd: invoice.servicePeriodEnd,
         },
         deviationThreshold,
       );
 
+      // Auto-detect reverse charge when matched to a contractor
+      let reverseChargeUpdate: { isReverseCharge: boolean } | undefined;
+      if (matchResult.contractorId) {
+        const rcResult = await applyReverseCharge({
+          organizationId: ctx.organizationId,
+          contractorId: matchResult.contractorId,
+          reverseChargeOverride: invoice.reverseChargeOverride,
+        });
+        reverseChargeUpdate = { isReverseCharge: rcResult.isReverseCharge };
+      }
+
       // Create match result record and update invoice in a transaction
-      const updated = await prisma.$transaction(async (tx) => {
+      const updated = await ctx.db.$transaction(async tx => {
         await tx.invoiceMatchResult.create({
           data: {
             organizationId: ctx.organizationId,
@@ -456,16 +829,16 @@ export const invoiceRouter = router({
             matchedContractId: matchResult.contractId,
             matchedContractorId: matchResult.contractorId,
             matchScore: matchResult.score,
-            expectedAmountGrosze: matchResult.expectedAmountGrosze,
-            amountDeltaGrosze: matchResult.amountDeltaGrosze,
+            expectedAmountMinor: matchResult.expectedAmountMinor,
+            amountDeltaMinor: matchResult.amountDeltaMinor,
             amountDeltaPercent: matchResult.amountDeltaPercent,
-            matchedBy: "RULE_ENGINE",
+            matchedBy: 'RULE_ENGINE',
             status: matchResult.matchStatus,
             explanationJson: {
               flags: matchResult.flags,
               duplicateInvoiceId: matchResult.duplicateInvoiceId,
             },
-            createdByUserId: ctx.user!.id,
+            createdByUserId: ctx.user?.id,
           },
         });
 
@@ -475,13 +848,16 @@ export const invoiceRouter = router({
             contractorId: matchResult.contractorId,
             contractId: matchResult.contractId,
             matchStatus: matchResult.matchStatus,
-            status: "UNDER_REVIEW",
+            status: 'UNDER_REVIEW',
             flagsJson: matchResult.flags.length > 0 ? matchResult.flags : undefined,
+            ...reverseChargeUpdate,
           },
         });
 
         return inv;
       });
+
+      void invalidateByPrefix(CacheKeys.dashboardPrefix(ctx.organizationId));
 
       return plain(updated);
     }),
@@ -491,10 +867,10 @@ export const invoiceRouter = router({
    * Creates a MANUALLY_CONFIRMED match result.
    */
   manualMatch: tenantProcedure
-    .use(requirePermission({ invoice: ["update"] }))
+    .use(requirePermission({ invoice: ['update'] }))
     .input(invoiceManualMatchSchema)
     .mutation(async ({ ctx, input }) => {
-      const invoice = await prisma.invoice.findFirst({
+      const invoice = await ctx.db.invoice.findFirst({
         where: {
           id: input.invoiceId,
           organizationId: ctx.organizationId,
@@ -504,13 +880,13 @@ export const invoiceRouter = router({
 
       if (!invoice) {
         throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Invoice not found",
+          code: 'NOT_FOUND',
+          message: E.INVOICE_NOT_FOUND,
         });
       }
 
       // Validate contractor belongs to org
-      const contractor = await prisma.contractor.findFirst({
+      const contractor = await ctx.db.contractor.findFirst({
         where: {
           id: input.contractorId,
           organizationId: ctx.organizationId,
@@ -520,14 +896,14 @@ export const invoiceRouter = router({
 
       if (!contractor) {
         throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Contractor not found in this organization.",
+          code: 'NOT_FOUND',
+          message: E.INVOICE_CONTRACTOR_NOT_FOUND,
         });
       }
 
       // Validate contract belongs to org (if provided)
       if (input.contractId) {
-        const contract = await prisma.contract.findFirst({
+        const contract = await ctx.db.contract.findFirst({
           where: {
             id: input.contractId,
             organizationId: ctx.organizationId,
@@ -537,13 +913,19 @@ export const invoiceRouter = router({
 
         if (!contract) {
           throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Contract not found in this organization.",
+            code: 'NOT_FOUND',
+            message: E.INVOICE_CONTRACT_NOT_FOUND,
           });
         }
       }
 
-      const updated = await prisma.$transaction(async (tx) => {
+      // Auto-detect reverse charge for manual match
+      const rcResult = await applyReverseCharge({
+        organizationId: ctx.organizationId,
+        contractorId: input.contractorId,
+      });
+
+      const updated = await ctx.db.$transaction(async tx => {
         // Create manual match result
         await tx.invoiceMatchResult.create({
           data: {
@@ -552,9 +934,9 @@ export const invoiceRouter = router({
             matchedContractId: input.contractId ?? null,
             matchedContractorId: input.contractorId,
             matchScore: 100,
-            matchedBy: "MANUAL",
-            status: "MANUALLY_CONFIRMED",
-            createdByUserId: ctx.user!.id,
+            matchedBy: 'MANUAL',
+            status: 'MANUALLY_CONFIRMED',
+            createdByUserId: ctx.user?.id,
           },
         });
 
@@ -563,7 +945,8 @@ export const invoiceRouter = router({
           data: {
             contractorId: input.contractorId,
             contractId: input.contractId ?? null,
-            matchStatus: "MANUALLY_CONFIRMED",
+            matchStatus: 'MANUALLY_CONFIRMED',
+            isReverseCharge: rcResult.isReverseCharge,
           },
         });
 
@@ -577,10 +960,10 @@ export const invoiceRouter = router({
    * Void an invoice (soft status transition to VOID).
    */
   voidInvoice: tenantProcedure
-    .use(requirePermission({ invoice: ["delete"] }))
+    .use(requirePermission({ invoice: ['delete'] }))
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const invoice = await prisma.invoice.findFirst({
+      const invoice = await ctx.db.invoice.findFirst({
         where: {
           id: input.id,
           organizationId: ctx.organizationId,
@@ -590,15 +973,26 @@ export const invoiceRouter = router({
 
       if (!invoice) {
         throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Invoice not found",
+          code: 'NOT_FOUND',
+          message: E.INVOICE_NOT_FOUND,
         });
       }
 
-      const updated = await prisma.invoice.update({
+      const updated = await ctx.db.invoice.update({
         where: { id: input.id },
-        data: { status: "VOID" },
+        data: { status: 'VOID' },
       });
+
+      // Calendar cleanup: remove payment deadline event (D-08)
+      void deleteCalendarEvent(ctx.db, {
+        organizationId: ctx.organizationId,
+        entityType: 'INVOICE',
+        entityId: input.id,
+      }).catch(_err => {
+        /* fire-and-forget */
+      });
+
+      void invalidateByPrefix(CacheKeys.dashboardPrefix(ctx.organizationId));
 
       return plain(updated);
     }),
@@ -608,10 +1002,10 @@ export const invoiceRouter = router({
    * Removes DUPLICATE_SUSPECTED from the flags array.
    */
   dismissDuplicate: tenantProcedure
-    .use(requirePermission({ invoice: ["update"] }))
+    .use(requirePermission({ invoice: ['update'] }))
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const invoice = await prisma.invoice.findFirst({
+      const invoice = await ctx.db.invoice.findFirst({
         where: {
           id: input.id,
           organizationId: ctx.organizationId,
@@ -621,19 +1015,15 @@ export const invoiceRouter = router({
 
       if (!invoice) {
         throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Invoice not found",
+          code: 'NOT_FOUND',
+          message: E.INVOICE_NOT_FOUND,
         });
       }
 
-      const currentFlags = Array.isArray(invoice.flagsJson)
-        ? (invoice.flagsJson as string[])
-        : [];
-      const updatedFlags = currentFlags.filter(
-        (f) => f !== "DUPLICATE_SUSPECTED",
-      );
+      const currentFlags = Array.isArray(invoice.flagsJson) ? (invoice.flagsJson as string[]) : [];
+      const updatedFlags = currentFlags.filter(f => f !== 'DUPLICATE_SUSPECTED');
 
-      const updated = await prisma.invoice.update({
+      const updated = await ctx.db.invoice.update({
         where: { id: input.id },
         data: {
           flagsJson: updatedFlags.length > 0 ? updatedFlags : undefined,
@@ -648,19 +1038,19 @@ export const invoiceRouter = router({
    * Case-insensitive, limit 10 results.
    */
   searchContractors: tenantProcedure
-    .use(requirePermission({ invoice: ["read"] }))
+    .use(requirePermission({ invoice: ['read'] }))
     .input(z.object({ query: z.string().min(1) }))
     .query(async ({ ctx, input }) => {
-      const contractors = await prisma.contractor.findMany({
+      const contractors = await ctx.db.contractor.findMany({
         where: {
           organizationId: ctx.organizationId,
           deletedAt: null,
           OR: [
             {
-              legalName: { contains: input.query, mode: "insensitive" },
+              legalName: { contains: input.query, mode: 'insensitive' },
             },
             {
-              taxId: { contains: input.query, mode: "insensitive" },
+              taxId: { contains: input.query, mode: 'insensitive' },
             },
           ],
         },
@@ -680,14 +1070,14 @@ export const invoiceRouter = router({
    * Get active/expiring contracts for a given contractor (for manual matching UI).
    */
   contractsForContractor: tenantProcedure
-    .use(requirePermission({ invoice: ["read"] }))
+    .use(requirePermission({ invoice: ['read'] }))
     .input(z.object({ contractorId: z.string() }))
     .query(async ({ ctx, input }) => {
-      const contracts = await prisma.contract.findMany({
+      const contracts = await ctx.db.contract.findMany({
         where: {
           contractorId: input.contractorId,
           organizationId: ctx.organizationId,
-          status: { in: ["ACTIVE", "EXPIRING"] },
+          status: { in: ['ACTIVE', 'EXPIRING'] },
           deletedAt: null,
         },
         select: {
@@ -695,11 +1085,37 @@ export const invoiceRouter = router({
           title: true,
           type: true,
           status: true,
-          rateValueGrosze: true,
+          rateValueMinor: true,
           currency: true,
         },
       });
 
       return plain(contracts);
+    }),
+
+  /**
+   * Toggle reverse charge status on an invoice.
+   * Records the override so audit trail distinguishes auto-detected from manual.
+   */
+  toggleReverseCharge: tenantProcedure
+    .use(requirePermission({ invoice: ['update'] }))
+    .input(
+      z.object({
+        invoiceId: z.string(),
+        isReverseCharge: z.boolean(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const invoice = await ctx.db.invoice.update({
+        where: {
+          id: input.invoiceId,
+          organizationId: ctx.organizationId,
+        },
+        data: {
+          isReverseCharge: input.isReverseCharge,
+          reverseChargeOverride: input.isReverseCharge,
+        },
+      });
+      return plain(invoice);
     }),
 });

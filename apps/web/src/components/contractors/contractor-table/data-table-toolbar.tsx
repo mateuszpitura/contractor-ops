@@ -1,20 +1,16 @@
-"use client";
+'use client';
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Filter, Loader2, Search, X } from "lucide-react";
-import { useTranslations } from "next-intl";
-
-import { trpc } from "@/trpc/init";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { useQuery } from '@tanstack/react-query';
+import { Filter, Loader2, Search, X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { enumKey } from '@/lib/enum-key';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -43,17 +39,11 @@ interface DataTableToolbarProps {
 // Filter option sets
 // ---------------------------------------------------------------------------
 
-const LIFECYCLE_STAGES = [
-  "DRAFT",
-  "ONBOARDING",
-  "ACTIVE",
-  "OFFBOARDING",
-  "ENDED",
-] as const;
+const LIFECYCLE_STAGES = ['DRAFT', 'ONBOARDING', 'ACTIVE', 'OFFBOARDING', 'ENDED'] as const;
 
-const BILLING_MODELS = ["FIXED", "HOURLY", "PROJECT", "MILESTONE"] as const;
+const BILLING_MODELS = ['FIXED', 'HOURLY', 'PROJECT', 'MILESTONE'] as const;
 
-const HEALTH_OPTIONS = ["green", "yellow", "red"] as const;
+const HEALTH_OPTIONS = ['green', 'yellow', 'red'] as const;
 
 // ---------------------------------------------------------------------------
 // Component
@@ -71,7 +61,7 @@ export function DataTableToolbar({
   onAddContractor,
   onImport,
 }: DataTableToolbarProps) {
-  const t = useTranslations("Contractors");
+  const t = useTranslations('Contractors');
 
   // Debounced search
   const [localSearch, setLocalSearch] = useState(search);
@@ -86,7 +76,7 @@ export function DataTableToolbar({
       setLocalSearch(value);
       clearTimeout(debounceRef.current);
       debounceRef.current = setTimeout(() => {
-        onSearchChange(value.length >= 2 ? value : "");
+        onSearchChange(value.length >= 2 ? value : '');
       }, 300);
     },
     [onSearchChange],
@@ -118,19 +108,14 @@ export function DataTableToolbar({
     });
   };
 
-  const toggleFilterValue = (
-    key: keyof FilterState,
-    value: string,
-  ) => {
+  const toggleFilterValue = (key: keyof FilterState, value: string) => {
     const current = filters[key];
-    const next = current.includes(value)
-      ? current.filter((v) => v !== value)
-      : [...current, value];
+    const next = current.includes(value) ? current.filter(v => v !== value) : [...current, value];
     onFiltersChange({ [key]: next });
   };
 
   const removeFilter = (key: keyof FilterState, value: string) => {
-    onFiltersChange({ [key]: filters[key].filter((v) => v !== value) });
+    onFiltersChange({ [key]: filters[key].filter(v => v !== value) });
   };
 
   return (
@@ -139,30 +124,29 @@ export function DataTableToolbar({
       <div className="flex items-center gap-2">
         {/* Search */}
         <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="absolute start-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder={t("searchPlaceholder")}
+            placeholder={t('searchPlaceholder')}
             value={localSearch}
-            onChange={(e) => handleSearchInput(e.target.value)}
-            className="h-9 pl-9 pr-8"
+            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
+            onChange={e => handleSearchInput(e.target.value)}
+            className="h-9 ps-9 pe-8"
           />
-          {isSearching && (
-            <Loader2 className="absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground" />
+          {!!isSearching && (
+            <Loader2 className="absolute end-2.5 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground" />
           )}
         </div>
 
         {/* Filters popover */}
         <Popover>
           <PopoverTrigger
-            render={(props) => (
-              <Button {...props} variant="outline" size="sm" className="h-9 gap-1.5">
+            // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
+            render={props => (
+              <Button {...props} variant="outline" size="lg">
                 <Filter className="h-3.5 w-3.5" />
-                {t("filters")}
+                {t('filters')}
                 {hasActiveFilters && (
-                  <Badge
-                    variant="secondary"
-                    className="ml-1 h-5 w-5 rounded-full p-0 text-[10px]"
-                  >
+                  <Badge variant="secondary" className="ms-1 h-5 w-5 rounded-full p-0 text-[10px]">
                     {activeFilterCount}
                   </Badge>
                 )}
@@ -173,52 +157,57 @@ export function DataTableToolbar({
             <div className="max-h-[400px] overflow-y-auto p-4 space-y-4">
               {/* Status / Lifecycle Stage */}
               <FilterSection
-                title={t("columns.status")}
-                options={LIFECYCLE_STAGES.map((stage) => ({
+                title={t('columns.status')}
+                options={LIFECYCLE_STAGES.map(stage => ({
                   value: stage,
-                  label: t(`lifecycle.${stage}`),
+                  label: t(`lifecycle.${enumKey(stage)}`),
                 }))}
                 selected={filters.lifecycleStage}
-                onToggle={(value) =>
-                  toggleFilterValue("lifecycleStage", value)
-                }
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+                onToggle={value => toggleFilterValue('lifecycleStage', value)}
               />
 
               {/* Owner */}
               <FilterSection
-                title={t("columns.owner")}
-                options={(users as Array<{ id?: string; userId?: string; name?: string | null; email?: string | null }>).map(
-                  (user) => ({
-                    value: user.id ?? user.userId ?? "",
-                    label: user.name ?? user.email ?? "Unknown",
-                  }),
-                )}
+                title={t('columns.owner')}
+                options={(
+                  users as Array<{
+                    id?: string;
+                    userId?: string;
+                    name?: string | null;
+                    email?: string | null;
+                  }>
+                ).map(user => ({
+                  value: user.id ?? user.userId ?? '',
+                  label: user.name ?? user.email ?? 'Unknown',
+                }))}
                 selected={filters.owner}
-                onToggle={(value) => toggleFilterValue("owner", value)}
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+                onToggle={value => toggleFilterValue('owner', value)}
               />
 
               {/* Billing model */}
               <FilterSection
-                title={t("columns.billingModel")}
-                options={BILLING_MODELS.map((model) => ({
+                title={t('columns.billingModel')}
+                options={BILLING_MODELS.map(model => ({
                   value: model,
-                  label: model,
+                  label: t(`billingModel.${enumKey(model)}`),
                 }))}
                 selected={filters.billingModel}
-                onToggle={(value) =>
-                  toggleFilterValue("billingModel", value)
-                }
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+                onToggle={value => toggleFilterValue('billingModel', value)}
               />
 
               {/* Compliance health */}
               <FilterSection
-                title={t("columns.health")}
-                options={HEALTH_OPTIONS.map((health) => ({
+                title={t('columns.health')}
+                options={HEALTH_OPTIONS.map(health => ({
                   value: health,
-                  label: t(`health.${health}`),
+                  label: t(`health.${enumKey(health)}`),
                 }))}
                 selected={filters.health}
-                onToggle={(value) => toggleFilterValue("health", value)}
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+                onToggle={value => toggleFilterValue('health', value)}
               />
             </div>
           </PopoverContent>
@@ -228,60 +217,69 @@ export function DataTableToolbar({
         <div className="flex-1" />
 
         {/* Import CTA */}
-        {onImport && (
-          <Button size="sm" variant="outline" className="h-9" onClick={onImport}>
-            {t("import")}
+        {!!onImport && (
+          <Button size="lg" variant="outline" onClick={onImport}>
+            {t('import')}
           </Button>
         )}
 
         {/* Add contractor CTA */}
-        <Button size="sm" className="h-9" onClick={onAddContractor}>
-          {t("addContractor")}
+        <Button size="lg" onClick={onAddContractor}>
+          {t('addContractor')}
         </Button>
       </div>
 
       {/* Active filter badges */}
       {hasActiveFilters && (
         <div className="flex flex-wrap items-center gap-1.5">
-          {filters.lifecycleStage.map((stage) => (
+          {filters.lifecycleStage.map(stage => (
             <FilterBadge
               key={`stage-${stage}`}
-              label={t(`lifecycle.${stage}` as Parameters<typeof t>[0])}
-              onRemove={() => removeFilter("lifecycleStage", stage)}
+              label={t(`lifecycle.${enumKey(stage)}` as Parameters<typeof t>[0])}
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+              onRemove={() => removeFilter('lifecycleStage', stage)}
             />
           ))}
-          {filters.owner.map((ownerId) => {
-            const user = (users as Array<{ id?: string; userId?: string; name?: string | null; email?: string | null }>).find(
-              (u) => (u.id ?? u.userId) === ownerId,
-            );
+          {filters.owner.map(ownerId => {
+            const user = (
+              users as Array<{
+                id?: string;
+                userId?: string;
+                name?: string | null;
+                email?: string | null;
+              }>
+            ).find(u => (u.id ?? u.userId) === ownerId);
             return (
               <FilterBadge
                 key={`owner-${ownerId}`}
                 label={user?.name ?? user?.email ?? ownerId}
-                onRemove={() => removeFilter("owner", ownerId)}
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+                onRemove={() => removeFilter('owner', ownerId)}
               />
             );
           })}
-          {filters.billingModel.map((model) => (
+          {filters.billingModel.map(model => (
             <FilterBadge
               key={`billing-${model}`}
-              label={model}
-              onRemove={() => removeFilter("billingModel", model)}
+              label={t(`billingModel.${enumKey(model)}`)}
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+              onRemove={() => removeFilter('billingModel', model)}
             />
           ))}
-          {filters.health.map((health) => (
+          {filters.health.map(health => (
             <FilterBadge
               key={`health-${health}`}
-              label={t(`health.${health}` as Parameters<typeof t>[0])}
-              onRemove={() => removeFilter("health", health)}
+              label={t(`health.${enumKey(health)}` as Parameters<typeof t>[0])}
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+              onRemove={() => removeFilter('health', health)}
             />
           ))}
           <button
             type="button"
-            className="ml-1 text-xs text-muted-foreground hover:text-foreground underline"
-            onClick={clearAllFilters}
-          >
-            {t("clearAll")}
+            className="ms-1 text-xs text-muted-foreground hover:text-foreground underline"
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+            onClick={clearAllFilters}>
+            {t('clearAll')}
           </button>
         </div>
       )}
@@ -310,13 +308,15 @@ function FilterSection({
     <div className="space-y-2">
       <h4 className="text-[13px] font-medium text-foreground">{title}</h4>
       <div className="space-y-1">
-        {options.map((option) => (
+        {options.map(option => (
           <label
             key={option.value}
-            className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-accent"
-          >
+            htmlFor={`filter-${title}-${option.value}`}
+            className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-accent">
             <Checkbox
+              id={`filter-${title}-${option.value}`}
               checked={selected.includes(option.value)}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
               onCheckedChange={() => onToggle(option.value)}
             />
             <span>{option.label}</span>
@@ -327,22 +327,17 @@ function FilterSection({
   );
 }
 
-function FilterBadge({
-  label,
-  onRemove,
-}: {
-  label: string;
-  onRemove: () => void;
-}) {
+function FilterBadge({ label, onRemove }: { label: string; onRemove: () => void }) {
+  const tAria = useTranslations('Common.aria');
+
   return (
-    <Badge variant="secondary" className="gap-1 pl-2 pr-1 py-0.5">
+    <Badge variant="secondary" className="gap-1 ps-2 pe-1 py-0.5">
       <span className="text-xs">{label}</span>
       <button
         type="button"
-        className="ml-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20"
+        className="ms-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20"
         onClick={onRemove}
-        aria-label={`Remove filter: ${label}`}
-      >
+        aria-label={tAria('removeFilter', { label })}>
         <X className="h-3 w-3" />
       </button>
     </Badge>

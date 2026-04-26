@@ -12,7 +12,7 @@ model ApprovalChainConfig {
   createdAt      DateTime             @default(now())
   updatedAt      DateTime             @updatedAt
 
-  organization   Organization @relation(fields: [organizationId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
 
   @@index([organizationId])
   @@index([organizationId, resourceType, isActive])
@@ -33,10 +33,10 @@ model ApprovalFlow {
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
 
-  organization     Organization @relation(fields: [organizationId], references: [id])
-  createdBy        User         @relation("ApprovalFlowCreator", fields: [createdByUserId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
+  createdBy    User         @relation("ApprovalFlowCreator", fields: [createdByUserId], references: [id])
 
-  steps            ApprovalStep[]
+  steps ApprovalStep[]
 
   @@index([organizationId])
   @@index([organizationId, resourceType, resourceId])
@@ -44,27 +44,27 @@ model ApprovalFlow {
 }
 
 model ApprovalStep {
-  id               String                @id @default(cuid())
-  organizationId   String
-  approvalFlowId   String
-  stepOrder        Int
-  name             String
-  approverUserId   String?
-  approverRole     UserRole?
-  status           ApprovalStatus        @default(NOT_STARTED)
-  required         Boolean
-  slaDeadline      DateTime?
-  actedAt          DateTime?
-  decision         ApprovalDecisionType?
-  comment          String?
-  createdAt        DateTime              @default(now())
-  updatedAt        DateTime              @updatedAt
+  id             String                @id @default(cuid())
+  organizationId String
+  approvalFlowId String
+  stepOrder      Int
+  name           String
+  approverUserId String?
+  approverRole   UserRole?
+  status         ApprovalStatus        @default(NOT_STARTED)
+  required       Boolean
+  slaDeadline    DateTime?
+  actedAt        DateTime?
+  decision       ApprovalDecisionType?
+  comment        String?
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
 
-  organization     Organization @relation(fields: [organizationId], references: [id])
-  approvalFlow     ApprovalFlow @relation(fields: [approvalFlowId], references: [id])
-  approver         User?        @relation("ApprovalStepApprover", fields: [approverUserId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
+  approvalFlow ApprovalFlow @relation(fields: [approvalFlowId], references: [id])
+  approver     User?        @relation("ApprovalStepApprover", fields: [approverUserId], references: [id])
 
-  decisions        ApprovalDecision[]
+  decisions ApprovalDecision[]
 
   @@unique([approvalFlowId, stepOrder])
   @@index([organizationId])
@@ -72,17 +72,17 @@ model ApprovalStep {
 }
 
 model ApprovalDecision {
-  id               String               @id @default(cuid())
-  organizationId   String
-  approvalStepId   String
-  actorUserId      String
-  decision         ApprovalDecisionType
-  comment          String?
-  createdAt        DateTime             @default(now())
+  id             String               @id @default(cuid())
+  organizationId String
+  approvalStepId String
+  actorUserId    String
+  decision       ApprovalDecisionType
+  comment        String?
+  createdAt      DateTime             @default(now())
 
-  organization     Organization @relation(fields: [organizationId], references: [id])
-  approvalStep     ApprovalStep @relation(fields: [approvalStepId], references: [id])
-  actor            User         @relation(fields: [actorUserId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
+  approvalStep ApprovalStep @relation(fields: [approvalStepId], references: [id])
+  actor        User         @relation(fields: [actorUserId], references: [id])
 
   @@index([organizationId])
   @@index([organizationId, approvalStepId])

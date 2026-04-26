@@ -1,9 +1,7 @@
-"use client";
+'use client';
 
-import { X } from "lucide-react";
-import { useTranslations } from "next-intl";
-
-import { Button } from "@/components/ui/button";
+import { X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -11,18 +9,16 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
+} from '@/components/ui/breadcrumb';
+import { Button } from '@/components/ui/button';
 
 interface DrillDownBreadcrumbProps {
   segments: Array<{ label: string; id?: string }>;
   onClear: () => void;
 }
 
-export function DrillDownBreadcrumb({
-  segments,
-  onClear,
-}: DrillDownBreadcrumbProps) {
-  const t = useTranslations("Reports");
+export function DrillDownBreadcrumb({ segments, onClear }: DrillDownBreadcrumbProps) {
+  const t = useTranslations('Reports');
 
   // Only render when a drill-down is active (more than 1 segment)
   if (segments.length <= 1) return null;
@@ -33,14 +29,14 @@ export function DrillDownBreadcrumb({
         <BreadcrumbList>
           <BreadcrumbItem>
             <BreadcrumbLink
-              render={(props) => (
+              // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
+              render={props => (
                 <button
                   {...props}
                   type="button"
                   onClick={onClear}
-                  className="cursor-pointer text-sm transition-colors hover:text-foreground"
-                >
-                  {t("all")}
+                  className="cursor-pointer text-sm transition-colors hover:text-foreground">
+                  {t('all')}
                 </button>
               )}
             />
@@ -58,10 +54,9 @@ export function DrillDownBreadcrumb({
         variant="ghost"
         size="sm"
         onClick={onClear}
-        className="h-6 gap-1 px-2 text-xs text-muted-foreground"
-      >
+        className="h-6 gap-1 px-2 text-xs text-muted-foreground">
         <X className="h-3 w-3" />
-        {t("clearFilter")}
+        {t('clearFilter')}
       </Button>
     </div>
   );

@@ -1,36 +1,26 @@
-"use client";
+'use client';
 
-import { useState, useMemo } from "react";
-import {
-  startOfMonth,
-  subMonths,
-  startOfYear,
-  format,
-} from "date-fns";
-import { CalendarIcon } from "lucide-react";
-import { useTranslations } from "next-intl";
-import type { DateRange } from "react-day-picker";
+import { format, startOfMonth, startOfYear, subMonths } from 'date-fns';
+import { CalendarIcon } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useMemo, useState } from 'react';
+import type { DateRange } from 'react-day-picker';
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
 
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-
-type Preset = "this-month" | "last-3m" | "last-6m" | "ytd" | "custom";
+type Preset = 'this-month' | 'last-3m' | 'last-6m' | 'ytd' | 'custom';
 
 const PRESETS: Array<{ id: Preset; labelKey: string }> = [
-  { id: "this-month", labelKey: "thisMonth" },
-  { id: "last-3m", labelKey: "last3Months" },
-  { id: "last-6m", labelKey: "last6Months" },
-  { id: "ytd", labelKey: "yearToDate" },
-  { id: "custom", labelKey: "custom" },
+  { id: 'this-month', labelKey: 'thisMonth' },
+  { id: 'last-3m', labelKey: 'last3Months' },
+  { id: 'last-6m', labelKey: 'last6Months' },
+  { id: 'ytd', labelKey: 'yearToDate' },
+  { id: 'custom', labelKey: 'custom' },
 ];
 
-function computeDateRange(preset: Exclude<Preset, "custom">): {
+function computeDateRange(preset: Exclude<Preset, 'custom'>): {
   from: string;
   to: string;
 } {
@@ -38,13 +28,13 @@ function computeDateRange(preset: Exclude<Preset, "custom">): {
   const to = now.toISOString();
 
   switch (preset) {
-    case "this-month":
+    case 'this-month':
       return { from: startOfMonth(now).toISOString(), to };
-    case "last-3m":
+    case 'last-3m':
       return { from: subMonths(startOfMonth(now), 3).toISOString(), to };
-    case "last-6m":
+    case 'last-6m':
       return { from: subMonths(startOfMonth(now), 6).toISOString(), to };
-    case "ytd":
+    case 'ytd':
       return { from: startOfYear(now).toISOString(), to };
   }
 }
@@ -55,13 +45,9 @@ interface DateRangeFilterProps {
   onDateChange: (from: string, to: string) => void;
 }
 
-export function DateRangeFilter({
-  dateFrom,
-  dateTo,
-  onDateChange,
-}: DateRangeFilterProps) {
-  const t = useTranslations("Reports");
-  const [activePreset, setActivePreset] = useState<Preset>("last-3m");
+export function DateRangeFilter({ dateFrom, dateTo, onDateChange }: DateRangeFilterProps) {
+  const t = useTranslations('Reports');
+  const [activePreset, setActivePreset] = useState<Preset>('last-3m');
   const [popoverOpen, setPopoverOpen] = useState(false);
 
   const calendarRange = useMemo<DateRange>(
@@ -75,7 +61,7 @@ export function DateRangeFilter({
   const handlePresetClick = (preset: Preset) => {
     setActivePreset(preset);
 
-    if (preset === "custom") {
+    if (preset === 'custom') {
       setPopoverOpen(true);
       return;
     }
@@ -92,32 +78,33 @@ export function DateRangeFilter({
   };
 
   const formatDisplay = () => {
-    if (!dateFrom || !dateTo) return "";
-    return `${format(new Date(dateFrom), "MMM d, yyyy")} - ${format(new Date(dateTo), "MMM d, yyyy")}`;
+    if (!(dateFrom && dateTo)) return '';
+    return `${format(new Date(dateFrom), 'MMM d, yyyy')} - ${format(new Date(dateTo), 'MMM d, yyyy')}`;
   };
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      {PRESETS.map((preset) => (
+      {PRESETS.map(preset => (
         <Button
           key={preset.id}
           variant="ghost"
           size="sm"
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
           onClick={() => handlePresetClick(preset.id)}
           className={cn(
-            "h-8 text-sm",
+            'h-8 text-sm',
             activePreset === preset.id
-              ? "bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary"
-              : "text-muted-foreground",
-          )}
-        >
-          {preset.id === "custom" ? (
+              ? 'bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary'
+              : 'text-muted-foreground',
+          )}>
+          {preset.id === 'custom' ? (
             <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
               <PopoverTrigger
-                render={(props) => (
+                // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
+                render={props => (
                   <span {...props} className="flex items-center gap-1.5">
                     <CalendarIcon className="h-3.5 w-3.5" />
-                    {activePreset === "custom" && formatDisplay()
+                    {activePreset === 'custom' && formatDisplay()
                       ? formatDisplay()
                       : t(preset.labelKey as Parameters<typeof t>[0])}
                   </span>
@@ -127,6 +114,7 @@ export function DateRangeFilter({
                 <Calendar
                   mode="range"
                   selected={calendarRange}
+                  // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
                   onSelect={handleRangeSelect}
                   numberOfMonths={2}
                 />

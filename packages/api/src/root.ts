@@ -1,22 +1,62 @@
-import { router } from "./init.js";
-import { organizationRouter } from "./routers/organization.js";
-import { userRouter } from "./routers/user.js";
-import { settingsRouter } from "./routers/settings.js";
-import { contractorRouter } from "./routers/contractor.js";
-import { contractRouter } from "./routers/contract.js";
-import { documentRouter } from "./routers/document.js";
-import { workflowRouter } from "./routers/workflow.js";
-import { invoiceRouter } from "./routers/invoice.js";
-import { approvalRouter } from "./routers/approval.js";
-import { notificationRouter } from "./routers/notification.js";
-import { reminderRouter } from "./routers/reminder.js";
-import { integrationRouter } from "./routers/integration.js";
-import { paymentRouter } from "./routers/payment.js";
-import { dashboardRouter } from "./routers/dashboard.js";
-import { reportRouter } from "./routers/report.js";
-import { auditRouter } from "./routers/audit.js";
-import { importRouter } from "./routers/import.js";
-import { searchRouter } from "./routers/search.js";
+import { buildFlagBag } from '@contractor-ops/feature-flags';
+import { router } from './init.js';
+import { adminBoeRateRouter } from './routers/admin-boe-rate.js';
+import { apiKeyRouter } from './routers/api-key.js';
+import { approvalRouter } from './routers/approval.js';
+import { auditRouter } from './routers/audit.js';
+import { bacsRouter } from './routers/bacs.js';
+import { billingRouter } from './routers/billing.js';
+import { calendarRouter } from './routers/calendar.js';
+import { classificationRouter } from './routers/classification.js';
+import { classificationDashboardRouter } from './routers/classification-dashboard.js';
+import { classificationDocumentRouter } from './routers/classification-document.js';
+import { consentRouter } from './routers/consent.js';
+import { contractRouter } from './routers/contract.js';
+import { contractorRouter } from './routers/contractor.js';
+import { dashboardRouter } from './routers/dashboard.js';
+import { docsRouter } from './routers/docs.js';
+import { documentRouter } from './routers/document.js';
+import { economicDependencyAlertRouter } from './routers/economic-dependency-alert.js';
+import { einvoiceRouter } from './routers/einvoice.js';
+import { equipmentRouter } from './routers/equipment.js';
+import { esignRouter } from './routers/esign.js';
+import { exchangeRateRouter } from './routers/exchange-rate.js';
+import { featureFlagsRouter } from './routers/feature-flags.js';
+import { gdprRouter } from './routers/gdpr.js';
+import { googleWorkspaceRouter } from './routers/google-workspace.js';
+import { importRouter } from './routers/import.js';
+import { integrationRouter } from './routers/integration.js';
+import { invoiceRouter } from './routers/invoice.js';
+import { invoiceIntakeRouter } from './routers/invoice-intake.js';
+import { ir35ChainRouter } from './routers/ir35-chain.js';
+import { ir35AttestationRouter } from './routers/ir35-other-client-attestation.js';
+import { jiraRouter } from './routers/jira.js';
+import { ksefRouter } from './routers/ksef.js';
+import { latePaymentInterestRouter } from './routers/late-payment-interest.js';
+import { legalRouter } from './routers/legal.js';
+import { leitwegIdRouter } from './routers/leitweg-id.js';
+import { linearRouter } from './routers/linear.js';
+import { notificationRouter } from './routers/notification.js';
+import { ocrRouter } from './routers/ocr.js';
+import { onboardingImportRouter } from './routers/onboarding-import.js';
+import { organizationRouter } from './routers/organization.js';
+import { paymentRouter } from './routers/payment.js';
+import { peppolRouter } from './routers/peppol.js';
+import { portalRouter } from './routers/portal.js';
+import { portalTimeRouter } from './routers/portal-time.js';
+import { reassessmentTriggerRouter } from './routers/reassessment-trigger.js';
+import { reminderRouter } from './routers/reminder.js';
+import { reportRouter } from './routers/report.js';
+import { searchRouter } from './routers/search.js';
+import { settingsRouter } from './routers/settings.js';
+import { skontoRouter } from './routers/skonto.js';
+import { statusfeststellungsverfahrenRouter } from './routers/statusfeststellungsverfahren.js';
+import { taxRouter } from './routers/tax.js';
+import { teamsRouter } from './routers/teams.js';
+import { timeRouter } from './routers/time.js';
+import { userRouter } from './routers/user.js';
+import { workflowRouter } from './routers/workflow.js';
+import { zatcaRouter } from './routers/zatca.js';
 
 /**
  * Root tRPC router merging all sub-routers.
@@ -39,8 +79,33 @@ import { searchRouter } from "./routers/search.js";
  * - audit: audit log list with search/filter/pagination, actors dropdown, CSV export
  * - import: CSV/XLSX import with parse, validate, commit endpoints for contractors and contracts
  * - search: unified cross-entity global search via tsvector (contractors, contracts, invoices)
+ * - portalTime: time entry CRUD, submit, external sync for portal contractors
+ * - time: manager timesheet review, approve/reject, bulk operations
+ * - jira: Jira Cloud integration — connection, projects, issue types, status mapping, task config, linked issues
+ * - calendar: Google/Outlook calendar connections, deadline sync, task config CRUD
+ * - billing: Stripe subscription management, checkout, portal, plan config
+ * - equipment: CRUD, assignment, shipment tracking, status management, contractor equipment view
  */
+
+// Phase 64 D-05 — Module-level evaluation of the classification kill-switch.
+// This represents the global platform baseline. Per-org / per-request enforcement
+// is handled by classificationProcedure middleware (D-06, Plan 64-01).
+// Default is false (ship dark) — classification routers are absent from appRouter
+// until the flag is enabled in Unleash.
+//
+// NOTE: This evaluation happens at module load. Changes to Unleash state require
+// a server restart to take effect at the appRouter level. The classificationProcedure
+// middleware handles hot-path per-request evaluation.
+const ClassificationFlagBag = buildFlagBag({
+  organizationId: 'ROOT',
+  region: 'EU', // jurisdiction='ANY' — region value doesn't affect evaluation
+});
+const CLASSIFICATION_ENABLED = ClassificationFlagBag.isEnabled('module.classification-engine');
+
 export const appRouter = router({
+  adminBoeRate: adminBoeRateRouter, // adminBoeRate: Super-admin BoE base rate CRUD — list, insert, update, delete (Phase 63 D-10)
+  apiKey: apiKeyRouter, // apiKey: Enterprise API key management — create, list, update, revoke
+  bacs: bacsRouter, // bacs: BACS Std 18 file generation — getSubmitterMasks, previewExport, generateExport, validateSortCode, saveSubmitterConfig (Phase 63 D-27)
   organization: organizationRouter,
   user: userRouter,
   settings: settingsRouter,
@@ -49,6 +114,7 @@ export const appRouter = router({
   document: documentRouter,
   workflow: workflowRouter,
   invoice: invoiceRouter,
+  invoiceIntake: invoiceIntakeRouter, // invoiceIntake: inbound XRechnung/ZUGFeRD intake pipeline — upload, parse, match, convert (Phase 62 EINV-03)
   approval: approvalRouter,
   notification: notificationRouter,
   reminder: reminderRouter,
@@ -59,6 +125,48 @@ export const appRouter = router({
   audit: auditRouter,
   import: importRouter,
   search: searchRouter,
+  skonto: skontoRouter, // skonto: German early payment discount CRUD + eligibility evaluation (Phase 63 D-21/D-24)
+  portal: portalRouter,
+  esign: esignRouter,
+  ocr: ocrRouter,
+  ksef: ksefRouter,
+  latePaymentInterest: latePaymentInterestRouter, // latePaymentInterest: LPCDA statutory interest — getForInvoice, getForOrg, waive, revokeWaiver, claim, downloadClaim (Phase 63 D-27)
+  legal: legalRouter, // legal: GDPR privacy notice PDF downloads (IDOR-safe, session-derived jurisdiction)
+  portalTime: portalTimeRouter,
+  time: timeRouter,
+  jira: jiraRouter,
+  linear: linearRouter, // linear: Linear integration -- connection, teams, status mapping, task config, linked issues
+  docs: docsRouter,
+  calendar: calendarRouter,
+  billing: billingRouter,
+  equipment: equipmentRouter,
+  googleWorkspace: googleWorkspaceRouter, // Google Workspace directory import, group resolution, bulk import, sync
+  gdpr: gdprRouter, // GDPR: right to erasure (Art. 17), data portability/export (Art. 20)
+  teams: teamsRouter, // Microsoft Teams integration -- channel discovery, channel mapping, connection status
+  onboardingImport: onboardingImportRouter, // onboardingImport: Cross-tool import wizard -- source discovery, user merge, project import, async progress
+  einvoice: einvoiceRouter, // einvoice: E-invoicing compliance statuses per country profile
+  leitwegId: leitwegIdRouter, // leitwegId: German public-sector Leitweg-ID CRUD + contractor/contract default resolution (Phase 61 EINV-05)
+  exchangeRate: exchangeRateRouter, // exchangeRate: Daily ECB exchange rates — query, convert, cron fetch
+  featureFlags: featureFlagsRouter, // featureFlags: Self-hosted Unleash-backed flag introspection for the web dashboard
+  consent: consentRouter, // consent: PDPL consent management — privacy notices, per-purpose consent, admin audit
+  peppol: peppolRouter, // peppol: Peppol network integration — participant registration, transmission tracking, ASP management
+  tax: taxRouter, // tax: Tax rate lookup, VAT validation, WHT calculation, WHT certificates, tax summary dashboard
+  zatca: zatcaRouter, // zatca: ZATCA device onboarding — tax details, CSR generation, compliance CSID, compliance checks, production cert
+  // Phase 64 D-05 — Classification routers conditionally registered based on flag.
+  // When OFF: procedures are absent from appRouter — clients receive METHOD_NOT_FOUND.
+  // Defense-in-depth: classificationProcedure middleware (D-06) also blocks per-request.
+  ...(CLASSIFICATION_ENABLED
+    ? {
+        classification: classificationRouter, // classification: IR35 + Scheinselbständigkeit engagement classification — draft/autosave/submit/outcome (Phase 58)
+        classificationDashboard: classificationDashboardRouter, // classificationDashboard: per-market compliance health dashboard aggregating Phase-58 assessments + Phase-60 alerts/triggers/DRV clearances (Phase 60 CLASS-10)
+        classificationDocument: classificationDocumentRouter, // classificationDocument: IR35 SDS + DRV defense bundle PDFs — append-only, content-addressed R2 (Phase 59)
+        ir35Chain: ir35ChainRouter, // ir35Chain: IR35 chain participant tracking + SDS delivery / acknowledgement (Phase 59 CLASS-04)
+        ir35Attestation: ir35AttestationRouter, // ir35Attestation: contractor other-client attestation + same-tenant cross-reference for DRV defense bundle (Phase 59 CLASS-06)
+        economicDependencyAlert: economicDependencyAlertRouter, // economicDependencyAlert: per-assignment billing-share band (safe/warning/critical) written by the daily §2 SGB VI scan (Phase 60 CLASS-07)
+        reassessmentTrigger: reassessmentTriggerRouter, // reassessmentTrigger: IR35 SDS reassessment triggers — AuditLog-driven material-change detection + acknowledge/dismiss (Phase 60 CLASS-08)
+        statusfeststellungsverfahren: statusfeststellungsverfahrenRouter, // statusfeststellungsverfahren: DRV § 7a SGB IV clearance procedure CRUD + 90/30/7-day expiry reminders (Phase 60 CLASS-09)
+      }
+    : {}),
 });
 
 /** Type-safe router type for client consumption */

@@ -1,42 +1,15 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { format } from "date-fns";
-import { toast } from "sonner";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
-import {
-  CalendarIcon,
-  Loader2,
-  MoreHorizontal,
-  AlertTriangle,
-} from "lucide-react";
-
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { format } from 'date-fns';
+import { AlertTriangle, CalendarIcon, Loader2, MoreHorizontal } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useEffect, useId, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import { z } from 'zod';
+import { VatRateSelector } from '@/components/invoices/vat-rate-selector';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -46,73 +19,73 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Card, CardContent } from "@/components/ui/card";
-import { trpc } from "@/trpc/init";
+} from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import { Card, CardContent } from '@/components/ui/card';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Local Zod schema (mirrors invoiceUpdateSchema to avoid cross-package dep)
 // ---------------------------------------------------------------------------
 
-const invoiceMetadataSchema = z.object({
-  invoiceNumber: z.string().min(1, "Invoice number is required").max(100),
-  issueDate: z.string().min(1, "Issue date is required"),
-  dueDate: z.string().min(1, "Due date is required"),
-  servicePeriodStart: z.string().optional(),
-  servicePeriodEnd: z.string().optional(),
-  sellerTaxId: z.string().max(50).optional(),
-  subtotalGrosze: z.number().int().min(1, "Net amount must be positive"),
-  vatRate: z.string().optional(),
-  vatAmountGrosze: z.number().int().min(0).optional(),
-  totalGrosze: z.number().int().min(1, "Gross amount must be positive"),
-  withholdingGrosze: z.number().int().min(0).optional(),
-  amountToPayGrosze: z.number().int().min(0),
-  currency: z.string().length(3),
-  sellerBankAccount: z.string().max(34).optional(),
-});
+function createInvoiceMetadataSchema(tv: (key: string) => string) {
+  return z.object({
+    invoiceNumber: z.string().min(1, tv('invoiceNumberRequired')).max(100),
+    issueDate: z.string().min(1, tv('issueDateRequired')),
+    dueDate: z.string().min(1, tv('dueDateRequired')),
+    servicePeriodStart: z.string().optional(),
+    servicePeriodEnd: z.string().optional(),
+    sellerTaxId: z.string().max(50).optional(),
+    subtotalMinor: z.number().int().min(1, tv('netAmountPositive')),
+    vatRate: z.string().optional(),
+    vatAmountMinor: z.number().int().min(0).optional(),
+    totalMinor: z.number().int().min(1, tv('grossAmountPositive')),
+    withholdingMinor: z.number().int().min(0).optional(),
+    amountToPayMinor: z.number().int().min(0),
+    currency: z.string().length(3),
+    sellerBankAccount: z.string().max(34).optional(),
+  });
+}
 
-type InvoiceMetadataValues = z.infer<typeof invoiceMetadataSchema>;
+type InvoiceMetadataValues = z.infer<ReturnType<typeof createInvoiceMetadataSchema>>;
 
 // ---------------------------------------------------------------------------
 // VAT rate options
 // ---------------------------------------------------------------------------
 
-const VAT_RATE_OPTIONS = [
-  { value: "23", label: "23%" },
-  { value: "8", label: "8%" },
-  { value: "5", label: "5%" },
-  { value: "0", label: "0%" },
-  { value: "ZW", label: "Exempt (ZW)" },
-  { value: "NP", label: "Not applicable (NP)" },
-] as const;
-
 const CURRENCY_OPTIONS = [
-  { value: "PLN", label: "PLN" },
-  { value: "EUR", label: "EUR" },
-  { value: "USD", label: "USD" },
-  { value: "GBP", label: "GBP" },
+  { value: 'PLN', label: 'PLN' },
+  { value: 'EUR', label: 'EUR' },
+  { value: 'USD', label: 'USD' },
+  { value: 'GBP', label: 'GBP' },
 ] as const;
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
-/** Convert grosze integer to display PLN string (e.g. 10050 -> "100.50") */
-function groszeToPln(grosze: number | null | undefined): string {
-  if (grosze == null || grosze === 0) return "";
-  return (grosze / 100).toFixed(2);
-}
-
-/** Convert PLN display string to grosze integer (e.g. "100.50" -> 10050) */
-function plnToGrosze(value: string): number {
-  const num = parseFloat(value);
-  if (isNaN(num)) return 0;
-  return Math.round(num * 100);
-}
+import { displayToMinor, minorToDisplay } from '@/lib/currency-conversion';
 
 /** Format a Date to ISO date string (YYYY-MM-DD) */
 function toDateString(date: Date): string {
-  return format(date, "yyyy-MM-dd");
+  return format(date, 'yyyy-MM-dd');
 }
 
 // ---------------------------------------------------------------------------
@@ -123,17 +96,17 @@ type InvoiceMetadataFormProps = {
   invoice: {
     id: string;
     invoiceNumber: string;
-    issueDate: string | null;
-    dueDate: string | null;
-    servicePeriodStart: string | null;
-    servicePeriodEnd: string | null;
+    issueDate: string | Date | null;
+    dueDate: string | Date | null;
+    servicePeriodStart: string | Date | null;
+    servicePeriodEnd: string | Date | null;
     sellerTaxId: string | null;
-    subtotalGrosze: number;
+    subtotalMinor: number;
     vatRate: string | null;
-    vatAmountGrosze: number | null;
-    totalGrosze: number;
-    withholdingGrosze: number | null;
-    amountToPayGrosze: number;
+    vatAmountMinor: number | null;
+    totalMinor: number;
+    withholdingMinor: number | null;
+    amountToPayMinor: number;
     currency: string;
     sellerBankAccount: string | null;
     status: string;
@@ -141,17 +114,39 @@ type InvoiceMetadataFormProps = {
   onSubmittedForMatching?: () => void;
 };
 
+/**
+ * Convert a date-ish field (string | Date | null | undefined) into a
+ * YYYY-MM-DD string suitable for `<input type="date">` and Zod schema.
+ */
+function dateFieldToString(value: string | Date | null | undefined): string {
+  if (value instanceof Date) return toDateString(value);
+  return value ?? '';
+}
+
+/**
+ * Like `dateFieldToString` but preserves null/undefined as `undefined`
+ * for fields that are optional in the form schema.
+ */
+function dateFieldToOptionalString(value: string | Date | null | undefined): string | undefined {
+  if (value === null || value === undefined) return;
+  return value instanceof Date ? toDateString(value) : value;
+}
+
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
-export function InvoiceMetadataForm({
-  invoice,
-  onSubmittedForMatching,
-}: InvoiceMetadataFormProps) {
-  const t = useTranslations("Invoices");
+export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: InvoiceMetadataFormProps) {
+  const t = useTranslations('Invoices');
+  const tMeta = useTranslations('Invoices.metadata');
+  const tv = useTranslations('Validation.invoice');
+  const id = useId();
   const queryClient = useQueryClient();
-  const isEditable = invoice.status === "RECEIVED";
+  const isEditable = invoice.status === 'RECEIVED';
+
+  const invoiceMetadataSchema = createInvoiceMetadataSchema((key: string) =>
+    tv(key as Parameters<typeof tv>[0]),
+  );
   const [voidDialogOpen, setVoidDialogOpen] = useState(false);
 
   const {
@@ -165,17 +160,17 @@ export function InvoiceMetadataForm({
     resolver: zodResolver(invoiceMetadataSchema),
     defaultValues: {
       invoiceNumber: invoice.invoiceNumber,
-      issueDate: invoice.issueDate ?? "",
-      dueDate: invoice.dueDate ?? "",
-      servicePeriodStart: invoice.servicePeriodStart ?? undefined,
-      servicePeriodEnd: invoice.servicePeriodEnd ?? undefined,
+      issueDate: dateFieldToString(invoice.issueDate),
+      dueDate: dateFieldToString(invoice.dueDate),
+      servicePeriodStart: dateFieldToOptionalString(invoice.servicePeriodStart),
+      servicePeriodEnd: dateFieldToOptionalString(invoice.servicePeriodEnd),
       sellerTaxId: invoice.sellerTaxId ?? undefined,
-      subtotalGrosze: invoice.subtotalGrosze,
+      subtotalMinor: invoice.subtotalMinor,
       vatRate: invoice.vatRate ?? undefined,
-      vatAmountGrosze: invoice.vatAmountGrosze ?? undefined,
-      totalGrosze: invoice.totalGrosze,
-      withholdingGrosze: invoice.withholdingGrosze ?? undefined,
-      amountToPayGrosze: invoice.amountToPayGrosze,
+      vatAmountMinor: invoice.vatAmountMinor ?? undefined,
+      totalMinor: invoice.totalMinor,
+      withholdingMinor: invoice.withholdingMinor ?? undefined,
+      amountToPayMinor: invoice.amountToPayMinor,
       currency: invoice.currency,
       sellerBankAccount: invoice.sellerBankAccount ?? undefined,
     },
@@ -185,74 +180,74 @@ export function InvoiceMetadataForm({
   useEffect(() => {
     reset({
       invoiceNumber: invoice.invoiceNumber,
-      issueDate: invoice.issueDate ?? "",
-      dueDate: invoice.dueDate ?? "",
-      servicePeriodStart: invoice.servicePeriodStart ?? undefined,
-      servicePeriodEnd: invoice.servicePeriodEnd ?? undefined,
+      issueDate: dateFieldToString(invoice.issueDate),
+      dueDate: dateFieldToString(invoice.dueDate),
+      servicePeriodStart: dateFieldToOptionalString(invoice.servicePeriodStart),
+      servicePeriodEnd: dateFieldToOptionalString(invoice.servicePeriodEnd),
       sellerTaxId: invoice.sellerTaxId ?? undefined,
-      subtotalGrosze: invoice.subtotalGrosze,
+      subtotalMinor: invoice.subtotalMinor,
       vatRate: invoice.vatRate ?? undefined,
-      vatAmountGrosze: invoice.vatAmountGrosze ?? undefined,
-      totalGrosze: invoice.totalGrosze,
-      withholdingGrosze: invoice.withholdingGrosze ?? undefined,
-      amountToPayGrosze: invoice.amountToPayGrosze,
+      vatAmountMinor: invoice.vatAmountMinor ?? undefined,
+      totalMinor: invoice.totalMinor,
+      withholdingMinor: invoice.withholdingMinor ?? undefined,
+      amountToPayMinor: invoice.amountToPayMinor,
       currency: invoice.currency,
       sellerBankAccount: invoice.sellerBankAccount ?? undefined,
     });
   }, [invoice, reset]);
 
   // Watched values for date pickers
-  const issueDateValue = watch("issueDate");
-  const dueDateValue = watch("dueDate");
-  const servicePeriodStartValue = watch("servicePeriodStart");
-  const servicePeriodEndValue = watch("servicePeriodEnd");
-  const vatRateValue = watch("vatRate");
-  const currencyValue = watch("currency");
+  const issueDateValue = watch('issueDate');
+  const dueDateValue = watch('dueDate');
+  const servicePeriodStartValue = watch('servicePeriodStart');
+  const servicePeriodEndValue = watch('servicePeriodEnd');
+  const vatRateValue = watch('vatRate');
+  const currencyValue = watch('currency');
 
   // Save draft mutation
   const saveDraftMutation = useMutation(
     trpc.invoice.update.mutationOptions({
       onSuccess: () => {
-        toast.success(t("detail.savedToast"));
+        toast.success(t('detail.savedToast'));
         queryClient.invalidateQueries({
           queryKey: trpc.invoice.getById.queryKey({ id: invoice.id }),
         });
       },
       onError: () => {
-        toast.error(t("detail.saveError"));
+        toast.error(t('detail.saveError'));
       },
-    })
+    }),
   );
 
   // Submit for matching mutation
   const submitForMatchingMutation = useMutation(
     trpc.invoice.submitForMatching.mutationOptions({
       onSuccess: () => {
-        toast.success(t("detail.submittedToast"));
+        toast.success(t('detail.submittedToast'));
         queryClient.invalidateQueries({
           queryKey: trpc.invoice.getById.queryKey({ id: invoice.id }),
         });
         onSubmittedForMatching?.();
       },
       onError: () => {
-        toast.error(t("detail.submitError"));
+        toast.error(t('detail.submitError'));
       },
-    })
+    }),
   );
 
   // Void invoice mutation
   const voidMutation = useMutation(
     trpc.invoice.voidInvoice.mutationOptions({
       onSuccess: () => {
-        toast.success(t("detail.voidedToast"));
+        toast.success(t('detail.voidedToast'));
         queryClient.invalidateQueries({
           queryKey: trpc.invoice.getById.queryKey({ id: invoice.id }),
         });
       },
       onError: () => {
-        toast.error(t("detail.voidError"));
+        toast.error(t('detail.voidError'));
       },
-    })
+    }),
   );
 
   function onSaveDraft(values: InvoiceMetadataValues) {
@@ -265,12 +260,12 @@ export function InvoiceMetadataForm({
         servicePeriodStart: values.servicePeriodStart || undefined,
         servicePeriodEnd: values.servicePeriodEnd || undefined,
         sellerTaxId: values.sellerTaxId || undefined,
-        subtotalGrosze: values.subtotalGrosze,
-        vatRate: (values.vatRate as "23" | "8" | "5" | "0" | "ZW" | "NP") || undefined,
-        vatAmountGrosze: values.vatAmountGrosze,
-        totalGrosze: values.totalGrosze,
-        withholdingGrosze: values.withholdingGrosze,
-        amountToPayGrosze: values.amountToPayGrosze,
+        subtotalMinor: values.subtotalMinor,
+        vatRate: (values.vatRate as '23' | '8' | '5' | '0' | 'ZW' | 'NP') || undefined,
+        vatAmountMinor: values.vatAmountMinor,
+        totalMinor: values.totalMinor,
+        withholdingMinor: values.withholdingMinor,
+        amountToPayMinor: values.amountToPayMinor,
         currency: values.currency,
         sellerBankAccount: values.sellerBankAccount || undefined,
       },
@@ -289,12 +284,12 @@ export function InvoiceMetadataForm({
           servicePeriodStart: values.servicePeriodStart || undefined,
           servicePeriodEnd: values.servicePeriodEnd || undefined,
           sellerTaxId: values.sellerTaxId || undefined,
-          subtotalGrosze: values.subtotalGrosze,
-          vatRate: (values.vatRate as "23" | "8" | "5" | "0" | "ZW" | "NP") || undefined,
-          vatAmountGrosze: values.vatAmountGrosze,
-          totalGrosze: values.totalGrosze,
-          withholdingGrosze: values.withholdingGrosze,
-          amountToPayGrosze: values.amountToPayGrosze,
+          subtotalMinor: values.subtotalMinor,
+          vatRate: (values.vatRate as '23' | '8' | '5' | '0' | 'ZW' | 'NP') || undefined,
+          vatAmountMinor: values.vatAmountMinor,
+          totalMinor: values.totalMinor,
+          withholdingMinor: values.withholdingMinor,
+          amountToPayMinor: values.amountToPayMinor,
           currency: values.currency,
           sellerBankAccount: values.sellerBankAccount || undefined,
         },
@@ -303,12 +298,11 @@ export function InvoiceMetadataForm({
         onSuccess: () => {
           submitForMatchingMutation.mutate({ id: invoice.id });
         },
-      }
+      },
     );
   }
 
-  const isSubmitting =
-    saveDraftMutation.isPending || submitForMatchingMutation.isPending;
+  const isSubmitting = saveDraftMutation.isPending || submitForMatchingMutation.isPending;
 
   return (
     <>
@@ -317,47 +311,45 @@ export function InvoiceMetadataForm({
           <form className="space-y-4">
             {/* Invoice number */}
             <div className="space-y-1.5">
-              <Label htmlFor="invoiceNumber">{t("detail.invoiceNumber")}</Label>
+              <Label htmlFor={`${id}-invoiceNumber`}>{t('detail.invoiceNumber')}</Label>
               <Input
-                id="invoiceNumber"
+                id={`${id}-invoiceNumber`}
                 className="font-mono text-[13px]"
-                placeholder={t("detail.invoiceNumberPlaceholder")}
+                placeholder={t('detail.invoiceNumberPlaceholder')}
                 disabled={!isEditable}
-                {...register("invoiceNumber")}
+                {...register('invoiceNumber')}
               />
-              {errors.invoiceNumber && (
-                <p className="text-xs text-destructive">
-                  {errors.invoiceNumber.message}
-                </p>
+              {!!errors.invoiceNumber && (
+                <p className="text-xs text-destructive">{errors.invoiceNumber.message}</p>
               )}
             </div>
 
             {/* Issue date + Due date row */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label>{t("detail.issueDate")}</Label>
+                <Label>{t('detail.issueDate')}</Label>
                 <DatePicker
                   value={issueDateValue}
-                  onChange={(date) => setValue("issueDate", date)}
+                  // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
+                  onChange={date => setValue('issueDate', date)}
                   disabled={!isEditable}
+                  pickDateLabel={tMeta('pickDate')}
                 />
-                {errors.issueDate && (
-                  <p className="text-xs text-destructive">
-                    {errors.issueDate.message}
-                  </p>
+                {!!errors.issueDate && (
+                  <p className="text-xs text-destructive">{errors.issueDate.message}</p>
                 )}
               </div>
               <div className="space-y-1.5">
-                <Label>{t("detail.dueDate")}</Label>
+                <Label>{t('detail.dueDate')}</Label>
                 <DatePicker
                   value={dueDateValue}
-                  onChange={(date) => setValue("dueDate", date)}
+                  // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
+                  onChange={date => setValue('dueDate', date)}
                   disabled={!isEditable}
+                  pickDateLabel={tMeta('pickDate')}
                 />
-                {errors.dueDate && (
-                  <p className="text-xs text-destructive">
-                    {errors.dueDate.message}
-                  </p>
+                {!!errors.dueDate && (
+                  <p className="text-xs text-destructive">{errors.dueDate.message}</p>
                 )}
               </div>
             </div>
@@ -365,99 +357,88 @@ export function InvoiceMetadataForm({
             {/* Service period row */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label>{t("detail.servicePeriodStart")}</Label>
+                <Label>{t('detail.servicePeriodStart')}</Label>
                 <DatePicker
-                  value={servicePeriodStartValue ?? ""}
-                  onChange={(date) =>
-                    setValue("servicePeriodStart", date || undefined)
-                  }
+                  value={servicePeriodStartValue ?? ''}
+                  // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
+                  onChange={date => setValue('servicePeriodStart', date || undefined)}
                   disabled={!isEditable}
+                  pickDateLabel={tMeta('pickDate')}
                 />
               </div>
               <div className="space-y-1.5">
-                <Label>{t("detail.servicePeriodEnd")}</Label>
+                <Label>{t('detail.servicePeriodEnd')}</Label>
                 <DatePicker
-                  value={servicePeriodEndValue ?? ""}
-                  onChange={(date) =>
-                    setValue("servicePeriodEnd", date || undefined)
-                  }
+                  value={servicePeriodEndValue ?? ''}
+                  // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
+                  onChange={date => setValue('servicePeriodEnd', date || undefined)}
                   disabled={!isEditable}
+                  pickDateLabel={tMeta('pickDate')}
                 />
               </div>
             </div>
 
             {/* Seller NIP */}
             <div className="space-y-1.5">
-              <Label htmlFor="sellerTaxId">{t("detail.sellerNip")}</Label>
+              <Label htmlFor={`${id}-sellerTaxId`}>{t('detail.sellerNip')}</Label>
               <Input
-                id="sellerTaxId"
+                id={`${id}-sellerTaxId`}
                 className="font-mono text-[13px]"
-                placeholder={t("detail.sellerNipPlaceholder")}
+                placeholder={t('detail.sellerNipPlaceholder')}
                 disabled={!isEditable}
-                {...register("sellerTaxId")}
+                {...register('sellerTaxId')}
               />
             </div>
 
             {/* Net amount + VAT rate row */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label htmlFor="netAmount">{t("detail.netAmount")}</Label>
+                <Label htmlFor={`${id}-netAmount`}>{t('detail.netAmount')}</Label>
                 <CurrencyInput
-                  id="netAmount"
-                  value={watch("subtotalGrosze")}
-                  onChange={(grosze) => setValue("subtotalGrosze", grosze)}
+                  id={`${id}-netAmount`}
+                  value={watch('subtotalMinor')}
+                  // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
+                  onChange={minor => setValue('subtotalMinor', minor)}
                   disabled={!isEditable}
                 />
-                {errors.subtotalGrosze && (
-                  <p className="text-xs text-destructive">
-                    {errors.subtotalGrosze.message}
-                  </p>
+                {!!errors.subtotalMinor && (
+                  <p className="text-xs text-destructive">{errors.subtotalMinor.message}</p>
                 )}
               </div>
               <div className="space-y-1.5">
-                <Label>{t("detail.vatRate")}</Label>
-                <Select
+                <Label>{t('detail.vatRate')}</Label>
+                <VatRateSelector
                   value={vatRateValue ?? undefined}
-                  onValueChange={(val) => setValue("vatRate", val ?? undefined)}
+                  // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
+                  onChange={code => setValue('vatRate', code)}
                   disabled={!isEditable}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder={t("detail.vatRatePlaceholder")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {VAT_RATE_OPTIONS.map((opt) => (
-                      <SelectItem key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                />
               </div>
             </div>
 
             {/* VAT amount + Gross amount row */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label htmlFor="vatAmount">{t("detail.vatAmount")}</Label>
+                <Label htmlFor={`${id}-vatAmount`}>{t('detail.vatAmount')}</Label>
                 <CurrencyInput
-                  id="vatAmount"
-                  value={watch("vatAmountGrosze") ?? 0}
-                  onChange={(grosze) => setValue("vatAmountGrosze", grosze)}
+                  id={`${id}-vatAmount`}
+                  value={watch('vatAmountMinor') ?? 0}
+                  // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
+                  onChange={minor => setValue('vatAmountMinor', minor)}
                   disabled={!isEditable}
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="grossAmount">{t("detail.grossAmount")}</Label>
+                <Label htmlFor={`${id}-grossAmount`}>{t('detail.grossAmount')}</Label>
                 <CurrencyInput
-                  id="grossAmount"
-                  value={watch("totalGrosze")}
-                  onChange={(grosze) => setValue("totalGrosze", grosze)}
+                  id={`${id}-grossAmount`}
+                  value={watch('totalMinor')}
+                  // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
+                  onChange={minor => setValue('totalMinor', minor)}
                   disabled={!isEditable}
                 />
-                {errors.totalGrosze && (
-                  <p className="text-xs text-destructive">
-                    {errors.totalGrosze.message}
-                  </p>
+                {!!errors.totalMinor && (
+                  <p className="text-xs text-destructive">{errors.totalMinor.message}</p>
                 )}
               </div>
             </div>
@@ -465,20 +446,22 @@ export function InvoiceMetadataForm({
             {/* Withholding + Amount to pay row */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label htmlFor="withholding">{t("detail.withholding")}</Label>
+                <Label htmlFor={`${id}-withholding`}>{t('detail.withholding')}</Label>
                 <CurrencyInput
-                  id="withholding"
-                  value={watch("withholdingGrosze") ?? 0}
-                  onChange={(grosze) => setValue("withholdingGrosze", grosze)}
+                  id={`${id}-withholding`}
+                  value={watch('withholdingMinor') ?? 0}
+                  // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
+                  onChange={minor => setValue('withholdingMinor', minor)}
                   disabled={!isEditable}
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="amountToPay">{t("detail.amountToPay")}</Label>
+                <Label htmlFor={`${id}-amountToPay`}>{t('detail.amountToPay')}</Label>
                 <CurrencyInput
-                  id="amountToPay"
-                  value={watch("amountToPayGrosze")}
-                  onChange={(grosze) => setValue("amountToPayGrosze", grosze)}
+                  id={`${id}-amountToPay`}
+                  value={watch('amountToPayMinor')}
+                  // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
+                  onChange={minor => setValue('amountToPayMinor', minor)}
                   disabled={!isEditable}
                 />
               </div>
@@ -487,17 +470,19 @@ export function InvoiceMetadataForm({
             {/* Currency + Bank account row */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label>{t("detail.currency")}</Label>
+                <Label>{t('detail.currency')}</Label>
                 <Select
                   value={currencyValue}
-                  onValueChange={(val) => { if (val) setValue("currency", val); }}
-                  disabled={!isEditable}
-                >
+                  // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
+                  onValueChange={val => {
+                    if (val) setValue('currency', val);
+                  }}
+                  disabled={!isEditable}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {CURRENCY_OPTIONS.map((opt) => (
+                    {CURRENCY_OPTIONS.map(opt => (
                       <SelectItem key={opt.value} value={opt.value}>
                         {opt.label}
                       </SelectItem>
@@ -506,13 +491,13 @@ export function InvoiceMetadataForm({
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="bankAccount">{t("detail.bankAccount")}</Label>
+                <Label htmlFor={`${id}-bankAccount`}>{t('detail.bankAccount')}</Label>
                 <Input
-                  id="bankAccount"
+                  id={`${id}-bankAccount`}
                   className="font-mono text-[13px]"
-                  placeholder={t("detail.bankAccountPlaceholder")}
+                  placeholder={t('detail.bankAccountPlaceholder')}
                   disabled={!isEditable}
-                  {...register("sellerBankAccount")}
+                  {...register('sellerBankAccount')}
                 />
               </div>
             </div>
@@ -526,41 +511,37 @@ export function InvoiceMetadataForm({
                       type="button"
                       variant="outline"
                       disabled={isSubmitting}
-                      onClick={handleSubmit(onSaveDraft)}
-                    >
-                      {saveDraftMutation.isPending && (
-                        <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                      onClick={handleSubmit(onSaveDraft)}>
+                      {!!saveDraftMutation.isPending && (
+                        <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />
                       )}
-                      {t("detail.saveDraft")}
+                      {t('detail.saveDraft')}
                     </Button>
                     <Button
                       type="button"
                       disabled={isSubmitting}
-                      onClick={handleSubmit(onSubmitForMatching)}
-                    >
-                      {submitForMatchingMutation.isPending && (
-                        <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                      onClick={handleSubmit(onSubmitForMatching)}>
+                      {!!submitForMatchingMutation.isPending && (
+                        <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />
                       )}
-                      {t("detail.submitForMatching")}
+                      {t('detail.submitForMatching')}
                     </Button>
                   </>
                 )}
               </div>
 
               <DropdownMenu>
-                <DropdownMenuTrigger
-                  render={<Button variant="ghost" size="icon" />}
-                >
+                <DropdownMenuTrigger render={<Button variant="ghost" size="icon" />}>
                   <MoreHorizontal className="h-4 w-4" />
                   <span className="sr-only">More actions</span>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem
                     className="text-destructive focus:text-destructive"
-                    onClick={() => setVoidDialogOpen(true)}
-                  >
-                    <AlertTriangle className="mr-1.5 h-3.5 w-3.5" />
-                    {t("detail.voidInvoice")}
+                    // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+                    onClick={() => setVoidDialogOpen(true)}>
+                    <AlertTriangle className="me-1.5 h-3.5 w-3.5" />
+                    {t('detail.voidInvoice')}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -573,24 +554,20 @@ export function InvoiceMetadataForm({
       <AlertDialog open={voidDialogOpen} onOpenChange={setVoidDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t("detail.voidConfirmTitle")}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t("detail.voidConfirmBody")}
-            </AlertDialogDescription>
+            <AlertDialogTitle>{t('detail.voidConfirmTitle')}</AlertDialogTitle>
+            <AlertDialogDescription>{t('detail.voidConfirmBody')}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{t("detail.cancel")}</AlertDialogCancel>
+            <AlertDialogCancel>{t('detail.cancel')}</AlertDialogCancel>
             <AlertDialogAction
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              variant="destructive"
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => {
                 voidMutation.mutate({ id: invoice.id });
                 setVoidDialogOpen(false);
-              }}
-            >
-              {voidMutation.isPending && (
-                <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-              )}
-              {t("detail.voidInvoiceCta")}
+              }}>
+              {!!voidMutation.isPending && <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />}
+              {t('detail.voidInvoiceCta')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -607,13 +584,15 @@ function DatePicker({
   value,
   onChange,
   disabled,
+  pickDateLabel,
 }: {
   value: string;
   onChange: (date: string) => void;
   disabled?: boolean;
+  pickDateLabel?: string;
 }) {
   const parsed = value ? new Date(value) : undefined;
-  const isValid = parsed && !isNaN(parsed.getTime());
+  const isValid = parsed && !Number.isNaN(parsed.getTime());
 
   return (
     <Popover>
@@ -621,21 +600,21 @@ function DatePicker({
         render={
           <Button
             variant="outline"
-            className={`w-full justify-start text-left font-normal ${
-              !isValid ? "text-muted-foreground" : ""
-            } ${disabled ? "pointer-events-none opacity-50 bg-muted" : ""}`}
+            className={`w-full justify-start text-start font-normal ${
+              isValid ? '' : 'text-muted-foreground'
+            } ${disabled ? 'pointer-events-none opacity-50 bg-muted' : ''}`}
             disabled={disabled}
           />
-        }
-      >
-        <CalendarIcon className="mr-2 h-4 w-4" />
-        {isValid ? format(parsed, "yyyy-MM-dd") : "Pick a date"}
+        }>
+        <CalendarIcon className="me-2 h-4 w-4" />
+        {isValid ? format(parsed, 'yyyy-MM-dd') : (pickDateLabel ?? 'Pick a date')}
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
         <Calendar
           mode="single"
           selected={isValid ? parsed : undefined}
-          onSelect={(date) => {
+          // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
+          onSelect={date => {
             if (date) onChange(toDateString(date));
           }}
         />
@@ -645,7 +624,7 @@ function DatePicker({
 }
 
 // ---------------------------------------------------------------------------
-// CurrencyInput sub-component (grosze <-> PLN display)
+// CurrencyInput sub-component (minor <-> display)
 // ---------------------------------------------------------------------------
 
 function CurrencyInput({
@@ -656,14 +635,14 @@ function CurrencyInput({
 }: {
   id: string;
   value: number;
-  onChange: (grosze: number) => void;
+  onChange: (minor: number) => void;
   disabled?: boolean;
 }) {
-  const [displayValue, setDisplayValue] = useState(groszeToPln(value));
+  const [displayValue, setDisplayValue] = useState(minorToDisplay(value));
 
   // Sync display when external value changes
   useEffect(() => {
-    setDisplayValue(groszeToPln(value));
+    setDisplayValue(minorToDisplay(value));
   }, [value]);
 
   return (
@@ -671,20 +650,22 @@ function CurrencyInput({
       id={id}
       type="text"
       inputMode="decimal"
-      className="font-mono text-[13px] text-right"
+      className="font-mono text-[13px] text-end"
       value={displayValue}
       disabled={disabled}
-      onChange={(e) => {
+      // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
+      onChange={e => {
         const raw = e.target.value;
         // Allow typing decimals
-        if (/^[0-9]*[.,]?[0-9]{0,2}$/.test(raw) || raw === "") {
+        if (/^[0-9]*[.,]?[0-9]{0,2}$/.test(raw) || raw === '') {
           setDisplayValue(raw);
         }
       }}
+      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
       onBlur={() => {
-        const grosze = plnToGrosze(displayValue.replace(",", "."));
-        onChange(grosze);
-        setDisplayValue(groszeToPln(grosze));
+        const minor = displayToMinor(displayValue.replace(',', '.'));
+        onChange(minor);
+        setDisplayValue(minorToDisplay(minor));
       }}
     />
   );

@@ -1,22 +1,19 @@
-import { z } from "zod";
-import { TRPCError } from "@trpc/server";
-import { prisma } from "@contractor-ops/db";
 import {
   reminderRuleCreateSchema,
-  reminderRuleUpdateSchema,
   reminderRuleToggleSchema,
-} from "@contractor-ops/validators";
-import { router } from "../init.js";
-import { tenantProcedure } from "../middleware/tenant.js";
-import { requirePermission } from "../middleware/rbac.js";
+  reminderRuleUpdateSchema,
+} from '@contractor-ops/validators';
+import { TRPCError } from '@trpc/server';
+import { z } from 'zod';
+import * as E from '../errors.js';
+import { router } from '../init.js';
+import { plain } from '../lib/plain.js';
+import { requirePermission } from '../middleware/rbac.js';
+import { tenantProcedure } from '../middleware/tenant.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-function plain<T>(data: T): T {
-  return JSON.parse(JSON.stringify(data)) as T;
-}
 
 // ---------------------------------------------------------------------------
 // Reminder router
@@ -28,9 +25,9 @@ export const reminderRouter = router({
    * Available to all tenant members.
    */
   list: tenantProcedure.query(async ({ ctx }) => {
-    const rules = await prisma.reminderRule.findMany({
+    const rules = await ctx.db.reminderRule.findMany({
       where: { organizationId: ctx.organizationId },
-      orderBy: { createdAt: "desc" },
+      orderBy: { createdAt: 'desc' },
     });
 
     return plain(rules);
@@ -40,10 +37,10 @@ export const reminderRouter = router({
    * Create a new reminder rule. Admin only.
    */
   create: tenantProcedure
-    .use(requirePermission({ organization: ["update"] }))
+    .use(requirePermission({ organization: ['update'] }))
     .input(reminderRuleCreateSchema)
     .mutation(async ({ ctx, input }) => {
-      const rule = await prisma.reminderRule.create({
+      const rule = await ctx.db.reminderRule.create({
         data: {
           organizationId: ctx.organizationId,
           name: input.name,
@@ -53,9 +50,7 @@ export const reminderRouter = router({
           offsetHours: input.offsetHours ?? null,
           channel: input.channel,
           recipientMode: input.recipientMode,
-          configJson: input.configJson
-            ? JSON.parse(JSON.stringify(input.configJson))
-            : undefined,
+          configJson: input.configJson ? JSON.parse(JSON.stringify(input.configJson)) : undefined,
           active: input.active,
         },
       });
@@ -67,29 +62,27 @@ export const reminderRouter = router({
    * Update an existing reminder rule. Admin only.
    */
   update: tenantProcedure
-    .use(requirePermission({ organization: ["update"] }))
+    .use(requirePermission({ organization: ['update'] }))
     .input(z.object({ id: z.string() }).merge(reminderRuleUpdateSchema))
     .mutation(async ({ ctx, input }) => {
       const { id, ...data } = input;
 
-      const existing = await prisma.reminderRule.findFirst({
+      const existing = await ctx.db.reminderRule.findFirst({
         where: { id, organizationId: ctx.organizationId },
       });
 
       if (!existing) {
         throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Reminder rule not found",
+          code: 'NOT_FOUND',
+          message: E.REMINDER_RULE_NOT_FOUND,
         });
       }
 
-      const updated = await prisma.reminderRule.update({
+      const updated = await ctx.db.reminderRule.update({
         where: { id },
         data: {
           ...data,
-          configJson: data.configJson
-            ? JSON.parse(JSON.stringify(data.configJson))
-            : undefined,
+          configJson: data.configJson ? JSON.parse(JSON.stringify(data.configJson)) : undefined,
         },
       });
 
@@ -100,21 +93,21 @@ export const reminderRouter = router({
    * Delete a reminder rule and its related instances. Admin only.
    */
   delete: tenantProcedure
-    .use(requirePermission({ organization: ["update"] }))
+    .use(requirePermission({ organization: ['update'] }))
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const existing = await prisma.reminderRule.findFirst({
+      const existing = await ctx.db.reminderRule.findFirst({
         where: { id: input.id, organizationId: ctx.organizationId },
       });
 
       if (!existing) {
         throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Reminder rule not found",
+          code: 'NOT_FOUND',
+          message: E.REMINDER_RULE_NOT_FOUND,
         });
       }
 
-      await prisma.$transaction(async (tx) => {
+      await ctx.db.$transaction(async tx => {
         await tx.reminderInstance.deleteMany({
           where: {
             reminderRuleId: input.id,
@@ -134,21 +127,21 @@ export const reminderRouter = router({
    * Admin only.
    */
   toggleActive: tenantProcedure
-    .use(requirePermission({ organization: ["update"] }))
+    .use(requirePermission({ organization: ['update'] }))
     .input(reminderRuleToggleSchema)
     .mutation(async ({ ctx, input }) => {
-      const existing = await prisma.reminderRule.findFirst({
+      const existing = await ctx.db.reminderRule.findFirst({
         where: { id: input.id, organizationId: ctx.organizationId },
       });
 
       if (!existing) {
         throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Reminder rule not found",
+          code: 'NOT_FOUND',
+          message: E.REMINDER_RULE_NOT_FOUND,
         });
       }
 
-      await prisma.$transaction(async (tx) => {
+      await ctx.db.$transaction(async tx => {
         await tx.reminderRule.update({
           where: { id: input.id },
           data: { active: input.active },
@@ -160,9 +153,9 @@ export const reminderRouter = router({
             where: {
               reminderRuleId: input.id,
               organizationId: ctx.organizationId,
-              status: "PENDING",
+              status: 'PENDING',
             },
-            data: { status: "CANCELLED" },
+            data: { status: 'CANCELLED' },
           });
         }
       });

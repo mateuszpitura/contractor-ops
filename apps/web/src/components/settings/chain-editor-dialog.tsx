@@ -1,107 +1,89 @@
-"use client";
+'use client';
 
-import { useEffect, useState, useCallback } from "react";
-import { useForm, useFieldArray, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
-import { toast } from "sonner";
-import { Plus, X, Loader2 } from "lucide-react";
-
-import { trpc } from "@/trpc/init";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { workflowAssignableRoleValues } from '@contractor-ops/validators/roles';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Loader2, Plus, X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useCallback, useEffect, useId, useState } from 'react';
+import { Controller, useFieldArray, useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import { z } from 'zod';
+import type { Condition } from '@/components/settings/condition-builder';
+import { ConditionBuilder } from '@/components/settings/condition-builder';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import {
-  Command,
-  CommandInput,
-  CommandList,
-  CommandEmpty,
-  CommandGroup,
-  CommandItem,
-} from "@/components/ui/command";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogFooter,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import {
-  ConditionBuilder,
-  type Condition,
-} from "@/components/settings/condition-builder";
+} from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Form schema (local wizard schema -- mirrors validators/approval.ts)
 // ---------------------------------------------------------------------------
 
-const APPROVER_ROLES = [
-  "ORG_ADMIN",
-  "FINANCE_ADMIN",
-  "OPS_MANAGER",
-  "TEAM_MANAGER",
-  "LEGAL_VIEWER",
-  "IT_ADMIN",
-  "ACCOUNTANT",
-  "READ_ONLY",
-] as const;
+const APPROVER_ROLES = workflowAssignableRoleValues;
 
 const ROLE_LABELS: Record<string, string> = {
-  ORG_ADMIN: "Admin",
-  FINANCE_ADMIN: "Finance Admin",
-  OPS_MANAGER: "Ops Manager",
-  TEAM_MANAGER: "Team Manager",
-  LEGAL_VIEWER: "Legal Viewer",
-  IT_ADMIN: "IT Admin",
-  ACCOUNTANT: "Accountant",
-  READ_ONLY: "Read Only",
+  admin: 'Admin',
+  finance_admin: 'Finance Admin',
+  ops_manager: 'Ops Manager',
+  team_manager: 'Team Manager',
+  legal_compliance_viewer: 'Legal Viewer',
+  it_admin: 'IT Admin',
+  external_accountant: 'Accountant',
+  readonly: 'Read Only',
 };
 
 const stepSchema = z.object({
-  name: z.string().min(1, "Level name is required").max(100),
-  approverType: z.enum(["user", "role"]),
+  name: z.string().min(1, 'Level name is required').max(100),
+  approverType: z.enum(['user', 'role']),
   approverUserId: z.string().nullish(),
   approverRole: z.enum(APPROVER_ROLES).nullish(),
-  slaHours: z.coerce.number().int().min(1, "SLA must be between 1 and 720 hours").max(720, "SLA must be between 1 and 720 hours"),
+  slaHours: z.coerce
+    .number()
+    .int()
+    .min(1, 'SLA must be between 1 and 720 hours')
+    .max(720, 'SLA must be between 1 and 720 hours'),
   required: z.boolean(),
 });
 
 const chainFormSchema = z.object({
-  name: z.string().min(1, "Chain name is required").max(100),
+  name: z.string().min(1, 'Chain name is required').max(100),
   isDefault: z.boolean(),
-  steps: z
-    .array(stepSchema)
-    .min(1, "Add at least one approval level")
-    .max(3),
+  steps: z.array(stepSchema).min(1, 'Add at least one approval level').max(3),
   conditions: z
     .array(
       z.object({
-        field: z.enum(["amount", "contractorType"]),
-        operator: z.enum(["gt", "lt", "eq"]),
+        field: z.enum(['amount', 'contractorType']),
+        operator: z.enum(['gt', 'lt', 'eq']),
         value: z.union([z.number(), z.string()]),
       }),
     )
@@ -119,10 +101,8 @@ export type ChainData = {
   name: string;
   isDefault: boolean;
   isActive: boolean;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  conditionsJson: any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  stepsJson: any;
+  conditionsJson: unknown;
+  stepsJson: unknown;
 };
 
 type ChainEditorDialogProps = {
@@ -135,9 +115,9 @@ type ChainEditorDialogProps = {
 // Default step
 // ---------------------------------------------------------------------------
 
-const DEFAULT_STEP: ChainFormValues["steps"][number] = {
-  name: "",
-  approverType: "user",
+const DEFAULT_STEP: ChainFormValues['steps'][number] = {
+  name: '',
+  approverType: 'user',
   approverUserId: null,
   approverRole: null,
   slaHours: 24,
@@ -155,26 +135,25 @@ function UserPicker({
   value: string | null | undefined;
   onChange: (userId: string | null) => void;
 }) {
-  const t = useTranslations("Settings");
+  const t = useTranslations('Settings');
   const [open, setOpen] = useState(false);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState('');
 
   const usersQuery = useQuery(trpc.user.list.queryOptions());
-  // user.list returns members with nested user objects
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const rawMembers = (usersQuery.data ?? []) as any[];
-  const users = rawMembers.map((m) => ({
+  // user.list returns flattened members: { id, userId, name, email, role, ... }
+  const rawMembers = usersQuery.data ?? [];
+  const users = rawMembers.map(m => ({
     id: (m.userId ?? m.id) as string,
-    name: (m.user?.name ?? m.name ?? "Unknown") as string,
-    email: (m.user?.email ?? m.email ?? "") as string,
-    role: (m.role ?? "") as string,
+    name: (m.name ?? 'Unknown') as string,
+    email: (m.email ?? '') as string,
+    role: (m.role ?? '') as string,
   }));
 
-  const selectedUser = users.find((u) => u.id === value);
+  const selectedUser = users.find(u => u.id === value);
 
   const filteredUsers = search
     ? users.filter(
-        (u) =>
+        u =>
           u.name.toLowerCase().includes(search.toLowerCase()) ||
           u.email.toLowerCase().includes(search.toLowerCase()),
       )
@@ -190,44 +169,43 @@ function UserPicker({
             className="w-full justify-start font-normal"
             type="button"
           />
-        }
-      >
+        }>
         {selectedUser ? (
           <span className="truncate">
             {selectedUser.name} ({selectedUser.email})
           </span>
         ) : (
-          <span className="text-muted-foreground">{t("approvals.editor.userPlaceholder")}</span>
+          <span className="text-muted-foreground">{t('approvals.editor.userPlaceholder')}</span>
         )}
       </PopoverTrigger>
       <PopoverContent className="w-[320px] p-0" align="start">
         <Command shouldFilter={false}>
           <CommandInput
-            placeholder={t("approvals.editor.userPlaceholder")}
+            placeholder={t('approvals.editor.userPlaceholder')}
             value={search}
             onValueChange={setSearch}
           />
           <CommandList>
-            <CommandEmpty>{t("approvals.editor.noUsersFound" as Parameters<typeof t>[0])}</CommandEmpty>
+            <CommandEmpty>
+              {t('approvals.editor.noUsersFound' as Parameters<typeof t>[0])}
+            </CommandEmpty>
             <CommandGroup>
-              {filteredUsers.map((user) => (
+              {filteredUsers.map(user => (
                 <CommandItem
                   key={user.id}
                   value={user.id}
+                  // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
                   onSelect={() => {
                     onChange(user.id);
                     setOpen(false);
-                    setSearch("");
+                    setSearch('');
                   }}
-                  data-checked={user.id === value || undefined}
-                >
+                  data-checked={user.id === value || undefined}>
                   <div className="flex flex-col">
                     <span className="text-sm font-medium">{user.name}</span>
-                    <span className="text-xs text-muted-foreground">
-                      {user.email}
-                    </span>
+                    <span className="text-xs text-muted-foreground">{user.email}</span>
                   </div>
-                  <Badge variant="secondary" className="ml-auto">
+                  <Badge variant="secondary" className="ms-auto">
                     {ROLE_LABELS[user.role] ?? user.role}
                   </Badge>
                 </CommandItem>
@@ -244,12 +222,9 @@ function UserPicker({
 // Component
 // ---------------------------------------------------------------------------
 
-export function ChainEditorDialog({
-  open,
-  onOpenChange,
-  chainData,
-}: ChainEditorDialogProps) {
-  const t = useTranslations("Settings");
+export function ChainEditorDialog({ open, onOpenChange, chainData }: ChainEditorDialogProps) {
+  const id = useId();
+  const t = useTranslations('Settings');
   const queryClient = useQueryClient();
   const isEditMode = chainData !== null;
 
@@ -257,7 +232,7 @@ export function ChainEditorDialog({
   const form = useForm<ChainFormValues>({
     resolver: zodResolver(chainFormSchema),
     defaultValues: {
-      name: "",
+      name: '',
       isDefault: false,
       steps: [{ ...DEFAULT_STEP }],
       conditions: [],
@@ -266,7 +241,7 @@ export function ChainEditorDialog({
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
-    name: "steps",
+    name: 'steps',
   });
 
   // ---- Reset form when chainData changes ----
@@ -274,18 +249,17 @@ export function ChainEditorDialog({
     if (!open) return;
 
     if (chainData) {
-      const steps = Array.isArray(chainData.stepsJson)
-        ? chainData.stepsJson
-        : [];
+      const steps = Array.isArray(chainData.stepsJson) ? chainData.stepsJson : [];
 
       form.reset({
         name: chainData.name,
         isDefault: chainData.isDefault,
         steps: steps.map((s: Record<string, unknown>) => ({
-          name: (s.name as string) ?? "",
-          approverType: s.approverUserId ? ("user" as const) : ("role" as const),
+          name: (s.name as string) ?? '',
+          approverType: s.approverUserId ? ('user' as const) : ('role' as const),
           approverUserId: (s.approverUserId as string | null) ?? null,
-          approverRole: (s.approverRole as ChainFormValues["steps"][number]["approverRole"]) ?? null,
+          approverRole:
+            (s.approverRole as ChainFormValues['steps'][number]['approverRole']) ?? null,
           slaHours: (s.slaHours as number) ?? 24,
           required: (s.required as boolean) ?? true,
         })),
@@ -295,7 +269,7 @@ export function ChainEditorDialog({
       });
     } else {
       form.reset({
-        name: "",
+        name: '',
         isDefault: false,
         steps: [{ ...DEFAULT_STEP }],
         conditions: [],
@@ -307,14 +281,14 @@ export function ChainEditorDialog({
   const createMutation = useMutation(
     trpc.approval.createChain.mutationOptions({
       onSuccess: () => {
-        toast.success(t("approvals.toasts.created"));
+        toast.success(t('approvals.toasts.created'));
         queryClient.invalidateQueries({
           queryKey: trpc.approval.listChains.queryKey(),
         });
         onOpenChange(false);
       },
       onError: () => {
-        toast.error(t("approvals.toasts.saveFailed"));
+        toast.error(t('approvals.toasts.saveFailed'));
       },
     }),
   );
@@ -322,14 +296,14 @@ export function ChainEditorDialog({
   const updateMutation = useMutation(
     trpc.approval.updateChain.mutationOptions({
       onSuccess: () => {
-        toast.success(t("approvals.toasts.updated"));
+        toast.success(t('approvals.toasts.updated'));
         queryClient.invalidateQueries({
           queryKey: trpc.approval.listChains.queryKey(),
         });
         onOpenChange(false);
       },
       onError: () => {
-        toast.error(t("approvals.toasts.saveFailed"));
+        toast.error(t('approvals.toasts.saveFailed'));
       },
     }),
   );
@@ -339,21 +313,17 @@ export function ChainEditorDialog({
   // ---- Submit handler ----
   const onSubmit = useCallback(
     (data: ChainFormValues) => {
-      const stepsJson = data.steps.map((step) => ({
+      const stepsJson = data.steps.map(step => ({
         name: step.name,
-        approverUserId:
-          step.approverType === "user" ? (step.approverUserId ?? null) : null,
-        approverRole:
-          step.approverType === "role" ? (step.approverRole ?? null) : null,
+        approverUserId: step.approverType === 'user' ? (step.approverUserId ?? null) : null,
+        approverRole: step.approverType === 'role' ? (step.approverRole ?? null) : null,
         slaHours: step.slaHours,
         required: step.required,
       }));
 
       const conditionsJson =
         data.conditions && data.conditions.length > 0
-          ? data.conditions.filter(
-              (c) => c.value !== "" && c.value !== undefined,
-            )
+          ? data.conditions.filter(c => c.value !== '' && c.value !== undefined)
           : null;
 
       if (isEditMode && chainData) {
@@ -379,51 +349,45 @@ export function ChainEditorDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[640px] max-h-[80vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[640px] max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {isEditMode ? t("approvals.editor.editTitle") : t("approvals.editor.createTitle")}
+            {isEditMode ? t('approvals.editor.editTitle') : t('approvals.editor.createTitle')}
           </DialogTitle>
           <DialogDescription>
             {isEditMode
-              ? t("approvals.editor.editDescription")
-              : t("approvals.editor.createDescription")}
+              ? t('approvals.editor.editDescription')
+              : t('approvals.editor.createDescription')}
           </DialogDescription>
         </DialogHeader>
 
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="space-y-6"
-        >
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           {/* Section 1: Chain name + default toggle */}
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="chain-name">{t("approvals.editor.chainName")}</Label>
+              <Label htmlFor={`${id}-chain-name`}>{t('approvals.editor.chainName')}</Label>
               <Input
-                id="chain-name"
-                placeholder={t("approvals.editor.chainNamePlaceholder")}
-                {...form.register("name")}
+                id={`${id}-chain-name`}
+                placeholder={t('approvals.editor.chainNamePlaceholder')}
+                {...form.register('name')}
               />
-              {form.formState.errors.name && (
-                <p className="text-xs text-destructive">
-                  {form.formState.errors.name.message}
-                </p>
+              {!!form.formState.errors.name && (
+                <p className="text-xs text-destructive">{form.formState.errors.name.message}</p>
               )}
             </div>
 
             <div className="flex items-center justify-between">
               <div>
-                <Label htmlFor="chain-default">{t("approvals.editor.defaultToggle")}</Label>
-                <p className="text-xs text-muted-foreground">
-                  {t("approvals.editor.defaultHelp")}
-                </p>
+                <Label htmlFor={`${id}-chain-default`}>{t('approvals.editor.defaultToggle')}</Label>
+                <p className="text-xs text-muted-foreground">{t('approvals.editor.defaultHelp')}</p>
               </div>
               <Controller
                 control={form.control}
                 name="isDefault"
+                // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
                 render={({ field }) => (
                   <Switch
-                    id="chain-default"
+                    id={`${id}-chain-default`}
                     checked={field.value}
                     onCheckedChange={field.onChange}
                   />
@@ -434,12 +398,10 @@ export function ChainEditorDialog({
 
           {/* Section 2: Approval levels */}
           <div className="space-y-3">
-            <h4 className="text-sm font-semibold">{t("approvals.editor.levelsHeading")}</h4>
+            <h4 className="text-sm font-semibold">{t('approvals.editor.levelsHeading')}</h4>
 
-            {form.formState.errors.steps?.root && (
-              <p className="text-xs text-destructive">
-                {form.formState.errors.steps.root.message}
-              </p>
+            {!!form.formState.errors.steps?.root && (
+              <p className="text-xs text-destructive">{form.formState.errors.steps.root.message}</p>
             )}
 
             {fields.map((field, index) => (
@@ -456,9 +418,9 @@ export function ChainEditorDialog({
                         variant="ghost"
                         size="icon-sm"
                         className="text-destructive hover:text-destructive"
+                        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                         onClick={() => remove(index)}
-                        aria-label={t("approvals.editor.removeLevel")}
-                      >
+                        aria-label={t('approvals.editor.removeLevel')}>
                         <X className="size-4" />
                       </Button>
                     )}
@@ -466,13 +428,13 @@ export function ChainEditorDialog({
 
                   {/* Level name */}
                   <div className="space-y-2">
-                    <Label htmlFor={`step-name-${index}`}>{t("approvals.editor.levelName")}</Label>
+                    <Label htmlFor={`step-name-${index}`}>{t('approvals.editor.levelName')}</Label>
                     <Input
                       id={`step-name-${index}`}
-                      placeholder={t("approvals.editor.levelNamePlaceholder")}
+                      placeholder={t('approvals.editor.levelNamePlaceholder')}
                       {...form.register(`steps.${index}.name`)}
                     />
-                    {form.formState.errors.steps?.[index]?.name && (
+                    {!!form.formState.errors.steps?.[index]?.name && (
                       <p className="text-xs text-destructive">
                         {form.formState.errors.steps[index].name?.message}
                       </p>
@@ -481,26 +443,26 @@ export function ChainEditorDialog({
 
                   {/* Approver type */}
                   <div className="space-y-2">
-                    <Label>{t("approvals.editor.approver")}</Label>
+                    <Label>{t('approvals.editor.approver')}</Label>
                     <Controller
                       control={form.control}
                       name={`steps.${index}.approverType`}
+                      // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
                       render={({ field: radioField }) => (
                         <RadioGroup
                           value={radioField.value}
                           onValueChange={radioField.onChange}
-                          className="flex gap-4"
-                        >
+                          className="flex gap-4">
                           <div className="flex items-center gap-2">
                             <RadioGroupItem value="user" />
                             <Label className="cursor-pointer font-normal">
-                              {t("approvals.editor.approverUser")}
+                              {t('approvals.editor.approverUser')}
                             </Label>
                           </div>
                           <div className="flex items-center gap-2">
                             <RadioGroupItem value="role" />
                             <Label className="cursor-pointer font-normal">
-                              {t("approvals.editor.approverRole")}
+                              {t('approvals.editor.approverRole')}
                             </Label>
                           </div>
                         </RadioGroup>
@@ -509,31 +471,29 @@ export function ChainEditorDialog({
                   </div>
 
                   {/* Conditional approver picker */}
-                  {form.watch(`steps.${index}.approverType`) === "user" ? (
+                  {form.watch(`steps.${index}.approverType`) === 'user' ? (
                     <Controller
                       control={form.control}
                       name={`steps.${index}.approverUserId`}
+                      // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
                       render={({ field: userField }) => (
-                        <UserPicker
-                          value={userField.value}
-                          onChange={userField.onChange}
-                        />
+                        <UserPicker value={userField.value} onChange={userField.onChange} />
                       )}
                     />
                   ) : (
                     <Controller
                       control={form.control}
                       name={`steps.${index}.approverRole`}
+                      // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
                       render={({ field: roleField }) => (
                         <Select
                           value={roleField.value ?? undefined}
-                          onValueChange={roleField.onChange}
-                        >
+                          onValueChange={roleField.onChange}>
                           <SelectTrigger className="w-full">
-                            <SelectValue placeholder={t("approvals.editor.rolePlaceholder")} />
+                            <SelectValue placeholder={t('approvals.editor.rolePlaceholder')} />
                           </SelectTrigger>
                           <SelectContent>
-                            {APPROVER_ROLES.map((role) => (
+                            {APPROVER_ROLES.map(role => (
                               <SelectItem key={role} value={role}>
                                 {ROLE_LABELS[role] ?? role}
                               </SelectItem>
@@ -546,11 +506,11 @@ export function ChainEditorDialog({
 
                   {/* SLA hours */}
                   <div className="space-y-2">
-                    <Label htmlFor={`step-sla-${index}`}>{t("approvals.editor.slaHours")}</Label>
+                    <Label htmlFor={`step-sla-${index}`}>{t('approvals.editor.slaHours')}</Label>
                     <Input
                       id={`step-sla-${index}`}
                       type="number"
-                      placeholder={t("approvals.editor.slaPlaceholder")}
+                      placeholder={t('approvals.editor.slaPlaceholder')}
                       min={1}
                       max={720}
                       {...form.register(`steps.${index}.slaHours`, {
@@ -558,7 +518,7 @@ export function ChainEditorDialog({
                       })}
                       className="max-w-[120px]"
                     />
-                    {form.formState.errors.steps?.[index]?.slaHours && (
+                    {!!form.formState.errors.steps?.[index]?.slaHours && (
                       <p className="text-xs text-destructive">
                         {form.formState.errors.steps[index].slaHours?.message}
                       </p>
@@ -567,10 +527,13 @@ export function ChainEditorDialog({
 
                   {/* Required toggle */}
                   <div className="flex items-center justify-between">
-                    <Label htmlFor={`step-required-${index}`}>{t("approvals.editor.required")}</Label>
+                    <Label htmlFor={`step-required-${index}`}>
+                      {t('approvals.editor.required')}
+                    </Label>
                     <Controller
                       control={form.control}
                       name={`steps.${index}.required`}
+                      // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
                       render={({ field: reqField }) => (
                         <Switch
                           id={`step-required-${index}`}
@@ -588,39 +551,32 @@ export function ChainEditorDialog({
             {fields.length >= 3 ? (
               <Tooltip>
                 <TooltipTrigger
-                  render={
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      disabled
-                    />
-                  }
-                >
-                  <Plus className="mr-1.5 size-3.5" />
-                  {t("approvals.editor.addLevel")}
+                  render={<Button type="button" variant="outline" size="sm" disabled />}>
+                  <Plus className="me-1.5 size-3.5" />
+                  {t('approvals.editor.addLevel')}
                 </TooltipTrigger>
-                <TooltipContent>{t("approvals.editor.maxLevels")}</TooltipContent>
+                <TooltipContent>{t('approvals.editor.maxLevels')}</TooltipContent>
               </Tooltip>
             ) : (
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => append({ ...DEFAULT_STEP })}
-              >
-                <Plus className="mr-1.5 size-3.5" />
-                {t("approvals.editor.addLevel")}
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+                onClick={() => append({ ...DEFAULT_STEP })}>
+                <Plus className="me-1.5 size-3.5" />
+                {t('approvals.editor.addLevel')}
               </Button>
             )}
           </div>
 
           {/* Section 3: Routing conditions */}
           <div className="space-y-3">
-            <h4 className="text-sm font-semibold">{t("approvals.editor.conditionsHeading")}</h4>
+            <h4 className="text-sm font-semibold">{t('approvals.editor.conditionsHeading')}</h4>
             <Controller
               control={form.control}
               name="conditions"
+              // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
               render={({ field: condField }) => (
                 <ConditionBuilder
                   value={(condField.value ?? []) as Condition[]}
@@ -635,16 +591,14 @@ export function ChainEditorDialog({
             <Button
               type="button"
               variant="ghost"
+              // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler
               onClick={() => onOpenChange(false)}
-              disabled={isPending}
-            >
-              {t("approvals.editor.discard")}
+              disabled={isPending}>
+              {t('approvals.editor.discard')}
             </Button>
             <Button type="submit" disabled={isPending}>
-              {isPending && (
-                <Loader2 className="mr-1.5 size-3.5 animate-spin" />
-              )}
-              {t("approvals.editor.save")}
+              {!!isPending && <Loader2 className="me-1.5 size-3.5 animate-spin" />}
+              {t('approvals.editor.save')}
             </Button>
           </DialogFooter>
         </form>

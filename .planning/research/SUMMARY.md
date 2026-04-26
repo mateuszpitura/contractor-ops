@@ -1,237 +1,212 @@
 # Project Research Summary
 
-**Project:** Contractor Ops — B2B Contractor Operations SaaS
-**Domain:** Multi-tenant B2B SaaS / Contractor Lifecycle Management (Poland-first)
-**Researched:** 2026-03-18
-**Confidence:** HIGH
+**Project:** v5.0 UK & Germany Market Expansion
+**Domain:** UK IR35 compliance, German Scheinselbstaendigkeit, EN 16931 e-invoicing (XRechnung/ZUGFeRD), BACS payments, HMRC/VIES VAT validation, German i18n
+**Researched:** 2026-04-12
+**Confidence:** MEDIUM (codebase analysis HIGH; external regulatory API specifics and 2026 standard versions MEDIUM; VIES REST availability LOW)
 
 ## Executive Summary
 
-This is a B2B operations SaaS targeting Polish companies that manage 5–200 B2B contractors. The product fills a genuine gap: Deel and Remote are priced per-contractor and optimized for cross-border EOR, SaldeoSMART is accounting-first with no lifecycle management, and Faktura.pl is invoice creation only. Nobody owns the full local B2B contractor lifecycle — onboard → contract → invoice → approve → pay → offboard — at a flat platform fee. Research confirms that building this as a multi-tenant Next.js monolith on Vercel, with tRPC for type-safe API access, Prisma + Neon PostgreSQL for data, and Inngest for durable background workflows, is the right stack for a solo developer with high delivery velocity requirements. The monorepo structure (Turborepo + pnpm) enables clean package boundaries without premature microservice complexity.
+v5.0 is a compliance-heavy market expansion that adds two new jurisdictions — UK and Germany — to the existing multi-market contractor operations platform. The defining architectural investment is a generic contractor classification engine (analogous to the v4.0 e-invoicing engine) that treats IR35 and Scheinselbstaendigkeit as pluggable rule sets. This pattern is already proven in the codebase: the e-invoicing engine's `EInvoiceProfile` interface, the gov-api `GovApiClient` base class, and the country-fields JSON/Zod pattern all extend naturally to the new domains with minimal friction. Crucially, the JS/TS ecosystem has no mature libraries for XRechnung, ZUGFeRD, BACS Standard 18, IR35 determination, or Scheinselbstaendigkeit — everything must be built from specification. Only one new runtime dependency (`pdf-lib`) is required for the entire milestone.
 
-The recommended approach is to ship a comprehensive v1 that replaces the Excel + email + Slack chaos with a coherent platform, rather than building a minimal tool and iterating. The invoice-to-payment pipeline (intake → match → approve → export) is the core value proposition and must be complete at launch. The workflow engine for onboarding/offboarding is the primary differentiator — no Polish competitor has it — and should ship in v1 despite its complexity. Anti-features to defer include OCR/AI invoice parsing (KSeF XML will supersede it), contractor self-service portal (doubles surface area), and open banking (regulatory complexity). The product should be PLN-only and Poland-focused at launch.
+The highest-risk work is the ZUGFeRD PDF/A-3 pipeline (embedding EN 16931-compliant CII XML into a PDF/A-3 archival container is a strict compliance requirement with limited Node.js tooling) and the classification engines (which carry existential legal liability if framed incorrectly — the tools must present risk assessments with mandatory disclaimers, never binding determinations). UK case law (Atholl House 2022, PGMOL 2024) and DRV audit precedent are unambiguous on this point. Both require careful design decisions before implementation begins. XRechnung, BACS, and German i18n are all extensions of proven patterns and carry substantially lower execution risk.
 
-The primary risks are architectural, not feature-level. Tenant data leakage in a financial SaaS is business-ending; the Prisma Client Extension tenant-scoping pattern must be baked into the foundation before any feature work. Currency precision errors (float vs. integer-grosze vs. Decimal) must be resolved at schema design time — retrofitting is extremely expensive. Approval workflow state machine corruption is the most complex domain problem and requires explicit state modeling with snapshotted chain configurations before any UI is built. These three pitfalls have HIGH recovery cost and must be treated as hard constraints from day 1, not afterthoughts.
+The recommended build order starts with country field foundations and i18n (zero external dependencies), then government API clients (start HMRC developer hub registration immediately — approval takes weeks), then the classification engine (the key v5.0 differentiator), then e-invoicing profiles (XRechnung first, ZUGFeRD second), then payment export. Legal disclaimer design and German legal terminology review by a Steuerberater must happen before any user-facing implementation — not as polish at the end.
 
 ## Key Findings
 
 ### Recommended Stack
 
-The stack is designed for a Vercel-native, serverless-first deployment with a strong TypeScript-first, end-to-end type safety posture. Next.js 15 with the App Router is the framework; tRPC v11 provides the API layer with full type inference from server to client via TanStack Query v5 integration. Better Auth with its Organization plugin handles multi-tenant auth and RBAC, replacing both Auth.js (now in maintenance mode) and Clerk (expensive at scale). Inngest replaces BullMQ/Trigger.dev for all durable background workflows — it is the only viable worker solution on Vercel serverless. Resend Inbound (released Nov 2025) handles email intake without a separate mail server. Cloudflare R2 handles file storage at zero egress cost. The toolchain uses Biome (not ESLint + Prettier) for 10-100x faster linting.
+The project needs only one new runtime dependency: `pdf-lib@^1.17.1` for ZUGFeRD PDF/A-3 generation. Every other capability is satisfied by existing packages (`fast-xml-parser`, `xml-crypto`, `zod`, `next-intl`, `node-forge`) or direct HTTP calls via `fetch` (HMRC VAT API, VIES REST). A new workspace package `@contractor-ops/classification` is required for the classification engine; its only dependency is `zod` (already in the workspace). `soap@^1.1.0` is a conditional second dependency, added only if VIES REST API proves unreliable in production.
+
+The `pdf-lib` PDF/A-3b capabilities must be verified during implementation with a proof-of-concept — the library can manipulate PDFs but PDF/A-3 compliance (XMP metadata, ICC color profiles, Associated Files mechanism) may require manual `PDFDict`/`PDFArray` work. If `pdf-lib` cannot meet requirements, the fallback is Apache PDFBox called as a child process.
 
 **Core technologies:**
-- **Next.js 15 + React 19:** Full-stack framework with Server Components — reduces client bundle for data-heavy SaaS pages. App Router is required for next-intl (i18n) compatibility.
-- **tRPC v11:** End-to-end type safety, no code generation. First-class App Router + TanStack Query v5 integration. The API layer for all client-server communication.
-- **Prisma 6 + Neon PostgreSQL 17:** ORM with mature migrations, Client Extensions for tenant scoping and audit logging. Neon provides serverless Postgres with connection pooling built in.
-- **Better Auth 1.x + Organization plugin:** Multi-tenant RBAC out of the box. Supports custom roles for the 8-role model (admin, finance, ops, manager, legal viewer, IT admin, accountant, readonly). Auth.js successor.
-- **Inngest 3.x:** Durable step functions for approval SLA timers, onboarding/offboarding workflows, invoice matching pipeline, scheduled jobs. The only viable worker solution on Vercel.
-- **TanStack Query v5 + Zustand 5 + nuqs 2:** Server state cache (TanStack Query), ephemeral UI state (Zustand), shareable filter/sort state in URL (nuqs). Clear separation of state concerns.
-- **shadcn/ui + Tailwind CSS 4 + TanStack Table 8:** Component library (copy-owned, not a dependency), utility styling, headless table with sorting/filtering/pagination.
-- **Cloudflare R2 + @aws-sdk/client-s3:** Zero-egress document storage with presigned URL upload/download pattern. Server never handles file bytes (critical with Vercel's 4.5MB body limit).
-- **Resend 4 + Resend Inbound + React Email 5:** Single vendor for transactional email send and inbound email intake. Webhook-based inbound eliminates IMAP polling (impossible on serverless).
-- **Upstash Redis + QStash:** Rate limiting, idempotency keys, and async HTTP job dispatch. QStash is the canonical Vercel pattern for background work (with Inngest handling durable workflows).
-- **next-intl 4:** Server Component-native i18n. Polish + English from day 1 with ICU message format.
-- **Turborepo 2 + pnpm 9 + Biome 1:** Monorepo orchestration, package management, and unified linting/formatting.
-
-Full details: `.planning/research/STACK.md`
+- `fast-xml-parser@^5.5.9`: UBL 2.1 XML for XRechnung and CII XML for ZUGFeRD — already installed, same pattern as Peppol-AE and ZATCA generators
+- `xml-crypto@^6.0.0`: XAdES-BES digital signatures for XRechnung — already installed, adapt ZATCA signer from ECDSA-SHA256 to RSA-SHA256
+- `pdf-lib@^1.17.1` (NEW): PDF/A-3b generation for ZUGFeRD — pure JS, Vercel-compatible, the only viable Node.js option for PDF/A-3 with AF support
+- `zod@^3.23.0`: IR35 questionnaire, Scheinselbstaendigkeit assessment, BACS format, UK/DE country fields — already installed everywhere
+- `next-intl@^4.8.3`: German `de` locale requires only a config change and `de.json` translation file — no version bump needed
+- Direct `fetch` + `GovApiClient`: HMRC VAT API and VIES REST; no SDK exists for either; both fit the existing retry/rate-limit/audit-logging pattern
 
 ### Expected Features
 
-The product is feature-complete at v1 — research confirms that a minimal invoice-only tool would not replace the existing Excel/email workflow. Every table-stakes feature must ship at launch. The differentiators (workflow engine, Slack inline approval, compliance health scoring) are what justify the platform pricing vs. per-contractor tools.
+**Must have (P0 table stakes for v5.0 launch):**
+- Generic contractor classification engine — abstract framework for IR35 and Scheinselbstaendigkeit rule sets; the architectural investment of v5.0, enabling future France URSSAF and Netherlands DBA as incremental additions
+- IR35 rule set — CEST-aligned assessment (5 areas: personal service, control, financial risk, part-and-parcel, MOO), risk scoring, inside/outside/undetermined outcomes with mandatory human sign-off
+- Status Determination Statement (SDS) generation + chain participant tracking — legal requirement under UK off-payroll rules; must include reasoning per assessment area, dispute process, and delivery timestamps
+- Scheinselbstaendigkeit rule set — DRV-aligned assessment (~20 criteria, 4 categories), weighted risk scoring, traffic-light outcomes
+- DRV audit defense documentation — exportable PDF bundle with assessment history, independence indicators, contractor revenue attestation
+- Economic dependency monitoring — billing concentration tracking with 70%/83.33% threshold alerts (5/6 rule per Section 2 SGB VI)
+- XRechnung e-invoicing profile — EN 16931 + BR-DE-* business rules, Leitweg-ID handling (B2G only, private sector uses order reference in BT-10), KoSIT Schematron validation
+- ZUGFeRD e-invoicing profile — PDF/A-3b with embedded CII XML (`factur-x.xml`), EN 16931 COMFORT level target, veraPDF-validated output
+- BACS Standard 18 export — fixed-width ASCII payment file for UK domestic batch payments
+- UK + German VAT rates and validation — UK (20%/5%/0%) via HMRC API; German (19%/7%/0%) via VIES
+- UK + German contractor profile fields — UTR, Companies House number (UK); Steuernummer, Handelsregister, USt-IdNr (DE)
+- German i18n — full `de` locale with locked legal terminology constants (tax law phrases must never be in translatable strings)
 
-**Must have at launch (table stakes — gaps here make the product feel incomplete):**
-- Multi-tenant org setup + RBAC + user invite flow — everything scopes to organization_id
-- Contractor registry + profiles with full activity history
-- Contract repository with status tracking, document management, and expiry reminders
-- Invoice intake (manual upload + email) with per-org email inbox
-- Invoice-to-contractor-to-contract matching with deviation detection
-- Duplicate invoice detection with normalized invoice number comparison
-- Configurable approval workflow (1–3 levels) with role-based routing, comments on rejection, delegation
-- Payment batch export (CSV/bank-compatible file) with idempotency
-- Dashboard with KPIs, approval queue, upcoming deadlines, spend overview
-- Notifications (in-app + email) for all critical events
-- Audit log (immutable, filterable, exportable) — compliance requirement for financial operations
-- Basic reports (spend by contractor/period, expiring contracts, overdue invoices)
-- Data import wizard (CSV/XLSX) — primary migration path from spreadsheets
-- i18n (Polish + English) with locale-aware date/number/currency formatting
-- Product onboarding wizard — reduces time-to-value dramatically
+**Should have (P1 competitive differentiators, add after market validation):**
+- IR35 reassessment triggers — auto-detect material changes from contract amendments, rate changes, extensions
+- UK late payment interest calculator — statutory interest (BoE base rate + 8%) plus fixed compensation tiers under Late Payment of Commercial Debts Act 1998
+- German Skonto support — early payment discount terms (2%/10 days, net 30 is German B2B standard)
+- Statusfeststellungsverfahren tracking — DRV clearance procedure application status management
+- Compliance health dashboard (UK/DE) — aggregated classification coverage, e-invoicing status, overdue reassessments, economic dependency alerts
+- Peppol BIS UK profile — low marginal effort given existing Peppol PINT-AE; trigger: NHS/government contract customer
 
-**Should have at launch (differentiators — competitive advantage vs. Deel/SaldeoSMART):**
-- Workflow engine with configurable onboarding/offboarding templates + task dependencies — no Polish competitor has this
-- Slack integration with inline approve/reject buttons — Polish tech companies live in Slack
-- Global search + command palette (Cmd+K) — power-user navigation, Linear/Vercel style
-- SLA timers on approval levels with escalation notifications
-- Compliance health scoring per contractor (valid contract, required docs, NIP verified)
-- Approval delegation and backup approvers
+**Defer to v6+:**
+- Faster Payments API — requires banking partnership; BACS covers the MVP
+- France URSSAF / Netherlands DBA classification rule sets — prove the engine pattern with UK+DE first
+- MTD VAT bridging — accounting software territory (Xero, FreeAgent)
+- Automated Statusfeststellungsverfahren DRV submission — no public API; pre-filled form generation is the correct alternative
 
-**Defer to v1.x (post-validation):**
-- Contractor self-service portal — doubles surface area, build after internal flow is validated
-- KSeF native integration — grace period until Dec 2026, email/upload intake first
-- E-sign integration (Autenti/DocuSign) — most Polish contracts signed by email/wet signature
-- OCR invoice parsing — KSeF XML will make OCR largely unnecessary
-
-**Defer to v2+ (future consideration):**
-- Open banking / payment initiation — regulatory complexity, bank file export is sufficient
-- Public API + webhooks — after integration requests come from customers
-- SSO/SCIM — enterprise feature, target market doesn't require it
-- Custom fields — fixed schemas cover 90% of cases; validate first
-
-Full details: `.planning/research/FEATURES.md`
+**Anti-features (explicitly do not build):**
+- Definitive IR35 determination — platform cannot carry legal liability for determinations; always frame as risk assessment requiring human sign-off
+- German payroll processing for reclassified contractors — DATEV/Personio territory; generate a handoff package instead
+- KoSIT XRechnung validator rebuilt in-house — use KoSIT's open-source Java validator; tracking Schematron changes across releases is significant ongoing burden
+- CIS (Construction Industry Scheme) deductions — niche construction payroll, out of scope
 
 ### Architecture Approach
 
-The architecture is a Turborepo monolith: a single Next.js app with supporting packages (`api`, `db`, `services`, `auth`, `shared`, `ui`). Business logic lives in `packages/services/`, not in tRPC routers (which are intentionally thin). All database access goes through a Prisma Client Extension that auto-injects `organization_id` from AsyncLocalStorage — this is the primary tenant isolation mechanism, with PostgreSQL RLS as defense-in-depth. Background work (notifications, SLA timers, email intake, scheduled jobs) flows through QStash for HTTP-based async dispatch and Inngest for durable multi-step workflows. Files go directly from browser to Cloudflare R2 via presigned PUT URLs, then server validates type/content; the API never handles file bytes.
+The v5.0 architecture is entirely additive. Existing patterns — country profile plugins, capability interfaces, format detection routing, and country fields JSON/Zod — absorb all new domains without engine changes. The only structural addition is the new `packages/classification` workspace package, which mirrors the `packages/einvoice` pattern exactly. The e-invoicing pipeline requires one surgical enhancement: an optional `Embeddable` capability interface for ZUGFeRD's PDF/A-3 embed step, following the same pattern as the existing `Signable` and `QRCodeable` capabilities. Classification is stored per engagement (not per contractor) — a single contractor can have independent IR35 (UK) and Scheinselbstaendigkeit (DE) assessments for different engagements.
 
 **Major components:**
-1. **tRPC middleware chain** (auth guard → tenant scope → RBAC check → audit logger) — every API request passes through all four layers in order
-2. **Prisma Client Extension (tenant)** — auto-injects `organizationId` into all queries; impossible to forget at the query level
-3. **Domain services package** (`packages/services/`) — business logic for invoice matching, workflow engine, approval chain, payment batching, notifications, audit; called by tRPC routers, cron jobs, and webhooks
-4. **Database-driven workflow engine** — templates, instances, and tasks stored in PostgreSQL; engine logic in `packages/services/src/workflow/`; no external orchestration needed for human-task workflows
-5. **Configurable approval chain** — `ApprovalChain` config snapshot at submission time (never updated in-flight), `ApprovalRequest` + `ApprovalStep` instances, sequential level routing with SLA deadlines
-6. **Event-driven audit + notifications** — domain events written to append-only `audit_log` (same transaction as state change) and dispatched to notification handlers via QStash (async, does not block the request)
-7. **File storage (presigned URLs)** — three-step pattern: request upload URL → browser PUT to R2 → confirm upload; download URLs generated on demand with 15-minute expiry
-8. **Inngest functions** — approval SLA timers, onboarding/offboarding workflow execution, email intake processing pipeline, invoice matching, overdue detection, contract expiry reminders
-
-Build order (what must exist before what): Foundation (monorepo + DB + auth + tRPC middleware) → Core entities (contractors + contracts + documents) → Workflow engine → Invoice pipeline (intake + matching + approval) → Payments + reporting → Polish (Slack, search, import, onboarding wizard).
-
-Full details: `.planning/research/ARCHITECTURE.md`
+1. `packages/classification` (NEW) — generic `ClassificationEngine` with pluggable `ClassificationRuleSet` interface; IR35 and Scheinselbstaendigkeit are the first two rule sets; SDS/DRV document generators and `ClassificationAssessment` DB model live here
+2. `packages/einvoice` (EXTEND) — new `xrechnung/` and `zugferd/` country profiles; `Embeddable` capability interface added to pipeline; `pdf-embedder.ts` for ZUGFeRD PDF/A-3
+3. `packages/gov-api` (EXTEND) — `HmrcVatClient` and `ViesClient` subclassing `GovApiClient`; async validation pattern, 30-day result caching, manual override for VIES downtime
+4. `packages/api/services/payment-export` (EXTEND) — `generateBacsStd18()` with ASCII transliteration, 18-char truncation, banking day calendar; BACS format detection rule (GBP + GB IBAN -> `BACS_STD18`)
+5. `packages/validators` (EXTEND) — `GB` and `DE` schemas added to `countryFieldsSchemaMap`; UK/DE TIN validators (UTR checksum, Steuernummer regional format, USt-IdNr check digit)
+6. `packages/db` (EXTEND) — new `classification.prisma`; `BACS_STD18` enum value; UK/DE VAT rate seed data
+7. `apps/web/messages/de.json` (NEW) — German translations with locked legal terminology constants (non-translatable tax law phrases stored as code constants, not in the translation file)
 
 ### Critical Pitfalls
 
-1. **Tenant data leakage via missing or bypassed tenant scoping** — Use Prisma Client Extension (not deprecated middleware) from day 1; write cross-tenant isolation integration tests for every model; never derive `organization_id` from request params (always from session). Recovery cost: CATASTROPHIC. Must be treated as a hard constraint, not a best-effort.
+1. **IR35 tool presented as legally binding** — Never show "IS inside/outside IR35." Always frame as risk assessment with indicators consistent with a status. Require acknowledgement disclaimers before each determination, store full questionnaire evidence in the SDS (not just the result), and version-stamp with regulatory rules version. Even HMRC's CEST tool is not binding; Atholl House 2022 and PGMOL 2024 both overturned CEST-aligned determinations.
 
-2. **Currency precision errors (float vs. Decimal vs. integer-grosze)** — Store monetary amounts as integers in grosze (1234 = 12.34 PLN) or use Prisma `Decimal` type with `decimal.js`/`dinero.js` for all arithmetic. Never use `Float` in Prisma schema, never call `parseFloat()` on money. Decision must be made at schema design time — retrofitting is extremely expensive.
+2. **ZUGFeRD PDF/A-3 embedding done incorrectly** — Attaching XML to a PDF is not ZUGFeRD compliance. The PDF must be ISO 19005-3 (PDF/A-3b), the XML must use the Associated Files (AF) mechanism in the document catalog, the filename must be exactly `factur-x.xml`, and XMP metadata must declare the ZUGFeRD profile and conformance level. Validate all output with veraPDF before shipping.
 
-3. **Approval workflow state machine corruption** — Model approval as an explicit state machine with defined states and valid transitions. Snapshot the approval chain configuration at invoice submission time (in-flight invoices use their snapshot, never the current org config). Use optimistic locking (version field) to prevent concurrent state changes. Any amount change after approval starts must reset the chain.
+3. **EN 16931 Schematron validation incomplete** — XSD schema validation is not sufficient. EN 16931 has ~170 Schematron business rules (BR-XX) plus ~26 German-specific rules (BR-DE-XX). Invoices that appear valid locally will be rejected by receiving systems and government portals. Run all three validation layers: XSD schema + EN 16931 Schematron + XRechnung CIUS Schematron. Use KoSIT reference invoices for the test suite.
 
-4. **Vercel serverless cannot run background jobs natively** — Design all async operations as idempotent HTTP endpoints from the start. Use QStash for async dispatch, Inngest for durable workflows, Vercel Cron for schedules, and Resend Inbound (not IMAP polling) for email intake. Wire up QStash + Vercel Cron in the foundation phase before building any feature that needs them.
+4. **Scheinselbstaendigkeit tool creating false security** — DRV audits are holistic assessments, not checklists. The 5/6 rule (83.33% income concentration) is a hard automatic alert that must be monitored in real time from billing data — it is the single most common DRV audit trigger. A "LOW risk" score does not constitute legal compliance. Include a German-language legal disclaimer: "Diese Risikobewertung ersetzt keine rechtliche Beratung."
 
-5. **Better Auth Organization misconfiguration (session/role leakage)** — Define all 8 roles with permissions using Better Auth's custom role system from the start. Always use server-side `hasPermission` API for authorization — never client-side checks for security-critical decisions. Always run `npx @better-auth/cli migrate` after plugin configuration changes.
+5. **BACS character encoding and field constraints** — BACS Standard 18 accepts only ASCII (0x20-0x7E). Contractor names with umlauts, Polish diacritics, or apostrophes cause full-file rejection. Implement `stripDiacritics()` + `.toUpperCase()`, truncate names to 18 characters with an audit trail showing original vs truncated, validate sort codes against EISCD structure, and calculate processing dates on banking days only (exclude weekends and UK bank holidays). Include contra record in every batch.
 
-6. **File upload security holes** — Validate file content via magic bytes (not extension or Content-Type header) after upload completes. Serve files from a separate domain with `Content-Disposition: attachment`. Scope R2 keys by `/{org_id}/{entity_type}/{entity_id}/`. Keep signed URL expiry to 5–15 minutes.
+6. **VIES treated as a reliable real-time service** — VIES has approximately 95% availability. Never block user flows on VIES validation. Validate German USt-IdNr format locally first (DE + 9 digits + check digit algorithm), then validate asynchronously, cache results for 30 days, and allow manual override when VIES is unavailable. HMRC API validates UK VAT numbers separately — never send UK numbers to VIES.
 
-7. **Invoice duplicate detection false positives/negatives** — Normalize invoice numbers before comparison (strip whitespace, normalize separators, uppercase). Use composite detection: exact match on (normalized_number + contractor_id) as primary, amount as secondary confirmation. Add date-range window for recurring invoice handling. Flag suspected duplicates for human review rather than auto-rejecting.
+7. **German legal terminology translated informally** — Tax law phrases like "Steuerschuldnerschaft des Leistungsempfaengers" (reverse charge, Section 14a(5) UStG) must appear verbatim on invoices. These are legal citations, not UI copy. Store them as locked constants in `packages/i18n/glossary/de-legal.ts`, not in `de.json` where translators could edit them. Use formal "Sie" consistently. Have a German Steuerberater review all tax-related strings before launch.
 
-Full details: `.planning/research/PITFALLS.md`
+8. **HMRC OAuth and fraud prevention headers** — HMRC requires fraud prevention headers (Gov-Client-Public-IP, Gov-Client-Timezone, etc.) on every API call. OAuth access tokens expire after 4 hours. Sandbox behaves differently from production. Register on HMRC developer hub early — the approval process can take weeks.
 
 ## Implications for Roadmap
 
-Based on combined research, the architecture's explicit build order maps directly to a 6-phase roadmap. Each phase has hard dependencies on the previous one except where noted as parallel.
+Based on the dependency graph identified in ARCHITECTURE.md, combined with feature priorities from FEATURES.md and pitfall phase mappings from PITFALLS.md, a 6-phase structure is recommended. Each phase delivers standalone value while satisfying prerequisites for the next.
 
-### Phase 1: Foundation
-**Rationale:** Everything in the system depends on this. Tenant scoping, auth, RBAC, and the tRPC middleware chain must exist before any feature can be built safely. Currency precision (integer-grosze vs. Decimal) must be decided here — it cannot be retrofitted. The background job infrastructure (QStash + Vercel Cron + Inngest) must be wired up now because notifications, SLA timers, and email intake all depend on it.
-**Delivers:** Working monorepo structure, database schema with tenant extension, Better Auth with all 8 custom roles, tRPC middleware chain (auth → tenant → RBAC → audit), Inngest + QStash integration, i18n framework (next-intl), CI/CD pipeline, and an authenticated app shell with navigation.
-**Addresses (features):** Multi-tenant org setup, RBAC, user invite flow, i18n scaffolding.
-**Avoids (pitfalls):** Tenant data leakage (Prisma extension from day 1), currency errors (integer schema from day 1), Better Auth misconfiguration (all 8 roles defined upfront), no background job support (QStash + Inngest wired up before needed).
-**Research flag:** STANDARD — well-documented patterns for all components.
+### Phase 1: Country Field Foundations + i18n
+**Rationale:** Zero external dependencies. Country fields, VAT rates, and i18n are prerequisites for classification, e-invoicing, and payment export. Fastest path to a testable foundation. German legal terminology must be locked before any invoice generation begins — this phase is the correct place to do it.
+**Delivers:** UK/DE contractor profile fields (UTR, Companies House, Steuernummer, Handelsregister, USt-IdNr), UK/DE VAT rates in TaxRate table, German `de` locale in next-intl, locked German legal terminology constants (`de-legal.ts`), Zod validators for UK/DE tax identifiers (UTR checksum, Steuernummer regional formats, GB IBAN structure), DB migration for `classification.prisma` (structure ready for Phase 3). Commission German Steuerberater review during this phase.
+**Addresses:** UK/DE contractor profile fields, German i18n, UK/DE VAT rates (P0 table stakes)
+**Avoids:** German legal terminology pitfall — lock phrases before any German invoice or compliance document is generated
 
-### Phase 2: Core Entities
-**Rationale:** Contractors and contracts are the root entities that invoices, workflows, and payments all reference. Cannot build the invoice pipeline or workflow engine without them. Document management (R2 presigned URLs) is needed for contract attachments, so file storage is established here.
-**Delivers:** Contractor registry with search/filter/bulk actions, NIP-based GUS/REGON lookup, contractor profiles with activity history, contract CRUD with status tracking and expiry metadata, document upload/download (R2 presigned URL pattern), compliance health scoring foundation.
-**Addresses (features):** Contractor registry + profiles, contract repository, document management, data import wizard (CSV/XLSX for contractors + contracts).
-**Avoids (pitfalls):** File upload security (magic byte validation, org-scoped R2 keys, short-expiry signed URLs established here), tenant isolation tests for contractor and contract models.
-**Research flag:** STANDARD — well-documented CRUD + R2 presigned URL pattern.
+### Phase 2: Government API Clients (HMRC + VIES)
+**Rationale:** Needed by Phase 3 (classification validates contractor tax IDs before assessment) and Phase 4 (e-invoicing validates VAT numbers on invoices). No dependencies beyond Phase 1 country fields. HMRC developer hub registration must be initiated during Phase 1 planning — do not wait until Phase 2 starts.
+**Delivers:** `HmrcVatClient` extending `GovApiClient` (UK VAT validation, OAuth 2.0, fraud prevention headers, 2 req/s rate limiting), `ViesClient` extending `GovApiClient` (EU USt-IdNr async-only validation, 30-day caching, manual override when unavailable), `tax.validateUkVat` and `tax.validateEuVat` tRPC procedures.
+**Uses:** `GovApiClient` base class (retry, rate limiting, audit logging), `zod` response schemas, existing encrypted credential store for OAuth tokens
+**Avoids:** HMRC OAuth/fraud-prevention-header pitfall; VIES reliability pitfall (async validation, never block flows)
 
-### Phase 3: Workflow Engine
-**Rationale:** The workflow engine is the primary differentiator. It is architecturally independent from the invoice pipeline and can be built in parallel, but it shares the notification/QStash infrastructure established in Phase 1. Building it before the invoice pipeline allows the notification service to be validated with a simpler domain (task completion) before being stressed by approval chains.
-**Delivers:** Workflow template builder (create/edit templates with ordered steps, dependencies, role assignment, conditional logic, SLA per step), workflow execution engine (advance on task completion, evaluate dependencies, schedule SLA deadlines via QStash), task management UI (list, complete, comment, attach), onboarding/offboarding workflow execution for contractors, overdue task detection (Vercel Cron), notifications for task assignment and deadlines.
-**Addresses (features):** Workflow engine + onboarding/offboarding templates, notifications (established here, reused in Phase 4).
-**Avoids (pitfalls):** Anti-pattern of building a general-purpose BPM (build simple task-dependency engine, expand only when real requirements demand it); Vercel serverless timeout (SLA checks via QStash delayed messages, not in-process timers).
-**Research flag:** NEEDS RESEARCH PHASE — workflow template builder conditional logic and task dependency evaluation need detailed technical design before implementation.
+### Phase 3: Contractor Classification Engine
+**Rationale:** The key v5.0 differentiator. Architecturally independent of e-invoicing, so it ships marketable value early. The generic engine design is the architectural investment that enables France URSSAF and Netherlands DBA as low-cost future additions. Must be designed as a risk assessment framework from the first design document — retrofitting disclaimers and human-sign-off flows after implementation is much harder.
+**Delivers:** `packages/classification` new package — `ClassificationEngine`, `ClassificationRuleSet` interface, IR35 rule set (CEST-aligned, 5 areas, ~25 questions, mandatory disclaimer + acknowledgement), SDS generation with chain participant tracking and delivery timestamps, Scheinselbstaendigkeit rule set (DRV-aligned, ~20 criteria, 4 categories), DRV audit defense documentation bundle, economic dependency monitoring (5/6 rule with real-time billing alerts), `ClassificationAssessment` DB model (per-engagement, not per-contractor), contractor profile risk badge and compliance item integration, reassessment notification hooks.
+**Avoids:** IR35 legal liability pitfall (risk assessment framing, disclaimers, human sign-off, full evidence storage); Scheinselbstaendigkeit false security pitfall (5/6 rule as hard real-time alert, holistic scoring); dual classification confusion pitfall (per-engagement data model, jurisdiction-separated UI)
 
-### Phase 4: Invoice Pipeline
-**Rationale:** This is the core business value. Depends on contractors and contracts (Phase 2) for matching, and on the notification/QStash infrastructure (Phase 3). The invoice lifecycle is the most complex state machine in the system; the approval chain design must be completed before any UI is built. The approval chain snapshot pattern must be implemented from the first version.
-**Delivers:** Invoice intake (drag-and-drop upload + per-org email inbox via Resend Inbound + Inngest processing), invoice-to-contractor matching (by NIP/sender email), invoice-to-contract matching with deviation detection, duplicate detection (normalized invoice numbers + date-range window for recurring), approval chain configuration UI (1–3 levels, role-based or user-specific), invoice approval workflow (approve/reject/clarify/delegate), SLA timers on approval levels with escalation, Slack integration (inline approve/reject in Block Kit messages), approval delegation and backup approvers.
-**Addresses (features):** Invoice intake, matching + dedup, configurable approval workflow, SLA timers, Slack integration, approval delegation.
-**Avoids (pitfalls):** Approval state machine corruption (explicit state machine with snapshots, optimistic locking, amount-change reset rule), duplicate detection failures (normalization + composite detection + human review for suspected duplicates), Slack webhook without signature verification.
-**Research flag:** NEEDS RESEARCH PHASE — approval chain state machine design and Slack Block Kit interactive message patterns need detailed technical design.
+### Phase 4: EN 16931 E-Invoicing (XRechnung + ZUGFeRD)
+**Rationale:** Depends on Phase 1 (VAT rates, country fields), Phase 2 (VAT number validation on invoices). The most technically complex phase. Build XRechnung first (pure UBL 2.1 XML — a familiar pattern from Peppol-AE) and fully validate it before starting ZUGFeRD. ZUGFeRD (new CII syntax + PDF/A-3 tooling uncertainty) is the hardest work in the milestone; beginning it with a pdf-lib proof-of-concept reduces risk significantly.
+**Delivers:** `Embeddable` capability interface in einvoice pipeline types; XRechnung profile (UBL 2.1 generator adapted from Peppol-AE, BR-DE-* validation, conditional Leitweg-ID for B2G vs order reference for B2B, XAdES-BES RSA-SHA256 signer adapted from ZATCA signer); ZUGFeRD profile (CII XML generator — new syntax, EN 16931 COMFORT level, PDF/A-3b embedding via pdf-lib, `factur-x.xml` AF attachment, veraPDF-validated output); three-layer validation (XSD + EN 16931 Schematron + XRechnung CIUS Schematron); KoSIT reference invoice test suite.
+**Uses:** `fast-xml-parser` (both UBL and CII XML), `xml-crypto` (XRechnung XAdES-BES), `pdf-lib` (ZUGFeRD PDF/A-3b)
+**Avoids:** Incomplete Schematron validation pitfall; ZUGFeRD AF mechanism pitfall; Leitweg-ID misuse pitfall (B2G/B2B distinction)
 
-### Phase 5: Payments + Reporting
-**Rationale:** Only approved invoices enter payment runs (hard dependency on Phase 4). Dashboard KPIs and reports require real data to exist. This phase closes the end-to-end loop: from invoice intake to payment confirmation.
-**Delivers:** Payment batch creation (select approved invoices, generate bank-compatible CSV/MT940), idempotent batch operations with partial failure handling, payment status tracking (paid/partial/failed per invoice), dashboard with KPI cards (pending approvals, upcoming deadlines, spend overview, overdue invoices), spend reports (by contractor, by period, by status), expiring contract report, audit log viewer (filterable, exportable), pre-computed KPI caching (Vercel Cron → Redis) to prevent dashboard contention.
-**Addresses (features):** Payment batch export, dashboard + KPIs, basic reports, audit log viewer.
-**Avoids (pitfalls):** Dashboard performance trap (pre-compute KPIs via scheduled cron, cache in Redis), payment batch without idempotency (idempotency keys from day 1), audit log not truly immutable (database role cannot UPDATE/DELETE).
-**Research flag:** STANDARD — bank CSV/MT940 format is documented; Recharts + shadcn/ui chart patterns are established.
+### Phase 5: UK Payment Infrastructure (BACS)
+**Rationale:** Depends only on Phase 1 (GBP currency and GB country code). Follows the proven Elixir generator pattern. Low-risk and fast to ship. Does not block Phase 3 or Phase 4, so it can proceed in parallel if team capacity allows.
+**Delivers:** `generateBacsStd18()` in `payment-export.ts` (VOL1/HDR1/HDR2/UHL1/data records/EOF1/EOF2/UTL1 structure, ASCII transliteration, 18-char name truncation with audit trail, contra record, banking day calendar for processing dates), BACS format detection rule (GBP + GB IBAN -> `BACS_STD18`), `PaymentExportFormat.BACS_STD18` enum value, pre-validation step with per-field error messages, BACS bureau sandbox test submission.
+**Avoids:** BACS character encoding and field constraint pitfall (ASCII-only, strict column positions, contra records, banking day calendar)
 
-### Phase 6: Polish and Launch Readiness
-**Rationale:** These features depend on data and flows established in all prior phases. Global search requires indexed data. The data import wizard benefits from knowing the final schema. The product onboarding wizard wraps the full setup flow. Compliance health scoring is now fully computable with contracts, documents, and NIP verification in place.
-**Delivers:** Global search + command palette (Cmd+K) with PostgreSQL full-text search (`tsvector`) across contractors/contracts/invoices, data import wizard (CSV/XLSX for contractors + contracts with preview + validation), product onboarding wizard (org setup → import → configure approvals → invite team), compliance health scoring per contractor (dashboard widget), contract expiry warnings (90/60/30/7 days, Vercel Cron), notification preference management (per event type, email vs. in-app), i18n completeness (PLN formatting with Polish locale: `1 234,56 zł`), E2E test coverage for critical flows.
-**Addresses (features):** Global search + Cmd+K, data import, product onboarding wizard, compliance health scoring, all remaining i18n gaps.
-**Avoids (pitfalls):** Full-text search via SQL LIKE (use `tsvector` indexes for > 5K records), i18n incomplete (PLN/date formatting not just string translation), email without deduplication (notification preferences + rate limiting).
-**Research flag:** STANDARD — PostgreSQL full-text search and shadcn/ui Command (cmdk) are well-documented. Import wizard pattern is established.
+### Phase 6: Compliance Polish + v5.x Features
+**Rationale:** Requires all previous phases to be functional. Compliance health dashboard aggregates data that only exists once Phases 3 and 4 are live. IR35 reassessment triggers require the classification engine to have real assessments against which to detect material changes.
+**Delivers:** UK/DE compliance health dashboard (classification coverage %, e-invoicing compliance status, overdue reassessments, economic dependency alerts), IR35 reassessment triggers (material change detection from contract amendments, rate period changes, extensions), UK late payment interest calculator (BoE base rate + 8%, GBP 40/70/100 fixed compensation tiers), German Skonto support (early payment discount terms on invoices, payment date eligibility tracking), Statusfeststellungsverfahren tracking (DRV clearance application status, validity period reminders), UK GDPR and German BDSG compliance adaptations.
+**Addresses:** P1 differentiator features from FEATURES.md
 
 ### Phase Ordering Rationale
 
-- **Foundation must be first** because tenant scoping, auth, RBAC, and currency decisions cannot be retrofitted without catastrophic risk. The architectural decisions made in Phase 1 (tenant extension, integer-grosze schema, async job patterns) determine the safety of every feature built afterward.
-- **Core entities before workflows and invoices** because contractors and contracts are foreign keys referenced by every other domain entity. Building workflows or invoice matching without contractors doesn't compile.
-- **Workflow engine before invoice pipeline** because it validates the notification/QStash infrastructure in a lower-stakes domain (task completion) before that infrastructure is stressed by approval chain SLA timers. The workflow engine is also the primary differentiator and benefits from early real-world validation.
-- **Invoice pipeline as its own phase** because it is the most complex and highest-risk domain (state machine, financial amounts, concurrent access). It should not be mixed with other features.
-- **Payments + reporting after invoice pipeline** because the dependency is hard: only approved invoices can enter payment batches. Reports are meaningless without data.
-- **Polish phase last** because search, import, onboarding wizard, and compliance scoring all benefit from real schema and data to work with.
+- Phase 1 first: Country fields, VAT rates, and i18n have zero external dependencies and unblock every subsequent phase. German terminology review should be commissioned here to avoid a last-minute scramble before Phase 4.
+- Phase 2 early: HMRC developer hub registration (initiated in Phase 1 planning) has an approval lag of weeks. Delivering the client in Phase 2 prevents it from blocking Phase 4. VIES reliability design decisions must be made here to establish the async-only pattern.
+- Phase 3 before Phase 4: Classification is the primary market differentiator and architecturally independent of e-invoicing. Shipping it first demonstrates market value and proves the new package pattern before tackling the more complex e-invoicing work.
+- Phase 4 internally ordered: XRechnung (familiar UBL pattern, low risk) must be implemented and validated before ZUGFeRD (new CII syntax, PDF/A-3 tooling uncertainty). Do not parallelize these two profiles within Phase 4.
+- Phase 5 parallel-eligible: BACS is a straightforward extension with no dependency on classification or e-invoicing. If team capacity allows, it can run in parallel with Phase 3 or Phase 4.
+- Phase 6 last: Compliance polish and v5.x features depend on all functional pieces being in place. Reassessment triggers cannot be tested without real classification assessments.
 
 ### Research Flags
 
-Phases likely needing deeper research during planning:
-- **Phase 3 (Workflow Engine):** The conditional logic system for workflow steps (JSON rules evaluation) and dependency graph traversal need detailed technical design. The database schema for templates vs. instances vs. tasks should be fully mapped before implementation begins.
-- **Phase 4 (Invoice Pipeline):** The approval state machine — every state, every valid transition, every guard, every effect — should be diagrammed and reviewed before any code is written. Slack Block Kit interactive message patterns with Inngest step function integration need a spike.
+Phases likely needing `/gsd:research-phase` during planning:
 
-Phases with standard patterns (research-phase can be skipped):
-- **Phase 1 (Foundation):** Turborepo + Next.js + Better Auth + tRPC + Prisma + Inngest + QStash are all well-documented with official guides and community patterns.
-- **Phase 2 (Core Entities):** Standard CRUD + R2 presigned URL upload pattern is established and documented.
-- **Phase 5 (Payments + Reporting):** Bank CSV format is a fixed specification. Recharts + shadcn/ui Chart component patterns are well-documented.
-- **Phase 6 (Polish):** PostgreSQL `tsvector` full-text search, cmdk command palette, and CSV import wizard are all established patterns.
+- **Phase 3 (Classification Engine):** Legal liability framing for IR35 tools is nuanced and case-law-driven. Recommend a focused research sprint on CEST question bank alignment (all 5 assessment areas, ~25 questions), DRV Betriebspruefung documentation requirements, and SDS statutory content requirements before implementation begins. The distinction between advisory tool and binding determination must be designed in from the first wireframe.
+- **Phase 4 (EN 16931 E-Invoicing — ZUGFeRD sub-phase):** Before committing to `pdf-lib` for PDF/A-3b, run a proof-of-concept that creates a minimal PDF/A-3b document with an Associated File entry and validates it with veraPDF. If this fails, the fallback path (Apache PDFBox as child process, or commercial PDF/A service) needs to be selected before implementation begins. Also confirm the exact XRechnung CIUS version in effect in 2026 from KoSIT artifacts — the `customizationID` URI is version-specific.
+- **Phase 2 (HMRC Client):** Verify whether the VAT number validation endpoint uses server-token (application-level) or user-restricted OAuth before building the auth flow. HMRC documentation is spread across multiple portals and is frequently outdated; sandbox verification is mandatory.
+
+Phases with standard patterns (skip research-phase):
+
+- **Phase 1 (Country Fields + i18n):** Adding `GB`/`DE` Zod schemas and a `de.json` locale file are mechanical extensions of confirmed existing patterns. No research needed beyond confirming tax identifier formats (UTR, Steuernummer) from official sources.
+- **Phase 5 (BACS):** Fixed-width format generation follows the existing Elixir generator pattern. The main risk (character encoding) is well-understood and has a clear mitigation strategy. No research phase needed — implement against the BACS Standard 18 spec with careful testing against the bureau sandbox.
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | All core technologies verified via official docs and multiple sources. Version compatibility matrix confirmed. Inngest/QStash split for durable vs. simple async is the recommended Vercel-native pattern. |
-| Features | HIGH | Competitor analysis is thorough (Deel, Remote, SaldeoSMART, Faktura.pl). Feature dependencies are clearly mapped. Anti-features are well-reasoned with specific alternatives. |
-| Architecture | HIGH | Well-established patterns for this exact stack (multi-tenant Prisma extension, tRPC middleware chain, presigned URL file storage, QStash + Vercel Cron). Multiple authoritative sources confirm the approaches. |
-| Pitfalls | HIGH (stack), MEDIUM (domain workflows) | Stack-specific pitfalls (Prisma, Vercel, Better Auth, R2) are verified against known issues and official docs. Domain workflow pitfalls (approval state machines, duplicate detection edge cases) are based on industry knowledge and AP workflow best practices — may surface additional edge cases during implementation. |
+| Stack | HIGH | One new dependency (pdf-lib). All other libraries confirmed present in codebase. pdf-lib PDF/A-3b AF mechanism capabilities need implementation-time proof-of-concept verification. |
+| Features | MEDIUM | IR35 and Scheinselbstaendigkeit regulatory frameworks are well-documented. XRechnung version (3.0.x) and ZUGFeRD version (2.3.x) specifics could not be verified against live KoSIT/ZUGFeRD.de sources in 2026. |
+| Architecture | HIGH | Based on direct codebase analysis. Extension points (EInvoiceProfile, GovApiClient, payment-export generators, country-fields map) are confirmed existing patterns. New package structure mirrors proven einvoice layout. |
+| Pitfalls | MEDIUM | Legal pitfalls (IR35 liability, German terminology) are grounded in case law and statute. Technical pitfalls (BACS format, VIES reliability) based on training data without live 2026 verification. HMRC OAuth flow type needs sandbox confirmation. |
 
-**Overall confidence:** HIGH
+**Overall confidence:** MEDIUM-HIGH. Architecture and stack decisions are high-confidence (codebase-driven). Feature and regulatory specifics are MEDIUM — implementation must include a verification step against live HMRC developer docs, KoSIT validator artifacts, and ZUGFeRD specification documents before building.
 
 ### Gaps to Address
 
-- **Resend Inbound reliability at volume:** Resend Inbound was released Nov 2025 and is relatively new. Email attachment handling and reliability for high-volume orgs should be tested early in Phase 4. Fallback: SendGrid Inbound Parse (same webhook pattern, proven at scale).
-- **KSeF timeline certainty:** KSeF mandatory deadline and API stability remain in flux. The v1 decision to use email/upload intake with a v1.5 KSeF path is correct, but the KSeF milestone should be re-evaluated when the API stabilizes (expected H1 2026).
-- **Approval state machine edge cases:** The pitfalls research identifies known edge cases (deleted approver, concurrent approval, amount change, delegation loops), but a formal state transition diagram should be produced as the first deliverable of Phase 4 planning to surface any missed transitions.
-- **Biome rule coverage:** Biome covers ~95% of ESLint rules. Any accessibility linting requirements (axe-core rules) or import sorting specifics should be evaluated early in Phase 1 to determine if a fallback ESLint config is needed.
-- **Integer-grosze vs. Decimal decision:** Both approaches (store amounts as integers in grosze, or use Prisma `Decimal` with `decimal.js`) are valid. This decision must be made and documented before Phase 1 database schema is written. The integer approach is safer for arithmetic but requires explicit formatting on display; Decimal is more intuitive but requires discipline with the library.
+- **VIES REST API production availability:** Confirm `https://ec.europa.eu/taxation_customs/vies/rest-api/check-vat-number` is production-stable in 2026. Decision gate: add `soap@^1.1.0` if REST is beta-only or unreliable. Verify at Phase 2 start before building the client.
+- **pdf-lib PDF/A-3b compliance:** Run a proof-of-concept at Phase 4 start verifying that pdf-lib can set `pdfaid:part=3` / `pdfaid:conformance=B` XMP metadata, embed an ICC output intent profile, and create AF (Associated Files) entries via low-level `PDFDict`/`PDFArray` APIs. If it cannot, select fallback (Apache PDFBox child process or commercial PDF/A service) before implementation.
+- **XRechnung CIUS version (2026):** The exact minor version and its Schematron rule set must be confirmed from KoSIT artifacts (github.com/itplr-kosit/validator-configuration-xrechnung) at Phase 4 start. The `customizationID` URI is version-specific and must not be hardcoded without a version config.
+- **HMRC developer hub registration timeline:** OAuth app approval can take weeks. Registration must be initiated during Phase 1 planning to avoid blocking Phase 2 delivery.
+- **BACS Standard 18 specification access:** The full spec is not freely available online — Vocalink/Pay.UK charges for it. Must be obtained through the client's BACS bureau or sponsoring bank before Phase 5 implementation begins.
+- **German Steuerberater review:** German tax law phrases must be reviewed by a qualified German tax professional before any German-language invoice or compliance document is generated. Commission this review during Phase 1 and complete before Phase 4 begins.
 
 ## Sources
 
-### Primary (HIGH confidence)
+### Primary (HIGH confidence — codebase analysis)
+- `packages/einvoice/src/types/profile.ts` — EInvoiceProfile interface and capability interface pattern
+- `packages/einvoice/src/engine/pipeline.ts` — existing pipeline structure and Embeddable hook point
+- `packages/einvoice/src/profiles/zatca/signer.ts` — XAdES-BES implementation (RSA-SHA256 adaptation for XRechnung)
+- `packages/einvoice/src/profiles/peppol-ae/generator.ts` — UBL 2.1 generator pattern (direct XRechnung template)
+- `packages/gov-api/src/client.ts` — GovApiClient base class (retry, rate limiting, audit logging)
+- `packages/api/src/services/payment-export.ts` — payment generator pattern (BACS follows Elixir generator)
+- `packages/api/src/services/payment-format-detection.ts` — format detection routing (BACS rule addition point)
+- `packages/validators/src/country-fields.ts` — countryFieldsSchemaMap pattern (GB/DE schemas slot in here)
+- `apps/web/src/i18n/routing.ts` — next-intl locale configuration (add `de` to locales array)
+- `packages/db/prisma/schema/payment.prisma` — PaymentExportFormat enum (add BACS_STD18)
 
-- [tRPC v11 announcement](https://trpc.io/blog/announcing-trpc-v11) — SSE subscriptions, FormData, TanStack Query v5 integration
-- [Better Auth Organization plugin docs](https://better-auth.com/docs/plugins/organization) — multi-tenant RBAC, custom roles, invitation workflow
-- [Inngest pricing + Vercel marketplace](https://www.inngest.com/pricing) / [https://vercel.com/marketplace/inngest](https://vercel.com/marketplace/inngest) — execution model, free tier, step functions
-- [Resend Inbound Emails](https://resend.com/blog/inbound-emails) — Nov 2025 launch, webhook parsing, attachment handling
-- [Cloudflare R2 presigned URLs](https://developers.cloudflare.com/r2/api/s3/presigned-urls/) — S3 compatibility, zero egress
-- [next-intl docs](https://next-intl.dev/) — App Router + Server Components native i18n
-- [nuqs](https://nuqs.dev/) — type-safe URL state, React Advanced 2025 talk
-- [Neon connection pooling docs](https://neon.com/docs/connect/connection-pooling) — serverless connection patterns
-- [Prisma Neon driver adapter](https://www.prisma.io/docs/orm/overview/databases/neon) — GA since Prisma v6.16
-- [QStash + Vercel Next.js](https://upstash.com/docs/qstash/quickstarts/vercel-nextjs) — canonical Vercel async job pattern
-- [Vercel Cron Jobs](https://vercel.com/docs/cron-jobs) — scheduling, best-effort timing
-- [Securing presigned URLs (AWS)](https://aws.amazon.com/blogs/compute/securing-amazon-s3-presigned-urls-for-serverless-applications/) — file security patterns
+### Secondary (MEDIUM confidence — training data, established standards)
+- EN 16931 / XRechnung 3.0.x / ZUGFeRD 2.3.x standard specifications
+- HMRC CEST assessment criteria (5 areas: personal service, control, financial risk, part-and-parcel, mutuality of obligation)
+- DRV Scheinselbstaendigkeit assessment criteria (~20 criteria, 4 categories: integration, independence, personal dependency, economic dependency)
+- BACS Standard 18 fixed-width format specification (VOL1/HDR1/HDR2/UHL1/data/UTL1/EOF structure)
+- HMRC VAT validation REST API (`/organisations/vat/check-vat-number/lookup/{vatNumber}`)
+- IR35 case law: Atholl House Productions Ltd v HMRC [2022] CSIH 3; PGMOL v HMRC [2024] UKSC 29
+- Section 2 SGB VI (5/6 economic dependency rule)
+- Section 14a(5) UStG (reverse charge mandatory phrase: Steuerschuldnerschaft des Leistungsempfaengers)
+- Chapter 10 ITEPA 2003 (UK off-payroll working rules, IR35 reform April 2021)
 
-### Secondary (MEDIUM confidence)
-
-- [Multi-tenant data isolation with PostgreSQL RLS (AWS)](https://aws.amazon.com/blogs/database/multi-tenant-data-isolation-with-postgresql-row-level-security/) — RLS as defense-in-depth rationale
-- [ZenStack Multi-Tenancy Implementation Approaches](https://zenstack.dev/blog/multi-tenant) — Prisma extension pattern for tenant scoping
-- [Inngest vs Trigger.dev comparison](https://nextbuild.co/blog/background-jobs-vercel-inngest-trigger) — architecture trade-offs
-- [Rillion — Invoice Approval Workflow Best Practices](https://www.rillion.com/blog/invoice-approval-workflow-best-practices/) — approval chain patterns, SLA timers
-- [KSeF Poland E-Invoicing](https://www.dudkowiak.com/tax-law-in-poland/e-invoicing-in-poland-ksef/) — timeline, grace period to Dec 2026
-- [ApprovalMax](https://approvalmax.com/) — AP workflow feature benchmarking
-- [Deel](https://www.deel.com/) / [Remote](https://remote.com/) / [SaldeoSMART](https://www.supremis.pl/en/produkt/saldeosmart-en/) — competitor feature matrix
-
-### Tertiary (LOW confidence — needs validation)
-
-- [Resend Inbound attachment volume reliability](https://resend.com/blog/inbound-emails) — new service (Nov 2025), untested at production volume; validate early in Phase 4
-- [Currency handling pitfalls in fintech](https://bitcat.dev/avoid-common-pitfalls-fintech-currency-handling/) — general guidance, not Polish-market specific; validate integer-grosze approach against PL accounting requirements
+### Tertiary (LOW confidence — requires live verification)
+- VIES REST API availability at `https://ec.europa.eu/taxation_customs/vies/rest-api/check-vat-number` in 2026
+- pdf-lib PDF/A-3b Associated Files (AF) mechanism capabilities with current library version
+- Exact XRechnung CIUS version in effect April 2026 and its Schematron rule set from KoSIT
+- HMRC OAuth token type (server-token vs user-restricted) for VAT number check endpoint
+- BACS Standard 18 any 2025/2026 specification updates from Vocalink/Pay.UK
 
 ---
-*Research completed: 2026-03-18*
+*Research completed: 2026-04-12*
 *Ready for roadmap: yes*

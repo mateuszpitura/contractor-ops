@@ -1,85 +1,73 @@
-"use client";
+'use client';
 
-import { useMemo, useCallback } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Bell, BellOff } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { parseAsString, parseAsInteger, useQueryState } from "nuqs";
-import { toast } from "sonner";
-
-import { trpc } from "@/trpc/init";
-import { useRouter } from "@/i18n/navigation";
-import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { Skeleton } from "@/components/ui/skeleton";
-import { cn } from "@/lib/utils";
-import { EmptyState } from "@/components/shared/empty-state";
-import {
-  NotificationItem,
-  getEntityUrl,
-  type NotificationData,
-} from "./notification-item";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Bell } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { parseAsInteger, parseAsString, useQueryState } from 'nuqs';
+import { useCallback, useId, useMemo } from 'react';
+import { toast } from 'sonner';
+import { AnimateIn } from '@/components/shared/animate-in';
+import { EmptyState } from '@/components/shared/empty-state';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Switch } from '@/components/ui/switch';
+import { useRouter } from '@/i18n/navigation';
+import { cn } from '@/lib/utils';
+import { trpc } from '@/trpc/init';
+import type { NotificationData } from './notification-item';
+import { getEntityUrl, NotificationItem } from './notification-item';
 
 // ---------------------------------------------------------------------------
 // Type filter mapping: UI chip value -> notification type(s)
 // ---------------------------------------------------------------------------
 
 type NotificationType =
-  | "APPROVAL_REQUEST"
-  | "APPROVAL_DECISION"
-  | "TASK_ASSIGNED"
-  | "TASK_OVERDUE"
-  | "CONTRACT_EXPIRING"
-  | "INVOICE_RECEIVED";
+  | 'APPROVAL_REQUEST'
+  | 'APPROVAL_DECISION'
+  | 'TASK_ASSIGNED'
+  | 'TASK_OVERDUE'
+  | 'CONTRACT_EXPIRING'
+  | 'INVOICE_RECEIVED';
 
 const TYPE_MAP: Record<string, NotificationType[]> = {
-  approvals: ["APPROVAL_REQUEST", "APPROVAL_DECISION"],
-  tasks: ["TASK_ASSIGNED", "TASK_OVERDUE"],
-  contracts: ["CONTRACT_EXPIRING"],
-  invoices: ["INVOICE_RECEIVED"],
+  approvals: ['APPROVAL_REQUEST', 'APPROVAL_DECISION'],
+  tasks: ['TASK_ASSIGNED', 'TASK_OVERDUE'],
+  contracts: ['CONTRACT_EXPIRING'],
+  invoices: ['INVOICE_RECEIVED'],
 };
 
-const FILTER_KEYS = ["all", "approvals", "tasks", "contracts", "invoices"] as const;
+const FILTER_KEYS = ['all', 'approvals', 'tasks', 'contracts', 'invoices'] as const;
 
 // ---------------------------------------------------------------------------
 // NotificationCenter
 // ---------------------------------------------------------------------------
 
 export function NotificationCenter() {
-  const t = useTranslations("Notifications");
-  const te = useTranslations("EmptyStates");
+  const t = useTranslations('Notifications');
+  const te = useTranslations('EmptyStates');
+  const id = useId();
   const router = useRouter();
   const queryClient = useQueryClient();
 
   // URL state via nuqs
-  const [typeFilter, setTypeFilter] = useQueryState(
-    "type",
-    parseAsString.withDefault("all"),
-  );
-  const [unreadOnly, setUnreadOnly] = useQueryState(
-    "unread",
-    parseAsString.withDefault(""),
-  );
-  const [page, setPage] = useQueryState(
-    "page",
-    parseAsInteger.withDefault(1),
-  );
+  const [typeFilter, setTypeFilter] = useQueryState('type', parseAsString.withDefault('all'));
+  const [unreadOnly, setUnreadOnly] = useQueryState('unread', parseAsString.withDefault(''));
+  const [page, setPage] = useQueryState('page', parseAsInteger.withDefault(1));
 
   // Build query input
   const queryInput = useMemo(() => {
-    const types = typeFilter !== "all" ? TYPE_MAP[typeFilter] : undefined;
+    const types = typeFilter === 'all' ? undefined : TYPE_MAP[typeFilter];
     // The API accepts a single type enum value, not an array.
     // For multi-type filters (e.g. approvals = 2 types), we pass undefined and let
     // the API return all. For single-type filters, we pass the specific type.
-    const type: NotificationType | undefined =
-      types && types.length === 1 ? types[0] : undefined;
+    const type: NotificationType | undefined = types && types.length === 1 ? types[0] : undefined;
 
     return {
       type,
-      unreadOnly: unreadOnly === "true" ? true : undefined,
+      unreadOnly: unreadOnly === 'true' ? true : undefined,
       page,
-      perPage: 10,
+      pageSize: 10,
     };
   }, [typeFilter, unreadOnly, page]);
 
@@ -108,7 +96,7 @@ export function NotificationCenter() {
     trpc.notification.markRead.mutationOptions({
       onSuccess: () => {
         void queryClient.invalidateQueries({
-          queryKey: [["notification"]],
+          queryKey: [['notification']],
         });
       },
     }),
@@ -118,13 +106,13 @@ export function NotificationCenter() {
   const markAllReadMutation = useMutation(
     trpc.notification.markAllRead.mutationOptions({
       onSuccess: () => {
-        toast.success(t("markedAllRead"));
+        toast.success(t('markedAllRead'));
         void queryClient.invalidateQueries({
-          queryKey: [["notification"]],
+          queryKey: [['notification']],
         });
       },
       onError: () => {
-        toast.error(t("errors.failedToMarkRead"));
+        toast.error(t('errors.failedToMarkRead'));
       },
     }),
   );
@@ -150,7 +138,7 @@ export function NotificationCenter() {
 
   const handleUnreadToggle = useCallback(
     (checked: boolean) => {
-      void setUnreadOnly(checked ? "true" : "");
+      void setUnreadOnly(checked ? 'true' : '');
       void setPage(1);
     },
     [setUnreadOnly, setPage],
@@ -162,33 +150,37 @@ export function NotificationCenter() {
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       {/* Page header */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-[20px] font-semibold">{t("title")}</h1>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => markAllReadMutation.mutate()}
-          disabled={unreadCount === 0 || markAllReadMutation.isPending}
-        >
-          {t("markAllRead")}
-        </Button>
-      </div>
+      <AnimateIn delay={0}>
+        <div className="flex items-center justify-between">
+          <h1 className="font-display text-[22px] font-semibold leading-tight tracking-tight">
+            {t('title')}
+          </h1>
+          <Button
+            variant="outline"
+            size="sm"
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+            onClick={() => markAllReadMutation.mutate()}
+            disabled={unreadCount === 0 || markAllReadMutation.isPending}>
+            {t('markAllRead')}
+          </Button>
+        </div>
+      </AnimateIn>
 
       {/* Filter bar */}
       <div className="flex flex-wrap items-center gap-2">
         {/* Type filter chips */}
-        {FILTER_KEYS.map((key) => (
+        {FILTER_KEYS.map(key => (
           <button
             key={key}
             type="button"
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={() => handleFilterChange(key)}
             className={cn(
-              "rounded-full px-3 py-1 text-xs font-medium transition-colors",
+              'rounded-full px-3 py-1 text-xs font-medium transition-colors',
               typeFilter === key
-                ? "bg-primary/10 text-primary"
-                : "bg-muted text-muted-foreground hover:bg-accent",
-            )}
-          >
+                ? 'bg-primary/10 text-primary'
+                : 'bg-muted text-muted-foreground hover:bg-accent',
+            )}>
             {t(`filters.${key}` as Parameters<typeof t>[0])}
           </button>
         ))}
@@ -199,12 +191,12 @@ export function NotificationCenter() {
         {/* Unread only toggle */}
         <div className="flex items-center gap-2">
           <Switch
-            id="unread-only"
-            checked={unreadOnly === "true"}
+            id={`${id}-unread-only`}
+            checked={unreadOnly === 'true'}
             onCheckedChange={handleUnreadToggle}
           />
-          <Label htmlFor="unread-only" className="text-sm">
-            {t("unreadOnly")}
+          <Label htmlFor={`${id}-unread-only`} className="text-sm">
+            {t('unreadOnly')}
           </Label>
         </div>
       </div>
@@ -214,9 +206,9 @@ export function NotificationCenter() {
         <div className="flex flex-col rounded-lg border">
           {Array.from({ length: 6 }).map((_, i) => (
             <div
-              key={i}
-              className="flex items-center gap-3 border-b px-4 py-3 last:border-b-0"
-            >
+              // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
+              key={`skel-${i}`}
+              className="flex items-center gap-3 border-b px-4 py-3 last:border-b-0">
               <Skeleton className="h-8 w-8 rounded-full" />
               <div className="flex flex-1 flex-col gap-1">
                 <Skeleton className="h-3.5 w-40" />
@@ -230,21 +222,16 @@ export function NotificationCenter() {
         /* Empty state - informational only */
         <EmptyState
           icon={Bell}
-          heading={te("notifications.heading")}
-          body={te("notifications.body")}
+          heading={te('notifications.heading')}
+          body={te('notifications.body')}
         />
       ) : (
         <>
           <div className="flex flex-col rounded-lg border">
-            {notifications.map((n) => (
-              <div
-                key={n.id}
-                className="border-b last:border-b-0"
-              >
-                <NotificationItem
-                  notification={n}
-                  onClick={() => handleItemClick(n)}
-                />
+            {notifications.map(n => (
+              <div key={n.id} className="border-b last:border-b-0">
+                {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+                <NotificationItem notification={n} onClick={() => handleItemClick(n)} />
               </div>
             ))}
           </div>
@@ -255,21 +242,21 @@ export function NotificationCenter() {
               <Button
                 variant="outline"
                 size="sm"
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 onClick={() => void setPage(page - 1)}
-                disabled={page <= 1}
-              >
-                {t("pagination.previous")}
+                disabled={page <= 1}>
+                {t('pagination.previous')}
               </Button>
               <span className="text-sm text-muted-foreground">
-                {t("pagination.pageOf", { page, totalPages })}
+                {t('pagination.pageOf', { page, totalPages })}
               </span>
               <Button
                 variant="outline"
                 size="sm"
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 onClick={() => void setPage(page + 1)}
-                disabled={page >= totalPages}
-              >
-                {t("pagination.next")}
+                disabled={page >= totalPages}>
+                {t('pagination.next')}
               </Button>
             </div>
           )}

@@ -1,37 +1,24 @@
-"use client";
+'use client';
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
-  type ColumnDef,
-  type VisibilityState,
-} from "@tanstack/react-table";
-import { useQuery } from "@tanstack/react-query";
-import { Users } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import type { ColumnDef, VisibilityState } from '@tanstack/react-table';
+import { getCoreRowModel, useReactTable } from '@tanstack/react-table';
+import { Loader2, Users } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { DataTableBody } from '@/components/shared/data-table-body';
+import { SortableTableHead } from '@/components/shared/sortable-table-head';
+import { Table, TableHeader, TableRow } from '@/components/ui/table';
+import { trpc } from '@/trpc/init';
+import type { ContractorRow } from './columns';
+import { getColumns } from './columns';
+import { DataTableBulkActions } from './data-table-bulk-actions';
+import { DataTableColumnToggle } from './data-table-column-toggle';
+import { DataTablePagination } from './data-table-pagination';
+import { DataTableToolbar } from './data-table-toolbar';
+import { useContractorFilters } from './use-contractor-filters';
 
-import { trpc } from "@/trpc/init";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-
-import { getColumns, type ContractorRow } from "./columns";
-import { DataTableToolbar } from "./data-table-toolbar";
-import { DataTablePagination } from "./data-table-pagination";
-import { DataTableColumnToggle } from "./data-table-column-toggle";
-import { DataTableBulkActions } from "./data-table-bulk-actions";
-import { useContractorFilters } from "./use-contractor-filters";
-
-const STORAGE_KEY = "contractor-table-columns";
+const STORAGE_KEY = 'contractor-table-columns';
 
 interface ContractorDataTableProps {
   onRowClick: (contractor: ContractorRow) => void;
@@ -49,26 +36,34 @@ export function ContractorDataTable({
   onAddContractor,
   onImport,
 }: ContractorDataTableProps) {
-  const t = useTranslations("Contractors");
+  const t = useTranslations('Contractors');
+  const tAria = useTranslations('Common.aria');
 
   // URL-synced filter state
   const [filters, setFilters] = useContractorFilters();
 
-  // Column visibility from localStorage
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
-    () => {
-      if (typeof window === "undefined") return {};
-      try {
-        const stored = localStorage.getItem(STORAGE_KEY);
-        return stored ? (JSON.parse(stored) as VisibilityState) : {};
-      } catch {
-        return {};
-      }
-    },
-  );
+  // Column visibility — start empty so SSR and client match, then hydrate from localStorage
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
 
-  // Persist column visibility
+  // Hydrate from localStorage after mount
   useEffect(() => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        setColumnVisibility(JSON.parse(stored) as VisibilityState);
+      }
+    } catch {
+      // Ignore localStorage errors
+    }
+  }, []);
+
+  // Persist column visibility changes (skip the initial hydration)
+  const isHydrated = useRef(false);
+  useEffect(() => {
+    if (!isHydrated.current) {
+      isHydrated.current = true;
+      return;
+    }
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(columnVisibility));
     } catch {
@@ -85,19 +80,21 @@ export function ContractorDataTable({
       page: filters.page,
       pageSize: filters.pageSize,
       search: filters.search || undefined,
-      sortBy: (filters.sortBy as "createdAt" | "legalName" | "status" | "lifecycleStage" | "type") || "createdAt",
-      sortOrder: (filters.sortOrder as "asc" | "desc") || "desc",
+      sortBy:
+        (filters.sortBy as 'createdAt' | 'legalName' | 'status' | 'lifecycleStage' | 'type') ||
+        'createdAt',
+      sortOrder: (filters.sortOrder as 'asc' | 'desc') || 'desc',
       filters: {
         lifecycleStage: filters.lifecycleStage.length
-          ? (filters.lifecycleStage as Array<"DRAFT" | "ONBOARDING" | "ACTIVE" | "OFFBOARDING" | "ENDED">)
+          ? (filters.lifecycleStage as Array<
+              'DRAFT' | 'ONBOARDING' | 'ACTIVE' | 'OFFBOARDING' | 'ENDED'
+            >)
           : undefined,
         ownerUserId: filters.owner.length ? filters.owner : undefined,
         primaryTeamId: filters.team.length ? filters.team : undefined,
-        billingModel: filters.billingModel.length
-          ? filters.billingModel
-          : undefined,
+        billingModel: filters.billingModel.length ? filters.billingModel : undefined,
         complianceHealth: filters.health.length
-          ? (filters.health as Array<"green" | "yellow" | "red">)
+          ? (filters.health as Array<'green' | 'yellow' | 'red'>)
           : undefined,
       },
     }),
@@ -105,21 +102,18 @@ export function ContractorDataTable({
   );
 
   // Fetch data
-  const contractorsQuery = useQuery(
-    trpc.contractor.list.queryOptions(queryInput),
-  );
+  const contractorsQuery = useQuery({
+    ...trpc.contractor.list.queryOptions(queryInput),
+    placeholderData: keepPreviousData,
+  });
 
   const data = useMemo(() => {
-    const result = contractorsQuery.data as
-      | { items: ContractorRow[]; total: number }
-      | undefined;
+    const result = contractorsQuery.data as { items: ContractorRow[]; total: number } | undefined;
     return result?.items ?? [];
   }, [contractorsQuery.data]);
 
   const totalRows = useMemo(() => {
-    const result = contractorsQuery.data as
-      | { items: unknown[]; total: number }
-      | undefined;
+    const result = contractorsQuery.data as { items: unknown[]; total: number } | undefined;
     return result?.total ?? 0;
   }, [contractorsQuery.data]);
 
@@ -140,45 +134,50 @@ export function ContractorDataTable({
       sorting: [
         {
           id: filters.sortBy,
-          desc: filters.sortOrder === "desc",
+          desc: filters.sortOrder === 'desc',
         },
       ],
     },
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
-    onSortingChange: (updater) => {
+    onSortingChange: updater => {
       const next =
-        typeof updater === "function"
-          ? updater([
-              { id: filters.sortBy, desc: filters.sortOrder === "desc" },
-            ])
+        typeof updater === 'function'
+          ? updater([{ id: filters.sortBy, desc: filters.sortOrder === 'desc' }])
           : updater;
-      if (next.length > 0) {
+      const first = next[0];
+      if (first) {
         void setFilters({
-          sortBy: next[0]!.id,
-          sortOrder: next[0]!.desc ? "desc" : "asc",
+          sortBy: first.id,
+          sortOrder: first.desc ? 'desc' : 'asc',
           page: 1,
         });
+      } else {
+        // Sort removed — reset to default
+        void setFilters({ sortBy: 'createdAt', sortOrder: 'desc', page: 1 });
       }
     },
+    enableSortingRemoval: true,
     getCoreRowModel: getCoreRowModel(),
     manualPagination: true,
     manualSorting: true,
     manualFiltering: true,
     enableRowSelection: true,
-    getRowId: (row) => row.id,
+    getRowId: row => row.id,
   });
 
   // Filter change handler
   const handleFiltersChange = useCallback(
-    (partial: Partial<{
-      status: string[];
-      lifecycleStage: string[];
-      owner: string[];
-      team: string[];
-      billingModel: string[];
-      health: string[];
-    }>) => {
+    (
+      partial: Partial<{
+        status: string[];
+        lifecycleStage: string[];
+        owner: string[];
+        team: string[];
+        billingModel: string[];
+        health: string[];
+      }>,
+    ) => {
       void setFilters({ ...partial, page: 1 });
     },
     [setFilters],
@@ -208,7 +207,7 @@ export function ContractorDataTable({
   // Clear filters for "no results" CTA
   const clearFilters = useCallback(() => {
     void setFilters({
-      search: "",
+      search: '',
       status: [],
       lifecycleStage: [],
       owner: [],
@@ -219,8 +218,10 @@ export function ContractorDataTable({
     });
   }, [setFilters]);
 
-  const isLoading = contractorsQuery.isLoading;
-  const isSearching = contractorsQuery.isFetching && !isLoading;
+  // isLoading = true only on first mount with no data (shows skeletons)
+  // isRefetching = true when data exists but is being refreshed (shows overlay)
+  const isLoading = contractorsQuery.isPending && !contractorsQuery.data;
+  const isRefetching = contractorsQuery.isFetching && !isLoading;
   const hasFiltersOrSearch =
     filters.search.length > 0 ||
     filters.lifecycleStage.length > 0 ||
@@ -243,7 +244,7 @@ export function ContractorDataTable({
           health: filters.health,
         }}
         onFiltersChange={handleFiltersChange}
-        isSearching={isSearching}
+        isSearching={isRefetching}
         onAddContractor={onAddContractor}
         onImport={onImport}
       />
@@ -252,122 +253,51 @@ export function ContractorDataTable({
       <DataTableBulkActions table={table} />
 
       {/* Table */}
-      <div className="rounded-xl border bg-background">
+      <div className="relative rounded-xl border bg-background">
+        {/* Refetch overlay — shows when data is stale and new data is loading */}
+        {!!isRefetching && (
+          <div className="absolute inset-0 z-10 flex items-start justify-center rounded-xl bg-background/60 pt-20">
+            <Loader2 className="h-5 w-5 animate-spin text-primary" />
+          </div>
+        )}
         <div className="flex items-center justify-end border-b px-4 py-2">
           <DataTableColumnToggle table={table} />
         </div>
 
         <Table>
           <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
+            {table.getHeaderGroups().map(headerGroup => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <TableHead
+                {headerGroup.headers.map(header => (
+                  <SortableTableHead
                     key={header.id}
-                    className="whitespace-nowrap text-[13px]"
-                    style={
-                      header.column.getSize() !== 150
-                        ? { width: header.column.getSize() }
-                        : undefined
-                    }
-                  >
-                    {header.isPlaceholder ? null : header.column.getCanSort() ? (
-                      <button
-                        type="button"
-                        className="flex items-center gap-1 hover:text-foreground"
-                        onClick={header.column.getToggleSortingHandler()}
-                      >
-                        {flexRender(
-                          header.column.columnDef.header,
-                          header.getContext(),
-                        )}
-                      </button>
-                    ) : (
-                      flexRender(
-                        header.column.columnDef.header,
-                        header.getContext(),
-                      )
-                    )}
-                  </TableHead>
+                    header={header}
+                    sortAriaLabel={tAria('sortBy', {
+                      column:
+                        typeof header.column.columnDef.header === 'string'
+                          ? header.column.columnDef.header
+                          : header.id,
+                    })}
+                  />
                 ))}
               </TableRow>
             ))}
           </TableHeader>
-          <TableBody>
-            {isLoading ? (
-              // Skeleton loading rows
-              Array.from({ length: 8 }).map((_, i) => (
-                <TableRow key={`skeleton-${i}`}>
-                  {table
-                    .getVisibleLeafColumns()
-                    .map((col) => (
-                      <TableCell key={col.id}>
-                        <Skeleton className="h-4 w-full max-w-[120px]" />
-                      </TableCell>
-                    ))}
-                </TableRow>
-              ))
-            ) : table.getRowModel().rows.length > 0 ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() ? "selected" : undefined}
-                  className="cursor-pointer"
-                  onClick={() => onRowClick(row.original)}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : hasFiltersOrSearch ? (
-              // No search results
-              <TableRow>
-                <TableCell
-                  colSpan={table.getVisibleLeafColumns().length}
-                  className="py-16 text-center"
-                >
-                  <h3 className="text-[16px] font-medium">
-                    {t("noResults.heading")}
-                  </h3>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {t("noResults.body")}
-                  </p>
-                  <Button
-                    variant="outline"
-                    className="mt-4"
-                    onClick={clearFilters}
-                  >
-                    {t("noResults.cta")}
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ) : (
-              // Empty state
-              <TableRow>
-                <TableCell
-                  colSpan={table.getVisibleLeafColumns().length}
-                  className="py-16 text-center"
-                >
-                  <Users className="mx-auto h-10 w-10 text-muted-foreground/50" />
-                  <h3 className="mt-3 text-[16px] font-medium">
-                    {t("empty.heading")}
-                  </h3>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {t("empty.body")}
-                  </p>
-                  <Button className="mt-4" onClick={onAddContractor}>
-                    {t("empty.cta")}
-                  </Button>
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
+          <DataTableBody
+            table={table}
+            isLoading={isLoading}
+            hasFiltersOrSearch={hasFiltersOrSearch}
+            onRowClick={onRowClick}
+            emptyIcon={<Users className="mx-auto h-10 w-10 text-muted-foreground/50" />}
+            emptyTitle={t('empty.heading')}
+            emptyDescription={t('empty.body')}
+            emptyCta={t('empty.cta')}
+            onEmptyCta={onAddContractor}
+            noResultsTitle={t('noResults.heading')}
+            noResultsDescription={t('noResults.body')}
+            noResultsCta={t('noResults.cta')}
+            onClearFilters={clearFilters}
+          />
         </Table>
 
         {/* Pagination */}

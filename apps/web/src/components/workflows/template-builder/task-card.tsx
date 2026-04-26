@@ -1,47 +1,46 @@
-"use client";
+'use client';
 
-import { useCallback, useState } from "react";
-import { useTranslations } from "next-intl";
-import { useQuery } from "@tanstack/react-query";
-import type { UseFormReturn } from "react-hook-form";
+import { workflowAssignableRoleValues } from '@contractor-ops/validators/roles';
+import { useQuery } from '@tanstack/react-query';
 import {
-  GripVertical,
-  ChevronDown,
-  ChevronUp,
-  FileText,
-  CheckCircle,
-  KeyRound,
   Banknote,
-  Monitor,
+  Bell,
   BookOpen,
   Calendar,
+  CheckCircle,
+  ChevronDown,
+  ChevronUp,
   ClipboardList,
-  Bell,
-} from "lucide-react";
-
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+  FileText,
+  GripVertical,
+  KeyRound,
+  Monitor,
+} from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useCallback, useState } from 'react';
+import type { UseFormReturn } from 'react-hook-form';
+import { JiraTaskConfig } from '@/components/integrations/jira-task-config';
+import { LinearTaskConfig } from '@/components/integrations/linear-task-config';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-
-import { trpc } from "@/trpc/init";
-import { ConditionBuilder, getConditionSummary } from "./condition-builder";
-import type { TemplateFormValues, TaskFormValues } from "./use-template-form";
+} from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { Textarea } from '@/components/ui/textarea';
+import { CalendarTaskConfig } from '@/components/workflow/calendar-task-config';
+import { enumKey } from '@/lib/enum-key';
+import { trpc } from '@/trpc/init';
+import { ConditionBuilder, getConditionSummary } from './condition-builder';
+import type { TaskFormValues, TemplateFormValues } from './use-template-form';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -76,55 +75,40 @@ const TASK_TYPE_ICONS: Record<string, React.ComponentType<{ className?: string }
 };
 
 const TASK_TYPES = [
-  "DOCUMENT_COLLECTION",
-  "APPROVAL",
-  "ACCESS_GRANT",
-  "ACCESS_REVOKE",
-  "FINANCE_SETUP",
-  "EQUIPMENT",
-  "KNOWLEDGE_TRANSFER",
-  "MEETING",
-  "MANUAL",
-  "NOTIFICATION",
+  'DOCUMENT_COLLECTION',
+  'APPROVAL',
+  'ACCESS_GRANT',
+  'ACCESS_REVOKE',
+  'FINANCE_SETUP',
+  'EQUIPMENT',
+  'KNOWLEDGE_TRANSFER',
+  'MEETING',
+  'MANUAL',
+  'NOTIFICATION',
 ] as const;
 
 const ASSIGNEE_MODES = [
-  "FIXED_USER",
-  "ROLE_BASED",
-  "CONTRACTOR_OWNER",
-  "CONTRACT_OWNER",
-  "PROJECT_MANAGER",
+  'FIXED_USER',
+  'ROLE_BASED',
+  'CONTRACTOR_OWNER',
+  'CONTRACT_OWNER',
+  'PROJECT_MANAGER',
 ] as const;
 
-const USER_ROLES = [
-  "ORG_ADMIN",
-  "FINANCE_ADMIN",
-  "OPS_MANAGER",
-  "TEAM_MANAGER",
-  "LEGAL_VIEWER",
-  "IT_ADMIN",
-  "ACCOUNTANT",
-  "READ_ONLY",
-] as const;
+const USER_ROLES = workflowAssignableRoleValues;
 
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
-export function TaskCard({
-  index,
-  onRemove,
-  allTasks,
-  form,
-  dragHandleProps,
-}: TaskCardProps) {
-  const t = useTranslations("Workflows");
+export function TaskCard({ index, onRemove, allTasks, form, dragHandleProps }: TaskCardProps) {
+  const t = useTranslations('Workflows');
   const [isOpen, setIsOpen] = useState(false);
 
   const task = form.watch(`tasks.${index}`);
-  const taskType = task?.taskType ?? "MANUAL";
-  const assigneeMode = task?.assigneeMode ?? "ROLE_BASED";
-  const title = task?.title ?? "";
+  const taskType = task?.taskType ?? 'MANUAL';
+  const assigneeMode = task?.assigneeMode ?? 'ROLE_BASED';
+  const title = task?.title ?? '';
   const conditions = task?.conditions ?? null;
 
   const TypeIcon = TASK_TYPE_ICONS[taskType] ?? ClipboardList;
@@ -132,16 +116,32 @@ export function TaskCard({
   // Fetch users for FIXED_USER mode
   const usersQuery = useQuery({
     ...trpc.user.list.queryOptions(),
-    enabled: assigneeMode === "FIXED_USER",
+    enabled: assigneeMode === 'FIXED_USER',
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const users = (usersQuery.data as any)?.items ?? [];
+  const users = usersQuery.data ?? [];
+
+  const taskTypeItems = TASK_TYPES.map(type => ({
+    value: type,
+    label: t(`taskType.${enumKey(type)}` as Parameters<typeof t>[0]),
+  }));
+
+  const assigneeModeItems = ASSIGNEE_MODES.map(mode => ({
+    value: mode,
+    label: t(`assigneeMode.${enumKey(mode)}` as Parameters<typeof t>[0]),
+  }));
+
+  const userRoleItems = USER_ROLES.map(role => ({
+    value: role,
+    label: role
+      .split('_')
+      .map(w => w.charAt(0) + w.slice(1).toLowerCase())
+      .join(' '),
+  }));
 
   const conditionSummary = getConditionSummary(
     conditions as Parameters<typeof getConditionSummary>[0],
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    t as any,
+    t as (key: string, values?: Record<string, string | number>) => string,
   );
 
   // Dependency options: only tasks with lower sortOrder
@@ -153,8 +153,7 @@ export function TaskCard({
     }));
 
   const handleConditionsChange = useCallback(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (val: any) => {
+    (val: Parameters<typeof getConditionSummary>[0]) => {
       form.setValue(`tasks.${index}.conditions`, val, { shouldDirty: true });
     },
     [form, index],
@@ -164,61 +163,54 @@ export function TaskCard({
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
       <Card className="overflow-hidden">
         {/* Collapsed header */}
-        <div className="flex items-center gap-2 px-3 py-2" style={{ minHeight: 56 }}>
+        <div className="flex items-center gap-2 px-3 py-2">
           {/* Drag handle */}
           <button
             type="button"
             className="flex cursor-grab items-center justify-center text-muted-foreground hover:text-foreground active:cursor-grabbing"
             {...(dragHandleProps?.attributes as React.HTMLAttributes<HTMLButtonElement>)}
-            {...(dragHandleProps?.listeners as React.HTMLAttributes<HTMLButtonElement>)}
-          >
+            {...(dragHandleProps?.listeners as React.HTMLAttributes<HTMLButtonElement>)}>
             <GripVertical className="size-5" />
           </button>
 
           {/* Title + badges */}
           <CollapsibleTrigger className="flex min-w-0 flex-1 items-center gap-2">
-            <span className={`truncate text-sm ${title ? "font-medium" : "text-muted-foreground"}`}>
-              {title || t("untitledTask")}
+            <span className={`truncate text-sm ${title ? 'font-medium' : 'text-muted-foreground'}`}>
+              {title || t('untitledTask')}
             </span>
 
             <Badge variant="secondary" className="shrink-0 gap-1 text-xs">
               <TypeIcon className="size-3" />
-              {t(`taskType_${taskType}`)}
+              {t(`taskType.${enumKey(taskType)}` as Parameters<typeof t>[0])}
             </Badge>
 
-            {task?.assigneeMode && (
+            {!!task?.assigneeMode && (
               <span className="hidden text-xs text-muted-foreground sm:inline">
-                {t(`assigneeMode_${assigneeMode}`)}
+                {t(`assigneeMode.${enumKey(assigneeMode)}` as Parameters<typeof t>[0])}
               </span>
             )}
 
             {task?.dueOffsetDays ? (
               <span className="hidden text-xs text-muted-foreground sm:inline">
-                {task.dueOffsetDays}{t("dueOffsetDays")}
+                {task.dueOffsetDays}
+                {t('dueOffsetDays')}
               </span>
             ) : null}
 
-            {task?.required && (
+            {!!task?.required && (
               <Badge variant="default" className="shrink-0 text-xs">
-                {t("requiredTask")}
+                {t('requiredTask')}
               </Badge>
             )}
 
             {conditionSummary && (
-              <Badge
-                variant="outline"
-                className="max-w-[240px] shrink-0 truncate text-xs"
-              >
+              <Badge variant="outline" className="max-w-[240px] shrink-0 truncate text-xs">
                 {conditionSummary}
               </Badge>
             )}
 
-            <span className="ml-auto shrink-0 text-muted-foreground">
-              {isOpen ? (
-                <ChevronUp className="size-4" />
-              ) : (
-                <ChevronDown className="size-4" />
-              )}
+            <span className="ms-auto shrink-0 text-muted-foreground">
+              {isOpen ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
             </span>
           </CollapsibleTrigger>
         </div>
@@ -228,35 +220,36 @@ export function TaskCard({
           <div className="space-y-4 border-t px-4 py-4">
             {/* Title */}
             <div className="space-y-1.5">
-              <Label htmlFor={`task-title-${index}`}>{t("taskTitle")}</Label>
+              <Label htmlFor={`task-title-${index}`}>{t('taskTitle')}</Label>
               <Input
                 id={`task-title-${index}`}
-                placeholder={t("taskTitlePlaceholder")}
+                placeholder={t('taskTitlePlaceholder')}
                 {...form.register(`tasks.${index}.title`)}
               />
             </div>
 
             {/* Task type */}
             <div className="space-y-1.5">
-              <Label>{t("taskType")}</Label>
+              <Label htmlFor={`task-type-${index}`}>{t('taskTypeLabel')}</Label>
               <Select
                 value={taskType}
-                onValueChange={(val) =>
+                // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
+                onValueChange={val =>
                   form.setValue(`tasks.${index}.taskType`, val as typeof taskType, {
                     shouldDirty: true,
                   })
                 }
-              >
-                <SelectTrigger className="w-full">
+                items={taskTypeItems}>
+                <SelectTrigger id={`task-type-${index}`} className="w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {TASK_TYPES.map((type) => {
-                    const Icon = TASK_TYPE_ICONS[type] ?? ClipboardList;
+                  {taskTypeItems.map(item => {
+                    const Icon = TASK_TYPE_ICONS[item.value] ?? ClipboardList;
                     return (
-                      <SelectItem key={type} value={type}>
-                        <Icon className="mr-1.5 inline-block size-3.5" />
-                        {t(`taskType_${type}`)}
+                      <SelectItem key={item.value} value={item.value}>
+                        <Icon className="me-1.5 inline-block size-3.5" />
+                        {item.label}
                       </SelectItem>
                     );
                   })}
@@ -266,10 +259,10 @@ export function TaskCard({
 
             {/* Description */}
             <div className="space-y-1.5">
-              <Label htmlFor={`task-desc-${index}`}>{t("taskDescription")}</Label>
+              <Label htmlFor={`task-desc-${index}`}>{t('taskDescription')}</Label>
               <Textarea
                 id={`task-desc-${index}`}
-                placeholder={t("descriptionPlaceholder")}
+                placeholder={t('descriptionPlaceholder')}
                 rows={2}
                 {...form.register(`tasks.${index}.description`)}
               />
@@ -277,24 +270,23 @@ export function TaskCard({
 
             {/* Assignee mode */}
             <div className="space-y-1.5">
-              <Label>{t("assignedTo")}</Label>
+              <Label htmlFor={`task-assignee-${index}`}>{t('assignedTo')}</Label>
               <Select
                 value={assigneeMode}
-                onValueChange={(val) =>
-                  form.setValue(
-                    `tasks.${index}.assigneeMode`,
-                    val as typeof assigneeMode,
-                    { shouldDirty: true },
-                  )
+                // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
+                onValueChange={val =>
+                  form.setValue(`tasks.${index}.assigneeMode`, val as typeof assigneeMode, {
+                    shouldDirty: true,
+                  })
                 }
-              >
-                <SelectTrigger className="w-full">
+                items={assigneeModeItems}>
+                <SelectTrigger id={`task-assignee-${index}`} className="w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {ASSIGNEE_MODES.map((mode) => (
-                    <SelectItem key={mode} value={mode}>
-                      {t(`assigneeMode_${mode}`)}
+                  {assigneeModeItems.map(item => (
+                    <SelectItem key={item.value} value={item.value}>
+                      {item.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -302,26 +294,27 @@ export function TaskCard({
             </div>
 
             {/* Conditional: Role select (when ROLE_BASED) */}
-            {assigneeMode === "ROLE_BASED" && (
+            {assigneeMode === 'ROLE_BASED' && (
               <div className="space-y-1.5">
-                <Label>{t("roleField")}</Label>
+                <Label htmlFor={`task-role-${index}`}>{t('roleField')}</Label>
                 <Select
-                  value={task?.assigneeRole ?? ""}
-                  onValueChange={(val) =>
+                  value={task?.assigneeRole ?? ''}
+                  // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
+                  onValueChange={val =>
                     form.setValue(
                       `tasks.${index}.assigneeRole`,
                       val as (typeof USER_ROLES)[number],
                       { shouldDirty: true },
                     )
                   }
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder={t("rolePlaceholder")} />
+                  items={userRoleItems}>
+                  <SelectTrigger id={`task-role-${index}`} className="w-full">
+                    <SelectValue placeholder={t('rolePlaceholder')} />
                   </SelectTrigger>
                   <SelectContent>
-                    {USER_ROLES.map((role) => (
-                      <SelectItem key={role} value={role}>
-                        {role}
+                    {userRoleItems.map(item => (
+                      <SelectItem key={item.value} value={item.value}>
+                        {item.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -330,37 +323,48 @@ export function TaskCard({
             )}
 
             {/* Conditional: User select (when FIXED_USER) */}
-            {assigneeMode === "FIXED_USER" && (
+            {assigneeMode === 'FIXED_USER' && (
               <div className="space-y-1.5">
-                <Label>{t("userField")}</Label>
-                <Select
-                  value={task?.assigneeUserId ?? ""}
-                  onValueChange={(val) =>
-                    form.setValue(`tasks.${index}.assigneeUserId`, val as string, {
-                      shouldDirty: true,
-                    })
-                  }
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder={t("userPlaceholder")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                    {users.map((user: any) => (
-                      <SelectItem key={user.id} value={user.id}>
-                        {user.name ?? user.email}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label htmlFor={`task-user-${index}`}>{t('userField')}</Label>
+                {(() => {
+                  const userItems = users.map(user => ({
+                    value: user.id as string,
+                    label: ((user.name ?? user.email) as string) ?? '',
+                  }));
+                  return (
+                    <Select
+                      value={task?.assigneeUserId ?? ''}
+                      // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
+                      onValueChange={val =>
+                        form.setValue(`tasks.${index}.assigneeUserId`, val as string, {
+                          shouldDirty: true,
+                        })
+                      }
+                      items={userItems}>
+                      <SelectTrigger id={`task-user-${index}`} className="w-full">
+                        <SelectValue placeholder={t('userPlaceholder')} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {userItems.map((item: { value: string; label: string }) => (
+                          <SelectItem key={item.value} value={item.value}>
+                            {item.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  );
+                })()}
               </div>
             )}
 
             {/* Due offset */}
             <div className="space-y-1.5">
-              <Label>{t("dueOffset")}</Label>
-              <div className="flex items-center gap-2">
+              <Label id={`task-due-label-${index}`}>{t('dueOffset')}</Label>
+              <fieldset
+                className="flex items-center gap-2"
+                aria-labelledby={`task-due-label-${index}`}>
                 <Input
+                  id={`task-due-days-${index}`}
                   type="number"
                   min={0}
                   className="w-24"
@@ -368,11 +372,11 @@ export function TaskCard({
                   {...form.register(`tasks.${index}.dueOffsetDays`, {
                     valueAsNumber: true,
                   })}
+                  aria-label={t('dueOffsetDays')}
                 />
-                <span className="text-sm text-muted-foreground">
-                  {t("dueOffsetDays")}
-                </span>
+                <span className="text-sm text-muted-foreground">{t('dueOffsetDays')}</span>
                 <Input
+                  id={`task-due-hours-${index}`}
                   type="number"
                   min={0}
                   className="w-24"
@@ -380,78 +384,92 @@ export function TaskCard({
                   {...form.register(`tasks.${index}.dueOffsetHours`, {
                     valueAsNumber: true,
                   })}
+                  aria-label={t('dueOffsetHours')}
                 />
-                <span className="text-sm text-muted-foreground">
-                  {t("dueOffsetHours")}
-                </span>
-              </div>
+                <span className="text-sm text-muted-foreground">{t('dueOffsetHours')}</span>
+              </fieldset>
             </div>
 
             {/* Required toggle */}
             <div className="flex items-center gap-3">
               <Switch
+                id={`task-required-${index}`}
                 checked={task?.required ?? false}
-                onCheckedChange={(checked) =>
+                // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
+                onCheckedChange={checked =>
                   form.setValue(`tasks.${index}.required`, !!checked, {
                     shouldDirty: true,
                   })
                 }
               />
-              <Label>{t("requiredTask")}</Label>
+              <Label htmlFor={`task-required-${index}`}>{t('requiredTask')}</Label>
             </div>
 
             {/* Dependency */}
             <div className="space-y-1.5">
-              <Label>{t("dependsOn")}</Label>
-              <Select
-                value={task?.dependsOnTaskTemplateId ?? ""}
-                onValueChange={(val) =>
-                  form.setValue(
-                    `tasks.${index}.dependsOnTaskTemplateId`,
-                    val === "__none__" ? undefined : (val as string),
-                    { shouldDirty: true },
-                  )
-                }
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder={t("dependsOnPlaceholder")} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="__none__">{t("noDependency")}</SelectItem>
-                  {dependencyOptions.map((opt) => (
-                    <SelectItem key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label htmlFor={`task-depends-${index}`}>{t('dependsOn')}</Label>
+              {(() => {
+                const depItems = [
+                  { value: '__none__', label: t('noDependency') },
+                  ...dependencyOptions,
+                ];
+                return (
+                  <Select
+                    value={task?.dependsOnTaskTemplateId ?? ''}
+                    // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
+                    onValueChange={val =>
+                      form.setValue(
+                        `tasks.${index}.dependsOnTaskTemplateId`,
+                        val === '__none__' ? undefined : (val as string),
+                        { shouldDirty: true },
+                      )
+                    }
+                    items={depItems}>
+                    <SelectTrigger id={`task-depends-${index}`} className="w-full">
+                      <SelectValue placeholder={t('dependsOnPlaceholder')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {depItems.map(item => (
+                        <SelectItem key={item.value} value={item.value}>
+                          {item.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                );
+              })()}
             </div>
 
             {/* Conditions */}
             <div className="space-y-1.5">
-              <Label>{t("conditions")}</Label>
+              <Label>{t('conditions')}</Label>
               <ConditionBuilder
-                value={conditions as Parameters<typeof ConditionBuilder>[0]["value"]}
+                value={conditions as Parameters<typeof ConditionBuilder>[0]['value']}
                 onChange={handleConditionsChange}
               />
             </div>
+
+            {/* Jira integration — only for saved task templates */}
+            {!!task?.id && <JiraTaskConfig taskTemplateId={task.id} />}
+
+            {/* Linear integration — only for saved task templates (D-05) */}
+            {!!task?.id && <LinearTaskConfig taskTemplateId={task.id} />}
+
+            {/* Calendar integration — only for saved task templates */}
+            {!!task?.id && <CalendarTaskConfig taskTemplateId={task.id} />}
 
             {/* Actions */}
             <div className="flex items-center justify-between border-t pt-3">
               <button
                 type="button"
                 className="text-sm text-destructive hover:underline"
-                onClick={() => onRemove(index)}
-              >
-                {t("removeTask")}
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+                onClick={() => onRemove(index)}>
+                {t('removeTask')}
               </button>
-              <Button
-                type="button"
-                variant="secondary"
-                size="sm"
-                onClick={() => setIsOpen(false)}
-              >
-                {t("doneEditing")}
+              {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+              <Button type="button" variant="secondary" size="sm" onClick={() => setIsOpen(false)}>
+                {t('doneEditing')}
               </Button>
             </div>
           </div>

@@ -3,16 +3,18 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "files": [
-    "dist"
-  ],
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "default": "./dist/index.js"
+      "types": "./src/index.ts",
+      "import": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./services/app-email": {
+      "types": "./src/services/app-email.ts",
+      "import": "./src/services/app-email.ts",
+      "default": "./src/services/app-email.ts"
     },
     "./services/slack-client": {
       "types": "./src/services/slack-client.ts",
@@ -28,33 +30,185 @@
       "types": "./src/services/notification-service.ts",
       "import": "./src/services/notification-service.ts",
       "default": "./src/services/notification-service.ts"
+    },
+    "./services/portal-session": {
+      "types": "./src/services/portal-session.ts",
+      "import": "./src/services/portal-session.ts",
+      "default": "./src/services/portal-session.ts"
+    },
+    "./services/r2": {
+      "types": "./src/services/r2.ts",
+      "import": "./src/services/r2.ts",
+      "default": "./src/services/r2.ts"
+    },
+    "./services/esign-orchestrator": {
+      "types": "./src/services/esign-orchestrator.ts",
+      "import": "./src/services/esign-orchestrator.ts",
+      "default": "./src/services/esign-orchestrator.ts"
+    },
+    "./services/ocr-extraction": {
+      "types": "./src/services/ocr-extraction.ts",
+      "import": "./src/services/ocr-extraction.ts",
+      "default": "./src/services/ocr-extraction.ts"
+    },
+    "./services/late-payment-claim-pdf": {
+      "types": "./src/services/late-payment-claim-pdf.ts",
+      "import": "./src/services/late-payment-claim-pdf.ts",
+      "default": "./src/services/late-payment-claim-pdf.ts"
+    },
+    "./services/stripe-client": {
+      "types": "./src/services/stripe-client.ts",
+      "import": "./src/services/stripe-client.ts",
+      "default": "./src/services/stripe-client.ts"
+    },
+    "./services/billing-constants": {
+      "types": "./src/services/billing-constants.ts",
+      "import": "./src/services/billing-constants.ts",
+      "default": "./src/services/billing-constants.ts"
+    },
+    "./services/billing-webhook": {
+      "types": "./src/services/billing-webhook.ts",
+      "import": "./src/services/billing-webhook.ts",
+      "default": "./src/services/billing-webhook.ts"
+    },
+    "./services/jira-webhook-handler": {
+      "types": "./src/services/jira-webhook-handler.ts",
+      "import": "./src/services/jira-webhook-handler.ts",
+      "default": "./src/services/jira-webhook-handler.ts"
+    },
+    "./services/resend-email-intake": {
+      "types": "./src/services/resend-email-intake.ts",
+      "import": "./src/services/resend-email-intake.ts",
+      "default": "./src/services/resend-email-intake.ts"
+    },
+    "./services/linear-webhook-handler": {
+      "types": "./src/services/linear-webhook-handler.ts",
+      "import": "./src/services/linear-webhook-handler.ts",
+      "default": "./src/services/linear-webhook-handler.ts"
+    },
+    "./services/google-workspace-sync-orchestrator": {
+      "types": "./src/services/google-workspace-sync-orchestrator.ts",
+      "import": "./src/services/google-workspace-sync-orchestrator.ts",
+      "default": "./src/services/google-workspace-sync-orchestrator.ts"
+    },
+    "./services/ksef-sync-orchestrator": {
+      "types": "./src/services/ksef-sync-orchestrator.ts",
+      "import": "./src/services/ksef-sync-orchestrator.ts",
+      "default": "./src/services/ksef-sync-orchestrator.ts"
+    },
+    "./services/peppol-orchestrator": {
+      "types": "./src/services/peppol-orchestrator.ts",
+      "import": "./src/services/peppol-orchestrator.ts",
+      "default": "./src/services/peppol-orchestrator.ts"
+    },
+    "./services/cron-monitor": {
+      "types": "./src/services/cron-monitor.ts",
+      "import": "./src/services/cron-monitor.ts",
+      "default": "./src/services/cron-monitor.ts"
+    },
+    "./services/teams/teams-bot-handler": {
+      "types": "./src/services/teams/teams-bot-handler.ts",
+      "import": "./src/services/teams/teams-bot-handler.ts",
+      "default": "./src/services/teams/teams-bot-handler.ts"
+    },
+    "./services/courier/inpost-polling-service": {
+      "types": "./src/services/courier/inpost-polling-service.ts",
+      "import": "./src/services/courier/inpost-polling-service.ts",
+      "default": "./src/services/courier/inpost-polling-service.ts"
+    },
+    "./services/courier/dpd-polling-service": {
+      "types": "./src/services/courier/dpd-polling-service.ts",
+      "import": "./src/services/courier/dpd-polling-service.ts",
+      "default": "./src/services/courier/dpd-polling-service.ts"
+    },
+    "./services/courier/ups-polling-service": {
+      "types": "./src/services/courier/ups-polling-service.ts",
+      "import": "./src/services/courier/ups-polling-service.ts",
+      "default": "./src/services/courier/ups-polling-service.ts"
+    },
+    "./services/courier/inpost-webhook-handler": {
+      "types": "./src/services/courier/inpost-webhook-handler.ts",
+      "import": "./src/services/courier/inpost-webhook-handler.ts",
+      "default": "./src/services/courier/inpost-webhook-handler.ts"
+    },
+    "./services/economic-dependency-scan": {
+      "types": "./src/services/economic-dependency-scan.ts",
+      "import": "./src/services/economic-dependency-scan.ts",
+      "default": "./src/services/economic-dependency-scan.ts"
+    },
+    "./services/rbac-recipients": {
+      "types": "./src/services/rbac-recipients.ts",
+      "import": "./src/services/rbac-recipients.ts",
+      "default": "./src/services/rbac-recipients.ts"
+    },
+    "./services/audit-writer": {
+      "types": "./src/services/audit-writer.ts",
+      "import": "./src/services/audit-writer.ts",
+      "default": "./src/services/audit-writer.ts"
+    },
+    "./services/reassessment-trigger-scan": {
+      "types": "./src/services/reassessment-trigger-scan.ts",
+      "import": "./src/services/reassessment-trigger-scan.ts",
+      "default": "./src/services/reassessment-trigger-scan.ts"
+    },
+    "./schemas/reassessment-trigger-reason": {
+      "types": "./src/schemas/reassessment-trigger-reason.ts",
+      "import": "./src/schemas/reassessment-trigger-reason.ts",
+      "default": "./src/schemas/reassessment-trigger-reason.ts"
     }
   },
   "scripts": {
     "build": "tsc",
-    "test": "vitest run"
+    "test": "vitest run",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1029.0",
+    "@aws-sdk/s3-request-presigner": "^3.1029.0",
+    "@azure/identity": "^4.13.1",
+    "@react-pdf/renderer": "^4.4.1",
     "@contractor-ops/auth": "workspace:*",
+    "@contractor-ops/classification": "workspace:*",
     "@contractor-ops/db": "workspace:*",
+    "@contractor-ops/einvoice": "workspace:*",
+    "@contractor-ops/feature-flags": "workspace:*",
+    "@contractor-ops/gov-api": "workspace:*",
+    "@contractor-ops/integrations": "workspace:*",
+    "@contractor-ops/logger": "workspace:*",
+    "@contractor-ops/secrets": "workspace:*",
+    "@contractor-ops/shared": "workspace:*",
     "@contractor-ops/validators": "workspace:*",
-    "@react-email/components": "^1.0.10",
+    "@microsoft/microsoft-graph-client": "^3.0.7",
+    "@react-email/components": "^1.0.12",
+    "@react-email/render": "^1.0.12",
+    "@sentry/nextjs": "^9.47.1",
     "@slack/web-api": "^7.15.0",
-    "@trpc/server": "^11.0.0",
+    "@trpc/server": "^11.16.0",
+    "@upstash/ratelimit": "^2.0.8",
+    "@upstash/redis": "^1.37.0",
     "bir1": "^4.1.1",
+    "botbuilder": "^4.23.3",
     "clamscan": "^2.4.0",
-    "file-type": "^21.3.3",
+    "exceljs": "^4.4.0",
+    "file-type": "^21.3.4",
     "mt940js": "^1.3.5",
-    "react": "^19.0.0",
+    "nodemailer": "^6.10.1",
+    "react": "^19.2.5",
     "resend": "^4.8.0",
-    "superjson": "^2.2.0",
+    "stripe": "^21.0.1",
+    "superjson": "^2.2.6",
     "xlsx": "^0.18.5",
-    "zod": "^3.23.0"
+    "zod": "^3.25.76"
   },
   "devDependencies": {
-    "@prisma/client": "^7.5.0",
-    "@types/react": "^19.0.0",
-    "typescript": "^5.7.0",
-    "vitest": "^4.1.0"
+    "@contractor-ops/test-utils": "workspace:*",
+    "@prisma/client": "^7.7.0",
+    "@types/nodemailer": "^6.4.17",
+    "@types/react": "^19.2.14",
+    "@vitest/coverage-v8": "^4.1.4",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.4"
   }
 }

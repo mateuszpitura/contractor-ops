@@ -1,24 +1,25 @@
-"use client";
+'use client';
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
-import { parseAsString, useQueryState } from "nuqs";
-import { Search, Download, Loader2 } from "lucide-react";
-import { toast } from "sonner";
-
-import { trpc } from "@/trpc/init";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
+import { keepPreviousData, useMutation, useQuery } from '@tanstack/react-query';
+import { Download, Loader2, Search } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { parseAsString, useQueryState } from 'nuqs';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { AuditLogTable, type AuditLogEntry } from "./audit-log-table";
+} from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
+import { enumKey } from '@/lib/enum-key';
+import { trpc } from '@/trpc/init';
+import type { AuditLogEntry } from './audit-log-table';
+import { AuditLogTable } from './audit-log-table';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -28,30 +29,30 @@ const PAGE_SIZE = 25;
 const DEBOUNCE_MS = 300;
 
 const ACTION_OPTIONS = [
-  "CREATE",
-  "UPDATE",
-  "DELETE",
-  "APPROVE",
-  "REJECT",
-  "SUBMIT",
-  "EXPORT",
-  "INVITE",
-  "DEACTIVATE",
-  "LOGIN",
+  'CREATE',
+  'UPDATE',
+  'DELETE',
+  'APPROVE',
+  'REJECT',
+  'SUBMIT',
+  'EXPORT',
+  'INVITE',
+  'DEACTIVATE',
+  'LOGIN',
 ] as const;
 
 const RESOURCE_TYPE_OPTIONS = [
-  "ORGANIZATION",
-  "CONTRACTOR",
-  "CONTRACT",
-  "DOCUMENT",
-  "INVOICE",
-  "WORKFLOW_RUN",
-  "WORKFLOW_TASK_RUN",
-  "PAYMENT_RUN",
-  "PROJECT",
-  "TEAM",
-  "APPROVAL_FLOW",
+  'ORGANIZATION',
+  'CONTRACTOR',
+  'CONTRACT',
+  'DOCUMENT',
+  'INVOICE',
+  'WORKFLOW_RUN',
+  'WORKFLOW_TASK_RUN',
+  'PAYMENT_RUN',
+  'PROJECT',
+  'TEAM',
+  'APPROVAL_FLOW',
 ] as const;
 
 // ---------------------------------------------------------------------------
@@ -65,44 +66,27 @@ const RESOURCE_TYPE_OPTIONS = [
  * All filter state synced to URL via nuqs for deep-linking.
  */
 export function AuditLogTab() {
-  const t = useTranslations("Settings.auditLog");
+  const t = useTranslations('Settings.auditLog');
+  const tAria = useTranslations('Common.aria');
 
   // ---------------------------------------------------------------------------
   // URL state (nuqs)
   // ---------------------------------------------------------------------------
 
-  const [search, setSearch] = useQueryState(
-    "auditSearch",
-    parseAsString.withDefault(""),
-  );
-  const [actorId, setActorId] = useQueryState(
-    "actorId",
-    parseAsString.withDefault(""),
-  );
+  const [search, setSearch] = useQueryState('auditSearch', parseAsString.withDefault(''));
+  const [actorId, setActorId] = useQueryState('actorId', parseAsString.withDefault(''));
   const [actionFilter, setActionFilter] = useQueryState(
-    "actionFilter",
-    parseAsString.withDefault(""),
+    'actionFilter',
+    parseAsString.withDefault(''),
   );
   const [resourceType, setResourceType] = useQueryState(
-    "resourceType",
-    parseAsString.withDefault(""),
+    'resourceType',
+    parseAsString.withDefault(''),
   );
-  const [dateFrom, setDateFrom] = useQueryState(
-    "dateFrom",
-    parseAsString.withDefault(""),
-  );
-  const [dateTo, setDateTo] = useQueryState(
-    "dateTo",
-    parseAsString.withDefault(""),
-  );
-  const [auditPage, setAuditPage] = useQueryState(
-    "auditPage",
-    parseAsString.withDefault("1"),
-  );
-  const [auditSort, setAuditSort] = useQueryState(
-    "auditSort",
-    parseAsString.withDefault("desc"),
-  );
+  const [dateFrom, setDateFrom] = useQueryState('dateFrom', parseAsString.withDefault(''));
+  const [dateTo, setDateTo] = useQueryState('dateTo', parseAsString.withDefault(''));
+  const [auditPage, setAuditPage] = useQueryState('auditPage', parseAsString.withDefault('1'));
+  const [auditSort, setAuditSort] = useQueryState('auditSort', parseAsString.withDefault('desc'));
 
   // ---------------------------------------------------------------------------
   // Debounced search
@@ -113,11 +97,11 @@ export function AuditLogTab() {
   useEffect(() => {
     const timer = setTimeout(() => {
       void setSearch(localSearch || null);
-      void setAuditPage("1");
+      void setAuditPage('1');
     }, DEBOUNCE_MS);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [localSearch]);
+  }, [localSearch, setSearch, setAuditPage]);
 
   // Sync URL -> local on external change
   useEffect(() => {
@@ -140,21 +124,15 @@ export function AuditLogTab() {
       resourceType: resourceType || undefined,
       dateFrom: dateFrom || undefined,
       dateTo: dateTo || undefined,
-      sortOrder: (auditSort as "asc" | "desc") || "desc",
+      sortOrder: (auditSort as 'asc' | 'desc') || 'desc',
     }),
-    [
-      currentPage,
-      search,
-      actorId,
-      actionFilter,
-      resourceType,
-      dateFrom,
-      dateTo,
-      auditSort,
-    ],
+    [currentPage, search, actorId, actionFilter, resourceType, dateFrom, dateTo, auditSort],
   );
 
-  const listQuery = useQuery(trpc.audit.list.queryOptions(queryInput));
+  const listQuery = useQuery({
+    ...trpc.audit.list.queryOptions(queryInput),
+    placeholderData: keepPreviousData,
+  });
   const actorsQuery = useQuery(trpc.audit.actors.queryOptions());
   const exportMutation = useMutation(trpc.audit.export.mutationOptions());
 
@@ -168,7 +146,7 @@ export function AuditLogTab() {
   const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>({});
 
   const handleToggleRow = useCallback((id: string) => {
-    setExpandedRows((prev) => ({
+    setExpandedRows(prev => ({
       ...prev,
       [id]: !prev[id],
     }));
@@ -190,7 +168,7 @@ export function AuditLogTab() {
   // ---------------------------------------------------------------------------
 
   const handleSortOrderChange = useCallback(
-    (order: "asc" | "desc") => {
+    (order: 'asc' | 'desc') => {
       void setAuditSort(order);
     },
     [setAuditSort],
@@ -211,7 +189,7 @@ export function AuditLogTab() {
         dateTo: dateTo || undefined,
       },
       {
-        onSuccess: (result) => {
+        onSuccess: result => {
           // base64 -> Blob -> download
           const raw = atob(result.data);
           const bytes = new Uint8Array(raw.length);
@@ -220,7 +198,7 @@ export function AuditLogTab() {
           }
           const blob = new Blob([bytes], { type: result.mimeType });
           const url = URL.createObjectURL(blob);
-          const a = document.createElement("a");
+          const a = document.createElement('a');
           a.href = url;
           a.download = result.filename;
           document.body.appendChild(a);
@@ -228,9 +206,7 @@ export function AuditLogTab() {
           document.body.removeChild(a);
           URL.revokeObjectURL(url);
 
-          toast.success(
-            t("exportToast", { count: totalCount }),
-          );
+          toast.success(t('exportToast', { count: totalCount }));
         },
       },
     );
@@ -252,14 +228,17 @@ export function AuditLogTab() {
 
   const actorOptions = useMemo(() => {
     const actors = actorsQuery.data ?? [];
-    return actors.map((a) => ({ id: a.id, name: a.name }));
+    return actors.map(a => ({ id: a.id, name: a.name }));
   }, [actorsQuery.data]);
 
   // ---------------------------------------------------------------------------
   // Loading skeleton
   // ---------------------------------------------------------------------------
 
-  if (listQuery.isLoading) {
+  const isLoading = listQuery.isPending && !listQuery.data;
+  const isRefetching = listQuery.isFetching && !isLoading;
+
+  if (isLoading) {
     return (
       <div className="space-y-4">
         <div className="flex items-center gap-3">
@@ -276,11 +255,14 @@ export function AuditLogTab() {
           totalCount={0}
           page={1}
           pageSize={PAGE_SIZE}
-          onPageChange={() => {}}
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+          onPageChange={() => undefined}
           sortOrder="desc"
-          onSortOrderChange={() => {}}
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+          onSortOrderChange={() => undefined}
           expandedRows={{}}
-          onToggleRow={() => {}}
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+          onToggleRow={() => undefined}
           isLoading
         />
       </div>
@@ -296,25 +278,25 @@ export function AuditLogTab() {
       {/* Search + Export */}
       <div className="flex items-center gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={localSearch}
-            onChange={(e) => setLocalSearch(e.target.value)}
-            placeholder={t("searchPlaceholder")}
-            className="pl-9"
+            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
+            onChange={e => setLocalSearch(e.target.value)}
+            placeholder={t('searchPlaceholder')}
+            className="ps-9"
           />
         </div>
         <Button
           variant="outline"
           onClick={handleExport}
-          disabled={exportMutation.isPending || totalCount === 0}
-        >
+          disabled={exportMutation.isPending || totalCount === 0}>
           {exportMutation.isPending ? (
-            <Loader2 className="mr-2 size-4 animate-spin" />
+            <Loader2 className="me-2 size-4 animate-spin" />
           ) : (
-            <Download className="mr-2 size-4" />
+            <Download className="me-2 size-4" />
           )}
-          {t("exportCta")}
+          {t('exportCta')}
         </Button>
       </div>
 
@@ -323,17 +305,17 @@ export function AuditLogTab() {
         {/* Actor filter */}
         <Select
           value={actorId}
-          onValueChange={(val) => {
+          // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
+          onValueChange={val => {
             void setActorId(val || null);
-            void setAuditPage("1");
-          }}
-        >
+            void setAuditPage('1');
+          }}>
           <SelectTrigger className="w-44">
-            <SelectValue placeholder={t("filterActorAll")} />
+            <SelectValue placeholder={t('filterActorAll')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">{t("filterActorAll")}</SelectItem>
-            {actorOptions.map((actor) => (
+            <SelectItem value="">{t('filterActorAll')}</SelectItem>
+            {actorOptions.map(actor => (
               <SelectItem key={actor.id} value={actor.id}>
                 {actor.name}
               </SelectItem>
@@ -344,19 +326,19 @@ export function AuditLogTab() {
         {/* Action filter */}
         <Select
           value={actionFilter}
-          onValueChange={(val) => {
+          // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
+          onValueChange={val => {
             void setActionFilter(val || null);
-            void setAuditPage("1");
-          }}
-        >
+            void setAuditPage('1');
+          }}>
           <SelectTrigger className="w-44">
-            <SelectValue placeholder={t("filterActionAll")} />
+            <SelectValue placeholder={t('filterActionAll')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">{t("filterActionAll")}</SelectItem>
-            {ACTION_OPTIONS.map((action) => (
+            <SelectItem value="">{t('filterActionAll')}</SelectItem>
+            {ACTION_OPTIONS.map(action => (
               <SelectItem key={action} value={action}>
-                {t(`actions.${action}` as Parameters<typeof t>[0])}
+                {t(`actions.${enumKey(action)}` as Parameters<typeof t>[0])}
               </SelectItem>
             ))}
           </SelectContent>
@@ -365,19 +347,19 @@ export function AuditLogTab() {
         {/* Resource type filter */}
         <Select
           value={resourceType}
-          onValueChange={(val) => {
+          // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
+          onValueChange={val => {
             void setResourceType(val || null);
-            void setAuditPage("1");
-          }}
-        >
+            void setAuditPage('1');
+          }}>
           <SelectTrigger className="w-44">
-            <SelectValue placeholder={t("filterResourceAll")} />
+            <SelectValue placeholder={t('filterResourceAll')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">{t("filterResourceAll")}</SelectItem>
-            {RESOURCE_TYPE_OPTIONS.map((rt) => (
+            <SelectItem value="">{t('filterResourceAll')}</SelectItem>
+            {RESOURCE_TYPE_OPTIONS.map(rt => (
               <SelectItem key={rt} value={rt}>
-                {t(`resources.${rt}` as Parameters<typeof t>[0])}
+                {t(`resources.${enumKey(rt)}` as Parameters<typeof t>[0])}
               </SelectItem>
             ))}
           </SelectContent>
@@ -387,24 +369,26 @@ export function AuditLogTab() {
         <Input
           type="date"
           value={dateFrom}
-          onChange={(e) => {
+          // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
+          onChange={e => {
             void setDateFrom(e.target.value || null);
-            void setAuditPage("1");
+            void setAuditPage('1');
           }}
           className="w-36"
-          aria-label="Date from"
+          aria-label={tAria('dateFrom')}
         />
 
         {/* Date range - to */}
         <Input
           type="date"
           value={dateTo}
-          onChange={(e) => {
+          // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
+          onChange={e => {
             void setDateTo(e.target.value || null);
-            void setAuditPage("1");
+            void setAuditPage('1');
           }}
           className="w-36"
-          aria-label="Date to"
+          aria-label={tAria('dateTo')}
         />
       </div>
 
@@ -415,10 +399,11 @@ export function AuditLogTab() {
         page={currentPage}
         pageSize={PAGE_SIZE}
         onPageChange={handlePageChange}
-        sortOrder={(auditSort as "asc" | "desc") || "desc"}
+        sortOrder={(auditSort as 'asc' | 'desc') || 'desc'}
         onSortOrderChange={handleSortOrderChange}
         expandedRows={expandedRows}
         onToggleRow={handleToggleRow}
+        isFetching={isRefetching}
       />
     </div>
   );

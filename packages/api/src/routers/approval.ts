@@ -1,27 +1,36 @@
-import { z } from "zod";
-import { TRPCError } from "@trpc/server";
-import { prisma } from "@contractor-ops/db";
+import type { Prisma } from '@contractor-ops/db';
+import { Prisma as PrismaClient } from '@contractor-ops/db/generated/prisma/client';
 import {
+  approvalAuditSystemLabel,
   approvalChainCreateSchema,
   approvalChainUpdateSchema,
   approvalQueueSchema,
   approveStepSchema,
-  rejectStepSchema,
-  delegateStepSchema,
-  requestClarificationSchema,
   bulkApproveSchema,
   bulkRejectSchema,
-} from "@contractor-ops/validators";
-import { router } from "../init.js";
-import { tenantProcedure } from "../middleware/tenant.js";
-import { requirePermission } from "../middleware/rbac.js";
+  delegateStepSchema,
+  rejectStepSchema,
+  requestClarificationSchema,
+} from '@contractor-ops/validators';
+import { TRPCError } from '@trpc/server';
+import { z } from 'zod';
+import * as E from '../errors.js';
+import { router } from '../init.js';
+import { requirePermission } from '../middleware/rbac.js';
+import { tenantProcedure } from '../middleware/tenant.js';
+import type { TxClient } from '../services/approval-engine.js';
 import {
-  routeToChain,
-  createApprovalFlow,
   advanceFlow,
   computeSlaStatus,
-} from "../services/approval-engine.js";
-import { dispatch } from "../services/notification-service.js";
+  createApprovalFlow,
+  routeToChain,
+} from '../services/approval-engine.js';
+import { CacheKeys, CacheTTL, cached, invalidate, invalidateByPrefix } from '../services/cache.js';
+import {
+  syncApprovalSlaDeadline,
+  syncPaymentDueDeadline,
+} from '../services/calendar-deadline-sync.js';
+import { dispatch } from '../services/notification-service.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -37,6 +46,305 @@ function plain<T>(data: T): T {
 }
 
 // ---------------------------------------------------------------------------
+// Step validation helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Validates that an approval step is PENDING and assigned to the given user.
+ * Throws appropriate TRPCErrors on failure. Caller is responsible for fetching
+ * the step with the desired include/select to preserve Prisma types.
+ */
+function validateStepForAction(
+  step: { status: string; approverUserId: string | null } | null,
+  userId: string | undefined,
+): asserts step is NonNullable<typeof step> {
+  if (!step) {
+    throw new TRPCError({ code: 'NOT_FOUND', message: E.APPROVAL_STEP_NOT_FOUND });
+  }
+
+  if (step.status !== 'PENDING') {
+    throw new TRPCError({ code: 'BAD_REQUEST', message: E.APPROVAL_STEP_NOT_PENDING });
+  }
+
+  if (step.approverUserId !== userId) {
+    throw new TRPCError({ code: 'FORBIDDEN', message: E.APPROVAL_NOT_ASSIGNED });
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Notification helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Dispatches an approval decision notification to the flow submitter.
+ */
+function dispatchDecisionNotification(
+  organizationId: string,
+  decision: 'approved' | 'rejected',
+  invoice: { id: string; invoiceNumber: string | null } | null,
+  submitterUserId: string | null | undefined,
+  approverName: string,
+  comment?: string,
+) {
+  if (!(submitterUserId && invoice)) return;
+
+  const title =
+    decision === 'approved'
+      ? `Invoice ${invoice.invoiceNumber} approved`
+      : `Invoice ${invoice.invoiceNumber} rejected`;
+
+  const body =
+    decision === 'approved'
+      ? `Approved by ${approverName}`
+      : `Rejected by ${approverName}: ${comment ?? ''}`;
+
+  dispatch({
+    organizationId,
+    type: 'APPROVAL_DECISION',
+    recipientUserIds: [submitterUserId],
+    title,
+    body,
+    entityType: 'INVOICE',
+    entityId: invoice.id,
+    metadata: {
+      invoiceNumber: invoice.invoiceNumber,
+      decision,
+      approverName,
+      ...(comment ? { comment } : {}),
+    },
+  }).catch(_err => {
+    /* fire-and-forget */
+  });
+}
+
+/**
+ * Dispatches an approval request notification to the next approver in a flow.
+ */
+async function dispatchNextApproverNotification(
+  db: TxClient,
+  organizationId: string,
+  invoice: {
+    id: string;
+    invoiceNumber: string | null;
+    totalMinor: number;
+    currency: string;
+    contractorId: string | null;
+  },
+  flowId: string,
+  nextStep: { approverUserId: string | null; slaDeadline: Date | null },
+) {
+  if (!nextStep.approverUserId) return;
+
+  const contractor = invoice.contractorId
+    ? await db.contractor.findUnique({
+        where: { id: invoice.contractorId },
+        select: { legalName: true },
+      })
+    : null;
+
+  const slaDeadline = nextStep.slaDeadline ? new Date(nextStep.slaDeadline).toISOString() : '';
+
+  dispatch({
+    organizationId,
+    type: 'APPROVAL_REQUEST',
+    recipientUserIds: [nextStep.approverUserId],
+    title: `Approval requested for ${invoice.invoiceNumber}`,
+    body: `${contractor?.legalName ?? 'Unknown'} - ${(invoice.totalMinor / 100).toFixed(2)} ${invoice.currency}`,
+    entityType: 'INVOICE',
+    entityId: invoice.id,
+    metadata: {
+      invoiceNumber: invoice.invoiceNumber,
+      contractorName: contractor?.legalName ?? 'Unknown',
+      amount: (invoice.totalMinor / 100).toFixed(2),
+      currency: invoice.currency,
+      slaDeadline,
+      invoiceId: invoice.id,
+      flowId,
+    },
+  }).catch(_err => {
+    /* fire-and-forget */
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Audit trail helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Checks whether an approval step has breached its SLA deadline.
+ */
+function isSlaBreach(step: {
+  slaDeadline: Date | null;
+  actedAt: Date | null;
+  status: string;
+}): boolean {
+  if (!step.slaDeadline) return false;
+  const now = new Date();
+  return (
+    (step.actedAt != null && step.actedAt > step.slaDeadline) ||
+    (step.status === 'PENDING' && now > step.slaDeadline)
+  );
+}
+
+/**
+ * Builds the audit trail events array from a flow with steps and decisions.
+ */
+function buildAuditEvents(
+  flow: {
+    startedAt: Date;
+    completedAt: Date | null;
+    status: string;
+    chainConfigId: string | null;
+    steps: Array<{
+      name: string | null;
+      stepOrder: number;
+      status: string;
+      slaDeadline: Date | null;
+      actedAt: Date | null;
+      decisions: Array<{
+        decision: string;
+        comment: string | null;
+        createdAt: Date;
+        actor: { id: string; name: string | null; email: string; image: string | null } | null;
+      }>;
+    }>;
+  },
+  chainName: string | null,
+): Record<string, unknown>[] {
+  const events: Record<string, unknown>[] = [];
+
+  // System event: submitted
+  events.push({
+    type: 'system',
+    label: 'submitted',
+    timestamp: flow.startedAt.toISOString(),
+  });
+
+  // System event: routed to chain
+  if (flow.chainConfigId) {
+    events.push({
+      type: 'system',
+      label: 'routed',
+      chainName: chainName ?? 'Unknown chain',
+      timestamp: flow.startedAt.toISOString(),
+    });
+  }
+
+  // Human decisions and SLA breach events
+  for (const step of flow.steps) {
+    for (const decision of step.decisions) {
+      events.push({
+        type: 'decision',
+        label: decision.decision.toLowerCase(),
+        levelName: step.name,
+        stepOrder: step.stepOrder,
+        actor: decision.actor,
+        comment: decision.comment,
+        timestamp: decision.createdAt.toISOString(),
+      });
+    }
+
+    // SLA breach detection
+    if (isSlaBreach(step)) {
+      events.push({
+        type: 'system',
+        label: approvalAuditSystemLabel.slaBreached,
+        levelName: step.name,
+        timestamp: (step.slaDeadline as Date).toISOString(),
+      });
+    }
+  }
+
+  // Flow completion event
+  if (flow.completedAt) {
+    events.push({
+      type: 'system',
+      label: flow.status === 'APPROVED' ? 'approved' : 'rejected',
+      timestamp: flow.completedAt.toISOString(),
+    });
+  }
+
+  // Sort by timestamp DESC (most recent first)
+  events.sort(
+    (a, b) => new Date(b.timestamp as string).getTime() - new Date(a.timestamp as string).getTime(),
+  );
+
+  return events;
+}
+
+/** WHERE fragments for raw SQL — must stay aligned with `where` below. */
+function approvalQueueSqlConditions(
+  organizationId: string,
+  approverUserId: string | undefined,
+  input: z.infer<typeof approvalQueueSchema>,
+) {
+  const conditions = [PrismaClient.sql`s."organizationId" = ${organizationId}`];
+  if (input.tab === 'my' && approverUserId) {
+    conditions.push(PrismaClient.sql`s."approverUserId" = ${approverUserId}`);
+  }
+  const now = new Date();
+  if (input.status === 'pending') {
+    conditions.push(PrismaClient.sql`s."status" = 'PENDING'::"ApprovalStatus"`);
+  } else if (input.status === 'overdue') {
+    conditions.push(PrismaClient.sql`s."status" = 'PENDING'::"ApprovalStatus"`);
+    conditions.push(PrismaClient.sql`s."slaDeadline" < ${now}`);
+  } else if (input.status === 'approved') {
+    conditions.push(PrismaClient.sql`s."status" = 'APPROVED'::"ApprovalStatus"`);
+  } else if (input.status === 'rejected') {
+    conditions.push(PrismaClient.sql`s."status" = 'REJECTED'::"ApprovalStatus"`);
+  }
+  return conditions;
+}
+
+/**
+ * After an approval flow completes, mark the invoice as approved and sync the
+ * payment-due calendar deadline (D-07). Extracted to reduce cognitive complexity
+ * of bulk-approve / single-approve handlers.
+ */
+async function finalizeApprovedInvoice(
+  tx: TxClient,
+  opts: {
+    resourceId: string;
+    organizationId: string;
+    db: TxClient;
+    userId: string | undefined;
+  },
+) {
+  await tx.invoice.update({
+    where: { id: opts.resourceId },
+    data: {
+      status: 'APPROVED',
+      paymentStatus: 'READY',
+      readyForPaymentAt: new Date(),
+    },
+  });
+
+  const invoice = await tx.invoice.findUnique({
+    where: { id: opts.resourceId },
+    select: { id: true, invoiceNumber: true, dueDate: true, contractorId: true },
+  });
+  if (!invoice?.dueDate) return;
+
+  const contractor = invoice.contractorId
+    ? await opts.db.contractor.findUnique({
+        where: { id: invoice.contractorId },
+        select: { displayName: true },
+      })
+    : null;
+
+  void syncPaymentDueDeadline(opts.db, {
+    organizationId: opts.organizationId,
+    invoiceId: invoice.id,
+    invoiceNumber: invoice.invoiceNumber ?? `INV-${invoice.id.slice(-6)}`,
+    contractorName: contractor?.displayName ?? 'Unknown',
+    dueDate: new Date(invoice.dueDate),
+    userId: opts.userId,
+  }).catch(_err => {
+    /* fire-and-forget */
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Approval router
 // ---------------------------------------------------------------------------
 
@@ -49,27 +357,33 @@ export const approvalRouter = router({
    * List all approval chain configs for the organization.
    */
   listChains: tenantProcedure
-    .use(requirePermission({ settings: ["read"] }))
+    .use(requirePermission({ settings: ['read'] }))
     .query(async ({ ctx }) => {
-      const chains = await prisma.approvalChainConfig.findMany({
-        where: {
-          organizationId: ctx.organizationId,
-          resourceType: "INVOICE",
-        },
-        orderBy: { createdAt: "asc" },
-      });
+      return cached(
+        CacheKeys.approvalChains(ctx.organizationId),
+        CacheTTL.APPROVAL_CHAINS,
+        async () => {
+          const chains = await ctx.db.approvalChainConfig.findMany({
+            where: {
+              organizationId: ctx.organizationId,
+              resourceType: 'INVOICE',
+            },
+            orderBy: { createdAt: 'asc' },
+          });
 
-      return plain(chains);
+          return plain(chains);
+        },
+      );
     }),
 
   /**
    * Get a single approval chain config by ID.
    */
   getChain: tenantProcedure
-    .use(requirePermission({ settings: ["read"] }))
+    .use(requirePermission({ settings: ['read'] }))
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
-      const chain = await prisma.approvalChainConfig.findFirst({
+      const chain = await ctx.db.approvalChainConfig.findFirst({
         where: {
           id: input.id,
           organizationId: ctx.organizationId,
@@ -78,8 +392,8 @@ export const approvalRouter = router({
 
       if (!chain) {
         throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Approval chain not found",
+          code: 'NOT_FOUND',
+          message: E.APPROVAL_CHAIN_NOT_FOUND,
         });
       }
 
@@ -91,16 +405,16 @@ export const approvalRouter = router({
    * If isDefault=true, unsets any existing default chain first.
    */
   createChain: tenantProcedure
-    .use(requirePermission({ settings: ["update"] }))
+    .use(requirePermission({ settings: ['update'] }))
     .input(approvalChainCreateSchema)
     .mutation(async ({ ctx, input }) => {
-      const chain = await prisma.$transaction(async (tx) => {
+      const chain = await ctx.db.$transaction(async tx => {
         // If setting as default, unset existing default
         if (input.isDefault) {
           await tx.approvalChainConfig.updateMany({
             where: {
               organizationId: ctx.organizationId,
-              resourceType: "INVOICE",
+              resourceType: 'INVOICE',
               isDefault: true,
             },
             data: { isDefault: false },
@@ -110,7 +424,7 @@ export const approvalRouter = router({
         return tx.approvalChainConfig.create({
           data: {
             organizationId: ctx.organizationId,
-            resourceType: "INVOICE",
+            resourceType: 'INVOICE',
             name: input.name,
             isDefault: input.isDefault,
             conditionsJson: input.conditionsJson ?? undefined,
@@ -118,6 +432,8 @@ export const approvalRouter = router({
           },
         });
       });
+
+      void invalidate(CacheKeys.approvalChains(ctx.organizationId));
 
       return plain(chain);
     }),
@@ -127,12 +443,12 @@ export const approvalRouter = router({
    * If setting isDefault=true, unsets existing default first.
    */
   updateChain: tenantProcedure
-    .use(requirePermission({ settings: ["update"] }))
+    .use(requirePermission({ settings: ['update'] }))
     .input(approvalChainUpdateSchema)
     .mutation(async ({ ctx, input }) => {
       const { id, ...data } = input;
 
-      const updated = await prisma.$transaction(async (tx) => {
+      const updated = await ctx.db.$transaction(async tx => {
         // Verify chain belongs to org
         const existing = await tx.approvalChainConfig.findFirst({
           where: { id, organizationId: ctx.organizationId },
@@ -140,8 +456,8 @@ export const approvalRouter = router({
 
         if (!existing) {
           throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Approval chain not found",
+            code: 'NOT_FOUND',
+            message: E.APPROVAL_CHAIN_NOT_FOUND,
           });
         }
 
@@ -150,7 +466,7 @@ export const approvalRouter = router({
           await tx.approvalChainConfig.updateMany({
             where: {
               organizationId: ctx.organizationId,
-              resourceType: "INVOICE",
+              resourceType: 'INVOICE',
               isDefault: true,
               id: { not: id },
             },
@@ -170,6 +486,8 @@ export const approvalRouter = router({
         });
       });
 
+      void invalidate(CacheKeys.approvalChains(ctx.organizationId));
+
       return plain(updated);
     }),
 
@@ -178,10 +496,10 @@ export const approvalRouter = router({
    * Prevents deletion if active approval flows reference this chain.
    */
   deleteChain: tenantProcedure
-    .use(requirePermission({ settings: ["update"] }))
+    .use(requirePermission({ settings: ['update'] }))
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      await prisma.$transaction(async (tx) => {
+      await ctx.db.$transaction(async tx => {
         // Verify chain belongs to org
         const existing = await tx.approvalChainConfig.findFirst({
           where: { id: input.id, organizationId: ctx.organizationId },
@@ -189,8 +507,8 @@ export const approvalRouter = router({
 
         if (!existing) {
           throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Approval chain not found",
+            code: 'NOT_FOUND',
+            message: E.APPROVAL_CHAIN_NOT_FOUND,
           });
         }
 
@@ -198,19 +516,21 @@ export const approvalRouter = router({
         const activeFlow = await tx.approvalFlow.findFirst({
           where: {
             chainConfigId: input.id,
-            status: "PENDING",
+            status: 'PENDING',
           },
         });
 
         if (activeFlow) {
           throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "Cannot delete chain with active approval flows",
+            code: 'BAD_REQUEST',
+            message: E.APPROVAL_CHAIN_HAS_ACTIVE_FLOWS,
           });
         }
 
         await tx.approvalChainConfig.delete({ where: { id: input.id } });
       });
+
+      void invalidate(CacheKeys.approvalChains(ctx.organizationId));
 
       return { success: true };
     }),
@@ -225,70 +545,121 @@ export const approvalRouter = router({
    * Filters by status, search, and pagination.
    */
   listPending: tenantProcedure
-    .use(requirePermission({ invoice: ["approve"] }))
+    .use(requirePermission({ invoice: ['approve'] }))
     .input(approvalQueueSchema)
     .query(async ({ ctx, input }) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const where: Record<string, any> = {
+      const where: Prisma.ApprovalStepWhereInput = {
         organizationId: ctx.organizationId,
       };
 
       // Tab filter
-      if (input.tab === "my") {
-        where.approverUserId = ctx.user!.id;
+      if (input.tab === 'my') {
+        where.approverUserId = ctx.user?.id;
       }
 
       // Status filter
       const now = new Date();
-      if (input.status === "pending") {
-        where.status = "PENDING";
-      } else if (input.status === "overdue") {
-        where.status = "PENDING";
+      if (input.status === 'pending') {
+        where.status = 'PENDING';
+      } else if (input.status === 'overdue') {
+        where.status = 'PENDING';
         where.slaDeadline = { lt: now };
-      } else if (input.status === "approved") {
-        where.status = "APPROVED";
-      } else if (input.status === "rejected") {
-        where.status = "REJECTED";
+      } else if (input.status === 'approved') {
+        where.status = 'APPROVED';
+      } else if (input.status === 'rejected') {
+        where.status = 'REJECTED';
       }
       // "all" — no additional status filter
 
-      const [steps, total] = await Promise.all([
-        prisma.approvalStep.findMany({
-          where,
-          skip: (input.page - 1) * input.pageSize,
-          take: input.pageSize,
-          orderBy: { slaDeadline: input.sortOrder },
-          include: {
-            approvalFlow: {
-              select: {
-                id: true,
-                resourceId: true,
-                resourceType: true,
-                status: true,
-                startedAt: true,
-                chainConfigId: true,
-              },
-            },
-            approver: {
-              select: { id: true, name: true, email: true, image: true },
-            },
+      const stepInclude = {
+        approvalFlow: {
+          select: {
+            id: true,
+            resourceId: true,
+            resourceType: true,
+            status: true,
+            startedAt: true,
+            chainConfigId: true,
           },
-        }),
-        prisma.approvalStep.count({ where }),
-      ]);
+        },
+        approver: {
+          select: { id: true, name: true, email: true, image: true },
+        },
+      } satisfies Prisma.ApprovalStepInclude;
+
+      type ApprovalQueueStepRow = Prisma.ApprovalStepGetPayload<{
+        include: typeof stepInclude;
+      }>;
+
+      let steps: ApprovalQueueStepRow[];
+      let total: number;
+
+      if (input.sortBy === 'amount') {
+        const sqlConditions = approvalQueueSqlConditions(ctx.organizationId, ctx.user?.id, input);
+        const whereSql = PrismaClient.sql`WHERE ${PrismaClient.join(sqlConditions, ' AND ')}`;
+        const orderDirSql =
+          input.sortOrder === 'asc' ? PrismaClient.sql`ASC` : PrismaClient.sql`DESC`;
+        const skip = (input.page - 1) * input.pageSize;
+
+        const [idRows, totalCount] = await Promise.all([
+          ctx.db.$queryRaw<Array<{ id: string }>>`
+            SELECT s.id
+            FROM "ApprovalStep" s
+            INNER JOIN "ApprovalFlow" f ON f.id = s."approvalFlowId"
+            LEFT JOIN "Invoice" i ON i.id = f."resourceId" AND f."resourceType" = 'INVOICE'::"EntityType"
+            ${whereSql}
+            ORDER BY COALESCE(i."amountToPayMinor", 0) ${orderDirSql}
+            LIMIT ${input.pageSize} OFFSET ${skip}
+          `,
+          ctx.db.approvalStep.count({ where }),
+        ]);
+
+        total = totalCount;
+        const ids = idRows.map(r => r.id);
+
+        if (ids.length === 0) {
+          return {
+            items: [],
+            total,
+            page: input.page,
+            pageSize: input.pageSize,
+          };
+        }
+
+        const unordered = await ctx.db.approvalStep.findMany({
+          where: { id: { in: ids } },
+          include: stepInclude,
+        });
+        const order = new Map(ids.map((id, idx) => [id, idx]));
+        steps = [...unordered].sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0));
+      } else {
+        const orderBy: Prisma.ApprovalStepOrderByWithRelationInput =
+          input.sortBy === 'submitted'
+            ? { approvalFlow: { startedAt: input.sortOrder } }
+            : { slaDeadline: input.sortOrder };
+
+        [steps, total] = await Promise.all([
+          ctx.db.approvalStep.findMany({
+            where,
+            skip: (input.page - 1) * input.pageSize,
+            take: input.pageSize,
+            orderBy,
+            include: stepInclude,
+          }),
+          ctx.db.approvalStep.count({ where }),
+        ]);
+      }
 
       // Batch-fetch invoice data for all steps
-      const invoiceIds = [
-        ...new Set(steps.map((s) => s.approvalFlow.resourceId)),
-      ];
+      const invoiceIds = [...new Set(steps.map(s => s.approvalFlow.resourceId))];
 
-      const invoices = await prisma.invoice.findMany({
+      const invoices = await ctx.db.invoice.findMany({
         where: { id: { in: invoiceIds } },
         select: {
           id: true,
           invoiceNumber: true,
           sellerName: true,
-          totalGrosze: true,
+          totalMinor: true,
           currency: true,
           createdAt: true,
           contractor: {
@@ -297,31 +668,25 @@ export const approvalRouter = router({
         },
       });
 
-      const invoiceMap = new Map(invoices.map((inv) => [inv.id, inv]));
+      const invoiceMap = new Map(invoices.map(inv => [inv.id, inv]));
 
       // Parse chain configs to get slaHours per step
       const chainConfigIds = [
-        ...new Set(
-          steps
-            .map((s) => s.approvalFlow.chainConfigId)
-            .filter(Boolean) as string[],
-        ),
+        ...new Set(steps.map(s => s.approvalFlow.chainConfigId).filter(Boolean) as string[]),
       ];
 
       const chainConfigs =
         chainConfigIds.length > 0
-          ? await prisma.approvalChainConfig.findMany({
+          ? await ctx.db.approvalChainConfig.findMany({
               where: { id: { in: chainConfigIds } },
               select: { id: true, stepsJson: true },
             })
           : [];
 
-      const chainConfigMap = new Map(
-        chainConfigs.map((c) => [c.id, c.stepsJson]),
-      );
+      const chainConfigMap = new Map(chainConfigs.map(c => [c.id, c.stepsJson]));
 
       // Enrich steps with invoice data and SLA status
-      const enrichedSteps = steps.map((step) => {
+      const enrichedSteps = steps.map(step => {
         const invoice = invoiceMap.get(step.approvalFlow.resourceId);
         const chainSteps = step.approvalFlow.chainConfigId
           ? (chainConfigMap.get(step.approvalFlow.chainConfigId) as
@@ -347,7 +712,7 @@ export const approvalRouter = router({
     }),
 
   // =========================================================================
-  // Approval Actions (all wrapped in prisma.$transaction)
+  // Approval Actions (all wrapped in ctx.db.$transaction)
   // =========================================================================
 
   /**
@@ -356,48 +721,23 @@ export const approvalRouter = router({
    * advances flow to next step, and updates invoice if flow completes.
    */
   approve: tenantProcedure
-    .use(requirePermission({ invoice: ["approve"] }))
+    .use(requirePermission({ invoice: ['approve'] }))
     .input(approveStepSchema)
     .mutation(async ({ ctx, input }) => {
-      const result = await prisma.$transaction(async (tx) => {
+      const result = await ctx.db.$transaction(async tx => {
         const step = await tx.approvalStep.findFirst({
-          where: {
-            id: input.stepId,
-            organizationId: ctx.organizationId,
-          },
-          include: {
-            approvalFlow: true,
-          },
+          where: { id: input.stepId, organizationId: ctx.organizationId },
+          include: { approvalFlow: true },
         });
-
-        if (!step) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Approval step not found",
-          });
-        }
-
-        if (step.status !== "PENDING") {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "Step is not pending approval",
-          });
-        }
-
-        if (step.approverUserId !== ctx.user!.id) {
-          throw new TRPCError({
-            code: "FORBIDDEN",
-            message: "You are not the assigned approver for this step",
-          });
-        }
+        validateStepForAction(step, ctx.user?.id);
 
         // Create decision record
         await tx.approvalDecision.create({
           data: {
             organizationId: ctx.organizationId,
             approvalStepId: step.id,
-            actorUserId: ctx.user!.id,
-            decision: "APPROVE",
+            actorUserId: ctx.user?.id,
+            decision: 'APPROVE',
             comment: input.comment ?? null,
           },
         });
@@ -406,23 +746,23 @@ export const approvalRouter = router({
         const updatedStep = await tx.approvalStep.update({
           where: { id: step.id },
           data: {
-            status: "APPROVED",
+            status: 'APPROVED',
             actedAt: new Date(),
-            decision: "APPROVE",
+            decision: 'APPROVE',
             comment: input.comment ?? null,
           },
         });
 
         // Advance flow
-        const advanceResult = await advanceFlow(tx, step.approvalFlowId);
+        const advanceResult = await advanceFlow(tx as TxClient, step.approvalFlowId);
 
         // If flow completed, update invoice status and payment status
         if (advanceResult.completed) {
           await tx.invoice.update({
             where: { id: step.approvalFlow.resourceId },
             data: {
-              status: "APPROVED",
-              paymentStatus: "READY",
+              status: 'APPROVED',
+              paymentStatus: 'READY',
               readyForPaymentAt: new Date(),
             },
           });
@@ -434,79 +774,72 @@ export const approvalRouter = router({
           select: {
             id: true,
             invoiceNumber: true,
-            totalGrosze: true,
+            totalMinor: true,
             currency: true,
             contractorId: true,
+            dueDate: true,
           },
         });
 
         const flow = await tx.approvalFlow.findUnique({
           where: { id: step.approvalFlowId },
-          select: { id: true, createdByUserId: true, steps: { orderBy: { stepOrder: "asc" } } },
+          select: { id: true, createdByUserId: true, steps: { orderBy: { stepOrder: 'asc' } } },
         });
 
         return { updatedStep, advanceResult, invoice, flow };
       });
 
       // Fire-and-forget: dispatch APPROVAL_DECISION to the user who submitted
-      if (result.flow?.createdByUserId && result.invoice) {
-        dispatch({
-          organizationId: ctx.organizationId,
-          type: "APPROVAL_DECISION",
-          recipientUserIds: [result.flow.createdByUserId],
-          title: `Invoice ${result.invoice.invoiceNumber} approved`,
-          body: `Approved by ${ctx.user!.name ?? "approver"}`,
-          entityType: "INVOICE",
-          entityId: result.invoice.id,
-          metadata: {
-            invoiceNumber: result.invoice.invoiceNumber,
-            decision: "approved",
-            approverName: ctx.user!.name ?? "approver",
-          },
-        }).catch((err) =>
-          console.error("[approval] dispatch APPROVAL_DECISION failed:", err),
-        );
-      }
+      dispatchDecisionNotification(
+        ctx.organizationId,
+        'approved',
+        result.invoice,
+        result.flow?.createdByUserId,
+        ctx.user?.name ?? 'approver',
+      );
 
       // If flow advanced to next step, dispatch APPROVAL_REQUEST to next approver
-      if (!result.advanceResult.completed && result.advanceResult.nextStepOrder && result.flow && result.invoice) {
+      if (
+        !result.advanceResult.completed &&
+        result.advanceResult.nextStepOrder &&
+        result.flow &&
+        result.invoice
+      ) {
         const nextStep = result.flow.steps.find(
-          (s) => s.stepOrder === result.advanceResult.nextStepOrder,
+          s => s.stepOrder === result.advanceResult.nextStepOrder,
         );
-        if (nextStep?.approverUserId) {
-          const contractor = result.invoice.contractorId
-            ? await prisma.contractor.findUnique({
-                where: { id: result.invoice.contractorId },
-                select: { legalName: true },
-              })
-            : null;
-
-          const slaDeadline = nextStep.slaDeadline
-            ? new Date(nextStep.slaDeadline).toISOString()
-            : "";
-
-          dispatch({
-            organizationId: ctx.organizationId,
-            type: "APPROVAL_REQUEST",
-            recipientUserIds: [nextStep.approverUserId],
-            title: `Approval requested for ${result.invoice.invoiceNumber}`,
-            body: `${contractor?.legalName ?? "Unknown"} - ${(result.invoice.totalGrosze / 100).toFixed(2)} ${result.invoice.currency}`,
-            entityType: "INVOICE",
-            entityId: result.invoice.id,
-            metadata: {
-              invoiceNumber: result.invoice.invoiceNumber,
-              contractorName: contractor?.legalName ?? "Unknown",
-              amount: (result.invoice.totalGrosze / 100).toFixed(2),
-              currency: result.invoice.currency,
-              slaDeadline,
-              invoiceId: result.invoice.id,
-              flowId: result.flow.id,
-            },
-          }).catch((err) =>
-            console.error("[approval] dispatch APPROVAL_REQUEST (next level) failed:", err),
+        if (nextStep) {
+          void dispatchNextApproverNotification(
+            ctx.db as unknown as TxClient,
+            ctx.organizationId,
+            result.invoice,
+            result.flow.id,
+            nextStep,
           );
         }
       }
+
+      // Calendar auto-push: sync payment deadline when invoice fully approved (D-07)
+      if (result.advanceResult.completed && result.invoice?.dueDate) {
+        const contractor = result.invoice.contractorId
+          ? await ctx.db.contractor.findUnique({
+              where: { id: result.invoice.contractorId },
+              select: { displayName: true },
+            })
+          : null;
+        void syncPaymentDueDeadline(ctx.db, {
+          organizationId: ctx.organizationId,
+          invoiceId: result.invoice.id,
+          invoiceNumber: result.invoice.invoiceNumber ?? `INV-${result.invoice.id.slice(-6)}`,
+          contractorName: contractor?.displayName ?? 'Unknown',
+          dueDate: new Date(result.invoice.dueDate),
+          userId: ctx.user?.id,
+        }).catch(_err => {
+          /* fire-and-forget */
+        });
+      }
+
+      void invalidateByPrefix(CacheKeys.dashboardPrefix(ctx.organizationId));
 
       return plain(result.updatedStep);
     }),
@@ -517,48 +850,23 @@ export const approvalRouter = router({
    * and updates invoice status to REJECTED. Does NOT advance flow.
    */
   reject: tenantProcedure
-    .use(requirePermission({ invoice: ["approve"] }))
+    .use(requirePermission({ invoice: ['approve'] }))
     .input(rejectStepSchema)
     .mutation(async ({ ctx, input }) => {
-      const result = await prisma.$transaction(async (tx) => {
+      const result = await ctx.db.$transaction(async tx => {
         const step = await tx.approvalStep.findFirst({
-          where: {
-            id: input.stepId,
-            organizationId: ctx.organizationId,
-          },
-          include: {
-            approvalFlow: true,
-          },
+          where: { id: input.stepId, organizationId: ctx.organizationId },
+          include: { approvalFlow: true },
         });
-
-        if (!step) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Approval step not found",
-          });
-        }
-
-        if (step.status !== "PENDING") {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "Step is not pending approval",
-          });
-        }
-
-        if (step.approverUserId !== ctx.user!.id) {
-          throw new TRPCError({
-            code: "FORBIDDEN",
-            message: "You are not the assigned approver for this step",
-          });
-        }
+        validateStepForAction(step, ctx.user?.id);
 
         // Create decision record
         await tx.approvalDecision.create({
           data: {
             organizationId: ctx.organizationId,
             approvalStepId: step.id,
-            actorUserId: ctx.user!.id,
-            decision: "REJECT",
+            actorUserId: ctx.user?.id,
+            decision: 'REJECT',
             comment: input.comment,
           },
         });
@@ -567,9 +875,9 @@ export const approvalRouter = router({
         const updatedStep = await tx.approvalStep.update({
           where: { id: step.id },
           data: {
-            status: "REJECTED",
+            status: 'REJECTED',
             actedAt: new Date(),
-            decision: "REJECT",
+            decision: 'REJECT',
             comment: input.comment,
           },
         });
@@ -578,7 +886,7 @@ export const approvalRouter = router({
         await tx.approvalFlow.update({
           where: { id: step.approvalFlowId },
           data: {
-            status: "REJECTED",
+            status: 'REJECTED',
             completedAt: new Date(),
           },
         });
@@ -586,7 +894,7 @@ export const approvalRouter = router({
         // Update invoice status
         await tx.invoice.update({
           where: { id: step.approvalFlow.resourceId },
-          data: { status: "REJECTED" },
+          data: { status: 'REJECTED' },
         });
 
         // Fetch data for notification
@@ -604,25 +912,14 @@ export const approvalRouter = router({
       });
 
       // Fire-and-forget: dispatch APPROVAL_DECISION (rejected) to submitter
-      if (result.flow?.createdByUserId && result.invoice) {
-        dispatch({
-          organizationId: ctx.organizationId,
-          type: "APPROVAL_DECISION",
-          recipientUserIds: [result.flow.createdByUserId],
-          title: `Invoice ${result.invoice.invoiceNumber} rejected`,
-          body: `Rejected by ${ctx.user!.name ?? "approver"}: ${input.comment}`,
-          entityType: "INVOICE",
-          entityId: result.invoice.id,
-          metadata: {
-            invoiceNumber: result.invoice.invoiceNumber,
-            decision: "rejected",
-            approverName: ctx.user!.name ?? "approver",
-            comment: input.comment,
-          },
-        }).catch((err) =>
-          console.error("[approval] dispatch APPROVAL_DECISION (reject) failed:", err),
-        );
-      }
+      dispatchDecisionNotification(
+        ctx.organizationId,
+        'rejected',
+        result.invoice,
+        result.flow?.createdByUserId,
+        ctx.user?.name ?? 'approver',
+        input.comment,
+      );
 
       return plain(result.updatedStep);
     }),
@@ -633,37 +930,14 @@ export const approvalRouter = router({
    * Step remains PENDING (SLA continues per D-10).
    */
   delegate: tenantProcedure
-    .use(requirePermission({ invoice: ["approve"] }))
+    .use(requirePermission({ invoice: ['approve'] }))
     .input(delegateStepSchema)
     .mutation(async ({ ctx, input }) => {
-      const result = await prisma.$transaction(async (tx) => {
+      const result = await ctx.db.$transaction(async tx => {
         const step = await tx.approvalStep.findFirst({
-          where: {
-            id: input.stepId,
-            organizationId: ctx.organizationId,
-          },
+          where: { id: input.stepId, organizationId: ctx.organizationId },
         });
-
-        if (!step) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Approval step not found",
-          });
-        }
-
-        if (step.status !== "PENDING") {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "Step is not pending approval",
-          });
-        }
-
-        if (step.approverUserId !== ctx.user!.id) {
-          throw new TRPCError({
-            code: "FORBIDDEN",
-            message: "You are not the assigned approver for this step",
-          });
-        }
+        validateStepForAction(step, ctx.user?.id);
 
         // Verify delegate user exists in the organization
         const delegateMember = await tx.member.findFirst({
@@ -675,8 +949,8 @@ export const approvalRouter = router({
 
         if (!delegateMember) {
           throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "Delegate user is not a member of this organization",
+            code: 'BAD_REQUEST',
+            message: E.APPROVAL_DELEGATE_NOT_MEMBER,
           });
         }
 
@@ -685,8 +959,8 @@ export const approvalRouter = router({
           data: {
             organizationId: ctx.organizationId,
             approvalStepId: step.id,
-            actorUserId: ctx.user!.id,
-            decision: "DELEGATE",
+            actorUserId: ctx.user?.id,
+            decision: 'DELEGATE',
             comment: input.comment ?? null,
           },
         });
@@ -702,6 +976,8 @@ export const approvalRouter = router({
         return updatedStep;
       });
 
+      void invalidateByPrefix(CacheKeys.dashboardPrefix(ctx.organizationId));
+
       return plain(result);
     }),
 
@@ -710,45 +986,22 @@ export const approvalRouter = router({
    * Creates a REQUEST_CHANGES decision. Step remains PENDING.
    */
   requestClarification: tenantProcedure
-    .use(requirePermission({ invoice: ["approve"] }))
+    .use(requirePermission({ invoice: ['approve'] }))
     .input(requestClarificationSchema)
     .mutation(async ({ ctx, input }) => {
-      const result = await prisma.$transaction(async (tx) => {
+      const result = await ctx.db.$transaction(async tx => {
         const step = await tx.approvalStep.findFirst({
-          where: {
-            id: input.stepId,
-            organizationId: ctx.organizationId,
-          },
+          where: { id: input.stepId, organizationId: ctx.organizationId },
         });
-
-        if (!step) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Approval step not found",
-          });
-        }
-
-        if (step.status !== "PENDING") {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "Step is not pending approval",
-          });
-        }
-
-        if (step.approverUserId !== ctx.user!.id) {
-          throw new TRPCError({
-            code: "FORBIDDEN",
-            message: "You are not the assigned approver for this step",
-          });
-        }
+        validateStepForAction(step, ctx.user?.id);
 
         // Create decision record
         await tx.approvalDecision.create({
           data: {
             organizationId: ctx.organizationId,
             approvalStepId: step.id,
-            actorUserId: ctx.user!.id,
-            decision: "REQUEST_CHANGES",
+            actorUserId: ctx.user?.id,
+            decision: 'REQUEST_CHANGES',
             comment: input.comment,
           },
         });
@@ -769,18 +1022,18 @@ export const approvalRouter = router({
    * Returns success/failure counts and error details.
    */
   bulkApprove: tenantProcedure
-    .use(requirePermission({ invoice: ["approve"] }))
+    .use(requirePermission({ invoice: ['approve'] }))
     .input(bulkApproveSchema)
     .mutation(async ({ ctx, input }) => {
       const results = await Promise.allSettled(
-        input.stepIds.map(async (stepId) => {
-          await prisma.$transaction(async (tx) => {
+        input.stepIds.map(async stepId => {
+          await ctx.db.$transaction(async tx => {
             const step = await tx.approvalStep.findFirst({
               where: {
                 id: stepId,
                 organizationId: ctx.organizationId,
-                status: "PENDING",
-                approverUserId: ctx.user!.id,
+                status: 'PENDING',
+                approverUserId: ctx.user?.id,
               },
               include: { approvalFlow: true },
             });
@@ -793,41 +1046,43 @@ export const approvalRouter = router({
               data: {
                 organizationId: ctx.organizationId,
                 approvalStepId: step.id,
-                actorUserId: ctx.user!.id,
-                decision: "APPROVE",
+                actorUserId: ctx.user?.id,
+                decision: 'APPROVE',
               },
             });
 
             await tx.approvalStep.update({
               where: { id: step.id },
               data: {
-                status: "APPROVED",
+                status: 'APPROVED',
                 actedAt: new Date(),
-                decision: "APPROVE",
+                decision: 'APPROVE',
               },
             });
 
-            const advanceResult = await advanceFlow(tx, step.approvalFlowId);
+            const advanceResult = await advanceFlow(tx as TxClient, step.approvalFlowId);
 
             if (advanceResult.completed) {
-              await tx.invoice.update({
-                where: { id: step.approvalFlow.resourceId },
-                data: {
-                  status: "APPROVED",
-                  paymentStatus: "READY",
-                  readyForPaymentAt: new Date(),
-                },
+              await finalizeApprovedInvoice(tx as TxClient, {
+                resourceId: step.approvalFlow.resourceId,
+                organizationId: ctx.organizationId,
+                db: ctx.db as unknown as TxClient,
+                userId: ctx.user?.id,
               });
             }
           });
         }),
       );
 
-      const succeeded = results.filter((r) => r.status === "fulfilled").length;
-      const failed = results.filter((r) => r.status === "rejected").length;
+      const succeeded = results.filter(r => r.status === 'fulfilled').length;
+      const failed = results.filter(r => r.status === 'rejected').length;
       const errors = results
-        .filter((r): r is PromiseRejectedResult => r.status === "rejected")
-        .map((r) => String(r.reason));
+        .filter((r): r is PromiseRejectedResult => r.status === 'rejected')
+        .map(r => String(r.reason));
+
+      if (succeeded > 0) {
+        void invalidateByPrefix(CacheKeys.dashboardPrefix(ctx.organizationId));
+      }
 
       return { succeeded, failed, errors };
     }),
@@ -837,18 +1092,18 @@ export const approvalRouter = router({
    * Processes each step individually via Promise.allSettled.
    */
   bulkReject: tenantProcedure
-    .use(requirePermission({ invoice: ["approve"] }))
+    .use(requirePermission({ invoice: ['approve'] }))
     .input(bulkRejectSchema)
     .mutation(async ({ ctx, input }) => {
       const results = await Promise.allSettled(
-        input.stepIds.map(async (stepId) => {
-          await prisma.$transaction(async (tx) => {
+        input.stepIds.map(async stepId => {
+          await ctx.db.$transaction(async tx => {
             const step = await tx.approvalStep.findFirst({
               where: {
                 id: stepId,
                 organizationId: ctx.organizationId,
-                status: "PENDING",
-                approverUserId: ctx.user!.id,
+                status: 'PENDING',
+                approverUserId: ctx.user?.id,
               },
               include: { approvalFlow: true },
             });
@@ -861,8 +1116,8 @@ export const approvalRouter = router({
               data: {
                 organizationId: ctx.organizationId,
                 approvalStepId: step.id,
-                actorUserId: ctx.user!.id,
-                decision: "REJECT",
+                actorUserId: ctx.user?.id,
+                decision: 'REJECT',
                 comment: input.comment,
               },
             });
@@ -870,9 +1125,9 @@ export const approvalRouter = router({
             await tx.approvalStep.update({
               where: { id: step.id },
               data: {
-                status: "REJECTED",
+                status: 'REJECTED',
                 actedAt: new Date(),
-                decision: "REJECT",
+                decision: 'REJECT',
                 comment: input.comment,
               },
             });
@@ -880,24 +1135,28 @@ export const approvalRouter = router({
             await tx.approvalFlow.update({
               where: { id: step.approvalFlowId },
               data: {
-                status: "REJECTED",
+                status: 'REJECTED',
                 completedAt: new Date(),
               },
             });
 
             await tx.invoice.update({
               where: { id: step.approvalFlow.resourceId },
-              data: { status: "REJECTED" },
+              data: { status: 'REJECTED' },
             });
           });
         }),
       );
 
-      const succeeded = results.filter((r) => r.status === "fulfilled").length;
-      const failed = results.filter((r) => r.status === "rejected").length;
+      const succeeded = results.filter(r => r.status === 'fulfilled').length;
+      const failed = results.filter(r => r.status === 'rejected').length;
       const errors = results
-        .filter((r): r is PromiseRejectedResult => r.status === "rejected")
-        .map((r) => String(r.reason));
+        .filter((r): r is PromiseRejectedResult => r.status === 'rejected')
+        .map(r => String(r.reason));
+
+      if (succeeded > 0) {
+        void invalidateByPrefix(CacheKeys.dashboardPrefix(ctx.organizationId));
+      }
 
       return { succeeded, failed, errors };
     }),
@@ -912,10 +1171,10 @@ export const approvalRouter = router({
    * and updates invoice status to APPROVAL_PENDING.
    */
   submitForApproval: tenantProcedure
-    .use(requirePermission({ invoice: ["update"] }))
+    .use(requirePermission({ invoice: ['update'] }))
     .input(z.object({ invoiceId: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const flow = await prisma.$transaction(async (tx) => {
+      const flow = await ctx.db.$transaction(async tx => {
         const invoice = await tx.invoice.findFirst({
           where: {
             id: input.invoiceId,
@@ -926,66 +1185,67 @@ export const approvalRouter = router({
 
         if (!invoice) {
           throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Invoice not found",
+            code: 'NOT_FOUND',
+            message: E.INVOICE_NOT_FOUND,
           });
         }
 
         // Verify invoice is in a state that allows submission
-        const allowedMatchStatuses = ["MATCHED", "MANUALLY_CONFIRMED"];
+        const allowedMatchStatuses = ['MATCHED', 'MANUALLY_CONFIRMED'];
         if (!allowedMatchStatuses.includes(invoice.matchStatus)) {
           throw new TRPCError({
-            code: "BAD_REQUEST",
-            message:
-              "Invoice must be matched or manually confirmed before submitting for approval",
+            code: 'BAD_REQUEST',
+            message: 'Invoice must be matched or manually confirmed before submitting for approval',
           });
         }
 
-        if (invoice.status === "APPROVAL_PENDING") {
+        if (invoice.status === 'APPROVAL_PENDING') {
           throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "Invoice is already pending approval",
+            code: 'BAD_REQUEST',
+            message: E.INVOICE_ALREADY_PENDING,
           });
         }
 
         // Route to appropriate chain
-        const chainConfig = await routeToChain(tx, ctx.organizationId, {
-          totalGrosze: invoice.totalGrosze,
+        const chainConfig = await routeToChain(tx as TxClient, ctx.organizationId, {
+          totalMinor: invoice.totalMinor,
         });
 
         if (!chainConfig) {
           throw new TRPCError({
-            code: "BAD_REQUEST",
-            message:
-              "No approval chain configured for this organization",
+            code: 'BAD_REQUEST',
+            message: 'No approval chain configured for this organization',
           });
         }
 
         // Create approval flow with snapshotted steps
-        const approvalFlow = await createApprovalFlow(tx, {
+        const approvalFlow = await createApprovalFlow(tx as TxClient, {
           organizationId: ctx.organizationId,
-          resourceType: "INVOICE",
+          resourceType: 'INVOICE',
           resourceId: invoice.id,
           chainConfig,
-          createdByUserId: ctx.user!.id,
+          createdByUserId: ctx.user?.id,
         });
 
         // Update invoice status
         await tx.invoice.update({
           where: { id: invoice.id },
-          data: { status: "APPROVAL_PENDING" },
+          data: { status: 'APPROVAL_PENDING' },
         });
 
         return { approvalFlow, invoice };
       });
 
       // Fire-and-forget: dispatch APPROVAL_REQUEST to first approver
-      const firstStep = flow.approvalFlow.steps?.[0];
+      const firstStep = await ctx.db.approvalStep.findFirst({
+        where: { approvalFlowId: flow.approvalFlow.id, organizationId: ctx.organizationId },
+        orderBy: { stepOrder: 'asc' },
+      });
       if (firstStep?.approverUserId) {
         const inv = flow.invoice;
         // Fetch contractor name for notification metadata
         const contractor = inv.contractorId
-          ? await prisma.contractor.findUnique({
+          ? await ctx.db.contractor.findUnique({
               where: { id: inv.contractorId },
               select: { legalName: true },
             })
@@ -993,28 +1253,42 @@ export const approvalRouter = router({
 
         const slaDeadline = firstStep.slaDeadline
           ? new Date(firstStep.slaDeadline).toISOString()
-          : "";
+          : '';
 
         dispatch({
           organizationId: ctx.organizationId,
-          type: "APPROVAL_REQUEST",
+          type: 'APPROVAL_REQUEST',
           recipientUserIds: [firstStep.approverUserId],
           title: `Approval requested for ${inv.invoiceNumber}`,
-          body: `${contractor?.legalName ?? "Unknown"} - ${(inv.totalGrosze / 100).toFixed(2)} ${inv.currency}. SLA: ${slaDeadline}`,
-          entityType: "INVOICE",
+          body: `${contractor?.legalName ?? 'Unknown'} - ${(inv.totalMinor / 100).toFixed(2)} ${inv.currency}. SLA: ${slaDeadline}`,
+          entityType: 'INVOICE',
           entityId: inv.id,
           metadata: {
             invoiceNumber: inv.invoiceNumber,
-            contractorName: contractor?.legalName ?? "Unknown",
-            amount: (inv.totalGrosze / 100).toFixed(2),
+            contractorName: contractor?.legalName ?? 'Unknown',
+            amount: (inv.totalMinor / 100).toFixed(2),
             currency: inv.currency,
             slaDeadline,
             invoiceId: inv.id,
             flowId: flow.approvalFlow.id,
           },
-        }).catch((err) =>
-          console.error("[approval] dispatch APPROVAL_REQUEST failed:", err),
-        );
+        }).catch(_err => {
+          /* fire-and-forget */
+        });
+      }
+
+      // Calendar auto-push: sync approval SLA deadline (D-09)
+      if (firstStep?.slaDeadline) {
+        void syncApprovalSlaDeadline(ctx.db, {
+          organizationId: ctx.organizationId,
+          approvalFlowId: flow.approvalFlow.id,
+          itemType: 'Invoice',
+          itemName: flow.invoice.invoiceNumber ?? `INV-${flow.invoice.id.slice(-6)}`,
+          deadline: new Date(firstStep.slaDeadline),
+          userId: ctx.user?.id,
+        }).catch(_err => {
+          /* fire-and-forget */
+        });
       }
 
       return plain(flow.approvalFlow);
@@ -1030,17 +1304,17 @@ export const approvalRouter = router({
    * Events sorted by timestamp DESC (most recent first).
    */
   getAuditTrail: tenantProcedure
-    .use(requirePermission({ invoice: ["read"] }))
+    .use(requirePermission({ invoice: ['read'] }))
     .input(z.object({ invoiceId: z.string() }))
     .query(async ({ ctx, input }) => {
-      const flow = await prisma.approvalFlow.findFirst({
+      const flow = await ctx.db.approvalFlow.findFirst({
         where: {
           resourceId: input.invoiceId,
           organizationId: ctx.organizationId,
         },
         include: {
           steps: {
-            orderBy: { stepOrder: "asc" },
+            orderBy: { stepOrder: 'asc' },
             include: {
               decisions: {
                 include: {
@@ -1048,7 +1322,7 @@ export const approvalRouter = router({
                     select: { id: true, name: true, email: true, image: true },
                   },
                 },
-                orderBy: { createdAt: "asc" },
+                orderBy: { createdAt: 'asc' },
               },
             },
           },
@@ -1056,13 +1330,13 @@ export const approvalRouter = router({
       });
 
       if (!flow) {
-        return { events: [] as Array<Record<string, unknown>>, flow: null };
+        return { events: [] as Record<string, unknown>[], flow: null };
       }
 
       // Resolve chain name for the flow
       let chainName: string | null = null;
       if (flow.chainConfigId) {
-        const cfg = await prisma.approvalChainConfig.findUnique({
+        const cfg = await ctx.db.approvalChainConfig.findUnique({
           where: { id: flow.chainConfigId },
           select: { name: true },
         });
@@ -1071,7 +1345,7 @@ export const approvalRouter = router({
 
       // Build flow summary with step data for chain tracker
       const resolvedSteps = await Promise.all(
-        flow.steps.map(async (step) => ({
+        flow.steps.map(async step => ({
           id: step.id,
           stepOrder: step.stepOrder,
           name: step.name,
@@ -1082,7 +1356,7 @@ export const approvalRouter = router({
           actedAt: step.actedAt?.toISOString() ?? null,
           decision: step.decision ?? null,
           approver: step.approverUserId
-            ? await prisma.user.findUnique({
+            ? await ctx.db.user.findUnique({
                 where: { id: step.approverUserId },
                 select: { id: true, name: true, email: true, image: true },
               })
@@ -1098,73 +1372,7 @@ export const approvalRouter = router({
         steps: resolvedSteps,
       };
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const events: Array<Record<string, any>> = [];
-
-      // System event: submitted
-      events.push({
-        type: "system",
-        label: "submitted",
-        timestamp: flow.startedAt.toISOString(),
-      });
-
-      // System event: routed to chain
-      if (flow.chainConfigId) {
-        events.push({
-          type: "system",
-          label: "routed",
-          chainName: chainName ?? "Unknown chain",
-          timestamp: flow.startedAt.toISOString(),
-        });
-      }
-
-      // Human decisions and SLA breach events
-      for (const step of flow.steps) {
-        for (const decision of step.decisions) {
-          events.push({
-            type: "decision",
-            label: decision.decision.toLowerCase(),
-            levelName: step.name,
-            stepOrder: step.stepOrder,
-            actor: decision.actor,
-            comment: decision.comment,
-            timestamp: decision.createdAt.toISOString(),
-          });
-        }
-
-        // SLA breach detection
-        if (step.slaDeadline) {
-          const now = new Date();
-          const breached =
-            (step.actedAt && step.actedAt > step.slaDeadline) ||
-            (step.status === "PENDING" && now > step.slaDeadline);
-
-          if (breached) {
-            events.push({
-              type: "system",
-              label: "sla_breached",
-              levelName: step.name,
-              timestamp: step.slaDeadline.toISOString(),
-            });
-          }
-        }
-      }
-
-      // Flow completion event
-      if (flow.completedAt) {
-        events.push({
-          type: "system",
-          label: flow.status === "APPROVED" ? "approved" : "rejected",
-          timestamp: flow.completedAt.toISOString(),
-        });
-      }
-
-      // Sort by timestamp DESC (most recent first)
-      events.sort(
-        (a, b) =>
-          new Date(b.timestamp as string).getTime() -
-          new Date(a.timestamp as string).getTime(),
-      );
+      const events = buildAuditEvents(flow, chainName);
 
       return plain({ events, flow: flowSummary });
     }),

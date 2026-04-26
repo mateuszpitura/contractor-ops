@@ -1,335 +1,430 @@
-# Stack Research
+# Stack Research: v5.0 UK & Germany Market Expansion
 
-**Domain:** B2B Contractor Operations SaaS (multi-tenant, Poland-first)
-**Researched:** 2026-03-18
-**Confidence:** HIGH
+**Domain:** UK IR35 compliance, German Scheinselbstaendigkeit, EN 16931 e-invoicing (XRechnung/ZUGFeRD), BACS payments, German localization, HMRC/VIES VAT validation
+**Researched:** 2026-04-12
+**Confidence:** MEDIUM (web search tools unavailable; recommendations based on thorough codebase analysis of existing patterns and training data knowledge of standards/APIs)
 
-## Recommended Stack
+## Key Finding: Build From Spec, Not From Libraries
 
-### Core Technologies
+The JS/TS ecosystem for EU e-invoicing is extremely thin. Unlike the Java/.NET world (which has Mustang, ZUGFeRD-csharp, etc.), Node.js has no mature, maintained libraries for XRechnung, ZUGFeRD, or EN 16931. The existing codebase already uses the right approach: `fast-xml-parser` for XML generation + `xml-crypto` for digital signatures, building country profiles that implement the `EInvoiceProfile` interface. **The new profiles (XRechnung, ZUGFeRD) follow this same pattern with zero engine changes.**
 
-| Technology | Version | Purpose | Why Recommended |
-|------------|---------|---------|-----------------|
-| Next.js | 15.x | Full-stack framework | SSR/SSG, file-based routing, Vercel-native. App Router is the standard for B2B dashboards. Server Components reduce client bundle for data-heavy pages. |
-| React | 19.x | UI library | Server Components, Suspense, transitions — all critical for data-dense SaaS UIs. |
-| TypeScript | 5.7+ | Type safety | Non-negotiable for a solo dev building a complex SaaS. End-to-end type safety with tRPC. |
-| tRPC | 11.x | API layer | Released March 2025. Full-stack type safety without code generation. SSE subscriptions for real-time updates. FormData support. First-class Next.js App Router + TanStack Query v5 integration. |
-| Prisma | 6.x | ORM | Mature ecosystem, declarative schema, migrations, type-safe queries. The db-schema is already designed for Prisma. Prisma Client Extensions for audit logging middleware. |
-| PostgreSQL (Neon) | 17 | Primary database | Serverless Postgres with branching (great for preview deploys). Native Vercel integration. Connection pooling built in. |
-| Tailwind CSS | 4.x | Styling | Utility-first, composes well with shadcn/ui. v4 has CSS-first config, faster builds. |
-| shadcn/ui | latest | Component library | Copy-paste components built on Radix UI. Not a dependency — you own the code. Already includes Chart (Recharts), Command (cmdk), Form (React Hook Form + Zod), and Table components. |
+Similarly, no meaningful npm packages exist for BACS Standard 18, IR35 determination, or Scheinselbstaendigkeit risk assessment. These are all build-from-spec domains.
 
-### Authentication & Authorization
+---
 
-| Technology | Version | Purpose | Why Recommended |
-|------------|---------|---------|-----------------|
-| Better Auth | 1.x | Authentication | Open-source, self-hosted, TypeScript-first. Organization plugin provides multi-tenant RBAC out of the box: owner/admin/member roles, invitations, member limits. Custom roles via dynamic RBAC stored in DB. Auth.js team joined Better Auth in Sep 2025 — this is the successor. |
+## What We Already Have (DO NOT Add)
 
-**Better Auth Organization plugin covers:**
-- Multi-tenant org creation with limits
-- Role-based access (owner, admin, member + custom roles)
-- Invitation workflows with email
-- Permission checking via `hasPermission` API
-- Active organization context for query scoping
+| Capability | Existing Package | Version | Notes |
+|------------|------------------|---------|-------|
+| XML generation | fast-xml-parser | ^5.5.9 | Used by ZATCA + Peppol-AE generators. Same `XMLBuilder`/`XMLParser` for XRechnung UBL and ZUGFeRD CII. |
+| XAdES digital signatures | xml-crypto | ^6.0.0 | Used by `ZatcaXAdESSigner`. Same `SignedXml` + `ExclusiveCanonicalization` for XRechnung XAdES. |
+| XML DOM | @xmldom/xmldom | 0.8.12 | Peer dependency of xml-crypto. Already installed. |
+| E-invoice profile architecture | @contractor-ops/einvoice | workspace | `EInvoiceProfile` interface, `Signable` capability, `registerProfile()` registry. New profiles slot in with zero engine changes. |
+| Payment export framework | payment-export.ts | -- | `generateCsv()`, `generateElixir()`, `generateSepaXml()`, `generateSwiftXml()`. BACS is another generator alongside these. |
+| Payment format detection | payment-format-detection.ts | -- | `detectFormat()` routes by currency + IBAN country. Add BACS rule for GBP + GB. |
+| Government API framework | @contractor-ops/gov-api | workspace | Cert auth, retry, rate limiting, audit logging. HMRC + VIES clients fit this pattern. |
+| i18n framework | next-intl | ^4.8.3 | Routing, pluralization, ICU MessageFormat. Adding `de` locale is config + translation file. |
+| Locale-aware formatting | date-fns + Intl | ^4.1.0 | German `de-DE` locale supported out of the box by both. |
+| Schema validation | zod | ^3.23.0 | Extend for IR35 questionnaire, Scheinselbstaendigkeit assessment, BACS format validation. |
+| Certificate handling | node-forge + crypto | ^1.3.1 | Node.js crypto module handles RSA-SHA256 for XRechnung (ZATCA uses ECDSA-SHA256). |
+| QR code generation | qrcode | ^1.5.4 | Already installed. Potentially useful for German invoice QR codes. |
 
-**Custom RBAC mapping:** The 8 roles from PROJECT.md (admin, finance, ops, manager, legal viewer, IT admin, accountant, readonly) should be implemented as custom roles using Better Auth's dynamic RBAC feature, stored in the database.
+## Recommended Stack Additions
 
-### State Management
+### New Libraries to Add
 
-| Technology | Version | Purpose | Why Recommended |
-|------------|---------|---------|-----------------|
-| TanStack Query | 5.x | Server state | Cache invalidation, optimistic updates, infinite scroll. The standard for server state in React. tRPC v11 has first-class integration. |
-| Zustand | 5.x | Client state | Minimal API, no boilerplate. Use sparingly — for UI state only (sidebar open, active filters, draft form state). Most state should live in TanStack Query or URL params. |
-| nuqs | 2.x | URL state | Type-safe search params. Used by Vercel, Sentry, Supabase. Essential for shareable filter/sort/pagination state on data tables. 6 kB gzipped. |
+| Library | Version | Package Target | Purpose | Why Recommended |
+|---------|---------|----------------|---------|-----------------|
+| pdf-lib | ^1.17.1 | @contractor-ops/einvoice | PDF/A-3 generation for ZUGFeRD (embed CII XML in PDF) | Pure JS, no native dependencies, works on Vercel. Supports PDF modification: file attachments (AF array), XMP metadata, output intent. The only mature JS library capable of producing PDF/A-3b compliant output with embedded XML. react-pdf (already installed) is for viewing -- pdf-lib is for generation/modification. |
 
-### Data Tables & Forms
+That is the only new dependency. Everything else is build-from-spec using existing libraries.
 
-| Technology | Version | Purpose | Why Recommended |
-|------------|---------|---------|-----------------|
-| TanStack Table | 8.x | Data tables | Headless, composable. Handles sorting, filtering, pagination, column visibility, row selection. Pairs with shadcn/ui DataTable pattern. |
-| React Hook Form | 7.x | Form management | Uncontrolled forms = fewer re-renders. Native Zod resolver. shadcn/ui Form component wraps this. |
-| Zod | 3.x | Schema validation | Single source of truth for validation: tRPC input, form validation, API responses. Shared in monorepo `packages/validators`. |
+### Libraries NOT to Add
 
-### Background Jobs & Workflow Orchestration
+| Avoid | Why | Use Instead |
+|-------|-----|-------------|
+| Any npm `zugferd` package | No mature, maintained packages in JS/TS. What exists is experimental or abandoned. | Build CII XML with `fast-xml-parser` following existing ZATCA/Peppol generator pattern. |
+| Any npm `xrechnung` package | Same situation -- no viable JS packages. | Build XRechnung UBL XML with `fast-xml-parser`, structurally identical to Peppol-AE generator. |
+| Any npm `bacs` package | Nothing exists. BACS Standard 18 is fixed-width text, simpler than the Elixir format already built. | `generateBacs()` function in `payment-export.ts` (~100-150 lines). |
+| `hmrc-client` or `hmrc-mtd-api` | No official HMRC npm SDK. Existing packages are unmaintained. | Direct `fetch` to HMRC REST API + Zod response validation. Fits existing gov-api pattern. |
+| `soap` for VIES | EU VIES now has a REST API alongside SOAP. Avoid adding a SOAP dependency. | Direct `fetch` to VIES REST endpoint (`/rest-api/check-vat-number`). Fall back to SOAP only if REST proves unreliable. |
+| Any "IR35 calculator" library | Does not exist. IR35 determination is a rules engine based on public CEST criteria. | Build questionnaire-driven weighted rules engine. |
+| `mustangserver` (Java ZUGFeRD) | Wrong ecosystem -- requires JVM. | Build natively in TypeScript. |
+| `pdfkit` | No PDF/A-3 support, no file embedding API for ZUGFeRD compliance. | `pdf-lib` |
+| `libxmljs` / `libxmljs2` | Native C++ bindings, breaks on Vercel/Edge. | `fast-xml-parser` (pure JS, already installed). |
+| `xrechnung-visualization` | For rendering XRechnung as HTML, not for generation. | Our UI already renders invoices. |
 
-| Technology | Version | Purpose | Why Recommended |
-|------------|---------|---------|-----------------|
-| **Inngest** | 3.x | Durable workflows, background jobs, scheduling | Event-driven, serverless-native. Runs on Vercel without separate worker infrastructure. Free tier: 50-100K executions/month. Step functions with sleep, fan-out, retries, debounce. First-class Vercel marketplace integration. |
+---
 
-**Why Inngest over alternatives:**
-- **vs BullMQ:** BullMQ requires a separate long-running Node.js server for workers — impossible on Vercel serverless. Upstash Redis costs spike with BullMQ's polling. Inngest calls your existing serverless endpoints.
-- **vs Trigger.dev:** Trigger.dev runs on dedicated compute (good for long tasks), but Inngest's step function model is better suited for approval chains, SLA timers, and multi-step workflows that sleep between steps. Inngest's free tier is 10x larger (50K vs 5K runs). Inngest can be self-hosted since v1.0.
-- **vs QStash:** QStash is a message queue, not a workflow engine. Good for simple fire-and-forget, but lacks step functions, fan-out, and the durability guarantees needed for approval chains.
+## Detailed Analysis by Domain
 
-**Inngest handles these PROJECT.md requirements:**
-- Approval workflow SLA timers (step.sleep + step.waitForEvent)
-- Onboarding/offboarding workflow execution with task dependencies
-- Invoice matching pipeline (event-driven, step-by-step)
-- Overdue detection (scheduled cron functions)
-- Contract expiry reminders (scheduled)
-- Email intake processing pipeline
-- Notification fan-out (in-app + email + Slack)
+### 1. EN 16931 E-Invoicing: XRechnung (UBL 2.1)
 
-### Email
+**Confidence: HIGH** -- existing Peppol-AE UBL 2.1 generator is structurally identical.
 
-| Technology | Version | Purpose | Why Recommended |
-|------------|---------|---------|-----------------|
-| Resend | 4.x | Transactional email sending | Built by React Email team. Simple API, good DX. Vercel-native. |
-| React Email | 5.x | Email templates | Build emails with React + TypeScript. Dark mode support, Tailwind 4 support. Shared in monorepo as `packages/email`. |
-| **Resend Inbound** | - | Email intake per org | Released Nov 2025. Webhook-based inbound email: parses content to JSON, stores attachments, provides download URLs. Eliminates need for SendGrid/Mailgun just for inbound. Single vendor for send + receive. |
+XRechnung is Germany's CIUS (Core Invoice Usage Specification) of EN 16931 using UBL 2.1 syntax. The existing `generatePintAeXml()` in `packages/einvoice/src/profiles/peppol-ae/generator.ts` is the direct template:
 
-**Email intake architecture:**
-1. Each org gets a dedicated Resend inbound address (e.g., `invoices-{org-slug}@in.contractorops.com`)
-2. Resend parses email, sends webhook to Next.js API route
-3. Inngest function triggered: extract attachments, match sender to contractor (by email/NIP), create invoice record, run duplicate detection
-4. No separate mail server infrastructure needed
+- Same `XMLBuilder` from fast-xml-parser
+- Same UBL namespaces (`urn:oasis:names:specification:ubl:schema:xsd:Invoice-2`, `cac:`, `cbc:`)
+- Different `CustomizationID`: `urn:cen.eu:en16931:2017#compliant#urn:xoev-de:kosit:standard:xrechnung_3.0`
+- Different `ProfileID`: `urn:fdc:peppol.eu:2017:poacc:billing:01:1.0`
+- Mandatory German fields: `BuyerReference` (Leitweg-ID for B2G), `PaymentTerms` (Skonto)
 
-### File Storage
+**Key difference from Peppol-AE:** XRechnung requires German-specific business rules (BR-DE-1 through BR-DE-26). These are Schematron validation rules, not XML structure differences. Implementation: add a `validate()` method that checks these rules.
 
-| Technology | Version | Purpose | Why Recommended |
-|------------|---------|---------|-----------------|
-| Cloudflare R2 | - | S3-compatible object storage | Zero egress fees (critical for document downloads). S3-compatible API via `@aws-sdk/client-s3`. Presigned URLs for secure upload/download. Cheapest option for a document-heavy SaaS. |
-| @aws-sdk/client-s3 | 3.x | S3 client | Official AWS SDK v3. Works with R2 via custom endpoint. |
-| @aws-sdk/s3-request-presigner | 3.x | Presigned URLs | Generate upload/download URLs server-side. Browser uploads directly to R2. |
-
-### Cache & Real-time
-
-| Technology | Version | Purpose | Why Recommended |
-|------------|---------|---------|-----------------|
-| Upstash Redis | - | Cache, rate limiting, sessions | Serverless Redis, per-request pricing. Use for: auth session cache, rate limiting, idempotency keys for payment runs, temporary locks. |
-| @upstash/redis | 1.x | Redis client | HTTP-based, works in serverless/edge. |
-| @upstash/ratelimit | 2.x | Rate limiting | Sliding window rate limiting for API routes. |
-
-**Note:** Do NOT use Upstash for BullMQ job queues — the polling cost is prohibitive. Use Inngest for background jobs instead.
-
-### Slack Integration
-
-| Technology | Version | Purpose | Why Recommended |
-|------------|---------|---------|-----------------|
-| @slack/bolt | 4.x | Slack app framework | Official SDK. Handles OAuth, interactive messages, slash commands, event subscriptions. |
-| @slack/web-api | 7.x | Slack API client | Included with Bolt. For sending Block Kit messages programmatically. |
-| slack-block-builder | 2.x | Block Kit builder | Declarative, type-safe builder for Block Kit JSON. Avoids hand-writing JSON for approval messages with buttons. |
-
-**Slack approval flow:**
-1. Invoice approved/needs-review triggers Inngest function
-2. Sends Block Kit message with Approve/Reject/Clarify buttons
-3. User clicks button, Slack sends interaction payload to webhook
-4. Webhook triggers tRPC mutation for approval action
-5. Updates invoice status, sends confirmation message
-
-### Internationalization
-
-| Technology | Version | Purpose | Why Recommended |
-|------------|---------|---------|-----------------|
-| next-intl | 4.x | i18n framework | Built for Next.js App Router + Server Components. 931K weekly downloads. Loads translations in Server Components without hydration overhead. Supports ICU message format for plurals, dates, currencies. |
-
-**Why next-intl over next-i18next:** next-i18next is not compatible with the App Router. next-intl was designed for Server Components from the ground up. It's the clear winner for new Next.js projects.
-
-**i18n architecture:**
-- Translation files in `packages/i18n/messages/{locale}.json`
-- Shared across monorepo
-- Polish (pl) + English (en) from day 1
-- Currency/date formatting via next-intl's `useFormatter` (handles PLN, EUR, date locales)
-
-### Charts & Reporting
-
-| Technology | Version | Purpose | Why Recommended |
-|------------|---------|---------|-----------------|
-| Recharts | 2.x (3.x when shadcn supports) | Dashboard charts | Already integrated via shadcn/ui Chart component. Composition-based API. Handles spend charts, KPI visualizations, trend lines. |
-
-**Do NOT add Tremor** — it's a wrapper around Recharts + Radix, which is exactly what shadcn/ui already provides. Adding Tremor would duplicate the abstraction layer.
-
-### Data Import/Export
-
-| Technology | Version | Purpose | Why Recommended |
-|------------|---------|---------|-----------------|
-| PapaParse | 5.x | CSV parsing | Fast, streaming, RFC 4180 compliant. Zero dependencies. Handles large files via ReadableStream in Node.js. |
-| xlsx (SheetJS) | 0.20.x | XLSX parsing | Read/write Excel files. Use Community Edition (free). For import wizard: XLSX -> parsed rows -> validation -> preview -> insert. |
-
-### Audit Logging
-
-| Technology | Version | Purpose | Why Recommended |
-|------------|---------|---------|-----------------|
-| Custom Prisma extension | - | Immutable audit trail | Use Prisma Client Extensions to intercept all mutations and write to append-only `audit_log` table. Captures: actor, action, entity, old/new values, timestamp, org_id. |
-
-**Implementation approach:**
-- Prisma middleware/extension intercepts `create`, `update`, `delete` operations
-- Writes to `audit_log` table with JSON diff of changes
-- Table has no UPDATE/DELETE permissions at DB level (PostgreSQL GRANT)
-- Separate from application logging — this is business audit trail
-- Do NOT use external services (Bemi) for v1 — the pattern is simple enough to build
-
-### Command Palette
-
-| Technology | Version | Purpose | Why Recommended |
-|------------|---------|---------|-----------------|
-| cmdk | 1.x | Command palette | Already bundled in shadcn/ui Command component. Used by Linear, Vercel. Fuzzy search, keyboard navigation, zero dependencies. Just use `shadcn add command`. |
-
-### Date & Time
-
-| Technology | Version | Purpose | Why Recommended |
-|------------|---------|---------|-----------------|
-| date-fns | 4.x | Date manipulation | Tree-shakeable, functional API, immutable. Better bundle optimization than dayjs for apps that only use a subset of functions. Native TypeScript. Timezone support via `date-fns-tz`. |
-
-### Development Tools
-
-| Tool | Purpose | Notes |
-|------|---------|-------|
-| Turborepo | 2.x | Monorepo orchestration | Caching, parallel tasks, dependency graph. Already decided. |
-| pnpm | 9.x | Package manager | Fast, disk-efficient, native workspace support. Standard for Turborepo monorepos. |
-| Biome | 1.x | Linter + Formatter | Replaces ESLint + Prettier. 10-100x faster. Single tool, single config. Rust-based. |
-| Vitest | 2.x | Unit/integration tests | Vite-native, fast, compatible with Jest API. Works with TypeScript out of the box. |
-| Playwright | 1.x | E2E tests | Cross-browser, auto-waiting, trace viewer. Best E2E framework for Next.js. |
-| Prisma Studio | - | DB GUI | Built into Prisma. Quick data inspection during development. |
-
-**Why Biome over ESLint + Prettier:** ESLint flat config + Prettier requires multiple packages, plugin compatibility headaches, and slower execution. Biome is a single binary that lints and formats TypeScript/TSX/JSON in milliseconds. The ecosystem has matured enough by 2025 to be production-ready.
-
-## Monorepo Structure
-
+**New profile structure:**
 ```
-contractor-ops/
-  apps/
-    web/                  # Next.js app (dashboard, all UI)
-  packages/
-    db/                   # Prisma schema, client, migrations, seed
-    api/                  # tRPC routers, procedures, middleware
-    validators/           # Zod schemas (shared between api + web)
-    email/                # React Email templates
-    i18n/                 # Translation files, next-intl config
-    ui/                   # shadcn/ui components (if extracting shared)
-    config-typescript/    # Shared tsconfig
-    config-biome/         # Shared Biome config
+packages/einvoice/src/profiles/xrechnung/
+  index.ts          -- XRechnungProfile implementing EInvoiceProfile
+  generator.ts      -- UBL 2.1 XML generation (adapt from peppol-ae/generator.ts)
+  parser.ts         -- UBL 2.1 XML parsing
+  validator.ts      -- BR-DE-* business rule validation
+  signer.ts         -- XAdES-BES with RSA-SHA256 (adapt from zatca/signer.ts)
+  constants.ts      -- XRechnung-specific IDs, namespaces
+  schemas.ts        -- Zod schemas for XRechnung extensions
 ```
 
-**Note:** Start with a single `web` app. Do NOT create separate `api` or `admin` apps — tRPC in Next.js API routes keeps everything in one deployment. Split only if you later need a separate admin panel or contractor portal.
+### 2. EN 16931 E-Invoicing: ZUGFeRD (CII + PDF/A-3)
+
+**Confidence: MEDIUM** -- CII syntax is new to the codebase; pdf-lib PDF/A-3 capabilities should be verified during implementation.
+
+ZUGFeRD 2.2+ (also Factur-X in France) uses UN/CEFACT CII (Cross-Industry Invoice) XML syntax. This is a different XML structure from UBL but maps to the same `EInvoice` canonical model.
+
+**CII vs UBL key differences:**
+- Different root element: `rsm:CrossIndustryInvoice` (not `Invoice`)
+- Different namespaces: `urn:un:unece:uncefact:data:standard:CrossIndustryInvoice:100`
+- Different element names: `ram:SellerTradeParty` (not `cac:AccountingSupplierParty`)
+- Same semantic content, different XML vocabulary
+
+**ZUGFeRD profiles** (conformance levels):
+- MINIMUM -- basic metadata only
+- BASIC WL -- no line items
+- BASIC -- with line items
+- EN 16931 (COMFORT) -- full EN 16931 compliance (recommended for contractor invoices)
+- EXTENDED -- additional German-specific fields
+
+**PDF/A-3 workflow:**
+1. Generate CII XML from `EInvoice` canonical model
+2. Take the contractor's submitted invoice PDF (or generate one)
+3. Convert to PDF/A-3b: embed sRGB ICC profile, add XMP metadata with `pdfaid:part=3` and `pdfaid:conformance=B`
+4. Attach CII XML as `factur-x.xml` with AFRelationship `Data` and MIME type `text/xml`
+5. Add the file to the catalog's AF (Associated Files) array
+
+**pdf-lib** handles steps 2-5. Step 1 uses fast-xml-parser.
+
+**New profile structure:**
+```
+packages/einvoice/src/profiles/zugferd/
+  index.ts          -- ZUGFeRDProfile implementing EInvoiceProfile
+  generator.ts      -- CII XML generation (NEW syntax, new builder)
+  parser.ts         -- CII XML parsing
+  validator.ts      -- ZUGFeRD profile conformance validation
+  pdf-embedder.ts   -- PDF/A-3b creation with XML attachment (uses pdf-lib)
+  constants.ts      -- CII namespaces, ZUGFeRD profile identifiers
+  schemas.ts        -- Zod schemas for ZUGFeRD extensions
+```
+
+**ZUGFeRD does NOT need XML digital signatures.** The PDF can optionally be signed (PAdES), but the XML itself is unsigned. This is a key difference from XRechnung.
+
+### 3. BACS Standard 18 File Format
+
+**Confidence: HIGH** -- simpler than Elixir format already implemented.
+
+BACS Standard 18 is the UK domestic payment file format. Fixed-width flat file with:
+
+- **VOL1** header (80 chars) -- volume label
+- **HDR1/HDR2** headers -- file identification, processing date
+- **UHL1** user header -- service/originator codes, processing date
+- **Data records** (100 chars) -- destination sort code (6), account number (8), transaction type (2 = credit), amount in pence (11), originator sort code (6), account number (8), free text ref (18), originator name (18)
+- **EOF1/EOF2** file trailers
+- **UTL1** user trailer -- debit/credit totals, record count
+
+**Implementation:** Add `generateBacs()` to `packages/api/src/services/payment-export.ts` alongside existing generators. The function signature matches the existing pattern:
+
+```typescript
+export function generateBacs(items: ExportItem[], org: OrgBankInfo): Buffer
+```
+
+**Payment format detection changes** in `payment-format-detection.ts`:
+- Add `'BACS'` to `ExportFormat` type
+- Add rule: GBP + GB IBAN -> `BACS`
+- Note: UK sort codes (6 digits) and account numbers (8 digits) can be extracted from GB IBANs (positions 9-14 and 15-22 respectively after the `GB` country code and 2-digit check)
+
+**Important BACS specifics:**
+- Amounts in pence (minor units) -- already the project standard
+- All text must be uppercase ASCII -- reuse `stripDiacritics()` helper + `.toUpperCase()`
+- Transaction code 99 = credit transfer (the payment type we need)
+- File must end with CRLF line endings -- same as Elixir
+
+### 4. HMRC VAT Number Validation
+
+**Confidence: MEDIUM** -- API exists and is REST-based; verify exact endpoint URLs during implementation.
+
+HMRC provides a REST API for VAT number validation (no authentication needed for basic lookup):
+
+```
+GET https://api.service.hmrc.gov.uk/organisations/vat/check-vat-number/lookup/{vatNumber}
+```
+
+Returns JSON:
+```json
+{
+  "target": {
+    "name": "ACME LTD",
+    "vatNumber": "123456789",
+    "address": { "line1": "...", "postcode": "..." }
+  },
+  "processingDate": "2026-04-12"
+}
+```
+
+**Implementation:** Add `hmrc-vat.ts` client in `packages/gov-api/src/` following the existing client pattern (fetch + Zod response validation + retry + rate limiting).
+
+**No new dependency needed.** Direct HTTP fetch with Zod response schema.
+
+**UK VAT number format:** `GB` + 9 digits (or 12 for government departments). Validate with regex before API call.
+
+### 5. VIES USt-IdNr (VAT ID) Validation
+
+**Confidence: LOW** -- VIES REST API availability needs verification during implementation.
+
+The EU VIES service validates EU VAT numbers. Two endpoints exist:
+
+1. **SOAP** (legacy, guaranteed available): WSDL at `https://ec.europa.eu/taxation_customs/vies/checkVatService.wsdl`
+2. **REST** (newer, verify availability): `POST https://ec.europa.eu/taxation_customs/vies/rest-api/check-vat-number`
+
+**Recommendation:** Try REST first (no new dependency). Request body: `{ "countryCode": "DE", "vatNumber": "123456789" }`. If REST is unreliable or in beta, fall back to SOAP (add `soap` package).
+
+**German USt-IdNr format:** `DE` + 9 digits. VIES validates against Bundeszentralamt fuer Steuern (BZSt) records.
+
+**Implementation:** Add `vies.ts` client in `packages/gov-api/src/`. Use qualified confirmation requests (provides name/address match) for KYC compliance.
+
+**Validation flag:** VIES REST API stability MUST be verified before implementation. If unavailable, add `soap@^1.1.0` as dependency.
+
+### 6. IR35 Determination Engine
+
+**Confidence: HIGH** -- well-documented public criteria, build-from-spec.
+
+No npm library or commercial API exists for IR35 determination. HMRC's CEST (Check Employment Status for Tax) tool is web-only with no public API.
+
+**Build a generic classification engine** with pluggable rule sets:
+
+```
+packages/classification/    (NEW package)
+  src/
+    engine.ts               -- Generic weighted questionnaire evaluator
+    types.ts                -- RuleSet, Question, Answer, RiskAssessment interfaces
+    rulesets/
+      ir35.ts               -- UK IR35 rule set (~20 weighted questions)
+      scheinselbst.ts       -- German Scheinselbstaendigkeit rule set
+    generators/
+      sds.ts                -- UK Status Determination Statement (PDF)
+      drv-defense.ts        -- German DRV audit defense documentation
+```
+
+**IR35 assessment factors** (from case law + CEST):
+1. Personal service / substitution rights
+2. Mutuality of obligation
+3. Control (how, when, where)
+4. Financial risk (own equipment, insurance, bad debt)
+5. Part of the organization (integration)
+6. Provision of equipment
+7. Right of dismissal / engagement length
+8. Employee-type benefits (holiday pay, pension)
+
+**Output:** INSIDE IR35 / OUTSIDE IR35 / INDETERMINATE with per-factor weighted scores and reasoning text.
+
+**SDS generation:** UK law requires medium/large companies to issue a Status Determination Statement. Template-driven document using assessment results.
+
+### 7. Scheinselbstaendigkeit Risk Engine
+
+**Confidence: HIGH** -- well-established German case law criteria.
+
+Same architecture as IR35 -- uses the generic classification engine with a different rule set.
+
+**DRV (Deutsche Rentenversicherung) assessment criteria:**
+1. Weisungsgebundenheit (bound by instructions)
+2. Eingliederung (organizational integration)
+3. Eigenes Unternehmerrisiko (own business risk)
+4. Eigene Arbeitsmittel (own work equipment)
+5. Mehrere Auftraggeber (multiple clients)
+6. Eigene Mitarbeiter (own employees)
+7. Marktauftritt (market presence)
+8. Keine Arbeitnehmeraehnliche Verguetung (not employee-like compensation)
+
+**Output:** HIGH RISK / MEDIUM RISK / LOW RISK with per-factor assessment and German-language reasoning for DRV audit defense.
+
+**DRV Statusfeststellungsverfahren** documentation: Generate structured defense documents that can be submitted to DRV if audited.
+
+### 8. German i18n with next-intl
+
+**Confidence: HIGH** -- next-intl handles German with zero issues.
+
+**Changes needed:**
+
+1. **Routing:** Add `'de'` to `locales` array in `apps/web/src/i18n/routing.ts`:
+   ```typescript
+   locales: ['en', 'pl', 'ar', 'de'] as const
+   ```
+
+2. **Messages:** Create `apps/web/messages/de.json` translation file (copy structure from `en.json`, translate)
+
+3. **No library changes.**
+
+**German-specific formatting handled by existing Intl APIs:**
+- Numbers: `1.234,56` (comma decimal, period thousands) -- `Intl.NumberFormat('de-DE')`
+- Dates: `12.04.2026` (DD.MM.YYYY) -- `Intl.DateTimeFormat('de-DE')`
+- Currency: `1.234,56 EUR` -- `Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' })`
+
+**German-specific field formats (validation with Zod, not i18n):**
+- Handelsregister: `HR[AB]\s?\d+` (e.g., "HRB 12345")
+- Steuernummer: varies by Bundesland, 10-11 digits with slashes (e.g., "123/456/78901")
+- USt-IdNr: `DE\d{9}` (e.g., "DE123456789")
+- Skonto terms: display string like "2% Skonto bei Zahlung innerhalb von 10 Tagen" -- translation key with ICU placeholders
+
+**UI layout note:** German compound words are long (Rechnungsstellungsdatum, Zahlungsbedingungen, Umsatzsteuervoranmeldung). Ensure:
+- Flexible column widths in tables (already using TanStack Table with auto-sizing)
+- `hyphens: auto` with `lang="de"` on `<html>` element for line breaking
+- Test all UI views with German translations for overflow
+
+### 9. XAdES Digital Signatures for XRechnung
+
+**Confidence: HIGH** -- existing ZATCA XAdES-BES signer is directly reusable.
+
+XRechnung requires XAdES-BES enveloped signatures when submitted to German public sector portals (ZRE -- Zentrale Rechnungseingangsplattform, OZG-RE).
+
+**Existing infrastructure in `packages/einvoice/src/profiles/zatca/signer.ts`:**
+- `ZatcaXAdESSigner` implements `Signable` interface
+- Uses `xml-crypto` for canonicalization + `crypto` for signing
+- Builds XAdES-BES SignedProperties manually
+- Full sign + verify flow
+
+**Key adaptation for XRechnung:**
+- ZATCA: ECDSA-SHA256 (secp256k1 curve) -- `dsaEncoding: 'ieee-p1363'`
+- XRechnung: RSA-SHA256 -- standard RSA signing, simpler
+- Algorithm URI: `http://www.w3.org/2001/04/xmldsig-more#rsa-sha256`
+- Certificate: Standard X.509 RSA certificate (not ECDSA)
+
+**Create `XRechnungSigner` class** adapting `ZatcaXAdESSigner`:
+- Change algorithm from ECDSA-SHA256 to RSA-SHA256
+- Remove ECDSA-specific `dsaEncoding` option
+- Same XAdES-BES structure (SignedProperties, CertDigest, IssuerSerial)
+- Same enveloped signature injection pattern
+
+**No new library needed.** `xml-crypto@^6.0.0` + Node.js `crypto` handles RSA-SHA256 natively.
+
+---
 
 ## Installation
 
 ```bash
-# Core framework
-pnpm add next@latest react@latest react-dom@latest typescript@latest
-
-# API layer
-pnpm add @trpc/server@latest @trpc/client@latest @trpc/tanstack-react-query@latest @tanstack/react-query@latest
-
-# Database
-pnpm add prisma@latest @prisma/client@latest
-
-# Auth
-pnpm add better-auth@latest
-
-# State & UI
-pnpm add zustand@latest nuqs@latest
-pnpm add @tanstack/react-table@latest
-pnpm add react-hook-form@latest @hookform/resolvers@latest zod@latest
-
-# Styling (shadcn/ui installed via CLI)
-pnpm add tailwindcss@latest
-
-# Background jobs
-pnpm add inngest@latest
-
-# Email
-pnpm add resend@latest @react-email/components@latest
-
-# File storage
-pnpm add @aws-sdk/client-s3@latest @aws-sdk/s3-request-presigner@latest
-
-# Cache & rate limiting
-pnpm add @upstash/redis@latest @upstash/ratelimit@latest
-
-# Slack
-pnpm add @slack/bolt@latest slack-block-builder@latest
-
-# i18n
-pnpm add next-intl@latest
-
-# Charts (via shadcn, but if manual)
-pnpm add recharts@latest
-
-# Data import
-pnpm add papaparse@latest xlsx@latest
-
-# Date utilities
-pnpm add date-fns@latest
-
-# Dev dependencies
-pnpm add -D @biomejs/biome@latest vitest@latest @playwright/test@latest
-pnpm add -D @types/react@latest @types/node@latest @types/papaparse@latest
+# The ONLY new dependency for the entire v5.0 milestone
+pnpm --filter @contractor-ops/einvoice add pdf-lib@^1.17.1
 ```
+
+**Conditional (only if VIES REST API proves unreliable):**
+```bash
+pnpm --filter @contractor-ops/gov-api add soap@^1.1.0
+```
+
+---
+
+## New Package: @contractor-ops/classification
+
+A new workspace package for the contractor classification engine:
+
+```bash
+# Create new package
+mkdir -p packages/classification/src
+```
+
+**Dependencies:** Only `zod` (already in workspace). No external libraries.
+
+**package.json:**
+```json
+{
+  "name": "@contractor-ops/classification",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "zod": "^3.23.0"
+  }
+}
+```
+
+---
 
 ## Alternatives Considered
 
 | Recommended | Alternative | When to Use Alternative |
 |-------------|-------------|-------------------------|
-| Better Auth | Clerk | If you want zero auth code and are OK with vendor lock-in + per-MAU pricing. Clerk is faster to ship but expensive at scale. |
-| Better Auth | Auth.js (NextAuth) | Don't. Auth.js team joined Better Auth in Sep 2025. Auth.js is in maintenance mode. |
-| Inngest | Trigger.dev v3 | If you need long-running compute (>5 min tasks, video processing). Trigger.dev runs on dedicated infra. Not needed for this app's workloads. |
-| Inngest | BullMQ + Upstash | If you already have a long-running server. On Vercel-only, this requires a separate VPS for workers — unnecessary complexity. |
-| Inngest | QStash | For simple fire-and-forget messages. QStash is good for one-off webhooks but lacks step functions and workflow durability. |
-| next-intl | next-i18next | Never for App Router projects. next-i18next doesn't support Server Components. |
-| Resend Inbound | SendGrid Inbound Parse | If you need higher volume or already use SendGrid. Resend keeps send + receive in one vendor. |
-| Cloudflare R2 | AWS S3 | If you need S3 features not in R2 (like S3 Object Lambda, Glacier). R2 is cheaper for document storage due to zero egress. |
-| Prisma | Drizzle | If you want SQL-first with zero abstraction. Drizzle is lighter but less mature ecosystem. The existing db-schema is Prisma-native — switching would cost time for no gain. |
-| Neon | Supabase | If you want built-in auth, storage, realtime (Supabase bundles these). This project already has Better Auth, R2, Inngest — Neon is the right focused choice. |
-| Biome | ESLint + Prettier | If you need niche ESLint plugins (accessibility, import sorting). Biome covers 95% of rules and is dramatically faster. |
-| date-fns | dayjs | If you prefer Moment-like chaining API. date-fns is more tree-shakeable. |
-| Recharts | Tremor | Don't — shadcn/ui already wraps Recharts. Adding Tremor duplicates the abstraction. |
+| pdf-lib (PDF/A-3) | puppeteer/playwright | If pixel-perfect HTML-to-PDF rendering needed. Not our case -- we need PDF metadata control for ZUGFeRD compliance. Also, puppeteer requires browser binary (breaks Vercel). |
+| pdf-lib (PDF/A-3) | @react-pdf/renderer | If generating PDFs from React components. Lacks PDF/A-3 metadata control and file embedding needed for ZUGFeRD. |
+| Direct fetch (HMRC) | Any `hmrc-*` npm package | Never. All are unmaintained; the API is simple REST. |
+| Direct fetch (VIES REST) | soap package (VIES SOAP) | Only if VIES REST API is unreliable or undocumented. Verify REST first. |
+| Build BACS from spec | N/A | No alternatives exist. Simple fixed-width format. |
+| Build IR35 engine | Commercial API (IR35 Shield, Kingsbridge) | If legal liability for determination is a concern. Commercial APIs cost $$$, add vendor lock-in, and CEST criteria are public. Build own engine, consider commercial validation as optional premium feature later. |
+| Build Scheinselbstaendigkeit engine | N/A | No APIs or libraries exist for this. |
+| CII XML with fast-xml-parser | Dedicated CII library | No maintained CII library exists in JS/TS. fast-xml-parser handles arbitrary XML generation. |
 
-## What NOT to Use
-
-| Avoid | Why | Use Instead |
-|-------|-----|-------------|
-| Moment.js | Deprecated, massive bundle (329 kB). Project recommends modern alternatives. | date-fns |
-| next-i18next | Not compatible with Next.js App Router or Server Components | next-intl |
-| Auth.js / NextAuth | Maintenance mode since Sep 2025. Better Auth is the successor. | Better Auth |
-| Express.js server | Adds deployment complexity. tRPC in Next.js API routes covers all API needs on Vercel. | tRPC + Next.js API routes |
-| BullMQ on Vercel | Workers can't run on serverless. Requires separate VPS. Upstash polling costs. | Inngest |
-| Tremor | Wraps Recharts + Radix — same as what shadcn/ui already provides. Duplicate abstraction. | shadcn/ui Chart component |
-| Prisma Accelerate | Neon already provides connection pooling. Accelerate adds unnecessary cost. | Neon built-in pooler |
-| tRPC v10 | v11 released March 2025 with App Router improvements, SSE subscriptions, FormData. No reason to use v10. | tRPC v11 |
+---
 
 ## Version Compatibility
 
-| Package A | Compatible With | Notes |
-|-----------|-----------------|-------|
-| tRPC v11 | TanStack Query v5 | v11 requires TanStack Query v5. Do not use v4. |
-| tRPC v11 | Next.js 15 | First-class App Router support via fetch adapter. |
-| Better Auth 1.x | Prisma 6.x | Uses Prisma adapter for session/user storage. |
-| shadcn/ui (latest) | Recharts 2.x | v3 support coming. Use Recharts 2.x for now. |
-| next-intl 4.x | Next.js 15 | Full App Router + Server Components support. |
-| Inngest 3.x | Next.js 15 | serve() handler works with App Router route handlers. |
-| React Email 5.x | Tailwind 4.x | v5 added Tailwind 4 support. |
-| nuqs 2.x | Next.js 15 | Supports both App and Pages router via adapters. |
+| Package | Compatible With | Notes |
+|---------|-----------------|-------|
+| pdf-lib@^1.17.1 | Node.js 18+, Vercel serverless | Pure JS, zero native deps. No conflict with existing react-pdf (different purpose). |
+| fast-xml-parser@^5.5.9 | pdf-lib (no conflict) | Already installed. Generates both UBL (XRechnung) and CII (ZUGFeRD) XML. |
+| xml-crypto@^6.0.0 | RSA-SHA256 + ECDSA-SHA256 | Already installed. Supports both algorithm families needed. |
+| next-intl@^4.8.3 | German `de` locale | No version change. ICU MessageFormat handles German pluralization (2 forms: singular/plural). |
+| zod@^3.23.0 | All new schemas | Already installed everywhere. Classification engine uses it for questionnaire validation. |
 
-## Confidence Assessment
+---
 
-| Area | Confidence | Reason |
-|------|------------|--------|
-| Core stack (Next.js, tRPC, Prisma, Tailwind) | HIGH | Well-established, verified via official docs and multiple sources |
-| Better Auth + Organization plugin | HIGH | Official docs confirm multi-tenant RBAC. Auth.js team merger verified. |
-| Inngest for background jobs | HIGH | Verified Vercel integration, pricing, step function capabilities via official docs |
-| Resend Inbound for email intake | MEDIUM | Feature released Nov 2025 — relatively new. Needs testing for attachment volume and reliability. Fallback: SendGrid Inbound Parse. |
-| Cloudflare R2 | HIGH | S3-compatible, presigned URLs documented, zero egress verified |
-| Slack Bolt integration | HIGH | Official Slack SDK, well-documented Block Kit interactive patterns |
-| next-intl | HIGH | 931K weekly downloads, Next.js Conf 2025 featured, App Router native |
-| Biome over ESLint | MEDIUM | Production-ready but smaller ecosystem of rules. May need ESLint for edge cases. |
+## Integration Summary
+
+| Domain | Approach | New Deps | Effort Estimate |
+|--------|----------|----------|-----------------|
+| XRechnung (UBL 2.1) | New einvoice profile, adapt Peppol-AE generator | None | Medium -- familiar pattern |
+| ZUGFeRD (CII + PDF/A-3) | New einvoice profile + PDF embedding | pdf-lib | High -- new XML syntax + PDF/A-3 |
+| BACS Standard 18 | Add generator to payment-export.ts | None | Low -- simpler than Elixir |
+| HMRC VAT validation | Add client to gov-api | None | Low -- simple REST call |
+| VIES validation | Add client to gov-api | None (maybe soap) | Low-Medium -- depends on REST availability |
+| IR35 engine | New classification package | None | Medium-High -- rules engine + SDS generation |
+| Scheinselbstaendigkeit | Rule set in classification package | None | Medium -- follows IR35 pattern |
+| German i18n | Config change + translation file | None | Low (translation effort is content, not code) |
+| XRechnung XAdES | Adapt ZATCA signer for RSA | None | Low -- algorithm swap only |
+
+**Total new runtime dependencies: 1 (pdf-lib)**
+
+---
+
+## Validation Flags (MUST Verify During Implementation)
+
+1. **VIES REST API** -- Confirm `https://ec.europa.eu/taxation_customs/vies/rest-api/check-vat-number` is production-ready. If beta-only, add `soap@^1.1.0`.
+2. **pdf-lib PDF/A-3b compliance** -- Verify pdf-lib can set required XMP metadata (`pdfaid:part=3`, `pdfaid:conformance=B`), embed ICC output intent profile, and create AF (Associated Files) entries. May need manual `PDFDict`/`PDFArray` manipulation.
+3. **XRechnung CIUS version** -- Confirm current version (expected 3.0.x in 2026). Schematron rules change between versions.
+4. **ZUGFeRD version** -- Confirm current version (expected 2.3.x). Verify Factur-X alignment still maintained.
+5. **HMRC VAT API** -- Verify exact endpoint URLs and rate limits.
+6. **BACS Standard 18** -- Verify if any 2025/2026 spec updates exist (format is stable but check).
+
+---
 
 ## Sources
 
-- [tRPC v11 announcement](https://trpc.io/blog/announcing-trpc-v11) -- SSE subscriptions, FormData, TanStack Query v5
-- [Better Auth Organization plugin](https://better-auth.com/docs/plugins/organization) -- multi-tenant RBAC docs
-- [Inngest pricing](https://www.inngest.com/pricing) -- free tier, execution model
-- [Inngest for Vercel](https://vercel.com/marketplace/inngest) -- marketplace integration
-- [Resend Inbound Emails](https://resend.com/blog/inbound-emails) -- Nov 2025 launch, webhook parsing
-- [Cloudflare R2 presigned URLs](https://developers.cloudflare.com/r2/api/s3/presigned-urls/) -- S3 compatibility
-- [next-intl docs](https://next-intl.dev/) -- App Router, Server Components
-- [nuqs](https://nuqs.dev/) -- type-safe URL state, React Advanced 2025
-- [shadcn/ui Chart](https://ui.shadcn.com/docs/components/radix/chart) -- Recharts integration
-- [BullMQ + Upstash docs](https://upstash.com/docs/redis/integrations/bullmq) -- worker limitation on serverless
-- [Inngest vs Trigger.dev comparison](https://nextbuild.co/blog/background-jobs-vercel-inngest-trigger) -- architecture differences
-- [Slack Block Kit](https://docs.slack.dev/block-kit/) -- interactive components
+- Codebase analysis: `packages/einvoice/` profile architecture (HIGH confidence)
+- Codebase analysis: `packages/api/src/services/payment-export.ts` payment generators (HIGH confidence)
+- Codebase analysis: `packages/einvoice/src/profiles/zatca/signer.ts` XAdES implementation (HIGH confidence)
+- Codebase analysis: `apps/web/src/i18n/routing.ts` locale configuration (HIGH confidence)
+- EN 16931 / XRechnung / ZUGFeRD standard knowledge (training data) -- MEDIUM confidence
+- BACS Standard 18 specification (training data) -- HIGH confidence, well-established format
+- HMRC VAT API (training data) -- MEDIUM confidence, verify endpoints
+- VIES API (training data) -- LOW confidence, verify REST availability
+- pdf-lib capabilities (training data) -- MEDIUM confidence, verify PDF/A-3b specifics
+- IR35 CEST criteria (training data) -- HIGH confidence, publicly documented
+- Scheinselbstaendigkeit DRV criteria (training data) -- HIGH confidence, established case law
 
 ---
-*Stack research for: B2B Contractor Operations SaaS*
-*Researched: 2026-03-18*
+*Stack research for: v5.0 UK & Germany Market Expansion*
+*Researched: 2026-04-12*

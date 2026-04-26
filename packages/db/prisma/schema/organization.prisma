@@ -2,72 +2,138 @@
 // Plus Team, Project, CostCenter
 
 model Organization {
-  id                   String             @id @default(cuid())
-  name                 String
-  slug                 String             @unique
-  logo                 String?
-  metadata             String?
-  createdAt            DateTime           @default(now())
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  logo      String?
+  metadata  String?
+  createdAt DateTime @default(now())
 
   // Custom fields from db-schema.md
-  legalName            String?
-  countryCode          String?            @db.Char(2)
-  defaultCurrency      String?            @db.Char(3)
-  timezone             String?
-  language             String?
-  fiscalYearStartMonth Int?               @default(1)
-  status               OrganizationStatus @default(ACTIVE)
-  billingEmail         String?
-  settingsJson         Json?
-  updatedAt            DateTime           @updatedAt
-  deletedAt            DateTime?
+  legalName                           String?
+  countryCode                         String?            @db.Char(2)
+  dataRegion                          DataRegion         @default(EU)
+  defaultCurrency                     String?            @db.Char(3)
+  timezone                            String?
+  language                            String?
+  fiscalYearStartMonth                Int?               @default(1)
+  status                              OrganizationStatus @default(ACTIVE)
+  // Phase 57 (D-11) — Kleinunternehmerregelung §19 UStG toggle (DE orgs only)
+  isKleinunternehmer                  Boolean            @default(false)
+  billingEmail                        String?
+  // Phase 63 (D-02) — BACS submitter credentials (encrypted + masked pairs)
+  bacsServiceUserNumberEncrypted      String?
+  bacsServiceUserNumberMasked         String?
+  bacsSubmitterSortCodeEncrypted      String?
+  bacsSubmitterSortCodeMasked         String?
+  bacsSubmitterAccountNumberEncrypted String?
+  bacsSubmitterAccountNumberMasked    String?
+  bacsSubmitterName                   String?            @db.VarChar(18)
+  settingsJson                        Json?
+  // Phase 64 D-20 — Opt-in expert referral email for the Get Expert Help page.
+  // When set, an additional "Contact our adviser" card is shown in the classification
+  // expert-help referral page with a mailto: link to this address.
+  expertReferralEmail                 String? // Nullable — no referral card if absent
+  portalSubdomain                     String?            @unique
+  portalCustomDomain                  String?            @unique
+  updatedAt                           DateTime           @updatedAt
+  deletedAt                           DateTime?
 
   // Relations
-  members              Member[]
-  invitations          Invitation[]
-  teams                Team[]
-  projects             Project[]
-  costCenters          CostCenter[]
-  contractors          Contractor[]
-  contractorContacts   ContractorContact[]
-  contractorBillingProfiles ContractorBillingProfile[]
-  contractorAssignments ContractorAssignment[]
-  contractorTags       ContractorTag[]
-  contracts            Contract[]
-  contractAmendments   ContractAmendment[]
-  contractRatePeriods  ContractRatePeriod[]
-  documents            Document[]
-  documentLinks        DocumentLink[]
-  complianceTemplates  ComplianceRequirementTemplate[]
-  complianceItems      ContractorComplianceItem[]
-  workflowTemplates    WorkflowTemplate[]
-  workflowTaskTemplates WorkflowTaskTemplate[]
-  workflowRuns         WorkflowRun[]
-  workflowTaskRuns     WorkflowTaskRun[]
-  workflowComments     WorkflowComment[]
-  workflowAttachments  WorkflowAttachment[]
-  invoices             Invoice[]
-  invoiceFiles         InvoiceFile[]
-  invoiceLines         InvoiceLine[]
-  invoiceMatchResults  InvoiceMatchResult[]
-  approvalChainConfigs ApprovalChainConfig[]
-  approvalFlows        ApprovalFlow[]
-  approvalSteps        ApprovalStep[]
-  approvalDecisions    ApprovalDecision[]
-  paymentRuns          PaymentRun[]
-  paymentRunItems      PaymentRunItem[]
-  paymentExports       PaymentExport[]
-  auditLogs            AuditLog[]
-  outboxEvents         OutboxEvent[]
-  integrationConnections IntegrationConnection[]
-  externalLinks        ExternalLink[]
-  integrationSyncLogs  IntegrationSyncLog[]
-  webhookDeliveries    WebhookDelivery[]
-  notifications        Notification[]
-  notificationPrefs    UserNotificationPreference[]
-  comments             Comment[]
-  reminderRules        ReminderRule[]
-  reminderInstances    ReminderInstance[]
+  members                        Member[]
+  invitations                    Invitation[]
+  teams                          Team[]
+  projects                       Project[]
+  costCenters                    CostCenter[]
+  contractors                    Contractor[]
+  contractorContacts             ContractorContact[]
+  contractorBillingProfiles      ContractorBillingProfile[]
+  contractorAssignments          ContractorAssignment[]
+  contractorTags                 ContractorTag[]
+  contracts                      Contract[]
+  contractAmendments             ContractAmendment[]
+  contractRatePeriods            ContractRatePeriod[]
+  documents                      Document[]
+  documentLinks                  DocumentLink[]
+  complianceTemplates            ComplianceRequirementTemplate[]
+  complianceItems                ContractorComplianceItem[]
+  workflowTemplates              WorkflowTemplate[]
+  workflowTaskTemplates          WorkflowTaskTemplate[]
+  workflowRuns                   WorkflowRun[]
+  workflowTaskRuns               WorkflowTaskRun[]
+  workflowComments               WorkflowComment[]
+  workflowAttachments            WorkflowAttachment[]
+  invoices                       Invoice[]
+  invoiceFiles                   InvoiceFile[]
+  invoiceLines                   InvoiceLine[]
+  invoiceMatchResults            InvoiceMatchResult[]
+  approvalChainConfigs           ApprovalChainConfig[]
+  approvalFlows                  ApprovalFlow[]
+  approvalSteps                  ApprovalStep[]
+  approvalDecisions              ApprovalDecision[]
+  paymentRuns                    PaymentRun[]
+  paymentRunItems                PaymentRunItem[]
+  paymentExports                 PaymentExport[]
+  auditLogs                      AuditLog[]
+  outboxEvents                   OutboxEvent[]
+  integrationConnections         IntegrationConnection[]
+  externalLinks                  ExternalLink[]
+  integrationSyncLogs            IntegrationSyncLog[]
+  webhookDeliveries              WebhookDelivery[]
+  portalSessions                 PortalSession[]
+  contractorChangeRequests       ContractorChangeRequest[]
+  contractorNotificationPrefs    ContractorNotificationPreference[]
+  notifications                  Notification[]
+  notificationPrefs              UserNotificationPreference[]
+  comments                       Comment[]
+  reminderRules                  ReminderRule[]
+  reminderInstances              ReminderInstance[]
+  signingEnvelopes               SigningEnvelope[]
+  signingEvents                  SigningEvent[]
+  ocrExtractions                 OcrExtraction[]
+  timesheets                     Timesheet[]
+  timeEntries                    TimeEntry[]
+  subscription                   Subscription?
+  ocrCreditLedger                OcrCreditLedger[]
+  equipment                      Equipment[]
+  equipmentAssignments           EquipmentAssignment[]
+  shipments                      Shipment[]
+  shipmentEvents                 ShipmentEvent[]
+  returnRequests                 ReturnRequest[]
+  courierConfigs                 CourierConfig[]
+  consentRecords                 ConsentRecord[]
+  privacyNotices                 PrivacyNotice[]
+  peppolParticipants             PeppolParticipant[]
+  peppolTransmissions            PeppolTransmission[]
+  govApiAuditLogs                GovApiAuditLog[]
+  zatcaChainEntries              ZatcaInvoiceChain[]
+  taxIdValidations               TaxIdValidation[]
+  apiKeys                        OrganizationApiKey[]
+  classificationAssessments      ClassificationAssessment[]
+  classificationDocuments        ClassificationDocument[]
+  ir35ChainParticipants          Ir35ChainParticipant[]
+  ir35ChainParticipantLinkedOrgs Ir35ChainParticipant[]             @relation("Ir35ChainParticipantLinkedOrg")
+  ir35OtherClientAttestations    Ir35OtherClientAttestation[]
+  economicDependencyAlertStates  EconomicDependencyAlertState[]
+  reassessmentTriggers           ReassessmentTrigger[]
+  statusfeststellungsverfahren   Statusfeststellungsverfahren[]
+  leitwegIds                     LeitwegId[]
+  eInvoiceLifecycles             EInvoiceLifecycle[]
+  eInvoiceLifecycleEvents        EInvoiceLifecycleEvent[]
+  peppolCapabilityCache          PeppolCapabilityCache[]
+  invoiceIntakes                 InvoiceIntakeRequest[]
+  // Phase 63 — UK Payments & Financial Features
+  invoicePayments                InvoicePayment[]
+  invoiceInterestCompensations   InvoiceInterestCompensation[]
+  invoiceInterestWaivers         InvoiceInterestWaiver[]
+  invoiceInterestClaims          InvoiceInterestClaim[]
+  skontoTerms                    SkontoTerm[]
+  skontoSnapshots                SkontoSnapshot[]
+  skontoApplications             SkontoApplication[]
+  // Phase 64 — Legal Compliance Hardening
+  classificationEscalationEvents ClassificationEscalationEvent[]
+  sdsApprovals                   SdsApproval[]
+  consentEvents                  ConsentEvent[]                     @relation("OrganizationConsentEvents")
 }
 
 model Member {
@@ -78,12 +144,13 @@ model Member {
   teamId         String?
   createdAt      DateTime @default(now())
 
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  team           Team?        @relation(fields: [teamId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  team         Team?        @relation(fields: [teamId], references: [id])
 
   @@index([organizationId])
   @@index([organizationId, userId])
+  @@index([organizationId, role])
 }
 
 model Invitation {
@@ -95,10 +162,10 @@ model Invitation {
   expiresAt      DateTime
   inviterId      String
 
-  createdAt      DateTime @default(now())
+  createdAt DateTime @default(now())
 
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  inviter        User         @relation(fields: [inviterId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  inviter      User         @relation(fields: [inviterId], references: [id])
 
   @@index([organizationId])
 }
@@ -115,14 +182,14 @@ model Team {
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
-  organization   Organization @relation(fields: [organizationId], references: [id])
-  manager        User?        @relation("TeamManager", fields: [managerUserId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
+  manager      User?        @relation("TeamManager", fields: [managerUserId], references: [id])
 
-  members        Member[]
-  contractors    Contractor[]
-  projects       Project[]
+  members               Member[]
+  contractors           Contractor[]
+  projects              Project[]
   contractorAssignments ContractorAssignment[]
-  contracts      Contract[]
+  contracts             Contract[]
 
   @@index([organizationId])
   @@index([organizationId, status])
@@ -137,17 +204,17 @@ model Project {
   status         SimpleStatus @default(ACTIVE)
   startDate      DateTime?    @db.Date
   endDate        DateTime?    @db.Date
-  budgetGrosze   Int?
+  budgetMinor    Int?
   budgetCurrency String?      @db.Char(3)
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
-  organization   Organization @relation(fields: [organizationId], references: [id])
-  team           Team?        @relation(fields: [teamId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
+  team         Team?        @relation(fields: [teamId], references: [id])
 
-  contractors    Contractor[]
+  contractors           Contractor[]
   contractorAssignments ContractorAssignment[]
-  contracts      Contract[]
+  contracts             Contract[]
 
   @@index([organizationId])
   @@index([organizationId, status])
@@ -163,11 +230,11 @@ model CostCenter {
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
-  organization   Organization @relation(fields: [organizationId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
 
-  contractors    Contractor[]
+  contractors           Contractor[]
   contractorAssignments ContractorAssignment[]
-  contracts      Contract[]
+  contracts             Contract[]
 
   @@unique([organizationId, code])
 }
@@ -185,4 +252,9 @@ enum SimpleStatus {
   ACTIVE
   INACTIVE
   ARCHIVED
+}
+
+enum DataRegion {
+  EU
+  ME
 }

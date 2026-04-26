@@ -1,0 +1,81 @@
+// Portal authentication — PortalSession, PortalMagicToken
+// These are global models (not tenant-scoped) — see tenant.ts globalModels
+
+model PortalSession {
+  id             String   @id @default(cuid())
+  token          String   @unique
+  contractorId   String
+  organizationId String
+  email          String
+  expiresAt      DateTime
+  ipAddress      String?
+  userAgent      String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  contractor   Contractor   @relation(fields: [contractorId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([token])
+  @@index([email])
+  @@index([contractorId, organizationId])
+  @@index([expiresAt])
+}
+
+model PortalMagicToken {
+  id        String    @id @default(cuid())
+  email     String
+  token     String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([token])
+  @@index([email])
+}
+
+// --- Contractor Self-Service ---
+
+model ContractorChangeRequest {
+  id               String                        @id @default(cuid())
+  organizationId   String
+  contractorId     String
+  status           ContractorChangeRequestStatus @default(PENDING)
+  requestedChanges Json
+  previousValues   Json
+  reviewedById     String?
+  reviewedAt       DateTime?
+  reviewComment    String?
+  createdAt        DateTime                      @default(now())
+  updatedAt        DateTime                      @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  contractor   Contractor   @relation(fields: [contractorId], references: [id])
+  reviewedBy   User?        @relation(fields: [reviewedById], references: [id])
+
+  @@index([organizationId])
+  @@index([organizationId, contractorId, status])
+  @@index([organizationId, status])
+}
+
+enum ContractorChangeRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model ContractorNotificationPreference {
+  id             String   @id @default(cuid())
+  contractorId   String
+  organizationId String
+  category       String // INVOICE_UPDATES, PAYMENT_CONFIRMATIONS, CONTRACT_CHANGES, DOCUMENT_UPLOADS, SECURITY_ALERTS
+  emailEnabled   Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  contractor   Contractor   @relation(fields: [contractorId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@unique([contractorId, category])
+  @@index([organizationId])
+}

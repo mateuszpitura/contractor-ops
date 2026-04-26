@@ -4,28 +4,41 @@
   "private": true,
   "type": "module",
   "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "files": ["dist"],
+  "types": "./src/index.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
+      "types": "./src/index.ts",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
     },
     "./client": {
-      "types": "./dist/client.d.ts",
+      "types": "./src/client.ts",
       "import": "./dist/client.js",
       "default": "./dist/client.js"
+    },
+    "./role-normalization": {
+      "types": "./src/role-normalization.ts",
+      "import": "./dist/role-normalization.js",
+      "default": "./dist/role-normalization.js"
     }
   },
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "test": "vitest run",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@contractor-ops/db": "workspace:*",
-    "better-auth": "^1.5.0"
+    "better-auth": "^1.6.2"
   },
   "devDependencies": {
-    "typescript": "^5.7.0"
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.4"
   }
 }
