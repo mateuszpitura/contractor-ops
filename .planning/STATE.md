@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v6.0
 milestone_name: Platform Maturity & Operational Hardening
-status: Phase 70 Waves 0–2 shipped GREEN; Phase 71 planned (7 plans across 4 waves; 2 marked autonomous:false for multi-region work). Phase 70 Plan 09 + 71-03 + 71-07 require human-supervised sessions.
-stopped_at: Phase 71 planned
-last_updated: "2026-04-27T01:43:00.000Z"
+status: executing
+stopped_at: Phase 74 context gathered
+last_updated: "2026-04-26T23:51:46.990Z"
 last_activity: 2026-04-27 — Phase 71 planned
 progress:
   percent: 9
@@ -48,6 +48,7 @@ Progress: [█░░░░░░░░░] 9% (v6.0 — 0/11 phases complete; Ph
 **Plan-checker verdict:** PASSED. All 16 LOCKED CONTEXT decisions (D-01..D-16) addressed; every COMPL-{02,08,09,10} requirement covered; Standing Constraint LOCAL-ONLY honoured (legal review DEFERRED, multi-region manual). Threat models, validation strategy (Nyquist), and Phase 70 dependency hooks (`signoff-registry-flags.json`, `lint:schema`/`lint:logs`/`i18n:parity` regression checks) all present.
 
 **Phase 71 plan artefacts:**
+
 - `71-RESEARCH.md` — pinned per-jurisdiction document specifics + draft legal text + library choice (`@date-fns/tz` v4)
 - `71-PATTERNS.md` — analog files: feature-flags signoff registry, classification recreateDraftAfterDrift, audit-writer, push-all-regions, revalidate-vat-button
 - `71-VALIDATION.md` — 36 verification entries across 7 plans; 5 manual-only (multi-region apply, visual SQL review, admin UI, legal text approval)
@@ -229,6 +230,6 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: --stopped-at
-Stopped at: Phase 76 context gathered
+Stopped at: Phase 74 context gathered
 Resume file: --resume-file
 Next command: `/gsd-plan-phase 70`
