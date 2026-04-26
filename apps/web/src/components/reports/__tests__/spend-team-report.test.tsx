@@ -60,7 +60,7 @@ vi.mock('../report-table', () => ({
     ) : (
       <div data-testid="report-table">
         {data.map((row: Record<string, unknown>, i: number) => (
-          <div key={row.teamId ?? i}>{row.teamName}</div>
+          <div key={(row.teamId as string | undefined) ?? i}>{row.teamName as React.ReactNode}</div>
         ))}
         {!!grandTotalLabel && (
           <div data-testid="grand-total">
@@ -110,7 +110,7 @@ describe('SpendTeamReport', () => {
           totalCount: 2,
         },
         isLoading: false,
-      } as unknown)
+      } as unknown as never)
       .mockReturnValueOnce({
         data: [{ teamId: 't-1', teamName: 'Engineering', totalMinor: 4800000 }],
         isLoading: false,
@@ -148,7 +148,7 @@ describe('SpendTeamReport', () => {
       .mockReturnValueOnce({
         data: { items: [], totalCount: 0 },
         isLoading: false,
-      } as unknown)
+      } as unknown as never)
       .mockReturnValueOnce({
         data: [],
         isLoading: false,
@@ -163,7 +163,7 @@ describe('SpendTeamReport', () => {
       .mockReturnValueOnce({
         data: undefined,
         isLoading: true,
-      } as unknown)
+      } as unknown as never)
       .mockReturnValueOnce({
         data: [],
         isLoading: false,
@@ -189,7 +189,7 @@ describe('SpendTeamReport', () => {
           totalCount: 1,
         },
         isLoading: false,
-      } as unknown)
+      } as unknown as never)
       .mockReturnValueOnce({
         data: undefined,
         isLoading: true,

@@ -229,7 +229,7 @@ describe('EquipmentTable', () => {
   it('handles search input changes', async () => {
     const { user } = setup(<EquipmentTable {...defaultProps} />);
     const searchInput = document.querySelector('input');
-    await user.type(searchInput, 'laptop');
+    await user.type(searchInput!, 'laptop');
     expect(searchInput).toHaveValue('laptop');
   });
 
@@ -295,7 +295,7 @@ describe('EquipmentTable', () => {
     expect(screen.getByText('Next')).toBeInTheDocument();
     const nextBtn = screen.getByText('Next').closest('button');
     expect(nextBtn).not.toBeDisabled();
-    await user.click(nextBtn);
+    await user.click(nextBtn!);
     // After clicking next, page state should advance
     expect(screen.getByText('Previous')).toBeInTheDocument();
   });
@@ -373,7 +373,7 @@ describe('EquipmentTable', () => {
     const { user } = setup(<EquipmentTable {...defaultProps} />);
     // Type in search to activate filters
     const searchInput = document.querySelector('input');
-    user.type(searchInput, 'nonexistent').then(() => {
+    user.type(searchInput!, 'nonexistent').then(() => {
       // After typing, if data is empty but search is active, "No results found" should show
     });
   });
@@ -382,7 +382,7 @@ describe('EquipmentTable', () => {
     const { user } = setup(<EquipmentTable {...defaultProps} />);
     const searchInput = document.querySelector('input');
     // The toolbar uses controlled input with onSearchChange callback
-    await user.type(searchInput, 'x');
+    await user.type(searchInput!, 'x');
     // After typing, input should contain the typed character
     expect((searchInput as HTMLInputElement).value).toContain('x');
   });
@@ -406,7 +406,7 @@ describe('EquipmentTable', () => {
     } as unknown as never);
     render(<EquipmentTable {...defaultProps} />);
     const table = document.querySelector('table');
-    const headers = table.querySelectorAll('th');
+    const headers = table!.querySelectorAll('th');
     expect(headers.length).toBeGreaterThan(2);
   });
 
@@ -429,7 +429,7 @@ describe('EquipmentTable', () => {
     } as unknown as never);
     render(<EquipmentTable {...defaultProps} />);
     const table = document.querySelector('table');
-    const sortButtons = table.querySelectorAll('th button');
+    const sortButtons = table!.querySelectorAll('th button');
     expect(sortButtons.length).toBeGreaterThan(0);
   });
 
@@ -452,7 +452,7 @@ describe('EquipmentTable', () => {
     } as unknown as never);
     const { user } = setup(<EquipmentTable {...defaultProps} />);
     const table = document.querySelector('table');
-    const sortButtons = table.querySelectorAll('th button');
+    const sortButtons = table!.querySelectorAll('th button');
     if (sortButtons.length > 0) {
       await user.click(sortButtons[0] as HTMLElement);
       // Sort state should change

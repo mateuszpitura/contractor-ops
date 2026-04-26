@@ -3,10 +3,10 @@ import { ConsentPurposeToggle } from '../consent-purpose-toggle';
 
 describe('ConsentPurposeToggle', () => {
   const defaultProps = {
-    purpose: 'DATA_PROCESSING' as const,
+    purpose: 'CONTRACTOR_DATA_PROCESSING' as const,
     required: true,
     granted: false,
-    onToggle: vi.fn(),
+    onToggle: vi.fn() as React.ComponentProps<typeof ConsentPurposeToggle>['onToggle'],
   };
 
   it('renders the label and description from translations', () => {

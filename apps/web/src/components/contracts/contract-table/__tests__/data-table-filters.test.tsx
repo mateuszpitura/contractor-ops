@@ -186,7 +186,7 @@ describe('DataTableFilters (contracts)', () => {
     const activeChip = screen.getByText('Active').closest("[data-slot='badge']");
     const removeBtn = activeChip?.querySelector('button');
     expect(removeBtn).toBeTruthy();
-    await user.click(removeBtn);
+    await user.click(removeBtn!);
     expect(onFiltersChange).toHaveBeenCalledWith({
       status: ['DRAFT'],
     });
@@ -221,7 +221,7 @@ describe('DataTableFilters (contracts)', () => {
     );
     const badge = screen.getByText(/From: 2026-01-01/).closest("[data-slot='badge']");
     const removeBtn = badge?.querySelector('button');
-    await user.click(removeBtn);
+    await user.click(removeBtn!);
     expect(onFiltersChange).toHaveBeenCalledWith({ endDateFrom: '' });
   });
 
@@ -235,7 +235,7 @@ describe('DataTableFilters (contracts)', () => {
     );
     const badge = screen.getByText(/To: 2026-12-31/).closest("[data-slot='badge']");
     const removeBtn = badge?.querySelector('button');
-    await user.click(removeBtn);
+    await user.click(removeBtn!);
     expect(onFiltersChange).toHaveBeenCalledWith({ endDateTo: '' });
   });
 
@@ -250,7 +250,7 @@ describe('DataTableFilters (contracts)', () => {
     );
     const badge = screen.getByText('Alice').closest("[data-slot='badge']");
     const removeBtn = badge?.querySelector('button');
-    await user.click(removeBtn);
+    await user.click(removeBtn!);
     expect(onFiltersChange).toHaveBeenCalledWith({ ownerUserId: [] });
   });
 
@@ -265,7 +265,7 @@ describe('DataTableFilters (contracts)', () => {
     );
     const badge = screen.getByText('Non-Disclosure Agreement').closest("[data-slot='badge']");
     const removeBtn = badge?.querySelector('button');
-    await user.click(removeBtn);
+    await user.click(removeBtn!);
     expect(onFiltersChange).toHaveBeenCalledWith({ type: [] });
   });
 
@@ -280,7 +280,7 @@ describe('DataTableFilters (contracts)', () => {
     );
     const badge = screen.getByText('Hourly').closest("[data-slot='badge']");
     const removeBtn = badge?.querySelector('button');
-    await user.click(removeBtn);
+    await user.click(removeBtn!);
     expect(onFiltersChange).toHaveBeenCalledWith({ billingModel: [] });
   });
 
@@ -295,7 +295,7 @@ describe('DataTableFilters (contracts)', () => {
     );
     const badge = screen.getByText('High').closest("[data-slot='badge']");
     const removeBtn = badge?.querySelector('button');
-    await user.click(removeBtn);
+    await user.click(removeBtn!);
     expect(onFiltersChange).toHaveBeenCalledWith({ complianceRiskLevel: [] });
   });
 
