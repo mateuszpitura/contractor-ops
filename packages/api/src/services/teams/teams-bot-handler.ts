@@ -205,7 +205,7 @@ export class TeamsBotHandler extends TeamsActivityHandler {
   // Adaptive Card Actions (approve / reject from card buttons)
   // -------------------------------------------------------------------------
 
-  async onAdaptiveCardInvoke(
+  override async onAdaptiveCardInvoke(
     context: TurnContext,
     invokeValue: AdaptiveCardInvokeValue,
   ): Promise<AdaptiveCardInvokeResponse> {
@@ -235,7 +235,7 @@ export class TeamsBotHandler extends TeamsActivityHandler {
   // Task Module (reject modal with mandatory comment)
   // -------------------------------------------------------------------------
 
-  async handleTeamsTaskModuleFetch(
+  override async handleTeamsTaskModuleFetch(
     _context: TurnContext,
     taskModuleRequest: TaskModuleRequest,
   ): Promise<TaskModuleResponse> {
@@ -264,7 +264,7 @@ export class TeamsBotHandler extends TeamsActivityHandler {
     };
   }
 
-  async handleTeamsTaskModuleSubmit(
+  override async handleTeamsTaskModuleSubmit(
     context: TurnContext,
     taskModuleRequest: TaskModuleRequest,
   ): Promise<TaskModuleResponse> {
@@ -601,7 +601,7 @@ export class TeamsBotHandler extends TeamsActivityHandler {
   // Override onTeamsMembersAdded to capture references when the bot is
   // installed or new members are added to a conversation.
 
-  protected async onTeamsMembersAdded(context: TurnContext): Promise<void> {
+  protected override async onTeamsMembersAdded(context: TurnContext): Promise<void> {
     await this.captureConversationReference(context);
   }
 
@@ -609,7 +609,7 @@ export class TeamsBotHandler extends TeamsActivityHandler {
    * Called when the bot is installed in a personal scope or team.
    * Captures the ConversationReference for future proactive messaging.
    */
-  protected async onInstallationUpdateAddActivity(context: TurnContext): Promise<void> {
+  protected override async onInstallationUpdateAddActivity(context: TurnContext): Promise<void> {
     await this.captureConversationReference(context);
   }
 

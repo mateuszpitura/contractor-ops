@@ -45,11 +45,11 @@ export class GoogleCalendarAdapter extends BaseAdapter {
   // OAuth
   // -------------------------------------------------------------------------
 
-  getOAuthConfig(): OAuthConfig {
+  override getOAuthConfig(): OAuthConfig {
     return GOOGLE_CALENDAR_OAUTH_CONFIG;
   }
 
-  async exchangeCodeForTokens(code: string, redirectUri: string): Promise<CredentialBlob> {
+  override async exchangeCodeForTokens(code: string, redirectUri: string): Promise<CredentialBlob> {
     const clientId = process.env.GOOGLE_CALENDAR_CLIENT_ID;
     const clientSecret = process.env.GOOGLE_CALENDAR_CLIENT_SECRET;
 
@@ -95,7 +95,7 @@ export class GoogleCalendarAdapter extends BaseAdapter {
     };
   }
 
-  async refreshToken(credentials: CredentialBlob): Promise<CredentialBlob> {
+  override async refreshToken(credentials: CredentialBlob): Promise<CredentialBlob> {
     const clientId = process.env.GOOGLE_CALENDAR_CLIENT_ID;
     const clientSecret = process.env.GOOGLE_CALENDAR_CLIENT_SECRET;
 
@@ -301,7 +301,7 @@ export class GoogleCalendarAdapter extends BaseAdapter {
   // Health Status
   // -------------------------------------------------------------------------
 
-  async getHealthStatus(connectionId: string): Promise<ProviderHealthStatus> {
+  override async getHealthStatus(connectionId: string): Promise<ProviderHealthStatus> {
     const connection = await prisma.integrationConnection.findUnique({
       where: { id: connectionId },
       select: {

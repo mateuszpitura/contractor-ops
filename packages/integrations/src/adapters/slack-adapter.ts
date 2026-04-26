@@ -30,7 +30,7 @@ export class SlackAdapter extends BaseAdapter {
   // OAuth
   // -------------------------------------------------------------------------
 
-  getOAuthConfig(): OAuthConfig {
+  override getOAuthConfig(): OAuthConfig {
     return {
       clientIdEnvVar: 'SLACK_CLIENT_ID',
       clientSecretEnvVar: 'SLACK_CLIENT_SECRET',
@@ -41,7 +41,7 @@ export class SlackAdapter extends BaseAdapter {
     };
   }
 
-  async exchangeCodeForTokens(code: string, redirectUri: string): Promise<CredentialBlob> {
+  override async exchangeCodeForTokens(code: string, redirectUri: string): Promise<CredentialBlob> {
     const clientId = process.env.SLACK_CLIENT_ID;
     const clientSecret = process.env.SLACK_CLIENT_SECRET;
 
@@ -85,7 +85,7 @@ export class SlackAdapter extends BaseAdapter {
   /**
    * Slack bot tokens don't expire — return credentials unchanged.
    */
-  async refreshToken(credentials: CredentialBlob): Promise<CredentialBlob> {
+  override async refreshToken(credentials: CredentialBlob): Promise<CredentialBlob> {
     return credentials;
   }
 
@@ -99,7 +99,7 @@ export class SlackAdapter extends BaseAdapter {
    * Required headers: x-slack-request-timestamp, x-slack-signature
    * Required env: SLACK_SIGNING_SECRET
    */
-  verifyWebhookSignature(
+  override verifyWebhookSignature(
     rawBody: string,
     headers: Record<string, string>,
   ): WebhookVerificationResult {
@@ -168,7 +168,7 @@ export class SlackAdapter extends BaseAdapter {
    * Stub for Plan 02 — full handler wiring (processBlockAction, processViewSubmission)
    * comes in Plan 03 when existing Slack interactivity route is migrated.
    */
-  async handleWebhook(
+  override async handleWebhook(
     payload: unknown,
     _organizationId: string,
     _connectionId: string,

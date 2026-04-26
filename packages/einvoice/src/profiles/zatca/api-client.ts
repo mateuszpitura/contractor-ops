@@ -148,7 +148,7 @@ export class ZatcaApiClient extends GovApiClient {
    * Override to delegate audit logging to GovApiAuditLogger.
    * Fire-and-forget: audit log failures must not break API operations.
    */
-  protected emitAuditEntry(entry: GovApiAuditEntry): void {
+  protected override emitAuditEntry(entry: GovApiAuditEntry): void {
     if (this.auditLogger) {
       void this.auditLogger.log(entry);
     }

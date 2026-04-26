@@ -12,11 +12,11 @@
 
 import { execSync } from 'node:child_process';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const repoRoot = resolve(__dirname, '..');
+const Dirname = dirname(fileURLToPath(import.meta.url));
+const repoRoot = resolve(Dirname, '..');
 const ratchetFile = resolve(repoRoot, 'scripts/.process-env-ratchet.json');
 
 // Files / paths where raw process.env is allowed:

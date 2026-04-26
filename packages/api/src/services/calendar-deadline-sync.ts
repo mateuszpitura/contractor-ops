@@ -287,7 +287,7 @@ export async function createTaskCalendarEvent(
   if (input.config.duration === 'full_day') {
     endDateTime = endOfDay(startDateTime);
   } else {
-    const durationMs = DURATION_MS[input.config.duration] ?? DURATION_MS['1h'];
+    const durationMs = DURATION_MS[input.config.duration] ?? DURATION_MS['1h'] ?? 60 * 60 * 1000;
     endDateTime = new Date(now.getTime() + durationMs).toISOString();
   }
 

@@ -89,7 +89,7 @@ function createRootLogger(): Logger {
     }
   }
 
-  if (streams.length === 1) {
+  if (streams.length === 1 && streams[0]) {
     return pino(baseOptions, streams[0].stream as DestinationStream);
   }
 

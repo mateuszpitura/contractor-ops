@@ -10,13 +10,13 @@ import { BaseAdapter } from './base-adapter.js';
  * Clockify uses regional base URLs. Users must select their region
  * during connection setup — API keys are region-specific.
  */
-export const CLOCKIFY_REGIONS: Record<string, string> = {
+export const CLOCKIFY_REGIONS = {
   global: 'https://api.clockify.me/api/v1',
   eu: 'https://euc1.clockify.me/api/v1',
   us: 'https://use2.clockify.me/api/v1',
   uk: 'https://euw2.clockify.me/api/v1',
   au: 'https://apse2.clockify.me/api/v1',
-};
+} as const satisfies Record<string, string>;
 
 export type ClockifyRegion = keyof typeof CLOCKIFY_REGIONS;
 
@@ -46,7 +46,7 @@ export class ClockifyAdapter extends BaseAdapter {
    * Returns health status for a Clockify connection based on
    * recent sync logs (same pattern as KSeF adapter).
    */
-  async getHealthStatus(connectionId: string): Promise<ProviderHealthStatus> {
+  override async getHealthStatus(connectionId: string): Promise<ProviderHealthStatus> {
     const connection = await prisma.integrationConnection.findUnique({
       where: { id: connectionId },
       select: {

@@ -142,6 +142,9 @@ export class DPDClient implements CourierClient {
     const json = await response.json();
     const parsed = dpdCreateResponseSchema.parse(json);
     const parcel = parsed.parcels[0];
+    if (!parcel) {
+      throw new Error('[dpd-client] createShipment returned no parcels');
+    }
 
     return {
       externalId: String(parcel.id),

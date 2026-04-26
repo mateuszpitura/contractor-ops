@@ -74,20 +74,23 @@ export function parseMt940(content: string): ParsedTransaction[] {
 // ---------------------------------------------------------------------------
 
 /** Column name aliases for CSV header detection. */
-const CSV_COLUMN_ALIASES: Record<string, string[]> = {
+const CSV_COLUMN_ALIASES = {
   amount: ['amount', 'kwota', 'value', 'suma'],
   iban: ['iban', 'account', 'konto', 'rachunek', 'account number'],
   date: ['date', 'data', 'booking date', 'data operacji'],
   reference: ['reference', 'referencja', 'ref'],
   description: ['description', 'opis', 'tytul', 'title', 'details'],
-};
+} satisfies Record<string, string[]>;
+
+type CsvColumnKey = keyof typeof CSV_COLUMN_ALIASES;
+type CsvColumnIndices = { [K in CsvColumnKey]: number };
 
 /**
  * Detects column indices from normalized CSV headers using alias matching.
  */
-function detectCsvColumns(headers: string[]): Record<string, number> {
-  const indices: Record<string, number> = {};
-  for (const [field, aliases] of Object.entries(CSV_COLUMN_ALIASES)) {
+function detectCsvColumns(headers: string[]): CsvColumnIndices {
+  const indices = {} as CsvColumnIndices;
+  for (const [field, aliases] of Object.entries(CSV_COLUMN_ALIASES) as [CsvColumnKey, string[]][]) {
     indices[field] = headers.findIndex(h => aliases.includes(h));
   }
   return indices;

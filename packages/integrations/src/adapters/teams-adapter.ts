@@ -62,11 +62,11 @@ export class TeamsAdapter extends BaseAdapter {
   // OAuth
   // -------------------------------------------------------------------------
 
-  getOAuthConfig(): OAuthConfig {
+  override getOAuthConfig(): OAuthConfig {
     return TEAMS_OAUTH_CONFIG;
   }
 
-  async exchangeCodeForTokens(code: string, redirectUri: string): Promise<CredentialBlob> {
+  override async exchangeCodeForTokens(code: string, redirectUri: string): Promise<CredentialBlob> {
     const clientId = process.env.AZURE_BOT_APP_ID;
     const clientSecret = process.env.AZURE_BOT_APP_SECRET;
 
@@ -115,7 +115,7 @@ export class TeamsAdapter extends BaseAdapter {
     };
   }
 
-  async refreshToken(credentials: CredentialBlob): Promise<CredentialBlob> {
+  override async refreshToken(credentials: CredentialBlob): Promise<CredentialBlob> {
     const clientId = process.env.AZURE_BOT_APP_ID;
     const clientSecret = process.env.AZURE_BOT_APP_SECRET;
 
@@ -174,7 +174,7 @@ export class TeamsAdapter extends BaseAdapter {
   // Health Status
   // -------------------------------------------------------------------------
 
-  async getHealthStatus(connectionId: string): Promise<ProviderHealthStatus> {
+  override async getHealthStatus(connectionId: string): Promise<ProviderHealthStatus> {
     const connection = await prisma.integrationConnection.findUnique({
       where: { id: connectionId },
       select: {

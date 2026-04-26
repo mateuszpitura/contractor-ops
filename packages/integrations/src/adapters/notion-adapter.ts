@@ -47,7 +47,7 @@ export class NotionAdapter extends BaseAdapter {
   // OAuth
   // -------------------------------------------------------------------------
 
-  getOAuthConfig(): OAuthConfig {
+  override getOAuthConfig(): OAuthConfig {
     return NOTION_OAUTH_CONFIG;
   }
 
@@ -58,7 +58,7 @@ export class NotionAdapter extends BaseAdapter {
    * `Authorization: Basic base64(clientId:clientSecret)` (Pitfall 1).
    * Putting credentials in the JSON body will fail.
    */
-  async exchangeCodeForTokens(code: string, redirectUri: string): Promise<CredentialBlob> {
+  override async exchangeCodeForTokens(code: string, redirectUri: string): Promise<CredentialBlob> {
     const clientId = process.env.NOTION_CLIENT_ID;
     const clientSecret = process.env.NOTION_CLIENT_SECRET;
 
@@ -113,7 +113,7 @@ export class NotionAdapter extends BaseAdapter {
    *
    * Uses HTTP Basic auth header (same as token exchange).
    */
-  async refreshToken(credentials: CredentialBlob): Promise<CredentialBlob> {
+  override async refreshToken(credentials: CredentialBlob): Promise<CredentialBlob> {
     const clientId = process.env.NOTION_CLIENT_ID;
     const clientSecret = process.env.NOTION_CLIENT_SECRET;
 
@@ -241,7 +241,7 @@ export class NotionAdapter extends BaseAdapter {
   // Health Status
   // -------------------------------------------------------------------------
 
-  async getHealthStatus(connectionId: string): Promise<ProviderHealthStatus> {
+  override async getHealthStatus(connectionId: string): Promise<ProviderHealthStatus> {
     const connection = await prisma.integrationConnection.findUnique({
       where: { id: connectionId },
       select: {

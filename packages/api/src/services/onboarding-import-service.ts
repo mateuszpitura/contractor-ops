@@ -302,7 +302,7 @@ export function mergeByEmail(
 
     merged.push({
       email,
-      name: data.sources[0]?.name,
+      name: data.sources[0]?.name ?? '',
       sources: data.sources.map(s => ({
         source: s.source as 'JIRA' | 'LINEAR' | 'GOOGLE_WORKSPACE' | 'SLACK',
         name: s.name,

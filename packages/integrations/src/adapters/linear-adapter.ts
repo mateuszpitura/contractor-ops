@@ -56,11 +56,11 @@ export class LinearAdapter extends BaseAdapter {
   // OAuth
   // -------------------------------------------------------------------------
 
-  getOAuthConfig(): OAuthConfig {
+  override getOAuthConfig(): OAuthConfig {
     return LINEAR_OAUTH_CONFIG;
   }
 
-  async exchangeCodeForTokens(code: string, redirectUri: string): Promise<CredentialBlob> {
+  override async exchangeCodeForTokens(code: string, redirectUri: string): Promise<CredentialBlob> {
     const clientId = process.env.LINEAR_CLIENT_ID;
     const clientSecret = process.env.LINEAR_CLIENT_SECRET;
 
@@ -111,7 +111,7 @@ export class LinearAdapter extends BaseAdapter {
     };
   }
 
-  async refreshToken(credentials: CredentialBlob): Promise<CredentialBlob> {
+  override async refreshToken(credentials: CredentialBlob): Promise<CredentialBlob> {
     const clientId = process.env.LINEAR_CLIENT_ID;
     const clientSecret = process.env.LINEAR_CLIENT_SECRET;
 
@@ -180,7 +180,7 @@ export class LinearAdapter extends BaseAdapter {
    * @param headers - Request headers (lowercased keys)
    * @returns Verification result with eventType extracted as type.action
    */
-  verifyWebhookSignature(
+  override verifyWebhookSignature(
     rawBody: string,
     headers: Record<string, string>,
   ): WebhookVerificationResult {
@@ -234,7 +234,7 @@ export class LinearAdapter extends BaseAdapter {
    * The actual processing is delegated to the _process route which calls
    * processLinearWebhook from @contractor-ops/api.
    */
-  async handleWebhook(
+  override async handleWebhook(
     _payload: unknown,
     _organizationId: string,
     _connectionId: string,
@@ -371,7 +371,7 @@ export class LinearAdapter extends BaseAdapter {
   // Health Status
   // -------------------------------------------------------------------------
 
-  async getHealthStatus(connectionId: string): Promise<ProviderHealthStatus> {
+  override async getHealthStatus(connectionId: string): Promise<ProviderHealthStatus> {
     const connection = await prisma.integrationConnection.findUnique({
       where: { id: connectionId },
       select: {

@@ -243,6 +243,9 @@ export class UPSClient implements CourierClient {
     const parsed = upsShipmentResponseSchema.parse(json);
     const results = parsed.ShipmentResponse.ShipmentResults;
     const pkg = results.PackageResults[0];
+    if (!pkg) {
+      throw new Error('[ups-client] createShipment returned no PackageResults');
+    }
 
     return {
       externalId: results.ShipmentIdentificationNumber,
@@ -297,7 +300,10 @@ export class UPSClient implements CourierClient {
 
     const json = await response.json();
     const parsed = upsTrackingResponseSchema.parse(json);
-    const pkg = parsed.trackResponse.shipment[0].package[0];
+    const pkg = parsed.trackResponse.shipment[0]?.package[0];
+    if (!pkg) {
+      throw new Error('[ups-client] getStatus returned no shipment/package');
+    }
 
     return {
       externalId: shipmentExternalId,

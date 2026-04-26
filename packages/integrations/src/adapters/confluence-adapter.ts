@@ -51,11 +51,11 @@ export class ConfluenceAdapter extends BaseAdapter {
   // OAuth
   // -------------------------------------------------------------------------
 
-  getOAuthConfig(): OAuthConfig {
+  override getOAuthConfig(): OAuthConfig {
     return CONFLUENCE_OAUTH_CONFIG;
   }
 
-  async exchangeCodeForTokens(code: string, redirectUri: string): Promise<CredentialBlob> {
+  override async exchangeCodeForTokens(code: string, redirectUri: string): Promise<CredentialBlob> {
     const clientId = process.env.CONFLUENCE_CLIENT_ID;
     const clientSecret = process.env.CONFLUENCE_CLIENT_SECRET;
 
@@ -101,7 +101,7 @@ export class ConfluenceAdapter extends BaseAdapter {
     };
   }
 
-  async refreshToken(credentials: CredentialBlob): Promise<CredentialBlob> {
+  override async refreshToken(credentials: CredentialBlob): Promise<CredentialBlob> {
     const clientId = process.env.CONFLUENCE_CLIENT_ID;
     const clientSecret = process.env.CONFLUENCE_CLIENT_SECRET;
 
@@ -278,7 +278,7 @@ export class ConfluenceAdapter extends BaseAdapter {
   // Health Status
   // -------------------------------------------------------------------------
 
-  async getHealthStatus(connectionId: string): Promise<ProviderHealthStatus> {
+  override async getHealthStatus(connectionId: string): Promise<ProviderHealthStatus> {
     const connection = await prisma.integrationConnection.findUnique({
       where: { id: connectionId },
       select: {

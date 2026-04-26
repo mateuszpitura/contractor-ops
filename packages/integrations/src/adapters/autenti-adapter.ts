@@ -51,7 +51,7 @@ export class AutentiAdapter extends BaseAdapter implements ESignAdapter {
   // OAuth
   // -------------------------------------------------------------------------
 
-  getOAuthConfig(): OAuthConfig {
+  override getOAuthConfig(): OAuthConfig {
     return {
       clientIdEnvVar: 'AUTENTI_CLIENT_ID',
       clientSecretEnvVar: 'AUTENTI_CLIENT_SECRET',
@@ -62,7 +62,7 @@ export class AutentiAdapter extends BaseAdapter implements ESignAdapter {
     };
   }
 
-  async exchangeCodeForTokens(code: string, redirectUri: string): Promise<CredentialBlob> {
+  override async exchangeCodeForTokens(code: string, redirectUri: string): Promise<CredentialBlob> {
     const clientId = process.env.AUTENTI_CLIENT_ID;
     const clientSecret = process.env.AUTENTI_CLIENT_SECRET;
 
@@ -105,7 +105,7 @@ export class AutentiAdapter extends BaseAdapter implements ESignAdapter {
     };
   }
 
-  async refreshToken(credentials: CredentialBlob): Promise<CredentialBlob> {
+  override async refreshToken(credentials: CredentialBlob): Promise<CredentialBlob> {
     const clientId = process.env.AUTENTI_CLIENT_ID;
     const clientSecret = process.env.AUTENTI_CLIENT_SECRET;
 
@@ -340,7 +340,7 @@ export class AutentiAdapter extends BaseAdapter implements ESignAdapter {
     };
   }
 
-  verifyWebhookSignature(
+  override verifyWebhookSignature(
     rawBody: string,
     headers: Record<string, string>,
   ): WebhookVerificationResult {
@@ -492,7 +492,7 @@ export class AutentiAdapter extends BaseAdapter implements ESignAdapter {
    * Delegates to the shared esign-webhook-handler for status updates
    * and idempotency. Returns the completion signal directly.
    */
-  async handleWebhook(
+  override async handleWebhook(
     payload: unknown,
     organizationId: string,
     connectionId: string,
