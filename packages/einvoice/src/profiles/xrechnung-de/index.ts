@@ -19,15 +19,43 @@ import type { EInvoice } from '../../types/invoice.js';
 import type { EInvoiceProfile } from '../../types/profile.js';
 import type { ValidationError, ValidationResult } from '../../types/validation.js';
 import { KOSIT_RULE_SET_VERSION, XRECHNUNG_DE_PROFILE_ID } from './constants.js';
+import type { SkontoTermInput } from './generator.js';
 import { generateXRechnungCii } from './generator.js';
 import { parseXRechnungCii } from './parser.js';
 import type { ValidationIssue, XRechnungValidationReport } from './validator.js';
 import { validateXRechnungCii } from './validator.js';
 
-/** Optional extras accepted by `generate()` — Leitweg-ID is the only one today. */
+/**
+ * Re-exported from `./generator.js` so api-side callers (e.g.
+ * `packages/api/src/services/einvoice-finalize.ts`) can construct the
+ * `skontoTerm` opt without reaching into the internal generator module.
+ *
+ * Per Phase 68 D-01 — keeps the api → einvoice dependency direction clean
+ * (the api package only imports public symbols from `xrechnung-de/index.ts`).
+ */
+export type { SkontoTermInput };
+
+/** Optional extras accepted by `generate()` — Leitweg-ID + Skonto term. */
 export interface XRechnungGenerateOptions {
   /** BT-10 BuyerReference. Resolved by Plan 04's leitweg-id-resolver. */
   leitwegId?: string | null;
+  /**
+   * Optional Skonto (early payment discount) term. When provided, the
+   * generator emits a BG-20 `<ram:SpecifiedTradePaymentTerms>` block
+   * containing the locked German phrase plus the structured
+   * `#SKONTO#TAGE=…#PROZENT=…#BASISBETRAG=…#` extension per XRechnung
+   * 3.0.2 Anhang E.
+   *
+   * Per Phase 68 D-01 — accepts the same type the CII-level helper
+   * (`generateXRechnungCii`) already takes, keeping the einvoice package
+   * self-contained (no api-side type leakage).
+   *
+   * Resolution policy (invoice-level term → billing-profile default →
+   * null) lives at the caller (`einvoice-finalize.ts`,
+   * `einvoice.ts:generateZugferdPdf`) via
+   * `services/skonto.ts:resolveSkontoTerm` — NOT inside this profile.
+   */
+  skontoTerm?: SkontoTermInput | null;
 }
 
 /**
@@ -47,7 +75,11 @@ export class XRechnungDEProfile implements EInvoiceProfile {
   readonly qrCode = undefined;
 
   async generate(invoice: EInvoice, opts?: XRechnungGenerateOptions): Promise<string> {
-    return generateXRechnungCii(invoice, opts?.leitwegId ?? null);
+    // Phase 68 D-02 — forward the resolved Skonto term (caller-resolved via
+    // services/skonto.ts:resolveSkontoTerm) to the CII helper. Default to
+    // null when omitted so the no-Skonto branch in buildPaymentTerms keeps
+    // emitting the standard <ram:DueDateDateTime>-only payment terms block.
+    return generateXRechnungCii(invoice, opts?.leitwegId ?? null, opts?.skontoTerm ?? null);
   }
 
   async parse(xml: string, _metadata?: Record<string, unknown>): Promise<EInvoice> {

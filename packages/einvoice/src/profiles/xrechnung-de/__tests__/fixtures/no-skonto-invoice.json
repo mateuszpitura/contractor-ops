@@ -1,0 +1,51 @@
+{
+  "id": "INV-2026-NOSKONTO",
+  "issueDate": "2026-04-14",
+  "dueDate": "2026-05-14",
+  "invoiceTypeCode": "380",
+  "currencyCode": "EUR",
+  "profileId": "xrechnung-de",
+  "supplier": {
+    "id": "DE123456789",
+    "name": "Acme Beratung GmbH",
+    "address": "Hauptstraße 1, 10115 Berlin",
+    "country": "DE"
+  },
+  "customer": {
+    "id": "DE987654321",
+    "name": "Bundesamt für Beispiel",
+    "address": "Friedrichstraße 50, 10117 Berlin",
+    "country": "DE"
+  },
+  "lines": [
+    {
+      "lineNumber": 1,
+      "description": "Software-Beratung",
+      "quantity": 10,
+      "unit": "HUR",
+      "unitPriceMinor": 12000,
+      "netAmountMinor": 120000,
+      "vatRate": "19",
+      "vatAmountMinor": 22800,
+      "grossAmountMinor": 142800
+    }
+  ],
+  "taxExclusiveAmount": 120000,
+  "taxInclusiveAmount": 142800,
+  "payableAmount": 142800,
+  "taxBreakdown": [
+    {
+      "taxableAmountMinor": 120000,
+      "taxAmountMinor": 22800,
+      "taxCategory": "S",
+      "percent": 19
+    }
+  ],
+  "paymentMeans": {
+    "code": "58",
+    "dueDate": "2026-05-14",
+    "bankAccount": "DE89370400440532013000",
+    "bankName": "Commerzbank",
+    "paymentReference": "INV-2026-NOSKONTO"
+  }
+}
