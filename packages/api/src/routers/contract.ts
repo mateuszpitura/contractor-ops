@@ -1,4 +1,4 @@
-import type { Prisma } from '@contractor-ops/db/generated/prisma/client';
+import type { ContractType, Prisma } from '@contractor-ops/db';
 import { createLogger } from '@contractor-ops/logger';
 import {
   amendmentCreateSchema,
@@ -18,7 +18,7 @@ import { writeAuditLog } from '../services/audit-writer.js';
 import { syncContractExpiryDeadline } from '../services/calendar-deadline-sync.js';
 import { deleteCalendarEvent } from '../services/calendar-event-service.js';
 
-const log = createLogger('contract-router');
+const log = createLogger({ service: 'contract-router' });
 
 /**
  * Phase 60 CLASS-08 — contract fields the reassessment scan treats as
@@ -218,7 +218,7 @@ function buildContractCreateData(
     organizationId,
     contractorId: input.contractorId,
     title: input.title,
-    type: input.type,
+    type: input.type as ContractType,
     startDate: new Date(input.startDate),
     endDate: input.endDate ? new Date(input.endDate) : null,
     noticePeriodDays: input.noticePeriodDays ?? null,
@@ -293,9 +293,11 @@ export const contractRouter = router({
           organizationId: ctx.organizationId,
           contractId: contract.id,
           contractName: contract.title ?? input.title,
-          contractorName: contract.contractor?.displayName ?? 'Unknown',
+          contractorName:
+            (contract as { contractor?: { displayName: string } }).contractor?.displayName ??
+            'Unknown',
           expiryDate: contract.endDate,
-          userId: ctx.user?.id,
+          userId: ctx.user!.id,
         }).catch(err => log.error({ err }, 'calendar sync on create failed'));
       }
 

@@ -95,7 +95,6 @@ export class SlackAdapter extends BaseAdapter {
 
   /**
    * Verifies Slack webhook signature using HMAC-SHA256 with timing-safe comparison.
-   * Mirrors the exact logic from apps/web/src/app/api/slack/interactivity/route.ts.
    *
    * Required headers: x-slack-request-timestamp, x-slack-signature
    * Required env: SLACK_SIGNING_SECRET

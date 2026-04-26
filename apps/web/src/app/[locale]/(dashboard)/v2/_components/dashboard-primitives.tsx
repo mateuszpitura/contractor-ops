@@ -202,8 +202,6 @@ export function Sparkline({
   w?: number;
   h?: number;
   color?: string;
-  /** @deprecated Use auto-generated useId() instead */
-  id?: string;
 }) {
   const gradientId = useId();
   if (!data.length) return null;

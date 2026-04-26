@@ -46,6 +46,7 @@ import type { HmrcVatClient, ViesClient } from '@contractor-ops/gov-api';
 // BEFORE any network I/O (RESEARCH Pattern 3).
 import { isValidGbVat, isValidUstIdNr } from '@contractor-ops/validators';
 import { maskTaxId } from './tax-id-pii.js';
+import type { OrmForTaxValidation } from './types.js';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -78,7 +79,7 @@ export interface TaxIdValidationResult {
 }
 
 export interface TaxIdValidationDeps {
-  prisma: PrismaClient;
+  prisma: OrmForTaxValidation;
   hmrcClient: HmrcVatClient;
   viesClient: ViesClient;
   now?: () => Date;

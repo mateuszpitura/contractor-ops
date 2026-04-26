@@ -364,7 +364,7 @@ export const invoiceRouter = router({
           await revalidateStaleVatIfNeeded(contractor, {
             organizationId: ctx.organizationId,
             db: ctx.db,
-            userId: ctx.user.id,
+            userId: ctx.user!.id,
           });
         }
       }
@@ -434,7 +434,7 @@ export const invoiceRouter = router({
             data: {
               organizationId: ctx.organizationId,
               actorType: 'USER',
-              actorId: ctx.user.id,
+              actorId: ctx.user!.id,
               action: 'invoice.reverse-charge-override',
               resourceType: 'INVOICE',
               resourceId: inv.id,

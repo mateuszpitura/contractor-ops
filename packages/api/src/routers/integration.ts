@@ -1,4 +1,3 @@
-import { createHmac } from 'node:crypto';
 import {
   generateOAuthState,
   getAdapter,
@@ -32,20 +31,6 @@ registerAllAdapters();
 
 function plain<T>(data: T): T {
   return JSON.parse(JSON.stringify(data)) as T;
-}
-
-/**
- * Generate HMAC-signed state parameter for Slack OAuth (legacy).
- * Contains orgId + userId + timestamp for CSRF protection.
- * Per research pitfall 6: HMAC-signed state prevents CSRF attacks.
- * @deprecated Use generateOAuthState from @contractor-ops/integrations for new providers.
- */
-function generateSlackOAuthState(orgId: string, userId: string, secret: string): string {
-  const payload = `${orgId}:${userId}:${Date.now()}`;
-  const hmac = createHmac('sha256', secret);
-  hmac.update(payload);
-  const signature = hmac.digest('hex');
-  return `${payload}:${signature}`;
 }
 
 // ---------------------------------------------------------------------------
@@ -82,73 +67,6 @@ export const integrationRouter = router({
       connectedByUser: connection.connectedBy,
     });
   }),
-
-  /**
-   * Generate a Slack OAuth authorization URL.
-   * Admin only. State parameter is HMAC-signed for CSRF protection.
-   */
-  getOAuthUrl: tenantProcedure
-    .use(requirePermission({ organization: ['update'] }))
-    .query(async ({ ctx }) => {
-      const env = getServerEnv();
-      const clientId = env.SLACK_CLIENT_ID;
-      const redirectUri = env.SLACK_REDIRECT_URI;
-      const signingSecret = env.SLACK_SIGNING_SECRET ?? env.SLACK_CLIENT_SECRET;
-
-      if (!(clientId && redirectUri && signingSecret)) {
-        throw new TRPCError({
-          code: 'PRECONDITION_FAILED',
-          message: E.INTEGRATION_NOT_CONFIGURED,
-        });
-      }
-
-      const state = generateSlackOAuthState(ctx.organizationId, ctx.user?.id, signingSecret);
-
-      const scopes = ['chat:write', 'users:read', 'users:read.email', 'im:write'].join(',');
-
-      const params = new URLSearchParams({
-        client_id: clientId,
-        scope: scopes,
-        redirect_uri: redirectUri,
-        state,
-      });
-
-      const url = `https://slack.com/oauth/v2/authorize?${params.toString()}`;
-
-      return { url };
-    }),
-
-  /**
-   * Disconnect Slack integration. Admin only.
-   * Sets status to DISCONNECTED and clears credentials reference.
-   */
-  disconnect: tenantProcedure
-    .use(requirePermission({ organization: ['update'] }))
-    .mutation(async ({ ctx }) => {
-      const connection = await ctx.db.integrationConnection.findFirst({
-        where: {
-          organizationId: ctx.organizationId,
-          provider: 'SLACK',
-        },
-      });
-
-      if (!connection) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: E.INTEGRATION_NOT_FOUND,
-        });
-      }
-
-      await ctx.db.integrationConnection.update({
-        where: { id: connection.id },
-        data: {
-          status: 'DISCONNECTED',
-          credentialsRef: '',
-        },
-      });
-
-      return { success: true };
-    }),
 
   /**
    * List user mappings between org members and Slack users.

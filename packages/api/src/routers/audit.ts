@@ -1,4 +1,5 @@
 import type { Prisma } from '@contractor-ops/db';
+import type { EntityType } from '@contractor-ops/db/generated/prisma/client';
 import { z } from 'zod';
 import { router } from '../init.js';
 import { requirePermission } from '../middleware/rbac.js';
@@ -70,13 +71,13 @@ export const auditRouter = router({
         where.action = input.action;
       }
       if (input.resourceType) {
-        where.resourceType = input.resourceType;
+        where.resourceType = input.resourceType as EntityType;
       }
-      if (input.dateFrom) {
-        where.createdAt = { ...where.createdAt, gte: new Date(input.dateFrom) };
-      }
-      if (input.dateTo) {
-        where.createdAt = { ...where.createdAt, lte: new Date(input.dateTo) };
+      if (input.dateFrom || input.dateTo) {
+        where.createdAt = {
+          ...(input.dateFrom && { gte: new Date(input.dateFrom) }),
+          ...(input.dateTo && { lte: new Date(input.dateTo) }),
+        };
       }
 
       const [items, totalCount] = await Promise.all([
@@ -143,13 +144,13 @@ export const auditRouter = router({
         where.action = input.action;
       }
       if (input.resourceType) {
-        where.resourceType = input.resourceType;
+        where.resourceType = input.resourceType as EntityType;
       }
-      if (input.dateFrom) {
-        where.createdAt = { ...where.createdAt, gte: new Date(input.dateFrom) };
-      }
-      if (input.dateTo) {
-        where.createdAt = { ...where.createdAt, lte: new Date(input.dateTo) };
+      if (input.dateFrom || input.dateTo) {
+        where.createdAt = {
+          ...(input.dateFrom && { gte: new Date(input.dateFrom) }),
+          ...(input.dateTo && { lte: new Date(input.dateTo) }),
+        };
       }
 
       const items = await ctx.db.auditLog.findMany({

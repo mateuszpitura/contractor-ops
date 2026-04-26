@@ -126,30 +126,3 @@ describe('evaluateCondition (workflow helper)', () => {
     expect(badOp).toBe(false);
   });
 });
-
-// ===========================================================================
-// startRun calendar integration — documented expectations
-// ===========================================================================
-
-describe('workflow router — startRun calendar integration', () => {
-  it.todo(
-    'builds calendarConfigMap from template tasks with calendarEnabled=true — ' +
-      'requires full startRun transaction mock, tested via integration tests',
-  );
-  it.todo(
-    'skips tasks where calendarTaskConfigSchema.safeParse fails — ' +
-      'safeParse returns { success: false } and task is excluded from calendarConfigMap',
-  );
-  it.todo(
-    'returns calendarTaskCount in startRun mutation response — ' +
-      'calendarTaskCount equals calendarConfigMap.size, appended to plain(run) return',
-  );
-  it.todo(
-    'calls createTaskCalendarEvent for each calendar-eligible TODO task run — ' +
-      'fire-and-forget via dynamic import, tested in calendar-sync.test.ts',
-  );
-  it.todo(
-    'logs server-side error when createTaskCalendarEvent fails — ' +
-      'catch block logs to console.error, does not propagate to caller',
-  );
-});

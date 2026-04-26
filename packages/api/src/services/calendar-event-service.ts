@@ -1,8 +1,14 @@
+import type { PrismaClient } from '@contractor-ops/db';
 import { GoogleCalendarAdapter } from '@contractor-ops/integrations/adapters/google-calendar-adapter';
 import { OutlookCalendarAdapter } from '@contractor-ops/integrations/adapters/outlook-calendar-adapter';
 import { decryptCredentials } from '@contractor-ops/integrations/services/credential-service';
 import type { CalendarEventMetadata } from '@contractor-ops/validators';
-import type { CalendarCalendarPrismaClient } from './types.js';
+import type { CalendarPrismaClient } from './types.js';
+
+/** Union calendar clients are not a single callable delegate; narrow for model access. */
+function calendarOrm(prisma: CalendarPrismaClient): PrismaClient {
+  return prisma as unknown as PrismaClient;
+}
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -70,7 +76,8 @@ async function findCalendarConnections(
   organizationId: string,
   userId?: string,
 ): Promise<CalendarConnection[]> {
-  const connections = await prisma.integrationConnection.findMany({
+  const db = calendarOrm(prisma);
+  const connections = await db.integrationConnection.findMany({
     where: {
       organizationId,
       provider: { in: [...CALENDAR_PROVIDERS] },
@@ -145,7 +152,8 @@ async function createEventForConnection(
   const externalType = EXTERNAL_TYPE_MAP[conn.provider];
   const { eventId, url, metadata } = await createProviderEvent(conn, input);
 
-  await prisma.externalLink.create({
+  const db = calendarOrm(prisma);
+  await db.externalLink.create({
     data: {
       organizationId: input.organizationId,
       integrationConnectionId: conn.id,
@@ -278,7 +286,8 @@ async function findCalendarExternalLinks(
   prisma: CalendarPrismaClient,
   input: { organizationId: string; entityType: string; entityId: string },
 ): Promise<CalendarExternalLink[]> {
-  return prisma.externalLink.findMany({
+  const db = calendarOrm(prisma);
+  return db.externalLink.findMany({
     where: {
       organizationId: input.organizationId,
       entityType: input.entityType,
@@ -316,6 +325,7 @@ async function updateEventForLink(
     ...(input.endDateTime ? { endTime: input.endDateTime } : {}),
   };
 
+  const db = calendarOrm(prisma);
   if (conn.provider === 'GOOGLE_CALENDAR') {
     const etag = existingMetadata.etag ?? '';
     const result = await googleAdapter.updateEvent(
@@ -330,7 +340,7 @@ async function updateEventForLink(
       etag,
     );
 
-    await prisma.externalLink.update({
+    await db.externalLink.update({
       where: { id: link.id },
       data: {
         externalUrl: result.htmlLink,
@@ -351,7 +361,7 @@ async function updateEventForLink(
       endDateTime: input.endDateTime,
     });
 
-    await prisma.externalLink.update({
+    await db.externalLink.update({
       where: { id: link.id },
       data: {
         externalUrl: result.webLink,
@@ -394,7 +404,8 @@ async function deleteEventForLink(
   }
 
   // Always clean up the ExternalLink
-  await prisma.externalLink.delete({
+  const db = calendarOrm(prisma);
+  await db.externalLink.delete({
     where: { id: link.id },
   });
 }

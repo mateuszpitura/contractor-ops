@@ -1,4 +1,4 @@
-import type { Prisma, TaxIdType } from '@contractor-ops/db';
+import type { Prisma, PrismaClient, TaxIdType } from '@contractor-ops/db';
 import {
   contractorCreateSchema,
   contractorLifecycleTransitionSchema,
@@ -21,6 +21,7 @@ import { syncSeatCountForOrg } from '../services/billing-service.js';
 import { CacheKeys, invalidateByPrefix } from '../services/cache.js';
 import { sanitizeStrings } from '../services/sanitize.js';
 import { validateTaxId } from '../services/tax-id-validation.service.js';
+import type { OrmForTaxValidation } from '../services/types.js';
 
 // ---------------------------------------------------------------------------
 // Lifecycle transition map
@@ -225,13 +226,14 @@ function resolveTaxIdType(countryCode: string): TaxIdType | null {
  * summary fields when VAT ID is removed.
  */
 async function handleVatIdChange(
-  db: Parameters<typeof validateTaxId>[1]['prisma'],
+  db: OrmForTaxValidation,
   contractorId: string,
   organizationId: string,
   userId: string,
   prior: { vatId: string | null },
   updated: { vatId: string | null; countryCode: string },
 ): Promise<void> {
+  const prisma = db as unknown as PrismaClient;
   const priorVatId = prior.vatId ?? null;
   const nextVatId = updated.vatId ?? null;
   if (priorVatId === nextVatId) return;
@@ -241,11 +243,11 @@ async function handleVatIdChange(
     if (taxIdType) {
       await validateTaxId(
         { organizationId, contractorId, taxIdType, taxIdValue: nextVatId, actor: { userId } },
-        { prisma: db, hmrcClient: getHmrcVatClient(), viesClient: getViesClient() },
+        { prisma, hmrcClient: getHmrcVatClient(), viesClient: getViesClient() },
       );
     }
   } else {
-    await db.contractor.update({
+    await prisma.contractor.update({
       where: { id: contractorId },
       data: { latestVatValidatedAt: null, latestVatValidationStatus: null },
     });
@@ -257,7 +259,7 @@ async function handleVatIdChange(
  * or payment terms change.
  */
 async function updateBillingProfileIfNeeded(
-  db: Parameters<typeof validateTaxId>[1]['prisma'],
+  db: OrmForTaxValidation,
   contractorId: string,
   organizationId: string,
   bankAccount: string | undefined | null,
@@ -265,7 +267,8 @@ async function updateBillingProfileIfNeeded(
 ): Promise<void> {
   if (bankAccount === undefined && paymentTermsDays === undefined) return;
 
-  const defaultProfile = await db.contractorBillingProfile.findFirst({
+  const prisma = db as unknown as PrismaClient;
+  const defaultProfile = await prisma.contractorBillingProfile.findFirst({
     where: { contractorId, organizationId, isDefault: true },
   });
   if (!defaultProfile) return;
@@ -279,7 +282,7 @@ async function updateBillingProfileIfNeeded(
   if (paymentTermsDays !== undefined) {
     profileUpdate.paymentTermsDays = paymentTermsDays ?? null;
   }
-  await db.contractorBillingProfile.update({
+  await prisma.contractorBillingProfile.update({
     where: { id: defaultProfile.id },
     data: profileUpdate,
   });
@@ -623,7 +626,7 @@ export const contractorRouter = router({
         await writeAuditLog({
           organizationId: ctx.organizationId,
           actorType: 'USER',
-          actorId: ctx.user.id,
+          actorId: ctx.user!.id,
           action: 'CREATE',
           resourceType: 'CONTRACTOR',
           resourceId: created.id,
@@ -703,7 +706,7 @@ export const contractorRouter = router({
         rateValueMinor,
       );
       if (mergedCustomFields) {
-        updateData.customFieldsJson = mergedCustomFields;
+        updateData.customFieldsJson = mergedCustomFields as Prisma.InputJsonValue;
       }
 
       const updated = await ctx.db.contractor.update({
@@ -715,7 +718,7 @@ export const contractorRouter = router({
       await writeAuditLog({
         organizationId: ctx.organizationId,
         actorType: 'USER',
-        actorId: ctx.user.id,
+        actorId: ctx.user!.id,
         action: 'UPDATE',
         resourceType: 'CONTRACTOR',
         resourceId: id,
@@ -725,7 +728,7 @@ export const contractorRouter = router({
       });
 
       // D-07 trigger 1: validate or clear VAT ID on change
-      await handleVatIdChange(ctx.db, id, ctx.organizationId, ctx.user.id, existing, updated);
+      await handleVatIdChange(ctx.db, id, ctx.organizationId, ctx.user!.id, existing, updated);
 
       // Update default billing profile if billing fields changed
       await updateBillingProfileIfNeeded(
@@ -909,7 +912,7 @@ export const contractorRouter = router({
       await writeAuditLog({
         organizationId: ctx.organizationId,
         actorType: 'USER',
-        actorId: ctx.user.id,
+        actorId: ctx.user!.id,
         action: 'DELETE',
         resourceType: 'CONTRACTOR',
         resourceId: input.id,
@@ -1344,7 +1347,7 @@ export const contractorRouter = router({
           contractorId: contractor.id,
           taxIdType,
           taxIdValue: contractor.vatId,
-          actor: { userId: ctx.user.id },
+          actor: { userId: ctx.user!.id },
         },
         {
           prisma: ctx.db,
@@ -1402,7 +1405,7 @@ export const contractorRouter = router({
           taxIdValue: contractor.vatId,
           // `intent` flows through to the orchestrator's logging / audit
           // surface; the distinguishing mark from validateVat lives here.
-          actor: { userId: ctx.user.id },
+          actor: { userId: ctx.user!.id },
         },
         {
           prisma: ctx.db,

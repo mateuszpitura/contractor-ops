@@ -1,4 +1,9 @@
-export type { Prisma, TaxIdType, ValidationStatus } from '../generated/prisma/client/index.js';
+export type {
+  ContractType,
+  Prisma,
+  TaxIdType,
+  ValidationStatus,
+} from '../generated/prisma/client/index.js';
 export { createPrismaClientForUrl, PrismaClient, prisma } from './client.js';
 // PHASE-60-CROSS-ORG-AGGREGATE: raw (non-tenant-scoped) client for cron-only cross-org aggregates.
 export { prismaRaw } from './raw.js';

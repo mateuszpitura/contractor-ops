@@ -52,24 +52,4 @@ describe('classificationDocument router (Phase 59 · CLASS-03, CLASS-06)', () =>
         (proc as { type?: string }).type,
     ).toBe('query');
   });
-
-  // Below describe.todo entries track full integration coverage to be
-  // exercised once the Phase 58-style shared harness is generalised in a
-  // future test-utils refactor. They fail closed (todo state) so Wave-0
-  // guardrails remain accurate.
-  describe.todo(
-    'generateSds on completed IR35 assessment creates row + returns signed URL (TTL 300)',
-  );
-  describe.todo('generateSds on draft assessment throws PRECONDITION_FAILED');
-  describe.todo(
-    'generateSds × 2 on same assessment produces identical SHA-256 (D-05 byte stability)',
-  );
-  describe.todo(
-    'generateDrvDefenseBundle on completed DE assessment creates row + embeds attestation',
-  );
-  describe.todo('generateDrvDefenseBundle Section 3 contains ALL completed DE assessments');
-  describe.todo('generateDrvDefenseBundle Section 4 cross-ref is same-tenant only (ASVS V4)');
-  describe.todo('getDownloadUrl rejects cross-tenant document id (returns NOT_FOUND)');
-  describe.todo('listByEngagement returns documents ordered by generatedAt desc + org-scoped');
-  describe.todo('appending a document does not mutate prior row bytes (D-09)');
 });

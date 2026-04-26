@@ -17,6 +17,8 @@ generated
 
 # Build output
 dist
+out
+apps/*/out
 
 # Test coverage
 coverage

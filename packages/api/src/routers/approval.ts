@@ -550,7 +550,7 @@ export const approvalRouter = router({
 
       // Tab filter
       if (input.tab === 'my') {
-        where.approverUserId = ctx.user?.id;
+        where.approverUserId = ctx.user!.id;
       }
 
       // Status filter
@@ -591,7 +591,7 @@ export const approvalRouter = router({
       let total: number;
 
       if (input.sortBy === 'amount') {
-        const sqlConditions = approvalQueueSqlConditions(ctx.organizationId, ctx.user?.id, input);
+        const sqlConditions = approvalQueueSqlConditions(ctx.organizationId, ctx.user!.id, input);
         const whereSql = PrismaClient.sql`WHERE ${PrismaClient.join(sqlConditions, ' AND ')}`;
         const orderDirSql =
           input.sortOrder === 'asc' ? PrismaClient.sql`ASC` : PrismaClient.sql`DESC`;
@@ -725,14 +725,14 @@ export const approvalRouter = router({
           where: { id: input.stepId, organizationId: ctx.organizationId },
           include: { approvalFlow: true },
         });
-        validateStepForAction(step, ctx.user?.id);
+        validateStepForAction(step, ctx.user!.id);
 
         // Create decision record
         await tx.approvalDecision.create({
           data: {
             organizationId: ctx.organizationId,
             approvalStepId: step.id,
-            actorUserId: ctx.user?.id,
+            actorUserId: ctx.user!.id,
             decision: 'APPROVE',
             comment: input.comment ?? null,
           },
@@ -829,7 +829,7 @@ export const approvalRouter = router({
           invoiceNumber: result.invoice.invoiceNumber ?? `INV-${result.invoice.id.slice(-6)}`,
           contractorName: contractor?.displayName ?? 'Unknown',
           dueDate: new Date(result.invoice.dueDate),
-          userId: ctx.user?.id,
+          userId: ctx.user!.id,
         }).catch(err => console.error('[approval] payment deadline sync failed:', err));
       }
 
@@ -852,14 +852,14 @@ export const approvalRouter = router({
           where: { id: input.stepId, organizationId: ctx.organizationId },
           include: { approvalFlow: true },
         });
-        validateStepForAction(step, ctx.user?.id);
+        validateStepForAction(step, ctx.user!.id);
 
         // Create decision record
         await tx.approvalDecision.create({
           data: {
             organizationId: ctx.organizationId,
             approvalStepId: step.id,
-            actorUserId: ctx.user?.id,
+            actorUserId: ctx.user!.id,
             decision: 'REJECT',
             comment: input.comment,
           },
@@ -931,7 +931,7 @@ export const approvalRouter = router({
         const step = await tx.approvalStep.findFirst({
           where: { id: input.stepId, organizationId: ctx.organizationId },
         });
-        validateStepForAction(step, ctx.user?.id);
+        validateStepForAction(step, ctx.user!.id);
 
         // Verify delegate user exists in the organization
         const delegateMember = await tx.member.findFirst({
@@ -953,7 +953,7 @@ export const approvalRouter = router({
           data: {
             organizationId: ctx.organizationId,
             approvalStepId: step.id,
-            actorUserId: ctx.user?.id,
+            actorUserId: ctx.user!.id,
             decision: 'DELEGATE',
             comment: input.comment ?? null,
           },
@@ -987,14 +987,14 @@ export const approvalRouter = router({
         const step = await tx.approvalStep.findFirst({
           where: { id: input.stepId, organizationId: ctx.organizationId },
         });
-        validateStepForAction(step, ctx.user?.id);
+        validateStepForAction(step, ctx.user!.id);
 
         // Create decision record
         await tx.approvalDecision.create({
           data: {
             organizationId: ctx.organizationId,
             approvalStepId: step.id,
-            actorUserId: ctx.user?.id,
+            actorUserId: ctx.user!.id,
             decision: 'REQUEST_CHANGES',
             comment: input.comment,
           },
@@ -1027,7 +1027,7 @@ export const approvalRouter = router({
                 id: stepId,
                 organizationId: ctx.organizationId,
                 status: 'PENDING',
-                approverUserId: ctx.user?.id,
+                approverUserId: ctx.user!.id,
               },
               include: { approvalFlow: true },
             });
@@ -1040,7 +1040,7 @@ export const approvalRouter = router({
               data: {
                 organizationId: ctx.organizationId,
                 approvalStepId: step.id,
-                actorUserId: ctx.user?.id,
+                actorUserId: ctx.user!.id,
                 decision: 'APPROVE',
               },
             });
@@ -1061,7 +1061,7 @@ export const approvalRouter = router({
                 resourceId: step.approvalFlow.resourceId,
                 organizationId: ctx.organizationId,
                 db: ctx.db as unknown as TxClient,
-                userId: ctx.user?.id,
+                userId: ctx.user!.id,
               });
             }
           });
@@ -1097,7 +1097,7 @@ export const approvalRouter = router({
                 id: stepId,
                 organizationId: ctx.organizationId,
                 status: 'PENDING',
-                approverUserId: ctx.user?.id,
+                approverUserId: ctx.user!.id,
               },
               include: { approvalFlow: true },
             });
@@ -1110,7 +1110,7 @@ export const approvalRouter = router({
               data: {
                 organizationId: ctx.organizationId,
                 approvalStepId: step.id,
-                actorUserId: ctx.user?.id,
+                actorUserId: ctx.user!.id,
                 decision: 'REJECT',
                 comment: input.comment,
               },
@@ -1218,7 +1218,7 @@ export const approvalRouter = router({
           resourceType: 'INVOICE',
           resourceId: invoice.id,
           chainConfig,
-          createdByUserId: ctx.user?.id,
+          createdByUserId: ctx.user!.id,
         });
 
         // Update invoice status
@@ -1231,7 +1231,10 @@ export const approvalRouter = router({
       });
 
       // Fire-and-forget: dispatch APPROVAL_REQUEST to first approver
-      const firstStep = flow.approvalFlow.steps?.[0];
+      const firstStep = await ctx.db.approvalStep.findFirst({
+        where: { approvalFlowId: flow.approvalFlow.id, organizationId: ctx.organizationId },
+        orderBy: { stepOrder: 'asc' },
+      });
       if (firstStep?.approverUserId) {
         const inv = flow.invoice;
         // Fetch contractor name for notification metadata
@@ -1274,7 +1277,7 @@ export const approvalRouter = router({
           itemType: 'Invoice',
           itemName: flow.invoice.invoiceNumber ?? `INV-${flow.invoice.id.slice(-6)}`,
           deadline: new Date(firstStep.slaDeadline),
-          userId: ctx.user?.id,
+          userId: ctx.user!.id,
         }).catch(err => console.error('[approval] SLA deadline sync failed:', err));
       }
 

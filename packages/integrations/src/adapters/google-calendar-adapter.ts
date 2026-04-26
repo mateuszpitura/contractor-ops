@@ -31,17 +31,6 @@ const GOOGLE_CALENDAR_OAUTH_CONFIG: OAuthConfig = {
   },
 };
 
-/**
- * Extra parameters for Google OAuth flow.
- * - access_type: "offline" — required to receive a refresh token
- * - prompt: "consent" — forces consent screen to ensure refresh token is returned
- * @deprecated Use OAuthConfig.extraAuthParams instead
- */
-export const GOOGLE_CALENDAR_EXTRA_AUTH_PARAMS: Record<string, string> = {
-  access_type: 'offline',
-  prompt: 'consent',
-};
-
 // ---------------------------------------------------------------------------
 // Google Calendar Adapter
 // ---------------------------------------------------------------------------

@@ -94,7 +94,7 @@ export const reassessmentTriggerRouter = router({
         where: { id: input.id },
         data: {
           status: 'ACKNOWLEDGED',
-          acknowledgedByUserId: ctx.user.id,
+          acknowledgedByUserId: ctx.user!.id,
           acknowledgedAt: new Date(),
         },
       });
@@ -115,7 +115,7 @@ export const reassessmentTriggerRouter = router({
       where: { id: input.id },
       data: {
         status: 'DISMISSED',
-        dismissedByUserId: ctx.user.id,
+        dismissedByUserId: ctx.user!.id,
         dismissedAt: new Date(),
         dismissedReason: input.reason,
       },

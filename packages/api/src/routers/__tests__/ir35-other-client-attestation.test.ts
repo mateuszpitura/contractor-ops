@@ -29,12 +29,4 @@ describe('ir35Attestation router (Phase 59 · CLASS-06 support)', () => {
         (proc as { type?: string }).type,
     ).toBe('mutation');
   });
-
-  // Integration coverage tracked as todos (same rationale as classification-document.test.ts).
-  describe.todo('upsert sets signedAt only when statementText or signedName changes');
-  describe.todo('getPlatformCrossReference returns ONLY same-tenant assignments');
-  describe.todo(
-    'getPlatformCrossReference excludes the current assignment when excludeAssignmentId is passed',
-  );
-  describe.todo('statementText > 4000 chars rejected by Zod');
 });

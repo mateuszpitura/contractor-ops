@@ -17,3 +17,6 @@ export type DbClient = TenantScopedDb;
  * global tables). Do not use for tenant business data when `ctx.db` is available.
  */
 export type PrimaryPrismaClient = PrismaClient;
+
+/** Primary singleton or tenant-scoped client (shared orchestrator entrypoints). */
+export type OrmForTaxValidation = PrismaClient | DbClient;

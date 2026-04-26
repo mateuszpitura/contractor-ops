@@ -337,40 +337,6 @@ describe('integration.getOAuthUrlGeneric', () => {
 });
 
 // ===========================================================================
-// disconnect (Slack)
-// ===========================================================================
-
-describe('integration.disconnect', () => {
-  it('disconnects an existing Slack connection', async () => {
-    mockPrisma.integrationConnection.findFirst.mockResolvedValueOnce({
-      id: 'conn-1',
-      organizationId: ORG_ID,
-      provider: 'SLACK',
-      status: 'CONNECTED',
-    });
-    mockPrisma.integrationConnection.update.mockResolvedValueOnce({
-      id: 'conn-1',
-      status: 'DISCONNECTED',
-      credentialsRef: '',
-    });
-
-    const result = await caller.integration.disconnect();
-
-    expect(result).toEqual({ success: true });
-    expect(mockPrisma.integrationConnection.update).toHaveBeenCalledWith({
-      where: { id: 'conn-1' },
-      data: { status: 'DISCONNECTED', credentialsRef: '' },
-    });
-  });
-
-  it('throws NOT_FOUND when no Slack connection exists', async () => {
-    mockPrisma.integrationConnection.findFirst.mockResolvedValueOnce(null);
-
-    await expect(caller.integration.disconnect()).rejects.toThrow('integrationNotFound');
-  });
-});
-
-// ===========================================================================
 // disconnectGeneric
 // ===========================================================================
 
