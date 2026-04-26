@@ -57,7 +57,7 @@ interface EquipmentFormProps {
     type: string;
     customType: string | null;
     notes: string | null;
-    purchaseDate: string | null;
+    purchaseDate: string | Date | null;
   } | null;
 }
 

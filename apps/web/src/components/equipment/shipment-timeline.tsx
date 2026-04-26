@@ -27,7 +27,7 @@ type ShipmentEvent = {
   id: string;
   status: string;
   notes: string | null;
-  occurredAt: string;
+  occurredAt: string | Date;
   createdByUserId: string | null;
 };
 

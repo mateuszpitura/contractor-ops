@@ -27,8 +27,8 @@ interface Assignment {
     displayName: string | null;
   };
   assignedByUserId: string;
-  assignedAt: string;
-  unassignedAt: string | null;
+  assignedAt: string | Date;
+  unassignedAt: string | Date | null;
   unassignedByUserId: string | null;
   notes: string | null;
 }
