@@ -10,6 +10,8 @@ The invoice-to-payment flow must work end-to-end: a contractor's invoice arrives
 
 ## Current State
 
+**v5.0 UK & Germany Expansion in progress** — Phase 63 (UK Payments & Financial Features) complete 2026-04-26. 8 of 9 v5.0 phases shipped; Phase 64 (Legal Compliance Hardening) is next. Phase 63 ships BACS Standard 18 export, LPCDA-compliant late payment interest, and German Skonto early-payment discounts (XRechnung BG-20). 6 manual UI checkpoints tracked in `63-HUMAN-UAT.md`.
+
 **v4.0 International Foundation & Gulf Expansion shipped 2026-04-12** — ~562K LOC TypeScript, 55 phases (11 v1.0 + 16 v2.0 + 17 v3.0 + 11 v4.0), 205 plans, 55 plans in v4.0.
 
 v4.0 International Foundation & Gulf Expansion (shipped 2026-04-12): Pluggable e-invoicing engine with country profiles (KSeF refactored, ZATCA Fatoorah integration, Peppol PINT-AE via Storecove ASP). Multi-currency with AED/SAR/GBP support and SWIFT pain.001 payment export. VAT engine with per-country rates, Saudi WHT calculator with treaty rates, and reverse charge detection. Full Arabic localization with RTL layout using CSS logical properties. PDPL compliance with jurisdiction-specific consent management and legal document generation. Multi-region infrastructure with per-org database routing and regional R2 storage. Government API framework with cert auth, retry, rate limiting, and audit logging.
@@ -195,4 +197,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-12 after milestone v5.0 UK & Germany Expansion started*
+*Last updated: 2026-04-26 after Phase 63 UK Payments & Financial Features complete*
