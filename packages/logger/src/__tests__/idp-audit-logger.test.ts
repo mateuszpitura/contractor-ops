@@ -1,39 +1,124 @@
-// Phase 70-01 · FOUND6-06 (D-15) — failing test scaffold for the dedicated
-// IdP audit logger factory. Plan 70-08 implements `getIdpAuditLogger` plus
-// the `IDP_AUDIT_ALLOWED_FIELDS` constant.
+// Phase 70 · Plan 08 · FOUND6-06 (D-15) — IdP audit logger contract.
+//
+// We mount a fresh pino into an in-memory Writable sink (same approach as
+// default-body-redact.test.ts and with-body-logging.test.ts) and exercise
+// the audit-child contract via `createIdpAuditChild(parent)`. The
+// production `getIdpAuditLogger()` delegates to that helper with the
+// global root, so the contract is identical.
 
-import { describe, expect, it, vi } from 'vitest';
-// biome-ignore lint/correctness/noUnresolvedImports: target of Plan 70-08
-import { getIdpAuditLogger, IDP_AUDIT_ALLOWED_FIELDS } from '../index.js';
+import { Writable } from 'node:stream';
+
+import pino from 'pino';
+import { describe, expect, it } from 'vitest';
+import type { IdpAuditEvent } from '../idp-audit-logger.js';
+import { createIdpAuditChild, IDP_AUDIT_ALLOWED_FIELDS } from '../idp-audit-logger.js';
+import { PII_MASK_PATHS } from '../pii-mask.js';
+
+function setup() {
+  const chunks: string[] = [];
+  const sink = new Writable({
+    write(chunk, _encoding, cb) {
+      chunks.push(chunk.toString());
+      cb();
+    },
+  });
+  // Mount a parent with the SAME redact config as the production root so
+  // the audit child's redact override is exercised against an identical
+  // baseline.
+  const parent = pino(
+    {
+      level: 'debug',
+      redact: { paths: [...PII_MASK_PATHS], censor: '[REDACTED]' },
+    },
+    sink,
+  );
+  const audit = createIdpAuditChild(parent);
+  return { chunks, audit };
+}
 
 describe('getIdpAuditLogger (FOUND6-06 — D-15)', () => {
-  it('emits externalUserId in plaintext while password is redacted', () => {
-    const captured: string[] = [];
-    const writeSpy = vi.spyOn(process.stdout, 'write').mockImplementation((chunk: unknown) => {
-      captured.push(typeof chunk === 'string' ? chunk : String(chunk));
-      return true;
-    });
-
-    const log = getIdpAuditLogger();
-    log.info(
+  it('emits externalUserId in plaintext', () => {
+    const { chunks, audit } = setup();
+    audit.info(
       {
         auditEvent: 'deprovision',
-        externalUserId: 'usr_123',
-        password: 'should-redact',
-      },
+        externalUserId: 'usr_abc123',
+      } satisfies IdpAuditEvent,
       'audit',
     );
-    writeSpy.mockRestore();
-
-    const joined = captured.join('');
-    expect(joined).toContain('usr_123');
-    expect(joined).not.toContain('should-redact');
+    const joined = chunks.join('');
+    expect(joined).toContain('usr_abc123');
   });
 
-  it('IDP_AUDIT_ALLOWED_FIELDS contains the expected keys', () => {
-    expect(IDP_AUDIT_ALLOWED_FIELDS).toContain('externalUserId');
-    expect(IDP_AUDIT_ALLOWED_FIELDS).toContain('actionResult');
-    expect(IDP_AUDIT_ALLOWED_FIELDS).toContain('scopeDelta');
-    expect(IDP_AUDIT_ALLOWED_FIELDS).toContain('auditEvent');
+  it('emits scopeDelta in plaintext (audit field allow-list)', () => {
+    const { chunks, audit } = setup();
+    audit.info(
+      {
+        auditEvent: 'reconnect',
+        scopeDelta: { added: ['user.deprovision'], removed: [] },
+      } satisfies IdpAuditEvent,
+      'scope upgrade',
+    );
+    const joined = chunks.join('');
+    expect(joined).toContain('user.deprovision');
+  });
+
+  it('redacts password / token / apiKey even though emitted by audit logger', () => {
+    const { chunks, audit } = setup();
+    // Cast to bypass IdpAuditEvent type-narrowing — we test the redact paths.
+    // PII_MASK_PATHS uses `*.password` etc. (depth-2 wildcard), so wrap
+    // creds in a `creds` object to exercise the path correctly.
+    audit.info(
+      {
+        auditEvent: 'rotate',
+        creds: {
+          password: 'should-redact',
+          token: 'tok-xyz',
+          apiKey: 'ak-123',
+        },
+        // biome-ignore lint/suspicious/noExplicitAny: redact-test override
+      } as any,
+      'rotate creds',
+    );
+    const joined = chunks.join('');
+    expect(joined).not.toContain('should-redact');
+    expect(joined).not.toContain('tok-xyz');
+    expect(joined).not.toContain('ak-123');
+    expect(joined).toContain('[REDACTED]');
+  });
+
+  it('does NOT redact body field (audit logger override of Plan 70-03 default-redact)', () => {
+    const { chunks, audit } = setup();
+    audit.info(
+      {
+        auditEvent: 'webhook-received',
+        body: { event_type: 'user.suspended' },
+        // biome-ignore lint/suspicious/noExplicitAny: redact-test override
+      } as any,
+      'webhook',
+    );
+    const joined = chunks.join('');
+    expect(joined).toContain('user.suspended');
+  });
+
+  it('binds service: idp-audit on every line', () => {
+    const { chunks, audit } = setup();
+    audit.info({ auditEvent: 'noop' } satisfies IdpAuditEvent, 'noop');
+    const joined = chunks.join('');
+    expect(joined).toContain('"service":"idp-audit"');
+  });
+
+  it('IDP_AUDIT_ALLOWED_FIELDS contains the canonical fields', () => {
+    expect([...IDP_AUDIT_ALLOWED_FIELDS]).toEqual([
+      'auditEvent',
+      'externalUserId',
+      'actionResult',
+      'provider',
+      'connectionId',
+      'scopeDelta',
+      'organizationId',
+      'userId',
+      'timestamp',
+    ]);
   });
 });

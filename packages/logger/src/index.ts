@@ -26,6 +26,12 @@ const baseOptions: LoggerOptions = {
   },
 };
 
+export {
+  getIdpAuditLogger,
+  IDP_AUDIT_ALLOWED_FIELDS,
+  type IdpAuditAllowedField,
+  type IdpAuditEvent,
+} from './idp-audit-logger.js';
 export { LOG_BODY_INCLUDE_PREFIXES } from './log-body-include-prefixes.js';
 export type { PiiMaskKeyword } from './pii-mask.js';
 export { PII_MASK_KEYWORDS, PII_MASK_PATHS } from './pii-mask.js';
