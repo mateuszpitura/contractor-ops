@@ -289,6 +289,9 @@ function invoiceRow(overrides: Record<string, unknown> = {}) {
     id: INVOICE_ID,
     organizationId: ORG_A,
     eInvoiceLifecycle: null,
+    // Phase 68 D-06 cascade defaults — empty arrays mean no Skonto.
+    skontoTerms: [] as Array<unknown>,
+    contractor: { id: 'ctr_default', billingProfiles: [] as Array<unknown> },
     ...overrides,
   };
 }
@@ -441,6 +444,113 @@ describe('einvoice.generateZugferdPdf', () => {
     const caller = makeCaller();
     await expect(caller.generateZugferdPdf({ invoiceId: 'not-a-cuid' })).rejects.toThrow();
     expect(mockPrisma.invoice.findFirst).not.toHaveBeenCalled();
+  });
+});
+
+// ===========================================================================
+// Phase 68 · Plan 05 — Skonto cascade plumbing (Layer C router boundary)
+//
+// Closes the audit I-1 router half for the ZUGFeRD path. The embedded
+// factur-x.xml end-to-end emission is locked by Plan 04
+// (packages/einvoice/src/profiles/zugferd-de/__tests__/generator.test.ts);
+// here we verify the api router resolves the cascade and forwards the
+// resolved term to the einvoice-package generator.
+// ===========================================================================
+
+describe('einvoice.generateZugferdPdf — Skonto BG-20 cascade plumbing (Phase 68 D-06)', () => {
+  it('forwards invoice-level SkontoTerm into generateZugferdPdf opts when set on the invoice', async () => {
+    mockPrisma.invoice.findFirst = vi.fn(async () =>
+      invoiceRow({
+        skontoTerms: [
+          {
+            id: 'sk_inv_1',
+            discountPercent: 3,
+            discountPeriodDays: 7,
+            netPeriodDays: 30,
+          },
+        ],
+        // Profile-default deliberately set to a different value to prove
+        // invoice-level term wins (matches services/skonto.ts:51 cascade).
+        contractor: {
+          id: 'ctr_1',
+          billingProfiles: [
+            {
+              id: 'bp_1',
+              skontoTerms: [
+                {
+                  id: 'sk_prof_1',
+                  discountPercent: 99,
+                  discountPeriodDays: 1,
+                  netPeriodDays: 99,
+                },
+              ],
+            },
+          ],
+        },
+      }),
+    );
+
+    const caller = makeCaller();
+    await caller.generateZugferdPdf({ invoiceId: INVOICE_ID });
+
+    expect(mockGenerateZugferdPdf).toHaveBeenCalledTimes(1);
+    expect(mockGenerateZugferdPdf).toHaveBeenCalledWith(
+      expect.objectContaining({
+        skontoTerm: {
+          discountPercent: 3,
+          discountPeriodDays: 7,
+          netPeriodDays: 30,
+        },
+      }),
+    );
+  });
+
+  it('falls back to billing-profile-default SkontoTerm when invoice-level term is absent', async () => {
+    mockPrisma.invoice.findFirst = vi.fn(async () =>
+      invoiceRow({
+        skontoTerms: [],
+        contractor: {
+          id: 'ctr_1',
+          billingProfiles: [
+            {
+              id: 'bp_1',
+              skontoTerms: [
+                {
+                  id: 'sk_prof_1',
+                  discountPercent: 2,
+                  discountPeriodDays: 14,
+                  netPeriodDays: 60,
+                },
+              ],
+            },
+          ],
+        },
+      }),
+    );
+
+    const caller = makeCaller();
+    await caller.generateZugferdPdf({ invoiceId: INVOICE_ID });
+
+    expect(mockGenerateZugferdPdf).toHaveBeenCalledWith(
+      expect.objectContaining({
+        skontoTerm: {
+          discountPercent: 2,
+          discountPeriodDays: 14,
+          netPeriodDays: 60,
+        },
+      }),
+    );
+  });
+
+  it('passes skontoTerm = null when neither invoice nor billing profile has a SkontoTerm', async () => {
+    mockPrisma.invoice.findFirst = vi.fn(async () => invoiceRow()); // defaults: empty arrays
+
+    const caller = makeCaller();
+    await caller.generateZugferdPdf({ invoiceId: INVOICE_ID });
+
+    expect(mockGenerateZugferdPdf).toHaveBeenCalledWith(
+      expect.objectContaining({ skontoTerm: null }),
+    );
   });
 });
 

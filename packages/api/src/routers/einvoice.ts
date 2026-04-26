@@ -40,6 +40,8 @@ import {
   putObjectString,
   signExistingDownload,
 } from '../services/r2.js';
+import type { SkontoTermData } from '../services/skonto.js';
+import { resolveSkontoTerm } from '../services/skonto.js';
 
 // ---------------------------------------------------------------------------
 // Types for the Prisma `$transaction` callback — we project onto the
@@ -245,7 +247,20 @@ export const einvoiceRouter = router({
         },
         include: {
           lines: { orderBy: { lineNumber: 'asc' } },
-          contractor: true,
+          // Phase 68 D-06 — eager-fetch SkontoTerm so the cascade resolver
+          // can compute the effective term BEFORE calling generateZugferdPdf.
+          // Include shape mirrors payment.ts:1213-1222 + einvoice-finalize.ts
+          // loadInvoiceWithRelations (single source-of-truth pattern; do NOT
+          // extract a shared helper for two callers).
+          skontoTerms: { take: 1 },
+          contractor: {
+            include: {
+              billingProfiles: {
+                take: 1,
+                include: { skontoTerms: { take: 1 } },
+              },
+            },
+          },
           contract: true,
           organization: true,
           eInvoiceLifecycle: true,
@@ -253,6 +268,27 @@ export const einvoiceRouter = router({
       })) as
         | (Record<string, unknown> & {
             id: string;
+            // Phase 68 D-06 — eager-fetched cascade inputs (mirrors Plan 03).
+            skontoTerms: Array<{
+              id: string;
+              discountPercent: unknown;
+              discountPeriodDays: number;
+              netPeriodDays: number;
+            }>;
+            contractor:
+              | ({
+                  id: string;
+                  billingProfiles: Array<{
+                    id: string;
+                    skontoTerms: Array<{
+                      id: string;
+                      discountPercent: unknown;
+                      discountPeriodDays: number;
+                      netPeriodDays: number;
+                    }>;
+                  }>;
+                } & Record<string, unknown>)
+              | null;
             eInvoiceLifecycle: {
               id: string;
               zugferdPdfKey: string | null;
@@ -275,10 +311,32 @@ export const einvoiceRouter = router({
         invoice as unknown as Parameters<typeof mapPrismaInvoiceToEInvoice>[0],
       );
 
+      // 2b. Resolve the Skonto cascade (Phase 68 D-06): invoice-level term
+      //     wins over billing-profile default. Mirrors einvoice-finalize.ts
+      //     and payment.ts:1239-1253. The inline mapping coerces Prisma
+      //     Decimal -> number per RESEARCH Pitfall 3.
+      const invoiceSkontoRow = invoice.skontoTerms[0];
+      const profileSkontoRow = invoice.contractor?.billingProfiles?.[0]?.skontoTerms?.[0];
+      const invoiceSkonto: SkontoTermData | null = invoiceSkontoRow
+        ? {
+            discountPercent: Number(invoiceSkontoRow.discountPercent),
+            discountPeriodDays: invoiceSkontoRow.discountPeriodDays,
+            netPeriodDays: invoiceSkontoRow.netPeriodDays,
+          }
+        : null;
+      const profileSkonto: SkontoTermData | null = profileSkontoRow
+        ? {
+            discountPercent: Number(profileSkontoRow.discountPercent),
+            discountPeriodDays: profileSkontoRow.discountPeriodDays,
+            netPeriodDays: profileSkontoRow.netPeriodDays,
+          }
+        : null;
+      const effectiveSkonto = resolveSkontoTerm(invoiceSkonto, profileSkonto);
+
       // 3. Generate the ZUGFeRD PDF bytes.
       let pdfBytes: Uint8Array;
       try {
-        pdfBytes = await generateZugferdPdf({ invoice: envelope });
+        pdfBytes = await generateZugferdPdf({ invoice: envelope, skontoTerm: effectiveSkonto });
       } catch (err) {
         if (err instanceof ZugferdLevelUnsupportedForOutput) {
           throw new TRPCError({
