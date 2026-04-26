@@ -7,6 +7,7 @@ model IntegrationConnection {
   status            IntegrationStatus   @default(DISCONNECTED)
   displayName       String?
   configJson        Json?
+  scopeCapabilities Json? // Phase 70 D-13 — typed via packages/db/src/types/scope-capabilities.ts
   credentialsRef    String
   connectedByUserId String
   userId            String? // null = org-level, set = per-user personal connection (D-12, D-14)

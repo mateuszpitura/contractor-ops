@@ -11,8 +11,15 @@ export type { DataRegion } from './region.js';
 export { getRegionalClient, preWarmRegionalClients, SUPPORTED_REGIONS } from './region.js';
 export type { RlsContext } from './rls.js';
 export { withRlsSession } from './rls.js';
+export {
+  capabilityEnumSchema,
+  providerIdSchema,
+  type ScopeCapabilitiesParsed,
+  scopeCapabilitiesSchema,
+} from './scope-capabilities-schema.js';
 export { withSoftDelete } from './soft-delete.js';
 export { tenantStore, withTenantScope } from './tenant.js';
+export type { CapabilityEnum, ProviderId, ScopeCapabilities } from './types/scope-capabilities.js';
 
 import { prisma as basePrisma } from './client.js';
 import { withSoftDelete } from './soft-delete.js';

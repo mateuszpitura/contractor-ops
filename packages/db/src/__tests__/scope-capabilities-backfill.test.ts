@@ -3,9 +3,7 @@
 // `backfill-scope-capabilities.ts` + the `ScopeCapabilities` type.
 
 import { describe, expect, it } from 'vitest';
-// biome-ignore lint/correctness/noUnresolvedImports: target of Plan 70-09
-import { backfillScopeCapabilities } from '../scripts/backfill-scope-capabilities.js';
-// biome-ignore lint/correctness/noUnresolvedImports: target of Plan 70-09
+import { backfillScopeCapabilities } from '../../scripts/backfill-scope-capabilities.js';
 import type { ScopeCapabilities } from '../types/scope-capabilities.js';
 
 describe('scopeCapabilities backfill (FOUND6-05 — D-14)', () => {
