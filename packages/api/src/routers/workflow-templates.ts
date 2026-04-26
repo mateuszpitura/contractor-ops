@@ -37,7 +37,7 @@ export const workflowTemplatesRouter = router({
             version: 1,
             status: 'DRAFT',
             appliesToEntityType: 'CONTRACTOR',
-            createdByUserId: ctx.user?.id,
+            createdByUserId: ctx.user.id,
           },
         });
 
@@ -286,7 +286,7 @@ export const workflowTemplatesRouter = router({
             version: 1,
             status: 'DRAFT',
             appliesToEntityType: source.appliesToEntityType,
-            createdByUserId: ctx.user?.id,
+            createdByUserId: ctx.user.id,
           },
         });
 
@@ -368,7 +368,7 @@ export const workflowTemplatesRouter = router({
             version: 1,
             status: 'DRAFT',
             appliesToEntityType: 'CONTRACTOR',
-            createdByUserId: ctx.user?.id,
+            createdByUserId: ctx.user.id,
           },
         });
 
@@ -454,7 +454,7 @@ export const workflowTemplatesRouter = router({
             version: 1,
             status: 'DRAFT',
             appliesToEntityType: 'CONTRACTOR',
-            createdByUserId: ctx.user?.id,
+            createdByUserId: ctx.user.id,
           },
         });
 

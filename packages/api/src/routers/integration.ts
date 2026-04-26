@@ -267,7 +267,7 @@ export const integrationRouter = router({
       const state = generateOAuthState(
         input.provider,
         ctx.organizationId,
-        ctx.user?.id,
+        ctx.user.id,
         clientSecret,
       );
 

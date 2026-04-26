@@ -71,7 +71,7 @@ export const taxRouter = router({
       return createWhtCertificate({
         organizationId: ctx.organizationId,
         paymentRunItemId: input.paymentRunItemId,
-        generatedByUserId: ctx.user?.id,
+        generatedByUserId: ctx.user.id,
       });
     }),
 

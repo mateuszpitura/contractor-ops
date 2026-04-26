@@ -116,7 +116,7 @@ export const ksefRouter = router({
               environment: input.environment,
             },
             credentialsRef,
-            connectedByUserId: ctx.user?.id,
+            connectedByUserId: ctx.user.id,
             connectedAt: new Date(),
           },
         });
@@ -131,7 +131,7 @@ export const ksefRouter = router({
               environment: input.environment,
             },
             credentialsRef,
-            connectedByUserId: ctx.user?.id,
+            connectedByUserId: ctx.user.id,
           },
         });
       }

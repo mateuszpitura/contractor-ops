@@ -263,7 +263,7 @@ export const timeRouter = router({
         ctx.db,
         ctx.organizationId,
         input.timesheetId,
-        ctx.user?.id,
+        ctx.user.id,
       );
       return plain(result);
     }),
@@ -279,7 +279,7 @@ export const timeRouter = router({
         ctx.db,
         ctx.organizationId,
         input.timesheetId,
-        ctx.user?.id,
+        ctx.user.id,
         input.reason,
       );
       return plain(result);
@@ -296,7 +296,7 @@ export const timeRouter = router({
         ctx.db,
         ctx.organizationId,
         input.timesheetIds,
-        ctx.user?.id,
+        ctx.user.id,
       );
       return { count: result.count };
     }),
@@ -312,7 +312,7 @@ export const timeRouter = router({
         ctx.db,
         ctx.organizationId,
         input.timesheetIds,
-        ctx.user?.id,
+        ctx.user.id,
         input.reason,
       );
       return { count: result.count };

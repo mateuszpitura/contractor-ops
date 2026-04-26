@@ -38,7 +38,7 @@ export function requirePermission(permission: Permission) {
         });
       }
 
-      return next({ ctx });
+      return next();
     }
 
     // Session auth: delegate to Better Auth
@@ -54,7 +54,7 @@ export function requirePermission(permission: Permission) {
       });
     }
 
-    return next({ ctx });
+    return next({ ctx: { ...ctx } });
   });
 
   return middleware;

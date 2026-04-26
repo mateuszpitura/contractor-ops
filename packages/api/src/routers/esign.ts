@@ -104,7 +104,7 @@ export const esignRouter = router({
     .mutation(async ({ ctx, input }) => {
       const envelope = await sendForSignature({
         organizationId: ctx.organizationId,
-        userId: ctx.user?.id,
+        userId: ctx.user.id,
         contractId: input.contractId,
         documentId: input.documentId,
         connectionId: input.connectionId,
@@ -183,7 +183,7 @@ export const esignRouter = router({
       await voidEnvelope({
         organizationId: ctx.organizationId,
         envelopeId: input.envelopeId,
-        userId: ctx.user?.id,
+        userId: ctx.user.id,
         reason: input.reason,
       });
 

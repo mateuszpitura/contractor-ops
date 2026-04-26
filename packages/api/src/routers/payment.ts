@@ -457,7 +457,7 @@ export const paymentRouter = router({
                 name: input.name ?? null,
                 status: 'DRAFT',
                 currency,
-                createdByUserId: ctx.user?.id,
+                createdByUserId: ctx.user.id,
                 totalMinor,
                 invoiceCount: groupInvoices.length,
                 notes: input.notes ?? null,
@@ -735,7 +735,7 @@ export const paymentRouter = router({
             paymentRunId: run.id,
             format: input.exportFormat,
             status: 'GENERATED',
-            generatedByUserId: ctx.user?.id,
+            generatedByUserId: ctx.user.id,
           },
         });
 
@@ -907,7 +907,7 @@ export const paymentRouter = router({
           const member = await tx.member.findFirst({
             where: {
               organizationId: ctx.organizationId,
-              userId: ctx.user?.id,
+              userId: ctx.user.id,
             },
             select: { role: true },
           });
@@ -1199,7 +1199,7 @@ export const paymentRouter = router({
   // =========================================================================
 
   applySkontoToItem: tenantProcedure
-    .use(requirePermission({ payment: ['update'] }))
+    .use(requirePermission({ payment: ['create'] }))
     .input(z.object({ paymentRunItemId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const item = await ctx.db.paymentRunItem.findFirst({
@@ -1210,11 +1210,12 @@ export const paymentRouter = router({
         include: {
           invoice: {
             include: {
-              skontoTerm: true,
+              skontoTerms: { take: 1 },
               contractor: {
                 include: {
-                  billingProfile: {
-                    include: { skontoTerm: true },
+                  billingProfiles: {
+                    take: 1,
+                    include: { skontoTerms: { take: 1 } },
                   },
                 },
               },
@@ -1231,21 +1232,23 @@ export const paymentRouter = router({
       }
 
       const { invoice } = item;
+      const invoiceSkontoTerm = invoice.skontoTerms[0];
+      const profileSkontoTerm = invoice.contractor?.billingProfiles[0]?.skontoTerms[0];
 
       // Resolve effective skonto term via cascade
-      const invoiceTerm = invoice.skontoTerm
+      const invoiceTerm = invoiceSkontoTerm
         ? {
-            discountPercent: Number(invoice.skontoTerm.discountPercent),
-            discountPeriodDays: invoice.skontoTerm.discountPeriodDays,
-            netPeriodDays: invoice.skontoTerm.netPeriodDays,
+            discountPercent: Number(invoiceSkontoTerm.discountPercent),
+            discountPeriodDays: invoiceSkontoTerm.discountPeriodDays,
+            netPeriodDays: invoiceSkontoTerm.netPeriodDays,
           }
         : null;
 
-      const profileTerm = invoice.contractor?.billingProfile?.skontoTerm
+      const profileTerm = profileSkontoTerm
         ? {
-            discountPercent: Number(invoice.contractor.billingProfile.skontoTerm.discountPercent),
-            discountPeriodDays: invoice.contractor.billingProfile.skontoTerm.discountPeriodDays,
-            netPeriodDays: invoice.contractor.billingProfile.skontoTerm.netPeriodDays,
+            discountPercent: Number(profileSkontoTerm.discountPercent),
+            discountPeriodDays: profileSkontoTerm.discountPeriodDays,
+            netPeriodDays: profileSkontoTerm.netPeriodDays,
           }
         : null;
 
@@ -1267,7 +1270,7 @@ export const paymentRouter = router({
       }
 
       // Find the effective skonto term record for the FK
-      const skontoTermRecord = invoice.skontoTerm ?? invoice.contractor?.billingProfile?.skontoTerm;
+      const skontoTermRecord = invoiceSkontoTerm ?? profileSkontoTerm;
 
       if (!(skontoTermRecord && effectiveTerm)) {
         throw new TRPCError({
@@ -1321,7 +1324,8 @@ export const paymentRouter = router({
               },
               contractor: {
                 include: {
-                  billingProfile: {
+                  billingProfiles: {
+                    take: 1,
                     select: { iban: true },
                   },
                 },
@@ -1340,7 +1344,7 @@ export const paymentRouter = router({
 
       const detections = run.items.map(item => {
         const currency = item.invoice?.currency ?? run.currency;
-        const iban = item.contractor?.billingProfile?.iban ?? '';
+        const iban = item.contractor?.billingProfiles[0]?.iban ?? '';
         const format = detectFormat(currency, iban);
 
         return {

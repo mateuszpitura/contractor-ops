@@ -468,7 +468,7 @@ export const workflowExecutionRouter = router({
             contractorId: contractor.id,
             contractId: contract?.id ?? null,
             status: 'IN_PROGRESS',
-            startedByUserId: ctx.user?.id,
+            startedByUserId: ctx.user.id,
             startedAt: now,
             dueAt: maxDueDate,
           },
@@ -564,7 +564,7 @@ export const workflowExecutionRouter = router({
         run.calendarConfigMap,
         run.contractorName,
         run.contractName,
-        ctx.user?.id,
+        ctx.user.id,
       );
 
       // Fire-and-forget: handle EQUIPMENT task integration hooks (Phase 30)
@@ -798,7 +798,7 @@ export const workflowExecutionRouter = router({
 
       const where: Record<string, unknown> = {
         organizationId: ctx.organizationId,
-        assigneeUserId: ctx.user?.id,
+        assigneeUserId: ctx.user.id,
         status: { in: ['TODO', 'IN_PROGRESS', 'BLOCKED'] },
       };
 
@@ -884,7 +884,7 @@ export const workflowExecutionRouter = router({
           data: {
             status: 'DONE',
             completedAt: now,
-            completedByUserId: ctx.user?.id,
+            completedByUserId: ctx.user.id,
             startedAt: task.startedAt ?? now,
           },
         });
@@ -1090,7 +1090,7 @@ export const workflowExecutionRouter = router({
           organizationId: ctx.organizationId,
           workflowRunId: input.workflowRunId,
           workflowTaskRunId: input.workflowTaskRunId ?? null,
-          authorUserId: ctx.user?.id,
+          authorUserId: ctx.user.id,
           body: input.body,
         },
         include: {
@@ -1147,7 +1147,7 @@ export const workflowExecutionRouter = router({
       const count = await ctx.db.workflowTaskRun.count({
         where: {
           organizationId: ctx.organizationId,
-          assigneeUserId: ctx.user?.id,
+          assigneeUserId: ctx.user.id,
           status: { in: ['TODO', 'IN_PROGRESS'] },
           dueAt: { lt: new Date() },
         },

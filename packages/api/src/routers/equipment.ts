@@ -375,7 +375,7 @@ const equipmentCoreRouter = router({
             organizationId: ctx.organizationId,
             equipmentId: input.equipmentId,
             contractorId: input.contractorId,
-            assignedByUserId: ctx.user?.id,
+            assignedByUserId: ctx.user.id,
             notes: input.notes ?? null,
           },
         }),
