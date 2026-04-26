@@ -47,8 +47,8 @@ vi.mock('@contractor-ops/db', () => ({
 import { auth } from '@contractor-ops/auth';
 import { evaluate } from '@contractor-ops/feature-flags';
 
-const mockAuth = auth.api.getSession as ReturnType<typeof vi.fn>;
-const mockEvaluate = evaluate as ReturnType<typeof vi.fn>;
+const mockAuth = auth.api.getSession as unknown as ReturnType<typeof vi.fn>;
+const mockEvaluate = evaluate as unknown as ReturnType<typeof vi.fn>;
 
 const SESSION_FIXTURE = {
   session: { activeOrganizationId: 'org-1', userId: 'user-1' },

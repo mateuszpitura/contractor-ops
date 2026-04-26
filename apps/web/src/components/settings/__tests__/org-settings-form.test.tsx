@@ -242,7 +242,7 @@ describe('OrgSettingsForm', () => {
     await user.clear(nameInput);
     await user.type(nameInput, 'Updated Org');
     const saveBtn = screen.getByText('Save changes').closest('button');
-    await user.click(saveBtn);
+    await user.click(saveBtn!);
     await waitFor(() => {
       expect(mutationState.mutate).toHaveBeenCalled();
     });
@@ -265,7 +265,7 @@ describe('OrgSettingsForm', () => {
     const nameInput = screen.getByLabelText(/organization name/i);
     await user.clear(nameInput);
     const saveBtn = screen.getByText('Save changes').closest('button');
-    await user.click(saveBtn);
+    await user.click(saveBtn!);
     // Validation should prevent submit with empty name
     await waitFor(() => {
       expect(mutationState.mutate).not.toHaveBeenCalled();
@@ -327,7 +327,7 @@ describe('OrgSettingsForm', () => {
     await user.clear(nameInput);
     await user.type(nameInput, 'New Name');
     const saveBtn = screen.getByText('Save changes').closest('button');
-    await user.click(saveBtn);
+    await user.click(saveBtn!);
     await waitFor(() => {
       expect(mutationState.mutate).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -347,7 +347,7 @@ describe('OrgSettingsForm', () => {
     await user.clear(emailInput);
     await user.type(emailInput, 'new-billing@acme.test');
     const saveBtn = screen.getByText('Save changes').closest('button');
-    await user.click(saveBtn);
+    await user.click(saveBtn!);
     await waitFor(() => {
       expect(mutationState.mutate).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -367,7 +367,7 @@ describe('OrgSettingsForm', () => {
     await user.clear(legalInput);
     await user.type(legalInput, 'New Legal');
     const saveBtn = screen.getByText('Save changes').closest('button');
-    await user.click(saveBtn);
+    await user.click(saveBtn!);
     await waitFor(() => {
       expect(mutationState.mutate).toHaveBeenCalledWith(
         expect.objectContaining({

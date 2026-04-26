@@ -19,13 +19,13 @@ describe('EquipmentTypeIcon', () => {
   it('applies default classes', () => {
     const { container } = render(<EquipmentTypeIcon type="LAPTOP" />);
     const svg = container.querySelector('svg');
-    expect(svg.className.baseVal || svg.getAttribute('class')).toContain('h-4');
+    expect(svg!.className.baseVal || svg!.getAttribute('class')).toContain('h-4');
   });
 
   it('merges custom className', () => {
     const { container } = render(<EquipmentTypeIcon type="LAPTOP" className="text-red-500" />);
     const svg = container.querySelector('svg');
-    const cls = svg.className.baseVal || svg.getAttribute('class') || '';
+    const cls = svg!.className.baseVal || svg!.getAttribute('class') || '';
     expect(cls).toContain('text-red-500');
   });
 });

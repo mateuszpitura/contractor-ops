@@ -29,7 +29,32 @@ vi.mock('../payment-run-badge', () => ({
   ),
 }));
 
-const baseRun = {
+type RunItem = {
+  id: string;
+  invoiceId: string;
+  amountMinor: number;
+  currency: string;
+  status: string;
+  paymentReference: string | null;
+  failureReason: string | null;
+  invoice: { invoiceNumber: string; dueDate: string };
+  contractor: { id: string; legalName: string };
+};
+
+type RunData = {
+  id: string;
+  runNumber: string | null;
+  status: string;
+  createdAt: string;
+  completedAt: string | null;
+  exportFormat: string | null;
+  invoiceCount: number;
+  totalMinor: number;
+  currency: string;
+  items: RunItem[];
+};
+
+const baseRun: RunData = {
   id: 'run-1',
   runNumber: 'PR-001',
   status: 'DRAFT',

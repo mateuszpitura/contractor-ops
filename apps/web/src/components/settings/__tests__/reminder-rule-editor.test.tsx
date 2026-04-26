@@ -382,7 +382,7 @@ describe('ReminderRuleEditor', () => {
     const nameInput = screen.getByLabelText('reminderRules.editor.ruleName');
     await user.type(nameInput, 'My Rule');
     const saveBtn = screen.getByText('reminderRules.editor.save').closest('button');
-    await user.click(saveBtn);
+    await user.click(saveBtn!);
     // Form submit attempt (validation may prevent mutation but code path is exercised)
   });
 
@@ -455,7 +455,7 @@ describe('ReminderRuleEditor', () => {
     });
     const { user } = setup(<ReminderRuleEditor open={true} onOpenChange={vi.fn()} rule={rule} />);
     const saveBtn = screen.getByText('reminderRules.editor.save').closest('button');
-    await user.click(saveBtn);
+    await user.click(saveBtn!);
   });
 
   // ---- Form submission with ROLE recipient mode and configRole ----
@@ -468,7 +468,7 @@ describe('ReminderRuleEditor', () => {
     });
     const { user } = setup(<ReminderRuleEditor open={true} onOpenChange={vi.fn()} rule={rule} />);
     const saveBtn = screen.getByText('reminderRules.editor.save').closest('button');
-    await user.click(saveBtn);
+    await user.click(saveBtn!);
   });
 
   // ---- Create mode submission (no rule) triggers createMutation ----
@@ -477,7 +477,7 @@ describe('ReminderRuleEditor', () => {
     const nameInput = screen.getByLabelText('reminderRules.editor.ruleName');
     await user.type(nameInput, 'New Reminder Rule');
     const saveBtn = screen.getByText('reminderRules.editor.save').closest('button');
-    await user.click(saveBtn);
+    await user.click(saveBtn!);
   });
 
   // ---- Edit mode submission triggers updateMutation ----
@@ -491,7 +491,7 @@ describe('ReminderRuleEditor', () => {
     await user.clear(nameInput);
     await user.type(nameInput, 'Updated Rule Name');
     const saveBtn = screen.getByText('reminderRules.editor.save').closest('button');
-    await user.click(saveBtn);
+    await user.click(saveBtn!);
   });
 
   // ---- offsetDays not included when trigger doesn't support it ----
@@ -502,7 +502,7 @@ describe('ReminderRuleEditor', () => {
     });
     const { user } = setup(<ReminderRuleEditor open={true} onOpenChange={vi.fn()} rule={rule} />);
     const saveBtn = screen.getByText('reminderRules.editor.save').closest('button');
-    await user.click(saveBtn);
+    await user.click(saveBtn!);
   });
 
   // ---- Reset form when reopened without rule ----

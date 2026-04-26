@@ -59,7 +59,7 @@ describe('WorkflowSidePanel', () => {
   });
 
   it('renders run details when open with data', () => {
-    mockedUseQuery.mockImplementation(((opts: Record<string, unknown>) => {
+    mockedUseQuery.mockImplementation(((opts: { queryKey?: readonly unknown[] }) => {
       if (opts?.queryKey?.[0] === 'workflow') {
         return {
           data: {
@@ -90,7 +90,7 @@ describe('WorkflowSidePanel', () => {
   });
 
   it('renders progress bar and task summary', () => {
-    mockedUseQuery.mockImplementation(((opts: Record<string, unknown>) => {
+    mockedUseQuery.mockImplementation(((opts: { queryKey?: readonly unknown[] }) => {
       if (opts?.queryKey?.[0] === 'workflow') {
         return {
           data: {
@@ -116,7 +116,7 @@ describe('WorkflowSidePanel', () => {
   });
 
   it('renders open workflow link button', () => {
-    mockedUseQuery.mockImplementation(((opts: Record<string, unknown>) => {
+    mockedUseQuery.mockImplementation(((opts: { queryKey?: readonly unknown[] }) => {
       if (opts?.queryKey?.[0] === 'workflow') {
         return {
           data: {
@@ -137,7 +137,7 @@ describe('WorkflowSidePanel', () => {
   });
 
   it('renders contractor link when contractor is present', () => {
-    mockedUseQuery.mockImplementation(((opts: Record<string, unknown>) => {
+    mockedUseQuery.mockImplementation(((opts: { queryKey?: readonly unknown[] }) => {
       if (opts?.queryKey?.[0] === 'workflow') {
         return {
           data: {
@@ -158,7 +158,7 @@ describe('WorkflowSidePanel', () => {
   });
 
   it('excludes condition-skipped tasks from progress count', () => {
-    mockedUseQuery.mockImplementation(((opts: Record<string, unknown>) => {
+    mockedUseQuery.mockImplementation(((opts: { queryKey?: readonly unknown[] }) => {
       if (opts?.queryKey?.[0] === 'workflow') {
         return {
           data: {

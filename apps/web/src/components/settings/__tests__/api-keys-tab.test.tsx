@@ -1,19 +1,34 @@
 import { render, screen } from '@/test/test-utils';
 import { ApiKeysTab } from '../api-keys-tab';
 
-const mockKeys = vi.hoisted(() => [
-  {
-    id: 'key-1',
-    name: 'ERP Integration',
-    prefix: 'abc123',
-    scopes: ['contractor:read', 'invoice:read'],
-    createdBy: { name: 'John Doe' },
-    createdAt: '2026-01-15T10:00:00Z',
-    lastUsedAt: '2026-04-10T15:30:00Z',
-    revokedAt: null,
-    expiresAt: null,
-  },
-]);
+type MockKey = {
+  id: string;
+  name: string;
+  prefix: string;
+  scopes: string[];
+  createdBy: { name: string };
+  createdAt: string;
+  lastUsedAt: string | null;
+  revokedAt: string | null;
+  expiresAt: string | null;
+};
+
+const mockKeys: MockKey[] = vi.hoisted(
+  () =>
+    [
+      {
+        id: 'key-1',
+        name: 'ERP Integration',
+        prefix: 'abc123',
+        scopes: ['contractor:read', 'invoice:read'],
+        createdBy: { name: 'John Doe' },
+        createdAt: '2026-01-15T10:00:00Z',
+        lastUsedAt: '2026-04-10T15:30:00Z',
+        revokedAt: null,
+        expiresAt: null,
+      },
+    ] as MockKey[],
+);
 
 vi.mock('@tanstack/react-query', async () => {
   const actual =

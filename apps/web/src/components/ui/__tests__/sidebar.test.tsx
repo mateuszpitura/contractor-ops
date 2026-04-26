@@ -308,7 +308,7 @@ describe('SidebarTrigger toggle', () => {
     const sidebar = document.querySelector("[data-slot='sidebar']");
     expect(sidebar).toHaveAttribute('data-state', 'expanded');
     const triggerBtn = screen.getByText('Toggle sidebar').closest('button');
-    await user.click(triggerBtn);
+    await user.click(triggerBtn!);
     expect(sidebar).toHaveAttribute('data-state', 'collapsed');
   });
 
@@ -316,8 +316,8 @@ describe('SidebarTrigger toggle', () => {
     const { user } = renderSidebar({ defaultOpen: true });
     const sidebar = document.querySelector("[data-slot='sidebar']");
     const triggerBtn = screen.getByText('Toggle sidebar').closest('button');
-    await user.click(triggerBtn);
-    await user.click(triggerBtn);
+    await user.click(triggerBtn!);
+    await user.click(triggerBtn!);
     expect(sidebar).toHaveAttribute('data-state', 'expanded');
   });
 });
@@ -372,7 +372,7 @@ describe('SidebarProvider controlled open', () => {
       </SidebarProvider>,
     );
     const triggerBtn = screen.getByText('Toggle sidebar').closest('button');
-    await user.click(triggerBtn);
+    await user.click(triggerBtn!);
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 });
@@ -470,7 +470,7 @@ describe('SidebarTrigger onClick passthrough', () => {
       </SidebarProvider>,
     );
     const triggerBtn = screen.getByText('Toggle sidebar').closest('button');
-    await user.click(triggerBtn);
+    await user.click(triggerBtn!);
     expect(customClick).toHaveBeenCalledTimes(1);
     const sidebar = document.querySelector("[data-slot='sidebar']");
     expect(sidebar).toHaveAttribute('data-state', 'collapsed');
