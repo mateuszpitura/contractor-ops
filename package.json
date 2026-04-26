@@ -13,6 +13,7 @@
     "format:check": "biome format .",
     "check:no-process-env": "node scripts/check-no-process-env.mjs",
     "lint:schema": "tsx scripts/lint-schema.mjs",
+    "lint:logs": "tsx scripts/lint-logs.mjs",
     "test": "turbo test",
     "test:coverage": "turbo build --filter=@contractor-ops/validators --filter=@contractor-ops/auth --filter=@contractor-ops/integrations --filter=@contractor-ops/logger && vitest run --coverage",
     "load:smoke": "k6 run load-tests/smoke.js",

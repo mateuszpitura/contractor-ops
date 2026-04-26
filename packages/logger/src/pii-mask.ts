@@ -57,6 +57,13 @@ export const PII_MASK_PATHS = [
   '*.countryFields.svNumber',
   '*.countryFields.socialInsuranceNumber',
   '*.countryFields.handelsregister.*',
+
+  // Phase 70 D-05 — default-redact request/response bodies. Top-level `body`
+  // and any `*.body` (one level of wrapping) emit `[REDACTED]` by default.
+  // Routers wanting plaintext bodies use `withBodyLogging` from this package;
+  // every approved opt-in lives in `LOG_BODY_INCLUDE_PREFIXES`.
+  'body',
+  '*.body',
 ] as const;
 
 /**

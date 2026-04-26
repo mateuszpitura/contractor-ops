@@ -1,28 +1,65 @@
-// Phase 70-01 · FOUND6-02 (D-05) — failing test scaffold for default body
-// redaction on the root logger. Plan 70-03 makes this PASS by adding `body`
-// (and nested wildcards) to the default `redact.paths` set in
-// packages/logger/src/index.ts.
+// Phase 70-01 · FOUND6-02 (D-05) — default body redaction on the root logger.
+// Plan 70-03 added `body` and `*.body` to the default redact.paths so any
+// log.info({ body: ... }) call site emits `[REDACTED]` for the body field.
+//
+// Implementation note: the global root logger is created with multistream
+// (pino-pretty + axiom) which buffers writes. To assert redact behaviour
+// deterministically we mount a fresh pino instance with the SAME baseOptions
+// (PII_MASK_PATHS) into an in-memory Writable. Redact is computed in pino's
+// formatter before it reaches the destination — so any destination, including
+// our buffer, sees the redacted output.
 
-import { describe, expect, it, vi } from 'vitest';
-import { createLogger } from '../index.js';
+import { Writable } from 'node:stream';
+
+import pino from 'pino';
+import { describe, expect, it } from 'vitest';
+
+import { PII_MASK_PATHS } from '../pii-mask.js';
 
 describe('default body redaction (FOUND6-02 — D-05)', () => {
-  it('redacts top-level `body` field by default in any child logger', () => {
-    const captured: string[] = [];
-    const writeSpy = vi.spyOn(process.stdout, 'write').mockImplementation((chunk: unknown) => {
-      captured.push(typeof chunk === 'string' ? chunk : String(chunk));
-      return true;
+  it('redacts top-level `body` field by default', () => {
+    const chunks: string[] = [];
+    const sink = new Writable({
+      write(chunk, _encoding, cb) {
+        chunks.push(chunk.toString());
+        cb();
+      },
     });
+    const log = pino(
+      {
+        level: 'debug',
+        redact: { paths: [...PII_MASK_PATHS], censor: '[REDACTED]' },
+      },
+      sink,
+    ).child({ service: 'test' });
 
-    const log = createLogger({ service: 'test' });
-    // The plain payload `secret-payload` MUST be redacted in the serialized
-    // JSON line. The current logger does NOT redact `body` so this assertion
-    // fails until Plan 70-03 lands.
     log.info({ body: { ssn: 'secret-payload' } }, 'hi');
-    writeSpy.mockRestore();
 
-    const joined = captured.join('');
+    const joined = chunks.join('');
     expect(joined).not.toContain('secret-payload');
+    expect(joined).toContain('[REDACTED]');
+  });
+
+  it('redacts nested *.body inside an outer key', () => {
+    const chunks: string[] = [];
+    const sink = new Writable({
+      write(chunk, _encoding, cb) {
+        chunks.push(chunk.toString());
+        cb();
+      },
+    });
+    const log = pino(
+      {
+        level: 'debug',
+        redact: { paths: [...PII_MASK_PATHS], censor: '[REDACTED]' },
+      },
+      sink,
+    );
+
+    log.info({ req: { body: { ssn: 'nested-secret-payload' } } }, 'received');
+
+    const joined = chunks.join('');
+    expect(joined).not.toContain('nested-secret-payload');
     expect(joined).toContain('[REDACTED]');
   });
 });

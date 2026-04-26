@@ -1,0 +1,4 @@
+{
+  "note": "Phase 70 D-07 audit baseline. Regenerate with: pnpm lint:logs --update-baseline",
+  "offences": []
+}
