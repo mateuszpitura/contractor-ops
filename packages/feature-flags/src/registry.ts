@@ -1,4 +1,5 @@
 import type { FlagDefinition } from './schemas.js';
+import { getFlagSignoff, isGatedFlag } from './signoff-registry-flags.js';
 
 /**
  * Deep-freezes an object tree. Runtime complement to `as const` — prevents
@@ -162,4 +163,38 @@ export const CLASSIFICATION_ENGINE_FLAG = 'module.classification-engine' as cons
 
 export function getFlagDefinition<K extends FlagKey>(key: K): (typeof FLAGS)[K] {
   return FLAGS[key];
+}
+
+// ---------------------------------------------------------------------------
+// Phase 70 D-10 — Boot-time signoff gate for legal-sensitive flag namespaces.
+//
+// Iterates every flag key. For each key whose namespace is gated (D-11),
+// requires a matching entry in the flag-signoff registry. Missing entries
+// trip a stderr error and `process.exit(1)` so an engineer who flips an
+// Unleash flag to APPROVED but forgets the registry entry hits the failure
+// at LOCAL boot — not in staging.
+//
+// Bypass: `FLAG_SIGNOFF_BYPASS=local` skips the exit and emits a warn line
+// instead. LOCAL-ONLY constraint — production must NOT set this.
+// ---------------------------------------------------------------------------
+
+const FLAG_SIGNOFF_BYPASS = process.env.FLAG_SIGNOFF_BYPASS === 'local';
+
+for (const key of FLAG_KEYS) {
+  if (!isGatedFlag(key)) continue;
+  const entry = getFlagSignoff(key);
+  if (entry !== undefined) continue;
+
+  const msg =
+    `[FLAG-SIGNOFF] flag '${key}' missing registry entry — refusing to boot. ` +
+    `Add a PENDING entry to packages/feature-flags/src/signoff-registry-flags.json ` +
+    `(see docs/lint-remediation/flag-signoff.md) ` +
+    `or set FLAG_SIGNOFF_BYPASS=local for LOCAL-ONLY dev.`;
+
+  if (FLAG_SIGNOFF_BYPASS) {
+    process.stderr.write(`[FLAG-SIGNOFF] WARN bypass active (LOCAL-ONLY): ${msg}\n`);
+  } else {
+    process.stderr.write(`${msg}\n`);
+    process.exit(1);
+  }
 }
