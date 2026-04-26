@@ -2,12 +2,12 @@
 gsd_state_version: 1.0
 milestone: v6.0
 milestone_name: Platform Maturity & Operational Hardening
-status: Roadmap created (54/54 requirements mapped, 100% coverage). Phase 70 ready for `/gsd-plan-phase 70`.
-stopped_at: Phase 70 context gathered
-last_updated: "2026-04-26T15:04:38.560Z"
-last_activity: 2026-04-26 — v6.0 roadmap created with 11 phases (70-80)
+status: paused — Phase 70 Wave 3 checkpoint (Plan 70-09 autonomous:false)
+stopped_at: Phase 70 — Wave 0–2 verified GREEN; Plan 70-09 needs human review
+last_updated: "2026-04-26T21:30:00.000Z"
+last_activity: 2026-04-26 — Phase 70 Waves 0–2 shipped (8/10 plans), checkpoint before Plan 70-09 multi-region migration
 progress:
-  percent: 0
+  percent: 9
 ---
 
 # Project State
@@ -21,14 +21,69 @@ See: .planning/PROJECT.md (updated 2026-04-26 — v6.0 milestone started)
 
 ## Current Position
 
-Phase: 70 — Not started
-Plan: —
-Status: Roadmap created (54/54 requirements mapped, 100% coverage). Phase 70 ready for `/gsd-plan-phase 70`.
-Last activity: 2026-04-26 — v6.0 roadmap created with 11 phases (70-80)
+Phase: 70 — Wave 0–2 complete (8/10 plans). CHECKPOINT at Plan 70-09.
+Plan: 70-09 (multi-region migration — `autonomous: false`)
+Status: Waves 0–2 shipped GREEN. Plan 70-09 requires human review before Prisma schema + multi-region backfill.
+Last activity: 2026-04-26 — Phase 70 Waves 0–2 verified
 
-Progress: [░░░░░░░░░░] 0% (v6.0 — 0/11 phases complete)
+Progress: [█░░░░░░░░░] 9% (v6.0 — 0/11 phases complete; Phase 70 at 8/10 plans)
 
-**Planned Phase:** 70 (v6.0 Foundation — Cross-Cutting CI Guards & Observability Baseline) — 10 plans — 2026-04-26T15:04:38.557Z
+**Active Phase:** 70 (v6.0 Foundation) — 8/10 plans landed, paused at multi-region checkpoint
+
+## Phase 70 Checkpoint — needs human review (Plan 70-09)
+
+**Plan 70-09 status:** PAUSED for human review. Marked `autonomous: false` per the planner. Pre-migration safe work below has been completed; the actual Prisma schema edit, `prisma migrate dev --create-only`, multi-region apply, and backfill script implementation are deliberately deferred to a human-supervised session.
+
+**Pre-checkpoint verification (all GREEN):**
+- `pnpm lint:schema` → "OK: 28 schema file(s) clean"
+- `pnpm lint:logs` → "OK: 1258 source file(s) clean"
+- `pnpm i18n:parity` → "OK: ... (baseline: 398 pre-existing site(s) tolerated)"
+- `pnpm --filter @contractor-ops/logger test` → 38/38 pass
+- `pnpm --filter @contractor-ops/feature-flags test` → 47/47 pass
+- `pnpm --filter @contractor-ops/lint-guards test` → 7/7 pass
+- `pnpm --filter @contractor-ops/validators exec vitest run locked-phrases-guard` → 78/78 pass (no regression)
+
+**Ships in Plans 01–08 (committed):**
+
+| Plan | Commit | Subject |
+|------|--------|---------|
+| 70-01 | `bcaa2e70` | Wave 0 failing test scaffolds for FOUND6-01..06 + lint-guards package |
+| 70-02 | `cde07dc8` | pnpm lint:schema CI guard for FOUND6-01 (P27) |
+| 70-03 | `abc00a7c` | default-redact logger bodies + pnpm lint:logs guard for FOUND6-02 (P28) |
+| 70-04 | `eb4486ce` | pnpm i18n:parity CI guard for FOUND6-03 (P29) |
+| 70-05 | `c251e4c7` | flag-namespace signoff registry schema + helpers for FOUND6-04 (P30) |
+| 70-06 | `f2d76942` | wire pnpm lint:schema/lint:logs/i18n:parity into CI + husky pre-push |
+| 70-07 | `99a6c74f` | boot-time flag-signoff gate + LOCAL-ONLY bypass for FOUND6-04 (P30) |
+| 70-08 | `741f62f0` | getIdpAuditLogger() with allow-list semantics for FOUND6-06 (P28) |
+
+**Pending plans (Wave 3 — needs human review):**
+
+- **70-09 (autonomous: false):** Add `IntegrationConnection.scopeCapabilities Json?` field, generate Prisma migration, ship the typed `ScopeCapabilities`/`CapabilityEnum` TS contract + Zod boundary schema, ship `backfill-scope-capabilities.ts` (single-region runner; LOCAL-ONLY, multi-region apply is a manual post-deploy item).
+- **70-10:** GoogleWorkspaceReconnectBanner component + 4-locale i18n strings (depends on 70-09's `ScopeCapabilities` types).
+
+**Why this is a checkpoint:**
+
+1. The Prisma schema edit creates a new database column. The generated `migration.sql` MUST be visually reviewed for unexpected DROP/RENAME entries (T-70-09-05) before any region's database is touched.
+2. The migration is multi-region (`DATABASE_URL_EU` and `DATABASE_URL_ME`). Per `packages/db/scripts/push-all-regions.ts`, both regions must be applied or both must be rolled back — there is no partial state. LOCAL-ONLY constraint means we don't have a hosted multi-region staging; the human runs the script per region from a workstation with the env vars exported.
+3. The `prisma migrate dev --create-only` invocation requires a live `DATABASE_URL` to compute the diff against the shadow database. This is not safe to do autonomously in a background session against an unknown environment.
+
+**Recommended human session for Plan 70-09:**
+
+1. Confirm `DATABASE_URL_EU` and `DATABASE_URL_ME` are set in your local shell (do NOT commit them).
+2. Edit `packages/db/prisma/schema/integration.prisma` per Plan 70-09 task 70-09-01: add `scopeCapabilities Json?` immediately after `configJson Json?` on the `IntegrationConnection` model.
+3. Run `cd packages/db && npx prisma format && cd ../.. && pnpm --filter @contractor-ops/db db:generate`.
+4. Run `cd packages/db && DATABASE_URL=$DATABASE_URL_EU npx prisma migrate dev --create-only --name add_scope_capabilities`.
+5. **Visually review** the generated `packages/db/prisma/migrations/<timestamp>_add_scope_capabilities/migration.sql` — must contain only `ALTER TABLE "IntegrationConnection" ADD COLUMN "scopeCapabilities" JSONB;` and nothing else.
+6. Implement Plan 70-09 tasks 70-09-02 (TS types), 70-09-03 (Zod schema), 70-09-04 (backfill script + README), 70-09-05 (commit).
+7. Run `pnpm --filter @contractor-ops/db test scope-capabilities-backfill` to verify Wave 0 contract turns GREEN.
+8. Multi-region apply is a manual post-deploy item (record in 70-09-SUMMARY.md):
+   ```sh
+   DATABASE_URL=$DATABASE_URL_EU tsx packages/db/scripts/backfill-scope-capabilities.ts --dry-run
+   DATABASE_URL=$DATABASE_URL_EU tsx packages/db/scripts/backfill-scope-capabilities.ts
+   DATABASE_URL=$DATABASE_URL_ME tsx packages/db/scripts/backfill-scope-capabilities.ts --dry-run
+   DATABASE_URL=$DATABASE_URL_ME tsx packages/db/scripts/backfill-scope-capabilities.ts
+   ```
+9. After 70-09 lands, run `/gsd-execute-phase 70 --wave 3` (or just `/gsd-execute-phase 70`) to resume Plan 70-10.
 
 ## Performance Metrics
 
