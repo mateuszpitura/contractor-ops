@@ -26,7 +26,7 @@ function makeMockTable() {
         toggleVisibility: vi.fn(),
       },
     ],
-  } as unknown;
+  } as unknown as never;
 }
 
 describe('DataTableColumnToggle', () => {

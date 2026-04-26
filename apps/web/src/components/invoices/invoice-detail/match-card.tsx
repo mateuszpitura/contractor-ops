@@ -40,10 +40,11 @@ type MatchResult = {
   expectedAmountMinor: number | null;
   amountDeltaMinor: number | null;
   amountDeltaPercent: number | null;
-  explanationJson: {
-    flags?: string[];
-    duplicateInvoiceId?: string | null;
-  } | null;
+  /**
+   * JSON payload from Prisma — narrow at use sites with `Array.isArray`
+   * / property checks. Typed as `unknown` to accept Prisma `JsonValue`.
+   */
+  explanationJson: unknown;
   status: string;
 };
 
@@ -55,7 +56,8 @@ type MatchCardProps = {
     contractId: string | null;
     totalMinor: number;
     currency: string;
-    flagsJson: string[] | null;
+    /** Prisma JSON column — narrowed at use sites. */
+    flagsJson: unknown;
     contractor: {
       id: string;
       legalName: string;

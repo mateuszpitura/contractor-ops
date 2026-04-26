@@ -90,9 +90,9 @@ beforeEach(() => {
     // Distinguish between connections and events queries
     const key = opts?.queryKey?.[0] ?? '';
     if (key === 'cal' && opts?.queryKey?.[1] === 'listEvents') {
-      return { data: eventsData, isLoading: false } as unknown;
+      return { data: eventsData, isLoading: false } as unknown as never;
     }
-    return { data: connectionsData, isLoading: connectionsLoading } as unknown;
+    return { data: connectionsData, isLoading: connectionsLoading } as unknown as never;
   });
 });
 

@@ -290,9 +290,9 @@ describe('SpendContractorReport', () => {
     mockUseQuery.mockImplementation(() => {
       callCount++;
       if (callCount === 1) {
-        return { data: { items: [], totalCount: 0 }, isLoading: false } as unknown;
+        return { data: { items: [], totalCount: 0 }, isLoading: false } as unknown as never;
       }
-      return { data: undefined, isLoading: false } as unknown;
+      return { data: undefined, isLoading: false } as unknown as never;
     });
     render(<SpendContractorReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByTestId('report-chart')).toBeInTheDocument();
@@ -303,8 +303,8 @@ describe('SpendContractorReport', () => {
     let callCount = 0;
     mockUseQuery.mockImplementation(() => {
       callCount++;
-      if (callCount === 1) return { data: undefined, isLoading: true } as unknown;
-      return { data: undefined, isLoading: true } as unknown;
+      if (callCount === 1) return { data: undefined, isLoading: true } as unknown as never;
+      return { data: undefined, isLoading: true } as unknown as never;
     });
     render(<SpendContractorReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByTestId('export-buttons')).toBeInTheDocument();
@@ -422,9 +422,9 @@ describe('SpendContractorReport', () => {
     mockUseQuery.mockImplementation(() => {
       callCount++;
       if (callCount === 1) {
-        return { data: { items: [], totalCount: 0 }, isLoading: false } as unknown;
+        return { data: { items: [], totalCount: 0 }, isLoading: false } as unknown as never;
       }
-      return { data: undefined, isLoading: false } as unknown;
+      return { data: undefined, isLoading: false } as unknown as never;
     });
     render(<SpendContractorReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByTestId('report-chart')).toBeInTheDocument();
@@ -451,12 +451,12 @@ describe('SpendContractorReport', () => {
             totalCount: 1,
           },
           isLoading: false,
-        } as unknown;
+        } as unknown as never;
       }
       return {
         data: [{ contractorId: 'c-1', contractorName: 'ChartCo', totalMinor: 100000 }],
         isLoading: false,
-      } as unknown;
+      } as unknown as never;
     });
     render(<SpendContractorReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
     expect(screen.getByTestId('report-chart')).toBeInTheDocument();

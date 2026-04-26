@@ -51,7 +51,7 @@ vi.mock('../task-card', () => ({
 }));
 
 describe('SortableTaskList', () => {
-  const mockForm = { watch: vi.fn(), register: vi.fn(), setValue: vi.fn() } as unknown;
+  const mockForm = { watch: vi.fn(), register: vi.fn(), setValue: vi.fn() } as unknown as never;
 
   it('renders empty state with add button when no fields', () => {
     render(

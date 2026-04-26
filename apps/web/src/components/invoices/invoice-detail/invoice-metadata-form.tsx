@@ -96,10 +96,10 @@ type InvoiceMetadataFormProps = {
   invoice: {
     id: string;
     invoiceNumber: string;
-    issueDate: string | null;
-    dueDate: string | null;
-    servicePeriodStart: string | null;
-    servicePeriodEnd: string | null;
+    issueDate: string | Date | null;
+    dueDate: string | Date | null;
+    servicePeriodStart: string | Date | null;
+    servicePeriodEnd: string | Date | null;
     sellerTaxId: string | null;
     subtotalMinor: number;
     vatRate: string | null;

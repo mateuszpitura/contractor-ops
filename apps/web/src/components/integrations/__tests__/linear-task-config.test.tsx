@@ -109,7 +109,10 @@ describe('LinearTaskConfig', () => {
     mockedUseQuery.mockImplementation((opts: Record<string, unknown>) => {
       const key = opts?.queryKey;
       if (key?.[0] === 'linear' && key?.[1] === 'connectionStatus') {
-        return { isLoading: false, data: { id: 'conn-1', status: 'CONNECTED' } } as unknown;
+        return {
+          isLoading: false,
+          data: { id: 'conn-1', status: 'CONNECTED' },
+        } as unknown as never;
       }
       if (key?.[0] === 'linear' && key?.[1] === 'teams') {
         return {
@@ -118,9 +121,9 @@ describe('LinearTaskConfig', () => {
             { id: 't1', name: 'Engineering', key: 'ENG' },
             { id: 't2', name: 'Design', key: 'DES' },
           ],
-        } as unknown;
+        } as unknown as never;
       }
-      return { isLoading: false, data: undefined } as unknown;
+      return { isLoading: false, data: undefined } as unknown as never;
     });
     render(<LinearTaskConfig taskTemplateId="tt-1" />);
     expect(screen.getByRole('combobox')).toBeInTheDocument();
@@ -131,13 +134,16 @@ describe('LinearTaskConfig', () => {
     mockedUseQuery.mockImplementation((opts: Record<string, unknown>) => {
       const key = opts?.queryKey;
       if (key?.[0] === 'linear' && key?.[1] === 'connectionStatus') {
-        return { isLoading: false, data: { id: 'conn-1', status: 'CONNECTED' } } as unknown;
+        return {
+          isLoading: false,
+          data: { id: 'conn-1', status: 'CONNECTED' },
+        } as unknown as never;
       }
       if (key?.[0] === 'linear' && key?.[1] === 'teams') {
         return {
           isLoading: false,
           data: [{ id: 't1', name: 'Engineering', key: 'ENG' }],
-        } as unknown;
+        } as unknown as never;
       }
       if (key?.[0] === 'jira' && key?.[1] === 'getTaskConfig') {
         return {
@@ -148,9 +154,9 @@ describe('LinearTaskConfig', () => {
             linearTeamKey: 'ENG',
             linearTeamName: 'Engineering',
           },
-        } as unknown;
+        } as unknown as never;
       }
-      return { isLoading: false, data: undefined } as unknown;
+      return { isLoading: false, data: undefined } as unknown as never;
     });
     render(<LinearTaskConfig taskTemplateId="tt-1" />);
     expect(screen.getByText('Engineering')).toBeInTheDocument();
@@ -160,9 +166,9 @@ describe('LinearTaskConfig', () => {
     mockedUseQuery.mockImplementation((opts: Record<string, unknown>) => {
       const key = opts?.queryKey;
       if (key?.[0] === 'linear' && key?.[1] === 'connectionStatus') {
-        return { isLoading: false, data: null } as unknown;
+        return { isLoading: false, data: null } as unknown as never;
       }
-      return { isLoading: false, data: undefined } as unknown;
+      return { isLoading: false, data: undefined } as unknown as never;
     });
     const { container } = render(<LinearTaskConfig taskTemplateId="tt-1" />);
     expect(container.innerHTML).toBe('');
@@ -172,9 +178,12 @@ describe('LinearTaskConfig', () => {
     mockedUseQuery.mockImplementation((opts: Record<string, unknown>) => {
       const key = opts?.queryKey;
       if (key?.[0] === 'linear' && key?.[1] === 'connectionStatus') {
-        return { isLoading: false, data: { id: 'conn-1', status: 'DISCONNECTED' } } as unknown;
+        return {
+          isLoading: false,
+          data: { id: 'conn-1', status: 'DISCONNECTED' },
+        } as unknown as never;
       }
-      return { isLoading: false, data: undefined } as unknown;
+      return { isLoading: false, data: undefined } as unknown as never;
     });
     const { container } = render(<LinearTaskConfig taskTemplateId="tt-1" />);
     expect(container.innerHTML).toBe('');
@@ -184,12 +193,15 @@ describe('LinearTaskConfig', () => {
     mockedUseQuery.mockImplementation((opts: Record<string, unknown>) => {
       const key = opts?.queryKey;
       if (key?.[0] === 'linear' && key?.[1] === 'connectionStatus') {
-        return { isLoading: false, data: { id: 'conn-1', status: 'PENDING_MAPPING' } } as unknown;
+        return {
+          isLoading: false,
+          data: { id: 'conn-1', status: 'PENDING_MAPPING' },
+        } as unknown as never;
       }
       if (key?.[0] === 'linear' && key?.[1] === 'teams') {
-        return { isLoading: false, data: [] } as unknown;
+        return { isLoading: false, data: [] } as unknown as never;
       }
-      return { isLoading: false, data: undefined } as unknown;
+      return { isLoading: false, data: undefined } as unknown as never;
     });
     render(<LinearTaskConfig taskTemplateId="tt-1" />);
     expect(screen.getByRole('switch')).toBeInTheDocument();
@@ -199,12 +211,18 @@ describe('LinearTaskConfig', () => {
     mockedUseQuery.mockImplementation((opts: Record<string, unknown>) => {
       const key = opts?.queryKey;
       if (key?.[0] === 'linear' && key?.[1] === 'connectionStatus') {
-        return { isLoading: false, data: { id: 'conn-1', status: 'CONNECTED' } } as unknown;
+        return {
+          isLoading: false,
+          data: { id: 'conn-1', status: 'CONNECTED' },
+        } as unknown as never;
       }
       if (key?.[0] === 'linear' && key?.[1] === 'teams') {
-        return { isLoading: false, data: [{ id: 't1', name: 'Team A', key: 'TA' }] } as unknown;
+        return {
+          isLoading: false,
+          data: [{ id: 't1', name: 'Team A', key: 'TA' }],
+        } as unknown as never;
       }
-      return { isLoading: false, data: undefined } as unknown;
+      return { isLoading: false, data: undefined } as unknown as never;
     });
     render(<LinearTaskConfig taskTemplateId="tt-1" />);
     const toggle = screen.getByRole('switch');
@@ -226,13 +244,16 @@ describe('LinearTaskConfig', () => {
     mockedUseQuery.mockImplementation((opts: Record<string, unknown>) => {
       const key = opts?.queryKey;
       if (key?.[0] === 'linear' && key?.[1] === 'connectionStatus') {
-        return { isLoading: false, data: { id: 'conn-1', status: 'CONNECTED' } } as unknown;
+        return {
+          isLoading: false,
+          data: { id: 'conn-1', status: 'CONNECTED' },
+        } as unknown as never;
       }
       if (key?.[0] === 'linear' && key?.[1] === 'teams') {
         return {
           isLoading: false,
           data: [{ id: 't1', name: 'Engineering', key: 'ENG' }],
-        } as unknown;
+        } as unknown as never;
       }
       if (key?.[0] === 'jira' && key?.[1] === 'getTaskConfig') {
         return {
@@ -243,9 +264,9 @@ describe('LinearTaskConfig', () => {
             linearTeamKey: 'ENG',
             linearTeamName: 'Engineering',
           },
-        } as unknown;
+        } as unknown as never;
       }
-      return { isLoading: false, data: undefined } as unknown;
+      return { isLoading: false, data: undefined } as unknown as never;
     });
     render(<LinearTaskConfig taskTemplateId="tt-1" />);
     const toggle = screen.getByRole('switch');

@@ -42,7 +42,7 @@ function makeMockTable(selectedCount: number) {
   return {
     getFilteredSelectedRowModel: () => ({ rows }),
     toggleAllPageRowsSelected: vi.fn(),
-  } as unknown;
+  } as unknown as never;
 }
 
 describe('DataTableBulkActions', () => {

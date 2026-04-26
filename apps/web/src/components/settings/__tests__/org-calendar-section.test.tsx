@@ -78,7 +78,11 @@ beforeEach(() => {
   } as unknown as never);
 
   vi.mocked(useQuery).mockImplementation(() => {
-    return { data: connectionsData, isLoading: connectionsLoading, refetch: vi.fn() } as unknown;
+    return {
+      data: connectionsData,
+      isLoading: connectionsLoading,
+      refetch: vi.fn(),
+    } as unknown as never;
   });
 });
 

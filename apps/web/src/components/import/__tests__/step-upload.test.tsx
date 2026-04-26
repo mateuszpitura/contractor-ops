@@ -387,7 +387,7 @@ describe('StepUpload', () => {
       readAsDataURL() {
         setTimeout(() => this.onerror?.(), 0);
       }
-    } as unknown;
+    } as unknown as never;
 
     await act(async () => {
       await capturedOnDrop?.([file]);
