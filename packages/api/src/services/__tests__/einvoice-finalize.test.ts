@@ -54,7 +54,24 @@ interface InvoiceRow {
     taxId: string | null;
     countryCode: string;
     isPublicSectorBuyer: boolean;
+    // Phase 68 D-03 — eager-fetched cascade input on the contractor relation.
+    billingProfiles: Array<{
+      id: string;
+      skontoTerms: Array<{
+        id: string;
+        discountPercent: unknown;
+        discountPeriodDays: number;
+        netPeriodDays: number;
+      }>;
+    }>;
   } | null;
+  // Phase 68 D-03 — eager-fetched invoice-level cascade input.
+  skontoTerms: Array<{
+    id: string;
+    discountPercent: unknown; // Prisma Decimal — modelled as unknown in the fake; tests pass a number
+    discountPeriodDays: number;
+    netPeriodDays: number;
+  }>;
   contract: { id: string } | null;
   organization: {
     id: string;
@@ -357,7 +374,13 @@ function makeInvoice(overrides: Partial<InvoiceRow> = {}): InvoiceRow {
       taxId: 'DE987654321',
       countryCode: 'DE',
       isPublicSectorBuyer: true,
+      // Phase 68 D-03 — empty default; tests opting into the profile-default
+      // branch override `contractor.billingProfiles[0].skontoTerms`.
+      billingProfiles: [],
     },
+    // Phase 68 D-03 — empty default; tests opting into the invoice-level
+    // branch override `skontoTerms`.
+    skontoTerms: [],
     contract: { id: 'con_1' },
     organization: {
       id: ORG_A,
@@ -713,5 +736,151 @@ describe('einvoice-finalize — edge cases', () => {
 
     // signDownloadUrl should NOT have been called since putObject failed first
     expect(r2.signCalls).toHaveLength(0);
+  });
+});
+
+// ===========================================================================
+// Phase 68 · Plan 03 — Skonto cascade plumbing (Layer B per CONTEXT D-08)
+// ===========================================================================
+
+describe('finalizeEInvoice — Skonto BG-20 cascade plumbing (Phase 68 D-03/D-04)', () => {
+  it('forwards invoice-level SkontoTerm into opts.skontoTerm when set on the invoice', async () => {
+    const invoice = makeInvoice({
+      skontoTerms: [
+        {
+          id: 'sk_inv_1',
+          discountPercent: 3,
+          discountPeriodDays: 7,
+          netPeriodDays: 30,
+        },
+      ],
+      // Profile-default deliberately set to a DIFFERENT value to prove the
+      // invoice-level term wins (matches services/skonto.ts:51 cascade).
+      contractor: {
+        id: 'ctr_1',
+        legalName: 'Bundesministerium',
+        taxId: 'DE987654321',
+        countryCode: 'DE',
+        isPublicSectorBuyer: true,
+        billingProfiles: [
+          {
+            id: 'bp_1',
+            skontoTerms: [
+              {
+                id: 'sk_prof_1',
+                discountPercent: 99, // wrong — must NOT be picked
+                discountPeriodDays: 1,
+                netPeriodDays: 99,
+              },
+            ],
+          },
+        ],
+      },
+    });
+    const db = makeDb({ invoice });
+    const r2 = makeR2();
+    const profile = makeProfile();
+    const logger = makeLogger();
+
+    await finalizeEInvoice(
+      {
+        db: db as never,
+        r2,
+        profile: profile as never,
+        logger,
+        now: () => new Date('2026-04-14T12:00:00Z'),
+      },
+      {
+        organizationId: ORG_A,
+        invoiceId: INVOICE_1,
+        actorUserId: USER_1,
+      },
+    );
+
+    expect(profile.generateAndValidate).toHaveBeenCalledOnce();
+    const [, opts] = profile.generateAndValidate.mock.calls[0] ?? [];
+    expect((opts as { skontoTerm?: unknown }).skontoTerm).toEqual({
+      discountPercent: 3,
+      discountPeriodDays: 7,
+      netPeriodDays: 30,
+    });
+  });
+
+  it('falls back to billing-profile-default SkontoTerm when invoice-level term is absent', async () => {
+    const invoice = makeInvoice({
+      skontoTerms: [],
+      contractor: {
+        id: 'ctr_1',
+        legalName: 'Bundesministerium',
+        taxId: 'DE987654321',
+        countryCode: 'DE',
+        isPublicSectorBuyer: true,
+        billingProfiles: [
+          {
+            id: 'bp_1',
+            skontoTerms: [
+              {
+                id: 'sk_prof_1',
+                discountPercent: 2,
+                discountPeriodDays: 14,
+                netPeriodDays: 60,
+              },
+            ],
+          },
+        ],
+      },
+    });
+    const db = makeDb({ invoice });
+    const r2 = makeR2();
+    const profile = makeProfile();
+    const logger = makeLogger();
+
+    await finalizeEInvoice(
+      {
+        db: db as never,
+        r2,
+        profile: profile as never,
+        logger,
+        now: () => new Date('2026-04-14T12:00:00Z'),
+      },
+      {
+        organizationId: ORG_A,
+        invoiceId: INVOICE_1,
+        actorUserId: USER_1,
+      },
+    );
+
+    const [, opts] = profile.generateAndValidate.mock.calls[0] ?? [];
+    expect((opts as { skontoTerm?: unknown }).skontoTerm).toEqual({
+      discountPercent: 2,
+      discountPeriodDays: 14,
+      netPeriodDays: 60,
+    });
+  });
+
+  it('passes opts.skontoTerm = null when neither invoice nor billing profile has a SkontoTerm', async () => {
+    const invoice = makeInvoice(); // defaults: skontoTerms=[], billingProfiles=[]
+    const db = makeDb({ invoice });
+    const r2 = makeR2();
+    const profile = makeProfile();
+    const logger = makeLogger();
+
+    await finalizeEInvoice(
+      {
+        db: db as never,
+        r2,
+        profile: profile as never,
+        logger,
+        now: () => new Date('2026-04-14T12:00:00Z'),
+      },
+      {
+        organizationId: ORG_A,
+        invoiceId: INVOICE_1,
+        actorUserId: USER_1,
+      },
+    );
+
+    const [, opts] = profile.generateAndValidate.mock.calls[0] ?? [];
+    expect((opts as { skontoTerm?: unknown }).skontoTerm).toBeNull();
   });
 });

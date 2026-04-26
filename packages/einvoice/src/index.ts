@@ -218,7 +218,10 @@ export {
 } from './profiles/xrechnung-de/constants.js';
 export type { CiiDocShape } from './profiles/xrechnung-de/generator.js';
 export { generateXRechnungCii } from './profiles/xrechnung-de/generator.js';
-export type { XRechnungGenerateOptions } from './profiles/xrechnung-de/index.js';
+// Phase 68 D-01 — re-export SkontoTermInput at the package root so api-side
+// callers (einvoice-finalize.ts, routers/einvoice.ts:generateZugferdPdf) can
+// import the type without reaching into the xrechnung-de subpath.
+export type { SkontoTermInput, XRechnungGenerateOptions } from './profiles/xrechnung-de/index.js';
 export { XRechnungDEProfile } from './profiles/xrechnung-de/index.js';
 export { embedLeitwegIdIntoCii } from './profiles/xrechnung-de/leitweg-id-embed.js';
 export { parseXRechnungCii } from './profiles/xrechnung-de/parser.js';

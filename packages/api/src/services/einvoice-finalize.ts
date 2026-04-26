@@ -51,6 +51,7 @@ import type {
 } from '@contractor-ops/db/generated/prisma/client';
 import type {
   EInvoice,
+  SkontoTermInput,
   XRechnungGenerateOptions,
   XRechnungValidationReport,
 } from '@contractor-ops/einvoice';
@@ -59,6 +60,8 @@ import type { ValidationEvent } from './einvoice-lifecycle-fsm.js';
 import { transitionValidation } from './einvoice-lifecycle-fsm.js';
 import type { ResolvedLeitwegId } from './leitweg-id-resolver.js';
 import { resolveLeitwegIdForInvoice } from './leitweg-id-resolver.js';
+import type { SkontoTermData } from './skonto.js';
+import { resolveSkontoTerm } from './skonto.js';
 
 // ---------------------------------------------------------------------------
 // Error codes / warning codes surfaced to Plan 07 UI (kept in lockstep with
@@ -241,10 +244,21 @@ export async function finalizeEInvoice(
 
   const warnings = resolvePreflightWarnings(invoice, resolvedLeitwegId);
 
+  // ── Resolve Skonto cascade (invoice → billing profile → null) ───────────
+  // Phase 68 D-03/D-04 — the BG-20 Payment Terms block in the emitted CII
+  // XML requires the resolved term as opts.skontoTerm. Cascade rule lives
+  // in services/skonto.ts:resolveSkontoTerm (Phase 63 D-21 source-of-truth).
+  const invoiceSkonto = toSkontoTermData(invoice.skontoTerms[0] ?? null);
+  const profileSkonto = toSkontoTermData(
+    invoice.contractor?.billingProfiles?.[0]?.skontoTerms?.[0] ?? null,
+  );
+  const effectiveSkonto: SkontoTermInput | null = resolveSkontoTerm(invoiceSkonto, profileSkonto);
+
   // ── Build envelope + run generate + validate ────────────────────────────
   const envelope = mapPrismaInvoiceToEInvoice(invoice);
   const { xml, report } = await profile.generateAndValidate(envelope, {
     leitwegId: resolvedLeitwegId?.value ?? null,
+    skontoTerm: effectiveSkonto,
   });
 
   // T-61-06-06 — bound the bytes we will persist.
@@ -405,11 +419,53 @@ async function loadInvoiceWithRelations(db: PrismaClient, input: FinalizeInput) 
     },
     include: {
       lines: { orderBy: { lineNumber: 'asc' } },
-      contractor: true,
+      // Phase 68 D-03 — eager-fetch SkontoTerm so finalizeEInvoice can
+      // resolve the effective term (invoice-level → billing-profile default
+      // → null) BEFORE calling profile.generateAndValidate. Include shape
+      // copied verbatim from packages/api/src/routers/payment.ts:1213-1222
+      // (single source-of-truth pattern; do NOT import from there).
+      skontoTerms: { take: 1 },
+      contractor: {
+        include: {
+          billingProfiles: {
+            take: 1,
+            include: { skontoTerms: { take: 1 } },
+          },
+        },
+      },
       contract: true,
       organization: true,
     },
   });
+}
+
+/**
+ * Map a Prisma `SkontoTerm` row (or null) into the structural shape consumed
+ * by `services/skonto.ts:resolveSkontoTerm`.
+ *
+ * Per Phase 68 D-04 + RESEARCH.md Pitfall 2 — kept inline (NOT extracted to
+ * services/skonto.ts) because there are exactly three call sites today
+ * (this file, `routers/payment.ts:1239-1253`, and `routers/einvoice.ts`
+ * `generateZugferdPdf` after Plan 05). Extracting a helper for two new
+ * callers is premature DRY.
+ *
+ * Per RESEARCH.md Pitfall 3 — `Number(row.discountPercent)` is REQUIRED:
+ * the Prisma column is Decimal; the cascade resolver expects a number.
+ * Failing to coerce produces `#PROZENT=Decimal(3.00)#` instead of
+ * `#PROZENT=3.00#` in the emitted CII XML.
+ */
+function toSkontoTermData(
+  row:
+    | { discountPercent: unknown; discountPeriodDays: number; netPeriodDays: number }
+    | null
+    | undefined,
+): SkontoTermData | null {
+  if (!row) return null;
+  return {
+    discountPercent: Number(row.discountPercent),
+    discountPeriodDays: row.discountPeriodDays,
+    netPeriodDays: row.netPeriodDays,
+  };
 }
 
 function resolvePreflightWarnings(
