@@ -32,8 +32,9 @@ describe('DE privacy notice content (FOUND-06)', () => {
 describe('DE privacy routing redirect (FOUND-06)', () => {
   it('redirects /legal/privacy to /legal/privacy/de when org.countryCode=DE', async () => {
     // Plan 07 exports a resolver / server helper that maps countryCode -> redirect URL.
-    // @ts-expect-error Plan 07 creates this module
-    const { resolvePrivacyRedirect } = await import('../(content)/_resolve');
+    const { resolvePrivacyRedirect } = (await import('../(content)/_resolve')) as {
+      resolvePrivacyRedirect: (input: { countryCode: string }) => string;
+    };
     expect(resolvePrivacyRedirect({ countryCode: 'DE' })).toBe('/legal/privacy/de');
   });
 });
@@ -43,8 +44,14 @@ describe('DE privacy PDF IDOR guard (FOUND-06, V4 Access Control)', () => {
     // Plan 07 must enforce jurisdiction=session.org.countryCode server-side; client
     // input 'SA' must be rejected or coerced. Test calls the tRPC mutation handler
     // directly (Plan 07 exposes a pure function for this check).
-    // @ts-expect-error Plan 07 creates this module
-    const { assertJurisdictionOrReject } = await import('@/server/api/routers/privacy-pdf.guard');
+    const { assertJurisdictionOrReject } = (await import(
+      '@/server/api/routers/privacy-pdf.guard'
+    )) as {
+      assertJurisdictionOrReject: (input: {
+        sessionOrgCountryCode: string;
+        requestedJurisdiction: string;
+      }) => void;
+    };
     const enforce = vi.fn(assertJurisdictionOrReject);
     expect(() => enforce({ sessionOrgCountryCode: 'DE', requestedJurisdiction: 'SA' })).toThrow();
   });

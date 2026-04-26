@@ -12,7 +12,7 @@ function Wrapper() {
       paymentTermsDays: undefined,
     },
   });
-  return <StepBilling form={form as unknown} />;
+  return <StepBilling form={form as never} />;
 }
 
 describe('StepBilling', () => {

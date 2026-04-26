@@ -4,7 +4,7 @@ import { NextRequest } from 'next/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const { mockDeletePortalSession } = vi.hoisted(() => ({
-  mockDeletePortalSession: vi.fn(async () => undefined),
+  mockDeletePortalSession: vi.fn<(token: string) => Promise<undefined>>(async () => undefined),
 }));
 
 vi.mock('@contractor-ops/api/services/portal-session', () => ({

@@ -19,7 +19,7 @@ vi.mock('@tanstack/react-query', async importOriginal => {
   const actual = await importOriginal<typeof import('@tanstack/react-query')>();
   return {
     ...actual,
-    useQuery: (opts: Record<string, unknown>) => {
+    useQuery: (opts: { select?: (data: unknown) => unknown }) => {
       const idx = queryCallIndex++;
       // First useQuery = getBranding, second = getPortalDomain
       const isBranding = idx % 2 === 0;
@@ -33,7 +33,7 @@ vi.mock('@tanstack/react-query', async importOriginal => {
 
       return { data, isLoading: loading };
     },
-    useMutation: (opts: Record<string, unknown>) => ({
+    useMutation: (opts: { onSuccess?: () => void }) => ({
       mutate: (...args: unknown[]) => {
         mockMutate(...(args as Parameters<typeof mockMutate>));
         opts?.onSuccess?.();

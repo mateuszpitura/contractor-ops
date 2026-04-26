@@ -45,7 +45,7 @@ function Wrapper({ defaultValues }: { defaultValues?: Record<string, unknown> })
       ...defaultValues,
     },
   });
-  return <StepCompany form={form as unknown} />;
+  return <StepCompany form={form as never} />;
 }
 
 describe('StepCompany', () => {

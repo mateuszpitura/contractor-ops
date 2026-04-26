@@ -31,7 +31,7 @@ function Wrapper() {
       defaultCostCenterId: '',
     },
   });
-  return <StepAssignment form={form as unknown} />;
+  return <StepAssignment form={form as never} />;
 }
 
 describe('StepAssignment', () => {

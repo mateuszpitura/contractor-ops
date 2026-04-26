@@ -20,17 +20,17 @@ const questions: RuleSetQuestion[] = [
   },
 ];
 
-const snapshot: QuestionsSnapshot = {
+const snapshot = {
   questions,
   capturedAt: new Date().toISOString(),
   ruleSetVersion: 'DRV-2024-v1',
-};
+} as unknown as QuestionsSnapshot;
 
-const categoryResult: ScheinCategoryResult = {
+const categoryResult = {
   category: 'integration',
   weight: 30,
   weightedScore: 15,
-};
+} as unknown as ScheinCategoryResult;
 
 describe('classifyCategoryVerdict', () => {
   it('returns green when ratio < 0.3', () => {

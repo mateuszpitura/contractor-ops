@@ -30,9 +30,14 @@ describe('ConfirmImportStep', () => {
     { email: 'a@test.com', name: 'Alice', status: 'new' as const, sources: [], conflicts: [] },
   ];
 
-  const projects = [
-    { sourceProvider: 'JIRA', externalId: 'p1', name: 'Project A', statuses: [{ name: 'Todo' }] },
-  ] as unknown;
+  const projects: React.ComponentProps<typeof ConfirmImportStep>['projects'] = [
+    {
+      sourceProvider: 'JIRA',
+      externalId: 'p1',
+      name: 'Project A',
+      statuses: [{ id: 'todo', name: 'Todo' }],
+    },
+  ];
 
   it('renders summary cards', () => {
     render(

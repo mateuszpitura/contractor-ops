@@ -5,7 +5,7 @@ import { ConsentManagementSection } from '../consent-management-section';
 // Mock data
 // ---------------------------------------------------------------------------
 
-let noticeData: Record<string, unknown> = {
+let noticeData: Record<string, unknown> | null = {
   jurisdiction: 'AE',
   legalReference: 'Federal Decree-Law No. 45/2021',
   controller: { name: 'Test Org', country: 'AE' },
@@ -145,7 +145,7 @@ vi.mock('../consent-purpose-toggle', () => ({
     purpose: string;
     required: boolean;
     granted: boolean;
-    onToggle: (v: boolean) => void;
+    onToggle: (purpose: string, granted: boolean) => void;
     disabled: boolean;
   }) => (
     <div data-testid={`toggle-${purpose}`}>

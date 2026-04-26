@@ -102,7 +102,7 @@ vi.mock('../consent-purpose-toggle', () => ({
     purpose: string;
     required: boolean;
     granted: boolean;
-    onToggle: (v: boolean) => void;
+    onToggle: (purpose: string, granted: boolean) => void;
   }) => (
     <div data-testid={`toggle-${purpose}`}>
       <button

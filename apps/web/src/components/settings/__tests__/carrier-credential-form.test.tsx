@@ -127,7 +127,7 @@ describe('CarrierCredentialForm', () => {
   it('test connection button is clickable', async () => {
     const { user } = setup(<CarrierCredentialForm carrier="dpd" carrierLabel="DPD" />);
     const testBtn = screen.getByText('Test connection').closest('button');
-    await user.click(testBtn);
+    await user.click(testBtn!);
     // Should not throw
   });
 
@@ -135,7 +135,7 @@ describe('CarrierCredentialForm', () => {
   it('save credentials button is clickable', async () => {
     const { user } = setup(<CarrierCredentialForm carrier="dpd" carrierLabel="DPD" />);
     const saveBtn = screen.getByText('Save credentials').closest('button');
-    await user.click(saveBtn);
+    await user.click(saveBtn!);
     // Should not throw
   });
 

@@ -165,7 +165,7 @@ describe('ReportChart', () => {
   it('returns null for unsupported chart type', () => {
     const { container } = render(
       <ReportChart
-        type={'unknown' as unknown}
+        type={'unknown' as never}
         data={[{ name: 'A', value: 1 }]}
         dataKey="value"
         nameKey="name"

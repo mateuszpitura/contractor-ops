@@ -10,8 +10,8 @@ let mockIsDragActive = false;
 let mockOnDrop: ((accepted: File[], rejected: unknown[]) => void) | null = null;
 
 vi.mock('react-dropzone', () => ({
-  useDropzone: (opts: Record<string, unknown>) => {
-    mockOnDrop = opts.onDrop;
+  useDropzone: (opts: { onDrop?: (accepted: File[], rejected: unknown[]) => void }) => {
+    mockOnDrop = opts.onDrop ?? null;
     return {
       getRootProps: () => ({
         'data-testid': 'dropzone',

@@ -53,7 +53,7 @@ vi.mock('@/trpc/init', () => ({
 
 // Mock child components to simplify assertions
 vi.mock('../trial-banner', () => ({
-  TrialBanner: ({ trialEnd }: { trialEnd: string }) => (
+  TrialBanner: ({ trialEnd }: { trialEnd: Date }) => (
     <div data-testid="trial-banner">Trial ends {trialEnd.toISOString()}</div>
   ),
 }));

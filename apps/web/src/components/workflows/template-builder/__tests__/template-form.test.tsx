@@ -333,7 +333,7 @@ describe('TemplateForm', () => {
     render(<TemplateForm />);
     // isDirty is false in mock, so no dot indicator should appear
     const saveBtn = screen.getByText('Save template').closest('button');
-    const dot = saveBtn.querySelector('span.rounded-full');
+    const dot = saveBtn!.querySelector('span.rounded-full');
     expect(dot).toBeNull();
   });
 
@@ -474,7 +474,7 @@ describe('TemplateForm', () => {
     const { user } = setup(<TemplateForm />);
     const saveBtn = screen.getByText('Save template').closest('button');
     // Click submit - form handleSubmit is called via mock
-    await user.click(saveBtn);
+    await user.click(saveBtn!);
     // The form should still be visible after submit
     expect(screen.getByText('Template name')).toBeInTheDocument();
   });

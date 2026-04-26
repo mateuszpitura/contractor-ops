@@ -25,11 +25,11 @@ const questions: RuleSetQuestion[] = [
   },
 ];
 
-const snapshot: QuestionsSnapshot = {
+const snapshot = {
   questions,
   capturedAt: new Date().toISOString(),
   ruleSetVersion: 'DRV-2024-v1',
-};
+} as unknown as QuestionsSnapshot;
 
 describe('DrvCriterionBreakdownList', () => {
   it('renders a table with the correct test id', () => {

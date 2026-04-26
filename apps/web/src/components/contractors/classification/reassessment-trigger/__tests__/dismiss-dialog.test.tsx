@@ -37,7 +37,7 @@ describe('ReassessmentTriggerDismissDialog', () => {
   });
 
   it('invokes onConfirm with the reason when submitted', async () => {
-    const onConfirm = vi.fn(async () => undefined);
+    const onConfirm = vi.fn<(reason: string) => Promise<undefined>>(async () => undefined);
     render(<ReassessmentTriggerDismissDialog open onOpenChange={vi.fn()} onConfirm={onConfirm} />);
     const textarea = screen.getByLabelText(/Reason for dismissing/i) as HTMLTextAreaElement;
     fireEvent.change(textarea, {
@@ -46,7 +46,7 @@ describe('ReassessmentTriggerDismissDialog', () => {
     const confirm = screen.getByRole('button', { name: /Dismiss$/i });
     fireEvent.click(confirm);
     expect(onConfirm).toHaveBeenCalledTimes(1);
-    expect(onConfirm.mock.calls[0]?.[0]).toContain('material');
+    expect(onConfirm.mock.calls[0]![0]).toContain('material');
   });
 
   it('surfaces the min-length error with role="alert" after a rejected submit', () => {

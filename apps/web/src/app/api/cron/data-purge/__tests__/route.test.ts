@@ -48,7 +48,7 @@ vi.mock('@contractor-ops/db', () => {
   return {
     prisma: {
       ...tx,
-      $transaction: (fn: (tx: typeof tx) => Promise<unknown>) => fn(tx),
+      $transaction: (fn: (tx: unknown) => Promise<unknown>) => fn(tx),
     },
   };
 });

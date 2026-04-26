@@ -21,8 +21,9 @@ describe('EU privacy notice fallback (FOUND-05/06)', () => {
     'IT',
     'NL',
   ])('falls back to /legal/privacy/eu for countryCode=%s', async countryCode => {
-    // @ts-expect-error Plan 07 creates this module
-    const { resolvePrivacyRedirect } = await import('../(content)/_resolve');
+    const { resolvePrivacyRedirect } = (await import('../(content)/_resolve')) as {
+      resolvePrivacyRedirect: (input: { countryCode: string }) => string;
+    };
     expect(resolvePrivacyRedirect({ countryCode })).toBe('/legal/privacy/eu');
   });
 
@@ -32,8 +33,9 @@ describe('EU privacy notice fallback (FOUND-05/06)', () => {
     'AE',
     'SA',
   ])('does NOT fall back to EU for jurisdiction-specific code %s', async countryCode => {
-    // @ts-expect-error Plan 07 creates this module
-    const { resolvePrivacyRedirect } = await import('../(content)/_resolve');
+    const { resolvePrivacyRedirect } = (await import('../(content)/_resolve')) as {
+      resolvePrivacyRedirect: (input: { countryCode: string }) => string;
+    };
     expect(resolvePrivacyRedirect({ countryCode })).not.toBe('/legal/privacy/eu');
   });
 });

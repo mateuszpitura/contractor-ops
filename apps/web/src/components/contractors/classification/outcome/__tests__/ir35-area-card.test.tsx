@@ -29,11 +29,11 @@ const questions: RuleSetQuestion[] = [
   },
 ];
 
-const snapshot: QuestionsSnapshot = {
+const snapshot = {
   questions,
   capturedAt: new Date().toISOString(),
   ruleSetVersion: 'IR35-2024-CEST',
-};
+} as unknown as QuestionsSnapshot;
 
 const areaResult: Ir35AreaResult = {
   area: 'substitution',

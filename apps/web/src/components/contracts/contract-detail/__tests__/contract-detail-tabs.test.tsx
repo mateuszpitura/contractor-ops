@@ -33,13 +33,13 @@ describe('ContractDetailTabs', () => {
   };
 
   it('renders all 4 tab triggers', () => {
-    render(<ContractDetailTabs contract={contract} />);
+    render(<ContractDetailTabs contract={contract as never} />);
     const tabs = screen.getAllByRole('tab');
     expect(tabs).toHaveLength(4);
   });
 
   it('shows overview content by default', () => {
-    render(<ContractDetailTabs contract={contract} />);
+    render(<ContractDetailTabs contract={contract as never} />);
     expect(screen.getByTestId('overview')).toBeInTheDocument();
   });
 });

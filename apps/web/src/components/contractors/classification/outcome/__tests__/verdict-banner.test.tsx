@@ -116,7 +116,7 @@ describe('VerdictBanner', () => {
   });
 
   it('handles DRV green verdict with success tone', () => {
-    const outcome: ScheinselbstandigkeitOutcome = {
+    const outcome = {
       kind: 'Scheinselbstaendigkeit',
       verdict: 'green',
       ruleSetVersion: 'DRV-2024',
@@ -125,13 +125,13 @@ describe('VerdictBanner', () => {
       computedAt: new Date().toISOString(),
     };
 
-    render(<VerdictBanner kind="drv" outcome={outcome} label="Low Risk" />);
+    render(<VerdictBanner kind="drv" outcome={outcome as never} label="Low Risk" />);
 
     expect(screen.getByTestId('verdict-banner')).toHaveAttribute('data-tone', 'success');
   });
 
   it('handles DRV red verdict with destructive tone', () => {
-    const outcome: ScheinselbstandigkeitOutcome = {
+    const outcome = {
       kind: 'Scheinselbstaendigkeit',
       verdict: 'red',
       ruleSetVersion: 'DRV-2024',
@@ -140,7 +140,7 @@ describe('VerdictBanner', () => {
       computedAt: new Date().toISOString(),
     };
 
-    render(<VerdictBanner kind="drv" outcome={outcome} label="High Risk" />);
+    render(<VerdictBanner kind="drv" outcome={outcome as never} label="High Risk" />);
 
     expect(screen.getByTestId('verdict-banner')).toHaveAttribute('data-tone', 'destructive');
   });

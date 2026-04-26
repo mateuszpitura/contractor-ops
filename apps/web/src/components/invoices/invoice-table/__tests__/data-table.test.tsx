@@ -93,7 +93,7 @@ describe('InvoiceDataTable', () => {
 
     const dataRow = screen.getByText('FV/DATA/01').closest('tr');
     expect(dataRow).toBeTruthy();
-    await user.click(dataRow);
+    await user.click(dataRow!);
 
     expect(onRowClick).toHaveBeenCalledTimes(1);
     expect(onRowClick).toHaveBeenCalledWith(expect.objectContaining({ id: 'inv-dt-1' }));
@@ -132,7 +132,7 @@ describe('InvoiceDataTable', () => {
     expect(screen.getByRole('heading', { name: /no invoices yet/i })).toBeInTheDocument();
 
     const emptyCell = screen.getByRole('heading', { name: /no invoices yet/i }).closest('td');
-    await user.click(within(emptyCell).getByRole('button', { name: /upload invoices/i }));
+    await user.click(within(emptyCell!).getByRole('button', { name: /upload invoices/i }));
     expect(onUpload).toHaveBeenCalledTimes(1);
   });
 

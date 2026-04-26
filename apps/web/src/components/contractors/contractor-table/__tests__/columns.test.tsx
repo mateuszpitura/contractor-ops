@@ -78,7 +78,7 @@ describe('getColumns', () => {
 
   it('has compliance health as last data column', () => {
     const lastCol = columns[columns.length - 1];
-    expect((lastCol as unknown).accessorKey).toBe('complianceHealth');
+    expect((lastCol as { accessorKey: string }).accessorKey).toBe('complianceHealth');
   });
 
   it('disables sorting on owner column', () => {

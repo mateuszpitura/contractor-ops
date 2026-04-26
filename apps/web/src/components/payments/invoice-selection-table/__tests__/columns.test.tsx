@@ -147,7 +147,7 @@ describe('getColumns cell renderers (invoice selection)', () => {
     const t = (key: string) => key;
     const columns = getColumns(t);
     const selectCol = columns.find(c => c.id === 'select');
-    const cellFn = selectCol?.cell as (info: unknown) => unknown;
+    const cellFn = selectCol?.cell as (info: unknown) => React.ReactElement;
     const result = cellFn({
       row: {
         original: makeRow({ _inRunNumber: 'PR-001' }),
