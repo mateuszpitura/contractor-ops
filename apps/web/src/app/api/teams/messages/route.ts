@@ -11,7 +11,6 @@
 // support res.status(n).send(body) chain.
 // ---------------------------------------------------------------------------
 
-import type { IncomingMessage, ServerResponse } from 'node:http';
 import { TeamsBotHandler } from '@contractor-ops/api/services/teams/teams-bot-handler';
 import { CloudAdapter, ConfigurationBotFrameworkAuthentication } from 'botbuilder';
 
@@ -99,19 +98,19 @@ export async function POST(request: Request): Promise<Response> {
 
     const res = createResponseShim();
 
-    // Process the activity through the adapter and bot handler
-    // The Bot Framework's `process` overloads use Response/Request shim
-    // types that don't structurally match Node's IncomingMessage /
-    // ServerResponse. The shims we construct above satisfy the runtime
-    // contract; cast at the boundary so TS picks the matching overload.
-    type AdapterProcess = ReturnType<typeof getAdapter>['process'];
-    await (
-      getAdapter().process as unknown as (
-        req: unknown,
-        res: unknown,
-        logic: Parameters<AdapterProcess>[2],
-      ) => Promise<void>
-    )(req, res, async context => {
+    // TODO(typecheck-pass-2): Bot Framework's `process` has multiple
+    // overloads using Response/Request shim types that don't structurally
+    // match Node's IncomingMessage / ServerResponse. Cast through the
+    // entire callable so TS doesn't try to resolve a (mismatched)
+    // overload. Runtime behaviour is unchanged — the shims we construct
+    // above are what the adapter expects.
+    type RawAdapterProcess = (
+      req: unknown,
+      res: unknown,
+      // biome-ignore lint/suspicious/noExplicitAny: Bot Framework callback type
+      logic: (context: any) => Promise<void>,
+    ) => Promise<void>;
+    await (getAdapter().process as unknown as RawAdapterProcess)(req, res, async context => {
       await bot.run(context);
     });
 
