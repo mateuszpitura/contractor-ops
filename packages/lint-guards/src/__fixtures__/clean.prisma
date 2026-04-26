@@ -1,0 +1,7 @@
+model Invoice {
+  id              String   @id @default(cuid())
+  organizationId  String
+  total           Decimal
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  @@index([organizationId])
+}

@@ -1,0 +1,4 @@
+model SecretLeak {
+  id     String  @id @default(cuid())
+  amount Decimal
+}

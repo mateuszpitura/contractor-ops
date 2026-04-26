@@ -1,0 +1,4 @@
+model Country {
+  code String @id
+  name String
+}
