@@ -43,10 +43,7 @@ interface IntakeValidationStatusPillProps {
  * Validation-outcome pill. Same color-+-icon-+-text triad as the intake
  * status pill; never signals by colour alone.
  */
-export function IntakeValidationStatusPill({
-  status,
-  className,
-}: IntakeValidationStatusPillProps) {
+export function IntakeValidationStatusPill({ status, className }: IntakeValidationStatusPillProps) {
   const t = useTranslations('EInvoice.intake.validation');
   const { icon: Icon, className: tokenClasses } = VALIDATION_VISUALS[status];
   const label = t(status);

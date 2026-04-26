@@ -59,10 +59,7 @@ export function MarketCard({ market }: MarketCardProps) {
       <CardContent className="flex flex-col gap-6">
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           {coverage.data ? (
-            <CoverageTile
-              completed={coverage.data.completed}
-              total={coverage.data.total}
-            />
+            <CoverageTile completed={coverage.data.completed} total={coverage.data.total} />
           ) : (
             <TileSkeleton />
           )}
@@ -75,10 +72,7 @@ export function MarketCard({ market }: MarketCardProps) {
             <TileSkeleton />
           )}
           {overdue.data ? (
-            <OverdueReassessmentsTile
-              count={overdue.data.count}
-              items={overdue.data.items}
-            />
+            <OverdueReassessmentsTile count={overdue.data.count} items={overdue.data.items} />
           ) : (
             <TileSkeleton />
           )}
@@ -96,13 +90,14 @@ export function MarketCard({ market }: MarketCardProps) {
               <ActiveAlertsTile
                 data={{
                   kind: 'de',
-                  economicBands:
-                    (activeAlerts.data as {
+                  economicBands: (
+                    activeAlerts.data as {
                       economicBands?: { warning: number; critical: number };
-                    }).economicBands ?? { warning: 0, critical: 0 },
+                    }
+                  ).economicBands ?? { warning: 0, critical: 0 },
                   drvExpiringWithin90d:
-                    (activeAlerts.data as { drvExpiringWithin90d?: number })
-                      .drvExpiringWithin90d ?? 0,
+                    (activeAlerts.data as { drvExpiringWithin90d?: number }).drvExpiringWithin90d ??
+                    0,
                 }}
               />
             )

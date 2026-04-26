@@ -39,7 +39,7 @@ export function ClaimDialog({ invoiceId, open, onOpenChange }: ClaimDialogProps)
       void utils.latePaymentInterest.getForInvoice.invalidate({ invoiceId });
       onOpenChange(false);
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(error.message);
     },
   });
@@ -63,7 +63,7 @@ export function ClaimDialog({ invoiceId, open, onOpenChange }: ClaimDialogProps)
           <Checkbox
             id="issue-secondary-invoice"
             checked={issueSecondaryInvoice}
-            onCheckedChange={(checked) => setIssueSecondaryInvoice(!!checked)}
+            onCheckedChange={checked => setIssueSecondaryInvoice(!!checked)}
           />
           <Label htmlFor="issue-secondary-invoice" className="text-sm leading-relaxed">
             {t('issueSecondaryInvoice')}
@@ -74,10 +74,7 @@ export function ClaimDialog({ invoiceId, open, onOpenChange }: ClaimDialogProps)
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             {t('cancel')}
           </Button>
-          <Button
-            onClick={handleConfirm}
-            disabled={claimMutation.isPending}
-          >
+          <Button onClick={handleConfirm} disabled={claimMutation.isPending}>
             {claimMutation.isPending ? t('confirming') : t('confirm')}
           </Button>
         </DialogFooter>

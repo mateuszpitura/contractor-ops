@@ -139,10 +139,7 @@ export class StorecoveClient {
    * upstream accidentally forwarding user input cannot break out of the
    * path segment.
    */
-  async getDiscoveryReceives(params: {
-    schemeId: string;
-    identifier: string;
-  }): Promise<unknown> {
+  async getDiscoveryReceives(params: { schemeId: string; identifier: string }): Promise<unknown> {
     const query = new URLSearchParams({
       scheme_id: params.schemeId,
       identifier: params.identifier,

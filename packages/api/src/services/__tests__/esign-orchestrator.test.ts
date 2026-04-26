@@ -276,9 +276,7 @@ describe('sendForSignature', () => {
       documentId: 'doc_1',
       connectionId: 'conn_1',
       provider: 'AUTENTI',
-      signers: [
-        { name: 'S', email: 's@e.com', role: 'signer', routingOrder: 1 },
-      ],
+      signers: [{ name: 'S', email: 's@e.com', role: 'signer', routingOrder: 1 }],
       message: 'Please sign this document',
       expiresInDays: 30,
       reminderIntervalDays: 7,
@@ -311,9 +309,7 @@ describe('sendForSignature', () => {
       documentId: 'doc_1',
       connectionId: 'conn_1',
       provider: 'DOCUSIGN',
-      signers: [
-        { name: 'S', email: 's@e.com', role: 'signer', routingOrder: 1 },
-      ],
+      signers: [{ name: 'S', email: 's@e.com', role: 'signer', routingOrder: 1 }],
     });
 
     expect(mockCreateSigningEnvelope).toHaveBeenCalledWith(
@@ -338,9 +334,7 @@ describe('sendForSignature', () => {
       documentId: 'doc_1',
       connectionId: 'conn_1',
       provider: 'DOCUSIGN',
-      signers: [
-        { name: 'S', email: 's@e.com', role: 'signer', routingOrder: 1 },
-      ],
+      signers: [{ name: 'S', email: 's@e.com', role: 'signer', routingOrder: 1 }],
     });
 
     expect(mockTx.signingRecipient.create).toHaveBeenCalledWith(
@@ -366,7 +360,8 @@ describe('sendForSignature', () => {
     });
 
     const sentEventCall = mockTx.signingEvent.create.mock.calls.find(
-      (call: unknown[]) => (call[0] as { data: { eventType: string } }).data.eventType === 'ENVELOPE_SENT',
+      (call: unknown[]) =>
+        (call[0] as { data: { eventType: string } }).data.eventType === 'ENVELOPE_SENT',
     );
     expect(sentEventCall).toBeDefined();
     expect(sentEventCall[0].data.description).toContain('First');
@@ -379,9 +374,7 @@ describe('sendForSignature', () => {
       documentId: 'doc_1',
       connectionId: 'conn_1',
       provider: 'DOCUSIGN',
-      signers: [
-        { name: 'S', email: 's@e.com', role: 'signer', routingOrder: 1 },
-      ],
+      signers: [{ name: 'S', email: 's@e.com', role: 'signer', routingOrder: 1 }],
     });
 
     expect(mockTx.externalLink.create).toHaveBeenCalledWith(
@@ -400,9 +393,7 @@ describe('sendForSignature', () => {
       documentId: 'doc_1',
       connectionId: 'conn_1',
       provider: 'AUTENTI',
-      signers: [
-        { name: 'S', email: 's@e.com', role: 'signer', routingOrder: 1 },
-      ],
+      signers: [{ name: 'S', email: 's@e.com', role: 'signer', routingOrder: 1 }],
     });
 
     expect(mockTx.externalLink.create).toHaveBeenCalledWith(

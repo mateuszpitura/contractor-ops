@@ -655,9 +655,7 @@ describe('jira-issue-sync', () => {
 
       await expect(
         transitionJiraIssue(prisma, ORG_ID, CONNECTION_ID, TASK_RUN_ID, 'IN_PROGRESS'),
-      ).rejects.toThrow(
-        expect.objectContaining({ code: 'UNAUTHORIZED' }),
-      );
+      ).rejects.toThrow(expect.objectContaining({ code: 'UNAUTHORIZED' }));
 
       expect(prisma.integrationSyncLog.update).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -680,9 +678,7 @@ describe('jira-issue-sync', () => {
 
       await expect(
         transitionJiraIssue(prisma, ORG_ID, CONNECTION_ID, TASK_RUN_ID, 'IN_PROGRESS'),
-      ).rejects.toThrow(
-        expect.objectContaining({ code: 'INTERNAL_SERVER_ERROR' }),
-      );
+      ).rejects.toThrow(expect.objectContaining({ code: 'INTERNAL_SERVER_ERROR' }));
     });
 
     it('logs FAILED sync when projectId cannot be determined', async () => {

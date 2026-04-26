@@ -50,20 +50,14 @@ describe('scoreIr35Area — verdict edge cases', () => {
     //   Q-SUB-05: inside-strong  (yes = inside-strong)
     // When both are yes, strong-inside is checked first and wins.
     const substitution: Ir35Area = 'substitution';
-    const result = scoreIr35Area(
-      substitution,
-      ans({ 'Q-SUB-01': 'yes', 'Q-SUB-05': 'yes' }),
-    );
+    const result = scoreIr35Area(substitution, ans({ 'Q-SUB-01': 'yes', 'Q-SUB-05': 'yes' }));
 
     expect(result.verdict).toBe('strong-inside');
   });
 
   it('returns leaning-inside with exactly 2 leaning-inside and 0 leaning-outside', () => {
     // Q-CTRL-01 yes + Q-CTRL-02 yes -> 2 inside-leaning signals, 0 outside.
-    const result = scoreIr35Area(
-      control,
-      ans({ 'Q-CTRL-01': 'yes', 'Q-CTRL-02': 'yes' }),
-    );
+    const result = scoreIr35Area(control, ans({ 'Q-CTRL-01': 'yes', 'Q-CTRL-02': 'yes' }));
 
     expect(result.verdict).toBe('leaning-inside');
   });
@@ -72,10 +66,7 @@ describe('scoreIr35Area — verdict edge cases', () => {
     // Q-CTRL-01 yes -> inside-leaning
     // Q-CTRL-05 yes -> outside-leaning
     // Mixed: neither threshold met -> neutral.
-    const result = scoreIr35Area(
-      control,
-      ans({ 'Q-CTRL-01': 'yes', 'Q-CTRL-05': 'yes' }),
-    );
+    const result = scoreIr35Area(control, ans({ 'Q-CTRL-01': 'yes', 'Q-CTRL-05': 'yes' }));
 
     expect(result.verdict).toBe('neutral');
   });

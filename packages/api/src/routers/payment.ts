@@ -26,10 +26,7 @@ import {
   resolveTransferTitle,
 } from '../services/payment-export.js';
 import { detectFormat } from '../services/payment-format-detection.js';
-import {
-  evaluateSkontoEligibility,
-  resolveSkontoTerm,
-} from '../services/skonto.js';
+import { evaluateSkontoEligibility, resolveSkontoTerm } from '../services/skonto.js';
 import { calculateWht } from '../services/tax-rate.service.js';
 import type { DbClient } from '../services/types.js';
 
@@ -1226,7 +1223,7 @@ export const paymentRouter = router({
         },
       });
 
-      if (!item || !item.invoice) {
+      if (!(item && item.invoice)) {
         throw new TRPCError({
           code: 'NOT_FOUND',
           message: 'Payment run item not found',
@@ -1246,13 +1243,9 @@ export const paymentRouter = router({
 
       const profileTerm = invoice.contractor?.billingProfile?.skontoTerm
         ? {
-            discountPercent: Number(
-              invoice.contractor.billingProfile.skontoTerm.discountPercent,
-            ),
-            discountPeriodDays:
-              invoice.contractor.billingProfile.skontoTerm.discountPeriodDays,
-            netPeriodDays:
-              invoice.contractor.billingProfile.skontoTerm.netPeriodDays,
+            discountPercent: Number(invoice.contractor.billingProfile.skontoTerm.discountPercent),
+            discountPeriodDays: invoice.contractor.billingProfile.skontoTerm.discountPeriodDays,
+            netPeriodDays: invoice.contractor.billingProfile.skontoTerm.netPeriodDays,
           }
         : null;
 
@@ -1274,17 +1267,16 @@ export const paymentRouter = router({
       }
 
       // Find the effective skonto term record for the FK
-      const skontoTermRecord = invoice.skontoTerm
-        ?? invoice.contractor?.billingProfile?.skontoTerm;
+      const skontoTermRecord = invoice.skontoTerm ?? invoice.contractor?.billingProfile?.skontoTerm;
 
-      if (!skontoTermRecord || !effectiveTerm) {
+      if (!(skontoTermRecord && effectiveTerm)) {
         throw new TRPCError({
           code: 'PRECONDITION_FAILED',
           message: 'No Skonto term record found',
         });
       }
 
-      const result = await ctx.db.$transaction(async (tx) => {
+      const result = await ctx.db.$transaction(async tx => {
         // Update payment run item amount to discounted amount
         const updatedItem = await tx.paymentRunItem.update({
           where: { id: input.paymentRunItemId },
@@ -1346,7 +1338,7 @@ export const paymentRouter = router({
         });
       }
 
-      const detections = run.items.map((item) => {
+      const detections = run.items.map(item => {
         const currency = item.invoice?.currency ?? run.currency;
         const iban = item.contractor?.billingProfile?.iban ?? '';
         const format = detectFormat(currency, iban);

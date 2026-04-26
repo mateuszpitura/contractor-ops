@@ -32,7 +32,13 @@ test.describe('Classification flow', () => {
     const table = page.locator('table').first();
     const hasTable = await table.isVisible({ timeout: 10_000 }).catch(() => false);
 
-    if (!hasTable) {
+    if (hasTable) {
+      const rows = table.locator('tbody tr');
+      const rowCount = await rows.count();
+      test.skip(rowCount === 0, 'Table has no rows — skipping click test');
+
+      await rows.first().click();
+    } else {
       // Try card-based layout
       const card = page
         .locator('[data-testid*="contractor"], [data-testid*="classification"], [class*="card"]')
@@ -41,12 +47,6 @@ test.describe('Classification flow', () => {
       test.skip(!hasCard, 'No contractor rows or cards visible — skipping click test');
 
       await card.click();
-    } else {
-      const rows = table.locator('tbody tr');
-      const rowCount = await rows.count();
-      test.skip(rowCount === 0, 'Table has no rows — skipping click test');
-
-      await rows.first().click();
     }
 
     // Expect either a side panel, dialog, or URL navigation
@@ -69,9 +69,7 @@ test.describe('Classification flow', () => {
       .filter({ hasText: /start assessment|assess|classify|begin|new assessment|evaluate/i })
       .first();
 
-    const emptyState = page.getByText(
-      /no contractors|no data|nothing to classify|get started/i,
-    );
+    const emptyState = page.getByText(/no contractors|no data|nothing to classify|get started/i);
 
     // Either the assess button or the empty state should be visible
     await expect(assessButton.or(emptyState)).toBeVisible({ timeout: 15_000 });

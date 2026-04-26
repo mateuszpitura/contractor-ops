@@ -50,10 +50,7 @@ export function RefreshDashboardButton() {
         onClick={onClick}
         aria-label={t('refreshButton')}
         data-testid="refresh-dashboard-button">
-        <RotateCw
-          aria-hidden="true"
-          className={busy ? 'size-4 animate-spin' : 'size-4'}
-        />
+        <RotateCw aria-hidden="true" className={busy ? 'size-4 animate-spin' : 'size-4'} />
         <span>{busy ? t('refreshingLabel') : t('refreshButton')}</span>
       </Button>
       <span

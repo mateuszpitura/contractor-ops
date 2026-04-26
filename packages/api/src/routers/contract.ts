@@ -764,7 +764,8 @@ export const contractRouter = router({
 
           // Phase 60 CLASS-08 — emit one audit row per transitioned contract so
           // the reassessment scan can detect each status change individually.
-          const auditWriterTx = tx as unknown as import('../services/audit-writer.js').AuditWriterClient;
+          const auditWriterTx =
+            tx as unknown as import('../services/audit-writer.js').AuditWriterClient;
           for (const id of valid) {
             const prev = oldStatusById.get(id);
             await writeAuditLog({

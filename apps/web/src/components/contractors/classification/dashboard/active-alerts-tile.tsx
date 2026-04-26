@@ -33,14 +33,13 @@ export function ActiveAlertsTile({ data }: ActiveAlertsTileProps) {
           data-count={count}>
           {count}
         </span>
-        {count === 0 ? (
-          <p className="text-sm text-muted-foreground">{t('alertsEmpty')}</p>
-        ) : null}
+        {count === 0 ? <p className="text-sm text-muted-foreground">{t('alertsEmpty')}</p> : null}
       </div>
     );
   }
 
-  const total = data.economicBands.warning + data.economicBands.critical + data.drvExpiringWithin90d;
+  const total =
+    data.economicBands.warning + data.economicBands.critical + data.drvExpiringWithin90d;
 
   return (
     <div className="flex flex-col gap-2" data-testid="active-alerts-tile-de">

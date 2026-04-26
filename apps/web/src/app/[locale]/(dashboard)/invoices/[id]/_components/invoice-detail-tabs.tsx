@@ -2,8 +2,8 @@
 
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useCallback, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { EInvoiceTab } from '@/components/invoices/einvoice-tab/einvoice-tab';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 

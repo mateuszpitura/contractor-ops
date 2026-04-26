@@ -54,19 +54,11 @@ import type {
   XRechnungGenerateOptions,
   XRechnungValidationReport,
 } from '@contractor-ops/einvoice';
-import {
-  KOSIT_RULE_SET_VERSION,
-  XRECHNUNG_DE_PROFILE_ID,
-} from '@contractor-ops/einvoice';
-
-import {
-  transitionValidation,
-  type ValidationEvent,
-} from './einvoice-lifecycle-fsm.js';
-import {
-  resolveLeitwegIdForInvoice,
-  type ResolvedLeitwegId,
-} from './leitweg-id-resolver.js';
+import { KOSIT_RULE_SET_VERSION, XRECHNUNG_DE_PROFILE_ID } from '@contractor-ops/einvoice';
+import type { ValidationEvent } from './einvoice-lifecycle-fsm.js';
+import { transitionValidation } from './einvoice-lifecycle-fsm.js';
+import type { ResolvedLeitwegId } from './leitweg-id-resolver.js';
+import { resolveLeitwegIdForInvoice } from './leitweg-id-resolver.js';
 
 // ---------------------------------------------------------------------------
 // Error codes / warning codes surfaced to Plan 07 UI (kept in lockstep with
@@ -77,9 +69,7 @@ import {
 export const EINVOICE_INVOICE_NOT_FOUND = 'EINVOICE_INVOICE_NOT_FOUND' as const;
 export const EINVOICE_ALREADY_FINALIZED = 'EINVOICE_ALREADY_FINALIZED' as const;
 
-export type FinalizeWarningCode =
-  | 'LEITWEG_ID_MISSING'
-  | 'BR_DE_17_NON_EUR_CURRENCY';
+export type FinalizeWarningCode = 'LEITWEG_ID_MISSING' | 'BR_DE_17_NON_EUR_CURRENCY';
 
 /**
  * `EInvoiceInvoiceNotFoundError` signals a missing / cross-tenant invoice.
@@ -101,9 +91,7 @@ export class EInvoiceInvoiceNotFoundError extends Error {
 export class EInvoiceAlreadyFinalizedError extends Error {
   readonly code = EINVOICE_ALREADY_FINALIZED;
   constructor(invoiceId: string) {
-    super(
-      `Invoice ${invoiceId} is already finalized. Pass force=true to re-finalize.`,
-    );
+    super(`Invoice ${invoiceId} is already finalized. Pass force=true to re-finalize.`);
     this.name = 'EInvoiceAlreadyFinalizedError';
   }
 }
@@ -246,11 +234,10 @@ export async function finalizeEInvoice(
   }
 
   // ── Resolve Leitweg-ID + pre-flight warnings ────────────────────────────
-  const resolvedLeitwegId = await resolveLeitwegIdForInvoice(
-    db,
-    input.organizationId,
-    { contractId: invoice.contractId, contractorId: invoice.contractorId },
-  );
+  const resolvedLeitwegId = await resolveLeitwegIdForInvoice(db, input.organizationId, {
+    contractId: invoice.contractId,
+    contractorId: invoice.contractorId,
+  });
 
   const warnings = resolvePreflightWarnings(invoice, resolvedLeitwegId);
 
@@ -278,11 +265,7 @@ export async function finalizeEInvoice(
 
   // ── Compute SHA-256 and content-addressed R2 key (D-14) ─────────────────
   const xmlSha256 = createHash('sha256').update(xml).digest('hex');
-  const xmlKey = buildXmlKey(
-    input.organizationId,
-    input.invoiceId,
-    xmlSha256,
-  );
+  const xmlKey = buildXmlKey(input.organizationId, input.invoiceId, xmlSha256);
 
   await r2.putObject({ key: xmlKey, body: xml, contentType: 'application/xml' });
 
@@ -304,8 +287,7 @@ export async function finalizeEInvoice(
       },
       select: { validationStatus: true },
     });
-    const priorStatus: EInvoiceValidationStatus =
-      current?.validationStatus ?? 'NOT_VALIDATED';
+    const priorStatus: EInvoiceValidationStatus = current?.validationStatus ?? 'NOT_VALIDATED';
     // FSM assertion: the resulting status must be reachable from the prior
     // state via the validation event we are about to apply.
     transitionValidation(priorStatus, validationEvent);
@@ -326,8 +308,7 @@ export async function finalizeEInvoice(
         ruleSetVersion: KOSIT_RULE_SET_VERSION,
         validatedAt: generatedAt,
         validationStatus,
-        validationReportSummary:
-          summary as unknown as Prisma.InputJsonValue,
+        validationReportSummary: summary as unknown as Prisma.InputJsonValue,
       },
       update: {
         profileId: XRECHNUNG_DE_PROFILE_ID,
@@ -336,8 +317,7 @@ export async function finalizeEInvoice(
         ruleSetVersion: KOSIT_RULE_SET_VERSION,
         validatedAt: generatedAt,
         validationStatus,
-        validationReportSummary:
-          summary as unknown as Prisma.InputJsonValue,
+        validationReportSummary: summary as unknown as Prisma.InputJsonValue,
       },
     });
 
@@ -417,10 +397,7 @@ export async function finalizeEInvoice(
 
 type InvoiceWithRelations = Awaited<ReturnType<typeof loadInvoiceWithRelations>>;
 
-async function loadInvoiceWithRelations(
-  db: PrismaClient,
-  input: FinalizeInput,
-) {
+async function loadInvoiceWithRelations(db: PrismaClient, input: FinalizeInput) {
   return db.invoice.findFirst({
     where: {
       id: input.invoiceId,
@@ -443,9 +420,7 @@ function resolvePreflightWarnings(
 
   const contractor = invoice.contractor;
   const isDePublicSector =
-    !!contractor &&
-    contractor.isPublicSectorBuyer === true &&
-    contractor.countryCode === 'DE';
+    !!contractor && contractor.isPublicSectorBuyer === true && contractor.countryCode === 'DE';
 
   if (isDePublicSector && resolvedLeitwegId === null) {
     warnings.push('LEITWEG_ID_MISSING');
@@ -467,9 +442,7 @@ function resolvePreflightWarnings(
  * envelope is jurisdiction-neutral so one mapper suffices. Future phases
  * may extract this to a shared helper once more profiles consume it.
  */
-export function mapPrismaInvoiceToEInvoice(
-  invoice: NonNullable<InvoiceWithRelations>,
-): EInvoice {
+export function mapPrismaInvoiceToEInvoice(invoice: NonNullable<InvoiceWithRelations>): EInvoice {
   const supplierOrg = invoice.organization;
   const contractor = invoice.contractor;
   const vatAmountMinor = invoice.vatAmountMinor ?? 0;
@@ -539,9 +512,7 @@ function statusFromReport(
   }
 }
 
-function validationEventFromStatus(
-  status: EInvoiceValidationStatus,
-): ValidationEvent {
+function validationEventFromStatus(status: EInvoiceValidationStatus): ValidationEvent {
   switch (status) {
     case 'VALID':
       return 'validate_complete_valid';
@@ -552,9 +523,7 @@ function validationEventFromStatus(
     case 'NOT_VALIDATED':
       // Unreachable in practice — the validator always produces one of the
       // three non-pending statuses. Throw loudly if it ever happens.
-      throw new Error(
-        'validationEventFromStatus: NOT_VALIDATED is not a result status',
-      );
+      throw new Error('validationEventFromStatus: NOT_VALIDATED is not a result status');
   }
 }
 
@@ -563,9 +532,7 @@ function validationEventFromStatus(
  * Keeps the first 20 issues total, oldest-first — sufficient for Plan 07 UI
  * to render an inline hint without blowing up the Prisma JSON payload.
  */
-function buildSummary(
-  report: XRechnungValidationReport,
-): FinalizeValidationReportSummary {
+function buildSummary(report: XRechnungValidationReport): FinalizeValidationReportSummary {
   const issues: FinalizeValidationReportSummary['issues'] = [];
   const perLayer: FinalizeValidationReportSummary['perLayer'] = [];
 
@@ -609,11 +576,7 @@ function buildSummary(
   };
 }
 
-export function buildXmlKey(
-  organizationId: string,
-  invoiceId: string,
-  xmlSha256: string,
-): string {
+export function buildXmlKey(organizationId: string, invoiceId: string, xmlSha256: string): string {
   return `einvoice-xml/${organizationId}/${invoiceId}/${xmlSha256.slice(0, 16)}.xml`;
 }
 

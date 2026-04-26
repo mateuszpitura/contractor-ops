@@ -26,11 +26,7 @@ interface IntakeDetailPdfPaneProps {
  * jump straight to the parsed-fields heading (a11y best practice per
  * UI-SPEC § Accessibility).
  */
-export function IntakeDetailPdfPane({
-  intakeId,
-  sourceKind,
-  className,
-}: IntakeDetailPdfPaneProps) {
+export function IntakeDetailPdfPane({ intakeId, sourceKind, className }: IntakeDetailPdfPaneProps) {
   const t = useTranslations('EInvoice.intake');
   const rawQuery = useQuery(trpc.invoiceIntake.downloadRawFile.queryOptions({ intakeId }));
   const url = (rawQuery.data as { url?: string } | undefined)?.url;
@@ -51,17 +47,19 @@ export function IntakeDetailPdfPane({
       <CardContent className="p-0">
         {rawQuery.isLoading ? (
           <Skeleton className="h-[600px] w-full rounded-none" />
-        ) : !url ? (
-          <div className="p-6 text-sm text-muted-foreground">{t('reportNotAvailable')}</div>
-        ) : isXml ? (
-          <XmlPreview url={url} />
+        ) : url ? (
+          isXml ? (
+            <XmlPreview url={url} />
+          ) : (
+            <iframe
+              src={url}
+              title={isXml ? 'XML preview' : 'PDF preview'}
+              className="h-[600px] w-full border-0 bg-muted"
+              sandbox="allow-scripts allow-same-origin"
+            />
+          )
         ) : (
-          <iframe
-            src={url}
-            title={isXml ? 'XML preview' : 'PDF preview'}
-            className="h-[600px] w-full border-0 bg-muted"
-            sandbox="allow-scripts allow-same-origin"
-          />
+          <div className="p-6 text-sm text-muted-foreground">{t('reportNotAvailable')}</div>
         )}
       </CardContent>
     </Card>

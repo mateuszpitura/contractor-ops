@@ -14,9 +14,7 @@ import { z } from 'zod';
 // ---------------------------------------------------------------------------
 
 /** Validates a UK bank sort code — exactly 6 digits, no separators. */
-export const sortCodeSchema = z
-  .string()
-  .regex(/^\d{6}$/, 'Sort code must be exactly 6 digits');
+export const sortCodeSchema = z.string().regex(/^\d{6}$/, 'Sort code must be exactly 6 digits');
 
 /** Validates a UK bank account number — exactly 8 digits. */
 export const accountNumberSchema = z
@@ -27,15 +25,10 @@ export const accountNumberSchema = z
 export const bacsSubmitterNameSchema = z
   .string()
   .max(18)
-  .regex(
-    /^[A-Z0-9 \-\.\'\/&\(\)\+,\:;\?=@"]*$/,
-    'Must be uppercase ASCII BACS characters only',
-  );
+  .regex(/^[A-Z0-9 \-.'/&()+,:;?=@"]*$/, 'Must be uppercase ASCII BACS characters only');
 
 /** Validates a BACS Service User Number — exactly 6 digits. */
-export const serviceUserNumberSchema = z
-  .string()
-  .regex(/^\d{6}$/, 'SUN must be exactly 6 digits');
+export const serviceUserNumberSchema = z.string().regex(/^\d{6}$/, 'SUN must be exactly 6 digits');
 
 // ---------------------------------------------------------------------------
 // Modulus check types
@@ -75,7 +68,7 @@ export function modulusCheck(
 
   // Find all matching entries for this sort code
   const matches = table.filter(
-    (entry) => sortCode >= entry.sortCodeRangeStart && sortCode <= entry.sortCodeRangeEnd,
+    entry => sortCode >= entry.sortCodeRangeStart && sortCode <= entry.sortCodeRangeEnd,
   );
 
   // If no entries match, the sort code is not in the modulus table — valid by default
@@ -114,7 +107,7 @@ export function modulusCheck(
   }
 
   // Exception 2 and 9: first OR second must pass (not both)
-  const hasOrException = matches.some((m) => m.exception === 2 || m.exception === 9);
+  const hasOrException = matches.some(m => m.exception === 2 || m.exception === 9);
   if (hasOrException) {
     return { valid: firstCheckPassed || secondCheckPassed, warnings };
   }

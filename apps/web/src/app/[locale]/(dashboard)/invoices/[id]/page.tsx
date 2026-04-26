@@ -447,9 +447,7 @@ export default function InvoiceDetailPage() {
             {/* Submit for approval button */}
             {!!flags.canSubmitForApproval && (
               <div className="flex justify-end">
-                <Button
-                  onClick={handleSubmitForApproval}
-                  disabled={submitForApproval.isPending}>
+                <Button onClick={handleSubmitForApproval} disabled={submitForApproval.isPending}>
                   {submitForApproval.isPending
                     ? t('detail.submittingForApproval')
                     : t('detail.submitForApproval')}

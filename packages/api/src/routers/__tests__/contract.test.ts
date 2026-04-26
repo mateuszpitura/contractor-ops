@@ -19,7 +19,7 @@ const ORG_ID = 'clxxxxxxxxxxxxxxxxxxxxxxxxx';
 const USER_ID = 'clyyyyyyyyyyyyyyyyyyyyyyyy';
 const CONTRACTOR_ID = 'clcontractor000000000001';
 const CONTRACT_ID = 'clcontract0000000000000001';
-const _CONTRACT_ID_2 = 'clcontract0000000000000002';
+const ContractId2 = 'clcontract0000000000000002';
 const AMENDMENT_ID = 'clamendment000000000000001';
 
 // ---------------------------------------------------------------------------
@@ -934,23 +934,21 @@ describe('contract router', () => {
     it('transitions valid contracts and reports failures', async () => {
       mockPrisma.contract.findMany.mockResolvedValueOnce([
         { id: CONTRACT_ID, status: 'DRAFT' },
-        { id: _CONTRACT_ID_2, status: 'TERMINATED' },
+        { id: ContractId2, status: 'TERMINATED' },
       ]);
       mockPrisma.contract.updateMany.mockResolvedValueOnce({ count: 1 });
 
       const result = await caller.contract.bulkTransition({
-        ids: [CONTRACT_ID, _CONTRACT_ID_2],
+        ids: [CONTRACT_ID, ContractId2],
         targetStatus: 'ACTIVE',
       });
 
       expect(result.updated).toBe(1);
-      expect(result.failed).toContain(_CONTRACT_ID_2);
+      expect(result.failed).toContain(ContractId2);
     });
 
     it('includes not-found IDs in failed list', async () => {
-      mockPrisma.contract.findMany.mockResolvedValueOnce([
-        { id: CONTRACT_ID, status: 'DRAFT' },
-      ]);
+      mockPrisma.contract.findMany.mockResolvedValueOnce([{ id: CONTRACT_ID, status: 'DRAFT' }]);
       mockPrisma.contract.updateMany.mockResolvedValueOnce({ count: 1 });
 
       const result = await caller.contract.bulkTransition({
@@ -963,9 +961,7 @@ describe('contract router', () => {
     });
 
     it('sets terminatedAt for bulk TERMINATED transitions', async () => {
-      mockPrisma.contract.findMany.mockResolvedValueOnce([
-        { id: CONTRACT_ID, status: 'ACTIVE' },
-      ]);
+      mockPrisma.contract.findMany.mockResolvedValueOnce([{ id: CONTRACT_ID, status: 'ACTIVE' }]);
       mockPrisma.contract.updateMany.mockResolvedValueOnce({ count: 1 });
 
       await caller.contract.bulkTransition({

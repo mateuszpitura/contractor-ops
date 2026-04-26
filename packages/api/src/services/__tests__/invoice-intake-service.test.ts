@@ -7,11 +7,9 @@
 // (gates, dedup, state machine, idempotency) in isolation.
 
 import { createHash } from 'node:crypto';
-
-import { describe, expect, it, vi, beforeEach } from 'vitest';
-
 import type { ParsedZugferd, XRechnungValidationReport } from '@contractor-ops/einvoice';
-
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { IntakeServiceDeps } from '../invoice-intake-service.js';
 import {
   acknowledgeValidation,
   confirmMatch,
@@ -19,16 +17,15 @@ import {
   INTAKE_MAX_FILE_BYTES,
   reject,
   uploadAndPersist,
-  type IntakeServiceDeps,
 } from '../invoice-intake-service.js';
 import {
-  FIXTURE_INVOICE_NUMBER,
-  FIXTURE_SUPPLIER_NAME,
-  FIXTURE_SUPPLIER_VAT,
   buildHappyPathPdfBase64,
   buildMinimalInvoice,
   buildXmlBase64,
   buildXmlFixture,
+  FIXTURE_INVOICE_NUMBER,
+  FIXTURE_SUPPLIER_NAME,
+  FIXTURE_SUPPLIER_VAT,
   padBase64BufferTo,
 } from './fixtures/intake-fixtures.js';
 
@@ -113,79 +110,72 @@ function makeDb(seed: { intakes?: IntakeRow[] } = {}) {
           return intakes.find(r => r.id === args.where.id) ?? null;
         }
         if (args.where.organizationId_rawFileSha256) {
-          const { organizationId, rawFileSha256 } =
-            args.where.organizationId_rawFileSha256;
+          const { organizationId, rawFileSha256 } = args.where.organizationId_rawFileSha256;
           return (
             intakes.find(
-              r =>
-                r.organizationId === organizationId &&
-                r.rawFileSha256 === rawFileSha256,
+              r => r.organizationId === organizationId && r.rawFileSha256 === rawFileSha256,
             ) ?? null
           );
         }
         return null;
       },
     ),
-    create: vi.fn(
-      async (args: { data: Partial<IntakeRow> & { organizationId: string } }) => {
-        // Simulate the unique constraint on (organizationId, rawFileSha256).
-        if (args.data.rawFileSha256) {
-          const clash = intakes.find(
-            r =>
-              r.organizationId === args.data.organizationId &&
-              r.rawFileSha256 === args.data.rawFileSha256,
+    create: vi.fn(async (args: { data: Partial<IntakeRow> & { organizationId: string } }) => {
+      // Simulate the unique constraint on (organizationId, rawFileSha256).
+      if (args.data.rawFileSha256) {
+        const clash = intakes.find(
+          r =>
+            r.organizationId === args.data.organizationId &&
+            r.rawFileSha256 === args.data.rawFileSha256,
+        );
+        if (clash) {
+          const err: Error & { code?: string } = new Error(
+            'Unique constraint failed on (organizationId,rawFileSha256)',
           );
-          if (clash) {
-            const err: Error & { code?: string } = new Error(
-              'Unique constraint failed on (organizationId,rawFileSha256)',
-            );
-            err.code = 'P2002';
-            throw err;
-          }
+          err.code = 'P2002';
+          throw err;
         }
-        intakeCounter += 1;
-        const created: IntakeRow = {
-          id: `intake_${intakeCounter}`,
-          organizationId: args.data.organizationId,
-          uploadedByUserId: args.data.uploadedByUserId ?? '',
-          sourceKind: args.data.sourceKind ?? 'UPLOAD_PDF',
-          rawFileKey: args.data.rawFileKey ?? '',
-          rawFileSha256: args.data.rawFileSha256 ?? '',
-          rawFileMime: args.data.rawFileMime ?? '',
-          rawFileSizeBytes: args.data.rawFileSizeBytes ?? 0,
-          extractedXmlKey: args.data.extractedXmlKey ?? null,
-          validationReportKey: args.data.validationReportKey ?? null,
-          profileLevel: args.data.profileLevel ?? 'XRECHNUNG',
-          parsedInvoiceJson: args.data.parsedInvoiceJson ?? null,
-          extractedSupplierName: args.data.extractedSupplierName ?? null,
-          extractedSupplierVatId: args.data.extractedSupplierVatId ?? null,
-          extractedSupplierLeitwegId: args.data.extractedSupplierLeitwegId ?? null,
-          extractedInvoiceNumber: args.data.extractedInvoiceNumber ?? null,
-          extractedInvoiceDate: args.data.extractedInvoiceDate ?? null,
-          extractedTotalMinor: args.data.extractedTotalMinor ?? null,
-          extractedCurrency: args.data.extractedCurrency ?? null,
-          matchedContractorId: null,
-          matchedContractId: null,
-          convertedInvoiceId: null,
-          status: args.data.status ?? 'PARSED',
-          validationStatus: args.data.validationStatus ?? 'VALID',
-          validationAcknowledgedAt: null,
-          validationAcknowledgedByUserId: null,
-          rejectionReason: null,
-          unmappedFieldsJson: args.data.unmappedFieldsJson ?? null,
-        };
-        intakes.push(created);
-        return created;
-      },
-    ),
-    update: vi.fn(
-      async (args: { where: { id: string }; data: Partial<IntakeRow> }) => {
-        const row = intakes.find(r => r.id === args.where.id);
-        if (!row) throw new Error(`intake ${args.where.id} not found`);
-        Object.assign(row, args.data);
-        return row;
-      },
-    ),
+      }
+      intakeCounter += 1;
+      const created: IntakeRow = {
+        id: `intake_${intakeCounter}`,
+        organizationId: args.data.organizationId,
+        uploadedByUserId: args.data.uploadedByUserId ?? '',
+        sourceKind: args.data.sourceKind ?? 'UPLOAD_PDF',
+        rawFileKey: args.data.rawFileKey ?? '',
+        rawFileSha256: args.data.rawFileSha256 ?? '',
+        rawFileMime: args.data.rawFileMime ?? '',
+        rawFileSizeBytes: args.data.rawFileSizeBytes ?? 0,
+        extractedXmlKey: args.data.extractedXmlKey ?? null,
+        validationReportKey: args.data.validationReportKey ?? null,
+        profileLevel: args.data.profileLevel ?? 'XRECHNUNG',
+        parsedInvoiceJson: args.data.parsedInvoiceJson ?? null,
+        extractedSupplierName: args.data.extractedSupplierName ?? null,
+        extractedSupplierVatId: args.data.extractedSupplierVatId ?? null,
+        extractedSupplierLeitwegId: args.data.extractedSupplierLeitwegId ?? null,
+        extractedInvoiceNumber: args.data.extractedInvoiceNumber ?? null,
+        extractedInvoiceDate: args.data.extractedInvoiceDate ?? null,
+        extractedTotalMinor: args.data.extractedTotalMinor ?? null,
+        extractedCurrency: args.data.extractedCurrency ?? null,
+        matchedContractorId: null,
+        matchedContractId: null,
+        convertedInvoiceId: null,
+        status: args.data.status ?? 'PARSED',
+        validationStatus: args.data.validationStatus ?? 'VALID',
+        validationAcknowledgedAt: null,
+        validationAcknowledgedByUserId: null,
+        rejectionReason: null,
+        unmappedFieldsJson: args.data.unmappedFieldsJson ?? null,
+      };
+      intakes.push(created);
+      return created;
+    }),
+    update: vi.fn(async (args: { where: { id: string }; data: Partial<IntakeRow> }) => {
+      const row = intakes.find(r => r.id === args.where.id);
+      if (!row) throw new Error(`intake ${args.where.id} not found`);
+      Object.assign(row, args.data);
+      return row;
+    }),
     count: vi.fn(async () => intakes.length),
   };
 
@@ -195,7 +185,13 @@ function makeDb(seed: { intakes?: IntakeRow[] } = {}) {
         data: Partial<InvoiceRow> & {
           organizationId: string;
           invoiceNumber: string;
-          lines?: { create: Array<{ lineNumber: number; description: string; netAmountMinor?: number | null }> };
+          lines?: {
+            create: Array<{
+              lineNumber: number;
+              description: string;
+              netAmountMinor?: number | null;
+            }>;
+          };
         };
       }) => {
         invoiceCounter += 1;
@@ -324,15 +320,13 @@ function makeR2Mock() {
   const puts: Array<{ key: string; contentType: string; bodyLength: number }> = [];
   return {
     puts,
-    putObjectString: vi.fn(
-      async (p: { key: string; body: string; contentType: string }) => {
-        puts.push({
-          key: p.key,
-          contentType: p.contentType,
-          bodyLength: Buffer.byteLength(p.body, 'utf8'),
-        });
-      },
-    ),
+    putObjectString: vi.fn(async (p: { key: string; body: string; contentType: string }) => {
+      puts.push({
+        key: p.key,
+        contentType: p.contentType,
+        bodyLength: Buffer.byteLength(p.body, 'utf8'),
+      });
+    }),
     putObjectAndSignDownload: vi.fn(
       async (p: { key: string; body: Uint8Array | Buffer; contentType: string }) => {
         puts.push({
@@ -373,12 +367,12 @@ const ORG_A = 'org_A';
 const ORG_B = 'org_B';
 const USER_1 = 'user_1';
 
-let HAPPY_PDF_BASE64: string;
-let HAPPY_XML_BASE64: string;
+let HappyPdfBase64: string;
+let HappyXmlBase64: string;
 
 beforeEach(async () => {
-  HAPPY_PDF_BASE64 = await buildHappyPathPdfBase64();
-  HAPPY_XML_BASE64 = buildXmlBase64();
+  HappyPdfBase64 = await buildHappyPathPdfBase64();
+  HappyXmlBase64 = buildXmlBase64();
 });
 
 // ---------------------------------------------------------------------------
@@ -396,7 +390,7 @@ describe('uploadAndPersist', () => {
         orgId: ORG_A,
         userId: USER_1,
         fileKind: 'pdf',
-        fileBase64: HAPPY_PDF_BASE64,
+        fileBase64: HappyPdfBase64,
         mime: 'application/pdf',
         originalFilename: 'invoice.pdf',
       },
@@ -436,7 +430,7 @@ describe('uploadAndPersist', () => {
         orgId: ORG_A,
         userId: USER_1,
         fileKind: 'pdf',
-        fileBase64: HAPPY_PDF_BASE64,
+        fileBase64: HappyPdfBase64,
         mime: 'application/pdf',
         originalFilename: 'invoice.pdf',
       },
@@ -448,7 +442,7 @@ describe('uploadAndPersist', () => {
         orgId: ORG_A,
         userId: USER_1,
         fileKind: 'pdf',
-        fileBase64: HAPPY_PDF_BASE64,
+        fileBase64: HappyPdfBase64,
         mime: 'application/pdf',
         originalFilename: 'invoice.pdf',
       },
@@ -476,7 +470,7 @@ describe('uploadAndPersist', () => {
           orgId: ORG_A,
           userId: USER_1,
           fileKind: 'xml',
-          fileBase64: HAPPY_XML_BASE64,
+          fileBase64: HappyXmlBase64,
           mime: 'application/xml',
           originalFilename: 'invoice.xml',
         },
@@ -499,7 +493,7 @@ describe('uploadAndPersist', () => {
         orgId: ORG_A,
         userId: USER_1,
         fileKind: 'xml',
-        fileBase64: HAPPY_XML_BASE64,
+        fileBase64: HappyXmlBase64,
         mime: 'application/xml',
         originalFilename: 'invoice.xml',
       },
@@ -521,7 +515,7 @@ describe('uploadAndPersist', () => {
     const db = makeDb();
     const deps = buildHappyDeps();
 
-    const oversized = padBase64BufferTo(HAPPY_PDF_BASE64, INTAKE_MAX_FILE_BYTES + 10);
+    const oversized = padBase64BufferTo(HappyPdfBase64, INTAKE_MAX_FILE_BYTES + 10);
 
     await expect(
       uploadAndPersist(
@@ -553,7 +547,7 @@ describe('uploadAndPersist', () => {
           orgId: ORG_A,
           userId: USER_1,
           fileKind: 'pdf',
-          fileBase64: HAPPY_XML_BASE64,
+          fileBase64: HappyXmlBase64,
           mime: 'image/png',
           originalFilename: 'invoice.png',
         },
@@ -582,9 +576,7 @@ describe('acknowledgeValidation', () => {
 
   it('sets validationAcknowledgedAt/By when row is WARNINGS', async () => {
     const db = makeDb({
-      intakes: [
-        makeSeedIntake({ status: 'NEEDS_REVIEW', validationStatus: 'WARNINGS' }),
-      ],
+      intakes: [makeSeedIntake({ status: 'NEEDS_REVIEW', validationStatus: 'WARNINGS' })],
     });
 
     await acknowledgeValidation(db as never, {

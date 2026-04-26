@@ -34,6 +34,13 @@ function SettingsContent() {
   // URL-synced tab state for deep linking (e.g. OAuth callback to ?tab=integrations)
   const [activeTab, setActiveTab] = useQueryState('tab', parseAsString.withDefault('general'));
 
+  const onSettingsTabChange = useCallback(
+    (value: string) => {
+      void setActiveTab(value);
+    },
+    [setActiveTab],
+  );
+
   const goToMembers = useCallback(() => router.push('/settings/members'), [router]);
   const canManageIntegrations = can('organization', ['update']);
   const canManageBilling = can('organization', ['update']);
@@ -51,7 +58,7 @@ function SettingsContent() {
       </AnimateIn>
 
       <AnimateIn delay={1}>
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <Tabs value={activeTab} onValueChange={onSettingsTabChange} className="w-full">
           <TabsList>
             <TabsTrigger value="general">{t('tabs.general')}</TabsTrigger>
             <TabsTrigger value="approvals">{t('tabs.approvals')}</TabsTrigger>

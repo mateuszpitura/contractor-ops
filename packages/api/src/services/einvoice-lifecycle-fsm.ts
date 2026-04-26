@@ -89,21 +89,20 @@ export class IllegalFsmTransitionError extends Error {
 
 // Keyed by `${current}|${event}` → next state. Any (current, event) pair not
 // in this map is illegal — the caller throws IllegalFsmTransitionError.
-const VALIDATION_TABLE: Readonly<Record<string, EInvoiceValidationStatus>> =
-  Object.freeze({
-    'NOT_VALIDATED|validate_complete_valid': 'VALID',
-    'NOT_VALIDATED|validate_complete_warnings': 'WARNINGS',
-    'NOT_VALIDATED|validate_complete_invalid': 'INVALID',
-    'VALID|validate_complete_valid': 'VALID',
-    'VALID|validate_complete_warnings': 'WARNINGS',
-    'VALID|validate_complete_invalid': 'INVALID',
-    'WARNINGS|validate_complete_valid': 'VALID',
-    'WARNINGS|validate_complete_warnings': 'WARNINGS',
-    'WARNINGS|validate_complete_invalid': 'INVALID',
-    'INVALID|validate_complete_valid': 'VALID',
-    'INVALID|validate_complete_warnings': 'WARNINGS',
-    'INVALID|validate_complete_invalid': 'INVALID',
-  });
+const VALIDATION_TABLE: Readonly<Record<string, EInvoiceValidationStatus>> = Object.freeze({
+  'NOT_VALIDATED|validate_complete_valid': 'VALID',
+  'NOT_VALIDATED|validate_complete_warnings': 'WARNINGS',
+  'NOT_VALIDATED|validate_complete_invalid': 'INVALID',
+  'VALID|validate_complete_valid': 'VALID',
+  'VALID|validate_complete_warnings': 'WARNINGS',
+  'VALID|validate_complete_invalid': 'INVALID',
+  'WARNINGS|validate_complete_valid': 'VALID',
+  'WARNINGS|validate_complete_warnings': 'WARNINGS',
+  'WARNINGS|validate_complete_invalid': 'INVALID',
+  'INVALID|validate_complete_valid': 'VALID',
+  'INVALID|validate_complete_warnings': 'WARNINGS',
+  'INVALID|validate_complete_invalid': 'INVALID',
+});
 
 /**
  * Apply a validation event to the current validation status and return the
@@ -132,9 +131,7 @@ export function transitionValidation(
 // Transmission transition table
 // ---------------------------------------------------------------------------
 
-const TRANSMISSION_TABLE: Readonly<
-  Record<string, EInvoiceTransmissionStatus>
-> = Object.freeze({
+const TRANSMISSION_TABLE: Readonly<Record<string, EInvoiceTransmissionStatus>> = Object.freeze({
   'NOT_SENT|queue': 'QUEUED',
   'QUEUED|transmit_success': 'SENT',
   'QUEUED|delivery_failed': 'FAILED',
@@ -180,8 +177,6 @@ export function transitionTransmission(
  * `FAILED` is NOT terminal: the UI surfaces a Retry button (maps to the
  * `retry` event → `QUEUED`).
  */
-export function isTerminalTransmissionStatus(
-  status: EInvoiceTransmissionStatus,
-): boolean {
+export function isTerminalTransmissionStatus(status: EInvoiceTransmissionStatus): boolean {
   return status === 'DELIVERED';
 }

@@ -200,7 +200,10 @@ beforeEach(() => {
 describe('publicInvoiceRouter', () => {
   describe('list', () => {
     it('returns paginated invoices scoped to the API key organization', async () => {
-      const invoices = [makeInvoice(), makeInvoice({ id: 'inv-pub-002', invoiceNumber: 'INV-2026-002' })];
+      const invoices = [
+        makeInvoice(),
+        makeInvoice({ id: 'inv-pub-002', invoiceNumber: 'INV-2026-002' }),
+      ];
       mockDb.invoice.findMany.mockResolvedValueOnce(invoices);
       mockDb.invoice.count.mockResolvedValueOnce(2);
 
@@ -212,7 +215,8 @@ describe('publicInvoiceRouter', () => {
       expect(result.page).toBe(1);
       expect(result.pageSize).toBe(25);
 
-      const whereArg = (mockDb.invoice.findMany as ReturnType<typeof vi.fn>).mock.calls[0]?.[0].where;
+      const whereArg = (mockDb.invoice.findMany as ReturnType<typeof vi.fn>).mock.calls[0]?.[0]
+        .where;
       expect(whereArg).toMatchObject({ organizationId: ORG_ID, deletedAt: null });
     });
 
@@ -223,7 +227,8 @@ describe('publicInvoiceRouter', () => {
       const caller = makeCaller();
       await caller.list({ status: 'APPROVED' });
 
-      const whereArg = (mockDb.invoice.findMany as ReturnType<typeof vi.fn>).mock.calls[0]?.[0].where;
+      const whereArg = (mockDb.invoice.findMany as ReturnType<typeof vi.fn>).mock.calls[0]?.[0]
+        .where;
       expect(whereArg).toMatchObject({ organizationId: ORG_ID, status: 'APPROVED' });
     });
 
@@ -234,7 +239,8 @@ describe('publicInvoiceRouter', () => {
       const caller = makeCaller();
       await caller.list({ contractorId: CONTRACTOR_ID });
 
-      const whereArg = (mockDb.invoice.findMany as ReturnType<typeof vi.fn>).mock.calls[0]?.[0].where;
+      const whereArg = (mockDb.invoice.findMany as ReturnType<typeof vi.fn>).mock.calls[0]?.[0]
+        .where;
       expect(whereArg).toMatchObject({ organizationId: ORG_ID, contractorId: CONTRACTOR_ID });
     });
 
@@ -245,7 +251,8 @@ describe('publicInvoiceRouter', () => {
       const caller = makeCaller();
       await caller.list({});
 
-      const whereArg = (mockDb.invoice.findMany as ReturnType<typeof vi.fn>).mock.calls[0]?.[0].where;
+      const whereArg = (mockDb.invoice.findMany as ReturnType<typeof vi.fn>).mock.calls[0]?.[0]
+        .where;
       expect(whereArg).toMatchObject({ deletedAt: null });
     });
 
@@ -272,7 +279,11 @@ describe('publicInvoiceRouter', () => {
     it('returns invoice details when the id belongs to the API key org', async () => {
       const invoice = {
         ...makeInvoice(),
-        contractor: { id: CONTRACTOR_ID, legalName: 'Test Contractor Sp. z o.o.', taxId: 'PL1234567890' },
+        contractor: {
+          id: CONTRACTOR_ID,
+          legalName: 'Test Contractor Sp. z o.o.',
+          taxId: 'PL1234567890',
+        },
         contract: null,
       };
       mockDb.invoice.findFirst.mockResolvedValueOnce(invoice);
@@ -283,7 +294,8 @@ describe('publicInvoiceRouter', () => {
       expect(result.id).toBe(INVOICE_ID);
       expect(result.invoiceNumber).toBe('INV-2026-001');
 
-      const whereArg = (mockDb.invoice.findFirst as ReturnType<typeof vi.fn>).mock.calls[0]?.[0].where;
+      const whereArg = (mockDb.invoice.findFirst as ReturnType<typeof vi.fn>).mock.calls[0]?.[0]
+        .where;
       expect(whereArg).toMatchObject({ id: INVOICE_ID, organizationId: ORG_ID, deletedAt: null });
     });
 
@@ -296,7 +308,8 @@ describe('publicInvoiceRouter', () => {
         message: 'invoiceNotFound',
       });
 
-      const whereArg = (mockDb.invoice.findFirst as ReturnType<typeof vi.fn>).mock.calls[0]?.[0].where;
+      const whereArg = (mockDb.invoice.findFirst as ReturnType<typeof vi.fn>).mock.calls[0]?.[0]
+        .where;
       expect(whereArg).toMatchObject({ organizationId: ORG_ID });
       expect(whereArg.organizationId).not.toBe(OTHER_ORG_ID);
     });
@@ -319,7 +332,7 @@ describe('publicInvoiceRouter', () => {
       mockDb.invoice.findFirst.mockResolvedValueOnce(invoice);
 
       const caller = makeCaller();
-      const result = await caller.getById({ id: INVOICE_ID }) as Record<string, unknown>;
+      const result = (await caller.getById({ id: INVOICE_ID })) as Record<string, unknown>;
 
       expect(result).not.toHaveProperty('organizationId');
       expect(result).not.toHaveProperty('deletedAt');

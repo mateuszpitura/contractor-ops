@@ -31,10 +31,7 @@ export type SkontoEligibilityInput = {
 
 export type SkontoEligibilityResult = {
   eligible: boolean;
-  eligibilityReason:
-    | 'ELIGIBLE'
-    | 'PAST_DISCOUNT_WINDOW'
-    | 'NO_SKONTO_CONFIGURED';
+  eligibilityReason: 'ELIGIBLE' | 'PAST_DISCOUNT_WINDOW' | 'NO_SKONTO_CONFIGURED';
   discountedAmountMinor: number;
   discountAmountMinor: number;
   netAmountMinor: number;
@@ -73,11 +70,8 @@ export function resolveSkontoTerm(
  * The discount amount is always computed (even for PAST_DISCOUNT_WINDOW)
  * so callers can show "you would have saved X" UI.
  */
-export function evaluateSkontoEligibility(
-  input: SkontoEligibilityInput,
-): SkontoEligibilityResult {
-  const { invoiceTotalMinor, invoiceIssueDate, skontoTerm, paidAt, asOf } =
-    input;
+export function evaluateSkontoEligibility(input: SkontoEligibilityInput): SkontoEligibilityResult {
+  const { invoiceTotalMinor, invoiceIssueDate, skontoTerm, paidAt, asOf } = input;
 
   // No skonto configured — pass through original amounts
   if (skontoTerm === null) {
@@ -93,14 +87,10 @@ export function evaluateSkontoEligibility(
 
   // Calculate discount deadline: issueDate + discountPeriodDays
   const discountDeadline = new Date(invoiceIssueDate);
-  discountDeadline.setDate(
-    discountDeadline.getDate() + skontoTerm.discountPeriodDays,
-  );
+  discountDeadline.setDate(discountDeadline.getDate() + skontoTerm.discountPeriodDays);
 
   // Calculate discount amounts (always, for display purposes)
-  const discountAmountMinor = Math.floor(
-    (invoiceTotalMinor * skontoTerm.discountPercent) / 100,
-  );
+  const discountAmountMinor = Math.floor((invoiceTotalMinor * skontoTerm.discountPercent) / 100);
   const discountedAmountMinor = invoiceTotalMinor - discountAmountMinor;
 
   // Reference date: use paidAt if available, otherwise asOf

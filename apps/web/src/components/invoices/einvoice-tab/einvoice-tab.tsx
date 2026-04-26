@@ -11,8 +11,8 @@ import { DownloadZugferdPdfButton } from './download-zugferd-pdf-button';
 import { GenerationSection } from './generation-section';
 import { LeitwegIdResolvedInline } from './leitweg-id-resolved-inline';
 import { TransmissionSection } from './transmission-section';
-import { ValidationSection } from './validation-section';
 import type { InvoiceTabData } from './types';
+import { ValidationSection } from './validation-section';
 
 interface EInvoiceTabProps {
   /**
@@ -22,6 +22,16 @@ interface EInvoiceTabProps {
    */
   data?: InvoiceTabData;
   invoiceId: string;
+}
+
+// tRPC error shape — narrow helper bypasses the strict generated
+// errorShape type while preserving the single `data?.code` field we read.
+function extractErrorCode(err: unknown): string | undefined {
+  if (err && typeof err === 'object') {
+    const e = err as { data?: { code?: string }; message?: string };
+    return e.data?.code ?? e.message;
+  }
+  return;
 }
 
 function openSignedUrl(url: string | undefined | null): void {
@@ -88,16 +98,6 @@ export function EInvoiceTab({ data, invoiceId }: EInvoiceTabProps) {
     [tErr],
   );
 
-  // tRPC error shape — narrow helper bypasses the strict generated
-  // errorShape type while preserving the single `data?.code` field we read.
-  const extractErrorCode = (err: unknown): string | undefined => {
-    if (err && typeof err === 'object') {
-      const e = err as { data?: { code?: string }; message?: string };
-      return e.data?.code ?? e.message;
-    }
-    return undefined;
-  };
-
   const finalizeMutation = useMutation(
     trpc.einvoice.finalize.mutationOptions({
       // biome-ignore lint/nursery/noJsxPropsBind: callbacks are stable via closure
@@ -109,7 +109,7 @@ export function EInvoiceTab({ data, invoiceId }: EInvoiceTabProps) {
           validationReport?: { issues?: unknown[] };
         };
         const issueCount = Array.isArray(r.validationReport?.issues)
-          ? r.validationReport?.issues?.length ?? 0
+          ? (r.validationReport?.issues?.length ?? 0)
           : 0;
         const status = r.validationStatus ?? 'VALIDATED';
         if (announcementRef.current) {
@@ -207,12 +207,7 @@ export function EInvoiceTab({ data, invoiceId }: EInvoiceTabProps) {
 
   return (
     <div className="space-y-12" data-slot="einvoice-tab">
-      <div
-        ref={announcementRef}
-        aria-live="polite"
-        role="status"
-        className="sr-only"
-      />
+      <div ref={announcementRef} aria-live="polite" role="status" className="sr-only" />
 
       {errorMessage ? (
         <Alert variant="destructive" data-slot="einvoice-tab-error">
@@ -254,10 +249,7 @@ export function EInvoiceTab({ data, invoiceId }: EInvoiceTabProps) {
 
       {/* Phase 62 — outbound ZUGFeRD section. Always available wherever the
           e-invoice tab is rendered (no feature-flag gating per D-14). */}
-      <ZugferdSection
-        invoiceId={invoiceId}
-        lifecycle={tabData.lifecycle}
-      />
+      <ZugferdSection invoiceId={invoiceId} lifecycle={tabData.lifecycle} />
     </div>
   );
 }
@@ -280,9 +272,7 @@ function ZugferdSection({ invoiceId, lifecycle }: ZugferdSectionProps) {
       className="space-y-3">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h3
-            id="zugferd-section-heading"
-            className="font-display text-xl font-semibold">
+          <h3 id="zugferd-section-heading" className="font-display text-xl font-semibold">
             {t('zugferdSectionHeading')}
           </h3>
           <p className="text-sm text-muted-foreground">{t('zugferdSectionBody')}</p>

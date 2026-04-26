@@ -7,8 +7,8 @@
 // button stays disabled until the reason is ≥ 10 characters (mirrors the
 // backend's Zod contract — keep the UX feedback in sync with the API).
 
-import { useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -60,8 +60,7 @@ export function ReassessmentTriggerDismissDialog({
           setAttempted(false);
         }
         onOpenChange(next);
-      }}
-    >
+      }}>
       <DialogContent data-slot="reassessment-trigger-dismiss-dialog">
         <DialogHeader>
           <DialogTitle>{t('dismissHeading')}</DialogTitle>
@@ -80,11 +79,7 @@ export function ReassessmentTriggerDismissDialog({
             aria-describedby={attempted && !isValid ? 'rt-dismiss-reason-error' : undefined}
           />
           {attempted && !isValid ? (
-            <p
-              id="rt-dismiss-reason-error"
-              role="alert"
-              className="text-destructive text-xs"
-            >
+            <p id="rt-dismiss-reason-error" role="alert" className="text-destructive text-xs">
               {t('dismissReasonMinLength')}
             </p>
           ) : null}
@@ -94,16 +89,14 @@ export function ReassessmentTriggerDismissDialog({
             type="button"
             variant="outline"
             onClick={() => onOpenChange(false)}
-            disabled={isSubmitting}
-          >
+            disabled={isSubmitting}>
             {t('dismissCancel')}
           </Button>
           <Button
             type="button"
             variant="destructive"
             onClick={handleConfirm}
-            disabled={!isValid || isSubmitting}
-          >
+            disabled={!isValid || isSubmitting}>
             {t('dismissConfirm')}
           </Button>
         </DialogFooter>

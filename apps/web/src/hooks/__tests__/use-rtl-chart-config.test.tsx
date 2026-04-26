@@ -102,7 +102,7 @@ describe('useRtlChartConfig', () => {
   });
 
   describe('other LTR locales', () => {
-    it.each(['de', 'pl', 'fr', 'es'])('returns LTR config for %s', (locale) => {
+    it.each(['de', 'pl', 'fr', 'es'])('returns LTR config for %s', locale => {
       mockUseLocale.mockReturnValue(locale);
       const { result } = renderHook(() => useRtlChartConfig());
       expect(result.current.isRtl).toBe(false);

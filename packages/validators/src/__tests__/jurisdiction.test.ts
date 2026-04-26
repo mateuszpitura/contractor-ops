@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { resolveJurisdiction } from '../privacy-notices/jurisdiction.js';
 import type { SupportedJurisdiction } from '../privacy-notices/jurisdiction.js';
+import { resolveJurisdiction } from '../privacy-notices/jurisdiction.js';
 
 describe('resolveJurisdiction', () => {
   describe('direct mappings', () => {
@@ -40,12 +40,17 @@ describe('resolveJurisdiction', () => {
       expect(resolveJurisdiction('')).toBe('EU');
     });
 
-    it.each(['US', 'FR', 'PL', 'JP', 'BR', 'XX', 'EU'])(
-      'returns EU for unsupported country %s',
-      (code) => {
-        expect(resolveJurisdiction(code)).toBe('EU');
-      },
-    );
+    it.each([
+      'US',
+      'FR',
+      'PL',
+      'JP',
+      'BR',
+      'XX',
+      'EU',
+    ])('returns EU for unsupported country %s', code => {
+      expect(resolveJurisdiction(code)).toBe('EU');
+    });
   });
 
   describe('return type', () => {

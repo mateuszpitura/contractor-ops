@@ -234,9 +234,7 @@ export function DrvClearanceForm({
                   value={validFrom}
                   onChange={e => setValidFrom(e.target.value)}
                   aria-invalid={Boolean(errors.validFrom)}
-                  aria-describedby={
-                    errors.validFrom ? `${formId}-validFrom-error` : undefined
-                  }
+                  aria-describedby={errors.validFrom ? `${formId}-validFrom-error` : undefined}
                 />
                 {errors.validFrom ? (
                   <p

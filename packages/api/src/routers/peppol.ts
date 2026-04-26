@@ -15,10 +15,7 @@ import { router } from '../init.js';
 import { requirePermission } from '../middleware/rbac.js';
 import { tenantProcedure } from '../middleware/tenant.js';
 import { buildStorecoveAdapterForOrg } from '../services/peppol-adapter-factory.js';
-import {
-  getCapabilitiesWithCache,
-  supportsXRechnungCii,
-} from '../services/peppol-capability.js';
+import { getCapabilitiesWithCache, supportsXRechnungCii } from '../services/peppol-capability.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -429,10 +426,7 @@ export const peppolRouter = router({
     .use(requirePermission({ settings: ['read'] }))
     .input(peppolLookupCapabilitiesSchema)
     .query(async ({ ctx, input }) => {
-      const adapter = await buildStorecoveAdapterForOrg(
-        ctx.db as never,
-        ctx.organizationId,
-      );
+      const adapter = await buildStorecoveAdapterForOrg(ctx.db as never, ctx.organizationId);
       if (!adapter) {
         throw new TRPCError({
           code: 'PRECONDITION_FAILED',

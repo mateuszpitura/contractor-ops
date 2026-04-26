@@ -171,18 +171,12 @@ describe('generateXRechnungCii — minimal valid invoice produces parseable CII'
     const xml = generateXRechnungCii(makeMinimalInvoice({ id: 'INV-42' }), null);
     const doc = libxmljs.parseXml(xml);
     const ns = { rsm: RSM_NS, ram: RAM_NS };
-    const idNode = doc.get(
-      '/rsm:CrossIndustryInvoice/rsm:ExchangedDocument/ram:ID',
-      ns,
-    );
+    const idNode = doc.get('/rsm:CrossIndustryInvoice/rsm:ExchangedDocument/ram:ID', ns);
     expect((idNode as libxmljs.Element | null)?.text()).toBe('INV-42');
   });
 
   it('formats the issue date as YYYYMMDD with format="102"', () => {
-    const xml = generateXRechnungCii(
-      makeMinimalInvoice({ issueDate: '2026-04-14' }),
-      null,
-    );
+    const xml = generateXRechnungCii(makeMinimalInvoice({ issueDate: '2026-04-14' }), null);
     expect(xml).toContain('format="102"');
     expect(xml).toContain('>20260414<');
   });

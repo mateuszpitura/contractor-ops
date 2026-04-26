@@ -110,9 +110,7 @@ describe('StorecoveClient', () => {
     });
 
     it('throws StorecoveApiError for invalid JSON response', async () => {
-      mockFetch.mockResolvedValueOnce(
-        new Response('not-json', { status: 200, statusText: 'OK' }),
-      );
+      mockFetch.mockResolvedValueOnce(new Response('not-json', { status: 200, statusText: 'OK' }));
 
       await expect(
         client.submitDocument({

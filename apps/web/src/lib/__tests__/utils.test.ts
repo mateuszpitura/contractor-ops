@@ -15,7 +15,7 @@ describe('cn', () => {
   });
 
   it('handles conditional classes via clsx syntax', () => {
-    expect(cn('base', false && 'hidden', 'visible')).toBe('base visible');
+    expect(cn('base', false, 'visible')).toBe('base visible');
   });
 
   it('handles undefined and null inputs', () => {

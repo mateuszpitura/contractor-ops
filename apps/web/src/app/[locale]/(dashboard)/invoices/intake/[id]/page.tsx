@@ -1,8 +1,8 @@
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
-import { IntakeDetailClient } from './intake-detail-client';
-import { getServerApi } from '@/trpc/server';
 import { getServerFlag } from '@/lib/server-flag';
+import { getServerApi } from '@/trpc/server';
+import { IntakeDetailClient } from './intake-detail-client';
 
 /**
  * Invoice intake detail page — `/invoices/intake/[id]`.
@@ -38,17 +38,14 @@ export default async function IntakeDetailPage({ params }: PageProps) {
     // appRouter is re-exported as a deeply-generic tree; cast once after
     // the call so downstream props stay strongly typed via the client
     // boundary's own shape.
-    intake = await (api as unknown as {
-      invoiceIntake: { getById: (i: { intakeId: string }) => Promise<unknown> };
-    }).invoiceIntake.getById({ intakeId: id });
+    intake = await (
+      api as unknown as {
+        invoiceIntake: { getById: (i: { intakeId: string }) => Promise<unknown> };
+      }
+    ).invoiceIntake.getById({ intakeId: id });
   } catch {
     notFound();
   }
 
-  return (
-    <IntakeDetailClient
-      intake={intake as never}
-      pageTitle={t('pageTitle')}
-    />
-  );
+  return <IntakeDetailClient intake={intake as never} pageTitle={t('pageTitle')} />;
 }

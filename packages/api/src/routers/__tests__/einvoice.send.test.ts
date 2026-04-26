@@ -232,9 +232,7 @@ function makeInvoice(overrides?: {
       // Use hasOwnProperty semantics via `in`-check so an explicit `null`
       // override sticks (nullish coalescing would treat it as unset).
       peppolSchemeId:
-        overrides && 'peppolSchemeId' in overrides
-          ? overrides.peppolSchemeId
-          : '0060',
+        overrides && 'peppolSchemeId' in overrides ? overrides.peppolSchemeId : '0060',
       peppolParticipantValue:
         overrides && 'peppolParticipantValue' in overrides
           ? overrides.peppolParticipantValue
@@ -296,12 +294,10 @@ describe('einvoice.send', () => {
     );
     // Two lifecycle updates: QUEUED then SENT.
     expect(mockPrisma.eInvoiceLifecycle.update).toHaveBeenCalledTimes(2);
-    const sentUpdateCall = mockPrisma.eInvoiceLifecycle.update.mock.calls.find(
-      (c: unknown[]) => {
-        const arg = c[0] as { data?: { transmissionStatus?: string } };
-        return arg.data?.transmissionStatus === 'SENT';
-      },
-    );
+    const sentUpdateCall = mockPrisma.eInvoiceLifecycle.update.mock.calls.find((c: unknown[]) => {
+      const arg = c[0] as { data?: { transmissionStatus?: string } };
+      return arg.data?.transmissionStatus === 'SENT';
+    });
     expect(sentUpdateCall).toBeDefined();
     // TRANSMITTED event written.
     const eventTypes = mockPrisma.eInvoiceLifecycleEvent.create.mock.calls.map(
@@ -382,12 +378,10 @@ describe('einvoice.send', () => {
     });
 
     // Lifecycle gets FAILED state.
-    const failedUpdate = mockPrisma.eInvoiceLifecycle.update.mock.calls.find(
-      (c: unknown[]) => {
-        const arg = c[0] as { data?: { transmissionStatus?: string } };
-        return arg.data?.transmissionStatus === 'FAILED';
-      },
-    );
+    const failedUpdate = mockPrisma.eInvoiceLifecycle.update.mock.calls.find((c: unknown[]) => {
+      const arg = c[0] as { data?: { transmissionStatus?: string } };
+      return arg.data?.transmissionStatus === 'FAILED';
+    });
     expect(failedUpdate).toBeDefined();
 
     // DELIVERY_FAILED event written.

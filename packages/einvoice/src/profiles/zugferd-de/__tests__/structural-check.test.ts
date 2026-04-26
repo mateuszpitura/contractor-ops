@@ -7,20 +7,11 @@
 //   4. PDF with XMP declaring pdfaid:part>1 → XMP_PDFA_PART_MISMATCH.
 //   5. PDF with embedded invoice.xml (not factur-x.xml) → WRONG_EMBEDDED_FILENAME.
 
-import {
-  AFRelationship,
-  PDFDocument,
-  PDFName,
-  PDFNumber,
-  PDFString,
-} from 'pdf-lib';
+import { AFRelationship, PDFDocument, PDFName, PDFNumber, PDFString } from 'pdf-lib';
 import { beforeAll, describe, expect, it } from 'vitest';
 
 import { wrapToPdfA3 } from '../pdf-wrapper.js';
-import {
-  ZugferdWrappingError,
-  assertZugferdStructure,
-} from '../zugferd-structural-check.js';
+import { assertZugferdStructure, ZugferdWrappingError } from '../zugferd-structural-check.js';
 
 const TRIVIAL_CII = `<?xml version="1.0" encoding="UTF-8"?>
 <rsm:CrossIndustryInvoice xmlns:rsm="urn:un:unece:uncefact:data:standard:CrossIndustryInvoice:100">
@@ -147,17 +138,12 @@ describe('assertZugferdStructure', () => {
       OutputConditionIdentifier: PDFString.of('sRGB'),
     });
     const oiRef = fresh.context.register(dummyOi);
-    fresh.catalog.set(
-      PDFName.of('OutputIntents'),
-      fresh.context.obj([oiRef]),
-    );
+    fresh.catalog.set(PDFName.of('OutputIntents'), fresh.context.obj([oiRef]));
     const bytes = await fresh.save({ useObjectStreams: false });
 
     const err = await assertZugferdStructure(bytes).catch(e => e);
     expect(err).toBeInstanceOf(ZugferdWrappingError);
-    expect((err as ZugferdWrappingError).subcode).toBe(
-      'WRONG_EMBEDDED_FILENAME',
-    );
+    expect((err as ZugferdWrappingError).subcode).toBe('WRONG_EMBEDDED_FILENAME');
   });
 
   it('error .code is the stable discriminant ZUGFERD_WRAPPING_FAILED', () => {

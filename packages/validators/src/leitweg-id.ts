@@ -99,7 +99,7 @@ export const leitwegIdSchema = z
   .max(46, 'Leitweg-ID too long')
   .regex(STRUCTURE_RE, 'Leitweg-ID structure invalid')
   .refine(
-    (value) => {
+    value => {
       const match = STRUCTURE_RE.exec(value);
       if (!match) return false;
       const [, coarse, fine, check] = match;
@@ -141,7 +141,7 @@ export const peppolParticipantPairSchema = z
       .nullable(),
   })
   .refine(
-    (d) =>
+    d =>
       (d.peppolSchemeId === null && d.peppolParticipantValue === null) ||
       (d.peppolSchemeId !== null && d.peppolParticipantValue !== null),
     {

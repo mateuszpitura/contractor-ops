@@ -4,7 +4,7 @@ import { HANDELSREGISTER_COURTS } from '../handelsregister-courts.js';
 
 describe('HANDELSREGISTER_COURTS', () => {
   it('has no duplicate court codes', () => {
-    const codes = HANDELSREGISTER_COURTS.map((c) => c.code);
+    const codes = HANDELSREGISTER_COURTS.map(c => c.code);
     const unique = new Set(codes);
     expect(unique.size).toBe(codes.length);
   });

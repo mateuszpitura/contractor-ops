@@ -1,18 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import {
-  sourceProviderSchema,
-  listSourcesOutputSchema,
-  fetchPeopleInputSchema,
-  sourceEntrySchema,
-  conflictSchema,
-  mergedPersonSchema,
-  fetchPeopleOutputSchema,
   batchImportInputSchema,
+  conflictSchema,
+  fetchPeopleInputSchema,
+  fetchPeopleOutputSchema,
   importedProjectSchema,
-  importProjectInputSchema,
-  startImportInputSchema,
   importProgressOutputSchema,
+  importProjectInputSchema,
+  listSourcesOutputSchema,
+  mergedPersonSchema,
   retryItemInputSchema,
+  sourceEntrySchema,
+  sourceProviderSchema,
+  startImportInputSchema,
 } from '../onboarding-import.js';
 
 // ---------------------------------------------------------------------------
@@ -20,7 +20,7 @@ import {
 // ---------------------------------------------------------------------------
 
 describe('sourceProviderSchema', () => {
-  it.each(['JIRA', 'LINEAR', 'GOOGLE_WORKSPACE', 'SLACK'])('accepts %s', (val) => {
+  it.each(['JIRA', 'LINEAR', 'GOOGLE_WORKSPACE', 'SLACK'])('accepts %s', val => {
     expect(sourceProviderSchema.safeParse(val).success).toBe(true);
   });
 

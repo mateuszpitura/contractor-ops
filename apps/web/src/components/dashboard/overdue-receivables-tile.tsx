@@ -80,8 +80,7 @@ export function OverdueReceivablesTile({ featureEnabled }: OverdueReceivablesTil
         </p>
         <Link
           href="/invoices?filter=overdue"
-          className="inline-flex items-center gap-1 text-sm text-primary hover:underline pt-1"
-        >
+          className="inline-flex items-center gap-1 text-sm text-primary hover:underline pt-1">
           {t('overdueClickThrough')}
           <ArrowRight className="h-3.5 w-3.5" />
         </Link>

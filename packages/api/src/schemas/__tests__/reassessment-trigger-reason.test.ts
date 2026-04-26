@@ -1,9 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-  triggerReasonSchema,
-  triggerReasonsSchema,
-} from '../reassessment-trigger-reason.js';
+import { triggerReasonSchema, triggerReasonsSchema } from '../reassessment-trigger-reason.js';
 
 describe('triggerReasonSchema', () => {
   it('parses a well-formed reason (happy path)', () => {
@@ -61,7 +58,11 @@ describe('triggerReasonsSchema', () => {
 
   it('rejects non-array input', () => {
     expect(() =>
-      triggerReasonsSchema.parse({ field: 'activeTo', auditLogId: 'x', resourceType: 'CONTRACTOR' }),
+      triggerReasonsSchema.parse({
+        field: 'activeTo',
+        auditLogId: 'x',
+        resourceType: 'CONTRACTOR',
+      }),
     ).toThrow();
   });
 });

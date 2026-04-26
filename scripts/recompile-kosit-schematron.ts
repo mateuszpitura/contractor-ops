@@ -28,10 +28,7 @@ import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 
 const REPO_ROOT = path.resolve(new URL('..', import.meta.url).pathname);
-const BUNDLE = path.join(
-  REPO_ROOT,
-  'packages/einvoice/src/profiles/xrechnung-de/validator-bundle',
-);
+const BUNDLE = path.join(REPO_ROOT, 'packages/einvoice/src/profiles/xrechnung-de/validator-bundle');
 
 interface Job {
   readonly xsl: string;
@@ -112,7 +109,9 @@ function assertCheckCommand(): void {
     );
   }
 
-  process.stdout.write(`[recompile-kosit-schematron] ✓ ${lines.length} artefact(s) verified against checksums.txt\n`);
+  process.stdout.write(
+    `[recompile-kosit-schematron] ✓ ${lines.length} artefact(s) verified against checksums.txt\n`,
+  );
 }
 
 function walkXsdFiles(dir: string): string[] {

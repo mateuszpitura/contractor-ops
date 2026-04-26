@@ -16,18 +16,14 @@ describe('ReassessmentTriggerDismissDialog', () => {
   it('renders heading + body copy from Classification.polish.reassessmentTrigger', () => {
     const onOpen = vi.fn();
     const onConfirm = vi.fn();
-    render(
-      <ReassessmentTriggerDismissDialog open onOpenChange={onOpen} onConfirm={onConfirm} />,
-    );
+    render(<ReassessmentTriggerDismissDialog open onOpenChange={onOpen} onConfirm={onConfirm} />);
     expect(screen.getByText(/Dismiss this reassessment trigger\?/i)).toBeInTheDocument();
     expect(screen.getByText(/will not re-fire on these field changes/i)).toBeInTheDocument();
   });
 
   it('keeps the destructive button disabled until reason is ≥ 10 characters', () => {
     const onConfirm = vi.fn();
-    render(
-      <ReassessmentTriggerDismissDialog open onOpenChange={vi.fn()} onConfirm={onConfirm} />,
-    );
+    render(<ReassessmentTriggerDismissDialog open onOpenChange={vi.fn()} onConfirm={onConfirm} />);
     const textarea = screen.getByLabelText(/Reason for dismissing/i) as HTMLTextAreaElement;
     const confirm = screen.getByRole('button', { name: /Dismiss$/i });
 
@@ -42,9 +38,7 @@ describe('ReassessmentTriggerDismissDialog', () => {
 
   it('invokes onConfirm with the reason when submitted', async () => {
     const onConfirm = vi.fn(async () => undefined);
-    render(
-      <ReassessmentTriggerDismissDialog open onOpenChange={vi.fn()} onConfirm={onConfirm} />,
-    );
+    render(<ReassessmentTriggerDismissDialog open onOpenChange={vi.fn()} onConfirm={onConfirm} />);
     const textarea = screen.getByLabelText(/Reason for dismissing/i) as HTMLTextAreaElement;
     fireEvent.change(textarea, {
       target: { value: 'Change is not material to classification after review' },
@@ -56,13 +50,7 @@ describe('ReassessmentTriggerDismissDialog', () => {
   });
 
   it('surfaces the min-length error with role="alert" after a rejected submit', () => {
-    render(
-      <ReassessmentTriggerDismissDialog
-        open
-        onOpenChange={vi.fn()}
-        onConfirm={vi.fn()}
-      />,
-    );
+    render(<ReassessmentTriggerDismissDialog open onOpenChange={vi.fn()} onConfirm={vi.fn()} />);
     const textarea = screen.getByLabelText(/Reason for dismissing/i) as HTMLTextAreaElement;
     fireEvent.change(textarea, { target: { value: 'no' } });
     const confirm = screen.getByRole('button', { name: /Dismiss$/i });

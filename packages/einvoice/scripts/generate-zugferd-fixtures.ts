@@ -24,15 +24,10 @@ import { createHash } from 'node:crypto';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-
-import type { EInvoice } from '../src/types/invoice.js';
 import { generateZugferdPdf } from '../src/profiles/zugferd-de/generator.js';
+import type { EInvoice } from '../src/types/invoice.js';
 
-const FIXTURES = [
-  'comfort-minimal',
-  'reverse-charge-leitweg',
-  'kleinunternehmer',
-] as const;
+const FIXTURES = ['comfort-minimal', 'reverse-charge-leitweg', 'kleinunternehmer'] as const;
 
 const FIXTURE_DIR = fileURLToPath(
   new URL('../src/profiles/zugferd-de/__fixtures__/', import.meta.url),
@@ -75,8 +70,7 @@ async function main(): Promise<void> {
   for (const name of FIXTURES) {
     const invoice = await loadFixture(name);
     const leitwegId =
-      (invoice.extensions as Record<string, unknown> | undefined)
-        ?.supplierLeitwegId ?? null;
+      (invoice.extensions as Record<string, unknown> | undefined)?.supplierLeitwegId ?? null;
     const pdf = await generateZugferdPdf({
       invoice,
       conformanceLevel: 'COMFORT',
@@ -110,9 +104,7 @@ async function main(): Promise<void> {
     }
     let ok = true;
     for (const name of FIXTURES) {
-      const line = manifest
-        .split('\n')
-        .find(l => l.trim().endsWith(`${name}.pdf`));
+      const line = manifest.split('\n').find(l => l.trim().endsWith(`${name}.pdf`));
       if (!line) {
         process.stderr.write(`missing ${name}.pdf in manifest\n`);
         ok = false;
@@ -120,9 +112,7 @@ async function main(): Promise<void> {
       }
       const [expected] = line.trim().split(/\s+/);
       if (expected !== digests[name]) {
-        process.stderr.write(
-          `DRIFT ${name}.pdf: expected ${expected}, got ${digests[name]}\n`,
-        );
+        process.stderr.write(`DRIFT ${name}.pdf: expected ${expected}, got ${digests[name]}\n`);
         ok = false;
       }
     }

@@ -18,17 +18,11 @@ import { complianceState } from '../../types/compliance.js';
 import type { EInvoice } from '../../types/invoice.js';
 import type { EInvoiceProfile } from '../../types/profile.js';
 import type { ValidationError, ValidationResult } from '../../types/validation.js';
-import {
-  KOSIT_RULE_SET_VERSION,
-  XRECHNUNG_DE_PROFILE_ID,
-} from './constants.js';
+import { KOSIT_RULE_SET_VERSION, XRECHNUNG_DE_PROFILE_ID } from './constants.js';
 import { generateXRechnungCii } from './generator.js';
 import { parseXRechnungCii } from './parser.js';
-import {
-  type ValidationIssue,
-  type XRechnungValidationReport,
-  validateXRechnungCii,
-} from './validator.js';
+import type { ValidationIssue, XRechnungValidationReport } from './validator.js';
+import { validateXRechnungCii } from './validator.js';
 
 /** Optional extras accepted by `generate()` — Leitweg-ID is the only one today. */
 export interface XRechnungGenerateOptions {
@@ -129,10 +123,7 @@ export class XRechnungDEProfile implements EInvoiceProfile {
  * `error` severity, and `info` is dropped (callers that need full fidelity
  * call `validateRich` instead).
  */
-function projectReport(
-  report: XRechnungValidationReport,
-  profileId: string,
-): ValidationResult {
+function projectReport(report: XRechnungValidationReport, profileId: string): ValidationResult {
   const errors: ValidationError[] = [];
   const warnings: ValidationError[] = [];
 

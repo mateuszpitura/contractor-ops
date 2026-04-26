@@ -714,9 +714,9 @@ describe('document.confirmUpload — error paths', () => {
     mockPrisma.document.findFirst.mockResolvedValue(doc);
     vi.mocked(headObject).mockRejectedValueOnce(new Error('NoSuchKey'));
 
-    await expect(
-      caller.document.confirmUpload({ documentId: DOC_ID }),
-    ).rejects.toMatchObject({ code: 'NOT_FOUND' });
+    await expect(caller.document.confirmUpload({ documentId: DOC_ID })).rejects.toMatchObject({
+      code: 'NOT_FOUND',
+    });
   });
 });
 
@@ -769,9 +769,7 @@ describe('document.uploadNewVersion — error paths', () => {
   });
 
   it('throws BAD_REQUEST when existing document is not ACTIVE', async () => {
-    mockPrisma.document.findFirst.mockResolvedValue(
-      makeDocument({ status: 'SUPERSEDED' }),
-    );
+    mockPrisma.document.findFirst.mockResolvedValue(makeDocument({ status: 'SUPERSEDED' }));
 
     await expect(
       caller.document.uploadNewVersion({
@@ -822,9 +820,7 @@ describe('document.getVersionHistory', () => {
 
   it('returns related documents when links exist', async () => {
     const doc = makeDocument({
-      links: [
-        { id: 'link-1', entityType: 'CONTRACTOR', entityId: 'c-1', linkRole: 'PRIMARY' },
-      ],
+      links: [{ id: 'link-1', entityType: 'CONTRACTOR', entityId: 'c-1', linkRole: 'PRIMARY' }],
     });
     mockPrisma.document.findFirst.mockResolvedValue(doc);
     mockPrisma.documentLink.findMany.mockResolvedValue([

@@ -1,7 +1,10 @@
-import type { PrismaClient } from '@contractor-ops/db';
+import type { Prisma, PrismaClient } from '@contractor-ops/db';
 import type { TenantScopedDb } from '../lib/tenant-db.js';
 
 export type { TenantScopedDb } from '../lib/tenant-db.js';
+
+/** Primary, interactive transaction, or tenant-scoped client — for calendar/deadline sync entrypoints. */
+export type CalendarPrismaClient = PrismaClient | Prisma.TransactionClient | TenantScopedDb;
 
 /**
  * Regional, tenant-scoped client (`ctx.db`). Use for all organization-bound queries/mutations

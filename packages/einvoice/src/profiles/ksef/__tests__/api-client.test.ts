@@ -37,9 +37,7 @@ function jsonResponse(data: unknown, status = 200) {
  */
 function mockAuthenticateFlow() {
   mockFetch.mockResolvedValueOnce(jsonResponse({ publicKey: rsaPublicKeyPem }));
-  mockFetch.mockResolvedValueOnce(
-    jsonResponse({ challenge: 'ch-123', timestampMs: Date.now() }),
-  );
+  mockFetch.mockResolvedValueOnce(jsonResponse({ challenge: 'ch-123', timestampMs: Date.now() }));
   mockFetch.mockResolvedValueOnce(
     jsonResponse({
       jwt: 'jwt-token-123',
@@ -90,9 +88,9 @@ describe('KsefApiClient', () => {
 
   describe('session requirement', () => {
     it('throws when calling queryInvoices without authentication', async () => {
-      await expect(
-        client.queryInvoices('1234567890', '2026-01-01', '2026-04-01'),
-      ).rejects.toThrow('KSeF session not established');
+      await expect(client.queryInvoices('1234567890', '2026-01-01', '2026-04-01')).rejects.toThrow(
+        'KSeF session not established',
+      );
     });
 
     it('throws when calling downloadInvoiceXml without authentication', async () => {
@@ -108,9 +106,9 @@ describe('KsefApiClient', () => {
 
   describe('authenticateWithCertificate', () => {
     it('throws not supported error', async () => {
-      await expect(
-        client.authenticateWithCertificate('cert', 'pass', 'nip'),
-      ).rejects.toThrow('Certificate-based KSeF authentication is not supported');
+      await expect(client.authenticateWithCertificate('cert', 'pass', 'nip')).rejects.toThrow(
+        'Certificate-based KSeF authentication is not supported',
+      );
     });
   });
 
@@ -157,12 +155,8 @@ describe('KsefApiClient', () => {
 
     it('allocates zero-filled encryption key when server omits it', async () => {
       mockFetch.mockResolvedValueOnce(jsonResponse({ publicKey: rsaPublicKeyPem }));
-      mockFetch.mockResolvedValueOnce(
-        jsonResponse({ challenge: 'ch', timestampMs: Date.now() }),
-      );
-      mockFetch.mockResolvedValueOnce(
-        jsonResponse({ jwt: 'jwt', referenceNumber: 'ref-x' }),
-      );
+      mockFetch.mockResolvedValueOnce(jsonResponse({ challenge: 'ch', timestampMs: Date.now() }));
+      mockFetch.mockResolvedValueOnce(jsonResponse({ jwt: 'jwt', referenceNumber: 'ref-x' }));
       mockFetch.mockResolvedValueOnce(jsonResponse({ processingCode: 200 }));
 
       const session = await client.authenticate('token', '1234567890');
@@ -276,9 +270,7 @@ describe('KsefApiClient', () => {
         text: () => Promise.resolve('Not Found'),
       } as unknown as Response);
 
-      await expect(client.downloadInvoiceXml('ref-xxx')).rejects.toThrow(
-        'KSeF API error 404',
-      );
+      await expect(client.downloadInvoiceXml('ref-xxx')).rejects.toThrow('KSeF API error 404');
     });
   });
 
@@ -289,9 +281,9 @@ describe('KsefApiClient', () => {
   describe('static helpers', () => {
     it('backoffMs caps at 10 seconds', () => {
       // Access private static via bracket notation for white-box testing
-      const backoff = (KsefApiClient as unknown as Record<string, unknown>)[
-        'backoffMs'
-      ] as ((n: number) => number) | undefined;
+      const backoff = (KsefApiClient as unknown as Record<string, unknown>)['backoffMs'] as
+        | ((n: number) => number)
+        | undefined;
       if (backoff) {
         expect(backoff(0)).toBe(1000);
         expect(backoff(1)).toBe(2000);

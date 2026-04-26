@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
-  exchangeRateQuerySchema,
-  exchangeRateLatestSchema,
   exchangeRateConvertSchema,
+  exchangeRateLatestSchema,
+  exchangeRateQuerySchema,
 } from '../exchange-rate.js';
 
 // ---------------------------------------------------------------------------

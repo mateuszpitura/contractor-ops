@@ -1,6 +1,6 @@
 'use client';
 
-import { CircleCheck, Circle, ShieldAlert, ShieldX } from 'lucide-react';
+import { Circle, CircleCheck, ShieldAlert, ShieldX } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { ComponentType } from 'react';
 import { Badge } from '@/components/ui/badge';
@@ -49,10 +49,7 @@ export function ValidationLayerRow({
   warningCount,
 }: ValidationLayerRowProps) {
   const t = useTranslations('EInvoice.InvoiceTab');
-  const labelKey = (`layer${layer}Label` as const) as
-    | 'layer1Label'
-    | 'layer2Label'
-    | 'layer3Label';
+  const labelKey = `layer${layer}Label` as const as 'layer1Label' | 'layer2Label' | 'layer3Label';
 
   const { icon: Icon, className } = STATUS_VISUAL[status];
   const resultLabel = (() => {

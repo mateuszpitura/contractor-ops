@@ -21,12 +21,11 @@ import { useQuery } from '@tanstack/react-query';
 import { AlertTriangle, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
-
+import { LeitwegIdCreateDialog } from '@/components/settings/e-invoicing/leitweg-id-create-dialog';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
-import { LeitwegIdCreateDialog } from '@/components/settings/e-invoicing/leitweg-id-create-dialog';
 import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
@@ -124,8 +123,8 @@ export function LeitwegIdInlineSelector({
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         prefill={{
-          contractorId: mode === 'contractor' ? contractorId ?? null : null,
-          contractId: mode === 'contract' ? contractId ?? null : null,
+          contractorId: mode === 'contractor' ? (contractorId ?? null) : null,
+          contractId: mode === 'contract' ? (contractId ?? null) : null,
         }}
         onSaved={id => onChange(id)}
       />

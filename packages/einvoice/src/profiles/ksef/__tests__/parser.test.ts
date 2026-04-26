@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
+import type { EInvoice } from '../../../types/invoice.js';
 import { generateFa3Xml } from '../generator.js';
 import { ksefToEInvoice } from '../mapper.js';
 import { parseFa3Xml } from '../parser.js';
-import type { EInvoice } from '../../../types/invoice.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -185,7 +185,8 @@ describe('parseFa3Xml', () => {
 
   it('throws ZodError for invalid parsed structure', () => {
     // XML with missing required Fa section (empty Faktura)
-    const badXml = '<Faktura><Podmiot1><DaneIdentyfikacyjne><NIP>123</NIP><Nazwa>X</Nazwa></DaneIdentyfikacyjne></Podmiot1></Faktura>';
+    const badXml =
+      '<Faktura><Podmiot1><DaneIdentyfikacyjne><NIP>123</NIP><Nazwa>X</Nazwa></DaneIdentyfikacyjne></Podmiot1></Faktura>';
 
     expect(() => parseFa3Xml(badXml, 'ref')).toThrow();
   });

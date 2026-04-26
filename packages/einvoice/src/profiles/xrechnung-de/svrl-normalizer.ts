@@ -26,8 +26,8 @@
 // untrusted DTD declarations), but a second-line defence keeps us safe even
 // if that ever changes.
 
-import { XMLParser } from 'fast-xml-parser';
 import { createLogger } from '@contractor-ops/logger';
+import { XMLParser } from 'fast-xml-parser';
 
 const log = createLogger({ service: 'einvoice.xrechnung-de.svrl-normalizer' });
 

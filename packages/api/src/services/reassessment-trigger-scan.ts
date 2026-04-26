@@ -19,10 +19,8 @@
 import { prisma, prismaRaw } from '@contractor-ops/db';
 import { createCronLogger } from '@contractor-ops/logger';
 import { metrics } from '@contractor-ops/logger/metrics';
-import {
-  triggerReasonsSchema,
-  type TriggerReason,
-} from '../schemas/reassessment-trigger-reason.js';
+import type { TriggerReason } from '../schemas/reassessment-trigger-reason.js';
+import { triggerReasonsSchema } from '../schemas/reassessment-trigger-reason.js';
 import { dispatch } from './notification-service.js';
 import { resolveRbacRecipients } from './rbac-recipients.js';
 
@@ -141,9 +139,11 @@ interface TriggerLookup {
  * assessment id) for an audit row. Returns null for anything that isn't
  * attached to a GB engagement with an existing SDS.
  */
-async function resolveEngagement(
-  row: AuditRow,
-): Promise<{ assignmentId: string; priorAssessmentId: string; priorSdsDocumentId: string | null } | null> {
+async function resolveEngagement(row: AuditRow): Promise<{
+  assignmentId: string;
+  priorAssessmentId: string;
+  priorSdsDocumentId: string | null;
+} | null> {
   if (row.resourceType === 'CONTRACTOR') {
     // PHASE-60-CROSS-ORG-AGGREGATE: assignment lookup outside tenant frame.
     const assignment = await prismaRaw.contractorAssignment.findFirst({
@@ -183,9 +183,11 @@ async function resolveEngagement(
   return null;
 }
 
-async function resolveIr35Assessment(
-  assignmentId: string,
-): Promise<{ assignmentId: string; priorAssessmentId: string; priorSdsDocumentId: string | null } | null> {
+async function resolveIr35Assessment(assignmentId: string): Promise<{
+  assignmentId: string;
+  priorAssessmentId: string;
+  priorSdsDocumentId: string | null;
+} | null> {
   // PHASE-60-CROSS-ORG-AGGREGATE: read assessment outside tenant frame.
   const assessment = await prismaRaw.classificationAssessment.findFirst({
     where: {
@@ -336,10 +338,7 @@ export async function runReassessmentTriggerScan(
   // don't re-fire — the original notification already went out).
   for (const payload of dispatchPayloads) {
     try {
-      const recipients = await resolveRbacRecipients(
-        payload.organizationId,
-        'contractor:read',
-      );
+      const recipients = await resolveRbacRecipients(payload.organizationId, 'contractor:read');
       if (recipients.length === 0) continue;
 
       await dispatch({
@@ -377,6 +376,7 @@ export async function runReassessmentTriggerScan(
 }
 
 // Exported for unit tests.
+// biome-ignore lint/style/useNamingConvention: test-internals export uses double-underscore prefix
 export const __testables = {
   CONTRACTOR_MATERIAL_FIELDS,
   CONTRACT_MATERIAL_FIELDS,
@@ -385,4 +385,5 @@ export const __testables = {
 
 // Silence "unused" for prisma — kept because future extensions may need
 // tenant-scoped reads (e.g. notification preferences).
+// biome-ignore lint/style/useNamingConvention: leading underscore marks intentionally-unused export
 export const _tenantScopedPrisma = prisma;

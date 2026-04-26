@@ -13,10 +13,8 @@ import {
   Upload,
   XCircle,
 } from 'lucide-react';
-import {
-  type EInvoiceComplianceStatus,
-  EInvoiceStatusCell,
-} from '@/components/invoices/einvoice-status-cell';
+import type { EInvoiceComplianceStatus } from '@/components/invoices/einvoice-status-cell';
+import { EInvoiceStatusCell } from '@/components/invoices/einvoice-status-cell';
 import { KsefSourceBadge } from '@/components/invoices/ksef-badge';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -80,10 +78,7 @@ export function deriveComplianceStatus(
 ): EInvoiceComplianceStatus {
   if (!lifecycle) return 'notGenerated';
   if (lifecycle.transmissionStatus === 'FAILED') return 'failed';
-  if (
-    lifecycle.transmissionStatus === 'SENT' ||
-    lifecycle.transmissionStatus === 'DELIVERED'
-  )
+  if (lifecycle.transmissionStatus === 'SENT' || lifecycle.transmissionStatus === 'DELIVERED')
     return 'transmitted';
   if (lifecycle.validationStatus === 'INVALID') return 'invalid';
   if (lifecycle.validationStatus === 'WARNINGS') return 'warnings';

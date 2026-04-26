@@ -15,17 +15,12 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 import type { EInvoice } from '../../../types/invoice.js';
-import {
-  XRECHNUNG_DE_PROFILE_ID,
-  XRECHNUNG_KLEINUNTERNEHMER_REASON,
-} from '../constants.js';
+import { XRECHNUNG_DE_PROFILE_ID, XRECHNUNG_KLEINUNTERNEHMER_REASON } from '../constants.js';
 import { generateXRechnungCii } from '../generator.js';
-import {
-  type ParserError,
-  parseXrechnungCii,
-} from '../parser.js';
+import type { ParserError } from '../parser.js';
+import { parseXrechnungCii } from '../parser.js';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const Dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // ---------------------------------------------------------------------------
 // Fixture helpers
@@ -175,7 +170,7 @@ describe('parseXrechnungCii — round-trip through generator', () => {
 
 describe('parseXrechnungCii — KoSIT positive-minimal fixture', () => {
   it('parses fixture as XRECHNUNG with zero error warnings', () => {
-    const fixturePath = path.join(__dirname, 'fixtures', 'kosit-positive-minimal.xml');
+    const fixturePath = path.join(Dirname, 'fixtures', 'kosit-positive-minimal.xml');
     const xml = readFileSync(fixturePath, 'utf8');
     const { invoice, profileLevel, warnings } = parseXrechnungCii(xml);
 
@@ -185,9 +180,7 @@ describe('parseXrechnungCii — KoSIT positive-minimal fixture', () => {
     // Fixture has extra CII decoration (DefinedTradeContact, IBAN, etc.)
     // that we ship as UNMAPPED_FIELD warnings; assert none of them are the
     // best-effort-extended flag (which would mean we mis-detected level).
-    expect(
-      warnings.some(w => w.code === 'LEVEL_EXTENDED_BEST_EFFORT'),
-    ).toBe(false);
+    expect(warnings.some(w => w.code === 'LEVEL_EXTENDED_BEST_EFFORT')).toBe(false);
   });
 });
 
@@ -248,9 +241,7 @@ describe('parseXrechnungCii — EXTENDED profile best-effort warning', () => {
     const { profileLevel, warnings } = parseXrechnungCii(xml);
 
     expect(profileLevel).toBe('EXTENDED');
-    const extendedWarnings = warnings.filter(
-      w => w.code === 'LEVEL_EXTENDED_BEST_EFFORT',
-    );
+    const extendedWarnings = warnings.filter(w => w.code === 'LEVEL_EXTENDED_BEST_EFFORT');
     expect(extendedWarnings).toHaveLength(1);
     expect(extendedWarnings[0].message).toMatch(/EXTENDED/i);
   });

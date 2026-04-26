@@ -107,7 +107,7 @@ const builder = new XMLBuilder({
  *   fromMinor(-1)      → "-0.01"
  */
 function fromMinor(minor: number): string {
-  if (!Number.isFinite(minor) || !Number.isInteger(minor)) {
+  if (!(Number.isFinite(minor) && Number.isInteger(minor))) {
     throw new Error(`Invalid minor-unit amount: ${String(minor)} (expected integer)`);
   }
   const negative = minor < 0;
@@ -180,9 +180,7 @@ function toCiiTax(tax: EInvoiceTaxSubtotal, currencyCode: string): CiiTradeTax {
   if (tax.taxCategory === 'S' && tax.percent == null) {
     // Guard against silently emitting a category-S row with no rate, which
     // KoSIT would flag with an unhelpful layer-2 message.
-    throw new Error(
-      'XRechnung CII: standard-rate (S) tax subtotal requires a percent value',
-    );
+    throw new Error('XRechnung CII: standard-rate (S) tax subtotal requires a percent value');
   }
 
   return base;
@@ -212,7 +210,7 @@ function toLineItem(line: EInvoiceLine, currencyCode: string): Record<string, un
       'ram:ApplicableTradeTax': {
         'ram:TypeCode': 'VAT',
         'ram:CategoryCode': 'S',
-        ...(line.vatRate != null ? { 'ram:RateApplicablePercent': line.vatRate } : {}),
+        ...(line.vatRate == null ? {} : { 'ram:RateApplicablePercent': line.vatRate }),
       },
       'ram:SpecifiedTradeSettlementLineMonetarySummation': {
         'ram:LineTotalAmount': {
@@ -291,8 +289,10 @@ function buildPaymentTerms(
     const dueDateCii = `${dueDate.getFullYear()}${String(dueDate.getMonth() + 1).padStart(2, '0')}${String(dueDate.getDate()).padStart(2, '0')}`;
 
     // Human-readable German description from mirrored locked phrase template
-    const germanDescription = XRECHNUNG_SKONTO_DESCRIPTION_TEMPLATE
-      .replace('{percent}', skontoTerm.discountPercent.toFixed(2))
+    const germanDescription = XRECHNUNG_SKONTO_DESCRIPTION_TEMPLATE.replace(
+      '{percent}',
+      skontoTerm.discountPercent.toFixed(2),
+    )
       .replace('{discountDays}', String(skontoTerm.discountPeriodDays))
       .replace('{netDays}', String(skontoTerm.netPeriodDays));
 
@@ -394,14 +394,13 @@ export function generateXRechnungCii(
           'ram:InvoiceCurrencyCode': currencyCode,
           'ram:ApplicableTradeTax': invoice.taxBreakdown.map(t => toCiiTax(t, currencyCode)),
           ...buildPaymentTerms(invoice, skontoTerm),
-          'ram:SpecifiedTradeSettlementHeaderMonetarySummation':
-            buildMonetarySummation(invoice),
+          'ram:SpecifiedTradeSettlementHeaderMonetarySummation': buildMonetarySummation(invoice),
         },
       },
     },
   };
 
-  const decorated = leitwegId !== null ? embedLeitwegIdIntoCii(doc, leitwegId) : doc;
+  const decorated = leitwegId === null ? doc : embedLeitwegIdIntoCii(doc, leitwegId);
   const body = builder.build(decorated) as string;
   return `<?xml version="1.0" encoding="UTF-8"?>\n${body}`;
 }

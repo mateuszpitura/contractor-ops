@@ -95,16 +95,15 @@ export async function writeAuditLog(input: WriteAuditLogInput): Promise<void> {
         actorId: input.actorId ?? null,
         actorName: input.actorName ?? null,
         action: input.action,
-        resourceType:
-          input.resourceType as Prisma.AuditLogUncheckedCreateInput['resourceType'],
+        resourceType: input.resourceType as Prisma.AuditLogUncheckedCreateInput['resourceType'],
         resourceId: input.resourceId,
         resourceName: input.resourceName ?? null,
-        oldValuesJson:
-          (input.oldValues ?? undefined) as Prisma.AuditLogUncheckedCreateInput['oldValuesJson'],
-        newValuesJson:
-          (input.newValues ?? undefined) as Prisma.AuditLogUncheckedCreateInput['newValuesJson'],
-        metadataJson:
-          (input.metadata ?? undefined) as Prisma.AuditLogUncheckedCreateInput['metadataJson'],
+        oldValuesJson: (input.oldValues ??
+          undefined) as Prisma.AuditLogUncheckedCreateInput['oldValuesJson'],
+        newValuesJson: (input.newValues ??
+          undefined) as Prisma.AuditLogUncheckedCreateInput['newValuesJson'],
+        metadataJson: (input.metadata ??
+          undefined) as Prisma.AuditLogUncheckedCreateInput['metadataJson'],
         ipAddress: input.ipAddress ?? null,
         userAgent: input.userAgent ?? null,
       },

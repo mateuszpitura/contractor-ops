@@ -65,10 +65,10 @@ export function SkontoApplyCheckbox({
     onSuccess: () => {
       void utils.payment.invalidate();
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(error.message);
       // Revert optimistic update
-      setApplied((prev) => !prev);
+      setApplied(prev => !prev);
       onSkontoToggle?.(paymentRunItemId, !applied);
     },
   });
@@ -83,7 +83,7 @@ export function SkontoApplyCheckbox({
         applySkontoDiscount: !!checked,
       });
     },
-    [paymentRunItemId, invoiceId, applyMutation, onSkontoToggle, applied],
+    [paymentRunItemId, invoiceId, applyMutation, onSkontoToggle],
   );
 
   // Past-window: disabled checkbox with explanation
@@ -98,8 +98,7 @@ export function SkontoApplyCheckbox({
         />
         <Label
           htmlFor={`skonto-${paymentRunItemId}`}
-          className="text-sm text-muted-foreground cursor-not-allowed"
-        >
+          className="text-sm text-muted-foreground cursor-not-allowed">
           {t('pastWindowDescription', { date: windowExpiryDate })}
         </Label>
       </div>
@@ -121,11 +120,7 @@ export function SkontoApplyCheckbox({
       />
       <Label
         htmlFor={`skonto-${paymentRunItemId}`}
-        className={cn(
-          'text-sm cursor-pointer',
-          applied && 'text-green-700 dark:text-green-400',
-        )}
-      >
+        className={cn('text-sm cursor-pointer', applied && 'text-green-700 dark:text-green-400')}>
         {t('applyDescription', {
           percent: discountPercent,
           amount: formatEUR(discountAmountMinor),

@@ -104,9 +104,7 @@ describe('KleinunternehmerToggle', () => {
       <KleinunternehmerToggle orgCountryCode="DE" isKleinunternehmer={false} />,
     );
     await user.click(screen.getByRole('switch'));
-    expect(
-      screen.getByText(/All new invoice lines will be billed at 0% VAT/),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/All new invoice lines will be billed at 0% VAT/)).toBeInTheDocument();
   });
 
   it('renders Cancel button in confirmation dialog', async () => {

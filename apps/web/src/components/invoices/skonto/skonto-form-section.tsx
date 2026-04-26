@@ -91,7 +91,7 @@ export function SkontoFormSection({
         void utils.skonto.evaluateForInvoice.invalidate({ invoiceId });
       }
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(error.message);
     },
   });
@@ -104,7 +104,7 @@ export function SkontoFormSection({
         void utils.skonto.evaluateForInvoice.invalidate({ invoiceId });
       }
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(error.message);
     },
   });
@@ -122,7 +122,7 @@ export function SkontoFormSection({
           return t('validation.invalidDays');
         }
       }
-      return undefined;
+      return;
     },
     [t],
   );
@@ -136,25 +136,25 @@ export function SkontoFormSection({
     // Cross-field: discount period must be shorter than net period
     const dd = Number(form.discountDays);
     const nd = Number(form.netDays);
-    if (!Number.isNaN(dd) && !Number.isNaN(nd) && dd >= nd) {
+    if (!(Number.isNaN(dd) || Number.isNaN(nd)) && dd >= nd) {
       newErrors.discountDays = t('validation.daysOrdering');
     }
 
     setErrors(newErrors);
-    return !newErrors.discountPercent && !newErrors.discountDays && !newErrors.netDays;
+    return !(newErrors.discountPercent || newErrors.discountDays || newErrors.netDays);
   }, [form, validateField, t]);
 
   const handleBlur = (name: keyof FormState) => {
     const error = validateField(name, form[name]);
-    setErrors((prev) => ({ ...prev, [name]: error }));
+    setErrors(prev => ({ ...prev, [name]: error }));
   };
 
   const handleChange = (name: keyof FormState, value: string) => {
-    setForm((prev) => ({ ...prev, [name]: value }));
+    setForm(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSave = () => {
-    if (!validateAll() || !invoiceId) return;
+    if (!(validateAll() && invoiceId)) return;
     upsertMutation.mutate({
       invoiceId,
       discountPercent: Number(form.discountPercent),
@@ -220,7 +220,7 @@ export function SkontoFormSection({
       )}
 
       {/* No default, no term: "Add Skonto" button */}
-      {!profileDefault && !invoiceTerm && !showInputs && (
+      {!(profileDefault || invoiceTerm || showInputs) && (
         <Button variant="outline" size="sm" onClick={() => setShowInputs(true)}>
           {t('addSkonto')}
         </Button>
@@ -239,7 +239,7 @@ export function SkontoFormSection({
                 max="50"
                 step="0.01"
                 value={form.discountPercent}
-                onChange={(e) => handleChange('discountPercent', e.target.value)}
+                onChange={e => handleChange('discountPercent', e.target.value)}
                 onBlur={() => handleBlur('discountPercent')}
                 className="tabular-nums"
                 aria-invalid={!!errors.discountPercent}
@@ -257,7 +257,7 @@ export function SkontoFormSection({
                 min="1"
                 step="1"
                 value={form.discountDays}
-                onChange={(e) => handleChange('discountDays', e.target.value)}
+                onChange={e => handleChange('discountDays', e.target.value)}
                 onBlur={() => handleBlur('discountDays')}
                 className="tabular-nums"
                 aria-invalid={!!errors.discountDays}
@@ -275,28 +275,20 @@ export function SkontoFormSection({
                 min="1"
                 step="1"
                 value={form.netDays}
-                onChange={(e) => handleChange('netDays', e.target.value)}
+                onChange={e => handleChange('netDays', e.target.value)}
                 onBlur={() => handleBlur('netDays')}
                 className="tabular-nums"
                 aria-invalid={!!errors.netDays}
               />
-              {errors.netDays && (
-                <p className="text-xs text-destructive">{errors.netDays}</p>
-              )}
+              {errors.netDays && <p className="text-xs text-destructive">{errors.netDays}</p>}
             </div>
           </div>
 
           {/* Live preview line */}
-          {previewText && (
-            <p className="text-sm text-muted-foreground">{previewText}</p>
-          )}
+          {previewText && <p className="text-sm text-muted-foreground">{previewText}</p>}
 
           <div className="flex items-center gap-2">
-            <Button
-              onClick={handleSave}
-              size="sm"
-              disabled={upsertMutation.isPending}
-            >
+            <Button onClick={handleSave} size="sm" disabled={upsertMutation.isPending}>
               {upsertMutation.isPending ? t('saving') : t('saveTerm')}
             </Button>
 
@@ -305,8 +297,7 @@ export function SkontoFormSection({
                 variant="ghost"
                 size="sm"
                 onClick={handleDelete}
-                disabled={deleteMutation.isPending}
-              >
+                disabled={deleteMutation.isPending}>
                 {t('resetToDefault')}
               </Button>
             )}
@@ -317,8 +308,7 @@ export function SkontoFormSection({
                 size="sm"
                 onClick={handleDelete}
                 disabled={deleteMutation.isPending}
-                className="text-destructive hover:text-destructive"
-              >
+                className="text-destructive hover:text-destructive">
                 {t('removeSkonto')}
               </Button>
             )}

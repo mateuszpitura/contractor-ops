@@ -19,9 +19,7 @@ describe('EconomicDependencyBandChip', () => {
   });
 
   it('renders the warning band with a ShieldAlert icon + bandWarning label', () => {
-    const { container } = render(
-      <EconomicDependencyBandChip band="warning" billingShare={0.75} />,
-    );
+    const { container } = render(<EconomicDependencyBandChip band="warning" billingShare={0.75} />);
     const chip = container.querySelector('[data-band="warning"]');
     expect(chip).not.toBeNull();
     expect(screen.getByText(/70%/i)).toBeInTheDocument();
@@ -29,9 +27,7 @@ describe('EconomicDependencyBandChip', () => {
   });
 
   it('renders the critical band with a ShieldX icon + bandCritical label', () => {
-    const { container } = render(
-      <EconomicDependencyBandChip band="critical" billingShare={0.9} />,
-    );
+    const { container } = render(<EconomicDependencyBandChip band="critical" billingShare={0.9} />);
     const chip = container.querySelector('[data-band="critical"]');
     expect(chip).not.toBeNull();
     expect(screen.getByText(/83%/i)).toBeInTheDocument();
@@ -48,9 +44,7 @@ describe('EconomicDependencyBandChip', () => {
   });
 
   it('marks the icon as decorative (aria-hidden) so screen readers rely on the text label', () => {
-    const { container } = render(
-      <EconomicDependencyBandChip band="warning" billingShare={0.75} />,
-    );
+    const { container } = render(<EconomicDependencyBandChip band="warning" billingShare={0.75} />);
     const svg = container.querySelector('svg');
     expect(svg?.getAttribute('aria-hidden')).toBe('true');
   });

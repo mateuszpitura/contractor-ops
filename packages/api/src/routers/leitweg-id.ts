@@ -59,9 +59,7 @@ function isPrismaUniqueViolation(err: unknown): boolean {
 
 // Shared permission gate for every Leitweg-ID mutation — Leitweg-IDs are a
 // property of Contractor records, so `contractor:update` is the right scope.
-const leitwegIdWriteProcedure = tenantProcedure.use(
-  requirePermission({ contractor: ['update'] }),
-);
+const leitwegIdWriteProcedure = tenantProcedure.use(requirePermission({ contractor: ['update'] }));
 
 // Shared select projection for list queries (includes contractor + contract
 // relations for the UI's dropdown + chip rendering).
@@ -102,15 +100,13 @@ export const leitwegIdRouter = router({
    * List Leitweg-IDs attached to a specific contractor. Used by the Settings
    * + Contractor profile "default Leitweg-ID" selector (Plan 07).
    */
-  listByContractor: tenantProcedure
-    .input(listByContractorInput)
-    .query(async ({ ctx, input }) => {
-      return ctx.db.leitwegId.findMany({
-        where: { organizationId: ctx.organizationId, contractorId: input.contractorId },
-        select: listSelect,
-        orderBy: [{ isDefaultForContractor: 'desc' }, { createdAt: 'desc' }],
-      });
-    }),
+  listByContractor: tenantProcedure.input(listByContractorInput).query(async ({ ctx, input }) => {
+    return ctx.db.leitwegId.findMany({
+      where: { organizationId: ctx.organizationId, contractorId: input.contractorId },
+      select: listSelect,
+      orderBy: [{ isDefaultForContractor: 'desc' }, { createdAt: 'desc' }],
+    });
+  }),
 
   /**
    * List Leitweg-IDs attached to a specific contract (per-contract override).
@@ -131,7 +127,7 @@ export const leitwegIdRouter = router({
    */
   create: leitwegIdWriteProcedure.input(createLeitwegIdInput).mutation(async ({ ctx, input }) => {
     try {
-      return await ctx.db.$transaction(async (tx) => {
+      return await ctx.db.$transaction(async tx => {
         if (input.isDefaultForContractor && input.contractorId) {
           await tx.leitwegId.updateMany({
             where: {
@@ -179,7 +175,7 @@ export const leitwegIdRouter = router({
     const { id, ...patch } = input;
 
     try {
-      return await ctx.db.$transaction(async (tx) => {
+      return await ctx.db.$transaction(async tx => {
         const existing = await tx.leitwegId.findFirst({
           where: { id, organizationId: ctx.organizationId },
           select: { id: true, contractorId: true },
@@ -205,18 +201,18 @@ export const leitwegIdRouter = router({
         return tx.leitwegId.update({
           where: { id },
           data: {
-            ...(patch.value !== undefined ? { value: patch.value } : {}),
-            ...(patch.description !== undefined ? { description: patch.description ?? null } : {}),
-            ...(patch.contractorId !== undefined
-              ? { contractorId: patch.contractorId ?? null }
-              : {}),
-            ...(patch.contractId !== undefined ? { contractId: patch.contractId ?? null } : {}),
-            ...(patch.isDefaultForContractor !== undefined
-              ? { isDefaultForContractor: patch.isDefaultForContractor }
-              : {}),
-            ...(patch.validFrom !== undefined ? { validFrom: patch.validFrom ?? null } : {}),
-            ...(patch.validTo !== undefined ? { validTo: patch.validTo ?? null } : {}),
-            ...(patch.notes !== undefined ? { notes: patch.notes ?? null } : {}),
+            ...(patch.value === undefined ? {} : { value: patch.value }),
+            ...(patch.description === undefined ? {} : { description: patch.description ?? null }),
+            ...(patch.contractorId === undefined
+              ? {}
+              : { contractorId: patch.contractorId ?? null }),
+            ...(patch.contractId === undefined ? {} : { contractId: patch.contractId ?? null }),
+            ...(patch.isDefaultForContractor === undefined
+              ? {}
+              : { isDefaultForContractor: patch.isDefaultForContractor }),
+            ...(patch.validFrom === undefined ? {} : { validFrom: patch.validFrom ?? null }),
+            ...(patch.validTo === undefined ? {} : { validTo: patch.validTo ?? null }),
+            ...(patch.notes === undefined ? {} : { notes: patch.notes ?? null }),
           },
           select: listSelect,
         });
@@ -239,7 +235,7 @@ export const leitwegIdRouter = router({
    * cleared inside the same transaction (T-61-04-05 race guard).
    */
   setDefault: leitwegIdWriteProcedure.input(setDefaultInput).mutation(async ({ ctx, input }) => {
-    return ctx.db.$transaction(async (tx) => {
+    return ctx.db.$transaction(async tx => {
       const row = await tx.leitwegId.findFirst({
         where: { id: input.id, organizationId: ctx.organizationId },
         select: { id: true, contractorId: true },

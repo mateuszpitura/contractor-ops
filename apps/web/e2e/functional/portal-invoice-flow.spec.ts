@@ -36,10 +36,15 @@ test.describe('Portal invoices — unauthenticated', () => {
     await expect(heading).toBeVisible({ timeout: 15_000 });
 
     // Portal should have some branding — heading or logo
-    const logo = page.locator('img[alt*="logo" i], svg[aria-label*="logo" i], [data-testid="logo"]');
+    const logo = page.locator(
+      'img[alt*="logo" i], svg[aria-label*="logo" i], [data-testid="logo"]',
+    );
     const brandingVisible =
       (await heading.isVisible().catch(() => false)) ||
-      (await logo.first().isVisible().catch(() => false));
+      (await logo
+        .first()
+        .isVisible()
+        .catch(() => false));
 
     expect(brandingVisible).toBeTruthy();
   });
@@ -58,7 +63,10 @@ test.describe('Portal invoices — authenticated', () => {
 
     // If redirected to portal login, dashboard auth does not grant portal access
     const redirectedToLogin = page.url().includes('/portal/login');
-    test.skip(redirectedToLogin, 'Dashboard auth does not grant portal access — magic link required');
+    test.skip(
+      redirectedToLogin,
+      'Dashboard auth does not grant portal access — magic link required',
+    );
   });
 
   test('portal invoices page renders', async ({ page }) => {
@@ -85,7 +93,10 @@ test.describe('Portal invoices — authenticated', () => {
       .first();
 
     const isVisible = await submitButton.isVisible({ timeout: 15_000 }).catch(() => false);
-    test.skip(!isVisible, 'Submit invoice button not visible — feature may be disabled for this portal user');
+    test.skip(
+      !isVisible,
+      'Submit invoice button not visible — feature may be disabled for this portal user',
+    );
 
     await expect(submitButton).toBeVisible();
   });

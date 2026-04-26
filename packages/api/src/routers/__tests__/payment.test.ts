@@ -472,7 +472,9 @@ describe('payment router', () => {
       // Verify invoices updated to IN_RUN via updateMany
       const updateManyCall = mockPrisma.invoice.updateMany.mock.calls[0]?.[0];
       expect(updateManyCall.data).toMatchObject({ paymentStatus: 'IN_RUN' });
-      expect(updateManyCall.where.id.in).toEqual(expect.arrayContaining([INVOICE_ID_1, INVOICE_ID_2]));
+      expect(updateManyCall.where.id.in).toEqual(
+        expect.arrayContaining([INVOICE_ID_1, INVOICE_ID_2]),
+      );
     });
 
     it('generates run number with year prefix PR-{year}-{seq}', async () => {

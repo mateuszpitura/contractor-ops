@@ -19,16 +19,14 @@ import type {
   EInvoiceValidationStatus,
 } from '@contractor-ops/db/generated/prisma/client';
 import { describe, expect, it } from 'vitest';
-
+import type { TransmissionEvent, ValidationEvent } from '../einvoice-lifecycle-fsm.js';
 import {
   IllegalFsmTransitionError,
   isTerminalTransmissionStatus,
+  TRANSMISSION_EVENTS,
   transitionTransmission,
   transitionValidation,
-  TRANSMISSION_EVENTS,
-  type TransmissionEvent,
   VALIDATION_EVENTS,
-  type ValidationEvent,
 } from '../einvoice-lifecycle-fsm.js';
 
 const ALL_VALIDATION_STATES: EInvoiceValidationStatus[] = [
@@ -60,12 +58,11 @@ describe('transitionValidation — legal edges', () => {
     ['INVALID', 'validate_complete_valid', 'VALID'],
     ['INVALID', 'validate_complete_warnings', 'WARNINGS'],
     ['INVALID', 'validate_complete_invalid', 'INVALID'],
-  ] as Array<[EInvoiceValidationStatus, ValidationEvent, EInvoiceValidationStatus]>)(
-    'transitionValidation(%s, %s) → %s',
-    (current, event, expected) => {
-      expect(transitionValidation(current, event)).toBe(expected);
-    },
-  );
+  ] as Array<
+    [EInvoiceValidationStatus, ValidationEvent, EInvoiceValidationStatus]
+  >)('transitionValidation(%s, %s) → %s', (current, event, expected) => {
+    expect(transitionValidation(current, event)).toBe(expected);
+  });
 });
 
 describe('transitionTransmission — legal edges', () => {
@@ -78,12 +75,11 @@ describe('transitionTransmission — legal edges', () => {
     ['FAILED', 'retry', 'QUEUED'],
     // Idempotent webhook re-delivery — DELIVERED is a terminal sink.
     ['DELIVERED', 'delivery_ack', 'DELIVERED'],
-  ] as Array<[EInvoiceTransmissionStatus, TransmissionEvent, EInvoiceTransmissionStatus]>)(
-    'transitionTransmission(%s, %s) → %s',
-    (current, event, expected) => {
-      expect(transitionTransmission(current, event)).toBe(expected);
-    },
-  );
+  ] as Array<
+    [EInvoiceTransmissionStatus, TransmissionEvent, EInvoiceTransmissionStatus]
+  >)('transitionTransmission(%s, %s) → %s', (current, event, expected) => {
+    expect(transitionTransmission(current, event)).toBe(expected);
+  });
 });
 
 describe('transitionTransmission — illegal edges throw', () => {
@@ -94,15 +90,11 @@ describe('transitionTransmission — illegal edges throw', () => {
   });
 
   it('DELIVERED → queue throws (terminal — must recreate lifecycle)', () => {
-    expect(() => transitionTransmission('DELIVERED', 'queue')).toThrow(
-      IllegalFsmTransitionError,
-    );
+    expect(() => transitionTransmission('DELIVERED', 'queue')).toThrow(IllegalFsmTransitionError);
   });
 
   it('DELIVERED → retry throws', () => {
-    expect(() => transitionTransmission('DELIVERED', 'retry')).toThrow(
-      IllegalFsmTransitionError,
-    );
+    expect(() => transitionTransmission('DELIVERED', 'retry')).toThrow(IllegalFsmTransitionError);
   });
 
   it('NOT_SENT → delivery_ack throws (no transmission to ack)', () => {

@@ -9,7 +9,8 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-
+import { LeitwegIdListCard } from '@/components/settings/e-invoicing/leitweg-id-list-card';
+import { PeppolParticipantCard } from '@/components/settings/e-invoicing/peppol-participant-card';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -18,8 +19,6 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
-import { LeitwegIdListCard } from '@/components/settings/e-invoicing/leitweg-id-list-card';
-import { PeppolParticipantCard } from '@/components/settings/e-invoicing/peppol-participant-card';
 
 // ---------------------------------------------------------------------------
 // Page

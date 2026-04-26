@@ -91,6 +91,18 @@ function InvoicesContent() {
     });
   }, [invoiceEmail]);
 
+  const handleComplianceReview = useCallback(() => {
+    // "Review N invoice(s)" CTA → multi-select invalid + failed. Updates
+    // URL via next/navigation so chips pick up the state declaratively.
+    const params = new URLSearchParams(window.location.search);
+    params.set('einvoiceStatus', 'invalid,failed');
+    window.history.replaceState(null, '', `?${params.toString()}`);
+    // Scroll the invoices table into view so the filtered set is visible.
+    document
+      .querySelector('[data-slot=invoices-table-region]')
+      ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, []);
+
   // Show empty state when no invoices exist
   if (!isCountLoading && invoiceTotal === 0) {
     return (
@@ -112,18 +124,6 @@ function InvoicesContent() {
       </div>
     );
   }
-
-  const handleComplianceReview = useCallback(() => {
-    // "Review N invoice(s)" CTA → multi-select invalid + failed. Updates
-    // URL via next/navigation so chips pick up the state declaratively.
-    const params = new URLSearchParams(window.location.search);
-    params.set('einvoiceStatus', 'invalid,failed');
-    window.history.replaceState(null, '', `?${params.toString()}`);
-    // Scroll the invoices table into view so the filtered set is visible.
-    document
-      .querySelector('[data-slot=invoices-table-region]')
-      ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }, []);
 
   return (
     <div className="space-y-6">

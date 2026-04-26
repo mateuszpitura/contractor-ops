@@ -68,12 +68,12 @@ describe('LeitwegIdCreateDialog', () => {
   });
 
   it('renders heading "Create Leitweg-ID" in create mode', () => {
-    render(<LeitwegIdCreateDialog open={true} onOpenChange={() => {}} />);
+    render(<LeitwegIdCreateDialog open={true} onOpenChange={vi.fn()} />);
     expect(screen.getByRole('heading', { name: /create leitweg-id/i })).toBeInTheDocument();
   });
 
   it('real-time validation disables Save until value is valid', async () => {
-    const { user } = setup(<LeitwegIdCreateDialog open={true} onOpenChange={() => {}} />);
+    const { user } = setup(<LeitwegIdCreateDialog open={true} onOpenChange={vi.fn()} />);
     const save = screen.getByTestId('leitweg-save') as HTMLButtonElement;
     // Empty → disabled (valueValidation.ok is false because value is empty)
     expect(save).toBeDisabled();
@@ -88,7 +88,7 @@ describe('LeitwegIdCreateDialog', () => {
   });
 
   it('accepts a structurally valid Leitweg-ID and enables Save', async () => {
-    const { user } = setup(<LeitwegIdCreateDialog open={true} onOpenChange={() => {}} />);
+    const { user } = setup(<LeitwegIdCreateDialog open={true} onOpenChange={vi.fn()} />);
     const input = screen.getByLabelText('Leitweg-ID') as HTMLInputElement;
     // Use a known-good value: 991-33333TEST-33 is a valid check-digit-safe example used
     // throughout the codebase (see docs).  If its check digit doesn't match
@@ -100,7 +100,7 @@ describe('LeitwegIdCreateDialog', () => {
   });
 
   it('surfaces UI-SPEC duplicate copy when the create mutation returns CONFLICT', async () => {
-    render(<LeitwegIdCreateDialog open={true} onOpenChange={() => {}} />);
+    render(<LeitwegIdCreateDialog open={true} onOpenChange={vi.fn()} />);
     // Simulate the mutation's onError firing with a duplicate/CONFLICT error.
     const onError = hoisted.getCreateOnError();
     expect(onError).not.toBeNull();
@@ -118,7 +118,7 @@ describe('LeitwegIdCreateDialog', () => {
     render(
       <LeitwegIdCreateDialog
         open={true}
-        onOpenChange={() => {}}
+        onOpenChange={vi.fn()}
         initial={{
           id: 'x',
           value: '991-33333TEST-33',
@@ -131,7 +131,7 @@ describe('LeitwegIdCreateDialog', () => {
   });
 
   it('renders all UI-SPEC copy labels', () => {
-    render(<LeitwegIdCreateDialog open={true} onOpenChange={() => {}} />);
+    render(<LeitwegIdCreateDialog open={true} onOpenChange={vi.fn()} />);
     // Format helper is rendered both as dialog description AND inline helper,
     // so ≥1 occurrence is expected.
     expect(screen.getAllByText(/format: coarse digits/i).length).toBeGreaterThan(0);

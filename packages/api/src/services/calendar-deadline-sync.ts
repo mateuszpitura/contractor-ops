@@ -1,9 +1,7 @@
 import type { CalendarTaskConfig } from '@contractor-ops/validators';
 import { getServerEnv } from '@contractor-ops/validators';
 import { createCalendarEvent, updateCalendarEvent } from './calendar-event-service.js';
-import type { DbClient } from './types.js';
-
-type PrismaClient = DbClient;
+import type { CalendarCalendarPrismaClient } from './types.js';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -31,7 +29,7 @@ const DURATION_MS: Record<string, number> = {
  * If it does, updates instead of creating a new one.
  */
 async function hasExistingCalendarEvent(
-  prisma: PrismaClient,
+  prisma: CalendarPrismaClient,
   organizationId: string,
   entityType: string,
   entityId: string,
@@ -70,7 +68,7 @@ function endOfDay(dateStr: string): string {
  * Event is a 30-minute block at 09:00 UTC on the expiry date.
  */
 export async function syncContractExpiryDeadline(
-  prisma: PrismaClient,
+  prisma: CalendarPrismaClient,
   input: {
     organizationId: string;
     contractId: string;
@@ -133,7 +131,7 @@ export async function syncContractExpiryDeadline(
  * with the [Contractor Ops] prefix (D-15).
  */
 export async function syncApprovalSlaDeadline(
-  prisma: PrismaClient,
+  prisma: CalendarPrismaClient,
   input: {
     organizationId: string;
     approvalFlowId: string;
@@ -196,7 +194,7 @@ export async function syncApprovalSlaDeadline(
  * with the [Contractor Ops] prefix (D-15).
  */
 export async function syncPaymentDueDeadline(
-  prisma: PrismaClient,
+  prisma: CalendarPrismaClient,
   input: {
     organizationId: string;
     invoiceId: string;
@@ -259,7 +257,7 @@ export async function syncPaymentDueDeadline(
  * and calculates event duration from the config. Prepends [Contractor Ops] prefix (D-15).
  */
 export async function createTaskCalendarEvent(
-  prisma: PrismaClient,
+  prisma: CalendarPrismaClient,
   input: {
     organizationId: string;
     workflowTaskRunId: string;

@@ -30,11 +30,7 @@ export interface DrvClearanceRowProps {
 interface OutcomeVisual {
   variant: 'default' | 'secondary' | 'destructive' | 'outline';
   icon: typeof CircleCheck;
-  labelKey:
-    | 'outcomePending'
-    | 'outcomeSelbstandig'
-    | 'outcomeAbhangig'
-    | 'outcomeWithdrawn';
+  labelKey: 'outcomePending' | 'outcomeSelbstandig' | 'outcomeAbhangig' | 'outcomeWithdrawn';
 }
 
 const OUTCOME_VISUALS: Record<Outcome, OutcomeVisual> = {

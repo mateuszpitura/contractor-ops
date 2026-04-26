@@ -2,9 +2,7 @@ import { GoogleCalendarAdapter } from '@contractor-ops/integrations/adapters/goo
 import { OutlookCalendarAdapter } from '@contractor-ops/integrations/adapters/outlook-calendar-adapter';
 import { decryptCredentials } from '@contractor-ops/integrations/services/credential-service';
 import type { CalendarEventMetadata } from '@contractor-ops/validators';
-import type { DbClient } from './types.js';
-
-type PrismaClient = DbClient;
+import type { CalendarCalendarPrismaClient } from './types.js';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -68,7 +66,7 @@ interface DeleteCalendarEventInput {
  * org-level connections (userId = null) per D-12 dual-push requirement.
  */
 async function findCalendarConnections(
-  prisma: PrismaClient,
+  prisma: CalendarPrismaClient,
   organizationId: string,
   userId?: string,
 ): Promise<CalendarConnection[]> {
@@ -121,7 +119,7 @@ async function findCalendarConnections(
  * so calendar failures never block business mutations (D-11).
  */
 export async function createCalendarEvent(
-  prisma: PrismaClient,
+  prisma: CalendarPrismaClient,
   input: CreateCalendarEventInput,
 ): Promise<void> {
   try {
@@ -140,7 +138,7 @@ export async function createCalendarEvent(
 }
 
 async function createEventForConnection(
-  prisma: PrismaClient,
+  prisma: CalendarPrismaClient,
   conn: CalendarConnection,
   input: CreateCalendarEventInput,
 ): Promise<void> {
@@ -218,7 +216,7 @@ async function createProviderEvent(
  * events via provider APIs. Uses fire-and-forget pattern.
  */
 export async function updateCalendarEvent(
-  prisma: PrismaClient,
+  prisma: CalendarPrismaClient,
   input: UpdateCalendarEventInput,
 ): Promise<void> {
   try {
@@ -242,7 +240,7 @@ export async function updateCalendarEvent(
  * Uses fire-and-forget pattern.
  */
 export async function deleteCalendarEvent(
-  prisma: PrismaClient,
+  prisma: CalendarPrismaClient,
   input: DeleteCalendarEventInput,
 ): Promise<void> {
   try {
@@ -277,7 +275,7 @@ interface CalendarExternalLink {
 }
 
 async function findCalendarExternalLinks(
-  prisma: PrismaClient,
+  prisma: CalendarPrismaClient,
   input: { organizationId: string; entityType: string; entityId: string },
 ): Promise<CalendarExternalLink[]> {
   return prisma.externalLink.findMany({
@@ -300,7 +298,7 @@ async function findCalendarExternalLinks(
 // ---------------------------------------------------------------------------
 
 async function updateEventForLink(
-  prisma: PrismaClient,
+  prisma: CalendarPrismaClient,
   link: CalendarExternalLink,
   input: UpdateCalendarEventInput,
 ): Promise<void> {
@@ -372,7 +370,10 @@ async function updateEventForLink(
 // Internal: per-link delete
 // ---------------------------------------------------------------------------
 
-async function deleteEventForLink(prisma: PrismaClient, link: CalendarExternalLink): Promise<void> {
+async function deleteEventForLink(
+  prisma: CalendarPrismaClient,
+  link: CalendarExternalLink,
+): Promise<void> {
   const conn = link.integrationConnection;
 
   // Attempt deletion even if disconnected -- best effort

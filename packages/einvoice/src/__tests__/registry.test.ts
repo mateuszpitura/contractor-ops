@@ -155,9 +155,7 @@ describe('Profile Registry — XRechnung-DE', () => {
     // now asserts the round-trip invariant rather than the former stub's
     // "throws Phase 62" message.
     const { XRechnungDEProfile } = await import('../profiles/xrechnung-de/index.js');
-    const { generateXRechnungCii } = await import(
-      '../profiles/xrechnung-de/generator.js'
-    );
+    const { generateXRechnungCii } = await import('../profiles/xrechnung-de/generator.js');
     registerProfile(new XRechnungDEProfile());
 
     const profile = getProfile('xrechnung-de');

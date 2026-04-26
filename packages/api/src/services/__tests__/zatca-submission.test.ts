@@ -36,8 +36,12 @@ const { apiClientBehavior, MockZatcaApiError } = vi.hoisted(() => {
   };
   /** Mutable per-test behavior for ZatcaApiClient instances */
   const apiClientBehavior = {
-    submitForClearance: vi.fn().mockResolvedValue({ clearanceStatus: 'CLEARED', validationResults: {} }),
-    submitForReporting: vi.fn().mockResolvedValue({ reportingStatus: 'REPORTED', validationResults: {} }),
+    submitForClearance: vi
+      .fn()
+      .mockResolvedValue({ clearanceStatus: 'CLEARED', validationResults: {} }),
+    submitForReporting: vi
+      .fn()
+      .mockResolvedValue({ reportingStatus: 'REPORTED', validationResults: {} }),
     constructorArgs: null as Record<string, unknown> | null,
   };
   return { apiClientBehavior, MockZatcaApiError };
@@ -155,8 +159,14 @@ function restoreDefaults() {
   mockSecretStore.get.mockResolvedValue('mock-secret');
   mockPrisma.zatcaInvoiceChain.update.mockResolvedValue({});
   mockQStashPublishJSON.mockResolvedValue({});
-  apiClientBehavior.submitForClearance.mockResolvedValue({ clearanceStatus: 'CLEARED', validationResults: {} });
-  apiClientBehavior.submitForReporting.mockResolvedValue({ reportingStatus: 'REPORTED', validationResults: {} });
+  apiClientBehavior.submitForClearance.mockResolvedValue({
+    clearanceStatus: 'CLEARED',
+    validationResults: {},
+  });
+  apiClientBehavior.submitForReporting.mockResolvedValue({
+    reportingStatus: 'REPORTED',
+    validationResults: {},
+  });
   apiClientBehavior.constructorArgs = null;
 }
 
@@ -170,9 +180,9 @@ describe('submitToZatca', () => {
     mockPrisma.invoice.findUniqueOrThrow.mockResolvedValue(baseInvoice());
     mockPrisma.integrationConnection.findFirst.mockResolvedValue(null);
 
-    await expect(
-      submitToZatca({ invoiceId: 'inv_1', organizationId: 'org_1' }),
-    ).rejects.toThrow('No active ZATCA connection');
+    await expect(submitToZatca({ invoiceId: 'inv_1', organizationId: 'org_1' })).rejects.toThrow(
+      'No active ZATCA connection',
+    );
   });
 
   it('throws when certificates are missing', async () => {
@@ -182,9 +192,9 @@ describe('submitToZatca', () => {
     });
     mockSecretStore.get.mockResolvedValue(null);
 
-    await expect(
-      submitToZatca({ invoiceId: 'inv_1', organizationId: 'org_1' }),
-    ).rejects.toThrow('ZATCA certificates not found');
+    await expect(submitToZatca({ invoiceId: 'inv_1', organizationId: 'org_1' })).rejects.toThrow(
+      'ZATCA certificates not found',
+    );
   });
 
   it('throws when private key is missing', async () => {
@@ -198,9 +208,9 @@ describe('submitToZatca', () => {
       .mockResolvedValueOnce('secret-value')
       .mockResolvedValueOnce(null);
 
-    await expect(
-      submitToZatca({ invoiceId: 'inv_1', organizationId: 'org_1' }),
-    ).rejects.toThrow('ZATCA private key not found');
+    await expect(submitToZatca({ invoiceId: 'inv_1', organizationId: 'org_1' })).rejects.toThrow(
+      'ZATCA private key not found',
+    );
   });
 
   it('uses sandbox URL for test environment', async () => {
@@ -279,9 +289,7 @@ describe('submitToZatca', () => {
       return fn(mockPrisma);
     });
 
-    await expect(
-      submitToZatca({ invoiceId: 'inv_1', organizationId: 'org_1' }),
-    ).rejects.toThrow();
+    await expect(submitToZatca({ invoiceId: 'inv_1', organizationId: 'org_1' })).rejects.toThrow();
 
     expect(mockPrisma.zatcaInvoiceChain.update).toHaveBeenCalledWith({
       where: { id: 'chain_1' },
@@ -373,8 +381,6 @@ describe('queueZatcaSubmission', () => {
   it('propagates QStash errors', async () => {
     mockQStashPublishJSON.mockRejectedValue(new Error('QStash unavailable'));
 
-    await expect(
-      queueZatcaSubmission('inv_1', 'org_1'),
-    ).rejects.toThrow('QStash unavailable');
+    await expect(queueZatcaSubmission('inv_1', 'org_1')).rejects.toThrow('QStash unavailable');
   });
 });

@@ -69,9 +69,7 @@ test.describe('Peppol inbound (Storecove webhook) smoke', () => {
   // -------------------------------------------------------------------------
   // 3. Malformed JSON body — syntactically invalid, must return 400 with error
   // -------------------------------------------------------------------------
-  test('POST with malformed JSON returns 400 with error field', async ({
-    request,
-  }) => {
+  test('POST with malformed JSON returns 400 with error field', async ({ request }) => {
     const res = await request.post(ENDPOINT, {
       data: '{ this is: not json !!!',
       headers: { 'content-type': 'application/json' },
@@ -88,9 +86,7 @@ test.describe('Peppol inbound (Storecove webhook) smoke', () => {
   // -------------------------------------------------------------------------
   // 4. Wrong content-type (text/plain) — must be rejected
   // -------------------------------------------------------------------------
-  test('POST with text/plain content-type is rejected (4xx or 5xx)', async ({
-    request,
-  }) => {
+  test('POST with text/plain content-type is rejected (4xx or 5xx)', async ({ request }) => {
     const res = await request.post(ENDPOINT, {
       data: 'hello world',
       headers: { 'content-type': 'text/plain' },

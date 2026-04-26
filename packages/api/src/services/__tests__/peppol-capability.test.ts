@@ -15,9 +15,8 @@
 //
 // Uses an in-memory fake Prisma + a lightweight ASPAdapter mock.
 
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-
 import { STORECOVE_CII_XRECHNUNG_DOC_TYPE_ID } from '@contractor-ops/einvoice';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ---------------------------------------------------------------------------
 // Import under test (module created alongside this file).
@@ -55,26 +54,42 @@ function makeCacheTable() {
   const rows: CacheRow[] = [];
   return {
     rows,
-    findUnique: vi.fn(async (args: { where: { organizationId_schemeId_value: { organizationId: string; schemeId: string; value: string } } }) => {
-      const key = args.where.organizationId_schemeId_value;
-      return (
-        rows.find(
-          (r) =>
-            r.organizationId === key.organizationId &&
-            r.schemeId === key.schemeId &&
-            r.value === key.value,
-        ) ?? null
-      );
-    }),
+    findUnique: vi.fn(
+      async (args: {
+        where: {
+          organizationId_schemeId_value: {
+            organizationId: string;
+            schemeId: string;
+            value: string;
+          };
+        };
+      }) => {
+        const key = args.where.organizationId_schemeId_value;
+        return (
+          rows.find(
+            r =>
+              r.organizationId === key.organizationId &&
+              r.schemeId === key.schemeId &&
+              r.value === key.value,
+          ) ?? null
+        );
+      },
+    ),
     upsert: vi.fn(
       async (args: {
-        where: { organizationId_schemeId_value: { organizationId: string; schemeId: string; value: string } };
+        where: {
+          organizationId_schemeId_value: {
+            organizationId: string;
+            schemeId: string;
+            value: string;
+          };
+        };
         create: Omit<CacheRow, 'id' | 'cachedAt'> & { cachedAt?: Date };
         update: Partial<CacheRow>;
       }) => {
         const key = args.where.organizationId_schemeId_value;
         const existing = rows.find(
-          (r) =>
+          r =>
             r.organizationId === key.organizationId &&
             r.schemeId === key.schemeId &&
             r.value === key.value,
@@ -104,11 +119,9 @@ function makeParticipantTable() {
   return {
     rows,
     findFirst: vi.fn(
-      async (args: {
-        where: { organizationId: string; status?: string | { in: string[] } };
-      }) => {
+      async (args: { where: { organizationId: string; status?: string | { in: string[] } } }) => {
         return (
-          rows.find((r) => {
+          rows.find(r => {
             if (r.organizationId !== args.where.organizationId) return false;
             const statusCond = args.where.status;
             if (!statusCond) return true;
@@ -121,14 +134,12 @@ function makeParticipantTable() {
         );
       },
     ),
-    update: vi.fn(
-      async (args: { where: { id: string }; data: Partial<ParticipantRow> }) => {
-        const row = rows.find((r) => r.id === args.where.id);
-        if (!row) return null;
-        Object.assign(row, args.data);
-        return row;
-      },
-    ),
+    update: vi.fn(async (args: { where: { id: string }; data: Partial<ParticipantRow> }) => {
+      const row = rows.find(r => r.id === args.where.id);
+      if (!row) return null;
+      Object.assign(row, args.data);
+      return row;
+    }),
   };
 }
 
@@ -299,9 +310,7 @@ describe('getCapabilitiesWithCache', () => {
 
 describe('supportsXRechnungCii', () => {
   it('returns true when the doc type is present', () => {
-    expect(
-      supportsXRechnungCii(['other', STORECOVE_CII_XRECHNUNG_DOC_TYPE_ID]),
-    ).toBe(true);
+    expect(supportsXRechnungCii(['other', STORECOVE_CII_XRECHNUNG_DOC_TYPE_ID])).toBe(true);
   });
 
   it('returns false for empty / missing list', () => {

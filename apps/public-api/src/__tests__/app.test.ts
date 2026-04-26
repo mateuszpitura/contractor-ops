@@ -18,10 +18,22 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const { mockCallerStub } = vi.hoisted(() => {
   const mockCallerStub = {
-    invoice: { list: vi.fn().mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 25 }), getById: vi.fn() },
-    contract: { list: vi.fn().mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 25 }), getById: vi.fn() },
-    contractor: { list: vi.fn().mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 25 }), getById: vi.fn() },
-    document: { list: vi.fn().mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 25 }), getDownloadUrl: vi.fn() },
+    invoice: {
+      list: vi.fn().mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 25 }),
+      getById: vi.fn(),
+    },
+    contract: {
+      list: vi.fn().mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 25 }),
+      getById: vi.fn(),
+    },
+    contractor: {
+      list: vi.fn().mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 25 }),
+      getById: vi.fn(),
+    },
+    document: {
+      list: vi.fn().mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 25 }),
+      getDownloadUrl: vi.fn(),
+    },
     featureFlags: { list: vi.fn().mockResolvedValue([]) },
   };
   return { mockCallerStub };
@@ -32,7 +44,14 @@ vi.mock('../lib/create-caller.js', () => ({
 }));
 
 vi.mock('@contractor-ops/logger', () => {
-  const stub = { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), fatal: vi.fn(), trace: vi.fn() };
+  const stub = {
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+    fatal: vi.fn(),
+    trace: vi.fn(),
+  };
   const loggerStub = { ...stub, child: vi.fn(() => ({ ...stub, child: vi.fn(() => stub) })) };
   return {
     logger: loggerStub,
@@ -65,7 +84,7 @@ describe('Health check', () => {
   it('GET /api/v1/health returns 200 { status: "ok" }', async () => {
     const res = await app.request('/api/v1/health');
     expect(res.status).toBe(200);
-    const body = await res.json() as { status: string };
+    const body = (await res.json()) as { status: string };
     expect(body).toEqual({ status: 'ok' });
   });
 });
@@ -78,7 +97,7 @@ describe('OpenAPI spec', () => {
   it('GET /api/v1/openapi.json returns 200 with the spec', async () => {
     const res = await app.request('/api/v1/openapi.json');
     expect(res.status).toBe(200);
-    const body = await res.json() as { openapi: string };
+    const body = (await res.json()) as { openapi: string };
     expect(body.openapi).toBe('3.1.0');
   });
 
@@ -100,7 +119,7 @@ describe('404 handling', () => {
 
   it('unknown route returns JSON error body with code=NOT_FOUND', async () => {
     const res = await app.request('/api/v1/does-not-exist');
-    const body = await res.json() as { error: { code: string; status: number } };
+    const body = (await res.json()) as { error: { code: string; status: number } };
     expect(body.error.code).toBe('NOT_FOUND');
     expect(body.error.status).toBe(404);
   });

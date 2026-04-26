@@ -24,7 +24,7 @@ describe('SRI guard logic (replicated from app.ts)', () => {
     if (docsEnabled && sri === SCALAR_SRI_PLACEHOLDER) {
       throw new Error(
         'ENABLE_API_DOCS=true but SCALAR_SRI_HASH is the placeholder. ' +
-        'Pin a real subresource-integrity hash',
+          'Pin a real subresource-integrity hash',
       );
     }
   }
@@ -66,7 +66,7 @@ describe('CSP string for /docs (replicated from app.ts)', () => {
       "default-src 'none'",
       "script-src 'self' https://cdn.jsdelivr.net",
       "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com",
-      "font-src https://fonts.gstatic.com https://cdn.jsdelivr.net",
+      'font-src https://fonts.gstatic.com https://cdn.jsdelivr.net',
       "img-src 'self' data: https:",
       "connect-src 'self'",
       "frame-ancestors 'none'",

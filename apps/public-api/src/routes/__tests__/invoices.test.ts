@@ -4,8 +4,8 @@
  * Covers: GET / query param coercion, GET /:id forwarding.
  */
 
-import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Hono } from 'hono';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ---------------------------------------------------------------------------
 // Caller stub — must use vi.hoisted() because vi.mock() is hoisted above
@@ -87,7 +87,9 @@ describe('GET /invoices', () => {
   });
 
   it('passes all params together correctly', async () => {
-    await app.request('/?page=2&pageSize=10&status=PAID&contractorId=c_1&sortBy=dueDate&sortOrder=desc');
+    await app.request(
+      '/?page=2&pageSize=10&status=PAID&contractorId=c_1&sortBy=dueDate&sortOrder=desc',
+    );
     const [input] = mockList.mock.calls[0] as [Record<string, unknown>][];
     expect(input).toMatchObject({
       page: 2,
@@ -115,7 +117,7 @@ describe('GET /invoices', () => {
     mockList.mockResolvedValueOnce({ items, total: 1, page: 1, pageSize: 25 });
     const res = await app.request('/');
     expect(res.status).toBe(200);
-    const body = await res.json() as { data: unknown[]; meta: unknown };
+    const body = (await res.json()) as { data: unknown[]; meta: unknown };
     expect(body.data).toEqual(items);
     expect(body.meta).toMatchObject({ total: 1, page: 1, pageSize: 25 });
   });
@@ -143,7 +145,7 @@ describe('GET /invoices/:id', () => {
     mockGetById.mockResolvedValueOnce(invoice);
     const res = await app.request('/inv-xyz');
     expect(res.status).toBe(200);
-    const body = await res.json() as { data: unknown };
+    const body = (await res.json()) as { data: unknown };
     expect(body).toEqual({ data: invoice });
   });
 });

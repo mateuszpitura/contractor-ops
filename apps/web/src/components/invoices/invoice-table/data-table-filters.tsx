@@ -94,8 +94,7 @@ export function DataTableFilters({ filters, onFiltersChange }: DataTableFiltersP
         variant={filters.overdue ? 'default' : 'outline'}
         size="lg"
         onClick={toggleOverdue}
-        className={filters.overdue ? 'bg-primary text-primary-foreground' : ''}
-      >
+        className={filters.overdue ? 'bg-primary text-primary-foreground' : ''}>
         {t('overdueFilter')}
       </Button>
 
@@ -147,12 +146,7 @@ export function DataTableFilters({ filters, onFiltersChange }: DataTableFiltersP
       {/* Active filter badges */}
       {hasActiveFilters && (
         <div className="flex flex-wrap items-center gap-1.5">
-          {filters.overdue && (
-            <FilterBadge
-              label={t('overdueFilter')}
-              onRemove={toggleOverdue}
-            />
-          )}
+          {filters.overdue && <FilterBadge label={t('overdueFilter')} onRemove={toggleOverdue} />}
           {filters.status.map(s => (
             <FilterBadge
               key={`status-${s}`}

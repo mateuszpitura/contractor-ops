@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { SecretStoreError } from '../secret-store.js';
 import type { ExtendedSecretStore } from '../secret-store.js';
+import { SecretStoreError } from '../secret-store.js';
 
 describe('SecretStoreError', () => {
   it('sets name to SecretStoreError', () => {
@@ -50,8 +50,8 @@ describe('ExtendedSecretStore interface', () => {
   it('can be implemented with all required methods', async () => {
     const store: ExtendedSecretStore = {
       get: async (_path: string) => 'secret-value',
-      set: async (_path: string, _value: string) => {},
-      delete: async (_path: string) => {},
+      set: async (_path: string, _value: string) => undefined,
+      delete: async (_path: string) => undefined,
       listSecrets: async (_prefix: string) => ['cert-1', 'cert-2'],
     };
 
@@ -64,8 +64,8 @@ describe('ExtendedSecretStore interface', () => {
   it('get returns null when secret is not found', async () => {
     const store: ExtendedSecretStore = {
       get: async () => null,
-      set: async () => {},
-      delete: async () => {},
+      set: async () => undefined,
+      delete: async () => undefined,
       listSecrets: async () => [],
     };
 
@@ -75,8 +75,8 @@ describe('ExtendedSecretStore interface', () => {
   it('listSecrets returns empty array for no matches', async () => {
     const store: ExtendedSecretStore = {
       get: async () => null,
-      set: async () => {},
-      delete: async () => {},
+      set: async () => undefined,
+      delete: async () => undefined,
       listSecrets: async () => [],
     };
 

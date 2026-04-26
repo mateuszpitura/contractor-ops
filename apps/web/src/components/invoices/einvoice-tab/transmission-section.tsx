@@ -16,19 +16,8 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import {
-  Table,
-  TableBody,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { TransmissionEventRow } from './transmission-event-row';
 import type { EInvoiceLifecycleShape, PeppolParticipantLike } from './types';
 
@@ -52,10 +41,7 @@ function computeSendGate(
   receiverAccepts: boolean,
 ): SendDisabledReason {
   if (!lifecycle) return 'VALIDATION_NOT_VALID';
-  if (
-    lifecycle.validationStatus !== 'VALID' &&
-    lifecycle.validationStatus !== 'WARNINGS'
-  ) {
+  if (lifecycle.validationStatus !== 'VALID' && lifecycle.validationStatus !== 'WARNINGS') {
     return 'VALIDATION_NOT_VALID';
   }
   if (!participant || participant.status !== 'ACTIVE') {
@@ -88,23 +74,14 @@ export function TransmissionSection({
     onSend();
   }, [onSend]);
 
-  const disabledReason = computeSendGate(
-    lifecycle,
-    peppolParticipant,
-    receiverAcceptsXRechnungCii,
-  );
+  const disabledReason = computeSendGate(lifecycle, peppolParticipant, receiverAcceptsXRechnungCii);
   const isSendDisabled = disabledReason !== null || isSendPending;
 
   const transmissionStatus = lifecycle?.transmissionStatus ?? 'NOT_SENT';
 
   const sendButton = (
-    <Button
-      onClick={handleOpenConfirm}
-      disabled={isSendDisabled}
-      data-slot="einvoice-send-button">
-      {isSendPending ? (
-        <Loader2 className="me-2 h-4 w-4 animate-spin" aria-hidden="true" />
-      ) : null}
+    <Button onClick={handleOpenConfirm} disabled={isSendDisabled} data-slot="einvoice-send-button">
+      {isSendPending ? <Loader2 className="me-2 h-4 w-4 animate-spin" aria-hidden="true" /> : null}
       {t('sendCta')}
     </Button>
   );
@@ -125,23 +102,19 @@ export function TransmissionSection({
 
         {transmissionStatus === 'NOT_SENT' ? (
           <div className="flex flex-col items-center justify-center gap-3 py-6 text-center">
-            <SendHorizontal
-              className="h-10 w-10 text-muted-foreground/50"
-              aria-hidden="true"
-            />
+            <SendHorizontal className="h-10 w-10 text-muted-foreground/50" aria-hidden="true" />
             <p className="text-sm text-muted-foreground">{t('transmissionNotSentBody')}</p>
           </div>
         ) : null}
 
         <div className="flex flex-wrap items-center gap-2">
-          {disabledReason !== null ? (
+          {disabledReason === null ? (
+            sendButton
+          ) : (
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger>
-                  <span
-                    tabIndex={0}
-                    className="inline-flex"
-                    aria-describedby="einvoice-send-disabled-tooltip">
+                  <span className="inline-flex" aria-describedby="einvoice-send-disabled-tooltip">
                     {sendButton}
                   </span>
                 </TooltipTrigger>
@@ -154,8 +127,6 @@ export function TransmissionSection({
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
-          ) : (
-            sendButton
           )}
         </div>
 
@@ -192,9 +163,7 @@ export function TransmissionSection({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel onClick={handleCancel}>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirm}>
-              {t('sendCta')}
-            </AlertDialogAction>
+            <AlertDialogAction onClick={handleConfirm}>{t('sendCta')}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

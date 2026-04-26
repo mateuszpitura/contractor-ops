@@ -6,6 +6,7 @@
 // AlertDialog with destructive button last in tab order per UI-SPEC.
 
 import { useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,7 +18,6 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { trpc } from '@/trpc/init';
-import { useToast } from '@/hooks/use-toast';
 
 interface DeleteBoeRateDialogProps {
   entry: {
@@ -29,29 +29,19 @@ interface DeleteBoeRateDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export function DeleteBoeRateDialog({
-  entry,
-  open,
-  onOpenChange,
-}: DeleteBoeRateDialogProps) {
+export function DeleteBoeRateDialog({ entry, open, onOpenChange }: DeleteBoeRateDialogProps) {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
 
   const deleteMutation = trpc.adminBoeRate.delete.useMutation({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [['adminBoeRate', 'list']] });
-      toast({
-        title: 'Rate deleted',
+      toast.success('Rate deleted', {
         description: 'BoE base rate entry has been removed.',
       });
       onOpenChange(false);
     },
     onError: error => {
-      toast({
-        title: 'Error',
-        description: error.message,
-        variant: 'destructive',
-      });
+      toast.error('Error', { description: error.message });
     },
   });
 
@@ -64,9 +54,9 @@ export function DeleteBoeRateDialog({
         <AlertDialogHeader>
           <AlertDialogTitle>Delete rate entry</AlertDialogTitle>
           <AlertDialogDescription>
-            Deleting the historical rate for {effectiveDate} ({rate}%) will change
-            interest calculations for any invoices referencing this statutory period.
-            This action cannot be undone.
+            Deleting the historical rate for {effectiveDate} ({rate}%) will change interest
+            calculations for any invoices referencing this statutory period. This action cannot be
+            undone.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
@@ -75,8 +65,7 @@ export function DeleteBoeRateDialog({
           <AlertDialogAction
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             onClick={() => deleteMutation.mutate({ id: entry.id })}
-            disabled={deleteMutation.isPending}
-          >
+            disabled={deleteMutation.isPending}>
             {deleteMutation.isPending ? 'Deleting...' : 'Delete rate'}
           </AlertDialogAction>
         </AlertDialogFooter>

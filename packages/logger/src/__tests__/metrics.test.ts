@@ -127,10 +127,7 @@ describe('metrics', () => {
       metrics.distribution('no.unit', 5, { tags: { env: 'test' } });
 
       expect(mockSetAttribute).toHaveBeenCalledWith('metric.no.unit', 5);
-      expect(mockSetAttribute).not.toHaveBeenCalledWith(
-        'metric.no.unit.unit',
-        expect.anything(),
-      );
+      expect(mockSetAttribute).not.toHaveBeenCalledWith('metric.no.unit.unit', expect.anything());
     });
 
     it('does not throw when no Sentry span is active', () => {

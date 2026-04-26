@@ -223,7 +223,7 @@ export async function updateBandState(
     currentBand: nextBand,
     lastBillingShare: Number(share.toFixed(4)),
     lastScannedAt: now,
-    lastCrossedAt: next !== prev ? now : (existing?.lastCrossedAt ?? null),
+    lastCrossedAt: next === prev ? (existing?.lastCrossedAt ?? null) : now,
     lastReminderAt: emittedType ? now : (existing?.lastReminderAt ?? null),
   };
 
@@ -361,4 +361,5 @@ export async function runEconomicDependencyScan(now: Date = new Date()): Promise
 }
 
 // Re-export prisma alias for tests that need to stub it via the same path.
+// biome-ignore lint/style/useNamingConvention: test-internals export uses double-underscore prefix
 export const __deps = { prisma, prismaRaw, dispatch, resolveRbacRecipients };

@@ -529,9 +529,7 @@ describe('invoiceIntake.reject', () => {
 
   it('11c. reason.length < 3 is rejected at the Zod layer', async () => {
     const caller = makeCaller();
-    await expect(
-      caller.reject({ intakeId: INTAKE_ID, reason: 'no' }),
-    ).rejects.toThrow();
+    await expect(caller.reject({ intakeId: INTAKE_ID, reason: 'no' })).rejects.toThrow();
     expect(mockReject).not.toHaveBeenCalled();
   });
 });
@@ -547,10 +545,7 @@ describe('invoiceIntake.downloadRawFile', () => {
     const result = await caller.downloadRawFile({ intakeId: INTAKE_ID });
     expect(result.url).toMatch(/^https:\/\/r2\.test\//);
     expect(result.expiresInSeconds).toBe(300);
-    expect(mockSignExistingDownload).toHaveBeenCalledWith(
-      'einvoice-intake/org_A/abc.pdf',
-      300,
-    );
+    expect(mockSignExistingDownload).toHaveBeenCalledWith('einvoice-intake/org_A/abc.pdf', 300);
   });
 });
 

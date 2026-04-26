@@ -6,11 +6,9 @@ import { useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { SvrlIssueList } from './svrl-issue-list';
-import {
-  ValidationLayerRow,
-  type ValidationLayerStatus,
-} from './validation-layer-row';
 import type { EInvoiceLifecycleShape } from './types';
+import type { ValidationLayerStatus } from './validation-layer-row';
+import { ValidationLayerRow } from './validation-layer-row';
 
 interface ValidationSectionProps {
   lifecycle: EInvoiceLifecycleShape | null;
@@ -53,8 +51,7 @@ export function ValidationSection({
   const handleDownloadReport = useCallback(() => onDownloadReport(), [onDownloadReport]);
 
   const summary = lifecycle?.validationReportSummary ?? null;
-  const hasValidationRun =
-    lifecycle !== null && lifecycle.validationStatus !== 'NOT_VALIDATED';
+  const hasValidationRun = lifecycle !== null && lifecycle.validationStatus !== 'NOT_VALIDATED';
 
   // Build per-layer rows (layers 1/2/3) from summary when available.
   const layerRows = summary?.perLayer ?? [];
@@ -64,23 +61,7 @@ export function ValidationSection({
       <CardContent className="space-y-4 p-6" data-slot="validation-section">
         <h3 className="text-xl font-semibold">{t('validationHeading')}</h3>
 
-        {!hasValidationRun || !summary ? (
-          <div className="flex flex-col items-center justify-center gap-3 py-8 text-center">
-            <ShieldQuestion
-              className="h-10 w-10 text-muted-foreground/50"
-              aria-hidden="true"
-            />
-            <p className="text-sm text-muted-foreground">
-              {t('validationNotValidatedBody')}
-            </p>
-            <Button onClick={handleRevalidate} disabled={isRevalidatePending}>
-              {isRevalidatePending ? (
-                <Loader2 className="me-2 h-4 w-4 animate-spin" aria-hidden="true" />
-              ) : null}
-              {t('validationCta')}
-            </Button>
-          </div>
-        ) : (
+        {hasValidationRun && summary ? (
           <div className="space-y-4">
             <div className="space-y-2">
               {[1, 2, 3].map(layerNum => {
@@ -117,6 +98,17 @@ export function ValidationSection({
               </Button>
             </div>
             <p className="text-xs text-muted-foreground">{t('downloadReportHelper')}</p>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center gap-3 py-8 text-center">
+            <ShieldQuestion className="h-10 w-10 text-muted-foreground/50" aria-hidden="true" />
+            <p className="text-sm text-muted-foreground">{t('validationNotValidatedBody')}</p>
+            <Button onClick={handleRevalidate} disabled={isRevalidatePending}>
+              {isRevalidatePending ? (
+                <Loader2 className="me-2 h-4 w-4 animate-spin" aria-hidden="true" />
+              ) : null}
+              {t('validationCta')}
+            </Button>
           </div>
         )}
       </CardContent>

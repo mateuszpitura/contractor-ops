@@ -82,9 +82,7 @@ const KLEIN_INVOICE: EInvoice = {
   taxExclusiveAmount: 50000,
   taxInclusiveAmount: 50000,
   payableAmount: 50000,
-  taxBreakdown: [
-    { taxableAmountMinor: 50000, taxAmountMinor: 0, taxCategory: 'E', percent: 0 },
-  ],
+  taxBreakdown: [{ taxableAmountMinor: 50000, taxAmountMinor: 0, taxCategory: 'E', percent: 0 }],
 };
 
 describe('renderInvoiceToPdfBuffer', () => {

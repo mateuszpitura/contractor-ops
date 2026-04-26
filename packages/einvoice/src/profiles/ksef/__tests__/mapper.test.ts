@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { KsefParsedInvoice } from '../schemas.js';
 import { ksefToEInvoice, mapKsefToInvoiceFields } from '../mapper.js';
+import type { KsefParsedInvoice } from '../schemas.js';
 
 // ---------------------------------------------------------------------------
 // Test Fixture
@@ -155,18 +155,14 @@ describe('ksefToEInvoice', () => {
   });
 
   it('maps invoice type code from KSeF type', () => {
-    expect(ksefToEInvoice(createParsedInvoice({ invoiceType: 'VAT' })).invoiceTypeCode).toBe(
-      '380',
-    );
-    expect(ksefToEInvoice(createParsedInvoice({ invoiceType: 'KOR' })).invoiceTypeCode).toBe(
+    expect(ksefToEInvoice(createParsedInvoice({ invoiceType: 'VAT' })).invoiceTypeCode).toBe('380');
+    expect(ksefToEInvoice(createParsedInvoice({ invoiceType: 'KOR' })).invoiceTypeCode).toBe('381');
+    expect(ksefToEInvoice(createParsedInvoice({ invoiceType: 'CORRECTIVE' })).invoiceTypeCode).toBe(
       '381',
     );
-    expect(
-      ksefToEInvoice(createParsedInvoice({ invoiceType: 'CORRECTIVE' })).invoiceTypeCode,
-    ).toBe('381');
-    expect(
-      ksefToEInvoice(createParsedInvoice({ invoiceType: 'UNKNOWN' })).invoiceTypeCode,
-    ).toBe('380');
+    expect(ksefToEInvoice(createParsedInvoice({ invoiceType: 'UNKNOWN' })).invoiceTypeCode).toBe(
+      '380',
+    );
   });
 
   it('builds tax breakdown from lines grouped by VAT rate', () => {
@@ -215,16 +211,12 @@ describe('ksefToEInvoice', () => {
   });
 
   it('maps GOTOWKA payment method to code 10 (Cash)', () => {
-    const result = ksefToEInvoice(
-      createParsedInvoice({ payment: { method: 'GOTOWKA' } }),
-    );
+    const result = ksefToEInvoice(createParsedInvoice({ payment: { method: 'GOTOWKA' } }));
     expect(result.paymentMeans?.code).toBe('10');
   });
 
   it('maps KARTA payment method to code 48 (Bank card)', () => {
-    const result = ksefToEInvoice(
-      createParsedInvoice({ payment: { method: 'KARTA' } }),
-    );
+    const result = ksefToEInvoice(createParsedInvoice({ payment: { method: 'KARTA' } }));
     expect(result.paymentMeans?.code).toBe('48');
   });
 

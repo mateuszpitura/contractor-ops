@@ -9,6 +9,7 @@ import { z } from 'zod';
 import { router } from '../init.js';
 import { requirePermission } from '../middleware/rbac.js';
 import { tenantProcedure } from '../middleware/tenant.js';
+import { invalidateBoeRateCache } from '../services/boe-rate-cache.js';
 
 const log = createLogger({ service: 'admin-boe-rate-router' });
 
@@ -83,6 +84,7 @@ export const adminBoeRateRouter = router({
         'BoE rate entry inserted manually',
       );
 
+      invalidateBoeRateCache();
       return plain(entry);
     }),
 
@@ -126,6 +128,7 @@ export const adminBoeRateRouter = router({
         'BoE rate entry updated',
       );
 
+      invalidateBoeRateCache();
       return plain(updated);
     }),
 
@@ -157,6 +160,7 @@ export const adminBoeRateRouter = router({
         'BoE rate entry deleted',
       );
 
+      invalidateBoeRateCache();
       return plain({ deleted: true });
     }),
 });

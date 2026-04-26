@@ -104,7 +104,9 @@ test.describe('Invoice e-invoice flow', () => {
 
     // Look for e-invoice status badge
     const statusIndicator = sidePanel
-      .locator('[class*="badge"], [class*="status"], [data-testid*="einvoice"], [data-testid*="status"]')
+      .locator(
+        '[class*="badge"], [class*="status"], [data-testid*="einvoice"], [data-testid*="status"]',
+      )
       .first()
       .or(
         sidePanel
@@ -144,7 +146,12 @@ test.describe('Invoice e-invoice flow', () => {
     const closeButton = sidePanel
       .locator('button[aria-label*="close"], button[aria-label*="Close"], [data-testid="close"]')
       .first()
-      .or(sidePanel.locator('button').filter({ hasText: /close|x/i }).first());
+      .or(
+        sidePanel
+          .locator('button')
+          .filter({ hasText: /close|x/i })
+          .first(),
+      );
 
     const closeVisible = await closeButton.isVisible({ timeout: 5_000 }).catch(() => false);
 

@@ -2,11 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { Badge } from '@/components/ui/badge';
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
   Table,
   TableBody,
@@ -108,12 +104,8 @@ export function SvrlIssueList({ issues }: SvrlIssueListProps) {
                           <div className="mt-2 space-y-2 rounded-md bg-muted/30 p-3">
                             <p className="text-sm">{issue.message}</p>
                             <p>
-                              <span className="text-xs text-muted-foreground">
-                                XPath:
-                              </span>{' '}
-                              <code className="font-mono text-xs break-all">
-                                {issue.xpath}
-                              </code>
+                              <span className="text-xs text-muted-foreground">XPath:</span>{' '}
+                              <code className="font-mono text-xs break-all">{issue.xpath}</code>
                             </p>
                           </div>
                         </CollapsibleContent>

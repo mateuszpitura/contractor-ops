@@ -39,9 +39,7 @@ describe('TransmissionSection', () => {
       />,
     );
 
-    expect(
-      screen.getByText('This e-invoice has not been transmitted.'),
-    ).toBeInTheDocument();
+    expect(screen.getByText('This e-invoice has not been transmitted.')).toBeInTheDocument();
     expect(document.querySelector('[data-slot=transmission-status-pill]')?.textContent).toBe(
       'NOT_SENT',
     );

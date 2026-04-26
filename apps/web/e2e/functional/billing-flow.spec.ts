@@ -88,13 +88,13 @@ test.describe('Billing flow', () => {
       .first();
     const dialogVisible = await dialog.isVisible({ timeout: 10_000 }).catch(() => false);
 
-    if (!dialogVisible) {
+    if (dialogVisible) {
+      await expect(dialog).toBeVisible();
+    } else {
       // URL should have changed (Stripe redirect or pricing page)
       await page.waitForTimeout(3_000);
       const urlAfter = page.url();
       expect(urlAfter !== urlBefore || dialogVisible).toBeTruthy();
-    } else {
-      await expect(dialog).toBeVisible();
     }
   });
 
@@ -122,11 +122,7 @@ test.describe('Billing flow', () => {
     const historySection = page
       .locator('[data-testid="billing-history"], [data-testid="billing-invoices"]')
       .first()
-      .or(
-        page
-          .locator('table, [role="table"]')
-          .first(),
-      )
+      .or(page.locator('table, [role="table"]').first())
       .or(
         page
           .locator('h2, h3, h4')

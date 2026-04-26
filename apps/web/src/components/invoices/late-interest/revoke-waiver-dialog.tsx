@@ -28,11 +28,7 @@ interface RevokeWaiverDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export function RevokeWaiverDialog({
-  invoiceId,
-  open,
-  onOpenChange,
-}: RevokeWaiverDialogProps) {
+export function RevokeWaiverDialog({ invoiceId, open, onOpenChange }: RevokeWaiverDialogProps) {
   const t = useTranslations('Payments.lateInterest.revokeWaiver');
   const utils = trpc.useUtils();
 
@@ -46,7 +42,7 @@ export function RevokeWaiverDialog({
       onOpenChange(false);
       setReason('');
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(error.message);
     },
   });
@@ -73,7 +69,7 @@ export function RevokeWaiverDialog({
             <Textarea
               id="revoke-reason"
               value={reason}
-              onChange={(e) => setReason(e.target.value)}
+              onChange={e => setReason(e.target.value)}
               placeholder={t('reasonPlaceholder')}
               minLength={10}
               className="min-h-[80px]"
@@ -89,8 +85,7 @@ export function RevokeWaiverDialog({
           <AlertDialogAction
             onClick={handleConfirm}
             disabled={!isReasonValid || revokeMutation.isPending}
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-          >
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
             {revokeMutation.isPending ? t('confirming') : t('confirm')}
           </AlertDialogAction>
         </AlertDialogFooter>

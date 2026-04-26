@@ -24,6 +24,7 @@ export const accessControlStatement = {
   integration: ['read', 'update'],
   time: ['read', 'approve'],
   equipment: ['read', 'create', 'update', 'delete'],
+  'admin:boe-rate': ['write'],
 } as const;
 
 export const ac = createAccessControl(accessControlStatement);

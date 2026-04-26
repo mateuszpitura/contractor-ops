@@ -489,9 +489,9 @@ describe('billing.createTopUpCheckout', () => {
   it('throws NOT_FOUND when no subscription exists', async () => {
     mockGetSubscription.mockResolvedValueOnce(null);
 
-    await expect(
-      caller.billing.createTopUpCheckout({ priceId: 'price_topup_10' }),
-    ).rejects.toThrow('No active subscription found');
+    await expect(caller.billing.createTopUpCheckout({ priceId: 'price_topup_10' })).rejects.toThrow(
+      'No active subscription found',
+    );
 
     expect(mockCreateTopUpCheckoutSession).not.toHaveBeenCalled();
   });
@@ -538,9 +538,7 @@ describe('billing.syncSeatCount', () => {
       seatCount: 5,
     } as unknown);
 
-    await expect(caller.billing.syncSeatCount()).rejects.toThrow(
-      'Subscription is not active',
-    );
+    await expect(caller.billing.syncSeatCount()).rejects.toThrow('Subscription is not active');
   });
 
   it('returns updated:false when seat count matches', async () => {
@@ -674,8 +672,8 @@ describe('billing.createCheckoutSession — org not found', () => {
       .mockResolvedValueOnce({ dataRegion: 'EU' })
       .mockResolvedValueOnce(null);
 
-    await expect(
-      caller.billing.createCheckoutSession({ priceId: PRICE_ID }),
-    ).rejects.toThrow('Organization not found');
+    await expect(caller.billing.createCheckoutSession({ priceId: PRICE_ID })).rejects.toThrow(
+      'Organization not found',
+    );
   });
 });

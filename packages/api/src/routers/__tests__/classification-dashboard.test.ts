@@ -22,154 +22,232 @@ const ORG_A = 'clorgaaaaaaaaaaaaaaaaaaaaaa';
 const ORG_B = 'clorgbbbbbbbbbbbbbbbbbbbbbb';
 const USER_ID = 'cluseraaaaaaaaaaaaaaaaaaaaa';
 
-const {
-  mockPrisma,
-  mockHasPermission,
-  fixtures,
-  mockR2PutObjectAndSignDownload,
-} = vi.hoisted(() => {
-  type Assignment = {
-    id: string;
-    organizationId: string;
-    status: 'ACTIVE' | 'INACTIVE';
-    contractorId: string;
-    contractor: { id: string; name: string; countryCode: 'GB' | 'DE' };
-  };
-  type Assessment = {
-    id: string;
-    organizationId: string;
-    contractorAssignmentId: string;
-    status: 'draft' | 'completed';
-    countryCode: 'GB' | 'DE';
-    outcome: Record<string, unknown> | null;
-    completedAt: Date | null;
-  };
-  type Alert = {
-    id: string;
-    organizationId: string;
-    contractorAssignmentId: string;
-    currentBand: 'safe' | 'warning' | 'critical';
-    lastBillingShare: number;
-    lastScannedAt: Date;
-    contractorAssignment?: { contractor?: { countryCode: 'GB' | 'DE' } };
-  };
-  type Trigger = {
-    id: string;
-    organizationId: string;
-    contractorAssignmentId: string;
-    status: 'OPEN' | 'ACKNOWLEDGED' | 'RESOLVED' | 'DISMISSED';
-    contractorAssignment?: {
-      contractor?: { name: string; countryCode: 'GB' | 'DE' } | null;
-    } | null;
-  };
-  type DrvRecord = {
-    id: string;
-    organizationId: string;
-    contractorAssignmentId: string;
-    outcome: 'PENDING' | 'SELBSTANDIG' | 'ABHANGIG' | 'WITHDRAWN';
-    validTo: Date | null;
-    filedAt: Date;
-    contractorAssignment?: { contractor?: { countryCode: 'GB' | 'DE' } };
-  };
+const { mockPrisma, mockHasPermission, fixtures, mockR2PutObjectAndSignDownload } = vi.hoisted(
+  () => {
+    type Assignment = {
+      id: string;
+      organizationId: string;
+      status: 'ACTIVE' | 'INACTIVE';
+      contractorId: string;
+      contractor: { id: string; name: string; countryCode: 'GB' | 'DE' };
+    };
+    type Assessment = {
+      id: string;
+      organizationId: string;
+      contractorAssignmentId: string;
+      status: 'draft' | 'completed';
+      countryCode: 'GB' | 'DE';
+      outcome: Record<string, unknown> | null;
+      completedAt: Date | null;
+    };
+    type Alert = {
+      id: string;
+      organizationId: string;
+      contractorAssignmentId: string;
+      currentBand: 'safe' | 'warning' | 'critical';
+      lastBillingShare: number;
+      lastScannedAt: Date;
+      contractorAssignment?: { contractor?: { countryCode: 'GB' | 'DE' } };
+    };
+    type Trigger = {
+      id: string;
+      organizationId: string;
+      contractorAssignmentId: string;
+      status: 'OPEN' | 'ACKNOWLEDGED' | 'RESOLVED' | 'DISMISSED';
+      contractorAssignment?: {
+        contractor?: { name: string; countryCode: 'GB' | 'DE' } | null;
+      } | null;
+    };
+    type DrvRecord = {
+      id: string;
+      organizationId: string;
+      contractorAssignmentId: string;
+      outcome: 'PENDING' | 'SELBSTANDIG' | 'ABHANGIG' | 'WITHDRAWN';
+      validTo: Date | null;
+      filedAt: Date;
+      contractorAssignment?: { contractor?: { countryCode: 'GB' | 'DE' } };
+    };
 
-  const fixtures = {
-    assignments: [] as Assignment[],
-    assessments: [] as Assessment[],
-    alerts: [] as Alert[],
-    triggers: [] as Trigger[],
-    drv: [] as DrvRecord[],
-    cronScanState: null as { name: string; lastScanCompletedAt: Date } | null,
-  };
+    const fixtures = {
+      assignments: [] as Assignment[],
+      assessments: [] as Assessment[],
+      alerts: [] as Alert[],
+      triggers: [] as Trigger[],
+      drv: [] as DrvRecord[],
+      cronScanState: null as { name: string; lastScanCompletedAt: Date } | null,
+    };
 
-  const matchWhere = (row: Record<string, unknown>, where: Record<string, unknown>): boolean => {
-    for (const [k, v] of Object.entries(where)) {
-      const rowVal = row[k];
-      if (v && typeof v === 'object' && !Array.isArray(v)) {
-        const clause = v as Record<string, unknown>;
-        if ('in' in clause) {
-          if (!(clause.in as unknown[]).includes(rowVal)) return false;
-          continue;
+    const matchWhere = (row: Record<string, unknown>, where: Record<string, unknown>): boolean => {
+      for (const [k, v] of Object.entries(where)) {
+        const rowVal = row[k];
+        if (v && typeof v === 'object' && !Array.isArray(v)) {
+          const clause = v as Record<string, unknown>;
+          if ('in' in clause) {
+            if (!(clause.in as unknown[]).includes(rowVal)) return false;
+            continue;
+          }
+          if ('lt' in clause && rowVal instanceof Date) {
+            if (!(rowVal < (clause.lt as Date))) return false;
+            continue;
+          }
+          if ('gte' in clause && 'lte' in clause && rowVal instanceof Date) {
+            if (rowVal < (clause.gte as Date)) return false;
+            if (rowVal > (clause.lte as Date)) return false;
+            continue;
+          }
+          if ('gte' in clause && rowVal instanceof Date) {
+            if (rowVal < (clause.gte as Date)) return false;
+            continue;
+          }
+          // nested object (e.g. contractor: { countryCode: 'GB' })
+          if (rowVal && typeof rowVal === 'object') {
+            if (!matchWhere(rowVal as Record<string, unknown>, clause)) return false;
+            continue;
+          }
+          return false;
         }
-        if ('lt' in clause && rowVal instanceof Date) {
-          if (!(rowVal < (clause.lt as Date))) return false;
-          continue;
-        }
-        if ('gte' in clause && 'lte' in clause && rowVal instanceof Date) {
-          if (rowVal < (clause.gte as Date)) return false;
-          if (rowVal > (clause.lte as Date)) return false;
-          continue;
-        }
-        if ('gte' in clause && rowVal instanceof Date) {
-          if (rowVal < (clause.gte as Date)) return false;
-          continue;
-        }
-        // nested object (e.g. contractor: { countryCode: 'GB' })
-        if (rowVal && typeof rowVal === 'object') {
-          if (!matchWhere(rowVal as Record<string, unknown>, clause)) return false;
-          continue;
-        }
-        return false;
+        if (rowVal !== v) return false;
       }
-      if (rowVal !== v) return false;
-    }
-    return true;
-  };
+      return true;
+    };
 
-  const mockHasPermission = vi.fn().mockResolvedValue({ success: true });
+    const mockHasPermission = vi.fn().mockResolvedValue({ success: true });
 
-  const mockR2PutObjectAndSignDownload = vi.fn(async (params: {
-    key: string;
-    body: Uint8Array;
-    contentType: string;
-    downloadFilename?: string;
-    ttlSeconds?: number;
-  }) => ({
-    signedUrl: `https://r2.test/${params.key}?sig=fake`,
-    expiresInSeconds: params.ttlSeconds ?? 300,
-    _body: params.body,
-    _contentType: params.contentType,
-    _downloadFilename: params.downloadFilename,
-  }));
-
-  const mockPrisma = {
-    contractor: {
-      count: vi.fn(async (args?: { where?: Record<string, unknown> }) => {
-        const seen = new Set<string>();
-        for (const a of fixtures.assignments) {
-          if (args?.where && !matchWhere(a.contractor, args.where)) continue;
-          seen.add(a.contractorId);
-        }
-        // For globalHeader, count ALL contractors (not just active-assignment ones)
-        if (!args?.where) return new Set(fixtures.assignments.map(a => a.contractorId)).size;
-        return seen.size;
+    const mockR2PutObjectAndSignDownload = vi.fn(
+      async (params: {
+        key: string;
+        body: Uint8Array;
+        contentType: string;
+        downloadFilename?: string;
+        ttlSeconds?: number;
+      }) => ({
+        signedUrl: `https://r2.test/${params.key}?sig=fake`,
+        expiresInSeconds: params.ttlSeconds ?? 300,
+        _body: params.body,
+        _contentType: params.contentType,
+        _downloadFilename: params.downloadFilename,
       }),
-    },
-    contractorAssignment: {
-      count: vi.fn(async (args?: { where?: Record<string, unknown> }) => {
-        const where = args?.where ?? {};
-        return fixtures.assignments.filter(a => matchWhere(a, where)).length;
-      }),
-      findMany: vi.fn(
-        async (args: { where?: Record<string, unknown>; include?: unknown; take?: number }) => {
+    );
+
+    const mockPrisma = {
+      contractor: {
+        count: vi.fn(async (args?: { where?: Record<string, unknown> }) => {
+          const seen = new Set<string>();
+          for (const a of fixtures.assignments) {
+            if (args?.where && !matchWhere(a.contractor, args.where)) continue;
+            seen.add(a.contractorId);
+          }
+          // For globalHeader, count ALL contractors (not just active-assignment ones)
+          if (!args?.where) return new Set(fixtures.assignments.map(a => a.contractorId)).size;
+          return seen.size;
+        }),
+      },
+      contractorAssignment: {
+        count: vi.fn(async (args?: { where?: Record<string, unknown> }) => {
           const where = args?.where ?? {};
-          const rows = fixtures.assignments.filter(a => matchWhere(a, where));
-          return rows.slice(0, args.take ?? rows.length);
-        },
-      ),
-    },
-    classificationAssessment: {
-      findMany: vi.fn(
-        async (args: {
-          where?: Record<string, unknown>;
-          orderBy?: unknown;
-          select?: Record<string, boolean>;
-          distinct?: string[];
-          include?: unknown;
-          take?: number;
-        }) => {
+          return fixtures.assignments.filter(a => matchWhere(a, where)).length;
+        }),
+        findMany: vi.fn(
+          async (args: { where?: Record<string, unknown>; include?: unknown; take?: number }) => {
+            const where = args?.where ?? {};
+            const rows = fixtures.assignments.filter(a => matchWhere(a, where));
+            return rows.slice(0, args.take ?? rows.length);
+          },
+        ),
+      },
+      classificationAssessment: {
+        findMany: vi.fn(
+          async (args: {
+            where?: Record<string, unknown>;
+            orderBy?: unknown;
+            select?: Record<string, boolean>;
+            distinct?: string[];
+            include?: unknown;
+            take?: number;
+          }) => {
+            const where = args?.where ?? {};
+            let rows = fixtures.assessments.filter(row => {
+              // flatten contractorAssignmentId:{ in: [...] }
+              for (const [k, v] of Object.entries(where)) {
+                if (
+                  k === 'contractorAssignmentId' &&
+                  typeof v === 'object' &&
+                  v !== null &&
+                  'in' in v
+                ) {
+                  if (!(v as { in: string[] }).in.includes(row.contractorAssignmentId))
+                    return false;
+                  continue;
+                }
+                if (k === 'completedAt' && typeof v === 'object' && v !== null) {
+                  const clause = v as { lt?: Date; gte?: Date; lte?: Date };
+                  if (clause.lt && (!row.completedAt || row.completedAt >= clause.lt)) return false;
+                  if (clause.gte && (!row.completedAt || row.completedAt < clause.gte))
+                    return false;
+                  if (clause.lte && (!row.completedAt || row.completedAt > clause.lte))
+                    return false;
+                  continue;
+                }
+                if (row[k as keyof typeof row] !== v) return false;
+              }
+              return true;
+            });
+            if (args.orderBy && typeof args.orderBy === 'object') {
+              const orderBy = args.orderBy as { completedAt?: 'asc' | 'desc' };
+              if (orderBy.completedAt === 'desc') {
+                rows = [...rows].sort(
+                  (a, b) => (b.completedAt?.getTime() ?? 0) - (a.completedAt?.getTime() ?? 0),
+                );
+              } else if (orderBy.completedAt === 'asc') {
+                rows = [...rows].sort(
+                  (a, b) => (a.completedAt?.getTime() ?? 0) - (b.completedAt?.getTime() ?? 0),
+                );
+              }
+            }
+            if (args.distinct?.includes('contractorAssignmentId')) {
+              const seen = new Set<string>();
+              rows = rows.filter(r => {
+                if (seen.has(r.contractorAssignmentId)) return false;
+                seen.add(r.contractorAssignmentId);
+                return true;
+              });
+            }
+            if (args.include) {
+              // hydrate contractorAssignment + contractor
+              rows = rows.map(r => {
+                const a = fixtures.assignments.find(x => x.id === r.contractorAssignmentId);
+                return {
+                  ...r,
+                  contractorAssignment: a
+                    ? {
+                        ...a,
+                        contractor: {
+                          name: a.contractor.name,
+                          countryCode: a.contractor.countryCode,
+                        },
+                      }
+                    : null,
+                } as typeof r;
+              });
+            }
+            return rows.slice(0, args.take ?? rows.length);
+          },
+        ),
+      },
+      economicDependencyAlertState: {
+        count: vi.fn(async (args: { where?: Record<string, unknown> }) => {
           const where = args?.where ?? {};
-          let rows = fixtures.assessments.filter(row => {
-            // flatten contractorAssignmentId:{ in: [...] }
+          return fixtures.alerts.filter(a => matchWhere(a, where)).length;
+        }),
+        findFirst: vi.fn(async () => {
+          const sorted = [...fixtures.alerts].sort(
+            (a, b) => b.lastScannedAt.getTime() - a.lastScannedAt.getTime(),
+          );
+          return sorted[0] ? { lastScannedAt: sorted[0].lastScannedAt } : null;
+        }),
+        findMany: vi.fn(async (args: { where?: Record<string, unknown> }) => {
+          const where = args?.where ?? {};
+          return fixtures.alerts.filter(a => {
             for (const [k, v] of Object.entries(where)) {
               if (
                 k === 'contractorAssignmentId' &&
@@ -177,142 +255,84 @@ const {
                 v !== null &&
                 'in' in v
               ) {
-                if (!((v as { in: string[] }).in.includes(row.contractorAssignmentId))) return false;
+                if (!(v as { in: string[] }).in.includes(a.contractorAssignmentId)) return false;
                 continue;
               }
-              if (k === 'completedAt' && typeof v === 'object' && v !== null) {
-                const clause = v as { lt?: Date; gte?: Date; lte?: Date };
-                if (clause.lt && (!row.completedAt || row.completedAt >= clause.lt)) return false;
-                if (clause.gte && (!row.completedAt || row.completedAt < clause.gte)) return false;
-                if (clause.lte && (!row.completedAt || row.completedAt > clause.lte)) return false;
-                continue;
-              }
-              if (row[k as keyof typeof row] !== v) return false;
+              if ((a as unknown as Record<string, unknown>)[k] !== v) return false;
             }
             return true;
           });
-          if (args.orderBy && typeof args.orderBy === 'object') {
-            const orderBy = args.orderBy as { completedAt?: 'asc' | 'desc' };
-            if (orderBy.completedAt === 'desc') {
-              rows = [...rows].sort(
-                (a, b) => (b.completedAt?.getTime() ?? 0) - (a.completedAt?.getTime() ?? 0),
-              );
-            } else if (orderBy.completedAt === 'asc') {
-              rows = [...rows].sort(
-                (a, b) => (a.completedAt?.getTime() ?? 0) - (b.completedAt?.getTime() ?? 0),
-              );
+        }),
+      },
+      reassessmentTrigger: {
+        count: vi.fn(async (args: { where?: Record<string, unknown> }) => {
+          const where = args?.where ?? {};
+          return fixtures.triggers.filter(t => matchWhere(t, where)).length;
+        }),
+        findMany: vi.fn(
+          async (args: { where?: Record<string, unknown>; include?: unknown; take?: number }) => {
+            const where = args?.where ?? {};
+            let rows = fixtures.triggers.filter(t => matchWhere(t, where));
+            if (args.include) {
+              rows = rows.map(t => {
+                const a = fixtures.assignments.find(x => x.id === t.contractorAssignmentId);
+                return {
+                  ...t,
+                  contractorAssignment: a
+                    ? {
+                        ...a,
+                        contractor: {
+                          name: a.contractor.name,
+                          countryCode: a.contractor.countryCode,
+                        },
+                      }
+                    : null,
+                };
+              });
             }
-          }
-          if (args.distinct?.includes('contractorAssignmentId')) {
-            const seen = new Set<string>();
-            rows = rows.filter(r => {
-              if (seen.has(r.contractorAssignmentId)) return false;
-              seen.add(r.contractorAssignmentId);
-              return true;
-            });
-          }
-          if (args.include) {
-            // hydrate contractorAssignment + contractor
-            rows = rows.map(r => {
-              const a = fixtures.assignments.find(x => x.id === r.contractorAssignmentId);
-              return {
-                ...r,
-                contractorAssignment: a
-                  ? {
-                      ...a,
-                      contractor: { name: a.contractor.name, countryCode: a.contractor.countryCode },
-                    }
-                  : null,
-              } as typeof r;
-            });
-          }
-          return rows.slice(0, args.take ?? rows.length);
-        },
-      ),
-    },
-    economicDependencyAlertState: {
-      count: vi.fn(async (args: { where?: Record<string, unknown> }) => {
-        const where = args?.where ?? {};
-        return fixtures.alerts.filter(a => matchWhere(a, where)).length;
-      }),
-      findFirst: vi.fn(async () => {
-        const sorted = [...fixtures.alerts].sort(
-          (a, b) => b.lastScannedAt.getTime() - a.lastScannedAt.getTime(),
-        );
-        return sorted[0] ? { lastScannedAt: sorted[0].lastScannedAt } : null;
-      }),
-      findMany: vi.fn(async (args: { where?: Record<string, unknown> }) => {
-        const where = args?.where ?? {};
-        return fixtures.alerts.filter(a => {
-          for (const [k, v] of Object.entries(where)) {
-            if (k === 'contractorAssignmentId' && typeof v === 'object' && v !== null && 'in' in v) {
-              if (!(v as { in: string[] }).in.includes(a.contractorAssignmentId)) return false;
-              continue;
+            return rows.slice(0, args.take ?? rows.length);
+          },
+        ),
+      },
+      statusfeststellungsverfahren: {
+        count: vi.fn(async (args: { where?: Record<string, unknown> }) => {
+          const where = args?.where ?? {};
+          return fixtures.drv.filter(d => matchWhere(d, where)).length;
+        }),
+        findMany: vi.fn(async (args: { where?: Record<string, unknown>; take?: number }) => {
+          const where = args?.where ?? {};
+          const rows = fixtures.drv.filter(d => {
+            for (const [k, v] of Object.entries(where)) {
+              if (
+                k === 'contractorAssignmentId' &&
+                typeof v === 'object' &&
+                v !== null &&
+                'in' in v
+              ) {
+                if (!(v as { in: string[] }).in.includes(d.contractorAssignmentId)) return false;
+                continue;
+              }
+              if ((d as unknown as Record<string, unknown>)[k] !== v) return false;
             }
-            if ((a as unknown as Record<string, unknown>)[k] !== v) return false;
-          }
-          return true;
-        });
-      }),
-    },
-    reassessmentTrigger: {
-      count: vi.fn(async (args: { where?: Record<string, unknown> }) => {
-        const where = args?.where ?? {};
-        return fixtures.triggers.filter(t => matchWhere(t, where)).length;
-      }),
-      findMany: vi.fn(async (args: { where?: Record<string, unknown>; include?: unknown; take?: number }) => {
-        const where = args?.where ?? {};
-        let rows = fixtures.triggers.filter(t => matchWhere(t, where));
-        if (args.include) {
-          rows = rows.map(t => {
-            const a = fixtures.assignments.find(x => x.id === t.contractorAssignmentId);
-            return {
-              ...t,
-              contractorAssignment: a
-                ? {
-                    ...a,
-                    contractor: { name: a.contractor.name, countryCode: a.contractor.countryCode },
-                  }
-                : null,
-            };
+            return true;
           });
-        }
-        return rows.slice(0, args.take ?? rows.length);
-      }),
-    },
-    statusfeststellungsverfahren: {
-      count: vi.fn(async (args: { where?: Record<string, unknown> }) => {
-        const where = args?.where ?? {};
-        return fixtures.drv.filter(d => matchWhere(d, where)).length;
-      }),
-      findMany: vi.fn(async (args: { where?: Record<string, unknown>; take?: number }) => {
-        const where = args?.where ?? {};
-        const rows = fixtures.drv.filter(d => {
-          for (const [k, v] of Object.entries(where)) {
-            if (k === 'contractorAssignmentId' && typeof v === 'object' && v !== null && 'in' in v) {
-              if (!(v as { in: string[] }).in.includes(d.contractorAssignmentId)) return false;
-              continue;
-            }
-            if ((d as unknown as Record<string, unknown>)[k] !== v) return false;
-          }
-          return true;
-        });
-        return rows.slice(0, args.take ?? rows.length);
-      }),
-    },
-    cronScanState: {
-      findUnique: vi.fn(async () =>
-        fixtures.cronScanState
-          ? { lastScanCompletedAt: fixtures.cronScanState.lastScanCompletedAt }
-          : null,
-      ),
-    },
-    organization: {
-      findUnique: vi.fn(async () => ({ dataRegion: 'EU' })),
-    },
-  };
-  return { mockPrisma, mockHasPermission, fixtures, mockR2PutObjectAndSignDownload };
-});
+          return rows.slice(0, args.take ?? rows.length);
+        }),
+      },
+      cronScanState: {
+        findUnique: vi.fn(async () =>
+          fixtures.cronScanState
+            ? { lastScanCompletedAt: fixtures.cronScanState.lastScanCompletedAt }
+            : null,
+        ),
+      },
+      organization: {
+        findUnique: vi.fn(async () => ({ dataRegion: 'EU' })),
+      },
+    };
+    return { mockPrisma, mockHasPermission, fixtures, mockR2PutObjectAndSignDownload };
+  },
+);
 
 vi.mock('@contractor-ops/auth', () => ({
   auth: {
@@ -458,7 +478,14 @@ function seedDe() {
       contractor: { id: `de-cont-${i}`, name: `DE Contractor ${i}`, countryCode: 'DE' },
     });
   }
-  const verdicts: Array<'green' | 'amber' | 'red'> = ['green', 'green', 'amber', 'amber', 'amber', 'red'];
+  const verdicts: Array<'green' | 'amber' | 'red'> = [
+    'green',
+    'green',
+    'amber',
+    'amber',
+    'amber',
+    'red',
+  ];
   verdicts.forEach((v, i) => {
     fixtures.assessments.push({
       id: `de-as-${i}`,
@@ -760,7 +787,11 @@ describe('classificationDashboard.exportMarketCsv (60-04-05, 60-04-06)', () => {
         organizationId: ORG_A,
         status: 'ACTIVE',
         contractorId: 'c-evil-2',
-        contractor: { id: 'c-evil-2', name: `=HYPERLINK("http://evil","click")`, countryCode: 'GB' },
+        contractor: {
+          id: 'c-evil-2',
+          name: `=HYPERLINK("http://evil","click")`,
+          countryCode: 'GB',
+        },
       },
     ];
     const caller = makeCaller(ORG_A);

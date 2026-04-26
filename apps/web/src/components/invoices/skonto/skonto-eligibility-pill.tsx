@@ -57,10 +57,7 @@ export interface SkontoEligibilityPillProps {
   className?: string;
 }
 
-export function SkontoEligibilityPill({
-  state,
-  className,
-}: SkontoEligibilityPillProps) {
+export function SkontoEligibilityPill({ state, className }: SkontoEligibilityPillProps) {
   const t = useTranslations('Payments.skonto.eligibility');
   const presentation = STATE_PRESENTATION[state];
   const Icon = presentation.icon;
@@ -70,8 +67,7 @@ export function SkontoEligibilityPill({
     <Badge
       variant="secondary"
       className={cn('gap-1', presentation.containerClass, className)}
-      aria-label={label}
-    >
+      aria-label={label}>
       <Icon className="h-3 w-3" aria-hidden="true" />
       <span>{label}</span>
     </Badge>

@@ -370,9 +370,7 @@ export async function detectDrvClearanceExpiries(): Promise<number> {
       );
       if (recipientUserIds.length === 0) continue;
 
-      const validToIso = clearance.validTo
-        ? clearance.validTo.toISOString().slice(0, 10)
-        : '';
+      const validToIso = clearance.validTo ? clearance.validTo.toISOString().slice(0, 10) : '';
 
       // T-60-10 — never log drvReference verbatim. The notification title/body
       // text is delivered to recipients who already have contractor:read,

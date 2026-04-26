@@ -30,7 +30,10 @@ export {
  */
 export const ZugferdPdfUploadSchema = z.object({
   base64: z.string().min(1),
-  filename: z.string().regex(/\.pdf$/i).max(255),
+  filename: z
+    .string()
+    .regex(/\.pdf$/i)
+    .max(255),
 });
 
 export type ZugferdPdfUpload = z.infer<typeof ZugferdPdfUploadSchema>;

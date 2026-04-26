@@ -17,9 +17,7 @@ import { AFRelationship, PDFDocument } from 'pdf-lib';
 import { beforeAll, describe, expect, it } from 'vitest';
 
 import type { EInvoice } from '../../../types/invoice.js';
-import {
-  XRECHNUNG_DE_PROFILE_ID,
-} from '../../xrechnung-de/constants.js';
+import { XRECHNUNG_DE_PROFILE_ID } from '../../xrechnung-de/constants.js';
 import { generateXRechnungCii } from '../../xrechnung-de/generator.js';
 import type { ZugferdParserError } from '../parser.js';
 import { parseZugferdPdf } from '../parser.js';

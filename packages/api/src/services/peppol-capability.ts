@@ -27,10 +27,7 @@
 //   `PEPPOL_PARTICIPANT_NOT_ACTIVE` and `PARTICIPANT_NOT_REACHABLE` so the
 //   i18n surface Plan 07 owns maps 1:1 without parsing message text.
 
-import type {
-  ASPAdapter,
-  ParticipantCapabilityResult,
-} from '@contractor-ops/einvoice';
+import type { ASPAdapter, ParticipantCapabilityResult } from '@contractor-ops/einvoice';
 import { STORECOVE_CII_XRECHNUNG_DOC_TYPE_ID } from '@contractor-ops/einvoice';
 
 // ---------------------------------------------------------------------------
@@ -274,13 +271,7 @@ export async function assertReceiverAcceptsXRechnung(
   schemeId: string,
   value: string,
 ): Promise<void> {
-  const result = await getCapabilitiesWithCache(
-    db,
-    adapter,
-    organizationId,
-    schemeId,
-    value,
-  );
+  const result = await getCapabilitiesWithCache(db, adapter, organizationId, schemeId, value);
   if (!supportsXRechnungCii(result.documentTypes)) {
     throw new Error(PARTICIPANT_NOT_REACHABLE);
   }

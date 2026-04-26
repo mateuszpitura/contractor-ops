@@ -11,13 +11,13 @@ import { describe, expect, it, vi } from 'vitest';
 
 import {
   FUZZY_MAX_DISTANCE,
+  levenshtein,
+  normaliseContractorName,
+  rankIntakeCandidates,
   SCORE_EXACT_NAME,
   SCORE_FUZZY_BASE,
   SCORE_LEITWEG_ID,
   SCORE_VAT_ID,
-  levenshtein,
-  normaliseContractorName,
-  rankIntakeCandidates,
 } from '../invoice-intake-matcher.js';
 
 interface FakeContractor {
@@ -35,10 +35,7 @@ interface FakeLeitwegId {
   contractorId: string | null;
 }
 
-function makeDb(opts: {
-  contractors?: FakeContractor[];
-  leitwegIds?: FakeLeitwegId[];
-}) {
+function makeDb(opts: { contractors?: FakeContractor[]; leitwegIds?: FakeLeitwegId[] }) {
   const contractors = opts.contractors ?? [];
   const leitwegIds = opts.leitwegIds ?? [];
 
@@ -69,20 +66,18 @@ function makeDb(opts: {
   };
 
   const leitwegId = {
-    findMany: vi.fn(
-      async (args: { where: { organizationId: string; value: string } }) => {
-        const { organizationId, value } = args.where;
-        return leitwegIds
-          .filter(l => l.organizationId === organizationId && l.value === value)
-          .map(l => ({
-            contractorId: l.contractorId,
-            contractor:
-              l.contractorId != null
-                ? (contractors.find(c => c.id === l.contractorId) ?? null)
-                : null,
-          }));
-      },
-    ),
+    findMany: vi.fn(async (args: { where: { organizationId: string; value: string } }) => {
+      const { organizationId, value } = args.where;
+      return leitwegIds
+        .filter(l => l.organizationId === organizationId && l.value === value)
+        .map(l => ({
+          contractorId: l.contractorId,
+          contractor:
+            l.contractorId == null
+              ? null
+              : (contractors.find(c => c.id === l.contractorId) ?? null),
+        }));
+    }),
   };
 
   return { contractor, leitwegId };
@@ -143,7 +138,7 @@ describe('rankIntakeCandidates', () => {
     });
     expect(ranked).toHaveLength(2);
     const [first, second] = ranked;
-    if (!first || !second) throw new Error('expected two candidates');
+    if (!(first && second)) throw new Error('expected two candidates');
     expect(first.contractorId).toBe('c_a');
     expect(first.score).toBe(SCORE_VAT_ID);
     expect(second.contractorId).toBe('c_b');

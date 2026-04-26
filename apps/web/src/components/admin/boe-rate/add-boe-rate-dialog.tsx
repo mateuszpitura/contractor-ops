@@ -6,6 +6,7 @@
 
 import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -19,7 +20,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { trpc } from '@/trpc/init';
-import { useToast } from '@/hooks/use-toast';
 
 interface AddBoeRateDialogProps {
   open: boolean;
@@ -32,24 +32,18 @@ export function AddBoeRateDialog({ open, onOpenChange }: AddBoeRateDialogProps) 
   const [notes, setNotes] = useState('');
 
   const queryClient = useQueryClient();
-  const { toast } = useToast();
 
   const insertMutation = trpc.adminBoeRate.insert.useMutation({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [['adminBoeRate', 'list']] });
-      toast({
-        title: 'Rate added',
+      toast.success('Rate added', {
         description: 'BoE base rate entry has been saved.',
       });
       resetForm();
       onOpenChange(false);
     },
     onError: error => {
-      toast({
-        title: 'Error',
-        description: error.message,
-        variant: 'destructive',
-      });
+      toast.error('Error', { description: error.message });
     },
   });
 
@@ -64,19 +58,15 @@ export function AddBoeRateDialog({ open, onOpenChange }: AddBoeRateDialogProps) 
 
     const rate = parseFloat(ratePercent);
     if (isNaN(rate) || rate < 0 || rate > 99.99) {
-      toast({
-        title: 'Validation error',
+      toast.error('Validation error', {
         description: 'Rate must be between 0 and 99.99.',
-        variant: 'destructive',
       });
       return;
     }
 
     if (!effectiveFrom) {
-      toast({
-        title: 'Validation error',
+      toast.error('Validation error', {
         description: 'Effective date is required.',
-        variant: 'destructive',
       });
       return;
     }
@@ -133,11 +123,7 @@ export function AddBoeRateDialog({ open, onOpenChange }: AddBoeRateDialogProps) 
             />
           </div>
           <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-            >
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
             <Button type="submit" disabled={insertMutation.isPending}>

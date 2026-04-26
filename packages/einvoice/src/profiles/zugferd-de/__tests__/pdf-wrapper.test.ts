@@ -11,24 +11,20 @@
 import { createHash } from 'node:crypto';
 import fs from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
-
+import type { PDFHexString, PDFString } from 'pdf-lib';
 import {
-  PDFDocument,
+  decodePDFRawStream,
   PDFDict,
-  PDFHexString,
+  PDFDocument,
   PDFName,
   PDFRawStream,
   PDFStream,
-  PDFString,
-  decodePDFRawStream,
 } from 'pdf-lib';
 import { beforeAll, describe, expect, it } from 'vitest';
 
 import { wrapToPdfA3 } from '../pdf-wrapper.js';
 
-const ICC_PATH = fileURLToPath(
-  new URL('../assets/sRGB2014.icc', import.meta.url),
-);
+const ICC_PATH = fileURLToPath(new URL('../assets/sRGB2014.icc', import.meta.url));
 
 const TRIVIAL_CII = `<?xml version="1.0" encoding="UTF-8"?>
 <rsm:CrossIndustryInvoice xmlns:rsm="urn:un:unece:uncefact:data:standard:CrossIndustryInvoice:100">
@@ -68,9 +64,7 @@ describe('wrapToPdfA3', () => {
   });
 
   it('wrapped output reloads via PDFDocument.load without throwing', async () => {
-    await expect(
-      PDFDocument.load(wrapped, { updateMetadata: false }),
-    ).resolves.toBeDefined();
+    await expect(PDFDocument.load(wrapped, { updateMetadata: false })).resolves.toBeDefined();
   });
 
   it('catalog /Metadata stream bytes contain pdfaid:part>3', () => {
@@ -119,7 +113,10 @@ describe('wrapToPdfA3', () => {
     const items = arr.asArray ? arr.asArray() : [];
     const first = wrappedDoc.context.lookup(items[0] as never, PDFDict);
     const profileRef = first.get(PDFName.of('DestOutputProfile'));
-    const profileStream = wrappedDoc.context.lookup(profileRef!, PDFStream) as unknown as PDFRawStream;
+    const profileStream = wrappedDoc.context.lookup(
+      profileRef!,
+      PDFStream,
+    ) as unknown as PDFRawStream;
     const profileBytes = decodePDFRawStream(profileStream).decode();
     expect(sha256(profileBytes)).toBe(iccSha);
   });

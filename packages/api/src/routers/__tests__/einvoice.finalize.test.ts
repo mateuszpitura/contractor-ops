@@ -273,9 +273,7 @@ describe('einvoice.finalize', () => {
   });
 
   it('NOT_FOUND when the service throws EInvoiceInvoiceNotFoundError (missing / cross-tenant invoice)', async () => {
-    mockFinalizeEInvoice.mockRejectedValueOnce(
-      new EInvoiceInvoiceNotFoundError(INVOICE_ID),
-    );
+    mockFinalizeEInvoice.mockRejectedValueOnce(new EInvoiceInvoiceNotFoundError(INVOICE_ID));
 
     const promise = caller.einvoice.finalize({
       invoiceId: INVOICE_ID,
@@ -290,9 +288,7 @@ describe('einvoice.finalize', () => {
   });
 
   it('CONFLICT when finalize service raises EInvoiceAlreadyFinalizedError (force=false + existing row)', async () => {
-    mockFinalizeEInvoice.mockRejectedValueOnce(
-      new EInvoiceAlreadyFinalizedError(INVOICE_ID),
-    );
+    mockFinalizeEInvoice.mockRejectedValueOnce(new EInvoiceAlreadyFinalizedError(INVOICE_ID));
 
     const promise = caller.einvoice.finalize({
       invoiceId: INVOICE_ID,
@@ -308,8 +304,8 @@ describe('einvoice.finalize', () => {
   it('propagates unknown errors (not translated to NOT_FOUND / CONFLICT)', async () => {
     mockFinalizeEInvoice.mockRejectedValueOnce(new Error('boom'));
 
-    await expect(
-      caller.einvoice.finalize({ invoiceId: INVOICE_ID, force: false }),
-    ).rejects.toThrow('boom');
+    await expect(caller.einvoice.finalize({ invoiceId: INVOICE_ID, force: false })).rejects.toThrow(
+      'boom',
+    );
   });
 });

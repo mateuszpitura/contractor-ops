@@ -1,8 +1,6 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import type { GovApiAuditLogger, GovApiRateLimiter } from '@contractor-ops/gov-api';
-import {
-  PINT_AE_DOCUMENT_TYPE_ID,
-} from '../../profiles/peppol-ae/constants.js';
+import { PINT_AE_DOCUMENT_TYPE_ID } from '../../profiles/peppol-ae/constants.js';
 import { STORECOVE_CII_XRECHNUNG_DOC_TYPE_ID } from '../../profiles/xrechnung-de/constants.js';
 import type {
   ASPAdapter,

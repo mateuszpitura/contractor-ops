@@ -94,4 +94,5 @@ export async function resolveRbacRecipients(
 
 // Exported for testing — lets the test snapshot the mapping to catch drift
 // against packages/auth/src/roles.ts.
+// biome-ignore lint/style/useNamingConvention: test-internals export uses double-underscore prefix
 export const __testables = { ROLE_CONTRACTOR_ACTIONS, roleGrants };

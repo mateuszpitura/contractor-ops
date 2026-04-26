@@ -33,10 +33,7 @@ interface SkontoBannerProps {
 export function SkontoBanner({ invoiceId, featureEnabled }: SkontoBannerProps) {
   const t = useTranslations('Payments.skonto.banner');
 
-  const query = trpc.skonto.evaluateForInvoice.useQuery(
-    { invoiceId },
-    { enabled: featureEnabled },
-  );
+  const query = trpc.skonto.evaluateForInvoice.useQuery({ invoiceId }, { enabled: featureEnabled });
 
   if (!featureEnabled) return null;
 
@@ -96,9 +93,7 @@ export function SkontoBanner({ invoiceId, featureEnabled }: SkontoBannerProps) {
   if (data.state === 'NOT_TAKEN_AT_PAYMENT') {
     return (
       <div className="rounded-lg border bg-muted/50 px-4 py-3">
-        <p className="text-sm text-muted-foreground">
-          {t('notTakenAtPayment')}
-        </p>
+        <p className="text-sm text-muted-foreground">{t('notTakenAtPayment')}</p>
       </div>
     );
   }
