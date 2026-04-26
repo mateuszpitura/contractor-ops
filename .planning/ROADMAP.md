@@ -6,8 +6,8 @@
 - v2.0 Platform Expansion - Phases 12-27 (shipped 2026-04-01)
 - v3.0 Enterprise & Monetization - Phases 28-44 (shipped 2026-04-10)
 - v4.0 International Foundation & Gulf Expansion - Phases 45-55 (shipped 2026-04-12)
-- v5.0 UK & Germany Expansion - Phases 56-67 (in progress)
-- v6.0 Platform Maturity & Operational Hardening - Phases 68-71 (planned)
+- v5.0 UK & Germany Expansion - Phases 56-69 (in progress)
+- v6.0 Platform Maturity & Operational Hardening - Phases 70-73 (planned)
 
 ## Phases
 
@@ -46,6 +46,8 @@ See .planning/milestones/v4.0/ for details.
 - [x] **Phase 65: Phase 63 Critical Bug Fixes** - Fix late-payment-interest flag key (PAY-06), Skonto amountMinor field (PAY-07), admin-boe-rate permission (CR-03), daysOverdue calculation (WR-02) (completed 2026-04-26)
 - [x] **Phase 66: Phase 57 Completion & Verification** - Execute 57-04 plan (VAT tRPC routers, invoice pipeline, UI), produce Phase 57 VERIFICATION.md (completed 2026-04-26)
 - [x] **Phase 67: Phase 56 & 58 Verification** - Produce Phase 56 VERIFICATION.md (country foundations), produce Phase 58 VERIFICATION.md (classification engine) (completed 2026-04-26)
+- [ ] **Phase 68: Skonto BG-20 XRechnung Emission Fix** - Thread Skonto term from invoice finalize through XRechnung CII generator so BG-20 Payment Terms are emitted on DE invoices with configured Skonto (closes I-1, EINV-01/02/04 partial, PAY-04 partial, F-4 broken)
+- [ ] **Phase 69: DE Message-Key Parity Fix** - Author 32 missing DE translations introduced by Phases 63+64 (25 Payments.lateInterest.* + 1 Payments.skonto.previewLineEn + 6 Admin.ClassificationEngineFlag.*) in formal-Sie register (closes FOUND-03)
 
 ## Phase Details
 
@@ -178,7 +180,7 @@ See .planning/milestones/v4.0/ for details.
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 56 -> 57 -> 58 -> 59 -> 60 -> 61 -> 62 -> 63 -> 64 -> 65 -> 66 -> 67
+Phases execute in numeric order: 56 -> 57 -> 58 -> 59 -> 60 -> 61 -> 62 -> 63 -> 64 -> 65 -> 66 -> 67 -> 68 -> 69
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -193,7 +195,9 @@ Phases execute in numeric order: 56 -> 57 -> 58 -> 59 -> 60 -> 61 -> 62 -> 63 ->
 | 64. Legal Compliance Hardening | v5.0 | 9/9 | Complete | 2026-04-25 |
 | 65. Phase 63 Critical Bug Fixes | v5.0 | 0/1 | Not started | - |
 | 66. Phase 57 Completion & Verification | v5.0 | 4/4 | Complete    | 2026-04-26 |
-| 67. Phase 56 & 58 Verification | v5.0 | 2/2 | Complete   | 2026-04-26 |
+| 67. Phase 56 & 58 Verification | v5.0 | 2/2 | Complete    | 2026-04-26 |
+| 68. Skonto BG-20 XRechnung Emission Fix | v5.0 | 0/0 | Not started | - |
+| 69. DE Message-Key Parity Fix | v5.0 | 0/0 | Not started | - |
 
 ### Phase 64: Legal Compliance Hardening
 **Goal**: Classification features (Phases 58-60) are completely inaccessible when the feature flag is disabled — no routes, no sidebar entries, no API endpoints, no data leakage — and when enabled after legal sign-off, all screens clearly communicate advisory-only status with escalation paths

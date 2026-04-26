@@ -28,7 +28,7 @@ export class ResendAdapter extends BaseAdapter {
   readonly supportsOAuth = false;
   readonly supportsWebhooks = true;
 
-  verifyWebhookSignature(
+  override verifyWebhookSignature(
     rawBody: string,
     headers: Record<string, string>,
   ): WebhookVerificationResult {
@@ -89,7 +89,7 @@ export class ResendAdapter extends BaseAdapter {
   /**
    * No-op: real work runs in `_process` via `processResendWebhookDelivery`.
    */
-  async handleWebhook(): Promise<void> {
+  override async handleWebhook(): Promise<void> {
     return;
   }
 }

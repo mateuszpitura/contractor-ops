@@ -18,5 +18,5 @@ export type DbClient = TenantScopedDb;
  */
 export type PrimaryPrismaClient = PrismaClient;
 
-/** Primary singleton or tenant-scoped client (shared orchestrator entrypoints). */
-export type OrmForTaxValidation = PrismaClient | DbClient;
+/** Primary Prisma singleton or tenant `ctx.db` — tax validation runs in both contexts. */
+export type TaxValidationDb = PrimaryPrismaClient | DbClient;

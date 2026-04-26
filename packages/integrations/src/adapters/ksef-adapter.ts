@@ -23,7 +23,7 @@ export class KsefAdapter extends BaseAdapter {
    * Returns health status for a KSeF connection based on
    * recent sync logs.
    */
-  async getHealthStatus(connectionId: string): Promise<ProviderHealthStatus> {
+  override async getHealthStatus(connectionId: string): Promise<ProviderHealthStatus> {
     const connection = await prisma.integrationConnection.findUnique({
       where: { id: connectionId },
       select: {

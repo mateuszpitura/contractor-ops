@@ -99,7 +99,7 @@ describe('tax-id-validation.service — pre-flight short-circuit', () => {
 
     const out = await validateTaxId(
       { ...baseInputGB, taxIdValue: 'GB12' },
-      { prisma: prisma as never, hmrcClient: hmrc, viesClient: vies, now: () => NOW },
+      { db: prisma as never, hmrcClient: hmrc, viesClient: vies, now: () => NOW },
     );
 
     expect(out.responseStatus).toBe('invalid');
@@ -121,7 +121,7 @@ describe('tax-id-validation.service — pre-flight short-circuit', () => {
 
     const out = await validateTaxId(
       { ...baseInputDE, taxIdValue: 'DE1' },
-      { prisma: prisma as never, hmrcClient: hmrc, viesClient: vies, now: () => NOW },
+      { db: prisma as never, hmrcClient: hmrc, viesClient: vies, now: () => NOW },
     );
 
     expect(out.responseStatus).toBe('invalid');
@@ -152,7 +152,7 @@ describe('tax-id-validation.service — happy path', () => {
     prisma.contractor.update.mockResolvedValue({ id: 'ctr_1' });
 
     const out = await validateTaxId(baseInputGB, {
-      prisma: prisma as never,
+      db: prisma as never,
       hmrcClient: hmrc,
       viesClient: vies,
       now: () => NOW,
@@ -199,7 +199,7 @@ describe('tax-id-validation.service — happy path', () => {
     prisma.contractor.update.mockResolvedValue({ id: 'ctr_1' });
 
     const out = await validateTaxId(baseInputDE, {
-      prisma: prisma as never,
+      db: prisma as never,
       hmrcClient: hmrc,
       viesClient: vies,
       now: () => NOW,
@@ -232,7 +232,7 @@ describe('tax-id-validation.service — soft-fail (D-08)', () => {
     prisma.contractor.update.mockResolvedValue({ id: 'ctr_1' });
 
     const out = await validateTaxId(baseInputGB, {
-      prisma: prisma as never,
+      db: prisma as never,
       hmrcClient: hmrc,
       viesClient: vies,
       now: () => NOW,
@@ -256,7 +256,7 @@ describe('tax-id-validation.service — soft-fail (D-08)', () => {
     prisma.contractor.update.mockResolvedValue({ id: 'ctr_1' });
 
     const out = await validateTaxId(baseInputDE, {
-      prisma: prisma as never,
+      db: prisma as never,
       hmrcClient: hmrc,
       viesClient: vies,
       now: () => NOW,
@@ -282,7 +282,7 @@ describe('tax-id-validation.service — soft-fail (D-08)', () => {
     prisma.contractor.update.mockResolvedValue({ id: 'ctr_1' });
 
     const out = await validateTaxId(baseInputGB, {
-      prisma: prisma as never,
+      db: prisma as never,
       hmrcClient: hmrc,
       viesClient: vies,
       now: () => NOW,
@@ -308,7 +308,7 @@ describe('tax-id-validation.service — atomic dual-write', () => {
 
     await expect(
       validateTaxId(baseInputGB, {
-        prisma: prisma as never,
+        db: prisma as never,
         hmrcClient: hmrc,
         viesClient: vies,
         now: () => NOW,
@@ -330,7 +330,7 @@ describe('tax-id-validation.service — PII logging safety', () => {
     prisma.contractor.update.mockResolvedValue({ id: 'ctr_1' });
 
     await validateTaxId(baseInputGB, {
-      prisma: prisma as never,
+      db: prisma as never,
       hmrcClient: hmrc,
       viesClient: vies,
       now: () => NOW,
@@ -354,7 +354,7 @@ describe('tax-id-validation.service — dispatch guards', () => {
     await expect(
       validateTaxId(
         { ...baseInputGB, taxIdType: 'FR_VAT' as never },
-        { prisma: prisma as never, hmrcClient: hmrc, viesClient: vies, now: () => NOW },
+        { db: prisma as never, hmrcClient: hmrc, viesClient: vies, now: () => NOW },
       ),
     ).rejects.toThrow(/Unsupported taxIdType/);
     expect(hmrc.checkVatNumber).not.toHaveBeenCalled();
@@ -376,7 +376,7 @@ describe('tax-id-validation.service — Zod schema failure surfaces as unavailab
     prisma.contractor.update.mockResolvedValue({ id: 'ctr_1' });
 
     const out = await validateTaxId(baseInputDE, {
-      prisma: prisma as never,
+      db: prisma as never,
       hmrcClient: hmrc,
       viesClient: vies,
       now: () => NOW,

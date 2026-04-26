@@ -1,4 +1,4 @@
-import type { Prisma, PrismaClient, TaxIdType } from '@contractor-ops/db';
+import type { Prisma, TaxIdType } from '@contractor-ops/db';
 import {
   contractorCreateSchema,
   contractorLifecycleTransitionSchema,
@@ -21,7 +21,7 @@ import { syncSeatCountForOrg } from '../services/billing-service.js';
 import { CacheKeys, invalidateByPrefix } from '../services/cache.js';
 import { sanitizeStrings } from '../services/sanitize.js';
 import { validateTaxId } from '../services/tax-id-validation.service.js';
-import type { OrmForTaxValidation } from '../services/types.js';
+import type { DbClient } from '../services/types.js';
 
 // ---------------------------------------------------------------------------
 // Lifecycle transition map
@@ -226,14 +226,13 @@ function resolveTaxIdType(countryCode: string): TaxIdType | null {
  * summary fields when VAT ID is removed.
  */
 async function handleVatIdChange(
-  db: OrmForTaxValidation,
+  db: DbClient,
   contractorId: string,
   organizationId: string,
   userId: string,
   prior: { vatId: string | null },
   updated: { vatId: string | null; countryCode: string },
 ): Promise<void> {
-  const prisma = db as unknown as PrismaClient;
   const priorVatId = prior.vatId ?? null;
   const nextVatId = updated.vatId ?? null;
   if (priorVatId === nextVatId) return;
@@ -243,11 +242,11 @@ async function handleVatIdChange(
     if (taxIdType) {
       await validateTaxId(
         { organizationId, contractorId, taxIdType, taxIdValue: nextVatId, actor: { userId } },
-        { prisma, hmrcClient: getHmrcVatClient(), viesClient: getViesClient() },
+        { db, hmrcClient: getHmrcVatClient(), viesClient: getViesClient() },
       );
     }
   } else {
-    await prisma.contractor.update({
+    await db.contractor.update({
       where: { id: contractorId },
       data: { latestVatValidatedAt: null, latestVatValidationStatus: null },
     });
@@ -259,7 +258,7 @@ async function handleVatIdChange(
  * or payment terms change.
  */
 async function updateBillingProfileIfNeeded(
-  db: OrmForTaxValidation,
+  db: DbClient,
   contractorId: string,
   organizationId: string,
   bankAccount: string | undefined | null,
@@ -267,8 +266,7 @@ async function updateBillingProfileIfNeeded(
 ): Promise<void> {
   if (bankAccount === undefined && paymentTermsDays === undefined) return;
 
-  const prisma = db as unknown as PrismaClient;
-  const defaultProfile = await prisma.contractorBillingProfile.findFirst({
+  const defaultProfile = await db.contractorBillingProfile.findFirst({
     where: { contractorId, organizationId, isDefault: true },
   });
   if (!defaultProfile) return;
@@ -282,7 +280,7 @@ async function updateBillingProfileIfNeeded(
   if (paymentTermsDays !== undefined) {
     profileUpdate.paymentTermsDays = paymentTermsDays ?? null;
   }
-  await prisma.contractorBillingProfile.update({
+  await db.contractorBillingProfile.update({
     where: { id: defaultProfile.id },
     data: profileUpdate,
   });
@@ -1350,7 +1348,7 @@ export const contractorRouter = router({
           actor: { userId: ctx.user!.id },
         },
         {
-          prisma: ctx.db,
+          db: ctx.db,
           hmrcClient: getHmrcVatClient(),
           viesClient: getViesClient(),
         },
@@ -1408,7 +1406,7 @@ export const contractorRouter = router({
           actor: { userId: ctx.user!.id },
         },
         {
-          prisma: ctx.db,
+          db: ctx.db,
           hmrcClient: getHmrcVatClient(),
           viesClient: getViesClient(),
         },

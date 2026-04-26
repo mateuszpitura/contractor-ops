@@ -13,7 +13,7 @@
 //        - GB_VAT      → HmrcVatClient.checkVatNumber(vrn, { useVerifiedLookup: true })
 //        - DE_USTIDNR  → ViesClient.checkVatNumber('DE', vat, { qualified: true })
 //
-//   3. Atomic dual-write (D-04, D-05, Pitfall 9): `prisma.$transaction([
+//   3. Atomic dual-write (D-04, D-05, Pitfall 9): `db.$transaction([
 //        taxIdValidation.create({...}),
 //        contractor.update({ latestVatValidatedAt, latestVatValidationStatus }),
 //      ])` guarantees the summary columns on `Contractor` never drift from
@@ -46,7 +46,15 @@ import type { HmrcVatClient, ViesClient } from '@contractor-ops/gov-api';
 // BEFORE any network I/O (RESEARCH Pattern 3).
 import { isValidGbVat, isValidUstIdNr } from '@contractor-ops/validators';
 import { maskTaxId } from './tax-id-pii.js';
-import type { OrmForTaxValidation } from './types.js';
+import type { TaxValidationDb } from './types.js';
+
+/**
+ * `TaxValidationDb` is a union (tenant + primary). Prisma’s delegate types
+ * are not callable as one union — this is the same runtime client as `ctx.db`.
+ */
+function taxValidationDelegates(db: TaxValidationDb): PrismaClient {
+  return db as unknown as PrismaClient;
+}
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -79,7 +87,8 @@ export interface TaxIdValidationResult {
 }
 
 export interface TaxIdValidationDeps {
-  prisma: OrmForTaxValidation;
+  /** Regional tenant client (`ctx.db`) or primary Prisma — never the global name `prisma`. */
+  db: TaxValidationDb;
   hmrcClient: HmrcVatClient;
   viesClient: ViesClient;
   now?: () => Date;
@@ -131,9 +140,9 @@ function stripCountryPrefix(value: string, country: 'GB' | 'DE'): string {
  */
 export async function getLatestValidation(
   params: { contractorId: string; taxIdType: TaxIdType },
-  deps: { prisma: PrismaClient },
+  deps: { db: TaxValidationDb },
 ): Promise<LatestValidationRow | null> {
-  const row = await deps.prisma.taxIdValidation.findFirst({
+  const row = await taxValidationDelegates(deps.db).taxIdValidation.findFirst({
     where: { contractorId: params.contractorId, taxIdType: params.taxIdType },
     orderBy: { requestedAt: 'desc' },
     select: { responseStatus: true, requestedAt: true, confirmationRef: true },
@@ -303,8 +312,9 @@ async function persistAndUpdate(
     now,
   } = args;
 
-  const [created] = await deps.prisma.$transaction([
-    deps.prisma.taxIdValidation.create({
+  const d = taxValidationDelegates(deps.db);
+  const [created] = await d.$transaction([
+    d.taxIdValidation.create({
       data: {
         organizationId: input.organizationId,
         contractorId: input.contractorId,
@@ -318,7 +328,7 @@ async function persistAndUpdate(
         errorMessage: errorMessage ?? undefined,
       },
     }),
-    deps.prisma.contractor.update({
+    d.contractor.update({
       where: { id: input.contractorId },
       data: {
         latestVatValidatedAt: now,
@@ -354,7 +364,7 @@ async function softFail(args: SoftFailArgs): Promise<TaxIdValidationResult> {
 
   const prior = await getLatestValidation(
     { contractorId: input.contractorId, taxIdType: input.taxIdType },
-    { prisma: deps.prisma },
+    { db: deps.db },
   );
 
   if (isValidationFresh(prior, now)) {
