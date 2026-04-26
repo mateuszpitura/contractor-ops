@@ -285,7 +285,12 @@ export function PortalReturnFlow({
                   <Skeleton className="mx-auto h-4 w-32" />
                 </div>
               ) : labelData ? (
-                <LabelDisplay labelData={labelData.data} contentType={labelData.contentType} />
+                <LabelDisplay
+                  label={{
+                    url: `data:${labelData.contentType};base64,${labelData.data}`,
+                    format: labelData.contentType.includes('pdf') ? 'PDF' : 'IMAGE',
+                  }}
+                />
               ) : (
                 <div className="py-8 text-center text-sm text-muted-foreground">
                   {t('approvalNotice')}

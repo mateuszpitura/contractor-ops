@@ -1,11 +1,11 @@
 'use client';
 
+import type { AppRouter } from '@contractor-ops/api';
+import type { inferRouterOutputs } from '@trpc/server';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useCallback } from 'react';
-
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import type { trpc } from '@/trpc/init';
 import { ActivityTab } from './activity-tab';
 import { AmendmentsTab } from './amendments-tab';
 import { DocumentsTab } from './documents-tab';
@@ -15,9 +15,7 @@ const TAB_KEYS = ['overview', 'documents', 'amendments', 'activity'] as const;
 type TabKey = (typeof TAB_KEYS)[number];
 
 /** Contract detail type derived from the tRPC router (contract.getById). */
-type ContractDetail = NonNullable<
-  Awaited<ReturnType<ReturnType<typeof trpc.contract.getById.queryOptions>['queryFn']>>
->;
+type ContractDetail = NonNullable<inferRouterOutputs<AppRouter>['contract']['getById']>;
 
 type ContractDetailTabsProps = {
   contract: ContractDetail;
@@ -63,7 +61,7 @@ export function ContractDetailTabs({ contract }: ContractDetailTabsProps) {
               ? [
                   {
                     name: contract.contractor.displayName,
-                    email: contract.contractor.email ?? '',
+                    email: '',
                     role: 'signer' as const,
                   },
                 ]

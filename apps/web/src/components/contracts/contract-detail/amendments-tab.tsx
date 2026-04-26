@@ -21,7 +21,7 @@ import { trpc } from '@/trpc/init';
 
 type Amendment = {
   id: string;
-  amendmentNumber: string;
+  amendmentNumber: string | null;
   title: string;
   effectiveDate: string | Date;
   description: string | null;
