@@ -44,7 +44,7 @@ See .planning/milestones/v4.0/ for details.
 - [x] **Phase 62: ZUGFeRD E-Invoicing** - ZUGFeRD PDF/A-3 with embedded CII XML, inbound XRechnung/ZUGFeRD parsing (completed 2026-04-16)
 - [x] **Phase 63: UK Payments & Financial Features** - BACS Standard 18 export, late payment interest, Skonto discounts (completed 2026-04-25)
 - [x] **Phase 65: Phase 63 Critical Bug Fixes** - Fix late-payment-interest flag key (PAY-06), Skonto amountMinor field (PAY-07), admin-boe-rate permission (CR-03), daysOverdue calculation (WR-02) (completed 2026-04-26)
-- [ ] **Phase 66: Phase 57 Completion & Verification** - Execute 57-04 plan (VAT tRPC routers, invoice pipeline, UI), produce Phase 57 VERIFICATION.md
+- [x] **Phase 66: Phase 57 Completion & Verification** - Execute 57-04 plan (VAT tRPC routers, invoice pipeline, UI), produce Phase 57 VERIFICATION.md (completed 2026-04-26)
 - [ ] **Phase 67: Phase 56 & 58 Verification** - Produce Phase 56 VERIFICATION.md (country foundations), produce Phase 58 VERIFICATION.md (classification engine)
 
 ## Phase Details
@@ -192,7 +192,7 @@ Phases execute in numeric order: 56 -> 57 -> 58 -> 59 -> 60 -> 61 -> 62 -> 63 ->
 | 63. UK Payments & Financial Features | v5.0 | 7/7 | Complete    | 2026-04-26 |
 | 64. Legal Compliance Hardening | v5.0 | 9/9 | Complete | 2026-04-25 |
 | 65. Phase 63 Critical Bug Fixes | v5.0 | 0/1 | Not started | - |
-| 66. Phase 57 Completion & Verification | v5.0 | 3/4 | In Progress|  |
+| 66. Phase 57 Completion & Verification | v5.0 | 4/4 | Complete   | 2026-04-26 |
 | 67. Phase 56 & 58 Verification | v5.0 | 1/2 | In Progress|  |
 
 ### Phase 64: Legal Compliance Hardening
