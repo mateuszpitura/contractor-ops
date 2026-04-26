@@ -1,10 +1,22 @@
-import type { MDXComponents } from 'mdx/types';
 import type {
   AnchorHTMLAttributes,
+  ComponentType,
   HTMLAttributes,
   LiHTMLAttributes,
   OlHTMLAttributes,
 } from 'react';
+
+/**
+ * Local mirror of the `MDXComponents` shape from `mdx/types`. We define
+ * it locally because `@types/mdx` is not a direct dependency and the
+ * package only matters for the `useMDXComponents` hook signature here.
+ *
+ * Equivalent (subset) of the upstream type — a record mapping HTML tag
+ * names to React components, plus any custom components.
+ */
+type MDXComponents = {
+  [tagName: string]: ComponentType<Record<string, unknown>> | undefined;
+};
 
 /**
  * MDX component map — Phase 56 Plan 07.

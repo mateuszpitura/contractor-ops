@@ -86,7 +86,7 @@ beforeEach(() => {
     isPending: false,
   } as unknown as never);
 
-  vi.mocked(useQuery).mockImplementation((opts: Record<string, unknown>) => {
+  vi.mocked(useQuery).mockImplementation((opts: { queryKey?: readonly unknown[] }) => {
     // Distinguish between connections and events queries
     const key = opts?.queryKey?.[0] ?? '';
     if (key === 'cal' && opts?.queryKey?.[1] === 'listEvents') {

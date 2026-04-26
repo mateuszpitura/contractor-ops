@@ -16,7 +16,7 @@ vi.mock('@tanstack/react-query', async () => {
   return {
     ...actual,
     useQuery: vi.fn().mockImplementation((opts: Record<string, unknown>) => {
-      const key = opts?.queryKey;
+      const key = opts?.queryKey as readonly unknown[] | undefined;
       if (key?.[0] === 'linear' && key?.[1] === 'connectionStatus') {
         return { isLoading: false, data: { id: 'conn-1', status: 'CONNECTED' } };
       }
@@ -106,8 +106,12 @@ describe('LinearTaskConfig', () => {
 
   // ---- Teams available: team display and interaction ----
   it('renders team options when teams are available', () => {
-    mockedUseQuery.mockImplementation((opts: Record<string, unknown>) => {
-      const key = opts?.queryKey;
+    (
+      mockedUseQuery as unknown as {
+        mockImplementation: (fn: (opts: { queryKey?: readonly unknown[] }) => unknown) => void;
+      }
+    ).mockImplementation(opts => {
+      const key = opts?.queryKey as readonly unknown[] | undefined;
       if (key?.[0] === 'linear' && key?.[1] === 'connectionStatus') {
         return {
           isLoading: false,
@@ -131,8 +135,12 @@ describe('LinearTaskConfig', () => {
   });
 
   it('renders with existing task config and shows team name', () => {
-    mockedUseQuery.mockImplementation((opts: Record<string, unknown>) => {
-      const key = opts?.queryKey;
+    (
+      mockedUseQuery as unknown as {
+        mockImplementation: (fn: (opts: { queryKey?: readonly unknown[] }) => unknown) => void;
+      }
+    ).mockImplementation(opts => {
+      const key = opts?.queryKey as readonly unknown[] | undefined;
       if (key?.[0] === 'linear' && key?.[1] === 'connectionStatus') {
         return {
           isLoading: false,
@@ -163,8 +171,12 @@ describe('LinearTaskConfig', () => {
   });
 
   it('returns null when not connected', () => {
-    mockedUseQuery.mockImplementation((opts: Record<string, unknown>) => {
-      const key = opts?.queryKey;
+    (
+      mockedUseQuery as unknown as {
+        mockImplementation: (fn: (opts: { queryKey?: readonly unknown[] }) => unknown) => void;
+      }
+    ).mockImplementation(opts => {
+      const key = opts?.queryKey as readonly unknown[] | undefined;
       if (key?.[0] === 'linear' && key?.[1] === 'connectionStatus') {
         return { isLoading: false, data: null } as unknown as never;
       }
@@ -175,8 +187,12 @@ describe('LinearTaskConfig', () => {
   });
 
   it('returns null when connection status is DISCONNECTED', () => {
-    mockedUseQuery.mockImplementation((opts: Record<string, unknown>) => {
-      const key = opts?.queryKey;
+    (
+      mockedUseQuery as unknown as {
+        mockImplementation: (fn: (opts: { queryKey?: readonly unknown[] }) => unknown) => void;
+      }
+    ).mockImplementation(opts => {
+      const key = opts?.queryKey as readonly unknown[] | undefined;
       if (key?.[0] === 'linear' && key?.[1] === 'connectionStatus') {
         return {
           isLoading: false,
@@ -190,8 +206,12 @@ describe('LinearTaskConfig', () => {
   });
 
   it('renders when connection is PENDING_MAPPING', () => {
-    mockedUseQuery.mockImplementation((opts: Record<string, unknown>) => {
-      const key = opts?.queryKey;
+    (
+      mockedUseQuery as unknown as {
+        mockImplementation: (fn: (opts: { queryKey?: readonly unknown[] }) => unknown) => void;
+      }
+    ).mockImplementation(opts => {
+      const key = opts?.queryKey as readonly unknown[] | undefined;
       if (key?.[0] === 'linear' && key?.[1] === 'connectionStatus') {
         return {
           isLoading: false,
@@ -208,8 +228,12 @@ describe('LinearTaskConfig', () => {
   });
 
   it('toggle cannot be enabled when no team is selected', async () => {
-    mockedUseQuery.mockImplementation((opts: Record<string, unknown>) => {
-      const key = opts?.queryKey;
+    (
+      mockedUseQuery as unknown as {
+        mockImplementation: (fn: (opts: { queryKey?: readonly unknown[] }) => unknown) => void;
+      }
+    ).mockImplementation(opts => {
+      const key = opts?.queryKey as readonly unknown[] | undefined;
       if (key?.[0] === 'linear' && key?.[1] === 'connectionStatus') {
         return {
           isLoading: false,
@@ -241,8 +265,12 @@ describe('LinearTaskConfig', () => {
   });
 
   it('renders with existing enabled config showing checked toggle', () => {
-    mockedUseQuery.mockImplementation((opts: Record<string, unknown>) => {
-      const key = opts?.queryKey;
+    (
+      mockedUseQuery as unknown as {
+        mockImplementation: (fn: (opts: { queryKey?: readonly unknown[] }) => unknown) => void;
+      }
+    ).mockImplementation(opts => {
+      const key = opts?.queryKey as readonly unknown[] | undefined;
       if (key?.[0] === 'linear' && key?.[1] === 'connectionStatus') {
         return {
           isLoading: false,

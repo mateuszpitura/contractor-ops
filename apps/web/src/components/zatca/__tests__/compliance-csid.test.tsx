@@ -89,10 +89,18 @@ describe('ComplianceCsid', () => {
 
   it('invokes onMutate callback to set phase to submitting', () => {
     let capturedOnMutate: (() => void) | undefined;
-    mockUseMutation.mockImplementation((opts: Record<string, unknown>) => {
-      capturedOnMutate = opts.onMutate as (() => void) | undefined;
-      return { mutate: vi.fn(), isPending: false };
-    });
+    mockUseMutation.mockImplementation(
+      (opts: {
+        queryKey?: readonly unknown[];
+        enabled?: unknown;
+        onMutate?: unknown;
+        onError?: unknown;
+        onSuccess?: unknown;
+      }) => {
+        capturedOnMutate = opts.onMutate as (() => void) | undefined;
+        return { mutate: vi.fn(), isPending: false };
+      },
+    );
     render(<ComplianceCsid {...defaultProps} />);
     // Trigger onMutate to move to submitting phase
     capturedOnMutate?.();
@@ -103,10 +111,18 @@ describe('ComplianceCsid', () => {
 
   it('invokes onError callback to reset phase and show toast', () => {
     let capturedOnError: ((error: Error) => void) | undefined;
-    mockUseMutation.mockImplementation((opts: Record<string, unknown>) => {
-      capturedOnError = opts.onError as ((error: Error) => void) | undefined;
-      return { mutate: vi.fn(), isPending: false };
-    });
+    mockUseMutation.mockImplementation(
+      (opts: {
+        queryKey?: readonly unknown[];
+        enabled?: unknown;
+        onMutate?: unknown;
+        onError?: unknown;
+        onSuccess?: unknown;
+      }) => {
+        capturedOnError = opts.onError as ((error: Error) => void) | undefined;
+        return { mutate: vi.fn(), isPending: false };
+      },
+    );
     render(<ComplianceCsid {...defaultProps} />);
     // Trigger onError
     capturedOnError?.(new Error('ZATCA API down'));
@@ -115,10 +131,18 @@ describe('ComplianceCsid', () => {
   it('invokes onSuccess callback to advance phase through storing to done', () => {
     vi.useFakeTimers();
     let capturedOnSuccess: (() => void) | undefined;
-    mockUseMutation.mockImplementation((opts: Record<string, unknown>) => {
-      capturedOnSuccess = opts.onSuccess as (() => void) | undefined;
-      return { mutate: vi.fn(), isPending: false };
-    });
+    mockUseMutation.mockImplementation(
+      (opts: {
+        queryKey?: readonly unknown[];
+        enabled?: unknown;
+        onMutate?: unknown;
+        onError?: unknown;
+        onSuccess?: unknown;
+      }) => {
+        capturedOnSuccess = opts.onSuccess as (() => void) | undefined;
+        return { mutate: vi.fn(), isPending: false };
+      },
+    );
     render(<ComplianceCsid {...defaultProps} />);
     capturedOnSuccess?.();
     // After 500ms timeout, phase should move to 'done'

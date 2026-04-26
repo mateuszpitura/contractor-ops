@@ -9,7 +9,7 @@ vi.mock('@tanstack/react-query', async importOriginal => {
   const actual = await importOriginal<typeof import('@tanstack/react-query')>();
   return {
     ...actual,
-    useQuery: vi.fn().mockImplementation((opts: Record<string, unknown>) => {
+    useQuery: vi.fn().mockImplementation((opts: { queryKey?: readonly unknown[] }) => {
       // Return empty equipment by default
       if (opts?.queryKey?.[0] === 'portal.listEquipment') {
         return { data: [], isPending: false };
@@ -80,7 +80,7 @@ describe('PortalEquipmentTab', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     // Reset to default empty equipment
-    mockedUseQuery.mockImplementation((opts: Record<string, unknown>) => {
+    mockedUseQuery.mockImplementation((opts: { queryKey?: readonly unknown[] }) => {
       if (opts?.queryKey?.[0] === 'portal.listEquipment') {
         return { data: [], isPending: false } as unknown as never;
       }
@@ -99,7 +99,7 @@ describe('PortalEquipmentTab', () => {
   });
 
   it('renders loading skeletons when equipment query is pending', () => {
-    mockedUseQuery.mockImplementation((opts: Record<string, unknown>) => {
+    mockedUseQuery.mockImplementation((opts: { queryKey?: readonly unknown[] }) => {
       if (opts?.queryKey?.[0] === 'portal.listEquipment') {
         return { data: undefined, isPending: true } as unknown as never;
       }
@@ -110,7 +110,7 @@ describe('PortalEquipmentTab', () => {
   });
 
   it('renders equipment card with name when equipment exists', () => {
-    mockedUseQuery.mockImplementation((opts: Record<string, unknown>) => {
+    mockedUseQuery.mockImplementation((opts: { queryKey?: readonly unknown[] }) => {
       if (opts?.queryKey?.[0] === 'portal.listEquipment') {
         return { data: MOCK_EQUIPMENT, isPending: false } as unknown as never;
       }
@@ -121,7 +121,7 @@ describe('PortalEquipmentTab', () => {
   });
 
   it('renders serial number for equipment', () => {
-    mockedUseQuery.mockImplementation((opts: Record<string, unknown>) => {
+    mockedUseQuery.mockImplementation((opts: { queryKey?: readonly unknown[] }) => {
       if (opts?.queryKey?.[0] === 'portal.listEquipment') {
         return { data: MOCK_EQUIPMENT, isPending: false } as unknown as never;
       }
@@ -132,7 +132,7 @@ describe('PortalEquipmentTab', () => {
   });
 
   it('renders equipment status badge', () => {
-    mockedUseQuery.mockImplementation((opts: Record<string, unknown>) => {
+    mockedUseQuery.mockImplementation((opts: { queryKey?: readonly unknown[] }) => {
       if (opts?.queryKey?.[0] === 'portal.listEquipment') {
         return { data: MOCK_EQUIPMENT, isPending: false } as unknown as never;
       }
@@ -143,7 +143,7 @@ describe('PortalEquipmentTab', () => {
   });
 
   it('renders return all button when returnable equipment exists', () => {
-    mockedUseQuery.mockImplementation((opts: Record<string, unknown>) => {
+    mockedUseQuery.mockImplementation((opts: { queryKey?: readonly unknown[] }) => {
       if (opts?.queryKey?.[0] === 'portal.listEquipment') {
         return { data: MOCK_EQUIPMENT, isPending: false } as unknown as never;
       }
@@ -154,7 +154,7 @@ describe('PortalEquipmentTab', () => {
   });
 
   it('shows pending approval banner when return request is pending', () => {
-    mockedUseQuery.mockImplementation((opts: Record<string, unknown>) => {
+    mockedUseQuery.mockImplementation((opts: { queryKey?: readonly unknown[] }) => {
       if (opts?.queryKey?.[0] === 'portal.listEquipment') {
         return { data: MOCK_EQUIPMENT, isPending: false } as unknown as never;
       }
@@ -172,7 +172,7 @@ describe('PortalEquipmentTab', () => {
   });
 
   it('shows shipment created banner when return is approved', () => {
-    mockedUseQuery.mockImplementation((opts: Record<string, unknown>) => {
+    mockedUseQuery.mockImplementation((opts: { queryKey?: readonly unknown[] }) => {
       if (opts?.queryKey?.[0] === 'portal.listEquipment') {
         return { data: MOCK_EQUIPMENT, isPending: false } as unknown as never;
       }
@@ -189,7 +189,7 @@ describe('PortalEquipmentTab', () => {
   });
 
   it('hides return button when active return exists', () => {
-    mockedUseQuery.mockImplementation((opts: Record<string, unknown>) => {
+    mockedUseQuery.mockImplementation((opts: { queryKey?: readonly unknown[] }) => {
       if (opts?.queryKey?.[0] === 'portal.listEquipment') {
         return { data: MOCK_EQUIPMENT, isPending: false } as unknown as never;
       }
@@ -206,7 +206,7 @@ describe('PortalEquipmentTab', () => {
   });
 
   it('opens cancel return confirmation dialog when cancel is clicked', async () => {
-    mockedUseQuery.mockImplementation((opts: Record<string, unknown>) => {
+    mockedUseQuery.mockImplementation((opts: { queryKey?: readonly unknown[] }) => {
       if (opts?.queryKey?.[0] === 'portal.listEquipment') {
         return { data: MOCK_EQUIPMENT, isPending: false } as unknown as never;
       }
@@ -233,7 +233,7 @@ describe('PortalEquipmentTab', () => {
         equipment: { ...MOCK_EQUIPMENT[0].equipment, serialNumber: null },
       },
     ];
-    mockedUseQuery.mockImplementation((opts: Record<string, unknown>) => {
+    mockedUseQuery.mockImplementation((opts: { queryKey?: readonly unknown[] }) => {
       if (opts?.queryKey?.[0] === 'portal.listEquipment') {
         return { data: noSerialEquipment, isPending: false } as unknown as never;
       }
@@ -250,7 +250,7 @@ describe('PortalEquipmentTab', () => {
         latestShipment: null,
       },
     ];
-    mockedUseQuery.mockImplementation((opts: Record<string, unknown>) => {
+    mockedUseQuery.mockImplementation((opts: { queryKey?: readonly unknown[] }) => {
       if (opts?.queryKey?.[0] === 'portal.listEquipment') {
         return { data: noDeliveryEquipment, isPending: false } as unknown as never;
       }
@@ -272,7 +272,7 @@ describe('PortalEquipmentTab', () => {
         equipment: { ...MOCK_EQUIPMENT[0].equipment, status: 'RETURNED' },
       },
     ];
-    mockedUseQuery.mockImplementation((opts: Record<string, unknown>) => {
+    mockedUseQuery.mockImplementation((opts: { queryKey?: readonly unknown[] }) => {
       if (opts?.queryKey?.[0] === 'portal.listEquipment') {
         return { data: returnedEquipment, isPending: false } as unknown as never;
       }
@@ -283,7 +283,7 @@ describe('PortalEquipmentTab', () => {
   });
 
   it('renders type icon for each equipment item', () => {
-    mockedUseQuery.mockImplementation((opts: Record<string, unknown>) => {
+    mockedUseQuery.mockImplementation((opts: { queryKey?: readonly unknown[] }) => {
       if (opts?.queryKey?.[0] === 'portal.listEquipment') {
         return { data: MOCK_EQUIPMENT, isPending: false } as unknown as never;
       }

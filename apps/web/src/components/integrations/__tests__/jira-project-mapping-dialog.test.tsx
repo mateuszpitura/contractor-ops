@@ -63,24 +63,32 @@ const MOCK_PROJECTS = [
 
 function setupWithProjects() {
   const emptyList: never[] = [];
-  mockedUseQuery.mockImplementation((opts: Record<string, unknown>) => {
-    if (opts?.enabled === false) {
+  mockedUseQuery.mockImplementation(
+    (opts: {
+      queryKey?: readonly unknown[];
+      enabled?: unknown;
+      onMutate?: unknown;
+      onError?: unknown;
+      onSuccess?: unknown;
+    }) => {
+      if (opts?.enabled === false) {
+        return { isLoading: false, data: undefined } as unknown as never;
+      }
+      const qk = opts?.queryKey;
+      const procedure =
+        Array.isArray(qk) && qk[0] === 'jira' && typeof qk[1] === 'string' ? qk[1] : undefined;
+      if (procedure === 'getTaskConfig') {
+        return { isLoading: false, data: undefined } as unknown as never;
+      }
+      if (procedure === 'listProjects') {
+        return { isLoading: false, data: MOCK_PROJECTS } as unknown as never;
+      }
+      if (procedure === 'listIssueTypes') {
+        return { isLoading: false, data: emptyList } as unknown as never;
+      }
       return { isLoading: false, data: undefined } as unknown as never;
-    }
-    const qk = opts?.queryKey;
-    const procedure =
-      Array.isArray(qk) && qk[0] === 'jira' && typeof qk[1] === 'string' ? qk[1] : undefined;
-    if (procedure === 'getTaskConfig') {
-      return { isLoading: false, data: undefined } as unknown as never;
-    }
-    if (procedure === 'listProjects') {
-      return { isLoading: false, data: MOCK_PROJECTS } as unknown as never;
-    }
-    if (procedure === 'listIssueTypes') {
-      return { isLoading: false, data: emptyList } as unknown as never;
-    }
-    return { isLoading: false, data: undefined } as unknown as never;
-  });
+    },
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -409,18 +417,26 @@ describe('JiraProjectMappingDialog', () => {
       jiraIssueTypeId: 'it-1',
       jiraIssueTypeName: 'Task',
     };
-    mockedUseQuery.mockImplementation((opts: Record<string, unknown>) => {
-      const qk = opts?.queryKey;
-      const procedure =
-        Array.isArray(qk) && qk[0] === 'jira' && typeof qk[1] === 'string' ? qk[1] : undefined;
-      if (procedure === 'getTaskConfig') {
-        return { isLoading: false, data: existingConfig } as unknown as never;
-      }
-      if (procedure === 'listProjects') {
-        return { isLoading: false, data: MOCK_PROJECTS } as unknown as never;
-      }
-      return { isLoading: false, data: [] } as unknown as never;
-    });
+    mockedUseQuery.mockImplementation(
+      (opts: {
+        queryKey?: readonly unknown[];
+        enabled?: unknown;
+        onMutate?: unknown;
+        onError?: unknown;
+        onSuccess?: unknown;
+      }) => {
+        const qk = opts?.queryKey;
+        const procedure =
+          Array.isArray(qk) && qk[0] === 'jira' && typeof qk[1] === 'string' ? qk[1] : undefined;
+        if (procedure === 'getTaskConfig') {
+          return { isLoading: false, data: existingConfig } as unknown as never;
+        }
+        if (procedure === 'listProjects') {
+          return { isLoading: false, data: MOCK_PROJECTS } as unknown as never;
+        }
+        return { isLoading: false, data: [] } as unknown as never;
+      },
+    );
     render(
       <JiraProjectMappingDialog
         open={true}
