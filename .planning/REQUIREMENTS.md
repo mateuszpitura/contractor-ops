@@ -32,10 +32,10 @@ Requirements for UK & Germany market expansion. Each maps to roadmap phases.
 
 ### E-Invoicing
 
-- [ ] **EINV-01**: User can generate XRechnung-compliant e-invoices (EN 16931 with German CIUS rules) in CII XML syntax
-- [ ] **EINV-02**: User can generate ZUGFeRD e-invoices as PDF/A-3 documents with embedded CII XML at EN 16931 (COMFORT) profile level
+- [x] **EINV-01**: User can generate XRechnung-compliant e-invoices (EN 16931 with German CIUS rules) in CII XML syntax
+- [x] **EINV-02**: User can generate ZUGFeRD e-invoices as PDF/A-3 documents with embedded CII XML at EN 16931 (COMFORT) profile level
 - [ ] **EINV-03**: User can receive and parse incoming XRechnung and ZUGFeRD invoices, extracting structured data into the invoice intake flow
-- [ ] **EINV-04**: User can validate generated e-invoices against KoSIT's three-layer validation (XSD schema, EN 16931 Schematron, XRechnung-specific Schematron)
+- [x] **EINV-04**: User can validate generated e-invoices against KoSIT's three-layer validation (XSD schema, EN 16931 Schematron, XRechnung-specific Schematron)
 - [ ] **EINV-05**: User can manage Leitweg-IDs for German B2G (public sector) invoicing with per-contractor or per-contract Leitweg-ID storage
 - [ ] **EINV-06**: User can send e-invoices to UK public sector recipients via Peppol BIS Billing 3.0, reusing the existing Storecove ASP integration
 - [ ] **EINV-07**: User can view e-invoicing compliance status per organization showing which invoices are EN 16931 compliant and which need attention
@@ -45,7 +45,7 @@ Requirements for UK & Germany market expansion. Each maps to roadmap phases.
 - [x] **PAY-01**: User can export UK contractor payments as BACS Standard 18 Direct Credit files with correct fixed-width formatting, sort code validation, and ASCII transliteration for non-ASCII characters
 - [x] **PAY-02**: User can apply UK VAT rates (20% standard, 5% reduced, 0% zero-rated) to invoices for UK-based organizations
 - [x] **PAY-03**: User can validate UK VAT registration numbers via HMRC API
-- [ ] **PAY-04**: User can apply German VAT rates (19% standard, 7% reduced) with Kleinunternehmerregelung exemption flag and reverse charge labeling ("Steuerschuldnerschaft des Leistungsempfängers")
+- [x] **PAY-04**: User can apply German VAT rates (19% standard, 7% reduced) with Kleinunternehmerregelung exemption flag and reverse charge labeling ("Steuerschuldnerschaft des Leistungsempfängers")
 - [x] **PAY-05**: User can validate German USt-IdNr via VIES API with qualified confirmation response
 - [x] **PAY-06**: User sees automatically calculated late payment interest on overdue UK invoices per the Late Payment of Commercial Debts Act (BoE base rate + 8% + fixed compensation of £40/£70/£100)
 - [x] **PAY-07**: User can configure Skonto (early payment discount) terms on German invoices with discount percentage and discount period, with automatic discounted amount calculation and eligibility tracking based on payment date
@@ -116,17 +116,17 @@ Deferred to future release. Tracked but not in current roadmap.
 | CLASS-09 | Phase 60 | Pending |
 | CLASS-10 | Phase 60 | Pending |
 | CLASS-11 | Phase 67 | Pending |
-| EINV-01 | Phase 68 | Pending |
-| EINV-02 | Phase 68 | Pending |
+| EINV-01 | Phase 68 | Complete |
+| EINV-02 | Phase 68 | Complete |
 | EINV-03 | Phase 62 | Pending |
-| EINV-04 | Phase 68 | Pending |
+| EINV-04 | Phase 68 | Complete |
 | EINV-05 | Phase 61 | Pending |
 | EINV-06 | Phase 61 | Pending |
 | EINV-07 | Phase 61 | Pending |
 | PAY-01 | Phase 63 | Complete |
 | PAY-02 | Phase 66 | Complete |
 | PAY-03 | Phase 66 | Complete |
-| PAY-04 | Phase 68 | Pending |
+| PAY-04 | Phase 68 | Complete |
 | PAY-05 | Phase 66 | Complete |
 | PAY-06 | Phase 65 | Complete |
 | PAY-07 | Phase 65 | Complete |
