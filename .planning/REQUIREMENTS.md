@@ -9,12 +9,12 @@ Requirements for UK & Germany market expansion. Each maps to roadmap phases.
 
 ### Country Foundations
 
-- [ ] **FOUND-01**: User can add UK-specific contractor fields (UTR, Companies House number, VAT registration number) to contractor profiles for UK-based organizations
-- [ ] **FOUND-02**: User can add German-specific contractor fields (Steuernummer, Handelsregister number, USt-IdNr, Sozialversicherungsnummer) to contractor profiles for German-based organizations
+- [x] **FOUND-01**: User can add UK-specific contractor fields (UTR, Companies House number, VAT registration number) to contractor profiles for UK-based organizations
+- [x] **FOUND-02**: User can add German-specific contractor fields (Steuernummer, Handelsregister number, USt-IdNr, Sozialversicherungsnummer) to contractor profiles for German-based organizations
 - [ ] **FOUND-03**: User can switch the platform UI to German (full i18n as third language alongside Polish and English)
-- [ ] **FOUND-04**: User sees German-localized legal terminology with correct formal register (Sie, mandatory tax phrases like "Steuerschuldnerschaft des Leistungsempfängers")
-- [ ] **FOUND-05**: User can view UK GDPR-compliant privacy notices and data processing information
-- [ ] **FOUND-06**: User can view German GDPR-compliant privacy notices (Datenschutzerklärung) with BfDI-aligned language
+- [x] **FOUND-04**: User sees German-localized legal terminology with correct formal register (Sie, mandatory tax phrases like "Steuerschuldnerschaft des Leistungsempfängers")
+- [x] **FOUND-05**: User can view UK GDPR-compliant privacy notices and data processing information
+- [x] **FOUND-06**: User can view German GDPR-compliant privacy notices (Datenschutzerklärung) with BfDI-aligned language
 
 ### Contractor Classification
 
@@ -99,12 +99,12 @@ Deferred to future release. Tracked but not in current roadmap.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| FOUND-01 | Phase 67 | Pending |
-| FOUND-02 | Phase 67 | Pending |
+| FOUND-01 | Phase 67 | Complete |
+| FOUND-02 | Phase 67 | Complete |
 | FOUND-03 | Phase 67 | Pending |
-| FOUND-04 | Phase 67 | Pending |
-| FOUND-05 | Phase 67 | Pending |
-| FOUND-06 | Phase 67 | Pending |
+| FOUND-04 | Phase 67 | Complete |
+| FOUND-05 | Phase 67 | Complete |
+| FOUND-06 | Phase 67 | Complete |
 | CLASS-01 | Phase 67 | Pending |
 | CLASS-02 | Phase 67 | Pending |
 | CLASS-03 | Phase 59 | Complete |
