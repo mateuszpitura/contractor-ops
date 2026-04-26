@@ -147,70 +147,82 @@ Explicitly excluded. Documented to prevent scope creep.
 
 ## Traceability
 
-Which phases cover which requirements. Filled by roadmapper.
+Which phases cover which requirements. Filled by roadmapper on 2026-04-26.
 
 | Requirement | Phase | Status |
 |---|---|---|
-| FOUND6-01 | TBD | Pending |
-| FOUND6-02 | TBD | Pending |
-| FOUND6-03 | TBD | Pending |
-| FOUND6-04 | TBD | Pending |
-| FOUND6-05 | TBD | Pending |
-| FOUND6-06 | TBD | Pending |
-| COMPL-01 | TBD | Pending |
-| COMPL-02 | TBD | Pending |
-| COMPL-03 | TBD | Pending |
-| COMPL-04 | TBD | Pending |
-| COMPL-05 | TBD | Pending |
-| COMPL-06 | TBD | Pending |
-| COMPL-07 | TBD | Pending |
-| COMPL-08 | TBD | Pending |
-| COMPL-09 | TBD | Pending |
-| COMPL-10 | TBD | Pending |
-| COMPL-11 | TBD | Pending |
-| IDP-01 | TBD | Pending |
-| IDP-02 | TBD | Pending |
-| IDP-03 | TBD | Pending |
-| IDP-04 | TBD | Pending |
-| IDP-05 | TBD | Pending |
-| IDP-06 | TBD | Pending |
-| IDP-07 | TBD | Pending |
-| IDP-08 | TBD | Pending |
-| IDP-09 | TBD | Pending |
-| IDP-10 | TBD | Pending |
-| IDP-11 | TBD | Pending |
-| IDP-12 | TBD | Pending |
-| IDP-13 | TBD | Pending |
-| IDP-14 | TBD | Pending |
-| IDP-15 | TBD | Pending |
-| GULF-01 | TBD | Pending |
-| GULF-02 | TBD | Pending |
-| GULF-03 | TBD | Pending |
-| GULF-04 | TBD | Pending |
-| GULF-05 | TBD | Pending |
-| GULF-06 | TBD | Pending |
-| GULF-07 | TBD | Pending |
-| GULF-08 | TBD | Pending |
-| GULF-09 | TBD | Pending |
-| GULF-10 | TBD | Pending |
-| GULF-11 | TBD | Pending |
-| OFFB-01 | TBD | Pending |
-| OFFB-02 | TBD | Pending |
-| OFFB-03 | TBD | Pending |
-| OFFB-04 | TBD | Pending |
-| OFFB-05 | TBD | Pending |
-| OFFB-06 | TBD | Pending |
-| OFFB-07 | TBD | Pending |
-| OFFB-08 | TBD | Pending |
-| OFFB-09 | TBD | Pending |
-| OFFB-10 | TBD | Pending |
-| OFFB-11 | TBD | Pending |
+| FOUND6-01 | Phase 70 | Pending |
+| FOUND6-02 | Phase 70 | Pending |
+| FOUND6-03 | Phase 70 | Pending |
+| FOUND6-04 | Phase 70 | Pending |
+| FOUND6-05 | Phase 70 | Pending |
+| FOUND6-06 | Phase 70 | Pending |
+| COMPL-01 | Phase 73 | Pending |
+| COMPL-02 | Phase 71 | Pending |
+| COMPL-03 | Phase 72 | Pending |
+| COMPL-04 | Phase 73 | Pending |
+| COMPL-05 | Phase 72 | Pending |
+| COMPL-06 | Phase 72 | Pending |
+| COMPL-07 | Phase 72 | Pending |
+| COMPL-08 | Phase 71 | Pending |
+| COMPL-09 | Phase 71 | Pending |
+| COMPL-10 | Phase 71 | Pending |
+| COMPL-11 | Phase 73 | Pending |
+| IDP-01 | Phase 77 | Pending |
+| IDP-02 | Phase 76 | Pending |
+| IDP-03 | Phase 77 | Pending |
+| IDP-04 | Phase 77 | Pending |
+| IDP-05 | Phase 78 | Pending |
+| IDP-06 | Phase 78 | Pending |
+| IDP-07 | Phase 78 | Pending |
+| IDP-08 | Phase 76 | Pending |
+| IDP-09 | Phase 76 | Pending |
+| IDP-10 | Phase 76 | Pending |
+| IDP-11 | Phase 76 | Pending |
+| IDP-12 | Phase 77 | Pending |
+| IDP-13 | Phase 76 | Pending |
+| IDP-14 | Phase 76 | Pending |
+| IDP-15 | Phase 76 | Pending |
+| GULF-01 | Phase 79 | Pending |
+| GULF-02 | Phase 79 | Pending |
+| GULF-03 | Phase 79 | Pending |
+| GULF-04 | Phase 79 | Pending |
+| GULF-05 | Phase 79 | Pending |
+| GULF-06 | Phase 79 | Pending |
+| GULF-07 | Phase 79 | Pending |
+| GULF-08 | Phase 79 | Pending |
+| GULF-09 | Phase 79 | Pending |
+| GULF-10 | Phase 79 | Pending |
+| GULF-11 | Phase 79 | Pending |
+| OFFB-01 | Phase 74 | Pending |
+| OFFB-02 | Phase 74 | Pending |
+| OFFB-03 | Phase 74 | Pending |
+| OFFB-04 | Phase 75 | Pending |
+| OFFB-05 | Phase 75 | Pending |
+| OFFB-06 | Phase 75 | Pending |
+| OFFB-07 | Phase 74 | Pending |
+| OFFB-08 | Phase 75 | Pending |
+| OFFB-09 | Phase 75 | Pending |
+| OFFB-10 | Phase 74 | Pending |
+| OFFB-11 | Phase 74 | Pending |
 
 **Coverage:**
 - v6.0 requirements: **54 total** (6 FOUND6 + 11 COMPL + 15 IDP + 11 GULF + 11 OFFB)
-- Mapped to phases: 0 (filled by roadmapper)
-- Unmapped: 54 ⚠️ (will resolve to 0 after roadmap)
+- Mapped to phases: **54 / 54** (100%)
+- Unmapped: **0** ✓
+- Phase distribution:
+  - Phase 70 (Foundation): 6 requirements (FOUND6-01..06)
+  - Phase 71 (F1 schema + policy): 4 requirements (COMPL-02, 08, 09, 10)
+  - Phase 72 (F1 reminder + payment block): 4 requirements (COMPL-03, 05, 06, 07)
+  - Phase 73 (F1 dashboard + portal + i18n): 3 requirements (COMPL-01, 04, 11)
+  - Phase 74 (F4 workflow + KT + override): 6 requirements (OFFB-01, 02, 03, 07, 10, 11)
+  - Phase 75 (F4 health check + IP verify + credentials): 5 requirements (OFFB-04, 05, 06, 08, 09)
+  - Phase 76 (F2 capability + saga + cooldown): 8 requirements (IDP-02, 08, 09, 10, 11, 13, 14, 15)
+  - Phase 77 (F2 GWS + Slack wedge): 4 requirements (IDP-01, 03, 04, 12)
+  - Phase 78 (F2 Entra + Okta + GitHub differentiator): 3 requirements (IDP-05, 06, 07)
+  - Phase 79 (F3 Gulf): 11 requirements (GULF-01..11)
+  - Phase 80 (verification + UAT): 0 requirements (verification phase covers all v6.0 surfaces)
 
 ---
 *Requirements defined: 2026-04-26*
-*Last updated: 2026-04-26 after initial definition*
+*Traceability filled by roadmapper: 2026-04-26 — 54/54 mapped, 100% coverage*

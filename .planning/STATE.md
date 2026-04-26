@@ -2,12 +2,13 @@
 gsd_state_version: 1.0
 milestone: v6.0
 milestone_name: Platform Maturity & Operational Hardening
-status: defining_requirements
+status: roadmap_created
 stopped_at: ""
-last_updated: "2026-04-26T12:00:00.000Z"
-last_activity: 2026-04-26 -- Milestone v6.0 started
+last_updated: "2026-04-26T14:30:00.000Z"
+last_activity: 2026-04-26 -- v6.0 roadmap created (Phases 70-80)
+planned_phase: 70
 progress:
-  total_phases: 0
+  total_phases: 11
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -25,12 +26,14 @@ See: .planning/PROJECT.md (updated 2026-04-26 — v6.0 milestone started)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 70 — Not started
 Plan: —
-Status: Defining requirements
-Last activity: 2026-04-26 — Milestone v6.0 started
+Status: Roadmap created (54/54 requirements mapped, 100% coverage). Phase 70 ready for `/gsd-plan-phase 70`.
+Last activity: 2026-04-26 — v6.0 roadmap created with 11 phases (70-80)
 
-Progress: [░░░░░░░░░░] 0% (v6.0)
+Progress: [░░░░░░░░░░] 0% (v6.0 — 0/11 phases complete)
+
+**Planned Phase:** 70 (v6.0 Foundation — Cross-Cutting CI Guards & Observability Baseline)
 
 ## Performance Metrics
 
@@ -38,6 +41,7 @@ Progress: [░░░░░░░░░░] 0% (v6.0)
 
 - Total plans completed: 314 (51 v1.0 + 52 v2.0 + 47 v3.0 + 55 v4.0 + 70 v5.0 [Phases 56–69, includes audit gap-closure trio 65/66/67 + follow-ups 68/69])
 - v6.0 plans completed: 0
+- v6.0 phases planned: 11 (70-80)
 
 **v5.0 Reference:**
 
@@ -74,11 +78,45 @@ Code-level audit gaps (I-1 / EINV-01/02/04 / PAY-04 / FOUND-03) all closed this 
 - **Legal/regulatory verification is DEFERRED.** Any feature that ordinarily requires sign-off from an external legal entity (UK tax adviser for IR35 / ITEPA wording, German Steuerberater for DRV / Scheinselbständigkeit / SGB terminology, Polish doradca podatkowy for JPK, Arabic legal counsel for PDPL, etc.) should be marked as "Needs verification by legal entity before production deploy" in the relevant SUMMARY.md / VALIDATION.md / plan checkpoint, but must NOT hard-block the build, the CI pipeline, or local execution. There is no point running approval workflows pre-deploy.
 - **Default behaviour for legal-review checkpoints:** treat the plan-provided legal wording as the working copy, ship it, and record the outstanding legal sign-off as a post-merge item in the phase SUMMARY under "Manual-Only Verifications" or an equivalent section. Do NOT write STATE.md blockers for missing legal sign-off unless the plan explicitly hard-stops on it.
 
+### v6.0 Roadmap Summary (created 2026-04-26)
+
+**11 phases (70-80) covering 54 requirements:**
+
+| Phase | Name | Reqs | Research |
+|---|---|---|---|
+| 70 | v6.0 Foundation — CI Guards & Observability | 6 | STANDARD |
+| 71 | F1 Compliance — Policy Package + Schema | 4 | NEEDS RESEARCH |
+| 72 | F1 Compliance — Reminder + Payment Block | 4 | STANDARD |
+| 73 | F1 Compliance — Dashboard + Portal + i18n | 3 | STANDARD |
+| 74 | F4 Offboarding — Workflow + KT Templates | 6 | STANDARD |
+| 75 | F4 Offboarding — IP Verify + Credentials | 5 | NEEDS RESEARCH |
+| 76 | F2 IdP — Capability + Saga + Cooldown | 8 | STANDARD |
+| 77 | F2 IdP — GWS + Slack (the wedge) | 4 | NEEDS RESEARCH |
+| 78 | F2 IdP — Entra + Okta + GitHub | 3 | NEEDS RESEARCH |
+| 79 | F3 Gulf — UAE Free-Zone + Saudization | 11 | NEEDS RESEARCH |
+| 80 | v6.0 Verification + Hardening + UAT | 0 | STANDARD |
+
+**Hard dependency edges:**
+- 70 → all (foundation guards must ship first)
+- 71 → 79 (free-zone trade license participates in F1 reminder cron)
+- 71 → 75 (F4 IP-clause findings persist as ContractorComplianceItem)
+- 74 → 75 (F4 IP_VERIFICATION needs override permission + workflow foundation)
+- 75 → 76 (F2 14-day cooldown gate references F4 final-invoice-paid state — Pitfall 7)
+- 76 → 77 → 78 (saga + cooldown infra → wedge → differentiator)
+
 ### Decisions
 
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
+- [v6.0 roadmap, 2026-04-26]: Foundation-first (Phase 70) — PITFALLS P27-P31 wins over ARCHITECTURE F1-first proposal; cross-cutting CI guards prevent CRITICAL-recovery-cost bug classes
+- [v6.0 roadmap, 2026-04-26]: F4 ships before F2 — Pitfall 7 cooldown gate references F4's final-invoice-paid state machine
+- [v6.0 roadmap, 2026-04-26]: F2 split into wedge (GWS+Slack, Phase 77) + differentiator (Entra+Okta+GitHub, Phase 78) — ~95% SMB market hits the wedge with narrowest scope expansion
+- [v6.0 roadmap, 2026-04-26]: F1 ships before F3 + F4 — both compose on F1's `ContractorComplianceItem` + reminder cron schema
+- [v6.0 requirements, 2026-04-26]: Drift escape hatch reused 3x (compliance requirement-set / Saudization Nitaqat thresholds / role taxonomy) — milestone-wide pattern mirrors v5.0 `recreateDraftAfterDrift`
+- [v6.0 requirements, 2026-04-26]: Saudization band entry is MANUAL — system never auto-computes (legal liability + quarterly matrix changes); GULF-FUTURE-02 likely never
+- [v6.0 requirements, 2026-04-26]: Contract clause scanner is REGEX-FIRST per-jurisdiction phrase library; Claude Vision tool_use only as MANUAL_REVIEW_REQUIRED tristate fallback (PITFALLS P22)
+- [v6.0 requirements, 2026-04-26]: Credentials are POINTERS only (`CredentialReference` schema) — content-validation regex rejects AKIA*/GitHub PATs/JWT/hex≥32; storing actual credentials explicitly out of scope (PITFALLS P21)
 - [v5.0 roadmap]: Classification engine as new `packages/classification` with pluggable country rule sets (mirrors einvoice pattern)
 - [v5.0 roadmap]: XRechnung uses CII XML syntax (not UBL) — different from existing Peppol-AE profile
 - [v5.0 roadmap]: ZUGFeRD requires PDF/A-3 with embedded CII XML via pdf-lib — highest technical risk, needs proof-of-concept
@@ -87,7 +125,9 @@ Recent decisions affecting current work:
 
 ### Pending Todos
 
-None yet.
+- Run `/gsd-plan-phase 70` to begin v6.0 execution (Phase 70 is foundation — must ship before any feature work).
+- Phase 71, 75, 77, 78, 79 carry NEEDS RESEARCH flags — `/gsd-plan-phase` will spawn `gsd-phase-researcher` for those.
+- Standing reminder: every legal-sensitive Unleash flag introduced by a v6.0 phase must register PENDING in `signoff-registry.ts` (FOUND6-04 CI gate enforces this once Phase 70 ships).
 
 ### Blockers/Concerns
 
@@ -113,8 +153,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-26 — milestone v6.0 started
-Stopped at: —
-Resume file: —
-
-**Planned Phase:** — (roadmap not yet created)
+Last session: 2026-04-26 — v6.0 roadmap created (Phases 70-80, 54/54 requirements mapped)
+Stopped at: Phase 70 ready to plan
+Resume file: .planning/ROADMAP.md (v6.0 section)
+Next command: `/gsd-plan-phase 70`
