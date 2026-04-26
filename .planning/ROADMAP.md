@@ -47,7 +47,7 @@ See .planning/milestones/v4.0/ for details.
 - [x] **Phase 66: Phase 57 Completion & Verification** - Execute 57-04 plan (VAT tRPC routers, invoice pipeline, UI), produce Phase 57 VERIFICATION.md (completed 2026-04-26)
 - [x] **Phase 67: Phase 56 & 58 Verification** - Produce Phase 56 VERIFICATION.md (country foundations), produce Phase 58 VERIFICATION.md (classification engine) (completed 2026-04-26)
 - [x] **Phase 68: Skonto BG-20 XRechnung Emission Fix** - Thread Skonto term from invoice finalize through XRechnung CII generator so BG-20 Payment Terms are emitted on DE invoices with configured Skonto (closes I-1, EINV-01/02/04 partial, PAY-04 partial, F-4 broken) (completed 2026-04-26)
-- [ ] **Phase 69: DE Message-Key Parity Fix** - Author 32 missing DE translations introduced by Phases 63+64 (25 Payments.lateInterest.* + 1 Payments.skonto.previewLineEn + 6 Admin.ClassificationEngineFlag.*) in formal-Sie register (closes FOUND-03)
+- [x] **Phase 69: DE Message-Key Parity Fix** - Author 32 missing DE translations introduced by Phases 63+64 (25 Payments.lateInterest.* + 1 Payments.skonto.previewLineEn + 6 Admin.ClassificationEngineFlag.*) in formal-Sie register (closes FOUND-03) (completed 2026-04-26)
 
 ## Phase Details
 
@@ -197,7 +197,7 @@ Phases execute in numeric order: 56 -> 57 -> 58 -> 59 -> 60 -> 61 -> 62 -> 63 ->
 | 66. Phase 57 Completion & Verification | v5.0 | 4/4 | Complete    | 2026-04-26 |
 | 67. Phase 56 & 58 Verification | v5.0 | 2/2 | Complete    | 2026-04-26 |
 | 68. Skonto BG-20 XRechnung Emission Fix | v5.0 | 5/5 | Complete    | 2026-04-26 |
-| 69. DE Message-Key Parity Fix | v5.0 | 0/0 | Not started | - |
+| 69. DE Message-Key Parity Fix | v5.0 | 1/1 | Complete    | 2026-04-26 |
 
 ### Phase 64: Legal Compliance Hardening
 **Goal**: Classification features (Phases 58-60) are completely inaccessible when the feature flag is disabled — no routes, no sidebar entries, no API endpoints, no data leakage — and when enabled after legal sign-off, all screens clearly communicate advisory-only status with escalation paths
