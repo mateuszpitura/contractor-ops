@@ -289,7 +289,7 @@ describe('ReminderRuleEditor', () => {
   it('renders with ROLE recipient mode and configJson role', () => {
     const rule = makeRule({
       recipientMode: 'ROLE',
-      configJson: { role: 'OPS_MANAGER' },
+      configJson: { role: 'ops_manager' },
     });
     render(<ReminderRuleEditor open={true} onOpenChange={vi.fn()} rule={rule} />);
     expect(screen.getByText('reminderRules.editor.ruleName')).toBeInTheDocument();
@@ -425,7 +425,7 @@ describe('ReminderRuleEditor', () => {
   it('renders role picker select in ROLE recipient mode', () => {
     const rule = makeRule({
       recipientMode: 'ROLE',
-      configJson: { role: 'OPS_MANAGER' },
+      configJson: { role: 'ops_manager' },
     });
     render(<ReminderRuleEditor open={true} onOpenChange={vi.fn()} rule={rule} />);
     // Role picker should be rendered (has combobox elements)
@@ -462,7 +462,7 @@ describe('ReminderRuleEditor', () => {
   it('submits form with ROLE recipient and configRole', async () => {
     const rule = makeRule({
       recipientMode: 'ROLE',
-      configJson: { role: 'OPS_MANAGER' },
+      configJson: { role: 'ops_manager' },
       triggerType: 'BEFORE_CONTRACT_END',
       offsetDays: 30,
     });

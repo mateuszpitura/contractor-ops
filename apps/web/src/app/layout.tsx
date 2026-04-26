@@ -5,9 +5,6 @@ import type { ReactNode } from 'react';
 // Phase 64 D-10 — register classification disclaimer gate at app boot
 import '@/lib/feature-flags-init';
 
-// Sentry: instrument client-side route transitions for performance tracing
-export { onRouterTransitionStart } from '@/sentry.client.config';
-
 const outfit = Outfit({
   subsets: ['latin', 'latin-ext'],
   variable: '--font-sans',

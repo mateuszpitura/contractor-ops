@@ -26,6 +26,7 @@ model PaymentRun {
   items   PaymentRunItem[]
   exports PaymentExport[]
 
+  @@unique([organizationId, runNumber])
   @@index([organizationId])
   @@index([organizationId, status])
   @@index([organizationId, createdAt])
@@ -59,8 +60,8 @@ model PaymentRunItem {
   contractor     Contractor                @relation(fields: [contractorId], references: [id])
   billingProfile ContractorBillingProfile? @relation(fields: [billingProfileId], references: [id])
 
-  invoicePayments    InvoicePayment[]
-  skontoApplication  SkontoApplication?
+  invoicePayments   InvoicePayment[]
+  skontoApplication SkontoApplication?
 
   @@unique([paymentRunId, invoiceId])
   @@index([organizationId])

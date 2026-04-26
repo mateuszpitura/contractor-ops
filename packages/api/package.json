@@ -51,6 +51,11 @@
       "import": "./src/services/ocr-extraction.ts",
       "default": "./src/services/ocr-extraction.ts"
     },
+    "./services/late-payment-claim-pdf": {
+      "types": "./src/services/late-payment-claim-pdf.ts",
+      "import": "./src/services/late-payment-claim-pdf.ts",
+      "default": "./src/services/late-payment-claim-pdf.ts"
+    },
     "./services/stripe-client": {
       "types": "./src/services/stripe-client.ts",
       "import": "./src/services/stripe-client.ts",
@@ -186,6 +191,7 @@
     "bir1": "^4.1.1",
     "botbuilder": "^4.23.3",
     "clamscan": "^2.4.0",
+    "exceljs": "^4.4.0",
     "file-type": "^21.3.4",
     "mt940js": "^1.3.5",
     "nodemailer": "^6.10.1",

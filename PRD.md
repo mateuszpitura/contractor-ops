@@ -1507,7 +1507,7 @@ ApprovalChainConfig {
   name            VARCHAR(255)
   resource_type   ENUM('invoice','document','contract')
   conditions_json JSONB            -- e.g., {"amount_gte": 5000, "contractor_type": "company"}
-  steps_json      JSONB            -- [{order: 1, role: "manager"}, {order: 2, role: "finance"}]
+  steps_json      JSONB            -- [{order: 1, role: "team_manager"}, {order: 2, role: "finance_admin"}]
   is_default      BOOLEAN
   created_at      TIMESTAMPTZ
 }

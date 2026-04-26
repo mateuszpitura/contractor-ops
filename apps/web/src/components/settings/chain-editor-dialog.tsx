@@ -1,5 +1,6 @@
 'use client';
 
+import { workflowAssignableRoleValues } from '@contractor-ops/validators/roles';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Loader2, Plus, X } from 'lucide-react';
@@ -48,26 +49,17 @@ import { trpc } from '@/trpc/init';
 // Form schema (local wizard schema -- mirrors validators/approval.ts)
 // ---------------------------------------------------------------------------
 
-const APPROVER_ROLES = [
-  'ORG_ADMIN',
-  'FINANCE_ADMIN',
-  'OPS_MANAGER',
-  'TEAM_MANAGER',
-  'LEGAL_VIEWER',
-  'IT_ADMIN',
-  'ACCOUNTANT',
-  'READ_ONLY',
-] as const;
+const APPROVER_ROLES = workflowAssignableRoleValues;
 
 const ROLE_LABELS: Record<string, string> = {
-  ORG_ADMIN: 'Admin',
-  FINANCE_ADMIN: 'Finance Admin',
-  OPS_MANAGER: 'Ops Manager',
-  TEAM_MANAGER: 'Team Manager',
-  LEGAL_VIEWER: 'Legal Viewer',
-  IT_ADMIN: 'IT Admin',
-  ACCOUNTANT: 'Accountant',
-  READ_ONLY: 'Read Only',
+  admin: 'Admin',
+  finance_admin: 'Finance Admin',
+  ops_manager: 'Ops Manager',
+  team_manager: 'Team Manager',
+  legal_compliance_viewer: 'Legal Viewer',
+  it_admin: 'IT Admin',
+  external_accountant: 'Accountant',
+  readonly: 'Read Only',
 };
 
 const stepSchema = z.object({

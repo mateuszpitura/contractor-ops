@@ -9,6 +9,11 @@ import { ac } from './permissions.js';
 /**
  * All permissions from the access control statement.
  * Used for the owner role which has full access.
+ *
+ * NOTE: `admin:boe-rate` is a global platform resource and is intentionally
+ * NOT granted to any per-org role (including owner). It is exclusive to the
+ * `platform_operator` role below, which is assigned to the dedicated
+ * operator org that manages cross-tenant reference data.
  */
 const allPermissions = {
   organization: ['update', 'delete'],
@@ -19,7 +24,7 @@ const allPermissions = {
   document: ['create', 'read', 'update', 'delete'],
   invoice: ['create', 'read', 'update', 'delete', 'approve'],
   workflow: ['create', 'read', 'update', 'delete', 'execute'],
-  payment: ['create', 'read', 'export'],
+  payment: ['create', 'read', 'update', 'export'],
   report: ['read', 'export'],
   settings: ['read', 'update'],
   integration: ['read', 'update'],
@@ -45,7 +50,7 @@ export const roles = {
     document: ['create', 'read', 'update', 'delete'],
     invoice: ['create', 'read', 'update', 'delete', 'approve'],
     workflow: ['create', 'read', 'update', 'delete', 'execute'],
-    payment: ['create', 'read', 'export'],
+    payment: ['create', 'read', 'update', 'export'],
     report: ['read', 'export'],
     settings: ['read', 'update'],
     integration: ['read', 'update'],
@@ -58,7 +63,7 @@ export const roles = {
     contractor: ['read'],
     contract: ['read'],
     invoice: ['create', 'read', 'update', 'delete', 'approve'],
-    payment: ['create', 'read', 'export'],
+    payment: ['create', 'read', 'update', 'export'],
     report: ['read', 'export'],
     settings: ['read'],
     time: ['read'],
@@ -114,6 +119,18 @@ export const roles = {
     invoice: ['read'],
     workflow: ['read'],
     report: ['read'],
+  }),
+
+  /**
+   * Platform operator: manages cross-tenant reference data (e.g. the
+   * Bank-of-England base rate that drives late-payment-interest claims
+   * across every GB B2B invoice in the system). Assigned only to members
+   * of the dedicated platform-operator org. Explicitly does NOT inherit
+   * any tenant-facing permission (contractor, invoice, payment, …) so an
+   * operator cannot read or mutate customer data.
+   */
+  platform_operator: ac.newRole({
+    'admin:boe-rate': ['read', 'write'],
   }),
 } as const;
 

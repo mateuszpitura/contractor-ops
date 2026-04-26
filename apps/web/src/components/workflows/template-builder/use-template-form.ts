@@ -1,5 +1,6 @@
 'use client';
 
+import { workflowAssignableRoleValues } from '@contractor-ops/validators/roles';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useCallback, useEffect } from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
@@ -46,18 +47,7 @@ const taskSchema = z.object({
     'CONTRACT_OWNER',
     'PROJECT_MANAGER',
   ]),
-  assigneeRole: z
-    .enum([
-      'ORG_ADMIN',
-      'FINANCE_ADMIN',
-      'OPS_MANAGER',
-      'TEAM_MANAGER',
-      'LEGAL_VIEWER',
-      'IT_ADMIN',
-      'ACCOUNTANT',
-      'READ_ONLY',
-    ])
-    .optional(),
+  assigneeRole: z.enum(workflowAssignableRoleValues).optional(),
   assigneeUserId: z.string().optional(),
   dueOffsetDays: z.number().int().nonnegative().optional(),
   dueOffsetHours: z.number().int().nonnegative().optional(),

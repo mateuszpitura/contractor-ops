@@ -58,31 +58,31 @@ describe('GET /documents', () => {
 
   it('forwards page and pageSize as numbers', async () => {
     await app.request('/?page=2&pageSize=20');
-    const [input] = mockList.mock.calls[0] as [{ page: unknown; pageSize: unknown }][];
+    const [input] = mockList.mock.calls[0] as [{ page: unknown; pageSize: unknown }];
     expect(input).toMatchObject({ page: 2, pageSize: 20 });
   });
 
   it('forwards entityType query param', async () => {
     await app.request('/?entityType=CONTRACTOR');
-    const [input] = mockList.mock.calls[0] as [{ entityType: unknown }][];
+    const [input] = mockList.mock.calls[0] as [{ entityType: unknown }];
     expect(input).toMatchObject({ entityType: 'CONTRACTOR' });
   });
 
   it('forwards entityId query param', async () => {
     await app.request('/?entityId=ent-abc');
-    const [input] = mockList.mock.calls[0] as [{ entityId: unknown }][];
+    const [input] = mockList.mock.calls[0] as [{ entityId: unknown }];
     expect(input).toMatchObject({ entityId: 'ent-abc' });
   });
 
   it('forwards sortOrder query param', async () => {
     await app.request('/?sortOrder=asc');
-    const [input] = mockList.mock.calls[0] as [{ sortOrder: unknown }][];
+    const [input] = mockList.mock.calls[0] as [{ sortOrder: unknown }];
     expect(input).toMatchObject({ sortOrder: 'asc' });
   });
 
   it('forwards all params together correctly', async () => {
     await app.request('/?page=1&pageSize=10&entityType=CONTRACT&entityId=cnt-1&sortOrder=desc');
-    const [input] = mockList.mock.calls[0] as [Record<string, unknown>][];
+    const [input] = mockList.mock.calls[0] as [Record<string, unknown>];
     expect(input).toMatchObject({
       page: 1,
       pageSize: 10,
@@ -94,7 +94,7 @@ describe('GET /documents', () => {
 
   it('passes undefined for all params when none provided', async () => {
     await app.request('/');
-    const [input] = mockList.mock.calls[0] as [Record<string, unknown>][];
+    const [input] = mockList.mock.calls[0] as [Record<string, unknown>];
     expect(input.page).toBeUndefined();
     expect(input.pageSize).toBeUndefined();
     expect(input.entityType).toBeUndefined();

@@ -1,16 +1,5 @@
 import { z } from 'zod';
-
-/** All available role names in the system */
-const roleEnum = z.enum([
-  'admin',
-  'finance_admin',
-  'ops_manager',
-  'team_manager',
-  'legal_compliance_viewer',
-  'it_admin',
-  'external_accountant',
-  'readonly',
-]);
+import { invitableMemberRoleEnum } from './roles.js';
 
 /**
  * Schema for inviting a new user to the organization.
@@ -18,7 +7,7 @@ const roleEnum = z.enum([
  */
 export const inviteUserSchema = z.object({
   email: z.string().email('Invalid email address'),
-  role: roleEnum,
+  role: invitableMemberRoleEnum,
 });
 
 export type InviteUserInput = z.infer<typeof inviteUserSchema>;
@@ -29,7 +18,7 @@ export type InviteUserInput = z.infer<typeof inviteUserSchema>;
  */
 export const updateUserRoleSchema = z.object({
   userId: z.string().min(1, 'User ID is required'),
-  role: roleEnum,
+  role: invitableMemberRoleEnum,
 });
 
 export type UpdateUserRoleInput = z.infer<typeof updateUserRoleSchema>;

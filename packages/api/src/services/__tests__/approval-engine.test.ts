@@ -433,7 +433,7 @@ describe('createApprovalFlow', () => {
       chainConfig: {
         id: 'chain-1',
         stepsJson: [
-          { name: 'Finance Review', approverRole: 'FINANCE_ADMIN', slaHours: 24, required: true },
+          { name: 'Finance Review', approverRole: 'finance_admin', slaHours: 24, required: true },
         ],
       },
       createdByUserId: 'creator',
@@ -446,7 +446,7 @@ describe('createApprovalFlow', () => {
     // Verify the resolved userId ends up in the step data
     const steps = captureCreateData(mockTx).steps.create;
     expect(steps[0].approverUserId).toBe('resolved-finance-user');
-    expect(steps[0].approverRole).toBe('FINANCE_ADMIN');
+    expect(steps[0].approverRole).toBe('finance_admin');
   });
 
   it('throws PRECONDITION_FAILED when member.findFirst returns null for a role', async () => {
@@ -457,7 +457,12 @@ describe('createApprovalFlow', () => {
       chainConfig: {
         id: 'chain-1',
         stepsJson: [
-          { name: 'Legal Review', approverRole: 'LEGAL_VIEWER', slaHours: 24, required: true },
+          {
+            name: 'Legal Review',
+            approverRole: 'legal_compliance_viewer',
+            slaHours: 24,
+            required: true,
+          },
         ],
       },
       createdByUserId: 'creator',
@@ -481,7 +486,7 @@ describe('createApprovalFlow', () => {
           {
             name: 'Manager Review',
             approverUserId: 'user-1',
-            approverRole: 'OPS_MANAGER',
+            approverRole: 'ops_manager',
             slaHours: 24,
             required: true,
           },

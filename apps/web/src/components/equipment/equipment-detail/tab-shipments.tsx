@@ -50,7 +50,7 @@ interface PendingReturn {
   contractorName: string;
   itemCount: number;
   targetPointName: string;
-  createdAt: string;
+  createdAt: string | Date;
 }
 
 interface TabShipmentsProps {

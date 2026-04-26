@@ -52,21 +52,21 @@ model Invoice {
   contract       Contract?                 @relation(fields: [contractId], references: [id])
   billingProfile ContractorBillingProfile? @relation(fields: [billingProfileId], references: [id])
 
-  files             InvoiceFile[]
-  lines             InvoiceLine[]
-  matchResults      InvoiceMatchResult[]
-  paymentRunItems   PaymentRunItem[]
-  zatcaChainEntry   ZatcaInvoiceChain?
-  eInvoiceLifecycle EInvoiceLifecycle?
-  intake            InvoiceIntakeRequest? @relation("InvoiceIntakeConvertedInvoice")
+  files                     InvoiceFile[]
+  lines                     InvoiceLine[]
+  matchResults              InvoiceMatchResult[]
+  paymentRunItems           PaymentRunItem[]
+  zatcaChainEntry           ZatcaInvoiceChain?
+  eInvoiceLifecycle         EInvoiceLifecycle?
+  intake                    InvoiceIntakeRequest?        @relation("InvoiceIntakeConvertedInvoice")
   // Phase 63 — UK Payments & Financial Features
-  payments              InvoicePayment[]
-  interestCompensation  InvoiceInterestCompensation?
-  interestWaivers       InvoiceInterestWaiver[]
-  interestClaims        InvoiceInterestClaim[]
-  interestClaimsAsSecondary InvoiceInterestClaim[] @relation("InterestClaimSecondaryInvoice")
-  skontoTerms           SkontoTerm[]
-  skontoSnapshot        SkontoSnapshot?
+  payments                  InvoicePayment[]
+  interestCompensation      InvoiceInterestCompensation?
+  interestWaivers           InvoiceInterestWaiver[]
+  interestClaims            InvoiceInterestClaim[]
+  interestClaimsAsSecondary InvoiceInterestClaim[]       @relation("InterestClaimSecondaryInvoice")
+  skontoTerms               SkontoTerm[]
+  skontoSnapshot            SkontoSnapshot?
 
   @@unique([organizationId, duplicateCheckHash])
   @@index([organizationId])
@@ -314,41 +314,56 @@ enum InterestWaiveType {
 }
 
 model InvoiceInterestWaiver {
-  id              String           @id @default(cuid())
+  id              String            @id @default(cuid())
   organizationId  String
-  organization    Organization     @relation(fields: [organizationId], references: [id])
+  organization    Organization      @relation(fields: [organizationId], references: [id])
   invoiceId       String
-  invoice         Invoice          @relation(fields: [invoiceId], references: [id])
+  invoice         Invoice           @relation(fields: [invoiceId], references: [id])
   waiveType       InterestWaiveType
-  reason          String           @db.Text
+  reason          String            @db.Text
   waivedByUserId  String
-  waivedAt        DateTime         @default(now())
+  waivedAt        DateTime          @default(now())
   revokedAt       DateTime?
   revokedByUserId String?
-  revokeReason    String?          @db.Text
-  createdAt       DateTime         @default(now())
+  revokeReason    String?           @db.Text
+  createdAt       DateTime          @default(now())
 
   @@index([organizationId, invoiceId])
   @@map("invoice_interest_waiver")
 }
 
 model InvoiceInterestClaim {
-  id                        String       @id @default(cuid())
+  id                        String                        @id @default(cuid())
   organizationId            String
-  organization              Organization @relation(fields: [organizationId], references: [id])
+  organization              Organization                  @relation(fields: [organizationId], references: [id])
   invoiceId                 String
-  invoice                   Invoice      @relation(fields: [invoiceId], references: [id])
+  invoice                   Invoice                       @relation(fields: [invoiceId], references: [id])
   claimedByUserId           String
-  claimedAt                 DateTime     @default(now())
+  claimedAt                 DateTime                      @default(now())
   snapshotInterestMinor     Int
   snapshotCompensationMinor Int
-  snapshotRateUsed          Decimal      @db.Decimal(5, 2)
+  snapshotRateUsed          Decimal                       @db.Decimal(5, 2)
   snapshotDaysOverdue       Int
-  pdfKey                    String
+  // pdfKey is nullable: the claim row lands synchronously, and a QStash
+  // worker renders and uploads the PDF asynchronously. Status:
+  //   PENDING_RENDER  — job queued, pdfKey still null
+  //   READY           — pdfKey populated, client can download
+  //   FAILED          — render failed (see pdfError)
+  pdfKey                    String?
+  pdfStatus                 InvoiceInterestClaimPdfStatus @default(PENDING_RENDER)
+  pdfError                  String?
+  pdfReadyAt                DateTime?
   secondaryInvoiceId        String?
-  secondaryInvoice          Invoice?     @relation("InterestClaimSecondaryInvoice", fields: [secondaryInvoiceId], references: [id])
-  createdAt                 DateTime     @default(now())
+  secondaryInvoice          Invoice?                      @relation("InterestClaimSecondaryInvoice", fields: [secondaryInvoiceId], references: [id])
+  createdAt                 DateTime                      @default(now())
 
   @@index([organizationId, invoiceId])
+  @@index([pdfStatus, createdAt])
   @@map("invoice_interest_claim")
+}
+
+enum InvoiceInterestClaimPdfStatus {
+  PENDING_RENDER
+  READY
+  FAILED
 }

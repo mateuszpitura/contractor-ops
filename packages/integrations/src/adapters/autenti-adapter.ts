@@ -1,5 +1,6 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { prisma } from '@contractor-ops/db';
+import { createIntegrationLogger } from '@contractor-ops/logger';
 import { decryptCredentials } from '../services/credential-service.js';
 import { handleSigningWebhook } from '../services/esign-webhook-handler.js';
 import type { CredentialBlob } from '../types/credentials.js';
@@ -20,6 +21,8 @@ import { BaseAdapter } from './base-adapter.js';
 // ---------------------------------------------------------------------------
 
 const AUTENTI_API_BASE = 'https://api.autenti.com/api/v2';
+
+const log = createIntegrationLogger('autenti');
 
 // ---------------------------------------------------------------------------
 // Autenti Adapter
@@ -314,9 +317,7 @@ export class AutentiAdapter extends BaseAdapter implements ESignAdapter {
       });
     } catch {
       // REMIND action may not be supported for all process states — log and no-op
-      console.warn(
-        `[autenti-adapter] REMIND action failed for process ${envelopeId}, continuing as no-op`,
-      );
+      log.warn({ envelopeId }, 'remind action failed for process, continuing as no-op');
     }
   }
 

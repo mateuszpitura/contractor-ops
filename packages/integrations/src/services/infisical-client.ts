@@ -7,7 +7,10 @@
 // Per T-48-14: Never log secret values. Path /zatca/{orgId} isolates orgs.
 // ---------------------------------------------------------------------------
 
+import { createIntegrationLogger } from '@contractor-ops/logger';
 import type { SecretStore } from '@contractor-ops/secrets';
+
+const log = createIntegrationLogger('infisical');
 
 // ---------------------------------------------------------------------------
 // Types
@@ -96,7 +99,7 @@ export class InfisicalSecretStore implements SecretStore {
       if (this.isNotFoundError(error)) {
         return null;
       }
-      console.error(`[infisical] Failed to get secret at path: ${path}`);
+      log.error({ path }, 'failed to get secret at path');
       throw new SecretStoreError(`Failed to retrieve secret`, 'get', path, error);
     }
   }
@@ -128,7 +131,7 @@ export class InfisicalSecretStore implements SecretStore {
       }
     } catch (error) {
       if (error instanceof SecretStoreError) throw error;
-      console.error(`[infisical] Failed to set secret at path: ${path}`);
+      log.error({ path }, 'failed to set secret at path');
       throw new SecretStoreError(`Failed to store secret`, 'set', path, error);
     }
   }
@@ -146,7 +149,7 @@ export class InfisicalSecretStore implements SecretStore {
     } catch (error) {
       // Deleting non-existent secret is a no-op
       if (this.isNotFoundError(error)) return;
-      console.error(`[infisical] Failed to delete secret at path: ${path}`);
+      log.error({ path }, 'failed to delete secret at path');
       throw new SecretStoreError(`Failed to delete secret`, 'delete', path, error);
     }
   }
@@ -198,7 +201,7 @@ export class InfisicalSecretStore implements SecretStore {
       });
     } catch (error) {
       this.initPromise = null; // Allow retry
-      console.error('[infisical] Failed to initialize SDK');
+      log.error({}, 'failed to initialize sdk');
       throw new SecretStoreError('Failed to initialize Infisical SDK', 'init', undefined, error);
     }
   }

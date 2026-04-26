@@ -1,6 +1,6 @@
 'use client';
 
-import { complianceState } from '@contractor-ops/einvoice';
+import { complianceState } from '@contractor-ops/einvoice/compliance';
 import { useQuery } from '@tanstack/react-query';
 import { CheckCircle2, FileCheck, XCircle } from 'lucide-react';
 import { useId } from 'react';

@@ -1,8 +1,25 @@
+import { createLogger } from '@contractor-ops/logger';
 import type { InPostClientConfig } from './courier/inpost-client.js';
 import { InPostClient } from './courier/inpost-client.js';
 import type { DbClient } from './types.js';
 
+const log = createLogger({ service: 'equipment-workflow' });
+
 type PrismaClient = DbClient;
+
+/** Transaction-scoped or full client: only the delegates used by InPost + workflow helpers. */
+type EquipmentWorkflowDb = Pick<
+  DbClient,
+  | 'workflowTaskRun'
+  | 'workflowRun'
+  | 'courierConfig'
+  | 'contractor'
+  | 'organization'
+  | 'shipment'
+  | 'shipmentEvent'
+  | 'equipment'
+  | 'returnRequest'
+>;
 
 // ---------------------------------------------------------------------------
 // Equipment Workflow Integration Service
@@ -45,8 +62,9 @@ export async function handleEquipmentTaskStart(
     if (taskRun.taskType !== 'EQUIPMENT') return;
 
     if (!workflowRun.contractorId) {
-      console.info(
-        `[equipment-workflow] Skipping EQUIPMENT task ${taskRun.id}: no contractor linked to workflow run ${workflowRun.id}`,
+      log.info(
+        { taskRunId: taskRun.id, workflowRunId: workflowRun.id },
+        'skipping EQUIPMENT task: no contractor linked to workflow run',
       );
       return;
     }
@@ -89,8 +107,9 @@ export async function handleEquipmentTaskStart(
           },
         });
 
-        console.info(
-          `[equipment-workflow] Task ${taskRun.id} auto-completed: no equipment assigned to contractor ${contractorId}`,
+        log.info(
+          { taskRunId: taskRun.id, contractorId },
+          'task auto-completed: no equipment assigned to contractor',
         );
 
         // Recompute workflow run progress after auto-completion
@@ -118,8 +137,9 @@ export async function handleEquipmentTaskStart(
           data: { status: 'RETURN_REQUESTED' },
         });
 
-        console.info(
-          `[equipment-workflow] Set ${equipmentIds.length} equipment item(s) to RETURN_REQUESTED for offboarding task ${taskRun.id}`,
+        log.info(
+          { equipmentCount: equipmentIds.length, taskRunId: taskRun.id },
+          'set equipment items to RETURN_REQUESTED for offboarding task',
         );
 
         // D-10: Auto-create InPost return shipment if org has courier config
@@ -133,15 +153,13 @@ export async function handleEquipmentTaskStart(
         });
       }
 
-      console.info(
-        `[equipment-workflow] Task ${taskRun.id} started: ${equipmentIds.length} equipment item(s), direction=${direction}`,
+      log.info(
+        { taskRunId: taskRun.id, equipmentCount: equipmentIds.length, direction },
+        'task started',
       );
     });
   } catch (error) {
-    console.error(
-      `[equipment-workflow] handleEquipmentTaskStart failed for task ${taskRun.id}:`,
-      error,
-    );
+    log.error({ err: error, taskRunId: taskRun.id }, 'handleEquipmentTaskStart failed for task');
   }
 }
 
@@ -206,8 +224,9 @@ export async function checkShipmentTaskCompletion(
     );
 
     if (!allComplete) {
-      console.info(
-        `[equipment-workflow] Shipment ${shipment.id} reached ${targetStatus}, but not all linked shipments complete for task ${workflowTaskRunId}`,
+      log.info(
+        { shipmentId: shipment.id, targetStatus, workflowTaskRunId },
+        'shipment reached target status, but not all linked shipments complete for task',
       );
       return;
     }
@@ -230,8 +249,9 @@ export async function checkShipmentTaskCompletion(
       return;
     }
 
-    console.info(
-      `[equipment-workflow] Auto-completed task ${workflowTaskRunId}: all ${allLinkedShipments.length} shipment(s) reached target status`,
+    log.info(
+      { workflowTaskRunId, shipmentCount: allLinkedShipments.length },
+      'auto-completed task: all shipments reached target status',
     );
 
     // Recompute workflow run progress
@@ -244,9 +264,9 @@ export async function checkShipmentTaskCompletion(
       await recomputeWorkflowProgress(db, taskRun.workflowRunId);
     }
   } catch (error) {
-    console.error(
-      `[equipment-workflow] checkShipmentTaskCompletion failed for shipment ${shipment.id}:`,
-      error,
+    log.error(
+      { err: error, shipmentId: shipment.id },
+      'checkShipmentTaskCompletion failed for shipment',
     );
   }
 }
@@ -267,7 +287,7 @@ export async function checkShipmentTaskCompletion(
  * Equipment stays in RETURN_REQUESTED if this fails — admin can create manually.
  */
 async function autoCreateInPostReturnShipment(
-  tx: PrismaClient,
+  tx: EquipmentWorkflowDb,
   params: {
     organizationId: string;
     contractorId: string;
@@ -309,8 +329,9 @@ async function autoCreateInPostReturnShipment(
     });
 
     if (!contractor?.preferredPaczkomatId) {
-      console.warn(
-        `[equipment-workflow] Contractor ${contractorId} has no preferred Paczkomat — skipping auto-shipment for task ${taskRunId}`,
+      log.warn(
+        { contractorId, taskRunId },
+        'contractor has no preferred Paczkomat — skipping auto-shipment for task',
       );
       return;
     }
@@ -407,8 +428,9 @@ async function autoCreateInPostReturnShipment(
       },
     });
 
-    console.info(
-      `[equipment-workflow] Auto-created InPost return shipment for offboarding task ${taskRunId}, contractor ${contractorId}`,
+    log.info(
+      { taskRunId, contractorId },
+      'auto-created InPost return shipment for offboarding task',
     );
 
     // Fire-and-forget: notify contractor with return label info (D-13)
@@ -416,9 +438,9 @@ async function autoCreateInPostReturnShipment(
     // The notification will be sent via the webhook handler when status updates arrive
   } catch (error) {
     // Do NOT fail the task start — equipment stays in RETURN_REQUESTED
-    console.error(
-      `[equipment-workflow] Auto-shipment creation failed for task ${params.taskRunId}:`,
-      error,
+    log.error(
+      { err: error, taskRunId: params.taskRunId },
+      'auto-shipment creation failed for task',
     );
   }
 }
@@ -430,7 +452,10 @@ async function autoCreateInPostReturnShipment(
 /**
  * Recompute workflow run progress and auto-complete if all required tasks done.
  */
-async function recomputeWorkflowProgress(tx: PrismaClient, workflowRunId: string): Promise<void> {
+async function recomputeWorkflowProgress(
+  tx: EquipmentWorkflowDb,
+  workflowRunId: string,
+): Promise<void> {
   const allTasks = await tx.workflowTaskRun.findMany({
     where: { workflowRunId },
     select: { status: true, required: true },
@@ -463,8 +488,9 @@ async function recomputeWorkflowProgress(tx: PrismaClient, workflowRunId: string
       },
     });
 
-    console.info(
-      `[equipment-workflow] Workflow run ${workflowRunId} auto-completed: all required tasks done (${progressPercent}%)`,
+    log.info(
+      { workflowRunId, progressPercent },
+      'workflow run auto-completed: all required tasks done',
     );
   } else {
     await tx.workflowRun.update({

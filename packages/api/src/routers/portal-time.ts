@@ -8,6 +8,7 @@ import {
 } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { router } from '../init.js';
+import { plain } from '../lib/plain.js';
 import { portalProcedure } from '../middleware/portal-auth.js';
 import { syncClockifyEntries } from '../services/clockify-sync.js';
 import { syncJiraWorklogs } from '../services/jira-worklog-sync.js';
@@ -16,15 +17,6 @@ import { getOrCreateTimesheet, saveDraftEntries, submitTimesheet } from '../serv
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-/**
- * Strips Prisma class prototype from query results, producing plain
- * JSON-serializable objects so that inferred tRPC router types do NOT
- * reference the generated Prisma client module (avoids TS2742).
- */
-function plain<T>(data: T): T {
-  return JSON.parse(JSON.stringify(data)) as T;
-}
 
 /**
  * Returns the ISO Monday for a given date string (YYYY-MM-DD).

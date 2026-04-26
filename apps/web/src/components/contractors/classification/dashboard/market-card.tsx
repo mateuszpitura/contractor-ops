@@ -11,6 +11,7 @@
 
 'use client';
 
+import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -38,12 +39,14 @@ function TileSkeleton() {
 export function MarketCard({ market }: MarketCardProps) {
   const t = useTranslations('Classification.polish.dashboard');
 
-  const coverage = trpc.classificationDashboard.coverageByMarket.useQuery({ market });
-  const riskDistribution = trpc.classificationDashboard.riskDistributionByMarket.useQuery({
-    market,
-  });
-  const overdue = trpc.classificationDashboard.overdueByMarket.useQuery({ market });
-  const activeAlerts = trpc.classificationDashboard.activeAlertsByMarket.useQuery({ market });
+  const coverage = useQuery(trpc.classificationDashboard.coverageByMarket.queryOptions({ market }));
+  const riskDistribution = useQuery(
+    trpc.classificationDashboard.riskDistributionByMarket.queryOptions({ market }),
+  );
+  const overdue = useQuery(trpc.classificationDashboard.overdueByMarket.queryOptions({ market }));
+  const activeAlerts = useQuery(
+    trpc.classificationDashboard.activeAlertsByMarket.queryOptions({ market }),
+  );
 
   const cardTitle = market === 'GB' ? t('gbCardTitle') : t('deCardTitle');
   const cardSubline = market === 'GB' ? t('gbCardSubline') : t('deCardSubline');

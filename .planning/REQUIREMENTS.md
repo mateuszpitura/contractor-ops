@@ -45,7 +45,7 @@ Requirements for UK & Germany market expansion. Each maps to roadmap phases.
 - [x] **PAY-01**: User can export UK contractor payments as BACS Standard 18 Direct Credit files with correct fixed-width formatting, sort code validation, and ASCII transliteration for non-ASCII characters
 - [x] **PAY-02**: User can apply UK VAT rates (20% standard, 5% reduced, 0% zero-rated) to invoices for UK-based organizations
 - [x] **PAY-03**: User can validate UK VAT registration numbers via HMRC API
-- [x] **PAY-04**: User can apply German VAT rates (19% standard, 7% reduced) with Kleinunternehmerregelung exemption flag and reverse charge labeling ("Steuerschuldnerschaft des Leistungsempfängers")
+- [ ] **PAY-04**: User can apply German VAT rates (19% standard, 7% reduced) with Kleinunternehmerregelung exemption flag and reverse charge labeling ("Steuerschuldnerschaft des Leistungsempfängers")
 - [x] **PAY-05**: User can validate German USt-IdNr via VIES API with qualified confirmation response
 - [x] **PAY-06**: User sees automatically calculated late payment interest on overdue UK invoices per the Late Payment of Commercial Debts Act (BoE base rate + 8% + fixed compensation of £40/£70/£100)
 - [x] **PAY-07**: User can configure Skonto (early payment discount) terms on German invoices with discount percentage and discount period, with automatic discounted amount calculation and eligibility tracking based on payment date
@@ -101,7 +101,7 @@ Deferred to future release. Tracked but not in current roadmap.
 |-------------|-------|--------|
 | FOUND-01 | Phase 67 | Complete |
 | FOUND-02 | Phase 67 | Complete |
-| FOUND-03 | Phase 67 | Pending |
+| FOUND-03 | Phase 69 | Pending |
 | FOUND-04 | Phase 67 | Complete |
 | FOUND-05 | Phase 67 | Complete |
 | FOUND-06 | Phase 67 | Complete |
@@ -116,17 +116,17 @@ Deferred to future release. Tracked but not in current roadmap.
 | CLASS-09 | Phase 60 | Pending |
 | CLASS-10 | Phase 60 | Pending |
 | CLASS-11 | Phase 67 | Pending |
-| EINV-01 | Phase 61 | Pending |
-| EINV-02 | Phase 62 | Pending |
+| EINV-01 | Phase 68 | Pending |
+| EINV-02 | Phase 68 | Pending |
 | EINV-03 | Phase 62 | Pending |
-| EINV-04 | Phase 61 | Pending |
+| EINV-04 | Phase 68 | Pending |
 | EINV-05 | Phase 61 | Pending |
 | EINV-06 | Phase 61 | Pending |
 | EINV-07 | Phase 61 | Pending |
 | PAY-01 | Phase 63 | Complete |
 | PAY-02 | Phase 66 | Complete |
 | PAY-03 | Phase 66 | Complete |
-| PAY-04 | Phase 66 | Complete |
+| PAY-04 | Phase 68 | Pending |
 | PAY-05 | Phase 66 | Complete |
 | PAY-06 | Phase 65 | Complete |
 | PAY-07 | Phase 65 | Complete |
@@ -148,4 +148,4 @@ Deferred to future release. Tracked but not in current roadmap.
 
 ---
 *Requirements defined: 2026-04-12*
-*Last updated: 2026-04-26 after gap closure phases 65-67 added; CLASS-01/02/05 reset from Complete to Pending (orphaned — no VERIFICATION.md); FOUND/CLASS/PAY traceability updated to gap closure phases*
+*Last updated: 2026-04-26 after gap closure phases 68-69 added per v5.0 milestone audit; PAY-04 reset from Complete to Pending (Skonto BG-20 emission gap I-1); EINV-01/02/04 + PAY-04 reassigned to Phase 68; FOUND-03 reassigned to Phase 69*

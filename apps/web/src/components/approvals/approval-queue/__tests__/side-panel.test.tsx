@@ -60,7 +60,7 @@ const baseStep: ApprovalQueueRow = {
   name: 'Manager Review',
   status: 'PENDING',
   approverUserId: 'user-1',
-  approverRole: 'OPS_MANAGER',
+  approverRole: 'ops_manager',
   slaDeadline: '2025-04-10T12:00:00Z',
   createdAt: '2025-04-01T10:00:00Z',
   approvalFlow: {

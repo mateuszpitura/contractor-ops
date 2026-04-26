@@ -1,9 +1,12 @@
 import { ConfluenceAdapter } from '@contractor-ops/integrations/adapters/confluence-adapter';
 import { NotionAdapter } from '@contractor-ops/integrations/adapters/notion-adapter';
 import { decryptCredentials } from '@contractor-ops/integrations/services/credential-service';
+import { createLogger } from '@contractor-ops/logger';
 import type { DocSearchResult } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import type { DbClient } from './types.js';
+
+const log = createLogger({ service: 'doc-link-service' });
 
 type PrismaClient = DbClient;
 
@@ -239,7 +242,7 @@ async function searchNotionPages(
         }),
       );
   } catch (error) {
-    console.error('[doc-link-service] Notion search failed:', error);
+    log.error({ err: error }, 'notion search failed');
     return [];
   }
 }
@@ -263,7 +266,7 @@ async function searchConfluencePages(
   const cloudId = config?.cloudId;
 
   if (!cloudId) {
-    console.error('[doc-link-service] Confluence connection missing cloudId');
+    log.error({}, 'confluence connection missing cloudId');
     return [];
   }
 
@@ -290,7 +293,7 @@ async function searchConfluencePages(
         }),
       );
   } catch (error) {
-    console.error('[doc-link-service] Confluence search failed:', error);
+    log.error({ err: error }, 'confluence search failed');
     return [];
   }
 }
@@ -360,7 +363,7 @@ export async function refreshDocMetadata(
       });
     }
   } catch (error) {
-    console.error('[doc-link-service] Metadata refresh failed:', error);
+    log.error({ err: error }, 'metadata refresh failed');
   }
 
   return link;

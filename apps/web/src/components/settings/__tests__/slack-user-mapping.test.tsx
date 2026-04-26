@@ -13,7 +13,7 @@ const mockMappings = {
     {
       userId: 'u2',
       user: { id: 'u2', name: 'Bob', email: 'bob@test.com', image: null },
-      role: 'member',
+      role: 'readonly',
       slackLink: {
         externalLinkId: 'el1',
         externalId: 'U123',

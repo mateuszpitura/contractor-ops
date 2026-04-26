@@ -28,18 +28,34 @@ function createLimiter(maxRequests: number, window: Parameters<typeof Ratelimit.
 const authLimiter = createLimiter(10, '1m'); // 10 auth requests per minute per IP
 const portalLimiter = createLimiter(10, '1m'); // 10 portal requests per minute per IP
 const apiLimiter = createLimiter(60, '1m'); // 60 API requests per minute per IP
-// Per-org limiter
-const orgLimiter = createLimiter(500, '1m'); // 500 requests per minute per org
+// NOTE: Per-org rate limiting used to key on the `better-auth.active_organization`
+// cookie, but that cookie is client-editable — an attacker can trivially
+// rotate the value to escape their bucket, making the limit unenforceable
+// at the edge. Per-org caps are enforced downstream at the tRPC layer where
+// the session (and thus org membership) has been cryptographically validated
+// by Better Auth. See packages/api/src/middleware/tenant.ts.
 
-// In-memory fallback when Redis is unavailable (dev / single-instance)
+// In-memory fallback when Redis is unavailable (dev / single-instance).
+// Cleanup is done on-access (lazy) rather than via setInterval — the edge
+// runtime is short-lived and reloads the module frequently, so a periodic
+// timer is mostly decorative and can leak across HMR reloads.
 const fallbackMap = new Map<string, { count: number; resetAt: number }>();
 const FALLBACK_WINDOW_MS = 60_000;
+const FALLBACK_MAX_ENTRIES = 10_000;
 
 function fallbackRateLimit(key: string, max: number): { allowed: boolean; remaining: number } {
   const now = Date.now();
   const entry = fallbackMap.get(key);
 
   if (!entry || now > entry.resetAt) {
+    // Opportunistic eviction when the map is saturated — drop the oldest
+    // 10 % (insertion-ordered, which is a close-enough proxy for LRU given
+    // entries expire within FALLBACK_WINDOW_MS anyway).
+    if (fallbackMap.size >= FALLBACK_MAX_ENTRIES) {
+      const toEvict = Math.ceil(FALLBACK_MAX_ENTRIES * 0.1);
+      const keys = Array.from(fallbackMap.keys()).slice(0, toEvict);
+      for (const k of keys) fallbackMap.delete(k);
+    }
     fallbackMap.set(key, { count: 1, resetAt: now + FALLBACK_WINDOW_MS });
     return { allowed: true, remaining: max - 1 };
   }
@@ -47,17 +63,6 @@ function fallbackRateLimit(key: string, max: number): { allowed: boolean; remain
   entry.count++;
   const remaining = Math.max(0, max - entry.count);
   return { allowed: entry.count <= max, remaining };
-}
-
-// Periodic cleanup of expired fallback entries
-if (typeof globalThis !== 'undefined') {
-  const cleanup = () => {
-    const now = Date.now();
-    for (const [key, entry] of fallbackMap) {
-      if (now > entry.resetAt) fallbackMap.delete(key);
-    }
-  };
-  setInterval(cleanup, 5 * 60_000).unref?.();
 }
 
 /**
@@ -111,10 +116,30 @@ function rateLimitResponse(remaining: number, limit: number, reset: number) {
 const LOAD_TEST_HEADER = 'x-load-test-secret';
 
 /**
+ * Constant-time byte compare for secret verification. Uses TextEncoder
+ * (edge-runtime safe) to avoid pulling node:crypto, and returns early-false
+ * on length mismatch without leaking timing about the prefix.
+ */
+function constantTimeEquals(a: string, b: string): boolean {
+  const aBytes = new TextEncoder().encode(a);
+  const bBytes = new TextEncoder().encode(b);
+  if (aBytes.length !== bBytes.length) return false;
+  let diff = 0;
+  for (let i = 0; i < aBytes.length; i++) {
+    diff |= (aBytes[i] ?? 0) ^ (bBytes[i] ?? 0);
+  }
+  return diff === 0;
+}
+
+/**
  * When LOAD_TEST_BYPASS=1 and LOAD_TEST_SECRET match the request header, skip
- * per-IP and per-org rate limits for /api/trpc (k6 / staging load tests).
+ * per-IP rate limits for /api/trpc (k6 / staging load tests).
  * Hard-blocked on production hosts (Vercel prod, Render non-preview). Never
  * enable LOAD_TEST_BYPASS on a public production service.
+ *
+ * The secret compare is constant-time to avoid leaking the secret through a
+ * timing side-channel — belt-and-braces, since the env guards already block
+ * use of this header in production.
  */
 function shouldSkipTrpcRateLimitForLoadTest(request: NextRequest): boolean {
   if (process.env.LOAD_TEST_BYPASS !== '1') return false;
@@ -125,7 +150,8 @@ function shouldSkipTrpcRateLimitForLoadTest(request: NextRequest): boolean {
   // non-preview (production) branch. Block bypass there.
   if (process.env.RENDER === 'true' && process.env.IS_PULL_REQUEST !== 'true') return false;
   const header = request.headers.get(LOAD_TEST_HEADER);
-  return header === secret;
+  if (!header) return false;
+  return constantTimeEquals(header, secret);
 }
 
 // ---------------------------------------------------------------------------
@@ -185,8 +211,30 @@ function isDashboardRoute(pathname: string): boolean {
 // Auth guard dispatcher (extracted to reduce middleware complexity)
 // ---------------------------------------------------------------------------
 
+/**
+ * Cheap cookie-shape guard. The Better Auth session-token cookie is a signed
+ * JWT-like string; a client-forged empty or obviously-malformed value can
+ * satisfy `cookies.has()` but is clearly not a real session.
+ *
+ * The authoritative session validation runs inside the tRPC context and in
+ * server-component layouts (see packages/api/src/context.ts and each
+ * dashboard layout). This middleware guard exists only to drive the
+ * unauthenticated UX redirect — it must NEVER be the sole gate on a
+ * protected route. Add a session check in every dashboard `layout.tsx`.
+ */
+function hasSessionCookie(request: NextRequest): boolean {
+  const raw = request.cookies.get('better-auth.session_token')?.value;
+  if (!raw) return false;
+  // Minimum plausible length for a Better Auth signed session token. Real
+  // tokens are ~50+ chars; anything shorter is almost certainly a forgery.
+  if (raw.length < 20) return false;
+  // Must be URL-safe base64-ish (letters, digits, `-_.~+/=`).
+  if (!/^[A-Za-z0-9._\-~+/=]+$/.test(raw)) return false;
+  return true;
+}
+
 function applyAuthGuards(request: NextRequest, pathname: string): NextResponse | null {
-  const hasSession = request.cookies.has('better-auth.session_token');
+  const hasSession = hasSessionCookie(request);
   const localeMatch = pathname.match(/^\/([a-z]{2})(\/.*)?$/);
   const locale = localeMatch?.[1] ?? 'en';
   const pathWithoutLocale = localeMatch?.[2] ?? '/';
@@ -233,12 +281,10 @@ async function applyRateLimits(
     if (!ipResult.allowed)
       return rateLimitResponse(ipResult.remaining, ipResult.limit, ipResult.reset);
 
-    const orgId = request.cookies.get('better-auth.active_organization')?.value;
-    if (orgId) {
-      const orgResult = await checkLimit(orgLimiter, orgId, 'org', 500);
-      if (!orgResult.allowed)
-        return rateLimitResponse(orgResult.remaining, orgResult.limit, orgResult.reset);
-    }
+    // Per-org rate limiting intentionally removed: the only org identifier
+    // available in the edge runtime is the `better-auth.active_organization`
+    // cookie, which is client-editable. Per-org caps live in the tRPC
+    // middleware where the session has been validated server-side.
   }
 
   return null;

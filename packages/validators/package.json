@@ -14,6 +14,11 @@
       "import": "./dist/index.js",
       "default": "./dist/index.js"
     },
+    "./roles": {
+      "types": "./src/roles.ts",
+      "import": "./src/roles.ts",
+      "default": "./src/roles.ts"
+    },
     "./minimal-server-env": {
       "types": "./src/minimal-server-env.ts",
       "import": "./src/minimal-server-env.ts",

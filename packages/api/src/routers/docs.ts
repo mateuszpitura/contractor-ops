@@ -1,6 +1,7 @@
 import { attachDocInputSchema, docSearchInputSchema } from '@contractor-ops/validators';
 import { z } from 'zod';
 import { router } from '../init.js';
+import { plain } from '../lib/plain.js';
 import { tenantProcedure } from '../middleware/tenant.js';
 import {
   attachDocLink,
@@ -21,10 +22,6 @@ function providerFromExternalType(
   externalType: 'NOTION_PAGE' | 'CONFLUENCE_PAGE',
 ): 'NOTION' | 'CONFLUENCE' {
   return externalType === 'NOTION_PAGE' ? 'NOTION' : 'CONFLUENCE';
-}
-
-function plain<T>(data: T): T {
-  return JSON.parse(JSON.stringify(data)) as T;
 }
 
 // ---------------------------------------------------------------------------

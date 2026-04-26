@@ -6,7 +6,7 @@ import {
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { publicProcedure, router } from '../init.js';
-import { adminProcedure } from '../middleware/rbac.js';
+import { adminProcedure, requirePermission } from '../middleware/rbac.js';
 import { tenantProcedure } from '../middleware/tenant.js';
 
 export const organizationRouter = router({
@@ -106,6 +106,7 @@ export const organizationRouter = router({
   // with no analogue in other jurisdictions.
   // ---------------------------------------------------------------------------
   setKleinunternehmer: tenantProcedure
+    .use(requirePermission({ settings: ['update'] }))
     .input(z.object({ enabled: z.boolean() }))
     .mutation(async ({ ctx, input }) => {
       const org = await ctx.db.organization.findUniqueOrThrow({

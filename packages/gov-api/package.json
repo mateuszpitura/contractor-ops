@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "@contractor-ops/db": "workspace:*",
+    "@contractor-ops/logger": "workspace:*",
     "@contractor-ops/secrets": "workspace:*",
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.37.0",

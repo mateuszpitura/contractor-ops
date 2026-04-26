@@ -6,14 +6,14 @@ describe('DashboardProvider', () => {
   it('provides activeOrg and userRole', () => {
     const org = { id: 'org-1', name: 'Test Org', slug: 'test-org', logo: null };
     const wrapper = ({ children }: { children: ReactNode }) => (
-      <DashboardProvider activeOrg={org} userRole="ORG_ADMIN">
+      <DashboardProvider activeOrg={org} userRole="admin">
         {children}
       </DashboardProvider>
     );
 
     const { result } = renderHook(() => useDashboardContext(), { wrapper });
     expect(result.current.activeOrg?.name).toBe('Test Org');
-    expect(result.current.userRole).toBe('ORG_ADMIN');
+    expect(result.current.userRole).toBe('admin');
   });
 
   it('provides null defaults without provider', () => {

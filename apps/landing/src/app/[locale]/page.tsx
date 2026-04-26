@@ -1,3 +1,4 @@
+import { createLogger } from '@contractor-ops/logger';
 import { SectionTracker } from '@/components/analytics/section-tracker';
 import { CTA } from '@/components/cta';
 import { Features } from '@/components/features';
@@ -15,6 +16,8 @@ import { defaultLocale, getTranslations, isValidLocale, TranslationProvider } fr
 import type { PricingPlan } from '@/lib/stripe';
 import { fetchPricingPlans } from '@/lib/stripe';
 
+const log = createLogger({ service: 'landing-home-page' });
+
 export default async function LandingPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale: localeParam } = await params;
   const locale: Locale = isValidLocale(localeParam) ? localeParam : defaultLocale;
@@ -24,7 +27,7 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
   try {
     plans = await fetchPricingPlans();
   } catch (error) {
-    console.error('[landing] Failed to fetch pricing from Stripe:', error);
+    log.error({ err: error }, 'failed to fetch pricing from Stripe');
     const { PLAN_CONTENT } = await import('@/lib/pricing-content');
     plans = Object.entries(PLAN_CONTENT).map(([slug, c]) => ({
       id: slug,

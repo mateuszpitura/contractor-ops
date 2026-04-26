@@ -51,7 +51,7 @@ export function ConfirmImportStep({
     const counts = new Map<string, number>();
     for (const person of peopleToImport) {
       const sel = personSelections.get(person.email);
-      const role = sel?.role ?? 'member';
+      const role = sel?.role ?? 'readonly';
       counts.set(role, (counts.get(role) ?? 0) + 1);
     }
     return Array.from(counts.entries()).map(([role, count]) => ({
@@ -94,7 +94,7 @@ export function ConfirmImportStep({
       return {
         email: p.email,
         name: p.name,
-        role: sel?.role ?? 'member',
+        role: sel?.role ?? 'readonly',
         skip: false,
       };
     });

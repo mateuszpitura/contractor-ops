@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { invitableMemberRoleEnum } from './roles.js';
 
 // ---------------------------------------------------------------------------
 // Source provider enum
@@ -73,7 +74,7 @@ export const batchImportInputSchema = z.object({
     z.object({
       email: z.string().email(),
       name: z.string(),
-      role: z.string(),
+      role: invitableMemberRoleEnum,
       skip: z.boolean().default(false),
     }),
   ),
@@ -149,7 +150,7 @@ export const importProgressOutputSchema = z.object({
     z.object({
       email: z.string(),
       error: z.string(),
-      role: z.string(),
+      role: invitableMemberRoleEnum,
     }),
   ),
 });

@@ -1,5 +1,6 @@
 'use client';
 
+import { invitableMemberRoleValues } from '@contractor-ops/validators/roles';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
@@ -30,30 +31,12 @@ import { trpc } from '@/trpc/init';
 
 const inviteSchema = z.object({
   email: z.string().email(),
-  role: z.enum([
-    'admin',
-    'finance_admin',
-    'ops_manager',
-    'team_manager',
-    'legal_compliance_viewer',
-    'it_admin',
-    'external_accountant',
-    'readonly',
-  ]),
+  role: z.enum(invitableMemberRoleValues),
 });
 
 type InviteValues = z.infer<typeof inviteSchema>;
 
-const roleKeys = [
-  'admin',
-  'finance_admin',
-  'ops_manager',
-  'team_manager',
-  'legal_compliance_viewer',
-  'it_admin',
-  'external_accountant',
-  'readonly',
-] as const;
+const roleKeys = invitableMemberRoleValues;
 
 export function InviteDialog({
   open,

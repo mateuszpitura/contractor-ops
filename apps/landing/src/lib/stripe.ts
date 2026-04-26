@@ -1,5 +1,8 @@
+import { createLogger } from '@contractor-ops/logger';
 import Stripe from 'stripe';
 import { CREDIT_PACK_CONTENT, PLAN_CONTENT } from './pricing-content';
+
+const log = createLogger({ service: 'landing-stripe' });
 
 /**
  * Stripe client — runs server-side only (build / ISR revalidation).
@@ -18,9 +21,7 @@ function getStripeClient() {
           'Set it in your environment or the build will use fallback prices.',
       );
     }
-    console.warn(
-      '[stripe] STRIPE_SECRET_KEY not set — using fallback prices from pricing-content.ts',
-    );
+    log.warn({}, 'STRIPE_SECRET_KEY not set — using fallback prices from pricing-content.ts');
     cachedStripeClient = null;
     return null;
   }

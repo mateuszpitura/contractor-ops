@@ -1,3 +1,6 @@
+import type { ShipmentStatus } from '@contractor-ops/db/generated/prisma/client';
+import { createLogger } from '@contractor-ops/logger';
+
 // ---------------------------------------------------------------------------
 // DPD Status Mapper
 //
@@ -5,13 +8,15 @@
 // Unknown statuses return null and log a warning (never throw).
 // ---------------------------------------------------------------------------
 
+const log = createLogger({ service: 'dpd-status-mapper' });
+
 /**
  * Complete mapping of DPD status strings to ShipmentStatus enum values.
  *
  * DPD uses DEP_ prefixed status codes. Multiple DPD statuses can map
  * to the same ShipmentStatus.
  */
-export const DPD_STATUS_MAP: Record<string, string> = {
+export const DPD_STATUS_MAP: Record<string, ShipmentStatus> = {
   DEP_ACCEPTED: 'CREATED',
   DEP_COLLECTED: 'PICKED_UP',
   DEP_IN_TRANSIT: 'IN_TRANSIT',
@@ -29,10 +34,10 @@ export const DPD_STATUS_MAP: Record<string, string> = {
  * @param rawStatus - The status string from DPD API or tracking response
  * @returns The mapped ShipmentStatus string, or null if the status is unknown
  */
-export function mapDpdStatus(rawStatus: string): string | null {
+export function mapDpdStatus(rawStatus: string): ShipmentStatus | null {
   const mapped = DPD_STATUS_MAP[rawStatus];
   if (!mapped) {
-    console.warn(`[dpd-status-mapper] Unknown DPD status: "${rawStatus}" — skipping`);
+    log.warn({ rawStatus }, 'unknown DPD status — skipping');
     return null;
   }
   return mapped;

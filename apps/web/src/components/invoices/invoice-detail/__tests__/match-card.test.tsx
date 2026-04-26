@@ -213,7 +213,7 @@ describe('MatchCard', () => {
   });
 
   it('masks tax ID for non-admin role', () => {
-    usePermissionsMock.mockReturnValue({ role: 'member' });
+    usePermissionsMock.mockReturnValue({ role: 'readonly' });
 
     render(<MatchCard invoice={createInvoice()} />);
 

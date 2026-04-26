@@ -192,14 +192,14 @@ enum AssigneeMode {
 }
 
 enum UserRole {
-  ORG_ADMIN
-  FINANCE_ADMIN
-  OPS_MANAGER
-  TEAM_MANAGER
-  LEGAL_VIEWER
-  IT_ADMIN
-  ACCOUNTANT
-  READ_ONLY
+  admin
+  finance_admin
+  ops_manager
+  team_manager
+  legal_compliance_viewer
+  it_admin
+  external_accountant
+  readonly
 }
 
 enum WorkflowRunStatus {

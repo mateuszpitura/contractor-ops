@@ -12,6 +12,7 @@
 
 'use client';
 
+import { useQuery } from '@tanstack/react-query';
 import { useFormatter, useTranslations } from 'next-intl';
 import { Suspense } from 'react';
 import { MarketCard } from '@/components/contractors/classification/dashboard/market-card';
@@ -22,7 +23,7 @@ import { trpc } from '@/trpc/init';
 function GlobalHeader() {
   const t = useTranslations('Classification.polish.dashboard');
   const formatter = useFormatter();
-  const header = trpc.classificationDashboard.globalHeader.useQuery();
+  const header = useQuery(trpc.classificationDashboard.globalHeader.queryOptions());
 
   if (!header.data) {
     return (

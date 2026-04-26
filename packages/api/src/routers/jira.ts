@@ -1,4 +1,5 @@
 import { decryptCredentials } from '@contractor-ops/integrations/services/credential-service';
+import { createLogger } from '@contractor-ops/logger';
 import {
   jiraTaskConfigSchema,
   saveJiraStatusMappingInputSchema,
@@ -8,6 +9,7 @@ import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import * as E from '../errors.js';
 import { router } from '../init.js';
+import { plain } from '../lib/plain.js';
 import type { TenantScopedDb } from '../lib/tenant-db.js';
 import { requirePermission } from '../middleware/rbac.js';
 import { tenantProcedure } from '../middleware/tenant.js';
@@ -16,13 +18,11 @@ import { detectScopeExpansionNeeded } from '../services/jira-issue-sync.js';
 import { getStatusMapping, saveStatusMapping } from '../services/jira-status-mapping.js';
 import { deregisterJiraWebhooks, registerJiraWebhooks } from '../services/jira-webhook-handler.js';
 
+const log = createLogger({ service: 'jira-router' });
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-function plain<T>(data: T): T {
-  return JSON.parse(JSON.stringify(data)) as T;
-}
 
 interface JiraConnectionConfig {
   cloudId?: string;
@@ -433,7 +433,7 @@ export const jiraRouter = router({
           // For now, use the project IDs directly in JQL (Jira accepts both)
           await registerJiraWebhooks(ctx.db, input.connectionId, projectKeys);
         } catch (error) {
-          console.error('[jira.saveStatusMapping] Failed to register webhooks:', error);
+          log.error({ err: error }, 'failed to register webhooks');
           // Don't fail the save — webhooks can be retried
         }
       }
@@ -507,7 +507,7 @@ export const jiraRouter = router({
       try {
         await deregisterJiraWebhooks(ctx.db, input.connectionId);
       } catch (error) {
-        console.error('[jira.disconnect] Failed to deregister webhooks:', error);
+        log.error({ err: error }, 'failed to deregister webhooks');
       }
 
       await ctx.db.integrationConnection.update({

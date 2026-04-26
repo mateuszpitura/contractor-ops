@@ -36,6 +36,7 @@ const { mockPrisma } = vi.hoisted(() => {
     invoice: {
       findMany: vi.fn(async () => []),
       findFirst: vi.fn(async () => null),
+      findFirstOrThrow: vi.fn(async () => null),
       findUnique: vi.fn(async () => null),
       create: vi.fn(async (opts: { data: Rec }) => ({
         id: INVOICE_ID,
@@ -46,6 +47,7 @@ const { mockPrisma } = vi.hoisted(() => {
         id: opts.where.id,
         ...opts.data,
       })),
+      updateMany: vi.fn(async () => ({ count: 0 })),
       count: vi.fn(async () => 0),
       groupBy: vi.fn(async () => []),
     },
@@ -422,6 +424,8 @@ function makeInvoice(overrides: Record<string, unknown> = {}) {
     sellerName: 'Acme Sp. z o.o.',
     status: 'RECEIVED',
     matchStatus: 'UNMATCHED',
+    paymentStatus: 'NOT_READY',
+    approvalStatus: 'NOT_STARTED',
     source: 'MANUAL_UPLOAD',
     duplicateCheckHash: 'hash-abc123',
     deletedAt: null,
@@ -551,7 +555,7 @@ describe('invoice.create', () => {
     });
   });
 
-  it('dispatches notification to FINANCE_ADMIN members', async () => {
+  it('dispatches notification to finance_admin members', async () => {
     mockPrisma.invoice.findFirst.mockResolvedValue(null);
     mockPrisma.invoice.create.mockResolvedValue(makeInvoice());
     mockPrisma.member.findMany.mockResolvedValue([
@@ -561,11 +565,11 @@ describe('invoice.create', () => {
 
     await caller.invoice.create(validInput);
 
-    // Verify member query for FINANCE_ADMIN
+    // Verify member query for finance_admin
     expect(mockPrisma.member.findMany).toHaveBeenCalledWith({
       where: {
         organizationId: ORG_ID,
-        role: 'FINANCE_ADMIN',
+        role: 'finance_admin',
       },
       select: { userId: true },
     });
@@ -841,20 +845,43 @@ describe('invoice.voidInvoice', () => {
   it('sets status to VOID', async () => {
     const invoice = makeInvoice();
     mockPrisma.invoice.findFirst.mockResolvedValue(invoice);
-    mockPrisma.invoice.update.mockResolvedValue({ ...invoice, status: 'VOID' });
+    mockPrisma.invoice.updateMany.mockResolvedValue({ count: 1 });
+    mockPrisma.invoice.findFirstOrThrow.mockResolvedValue({
+      ...invoice,
+      status: 'VOID',
+      paymentStatus: 'NOT_READY',
+      approvalStatus: 'CANCELLED',
+    });
 
     await caller.invoice.voidInvoice({ id: INVOICE_ID });
 
-    expect(mockPrisma.invoice.update).toHaveBeenCalledWith({
-      where: { id: INVOICE_ID },
-      data: { status: 'VOID' },
+    expect(mockPrisma.invoice.updateMany).toHaveBeenCalledWith({
+      where: {
+        id: INVOICE_ID,
+        organizationId: ORG_ID,
+        deletedAt: null,
+        status: { not: 'VOID' },
+        paymentStatus: { notIn: ['PAID', 'IN_RUN'] },
+      },
+      data: {
+        status: 'VOID',
+        paymentStatus: 'NOT_READY',
+        approvalStatus: 'CANCELLED',
+        paidAt: null,
+        readyForPaymentAt: null,
+        approvedAt: null,
+      },
     });
   });
 
   it('cleans up calendar events', async () => {
     const invoice = makeInvoice();
     mockPrisma.invoice.findFirst.mockResolvedValue(invoice);
-    mockPrisma.invoice.update.mockResolvedValue({ ...invoice, status: 'VOID' });
+    mockPrisma.invoice.updateMany.mockResolvedValue({ count: 1 });
+    mockPrisma.invoice.findFirstOrThrow.mockResolvedValue({
+      ...invoice,
+      status: 'VOID',
+    });
 
     await caller.invoice.voidInvoice({ id: INVOICE_ID });
 
@@ -863,6 +890,16 @@ describe('invoice.voidInvoice', () => {
       entityType: 'INVOICE',
       entityId: INVOICE_ID,
     });
+  });
+
+  it('rejects void when invoice is PAID', async () => {
+    const invoice = makeInvoice({ paymentStatus: 'PAID' });
+    mockPrisma.invoice.findFirst.mockResolvedValue(invoice);
+
+    await expect(caller.invoice.voidInvoice({ id: INVOICE_ID })).rejects.toMatchObject({
+      code: 'BAD_REQUEST',
+    });
+    expect(mockPrisma.invoice.updateMany).not.toHaveBeenCalled();
   });
 });
 

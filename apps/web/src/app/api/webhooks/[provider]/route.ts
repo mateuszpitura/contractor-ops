@@ -2,10 +2,13 @@ import { prisma } from '@contractor-ops/db';
 import { registerAllAdapters } from '@contractor-ops/integrations/adapters/register-all';
 import { getAdapter } from '@contractor-ops/integrations/registry';
 import { getQStashClient } from '@contractor-ops/integrations/services/qstash-client';
+import { createWebhookLogger } from '@contractor-ops/logger';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 import { extractSlackTeamId, resolveSlackConnectionByTeamId } from '../slack-webhook-context.js';
+
+const log = createWebhookLogger('generic');
 
 // ---------------------------------------------------------------------------
 // Ensure adapters are registered
@@ -92,14 +95,15 @@ export async function POST(
   }
 
   if (provider === 'resend' && !resolvedOrgId) {
-    console.warn(
-      `[webhook/resend] Skipping WebhookDelivery: unresolved organization (slug=${verification.organizationSlug ?? 'none'})`,
+    log.warn(
+      { provider, slug: verification.organizationSlug ?? null },
+      'skipping WebhookDelivery: unresolved organization',
     );
     return NextResponse.json({ received: true, persisted: false });
   }
 
   if (!resolvedOrgId) {
-    console.warn(`[webhook/${provider}] Skipping WebhookDelivery: missing organizationId`);
+    log.warn({ provider }, 'skipping WebhookDelivery: missing organizationId');
     return NextResponse.json({ received: true, persisted: false });
   }
 
@@ -123,7 +127,10 @@ export async function POST(
       retries: 3,
     });
   } catch (queueError) {
-    console.error(`[webhook/${provider}] Failed to queue for processing:`, queueError);
+    log.error(
+      { err: queueError, provider, deliveryId: delivery.id },
+      'failed to queue for processing',
+    );
     await prisma.webhookDelivery.update({
       where: { id: delivery.id },
       data: {

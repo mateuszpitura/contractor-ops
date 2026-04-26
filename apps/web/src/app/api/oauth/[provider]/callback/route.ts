@@ -6,8 +6,11 @@ import {
   registerAllAdapters,
   verifyOAuthState,
 } from '@contractor-ops/integrations';
+import { createLogger } from '@contractor-ops/logger';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+
+const log = createLogger({ service: 'oauth-callback' });
 
 // Ensure all OAuth adapters are registered before any callback is processed
 registerAllAdapters();
@@ -39,7 +42,7 @@ export async function GET(
     // Look up the adapter for this provider
     const adapter = getAdapter(provider);
     if (!(adapter?.supportsOAuth && adapter.exchangeCodeForTokens && adapter.getOAuthConfig)) {
-      console.error(`[oauth/${provider}] No OAuth adapter registered`);
+      log.error({ provider }, 'no oauth adapter registered');
       return NextResponse.redirect(settingsUrl('error'));
     }
 
@@ -47,14 +50,14 @@ export async function GET(
     const oauthConfig = adapter.getOAuthConfig();
     const signingSecret = process.env[oauthConfig.clientSecretEnvVar];
     if (!signingSecret) {
-      console.error(`[oauth/${provider}] Missing env var: ${oauthConfig.clientSecretEnvVar}`);
+      log.error({ provider, envVar: oauthConfig.clientSecretEnvVar }, 'missing env var');
       return NextResponse.redirect(settingsUrl('error'));
     }
 
     // Verify HMAC-signed state with provider in payload (cross-provider CSRF)
     const state = verifyOAuthState(stateParam, provider, signingSecret);
     if (!state) {
-      console.error(`[oauth/${provider}] Invalid or expired state parameter`);
+      log.error({ provider }, 'invalid or expired state parameter');
       return NextResponse.redirect(settingsUrl('error'));
     }
 
@@ -107,7 +110,7 @@ export async function GET(
 
     return NextResponse.redirect(settingsUrl('connected'));
   } catch (error) {
-    console.error(`[oauth/${provider}] Unexpected error:`, error);
+    log.error({ err: error, provider }, 'unexpected error');
     return NextResponse.redirect(settingsUrl('error'));
   }
 }

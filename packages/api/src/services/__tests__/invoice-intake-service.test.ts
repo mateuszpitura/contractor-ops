@@ -225,6 +225,25 @@ function makeDb(seed: { intakes?: IntakeRow[] } = {}) {
     ),
   };
 
+  // Cross-tenant FK guards added to confirmMatch / convertToInvoice re-query
+  // contractor + contract by id AND organizationId. Defense-in-depth: Prisma's
+  // tenant extension does not re-scope `include`'d relations, so a malicious
+  // contractorId from another org could otherwise be persisted on the intake.
+  // In the test harness both models always resolve positively; individual
+  // tests can override with mockImplementationOnce when they want to assert
+  // the guard fires.
+  const contractor = {
+    findFirst: vi.fn(async (args: { where: { id: string; organizationId: string } }) => ({
+      id: args.where.id,
+    })),
+  };
+
+  const contract = {
+    findFirst: vi.fn(async (args: { where: { id: string; organizationId: string } }) => ({
+      id: args.where.id,
+    })),
+  };
+
   async function $transaction<T>(fn: (tx: typeof client) => Promise<T>): Promise<T> {
     return fn(client);
   }
@@ -232,6 +251,8 @@ function makeDb(seed: { intakes?: IntakeRow[] } = {}) {
   const client = {
     invoiceIntakeRequest,
     invoice,
+    contractor,
+    contract,
     $transaction,
     __rows: { intakes, invoices },
   } as const;
@@ -631,6 +652,40 @@ describe('convertToInvoice', () => {
     expect(db.__rows.invoices).toHaveLength(1);
   });
 
+  it('maps Prisma P2002 on (org, contractor, invoiceNumber) to DUPLICATE_INVOICE_NUMBER', async () => {
+    // Finding #5 — GoBD requires that two intakes carrying the same
+    // supplier-issued invoice number do NOT both produce real Invoice
+    // rows. The DB unique index is the authoritative guard; this test
+    // asserts the service translates the low-level P2002 into the typed
+    // error the router maps to CONFLICT.
+    const db = makeDb({
+      intakes: [
+        makeSeedIntake({
+          status: 'MATCHED',
+          validationStatus: 'VALID',
+          matchedContractorId: 'c_1',
+        }),
+      ],
+    });
+
+    db.invoice.create.mockImplementationOnce(async () => {
+      const err: Error & { code?: string; meta?: { target?: string[] } } = new Error(
+        'Unique constraint failed on (organizationId,contractorId,invoiceNumber)',
+      );
+      err.code = 'P2002';
+      err.meta = { target: ['organizationId', 'contractorId', 'invoiceNumber'] };
+      throw err;
+    });
+
+    await expect(
+      convertToInvoice(db as never, {
+        orgId: ORG_A,
+        intakeId: 'intake_seed',
+        userId: USER_1,
+      }),
+    ).rejects.toMatchObject({ code: 'DUPLICATE_INVOICE_NUMBER' });
+  });
+
   it('convert from MATCHED + WARNINGS without acknowledgement throws INVALID_STATE_TRANSITION', async () => {
     const db = makeDb({
       intakes: [
@@ -721,6 +776,56 @@ describe('confirmMatch', () => {
     expect(row?.status).toBe('MATCHED');
     expect(row?.matchedContractorId).toBe('c_1');
     expect(row?.matchedContractId).toBe('con_1');
+  });
+
+  it('rejects a contractorId that belongs to another org (cross-tenant FK guard)', async () => {
+    // Defense-in-depth for Prisma's tenant extension. The extension only
+    // scopes top-level `where` clauses; it does NOT re-scope relation-level
+    // `include` loads. Without this guard, a caller could set
+    // matchedContractorId to another org's contractor, and subsequent reads
+    // via `include: { contractor: true }` would happily surface the
+    // cross-tenant row. The service pre-checks by querying
+    // contractor.findFirst({ id, organizationId }) and failing closed.
+    const db = makeDb({
+      intakes: [makeSeedIntake({ status: 'PARSED', validationStatus: 'VALID' })],
+    });
+
+    db.contractor.findFirst.mockResolvedValueOnce(null);
+
+    await expect(
+      confirmMatch(db as never, {
+        orgId: ORG_A,
+        intakeId: 'intake_seed',
+        contractorId: 'c_from_org_b',
+      }),
+    ).rejects.toMatchObject({ code: 'NOT_FOUND' });
+
+    // Intake row must not have been mutated.
+    const row = db.__rows.intakes.find(r => r.id === 'intake_seed');
+    expect(row?.status).toBe('PARSED');
+    expect(row?.matchedContractorId).toBeNull();
+  });
+
+  it('rejects a contractId whose contractor belongs to another org (cross-tenant FK guard)', async () => {
+    const db = makeDb({
+      intakes: [makeSeedIntake({ status: 'PARSED', validationStatus: 'VALID' })],
+    });
+
+    // Contractor check passes, but contract check fails — the pair must
+    // both live in the caller's org AND be connected to each other.
+    db.contract.findFirst.mockResolvedValueOnce(null);
+
+    await expect(
+      confirmMatch(db as never, {
+        orgId: ORG_A,
+        intakeId: 'intake_seed',
+        contractorId: 'c_1',
+        contractId: 'con_from_org_b',
+      }),
+    ).rejects.toMatchObject({ code: 'NOT_FOUND' });
+
+    const row = db.__rows.intakes.find(r => r.id === 'intake_seed');
+    expect(row?.status).toBe('PARSED');
   });
 });
 

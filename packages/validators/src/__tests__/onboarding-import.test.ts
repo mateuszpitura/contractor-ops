@@ -188,14 +188,14 @@ describe('mergedPersonSchema', () => {
 describe('batchImportInputSchema', () => {
   it('accepts valid batch', () => {
     const r = batchImportInputSchema.safeParse({
-      people: [{ email: 'a@b.com', name: 'A', role: 'engineer' }],
+      people: [{ email: 'a@b.com', name: 'A', role: 'readonly' }],
     });
     expect(r.success).toBe(true);
   });
 
   it('defaults skip to false', () => {
     const r = batchImportInputSchema.safeParse({
-      people: [{ email: 'a@b.com', name: 'A', role: 'engineer' }],
+      people: [{ email: 'a@b.com', name: 'A', role: 'readonly' }],
     });
     expect(r.success).toBe(true);
     if (r.success) {
@@ -205,7 +205,7 @@ describe('batchImportInputSchema', () => {
 
   it('rejects invalid email in people array', () => {
     const r = batchImportInputSchema.safeParse({
-      people: [{ email: 'not-email', name: 'A', role: 'engineer' }],
+      people: [{ email: 'not-email', name: 'A', role: 'readonly' }],
     });
     expect(r.success).toBe(false);
   });
@@ -319,7 +319,7 @@ describe('importProgressOutputSchema', () => {
       status: 'failed',
       totalItems: 1,
       completedItems: 0,
-      failedItems: [{ email: 'a@b.com', error: 'Duplicate', role: 'dev' }],
+      failedItems: [{ email: 'a@b.com', error: 'Duplicate', role: 'readonly' }],
     });
     expect(r.success).toBe(true);
   });
@@ -364,7 +364,7 @@ describe('retryItemInputSchema', () => {
 describe('startImportInputSchema', () => {
   it('accepts valid combined input', () => {
     const r = startImportInputSchema.safeParse({
-      people: [{ email: 'a@b.com', name: 'A', role: 'dev' }],
+      people: [{ email: 'a@b.com', name: 'A', role: 'readonly' }],
       projects: [
         {
           sourceProvider: 'JIRA',

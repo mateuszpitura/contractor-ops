@@ -37,7 +37,7 @@ function makeRow(overrides: Partial<ApprovalQueueRow> = {}): ApprovalQueueRow {
     name: 'Manager Approval',
     status: 'PENDING',
     approverUserId: 'user-1',
-    approverRole: 'MANAGER',
+    approverRole: 'team_manager',
     slaDeadline: null,
     createdAt: '2026-01-01T00:00:00Z',
     approvalFlow: {

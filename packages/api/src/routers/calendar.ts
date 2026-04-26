@@ -2,6 +2,7 @@ import { calendarTaskConfigSchema } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { router } from '../init.js';
+import { plain } from '../lib/plain.js';
 import { requirePermission } from '../middleware/rbac.js';
 import { tenantProcedure } from '../middleware/tenant.js';
 import { requireTier } from '../middleware/tier.js';
@@ -16,10 +17,6 @@ const CALENDAR_EVENT_TYPES = ['GOOGLE_CALENDAR_EVENT', 'OUTLOOK_CALENDAR_EVENT']
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-function plain<T>(data: T): T {
-  return JSON.parse(JSON.stringify(data)) as T;
-}
 
 // ---------------------------------------------------------------------------
 // Calendar Router

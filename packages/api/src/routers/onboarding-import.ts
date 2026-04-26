@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { authApi } from '@contractor-ops/auth';
 import type { Prisma } from '@contractor-ops/db';
 import { decryptCredentials } from '@contractor-ops/integrations';
+import type { InvitableMemberRole, StartImportInput } from '@contractor-ops/validators';
 import {
   fetchPeopleInputSchema,
   retryItemInputSchema,
@@ -42,7 +43,7 @@ export interface ImportJob {
   status: 'pending' | 'processing' | 'completed' | 'failed';
   totalItems: number;
   completedItems: number;
-  failedItems: Array<{ email: string; error: string; role: string }>;
+  failedItems: Array<{ email: string; error: string; role: InvitableMemberRole }>;
 }
 
 interface OrgSettings {
@@ -230,10 +231,9 @@ async function fetchLinearProjects(accessToken: string): Promise<
  * Processes people invitations and tracks results on the job object.
  */
 async function processPeopleImport(
-  // biome-ignore lint/suspicious/noExplicitAny: Headers type from tRPC context
-  headers: any,
+  headers: Headers,
   organizationId: string,
-  people: Array<{ email: string; role: string; skip?: boolean }>,
+  people: StartImportInput['people'],
   job: ImportJob,
 ) {
   const nonSkipped = people.filter(p => !p.skip);
@@ -243,16 +243,7 @@ async function processPeopleImport(
         headers,
         body: {
           email: person.email,
-          role: person.role as
-            | 'admin'
-            | 'owner'
-            | 'finance_admin'
-            | 'ops_manager'
-            | 'team_manager'
-            | 'legal_compliance_viewer'
-            | 'it_admin'
-            | 'external_accountant'
-            | 'readonly',
+          role: person.role,
           organizationId,
         },
       });
@@ -268,13 +259,12 @@ async function processPeopleImport(
  * Processes project imports and tracks results on the job object.
  */
 async function processProjectImport(
-  // biome-ignore lint/suspicious/noExplicitAny: project type from validator input schema
-  projects: any[],
+  projects: StartImportInput['projects'],
   organizationId: string,
   createdByUserId: string | undefined,
   job: ImportJob,
 ) {
-  const nonSkipped = projects.filter((p: { skip?: boolean }) => !p.skip);
+  const nonSkipped = projects.filter(p => !p.skip);
   if (nonSkipped.length === 0) return;
 
   try {
@@ -530,16 +520,7 @@ export const onboardingImportRouter = router({
           headers: ctx.headers,
           body: {
             email: input.email,
-            role: (failedItem.role || 'readonly') as
-              | 'admin'
-              | 'owner'
-              | 'finance_admin'
-              | 'ops_manager'
-              | 'team_manager'
-              | 'legal_compliance_viewer'
-              | 'it_admin'
-              | 'external_accountant'
-              | 'readonly',
+            role: (failedItem.role || 'readonly') as InvitableMemberRole,
             organizationId: ctx.organizationId,
           },
         });

@@ -37,8 +37,8 @@
       "recommended": true,
       "suspicious": {
         "noConsole": {
-          "level": "warn",
-          "options": { "allow": ["warn", "error", "info"] }
+          "level": "error",
+          "options": { "allow": [] }
         },
         "noArrayIndexKey": "warn",
         "noEmptyBlockStatements": "error",
@@ -189,12 +189,16 @@
         "**/*.test.ts",
         "**/*.test.tsx",
         "**/*.spec.ts",
-        "**/*.spec.tsx"
+        "**/*.spec.tsx",
+        "**/e2e/**"
       ],
       "linter": {
         "rules": {
           "performance": {
             "noImgElement": "off"
+          },
+          "suspicious": {
+            "noConsole": "off"
           }
         }
       }
@@ -205,6 +209,9 @@
         "rules": {
           "correctness": {
             "noUndeclaredDependencies": "off"
+          },
+          "suspicious": {
+            "noConsole": "off"
           }
         }
       }

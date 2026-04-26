@@ -1,6 +1,9 @@
 import { decryptCredentials } from '@contractor-ops/integrations/services/credential-service';
+import { createLogger } from '@contractor-ops/logger';
 import { TRPCError } from '@trpc/server';
 import type { DbClient } from './types.js';
+
+const log = createLogger({ service: 'jira-worklog-sync' });
 
 type PrismaClient = DbClient;
 
@@ -108,7 +111,7 @@ async function fetchIssueWorklogs(
     const worklogResponse = await fetch(worklogUrl.toString(), { headers: authHeaders });
 
     if (!worklogResponse.ok) {
-      console.error(`Failed to fetch worklogs for issue ${issueKey}: ${worklogResponse.status}`);
+      log.error({ issueKey, status: worklogResponse.status }, 'failed to fetch worklogs for issue');
       break;
     }
 

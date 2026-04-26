@@ -44,7 +44,7 @@ describe('ConfirmImportStep', () => {
       <ConfirmImportStep
         mergedPeople={people}
         personSelections={
-          new Map([['a@test.com', { role: 'member', skip: false, resolvedConflicts: {} }]])
+          new Map([['a@test.com', { role: 'readonly', skip: false, resolvedConflicts: {} }]])
         }
         projects={projects}
         projectSelections={
@@ -69,7 +69,7 @@ describe('ConfirmImportStep', () => {
       <ConfirmImportStep
         mergedPeople={people}
         personSelections={
-          new Map([['a@test.com', { role: 'member', skip: false, resolvedConflicts: {} }]])
+          new Map([['a@test.com', { role: 'readonly', skip: false, resolvedConflicts: {} }]])
         }
         projects={[]}
         projectSelections={new Map()}

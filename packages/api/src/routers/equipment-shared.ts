@@ -25,14 +25,10 @@ export const NOTIFICATION_KEYS = {
 // Helpers
 // ---------------------------------------------------------------------------
 
-/**
- * Strips Prisma class prototype from query results, producing plain
- * JSON-serializable objects so that inferred tRPC router types do NOT
- * reference the generated Prisma client module (avoids TS2742).
- */
-export function plain<T>(data: T): T {
-  return JSON.parse(JSON.stringify(data)) as T;
-}
+// `plain` is now defined once at packages/api/src/lib/plain.ts. We re-export
+// here for backward compatibility so existing equipment-* routers can keep
+// importing from this module.
+export { plain } from '../lib/plain.js';
 
 // ---------------------------------------------------------------------------
 // Equipment status transition map (D-05, D-06)

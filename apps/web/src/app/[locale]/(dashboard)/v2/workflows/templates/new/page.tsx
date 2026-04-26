@@ -1,5 +1,6 @@
 'use client';
 
+import { workflowAssignableRoleValues } from '@contractor-ops/validators/roles';
 import type { DragEndEvent } from '@dnd-kit/core';
 import {
   closestCenter,
@@ -121,16 +122,7 @@ const ASSIGNEE_MODES = [
   { value: 'PROJECT_MANAGER', label: 'Project Manager' },
 ] as const;
 
-const ROLES = [
-  'ORG_ADMIN',
-  'FINANCE_ADMIN',
-  'OPS_MANAGER',
-  'TEAM_MANAGER',
-  'LEGAL_VIEWER',
-  'IT_ADMIN',
-  'ACCOUNTANT',
-  'READ_ONLY',
-] as const;
+const ROLES = workflowAssignableRoleValues;
 
 // =============================================================================
 // BACKGROUND

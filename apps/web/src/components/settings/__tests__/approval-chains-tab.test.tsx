@@ -168,7 +168,7 @@ describe('ApprovalChainsTab', () => {
           {
             name: 'L1',
             approverUserId: null,
-            approverRole: 'ORG_ADMIN',
+            approverRole: 'admin',
             slaHours: 24,
             required: true,
           },

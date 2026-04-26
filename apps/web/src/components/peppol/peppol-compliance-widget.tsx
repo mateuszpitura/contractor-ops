@@ -1,6 +1,6 @@
 'use client';
 
-import { complianceState } from '@contractor-ops/einvoice';
+import { complianceState } from '@contractor-ops/einvoice/compliance';
 import { Globe } from 'lucide-react';
 
 // ---------------------------------------------------------------------------

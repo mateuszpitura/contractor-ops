@@ -6,9 +6,18 @@ import {
   parseFa3Xml,
 } from '@contractor-ops/einvoice';
 import { decryptCredentials } from '@contractor-ops/integrations';
-import { computeDuplicateCheckHash, runAutoMatch } from './invoice-matching.js';
+import { createLogger } from '@contractor-ops/logger';
+import { releaseAdvisoryLock, tryAcquireAdvisoryLock } from '../lib/advisory-lock.js';
+import { computeDuplicateCheckHashForInvoice, runAutoMatch } from './invoice-matching.js';
 import { checkCrossSourceDuplicate, linkDuplicateInvoices } from './ksef-duplicate-detection.js';
 import { dispatch } from './notification-service.js';
+
+type AdvisoryLockDb = {
+  $queryRawUnsafe: (query: string, ...args: unknown[]) => Promise<unknown>;
+  $executeRawUnsafe: (query: string, ...args: unknown[]) => Promise<unknown>;
+};
+
+const log = createLogger({ service: 'ksef-sync-orchestrator' });
 
 // ---------------------------------------------------------------------------
 // Post-sync helpers
@@ -49,7 +58,12 @@ async function dispatchKsefSyncNotification(
   if (invoicesCreated === 0) return;
 
   const members = await db.member.findMany({
-    where: { organizationId, role: { in: ['owner', 'admin', 'finance_manager'] } },
+    where: {
+      organizationId,
+      role: {
+        in: ['owner', 'admin', 'finance_admin'],
+      },
+    },
     select: { userId: true },
   });
 
@@ -68,10 +82,7 @@ async function dispatchKsefSyncNotification(
       metadata: { invoicesCreated, duplicatesFound, link: '/invoices?source=KSEF' },
     });
   } catch (notificationError) {
-    console.error(
-      `[ksef-sync] Notification dispatch failed for org=${organizationId}:`,
-      notificationError,
-    );
+    log.error({ err: notificationError, organizationId }, 'notification dispatch failed for org');
   }
 }
 
@@ -108,19 +119,18 @@ async function processSingleKsefInvoice(
   const { invoice: fields, lines } = mapKsefToInvoiceFields(parsed);
 
   // Compute duplicate check hash
-  const hash = computeDuplicateCheckHash(
-    fields.invoiceNumber,
-    fields.sellerTaxId ?? '',
-    fields.totalMinor,
-  );
+  const hash =
+    computeDuplicateCheckHashForInvoice({
+      invoiceNumber: fields.invoiceNumber,
+      sellerTaxId: fields.sellerTaxId,
+      sellerName: fields.sellerName,
+      totalMinor: fields.totalMinor,
+    }) ?? null;
 
   // Check cross-source duplicate (per D-11)
-  const dup = await checkCrossSourceDuplicate(
-    db,
-    organizationId,
-    fields.invoiceNumber,
-    fields.sellerTaxId ?? '',
-  );
+  const dup = fields.sellerTaxId
+    ? await checkCrossSourceDuplicate(db, organizationId, fields.invoiceNumber, fields.sellerTaxId)
+    : { isDuplicate: false, existingInvoiceId: null, existingSource: null };
 
   // dueDate required by Prisma — fall back to issueDate + 14 days
   const dueDate = fields.dueDate ?? new Date(fields.issueDate.getTime() + 14 * 24 * 3600 * 1000);
@@ -201,6 +211,8 @@ export async function processKsefSync(params: {
     let duplicatesFound = 0;
     const errors: string[] = [];
     let client: KsefApiClient | null = null;
+    const lockKey = `ksef-sync:${params.connectionId}`;
+    let lockAcquired = false;
 
     const syncLog = await db.integrationSyncLog.create({
       data: {
@@ -214,6 +226,20 @@ export async function processKsefSync(params: {
     });
 
     try {
+      // Prevent overlapping syncs for the same connection (QStash retries + manual triggers).
+      lockAcquired = await tryAcquireAdvisoryLock(db as unknown as AdvisoryLockDb, lockKey);
+      if (!lockAcquired) {
+        await db.integrationSyncLog.update({
+          where: { id: syncLog.id },
+          data: {
+            status: 'SUCCESS',
+            completedAt: new Date(),
+            responsePayloadJson: { skipped: true, reason: 'already-running' },
+          },
+        });
+        return { invoicesCreated: 0, duplicatesFound: 0, errors: [] };
+      }
+
       // -----------------------------------------------------------------------
       // Step 1: Load connection and decrypt credentials
       // -----------------------------------------------------------------------
@@ -344,6 +370,10 @@ export async function processKsefSync(params: {
         } catch {
           // Swallow session termination errors
         }
+      }
+
+      if (lockAcquired) {
+        await releaseAdvisoryLock(db as unknown as AdvisoryLockDb, lockKey).catch(() => undefined);
       }
     }
   });

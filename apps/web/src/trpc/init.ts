@@ -44,14 +44,31 @@ const fetchWithTimeout: typeof fetch = (input, init) => {
  * - **Production**: `httpBatchLink` — batches parallel calls into one HTTP request.
  * - **Timeout**: 30s per request via AbortController wrapper.
  */
-export const trpc: ReturnType<typeof createTRPCOptionsProxy<AppRouter>> =
-  createTRPCOptionsProxy<AppRouter>({
-    client: createTRPCClient<AppRouter>({
-      links: [
-        isDev
-          ? httpLink({ url, transformer: superjson, fetch: fetchWithTimeout })
-          : httpBatchLink({ url, transformer: superjson, fetch: fetchWithTimeout }),
-      ],
-    }),
-    queryClient: makeQueryClient(),
-  });
+const trpcBase = createTRPCOptionsProxy<AppRouter>({
+  client: createTRPCClient<AppRouter>({
+    links: [
+      isDev
+        ? httpLink({ url, transformer: superjson, fetch: fetchWithTimeout })
+        : httpBatchLink({ url, transformer: superjson, fetch: fetchWithTimeout }),
+    ],
+  }),
+  queryClient: makeQueryClient(),
+});
+
+type TrpcBase = typeof trpcBase;
+
+/**
+ * `appRouter` omits classification* keys when the kill-switch is off, so the
+ * inferred proxy marks those sub-routers optional. The web app only ships
+ * classification UI when the module is enabled; assert non-optional for hooks.
+ */
+export const trpc = trpcBase as TrpcBase & {
+  classification: NonNullable<TrpcBase['classification']>;
+  classificationDashboard: NonNullable<TrpcBase['classificationDashboard']>;
+  classificationDocument: NonNullable<TrpcBase['classificationDocument']>;
+  ir35Chain: NonNullable<TrpcBase['ir35Chain']>;
+  ir35Attestation: NonNullable<TrpcBase['ir35Attestation']>;
+  economicDependencyAlert: NonNullable<TrpcBase['economicDependencyAlert']>;
+  reassessmentTrigger: NonNullable<TrpcBase['reassessmentTrigger']>;
+  statusfeststellungsverfahren: NonNullable<TrpcBase['statusfeststellungsverfahren']>;
+};

@@ -7,6 +7,7 @@
 // ---------------------------------------------------------------------------
 
 import { prisma } from '@contractor-ops/db';
+import { createLogger } from '@contractor-ops/logger';
 import { getServerEnv } from '@contractor-ops/validators';
 import type { ConversationReference, TurnContext } from 'botbuilder';
 import { CardFactory, CloudAdapter, ConfigurationBotFrameworkAuthentication } from 'botbuilder';
@@ -20,6 +21,8 @@ import type {
   MessagingProvider,
   ReminderDMParams,
 } from './types.js';
+
+const log = createLogger({ service: 'teams-messaging-provider' });
 
 // ---------------------------------------------------------------------------
 // CloudAdapter singleton
@@ -77,7 +80,7 @@ export class TeamsMessagingProvider implements MessagingProvider {
   async sendApprovalCard(params: ApprovalCardParams): Promise<void> {
     const convRef = await getConversationReference(params.organizationId, params.recipientId);
     if (!convRef) {
-      console.warn(`[Teams] No ConversationReference for recipient ${params.recipientId}`);
+      log.warn({ recipientId: params.recipientId }, 'no ConversationReference for recipient');
       return;
     }
 
@@ -107,7 +110,7 @@ export class TeamsMessagingProvider implements MessagingProvider {
   async sendReminderDM(params: ReminderDMParams): Promise<void> {
     const convRef = await getConversationReference(params.organizationId, params.recipientId);
     if (!convRef) {
-      console.warn(`[Teams] No ConversationReference for recipient ${params.recipientId}`);
+      log.warn({ recipientId: params.recipientId }, 'no ConversationReference for recipient');
       return;
     }
 
@@ -161,7 +164,7 @@ export class TeamsMessagingProvider implements MessagingProvider {
     });
 
     if (!connection) {
-      console.warn(`[Teams] No MICROSOFT_TEAMS connection for org ${params.organizationId}`);
+      log.warn({ organizationId: params.organizationId }, 'no MICROSOFT_TEAMS connection for org');
       return;
     }
 
@@ -170,7 +173,7 @@ export class TeamsMessagingProvider implements MessagingProvider {
     const channelRef = teamRefs[params.channelId];
 
     if (!channelRef) {
-      console.warn(`[Teams] No ConversationReference for channel ${params.channelId}`);
+      log.warn({ channelId: params.channelId }, 'no ConversationReference for channel');
       return;
     }
 

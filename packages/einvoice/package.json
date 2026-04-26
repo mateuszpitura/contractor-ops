@@ -13,10 +13,25 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
+    },
+    "./compliance": {
+      "types": "./dist/types/compliance.d.ts",
+      "import": "./dist/types/compliance.js",
+      "default": "./dist/types/compliance.js"
+    },
+    "./zatca/schemas": {
+      "types": "./dist/profiles/zatca/schemas.d.ts",
+      "import": "./dist/profiles/zatca/schemas.js",
+      "default": "./dist/profiles/zatca/schemas.js"
+    },
+    "./zatca/types": {
+      "types": "./dist/profiles/zatca/types.d.ts",
+      "import": "./dist/profiles/zatca/types.js",
+      "default": "./dist/profiles/zatca/types.js"
     }
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && node ./scripts/copy-zugferd-assets.mjs",
     "test": "vitest run",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",

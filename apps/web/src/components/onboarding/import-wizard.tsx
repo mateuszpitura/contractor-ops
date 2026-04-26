@@ -1,6 +1,7 @@
 'use client';
 
 import type { FetchProjectsOutput, MergedPerson } from '@contractor-ops/validators';
+import type { InvitableMemberRole } from '@contractor-ops/validators/roles';
 import { Check } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useMemo, useState } from 'react';
@@ -19,7 +20,7 @@ import { SourceSelectionStep } from './source-selection-step';
 type WizardStep = 1 | 2 | 3 | 4;
 
 export interface PersonSelection {
-  role: string;
+  role: InvitableMemberRole;
   skip: boolean;
   resolvedConflicts: Record<string, string>;
 }

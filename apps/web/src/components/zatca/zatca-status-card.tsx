@@ -1,6 +1,6 @@
 'use client';
 
-import type { ZatcaOnboardingState } from '@contractor-ops/einvoice';
+import type { ZatcaOnboardingState } from '@contractor-ops/einvoice/zatca/types';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Settings, ShieldCheck, Unplug } from 'lucide-react';
 import { useState } from 'react';

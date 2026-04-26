@@ -11,6 +11,7 @@
 
 import type { Prisma } from '@contractor-ops/db';
 import { prisma } from '@contractor-ops/db';
+import { createLogger } from '@contractor-ops/logger';
 import { getServerEnv } from '@contractor-ops/validators';
 import type {
   AdaptiveCardInvokeResponse,
@@ -24,6 +25,8 @@ import { z } from 'zod';
 import { advanceFlow } from '../approval-engine.js';
 import { buildApprovalResultCard } from './cards/approval-result-card.js';
 import { buildRejectModalCard } from './cards/reject-modal-card.js';
+
+const log = createLogger({ service: 'teams-bot-handler' });
 
 // ---------------------------------------------------------------------------
 // Zod schemas for invoke payload validation (per CLAUDE.md: validate all
@@ -78,7 +81,7 @@ export async function storeConversationReference(
 ): Promise<void> {
   const aadObjectId = ref.user?.aadObjectId;
   if (!aadObjectId) {
-    console.warn('[Teams] Cannot store ConversationReference: no aadObjectId');
+    log.warn({}, 'cannot store ConversationReference: no aadObjectId');
     return;
   }
 
@@ -92,7 +95,7 @@ export async function storeConversationReference(
   });
 
   if (!connection) {
-    console.warn(`[Teams] No MICROSOFT_TEAMS connection for org ${organizationId}`);
+    log.warn({ organizationId }, 'no MICROSOFT_TEAMS connection for org');
     return;
   }
 
@@ -226,7 +229,7 @@ export class TeamsBotHandler extends TeamsActivityHandler {
           return errorInvokeResponse(400, `Unknown action: ${actionType}`);
       }
     } catch (error) {
-      console.error('[Teams] Card invoke error:', error);
+      log.error({ err: error }, 'card invoke error');
       return errorInvokeResponse(500, 'Internal error processing action');
     }
   }
@@ -518,8 +521,10 @@ export class TeamsBotHandler extends TeamsActivityHandler {
         await tx.invoice.update({
           where: { id: flow.resourceId },
           data: {
-            status: 'APPROVED',
+            status: 'READY_FOR_PAYMENT',
+            approvalStatus: 'APPROVED',
             paymentStatus: 'READY',
+            approvedAt: new Date(),
             readyForPaymentAt: new Date(),
           },
         });
@@ -633,7 +638,7 @@ export class TeamsBotHandler extends TeamsActivityHandler {
 
       await storeConversationReference(connection.organizationId, ref);
     } catch (error) {
-      console.error('[Teams] Failed to capture conversation reference:', error);
+      log.error({ err: error }, 'failed to capture conversation reference');
     }
   }
 }

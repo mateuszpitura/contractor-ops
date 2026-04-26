@@ -5,7 +5,9 @@ import {
   notificationMarkReadSchema,
   notificationPreferenceUpdateSchema,
 } from '@contractor-ops/validators';
+import { TRPCError } from '@trpc/server';
 import { router } from '../init.js';
+import { plain } from '../lib/plain.js';
 import { tenantProcedure } from '../middleware/tenant.js';
 import { getOrCreatePreferences } from '../services/notification-service.js';
 
@@ -13,8 +15,12 @@ import { getOrCreatePreferences } from '../services/notification-service.js';
 // Helpers
 // ---------------------------------------------------------------------------
 
-function plain<T>(data: T): T {
-  return JSON.parse(JSON.stringify(data)) as T;
+function requireUserId(ctx: { user?: { id: string } | null }): string {
+  const userId = ctx.user?.id;
+  if (!userId) {
+    throw new TRPCError({ code: 'UNAUTHORIZED' });
+  }
+  return userId;
 }
 
 // ---------------------------------------------------------------------------
@@ -27,9 +33,10 @@ export const notificationRouter = router({
    * Supports filtering by type, status, unread-only, and pagination.
    */
   list: tenantProcedure.input(notificationListSchema).query(async ({ ctx, input }) => {
+    const userId = requireUserId(ctx);
     const where: Prisma.NotificationWhereInput = {
       organizationId: ctx.organizationId,
-      userId: ctx.user?.id,
+      userId,
     };
 
     if (input.type) {
@@ -69,9 +76,10 @@ export const notificationRouter = router({
    * Get unread notification count for the current user.
    */
   unreadCount: tenantProcedure.query(async ({ ctx }) => {
+    const userId = requireUserId(ctx);
     const count = await ctx.db.notification.count({
       where: {
-        userId: ctx.user?.id,
+        userId,
         organizationId: ctx.organizationId,
         status: { in: ['PENDING', 'SENT'] },
       },
@@ -85,10 +93,11 @@ export const notificationRouter = router({
    * Only the notification owner can mark it read.
    */
   markRead: tenantProcedure.input(notificationMarkReadSchema).mutation(async ({ ctx, input }) => {
+    const userId = requireUserId(ctx);
     await ctx.db.notification.updateMany({
       where: {
         id: input.notificationId,
-        userId: ctx.user?.id,
+        userId,
         organizationId: ctx.organizationId,
       },
       data: {
@@ -104,9 +113,10 @@ export const notificationRouter = router({
    * Mark all notifications as read for the current user.
    */
   markAllRead: tenantProcedure.mutation(async ({ ctx }) => {
+    const userId = requireUserId(ctx);
     await ctx.db.notification.updateMany({
       where: {
-        userId: ctx.user?.id,
+        userId,
         organizationId: ctx.organizationId,
         readAt: null,
       },
@@ -124,10 +134,9 @@ export const notificationRouter = router({
    * Creates defaults for any missing types via getOrCreatePreferences.
    */
   getPreferences: tenantProcedure.query(async ({ ctx }) => {
+    const userId = requireUserId(ctx);
     const preferences = await Promise.all(
-      NOTIFICATION_TYPES.map(type =>
-        getOrCreatePreferences(ctx.user?.id, ctx.organizationId, type),
-      ),
+      NOTIFICATION_TYPES.map(type => getOrCreatePreferences(userId, ctx.organizationId, type)),
     );
 
     return plain(preferences);
@@ -140,17 +149,18 @@ export const notificationRouter = router({
   updatePreferences: tenantProcedure
     .input(notificationPreferenceUpdateSchema)
     .mutation(async ({ ctx, input }) => {
+      const userId = requireUserId(ctx);
       const results = await Promise.all(
         input.preferences.map(pref =>
           ctx.db.userNotificationPreference.upsert({
             where: {
               userId_notificationType: {
-                userId: ctx.user?.id,
+                userId,
                 notificationType: pref.notificationType,
               },
             },
             create: {
-              userId: ctx.user?.id,
+              userId,
               organizationId: ctx.organizationId,
               notificationType: pref.notificationType,
               channelEmail: pref.channelEmail,

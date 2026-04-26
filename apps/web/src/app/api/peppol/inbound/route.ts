@@ -2,9 +2,18 @@ import { PeppolOrchestrator } from '@contractor-ops/api/services/peppol-orchestr
 import { prisma } from '@contractor-ops/db';
 import { StorecoveAdapter } from '@contractor-ops/einvoice';
 import { getCredentials } from '@contractor-ops/integrations';
+import { createWebhookLogger } from '@contractor-ops/logger';
 import { verifySignatureAppRouter } from '@upstash/qstash/nextjs';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
+
+const log = createWebhookLogger('peppol-inbound');
+
+const peppolInboundBodySchema = z.object({
+  deliveryId: z.string().min(1),
+  organizationId: z.string().min(1),
+});
 
 // ---------------------------------------------------------------------------
 // POST /api/peppol/inbound
@@ -17,15 +26,12 @@ import { NextResponse } from 'next/server';
  * webhook delivery, parses the XML, and creates an Invoice record.
  */
 async function handler(request: NextRequest) {
-  const body = await request.json();
-  const { deliveryId, organizationId } = body as {
-    deliveryId: string;
-    organizationId: string;
-  };
-
-  if (!(deliveryId && organizationId)) {
-    return NextResponse.json({ error: 'Missing deliveryId or organizationId' }, { status: 400 });
+  const rawBody = await request.json().catch(() => null);
+  const parsed = peppolInboundBodySchema.safeParse(rawBody);
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Invalid body' }, { status: 400 });
   }
+  const { deliveryId, organizationId } = parsed.data;
 
   try {
     // Load webhook delivery
@@ -43,7 +49,7 @@ async function handler(request: NextRequest) {
     });
 
     if (!connection) {
-      console.error(`[peppol/inbound] No active Peppol connection for org ${organizationId}`);
+      log.error({ organizationId }, 'no active Peppol connection');
       return NextResponse.json({ error: 'No Peppol connection' });
     }
 
@@ -84,7 +90,7 @@ async function handler(request: NextRequest) {
       skipped: result === null,
     });
   } catch (error) {
-    console.error(`[peppol/inbound] Failed for delivery ${deliveryId}:`, error);
+    log.error({ err: error, deliveryId }, 'inbound processing failed');
 
     // Mark delivery as failed
     await prisma.webhookDelivery

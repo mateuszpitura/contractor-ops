@@ -15,12 +15,7 @@ import type { DbClient } from '../services/types.js';
 /**
  * Prevents deactivating the last admin/owner in an organization.
  */
-async function guardLastAdmin(
-  // biome-ignore lint/suspicious/noExplicitAny: tenant-scoped db type not directly importable without circular ref
-  db: any,
-  organizationId: string,
-  userId: string,
-) {
+async function guardLastAdmin(db: DbClient, organizationId: string, userId: string) {
   const targetMember = await db.member.findFirst({
     where: { organizationId, userId },
     select: { role: true },

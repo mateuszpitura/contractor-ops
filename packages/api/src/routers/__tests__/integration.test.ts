@@ -591,7 +591,7 @@ describe('integration.listUserMappings', () => {
       },
       {
         userId: 'user-b',
-        role: 'member',
+        role: 'readonly',
         user: { id: 'user-b', name: 'Bob', email: 'bob@test.com', image: null },
       },
     ]);

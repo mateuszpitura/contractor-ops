@@ -15,6 +15,10 @@ import { router } from '../init.js';
 import { requirePermission } from '../middleware/rbac.js';
 import { tenantProcedure } from '../middleware/tenant.js';
 import {
+  assertValidContractorTaxId,
+  normalizeContractorTaxId,
+} from '../services/contractor-tax-id.js';
+import {
   autoMapColumns,
   parseImportFile,
   processImportFile,
@@ -34,7 +38,10 @@ async function commitContractorRow(
   row: Record<string, unknown>,
   duplicateAction: string | undefined,
 ): Promise<'created' | 'updated' | 'skipped' | 'failed'> {
-  const taxId = String(row.taxId ?? row.contractorTaxId ?? '').trim();
+  const countryCode = String(row.countryCode ?? 'PL');
+  const taxId =
+    normalizeContractorTaxId(countryCode, String(row.taxId ?? row.contractorTaxId ?? '')) ?? '';
+  assertValidContractorTaxId(countryCode, taxId);
 
   if (duplicateAction === 'skip') return 'skipped';
 
@@ -53,6 +60,7 @@ async function commitContractorRow(
         phone: row.phone ? String(row.phone) : existing.phone,
         countryCode: String(row.countryCode ?? existing.countryCode),
         currency: String(row.currency ?? existing.currency),
+        taxId,
       },
     });
     return 'updated';
@@ -60,7 +68,7 @@ async function commitContractorRow(
 
   // Create new contractor
   try {
-    await tx.contractor.create({
+    const created = await tx.contractor.create({
       data: {
         organizationId,
         legalName: String(row.legalName ?? ''),
@@ -70,15 +78,29 @@ async function commitContractorRow(
           | 'COMPANY'
           | 'INDIVIDUAL_FREELANCER'
           | 'OTHER',
-        taxId: String(row.taxId ?? ''),
+        taxId,
         vatId: row.vatId ? String(row.vatId) : null,
         email: String(row.email ?? ''),
         phone: row.phone ? String(row.phone) : null,
-        countryCode: String(row.countryCode ?? 'PL'),
+        countryCode,
         currency: String(row.currency ?? 'PLN'),
         status: 'ACTIVE',
         lifecycleStage: 'ACTIVE',
         ownerUserId: userId,
+      },
+    });
+    await tx.contractorBillingProfile.create({
+      data: {
+        organizationId,
+        contractorId: created.id,
+        legalEntityName: created.legalName,
+        billingEmail: created.email,
+        countryCode: created.countryCode,
+        preferredCurrency: created.currency,
+        taxId: created.taxId,
+        vatId: created.vatId,
+        validFrom: new Date(),
+        isDefault: true,
       },
     });
     return 'created';
@@ -99,10 +121,12 @@ async function commitContractRow(
   let contractorId = row.contractorId ? String(row.contractorId) : null;
 
   if (!contractorId) {
+    const countryCode = String(row.countryCode ?? 'PL');
+    const taxId = normalizeContractorTaxId(countryCode, String(row.contractorTaxId ?? '')) ?? '';
     const contractor = await tx.contractor.findFirst({
       where: {
         organizationId,
-        taxId: String(row.contractorTaxId ?? ''),
+        taxId,
         deletedAt: null,
       },
       select: { id: true },
@@ -244,27 +268,38 @@ export const importRouter = router({
       }),
     )
     .mutation(async ({ input, ctx }) => {
+      const actorUserId = ctx.user?.id;
+      if (!actorUserId) {
+        throw new TRPCError({ code: 'UNAUTHORIZED' });
+      }
+
       const { entityType, rows, duplicateActions } = input;
       const counts = { created: 0, updated: 0, skipped: 0, failed: 0 };
 
       try {
         await ctx.db.$transaction(async tx => {
           for (const row of rows) {
-            const taxId = String(row.taxId ?? row.contractorTaxId ?? '').trim();
+            const countryCode = String(row.countryCode ?? 'PL');
+            const taxId =
+              normalizeContractorTaxId(
+                countryCode,
+                String(row.taxId ?? row.contractorTaxId ?? ''),
+              ) ?? '';
             const result =
               entityType === 'contractor'
                 ? await commitContractorRow(
                     tx,
                     ctx.organizationId,
-                    ctx.user?.id,
+                    actorUserId,
                     row,
                     duplicateActions[taxId],
                   )
-                : await commitContractRow(tx, ctx.organizationId, ctx.user?.id, row);
+                : await commitContractRow(tx, ctx.organizationId, actorUserId, row);
             counts[result]++;
           }
         });
       } catch (err) {
+        if (err instanceof TRPCError) throw err;
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
           message: err instanceof Error ? err.message : 'Import commit failed',

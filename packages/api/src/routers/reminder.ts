@@ -7,16 +7,13 @@ import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import * as E from '../errors.js';
 import { router } from '../init.js';
+import { plain } from '../lib/plain.js';
 import { requirePermission } from '../middleware/rbac.js';
 import { tenantProcedure } from '../middleware/tenant.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-function plain<T>(data: T): T {
-  return JSON.parse(JSON.stringify(data)) as T;
-}
 
 // ---------------------------------------------------------------------------
 // Reminder router

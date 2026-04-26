@@ -4,9 +4,9 @@
  * Phase 46: Added home-currency conversion for multi-currency reports.
  */
 
-import type { PrismaClient } from '@contractor-ops/db';
 import { minorToDecimalStr } from '@contractor-ops/shared';
 import { convertAmount } from './exchange-rate.js';
+import type { DbClient } from './types.js';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -257,7 +257,7 @@ export async function generateComplianceCsv(
  * Per CURR-05: display-only conversion, not FX settlement.
  */
 export async function convertToHomeCurrency(
-  prisma: PrismaClient,
+  prisma: DbClient,
   amountMinor: number,
   fromCurrency: string,
   homeCurrency: string,

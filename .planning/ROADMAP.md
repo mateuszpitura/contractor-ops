@@ -250,13 +250,37 @@ Phases execute in numeric order: 56 -> 57 -> 58 -> 59 -> 60 -> 61 -> 62 -> 63 ->
   2. `58-VERIFICATION.md` exists and confirms CLASS-01/02/05/11 are all satisfied — classification engine accepts UK/DE rule sets, IR35 5-area scoring and DRV 20-criteria scoring produce correct outcomes, per-engagement model stores assessments independently
 **Plans**: TBD
 
+### Phase 68: Skonto BG-20 XRechnung Emission Fix
+**Goal**: User-configured Skonto (early payment discount) terms on a German invoice are emitted as structured BG-20 Payment Terms inside the finalized XRechnung CII XML and inside the embedded CII XML of ZUGFeRD PDF/A-3 documents — closing the cross-phase wiring defect surfaced by the v5.0 milestone audit (I-1)
+**Depends on**: Phase 61 (XRechnungDEProfile + generator), Phase 62 (ZUGFeRD reuse of XRechnung CII), Phase 63 (Skonto term resolver in `payment.ts:1213-1294`)
+**Requirements**: EINV-01, EINV-02, EINV-04, PAY-04
+**Gap Closure**: Closes I-1 (CRITICAL cross-phase integration), EINV-01/02/04 partial, PAY-04 partial, broken E2E flow F-4 (DE invoice → XRechnung → KoSIT → Peppol)
+**Success Criteria** (what must be TRUE):
+  1. `XRechnungGenerateOptions` accepts an optional `skontoTerm` field; `XRechnungDEProfile.generate()` and `generateAndValidate()` plumb it through to `generateXRechnungCii(invoice, leitwegId, skontoTerm)`
+  2. `packages/api/src/services/einvoice-finalize.ts` resolves the effective Skonto term (invoice-level → billing-profile default) using the same precedence as `resolveSkontoTerm` in `payment.ts:1213-1294`, and passes it into `profile.generateAndValidate()` alongside the existing `leitwegId`
+  3. A regression test asserts that finalizing a DE invoice with a configured Skonto term emits `<ram:SpecifiedTradePaymentTerms>` containing `#SKONTO#TAGE=n#PROZENT=n#` semantics in the BG-20 group, and the same assertion passes for the embedded CII inside a ZUGFeRD PDF/A-3 generation path
+  4. The KoSIT 3-layer validator continues to pass for invoices both with and without Skonto terms (no regression on the existing XRechnung 3.0.2 CIUS Schematron)
+**Plans**: TBD
+
+### Phase 69: DE Message-Key Parity Fix
+**Goal**: User can switch the platform to German and see complete localized copy across late-payment-interest dialogs, Skonto preview, and the Admin Classification Engine flag panel — closing the 32-key parity gap introduced by Phases 63 and 64 against the Phase 56 invariant
+**Depends on**: Phase 56 (de.json formal-Sie register baseline + R-06 parity test), Phase 63 (Payments.lateInterest + Payments.skonto namespaces), Phase 64 (Admin.ClassificationEngineFlag namespace)
+**Requirements**: FOUND-03
+**Gap Closure**: Closes FOUND-03 (unsatisfied in v5.0 audit; 32 EN-only keys identified by GAP-67-01-01 in 56-VERIFICATION.md)
+**Success Criteria** (what must be TRUE):
+  1. All 25 `Payments.lateInterest.*` keys (LPCDA late-interest dialog, claim PDF copy, waiver flow) have DE translations in formal-Sie register, present in `apps/web/messages/de.json`; copy is flagged for Steuerberater + Plain operations review post-deploy per Standing Project Constraints (LOCAL-ONLY, legal sign-off deferred)
+  2. The `Payments.skonto.previewLineEn` key has a DE translation matching the Skonto preview banner copy contract from Phase 63
+  3. All 6 `Admin.ClassificationEngineFlag.*` keys (super-admin classification-engine flag status panel from Phase 64) have DE translations in formal-Sie register
+  4. The R-06 de-locale parity test (3639 leaf-key parity assertion across en/de) passes with zero missing keys; FOUND-03 traceability flips to `Complete` after this phase
+**Plans**: TBD
+
 ---
 
 ### v6.0 Platform Maturity & Operational Hardening (Planned)
 
 **Milestone Goal:** Make the platform production-grade across all supported markets (PL, UK, DE, UAE, SA) by closing critical operational gaps — compliance document lifecycle, automated access deprovisioning, Gulf operational polish, and offboarding hardening. No new market entry; focus on reliability and security for real users.
 
-- [ ] **Phase 68: Compliance Document Lifecycle Engine** - Per-country required document definitions, automated expiry tracking with 90/60/30/15/7-day alerts, hard payment blocking on expired critical documents, automated contractor reminders via email/portal, compliance dashboard with at-risk contractor count
-- [ ] **Phase 69: Identity Provider Deprovisioning** - Google Workspace auto-suspend, Azure AD/Entra ID auto-disable, Okta SSO revocation, GitHub org member removal, Slack workspace deactivation on offboarding, full audit trail of access revocation per contractor
-- [ ] **Phase 70: Gulf Operational Polish** - UAE free zone entity tracking with permitted activity scope per zone and license expiry monitoring; Saudization workforce composition dashboard with nationality tracking (visibility only, not Nitaqat band simulation or advisory)
-- [ ] **Phase 71: Offboarding Hardening** - Structured knowledge transfer checklist templates per role type, IP assignment verification workflow blocking offboarding completion, documentation handover task with repo/wiki/credential links, contract clause health check flagging missing IP assignment language
+- [ ] **Phase 70: Compliance Document Lifecycle Engine** - Per-country required document definitions, automated expiry tracking with 90/60/30/15/7-day alerts, hard payment blocking on expired critical documents, automated contractor reminders via email/portal, compliance dashboard with at-risk contractor count
+- [ ] **Phase 71: Identity Provider Deprovisioning** - Google Workspace auto-suspend, Azure AD/Entra ID auto-disable, Okta SSO revocation, GitHub org member removal, Slack workspace deactivation on offboarding, full audit trail of access revocation per contractor
+- [ ] **Phase 72: Gulf Operational Polish** - UAE free zone entity tracking with permitted activity scope per zone and license expiry monitoring; Saudization workforce composition dashboard with nationality tracking (visibility only, not Nitaqat band simulation or advisory)
+- [ ] **Phase 73: Offboarding Hardening** - Structured knowledge transfer checklist templates per role type, IP assignment verification workflow blocking offboarding completion, documentation handover task with repo/wiki/credential links, contract clause health check flagging missing IP assignment language

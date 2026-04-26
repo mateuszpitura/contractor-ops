@@ -12,7 +12,10 @@
 // ---------------------------------------------------------------------------
 
 import { TeamsBotHandler } from '@contractor-ops/api/services/teams/teams-bot-handler';
+import { createWebhookLogger } from '@contractor-ops/logger';
 import { CloudAdapter, ConfigurationBotFrameworkAuthentication } from 'botbuilder';
+
+const log = createWebhookLogger('teams-bot');
 
 // ---------------------------------------------------------------------------
 // CloudAdapter singleton (shared across requests)
@@ -123,7 +126,7 @@ export async function POST(request: Request): Promise<Response> {
       headers: responseBody ? { 'Content-Type': 'application/json' } : undefined,
     });
   } catch (error) {
-    console.error('[Teams] Bot Framework endpoint error:', error);
+    log.error({ err: error }, 'bot framework endpoint error');
     return new Response(JSON.stringify({ error: 'Internal server error' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },

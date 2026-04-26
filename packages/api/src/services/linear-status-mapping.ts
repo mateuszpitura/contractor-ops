@@ -1,7 +1,10 @@
+import { createLogger } from '@contractor-ops/logger';
 import type { LinearStatusMappingEntry } from '@contractor-ops/validators';
 import { linearStatusMappingEntrySchema } from '@contractor-ops/validators';
 import { z } from 'zod';
 import type { DbClient } from './types.js';
+
+const log = createLogger({ service: 'linear-status-mapping' });
 
 type PrismaClient = DbClient;
 
@@ -173,13 +176,17 @@ export async function resolveInternalStatus(
   const cachedState = config.stateCache?.[teamId]?.[linearStateId];
 
   if (cachedState) {
-    console.warn(
-      `[Linear] Unmapped state received: ${cachedState.name} (${cachedState.type}) for team ${teamId}, stateId=${linearStateId}`,
+    log.warn(
+      {
+        stateName: cachedState.name,
+        stateType: cachedState.type,
+        teamId,
+        linearStateId,
+      },
+      'unmapped state received',
     );
   } else {
-    console.warn(
-      `[Linear] Unknown unmapped stateId=${linearStateId} for team ${teamId} (not in stateCache)`,
-    );
+    log.warn({ linearStateId, teamId }, 'unknown unmapped stateId (not in stateCache)');
   }
 
   return null;

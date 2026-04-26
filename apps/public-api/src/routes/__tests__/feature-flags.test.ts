@@ -74,7 +74,7 @@ describe('GET /feature-flags', () => {
     await app.request('/');
     expect(mockCreatePublicCaller).toHaveBeenCalledOnce();
     // The context passed should be the Hono Context object (has req/res/etc)
-    const [ctx] = mockCreatePublicCaller.mock.calls[0] as [{ req: unknown }];
+    const [ctx] = mockCreatePublicCaller.mock.calls[0] as unknown as [{ req: unknown }];
     expect(ctx).toBeDefined();
     expect(ctx.req).toBeDefined();
   });

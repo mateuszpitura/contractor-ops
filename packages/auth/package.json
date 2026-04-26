@@ -19,6 +19,11 @@
       "types": "./src/client.ts",
       "import": "./dist/client.js",
       "default": "./dist/client.js"
+    },
+    "./role-normalization": {
+      "types": "./src/role-normalization.ts",
+      "import": "./dist/role-normalization.js",
+      "default": "./dist/role-normalization.js"
     }
   },
   "scripts": {

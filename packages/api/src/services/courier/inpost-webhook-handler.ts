@@ -1,7 +1,10 @@
 import crypto from 'node:crypto';
+import { createLogger } from '@contractor-ops/logger';
 import { inpostWebhookPayloadSchema } from '@contractor-ops/validators';
 import { mapInPostStatus } from './inpost-status-mapper.js';
 import { isEventDuplicate, processShipmentStatusChange } from './shipment-processing.js';
+
+const log = createLogger({ service: 'inpost-webhook-handler' });
 
 // ---------------------------------------------------------------------------
 // InPost Webhook Handler
@@ -31,7 +34,7 @@ export function verifyInPostSignature(
   secret: string,
 ): boolean {
   if (!secret) {
-    console.warn('[inpost-webhook] No webhook secret configured — skipping signature verification');
+    log.warn({}, 'no webhook secret configured — skipping signature verification');
     return true;
   }
 
@@ -62,7 +65,7 @@ export async function handleInPostWebhook(
   // 1. Validate payload
   const parsed = inpostWebhookPayloadSchema.safeParse(payload);
   if (!parsed.success) {
-    console.warn('[inpost-webhook] Invalid payload:', parsed.error.flatten());
+    log.warn({ error: parsed.error.flatten() }, 'invalid payload');
     return;
   }
 
@@ -71,8 +74,13 @@ export async function handleInPostWebhook(
   // 2. Find shipment by externalId, fallback to trackingNumber
   const shipment = await findShipment(db, organizationId, data);
   if (!shipment) {
-    console.warn(
-      `[inpost-webhook] Shipment not found for org=${organizationId}, externalId=${data.shipment_id}, tracking=${data.tracking_number ?? 'N/A'}`,
+    log.warn(
+      {
+        organizationId,
+        externalId: data.shipment_id,
+        trackingNumber: data.tracking_number ?? 'N/A',
+      },
+      'shipment not found',
     );
     return;
   }
@@ -83,9 +91,7 @@ export async function handleInPostWebhook(
 
   // 4. Deduplicate
   if (await isEventDuplicate(db, shipment.id, mappedStatus)) {
-    console.info(
-      `[inpost-webhook] Duplicate event skipped: shipment=${shipment.id}, status=${mappedStatus}`,
-    );
+    log.info({ shipmentId: shipment.id, status: mappedStatus }, 'duplicate event skipped');
     return;
   }
 
@@ -107,9 +113,7 @@ export async function handleInPostWebhook(
     `ShipX webhook: ${data.status}`,
   );
 
-  console.info(
-    `[inpost-webhook] Processed: shipment=${shipment.id}, status=${data.status} -> ${mappedStatus}`,
-  );
+  log.info({ shipmentId: shipment.id, rawStatus: data.status, mappedStatus }, 'processed');
 }
 
 // ---------------------------------------------------------------------------

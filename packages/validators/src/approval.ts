@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { workflowAssignableRoleEnum } from './roles.js';
 
 // ---------------------------------------------------------------------------
 // Prisma enum mirrors (string unions — validators package has no Prisma dep)
@@ -34,18 +35,7 @@ export const conditionSchema = z.object({
 export const stepConfigSchema = z.object({
   name: z.string().min(1).max(100),
   approverUserId: z.string().nullish(),
-  approverRole: z
-    .enum([
-      'ORG_ADMIN',
-      'FINANCE_ADMIN',
-      'OPS_MANAGER',
-      'TEAM_MANAGER',
-      'LEGAL_VIEWER',
-      'IT_ADMIN',
-      'ACCOUNTANT',
-      'READ_ONLY',
-    ])
-    .nullish(),
+  approverRole: workflowAssignableRoleEnum.nullish(),
   slaHours: z.number().int().min(1).max(720),
   required: z.boolean().default(true),
 });

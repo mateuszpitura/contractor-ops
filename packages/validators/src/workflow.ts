@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { optionalFk, optionalString } from './helpers.js';
+import { workflowAssignableRoleEnum } from './roles.js';
 
 // ---------------------------------------------------------------------------
 // Prisma enum mirrors (string unions — validators package has no Prisma dep)
@@ -55,16 +56,7 @@ export const workflowTaskStatusEnum = z.enum([
   'OVERDUE',
 ]);
 
-export const userRoleEnum = z.enum([
-  'ORG_ADMIN',
-  'FINANCE_ADMIN',
-  'OPS_MANAGER',
-  'TEAM_MANAGER',
-  'LEGAL_VIEWER',
-  'IT_ADMIN',
-  'ACCOUNTANT',
-  'READ_ONLY',
-]);
+export const userRoleEnum = workflowAssignableRoleEnum;
 
 // ---------------------------------------------------------------------------
 // Condition schemas (AND/OR rule builder for conditional task logic)

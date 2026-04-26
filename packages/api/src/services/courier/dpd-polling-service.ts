@@ -1,3 +1,4 @@
+import { createLogger } from '@contractor-ops/logger';
 import { DPDClient } from './dpd-client.js';
 import { mapDpdStatus } from './dpd-status-mapper.js';
 import {
@@ -13,6 +14,8 @@ import {
 // ---------------------------------------------------------------------------
 
 import type { DbClient } from '../types.js';
+
+const log = createLogger({ service: 'dpd-polling-service' });
 
 type PrismaClient = DbClient;
 
@@ -47,7 +50,7 @@ export async function pollDpdShipmentStatuses(
   });
 
   if (!config) {
-    console.warn(`[dpd-polling] No courier config found for org=${organizationId}`);
+    log.warn({ organizationId }, 'no courier config found for org');
     return { checked: 0, updated: 0 };
   }
 
@@ -95,14 +98,14 @@ export async function pollDpdShipmentStatuses(
 
       updated++;
     } catch (error) {
-      console.error(
-        `[dpd-polling] Error polling shipment ${shipment.id} (ext=${shipment.externalId}):`,
-        error,
+      log.error(
+        { err: error, shipmentId: shipment.id, externalId: shipment.externalId },
+        'error polling shipment',
       );
     }
   }
 
-  console.info(`[dpd-polling] Org ${organizationId}: checked ${checked}, updated ${updated}`);
+  log.info({ organizationId, checked, updated }, 'polling complete');
 
   return { checked, updated };
 }

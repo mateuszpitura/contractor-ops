@@ -1,6 +1,6 @@
 'use client';
 
-import type { ZatcaOnboardingState } from '@contractor-ops/einvoice';
+import type { ZatcaOnboardingState } from '@contractor-ops/einvoice/zatca/types';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
