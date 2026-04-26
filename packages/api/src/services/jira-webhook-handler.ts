@@ -1,3 +1,4 @@
+import type { Prisma } from '@contractor-ops/db';
 import { decryptCredentials } from '@contractor-ops/integrations/services/credential-service';
 import type { JiraIssueMetadata } from '@contractor-ops/validators';
 import { getServerEnv, jiraWebhookPayloadSchema } from '@contractor-ops/validators';
@@ -257,7 +258,7 @@ export async function processJiraWebhook(
     await prisma.workflowTaskRun.update({
       where: { id: externalLink.entityId },
       data: {
-        status: mappedWorkflowStatus,
+        status: mappedWorkflowStatus as Prisma.WorkflowTaskRunUpdateInput['status'],
       },
     });
 

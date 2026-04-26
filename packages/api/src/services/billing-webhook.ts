@@ -328,8 +328,11 @@ async function handleSubscriptionUpdated(
 
   await tx.subscription.upsert({
     where: { stripeSubscriptionId: subscription.id },
-    create: { stripeSubscriptionId: subscription.id, ...data },
-    update: data,
+    create: {
+      stripeSubscriptionId: subscription.id,
+      ...data,
+    } as Parameters<typeof tx.subscription.upsert>[0]['create'],
+    update: data as Parameters<typeof tx.subscription.upsert>[0]['update'],
   });
 
   void invalidate(CacheKeys.subscription(organizationId), CacheKeys.creditBalance(organizationId));

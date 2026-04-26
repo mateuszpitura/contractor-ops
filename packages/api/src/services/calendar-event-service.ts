@@ -1,4 +1,4 @@
-import type { PrismaClient } from '@contractor-ops/db';
+import type { Prisma, PrismaClient } from '@contractor-ops/db';
 import { GoogleCalendarAdapter } from '@contractor-ops/integrations/adapters/google-calendar-adapter';
 import { OutlookCalendarAdapter } from '@contractor-ops/integrations/adapters/outlook-calendar-adapter';
 import { decryptCredentials } from '@contractor-ops/integrations/services/credential-service';
@@ -157,7 +157,7 @@ async function createEventForConnection(
     data: {
       organizationId: input.organizationId,
       integrationConnectionId: conn.id,
-      entityType: input.entityType,
+      entityType: input.entityType as Prisma.ExternalLinkCreateInput['entityType'],
       entityId: input.entityId,
       externalType,
       externalId: eventId,
@@ -287,10 +287,10 @@ async function findCalendarExternalLinks(
   input: { organizationId: string; entityType: string; entityId: string },
 ): Promise<CalendarExternalLink[]> {
   const db = calendarOrm(prisma);
-  return db.externalLink.findMany({
+  const links = await db.externalLink.findMany({
     where: {
       organizationId: input.organizationId,
-      entityType: input.entityType,
+      entityType: input.entityType as Prisma.ExternalLinkWhereInput['entityType'],
       entityId: input.entityId,
       externalType: { in: ['GOOGLE_CALENDAR_EVENT', 'OUTLOOK_CALENDAR_EVENT'] },
     },
@@ -300,6 +300,7 @@ async function findCalendarExternalLinks(
       },
     },
   });
+  return links as unknown as CalendarExternalLink[];
 }
 
 // ---------------------------------------------------------------------------

@@ -272,7 +272,7 @@ export const einvoiceRouter = router({
       // 2. Build the canonical EInvoice envelope (same helper the XRechnung
       //    finalize path uses — single source of CII truth).
       const envelope = mapPrismaInvoiceToEInvoice(
-        invoice as Parameters<typeof mapPrismaInvoiceToEInvoice>[0],
+        invoice as unknown as Parameters<typeof mapPrismaInvoiceToEInvoice>[0],
       );
 
       // 3. Generate the ZUGFeRD PDF bytes.

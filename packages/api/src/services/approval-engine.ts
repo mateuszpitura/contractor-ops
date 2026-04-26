@@ -1,4 +1,4 @@
-import type { PrismaClient } from '@contractor-ops/db';
+import type { Prisma, PrismaClient } from '@contractor-ops/db';
 import { TRPCError } from '@trpc/server';
 
 // ---------------------------------------------------------------------------
@@ -217,7 +217,7 @@ export async function createApprovalFlow(
           status: index === 0 ? 'PENDING' : 'NOT_STARTED',
           required: step.required,
           slaDeadline: index === 0 ? addHours(now, step.slaHours) : null,
-        })),
+        })) as unknown as Prisma.ApprovalStepCreateWithoutApprovalFlowInput[],
       },
     },
     include: {

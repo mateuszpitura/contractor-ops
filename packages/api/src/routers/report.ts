@@ -257,8 +257,10 @@ export const reportRouter = router({
           contractTitle: c.title,
           contractorId: c.contractor.id,
           contractorName: c.contractor.legalName,
-          endDate: c.endDate?.toISOString(),
-          daysRemaining: Math.ceil((c.endDate?.getTime() - now.getTime()) / msPerDay),
+          endDate: c.endDate?.toISOString() ?? null,
+          daysRemaining: c.endDate
+            ? Math.ceil((c.endDate.getTime() - now.getTime()) / msPerDay)
+            : 0,
           status: c.status,
         })),
         totalCount,
@@ -747,8 +749,10 @@ export const reportRouter = router({
         contracts.map(c => ({
           contractTitle: c.title,
           contractorName: c.contractor.legalName,
-          endDate: c.endDate?.toISOString().slice(0, 10),
-          daysRemaining: Math.ceil((c.endDate?.getTime() - now.getTime()) / msPerDay),
+          endDate: c.endDate?.toISOString().slice(0, 10) ?? '',
+          daysRemaining: c.endDate
+            ? Math.ceil((c.endDate.getTime() - now.getTime()) / msPerDay)
+            : 0,
           status: c.status,
         })),
       );

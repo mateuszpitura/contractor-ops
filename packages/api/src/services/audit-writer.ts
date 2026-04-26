@@ -19,7 +19,7 @@ import type { Prisma } from '@contractor-ops/db';
 import { prisma } from '@contractor-ops/db';
 import { createLogger } from '@contractor-ops/logger';
 
-const log = createLogger('audit-writer');
+const log = createLogger({ service: 'audit-writer' });
 
 /** Mirrors @contractor-ops/db ActorType Prisma enum. */
 export type AuditActorType = 'USER' | 'SYSTEM' | 'INTEGRATION' | 'API_KEY' | 'CONTRACTOR';

@@ -96,7 +96,7 @@ export function renderNotificationEmail(
   const Component = TEMPLATE_MAP[type];
   const getSubject = SUBJECT_LINES[type];
 
-  if (!(Component && getSubject)) {
+  if (Component === undefined || getSubject === undefined) {
     throw new Error(`Unknown notification type: ${type}`);
   }
 

@@ -1,3 +1,4 @@
+import type { Prisma } from '@contractor-ops/db';
 import type { CalendarTaskConfig } from '@contractor-ops/validators';
 import { getServerEnv } from '@contractor-ops/validators';
 import { createCalendarEvent, updateCalendarEvent } from './calendar-event-service.js';
@@ -37,7 +38,7 @@ async function hasExistingCalendarEvent(
   const count = await prisma.externalLink.count({
     where: {
       organizationId,
-      entityType,
+      entityType: entityType as Prisma.ExternalLinkWhereInput['entityType'],
       entityId,
       externalType: {
         in: ['GOOGLE_CALENDAR_EVENT', 'OUTLOOK_CALENDAR_EVENT'],

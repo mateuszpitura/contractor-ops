@@ -227,7 +227,7 @@ async function revalidateStaleVatIfNeeded(
       actor: { userId: ctx.userId },
     },
     {
-      prisma: ctx.db,
+      db: ctx.db,
       hmrcClient: getHmrcVatClient(),
       viesClient: getViesClient(),
     },
@@ -275,7 +275,10 @@ async function resolveEffectiveVatRate(
     if (isReverseCharge) {
       rate = 'RC';
     } else if (org.countryCode) {
-      rate = await getDefaultRateCode(org.countryCode, db);
+      rate = await getDefaultRateCode(
+        org.countryCode,
+        db as unknown as Parameters<typeof getDefaultRateCode>[1],
+      );
     }
   }
 

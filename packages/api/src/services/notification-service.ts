@@ -143,7 +143,7 @@ async function sendNotificationEmail(userId: string, event: NotificationEvent): 
   await sendAppEmail({
     from: 'Contractor Ops <notifications@contractorhub.io>',
     to: user.email,
-    subject,
+    subject: String(subject),
     react,
     headers: {
       'List-Unsubscribe': `<${preferencesUrl}>`,

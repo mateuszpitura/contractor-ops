@@ -242,7 +242,7 @@ export const gdprRouter = router({
         // 12. E-signatures (recipients must be deleted before envelopes due to FK)
         // -----------------------------------------------------------------
         const signingRecipients = await tx.signingRecipient.deleteMany({
-          where: { organizationId: orgId },
+          where: { signingEnvelope: { organizationId: orgId } },
         });
         results.signingRecipients = signingRecipients.count;
 

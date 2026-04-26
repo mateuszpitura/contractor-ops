@@ -1,3 +1,4 @@
+import type { Prisma } from '@contractor-ops/db';
 import { decryptCredentials } from '@contractor-ops/integrations/services/credential-service';
 import type { LinearIssueMetadata } from '@contractor-ops/validators';
 import { getServerEnv, linearWebhookPayloadSchema } from '@contractor-ops/validators';
@@ -55,9 +56,9 @@ function logInboundSync(
       integrationConnectionId: connectionId,
       direction: 'INBOUND',
       syncType,
-      status: data.status ?? 'SUCCESS',
+      status: (data.status ?? 'SUCCESS') as Prisma.IntegrationSyncLogCreateInput['status'],
       completedAt: data.status === 'STARTED' ? undefined : new Date(),
-      entityType: data.entityType,
+      entityType: data.entityType as Prisma.IntegrationSyncLogCreateInput['entityType'],
       entityId: data.entityId,
       errorMessage: data.errorMessage,
       responsePayloadJson: data.responsePayloadJson,
@@ -290,7 +291,7 @@ export async function processLinearWebhook(
     await prisma.workflowTaskRun.update({
       where: { id: externalLink.entityId },
       data: {
-        status: mappedWorkflowStatus,
+        status: mappedWorkflowStatus as Prisma.WorkflowTaskRunUpdateInput['status'],
       },
     });
 

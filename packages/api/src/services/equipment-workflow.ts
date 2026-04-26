@@ -53,7 +53,7 @@ export async function handleEquipmentTaskStart(
 
     const contractorId = workflowRun.contractorId;
 
-    await db.$transaction(async (tx: PrismaClient) => {
+    await db.$transaction(async tx => {
       // Find all equipment currently assigned to this contractor
       const assignments = await tx.equipmentAssignment.findMany({
         where: {
@@ -94,7 +94,7 @@ export async function handleEquipmentTaskStart(
         );
 
         // Recompute workflow run progress after auto-completion
-        await recomputeWorkflowProgress(tx, workflowRun.id);
+        await recomputeWorkflowProgress(tx as unknown as PrismaClient, workflowRun.id);
         return;
       }
 
@@ -123,7 +123,7 @@ export async function handleEquipmentTaskStart(
         );
 
         // D-10: Auto-create InPost return shipment if org has courier config
-        await autoCreateInPostReturnShipment(tx, {
+        await autoCreateInPostReturnShipment(tx as unknown as PrismaClient, {
           organizationId,
           contractorId,
           equipmentIds,
@@ -316,7 +316,7 @@ async function autoCreateInPostReturnShipment(
     }
 
     // Parse config and create InPost client
-    const configJson = courierConfig.configJson as InPostClientConfig;
+    const configJson = courierConfig.configJson as unknown as InPostClientConfig;
     const client = new InPostClient(configJson);
 
     // Load org for sender details

@@ -266,7 +266,13 @@ export async function convertToHomeCurrency(
   if (fromCurrency === homeCurrency) {
     return { amountMinor, rate: 1 };
   }
-  const result = await convertAmount(prisma, amountMinor, fromCurrency, homeCurrency, date);
+  const result = await convertAmount(
+    prisma as unknown as Parameters<typeof convertAmount>[0],
+    amountMinor,
+    fromCurrency,
+    homeCurrency,
+    date,
+  );
   if (!result) return null;
   return { amountMinor: result.amountMinor, rate: result.rate };
 }
