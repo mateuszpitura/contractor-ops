@@ -48,6 +48,26 @@ Progress: [█████████░] 91%
 
 ## Accumulated Context
 
+## Deferred Items
+
+Items acknowledged and deferred at v5.0 milestone close on 2026-04-26:
+
+| Category | Phase | File | Status | Disposition |
+|----------|-------|------|--------|-------------|
+| uat_gap | 60 | 60-HUMAN-UAT.md | partial — 4 pending scenarios | post-deploy manual UI verification |
+| uat_gap | 61 | 61-UAT.md | partial — 12 pending scenarios | post-deploy manual UI verification |
+| uat_gap | 62 | 62-HUMAN-UAT.md | partial — 3 pending scenarios | post-deploy manual UI verification |
+| uat_gap | 63 | 63-HUMAN-UAT.md | partial — 6 pending scenarios | post-deploy manual UI verification |
+| verification_gap | 56 | 56-VERIFICATION.md | gaps_found | GAP-67-01-01 closed by Phase 69 (commit ee0dc8aa); FOUND-03 → Complete |
+| verification_gap | 57 | 57-VERIFICATION.md | gaps_found | code-level passed; gap addressed by Phase 66 + Phase 57 plan 04 audit-acknowledgement |
+| verification_gap | 58 | 58-VERIFICATION.md | gaps_found | I-3 documented as warning (verification-shape only, runtime works); Phase 67 verified |
+| verification_gap | 60 | 60-VERIFICATION.md | human_needed | manual UI UAT — same items as 60-HUMAN-UAT above |
+| verification_gap | 61 | 61-VERIFICATION.md | human_needed | manual UI UAT — same items as 61-UAT above |
+| verification_gap | 62 | 62-VERIFICATION.md | human_needed | manual UI UAT — same items as 62-HUMAN-UAT above |
+
+All items consistent with Standing Project Constraints (LOCAL-ONLY, manual UI verification deferred to post-deploy).
+Code-level audit gaps (I-1 / EINV-01/02/04 / PAY-04 / FOUND-03) all closed this session by Phases 65-69.
+
 ### Standing Project Constraints
 
 - **Deployment status: LOCAL-ONLY.** The application is still in local development and has not been deployed to production. No external users, no regulated customers, no live data flows.

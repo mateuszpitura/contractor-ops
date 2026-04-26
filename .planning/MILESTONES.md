@@ -1,5 +1,38 @@
 # Milestones
 
+## v5.0 UK & Germany Expansion (Shipped: 2026-04-26)
+
+**Phases completed:** 14 phases (56-69), 70 plans
+
+**Key accomplishments:**
+
+- Generic contractor classification engine with UK IR35 (CEST-aligned, 25 questions, dispositive scoring per Atholl House + PGMOL) and German Scheinselbständigkeit (DRV 30/30/25/15 weighted criteria) rule sets, stored per-engagement
+- Status Determination Statement (SDS) PDF generation, IR35 chain participants tracking with delivery timestamps, DRV audit defense PDF bundle for compliance evidence
+- Automated economic-dependency alerts (70% / 83.33% thresholds) with daily band state-machine cron, reassessment triggers wired to AuditLog scans, Statusfeststellungsverfahren tracking with 90/30/7-day expiry reminders
+- Per-market compliance health dashboard with 8 tRPC procedures, CSV export with formula-injection neutralization, and 7-component native-flex visualisation (no chart library)
+- XRechnung 3.0.2 CII XML generator with KoSIT 3-layer validation (libxmljs2 XSD + saxon-js EN 16931 + saxon-js XRechnung CIUS Schematron), Leitweg-ID lifecycle (per-contractor / per-contract resolution), Peppol BIS 3.0 transmission via Storecove with capability cache
+- ZUGFeRD PDF/A-3 hybrid generator using pdf-lib, structural-check assertions, XMP metadata, and Phase 61 CII generator reuse for embedded XML
+- BACS Standard 18 Direct Credit export with VocaLink modulus-check sort-code validation, ASCII transliteration utility, and per-org submitter configuration
+- LPCDA-compliant statutory late-payment interest with BoE base-rate poller cron, claim PDF (React-PDF), waiver/revoke flow, and admin BoE-rate management page
+- German Skonto early-payment-discount cascade (invoice-level → billing-profile default) with structured BG-20 XRechnung Payment Terms emission per Anhang E (`#SKONTO#TAGE=n#PROZENT=n#BASISBETRAG=n#`) — wired through both XRechnung CII and ZUGFeRD embedded CII (closes audit I-1)
+- HMRC VAT validation (OAuth 2.0 client-credentials with 401-refresh and fraud-prevention headers) and VIES qualified USt-IdNr confirmation with graceful soft-fail
+- Tax-id-validation orchestrator with 90-day freshness window, reverse-charge rules (gb_eu_post_brexit_b2b + de_domestic_13b_ustg), and Kleinunternehmer service
+- German i18n at full message-key parity (4,281 leaf keys) in formal-Sie register, locked DSGVO/tax phrases as compile-time constants (78/78 CI guard), Datenschutzerklärung MDX with BfDI-aligned content, IDOR-safe React-PDF privacy notice download
+- UK GDPR privacy notice MDX page + React-PDF template + jurisdiction resolver
+- Country-specific contractor profile fields with HMRC-grade validators (UTR mod-11, GB VAT mod-97/9755, Companies House) and German validators (USt-IdNr ISO 7064, SV-Nummer DRV-spec, 16-Bundesland Steuernummer regex map, ~120-court Handelsregister list)
+- Legal compliance hardening: Unleash feature-flag wrapper with deployment-time signoff registry (PENDING → APPROVED CI gate), advisory banner component on classification outcomes, escalation logging, ToS reacceptance modal
+- When `classification-engine` flag OFF: classification UI fully removed from render tree, tRPC procedures FORBIDDEN/unregistered, document endpoints inaccessible, economic-dependency cron skips execution
+- Closed audit I-1 cross-phase wiring defect (Phase 68: 5 plans, 3 waves, 4-layer test coverage proves XRechnung XML + ZUGFeRD embedded CII both emit BG-20)
+- Closed FOUND-03 i18n parity gap (Phase 69: 32 missing DE translations authored in formal-Sie register; LPCDA copy uses German with parenthetical English on first occurrence to avoid BGB Verzugszinsen statutory framework confusion)
+- Phase 67 produced VERIFICATION.md for Phases 56 + 58 retroactively, surfacing GAP-67-01-01 which Phase 69 then closed
+- Phase 65 fixed 4 critical Phase 63 bugs (wrong feature flag key, wrong amount field, missing permission registration, daysOverdue calculation source)
+- Phase 66 executed Phase 57's outstanding plan 04 (VAT tRPC routers + invoice pipeline + UI) and produced 57-VERIFICATION.md
+- Audit gap-closure trio (65, 66, 67) plus follow-up phases (68, 69) all PASSED verifier — every audit-flagged gap closed before milestone close
+
+Known deferred items at close: 10 (see STATE.md Deferred Items) — all manual UI UAT (post-deploy) or VERIFICATION.md `gaps_found` files whose underlying issues were addressed by gap-closure phases.
+
+---
+
 ## v3.0 Enterprise & Monetization (Shipped: 2026-04-10)
 
 **Phases completed:** 17 phases, 47 plans, 91 tasks

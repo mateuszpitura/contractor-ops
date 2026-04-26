@@ -90,22 +90,34 @@ v3.0 Enterprise & Monetization (shipped 2026-04-11): Stripe subscription billing
 - ✓ Government API framework with cert auth, retry, rate limiting, audit logging — v4.0
 - ✓ Locale-aware formatting (currency, dates) across all supported locales — v4.0
 
+### Validated — v5.0
+
+- ✓ Generic contractor classification engine with UK IR35 (CEST-aligned, 25 questions) and German Scheinselbständigkeit (DRV 30/30/25/15 weighted criteria) — v5.0
+- ✓ Status Determination Statement (SDS) PDF generation, IR35 chain participant tracking, DRV audit defense PDF bundle — v5.0
+- ✓ Economic dependency alerts (70%/83.33% thresholds), reassessment triggers via AuditLog scans, Statusfeststellungsverfahren tracking with expiry reminders — v5.0
+- ✓ Per-market compliance health dashboard with CSV export and 7-component visualisation — v5.0
+- ✓ XRechnung 3.0.2 CII XML generator with KoSIT 3-layer validation and Leitweg-ID lifecycle — v5.0
+- ✓ ZUGFeRD PDF/A-3 hybrid generator with embedded CII XML and inbound parser — v5.0
+- ✓ BACS Standard 18 Direct Credit export with VocaLink modulus check and ASCII transliteration — v5.0
+- ✓ LPCDA-compliant statutory late-payment interest with BoE base-rate poller, claim PDF, and waiver flow — v5.0
+- ✓ German Skonto early-payment-discount cascade with structured BG-20 emission in XRechnung CII + ZUGFeRD embedded CII — v5.0
+- ✓ HMRC VAT validation (OAuth + fraud-prevention headers) and VIES qualified USt-IdNr confirmation — v5.0
+- ✓ German i18n at full message-key parity (4,281 leaf keys, formal-Sie register, 78/78 locked legal phrases) — v5.0
+- ✓ UK GDPR privacy notice + German Datenschutzerklärung MDX with React-PDF download (IDOR-safe) — v5.0
+- ✓ UK contractor fields (UTR mod-11, GB VAT mod-97, Companies House) + German contractor fields (Steuernummer 16-Bundesland, USt-IdNr ISO 7064, SV-Nummer DRV-spec, Handelsregister ~120-court list) — v5.0
+- ✓ Legal compliance hardening: Unleash feature-flag with PENDING → APPROVED CI gate, advisory banners, ToS reacceptance, classification flag-OFF render-tree removal + tRPC FORBIDDEN — v5.0
+
 ### Active
 
-## Current Milestone: v5.0 UK & Germany Expansion
+## Next Milestone: v6.0 Platform Maturity & Operational Hardening
 
-**Goal:** Expand Contractor Ops to the UK and German markets with full compliance coverage, contractor classification engines, market-specific e-invoicing, payment formats, and German localization.
+**Goal:** Make the platform production-grade across all supported markets (PL, UK, DE, UAE, SA) by closing critical operational gaps. No new market entry; focus on reliability and security for real users.
 
 **Target features:**
-- Generic contractor classification risk engine with UK (IR35) and German (Scheinselbständigkeit) rule sets
-- IR35 status determination, SDS generation, chain participant tracking
-- Scheinselbständigkeit risk assessment with DRV audit defense documentation
-- EN 16931 e-invoicing engine with XRechnung and ZUGFeRD country profiles
-- UK payment infrastructure (BACS Standard 18, research Faster Payments)
-- Full German i18n (third language)
-- UK GDPR + German GDPR compliance
-- HMRC VAT validation, German USt-IdNr validation via VIES
-- UK contractor fields (UTR, Companies House), German fields (Steuernummer, Handelsregister)
+- Compliance Document Lifecycle Engine — per-country required document definitions, automated expiry tracking with 90/60/30/15/7-day alerts, hard payment blocking on expired critical documents, automated contractor reminders, compliance dashboard with at-risk contractor count
+- Identity Provider Deprovisioning — Google Workspace auto-suspend, Azure AD/Entra ID auto-disable, Okta SSO revocation, GitHub org member removal, Slack workspace deactivation on offboarding, full audit trail of access revocation
+- Gulf Operational Polish — UAE free zone entity tracking with permitted activity scope per zone and license expiry monitoring; Saudization workforce composition dashboard with nationality tracking
+- Offboarding Hardening — knowledge transfer checklist templates per role type, IP assignment verification workflow blocking offboarding completion, documentation handover task with credential links, contract clause health check flagging missing IP-assignment language
 
 ### Out of Scope
 
