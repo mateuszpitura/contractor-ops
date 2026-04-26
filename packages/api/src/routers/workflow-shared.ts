@@ -78,7 +78,15 @@ export interface ConditionGroup {
  * e.g., "contractor.type" -> context.contractor.type
  */
 function getNestedValue(obj: Record<string, unknown>, path: string): unknown {
-  return path.split('.').reduce((current, key) => current?.[key], obj);
+  return path
+    .split('.')
+    .reduce<unknown>(
+      (current, key) =>
+        current && typeof current === 'object'
+          ? (current as Record<string, unknown>)[key]
+          : undefined,
+      obj,
+    );
 }
 
 /**

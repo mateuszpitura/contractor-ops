@@ -59,7 +59,7 @@ export function requireTier(minimumTier: SubscriptionTier) {
     }
 
     return next({
-      ctx: { ...ctx, subscription: sub },
+      ctx: { subscription: sub },
     });
   });
 }

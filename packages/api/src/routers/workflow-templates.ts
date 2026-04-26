@@ -59,7 +59,7 @@ export const workflowTemplatesRouter = router({
               dependsOnTaskTemplateId: task.dependsOnTaskTemplateId ?? null,
               externalUrl: task.externalUrl || null,
               configJson: task.conditions ?? undefined,
-            })),
+            })) as Prisma.WorkflowTaskTemplateCreateManyInput[],
           });
         }
 
@@ -130,7 +130,7 @@ export const workflowTemplatesRouter = router({
                 dependsOnTaskTemplateId: task.dependsOnTaskTemplateId ?? null,
                 externalUrl: task.externalUrl || null,
                 configJson: task.conditions ?? undefined,
-              })),
+              })) as Prisma.WorkflowTaskTemplateCreateManyInput[],
             });
           }
         }
@@ -440,7 +440,7 @@ export const workflowTemplatesRouter = router({
             dueOffsetHours: null,
             dependsOnTaskTemplateId: null,
             externalUrl: null,
-          })),
+          })) as unknown as Prisma.WorkflowTaskTemplateCreateManyInput[],
         });
 
         // ----- Template 2: Contractor Offboarding -----
@@ -512,7 +512,7 @@ export const workflowTemplatesRouter = router({
             dueOffsetHours: null,
             dependsOnTaskTemplateId: null,
             externalUrl: null,
-          })),
+          })) as unknown as Prisma.WorkflowTaskTemplateCreateManyInput[],
         });
       });
 

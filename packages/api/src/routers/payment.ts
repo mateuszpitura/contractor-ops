@@ -179,7 +179,7 @@ function _buildExportItems(
       taxId: item.contractor.taxId,
       bankName: item.billingProfile?.bankName ?? null,
       swiftBic: item.billingProfile?.swiftBic ?? null,
-      dueDate: item.invoice.dueDate,
+      dueDate: item.invoice.dueDate ?? new Date(),
       transferTitle,
     };
   });
@@ -1255,7 +1255,7 @@ export const paymentRouter = router({
       const effectiveTerm = resolveSkontoTerm(invoiceTerm, profileTerm);
 
       const eligibility = evaluateSkontoEligibility({
-        invoiceTotalMinor: invoice.amountMinor,
+        invoiceTotalMinor: invoice.totalMinor,
         invoiceIssueDate: invoice.issueDate,
         skontoTerm: effectiveTerm,
         paidAt: invoice.paidAt,
@@ -1326,7 +1326,7 @@ export const paymentRouter = router({
                 include: {
                   billingProfiles: {
                     take: 1,
-                    select: { iban: true },
+                    select: { bankAccountMasked: true },
                   },
                 },
               },
@@ -1344,7 +1344,7 @@ export const paymentRouter = router({
 
       const detections = run.items.map(item => {
         const currency = item.invoice?.currency ?? run.currency;
-        const iban = item.contractor?.billingProfiles[0]?.iban ?? '';
+        const iban = item.contractor?.billingProfiles[0]?.bankAccountMasked ?? '';
         const format = detectFormat(currency, iban);
 
         return {

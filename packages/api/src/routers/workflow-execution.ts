@@ -233,10 +233,19 @@ async function instantiateTaskRuns(
 
   for (const taskTemplate of templateTasks) {
     const condition = taskTemplate.configJson as ConditionGroup | null;
-    const conditionMet = evaluateCondition(condition, { contractor, contract });
+    const conditionMet = evaluateCondition(condition, {
+      contractor,
+      contract: contract ?? undefined,
+    });
 
     const assigneeUserId = conditionMet
-      ? await resolveAssignee(taskTemplate, contractor, contract, organizationId, tx)
+      ? await resolveAssignee(
+          taskTemplate,
+          contractor as { internalOwnerUserId?: string | null },
+          contract as { internalOwnerUserId?: string | null } | null,
+          organizationId,
+          tx as unknown as Parameters<typeof resolveAssignee>[4],
+        )
       : null;
 
     const dueAt = computeTaskDueAt(
@@ -259,14 +268,18 @@ async function instantiateTaskRuns(
         workflowTaskTemplateId: taskTemplate.id,
         title: taskTemplate.title,
         description: taskTemplate.description,
-        taskType: taskTemplate.taskType,
+        taskType: taskTemplate.taskType as Parameters<
+          typeof tx.workflowTaskRun.create
+        >[0]['data']['taskType'],
         required: taskTemplate.required,
         assigneeUserId,
-        assigneeRole: taskTemplate.assigneeRole,
+        assigneeRole: taskTemplate.assigneeRole as Parameters<
+          typeof tx.workflowTaskRun.create
+        >[0]['data']['assigneeRole'],
         dueAt,
         dependsOnTaskRunId: dependsOnRunId,
         status,
-        resultJson,
+        resultJson: resultJson ?? undefined,
       },
     });
 
