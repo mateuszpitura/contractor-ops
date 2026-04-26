@@ -885,6 +885,46 @@ describe('contractor.validateVat / revalidateVat (Phase 57 · Plan 04)', () => {
     expect(result.responseStatus).toBe('stale');
     expect(result.source).toBe('stale-cache');
   });
+
+  it('validateVat surfaces responseStatus=invalid to the caller (HMRC 404 sad path) — §2', async () => {
+    // Plan 57-04 Task 3 §2 manual scenario:
+    // "Change the same contractor's VAT ID to GB555555555 (HMRC sandbox 404
+    // fixture). Click Revalidate VAT. Expected: pill flips to red Invalid;
+    // toast shows error."
+    //
+    // At the router layer the equivalent assertion is: when the orchestrator
+    // returns { responseStatus: 'invalid' } (which is what validateTaxId
+    // produces after HmrcVatClient.checkVatNumber returns { status: 'invalid' }
+    // for an HMRC 404), the router MUST surface that result without throwing.
+    // The UI pill consumes the returned responseStatus to render the red
+    // "Invalid" badge.
+    //
+    // This is the deterministic substitute for the HMRC sandbox round-trip;
+    // wire-level coverage of the 404→invalid mapping lives in
+    // packages/gov-api/src/clients/__tests__/hmrc-vat-client.msw.integration.test.ts
+    // (extended in Plan 66-03).
+    validateTaxIdMock.mockResolvedValueOnce({
+      responseStatus: 'invalid',
+      confirmationRef: null,
+      source: 'api',
+      requestedAt: new Date('2026-04-13T10:00:00Z'),
+      taxIdValidationId: 'clval00000000000000000099',
+    });
+    mockPrisma.contractor.findFirst.mockResolvedValueOnce({
+      id: CONTRACTOR_ID,
+      countryCode: 'GB',
+      vatId: 'GB555555555',
+    });
+
+    const result = await caller.contractor.validateVat({ contractorId: CONTRACTOR_ID });
+
+    expect(validateTaxIdMock).toHaveBeenCalledTimes(1);
+    expect(result.responseStatus).toBe('invalid');
+    expect(result.confirmationRef).toBeNull();
+    // Sanity: the router did NOT throw — the invalid status surfaces as a
+    // returned value. (A throw here would break the UI's optimistic-update
+    // contract: the pill expects to receive a result object to render.)
+  });
 });
 
 // ---------------------------------------------------------------------------

@@ -230,6 +230,20 @@ vi.mock('@sentry/nextjs', () => {
 vi.mock('@contractor-ops/logger', () => ({
   createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
   createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
+  createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
+  createWebhookLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+  })),
+  createIntegrationLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+  })),
+  logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() },
 }));
 
 vi.mock('@contractor-ops/logger/metrics', () => ({
@@ -365,5 +379,80 @@ describe('organization.update', () => {
     expect(call.body.data.metadata).toEqual({
       billingEmail: 'billing@corp.com',
     });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Phase 57 · Plan 04 + Phase 66 · Plan 02 — setKleinunternehmer DE-only gate
+// ---------------------------------------------------------------------------
+//
+// Plan 57-04 Task 3 §6 manual scenario:
+//   "In a DE org, navigate to Settings → Organization; find the Kleinunternehmer
+//    toggle (should ONLY be visible for DE orgs). Enable the toggle ..."
+//
+// Phase 66 deterministic substitute: assert at the router layer that
+//   (a) DE orgs can flip the flag and the persisted data carries it,
+//   (b) non-DE orgs are rejected with FORBIDDEN before the persistence call
+//       (UI hides the toggle for non-DE; the router enforces it as
+//       defense-in-depth — Plan 57-04 Threat T-57-04-02).
+//
+// This block mocks the additional Prisma methods setKleinunternehmer needs
+// (findUniqueOrThrow + update) inline via beforeEach so the changes do not
+// pollute the hoisted mockPrisma factory.
+
+describe('organization.setKleinunternehmer (Phase 57 · Plan 04 / Phase 66)', () => {
+  const setKuFindUniqueOrThrow = vi.fn();
+  const setKuUpdate = vi.fn();
+
+  beforeEach(() => {
+    setKuFindUniqueOrThrow.mockReset();
+    setKuUpdate.mockReset();
+    // Attach the additional methods that setKleinunternehmer requires.
+    // The hoisted mockPrisma in this file only declares `organization.findUnique`
+    // and `member.findFirst` because the original test surface is small.
+    (mockPrisma.organization as Record<string, unknown>).findUniqueOrThrow = setKuFindUniqueOrThrow;
+    (mockPrisma.organization as Record<string, unknown>).update = setKuUpdate;
+  });
+
+  it('flips isKleinunternehmer for a DE org and returns the new value', async () => {
+    setKuFindUniqueOrThrow.mockResolvedValueOnce({ countryCode: 'DE' });
+    setKuUpdate.mockResolvedValueOnce({ isKleinunternehmer: true });
+
+    const result = await caller.organization.setKleinunternehmer({ enabled: true });
+
+    expect(setKuFindUniqueOrThrow).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: ORG_ID },
+        select: { countryCode: true },
+      }),
+    );
+    expect(setKuUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: ORG_ID },
+        data: { isKleinunternehmer: true },
+        select: { isKleinunternehmer: true },
+      }),
+    );
+    expect(result).toEqual({ isKleinunternehmer: true });
+  });
+
+  it('throws FORBIDDEN for a non-DE org (UK) and does NOT call organization.update — defense-in-depth', async () => {
+    setKuFindUniqueOrThrow.mockResolvedValueOnce({ countryCode: 'GB' });
+
+    await expect(caller.organization.setKleinunternehmer({ enabled: true })).rejects.toMatchObject({
+      code: 'FORBIDDEN',
+    });
+
+    expect(setKuUpdate).not.toHaveBeenCalled();
+  });
+
+  it('throws FORBIDDEN for a non-DE org (PL) — covers the same gate from a non-EU-VAT-context-style country', async () => {
+    setKuFindUniqueOrThrow.mockResolvedValueOnce({ countryCode: 'PL' });
+
+    await expect(caller.organization.setKleinunternehmer({ enabled: false })).rejects.toMatchObject(
+      { code: 'FORBIDDEN' },
+    );
+
+    expect(setKuUpdate).not.toHaveBeenCalled();
   });
 });
