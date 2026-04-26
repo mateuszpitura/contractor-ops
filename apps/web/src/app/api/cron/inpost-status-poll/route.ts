@@ -91,21 +91,33 @@ async function pollAllCarriersForOrg(organizationId: string): Promise<OrgResult>
   const carriers: CarrierResult[] = [];
 
   // Poll InPost shipments
-  const inpostResult = await pollInPostShipmentStatuses(prisma, organizationId).catch(err => {
+  // TODO(typecheck-pass-2): polling helpers expect an extended Prisma client
+  // type that doesn't structurally match the bare PrismaClient. Cast at the
+  // boundary; the runtime call is unaffected.
+  const inpostResult = await pollInPostShipmentStatuses(
+    prisma as unknown as Parameters<typeof pollInPostShipmentStatuses>[0],
+    organizationId,
+  ).catch(err => {
     console.error(`[courier-status-poll] InPost error for org ${organizationId}:`, err);
     return { checked: 0, updated: 0 };
   });
   carriers.push({ carrier: 'inpost', ...inpostResult });
 
   // Poll DPD shipments
-  const dpdResult = await pollDpdShipmentStatuses(prisma, organizationId).catch(err => {
+  const dpdResult = await pollDpdShipmentStatuses(
+    prisma as unknown as Parameters<typeof pollDpdShipmentStatuses>[0],
+    organizationId,
+  ).catch(err => {
     console.error(`[courier-status-poll] DPD error for org ${organizationId}:`, err);
     return { checked: 0, updated: 0 };
   });
   carriers.push({ carrier: 'dpd', ...dpdResult });
 
   // Poll UPS shipments
-  const upsResult = await pollUpsShipmentStatuses(prisma, organizationId).catch(err => {
+  const upsResult = await pollUpsShipmentStatuses(
+    prisma as unknown as Parameters<typeof pollUpsShipmentStatuses>[0],
+    organizationId,
+  ).catch(err => {
     console.error(`[courier-status-poll] UPS error for org ${organizationId}:`, err);
     return { checked: 0, updated: 0 };
   });

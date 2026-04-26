@@ -40,18 +40,21 @@ vi.mock('@contractor-ops/integrations/services/qstash-client', () => ({
 vi.mock('@contractor-ops/db', () => ({
   prisma: {
     webhookDelivery: {
-      create: (...args: unknown[]) => mockCreate(...args),
-      update: (...args: unknown[]) => mockUpdate(...args),
+      create: (...args: unknown[]) => (mockCreate as (...a: unknown[]) => unknown)(...args),
+      update: (...args: unknown[]) => (mockUpdate as (...a: unknown[]) => unknown)(...args),
     },
     organization: {
-      findUnique: (...args: unknown[]) => mockOrgFindUnique(...args),
+      findUnique: (...args: unknown[]) =>
+        (mockOrgFindUnique as (...a: unknown[]) => unknown)(...args),
     },
   },
 }));
 
 vi.mock('../../slack-webhook-context.js', () => ({
-  extractSlackTeamId: (...a: unknown[]) => mockExtractSlackTeamId(...a),
-  resolveSlackConnectionByTeamId: (...a: unknown[]) => mockResolveSlackConnectionByTeamId(...a),
+  extractSlackTeamId: (...a: unknown[]) =>
+    (mockExtractSlackTeamId as (...a: unknown[]) => unknown)(...a),
+  resolveSlackConnectionByTeamId: (...a: unknown[]) =>
+    (mockResolveSlackConnectionByTeamId as (...a: unknown[]) => unknown)(...a),
 }));
 
 import { POST } from '../route';

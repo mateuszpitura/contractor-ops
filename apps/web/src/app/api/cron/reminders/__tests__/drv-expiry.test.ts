@@ -29,7 +29,14 @@ type NotificationRow = {
 const { mockPrisma, clearances, notifications, dispatchMock, resolveRbacMock } = vi.hoisted(() => {
   const clearances: ClearanceRow[] = [];
   const notifications: NotificationRow[] = [];
-  const dispatchMock = vi.fn(async () => undefined);
+  const dispatchMock = vi.fn<
+    (arg: {
+      type: string;
+      entityType: string;
+      entityId: string;
+      recipientUserIds?: string[];
+    }) => Promise<undefined>
+  >(async () => undefined);
   const resolveRbacMock = vi.fn(async () => ['user-1', 'user-2']);
 
   const mockPrisma = {

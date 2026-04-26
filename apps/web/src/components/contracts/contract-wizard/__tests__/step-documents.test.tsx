@@ -31,8 +31,8 @@ vi.mock('@/trpc/init', () => ({
 let dropCallback: ((files: File[]) => void) | null = null;
 
 vi.mock('react-dropzone', () => ({
-  useDropzone: (opts: Record<string, unknown>) => {
-    dropCallback = opts.onDrop;
+  useDropzone: (opts: { onDrop?: (files: File[]) => void }) => {
+    dropCallback = opts.onDrop ?? null;
     return {
       getRootProps: () => ({ 'data-testid': 'dropzone' }),
       getInputProps: () => ({}),
@@ -86,9 +86,13 @@ describe('StepDocuments', () => {
       open: vi.fn(),
       setRequestHeader: vi.fn(),
       send: vi.fn(),
-      upload: { onprogress: null as unknown },
-      onload: null as unknown,
-      onerror: null as unknown,
+      upload: {
+        onprogress: null as
+          | null
+          | ((evt: { lengthComputable?: boolean; loaded?: number; total?: number }) => void),
+      },
+      onload: null as null | (() => void),
+      onerror: null as null | (() => void),
       status: 200,
     };
     vi.stubGlobal(
@@ -122,9 +126,13 @@ describe('StepDocuments', () => {
       open: vi.fn(),
       setRequestHeader: vi.fn(),
       send: vi.fn(),
-      upload: { onprogress: null as unknown },
-      onload: null as unknown,
-      onerror: null as unknown,
+      upload: {
+        onprogress: null as
+          | null
+          | ((evt: { lengthComputable?: boolean; loaded?: number; total?: number }) => void),
+      },
+      onload: null as null | (() => void),
+      onerror: null as null | (() => void),
       status: 200,
     };
     vi.stubGlobal(
@@ -174,9 +182,13 @@ describe('StepDocuments', () => {
       open: vi.fn(),
       setRequestHeader: vi.fn(),
       send: vi.fn(),
-      upload: { onprogress: null as unknown },
-      onload: null as unknown,
-      onerror: null as unknown,
+      upload: {
+        onprogress: null as
+          | null
+          | ((evt: { lengthComputable?: boolean; loaded?: number; total?: number }) => void),
+      },
+      onload: null as null | (() => void),
+      onerror: null as null | (() => void),
       status: 200,
     };
     vi.stubGlobal(
@@ -206,9 +218,13 @@ describe('StepDocuments', () => {
       open: vi.fn(),
       setRequestHeader: vi.fn(),
       send: vi.fn(),
-      upload: { onprogress: null as unknown },
-      onload: null as unknown,
-      onerror: null as unknown,
+      upload: {
+        onprogress: null as
+          | null
+          | ((evt: { lengthComputable?: boolean; loaded?: number; total?: number }) => void),
+      },
+      onload: null as null | (() => void),
+      onerror: null as null | (() => void),
       status: 200,
     };
     vi.stubGlobal(
@@ -247,9 +263,13 @@ describe('StepDocuments', () => {
       open: vi.fn(),
       setRequestHeader: vi.fn(),
       send: vi.fn(),
-      upload: { onprogress: null as unknown },
-      onload: null as unknown,
-      onerror: null as unknown,
+      upload: {
+        onprogress: null as
+          | null
+          | ((evt: { lengthComputable?: boolean; loaded?: number; total?: number }) => void),
+      },
+      onload: null as null | (() => void),
+      onerror: null as null | (() => void),
       status: 200,
     };
     vi.stubGlobal(
@@ -278,9 +298,13 @@ describe('StepDocuments', () => {
       open: vi.fn(),
       setRequestHeader: vi.fn(),
       send: vi.fn(),
-      upload: { onprogress: null as unknown },
-      onload: null as unknown,
-      onerror: null as unknown,
+      upload: {
+        onprogress: null as
+          | null
+          | ((evt: { lengthComputable?: boolean; loaded?: number; total?: number }) => void),
+      },
+      onload: null as null | (() => void),
+      onerror: null as null | (() => void),
       status: 200,
     };
     vi.stubGlobal(
@@ -310,9 +334,13 @@ describe('StepDocuments', () => {
       open: vi.fn(),
       setRequestHeader: vi.fn(),
       send: vi.fn(),
-      upload: { onprogress: null as unknown },
-      onload: null as unknown,
-      onerror: null as unknown,
+      upload: {
+        onprogress: null as
+          | null
+          | ((evt: { lengthComputable?: boolean; loaded?: number; total?: number }) => void),
+      },
+      onload: null as null | (() => void),
+      onerror: null as null | (() => void),
       status: 200,
     };
     vi.stubGlobal(
@@ -346,9 +374,13 @@ describe('StepDocuments', () => {
       open: vi.fn(),
       setRequestHeader: vi.fn(),
       send: vi.fn(),
-      upload: { onprogress: null as unknown },
-      onload: null as unknown,
-      onerror: null as unknown,
+      upload: {
+        onprogress: null as
+          | null
+          | ((evt: { lengthComputable?: boolean; loaded?: number; total?: number }) => void),
+      },
+      onload: null as null | (() => void),
+      onerror: null as null | (() => void),
       status: 200,
     };
     vi.stubGlobal(
@@ -388,9 +420,13 @@ describe('StepDocuments', () => {
       open: vi.fn(),
       setRequestHeader: vi.fn(),
       send: vi.fn(),
-      upload: { onprogress: null as unknown },
-      onload: null as unknown,
-      onerror: null as unknown,
+      upload: {
+        onprogress: null as
+          | null
+          | ((evt: { lengthComputable?: boolean; loaded?: number; total?: number }) => void),
+      },
+      onload: null as null | (() => void),
+      onerror: null as null | (() => void),
       status: 200,
     };
     vi.stubGlobal(
@@ -419,9 +455,13 @@ describe('StepDocuments', () => {
       open: vi.fn(),
       setRequestHeader: vi.fn(),
       send: vi.fn(),
-      upload: { onprogress: null as unknown },
-      onload: null as unknown,
-      onerror: null as unknown,
+      upload: {
+        onprogress: null as
+          | null
+          | ((evt: { lengthComputable?: boolean; loaded?: number; total?: number }) => void),
+      },
+      onload: null as null | (() => void),
+      onerror: null as null | (() => void),
       status: 500,
     };
     vi.stubGlobal(
@@ -451,9 +491,13 @@ describe('StepDocuments', () => {
       open: vi.fn(),
       setRequestHeader: vi.fn(),
       send: vi.fn(),
-      upload: { onprogress: null as unknown },
-      onload: null as unknown,
-      onerror: null as unknown,
+      upload: {
+        onprogress: null as
+          | null
+          | ((evt: { lengthComputable?: boolean; loaded?: number; total?: number }) => void),
+      },
+      onload: null as null | (() => void),
+      onerror: null as null | (() => void),
       status: 200,
     };
     vi.stubGlobal(
@@ -482,9 +526,13 @@ describe('StepDocuments', () => {
       open: vi.fn(),
       setRequestHeader: vi.fn(),
       send: vi.fn(),
-      upload: { onprogress: null as unknown },
-      onload: null as unknown,
-      onerror: null as unknown,
+      upload: {
+        onprogress: null as
+          | null
+          | ((evt: { lengthComputable?: boolean; loaded?: number; total?: number }) => void),
+      },
+      onload: null as null | (() => void),
+      onerror: null as null | (() => void),
       status: 200,
     };
     vi.stubGlobal(

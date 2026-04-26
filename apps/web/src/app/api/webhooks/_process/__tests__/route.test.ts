@@ -66,7 +66,8 @@ vi.mock('@contractor-ops/api/services/linear-webhook-handler', () => ({
 }));
 
 vi.mock('@contractor-ops/api/services/resend-email-intake', () => ({
-  processResendWebhookDelivery: (...args: unknown[]) => mockProcessResendWebhookDelivery(...args),
+  processResendWebhookDelivery: (...args: unknown[]) =>
+    (mockProcessResendWebhookDelivery as (...a: unknown[]) => unknown)(...args),
 }));
 
 import { POST } from '../route';
