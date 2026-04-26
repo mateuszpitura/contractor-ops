@@ -2992,7 +2992,32 @@
       "validationFail": "Sort-Code-Format ungültig — 6 Ziffern erforderlich"
     },
     "lateInterest": {
-      "sectionHeading": "Statutory late-payment interest",
+      "sectionHeading": "Gesetzliche Verzugszinsen (LPCDA)",
+      "explanationTooltip": "Berechnet nach dem Late Payment of Commercial Debts (Interest) Act 1998 (LPCDA). Zinssatz = Bank of England Leitzins + 8 %, festgesetzt am letzten Tag des vorangegangenen 6-monatigen gesetzlichen Bezugszeitraums (30. Juni oder 31. Dezember).",
+      "b2cBanner": "Gesetzliche Verzugszinsen nicht anwendbar (B2C-Transaktion).",
+      "principalOutstanding": "Ausstehender Hauptbetrag",
+      "daysOverdue": "Tage in Verzug",
+      "rateUsed": "Verwendeter Zinssatz",
+      "dailyAccrual": "Täglicher Zinsanlauf",
+      "interestAccrued": "Aufgelaufene Zinsen",
+      "fixedCompensation": "Pauschale Entschädigung",
+      "totalStatutoryClaim": "Gesetzlicher Gesamtanspruch",
+      "claimCta": "Gesetzliche Verzugszinsen geltend machen",
+      "claimSecondaryOption": "Anspruch als Nebenrechnung ausstellen",
+      "claimDialogTitle": "Gesetzliche Verzugszinsen geltend machen?",
+      "claimDialogBody": "Damit werden die aktuellen Beträge für Zinsen und Entschädigung als Anspruchs-Snapshot festgehalten, ein PDF-Anspruchsschreiben erzeugt und (optional) eine Nebenrechnung über den Anspruchsbetrag ausgestellt. Der Snapshot ist unveränderlich — weitere Zinsen werden danach nicht mehr aufgeschlagen.",
+      "downloadClaimPdf": "Anspruchsschreiben herunterladen",
+      "claimedBanner": "Anspruchs-Snapshot erstellt am {date} — £{amount}. Auf diesen Anspruch fallen keine weiteren Zinsen an.",
+      "waiveCta": "Zinsen erlassen",
+      "waiveDialogTitle": "Gesetzliche Verzugszinsen erlassen?",
+      "waiveReasonPlaceholder": "Begründung (erforderlich, mind. 10 Zeichen) — z. B. mit Kunden ausgehandelter Vergleich, Kulanz, Verwaltungsfehler",
+      "waiveTypeInterestOnly": "Nur Zinsen",
+      "waiveTypeCompensationOnly": "Nur Entschädigung",
+      "waiveTypeBoth": "Beides",
+      "waiveConfirm": "Zinsen erlassen",
+      "waivedBanner": "Zinsen am {date} von {name} erlassen. {revokeLink}",
+      "revokeWaiverCta": "Verzicht widerrufen",
+      "revokeReasonPlaceholder": "Begründung für den Widerruf (erforderlich) — z. B. Kunde hat Vergleich abgelehnt",
       "overdueInterestColumn": "Verzugszinsen",
       "overdueFilterChip": "Überfällig",
       "emptyOverdue": "Keine überfälligen UK-B2B-Rechnungen"
@@ -3014,6 +3039,7 @@
       "discountPercentLabel": "Skonto-Prozentsatz",
       "discountPeriodLabel": "Skonto-Frist (Tage)",
       "netPeriodLabel": "Netto-Frist (Tage)",
+      "previewLineEn": "{percent}% Skonto bei Zahlung innerhalb von {discountDays} Tagen, sonst netto {netDays} Tage",
       "saveTerm": "Skonto-Bedingung speichern",
       "deleteInvoiceSpecific": "Auf Auftragnehmer-Voreinstellung zurücksetzen",
       "validationPercentRange": "Skonto muss zwischen 0 und 50% liegen",
@@ -5555,6 +5581,14 @@
       "deleteDialogBody": "Das Löschen eines historischen Zinssatzes ändert die Zinsberechnung für alle Rechnungen, die in seinem Gültigkeitszeitraum überfällig wurden. Nur fortfahren, wenn dieser Eintrag fehlerhaft erfasst wurde.",
       "pollerSuccess": "Letzter BoE-API-Abruf: {date} — Zinssatz unverändert / neuer Zinssatz {percent}% erfasst",
       "pollerFailure": "Letzter BoE-API-Abruf am {date} fehlgeschlagen. Manuelle Erfassung weiterhin möglich; der Abruf wird beim nächsten geplanten Lauf erneut versucht."
+    },
+    "ClassificationEngineFlag": {
+      "title": "Klassifizierungs-Engine Flag-Status",
+      "subtitle": "Status des Kill-Switch `module.classification-engine` und Disclaimer-Signoff-Registry.",
+      "appSideValue": "App-seitiger Wert (was Nutzer sehen)",
+      "signoffRegistry": "Signoff-Registry",
+      "pendingGate": "Flag in Unleash AKTIV, aber app-seitig blockiert — {count} Disclaimer offen (PENDING).",
+      "pendingGateResolution": "Auflösen durch PR-Update von `packages/validators/src/legal/signoff-registry.json`"
     }
   }
 }
