@@ -17,7 +17,10 @@
   },
   "scripts": {
     "build": "tsc",
-    "test": "vitest run"
+    "test": "vitest run",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@contractor-ops/db": "workspace:*",

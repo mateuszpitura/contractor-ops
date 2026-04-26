@@ -17,7 +17,7 @@ jobs:
   ci:
     name: Lint, Typecheck & Test
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
 
     steps:
       - name: Checkout
@@ -38,11 +38,17 @@ jobs:
       - name: Generate Prisma client
         run: pnpm run db:generate
 
-      - name: Build packages (typecheck)
-        run: pnpm run build
+      - name: Format check (biome)
+        run: pnpm run format:check
 
       - name: Lint
         run: pnpm run lint
+
+      - name: No raw process.env outside allowlist (ratchet)
+        run: pnpm run check:no-process-env
+
+      - name: Build packages
+        run: pnpm run build
 
       - name: Test
         run: pnpm run test
@@ -50,6 +56,22 @@ jobs:
       - name: Dependency audit (informational)
         run: pnpm audit --audit-level moderate
         continue-on-error: true
+
+  secrets-scan:
+    name: Gitleaks (secret scan)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_CONFIG: .gitleaks.toml
 
   legal-gate-production:
     name: Legal Gate — production deploy (LEGAL-02)

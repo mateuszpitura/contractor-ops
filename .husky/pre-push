@@ -1,0 +1,6 @@
+#!/usr/bin/env sh
+# Pre-push: fast feedback before CI runs.
+# Lint + format check are quick. Typecheck and full build are too slow for
+# every push, so they are left to CI.
+
+pnpm run format:check && pnpm run lint && pnpm run check:no-process-env

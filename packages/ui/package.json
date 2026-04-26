@@ -16,7 +16,10 @@
     }
   },
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "typescript": "^5.9.3"
