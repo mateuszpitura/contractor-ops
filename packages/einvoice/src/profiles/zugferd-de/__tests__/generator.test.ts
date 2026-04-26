@@ -60,11 +60,14 @@ describe('generateZugferdPdf', () => {
   let comfortMinimal: EInvoice;
   let reverseCharge: EInvoice;
   let klein: EInvoice;
+  // Phase 68 D-05 — Skonto-bearing fixture for the embedded-CII BG-20 test.
+  let comfortSkonto: EInvoice;
 
   beforeAll(async () => {
     comfortMinimal = await loadFixture('comfort-minimal');
     reverseCharge = await loadFixture('reverse-charge-leitweg');
     klein = await loadFixture('kleinunternehmer');
+    comfortSkonto = await loadFixture('comfort-skonto');
   });
 
   it('happy path: comfort-minimal returns Uint8Array > 10000 bytes', async () => {
@@ -125,5 +128,43 @@ describe('generateZugferdPdf', () => {
     expect((err as ZugferdLevelUnsupportedForOutput).code).toBe(
       'ZUGFERD_LEVEL_UNSUPPORTED_FOR_OUTPUT',
     );
+  });
+
+  // -----------------------------------------------------------------------
+  // Phase 68 · Plan 04 — Skonto BG-20 in embedded CII (end-to-end)
+  //
+  // Closes the embedded-CII half of the v5.0 audit I-1 finding for the
+  // ZUGFeRD path. The router half (call-shape assertion against the
+  // mocked generator) is locked by Plan 05's
+  // packages/api/src/routers/__tests__/einvoice.generate-zugferd.test.ts
+  // extension. Together the two halves prove the Skonto term reaches the
+  // embedded factur-x.xml when a Skonto-bearing DE invoice is finalized
+  // through the ZUGFeRD path.
+  // -----------------------------------------------------------------------
+
+  it('Skonto path: extracted CII contains structured BG-20 #SKONTO# extension (Phase 68 D-05/D-08 Layer C)', async () => {
+    const out = await generateZugferdPdf({
+      invoice: comfortSkonto,
+      producedAt: FIXED_TIME,
+      skontoTerm: {
+        discountPercent: 3,
+        discountPeriodDays: 7,
+        netPeriodDays: 30,
+      },
+    });
+    const cii = await extractCiiXml(out);
+    expect(cii).toContain('<ram:SpecifiedTradePaymentTerms>');
+    expect(cii).toContain('#SKONTO#TAGE=7');
+    expect(cii).toContain('#PROZENT=3.00');
+    expect(cii).toContain('#BASISBETRAG=');
+  });
+
+  it('No-Skonto path: extracted CII does NOT contain #SKONTO# (no-regression on Phase 62 behaviour)', async () => {
+    const out = await generateZugferdPdf({
+      invoice: comfortMinimal,
+      producedAt: FIXED_TIME,
+    });
+    const cii = await extractCiiXml(out);
+    expect(cii).not.toContain('#SKONTO#');
   });
 });

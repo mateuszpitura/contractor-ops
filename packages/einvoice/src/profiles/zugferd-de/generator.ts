@@ -18,6 +18,7 @@
 
 import { createLogger } from '@contractor-ops/logger';
 import type { EInvoice } from '../../types/invoice.js';
+import type { SkontoTermInput } from '../xrechnung-de/generator.js';
 import { generateXRechnungCii } from '../xrechnung-de/generator.js';
 
 import type { ZugferdConformanceLevel } from './constants.js';
@@ -45,6 +46,19 @@ export interface GenerateZugferdInput {
    * the XRechnung generator. Defaults to `null` (no Leitweg-ID).
    */
   leitwegId?: string | null;
+  /**
+   * Optional Skonto (early payment discount) term. When provided, the
+   * embedded CII XML emits a BG-20 <ram:SpecifiedTradePaymentTerms>
+   * block with the locked German phrase + the structured
+   * #SKONTO#TAGE=…#PROZENT=…#BASISBETRAG=…# extension per XRechnung
+   * 3.0.2 Anhang E.
+   *
+   * Per Phase 68 D-05 — symmetric with XRechnungGenerateOptions.skontoTerm
+   * from xrechnung-de/index.ts. Resolution policy lives at the caller
+   * (api-side: routers/einvoice.ts:generateZugferdPdf after Plan 05),
+   * not here.
+   */
+  skontoTerm?: SkontoTermInput | null;
 }
 
 /**
@@ -79,7 +93,10 @@ export async function generateZugferdPdf(input: GenerateZugferdInput): Promise<U
   const leitwegId = input.leitwegId ?? null;
 
   log.debug('building CII XML');
-  const xml = generateXRechnungCii(input.invoice, leitwegId);
+  // Phase 68 D-05 — thread input.skontoTerm into the CII helper so the
+  // embedded factur-x.xml carries the BG-20 Payment Terms block. Defaults
+  // to null when omitted (no-Skonto path matches Phase 62 behaviour).
+  const xml = generateXRechnungCii(input.invoice, leitwegId, input.skontoTerm ?? null);
 
   log.debug('rendering visual PDF');
   const visualPdf = await renderInvoiceToPdfBuffer(input.invoice);

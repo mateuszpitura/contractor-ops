@@ -16,6 +16,7 @@ import { complianceState } from '../../types/compliance.js';
 import type { EInvoice } from '../../types/invoice.js';
 import type { EInvoiceProfile } from '../../types/profile.js';
 import type { ValidationResult } from '../../types/validation.js';
+import type { SkontoTermInput } from '../xrechnung-de/generator.js';
 import { ZUGFERD_DE_PROFILE_ID } from './constants.js';
 import { generateZugferdPdf } from './generator.js';
 import { parseZugferdPdf } from './parser.js';
@@ -42,9 +43,21 @@ export class ZugferdDEProfile implements EInvoiceProfile {
    * `EInvoice` envelope. Returns a base64-encoded PDF string to satisfy
    * the `EInvoiceProfile.generate(): Promise<string>` contract — callers
    * that need the raw bytes should call `generateZugferdPdf` directly.
+   *
+   * Per Phase 68 D-05 — symmetric with `XRechnungDEProfile.generate(invoice, opts)`
+   * so cross-DE callers can stay format-agnostic. Forwards `opts.leitwegId`
+   * and `opts.skontoTerm` into the underlying `generateZugferdPdf` (which
+   * threads them into the embedded CII XML).
    */
-  async generate(invoice: EInvoice): Promise<string> {
-    const bytes = await generateZugferdPdf({ invoice });
+  async generate(
+    invoice: EInvoice,
+    opts?: { leitwegId?: string | null; skontoTerm?: SkontoTermInput | null },
+  ): Promise<string> {
+    const bytes = await generateZugferdPdf({
+      invoice,
+      leitwegId: opts?.leitwegId ?? null,
+      skontoTerm: opts?.skontoTerm ?? null,
+    });
     return Buffer.from(bytes).toString('base64');
   }
 
