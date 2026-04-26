@@ -4636,6 +4636,12 @@
     }
   },
   "Integrations": {
+    "GoogleWorkspaceReconnect": {
+      "bannerTitle": "Reconnect Google Workspace",
+      "bannerBody": "Reconnect your Google Workspace integration to unlock new IdP deprovisioning features. Your existing read-only directory import will continue working until you complete the reconnect.",
+      "reconnectButton": "Reconnect Google Workspace",
+      "dismissAria": "Dismiss reconnect banner"
+    },
     "jira": {
       "taskConfig": {
         "configSaved": "Jira task configuration saved",

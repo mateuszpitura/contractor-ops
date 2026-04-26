@@ -1,5 +1,6 @@
 'use client';
 
+import type { ScopeCapabilities } from '@contractor-ops/db';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -10,6 +11,7 @@ import { trpc } from '@/trpc/init';
 import { DirectoryImportWizard } from './google-workspace/directory-import-wizard';
 import { SyncStatusSection } from './google-workspace/sync-status-section';
 import { GoogleWorkspaceLogo } from './google-workspace-logo';
+import { GoogleWorkspaceReconnectBanner } from './google-workspace-reconnect-banner';
 
 // ---------------------------------------------------------------------------
 // GoogleWorkspaceProviderSection
@@ -34,9 +36,18 @@ export function GoogleWorkspaceProviderSection() {
     }
   }, [searchParams]);
 
+  // Phase 70 D-16 / FOUND6-05 — Until Phase 76 surfaces the parsed
+  // scopeCapabilities through `getHealth`, we pass `null` so the banner
+  // renders for ALL connected v3.0 tenants. Once Phase 76 wires the column
+  // through, replace `null` with `health?.scopeCapabilities ?? null`.
+  // TODO(Phase 76): wire scopeCapabilities from getHealth response.
+  const scopeCapabilities: ScopeCapabilities | null = null;
+
   return (
     <FeatureGate requiredTier="Pro" featureName="Google Workspace integration">
       <div className="space-y-4">
+        {isConnected && <GoogleWorkspaceReconnectBanner scopeCapabilities={scopeCapabilities} />}
+
         <ProviderConnectionCard
           provider="google_workspace"
           displayName="Google Workspace"

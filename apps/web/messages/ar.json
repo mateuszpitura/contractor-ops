@@ -4512,6 +4512,12 @@
     }
   },
   "Integrations": {
+    "GoogleWorkspaceReconnect": {
+      "bannerTitle": "أعد ربط Google Workspace",
+      "bannerBody": "أعد ربط تكامل Google Workspace الخاص بك لتفعيل ميزات إلغاء تفعيل IdP الجديدة. سيستمر عمل استيراد الدليل للقراءة فقط حتى تكتمل عملية إعادة الربط.",
+      "reconnectButton": "أعد ربط Google Workspace",
+      "dismissAria": "إغلاق إشعار إعادة الربط"
+    },
     "jira": {
       "taskConfig": {
         "configSaved": "Jira task configuration saved",

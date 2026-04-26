@@ -4781,6 +4781,12 @@
     }
   },
   "Integrations": {
+    "GoogleWorkspaceReconnect": {
+      "bannerTitle": "Google Workspace neu verbinden",
+      "bannerBody": "Verbinden Sie Ihre Google-Workspace-Integration neu, um neue IdP-Deprovisioning-Funktionen freizuschalten. Ihr bisheriger Lesezugriff auf das Verzeichnis bleibt bis zum Abschluss der Neuverbindung erhalten.",
+      "reconnectButton": "Google Workspace neu verbinden",
+      "dismissAria": "Hinweis zum Neuverbinden schließen"
+    },
     "jira": {
       "taskConfig": {
         "configSaved": "Jira task configuration saved",

@@ -4512,6 +4512,12 @@
     }
   },
   "Integrations": {
+    "GoogleWorkspaceReconnect": {
+      "bannerTitle": "Połącz ponownie Google Workspace",
+      "bannerBody": "Prosimy ponownie połączyć integrację Google Workspace, aby odblokować nowe funkcje deprowizjonowania IdP. Dotychczasowy odczyt katalogu pozostanie aktywny do momentu zakończenia ponownego połączenia.",
+      "reconnectButton": "Połącz ponownie Google Workspace",
+      "dismissAria": "Zamknij banner ponownego połączenia"
+    },
     "jira": {
       "taskConfig": {
         "configSaved": "Jira task configuration saved",
