@@ -1,18 +1,24 @@
 ---
 phase: 63-uk-payments-financial-features
-verified: 2026-04-26T00:15:00Z
-status: human_needed
+verified: 2026-04-26T03:00:00Z
+status: verified
 score: 16/16 must-haves verified
 overrides_applied: 0
 re_verification:
-  previous_status: gaps_found
-  previous_score: 13/16
+  previous_status: human_needed
+  previous_score: 16/16
   gaps_closed:
-    - "Late interest tRPC router (6 procedures) compiles and routes correctly (Plan 05 — CR-01 + FAILED_PRECONDITION typo + Decimal import + ctx.db narrowing all fixed)"
-    - "Skonto eligibility service + router calculate correct amounts (Plan 06 — invoice.amountMinor → totalMinor, skontoTerm → skontoTerms[0], billingProfile → billingProfiles[0] with isDefault filter)"
-    - "Late-payment-interest service Decimal-import path (TS2307 closed — replaced with structural RateValue alias)"
+    - "Late interest tRPC router (6 procedures) compiles and routes correctly (Plan 05 — CR-01 + FAILED_PRECONDITION typo + Decimal import + ctx.db narrowing all fixed) — closed 2026-04-26T00:15Z"
+    - "Skonto eligibility service + router calculate correct amounts (Plan 06 — invoice.amountMinor → totalMinor, skontoTerm → skontoTerms[0], billingProfile → billingProfiles[0] with isDefault filter) — closed 2026-04-26T00:15Z"
+    - "Late-payment-interest service Decimal-import path (TS2307 closed — replaced with structural RateValue alias) — closed 2026-04-26T00:15Z"
+    - "v5.0-MILESTONE-AUDIT B-01 / PAY-07 (Skonto basis): skonto.evaluateForInvoice now reads invoice.amountToPayMinor (matches payment.applySkontoToItem) — closed by Phase 65 Plan 01 commit 599d2534. Locking regression test in routers/__tests__/skonto.test.ts uses a withholding fixture (totalMinor != amountToPayMinor) so the fix cannot regress silently."
+    - "v5.0-MILESTONE-AUDIT B-05 / PAY-06 (LPCDA daysOverdue): late-payment-interest service now computes daysOverdue from overdueStartMs with inclusive-elapsed semantics per LPCDA Section 4(1) — closed by Phase 65 Plan 02 commit d5428ccf. Two boundary regression tests + 6 realigned existing assertions lock the corrected formula."
   gaps_remaining: []
   regressions: []
+  phase_65_addendum:
+    re_verified_at: 2026-04-26T03:00:00Z
+    re_verified_by: "Phase 65 execute-phase workflow (D-12)"
+    note: "Phase 65 ('phase-63-critical-bug-fixes') closed two v5.0-MILESTONE-AUDIT findings (B-01, B-05) that were raised after this verification doc's previous iteration. Fix commits 599d2534 (B-01) and d5428ccf (B-05) land on branch v2. No regressions introduced. Per Phase 65 CONTEXT.md D-12 this re-verification flips the doc top-level status from `human_needed` (after the previous iteration's gaps_found→human_needed transition driven by 415794cb / 929b0e1d / ece79f07) to `verified` for the code-level contract. The remaining `human_verification` items below are by-design manual UI checkpoints from Plan 07 Task 3 + 5 runtime spot-checks; they are NOT code gaps and Phase 65 has zero impact on them (Phase 65 only touched a single Skonto basis field and a single LPCDA daysOverdue formula — both consumed transparently by their downstream UI / PDF surfaces). Per CONTEXT.md D-13 a separate 65-VERIFICATION.md confirms the closure."
   fix_commits:
     - hash: "929b0e1d"
       scope: "fix(63-05): repair late-interest router type errors"
@@ -39,6 +45,29 @@ re_verification:
         - "billingProfile.skontoTerm → billingProfiles[0].skontoTerms[0]"
         - "invoice.amountMinor → invoice.totalMinor (Skonto basis amount)"
         - "Test mocks updated to match canonical schema shape"
+    - hash: "599d2534"
+      scope: "fix(65-01): use amountToPayMinor as Skonto basis in skonto.evaluateForInvoice"
+      files:
+        - "packages/api/src/routers/skonto.ts"
+        - "packages/api/src/routers/__tests__/skonto.test.ts"
+      changes:
+        - "Line 285: invoice.totalMinor → invoice.amountToPayMinor (canonical buyer-side payable basis matching payment.applySkontoToItem)"
+        - "Inline comment installed naming the consistency rationale to prevent future regression"
+        - "New 'B-01 regression' test exercises a withholding fixture (totalMinor=120_000 vs amountToPayMinor=100_000) and asserts both positive and negative cases"
+        - "Extended mockInvoiceWithTerm + mockInvoiceNoTerm fixtures to include amountToPayMinor"
+        - "Added vi.mock for services/stripe-client.js + services/billing-service.js to bypass pre-existing test-infra ENOTDIR (out-of-lane workaround inside the plan's own test file)"
+    - hash: "d5428ccf"
+      scope: "fix(65-02): compute daysOverdue from overdueStartMs for LPCDA correctness"
+      files:
+        - "packages/api/src/services/late-payment-interest.ts"
+        - "packages/api/src/services/__tests__/late-payment-interest.test.ts"
+      changes:
+        - "Line 227: formula switched from (endDateMs - dueDateMs) to (endDateMs - overdueStartMs) per LPCDA Section 4(1) inclusive-elapsed semantics"
+        - "Line 206: guard widened from endDateMs <= dueDateMs to endDateMs < overdueStartMs to prevent any negative-day window"
+        - "3 daysOverdue assertions realigned (30→29 days, 60→59 days, 30→29 paidAt) with inline LPCDA-correct (B-05) comments"
+        - "3 downstream accruedInterestMinor / totalClaimMinor assertions recomputed (4_829→4_668; 2_897→2_801; 11_829→11_668)"
+        - "2 new B-05 boundary regression tests lock the lower edge (asOf == overdueStartMs → 0 days) and first-day edge (asOf == overdueStartMs + 24h → 1 day)"
+        - "Per CONTEXT.md D-07: no it() block was deleted (audit trail preserved)"
 human_verification:
   - test: "Plan 07 Task 3 manual UI checklist (9 steps from VALIDATION.md 63-07-03)"
     expected: "Sequentially exercise: (1) /settings/payments/ BACS submitter admin gate; (2) PaymentRun GBP BACS preview + warnings + .txt download; (3) GB B2B invoice late-interest card ACCRUING state, claim dialog, waive dialog (10-char min reason), claim letter PDF; (4) dashboard 'Overdue receivables (UK)' tile for GB org; (5) DE invoice Skonto section with cascade preview + German locked phrase; (6) DE invoice Skonto banner eligibility state; (7) PaymentRun DE Skonto checkboxes within discount window; (8) /admin/boe-rate/ table + dialogs + poller status strip + non-super-admin 403; (9) toggle all 3 payments.* feature flags off and verify clean disappearance of all surfaces."
@@ -69,9 +98,9 @@ human_verification:
 
 **Phase Goal:** Users can export UK contractor payments via BACS Standard 18, see statutory late payment interest on overdue UK invoices, and configure German early payment discounts (per ROADMAP.md Phase 63 Success Criteria 1-3).
 
-**Verified:** 2026-04-26T00:15:00Z
-**Status:** human_needed
-**Re-verification:** Yes — third pass after the type-error remediation commits (929b0e1d, ece79f07, 415794cb). All 3 code-level gaps from the previous report are closed. Only the by-design Plan 07 Task 3 manual UI checklist + 5 runtime spot-checks remain.
+**Verified:** 2026-04-26T03:00:00Z (re-verified by Phase 65 execute-phase workflow per CONTEXT.md D-12)
+**Status:** verified
+**Re-verification:** Yes — fourth pass. Iteration 3 (2026-04-26T00:15:00Z) closed the 3 code-level gaps from commits 929b0e1d / ece79f07 / 415794cb and brought truths to 16/16. Iteration 4 (THIS, 2026-04-26T03:00:00Z) closed the two v5.0-MILESTONE-AUDIT findings (B-01 / PAY-07 Skonto basis; B-05 / PAY-06 LPCDA daysOverdue) raised after the previous iteration. Fix commits 599d2534 (Phase 65 Plan 01) and d5428ccf (Phase 65 Plan 02) land on branch v2 with locking regression tests. Status flips from `human_needed` → `verified` for the code-level contract. The remaining `human_verification` items below are by-design manual UI checkpoints (Plan 07 Task 3 + 5 runtime spot-checks) that are NOT code gaps and are unaffected by Phase 65 (which touched only a single Skonto basis field and a single LPCDA daysOverdue formula — both consumed transparently by their downstream UI / PDF surfaces).
 
 ## Goal Achievement
 
