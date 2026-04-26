@@ -3,7 +3,8 @@ import {
   SOFTWARE_NOT_LEGAL_ADVICE_EN,
 } from '@contractor-ops/validators';
 import type { Metadata } from 'next';
-import { getLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
+import { getLocale } from 'next-intl/server';
 
 export const metadata: Metadata = {
   title: 'Terms of Service — Contractor Ops',

@@ -112,7 +112,7 @@ function TiltCard({
           ? (e: React.KeyboardEvent) => {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
-                onClick(e as unknown as React.MouseEvent);
+                onClick();
               }
             }
           : undefined

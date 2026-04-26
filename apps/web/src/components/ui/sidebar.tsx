@@ -240,7 +240,7 @@ function SidebarTrigger({ className, onClick, ...props }: React.ComponentProps<t
   const t = useTranslations('Common');
 
   const handleClick = React.useCallback(
-    (event: React.MouseEvent<HTMLButtonElement>) => {
+    (event: Parameters<NonNullable<typeof onClick>>[0]) => {
       onClick?.(event);
       toggleSidebar();
     },

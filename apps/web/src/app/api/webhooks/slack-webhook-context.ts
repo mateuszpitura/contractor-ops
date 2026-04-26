@@ -1,4 +1,4 @@
-import { Prisma, prisma } from '@contractor-ops/db';
+import { prisma } from '@contractor-ops/db';
 
 // ---------------------------------------------------------------------------
 // Slack webhook ingress — resolve org + connection from workspace team id
@@ -61,14 +61,14 @@ export async function resolveSlackConnectionByTeamId(teamId: string): Promise<{
   organizationId: string;
   connectionId: string;
 } | null> {
-  const rows = await prisma.$queryRaw<Array<{ id: string; organizationId: string }>>(Prisma.sql`
+  const rows = await prisma.$queryRaw<Array<{ id: string; organizationId: string }>>`
     SELECT id, "organizationId"
     FROM "IntegrationConnection"
     WHERE provider = 'SLACK'
       AND status = 'CONNECTED'
       AND "configJson"->>'teamId' = ${teamId}
     LIMIT 1
-  `);
+  `;
 
   const row = rows[0];
   if (!row) return null;

@@ -261,7 +261,7 @@ export function SlackUserMapping() {
                       // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                       onClick={() =>
                         unlinkMutation.mutate({
-                          externalLinkId: mapping.slackLink.externalLinkId,
+                          externalLinkId: mapping.slackLink?.externalLinkId ?? '',
                         })
                       }
                       disabled={unlinkMutation.isPending}>

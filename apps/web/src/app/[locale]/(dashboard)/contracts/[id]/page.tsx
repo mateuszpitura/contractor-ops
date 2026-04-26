@@ -112,18 +112,18 @@ export default function ContractDetailPage() {
         <DetailHeader
           contract={{
             ...contract,
-            _documentCount: contract.documents?.length ?? contract._meta?.documentCount ?? 0,
+            _documentCount: contract.documentCount ?? 0,
             _hasConnectedProvider: esignConnections.length > 0,
             _contractParties: contract.contractor
               ? [
                   {
                     name: contract.contractor.displayName,
-                    email: contract.contractor.email ?? '',
+                    email: '',
                     role: 'signer' as const,
                   },
                 ]
               : [],
-            _firstDocumentId: contract.documents?.[0]?.id,
+            _firstDocumentId: undefined,
           }}
         />
       )}

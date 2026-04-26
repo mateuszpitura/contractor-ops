@@ -2,7 +2,7 @@ import { render, screen } from '@/test/test-utils';
 import { TabContracts } from '../tab-contracts';
 
 const { mockUseQuery } = vi.hoisted(() => ({
-  mockUseQuery: vi.fn(() => ({
+  mockUseQuery: vi.fn<() => Record<string, unknown>>(() => ({
     data: null,
     isLoading: false,
     isFetching: false,

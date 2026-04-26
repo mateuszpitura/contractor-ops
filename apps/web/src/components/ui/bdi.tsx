@@ -1,4 +1,4 @@
-import type { HTMLAttributes } from 'react';
+import type { HTMLAttributes, RefObject } from 'react';
 import { cn } from '@/lib/utils';
 
 export interface BdiProps extends HTMLAttributes<HTMLElement> {

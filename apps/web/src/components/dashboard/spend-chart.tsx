@@ -82,10 +82,12 @@ function ChartTooltip({
   active,
   payload,
   label,
+  formatter,
 }: {
   active?: boolean;
   payload?: Array<{ name: string; value: number; color: string }>;
   label?: string;
+  formatter: Intl.NumberFormat;
 }) {
   if (!(active && payload?.length)) return null;
 
@@ -101,7 +103,7 @@ function ChartTooltip({
           <span className="inline-block h-2 w-2 shrink-0 rounded-full" />
           <span className="text-xs text-muted-foreground">{entry.name}</span>
           <span className="ms-auto font-display text-sm font-bold tabular-nums">
-            {currencyFormatter.format(entry.value / 100)}
+            {formatter.format(entry.value / 100)}
           </span>
         </div>
       ))}
@@ -228,7 +230,7 @@ export function SpendChart() {
                 {...yAxisProps}
               />
               <Tooltip
-                content={<ChartTooltip />}
+                content={<ChartTooltip formatter={currencyFormatter} />}
                 cursor={{
                   stroke: 'var(--color-primary)',
                   strokeWidth: 1,
