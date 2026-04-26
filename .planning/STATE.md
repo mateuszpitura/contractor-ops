@@ -18,19 +18,19 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-04-12)
+See: .planning/PROJECT.md (updated 2026-04-26 after v5.0 milestone completion)
 
 **Core value:** The invoice-to-payment flow must work end-to-end: invoice arrives, gets matched to contract, routed through approval, and batched for payment — with full audit trail.
-**Current focus:** Phase 69 — de-i18n-parity-fix
+**Current focus:** v5.0 milestone CLOSED 2026-04-26. Next: v6.0 Platform Maturity & Operational Hardening (Phases 70-73).
 
 ## Current Position
 
-Phase: 69
-Plan: Not started
-Status: Milestone complete
-Last activity: 2026-04-26
+Phase: — (between milestones)
+Plan: —
+Status: Milestone complete; v6.0 not yet started
+Last activity: 2026-04-26 — v5.0 milestone close
 
-Progress: [█████████░] 91%
+Progress: [██████████] 100% (v5.0)
 
 ## Performance Metrics
 

@@ -101,9 +101,66 @@
 
 ---
 
+## Milestone: v5.0 — UK & Germany Expansion
+
+**Shipped:** 2026-04-26
+**Phases:** 14 (56-69) | **Plans:** 70
+
+### What Was Built
+- Generic contractor classification engine (UK IR35 + German Scheinselbständigkeit) with per-engagement assessments, SDS PDF generation, IR35 chain tracking, DRV audit defense bundle
+- Automated economic-dependency alerts (70%/83.33% bands), reassessment triggers, Statusfeststellungsverfahren tracking, per-market compliance health dashboard
+- EN 16931 e-invoicing: XRechnung 3.0.2 CII XML generator + ZUGFeRD PDF/A-3 hybrid + KoSIT 3-layer validator (libxmljs2 XSD + saxon-js EN16931 + saxon-js XRechnung CIUS Schematron)
+- Leitweg-ID lifecycle (per-contractor / per-contract resolution) + Peppol BIS 3.0 transmission via Storecove with capability cache
+- BACS Standard 18 Direct Credit export with VocaLink modulus check + ASCII transliteration; LPCDA-compliant statutory late-payment interest with BoE base-rate poller and claim PDF; German Skonto cascade with structured BG-20 emission (`#SKONTO#TAGE=n#PROZENT=n#`)
+- HMRC VAT validation (OAuth + fraud-prevention headers) + VIES qualified USt-IdNr confirmation + tax-id-validation orchestrator with 90-day freshness window
+- German i18n at full message-key parity (4,281 leaves, formal-Sie register, 78/78 locked legal phrases CI guard); UK GDPR + German Datenschutzerklärung MDX with React-PDF download (IDOR-safe)
+- Country-specific contractor field validators (UTR mod-11, GB VAT mod-97/9755, Companies House; Steuernummer 16-Bundesland regex map, USt-IdNr ISO 7064, SV-Nummer DRV-spec, Handelsregister ~120-court list)
+- Legal compliance hardening: Unleash feature-flag with PENDING → APPROVED CI gate, advisory banners, ToS reacceptance, classification flag-OFF render-tree removal + tRPC FORBIDDEN
+
+### What Worked
+- **Audit-driven gap-closure phases** — v5.0 milestone audit surfaced 5 audit findings; each got its own dedicated phase (65-69) with traceable VERIFICATION.md, rather than retrofitting onto original phases. Clean traceability story for every requirement.
+- **Single-source-of-truth pattern for cross-cutting business rules** — `resolveSkontoTerm` in `services/skonto.ts` was authored in Phase 63 and re-consumed (not re-implemented) in Phase 68 across two new call sites
+- **Locked-phrase compile-time CI guard** — Phase 56 pattern extended cleanly through Phases 58, 59, 60, 62, 63, 64 (78/78 final count) without drift
+- **`api → einvoice` dependency direction** — strict one-way enforcement let Phase 68's wiring fix avoid creating bidirectional coupling
+- **4-layer regression test coverage for audit I-1 closure** — Layer A (profile unit) + Layer B (finalize integration) + Layer C router (mocked) + Layer C deeper (real-PDF byte-level CII extraction). Belt-and-suspenders for a CRITICAL audit finding.
+- **Background manager dispatching** — running plan-phase + execute-phase in parallel for adjacent phases compressed wall time without sacrificing isolation
+
+### What Was Inefficient
+- **`milestone.complete` SDK helper bug** — handler delegates to `phasesArchive([], projectDir)` with empty args instead of `[version]`; the milestone-close workflow had to fall back to direct `phases.archive` invocation. Filed for SDK fix.
+- **Cross-package build coordination** — `packages/api` consumes `packages/einvoice`'s compiled `dist/`, requiring rebuilds between cross-package edits within a single phase
+- **Phase 67 verification surfaced GAP-67-01-01 late** — i18n parity drift from Phases 63 + 64 wasn't caught at those phases' own ship time because each only verified its own surface area
+- **Pre-existing `packages/api` test suite breakage** — 56 failed test files / 36 failed tests rooted in `auth/src/roles.ts` permission DSL; predates v5.0; carried forward as tech debt
+- **Stale milestone audit at close time** — v5.0-MILESTONE-AUDIT.md was generated before Phases 65-69 closed its flagged gaps; the audit's `gaps_found` status persisted in the file even though the actual gaps were all closed
+
+### Patterns Established
+- **Symmetric DE profile contracts** — `XRechnungDEProfile.generate(invoice, opts)` and `ZugferdDEProfile.generate(invoice, opts)` accept the same shape so cross-DE callers stay format-agnostic
+- **`payment.ts:1213-1294` Skonto cascade pattern** — eager-load `skontoTerms` via Prisma include + call `resolveSkontoTerm` inline at every consumption site
+- **Foreign-statute parenthetical-English convention** — when translating UK/EU statute names into DE locale, primary in German with canonical English in parens on first occurrence; avoids BGB conflation
+- **Forward-only fixes for LOCAL-ONLY deploy posture** — Phases 65/68/69 all skipped historical-data backfill scripts per Standing Project Constraints
+- **KoSIT validator-bundle as a black-box pinned release** — never patched; custom Schematron deferred (Phase 68 D-11 parked the BG-20 assertion as out-of-scope)
+- **Audit-grade test coverage for CRITICAL audit findings** — 4 layers (unit + integration + router + real-byte) for Phase 68 vs single-layer for normal feature work
+- **Standing Project Constraints in STATE.md as a referenced contract** — every phase's CONTEXT.md cited "STATE.md §Standing Project Constraints" for deferral rationale (Steuerberater, manual UI UAT, backfill scripts), keeping disposition consistent across 14 phases
+
+### Key Lessons
+- **Cross-phase wiring needs cross-phase verification.** Per-phase VERIFICATION.md proved its own surface area but didn't test the production wiring at boundaries — that's exactly how I-1 (Skonto BG-20 not threaded through finalize) slipped past Phases 61, 62, 63 individually. The fix is at the milestone audit layer, not the phase layer.
+- **Milestone audits should be re-run after gap-closure phases ship** — running a fresh audit at close time would have flipped the milestone status from `gaps_found` to `passed` automatically.
+- **Locked compile-time legal phrases scale to 78 entries with zero drift** — the pattern from Phase 56 (CI guard + named imports + grep assertion) held cleanly through 7 more phases of additions.
+- **Single-source-of-truth pays off when re-used** — `resolveSkontoTerm` was written once in Phase 63 D-21 and consumed three times. Zero drift, zero re-implementation, zero per-call-site test boilerplate.
+- **Foreign-statute terminology matters for legal traceability** — translating LPCDA `statutory interest` directly to BGB `Verzugszinsen` would have misled DE users into thinking BGB rules apply. Phase 69 D-02 caught this because the discussion phase explicitly compared the two regimes.
+- **Gap-closure phases compound the milestone audit signal** — five gap-closure phases (65-69) shipped in <12 hours of background-agent execution because they were narrow, well-scoped, single-purpose.
+
+### Cost Observations
+- Background manager dispatching consumed ~62 minutes of total background-agent execution for Phases 68 + 69 (plan + execute each)
+- Plan-phase agents averaged ~12 min, execute-phase agents averaged ~20 min
+- 4 background agents spawned in this session; all returned READY/PASSED on first iteration with no revision loops
+- Notable: gap-closure phases averaged <2 min planning per plan vs ~5 min for v5.0 original phases — narrower scope translates directly to faster planning loops
+
+---
+
 ## Cross-Milestone Trends
 
 | Milestone | Phases | Plans | Days | LOC | Key Pattern |
 |-----------|--------|-------|------|-----|-------------|
 | v1.0 MVP | 11 | 51 | 6 | 214K | Wave-based parallel execution |
 | v2.0 Platform Expansion | 16 | 52 | 14 | +44K | Provider adapter pattern, gap closure phases |
+| v5.0 UK & Germany Expansion | 14 | 70 | 14 | +142K TS | Audit-driven gap-closure phases (65-69), locked compile-time legal phrases (78/78), single-source-of-truth cross-phase business rules |
