@@ -9,7 +9,7 @@ import { render } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { VerdictBanner } from '../verdict-banner';
 
-const IR35_INDETERMINATE: Ir35Outcome = {
+const IR35_INDETERMINATE = {
   kind: 'IR35',
   verdict: 'indeterminate',
   totalScore: 50,
@@ -18,7 +18,7 @@ const IR35_INDETERMINATE: Ir35Outcome = {
   ruleSetVersion: '1.0.0',
 };
 
-const IR35_OUTSIDE: Ir35Outcome = {
+const IR35_OUTSIDE = {
   kind: 'IR35',
   verdict: 'outside',
   totalScore: 20,
@@ -27,7 +27,7 @@ const IR35_OUTSIDE: Ir35Outcome = {
   ruleSetVersion: '1.0.0',
 };
 
-const DRV_AMBER: ScheinselbstandigkeitOutcome = {
+const DRV_AMBER = {
   kind: 'SCHEINSELBSTANDIGKEIT',
   verdict: 'amber',
   categoryScores: {},
@@ -41,7 +41,7 @@ describe('VerdictBanner escalation event (Phase 64 D-19)', () => {
     render(
       <VerdictBanner
         kind="ir35"
-        outcome={IR35_INDETERMINATE}
+        outcome={IR35_INDETERMINATE as never}
         label="Indeterminate"
         onAmberVerdictMounted={onAmber}
       />,
@@ -54,7 +54,7 @@ describe('VerdictBanner escalation event (Phase 64 D-19)', () => {
     render(
       <VerdictBanner
         kind="drv"
-        outcome={DRV_AMBER}
+        outcome={DRV_AMBER as never}
         label="Amber"
         onAmberVerdictMounted={onAmber}
       />,
@@ -67,7 +67,7 @@ describe('VerdictBanner escalation event (Phase 64 D-19)', () => {
     render(
       <VerdictBanner
         kind="ir35"
-        outcome={IR35_OUTSIDE}
+        outcome={IR35_OUTSIDE as never}
         label="Outside"
         onAmberVerdictMounted={onAmber}
       />,
@@ -78,7 +78,9 @@ describe('VerdictBanner escalation event (Phase 64 D-19)', () => {
   it('does NOT call onAmberVerdictMounted when prop is omitted', () => {
     // Should not throw when prop is absent
     expect(() =>
-      render(<VerdictBanner kind="ir35" outcome={IR35_INDETERMINATE} label="Indeterminate" />),
+      render(
+        <VerdictBanner kind="ir35" outcome={IR35_INDETERMINATE as never} label="Indeterminate" />,
+      ),
     ).not.toThrow();
   });
 });

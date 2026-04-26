@@ -547,7 +547,7 @@ describe('ApprovalSidePanel', () => {
     // Click delegate confirm - find the button inside the delegate overlay
     const delegateBtns = screen.getAllByText('Delegate approval');
     const confirmBtn = delegateBtns[delegateBtns.length - 1]?.closest('button');
-    await user.click(confirmBtn);
+    await user.click(confirmBtn!);
     expect(mockMutate).toHaveBeenCalledWith(
       expect.objectContaining({
         stepId: 'step-1',
@@ -599,7 +599,13 @@ describe('ApprovalSidePanel', () => {
       ...baseStep,
       invoice: { ...baseStep.invoice, contractor: null },
     };
-    render(<ApprovalSidePanel step={stepNoContractor} open={true} onOpenChange={onOpenChange} />);
+    render(
+      <ApprovalSidePanel
+        step={stepNoContractor as never}
+        open={true}
+        onOpenChange={onOpenChange}
+      />,
+    );
     expect(screen.queryByText('Acme Corp')).not.toBeInTheDocument();
   });
 
@@ -607,11 +613,7 @@ describe('ApprovalSidePanel', () => {
   it('does not render approver section when approver is null', () => {
     const stepNoApprover = { ...baseStep, approver: null };
     render(
-      <ApprovalSidePanel
-        step={stepNoApprover as unknown}
-        open={true}
-        onOpenChange={onOpenChange}
-      />,
+      <ApprovalSidePanel step={stepNoApprover as never} open={true} onOpenChange={onOpenChange} />,
     );
     expect(screen.queryByText('John Doe')).not.toBeInTheDocument();
   });

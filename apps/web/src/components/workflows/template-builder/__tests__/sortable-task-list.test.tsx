@@ -72,7 +72,7 @@ describe('SortableTaskList', () => {
     render(
       <SortableTaskList
         fields={[{ id: 'f1' }, { id: 'f2' }]}
-        tasks={[{ title: 'Task 1' } as unknown, { title: 'Task 2' } as unknown]}
+        tasks={[{ title: 'Task 1' } as never, { title: 'Task 2' } as never]}
         form={mockForm}
         onReorder={vi.fn()}
         onRemove={vi.fn()}
@@ -87,7 +87,7 @@ describe('SortableTaskList', () => {
     render(
       <SortableTaskList
         fields={[{ id: 'f1' }]}
-        tasks={[{ title: 'Task 1' } as unknown]}
+        tasks={[{ title: 'Task 1' } as never]}
         form={mockForm}
         onReorder={vi.fn()}
         onRemove={vi.fn()}

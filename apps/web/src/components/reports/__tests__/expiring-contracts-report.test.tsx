@@ -71,8 +71,8 @@ vi.mock('../report-table', () => ({
       <div data-testid="empty">{emptyTitle}</div>
     ) : (
       <div data-testid="report-table">
-        {data.map(row => (
-          <div key={row.contractId}>{row.contractTitle}</div>
+        {data.map((row: Record<string, unknown>) => (
+          <div key={row.contractId as string}>{row.contractTitle as React.ReactNode}</div>
         ))}
       </div>
     ),
@@ -151,7 +151,9 @@ describe('ExpiringContractsReport', () => {
 
   it('shows table loading while chart query is already settled', () => {
     let call = 0;
-    mockUseQuery.mockImplementation(() => {
+    (
+      mockUseQuery as unknown as { mockImplementation: (fn: () => unknown) => void }
+    ).mockImplementation(() => {
       call++;
       if (call === 1) {
         return { data: undefined, isLoading: true };

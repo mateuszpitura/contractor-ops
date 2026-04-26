@@ -66,8 +66,8 @@ vi.mock('../report-table', () => ({
       <div data-testid="empty">{emptyTitle}</div>
     ) : (
       <div data-testid="report-table">
-        {data.map(row => (
-          <div key={row.invoiceId}>{row.invoiceNumber}</div>
+        {data.map((row: Record<string, unknown>) => (
+          <div key={row.invoiceId as string}>{row.invoiceNumber as React.ReactNode}</div>
         ))}
       </div>
     ),

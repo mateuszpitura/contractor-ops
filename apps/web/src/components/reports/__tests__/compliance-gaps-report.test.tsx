@@ -71,8 +71,8 @@ vi.mock('../report-table', () => ({
       <div data-testid="empty">{emptyTitle}</div>
     ) : (
       <div data-testid="report-table">
-        {data.map(row => (
-          <div key={row.contractorId}>{row.contractorName}</div>
+        {data.map((row: Record<string, unknown>) => (
+          <div key={row.contractorId as string}>{row.contractorName as React.ReactNode}</div>
         ))}
       </div>
     ),
@@ -144,7 +144,9 @@ describe('ComplianceGapsReport', () => {
 
   it('shows table loading while chart query is already settled', () => {
     let call = 0;
-    mockUseQuery.mockImplementation(() => {
+    (
+      mockUseQuery as unknown as { mockImplementation: (fn: () => unknown) => void }
+    ).mockImplementation(() => {
       call++;
       if (call === 1) {
         return { data: undefined, isLoading: true };
@@ -219,7 +221,9 @@ describe('ComplianceGapsReport', () => {
   // ---- Chart data with health distribution ----
   it('passes chart data to ReportChart when chart query returns data', () => {
     let callCount = 0;
-    mockUseQuery.mockImplementation(() => {
+    (
+      mockUseQuery as unknown as { mockImplementation: (fn: () => unknown) => void }
+    ).mockImplementation(() => {
       callCount++;
       if (callCount === 1) {
         return {
@@ -311,7 +315,9 @@ describe('ComplianceGapsReport', () => {
   // ---- Chart query returns undefined ----
   it('renders chart component even when chart query data is undefined', () => {
     let callCount = 0;
-    mockUseQuery.mockImplementation(() => {
+    (
+      mockUseQuery as unknown as { mockImplementation: (fn: () => unknown) => void }
+    ).mockImplementation(() => {
       callCount++;
       if (callCount === 1) {
         return { data: { items: [], totalCount: 0 }, isLoading: false } as unknown as never;
@@ -366,7 +372,9 @@ describe('ComplianceGapsReport', () => {
   // ---- Export buttons always present ----
   it('renders export buttons even when loading', () => {
     let callCount = 0;
-    mockUseQuery.mockImplementation(() => {
+    (
+      mockUseQuery as unknown as { mockImplementation: (fn: () => unknown) => void }
+    ).mockImplementation(() => {
       callCount++;
       if (callCount === 1) return { data: undefined, isLoading: true } as unknown as never;
       return { data: undefined, isLoading: true } as unknown as never;
@@ -470,7 +478,9 @@ describe('ComplianceGapsReport', () => {
   // ---- chartData returns empty array when chart query data is falsy ----
   it('handles chartData returning empty array for undefined chart data', () => {
     let callCount = 0;
-    mockUseQuery.mockImplementation(() => {
+    (
+      mockUseQuery as unknown as { mockImplementation: (fn: () => unknown) => void }
+    ).mockImplementation(() => {
       callCount++;
       if (callCount === 1) {
         return { data: { items: [], totalCount: 0 }, isLoading: false } as unknown as never;

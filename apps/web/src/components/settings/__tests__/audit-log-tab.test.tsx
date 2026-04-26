@@ -190,7 +190,7 @@ describe('AuditLogTab', () => {
     mockListData = { items: [{ id: '1' }], totalCount: 5 };
     const { user } = setup(<AuditLogTab />);
     const exportBtn = screen.getByText('Export audit log').closest('button');
-    await user.click(exportBtn);
+    await user.click(exportBtn!);
     expect(mockExportMutate).toHaveBeenCalledTimes(1);
   });
 
@@ -387,7 +387,7 @@ describe('AuditLogTab', () => {
     mockListData = { items: [{ id: '1' }], totalCount: 5 };
     const { user } = setup(<AuditLogTab />);
     const exportBtn = screen.getByText('Export audit log').closest('button');
-    await user.click(exportBtn);
+    await user.click(exportBtn!);
     expect(mockExportMutate).toHaveBeenCalledTimes(1);
   });
 
@@ -504,7 +504,7 @@ describe('AuditLogTab', () => {
     mockListData = { items: [{ id: '1' }], totalCount: 1 };
     const { user } = setup(<AuditLogTab />);
     const exportBtn = screen.getByText('Export audit log').closest('button');
-    await user.click(exportBtn);
+    await user.click(exportBtn!);
     expect(mockExportMutate).toHaveBeenCalledTimes(1);
   });
 

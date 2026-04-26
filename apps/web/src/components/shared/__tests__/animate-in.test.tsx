@@ -24,14 +24,14 @@ describe('AnimateIn', () => {
   it('applies default className with min-w-0', () => {
     render(<AnimateIn>Content</AnimateIn>);
     const el = screen.getByText('Content').closest('div');
-    expect(el.className).toContain('min-w-0');
+    expect(el!.className).toContain('min-w-0');
   });
 
   it('merges custom className', () => {
     render(<AnimateIn className="extra-class">Content</AnimateIn>);
     const el = screen.getByText('Content').closest('div');
-    expect(el.className).toContain('min-w-0');
-    expect(el.className).toContain('extra-class');
+    expect(el!.className).toContain('min-w-0');
+    expect(el!.className).toContain('extra-class');
   });
 
   it('renders complex children', () => {
