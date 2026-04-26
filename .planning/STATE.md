@@ -2,16 +2,11 @@
 gsd_state_version: 1.0
 milestone: v6.0
 milestone_name: Platform Maturity & Operational Hardening
-status: roadmap_created
-stopped_at: ""
-last_updated: "2026-04-26T14:30:00.000Z"
-last_activity: 2026-04-26 -- v6.0 roadmap created (Phases 70-80)
-planned_phase: 70
+status: Roadmap created (54/54 requirements mapped, 100% coverage). Phase 70 ready for `/gsd-plan-phase 70`.
+stopped_at: Phase 70 context gathered
+last_updated: "2026-04-26T14:30:06.059Z"
+last_activity: 2026-04-26 — v6.0 roadmap created with 11 phases (70-80)
 progress:
-  total_phases: 11
-  completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
   percent: 0
 ---
 
@@ -97,6 +92,7 @@ Code-level audit gaps (I-1 / EINV-01/02/04 / PAY-04 / FOUND-03) all closed this 
 | 80 | v6.0 Verification + Hardening + UAT | 0 | STANDARD |
 
 **Hard dependency edges:**
+
 - 70 → all (foundation guards must ship first)
 - 71 → 79 (free-zone trade license participates in F1 reminder cron)
 - 71 → 75 (F4 IP-clause findings persist as ContractorComplianceItem)
@@ -153,7 +149,7 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-04-26 — v6.0 roadmap created (Phases 70-80, 54/54 requirements mapped)
-Stopped at: Phase 70 ready to plan
-Resume file: .planning/ROADMAP.md (v6.0 section)
+Last session: --stopped-at
+Stopped at: Phase 70 context gathered
+Resume file: --resume-file
 Next command: `/gsd-plan-phase 70`
