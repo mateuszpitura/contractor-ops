@@ -15,6 +15,11 @@
       "types": "./src/client.ts",
       "import": "./src/client.ts",
       "default": "./src/client.ts"
+    },
+    "./role-normalization": {
+      "types": "./src/role-normalization.ts",
+      "import": "./src/role-normalization.ts",
+      "default": "./src/role-normalization.ts"
     }
   },
   "scripts": {

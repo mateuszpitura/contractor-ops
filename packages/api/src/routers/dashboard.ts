@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { router } from '../init.js';
+import { plain } from '../lib/plain.js';
 import type { TenantScopedDb } from '../lib/tenant-db.js';
 import { requirePermission } from '../middleware/rbac.js';
 import { tenantProcedure } from '../middleware/tenant.js';
@@ -8,10 +9,6 @@ import { CacheKeys, CacheTTL, cached } from '../services/cache.js';
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-function plain<T>(data: T): T {
-  return JSON.parse(JSON.stringify(data)) as T;
-}
 
 const reportRead = requirePermission({ report: ['read'] });
 

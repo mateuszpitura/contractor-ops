@@ -36,13 +36,7 @@ type StatusVisualConfig = {
   icon: ComponentType<{ className?: string }>;
   /** Tailwind classes mapping to locked phase-61 pill palette. */
   className: string;
-  labelKey:
-    | 'notGenerated'
-    | 'valid'
-    | 'warnings'
-    | 'invalid'
-    | 'transmitted'
-    | 'failed';
+  labelKey: 'notGenerated' | 'valid' | 'warnings' | 'invalid' | 'transmitted' | 'failed';
 };
 
 const STATUS_VISUALS: Record<EInvoiceComplianceStatus, StatusVisualConfig> = {
@@ -92,11 +86,7 @@ const STATUS_VISUALS: Record<EInvoiceComplianceStatus, StatusVisualConfig> = {
  * - `EInvoice.InvoicesList.Cell.transmitted`
  * - `EInvoice.InvoicesList.Cell.failed`
  */
-export function EInvoiceStatusCell({
-  status,
-  invoiceId,
-  className,
-}: EInvoiceStatusCellProps) {
+export function EInvoiceStatusCell({ status, invoiceId, className }: EInvoiceStatusCellProps) {
   const t = useTranslations('EInvoice.InvoicesList.Cell');
 
   const visual = STATUS_VISUALS[status];

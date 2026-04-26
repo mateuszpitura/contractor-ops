@@ -94,11 +94,29 @@ describe('syncJiraWorklogs', () => {
     mockPrisma.integrationConnection.findUnique.mockResolvedValue(null);
 
     await expect(
-      syncJiraWorklogs(mockPrisma as never, ORG_ID, CONTRACTOR_ID, CONTRACT_ID, TIMESHEET_ID, CONNECTION_ID, '2026-01-01', '2026-01-31'),
+      syncJiraWorklogs(
+        mockPrisma as never,
+        ORG_ID,
+        CONTRACTOR_ID,
+        CONTRACT_ID,
+        TIMESHEET_ID,
+        CONNECTION_ID,
+        '2026-01-01',
+        '2026-01-31',
+      ),
     ).rejects.toThrow(TRPCError);
 
     try {
-      await syncJiraWorklogs(mockPrisma as never, ORG_ID, CONTRACTOR_ID, CONTRACT_ID, TIMESHEET_ID, CONNECTION_ID, '2026-01-01', '2026-01-31');
+      await syncJiraWorklogs(
+        mockPrisma as never,
+        ORG_ID,
+        CONTRACTOR_ID,
+        CONTRACT_ID,
+        TIMESHEET_ID,
+        CONNECTION_ID,
+        '2026-01-01',
+        '2026-01-31',
+      );
     } catch (e) {
       expect((e as TRPCError).code).toBe('NOT_FOUND');
     }
@@ -110,7 +128,16 @@ describe('syncJiraWorklogs', () => {
     );
 
     try {
-      await syncJiraWorklogs(mockPrisma as never, ORG_ID, CONTRACTOR_ID, CONTRACT_ID, TIMESHEET_ID, CONNECTION_ID, '2026-01-01', '2026-01-31');
+      await syncJiraWorklogs(
+        mockPrisma as never,
+        ORG_ID,
+        CONTRACTOR_ID,
+        CONTRACT_ID,
+        TIMESHEET_ID,
+        CONNECTION_ID,
+        '2026-01-01',
+        '2026-01-31',
+      );
       expect.fail('expected throw');
     } catch (e) {
       expect(e).toBeInstanceOf(TRPCError);
@@ -124,7 +151,16 @@ describe('syncJiraWorklogs', () => {
     );
 
     try {
-      await syncJiraWorklogs(mockPrisma as never, ORG_ID, CONTRACTOR_ID, CONTRACT_ID, TIMESHEET_ID, CONNECTION_ID, '2026-01-01', '2026-01-31');
+      await syncJiraWorklogs(
+        mockPrisma as never,
+        ORG_ID,
+        CONTRACTOR_ID,
+        CONTRACT_ID,
+        TIMESHEET_ID,
+        CONNECTION_ID,
+        '2026-01-01',
+        '2026-01-31',
+      );
       expect.fail('expected throw');
     } catch (e) {
       expect(e).toBeInstanceOf(TRPCError);
@@ -142,11 +178,20 @@ describe('syncJiraWorklogs', () => {
     });
 
     // Mock fetch to return empty search results
-    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(
-      mockFetchJson({ issues: [], startAt: 0, maxResults: 100, total: 0 }),
-    );
+    const fetchSpy = vi
+      .spyOn(globalThis, 'fetch')
+      .mockImplementation(mockFetchJson({ issues: [], startAt: 0, maxResults: 100, total: 0 }));
 
-    await syncJiraWorklogs(mockPrisma as never, ORG_ID, CONTRACTOR_ID, CONTRACT_ID, TIMESHEET_ID, CONNECTION_ID, '2026-01-01', '2026-01-31');
+    await syncJiraWorklogs(
+      mockPrisma as never,
+      ORG_ID,
+      CONTRACTOR_ID,
+      CONTRACT_ID,
+      TIMESHEET_ID,
+      CONNECTION_ID,
+      '2026-01-01',
+      '2026-01-31',
+    );
 
     expect(mockPrisma.externalLink.findFirst).toHaveBeenCalledWith({
       where: expect.objectContaining({
@@ -168,7 +213,16 @@ describe('syncJiraWorklogs', () => {
     mockPrisma.externalLink.findFirst.mockResolvedValue(null);
 
     try {
-      await syncJiraWorklogs(mockPrisma as never, ORG_ID, CONTRACTOR_ID, CONTRACT_ID, TIMESHEET_ID, CONNECTION_ID, '2026-01-01', '2026-01-31');
+      await syncJiraWorklogs(
+        mockPrisma as never,
+        ORG_ID,
+        CONTRACTOR_ID,
+        CONTRACT_ID,
+        TIMESHEET_ID,
+        CONNECTION_ID,
+        '2026-01-01',
+        '2026-01-31',
+      );
       expect.fail('expected throw');
     } catch (e) {
       expect(e).toBeInstanceOf(TRPCError);
@@ -180,12 +234,19 @@ describe('syncJiraWorklogs', () => {
   it('throws UNAUTHORIZED on 401 from Jira search API', async () => {
     mockPrisma.integrationConnection.findUnique.mockResolvedValue(connectedConnection());
 
-    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(
-      mockFetchJson({}, 401),
-    );
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(mockFetchJson({}, 401));
 
     try {
-      await syncJiraWorklogs(mockPrisma as never, ORG_ID, CONTRACTOR_ID, CONTRACT_ID, TIMESHEET_ID, CONNECTION_ID, '2026-01-01', '2026-01-31');
+      await syncJiraWorklogs(
+        mockPrisma as never,
+        ORG_ID,
+        CONTRACTOR_ID,
+        CONTRACT_ID,
+        TIMESHEET_ID,
+        CONNECTION_ID,
+        '2026-01-01',
+        '2026-01-31',
+      );
       expect.fail('expected throw');
     } catch (e) {
       expect(e).toBeInstanceOf(TRPCError);
@@ -209,7 +270,16 @@ describe('syncJiraWorklogs', () => {
     );
 
     try {
-      await syncJiraWorklogs(mockPrisma as never, ORG_ID, CONTRACTOR_ID, CONTRACT_ID, TIMESHEET_ID, CONNECTION_ID, '2026-01-01', '2026-01-31');
+      await syncJiraWorklogs(
+        mockPrisma as never,
+        ORG_ID,
+        CONTRACTOR_ID,
+        CONTRACT_ID,
+        TIMESHEET_ID,
+        CONNECTION_ID,
+        '2026-01-01',
+        '2026-01-31',
+      );
       expect.fail('expected throw');
     } catch (e) {
       expect(e).toBeInstanceOf(TRPCError);
@@ -224,9 +294,7 @@ describe('syncJiraWorklogs', () => {
     mockPrisma.timeEntry.findFirst.mockResolvedValue(null); // No existing entries
 
     const searchResponse = {
-      issues: [
-        { key: 'PROJ-1', fields: { summary: 'Task one' } },
-      ],
+      issues: [{ key: 'PROJ-1', fields: { summary: 'Task one' } }],
       startAt: 0,
       maxResults: 100,
       total: 1,
@@ -382,7 +450,16 @@ describe('syncJiraWorklogs', () => {
     );
 
     await expect(
-      syncJiraWorklogs(mockPrisma as never, ORG_ID, CONTRACTOR_ID, CONTRACT_ID, TIMESHEET_ID, CONNECTION_ID, '2026-01-01', '2026-01-31'),
+      syncJiraWorklogs(
+        mockPrisma as never,
+        ORG_ID,
+        CONTRACTOR_ID,
+        CONTRACT_ID,
+        TIMESHEET_ID,
+        CONNECTION_ID,
+        '2026-01-01',
+        '2026-01-31',
+      ),
     ).rejects.toThrow();
 
     expect(mockPrisma.integrationSyncLog.update).toHaveBeenCalledWith({

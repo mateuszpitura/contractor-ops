@@ -1,6 +1,7 @@
 import { prisma } from '@contractor-ops/db';
 import { decryptCredentials, encryptCredentials, getAdapter } from '@contractor-ops/integrations';
 import type { GoogleWorkspaceAdapter } from '@contractor-ops/integrations/adapters/google-workspace-adapter';
+import { releaseAdvisoryLock, tryAcquireAdvisoryLock } from '../lib/advisory-lock.js';
 import { dispatch } from './notification-service.js';
 
 // ---------------------------------------------------------------------------
@@ -48,6 +49,20 @@ export async function processDirectorySync(params: {
       startedAt: new Date(),
     },
   });
+
+  const lockKey = `google-workspace-sync:${connectionId}`;
+  const lockAcquired = await tryAcquireAdvisoryLock(prisma, lockKey);
+  if (!lockAcquired) {
+    await prisma.integrationSyncLog.update({
+      where: { id: syncLog.id },
+      data: {
+        status: 'SUCCESS',
+        completedAt: new Date(),
+        responsePayloadJson: { skipped: true, reason: 'already-running' },
+      },
+    });
+    return { newHires: 0, departures: 0, totalUsers: 0 };
+  }
 
   try {
     // -----------------------------------------------------------------------
@@ -258,6 +273,9 @@ export async function processDirectorySync(params: {
 
     // Re-throw so the route handler returns 500 (QStash will retry)
     throw error;
+  } finally {
+    // Best-effort unlock; the lock is connection-scoped so it is safe to ignore unlock failures.
+    await releaseAdvisoryLock(prisma, lockKey).catch(() => undefined);
   }
 }
 

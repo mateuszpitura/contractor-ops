@@ -1,5 +1,6 @@
 import type { Prisma } from '@contractor-ops/db/generated/prisma/client';
 import { createLogger } from '@contractor-ops/logger';
+import type { ContractCreateInput } from '@contractor-ops/validators';
 import {
   amendmentCreateSchema,
   contractCreateSchema,
@@ -18,7 +19,7 @@ import { writeAuditLog } from '../services/audit-writer.js';
 import { syncContractExpiryDeadline } from '../services/calendar-deadline-sync.js';
 import { deleteCalendarEvent } from '../services/calendar-event-service.js';
 
-const log = createLogger('contract-router');
+const log = createLogger({ service: 'contract-router' });
 
 /**
  * Phase 60 CLASS-08 — contract fields the reassessment scan treats as
@@ -174,14 +175,21 @@ function coerceDateFields(updateData: Record<string, unknown>) {
   }
 }
 
-function validateDateOrder(updateData: Record<string, unknown>) {
-  if (updateData.endDate && updateData.startDate) {
-    if (updateData.endDate <= updateData.startDate) {
-      throw new TRPCError({
-        code: 'BAD_REQUEST',
-        message: E.CONTRACT_END_DATE_BEFORE_START,
-      });
-    }
+function validateDateOrder(
+  updateData: Record<string, unknown>,
+  existing?: { startDate: Date; endDate: Date | null },
+) {
+  const effectiveStart = (updateData.startDate as Date | undefined) ?? existing?.startDate;
+  const effectiveEnd =
+    updateData.endDate === null
+      ? null
+      : ((updateData.endDate as Date | undefined) ?? existing?.endDate ?? null);
+
+  if (effectiveStart && effectiveEnd && effectiveEnd <= effectiveStart) {
+    throw new TRPCError({
+      code: 'BAD_REQUEST',
+      message: E.CONTRACT_END_DATE_BEFORE_START,
+    });
   }
 }
 
@@ -190,30 +198,8 @@ function validateDateOrder(updateData: Record<string, unknown>) {
  */
 function buildContractCreateData(
   organizationId: string,
-  input: {
-    contractorId: string;
-    title: string;
-    type: string;
-    startDate: string;
-    endDate?: string | null;
-    noticePeriodDays?: number | null;
-    autoRenewal: boolean;
-    renewalTerms?: string | null;
-    currency: string;
-    billingModel: string;
-    rateType: string;
-    rateValueMinor?: number | null;
-    retainerAmountMinor?: number | null;
-    expectedHoursPerPeriod?: number | null;
-    paymentTermsDays?: number | null;
-    invoiceCycle?: string | null;
-    internalOwnerUserId?: string | null;
-    teamId?: string | null;
-    projectId?: string | null;
-    costCenterId?: string | null;
-    notes?: string | null;
-  },
-) {
+  input: ContractCreateInput,
+): Prisma.ContractUncheckedCreateInput {
   return {
     organizationId,
     contractorId: input.contractorId,
@@ -377,7 +363,7 @@ export const contractRouter = router({
       const updateData: Record<string, unknown> = { ...input.data };
 
       coerceDateFields(updateData);
-      validateDateOrder(updateData);
+      validateDateOrder(updateData, existing);
 
       const updated = await ctx.db.contract.update({
         where: { id: input.id },
@@ -764,7 +750,8 @@ export const contractRouter = router({
 
           // Phase 60 CLASS-08 — emit one audit row per transitioned contract so
           // the reassessment scan can detect each status change individually.
-          const auditWriterTx = tx as unknown as import('../services/audit-writer.js').AuditWriterClient;
+          const auditWriterTx =
+            tx as unknown as import('../services/audit-writer.js').AuditWriterClient;
           for (const id of valid) {
             const prev = oldStatusById.get(id);
             await writeAuditLog({

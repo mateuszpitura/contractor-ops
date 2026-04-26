@@ -1,5 +1,6 @@
 'use client';
 
+import * as Sentry from '@sentry/nextjs';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { TRPCClientError } from '@trpc/client';
 import {
@@ -114,7 +115,7 @@ export function InvoiceUploadArea({
           setCreditExhausted(true);
         } else {
           // OCR trigger failure is non-blocking
-          console.warn('OCR trigger failed, manual entry available');
+          Sentry.captureException(error, { tags: { feature: 'invoice-upload' } });
         }
       }
     },

@@ -282,9 +282,7 @@ function makeCaller(userId = USER_A, orgId = ORG_A) {
 // Fixtures
 // ---------------------------------------------------------------------------
 
-const EXPECTED_SHA = createHash('sha256')
-  .update(Buffer.from(MOCK_PDF_BYTES))
-  .digest('hex');
+const EXPECTED_SHA = createHash('sha256').update(Buffer.from(MOCK_PDF_BYTES)).digest('hex');
 
 function invoiceRow(overrides: Record<string, unknown> = {}) {
   return {
@@ -330,9 +328,7 @@ describe('einvoice.generateZugferdPdf', () => {
     expect(lifecycleUpserts[0]?.profileId).toBe('zugferd-de');
     expect(lifecycleEvents).toHaveLength(1);
     expect(lifecycleEvents[0]?.eventType).toBe('ZUGFERD_GENERATED');
-    expect((lifecycleEvents[0]?.detailsJson as { sha256: string }).sha256).toBe(
-      EXPECTED_SHA,
-    );
+    expect((lifecycleEvents[0]?.detailsJson as { sha256: string }).sha256).toBe(EXPECTED_SHA);
     expect(lifecycleEvents[0]?.actorUserId).toBe(USER_A);
   });
 
@@ -363,14 +359,14 @@ describe('einvoice.generateZugferdPdf', () => {
 
   it('3. cross-org access returns NOT_FOUND (never FORBIDDEN)', async () => {
     // findFirst filters by { id, organizationId } — cross-org caller finds nothing.
-    mockPrisma.invoice.findFirst = vi.fn(async (args: {
-      where: { id: string; organizationId: string };
-    }) => {
-      if (args.where.organizationId === ORG_A && args.where.id === INVOICE_ID) {
-        return invoiceRow();
-      }
-      return null;
-    });
+    mockPrisma.invoice.findFirst = vi.fn(
+      async (args: { where: { id: string; organizationId: string } }) => {
+        if (args.where.organizationId === ORG_A && args.where.id === INVOICE_ID) {
+          return invoiceRow();
+        }
+        return null;
+      },
+    );
 
     const callerB = makeCaller('user_B', ORG_B);
     try {
@@ -424,16 +420,13 @@ describe('einvoice.generateZugferdPdf', () => {
   });
 
   it('5. new lifecycle row is created when none existed (upsert create branch)', async () => {
-    mockPrisma.invoice.findFirst = vi.fn(async () =>
-      invoiceRow({ eInvoiceLifecycle: null }),
-    );
+    mockPrisma.invoice.findFirst = vi.fn(async () => invoiceRow({ eInvoiceLifecycle: null }));
 
     const caller = makeCaller();
     await caller.generateZugferdPdf({ invoiceId: INVOICE_ID });
 
     expect(mockPrisma.eInvoiceLifecycle.upsert).toHaveBeenCalled();
-    const upsertCall = vi.mocked(mockPrisma.eInvoiceLifecycle.upsert).mock
-      .calls[0]?.[0] as {
+    const upsertCall = vi.mocked(mockPrisma.eInvoiceLifecycle.upsert).mock.calls[0]?.[0] as {
       create: { profileId: string; invoiceId: string; organizationId: string };
       update: Record<string, unknown>;
       where: Record<string, unknown>;
@@ -446,9 +439,7 @@ describe('einvoice.generateZugferdPdf', () => {
   it('6. invalid cuid at input layer rejects before DB is touched', async () => {
     mockPrisma.invoice.findFirst = vi.fn(async () => invoiceRow());
     const caller = makeCaller();
-    await expect(
-      caller.generateZugferdPdf({ invoiceId: 'not-a-cuid' }),
-    ).rejects.toThrow();
+    await expect(caller.generateZugferdPdf({ invoiceId: 'not-a-cuid' })).rejects.toThrow();
     expect(mockPrisma.invoice.findFirst).not.toHaveBeenCalled();
   });
 });

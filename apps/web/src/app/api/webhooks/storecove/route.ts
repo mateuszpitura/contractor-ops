@@ -24,8 +24,9 @@
 // Structured logging only — uses `@contractor-ops/logger`. No direct
 // stdout / stderr writes; every error path routes through the logger.
 
-import { StorecoveAdapter, type WebhookVerification } from '@contractor-ops/einvoice';
 import { prisma } from '@contractor-ops/db';
+import type { WebhookVerification } from '@contractor-ops/einvoice';
+import { StorecoveAdapter } from '@contractor-ops/einvoice';
 import { createLogger } from '@contractor-ops/logger';
 import { getServerEnv } from '@contractor-ops/validators';
 import type { NextRequest } from 'next/server';
@@ -43,10 +44,7 @@ const SUCCESS_EVENTS = new Set([
   'invoice.delivered',
 ]);
 
-const FAILED_EVENTS = new Set([
-  'invoice.transmission.failed',
-  'invoice.failed',
-]);
+const FAILED_EVENTS = new Set(['invoice.transmission.failed', 'invoice.failed']);
 
 // ---------------------------------------------------------------------------
 // Adapter factory — global shared secret via STORECOVE_WEBHOOK_SECRET env
@@ -61,7 +59,7 @@ function getWebhookSecret(): string | undefined {
     const value = env.STORECOVE_WEBHOOK_SECRET;
     return typeof value === 'string' && value.length > 0 ? value : undefined;
   } catch {
-    return undefined;
+    return;
   }
 }
 
@@ -104,10 +102,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: 'Not configured' }, { status: 500 });
   }
 
-  const verification: WebhookVerification = verifier.verifyWebhookSignature(
-    rawBody,
-    headers,
-  );
+  const verification: WebhookVerification = verifier.verifyWebhookSignature(rawBody, headers);
   if (!verification.valid) {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
   }
@@ -147,10 +142,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   });
 
   if (!lifecycle) {
-    logger.info(
-      { guid, eventType },
-      'Storecove webhook: no matching lifecycle — ignoring',
-    );
+    logger.info({ guid, eventType }, 'Storecove webhook: no matching lifecycle — ignoring');
     return NextResponse.json({ received: true }, { status: 200 });
   }
 
@@ -175,7 +167,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   // 7. Classify + persist atomically.
   const isSuccess = SUCCESS_EVENTS.has(eventType);
   const isFailure = FAILED_EVENTS.has(eventType);
-  if (!isSuccess && !isFailure) {
+  if (!(isSuccess || isFailure)) {
     logger.info({ eventType, guid }, 'Storecove webhook: unknown event — noop');
     return NextResponse.json({ received: true, ignored: true }, { status: 200 });
   }

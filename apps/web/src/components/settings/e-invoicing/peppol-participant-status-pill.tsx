@@ -55,10 +55,7 @@ const STATUS_TRIAD: Record<PeppolParticipantStatus, TriadKey> = {
   NOT_REGISTERED: 'muted',
 };
 
-const STATUS_ICON: Record<
-  PeppolParticipantStatus,
-  ComponentType<SVGProps<SVGSVGElement>>
-> = {
+const STATUS_ICON: Record<PeppolParticipantStatus, ComponentType<SVGProps<SVGSVGElement>>> = {
   ACTIVE: CircleCheck,
   REGISTERED: CircleCheck,
   PENDING: ShieldAlert,

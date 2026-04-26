@@ -4,8 +4,8 @@
  * Covers: GET / query param coercion + forwarding, GET /:id forwarding.
  */
 
-import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Hono } from 'hono';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ---------------------------------------------------------------------------
 // Caller stub — must use vi.hoisted() because vi.mock() is hoisted above
@@ -58,31 +58,33 @@ describe('GET /contractors', () => {
 
   it('forwards page and pageSize as numbers', async () => {
     await app.request('/?page=2&pageSize=15');
-    const [input] = mockList.mock.calls[0] as [{ page: unknown; pageSize: unknown }][];
+    const [input] = mockList.mock.calls[0] as [{ page: unknown; pageSize: unknown }];
     expect(input).toMatchObject({ page: 2, pageSize: 15 });
   });
 
   it('forwards status query param', async () => {
     await app.request('/?status=ACTIVE');
-    const [input] = mockList.mock.calls[0] as [{ status: unknown }][];
+    const [input] = mockList.mock.calls[0] as [{ status: unknown }];
     expect(input).toMatchObject({ status: 'ACTIVE' });
   });
 
   it('forwards lifecycleStage query param', async () => {
     await app.request('/?lifecycleStage=ONBOARDING');
-    const [input] = mockList.mock.calls[0] as [{ lifecycleStage: unknown }][];
+    const [input] = mockList.mock.calls[0] as [{ lifecycleStage: unknown }];
     expect(input).toMatchObject({ lifecycleStage: 'ONBOARDING' });
   });
 
   it('forwards sortBy and sortOrder query params', async () => {
     await app.request('/?sortBy=legalName&sortOrder=asc');
-    const [input] = mockList.mock.calls[0] as [{ sortBy: unknown; sortOrder: unknown }][];
+    const [input] = mockList.mock.calls[0] as [{ sortBy: unknown; sortOrder: unknown }];
     expect(input).toMatchObject({ sortBy: 'legalName', sortOrder: 'asc' });
   });
 
   it('forwards all params together correctly', async () => {
-    await app.request('/?page=1&pageSize=10&status=INACTIVE&lifecycleStage=ENDED&sortBy=createdAt&sortOrder=desc');
-    const [input] = mockList.mock.calls[0] as [Record<string, unknown>][];
+    await app.request(
+      '/?page=1&pageSize=10&status=INACTIVE&lifecycleStage=ENDED&sortBy=createdAt&sortOrder=desc',
+    );
+    const [input] = mockList.mock.calls[0] as [Record<string, unknown>];
     expect(input).toMatchObject({
       page: 1,
       pageSize: 10,
@@ -95,7 +97,7 @@ describe('GET /contractors', () => {
 
   it('passes undefined for all params when none provided', async () => {
     await app.request('/');
-    const [input] = mockList.mock.calls[0] as [Record<string, unknown>][];
+    const [input] = mockList.mock.calls[0] as [Record<string, unknown>];
     expect(input.page).toBeUndefined();
     expect(input.pageSize).toBeUndefined();
     expect(input.status).toBeUndefined();
@@ -109,7 +111,7 @@ describe('GET /contractors', () => {
     mockList.mockResolvedValueOnce({ items, total: 1, page: 1, pageSize: 25 });
     const res = await app.request('/');
     expect(res.status).toBe(200);
-    const body = await res.json() as { data: unknown[]; meta: unknown };
+    const body = (await res.json()) as { data: unknown[]; meta: unknown };
     expect(body.data).toEqual(items);
     expect(body.meta).toMatchObject({ total: 1, page: 1, pageSize: 25 });
   });
@@ -131,7 +133,7 @@ describe('GET /contractors/:id', () => {
     mockGetById.mockResolvedValueOnce(contractor);
     const res = await app.request('/ctr-xyz');
     expect(res.status).toBe(200);
-    const body = await res.json() as { data: unknown };
+    const body = (await res.json()) as { data: unknown };
     expect(body).toEqual({ data: contractor });
   });
 });

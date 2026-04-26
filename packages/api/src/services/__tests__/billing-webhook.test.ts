@@ -751,10 +751,7 @@ describe('billing-webhook', () => {
     });
 
     it('skips when no subscription ID in invoice', async () => {
-      const event = makeEvent(
-        'invoice.payment_failed',
-        makeInvoice({ parent: null }),
-      );
+      const event = makeEvent('invoice.payment_failed', makeInvoice({ parent: null }));
 
       await routeStripeEvent(event, tx);
 
@@ -795,10 +792,7 @@ describe('billing-webhook', () => {
 
   describe('handleInvoicePaid - edge cases', () => {
     it('skips when invoice has no subscription ID', async () => {
-      const event = makeEvent(
-        'invoice.paid',
-        makeInvoice({ parent: null }),
-      );
+      const event = makeEvent('invoice.paid', makeInvoice({ parent: null }));
 
       await routeStripeEvent(event, tx);
 
@@ -1002,10 +996,7 @@ describe('billing-webhook', () => {
     });
 
     it('skips when no subscription ID in invoice', async () => {
-      const event = makeEvent(
-        'invoice.payment_action_required',
-        makeInvoice({ parent: null }),
-      );
+      const event = makeEvent('invoice.payment_action_required', makeInvoice({ parent: null }));
 
       await routeStripeEvent(event, tx);
 

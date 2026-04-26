@@ -6,7 +6,7 @@
 // fail the test.
 
 import { describe, expect, it } from 'vitest';
-
+import type { ZugferdConformanceLevel } from '../constants.js';
 import {
   GUIDELINE_URN_TO_LEVEL,
   PDFA_ID_CONFORMANCE,
@@ -23,7 +23,6 @@ import {
   ZUGFERD_XMP_NAMESPACE,
   ZUGFERD_XMP_PREFIX,
   ZUGFERD_XMP_VERSION,
-  type ZugferdConformanceLevel,
 } from '../constants.js';
 
 describe('ZUGFeRD profile identity constants', () => {
@@ -56,9 +55,7 @@ describe('ZUGFeRD XMP namespace constants', () => {
   it('XMP namespace URI matches the spec-mandated Factur-X 1p0 URI', () => {
     // This URI is the single identifier ZUGFeRD-capable readers index
     // PDFs by. Mutate it and the PDF is no longer recognized as ZUGFeRD.
-    expect(ZUGFERD_XMP_NAMESPACE).toBe(
-      'urn:factur-x:pdfa:CrossIndustryDocument:invoice:1p0#',
-    );
+    expect(ZUGFERD_XMP_NAMESPACE).toBe('urn:factur-x:pdfa:CrossIndustryDocument:invoice:1p0#');
     expect(ZUGFERD_XMP_NAMESPACE.endsWith(':1p0#')).toBe(true);
   });
 
@@ -160,16 +157,12 @@ describe('UNSUPPORTED_GUIDELINE_URNS set', () => {
 describe('GUIDELINE_URN_TO_LEVEL and UNSUPPORTED_GUIDELINE_URNS are disjoint', () => {
   it('no URN appears in both sets', () => {
     for (const urn of Object.keys(GUIDELINE_URN_TO_LEVEL)) {
-      expect(
-        UNSUPPORTED_GUIDELINE_URNS.has(urn),
-        `URN ${urn} must not be in both sets`,
-      ).toBe(false);
+      expect(UNSUPPORTED_GUIDELINE_URNS.has(urn), `URN ${urn} must not be in both sets`).toBe(
+        false,
+      );
     }
     for (const urn of UNSUPPORTED_GUIDELINE_URNS) {
-      expect(
-        urn in GUIDELINE_URN_TO_LEVEL,
-        `URN ${urn} must not be in both sets`,
-      ).toBe(false);
+      expect(urn in GUIDELINE_URN_TO_LEVEL, `URN ${urn} must not be in both sets`).toBe(false);
     }
   });
 });

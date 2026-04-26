@@ -51,9 +51,7 @@ describe('buildZugferdXmpPacket', () => {
   it('declares pdfaid + fx namespaces with exact URIs', () => {
     const xml = decode(buildZugferdXmpPacket(BASE_INPUT));
     expect(xml).toContain('xmlns:pdfaid="http://www.aiim.org/pdfa/ns/id/"');
-    expect(xml).toContain(
-      'xmlns:fx="urn:factur-x:pdfa:CrossIndustryDocument:invoice:1p0#"',
-    );
+    expect(xml).toContain('xmlns:fx="urn:factur-x:pdfa:CrossIndustryDocument:invoice:1p0#"');
   });
 
   it('XML-escapes special chars in documentTitle (&, <, >, ", \')', () => {

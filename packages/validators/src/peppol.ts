@@ -28,9 +28,7 @@ export type PeppolParticipantId = z.infer<typeof peppolParticipantIdSchema>;
 // (`peppolParticipantPairSchema`) lives in `./leitweg-id.ts` to colocate
 // with Contractor boundary validation; re-exported from the package root.
 
-export const peppolSchemeIdSchema = z
-  .string()
-  .regex(/^\d{4}$/, 'Peppol schemeId must be 4 digits');
+export const peppolSchemeIdSchema = z.string().regex(/^\d{4}$/, 'Peppol schemeId must be 4 digits');
 
 export const peppolParticipantValueSchema = z
   .string()

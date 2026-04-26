@@ -460,7 +460,7 @@ describe('workflowTemplatesRouter', () => {
             sortOrder: 0,
             required: true,
             assigneeMode: 'ROLE_BASED',
-            assigneeRole: 'OPS_MANAGER',
+            assigneeRole: 'ops_manager',
             assigneeUserId: null,
             dueOffsetDays: 5,
             dueOffsetHours: null,

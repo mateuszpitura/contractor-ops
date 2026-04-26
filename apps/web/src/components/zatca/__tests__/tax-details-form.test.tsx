@@ -71,9 +71,7 @@ describe('TaxDetailsForm', () => {
 
   it('renders description text', () => {
     render(<TaxDetailsForm {...defaultProps} />);
-    expect(
-      screen.getByText(/Enter your organization/),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/Enter your organization/)).toBeInTheDocument();
   });
 
   it('renders Organization Address fieldset legend', () => {
@@ -104,7 +102,15 @@ describe('TaxDetailsForm', () => {
     render(
       <TaxDetailsForm
         {...defaultProps}
-        defaultValues={{ vatNumber: '300000000000003', orgNameArabic: 'شركة', street: 'King Fahd Rd', city: 'Riyadh', district: 'Al Olaya', postalCode: '12345', invoiceTypes: ['standard'] }}
+        defaultValues={{
+          vatNumber: '300000000000003',
+          orgNameArabic: 'شركة',
+          street: 'King Fahd Rd',
+          city: 'Riyadh',
+          district: 'Al Olaya',
+          postalCode: '12345',
+          invoiceTypes: ['standard'],
+        }}
       />,
     );
     expect(screen.getByLabelText('VAT Registration Number')).toHaveValue('300000000000003');

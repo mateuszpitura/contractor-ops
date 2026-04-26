@@ -5,15 +5,22 @@
  * Zod validation errors, unknown TRPCError codes, plain Error fallback.
  */
 
-import { describe, expect, it, vi } from 'vitest';
 import { TRPCError } from '@trpc/server';
+import { describe, expect, it, vi } from 'vitest';
 
 // ---------------------------------------------------------------------------
 // Module mocks
 // ---------------------------------------------------------------------------
 
 vi.mock('@contractor-ops/logger', () => {
-  const stub = { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), fatal: vi.fn(), trace: vi.fn() };
+  const stub = {
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+    fatal: vi.fn(),
+    trace: vi.fn(),
+  };
   const loggerStub = { ...stub, child: vi.fn(() => ({ ...stub, child: vi.fn(() => stub) })) };
   return {
     logger: loggerStub,
@@ -50,7 +57,6 @@ function makeContext() {
 // ---------------------------------------------------------------------------
 
 describe('handleError', () => {
-
   describe('TRPCError → HTTP status mapping', () => {
     const cases: Array<[string, number]> = [
       ['PARSE_ERROR', 422],
@@ -99,8 +105,14 @@ describe('handleError', () => {
       const c = makeContext();
       const err = new TRPCError({ code: 'NOT_FOUND', message: 'not here' });
       handleError(err, c);
-      const [body] = (c.json as ReturnType<typeof vi.fn>).mock.calls[0] as [{ error: { code: string; message: string; status: number } }];
-      expect(body.error).toMatchObject({ code: expect.any(String), message: expect.any(String), status: 404 });
+      const [body] = (c.json as ReturnType<typeof vi.fn>).mock.calls[0] as [
+        { error: { code: string; message: string; status: number } },
+      ];
+      expect(body.error).toMatchObject({
+        code: expect.any(String),
+        message: expect.any(String),
+        status: 404,
+      });
     });
   });
 
@@ -110,7 +122,9 @@ describe('handleError', () => {
       const message = JSON.stringify({ type: 'TIER_REQUIRED', requiredTier: 'ENTERPRISE' });
       const err = new TRPCError({ code: 'FORBIDDEN', message });
       handleError(err, c);
-      const [body] = (c.json as ReturnType<typeof vi.fn>).mock.calls[0] as [{ error: { code: string; message: string } }];
+      const [body] = (c.json as ReturnType<typeof vi.fn>).mock.calls[0] as [
+        { error: { code: string; message: string } },
+      ];
       expect(body.error.code).toBe('TIER_REQUIRED');
       expect(body.error.message).toContain('ENTERPRISE');
     });
@@ -120,10 +134,7 @@ describe('handleError', () => {
       const message = JSON.stringify({ type: 'TIER_REQUIRED', requiredTier: 'PRO' });
       const err = new TRPCError({ code: 'FORBIDDEN', message });
       handleError(err, c);
-      expect(c.json).toHaveBeenCalledWith(
-        expect.any(Object),
-        403,
-      );
+      expect(c.json).toHaveBeenCalledWith(expect.any(Object), 403);
     });
   });
 
@@ -135,7 +146,9 @@ describe('handleError', () => {
         message: '[{"validation":"invalid type","message":"..."}]',
       });
       handleError(err, c);
-      const [body] = (c.json as ReturnType<typeof vi.fn>).mock.calls[0] as [{ error: { code: string; message: string } }];
+      const [body] = (c.json as ReturnType<typeof vi.fn>).mock.calls[0] as [
+        { error: { code: string; message: string } },
+      ];
       expect(body.error.code).toBe('VALIDATION_ERROR');
       expect(body.error.message).toBe('Invalid request parameters.');
     });

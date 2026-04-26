@@ -1,6 +1,6 @@
 'use client';
 
-import { complianceState } from '@contractor-ops/einvoice';
+import { complianceState } from '@contractor-ops/einvoice/compliance';
 import { useQuery } from '@tanstack/react-query';
 import { FileCheck } from 'lucide-react';
 import { PeppolComplianceWidget } from '@/components/peppol/peppol-compliance-widget';

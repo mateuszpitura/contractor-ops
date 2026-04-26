@@ -45,25 +45,19 @@ describe('computeKsefComplianceStatus', () => {
   });
 
   it('returns suspended when connection status is DISCONNECTED', () => {
-    const result = computeKsefComplianceStatus(
-      makeConnection({ status: 'DISCONNECTED' }),
-    );
+    const result = computeKsefComplianceStatus(makeConnection({ status: 'DISCONNECTED' }));
 
     expect(result.state).toBe('suspended');
   });
 
   it('returns error when connection status is ERROR', () => {
-    const result = computeKsefComplianceStatus(
-      makeConnection({ status: 'ERROR' }),
-    );
+    const result = computeKsefComplianceStatus(makeConnection({ status: 'ERROR' }));
 
     expect(result.state).toBe('error');
   });
 
   it('returns error when connection status is REAUTH_REQUIRED', () => {
-    const result = computeKsefComplianceStatus(
-      makeConnection({ status: 'REAUTH_REQUIRED' }),
-    );
+    const result = computeKsefComplianceStatus(makeConnection({ status: 'REAUTH_REQUIRED' }));
 
     expect(result.state).toBe('error');
   });
@@ -100,9 +94,7 @@ describe('computeKsefComplianceStatus', () => {
   });
 
   it('returns active with healthScore 0 when recentSyncStatuses is empty', () => {
-    const result = computeKsefComplianceStatus(
-      makeConnection({ recentSyncStatuses: [] }),
-    );
+    const result = computeKsefComplianceStatus(makeConnection({ recentSyncStatuses: [] }));
 
     expect(result.state).toBe('active');
     expect(result.healthScore).toBe(0);

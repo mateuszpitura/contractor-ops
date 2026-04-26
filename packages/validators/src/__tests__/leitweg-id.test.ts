@@ -11,10 +11,7 @@ import {
   peppolParticipantPairSchema,
   validateLeitwegCheckDigit,
 } from '../leitweg-id.js';
-import {
-  LEITWEG_ID_INVALID_FIXTURES,
-  LEITWEG_ID_VALID_FIXTURES,
-} from './leitweg-id.fixtures.js';
+import { LEITWEG_ID_INVALID_FIXTURES, LEITWEG_ID_VALID_FIXTURES } from './leitweg-id.fixtures.js';
 
 describe('leitwegIdSchema — valid KoSIT-aligned fixtures', () => {
   for (const value of LEITWEG_ID_VALID_FIXTURES) {

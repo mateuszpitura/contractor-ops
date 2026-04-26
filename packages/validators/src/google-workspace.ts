@@ -1,21 +1,14 @@
 import { z } from 'zod';
+import type { DirectoryRole } from './roles.js';
+import { invitableMemberRoleEnum } from './roles.js';
 
 // ---------------------------------------------------------------------------
 // Shared role enum (must match Better Auth organization roles)
 // ---------------------------------------------------------------------------
 
-export const directoryRoleEnum = z.enum([
-  'admin',
-  'finance_admin',
-  'ops_manager',
-  'team_manager',
-  'legal_compliance_viewer',
-  'it_admin',
-  'external_accountant',
-  'readonly',
-]);
+export const directoryRoleEnum = invitableMemberRoleEnum;
 
-export type DirectoryRole = z.infer<typeof directoryRoleEnum>;
+export type { DirectoryRole };
 
 // ---------------------------------------------------------------------------
 // Google Directory User Schema
@@ -94,7 +87,7 @@ export type DirectoryImportInput = z.infer<typeof directoryImportInputSchema>;
 // ---------------------------------------------------------------------------
 
 export const directoryImportResultSchema = z.object({
-  succeeded: z.array(z.object({ email: z.string(), role: z.string() })),
+  succeeded: z.array(z.object({ email: z.string(), role: directoryRoleEnum })),
   failed: z.array(z.object({ email: z.string(), error: z.string() })),
 });
 

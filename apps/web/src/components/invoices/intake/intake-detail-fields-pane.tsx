@@ -4,7 +4,8 @@ import { ChevronDown, ChevronRight } from 'lucide-react';
 import { useFormatter, useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { IntakeProfileLevelBadge, type ProfileLevel } from './intake-profile-level-badge';
+import type { ProfileLevel } from './intake-profile-level-badge';
+import { IntakeProfileLevelBadge } from './intake-profile-level-badge';
 
 interface IntakeDetailFieldsPaneProps {
   intakeId?: string;
@@ -47,9 +48,7 @@ export function IntakeDetailFieldsPane({
   const [advancedOpen, setAdvancedOpen] = useState(false);
 
   const formattedTotal = formatTotal(totalMinor, currency);
-  const formattedDate = invoiceDate
-    ? format.dateTime(new Date(invoiceDate), 'short')
-    : '—';
+  const formattedDate = invoiceDate ? format.dateTime(new Date(invoiceDate), 'short') : '—';
 
   const hasUnmapped = unmappedFields !== null && unmappedFields !== undefined;
 
@@ -77,9 +76,7 @@ export function IntakeDetailFieldsPane({
             mono
           />
           <dt className="text-muted-foreground">{tField('profileLevel')}</dt>
-          <dd>
-            {profileLevel ? <IntakeProfileLevelBadge level={profileLevel} /> : '—'}
-          </dd>
+          <dd>{profileLevel ? <IntakeProfileLevelBadge level={profileLevel} /> : '—'}</dd>
         </dl>
 
         {hasUnmapped && (
@@ -101,9 +98,7 @@ export function IntakeDetailFieldsPane({
             </button>
             {advancedOpen && (
               <div id="intake-unmapped-fields" className="mt-2">
-                <p className="mb-2 text-xs text-muted-foreground">
-                  {t('unmappedFieldsHeading')}
-                </p>
+                <p className="mb-2 text-xs text-muted-foreground">{t('unmappedFieldsHeading')}</p>
                 <pre className="max-h-60 overflow-auto rounded-md bg-muted/30 p-3 font-mono text-[11px]">
                   {JSON.stringify(unmappedFields, null, 2)}
                 </pre>
@@ -127,9 +122,7 @@ function Field({ label, value, mono, className }: FieldProps) {
   return (
     <>
       <dt className="text-muted-foreground">{label}</dt>
-      <dd className={`${mono ? 'font-mono text-xs' : ''} ${className ?? ''}`}>
-        {value ?? '—'}
-      </dd>
+      <dd className={`${mono ? 'font-mono text-xs' : ''} ${className ?? ''}`}>{value ?? '—'}</dd>
     </>
   );
 }

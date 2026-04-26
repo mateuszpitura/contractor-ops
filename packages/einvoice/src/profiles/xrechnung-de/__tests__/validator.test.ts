@@ -7,15 +7,15 @@
 // saxon-js XRechnung CIUS SEF. Per-layer outcomes are documented in
 // `__tests__/fixtures/README.md`.
 
+import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { KOSIT_RULE_SET_VERSION } from '../constants.js';
 import { validateXRechnungCii } from '../validator.js';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const FIXTURES = path.join(__dirname, 'fixtures');
+const Dirname = path.dirname(fileURLToPath(import.meta.url));
+const FIXTURES = path.join(Dirname, 'fixtures');
 const fx = (name: string): string => readFileSync(path.join(FIXTURES, name), 'utf8');
 
 describe('validateXRechnungCii — three-layer KoSIT pipeline', () => {
@@ -65,10 +65,7 @@ describe('validateXRechnungCii — three-layer KoSIT pipeline', () => {
     expect(layer3).toBeDefined();
     // BR-DE-17 (TypeCode whitelist) is emitted as @flag="warning" by the real
     // KoSIT schematron — see fixtures/README.md "BR-DE-17 deviation note".
-    const allLayer3 = [
-      ...(layer3?.errors ?? []),
-      ...(layer3?.warnings ?? []),
-    ];
+    const allLayer3 = [...(layer3?.errors ?? []), ...(layer3?.warnings ?? [])];
     expect(allLayer3.some(i => i.ruleId === 'BR-DE-17')).toBe(true);
   });
 

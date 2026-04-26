@@ -1,3 +1,4 @@
+import { createLogger } from '@contractor-ops/logger';
 import { InPostClient } from './inpost-client.js';
 import { mapInPostStatus } from './inpost-status-mapper.js';
 import {
@@ -14,6 +15,8 @@ import {
 // ---------------------------------------------------------------------------
 
 import type { DbClient } from '../types.js';
+
+const log = createLogger({ service: 'inpost-polling-service' });
 
 type PrismaClient = DbClient;
 
@@ -47,11 +50,11 @@ export async function pollInPostShipmentStatuses(
   });
 
   if (!config) {
-    console.warn(`[inpost-polling] No courier config found for org=${organizationId}`);
+    log.warn({ organizationId }, 'no courier config found for org');
     return { checked: 0, updated: 0 };
   }
 
-  const configJson = config.configJson as CourierConfigJson;
+  const configJson = config.configJson as unknown as CourierConfigJson;
 
   const client = new InPostClient({
     apiToken: configJson.apiToken,
@@ -94,14 +97,14 @@ export async function pollInPostShipmentStatuses(
 
       updated++;
     } catch (error) {
-      console.error(
-        `[inpost-polling] Error polling shipment ${shipment.id} (ext=${shipment.externalId}):`,
-        error,
+      log.error(
+        { err: error, shipmentId: shipment.id, externalId: shipment.externalId },
+        'error polling shipment',
       );
     }
   }
 
-  console.info(`[inpost-polling] Org ${organizationId}: checked ${checked}, updated ${updated}`);
+  log.info({ organizationId, checked, updated }, 'polling complete');
 
   return { checked, updated };
 }

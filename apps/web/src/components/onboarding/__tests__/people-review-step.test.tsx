@@ -45,7 +45,7 @@ function makeSelections(
   const map = new Map<string, PersonSelection>();
   for (const p of people) {
     map.set(p.email, {
-      role: 'member',
+      role: 'readonly',
       skip: p.status === 'exists',
       resolvedConflicts: {},
     });

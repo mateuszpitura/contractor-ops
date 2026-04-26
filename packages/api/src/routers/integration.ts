@@ -19,6 +19,7 @@ import {
 import { TRPCError } from '@trpc/server';
 import * as E from '../errors.js';
 import { router } from '../init.js';
+import { plain } from '../lib/plain.js';
 import { requirePermission } from '../middleware/rbac.js';
 import { tenantProcedure } from '../middleware/tenant.js';
 import { syncWorkspaceUsers } from '../services/slack-client.js';
@@ -29,10 +30,6 @@ registerAllAdapters();
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-function plain<T>(data: T): T {
-  return JSON.parse(JSON.stringify(data)) as T;
-}
 
 /**
  * Generate HMAC-signed state parameter for Slack OAuth (legacy).
@@ -102,7 +99,12 @@ export const integrationRouter = router({
         });
       }
 
-      const state = generateSlackOAuthState(ctx.organizationId, ctx.user?.id, signingSecret);
+      const userId = ctx.user?.id;
+      if (!userId) {
+        throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Authentication required' });
+      }
+
+      const state = generateSlackOAuthState(ctx.organizationId, userId, signingSecret);
 
       const scopes = ['chat:write', 'users:read', 'users:read.email', 'im:write'].join(',');
 
@@ -346,12 +348,12 @@ export const integrationRouter = router({
       }
 
       const redirectUri = `${appUrl}${oauthConfig.redirectPath}`;
-      const state = generateOAuthState(
-        input.provider,
-        ctx.organizationId,
-        ctx.user?.id,
-        clientSecret,
-      );
+      const userId = ctx.user?.id;
+      if (!userId) {
+        throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Authentication required' });
+      }
+
+      const state = generateOAuthState(input.provider, ctx.organizationId, userId, clientSecret);
 
       const params = new URLSearchParams({
         client_id: clientId,

@@ -125,6 +125,7 @@ export const auth = betterAuth({
         it_admin: roles.it_admin,
         external_accountant: roles.external_accountant,
         readonly: roles.readonly,
+        platform_operator: roles.platform_operator,
       },
       async sendInvitationEmail(_data) {
         if (process.env.NODE_ENV === 'development') {

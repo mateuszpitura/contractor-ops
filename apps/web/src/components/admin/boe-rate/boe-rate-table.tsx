@@ -86,8 +86,7 @@ export function BoeRateTable() {
               <TableCell>
                 <Badge
                   variant={entry.source === 'BOE_API' ? 'secondary' : 'outline'}
-                  aria-label={`Source: ${entry.source === 'BOE_API' ? 'BoE API' : 'Manual'}`}
-                >
+                  aria-label={`Source: ${entry.source === 'BOE_API' ? 'BoE API' : 'Manual'}`}>
                   {entry.source === 'BOE_API' ? 'BoE API' : 'Manual'}
                 </Badge>
               </TableCell>
@@ -106,16 +105,14 @@ export function BoeRateTable() {
                     variant="ghost"
                     size="icon"
                     onClick={() => setEditEntry(entry)}
-                    aria-label="Edit rate entry"
-                  >
+                    aria-label="Edit rate entry">
                     <PencilIcon className="h-4 w-4" />
                   </Button>
                   <Button
                     variant="ghost"
                     size="icon"
                     onClick={() => setDeleteEntry(entry)}
-                    aria-label="Delete rate entry"
-                  >
+                    aria-label="Delete rate entry">
                     <TrashIcon className="h-4 w-4" />
                   </Button>
                 </div>

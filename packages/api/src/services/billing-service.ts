@@ -1,6 +1,9 @@
 import { prisma } from '@contractor-ops/db';
+import { createLogger } from '@contractor-ops/logger';
 import { CacheKeys, CacheTTL, cached } from './cache.js';
 import { stripe } from './stripe-client.js';
+
+const log = createLogger({ service: 'billing-service' });
 
 // ---------------------------------------------------------------------------
 // Types
@@ -108,7 +111,7 @@ export async function createCheckoutSession(
 
     return { sessionUrl: session.url };
   } catch (error) {
-    console.error('[billing-service] createCheckoutSession failed:', error);
+    log.error({ err: error }, 'createCheckoutSession failed');
     throw error;
   }
 }
@@ -151,7 +154,7 @@ export async function getProrationPreview(params: ProrationPreviewParams): Promi
       totalMinor: preview.total,
     };
   } catch (error) {
-    console.error('[billing-service] getProrationPreview failed:', error);
+    log.error({ err: error }, 'getProrationPreview failed');
     throw error;
   }
 }
@@ -174,7 +177,7 @@ export async function createPortalSession(params: {
 
     return { url: session.url };
   } catch (error) {
-    console.error('[billing-service] createPortalSession failed:', error);
+    log.error({ err: error }, 'createPortalSession failed');
     throw error;
   }
 }
@@ -218,7 +221,7 @@ export async function createTopUpCheckoutSession(
 
     return { sessionUrl: session.url };
   } catch (error) {
-    console.error('[billing-service] createTopUpCheckoutSession failed:', error);
+    log.error({ err: error }, 'createTopUpCheckoutSession failed');
     throw error;
   }
 }
@@ -251,9 +254,13 @@ export async function updateSubscriptionSeatCount(params: {
       proration_behavior: 'create_prorations',
     });
   } catch (error) {
-    console.error(
-      `[billing-service] updateSubscriptionSeatCount failed: subscription=${params.stripeSubscriptionId}, quantity=${params.newQuantity}`,
-      error,
+    log.error(
+      {
+        err: error,
+        stripeSubscriptionId: params.stripeSubscriptionId,
+        newQuantity: params.newQuantity,
+      },
+      'updateSubscriptionSeatCount failed',
     );
     throw error;
   }
@@ -303,7 +310,7 @@ export async function syncSeatCountForOrg(organizationId: string): Promise<void>
       data: { seatCount: newQuantity },
     });
   } catch (error) {
-    console.error(`[billing] Failed to sync seat count for org ${organizationId}:`, error);
+    log.error({ err: error, organizationId }, 'failed to sync seat count for org');
   }
 }
 
@@ -345,7 +352,7 @@ export async function ensureStripeCustomer(params: EnsureStripeCustomerParams): 
 
     return customer.id;
   } catch (error) {
-    console.error('[billing-service] ensureStripeCustomer failed:', error);
+    log.error({ err: error }, 'ensureStripeCustomer failed');
     throw error;
   }
 }

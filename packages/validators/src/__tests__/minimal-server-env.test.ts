@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { minimalServerEnv } from '../minimal-server-env.js';
 import { serverEnvSchema } from '../env.js';
+import { minimalServerEnv } from '../minimal-server-env.js';
 
 describe('minimalServerEnv', () => {
   it('returns a Record<string, string>', () => {

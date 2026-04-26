@@ -22,6 +22,14 @@ import {
 // Equipment Shipments sub-router
 // ---------------------------------------------------------------------------
 
+function requireUserId(ctx: { user?: { id: string } | null }): string {
+  const userId = ctx.user?.id;
+  if (!userId) {
+    throw new TRPCError({ code: 'UNAUTHORIZED' });
+  }
+  return userId;
+}
+
 export const equipmentShipmentsRouter = router({
   /**
    * Create a shipment for equipment with an initial CREATED event.
@@ -31,6 +39,7 @@ export const equipmentShipmentsRouter = router({
     .use(requirePermission({ equipment: ['create'] }))
     .input(shipmentCreateSchema)
     .mutation(async ({ ctx, input }) => {
+      const actorUserId = requireUserId(ctx);
       const equipment = await ctx.db.equipment.findFirst({
         where: {
           id: input.equipmentId,
@@ -62,7 +71,7 @@ export const equipmentShipmentsRouter = router({
             trackingNumber: input.trackingNumber ?? null,
             expectedDeliveryAt: input.expectedDeliveryAt ?? null,
             currentStatus: 'CREATED',
-            createdByUserId: ctx.user?.id,
+            createdByUserId: actorUserId,
           },
         });
 
@@ -73,7 +82,7 @@ export const equipmentShipmentsRouter = router({
             shipmentId: created.id,
             status: 'CREATED',
             notes: input.notes ?? null,
-            createdByUserId: ctx.user?.id,
+            createdByUserId: actorUserId,
           },
         });
 
@@ -98,7 +107,7 @@ export const equipmentShipmentsRouter = router({
         data: {
           organizationId: ctx.organizationId,
           actorType: 'USER',
-          actorId: ctx.user?.id,
+          actorId: actorUserId,
           actorName: ctx.user?.name,
           action: 'shipment.create',
           resourceType: 'SHIPMENT',
@@ -124,6 +133,7 @@ export const equipmentShipmentsRouter = router({
     .use(requirePermission({ equipment: ['update'] }))
     .input(shipmentEventCreateSchema)
     .mutation(async ({ ctx, input }) => {
+      const actorUserId = requireUserId(ctx);
       const shipment = await ctx.db.shipment.findFirst({
         where: {
           id: input.shipmentId,
@@ -149,7 +159,7 @@ export const equipmentShipmentsRouter = router({
             shipmentId: input.shipmentId,
             status: input.status,
             notes: input.notes ?? null,
-            createdByUserId: ctx.user?.id,
+            createdByUserId: actorUserId,
           },
         });
 
@@ -185,7 +195,7 @@ export const equipmentShipmentsRouter = router({
         data: {
           organizationId: ctx.organizationId,
           actorType: 'USER',
-          actorId: ctx.user?.id,
+          actorId: actorUserId,
           actorName: ctx.user?.name,
           action: 'shipment.updateStatus',
           resourceType: 'SHIPMENT',

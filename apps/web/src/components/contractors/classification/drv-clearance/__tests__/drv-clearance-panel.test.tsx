@@ -16,9 +16,10 @@ interface ClearanceRow {
   notes: string | null;
 }
 
-const mockListQuery: { current: { isPending: boolean; data: ClearanceRow[] | null | undefined } } = {
-  current: { isPending: false, data: [] },
-};
+const mockListQuery: { current: { isPending: boolean; data: ClearanceRow[] | null | undefined } } =
+  {
+    current: { isPending: false, data: [] },
+  };
 
 vi.mock('@tanstack/react-query', async () => {
   const actual = await vi.importActual<Record<string, unknown>>('@tanstack/react-query');

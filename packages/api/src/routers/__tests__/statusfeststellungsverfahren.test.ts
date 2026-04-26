@@ -37,11 +37,7 @@ const { mockPrisma, rows, mockHasPermission, auditCreate } = vi.hoisted(() => {
       findMany: vi.fn(async (args: { where?: Record<string, unknown> }) => {
         const where = args?.where ?? {};
         return Array.from(rows.values()).filter(r => {
-          if (
-            'organizationId' in where &&
-            where.organizationId !== r.organizationId
-          )
-            return false;
+          if ('organizationId' in where && where.organizationId !== r.organizationId) return false;
           if (
             'contractorAssignmentId' in where &&
             where.contractorAssignmentId !== r.contractorAssignmentId
@@ -54,10 +50,7 @@ const { mockPrisma, rows, mockHasPermission, auditCreate } = vi.hoisted(() => {
         const where = args?.where ?? {};
         return (
           Array.from(rows.values()).find(r => {
-            if (
-              'organizationId' in where &&
-              where.organizationId !== r.organizationId
-            )
+            if ('organizationId' in where && where.organizationId !== r.organizationId)
               return false;
             if ('id' in where && where.id !== r.id) return false;
             return true;
@@ -70,14 +63,12 @@ const { mockPrisma, rows, mockHasPermission, auditCreate } = vi.hoisted(() => {
         rows.set(id, row);
         return row;
       }),
-      update: vi.fn(
-        async (args: { where: { id: string }; data: Partial<Row> }) => {
-          const row = rows.get(args.where.id);
-          if (!row) throw new Error('not found');
-          Object.assign(row, args.data);
-          return row;
-        },
-      ),
+      update: vi.fn(async (args: { where: { id: string }; data: Partial<Row> }) => {
+        const row = rows.get(args.where.id);
+        if (!row) throw new Error('not found');
+        Object.assign(row, args.data);
+        return row;
+      }),
       delete: vi.fn(async (args: { where: { id: string } }) => {
         const row = rows.get(args.where.id);
         if (!row) throw new Error('not found');
@@ -284,9 +275,7 @@ describe('statusfeststellungsverfahren.listByEngagement (60-03-01)', () => {
     await caller.statusfeststellungsverfahren.listByEngagement({
       contractorAssignmentId: ASSIGN_A,
     });
-    const args = mockPrisma.statusfeststellungsverfahren.findMany.mock.calls.at(
-      -1,
-    )?.[0];
+    const args = mockPrisma.statusfeststellungsverfahren.findMany.mock.calls.at(-1)?.[0];
     expect(args?.where?.contractorAssignmentId).toBe(ASSIGN_A);
   });
 

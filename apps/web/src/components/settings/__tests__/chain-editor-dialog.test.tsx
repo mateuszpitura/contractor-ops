@@ -55,14 +55,14 @@ const twoStepChain = {
     {
       name: 'Manager Review',
       approverUserId: null,
-      approverRole: 'OPS_MANAGER',
+      approverRole: 'ops_manager',
       slaHours: 48,
       required: true,
     },
     {
       name: 'Finance Review',
       approverUserId: null,
-      approverRole: 'FINANCE_ADMIN',
+      approverRole: 'finance_admin',
       slaHours: 24,
       required: false,
     },
@@ -361,7 +361,7 @@ describe('ChainEditorDialog', () => {
         {
           name: 'Role Step',
           approverUserId: null,
-          approverRole: 'OPS_MANAGER',
+          approverRole: 'ops_manager',
           slaHours: 48,
           required: true,
         },

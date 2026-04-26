@@ -111,12 +111,10 @@ export const GUIDELINE_URN_TO_LEVEL: Readonly<Record<string, ZugferdConformanceL
     'urn:factur-x.eu:1p0:comfort': 'COMFORT',
     // XRechnung 3.0 — legacy xoev-de URN kept for backwards compatibility
     // with documents generated against earlier releases of the CIUS.
-    'urn:cen.eu:en16931:2017#compliant#urn:xoev-de:kosit:standard:xrechnung_3.0':
-      'XRECHNUNG',
+    'urn:cen.eu:en16931:2017#compliant#urn:xoev-de:kosit:standard:xrechnung_3.0': 'XRECHNUNG',
     // XRechnung 3.0 — canonical xeinkauf.de URN used by the current
     // KoSIT validator-configuration-xrechnung release-2026-01-31.
-    'urn:cen.eu:en16931:2017#compliant#urn:xeinkauf.de:kosit:xrechnung_3.0':
-      'XRECHNUNG',
+    'urn:cen.eu:en16931:2017#compliant#urn:xeinkauf.de:kosit:xrechnung_3.0': 'XRECHNUNG',
     'urn:factur-x.eu:1p0:en16931': 'COMFORT',
     'urn:factur-x.eu:1p0:extended': 'EXTENDED',
   });

@@ -25,23 +25,18 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-
+import { createLogger } from '@contractor-ops/logger';
 import libxmljs from 'libxmljs2';
 import SaxonJS from 'saxon-js';
 
-import { createLogger } from '@contractor-ops/logger';
-
 import { KOSIT_RULE_SET_VERSION } from './constants.js';
-import {
-  type NormalisedSvrl,
-  type ValidationIssue,
-  normaliseSvrl,
-} from './svrl-normalizer.js';
+import type { NormalisedSvrl, ValidationIssue } from './svrl-normalizer.js';
+import { normaliseSvrl } from './svrl-normalizer.js';
 
 const log = createLogger({ service: 'einvoice.xrechnung-de.validator' });
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const BUNDLE_DIR = path.join(__dirname, 'validator-bundle');
+const Dirname = path.dirname(fileURLToPath(import.meta.url));
+const BUNDLE_DIR = path.join(Dirname, 'validator-bundle');
 const XSD_DIR = path.join(BUNDLE_DIR, 'CII-D16B-schema');
 
 // ---------------------------------------------------------------------------
@@ -135,9 +130,7 @@ function runXsd(xml: string, ciiXsd: string): XsdRun {
           ruleId: 'XSD-PARSE',
           xpath: '',
           severity: 'fatal',
-          message: `XML parse error: ${
-            err instanceof Error ? err.message : String(err)
-          }`,
+          message: `XML parse error: ${err instanceof Error ? err.message : String(err)}`,
         },
       ],
     };
@@ -150,7 +143,10 @@ function runXsd(xml: string, ciiXsd: string): XsdRun {
     ruleId: 'XSD',
     xpath: '',
     severity: 'fatal',
-    message: typeof e === 'object' && e && 'message' in e ? String((e as { message: unknown }).message).trim() : String(e).trim(),
+    message:
+      typeof e === 'object' && e && 'message' in e
+        ? String((e as { message: unknown }).message).trim()
+        : String(e).trim(),
   }));
   return { ok: false, errors };
 }
@@ -182,9 +178,7 @@ async function runSchematron(
  * failure — only on programmer errors (corrupt bundle, saxon-js internal
  * failure). Validation problems surface in `report.layers[].errors[]`.
  */
-export async function validateXRechnungCii(
-  xml: string,
-): Promise<XRechnungValidationReport> {
+export async function validateXRechnungCii(xml: string): Promise<XRechnungValidationReport> {
   const { en16931Sef, xrechnungSef, ciiXsd } = await loadBundle();
   const layers: ValidationLayerReport[] = [];
 

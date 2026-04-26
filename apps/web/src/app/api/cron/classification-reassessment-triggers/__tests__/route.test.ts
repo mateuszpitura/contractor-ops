@@ -50,9 +50,7 @@ describe('GET /api/cron/classification-reassessment-triggers', () => {
 
   it('returns 401 when the Authorization header is missing', async () => {
     process.env.CRON_SECRET = 's3cret';
-    const req = new NextRequest(
-      'http://localhost/api/cron/classification-reassessment-triggers',
-    );
+    const req = new NextRequest('http://localhost/api/cron/classification-reassessment-triggers');
     const res = await GET(req);
     expect(res.status).toBe(401);
     expect(mockRunScan).not.toHaveBeenCalled();
@@ -60,20 +58,18 @@ describe('GET /api/cron/classification-reassessment-triggers', () => {
 
   it('returns 401 when the Bearer token does not match', async () => {
     process.env.CRON_SECRET = 's3cret';
-    const req = new NextRequest(
-      'http://localhost/api/cron/classification-reassessment-triggers',
-      { headers: { authorization: 'Bearer wrong' } },
-    );
+    const req = new NextRequest('http://localhost/api/cron/classification-reassessment-triggers', {
+      headers: { authorization: 'Bearer wrong' },
+    });
     const res = await GET(req);
     expect(res.status).toBe(401);
   });
 
   it('returns 200 with scan result JSON when authorised', async () => {
     process.env.CRON_SECRET = 's3cret';
-    const req = new NextRequest(
-      'http://localhost/api/cron/classification-reassessment-triggers',
-      { headers: { authorization: 'Bearer s3cret' } },
-    );
+    const req = new NextRequest('http://localhost/api/cron/classification-reassessment-triggers', {
+      headers: { authorization: 'Bearer s3cret' },
+    });
     const res = await GET(req);
     expect(res.status).toBe(200);
     const body = (await res.json()) as Record<string, number>;
@@ -84,10 +80,9 @@ describe('GET /api/cron/classification-reassessment-triggers', () => {
   it('returns 500 and captures to Sentry when the scan throws', async () => {
     process.env.CRON_SECRET = 's3cret';
     mockRunScan.mockRejectedValueOnce(new Error('boom'));
-    const req = new NextRequest(
-      'http://localhost/api/cron/classification-reassessment-triggers',
-      { headers: { authorization: 'Bearer s3cret' } },
-    );
+    const req = new NextRequest('http://localhost/api/cron/classification-reassessment-triggers', {
+      headers: { authorization: 'Bearer s3cret' },
+    });
     const res = await GET(req);
     expect(res.status).toBe(500);
     expect(mockCapture).toHaveBeenCalled();
@@ -95,10 +90,10 @@ describe('GET /api/cron/classification-reassessment-triggers', () => {
 
   it('POST handler mirrors GET', async () => {
     process.env.CRON_SECRET = 's3cret';
-    const req = new NextRequest(
-      'http://localhost/api/cron/classification-reassessment-triggers',
-      { method: 'POST', headers: { authorization: 'Bearer s3cret' } },
-    );
+    const req = new NextRequest('http://localhost/api/cron/classification-reassessment-triggers', {
+      method: 'POST',
+      headers: { authorization: 'Bearer s3cret' },
+    });
     const res = await POST(req);
     expect(res.status).toBe(200);
   });

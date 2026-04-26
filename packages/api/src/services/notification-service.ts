@@ -1,9 +1,12 @@
 import { prisma } from '@contractor-ops/db';
+import { createLogger } from '@contractor-ops/logger';
 import type { NOTIFICATION_TYPES } from '@contractor-ops/validators';
 import { getServerEnv } from '@contractor-ops/validators';
 import { sendAppEmail } from './app-email.js';
-import { renderNotificationEmail } from './email-templates.js';
+import { formatEmailSubjectForTransport, renderNotificationEmail } from './email-templates.js';
 import { getConnectedMessagingProviders } from './messaging/index.js';
+
+const log = createLogger({ service: 'notification-service' });
 
 // ---------------------------------------------------------------------------
 // Types
@@ -125,7 +128,7 @@ async function sendNotificationEmail(userId: string, event: NotificationEvent): 
   });
 
   if (!user?.email) {
-    console.warn(`[notification-service] No email for user=${userId}, skipping email`);
+    log.warn({ userId }, 'no email for user, skipping email');
     return;
   }
 
@@ -143,7 +146,7 @@ async function sendNotificationEmail(userId: string, event: NotificationEvent): 
   await sendAppEmail({
     from: 'Contractor Ops <notifications@contractorhub.io>',
     to: user.email,
-    subject,
+    subject: formatEmailSubjectForTransport(subject),
     react,
     headers: {
       'List-Unsubscribe': `<${preferencesUrl}>`,
@@ -241,7 +244,7 @@ async function dispatchToUser(
     try {
       await sendNotificationEmail(userId, event);
     } catch (error) {
-      console.error(`[notification-service] Email send failed for user=${userId}:`, error);
+      log.error({ err: error, userId }, 'email send failed for user');
     }
   }
 
@@ -270,9 +273,9 @@ async function dispatchToMessagingProviders(
 
       await sendProviderMessage(provider, event, recipientId);
     } catch (error) {
-      console.error(
-        `[notification-service] ${provider.platform} send failed for user=${userId}:`,
-        error,
+      log.error(
+        { err: error, platform: provider.platform, userId },
+        'provider send failed for user',
       );
     }
   }
@@ -331,7 +334,7 @@ async function dispatchChannelAlerts(event: NotificationEvent): Promise<void> {
         viewUrl: buildEntityUrl(event.entityType ?? 'unknown', event.entityId ?? ''),
       });
     } catch (error) {
-      console.error(`[notification-service] ${provider.platform} channel alert failed:`, error);
+      log.error({ err: error, platform: provider.platform }, 'provider channel alert failed');
     }
   }
 }

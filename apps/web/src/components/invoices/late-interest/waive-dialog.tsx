@@ -55,7 +55,7 @@ export function WaiveDialog({ invoiceId, open, onOpenChange }: WaiveDialogProps)
       setReason('');
       setWaiveType('BOTH');
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(error.message);
     },
   });
@@ -80,12 +80,12 @@ export function WaiveDialog({ invoiceId, open, onOpenChange }: WaiveDialogProps)
         <div className="space-y-4 py-4">
           <div className="space-y-2">
             <Label htmlFor="waive-type">{t('typeLabel')}</Label>
-            <Select value={waiveType} onValueChange={(v) => setWaiveType(v as WaiveType)}>
+            <Select value={waiveType} onValueChange={v => setWaiveType(v as WaiveType)}>
               <SelectTrigger id="waive-type">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {WAIVE_TYPES.map((type) => (
+                {WAIVE_TYPES.map(type => (
                   <SelectItem key={type} value={type}>
                     {t(`types.${type}`)}
                   </SelectItem>
@@ -99,7 +99,7 @@ export function WaiveDialog({ invoiceId, open, onOpenChange }: WaiveDialogProps)
             <Textarea
               id="waive-reason"
               value={reason}
-              onChange={(e) => setReason(e.target.value)}
+              onChange={e => setReason(e.target.value)}
               placeholder={t('reasonPlaceholder')}
               minLength={10}
               className="min-h-[80px]"
@@ -115,8 +115,7 @@ export function WaiveDialog({ invoiceId, open, onOpenChange }: WaiveDialogProps)
           <AlertDialogAction
             onClick={handleConfirm}
             disabled={!isReasonValid || waiveMutation.isPending}
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-          >
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
             {waiveMutation.isPending ? t('confirming') : t('confirm')}
           </AlertDialogAction>
         </AlertDialogFooter>

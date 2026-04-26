@@ -1,6 +1,8 @@
 'use client';
 
 import type { MergedPerson } from '@contractor-ops/validators';
+import type { InvitableMemberRole } from '@contractor-ops/validators/roles';
+import { invitableMemberRoleValues } from '@contractor-ops/validators/roles';
 import { useQuery } from '@tanstack/react-query';
 import { Users } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -34,16 +36,21 @@ import type { PersonSelection } from './import-wizard';
 // Role options
 // ---------------------------------------------------------------------------
 
-const ROLE_OPTIONS = [
-  { value: 'admin', label: 'Admin' },
-  { value: 'manager', label: 'Manager' },
-  { value: 'member', label: 'Member' },
-  { value: 'readonly', label: 'Read Only' },
-  { value: 'finance', label: 'Finance' },
-  { value: 'hr', label: 'HR' },
-  { value: 'contractor_manager', label: 'Contractor Manager' },
-  { value: 'approver', label: 'Approver' },
-];
+const ROLE_LABELS: Record<InvitableMemberRole, string> = {
+  admin: 'Admin',
+  finance_admin: 'Finance Admin',
+  ops_manager: 'Ops Manager',
+  team_manager: 'Team Manager',
+  legal_compliance_viewer: 'Legal / Compliance Viewer',
+  it_admin: 'IT Admin',
+  external_accountant: 'External Accountant',
+  readonly: 'Read Only',
+};
+
+const ROLE_OPTIONS = invitableMemberRoleValues.map(value => ({
+  value,
+  label: ROLE_LABELS[value],
+}));
 
 // ---------------------------------------------------------------------------
 // Source badge
@@ -107,7 +114,7 @@ export function PeopleReviewStep({
       const newSelections = new Map<string, PersonSelection>();
       for (const person of data) {
         newSelections.set(person.email, {
-          role: person.status === 'exists' ? 'member' : 'member',
+          role: 'readonly',
           skip: person.status === 'exists',
           resolvedConflicts: {},
         });
@@ -169,7 +176,7 @@ export function PeopleReviewStep({
     (email: string, update: Partial<PersonSelection>) => {
       const next = new Map(personSelections);
       const current = next.get(email) ?? {
-        role: 'member',
+        role: 'readonly',
         skip: false,
         resolvedConflicts: {},
       };
@@ -187,7 +194,7 @@ export function PeopleReviewStep({
   );
 
   const handleRoleChange = useCallback(
-    (email: string, role: string) => {
+    (email: string, role: InvitableMemberRole) => {
       updateSelection(email, { role });
     },
     [updateSelection],
@@ -224,7 +231,7 @@ export function PeopleReviewStep({
   }, [checkedEmails, personSelections, onPersonSelectionsChange]);
 
   const handleBatchRole = useCallback(
-    (role: string) => {
+    (role: InvitableMemberRole) => {
       const next = new Map(personSelections);
       for (const email of checkedEmails) {
         const current = next.get(email);
@@ -322,7 +329,7 @@ export function PeopleReviewStep({
               {t('batchSkip')}
             </Button>
             {/* biome-ignore lint/nursery/noJsxPropsBind: controlled component handler */}
-            <Select onValueChange={val => val && handleBatchRole(val as string)}>
+            <Select onValueChange={val => val && handleBatchRole(val as InvitableMemberRole)}>
               <SelectTrigger size="sm" className="w-36">
                 <SelectValue>{t('batchRole')}</SelectValue>
               </SelectTrigger>
@@ -436,10 +443,10 @@ export function PeopleReviewStep({
                         {/* Role */}
                         <TableCell>
                           <Select
-                            value={sel?.role ?? 'member'}
+                            value={sel?.role ?? 'readonly'}
                             // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
                             onValueChange={val =>
-                              val && handleRoleChange(person.email, val as string)
+                              val && handleRoleChange(person.email, val as InvitableMemberRole)
                             }
                             disabled={isExisting || isSkipped}>
                             <SelectTrigger size="sm" className="w-32">

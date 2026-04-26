@@ -1,4 +1,6 @@
-import type { Prisma, TaxIdType } from '@contractor-ops/db';
+import type { Prisma } from '@contractor-ops/db';
+import type { Invoice, TaxIdType } from '@contractor-ops/db/generated/prisma/client';
+import { createLogger } from '@contractor-ops/logger';
 import {
   invoiceCreateSchema,
   invoiceListSchema,
@@ -15,7 +17,7 @@ import { requirePermission } from '../middleware/rbac.js';
 import { tenantProcedure } from '../middleware/tenant.js';
 import { CacheKeys, invalidateByPrefix } from '../services/cache.js';
 import { deleteCalendarEvent } from '../services/calendar-event-service.js';
-import { computeDuplicateCheckHash, runAutoMatch } from '../services/invoice-matching.js';
+import { computeDuplicateCheckHashForInvoice, runAutoMatch } from '../services/invoice-matching.js';
 import { applyKleinunternehmerOverride } from '../services/kleinunternehmer.service.js';
 import { dispatch } from '../services/notification-service.js';
 import type { DE13bServiceType } from '../services/reverse-charge.service.js';
@@ -24,18 +26,20 @@ import { sanitizeStrings } from '../services/sanitize.js';
 import { isValidationFresh, validateTaxId } from '../services/tax-id-validation.service.js';
 import { getDefaultRateCode } from '../services/tax-rate.service.js';
 
+const log = createLogger({ service: 'invoice-router' });
+
 // ---------------------------------------------------------------------------
 // Finance team helper
 // ---------------------------------------------------------------------------
 
-/**
- * Queries organization members with FINANCE_ADMIN role and returns their user IDs.
- */
+/** Queries finance-facing organization members and returns their user IDs. */
 async function getFinanceTeamUserIds(db: TenantScopedDb, orgId: string): Promise<string[]> {
   const members = await db.member.findMany({
     where: {
       organizationId: orgId,
-      role: 'FINANCE_ADMIN',
+      role: {
+        in: ['finance_admin', 'external_accountant'],
+      },
     },
     select: { userId: true },
   });
@@ -98,6 +102,30 @@ function validateServicePeriod(
   }
 }
 
+function validateIssueDueDates(
+  updateData: Record<string, unknown>,
+  existing: { issueDate: Date; dueDate: Date },
+) {
+  const effectiveIssue = (updateData.issueDate as Date | undefined) ?? existing.issueDate;
+  const effectiveDue = (updateData.dueDate as Date | undefined) ?? existing.dueDate;
+  const endOfToday = new Date();
+  endOfToday.setHours(23, 59, 59, 999);
+
+  if (effectiveIssue > endOfToday) {
+    throw new TRPCError({
+      code: 'BAD_REQUEST',
+      message: 'Issue date cannot be in the future.',
+    });
+  }
+
+  if (effectiveDue < effectiveIssue) {
+    throw new TRPCError({
+      code: 'BAD_REQUEST',
+      message: 'Due date must be on or after issue date.',
+    });
+  }
+}
+
 /**
  * Validates arithmetic consistency of invoice amounts.
  * subtotal + vat - withholding = total, and amountToPay = total.
@@ -151,10 +179,15 @@ function validateInvoiceAmounts(
  */
 function recomputeDuplicateHash(
   updateData: Record<string, unknown>,
-  existing: { invoiceNumber: string | null; sellerTaxId: string | null; totalMinor: number },
+  existing: {
+    invoiceNumber: string | null;
+    sellerTaxId: string | null;
+    sellerName: string | null;
+    totalMinor: number;
+  },
 ) {
   if (
-    !(updateData.invoiceNumber || updateData.sellerTaxId) &&
+    !(updateData.invoiceNumber || updateData.sellerTaxId || updateData.sellerName) &&
     updateData.totalMinor === undefined
   ) {
     return;
@@ -162,15 +195,16 @@ function recomputeDuplicateHash(
 
   const effectiveNumber = (updateData.invoiceNumber as string) ?? existing.invoiceNumber;
   const effectiveTaxId = (updateData.sellerTaxId as string) ?? existing.sellerTaxId;
+  const effectiveSellerName = (updateData.sellerName as string) ?? existing.sellerName;
   const effectiveTotal = (updateData.totalMinor as number) ?? existing.totalMinor;
 
-  if (effectiveNumber && effectiveTaxId) {
-    updateData.duplicateCheckHash = computeDuplicateCheckHash(
-      effectiveNumber,
-      effectiveTaxId,
-      effectiveTotal,
-    );
-  }
+  updateData.duplicateCheckHash =
+    computeDuplicateCheckHashForInvoice({
+      invoiceNumber: effectiveNumber,
+      sellerTaxId: effectiveTaxId,
+      sellerName: effectiveSellerName,
+      totalMinor: effectiveTotal,
+    }) ?? null;
 }
 
 // ---------------------------------------------------------------------------
@@ -184,6 +218,12 @@ type ContractorTaxSnapshot = {
   type: string;
   latestVatValidatedAt: Date | null;
   latestVatValidationStatus: string | null;
+};
+
+type TaxRateDb = {
+  taxRate: {
+    findFirst: (args: Prisma.TaxRateFindFirstArgs) => Promise<{ code: string } | null>;
+  };
 };
 
 /**
@@ -275,14 +315,17 @@ async function resolveEffectiveVatRate(
     if (isReverseCharge) {
       rate = 'RC';
     } else if (org.countryCode) {
-      rate = await getDefaultRateCode(org.countryCode, db);
+      rate = await getDefaultRateCode(org.countryCode, db as unknown as TaxRateDb);
     }
   }
 
   if (org.countryCode) {
     const ku = applyKleinunternehmerOverride(
       { vatRate: rate },
-      { countryCode: org.countryCode, isKleinunternehmer: org.isKleinunternehmer },
+      {
+        countryCode: org.countryCode,
+        isKleinunternehmer: org.isKleinunternehmer,
+      },
     );
     rate = ku.vatRate || rate;
   }
@@ -304,18 +347,25 @@ export const invoiceRouter = router({
     .use(requirePermission({ invoice: ['create'] }))
     .input(invoiceCreateSchema)
     .mutation(async ({ ctx, input: rawInput }) => {
+      if (!ctx.user) {
+        throw new TRPCError({ code: 'UNAUTHORIZED' });
+      }
+      const userId = ctx.user.id;
+
       const input = sanitizeStrings(rawInput);
       const { documentIds, ...invoiceData } = input;
 
-      // Check for duplicate before creating
-      let duplicateCheckHash: string | null = null;
-      if (invoiceData.sellerTaxId && invoiceData.invoiceNumber) {
-        duplicateCheckHash = computeDuplicateCheckHash(
-          invoiceData.invoiceNumber,
-          invoiceData.sellerTaxId,
-          invoiceData.totalMinor,
-        );
+      // Check for duplicate before creating.
+      // Primary seller key: sellerTaxId. Fallback: sellerName.
+      const duplicateCheckHash =
+        computeDuplicateCheckHashForInvoice({
+          invoiceNumber: invoiceData.invoiceNumber,
+          sellerTaxId: invoiceData.sellerTaxId,
+          sellerName: invoiceData.sellerName,
+          totalMinor: invoiceData.totalMinor,
+        }) ?? null;
 
+      if (duplicateCheckHash) {
         const existing = await ctx.db.invoice.findFirst({
           where: {
             organizationId: ctx.organizationId,
@@ -364,7 +414,7 @@ export const invoiceRouter = router({
           await revalidateStaleVatIfNeeded(contractor, {
             organizationId: ctx.organizationId,
             db: ctx.db,
-            userId: ctx.user.id,
+            userId,
           });
         }
       }
@@ -390,90 +440,102 @@ export const invoiceRouter = router({
       );
       // ---------------------------------------------------------------------
 
-      const invoice = await ctx.db.$transaction(async tx => {
-        // Create invoice record
-        const inv = await tx.invoice.create({
-          data: {
-            organizationId: ctx.organizationId,
-            invoiceNumber: invoiceData.invoiceNumber,
-            issueDate: new Date(invoiceData.issueDate),
-            dueDate: new Date(invoiceData.dueDate),
-            servicePeriodStart: invoiceData.servicePeriodStart
-              ? new Date(invoiceData.servicePeriodStart)
-              : null,
-            servicePeriodEnd: invoiceData.servicePeriodEnd
-              ? new Date(invoiceData.servicePeriodEnd)
-              : null,
-            currency: invoiceData.currency,
-            subtotalMinor: invoiceData.subtotalMinor,
-            vatRate: effectiveVatRate,
-            vatAmountMinor: invoiceData.vatAmountMinor ?? null,
-            totalMinor: invoiceData.totalMinor,
-            withholdingMinor: invoiceData.withholdingMinor ?? null,
-            amountToPayMinor: invoiceData.amountToPayMinor,
-            sellerTaxId: invoiceData.sellerTaxId ?? null,
-            sellerName: invoiceData.sellerName ?? null,
-            sellerBankAccount: invoiceData.sellerBankAccount ?? null,
-            isReverseCharge: finalIsReverseCharge,
-            reverseChargeOverride: invoiceData.reverseChargeOverride ?? null,
-            contractorId: contractor?.id ?? null,
-            status: 'RECEIVED',
-            matchStatus: 'UNMATCHED',
-            source: 'MANUAL_UPLOAD',
-            duplicateCheckHash,
-          },
-        });
-
-        // --- Step 6: Override-with-reason audit (D-13) -----------------------
-        if (
-          invoiceData.reverseChargeOverride === false &&
-          rcShouldApply &&
-          invoiceData.reverseChargeOverrideReason
-        ) {
-          await tx.auditLog.create({
+      let invoice: Invoice;
+      try {
+        invoice = await ctx.db.$transaction(async tx => {
+          // Create invoice record
+          const inv = await tx.invoice.create({
             data: {
               organizationId: ctx.organizationId,
-              actorType: 'USER',
-              actorId: ctx.user.id,
-              action: 'invoice.reverse-charge-override',
-              resourceType: 'INVOICE',
-              resourceId: inv.id,
-              metadataJson: {
-                reason: invoiceData.reverseChargeOverrideReason,
-                autoDetected: true,
-                userDisabled: true,
-              },
+              invoiceNumber: invoiceData.invoiceNumber,
+              issueDate: new Date(invoiceData.issueDate),
+              dueDate: new Date(invoiceData.dueDate),
+              servicePeriodStart: invoiceData.servicePeriodStart
+                ? new Date(invoiceData.servicePeriodStart)
+                : null,
+              servicePeriodEnd: invoiceData.servicePeriodEnd
+                ? new Date(invoiceData.servicePeriodEnd)
+                : null,
+              currency: invoiceData.currency,
+              subtotalMinor: invoiceData.subtotalMinor,
+              vatRate: effectiveVatRate,
+              vatAmountMinor: invoiceData.vatAmountMinor ?? null,
+              totalMinor: invoiceData.totalMinor,
+              withholdingMinor: invoiceData.withholdingMinor ?? null,
+              amountToPayMinor: invoiceData.amountToPayMinor,
+              sellerTaxId: invoiceData.sellerTaxId ?? null,
+              sellerName: invoiceData.sellerName ?? null,
+              sellerBankAccount: invoiceData.sellerBankAccount ?? null,
+              isReverseCharge: finalIsReverseCharge,
+              reverseChargeOverride: invoiceData.reverseChargeOverride ?? null,
+              contractorId: contractor?.id ?? null,
+              status: 'RECEIVED',
+              matchStatus: 'UNMATCHED',
+              source: 'MANUAL_UPLOAD',
+              duplicateCheckHash,
             },
           });
-        }
 
-        // Create InvoiceFile records linking each document
-        if (documentIds.length > 0) {
-          await tx.invoiceFile.createMany({
-            data: documentIds.map(documentId => ({
-              organizationId: ctx.organizationId,
-              invoiceId: inv.id,
-              documentId,
-              role: 'SOURCE_ORIGINAL' as const,
-            })),
+          // --- Step 6: Override-with-reason audit (D-13) -----------------------
+          if (
+            invoiceData.reverseChargeOverride === false &&
+            rcShouldApply &&
+            invoiceData.reverseChargeOverrideReason
+          ) {
+            await tx.auditLog.create({
+              data: {
+                organizationId: ctx.organizationId,
+                actorType: 'USER',
+                actorId: userId,
+                action: 'invoice.reverse-charge-override',
+                resourceType: 'INVOICE',
+                resourceId: inv.id,
+                metadataJson: {
+                  reason: invoiceData.reverseChargeOverrideReason,
+                  autoDetected: true,
+                  userDisabled: true,
+                },
+              },
+            });
+          }
+
+          // Create InvoiceFile records linking each document
+          if (documentIds.length > 0) {
+            await tx.invoiceFile.createMany({
+              data: documentIds.map(documentId => ({
+                organizationId: ctx.organizationId,
+                invoiceId: inv.id,
+                documentId,
+                role: 'SOURCE_ORIGINAL' as const,
+              })),
+            });
+          }
+
+          // Create DocumentLink records with entityType INVOICE
+          if (documentIds.length > 0) {
+            await tx.documentLink.createMany({
+              data: documentIds.map(documentId => ({
+                organizationId: ctx.organizationId,
+                documentId,
+                entityType: 'INVOICE' as const,
+                entityId: inv.id,
+                linkRole: 'PRIMARY' as const,
+              })),
+            });
+          }
+
+          return inv;
+        });
+      } catch (err) {
+        const maybePrismaError = err as unknown as { code?: string };
+        if (maybePrismaError?.code === 'P2002') {
+          throw new TRPCError({
+            code: 'CONFLICT',
+            message: E.INVOICE_DUPLICATE,
           });
         }
-
-        // Create DocumentLink records with entityType INVOICE
-        if (documentIds.length > 0) {
-          await tx.documentLink.createMany({
-            data: documentIds.map(documentId => ({
-              organizationId: ctx.organizationId,
-              documentId,
-              entityType: 'INVOICE' as const,
-              entityId: inv.id,
-              linkRole: 'PRIMARY' as const,
-            })),
-          });
-        }
-
-        return inv;
-      });
+        throw err;
+      }
 
       // Fire-and-forget: dispatch INVOICE_RECEIVED to finance team
       const financeUserIds = await getFinanceTeamUserIds(ctx.db, ctx.organizationId);
@@ -492,7 +554,12 @@ export const invoiceRouter = router({
             amount: (invoiceData.totalMinor / 100).toFixed(2),
             currency: invoiceData.currency,
           },
-        }).catch(err => console.error('[invoice] dispatch INVOICE_RECEIVED failed:', err));
+        }).catch(err =>
+          log.error(
+            { err: err instanceof Error ? err.message : String(err), invoiceId: invoice.id },
+            'dispatch INVOICE_RECEIVED failed',
+          ),
+        );
       }
 
       void invalidateByPrefix(CacheKeys.dashboardPrefix(ctx.organizationId));
@@ -605,6 +672,7 @@ export const invoiceRouter = router({
       delete updateData.documentIds;
 
       coerceInvoiceDateFields(updateData);
+      validateIssueDueDates(updateData, existing);
       validateServicePeriod(updateData, existing);
       validateInvoiceAmounts(updateData, existing);
       recomputeDuplicateHash(updateData, existing);
@@ -880,6 +948,17 @@ export const invoiceRouter = router({
         });
       }
 
+      if (
+        invoice.status === 'VOID' ||
+        invoice.paymentStatus === 'IN_RUN' ||
+        invoice.paymentStatus === 'PAID'
+      ) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Invoice cannot be rematched after payment processing has started.',
+        });
+      }
+
       // Validate contractor belongs to org
       const contractor = await ctx.db.contractor.findFirst({
         where: {
@@ -910,6 +989,13 @@ export const invoiceRouter = router({
           throw new TRPCError({
             code: 'NOT_FOUND',
             message: E.INVOICE_CONTRACT_NOT_FOUND,
+          });
+        }
+
+        if (contract.contractorId !== input.contractorId) {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: 'Contract does not belong to the selected contractor.',
           });
         }
       }
@@ -973,9 +1059,70 @@ export const invoiceRouter = router({
         });
       }
 
-      const updated = await ctx.db.invoice.update({
-        where: { id: input.id },
-        data: { status: 'VOID' },
+      if (invoice.status === 'VOID') {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: E.INVOICE_ALREADY_VOIDED,
+        });
+      }
+
+      if (invoice.paymentStatus === 'PAID' || invoice.paymentStatus === 'IN_RUN') {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: E.INVOICE_VOID_NOT_ALLOWED,
+        });
+      }
+
+      const outcome = await ctx.db.invoice.updateMany({
+        where: {
+          id: input.id,
+          organizationId: ctx.organizationId,
+          deletedAt: null,
+          status: { not: 'VOID' },
+          paymentStatus: { notIn: ['PAID', 'IN_RUN'] },
+        },
+        data: {
+          status: 'VOID',
+          paymentStatus: 'NOT_READY',
+          approvalStatus: 'CANCELLED',
+          paidAt: null,
+          readyForPaymentAt: null,
+          approvedAt: null,
+        },
+      });
+
+      if (outcome.count === 0) {
+        const current = await ctx.db.invoice.findFirst({
+          where: {
+            id: input.id,
+            organizationId: ctx.organizationId,
+            deletedAt: null,
+          },
+        });
+        if (!current) {
+          throw new TRPCError({
+            code: 'NOT_FOUND',
+            message: E.INVOICE_NOT_FOUND,
+          });
+        }
+        if (current.status === 'VOID') {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: E.INVOICE_ALREADY_VOIDED,
+          });
+        }
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: E.INVOICE_VOID_NOT_ALLOWED,
+        });
+      }
+
+      const updated = await ctx.db.invoice.findFirstOrThrow({
+        where: {
+          id: input.id,
+          organizationId: ctx.organizationId,
+          deletedAt: null,
+        },
       });
 
       // Calendar cleanup: remove payment deadline event (D-08)
@@ -983,7 +1130,12 @@ export const invoiceRouter = router({
         organizationId: ctx.organizationId,
         entityType: 'INVOICE',
         entityId: input.id,
-      }).catch(err => console.error('[invoice] calendar event cleanup on void failed:', err));
+      }).catch(err =>
+        log.error(
+          { err: err instanceof Error ? err.message : String(err), invoiceId: input.id },
+          'calendar event cleanup on void failed',
+        ),
+      );
 
       void invalidateByPrefix(CacheKeys.dashboardPrefix(ctx.organizationId));
 

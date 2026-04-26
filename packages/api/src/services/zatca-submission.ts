@@ -29,9 +29,12 @@ import {
 } from '@contractor-ops/einvoice';
 import { createZatcaSecretStore, ZATCA_SECRET_NAMES } from '@contractor-ops/integrations';
 import { getQStashClient } from '@contractor-ops/integrations/services/qstash-client';
+import { createLogger } from '@contractor-ops/logger';
 import { getServerEnv } from '@contractor-ops/validators';
 import type { PrismaLike } from './zatca-hash-chain.js';
 import { acquireChainLock, getNextChainEntry, recordChainEntry } from './zatca-hash-chain.js';
+
+const log = createLogger({ service: 'zatca-submission' });
 
 // ---------------------------------------------------------------------------
 // Types
@@ -276,17 +279,21 @@ export async function handleZatcaSubmissionJob(payload: ZatcaSubmissionJobPayloa
     if (error instanceof ZatcaApiError) {
       if (error.errorType === 'non-retryable' || error.errorType === 'auth') {
         // Don't retry -- log and let QStash mark as dead
-        console.error(
-          `[zatca-submission] Non-retryable error for invoice ${payload.invoiceId}:`,
-          error.statusCode,
-          error.errorType,
+        log.error(
+          {
+            err: error,
+            invoiceId: payload.invoiceId,
+            statusCode: error.statusCode,
+            errorType: error.errorType,
+          },
+          'non-retryable error for invoice',
         );
         return; // Returning 200 tells QStash to not retry
       }
       // Retryable error -- throw to trigger QStash retry
-      console.warn(
-        `[zatca-submission] Retryable error for invoice ${payload.invoiceId}:`,
-        error.statusCode,
+      log.warn(
+        { invoiceId: payload.invoiceId, statusCode: error.statusCode },
+        'retryable error for invoice',
       );
     }
     throw error;

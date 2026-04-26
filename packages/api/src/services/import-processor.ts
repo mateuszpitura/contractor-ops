@@ -7,6 +7,7 @@
 
 import { prisma } from '@contractor-ops/db';
 import * as E from '../errors.js';
+import { isValidContractorTaxId, normalizeContractorTaxId } from './contractor-tax-id.js';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -139,6 +140,11 @@ export function validateContractorRow(row: Record<string, unknown>): {
   }
   if (!row.currency || String(row.currency).trim() === '') {
     row.currency = 'PLN';
+  }
+
+  row.taxId = normalizeContractorTaxId(String(row.countryCode), String(row.taxId ?? ''));
+  if (!isValidContractorTaxId(String(row.countryCode), String(row.taxId ?? ''))) {
+    errors.push({ field: 'taxId', message: 'Invalid NIP number' });
   }
 
   // Validate type enum
@@ -350,7 +356,11 @@ async function detectContractorDuplicates(
   duplicateRows: ImportRow[],
   organizationId: string,
 ): Promise<void> {
-  const taxIds = validRows.map(r => String(r.data.taxId ?? '').trim()).filter(Boolean);
+  const taxIds = validRows
+    .map(r =>
+      normalizeContractorTaxId(String(r.data.countryCode ?? 'PL'), String(r.data.taxId ?? '')),
+    )
+    .filter((taxId): taxId is string => Boolean(taxId));
   if (taxIds.length === 0) return;
 
   const existing = await prisma.contractor.findMany({
@@ -362,7 +372,12 @@ async function detectContractorDuplicates(
 
   const stillValid: ImportRow[] = [];
   for (const row of validRows) {
-    const taxId = String(row.data.taxId ?? '').trim();
+    const taxId =
+      normalizeContractorTaxId(
+        String(row.data.countryCode ?? 'PL'),
+        String(row.data.taxId ?? ''),
+      ) ?? '';
+    row.data.taxId = taxId;
     const existingId = existingByTaxId.get(taxId);
     if (existingId) {
       duplicateRows.push({ ...row, status: 'duplicate', duplicateOf: existingId });
@@ -383,7 +398,14 @@ async function resolveContractorForeignKeys(
   invalidRows: ImportRow[],
   organizationId: string,
 ): Promise<void> {
-  const taxIds = validRows.map(r => String(r.data.contractorTaxId ?? '').trim()).filter(Boolean);
+  const taxIds = validRows
+    .map(r =>
+      normalizeContractorTaxId(
+        String(r.data.countryCode ?? 'PL'),
+        String(r.data.contractorTaxId ?? ''),
+      ),
+    )
+    .filter((taxId): taxId is string => Boolean(taxId));
   if (taxIds.length === 0) return;
 
   const contractors = await prisma.contractor.findMany({
@@ -395,7 +417,12 @@ async function resolveContractorForeignKeys(
 
   const stillValid: ImportRow[] = [];
   for (const row of validRows) {
-    const taxId = String(row.data.contractorTaxId ?? '').trim();
+    const taxId =
+      normalizeContractorTaxId(
+        String(row.data.countryCode ?? 'PL'),
+        String(row.data.contractorTaxId ?? ''),
+      ) ?? '';
+    row.data.contractorTaxId = taxId;
     const contractorId = contractorByTaxId.get(taxId);
     if (contractorId) {
       row.data.contractorId = contractorId;

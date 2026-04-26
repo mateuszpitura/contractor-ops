@@ -207,8 +207,7 @@ export function LeitwegIdCreateDialog({
     },
   });
 
-  const saveDisabled =
-    !valueValidation.ok || createMutation.isPending || updateMutation.isPending;
+  const saveDisabled = !valueValidation.ok || createMutation.isPending || updateMutation.isPending;
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -227,9 +226,10 @@ export function LeitwegIdCreateDialog({
     };
 
     if (isEdit && initial) {
-      (
-        updateMutation.mutate as (input: { id: string } & typeof payload) => void
-      )({ id: initial.id, ...payload });
+      (updateMutation.mutate as (input: { id: string } & typeof payload) => void)({
+        id: initial.id,
+        ...payload,
+      });
     } else {
       (createMutation.mutate as (input: typeof payload) => void)(payload);
     }

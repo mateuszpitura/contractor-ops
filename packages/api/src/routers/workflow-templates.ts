@@ -27,6 +27,11 @@ export const workflowTemplatesRouter = router({
     .use(requirePermission({ workflow: ['create'] }))
     .input(templateCreateSchema)
     .mutation(async ({ ctx, input }) => {
+      const userId = ctx.user?.id;
+      if (!userId) {
+        throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Authentication required' });
+      }
+
       const template = await ctx.db.$transaction(async tx => {
         const created = await tx.workflowTemplate.create({
           data: {
@@ -37,7 +42,7 @@ export const workflowTemplatesRouter = router({
             version: 1,
             status: 'DRAFT',
             appliesToEntityType: 'CONTRACTOR',
-            createdByUserId: ctx.user?.id,
+            createdByUserId: userId,
           },
         });
 
@@ -261,6 +266,11 @@ export const workflowTemplatesRouter = router({
     .use(requirePermission({ workflow: ['create'] }))
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
+      const userId = ctx.user?.id;
+      if (!userId) {
+        throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Authentication required' });
+      }
+
       const source = await ctx.db.workflowTemplate.findFirst({
         where: {
           id: input.id,
@@ -286,7 +296,7 @@ export const workflowTemplatesRouter = router({
             version: 1,
             status: 'DRAFT',
             appliesToEntityType: source.appliesToEntityType,
-            createdByUserId: ctx.user?.id,
+            createdByUserId: userId,
           },
         });
 
@@ -348,6 +358,11 @@ export const workflowTemplatesRouter = router({
   seedStarterTemplates: tenantProcedure
     .use(requirePermission({ workflow: ['create'] }))
     .mutation(async ({ ctx }) => {
+      const userId = ctx.user?.id;
+      if (!userId) {
+        throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Authentication required' });
+      }
+
       const existingCount = await ctx.db.workflowTemplate.count({
         where: { organizationId: ctx.organizationId },
       });
@@ -368,7 +383,7 @@ export const workflowTemplatesRouter = router({
             version: 1,
             status: 'DRAFT',
             appliesToEntityType: 'CONTRACTOR',
-            createdByUserId: ctx.user?.id,
+            createdByUserId: userId,
           },
         });
 
@@ -376,49 +391,49 @@ export const workflowTemplatesRouter = router({
           {
             title: WORKFLOW_TEMPLATE_KEYS.onboarding.collectNda,
             taskType: 'DOCUMENT_COLLECTION' as const,
-            assigneeRole: 'OPS_MANAGER' as const,
+            assigneeRole: 'ops_manager' as const,
             dueOffsetDays: 2,
             sortOrder: 0,
           },
           {
             title: WORKFLOW_TEMPLATE_KEYS.onboarding.signContract,
             taskType: 'APPROVAL' as const,
-            assigneeRole: 'LEGAL_VIEWER' as const,
+            assigneeRole: 'legal_compliance_viewer' as const,
             dueOffsetDays: 5,
             sortOrder: 1,
           },
           {
             title: WORKFLOW_TEMPLATE_KEYS.onboarding.setupItAccess,
             taskType: 'ACCESS_GRANT' as const,
-            assigneeRole: 'IT_ADMIN' as const,
+            assigneeRole: 'it_admin' as const,
             dueOffsetDays: 3,
             sortOrder: 2,
           },
           {
             title: WORKFLOW_TEMPLATE_KEYS.onboarding.setupFinance,
             taskType: 'FINANCE_SETUP' as const,
-            assigneeRole: 'FINANCE_ADMIN' as const,
+            assigneeRole: 'finance_admin' as const,
             dueOffsetDays: 3,
             sortOrder: 3,
           },
           {
             title: WORKFLOW_TEMPLATE_KEYS.onboarding.provisionEquipment,
             taskType: 'EQUIPMENT' as const,
-            assigneeRole: 'OPS_MANAGER' as const,
+            assigneeRole: 'ops_manager' as const,
             dueOffsetDays: 5,
             sortOrder: 4,
           },
           {
             title: WORKFLOW_TEMPLATE_KEYS.onboarding.teamIntroMeeting,
             taskType: 'MEETING' as const,
-            assigneeRole: 'TEAM_MANAGER' as const,
+            assigneeRole: 'team_manager' as const,
             dueOffsetDays: 7,
             sortOrder: 5,
           },
           {
             title: WORKFLOW_TEMPLATE_KEYS.onboarding.knowledgeTransfer,
             taskType: 'KNOWLEDGE_TRANSFER' as const,
-            assigneeRole: 'TEAM_MANAGER' as const,
+            assigneeRole: 'team_manager' as const,
             dueOffsetDays: 14,
             sortOrder: 6,
           },
@@ -454,7 +469,7 @@ export const workflowTemplatesRouter = router({
             version: 1,
             status: 'DRAFT',
             appliesToEntityType: 'CONTRACTOR',
-            createdByUserId: ctx.user?.id,
+            createdByUserId: userId,
           },
         });
 
@@ -462,35 +477,35 @@ export const workflowTemplatesRouter = router({
           {
             title: WORKFLOW_TEMPLATE_KEYS.offboarding.knowledgeTransfer,
             taskType: 'KNOWLEDGE_TRANSFER' as const,
-            assigneeRole: 'TEAM_MANAGER' as const,
+            assigneeRole: 'team_manager' as const,
             dueOffsetDays: 7,
             sortOrder: 0,
           },
           {
             title: WORKFLOW_TEMPLATE_KEYS.offboarding.revokeItAccess,
             taskType: 'ACCESS_REVOKE' as const,
-            assigneeRole: 'IT_ADMIN' as const,
+            assigneeRole: 'it_admin' as const,
             dueOffsetDays: 1,
             sortOrder: 1,
           },
           {
             title: WORKFLOW_TEMPLATE_KEYS.offboarding.returnEquipment,
             taskType: 'EQUIPMENT' as const,
-            assigneeRole: 'OPS_MANAGER' as const,
+            assigneeRole: 'ops_manager' as const,
             dueOffsetDays: 5,
             sortOrder: 2,
           },
           {
             title: WORKFLOW_TEMPLATE_KEYS.offboarding.financeWrapUp,
             taskType: 'FINANCE_SETUP' as const,
-            assigneeRole: 'FINANCE_ADMIN' as const,
+            assigneeRole: 'finance_admin' as const,
             dueOffsetDays: 3,
             sortOrder: 3,
           },
           {
             title: WORKFLOW_TEMPLATE_KEYS.offboarding.finalDocumentation,
             taskType: 'DOCUMENT_COLLECTION' as const,
-            assigneeRole: 'OPS_MANAGER' as const,
+            assigneeRole: 'ops_manager' as const,
             dueOffsetDays: 5,
             sortOrder: 4,
           },

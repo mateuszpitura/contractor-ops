@@ -61,6 +61,12 @@ import { KsefProfile as _KsefProfile } from './profiles/ksef/index.js';
 // Storecove ASP adapter
 export { StorecoveAdapter } from './asp/storecove/adapter.js';
 export { StorecoveApiError, StorecoveClient } from './asp/storecove/client.js';
+export type { StorecoveDiscoveryResponse } from './asp/storecove/schemas.js';
+// ASP storecove schemas (Plan 61-05)
+export {
+  extractDocumentTypes,
+  storecoveDiscoveryResponseSchema,
+} from './asp/storecove/schemas.js';
 export type { StorecoveConfig } from './asp/storecove/types.js';
 // ASP adapter types
 export type {
@@ -78,12 +84,6 @@ export type {
   TransmitInvoiceParams,
   WebhookVerification,
 } from './asp/types.js';
-// ASP storecove schemas (Plan 61-05)
-export {
-  extractDocumentTypes,
-  storecoveDiscoveryResponseSchema,
-} from './asp/storecove/schemas.js';
-export type { StorecoveDiscoveryResponse } from './asp/storecove/schemas.js';
 export type {
   KsefInvoiceMetadata,
   KsefQueryResult,
@@ -216,10 +216,10 @@ export {
   XRECHNUNG_PROFILE_ID,
   XRECHNUNG_VERSION,
 } from './profiles/xrechnung-de/constants.js';
-export { generateXRechnungCii } from './profiles/xrechnung-de/generator.js';
 export type { CiiDocShape } from './profiles/xrechnung-de/generator.js';
-export { XRechnungDEProfile } from './profiles/xrechnung-de/index.js';
+export { generateXRechnungCii } from './profiles/xrechnung-de/generator.js';
 export type { XRechnungGenerateOptions } from './profiles/xrechnung-de/index.js';
+export { XRechnungDEProfile } from './profiles/xrechnung-de/index.js';
 export { embedLeitwegIdIntoCii } from './profiles/xrechnung-de/leitweg-id-embed.js';
 export { parseXRechnungCii } from './profiles/xrechnung-de/parser.js';
 // XRechnung-DE schemas
@@ -231,19 +231,19 @@ export {
   eInvoiceFormatSchema,
   finalizeEInvoiceInputSchema,
 } from './profiles/xrechnung-de/schemas.js';
-// XRechnung-DE three-layer KoSIT validator (Plan 61-03)
-export { normaliseSvrl } from './profiles/xrechnung-de/svrl-normalizer.js';
 export type {
   NormalisedSvrl,
   ValidationIssue as XRechnungValidationIssue,
 } from './profiles/xrechnung-de/svrl-normalizer.js';
-export { validateXRechnungCii } from './profiles/xrechnung-de/validator.js';
+// XRechnung-DE three-layer KoSIT validator (Plan 61-03)
+export { normaliseSvrl } from './profiles/xrechnung-de/svrl-normalizer.js';
 export type {
   ValidationLayerName,
   ValidationLayerReport,
   ValidationLayerStatus,
   XRechnungValidationReport,
 } from './profiles/xrechnung-de/validator.js';
+export { validateXRechnungCii } from './profiles/xrechnung-de/validator.js';
 
 // Convenience: register KSeF profile
 export function registerKsefProfile(options?: ConstructorParameters<typeof _KsefProfile>[0]): void {
@@ -279,6 +279,16 @@ export function registerXRechnungDEProfile(): void {
 
 import { ZugferdDEProfile as _ZugferdDEProfile } from './profiles/zugferd-de/index.js';
 
+export type {
+  ParsedXrechnung,
+  ParserError as XRechnungParserError,
+  ParserWarning as XRechnungParserWarning,
+} from './profiles/xrechnung-de/parser.js';
+// XRechnung inbound parser — Phase-62 fully implemented.
+// Named export is the richer typed parser (ParsedXrechnung), separate from
+// the Phase-61 back-compat `parseXRechnungCii` already exported above.
+export { parseXrechnungCii } from './profiles/xrechnung-de/parser.js';
+export type { ZugferdConformanceLevel } from './profiles/zugferd-de/constants.js';
 // ZUGFeRD-DE constants + types
 export {
   GUIDELINE_URN_TO_LEVEL,
@@ -296,46 +306,29 @@ export {
   ZUGFERD_XMP_PREFIX,
   ZUGFERD_XMP_VERSION,
 } from './profiles/zugferd-de/constants.js';
-export type { ZugferdConformanceLevel } from './profiles/zugferd-de/constants.js';
-
-// ZUGFeRD-DE parser + delegate validator
-export { parseZugferdPdf } from './profiles/zugferd-de/parser.js';
-export type {
-  ParsedZugferd,
-  ZugferdParserError,
-} from './profiles/zugferd-de/parser.js';
-export { validateZugferdEmbeddedXml } from './profiles/zugferd-de/validator.js';
-
-// ZUGFeRD-DE upload schema (Plan 05 intake route)
-export {
-  ZugferdPdfUploadSchema,
-} from './profiles/zugferd-de/schemas.js';
-export type { ZugferdPdfUpload } from './profiles/zugferd-de/schemas.js';
-
-// ZUGFeRD-DE profile class
-export { ZugferdDEProfile } from './profiles/zugferd-de/index.js';
-
+export type { GenerateZugferdInput } from './profiles/zugferd-de/generator.js';
 // ZUGFeRD-DE outbound pipeline (Plan 62-03)
 export {
   generateZugferdPdf,
   ZugferdLevelUnsupportedForOutput,
 } from './profiles/zugferd-de/generator.js';
-export type { GenerateZugferdInput } from './profiles/zugferd-de/generator.js';
+// ZUGFeRD-DE profile class
+export { ZugferdDEProfile } from './profiles/zugferd-de/index.js';
+export type {
+  ParsedZugferd,
+  ZugferdParserError,
+} from './profiles/zugferd-de/parser.js';
+// ZUGFeRD-DE parser + delegate validator
+export { parseZugferdPdf } from './profiles/zugferd-de/parser.js';
+export type { ZugferdPdfUpload } from './profiles/zugferd-de/schemas.js';
+// ZUGFeRD-DE upload schema (Plan 05 intake route)
+export { ZugferdPdfUploadSchema } from './profiles/zugferd-de/schemas.js';
+export { validateZugferdEmbeddedXml } from './profiles/zugferd-de/validator.js';
+export type { StructuralCheckSubcode } from './profiles/zugferd-de/zugferd-structural-check.js';
 export {
   assertZugferdStructure,
   ZugferdWrappingError,
 } from './profiles/zugferd-de/zugferd-structural-check.js';
-export type { StructuralCheckSubcode } from './profiles/zugferd-de/zugferd-structural-check.js';
-
-// XRechnung inbound parser — Phase-62 fully implemented.
-// Named export is the richer typed parser (ParsedXrechnung), separate from
-// the Phase-61 back-compat `parseXRechnungCii` already exported above.
-export { parseXrechnungCii } from './profiles/xrechnung-de/parser.js';
-export type {
-  ParsedXrechnung,
-  ParserError as XRechnungParserError,
-  ParserWarning as XRechnungParserWarning,
-} from './profiles/xrechnung-de/parser.js';
 
 // Convenience: register ZUGFeRD-DE profile
 export function registerZugferdDEProfile(): void {

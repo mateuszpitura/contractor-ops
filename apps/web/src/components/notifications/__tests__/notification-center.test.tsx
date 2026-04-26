@@ -224,7 +224,23 @@ describe('NotificationCenter', () => {
   it('renders pagination when totalPages > 1', () => {
     mockUseQuery
       .mockReturnValueOnce({
-        data: { items: [{ id: 'n1', type: 'TASK_ASSIGNED', title: 'T', body: 'B', entityType: 'task', entityId: 't1', readAt: null, createdAt: new Date().toISOString() }], total: 20, page: 1, totalPages: 2 },
+        data: {
+          items: [
+            {
+              id: 'n1',
+              type: 'TASK_ASSIGNED',
+              title: 'T',
+              body: 'B',
+              entityType: 'task',
+              entityId: 't1',
+              readAt: null,
+              createdAt: new Date().toISOString(),
+            },
+          ],
+          total: 20,
+          page: 1,
+          totalPages: 2,
+        },
         isLoading: false,
       })
       .mockReturnValueOnce({
@@ -239,7 +255,23 @@ describe('NotificationCenter', () => {
   it('disables previous button on first page', () => {
     mockUseQuery
       .mockReturnValueOnce({
-        data: { items: [{ id: 'n1', type: 'TASK_ASSIGNED', title: 'T', body: 'B', entityType: 'task', entityId: 't1', readAt: null, createdAt: new Date().toISOString() }], total: 20, page: 1, totalPages: 2 },
+        data: {
+          items: [
+            {
+              id: 'n1',
+              type: 'TASK_ASSIGNED',
+              title: 'T',
+              body: 'B',
+              entityType: 'task',
+              entityId: 't1',
+              readAt: null,
+              createdAt: new Date().toISOString(),
+            },
+          ],
+          total: 20,
+          page: 1,
+          totalPages: 2,
+        },
         isLoading: false,
       })
       .mockReturnValueOnce({

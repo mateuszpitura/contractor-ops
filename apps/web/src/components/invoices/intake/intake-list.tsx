@@ -17,13 +17,13 @@ import {
 import { Link } from '@/i18n/navigation';
 import { trpc } from '@/trpc/init';
 import { IntakeFilterChips, parseFilterParam } from './intake-filter-chips';
-import { IntakeProfileLevelBadge, type ProfileLevel } from './intake-profile-level-badge';
-import { IntakeStatusPill, type IntakeStatus } from './intake-status-pill';
-import {
-  IntakeValidationStatusPill,
-  type ValidationStatus,
-} from './intake-validation-status-pill';
+import type { ProfileLevel } from './intake-profile-level-badge';
+import { IntakeProfileLevelBadge } from './intake-profile-level-badge';
+import type { IntakeStatus } from './intake-status-pill';
+import { IntakeStatusPill } from './intake-status-pill';
 import { IntakeUploadDialog } from './intake-upload-dialog';
+import type { ValidationStatus } from './intake-validation-status-pill';
+import { IntakeValidationStatusPill } from './intake-validation-status-pill';
 
 // ---------------------------------------------------------------------------
 // Row shape surfaced by trpc.invoiceIntake.listByOrg. Kept permissive
@@ -85,7 +85,7 @@ export function IntakeList({ initialStatus }: IntakeListProps) {
 
   // Map the chip value back to the enum the router expects.
   const statusEnum = useMemo(() => {
-    if (!statusFilter) return undefined;
+    if (!statusFilter) return;
     const map: Record<string, IntakeStatus> = {
       needsReview: 'NEEDS_REVIEW',
       matched: 'MATCHED',

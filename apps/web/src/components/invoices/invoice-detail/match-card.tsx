@@ -30,6 +30,7 @@ import { Link } from '@/i18n/navigation';
 import { enumKey } from '@/lib/enum-key';
 import { canViewSensitivePii, maskTaxId } from '@/lib/mask-pii';
 import { trpc } from '@/trpc/init';
+import type { Prisma } from '@contractor-ops/db/generated/prisma/client';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -40,10 +41,7 @@ type MatchResult = {
   expectedAmountMinor: number | null;
   amountDeltaMinor: number | null;
   amountDeltaPercent: number | null;
-  explanationJson: {
-    flags?: string[];
-    duplicateInvoiceId?: string | null;
-  } | null;
+  explanationJson: Prisma.JsonValue | null;
   status: string;
 };
 
@@ -55,7 +53,7 @@ type MatchCardProps = {
     contractId: string | null;
     totalMinor: number;
     currency: string;
-    flagsJson: string[] | null;
+    flagsJson: Prisma.JsonValue | null;
     contractor: {
       id: string;
       legalName: string;

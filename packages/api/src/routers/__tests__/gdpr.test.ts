@@ -419,10 +419,7 @@ describe('gdprRouter', () => {
     });
 
     it('reports r2ObjectsCleaned as 0 when no documents have storageKeys', async () => {
-      mockPrisma.document.findMany.mockResolvedValue([
-        { storageKey: null },
-        { storageKey: null },
-      ]);
+      mockPrisma.document.findMany.mockResolvedValue([{ storageKey: null }, { storageKey: null }]);
 
       const out = await caller.requestErasure({
         confirmPhrase: 'DELETE ALL DATA',

@@ -28,11 +28,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { trpc } from '@/trpc/init';
-
-import {
-  LeitwegIdCreateDialog,
-  type LeitwegIdEditInitial,
-} from './leitweg-id-create-dialog';
+import type { LeitwegIdEditInitial } from './leitweg-id-create-dialog';
+import { LeitwegIdCreateDialog } from './leitweg-id-create-dialog';
 import { LeitwegIdDeleteDialog } from './leitweg-id-delete-dialog';
 
 // ---------------------------------------------------------------------------
@@ -115,9 +112,9 @@ export function LeitwegIdRow({ row }: LeitwegIdRowProps) {
                 {row.contract.reference ?? row.contract.id}
               </Badge>
             ) : null}
-            {!row.contractor && !row.contract ? (
+            {row.contractor || row.contract ? null : (
               <span className="text-sm text-muted-foreground">—</span>
-            ) : null}
+            )}
           </div>
         </TableCell>
         <TableCell className="align-top">
@@ -169,11 +166,7 @@ export function LeitwegIdRow({ row }: LeitwegIdRowProps) {
       </TableRow>
 
       {editOpen ? (
-        <LeitwegIdCreateDialog
-          open={editOpen}
-          onOpenChange={setEditOpen}
-          initial={editInitial}
-        />
+        <LeitwegIdCreateDialog open={editOpen} onOpenChange={setEditOpen} initial={editInitial} />
       ) : null}
       {deleteOpen ? (
         <LeitwegIdDeleteDialog

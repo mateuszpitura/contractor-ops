@@ -1,5 +1,6 @@
 import type { HeadObjectCommandOutput } from '@aws-sdk/client-s3';
 import type { Prisma } from '@contractor-ops/db';
+import { createLogger } from '@contractor-ops/logger';
 import {
   documentConfirmUploadSchema,
   documentLinkSchema,
@@ -11,6 +12,7 @@ import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import * as E from '../errors.js';
 import { router } from '../init.js';
+import { plain } from '../lib/plain.js';
 import { requirePermission } from '../middleware/rbac.js';
 import { tenantProcedure } from '../middleware/tenant.js';
 import { uploadRateLimitMiddleware } from '../middleware/upload-rate-limit.js';
@@ -24,18 +26,11 @@ import {
 } from '../services/regional-storage.js';
 import { isClamAvailable, scanBuffer } from '../services/virus-scanner.js';
 
+const log = createLogger({ service: 'document-router' });
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-/**
- * Strips Prisma class prototype from query results, producing plain
- * JSON-serializable objects so that inferred tRPC router types do NOT
- * reference the generated Prisma client module (avoids TS2742).
- */
-function plain<T>(data: T): T {
-  return JSON.parse(JSON.stringify(data)) as T;
-}
 
 /**
  * Async fire-and-forget: validates MIME type and scans for viruses.
@@ -70,7 +65,7 @@ async function scanAndUpdate(
     const bodyBytes = await response.Body?.transformToByteArray();
 
     if (!bodyBytes) {
-      console.error('[document-scan] Could not read object body for:', storageKey);
+      log.error({ storageKey }, 'could not read object body');
       await db.document.update({
         where: { id: documentId },
         data: { virusScanStatus: 'FAILED' },
@@ -83,8 +78,9 @@ async function scanAndUpdate(
     // Step 1: MIME validation via magic bytes
     const mimeResult = await validateMimeType(buffer);
     if (!mimeResult.valid) {
-      console.warn(
-        `[document-scan] Invalid MIME type for ${documentId}: detected ${mimeResult.detectedMime ?? 'unknown'}`,
+      log.warn(
+        { documentId, detectedMime: mimeResult.detectedMime ?? 'unknown' },
+        'invalid mime type',
       );
       await db.document.update({
         where: { id: documentId },
@@ -96,7 +92,7 @@ async function scanAndUpdate(
     // Step 2: Virus scan via ClamAV
     const clamReady = await isClamAvailable();
     if (!clamReady) {
-      console.error('[document-scan] ClamAV not available — marking FAILED');
+      log.error({}, 'clamav not available — marking failed');
       await db.document.update({
         where: { id: documentId },
         data: { virusScanStatus: 'FAILED' },
@@ -111,22 +107,20 @@ async function scanAndUpdate(
         data: { virusScanStatus: 'CLEAN' },
       });
     } else {
-      console.warn(
-        `[document-scan] Virus detected in ${documentId}: ${scanResult.virusName ?? 'unknown'}`,
-      );
+      log.warn({ documentId, virusName: scanResult.virusName ?? 'unknown' }, 'virus detected');
       await db.document.update({
         where: { id: documentId },
         data: { virusScanStatus: 'INFECTED' },
       });
     }
   } catch (error) {
-    console.error('[document-scan] Scan pipeline failed for:', documentId, error);
+    log.error({ err: error, documentId }, 'scan pipeline failed');
     await db.document
       .update({
         where: { id: documentId },
         data: { virusScanStatus: 'FAILED' },
       })
-      .catch(e => console.error('[document-scan] Failed to update status:', e));
+      .catch(e => log.error({ err: e }, 'failed to update status'));
   }
 }
 
@@ -508,7 +502,7 @@ export const documentRouter = router({
       try {
         await deleteRegionalObject(doc.storageKey);
       } catch (error) {
-        console.error('[document-delete] Failed to delete R2 object:', doc.storageKey, error);
+        log.error({ err: error, storageKey: doc.storageKey }, 'failed to delete r2 object');
       }
 
       // Remove associated document links

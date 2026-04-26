@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { setup, render, screen } from '@/test/test-utils';
+import { render, screen, setup } from '@/test/test-utils';
 import { ValidationSection } from '../validation-section';
 
 describe('ValidationSection', () => {

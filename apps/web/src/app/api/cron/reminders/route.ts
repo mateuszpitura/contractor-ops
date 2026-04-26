@@ -1,12 +1,16 @@
 import { withCronMonitor } from '@contractor-ops/api/services/cron-monitor';
 import { dispatch } from '@contractor-ops/api/services/notification-service';
 import { resolveRbacRecipients } from '@contractor-ops/api/services/rbac-recipients';
-import { prisma, prismaRaw } from '@contractor-ops/db';
+import { parseMemberRole } from '@contractor-ops/auth/role-normalization';
+import { prisma } from '@contractor-ops/db';
 import { createCronLogger } from '@contractor-ops/logger';
 import { metrics } from '@contractor-ops/logger/metrics';
 import * as Sentry from '@sentry/nextjs';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+
+import { detectDrvClearanceExpiries } from './drv-clearance-expiries.js';
+import { addDays, claimCronNotificationDedup, startOfDay } from './reminders-shared.js';
 
 const log = createCronLogger('reminders');
 
@@ -27,16 +31,10 @@ function verifyCronSecret(request: NextRequest): boolean {
 // Helpers
 // ---------------------------------------------------------------------------
 
-function addDays(date: Date, days: number): Date {
-  const result = new Date(date);
-  result.setUTCDate(result.getUTCDate() + days);
-  return result;
-}
+const ROLLING_24H_MS = 24 * 60 * 60 * 1000;
 
-function startOfDay(date: Date): Date {
-  const result = new Date(date);
-  result.setUTCHours(0, 0, 0, 0);
-  return result;
+function rolling24hWindowId(now: Date): number {
+  return Math.floor(now.getTime() / ROLLING_24H_MS);
 }
 
 // ---------------------------------------------------------------------------
@@ -47,6 +45,7 @@ interface ReminderEntity {
   id: string;
   label: string;
   contractorId: string | null;
+  ownerUserId: string | null;
   organizationId: string;
 }
 
@@ -74,32 +73,33 @@ async function processRuleEntities(
   const scheduledFor = startOfDay(today);
 
   for (const entity of entities) {
-    const existing = await prisma.reminderInstance.findFirst({
-      where: {
-        reminderRuleId: rule.id,
-        entityId: entity.id,
-        entityType: dispatchParams.entityType,
-        scheduledFor,
-      },
-    });
-    if (existing) continue;
-
-    await prisma.reminderInstance.create({
-      data: {
-        organizationId: rule.organizationId,
-        reminderRuleId: rule.id,
-        entityType: dispatchParams.entityType,
-        entityId: entity.id,
-        scheduledFor,
-        status: 'PENDING',
-      },
-    });
+    // Idempotency: the DB unique constraint on (ruleId, entityType, entityId, scheduledFor)
+    // makes this safe under overlapping cron ticks. If another tick already created the
+    // instance, we skip dispatch.
+    try {
+      await prisma.reminderInstance.create({
+        data: {
+          organizationId: rule.organizationId,
+          reminderRuleId: rule.id,
+          entityType: dispatchParams.entityType,
+          entityId: entity.id,
+          scheduledFor,
+          status: 'PENDING',
+        },
+      });
+    } catch (err) {
+      const maybePrismaError = err as unknown as { code?: string };
+      if (maybePrismaError?.code === 'P2002') {
+        continue;
+      }
+      throw err;
+    }
 
     const recipientIds = await resolveRecipients(
       rule.organizationId,
       rule.recipientMode,
       rule.configJson as Record<string, unknown> | null,
-      entity.contractorId,
+      entity.ownerUserId,
     );
 
     if (recipientIds.length > 0) {
@@ -143,12 +143,19 @@ async function findMatchingContracts(
       status: { not: 'TERMINATED' },
       deletedAt: null,
     },
-    select: { id: true, title: true, contractorId: true, organizationId: true },
+    select: {
+      id: true,
+      title: true,
+      contractorId: true,
+      organizationId: true,
+      contractor: { select: { ownerUserId: true } },
+    },
   });
   return contracts.map(c => ({
     id: c.id,
     label: c.title,
     contractorId: c.contractorId,
+    ownerUserId: c.contractor?.ownerUserId ?? null,
     organizationId: c.organizationId,
   }));
 }
@@ -164,12 +171,19 @@ async function findMatchingInvoices(
       status: { notIn: ['PAID', 'VOID'] },
       deletedAt: null,
     },
-    select: { id: true, invoiceNumber: true, organizationId: true, contractorId: true },
+    select: {
+      id: true,
+      invoiceNumber: true,
+      organizationId: true,
+      contractorId: true,
+      contractor: { select: { ownerUserId: true } },
+    },
   });
   return invoices.map(inv => ({
     id: inv.id,
     label: inv.invoiceNumber,
     contractorId: inv.contractorId,
+    ownerUserId: inv.contractor?.ownerUserId ?? null,
     organizationId: inv.organizationId,
   }));
 }
@@ -255,7 +269,6 @@ async function evaluateReminderRules(): Promise<{
 
 async function detectOverdueTasks(): Promise<number> {
   const now = new Date();
-  const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
   let notified = 0;
 
   // Find all overdue workflow tasks across all organizations
@@ -287,17 +300,10 @@ async function detectOverdueTasks(): Promise<number> {
   for (const task of overdueTasks) {
     if (!task.assigneeUserId) continue;
 
-    // 24h dedup: check if TASK_OVERDUE notification already sent for this task today
-    const recentNotification = await prisma.notification.findFirst({
-      where: {
-        type: 'TASK_OVERDUE',
-        entityType: 'WORKFLOW_TASK_RUN',
-        entityId: task.id,
-        createdAt: { gte: oneDayAgo },
-      },
-    });
-
-    if (recentNotification) continue;
+    const dedupeKey = `TASK_OVERDUE:WORKFLOW_TASK_RUN:${task.id}:${task.assigneeUserId}:${rolling24hWindowId(now)}`;
+    if (!(await claimCronNotificationDedup(dedupeKey))) {
+      continue;
+    }
 
     const contractorName = task.workflowRun?.contractor?.displayName ?? '';
     const workflowName = task.workflowRun?.workflowTemplate?.name ?? '';
@@ -313,81 +319,6 @@ async function detectOverdueTasks(): Promise<number> {
     });
 
     notified++;
-  }
-
-  return notified;
-}
-
-// ---------------------------------------------------------------------------
-// Phase 60 · CLASS-09 — DRV § 7a SGB IV clearance expiry detector.
-// See .planning/phases/60-classification-polish/60-03-PLAN.md (D-11).
-//
-// Piggybacks on this existing reminders cron (NOT a new cron) to fire
-// notifications 90 / 30 / 7 days before validTo on Statusfeststellungsverfahren
-// rows with outcome in {SELBSTANDIG, ABHANGIG}. Day-exact match on
-// (gte target, lt target+1) avoids timezone drift. One-shot dedup keyed on
-// (type, entityType=CONTRACTOR, entityId=clearance.id) per T-60-12.
-// ---------------------------------------------------------------------------
-
-const DRV_EXPIRY_BANDS = [
-  { days: 90, type: 'classification.drv_expiry_90d' as const },
-  { days: 30, type: 'classification.drv_expiry_30d' as const },
-  { days: 7, type: 'classification.drv_expiry_7d' as const },
-];
-
-export async function detectDrvClearanceExpiries(): Promise<number> {
-  const now = new Date();
-  const today = startOfDay(now);
-  let notified = 0;
-
-  for (const band of DRV_EXPIRY_BANDS) {
-    const target = addDays(today, band.days);
-    const targetEnd = addDays(target, 1);
-
-    // PHASE-60-CROSS-ORG-AGGREGATE: cron runs without tenant frame — scans
-    // clearances across every organization to fire lead-time reminders.
-    const clearances = await prismaRaw.statusfeststellungsverfahren.findMany({
-      where: {
-        validTo: { gte: target, lt: targetEnd },
-        outcome: { in: ['SELBSTANDIG', 'ABHANGIG'] },
-      },
-    });
-
-    for (const clearance of clearances) {
-      // T-60-12 — one-shot dedup on (type, CONTRACTOR, clearance.id).
-      const prior = await prismaRaw.notification.findFirst({
-        where: {
-          type: band.type,
-          entityType: 'CONTRACTOR',
-          entityId: clearance.id,
-        },
-      });
-      if (prior) continue;
-
-      const recipientUserIds = await resolveRbacRecipients(
-        clearance.organizationId,
-        'contractor:read',
-      );
-      if (recipientUserIds.length === 0) continue;
-
-      const validToIso = clearance.validTo
-        ? clearance.validTo.toISOString().slice(0, 10)
-        : '';
-
-      // T-60-10 — never log drvReference verbatim. The notification title/body
-      // text is delivered to recipients who already have contractor:read,
-      // so including it in-band is acceptable; logs only reference clearance.id.
-      await dispatch({
-        organizationId: clearance.organizationId,
-        type: band.type,
-        recipientUserIds,
-        title: `DRV clearance expires in ${band.days} days`,
-        body: `Reference ${clearance.drvReference}, valid until ${validToIso}. Begin the renewal filing — DRV processing typically takes 3-6 months.`,
-        entityType: 'CONTRACTOR',
-        entityId: clearance.id,
-      });
-      notified++;
-    }
   }
 
   return notified;
@@ -414,7 +345,9 @@ async function resolveRecipients(
       const financeMembers = await prisma.member.findMany({
         where: {
           organizationId,
-          role: { in: ['FINANCE_ADMIN', 'ACCOUNTANT'] },
+          role: {
+            in: ['finance_admin', 'external_accountant'],
+          },
         },
         select: { userId: true },
       });
@@ -433,9 +366,10 @@ async function resolveRecipients(
 
     case 'ROLE': {
       const role = configJson?.role as string | undefined;
-      if (!role) return [];
+      const parsedRole = parseMemberRole(role);
+      if (!parsedRole) return [];
       const members = await prisma.member.findMany({
-        where: { organizationId, role },
+        where: { organizationId, role: parsedRole },
         select: { userId: true },
       });
       return members.map(m => m.userId);

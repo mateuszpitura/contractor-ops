@@ -26,69 +26,66 @@ type NotificationRow = {
   entityId: string;
 };
 
-const { mockPrisma, clearances, notifications, dispatchMock, resolveRbacMock } =
-  vi.hoisted(() => {
-    const clearances: ClearanceRow[] = [];
-    const notifications: NotificationRow[] = [];
-    const dispatchMock = vi.fn(async () => undefined);
-    const resolveRbacMock = vi.fn(async () => ['user-1', 'user-2']);
+const { mockPrisma, clearances, notifications, dispatchMock, resolveRbacMock } = vi.hoisted(() => {
+  const clearances: ClearanceRow[] = [];
+  const notifications: NotificationRow[] = [];
+  const dispatchMock = vi.fn(async () => undefined);
+  const resolveRbacMock = vi.fn(async () => ['user-1', 'user-2']);
 
-    const mockPrisma = {
-      statusfeststellungsverfahren: {
-        findMany: vi.fn(
-          async (args: {
-            where?: {
-              validTo?: { gte?: Date; lt?: Date };
-              outcome?: { in?: string[] };
-            };
-          }) => {
-            const where = args?.where ?? {};
-            return clearances.filter(c => {
-              if (where.outcome?.in && !where.outcome.in.includes(c.outcome)) {
-                return false;
-              }
-              if (where.validTo?.gte && c.validTo && c.validTo < where.validTo.gte) {
-                return false;
-              }
-              if (where.validTo?.lt && c.validTo && c.validTo >= where.validTo.lt) {
-                return false;
-              }
-              if (!c.validTo) return false;
-              return true;
-            });
-          },
-        ),
-      },
-      notification: {
-        findFirst: vi.fn(
-          async (args: {
-            where: { type: string; entityType: string; entityId: string };
-          }) => {
-            return (
-              notifications.find(
-                n =>
-                  n.type === args.where.type &&
-                  n.entityType === args.where.entityType &&
-                  n.entityId === args.where.entityId,
-              ) ?? null
-            );
-          },
-        ),
-      },
-      // Existing cron helpers require these:
-      reminderRule: { findMany: vi.fn(async () => []) },
-      reminderInstance: {
-        findFirst: vi.fn(async () => null),
-        create: vi.fn(async () => ({ id: 'ri-1' })),
-        updateMany: vi.fn(async () => ({ count: 0 })),
-      },
-      workflowTaskRun: { findMany: vi.fn(async () => []) },
-      member: { findMany: vi.fn(async () => []) },
-      contract: { findMany: vi.fn(async () => []) },
-      invoice: { findMany: vi.fn(async () => []) },
-    };
-    return { mockPrisma, clearances, notifications, dispatchMock, resolveRbacMock };
-  });
+  const mockPrisma = {
+    statusfeststellungsverfahren: {
+      findMany: vi.fn(
+        async (args: {
+          where?: {
+            validTo?: { gte?: Date; lt?: Date };
+            outcome?: { in?: string[] };
+          };
+        }) => {
+          const where = args?.where ?? {};
+          return clearances.filter(c => {
+            if (where.outcome?.in && !where.outcome.in.includes(c.outcome)) {
+              return false;
+            }
+            if (where.validTo?.gte && c.validTo && c.validTo < where.validTo.gte) {
+              return false;
+            }
+            if (where.validTo?.lt && c.validTo && c.validTo >= where.validTo.lt) {
+              return false;
+            }
+            if (!c.validTo) return false;
+            return true;
+          });
+        },
+      ),
+    },
+    notification: {
+      findFirst: vi.fn(
+        async (args: { where: { type: string; entityType: string; entityId: string } }) => {
+          return (
+            notifications.find(
+              n =>
+                n.type === args.where.type &&
+                n.entityType === args.where.entityType &&
+                n.entityId === args.where.entityId,
+            ) ?? null
+          );
+        },
+      ),
+    },
+    // Existing cron helpers require these:
+    reminderRule: { findMany: vi.fn(async () => []) },
+    reminderInstance: {
+      findFirst: vi.fn(async () => null),
+      create: vi.fn(async () => ({ id: 'ri-1' })),
+      updateMany: vi.fn(async () => ({ count: 0 })),
+    },
+    workflowTaskRun: { findMany: vi.fn(async () => []) },
+    member: { findMany: vi.fn(async () => []) },
+    contract: { findMany: vi.fn(async () => []) },
+    invoice: { findMany: vi.fn(async () => []) },
+  };
+  return { mockPrisma, clearances, notifications, dispatchMock, resolveRbacMock };
+});
 
 vi.mock('@contractor-ops/db', () => ({
   prisma: mockPrisma,
@@ -136,7 +133,7 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
 }));
 
 // Import after mocks.
-const { detectDrvClearanceExpiries } = await import('../route');
+const { detectDrvClearanceExpiries } = await import('../drv-clearance-expiries.js');
 
 function startOfTodayUtc(): Date {
   const d = new Date();

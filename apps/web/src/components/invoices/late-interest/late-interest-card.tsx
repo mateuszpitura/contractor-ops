@@ -86,10 +86,7 @@ export function LateInterestCard({
 
   // Gate: only show for GB B2B GBP invoices with flag on
   const isApplicable =
-    featureEnabled &&
-    contractorCountryCode === 'GB' &&
-    isBusinessCustomer &&
-    currency === 'GBP';
+    featureEnabled && contractorCountryCode === 'GB' && isBusinessCustomer && currency === 'GBP';
 
   const query = trpc.latePaymentInterest.getForInvoice.useQuery(
     { invoiceId },
@@ -105,9 +102,7 @@ export function LateInterestCard({
 
   // B2C banner
   if (isApplicable && !isBusinessCustomer) {
-    return (
-      <p className="text-sm text-muted-foreground">{t('b2cNotApplicable')}</p>
-    );
+    return <p className="text-sm text-muted-foreground">{t('b2cNotApplicable')}</p>;
   }
 
   // Loading
@@ -154,8 +149,14 @@ export function LateInterestCard({
                 tooltip={<RateCalculationTooltip />}
               />
               <DetailRow label={t('dailyAccrual')} value={formatGBP(data.dailyAccrualMinor)} />
-              <DetailRow label={t('interestAccrued')} value={formatGBP(data.interestAccruedMinor)} />
-              <DetailRow label={t('fixedCompensation')} value={formatGBP(data.fixedCompensationMinor)} />
+              <DetailRow
+                label={t('interestAccrued')}
+                value={formatGBP(data.interestAccruedMinor)}
+              />
+              <DetailRow
+                label={t('fixedCompensation')}
+                value={formatGBP(data.fixedCompensationMinor)}
+              />
             </div>
 
             <Separator />
@@ -175,8 +176,7 @@ export function LateInterestCard({
                 variant="ghost"
                 size="sm"
                 onClick={handleWaiveClick}
-                className="text-destructive hover:text-destructive"
-              >
+                className="text-destructive hover:text-destructive">
                 {t('waiveCta')}
               </Button>
             </div>
@@ -218,7 +218,10 @@ export function LateInterestCard({
             <DetailRow label={t('daysOverdue')} value={String(data.daysOverdue)} />
             <DetailRow label={t('rateUsed')} value={`${data.ratePercent}%`} />
             <DetailRow label={t('interestAccrued')} value={formatGBP(data.interestAccruedMinor)} />
-            <DetailRow label={t('fixedCompensation')} value={formatGBP(data.fixedCompensationMinor)} />
+            <DetailRow
+              label={t('fixedCompensation')}
+              value={formatGBP(data.fixedCompensationMinor)}
+            />
           </div>
 
           <Separator />
@@ -279,8 +282,7 @@ export function LateInterestCard({
               variant="ghost"
               size="sm"
               onClick={handleRevokeClick}
-              className="text-destructive hover:text-destructive"
-            >
+              className="text-destructive hover:text-destructive">
               {t('revokeWaiverCta')}
             </Button>
           </CardContent>

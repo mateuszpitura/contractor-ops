@@ -31,7 +31,8 @@ vi.mock('@/trpc/init', () => ({
 import { render, screen, setup } from '@/test/test-utils';
 
 import { DrvClearanceForm } from '../drv-clearance-form';
-import { DrvClearanceRow, type DrvClearanceRowData } from '../drv-clearance-row';
+import type { DrvClearanceRowData } from '../drv-clearance-row';
+import { DrvClearanceRow } from '../drv-clearance-row';
 
 beforeEach(() => {
   mockMutate.mockClear();
@@ -39,13 +40,7 @@ beforeEach(() => {
 
 describe('DrvClearanceForm — accessibility (UI-SPEC §Accessibility Contract)', () => {
   it('associates every labelled field with an input (label htmlFor → input id)', () => {
-    render(
-      <DrvClearanceForm
-        open
-        onOpenChange={() => undefined}
-        contractorAssignmentId="ca-1"
-      />,
-    );
+    render(<DrvClearanceForm open onOpenChange={() => undefined} contractorAssignmentId="ca-1" />);
 
     // getByLabelText ensures the label is actually associated with a form control.
     expect(screen.getByLabelText(/Filing date/i)).toBeInTheDocument();
@@ -55,11 +50,7 @@ describe('DrvClearanceForm — accessibility (UI-SPEC §Accessibility Contract)'
 
   it('surfaces validation errors with role="alert" when required fields are empty', async () => {
     const { user } = setup(
-      <DrvClearanceForm
-        open
-        onOpenChange={() => undefined}
-        contractorAssignmentId="ca-1"
-      />,
+      <DrvClearanceForm open onOpenChange={() => undefined} contractorAssignmentId="ca-1" />,
     );
 
     const submit = screen.getByRole('button', { name: /File clearance/i });
@@ -68,21 +59,13 @@ describe('DrvClearanceForm — accessibility (UI-SPEC §Accessibility Contract)'
     const alerts = screen.getAllByRole('alert');
     expect(alerts.length).toBeGreaterThan(0);
     // The drvReference field is the canonical required field.
-    expect(
-      alerts.some(el => /DRV reference is required/i.test(el.textContent ?? '')),
-    ).toBe(true);
+    expect(alerts.some(el => /DRV reference is required/i.test(el.textContent ?? ''))).toBe(true);
     // The server mutation should NOT have been called.
     expect(mockMutate).not.toHaveBeenCalled();
   });
 
   it('external V0023 link carries rel="noopener noreferrer" and target="_blank" (T-60-11)', () => {
-    render(
-      <DrvClearanceForm
-        open
-        onOpenChange={() => undefined}
-        contractorAssignmentId="ca-1"
-      />,
-    );
+    render(<DrvClearanceForm open onOpenChange={() => undefined} contractorAssignmentId="ca-1" />);
 
     const link = screen.getByRole('link', { name: /DRV form V0023/i });
     expect(link.getAttribute('target')).toBe('_blank');

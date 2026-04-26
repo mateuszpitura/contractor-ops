@@ -17,19 +17,15 @@ import { useQuery } from '@tanstack/react-query';
 import { Globe } from 'lucide-react';
 import { useFormatter, useTranslations } from 'next-intl';
 import { useState } from 'react';
-
+import { Bdi } from '@/components/ui/bdi';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Bdi } from '@/components/ui/bdi';
 import { trpc } from '@/trpc/init';
-
-import {
-  PeppolParticipantStatusPill,
-  type PeppolParticipantStatus,
-} from './peppol-participant-status-pill';
-import { PeppolParticipantRegisterDialog } from './peppol-participant-register-dialog';
 import { PeppolParticipantDeregisterDialog } from './peppol-participant-deregister-dialog';
+import { PeppolParticipantRegisterDialog } from './peppol-participant-register-dialog';
+import type { PeppolParticipantStatus } from './peppol-participant-status-pill';
+import { PeppolParticipantStatusPill } from './peppol-participant-status-pill';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -70,9 +66,9 @@ export function PeppolParticipantCard() {
           <CardTitle className="text-xl">
             {active ? tDialog('activeHeading') : t('emptyHeading')}
           </CardTitle>
-          {!active ? (
+          {active ? null : (
             <p className="text-sm text-muted-foreground max-w-prose">{t('emptyBody')}</p>
-          ) : null}
+          )}
         </div>
         {active ? (
           <PeppolParticipantStatusPill
@@ -92,10 +88,7 @@ export function PeppolParticipantCard() {
           <div className="space-y-4">
             <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <DlItem label="Participant">
-                <Bdi
-                  dir="ltr"
-                  className="font-mono text-sm"
-                  data-testid="participant-id">
+                <Bdi dir="ltr" className="font-mono text-sm" data-testid="participant-id">
                   {`${active.schemeId}:${active.identifierValue}`}
                 </Bdi>
               </DlItem>
@@ -115,10 +108,7 @@ export function PeppolParticipantCard() {
             </dl>
 
             <div className="flex flex-wrap gap-2 pt-2">
-              <Button
-                type="button"
-                variant="destructive"
-                onClick={() => setDeregisterOpen(true)}>
+              <Button type="button" variant="destructive" onClick={() => setDeregisterOpen(true)}>
                 {tDialog('deregisterButton')}
               </Button>
             </div>
@@ -133,15 +123,9 @@ export function PeppolParticipantCard() {
         )}
       </CardContent>
 
-      <PeppolParticipantRegisterDialog
-        open={registerOpen}
-        onOpenChange={setRegisterOpen}
-      />
+      <PeppolParticipantRegisterDialog open={registerOpen} onOpenChange={setRegisterOpen} />
       {active ? (
-        <PeppolParticipantDeregisterDialog
-          open={deregisterOpen}
-          onOpenChange={setDeregisterOpen}
-        />
+        <PeppolParticipantDeregisterDialog open={deregisterOpen} onOpenChange={setDeregisterOpen} />
       ) : null}
     </Card>
   );

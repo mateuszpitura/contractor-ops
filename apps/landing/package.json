@@ -10,6 +10,7 @@
     "lint": "biome check ."
   },
   "dependencies": {
+    "@contractor-ops/logger": "workspace:*",
     "@posthog/react": "^1.9.0",
     "@tailwindcss/postcss": "^4.2.2",
     "class-variance-authority": "^0.7.1",

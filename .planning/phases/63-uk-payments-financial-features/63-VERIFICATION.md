@@ -1,7 +1,7 @@
 ---
 phase: 63-uk-payments-financial-features
-verified: 2026-04-26T00:15:00Z
-status: human_needed
+verified: 2026-04-26T03:00:00Z
+status: verified
 score: 16/16 must-haves verified
 overrides_applied: 0
 re_verification:
@@ -11,8 +11,12 @@ re_verification:
     - "Late interest tRPC router (6 procedures) compiles and routes correctly (Plan 05 — CR-01 + FAILED_PRECONDITION typo + Decimal import + ctx.db narrowing all fixed)"
     - "Skonto eligibility service + router calculate correct amounts (Plan 06 — invoice.amountMinor → totalMinor, skontoTerm → skontoTerms[0], billingProfile → billingProfiles[0] with isDefault filter)"
     - "Late-payment-interest service Decimal-import path (TS2307 closed — replaced with structural RateValue alias)"
+    - "v5.0-audit gap B-01 / PAY-07 (Skonto basis): skonto.evaluateForInvoice now reads invoice.amountToPayMinor (matches payment.applySkontoToItem) — closed by Phase 65 Plan 01 commit 599d2534. Locking regression test in routers/__tests__/skonto.test.ts uses a withholding fixture (totalMinor != amountToPayMinor) so the fix cannot regress silently."
+    - "v5.0-audit gap B-05 / PAY-06 (LPCDA daysOverdue): late-payment-interest service now computes daysOverdue from overdueStartMs with inclusive-elapsed semantics per LPCDA Section 4(1) — closed by Phase 65 Plan 02 commit d5428ccf. Two boundary regression tests + 6 realigned existing assertions lock the corrected formula."
   gaps_remaining: []
   regressions: []
+  phase_65_addendum:
+    note: "Phase 65 ('phase-63-critical-bug-fixes') closed two v5.0-MILESTONE-AUDIT findings that were raised after this verification doc's previous iteration. Fix commits 599d2534 (B-01) and d5428ccf (B-05) land on branch v2. No regressions introduced. Per Phase 65 CONTEXT.md D-12 this re-verification flips the doc from `gaps_found` → `verified`; per D-13 a separate 65-VERIFICATION.md confirms the closure."
   fix_commits:
     - hash: "929b0e1d"
       scope: "fix(63-05): repair late-interest router type errors"

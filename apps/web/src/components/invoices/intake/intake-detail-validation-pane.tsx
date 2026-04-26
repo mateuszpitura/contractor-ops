@@ -7,10 +7,8 @@ import { useCallback, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { trpc } from '@/trpc/init';
-import {
-  IntakeValidationStatusPill,
-  type ValidationStatus,
-} from './intake-validation-status-pill';
+import type { ValidationStatus } from './intake-validation-status-pill';
+import { IntakeValidationStatusPill } from './intake-validation-status-pill';
 
 interface ValidationIssue {
   severity: 'warning' | 'fatal' | 'info' | string;
@@ -52,8 +50,12 @@ export function IntakeDetailValidationPane({
     try {
       // We use `useQuery`-cached fetches elsewhere; here we want a one-shot
       // on-click load so the signed URL is always fresh (300 s TTL).
-      const response = await fetch(`/api/trpc/invoiceIntake.downloadValidationReport?batch=1&input=${encodeURIComponent(JSON.stringify({ 0: { json: { intakeId } } }))}`);
-      const json = (await response.json()) as Array<{ result?: { data?: { json?: { url?: string } } } }>;
+      const response = await fetch(
+        `/api/trpc/invoiceIntake.downloadValidationReport?batch=1&input=${encodeURIComponent(JSON.stringify({ 0: { json: { intakeId } } }))}`,
+      );
+      const json = (await response.json()) as Array<{
+        result?: { data?: { json?: { url?: string } } };
+      }>;
       const url = json?.[0]?.result?.data?.json?.url;
       if (url) {
         window.open(url, '_blank', 'noopener,noreferrer');
@@ -105,9 +107,7 @@ export function IntakeDetailValidationPane({
             {firstFive.map((issue, index) => (
               // biome-ignore lint/suspicious/noArrayIndexKey: stable order from server
               <li key={`issue-${index}`} className="rounded-md border p-2">
-                <span className="me-2 font-mono text-[10px] uppercase">
-                  [{issue.severity}]
-                </span>
+                <span className="me-2 font-mono text-[10px] uppercase">[{issue.severity}]</span>
                 {issue.ruleId && <span className="me-2 font-mono">{issue.ruleId}</span>}
                 <span>{issue.message ?? ''}</span>
                 {issue.xpath && (

@@ -230,7 +230,7 @@ describe('resolveAssignee()', () => {
     mockTx.member.findFirst.mockResolvedValueOnce({ userId: 'member-1' });
 
     const result = await resolveAssignee(
-      { assigneeMode: 'ROLE_BASED', assigneeRole: 'OPS_MANAGER' },
+      { assigneeMode: 'ROLE_BASED', assigneeRole: 'ops_manager' },
       {},
       null,
       'org-1',
@@ -242,7 +242,7 @@ describe('resolveAssignee()', () => {
       expect.objectContaining({
         where: expect.objectContaining({
           organizationId: 'org-1',
-          role: 'OPS_MANAGER',
+          role: 'ops_manager',
         }),
       }),
     );

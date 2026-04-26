@@ -1,5 +1,6 @@
 import type { Prisma } from '@contractor-ops/db';
 import { Prisma as PrismaClient } from '@contractor-ops/db/generated/prisma/client';
+import { createLogger } from '@contractor-ops/logger';
 import {
   approvalAuditSystemLabel,
   approvalChainCreateSchema,
@@ -16,6 +17,7 @@ import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import * as E from '../errors.js';
 import { router } from '../init.js';
+import { plain } from '../lib/plain.js';
 import { requirePermission } from '../middleware/rbac.js';
 import { tenantProcedure } from '../middleware/tenant.js';
 import type { TxClient } from '../services/approval-engine.js';
@@ -32,18 +34,11 @@ import {
 } from '../services/calendar-deadline-sync.js';
 import { dispatch } from '../services/notification-service.js';
 
+const log = createLogger({ service: 'approval-router' });
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-/**
- * Strips Prisma class prototype from query results, producing plain
- * JSON-serializable objects so that inferred tRPC router types do NOT
- * reference the generated Prisma client module (avoids TS2742).
- */
-function plain<T>(data: T): T {
-  return JSON.parse(JSON.stringify(data)) as T;
-}
 
 // ---------------------------------------------------------------------------
 // Step validation helpers
@@ -112,9 +107,7 @@ function dispatchDecisionNotification(
       approverName,
       ...(comment ? { comment } : {}),
     },
-  }).catch(err =>
-    console.error(`[approval] dispatch APPROVAL_DECISION (${decision}) failed:`, err),
-  );
+  }).catch(err => log.error({ err, decision }, 'dispatch approval_decision failed'));
 }
 
 /**
@@ -161,7 +154,7 @@ async function dispatchNextApproverNotification(
       invoiceId: invoice.id,
       flowId,
     },
-  }).catch(err => console.error('[approval] dispatch APPROVAL_REQUEST (next level) failed:', err));
+  }).catch(err => log.error({ err }, 'dispatch approval_request (next level) failed'));
 }
 
 // ---------------------------------------------------------------------------
@@ -311,8 +304,10 @@ async function finalizeApprovedInvoice(
   await tx.invoice.update({
     where: { id: opts.resourceId },
     data: {
-      status: 'APPROVED',
+      status: 'READY_FOR_PAYMENT',
+      approvalStatus: 'APPROVED',
       paymentStatus: 'READY',
+      approvedAt: new Date(),
       readyForPaymentAt: new Date(),
     },
   });
@@ -330,14 +325,14 @@ async function finalizeApprovedInvoice(
       })
     : null;
 
-  void syncPaymentDueDeadline(opts.db, {
+  void syncPaymentDueDeadline(opts.db as unknown as Parameters<typeof syncPaymentDueDeadline>[0], {
     organizationId: opts.organizationId,
     invoiceId: invoice.id,
     invoiceNumber: invoice.invoiceNumber ?? `INV-${invoice.id.slice(-6)}`,
     contractorName: contractor?.displayName ?? 'Unknown',
     dueDate: new Date(invoice.dueDate),
     userId: opts.userId,
-  }).catch(err => console.error('[approval] payment deadline sync failed:', err));
+  }).catch(err => log.error({ err }, 'payment deadline sync failed'));
 }
 
 // ---------------------------------------------------------------------------
@@ -720,19 +715,24 @@ export const approvalRouter = router({
     .use(requirePermission({ invoice: ['approve'] }))
     .input(approveStepSchema)
     .mutation(async ({ ctx, input }) => {
+      const actorUserId = ctx.user?.id;
+      if (!actorUserId) {
+        throw new TRPCError({ code: 'UNAUTHORIZED' });
+      }
+
       const result = await ctx.db.$transaction(async tx => {
         const step = await tx.approvalStep.findFirst({
           where: { id: input.stepId, organizationId: ctx.organizationId },
           include: { approvalFlow: true },
         });
-        validateStepForAction(step, ctx.user?.id);
+        validateStepForAction(step, actorUserId);
 
         // Create decision record
         await tx.approvalDecision.create({
           data: {
             organizationId: ctx.organizationId,
             approvalStepId: step.id,
-            actorUserId: ctx.user?.id,
+            actorUserId,
             decision: 'APPROVE',
             comment: input.comment ?? null,
           },
@@ -757,8 +757,10 @@ export const approvalRouter = router({
           await tx.invoice.update({
             where: { id: step.approvalFlow.resourceId },
             data: {
-              status: 'APPROVED',
+              status: 'READY_FOR_PAYMENT',
+              approvalStatus: 'APPROVED',
               paymentStatus: 'READY',
+              approvedAt: new Date(),
               readyForPaymentAt: new Date(),
             },
           });
@@ -830,7 +832,7 @@ export const approvalRouter = router({
           contractorName: contractor?.displayName ?? 'Unknown',
           dueDate: new Date(result.invoice.dueDate),
           userId: ctx.user?.id,
-        }).catch(err => console.error('[approval] payment deadline sync failed:', err));
+        }).catch(err => log.error({ err }, 'payment deadline sync failed'));
       }
 
       void invalidateByPrefix(CacheKeys.dashboardPrefix(ctx.organizationId));
@@ -847,19 +849,24 @@ export const approvalRouter = router({
     .use(requirePermission({ invoice: ['approve'] }))
     .input(rejectStepSchema)
     .mutation(async ({ ctx, input }) => {
+      const actorUserId = ctx.user?.id;
+      if (!actorUserId) {
+        throw new TRPCError({ code: 'UNAUTHORIZED' });
+      }
+
       const result = await ctx.db.$transaction(async tx => {
         const step = await tx.approvalStep.findFirst({
           where: { id: input.stepId, organizationId: ctx.organizationId },
           include: { approvalFlow: true },
         });
-        validateStepForAction(step, ctx.user?.id);
+        validateStepForAction(step, actorUserId);
 
         // Create decision record
         await tx.approvalDecision.create({
           data: {
             organizationId: ctx.organizationId,
             approvalStepId: step.id,
-            actorUserId: ctx.user?.id,
+            actorUserId,
             decision: 'REJECT',
             comment: input.comment,
           },
@@ -888,7 +895,13 @@ export const approvalRouter = router({
         // Update invoice status
         await tx.invoice.update({
           where: { id: step.approvalFlow.resourceId },
-          data: { status: 'REJECTED' },
+          data: {
+            status: 'REJECTED',
+            approvalStatus: 'REJECTED',
+            paymentStatus: 'NOT_READY',
+            rejectedAt: new Date(),
+            rejectionReason: input.comment,
+          },
         });
 
         // Fetch data for notification
@@ -927,11 +940,16 @@ export const approvalRouter = router({
     .use(requirePermission({ invoice: ['approve'] }))
     .input(delegateStepSchema)
     .mutation(async ({ ctx, input }) => {
+      const actorUserId = ctx.user?.id;
+      if (!actorUserId) {
+        throw new TRPCError({ code: 'UNAUTHORIZED' });
+      }
+
       const result = await ctx.db.$transaction(async tx => {
         const step = await tx.approvalStep.findFirst({
           where: { id: input.stepId, organizationId: ctx.organizationId },
         });
-        validateStepForAction(step, ctx.user?.id);
+        validateStepForAction(step, actorUserId);
 
         // Verify delegate user exists in the organization
         const delegateMember = await tx.member.findFirst({
@@ -953,7 +971,7 @@ export const approvalRouter = router({
           data: {
             organizationId: ctx.organizationId,
             approvalStepId: step.id,
-            actorUserId: ctx.user?.id,
+            actorUserId,
             decision: 'DELEGATE',
             comment: input.comment ?? null,
           },
@@ -983,18 +1001,23 @@ export const approvalRouter = router({
     .use(requirePermission({ invoice: ['approve'] }))
     .input(requestClarificationSchema)
     .mutation(async ({ ctx, input }) => {
+      const actorUserId = ctx.user?.id;
+      if (!actorUserId) {
+        throw new TRPCError({ code: 'UNAUTHORIZED' });
+      }
+
       const result = await ctx.db.$transaction(async tx => {
         const step = await tx.approvalStep.findFirst({
           where: { id: input.stepId, organizationId: ctx.organizationId },
         });
-        validateStepForAction(step, ctx.user?.id);
+        validateStepForAction(step, actorUserId);
 
         // Create decision record
         await tx.approvalDecision.create({
           data: {
             organizationId: ctx.organizationId,
             approvalStepId: step.id,
-            actorUserId: ctx.user?.id,
+            actorUserId,
             decision: 'REQUEST_CHANGES',
             comment: input.comment,
           },
@@ -1019,6 +1042,11 @@ export const approvalRouter = router({
     .use(requirePermission({ invoice: ['approve'] }))
     .input(bulkApproveSchema)
     .mutation(async ({ ctx, input }) => {
+      const actorUserId = ctx.user?.id;
+      if (!actorUserId) {
+        throw new TRPCError({ code: 'UNAUTHORIZED' });
+      }
+
       const results = await Promise.allSettled(
         input.stepIds.map(async stepId => {
           await ctx.db.$transaction(async tx => {
@@ -1027,7 +1055,7 @@ export const approvalRouter = router({
                 id: stepId,
                 organizationId: ctx.organizationId,
                 status: 'PENDING',
-                approverUserId: ctx.user?.id,
+                approverUserId: actorUserId,
               },
               include: { approvalFlow: true },
             });
@@ -1040,7 +1068,7 @@ export const approvalRouter = router({
               data: {
                 organizationId: ctx.organizationId,
                 approvalStepId: step.id,
-                actorUserId: ctx.user?.id,
+                actorUserId,
                 decision: 'APPROVE',
               },
             });
@@ -1061,7 +1089,7 @@ export const approvalRouter = router({
                 resourceId: step.approvalFlow.resourceId,
                 organizationId: ctx.organizationId,
                 db: ctx.db as unknown as TxClient,
-                userId: ctx.user?.id,
+                userId: actorUserId,
               });
             }
           });
@@ -1089,6 +1117,11 @@ export const approvalRouter = router({
     .use(requirePermission({ invoice: ['approve'] }))
     .input(bulkRejectSchema)
     .mutation(async ({ ctx, input }) => {
+      const actorUserId = ctx.user?.id;
+      if (!actorUserId) {
+        throw new TRPCError({ code: 'UNAUTHORIZED' });
+      }
+
       const results = await Promise.allSettled(
         input.stepIds.map(async stepId => {
           await ctx.db.$transaction(async tx => {
@@ -1097,7 +1130,7 @@ export const approvalRouter = router({
                 id: stepId,
                 organizationId: ctx.organizationId,
                 status: 'PENDING',
-                approverUserId: ctx.user?.id,
+                approverUserId: actorUserId,
               },
               include: { approvalFlow: true },
             });
@@ -1110,7 +1143,7 @@ export const approvalRouter = router({
               data: {
                 organizationId: ctx.organizationId,
                 approvalStepId: step.id,
-                actorUserId: ctx.user?.id,
+                actorUserId,
                 decision: 'REJECT',
                 comment: input.comment,
               },
@@ -1136,7 +1169,13 @@ export const approvalRouter = router({
 
             await tx.invoice.update({
               where: { id: step.approvalFlow.resourceId },
-              data: { status: 'REJECTED' },
+              data: {
+                status: 'REJECTED',
+                approvalStatus: 'REJECTED',
+                paymentStatus: 'NOT_READY',
+                rejectedAt: new Date(),
+                rejectionReason: input.comment,
+              },
             });
           });
         }),
@@ -1168,12 +1207,20 @@ export const approvalRouter = router({
     .use(requirePermission({ invoice: ['update'] }))
     .input(z.object({ invoiceId: z.string() }))
     .mutation(async ({ ctx, input }) => {
+      const actorUserId = ctx.user?.id;
+      if (!actorUserId) {
+        throw new TRPCError({ code: 'UNAUTHORIZED' });
+      }
+
       const flow = await ctx.db.$transaction(async tx => {
         const invoice = await tx.invoice.findFirst({
           where: {
             id: input.invoiceId,
             organizationId: ctx.organizationId,
             deletedAt: null,
+          },
+          include: {
+            contractor: { select: { type: true } },
           },
         });
 
@@ -1200,9 +1247,27 @@ export const approvalRouter = router({
           });
         }
 
+        const activeFlow = await tx.approvalFlow.findFirst({
+          where: {
+            organizationId: ctx.organizationId,
+            resourceType: 'INVOICE',
+            resourceId: invoice.id,
+            status: 'PENDING',
+          },
+          select: { id: true },
+        });
+
+        if (activeFlow) {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: E.INVOICE_ALREADY_PENDING,
+          });
+        }
+
         // Route to appropriate chain
         const chainConfig = await routeToChain(tx as TxClient, ctx.organizationId, {
           totalMinor: invoice.totalMinor,
+          contractorType: invoice.contractor?.type,
         });
 
         if (!chainConfig) {
@@ -1218,13 +1283,13 @@ export const approvalRouter = router({
           resourceType: 'INVOICE',
           resourceId: invoice.id,
           chainConfig,
-          createdByUserId: ctx.user?.id,
+          createdByUserId: actorUserId,
         });
 
         // Update invoice status
         await tx.invoice.update({
           where: { id: invoice.id },
-          data: { status: 'APPROVAL_PENDING' },
+          data: { status: 'APPROVAL_PENDING', approvalStatus: 'PENDING' },
         });
 
         return { approvalFlow, invoice };
@@ -1263,7 +1328,7 @@ export const approvalRouter = router({
             invoiceId: inv.id,
             flowId: flow.approvalFlow.id,
           },
-        }).catch(err => console.error('[approval] dispatch APPROVAL_REQUEST failed:', err));
+        }).catch(err => log.error({ err }, 'dispatch approval_request failed'));
       }
 
       // Calendar auto-push: sync approval SLA deadline (D-09)
@@ -1275,7 +1340,7 @@ export const approvalRouter = router({
           itemName: flow.invoice.invoiceNumber ?? `INV-${flow.invoice.id.slice(-6)}`,
           deadline: new Date(firstStep.slaDeadline),
           userId: ctx.user?.id,
-        }).catch(err => console.error('[approval] SLA deadline sync failed:', err));
+        }).catch(err => log.error({ err }, 'sla deadline sync failed'));
       }
 
       return plain(flow.approvalFlow);

@@ -16,13 +16,12 @@ import { z } from 'zod';
 import { router } from '../init.js';
 import { requirePermission } from '../middleware/rbac.js';
 import { tenantProcedure } from '../middleware/tenant.js';
+import type { FinalizeResult, R2Service } from '../services/einvoice-finalize.js';
 import {
   EInvoiceAlreadyFinalizedError,
   EInvoiceInvoiceNotFoundError,
   finalizeEInvoice,
   mapPrismaInvoiceToEInvoice,
-  type FinalizeResult,
-  type R2Service,
 } from '../services/einvoice-finalize.js';
 import {
   IllegalFsmTransitionError,
@@ -51,10 +50,7 @@ import {
 
 interface LifecycleTx {
   eInvoiceLifecycle: {
-    update: (args: {
-      where: { id: string };
-      data: Record<string, unknown>;
-    }) => Promise<unknown>;
+    update: (args: { where: { id: string }; data: Record<string, unknown> }) => Promise<unknown>;
   };
   eInvoiceLifecycleEvent: {
     create: (args: { data: Record<string, unknown> }) => Promise<unknown>;
@@ -100,9 +96,7 @@ async function getLogger(): Promise<RouterLogger> {
 const r2Service: R2Service = {
   async putObject(params) {
     const body =
-      typeof params.body === 'string'
-        ? params.body
-        : Buffer.from(params.body).toString('utf-8');
+      typeof params.body === 'string' ? params.body : Buffer.from(params.body).toString('utf-8');
     await putObjectString({ key: params.key, body, contentType: params.contentType });
   },
   async signDownloadUrl(key, ttlSeconds) {
@@ -244,9 +238,7 @@ export const einvoiceRouter = router({
       const logger = await getLogger();
 
       // 1. Load invoice (org-scoped) + its existing lifecycle row.
-      const invoice = (await (
-        ctx.db.invoice.findFirst as (args: unknown) => Promise<unknown>
-      )({
+      const invoice = (await (ctx.db.invoice.findFirst as (args: unknown) => Promise<unknown>)({
         where: {
           id: input.invoiceId,
           organizationId: ctx.organizationId,
@@ -280,7 +272,7 @@ export const einvoiceRouter = router({
       // 2. Build the canonical EInvoice envelope (same helper the XRechnung
       //    finalize path uses — single source of CII truth).
       const envelope = mapPrismaInvoiceToEInvoice(
-        invoice as Parameters<typeof mapPrismaInvoiceToEInvoice>[0],
+        invoice as unknown as Parameters<typeof mapPrismaInvoiceToEInvoice>[0],
       );
 
       // 3. Generate the ZUGFeRD PDF bytes.
@@ -311,9 +303,7 @@ export const einvoiceRouter = router({
       // 4. Content-addressed idempotency — if the lifecycle already has a
       //    matching sha, re-sign the existing object and return. Append no
       //    second event.
-      const sha = createHash('sha256')
-        .update(Buffer.from(pdfBytes))
-        .digest('hex');
+      const sha = createHash('sha256').update(Buffer.from(pdfBytes)).digest('hex');
       const key = `einvoice-pdf/${ctx.organizationId}/${input.invoiceId}/${sha.slice(0, 16)}.pdf`;
 
       const existing = invoice.eInvoiceLifecycle;
@@ -345,50 +335,48 @@ export const einvoiceRouter = router({
 
       // 6. Upsert lifecycle + append ZUGFERD_GENERATED event atomically.
       const now = new Date();
-      await (ctx.db as never as { $transaction: TxRunner }).$transaction(
-        async tx => {
-          const txDb = tx as unknown as LifecycleTx & {
-            eInvoiceLifecycle: {
-              upsert: (args: {
-                where: Record<string, unknown>;
-                create: Record<string, unknown>;
-                update: Record<string, unknown>;
-              }) => Promise<{ id: string }>;
-            };
+      await (ctx.db as never as { $transaction: TxRunner }).$transaction(async tx => {
+        const txDb = tx as unknown as LifecycleTx & {
+          eInvoiceLifecycle: {
+            upsert: (args: {
+              where: Record<string, unknown>;
+              create: Record<string, unknown>;
+              update: Record<string, unknown>;
+            }) => Promise<{ id: string }>;
           };
-          const upserted = await txDb.eInvoiceLifecycle.upsert({
-            where: {
-              organizationId_invoiceId: {
-                organizationId: ctx.organizationId,
-                invoiceId: input.invoiceId,
-              },
-            },
-            create: {
+        };
+        const upserted = await txDb.eInvoiceLifecycle.upsert({
+          where: {
+            organizationId_invoiceId: {
               organizationId: ctx.organizationId,
               invoiceId: input.invoiceId,
-              profileId: 'zugferd-de',
-              zugferdPdfKey: key,
-              zugferdPdfSha256: sha,
-              zugferdGeneratedAt: now,
             },
-            update: {
-              zugferdPdfKey: key,
-              zugferdPdfSha256: sha,
-              zugferdGeneratedAt: now,
-            },
-          });
-          await txDb.eInvoiceLifecycleEvent.create({
-            data: {
-              organizationId: ctx.organizationId,
-              lifecycleId: upserted.id,
-              eventType: 'ZUGFERD_GENERATED',
-              occurredAt: now,
-              actorUserId: ctx.user?.id ?? null,
-              detailsJson: { sha256: sha, pdfKey: key, byteLength: pdfBytes.length },
-            },
-          });
-        },
-      );
+          },
+          create: {
+            organizationId: ctx.organizationId,
+            invoiceId: input.invoiceId,
+            profileId: 'zugferd-de',
+            zugferdPdfKey: key,
+            zugferdPdfSha256: sha,
+            zugferdGeneratedAt: now,
+          },
+          update: {
+            zugferdPdfKey: key,
+            zugferdPdfSha256: sha,
+            zugferdGeneratedAt: now,
+          },
+        });
+        await txDb.eInvoiceLifecycleEvent.create({
+          data: {
+            organizationId: ctx.organizationId,
+            lifecycleId: upserted.id,
+            eventType: 'ZUGFERD_GENERATED',
+            occurredAt: now,
+            actorUserId: ctx.user?.id ?? null,
+            detailsJson: { sha256: sha, pdfKey: key, byteLength: pdfBytes.length },
+          },
+        });
+      });
 
       logger.info(
         {
@@ -465,14 +453,12 @@ export const einvoiceRouter = router({
         ctx.db as never,
         ctx.organizationId,
         input.lifecycleId,
-      )) as
-        | {
-            id: string;
-            xmlKey: string | null;
-            xmlSha256: string | null;
-          }
-        | null;
-      if (!lifecycle || !lifecycle.xmlKey) {
+      )) as {
+        id: string;
+        xmlKey: string | null;
+        xmlSha256: string | null;
+      } | null;
+      if (!(lifecycle && lifecycle.xmlKey)) {
         throw new TRPCError({
           code: 'NOT_FOUND',
           message: 'EINVOICE_LIFECYCLE_NOT_FOUND',
@@ -490,11 +476,7 @@ export const einvoiceRouter = router({
 
       const now = new Date();
       const nextStatus =
-        report.status === 'VALID'
-          ? 'VALID'
-          : report.status === 'WARNINGS'
-            ? 'WARNINGS'
-            : 'INVALID';
+        report.status === 'VALID' ? 'VALID' : report.status === 'WARNINGS' ? 'WARNINGS' : 'INVALID';
 
       await (ctx.db as never as { $transaction: TxRunner }).$transaction(async tx => {
         const txDb = tx;
@@ -553,16 +535,13 @@ export const einvoiceRouter = router({
         ctx.organizationId,
         input.lifecycleId,
       )) as { id: string; xmlKey: string | null } | null;
-      if (!lifecycle || !lifecycle.xmlKey) {
+      if (!(lifecycle && lifecycle.xmlKey)) {
         throw new TRPCError({
           code: 'NOT_FOUND',
           message: 'EINVOICE_XML_NOT_FOUND',
         });
       }
-      const { signedUrl, expiresInSeconds } = await signExistingDownload(
-        lifecycle.xmlKey,
-        300,
-      );
+      const { signedUrl, expiresInSeconds } = await signExistingDownload(lifecycle.xmlKey, 300);
       return { url: signedUrl, expiresInSeconds };
     }),
 
@@ -612,28 +591,21 @@ export const einvoiceRouter = router({
       const invoice = (await (ctx.db.invoice.findFirst as (args: unknown) => Promise<unknown>)({
         where: { id: input.invoiceId, organizationId: ctx.organizationId },
         include: { eInvoiceLifecycle: true, contractor: true },
-      })) as
-        | {
-            id: string;
-            contractor: {
-              peppolSchemeId: string | null;
-              peppolParticipantValue: string | null;
-            } | null;
-            eInvoiceLifecycle: {
-              id: string;
-              xmlKey: string | null;
-              validationStatus: 'NOT_VALIDATED' | 'VALID' | 'WARNINGS' | 'INVALID';
-              transmissionStatus:
-                | 'NOT_SENT'
-                | 'QUEUED'
-                | 'SENT'
-                | 'DELIVERED'
-                | 'FAILED';
-            } | null;
-          }
-        | null;
+      })) as {
+        id: string;
+        contractor: {
+          peppolSchemeId: string | null;
+          peppolParticipantValue: string | null;
+        } | null;
+        eInvoiceLifecycle: {
+          id: string;
+          xmlKey: string | null;
+          validationStatus: 'NOT_VALIDATED' | 'VALID' | 'WARNINGS' | 'INVALID';
+          transmissionStatus: 'NOT_SENT' | 'QUEUED' | 'SENT' | 'DELIVERED' | 'FAILED';
+        } | null;
+      } | null;
 
-      if (!invoice || !invoice.eInvoiceLifecycle || !invoice.eInvoiceLifecycle.xmlKey) {
+      if (!(invoice && invoice.eInvoiceLifecycle && invoice.eInvoiceLifecycle.xmlKey)) {
         throw new TRPCError({
           code: 'NOT_FOUND',
           message: 'EINVOICE_LIFECYCLE_NOT_FOUND',
@@ -642,10 +614,7 @@ export const einvoiceRouter = router({
       const lifecycle = invoice.eInvoiceLifecycle;
 
       // 2. Only VALID / WARNINGS may be sent.
-      if (
-        lifecycle.validationStatus !== 'VALID' &&
-        lifecycle.validationStatus !== 'WARNINGS'
-      ) {
+      if (lifecycle.validationStatus !== 'VALID' && lifecycle.validationStatus !== 'WARNINGS') {
         throw new TRPCError({
           code: 'PRECONDITION_FAILED',
           message: 'KOSIT_VALIDATION_FAILED',
@@ -669,7 +638,7 @@ export const einvoiceRouter = router({
       // 4. Contractor must carry a Peppol identifier pair.
       const schemeId = invoice.contractor?.peppolSchemeId ?? null;
       const value = invoice.contractor?.peppolParticipantValue ?? null;
-      if (!schemeId || !value) {
+      if (!(schemeId && value)) {
         throw new TRPCError({
           code: 'PRECONDITION_FAILED',
           message: PARTICIPANT_NOT_REACHABLE,
@@ -677,10 +646,7 @@ export const einvoiceRouter = router({
       }
 
       // 5. Adapter factory — tests mock this module.
-      const adapter = await buildStorecoveAdapterForOrg(
-        ctx.db as never,
-        ctx.organizationId,
-      );
+      const adapter = await buildStorecoveAdapterForOrg(ctx.db as never, ctx.organizationId);
       if (!adapter) {
         throw new TRPCError({
           code: 'PRECONDITION_FAILED',
@@ -912,9 +878,7 @@ export const einvoiceRouter = router({
   summaryForOrg: tenantProcedure
     .use(requirePermission({ invoice: ['read'] }))
     .query(async ({ ctx }) => {
-      const total = await (
-        ctx.db.invoice.count as (args: unknown) => Promise<number>
-      )({
+      const total = await (ctx.db.invoice.count as (args: unknown) => Promise<number>)({
         where: { organizationId: ctx.organizationId },
       });
 
@@ -926,12 +890,7 @@ export const einvoiceRouter = router({
         _count: { _all: true },
       })) as Array<{
         validationStatus: 'NOT_VALIDATED' | 'VALID' | 'WARNINGS' | 'INVALID';
-        transmissionStatus:
-          | 'NOT_SENT'
-          | 'QUEUED'
-          | 'SENT'
-          | 'DELIVERED'
-          | 'FAILED';
+        transmissionStatus: 'NOT_SENT' | 'QUEUED' | 'SENT' | 'DELIVERED' | 'FAILED';
         _count: { _all: number };
       }>;
 

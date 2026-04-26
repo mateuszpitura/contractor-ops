@@ -55,7 +55,12 @@ export function RiskDistributionTile({ counts, totalCompleted }: RiskDistributio
   const segments: Array<{ bucket: RiskBucket; count: number; pct: number; label: string }> = [
     { bucket: 'safe', count: counts.safe, pct: safePct, label: t('riskBucketSafe') },
     { bucket: 'warning', count: counts.warning, pct: warningPct, label: t('riskBucketWarning') },
-    { bucket: 'critical', count: counts.critical, pct: criticalPct, label: t('riskBucketCritical') },
+    {
+      bucket: 'critical',
+      count: counts.critical,
+      pct: criticalPct,
+      label: t('riskBucketCritical'),
+    },
   ];
 
   const ariaLabel = t('riskDistributionAriaLabel', {

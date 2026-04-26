@@ -66,10 +66,7 @@ async function handler(request: NextRequest) {
   // handlers, which are non-idempotent (Jira/Linear mutations, e-sign
   // completion, Resend intake). Return 200 so QStash stops retrying.
   if (delivery.deliveryStatus === 'PROCESSED') {
-    log.info(
-      { deliveryId, provider },
-      'webhook delivery already PROCESSED; skipping re-delivery',
-    );
+    log.info({ deliveryId, provider }, 'webhook delivery already PROCESSED; skipping re-delivery');
     return NextResponse.json({ skipped: true, reason: 'already-processed' });
   }
 

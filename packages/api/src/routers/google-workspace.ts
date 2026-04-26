@@ -8,6 +8,7 @@ import {
 } from '@contractor-ops/integrations';
 import type { GoogleWorkspaceAdapter } from '@contractor-ops/integrations/adapters/google-workspace-adapter';
 import { getQStashClient } from '@contractor-ops/integrations/services/qstash-client';
+import { createLogger } from '@contractor-ops/logger';
 import type { DirectoryRole } from '@contractor-ops/validators';
 import { directoryImportInputSchema, getServerEnv } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
@@ -17,6 +18,8 @@ import type { TenantScopedDb } from '../lib/tenant-db.js';
 import { requirePermission } from '../middleware/rbac.js';
 import { tenantProcedure } from '../middleware/tenant.js';
 import { requireTier } from '../middleware/tier.js';
+
+const log = createLogger({ service: 'google-workspace-router' });
 
 // Ensure adapters are registered before any procedure runs
 registerAllAdapters();
@@ -108,7 +111,7 @@ async function ensureSyncCronSchedule(
       },
     });
   } catch (error) {
-    console.error('[google-workspace] Failed to create sync cron schedule:', error);
+    log.error({ err: error }, 'failed to create sync cron schedule');
     // Don't fail the operation — schedule can be retried
   }
 }

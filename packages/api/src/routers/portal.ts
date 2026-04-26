@@ -8,6 +8,10 @@ import { router } from '../init.js';
 import type { TenantScopedDb } from '../lib/tenant-db.js';
 import { portalProcedure, portalPublicProcedure } from '../middleware/portal-auth.js';
 import { encryptBankAccount } from '../services/bank-account-crypto.js';
+import {
+  assertValidContractorTaxId,
+  normalizeContractorTaxId,
+} from '../services/contractor-tax-id.js';
 import type { InPostClientConfig } from '../services/courier/inpost-client.js';
 import { InPostClient } from '../services/courier/inpost-client.js';
 import { dispatch } from '../services/notification-service.js';
@@ -1061,26 +1065,40 @@ export const portalRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      // Read current billing profile values for previousValues snapshot
-      const currentProfile = await ctx.db.contractorBillingProfile.findFirst({
-        where: {
-          contractorId: ctx.contractorId,
-          organizationId: ctx.organizationId,
-          isDefault: true,
-        },
-        select: {
-          bankAccountMasked: true,
-          bankName: true,
-          swiftBic: true,
-          taxId: true,
-        },
-      });
+      // Read current canonical contractor + billing profile values for the snapshot.
+      const [contractor, currentProfile] = await Promise.all([
+        ctx.db.contractor.findFirst({
+          where: {
+            id: ctx.contractorId,
+            organizationId: ctx.organizationId,
+            deletedAt: null,
+          },
+          select: { countryCode: true, taxId: true },
+        }),
+        ctx.db.contractorBillingProfile.findFirst({
+          where: {
+            contractorId: ctx.contractorId,
+            organizationId: ctx.organizationId,
+            isDefault: true,
+          },
+          select: {
+            bankAccountMasked: true,
+            bankName: true,
+            swiftBic: true,
+            taxId: true,
+          },
+        }),
+      ]);
+
+      if (!contractor) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: E.CONTRACTOR_NOT_FOUND });
+      }
 
       const previousValues: Record<string, unknown> = {
         bankAccountMasked: currentProfile?.bankAccountMasked ?? null,
         bankName: currentProfile?.bankName ?? null,
         swiftBic: currentProfile?.swiftBic ?? null,
-        taxId: currentProfile?.taxId ?? null,
+        taxId: contractor.taxId ?? currentProfile?.taxId ?? null,
       };
 
       // Build requested changes — encrypt bank account for storage
@@ -1098,7 +1116,9 @@ export const portalRouter = router({
         requestedChanges.swiftBic = input.swiftBic;
       }
       if (input.taxId !== undefined) {
-        requestedChanges.taxId = input.taxId;
+        const normalizedTaxId = normalizeContractorTaxId(contractor.countryCode, input.taxId);
+        assertValidContractorTaxId(contractor.countryCode, normalizedTaxId);
+        requestedChanges.taxId = normalizedTaxId;
       }
 
       if (Object.keys(requestedChanges).length === 0) {

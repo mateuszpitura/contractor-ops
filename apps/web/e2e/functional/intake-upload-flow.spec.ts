@@ -92,9 +92,7 @@ test.describe('Phase 62 inbound intake flow', () => {
 
     await test.step('confirm match (if a match was pre-selected)', async () => {
       const confirmMatchButton = page.getByRole('button', { name: /Confirm match/i });
-      const canConfirm = await confirmMatchButton
-        .isVisible({ timeout: 5_000 })
-        .catch(() => false);
+      const canConfirm = await confirmMatchButton.isVisible({ timeout: 5_000 }).catch(() => false);
       if (canConfirm) {
         await confirmMatchButton.click();
         await expect(page.getByText(/Matched/i).first()).toBeVisible({ timeout: 15_000 });
@@ -125,7 +123,7 @@ test.describe('Phase 62 inbound intake flow', () => {
         return;
       }
       await convertButton.click();
-      await page.waitForURL(/\/en\/invoices\/(?!intake)[^\/]+/, { timeout: 30_000 });
+      await page.waitForURL(/\/en\/invoices\/(?!intake)[^/]+/, { timeout: 30_000 });
       await expect(page.locator('#main-content')).toBeVisible({ timeout: 15_000 });
     });
   });

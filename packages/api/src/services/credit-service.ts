@@ -1,5 +1,6 @@
 import { prisma } from '@contractor-ops/db';
 import type { Prisma } from '@contractor-ops/db/generated/prisma/client';
+import { createLogger } from '@contractor-ops/logger';
 import { metrics } from '@contractor-ops/logger/metrics';
 import type { BillingCreditDenialReason } from '@contractor-ops/validators';
 import { billingCreditDenialReason } from '@contractor-ops/validators';
@@ -7,6 +8,8 @@ import { TIER_CREDIT_ALLOWANCE, TRIAL_CREDIT_ALLOWANCE } from './billing-constan
 import { CacheKeys, CacheTTL, cached, invalidate } from './cache.js';
 import { dispatch } from './notification-service.js';
 import { stripe } from './stripe-client.js';
+
+const log = createLogger({ service: 'credit-service' });
 
 // ---------------------------------------------------------------------------
 // Types
@@ -204,7 +207,7 @@ export async function checkAndDeductCredit(organizationId: string): Promise<Cred
           value: '1',
         },
       })
-      .catch((err: unknown) => console.error('[billing] Meter event failed:', err));
+      .catch((err: unknown) => log.error({ err }, 'meter event failed'));
   }
 
   // Strip internal stripeCustomerId from the return type
@@ -298,9 +301,9 @@ async function notifyCreditExhausted(organizationId: string): Promise<void> {
       entityId: organizationId,
     });
   } catch (error) {
-    console.error(
-      `[billing] Failed to send credit exhaustion notification for org ${organizationId}:`,
-      error,
+    log.error(
+      { err: error, organizationId },
+      'failed to send credit exhaustion notification for org',
     );
   }
 }

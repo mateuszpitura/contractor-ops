@@ -3,9 +3,12 @@ export { CachedStore } from './cached-store.js';
 export { MemoryStore } from './memory-store.js';
 export type { SecretStore } from './secret-store.js';
 
+import { createLogger } from '@contractor-ops/logger';
 import { CachedStore } from './cached-store.js';
 import { MemoryStore } from './memory-store.js';
 import type { SecretStore } from './secret-store.js';
+
+const log = createLogger({ service: 'secrets' });
 
 // ---------------------------------------------------------------------------
 // Singleton secret store
@@ -24,9 +27,9 @@ let _instance: SecretStore | null = null;
 export function getSecretStore(): SecretStore {
   if (_instance) return _instance;
 
-  console.warn(
-    '[secrets] No external secret store configured — using in-memory store. ' +
-      'Credentials will be lost on process restart.',
+  log.warn(
+    {},
+    'no external secret store configured — using in-memory store. credentials will be lost on process restart.',
   );
   _instance = new CachedStore(new MemoryStore());
   return _instance;

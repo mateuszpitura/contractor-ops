@@ -10,10 +10,13 @@ import {
   RESEND_EMAIL_RATE_MAX_PER_HOUR,
 } from '@contractor-ops/api/services/resend-email-intake';
 import { prisma } from '@contractor-ops/db';
+import { createWebhookLogger } from '@contractor-ops/logger';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import type { WebhookEventPayload } from 'resend';
 import { Resend } from 'resend';
+
+const log = createWebhookLogger('resend-inbound');
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -56,12 +59,12 @@ export async function POST(request: NextRequest) {
   const apiKey = process.env.RESEND_API_KEY;
 
   if (!webhookSecret) {
-    console.error('[resend-inbound] RESEND_WEBHOOK_SECRET is not set');
+    log.error({}, 'RESEND_WEBHOOK_SECRET is not set');
     return NextResponse.json({ error: 'Webhook secret not configured' }, { status: 500 });
   }
 
   if (!apiKey) {
-    console.error('[resend-inbound] RESEND_API_KEY is not set');
+    log.error({}, 'RESEND_API_KEY is not set');
     return NextResponse.json({ error: 'Resend API key not configured' }, { status: 500 });
   }
 
@@ -88,7 +91,7 @@ export async function POST(request: NextRequest) {
       webhookSecret,
     });
   } catch (error) {
-    console.warn('[resend-inbound] Invalid webhook signature:', error);
+    log.warn({ err: error }, 'invalid webhook signature');
     return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
   }
 
@@ -107,10 +110,7 @@ export async function POST(request: NextRequest) {
   }
 
   if (!orgSlug) {
-    console.warn(
-      '[resend-inbound] Could not parse org slug from recipients: %s',
-      toAddresses.join(', '),
-    );
+    log.warn({ recipients: toAddresses }, 'could not parse org slug from recipients');
     return NextResponse.json({ received: true });
   }
 
@@ -119,17 +119,15 @@ export async function POST(request: NextRequest) {
   });
 
   if (!organization) {
-    console.warn('[resend-inbound] No organization found for slug: %s', orgSlug);
+    log.warn({ orgSlug }, 'no organization found for slug');
     return NextResponse.json({ received: true });
   }
 
   const { allowed: emailAllowed } = checkResendEmailIntakeRateLimit(organization.id);
   if (!emailAllowed) {
-    console.warn(
-      '[resend-inbound] Rate limit exceeded for org %s (%s): %d emails/hour max',
-      organization.id,
-      orgSlug,
-      RESEND_EMAIL_RATE_MAX_PER_HOUR,
+    log.warn(
+      { organizationId: organization.id, orgSlug, maxPerHour: RESEND_EMAIL_RATE_MAX_PER_HOUR },
+      'rate limit exceeded',
     );
     return NextResponse.json({ error: 'Email intake rate limit exceeded' }, { status: 429 });
   }

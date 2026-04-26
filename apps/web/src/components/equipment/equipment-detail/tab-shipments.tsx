@@ -29,7 +29,7 @@ interface ShipmentEvent {
   id: string;
   status: string;
   notes: string | null;
-  occurredAt: string;
+  occurredAt: string | Date;
   createdByUserId: string | null;
 }
 
@@ -40,8 +40,8 @@ interface Shipment {
   carrierCustom: string | null;
   trackingNumber: string | null;
   currentStatus: string;
-  expectedDeliveryAt: string | null;
-  createdAt: string;
+  expectedDeliveryAt: string | Date | null;
+  createdAt: string | Date;
   events: ShipmentEvent[];
 }
 
@@ -50,7 +50,7 @@ interface PendingReturn {
   contractorName: string;
   itemCount: number;
   targetPointName: string;
-  createdAt: string;
+  createdAt: string | Date;
 }
 
 interface TabShipmentsProps {

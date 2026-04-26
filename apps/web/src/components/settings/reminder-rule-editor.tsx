@@ -1,5 +1,6 @@
 'use client';
 
+import { workflowAssignableRoleValues } from '@contractor-ops/validators/roles';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
@@ -90,26 +91,17 @@ const RECIPIENT_MODES = [
   { value: 'ROLE', labelKey: 'recipientRole' },
 ] as const;
 
-const ROLE_OPTIONS = [
-  'ORG_ADMIN',
-  'FINANCE_ADMIN',
-  'OPS_MANAGER',
-  'TEAM_MANAGER',
-  'LEGAL_VIEWER',
-  'IT_ADMIN',
-  'ACCOUNTANT',
-  'READ_ONLY',
-] as const;
+const ROLE_OPTIONS = workflowAssignableRoleValues;
 
 const ROLE_LABELS: Record<string, string> = {
-  ORG_ADMIN: 'Admin',
-  FINANCE_ADMIN: 'Finance Admin',
-  OPS_MANAGER: 'Ops Manager',
-  TEAM_MANAGER: 'Team Manager',
-  LEGAL_VIEWER: 'Legal Viewer',
-  IT_ADMIN: 'IT Admin',
-  ACCOUNTANT: 'Accountant',
-  READ_ONLY: 'Read Only',
+  admin: 'Admin',
+  finance_admin: 'Finance Admin',
+  ops_manager: 'Ops Manager',
+  team_manager: 'Team Manager',
+  legal_compliance_viewer: 'Legal Viewer',
+  it_admin: 'IT Admin',
+  external_accountant: 'Accountant',
+  readonly: 'Read Only',
 };
 
 // ---------------------------------------------------------------------------

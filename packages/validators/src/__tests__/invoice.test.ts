@@ -363,9 +363,7 @@ describe('invoiceCreateSchema — refinement branches', () => {
     });
     expect(result.success).toBe(false);
     if (!result.success) {
-      const issue = result.error.issues.find(i =>
-        i.path.includes('reverseChargeOverrideReason'),
-      );
+      const issue = result.error.issues.find(i => i.path.includes('reverseChargeOverrideReason'));
       expect(issue).toBeDefined();
       expect(issue?.message).toContain('Override reason required');
     }
@@ -466,7 +464,14 @@ describe('invoiceUpdateSchema', () => {
 
 describe('invoiceListSchema — additional branches', () => {
   it('accepts all sort options', () => {
-    const sortOptions = ['receivedAt', 'invoiceNumber', 'issueDate', 'dueDate', 'totalMinor', 'status'] as const;
+    const sortOptions = [
+      'receivedAt',
+      'invoiceNumber',
+      'issueDate',
+      'dueDate',
+      'totalMinor',
+      'status',
+    ] as const;
     for (const sortBy of sortOptions) {
       const result = invoiceListSchema.safeParse({ sortBy });
       expect(result.success).toBe(true);

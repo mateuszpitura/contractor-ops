@@ -11,12 +11,7 @@ import { cn } from '@/lib/utils';
 // Late-interest status pill — 5 states per UI-SPEC colour table
 // ---------------------------------------------------------------------------
 
-export type LateInterestStatus =
-  | 'NOT_APPLICABLE'
-  | 'ACCRUING'
-  | 'CLAIMED'
-  | 'WAIVED'
-  | 'PAID';
+export type LateInterestStatus = 'NOT_APPLICABLE' | 'ACCRUING' | 'CLAIMED' | 'WAIVED' | 'PAID';
 
 interface StatusPresentation {
   labelKey: string;
@@ -57,10 +52,7 @@ export interface LateInterestStatusPillProps {
   className?: string;
 }
 
-export function LateInterestStatusPill({
-  status,
-  className,
-}: LateInterestStatusPillProps) {
+export function LateInterestStatusPill({ status, className }: LateInterestStatusPillProps) {
   const t = useTranslations('Payments.lateInterest.status');
   const presentation = STATUS_PRESENTATION[status];
   const Icon = presentation.icon;
@@ -70,8 +62,7 @@ export function LateInterestStatusPill({
     <Badge
       variant="secondary"
       className={cn('gap-1', presentation.containerClass, className)}
-      aria-label={label}
-    >
+      aria-label={label}>
       <Icon className="h-3 w-3" aria-hidden="true" />
       <span>{label}</span>
     </Badge>

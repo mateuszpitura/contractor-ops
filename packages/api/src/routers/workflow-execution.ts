@@ -2,6 +2,10 @@
  * Workflow execution procedures: run lifecycle (start, cancel, get, list),
  * task actions (complete, skip, reassign), comments, and overdue count.
  */
+
+import type { Prisma } from '@contractor-ops/db/generated/prisma/client';
+import { createLogger } from '@contractor-ops/logger';
+import type { userRoleEnum, workflowTaskTypeEnum } from '@contractor-ops/validators';
 import {
   addCommentSchema,
   calendarTaskConfigSchema,
@@ -37,6 +41,8 @@ import {
   resolveAssignee,
   validateTransition,
 } from './workflow-shared.js';
+
+const log = createLogger({ service: 'workflow-execution-router' });
 
 /** Transaction client derived from the tenant-scoped DbClient. */
 type TxClient = Parameters<Parameters<DbClient['$transaction']>[0]>[0];
@@ -135,7 +141,7 @@ function syncTaskToExternalSystems(
           await transitionJiraIssue(db, organizationId, connection.id, task.id, targetStatus);
         }
       } catch (err) {
-        console.error(`[workflow] Outbound Jira transition failed for ${task.id}:`, err);
+        log.error({ err, taskId: task.id }, 'outbound jira transition failed');
       }
     })();
   }
@@ -146,7 +152,7 @@ function syncTaskToExternalSystems(
         const { syncTaskStatusToLinear } = await import('../services/linear-issue-sync.js');
         await syncTaskStatusToLinear(db, task.id, targetStatus);
       } catch (err) {
-        console.error(`[workflow] Outbound Linear sync failed for ${task.id}:`, err);
+        log.error({ err, taskId: task.id }, 'outbound linear sync failed');
       }
     })();
   }
@@ -215,10 +221,10 @@ async function instantiateTaskRuns(
     configJson: unknown;
     title: string;
     description: string | null;
-    taskType: string;
+    taskType: z.infer<typeof workflowTaskTypeEnum>;
     required: boolean;
     assigneeMode: string;
-    assigneeRole: string | null;
+    assigneeRole: z.infer<typeof userRoleEnum> | null;
     assigneeUserId: string | null;
     dueOffsetDays: number | null;
     dueOffsetHours: number | null;
@@ -233,10 +239,19 @@ async function instantiateTaskRuns(
 
   for (const taskTemplate of templateTasks) {
     const condition = taskTemplate.configJson as ConditionGroup | null;
-    const conditionMet = evaluateCondition(condition, { contractor, contract });
+    const conditionMet = evaluateCondition(condition, {
+      contractor: contractor as Record<string, unknown>,
+      contract: contract ? (contract as Record<string, unknown>) : undefined,
+    });
 
     const assigneeUserId = conditionMet
-      ? await resolveAssignee(taskTemplate, contractor, contract, organizationId, tx)
+      ? await resolveAssignee(
+          taskTemplate,
+          contractor as { internalOwnerUserId?: string | null },
+          contract as { internalOwnerUserId?: string | null } | null,
+          organizationId,
+          tx,
+        )
       : null;
 
     const dueAt = computeTaskDueAt(
@@ -266,7 +281,7 @@ async function instantiateTaskRuns(
         dueAt,
         dependsOnTaskRunId: dependsOnRunId,
         status,
-        resultJson,
+        resultJson: resultJson as Prisma.InputJsonValue,
       },
     });
 
@@ -304,11 +319,11 @@ async function syncJiraTasksAfterStart(
 
     for (const task of todoTasks) {
       createJiraIssue(db, organizationId, connection.id, task.id).catch(err =>
-        console.error(`[workflow/startRun] Jira issue creation failed for task ${task.id}:`, err),
+        log.error({ err, taskId: task.id }, 'jira issue creation failed for task'),
       );
     }
   } catch (err) {
-    console.error('[workflow/startRun] Jira issue creation setup failed:', err);
+    log.error({ err }, 'jira issue creation setup failed');
   }
 }
 
@@ -344,12 +359,10 @@ async function syncLinearTasksAfterStart(
         assigneeEmail: undefined,
         teamId: linearConfig.teamId,
         teamKey: linearConfig.teamKey,
-      }).catch(err =>
-        console.error(`[workflow/startRun] Linear issue creation failed for task ${task.id}:`, err),
-      );
+      }).catch(err => log.error({ err, taskId: task.id }, 'linear issue creation failed for task'));
     }
   } catch (err) {
-    console.error('[workflow/startRun] Linear issue creation setup failed:', err);
+    log.error({ err }, 'linear issue creation setup failed');
   }
 }
 
@@ -384,14 +397,11 @@ async function syncCalendarTasksAfterStart(
         taskName: task.title,
         userId,
       }).catch(err =>
-        console.error(
-          `[workflow/startRun] Calendar event creation failed for task ${task.id}:`,
-          err,
-        ),
+        log.error({ err, taskId: task.id }, 'calendar event creation failed for task'),
       );
     }
   } catch (err) {
-    console.error('[workflow/startRun] Calendar event creation setup failed:', err);
+    log.error({ err }, 'calendar event creation setup failed');
   }
 }
 
@@ -412,6 +422,11 @@ export const workflowExecutionRouter = router({
     .use(requirePermission({ workflow: ['execute'] }))
     .input(startRunSchema)
     .mutation(async ({ ctx, input }) => {
+      const userId = ctx.user?.id;
+      if (!userId) {
+        throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Authentication required' });
+      }
+
       const run = await ctx.db.$transaction(async tx => {
         const template = await tx.workflowTemplate.findFirst({
           where: {
@@ -468,7 +483,7 @@ export const workflowExecutionRouter = router({
             contractorId: contractor.id,
             contractId: contract?.id ?? null,
             status: 'IN_PROGRESS',
-            startedByUserId: ctx.user?.id,
+            startedByUserId: userId,
             startedAt: now,
             dueAt: maxDueDate,
           },
@@ -541,7 +556,7 @@ export const workflowExecutionRouter = router({
             workflowName: run.run.workflowTemplate.name,
             contractorName: run.contractorName,
           },
-        }).catch(err => console.error('[workflow] dispatch TASK_ASSIGNED failed:', err));
+        }).catch(err => log.error({ err }, 'dispatch task_assigned failed'));
       }
 
       // Fire-and-forget: sync eligible tasks to external integrations
@@ -564,7 +579,7 @@ export const workflowExecutionRouter = router({
         run.calendarConfigMap,
         run.contractorName,
         run.contractName,
-        ctx.user?.id,
+        userId,
       );
 
       // Fire-and-forget: handle EQUIPMENT task integration hooks (Phase 30)
@@ -795,10 +810,14 @@ export const workflowExecutionRouter = router({
     .input(myTasksListSchema)
     .query(async ({ ctx, input }) => {
       const { page, pageSize, overdueOnly } = input;
+      const me = ctx.user?.id;
+      if (!me) {
+        throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Authentication required' });
+      }
 
       const where: Record<string, unknown> = {
         organizationId: ctx.organizationId,
-        assigneeUserId: ctx.user?.id,
+        assigneeUserId: me,
         status: { in: ['TODO', 'IN_PROGRESS', 'BLOCKED'] },
       };
 
@@ -851,6 +870,11 @@ export const workflowExecutionRouter = router({
     .use(requirePermission({ workflow: ['execute'] }))
     .input(taskActionSchema)
     .mutation(async ({ ctx, input }) => {
+      const userId = ctx.user?.id;
+      if (!userId) {
+        throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Authentication required' });
+      }
+
       const result = await ctx.db.$transaction(async tx => {
         const task = await tx.workflowTaskRun.findFirst({
           where: {
@@ -884,7 +908,7 @@ export const workflowExecutionRouter = router({
           data: {
             status: 'DONE',
             completedAt: now,
-            completedByUserId: ctx.user?.id,
+            completedByUserId: userId,
             startedAt: task.startedAt ?? now,
           },
         });
@@ -1054,7 +1078,7 @@ export const workflowExecutionRouter = router({
             updated.workflowRun.contractor?.displayName ??
             'Unknown',
         },
-      }).catch(err => console.error('[workflow] dispatch TASK_ASSIGNED (reassign) failed:', err));
+      }).catch(err => log.error({ err }, 'dispatch task_assigned (reassign) failed'));
 
       return plain(updated);
     }),
@@ -1070,6 +1094,11 @@ export const workflowExecutionRouter = router({
     .use(requirePermission({ workflow: ['update'] }))
     .input(addCommentSchema)
     .mutation(async ({ ctx, input }) => {
+      const userId = ctx.user?.id;
+      if (!userId) {
+        throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Authentication required' });
+      }
+
       // Verify run belongs to org
       const run = await ctx.db.workflowRun.findFirst({
         where: {
@@ -1090,7 +1119,7 @@ export const workflowExecutionRouter = router({
           organizationId: ctx.organizationId,
           workflowRunId: input.workflowRunId,
           workflowTaskRunId: input.workflowTaskRunId ?? null,
-          authorUserId: ctx.user?.id,
+          authorUserId: userId,
           body: input.body,
         },
         include: {
@@ -1144,10 +1173,15 @@ export const workflowExecutionRouter = router({
   overdueCount: tenantProcedure
     .use(requirePermission({ workflow: ['read'] }))
     .query(async ({ ctx }) => {
+      const me = ctx.user?.id;
+      if (!me) {
+        throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Authentication required' });
+      }
+
       const count = await ctx.db.workflowTaskRun.count({
         where: {
           organizationId: ctx.organizationId,
-          assigneeUserId: ctx.user?.id,
+          assigneeUserId: me,
           status: { in: ['TODO', 'IN_PROGRESS'] },
           dueAt: { lt: new Date() },
         },

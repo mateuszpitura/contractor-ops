@@ -73,7 +73,7 @@ model Contractor {
   taxIdValidations          TaxIdValidation[]
   ir35ChainParticipantLinks Ir35ChainParticipant[]
   leitwegIds                LeitwegId[]
-  intakes                   InvoiceIntakeRequest[] @relation("InvoiceIntakeMatchedContractor")
+  intakes                   InvoiceIntakeRequest[]             @relation("InvoiceIntakeMatchedContractor")
 
   // InPost preferred Paczkomat (D-03)
   preferredPaczkomatId      String?
@@ -136,10 +136,10 @@ model ContractorBillingProfile {
   contractor   Contractor   @relation(fields: [contractorId], references: [id])
 
   // Phase 63 (D-01) — UK BACS bank account fields (encrypted + masked pairs)
-  ukSortCodeEncrypted       String?
-  ukSortCodeMasked          String?
-  ukAccountNumberEncrypted  String?
-  ukAccountNumberMasked     String?
+  ukSortCodeEncrypted      String?
+  ukSortCodeMasked         String?
+  ukAccountNumberEncrypted String?
+  ukAccountNumberMasked    String?
 
   invoices        Invoice[]
   paymentRunItems PaymentRunItem[]

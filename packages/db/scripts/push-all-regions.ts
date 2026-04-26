@@ -16,6 +16,9 @@ import { execSync } from 'node:child_process';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { config } from 'dotenv';
+import pino from 'pino';
+
+const log = pino({ level: process.env.LOG_LEVEL ?? 'info' });
 
 // biome-ignore lint/style/useNamingConvention: standard Node.js __dirname polyfill for ESM
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -51,7 +54,7 @@ function pushRegion(envVar: string): RegionResult {
     return { region, status: 'ok' };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    console.error(`[${region}] Schema push FAILED: ${message}`);
+    log.error({ region, err: message }, 'schema push failed');
     return { region, status: 'failed', error: message };
   }
 }
@@ -64,7 +67,7 @@ function main() {
     results.push(result);
 
     if (result.status === 'failed') {
-      console.error('\nAborting: Schema push failed. Fix the issue and re-run.');
+      log.error({}, 'aborting: schema push failed. fix the issue and re-run.');
       process.exit(1);
     }
   }

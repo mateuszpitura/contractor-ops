@@ -1,5 +1,8 @@
+import { createLogger } from '@contractor-ops/logger';
 import { getServerEnv } from '@contractor-ops/validators';
 import NodeClam from 'clamscan';
+
+const log = createLogger({ service: 'virus-scanner' });
 
 // ---------------------------------------------------------------------------
 // ClamAV virus scanner singleton
@@ -44,7 +47,7 @@ export async function scanBuffer(
       virusName: viruses?.[0],
     };
   } catch (error) {
-    console.error('[virus-scanner] Scan failed:', error);
+    log.error({ err: error }, 'scan failed');
     throw error;
   }
 }

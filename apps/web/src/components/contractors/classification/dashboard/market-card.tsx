@@ -11,6 +11,7 @@
 
 'use client';
 
+import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -38,12 +39,14 @@ function TileSkeleton() {
 export function MarketCard({ market }: MarketCardProps) {
   const t = useTranslations('Classification.polish.dashboard');
 
-  const coverage = trpc.classificationDashboard.coverageByMarket.useQuery({ market });
-  const riskDistribution = trpc.classificationDashboard.riskDistributionByMarket.useQuery({
-    market,
-  });
-  const overdue = trpc.classificationDashboard.overdueByMarket.useQuery({ market });
-  const activeAlerts = trpc.classificationDashboard.activeAlertsByMarket.useQuery({ market });
+  const coverage = useQuery(trpc.classificationDashboard.coverageByMarket.queryOptions({ market }));
+  const riskDistribution = useQuery(
+    trpc.classificationDashboard.riskDistributionByMarket.queryOptions({ market }),
+  );
+  const overdue = useQuery(trpc.classificationDashboard.overdueByMarket.queryOptions({ market }));
+  const activeAlerts = useQuery(
+    trpc.classificationDashboard.activeAlertsByMarket.queryOptions({ market }),
+  );
 
   const cardTitle = market === 'GB' ? t('gbCardTitle') : t('deCardTitle');
   const cardSubline = market === 'GB' ? t('gbCardSubline') : t('deCardSubline');
@@ -59,10 +62,7 @@ export function MarketCard({ market }: MarketCardProps) {
       <CardContent className="flex flex-col gap-6">
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           {coverage.data ? (
-            <CoverageTile
-              completed={coverage.data.completed}
-              total={coverage.data.total}
-            />
+            <CoverageTile completed={coverage.data.completed} total={coverage.data.total} />
           ) : (
             <TileSkeleton />
           )}
@@ -75,10 +75,7 @@ export function MarketCard({ market }: MarketCardProps) {
             <TileSkeleton />
           )}
           {overdue.data ? (
-            <OverdueReassessmentsTile
-              count={overdue.data.count}
-              items={overdue.data.items}
-            />
+            <OverdueReassessmentsTile count={overdue.data.count} items={overdue.data.items} />
           ) : (
             <TileSkeleton />
           )}
@@ -96,13 +93,14 @@ export function MarketCard({ market }: MarketCardProps) {
               <ActiveAlertsTile
                 data={{
                   kind: 'de',
-                  economicBands:
-                    (activeAlerts.data as {
+                  economicBands: (
+                    activeAlerts.data as {
                       economicBands?: { warning: number; critical: number };
-                    }).economicBands ?? { warning: 0, critical: 0 },
+                    }
+                  ).economicBands ?? { warning: 0, critical: 0 },
                   drvExpiringWithin90d:
-                    (activeAlerts.data as { drvExpiringWithin90d?: number })
-                      .drvExpiringWithin90d ?? 0,
+                    (activeAlerts.data as { drvExpiringWithin90d?: number }).drvExpiringWithin90d ??
+                    0,
                 }}
               />
             )

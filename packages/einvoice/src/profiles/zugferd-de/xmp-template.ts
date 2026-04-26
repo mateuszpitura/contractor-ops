@@ -17,11 +17,11 @@
 // double quotes so single quotes don't strictly need escaping, but we escape
 // both to match the XML 1.0 §2.4 predefined-entities definition.
 
+import type { ZugferdConformanceLevel } from './constants.js';
 import {
   PDFA_ID_CONFORMANCE,
   PDFA_ID_NAMESPACE,
   PDFA_ID_PART,
-  type ZugferdConformanceLevel,
   ZUGFERD_XMP_DOCUMENT_FILE_NAME,
   ZUGFERD_XMP_DOCUMENT_TYPE,
   ZUGFERD_XMP_NAMESPACE,

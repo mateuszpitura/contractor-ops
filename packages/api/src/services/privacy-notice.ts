@@ -12,6 +12,7 @@
  */
 
 import { prisma } from '@contractor-ops/db';
+import type { Prisma } from '@contractor-ops/db/generated/prisma/client';
 import type { SupportedJurisdiction as SupportedJurisdictionImpl } from '@contractor-ops/validators';
 import {
   dePrivacyNotice,
@@ -239,7 +240,7 @@ export async function getPrivacyNotice(
         organizationId,
         jurisdiction,
         version: 1,
-        contentJson: defaultContent as unknown as Record<string, unknown>,
+        contentJson: defaultContent as Prisma.InputJsonValue,
         effectiveFrom: new Date(),
       },
     });
@@ -276,7 +277,7 @@ export async function createPrivacyNotice(
       organizationId,
       jurisdiction,
       version: nextVersion,
-      contentJson,
+      contentJson: contentJson as Prisma.InputJsonValue,
       effectiveFrom: new Date(),
     },
   });

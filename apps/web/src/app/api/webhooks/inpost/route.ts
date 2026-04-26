@@ -3,8 +3,17 @@ import {
   verifyInPostSignature,
 } from '@contractor-ops/api/services/courier/inpost-webhook-handler';
 import { prisma } from '@contractor-ops/db';
+import { createWebhookLogger } from '@contractor-ops/logger';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
+
+const log = createWebhookLogger('inpost');
+
+const inpostPayloadMatchSchema = z.object({
+  shipment_id: z.string().optional(),
+  tracking_number: z.string().optional(),
+});
 
 // ---------------------------------------------------------------------------
 // POST /api/webhooks/inpost
@@ -33,16 +42,20 @@ function matchOrgBySignature(
 }
 
 async function matchOrgByShipmentPayload(rawBody: string): Promise<string | null> {
-  let payload: { shipment_id?: string; tracking_number?: string };
+  let json: unknown;
   try {
-    payload = JSON.parse(rawBody);
+    json = JSON.parse(rawBody);
   } catch {
     return null;
   }
 
+  const parsed = inpostPayloadMatchSchema.safeParse(json);
+  if (!parsed.success) return null;
+  const payload = parsed.data;
+
   if (payload.shipment_id) {
     const shipment = await prisma.shipment.findFirst({
-      where: { externalId: String(payload.shipment_id), carrier: 'InPost' },
+      where: { externalId: payload.shipment_id, carrier: 'InPost' },
       select: { organizationId: true },
     });
     if (shipment) return shipment.organizationId;
@@ -95,7 +108,7 @@ export async function POST(request: NextRequest) {
   });
 
   if (configs.length === 0) {
-    console.warn('[inpost-webhook] No InPost courier configs found');
+    log.warn({}, 'no InPost courier configs found');
     return NextResponse.json({ error: 'Not configured' }, { status: 404 });
   }
 
@@ -117,7 +130,7 @@ export async function POST(request: NextRequest) {
 
   // Fire-and-forget: process webhook event
   void handleInPostWebhook(prisma, matchedOrgId, payload).catch(err =>
-    console.error(`[inpost-webhook] Processing failed for org=${matchedOrgId}:`, err),
+    log.error({ err, organizationId: matchedOrgId }, 'processing failed'),
   );
 
   return NextResponse.json({ received: true });

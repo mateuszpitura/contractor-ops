@@ -838,9 +838,9 @@ describe('workflowExecutionRouter', () => {
         workflowRun: { id: RUN_ID, status: 'IN_PROGRESS' },
       });
 
-      await expect(
-        caller.skipTask({ taskRunId: TASK_RUN_ID, reason: 'test' }),
-      ).rejects.toThrow(TRPCError);
+      await expect(caller.skipTask({ taskRunId: TASK_RUN_ID, reason: 'test' })).rejects.toThrow(
+        TRPCError,
+      );
     });
   });
 

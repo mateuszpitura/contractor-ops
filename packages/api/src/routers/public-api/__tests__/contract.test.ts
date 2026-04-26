@@ -212,7 +212,8 @@ describe('publicContractRouter', () => {
       expect(result.page).toBe(1);
       expect(result.pageSize).toBe(25);
 
-      const whereArg = (mockDb.contract.findMany as ReturnType<typeof vi.fn>).mock.calls[0]?.[0].where;
+      const whereArg = (mockDb.contract.findMany as ReturnType<typeof vi.fn>).mock.calls[0]?.[0]
+        .where;
       expect(whereArg).toMatchObject({ organizationId: ORG_ID, deletedAt: null });
     });
 
@@ -223,7 +224,8 @@ describe('publicContractRouter', () => {
       const caller = makeCaller();
       await caller.list({ status: 'EXPIRED' });
 
-      const whereArg = (mockDb.contract.findMany as ReturnType<typeof vi.fn>).mock.calls[0]?.[0].where;
+      const whereArg = (mockDb.contract.findMany as ReturnType<typeof vi.fn>).mock.calls[0]?.[0]
+        .where;
       expect(whereArg).toMatchObject({ organizationId: ORG_ID, status: 'EXPIRED' });
     });
 
@@ -234,7 +236,8 @@ describe('publicContractRouter', () => {
       const caller = makeCaller();
       await caller.list({ contractorId: CONTRACTOR_ID });
 
-      const whereArg = (mockDb.contract.findMany as ReturnType<typeof vi.fn>).mock.calls[0]?.[0].where;
+      const whereArg = (mockDb.contract.findMany as ReturnType<typeof vi.fn>).mock.calls[0]?.[0]
+        .where;
       expect(whereArg).toMatchObject({ organizationId: ORG_ID, contractorId: CONTRACTOR_ID });
     });
 
@@ -245,7 +248,8 @@ describe('publicContractRouter', () => {
       const caller = makeCaller();
       await caller.list({});
 
-      const whereArg = (mockDb.contract.findMany as ReturnType<typeof vi.fn>).mock.calls[0]?.[0].where;
+      const whereArg = (mockDb.contract.findMany as ReturnType<typeof vi.fn>).mock.calls[0]?.[0]
+        .where;
       expect(whereArg).toMatchObject({ deletedAt: null });
     });
 
@@ -287,7 +291,8 @@ describe('publicContractRouter', () => {
       expect(result.id).toBe(CONTRACT_ID);
       expect(result.title).toBe('Senior Backend Development');
 
-      const whereArg = (mockDb.contract.findFirst as ReturnType<typeof vi.fn>).mock.calls[0]?.[0].where;
+      const whereArg = (mockDb.contract.findFirst as ReturnType<typeof vi.fn>).mock.calls[0]?.[0]
+        .where;
       expect(whereArg).toMatchObject({ id: CONTRACT_ID, organizationId: ORG_ID, deletedAt: null });
     });
 
@@ -300,7 +305,8 @@ describe('publicContractRouter', () => {
         message: 'contractNotFound',
       });
 
-      const whereArg = (mockDb.contract.findFirst as ReturnType<typeof vi.fn>).mock.calls[0]?.[0].where;
+      const whereArg = (mockDb.contract.findFirst as ReturnType<typeof vi.fn>).mock.calls[0]?.[0]
+        .where;
       expect(whereArg.organizationId).toBe(ORG_ID);
       expect(whereArg.organizationId).not.toBe(OTHER_ORG_ID);
     });
@@ -322,7 +328,7 @@ describe('publicContractRouter', () => {
       mockDb.contract.findFirst.mockResolvedValueOnce(contract);
 
       const caller = makeCaller();
-      const result = await caller.getById({ id: CONTRACT_ID }) as Record<string, unknown>;
+      const result = (await caller.getById({ id: CONTRACT_ID })) as Record<string, unknown>;
 
       expect(result).not.toHaveProperty('organizationId');
       expect(result).not.toHaveProperty('deletedAt');
@@ -330,7 +336,9 @@ describe('publicContractRouter', () => {
 
     it('rejects caller without contract:read scope', async () => {
       const caller = makeCaller(['contractor:read']);
-      await expect(caller.getById({ id: CONTRACT_ID })).rejects.toMatchObject({ code: 'FORBIDDEN' });
+      await expect(caller.getById({ id: CONTRACT_ID })).rejects.toMatchObject({
+        code: 'FORBIDDEN',
+      });
     });
   });
 });

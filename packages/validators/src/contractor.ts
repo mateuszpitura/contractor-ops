@@ -48,6 +48,8 @@ export const nipSchema = z
   .transform(v => v.replace(/[\s-]/g, ''))
   .refine(isValidNip, { message: 'Invalid NIP number' });
 
+const taxIdSchema = z.string().min(1, 'Tax ID is required').max(50);
+
 // ---------------------------------------------------------------------------
 // IBAN validation (via ibantools)
 // ---------------------------------------------------------------------------
@@ -62,12 +64,12 @@ const ibanRefine = (val: string) => isValidIBAN(val.replace(/\s/g, '').toUpperCa
  * Schema for creating a new contractor.
  * Covers company details, billing configuration, and team assignment.
  */
-export const contractorCreateSchema = z.object({
+const contractorBaseSchema = z.object({
   // Company details
   legalName: z.string().min(1, 'Legal name is required').max(255),
   displayName: z.string().min(1, 'Display name is required').max(255),
   type: contractorTypeEnum,
-  taxId: nipSchema,
+  taxId: taxIdSchema,
   vatId: optionalString,
   registrationNumber: optionalString,
   email: z.string().email('Invalid email address'),
@@ -98,6 +100,21 @@ export const contractorCreateSchema = z.object({
   defaultCostCenterId: optionalFk,
 });
 
+function validateCountryTaxId(
+  data: { countryCode?: string; taxId?: string },
+  ctx: z.RefinementCtx,
+) {
+  if (data.countryCode === 'PL' && data.taxId !== undefined && !isValidNip(data.taxId)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['taxId'],
+      message: 'Invalid NIP number',
+    });
+  }
+}
+
+export const contractorCreateSchema = contractorBaseSchema.superRefine(validateCountryTaxId);
+
 export type ContractorCreateInput = z.infer<typeof contractorCreateSchema>;
 
 /**
@@ -105,9 +122,12 @@ export type ContractorCreateInput = z.infer<typeof contractorCreateSchema>;
  * Extends the create schema with additional fields that are editable
  * but not part of initial creation (e.g., notes).
  */
-export const contractorUpdateSchema = contractorCreateSchema.partial().extend({
-  notes: z.string().optional(),
-});
+export const contractorUpdateSchema = contractorBaseSchema
+  .partial()
+  .extend({
+    notes: z.string().optional(),
+  })
+  .superRefine(validateCountryTaxId);
 
 export type ContractorUpdateInput = z.infer<typeof contractorUpdateSchema>;
 

@@ -520,6 +520,13 @@ export {
   reminderRuleUpdateSchema,
   reminderTriggerTypeEnum,
 } from './reminder.js';
+export type { InvitableMemberRole, WorkflowAssignableRole } from './roles.js';
+export {
+  invitableMemberRoleEnum,
+  invitableMemberRoleValues,
+  workflowAssignableRoleEnum,
+  workflowAssignableRoleValues,
+} from './roles.js';
 export type {
   BundeslandCode,
   SteuernummerFormat,

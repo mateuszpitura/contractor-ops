@@ -4,8 +4,8 @@ import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import type { ColumnDef } from '@tanstack/react-table';
 import { getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { FileText, Loader2 } from 'lucide-react';
-import { useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useCallback, useMemo, useState } from 'react';
 import { parseFilterParam } from '@/components/invoices/einvoice-compliance-filter-chips';
 import { DataTableBody } from '@/components/shared/data-table-body';
@@ -120,9 +120,7 @@ export function InvoiceDataTable({ onRowClick, onUpload }: InvoiceDataTableProps
     const rows = result?.items ?? [];
     if (!isComplianceFilterActive) return rows;
     const allowed = new Set(complianceFilters);
-    return rows.filter(row =>
-      allowed.has(deriveComplianceStatus(row.eInvoiceLifecycle)),
-    );
+    return rows.filter(row => allowed.has(deriveComplianceStatus(row.eInvoiceLifecycle)));
   }, [invoicesQuery.data, complianceFilters, isComplianceFilterActive]);
 
   const totalRows = useMemo(() => {

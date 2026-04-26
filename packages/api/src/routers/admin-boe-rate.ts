@@ -7,18 +7,16 @@ import { createLogger } from '@contractor-ops/logger';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { router } from '../init.js';
+import { plain } from '../lib/plain.js';
 import { requirePermission } from '../middleware/rbac.js';
 import { tenantProcedure } from '../middleware/tenant.js';
+import { invalidateBoeRateCache } from '../services/boe-rate-cache.js';
 
 const log = createLogger({ service: 'admin-boe-rate-router' });
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-function plain<T>(data: T): T {
-  return JSON.parse(JSON.stringify(data)) as T;
-}
 
 // ---------------------------------------------------------------------------
 // Router
@@ -74,6 +72,8 @@ export const adminBoeRateRouter = router({
         },
       });
 
+      invalidateBoeRateCache();
+
       log.info(
         {
           entryId: entry.id,
@@ -117,6 +117,8 @@ export const adminBoeRateRouter = router({
         },
       });
 
+      invalidateBoeRateCache();
+
       log.info(
         {
           entryId: input.id,
@@ -147,6 +149,8 @@ export const adminBoeRateRouter = router({
       await ctx.db.boEBaseRateHistory.delete({
         where: { id: input.id },
       });
+
+      invalidateBoeRateCache();
 
       log.info(
         {

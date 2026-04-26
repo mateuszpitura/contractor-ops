@@ -1,5 +1,12 @@
+import type { Prisma } from '@contractor-ops/db';
 import { prisma } from '@contractor-ops/db';
 import type { TaxRateResponse, WhtCalculation, WhtServiceType } from '@contractor-ops/validators';
+
+type TaxRateDb = {
+  taxRate: {
+    findFirst: (args: Prisma.TaxRateFindFirstArgs) => Promise<{ code: string } | null>;
+  };
+};
 
 /**
  * Get active tax rates for a country as of a given date.
@@ -43,7 +50,7 @@ export async function getDefaultRateCode(
   countryCode: string,
   // Accept a Prisma client for dependency injection in tests; defaults to the
   // shared instance for production callers.
-  db: typeof prisma = prisma,
+  db: TaxRateDb = prisma,
   asOfDate: Date = new Date(),
 ): Promise<string | null> {
   const rate = await db.taxRate.findFirst({

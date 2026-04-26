@@ -25,9 +25,8 @@ vi.mock('@trpc/client', () => ({
 }));
 
 vi.mock('@tanstack/react-query', async () => {
-  const actual = await vi.importActual<typeof import('@tanstack/react-query')>(
-    '@tanstack/react-query',
-  );
+  const actual =
+    await vi.importActual<typeof import('@tanstack/react-query')>('@tanstack/react-query');
   return {
     ...actual,
     useMutation: () => ({
@@ -60,8 +59,8 @@ vi.mock('sonner', () => ({
 
 // Import after mocks so the module picks them up.
 import { fireEvent } from '@testing-library/react';
-import { setup, screen } from '@/test/test-utils';
 import { toast } from 'sonner';
+import { screen, setup } from '@/test/test-utils';
 import { IntakeUploadDialog } from '../intake-upload-dialog';
 
 beforeEach(() => {

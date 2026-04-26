@@ -10,6 +10,7 @@ import {
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { router } from '../init.js';
+import { plain } from '../lib/plain.js';
 import { requirePermission } from '../middleware/rbac.js';
 import { tenantProcedure } from '../middleware/tenant.js';
 import {
@@ -24,13 +25,12 @@ import { computeTimeReconciliation } from '../services/time-reconciliation.js';
 // Helpers
 // ---------------------------------------------------------------------------
 
-/**
- * Strips Prisma class prototype from query results, producing plain
- * JSON-serializable objects so that inferred tRPC router types do NOT
- * reference the generated Prisma client module (avoids TS2742).
- */
-function plain<T>(data: T): T {
-  return JSON.parse(JSON.stringify(data)) as T;
+function requireUserId(ctx: { user?: { id: string } | null }): string {
+  const id = ctx.user?.id;
+  if (!id) {
+    throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Authentication required' });
+  }
+  return id;
 }
 
 // ---------------------------------------------------------------------------
@@ -263,7 +263,7 @@ export const timeRouter = router({
         ctx.db,
         ctx.organizationId,
         input.timesheetId,
-        ctx.user?.id,
+        requireUserId(ctx),
       );
       return plain(result);
     }),
@@ -279,7 +279,7 @@ export const timeRouter = router({
         ctx.db,
         ctx.organizationId,
         input.timesheetId,
-        ctx.user?.id,
+        requireUserId(ctx),
         input.reason,
       );
       return plain(result);
@@ -296,7 +296,7 @@ export const timeRouter = router({
         ctx.db,
         ctx.organizationId,
         input.timesheetIds,
-        ctx.user?.id,
+        requireUserId(ctx),
       );
       return { count: result.count };
     }),
@@ -312,7 +312,7 @@ export const timeRouter = router({
         ctx.db,
         ctx.organizationId,
         input.timesheetIds,
-        ctx.user?.id,
+        requireUserId(ctx),
         input.reason,
       );
       return { count: result.count };

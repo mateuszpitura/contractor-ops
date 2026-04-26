@@ -1,7 +1,15 @@
+import type {
+  EquipmentStatus,
+  ShipmentDirection,
+  ShipmentStatus,
+} from '@contractor-ops/db/generated/prisma/client';
+import { createLogger } from '@contractor-ops/logger';
 import { checkShipmentTaskCompletion } from '../equipment-workflow.js';
 import type { DbClient } from '../types.js';
 import { NOTIFICATION_STATUSES } from './inpost-status-mapper.js';
 import { dispatchShipmentNotification } from './shipment-notification.js';
+
+const log = createLogger({ service: 'shipment-processing' });
 
 // ---------------------------------------------------------------------------
 // Shared Shipment Processing
@@ -14,7 +22,7 @@ import { dispatchShipmentNotification } from './shipment-notification.js';
 type PrismaClient = DbClient;
 
 /** Terminal statuses -- no need to poll these shipments. */
-export const TERMINAL_STATUSES = ['DELIVERED', 'FAILED', 'RETURNED'];
+export const TERMINAL_STATUSES: ShipmentStatus[] = ['DELIVERED', 'FAILED', 'RETURNED'];
 
 /**
  * Maps (shipment status, direction) to equipment status.
@@ -48,9 +56,9 @@ export const EQUIPMENT_STATUS_TRANSITIONS: Record<string, string[]> = {
 
 interface ShipmentRecord {
   id: string;
-  trackingNumber: string;
-  currentStatus: string;
-  direction: string;
+  trackingNumber: string | null;
+  currentStatus: ShipmentStatus;
+  direction: ShipmentDirection;
   equipmentId: string;
   externalId: string | null;
   workflowTaskRunId: string | null;
@@ -68,7 +76,7 @@ export async function processShipmentStatusChange(
   db: PrismaClient,
   organizationId: string,
   shipment: ShipmentRecord,
-  mappedStatus: string,
+  mappedStatus: ShipmentStatus,
   carrierName: string,
   eventNotes: string,
 ): Promise<void> {
@@ -95,7 +103,7 @@ export async function processShipmentStatusChange(
       organizationId,
       {
         id: shipment.id,
-        trackingNumber: shipment.trackingNumber,
+        trackingNumber: shipment.trackingNumber ?? '',
         currentStatus: shipment.currentStatus,
       },
       mappedStatus,
@@ -107,9 +115,9 @@ export async function processShipmentStatusChange(
   void checkShipmentTaskCompletion(db, organizationId, {
     id: shipment.id,
     workflowTaskRunId: shipment.workflowTaskRunId,
-    direction: shipment.direction as 'OUTBOUND' | 'RETURN',
+    direction: shipment.direction,
     currentStatus: mappedStatus,
-  }).catch(console.error);
+  }).catch((err: unknown) => log.error({ err }, 'checkShipmentTaskCompletion failed'));
 
   // 5. Auto-advance equipment status
   await tryAdvanceEquipmentStatus(db, shipment.equipmentId, mappedStatus, shipment.direction);
@@ -122,11 +130,11 @@ export async function processShipmentStatusChange(
 async function tryAdvanceEquipmentStatus(
   db: PrismaClient,
   equipmentId: string,
-  shipmentStatus: string,
-  direction: string,
+  shipmentStatus: ShipmentStatus,
+  direction: ShipmentDirection,
 ): Promise<void> {
   const directionMap = SHIPMENT_TO_EQUIPMENT_STATUS[shipmentStatus];
-  const newEquipmentStatus = directionMap?.[direction];
+  const newEquipmentStatus = directionMap?.[direction] as EquipmentStatus | undefined;
 
   if (!newEquipmentStatus) return;
 
@@ -156,7 +164,7 @@ async function tryAdvanceEquipmentStatus(
 export async function isEventDuplicate(
   db: PrismaClient,
   shipmentId: string,
-  status: string,
+  status: ShipmentStatus,
 ): Promise<boolean> {
   const existing = await db.shipmentEvent.findFirst({
     where: { shipmentId, status },

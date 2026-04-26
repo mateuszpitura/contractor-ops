@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { setup, render, screen } from '@/test/test-utils';
+import { render, screen, setup } from '@/test/test-utils';
 import {
   EInvoiceComplianceFilterChips,
   parseFilterParam,
@@ -50,10 +50,7 @@ describe('EInvoiceComplianceFilterChips', () => {
     for (const chip of chips) {
       expect(chip).toHaveAttribute('tabIndex', '0');
     }
-    expect(screen.getByRole('button', { name: 'All' })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    );
+    expect(screen.getByRole('button', { name: 'All' })).toHaveAttribute('aria-pressed', 'true');
   });
 
   it('clicking "Invalid" writes ?einvoiceStatus=invalid to the URL and fires onChange', async () => {
@@ -76,14 +73,8 @@ describe('EInvoiceComplianceFilterChips', () => {
   it('loads active state from ?einvoiceStatus URL param', () => {
     routerState.search = 'einvoiceStatus=failed';
     render(<EInvoiceComplianceFilterChips syncToUrl={false} />);
-    expect(screen.getByRole('button', { name: 'Failed' })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    );
-    expect(screen.getByRole('button', { name: 'All' })).toHaveAttribute(
-      'aria-pressed',
-      'false',
-    );
+    expect(screen.getByRole('button', { name: 'Failed' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: 'All' })).toHaveAttribute('aria-pressed', 'false');
   });
 
   it('renders the German translation under de locale', () => {
@@ -94,19 +85,8 @@ describe('EInvoiceComplianceFilterChips', () => {
 
   it('controlled value prop overrides URL state (supports multi-select)', () => {
     routerState.search = 'einvoiceStatus=all';
-    render(
-      <EInvoiceComplianceFilterChips
-        syncToUrl={false}
-        value={['invalid', 'failed']}
-      />,
-    );
-    expect(screen.getByRole('button', { name: 'Invalid' })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    );
-    expect(screen.getByRole('button', { name: 'Failed' })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    );
+    render(<EInvoiceComplianceFilterChips syncToUrl={false} value={['invalid', 'failed']} />);
+    expect(screen.getByRole('button', { name: 'Invalid' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: 'Failed' })).toHaveAttribute('aria-pressed', 'true');
   });
 });

@@ -33,9 +33,7 @@ const makeInvoice = (overrides?: Partial<EInvoice>): EInvoice => ({
   taxExclusiveAmount: 50000,
   taxInclusiveAmount: 52500,
   payableAmount: 52500,
-  taxBreakdown: [
-    { taxableAmountMinor: 50000, taxAmountMinor: 2500, taxCategory: 'S', percent: 5 },
-  ],
+  taxBreakdown: [{ taxableAmountMinor: 50000, taxAmountMinor: 2500, taxCategory: 'S', percent: 5 }],
   profileId: 'peppol-ae',
   extensions: { buyerReference: 'PO-2026-001' },
   ...overrides,
@@ -100,10 +98,7 @@ describe('validatePintAeXml', () => {
 
   it('returns MISSING_CURRENCY_CODE when DocumentCurrencyCode is removed', () => {
     const xml = generatePintAeXml(makeInvoice());
-    const stripped = xml.replace(
-      /<cbc:DocumentCurrencyCode>.*?<\/cbc:DocumentCurrencyCode>/,
-      '',
-    );
+    const stripped = xml.replace(/<cbc:DocumentCurrencyCode>.*?<\/cbc:DocumentCurrencyCode>/, '');
     const result = validatePintAeXml(stripped);
 
     expect(result.valid).toBe(false);
@@ -116,9 +111,7 @@ describe('validatePintAeXml', () => {
     const xml = generatePintAeXml(makeInvoice());
     // Remove the supplier schemeID attribute so the TRN check fails
     const stripped = xml.replace(
-      new RegExp(
-        `(<cac:AccountingSupplierParty>[\\s\\S]*?)schemeID="${UAE_SCHEME_ID}"`,
-      ),
+      new RegExp(`(<cac:AccountingSupplierParty>[\\s\\S]*?)schemeID="${UAE_SCHEME_ID}"`),
       '$1schemeID="9999"',
     );
     const result = validatePintAeXml(stripped);
@@ -158,9 +151,7 @@ describe('validatePintAeXml', () => {
     const xml = generatePintAeXml(makeInvoice());
     // Change the customer schemeID so TRN check triggers a warning
     const tampered = xml.replace(
-      new RegExp(
-        `(<cac:AccountingCustomerParty>[\\s\\S]*?)schemeID="${UAE_SCHEME_ID}"`,
-      ),
+      new RegExp(`(<cac:AccountingCustomerParty>[\\s\\S]*?)schemeID="${UAE_SCHEME_ID}"`),
       '$1schemeID="9999"',
     );
     const result = validatePintAeXml(tampered);
@@ -246,9 +237,7 @@ describe('parsePintAeXml', () => {
   it('throws when Invoice root element is missing', () => {
     const xml = '<Document><cbc:ID>123</cbc:ID></Document>';
 
-    expect(() => parsePintAeXml(xml)).toThrow(
-      'Invalid PINT-AE XML: missing Invoice root element',
-    );
+    expect(() => parsePintAeXml(xml)).toThrow('Invalid PINT-AE XML: missing Invoice root element');
   });
 
   it('parses valid XML into correct EInvoice fields', () => {

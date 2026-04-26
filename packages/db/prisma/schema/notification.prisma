@@ -92,8 +92,19 @@ model ReminderInstance {
 
   organization Organization @relation(fields: [organizationId], references: [id])
 
+  // Enforces cron idempotency under concurrency:
+  // one logical reminder instance per rule+entity+day.
+  @@unique([reminderRuleId, entityType, entityId, scheduledFor])
   @@index([organizationId])
   @@index([organizationId, scheduledFor, status])
+}
+
+/// Idempotent keys for cron-driven notifications (concurrency-safe dedup).
+/// Examples: TASK_OVERDUE per assignee per rolling 24h window; DRV expiry one-shot per clearance + band.
+model NotificationCronDedup {
+  id        String   @id @default(cuid())
+  dedupeKey String   @unique @db.VarChar(512)
+  createdAt DateTime @default(now())
 }
 
 // --- Enums ---

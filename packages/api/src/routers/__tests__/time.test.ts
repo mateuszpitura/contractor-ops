@@ -609,7 +609,10 @@ describe('time router', () => {
       mockRejectTimesheet.mockRejectedValueOnce(new Error('Timesheet not in SUBMITTED state'));
 
       await expect(
-        caller.time.reject({ timesheetId: TIMESHEET_ID_1, reason: 'Timesheet not in SUBMITTED state - rejecting' }),
+        caller.time.reject({
+          timesheetId: TIMESHEET_ID_1,
+          reason: 'Timesheet not in SUBMITTED state - rejecting',
+        }),
       ).rejects.toThrow('Timesheet not in SUBMITTED state');
     });
   });
@@ -632,9 +635,9 @@ describe('time router', () => {
     it('propagates service errors on bulk approve', async () => {
       mockBulkApproveTimesheets.mockRejectedValueOnce(new Error('Some timesheets invalid'));
 
-      await expect(
-        caller.time.bulkApprove({ timesheetIds: [TIMESHEET_ID_1] }),
-      ).rejects.toThrow('Some timesheets invalid');
+      await expect(caller.time.bulkApprove({ timesheetIds: [TIMESHEET_ID_1] })).rejects.toThrow(
+        'Some timesheets invalid',
+      );
     });
   });
 
@@ -667,9 +670,7 @@ describe('time router', () => {
       mockPrisma.timesheet.groupBy
         .mockResolvedValueOnce([{ contractorId: CONTRACTOR_ID, _count: 3 }]) // pending
         .mockResolvedValueOnce([{ contractorId: CONTRACTOR_ID }]) // has timesheets
-        .mockResolvedValueOnce([
-          { contractorId: CONTRACTOR_ID, _sum: { totalMinutes: 4800 } },
-        ]); // monthly
+        .mockResolvedValueOnce([{ contractorId: CONTRACTOR_ID, _sum: { totalMinutes: 4800 } }]); // monthly
 
       const result = await caller.time.listContractors();
 
@@ -718,9 +719,7 @@ describe('time router', () => {
 
   describe('getReconciliation', () => {
     it('delegates to computeTimeReconciliation', async () => {
-      const { computeTimeReconciliation } = await import(
-        '../../services/time-reconciliation.js'
-      );
+      const { computeTimeReconciliation } = await import('../../services/time-reconciliation.js');
       vi.mocked(computeTimeReconciliation).mockResolvedValueOnce({
         expectedAmountMinor: 100000,
         approvedMinutes: 4800,

@@ -7,8 +7,8 @@ import { IntakeDetailFieldsPane } from '@/components/invoices/intake/intake-deta
 import { IntakeDetailMatchPane } from '@/components/invoices/intake/intake-detail-match-pane';
 import { IntakeDetailPdfPane } from '@/components/invoices/intake/intake-detail-pdf-pane';
 import { IntakeDetailValidationPane } from '@/components/invoices/intake/intake-detail-validation-pane';
-import type { IntakeStatus } from '@/components/invoices/intake/intake-status-pill';
 import type { ProfileLevel } from '@/components/invoices/intake/intake-profile-level-badge';
+import type { IntakeStatus } from '@/components/invoices/intake/intake-status-pill';
 import type { ValidationStatus } from '@/components/invoices/intake/intake-validation-status-pill';
 import { PageHeader } from '@/components/shared/page-header';
 import { Alert, AlertDescription } from '@/components/ui/alert';

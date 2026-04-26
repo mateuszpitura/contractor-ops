@@ -223,7 +223,7 @@ export async function updateBandState(
     currentBand: nextBand,
     lastBillingShare: Number(share.toFixed(4)),
     lastScannedAt: now,
-    lastCrossedAt: next !== prev ? now : (existing?.lastCrossedAt ?? null),
+    lastCrossedAt: next === prev ? (existing?.lastCrossedAt ?? null) : now,
     lastReminderAt: emittedType ? now : (existing?.lastReminderAt ?? null),
   };
 

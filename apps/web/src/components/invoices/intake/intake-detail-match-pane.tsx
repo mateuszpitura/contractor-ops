@@ -74,8 +74,7 @@ export function IntakeDetailMatchPane({
           queryKey: trpc.invoiceIntake.getById.queryKey({ intakeId }),
         });
       },
-      onError: err =>
-        toast.error(err instanceof Error ? err.message : t('errorGeneric')),
+      onError: err => toast.error(err instanceof Error ? err.message : t('errorGeneric')),
     }),
   );
 
@@ -164,11 +163,7 @@ export function IntakeDetailMatchPane({
         })}
 
         {!alreadyMatched && (
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleCreateFromData}
-            className="w-full">
+          <Button type="button" variant="outline" onClick={handleCreateFromData} className="w-full">
             <UserPlus className="h-4 w-4" aria-hidden="true" />
             <span>{t('ctaCreateContractor')}</span>
           </Button>

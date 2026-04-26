@@ -8,8 +8,11 @@ import { createHmac, timingSafeEqual } from 'node:crypto';
 import { advanceFlow } from '@contractor-ops/api/services/approval-engine';
 import { getSlackClient, updateMessageToResult } from '@contractor-ops/api/services/slack-client';
 import { prisma } from '@contractor-ops/db';
+import { createWebhookLogger } from '@contractor-ops/logger';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+
+const log = createWebhookLogger('slack-interactivity');
 
 // ---------------------------------------------------------------------------
 // Slack Signature Verification
@@ -112,7 +115,7 @@ async function processBlockAction(payload: SlackInteractionPayload) {
   const slackUserId = payload.user?.id as string;
   const actor = await resolveUserFromSlackId(slackUserId);
   if (!actor) {
-    console.error('[slack-interactivity] Could not resolve user for Slack ID:', slackUserId);
+    log.error({ slackUserId }, 'could not resolve user for slack id');
     return;
   }
 
@@ -320,7 +323,7 @@ export async function POST(request: NextRequest) {
   if (payload.type === 'view_submission') {
     // Process async but return immediately
     processViewSubmission(payload).catch(error => {
-      console.error('[slack-interactivity] view_submission error:', error);
+      log.error({ err: error }, 'view_submission error');
     });
 
     // Return response_action: clear to close the modal
@@ -331,7 +334,7 @@ export async function POST(request: NextRequest) {
   // then process asynchronously
   if (payload.type === 'block_actions') {
     processBlockAction(payload).catch(error => {
-      console.error('[slack-interactivity] block_actions error:', error);
+      log.error({ err: error }, 'block_actions error');
     });
   }
 

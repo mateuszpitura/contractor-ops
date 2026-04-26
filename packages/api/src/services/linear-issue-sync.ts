@@ -1,8 +1,11 @@
 import { decryptCredentials } from '@contractor-ops/integrations/services/credential-service';
+import { createLogger } from '@contractor-ops/logger';
 import type { LinearIssueMetadata } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { resolveLinearStateId } from './linear-status-mapping.js';
 import type { DbClient } from './types.js';
+
+const log = createLogger({ service: 'linear-issue-sync' });
 
 type PrismaClient = DbClient;
 
@@ -175,15 +178,10 @@ export async function createLinearIssue(
         if (matchedUser) {
           assigneeId = matchedUser.id;
         } else {
-          console.warn(
-            `[Linear] No user found for email ${assigneeEmail}, creating issue unassigned (D-07)`,
-          );
+          log.warn({ assigneeEmail }, 'no user found for email, creating issue unassigned (D-07)');
         }
       } catch (lookupError) {
-        console.warn(
-          `[Linear] User lookup by email failed, creating issue unassigned:`,
-          lookupError,
-        );
+        log.warn({ err: lookupError }, 'user lookup by email failed, creating issue unassigned');
       }
     }
 
@@ -341,9 +339,7 @@ export async function syncTaskStatusToLinear(
   if (lastSyncOrigin === 'LINEAR' && lastSyncAt) {
     const syncAge = Date.now() - new Date(lastSyncAt).getTime();
     if (syncAge < LOOP_PREVENTION_WINDOW_MS) {
-      console.info(
-        `[Linear] Suppressing outbound sync for ${taskRunId} (origin=LINEAR, age=${syncAge}ms)`,
-      );
+      log.info({ taskRunId, syncAge }, 'suppressing outbound sync (origin=LINEAR)');
       return;
     }
   }
@@ -360,7 +356,7 @@ export async function syncTaskStatusToLinear(
   // 4. Determine teamId from metadata or connection config
   const linearIssueId = metadata.linearIssueId as string;
   if (!linearIssueId) {
-    console.warn(`[Linear] ExternalLink ${externalLink.id} missing linearIssueId in metadata`);
+    log.warn({ externalLinkId: externalLink.id }, 'externalLink missing linearIssueId in metadata');
     return;
   }
 
@@ -383,7 +379,7 @@ export async function syncTaskStatusToLinear(
   }
 
   if (!teamId) {
-    console.warn(`[Linear] Cannot determine teamId for task ${taskRunId}, skipping outbound sync`);
+    log.warn({ taskRunId }, 'cannot determine teamId for task, skipping outbound sync');
     return;
   }
 

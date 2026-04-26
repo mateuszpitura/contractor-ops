@@ -20,6 +20,7 @@
 // Open Question #3 (60-CONTEXT.md) — resolved: this helper is the single
 // source of truth for "which users in org X can see contractor:read?".
 
+import { parseMemberRole } from '@contractor-ops/auth/role-normalization';
 import { prismaRaw } from '@contractor-ops/db';
 
 // ---------------------------------------------------------------------------
@@ -43,11 +44,17 @@ const ROLE_CONTRACTOR_ACTIONS: Record<string, readonly ContractorAction[]> = {
   it_admin: [],
   external_accountant: ['read'],
   readonly: ['read'],
+  // platform_operator is a cross-tenant role limited to BoE-rate admin;
+  // it grants no contractor-scoped permissions and must never appear in
+  // contractor:read recipient resolution.
+  platform_operator: [],
 };
 
 function roleGrants(role: string, action: ContractorAction): boolean {
-  const normalised = role.toLowerCase();
-  const grants = ROLE_CONTRACTOR_ACTIONS[normalised];
+  const parsed = parseMemberRole(role);
+  if (!parsed) return false;
+
+  const grants = ROLE_CONTRACTOR_ACTIONS[parsed];
   return grants ? grants.includes(action) : false;
 }
 
@@ -94,4 +101,4 @@ export async function resolveRbacRecipients(
 
 // Exported for testing — lets the test snapshot the mapping to catch drift
 // against packages/auth/src/roles.ts.
-export const __testables = { ROLE_CONTRACTOR_ACTIONS, roleGrants };
+export const testables = { ROLE_CONTRACTOR_ACTIONS, roleGrants };

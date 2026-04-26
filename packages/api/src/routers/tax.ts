@@ -68,10 +68,15 @@ export const taxRouter = router({
   generateWhtCertificate: tenantProcedure
     .input(z.object({ paymentRunItemId: z.string() }))
     .mutation(async ({ ctx, input }) => {
+      const userId = ctx.user?.id;
+      if (!userId) {
+        throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Authentication required' });
+      }
+
       return createWhtCertificate({
         organizationId: ctx.organizationId,
         paymentRunItemId: input.paymentRunItemId,
-        generatedByUserId: ctx.user?.id,
+        generatedByUserId: userId,
       });
     }),
 

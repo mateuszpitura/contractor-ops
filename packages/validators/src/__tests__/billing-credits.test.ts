@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { billingCreditDenialReason } from '../billing-credits.js';
 import type { BillingCreditDenialReason } from '../billing-credits.js';
+import { billingCreditDenialReason } from '../billing-credits.js';
 
 describe('billingCreditDenialReason', () => {
   it('exposes noSubscription reason', () => {

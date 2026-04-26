@@ -48,6 +48,14 @@ function extractClientInfo(headers: Headers): {
   };
 }
 
+function requireUserId(ctx: { user?: { id: string } | null }): string {
+  const id = ctx.user?.id;
+  if (!id) {
+    throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Authentication required' });
+  }
+  return id;
+}
+
 // ---------------------------------------------------------------------------
 // Router
 // ---------------------------------------------------------------------------
@@ -71,7 +79,7 @@ export const consentRouter = router({
    * Returns a map of purpose -> { granted, version, lastUpdated }.
    */
   getCurrentConsent: tenantProcedure.query(async ({ ctx }) => {
-    const consentMap = await getCurrentConsent(ctx.organizationId, ctx.user?.id);
+    const consentMap = await getCurrentConsent(ctx.organizationId, requireUserId(ctx));
     // Convert Map to plain object for serialization
     return Object.fromEntries(consentMap);
   }),
@@ -80,14 +88,14 @@ export const consentRouter = router({
    * Get consent history for the authenticated user, optionally filtered by purpose.
    */
   getConsentHistory: tenantProcedure.input(consentQuerySchema).query(async ({ ctx, input }) => {
-    return getConsentHistory(ctx.organizationId, ctx.user?.id, input.purpose);
+    return getConsentHistory(ctx.organizationId, requireUserId(ctx), input.purpose);
   }),
 
   /**
    * Check if the authenticated user has granted all required consents.
    */
   hasRequiredConsents: tenantProcedure.query(async ({ ctx }) => {
-    return hasRequiredConsents(ctx.organizationId, ctx.user?.id);
+    return hasRequiredConsents(ctx.organizationId, requireUserId(ctx));
   }),
 
   /**
@@ -96,11 +104,12 @@ export const consentRouter = router({
    */
   grant: sensitiveActionProcedure.input(grantConsentSchema).mutation(async ({ ctx, input }) => {
     const { ipAddress, userAgent } = extractClientInfo(ctx.headers);
+    const userId = requireUserId(ctx);
 
     if (input.granted) {
-      return grantConsent(ctx.organizationId, ctx.user?.id, input.purpose, ipAddress, userAgent);
+      return grantConsent(ctx.organizationId, userId, input.purpose, ipAddress, userAgent);
     } else {
-      return revokeConsent(ctx.organizationId, ctx.user?.id, input.purpose, ipAddress, userAgent);
+      return revokeConsent(ctx.organizationId, userId, input.purpose, ipAddress, userAgent);
     }
   }),
 
@@ -115,7 +124,7 @@ export const consentRouter = router({
 
       return bulkGrantConsent(
         ctx.organizationId,
-        ctx.user?.id,
+        requireUserId(ctx),
         input.consents,
         ipAddress,
         userAgent,

@@ -38,8 +38,8 @@ vi.mock('../intake-detail-client', () => ({
   ),
 }));
 
-import { getServerApi } from '@/trpc/server';
 import { getServerFlag } from '@/lib/server-flag';
+import { getServerApi } from '@/trpc/server';
 import IntakeDetailPage from '../page';
 
 beforeEach(() => {
@@ -93,4 +93,3 @@ describe('IntakeDetailPage (server component)', () => {
     expect(notFoundSpy).toHaveBeenCalledTimes(1);
   });
 });
-

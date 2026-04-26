@@ -51,23 +51,7 @@ export function GenerationSection({
       <CardContent className="space-y-4 p-6">
         <h3 className="text-xl font-semibold">{t('generationHeading')}</h3>
 
-        {!lifecycle ? (
-          <div className="flex flex-col items-center justify-center gap-3 py-8 text-center">
-            <FileCode2
-              className="h-10 w-10 text-muted-foreground/50"
-              aria-hidden="true"
-            />
-            <p className="text-sm text-muted-foreground">
-              {t('generationNotGeneratedBody')}
-            </p>
-            <Button onClick={handleFinalize} disabled={isFinalizePending}>
-              {isFinalizePending ? (
-                <Loader2 className="me-2 h-4 w-4 animate-spin" aria-hidden="true" />
-              ) : null}
-              {t('generateCta')}
-            </Button>
-          </div>
-        ) : (
+        {lifecycle ? (
           <div className="space-y-3">
             <p className="text-sm text-muted-foreground">
               {t('generationCaptionPattern', {
@@ -83,14 +67,22 @@ export function GenerationSection({
                 ) : null}
                 {t('finalizeCta')}
               </Button>
-              <Button
-                variant="outline"
-                onClick={handleDownload}
-                disabled={isDownloadXmlPending}>
+              <Button variant="outline" onClick={handleDownload} disabled={isDownloadXmlPending}>
                 {t('downloadXmlButton')}
               </Button>
             </div>
             <p className="text-xs text-muted-foreground">{t('downloadXmlHelper')}</p>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center gap-3 py-8 text-center">
+            <FileCode2 className="h-10 w-10 text-muted-foreground/50" aria-hidden="true" />
+            <p className="text-sm text-muted-foreground">{t('generationNotGeneratedBody')}</p>
+            <Button onClick={handleFinalize} disabled={isFinalizePending}>
+              {isFinalizePending ? (
+                <Loader2 className="me-2 h-4 w-4 animate-spin" aria-hidden="true" />
+              ) : null}
+              {t('generateCta')}
+            </Button>
           </div>
         )}
       </CardContent>

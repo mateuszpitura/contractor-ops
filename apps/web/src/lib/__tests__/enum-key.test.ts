@@ -4,7 +4,7 @@ import { enumKey } from '../enum-key';
 describe('enumKey', () => {
   it('converts UPPER_SNAKE_CASE to camelCase', () => {
     expect(enumKey('DOCUMENT_COLLECTION')).toBe('documentCollection');
-    expect(enumKey('FINANCE_ADMIN')).toBe('financeAdmin');
+    expect(enumKey('finance_admin')).toBe('financeAdmin');
     expect(enumKey('B2B_MASTER_SERVICE')).toBe('b2bMasterService');
   });
 

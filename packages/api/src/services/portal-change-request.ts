@@ -121,6 +121,13 @@ export async function approveChangeRequest(
       });
     }
 
+    if (changes.taxId !== undefined) {
+      await tx.contractor.update({
+        where: { id: request.contractorId },
+        data: { taxId: changes.taxId },
+      });
+    }
+
     // Mark change request as approved
     await tx.contractorChangeRequest.update({
       where: { id: requestId },

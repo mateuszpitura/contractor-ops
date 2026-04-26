@@ -2,7 +2,9 @@
  * Shared constants, helpers, and types for the workflow domain routers.
  * Used by workflow-templates.ts and workflow-execution.ts.
  */
+import { parseMemberRole } from '@contractor-ops/auth/role-normalization';
 import { workflowTaskSkipReason } from '@contractor-ops/validators';
+import type { DbClient } from '../services/types.js';
 
 // ---------------------------------------------------------------------------
 // i18n workflow template key constants
@@ -31,14 +33,9 @@ export const WORKFLOW_TEMPLATE_KEYS = {
 // Helpers
 // ---------------------------------------------------------------------------
 
-/**
- * Strips Prisma class prototype from query results, producing plain
- * JSON-serializable objects so that inferred tRPC router types do NOT
- * reference the generated Prisma client module (avoids TS2742).
- */
-export function plain<T>(data: T): T {
-  return JSON.parse(JSON.stringify(data)) as T;
-}
+// Re-export `plain` from the shared util for workflow-* routers that
+// previously imported it from this module.
+export { plain } from '../lib/plain.js';
 
 /**
  * Add days to a date, returning a new Date instance.
@@ -78,7 +75,12 @@ export interface ConditionGroup {
  * e.g., "contractor.type" -> context.contractor.type
  */
 function getNestedValue(obj: Record<string, unknown>, path: string): unknown {
-  return path.split('.').reduce((current, key) => current?.[key], obj);
+  let current: unknown = obj;
+  for (const key of path.split('.')) {
+    if (!current || typeof current !== 'object') return;
+    current = (current as Record<string, unknown>)[key];
+  }
+  return current;
 }
 
 /**
@@ -127,16 +129,19 @@ export async function resolveAssignee(
   contractor: { internalOwnerUserId?: string | null },
   contract: { internalOwnerUserId?: string | null } | null,
   orgId: string,
-  tx: { member: { findFirst: (args: unknown) => Promise<{ userId: string } | null> } },
+  tx: Pick<DbClient, 'member'>,
 ): Promise<string | null> {
   switch (task.assigneeMode) {
     case 'FIXED_USER':
       return task.assigneeUserId ?? null;
     case 'ROLE_BASED': {
+      const assigneeRole = parseMemberRole(task.assigneeRole);
+      if (!assigneeRole) return null;
+
       const member = await tx.member.findFirst({
         where: {
           organizationId: orgId,
-          role: task.assigneeRole,
+          role: assigneeRole,
           user: { banned: false },
         },
       });

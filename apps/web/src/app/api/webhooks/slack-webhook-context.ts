@@ -1,4 +1,5 @@
-import { Prisma, prisma } from '@contractor-ops/db';
+import { prisma } from '@contractor-ops/db';
+import { Prisma } from '@contractor-ops/db/generated/prisma/client';
 
 // ---------------------------------------------------------------------------
 // Slack webhook ingress — resolve org + connection from workspace team id

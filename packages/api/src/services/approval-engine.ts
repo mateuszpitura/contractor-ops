@@ -1,3 +1,4 @@
+import { eligibleMemberRolesForApproval } from '@contractor-ops/auth/role-normalization';
 import type { PrismaClient } from '@contractor-ops/db';
 import { TRPCError } from '@trpc/server';
 
@@ -170,7 +171,7 @@ export async function createApprovalFlow(
       const member = await tx.member.findFirst({
         where: {
           organizationId: params.organizationId,
-          role: step.approverRole,
+          role: { in: eligibleMemberRolesForApproval(step.approverRole) },
         },
         select: { userId: true },
       });
@@ -205,14 +206,14 @@ export async function createApprovalFlow(
           name: step.name,
           approverUserId: step.approverUserId ?? null,
           approverRole: step.approverRole as
-            | 'ORG_ADMIN'
-            | 'FINANCE_ADMIN'
-            | 'OPS_MANAGER'
-            | 'TEAM_MANAGER'
-            | 'LEGAL_VIEWER'
-            | 'IT_ADMIN'
-            | 'ACCOUNTANT'
-            | 'READ_ONLY'
+            | 'admin'
+            | 'finance_admin'
+            | 'ops_manager'
+            | 'team_manager'
+            | 'legal_compliance_viewer'
+            | 'it_admin'
+            | 'external_accountant'
+            | 'readonly'
             | null,
           status: index === 0 ? 'PENDING' : 'NOT_STARTED',
           required: step.required,

@@ -110,18 +110,14 @@ describe('TaskCard', () => {
   });
 
   it('renders drag handle and collapsible trigger buttons', () => {
-    render(
-      <TaskCard index={0} allTasks={[]} form={createMockForm()} onRemove={vi.fn()} />,
-    );
+    render(<TaskCard index={0} allTasks={[]} form={createMockForm()} onRemove={vi.fn()} />);
     const buttons = screen.getAllByRole('button');
     // At minimum: drag handle button exists
     expect(buttons.length).toBeGreaterThanOrEqual(1);
   });
 
   it('renders condition builder placeholder in collapsed state', () => {
-    render(
-      <TaskCard index={0} allTasks={[]} form={createMockForm()} onRemove={vi.fn()} />,
-    );
+    render(<TaskCard index={0} allTasks={[]} form={createMockForm()} onRemove={vi.fn()} />);
     // ConditionBuilder is mocked, but the summary is null so no badge shows
     expect(screen.queryByText('ConditionBuilder')).not.toBeInTheDocument();
   });

@@ -8,17 +8,16 @@
  * needs isolation uses vi.resetModules() + dynamic import after stubbing env.
  */
 
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { MiddlewareHandler } from 'hono';
 import { Hono } from 'hono';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
 /** Build a tiny Hono app that attaches middleware under test and serves /test */
-async function buildApp(
-  middleware: (c: import('hono').Context, next: import('hono').Next) => Promise<void>,
-) {
+async function buildApp(middleware: MiddlewareHandler) {
   const app = new Hono();
   app.use('*', middleware);
   app.get('/test', c => c.json({ ok: true }));

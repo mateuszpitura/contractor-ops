@@ -10,31 +10,18 @@
 
 import fs from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
-
-import {
-  PDFDict,
-  PDFDocument,
-  PDFHexString,
-  PDFName,
-  PDFRawStream,
-  PDFString,
-  decodePDFRawStream,
-} from 'pdf-lib';
+import type { PDFHexString, PDFRawStream, PDFString } from 'pdf-lib';
+import { decodePDFRawStream, PDFDict, PDFDocument, PDFName } from 'pdf-lib';
 import { beforeAll, describe, expect, it } from 'vitest';
 
 import type { EInvoice } from '../../../types/invoice.js';
-import {
-  generateZugferdPdf,
-  ZugferdLevelUnsupportedForOutput,
-} from '../generator.js';
+import { generateZugferdPdf, ZugferdLevelUnsupportedForOutput } from '../generator.js';
 import { assertZugferdStructure } from '../zugferd-structural-check.js';
 
 const FIXED_TIME = new Date('2026-01-15T10:00:00Z');
 
 async function loadFixture(name: string): Promise<EInvoice> {
-  const p = fileURLToPath(
-    new URL(`../__fixtures__/${name}.json`, import.meta.url),
-  );
+  const p = fileURLToPath(new URL(`../__fixtures__/${name}.json`, import.meta.url));
   return JSON.parse(await fs.readFile(p, 'utf-8')) as EInvoice;
 }
 
@@ -97,9 +84,8 @@ describe('generateZugferdPdf', () => {
     await expect(assertZugferdStructure(out)).resolves.toBeUndefined();
   });
 
-  it("reverse-charge embedded XML contains <ram:CategoryCode>AE</...>", async () => {
-    const leitwegId =
-      (reverseCharge.extensions as Record<string, unknown>)?.supplierLeitwegId;
+  it('reverse-charge embedded XML contains <ram:CategoryCode>AE</...>', async () => {
+    const leitwegId = (reverseCharge.extensions as Record<string, unknown>)?.supplierLeitwegId;
     const out = await generateZugferdPdf({
       invoice: reverseCharge,
       producedAt: FIXED_TIME,
@@ -109,7 +95,7 @@ describe('generateZugferdPdf', () => {
     expect(xml).toContain('<ram:CategoryCode>AE</ram:CategoryCode>');
   });
 
-  it("kleinunternehmer embedded XML contains <ram:CategoryCode>E</...>", async () => {
+  it('kleinunternehmer embedded XML contains <ram:CategoryCode>E</...>', async () => {
     const out = await generateZugferdPdf({
       invoice: klein,
       producedAt: FIXED_TIME,

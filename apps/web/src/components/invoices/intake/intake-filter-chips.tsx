@@ -13,13 +13,7 @@ import { cn } from '@/lib/utils';
 // for shareable, back-button-safe state. `All` clears the query param.
 // ---------------------------------------------------------------------------
 
-export const INTAKE_FILTERS = [
-  'all',
-  'needsReview',
-  'matched',
-  'converted',
-  'rejected',
-] as const;
+export const INTAKE_FILTERS = ['all', 'needsReview', 'matched', 'converted', 'rejected'] as const;
 
 export type IntakeFilterValue = (typeof INTAKE_FILTERS)[number];
 
@@ -94,28 +88,25 @@ export function IntakeFilterChips({ value, onChange }: IntakeFilterChipsProps) {
     [onChange, router, searchParams],
   );
 
-  const handleKeyDown = useCallback(
-    (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
-      const total = INTAKE_FILTERS.length;
-      if (event.key === 'ArrowRight' || event.key === 'ArrowLeft') {
-        event.preventDefault();
-        const delta = event.key === 'ArrowRight' ? 1 : -1;
-        const nextIndex = (index + delta + total) % total;
-        chipRefs.current[nextIndex]?.focus();
-        return;
-      }
-      if (event.key === 'Home') {
-        event.preventDefault();
-        chipRefs.current[0]?.focus();
-        return;
-      }
-      if (event.key === 'End') {
-        event.preventDefault();
-        chipRefs.current[total - 1]?.focus();
-      }
-    },
-    [],
-  );
+  const handleKeyDown = useCallback((event: KeyboardEvent<HTMLButtonElement>, index: number) => {
+    const total = INTAKE_FILTERS.length;
+    if (event.key === 'ArrowRight' || event.key === 'ArrowLeft') {
+      event.preventDefault();
+      const delta = event.key === 'ArrowRight' ? 1 : -1;
+      const nextIndex = (index + delta + total) % total;
+      chipRefs.current[nextIndex]?.focus();
+      return;
+    }
+    if (event.key === 'Home') {
+      event.preventDefault();
+      chipRefs.current[0]?.focus();
+      return;
+    }
+    if (event.key === 'End') {
+      event.preventDefault();
+      chipRefs.current[total - 1]?.focus();
+    }
+  }, []);
 
   return (
     <div

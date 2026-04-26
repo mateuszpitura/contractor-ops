@@ -1,5 +1,6 @@
 import type { Prisma } from '@contractor-ops/db';
 import { decryptCredentials } from '@contractor-ops/integrations/services/credential-service';
+import { createLogger } from '@contractor-ops/logger';
 import type { LinearIssueMetadata } from '@contractor-ops/validators';
 import {
   saveLinearStatusMappingInputSchema,
@@ -9,6 +10,7 @@ import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import * as E from '../errors.js';
 import { router } from '../init.js';
+import { plain } from '../lib/plain.js';
 import type { TenantScopedDb } from '../lib/tenant-db.js';
 import { requirePermission } from '../middleware/rbac.js';
 import { tenantProcedure } from '../middleware/tenant.js';
@@ -16,13 +18,11 @@ import { requireTier } from '../middleware/tier.js';
 import { linearGraphQL } from '../services/linear-issue-sync.js';
 import { registerLinearWebhook } from '../services/linear-webhook-handler.js';
 
+const log = createLogger({ service: 'linear-router' });
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-function plain<T>(data: T): T {
-  return JSON.parse(JSON.stringify(data)) as T;
-}
 
 interface LinearConnectionConfig {
   statusMappings?: Record<string, unknown[]>;
@@ -238,7 +238,7 @@ export const linearRouter = router({
       const webhooks = (config.webhooks as Record<string, string> | undefined) ?? {};
       if (!webhooks[input.teamId]) {
         void registerLinearWebhook(ctx.db, connection.id, input.teamId).catch(err =>
-          console.error(`[Linear] Webhook registration failed for team ${input.teamId}:`, err),
+          log.error({ err, teamId: input.teamId }, 'webhook registration failed for team'),
         );
       }
 

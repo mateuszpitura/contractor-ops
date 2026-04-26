@@ -1,5 +1,8 @@
+import { createLogger } from '@contractor-ops/logger';
 import { dispatch } from '../notification-service.js';
 import type { DbClient } from '../types.js';
+
+const log = createLogger({ service: 'shipment-notification' });
 
 type PrismaClient = DbClient;
 
@@ -56,6 +59,6 @@ export async function dispatchShipmentNotification(
       },
     });
   } catch (err) {
-    console.error(`[${carrier.toLowerCase()}-notification] Failed to dispatch notification:`, err);
+    log.error({ err, carrier: carrier.toLowerCase() }, 'failed to dispatch notification');
   }
 }

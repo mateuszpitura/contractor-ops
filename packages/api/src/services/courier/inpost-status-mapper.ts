@@ -1,3 +1,6 @@
+import type { ShipmentStatus } from '@contractor-ops/db/generated/prisma/client';
+import { createLogger } from '@contractor-ops/logger';
+
 // ---------------------------------------------------------------------------
 // InPost ShipX Status Mapper
 //
@@ -5,13 +8,15 @@
 // Unknown statuses return null and log a warning (never throw).
 // ---------------------------------------------------------------------------
 
+const log = createLogger({ service: 'inpost-status-mapper' });
+
 /**
  * Complete mapping of ShipX status strings to ShipmentStatus enum values.
  *
  * ShipX uses granular carrier-specific statuses that don't map 1:1 to our
  * simplified enum. Multiple ShipX statuses can map to the same ShipmentStatus.
  */
-export const INPOST_STATUS_MAP: Record<string, string> = {
+export const INPOST_STATUS_MAP: Record<string, ShipmentStatus> = {
   created: 'CREATED',
   offers_prepared: 'CREATED',
   offer_selected: 'CREATED',
@@ -37,10 +42,10 @@ export const INPOST_STATUS_MAP: Record<string, string> = {
  * @param rawStatus - The status string from ShipX API or webhook payload
  * @returns The mapped ShipmentStatus string, or null if the status is unknown
  */
-export function mapInPostStatus(rawStatus: string): string | null {
+export function mapInPostStatus(rawStatus: string): ShipmentStatus | null {
   const mapped = INPOST_STATUS_MAP[rawStatus];
   if (!mapped) {
-    console.warn(`[inpost-status-mapper] Unknown ShipX status: "${rawStatus}" — skipping`);
+    log.warn({ rawStatus }, 'unknown ShipX status — skipping');
     return null;
   }
   return mapped;

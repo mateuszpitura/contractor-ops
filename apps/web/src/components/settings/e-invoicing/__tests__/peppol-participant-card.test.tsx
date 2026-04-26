@@ -1,13 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { render, screen } from '@/test/test-utils';
-
-import {
-  PeppolParticipantStatusPill,
-  semanticTriadClass,
-  type PeppolParticipantStatus,
-} from '../peppol-participant-status-pill';
 import { PeppolParticipantCard } from '../peppol-participant-card';
+import type { PeppolParticipantStatus } from '../peppol-participant-status-pill';
+import { PeppolParticipantStatusPill, semanticTriadClass } from '../peppol-participant-status-pill';
 
 // ---------------------------------------------------------------------------
 // Mocks — tRPC client + TanStack React Query
@@ -70,14 +66,11 @@ describe('PeppolParticipantStatusPill — semantic triad', () => {
     'NOT_REGISTERED',
   ] as const;
 
-  it.each(statuses)(
-    'combines icon + visible text label for status=%s (WCAG 1.4.1)',
-    status => {
-      render(<PeppolParticipantStatusPill status={status} label={status} />);
-      // Visible text label present
-      expect(screen.getByText(status)).toBeInTheDocument();
-    },
-  );
+  it.each(statuses)('combines icon + visible text label for status=%s (WCAG 1.4.1)', status => {
+    render(<PeppolParticipantStatusPill status={status} label={status} />);
+    // Visible text label present
+    expect(screen.getByText(status)).toBeInTheDocument();
+  });
 
   it('maps ACTIVE / REGISTERED to border-success class', () => {
     expect(semanticTriadClass('ACTIVE')).toContain('border-success');
@@ -98,9 +91,7 @@ describe('PeppolParticipantStatusPill — semantic triad', () => {
   });
 
   it('renders icon as aria-hidden (colour never alone conveys meaning)', () => {
-    const { container } = render(
-      <PeppolParticipantStatusPill status="ACTIVE" label="Active" />,
-    );
+    const { container } = render(<PeppolParticipantStatusPill status="ACTIVE" label="Active" />);
     const hidden = container.querySelector('[aria-hidden="true"]');
     expect(hidden).not.toBeNull();
   });
@@ -147,9 +138,7 @@ describe('PeppolParticipantCard', () => {
     expect(bdi).toHaveAttribute('dir', 'ltr');
     expect(bdi.textContent).toBe('0060:12345678');
     // Deregister destructive CTA present
-    expect(
-      screen.getByRole('button', { name: /deregister participant/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /deregister participant/i })).toBeInTheDocument();
   });
 
   it('treats the only DEREGISTERED row as "not registered" (renders empty state)', () => {

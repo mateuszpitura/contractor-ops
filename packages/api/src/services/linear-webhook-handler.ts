@@ -1,10 +1,18 @@
+import type {
+  EntityType,
+  SyncStatus,
+  WorkflowTaskStatus,
+} from '@contractor-ops/db/generated/prisma/client';
 import { decryptCredentials } from '@contractor-ops/integrations/services/credential-service';
+import { createLogger } from '@contractor-ops/logger';
 import type { LinearIssueMetadata } from '@contractor-ops/validators';
 import { getServerEnv, linearWebhookPayloadSchema } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { linearGraphQL } from './linear-issue-sync.js';
 import { resolveInternalStatus } from './linear-status-mapping.js';
 import type { DbClient } from './types.js';
+
+const log = createLogger({ service: 'linear-webhook-handler' });
 
 type PrismaClient = DbClient;
 
@@ -55,9 +63,9 @@ function logInboundSync(
       integrationConnectionId: connectionId,
       direction: 'INBOUND',
       syncType,
-      status: data.status ?? 'SUCCESS',
+      status: (data.status ?? 'SUCCESS') as SyncStatus,
       completedAt: data.status === 'STARTED' ? undefined : new Date(),
-      entityType: data.entityType,
+      entityType: data.entityType == null ? null : (data.entityType as EntityType),
       entityId: data.entityId,
       errorMessage: data.errorMessage,
       responsePayloadJson: data.responsePayloadJson,
@@ -290,7 +298,7 @@ export async function processLinearWebhook(
     await prisma.workflowTaskRun.update({
       where: { id: externalLink.entityId },
       data: {
-        status: mappedWorkflowStatus,
+        status: mappedWorkflowStatus as WorkflowTaskStatus,
       },
     });
 
@@ -469,7 +477,7 @@ export async function deregisterLinearWebhook(
     );
   } catch {
     // Best effort -- continue to clean up config
-    console.warn(`[Linear] Failed to delete webhook ${webhookId} for team ${teamId}`);
+    log.warn({ webhookId, teamId }, 'failed to delete webhook for team');
   }
 
   // Remove from config

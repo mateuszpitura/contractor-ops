@@ -1,6 +1,8 @@
 import type { Prisma } from '@contractor-ops/db';
+import { EntityType } from '@contractor-ops/db/generated/prisma/client';
 import { z } from 'zod';
 import { router } from '../init.js';
+import { plain } from '../lib/plain.js';
 import { requirePermission } from '../middleware/rbac.js';
 import { tenantProcedure } from '../middleware/tenant.js';
 import { requireTier } from '../middleware/tier.js';
@@ -9,10 +11,6 @@ import { generateAuditCsv } from '../services/report-export.js';
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-function plain<T>(data: T): T {
-  return JSON.parse(JSON.stringify(data)) as T;
-}
 
 const settingsRead = requirePermission({ settings: ['read'] });
 
@@ -24,7 +22,7 @@ const auditFilterSchema = z.object({
   search: z.string().optional(),
   actorId: z.string().optional(),
   action: z.string().optional(),
-  resourceType: z.string().optional(),
+  resourceType: z.nativeEnum(EntityType).optional(),
   dateFrom: z.string().optional(),
   dateTo: z.string().optional(),
 });
@@ -72,11 +70,11 @@ export const auditRouter = router({
       if (input.resourceType) {
         where.resourceType = input.resourceType;
       }
-      if (input.dateFrom) {
-        where.createdAt = { ...where.createdAt, gte: new Date(input.dateFrom) };
-      }
-      if (input.dateTo) {
-        where.createdAt = { ...where.createdAt, lte: new Date(input.dateTo) };
+      if (input.dateFrom || input.dateTo) {
+        where.createdAt = {
+          ...(input.dateFrom ? { gte: new Date(input.dateFrom) } : {}),
+          ...(input.dateTo ? { lte: new Date(input.dateTo) } : {}),
+        };
       }
 
       const [items, totalCount] = await Promise.all([
@@ -145,11 +143,11 @@ export const auditRouter = router({
       if (input.resourceType) {
         where.resourceType = input.resourceType;
       }
-      if (input.dateFrom) {
-        where.createdAt = { ...where.createdAt, gte: new Date(input.dateFrom) };
-      }
-      if (input.dateTo) {
-        where.createdAt = { ...where.createdAt, lte: new Date(input.dateTo) };
+      if (input.dateFrom || input.dateTo) {
+        where.createdAt = {
+          ...(input.dateFrom ? { gte: new Date(input.dateFrom) } : {}),
+          ...(input.dateTo ? { lte: new Date(input.dateTo) } : {}),
+        };
       }
 
       const items = await ctx.db.auditLog.findMany({

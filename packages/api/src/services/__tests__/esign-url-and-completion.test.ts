@@ -31,9 +31,7 @@ const {
     signingEnvelope: { update: vi.fn() },
     contract: { findUnique: vi.fn(), update: vi.fn() },
   };
-  const mockTransaction = vi.fn(async (fn: (tx: typeof mockTx) => Promise<unknown>) =>
-    fn(mockTx),
-  );
+  const mockTransaction = vi.fn(async (fn: (tx: typeof mockTx) => Promise<unknown>) => fn(mockTx));
   return {
     mockSigningEnvelopeFindFirst: vi.fn(),
     mockDocumentFindUnique: vi.fn(),

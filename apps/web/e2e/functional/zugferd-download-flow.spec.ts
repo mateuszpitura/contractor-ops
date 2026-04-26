@@ -32,7 +32,9 @@ test.describe('Phase 62 outbound ZUGFeRD download', () => {
     skipIfUnauthenticated(page);
   });
 
-  async function openFirstInvoiceEInvoiceTab(page: import('@playwright/test').Page): Promise<boolean> {
+  async function openFirstInvoiceEInvoiceTab(
+    page: import('@playwright/test').Page,
+  ): Promise<boolean> {
     const rows = page.locator('table tbody tr');
     const rowCount = await rows.count().catch(() => 0);
     if (rowCount === 0) return false;
@@ -40,9 +42,7 @@ test.describe('Phase 62 outbound ZUGFeRD download', () => {
     // Most invoice surfaces open a side panel / dialog; the e-invoice
     // section renders inside that panel. If the UI routed to a dedicated
     // detail page we still find the ZUGFeRD heading once it lands.
-    const panel = page
-      .locator('[data-state="open"][role="dialog"], [role="dialog"]')
-      .first();
+    const panel = page.locator('[data-state="open"][role="dialog"], [role="dialog"]').first();
     await panel.isVisible({ timeout: 15_000 }).catch(() => false);
     // Activate the e-invoice tab if one is present.
     const einvoiceTab = page.getByRole('tab', { name: /e-?invoice/i });

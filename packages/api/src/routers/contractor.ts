@@ -1,4 +1,5 @@
-import type { Prisma, TaxIdType } from '@contractor-ops/db';
+import type { Prisma } from '@contractor-ops/db';
+import type { TaxIdType } from '@contractor-ops/db/generated/prisma/client';
 import {
   contractorCreateSchema,
   contractorLifecycleTransitionSchema,
@@ -19,6 +20,10 @@ import { writeAuditLog } from '../services/audit-writer.js';
 import { encryptBankAccount } from '../services/bank-account-crypto.js';
 import { syncSeatCountForOrg } from '../services/billing-service.js';
 import { CacheKeys, invalidateByPrefix } from '../services/cache.js';
+import {
+  assertValidContractorTaxId,
+  normalizeContractorTaxId,
+} from '../services/contractor-tax-id.js';
 import { sanitizeStrings } from '../services/sanitize.js';
 import { validateTaxId } from '../services/tax-id-validation.service.js';
 
@@ -557,6 +562,11 @@ export const contractorRouter = router({
     .use(requirePermission({ contractor: ['create'] }))
     .input(contractorCreateSchema)
     .mutation(async ({ ctx, input: rawInput }) => {
+      const actorUserId = ctx.user?.id;
+      if (!actorUserId) {
+        throw new TRPCError({ code: 'UNAUTHORIZED' });
+      }
+
       const input = sanitizeStrings(rawInput);
       const {
         billingModel,
@@ -569,6 +579,13 @@ export const contractorRouter = router({
         defaultCostCenterId,
         ...companyFields
       } = input;
+
+      const normalizedTaxId = normalizeContractorTaxId(
+        companyFields.countryCode,
+        companyFields.taxId,
+      );
+      assertValidContractorTaxId(companyFields.countryCode, normalizedTaxId);
+      companyFields.taxId = normalizedTaxId ?? companyFields.taxId;
 
       const contractor = await ctx.db.$transaction(async tx => {
         const created = await tx.contractor.create({
@@ -623,7 +640,7 @@ export const contractorRouter = router({
         await writeAuditLog({
           organizationId: ctx.organizationId,
           actorType: 'USER',
-          actorId: ctx.user.id,
+          actorId: actorUserId,
           action: 'CREATE',
           resourceType: 'CONTRACTOR',
           resourceId: created.id,
@@ -654,8 +671,13 @@ export const contractorRouter = router({
    */
   update: tenantProcedure
     .use(requirePermission({ contractor: ['update'] }))
-    .input(contractorUpdateSchema.extend({ id: z.string().min(1) }))
+    .input(z.intersection(z.object({ id: z.string().min(1) }), contractorUpdateSchema))
     .mutation(async ({ ctx, input: rawInput }) => {
+      const actorUserId = ctx.user?.id;
+      if (!actorUserId) {
+        throw new TRPCError({ code: 'UNAUTHORIZED' });
+      }
+
       const input = sanitizeStrings(rawInput);
       const {
         id,
@@ -686,6 +708,18 @@ export const contractorRouter = router({
         });
       }
 
+      if (companyFields.taxId !== undefined) {
+        const normalizedTaxId = normalizeContractorTaxId(
+          companyFields.countryCode ?? existing.countryCode,
+          companyFields.taxId,
+        );
+        assertValidContractorTaxId(
+          companyFields.countryCode ?? existing.countryCode,
+          normalizedTaxId,
+        );
+        companyFields.taxId = normalizedTaxId ?? undefined;
+      }
+
       const updateData: Prisma.ContractorUpdateInput = {
         ...companyFields,
         ...buildContractorRelationUpdates({
@@ -703,7 +737,7 @@ export const contractorRouter = router({
         rateValueMinor,
       );
       if (mergedCustomFields) {
-        updateData.customFieldsJson = mergedCustomFields;
+        updateData.customFieldsJson = mergedCustomFields as Prisma.InputJsonObject;
       }
 
       const updated = await ctx.db.contractor.update({
@@ -715,7 +749,7 @@ export const contractorRouter = router({
       await writeAuditLog({
         organizationId: ctx.organizationId,
         actorType: 'USER',
-        actorId: ctx.user.id,
+        actorId: actorUserId,
         action: 'UPDATE',
         resourceType: 'CONTRACTOR',
         resourceId: id,
@@ -725,7 +759,7 @@ export const contractorRouter = router({
       });
 
       // D-07 trigger 1: validate or clear VAT ID on change
-      await handleVatIdChange(ctx.db, id, ctx.organizationId, ctx.user.id, existing, updated);
+      await handleVatIdChange(ctx.db, id, ctx.organizationId, actorUserId, existing, updated);
 
       // Update default billing profile if billing fields changed
       await updateBillingProfileIfNeeded(
@@ -820,6 +854,11 @@ export const contractorRouter = router({
     .use(requirePermission({ contractor: ['delete'] }))
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
+      const actorUserId = ctx.user?.id;
+      if (!actorUserId) {
+        throw new TRPCError({ code: 'UNAUTHORIZED' });
+      }
+
       const contractor = await ctx.db.contractor.findFirst({
         where: {
           id: input.id,
@@ -840,6 +879,8 @@ export const contractorRouter = router({
         where: {
           contractorId: input.id,
           organizationId: ctx.organizationId,
+          deletedAt: null,
+          status: { not: 'VOID' },
           paymentStatus: { notIn: ['PAID', 'NOT_READY'] },
         },
       });
@@ -909,7 +950,7 @@ export const contractorRouter = router({
       await writeAuditLog({
         organizationId: ctx.organizationId,
         actorType: 'USER',
-        actorId: ctx.user.id,
+        actorId: actorUserId,
         action: 'DELETE',
         resourceType: 'CONTRACTOR',
         resourceId: input.id,
@@ -944,6 +985,8 @@ export const contractorRouter = router({
         where: {
           contractorId: { in: input.ids },
           organizationId: ctx.organizationId,
+          deletedAt: null,
+          status: { not: 'VOID' },
           paymentStatus: { notIn: ['PAID', 'NOT_READY'] },
         },
       });
@@ -1309,6 +1352,11 @@ export const contractorRouter = router({
     .use(requirePermission({ contractor: ['update'] }))
     .input(z.object({ contractorId: z.string().min(1) }))
     .mutation(async ({ ctx, input }) => {
+      const actorUserId = ctx.user?.id;
+      if (!actorUserId) {
+        throw new TRPCError({ code: 'UNAUTHORIZED' });
+      }
+
       const contractor = await ctx.db.contractor.findFirst({
         where: {
           id: input.contractorId,
@@ -1344,7 +1392,7 @@ export const contractorRouter = router({
           contractorId: contractor.id,
           taxIdType,
           taxIdValue: contractor.vatId,
-          actor: { userId: ctx.user.id },
+          actor: { userId: actorUserId },
         },
         {
           prisma: ctx.db,
@@ -1365,6 +1413,11 @@ export const contractorRouter = router({
     .use(requirePermission({ contractor: ['update'] }))
     .input(z.object({ contractorId: z.string().min(1) }))
     .mutation(async ({ ctx, input }) => {
+      const actorUserId = ctx.user?.id;
+      if (!actorUserId) {
+        throw new TRPCError({ code: 'UNAUTHORIZED' });
+      }
+
       const contractor = await ctx.db.contractor.findFirst({
         where: {
           id: input.contractorId,
@@ -1402,7 +1455,7 @@ export const contractorRouter = router({
           taxIdValue: contractor.vatId,
           // `intent` flows through to the orchestrator's logging / audit
           // surface; the distinguishing mark from validateVat lives here.
-          actor: { userId: ctx.user.id },
+          actor: { userId: actorUserId },
         },
         {
           prisma: ctx.db,

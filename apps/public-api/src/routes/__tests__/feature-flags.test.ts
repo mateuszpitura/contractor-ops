@@ -4,8 +4,8 @@
  * Covers: GET / calls caller.featureFlags.list() and wraps result as { data }.
  */
 
-import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Hono } from 'hono';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ---------------------------------------------------------------------------
 // Caller stub — must use vi.hoisted() because vi.mock() is hoisted above
@@ -53,10 +53,13 @@ describe('GET /feature-flags', () => {
   });
 
   it('wraps the result as { data: flags }', async () => {
-    const flags = [{ key: 'feature-a', enabled: true }, { key: 'feature-b', enabled: false }];
+    const flags = [
+      { key: 'feature-a', enabled: true },
+      { key: 'feature-b', enabled: false },
+    ];
     mockList.mockResolvedValueOnce(flags);
     const res = await app.request('/');
-    const body = await res.json() as { data: unknown };
+    const body = (await res.json()) as { data: unknown };
     expect(body).toEqual({ data: flags });
   });
 
@@ -71,7 +74,7 @@ describe('GET /feature-flags', () => {
     await app.request('/');
     expect(mockCreatePublicCaller).toHaveBeenCalledOnce();
     // The context passed should be the Hono Context object (has req/res/etc)
-    const [ctx] = mockCreatePublicCaller.mock.calls[0] as [{ req: unknown }];
+    const [ctx] = mockCreatePublicCaller.mock.calls[0] as unknown as [{ req: unknown }];
     expect(ctx).toBeDefined();
     expect(ctx.req).toBeDefined();
   });
@@ -79,7 +82,7 @@ describe('GET /feature-flags', () => {
   it('returns empty data array when no flags exist', async () => {
     mockList.mockResolvedValueOnce([]);
     const res = await app.request('/');
-    const body = await res.json() as { data: unknown[] };
+    const body = (await res.json()) as { data: unknown[] };
     expect(body.data).toEqual([]);
   });
 });

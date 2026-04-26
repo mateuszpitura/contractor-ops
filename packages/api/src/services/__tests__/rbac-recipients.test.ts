@@ -26,7 +26,7 @@ vi.mock('@contractor-ops/db', () => ({
 // Imported AFTER the db mock so better-auth's adapter init doesn't crash.
 import { roles as authRoles } from '@contractor-ops/auth';
 
-import { __testables, resolveRbacRecipients } from '../rbac-recipients.js';
+import { resolveRbacRecipients, testables } from '../rbac-recipients.js';
 
 const ORG_A = 'clorgaaaaaaaaaaaaaaaaaaaaaa';
 const ORG_B = 'clorgbbbbbbbbbbbbbbbbbbbbbb';
@@ -102,7 +102,7 @@ describe('resolveRbacRecipients', () => {
       expected[name] = actions.filter(a => a === 'read' || a === 'update').sort();
     }
     const actual: Record<string, string[]> = {};
-    for (const [name, actions] of Object.entries(__testables.ROLE_CONTRACTOR_ACTIONS)) {
+    for (const [name, actions] of Object.entries(testables.ROLE_CONTRACTOR_ACTIONS)) {
       actual[name] = Array.from(actions).sort();
     }
     expect(actual).toEqual(expected);

@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
   taxRateCodeSchema,
   taxRateResponseSchema,
-  whtServiceTypeEnum,
   whtCalculationSchema,
+  whtServiceTypeEnum,
 } from '../tax.js';
 
 // ---------------------------------------------------------------------------
@@ -81,12 +81,14 @@ describe('taxRateResponseSchema', () => {
 // ---------------------------------------------------------------------------
 
 describe('whtServiceTypeEnum', () => {
-  it.each(['technical_services', 'management_fees', 'royalties', 'rent_equipment'])(
-    'accepts %s',
-    (val) => {
-      expect(whtServiceTypeEnum.safeParse(val).success).toBe(true);
-    },
-  );
+  it.each([
+    'technical_services',
+    'management_fees',
+    'royalties',
+    'rent_equipment',
+  ])('accepts %s', val => {
+    expect(whtServiceTypeEnum.safeParse(val).success).toBe(true);
+  });
 
   it('rejects unknown service type', () => {
     expect(whtServiceTypeEnum.safeParse('consulting').success).toBe(false);

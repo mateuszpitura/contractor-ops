@@ -62,8 +62,8 @@ vi.mock('@contractor-ops/db', () => ({
 }));
 
 import { t } from '../../init.js';
-import { tenantProcedure } from '../tenant.js';
 import { requireFeatureFlag, tenantFlaggedProcedure } from '../feature-flag.js';
+import { tenantProcedure } from '../tenant.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -162,9 +162,7 @@ describe('tenantFlaggedProcedure', () => {
     const caller = t.createCallerFactory(router)(authedCtx());
     await caller.ping();
 
-    expect(mockLazyFlagBag).toHaveBeenCalledWith(
-      expect.objectContaining({ region: 'EU' }),
-    );
+    expect(mockLazyFlagBag).toHaveBeenCalledWith(expect.objectContaining({ region: 'EU' }));
   });
 
   it('passes ME region through when org has ME', async () => {
@@ -180,9 +178,7 @@ describe('tenantFlaggedProcedure', () => {
     const caller = t.createCallerFactory(router)(authedCtx());
     await caller.ping();
 
-    expect(mockLazyFlagBag).toHaveBeenCalledWith(
-      expect.objectContaining({ region: 'ME' }),
-    );
+    expect(mockLazyFlagBag).toHaveBeenCalledWith(expect.objectContaining({ region: 'ME' }));
   });
 });
 
@@ -241,7 +237,9 @@ describe('requireFeatureFlag', () => {
     } catch (e) {
       expect(e).toBeInstanceOf(TRPCError);
       expect((e as TRPCError).code).toBe('INTERNAL_SERVER_ERROR');
-      expect((e as TRPCError).message).toContain('requireFeatureFlag used on a procedure without ctx.flags');
+      expect((e as TRPCError).message).toContain(
+        'requireFeatureFlag used on a procedure without ctx.flags',
+      );
     }
   });
 });

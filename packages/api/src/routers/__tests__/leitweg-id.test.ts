@@ -99,13 +99,13 @@ const { mockPrisma, leitwegIds, permissionResult } = vi.hoisted(() => {
       }),
       findMany: vi.fn(async (args: { where?: Record<string, unknown> }) => {
         const where = args?.where ?? {};
-        return Array.from(leitwegIds.values()).filter((r) => matches(r, where));
+        return Array.from(leitwegIds.values()).filter(r => matches(r, where));
       }),
       create: vi.fn(async (args: { data: Partial<LeitwegIdRow> }) => {
         const id = nextId();
         const now = new Date();
         const existing = Array.from(leitwegIds.values()).find(
-          (r) => r.organizationId === args.data.organizationId && r.value === args.data.value,
+          r => r.organizationId === args.data.organizationId && r.value === args.data.value,
         );
         if (existing) {
           const err = new Error('Unique constraint failed');
@@ -284,7 +284,7 @@ describe('leitwegId.create', () => {
     });
     expect(result.value).toBe(VALID_LWID_1);
     expect(result.id).toMatch(/^cllwid/);
-    const stored = Array.from(leitwegIds.values()).find((r) => r.value === VALID_LWID_1);
+    const stored = Array.from(leitwegIds.values()).find(r => r.value === VALID_LWID_1);
     expect(stored?.organizationId).toBe(ORG_A);
   });
 
@@ -318,8 +318,8 @@ describe('leitwegId.create', () => {
       value: VALID_LWID_1,
       isDefaultForContractor: false,
     });
-    const byOrgA = Array.from(leitwegIds.values()).filter((r) => r.organizationId === ORG_A);
-    const byOrgB = Array.from(leitwegIds.values()).filter((r) => r.organizationId === ORG_B);
+    const byOrgA = Array.from(leitwegIds.values()).filter(r => r.organizationId === ORG_A);
+    const byOrgB = Array.from(leitwegIds.values()).filter(r => r.organizationId === ORG_B);
     expect(byOrgA).toHaveLength(1);
     expect(byOrgB).toHaveLength(1);
   });
@@ -342,7 +342,7 @@ describe('leitwegId.create', () => {
     expect(storedSecond?.isDefaultForContractor).toBe(true);
     // Exactly one default for K1.
     const defaults = Array.from(leitwegIds.values()).filter(
-      (r) => r.contractorId === CONTRACTOR_K1 && r.isDefaultForContractor,
+      r => r.contractorId === CONTRACTOR_K1 && r.isDefaultForContractor,
     );
     expect(defaults).toHaveLength(1);
   });
@@ -397,7 +397,7 @@ describe('leitwegId.setDefault', () => {
     expect(leitwegIds.get(c.id)?.isDefaultForContractor).toBe(true);
 
     const k1Defaults = Array.from(leitwegIds.values()).filter(
-      (r) => r.contractorId === CONTRACTOR_K1 && r.isDefaultForContractor,
+      r => r.contractorId === CONTRACTOR_K1 && r.isDefaultForContractor,
     );
     expect(k1Defaults).toHaveLength(1);
     expect(k1Defaults[0]?.id).toBe(b.id);
@@ -449,7 +449,7 @@ describe('leitwegId.list — multi-tenant isolation', () => {
     const orgBList = await makeCaller(ORG_B).leitwegId.list();
 
     expect(orgAList).toHaveLength(2);
-    expect(orgAList.every((r) => r.value !== VALID_LWID_3)).toBe(true);
+    expect(orgAList.every(r => r.value !== VALID_LWID_3)).toBe(true);
     expect(orgBList).toHaveLength(1);
     expect(orgBList[0]?.value).toBe(VALID_LWID_3);
   });

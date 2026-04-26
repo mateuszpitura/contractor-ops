@@ -8,12 +8,7 @@ import type { SvrlIssue } from './svrl-issue-list';
 
 export type EInvoiceValidationStatus = 'NOT_VALIDATED' | 'VALID' | 'WARNINGS' | 'INVALID';
 
-export type EInvoiceTransmissionStatus =
-  | 'NOT_SENT'
-  | 'QUEUED'
-  | 'SENT'
-  | 'DELIVERED'
-  | 'FAILED';
+export type EInvoiceTransmissionStatus = 'NOT_SENT' | 'QUEUED' | 'SENT' | 'DELIVERED' | 'FAILED';
 
 export interface EInvoiceLifecycleEventShape {
   id: string;

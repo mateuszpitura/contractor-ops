@@ -32,8 +32,7 @@ export function ReassessmentTriggerChip({ count, className }: ReassessmentTrigge
       className={cn('gap-1.5 py-1 px-2', className)}
       aria-label={ariaLabel}
       data-slot="reassessment-trigger-chip"
-      title={tooltip}
-    >
+      title={tooltip}>
       <RefreshCcw aria-hidden="true" className="size-3.5" />
       <span>{label}</span>
     </Badge>

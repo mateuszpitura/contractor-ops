@@ -1,5 +1,8 @@
+import { createLogger } from '@contractor-ops/logger';
 import { TRPCError } from '@trpc/server';
 import type { Context } from 'hono';
+
+const log = createLogger({ service: 'public-api' });
 
 // ---------------------------------------------------------------------------
 // tRPC → HTTP status code mapping
@@ -74,7 +77,7 @@ export function handleError(err: Error, c: Context) {
     return c.json(formatErrorResponse(status, code, message), status as 400);
   }
 
-  console.error('[public-api] Unhandled error:', err);
+  log.error({ err }, 'unhandled error');
 
   return c.json(
     formatErrorResponse(500, 'INTERNAL_SERVER_ERROR', 'An unexpected error occurred.'),

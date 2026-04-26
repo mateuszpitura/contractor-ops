@@ -113,9 +113,7 @@ describe('AuditLogTable', () => {
   });
 
   it('renders refetching overlay when isFetching but not isLoading', () => {
-    const { container } = render(
-      <AuditLogTable {...defaultProps} isFetching isLoading={false} />,
-    );
+    const { container } = render(<AuditLogTable {...defaultProps} isFetching isLoading={false} />);
     // Refetch overlay has a Loader2 spinner
     expect(container.querySelector('.animate-spin')).toBeTruthy();
   });

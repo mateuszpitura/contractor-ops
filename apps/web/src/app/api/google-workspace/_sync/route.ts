@@ -1,9 +1,12 @@
 import { processDirectorySync } from '@contractor-ops/api/services/google-workspace-sync-orchestrator';
 import { registerAllAdapters } from '@contractor-ops/integrations/adapters/register-all';
+import { createCronLogger } from '@contractor-ops/logger';
 import { verifySignatureAppRouter } from '@upstash/qstash/nextjs';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
+
+const log = createCronLogger('google-workspace-sync');
 
 // ---------------------------------------------------------------------------
 // Ensure adapters are registered
@@ -56,10 +59,7 @@ async function handler(request: NextRequest) {
     const result = await processDirectorySync({ organizationId, connectionId });
     return NextResponse.json({ processed: true, ...result });
   } catch (error) {
-    console.error(
-      `[google-workspace/_sync] Failed to sync directory for org ${organizationId}:`,
-      error,
-    );
+    log.error({ err: error, organizationId }, 'failed to sync directory for org');
     return NextResponse.json({ error: 'Google Workspace directory sync failed' }, { status: 500 });
   }
 }

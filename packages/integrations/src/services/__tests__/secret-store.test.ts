@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { SecretStoreError } from '../secret-store.js';
 import type { ExtendedSecretStore } from '../secret-store.js';
+import { SecretStoreError } from '../secret-store.js';
 
 describe('SecretStoreError', () => {
   it('sets name to SecretStoreError', () => {

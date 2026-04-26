@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { setup, render, screen } from '@/test/test-utils';
+import { render, screen, setup } from '@/test/test-utils';
 import type { InvoiceTabData } from '../types';
 
 // ---------------------------------------------------------------------------
@@ -13,9 +13,8 @@ const downloadReportMutate = vi.fn();
 const sendMutate = vi.fn();
 
 vi.mock('@tanstack/react-query', async () => {
-  const actual = await vi.importActual<typeof import('@tanstack/react-query')>(
-    '@tanstack/react-query',
-  );
+  const actual =
+    await vi.importActual<typeof import('@tanstack/react-query')>('@tanstack/react-query');
   return {
     ...actual,
     useQuery: () => ({ data: undefined, isLoading: false }),

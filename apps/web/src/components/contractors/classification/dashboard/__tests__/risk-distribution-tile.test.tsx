@@ -8,7 +8,9 @@ import { RiskDistributionTile } from '../risk-distribution-tile';
 
 describe('RiskDistributionTile', () => {
   it('renders 3 segments with widths proportional to {safe, warning, critical}', () => {
-    render(<RiskDistributionTile counts={{ safe: 5, warning: 3, critical: 2 }} totalCompleted={10} />);
+    render(
+      <RiskDistributionTile counts={{ safe: 5, warning: 3, critical: 2 }} totalCompleted={10} />,
+    );
     const bar = screen.getByTestId('risk-distribution-bar');
     expect(bar).toBeInTheDocument();
     const segments = bar.querySelectorAll('[data-bucket]');

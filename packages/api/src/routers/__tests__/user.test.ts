@@ -324,7 +324,7 @@ describe('user.list', () => {
         {
           id: MEMBER_ID,
           userId: TARGET_USER_ID,
-          role: 'member',
+          role: 'readonly',
           createdAt: '2025-01-01T00:00:00Z',
           user: {
             id: TARGET_USER_ID,
@@ -345,7 +345,7 @@ describe('user.list', () => {
       name: 'Jane Doe',
       email: 'jane@example.com',
       image: 'https://avatar.example.com/jane.png',
-      role: 'member',
+      role: 'readonly',
       createdAt: '2025-01-01T00:00:00Z',
     });
   });
@@ -443,7 +443,7 @@ describe('user.deactivate', () => {
 
   it('transfers contractor ownership to an admin when deactivating', async () => {
     mockPrisma.member.findFirst
-      .mockResolvedValueOnce({ role: 'member' }) // target is not admin
+      .mockResolvedValueOnce({ role: 'readonly' }) // target is not admin
       .mockResolvedValueOnce({ userId: USER_ID }); // replacement admin
     mockPrisma.approvalStep.findMany.mockResolvedValueOnce([]);
     mockPrisma.contractor.findMany.mockResolvedValueOnce([

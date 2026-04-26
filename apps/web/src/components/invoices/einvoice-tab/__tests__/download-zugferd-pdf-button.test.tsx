@@ -10,12 +10,14 @@ const { mutationState } = vi.hoisted(() => ({
 }));
 
 vi.mock('@tanstack/react-query', async () => {
-  const actual = await vi.importActual<typeof import('@tanstack/react-query')>(
-    '@tanstack/react-query',
-  );
+  const actual =
+    await vi.importActual<typeof import('@tanstack/react-query')>('@tanstack/react-query');
   return {
     ...actual,
-    useMutation: (options: { onSuccess?: (r: unknown) => void; onError?: (e: unknown) => void }) => {
+    useMutation: (options: {
+      onSuccess?: (r: unknown) => void;
+      onError?: (e: unknown) => void;
+    }) => {
       const mutate = vi.fn((input: unknown) => {
         void (async () => {
           try {
@@ -57,12 +59,12 @@ vi.mock('sonner', () => ({
   toast: { success: vi.fn(), error: vi.fn() },
 }));
 
-import { setup, screen, waitFor } from '@/test/test-utils';
 import { toast } from 'sonner';
+import { screen, setup, waitFor } from '@/test/test-utils';
 import { DownloadZugferdPdfButton } from '../download-zugferd-pdf-button';
 
 beforeEach(() => {
-  mutationState.next = (async () => ({}));
+  mutationState.next = async () => ({});
   mutationState.isPending = false;
   (toast.success as unknown as ReturnType<typeof vi.fn>).mockReset?.();
   (toast.error as unknown as ReturnType<typeof vi.fn>).mockReset?.();
@@ -103,7 +105,8 @@ describe('DownloadZugferdPdfButton', () => {
     await user.click(screen.getByTestId('download-zugferd-pdf-button'));
 
     await waitFor(() => expect(toast.error).toHaveBeenCalled());
-    const errMessage = (toast.error as unknown as ReturnType<typeof vi.fn>).mock.calls[0]?.[0] as string;
+    const errMessage = (toast.error as unknown as ReturnType<typeof vi.fn>).mock
+      .calls[0]?.[0] as string;
     expect(errMessage).toContain('ZUGFeRD');
   });
 });

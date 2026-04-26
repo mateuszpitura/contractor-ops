@@ -1,3 +1,5 @@
+import { parseMemberRole } from '@contractor-ops/auth/role-normalization';
+
 /**
  * Masks a tax ID (NIP) for display to non-privileged roles.
  * Shows first 2 and last 2 digits, replacing the rest with bullets.
@@ -25,6 +27,6 @@ const PII_PERMITTED_ROLES = new Set([
  * like tax IDs and bank account numbers.
  */
 export function canViewSensitivePii(role: string | undefined): boolean {
-  if (!role) return false;
-  return PII_PERMITTED_ROLES.has(role);
+  const parsed = parseMemberRole(role);
+  return parsed ? PII_PERMITTED_ROLES.has(parsed) : false;
 }

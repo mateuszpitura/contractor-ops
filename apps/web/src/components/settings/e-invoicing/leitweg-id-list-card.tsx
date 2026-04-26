@@ -15,17 +15,12 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import {
-  Table,
-  TableBody,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { trpc } from '@/trpc/init';
 
 import { LeitwegIdCreateDialog } from './leitweg-id-create-dialog';
-import { LeitwegIdRow, type LeitwegIdRowData } from './leitweg-id-row';
+import type { LeitwegIdRowData } from './leitweg-id-row';
+import { LeitwegIdRow } from './leitweg-id-row';
 
 // ---------------------------------------------------------------------------
 // Component

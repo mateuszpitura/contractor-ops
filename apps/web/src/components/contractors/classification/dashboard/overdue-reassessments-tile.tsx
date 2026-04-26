@@ -39,9 +39,7 @@ export function OverdueReassessmentsTile({ count, items }: OverdueReassessmentsT
             </li>
           ))}
           {count > 5 ? (
-            <li className="text-xs text-primary">
-              {t('overdueShowMore', { count: count - 5 })}
-            </li>
+            <li className="text-xs text-primary">{t('overdueShowMore', { count: count - 5 })}</li>
           ) : null}
         </ul>
       )}

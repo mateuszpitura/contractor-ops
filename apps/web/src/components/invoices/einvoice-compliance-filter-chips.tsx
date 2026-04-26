@@ -1,10 +1,10 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useCallback, useMemo } from 'react';
-import { useRouter } from '@/i18n/navigation';
 import { Badge } from '@/components/ui/badge';
+import { useRouter } from '@/i18n/navigation';
 
 // ---------------------------------------------------------------------------
 // Supported filter values — mirrors the einvoice.listByOrg router enum
@@ -27,14 +27,7 @@ const URL_PARAM = 'einvoiceStatus';
 
 interface FilterChipDef {
   value: EInvoiceComplianceFilter;
-  labelKey:
-    | 'all'
-    | 'notGenerated'
-    | 'valid'
-    | 'warnings'
-    | 'invalid'
-    | 'transmitted'
-    | 'failed';
+  labelKey: 'all' | 'notGenerated' | 'valid' | 'warnings' | 'invalid' | 'transmitted' | 'failed';
 }
 
 const CHIPS: FilterChipDef[] = [
@@ -120,9 +113,7 @@ export function EInvoiceComplianceFilterChips({
     (chip: EInvoiceComplianceFilter) => {
       // Single-select semantics: click the same chip again → back to `all`.
       const next: EInvoiceComplianceFilter[] =
-        chip === 'all' || (activeSet.has(chip) && activeFilters.length === 1)
-          ? ['all']
-          : [chip];
+        chip === 'all' || (activeSet.has(chip) && activeFilters.length === 1) ? ['all'] : [chip];
       writeUrl(next);
       onChange?.(next);
     },
@@ -140,10 +131,7 @@ export function EInvoiceComplianceFilterChips({
   );
 
   return (
-    <div
-      className="flex flex-wrap items-center gap-2"
-      role="group"
-      aria-label={t('label')}>
+    <div className="flex flex-wrap items-center gap-2" role="group" aria-label={t('label')}>
       {CHIPS.map(chip => {
         const isActive = activeSet.has(chip.value);
         return (
@@ -156,9 +144,7 @@ export function EInvoiceComplianceFilterChips({
             data-value={chip.value}
             variant={isActive ? 'default' : 'outline'}
             className={`cursor-pointer h-8 px-3 text-sm select-none ${
-              isActive
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-transparent hover:bg-muted'
+              isActive ? 'bg-primary text-primary-foreground' : 'bg-transparent hover:bg-muted'
             }`}
             // biome-ignore lint/nursery/noJsxPropsBind: per-chip handler
             onClick={() => handleClick(chip.value)}

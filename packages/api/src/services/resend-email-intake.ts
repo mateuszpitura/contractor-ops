@@ -8,10 +8,13 @@
 
 import { randomUUID } from 'node:crypto';
 import { PutObjectCommand } from '@aws-sdk/client-s3';
+import { createLogger } from '@contractor-ops/logger';
 import type { Resend } from 'resend';
 import { createR2Client, getR2BucketName } from './r2.js';
 import { getResend } from './resend-client.js';
 import type { DbClient } from './types.js';
+
+const log = createLogger({ service: 'resend-email-intake' });
 
 /** Resend Receiving API — SDK types may not include `emails.receiving` yet. */
 function resendReceivingAttachments(resend: Resend) {
@@ -180,11 +183,7 @@ async function processNonPdfAttachmentsForInvoice(
         },
       });
     } catch (nonPdfError) {
-      console.error(
-        '[resend-email-intake] Failed to process non-PDF attachment %s:',
-        nonPdfId,
-        nonPdfError,
-      );
+      log.error({ err: nonPdfError, nonPdfId }, 'failed to process non-PDF attachment');
     }
   }
 }
@@ -220,7 +219,7 @@ async function processOnePdfAttachment(
     });
 
     if (!attResponse.data) {
-      console.error('[resend-email-intake] No data returned for attachment %s', attachmentId);
+      log.error({ attachmentId }, 'no data returned for attachment');
       return null;
     }
 
@@ -228,11 +227,7 @@ async function processOnePdfAttachment(
 
     const pdfResponse = await fetch(attData.download_url);
     if (!pdfResponse.ok) {
-      console.error(
-        '[resend-email-intake] Failed to download attachment %s: %d',
-        attachmentId,
-        pdfResponse.status,
-      );
+      log.error({ attachmentId, status: pdfResponse.status }, 'failed to download attachment');
       return null;
     }
 
@@ -316,11 +311,7 @@ async function processOnePdfAttachment(
 
     return invoice.id;
   } catch (error) {
-    console.error(
-      '[resend-email-intake] Failed to process PDF attachment %s:',
-      attachmentId,
-      error,
-    );
+    log.error({ err: error, attachmentId }, 'failed to process PDF attachment');
     return null;
   }
 }

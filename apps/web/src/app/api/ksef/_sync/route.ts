@@ -1,8 +1,17 @@
 import { processKsefSync } from '@contractor-ops/api/services/ksef-sync-orchestrator';
 import { registerAllAdapters } from '@contractor-ops/integrations/adapters/register-all';
+import { createCronLogger } from '@contractor-ops/logger';
 import { verifySignatureAppRouter } from '@upstash/qstash/nextjs';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
+
+const log = createCronLogger('ksef-sync');
+
+const ksefSyncBodySchema = z.object({
+  organizationId: z.string().min(1),
+  connectionId: z.string().min(1),
+});
 
 // ---------------------------------------------------------------------------
 // Ensure adapters are registered
@@ -31,21 +40,18 @@ registerAllAdapters();
  * 4. Return 200 on success, 500 on error (QStash retries on non-2xx)
  */
 async function handler(request: NextRequest) {
-  const body = await request.json();
-  const { organizationId, connectionId } = body as {
-    organizationId: string;
-    connectionId: string;
-  };
-
-  if (!(organizationId && connectionId)) {
-    return NextResponse.json({ error: 'Missing organizationId or connectionId' }, { status: 400 });
+  const rawBody = await request.json().catch(() => null);
+  const parsed = ksefSyncBodySchema.safeParse(rawBody);
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Invalid body' }, { status: 400 });
   }
+  const { organizationId, connectionId } = parsed.data;
 
   try {
     const result = await processKsefSync({ organizationId, connectionId });
     return NextResponse.json({ processed: true, ...result });
   } catch (error) {
-    console.error(`[ksef/_sync] Failed to sync KSeF for org ${organizationId}:`, error);
+    log.error({ err: error, organizationId }, 'ksef sync failed');
     return NextResponse.json({ error: 'KSeF sync failed' }, { status: 500 });
   }
 }

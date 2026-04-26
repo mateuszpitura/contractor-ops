@@ -124,9 +124,7 @@ describe('LeitwegIdInlineSelector', () => {
         isPublicSectorBuyer={true}
       />,
     );
-    expect(
-      screen.queryByText(/leitweg-id missing for german public-sector buyer/i),
-    ).toBeNull();
+    expect(screen.queryByText(/leitweg-id missing for german public-sector buyer/i)).toBeNull();
   });
 });
 
@@ -136,28 +134,18 @@ describe('LeitwegIdInlineSelector', () => {
 
 describe('PeppolIdentifierFields — pair constraint', () => {
   it('shows no error when both fields are empty', () => {
-    render(
-      <PeppolIdentifierFields value={{ schemeId: '', value: '' }} onChange={() => {}} />,
-    );
+    render(<PeppolIdentifierFields value={{ schemeId: '', value: '' }} onChange={() => {}} />);
     expect(screen.queryByRole('alert')).toBeNull();
   });
 
   it('surfaces pair error when only scheme is provided', () => {
-    render(
-      <PeppolIdentifierFields
-        value={{ schemeId: '0060', value: '' }}
-        onChange={() => {}}
-      />,
-    );
+    render(<PeppolIdentifierFields value={{ schemeId: '0060', value: '' }} onChange={() => {}} />);
     expect(screen.getByRole('alert')).toBeInTheDocument();
   });
 
   it('surfaces pair error when only value is provided', () => {
     render(
-      <PeppolIdentifierFields
-        value={{ schemeId: '', value: '12345678' }}
-        onChange={() => {}}
-      />,
+      <PeppolIdentifierFields value={{ schemeId: '', value: '12345678' }} onChange={() => {}} />,
     );
     expect(screen.getByRole('alert')).toBeInTheDocument();
   });

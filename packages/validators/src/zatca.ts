@@ -1,4 +1,4 @@
-// ZATCA schemas — re-exported from @contractor-ops/einvoice
+// ZATCA schemas — re-exported from @contractor-ops/einvoice (narrows import graph for browser bundles)
 
 export type {
   ZatcaConnectionConfig,
@@ -7,7 +7,7 @@ export type {
   ZatcaInvoiceFields,
   ZatcaOnboardingStepType,
   ZatcaTaxDetails,
-} from '@contractor-ops/einvoice';
+} from '@contractor-ops/einvoice/zatca/schemas';
 export {
   zatcaConnectionConfigSchema,
   zatcaCsrAttributesSchema,
@@ -15,4 +15,4 @@ export {
   zatcaInvoiceFieldsSchema,
   zatcaOnboardingStepSchema,
   zatcaTaxDetailsSchema,
-} from '@contractor-ops/einvoice';
+} from '@contractor-ops/einvoice/zatca/schemas';

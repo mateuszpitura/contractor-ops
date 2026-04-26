@@ -3,7 +3,7 @@ import {
   SOFTWARE_NOT_LEGAL_ADVICE_EN,
 } from '@contractor-ops/validators';
 import type { Metadata } from 'next';
-import { getLocale, useTranslations } from 'next-intl';
+import { getLocale, getTranslations } from 'next-intl/server';
 
 export const metadata: Metadata = {
   title: 'Terms of Service — Contractor Ops',
@@ -13,7 +13,7 @@ export default async function TermsOfServicePage() {
   const locale = await getLocale();
   const softwareNotLegalAdvice =
     locale === 'de' ? SOFTWARE_NOT_LEGAL_ADVICE_DE : SOFTWARE_NOT_LEGAL_ADVICE_EN;
-  const t = useTranslations('Legal.terms');
+  const t = await getTranslations('Legal.terms');
 
   return (
     <article className="prose prose-neutral dark:prose-invert max-w-none">

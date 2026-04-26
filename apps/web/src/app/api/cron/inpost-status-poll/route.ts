@@ -2,9 +2,12 @@ import { pollDpdShipmentStatuses } from '@contractor-ops/api/services/courier/dp
 import { pollInPostShipmentStatuses } from '@contractor-ops/api/services/courier/inpost-polling-service';
 import { pollUpsShipmentStatuses } from '@contractor-ops/api/services/courier/ups-polling-service';
 import { prisma } from '@contractor-ops/db';
+import { createCronLogger } from '@contractor-ops/logger';
 import { verifySignatureAppRouter } from '@upstash/qstash/nextjs';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+
+const log = createCronLogger('inpost-status-poll');
 
 // ---------------------------------------------------------------------------
 // POST /api/cron/inpost-status-poll
@@ -76,8 +79,9 @@ async function handler(request: NextRequest) {
     0,
   );
 
-  console.info(
-    `[courier-status-poll] Completed: ${results.length} org(s), ${totalChecked} checked, ${totalUpdated} updated`,
+  log.info(
+    { orgCount: results.length, totalChecked, totalUpdated },
+    'completed courier status poll',
   );
 
   return NextResponse.json({ results });
@@ -92,21 +96,21 @@ async function pollAllCarriersForOrg(organizationId: string): Promise<OrgResult>
 
   // Poll InPost shipments
   const inpostResult = await pollInPostShipmentStatuses(prisma, organizationId).catch(err => {
-    console.error(`[courier-status-poll] InPost error for org ${organizationId}:`, err);
+    log.error({ err, organizationId }, 'inpost error for org');
     return { checked: 0, updated: 0 };
   });
   carriers.push({ carrier: 'inpost', ...inpostResult });
 
   // Poll DPD shipments
   const dpdResult = await pollDpdShipmentStatuses(prisma, organizationId).catch(err => {
-    console.error(`[courier-status-poll] DPD error for org ${organizationId}:`, err);
+    log.error({ err, organizationId }, 'dpd error for org');
     return { checked: 0, updated: 0 };
   });
   carriers.push({ carrier: 'dpd', ...dpdResult });
 
   // Poll UPS shipments
   const upsResult = await pollUpsShipmentStatuses(prisma, organizationId).catch(err => {
-    console.error(`[courier-status-poll] UPS error for org ${organizationId}:`, err);
+    log.error({ err, organizationId }, 'ups error for org');
     return { checked: 0, updated: 0 };
   });
   carriers.push({ carrier: 'ups', ...upsResult });

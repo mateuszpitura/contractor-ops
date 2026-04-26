@@ -1,5 +1,8 @@
+import { createLogger } from '@contractor-ops/logger';
 import { getServerEnv } from '@contractor-ops/validators';
 import { Redis } from '@upstash/redis';
+
+const log = createLogger({ service: 'cache' });
 
 // ---------------------------------------------------------------------------
 // Client
@@ -86,7 +89,7 @@ export async function cached<T>(key: string, ttlSec: number, fn: () => Promise<T
       return unwrap(hit);
     }
   } catch (err) {
-    console.warn('[cache] Redis GET failed, falling back to DB:', err);
+    log.warn({ err }, 'redis GET failed, falling back to DB');
   }
 
   // 2. Cache miss → fetch with singleflight
@@ -94,7 +97,7 @@ export async function cached<T>(key: string, ttlSec: number, fn: () => Promise<T
 
   // 3. Write-back (fire-and-forget, don't block response)
   client.set(key, wrap(result), { ex: ttlSec }).catch(err => {
-    console.warn('[cache] Redis SET failed:', err);
+    log.warn({ err }, 'redis SET failed');
   });
 
   return result;
@@ -131,7 +134,7 @@ export async function invalidate(...keys: string[]): Promise<void> {
   try {
     await client.del(...keys);
   } catch (err) {
-    console.warn('[cache] Redis DEL failed:', err);
+    log.warn({ err }, 'redis DEL failed');
   }
 }
 
@@ -157,7 +160,7 @@ export async function invalidateByPrefix(prefix: string): Promise<void> {
       }
     } while (cursor !== 0);
   } catch (err) {
-    console.warn('[cache] Redis prefix invalidation failed:', err);
+    log.warn({ err }, 'redis prefix invalidation failed');
   }
 }
 

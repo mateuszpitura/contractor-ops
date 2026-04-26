@@ -187,9 +187,7 @@ export function IntakeUploadDialog({ open, onOpenChange }: IntakeUploadDialogPro
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>{t('uploadDialogTitle')}</DialogTitle>
-          <DialogDescription id="intake-upload-helper">
-            {t('dropZoneSecondary')}
-          </DialogDescription>
+          <DialogDescription id="intake-upload-helper">{t('dropZoneSecondary')}</DialogDescription>
         </DialogHeader>
 
         {localError ? (

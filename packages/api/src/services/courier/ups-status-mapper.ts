@@ -1,3 +1,6 @@
+import type { ShipmentStatus } from '@contractor-ops/db/generated/prisma/client';
+import { createLogger } from '@contractor-ops/logger';
+
 // ---------------------------------------------------------------------------
 // UPS Status Mapper
 //
@@ -5,12 +8,14 @@
 // Unknown statuses return null and log a warning (never throw).
 // ---------------------------------------------------------------------------
 
+const log = createLogger({ service: 'ups-status-mapper' });
+
 /**
  * Complete mapping of UPS tracking type codes to ShipmentStatus enum values.
  *
  * UPS uses single-letter (or two-letter) type codes in tracking responses.
  */
-export const UPS_STATUS_MAP: Record<string, string> = {
+export const UPS_STATUS_MAP: Record<string, ShipmentStatus> = {
   M: 'CREATED', // Manifest/Billing info received
   P: 'PICKED_UP', // Picked up
   I: 'IN_TRANSIT', // In Transit
@@ -26,10 +31,10 @@ export const UPS_STATUS_MAP: Record<string, string> = {
  * @param typeCode - The type code from UPS Tracking API response
  * @returns The mapped ShipmentStatus string, or null if the code is unknown
  */
-export function mapUpsStatus(typeCode: string): string | null {
+export function mapUpsStatus(typeCode: string): ShipmentStatus | null {
   const mapped = UPS_STATUS_MAP[typeCode];
   if (!mapped) {
-    console.warn(`[ups-status-mapper] Unknown UPS status type code: "${typeCode}" — skipping`);
+    log.warn({ typeCode }, 'unknown UPS status type code — skipping');
     return null;
   }
   return mapped;

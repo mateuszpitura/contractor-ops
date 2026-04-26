@@ -24,10 +24,7 @@ interface DownloadZugferdPdfButtonProps {
  * Revokes the object URL immediately so memory leaks are impossible.
  * (The signed URL itself is the direct R2 download; no blob conversion.)
  */
-export function DownloadZugferdPdfButton({
-  invoiceId,
-  className,
-}: DownloadZugferdPdfButtonProps) {
+export function DownloadZugferdPdfButton({ invoiceId, className }: DownloadZugferdPdfButtonProps) {
   const t = useTranslations('EInvoice.intake');
   const queryClient = useQueryClient();
 

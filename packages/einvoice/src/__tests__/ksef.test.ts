@@ -83,7 +83,11 @@ function createParsedInvoice(overrides?: Partial<KsefParsedInvoice>): KsefParsed
     issueDate: '2026-04-01',
     invoiceType: 'VAT',
     currency: 'PLN',
-    seller: { nip: '1234567890', name: 'Acme Sp. z o.o.', address: 'Marszalkowska 10 00-001 Warszawa' },
+    seller: {
+      nip: '1234567890',
+      name: 'Acme Sp. z o.o.',
+      address: 'Marszalkowska 10 00-001 Warszawa',
+    },
     buyer: { nip: '9876543210', name: 'Client Corp' },
     lines: [
       {
@@ -283,9 +287,30 @@ describe('KSeF mapKsefToInvoiceFields', () => {
     const { mapKsefToInvoiceFields } = await import('../profiles/ksef/mapper.js');
     const parsed = createParsedInvoice({
       lines: [
-        { lineNumber: 1, description: 'A', vatRate: '23', netAmountMinor: 1000, vatAmountMinor: 230, grossAmountMinor: 1230 },
-        { lineNumber: 2, description: 'B', vatRate: '23', netAmountMinor: 2000, vatAmountMinor: 460, grossAmountMinor: 2460 },
-        { lineNumber: 3, description: 'C', vatRate: '8', netAmountMinor: 500, vatAmountMinor: 40, grossAmountMinor: 540 },
+        {
+          lineNumber: 1,
+          description: 'A',
+          vatRate: '23',
+          netAmountMinor: 1000,
+          vatAmountMinor: 230,
+          grossAmountMinor: 1230,
+        },
+        {
+          lineNumber: 2,
+          description: 'B',
+          vatRate: '23',
+          netAmountMinor: 2000,
+          vatAmountMinor: 460,
+          grossAmountMinor: 2460,
+        },
+        {
+          lineNumber: 3,
+          description: 'C',
+          vatRate: '8',
+          netAmountMinor: 500,
+          vatAmountMinor: 40,
+          grossAmountMinor: 540,
+        },
       ],
     });
     const { invoice } = mapKsefToInvoiceFields(parsed);
@@ -310,9 +335,7 @@ describe('KSeF mapKsefToInvoiceFields', () => {
   it('handles lines with no vatRate', async () => {
     const { mapKsefToInvoiceFields } = await import('../profiles/ksef/mapper.js');
     const parsed = createParsedInvoice({
-      lines: [
-        { lineNumber: 1, description: 'Exempt item', netAmountMinor: 1000 },
-      ],
+      lines: [{ lineNumber: 1, description: 'Exempt item', netAmountMinor: 1000 }],
     });
     const { invoice } = mapKsefToInvoiceFields(parsed);
     expect(invoice.vatRate).toBeNull();
@@ -366,7 +389,9 @@ describe('KSeF ksefToEInvoice', () => {
     const { ksefToEInvoice } = await import('../profiles/ksef/mapper.js');
 
     // Transfer
-    const transfer = ksefToEInvoice(createParsedInvoice({ payment: { method: 'przelew', dueDate: '2026-04-30' } }));
+    const transfer = ksefToEInvoice(
+      createParsedInvoice({ payment: { method: 'przelew', dueDate: '2026-04-30' } }),
+    );
     expect(transfer.paymentMeans?.code).toBe('30');
 
     // Cash
@@ -390,9 +415,27 @@ describe('KSeF ksefToEInvoice', () => {
     const { ksefToEInvoice } = await import('../profiles/ksef/mapper.js');
     const parsed = createParsedInvoice({
       lines: [
-        { lineNumber: 1, description: 'A', vatRate: '23', netAmountMinor: 10000, vatAmountMinor: 2300 },
-        { lineNumber: 2, description: 'B', vatRate: '23', netAmountMinor: 20000, vatAmountMinor: 4600 },
-        { lineNumber: 3, description: 'C', vatRate: '8', netAmountMinor: 5000, vatAmountMinor: 400 },
+        {
+          lineNumber: 1,
+          description: 'A',
+          vatRate: '23',
+          netAmountMinor: 10000,
+          vatAmountMinor: 2300,
+        },
+        {
+          lineNumber: 2,
+          description: 'B',
+          vatRate: '23',
+          netAmountMinor: 20000,
+          vatAmountMinor: 4600,
+        },
+        {
+          lineNumber: 3,
+          description: 'C',
+          vatRate: '8',
+          netAmountMinor: 5000,
+          vatAmountMinor: 400,
+        },
         { lineNumber: 4, description: 'D', vatRate: '0', netAmountMinor: 1000, vatAmountMinor: 0 },
       ],
     });

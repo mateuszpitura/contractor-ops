@@ -1,3 +1,4 @@
+import type { EntityType } from '@contractor-ops/db/generated/prisma/client';
 import type { CalendarTaskConfig } from '@contractor-ops/validators';
 import { getServerEnv } from '@contractor-ops/validators';
 import { createCalendarEvent, updateCalendarEvent } from './calendar-event-service.js';
@@ -33,7 +34,7 @@ const DURATION_MS: Record<string, number> = {
 async function hasExistingCalendarEvent(
   prisma: PrismaClient,
   organizationId: string,
-  entityType: string,
+  entityType: EntityType,
   entityId: string,
 ): Promise<boolean> {
   const count = await prisma.externalLink.count({

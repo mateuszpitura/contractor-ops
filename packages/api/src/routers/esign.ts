@@ -1,6 +1,7 @@
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { router } from '../init.js';
+import { plain } from '../lib/plain.js';
 import { portalProcedure } from '../middleware/portal-auth.js';
 import { requirePermission } from '../middleware/rbac.js';
 import { tenantProcedure } from '../middleware/tenant.js';
@@ -14,10 +15,6 @@ import {
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-function plain<T>(data: T): T {
-  return JSON.parse(JSON.stringify(data)) as T;
-}
 
 // ---------------------------------------------------------------------------
 // Input schemas
@@ -102,9 +99,14 @@ export const esignRouter = router({
     .use(requirePermission({ contract: ['update'] }))
     .input(sendForSignatureInput)
     .mutation(async ({ ctx, input }) => {
+      const userId = ctx.user?.id;
+      if (!userId) {
+        throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Authentication required' });
+      }
+
       const envelope = await sendForSignature({
         organizationId: ctx.organizationId,
-        userId: ctx.user?.id,
+        userId,
         contractId: input.contractId,
         documentId: input.documentId,
         connectionId: input.connectionId,
@@ -180,10 +182,15 @@ export const esignRouter = router({
     .use(requirePermission({ contract: ['update'] }))
     .input(voidEnvelopeInput)
     .mutation(async ({ ctx, input }) => {
+      const userId = ctx.user?.id;
+      if (!userId) {
+        throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Authentication required' });
+      }
+
       await voidEnvelope({
         organizationId: ctx.organizationId,
         envelopeId: input.envelopeId,
-        userId: ctx.user?.id,
+        userId,
         reason: input.reason,
       });
 

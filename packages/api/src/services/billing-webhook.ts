@@ -1,3 +1,7 @@
+import type {
+  SubscriptionStatus,
+  SubscriptionTier,
+} from '@contractor-ops/db/generated/prisma/client';
 import { createLogger } from '@contractor-ops/logger';
 import { metrics } from '@contractor-ops/logger/metrics';
 import { getServerEnv } from '@contractor-ops/validators';
@@ -40,7 +44,7 @@ interface SubscriptionWithPeriod extends Stripe.Subscription {
 // Stripe status -> DB enum mapping
 // ---------------------------------------------------------------------------
 
-const STRIPE_STATUS_MAP: Record<string, string> = {
+const STRIPE_STATUS_MAP: Record<string, SubscriptionStatus> = {
   trialing: 'TRIALING',
   active: 'ACTIVE',
   past_due: 'PAST_DUE',
@@ -73,7 +77,7 @@ async function sendBillingEmail(params: {
       html: `<p>${params.body}</p><p><a href="${buildBillingUrl()}">Go to billing settings</a></p>`,
     });
   } catch (error) {
-    console.error('[billing-webhook] Email send failed:', error);
+    log.error({ err: error }, 'email send failed');
   }
 }
 
@@ -190,7 +194,7 @@ async function handleCheckoutCompleted(
     typeof session.subscription === 'string' ? session.subscription : session.subscription?.id;
 
   if (!subscriptionId) {
-    console.error('[stripe-webhook] checkout.session.completed missing subscription ID');
+    log.error({}, 'checkout.session.completed missing subscription ID');
     return;
   }
 
@@ -203,9 +207,7 @@ async function handleCheckoutCompleted(
   if (subscription.status === 'trialing') {
     const organizationId = subscription.metadata?.organizationId;
     if (!organizationId) {
-      console.error(
-        '[stripe-webhook] checkout.session.completed: missing organizationId in metadata',
-      );
+      log.error({}, 'checkout.session.completed: missing organizationId in metadata');
       return;
     }
 
@@ -314,7 +316,7 @@ async function handleSubscriptionUpdated(
 ): Promise<void> {
   const organizationId = subscription.metadata?.organizationId;
   if (!organizationId) {
-    console.error('[stripe-webhook] handleSubscriptionUpdated: missing organizationId in metadata');
+    log.error({}, 'handleSubscriptionUpdated: missing organizationId in metadata');
     return;
   }
 
@@ -341,10 +343,10 @@ async function handleSubscriptionUpdated(
 }
 
 function buildSubscriptionData(subscription: SubscriptionWithPeriod, organizationId: string) {
-  const status = STRIPE_STATUS_MAP[subscription.status] ?? 'ACTIVE';
+  const status: SubscriptionStatus = STRIPE_STATUS_MAP[subscription.status] ?? 'ACTIVE';
   const priceId = subscription.items.data[0]?.price?.id;
 
-  let tier: string;
+  let tier: SubscriptionTier;
   try {
     tier = priceId ? resolveTierFromPriceId(priceId) : 'STARTER';
   } catch {
@@ -417,7 +419,7 @@ async function notifyAdminsOfTierChange(
     entityType: 'ORGANIZATION',
     entityId: organizationId,
   }).catch((error: unknown) =>
-    console.error('[stripe-webhook] Subscription change notification failed:', error),
+    log.error({ err: error }, 'subscription change notification failed'),
   );
 }
 
@@ -463,7 +465,7 @@ async function handleTrialWillEnd(subscription: Stripe.Subscription, tx: TxClien
   });
 
   if (!sub?.organization) {
-    console.error('[stripe-webhook] handleTrialWillEnd: subscription not found in DB');
+    log.error({}, 'handleTrialWillEnd: subscription not found in DB');
     return;
   }
 
@@ -488,9 +490,7 @@ async function handleTrialWillEnd(subscription: Stripe.Subscription, tx: TxClien
       body: 'Your trial ends in 3 days. Choose a plan to continue without interruption.',
       entityType: 'ORGANIZATION',
       entityId: sub.organization.id,
-    }).catch((error: unknown) =>
-      console.error('[stripe-webhook] Trial notification dispatch failed:', error),
-    );
+    }).catch((error: unknown) => log.error({ err: error }, 'trial notification dispatch failed'));
   }
 
   // Per D-10: Also send email to billingEmail
@@ -531,9 +531,7 @@ async function handleInvoicePaid(invoice: Stripe.Invoice, tx: TxClient): Promise
   });
 
   if (!sub?.stripePriceId) {
-    console.warn(
-      `[stripe-webhook] handleInvoicePaid: subscription ${subscriptionId} not found or missing priceId`,
-    );
+    log.warn({ subscriptionId }, 'handleInvoicePaid: subscription not found or missing priceId');
     return;
   }
 
@@ -541,7 +539,7 @@ async function handleInvoicePaid(invoice: Stripe.Invoice, tx: TxClient): Promise
   try {
     tier = resolveTierFromPriceId(sub.stripePriceId);
   } catch {
-    console.warn(`[stripe-webhook] handleInvoicePaid: unknown price ${sub.stripePriceId}`);
+    log.warn({ priceId: sub.stripePriceId }, 'handleInvoicePaid: unknown price');
     return;
   }
 
@@ -642,7 +640,7 @@ async function notifyBillingAdmins(
       entityType: 'ORGANIZATION',
       entityId: sub.organizationId,
     }).catch((error: unknown) =>
-      console.error(`[stripe-webhook] ${notification.type} notification failed:`, error),
+      log.error({ err: error, notificationType: notification.type }, 'notification failed'),
     );
   }
 
@@ -669,8 +667,9 @@ async function handleSubscriptionPaused(
   });
 
   if (!existing) {
-    console.warn(
-      `[stripe-webhook] handleSubscriptionPaused: subscription ${subscription.id} not found in DB`,
+    log.warn(
+      { subscriptionId: subscription.id },
+      'handleSubscriptionPaused: subscription not found in DB',
     );
     return;
   }

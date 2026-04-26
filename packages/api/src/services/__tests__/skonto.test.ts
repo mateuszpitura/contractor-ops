@@ -1,10 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import {
-  evaluateSkontoEligibility,
-  resolveSkontoTerm,
-  type SkontoEligibilityInput,
-  type SkontoTermData,
-} from '../skonto.js';
+import type { SkontoEligibilityInput, SkontoTermData } from '../skonto.js';
+import { evaluateSkontoEligibility, resolveSkontoTerm } from '../skonto.js';
 
 // ---------------------------------------------------------------------------
 // resolveSkontoTerm

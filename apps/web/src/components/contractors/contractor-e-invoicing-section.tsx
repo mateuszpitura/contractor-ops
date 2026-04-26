@@ -49,17 +49,18 @@ export function ContractorEInvoicingSection({
     trpc.contractor.getById.queryOptions({ id: contractorId } as never),
   );
   const contractor = contractorQuery.data as { isPublicSectorBuyer?: boolean } | undefined;
-  const effectiveIsPublicSector =
-    isPublicSectorBuyer ?? contractor?.isPublicSectorBuyer ?? false;
+  const effectiveIsPublicSector = isPublicSectorBuyer ?? contractor?.isPublicSectorBuyer ?? false;
 
   return (
     <Card data-testid="contractor-e-invoicing-section">
       <CardHeader>
         <CardTitle className="text-xl">E-invoicing</CardTitle>
-        <p className="text-sm text-muted-foreground">{t('leitwegResolvedPattern', {
-          leitwegIdValue: '—',
-          source: '—',
-        })}</p>
+        <p className="text-sm text-muted-foreground">
+          {t('leitwegResolvedPattern', {
+            leitwegIdValue: '—',
+            source: '—',
+          })}
+        </p>
       </CardHeader>
       <CardContent className="space-y-6">
         <PeppolIdentifierFields value={peppol} onChange={setPeppol} />

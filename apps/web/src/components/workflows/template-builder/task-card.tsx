@@ -1,5 +1,6 @@
 'use client';
 
+import { workflowAssignableRoleValues } from '@contractor-ops/validators/roles';
 import { useQuery } from '@tanstack/react-query';
 import {
   Banknote,
@@ -94,16 +95,7 @@ const ASSIGNEE_MODES = [
   'PROJECT_MANAGER',
 ] as const;
 
-const USER_ROLES = [
-  'ORG_ADMIN',
-  'FINANCE_ADMIN',
-  'OPS_MANAGER',
-  'TEAM_MANAGER',
-  'LEGAL_VIEWER',
-  'IT_ADMIN',
-  'ACCOUNTANT',
-  'READ_ONLY',
-] as const;
+const USER_ROLES = workflowAssignableRoleValues;
 
 // ---------------------------------------------------------------------------
 // Component

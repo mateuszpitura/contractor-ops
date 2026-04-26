@@ -2,9 +2,19 @@ import { PeppolOrchestrator } from '@contractor-ops/api/services/peppol-orchestr
 import { prisma } from '@contractor-ops/db';
 import { StorecoveAdapter } from '@contractor-ops/einvoice';
 import { getCredentials } from '@contractor-ops/integrations';
+import { createWebhookLogger } from '@contractor-ops/logger';
 import { verifySignatureAppRouter } from '@upstash/qstash/nextjs';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
+
+const log = createWebhookLogger('peppol-outbound');
+
+const peppolOutboundBodySchema = z.object({
+  organizationId: z.string().min(1),
+  invoiceId: z.string().min(1),
+  receiverParticipantId: z.string().min(1),
+});
 
 // ---------------------------------------------------------------------------
 // POST /api/peppol/outbound
@@ -20,16 +30,12 @@ import { NextResponse } from 'next/server';
  * validation failures — only infra errors should retry).
  */
 async function handler(request: NextRequest) {
-  const body = await request.json();
-  const { organizationId, invoiceId, receiverParticipantId } = body as {
-    organizationId: string;
-    invoiceId: string;
-    receiverParticipantId: string;
-  };
-
-  if (!(organizationId && invoiceId && receiverParticipantId)) {
-    return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+  const rawBody = await request.json().catch(() => null);
+  const parsed = peppolOutboundBodySchema.safeParse(rawBody);
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Invalid body' }, { status: 400 });
   }
+  const { organizationId, invoiceId, receiverParticipantId } = parsed.data;
 
   try {
     // Load connection and decrypt credentials
@@ -42,7 +48,7 @@ async function handler(request: NextRequest) {
     });
 
     if (!connection) {
-      console.error(`[peppol/outbound] No active Peppol connection for org ${organizationId}`);
+      log.error({ organizationId }, 'no active Peppol connection');
       return NextResponse.json({ error: 'No Peppol connection' });
     }
 
@@ -67,10 +73,7 @@ async function handler(request: NextRequest) {
 
     return NextResponse.json({ processed: true, transmissionId: transmission.id });
   } catch (error) {
-    console.error(
-      `[peppol/outbound] Failed for org ${organizationId}, invoice ${invoiceId}:`,
-      error,
-    );
+    log.error({ err: error, organizationId, invoiceId }, 'outbound processing failed');
     // Return 200 to prevent QStash retry on business errors
     // The transmission record is already marked FAILED in the orchestrator
     return NextResponse.json({

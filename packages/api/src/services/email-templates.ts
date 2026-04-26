@@ -24,7 +24,7 @@ export const EMAIL_SUBJECT_KEYS = {
 // Subject lines — return i18n keys with interpolation params
 // ---------------------------------------------------------------------------
 
-interface EmailSubject {
+export interface EmailSubject {
   /** The i18n key for the subject line */
   key: string;
   /** Interpolation parameters for the frontend to resolve */
@@ -96,7 +96,7 @@ export function renderNotificationEmail(
   const Component = TEMPLATE_MAP[type];
   const getSubject = SUBJECT_LINES[type];
 
-  if (!(Component && getSubject)) {
+  if (Component == null || getSubject == null) {
     throw new Error(`Unknown notification type: ${type}`);
   }
 
@@ -104,4 +104,13 @@ export function renderNotificationEmail(
     subject: getSubject(data),
     react: createElement(Component, data),
   };
+}
+
+/** Flatten i18n subject + params into a single string for SMTP/Resend. */
+export function formatEmailSubjectForTransport(s: EmailSubject): string {
+  const parts = Object.values(s.params).filter(v => v && String(v).length > 0);
+  if (parts.length > 0) {
+    return parts.join(' — ');
+  }
+  return s.key;
 }

@@ -1,5 +1,6 @@
 'use client';
 
+import type { DirectoryRole } from '@contractor-ops/validators';
 import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
@@ -12,7 +13,7 @@ import { Card, CardContent } from '@/components/ui/card';
 
 interface ImportConfirmStepProps {
   userCount: number;
-  roleBreakdown: Array<{ role: string; count: number; source: string }>;
+  roleBreakdown: Array<{ role: DirectoryRole; count: number; source: string }>;
   onConfirm: () => void;
   onBack: () => void;
   isImporting: boolean;

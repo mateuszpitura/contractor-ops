@@ -29,7 +29,10 @@ test.describe('Portal documents — authenticated', () => {
     await page.goto('/en/portal/documents', { waitUntil: 'domcontentloaded' });
 
     const redirectedToLogin = page.url().includes('/portal/login');
-    test.skip(redirectedToLogin, 'Dashboard auth does not grant portal access — magic link required');
+    test.skip(
+      redirectedToLogin,
+      'Dashboard auth does not grant portal access — magic link required',
+    );
   });
 
   test('documents page renders', async ({ page }) => {
@@ -56,7 +59,10 @@ test.describe('Portal documents — authenticated', () => {
       .first();
 
     const isVisible = await uploadButton.isVisible({ timeout: 15_000 }).catch(() => false);
-    test.skip(!isVisible, 'Upload document button not visible — feature may be disabled for this portal user');
+    test.skip(
+      !isVisible,
+      'Upload document button not visible — feature may be disabled for this portal user',
+    );
 
     await expect(uploadButton).toBeVisible();
   });
@@ -98,7 +104,10 @@ test.describe('Portal documents — authenticated', () => {
       );
 
     const isVisible = await filter.isVisible({ timeout: 15_000 }).catch(() => false);
-    test.skip(!isVisible, 'Document type filter not visible — may not be implemented or no categories available');
+    test.skip(
+      !isVisible,
+      'Document type filter not visible — may not be implemented or no categories available',
+    );
 
     await expect(filter).toBeVisible();
   });

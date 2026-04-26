@@ -55,8 +55,7 @@ export async function buildStorecoveAdapterForOrg(
   const blobEnv = (blob.extra as Record<string, unknown> | undefined)?.environment;
   const env = configEnv === 'production' || blobEnv === 'production' ? 'production' : 'sandbox';
 
-  const baseUrl =
-    env === 'production' ? STORECOVE_PRODUCTION_BASE_URL : STORECOVE_SANDBOX_BASE_URL;
+  const baseUrl = env === 'production' ? STORECOVE_PRODUCTION_BASE_URL : STORECOVE_SANDBOX_BASE_URL;
 
   return new StorecoveAdapter({
     apiKey,

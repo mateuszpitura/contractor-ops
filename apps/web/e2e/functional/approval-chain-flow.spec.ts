@@ -20,21 +20,19 @@ test.describe('Approval chain flow', () => {
     const table = page.locator('table').first();
     const hasTable = await table.isVisible({ timeout: 10_000 }).catch(() => false);
 
-    if (!hasTable) {
-      // Try card-based layout
-      const card = page
-        .locator('[data-testid*="approval"], [class*="card"]')
-        .first();
-      const hasCard = await card.isVisible({ timeout: 5_000 }).catch(() => false);
-      test.skip(!hasCard, 'No approval items visible — skipping detail test');
-
-      await card.click();
-    } else {
+    if (hasTable) {
       const rows = table.locator('tbody tr');
       const rowCount = await rows.count();
       test.skip(rowCount === 0, 'No rows in approval table — skipping detail test');
 
       await rows.first().click();
+    } else {
+      // Try card-based layout
+      const card = page.locator('[data-testid*="approval"], [class*="card"]').first();
+      const hasCard = await card.isVisible({ timeout: 5_000 }).catch(() => false);
+      test.skip(!hasCard, 'No approval items visible — skipping detail test');
+
+      await card.click();
     }
 
     const dialog = page
@@ -170,7 +168,12 @@ test.describe('Approval chain flow', () => {
     const closeButton = dialog
       .locator('button[aria-label*="close"], button[aria-label*="Close"], [data-testid="close"]')
       .first()
-      .or(dialog.locator('button').filter({ hasText: /close|cancel|x/i }).first());
+      .or(
+        dialog
+          .locator('button')
+          .filter({ hasText: /close|cancel|x/i })
+          .first(),
+      );
 
     const closeVisible = await closeButton.isVisible({ timeout: 5_000 }).catch(() => false);
 
@@ -296,7 +299,10 @@ test.describe('Approval chain flow', () => {
     const dialogClosed = dialog.isHidden({ timeout: 15_000 }).catch(() => false);
 
     const resolved = await Promise.race([
-      successIndicator.waitFor({ state: 'visible', timeout: 15_000 }).then(() => true).catch(() => false),
+      successIndicator
+        .waitFor({ state: 'visible', timeout: 15_000 })
+        .then(() => true)
+        .catch(() => false),
       dialogClosed,
     ]);
 
@@ -351,15 +357,13 @@ test.describe('Approval chain flow', () => {
       .locator('span, div, p, [role="status"]')
       .filter({ hasText: /rejected|declined|denied/i })
       .first();
-    const rejectedVisible = await rejectedStatus
-      .isVisible({ timeout: 15_000 })
-      .catch(() => false);
+    const rejectedVisible = await rejectedStatus.isVisible({ timeout: 15_000 }).catch(() => false);
 
-    if (!rejectedVisible) {
+    if (rejectedVisible) {
+      await expect(rejectedStatus).toBeVisible();
+    } else {
       // Accept dialog dismissal or page remaining functional without errors
       await expect(page.locator('#main-content')).toBeVisible({ timeout: 10_000 });
-    } else {
-      await expect(rejectedStatus).toBeVisible();
     }
   });
 
@@ -376,9 +380,7 @@ test.describe('Approval chain flow', () => {
     test.skip(!hasTabList, 'No tab navigation present — skipping multi-stage test');
 
     // Look for "All" or "Completed" tab that would show cross-stage items
-    const allTab = page
-      .getByRole('tab', { name: /all|completed|history|done/i })
-      .first();
+    const allTab = page.getByRole('tab', { name: /all|completed|history|done/i }).first();
     const allTabVisible = await allTab.isVisible({ timeout: 5_000 }).catch(() => false);
     test.skip(!allTabVisible, 'No "All" or "Completed" tab visible — skipping');
 
@@ -387,7 +389,9 @@ test.describe('Approval chain flow', () => {
 
     // The tab content should render (table, cards, or empty state)
     const content = page
-      .locator('table, [role="table"], [data-testid*="table"], [data-testid*="approval"], [class*="card"]')
+      .locator(
+        'table, [role="table"], [data-testid*="table"], [data-testid*="approval"], [class*="card"]',
+      )
       .first()
       .or(page.getByText(/no approvals|no items|nothing/i));
     await expect(content).toBeVisible({ timeout: 15_000 });
@@ -422,7 +426,7 @@ test.describe('Approval chain flow', () => {
         .or(
           dialog
             .locator('span, p, div')
-            .filter({ hasText: /\d{2}[.\/\-]\d{2}[.\/\-]\d{2,4}|\d{1,2}:\d{2}|ago/i })
+            .filter({ hasText: /\d{2}[./-]\d{2}[./-]\d{2,4}|\d{1,2}:\d{2}|ago/i })
             .first(),
         );
 
@@ -451,7 +455,10 @@ test.describe('Approval chain flow', () => {
       await expect(delegateButton).toBeEnabled({ timeout: 5_000 });
     } else {
       // Delegation UI is not present — accepted; test passes as structural TODO
-      test.skip(true, 'No delegate/reassign button found — delegation UI not implemented or not available for this item');
+      test.skip(
+        true,
+        'No delegate/reassign button found — delegation UI not implemented or not available for this item',
+      );
     }
   });
 
@@ -467,10 +474,10 @@ test.describe('Approval chain flow', () => {
 
       if (rowCount > 0) {
         // Queue has items — try switching to a tab that should be empty
-        const completedTab = page
-          .getByRole('tab', { name: /completed|done|processed/i })
-          .first();
-        const completedVisible = await completedTab.isVisible({ timeout: 5_000 }).catch(() => false);
+        const completedTab = page.getByRole('tab', { name: /completed|done|processed/i }).first();
+        const completedVisible = await completedTab
+          .isVisible({ timeout: 5_000 })
+          .catch(() => false);
 
         if (completedVisible) {
           await completedTab.click();
@@ -487,7 +494,9 @@ test.describe('Approval chain flow', () => {
       .first()
       .or(
         page
-          .getByText(/no approvals|nothing to review|no pending|no items|all caught up|queue is empty/i)
+          .getByText(
+            /no approvals|nothing to review|no pending|no items|all caught up|queue is empty/i,
+          )
           .first(),
       );
 
@@ -537,11 +546,7 @@ test.describe('Approval chain flow', () => {
       const validationError = page
         .locator('[aria-invalid="true"], [data-invalid], .field-error, [class*="error"]')
         .first()
-        .or(
-          page
-            .getByText(/required|cannot be empty|please provide|fill in/i)
-            .first(),
-        );
+        .or(page.getByText(/required|cannot be empty|please provide|fill in/i).first());
 
       const errorVisible = await validationError.isVisible({ timeout: 8_000 }).catch(() => false);
 
@@ -556,7 +561,10 @@ test.describe('Approval chain flow', () => {
       }
     } else {
       // Submit button not visible — form may gate it differently
-      test.skip(true, 'No submit button visible after opening reject flow — skipping validation test');
+      test.skip(
+        true,
+        'No submit button visible after opening reject flow — skipping validation test',
+      );
     }
   });
 
@@ -584,7 +592,7 @@ test.describe('Approval chain flow', () => {
       .or(
         dialog
           .locator('span, p, div')
-          .filter({ hasText: /\d{2}[.\/\-]\d{2}[.\/\-]\d{2,4}|\d{1,2}:\d{2}|ago|yesterday|today/i })
+          .filter({ hasText: /\d{2}[./-]\d{2}[./-]\d{2,4}|\d{1,2}:\d{2}|ago|yesterday|today/i })
           .first(),
       );
 
@@ -599,7 +607,7 @@ test.describe('Approval chain flow', () => {
     }
 
     // At a minimum the dialog itself must be visible
-    if (!approverVisible && !timestampVisible) {
+    if (!(approverVisible || timestampVisible)) {
       await expect(dialog).toBeVisible({ timeout: 5_000 });
     }
   });

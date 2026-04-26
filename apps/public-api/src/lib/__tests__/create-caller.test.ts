@@ -13,7 +13,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const { mockCreateApiKeyContext, mockCallerFactory, mockCaller } = vi.hoisted(() => {
   const mockCaller = { invoice: { list: vi.fn() } };
   const mockCallerFactory = vi.fn(() => mockCaller);
-  const mockCreateApiKeyContext = vi.fn((opts: { headers: Headers }) => ({ headers: opts.headers }));
+  const mockCreateApiKeyContext = vi.fn((opts: { headers: Headers }) => ({
+    headers: opts.headers,
+  }));
   return { mockCreateApiKeyContext, mockCallerFactory, mockCaller };
 });
 
@@ -38,7 +40,7 @@ function makeHonoContext(authHeader?: string): import('hono').Context {
     req: {
       header: vi.fn((name: string) => {
         if (name === 'authorization') return authHeader;
-        return undefined;
+        return;
       }),
     },
   } as unknown as import('hono').Context;

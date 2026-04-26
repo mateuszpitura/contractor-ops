@@ -116,8 +116,7 @@ export const EINVOICE_INTAKE_EXTENDED_BEST_EFFORT_DE =
 // Sourced from § 7a SGB IV and DRV Clearingstelle terminology.
 // PENDING Steuerberater sign-off — flagged under Manual-Only Verifications.
 
-export const DRV_CLEARANCE_PANEL_HEADER_DE =
-  'Statusfeststellungsverfahren (§ 7a SGB IV)' as const;
+export const DRV_CLEARANCE_PANEL_HEADER_DE = 'Statusfeststellungsverfahren (§ 7a SGB IV)' as const;
 export const DRV_CLEARANCE_SECTION_REFERENCE_DE = '§ 7a SGB IV' as const;
 
 /**

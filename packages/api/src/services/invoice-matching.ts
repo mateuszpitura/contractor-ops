@@ -36,6 +36,38 @@ export function computeDuplicateCheckHash(
     .digest('hex');
 }
 
+function normalizeSellerName(name: string): string {
+  return name.trim().toLowerCase().replace(/\s+/g, ' ');
+}
+
+/**
+ * Computes a duplicate-check hash for invoice creation/update when sellerTaxId
+ * is missing. Falls back to sellerName as the seller identifier.
+ *
+ * Returns null when the input does not provide enough information to form a
+ * stable key.
+ */
+export function computeDuplicateCheckHashForInvoice(input: {
+  invoiceNumber: string | null | undefined;
+  sellerTaxId: string | null | undefined;
+  sellerName: string | null | undefined;
+  totalMinor: number;
+}): string | null {
+  const invoiceNumber = input.invoiceNumber?.trim();
+  if (!invoiceNumber) return null;
+
+  const sellerKey = input.sellerTaxId?.trim()
+    ? `tax:${input.sellerTaxId.trim()}`
+    : input.sellerName?.trim()
+      ? `name:${normalizeSellerName(input.sellerName)}`
+      : null;
+  if (!sellerKey) return null;
+
+  return createHash('sha256')
+    .update(`${invoiceNumber.toLowerCase()}|${sellerKey}|${input.totalMinor}`)
+    .digest('hex');
+}
+
 // ---------------------------------------------------------------------------
 // Internal pipeline types
 // ---------------------------------------------------------------------------

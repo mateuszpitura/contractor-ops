@@ -103,6 +103,10 @@ const { mockPrisma } = vi.hoisted(() => {
       findFirst: vi.fn(async () => ({ role: 'admin' })),
     },
     $transaction: vi.fn(async (fn: (tx: Rec) => Promise<unknown>) => fn(mockPrisma)),
+    // Advisory lock used by payment.create to serialise runNumber allocation.
+    // Safe no-op in unit tests; real behaviour is PG-level and exercised in
+    // integration tests.
+    $executeRawUnsafe: vi.fn(async () => 0),
   };
 
   return { mockPrisma };
@@ -272,7 +276,12 @@ vi.mock('@contractor-ops/logger', () => ({
     error: vi.fn(),
     debug: vi.fn(),
   })),
-  logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() },
+  logger: Object.assign(
+    { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() },
+    {
+      child: () => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() }),
+    },
+  ),
 }));
 
 vi.mock('@contractor-ops/logger/metrics', () => ({
@@ -472,7 +481,9 @@ describe('payment router', () => {
       // Verify invoices updated to IN_RUN via updateMany
       const updateManyCall = mockPrisma.invoice.updateMany.mock.calls[0]?.[0];
       expect(updateManyCall.data).toMatchObject({ paymentStatus: 'IN_RUN' });
-      expect(updateManyCall.where.id.in).toEqual(expect.arrayContaining([INVOICE_ID_1, INVOICE_ID_2]));
+      expect(updateManyCall.where.id.in).toEqual(
+        expect.arrayContaining([INVOICE_ID_1, INVOICE_ID_2]),
+      );
     });
 
     it('generates run number with year prefix PR-{year}-{seq}', async () => {
@@ -487,6 +498,44 @@ describe('payment router', () => {
       const createCall = mockPrisma.paymentRun.create.mock.calls[0]?.[0];
       const year = new Date().getFullYear();
       expect(createCall.data.runNumber).toBe(`PR-${year}-006`);
+    });
+
+    it('takes a per-org advisory lock before allocating a run number', async () => {
+      // Finding #2 — prevents two concurrent `create` calls in the same
+      // org from both reading lastRun and producing the same runNumber.
+      // The DB unique index is the ultimate backstop; the lock avoids
+      // rollback churn under contention.
+      const invoice = makeInvoice();
+      mockPrisma.invoice.findMany.mockResolvedValueOnce([invoice]);
+      mockPrisma.paymentRun.findFirst.mockResolvedValueOnce(null);
+
+      await caller.payment.create({ invoiceIds: [INVOICE_ID_1] });
+
+      expect(mockPrisma.$executeRawUnsafe).toHaveBeenCalledWith(
+        'SELECT pg_advisory_xact_lock(hashtext($1))',
+        `payment-run:${ORG_ID}`,
+      );
+    });
+
+    it('maps Prisma P2002 runNumber collision to a tRPC CONFLICT', async () => {
+      // The advisory lock is best-effort (a misconfigured deploy or a
+      // multi-region write fight could bypass it). The DB unique index
+      // on (organizationId, runNumber) is the guaranteed guard; this
+      // test locks in that the error path surfaces as CONFLICT rather
+      // than an opaque 500.
+      const invoice = makeInvoice();
+      mockPrisma.invoice.findMany.mockResolvedValueOnce([invoice]);
+      mockPrisma.paymentRun.findFirst.mockResolvedValueOnce(null);
+
+      const p2002 = Object.assign(new Error('Unique constraint failed'), {
+        code: 'P2002',
+        meta: { target: ['organizationId', 'runNumber'] },
+      });
+      mockPrisma.paymentRun.create.mockRejectedValueOnce(p2002);
+
+      await expect(caller.payment.create({ invoiceIds: [INVOICE_ID_1] })).rejects.toMatchObject({
+        code: 'CONFLICT',
+      });
     });
 
     it('rejects invoices not in READY status', async () => {
@@ -838,7 +887,7 @@ describe('payment router', () => {
     it('requires admin role to cancel EXPORTED run', async () => {
       const run = makeRun({ status: 'EXPORTED', items: [] });
       mockPrisma.paymentRun.findFirst.mockResolvedValueOnce(run);
-      mockPrisma.member.findFirst.mockResolvedValueOnce({ role: 'member' });
+      mockPrisma.member.findFirst.mockResolvedValueOnce({ role: 'readonly' });
 
       await expect(caller.payment.cancel({ runId: RUN_ID })).rejects.toMatchObject({
         code: 'FORBIDDEN',

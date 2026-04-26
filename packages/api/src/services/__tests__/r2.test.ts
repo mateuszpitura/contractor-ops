@@ -133,17 +133,13 @@ describe('signExistingDownload (Phase 59 D-05)', () => {
   it('includes downloadFilename in disposition when provided', async () => {
     await signExistingDownload('key.pdf', 300, 'my-report.pdf');
     const lastGet = getObjectCalls.at(-1);
-    expect(lastGet?.input.ResponseContentDisposition).toBe(
-      'attachment; filename="my-report.pdf"',
-    );
+    expect(lastGet?.input.ResponseContentDisposition).toBe('attachment; filename="my-report.pdf"');
   });
 
   it('strips double quotes from downloadFilename for security', async () => {
     await signExistingDownload('key.pdf', 300, 'file"name.pdf');
     const lastGet = getObjectCalls.at(-1);
-    expect(lastGet?.input.ResponseContentDisposition).toBe(
-      'attachment; filename="filename.pdf"',
-    );
+    expect(lastGet?.input.ResponseContentDisposition).toBe('attachment; filename="filename.pdf"');
   });
 });
 

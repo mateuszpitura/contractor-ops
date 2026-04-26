@@ -1,7 +1,7 @@
 'use client';
 
-import type { ZatcaTaxDetails } from '@contractor-ops/einvoice';
-import { zatcaTaxDetailsSchema } from '@contractor-ops/einvoice';
+import type { ZatcaTaxDetails } from '@contractor-ops/einvoice/zatca/schemas';
+import { zatcaTaxDetailsSchema } from '@contractor-ops/einvoice/zatca/schemas';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';

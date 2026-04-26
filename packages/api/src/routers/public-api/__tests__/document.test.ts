@@ -112,7 +112,9 @@ vi.mock('../../../services/cache.js', () => ({
 
 vi.mock('../../../services/regional-storage.js', () => ({
   createRegionalPresignedDownloadUrl: mockCreateRegionalPresignedDownloadUrl,
-  createRegionalPresignedUploadUrl: vi.fn(async (key: string) => `https://r2.example.com/upload/${key}?sig=abc`),
+  createRegionalPresignedUploadUrl: vi.fn(
+    async (key: string) => `https://r2.example.com/upload/${key}?sig=abc`,
+  ),
   headRegionalObject: vi.fn(async () => ({ ContentLength: 2048 })),
   deleteRegionalObject: vi.fn(async () => undefined),
 }));
@@ -220,7 +222,8 @@ describe('publicDocumentRouter', () => {
       expect(result.page).toBe(1);
       expect(result.pageSize).toBe(25);
 
-      const whereArg = (mockDb.document.findMany as ReturnType<typeof vi.fn>).mock.calls[0]?.[0].where;
+      const whereArg = (mockDb.document.findMany as ReturnType<typeof vi.fn>).mock.calls[0]?.[0]
+        .where;
       expect(whereArg).toMatchObject({ organizationId: ORG_ID, deletedAt: null });
     });
 
@@ -231,7 +234,8 @@ describe('publicDocumentRouter', () => {
       const caller = makeCaller();
       await caller.list({ entityType: 'INVOICE', entityId: ENTITY_ID });
 
-      const whereArg = (mockDb.document.findMany as ReturnType<typeof vi.fn>).mock.calls[0]?.[0].where;
+      const whereArg = (mockDb.document.findMany as ReturnType<typeof vi.fn>).mock.calls[0]?.[0]
+        .where;
       expect(whereArg).toMatchObject({
         organizationId: ORG_ID,
         links: {
@@ -251,7 +255,8 @@ describe('publicDocumentRouter', () => {
       const caller = makeCaller();
       await caller.list({ entityType: 'CONTRACTOR' });
 
-      const whereArg = (mockDb.document.findMany as ReturnType<typeof vi.fn>).mock.calls[0]?.[0].where;
+      const whereArg = (mockDb.document.findMany as ReturnType<typeof vi.fn>).mock.calls[0]?.[0]
+        .where;
       expect(whereArg).not.toHaveProperty('links');
     });
 
@@ -262,7 +267,8 @@ describe('publicDocumentRouter', () => {
       const caller = makeCaller();
       await caller.list({});
 
-      const whereArg = (mockDb.document.findMany as ReturnType<typeof vi.fn>).mock.calls[0]?.[0].where;
+      const whereArg = (mockDb.document.findMany as ReturnType<typeof vi.fn>).mock.calls[0]?.[0]
+        .where;
       expect(whereArg).toMatchObject({ deletedAt: null });
     });
 
@@ -273,7 +279,8 @@ describe('publicDocumentRouter', () => {
       const caller = makeCaller();
       await caller.list({});
 
-      const selectArg = (mockDb.document.findMany as ReturnType<typeof vi.fn>).mock.calls[0]?.[0].select;
+      const selectArg = (mockDb.document.findMany as ReturnType<typeof vi.fn>).mock.calls[0]?.[0]
+        .select;
       expect(selectArg).toBeDefined();
       expect(selectArg).not.toHaveProperty('storageKey');
       expect(selectArg).not.toHaveProperty('organizationId');
@@ -296,7 +303,8 @@ describe('publicDocumentRouter', () => {
       expect(result.url).toContain('r2.example.com');
       expect(result.expiresIn).toBe(900);
 
-      const whereArg = (mockDb.document.findFirst as ReturnType<typeof vi.fn>).mock.calls[0]?.[0].where;
+      const whereArg = (mockDb.document.findFirst as ReturnType<typeof vi.fn>).mock.calls[0]?.[0]
+        .where;
       expect(whereArg).toMatchObject({ id: DOC_ID, organizationId: ORG_ID, deletedAt: null });
       expect(mockCreateRegionalPresignedDownloadUrl).toHaveBeenCalledWith(STORAGE_KEY, 900);
     });
@@ -310,7 +318,8 @@ describe('publicDocumentRouter', () => {
         message: 'documentNotFound',
       });
 
-      const whereArg = (mockDb.document.findFirst as ReturnType<typeof vi.fn>).mock.calls[0]?.[0].where;
+      const whereArg = (mockDb.document.findFirst as ReturnType<typeof vi.fn>).mock.calls[0]?.[0]
+        .where;
       expect(whereArg.organizationId).toBe(ORG_ID);
       expect(whereArg.organizationId).not.toBe(OTHER_ORG_ID);
     });

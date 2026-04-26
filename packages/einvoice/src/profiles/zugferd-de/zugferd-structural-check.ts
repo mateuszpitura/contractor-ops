@@ -19,15 +19,8 @@
 // Each failed assertion throws a `ZugferdWrappingError` with a specific
 // `subcode` so the router / caller can surface a precise diagnostic.
 
-import {
-  PDFDict,
-  PDFDocument,
-  PDFHexString,
-  PDFName,
-  PDFRawStream,
-  PDFString,
-  decodePDFRawStream,
-} from 'pdf-lib';
+import type { PDFHexString, PDFString } from 'pdf-lib';
+import { decodePDFRawStream, PDFDict, PDFDocument, PDFName, PDFRawStream } from 'pdf-lib';
 
 import { ZUGFERD_ATTACHMENT_FILENAME } from './constants.js';
 
@@ -79,17 +72,11 @@ export async function assertZugferdStructure(pdfBytes: Uint8Array): Promise<void
   // ----- 1. /Metadata ---------------------------------------------------
   const metaRef = doc.catalog.get(PDFName.of('Metadata'));
   if (!metaRef) {
-    throw new ZugferdWrappingError(
-      'MISSING_METADATA',
-      'Catalog /Metadata entry is missing',
-    );
+    throw new ZugferdWrappingError('MISSING_METADATA', 'Catalog /Metadata entry is missing');
   }
   const metaStream = doc.context.lookup(metaRef);
   if (!(metaStream instanceof PDFRawStream)) {
-    throw new ZugferdWrappingError(
-      'MISSING_METADATA',
-      'Catalog /Metadata is not a stream',
-    );
+    throw new ZugferdWrappingError('MISSING_METADATA', 'Catalog /Metadata is not a stream');
   }
   const xmpBytes = decodePDFRawStream(metaStream).decode();
   const xmp = new TextDecoder().decode(xmpBytes);
@@ -102,9 +89,7 @@ export async function assertZugferdStructure(pdfBytes: Uint8Array): Promise<void
 
   // ----- 5. XMP fx:DocumentFileName ------------------------------------
   // Done alongside (1) since we already have the XMP bytes in hand.
-  if (
-    !xmp.includes(`<fx:DocumentFileName>${ZUGFERD_ATTACHMENT_FILENAME}</fx:DocumentFileName>`)
-  ) {
+  if (!xmp.includes(`<fx:DocumentFileName>${ZUGFERD_ATTACHMENT_FILENAME}</fx:DocumentFileName>`)) {
     throw new ZugferdWrappingError(
       'XMP_FX_FILENAME_MISMATCH',
       `XMP metadata does not declare <fx:DocumentFileName>${ZUGFERD_ATTACHMENT_FILENAME}</...>`,
@@ -114,10 +99,7 @@ export async function assertZugferdStructure(pdfBytes: Uint8Array): Promise<void
   // ----- 2. /OutputIntents ---------------------------------------------
   const outputIntentsRef = doc.catalog.get(PDFName.of('OutputIntents'));
   if (!outputIntentsRef) {
-    throw new ZugferdWrappingError(
-      'MISSING_OUTPUT_INTENT',
-      'Catalog /OutputIntents is missing',
-    );
+    throw new ZugferdWrappingError('MISSING_OUTPUT_INTENT', 'Catalog /OutputIntents is missing');
   }
   const outputIntents = doc.context.lookup(outputIntentsRef) as unknown as {
     asArray?: () => unknown[];
@@ -141,10 +123,7 @@ export async function assertZugferdStructure(pdfBytes: Uint8Array): Promise<void
   // ----- 3. Embedded factur-x.xml --------------------------------------
   const embeddedMatch = findEmbeddedFacturX(doc);
   if (!embeddedMatch.found) {
-    throw new ZugferdWrappingError(
-      embeddedMatch.reason,
-      embeddedMatch.message,
-    );
+    throw new ZugferdWrappingError(embeddedMatch.reason, embeddedMatch.message);
   }
 
   // ----- 4. AFRelationship === /Alternative ---------------------------
@@ -169,10 +148,7 @@ interface FoundMatch {
 
 interface MissingMatch {
   found: false;
-  reason: Extract<
-    StructuralCheckSubcode,
-    'MISSING_EMBEDDED_FILE' | 'WRONG_EMBEDDED_FILENAME'
-  >;
+  reason: Extract<StructuralCheckSubcode, 'MISSING_EMBEDDED_FILE' | 'WRONG_EMBEDDED_FILENAME'>;
   message: string;
 }
 
@@ -230,11 +206,7 @@ function findEmbeddedFacturX(doc: PDFDocument): EmbeddedMatch {
   };
 }
 
-function scanNameTree(
-  doc: PDFDocument,
-  node: PDFDict,
-  seen: string[],
-): FoundMatch | null {
+function scanNameTree(doc: PDFDocument, node: PDFDict, seen: string[]): FoundMatch | null {
   const namesRef = node.get(PDFName.of('Names'));
   if (namesRef) {
     const namesArr = doc.context.lookup(namesRef) as unknown as {

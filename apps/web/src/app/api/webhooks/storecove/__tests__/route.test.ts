@@ -18,36 +18,30 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const GUID = 'sc-msg-guid-1';
 
-const {
-  mockPrisma,
-  mockVerifyWebhookSignature,
-  mockParseWebhookPayload,
-  mockCreateLogger,
-} = vi.hoisted(() => {
-  return {
-    mockPrisma: {
-      eInvoiceLifecycle: {
-        findFirst: vi.fn(),
-        update: vi.fn(),
+const { mockPrisma, mockVerifyWebhookSignature, mockParseWebhookPayload, mockCreateLogger } =
+  vi.hoisted(() => {
+    return {
+      mockPrisma: {
+        eInvoiceLifecycle: {
+          findFirst: vi.fn(),
+          update: vi.fn(),
+        },
+        eInvoiceLifecycleEvent: {
+          findFirst: vi.fn(),
+          create: vi.fn(),
+        },
+        $transaction: vi.fn(async (fn: (tx: unknown) => Promise<unknown>) => fn(mockPrisma)),
       },
-      eInvoiceLifecycleEvent: {
-        findFirst: vi.fn(),
-        create: vi.fn(),
-      },
-      $transaction: vi.fn(
-        async (fn: (tx: unknown) => Promise<unknown>) => fn(mockPrisma),
-      ),
-    },
-    mockVerifyWebhookSignature: vi.fn(),
-    mockParseWebhookPayload: vi.fn(),
-    mockCreateLogger: vi.fn(() => ({
-      info: vi.fn(),
-      warn: vi.fn(),
-      error: vi.fn(),
-      debug: vi.fn(),
-    })),
-  };
-});
+      mockVerifyWebhookSignature: vi.fn(),
+      mockParseWebhookPayload: vi.fn(),
+      mockCreateLogger: vi.fn(() => ({
+        info: vi.fn(),
+        warn: vi.fn(),
+        error: vi.fn(),
+        debug: vi.fn(),
+      })),
+    };
+  });
 
 // Rebind mockPrisma.$transaction so it closes over the final object after
 // vi.hoisted; vitest's hoister leaves the local `mockPrisma` reference
@@ -113,8 +107,8 @@ beforeEach(() => {
   mockPrisma.eInvoiceLifecycle.update.mockResolvedValue(undefined);
   mockPrisma.eInvoiceLifecycleEvent.create.mockResolvedValue(undefined);
   // Re-bind $transaction since clearAllMocks resets the impl.
-  mockPrisma.$transaction.mockImplementation(
-    async (fn: (tx: unknown) => Promise<unknown>) => fn(mockPrisma),
+  mockPrisma.$transaction.mockImplementation(async (fn: (tx: unknown) => Promise<unknown>) =>
+    fn(mockPrisma),
   );
 });
 

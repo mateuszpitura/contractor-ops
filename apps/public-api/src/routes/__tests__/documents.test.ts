@@ -4,8 +4,8 @@
  * Covers: GET / query param coercion + forwarding, GET /:id/download-url.
  */
 
-import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Hono } from 'hono';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ---------------------------------------------------------------------------
 // Caller stub — must use vi.hoisted() because vi.mock() is hoisted above
@@ -58,31 +58,31 @@ describe('GET /documents', () => {
 
   it('forwards page and pageSize as numbers', async () => {
     await app.request('/?page=2&pageSize=20');
-    const [input] = mockList.mock.calls[0] as [{ page: unknown; pageSize: unknown }][];
+    const [input] = mockList.mock.calls[0] as [{ page: unknown; pageSize: unknown }];
     expect(input).toMatchObject({ page: 2, pageSize: 20 });
   });
 
   it('forwards entityType query param', async () => {
     await app.request('/?entityType=CONTRACTOR');
-    const [input] = mockList.mock.calls[0] as [{ entityType: unknown }][];
+    const [input] = mockList.mock.calls[0] as [{ entityType: unknown }];
     expect(input).toMatchObject({ entityType: 'CONTRACTOR' });
   });
 
   it('forwards entityId query param', async () => {
     await app.request('/?entityId=ent-abc');
-    const [input] = mockList.mock.calls[0] as [{ entityId: unknown }][];
+    const [input] = mockList.mock.calls[0] as [{ entityId: unknown }];
     expect(input).toMatchObject({ entityId: 'ent-abc' });
   });
 
   it('forwards sortOrder query param', async () => {
     await app.request('/?sortOrder=asc');
-    const [input] = mockList.mock.calls[0] as [{ sortOrder: unknown }][];
+    const [input] = mockList.mock.calls[0] as [{ sortOrder: unknown }];
     expect(input).toMatchObject({ sortOrder: 'asc' });
   });
 
   it('forwards all params together correctly', async () => {
     await app.request('/?page=1&pageSize=10&entityType=CONTRACT&entityId=cnt-1&sortOrder=desc');
-    const [input] = mockList.mock.calls[0] as [Record<string, unknown>][];
+    const [input] = mockList.mock.calls[0] as [Record<string, unknown>];
     expect(input).toMatchObject({
       page: 1,
       pageSize: 10,
@@ -94,7 +94,7 @@ describe('GET /documents', () => {
 
   it('passes undefined for all params when none provided', async () => {
     await app.request('/');
-    const [input] = mockList.mock.calls[0] as [Record<string, unknown>][];
+    const [input] = mockList.mock.calls[0] as [Record<string, unknown>];
     expect(input.page).toBeUndefined();
     expect(input.pageSize).toBeUndefined();
     expect(input.entityType).toBeUndefined();
@@ -107,7 +107,7 @@ describe('GET /documents', () => {
     mockList.mockResolvedValueOnce({ items, total: 1, page: 1, pageSize: 25 });
     const res = await app.request('/');
     expect(res.status).toBe(200);
-    const body = await res.json() as { data: unknown[]; meta: unknown };
+    const body = (await res.json()) as { data: unknown[]; meta: unknown };
     expect(body.data).toEqual(items);
     expect(body.meta).toMatchObject({ total: 1, page: 1, pageSize: 25 });
   });
@@ -119,7 +119,10 @@ describe('GET /documents/:id/download-url', () => {
   });
 
   it('calls caller.document.getDownloadUrl with the route param id', async () => {
-    mockGetDownloadUrl.mockResolvedValueOnce({ url: 'https://example.com/signed', expiresAt: '2099-01-01' });
+    mockGetDownloadUrl.mockResolvedValueOnce({
+      url: 'https://example.com/signed',
+      expiresAt: '2099-01-01',
+    });
     await app.request('/doc-abc/download-url');
     expect(mockGetDownloadUrl).toHaveBeenCalledWith({ id: 'doc-abc' });
   });
@@ -129,13 +132,16 @@ describe('GET /documents/:id/download-url', () => {
     mockGetDownloadUrl.mockResolvedValueOnce(result);
     const res = await app.request('/doc-xyz/download-url');
     expect(res.status).toBe(200);
-    const body = await res.json() as { data: unknown };
+    const body = (await res.json()) as { data: unknown };
     expect(body).toEqual({ data: result });
   });
 
   it('passes the exact document id from the URL to the caller', async () => {
     const docId = 'doc-unique-123';
-    mockGetDownloadUrl.mockResolvedValueOnce({ url: 'https://r2.example.com/file', expiresAt: '2099' });
+    mockGetDownloadUrl.mockResolvedValueOnce({
+      url: 'https://r2.example.com/file',
+      expiresAt: '2099',
+    });
     await app.request(`/${docId}/download-url`);
     expect(mockGetDownloadUrl).toHaveBeenCalledWith({ id: docId });
   });

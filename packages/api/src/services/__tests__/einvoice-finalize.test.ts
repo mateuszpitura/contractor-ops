@@ -18,13 +18,12 @@
 
 import type { XRechnungValidationReport } from '@contractor-ops/einvoice';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-
+import type { R2Service } from '../einvoice-finalize.js';
 import {
   EInvoiceAlreadyFinalizedError,
   EInvoiceInvoiceNotFoundError,
   FINALIZE_MAX_XML_BYTES,
   finalizeEInvoice,
-  type R2Service,
 } from '../einvoice-finalize.js';
 
 // ---------------------------------------------------------------------------
@@ -123,13 +122,15 @@ function makeDb(seed?: {
   let eventCounter = 0;
 
   const invoice = {
-    findFirst: vi.fn(async (args: { where: { id: string; organizationId: string }; include?: unknown }) => {
-      return (
-        invoices.find(
-          r => r.id === args.where.id && r.organizationId === args.where.organizationId,
-        ) ?? null
-      );
-    }),
+    findFirst: vi.fn(
+      async (args: { where: { id: string; organizationId: string }; include?: unknown }) => {
+        return (
+          invoices.find(
+            r => r.id === args.where.id && r.organizationId === args.where.organizationId,
+          ) ?? null
+        );
+      },
+    ),
   };
 
   const leitwegId = {
@@ -158,9 +159,7 @@ function makeDb(seed?: {
 
   function findLifecycle(organizationId: string, invoiceId: string) {
     return (
-      lifecycles.find(
-        r => r.organizationId === organizationId && r.invoiceId === invoiceId,
-      ) ?? null
+      lifecycles.find(r => r.organizationId === organizationId && r.invoiceId === invoiceId) ?? null
     );
   }
 
@@ -209,20 +208,28 @@ function makeDb(seed?: {
   };
 
   const eInvoiceLifecycleEvent = {
-    create: vi.fn(async (args: { data: Partial<EventRow> & { organizationId: string; lifecycleId: string; eventType: string } }) => {
-      eventCounter += 1;
-      const created: EventRow = {
-        id: `ev-${eventCounter}`,
-        organizationId: args.data.organizationId,
-        lifecycleId: args.data.lifecycleId,
-        eventType: args.data.eventType,
-        occurredAt: args.data.occurredAt ?? new Date(),
-        actorUserId: args.data.actorUserId ?? null,
-        detailsJson: args.data.detailsJson ?? null,
-      };
-      events.push(created);
-      return created;
-    }),
+    create: vi.fn(
+      async (args: {
+        data: Partial<EventRow> & {
+          organizationId: string;
+          lifecycleId: string;
+          eventType: string;
+        };
+      }) => {
+        eventCounter += 1;
+        const created: EventRow = {
+          id: `ev-${eventCounter}`,
+          organizationId: args.data.organizationId,
+          lifecycleId: args.data.lifecycleId,
+          eventType: args.data.eventType,
+          occurredAt: args.data.occurredAt ?? new Date(),
+          actorUserId: args.data.actorUserId ?? null,
+          detailsJson: args.data.detailsJson ?? null,
+        };
+        events.push(created);
+        return created;
+      },
+    ),
   };
 
   async function $transaction<T>(
@@ -260,13 +267,15 @@ function makeR2(): R2Service & {
   return {
     putCalls,
     signCalls,
-    putObject: vi.fn(async (params: { key: string; body: string | Uint8Array | Buffer; contentType: string }) => {
-      const length =
-        typeof params.body === 'string'
-          ? Buffer.byteLength(params.body, 'utf8')
-          : params.body.length;
-      putCalls.push({ key: params.key, contentType: params.contentType, bodyLength: length });
-    }),
+    putObject: vi.fn(
+      async (params: { key: string; body: string | Uint8Array | Buffer; contentType: string }) => {
+        const length =
+          typeof params.body === 'string'
+            ? Buffer.byteLength(params.body, 'utf8')
+            : params.body.length;
+        putCalls.push({ key: params.key, contentType: params.contentType, bodyLength: length });
+      },
+    ),
     signDownloadUrl: vi.fn(async (key: string, ttlSeconds: number) => {
       signCalls.push({ key, ttlSeconds });
       return {
@@ -282,15 +291,8 @@ function makeR2(): R2Service & {
 // exercised in @contractor-ops/einvoice tests).
 // ---------------------------------------------------------------------------
 
-function makeProfile(
-  opts: {
-    xml?: string;
-    report?: XRechnungValidationReport;
-  } = {},
-) {
-  const xml =
-    opts.xml ??
-    '<?xml version="1.0" encoding="UTF-8"?><rsm:CrossIndustryInvoice/>';
+function makeProfile(opts: { xml?: string; report?: XRechnungValidationReport } = {}) {
+  const xml = opts.xml ?? '<?xml version="1.0" encoding="UTF-8"?><rsm:CrossIndustryInvoice/>';
   const report: XRechnungValidationReport = opts.report ?? {
     status: 'VALID',
     ruleSetVersion: 'XRechnung 3.0.2',
@@ -553,9 +555,7 @@ describe('finalizeEInvoice — force re-finalize', () => {
     // Still exactly one lifecycle row (upsert respects uniqueness).
     expect(db.__rows.lifecycles).toHaveLength(1);
     // But the row was updated (new xmlKey).
-    expect(db.__rows.lifecycles[0]?.xmlKey).not.toBe(
-      'einvoice-xml/org_A/inv_1/oldhash.xml',
-    );
+    expect(db.__rows.lifecycles[0]?.xmlKey).not.toBe('einvoice-xml/org_A/inv_1/oldhash.xml');
 
     // Two new events written, the second is RE_VALIDATED.
     const eventTypes = db.__rows.events.map(e => e.eventType);
@@ -654,7 +654,13 @@ describe('einvoice-finalize — edge cases', () => {
 
     await expect(
       finalizeEInvoice(
-        { db: db as never, r2, profile: profile as never, logger, now: () => new Date('2026-04-14T12:00:00Z') },
+        {
+          db: db as never,
+          r2,
+          profile: profile as never,
+          logger,
+          now: () => new Date('2026-04-14T12:00:00Z'),
+        },
         { organizationId: ORG_A, invoiceId: INVOICE_1, actorUserId: USER_1 },
       ),
     ).rejects.toThrow(/XRechnung XML exceeds/);
@@ -662,7 +668,13 @@ describe('einvoice-finalize — edge cases', () => {
     // Verify the error message includes the byte counts
     await expect(
       finalizeEInvoice(
-        { db: db as never, r2, profile: profile as never, logger, now: () => new Date('2026-04-14T12:00:00Z') },
+        {
+          db: db as never,
+          r2,
+          profile: profile as never,
+          logger,
+          now: () => new Date('2026-04-14T12:00:00Z'),
+        },
         { organizationId: ORG_A, invoiceId: INVOICE_1, actorUserId: USER_1 },
       ),
     ).rejects.toThrow(`${FINALIZE_MAX_XML_BYTES} bytes`);
@@ -685,7 +697,13 @@ describe('einvoice-finalize — edge cases', () => {
 
     await expect(
       finalizeEInvoice(
-        { db: db as never, r2, profile: profile as never, logger, now: () => new Date('2026-04-14T12:00:00Z') },
+        {
+          db: db as never,
+          r2,
+          profile: profile as never,
+          logger,
+          now: () => new Date('2026-04-14T12:00:00Z'),
+        },
         { organizationId: ORG_A, invoiceId: INVOICE_1, actorUserId: USER_1 },
       ),
     ).rejects.toThrow('R2 connection timeout');

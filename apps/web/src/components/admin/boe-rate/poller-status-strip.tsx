@@ -17,13 +17,15 @@ export function PollerStatusStrip() {
   }
 
   // Find the most recent BOE_API-sourced entry
-  const apiEntries = (entries as Array<{
-    id: string;
-    effectiveFrom: string | Date;
-    ratePercent: string | number;
-    source: 'BOE_API' | 'MANUAL';
-    createdAt: string | Date;
-  }>).filter(e => e.source === 'BOE_API');
+  const apiEntries = (
+    entries as Array<{
+      id: string;
+      effectiveFrom: string | Date;
+      ratePercent: string | number;
+      source: 'BOE_API' | 'MANUAL';
+      createdAt: string | Date;
+    }>
+  ).filter(e => e.source === 'BOE_API');
 
   if (apiEntries.length === 0) {
     return (
@@ -48,14 +50,11 @@ export function PollerStatusStrip() {
     <div
       className="flex items-center gap-2 rounded-md bg-muted/50 px-4 py-2 text-sm text-muted-foreground"
       role="status"
-      aria-label="BoE API poll status"
-    >
+      aria-label="BoE API poll status">
       <CheckCircle2Icon className="h-4 w-4 shrink-0 text-success" aria-hidden="true" />
       <span>
         Last BoE API poll: {pollDate}
-        {rateChanged
-          ? ` — new rate ${rate}% recorded`
-          : ' — rate unchanged'}
+        {rateChanged ? ` — new rate ${rate}% recorded` : ' — rate unchanged'}
       </span>
     </div>
   );

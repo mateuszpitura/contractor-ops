@@ -585,9 +585,9 @@ describe('integration.unlinkUser', () => {
   it('throws NOT_FOUND when external link does not exist', async () => {
     mockPrisma.externalLink.findFirst.mockResolvedValueOnce(null);
 
-    await expect(
-      caller.integration.unlinkUser({ externalLinkId: 'nonexistent' }),
-    ).rejects.toThrow('integrationLinkNotFound');
+    await expect(caller.integration.unlinkUser({ externalLinkId: 'nonexistent' })).rejects.toThrow(
+      'integrationLinkNotFound',
+    );
   });
 });
 
@@ -625,7 +625,7 @@ describe('integration.listUserMappings', () => {
       },
       {
         userId: 'user-b',
-        role: 'member',
+        role: 'readonly',
         user: { id: 'user-b', name: 'Bob', email: 'bob@test.com', image: null },
       },
     ]);

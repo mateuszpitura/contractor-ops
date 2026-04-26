@@ -48,24 +48,23 @@ describe('billingRatioToScore boundaries', () => {
 // ---------------------------------------------------------------------------
 
 describe('MissingAnswerError for each required question', () => {
-  const requiredQuestions = SCHEIN_QUESTIONS.filter((q) => q.required);
+  const requiredQuestions = SCHEIN_QUESTIONS.filter(q => q.required);
 
-  it.each(requiredQuestions.map((q) => [q.id, q.category]))(
-    'throws MissingAnswerError when %s (%s) is missing',
-    (questionId) => {
-      const answers = baseAnswers();
-      delete answers[questionId];
+  it.each(
+    requiredQuestions.map(q => [q.id, q.category]),
+  )('throws MissingAnswerError when %s (%s) is missing', questionId => {
+    const answers = baseAnswers();
+    delete answers[questionId];
 
-      expect(() => scoreSchein(answers)).toThrow(MissingAnswerError);
+    expect(() => scoreSchein(answers)).toThrow(MissingAnswerError);
 
-      try {
-        scoreSchein(answers);
-      } catch (err) {
-        expect(err).toBeInstanceOf(MissingAnswerError);
-        expect((err as MissingAnswerError).questionId).toBe(questionId);
-      }
-    },
-  );
+    try {
+      scoreSchein(answers);
+    } catch (err) {
+      expect(err).toBeInstanceOf(MissingAnswerError);
+      expect((err as MissingAnswerError).questionId).toBe(questionId);
+    }
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -73,9 +72,7 @@ describe('MissingAnswerError for each required question', () => {
 // ---------------------------------------------------------------------------
 
 describe("per-category 'integration' verdict", () => {
-  const integrationQuestions = SCHEIN_QUESTIONS.filter(
-    (q) => q.category === 'integration',
-  );
+  const integrationQuestions = SCHEIN_QUESTIONS.filter(q => q.category === 'integration');
 
   it("returns 'red' when all integration criteria score max (3)", () => {
     const overrides: Record<string, AnswerMap[string]> = {};
@@ -83,9 +80,7 @@ describe("per-category 'integration' verdict", () => {
       overrides[q.id] = { rawScore: 3 };
     }
     const result = scoreSchein(baseAnswers(overrides));
-    const integrationCategory = result.outcome.categories.find(
-      (c) => c.category === 'integration',
-    );
+    const integrationCategory = result.outcome.categories.find(c => c.category === 'integration');
     expect(integrationCategory).toBeDefined();
     expect(integrationCategory!.verdict).toBe('red');
   });
@@ -93,9 +88,7 @@ describe("per-category 'integration' verdict", () => {
   it("returns 'green' when all integration criteria score 0", () => {
     // baseAnswers already sets everything to 0
     const result = scoreSchein(baseAnswers());
-    const integrationCategory = result.outcome.categories.find(
-      (c) => c.category === 'integration',
-    );
+    const integrationCategory = result.outcome.categories.find(c => c.category === 'integration');
     expect(integrationCategory).toBeDefined();
     expect(integrationCategory!.verdict).toBe('green');
   });

@@ -18,12 +18,18 @@ export const accessControlStatement = {
   document: ['create', 'read', 'update', 'delete'],
   invoice: ['create', 'read', 'update', 'delete', 'approve'],
   workflow: ['create', 'read', 'update', 'delete', 'execute'],
-  payment: ['create', 'read', 'export'],
+  payment: ['create', 'read', 'update', 'export'],
   report: ['read', 'export'],
   settings: ['read', 'update'],
   integration: ['read', 'update'],
   time: ['read', 'approve'],
   equipment: ['read', 'create', 'update', 'delete'],
+  // Global platform-level resources. These are NOT tenant-scoped (see
+  // `globalModels` in packages/db/src/tenant.ts) and a write here affects
+  // every tenant's data — e.g. the BoE base rate drives late-payment
+  // interest calculations across all GB B2B invoices. Grant only to the
+  // dedicated platform-operator role below.
+  'admin:boe-rate': ['read', 'write'],
 } as const;
 
 export const ac = createAccessControl(accessControlStatement);

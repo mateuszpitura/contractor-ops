@@ -41,7 +41,6 @@ export function PostHogProvider({ children }: { children: ReactNode }) {
     const host = process.env.NEXT_PUBLIC_POSTHOG_HOST;
 
     if (!token) {
-      console.warn('[posthog] NEXT_PUBLIC_POSTHOG_KEY not set — analytics disabled');
       return;
     }
 

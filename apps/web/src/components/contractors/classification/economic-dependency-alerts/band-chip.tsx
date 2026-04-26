@@ -77,8 +77,7 @@ export function EconomicDependencyBandChip({
       variant={presentation.variant}
       className={cn('gap-1.5 py-1 px-2', presentation.containerClass, className)}
       aria-label={ariaLabel}
-      data-band={band}
-    >
+      data-band={band}>
       <Icon aria-hidden="true" className={cn('size-3.5', presentation.iconClass)} />
       <span>{label}</span>
     </Badge>

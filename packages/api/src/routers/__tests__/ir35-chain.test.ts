@@ -195,9 +195,9 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
 // Imports (after mocks)
 // ---------------------------------------------------------------------------
 
-import { ir35ChainRouter } from '../ir35-chain.js';
 import { createCallerFactory } from '../../init.js';
 import { appRouter } from '../../root.js';
+import { ir35ChainRouter } from '../ir35-chain.js';
 
 // ---------------------------------------------------------------------------
 // Caller setup
@@ -353,9 +353,7 @@ describe('ir35Chain.listByEngagement', () => {
 
   it('throws NOT_FOUND when engagement does not exist', async () => {
     mockPrisma.ir35ChainParticipant.findMany.mockResolvedValueOnce([]);
-    mockPrisma.contractorAssignment.findUniqueOrThrow.mockRejectedValueOnce(
-      new Error('Not found'),
-    );
+    mockPrisma.contractorAssignment.findUniqueOrThrow.mockRejectedValueOnce(new Error('Not found'));
 
     await expect(
       caller.ir35Chain.listByEngagement({ contractorAssignmentId: 'nonexistent' }),
@@ -464,10 +462,7 @@ describe('ir35Chain.reorderParticipants', () => {
   });
 
   it('throws BAD_REQUEST on duplicate ids', async () => {
-    mockPrisma.ir35ChainParticipant.findMany.mockResolvedValueOnce([
-      { id: 'p-1' },
-      { id: 'p-2' },
-    ]);
+    mockPrisma.ir35ChainParticipant.findMany.mockResolvedValueOnce([{ id: 'p-1' }, { id: 'p-2' }]);
 
     await expect(
       caller.ir35Chain.reorderParticipants({
@@ -493,10 +488,7 @@ describe('ir35Chain.reorderParticipants', () => {
   });
 
   it('throws BAD_REQUEST when orderedIds contains foreign id', async () => {
-    mockPrisma.ir35ChainParticipant.findMany.mockResolvedValueOnce([
-      { id: 'p-1' },
-      { id: 'p-2' },
-    ]);
+    mockPrisma.ir35ChainParticipant.findMany.mockResolvedValueOnce([{ id: 'p-1' }, { id: 'p-2' }]);
 
     await expect(
       caller.ir35Chain.reorderParticipants({
@@ -619,9 +611,7 @@ describe('ir35Chain.removeParticipant', () => {
   });
 
   it('throws NOT_FOUND when participant does not exist', async () => {
-    mockPrisma.ir35ChainParticipant.findUniqueOrThrow.mockRejectedValueOnce(
-      new Error('Not found'),
-    );
+    mockPrisma.ir35ChainParticipant.findUniqueOrThrow.mockRejectedValueOnce(new Error('Not found'));
 
     await expect(caller.ir35Chain.removeParticipant({ id: 'nonexistent' })).rejects.toThrow(
       TRPCError,

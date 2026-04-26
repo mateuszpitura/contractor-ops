@@ -5,6 +5,7 @@ import type {
   OcrExtractionResult,
 } from '@contractor-ops/integrations/types/ocr';
 import { zodResolver } from '@hookform/resolvers/zod';
+import * as Sentry from '@sentry/nextjs';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { TRPCClientError } from '@trpc/client';
 import { ExternalLink, FileText, Info, Loader2, UploadCloud, X } from 'lucide-react';
@@ -520,7 +521,7 @@ function useFileUploadWithOcr(t: (key: string) => string) {
             ) {
               setCreditExhausted(true);
             } else {
-              console.warn('Portal OCR trigger failed, manual entry available');
+              Sentry.captureException(error, { tags: { feature: 'portal-invoice-submit' } });
             }
           }
         }

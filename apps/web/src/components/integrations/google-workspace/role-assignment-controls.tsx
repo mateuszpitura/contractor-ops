@@ -1,6 +1,7 @@
 'use client';
 
-import type { DirectoryRole } from '@contractor-ops/validators';
+import type { DirectoryRole } from '@contractor-ops/validators/roles';
+import { invitableMemberRoleValues } from '@contractor-ops/validators/roles';
 import { useTranslations } from 'next-intl';
 import { useId } from 'react';
 import {
@@ -15,16 +16,7 @@ import {
 // Constants
 // ---------------------------------------------------------------------------
 
-const ROLE_OPTIONS: DirectoryRole[] = [
-  'admin',
-  'finance_admin',
-  'ops_manager',
-  'team_manager',
-  'legal_compliance_viewer',
-  'it_admin',
-  'external_accountant',
-  'readonly',
-];
+const ROLE_OPTIONS: DirectoryRole[] = [...invitableMemberRoleValues];
 
 const ROLE_LABELS: Record<DirectoryRole, string> = {
   admin: 'Admin',

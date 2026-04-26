@@ -25,9 +25,7 @@ test.describe('Settings — Integrations flow', () => {
 
     // Look for integration cards by common patterns
     const cards = page
-      .locator(
-        '[data-testid*="integration"], [class*="card"], [class*="Card"]',
-      )
+      .locator('[data-testid*="integration"], [class*="card"], [class*="Card"]')
       .filter({
         hasText: /jira|linear|slack|xero|quickbooks|ksef|zatca|peppol|stripe/i,
       });
@@ -57,7 +55,10 @@ test.describe('Settings — Integrations flow', () => {
   test('connect button visible on disconnected integrations', async ({ page }) => {
     const tabPanel = page.locator('[role="tabpanel"]');
     const tabPanelVisible = await tabPanel.isVisible({ timeout: 15_000 }).catch(() => false);
-    test.skip(!tabPanelVisible, 'Integrations tab panel not rendered — skipping connect button test');
+    test.skip(
+      !tabPanelVisible,
+      'Integrations tab panel not rendered — skipping connect button test',
+    );
 
     const connectButton = page
       .locator('button, a')
@@ -88,13 +89,13 @@ test.describe('Settings — Integrations flow', () => {
       .first();
     const dialogVisible = await dialog.isVisible({ timeout: 10_000 }).catch(() => false);
 
-    if (!dialogVisible) {
+    if (dialogVisible) {
+      await expect(dialog).toBeVisible();
+    } else {
       // May have redirected to OAuth provider or opened new page
       await page.waitForTimeout(3_000);
       const urlAfter = page.url();
       expect(urlAfter !== urlBefore || dialogVisible).toBeTruthy();
-    } else {
-      await expect(dialog).toBeVisible();
     }
   });
 
@@ -107,12 +108,7 @@ test.describe('Settings — Integrations flow', () => {
       .locator('[data-testid*="ksef"], [data-testid*="integration"]')
       .filter({ hasText: /ksef/i })
       .first()
-      .or(
-        page
-          .locator('div, section, article')
-          .filter({ hasText: /ksef/i })
-          .first(),
-      );
+      .or(page.locator('div, section, article').filter({ hasText: /ksef/i }).first());
 
     const isVisible = await ksefCard.isVisible({ timeout: 15_000 }).catch(() => false);
     test.skip(!isVisible, 'KSeF integration card not visible — PL jurisdiction may not be active');
@@ -129,12 +125,7 @@ test.describe('Settings — Integrations flow', () => {
       .locator('[data-testid*="zatca"], [data-testid*="integration"]')
       .filter({ hasText: /zatca/i })
       .first()
-      .or(
-        page
-          .locator('div, section, article')
-          .filter({ hasText: /zatca/i })
-          .first(),
-      );
+      .or(page.locator('div, section, article').filter({ hasText: /zatca/i }).first());
 
     const isVisible = await zatcaCard.isVisible({ timeout: 15_000 }).catch(() => false);
     test.skip(!isVisible, 'ZATCA integration card not visible — AE jurisdiction may not be active');

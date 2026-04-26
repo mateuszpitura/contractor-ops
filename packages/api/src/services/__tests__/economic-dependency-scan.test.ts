@@ -123,11 +123,11 @@ vi.mock('../rbac-recipients.js', () => ({
 import {
   bandFor,
   CRITICAL_THRESHOLD,
-  REMINDER_CADENCE_DAYS,
-  WARNING_THRESHOLD,
   computeBillingShare,
+  REMINDER_CADENCE_DAYS,
   runEconomicDependencyScan,
   updateBandState,
+  WARNING_THRESHOLD,
 } from '../economic-dependency-scan.js';
 
 const ORG_A = 'clorgaaaaaaaaaaaaaaaaaaaaaa';
@@ -184,8 +184,7 @@ describe('computeBillingShare', () => {
       sum: 500_00,
     });
     invoicesByWhere.push({
-      match: where =>
-        !('organizationId' in where) && (where.contractorId as string) === CONTRACTOR,
+      match: where => !('organizationId' in where) && (where.contractorId as string) === CONTRACTOR,
       sum: 1_000_00,
     });
 
@@ -210,8 +209,7 @@ describe('computeBillingShare', () => {
       sum: 700_00,
     });
     invoicesByWhere.push({
-      match: where =>
-        !('organizationId' in where) && (where.contractorId as string) === CONTRACTOR,
+      match: where => !('organizationId' in where) && (where.contractorId as string) === CONTRACTOR,
       sum: 1_000_00,
     });
 
@@ -465,9 +463,7 @@ describe('runEconomicDependencyScan (orchestrator)', () => {
 
     const res = await runEconomicDependencyScan(new Date('2026-04-14T00:00:00Z'));
     expect(res.notificationsDispatched).toBe(1);
-    expect(mockDispatch.mock.calls[0][0].type).toBe(
-      'classification.economic_dependency_warning',
-    );
+    expect(mockDispatch.mock.calls[0][0].type).toBe('classification.economic_dependency_warning');
   });
 
   it('filters assignments by status=ACTIVE + contractor.countryCode=DE in the findMany where-clause', async () => {

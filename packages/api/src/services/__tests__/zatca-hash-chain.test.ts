@@ -17,8 +17,8 @@ const mockPrisma = {
   },
 };
 
-import { acquireChainLock, getNextChainEntry, recordChainEntry } from '../zatca-hash-chain.js';
 import type { ChainEntry, PrismaLike, RecordChainData } from '../zatca-hash-chain.js';
+import { acquireChainLock, getNextChainEntry, recordChainEntry } from '../zatca-hash-chain.js';
 
 // ---------------------------------------------------------------------------
 // Tests
@@ -44,9 +44,9 @@ describe('acquireChainLock', () => {
   it('propagates database errors', async () => {
     mockExecuteRawUnsafe.mockRejectedValue(new Error('DB connection failed'));
 
-    await expect(
-      acquireChainLock(mockPrisma as unknown as PrismaLike, 'org_test'),
-    ).rejects.toThrow('DB connection failed');
+    await expect(acquireChainLock(mockPrisma as unknown as PrismaLike, 'org_test')).rejects.toThrow(
+      'DB connection failed',
+    );
   });
 });
 
@@ -164,8 +164,8 @@ describe('recordChainEntry', () => {
       zatcaUuid: 'uuid-1',
     };
 
-    await expect(
-      recordChainEntry(mockPrisma as unknown as PrismaLike, data),
-    ).rejects.toThrow('Unique constraint violation');
+    await expect(recordChainEntry(mockPrisma as unknown as PrismaLike, data)).rejects.toThrow(
+      'Unique constraint violation',
+    );
   });
 });

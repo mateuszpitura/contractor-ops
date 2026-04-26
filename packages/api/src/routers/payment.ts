@@ -1,3 +1,4 @@
+import { isAdminLikeRole } from '@contractor-ops/auth/role-normalization';
 import type { PaymentRun } from '@contractor-ops/db/generated/prisma/client';
 import {
   bankStatementConfirmSchema,
@@ -14,8 +15,11 @@ import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import * as E from '../errors.js';
 import { router } from '../init.js';
+import * as idempotency from '../lib/idempotency.js';
+import { plain } from '../lib/plain.js';
 import { requirePermission } from '../middleware/rbac.js';
 import { tenantProcedure } from '../middleware/tenant.js';
+import { decryptBankAccount } from '../services/bank-account-crypto.js';
 import { matchStatementToRun, parseBankStatement } from '../services/bank-statement.js';
 import type { ExportItem, OrgBankInfo } from '../services/payment-export.js';
 import {
@@ -26,72 +30,26 @@ import {
   resolveTransferTitle,
 } from '../services/payment-export.js';
 import { detectFormat } from '../services/payment-format-detection.js';
-import {
-  evaluateSkontoEligibility,
-  resolveSkontoTerm,
-} from '../services/skonto.js';
+import { evaluateSkontoEligibility, resolveSkontoTerm } from '../services/skonto.js';
 import { calculateWht } from '../services/tax-rate.service.js';
 import type { DbClient } from '../services/types.js';
 
-/** Transaction client derived from the tenant-scoped DbClient. */
 type TxClient = Parameters<Parameters<DbClient['$transaction']>[0]>[0];
 
 // ---------------------------------------------------------------------------
-// Helpers
+// Idempotency TTL for payment run creation (24 hours).
+// Payment runs persist much longer than a few minutes, so the TTL must
+// cover the realistic window in which duplicate requests may arrive.
+// Storage is delegated to `lib/idempotency` (Upstash + in-memory fallback).
 // ---------------------------------------------------------------------------
 
-/**
- * Strips Prisma class prototype from query results, producing plain
- * JSON-serializable objects so that inferred tRPC router types do NOT
- * reference the generated Prisma client module (avoids TS2742).
- */
-function plain<T>(data: T): T {
-  return JSON.parse(JSON.stringify(data)) as T;
-}
+const IDEMPOTENCY_TTL_SECONDS = 24 * 60 * 60;
 
-// ---------------------------------------------------------------------------
-// Idempotency key cache for payment run creation (24-hour window)
-// Payment runs persist much longer than a few minutes, so the cache TTL
-// must cover the realistic window in which duplicate requests may arrive.
-// ---------------------------------------------------------------------------
-
-const IDEMPOTENCY_TTL_MS = 24 * 60 * 60_000;
-
-/** Maps "orgId:idempotencyKey" → { runIds, expiresAt } or "PENDING" sentinel */
-const idempotencyCache = new Map<string, { result: unknown; expiresAt: number } | 'PENDING'>();
-
-if (typeof globalThis !== 'undefined') {
-  const cleanup = () => {
-    const now = Date.now();
-    for (const [key, entry] of idempotencyCache) {
-      if (entry === 'PENDING') continue;
-      if (now > entry.expiresAt) idempotencyCache.delete(key);
-    }
-  };
-  setInterval(cleanup, 60_000).unref?.();
-}
+const ACTIVE_PAYMENT_ITEM_STATUSES = ['PENDING', 'EXPORTED'] as const;
 
 // ---------------------------------------------------------------------------
 // Payment run helpers
 // ---------------------------------------------------------------------------
-
-/**
- * Generates the sequential run number for a payment run (e.g., PR-2026-001).
- */
-async function _generateRunNumber(tx: TxClient, organizationId: string): Promise<string> {
-  const year = new Date().getFullYear();
-  const prefix = `PR-${year}-`;
-
-  const lastRun = await tx.paymentRun.findFirst({
-    where: { organizationId, runNumber: { startsWith: prefix } },
-    orderBy: { runNumber: 'desc' },
-    select: { runNumber: true },
-  });
-
-  const seq = lastRun?.runNumber ? parseInt(lastRun.runNumber.replace(prefix, ''), 10) + 1 : 1;
-
-  return `${prefix}${String(seq).padStart(3, '0')}`;
-}
 
 /**
  * Generates an export file buffer and extension based on the format.
@@ -153,6 +111,7 @@ function _buildExportItems(
     contractor: { legalName: string; taxId: string | null };
     billingProfile: {
       bankAccountMasked: string | null;
+      bankAccountEncrypted: string | null;
       swiftBic: string | null;
       bankName: string | null;
     } | null;
@@ -173,9 +132,25 @@ function _buildExportItems(
       contractorName: item.contractor.legalName,
     });
 
+    const encryptedAccount = item.billingProfile?.bankAccountEncrypted;
+    if (!encryptedAccount) {
+      throw new TRPCError({
+        code: 'PRECONDITION_FAILED',
+        message: `Missing payable bank account for ${item.contractor.legalName}`,
+      });
+    }
+    if (!item.invoice.dueDate) {
+      throw new TRPCError({
+        code: 'PRECONDITION_FAILED',
+        message: `Missing due date for invoice ${invoiceNumber}`,
+      });
+    }
+
+    const iban = decryptBankAccount(encryptedAccount);
+
     return {
       contractorName: item.contractor.legalName,
-      iban: item.billingProfile?.bankAccountMasked ?? '',
+      iban,
       amountMinor: item.amountMinor,
       currency: item.currency,
       invoiceNumber,
@@ -185,6 +160,85 @@ function _buildExportItems(
       dueDate: item.invoice.dueDate,
       transferTitle,
     };
+  });
+}
+
+async function ensureNoActivePaymentRunItems(
+  tx: TxClient,
+  organizationId: string,
+  invoiceIds: string[],
+): Promise<void> {
+  const activeItem = await tx.paymentRunItem.findFirst({
+    where: {
+      organizationId,
+      invoiceId: { in: invoiceIds },
+      status: { in: [...ACTIVE_PAYMENT_ITEM_STATUSES] },
+    },
+    select: { invoiceId: true },
+  });
+
+  if (activeItem) {
+    throw new TRPCError({
+      code: 'CONFLICT',
+      message: E.PAYMENT_INVOICES_NOT_READY,
+    });
+  }
+}
+
+async function createInvoicePaymentRows(
+  tx: TxClient,
+  params: {
+    organizationId: string;
+    items: Array<{ id: string; invoiceId: string; amountMinor: number }>;
+    paidAt: Date;
+    sourceKind: 'PAYMENT_RUN' | 'BANK_STATEMENT';
+    createdByUserId?: string;
+    notes?: string | null;
+  },
+): Promise<void> {
+  if (params.items.length === 0) return;
+
+  const itemIds = params.items.map(item => item.id);
+  const existingRows = await tx.invoicePayment.findMany({
+    where: {
+      organizationId: params.organizationId,
+      sourcePaymentRunItemId: { in: itemIds },
+    },
+    select: { sourcePaymentRunItemId: true },
+  });
+  const seen = new Set(existingRows.map(row => row.sourcePaymentRunItemId).filter(Boolean));
+  const rows = params.items.filter(item => !seen.has(item.id));
+  if (rows.length === 0) return;
+
+  await tx.invoicePayment.createMany({
+    data: rows.map(item => ({
+      organizationId: params.organizationId,
+      invoiceId: item.invoiceId,
+      amountMinor: item.amountMinor,
+      paidAt: params.paidAt,
+      sourceKind: params.sourceKind,
+      sourcePaymentRunItemId: item.id,
+      notes: params.notes ?? null,
+      createdByUserId: params.createdByUserId ?? null,
+    })),
+  });
+}
+
+async function markInvoicesPaid(tx: TxClient, invoiceIds: string[], paidAt: Date): Promise<void> {
+  if (invoiceIds.length === 0) return;
+
+  await tx.invoice.updateMany({
+    where: { id: { in: invoiceIds } },
+    data: { status: 'PAID', paymentStatus: 'PAID', paidAt },
+  });
+}
+
+async function releaseInvoicesForPayment(tx: TxClient, invoiceIds: string[]): Promise<void> {
+  if (invoiceIds.length === 0) return;
+
+  await tx.invoice.updateMany({
+    where: { id: { in: invoiceIds } },
+    data: { status: 'READY_FOR_PAYMENT', paymentStatus: 'READY' },
   });
 }
 
@@ -231,7 +285,10 @@ async function _applyWhtIfSaudi(
     });
     await tx.invoice.update({
       where: { id: item.invoiceId },
-      data: { withholdingMinor: whtResult.whtAmountMinor },
+      data: {
+        withholdingMinor: whtResult.whtAmountMinor,
+        amountToPayMinor: whtResult.netAmountMinor,
+      },
     });
   }
 }
@@ -319,7 +376,8 @@ export const paymentRouter = router({
       const items = await ctx.db.invoice.findMany({
         where,
         take: input.limit + 1,
-        orderBy: { dueDate: 'asc' },
+        // Compound order so the cursor has a deterministic tiebreaker.
+        orderBy: [{ dueDate: 'asc' }, { id: 'asc' }],
         include: {
           contractor: {
             select: { id: true, legalName: true, taxId: true },
@@ -356,29 +414,53 @@ export const paymentRouter = router({
     .use(requirePermission({ payment: ['create'] }))
     .input(paymentRunCreateSchema)
     .mutation(async ({ ctx, input }) => {
-      // Idempotency check: return cached result if same key was used recently
+      const actorUserId = ctx.user?.id;
+      if (!actorUserId) {
+        throw new TRPCError({ code: 'UNAUTHORIZED' });
+      }
+
+      // Idempotency check: distributed via Upstash Redis when configured so
+      // duplicate requests hitting different pods converge on the same
+      // answer. Falls back to in-memory on single-instance deploys.
       const cacheKey = input.idempotencyKey
         ? `${ctx.organizationId}:${input.idempotencyKey}`
         : null;
 
       if (cacheKey) {
-        const cached = idempotencyCache.get(cacheKey);
-        if (cached === 'PENDING') {
+        const hit = await idempotency.reserve<ReturnType<typeof plain>>(
+          cacheKey,
+          IDEMPOTENCY_TTL_SECONDS,
+        );
+        if (hit.kind === 'PENDING') {
           throw new TRPCError({
             code: 'CONFLICT',
             message: 'Payment run creation in progress',
           });
         }
-        if (cached && Date.now() < cached.expiresAt) {
-          return cached.result as ReturnType<typeof plain>;
+        if (hit.kind === 'HIT') {
+          return hit.result;
         }
-        // Reserve the key immediately to prevent concurrent requests
-        idempotencyCache.set(cacheKey, 'PENDING');
+        // MISS — reservation written, caller continues.
       }
 
       let result: PaymentRun[];
       try {
         result = await ctx.db.$transaction(async tx => {
+          // Serialise run-number allocation per org via a transactional
+          // advisory lock. Two concurrent `create` calls in the same org
+          // would otherwise both read the same `lastRun` and produce
+          // colliding run numbers — the DB unique index catches it, but
+          // the lock avoids the rollback churn. Released at COMMIT/ROLLBACK.
+          // Same pattern used in services/zatca-hash-chain.ts.
+          await (
+            tx as unknown as {
+              $executeRawUnsafe: (query: string, ...args: unknown[]) => Promise<unknown>;
+            }
+          ).$executeRawUnsafe(
+            'SELECT pg_advisory_xact_lock(hashtext($1))',
+            `payment-run:${ctx.organizationId}`,
+          );
+
           // Fetch all invoices with their data
           const invoices = await tx.invoice.findMany({
             where: {
@@ -390,6 +472,8 @@ export const paymentRouter = router({
               billingProfile: { select: { id: true, preferredCurrency: true } },
             },
           });
+
+          await ensureNoActivePaymentRunItems(tx, ctx.organizationId, input.invoiceIds);
 
           // Verify all invoices have paymentStatus READY
           const notReady = invoices.filter(inv => inv.paymentStatus !== 'READY');
@@ -404,6 +488,14 @@ export const paymentRouter = router({
             throw new TRPCError({
               code: 'NOT_FOUND',
               message: E.PAYMENT_INVOICES_NOT_FOUND,
+            });
+          }
+
+          const missingPaymentData = invoices.filter(inv => !inv.contractorId);
+          if (missingPaymentData.length > 0) {
+            throw new TRPCError({
+              code: 'PRECONDITION_FAILED',
+              message: 'All invoices must be matched to a contractor before payment.',
             });
           }
 
@@ -460,7 +552,7 @@ export const paymentRouter = router({
                 name: input.name ?? null,
                 status: 'DRAFT',
                 currency,
-                createdByUserId: ctx.user?.id,
+                createdByUserId: actorUserId,
                 totalMinor,
                 invoiceCount: groupInvoices.length,
                 notes: input.notes ?? null,
@@ -484,12 +576,26 @@ export const paymentRouter = router({
             // Apply WHT calculations for Saudi orgs on cross-border payments
             await _applyWhtIfSaudi(tx, ctx.organizationId, run.id);
 
+            const itemTotals = await tx.paymentRunItem.aggregate({
+              where: { paymentRunId: run.id, status: { not: 'SKIPPED' } },
+              _sum: { amountMinor: true },
+              _count: true,
+            });
+
+            const updatedRun = await tx.paymentRun.update({
+              where: { id: run.id },
+              data: {
+                totalMinor: itemTotals._sum.amountMinor ?? 0,
+                invoiceCount: itemTotals._count,
+              },
+            });
+
             await tx.invoice.updateMany({
               where: { id: { in: groupInvoices.map(inv => inv.id) } },
               data: { paymentStatus: 'IN_RUN' },
             });
 
-            runs.push(run);
+            runs.push(updatedRun);
           }
 
           return runs;
@@ -497,19 +603,35 @@ export const paymentRouter = router({
 
         const plainResult = plain(result);
 
-        // Update cache with actual result
+        // Persist the completed result, overwriting the PENDING sentinel.
         if (cacheKey) {
-          idempotencyCache.set(cacheKey, {
-            result: plainResult,
-            expiresAt: Date.now() + IDEMPOTENCY_TTL_MS,
-          });
+          await idempotency.complete(cacheKey, plainResult, IDEMPOTENCY_TTL_SECONDS);
         }
 
         return plainResult;
       } catch (err) {
         // Clear reservation on failure so the key can be retried
         if (cacheKey) {
-          idempotencyCache.delete(cacheKey);
+          await idempotency.clear(cacheKey);
+        }
+        // Translate the DB-level uniqueness violation on (organizationId,
+        // runNumber) into a 409. This is the guaranteed backstop if the
+        // advisory lock is somehow bypassed (misconfiguration, multi-region
+        // write race). Returning an opaque 500 would cause well-behaved
+        // clients to retry the same input and hit the same collision.
+        const maybePrismaError = err as { code?: string; meta?: { target?: string[] } };
+        if (maybePrismaError?.code === 'P2002') {
+          const target = maybePrismaError.meta?.target ?? [];
+          if (target.includes('runNumber')) {
+            throw new TRPCError({
+              code: 'CONFLICT',
+              message: 'Payment run number collision; retry the request.',
+            });
+          }
+          throw new TRPCError({
+            code: 'CONFLICT',
+            message: E.PAYMENT_INVOICES_NOT_READY,
+          });
         }
         throw err;
       }
@@ -540,6 +662,7 @@ export const paymentRouter = router({
               billingProfile: {
                 select: {
                   bankAccountMasked: true,
+                  bankAccountEncrypted: true,
                   swiftBic: true,
                   bankName: true,
                 },
@@ -587,10 +710,12 @@ export const paymentRouter = router({
         where.id = { gt: input.cursor };
       }
 
+      // Compound order `(sortBy, id)` so cursor pagination stays stable
+      // when two rows share the same sortBy value.
       const items = await ctx.db.paymentRun.findMany({
         where,
         take: input.limit + 1,
-        orderBy: { [input.sortBy]: input.sortOrder },
+        orderBy: [{ [input.sortBy]: input.sortOrder }, { id: input.sortOrder }],
         include: {
           _count: { select: { items: true } },
         },
@@ -613,6 +738,11 @@ export const paymentRouter = router({
     .use(requirePermission({ payment: ['export'] }))
     .input(paymentRunLockSchema)
     .mutation(async ({ ctx, input }) => {
+      const actorUserId = ctx.user?.id;
+      if (!actorUserId) {
+        throw new TRPCError({ code: 'UNAUTHORIZED' });
+      }
+
       const result = await ctx.db.$transaction(async tx => {
         const run = await tx.paymentRun.findFirst({
           where: {
@@ -639,6 +769,7 @@ export const paymentRouter = router({
                 billingProfile: {
                   select: {
                     bankAccountMasked: true,
+                    bankAccountEncrypted: true,
                     swiftBic: true,
                     bankName: true,
                   },
@@ -738,7 +869,7 @@ export const paymentRouter = router({
             paymentRunId: run.id,
             format: input.exportFormat,
             status: 'GENERATED',
-            generatedByUserId: ctx.user?.id,
+            generatedByUserId: actorUserId,
           },
         });
 
@@ -789,16 +920,19 @@ export const paymentRouter = router({
 
         // Update invoice paymentStatus
         if (input.status === 'PAID') {
-          await tx.invoice.update({
-            where: { id: item.invoiceId },
-            data: { paymentStatus: 'PAID', paidAt: new Date() },
+          const paidAt = new Date();
+          await createInvoicePaymentRows(tx, {
+            organizationId: ctx.organizationId,
+            items: [{ id: item.id, invoiceId: item.invoiceId, amountMinor: item.amountMinor }],
+            paidAt,
+            sourceKind: 'PAYMENT_RUN',
+            createdByUserId: ctx.user?.id,
+            notes: input.paymentReference ?? null,
           });
+          await markInvoicesPaid(tx, [item.invoiceId], paidAt);
         } else if (input.status === 'FAILED') {
           // Auto-release: failed items go back to READY (D-11)
-          await tx.invoice.update({
-            where: { id: item.invoiceId },
-            data: { paymentStatus: 'READY' },
-          });
+          await releaseInvoicesForPayment(tx, [item.invoiceId]);
         }
 
         // Check if all items in run are terminal -> auto-complete
@@ -852,11 +986,19 @@ export const paymentRouter = router({
           },
         });
 
-        // Batch update all linked invoices to PAID
-        await tx.invoice.updateMany({
-          where: { id: { in: invoiceIds } },
-          data: { paymentStatus: 'PAID', paidAt: now },
+        await createInvoicePaymentRows(tx, {
+          organizationId: ctx.organizationId,
+          items: run.items.map(item => ({
+            id: item.id,
+            invoiceId: item.invoiceId,
+            amountMinor: item.amountMinor,
+          })),
+          paidAt: now,
+          sourceKind: 'PAYMENT_RUN',
+          createdByUserId: ctx.user?.id,
+          notes: input.batchReference ?? null,
         });
+        await markInvoicesPaid(tx, invoiceIds, now);
 
         // Mark run as completed
         const updatedRun = await tx.paymentRun.update({
@@ -915,7 +1057,7 @@ export const paymentRouter = router({
             select: { role: true },
           });
 
-          if (member?.role !== 'admin') {
+          if (!isAdminLikeRole(member?.role)) {
             throw new TRPCError({
               code: 'FORBIDDEN',
               message:
@@ -930,10 +1072,15 @@ export const paymentRouter = router({
           .map(item => item.invoiceId);
 
         if (unpaidInvoiceIds.length > 0) {
-          await tx.invoice.updateMany({
-            where: { id: { in: unpaidInvoiceIds } },
-            data: { paymentStatus: 'READY' },
+          await tx.paymentRunItem.updateMany({
+            where: {
+              paymentRunId: run.id,
+              invoiceId: { in: unpaidInvoiceIds },
+              status: { not: 'PAID' },
+            },
+            data: { status: 'SKIPPED' },
           });
+          await releaseInvoicesForPayment(tx, unpaidInvoiceIds);
         }
 
         // Cancel the run
@@ -971,7 +1118,7 @@ export const paymentRouter = router({
           items: {
             include: {
               billingProfile: {
-                select: { bankAccountMasked: true },
+                select: { bankAccountMasked: true, bankAccountEncrypted: true },
               },
             },
           },
@@ -999,7 +1146,9 @@ export const paymentRouter = router({
       const matchItems = run.items.map(item => ({
         id: item.id,
         amountMinor: item.amountMinor,
-        iban: item.billingProfile?.bankAccountMasked ?? '',
+        iban: item.billingProfile?.bankAccountEncrypted
+          ? decryptBankAccount(item.billingProfile.bankAccountEncrypted)
+          : '',
       }));
 
       const matches = matchStatementToRun(transactions, matchItems);
@@ -1040,7 +1189,7 @@ export const paymentRouter = router({
             paymentRunId: run.id,
             organizationId: ctx.organizationId,
           },
-          select: { id: true, invoiceId: true },
+          select: { id: true, invoiceId: true, amountMinor: true },
         });
 
         if (validItems.length > 0) {
@@ -1053,11 +1202,18 @@ export const paymentRouter = router({
             data: { status: 'PAID', markedPaidAt: now },
           });
 
-          // Batch-update all linked invoices to PAID
-          await tx.invoice.updateMany({
-            where: { id: { in: invoiceIds } },
-            data: { paymentStatus: 'PAID', paidAt: now },
+          await createInvoicePaymentRows(tx, {
+            organizationId: ctx.organizationId,
+            items: validItems.map(item => ({
+              id: item.id,
+              invoiceId: item.invoiceId,
+              amountMinor: item.amountMinor,
+            })),
+            paidAt: now,
+            sourceKind: 'BANK_STATEMENT',
+            createdByUserId: ctx.user?.id,
           });
+          await markInvoicesPaid(tx, invoiceIds, now);
         }
 
         // Check if all items terminal -> auto-complete
@@ -1130,7 +1286,7 @@ export const paymentRouter = router({
           // Release invoice back to READY
           await tx.invoice.update({
             where: { id: input.invoiceId },
-            data: { paymentStatus: 'READY' },
+            data: { status: 'READY_FOR_PAYMENT', paymentStatus: 'READY' },
           });
 
           // Recalculate run totals from actual remaining items (not cached values)
@@ -1211,22 +1367,19 @@ export const paymentRouter = router({
           organizationId: ctx.organizationId,
         },
         include: {
+          paymentRun: { select: { id: true, status: true } },
+          billingProfile: {
+            include: { skontoTerms: true },
+          },
           invoice: {
             include: {
-              skontoTerm: true,
-              contractor: {
-                include: {
-                  billingProfile: {
-                    include: { skontoTerm: true },
-                  },
-                },
-              },
+              skontoTerms: true,
             },
           },
         },
       });
 
-      if (!item || !item.invoice) {
+      if (!(item && item.invoice)) {
         throw new TRPCError({
           code: 'NOT_FOUND',
           message: 'Payment run item not found',
@@ -1235,31 +1388,37 @@ export const paymentRouter = router({
 
       const { invoice } = item;
 
+      if (item.paymentRun.status !== 'DRAFT') {
+        throw new TRPCError({
+          code: 'PRECONDITION_FAILED',
+          message: 'Skonto can only be applied before a payment run is exported',
+        });
+      }
+
       // Resolve effective skonto term via cascade
-      const invoiceTerm = invoice.skontoTerm
+      const invoiceSkontoTerm = invoice.skontoTerms[0] ?? null;
+      const profileSkontoTerm = item.billingProfile?.skontoTerms[0] ?? null;
+
+      const invoiceTerm = invoiceSkontoTerm
         ? {
-            discountPercent: Number(invoice.skontoTerm.discountPercent),
-            discountPeriodDays: invoice.skontoTerm.discountPeriodDays,
-            netPeriodDays: invoice.skontoTerm.netPeriodDays,
+            discountPercent: Number(invoiceSkontoTerm.discountPercent),
+            discountPeriodDays: invoiceSkontoTerm.discountPeriodDays,
+            netPeriodDays: invoiceSkontoTerm.netPeriodDays,
           }
         : null;
 
-      const profileTerm = invoice.contractor?.billingProfile?.skontoTerm
+      const profileTerm = profileSkontoTerm
         ? {
-            discountPercent: Number(
-              invoice.contractor.billingProfile.skontoTerm.discountPercent,
-            ),
-            discountPeriodDays:
-              invoice.contractor.billingProfile.skontoTerm.discountPeriodDays,
-            netPeriodDays:
-              invoice.contractor.billingProfile.skontoTerm.netPeriodDays,
+            discountPercent: Number(profileSkontoTerm.discountPercent),
+            discountPeriodDays: profileSkontoTerm.discountPeriodDays,
+            netPeriodDays: profileSkontoTerm.netPeriodDays,
           }
         : null;
 
       const effectiveTerm = resolveSkontoTerm(invoiceTerm, profileTerm);
 
       const eligibility = evaluateSkontoEligibility({
-        invoiceTotalMinor: invoice.amountMinor,
+        invoiceTotalMinor: invoice.amountToPayMinor,
         invoiceIssueDate: invoice.issueDate,
         skontoTerm: effectiveTerm,
         paidAt: invoice.paidAt,
@@ -1274,17 +1433,16 @@ export const paymentRouter = router({
       }
 
       // Find the effective skonto term record for the FK
-      const skontoTermRecord = invoice.skontoTerm
-        ?? invoice.contractor?.billingProfile?.skontoTerm;
+      const skontoTermRecord = invoiceSkontoTerm ?? profileSkontoTerm;
 
-      if (!skontoTermRecord || !effectiveTerm) {
+      if (!(skontoTermRecord && effectiveTerm)) {
         throw new TRPCError({
           code: 'PRECONDITION_FAILED',
           message: 'No Skonto term record found',
         });
       }
 
-      const result = await ctx.db.$transaction(async (tx) => {
+      const result = await ctx.db.$transaction(async tx => {
         // Update payment run item amount to discounted amount
         const updatedItem = await tx.paymentRunItem.update({
           where: { id: input.paymentRunItemId },
@@ -1299,6 +1457,20 @@ export const paymentRouter = router({
             skontoTermId: skontoTermRecord.id,
             discountPercentApplied: effectiveTerm.discountPercent,
             discountAmountMinor: eligibility.discountAmountMinor,
+          },
+        });
+
+        const remainingAgg = await tx.paymentRunItem.aggregate({
+          where: { paymentRunId: item.paymentRun.id, status: { not: 'SKIPPED' } },
+          _sum: { amountMinor: true },
+          _count: true,
+        });
+
+        await tx.paymentRun.update({
+          where: { id: item.paymentRun.id },
+          data: {
+            totalMinor: remainingAgg._sum.amountMinor ?? 0,
+            invoiceCount: remainingAgg._count,
           },
         });
 
@@ -1327,11 +1499,9 @@ export const paymentRouter = router({
               invoice: {
                 select: { currency: true },
               },
-              contractor: {
-                include: {
-                  billingProfile: {
-                    select: { iban: true },
-                  },
+              billingProfile: {
+                select: {
+                  bankAccountEncrypted: true,
                 },
               },
             },
@@ -1346,9 +1516,11 @@ export const paymentRouter = router({
         });
       }
 
-      const detections = run.items.map((item) => {
-        const currency = item.invoice?.currency ?? run.currency;
-        const iban = item.contractor?.billingProfile?.iban ?? '';
+      const detections = run.items.map(item => {
+        const currency = item.invoice?.currency ?? run.currency ?? '';
+        const iban = item.billingProfile?.bankAccountEncrypted
+          ? decryptBankAccount(item.billingProfile.bankAccountEncrypted)
+          : '';
         const format = detectFormat(currency, iban);
 
         return {

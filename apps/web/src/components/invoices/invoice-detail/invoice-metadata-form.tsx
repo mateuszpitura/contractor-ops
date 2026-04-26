@@ -88,6 +88,16 @@ function toDateString(date: Date): string {
   return format(date, 'yyyy-MM-dd');
 }
 
+function dateFieldToString(v: string | Date | null | undefined): string {
+  if (v == null) return '';
+  return v instanceof Date ? toDateString(v) : v;
+}
+
+function optionalDateFieldToString(v: string | Date | null | undefined): string | undefined {
+  if (v == null || v === '') return undefined;
+  return v instanceof Date ? toDateString(v) : v;
+}
+
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
@@ -96,10 +106,10 @@ type InvoiceMetadataFormProps = {
   invoice: {
     id: string;
     invoiceNumber: string;
-    issueDate: string | null;
-    dueDate: string | null;
-    servicePeriodStart: string | null;
-    servicePeriodEnd: string | null;
+    issueDate: string | Date | null;
+    dueDate: string | Date | null;
+    servicePeriodStart: string | Date | null;
+    servicePeriodEnd: string | Date | null;
     sellerTaxId: string | null;
     subtotalMinor: number;
     vatRate: string | null;
@@ -142,10 +152,10 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
     resolver: zodResolver(invoiceMetadataSchema),
     defaultValues: {
       invoiceNumber: invoice.invoiceNumber,
-      issueDate: invoice.issueDate ?? '',
-      dueDate: invoice.dueDate ?? '',
-      servicePeriodStart: invoice.servicePeriodStart ?? undefined,
-      servicePeriodEnd: invoice.servicePeriodEnd ?? undefined,
+      issueDate: dateFieldToString(invoice.issueDate),
+      dueDate: dateFieldToString(invoice.dueDate),
+      servicePeriodStart: optionalDateFieldToString(invoice.servicePeriodStart),
+      servicePeriodEnd: optionalDateFieldToString(invoice.servicePeriodEnd),
       sellerTaxId: invoice.sellerTaxId ?? undefined,
       subtotalMinor: invoice.subtotalMinor,
       vatRate: invoice.vatRate ?? undefined,
@@ -162,10 +172,10 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
   useEffect(() => {
     reset({
       invoiceNumber: invoice.invoiceNumber,
-      issueDate: invoice.issueDate ?? '',
-      dueDate: invoice.dueDate ?? '',
-      servicePeriodStart: invoice.servicePeriodStart ?? undefined,
-      servicePeriodEnd: invoice.servicePeriodEnd ?? undefined,
+      issueDate: dateFieldToString(invoice.issueDate),
+      dueDate: dateFieldToString(invoice.dueDate),
+      servicePeriodStart: optionalDateFieldToString(invoice.servicePeriodStart),
+      servicePeriodEnd: optionalDateFieldToString(invoice.servicePeriodEnd),
       sellerTaxId: invoice.sellerTaxId ?? undefined,
       subtotalMinor: invoice.subtotalMinor,
       vatRate: invoice.vatRate ?? undefined,

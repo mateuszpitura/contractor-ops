@@ -18,7 +18,7 @@ const permissions: Record<string, Record<string, string[]>> = {
     document: ['create', 'read', 'update', 'delete'],
     invoice: ['create', 'read', 'update', 'delete', 'approve'],
     workflow: ['create', 'read', 'update', 'delete', 'execute'],
-    payment: ['create', 'read', 'export'],
+    payment: ['create', 'read', 'update', 'export'],
     report: ['read', 'export'],
     settings: ['read', 'update'],
     integration: ['read', 'update'],
@@ -34,7 +34,7 @@ const permissions: Record<string, Record<string, string[]>> = {
     document: ['create', 'read', 'update', 'delete'],
     invoice: ['create', 'read', 'update', 'delete', 'approve'],
     workflow: ['create', 'read', 'update', 'delete', 'execute'],
-    payment: ['create', 'read', 'export'],
+    payment: ['create', 'read', 'update', 'export'],
     report: ['read', 'export'],
     settings: ['read', 'update'],
     integration: ['read', 'update'],
@@ -45,7 +45,7 @@ const permissions: Record<string, Record<string, string[]>> = {
     contractor: ['read'],
     contract: ['read'],
     invoice: ['create', 'read', 'update', 'delete', 'approve'],
-    payment: ['create', 'read', 'export'],
+    payment: ['create', 'read', 'update', 'export'],
     report: ['read', 'export'],
     settings: ['read'],
     time: ['read'],
@@ -95,6 +95,9 @@ const permissions: Record<string, Record<string, string[]>> = {
     invoice: ['read'],
     workflow: ['read'],
     report: ['read'],
+  },
+  platform_operator: {
+    'admin:boe-rate': ['read', 'write'],
   },
 };
 

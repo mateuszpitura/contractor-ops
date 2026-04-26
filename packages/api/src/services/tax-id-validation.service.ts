@@ -40,12 +40,20 @@
 //     matches T-57-03-05 — no cross-tenant read path exists.
 // ---------------------------------------------------------------------------
 
-import type { Prisma, PrismaClient, TaxIdType, ValidationStatus } from '@contractor-ops/db';
+import type {
+  Prisma,
+  TaxIdType,
+  ValidationStatus,
+} from '@contractor-ops/db/generated/prisma/client';
 import type { HmrcVatClient, ViesClient } from '@contractor-ops/gov-api';
+import { createLogger } from '@contractor-ops/logger';
 // Pre-flight validators — canonical Phase 56 implementations. These run
 // BEFORE any network I/O (RESEARCH Pattern 3).
 import { isValidGbVat, isValidUstIdNr } from '@contractor-ops/validators';
+import type { TenantScopedDb } from '../lib/tenant-db.js';
 import { maskTaxId } from './tax-id-pii.js';
+
+const log = createLogger({ service: 'tax-id-validation' });
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -78,7 +86,7 @@ export interface TaxIdValidationResult {
 }
 
 export interface TaxIdValidationDeps {
-  prisma: PrismaClient;
+  prisma: TenantScopedDb;
   hmrcClient: HmrcVatClient;
   viesClient: ViesClient;
   now?: () => Date;
@@ -130,7 +138,7 @@ function stripCountryPrefix(value: string, country: 'GB' | 'DE'): string {
  */
 export async function getLatestValidation(
   params: { contractorId: string; taxIdType: TaxIdType },
-  deps: { prisma: PrismaClient },
+  deps: { prisma: Pick<TenantScopedDb, 'taxIdValidation'> },
 ): Promise<LatestValidationRow | null> {
   const row = await deps.prisma.taxIdValidation.findFirst({
     where: { contractorId: params.contractorId, taxIdType: params.taxIdType },
@@ -246,10 +254,7 @@ export async function validateTaxId(
     // Any thrown error — HmrcApiError, ViesApiError, schema violation, TCP
     // reset — maps to the D-08 soft-fail branch. Logs are PII-masked.
     const message = err instanceof Error ? err.message : 'Unknown upstream error';
-    // eslint-disable-next-line no-console
-    console.error(
-      `[tax-id-validation] upstream error for ${input.taxIdType} ${maskedValue}: ${message}`,
-    );
+    log.error({ err, taxIdType: input.taxIdType, maskedValue }, 'upstream error');
     return softFail({
       input,
       apiProvider: input.taxIdType === 'GB_VAT' ? 'hmrc' : 'vies',

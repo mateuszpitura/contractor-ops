@@ -2,21 +2,21 @@ import type { IntegrationConnection } from '@contractor-ops/db/generated/prisma/
 import { KsefApiClient, ksefConnectionConfigSchema } from '@contractor-ops/einvoice';
 import { encryptCredentials } from '@contractor-ops/integrations';
 import { getQStashClient } from '@contractor-ops/integrations/services/qstash-client';
+import { createLogger } from '@contractor-ops/logger';
 import { getServerEnv } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import * as E from '../errors.js';
 import { router } from '../init.js';
+import { plain } from '../lib/plain.js';
 import { requirePermission } from '../middleware/rbac.js';
 import { tenantProcedure } from '../middleware/tenant.js';
+
+const log = createLogger({ service: 'ksef-router' });
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-function plain<T>(data: T): T {
-  return JSON.parse(JSON.stringify(data)) as T;
-}
 
 // ---------------------------------------------------------------------------
 // Input schemas
@@ -48,6 +48,11 @@ export const ksefRouter = router({
     .use(requirePermission({ settings: ['update'] }))
     .input(connectInput)
     .mutation(async ({ ctx, input }) => {
+      const connectedByUserId = ctx.user?.id;
+      if (!connectedByUserId) {
+        throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Authentication required' });
+      }
+
       // Step 1: Get org NIP (per D-03)
       const org = await ctx.db.organization.findUniqueOrThrow({
         where: { id: ctx.organizationId },
@@ -116,7 +121,7 @@ export const ksefRouter = router({
               environment: input.environment,
             },
             credentialsRef,
-            connectedByUserId: ctx.user?.id,
+            connectedByUserId,
             connectedAt: new Date(),
           },
         });
@@ -131,7 +136,7 @@ export const ksefRouter = router({
               environment: input.environment,
             },
             credentialsRef,
-            connectedByUserId: ctx.user?.id,
+            connectedByUserId,
           },
         });
       }
@@ -161,7 +166,7 @@ export const ksefRouter = router({
           },
         });
       } catch (error) {
-        console.error('[ksef.connect] Failed to create QStash schedule:', error);
+        log.error({ err: error }, 'failed to create qstash schedule');
         // Don't fail the connection — schedule can be retried
       }
 
@@ -198,7 +203,7 @@ export const ksefRouter = router({
           const qstash = getQStashClient();
           await qstash.schedules.delete(scheduleId);
         } catch (error) {
-          console.error('[ksef.disconnect] Failed to delete QStash schedule:', error);
+          log.error({ err: error }, 'failed to delete qstash schedule');
         }
       }
 

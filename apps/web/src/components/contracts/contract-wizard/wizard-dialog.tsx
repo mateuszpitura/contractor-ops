@@ -1,6 +1,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
+import * as Sentry from '@sentry/nextjs';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Check, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -259,8 +260,11 @@ export function ContractWizardDialog({
           entityType: 'CONTRACT',
           entityId: contractId,
         } as Parameters<typeof linkToEntityMutation.mutateAsync>[0]);
-      } catch {
-        console.error(`Failed to link document ${docId} to contract`);
+      } catch (error) {
+        Sentry.captureException(error, {
+          tags: { feature: 'contract-wizard' },
+          extra: { documentId: docId, contractId },
+        });
       }
     }
   }

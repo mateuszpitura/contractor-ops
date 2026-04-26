@@ -1,6 +1,9 @@
+import { createLogger } from '@contractor-ops/logger';
 import { getRequestConfig } from 'next-intl/server';
 import type { Locale } from './routing';
 import { routing } from './routing';
+
+const log = createLogger({ service: 'i18n' });
 
 const localeSettings: Record<
   Locale,
@@ -43,7 +46,7 @@ export default getRequestConfig(async ({ requestLocale }) => {
     ...(settings.numberingSystem && {
       onError(error) {
         // Silently ignore — next-intl logs by default
-        console.error(error);
+        log.error({ err: error }, 'next-intl error');
       },
     }),
   };

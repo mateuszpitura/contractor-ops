@@ -17,12 +17,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useRouter } from '@/i18n/navigation';
 import { cn } from '@/lib/utils';
 import { trpc } from '@/trpc/init';
@@ -89,24 +84,21 @@ export function IntakeDetailActionsBar({
           router.push(`/invoices/${converted.invoiceId}`);
         }
       },
-      onError: err =>
-        toast.error(err instanceof Error ? err.message : t('errorGeneric')),
+      onError: err => toast.error(err instanceof Error ? err.message : t('errorGeneric')),
     }),
   );
 
   const confirmMatchMutation = useMutation(
     trpc.invoiceIntake.confirmMatch.mutationOptions({
       onSuccess: () => invalidateBoth(),
-      onError: err =>
-        toast.error(err instanceof Error ? err.message : t('errorGeneric')),
+      onError: err => toast.error(err instanceof Error ? err.message : t('errorGeneric')),
     }),
   );
 
   const acknowledgeMutation = useMutation(
     trpc.invoiceIntake.acknowledgeValidation.mutationOptions({
       onSuccess: () => invalidateBoth(),
-      onError: err =>
-        toast.error(err instanceof Error ? err.message : t('errorGeneric')),
+      onError: err => toast.error(err instanceof Error ? err.message : t('errorGeneric')),
     }),
   );
 
@@ -117,8 +109,7 @@ export function IntakeDetailActionsBar({
         setRejectOpen(false);
         setRejectReason('');
       },
-      onError: err =>
-        toast.error(err instanceof Error ? err.message : t('errorGeneric')),
+      onError: err => toast.error(err instanceof Error ? err.message : t('errorGeneric')),
     }),
   );
 
@@ -126,8 +117,7 @@ export function IntakeDetailActionsBar({
     (validationStatus === 'WARNINGS' || validationStatus === 'INVALID') &&
     !validationAcknowledgedAt;
 
-  const canConvert =
-    status === 'MATCHED' && !needsValidationAck && !convertMutation.isPending;
+  const canConvert = status === 'MATCHED' && !needsValidationAck && !convertMutation.isPending;
 
   let convertTooltip: string | null = null;
   if (status !== 'MATCHED') convertTooltip = t('tooltipConvertDisabledNeedsMatch');

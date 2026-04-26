@@ -1,5 +1,8 @@
 import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 import { prisma } from '@contractor-ops/db';
+import { createLogger } from '@contractor-ops/logger';
+
+const log = createLogger({ service: 'api-key-service' });
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -159,7 +162,7 @@ export function touchLastUsed(keyId: string): void {
       data: { lastUsedAt: new Date() },
     })
     .catch(err => {
-      console.error('[api-key] Failed to update lastUsedAt:', keyId, err);
+      log.error({ err, keyId }, 'failed to update lastUsedAt');
     });
 }
 

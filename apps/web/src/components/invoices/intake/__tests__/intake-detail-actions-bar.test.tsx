@@ -8,9 +8,8 @@ const mutationCalls: Record<string, ReturnType<typeof vi.fn>> = {
 };
 
 vi.mock('@tanstack/react-query', async () => {
-  const actual = await vi.importActual<typeof import('@tanstack/react-query')>(
-    '@tanstack/react-query',
-  );
+  const actual =
+    await vi.importActual<typeof import('@tanstack/react-query')>('@tanstack/react-query');
   let mutationCallCount = 0;
   const mutationKeys = ['convert', 'confirmMatch', 'acknowledge', 'reject'] as const;
   return {
@@ -102,7 +101,9 @@ describe('IntakeDetailActionsBar', () => {
       />,
     );
     await user.click(screen.getByTestId('intake-reject-trigger'));
-    await waitFor(() => expect(screen.getByTestId('intake-reject-reason-input')).toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.getByTestId('intake-reject-reason-input')).toBeInTheDocument(),
+    );
     // The textarea is the first focusable inside the dialog — destructive
     // button is NOT auto-focused per UI-SPEC § Accessibility.
     const textarea = screen.getByTestId('intake-reject-reason-input');

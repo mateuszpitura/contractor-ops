@@ -171,13 +171,7 @@ function formatDate(d: Date): string {
   return d.toISOString().slice(0, 10);
 }
 
-function renderPageNumber({
-  pageNumber,
-  totalPages,
-}: {
-  pageNumber: number;
-  totalPages: number;
-}) {
+function renderPageNumber({ pageNumber, totalPages }: { pageNumber: number; totalPages: number }) {
   return `${pageNumber} / ${totalPages}`;
 }
 

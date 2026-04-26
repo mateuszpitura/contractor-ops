@@ -1,10 +1,8 @@
 import type { AnchorHTMLAttributes } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@/test/test-utils';
-import {
-  EInvoiceStatusCell,
-  type EInvoiceComplianceStatus,
-} from '../einvoice-status-cell';
+import type { EInvoiceComplianceStatus } from '../einvoice-status-cell';
+import { EInvoiceStatusCell } from '../einvoice-status-cell';
 
 // Stub the next-intl `Link` to avoid loading next/navigation at module-init.
 vi.mock('@/i18n/navigation', () => ({

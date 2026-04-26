@@ -1,8 +1,12 @@
+import type { EntityType, Prisma } from '@contractor-ops/db/generated/prisma/client';
 import { GoogleCalendarAdapter } from '@contractor-ops/integrations/adapters/google-calendar-adapter';
 import { OutlookCalendarAdapter } from '@contractor-ops/integrations/adapters/outlook-calendar-adapter';
 import { decryptCredentials } from '@contractor-ops/integrations/services/credential-service';
+import { createLogger } from '@contractor-ops/logger';
 import type { CalendarEventMetadata } from '@contractor-ops/validators';
 import type { DbClient } from './types.js';
+
+const log = createLogger({ service: 'calendar-event-service' });
 
 type PrismaClient = DbClient;
 
@@ -33,7 +37,7 @@ interface CalendarConnection {
 interface CreateCalendarEventInput {
   organizationId: string;
   userId?: string;
-  entityType: string;
+  entityType: EntityType;
   entityId: string;
   summary: string;
   description?: string;
@@ -44,7 +48,7 @@ interface CreateCalendarEventInput {
 
 interface UpdateCalendarEventInput {
   organizationId: string;
-  entityType: string;
+  entityType: EntityType;
   entityId: string;
   summary?: string;
   description?: string;
@@ -54,7 +58,7 @@ interface UpdateCalendarEventInput {
 
 interface DeleteCalendarEventInput {
   organizationId: string;
-  entityType: string;
+  entityType: EntityType;
   entityId: string;
 }
 
@@ -135,7 +139,7 @@ export async function createCalendarEvent(
 
     logRejected(results, 'create');
   } catch (error) {
-    console.error('[calendar-event-service] Unexpected error in createCalendarEvent:', error);
+    log.error({ err: error }, 'unexpected error in createCalendarEvent');
   }
 }
 
@@ -231,7 +235,7 @@ export async function updateCalendarEvent(
 
     logRejected(results, 'update');
   } catch (error) {
-    console.error('[calendar-event-service] Unexpected error in updateCalendarEvent:', error);
+    log.error({ err: error }, 'unexpected error in updateCalendarEvent');
   }
 }
 
@@ -255,7 +259,7 @@ export async function deleteCalendarEvent(
 
     logRejected(results, 'delete');
   } catch (error) {
-    console.error('[calendar-event-service] Unexpected error in deleteCalendarEvent:', error);
+    log.error({ err: error }, 'unexpected error in deleteCalendarEvent');
   }
 }
 
@@ -267,7 +271,7 @@ interface CalendarExternalLink {
   id: string;
   externalId: string;
   externalType: string;
-  metadataJson: Record<string, unknown> | null;
+  metadataJson: Prisma.JsonValue | null;
   integrationConnection: {
     id: string;
     provider: string;
@@ -278,8 +282,8 @@ interface CalendarExternalLink {
 
 async function findCalendarExternalLinks(
   prisma: PrismaClient,
-  input: { organizationId: string; entityType: string; entityId: string },
-): Promise<CalendarExternalLink[]> {
+  input: { organizationId: string; entityType: EntityType; entityId: string },
+) {
   return prisma.externalLink.findMany({
     where: {
       organizationId: input.organizationId,
@@ -389,7 +393,7 @@ async function deleteEventForLink(prisma: PrismaClient, link: CalendarExternalLi
       }
     }
   } catch (deleteError) {
-    console.error('[calendar-event-service] Failed to delete provider event:', deleteError);
+    log.error({ err: deleteError }, 'failed to delete provider event');
   }
 
   // Always clean up the ExternalLink
@@ -405,10 +409,7 @@ async function deleteEventForLink(prisma: PrismaClient, link: CalendarExternalLi
 function logRejected(results: PromiseSettledResult<unknown>[], operation: string): void {
   for (const result of results) {
     if (result.status === 'rejected') {
-      console.error(
-        `[calendar-event-service] Failed to ${operation} calendar event:`,
-        result.reason,
-      );
+      log.error({ err: result.reason, operation }, 'failed to process calendar event');
     }
   }
 }

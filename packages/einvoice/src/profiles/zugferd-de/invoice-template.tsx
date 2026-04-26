@@ -18,15 +18,7 @@
 
 import { fileURLToPath } from 'node:url';
 
-import {
-  Document,
-  Font,
-  Page,
-  StyleSheet,
-  Text,
-  View,
-  renderToBuffer,
-} from '@react-pdf/renderer';
+import { Document, Font, Page, renderToBuffer, StyleSheet, Text, View } from '@react-pdf/renderer';
 
 import type { EInvoice, EInvoiceLine, EInvoiceTaxSubtotal } from '../../types/invoice.js';
 
@@ -40,12 +32,8 @@ import type { EInvoice, EInvoiceLine, EInvoiceTaxSubtotal } from '../../types/in
 // font bytes in module scope.
 // ---------------------------------------------------------------------------
 
-const FONT_REG_PATH = fileURLToPath(
-  new URL('./assets/NotoSans-Regular.ttf', import.meta.url),
-);
-const FONT_BOLD_PATH = fileURLToPath(
-  new URL('./assets/NotoSans-Bold.ttf', import.meta.url),
-);
+const FONT_REG_PATH = fileURLToPath(new URL('./assets/NotoSans-Regular.ttf', import.meta.url));
+const FONT_BOLD_PATH = fileURLToPath(new URL('./assets/NotoSans-Bold.ttf', import.meta.url));
 
 Font.register({
   family: 'Noto Sans',
@@ -65,8 +53,7 @@ Font.register({
 
 const LOCKED_KLEINUNTERNEHMER_NOTICE =
   'Gemäß § 19 UStG wird keine Umsatzsteuer ausgewiesen' as const;
-const LOCKED_REVERSE_CHARGE_NOTICE =
-  'Steuerschuldnerschaft des Leistungsempfängers' as const;
+const LOCKED_REVERSE_CHARGE_NOTICE = 'Steuerschuldnerschaft des Leistungsempfängers' as const;
 
 // ---------------------------------------------------------------------------
 // Styles
@@ -247,20 +234,12 @@ function PartyBlock({ label, party, leitwegId }: PartyProps) {
       {party.address ? <Text style={styles.partyLine}>{party.address}</Text> : null}
       {party.country ? <Text style={styles.partyLine}>{party.country}</Text> : null}
       <Text style={styles.partyLine}>VAT ID: {party.id}</Text>
-      {leitwegId ? (
-        <Text style={styles.partyLine}>Leitweg-ID: {leitwegId}</Text>
-      ) : null}
+      {leitwegId ? <Text style={styles.partyLine}>Leitweg-ID: {leitwegId}</Text> : null}
     </View>
   );
 }
 
-function LineItemsTable({
-  lines,
-  currency,
-}: {
-  lines: EInvoiceLine[];
-  currency: string;
-}) {
+function LineItemsTable({ lines, currency }: { lines: EInvoiceLine[]; currency: string }) {
   return (
     <View style={styles.table}>
       <View style={[styles.row, styles.headerRow]}>
@@ -274,49 +253,35 @@ function LineItemsTable({
         <View key={line.lineNumber} style={styles.row}>
           <Text style={styles.cellDesc}>{line.description}</Text>
           <Text style={styles.cellQty}>{fmtQty(line.quantity)}</Text>
-          <Text style={styles.cellUnit}>
-            {fmtMinor(line.unitPriceMinor, currency)}
-          </Text>
+          <Text style={styles.cellUnit}>{fmtMinor(line.unitPriceMinor, currency)}</Text>
           <Text style={styles.cellVat}>{fmtVatRate(line.vatRate)}</Text>
-          <Text style={styles.cellNet}>
-            {fmtMinor(line.netAmountMinor, currency)}
-          </Text>
+          <Text style={styles.cellNet}>{fmtMinor(line.netAmountMinor, currency)}</Text>
         </View>
       ))}
     </View>
   );
 }
 
-function TotalsBlock({
-  invoice,
-}: {
-  invoice: EInvoice;
-}) {
+function TotalsBlock({ invoice }: { invoice: EInvoice }) {
   const { currencyCode, taxExclusiveAmount, taxInclusiveAmount } = invoice;
   return (
     <View style={styles.totals}>
       <View style={styles.totalRow}>
         <Text style={styles.totalLabel}>Net subtotal</Text>
-        <Text style={styles.totalValue}>
-          {fmtMinor(taxExclusiveAmount, currencyCode)}
-        </Text>
+        <Text style={styles.totalValue}>{fmtMinor(taxExclusiveAmount, currencyCode)}</Text>
       </View>
       {invoice.taxBreakdown.map((t: EInvoiceTaxSubtotal) => (
         <View key={t.taxCategory + '-' + (t.percent ?? 'x')} style={styles.totalRow}>
           <Text style={styles.totalLabel}>
             VAT {t.taxCategory}
-            {t.percent !== undefined ? ` (${t.percent}%)` : ''}
+            {t.percent === undefined ? '' : ` (${t.percent}%)`}
           </Text>
-          <Text style={styles.totalValue}>
-            {fmtMinor(t.taxAmountMinor, currencyCode)}
-          </Text>
+          <Text style={styles.totalValue}>{fmtMinor(t.taxAmountMinor, currencyCode)}</Text>
         </View>
       ))}
       <View style={styles.grossRow}>
         <Text style={styles.grossLabel}>Gross total</Text>
-        <Text style={styles.grossValue}>
-          {fmtMinor(taxInclusiveAmount, currencyCode)}
-        </Text>
+        <Text style={styles.grossValue}>{fmtMinor(taxInclusiveAmount, currencyCode)}</Text>
       </View>
     </View>
   );
@@ -339,8 +304,7 @@ export function InvoiceDocument({ invoice }: InvoiceTemplateProps) {
       title={`Invoice ${invoice.id}`}
       producer="@contractor-ops/einvoice 5.0"
       creator="@contractor-ops/einvoice 5.0"
-      language="de"
-    >
+      language="de">
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
           <Text style={styles.title}>Invoice {invoice.id}</Text>
@@ -384,14 +348,11 @@ export function InvoiceDocument({ invoice }: InvoiceTemplateProps) {
           <View style={styles.footer}>
             <Text style={styles.footerLabel}>Payment</Text>
             {invoice.paymentMeans.dueDate ? (
-              <Text style={styles.footerNote}>
-                Due by {invoice.paymentMeans.dueDate}
-              </Text>
+              <Text style={styles.footerNote}>Due by {invoice.paymentMeans.dueDate}</Text>
             ) : null}
             {invoice.paymentMeans.bankAccount ? (
               <Text style={styles.footerNote}>
-                Bank: {invoice.paymentMeans.bankName ?? ''} ·{' '}
-                {invoice.paymentMeans.bankAccount}
+                Bank: {invoice.paymentMeans.bankName ?? ''} · {invoice.paymentMeans.bankAccount}
               </Text>
             ) : null}
             {invoice.paymentMeans.paymentReference ? (
@@ -402,9 +363,7 @@ export function InvoiceDocument({ invoice }: InvoiceTemplateProps) {
           </View>
         ) : null}
 
-        {klein ? (
-          <Text style={styles.statutoryNote}>{LOCKED_KLEINUNTERNEHMER_NOTICE}.</Text>
-        ) : null}
+        {klein ? <Text style={styles.statutoryNote}>{LOCKED_KLEINUNTERNEHMER_NOTICE}.</Text> : null}
         {reverseCharge ? (
           <Text style={styles.statutoryNote}>{LOCKED_REVERSE_CHARGE_NOTICE}.</Text>
         ) : null}

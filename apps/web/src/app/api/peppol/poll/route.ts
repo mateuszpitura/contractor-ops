@@ -2,9 +2,17 @@ import { PeppolOrchestrator } from '@contractor-ops/api/services/peppol-orchestr
 import { prisma } from '@contractor-ops/db';
 import { StorecoveAdapter } from '@contractor-ops/einvoice';
 import { getCredentials } from '@contractor-ops/integrations';
+import { createCronLogger } from '@contractor-ops/logger';
 import { verifySignatureAppRouter } from '@upstash/qstash/nextjs';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
+
+const log = createCronLogger('peppol-poll');
+
+const peppolPollBodySchema = z.object({
+  organizationId: z.string().min(1).optional(),
+});
 
 // ---------------------------------------------------------------------------
 // POST /api/peppol/poll
@@ -42,7 +50,7 @@ async function pollParticipant(
 
     return { organizationId, processed };
   } catch (error) {
-    console.error(`[peppol/poll] Failed for org ${organizationId}:`, error);
+    log.error({ err: error, organizationId }, 'poll failed for org');
 
     await recordPollError(organizationId, error);
     return null;
@@ -77,8 +85,12 @@ async function recordPollError(organizationId: string, error: unknown): Promise<
  * Catches missed webhooks by polling the Storecove API directly.
  */
 async function handler(request: NextRequest) {
-  const body = await request.json();
-  const { organizationId } = body as { organizationId?: string };
+  const rawBody = await request.json().catch(() => ({}));
+  const parsed = peppolPollBodySchema.safeParse(rawBody);
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Invalid body' }, { status: 400 });
+  }
+  const { organizationId } = parsed.data;
 
   try {
     // If a specific org is provided, poll just that one.
@@ -108,7 +120,7 @@ async function handler(request: NextRequest) {
       results,
     });
   } catch (error) {
-    console.error('[peppol/poll] Global poll failure:', error);
+    log.error({ err: error }, 'global poll failure');
     return NextResponse.json({ error: 'Poll failed' }, { status: 500 });
   }
 }

@@ -34,8 +34,11 @@ describe('canViewSensitivePii', () => {
     for (const role of [
       'owner',
       'admin',
+      'admin',
+      'finance_admin',
       'finance_admin',
       'ops_manager',
+      'external_accountant',
       'external_accountant',
     ] as const) {
       expect(canViewSensitivePii(role)).toBe(true);

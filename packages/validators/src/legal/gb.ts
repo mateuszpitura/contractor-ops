@@ -18,8 +18,7 @@ export const LPCDA_CLAIM_FOOTER =
 export const LPCDA_STATUTORY_RATE_LABEL =
   'Bank of England base rate plus 8 percentage points' as const;
 
-export const LPCDA_COMPENSATION_LABEL =
-  'Fixed sum compensation under Section 5A' as const;
+export const LPCDA_COMPENSATION_LABEL = 'Fixed sum compensation under Section 5A' as const;
 
 export const LPCDA_SECTION_REF =
   'Late Payment of Commercial Debts (Interest) Act 1998, Sections 3, 4, and 5A' as const;

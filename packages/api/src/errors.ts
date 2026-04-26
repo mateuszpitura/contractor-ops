@@ -37,6 +37,8 @@ export const INVOICE_CONTRACTOR_NOT_FOUND = 'invoiceContractorNotFound';
 export const INVOICE_CONTRACT_NOT_FOUND = 'invoiceContractNotFound';
 export const INVOICE_ALREADY_PENDING = 'invoiceAlreadyPending';
 export const INVOICE_DUPLICATE = 'invoiceDuplicate';
+export const INVOICE_ALREADY_VOIDED = 'invoiceAlreadyVoided';
+export const INVOICE_VOID_NOT_ALLOWED = 'invoiceVoidNotAllowed';
 
 // ─── Payment ─────────────────────────────────────────────────────
 export const PAYMENT_RUN_NOT_FOUND = 'paymentRunNotFound';

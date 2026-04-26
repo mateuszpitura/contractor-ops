@@ -42,24 +42,19 @@ const { mockPrisma, triggers, mockHasPermission } = vi.hoisted(() => {
         const where = args?.where ?? {};
         return (
           Array.from(triggers.values()).find(t => {
-            if (
-              'organizationId' in where &&
-              where.organizationId !== t.organizationId
-            )
+            if ('organizationId' in where && where.organizationId !== t.organizationId)
               return false;
             if ('id' in where && where.id !== t.id) return false;
             return true;
           }) ?? null
         );
       }),
-      update: vi.fn(
-        async (args: { where: { id: string }; data: Partial<TriggerRow> }) => {
-          const row = triggers.get(args.where.id);
-          if (!row) throw new Error('not found');
-          Object.assign(row, args.data);
-          return row;
-        },
-      ),
+      update: vi.fn(async (args: { where: { id: string }; data: Partial<TriggerRow> }) => {
+        const row = triggers.get(args.where.id);
+        if (!row) throw new Error('not found');
+        Object.assign(row, args.data);
+        return row;
+      }),
     },
     organization: {
       findUnique: vi.fn(async () => ({ dataRegion: 'EU' })),
@@ -151,9 +146,7 @@ function seed() {
     contractorAssignmentId: ASSIGN_A,
     priorAssessmentId: 'assess-1',
     status: 'OPEN',
-    triggerReasons: [
-      { field: 'activeTo', auditLogId: 'aud-1', resourceType: 'CONTRACTOR' },
-    ],
+    triggerReasons: [{ field: 'activeTo', auditLogId: 'aud-1', resourceType: 'CONTRACTOR' }],
     dismissedReason: null,
   });
   triggers.set('rt-2', {
@@ -183,9 +176,7 @@ describe('reassessmentTrigger.list (60-02-07)', () => {
   it('is rejected with FORBIDDEN when contractor:read is denied', async () => {
     mockHasPermission.mockResolvedValue({ success: false });
     const caller = makeCaller(ORG_A);
-    await expect(caller.reassessmentTrigger.list({ limit: 50 })).rejects.toBeInstanceOf(
-      TRPCError,
-    );
+    await expect(caller.reassessmentTrigger.list({ limit: 50 })).rejects.toBeInstanceOf(TRPCError);
   });
 });
 

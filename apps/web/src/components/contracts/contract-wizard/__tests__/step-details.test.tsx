@@ -38,7 +38,7 @@ vi.mock('@tanstack/react-query', async () => {
 });
 
 vi.mock('@/hooks/use-permissions', () => ({
-  usePermissions: () => ({ role: 'ADMIN' }),
+  usePermissions: () => ({ role: 'admin' }),
 }));
 
 vi.mock('@/lib/mask-pii', () => ({

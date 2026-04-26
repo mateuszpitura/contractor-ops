@@ -43,7 +43,7 @@ describe('createAxiomStream', () => {
       const stream = createAxiomStream(opts);
       const payload = { level: 'info', msg: 'hello' };
 
-      stream.write(JSON.stringify(payload), (err) => {
+      stream.write(JSON.stringify(payload), err => {
         try {
           expect(err).toBeFalsy();
           expect(mockIngest).toHaveBeenCalledOnce();
@@ -60,7 +60,7 @@ describe('createAxiomStream', () => {
       const stream = createAxiomStream(opts);
       const payload = { level: 'warn', msg: 'buffer test' };
 
-      stream.write(Buffer.from(JSON.stringify(payload)), (err) => {
+      stream.write(Buffer.from(JSON.stringify(payload)), err => {
         try {
           expect(err).toBeFalsy();
           expect(mockIngest).toHaveBeenCalledWith('test-dataset', [payload]);
@@ -76,7 +76,7 @@ describe('createAxiomStream', () => {
     new Promise<void>((resolve, reject) => {
       const stream = createAxiomStream(opts);
 
-      stream.write('not-valid-json', (err) => {
+      stream.write('not-valid-json', err => {
         try {
           expect(err).toBeFalsy();
           expect(mockIngest).not.toHaveBeenCalled();
@@ -95,7 +95,7 @@ describe('createAxiomStream', () => {
 
       const stream = createAxiomStream(opts);
 
-      stream.write(JSON.stringify({ msg: 'boom' }), (err) => {
+      stream.write(JSON.stringify({ msg: 'boom' }), err => {
         try {
           expect(err).toBeFalsy();
           resolve();

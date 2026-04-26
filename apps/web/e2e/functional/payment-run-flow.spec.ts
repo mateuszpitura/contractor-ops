@@ -23,11 +23,7 @@ test.describe('Payment run flow', () => {
       .locator('button')
       .filter({ hasText: /create payment|new payment|add payment|start payment/i })
       .first()
-      .or(
-        page
-          .getByRole('button', { name: /create|new|add/i })
-          .first(),
-      );
+      .or(page.getByRole('button', { name: /create|new|add/i }).first());
 
     await expect(createButton).toBeVisible({ timeout: 15_000 });
     await expect(createButton).toBeEnabled();
@@ -38,11 +34,7 @@ test.describe('Payment run flow', () => {
       .locator('button')
       .filter({ hasText: /create payment|new payment|add payment|start payment/i })
       .first()
-      .or(
-        page
-          .getByRole('button', { name: /create|new|add/i })
-          .first(),
-      );
+      .or(page.getByRole('button', { name: /create|new|add/i }).first());
 
     const buttonVisible = await createButton.isVisible({ timeout: 15_000 }).catch(() => false);
     test.skip(!buttonVisible, 'No create button visible — skipping wizard test');
@@ -65,11 +57,7 @@ test.describe('Payment run flow', () => {
       .locator('button')
       .filter({ hasText: /create payment|new payment|add payment|start payment/i })
       .first()
-      .or(
-        page
-          .getByRole('button', { name: /create|new|add/i })
-          .first(),
-      );
+      .or(page.getByRole('button', { name: /create|new|add/i }).first());
 
     const buttonVisible = await createButton.isVisible({ timeout: 15_000 }).catch(() => false);
     test.skip(!buttonVisible, 'No create button visible — skipping selection step test');
@@ -115,11 +103,7 @@ test.describe('Payment run flow', () => {
       .locator('button')
       .filter({ hasText: /create payment|new payment|add payment|start payment/i })
       .first()
-      .or(
-        page
-          .getByRole('button', { name: /create|new|add/i })
-          .first(),
-      );
+      .or(page.getByRole('button', { name: /create|new|add/i }).first());
 
     const buttonVisible = await createButton.isVisible({ timeout: 15_000 }).catch(() => false);
     test.skip(!buttonVisible, 'No create button visible — skipping payment method test');
@@ -161,11 +145,7 @@ test.describe('Payment run flow', () => {
       .locator('button')
       .filter({ hasText: /create payment|new payment|add payment|start payment/i })
       .first()
-      .or(
-        page
-          .getByRole('button', { name: /create|new|add/i })
-          .first(),
-      );
+      .or(page.getByRole('button', { name: /create|new|add/i }).first());
 
     const buttonVisible = await createButton.isVisible({ timeout: 15_000 }).catch(() => false);
     test.skip(!buttonVisible, 'No create button visible — skipping cancel test');
@@ -185,11 +165,7 @@ test.describe('Payment run flow', () => {
         .locator('button')
         .filter({ hasText: /cancel|close|back/i })
         .first()
-        .or(
-          dialog
-            .locator('button[aria-label*="close"], button[aria-label*="Close"]')
-            .first(),
-        );
+        .or(dialog.locator('button[aria-label*="close"], button[aria-label*="Close"]').first());
 
       const cancelVisible = await cancelButton.isVisible({ timeout: 5_000 }).catch(() => false);
 
@@ -220,9 +196,7 @@ test.describe('Payment run flow', () => {
     // Look for status badges within the table
     const badge = page
       .locator('table tbody')
-      .locator(
-        '[class*="badge"], [class*="pill"], [class*="status"], [data-testid*="status"]',
-      )
+      .locator('[class*="badge"], [class*="pill"], [class*="status"], [data-testid*="status"]')
       .first()
       .or(
         page

@@ -7,8 +7,11 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { encryptToken, syncWorkspaceUsers } from '@contractor-ops/api/services/slack-client';
 import { prisma } from '@contractor-ops/db';
+import { createLogger } from '@contractor-ops/logger';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+
+const log = createLogger({ service: 'slack-oauth' });
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -77,7 +80,7 @@ export async function GET(request: NextRequest) {
     // Verify HMAC-signed state (CSRF protection per pitfall 6)
     const state = verifyState(stateParam);
     if (!state) {
-      console.error('[slack-oauth] Invalid or expired state parameter');
+      log.error('invalid or expired state parameter');
       return NextResponse.redirect(settingsUrl('error'));
     }
 
@@ -85,7 +88,7 @@ export async function GET(request: NextRequest) {
     const clientId = process.env.SLACK_CLIENT_ID;
     const clientSecret = process.env.SLACK_CLIENT_SECRET;
     if (!(clientId && clientSecret)) {
-      console.error('[slack-oauth] Missing SLACK_CLIENT_ID or SLACK_CLIENT_SECRET');
+      log.error('missing slack_client_id or slack_client_secret');
       return NextResponse.redirect(settingsUrl('error'));
     }
 
@@ -108,7 +111,7 @@ export async function GET(request: NextRequest) {
     };
 
     if (!(data.ok && data.access_token)) {
-      console.error('[slack-oauth] Token exchange failed:', data.error);
+      log.error({ error: data.error }, 'token exchange failed');
       return NextResponse.redirect(settingsUrl('error'));
     }
 
@@ -161,12 +164,12 @@ export async function GET(request: NextRequest) {
     try {
       const _syncResult = await syncWorkspaceUsers(state.orgId, connectionId);
     } catch (syncError) {
-      console.error('[slack-oauth] User sync failed (non-blocking):', syncError);
+      log.error({ err: syncError }, 'user sync failed (non-blocking)');
     }
 
     return NextResponse.redirect(settingsUrl('connected'));
   } catch (error) {
-    console.error('[slack-oauth] Unexpected error:', error);
+    log.error({ err: error }, 'unexpected error');
     return NextResponse.redirect(settingsUrl('error'));
   }
 }

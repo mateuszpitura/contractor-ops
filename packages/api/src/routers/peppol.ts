@@ -1,6 +1,7 @@
 import type { IntegrationConnection } from '@contractor-ops/db/generated/prisma/client';
 import { storeCredentials } from '@contractor-ops/integrations';
 import { getQStashClient } from '@contractor-ops/integrations/services/qstash-client';
+import { createLogger } from '@contractor-ops/logger';
 import {
   connectPeppolSchema,
   getServerEnv,
@@ -12,21 +13,17 @@ import {
 import { TRPCError } from '@trpc/server';
 import * as E from '../errors.js';
 import { router } from '../init.js';
+import { plain } from '../lib/plain.js';
 import { requirePermission } from '../middleware/rbac.js';
 import { tenantProcedure } from '../middleware/tenant.js';
 import { buildStorecoveAdapterForOrg } from '../services/peppol-adapter-factory.js';
-import {
-  getCapabilitiesWithCache,
-  supportsXRechnungCii,
-} from '../services/peppol-capability.js';
+import { getCapabilitiesWithCache, supportsXRechnungCii } from '../services/peppol-capability.js';
+
+const log = createLogger({ service: 'peppol-router' });
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-function plain<T>(data: T): T {
-  return JSON.parse(JSON.stringify(data)) as T;
-}
 
 // ---------------------------------------------------------------------------
 // Peppol Router
@@ -42,6 +39,11 @@ export const peppolRouter = router({
     .use(requirePermission({ settings: ['update'] }))
     .input(connectPeppolSchema)
     .mutation(async ({ ctx, input }) => {
+      const connectedByUserId = ctx.user?.id;
+      if (!connectedByUserId) {
+        throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Authentication required' });
+      }
+
       const participantId = `0192:${input.trn}`;
 
       // Check if already connected
@@ -91,7 +93,7 @@ export const peppolRouter = router({
               environment: input.environment,
             },
             credentialsRef,
-            connectedByUserId: ctx.user?.id,
+            connectedByUserId,
             connectedAt: new Date(),
           },
         });
@@ -106,7 +108,7 @@ export const peppolRouter = router({
               environment: input.environment,
             },
             credentialsRef,
-            connectedByUserId: ctx.user?.id,
+            connectedByUserId,
           },
         });
       }
@@ -146,7 +148,7 @@ export const peppolRouter = router({
           },
         });
       } catch (error) {
-        console.error('[peppol.connect] Failed to create QStash schedule:', error);
+        log.error({ err: error }, 'failed to create qstash schedule');
         // Don't fail the connection — schedule can be retried
       }
 
@@ -198,7 +200,7 @@ export const peppolRouter = router({
             const qstash = getQStashClient();
             await qstash.schedules.delete(scheduleId);
           } catch (error) {
-            console.error('[peppol.disconnect] Failed to delete QStash schedule:', error);
+            log.error({ err: error }, 'failed to delete qstash schedule');
           }
         }
 
@@ -429,10 +431,7 @@ export const peppolRouter = router({
     .use(requirePermission({ settings: ['read'] }))
     .input(peppolLookupCapabilitiesSchema)
     .query(async ({ ctx, input }) => {
-      const adapter = await buildStorecoveAdapterForOrg(
-        ctx.db as never,
-        ctx.organizationId,
-      );
+      const adapter = await buildStorecoveAdapterForOrg(ctx.db as never, ctx.organizationId);
       if (!adapter) {
         throw new TRPCError({
           code: 'PRECONDITION_FAILED',

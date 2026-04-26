@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { describe, expect, it, vi } from 'vitest';
-import { setup, render, screen } from '@/test/test-utils';
+import { render, screen, setup } from '@/test/test-utils';
 
 import { EInvoiceComplianceSummaryTile } from '../einvoice-compliance-summary-tile';
 
@@ -48,9 +48,7 @@ describe('EInvoiceComplianceSummaryTile', () => {
     render(<EInvoiceComplianceSummaryTile />);
 
     expect(screen.getByTestId('einvoice-compliance-kpi')).toHaveTextContent('84%');
-    expect(
-      screen.getByText(/84 of 100 invoices are EN 16931 compliant\./),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/84 of 100 invoices are EN 16931 compliant\./)).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Review/ })).not.toBeInTheDocument();
   });
 
@@ -69,9 +67,7 @@ describe('EInvoiceComplianceSummaryTile', () => {
     } as ReturnType<typeof useQuery>);
 
     const onReview = vi.fn();
-    const { user } = setup(
-      <EInvoiceComplianceSummaryTile onReviewFilterRequested={onReview} />,
-    );
+    const { user } = setup(<EInvoiceComplianceSummaryTile onReviewFilterRequested={onReview} />);
 
     const reviewBtn = screen.getByRole('button', { name: 'Review 30 invoice(s)' });
     await user.click(reviewBtn);

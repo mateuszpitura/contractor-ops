@@ -209,7 +209,8 @@ describe('publicContractorRouter', () => {
       expect(result.page).toBe(1);
       expect(result.pageSize).toBe(25);
 
-      const whereArg = (mockDb.contractor.findMany as ReturnType<typeof vi.fn>).mock.calls[0]?.[0].where;
+      const whereArg = (mockDb.contractor.findMany as ReturnType<typeof vi.fn>).mock.calls[0]?.[0]
+        .where;
       expect(whereArg).toMatchObject({ organizationId: ORG_ID, deletedAt: null });
     });
 
@@ -220,7 +221,8 @@ describe('publicContractorRouter', () => {
       const caller = makeCaller();
       await caller.list({ status: 'INACTIVE' });
 
-      const whereArg = (mockDb.contractor.findMany as ReturnType<typeof vi.fn>).mock.calls[0]?.[0].where;
+      const whereArg = (mockDb.contractor.findMany as ReturnType<typeof vi.fn>).mock.calls[0]?.[0]
+        .where;
       expect(whereArg).toMatchObject({ organizationId: ORG_ID, status: 'INACTIVE' });
     });
 
@@ -231,7 +233,8 @@ describe('publicContractorRouter', () => {
       const caller = makeCaller();
       await caller.list({ lifecycleStage: 'ONBOARDING' });
 
-      const whereArg = (mockDb.contractor.findMany as ReturnType<typeof vi.fn>).mock.calls[0]?.[0].where;
+      const whereArg = (mockDb.contractor.findMany as ReturnType<typeof vi.fn>).mock.calls[0]?.[0]
+        .where;
       expect(whereArg).toMatchObject({ organizationId: ORG_ID, lifecycleStage: 'ONBOARDING' });
     });
 
@@ -242,7 +245,8 @@ describe('publicContractorRouter', () => {
       const caller = makeCaller();
       await caller.list({});
 
-      const whereArg = (mockDb.contractor.findMany as ReturnType<typeof vi.fn>).mock.calls[0]?.[0].where;
+      const whereArg = (mockDb.contractor.findMany as ReturnType<typeof vi.fn>).mock.calls[0]?.[0]
+        .where;
       expect(whereArg).toMatchObject({ deletedAt: null });
     });
 
@@ -279,8 +283,13 @@ describe('publicContractorRouter', () => {
       expect(result.id).toBe(CONTRACTOR_ID);
       expect(result.legalName).toBe('Kowalski Jan');
 
-      const whereArg = (mockDb.contractor.findFirst as ReturnType<typeof vi.fn>).mock.calls[0]?.[0].where;
-      expect(whereArg).toMatchObject({ id: CONTRACTOR_ID, organizationId: ORG_ID, deletedAt: null });
+      const whereArg = (mockDb.contractor.findFirst as ReturnType<typeof vi.fn>).mock.calls[0]?.[0]
+        .where;
+      expect(whereArg).toMatchObject({
+        id: CONTRACTOR_ID,
+        organizationId: ORG_ID,
+        deletedAt: null,
+      });
     });
 
     it('throws NOT_FOUND when contractor belongs to a different org', async () => {
@@ -292,7 +301,8 @@ describe('publicContractorRouter', () => {
         message: 'contractorNotFound',
       });
 
-      const whereArg = (mockDb.contractor.findFirst as ReturnType<typeof vi.fn>).mock.calls[0]?.[0].where;
+      const whereArg = (mockDb.contractor.findFirst as ReturnType<typeof vi.fn>).mock.calls[0]?.[0]
+        .where;
       expect(whereArg.organizationId).toBe(ORG_ID);
       expect(whereArg.organizationId).not.toBe(OTHER_ORG_ID);
     });
@@ -310,7 +320,7 @@ describe('publicContractorRouter', () => {
       mockDb.contractor.findFirst.mockResolvedValueOnce(makeContractor());
 
       const caller = makeCaller();
-      const result = await caller.getById({ id: CONTRACTOR_ID }) as Record<string, unknown>;
+      const result = (await caller.getById({ id: CONTRACTOR_ID })) as Record<string, unknown>;
 
       expect(result).not.toHaveProperty('organizationId');
       expect(result).not.toHaveProperty('deletedAt');
@@ -318,7 +328,9 @@ describe('publicContractorRouter', () => {
 
     it('rejects caller without contractor:read scope', async () => {
       const caller = makeCaller(['contract:read']);
-      await expect(caller.getById({ id: CONTRACTOR_ID })).rejects.toMatchObject({ code: 'FORBIDDEN' });
+      await expect(caller.getById({ id: CONTRACTOR_ID })).rejects.toMatchObject({
+        code: 'FORBIDDEN',
+      });
     });
   });
 });

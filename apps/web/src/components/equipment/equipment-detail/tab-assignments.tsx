@@ -27,8 +27,9 @@ interface Assignment {
     displayName: string | null;
   };
   assignedByUserId: string;
-  assignedAt: string;
-  unassignedAt: string | null;
+  /** ISO string (JSON) or `Date` when passed from tRPC + superjson */
+  assignedAt: string | Date;
+  unassignedAt: string | Date | null;
   unassignedByUserId: string | null;
   notes: string | null;
 }

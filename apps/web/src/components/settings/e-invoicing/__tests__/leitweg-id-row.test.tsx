@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { render, screen } from '@/test/test-utils';
-
-import { LeitwegIdRow, type LeitwegIdRowData } from '../leitweg-id-row';
+import type { LeitwegIdRowData } from '../leitweg-id-row';
+import { LeitwegIdRow } from '../leitweg-id-row';
 
 vi.mock('@tanstack/react-query', async importOriginal => {
   const actual = await importOriginal<typeof import('@tanstack/react-query')>();

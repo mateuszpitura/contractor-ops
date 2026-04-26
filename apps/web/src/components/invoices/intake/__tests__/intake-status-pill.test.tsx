@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { render, screen } from '@/test/test-utils';
-import { IntakeStatusPill, type IntakeStatus } from '../intake-status-pill';
+import type { IntakeStatus } from '../intake-status-pill';
+import { IntakeStatusPill } from '../intake-status-pill';
 
 // ---------------------------------------------------------------------------
 // Expected token-class substrings for each intake status.
@@ -25,16 +26,15 @@ const STATUS_LABELS: Record<IntakeStatus, string> = {
 };
 
 describe('IntakeStatusPill', () => {
-  it.each(Object.keys(STATUS_CLASS_EXPECTATIONS) as IntakeStatus[])(
-    'renders %s with the correct token classes',
-    status => {
-      render(<IntakeStatusPill status={status} />);
-      const pill = screen.getByRole('status');
-      for (const token of STATUS_CLASS_EXPECTATIONS[status]) {
-        expect(pill.className).toContain(token);
-      }
-    },
-  );
+  it.each(
+    Object.keys(STATUS_CLASS_EXPECTATIONS) as IntakeStatus[],
+  )('renders %s with the correct token classes', status => {
+    render(<IntakeStatusPill status={status} />);
+    const pill = screen.getByRole('status');
+    for (const token of STATUS_CLASS_EXPECTATIONS[status]) {
+      expect(pill.className).toContain(token);
+    }
+  });
 
   it('includes a decorative icon marked aria-hidden', () => {
     const { container } = render(<IntakeStatusPill status="PARSED" />);

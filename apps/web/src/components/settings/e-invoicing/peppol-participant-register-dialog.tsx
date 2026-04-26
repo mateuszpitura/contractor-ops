@@ -169,10 +169,7 @@ export function PeppolParticipantRegisterDialog({
             />
             <p className="text-sm text-muted-foreground">{t('schemeHelper')}</p>
             {!validation.ok && 'scheme' in validation && validation.scheme ? (
-              <p
-                id={schemeErrId}
-                role="alert"
-                className="text-sm text-destructive">
+              <p id={schemeErrId} role="alert" className="text-sm text-destructive">
                 {validation.scheme}
               </p>
             ) : null}
@@ -192,10 +189,7 @@ export function PeppolParticipantRegisterDialog({
             />
             <p className="text-sm text-muted-foreground">{t('valueHelper')}</p>
             {!validation.ok && 'value' in validation && validation.value ? (
-              <p
-                id={valueErrId}
-                role="alert"
-                className="text-sm text-destructive">
+              <p id={valueErrId} role="alert" className="text-sm text-destructive">
                 {validation.value}
               </p>
             ) : null}

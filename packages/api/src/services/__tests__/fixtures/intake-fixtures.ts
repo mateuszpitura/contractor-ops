@@ -25,8 +25,8 @@
 //   - `padBase64BufferTo(b64, N)`      — grow a base64 buffer past N bytes
 //   - `buildXsdInvalidXmlBase64()`     — base64 XML with a non-CII root
 
-import { generateXRechnungCii } from '@contractor-ops/einvoice';
 import type { EInvoice } from '@contractor-ops/einvoice';
+import { generateXRechnungCii } from '@contractor-ops/einvoice';
 
 export const FIXTURE_SUPPLIER_VAT = 'DE123456789';
 export const FIXTURE_SUPPLIER_NAME = 'Alpha GmbH';

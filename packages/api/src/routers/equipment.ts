@@ -332,6 +332,11 @@ const equipmentCoreRouter = router({
     .use(requirePermission({ equipment: ['update'] }))
     .input(equipmentAssignSchema)
     .mutation(async ({ ctx, input }) => {
+      const userId = ctx.user?.id;
+      if (!userId) {
+        throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Authentication required' });
+      }
+
       const equipment = await ctx.db.equipment.findFirst({
         where: {
           id: input.equipmentId,
@@ -375,7 +380,7 @@ const equipmentCoreRouter = router({
             organizationId: ctx.organizationId,
             equipmentId: input.equipmentId,
             contractorId: input.contractorId,
-            assignedByUserId: ctx.user?.id,
+            assignedByUserId: userId,
             notes: input.notes ?? null,
           },
         }),
@@ -389,7 +394,7 @@ const equipmentCoreRouter = router({
         data: {
           organizationId: ctx.organizationId,
           actorType: 'USER',
-          actorId: ctx.user?.id,
+          actorId: userId,
           actorName: ctx.user?.name,
           action: 'equipment.assign',
           resourceType: 'EQUIPMENT',
