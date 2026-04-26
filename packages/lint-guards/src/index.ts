@@ -1,3 +1,14 @@
-// Public API — populated by Plans 70-02 (schema-guard), 70-03 (logs-guard),
-// and 70-04 (i18n-parity). This Wave 0 plan only ships test scaffolds.
-export const PLACEHOLDER = 'lint-guards' as const;
+// Public API for @contractor-ops/lint-guards.
+// Plans 02 (schema-guard) populates the schema exports below.
+// Plans 03 (logs-guard) and 04 (i18n-parity) extend this surface.
+
+export { formatSchemaOffences } from './schema-guard/format-offence.js';
+export {
+  GLOBAL_LOOKUP_MODELS_ALLOWLIST,
+  type GlobalLookupModel,
+} from './schema-guard/global-lookup-allowlist.js';
+export {
+  runSchemaGuard,
+  type SchemaGuardOffence,
+  type SchemaGuardOptions,
+} from './schema-guard/run-guard.js';
