@@ -119,7 +119,7 @@ export async function handleInPostWebhook(
 async function findShipment(
   db: PrismaClient,
   organizationId: string,
-  data: { shipment_id: number; tracking_number?: string },
+  data: { shipment_id: string | number; tracking_number?: string },
 ) {
   let shipment = await db.shipment.findFirst({
     where: {

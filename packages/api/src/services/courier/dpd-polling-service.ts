@@ -51,7 +51,7 @@ export async function pollDpdShipmentStatuses(
     return { checked: 0, updated: 0 };
   }
 
-  const configJson = config.configJson as DpdCourierConfigJson;
+  const configJson = config.configJson as unknown as DpdCourierConfigJson;
 
   const client = new DPDClient({
     username: configJson.username,

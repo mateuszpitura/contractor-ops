@@ -1,3 +1,4 @@
+import type { Prisma } from '@contractor-ops/db';
 import { checkShipmentTaskCompletion } from '../equipment-workflow.js';
 import type { DbClient } from '../types.js';
 import { NOTIFICATION_STATUSES } from './inpost-status-mapper.js';
@@ -13,8 +14,14 @@ import { dispatchShipmentNotification } from './shipment-notification.js';
 
 type PrismaClient = DbClient;
 
-/** Terminal statuses -- no need to poll these shipments. */
-export const TERMINAL_STATUSES = ['DELIVERED', 'FAILED', 'RETURNED'];
+/**
+ * Terminal statuses -- no need to poll these shipments.
+ * Cast to the Prisma enum array type so the polling services can use this
+ * directly inside `currentStatus: { notIn: TERMINAL_STATUSES }` filters.
+ */
+export const TERMINAL_STATUSES = ['DELIVERED', 'FAILED', 'RETURNED'] as unknown as NonNullable<
+  Extract<Prisma.ShipmentWhereInput['currentStatus'], { notIn?: unknown }>['notIn']
+>;
 
 /**
  * Maps (shipment status, direction) to equipment status.
@@ -48,7 +55,7 @@ export const EQUIPMENT_STATUS_TRANSITIONS: Record<string, string[]> = {
 
 interface ShipmentRecord {
   id: string;
-  trackingNumber: string;
+  trackingNumber: string | null;
   currentStatus: string;
   direction: string;
   equipmentId: string;
@@ -77,7 +84,7 @@ export async function processShipmentStatusChange(
     data: {
       organizationId,
       shipmentId: shipment.id,
-      status: mappedStatus,
+      status: mappedStatus as Prisma.ShipmentEventCreateInput['status'],
       notes: eventNotes,
     },
   });
@@ -85,7 +92,7 @@ export async function processShipmentStatusChange(
   // 2. Update shipment current status
   await db.shipment.update({
     where: { id: shipment.id },
-    data: { currentStatus: mappedStatus },
+    data: { currentStatus: mappedStatus as Prisma.ShipmentUpdateInput['currentStatus'] },
   });
 
   // 3. Dispatch notification for notable statuses
@@ -141,7 +148,7 @@ async function tryAdvanceEquipmentStatus(
   if (allowed.includes(newEquipmentStatus)) {
     await db.equipment.update({
       where: { id: equipmentId },
-      data: { status: newEquipmentStatus },
+      data: { status: newEquipmentStatus as Prisma.EquipmentUpdateInput['status'] },
     });
   }
 }
@@ -159,7 +166,7 @@ export async function isEventDuplicate(
   status: string,
 ): Promise<boolean> {
   const existing = await db.shipmentEvent.findFirst({
-    where: { shipmentId, status },
+    where: { shipmentId, status: status as Prisma.ShipmentEventWhereInput['status'] },
   });
   return !!existing;
 }

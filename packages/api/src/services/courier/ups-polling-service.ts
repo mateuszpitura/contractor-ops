@@ -51,7 +51,7 @@ export async function pollUpsShipmentStatuses(
     return { checked: 0, updated: 0 };
   }
 
-  const configJson = config.configJson as UpsCourierConfigJson;
+  const configJson = config.configJson as unknown as UpsCourierConfigJson;
 
   const client = new UPSClient({
     clientId: configJson.clientId,

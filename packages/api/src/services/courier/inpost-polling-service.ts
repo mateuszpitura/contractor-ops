@@ -51,7 +51,7 @@ export async function pollInPostShipmentStatuses(
     return { checked: 0, updated: 0 };
   }
 
-  const configJson = config.configJson as CourierConfigJson;
+  const configJson = config.configJson as unknown as CourierConfigJson;
 
   const client = new InPostClient({
     apiToken: configJson.apiToken,
