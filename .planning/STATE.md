@@ -1,48 +1,48 @@
 ---
 gsd_state_version: 1.0
-milestone: v5.0
-milestone_name: UK & Germany Expansion
-status: milestone_complete
-stopped_at: Phase 69 context gathered
-last_updated: "2026-04-26T11:31:38.943Z"
-last_activity: 2026-04-26 -- Phase 69 execution started
+milestone: v6.0
+milestone_name: Platform Maturity & Operational Hardening
+status: defining_requirements
+stopped_at: ""
+last_updated: "2026-04-26T12:00:00.000Z"
+last_activity: 2026-04-26 -- Milestone v6.0 started
 progress:
-  total_phases: 14
-  completed_phases: 14
-  total_plans: 70
-  completed_plans: 69
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-04-26 after v5.0 milestone completion)
+See: .planning/PROJECT.md (updated 2026-04-26 — v6.0 milestone started)
 
 **Core value:** The invoice-to-payment flow must work end-to-end: invoice arrives, gets matched to contract, routed through approval, and batched for payment — with full audit trail.
-**Current focus:** v5.0 milestone CLOSED 2026-04-26. Next: v6.0 Platform Maturity & Operational Hardening (Phases 70-73).
+**Current focus:** v6.0 Platform Maturity & Operational Hardening — close critical operational gaps across PL, UK, DE, UAE, SA. No new market entry.
 
 ## Current Position
 
-Phase: — (between milestones)
+Phase: Not started (defining requirements)
 Plan: —
-Status: Milestone complete; v6.0 not yet started
-Last activity: 2026-04-26 — v5.0 milestone close
+Status: Defining requirements
+Last activity: 2026-04-26 — Milestone v6.0 started
 
-Progress: [██████████] 100% (v5.0)
+Progress: [░░░░░░░░░░] 0% (v6.0)
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 244 (51 v1.0 + 52 v2.0 + 47 v3.0 + 55 v4.0)
-- v5.0 plans completed: 0
+- Total plans completed: 314 (51 v1.0 + 52 v2.0 + 47 v3.0 + 55 v4.0 + 70 v5.0 [Phases 56–69, includes audit gap-closure trio 65/66/67 + follow-ups 68/69])
+- v6.0 plans completed: 0
 
-**v4.0 Reference:**
+**v5.0 Reference:**
 
-- 55 plans across 11 phases
-- Trend: Stable
+- 70 plans across 14 phases (56–69)
+- Trend: Stable; gap-closure phases reduced verification debt to zero before milestone close
 
 *Updated after each plan completion*
 
@@ -113,8 +113,8 @@ None yet.
 
 ## Session Continuity
 
-Last session: --stopped-at
-Stopped at: Phase 69 context gathered
-Resume file: --resume-file
+Last session: 2026-04-26 — milestone v6.0 started
+Stopped at: —
+Resume file: —
 
-**Planned Phase:** 69 (de-i18n-parity-fix) — 1 plans — 2026-04-26T11:05:41.775Z
+**Planned Phase:** — (roadmap not yet created)

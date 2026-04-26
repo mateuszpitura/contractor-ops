@@ -8,6 +8,21 @@ A B2B contractor operations platform for EU, UK, and Gulf companies with 5-50 co
 
 The invoice-to-payment flow must work end-to-end: a contractor's invoice arrives, gets matched to their contract, routed through approval, and batched for payment — with full audit trail and zero manual tracking in spreadsheets.
 
+## Current Milestone: v6.0 Platform Maturity & Operational Hardening
+
+**Goal:** Make the platform production-grade across all supported markets (PL, UK, DE, UAE, SA) by closing critical operational gaps. No new market entry; focus on reliability and security for real users.
+
+**Target features:**
+- **Compliance Document Lifecycle Engine** — per-country required document definitions, automated expiry tracking with 90/60/30/15/7-day alerts, hard payment blocking on expired critical documents, automated contractor reminders, compliance dashboard with at-risk contractor count
+- **Identity Provider Deprovisioning** — Google Workspace auto-suspend, Azure AD/Entra ID auto-disable, Okta SSO revocation, GitHub org member removal, Slack workspace deactivation on offboarding, full audit trail of access revocation
+- **Gulf Operational Polish** — UAE free zone entity tracking with permitted activity scope per zone and license expiry monitoring; Saudization workforce composition dashboard with nationality tracking
+- **Offboarding Hardening** — knowledge transfer checklist templates per role type, IP assignment verification workflow blocking offboarding completion, documentation handover task with credential links, contract clause health check flagging missing IP-assignment language
+
+**Key context:**
+- Phase numbering continues from v5.0 (next phase = 70)
+- LOCAL-ONLY deploy posture preserved; legal sign-off remains DEFERRED for any feature touching jurisdiction-specific compliance text
+- Feature gating uses self-hosted Unleash OSS + thin code wrapper per existing strategy
+
 ## Current State
 
 **v5.0 UK & Germany Expansion COMPLETE 2026-04-26** — all 14 phases shipped (Phase 56–69). Final phase 69 (DE Message-Key Parity Fix) closed GAP-67-01-01 with 32 missing German translations across LPCDA late-interest dialog (Phase 63), Skonto preview-line, and Admin Classification Engine flag panel (Phase 64); FOUND-03 flipped Pending → Complete. Milestone delivers UK invoicing foundation (BACS Standard 18, LPCDA late-payment interest, Bank of England rate poller, IR35/SDS classification), German invoicing foundation (XRechnung CIUS-XR + ZUGFeRD, Skonto early-payment discounts, Scheinselbständigkeit risk classification with DRV criteria), full DE locale (formal-Sie register, 78 locked legal phrases, full message-key parity vs en.json), and v5.0 verification + hardening passes. 6 manual UI checkpoints tracked in `63-HUMAN-UAT.md`; LPCDA copy + Steuerberater + Plain operations sign-off recorded as post-deploy items per Standing Project Constraints (LOCAL-ONLY deploy posture, legal review DEFERRED).
@@ -109,15 +124,12 @@ v3.0 Enterprise & Monetization (shipped 2026-04-11): Stripe subscription billing
 
 ### Active
 
-## Next Milestone: v6.0 Platform Maturity & Operational Hardening
+<!-- v6.0 target features. Concrete REQ-IDs live in .planning/REQUIREMENTS.md. -->
 
-**Goal:** Make the platform production-grade across all supported markets (PL, UK, DE, UAE, SA) by closing critical operational gaps. No new market entry; focus on reliability and security for real users.
-
-**Target features:**
-- Compliance Document Lifecycle Engine — per-country required document definitions, automated expiry tracking with 90/60/30/15/7-day alerts, hard payment blocking on expired critical documents, automated contractor reminders, compliance dashboard with at-risk contractor count
-- Identity Provider Deprovisioning — Google Workspace auto-suspend, Azure AD/Entra ID auto-disable, Okta SSO revocation, GitHub org member removal, Slack workspace deactivation on offboarding, full audit trail of access revocation
-- Gulf Operational Polish — UAE free zone entity tracking with permitted activity scope per zone and license expiry monitoring; Saudization workforce composition dashboard with nationality tracking
-- Offboarding Hardening — knowledge transfer checklist templates per role type, IP assignment verification workflow blocking offboarding completion, documentation handover task with credential links, contract clause health check flagging missing IP-assignment language
+- [ ] Compliance Document Lifecycle Engine
+- [ ] Identity Provider Deprovisioning
+- [ ] Gulf Operational Polish (UAE free zone + Saudization tracking)
+- [ ] Offboarding Hardening (knowledge transfer + IP verification)
 
 ### Out of Scope
 
@@ -209,4 +221,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-26 after Phase 69 DE Message-Key Parity Fix complete — v5.0 UK & Germany Expansion milestone shipped (14/14 phases)*
+*Last updated: 2026-04-26 — milestone v6.0 Platform Maturity & Operational Hardening started*
