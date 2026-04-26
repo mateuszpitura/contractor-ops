@@ -4,7 +4,7 @@
  */
 
 import { MemoryStore } from '@contractor-ops/secrets';
-import { createMockServer, selectHandlers } from '@contractor-ops/test-utils';
+import { createMockServer, HttpResponse, http, selectHandlers } from '@contractor-ops/test-utils';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 
 import type { HmrcVatClientDeps } from '../hmrc-vat-client.js';
@@ -84,6 +84,45 @@ describe('HmrcVatClient MSW integration', () => {
       organizationId: 'org-msw-2',
     });
 
+    expect(result.status).toBe('invalid');
+    expect(result.raw).toBeNull();
+  });
+
+  it('checkVatNumber returns invalid after a real network 404 (post-network sad path) — §2', async () => {
+    // Plan 57-04 Task 3 §2 manual scenario:
+    // "Change the same contractor's VAT ID to GB555555555 (HMRC sandbox 404
+    // fixture). Click Revalidate VAT. Expected: pill flips to red Invalid;
+    // toast shows error."
+    //
+    // The default HMRC handler returns 404 ONLY for HMRC_SANDBOX_INVALID_VRN
+    // ('555555555'), but that VRN fails the inline checksum preflight and the
+    // client short-circuits BEFORE the network. The existing line-77 test
+    // covers that defense-in-depth path.
+    //
+    // To prove the post-network 404 → invalid mapping (lines 226-228 of
+    // hmrc-vat-client.ts: `if (response.status === 404) return { status:
+    // 'invalid', raw: null }`), override the handler at test scope to return
+    // 404 for a checksum-PASSING VRN (the canonical sandbox valid), and
+    // count handler invocations so a regression that re-introduces a
+    // checksum-style early-return is caught.
+    let handlerCallCount = 0;
+    server.use(
+      http.get(`${HMRC_TEST_BASE}/organisations/vat/check-vat-number/lookup/:targetVrn`, () => {
+        handlerCallCount += 1;
+        return HttpResponse.json(
+          { code: 'NOT_FOUND', message: 'The provided VRN was not found' },
+          { status: 404 },
+        );
+      }),
+    );
+
+    const client = await makeClient();
+
+    const result = await client.checkVatNumber('GB193054661', {
+      organizationId: 'org-msw-3',
+    });
+
+    expect(handlerCallCount).toBe(1);
     expect(result.status).toBe('invalid');
     expect(result.raw).toBeNull();
   });
