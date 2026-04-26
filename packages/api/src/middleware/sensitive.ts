@@ -16,7 +16,7 @@ const SENSITIVE_ACTION_MAX_AGE_MS = 5 * 60 * 1000; // 5 minutes
  * payment runs — any operation where a stale session poses a security risk.
  */
 export const sensitiveActionMiddleware = t.middleware(async ({ ctx, next }) => {
-  if (!ctx.session) {
+  if (!(ctx.session && ctx.user)) {
     throw new TRPCError({ code: 'UNAUTHORIZED' });
   }
 
@@ -31,7 +31,11 @@ export const sensitiveActionMiddleware = t.middleware(async ({ ctx, next }) => {
     });
   }
 
-  return next({ ctx });
+  // Preserve narrowed session/user types from the upstream auth/tenant middleware.
+  const session = ctx.session;
+  const user = ctx.user;
+
+  return next({ ctx: { ...ctx, session, user } });
 });
 
 /**

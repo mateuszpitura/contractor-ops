@@ -68,7 +68,13 @@ const tenantMiddleware = t.middleware(async ({ ctx, next }) => {
     });
   }
 
-  return runWithTenantContext(orgId, async tenantCtx => next({ ctx: { ...ctx, ...tenantCtx } }));
+  // Preserve narrowed session/user types from the auth middleware through the spread.
+  const session = ctx.session;
+  const user = ctx.user;
+
+  return runWithTenantContext(orgId, async tenantCtx =>
+    next({ ctx: { ...ctx, ...tenantCtx, session, user } }),
+  );
 });
 
 /**

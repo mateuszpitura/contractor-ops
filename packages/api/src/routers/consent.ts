@@ -71,7 +71,7 @@ export const consentRouter = router({
    * Returns a map of purpose -> { granted, version, lastUpdated }.
    */
   getCurrentConsent: tenantProcedure.query(async ({ ctx }) => {
-    const consentMap = await getCurrentConsent(ctx.organizationId, ctx.user?.id);
+    const consentMap = await getCurrentConsent(ctx.organizationId, ctx.user.id);
     // Convert Map to plain object for serialization
     return Object.fromEntries(consentMap);
   }),
@@ -80,14 +80,14 @@ export const consentRouter = router({
    * Get consent history for the authenticated user, optionally filtered by purpose.
    */
   getConsentHistory: tenantProcedure.input(consentQuerySchema).query(async ({ ctx, input }) => {
-    return getConsentHistory(ctx.organizationId, ctx.user?.id, input.purpose);
+    return getConsentHistory(ctx.organizationId, ctx.user.id, input.purpose);
   }),
 
   /**
    * Check if the authenticated user has granted all required consents.
    */
   hasRequiredConsents: tenantProcedure.query(async ({ ctx }) => {
-    return hasRequiredConsents(ctx.organizationId, ctx.user?.id);
+    return hasRequiredConsents(ctx.organizationId, ctx.user.id);
   }),
 
   /**
@@ -98,9 +98,9 @@ export const consentRouter = router({
     const { ipAddress, userAgent } = extractClientInfo(ctx.headers);
 
     if (input.granted) {
-      return grantConsent(ctx.organizationId, ctx.user?.id, input.purpose, ipAddress, userAgent);
+      return grantConsent(ctx.organizationId, ctx.user.id, input.purpose, ipAddress, userAgent);
     } else {
-      return revokeConsent(ctx.organizationId, ctx.user?.id, input.purpose, ipAddress, userAgent);
+      return revokeConsent(ctx.organizationId, ctx.user.id, input.purpose, ipAddress, userAgent);
     }
   }),
 
@@ -115,7 +115,7 @@ export const consentRouter = router({
 
       return bulkGrantConsent(
         ctx.organizationId,
-        ctx.user?.id,
+        ctx.user.id,
         input.consents,
         ipAddress,
         userAgent,
