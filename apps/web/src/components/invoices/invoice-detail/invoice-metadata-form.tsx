@@ -114,6 +114,24 @@ type InvoiceMetadataFormProps = {
   onSubmittedForMatching?: () => void;
 };
 
+/**
+ * Convert a date-ish field (string | Date | null | undefined) into a
+ * YYYY-MM-DD string suitable for `<input type="date">` and Zod schema.
+ */
+function dateFieldToString(value: string | Date | null | undefined): string {
+  if (value instanceof Date) return toDateString(value);
+  return value ?? '';
+}
+
+/**
+ * Like `dateFieldToString` but preserves null/undefined as `undefined`
+ * for fields that are optional in the form schema.
+ */
+function dateFieldToOptionalString(value: string | Date | null | undefined): string | undefined {
+  if (value === null || value === undefined) return;
+  return value instanceof Date ? toDateString(value) : value;
+}
+
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
@@ -142,10 +160,10 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
     resolver: zodResolver(invoiceMetadataSchema),
     defaultValues: {
       invoiceNumber: invoice.invoiceNumber,
-      issueDate: invoice.issueDate ?? '',
-      dueDate: invoice.dueDate ?? '',
-      servicePeriodStart: invoice.servicePeriodStart ?? undefined,
-      servicePeriodEnd: invoice.servicePeriodEnd ?? undefined,
+      issueDate: dateFieldToString(invoice.issueDate),
+      dueDate: dateFieldToString(invoice.dueDate),
+      servicePeriodStart: dateFieldToOptionalString(invoice.servicePeriodStart),
+      servicePeriodEnd: dateFieldToOptionalString(invoice.servicePeriodEnd),
       sellerTaxId: invoice.sellerTaxId ?? undefined,
       subtotalMinor: invoice.subtotalMinor,
       vatRate: invoice.vatRate ?? undefined,
@@ -162,10 +180,10 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
   useEffect(() => {
     reset({
       invoiceNumber: invoice.invoiceNumber,
-      issueDate: invoice.issueDate ?? '',
-      dueDate: invoice.dueDate ?? '',
-      servicePeriodStart: invoice.servicePeriodStart ?? undefined,
-      servicePeriodEnd: invoice.servicePeriodEnd ?? undefined,
+      issueDate: dateFieldToString(invoice.issueDate),
+      dueDate: dateFieldToString(invoice.dueDate),
+      servicePeriodStart: dateFieldToOptionalString(invoice.servicePeriodStart),
+      servicePeriodEnd: dateFieldToOptionalString(invoice.servicePeriodEnd),
       sellerTaxId: invoice.sellerTaxId ?? undefined,
       subtotalMinor: invoice.subtotalMinor,
       vatRate: invoice.vatRate ?? undefined,
