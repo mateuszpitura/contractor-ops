@@ -1,0 +1,2393 @@
+{
+  "note": "Phase 70 i18n parity baseline — pre-existing missing-translation drift tolerated. Regenerate with: pnpm i18n:parity --update-baseline. NEW drift always fails.",
+  "offences": [
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Admin.BoeRate.addCta",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Admin.BoeRate.addDialogTitle",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Admin.BoeRate.colEffectiveFrom",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Admin.BoeRate.colNotes",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Admin.BoeRate.colRatePercent",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Admin.BoeRate.colRecordedAt",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Admin.BoeRate.colRecordedBy",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Admin.BoeRate.colSource",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Admin.BoeRate.deleteDialogBody",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Admin.BoeRate.deleteDialogTitle",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Admin.BoeRate.pageSubtitle",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Admin.BoeRate.pageTitle",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Admin.BoeRate.pollerFailure",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Admin.BoeRate.pollerSuccess",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Admin.BoeRate.sourceBoeApi",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Admin.BoeRate.sourceManual",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Admin.ClassificationEngineFlag.appSideValue",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Admin.ClassificationEngineFlag.pendingGate",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Admin.ClassificationEngineFlag.pendingGateResolution",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Admin.ClassificationEngineFlag.signoffRegistry",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Admin.ClassificationEngineFlag.subtitle",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Admin.ClassificationEngineFlag.title",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Classification.AdvisoryBanner.label",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Classification.ExpertHelp.de.description",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Classification.ExpertHelp.de.drv.description",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Classification.ExpertHelp.de.drv.title",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Classification.ExpertHelp.de.steuerberater.description",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Classification.ExpertHelp.de.steuerberater.title",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Classification.ExpertHelp.de.title",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Classification.ExpertHelp.gb.ciot.description",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Classification.ExpertHelp.gb.ciot.title",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Classification.ExpertHelp.gb.description",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Classification.ExpertHelp.gb.hmrc.description",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Classification.ExpertHelp.gb.hmrc.title",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Classification.ExpertHelp.gb.title",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Classification.ExpertHelp.orgAdviser.contact",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Classification.ExpertHelp.orgAdviser.description",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Classification.ExpertHelp.orgAdviser.title",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Classification.ExpertHelp.subtitle",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Classification.ExpertHelp.title",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Classification.documents.byteSize",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Classification.documents.documentHistory",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Classification.documents.download",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Classification.documents.drvDisabledNeedAssessment",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Classification.documents.drvDisabledNeedAttestation",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Classification.documents.emptyState",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Classification.documents.errorGenericTitle",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Classification.documents.generateDisabled",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Classification.documents.generateDrvBundle",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Classification.documents.generateSds",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Classification.documents.generatedOn",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Classification.documents.generating",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Classification.documents.kindDrvDefenseBundle",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Classification.documents.kindSds",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Classification.documents.subtitle",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Classification.documents.title",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Classification.documents.toastSdsGenerated",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Ir35Chain.addParticipant",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Ir35Chain.addParticipantHint",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Ir35Chain.addParticipantTitle",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Ir35Chain.cancel",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Ir35Chain.columnAcknowledged",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Ir35Chain.columnActions",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Ir35Chain.columnDelivered",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Ir35Chain.columnDisplayName",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Ir35Chain.columnRole",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Ir35Chain.confirm",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Ir35Chain.contactEmail",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Ir35Chain.displayName",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Ir35Chain.emptyState",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Ir35Chain.markAcknowledged",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Ir35Chain.markAcknowledgedTitle",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Ir35Chain.markDelivered",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Ir35Chain.markDeliveredTitle",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Ir35Chain.notAcknowledged",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Ir35Chain.notDelivered",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Ir35Chain.noteLabel",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Ir35Chain.remove",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Ir35Chain.role.AGENCY",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Ir35Chain.role.CLIENT",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Ir35Chain.role.PSC",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Ir35Chain.role.WORKER",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Ir35Chain.roleLabel",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Ir35Chain.save",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Ir35Chain.saving",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Ir35Chain.subtitle",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Ir35Chain.title",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Legal.DrvUpload.downloadLetter",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Legal.DrvUpload.fileTooLarge",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Legal.DrvUpload.uploadDecisionLetter",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Legal.DrvUpload.uploadedAt",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Legal.DrvUpload.uploading",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Legal.SdsApproval.approved",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Legal.SdsApproval.clientNameLabel",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Legal.SdsApproval.clientNamePlaceholder",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Legal.SdsApproval.confirmApproval",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Legal.SdsApproval.confirmingApproval",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Legal.SdsApproval.gateTitle",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Legal.TermsModal.accept",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Legal.TermsModal.accepting",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Legal.TermsModal.description",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Legal.TermsModal.readFull",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Legal.TermsModal.termsLink",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Legal.TermsModal.title",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Legal.terms.sections.softwareNotLegalAdvice.heading",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Legal.terms.sections.softwareNotLegalAdvice.subheading",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "OtherClientAttestation.saving",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "OtherClientAttestation.signedNameLabel",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "OtherClientAttestation.statementHint",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "OtherClientAttestation.statementLabel",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "OtherClientAttestation.submit",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "OtherClientAttestation.subtitle",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "OtherClientAttestation.title",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "OtherClientAttestation.update",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.bacs.accountNumberLabel",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.bacs.downloadAction",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.bacs.emptyState",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.bacs.featureFlagOffBanner",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.bacs.generateFailure",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.bacs.modulusWarningTitle",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.bacs.previewAction",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.bacs.previewCardTitle",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.bacs.saveSubmitter",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.bacs.savedToast",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.bacs.sectionHeading",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.bacs.settingsPageSubtitle",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.bacs.settingsPageTitle",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.bacs.sortCodeLabel",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.bacs.submitterNameLabel",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.bacs.submitterNotConfigured",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.bacs.sunHelper",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.bacs.sunLabel",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.bacs.transliterationWarning",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.bacs.unmappableError",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.dashboardTile.clickThrough",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.dashboardTile.subline",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.dashboardTile.title",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.lateInterest.b2cBanner",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.lateInterest.claimCta",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.lateInterest.claimDialogBody",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.lateInterest.claimDialogTitle",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.lateInterest.claimSecondaryOption",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.lateInterest.claimedBanner",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.lateInterest.dailyAccrual",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.lateInterest.daysOverdue",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.lateInterest.downloadClaimPdf",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.lateInterest.explanationTooltip",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.lateInterest.fixedCompensation",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.lateInterest.interestAccrued",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.lateInterest.principalOutstanding",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.lateInterest.rateUsed",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.lateInterest.revokeReasonPlaceholder",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.lateInterest.revokeWaiverCta",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.lateInterest.sectionHeading",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.lateInterest.totalStatutoryClaim",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.lateInterest.waiveConfirm",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.lateInterest.waiveCta",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.lateInterest.waiveDialogTitle",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.lateInterest.waiveReasonPlaceholder",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.lateInterest.waiveTypeBoth",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.lateInterest.waiveTypeCompensationOnly",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.lateInterest.waiveTypeInterestOnly",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.lateInterest.waivedBanner",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.overdueInterest.columnHeader",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.overdueInterest.emptyState",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.overdueInterest.filterChip",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.skonto.cellFormat",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.skonto.clearDefault",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.skonto.columnHeader",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.skonto.customizeToggle",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.skonto.defaultHelper",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.skonto.defaultSectionHeading",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.skonto.deleteInvoiceSpecific",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.skonto.discountPercentLabel",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.skonto.discountPeriodLabel",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.skonto.eligibleBanner",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.skonto.emptyCell",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.skonto.lineCheckboxLabel",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.skonto.netPeriodLabel",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.skonto.notTakenBanner",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.skonto.outsideWindowHelper",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.skonto.previewLineEn",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.skonto.saveDefault",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.skonto.saveTerm",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.skonto.sectionHeading",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.skonto.snapshotToast",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.skonto.takenBanner",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.skonto.useDefaultPill",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.skonto.validationDaysOrdering",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.skonto.validationPercentRange",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.skonto.windowExpiredBanner",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.ukBank.accountNumberHelper",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.ukBank.accountNumberLabel",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.ukBank.sortCodeHelper",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.ukBank.sortCodeLabel",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.ukBank.validateButton",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.ukBank.validationFail",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.ukBank.validationSuccess",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "pl",
+      "missingKey": "Payments.ukBank.validationWarn",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Admin.BoeRate.addCta",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Admin.BoeRate.addDialogTitle",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Admin.BoeRate.colEffectiveFrom",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Admin.BoeRate.colNotes",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Admin.BoeRate.colRatePercent",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Admin.BoeRate.colRecordedAt",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Admin.BoeRate.colRecordedBy",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Admin.BoeRate.colSource",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Admin.BoeRate.deleteDialogBody",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Admin.BoeRate.deleteDialogTitle",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Admin.BoeRate.pageSubtitle",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Admin.BoeRate.pageTitle",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Admin.BoeRate.pollerFailure",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Admin.BoeRate.pollerSuccess",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Admin.BoeRate.sourceBoeApi",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Admin.BoeRate.sourceManual",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Admin.ClassificationEngineFlag.appSideValue",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Admin.ClassificationEngineFlag.pendingGate",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Admin.ClassificationEngineFlag.pendingGateResolution",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Admin.ClassificationEngineFlag.signoffRegistry",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Admin.ClassificationEngineFlag.subtitle",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Admin.ClassificationEngineFlag.title",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Classification.AdvisoryBanner.label",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Classification.ExpertHelp.de.description",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Classification.ExpertHelp.de.drv.description",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Classification.ExpertHelp.de.drv.title",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Classification.ExpertHelp.de.steuerberater.description",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Classification.ExpertHelp.de.steuerberater.title",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Classification.ExpertHelp.de.title",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Classification.ExpertHelp.gb.ciot.description",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Classification.ExpertHelp.gb.ciot.title",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Classification.ExpertHelp.gb.description",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Classification.ExpertHelp.gb.hmrc.description",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Classification.ExpertHelp.gb.hmrc.title",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Classification.ExpertHelp.gb.title",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Classification.ExpertHelp.orgAdviser.contact",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Classification.ExpertHelp.orgAdviser.description",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Classification.ExpertHelp.orgAdviser.title",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Classification.ExpertHelp.subtitle",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Classification.ExpertHelp.title",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Classification.documents.byteSize",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Classification.documents.documentHistory",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Classification.documents.download",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Classification.documents.drvDisabledNeedAssessment",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Classification.documents.drvDisabledNeedAttestation",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Classification.documents.emptyState",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Classification.documents.errorGenericTitle",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Classification.documents.generateDisabled",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Classification.documents.generateDrvBundle",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Classification.documents.generateSds",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Classification.documents.generatedOn",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Classification.documents.generating",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Classification.documents.kindDrvDefenseBundle",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Classification.documents.kindSds",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Classification.documents.subtitle",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Classification.documents.title",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Classification.documents.toastSdsGenerated",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Ir35Chain.addParticipant",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Ir35Chain.addParticipantHint",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Ir35Chain.addParticipantTitle",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Ir35Chain.cancel",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Ir35Chain.columnAcknowledged",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Ir35Chain.columnActions",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Ir35Chain.columnDelivered",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Ir35Chain.columnDisplayName",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Ir35Chain.columnRole",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Ir35Chain.confirm",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Ir35Chain.contactEmail",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Ir35Chain.displayName",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Ir35Chain.emptyState",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Ir35Chain.markAcknowledged",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Ir35Chain.markAcknowledgedTitle",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Ir35Chain.markDelivered",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Ir35Chain.markDeliveredTitle",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Ir35Chain.notAcknowledged",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Ir35Chain.notDelivered",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Ir35Chain.noteLabel",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Ir35Chain.remove",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Ir35Chain.role.AGENCY",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Ir35Chain.role.CLIENT",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Ir35Chain.role.PSC",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Ir35Chain.role.WORKER",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Ir35Chain.roleLabel",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Ir35Chain.save",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Ir35Chain.saving",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Ir35Chain.subtitle",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Ir35Chain.title",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Legal.DrvUpload.downloadLetter",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Legal.DrvUpload.fileTooLarge",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Legal.DrvUpload.uploadDecisionLetter",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Legal.DrvUpload.uploadedAt",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Legal.DrvUpload.uploading",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Legal.SdsApproval.approved",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Legal.SdsApproval.clientNameLabel",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Legal.SdsApproval.clientNamePlaceholder",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Legal.SdsApproval.confirmApproval",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Legal.SdsApproval.confirmingApproval",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Legal.SdsApproval.gateTitle",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Legal.TermsModal.accept",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Legal.TermsModal.accepting",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Legal.TermsModal.description",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Legal.TermsModal.readFull",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Legal.TermsModal.termsLink",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Legal.TermsModal.title",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Legal.terms.sections.softwareNotLegalAdvice.heading",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Legal.terms.sections.softwareNotLegalAdvice.subheading",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "OtherClientAttestation.saving",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "OtherClientAttestation.signedNameLabel",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "OtherClientAttestation.statementHint",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "OtherClientAttestation.statementLabel",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "OtherClientAttestation.submit",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "OtherClientAttestation.subtitle",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "OtherClientAttestation.title",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "OtherClientAttestation.update",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.bacs.accountNumberLabel",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.bacs.downloadAction",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.bacs.emptyState",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.bacs.featureFlagOffBanner",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.bacs.generateFailure",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.bacs.modulusWarningTitle",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.bacs.previewAction",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.bacs.previewCardTitle",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.bacs.saveSubmitter",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.bacs.savedToast",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.bacs.sectionHeading",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.bacs.settingsPageSubtitle",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.bacs.settingsPageTitle",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.bacs.sortCodeLabel",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.bacs.submitterNameLabel",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.bacs.submitterNotConfigured",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.bacs.sunHelper",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.bacs.sunLabel",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.bacs.transliterationWarning",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.bacs.unmappableError",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.dashboardTile.clickThrough",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.dashboardTile.subline",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.dashboardTile.title",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.lateInterest.b2cBanner",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.lateInterest.claimCta",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.lateInterest.claimDialogBody",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.lateInterest.claimDialogTitle",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.lateInterest.claimSecondaryOption",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.lateInterest.claimedBanner",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.lateInterest.dailyAccrual",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.lateInterest.daysOverdue",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.lateInterest.downloadClaimPdf",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.lateInterest.explanationTooltip",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.lateInterest.fixedCompensation",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.lateInterest.interestAccrued",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.lateInterest.principalOutstanding",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.lateInterest.rateUsed",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.lateInterest.revokeReasonPlaceholder",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.lateInterest.revokeWaiverCta",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.lateInterest.sectionHeading",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.lateInterest.totalStatutoryClaim",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.lateInterest.waiveConfirm",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.lateInterest.waiveCta",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.lateInterest.waiveDialogTitle",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.lateInterest.waiveReasonPlaceholder",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.lateInterest.waiveTypeBoth",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.lateInterest.waiveTypeCompensationOnly",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.lateInterest.waiveTypeInterestOnly",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.lateInterest.waivedBanner",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.overdueInterest.columnHeader",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.overdueInterest.emptyState",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.overdueInterest.filterChip",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.skonto.cellFormat",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.skonto.clearDefault",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.skonto.columnHeader",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.skonto.customizeToggle",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.skonto.defaultHelper",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.skonto.defaultSectionHeading",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.skonto.deleteInvoiceSpecific",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.skonto.discountPercentLabel",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.skonto.discountPeriodLabel",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.skonto.eligibleBanner",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.skonto.emptyCell",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.skonto.lineCheckboxLabel",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.skonto.netPeriodLabel",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.skonto.notTakenBanner",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.skonto.outsideWindowHelper",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.skonto.previewLineEn",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.skonto.saveDefault",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.skonto.saveTerm",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.skonto.sectionHeading",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.skonto.snapshotToast",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.skonto.takenBanner",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.skonto.useDefaultPill",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.skonto.validationDaysOrdering",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.skonto.validationPercentRange",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.skonto.windowExpiredBanner",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.ukBank.accountNumberHelper",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.ukBank.accountNumberLabel",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.ukBank.sortCodeHelper",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.ukBank.sortCodeLabel",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.ukBank.validateButton",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.ukBank.validationFail",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.ukBank.validationSuccess",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Payments.ukBank.validationWarn",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    }
+  ]
+}
