@@ -37,3 +37,16 @@ export {
   type Jurisdiction,
   jurisdictionSchema,
 } from './schemas.js';
+export {
+  GATED_FLAG_NAMESPACE_PREFIXES,
+  getAllPendingFlags,
+  getFlagSignoff,
+  isFlagSignoffSatisfied,
+  isGatedFlag,
+} from './signoff-registry-flags.js';
+export type {
+  FlagApproverRole,
+  FlagSignoffEntry,
+  FlagSignoffRegistry,
+  FlagSignoffStatus,
+} from './signoff-registry-flags-schema.js';
