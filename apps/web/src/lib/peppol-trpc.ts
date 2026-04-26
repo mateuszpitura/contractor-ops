@@ -42,4 +42,7 @@ interface PeppolTrpcProxy {
   };
 }
 
-export const peppolTrpc = (trpc as Record<string, unknown>).peppol as PeppolTrpcProxy;
+// Two-step cast via `unknown` because tRPC's `TRPCOptionsProxy` does not
+// structurally overlap with our minimal proxy shape — its deep generic
+// types intentionally don't expose a string index signature.
+export const peppolTrpc = (trpc as unknown as Record<string, unknown>).peppol as PeppolTrpcProxy;

@@ -91,7 +91,7 @@ export function useApprovalActions(
 
   const delegate = useCallback(
     (userId: string, comment: string) => {
-      delegateMutation.mutate({ stepId, targetUserId: userId, note: comment } as Parameters<
+      delegateMutation.mutate({ stepId, delegateToUserId: userId, comment } as Parameters<
         typeof delegateMutation.mutate
       >[0]);
     },

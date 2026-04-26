@@ -286,7 +286,10 @@ function TaskActionToolbar({
   task: TaskCardRunProps['task'];
   runId: string;
   dependencyTitle?: string;
-  completeMutation: ReturnType<typeof useMutation<void, Error, { taskRunId: string }>>;
+  completeMutation: {
+    isPending: boolean;
+    mutate: (variables: { taskRunId: string }) => void;
+  };
   t: ReturnType<typeof useTranslations<'Workflows'>>;
 }) {
   return (
