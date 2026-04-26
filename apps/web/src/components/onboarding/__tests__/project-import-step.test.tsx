@@ -23,20 +23,28 @@ vi.mock('@/components/integrations/brand-icons', () => ({
 
 const mockedUseQuery = vi.mocked(useQuery);
 
-const sampleProjects = [
+type ProjectsProp = React.ComponentProps<typeof ProjectImportStep>['projects'];
+const sampleProjects: ProjectsProp = [
   {
     sourceProvider: 'JIRA',
     externalId: 'p1',
     name: 'Alpha Project',
-    statuses: [{ name: 'To Do' }, { name: 'In Progress' }, { name: 'Done' }],
+    statuses: [
+      { id: 'todo', name: 'To Do' },
+      { id: 'inprogress', name: 'In Progress' },
+      { id: 'done', name: 'Done' },
+    ],
   },
   {
     sourceProvider: 'LINEAR',
     externalId: 'p2',
     name: 'Beta Project',
-    statuses: [{ name: 'Backlog' }, { name: 'Completed' }],
+    statuses: [
+      { id: 'backlog', name: 'Backlog' },
+      { id: 'completed', name: 'Completed' },
+    ],
   },
-] as unknown;
+];
 
 function makeSelections(projects: typeof sampleProjects) {
   const map = new Map();

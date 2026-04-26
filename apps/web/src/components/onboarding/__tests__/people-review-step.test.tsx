@@ -28,15 +28,17 @@ const mockedUseQuery = vi.mocked(useQuery);
 // Helpers
 // ---------------------------------------------------------------------------
 
-function makePerson(overrides: Record<string, unknown> = {}) {
+type MergedPerson = React.ComponentProps<typeof PeopleReviewStep>['mergedPeople'][number];
+
+function makePerson(overrides: Record<string, unknown> = {}): MergedPerson {
   return {
     email: 'john@test.com',
     name: 'John Doe',
-    status: 'new' as const,
+    status: 'new',
     sources: [{ source: 'JIRA', name: 'John Doe' }],
     conflicts: [],
     ...overrides,
-  };
+  } as MergedPerson;
 }
 
 function makeSelections(
