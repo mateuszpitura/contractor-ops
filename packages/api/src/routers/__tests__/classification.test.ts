@@ -230,6 +230,12 @@ vi.mock('@contractor-ops/logger', () => ({
     warn: (payload: unknown) => capturedLogs.push({ level: 'warn', payload }),
     error: (payload: unknown) => capturedLogs.push({ level: 'error', payload }),
   })),
+  createIntegrationLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+  })),
 }));
 
 vi.mock('@contractor-ops/logger/metrics', () => ({
