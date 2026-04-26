@@ -10,7 +10,7 @@ The invoice-to-payment flow must work end-to-end: a contractor's invoice arrives
 
 ## Current State
 
-**v5.0 UK & Germany Expansion in progress** — Phase 63 (UK Payments & Financial Features) complete 2026-04-26. 8 of 9 v5.0 phases shipped; Phase 64 (Legal Compliance Hardening) is next. Phase 63 ships BACS Standard 18 export, LPCDA-compliant late payment interest, and German Skonto early-payment discounts (XRechnung BG-20). 6 manual UI checkpoints tracked in `63-HUMAN-UAT.md`.
+**v5.0 UK & Germany Expansion COMPLETE 2026-04-26** — all 14 phases shipped (Phase 56–69). Final phase 69 (DE Message-Key Parity Fix) closed GAP-67-01-01 with 32 missing German translations across LPCDA late-interest dialog (Phase 63), Skonto preview-line, and Admin Classification Engine flag panel (Phase 64); FOUND-03 flipped Pending → Complete. Milestone delivers UK invoicing foundation (BACS Standard 18, LPCDA late-payment interest, Bank of England rate poller, IR35/SDS classification), German invoicing foundation (XRechnung CIUS-XR + ZUGFeRD, Skonto early-payment discounts, Scheinselbständigkeit risk classification with DRV criteria), full DE locale (formal-Sie register, 78 locked legal phrases, full message-key parity vs en.json), and v5.0 verification + hardening passes. 6 manual UI checkpoints tracked in `63-HUMAN-UAT.md`; LPCDA copy + Steuerberater + Plain operations sign-off recorded as post-deploy items per Standing Project Constraints (LOCAL-ONLY deploy posture, legal review DEFERRED).
 
 **v4.0 International Foundation & Gulf Expansion shipped 2026-04-12** — ~562K LOC TypeScript, 55 phases (11 v1.0 + 16 v2.0 + 17 v3.0 + 11 v4.0), 205 plans, 55 plans in v4.0.
 
@@ -197,4 +197,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-26 after Phase 63 UK Payments & Financial Features complete*
+*Last updated: 2026-04-26 after Phase 69 DE Message-Key Parity Fix complete — v5.0 UK & Germany Expansion milestone shipped (14/14 phases)*
