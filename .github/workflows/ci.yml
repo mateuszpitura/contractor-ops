@@ -47,6 +47,15 @@ jobs:
       - name: No raw process.env outside allowlist (ratchet)
         run: pnpm run check:no-process-env
 
+      - name: Lint Prisma schema for tenant scoping (FOUND6-01 / P27)
+        run: pnpm run lint:schema
+
+      - name: Lint logger call sites for body-redaction drift (FOUND6-02 / P28)
+        run: pnpm run lint:logs
+
+      - name: Verify i18n message-key parity (FOUND6-03 / P29)
+        run: pnpm run i18n:parity
+
       - name: Build packages
         run: pnpm run build
 
