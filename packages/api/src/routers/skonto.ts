@@ -276,8 +276,13 @@ export const skontoRouter = router({
 
       const effectiveTerm = resolveSkontoTerm(invoiceTerm, profileTerm) as SkontoTermData | null;
 
+      // Skonto basis = invoice.amountToPayMinor (NOT totalMinor). For invoices
+      // with reverse-charge VAT or supplier withholding the two fields differ;
+      // the discount must apply against the amount the buyer is actually paying
+      // (matches packages/api/src/routers/payment.ts:applySkontoToItem).
+      // Fixes B-01 (CR-02 in 63-VERIFICATION.md) — Phase 65 CONTEXT.md D-03.
       const result = evaluateSkontoEligibility({
-        invoiceTotalMinor: invoice.totalMinor,
+        invoiceTotalMinor: invoice.amountToPayMinor,
         invoiceIssueDate: invoice.issueDate,
         skontoTerm: effectiveTerm,
         paidAt: invoice.paidAt,

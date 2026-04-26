@@ -114,6 +114,20 @@ vi.mock('../../services/cache.js', () => ({
   CacheTTL: {},
 }));
 
+// Stripe-client (and the billing-service that consumes it) is pulled in
+// transitively through tier.ts → billing-service.ts when the router is
+// registered via tenantFlaggedProcedure. Stripe-client imports getServerEnv
+// from @contractor-ops/validators, which currently re-exports through a
+// subpath that the api-package vitest alias cannot resolve. Stub it here so
+// the test loader never walks into the broken subpath.
+vi.mock('../../services/stripe-client.js', () => ({
+  stripe: {},
+  getStripeWebhookSecret: vi.fn(() => 'whsec_test'),
+}));
+vi.mock('../../services/billing-service.js', () => ({
+  getSubscription: vi.fn(async () => ({ tier: 'enterprise' as const })),
+}));
+
 vi.mock('@sentry/nextjs', () => {
   const mockSpan = { setStatus: vi.fn(), setAttribute: vi.fn(), end: vi.fn() };
   return {
@@ -455,7 +469,10 @@ describe('skontoRouter', () => {
     const mockInvoiceWithTerm = {
       id: INVOICE_ID,
       organizationId: ORG_ID,
+      // Default fixture: totalMinor == amountToPayMinor (no withholding / RC-VAT).
+      // The B-01 regression test below uses a separate fixture where they differ.
       totalMinor: 100_000,
+      amountToPayMinor: 100_000,
       issueDate,
       paidAt: null,
       skontoTerms: [
@@ -472,6 +489,7 @@ describe('skontoRouter', () => {
       id: INVOICE_ID,
       organizationId: ORG_ID,
       totalMinor: 100_000,
+      amountToPayMinor: 100_000,
       issueDate,
       paidAt: null,
       skontoTerms: [],
@@ -579,6 +597,39 @@ describe('skontoRouter', () => {
         paidAt: null,
       });
       expect(call.asOf).toBeInstanceOf(Date);
+    });
+
+    it('uses invoice.amountToPayMinor (not totalMinor) as the Skonto basis — B-01 regression', async () => {
+      // Withholding case: an invoice where totalMinor and amountToPayMinor
+      // diverge (e.g. supplier-side withholding tax deducted at source, or
+      // reverse-charge VAT). The Skonto basis MUST track amountToPayMinor so
+      // that skonto.evaluateForInvoice and payment.applySkontoToItem agree on
+      // the basis for the same invoice. This test would have caught CR-02 in
+      // the v5.0 audit (see .planning/phases/63-uk-payments-financial-features/
+      // 63-VERIFICATION.md and Phase 65 CONTEXT.md decision D-03 / B-01).
+      const totalMinor = 120_000; // gross invoice
+      const amountToPayMinor = 100_000; // after €20 supplier withholding
+      expect(totalMinor).not.toBe(amountToPayMinor); // sanity: fixture exposes the bug surface
+
+      const withholdingInvoice = {
+        ...mockInvoiceWithTerm,
+        totalMinor,
+        amountToPayMinor,
+      };
+      mockPrisma.invoice.findFirst.mockResolvedValueOnce(withholdingInvoice);
+      const resolvedTerm = { discountPercent: 2, discountPeriodDays: 10, netPeriodDays: 30 };
+      mockResolveSkontoTerm.mockReturnValueOnce(resolvedTerm);
+      mockEvaluateSkontoEligibility.mockReturnValueOnce(eligibleResult);
+
+      await caller.evaluateForInvoice({ invoiceId: INVOICE_ID });
+
+      // CRITICAL: must equal amountToPayMinor, not totalMinor.
+      expect(mockEvaluateSkontoEligibility).toHaveBeenCalledWith(
+        expect.objectContaining({ invoiceTotalMinor: amountToPayMinor }),
+      );
+      expect(mockEvaluateSkontoEligibility).not.toHaveBeenCalledWith(
+        expect.objectContaining({ invoiceTotalMinor: totalMinor }),
+      );
     });
 
     it('passes correct where clause when querying invoice', async () => {
