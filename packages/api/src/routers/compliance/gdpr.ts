@@ -5,6 +5,48 @@ import { tenantProcedure } from '../../middleware/tenant.js';
 import { deleteRegionalObject } from '../../services/regional-storage.js';
 
 // ---------------------------------------------------------------------------
+// Bulk delete / soft-delete helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Hard-delete every row of a tenant-scoped model and return the row count.
+ * Centralises the `deleteMany({ where: { organizationId } })` pattern that
+ * the erasure mutation runs across ~40 models.
+ */
+async function deleteByOrgAndCount(
+  model: {
+    deleteMany: (args: { where: { organizationId: string } }) => Promise<{ count: number }>;
+  },
+  organizationId: string,
+): Promise<number> {
+  const result = await model.deleteMany({ where: { organizationId } });
+  return result.count;
+}
+
+/**
+ * Soft-delete (set `deletedAt`) every still-live row of a tenant-scoped
+ * model and return the count of rows updated. Used for entities that are
+ * preserved through the retention window before the data-purge cron
+ * removes them permanently.
+ */
+async function softDeleteByOrgAndCount(
+  model: {
+    updateMany: (args: {
+      where: { organizationId: string; deletedAt: null };
+      data: { deletedAt: Date };
+    }) => Promise<{ count: number }>;
+  },
+  organizationId: string,
+  now: Date,
+): Promise<number> {
+  const result = await model.updateMany({
+    where: { organizationId, deletedAt: null },
+    data: { deletedAt: now },
+  });
+  return result.count;
+}
+
+// ---------------------------------------------------------------------------
 // GDPR Router — Right to Erasure (Art. 17) + Data Portability (Art. 20)
 // ---------------------------------------------------------------------------
 
@@ -41,47 +83,17 @@ export const gdprRouter = router({
       const results: Record<string, number> = {};
 
       await ctx.db.$transaction(async tx => {
-        // 1. Soft-delete contractors
-        const contractors = await tx.contractor.updateMany({
-          where: { organizationId: orgId, deletedAt: null },
-          data: { deletedAt: now },
-        });
-        results.contractors = contractors.count;
-
-        // 2. Soft-delete contracts
-        const contracts = await tx.contract.updateMany({
-          where: { organizationId: orgId, deletedAt: null },
-          data: { deletedAt: now },
-        });
-        results.contracts = contracts.count;
-
-        // 3. Soft-delete documents
-        const documents = await tx.document.updateMany({
-          where: { organizationId: orgId, deletedAt: null },
-          data: { deletedAt: now },
-        });
-        results.documents = documents.count;
+        // 1-3. Soft-delete top-level entities (preserved through the retention
+        //      window so the data-purge cron can finalise + R2 cleanup).
+        results.contractors = await softDeleteByOrgAndCount(tx.contractor, orgId, now);
+        results.contracts = await softDeleteByOrgAndCount(tx.contract, orgId, now);
+        results.documents = await softDeleteByOrgAndCount(tx.document, orgId, now);
 
         // 4a. Invoice child records (must be deleted before invoices due to FK)
-        const invoiceLines = await tx.invoiceLine.deleteMany({
-          where: { organizationId: orgId },
-        });
-        results.invoiceLines = invoiceLines.count;
-
-        const invoiceMatchResults = await tx.invoiceMatchResult.deleteMany({
-          where: { organizationId: orgId },
-        });
-        results.invoiceMatchResults = invoiceMatchResults.count;
-
-        const invoiceFiles = await tx.invoiceFile.deleteMany({
-          where: { organizationId: orgId },
-        });
-        results.invoiceFiles = invoiceFiles.count;
-
-        const documentLinks = await tx.documentLink.deleteMany({
-          where: { organizationId: orgId },
-        });
-        results.documentLinks = documentLinks.count;
+        results.invoiceLines = await deleteByOrgAndCount(tx.invoiceLine, orgId);
+        results.invoiceMatchResults = await deleteByOrgAndCount(tx.invoiceMatchResult, orgId);
+        results.invoiceFiles = await deleteByOrgAndCount(tx.invoiceFile, orgId);
+        results.documentLinks = await deleteByOrgAndCount(tx.documentLink, orgId);
 
         // 4b. Soft-delete invoices (unless retaining for tax compliance)
         if (input.retainFinancialRecords) {
@@ -90,41 +102,18 @@ export const gdprRouter = router({
             where: { organizationId: orgId, deletedAt: null },
           });
         } else {
-          const invoices = await tx.invoice.updateMany({
-            where: { organizationId: orgId, deletedAt: null },
-            data: { deletedAt: now },
-          });
-          results.invoices = invoices.count;
+          results.invoices = await softDeleteByOrgAndCount(tx.invoice, orgId, now);
         }
 
-        // 5. Delete notifications
-        const notifications = await tx.notification.deleteMany({
-          where: { organizationId: orgId },
-        });
-        results.notifications = notifications.count;
+        // 5-6. Notifications + audit logs (PII).
+        results.notifications = await deleteByOrgAndCount(tx.notification, orgId);
+        results.auditLogs = await deleteByOrgAndCount(tx.auditLog, orgId);
 
-        // 6. Delete audit logs (they contain PII like actor names)
-        const auditLogs = await tx.auditLog.deleteMany({
-          where: { organizationId: orgId },
-        });
-        results.auditLogs = auditLogs.count;
-
-        // -----------------------------------------------------------------
         // 7. Time tracking
-        // -----------------------------------------------------------------
-        const timeEntries = await tx.timeEntry.deleteMany({
-          where: { organizationId: orgId },
-        });
-        results.timeEntries = timeEntries.count;
+        results.timeEntries = await deleteByOrgAndCount(tx.timeEntry, orgId);
+        results.timesheets = await deleteByOrgAndCount(tx.timesheet, orgId);
 
-        const timesheets = await tx.timesheet.deleteMany({
-          where: { organizationId: orgId },
-        });
-        results.timesheets = timesheets.count;
-
-        // -----------------------------------------------------------------
         // 8. Payments (respect retainFinancialRecords flag)
-        // -----------------------------------------------------------------
         if (input.retainFinancialRecords) {
           results.paymentExports = 0;
           results.paymentRunItems = 0;
@@ -133,234 +122,89 @@ export const gdprRouter = router({
             where: { organizationId: orgId },
           });
         } else {
-          const paymentExports = await tx.paymentExport.deleteMany({
-            where: { organizationId: orgId },
-          });
-          results.paymentExports = paymentExports.count;
-
-          const paymentRunItems = await tx.paymentRunItem.deleteMany({
-            where: { organizationId: orgId },
-          });
-          results.paymentRunItems = paymentRunItems.count;
-
-          const paymentRuns = await tx.paymentRun.deleteMany({
-            where: { organizationId: orgId },
-          });
-          results.paymentRuns = paymentRuns.count;
+          results.paymentExports = await deleteByOrgAndCount(tx.paymentExport, orgId);
+          results.paymentRunItems = await deleteByOrgAndCount(tx.paymentRunItem, orgId);
+          results.paymentRuns = await deleteByOrgAndCount(tx.paymentRun, orgId);
         }
 
-        // -----------------------------------------------------------------
         // 9. Equipment & shipping
-        // -----------------------------------------------------------------
-        const shipmentEvents = await tx.shipmentEvent.deleteMany({
-          where: { organizationId: orgId },
-        });
-        results.shipmentEvents = shipmentEvents.count;
+        results.shipmentEvents = await deleteByOrgAndCount(tx.shipmentEvent, orgId);
+        results.returnRequests = await deleteByOrgAndCount(tx.returnRequest, orgId);
+        results.shipments = await deleteByOrgAndCount(tx.shipment, orgId);
+        results.equipmentAssignments = await deleteByOrgAndCount(tx.equipmentAssignment, orgId);
+        results.equipment = await deleteByOrgAndCount(tx.equipment, orgId);
+        results.courierConfigs = await deleteByOrgAndCount(tx.courierConfig, orgId);
 
-        const returnRequests = await tx.returnRequest.deleteMany({
-          where: { organizationId: orgId },
-        });
-        results.returnRequests = returnRequests.count;
-
-        const shipments = await tx.shipment.deleteMany({
-          where: { organizationId: orgId },
-        });
-        results.shipments = shipments.count;
-
-        const equipmentAssignments = await tx.equipmentAssignment.deleteMany({
-          where: { organizationId: orgId },
-        });
-        results.equipmentAssignments = equipmentAssignments.count;
-
-        const equipment = await tx.equipment.deleteMany({
-          where: { organizationId: orgId },
-        });
-        results.equipment = equipment.count;
-
-        const courierConfigs = await tx.courierConfig.deleteMany({
-          where: { organizationId: orgId },
-        });
-        results.courierConfigs = courierConfigs.count;
-
-        // -----------------------------------------------------------------
         // 10. Approval chains
-        // -----------------------------------------------------------------
-        const approvalDecisions = await tx.approvalDecision.deleteMany({
-          where: { organizationId: orgId },
-        });
-        results.approvalDecisions = approvalDecisions.count;
+        results.approvalDecisions = await deleteByOrgAndCount(tx.approvalDecision, orgId);
+        results.approvalSteps = await deleteByOrgAndCount(tx.approvalStep, orgId);
+        results.approvalFlows = await deleteByOrgAndCount(tx.approvalFlow, orgId);
+        results.approvalChainConfigs = await deleteByOrgAndCount(tx.approvalChainConfig, orgId);
 
-        const approvalSteps = await tx.approvalStep.deleteMany({
-          where: { organizationId: orgId },
-        });
-        results.approvalSteps = approvalSteps.count;
-
-        const approvalFlows = await tx.approvalFlow.deleteMany({
-          where: { organizationId: orgId },
-        });
-        results.approvalFlows = approvalFlows.count;
-
-        const approvalChainConfigs = await tx.approvalChainConfig.deleteMany({
-          where: { organizationId: orgId },
-        });
-        results.approvalChainConfigs = approvalChainConfigs.count;
-
-        // -----------------------------------------------------------------
         // 11. Workflows
-        // -----------------------------------------------------------------
-        const workflowAttachments = await tx.workflowAttachment.deleteMany({
-          where: { organizationId: orgId },
-        });
-        results.workflowAttachments = workflowAttachments.count;
+        results.workflowAttachments = await deleteByOrgAndCount(tx.workflowAttachment, orgId);
+        results.workflowComments = await deleteByOrgAndCount(tx.workflowComment, orgId);
+        results.workflowTaskRuns = await deleteByOrgAndCount(tx.workflowTaskRun, orgId);
+        results.workflowRuns = await deleteByOrgAndCount(tx.workflowRun, orgId);
+        results.workflowTaskTemplates = await deleteByOrgAndCount(tx.workflowTaskTemplate, orgId);
+        results.workflowTemplates = await deleteByOrgAndCount(tx.workflowTemplate, orgId);
 
-        const workflowComments = await tx.workflowComment.deleteMany({
-          where: { organizationId: orgId },
-        });
-        results.workflowComments = workflowComments.count;
-
-        const workflowTaskRuns = await tx.workflowTaskRun.deleteMany({
-          where: { organizationId: orgId },
-        });
-        results.workflowTaskRuns = workflowTaskRuns.count;
-
-        const workflowRuns = await tx.workflowRun.deleteMany({
-          where: { organizationId: orgId },
-        });
-        results.workflowRuns = workflowRuns.count;
-
-        const workflowTaskTemplates = await tx.workflowTaskTemplate.deleteMany({
-          where: { organizationId: orgId },
-        });
-        results.workflowTaskTemplates = workflowTaskTemplates.count;
-
-        const workflowTemplates = await tx.workflowTemplate.deleteMany({
-          where: { organizationId: orgId },
-        });
-        results.workflowTemplates = workflowTemplates.count;
-
-        // -----------------------------------------------------------------
-        // 12. E-signatures (recipients must be deleted before envelopes due to FK)
-        // -----------------------------------------------------------------
+        // 12. E-signatures (recipients must be deleted before envelopes due to FK).
+        //     SigningRecipient is filtered through its envelope, not by orgId
+        //     directly, so it stays inline.
         const signingRecipients = await tx.signingRecipient.deleteMany({
           where: { signingEnvelope: { organizationId: orgId } },
         });
         results.signingRecipients = signingRecipients.count;
 
-        const signingEvents = await tx.signingEvent.deleteMany({
-          where: { organizationId: orgId },
-        });
-        results.signingEvents = signingEvents.count;
+        results.signingEvents = await deleteByOrgAndCount(tx.signingEvent, orgId);
+        results.signingEnvelopes = await deleteByOrgAndCount(tx.signingEnvelope, orgId);
 
-        const signingEnvelopes = await tx.signingEnvelope.deleteMany({
-          where: { organizationId: orgId },
-        });
-        results.signingEnvelopes = signingEnvelopes.count;
-
-        // -----------------------------------------------------------------
         // 13. Integrations
-        // -----------------------------------------------------------------
-        const integrationSyncLogs = await tx.integrationSyncLog.deleteMany({
-          where: { organizationId: orgId },
-        });
-        results.integrationSyncLogs = integrationSyncLogs.count;
+        results.integrationSyncLogs = await deleteByOrgAndCount(tx.integrationSyncLog, orgId);
+        results.externalLinks = await deleteByOrgAndCount(tx.externalLink, orgId);
+        results.integrationConnections = await deleteByOrgAndCount(tx.integrationConnection, orgId);
+        results.webhookDeliveries = await deleteByOrgAndCount(tx.webhookDelivery, orgId);
 
-        const externalLinks = await tx.externalLink.deleteMany({
-          where: { organizationId: orgId },
-        });
-        results.externalLinks = externalLinks.count;
-
-        const integrationConnections = await tx.integrationConnection.deleteMany({
-          where: { organizationId: orgId },
-        });
-        results.integrationConnections = integrationConnections.count;
-
-        const webhookDeliveries = await tx.webhookDelivery.deleteMany({
-          where: { organizationId: orgId },
-        });
-        results.webhookDeliveries = webhookDeliveries.count;
-
-        // -----------------------------------------------------------------
         // 14. OCR extractions
-        // -----------------------------------------------------------------
-        const ocrExtractions = await tx.ocrExtraction.deleteMany({
-          where: { organizationId: orgId },
-        });
-        results.ocrExtractions = ocrExtractions.count;
+        results.ocrExtractions = await deleteByOrgAndCount(tx.ocrExtraction, orgId);
 
-        // -----------------------------------------------------------------
         // 15. Contractor portal & self-service
-        // -----------------------------------------------------------------
-        const portalSessions = await tx.portalSession.deleteMany({
-          where: { organizationId: orgId },
-        });
-        results.portalSessions = portalSessions.count;
+        results.portalSessions = await deleteByOrgAndCount(tx.portalSession, orgId);
+        results.contractorChangeRequests = await deleteByOrgAndCount(
+          tx.contractorChangeRequest,
+          orgId,
+        );
+        results.contractorNotificationPreferences = await deleteByOrgAndCount(
+          tx.contractorNotificationPreference,
+          orgId,
+        );
 
-        const contractorChangeRequests = await tx.contractorChangeRequest.deleteMany({
-          where: { organizationId: orgId },
-        });
-        results.contractorChangeRequests = contractorChangeRequests.count;
-
-        const contractorNotificationPreferences =
-          await tx.contractorNotificationPreference.deleteMany({
-            where: { organizationId: orgId },
-          });
-        results.contractorNotificationPreferences = contractorNotificationPreferences.count;
-
-        // -----------------------------------------------------------------
         // 16. Contractor details (contacts, billing, assignments, compliance)
-        // -----------------------------------------------------------------
-        const contractorContacts = await tx.contractorContact.deleteMany({
-          where: { organizationId: orgId },
-        });
-        results.contractorContacts = contractorContacts.count;
+        results.contractorContacts = await deleteByOrgAndCount(tx.contractorContact, orgId);
+        results.contractorBillingProfiles = await deleteByOrgAndCount(
+          tx.contractorBillingProfile,
+          orgId,
+        );
+        results.contractorAssignments = await deleteByOrgAndCount(tx.contractorAssignment, orgId);
+        results.contractorComplianceItems = await deleteByOrgAndCount(
+          tx.contractorComplianceItem,
+          orgId,
+        );
+        results.complianceRequirementTemplates = await deleteByOrgAndCount(
+          tx.complianceRequirementTemplate,
+          orgId,
+        );
+        results.contractorTags = await deleteByOrgAndCount(tx.contractorTag, orgId);
 
-        const contractorBillingProfiles = await tx.contractorBillingProfile.deleteMany({
-          where: { organizationId: orgId },
-        });
-        results.contractorBillingProfiles = contractorBillingProfiles.count;
-
-        const contractorAssignments = await tx.contractorAssignment.deleteMany({
-          where: { organizationId: orgId },
-        });
-        results.contractorAssignments = contractorAssignments.count;
-
-        const contractorComplianceItems = await tx.contractorComplianceItem.deleteMany({
-          where: { organizationId: orgId },
-        });
-        results.contractorComplianceItems = contractorComplianceItems.count;
-
-        const complianceRequirementTemplates = await tx.complianceRequirementTemplate.deleteMany({
-          where: { organizationId: orgId },
-        });
-        results.complianceRequirementTemplates = complianceRequirementTemplates.count;
-
-        const contractorTags = await tx.contractorTag.deleteMany({
-          where: { organizationId: orgId },
-        });
-        results.contractorTags = contractorTags.count;
-
-        // -----------------------------------------------------------------
         // 17. Notifications & reminders (user-level)
-        // -----------------------------------------------------------------
-        const userNotificationPreferences = await tx.userNotificationPreference.deleteMany({
-          where: { organizationId: orgId },
-        });
-        results.userNotificationPreferences = userNotificationPreferences.count;
-
-        const comments = await tx.comment.deleteMany({
-          where: { organizationId: orgId },
-        });
-        results.comments = comments.count;
-
-        const reminderInstances = await tx.reminderInstance.deleteMany({
-          where: { organizationId: orgId },
-        });
-        results.reminderInstances = reminderInstances.count;
-
-        const reminderRules = await tx.reminderRule.deleteMany({
-          where: { organizationId: orgId },
-        });
-        results.reminderRules = reminderRules.count;
+        results.userNotificationPreferences = await deleteByOrgAndCount(
+          tx.userNotificationPreference,
+          orgId,
+        );
+        results.comments = await deleteByOrgAndCount(tx.comment, orgId);
+        results.reminderInstances = await deleteByOrgAndCount(tx.reminderInstance, orgId);
+        results.reminderRules = await deleteByOrgAndCount(tx.reminderRule, orgId);
 
         // -----------------------------------------------------------------
         // 18. Portal magic tokens (global model, filtered by contractor email)
