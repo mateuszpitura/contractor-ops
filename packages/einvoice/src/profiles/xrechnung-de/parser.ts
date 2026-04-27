@@ -38,6 +38,7 @@
 import { createLogger } from '@contractor-ops/logger';
 import { XMLParser } from 'fast-xml-parser';
 
+import { InvalidMinorUnitsValueError, toMinorUnits } from '../../engine/xml-utils.js';
 import type {
   EInvoice,
   EInvoiceLine,
@@ -72,12 +73,35 @@ export interface ParsedXrechnung {
 }
 
 /**
- * Discriminated union of typed errors thrown by the parser.
- * Callers should inspect `.code` and react accordingly.
+ * Discriminated union of typed errors thrown by the parser. Retained as a
+ * type alias for callers that pattern-match on `.code` — kept structurally
+ * compatible with the {@link CIIParserError} class instances now thrown.
  */
 export type ParserError =
   | { code: 'CII_PARSE_FAILED'; message: string }
   | { code: 'ZUGFERD_LEVEL_UNSUPPORTED'; level: string };
+
+/**
+ * Class-form of {@link ParserError}. Subclasses `Error` so callers retain a
+ * stack trace AND `error instanceof Error === true` (the previous plain-object
+ * throws produced `[object Object]` in catch sites that defaulted to
+ * `String(err)` — see bug-hunt 2026-04-27 [MEDIUM]).
+ *
+ * Discriminated by `.code`; callers should still
+ * `if (err instanceof CIIParserError && err.code === 'CII_PARSE_FAILED') { ... }`
+ * style narrow.
+ */
+export class CIIParserError extends Error {
+  constructor(
+    public readonly code: 'CII_PARSE_FAILED' | 'ZUGFERD_LEVEL_UNSUPPORTED',
+    message: string,
+    /** Present only when code === 'ZUGFERD_LEVEL_UNSUPPORTED'. */
+    public readonly level?: string,
+  ) {
+    super(message);
+    this.name = 'CIIParserError';
+  }
+}
 
 // ---------------------------------------------------------------------------
 // XMLParser configuration
@@ -112,45 +136,40 @@ function stripBom(input: string): string {
   return input;
 }
 
-/** Parse a BigDecimal string (e.g. "1190.00") back to an integer minor-units value. */
-function toMinorUnits(value: unknown): number {
-  if (value == null) return 0;
-  const str = typeof value === 'string' ? value : String(value);
-  const trimmed = str.trim();
-  if (trimmed === '') return 0;
-  const num = Number(trimmed);
-  if (!Number.isFinite(num)) {
-    throw {
-      code: 'CII_PARSE_FAILED',
-      message: `Invalid decimal value in CII document: "${trimmed}"`,
-    } satisfies ParserError;
+/**
+ * Parse a CII BigDecimal string (e.g. "1190.00") to integer minor units,
+ * delegating to the shared precision-safe helper. Wraps the shared
+ * {@link InvalidMinorUnitsValueError} in a CII-typed error so callers that
+ * already pattern-match on `CII_PARSE_FAILED` keep working.
+ */
+function ciiToMinorUnits(value: unknown): number {
+  try {
+    return toMinorUnits(value);
+  } catch (err) {
+    if (err instanceof InvalidMinorUnitsValueError) {
+      throw new CIIParserError(
+        'CII_PARSE_FAILED',
+        `Invalid decimal value in CII document: "${err.raw}"`,
+      );
+    }
+    throw err;
   }
-  // Integer-string round: split on decimal point so precision is preserved.
-  const negative = trimmed.startsWith('-');
-  const abs = negative ? trimmed.slice(1) : trimmed;
-  const [intPart = '0', fracPartRaw = ''] = abs.split('.');
-  const fracPart = `${fracPartRaw}00`.slice(0, 2);
-  const minor = Number(intPart) * 100 + Number(fracPart);
-  return negative ? -minor : minor;
 }
 
 /** Convert a CII format="102" YYYYMMDD date string to ISO YYYY-MM-DD. */
 function fromCiiDate(value: unknown): string {
   if (value == null) {
-    throw {
-      code: 'CII_PARSE_FAILED',
-      message: 'Missing date value in CII document',
-    } satisfies ParserError;
+    throw new CIIParserError('CII_PARSE_FAILED', 'Missing date value in CII document');
   }
   const str = typeof value === 'string' ? value.trim() : String(value);
   if (/^\d{8}$/.test(str)) {
     return `${str.slice(0, 4)}-${str.slice(4, 6)}-${str.slice(6, 8)}`;
   }
   if (/^\d{4}-\d{2}-\d{2}/.test(str)) return str.slice(0, 10);
-  throw {
-    code: 'CII_PARSE_FAILED',
-    message: `Unrecognised CII date format: "${str}" (expected YYYYMMDD)`,
-  } satisfies ParserError;
+  throw new CIIParserError(
+    'CII_PARSE_FAILED',
+    `Unrecognised CII date format: "${str}" (expected YYYYMMDD)`,
+  );
 }
 
 /**
@@ -244,7 +263,7 @@ function parseLine(
     | Record<string, unknown>
     | undefined;
   const unitPriceText = netPrice ? nodeText(netPrice['ram:ChargeAmount']) : undefined;
-  const unitPriceMinor = unitPriceText == null ? undefined : toMinorUnits(unitPriceText);
+  const unitPriceMinor = unitPriceText == null ? undefined : ciiToMinorUnits(unitPriceText);
 
   const lineDelivery = raw['ram:SpecifiedLineTradeDelivery'] as Record<string, unknown> | undefined;
   const billedQty = lineDelivery?.['ram:BilledQuantity'] as
@@ -276,7 +295,7 @@ function parseLine(
     | Record<string, unknown>
     | undefined;
   const lineTotalText = lineMonSum ? nodeText(lineMonSum['ram:LineTotalAmount']) : undefined;
-  const netAmountMinor = lineTotalText == null ? undefined : toMinorUnits(lineTotalText);
+  const netAmountMinor = lineTotalText == null ? undefined : ciiToMinorUnits(lineTotalText);
 
   // Record unmapped sibling paths for downstream surface.
   const mappedTopKeys = new Set([
@@ -312,8 +331,8 @@ function parseTaxSubtotal(raw: Record<string, unknown>): EInvoiceTaxSubtotal {
   const percentText = nodeText(raw['ram:RateApplicablePercent']);
 
   const base: EInvoiceTaxSubtotal = {
-    taxableAmountMinor: taxableText == null ? 0 : toMinorUnits(taxableText),
-    taxAmountMinor: taxText == null ? 0 : toMinorUnits(taxText),
+    taxableAmountMinor: taxableText == null ? 0 : ciiToMinorUnits(taxableText),
+    taxAmountMinor: taxText == null ? 0 : ciiToMinorUnits(taxText),
     taxCategory: categoryCode,
   };
 
@@ -331,25 +350,29 @@ function parseTaxSubtotal(raw: Record<string, unknown>): EInvoiceTaxSubtotal {
 
 function detectProfileLevel(guidelineUrn: string | undefined): ZugferdConformanceLevel {
   if (guidelineUrn == null || guidelineUrn === '') {
-    throw {
-      code: 'ZUGFERD_LEVEL_UNSUPPORTED',
-      level: '(missing GuidelineSpecifiedDocumentContextParameter/ram:ID)',
-    } satisfies ParserError;
+    const level = '(missing GuidelineSpecifiedDocumentContextParameter/ram:ID)';
+    throw new CIIParserError(
+      'ZUGFERD_LEVEL_UNSUPPORTED',
+      `Unsupported ZUGFeRD profile level: ${level}`,
+      level,
+    );
   }
 
   if (UNSUPPORTED_GUIDELINE_URNS.has(guidelineUrn)) {
-    throw {
-      code: 'ZUGFERD_LEVEL_UNSUPPORTED',
-      level: guidelineUrn,
-    } satisfies ParserError;
+    throw new CIIParserError(
+      'ZUGFERD_LEVEL_UNSUPPORTED',
+      `Unsupported ZUGFeRD profile level: ${guidelineUrn}`,
+      guidelineUrn,
+    );
   }
 
   const level = GUIDELINE_URN_TO_LEVEL[guidelineUrn];
   if (level == null) {
-    throw {
-      code: 'ZUGFERD_LEVEL_UNSUPPORTED',
-      level: guidelineUrn,
-    } satisfies ParserError;
+    throw new CIIParserError(
+      'ZUGFERD_LEVEL_UNSUPPORTED',
+      `Unsupported ZUGFeRD profile level: ${guidelineUrn}`,
+      guidelineUrn,
+    );
   }
 
   return level;
@@ -376,18 +399,12 @@ export function parseXrechnungCii(xml: string): ParsedXrechnung {
     tree = xmlParser.parse(stripped) as Record<string, unknown>;
   } catch (err) {
     log.warn({ err }, 'Failed to parse CII XML');
-    throw {
-      code: 'CII_PARSE_FAILED',
-      message: err instanceof Error ? err.message : String(err),
-    } satisfies ParserError;
+    throw new CIIParserError('CII_PARSE_FAILED', err instanceof Error ? err.message : String(err));
   }
 
   const root = tree['rsm:CrossIndustryInvoice'] as Record<string, unknown> | undefined;
   if (!root) {
-    throw {
-      code: 'CII_PARSE_FAILED',
-      message: 'Missing rsm:CrossIndustryInvoice root element',
-    } satisfies ParserError;
+    throw new CIIParserError('CII_PARSE_FAILED', 'Missing rsm:CrossIndustryInvoice root element');
   }
 
   // --- Context: guideline URN → profile level -----------------------------
@@ -417,19 +434,13 @@ export function parseXrechnungCii(xml: string): ParsedXrechnung {
     exchanged?.['ram:IssueDateTime'] as Record<string, unknown> | undefined,
   );
   if (issueDate == null) {
-    throw {
-      code: 'CII_PARSE_FAILED',
-      message: 'Missing rsm:ExchangedDocument/ram:IssueDateTime',
-    } satisfies ParserError;
+    throw new CIIParserError('CII_PARSE_FAILED', 'Missing rsm:ExchangedDocument/ram:IssueDateTime');
   }
 
   // --- Trade transaction --------------------------------------------------
   const trade = root['rsm:SupplyChainTradeTransaction'] as Record<string, unknown> | undefined;
   if (!trade) {
-    throw {
-      code: 'CII_PARSE_FAILED',
-      message: 'Missing rsm:SupplyChainTradeTransaction',
-    } satisfies ParserError;
+    throw new CIIParserError('CII_PARSE_FAILED', 'Missing rsm:SupplyChainTradeTransaction');
   }
 
   const agreement = trade['ram:ApplicableHeaderTradeAgreement'] as
@@ -454,10 +465,7 @@ export function parseXrechnungCii(xml: string): ParsedXrechnung {
     | Record<string, unknown>
     | undefined;
   if (!settlement) {
-    throw {
-      code: 'CII_PARSE_FAILED',
-      message: 'Missing ram:ApplicableHeaderTradeSettlement',
-    } satisfies ParserError;
+    throw new CIIParserError('CII_PARSE_FAILED', 'Missing ram:ApplicableHeaderTradeSettlement');
   }
   const currencyCode = nodeText(settlement['ram:InvoiceCurrencyCode']) ?? 'EUR';
 
@@ -483,12 +491,14 @@ export function parseXrechnungCii(xml: string): ParsedXrechnung {
     | Record<string, unknown>
     | undefined;
   const taxExclusiveAmount = monSum
-    ? toMinorUnits(nodeText(monSum['ram:TaxBasisTotalAmount']) ?? '0')
+    ? ciiToMinorUnits(nodeText(monSum['ram:TaxBasisTotalAmount']) ?? '0')
     : 0;
   const taxInclusiveAmount = monSum
-    ? toMinorUnits(nodeText(monSum['ram:GrandTotalAmount']) ?? '0')
+    ? ciiToMinorUnits(nodeText(monSum['ram:GrandTotalAmount']) ?? '0')
     : 0;
-  const payableAmount = monSum ? toMinorUnits(nodeText(monSum['ram:DuePayableAmount']) ?? '0') : 0;
+  const payableAmount = monSum
+    ? ciiToMinorUnits(nodeText(monSum['ram:DuePayableAmount']) ?? '0')
+    : 0;
 
   // --- Lines --------------------------------------------------------------
   const rawLines = trade['ram:IncludedSupplyChainTradeLineItem'] as

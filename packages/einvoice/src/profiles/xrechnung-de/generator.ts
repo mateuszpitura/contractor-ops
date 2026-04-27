@@ -130,6 +130,29 @@ function toCiiDate(isoDate: string): string {
   return `${match[1]}${match[2]}${match[3]}`;
 }
 
+/**
+ * Add `days` to a `YYYY-MM-DD` ISO date and return CII format="102"
+ * (YYYYMMDD), using UTC arithmetic only — no `Date` getters that would
+ * shift across local-TZ boundaries (`getDate()` etc.). Mirrors the
+ * `toCiiDate` regex parse so the input shape contract is identical.
+ */
+function addDaysUtcCii(isoDate: string, days: number): string {
+  const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(isoDate);
+  if (!match) {
+    throw new Error(`Invalid date for UTC arithmetic: "${isoDate}" (expected YYYY-MM-DD)`);
+  }
+  const year = Number(match[1]);
+  const month = Number(match[2]); // 1-12
+  const day = Number(match[3]);
+  // Date.UTC normalises overflow (e.g. month=12 + day+50 wraps to next year).
+  const utcMs = Date.UTC(year, month - 1, day) + days * 86400000;
+  const out = new Date(utcMs);
+  const y = String(out.getUTCFullYear()).padStart(4, '0');
+  const m = String(out.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(out.getUTCDate()).padStart(2, '0');
+  return `${y}${m}${d}`;
+}
+
 interface CiiTradeTax {
   'ram:TypeCode': string;
   'ram:CategoryCode': string;
@@ -280,11 +303,13 @@ function buildPaymentTerms(
   skontoTerm?: SkontoTermInput | null,
 ): Record<string, unknown> {
   if (skontoTerm) {
-    // Compute due date from issue date + net period
-    const issueDateParsed = new Date(invoice.issueDate);
-    const dueDate = new Date(issueDateParsed);
-    dueDate.setDate(dueDate.getDate() + skontoTerm.netPeriodDays);
-    const dueDateCii = `${dueDate.getFullYear()}${String(dueDate.getMonth() + 1).padStart(2, '0')}${String(dueDate.getDate()).padStart(2, '0')}`;
+    // Compute due date from issue date + net period in UTC. Using
+    // `new Date(YYYY-MM-DD).setDate(...)` would parse as UTC midnight then
+    // mutate via local-TZ accessors — for negative-offset TZs (e.g. PST)
+    // `getDate()` returns the previous calendar day, shifting the legally-
+    // binding Skonto window by 1 day around month boundaries (bug-hunt
+    // 2026-04-27 [HIGH]).
+    const dueDateCii = addDaysUtcCii(invoice.issueDate, skontoTerm.netPeriodDays);
 
     // Human-readable German description from mirrored locked phrase template
     const germanDescription = XRECHNUNG_SKONTO_DESCRIPTION_TEMPLATE.replace(

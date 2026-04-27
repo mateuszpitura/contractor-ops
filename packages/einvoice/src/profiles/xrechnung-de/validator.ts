@@ -194,20 +194,14 @@ export async function validateXRechnungCii(xml: string): Promise<XRechnungValida
   });
 
   if (!xsd.ok) {
-    layers.push({
-      layer: 'EN16931-SCH',
+    const skipped = (layer: ValidationLayerName): ValidationLayerReport => ({
+      layer,
       status: 'SKIPPED',
       errors: [],
       warnings: [],
       infos: [],
     });
-    layers.push({
-      layer: 'XRECHNUNG-SCH',
-      status: 'SKIPPED',
-      errors: [],
-      warnings: [],
-      infos: [],
-    });
+    layers.push(skipped('EN16931-SCH'), skipped('XRECHNUNG-SCH'));
     return {
       status: 'INVALID',
       ruleSetVersion: KOSIT_RULE_SET_VERSION,

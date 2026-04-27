@@ -47,7 +47,7 @@ export type {
 // Pipeline
 export { runPipeline } from './engine/pipeline.js';
 // XML utilities
-export { dig, toMinorUnits } from './engine/xml-utils.js';
+export { dig, InvalidMinorUnitsValueError, toMinorUnits } from './engine/xml-utils.js';
 export {
   clearProfiles,
   getProfile,
@@ -290,7 +290,7 @@ export type {
 // XRechnung inbound parser — Phase-62 fully implemented.
 // Named export is the richer typed parser (ParsedXrechnung), separate from
 // the Phase-61 back-compat `parseXRechnungCii` already exported above.
-export { parseXrechnungCii } from './profiles/xrechnung-de/parser.js';
+export { CIIParserError, parseXrechnungCii } from './profiles/xrechnung-de/parser.js';
 export type { ZugferdConformanceLevel } from './profiles/zugferd-de/constants.js';
 // ZUGFeRD-DE constants + types
 export {
@@ -322,7 +322,7 @@ export type {
   ZugferdParserError,
 } from './profiles/zugferd-de/parser.js';
 // ZUGFeRD-DE parser + delegate validator
-export { parseZugferdPdf } from './profiles/zugferd-de/parser.js';
+export { parseZugferdPdf, ZugferdParserErrorClass } from './profiles/zugferd-de/parser.js';
 export type { ZugferdPdfUpload } from './profiles/zugferd-de/schemas.js';
 // ZUGFeRD-DE upload schema (Plan 05 intake route)
 export { ZugferdPdfUploadSchema } from './profiles/zugferd-de/schemas.js';

@@ -17,6 +17,7 @@
 // double quotes so single quotes don't strictly need escaping, but we escape
 // both to match the XML 1.0 §2.4 predefined-entities definition.
 
+import { escapeXmlEntities } from '../../engine/xml-utils.js';
 import type { ZugferdConformanceLevel } from './constants.js';
 import {
   PDFA_ID_CONFORMANCE,
@@ -136,14 +137,8 @@ export function buildZugferdXmpPacket(input: BuildXmpInput): Uint8Array {
 }
 
 // ---------------------------------------------------------------------------
-// XML escape — XML 1.0 §2.4 predefined entities only.
+// XML escape — single source of truth in engine/xml-utils.ts to keep the
+// XMP template + ZATCA signer in lockstep (XML 1.0 §2.4 predefined entities).
 // ---------------------------------------------------------------------------
 
-function escapeXml(value: string): string {
-  return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;');
-}
+const escapeXml = escapeXmlEntities;

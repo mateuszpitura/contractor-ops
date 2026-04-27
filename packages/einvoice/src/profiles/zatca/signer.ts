@@ -8,6 +8,7 @@
 
 import crypto from 'node:crypto';
 import { ExclusiveCanonicalization, SignedXml } from 'xml-crypto';
+import { escapeXmlEntities } from '../../engine/xml-utils.js';
 import type {
   CertificateInfo,
   Signable,
@@ -114,6 +115,13 @@ function computeCertDigest(cert: crypto.X509Certificate): string {
 }
 
 function extractSerialNumber(cert: crypto.X509Certificate): string {
+  // Self-signed onboarding/test certs occasionally omit the serialNumber
+  // extension; Node returns ''. `BigInt('0x')` then throws SyntaxError with
+  // a message that leaks crypto internals. Surface a clear, generic error
+  // matching the pattern set by `parseCertificate` / `parsePrivateKey`.
+  if (!cert.serialNumber) {
+    throw new Error('ZATCA signing: certificate is missing a serial number');
+  }
   return BigInt(`0x${cert.serialNumber}`).toString(10);
 }
 
@@ -131,13 +139,10 @@ function sha256Base64(data: string): string {
   return crypto.createHash('sha256').update(data, 'utf-8').digest('base64');
 }
 
-function escapeXml(str: string): string {
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
+// Single-source-of-truth XML 1.0 §2.4 escape — re-exported alias here only
+// to keep the call sites short. See `engine/xml-utils.ts:escapeXmlEntities`
+// for the rationale (bug-hunt 2026-04-27 [HIGH] — apostrophe asymmetry).
+const escapeXml = escapeXmlEntities;
 
 // ---------------------------------------------------------------------------
 // Canonicalization using xml-crypto internals
@@ -158,6 +163,7 @@ function computeDocDigest(xml: string): string {
 
   // Apply exclusive C14N (enveloped-sig is no-op on unsigned XML)
   const c14n = new ExclusiveCanonicalization();
+  // nominal-type bridge: xml-crypto's xmldom vs. ours — same runtime shape.
   const canonicalXml = c14n.process(rootElement as unknown as Element, {}).toString();
 
   return sha256Base64(canonicalXml);
@@ -172,7 +178,130 @@ function canonicalizeFragment(xmlStr: string): string {
   const c14n = new ExclusiveCanonicalization();
   const fragmentRoot = doc.documentElement;
   if (!fragmentRoot) throw new Error('XML fragment has no root element');
+  // nominal-type bridge: xml-crypto's xmldom vs. ours — same runtime shape.
   return c14n.process(fragmentRoot as unknown as Element, {}).toString();
+}
+
+/**
+ * Compute the SignedProperties digest from a document that contains an
+ * already-injected XAdES placeholder signature. The 2-pass injection-then-
+ * canonicalize trick ensures namespace inheritance from ancestors matches
+ * what a verifier will compute — canonicalizing SignedProperties in
+ * isolation drops inherited namespace declarations and breaks the digest.
+ */
+function computeSignedPropsDigest(documentWithPlaceholderSig: string): string {
+  const { DOMParser } = getXmldom();
+  const doc = new DOMParser().parseFromString(documentWithPlaceholderSig, 'text/xml');
+  const allElements = doc.getElementsByTagName('*');
+  let signedPropsElement: unknown = null;
+  for (let i = 0; i < allElements.length; i++) {
+    const el = allElements.item(i) as { getAttribute(name: string): string | null };
+    if (el.getAttribute('Id') === SIGNED_PROPS_ID) {
+      signedPropsElement = el;
+      break;
+    }
+  }
+  if (!signedPropsElement) {
+    throw new Error('Failed to find SignedProperties in temporary document');
+  }
+  const c14n = new ExclusiveCanonicalization();
+  // nominal-type bridge: xml-crypto's xmldom vs. ours — same runtime shape.
+  const canonSignedProps = c14n.process(signedPropsElement as Element, {}).toString();
+  return sha256Base64(canonSignedProps);
+}
+
+// ---------------------------------------------------------------------------
+// XAdES signature slot location + injection
+// ---------------------------------------------------------------------------
+
+const XADES_EXTENSION_URI = 'urn:oasis:names:specification:ubl:dsig:enveloped:xades';
+
+/**
+ * Validate that the input XML contains exactly one `ext:ExtensionContent`
+ * element whose parent `UBLExtension/ExtensionURI` text equals the XAdES
+ * enveloped-signature URI. Throws with a clear message if zero or more
+ * than one such slot is present.
+ *
+ * Why this matters: UBLExtensions cardinality is `1..N` and the signer
+ * historically used a regex that matched the FIRST empty ExtensionContent
+ * regardless of which UBLExtension owned it (bug-hunt 2026-04-27 [HIGH]).
+ * A future generator change or attacker-controlled UBL fragment that adds
+ * another empty ExtensionContent would silently put the signature in the
+ * wrong slot. Validating up-front via DOM removes that ambiguity.
+ *
+ * Returns nothing — the actual injection uses string-replace anchored at
+ * the empty `<ext:ExtensionContent>(\s*)</ext:ExtensionContent>` pair so
+ * the rest of the document stays byte-identical (which the doc-digest
+ * canonicalisation depends on).
+ */
+function assertSingleXadesSlot(xml: string): void {
+  const { DOMParser } = getXmldom();
+  const doc = new DOMParser().parseFromString(xml, 'text/xml');
+  const root = doc.documentElement;
+  if (!root) {
+    throw new Error('ZATCA signing: XML document has no root element');
+  }
+
+  const ublExtensions = root.getElementsByTagName('ext:UBLExtension');
+  let xadesEmptySlots = 0;
+  for (let i = 0; i < ublExtensions.length; i++) {
+    const ext = ublExtensions.item(i);
+    if (!ext) continue;
+    const uriEl = ext.getElementsByTagName('ext:ExtensionURI').item(0);
+    const uriText = uriEl?.textContent?.trim();
+    if (uriText !== XADES_EXTENSION_URI) continue;
+    const contentEls = ext.getElementsByTagName('ext:ExtensionContent');
+    for (let j = 0; j < contentEls.length; j++) {
+      const contentEl = contentEls.item(j);
+      if (!contentEl) continue;
+      // We only inject into a slot that is currently empty (whitespace-only
+      // content is fine — fast-xml-parser emits exactly that). If the slot
+      // already contains a Signature, the caller is double-signing, which
+      // we treat as a programmer error.
+      const hasElementChild = Array.from({ length: contentEl.childNodes.length }, (_, k) =>
+        contentEl.childNodes.item(k),
+      ).some(n => n != null && (n as { nodeType: number }).nodeType === 1 /* ELEMENT_NODE */);
+      if (!hasElementChild) {
+        xadesEmptySlots += 1;
+      }
+    }
+  }
+
+  if (xadesEmptySlots === 0) {
+    throw new Error(
+      `ZATCA signing: could not find an empty <ext:ExtensionContent> under the UBLExtension carrying ExtensionURI="${XADES_EXTENSION_URI}"`,
+    );
+  }
+  if (xadesEmptySlots > 1) {
+    throw new Error(
+      `ZATCA signing: multiple empty <ext:ExtensionContent> slots present under XAdES UBLExtension — ambiguous injection target`,
+    );
+  }
+}
+
+/**
+ * Inject a `<ds:Signature>` fragment into the empty XAdES slot.
+ *
+ * Implementation: validate-via-DOM that exactly one such slot exists, then
+ * targeted string-replace. Keeps the rest of the document byte-stable so
+ * the doc digest computed against the unsigned input C14Ns identically
+ * to the verifier-side C14N (which strips ds:Signature first).
+ */
+function injectSignatureIntoXadesSlot(xml: string, signatureFragmentXml: string): string {
+  assertSingleXadesSlot(xml);
+  const replaced = xml.replace(
+    /(<ext:ExtensionContent>)(\s*)(<\/ext:ExtensionContent>)/,
+    `$1${signatureFragmentXml}$2$3`,
+  );
+  if (replaced === xml) {
+    // assertSingleXadesSlot above already rules this out structurally — this
+    // is a defensive secondary check against subtle whitespace/PI variations
+    // the regex cannot match (e.g. a comment inside the slot).
+    throw new Error(
+      'ZATCA signing: failed to substitute signature into <ext:ExtensionContent> slot (regex did not match)',
+    );
+  }
+  return replaced;
 }
 
 // ---------------------------------------------------------------------------
@@ -305,30 +434,13 @@ export class ZatcaXAdESSigner implements Signable {
       signedPropsXml,
     });
 
-    // Inject placeholder signature into document
-    const tempSignedXml = xml.replace(
-      /(<ext:ExtensionContent>)(\s*)(<\/ext:ExtensionContent>)/,
-      `$1${placeholderSignatureXml}$2$3`,
-    );
+    // Inject placeholder signature into the XAdES extension slot via DOM —
+    // not regex — so we provably target the right UBLExtension and fail loud
+    // if the slot is missing. See `injectSignatureIntoXadesSlot` JSDoc.
+    const tempSignedXml = injectSignatureIntoXadesSlot(xml, placeholderSignatureXml);
 
     // 4. Compute real SignedProperties digest from the full document
-    const { DOMParser: DomParser } = getXmldom();
-    const tempDoc = new DomParser().parseFromString(tempSignedXml, 'text/xml');
-    const allElements = tempDoc.getElementsByTagName('*');
-    let signedPropsElement: unknown = null;
-    for (let i = 0; i < allElements.length; i++) {
-      const el = allElements.item(i) as { getAttribute(name: string): string | null };
-      if (el.getAttribute('Id') === SIGNED_PROPS_ID) {
-        signedPropsElement = el;
-        break;
-      }
-    }
-    if (!signedPropsElement) {
-      throw new Error('Failed to find SignedProperties in temporary document');
-    }
-    const c14n = new ExclusiveCanonicalization();
-    const canonSignedProps = c14n.process(signedPropsElement as Element, {}).toString();
-    const signedPropsDigest = sha256Base64(canonSignedProps);
+    const signedPropsDigest = computeSignedPropsDigest(tempSignedXml);
 
     // 5. Build real SignedInfo with correct digest
     const signedInfoXml = buildSignedInfoXml(docDigest, signedPropsDigest);
@@ -347,11 +459,8 @@ export class ZatcaXAdESSigner implements Signable {
       signedPropsXml,
     });
 
-    // 8. Inject into UBLExtensions/ExtensionContent
-    return xml.replace(
-      /(<ext:ExtensionContent>)(\s*)(<\/ext:ExtensionContent>)/,
-      `$1${finalSignatureXml}$2$3`,
-    );
+    // 8. Inject final signature into the XAdES UBLExtensions slot.
+    return injectSignatureIntoXadesSlot(xml, finalSignatureXml);
   }
 
   async verify(xml: string): Promise<SignatureVerificationResult> {

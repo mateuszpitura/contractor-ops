@@ -63,7 +63,14 @@ export class ZatcaProfile implements EInvoiceProfile {
         profileId: this.profileId,
       };
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
+      // `error instanceof Error` is now reliable across all parser-thrown
+      // values after bug-hunt 2026-04-27 fixed the plain-object throw sites.
+      const message =
+        error instanceof Error
+          ? error.message
+          : typeof error === 'object' && error !== null && 'message' in error
+            ? String((error as { message: unknown }).message)
+            : String(error);
       return {
         valid: false,
         errors: [{ code: 'PARSE_ERROR', message, severity: 'error' }],

@@ -16,7 +16,7 @@ export {
   ZugferdLevelUnsupportedForOutput,
 } from './generator.js';
 export type { ParsedZugferd, ZugferdParserError } from './parser.js';
-export { parseZugferdPdf } from './parser.js';
+export { parseZugferdPdf, ZugferdParserErrorClass } from './parser.js';
 export { ZugferdDEProfile } from './profile.js';
 export * from './schemas.js';
 export { validateZugferdEmbeddedXml } from './validator.js';

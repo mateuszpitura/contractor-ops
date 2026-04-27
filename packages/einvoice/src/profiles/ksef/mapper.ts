@@ -97,21 +97,39 @@ function mapPaymentMethodCode(method: string | undefined): string | undefined {
  * country-agnostic model.
  */
 export function ksefToEInvoice(parsed: KsefParsedInvoice): EInvoice {
-  // Build tax breakdown by grouping lines by vatRate
-  const taxGroups = new Map<string, { taxable: number; tax: number; rate: number }>();
+  // Build tax breakdown by grouping lines on a (vatRate, taxCategory) tuple.
+  // Today the FA(3) parser does not yet extract an explicit category; we
+  // derive it from the rate (>0 = 'S', 0 = 'Z'). Keying on the full tuple
+  // means once a future parser change starts surfacing a distinct category
+  // for exempt vs. zero-rated lines, this aggregator will not silently merge
+  // them (bug-hunt 2026-04-27 [MEDIUM]).
+  interface TaxGroup {
+    taxable: number;
+    tax: number;
+    rate: number;
+    category: string;
+  }
+  const taxGroups = new Map<string, TaxGroup>();
   for (const line of parsed.lines) {
-    const key = line.vatRate ?? '0';
-    const existing = taxGroups.get(key) ?? { taxable: 0, tax: 0, rate: 0 };
+    const rateKey = line.vatRate ?? '0';
+    const rate = rateKey === '0' ? 0 : parseFloat(rateKey) || 0;
+    const category = rate > 0 ? 'S' : 'Z';
+    const key = `${rateKey}|${category}`;
+    const existing = taxGroups.get(key) ?? {
+      taxable: 0,
+      tax: 0,
+      rate,
+      category,
+    };
     existing.taxable += line.netAmountMinor ?? 0;
     existing.tax += line.vatAmountMinor ?? 0;
-    existing.rate = key === '0' ? 0 : parseFloat(key) || 0;
     taxGroups.set(key, existing);
   }
 
-  const taxBreakdown: EInvoiceTaxSubtotal[] = Array.from(taxGroups.entries()).map(([, group]) => ({
+  const taxBreakdown: EInvoiceTaxSubtotal[] = Array.from(taxGroups.values()).map(group => ({
     taxableAmountMinor: group.taxable,
     taxAmountMinor: group.tax,
-    taxCategory: group.rate > 0 ? 'S' : 'Z',
+    taxCategory: group.category,
     percent: group.rate,
   }));
 

@@ -393,10 +393,13 @@ export class KsefApiClient {
   }
 
   /**
-   * Normalize an unknown thrown value into an Error instance.
+   * Normalize an unknown thrown value into an Error instance, preserving
+   * the original via `.cause` when wrapping a non-Error so downstream
+   * debugging can still walk the cause chain (bug-hunt 2026-04-27 [LOW]).
    */
   private static toError(error: unknown): Error {
-    return error instanceof Error ? error : new Error(String(error));
+    if (error instanceof Error) return error;
+    return new Error(String(error), { cause: error });
   }
 
   /**
@@ -444,6 +447,8 @@ export class KsefApiClient {
       }
     }
 
+    // Preserve the last attempt's cause chain so post-mortem callers can see
+    // which underlying error was the final retry failure.
     throw lastError ?? new Error('KSeF API request failed after retries');
   }
 }

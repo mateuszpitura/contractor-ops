@@ -20,7 +20,7 @@
 // `subcode` so the router / caller can surface a precise diagnostic.
 
 import type { PDFHexString, PDFString } from 'pdf-lib';
-import { decodePDFRawStream, PDFDict, PDFDocument, PDFName, PDFRawStream } from 'pdf-lib';
+import { decodePDFRawStream, PDFArray, PDFDict, PDFDocument, PDFName, PDFRawStream } from 'pdf-lib';
 
 import { ZUGFERD_ATTACHMENT_FILENAME } from './constants.js';
 
@@ -34,6 +34,7 @@ export type StructuralCheckSubcode =
   | 'WRONG_EMBEDDED_FILENAME'
   | 'MISSING_AF_RELATIONSHIP'
   | 'MISSING_OUTPUT_INTENT'
+  | 'STRUCTURAL_SHAPE_MISMATCH'
   | 'XMP_PDFA_PART_MISMATCH'
   | 'XMP_FX_FILENAME_MISMATCH';
 
@@ -101,10 +102,20 @@ export async function assertZugferdStructure(pdfBytes: Uint8Array): Promise<void
   if (!outputIntentsRef) {
     throw new ZugferdWrappingError('MISSING_OUTPUT_INTENT', 'Catalog /OutputIntents is missing');
   }
-  const outputIntents = doc.context.lookup(outputIntentsRef) as unknown as {
-    asArray?: () => unknown[];
-  };
-  const oiItems = outputIntents.asArray ? outputIntents.asArray() : [];
+  const outputIntents = doc.context.lookup(outputIntentsRef);
+  // PDF/A-3 mandates /OutputIntents be a PDFArray. If it isn't, the wrap
+  // pipeline produced a malformed PDF — surface that explicitly instead of
+  // collapsing into the misleading "array is empty" path.
+  if (!(outputIntents instanceof PDFArray)) {
+    throw new ZugferdWrappingError(
+      'STRUCTURAL_SHAPE_MISMATCH',
+      `Catalog /OutputIntents must be a PDFArray (got ${
+        (outputIntents as { constructor?: { name?: string } } | null)?.constructor?.name ??
+        'undefined'
+      })`,
+    );
+  }
+  const oiItems = outputIntents.asArray();
   if (oiItems.length === 0) {
     throw new ZugferdWrappingError(
       'MISSING_OUTPUT_INTENT',
@@ -159,10 +170,16 @@ function findEmbeddedFacturX(doc: PDFDocument): EmbeddedMatch {
   const afRef = doc.catalog.get(PDFName.of('AF'));
   const seenFilenames: string[] = [];
   if (afRef) {
-    const afArr = doc.context.lookup(afRef) as unknown as {
-      asArray?: () => unknown[];
-    };
-    const items = afArr.asArray ? afArr.asArray() : [];
+    const afArr = doc.context.lookup(afRef);
+    if (!(afArr instanceof PDFArray)) {
+      throw new ZugferdWrappingError(
+        'STRUCTURAL_SHAPE_MISMATCH',
+        `Catalog /AF must be a PDFArray (got ${
+          (afArr as { constructor?: { name?: string } } | null)?.constructor?.name ?? 'undefined'
+        })`,
+      );
+    }
+    const items = afArr.asArray();
     for (const fsRef of items) {
       const fs = doc.context.lookup(fsRef as never, PDFDict);
       const filename = readFileName(fs);
@@ -209,10 +226,16 @@ function findEmbeddedFacturX(doc: PDFDocument): EmbeddedMatch {
 function scanNameTree(doc: PDFDocument, node: PDFDict, seen: string[]): FoundMatch | null {
   const namesRef = node.get(PDFName.of('Names'));
   if (namesRef) {
-    const namesArr = doc.context.lookup(namesRef) as unknown as {
-      asArray?: () => unknown[];
-    };
-    const items = namesArr.asArray ? namesArr.asArray() : [];
+    const namesArr = doc.context.lookup(namesRef);
+    if (!(namesArr instanceof PDFArray)) {
+      throw new ZugferdWrappingError(
+        'STRUCTURAL_SHAPE_MISMATCH',
+        `EmbeddedFiles /Names must be a PDFArray (got ${
+          (namesArr as { constructor?: { name?: string } } | null)?.constructor?.name ?? 'undefined'
+        })`,
+      );
+    }
+    const items = namesArr.asArray();
     for (let i = 0; i < items.length; i += 2) {
       const keyVal = items[i] as PDFString | PDFHexString;
       let name: string | null = null;
@@ -234,10 +257,16 @@ function scanNameTree(doc: PDFDocument, node: PDFDict, seen: string[]): FoundMat
   }
   const kidsRef = node.get(PDFName.of('Kids'));
   if (kidsRef) {
-    const kidsArr = doc.context.lookup(kidsRef) as unknown as {
-      asArray?: () => unknown[];
-    };
-    const items = kidsArr.asArray ? kidsArr.asArray() : [];
+    const kidsArr = doc.context.lookup(kidsRef);
+    if (!(kidsArr instanceof PDFArray)) {
+      throw new ZugferdWrappingError(
+        'STRUCTURAL_SHAPE_MISMATCH',
+        `EmbeddedFiles /Kids must be a PDFArray (got ${
+          (kidsArr as { constructor?: { name?: string } } | null)?.constructor?.name ?? 'undefined'
+        })`,
+      );
+    }
+    const items = kidsArr.asArray();
     for (const kidRef of items) {
       const kid = doc.context.lookup(kidRef as never, PDFDict);
       const res = scanNameTree(doc, kid, seen);

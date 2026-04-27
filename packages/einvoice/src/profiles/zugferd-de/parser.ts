@@ -57,10 +57,30 @@ export interface ParsedZugferd extends ParsedXrechnung {
  * Discriminated union of typed PDF-stage errors. XML-stage errors
  * (CII_PARSE_FAILED, ZUGFERD_LEVEL_UNSUPPORTED) propagate unchanged from
  * the inner XRechnung parser.
+ *
+ * Retained as a type alias for callers that pattern-match on `.code` —
+ * structurally compatible with the {@link ZugferdParserErrorClass} instances
+ * now thrown.
  */
 export type ZugferdParserError =
   | { code: 'ZUGFERD_PDF_UNREADABLE'; message: string }
   | { code: 'ZUGFERD_NO_XML_ATTACHMENT'; message: string };
+
+/**
+ * Class-form of {@link ZugferdParserError}. Subclasses `Error` so callers
+ * retain stack traces and `instanceof Error` is true (the previous plain
+ * object throws produced `[object Object]` in catch sites that defaulted to
+ * `String(err)` — see bug-hunt 2026-04-27 [MEDIUM]).
+ */
+export class ZugferdParserErrorClass extends Error {
+  constructor(
+    public readonly code: 'ZUGFERD_PDF_UNREADABLE' | 'ZUGFERD_NO_XML_ATTACHMENT',
+    message: string,
+  ) {
+    super(message);
+    this.name = 'ZugferdParserError';
+  }
+}
 
 const log = createLogger({ module: 'zugferd-de/parser' });
 
@@ -82,18 +102,18 @@ export async function parseZugferdPdf(bytes: Uint8Array): Promise<ParsedZugferd>
     });
   } catch (err) {
     log.warn({ err: err instanceof Error ? err.message : String(err) }, 'Failed to load PDF');
-    throw {
-      code: 'ZUGFERD_PDF_UNREADABLE',
-      message: err instanceof Error ? err.message : String(err),
-    } satisfies ZugferdParserError;
+    throw new ZugferdParserErrorClass(
+      'ZUGFERD_PDF_UNREADABLE',
+      err instanceof Error ? err.message : String(err),
+    );
   }
 
   const xmlBytes = findEmbeddedFacturXXml(doc);
   if (!xmlBytes) {
-    throw {
-      code: 'ZUGFERD_NO_XML_ATTACHMENT',
-      message: `PDF contains no ${ZUGFERD_ATTACHMENT_FILENAME} attachment with AFRelationship=${ZUGFERD_AF_RELATIONSHIP}`,
-    } satisfies ZugferdParserError;
+    throw new ZugferdParserErrorClass(
+      'ZUGFERD_NO_XML_ATTACHMENT',
+      `PDF contains no ${ZUGFERD_ATTACHMENT_FILENAME} attachment with AFRelationship=${ZUGFERD_AF_RELATIONSHIP}`,
+    );
   }
 
   const extractedXml = new TextDecoder('utf-8').decode(xmlBytes);

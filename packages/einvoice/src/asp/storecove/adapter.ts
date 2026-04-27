@@ -332,16 +332,32 @@ export class StorecoveAdapter implements ASPAdapter {
       return { valid: false };
     }
 
+    // HTTP headers are case-insensitive — accept both common casings used by
+    // Storecove's docs. Callers SHOULD normalise upstream, but we tolerate
+    // either spelling here as a defensive default.
     const signature = headers['storecove-signature'] ?? headers['Storecove-Signature'];
-    if (!signature) {
+
+    // Strict shape gate BEFORE hex-decoding: `Buffer.from(<header>, 'hex')`
+    // silently truncates on any non-hex character or odd-length input, which
+    // weakens the HMAC strength bound (the comparison universe shrinks below
+    // the header's actual character space) AND, when the resulting buffers
+    // differ in length, `timingSafeEqual` throws RangeError. Rejecting here
+    // converts both failure modes into a clean `{ valid: false }`.
+    const HEX64 = /^[0-9a-f]{64}$/i;
+    if (typeof signature !== 'string' || !HEX64.test(signature)) {
       return { valid: false };
     }
 
     const computed = createHmac('sha256', this.webhookSecret).update(rawBody).digest('hex');
+    const sigBuf = Buffer.from(signature, 'hex');
+    const cmpBuf = Buffer.from(computed, 'hex');
+    // Both buffers are 32 bytes after the regex gate, but defence-in-depth:
+    // never feed mismatched lengths into timingSafeEqual.
+    if (sigBuf.length !== cmpBuf.length) {
+      return { valid: false };
+    }
 
-    const valid = timingSafeEqual(Buffer.from(computed, 'hex'), Buffer.from(signature, 'hex'));
-
-    if (!valid) {
+    if (!timingSafeEqual(sigBuf, cmpBuf)) {
       return { valid: false };
     }
 
