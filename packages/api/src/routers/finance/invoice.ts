@@ -266,10 +266,7 @@ async function resolveEffectiveVatRate(
     if (isReverseCharge) {
       rate = 'RC';
     } else if (org.countryCode) {
-      rate = await getDefaultRateCode(
-        org.countryCode,
-        db as unknown as Parameters<typeof getDefaultRateCode>[1],
-      );
+      rate = await getDefaultRateCode(org.countryCode, db);
     }
   }
 
