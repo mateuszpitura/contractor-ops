@@ -19,6 +19,21 @@ describe('role parsing', () => {
     expect(parseMemberRole('READ_ONLY')).toBeNull();
   });
 
+  it('rejects whitespace-padded inputs (no implicit trimming)', () => {
+    // Authorization predicates accept exact matches only — silent whitespace
+    // normalization is a code smell at this layer.
+    expect(parseMemberRole(' admin')).toBeNull();
+    expect(parseMemberRole('admin ')).toBeNull();
+    expect(parseMemberRole('  admin  ')).toBeNull();
+    expect(parseMemberRole('\tadmin')).toBeNull();
+  });
+
+  it('rejects null, undefined, and empty strings', () => {
+    expect(parseMemberRole(null)).toBeNull();
+    expect(parseMemberRole(undefined)).toBeNull();
+    expect(parseMemberRole('')).toBeNull();
+  });
+
   it('allows owners to satisfy admin approval steps', () => {
     expect(eligibleMemberRolesForApproval('admin')).toEqual(['owner', 'admin']);
   });

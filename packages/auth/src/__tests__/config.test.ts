@@ -43,4 +43,30 @@ describe('auth config exports', () => {
     expect(auth.options.emailAndPassword?.enabled).toBe(true);
     expect(auth.options.emailAndPassword?.requireEmailVerification).toBe(true);
   });
+
+  it('does NOT register Google/Microsoft providers when env vars are absent', async () => {
+    const { auth } = await import('../config.js');
+    // Test env has no GOOGLE_/MICROSOFT_ vars set, so neither provider should
+    // appear — the previous `as string` cast silently registered both with
+    // `undefined` credentials, which is the bug we're guarding against.
+    const providers = auth.options.socialProviders ?? {};
+    expect(providers).not.toHaveProperty('google');
+    expect(providers).not.toHaveProperty('microsoft');
+  });
+
+  it('excludes microsoft from accountLinking.trustedProviders', async () => {
+    const { auth } = await import('../config.js');
+    // Microsoft consumer tenants historically allow self-asserted email;
+    // auto-linking on microsoft-supplied email is an account-takeover vector.
+    const trusted = auth.options.account?.accountLinking?.trustedProviders ?? [];
+    expect(trusted).not.toContain('microsoft');
+    expect(trusted).toContain('google');
+  });
+
+  it('configures secure cookie attribute based on production flag', async () => {
+    const { auth } = await import('../config.js');
+    // NODE_ENV is "test" during vitest run — so secure should be false.
+    expect(auth.options.advanced?.defaultCookieAttributes?.secure).toBe(false);
+    expect(auth.options.advanced?.defaultCookieAttributes?.sameSite).toBe('lax');
+  });
 });
