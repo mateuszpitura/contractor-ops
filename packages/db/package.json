@@ -36,9 +36,11 @@
     "db:push:all": "tsx scripts/push-all-regions.ts",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "typecheck:fast": "tsgo --noEmit"
   },
   "dependencies": {
+    "@contractor-ops/compliance-policy": "workspace:*",
     "@neondatabase/serverless": "^1.0.2",
     "@prisma/adapter-neon": "^7.7.0",
     "@prisma/client": "^7.7.0",
