@@ -37,6 +37,8 @@ import {
   syncPaymentDueDeadline,
 } from '../../services/calendar-deadline-sync.js';
 import { dispatch } from '../../services/notification-service.js';
+import type { ApprovalQueueStepRow } from './approval-types.js';
+import { approvalStepQueueInclude } from './approval-types.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -577,26 +579,6 @@ export const approvalRouter = router({
       }
       // "all" — no additional status filter
 
-      const stepInclude = {
-        approvalFlow: {
-          select: {
-            id: true,
-            resourceId: true,
-            resourceType: true,
-            status: true,
-            startedAt: true,
-            chainConfigId: true,
-          },
-        },
-        approver: {
-          select: { id: true, name: true, email: true, image: true },
-        },
-      } satisfies Prisma.ApprovalStepInclude;
-
-      type ApprovalQueueStepRow = Prisma.ApprovalStepGetPayload<{
-        include: typeof stepInclude;
-      }>;
-
       let steps: ApprovalQueueStepRow[];
       let total: number;
 
@@ -634,7 +616,7 @@ export const approvalRouter = router({
 
         const unordered = await ctx.db.approvalStep.findMany({
           where: { id: { in: ids } },
-          include: stepInclude,
+          include: approvalStepQueueInclude,
         });
         const order = new Map(ids.map((id, idx) => [id, idx]));
         steps = [...unordered].sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0));
@@ -650,7 +632,7 @@ export const approvalRouter = router({
             skip: (input.page - 1) * input.pageSize,
             take: input.pageSize,
             orderBy,
-            include: stepInclude,
+            include: approvalStepQueueInclude,
           }),
           ctx.db.approvalStep.count({ where }),
         ]);
