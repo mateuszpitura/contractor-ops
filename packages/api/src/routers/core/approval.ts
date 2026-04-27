@@ -16,6 +16,7 @@ import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import * as E from '../../errors.js';
 import { router } from '../../init.js';
+import type { TenantScopedDb } from '../../lib/tenant-db.js';
 import { requirePermission } from '../../middleware/rbac.js';
 import { tenantProcedure } from '../../middleware/tenant.js';
 import type { TxClient } from '../../services/approval-engine.js';
@@ -129,7 +130,7 @@ function dispatchDecisionNotification(
  * Dispatches an approval request notification to the next approver in a flow.
  */
 async function dispatchNextApproverNotification(
-  db: TxClient,
+  db: TenantScopedDb,
   organizationId: string,
   invoice: {
     id: string;
@@ -314,7 +315,7 @@ async function finalizeApprovedInvoice(
   opts: {
     resourceId: string;
     organizationId: string;
-    db: TxClient;
+    db: TenantScopedDb;
     userId: string | undefined;
   },
 ) {
@@ -798,7 +799,7 @@ export const approvalRouter = router({
         );
         if (nextStep) {
           void dispatchNextApproverNotification(
-            ctx.db as unknown as TxClient,
+            ctx.db,
             ctx.organizationId,
             result.invoice,
             result.flow.id,
@@ -1054,7 +1055,7 @@ export const approvalRouter = router({
               await finalizeApprovedInvoice(tx as TxClient, {
                 resourceId: step.approvalFlow.resourceId,
                 organizationId: ctx.organizationId,
-                db: ctx.db as unknown as TxClient,
+                db: ctx.db,
                 userId: ctx.user?.id,
               });
             }
