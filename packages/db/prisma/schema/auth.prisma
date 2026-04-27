@@ -20,6 +20,10 @@ model User {
   failedLoginAttempts Int       @default(0)
   lockedUntil         DateTime?
 
+  // Phase 74 D-08 — manual out-of-office override (Zod-validated JSONB on writes)
+  // Shape: { from: ISO, until: ISO, fallbackUserId?: string, reason?: string }
+  outOfOffice Json?
+
   sessions Session[]
   accounts Account[]
 
@@ -28,8 +32,10 @@ model User {
   invitations Invitation[]
 
   // Contractor relations
-  ownedContractors Contractor[] @relation("ContractorOwner")
-  managedTeams     Team[]       @relation("TeamManager")
+  ownedContractors      Contractor[] @relation("ContractorOwner")
+  managedTeams          Team[]       @relation("TeamManager")
+  // Phase 74 D-06 — back-relation for Team.fallbackApprover
+  fallbackApprovedTeams Team[]       @relation("TeamFallbackApprover")
 
   // Contract relations
   ownedContracts Contract[] @relation("ContractOwner")

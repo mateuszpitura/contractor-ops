@@ -30,6 +30,8 @@ model Contractor {
   primaryTeamId             String?
   primaryProjectId          String?
   defaultCostCenterId       String?
+  // Phase 74 D-02 — KT role tag for offboarding template auto-selection (NULL → Generic Consultant fallback)
+  workflowRoleId            String?
   notes                     String?
   isSensitive               Boolean                  @default(false)
   customFieldsJson          Json?
@@ -48,11 +50,12 @@ model Contractor {
   archivedAt                DateTime?
   deletedAt                 DateTime?
 
-  organization      Organization @relation(fields: [organizationId], references: [id])
-  owner             User?        @relation("ContractorOwner", fields: [ownerUserId], references: [id])
-  primaryTeam       Team?        @relation(fields: [primaryTeamId], references: [id])
-  primaryProject    Project?     @relation(fields: [primaryProjectId], references: [id])
-  defaultCostCenter CostCenter?  @relation(fields: [defaultCostCenterId], references: [id])
+  organization      Organization          @relation(fields: [organizationId], references: [id])
+  owner             User?                 @relation("ContractorOwner", fields: [ownerUserId], references: [id])
+  primaryTeam       Team?                 @relation(fields: [primaryTeamId], references: [id])
+  primaryProject    Project?              @relation(fields: [primaryProjectId], references: [id])
+  defaultCostCenter CostCenter?           @relation(fields: [defaultCostCenterId], references: [id])
+  workflowRole      WorkflowRoleTemplate? @relation(fields: [workflowRoleId], references: [id])
 
   contacts                  ContractorContact[]
   billingProfiles           ContractorBillingProfile[]
@@ -86,6 +89,7 @@ model Contractor {
   @@index([organizationId, ownerUserId])
   @@index([organizationId, legalName])
   @@index([organizationId, taxId])
+  @@index([organizationId, workflowRoleId])
 }
 
 model ContractorContact {

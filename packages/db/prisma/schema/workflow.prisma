@@ -50,24 +50,82 @@ model WorkflowTaskTemplate {
   @@index([organizationId, workflowTemplateId, sortOrder])
 }
 
-model WorkflowRun {
-  id                 String            @id @default(cuid())
+// Phase 74 D-01 / D-04 — KT role-template definitions (per-org typed seeds + ops-added).
+// Lives next to WorkflowTaskTemplate but is a separate registry — these rows
+// are consumed by Plan 74-05's startOffboardingRun template auto-selection.
+model WorkflowRoleTemplate {
+  id                 String   @id @default(cuid())
   organizationId     String
-  workflowTemplateId String
-  entityType         EntityType
-  entityId           String
-  contractorId       String?
-  contractId         String?
-  status             WorkflowRunStatus @default(NOT_STARTED)
-  startedByUserId    String
-  startedAt          DateTime          @default(now())
-  dueAt              DateTime?
-  completedAt        DateTime?
-  cancelledAt        DateTime?
-  cancelReason       String?
-  progressPercent    Int?
-  createdAt          DateTime          @default(now())
-  updatedAt          DateTime          @updatedAt
+  role               String
+  displayNameI18nKey String?
+  displayNameEn      String?
+  displayNamePl      String?
+  displayNameDe      String?
+  isSeed             Boolean  @default(false)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  organization  Organization               @relation(fields: [organizationId], references: [id])
+  contractors   Contractor[]
+  taskTemplates WorkflowRoleTaskTemplate[]
+
+  @@unique([organizationId, role])
+  @@index([organizationId])
+  @@index([organizationId, isSeed])
+}
+
+// Phase 74 D-04 — KT task items belonging to a WorkflowRoleTemplate (6-9 per template).
+// Plan 74-05 materialises these from OFFBOARDING_TEMPLATE_SEEDS on per-org first boot.
+model WorkflowRoleTaskTemplate {
+  id                     String   @id @default(cuid())
+  organizationId         String
+  workflowRoleTemplateId String
+  sortOrder              Int
+  titleI18nKey           String?
+  descriptionI18nKey     String?
+  titleEn                String?
+  titlePl                String?
+  titleDe                String?
+  descriptionEn          String?
+  descriptionPl          String?
+  descriptionDe          String?
+  dueDayOffset           Int
+  requiredDocsJson       Json?
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  organization         Organization         @relation(fields: [organizationId], references: [id])
+  workflowRoleTemplate WorkflowRoleTemplate @relation(fields: [workflowRoleTemplateId], references: [id], onDelete: Cascade)
+
+  @@unique([workflowRoleTemplateId, sortOrder])
+  @@index([organizationId])
+  @@index([organizationId, workflowRoleTemplateId, sortOrder])
+}
+
+model WorkflowRun {
+  id                   String            @id @default(cuid())
+  organizationId       String
+  workflowTemplateId   String
+  entityType           EntityType
+  entityId             String
+  contractorId         String?
+  contractId           String?
+  status               WorkflowRunStatus @default(NOT_STARTED)
+  startedByUserId      String
+  startedAt            DateTime          @default(now())
+  dueAt                DateTime?
+  completedAt          DateTime?
+  cancelledAt          DateTime?
+  cancelReason         String?
+  progressPercent      Int?
+  // Phase 74 D-03 — start-time template-selection override (NULL = auto-selected)
+  overriddenTemplateId String?
+  overriddenByUserId   String?
+  overriddenAt         DateTime?
+  // Phase 74 D-11 — IP_VERIFICATION override metadata (NULL until override invoked)
+  overrideMetadata     Json?
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
 
   organization     Organization     @relation(fields: [organizationId], references: [id])
   workflowTemplate WorkflowTemplate @relation(fields: [workflowTemplateId], references: [id])
@@ -181,6 +239,10 @@ enum WorkflowTaskType {
   MEETING
   MANUAL
   NOTIFICATION
+  // Phase 74 D-09 — IP-verification blocking task that owners can override
+  IP_VERIFICATION
+  // Phase 74 — recurring contract-health-check task surfaced during offboarding
+  CONTRACT_HEALTH_CHECK
 }
 
 enum AssigneeMode {

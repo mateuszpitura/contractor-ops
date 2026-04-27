@@ -63,6 +63,9 @@ model Organization {
   workflowTaskRuns               WorkflowTaskRun[]
   workflowComments               WorkflowComment[]
   workflowAttachments            WorkflowAttachment[]
+  // Phase 74 — KT role-template + role-task-template registries (per-org typed seeds + ops-added)
+  workflowRoleTemplates          WorkflowRoleTemplate[]
+  workflowRoleTaskTemplates      WorkflowRoleTaskTemplate[]
   invoices                       Invoice[]
   invoiceFiles                   InvoiceFile[]
   invoiceLines                   InvoiceLine[]
@@ -173,17 +176,20 @@ model Invitation {
 // --- Organizational Structure ---
 
 model Team {
-  id             String       @id @default(cuid())
-  organizationId String
-  name           String
-  code           String?
-  managerUserId  String?
-  status         SimpleStatus @default(ACTIVE)
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  id                 String       @id @default(cuid())
+  organizationId     String
+  name               String
+  code               String?
+  managerUserId      String?
+  // Phase 74 D-06 — fallback approver when manager is on PTO (NULL → owners-broadcast)
+  fallbackApproverId String?
+  status             SimpleStatus @default(ACTIVE)
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
 
-  organization Organization @relation(fields: [organizationId], references: [id])
-  manager      User?        @relation("TeamManager", fields: [managerUserId], references: [id])
+  organization     Organization @relation(fields: [organizationId], references: [id])
+  manager          User?        @relation("TeamManager", fields: [managerUserId], references: [id])
+  fallbackApprover User?        @relation("TeamFallbackApprover", fields: [fallbackApproverId], references: [id])
 
   members               Member[]
   contractors           Contractor[]
