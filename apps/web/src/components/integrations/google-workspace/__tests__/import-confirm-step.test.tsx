@@ -5,13 +5,13 @@ describe('ImportConfirmStep', () => {
   const defaultProps = {
     userCount: 5,
     roleBreakdown: [
-      { role: 'Admin', count: 2, source: 'Default' },
-      { role: 'Read Only', count: 3, source: 'Group: Engineering' },
+      { role: 'admin', count: 2, source: 'Default' },
+      { role: 'readonly', count: 3, source: 'Group: Engineering' },
     ],
     onConfirm: vi.fn(),
     onBack: vi.fn(),
     isImporting: false,
-  };
+  } as const;
 
   it('renders ready to import heading', () => {
     render(<ImportConfirmStep {...defaultProps} />);

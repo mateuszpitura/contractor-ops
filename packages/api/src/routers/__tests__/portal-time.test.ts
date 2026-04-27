@@ -119,6 +119,12 @@ vi.mock('../../services/portal-session.js', () => ({
 }));
 
 vi.mock('@contractor-ops/logger', () => ({
+  createIntegrationLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+  })),
   createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
 }));
@@ -136,7 +142,7 @@ vi.mock('@sentry/nextjs', () => {
 });
 
 import { createCallerFactory } from '../../init.js';
-import { portalTimeRouter } from '../portal-time.js';
+import { portalTimeRouter } from '../portal/portal-time.js';
 
 const createCaller = createCallerFactory(portalTimeRouter);
 

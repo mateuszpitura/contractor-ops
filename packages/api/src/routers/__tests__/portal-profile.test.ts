@@ -29,6 +29,8 @@ const { mockPrisma } = vi.hoisted(() => {
     },
     contractor: {
       findUnique: vi.fn(),
+      // submitFinancialChangeRequest uses findFirst (lookup by portal session token, not pk).
+      findFirst: vi.fn(),
       update: vi.fn(),
     },
     contractorBillingProfile: {
@@ -118,6 +120,12 @@ vi.mock('../../services/stripe-client.js', () => ({
 }));
 
 vi.mock('@contractor-ops/logger', () => ({
+  createIntegrationLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+  })),
   createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
 }));
@@ -139,14 +147,14 @@ vi.mock('@sentry/nextjs', () => {
 // ---------------------------------------------------------------------------
 
 import { createCallerFactory } from '../../init.js';
-import { appRouter } from '../../root.js';
+import { portalAppRouter } from '../../portal-root.js';
 import { createChangeRequest } from '../../services/portal-change-request.js';
 
 // ---------------------------------------------------------------------------
 // Caller setup
 // ---------------------------------------------------------------------------
 
-const createCaller = createCallerFactory(appRouter);
+const createCaller = createCallerFactory(portalAppRouter);
 
 function makePortalCaller() {
   return createCaller({
@@ -392,6 +400,14 @@ describe('portal.updateContactInfo', () => {
 // ===========================================================================
 
 describe('portal.submitFinancialChangeRequest', () => {
+  beforeEach(() => {
+    // Source reads contractor for tax-ID validation/snapshot before issuing the change request.
+    mockPrisma.contractor.findFirst.mockResolvedValue({
+      countryCode: 'PL',
+      taxId: null,
+    });
+  });
+
   it('creates ContractorChangeRequest with requested financial changes (PORT-06b)', async () => {
     mockPrisma.contractorBillingProfile.findFirst.mockResolvedValue({
       bankAccountMasked: '****1111',

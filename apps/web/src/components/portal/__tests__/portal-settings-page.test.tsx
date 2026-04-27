@@ -30,7 +30,7 @@ vi.mock('@tanstack/react-query', async importOriginal => {
   };
 });
 vi.mock('@/trpc/init', () => ({
-  trpc: {
+  portalTrpc: {
     portal: {
       getProfile: { queryOptions: () => ({ queryKey: ['portal.profile'] }) },
       updateContactInfo: { mutationOptions: () => ({ mutationFn: vi.fn() }) },

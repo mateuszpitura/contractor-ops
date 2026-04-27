@@ -58,7 +58,10 @@ vi.mock('@/trpc/init', () => {
       },
     },
   );
-  return { trpc: proxy };
+  // After the tRPC AppRouter split, the portal endpoint has its own client
+  // (`portalTrpc`) typed against `PortalAppRouter`. The proxy is shape-agnostic,
+  // so we expose the same recursive proxy under both names.
+  return { trpc: proxy, portalTrpc: proxy };
 });
 
 vi.mock('@/components/ui/scroll-area', () => ({

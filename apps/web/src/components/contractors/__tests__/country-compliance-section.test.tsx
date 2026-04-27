@@ -26,48 +26,49 @@ type EngagementRow = {
 };
 const mockEngagements: { value: EngagementRow[] } = { value: [] };
 
-vi.mock('@/trpc/init', () => ({
-  trpc: {
-    useUtils: () => ({
+vi.mock('@tanstack/react-query', async importOriginal => {
+  const actual = await importOriginal<typeof import('@tanstack/react-query')>();
+  return {
+    ...actual,
+    useQuery: (opts: { queryKey?: unknown[] }) => {
+      const key = JSON.stringify(opts?.queryKey ?? []);
+      if (key.includes('getCountryFieldsConfig')) {
+        return { isLoading: false, data: mockConfigData.value };
+      }
+      if (key.includes('listEngagements')) {
+        return { isLoading: false, data: mockEngagements.value };
+      }
+      if (key.includes('classification.getLatest') || key.includes('getLatest')) {
+        return { isPending: false, data: null };
+      }
+      return { isLoading: false, data: {}, refetch: vi.fn() };
+    },
+    useMutation: () => ({ mutate: vi.fn(), isPending: false }),
+  };
+});
+
+vi.mock('@/trpc/init', () => {
+  const stub = (extra?: Record<string, unknown>) => ({
+    queryOptions: (input?: unknown) => ({ queryKey: ['mock', input], ...extra }),
+    mutationOptions: (opts?: Record<string, unknown>) => ({ mutationFn: vi.fn(), ...opts }),
+    queryKey: () => ['mock'],
+  });
+  return {
+    trpc: {
       contractor: {
-        getById: { invalidate: vi.fn() },
+        getCountryFieldsConfig: stub({ queryKey: ['contractor.getCountryFieldsConfig'] }),
+        getCountryFields: stub({ queryKey: ['contractor.getCountryFields'] }),
+        getById: stub({ queryKey: ['contractor.getById'] }),
+        listEngagements: stub({ queryKey: ['contractor.listEngagements'] }),
+        updateCountryFields: stub(),
+        revalidateVat: stub(),
       },
-    }),
-    contractor: {
-      getCountryFieldsConfig: {
-        useQuery: () => ({ isLoading: false, data: mockConfigData.value }),
-      },
-      getCountryFields: {
-        useQuery: () => ({
-          isLoading: false,
-          data: {},
-          refetch: vi.fn(),
-        }),
-      },
-      getById: {
-        useQuery: () => ({ isLoading: false, data: null }),
-      },
-      listEngagements: {
-        useQuery: () => ({ isLoading: false, data: mockEngagements.value }),
-      },
-      updateCountryFields: {
-        useMutation: () => ({ mutate: vi.fn(), isPending: false }),
-      },
-      revalidateVat: {
-        useMutation: () => ({ mutate: vi.fn(), isPending: false }),
+      classification: {
+        getLatest: stub({ queryKey: ['classification.getLatest'] }),
       },
     },
-    classification: {
-      getLatest: {
-        useQuery: () => ({ isPending: false, data: null }),
-        queryOptions: (input: { contractorAssignmentId: string }) => ({
-          queryKey: [['classification', 'getLatest'], input],
-          queryFn: async () => null,
-        }),
-      },
-    },
-  },
-}));
+  };
+});
 
 vi.mock('@/i18n/navigation', () => ({
   useRouter: () => ({ push: vi.fn() }),

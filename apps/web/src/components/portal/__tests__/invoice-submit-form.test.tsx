@@ -147,7 +147,10 @@ vi.mock('@tanstack/react-query', async () => {
 });
 
 vi.mock('@/trpc/init', () => ({
-  trpc: {
+  // Portal procedures live on `portalTrpc` (PortalAppRouter); the main
+  // `trpc` only exposes the internal AppRouter, so OCR portal triggers
+  // (which use `portalProcedure` but live on the OCR router) stay on `trpc`.
+  portalTrpc: {
     portal: {
       getActiveContracts: {
         queryOptions: vi.fn(() => ({ queryKey: ['portal', 'getActiveContracts'] })),
@@ -157,6 +160,8 @@ vi.mock('@/trpc/init', () => ({
         mutationOptions: vi.fn(() => ({ mutationKey: ['portal', 'submitInvoice'] })),
       },
     },
+  },
+  trpc: {
     ocr: {
       portalTrigger: { mutationOptions: vi.fn(() => ({ mutationKey: ['ocr', 'portalTrigger'] })) },
       portalGetResult: { queryOptions: vi.fn(() => ({ queryKey: ['ocr', 'portalGetResult'] })) },
@@ -385,7 +390,6 @@ describe('InvoiceSubmitForm', () => {
   it('does not render CreditExhaustedInline on generic OCR error', async () => {
     ocrTriggerBehavior = 'generic-error';
     stubXhr();
-    const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
 
     const { user } = setup(<InvoiceSubmitForm />);
 
@@ -396,15 +400,16 @@ describe('InvoiceSubmitForm', () => {
     expect(input).toBeTruthy();
     await user.upload(input, file);
 
-    // Wait for the upload chain to settle
+    // Wait for the upload chain to settle and for the file metadata to render —
+    // proves the upload finished and we reached the post-OCR branch without
+    // throwing. Source no longer console.warns on generic OCR errors; it
+    // reports to Sentry, which is mocked out elsewhere.
     await waitFor(() => {
-      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('manual entry available'));
+      expect(screen.getAllByText(/inv-generic\.pdf/).length).toBeGreaterThan(0);
     });
 
-    // CreditExhaustedInline should NOT appear for generic errors
+    // CreditExhaustedInline must NOT appear for non-credit-exhausted errors.
     expect(screen.queryByTestId('credit-exhausted-inline')).not.toBeInTheDocument();
-
-    consoleSpy.mockRestore();
   });
 
   it('shows uploaded file info when upload is complete', async () => {

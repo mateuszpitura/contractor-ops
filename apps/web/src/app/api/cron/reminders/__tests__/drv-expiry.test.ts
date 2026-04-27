@@ -90,6 +90,9 @@ const { mockPrisma, clearances, notifications, dispatchMock, resolveRbacMock } =
     member: { findMany: vi.fn(async () => []) },
     contract: { findMany: vi.fn(async () => []) },
     invoice: { findMany: vi.fn(async () => []) },
+    notificationCronDedup: {
+      create: vi.fn(async () => ({ id: 'dedup-1' })),
+    },
   };
   return { mockPrisma, clearances, notifications, dispatchMock, resolveRbacMock };
 });
@@ -140,7 +143,7 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
 }));
 
 // Import after mocks.
-const { detectDrvClearanceExpiries } = await import('../route');
+const { detectDrvClearanceExpiries } = await import('../drv-clearance-expiries');
 
 function startOfTodayUtc(): Date {
   const d = new Date();
@@ -245,7 +248,7 @@ describe('detectDrvClearanceExpiries — 90/30/7 day bands (60-03-03)', () => {
 });
 
 describe('detectDrvClearanceExpiries — one-shot dedup (60-03-04)', () => {
-  it('skips clearance with an existing Notification for the same (type, entityId)', async () => {
+  it('skips clearance with an existing dedup row for the same (band, clearance)', async () => {
     const today = startOfTodayUtc();
     clearances.push({
       id: 'c-dedup',
@@ -255,11 +258,13 @@ describe('detectDrvClearanceExpiries — one-shot dedup (60-03-04)', () => {
       outcome: 'SELBSTANDIG',
       drvReference: 'DRV-DEDUP',
     });
-    notifications.push({
-      id: 'n-prev',
-      type: 'classification.drv_expiry_90d',
-      entityType: 'CONTRACTOR',
-      entityId: 'c-dedup',
+    // Simulate the dedup row already existing for this band/clearance — Prisma
+    // returns P2002 on duplicate insert, which `claimCronNotificationDedup`
+    // converts into "skip".
+    mockPrisma.notificationCronDedup.create.mockImplementationOnce(async () => {
+      const err = new Error('Unique constraint failed');
+      (err as { code?: string }).code = 'P2002';
+      throw err;
     });
 
     const sent = await detectDrvClearanceExpiries();

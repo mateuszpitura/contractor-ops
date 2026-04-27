@@ -240,7 +240,7 @@ import { createHash } from 'node:crypto';
 
 import { TRPCError } from '@trpc/server';
 import { createCallerFactory } from '../../init.js';
-import { einvoiceRouter } from '../einvoice.js';
+import { einvoiceRouter } from '../core/einvoice.js';
 
 const createCaller = createCallerFactory(einvoiceRouter);
 

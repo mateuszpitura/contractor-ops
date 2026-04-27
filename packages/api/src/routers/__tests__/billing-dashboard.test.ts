@@ -53,6 +53,12 @@ vi.mock('@sentry/nextjs', () => {
 });
 
 vi.mock('@contractor-ops/logger', () => ({
+  createIntegrationLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+  })),
   createTrpcLogger: vi.fn(() => ({
     info: vi.fn(),
     warn: vi.fn(),
@@ -66,7 +72,7 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
 }));
 
 import { t } from '../../init.js';
-import { billingRouter } from '../billing.js';
+import { billingRouter } from '../finance/billing.js';
 
 function authedWithOrg() {
   const userId = 'user_billing';

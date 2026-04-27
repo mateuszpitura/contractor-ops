@@ -95,6 +95,12 @@ vi.mock('@contractor-ops/db', () => ({
 }));
 
 vi.mock('@contractor-ops/logger', () => ({
+  createIntegrationLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+  })),
   createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
   createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
@@ -103,6 +109,28 @@ vi.mock('@contractor-ops/logger', () => ({
 vi.mock('@contractor-ops/logger/metrics', () => ({
   metrics: { increment: vi.fn(), gauge: vi.fn(), distribution: vi.fn() },
 }));
+
+vi.mock('@contractor-ops/feature-flags', async importOriginal => {
+  // Multi-layer enforcement (D-05/D-06):
+  //  1. root.ts evaluates `buildFlagBag` at module load to gate classification routers.
+  //  2. classificationProcedure middleware calls `evaluate(...)` per-request.
+  // Tests that exercise classification need both layers to return enabled=true.
+  const actual = (await importOriginal()) as Record<string, unknown>;
+  const enabledBag = {
+    values: { 'module.classification-engine': true },
+    isEnabled: (key: string) => key === 'module.classification-engine',
+  };
+  return {
+    ...actual,
+    buildFlagBag: vi.fn(() => enabledBag),
+    lazyFlagBag: vi.fn(() => enabledBag),
+    evaluate: vi.fn((key: string) =>
+      key === 'module.classification-engine'
+        ? { enabled: true, reason: 'mocked' }
+        : { enabled: false, reason: 'mocked' },
+    ),
+  };
+});
 
 import { createCallerFactory } from '../../init.js';
 import { appRouter } from '../../root.js';

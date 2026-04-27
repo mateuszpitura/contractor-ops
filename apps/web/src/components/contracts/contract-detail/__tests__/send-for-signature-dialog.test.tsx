@@ -395,9 +395,16 @@ describe('SendForSignatureDialog', () => {
 
   // ---- Message input interaction ----
   it('allows typing in the message field', async () => {
-    const { user } = setup(<SendForSignatureDialog {...defaultProps} />);
-    const textarea = screen.getByRole('textbox');
-    await user.type(textarea, 'Please review');
+    const { fireEvent } = await import('@testing-library/react');
+    render(<SendForSignatureDialog {...defaultProps} />);
+    // The dialog renders multiple textboxes (signer name, signer email, message
+    // textarea). Pick the only <textarea> element to avoid ambiguity.
+    const textarea = document.querySelector('textarea') as HTMLTextAreaElement | null;
+    expect(textarea).not.toBeNull();
+    // user.type can flake here under jsdom because the textarea sits inside a
+    // Base UI Dialog (focus guards, inert attrs). fireEvent.change is the
+    // documented escape hatch for controlled-input change-handler tests.
+    fireEvent.change(textarea!, { target: { value: 'Please review' } });
     expect(textarea).toHaveValue('Please review');
   });
 

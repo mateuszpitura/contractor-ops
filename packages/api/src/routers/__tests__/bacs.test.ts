@@ -120,6 +120,12 @@ vi.mock('../../services/audit-writer.js', () => ({
 }));
 
 vi.mock('@contractor-ops/logger', () => ({
+  createIntegrationLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+  })),
   createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
 }));
@@ -141,7 +147,7 @@ vi.mock('@sentry/nextjs', () => {
 // ---------------------------------------------------------------------------
 
 import { createCallerFactory } from '../../init.js';
-import { bacsRouter } from '../bacs.js';
+import { bacsRouter } from '../finance/bacs.js';
 
 const createCaller = createCallerFactory(bacsRouter);
 

@@ -63,6 +63,12 @@ const { mockPrisma } = vi.hoisted(() => {
         ...opts.data,
       })),
     },
+    approvalStep: {
+      updateMany: vi.fn(async () => ({ count: 0 })),
+    },
+    approvalFlow: {
+      updateMany: vi.fn(async () => ({ count: 0 })),
+    },
     member: {
       findMany: vi.fn(async () => []),
       findFirst: vi.fn(async () => ({ role: 'admin' })),
@@ -569,7 +575,7 @@ describe('invoice.create', () => {
     expect(mockPrisma.member.findMany).toHaveBeenCalledWith({
       where: {
         organizationId: ORG_ID,
-        role: 'finance_admin',
+        role: 'FINANCE_ADMIN',
       },
       select: { userId: true },
     });

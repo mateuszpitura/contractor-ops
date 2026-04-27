@@ -50,6 +50,12 @@ const { mockPrisma } = vi.hoisted(() => {
         ...opts.data,
       })),
     },
+    contractorBillingProfile: {
+      create: vi.fn(async (opts: { data: Rec }) => ({
+        id: 'bp-1',
+        ...opts.data,
+      })),
+    },
     invoice: {
       findMany: vi.fn(async () => []),
       findFirst: vi.fn(async () => null),
@@ -487,10 +493,10 @@ describe('import router', () => {
           legalName: 'Acme Corp',
           displayName: 'Acme',
           type: 'COMPANY',
-          taxId: '1234567890',
+          taxId: 'GB123456789',
           email: 'acme@example.com',
-          countryCode: 'PL',
-          currency: 'PLN',
+          countryCode: 'GB',
+          currency: 'GBP',
         },
       ];
 
@@ -508,10 +514,10 @@ describe('import router', () => {
         organizationId: ORG_ID,
         legalName: 'Acme Corp',
         displayName: 'Acme',
-        taxId: '1234567890',
+        taxId: 'GB123456789',
         email: 'acme@example.com',
-        countryCode: 'PL',
-        currency: 'PLN',
+        countryCode: 'GB',
+        currency: 'GBP',
         ownerUserId: USER_ID,
       });
 
@@ -519,7 +525,9 @@ describe('import router', () => {
     });
 
     it('skips rows when duplicateAction is skip', async () => {
-      const rows = [{ legalName: 'Dup Corp', taxId: 'DUP123', email: 'dup@example.com' }];
+      const rows = [
+        { legalName: 'Dup Corp', taxId: 'DUP123', email: 'dup@example.com', countryCode: 'GB' },
+      ];
 
       const result = await caller.import.commit({
         entityType: 'contractor',
@@ -539,8 +547,8 @@ describe('import router', () => {
         displayName: 'Old',
         email: 'old@example.com',
         phone: null,
-        countryCode: 'PL',
-        currency: 'PLN',
+        countryCode: 'GB',
+        currency: 'GBP',
       });
 
       const rows = [
@@ -549,7 +557,7 @@ describe('import router', () => {
           displayName: 'Updated',
           taxId: 'UPD123',
           email: 'updated@example.com',
-          countryCode: 'PL',
+          countryCode: 'GB',
           currency: 'EUR',
         },
       ];

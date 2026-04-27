@@ -4,20 +4,10 @@ import { KleinunternehmerToggle } from '../kleinunternehmer-toggle';
 
 vi.mock('@/trpc/init', () => ({
   trpc: {
-    useUtils: () => ({
-      organization: {
-        getCurrent: {
-          invalidate: vi.fn(),
-        },
-      },
-    }),
     organization: {
+      getCurrent: { queryKey: () => ['organization.getCurrent'] },
       setKleinunternehmer: {
-        useMutation: (opts?: Record<string, unknown>) => ({
-          mutate: vi.fn(),
-          isPending: false,
-          ...opts,
-        }),
+        mutationOptions: (opts: Record<string, unknown>) => ({ mutationFn: vi.fn(), ...opts }),
       },
     },
   },

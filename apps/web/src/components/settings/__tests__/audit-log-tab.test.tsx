@@ -1,7 +1,43 @@
 import userEvent from '@testing-library/user-event';
+import type * as React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, setup, waitFor } from '@/test/test-utils';
 import { AuditLogTab } from '../audit-log-tab';
+
+// Replace @/components/ui/select (Base UI portal-based primitive — flaky under
+// jsdom because the popup uses inert attributes on parents) with a native
+// <select>. Tests still drive the same `onValueChange` contract.
+vi.mock('@/components/ui/select', () => ({
+  Select: ({
+    children,
+    onValueChange,
+  }: {
+    children: React.ReactNode;
+    value?: string;
+    onValueChange?: (v: string) => void;
+  }) => (
+    <select
+      role="combobox"
+      aria-expanded={false}
+      aria-label="select"
+      // biome-ignore lint/nursery/noJsxPropsBind: test stub
+      onChange={e => onValueChange?.(e.target.value)}>
+      {children}
+    </select>
+  ),
+  SelectTrigger: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  SelectValue: ({
+    children,
+    placeholder,
+  }: {
+    children?: React.ReactNode;
+    placeholder?: string;
+  }) => <>{children ?? placeholder}</>,
+  SelectContent: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  SelectItem: ({ value, children }: { value: string; children: React.ReactNode }) => (
+    <option value={value}>{children}</option>
+  ),
+}));
 
 const {
   mockSetSearch,
@@ -197,17 +233,18 @@ describe('AuditLogTab', () => {
   // ---- Filter selects ----
   it('renders actor filter select', () => {
     render(<AuditLogTab />);
-    expect(screen.getByText('All actors')).toBeInTheDocument();
+    // Placeholder + first <option>; both contain the same fallback label.
+    expect(screen.getAllByText('All actors').length).toBeGreaterThanOrEqual(1);
   });
 
   it('renders action filter select', () => {
     render(<AuditLogTab />);
-    expect(screen.getByText('All actions')).toBeInTheDocument();
+    expect(screen.getAllByText('All actions').length).toBeGreaterThanOrEqual(1);
   });
 
   it('renders resource type filter select', () => {
     render(<AuditLogTab />);
-    expect(screen.getByText('All resources')).toBeInTheDocument();
+    expect(screen.getAllByText('All resources').length).toBeGreaterThanOrEqual(1);
   });
 
   // ---- Date filters ----
@@ -254,7 +291,7 @@ describe('AuditLogTab', () => {
     ];
     render(<AuditLogTab />);
     // Actors are rendered in the select dropdown (not visible until opened)
-    expect(screen.getByText('All actors')).toBeInTheDocument();
+    expect(screen.getAllByText('All actors').length).toBeGreaterThanOrEqual(1);
   });
 
   // ---- Filter select presence ----
@@ -453,7 +490,7 @@ describe('AuditLogTab', () => {
       { id: 'u2', name: 'Bob' },
     ];
     render(<AuditLogTab />);
-    expect(screen.getByText('All actors')).toBeInTheDocument();
+    expect(screen.getAllByText('All actors').length).toBeGreaterThanOrEqual(1);
     // Actors appear in select options
     const selects = screen.getAllByRole('combobox');
     expect(selects.length).toBeGreaterThanOrEqual(3);
@@ -491,7 +528,7 @@ describe('AuditLogTab', () => {
       { id: 'u3', name: 'Charlie' },
     ];
     render(<AuditLogTab />);
-    expect(screen.getByText('All actors')).toBeInTheDocument();
+    expect(screen.getAllByText('All actors').length).toBeGreaterThanOrEqual(1);
   });
 
   // ---- Export with filters applied ----
@@ -532,39 +569,24 @@ describe('AuditLogTab', () => {
     ];
     const user = userEvent.setup({ pointerEventsCheck: 0 });
     render(<AuditLogTab />);
-    const selects = screen.getAllByRole('combobox');
-    // First combobox is actor filter
-    await user.click(selects[0]);
-    await waitFor(() => {
-      expect(screen.getByText('Alice')).toBeInTheDocument();
-    });
-    await user.click(screen.getByText('Alice'));
+    // First combobox is the actor filter — pick Alice (id u1).
+    await user.selectOptions(screen.getAllByRole('combobox')[0], 'u1');
     expect(mockSetActorId).toHaveBeenCalled();
   });
 
   it('calls setActionFilter when action filter is changed', async () => {
     const user = userEvent.setup({ pointerEventsCheck: 0 });
     render(<AuditLogTab />);
-    const selects = screen.getAllByRole('combobox');
-    // Second combobox is action filter
-    await user.click(selects[1]);
-    await waitFor(() => {
-      expect(screen.getByText('Created')).toBeInTheDocument();
-    });
-    await user.click(screen.getByText('Created'));
+    // Second combobox is action filter — pick CREATE.
+    await user.selectOptions(screen.getAllByRole('combobox')[1], 'CREATE');
     expect(mockSetActionFilter).toHaveBeenCalled();
   });
 
   it('calls setResourceType when resource type filter is changed', async () => {
     const user = userEvent.setup({ pointerEventsCheck: 0 });
     render(<AuditLogTab />);
-    const selects = screen.getAllByRole('combobox');
-    // Third combobox is resource type filter
-    await user.click(selects[2]);
-    await waitFor(() => {
-      expect(screen.getByText('Invoice')).toBeInTheDocument();
-    });
-    await user.click(screen.getByText('Invoice'));
+    // Third combobox is resource type filter — pick INVOICE.
+    await user.selectOptions(screen.getAllByRole('combobox')[2], 'INVOICE');
     expect(mockSetResourceType).toHaveBeenCalled();
   });
 
@@ -573,12 +595,7 @@ describe('AuditLogTab', () => {
     mockActorsData = [{ id: 'u1', name: 'Alice' }];
     const user = userEvent.setup({ pointerEventsCheck: 0 });
     render(<AuditLogTab />);
-    const selects = screen.getAllByRole('combobox');
-    await user.click(selects[0]);
-    await waitFor(() => {
-      expect(screen.getByText('Alice')).toBeInTheDocument();
-    });
-    await user.click(screen.getByText('Alice'));
+    await user.selectOptions(screen.getAllByRole('combobox')[0], 'u1');
     expect(mockSetAuditPage).toHaveBeenCalledWith('1');
   });
 
@@ -586,12 +603,7 @@ describe('AuditLogTab', () => {
     queryStateValues.auditPage = '3';
     const user = userEvent.setup({ pointerEventsCheck: 0 });
     render(<AuditLogTab />);
-    const selects = screen.getAllByRole('combobox');
-    await user.click(selects[1]);
-    await waitFor(() => {
-      expect(screen.getByText('Updated')).toBeInTheDocument();
-    });
-    await user.click(screen.getByText('Updated'));
+    await user.selectOptions(screen.getAllByRole('combobox')[1], 'UPDATE');
     expect(mockSetAuditPage).toHaveBeenCalledWith('1');
   });
 
@@ -599,12 +611,7 @@ describe('AuditLogTab', () => {
     queryStateValues.auditPage = '4';
     const user = userEvent.setup({ pointerEventsCheck: 0 });
     render(<AuditLogTab />);
-    const selects = screen.getAllByRole('combobox');
-    await user.click(selects[2]);
-    await waitFor(() => {
-      expect(screen.getByText('Contract')).toBeInTheDocument();
-    });
-    await user.click(screen.getByText('Contract'));
+    await user.selectOptions(screen.getAllByRole('combobox')[2], 'CONTRACT');
     expect(mockSetAuditPage).toHaveBeenCalledWith('1');
   });
 

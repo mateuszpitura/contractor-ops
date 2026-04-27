@@ -21,7 +21,7 @@ vi.mock('@tanstack/react-query', async importOriginal => {
   };
 });
 vi.mock('@/trpc/init', () => ({
-  trpc: {
+  portalTrpc: {
     portal: {
       listEquipment: {
         queryOptions: () => ({ queryKey: ['portal.listEquipment'] }),

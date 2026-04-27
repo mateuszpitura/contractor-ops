@@ -174,7 +174,7 @@ vi.mock('@contractor-ops/integrations/services/qstash-client', () => ({
 // ---------------------------------------------------------------------------
 
 import { createCallerFactory } from '../../init.js';
-import { latePaymentInterestRouter } from '../late-payment-interest.js';
+import { latePaymentInterestRouter } from '../finance/late-payment-interest.js';
 
 // ---------------------------------------------------------------------------
 // Caller helper

@@ -16,52 +16,13 @@ import {
   EQUIPMENT_NOT_FOUND,
   EQUIPMENT_STATUS_TRANSITIONS,
   NOTIFICATION_KEYS,
-  plain,
   SHIPMENT_CANNOT_DELETE,
   SHIPMENT_NOT_FOUND,
   SHIPMENT_TO_EQUIPMENT_STATUS,
-} from '../equipment-shared.js';
+} from '../equipment/equipment-shared.js';
 
-// ===========================================================================
-// plain()
-// ===========================================================================
-
-describe('plain()', () => {
-  it('returns a JSON-serializable copy of the input', () => {
-    const input = { id: '1', name: 'Laptop', nested: { a: 1 } };
-    const result = plain(input);
-    expect(result).toEqual(input);
-    expect(result).not.toBe(input);
-  });
-
-  it('strips non-serializable properties (functions, undefined)', () => {
-    const input = {
-      id: '1',
-      fn: () => {
-        /* noop */
-      },
-      undef: undefined,
-      name: 'Test',
-    };
-    const result = plain(input);
-    expect(result).toEqual({ id: '1', name: 'Test' });
-    expect(result).not.toHaveProperty('fn');
-    expect(result).not.toHaveProperty('undef');
-  });
-
-  it('handles arrays', () => {
-    const input = [{ id: '1' }, { id: '2' }];
-    const result = plain(input);
-    expect(result).toEqual(input);
-    expect(result).not.toBe(input);
-  });
-
-  it('handles null and primitive values', () => {
-    expect(plain(null)).toBeNull();
-    expect(plain('hello')).toBe('hello');
-    expect(plain(42)).toBe(42);
-  });
-});
+// `plain()` was removed from equipment-shared (replaced by inline structuredClone
+// at call sites). The legacy test suite for it has been deleted.
 
 // ===========================================================================
 // EQUIPMENT_STATUS_TRANSITIONS

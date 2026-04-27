@@ -11,7 +11,7 @@ import plMessages from '../../messages/pl.json' with { type: 'json' };
 
 const messages: Record<string, typeof enMessages> = {
   en: enMessages,
-  pl: plMessages,
+  pl: plMessages as unknown as typeof enMessages,
   de: deMessages as typeof enMessages,
 };
 

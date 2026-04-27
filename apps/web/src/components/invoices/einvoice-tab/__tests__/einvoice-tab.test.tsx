@@ -53,16 +53,19 @@ vi.mock('@/trpc/init', () => ({
         mutationOptions: (opts: unknown) => ({ mutationFn: revalidateMutate, ...(opts ?? {}) }),
       },
       downloadXml: {
-        mutationOptions: (opts: unknown) => ({ mutationFn: downloadXmlMutate, ...(opts ?? {}) }),
+        queryOptions: () => ({ queryKey: ['einvoice', 'downloadXml'], queryFn: downloadXmlMutate }),
       },
       downloadReport: {
-        mutationOptions: (opts: unknown) => ({
-          mutationFn: downloadReportMutate,
-          ...(opts ?? {}),
+        queryOptions: () => ({
+          queryKey: ['einvoice', 'downloadReport'],
+          queryFn: downloadReportMutate,
         }),
       },
       send: {
         mutationOptions: (opts: unknown) => ({ mutationFn: sendMutate, ...(opts ?? {}) }),
+      },
+      generateZugferdPdf: {
+        mutationOptions: (opts: unknown) => ({ mutationFn: vi.fn(), ...(opts ?? {}) }),
       },
     },
   },

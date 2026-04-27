@@ -139,6 +139,12 @@ vi.mock('@sentry/nextjs', () => {
 });
 
 vi.mock('@contractor-ops/logger', () => ({
+  createIntegrationLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+  })),
   createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
   createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
 }));
@@ -152,7 +158,7 @@ import { advanceFlow, createApprovalFlow, routeToChain } from '../../services/ap
 import { invalidateByPrefix } from '../../services/cache.js';
 import { syncPaymentDueDeadline } from '../../services/calendar-deadline-sync.js';
 import { dispatch } from '../../services/notification-service.js';
-import { approvalRouter } from '../approval.js';
+import { approvalRouter } from '../core/approval.js';
 
 const createCaller = createCallerFactory(approvalRouter);
 

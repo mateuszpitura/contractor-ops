@@ -49,8 +49,20 @@ vi.mock('@/trpc/init', () => ({
     },
     leitwegId: {
       list: { queryKey: vi.fn(() => ['lid', 'list']) },
-      create: { mutationOptions: vi.fn(() => ({ mutationKey: ['lid', 'create'] })) },
-      update: { mutationOptions: vi.fn(() => ({ mutationKey: ['lid', 'update'] })) },
+      // Forward the caller's onSuccess/onError so the test mock useMutation can
+      // capture the onError handler via the resulting mutationKey.
+      create: {
+        mutationOptions: vi.fn((opts: Record<string, unknown> = {}) => ({
+          mutationKey: ['lid', 'create'],
+          ...opts,
+        })),
+      },
+      update: {
+        mutationOptions: vi.fn((opts: Record<string, unknown> = {}) => ({
+          mutationKey: ['lid', 'update'],
+          ...opts,
+        })),
+      },
     },
   },
 }));

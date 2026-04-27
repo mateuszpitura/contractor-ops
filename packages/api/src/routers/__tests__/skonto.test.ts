@@ -165,7 +165,7 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
 // ---------------------------------------------------------------------------
 
 import { createCallerFactory } from '../../init.js';
-import { skontoRouter } from '../skonto.js';
+import { skontoRouter } from '../finance/skonto.js';
 
 // ---------------------------------------------------------------------------
 // Caller helper

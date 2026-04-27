@@ -246,6 +246,12 @@ vi.mock('@sentry/nextjs', () => {
 });
 
 vi.mock('@contractor-ops/logger', () => ({
+  createIntegrationLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+  })),
   createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
   createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
 }));
@@ -493,9 +499,9 @@ describe('calendar router', () => {
       const fs = await import('node:fs');
       const path = await import('node:path');
       const sourceDir = path.resolve(import.meta.dirname, '../../routers');
-      const source = fs.readFileSync(path.join(sourceDir, 'calendar.ts'), 'utf-8');
+      const source = fs.readFileSync(path.join(sourceDir, 'core/calendar.ts'), 'utf-8');
 
-      expect(source).toContain("import { requireTier } from '../middleware/tier.js'");
+      expect(source).toContain("import { requireTier } from '../../middleware/tier.js'");
       expect(source).toContain("requireTier('PRO')");
 
       const matches = source.match(/\.use\(requireTier\('PRO'\)\)/g);
@@ -506,7 +512,7 @@ describe('calendar router', () => {
       const fs = await import('node:fs');
       const path = await import('node:path');
       const sourceDir = path.resolve(import.meta.dirname, '../../routers');
-      const source = fs.readFileSync(path.join(sourceDir, 'calendar.ts'), 'utf-8');
+      const source = fs.readFileSync(path.join(sourceDir, 'core/calendar.ts'), 'utf-8');
 
       for (const proc of [
         'listConnections',

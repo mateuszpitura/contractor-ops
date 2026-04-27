@@ -6,14 +6,19 @@ vi.mock('@/lib/format-currency', () => ({
   formatMinorUnits: (minor: number) => (minor / 100).toFixed(2),
 }));
 
+vi.mock('@tanstack/react-query', async importOriginal => {
+  const actual = await importOriginal<typeof import('@tanstack/react-query')>();
+  return {
+    ...actual,
+    useMutation: () => ({ mutate: vi.fn(), isPending: false }),
+  };
+});
+
 vi.mock('@/trpc/init', () => ({
   trpc: {
     tax: {
       generateWhtCertificate: {
-        useMutation: () => ({
-          mutate: vi.fn(),
-          isPending: false,
-        }),
+        mutationOptions: (opts: Record<string, unknown>) => ({ mutationFn: vi.fn(), ...opts }),
       },
     },
   },

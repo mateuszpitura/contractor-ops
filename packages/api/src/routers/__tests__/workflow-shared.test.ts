@@ -13,37 +13,11 @@ import {
   addHours,
   calculateProgress,
   evaluateCondition,
-  plain,
   resolveAssignee,
   TASK_TRANSITIONS,
   validateTransition,
   WORKFLOW_TEMPLATE_KEYS,
-} from '../workflow-shared.js';
-
-// ===========================================================================
-// plain()
-// ===========================================================================
-
-describe('plain()', () => {
-  it('returns a JSON-serializable copy of the input', () => {
-    const input = { id: '1', name: 'Template', nested: { a: 1 } };
-    const result = plain(input);
-    expect(result).toEqual(input);
-    expect(result).not.toBe(input);
-  });
-
-  it('strips functions and undefined values', () => {
-    const input = {
-      id: '1',
-      fn: () => {
-        /* noop */
-      },
-      undef: undefined,
-    };
-    const result = plain(input);
-    expect(result).toEqual({ id: '1' });
-  });
-});
+} from '../workflow/workflow-shared.js';
 
 // ===========================================================================
 // addDays()

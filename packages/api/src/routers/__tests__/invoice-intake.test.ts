@@ -156,7 +156,7 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
 
 import { TRPCError } from '@trpc/server';
 import { createCallerFactory } from '../../init.js';
-import { invoiceIntakeRouter } from '../invoice-intake.js';
+import { invoiceIntakeRouter } from '../finance/invoice-intake.js';
 
 const createCaller = createCallerFactory(invoiceIntakeRouter);
 

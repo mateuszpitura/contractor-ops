@@ -174,7 +174,7 @@ describe('TeamsBotHandler', () => {
             data: {
               action: 'approve_invoice',
               invoiceId: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
-              flowId: 'f1e2d3c4-b5a6-7890-dcba-0987654321fe',
+              flowId: 'f1e2d3c4-b5a6-7890-acba-0987654321fe',
             },
           },
         } as never,
@@ -192,7 +192,7 @@ describe('TeamsBotHandler', () => {
             data: {
               action: 'reject_invoice',
               invoiceId: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
-              flowId: 'f1e2d3c4-b5a6-7890-dcba-0987654321fe',
+              flowId: 'f1e2d3c4-b5a6-7890-acba-0987654321fe',
             },
           },
         } as never,
@@ -278,7 +278,7 @@ describe('TeamsBotHandler', () => {
             data: {
               action: 'approve_invoice',
               invoiceId: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
-              flowId: 'f1e2d3c4-b5a6-7890-dcba-0987654321fe',
+              flowId: 'f1e2d3c4-b5a6-7890-acba-0987654321fe',
             },
           },
         } as never,
@@ -297,7 +297,7 @@ describe('TeamsBotHandler', () => {
         {
           data: {
             invoiceId: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
-            flowId: 'f1e2d3c4-b5a6-7890-dcba-0987654321fe',
+            flowId: 'f1e2d3c4-b5a6-7890-acba-0987654321fe',
           },
         } as never,
       );
@@ -352,7 +352,7 @@ describe('TeamsBotHandler', () => {
           data: {
             action: 'submit_rejection',
             invoiceId: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
-            flowId: 'f1e2d3c4-b5a6-7890-dcba-0987654321fe',
+            flowId: 'f1e2d3c4-b5a6-7890-acba-0987654321fe',
             comment: 'Not correct',
           },
         } as never,

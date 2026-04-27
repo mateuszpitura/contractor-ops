@@ -92,6 +92,12 @@ vi.mock('@sentry/nextjs', () => {
 });
 
 vi.mock('@contractor-ops/logger', () => ({
+  createIntegrationLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+  })),
   createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
 }));
@@ -105,7 +111,7 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
 // ---------------------------------------------------------------------------
 
 import { createCallerFactory } from '../../init.js';
-import { adminBoeRateRouter } from '../admin-boe-rate.js';
+import { adminBoeRateRouter } from '../core/admin-boe-rate.js';
 
 // ---------------------------------------------------------------------------
 // Caller helper

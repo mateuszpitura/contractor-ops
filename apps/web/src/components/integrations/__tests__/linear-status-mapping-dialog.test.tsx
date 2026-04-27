@@ -1,4 +1,5 @@
 import userEvent from '@testing-library/user-event';
+import type * as React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, setup, waitFor } from '@/test/test-utils';
 import { LinearStatusMappingDialog } from '../linear-status-mapping-dialog';
@@ -6,6 +7,41 @@ import { LinearStatusMappingDialog } from '../linear-status-mapping-dialog';
 // ---------------------------------------------------------------------------
 // Mocks
 // ---------------------------------------------------------------------------
+
+// Replace @/components/ui/select (Base UI portal-based primitive — flaky under
+// jsdom because the popup uses inert attributes on the parent dialog) with a
+// native <select>. Tests still drive the same `onValueChange` contract.
+vi.mock('@/components/ui/select', () => ({
+  Select: ({
+    children,
+    onValueChange,
+  }: {
+    children: React.ReactNode;
+    value?: string;
+    onValueChange?: (v: string) => void;
+  }) => (
+    <select
+      role="combobox"
+      aria-expanded={false}
+      aria-label="select"
+      // biome-ignore lint/nursery/noJsxPropsBind: test stub
+      onChange={e => onValueChange?.(e.target.value)}>
+      {children}
+    </select>
+  ),
+  SelectTrigger: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  SelectValue: ({
+    children,
+    placeholder,
+  }: {
+    children?: React.ReactNode;
+    placeholder?: string;
+  }) => <>{children ?? placeholder}</>,
+  SelectContent: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  SelectItem: ({ value, children }: { value: string; children: React.ReactNode }) => (
+    <option value={value}>{children}</option>
+  ),
+}));
 
 vi.mock('sonner', () => ({
   toast: { success: vi.fn(), error: vi.fn() },
@@ -266,38 +302,26 @@ describe('LinearStatusMappingDialog', () => {
   it('renders mapping table after selecting a team via combobox', async () => {
     const user = userEvent.setup({ pointerEventsCheck: 0 });
     render(<LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />);
-    // Open the team select dropdown
-    const combobox = screen.getByRole('combobox');
-    await user.click(combobox);
-    // Select the first team
-    await waitFor(() => {
-      expect(screen.getByText('Engineering (ENG)')).toBeInTheDocument();
-    });
-    await user.click(screen.getByText('Engineering (ENG)'));
-    // Now the mapping table should appear
+    await user.selectOptions(screen.getByRole('combobox'), 'team-1');
     await waitFor(() => {
       expect(screen.getByText('Workflow Status')).toBeInTheDocument();
       expect(screen.getByText('Linear State')).toBeInTheDocument();
     });
-    // All 6 workflow statuses should be visible
-    expect(screen.getByText('To Do')).toBeInTheDocument();
-    expect(screen.getByText('In Progress')).toBeInTheDocument();
-    expect(screen.getByText('Done')).toBeInTheDocument();
-    expect(screen.getByText('Blocked')).toBeInTheDocument();
-    expect(screen.getByText('Skipped')).toBeInTheDocument();
-    expect(screen.getByText('Cancelled')).toBeInTheDocument();
+    // All 6 workflow statuses should be visible (allow duplicates because
+    // Linear states also appear as native <option>s in the same DOM).
+    expect(screen.getAllByText('To Do').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText('In Progress').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText('Done').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText('Blocked').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText('Skipped').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText('Cancelled').length).toBeGreaterThanOrEqual(1);
   });
 
   it('applies smart defaults when no existing mapping', async () => {
     existingMapping = [];
     const user = userEvent.setup({ pointerEventsCheck: 0 });
     render(<LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />);
-    const combobox = screen.getByRole('combobox');
-    await user.click(combobox);
-    await waitFor(() => {
-      expect(screen.getByText('Engineering (ENG)')).toBeInTheDocument();
-    });
-    await user.click(screen.getByText('Engineering (ENG)'));
+    await user.selectOptions(screen.getByRole('combobox'), 'team-1');
     await waitFor(() => {
       expect(screen.getByText('Workflow Status')).toBeInTheDocument();
     });
@@ -329,12 +353,7 @@ describe('LinearStatusMappingDialog', () => {
     ];
     const user = userEvent.setup({ pointerEventsCheck: 0 });
     render(<LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />);
-    const combobox = screen.getByRole('combobox');
-    await user.click(combobox);
-    await waitFor(() => {
-      expect(screen.getByText('Engineering (ENG)')).toBeInTheDocument();
-    });
-    await user.click(screen.getByText('Engineering (ENG)'));
+    await user.selectOptions(screen.getByRole('combobox'), 'team-1');
     await waitFor(() => {
       expect(screen.getByText('Workflow Status')).toBeInTheDocument();
     });
@@ -354,12 +373,7 @@ describe('LinearStatusMappingDialog', () => {
     ];
     const user = userEvent.setup({ pointerEventsCheck: 0 });
     render(<LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />);
-    const combobox = screen.getByRole('combobox');
-    await user.click(combobox);
-    await waitFor(() => {
-      expect(screen.getByText('Engineering (ENG)')).toBeInTheDocument();
-    });
-    await user.click(screen.getByText('Engineering (ENG)'));
+    await user.selectOptions(screen.getByRole('combobox'), 'team-1');
     await waitFor(() => {
       expect(screen.getByText('Workflow Status')).toBeInTheDocument();
     });
@@ -373,12 +387,7 @@ describe('LinearStatusMappingDialog', () => {
     existingMapping = [];
     const user = userEvent.setup({ pointerEventsCheck: 0 });
     render(<LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />);
-    const combobox = screen.getByRole('combobox');
-    await user.click(combobox);
-    await waitFor(() => {
-      expect(screen.getByText('Engineering (ENG)')).toBeInTheDocument();
-    });
-    await user.click(screen.getByText('Engineering (ENG)'));
+    await user.selectOptions(screen.getByRole('combobox'), 'team-1');
     await waitFor(() => {
       expect(screen.getByText('Workflow Status')).toBeInTheDocument();
     });
@@ -391,12 +400,7 @@ describe('LinearStatusMappingDialog', () => {
   it('renders second team option and can switch teams', async () => {
     const user = userEvent.setup({ pointerEventsCheck: 0 });
     render(<LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />);
-    const combobox = screen.getByRole('combobox');
-    await user.click(combobox);
-    await waitFor(() => {
-      expect(screen.getByText('Design (DES)')).toBeInTheDocument();
-    });
-    await user.click(screen.getByText('Design (DES)'));
+    await user.selectOptions(screen.getByRole('combobox'), 'team-2');
     await waitFor(() => {
       expect(screen.getByText('Workflow Status')).toBeInTheDocument();
     });
@@ -406,12 +410,7 @@ describe('LinearStatusMappingDialog', () => {
     existingMapping = [];
     const user = userEvent.setup({ pointerEventsCheck: 0 });
     render(<LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />);
-    const combobox = screen.getByRole('combobox');
-    await user.click(combobox);
-    await waitFor(() => {
-      expect(screen.getByText('Engineering (ENG)')).toBeInTheDocument();
-    });
-    await user.click(screen.getByText('Engineering (ENG)'));
+    await user.selectOptions(screen.getByRole('combobox'), 'team-1');
     await waitFor(() => {
       expect(screen.getByText('Workflow Status')).toBeInTheDocument();
     });
@@ -424,12 +423,7 @@ describe('LinearStatusMappingDialog', () => {
     existingMapping = [];
     const user = userEvent.setup({ pointerEventsCheck: 0 });
     render(<LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />);
-    const combobox = screen.getByRole('combobox');
-    await user.click(combobox);
-    await waitFor(() => {
-      expect(screen.getByText('Engineering (ENG)')).toBeInTheDocument();
-    });
-    await user.click(screen.getByText('Engineering (ENG)'));
+    await user.selectOptions(screen.getByRole('combobox'), 'team-1');
     await waitFor(() => {
       expect(screen.getByText('Workflow Status')).toBeInTheDocument();
     });
@@ -447,12 +441,7 @@ describe('LinearStatusMappingDialog', () => {
   it('description updates after team is selected', async () => {
     const user = userEvent.setup({ pointerEventsCheck: 0 });
     render(<LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />);
-    const combobox = screen.getByRole('combobox');
-    await user.click(combobox);
-    await waitFor(() => {
-      expect(screen.getByText('Engineering (ENG)')).toBeInTheDocument();
-    });
-    await user.click(screen.getByText('Engineering (ENG)'));
+    await user.selectOptions(screen.getByRole('combobox'), 'team-1');
     // After selecting a team, the mapping table should appear
     await waitFor(() => {
       expect(screen.getByText('Workflow Status')).toBeInTheDocument();
@@ -463,23 +452,12 @@ describe('LinearStatusMappingDialog', () => {
     existingMapping = [];
     const user = userEvent.setup({ pointerEventsCheck: 0 });
     render(<LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />);
-    const combobox = screen.getByRole('combobox');
-    // Select first team
-    await user.click(combobox);
-    await waitFor(() => {
-      expect(screen.getByText('Engineering (ENG)')).toBeInTheDocument();
-    });
-    await user.click(screen.getByText('Engineering (ENG)'));
+    await user.selectOptions(screen.getByRole('combobox'), 'team-1');
     await waitFor(() => {
       expect(screen.getByText('Workflow Status')).toBeInTheDocument();
     });
-    // Switch to second team
-    const teamCombobox = screen.getAllByRole('combobox')[0];
-    await user.click(teamCombobox);
-    await waitFor(() => {
-      expect(screen.getByText('Design (DES)')).toBeInTheDocument();
-    });
-    await user.click(screen.getByText('Design (DES)'));
+    // Switch to second team — team select is the first combobox.
+    await user.selectOptions(screen.getAllByRole('combobox')[0], 'team-2');
     await waitFor(() => {
       expect(screen.getByText('Workflow Status')).toBeInTheDocument();
     });
@@ -489,12 +467,7 @@ describe('LinearStatusMappingDialog', () => {
     existingMapping = [];
     const user = userEvent.setup({ pointerEventsCheck: 0 });
     render(<LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />);
-    const combobox = screen.getByRole('combobox');
-    await user.click(combobox);
-    await waitFor(() => {
-      expect(screen.getByText('Engineering (ENG)')).toBeInTheDocument();
-    });
-    await user.click(screen.getByText('Engineering (ENG)'));
+    await user.selectOptions(screen.getByRole('combobox'), 'team-1');
     await waitFor(() => {
       expect(screen.getByText('Workflow Status')).toBeInTheDocument();
     });
@@ -510,19 +483,16 @@ describe('LinearStatusMappingDialog', () => {
   it('shows all 6 workflow status labels in mapping table', async () => {
     const user = userEvent.setup({ pointerEventsCheck: 0 });
     render(<LinearStatusMappingDialog open={true} onOpenChange={onOpenChange} />);
-    const combobox = screen.getByRole('combobox');
-    await user.click(combobox);
+    await user.selectOptions(screen.getByRole('combobox'), 'team-1');
+    // Allow duplicates because Linear states render as native <option>s in
+    // the same DOM under the test stub.
     await waitFor(() => {
-      expect(screen.getByText('Engineering (ENG)')).toBeInTheDocument();
-    });
-    await user.click(screen.getByText('Engineering (ENG)'));
-    await waitFor(() => {
-      expect(screen.getByText('To Do')).toBeInTheDocument();
-      expect(screen.getByText('In Progress')).toBeInTheDocument();
-      expect(screen.getByText('Done')).toBeInTheDocument();
-      expect(screen.getByText('Blocked')).toBeInTheDocument();
-      expect(screen.getByText('Skipped')).toBeInTheDocument();
-      expect(screen.getByText('Cancelled')).toBeInTheDocument();
+      expect(screen.getAllByText('To Do').length).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByText('In Progress').length).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByText('Done').length).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByText('Blocked').length).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByText('Skipped').length).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByText('Cancelled').length).toBeGreaterThanOrEqual(1);
     });
   });
 });

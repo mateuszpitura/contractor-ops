@@ -26,7 +26,7 @@ vi.mock('@contractor-ops/db', () => ({
 // Imported AFTER the db mock so better-auth's adapter init doesn't crash.
 import { roles as authRoles } from '@contractor-ops/auth';
 
-import { resolveRbacRecipients, testables } from '../rbac-recipients.js';
+import { resolveRbacRecipients, __testables as testables } from '../rbac-recipients.js';
 
 const ORG_A = 'clorgaaaaaaaaaaaaaaaaaaaaaa';
 const ORG_B = 'clorgbbbbbbbbbbbbbbbbbbbbbb';

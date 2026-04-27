@@ -13,6 +13,10 @@ vi.mock('@contractor-ops/db', () => {
     ocrCreditLedger: { create: vi.fn() },
     matchResult: { create: vi.fn() },
     member: { findMany: vi.fn() },
+    // Raw SQL hooks: tenant scoping (search_path/RLS) + advisory lock acquire.
+    // Returning [{acquired: true}] makes pg_try_advisory_lock succeed in tests.
+    $queryRawUnsafe: vi.fn(async () => [{ acquired: true }]),
+    $executeRawUnsafe: vi.fn(async () => 0),
   };
   return {
     prisma,
@@ -73,6 +77,7 @@ vi.mock('@contractor-ops/validators', () => ({
 
 vi.mock('../invoice-matching.js', () => ({
   computeDuplicateCheckHash: vi.fn().mockReturnValue('hash123'),
+  computeDuplicateCheckHashForInvoice: vi.fn().mockReturnValue('hash123'),
   runAutoMatch: vi.fn(),
 }));
 

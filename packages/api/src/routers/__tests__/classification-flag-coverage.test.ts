@@ -11,7 +11,8 @@ import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
-const routersDir = new URL('../', import.meta.url);
+// All classification routers live under routers/compliance/ after the domain split.
+const routersDir = new URL('../compliance/', import.meta.url);
 
 async function readRouter(name: string): Promise<string> {
   return readFile(fileURLToPath(new URL(`${name}`, routersDir)), 'utf8');
@@ -20,7 +21,7 @@ async function readRouter(name: string): Promise<string> {
 describe('Classification flag coverage (Phase 64 D-07)', () => {
   it('classification.ts imports classificationProcedure and not tenantProcedure directly', async () => {
     const src = await readRouter('classification.ts');
-    expect(src).toContain("from '../middleware/require-classification-flag.js'");
+    expect(src).toContain("from '../../middleware/require-classification-flag.js'");
     expect(src).toContain('classificationProcedure');
     expect(src).not.toMatch(/import.*tenantProcedure.*from.*tenant/);
   });
@@ -69,7 +70,9 @@ describe('Classification flag coverage (Phase 64 D-07)', () => {
 
   it('require-classification-flag middleware throws FORBIDDEN with CLASSIFICATION_ENGINE_DISABLED', async () => {
     const src = await readFile(
-      fileURLToPath(new URL('../middleware/require-classification-flag.ts', routersDir)),
+      // require-classification-flag.ts lives at packages/api/src/middleware/.
+      // routersDir resolves to routers/compliance/, so we go up two levels.
+      fileURLToPath(new URL('../../middleware/require-classification-flag.ts', routersDir)),
       'utf8',
     );
     expect(src).toContain('CLASSIFICATION_ENGINE_DISABLED');

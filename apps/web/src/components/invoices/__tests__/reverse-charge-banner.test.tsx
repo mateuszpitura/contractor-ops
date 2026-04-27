@@ -1,11 +1,27 @@
+import { mutationOptions } from '@/test/mocks/trpc';
 import { render, screen } from '@/test/test-utils';
 import { ReverseChargeBanner } from '../reverse-charge-banner';
+
+function rqKey() {
+  return '__rq_reverse_charge_banner__';
+}
+function rq() {
+  return (globalThis as any)[rqKey()] as ReturnType<
+    typeof import('@/test/mocks/react-query').createReactQueryMockController
+  >;
+}
+
+vi.mock('@tanstack/react-query', async () => {
+  const { createReactQueryMockController } = await import('@/test/mocks/react-query');
+  (globalThis as any)[rqKey()] ??= createReactQueryMockController();
+  return rq().factory();
+});
 
 vi.mock('@/trpc/init', () => ({
   trpc: {
     invoice: {
       toggleReverseCharge: {
-        useMutation: () => ({ mutate: vi.fn(), isPending: false }),
+        mutationOptions: (opts?: Record<string, unknown>) => mutationOptions(opts),
       },
     },
   },

@@ -100,6 +100,12 @@ vi.mock('@sentry/nextjs', () => {
 });
 
 vi.mock('@contractor-ops/logger', () => ({
+  createIntegrationLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+  })),
   createTrpcLogger: vi.fn(() => ({
     info: vi.fn(),
     warn: vi.fn(),
@@ -146,7 +152,7 @@ vi.mock('../../services/jira-webhook-handler.js', () => ({
 }));
 
 import { createCallerFactory } from '../../init.js';
-import { jiraRouter } from '../jira.js';
+import { jiraRouter } from '../integrations/jira.js';
 
 const createCaller = createCallerFactory(jiraRouter);
 
@@ -499,7 +505,9 @@ describe('jiraRouter', () => {
     });
 
     expect(result).toHaveLength(1);
-    expect((result[0] as { updatedAt: string }).updatedAt).toBe(updatedAt.toISOString());
+    const got = (result[0] as { updatedAt: string | Date }).updatedAt;
+    const gotIso = got instanceof Date ? got.toISOString() : got;
+    expect(gotIso).toBe(updatedAt.toISOString());
     expect(mockPrisma.externalLink.findMany).toHaveBeenCalledWith(
       expect.objectContaining({ take: 3 }),
     );
@@ -585,9 +593,9 @@ describe('jiraRouter', () => {
       const fs = await import('node:fs');
       const path = await import('node:path');
       const sourceDir = path.resolve(import.meta.dirname, '../../routers');
-      const source = fs.readFileSync(path.join(sourceDir, 'jira.ts'), 'utf-8');
+      const source = fs.readFileSync(path.join(sourceDir, 'integrations/jira.ts'), 'utf-8');
 
-      expect(source).toContain("import { requireTier } from '../middleware/tier.js'");
+      expect(source).toContain("import { requireTier } from '../../middleware/tier.js'");
       expect(source).toContain("requireTier('PRO')");
 
       const matches = source.match(/\.use\(requireTier\('PRO'\)\)/g);
@@ -598,7 +606,7 @@ describe('jiraRouter', () => {
       const fs = await import('node:fs');
       const path = await import('node:path');
       const sourceDir = path.resolve(import.meta.dirname, '../../routers');
-      const source = fs.readFileSync(path.join(sourceDir, 'jira.ts'), 'utf-8');
+      const source = fs.readFileSync(path.join(sourceDir, 'integrations/jira.ts'), 'utf-8');
 
       for (const proc of [
         'connectionStatus',

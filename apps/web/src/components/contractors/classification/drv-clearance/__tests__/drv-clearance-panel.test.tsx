@@ -33,6 +33,16 @@ vi.mock('@tanstack/react-query', async () => {
 
 vi.mock('@/trpc/init', () => ({
   trpc: {
+    classificationDocument: {
+      uploadDrvDecisionLetter: {
+        mutationOptions: (opts?: {
+          onSuccess?: () => void;
+          onError?: (err: { message: string }) => void;
+        }) => ({
+          ...opts,
+        }),
+      },
+    },
     statusfeststellungsverfahren: {
       listByEngagement: {
         queryOptions: (input: { contractorAssignmentId: string }) => ({

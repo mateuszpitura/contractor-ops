@@ -23,7 +23,7 @@ import { describe, expect, it } from 'vitest';
 // Import the pure function directly (no mocking needed)
 // ---------------------------------------------------------------------------
 
-import { evaluateCondition } from '../workflow.js';
+import { evaluateCondition } from '../workflow/workflow.js';
 
 // ===========================================================================
 // evaluateCondition — used by startRun to filter template tasks

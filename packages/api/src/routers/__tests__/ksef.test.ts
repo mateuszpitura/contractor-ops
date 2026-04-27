@@ -144,7 +144,7 @@ vi.mock('../../services/ksef-sync-orchestrator.js', () => ({
 }));
 
 import { createCallerFactory } from '../../init.js';
-import { ksefRouter } from '../ksef.js';
+import { ksefRouter } from '../integrations/ksef.js';
 
 const createCaller = createCallerFactory(ksefRouter);
 

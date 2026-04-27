@@ -134,6 +134,12 @@ vi.mock('../../services/stripe-client.js', () => ({
 }));
 
 vi.mock('@contractor-ops/logger', () => ({
+  createIntegrationLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+  })),
   createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
 }));
@@ -161,13 +167,15 @@ vi.mock('../../services/teams/teams-graph-client.js', () => ({
 // ---------------------------------------------------------------------------
 
 import { createCallerFactory } from '../../init.js';
+import { portalAppRouter } from '../../portal-root.js';
 import { appRouter } from '../../root.js';
 
 // ---------------------------------------------------------------------------
-// Caller setup — admin tenant caller
+// Caller setup — admin tenant caller (appRouter) + portal caller (portalAppRouter)
 // ---------------------------------------------------------------------------
 
 const createCaller = createCallerFactory(appRouter);
+const createPortalCaller = createCallerFactory(portalAppRouter);
 
 function makeTenantCaller() {
   const session = {
@@ -206,7 +214,7 @@ function makeTenantCaller() {
 const caller = makeTenantCaller();
 
 function makePortalCaller() {
-  return createCaller({
+  return createPortalCaller({
     headers: new Headers({ cookie: `portal_session=${PORTAL_SESSION_TOKEN}` }),
     session: null as never,
     user: null as never,

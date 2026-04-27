@@ -70,7 +70,7 @@ describe('validateContractorRow', () => {
   it('applies defaults and passes for valid row', () => {
     const data: Record<string, unknown> = {
       legalName: 'Acme',
-      taxId: '1234567890',
+      taxId: '5260250995',
       email: 'a@b.com',
     };
     const r = validateContractorRow(data);
@@ -116,7 +116,7 @@ describe('processImportFile', () => {
   it('returns one valid contractor row when mapping matches sheet', async () => {
     const buf = await buildXlsxBuffer(
       ['legalName', 'taxId', 'email'],
-      ['Test Ltd', '1234567890', 'x@example.com'],
+      ['Test Ltd', '5260250995', 'x@example.com'],
     );
     const columnMapping = autoMapColumns(['legalName', 'taxId', 'email'], 'contractor');
     const result = await processImportFile(buf, 'contractor', 'org_1', columnMapping);
@@ -127,10 +127,10 @@ describe('processImportFile', () => {
   });
 
   it('flags duplicate contractor by taxId', async () => {
-    mockContractorFindMany.mockResolvedValue([{ id: 'c-existing', taxId: '1234567890' }]);
+    mockContractorFindMany.mockResolvedValue([{ id: 'c-existing', taxId: '5260250995' }]);
     const buf = await buildXlsxBuffer(
       ['legalName', 'taxId', 'email'],
-      ['Test Ltd', '1234567890', 'x@example.com'],
+      ['Test Ltd', '5260250995', 'x@example.com'],
     );
     const columnMapping = autoMapColumns(['legalName', 'taxId', 'email'], 'contractor');
     const result = await processImportFile(buf, 'contractor', 'org_1', columnMapping);

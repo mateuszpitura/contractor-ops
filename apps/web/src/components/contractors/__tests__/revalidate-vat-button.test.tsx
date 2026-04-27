@@ -3,18 +3,10 @@ import { RevalidateVatButton } from '../revalidate-vat-button';
 
 vi.mock('@/trpc/init', () => ({
   trpc: {
-    useUtils: () => ({
-      contractor: {
-        getById: { invalidate: vi.fn() },
-      },
-    }),
     contractor: {
+      getById: { queryKey: () => ['contractor.getById'] },
       revalidateVat: {
-        useMutation: (opts: Record<string, unknown>) => ({
-          mutate: vi.fn(),
-          isPending: false,
-          ...opts,
-        }),
+        mutationOptions: (opts: Record<string, unknown>) => ({ mutationFn: vi.fn(), ...opts }),
       },
     },
   },

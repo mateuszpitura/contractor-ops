@@ -11,11 +11,19 @@ const mockData = vi.hoisted(() => ({
   whtPendingCount: 2,
 }));
 
+vi.mock('@tanstack/react-query', async importOriginal => {
+  const actual = await importOriginal<typeof import('@tanstack/react-query')>();
+  return {
+    ...actual,
+    useQuery: () => ({ isLoading: false, data: mockData }),
+  };
+});
+
 vi.mock('@/trpc/init', () => ({
   trpc: {
     tax: {
       taxSummary: {
-        useQuery: () => ({ isLoading: false, data: mockData }),
+        queryOptions: () => ({ queryKey: ['tax.taxSummary'] }),
       },
     },
   },

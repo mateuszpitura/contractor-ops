@@ -1,3 +1,4 @@
+import { mutationOptions, queryOptions, trpcQueryKey } from '@/test/mocks/trpc';
 import { render, screen, setup } from '@/test/test-utils';
 import { ConsentManagementSection } from '../consent-management-section';
 
@@ -50,6 +51,21 @@ const { mockGrantMutate, mockDownloadDPAMutate, mockDownloadSCCMutate } = vi.hoi
   mockDownloadSCCMutate: vi.fn(),
 }));
 
+function rqKey() {
+  return '__rq_consent_management_section__';
+}
+function rq() {
+  return (globalThis as any)[rqKey()] as ReturnType<
+    typeof import('@/test/mocks/react-query').createReactQueryMockController
+  >;
+}
+
+vi.mock('@tanstack/react-query', async () => {
+  const { createReactQueryMockController } = await import('@/test/mocks/react-query');
+  (globalThis as any)[rqKey()] ??= createReactQueryMockController();
+  return rq().factory();
+});
+
 // ---------------------------------------------------------------------------
 // Mocks
 // ---------------------------------------------------------------------------
@@ -69,63 +85,119 @@ vi.mock('@/trpc/init', () => ({
   trpc: {
     consent: {
       getPrivacyNotice: {
-        useQuery: () => ({ data: noticeData, isLoading: noticeLoading }),
+        queryOptions: () => queryOptions(trpcQueryKey(['consent', 'getPrivacyNotice'])),
       },
       getCurrentConsent: {
-        useQuery: () => ({ data: currentConsentData, isLoading: consentLoading }),
+        queryOptions: () => queryOptions(trpcQueryKey(['consent', 'getCurrentConsent'])),
+        queryKey: () => trpcQueryKey(['consent', 'getCurrentConsent']),
       },
       getConsentHistory: {
-        useQuery: () => ({ data: consentHistoryData }),
+        queryOptions: (input: unknown) =>
+          queryOptions(trpcQueryKey(['consent', 'getConsentHistory'], input)),
+        queryKey: (input: unknown) => trpcQueryKey(['consent', 'getConsentHistory'], input),
       },
       getCrossBorderStatus: {
-        useQuery: () => ({ data: crossBorderData }),
+        queryOptions: () => queryOptions(trpcQueryKey(['consent', 'getCrossBorderStatus'])),
       },
       grant: {
-        useMutation: (opts?: { onSuccess?: () => void; onError?: (e: Error) => void }) => ({
-          mutate: (args: unknown) => {
-            mockGrantMutate(args);
-            opts?.onSuccess?.();
-          },
-          isPending: false,
-        }),
+        mutationOptions: (opts?: { onSuccess?: () => void; onError?: (e: Error) => void }) =>
+          mutationOptions(opts),
       },
       downloadDPA: {
-        useMutation: (opts?: {
+        mutationOptions: (opts?: {
           onSuccess?: (data: unknown) => void;
           onError?: (e: Error) => void;
-        }) => ({
-          mutate: () => {
-            mockDownloadDPAMutate();
-            opts?.onSuccess?.({ content: '<html>DPA</html>', filename: 'DPA.html' });
-          },
-          isPending: false,
-        }),
+        }) => mutationOptions({ __trpcProc: 'downloadDPA', ...(opts ?? {}) }),
       },
       downloadSCC: {
-        useMutation: (opts?: {
+        mutationOptions: (opts?: {
           onSuccess?: (data: unknown) => void;
           onError?: (e: Error) => void;
-        }) => ({
-          mutate: () => {
-            mockDownloadSCCMutate();
-            opts?.onSuccess?.({ content: '<html>SCC</html>', filename: 'SCC.html' });
-          },
-          isPending: false,
-        }),
+        }) => mutationOptions({ __trpcProc: 'downloadSCC', ...(opts ?? {}) }),
       },
     },
-    useUtils: () => ({
-      consent: {
-        getCurrentConsent: { invalidate: vi.fn() },
-        getConsentHistory: { invalidate: vi.fn() },
-      },
-    }),
   },
 }));
 
 vi.mock('sonner', () => ({
   toast: { success: vi.fn(), error: vi.fn(), info: vi.fn() },
 }));
+
+beforeEach(() => {
+  rq().setQueryResult(trpcQueryKey(['consent', 'getPrivacyNotice']), {
+    get data() {
+      return noticeData;
+    },
+    get isLoading() {
+      return noticeLoading;
+    },
+  });
+  rq().setQueryResult(trpcQueryKey(['consent', 'getCurrentConsent']), {
+    get data() {
+      return currentConsentData;
+    },
+    get isLoading() {
+      return consentLoading;
+    },
+  });
+  rq().setQueryResult(trpcQueryKey(['consent', 'getConsentHistory'], {}), {
+    get data() {
+      return consentHistoryData;
+    },
+  });
+  rq().setQueryResult(trpcQueryKey(['consent', 'getCrossBorderStatus']), {
+    get data() {
+      return crossBorderData;
+    },
+  });
+
+  rq().setUseMutationImpl((options?: object) => {
+    return {
+      mutate: (args?: unknown) => {
+        const onSuccess = (options as any)?.onSuccess as ((data?: any) => void) | undefined;
+        const proc = (options as any)?.__trpcProc as string | undefined;
+
+        if ((options as any)?.onError && args === '__force_error__') {
+          (options as any).onError(new Error('err'));
+          return;
+        }
+
+        // Heuristic: grant has args, downloads don't.
+        if (args && typeof args === 'object' && 'purpose' in (args as any)) {
+          mockGrantMutate(args);
+          onSuccess?.();
+          return;
+        }
+
+        if (proc === 'downloadDPA') {
+          mockDownloadDPAMutate();
+          onSuccess?.({ content: '<html>DPA</html>', filename: 'DPA.html' });
+          return;
+        }
+
+        if (proc === 'downloadSCC') {
+          mockDownloadSCCMutate();
+          onSuccess?.({ content: '<html>SCC</html>', filename: 'SCC.html' });
+          return;
+        }
+
+        if (options && typeof options === 'object' && 'onSuccess' in (options as any)) {
+          // DPA / SCC success payload
+          if (mockDownloadDPAMutate.mock.calls.length === 0) {
+            mockDownloadDPAMutate();
+            onSuccess?.({ content: '<html>DPA</html>', filename: 'DPA.html' });
+          } else {
+            mockDownloadSCCMutate();
+            onSuccess?.({ content: '<html>SCC</html>', filename: 'SCC.html' });
+          }
+        }
+      },
+      isPending: false,
+      status: 'idle' as const,
+      ...(options ?? {}),
+    } as any;
+  });
+});
 
 // Mock child components
 vi.mock('../privacy-notice-display', () => ({

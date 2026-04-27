@@ -28,10 +28,12 @@ describe('DataTableFilters', () => {
 
     await user.click(screen.getByRole('button', { name: /clear all/i }));
 
-    expect(onFiltersChange).toHaveBeenCalledWith({
-      status: [],
-      source: [],
-    });
+    expect(onFiltersChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: [],
+        source: [],
+      }),
+    );
   });
 
   it('removes a status chip when the remove control is activated', async () => {

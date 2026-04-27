@@ -17,6 +17,9 @@ vi.mock('@contractor-ops/db', () => ({
       findUniqueOrThrow: mockFindUniqueOrThrow,
       update: mockUpdate,
     },
+    // Raw SQL hooks: tenant scoping (search_path) + advisory lock acquire/release.
+    $queryRawUnsafe: vi.fn(async () => [{ acquired: true }]),
+    $executeRawUnsafe: vi.fn(async () => 0),
   },
 }));
 

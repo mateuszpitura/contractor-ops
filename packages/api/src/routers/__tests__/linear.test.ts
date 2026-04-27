@@ -84,6 +84,12 @@ vi.mock('@sentry/nextjs', () => {
 });
 
 vi.mock('@contractor-ops/logger', () => ({
+  createIntegrationLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+  })),
   createTrpcLogger: vi.fn(() => ({
     info: vi.fn(),
     warn: vi.fn(),
@@ -125,7 +131,7 @@ vi.mock('../../services/linear-webhook-handler.js', () => ({
 }));
 
 import { createCallerFactory } from '../../init.js';
-import { linearRouter } from '../linear.js';
+import { linearRouter } from '../integrations/linear.js';
 
 const createCaller = createCallerFactory(linearRouter);
 
@@ -475,9 +481,9 @@ describe('linearRouter', () => {
       const fs = await import('node:fs');
       const path = await import('node:path');
       const sourceDir = path.resolve(import.meta.dirname, '../../routers');
-      const source = fs.readFileSync(path.join(sourceDir, 'linear.ts'), 'utf-8');
+      const source = fs.readFileSync(path.join(sourceDir, 'integrations/linear.ts'), 'utf-8');
 
-      expect(source).toContain("import { requireTier } from '../middleware/tier.js'");
+      expect(source).toContain("import { requireTier } from '../../middleware/tier.js'");
       expect(source).toContain("requireTier('PRO')");
 
       const matches = source.match(/\.use\(requireTier\('PRO'\)\)/g);
@@ -488,7 +494,7 @@ describe('linearRouter', () => {
       const fs = await import('node:fs');
       const path = await import('node:path');
       const sourceDir = path.resolve(import.meta.dirname, '../../routers');
-      const source = fs.readFileSync(path.join(sourceDir, 'linear.ts'), 'utf-8');
+      const source = fs.readFileSync(path.join(sourceDir, 'integrations/linear.ts'), 'utf-8');
 
       for (const proc of [
         'connectionStatus',

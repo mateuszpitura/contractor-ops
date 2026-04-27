@@ -215,6 +215,12 @@ vi.mock('../../services/courier/ups-client.js', () => ({
 }));
 
 vi.mock('@contractor-ops/logger', () => ({
+  createIntegrationLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+  })),
   createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
 }));
@@ -253,13 +259,13 @@ vi.mock('botframework-connector', () => ({
 // ---------------------------------------------------------------------------
 
 import { createCallerFactory } from '../../init.js';
-import { appRouter } from '../../root.js';
+import { portalAppRouter } from '../../portal-root.js';
 
 // ---------------------------------------------------------------------------
 // Caller setup
 // ---------------------------------------------------------------------------
 
-const createCaller = createCallerFactory(appRouter);
+const createCaller = createCallerFactory(portalAppRouter);
 
 function portalCaller() {
   return createCaller({

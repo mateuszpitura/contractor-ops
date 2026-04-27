@@ -70,6 +70,12 @@ vi.mock('@contractor-ops/feature-flags', () => ({
     values: {},
     isEnabled: mockIsEnabled,
   })),
+  // root.ts evaluates `buildFlagBag` at module load to gate classification routers.
+  // The test doesn't exercise that path, but the import resolves regardless.
+  buildFlagBag: vi.fn(() => ({
+    values: {},
+    isEnabled: mockIsEnabled,
+  })),
 }));
 
 vi.mock('@contractor-ops/auth', () => ({
@@ -129,6 +135,12 @@ vi.mock('@sentry/nextjs', () => {
 });
 
 vi.mock('@contractor-ops/logger', () => ({
+  createIntegrationLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+  })),
   createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
   createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
 }));

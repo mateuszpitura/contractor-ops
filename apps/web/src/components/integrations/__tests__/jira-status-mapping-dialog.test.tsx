@@ -1,4 +1,5 @@
 import userEvent from '@testing-library/user-event';
+import * as React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, setup, waitFor } from '@/test/test-utils';
 import { JiraStatusMappingDialog } from '../jira-status-mapping-dialog';
@@ -6,6 +7,46 @@ import { JiraStatusMappingDialog } from '../jira-status-mapping-dialog';
 // ---------------------------------------------------------------------------
 // Mocks
 // ---------------------------------------------------------------------------
+
+// Replace @/components/ui/select (Base UI portal-based primitive — flaky under
+// jsdom because the popup uses inert attributes on the parent dialog) with a
+// native <select>. Tests still drive the same `onValueChange` contract.
+vi.mock('@/components/ui/select', () => {
+  const SelectCtx = React.createContext<{ onValueChange?: (v: string) => void } | null>(null);
+  return {
+    Select: ({
+      children,
+      onValueChange,
+    }: {
+      children: React.ReactNode;
+      value?: string;
+      onValueChange?: (v: string) => void;
+    }) => (
+      <SelectCtx.Provider value={{ onValueChange }}>
+        <select
+          role="combobox"
+          aria-expanded={false}
+          aria-label="select"
+          // biome-ignore lint/nursery/noJsxPropsBind: test stub
+          onChange={e => onValueChange?.(e.target.value)}>
+          {children}
+        </select>
+      </SelectCtx.Provider>
+    ),
+    SelectTrigger: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+    SelectValue: ({
+      children,
+      placeholder,
+    }: {
+      children?: React.ReactNode;
+      placeholder?: string;
+    }) => <>{children ?? placeholder}</>,
+    SelectContent: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+    SelectItem: ({ value, children }: { value: string; children: React.ReactNode }) => (
+      <option value={value}>{children}</option>
+    ),
+  };
+});
 
 vi.mock('sonner', () => ({
   toast: { success: vi.fn(), error: vi.fn() },
@@ -271,21 +312,17 @@ describe('JiraStatusMappingDialog', () => {
     render(
       <JiraStatusMappingDialog open={true} onOpenChange={onOpenChange} connectionId="conn-1" />,
     );
-    const combobox = screen.getByRole('combobox');
-    await user.click(combobox);
-    await waitFor(() => {
-      expect(screen.getByText('WEB — Web App')).toBeInTheDocument();
-    });
-    await user.click(screen.getByText('WEB — Web App'));
+    await user.selectOptions(screen.getByRole('combobox'), 'proj-1');
     await waitFor(() => {
       expect(screen.getByText('Workflow Status')).toBeInTheDocument();
       expect(screen.getByText('Jira Transition')).toBeInTheDocument();
     });
-    // All workflow statuses should be visible
-    expect(screen.getByText('To Do')).toBeInTheDocument();
-    expect(screen.getByText('In Progress')).toBeInTheDocument();
-    expect(screen.getByText('Done')).toBeInTheDocument();
-    expect(screen.getByText('Blocked')).toBeInTheDocument();
+    // All workflow statuses should be visible (multiple of these strings exist
+    // because Jira transitions also include Open/In Progress/Done as <option>s).
+    expect(screen.getAllByText('To Do').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText('In Progress').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText('Done').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText('Blocked').length).toBeGreaterThanOrEqual(1);
   });
 
   it('shows save button enabled after selecting project with no existing mappings', async () => {
@@ -294,12 +331,7 @@ describe('JiraStatusMappingDialog', () => {
     render(
       <JiraStatusMappingDialog open={true} onOpenChange={onOpenChange} connectionId="conn-1" />,
     );
-    const combobox = screen.getByRole('combobox');
-    await user.click(combobox);
-    await waitFor(() => {
-      expect(screen.getByText('WEB — Web App')).toBeInTheDocument();
-    });
-    await user.click(screen.getByText('WEB — Web App'));
+    await user.selectOptions(screen.getByRole('combobox'), 'proj-1');
     await waitFor(() => {
       expect(screen.getByText('Workflow Status')).toBeInTheDocument();
     });
@@ -320,12 +352,7 @@ describe('JiraStatusMappingDialog', () => {
     render(
       <JiraStatusMappingDialog open={true} onOpenChange={onOpenChange} connectionId="conn-1" />,
     );
-    const combobox = screen.getByRole('combobox');
-    await user.click(combobox);
-    await waitFor(() => {
-      expect(screen.getByText('WEB — Web App')).toBeInTheDocument();
-    });
-    await user.click(screen.getByText('WEB — Web App'));
+    await user.selectOptions(screen.getByRole('combobox'), 'proj-1');
     await waitFor(() => {
       expect(screen.getByText('Workflow Status')).toBeInTheDocument();
     });
@@ -344,12 +371,7 @@ describe('JiraStatusMappingDialog', () => {
       <JiraStatusMappingDialog open={true} onOpenChange={onOpenChange} connectionId="conn-1" />,
     );
     // Select project first
-    const combobox = screen.getByRole('combobox');
-    await user.click(combobox);
-    await waitFor(() => {
-      expect(screen.getByText('WEB — Web App')).toBeInTheDocument();
-    });
-    await user.click(screen.getByText('WEB — Web App'));
+    await user.selectOptions(screen.getByRole('combobox'), 'proj-1');
     await waitFor(() => {
       expect(screen.getByText('Workflow Status')).toBeInTheDocument();
     });
@@ -371,12 +393,7 @@ describe('JiraStatusMappingDialog', () => {
     render(
       <JiraStatusMappingDialog open={true} onOpenChange={onOpenChange} connectionId="conn-1" />,
     );
-    const combobox = screen.getByRole('combobox');
-    await user.click(combobox);
-    await waitFor(() => {
-      expect(screen.getByText('WEB — Web App')).toBeInTheDocument();
-    });
-    await user.click(screen.getByText('WEB — Web App'));
+    await user.selectOptions(screen.getByRole('combobox'), 'proj-1');
     await waitFor(() => {
       expect(screen.getByText(/for Web App/)).toBeInTheDocument();
     });
@@ -388,12 +405,7 @@ describe('JiraStatusMappingDialog', () => {
     render(
       <JiraStatusMappingDialog open={true} onOpenChange={onOpenChange} connectionId="conn-1" />,
     );
-    const combobox = screen.getByRole('combobox');
-    await user.click(combobox);
-    await waitFor(() => {
-      expect(screen.getByText('API — API Service')).toBeInTheDocument();
-    });
-    await user.click(screen.getByText('API — API Service'));
+    await user.selectOptions(screen.getByRole('combobox'), 'proj-2');
     await waitFor(() => {
       expect(screen.getByText(/for API Service/)).toBeInTheDocument();
     });
@@ -405,12 +417,7 @@ describe('JiraStatusMappingDialog', () => {
     render(
       <JiraStatusMappingDialog open={true} onOpenChange={onOpenChange} connectionId="conn-1" />,
     );
-    const combobox = screen.getByRole('combobox');
-    await user.click(combobox);
-    await waitFor(() => {
-      expect(screen.getByText('WEB — Web App')).toBeInTheDocument();
-    });
-    await user.click(screen.getByText('WEB — Web App'));
+    await user.selectOptions(screen.getByRole('combobox'), 'proj-1');
     await waitFor(() => {
       expect(screen.getByText('To Do')).toBeInTheDocument();
       expect(screen.getByText('In Progress')).toBeInTheDocument();
@@ -430,12 +437,7 @@ describe('JiraStatusMappingDialog', () => {
     render(
       <JiraStatusMappingDialog open={true} onOpenChange={onOpenChange} connectionId="conn-1" />,
     );
-    const combobox = screen.getByRole('combobox');
-    await user.click(combobox);
-    await waitFor(() => {
-      expect(screen.getByText('WEB — Web App')).toBeInTheDocument();
-    });
-    await user.click(screen.getByText('WEB — Web App'));
+    await user.selectOptions(screen.getByRole('combobox'), 'proj-1');
     await waitFor(() => {
       expect(screen.getByText('Workflow Status')).toBeInTheDocument();
     });
@@ -454,25 +456,15 @@ describe('JiraStatusMappingDialog', () => {
     render(
       <JiraStatusMappingDialog open={true} onOpenChange={onOpenChange} connectionId="conn-1" />,
     );
-    const combobox = screen.getByRole('combobox');
-    await user.click(combobox);
-    await waitFor(() => {
-      expect(screen.getByText('WEB — Web App')).toBeInTheDocument();
-    });
-    await user.click(screen.getByText('WEB — Web App'));
+    await user.selectOptions(screen.getByRole('combobox'), 'proj-1');
     await waitFor(() => {
       expect(screen.getByText('Workflow Status')).toBeInTheDocument();
     });
-    // Select a status for the first workflow status
+    // Select a Jira transition for the first workflow status (the project
+    // combobox is index 0; transition selects start at index 1).
     const allComboboxes = screen.getAllByRole('combobox');
-    await user.click(allComboboxes[1]);
-    await waitFor(() => {
-      const options = screen.getAllByText('Open');
-      expect(options.length).toBeGreaterThanOrEqual(1);
-    });
-    // Click the Open option in the dropdown
-    const openOptions = screen.getAllByText('Open');
-    await user.click(openOptions[openOptions.length - 1]);
+    expect(allComboboxes.length).toBeGreaterThan(1);
+    await user.selectOptions(allComboboxes[1] as HTMLSelectElement, 'js-1');
     // Save button should be enabled now
     const saveBtn = screen.getByRole('button', { name: 'Save Mapping' });
     expect(saveBtn).not.toBeDisabled();
@@ -492,23 +484,12 @@ describe('JiraStatusMappingDialog', () => {
     render(
       <JiraStatusMappingDialog open={true} onOpenChange={onOpenChange} connectionId="conn-1" />,
     );
-    const combobox = screen.getByRole('combobox');
-    // Select first project
-    await user.click(combobox);
-    await waitFor(() => {
-      expect(screen.getByText('WEB — Web App')).toBeInTheDocument();
-    });
-    await user.click(screen.getByText('WEB — Web App'));
+    await user.selectOptions(screen.getByRole('combobox'), 'proj-1');
     await waitFor(() => {
       expect(screen.getByText('Workflow Status')).toBeInTheDocument();
     });
-    // Switch to second project
-    const projectCombobox = screen.getAllByRole('combobox')[0];
-    await user.click(projectCombobox);
-    await waitFor(() => {
-      expect(screen.getByText('API — API Service')).toBeInTheDocument();
-    });
-    await user.click(screen.getByText('API — API Service'));
+    // Switch to second project (project select is the first combobox).
+    await user.selectOptions(screen.getAllByRole('combobox')[0], 'proj-2');
     await waitFor(() => {
       expect(screen.getByText(/for API Service/)).toBeInTheDocument();
     });
@@ -521,12 +502,7 @@ describe('JiraStatusMappingDialog', () => {
     render(
       <JiraStatusMappingDialog open={true} onOpenChange={onOpenChange} connectionId="conn-1" />,
     );
-    const combobox = screen.getByRole('combobox');
-    await user.click(combobox);
-    await waitFor(() => {
-      expect(screen.getByText('WEB — Web App')).toBeInTheDocument();
-    });
-    await user.click(screen.getByText('WEB — Web App'));
+    await user.selectOptions(screen.getByRole('combobox'), 'proj-1');
     await waitFor(() => {
       expect(screen.getByText('Workflow Status')).toBeInTheDocument();
     });

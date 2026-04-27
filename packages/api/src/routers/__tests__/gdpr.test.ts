@@ -135,6 +135,12 @@ vi.mock('@sentry/nextjs', () => {
 });
 
 vi.mock('@contractor-ops/logger', () => ({
+  createIntegrationLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+  })),
   createTrpcLogger: vi.fn(() => ({
     info: vi.fn(),
     warn: vi.fn(),
@@ -165,7 +171,7 @@ vi.mock('../../services/regional-storage.js', () => ({
 
 import { createCallerFactory } from '../../init.js';
 import { deleteRegionalObject } from '../../services/regional-storage.js';
-import { gdprRouter } from '../gdpr.js';
+import { gdprRouter } from '../compliance/gdpr.js';
 
 const createCaller = createCallerFactory(gdprRouter);
 

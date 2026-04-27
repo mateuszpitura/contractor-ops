@@ -551,8 +551,8 @@ describe('ApprovalSidePanel', () => {
     expect(mockMutate).toHaveBeenCalledWith(
       expect.objectContaining({
         stepId: 'step-1',
-        targetUserId: 'user-delegate-99',
-        note: 'Out of office, please review',
+        delegateToUserId: 'user-delegate-99',
+        comment: 'Out of office, please review',
       }),
     );
   });

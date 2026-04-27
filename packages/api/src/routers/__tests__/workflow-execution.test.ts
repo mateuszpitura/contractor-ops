@@ -154,6 +154,12 @@ vi.mock('@sentry/nextjs', () => {
 });
 
 vi.mock('@contractor-ops/logger', () => ({
+  createIntegrationLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+  })),
   createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
 }));
@@ -167,7 +173,7 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
 // ---------------------------------------------------------------------------
 
 import { createCallerFactory } from '../../init.js';
-import { workflowExecutionRouter } from '../workflow-execution.js';
+import { workflowExecutionRouter } from '../workflow/workflow-execution.js';
 
 // ---------------------------------------------------------------------------
 // Caller helper

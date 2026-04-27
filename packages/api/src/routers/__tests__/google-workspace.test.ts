@@ -142,6 +142,12 @@ vi.mock('@sentry/nextjs', () => {
 });
 
 vi.mock('@contractor-ops/logger', () => ({
+  createIntegrationLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+  })),
   createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
 }));
@@ -180,7 +186,7 @@ vi.mock('../../services/billing-constants.js', () => ({
 }));
 
 import { createCallerFactory } from '../../init.js';
-import { googleWorkspaceRouter } from '../google-workspace.js';
+import { googleWorkspaceRouter } from '../integrations/google-workspace.js';
 
 const createCaller = createCallerFactory(googleWorkspaceRouter);
 

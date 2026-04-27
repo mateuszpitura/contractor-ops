@@ -23,16 +23,32 @@ vi.mock('@sentry/nextjs', () => ({
   captureException: mockCapture,
 }));
 
-vi.mock('@contractor-ops/logger', () => ({
-  createCronLogger: vi.fn(() => ({
+vi.mock('@contractor-ops/logger', () => {
+  const stub = {
     info: vi.fn(),
     warn: vi.fn(),
     error: vi.fn(),
-  })),
-}));
+    debug: vi.fn(),
+    fatal: vi.fn(),
+    trace: vi.fn(),
+  };
+  return {
+    createLogger: vi.fn(() => stub),
+    createCronLogger: vi.fn(() => stub),
+    createTrpcLogger: vi.fn(() => stub),
+    createWebhookLogger: vi.fn(() => stub),
+    createIntegrationLogger: vi.fn(() => stub),
+  };
+});
 
 vi.mock('@contractor-ops/logger/metrics', () => ({
   metrics: { gauge: mockMetricsGauge, increment: vi.fn(), distribution: vi.fn() },
+}));
+
+vi.mock('@contractor-ops/feature-flags', () => ({
+  evaluate: vi.fn(() => ({ enabled: true, source: 'unleash' })),
+  buildFlagBag: vi.fn(() => ({})),
+  lazyFlagBag: vi.fn(() => ({})),
 }));
 
 import { GET, POST } from '../route';

@@ -21,6 +21,11 @@ vi.mock('@tanstack/react-query', async () => {
 
 vi.mock('@/trpc/init', () => ({
   trpc: {
+    classification: {
+      approveSds: {
+        mutationOptions: (opts: Record<string, unknown>) => opts,
+      },
+    },
     classificationDocument: {
       generateSds: {
         mutationOptions: (opts: Record<string, unknown>) => opts,
@@ -46,7 +51,9 @@ describe('GenerateSdsButton', () => {
   });
 
   it('calls mutate with assessment id when clicked', async () => {
-    const { user } = setup(<GenerateSdsButton classificationAssessmentId="a-1" />);
+    const { user } = setup(
+      <GenerateSdsButton classificationAssessmentId="a-1" alreadyApproved={true} />,
+    );
 
     await user.click(screen.getByRole('button'));
 
@@ -56,7 +63,7 @@ describe('GenerateSdsButton', () => {
   it('disables button when mutation is pending', () => {
     mockMutationState.current = { isPending: true };
 
-    render(<GenerateSdsButton classificationAssessmentId="a-1" />);
+    render(<GenerateSdsButton classificationAssessmentId="a-1" alreadyApproved={true} />);
 
     expect(screen.getByRole('button')).toBeDisabled();
   });
@@ -64,7 +71,7 @@ describe('GenerateSdsButton', () => {
   it('sets aria-busy when mutation is pending', () => {
     mockMutationState.current = { isPending: true };
 
-    render(<GenerateSdsButton classificationAssessmentId="a-1" />);
+    render(<GenerateSdsButton classificationAssessmentId="a-1" alreadyApproved={true} />);
 
     expect(screen.getByRole('button')).toHaveAttribute('aria-busy', 'true');
   });

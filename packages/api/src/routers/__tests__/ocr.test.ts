@@ -152,6 +152,12 @@ vi.mock('../../services/billing-service.js', () => ({
 }));
 
 vi.mock('@contractor-ops/logger', () => ({
+  createIntegrationLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+  })),
   createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
 }));
@@ -424,9 +430,9 @@ describe('ocr.portalGetResult', () => {
       const fs = await import('node:fs');
       const path = await import('node:path');
       const sourceDir = path.resolve(import.meta.dirname, '../../routers');
-      const source = fs.readFileSync(path.join(sourceDir, 'ocr.ts'), 'utf-8');
+      const source = fs.readFileSync(path.join(sourceDir, 'core/ocr.ts'), 'utf-8');
 
-      expect(source).toContain("import { requireTier } from '../middleware/tier.js'");
+      expect(source).toContain("import { requireTier } from '../../middleware/tier.js'");
       expect(source).toContain("requireTier('PRO')");
 
       const matches = source.match(/\.use\(requireTier\('PRO'\)\)/g);
@@ -437,7 +443,7 @@ describe('ocr.portalGetResult', () => {
       const fs = await import('node:fs');
       const path = await import('node:path');
       const sourceDir = path.resolve(import.meta.dirname, '../../routers');
-      const source = fs.readFileSync(path.join(sourceDir, 'ocr.ts'), 'utf-8');
+      const source = fs.readFileSync(path.join(sourceDir, 'core/ocr.ts'), 'utf-8');
 
       for (const proc of ['getResult', 'getByDocument']) {
         const procRegex = new RegExp(

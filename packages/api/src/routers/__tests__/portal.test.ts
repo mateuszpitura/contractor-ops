@@ -152,6 +152,12 @@ vi.mock('@sentry/nextjs', () => {
 });
 
 vi.mock('@contractor-ops/logger', () => ({
+  createIntegrationLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+  })),
   createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
   createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
 }));
@@ -189,7 +195,7 @@ vi.mock('../../services/bank-account-crypto.js', () => ({
 }));
 
 import { createCallerFactory } from '../../init.js';
-import { portalRouter } from '../portal.js';
+import { portalRouter } from '../portal/portal.js';
 
 const createCaller = createCallerFactory(portalRouter);
 
@@ -477,7 +483,11 @@ describe('portal router — getSession + overview', () => {
     expect(out.pendingInvoices).toBe(5);
     expect(out.recentPaymentsMinor).toBe(10_000);
     expect(out.recentPaymentsCurrency).toBe('PLN');
-    expect(out.upcomingDeadline).toBe('2026-12-01T00:00:00.000Z');
+    expect(
+      out.upcomingDeadline instanceof Date
+        ? out.upcomingDeadline.toISOString()
+        : out.upcomingDeadline,
+    ).toBe('2026-12-01T00:00:00.000Z');
     expect(out.recentActivity).toEqual([]);
   });
 });
@@ -647,9 +657,8 @@ describe('portal router — contracts + invoices', () => {
         }),
       ]),
     );
-    expect((out.activityLog[0] as { timestamp: string }).timestamp).toBe(
-      '2026-02-15T10:00:00.000Z',
-    );
+    const ts = (out.activityLog[0] as { timestamp: string | Date }).timestamp;
+    expect(ts instanceof Date ? ts.toISOString() : ts).toBe('2026-02-15T10:00:00.000Z');
   });
 });
 
@@ -904,6 +913,10 @@ describe('portal router — submitFinancialChangeRequest', () => {
   });
 
   it('creates change request with bankName and snapshots previous billing profile', async () => {
+    mockPrisma.contractor.findFirst.mockResolvedValueOnce({
+      countryCode: 'PL',
+      taxId: '5260000000',
+    });
     mockPrisma.contractorBillingProfile.findFirst.mockResolvedValueOnce({
       bankAccountMasked: '****99',
       bankName: 'Old Bank',
@@ -928,10 +941,15 @@ describe('portal router — submitFinancialChangeRequest', () => {
     );
     expect(out.id).toBe('cr-1');
     expect(out.status).toBe('PENDING');
-    expect(out.createdAt).toBe('2026-06-01T00:00:00.000Z');
+    const ca = out.createdAt as string | Date;
+    expect(ca instanceof Date ? ca.toISOString() : ca).toBe('2026-06-01T00:00:00.000Z');
   });
 
   it('encrypts bank account, masks last four, and passes to createChangeRequest', async () => {
+    mockPrisma.contractor.findFirst.mockResolvedValueOnce({
+      countryCode: 'PL',
+      taxId: null,
+    });
     mockPrisma.contractorBillingProfile.findFirst.mockResolvedValueOnce(null);
 
     await authedPortalCaller().submitFinancialChangeRequest({
@@ -951,6 +969,10 @@ describe('portal router — submitFinancialChangeRequest', () => {
   });
 
   it('propagates CONFLICT when a pending change request already exists', async () => {
+    mockPrisma.contractor.findFirst.mockResolvedValueOnce({
+      countryCode: 'PL',
+      taxId: null,
+    });
     mockPrisma.contractorBillingProfile.findFirst.mockResolvedValueOnce(null);
     mockCreateChangeRequest.mockRejectedValueOnce(
       new TRPCError({ code: 'CONFLICT', message: 'PORTAL_PENDING_CHANGE_EXISTS' }),

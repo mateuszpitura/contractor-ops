@@ -1,3 +1,25 @@
+vi.mock('@contractor-ops/feature-flags', async importOriginal => {
+  // Multi-layer enforcement (D-05/D-06):
+  //  1. root.ts evaluates `buildFlagBag` at module load to gate classification routers.
+  //  2. classificationProcedure middleware calls `evaluate(...)` per-request.
+  // Tests that exercise classification need both layers to return enabled=true.
+  const actual = (await importOriginal()) as Record<string, unknown>;
+  const enabledBag = {
+    values: { 'module.classification-engine': true },
+    isEnabled: (key: string) => key === 'module.classification-engine',
+  };
+  return {
+    ...actual,
+    buildFlagBag: vi.fn(() => enabledBag),
+    lazyFlagBag: vi.fn(() => enabledBag),
+    evaluate: vi.fn((key: string) =>
+      key === 'module.classification-engine'
+        ? { enabled: true, reason: 'mocked' }
+        : { enabled: false, reason: 'mocked' },
+    ),
+  };
+});
+
 // Phase 59 Plan 59-02 Task 2 — classificationDocument router contract tests.
 //
 // Strategy: shape-level assertions via structural inspection of the router
@@ -9,7 +31,7 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { classificationDocumentRouter } from '../classification-document.js';
+import { classificationDocumentRouter } from '../compliance/classification-document.js';
 
 describe('classificationDocument router (Phase 59 · CLASS-03, CLASS-06)', () => {
   it('exposes generateSds / generateDrvDefenseBundle / getDownloadUrl / listByEngagement procedures', () => {

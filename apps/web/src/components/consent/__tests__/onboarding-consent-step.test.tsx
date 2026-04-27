@@ -64,20 +64,31 @@ vi.mock('next-intl', async importOriginal => {
   };
 });
 
+vi.mock('@tanstack/react-query', async importOriginal => {
+  const actual = await importOriginal<typeof import('@tanstack/react-query')>();
+  return {
+    ...actual,
+    useQuery: () => ({ data: noticeData, isLoading: noticeLoading }),
+    useMutation: (opts?: { onSuccess?: () => void }) => ({
+      mutate: (args: unknown) => {
+        mockBulkGrantMutate(args);
+        opts?.onSuccess?.();
+      },
+      isPending: bulkGrantPending,
+    }),
+  };
+});
+
 vi.mock('@/trpc/init', () => ({
   trpc: {
     consent: {
       getPrivacyNotice: {
-        useQuery: () => ({ data: noticeData, isLoading: noticeLoading }),
+        queryOptions: (input?: unknown) => ({
+          queryKey: ['consent.getPrivacyNotice', input],
+        }),
       },
       bulkGrant: {
-        useMutation: (opts?: { onSuccess?: () => void }) => ({
-          mutate: (args: unknown) => {
-            mockBulkGrantMutate(args);
-            opts?.onSuccess?.();
-          },
-          isPending: bulkGrantPending,
-        }),
+        mutationOptions: (opts?: Record<string, unknown>) => ({ mutationFn: vi.fn(), ...opts }),
       },
     },
   },

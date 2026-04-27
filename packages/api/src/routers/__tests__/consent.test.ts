@@ -79,6 +79,12 @@ vi.mock('@contractor-ops/auth', () => ({
 }));
 
 vi.mock('@contractor-ops/logger', () => ({
+  createIntegrationLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+  })),
   createTrpcLogger: vi.fn(() => ({
     info: vi.fn(),
     warn: vi.fn(),
@@ -595,11 +601,7 @@ describe('consentRouter', () => {
       const caller = createCaller();
       const result = await caller.consent.getCrossBorderStatus();
 
-      expect(result).toEqual({
-        detected: false,
-        orgRegion: null,
-        hostingRegion: null,
-      });
+      expect(result).toEqual({ detected: false });
     });
 
     it('returns cross-border status when org has countryCode', async () => {

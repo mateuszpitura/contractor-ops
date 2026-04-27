@@ -480,9 +480,9 @@ describe('audit router', () => {
       const fs = await import('node:fs');
       const path = await import('node:path');
       const sourceDir = path.resolve(import.meta.dirname, '../../routers');
-      const source = fs.readFileSync(path.join(sourceDir, 'audit.ts'), 'utf-8');
+      const source = fs.readFileSync(path.join(sourceDir, 'core/audit.ts'), 'utf-8');
 
-      expect(source).toContain("import { requireTier } from '../middleware/tier.js'");
+      expect(source).toContain("import { requireTier } from '../../middleware/tier.js'");
       expect(source).toContain("requireTier('ENTERPRISE')");
 
       const matches = source.match(/\.use\(requireTier\('ENTERPRISE'\)\)/g);
