@@ -13,6 +13,7 @@ describe('roles', () => {
     'it_admin',
     'external_accountant',
     'readonly',
+    'platform_operator',
   ] as const;
 
   it('defines all exported platform roles', () => {
@@ -29,8 +30,23 @@ describe('roles', () => {
     }
   });
 
-  it('admin matches owner (full org permissions)', () => {
-    expect(roles.admin.statements).toEqual(roles.owner.statements);
+  it('admin matches owner on all resources EXCEPT workflow override_blocking_task (Phase 74 D-09)', () => {
+    // Phase 74 introduced workflow:override_blocking_task as an OWNER-only
+    // action. Admin retains every other permission owner has.
+    const owner = roles.owner.statements;
+    const admin = roles.admin.statements;
+    for (const resource of Object.keys(owner)) {
+      const ownerActions = (owner[resource as keyof typeof owner] ?? []) as readonly string[];
+      const adminActions = (admin[resource as keyof typeof admin] ?? []) as readonly string[];
+      if (resource === 'workflow') {
+        // Admin has owner's workflow set MINUS override_blocking_task.
+        const expected = ownerActions.filter(a => a !== 'override_blocking_task');
+        expect([...adminActions].sort()).toEqual([...expected].sort());
+        expect(adminActions).not.toContain('override_blocking_task');
+      } else {
+        expect([...adminActions].sort()).toEqual([...ownerActions].sort());
+      }
+    }
   });
 
   it('finance_admin cannot create or bulk-update contractors', () => {

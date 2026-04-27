@@ -23,7 +23,7 @@ const allPermissions = {
   contract: ['create', 'read', 'update', 'delete'],
   document: ['create', 'read', 'update', 'delete'],
   invoice: ['create', 'read', 'update', 'delete', 'approve'],
-  workflow: ['create', 'read', 'update', 'delete', 'execute'],
+  workflow: ['create', 'read', 'update', 'delete', 'execute', 'override_blocking_task'],
   payment: ['create', 'read', 'update', 'export'],
   report: ['read', 'export'],
   settings: ['read', 'update'],
