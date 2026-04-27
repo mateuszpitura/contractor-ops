@@ -1,22 +1,52 @@
-// TODO(Plan 74-03): implement OWNER-only permission table-test once the
-// workflow:override_blocking_task statement lands in @contractor-ops/auth.
+// Phase 74 Plan 74-03 — Pitfall 2 regression test (74-RESEARCH.md § Common Pitfalls).
 //
-// Plan 74-03 will replace the it.todo placeholders below with the actual
-// table-driven assertions iterating all 10 lowercase role names.
+// Asserts the workflow:override_blocking_task action is granted to OWNER ONLY.
+// CI fails immediately if any future role-table edit accidentally widens the
+// grant to a non-owner role.
 
-import { describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
+import { roles } from '../roles.js';
+
+const ALL_ROLE_NAMES = [
+  'owner',
+  'admin',
+  'finance_admin',
+  'ops_manager',
+  'team_manager',
+  'legal_compliance_viewer',
+  'it_admin',
+  'external_accountant',
+  'readonly',
+  'platform_operator',
+] as const;
+
+type RoleName = (typeof ALL_ROLE_NAMES)[number];
+
+function workflowActionsFor(name: RoleName): readonly string[] {
+  const role = roles[name as keyof typeof roles] as
+    | { statements?: { workflow?: readonly string[] } }
+    | undefined;
+  return role?.statements?.workflow ?? [];
+}
 
 describe('workflow:override_blocking_task — D-09 / SC#5 OWNER-only', () => {
-  it.todo('owner role grants override_blocking_task');
+  it.each(
+    ALL_ROLE_NAMES,
+  )('role %s — override_blocking_task grant matches owner-only invariant', roleName => {
+    const role = roles[roleName as keyof typeof roles];
+    expect(role, `role ${roleName} must be exported from roles.ts`).toBeDefined();
+    const granted = workflowActionsFor(roleName).includes('override_blocking_task');
+    if (roleName === 'owner') {
+      expect(granted, 'owner role MUST grant override_blocking_task').toBe(true);
+    } else {
+      expect(granted, `role ${roleName} MUST NOT grant override_blocking_task`).toBe(false);
+    }
+  });
 
-  // Plan 74-03 will expand this into it.each(...) over the 9 non-owner roles.
-  it.todo('role admin does NOT grant override_blocking_task');
-  it.todo('role finance_admin does NOT grant override_blocking_task');
-  it.todo('role ops_manager does NOT grant override_blocking_task');
-  it.todo('role team_manager does NOT grant override_blocking_task');
-  it.todo('role legal_compliance_viewer does NOT grant override_blocking_task');
-  it.todo('role it_admin does NOT grant override_blocking_task');
-  it.todo('role external_accountant does NOT grant override_blocking_task');
-  it.todo('role readonly does NOT grant override_blocking_task');
-  it.todo('role platform_operator does NOT grant override_blocking_task');
+  it('exactly one role grants override_blocking_task (Pitfall 2 regression)', () => {
+    const granters = ALL_ROLE_NAMES.filter(name =>
+      workflowActionsFor(name).includes('override_blocking_task'),
+    );
+    expect(granters).toEqual(['owner']);
+  });
 });
