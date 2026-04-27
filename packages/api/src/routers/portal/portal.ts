@@ -27,6 +27,7 @@ import {
   createRegionalPresignedDownloadUrl,
   createRegionalPresignedUploadUrl,
 } from '../../services/regional-storage.js';
+import { mapPortalDocLink, portalDocLinkInclude } from './portal-doc-mapper.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -468,33 +469,10 @@ export const portalRouter = router({
     // Fetch attached documents via DocumentLink
     const docLinks = await ctx.db.documentLink.findMany({
       where: { entityType: 'CONTRACT', entityId: input.id },
-      include: {
-        document: {
-          select: {
-            id: true,
-            originalFileName: true,
-            mimeType: true,
-            fileSizeBytes: true,
-            documentType: true,
-            storageKey: true,
-          },
-        },
-      },
+      include: portalDocLinkInclude,
     });
 
-    const documents = await Promise.all(
-      docLinks.map(async link => {
-        const downloadUrl = await createRegionalPresignedDownloadUrl(link.document.storageKey);
-        return {
-          id: link.document.id,
-          name: link.document.originalFileName,
-          type: link.document.documentType,
-          mimeType: link.document.mimeType,
-          sizeBytes: Number(link.document.fileSizeBytes),
-          downloadUrl,
-        };
-      }),
-    );
+    const documents = await Promise.all(docLinks.map(mapPortalDocLink));
 
     return { ...contract, documents };
   }),
@@ -668,19 +646,7 @@ export const portalRouter = router({
         entityType: 'CONTRACTOR',
         entityId: ctx.contractorId,
       },
-      include: {
-        document: {
-          select: {
-            id: true,
-            originalFileName: true,
-            mimeType: true,
-            fileSizeBytes: true,
-            documentType: true,
-            createdAt: true,
-            storageKey: true,
-          },
-        },
-      },
+      include: portalDocLinkInclude,
     });
 
     // Documents linked to contractor's contracts
@@ -697,48 +663,19 @@ export const portalRouter = router({
               entityType: 'CONTRACT',
               entityId: { in: contractIdList },
             },
-            include: {
-              document: {
-                select: {
-                  id: true,
-                  originalFileName: true,
-                  mimeType: true,
-                  fileSizeBytes: true,
-                  documentType: true,
-                  createdAt: true,
-                  storageKey: true,
-                },
-              },
-            },
+            include: portalDocLinkInclude,
           })
         : [];
 
     // Deduplicate by document ID
     const seenIds = new Set<string>();
-    const allLinks = [...contractorDocLinks, ...contractDocLinks];
+    const dedupedLinks = [...contractorDocLinks, ...contractDocLinks].filter(link => {
+      if (seenIds.has(link.document.id)) return false;
+      seenIds.add(link.document.id);
+      return true;
+    });
 
-    const documents = await Promise.all(
-      allLinks
-        .filter(link => {
-          if (seenIds.has(link.document.id)) return false;
-          seenIds.add(link.document.id);
-          return true;
-        })
-        .map(async link => {
-          const downloadUrl = await createRegionalPresignedDownloadUrl(link.document.storageKey);
-          return {
-            id: link.document.id,
-            name: link.document.originalFileName,
-            type: link.document.documentType,
-            mimeType: link.document.mimeType,
-            sizeBytes: Number(link.document.fileSizeBytes),
-            addedAt: link.document.createdAt,
-            downloadUrl,
-          };
-        }),
-    );
-
-    return documents;
+    return Promise.all(dedupedLinks.map(mapPortalDocLink));
   }),
 
   /**
