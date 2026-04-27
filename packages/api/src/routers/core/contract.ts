@@ -40,15 +40,17 @@ const CONTRACT_AUDIT_FIELDS = [
 ] as const;
 
 function diffContractFields(
-  existing: Record<string, unknown>,
-  updateData: Record<string, unknown>,
+  existing: object,
+  updateData: object,
 ): { oldValues: Record<string, unknown>; newValues: Record<string, unknown> } {
+  const e = existing as Record<string, unknown>;
+  const u = updateData as Record<string, unknown>;
   const oldValues: Record<string, unknown> = {};
   const newValues: Record<string, unknown> = {};
   for (const field of CONTRACT_AUDIT_FIELDS) {
-    if (field in updateData && existing[field] !== updateData[field]) {
-      oldValues[field] = serialiseForAudit(existing[field]);
-      newValues[field] = serialiseForAudit(updateData[field]);
+    if (field in u && e[field] !== u[field]) {
+      oldValues[field] = serialiseForAudit(e[field]);
+      newValues[field] = serialiseForAudit(u[field]);
     }
   }
   return { oldValues, newValues };
@@ -364,10 +366,7 @@ export const contractRouter = router({
       });
 
       // Phase 60 CLASS-08 — audit contract update; scan reads the diff.
-      const diff = diffContractFields(
-        existing as unknown as Record<string, unknown>,
-        updateData as Record<string, unknown>,
-      );
+      const diff = diffContractFields(existing, updateData);
       await writeAuditLog({
         organizationId: ctx.organizationId,
         actorType: 'USER',
@@ -743,8 +742,6 @@ export const contractRouter = router({
 
           // Phase 60 CLASS-08 — emit one audit row per transitioned contract so
           // the reassessment scan can detect each status change individually.
-          const auditWriterTx =
-            tx as unknown as import('../../services/audit-writer.js').AuditWriterClient;
           for (const id of valid) {
             const prev = oldStatusById.get(id);
             await writeAuditLog({
@@ -757,7 +754,7 @@ export const contractRouter = router({
               resourceName: prev?.title ?? null,
               oldValues: { status: prev?.status ?? null },
               newValues: { status: input.targetStatus },
-              tx: auditWriterTx,
+              tx,
             });
           }
         });
