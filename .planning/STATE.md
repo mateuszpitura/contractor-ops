@@ -4,14 +4,14 @@ milestone: v6.0
 milestone_name: Platform Maturity & Operational Hardening
 status: executing
 stopped_at: Phase 70 complete (10/10 plans); backfill apply deferred to post-deploy
-last_updated: "2026-04-27T10:50:57.239Z"
+last_updated: "2026-04-27T11:09:15.826Z"
 last_activity: 2026-04-27
 progress:
   total_phases: 11
   completed_phases: 1
   total_plans: 35
-  completed_plans: 16
-  percent: 46
+  completed_plans: 21
+  percent: 60
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-26 — v6.0 milestone started)
 ## Current Position
 
 Phase: 74 (F4 Offboarding — Workflow Foundation + KT Templates + Override Permission) — EXECUTING
-Plan: 4 of 8
+Plan: 6 of 8
 Status: Ready to execute
 Last activity: 2026-04-27
 

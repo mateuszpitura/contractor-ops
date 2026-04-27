@@ -81,7 +81,7 @@ Phase artifacts: `.planning/milestones/v5.0-phases/`
 #### Phase List
 
 - [x] **Phase 70: v6.0 Foundation — Cross-Cutting CI Guards & Observability Baseline** (10/10 plans) — completed 2026-04-27. Multi-region backfill apply deferred to post-deploy (see STATE.md Deferred Items)
-- [ ] **Phase 71: F1 Compliance — Policy Package + Schema + Classification Reconcile** — `packages/compliance-policy` with per-jurisdiction profiles, additive `ContractorComplianceItem` extension, drift escape hatch
+- [x] **Phase 71: F1 Compliance — Policy Package + Schema + Classification Reconcile** — `packages/compliance-policy` with per-jurisdiction profiles, additive `ContractorComplianceItem` extension, drift escape hatch (completed 2026-04-27)
 - [ ] **Phase 72: F1 Compliance — Reminder Cascade + Payment Block** — band-state-machine cron, daily digest, paymentRouter hard-block, approval-engine condition operator, atomic audit row
 - [ ] **Phase 73: F1 Compliance — Admin Dashboard + Portal Self-Service + i18n** — at-risk dashboard, contractor portal compliance tab, one-click upload-replacement, en/pl/de parity
 - [ ] **Phase 74: F4 Offboarding — Workflow Foundation + KT Templates + Override Permission** — IP_VERIFICATION + CONTRACT_HEALTH_CHECK enums, OWNER override with reason, 4 role-typed KT seed templates, OOO-aware routing
@@ -120,7 +120,7 @@ Phase artifacts: `.planning/milestones/v5.0-phases/`
   2. "Expires today" for a contractor in Riyadh resolves at 00:00 Asia/Riyadh time, not 00:00 of the org HQ timezone — `@db.Date` plus `expiry_jurisdiction_tz` field drives the boundary
   3. Per-jurisdiction policy registry seeds resolve correctly across PL/UK/DE/UAE/SA covering at minimum: UK Right-to-Work (90-day), UK UTR, DE A1 (24-month), DE Aufenthaltstitel, DE §48b EStG (construction-only), PL ZUS A1 (12-month), PL UDT, KSA Iqama (1-year), KSA work permit + Qiwa-auth boolean, UAE Emirates ID, UAE free-zone trade license — *Needs verification by legal entity before production deploy* per Standing Constraints
   4. Admin invokes `recreateComplianceAssessment(reason)` after a `RULE_SET_VERSION` bump and sees regenerated requirements with audit log entry; operation never auto-runs (mirrors v5.0 `recreateDraftAfterDrift`)
-**Plans:** TBD
+**Plans:** 7/7 plans complete
 **Research flag:** NEEDS RESEARCH — per-jurisdiction document seed data is dense (Border Security Act 2025, A1 24mo, §48b EStG, Iqama+Qiwa-auth)
 **Feature flags:** `compliance-policy-engine` PENDING
 
@@ -165,7 +165,7 @@ Phase artifacts: `.planning/milestones/v5.0-phases/`
   4. OWNER-role admin attempts to complete an offboarding while `IP_VERIFICATION` task is open; system surfaces an override dialog requiring reason text (min 20 chars) + acknowledgement checkbox; override audit-logs to immutable trail and surfaces a permanent badge on the offboarding record
   5. Non-OWNER user (admin, manager, finance) sees no override button on the same screen; `workflow:override_blocking_task` permission is OWNER-only and CI-tested
   6. All OFFB workflow surfaces ship en/pl/de message-key parity; locked-phrase registry extension still pending Werkvertrag wording (lands in Phase 75)
-**Plans:** TBD
+**Plans:** 5/8 plans executed
 **Research flag:** STANDARD (extends v1.0 template builder + v1.0 RBAC)
 **Feature flags:** `offboarding-hardening-foundation` PENDING
 **UI hint:** yes
@@ -380,10 +380,10 @@ Phase artifacts: `.planning/milestones/v5.0-phases/`
 | 68. Skonto BG-20 XRechnung Emission Fix        | v5.0      | 5/5            | Complete    | 2026-04-26 |
 | 69. DE Message-Key Parity Fix                  | v5.0      | 1/1            | Complete    | 2026-04-26 |
 | 70. v6.0 Foundation — CI Guards                | v6.0      | 0/?            | Not started | -          |
-| 71. F1 Compliance — Policy Package + Schema   | v6.0      | 0/?            | Not started | -          |
+| 71. F1 Compliance — Policy Package + Schema   | v6.0      | 7/7 | Complete   | 2026-04-27 |
 | 72. F1 Compliance — Reminder + Payment Block  | v6.0      | 0/?            | Not started | -          |
 | 73. F1 Compliance — Dashboard + Portal + i18n | v6.0      | 0/?            | Not started | -          |
-| 74. F4 Offboarding — Workflow + KT            | v6.0      | 0/?            | Not started | -          |
+| 74. F4 Offboarding — Workflow + KT            | v6.0      | 5/8 | In Progress|  |
 | 75. F4 Offboarding — IP Verify + Credentials  | v6.0      | 0/?            | Not started | -          |
 | 76. F2 IdP — Capability + Saga + Cooldown     | v6.0      | 0/?            | Not started | -          |
 | 77. F2 IdP — GWS + Slack (the wedge)          | v6.0      | 0/?            | Not started | -          |
