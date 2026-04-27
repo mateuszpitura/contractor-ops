@@ -1,5 +1,6 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { prisma } from '@contractor-ops/db';
+import { createIntegrationLogger } from '@contractor-ops/logger';
 import { decryptCredentials } from '../services/credential-service.js';
 import { handleSigningWebhook } from '../services/esign-webhook-handler.js';
 import type { CredentialBlob } from '../types/credentials.js';
@@ -42,6 +43,8 @@ interface DocuSignSigner {
   recipientId: string;
   email: string;
   status: string;
+  /** Display name from the original envelope; preserved across resend operations. */
+  name?: string;
 }
 
 interface DocuSignRecipients {
@@ -91,6 +94,38 @@ interface DocuSignSdk {
 }
 
 // ---------------------------------------------------------------------------
+// Module-scoped state
+// ---------------------------------------------------------------------------
+
+const log = createIntegrationLogger('docusign');
+
+/**
+ * Cache the dynamically-imported docusign-esign SDK at module level so
+ * subsequent operations don't re-resolve `import('docusign-esign')` and
+ * re-cast the namespace on every API call.
+ */
+let sdkPromise: Promise<DocuSignSdk> | null = null;
+
+/**
+ * Returns the OAuth host (account-d.docusign.com for demo, account.docusign.com
+ * for production). Driven by the `DOCUSIGN_OAUTH_HOST` env var with a safe
+ * dev-only default to avoid silently signing production envelopes against
+ * the demo account when configuration drifts.
+ */
+function getDocuSignOAuthHost(): string {
+  const host = process.env.DOCUSIGN_OAUTH_HOST;
+  if (host) return host;
+  // In production NODE_ENV the missing env var must fail closed.
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error(
+      'DOCUSIGN_OAUTH_HOST environment variable is required in production. ' +
+        'Set it to "account.docusign.com" (production) or "account-d.docusign.com" (demo).',
+    );
+  }
+  return 'account-d.docusign.com';
+}
+
+// ---------------------------------------------------------------------------
 // DocuSign Adapter
 // ---------------------------------------------------------------------------
 
@@ -121,11 +156,12 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
   // -------------------------------------------------------------------------
 
   override getOAuthConfig(): OAuthConfig {
+    const host = getDocuSignOAuthHost();
     return {
       clientIdEnvVar: 'DOCUSIGN_CLIENT_ID',
       clientSecretEnvVar: 'DOCUSIGN_CLIENT_SECRET',
-      authorizationUrl: 'https://account-d.docusign.com/oauth/auth',
-      tokenUrl: 'https://account-d.docusign.com/oauth/token',
+      authorizationUrl: `https://${host}/oauth/auth`,
+      tokenUrl: `https://${host}/oauth/token`,
       scopes: ['signature'],
       redirectPath: '/api/oauth/docusign/callback',
     };
@@ -141,7 +177,7 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
       );
     }
 
-    const response = await fetch('https://account-d.docusign.com/oauth/token', {
+    const response = await fetch(`https://${getDocuSignOAuthHost()}/oauth/token`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -189,7 +225,7 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
       throw new Error('No refresh token available for DocuSign');
     }
 
-    const response = await fetch('https://account-d.docusign.com/oauth/token', {
+    const response = await fetch(`https://${getDocuSignOAuthHost()}/oauth/token`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -340,9 +376,13 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
       },
     );
 
+    // DocuSign does not return a TTL for recipient view URLs (the URL is
+    // single-use and account policies can shorten/extend the validity
+    // window). Returning a fabricated 5-minute expiry would mislead the UI
+    // into trusting a stale URL — instead we omit `expiresAt` and let the
+    // caller request a fresh URL on first use.
     return {
       url: result.url,
-      expiresAt: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
     };
   }
 
@@ -425,11 +465,17 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
       throw new Error(`Recipient ${recipientEmail} not found in envelope ${envelopeId}`);
     }
 
+    // Preserve the original signer name when re-sending. Falling back to the
+    // email is correct only when the original envelope was created without
+    // a display name (rare). DocuSign accounts in strict-name-match mode
+    // can reject envelopes whose signer name no longer matches the original.
+    const signerName = matchingSigner.name?.trim() ? matchingSigner.name : matchingSigner.email;
+
     const recipients = docusign.Recipients.constructFromObject({
       signers: [
         docusign.Signer.constructFromObject({
           email: matchingSigner.email,
-          name: matchingSigner.email,
+          name: signerName,
           recipientId: matchingSigner.recipientId,
         }),
       ],
@@ -493,10 +539,24 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
       return { valid: false };
     }
 
-    const expectedSignature = createHmac('sha256', secret).update(rawBody).digest('base64');
+    // Reject signatures that aren't well-formed base64 before reaching
+    // timingSafeEqual. `Buffer.from(s, 'base64')` silently drops non-base64
+    // characters and pads partial groups, so we cannot rely on it to fail
+    // closed for malformed input — we must validate first.
+    if (!/^[A-Za-z0-9+/]+={0,2}$/.test(signature)) {
+      return { valid: false };
+    }
 
-    const expectedBuffer = Buffer.from(expectedSignature);
-    const receivedBuffer = Buffer.from(signature);
+    let receivedBuffer: Buffer;
+    try {
+      receivedBuffer = Buffer.from(signature, 'base64');
+    } catch {
+      return { valid: false };
+    }
+
+    // `digest()` (no encoding) returns the raw HMAC bytes, so both buffers
+    // are compared in their canonical decoded form — not as strings.
+    const expectedBuffer = createHmac('sha256', secret).update(rawBody).digest();
 
     if (expectedBuffer.length !== receivedBuffer.length) {
       return { valid: false };
@@ -546,8 +606,23 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
 
     const docusign = await this.loadDocuSignSdk();
 
+    if (!configJson.basePath) {
+      // Fail closed rather than defaulting to demo — silently signing
+      // production envelopes against demo.docusign.net is a compliance risk.
+      // Operators must explicitly configure the basePath returned by the
+      // userInfo endpoint after OAuth (e.g., https://na3.docusign.net/restapi).
+      log.error(
+        { connectionId },
+        'DocuSign basePath missing on connection — refusing to default to demo environment',
+      );
+      throw new Error(
+        `DocuSign basePath missing in connection config for ${connectionId}. ` +
+          'Refusing to default to demo environment.',
+      );
+    }
+
     const apiClient: DocuSignApiClient = new docusign.ApiClient();
-    apiClient.setBasePath(configJson.basePath ?? 'https://demo.docusign.net/restapi');
+    apiClient.setBasePath(configJson.basePath);
     apiClient.addDefaultHeader('Authorization', `Bearer ${credentials.accessToken}`);
 
     return { apiClient, accountId: configJson.accountId };
@@ -555,10 +630,17 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
 
   /**
    * Dynamically loads the docusign-esign SDK (pure JS, no types).
-   * Returns as DocuSignSdk — our local interface covering the subset we use.
+   *
+   * The SDK module is resolved once and cached at module level so subsequent
+   * operations don't pay the resolution cost. Note: this caches only the
+   * module — credentials and the `ApiClient` instance are still per-call so
+   * token refreshes are picked up on the next operation.
    */
   private async loadDocuSignSdk(): Promise<DocuSignSdk> {
-    return (await import('docusign-esign')) as unknown as DocuSignSdk;
+    if (!sdkPromise) {
+      sdkPromise = import('docusign-esign').then(mod => mod as unknown as DocuSignSdk);
+    }
+    return sdkPromise;
   }
 
   private mapDocuSignEventType(

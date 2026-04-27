@@ -247,7 +247,11 @@ export class ClaudeOcrAdapter implements OcrAdapter {
     this.client = new Anthropic({
       apiKey: params?.apiKey ?? process.env.ANTHROPIC_API_KEY,
     });
-    this.modelId = params?.modelId ?? 'claude-sonnet-4-5-20250514';
+    // Default to Sonnet 4.6 — current generally-available Anthropic model
+    // good enough for document extraction. Can be overridden per-instance
+    // or via the CLAUDE_OCR_MODEL_ID env var (e.g., to test Haiku 4.5 for
+    // cheaper extraction once the accuracy floor is established).
+    this.modelId = params?.modelId ?? process.env.CLAUDE_OCR_MODEL_ID ?? 'claude-sonnet-4-6';
   }
 
   async extractInvoice(request: OcrExtractionRequest): Promise<OcrExtractionResult> {
@@ -316,6 +320,15 @@ export class ClaudeOcrAdapter implements OcrAdapter {
 
       return this.parseExtractionResponse(rawData, processingTimeMs, request.pageCount, response);
     } catch (error) {
+      // Treat model-not-found / authentication failures as hard errors so
+      // operators see the misconfiguration instead of a buried OCR result
+      // with `status: 'FAILED'`. Other errors still degrade gracefully.
+      if (error instanceof Anthropic.APIError && (error.status === 404 || error.status === 401)) {
+        throw new Error(
+          `Claude OCR adapter: ${error.status} ${error.message} (modelId=${this.modelId}). ` +
+            'Check the CLAUDE_OCR_MODEL_ID env var and ANTHROPIC_API_KEY.',
+        );
+      }
       return {
         status: 'FAILED',
         fields: {},

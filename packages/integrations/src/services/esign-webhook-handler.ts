@@ -5,7 +5,53 @@ import type {
   SigningEnvelopeStatus,
   SigningRecipientStatus,
 } from '@contractor-ops/db/generated/prisma/client';
+import { createIntegrationLogger } from '@contractor-ops/logger';
 import { normalizeSigningEvent } from './esign-service.js';
+
+const log = createIntegrationLogger('esign-webhook-handler');
+
+/**
+ * Allowed values for `SigningEnvelopeStatus` per the Prisma schema.
+ * Kept as a string union here to avoid pulling Prisma's runtime enum value
+ * map (which differs between generated client versions).
+ */
+const ALLOWED_ENVELOPE_STATUSES = [
+  'CREATED',
+  'SENT',
+  'DELIVERED',
+  'COMPLETED',
+  'DECLINED',
+  'VOIDED',
+  'EXPIRED',
+] as const;
+
+/**
+ * Allowed values for `SigningRecipientStatus` per the Prisma schema.
+ */
+const ALLOWED_RECIPIENT_STATUSES = [
+  'PENDING',
+  'SENT',
+  'DELIVERED',
+  'VIEWED',
+  'SIGNED',
+  'DECLINED',
+] as const;
+
+function safeEnvelopeStatus(raw: string): SigningEnvelopeStatus {
+  if ((ALLOWED_ENVELOPE_STATUSES as readonly string[]).includes(raw)) {
+    return raw as SigningEnvelopeStatus;
+  }
+  log.warn({ rawStatus: raw }, 'Unknown envelope status from provider — defaulting to SENT');
+  return 'SENT' as SigningEnvelopeStatus;
+}
+
+function safeRecipientStatus(raw: string): SigningRecipientStatus {
+  if ((ALLOWED_RECIPIENT_STATUSES as readonly string[]).includes(raw)) {
+    return raw as SigningRecipientStatus;
+  }
+  log.warn({ rawStatus: raw }, 'Unknown recipient status from provider — defaulting to PENDING');
+  return 'PENDING' as SigningRecipientStatus;
+}
 
 // ---------------------------------------------------------------------------
 // E-Sign Webhook Handler
@@ -169,10 +215,11 @@ async function updateRecipientStatus(
   event: NormalizedEvent,
 ): Promise<void> {
   const rawStatus = event.recipientStatus ?? '';
-  const recipientStatus = RECIPIENT_STATUS_MAP[rawStatus] ?? rawStatus;
+  const mapped = RECIPIENT_STATUS_MAP[rawStatus] ?? rawStatus;
+  const recipientStatus = safeRecipientStatus(mapped);
 
   const recipientUpdate: Prisma.SigningRecipientUpdateInput = {
-    status: recipientStatus as SigningRecipientStatus,
+    status: recipientStatus,
   };
 
   const timestampField = RECIPIENT_TIMESTAMP_FIELD[event.eventType];
@@ -198,10 +245,11 @@ async function updateEnvelopeStatus(
   event: NormalizedEvent,
 ): Promise<void> {
   const rawEnvStatus = event.envelopeStatus ?? '';
-  const envelopeStatus = ENVELOPE_STATUS_MAP[rawEnvStatus] ?? rawEnvStatus;
+  const mapped = ENVELOPE_STATUS_MAP[rawEnvStatus] ?? rawEnvStatus;
+  const envelopeStatus = safeEnvelopeStatus(mapped);
 
   const envelopeUpdate: Prisma.SigningEnvelopeUpdateInput = {
-    status: envelopeStatus as SigningEnvelopeStatus,
+    status: envelopeStatus,
   };
 
   if (event.envelopeStatus === 'COMPLETED') {

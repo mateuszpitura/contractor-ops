@@ -27,6 +27,13 @@ describe('BaseAdapter', () => {
     expect(a.refreshToken).toBeUndefined();
     expect(a.verifyWebhookSignature).toBeUndefined();
     expect(a.handleWebhook).toBeUndefined();
-    expect(a.getHealthStatus).toBeUndefined();
+  });
+
+  it('provides a default getHealthStatus implementation', () => {
+    const a = new TestAdapter();
+    // Per the LOW finding in the bug-hunt report, getHealthStatus is now
+    // defined on BaseAdapter to remove ~600 LOC of duplication. Adapters
+    // override only when they need custom logic.
+    expect(typeof a.getHealthStatus).toBe('function');
   });
 });

@@ -13,7 +13,10 @@ export {
   clearAdapters,
   getAdapter,
   getAllAdapters,
+  getAllOcrAdapters,
+  getOcrAdapterBySlug,
   registerAdapter,
+  registerOcrAdapter,
 } from './registry.js';
 // Credential Service
 export {
@@ -34,6 +37,12 @@ export {
   resendSigningNotification,
   voidSigningEnvelope,
 } from './services/esign-service.js';
+// Shared HTTP fetch helpers
+export type { FetchWithTimeoutOptions } from './services/fetch-helpers.js';
+export {
+  DEFAULT_FETCH_TIMEOUT_MS,
+  fetchWithTimeout,
+} from './services/fetch-helpers.js';
 // Health Service
 export {
   getAllProviderHealth,

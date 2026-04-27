@@ -355,10 +355,24 @@ export class AutentiAdapter extends BaseAdapter implements ESignAdapter {
       return { valid: false };
     }
 
-    const expectedSignature = createHmac('sha256', secret).update(rawBody).digest('hex');
+    // Reject signatures that aren't well-formed hex before decoding.
+    // Node's `Buffer.from(s, 'hex')` silently truncates at the first invalid
+    // character, which would yield a comparison of mismatched-but-non-empty
+    // buffers — fail closed instead.
+    if (!/^[0-9a-f]+$/i.test(signature)) {
+      return { valid: false };
+    }
 
-    const expectedBuffer = Buffer.from(expectedSignature);
-    const receivedBuffer = Buffer.from(signature);
+    let receivedBuffer: Buffer;
+    try {
+      receivedBuffer = Buffer.from(signature, 'hex');
+    } catch {
+      return { valid: false };
+    }
+
+    // `digest()` (no encoding) returns raw HMAC bytes; we compare on bytes,
+    // not on hex-encoded strings, to make the cryptographic intent explicit.
+    const expectedBuffer = createHmac('sha256', secret).update(rawBody).digest();
 
     if (expectedBuffer.length !== receivedBuffer.length) {
       return { valid: false };

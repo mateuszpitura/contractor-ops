@@ -1,5 +1,5 @@
-import { prisma } from '@contractor-ops/db';
 import type { ProviderHealthStatus } from '../types/health.js';
+import type { GetHealthStatusOptions } from './base-adapter.js';
 import { BaseAdapter } from './base-adapter.js';
 
 // ---------------------------------------------------------------------------
@@ -43,88 +43,16 @@ export class ClockifyAdapter extends BaseAdapter {
   readonly supportsWebhooks = false;
 
   /**
-   * Returns health status for a Clockify connection based on
-   * recent sync logs (same pattern as KSeF adapter).
+   * API keys do not expire — defer to the shared default but disable the
+   * token-expiry derivation step.
    */
-  override async getHealthStatus(connectionId: string): Promise<ProviderHealthStatus> {
-    const connection = await prisma.integrationConnection.findUnique({
-      where: { id: connectionId },
-      select: {
-        provider: true,
-        displayName: true,
-        connectedAt: true,
-        lastSyncAt: true,
-        lastSuccessAt: true,
-        lastErrorAt: true,
-        lastErrorMessage: true,
-        status: true,
-      },
+  override async getHealthStatus(
+    connectionId: string,
+    options?: GetHealthStatusOptions,
+  ): Promise<ProviderHealthStatus> {
+    return super.getHealthStatus(connectionId, {
+      includeTokenExpiry: false,
+      ...options,
     });
-
-    if (!connection) {
-      return {
-        status: 'DISCONNECTED',
-        provider: 'clockify',
-        recentSyncs: [],
-        recentWebhooks: [],
-        errorCountLast24h: 0,
-      };
-    }
-
-    // Fetch recent sync logs
-    const recentSyncs = await prisma.integrationSyncLog.findMany({
-      where: { integrationConnectionId: connectionId },
-      orderBy: { startedAt: 'desc' },
-      take: 5,
-      select: {
-        id: true,
-        syncType: true,
-        status: true,
-        startedAt: true,
-        completedAt: true,
-      },
-    });
-
-    // Count errors in last 24h
-    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-    const errorCountLast24h = await prisma.integrationSyncLog.count({
-      where: {
-        integrationConnectionId: connectionId,
-        status: 'FAILED',
-        startedAt: { gte: oneDayAgo },
-      },
-    });
-
-    // Determine status
-    let status: ProviderHealthStatus['status'];
-    if (connection.status !== 'CONNECTED') {
-      status = 'DISCONNECTED';
-    } else if (connection.lastErrorAt && !connection.lastSuccessAt) {
-      status = 'ERROR';
-    } else if (recentSyncs[0]?.status === 'FAILED') {
-      status = 'ERROR';
-    } else {
-      status = 'CONNECTED';
-    }
-
-    return {
-      status,
-      provider: 'clockify',
-      displayName: connection.displayName,
-      connectedAt: connection.connectedAt,
-      lastSyncAt: connection.lastSyncAt,
-      lastSuccessAt: connection.lastSuccessAt,
-      lastErrorAt: connection.lastErrorAt,
-      lastErrorMessage: connection.lastErrorMessage,
-      recentSyncs: recentSyncs.map(s => ({
-        id: s.id,
-        syncType: s.syncType,
-        status: s.status,
-        startedAt: s.startedAt,
-        completedAt: s.completedAt,
-      })),
-      recentWebhooks: [], // Clockify uses on-demand polling, no webhooks
-      errorCountLast24h,
-    };
   }
 }

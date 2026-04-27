@@ -1,3 +1,4 @@
+import { createIntegrationLogger } from '@contractor-ops/logger';
 import { Resend } from 'resend';
 import type { WebhookVerificationResult } from '../types/webhook.js';
 import { BaseAdapter } from './base-adapter.js';
@@ -7,6 +8,26 @@ import { BaseAdapter } from './base-adapter.js';
 // ---------------------------------------------------------------------------
 
 const EMAIL_DOMAIN_SUFFIX = '.contractorhub.io';
+
+const log = createIntegrationLogger('resend');
+
+/**
+ * Resend client singleton (and the API key it was constructed with).
+ *
+ * The `verify` call does not make a network request, but constructing a
+ * fresh `Resend` instance per webhook still pays the cost of pulling the
+ * dependency tree on hot paths. We rebuild the client only when the API
+ * key changes — typically never within a single process lifetime.
+ */
+let resendInstance: Resend | null = null;
+let resendInstanceKey: string | null = null;
+
+function getResendClient(apiKey: string): Resend {
+  if (resendInstance && resendInstanceKey === apiKey) return resendInstance;
+  resendInstance = new Resend(apiKey);
+  resendInstanceKey = apiKey;
+  return resendInstance;
+}
 
 // ---------------------------------------------------------------------------
 // Resend Adapter
@@ -36,7 +57,15 @@ export class ResendAdapter extends BaseAdapter {
     const apiKey = process.env.RESEND_API_KEY;
 
     if (!(webhookSecret && apiKey)) {
-      return { valid: false };
+      // Configuration error, not an attacker — log so operators can debug.
+      log.warn(
+        {
+          hasSecret: Boolean(webhookSecret),
+          hasApiKey: Boolean(apiKey),
+        },
+        'Resend webhook verification skipped: missing RESEND_WEBHOOK_SECRET or RESEND_API_KEY',
+      );
+      return { valid: false, reason: 'config' };
     }
 
     const svixId = headers['svix-id'];
@@ -44,12 +73,13 @@ export class ResendAdapter extends BaseAdapter {
     const svixSignature = headers['svix-signature'];
 
     if (!(svixId && svixTimestamp && svixSignature)) {
-      return { valid: false };
+      return { valid: false, reason: 'headers' };
     }
 
+    let event: unknown;
     try {
-      const resend = new Resend(apiKey);
-      const event = resend.webhooks.verify({
+      const resend = getResendClient(apiKey);
+      event = resend.webhooks.verify({
         payload: rawBody,
         headers: {
           id: svixId,
@@ -58,32 +88,40 @@ export class ResendAdapter extends BaseAdapter {
         },
         webhookSecret,
       });
-
-      const eventType = (event as { type?: string }).type ?? 'unknown';
-
-      let organizationSlug: string | undefined;
-      try {
-        const data = (event as { data?: { to?: string[] } }).data;
-        const toAddresses = data?.to ?? [];
-        for (const addr of toAddresses) {
-          const slug = parseOrgSlugFromEmail(addr);
-          if (slug) {
-            organizationSlug = slug;
-            break;
-          }
-        }
-      } catch {
-        // organizationSlug stays undefined
-      }
-
-      return {
-        valid: true,
-        eventType,
-        organizationSlug,
-      };
-    } catch {
-      return { valid: false };
+    } catch (err) {
+      // Never log the secret or full headers — only the error class.
+      log.warn(
+        {
+          error: err instanceof Error ? err.message : String(err),
+          errorName: err instanceof Error ? err.name : undefined,
+        },
+        'Resend webhook signature verification failed',
+      );
+      return { valid: false, reason: 'signature' };
     }
+
+    const eventType = (event as { type?: string }).type ?? 'unknown';
+
+    let organizationSlug: string | undefined;
+    try {
+      const data = (event as { data?: { to?: string[] } }).data;
+      const toAddresses = data?.to ?? [];
+      for (const addr of toAddresses) {
+        const slug = parseOrgSlugFromEmail(addr);
+        if (slug) {
+          organizationSlug = slug;
+          break;
+        }
+      }
+    } catch {
+      // organizationSlug stays undefined — not a security-critical path
+    }
+
+    return {
+      valid: true,
+      eventType,
+      organizationSlug,
+    };
   }
 
   /**

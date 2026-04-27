@@ -138,35 +138,44 @@ export function parseBoeCsv(csv: string): ParsedRateRow[] {
 /**
  * Parse a BoE-formatted date `DD Mon YYYY` → Date (UTC, midnight).
  * Returns null on any failure so the caller can skip the row.
+ *
+ * Accepts 3-letter abbreviations (default BoE CSV format), 4-letter
+ * abbreviations such as "June" or "Sept" (BoE press releases occasionally
+ * use these), and full month names. Matches are case-insensitive.
  */
 function parseBoeDate(input: string): Date | null {
-  const match = input.match(/^(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})$/);
+  const match = input.match(/^(\d{1,2})\s+([A-Za-z]{3,9})\s+(\d{4})$/);
   if (!match) return null;
 
   const day = Number.parseInt(match[1] ?? '', 10);
-  const monthAbbrev = (match[2] ?? '').toLowerCase();
+  const monthName = (match[2] ?? '').toLowerCase();
   const year = Number.parseInt(match[3] ?? '', 10);
 
-  const months: Record<string, number> = {
-    jan: 0,
-    feb: 1,
-    mar: 2,
-    apr: 3,
-    may: 4,
-    jun: 5,
-    jul: 6,
-    aug: 7,
-    sep: 8,
-    oct: 9,
-    nov: 10,
-    dec: 11,
-  };
-  const month = months[monthAbbrev];
-  if (month === undefined) return null;
+  // Map any prefix (3+ letters) of the canonical English month name to its
+  // 0-based month index. Both abbreviated and full forms resolve correctly:
+  //   "jan" / "january" → 0
+  //   "sep" / "sept" / "september" → 8
+  //   "june" / "jun" → 5
+  const monthNames = [
+    'january',
+    'february',
+    'march',
+    'april',
+    'may',
+    'june',
+    'july',
+    'august',
+    'september',
+    'october',
+    'november',
+    'december',
+  ] as const;
+  const monthIndex = monthNames.findIndex(name => name.startsWith(monthName));
+  if (monthIndex === -1) return null;
   if (!(Number.isFinite(day) && Number.isFinite(year))) return null;
 
   // Construct UTC midnight to match BoEBaseRateHistory.effectiveFrom (@db.Date).
-  const date = new Date(Date.UTC(year, month, day));
+  const date = new Date(Date.UTC(year, monthIndex, day));
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
@@ -257,9 +266,8 @@ export async function pollBoeBaseRate(deps: PollDeps = {}): Promise<PollBoeBaseR
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
-    let response: Response;
     try {
-      response = await fetcher(url, {
+      const response = await fetcher(url, {
         method: 'GET',
         headers: {
           Accept: 'text/csv,application/csv,*/*',
@@ -267,20 +275,24 @@ export async function pollBoeBaseRate(deps: PollDeps = {}): Promise<PollBoeBaseR
         },
         signal: controller.signal,
       });
+
+      if (!response.ok) {
+        const message = `BoE CSV endpoint returned HTTP ${response.status}`;
+        log.warn(
+          { url, status: response.status },
+          'BoE rate poll failed — manual entry still possible via admin router',
+        );
+        return { updated: false, currentRate: null, error: message };
+      }
+
+      // IMPORTANT: read the body inside the same abortable scope so the
+      // FETCH_TIMEOUT_MS bound applies to slow streaming responses too.
+      // BoE has no SLA; a 1KB/s drip would otherwise burn the entire cron
+      // window without ever timing out.
+      csvText = await response.text();
     } finally {
       clearTimeout(timeout);
     }
-
-    if (!response.ok) {
-      const message = `BoE CSV endpoint returned HTTP ${response.status}`;
-      log.warn(
-        { url, status: response.status },
-        'BoE rate poll failed — manual entry still possible via admin router',
-      );
-      return { updated: false, currentRate: null, error: message };
-    }
-
-    csvText = await response.text();
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     log.warn(
@@ -332,8 +344,17 @@ export async function pollBoeBaseRate(deps: PollDeps = {}): Promise<PollBoeBaseR
       : (stored.ratePercent.toNumber?.() ?? Number(stored.ratePercent))
     : null;
 
-  // Same rate → no-op.
-  if (storedRate !== null && storedRate === fetchedRate) {
+  // BoE publishes rates to 2 decimal places (e.g., 4.75) but Prisma `Decimal`
+  // round-trips can introduce IEEE-754 noise (e.g., 0.10000000000000001).
+  // Compare with an epsilon well below the minimum BoE precision so a
+  // floating-point artefact never triggers a spurious "different rate"
+  // branch and a duplicate row insert.
+  const RATE_EPSILON = 1e-6;
+  if (
+    storedRate !== null &&
+    Number.isFinite(storedRate) &&
+    Math.abs(storedRate - fetchedRate) < RATE_EPSILON
+  ) {
     log.info({ fetchedRate, storedRate }, 'BoE rate unchanged — skipping insert');
     return { updated: false, currentRate: fetchedRate };
   }
@@ -375,6 +396,47 @@ export async function pollBoeBaseRate(deps: PollDeps = {}): Promise<PollBoeBaseR
       'BoE rate row already exists for effectiveFrom — preserving (manual override safe)',
     );
     return { updated: false, currentRate: fetchedRate };
+  }
+
+  // Manual override protection: if the most recent prior row was a human
+  // correction (`source = 'MANUAL'`) within ±2 days of the BoE-published
+  // `effectiveFrom`, an admin has likely typed the same rate change a day
+  // off from the BoE timestamp. Inserting another row would create two
+  // overlapping records and downstream lookups for "rate as of date X"
+  // could pick the wrong row for the entire 6-month statutory window
+  // around 30 Jun / 31 Dec. Abort and log so a human can resolve.
+  let priorManualConflict: { effectiveFrom: Date; ratePercent: unknown; source: string } | null;
+  try {
+    const TWO_DAYS_MS = 2 * 24 * 60 * 60 * 1000;
+    priorManualConflict = (await db.boEBaseRateHistory.findFirst({
+      where: {
+        source: 'MANUAL',
+        effectiveFrom: {
+          gte: new Date(effectiveFrom.getTime() - TWO_DAYS_MS),
+          lte: new Date(effectiveFrom.getTime() + TWO_DAYS_MS),
+        },
+      },
+      orderBy: { effectiveFrom: 'desc' },
+      select: { effectiveFrom: true, ratePercent: true, source: true },
+    })) as typeof priorManualConflict;
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    log.warn({ err: message, fetchedRate }, 'BoE rate poll manual-conflict check failed');
+    return { updated: false, currentRate: fetchedRate, error: message };
+  }
+
+  if (priorManualConflict) {
+    const message =
+      'BoE-published effectiveFrom collides with a manual override within ±2 days — human review required';
+    log.warn(
+      {
+        boeEffectiveFrom: effectiveFrom.toISOString(),
+        manualEffectiveFrom: priorManualConflict.effectiveFrom.toISOString(),
+        fetchedRate,
+      },
+      message,
+    );
+    return { updated: false, currentRate: fetchedRate, error: message };
   }
 
   try {

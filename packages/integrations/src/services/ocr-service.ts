@@ -1,4 +1,4 @@
-import { getAdapter } from '../registry.js';
+import { getOcrAdapterBySlug } from '../registry.js';
 import type { OcrAdapter, OcrExtractionRequest, OcrExtractionResult } from '../types/ocr.js';
 
 // ---------------------------------------------------------------------------
@@ -8,7 +8,31 @@ import type { OcrAdapter, OcrExtractionRequest, OcrExtractionResult } from '../t
 type OcrProvider = 'CLAUDE' | 'GOOGLE_DOCUMENT_AI' | 'AZURE_FORM_RECOGNIZER';
 
 /**
- * Resolves the OcrAdapter for a given provider from the adapter registry.
+ * Required method surface every OCR adapter must implement.
+ * Used as a runtime guard in `getOcrAdapter()` so partially-implemented
+ * adapters fail at registration time rather than at first call.
+ */
+const OCR_ADAPTER_METHODS = ['extractInvoice'] as const satisfies ReadonlyArray<keyof OcrAdapter>;
+const OCR_ADAPTER_PROPS = [
+  'providerName',
+  'slug',
+  'supportedDocumentTypes',
+] as const satisfies ReadonlyArray<keyof OcrAdapter>;
+
+function isOcrAdapter(value: unknown): value is OcrAdapter {
+  if (!(value && typeof value === 'object')) return false;
+  const candidate = value as Record<string, unknown>;
+  for (const method of OCR_ADAPTER_METHODS) {
+    if (typeof candidate[method] !== 'function') return false;
+  }
+  for (const prop of OCR_ADAPTER_PROPS) {
+    if (candidate[prop] === undefined) return false;
+  }
+  return true;
+}
+
+/**
+ * Resolves the OcrAdapter for a given provider from the OCR adapter registry.
  *
  * @param provider - The OCR provider to look up
  * @returns The resolved OcrAdapter
@@ -16,7 +40,7 @@ type OcrProvider = 'CLAUDE' | 'GOOGLE_DOCUMENT_AI' | 'AZURE_FORM_RECOGNIZER';
  */
 export function getOcrAdapter(provider: OcrProvider): OcrAdapter {
   const slug = provider.toLowerCase();
-  const adapter = getAdapter(slug);
+  const adapter = getOcrAdapterBySlug(slug);
 
   if (!adapter) {
     throw new Error(
@@ -25,13 +49,11 @@ export function getOcrAdapter(provider: OcrProvider): OcrAdapter {
     );
   }
 
-  // Verify the adapter implements OcrAdapter methods
-  const ocrAdapter = adapter as unknown as OcrAdapter;
-  if (typeof ocrAdapter.extractInvoice !== 'function') {
+  if (!isOcrAdapter(adapter)) {
     throw new Error(`Adapter for ${provider} does not implement the OcrAdapter interface.`);
   }
 
-  return ocrAdapter;
+  return adapter;
 }
 
 /**

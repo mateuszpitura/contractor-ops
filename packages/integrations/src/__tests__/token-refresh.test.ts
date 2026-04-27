@@ -230,6 +230,10 @@ describe('token-refresh', () => {
           refreshLockedAt: new Date(), // recently locked
         }),
       );
+      // Atomic claim: updateMany returns count 0 because the where-clause
+      // OR(refreshLockedAt IS NULL, refreshLockedAt <= staleCutoff) does not
+      // match a recently-locked row.
+      mockUpdateMany.mockResolvedValueOnce({ count: 0 });
 
       const result = await lazyRefresh('conn-1');
 

@@ -427,18 +427,36 @@ export class KsefApiClient {
    * - Retries on HTTP 429 (rate limit) with Retry-After backoff
    * - Retries on HTTP 5xx with exponential backoff
    * - Throws on 4xx (except 429)
+   *
+   * Idempotency: by default only GET/HEAD requests are retried. KSeF POSTs
+   * such as `/auth/token/redeem` and `/invoices/query/metadata` are NOT
+   * idempotent — re-issuing them after a 502/timeout can claim multiple
+   * sessions or create duplicate query jobs. Callers that know their POST
+   * is safe to retry can opt in via `retryNonIdempotent: true`.
    */
-  private async fetchWithRetry(url: string, options: RequestInit, retries = 2): Promise<Response> {
+  private async fetchWithRetry(
+    url: string,
+    options: RequestInit,
+    opts: { retries?: number; retryNonIdempotent?: boolean } | number = {},
+  ): Promise<Response> {
+    // Backwards-compat: a numeric second arg is treated as `retries`.
+    const { retries = 2, retryNonIdempotent = false } =
+      typeof opts === 'number' ? { retries: opts } : opts;
+
+    const method = (options.method ?? 'GET').toUpperCase();
+    const isIdempotent = method === 'GET' || method === 'HEAD';
+    const effectiveRetries = isIdempotent || retryNonIdempotent ? retries : 0;
+
     let lastError: Error | null = null;
 
-    for (let attempt = 0; attempt <= retries; attempt++) {
+    for (let attempt = 0; attempt <= effectiveRetries; attempt++) {
       try {
-        const result = await this.attemptFetch(url, options, attempt, retries);
+        const result = await this.attemptFetch(url, options, attempt, effectiveRetries);
         if (result) return result;
       } catch (error) {
         if (KsefApiClient.isNonRetryableApiError(error)) throw error;
         lastError = KsefApiClient.toError(error);
-        if (attempt < retries) {
+        if (attempt < effectiveRetries) {
           await new Promise(resolve => setTimeout(resolve, KsefApiClient.backoffMs(attempt)));
         }
       }

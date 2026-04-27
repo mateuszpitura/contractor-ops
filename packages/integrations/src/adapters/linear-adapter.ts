@@ -1,9 +1,9 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
-import { prisma } from '@contractor-ops/db';
 import type { CredentialBlob } from '../types/credentials.js';
 import type { ProviderHealthStatus } from '../types/health.js';
 import type { OAuthConfig } from '../types/provider.js';
 import type { WebhookVerificationResult } from '../types/webhook.js';
+import type { GetHealthStatusOptions } from './base-adapter.js';
 import { BaseAdapter } from './base-adapter.js';
 
 // ---------------------------------------------------------------------------
@@ -371,89 +371,18 @@ export class LinearAdapter extends BaseAdapter {
   // Health Status
   // -------------------------------------------------------------------------
 
-  override async getHealthStatus(connectionId: string): Promise<ProviderHealthStatus> {
-    const connection = await prisma.integrationConnection.findUnique({
-      where: { id: connectionId },
-      select: {
-        provider: true,
-        displayName: true,
-        connectedAt: true,
-        lastSyncAt: true,
-        lastSuccessAt: true,
-        lastErrorAt: true,
-        lastErrorMessage: true,
-        tokenExpiresAt: true,
-        status: true,
-      },
+  /**
+   * Linear allows a connection to sit in `PENDING_MAPPING` between OAuth
+   * and team selection — this is still considered "connected enough" for
+   * health derivation. Defer everything else to the shared default.
+   */
+  override async getHealthStatus(
+    connectionId: string,
+    options?: GetHealthStatusOptions,
+  ): Promise<ProviderHealthStatus> {
+    return super.getHealthStatus(connectionId, {
+      allowedConnectedStatuses: ['PENDING_MAPPING'],
+      ...options,
     });
-
-    if (!connection) {
-      return {
-        status: 'DISCONNECTED',
-        provider: 'linear',
-        recentSyncs: [],
-        recentWebhooks: [],
-        errorCountLast24h: 0,
-      };
-    }
-
-    // Fetch recent sync logs
-    const recentSyncs = await prisma.integrationSyncLog.findMany({
-      where: { integrationConnectionId: connectionId },
-      orderBy: { startedAt: 'desc' },
-      take: 5,
-      select: {
-        id: true,
-        syncType: true,
-        status: true,
-        startedAt: true,
-        completedAt: true,
-      },
-    });
-
-    // Count errors in last 24h
-    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-    const errorCountLast24h = await prisma.integrationSyncLog.count({
-      where: {
-        integrationConnectionId: connectionId,
-        status: 'FAILED',
-        startedAt: { gte: oneDayAgo },
-      },
-    });
-
-    // Determine status
-    let status: ProviderHealthStatus['status'];
-    if (connection.status !== 'CONNECTED' && connection.status !== 'PENDING_MAPPING') {
-      status = 'DISCONNECTED';
-    } else if (connection.lastErrorAt && !connection.lastSuccessAt) {
-      status = 'ERROR';
-    } else if (connection.tokenExpiresAt && connection.tokenExpiresAt < new Date()) {
-      status = 'REAUTH_REQUIRED';
-    } else if (recentSyncs[0]?.status === 'FAILED') {
-      status = 'ERROR';
-    } else {
-      status = 'CONNECTED';
-    }
-
-    return {
-      status,
-      provider: 'linear',
-      displayName: connection.displayName,
-      connectedAt: connection.connectedAt,
-      lastSyncAt: connection.lastSyncAt,
-      lastSuccessAt: connection.lastSuccessAt,
-      lastErrorAt: connection.lastErrorAt,
-      lastErrorMessage: connection.lastErrorMessage,
-      tokenExpiresAt: connection.tokenExpiresAt,
-      recentSyncs: recentSyncs.map(s => ({
-        id: s.id,
-        syncType: s.syncType,
-        status: s.status,
-        startedAt: s.startedAt,
-        completedAt: s.completedAt,
-      })),
-      recentWebhooks: [],
-      errorCountLast24h,
-    };
   }
 }

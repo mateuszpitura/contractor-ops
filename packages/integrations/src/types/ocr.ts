@@ -54,10 +54,14 @@ export interface OcrExtractionResult {
 /**
  * Provider-agnostic interface for document extraction.
  * Implemented by ClaudeOcrAdapter (and future providers).
+ *
+ * `slug` is the lowercased registry key (e.g., 'claude') and is required so
+ * the dedicated OCR registry can resolve adapters consistently.
  */
 export interface OcrAdapter {
   extractInvoice(request: OcrExtractionRequest): Promise<OcrExtractionResult>;
   readonly providerName: string;
+  readonly slug: string;
   readonly supportedDocumentTypes: string[];
 }
 

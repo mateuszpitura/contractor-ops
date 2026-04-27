@@ -1,7 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { clearAdapters, registerAdapter } from '../../registry.js';
+import { clearAdapters, registerOcrAdapter } from '../../registry.js';
 import type { OcrAdapter, OcrExtractionResult } from '../../types/ocr.js';
-import type { IntegrationProviderAdapter } from '../../types/provider.js';
 import { extractInvoice, getOcrAdapter } from '../ocr-service.js';
 
 // ---------------------------------------------------------------------------
@@ -40,8 +39,10 @@ describe('ocr-service', () => {
   beforeEach(() => {
     clearAdapters();
     vi.clearAllMocks();
-    // Register the mock adapter with the same slug pattern used by ClaudeOcrAdapter
-    registerAdapter(mockOcrAdapter as unknown as IntegrationProviderAdapter);
+    // Register the mock adapter into the dedicated OCR registry (per the
+    // bug-hunt fix that split OCR-only adapters out of the main provider
+    // registry — they have no IntegrationConnection row).
+    registerOcrAdapter(mockOcrAdapter);
   });
 
   afterEach(() => {

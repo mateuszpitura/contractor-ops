@@ -82,8 +82,16 @@ export async function refreshExpiring(): Promise<{
  * Lazy refresh: called before an API call when token might be expired.
  * Safety net for when cron misses a refresh cycle.
  *
+ * Uses the same atomic `updateMany` claim pattern as `refreshExpiring`
+ * — a plain read-then-write check on `refreshLockedAt` would let two
+ * concurrent callers each call `adapter.refreshToken` against the OAuth
+ * provider, and most providers (Google, Atlassian, DocuSign) invalidate
+ * the previous refresh token on use. The losing caller would then be
+ * silently moved to `REAUTH_REQUIRED`.
+ *
  * @param connectionId - The IntegrationConnection ID to check and refresh
- * @returns true if refresh was performed, false otherwise
+ * @returns true if refresh was performed, false otherwise (not expired,
+ *   already locked by another caller, or connection missing)
  */
 export async function lazyRefresh(connectionId: string): Promise<boolean> {
   const conn = await prisma.integrationConnection.findUnique({
@@ -93,18 +101,21 @@ export async function lazyRefresh(connectionId: string): Promise<boolean> {
   if (!conn?.tokenExpiresAt) return false;
   if (conn.tokenExpiresAt > new Date()) return false; // not expired yet
 
-  // Check lock — skip if another process is currently refreshing
-  if (conn.refreshLockedAt && conn.refreshLockedAt > new Date(Date.now() - LOCK_TTL_MS)) {
-    return false;
-  }
+  // Atomic lock acquisition. updateMany returns count: 0 if another caller
+  // already holds an active lock — in that case we yield, the other caller
+  // will refresh, and the API request can retry.
+  const staleCutoff = new Date(Date.now() - LOCK_TTL_MS);
+  const claimed = await prisma.integrationConnection.updateMany({
+    where: {
+      id: connectionId,
+      OR: [{ refreshLockedAt: null }, { refreshLockedAt: { lte: staleCutoff } }],
+    },
+    data: { refreshLockedAt: new Date() },
+  });
+
+  if (claimed.count === 0) return false; // another process owns the lock
 
   try {
-    // Acquire lock
-    await prisma.integrationConnection.update({
-      where: { id: connectionId },
-      data: { refreshLockedAt: new Date() },
-    });
-
     await refreshSingleConnection(connectionId, conn.provider.toLowerCase(), conn.credentialsRef);
     return true;
   } catch (error) {

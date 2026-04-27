@@ -15,6 +15,31 @@ import type {
 type ESignProvider = 'DOCUSIGN' | 'AUTENTI';
 
 /**
+ * Required method surface every ESignAdapter must implement.
+ * Used as a runtime guard so partial adapters fail at resolve-time
+ * rather than at first call site.
+ */
+const ESIGN_ADAPTER_METHODS = [
+  'createEnvelope',
+  'getEmbeddedSigningUrl',
+  'getSignedDocument',
+  'getEnvelopeStatus',
+  'voidEnvelope',
+  'resendToRecipient',
+  'normalizeWebhookEvent',
+] as const satisfies ReadonlyArray<keyof ESignAdapter>;
+
+function isESignAdapter(value: unknown): value is ESignAdapter {
+  if (!(value && typeof value === 'object')) return false;
+  const candidate = value as Record<string, unknown>;
+  for (const method of ESIGN_ADAPTER_METHODS) {
+    if (typeof candidate[method] !== 'function') return false;
+  }
+  if (typeof candidate.supportsEmbeddedSigning !== 'boolean') return false;
+  return true;
+}
+
+/**
  * Resolves the ESignAdapter for a given provider from the adapter registry.
  *
  * @param provider - The e-sign provider to look up
@@ -32,13 +57,11 @@ export function getESignAdapter(provider: ESignProvider): ESignAdapter {
     );
   }
 
-  // Verify the adapter implements ESignAdapter methods
-  const esignAdapter = adapter as unknown as ESignAdapter;
-  if (typeof esignAdapter.createEnvelope !== 'function') {
+  if (!isESignAdapter(adapter)) {
     throw new Error(`Adapter for ${provider} does not implement the ESignAdapter interface.`);
   }
 
-  return esignAdapter;
+  return adapter;
 }
 
 /**

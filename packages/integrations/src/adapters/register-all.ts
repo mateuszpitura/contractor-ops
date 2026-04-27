@@ -1,5 +1,4 @@
-import { registerAdapter } from '../registry.js';
-import type { IntegrationProviderAdapter } from '../types/provider.js';
+import { registerAdapter, registerOcrAdapter } from '../registry.js';
 import { AutentiAdapter } from './autenti-adapter.js';
 import { ClaudeOcrAdapter } from './claude-ocr-adapter.js';
 import { ClockifyAdapter } from './clockify-adapter.js';
@@ -23,12 +22,22 @@ import { TeamsAdapter } from './teams-adapter.js';
 let registered = false;
 
 /**
- * Registers all provider adapters with the global registry.
+ * Registers all provider adapters with the global registries.
+ *
+ * - Integration provider adapters (OAuth + webhooks + health) are registered
+ *   in the main provider registry consumed by `getAllAdapters()` and
+ *   `getProviderHealth()`.
+ * - OCR-only adapters (e.g. Claude Vision) are registered in the dedicated
+ *   OCR registry. They have no IntegrationConnection row and must NOT be
+ *   surfaced to the health-service which would query Prisma with a
+ *   non-existent provider enum.
+ *
  * Safe to call multiple times — only registers on the first call.
  */
 export function registerAllAdapters(): void {
   if (registered) return;
 
+  // True integration provider adapters
   registerAdapter(new SlackAdapter());
   registerAdapter(new ResendAdapter());
   registerAdapter(new DocuSignAdapter());
@@ -43,7 +52,9 @@ export function registerAllAdapters(): void {
   registerAdapter(new OutlookCalendarAdapter());
   registerAdapter(new LinearAdapter());
   registerAdapter(new TeamsAdapter());
-  registerAdapter(new ClaudeOcrAdapter() as unknown as IntegrationProviderAdapter);
+
+  // OCR-only adapters (separate registry — no Prisma connection rows)
+  registerOcrAdapter(new ClaudeOcrAdapter());
 
   registered = true;
 }

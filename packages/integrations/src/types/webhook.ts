@@ -12,6 +12,13 @@ export interface WebhookVerificationResult {
   organizationSlug?: string;
   eventType?: string;
   connectionId?: string;
+  /**
+   * Reason a verification failed. Helps operators distinguish a configuration
+   * problem (`config` — secret/API key missing or malformed) from genuine
+   * signature mismatches (`signature` — likely an attacker probe or stale
+   * webhook). Only set when `valid === false`.
+   */
+  reason?: 'config' | 'signature' | 'headers';
 }
 
 /**
