@@ -1,0 +1,1832 @@
+diff --git a/apps/web/src/app/[locale]/(dashboard)/invoices/[id]/page.tsx b/apps/web/src/app/[locale]/(dashboard)/invoices/[id]/page.tsx
+index cbc1388f..f57573e1 100644
+--- a/apps/web/src/app/[locale]/(dashboard)/invoices/[id]/page.tsx
++++ b/apps/web/src/app/[locale]/(dashboard)/invoices/[id]/page.tsx
+@@ -120,8 +120,7 @@ function DetailSkeleton() {
+ // Invoice feature flag derivation (reduces cognitive complexity in render)
+ // ---------------------------------------------------------------------------
+ 
+-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+-function deriveInvoiceFlags(invoice: Record<string, any>) {
++function deriveInvoiceFlags(invoice: Record<string, unknown>) {
+   // Duplicate detection
+   const flagsArray: string[] = Array.isArray(invoice.flagsJson) ? invoice.flagsJson : [];
+   const hasDuplicateFlag = flagsArray.includes('DUPLICATE_SUSPECTED');
+diff --git a/apps/web/src/app/[locale]/(dashboard)/reports/page.tsx b/apps/web/src/app/[locale]/(dashboard)/reports/page.tsx
+index bde10ea2..de01e568 100644
+--- a/apps/web/src/app/[locale]/(dashboard)/reports/page.tsx
++++ b/apps/web/src/app/[locale]/(dashboard)/reports/page.tsx
+@@ -74,14 +74,14 @@ function ReportsContent() {
+     <div className="space-y-6">
+       {/* Mobile sidebar (horizontal pill bar) */}
+       <div className="lg:hidden">
+-        // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
++        {/* biome-ignore lint/nursery/noJsxPropsBind: menu item handler */}
+         <ReportSidebar activeReport={report} onSelect={r => void setReport(r)} />
+       </div>
+ 
+       <div className="flex gap-6">
+         {/* Desktop sidebar */}
+         <div className="hidden lg:block">
+-          // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
++          {/* biome-ignore lint/nursery/noJsxPropsBind: menu item handler */}
+           <ReportSidebar activeReport={report} onSelect={r => void setReport(r)} />
+         </div>
+ 
+@@ -96,7 +96,7 @@ function ReportsContent() {
+ 
+           {/* Date range filter */}
+           <AnimateIn delay={1}>
+-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++            {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+             <DateRangeFilter dateFrom={dateFrom} dateTo={dateTo} onDateChange={handleDateChange} />
+           </AnimateIn>
+ 
+diff --git a/apps/web/src/app/[locale]/(dashboard)/time/page.tsx b/apps/web/src/app/[locale]/(dashboard)/time/page.tsx
+index bd1c1c78..c6a24fcc 100644
+--- a/apps/web/src/app/[locale]/(dashboard)/time/page.tsx
++++ b/apps/web/src/app/[locale]/(dashboard)/time/page.tsx
+@@ -199,7 +199,7 @@ function TimeTrackingContent() {
+       </AnimateIn>
+ 
+       <AnimateIn delay={1}>
+-        // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
++        {/* biome-ignore lint/nursery/noJsxPropsBind: controlled component handler */}
+         <Tabs value={tab} onValueChange={value => void setTab(value)}>
+           <TabsList>
+             <TabsTrigger value="pending">
+@@ -241,7 +241,7 @@ function TimeTrackingContent() {
+             <div className="space-y-4">
+               {/* Filters */}
+               <div className="flex items-center gap-3">
+-                // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
++                {/* biome-ignore lint/nursery/noJsxPropsBind: controlled component handler */}
+                 <Select value={statusFilter} onValueChange={v => void setStatusFilter(v)}>
+                   <SelectTrigger className="w-40">
+                     <SelectValue placeholder={t('filters.statusPlaceholder')} />
+diff --git a/apps/web/src/app/[locale]/(dashboard)/v2/contractors/page.tsx b/apps/web/src/app/[locale]/(dashboard)/v2/contractors/page.tsx
+index fdc49581..fe6e178a 100644
+--- a/apps/web/src/app/[locale]/(dashboard)/v2/contractors/page.tsx
++++ b/apps/web/src/app/[locale]/(dashboard)/v2/contractors/page.tsx
+@@ -446,7 +446,7 @@ function ContractorsV2Content() {
+         </h2>
+         <p className="mt-2 max-w-sm text-sm text-muted-foreground">{tv('emptyState.body')}</p>
+         <div className="mt-6 flex gap-3">
+-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++          {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+           <Button onClick={() => setWizardOpen(true)}>
+             <Plus className="me-1.5 h-4 w-4" /> {tv('emptyState.addContractor')}
+           </Button>
+@@ -482,7 +482,7 @@ function ContractorsV2Content() {
+             <Button variant="outline" size="sm" className="text-xs">
+               <Upload className="me-1.5 h-3.5 w-3.5" /> {t('import')}
+             </Button>
+-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++            {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+             <Button size="sm" className="text-xs" onClick={() => setWizardOpen(true)}>
+               <Plus className="me-1.5 h-3.5 w-3.5" /> {t('addContractor')}
+             </Button>
+@@ -500,7 +500,7 @@ function ContractorsV2Content() {
+             <button
+               key={value}
+               type="button"
+-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++              // biome-ignore lint/nursery/noJsxPropsBind: filter pill handler
+               onClick={() => {
+                 setStage(value);
+                 setPage(1);
+diff --git a/apps/web/src/app/[locale]/(dashboard)/workflows/[id]/page.tsx b/apps/web/src/app/[locale]/(dashboard)/workflows/[id]/page.tsx
+index 30eb4c80..50617a0e 100644
+--- a/apps/web/src/app/[locale]/(dashboard)/workflows/[id]/page.tsx
++++ b/apps/web/src/app/[locale]/(dashboard)/workflows/[id]/page.tsx
+@@ -84,7 +84,7 @@ export default function WorkflowRunDetailPage() {
+     return (
+       <div className="flex min-h-[400px] flex-col items-center justify-center gap-3 text-center">
+         <h2 className="text-lg font-medium">{t('errors.failedToLoadWorkflowDetail')}</h2>
+-        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+         <Button variant="outline" onClick={() => runQuery.refetch()}>
+           {t('errors.retry')}
+         </Button>
+diff --git a/apps/web/src/app/[locale]/(dashboard)/workflows/page.tsx b/apps/web/src/app/[locale]/(dashboard)/workflows/page.tsx
+index 4f5f55c4..4c9beb47 100644
+--- a/apps/web/src/app/[locale]/(dashboard)/workflows/page.tsx
++++ b/apps/web/src/app/[locale]/(dashboard)/workflows/page.tsx
+@@ -119,7 +119,7 @@ function WorkflowsContent() {
+ 
+       {/* Tabs */}
+       <AnimateIn delay={1}>
+-        // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
++        {/* biome-ignore lint/nursery/noJsxPropsBind: controlled component handler */}
+         <Tabs value={tab} onValueChange={value => void setTab(value)}>
+           <TabsList>
+             <TabsTrigger value="runs">{t('tabRuns')}</TabsTrigger>
+diff --git a/apps/web/src/components/approvals/approval-queue/columns.tsx b/apps/web/src/components/approvals/approval-queue/columns.tsx
+index 3adbbf0e..218ad065 100644
+--- a/apps/web/src/components/approvals/approval-queue/columns.tsx
++++ b/apps/web/src/components/approvals/approval-queue/columns.tsx
+@@ -101,7 +101,7 @@ function RejectPopover({
+           </Button>
+         )}
+       />
+-      // biome-ignore lint/nursery/noJsxPropsBind: stopPropagation on popover
++      {/* biome-ignore lint/nursery/noJsxPropsBind: stopPropagation on popover */}
+       <PopoverContent className="w-80 p-4" align="end" onClick={e => e.stopPropagation()}>
+         <div className="space-y-3">
+           <h4 className="font-medium text-sm">{t('rejectPopover.heading')}</h4>
+@@ -317,7 +317,7 @@ export function getColumns(
+               <CheckCircle2 className="h-3.5 w-3.5" />
+               {t('actions.approve')}
+             </Button>
+-            // biome-ignore lint/nursery/noJsxPropsBind: column definition
++            {/* biome-ignore lint/nursery/noJsxPropsBind: column definition */}
+             <RejectPopover onReject={comment => callbacks.onReject(step.id, comment)} t={t} />
+           </div>
+         );
+diff --git a/apps/web/src/components/approvals/approval-queue/data-table-toolbar.tsx b/apps/web/src/components/approvals/approval-queue/data-table-toolbar.tsx
+index 5b709c59..192e6cc5 100644
+--- a/apps/web/src/components/approvals/approval-queue/data-table-toolbar.tsx
++++ b/apps/web/src/components/approvals/approval-queue/data-table-toolbar.tsx
+@@ -200,14 +200,14 @@ export function ApprovalQueueToolbar({
+             <span className="text-sm font-medium text-muted-foreground whitespace-nowrap">
+               {t('bulk.selectedCount', { count })}
+             </span>
+-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++            {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+             <Button size="sm" onClick={handleBulkApprove} disabled={bulkApproveMutation.isPending}>
+               {!!bulkApproveMutation.isPending && (
+                 <Loader2 className="me-1 h-3.5 w-3.5 animate-spin" />
+               )}
+               {t('bulk.approve', { count })}
+             </Button>
+-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++            {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+             <Button variant="destructive" size="sm" onClick={() => setBulkRejectOpen(true)}>
+               {t('bulk.reject', { count })}
+             </Button>
+diff --git a/apps/web/src/components/approvals/approval-queue/side-panel.tsx b/apps/web/src/components/approvals/approval-queue/side-panel.tsx
+index 7ca00611..20a2132b 100644
+--- a/apps/web/src/components/approvals/approval-queue/side-panel.tsx
++++ b/apps/web/src/components/approvals/approval-queue/side-panel.tsx
+@@ -389,7 +389,7 @@ export function ApprovalSidePanel({ step, open, onOpenChange }: ApprovalSidePane
+         {isPending && (
+           <div className="border-t p-4 space-y-2">
+             <div className="flex items-center gap-2">
+-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++              {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+               <Button className="flex-1" onClick={() => approveAction()} disabled={actionsPending}>
+                 <CheckCircle2 className="me-1.5 h-4 w-4" />
+                 {t('sidePanel.approve')}
+@@ -466,12 +466,12 @@ export function ApprovalSidePanel({ step, open, onOpenChange }: ApprovalSidePane
+                 )}
+               />
+               <DropdownMenuContent align="end" className="w-56">
+-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++                {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+                 <DropdownMenuItem onClick={() => setClarifyOpen(true)}>
+                   <HelpCircle className="me-2 h-4 w-4" />
+                   {t('sidePanel.requestClarification')}
+                 </DropdownMenuItem>
+-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++                {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+                 <DropdownMenuItem onClick={() => setDelegateOpen(true)}>
+                   <UserPlus className="me-2 h-4 w-4" />
+                   {t('sidePanel.delegateApproval')}
+diff --git a/apps/web/src/components/billing/__tests__/soft-block-modal.test.tsx b/apps/web/src/components/billing/__tests__/soft-block-modal.test.tsx
+index 70c4d3c9..f2002c47 100644
+--- a/apps/web/src/components/billing/__tests__/soft-block-modal.test.tsx
++++ b/apps/web/src/components/billing/__tests__/soft-block-modal.test.tsx
+@@ -9,7 +9,7 @@ import { SoftBlockModal } from '../soft-block-modal';
+ vi.mock('../plan-comparison-grid', () => ({
+   PlanComparisonGrid: ({ onSelectPlan }: { onSelectPlan: (plan: string) => void }) => (
+     <div data-testid="plan-grid">
+-      // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
++      {/* biome-ignore lint/nursery/noJsxPropsBind: menu item handler */}
+       <button type="button" onClick={() => onSelectPlan('price_pro')}>
+         Select Pro
+       </button>
+diff --git a/apps/web/src/components/billing/billing-overlay.tsx b/apps/web/src/components/billing/billing-overlay.tsx
+index 381299ca..cbc6c174 100644
+--- a/apps/web/src/components/billing/billing-overlay.tsx
++++ b/apps/web/src/components/billing/billing-overlay.tsx
+@@ -75,9 +75,9 @@ export function BillingOverlay() {
+         // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+         <TrialBanner trialEnd={trialEnd} onUpgrade={handleUpgrade} />
+       )}
+-      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++      {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+       {isPastDue && <PastDueBanner onResolve={handleUpgrade} />}
+-      // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
++      {/* biome-ignore lint/nursery/noJsxPropsBind: menu item handler */}
+       <SoftBlockModal isOpen={isTrialExpired || isBlocked} onSelectPlan={handleSelectPlan} />
+     </>
+   );
+diff --git a/apps/web/src/components/billing/top-up-dialog.tsx b/apps/web/src/components/billing/top-up-dialog.tsx
+index 9e7d5134..08917565 100644
+--- a/apps/web/src/components/billing/top-up-dialog.tsx
++++ b/apps/web/src/components/billing/top-up-dialog.tsx
+@@ -109,7 +109,7 @@ export function TopUpDialog({ open, onOpenChange }: TopUpDialogProps) {
+             disabled={checkoutMutation.isPending}>
+             {t('cancel')}
+           </Button>
+-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++          {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+           <Button onClick={handleConfirm} disabled={checkoutMutation.isPending}>
+             {!!checkoutMutation.isPending && (
+               <Loader2 className="animate-spin" aria-hidden="true" />
+diff --git a/apps/web/src/components/billing/usage-dashboard.tsx b/apps/web/src/components/billing/usage-dashboard.tsx
+index 62b0fcd0..d217eb54 100644
+--- a/apps/web/src/components/billing/usage-dashboard.tsx
++++ b/apps/web/src/components/billing/usage-dashboard.tsx
+@@ -81,7 +81,7 @@ export function UsageDashboard() {
+     return (
+       <div className="flex flex-col items-center gap-4 py-12">
+         <p className="text-sm text-muted-foreground">{t('errorLoading')}</p>
+-        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+         <Button variant="outline" size="sm" onClick={() => refetch()}>
+           <RefreshCw size={14} aria-hidden="true" />
+           {t('retry')}
+@@ -182,7 +182,7 @@ export function UsageDashboard() {
+       <Separator />
+ 
+       {/* Plan Comparison Grid */}
+-      // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
++      {/* biome-ignore lint/nursery/noJsxPropsBind: menu item handler */}
+       <PlanComparisonGrid currentTier={currentTier} onSelectPlan={() => undefined} />
+ 
+       <TopUpDialog open={topUpOpen} onOpenChange={setTopUpOpen} />
+diff --git a/apps/web/src/components/contractors/contractor-profile/profile-header.tsx b/apps/web/src/components/contractors/contractor-profile/profile-header.tsx
+index dd05fe3a..093ba37e 100644
+--- a/apps/web/src/components/contractors/contractor-profile/profile-header.tsx
++++ b/apps/web/src/components/contractors/contractor-profile/profile-header.tsx
+@@ -179,13 +179,13 @@ export function ProfileHeader({ contractor }: ProfileHeaderProps) {
+       </div>
+ 
+       <div className="flex items-center gap-2">
+-        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+         <Button variant="outline" size="sm" onClick={() => toast.info(t('actions.editComingSoon'))}>
+           <Pencil className="me-1.5 size-3.5" />
+           {t('actions.edit')}
+         </Button>
+ 
+-        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+         <Button variant="outline" size="sm" onClick={() => setWizardOpen(true)}>
+           <FilePlus className="me-1.5 size-3.5" />
+           {t('actions.addContract')}
+diff --git a/apps/web/src/components/contractors/contractor-profile/tab-contracts.tsx b/apps/web/src/components/contractors/contractor-profile/tab-contracts.tsx
+index 64eb18dd..af8d55bb 100644
+--- a/apps/web/src/components/contractors/contractor-profile/tab-contracts.tsx
++++ b/apps/web/src/components/contractors/contractor-profile/tab-contracts.tsx
+@@ -188,7 +188,7 @@ export function TabContracts({ contractorId }: TabContractsProps) {
+           <FileText className="size-10 text-muted-foreground/50" />
+           <h4 className="text-sm font-medium">{t('contractorTab.emptyHeading')}</h4>
+           <p className="max-w-sm text-sm text-muted-foreground">{t('contractorTab.emptyBody')}</p>
+-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++          {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+           <Button size="sm" onClick={() => setWizardOpen(true)}>
+             <Plus className="me-1.5 size-3.5" />
+             {t('contractorTab.emptyCTA')}
+@@ -208,7 +208,7 @@ export function TabContracts({ contractorId }: TabContractsProps) {
+       {/* Header with CTA */}
+       <div className="flex items-center justify-between">
+         <h3 className="text-base font-medium">{t('contractorTab.heading')}</h3>
+-        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+         <Button size="sm" onClick={() => setWizardOpen(true)}>
+           <Plus className="me-1.5 size-3.5" />
+           {t('contractorTab.addCTA')}
+diff --git a/apps/web/src/components/contractors/contractor-profile/tabs/invoices-tab.tsx b/apps/web/src/components/contractors/contractor-profile/tabs/invoices-tab.tsx
+index c12df067..ceb484ac 100644
+--- a/apps/web/src/components/contractors/contractor-profile/tabs/invoices-tab.tsx
++++ b/apps/web/src/components/contractors/contractor-profile/tabs/invoices-tab.tsx
+@@ -131,7 +131,7 @@ export function InvoicesTab({ contractorId }: InvoicesTabProps) {
+           <FileText className="size-10 text-muted-foreground/50" />
+           <h4 className="text-sm font-medium">{t('tab.noInvoicesHeading')}</h4>
+           <p className="max-w-sm text-sm text-muted-foreground">{t('tab.noInvoicesBody')}</p>
+-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++          {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+           <Button size="sm" onClick={() => setUploadOpen(true)}>
+             <Upload className="me-1.5 size-3.5" />
+             {t('tab.uploadInvoice')}
+@@ -154,7 +154,7 @@ export function InvoicesTab({ contractorId }: InvoicesTabProps) {
+       {/* Header with upload CTA */}
+       <div className="flex items-center justify-between">
+         <h3 className="text-base font-medium">{t('tab.heading')}</h3>
+-        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+         <Button size="sm" onClick={() => setUploadOpen(true)}>
+           <Upload className="me-1.5 size-3.5" />
+           {t('tab.uploadInvoice')}
+diff --git a/apps/web/src/components/contractors/contractor-profile/workflows-tab.tsx b/apps/web/src/components/contractors/contractor-profile/workflows-tab.tsx
+index c6277fca..2fd99365 100644
+--- a/apps/web/src/components/contractors/contractor-profile/workflows-tab.tsx
++++ b/apps/web/src/components/contractors/contractor-profile/workflows-tab.tsx
+@@ -233,7 +233,7 @@ export function WorkflowsTab({ contractorId }: WorkflowsTabProps) {
+           <GitBranch className="size-10 text-muted-foreground/50" />
+           <h4 className="text-sm font-medium">{t('contractorNoWorkflows')}</h4>
+           <p className="max-w-sm text-sm text-muted-foreground">{t('contractorNoWorkflowsBody')}</p>
+-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++          {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+           <Button size="sm" onClick={() => setPickerOpen(true)}>
+             <Plus className="me-1.5 size-3.5" />
+             {t('contractorNoWorkflowsCta')}
+@@ -256,7 +256,7 @@ export function WorkflowsTab({ contractorId }: WorkflowsTabProps) {
+       {/* Header with CTA */}
+       <div className="flex items-center justify-between">
+         <h3 className="text-base font-medium">{t('contractorWorkflowsTab')}</h3>
+-        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+         <Button size="sm" onClick={() => setPickerOpen(true)}>
+           <Plus className="me-1.5 size-3.5" />
+           {t('contractorStartWorkflow')}
+diff --git a/apps/web/src/components/contractors/contractor-table/data-table-pagination.tsx b/apps/web/src/components/contractors/contractor-table/data-table-pagination.tsx
+index 991c0bb8..b7c3e2cc 100644
+--- a/apps/web/src/components/contractors/contractor-table/data-table-pagination.tsx
++++ b/apps/web/src/components/contractors/contractor-table/data-table-pagination.tsx
+@@ -54,7 +54,7 @@ export function DataTablePagination<TData>({
+         {/* Page size selector */}
+         <div className="flex items-center gap-2">
+           <span className="text-sm text-muted-foreground">{t('rowsPerPage')}</span>
+-          // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
++          {/* biome-ignore lint/nursery/noJsxPropsBind: controlled component handler */}
+           <Select value={String(pageSize)} onValueChange={value => onPageSizeChange(Number(value))}>
+             <SelectTrigger className="h-8 w-[70px]">
+               <SelectValue />
+diff --git a/apps/web/src/components/contractors/contractor-wizard/wizard-dialog.tsx b/apps/web/src/components/contractors/contractor-wizard/wizard-dialog.tsx
+index abe1f102..eb744398 100644
+--- a/apps/web/src/components/contractors/contractor-wizard/wizard-dialog.tsx
++++ b/apps/web/src/components/contractors/contractor-wizard/wizard-dialog.tsx
+@@ -334,7 +334,7 @@ export function WizardDialog({ open, onOpenChange }: WizardDialogProps) {
+                 </Button>
+               )}
+             </div>
+-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++            {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+             <Button type="button" onClick={handleNext} disabled={createMutation.isPending}>
+               {createMutation.isPending ? (
+                 <>
+diff --git a/apps/web/src/components/contractors/country-compliance-section.tsx b/apps/web/src/components/contractors/country-compliance-section.tsx
+index 2b80dd2a..7660d94d 100644
+--- a/apps/web/src/components/contractors/country-compliance-section.tsx
++++ b/apps/web/src/components/contractors/country-compliance-section.tsx
+@@ -118,7 +118,7 @@ export function CountryComplianceSection({ contractorId }: CountryComplianceSect
+             onChange={(key, val) => setFormData(prev => ({ ...prev, [key]: val }))}
+           />
+         )}
+-        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+         <Button onClick={handleSave} disabled={updateMutation.isPending} className="mt-4">
+           {updateMutation.isPending ? (
+             <Loader2 className="me-2 h-4 w-4 animate-spin" />
+diff --git a/apps/web/src/components/contracts/contract-detail/amendments-tab.tsx b/apps/web/src/components/contracts/contract-detail/amendments-tab.tsx
+index f423c74b..44b598f5 100644
+--- a/apps/web/src/components/contracts/contract-detail/amendments-tab.tsx
++++ b/apps/web/src/components/contracts/contract-detail/amendments-tab.tsx
+@@ -115,7 +115,7 @@ function AddAmendmentDialog({
+         <DialogHeader>
+           <DialogTitle>{t('addTitle')}</DialogTitle>
+         </DialogHeader>
+-        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+         <form onSubmit={handleSubmit} className="space-y-4">
+           <div className="space-y-2">
+             <label htmlFor="amendment-title" className="text-sm font-medium">
+@@ -161,7 +161,7 @@ function AddAmendmentDialog({
+             />
+           </div>
+           <DialogFooter>
+-            // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler
++            {/* biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler */}
+             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+               {t('cancel')}
+             </Button>
+@@ -267,7 +267,7 @@ export function AmendmentsTab({ contract }: AmendmentsTabProps) {
+       {/* Header with CTA */}
+       <div className="flex items-center justify-between">
+         <h3 className="text-base font-medium">{t('heading')}</h3>
+-        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+         <Button size="sm" onClick={() => setDialogOpen(true)}>
+           <Plus className="me-1.5 size-3.5" />
+           {t('addCta')}
+diff --git a/apps/web/src/components/contracts/contract-detail/embedded-signing-modal.tsx b/apps/web/src/components/contracts/contract-detail/embedded-signing-modal.tsx
+index 6586241e..51e94116 100644
+--- a/apps/web/src/components/contracts/contract-detail/embedded-signing-modal.tsx
++++ b/apps/web/src/components/contracts/contract-detail/embedded-signing-modal.tsx
+@@ -173,14 +173,14 @@ export function EmbeddedSigningModal({
+                   })}
+                 </p>
+                 <div className="flex gap-3">
+-                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++                  {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+                   <Button onClick={() => window.open(signingData.url, '_blank')}>
+                     <ExternalLink className="me-1.5 size-4" />
+                     {t('continueToProvider', {
+                       provider: provider === 'AUTENTI' ? 'Autenti' : provider,
+                     })}
+                   </Button>
+-                  // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler
++                  {/* biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler */}
+                   <Button variant="outline" onClick={() => onOpenChange(false)}>
+                     {t('returnToContract')}
+                   </Button>
+@@ -193,7 +193,7 @@ export function EmbeddedSigningModal({
+           <div className="flex h-full items-center justify-center">
+             <div className="flex flex-col items-center gap-3 text-center">
+               <p className="text-sm text-muted-foreground">{t('loadError')}</p>
+-              // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler
++              {/* biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler */}
+               <Button variant="outline" onClick={() => onOpenChange(false)}>
+                 {t('returnToContract')}
+               </Button>
+diff --git a/apps/web/src/components/contracts/contract-detail/overview-tab.tsx b/apps/web/src/components/contracts/contract-detail/overview-tab.tsx
+index b2b723e1..e44eda10 100644
+--- a/apps/web/src/components/contracts/contract-detail/overview-tab.tsx
++++ b/apps/web/src/components/contracts/contract-detail/overview-tab.tsx
+@@ -140,7 +140,7 @@ function ExpiryRemindersEditor({
+               })
+             : t('reminders.none')}
+         </span>
+-        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+         <Button variant="ghost" size="icon-sm" onClick={() => setEditing(true)}>
+           <Pencil className="size-3" />
+           <span className="sr-only">{t('reminders.edit')}</span>
+@@ -159,7 +159,7 @@ function ExpiryRemindersEditor({
+         className="h-7 w-40 rounded-md border bg-background px-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+         placeholder={t('remindersPlaceholder')}
+       />
+-      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++      {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+       <Button variant="ghost" size="icon-sm" onClick={handleSave} disabled={mutation.isPending}>
+         <Check className="size-3" />
+       </Button>
+diff --git a/apps/web/src/components/contracts/contract-detail/send-for-signature-button.tsx b/apps/web/src/components/contracts/contract-detail/send-for-signature-button.tsx
+index b287b1da..3c4ddfcf 100644
+--- a/apps/web/src/components/contracts/contract-detail/send-for-signature-button.tsx
++++ b/apps/web/src/components/contracts/contract-detail/send-for-signature-button.tsx
+@@ -78,7 +78,7 @@ export function SendForSignatureButton({
+ 
+   return (
+     <>
+-      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++      {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+       <Button variant="default" size="sm" onClick={() => setDialogOpen(true)}>
+         <PenLine className="me-1.5 size-4" />
+         Send for Signature
+diff --git a/apps/web/src/components/contracts/contract-detail/send-for-signature-dialog.tsx b/apps/web/src/components/contracts/contract-detail/send-for-signature-dialog.tsx
+index 282079c7..3f9a2397 100644
+--- a/apps/web/src/components/contracts/contract-detail/send-for-signature-dialog.tsx
++++ b/apps/web/src/components/contracts/contract-detail/send-for-signature-dialog.tsx
+@@ -365,7 +365,7 @@ export function SendForSignatureDialog({
+             <div className="flex gap-2">
+               <div className="flex-1 space-y-2">
+                 <Label>{tSend('expiresLabel')}</Label>
+-                // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
++                {/* biome-ignore lint/nursery/noJsxPropsBind: controlled component handler */}
+                 <Select value={expiresInDays} onValueChange={val => setExpiresInDays(val ?? '14')}>
+                   <SelectTrigger className="w-full">
+                     <SelectValue />
+diff --git a/apps/web/src/components/contracts/contract-detail/signing-progress-bar.tsx b/apps/web/src/components/contracts/contract-detail/signing-progress-bar.tsx
+index 2eb05112..229c2f45 100644
+--- a/apps/web/src/components/contracts/contract-detail/signing-progress-bar.tsx
++++ b/apps/web/src/components/contracts/contract-detail/signing-progress-bar.tsx
+@@ -161,7 +161,7 @@ export function SigningProgressBar({ envelope }: SigningProgressBarProps) {
+           <div className="flex items-center gap-3">
+             <p className="text-sm text-muted-foreground">{statusText}</p>
+ 
+-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++            {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+             <Button variant="ghost" size="sm" onClick={() => setAuditOpen(true)}>
+               {t('viewHistory')}
+             </Button>
+@@ -192,7 +192,7 @@ export function SigningProgressBar({ envelope }: SigningProgressBarProps) {
+                     {t('resendTo', { name: r.name })}
+                   </DropdownMenuItem>
+                 ))}
+-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++                {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+                 <DropdownMenuItem variant="destructive" onClick={() => setVoidOpen(true)}>
+                   <Ban className="me-2 size-3.5" />
+                   {t('voidEnvelope')}
+diff --git a/apps/web/src/components/contracts/contract-table/data-table-pagination.tsx b/apps/web/src/components/contracts/contract-table/data-table-pagination.tsx
+index f4151173..4ff1dc1f 100644
+--- a/apps/web/src/components/contracts/contract-table/data-table-pagination.tsx
++++ b/apps/web/src/components/contracts/contract-table/data-table-pagination.tsx
+@@ -54,7 +54,7 @@ export function DataTablePagination<TData>({
+         {/* Page size selector */}
+         <div className="flex items-center gap-2">
+           <span className="text-sm text-muted-foreground">{t('rowsPerPage')}</span>
+-          // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
++          {/* biome-ignore lint/nursery/noJsxPropsBind: controlled component handler */}
+           <Select value={String(pageSize)} onValueChange={value => onPageSizeChange(Number(value))}>
+             <SelectTrigger className="h-8 w-[70px]">
+               <SelectValue />
+diff --git a/apps/web/src/components/contracts/contract-wizard/wizard-dialog.tsx b/apps/web/src/components/contracts/contract-wizard/wizard-dialog.tsx
+index 5b8017ee..e28c0b6e 100644
+--- a/apps/web/src/components/contracts/contract-wizard/wizard-dialog.tsx
++++ b/apps/web/src/components/contracts/contract-wizard/wizard-dialog.tsx
+@@ -333,7 +333,7 @@ export function ContractWizardDialog({
+ 
+   return (
+     <>
+-      // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler
++      {/* biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler */}
+       <Dialog open={open} onOpenChange={o => !o && handleClose()}>
+         <DialogContent className="sm:max-w-[640px]" showCloseButton={false}>
+           <DialogHeader>
+@@ -371,7 +371,7 @@ export function ContractWizardDialog({
+                 </Button>
+               )}
+             </div>
+-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++            {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+             <Button type="button" onClick={handleNext} disabled={createMutation.isPending}>
+               {createMutation.isPending ? (
+                 <>
+@@ -395,7 +395,7 @@ export function ContractWizardDialog({
+           </AlertDialogHeader>
+           <AlertDialogFooter>
+             <AlertDialogCancel>{t('discardConfirm.keep')}</AlertDialogCancel>
+-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++            {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+             <AlertDialogAction onClick={handleDiscard} variant="destructive">
+               {t('discardConfirm.discard')}
+             </AlertDialogAction>
+diff --git a/apps/web/src/components/equipment/carrier-shipment-form.tsx b/apps/web/src/components/equipment/carrier-shipment-form.tsx
+index 984f16ff..392c8e97 100644
+--- a/apps/web/src/components/equipment/carrier-shipment-form.tsx
++++ b/apps/web/src/components/equipment/carrier-shipment-form.tsx
+@@ -365,7 +365,7 @@ export function CarrierShipmentForm({
+           </div>
+ 
+           <DialogFooter>
+-            // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler
++            {/* biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler */}
+             <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
+               {t('cancel')}
+             </Button>
+diff --git a/apps/web/src/components/equipment/equipment-detail/tab-shipments.tsx b/apps/web/src/components/equipment/equipment-detail/tab-shipments.tsx
+index c3b27ff0..cef90fac 100644
+--- a/apps/web/src/components/equipment/equipment-detail/tab-shipments.tsx
++++ b/apps/web/src/components/equipment/equipment-detail/tab-shipments.tsx
+@@ -166,7 +166,7 @@ export function TabShipments({
+       ))}
+ 
+       {/* Delete confirmation */}
+-      // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler
++      {/* biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler */}
+       <Dialog open={!!deleteTarget} onOpenChange={v => !v && setDeleteTarget(null)}>
+         <DialogContent>
+           <DialogHeader>
+diff --git a/apps/web/src/components/equipment/equipment-table/equipment-columns.tsx b/apps/web/src/components/equipment/equipment-table/equipment-columns.tsx
+index 2248975e..ac6fbcc0 100644
+--- a/apps/web/src/components/equipment/equipment-table/equipment-columns.tsx
++++ b/apps/web/src/components/equipment/equipment-table/equipment-columns.tsx
+@@ -154,7 +154,7 @@ export function getEquipmentColumns(
+               )}
+             />
+             <DropdownMenuContent align="end">
+-              // biome-ignore lint/nursery/noJsxPropsBind: column definition
++              {/* biome-ignore lint/nursery/noJsxPropsBind: column definition */}
+               <DropdownMenuItem onSelect={() => actions.onEdit(equipment)}>
+                 <Pencil className="me-2 h-3.5 w-3.5" />
+                 {t('detail.edit')}
+diff --git a/apps/web/src/components/equipment/return-approval-banner.tsx b/apps/web/src/components/equipment/return-approval-banner.tsx
+index fe8ef86b..e19cc49f 100644
+--- a/apps/web/src/components/equipment/return-approval-banner.tsx
++++ b/apps/web/src/components/equipment/return-approval-banner.tsx
+@@ -123,7 +123,7 @@ export function ReturnApprovalBanner({ returnRequest }: ReturnApprovalBannerProp
+               )}
+               {t('reject')}
+             </Button>
+-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++            {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+             <Button size="sm" onClick={handleApprove} disabled={isPending}>
+               {!!approveMutation.isPending && (
+                 <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />
+diff --git a/apps/web/src/components/equipment/shipment-label-view.tsx b/apps/web/src/components/equipment/shipment-label-view.tsx
+index 7c3ea45b..06ff0ece 100644
+--- a/apps/web/src/components/equipment/shipment-label-view.tsx
++++ b/apps/web/src/components/equipment/shipment-label-view.tsx
+@@ -41,7 +41,7 @@ export function LabelDisplay({
+         <a href={label.url} download className="text-sm underline">
+           Download
+         </a>
+-        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+         <button type="button" className="text-sm underline" onClick={() => window.print()}>
+           Print
+         </button>
+diff --git a/apps/web/src/components/equipment/shipment-timeline.tsx b/apps/web/src/components/equipment/shipment-timeline.tsx
+index bc98dac3..94b9634f 100644
+--- a/apps/web/src/components/equipment/shipment-timeline.tsx
++++ b/apps/web/src/components/equipment/shipment-timeline.tsx
+@@ -129,7 +129,7 @@ export function ShipmentTimeline({
+               className="text-xs font-medium text-muted-foreground">
+               {t('shipment.addStatusUpdate')}
+             </label>
+-            // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
++            {/* biome-ignore lint/nursery/noJsxPropsBind: controlled component handler */}
+             <Select value={newStatus} onValueChange={val => val && setNewStatus(val)}>
+               <SelectTrigger id="shipment-new-status" className="w-full">
+                 <SelectValue placeholder="Select status..." />
+diff --git a/apps/web/src/components/import/import-wizard-dialog.tsx b/apps/web/src/components/import/import-wizard-dialog.tsx
+index 9c0f3dd8..fc3d7f56 100644
+--- a/apps/web/src/components/import/import-wizard-dialog.tsx
++++ b/apps/web/src/components/import/import-wizard-dialog.tsx
+@@ -388,7 +388,7 @@ export function ImportWizardDialog({
+ 
+   return (
+     <>
+-      // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler
++      {/* biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler */}
+       <Dialog open={open} onOpenChange={o => !o && handleClose()}>
+         <DialogContent className="sm:max-w-[720px]" showCloseButton={false}>
+           <DialogHeader>
+diff --git a/apps/web/src/components/import/step-confirm.tsx b/apps/web/src/components/import/step-confirm.tsx
+index 2df91703..e57d7189 100644
+--- a/apps/web/src/components/import/step-confirm.tsx
++++ b/apps/web/src/components/import/step-confirm.tsx
+@@ -102,7 +102,7 @@ export function StepConfirm({
+         <AlertCircle className="size-12 text-destructive" />
+         <h3 className="mt-4 text-lg font-semibold">{t('confirm.errorTitle')}</h3>
+         <p className="mt-2 text-sm text-muted-foreground">{t('confirm.errorDescription')}</p>
+-        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+         <Button className="mt-6" onClick={handleImport} type="button">
+           {t('confirm.tryAgain')}
+         </Button>
+@@ -138,7 +138,7 @@ export function StepConfirm({
+         </div>
+       </div>
+ 
+-      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++      {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+       <Button className="mt-8" onClick={handleImport} type="button">
+         {t('confirm.importButton', { count: totalToImport })}
+       </Button>
+diff --git a/apps/web/src/components/import/step-duplicates.tsx b/apps/web/src/components/import/step-duplicates.tsx
+index c8683a67..c6e89bb0 100644
+--- a/apps/web/src/components/import/step-duplicates.tsx
++++ b/apps/web/src/components/import/step-duplicates.tsx
+@@ -69,7 +69,7 @@ export function StepDuplicates({
+ 
+       {/* Bulk action buttons */}
+       <div className="flex gap-2">
+-        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+         <Button variant="outline" size="sm" onClick={() => handleBulkAction('skip')} type="button">
+           {t('duplicates.skipAll')}
+         </Button>
+diff --git a/apps/web/src/components/invoices/__tests__/invoice-upload-area.test.tsx b/apps/web/src/components/invoices/__tests__/invoice-upload-area.test.tsx
+index 53f488c4..d8e459a3 100644
+--- a/apps/web/src/components/invoices/__tests__/invoice-upload-area.test.tsx
++++ b/apps/web/src/components/invoices/__tests__/invoice-upload-area.test.tsx
+@@ -134,15 +134,15 @@ vi.mock('@/components/ocr/ocr-review-panel', () => ({
+     onRetrigger: () => void | Promise<void>;
+   }) => (
+     <div data-testid="ocr-review-panel">
+-      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++      {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+       <button type="button" onClick={() => onAccept(sampleOcrDataForMock)}>
+         Apply OCR data
+       </button>
+-      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++      {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+       <button type="button" onClick={() => onDiscard()}>
+         Discard OCR
+       </button>
+-      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++      {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+       <button type="button" onClick={() => void onRetrigger()}>
+         Re-run OCR
+       </button>
+diff --git a/apps/web/src/components/invoices/invoice-table/__tests__/use-invoice-filters.test.tsx b/apps/web/src/components/invoices/invoice-table/__tests__/use-invoice-filters.test.tsx
+index dcc89393..c8c96594 100644
+--- a/apps/web/src/components/invoices/invoice-table/__tests__/use-invoice-filters.test.tsx
++++ b/apps/web/src/components/invoices/invoice-table/__tests__/use-invoice-filters.test.tsx
+@@ -12,7 +12,7 @@ function FiltersProbe() {
+       <span data-testid="page">{state.page}</span>
+       <span data-testid="pageSize">{state.pageSize}</span>
+       <span data-testid="search">{state.search}</span>
+-      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++      {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+       <button type="button" onClick={() => void setState({ page: 4 })}>
+         setPage4
+       </button>
+diff --git a/apps/web/src/components/invoices/invoice-table/data-table-pagination.tsx b/apps/web/src/components/invoices/invoice-table/data-table-pagination.tsx
+index 08b10b73..41c4c961 100644
+--- a/apps/web/src/components/invoices/invoice-table/data-table-pagination.tsx
++++ b/apps/web/src/components/invoices/invoice-table/data-table-pagination.tsx
+@@ -53,7 +53,7 @@ export function DataTablePagination<TData>({
+         {/* Page size selector */}
+         <div className="flex items-center gap-2">
+           <span className="text-sm text-muted-foreground">{t('rowsPerPage')}</span>
+-          // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
++          {/* biome-ignore lint/nursery/noJsxPropsBind: controlled component handler */}
+           <Select value={String(pageSize)} onValueChange={value => onPageSizeChange(Number(value))}>
+             <SelectTrigger className="h-8 w-[70px]">
+               <SelectValue />
+diff --git a/apps/web/src/components/onboarding/people-review-step.tsx b/apps/web/src/components/onboarding/people-review-step.tsx
+index adf19cfc..4fb3452c 100644
+--- a/apps/web/src/components/onboarding/people-review-step.tsx
++++ b/apps/web/src/components/onboarding/people-review-step.tsx
+@@ -321,7 +321,7 @@ export function PeopleReviewStep({
+             <Button size="sm" variant="outline" onClick={handleBatchSkip}>
+               {t('batchSkip')}
+             </Button>
+-            // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
++            {/* biome-ignore lint/nursery/noJsxPropsBind: controlled component handler */}
+             <Select onValueChange={val => val && handleBatchRole(val as string)}>
+               <SelectTrigger size="sm" className="w-36">
+                 <SelectValue>{t('batchRole')}</SelectValue>
+diff --git a/apps/web/src/components/onboarding/project-import-step.tsx b/apps/web/src/components/onboarding/project-import-step.tsx
+index cb1f1b65..77ce9b54 100644
+--- a/apps/web/src/components/onboarding/project-import-step.tsx
++++ b/apps/web/src/components/onboarding/project-import-step.tsx
+@@ -110,7 +110,7 @@ function ProjectCard({ project, selection, onSelectionChange }: ProjectCardProps
+               {expanded ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}
+               {t('editSteps')}
+             </Button>
+-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++            {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+             <Button variant="link" size="sm" onClick={handleSkip} className="text-muted-foreground">
+               {t('skipProject')}
+             </Button>
+@@ -174,7 +174,7 @@ function ProjectCard({ project, selection, onSelectionChange }: ProjectCardProps
+               </div>
+             ))}
+ 
+-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++            {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+             <Button variant="outline" size="sm" onClick={handleAddStep} className="mt-1">
+               <Plus className="size-3" />
+               {t('addStep')}
+diff --git a/apps/web/src/components/payments/new-payment-run-dialog/step-review.tsx b/apps/web/src/components/payments/new-payment-run-dialog/step-review.tsx
+index ff6ad0e6..92a26cdd 100644
+--- a/apps/web/src/components/payments/new-payment-run-dialog/step-review.tsx
++++ b/apps/web/src/components/payments/new-payment-run-dialog/step-review.tsx
+@@ -243,7 +243,7 @@ export function StepReview({
+       {/* Export format */}
+       <div className="space-y-1.5">
+         <Label className="text-xs">{t('step2.exportFormatLabel')}</Label>
+-        // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
++        {/* biome-ignore lint/nursery/noJsxPropsBind: controlled component handler */}
+         <Select value={exportFormat} onValueChange={v => setExportFormat(v ?? 'CSV')}>
+           <SelectTrigger className="w-full h-8">
+             <SelectValue />
+diff --git a/apps/web/src/components/payments/new-payment-run-dialog/step-select.tsx b/apps/web/src/components/payments/new-payment-run-dialog/step-select.tsx
+index a23845f2..dc0548ae 100644
+--- a/apps/web/src/components/payments/new-payment-run-dialog/step-select.tsx
++++ b/apps/web/src/components/payments/new-payment-run-dialog/step-select.tsx
+@@ -148,7 +148,7 @@ export function StepSelect({
+     <div className="flex flex-col gap-4">
+       {/* Filter row */}
+       <div className="flex items-center gap-2 flex-wrap">
+-        // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
++        {/* biome-ignore lint/nursery/noJsxPropsBind: controlled component handler */}
+         <Select value={currency} onValueChange={v => setCurrency(v ?? 'all')}>
+           <SelectTrigger className="w-[160px] h-8">
+             <SelectValue placeholder={t('step1.allCurrencies')} />
+diff --git a/apps/web/src/components/payments/payment-run-side-panel.tsx b/apps/web/src/components/payments/payment-run-side-panel.tsx
+index be33fa81..3f689b1d 100644
+--- a/apps/web/src/components/payments/payment-run-side-panel.tsx
++++ b/apps/web/src/components/payments/payment-run-side-panel.tsx
+@@ -466,7 +466,7 @@ function PaymentRunItemRow({
+             <DropdownMenuContent align="end">
+               {!isTerminal && (
+                 <>
+-                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++                  {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+                   <DropdownMenuItem onClick={() => setActiveAction('paid')}>
+                     <CheckCircle2 className="me-2 h-4 w-4" />
+                     {t('sidePanel.markPaid')}
+diff --git a/apps/web/src/components/payments/wht-summary-card.tsx b/apps/web/src/components/payments/wht-summary-card.tsx
+index e663b83a..09cfc5de 100644
+--- a/apps/web/src/components/payments/wht-summary-card.tsx
++++ b/apps/web/src/components/payments/wht-summary-card.tsx
+@@ -86,7 +86,7 @@ export function WhtSummaryCard({ paymentRunId: _paymentRunId, items }: WhtSummar
+           {treatyCount > 0 && <Badge variant="outline">Treaty rates applied: {treatyCount}</Badge>}
+         </div>
+ 
+-        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+         <Button onClick={handleGenerateAll} disabled={generateMutation.isPending} className="mt-6">
+           {generateMutation.isPending ? (
+             <Loader2 className="me-2 h-4 w-4 animate-spin" />
+diff --git a/apps/web/src/components/peppol/peppol-wizard.tsx b/apps/web/src/components/peppol/peppol-wizard.tsx
+index ee6b3eac..83dcb74a 100644
+--- a/apps/web/src/components/peppol/peppol-wizard.tsx
++++ b/apps/web/src/components/peppol/peppol-wizard.tsx
+@@ -281,7 +281,7 @@ export function PeppolWizard({ open, onOpenChange }: PeppolWizardProps) {
+                 <Alert variant="destructive">
+                   <AlertTitle>Registration Failed</AlertTitle>
+                   <AlertDescription>{registrationError}</AlertDescription>
+-                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++                  {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+                   <Button variant="outline" size="sm" className="mt-3" onClick={handleRetry}>
+                     Retry
+                   </Button>
+diff --git a/apps/web/src/components/portal/portal-equipment-tab.tsx b/apps/web/src/components/portal/portal-equipment-tab.tsx
+index 3fb659d6..9e6ee323 100644
+--- a/apps/web/src/components/portal/portal-equipment-tab.tsx
++++ b/apps/web/src/components/portal/portal-equipment-tab.tsx
+@@ -167,7 +167,7 @@ export function PortalEquipmentTab() {
+         <div className="rounded-md border-s-4 border-warning bg-warning/10 p-4">
+           <div className="flex items-center justify-between">
+             <p className="text-sm font-medium">{t('pendingApproval')}</p>
+-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++            {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+             <Button variant="outline" size="sm" onClick={() => setCancelDialogOpen(true)}>
+               {t('cancelReturn')}
+             </Button>
+@@ -179,7 +179,7 @@ export function PortalEquipmentTab() {
+         <div className="rounded-md border-s-4 border-primary bg-primary/10 p-4">
+           <div className="flex items-center justify-between">
+             <p className="text-sm font-medium">{t('returnApproved')}</p>
+-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++            {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+             <Button size="sm" onClick={() => setReturnFlowOpen(true)}>
+               {t('viewLabel')}
+             </Button>
+diff --git a/apps/web/src/components/portal/portal-mobile-menu.tsx b/apps/web/src/components/portal/portal-mobile-menu.tsx
+index 01eba5fe..d78acb96 100644
+--- a/apps/web/src/components/portal/portal-mobile-menu.tsx
++++ b/apps/web/src/components/portal/portal-mobile-menu.tsx
+@@ -141,7 +141,7 @@ export function PortalMobileMenu({
+             <p className="text-sm font-medium">{contractorName}</p>
+             <p className="text-xs text-muted-foreground">{contractorEmail}</p>
+           </div>
+-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++          {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+           <Button variant="outline" className="w-full" onClick={handleLogout}>
+             <LogOut className="me-2 h-4 w-4" />
+             {t('signOut')}
+diff --git a/apps/web/src/components/portal/portal-return-flow.tsx b/apps/web/src/components/portal/portal-return-flow.tsx
+index 3f8dbfa6..7adf28e5 100644
+--- a/apps/web/src/components/portal/portal-return-flow.tsx
++++ b/apps/web/src/components/portal/portal-return-flow.tsx
+@@ -213,11 +213,11 @@ export function PortalReturnFlow({
+               </div>
+ 
+               <DialogFooter>
+-                // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler
++                {/* biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler */}
+                 <Button variant="outline" onClick={() => onOpenChange(false)}>
+                   {t('cancel')}
+                 </Button>
+-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++                {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+                 <Button onClick={() => setStep(2)} disabled={!selectedPoint}>
+                   {t('next')}
+                 </Button>
+@@ -260,7 +260,7 @@ export function PortalReturnFlow({
+               </div>
+ 
+               <DialogFooter>
+-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++                {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+                 <Button variant="outline" onClick={() => setStep(1)}>
+                   {t('back')}
+                 </Button>
+@@ -299,7 +299,7 @@ export function PortalReturnFlow({
+               )}
+ 
+               <DialogFooter>
+-                // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler
++                {/* biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler */}
+                 <Button onClick={() => onOpenChange(false)}>{t('cancel')}</Button>
+               </DialogFooter>
+             </div>
+diff --git a/apps/web/src/components/portal/portal-top-bar.tsx b/apps/web/src/components/portal/portal-top-bar.tsx
+index d4c858ca..3932b4d7 100644
+--- a/apps/web/src/components/portal/portal-top-bar.tsx
++++ b/apps/web/src/components/portal/portal-top-bar.tsx
+@@ -175,7 +175,7 @@ export function PortalTopBar({
+                 </div>
+               </DropdownMenuLabel>
+               <DropdownMenuSeparator />
+-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++              {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+               <DropdownMenuItem onClick={handleLogout}>
+                 <LogOut className="me-2 h-4 w-4" />
+                 Sign out
+diff --git a/apps/web/src/components/settings/__tests__/admin-branding-section.test.tsx b/apps/web/src/components/settings/__tests__/admin-branding-section.test.tsx
+index d1535218..54013844 100644
+--- a/apps/web/src/components/settings/__tests__/admin-branding-section.test.tsx
++++ b/apps/web/src/components/settings/__tests__/admin-branding-section.test.tsx
+@@ -70,7 +70,7 @@ vi.mock('../brand-color-picker', () => ({
+   BrandColorPicker: ({ value, onChange }: { value: string; onChange: (v: string) => void }) => (
+     <div data-testid="color-picker">
+       <span>Color: {value}</span>
+-      // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
++      {/* biome-ignore lint/nursery/noJsxPropsBind: controlled input handler */}
+       <button type="button" onClick={() => onChange('#ff0000')}>
+         Set red
+       </button>
+diff --git a/apps/web/src/components/settings/api-keys-tab.tsx b/apps/web/src/components/settings/api-keys-tab.tsx
+index cb31be25..6175b53c 100644
+--- a/apps/web/src/components/settings/api-keys-tab.tsx
++++ b/apps/web/src/components/settings/api-keys-tab.tsx
+@@ -176,7 +176,7 @@ function CreateKeyDialog({
+           <div className="space-y-3">
+             <div className="flex items-center gap-2 rounded-lg border bg-muted/50 p-3">
+               <code className="flex-1 break-all text-xs font-mono">{createdKey}</code>
+-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++              {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+               <Button variant="ghost" size="icon-sm" onClick={handleCopy} aria-label="Copy key">
+                 {copied ? (
+                   <Check className="size-4 text-green-600" />
+@@ -355,7 +355,7 @@ export function ApiKeysTab() {
+               Manage API keys for the Enterprise REST API.
+             </p>
+           </div>
+-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++          {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+           <Button size="sm" onClick={() => setCreateOpen(true)}>
+             <Plus className="mr-1.5 size-4" />
+             Create Key
+diff --git a/apps/web/src/components/settings/approval-chains-tab.tsx b/apps/web/src/components/settings/approval-chains-tab.tsx
+index 3336ee4f..3c57a1a8 100644
+--- a/apps/web/src/components/settings/approval-chains-tab.tsx
++++ b/apps/web/src/components/settings/approval-chains-tab.tsx
+@@ -159,7 +159,7 @@ export function ApprovalChainsTab() {
+         <div className="flex flex-col items-center justify-center py-16 text-center">
+           <h3 className="text-base font-semibold">{t('approvals.empty.heading')}</h3>
+           <p className="mt-1 max-w-sm text-sm text-muted-foreground">{t('approvals.empty.body')}</p>
+-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++          {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+           <Button className="mt-4" onClick={handleCreate}>
+             <Plus className="me-1.5 size-4" />
+             {t('approvals.empty.cta')}
+@@ -184,7 +184,7 @@ export function ApprovalChainsTab() {
+             <h3 className="text-base font-semibold">{t('approvals.heading')}</h3>
+             <p className="text-sm text-muted-foreground">{t('approvals.description')}</p>
+           </div>
+-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++          {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+           <Button onClick={handleCreate}>
+             <Plus className="me-1.5 size-4" />
+             {t('approvals.createChain')}
+@@ -227,7 +227,7 @@ export function ApprovalChainsTab() {
+               </div>
+             </CardContent>
+             <CardFooter className="gap-2">
+-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++              {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+               <Button variant="ghost" size="sm" onClick={() => handleEdit(chain)}>
+                 <Pencil className="me-1.5 size-3.5" />
+                 {t('approvals.edit')}
+diff --git a/apps/web/src/components/settings/audit-log-table.tsx b/apps/web/src/components/settings/audit-log-table.tsx
+index 408f1fcd..469f3aa0 100644
+--- a/apps/web/src/components/settings/audit-log-table.tsx
++++ b/apps/web/src/components/settings/audit-log-table.tsx
+@@ -304,7 +304,7 @@ export function AuditLogTable({
+               const isExpanded = !!expandedRows[row.original.id];
+               return (
+                 <span key={row.id} className="contents">
+-                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++                  {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+                   <TableRow className="cursor-pointer" onClick={() => onToggleRow(row.original.id)}>
+                     {row.getVisibleCells().map(cell => (
+                       <TableCell key={cell.id}>
+diff --git a/apps/web/src/components/settings/condition-builder.tsx b/apps/web/src/components/settings/condition-builder.tsx
+index 7730b2a8..bfd94656 100644
+--- a/apps/web/src/components/settings/condition-builder.tsx
++++ b/apps/web/src/components/settings/condition-builder.tsx
+@@ -157,7 +157,7 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
+       ))}
+ 
+       {/* Add condition */}
+-      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++      {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+       <Button type="button" variant="outline" size="sm" onClick={handleAdd}>
+         <Plus className="me-1.5 size-3.5" />
+         {t('approvals.editor.addCondition')}
+diff --git a/apps/web/src/components/settings/dpd-provider-section.tsx b/apps/web/src/components/settings/dpd-provider-section.tsx
+index 16dbe888..f620560b 100644
+--- a/apps/web/src/components/settings/dpd-provider-section.tsx
++++ b/apps/web/src/components/settings/dpd-provider-section.tsx
+@@ -44,7 +44,7 @@ export function DpdProviderSection() {
+         </CardHeader>
+       </Card>
+ 
+-      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++      {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+       <Button variant="outline" size="sm" onClick={() => setConfigOpen(true)}>
+         {t('configureDpd')}
+       </Button>
+diff --git a/apps/web/src/components/settings/expiry-reminder-defaults.tsx b/apps/web/src/components/settings/expiry-reminder-defaults.tsx
+index af9f1ad0..42ace68d 100644
+--- a/apps/web/src/components/settings/expiry-reminder-defaults.tsx
++++ b/apps/web/src/components/settings/expiry-reminder-defaults.tsx
+@@ -88,7 +88,7 @@ export function ExpiryReminderDefaults() {
+           />
+           <p className="text-xs text-muted-foreground">{t('expiryReminders.description')}</p>
+         </div>
+-        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+         <Button size="sm" onClick={handleSave} disabled={updateMutation.isPending}>
+           {updateMutation.isPending ? (
+             <Loader2 className="me-1.5 size-3.5 animate-spin" />
+diff --git a/apps/web/src/components/settings/invoice-matching-settings.tsx b/apps/web/src/components/settings/invoice-matching-settings.tsx
+index 85c8bf0d..4e49afeb 100644
+--- a/apps/web/src/components/settings/invoice-matching-settings.tsx
++++ b/apps/web/src/components/settings/invoice-matching-settings.tsx
+@@ -119,7 +119,7 @@ export function InvoiceMatchingSettings() {
+         </div>
+       </CardContent>
+       <CardFooter>
+-        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+         <Button size="sm" onClick={handleSave} disabled={updateMutation.isPending}>
+           {updateMutation.isPending ? (
+             <Loader2 className="me-1.5 size-3.5 animate-spin" />
+diff --git a/apps/web/src/components/settings/ksef-setup-dialog.tsx b/apps/web/src/components/settings/ksef-setup-dialog.tsx
+index d84ab8fb..6f15def8 100644
+--- a/apps/web/src/components/settings/ksef-setup-dialog.tsx
++++ b/apps/web/src/components/settings/ksef-setup-dialog.tsx
+@@ -136,7 +136,7 @@ export function KsefSetupDialog({ open, onOpenChange, orgNip }: KsefSetupDialogP
+           </div>
+ 
+           {/* Auth method tabs */}
+-          // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
++          {/* biome-ignore lint/nursery/noJsxPropsBind: controlled component handler */}
+           <Tabs value={authMethod} onValueChange={v => setAuthMethod(v as 'token' | 'certificate')}>
+             <TabsList>
+               <TabsTrigger value="token" disabled={isFormDisabled}>
+@@ -209,11 +209,11 @@ export function KsefSetupDialog({ open, onOpenChange, orgNip }: KsefSetupDialogP
+         </div>
+ 
+         <DialogFooter>
+-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++          {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+           <Button variant="outline" onClick={resetAndClose}>
+             {t('discard')}
+           </Button>
+-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++          {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+           <Button onClick={handleSave} disabled={isSaveDisabled}>
+             {!!connectMutation.isPending && (
+               <Loader2 className="me-1.5 size-3.5 animate-spin" aria-hidden="true" />
+diff --git a/apps/web/src/components/settings/org-calendar-section.tsx b/apps/web/src/components/settings/org-calendar-section.tsx
+index c2cd57c0..5db52aa4 100644
+--- a/apps/web/src/components/settings/org-calendar-section.tsx
++++ b/apps/web/src/components/settings/org-calendar-section.tsx
+@@ -126,7 +126,7 @@ function OrgCalendarProviderCard({
+           ) : (
+             <div className="space-y-3">
+               <p className="text-sm text-muted-foreground">{t('orgCalendarDescription')}</p>
+-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++              {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+               <Button onClick={handleConnect}>{t('connectCalendar')}</Button>
+             </div>
+           )}
+diff --git a/apps/web/src/components/settings/provider-connection-card.tsx b/apps/web/src/components/settings/provider-connection-card.tsx
+index ad2a37f2..32db4b97 100644
+--- a/apps/web/src/components/settings/provider-connection-card.tsx
++++ b/apps/web/src/components/settings/provider-connection-card.tsx
+@@ -222,7 +222,7 @@ export function ProviderConnectionCard({
+                 )}
+               </div>
+               <div className="flex gap-2">
+-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++                {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+                 <Button variant="outline" onClick={() => setDetailSheetOpen(true)}>
+                   {t('provider.manageCta')}
+                 </Button>
+@@ -246,7 +246,7 @@ export function ProviderConnectionCard({
+                   : t('provider.errorConnectionFailed')}
+               </p>
+               <div className="flex gap-2">
+-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++                {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+                 <Button variant="outline" onClick={handleConnect}>
+                   {t('provider.reconnectCta')}
+                 </Button>
+@@ -267,7 +267,7 @@ export function ProviderConnectionCard({
+           {!(isConnected || isReauthRequired || isError) && (
+             <div className="space-y-3">
+               <p className="text-sm text-muted-foreground">{description}</p>
+-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++              {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+               <Button onClick={handleConnect}>
+                 {t('provider.connectCta', { provider: displayName })}
+               </Button>
+diff --git a/apps/web/src/components/settings/reminder-rules-section.tsx b/apps/web/src/components/settings/reminder-rules-section.tsx
+index af5e3b7c..9b70d1be 100644
+--- a/apps/web/src/components/settings/reminder-rules-section.tsx
++++ b/apps/web/src/components/settings/reminder-rules-section.tsx
+@@ -195,7 +195,7 @@ export function ReminderRulesSection() {
+           <p className="mt-1 max-w-sm text-sm text-muted-foreground">
+             {t('reminderRules.emptyBody')}
+           </p>
+-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++          {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+           <Button className="mt-4" onClick={handleCreate}>
+             <Plus className="me-1.5 size-4" />
+             {t('reminderRules.emptyCta')}
+@@ -220,7 +220,7 @@ export function ReminderRulesSection() {
+             <h3 className="text-base font-semibold">{t('reminderRules.heading')}</h3>
+             <p className="text-sm text-muted-foreground">{t('reminderRules.description')}</p>
+           </div>
+-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++          {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+           <Button onClick={handleCreate}>
+             <Plus className="me-1.5 size-4" />
+             {t('reminderRules.createRule')}
+@@ -265,7 +265,7 @@ export function ReminderRulesSection() {
+                 </div>
+               </CardContent>
+               <CardFooter className="gap-2">
+-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++                {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+                 <Button variant="ghost" size="sm" onClick={() => handleEdit(rule)}>
+                   <Pencil className="me-1.5 size-3.5" />
+                   {t('reminderRules.edit')}
+diff --git a/apps/web/src/components/settings/ups-provider-section.tsx b/apps/web/src/components/settings/ups-provider-section.tsx
+index 3647b4fd..f008642b 100644
+--- a/apps/web/src/components/settings/ups-provider-section.tsx
++++ b/apps/web/src/components/settings/ups-provider-section.tsx
+@@ -44,7 +44,7 @@ export function UpsProviderSection() {
+         </CardHeader>
+       </Card>
+ 
+-      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++      {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+       <Button variant="outline" size="sm" onClick={() => setConfigOpen(true)}>
+         {t('configureUps')}
+       </Button>
+diff --git a/apps/web/src/components/time/__tests__/approval-queue-table.test.tsx b/apps/web/src/components/time/__tests__/approval-queue-table.test.tsx
+index d02a445a..0a723305 100644
+--- a/apps/web/src/components/time/__tests__/approval-queue-table.test.tsx
++++ b/apps/web/src/components/time/__tests__/approval-queue-table.test.tsx
+@@ -19,7 +19,7 @@ vi.mock('../rejection-reason-dialog', () => ({
+   }) =>
+     open ? (
+       <div data-testid="rejection-dialog">
+-        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+         <button type="button" onClick={() => onConfirm('too long')}>
+           confirm-reject
+         </button>
+diff --git a/apps/web/src/components/time/__tests__/contractor-timesheet-review.test.tsx b/apps/web/src/components/time/__tests__/contractor-timesheet-review.test.tsx
+index 0f50f870..72d59222 100644
+--- a/apps/web/src/components/time/__tests__/contractor-timesheet-review.test.tsx
++++ b/apps/web/src/components/time/__tests__/contractor-timesheet-review.test.tsx
+@@ -24,7 +24,7 @@ vi.mock('../rejection-reason-dialog', () => ({
+   }) =>
+     open ? (
+       <div data-testid="rejection-dialog">
+-        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+         <button type="button" onClick={() => onConfirm('reason text')}>
+           confirm-reject
+         </button>
+diff --git a/apps/web/src/components/time/approval-queue-table.tsx b/apps/web/src/components/time/approval-queue-table.tsx
+index e900648c..da237489 100644
+--- a/apps/web/src/components/time/approval-queue-table.tsx
++++ b/apps/web/src/components/time/approval-queue-table.tsx
+@@ -227,7 +227,7 @@ export function ApprovalQueueTable({
+                 </TableCell>
+                 <TableCell>
+                   <div className="flex items-center justify-end gap-2 opacity-0 transition-opacity group-hover:opacity-100 sm:opacity-100">
+-                    // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++                    {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+                     <Button size="sm" variant="default" onClick={() => onApprove(ts.id)}>
+                       <CheckCircle className="me-1.5 h-3.5 w-3.5" />
+                       Approve
+@@ -257,7 +257,7 @@ export function ApprovalQueueTable({
+               {selectedArray.length} timesheet{selectedArray.length === 1 ? '' : 's'} selected
+             </p>
+             <div className="flex items-center gap-2">
+-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++              {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+               <Button variant="outline" size="sm" onClick={() => setSelectedIds(new Set())}>
+                 Clear
+               </Button>
+@@ -269,7 +269,7 @@ export function ApprovalQueueTable({
+                 onClick={() => setBulkRejectOpen(true)}>
+                 Reject All
+               </Button>
+-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++              {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+               <Button size="sm" onClick={() => setBulkApproveOpen(true)}>
+                 Approve All
+               </Button>
+diff --git a/apps/web/src/components/time/external-sync-button.tsx b/apps/web/src/components/time/external-sync-button.tsx
+index 26d3c616..0594c6b8 100644
+--- a/apps/web/src/components/time/external-sync-button.tsx
++++ b/apps/web/src/components/time/external-sync-button.tsx
+@@ -169,7 +169,7 @@ export function ExternalSyncButton({
+             </Popover>
+           </div>
+ 
+-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++          {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+           <Button className="w-full" onClick={handleImport}>
+             Import Entries
+           </Button>
+diff --git a/apps/web/src/components/time/rejection-reason-dialog.tsx b/apps/web/src/components/time/rejection-reason-dialog.tsx
+index b9bb7eb2..8512ac51 100644
+--- a/apps/web/src/components/time/rejection-reason-dialog.tsx
++++ b/apps/web/src/components/time/rejection-reason-dialog.tsx
+@@ -104,7 +104,7 @@ export function RejectionReasonDialog({
+         </div>
+ 
+         <DialogFooter className="gap-2 sm:gap-0">
+-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++          {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+           <Button variant="outline" onClick={() => handleOpenChange(false)} disabled={isSubmitting}>
+             Keep Reviewing
+           </Button>
+diff --git a/apps/web/src/components/time/single-entry-form.tsx b/apps/web/src/components/time/single-entry-form.tsx
+index 03b1888e..d1084744 100644
+--- a/apps/web/src/components/time/single-entry-form.tsx
++++ b/apps/web/src/components/time/single-entry-form.tsx
+@@ -225,11 +225,11 @@ export function SingleEntryForm({
+         </div>
+ 
+         <DialogFooter className="gap-2 sm:gap-0">
+-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++          {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+           <Button variant="outline" onClick={handleDiscard}>
+             Discard Entry
+           </Button>
+-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++          {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+           <Button onClick={handleSubmit} disabled={isSubmitting}>
+             {isSubmitting ? 'Adding...' : 'Add Entry'}
+           </Button>
+diff --git a/apps/web/src/components/time/timesheet-header.tsx b/apps/web/src/components/time/timesheet-header.tsx
+index 3c689ffc..62eaa957 100644
+--- a/apps/web/src/components/time/timesheet-header.tsx
++++ b/apps/web/src/components/time/timesheet-header.tsx
+@@ -68,7 +68,7 @@ export function TimesheetHeader({
+     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+       {/* Left: Week selector */}
+       <div className="flex items-center gap-2">
+-        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+         <Button variant="ghost" size="icon" onClick={handlePrevWeek} aria-label="Previous week">
+           <ChevronLeft className="h-4 w-4" />
+         </Button>
+@@ -91,7 +91,7 @@ export function TimesheetHeader({
+           </PopoverContent>
+         </Popover>
+ 
+-        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+         <Button variant="ghost" size="icon" onClick={handleNextWeek} aria-label="Next week">
+           <ChevronRight className="h-4 w-4" />
+         </Button>
+diff --git a/apps/web/src/components/workflow/calendar-event-config-dialog.tsx b/apps/web/src/components/workflow/calendar-event-config-dialog.tsx
+index 507aaf5f..3e89e286 100644
+--- a/apps/web/src/components/workflow/calendar-event-config-dialog.tsx
++++ b/apps/web/src/components/workflow/calendar-event-config-dialog.tsx
+@@ -122,7 +122,7 @@ export function CalendarEventConfigDialog({
+           {/* Duration */}
+           <div className="space-y-2">
+             <Label htmlFor="calendar-event-duration">{t('durationLabel')}</Label>
+-            // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
++            {/* biome-ignore lint/nursery/noJsxPropsBind: controlled component handler */}
+             <Select value={duration} onValueChange={val => setDuration(val ?? '1h')}>
+               <SelectTrigger id="calendar-event-duration">
+                 <SelectValue />
+@@ -153,11 +153,11 @@ export function CalendarEventConfigDialog({
+         </div>
+ 
+         <DialogFooter>
+-          // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler
++          {/* biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler */}
+           <Button variant="outline" onClick={() => onOpenChange(false)}>
+             {t('cancelButton')}
+           </Button>
+-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++          {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+           <Button onClick={handleSave}>{t('saveEventConfig')}</Button>
+         </DialogFooter>
+       </DialogContent>
+diff --git a/apps/web/src/components/workflow/calendar-task-config.tsx b/apps/web/src/components/workflow/calendar-task-config.tsx
+index d3a4ed73..773d7262 100644
+--- a/apps/web/src/components/workflow/calendar-task-config.tsx
++++ b/apps/web/src/components/workflow/calendar-task-config.tsx
+@@ -112,7 +112,7 @@ export function CalendarTaskConfig({ taskTemplateId }: CalendarTaskConfigProps)
+         <span className={`flex-1 text-sm ${isConfigured ? '' : 'text-muted-foreground'}`}>
+           {summaryText}
+         </span>
+-        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+         <Button variant="ghost" size="sm" onClick={() => setDialogOpen(true)}>
+           {t('configureButton')}
+         </Button>
+diff --git a/apps/web/src/components/workflows/template-builder/condition-builder.tsx b/apps/web/src/components/workflows/template-builder/condition-builder.tsx
+index 0e1f0fa0..4b5741db 100644
+--- a/apps/web/src/components/workflows/template-builder/condition-builder.tsx
++++ b/apps/web/src/components/workflows/template-builder/condition-builder.tsx
+@@ -125,7 +125,7 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
+     return (
+       <div className="space-y-2">
+         <p className="text-sm text-muted-foreground">{t('noConditions')}</p>
+-        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+         <Button type="button" variant="outline" size="sm" onClick={addRule}>
+           <Plus className="me-1.5 size-3.5" />
+           {t('addCondition')}
+@@ -239,7 +239,7 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
+       ))}
+ 
+       {/* Add condition button */}
+-      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++      {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+       <Button type="button" variant="outline" size="sm" onClick={addRule}>
+         <Plus className="me-1.5 size-3.5" />
+         {t('addCondition')}
+diff --git a/apps/web/src/components/workflows/template-builder/task-card.tsx b/apps/web/src/components/workflows/template-builder/task-card.tsx
+index 5d7108ce..7493f186 100644
+--- a/apps/web/src/components/workflows/template-builder/task-card.tsx
++++ b/apps/web/src/components/workflows/template-builder/task-card.tsx
+@@ -474,7 +474,7 @@ export function TaskCard({ index, onRemove, allTasks, form, dragHandleProps }: T
+                 onClick={() => onRemove(index)}>
+                 {t('removeTask')}
+               </button>
+-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++              {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+               <Button type="button" variant="secondary" size="sm" onClick={() => setIsOpen(false)}>
+                 {t('doneEditing')}
+               </Button>
+diff --git a/apps/web/src/components/workflows/template-picker-dialog.tsx b/apps/web/src/components/workflows/template-picker-dialog.tsx
+index 7a36b479..736bf1ff 100644
+--- a/apps/web/src/components/workflows/template-picker-dialog.tsx
++++ b/apps/web/src/components/workflows/template-picker-dialog.tsx
+@@ -277,7 +277,7 @@ export function TemplatePicker({
+         </ScrollArea>
+ 
+         <DialogFooter>
+-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++          {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+           <Button variant="outline" onClick={() => handleOpenChange(false)}>
+             {tp('close')}
+           </Button>
+diff --git a/apps/web/src/components/workflows/templates-table.tsx b/apps/web/src/components/workflows/templates-table.tsx
+index 20d9fbff..b48ff984 100644
+--- a/apps/web/src/components/workflows/templates-table.tsx
++++ b/apps/web/src/components/workflows/templates-table.tsx
+@@ -299,7 +299,7 @@ export function TemplatesTable() {
+                         <Pencil className="me-2 h-4 w-4" />
+                         {t('templates.actionEdit')}
+                       </DropdownMenuItem>
+-                      // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
++                      {/* biome-ignore lint/nursery/noJsxPropsBind: menu item handler */}
+                       <DropdownMenuItem onSelect={() => void handleDuplicate(template)}>
+                         <Copy className="me-2 h-4 w-4" />
+                         {t('templates.actionDuplicate')}
+@@ -354,7 +354,7 @@ export function TemplatesTable() {
+           </AlertDialogHeader>
+           <AlertDialogFooter>
+             <AlertDialogCancel>{t('templates.deleteCancel')}</AlertDialogCancel>
+-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++            {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+             <AlertDialogAction variant="destructive" onClick={() => void handleDelete()}>
+               {t('templates.deleteConfirm')}
+             </AlertDialogAction>
+diff --git a/apps/web/src/components/workflows/workflow-run/task-attachments.tsx b/apps/web/src/components/workflows/workflow-run/task-attachments.tsx
+index f7e682c8..7cfa4487 100644
+--- a/apps/web/src/components/workflows/workflow-run/task-attachments.tsx
++++ b/apps/web/src/components/workflows/workflow-run/task-attachments.tsx
+@@ -50,7 +50,7 @@ export function TaskAttachments({ taskRunId }: TaskAttachmentsProps) {
+     <div className="space-y-3">
+       <div className="flex items-center justify-between">
+         <h4 className="text-sm font-medium">{t('attachmentsHeading')}</h4>
+-        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+         <Button variant="ghost" size="sm" onClick={() => setShowDropZone(prev => !prev)}>
+           {t('addAttachment')}
+         </Button>
+diff --git a/apps/web/src/components/workflows/workflow-run/task-card-run.tsx b/apps/web/src/components/workflows/workflow-run/task-card-run.tsx
+index 9d3315c0..ff8678a2 100644
+--- a/apps/web/src/components/workflows/workflow-run/task-card-run.tsx
++++ b/apps/web/src/components/workflows/workflow-run/task-card-run.tsx
+@@ -236,7 +236,7 @@ function ReassignPopover({ taskRunId, runId }: { taskRunId: string; runId: strin
+         )}
+       />
+       <PopoverContent className="w-72 space-y-3" align="start">
+-        // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
++        {/* biome-ignore lint/nursery/noJsxPropsBind: controlled component handler */}
+         <Select value={selectedUserId} onValueChange={val => setSelectedUserId(val ?? '')}>
+           <SelectTrigger>
+             <SelectValue placeholder={t('reassignPlaceholder')} />
+diff --git a/apps/web/src/components/workflows/workflow-runs-table/data-table-pagination.tsx b/apps/web/src/components/workflows/workflow-runs-table/data-table-pagination.tsx
+index 8fe13264..c7ce4348 100644
+--- a/apps/web/src/components/workflows/workflow-runs-table/data-table-pagination.tsx
++++ b/apps/web/src/components/workflows/workflow-runs-table/data-table-pagination.tsx
+@@ -53,7 +53,7 @@ export function DataTablePagination<TData>({
+         {/* Page size selector */}
+         <div className="flex items-center gap-2">
+           <span className="text-sm text-muted-foreground">{t('rowsPerPage')}</span>
+-          // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
++          {/* biome-ignore lint/nursery/noJsxPropsBind: controlled component handler */}
+           <Select value={String(pageSize)} onValueChange={value => onPageSizeChange(Number(value))}>
+             <SelectTrigger className="h-8 w-[70px]">
+               <SelectValue />
+diff --git a/apps/web/src/components/zatca/environment-toggle.tsx b/apps/web/src/components/zatca/environment-toggle.tsx
+index a6475e24..79eaf52c 100644
+--- a/apps/web/src/components/zatca/environment-toggle.tsx
++++ b/apps/web/src/components/zatca/environment-toggle.tsx
+@@ -142,7 +142,7 @@ export function EnvironmentToggle({
+           </AlertDialogHeader>
+           <AlertDialogFooter>
+             <AlertDialogCancel>Cancel</AlertDialogCancel>
+-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++            {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+             <AlertDialogAction onClick={confirmSwitchToSandbox}>
+               Switch to Sandbox
+             </AlertDialogAction>
+diff --git a/apps/web/src/components/zatca/zatca-status-card.tsx b/apps/web/src/components/zatca/zatca-status-card.tsx
+index c85d358a..0833fbda 100644
+--- a/apps/web/src/components/zatca/zatca-status-card.tsx
++++ b/apps/web/src/components/zatca/zatca-status-card.tsx
+@@ -89,7 +89,7 @@ export function ZatcaStatusCard() {
+                 organization&apos;s certificate to get started.
+               </p>
+             </div>
+-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++            {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+             <Button onClick={() => setWizardOpen(true)}>Connect to ZATCA</Button>
+           </div>
+         </Card>
+@@ -126,7 +126,7 @@ export function ZatcaStatusCard() {
+             <Badge variant={statusConfig.variant}>{statusConfig.label}</Badge>
+           </div>
+           <div className="mt-4">
+-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
++            {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+             <Button variant="outline" size="sm" onClick={() => setWizardOpen(true)}>
+               Continue Setup
+             </Button>
+diff --git a/packages/api/src/routers/__tests__/api-key.test.ts b/packages/api/src/routers/__tests__/api-key.test.ts
+index 11a99a14..3b41c932 100644
+--- a/packages/api/src/routers/__tests__/api-key.test.ts
++++ b/packages/api/src/routers/__tests__/api-key.test.ts
+@@ -162,7 +162,7 @@ vi.mock('../../services/r2.js', () => ({
+ }));
+ 
+ vi.mock('../../services/billing-service.js', () => ({
+-  getSubscription: vi.fn(async () => null),
++  getSubscription: vi.fn(async () => ({ id: 'sub-1', status: 'ACTIVE', tier: 'ENTERPRISE', stripeCustomerId: 'cus_test', stripeSubscriptionId: 'sub_test' })),
+   createCheckoutSession: vi.fn(async () => ({ url: 'https://checkout.stripe.com/session' })),
+   createPortalSession: vi.fn(async () => ({ url: 'https://billing.stripe.com/portal' })),
+   getProrationPreview: vi.fn(async () => ({ immediateTotal: 0, proratedCredits: 0, newPriceAmount: 0 })),
+diff --git a/packages/api/src/routers/__tests__/einvoice.test.ts b/packages/api/src/routers/__tests__/einvoice.test.ts
+index 19ed9792..c0129a9a 100644
+--- a/packages/api/src/routers/__tests__/einvoice.test.ts
++++ b/packages/api/src/routers/__tests__/einvoice.test.ts
+@@ -79,10 +79,14 @@ vi.mock('@contractor-ops/db', () => ({
+   getRegionalClient: vi.fn(() => mockPrisma),
+ }));
+ 
+-vi.mock('@contractor-ops/einvoice', () => ({
+-  listProfiles: mockListProfiles,
+-  computeKsefComplianceStatus: mockComputeKsefComplianceStatus,
+-}));
++vi.mock('@contractor-ops/einvoice', async (importOriginal) => {
++  const actual = await importOriginal<Record<string, unknown>>();
++  return {
++    ...actual,
++    listProfiles: mockListProfiles,
++    computeKsefComplianceStatus: mockComputeKsefComplianceStatus,
++  };
++});
+ 
+ vi.mock('../../services/cache.js', () => ({
+   cached: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
+diff --git a/packages/api/src/routers/__tests__/equipment-couriers.test.ts b/packages/api/src/routers/__tests__/equipment-couriers.test.ts
+index 1556af92..0401c642 100644
+--- a/packages/api/src/routers/__tests__/equipment-couriers.test.ts
++++ b/packages/api/src/routers/__tests__/equipment-couriers.test.ts
+@@ -399,7 +399,7 @@ describe('equipmentCouriers.createInPostShipment', () => {
+       { ...createdShipment, events: [] },
+     ]);
+ 
+-    const result = await caller.equipmentCouriers.createInPostShipment({
++    const result = await caller.equipment.createInPostShipment({
+       equipmentIds: ['eq-1'],
+       direction: 'OUTBOUND',
+       targetPointId: 'WAW01A',
+@@ -414,7 +414,7 @@ describe('equipmentCouriers.createInPostShipment', () => {
+     mockPrisma.courierConfig.findUnique.mockResolvedValueOnce(null);
+ 
+     await expect(
+-      caller.equipmentCouriers.createInPostShipment({
++      caller.equipment.createInPostShipment({
+         equipmentIds: ['eq-1'],
+         direction: 'OUTBOUND',
+         targetPointId: 'WAW01A',
+@@ -430,7 +430,7 @@ describe('equipmentCouriers.createInPostShipment', () => {
+     mockPrisma.equipment.findMany.mockResolvedValueOnce([]); // no items found
+ 
+     await expect(
+-      caller.equipmentCouriers.createInPostShipment({
++      caller.equipment.createInPostShipment({
+         equipmentIds: ['eq-missing'],
+         direction: 'OUTBOUND',
+         targetPointId: 'WAW01A',
+@@ -448,7 +448,7 @@ describe('equipmentCouriers.createInPostShipment', () => {
+     ]);
+ 
+     await expect(
+-      caller.equipmentCouriers.createInPostShipment({
++      caller.equipment.createInPostShipment({
+         equipmentIds: ['eq-1'],
+         direction: 'OUTBOUND',
+         targetPointId: 'WAW01A',
+@@ -463,7 +463,7 @@ describe('equipmentCouriers.saveCourierConfig', () => {
+     mockPrisma.courierConfig.upsert.mockResolvedValueOnce({});
+     mockPrisma.auditLog.create.mockResolvedValueOnce({});
+ 
+-    const result = await caller.equipmentCouriers.saveCourierConfig({
++    const result = await caller.equipment.saveCourierConfig({
+       carrier: 'dpd',
+       username: 'dpd-user',
+       password: 'dpd-pass',
+@@ -484,7 +484,7 @@ describe('equipmentCouriers.getCourierConfigs', () => {
+     ];
+     mockPrisma.courierConfig.findMany.mockResolvedValueOnce(configs);
+ 
+-    const result = await caller.equipmentCouriers.getCourierConfigs();
++    const result = await caller.equipment.getCourierConfigs();
+ 
+     expect(result).toEqual(configs);
+     expect(mockPrisma.courierConfig.findMany).toHaveBeenCalledWith(
+@@ -502,7 +502,7 @@ describe('equipmentCouriers.testCourierConnection', () => {
+       getStatus: vi.fn().mockRejectedValueOnce(new Error('Shipment not found (404)')),
+     });
+ 
+-    const result = await caller.equipmentCouriers.testCourierConnection({
++    const result = await caller.equipment.testCourierConnection({
+       carrier: 'dpd',
+       username: 'dpd-user',
+       password: 'dpd-pass',
+@@ -517,7 +517,7 @@ describe('equipmentCouriers.testCourierConnection', () => {
+       getStatus: vi.fn().mockRejectedValueOnce(new Error('Invalid credentials')),
+     });
+ 
+-    const result = await caller.equipmentCouriers.testCourierConnection({
++    const result = await caller.equipment.testCourierConnection({
+       carrier: 'dpd',
+       username: 'dpd-user',
+       password: 'wrong-pass',
+@@ -542,7 +542,7 @@ describe('equipmentCouriers.getShipmentLabel', () => {
+       configJson: { organizationId: 123, token: 'tok' },
+     });
+ 
+-    const result = await caller.equipmentCouriers.getShipmentLabel({
++    const result = await caller.equipment.getShipmentLabel({
+       shipmentId: 'ship-1',
+     });
+ 
+@@ -555,7 +555,7 @@ describe('equipmentCouriers.getShipmentLabel', () => {
+     mockPrisma.shipment.findFirst.mockResolvedValueOnce(null);
+ 
+     await expect(
+-      caller.equipmentCouriers.getShipmentLabel({ shipmentId: 'nonexistent' }),
++      caller.equipment.getShipmentLabel({ shipmentId: 'nonexistent' }),
+     ).rejects.toThrow();
+   });
+ 
+@@ -568,7 +568,7 @@ describe('equipmentCouriers.getShipmentLabel', () => {
+     });
+ 
+     await expect(
+-      caller.equipmentCouriers.getShipmentLabel({ shipmentId: 'ship-1' }),
++      caller.equipment.getShipmentLabel({ shipmentId: 'ship-1' }),
+     ).rejects.toThrow('SHIPMENT_NO_INPOST_LABEL');
+   });
+ });
+diff --git a/packages/api/src/routers/__tests__/equipment-returns.test.ts b/packages/api/src/routers/__tests__/equipment-returns.test.ts
+index 171b8acd..08a98245 100644
+--- a/packages/api/src/routers/__tests__/equipment-returns.test.ts
++++ b/packages/api/src/routers/__tests__/equipment-returns.test.ts
+@@ -351,7 +351,7 @@ describe('equipmentReturns.approveReturnRequest', () => {
+     mockPrisma.returnRequest.update.mockResolvedValueOnce(updatedRequest);
+     mockPrisma.auditLog.create.mockResolvedValue({});
+ 
+-    const result = await caller.equipmentReturns.approveReturnRequest({
++    const result = await caller.equipment.approveReturnRequest({
+       id: 'rr-1',
+       parcelSize: 'A',
+     });
+@@ -370,7 +370,7 @@ describe('equipmentReturns.approveReturnRequest', () => {
+     mockPrisma.returnRequest.findFirst.mockResolvedValueOnce(null);
+ 
+     await expect(
+-      caller.equipmentReturns.approveReturnRequest({ id: 'nonexistent', parcelSize: 'A' }),
++      caller.equipment.approveReturnRequest({ id: 'nonexistent', parcelSize: 'A' }),
+     ).rejects.toThrow('RETURN_REQUEST_NOT_FOUND');
+   });
+ 
+@@ -383,7 +383,7 @@ describe('equipmentReturns.approveReturnRequest', () => {
+     });
+ 
+     await expect(
+-      caller.equipmentReturns.approveReturnRequest({ id: 'rr-1', parcelSize: 'A' }),
++      caller.equipment.approveReturnRequest({ id: 'rr-1', parcelSize: 'A' }),
+     ).rejects.toThrow('RETURN_REQUEST_NOT_PENDING');
+   });
+ 
+@@ -400,7 +400,7 @@ describe('equipmentReturns.approveReturnRequest', () => {
+     mockPrisma.courierConfig.findUnique.mockResolvedValueOnce(null);
+ 
+     await expect(
+-      caller.equipmentReturns.approveReturnRequest({ id: 'rr-1', parcelSize: 'A' }),
++      caller.equipment.approveReturnRequest({ id: 'rr-1', parcelSize: 'A' }),
+     ).rejects.toThrow('COURIER_CONFIG_NOT_FOUND');
+   });
+ });
+@@ -424,7 +424,7 @@ describe('equipmentReturns.rejectReturnRequest', () => {
+     mockPrisma.equipment.updateMany.mockResolvedValueOnce({ count: 2 });
+     mockPrisma.auditLog.create.mockResolvedValue({});
+ 
+-    const result = await caller.equipmentReturns.rejectReturnRequest({
++    const result = await caller.equipment.rejectReturnRequest({
+       id: 'rr-1',
+       reason: 'Equipment not needed',
+     });
+@@ -441,7 +441,7 @@ describe('equipmentReturns.rejectReturnRequest', () => {
+     mockPrisma.returnRequest.findFirst.mockResolvedValueOnce(null);
+ 
+     await expect(
+-      caller.equipmentReturns.rejectReturnRequest({ id: 'nonexistent' }),
++      caller.equipment.rejectReturnRequest({ id: 'nonexistent' }),
+     ).rejects.toThrow('RETURN_REQUEST_NOT_FOUND');
+   });
+ 
+@@ -453,7 +453,7 @@ describe('equipmentReturns.rejectReturnRequest', () => {
+     });
+ 
+     await expect(
+-      caller.equipmentReturns.rejectReturnRequest({ id: 'rr-1' }),
++      caller.equipment.rejectReturnRequest({ id: 'rr-1' }),
+     ).rejects.toThrow('RETURN_REQUEST_NOT_PENDING');
+   });
+ });
+@@ -476,7 +476,7 @@ describe('equipmentReturns.listReturnRequests', () => {
+     ];
+     mockPrisma.returnRequest.findMany.mockResolvedValueOnce(requests);
+ 
+-    const result = await caller.equipmentReturns.listReturnRequests({});
++    const result = await caller.equipment.listReturnRequests({});
+ 
+     expect(result).toHaveLength(2);
+     expect(mockPrisma.returnRequest.findMany).toHaveBeenCalledWith(
+@@ -489,7 +489,7 @@ describe('equipmentReturns.listReturnRequests', () => {
+   it('filters by status when provided', async () => {
+     mockPrisma.returnRequest.findMany.mockResolvedValueOnce([]);
+ 
+-    await caller.equipmentReturns.listReturnRequests({ status: 'PENDING_APPROVAL' });
++    await caller.equipment.listReturnRequests({ status: 'PENDING_APPROVAL' });
+ 
+     expect(mockPrisma.returnRequest.findMany).toHaveBeenCalledWith(
+       expect.objectContaining({
+diff --git a/packages/api/src/routers/__tests__/peppol.test.ts b/packages/api/src/routers/__tests__/peppol.test.ts
+index 5bcf0882..4617d17b 100644
+--- a/packages/api/src/routers/__tests__/peppol.test.ts
++++ b/packages/api/src/routers/__tests__/peppol.test.ts
+@@ -94,9 +94,13 @@ vi.mock('@contractor-ops/db', () => ({
+   getRegionalClient: vi.fn(() => mockPrisma),
+ }));
+ 
+-vi.mock('@contractor-ops/integrations', () => ({
+-  storeCredentials: mockStoreCredentials,
+-}));
++vi.mock('@contractor-ops/integrations', async (importOriginal) => {
++  const actual = await importOriginal<Record<string, unknown>>();
++  return {
++    ...actual,
++    storeCredentials: mockStoreCredentials,
++  };
++});
+ 
+ vi.mock('@contractor-ops/integrations/services/qstash-client', () => ({
+   getQStashClient: mockGetQStashClient,
+@@ -346,7 +350,7 @@ describe('peppol.connect', () => {
+     mockPrisma.integrationConnection.update.mockResolvedValueOnce(mockConnection);
+ 
+     const result = await caller.peppol.connect({
+-      trn: '1234567890',
++      trn: '123456789012345',
+       aspProvider: 'storecove',
+       environment: 'sandbox',
+       apiKey: 'test-api-key',
+@@ -370,7 +374,7 @@ describe('peppol.connect', () => {
+ 
+     await expect(
+       caller.peppol.connect({
+-        trn: '1234567890',
++        trn: '123456789012345',
+         aspProvider: 'storecove',
+         environment: 'sandbox',
+         apiKey: 'test-api-key',
+@@ -392,7 +396,7 @@ describe('peppol.connect', () => {
+     });
+ 
+     await caller.peppol.connect({
+-      trn: '1234567890',
++      trn: '123456789012345',
+       aspProvider: 'storecove',
+       environment: 'sandbox',
+       apiKey: 'test-api-key',
+@@ -509,7 +513,7 @@ describe('peppol.getTransmissions', () => {
+ describe('peppol.retryTransmission', () => {
+   it('resets a failed transmission to PENDING', async () => {
+     const transmission = {
+-      id: 'tx-1',
++      id: 'clxxxxxxxxxxxxxxxxtx00001',
+       organizationId: ORG_ID,
+       status: 'FAILED',
+       errorMessage: 'Network timeout',
+@@ -518,7 +522,7 @@ describe('peppol.retryTransmission', () => {
+     const updated = { ...transmission, status: 'PENDING', errorMessage: null };
+     mockPrisma.peppolTransmission.update.mockResolvedValueOnce(updated);
+ 
+-    const result = await caller.peppol.retryTransmission({ transmissionId: 'tx-1' });
++    const result = await caller.peppol.retryTransmission({ transmissionId: 'clxxxxxxxxxxxxxxxxtx00001' });
+ 
+     expect(result.status).toBe('PENDING');
+     expect(result.errorMessage).toBeNull();
+@@ -528,7 +532,7 @@ describe('peppol.retryTransmission', () => {
+     mockPrisma.peppolTransmission.findFirst.mockResolvedValueOnce(null);
+ 
+     await expect(
+-      caller.peppol.retryTransmission({ transmissionId: 'nonexistent' }),
++      caller.peppol.retryTransmission({ transmissionId: 'clxxxxxxxxxxxxxxxxtx00002' }),
+     ).rejects.toThrow('Failed transmission not found');
+   });
+ });
+diff --git a/packages/api/src/routers/__tests__/tax.test.ts b/packages/api/src/routers/__tests__/tax.test.ts
+index f61abaf6..ce8727be 100644
+--- a/packages/api/src/routers/__tests__/tax.test.ts
++++ b/packages/api/src/routers/__tests__/tax.test.ts
+@@ -376,11 +376,11 @@ describe('tax.calculateWht', () => {
+ 
+     const result = await caller.tax.calculateWht({
+       contractorResidency: 'DE',
+-      serviceType: 'CONSULTING',
++      serviceType: 'technical_services',
+       grossAmountMinor: 10000,
+     });
+ 
+-    expect(mockCalculateWht).toHaveBeenCalledWith('PL', 'DE', 'CONSULTING', 10000);
++    expect(mockCalculateWht).toHaveBeenCalledWith('PL', 'DE', 'technical_services', 10000);
+     expect(result).toEqual(whtResult);
+   });
+ 
+@@ -389,7 +389,7 @@ describe('tax.calculateWht', () => {
+ 
+     const result = await caller.tax.calculateWht({
+       contractorResidency: 'DE',
+-      serviceType: 'CONSULTING',
++      serviceType: 'technical_services',
+       grossAmountMinor: 10000,
+     });
+ 
+diff --git a/packages/api/src/routers/__tests__/workflow-templates.test.ts b/packages/api/src/routers/__tests__/workflow-templates.test.ts
+index b9c93fd5..0ae0e446 100644
+--- a/packages/api/src/routers/__tests__/workflow-templates.test.ts
++++ b/packages/api/src/routers/__tests__/workflow-templates.test.ts
+@@ -60,7 +60,7 @@ const { mockPrisma } = vi.hoisted(() => {
+       findFirst: vi.fn(),
+     },
+     member: {
+-      findFirst: vi.fn().mockResolvedValue({ role: 'admin', userId: USER_ID }),
++      findFirst: vi.fn().mockResolvedValue({ role: 'admin', userId: 'user-wftmpl-001' }),
+     },
+     auditLog: {
+       create: vi.fn(),
+diff --git a/packages/api/src/routers/__tests__/zatca.test.ts b/packages/api/src/routers/__tests__/zatca.test.ts
+index 215d29ae..d800d3d1 100644
+--- a/packages/api/src/routers/__tests__/zatca.test.ts
++++ b/packages/api/src/routers/__tests__/zatca.test.ts
+@@ -110,12 +110,12 @@ vi.mock('@contractor-ops/db', () => ({
+   getRegionalClient: vi.fn(() => mockPrisma),
+ }));
+ 
+-vi.mock('@contractor-ops/einvoice', () => ({
+-  zatcaTaxDetailsSchema: {
+-    parse: vi.fn((x: unknown) => x),
+-    safeParse: vi.fn((x: unknown) => ({ success: true, data: x })),
+-  },
+-}));
++vi.mock('@contractor-ops/einvoice', async () => {
++  const { z } = await import('zod');
++  return {
++    zatcaTaxDetailsSchema: z.any(),
++  };
++});
+ 
+ vi.mock('../../services/zatca-onboarding.js', () => ({
+   saveTaxDetails: mockSaveTaxDetails,

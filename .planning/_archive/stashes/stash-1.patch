@@ -1,0 +1,718 @@
+diff --git a/apps/web/src/app/[locale]/(dashboard)/invoices/[id]/page.tsx b/apps/web/src/app/[locale]/(dashboard)/invoices/[id]/page.tsx
+index cbc1388f..816f28ac 100644
+--- a/apps/web/src/app/[locale]/(dashboard)/invoices/[id]/page.tsx
++++ b/apps/web/src/app/[locale]/(dashboard)/invoices/[id]/page.tsx
+@@ -29,6 +29,7 @@ import { ZatcaStatusBadge } from '@/components/zatca/zatca-status-badge';
+ import { ZatcaSubmissionDetail } from '@/components/zatca/zatca-submission-detail';
+ import type { ZatcaSubmissionResult } from '@/components/zatca/zatca-trpc';
+ import { zatcaTrpc } from '@/components/zatca/zatca-trpc';
++import { enumKey } from '@/lib/enum-key';
+ import type { PeppolTransmissionResult } from '@/lib/peppol-trpc';
+ import { peppolTrpc } from '@/lib/peppol-trpc';
+ import { trpc } from '@/trpc/init';
+@@ -312,7 +313,7 @@ export default function InvoiceDetailPage() {
+         <h1 className="text-xl font-semibold font-mono">{invoice.invoiceNumber}</h1>
+         {!!statusConfig && (
+           <Badge variant="secondary" className={`gap-1 ${statusConfig.className}`}>
+-            {t(`status.${statusConfig.label}`)}
++            {t(`status.${enumKey(statusConfig.label)}`)}
+           </Badge>
+         )}
+         {isKsefSource ? (
+diff --git a/apps/web/src/app/[locale]/(dashboard)/v2/page.tsx b/apps/web/src/app/[locale]/(dashboard)/v2/page.tsx
+index d7107cf4..9bb4d718 100644
+--- a/apps/web/src/app/[locale]/(dashboard)/v2/page.tsx
++++ b/apps/web/src/app/[locale]/(dashboard)/v2/page.tsx
+@@ -21,6 +21,7 @@ import { Badge } from '@/components/ui/badge';
+ import { usePermissions } from '@/hooks/use-permissions';
+ import { Link } from '@/i18n/navigation';
+ import { authClient } from '@/lib/auth-client';
++import { enumKey } from '@/lib/enum-key';
+ import { trpc } from '@/trpc/init';
+ import {
+   AnimatedNumber,
+@@ -453,14 +454,18 @@ export default function DashboardV2Page() {
+                       <p className="text-[12px] leading-snug">
+                         <span className="font-semibold">{item.actorName ?? 'System'}</span>{' '}
+                         <span className="text-muted-foreground/70">
+-                          {t(`activity.actions.${item.action}` as Parameters<typeof t>[0])}
++                          {t(`activity.actions.${enumKey(item.action)}` as Parameters<typeof t>[0])}
+                         </span>
+                       </p>
+                       <div className="mt-1 flex items-center gap-1.5">
+                         <Badge
+                           variant="secondary"
+                           className="px-1.5 py-0 text-[8px] font-bold uppercase tracking-wider">
+-                          {t(`activity.resources.${item.resourceType}` as Parameters<typeof t>[0])}
++                          {t(
++                            `activity.resources.${enumKey(item.resourceType)}` as Parameters<
++                              typeof t
++                            >[0],
++                          )}
+                         </Badge>
+                         <span className="text-[9px] text-muted-foreground/40">
+                           {formatDistanceToNow(new Date(item.createdAt), { addSuffix: true })}
+diff --git a/apps/web/src/components/contractors/contractor-side-panel.tsx b/apps/web/src/components/contractors/contractor-side-panel.tsx
+index c7a518cc..6d88d965 100644
+--- a/apps/web/src/components/contractors/contractor-side-panel.tsx
++++ b/apps/web/src/components/contractors/contractor-side-panel.tsx
+@@ -9,6 +9,7 @@ import { Separator } from '@/components/ui/separator';
+ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+ import { usePermissions } from '@/hooks/use-permissions';
+ import { Link } from '@/i18n/navigation';
++import { enumKey } from '@/lib/enum-key';
+ import { canViewSensitivePii, maskTaxId } from '@/lib/mask-pii';
+ import { ComplianceHealthBadge } from './compliance-health-badge';
+ import type { ContractorRow } from './contractor-table/columns';
+@@ -73,10 +74,10 @@ export function ContractorSidePanel({ contractor, open, onOpenChange }: Contract
+                 <Badge
+                   variant="secondary"
+                   className={lifecycleBadgeColors[contractor.lifecycleStage] ?? ''}>
+-                  {t(`lifecycle.${contractor.lifecycleStage}` as Parameters<typeof t>[0])}
++                  {t(`lifecycle.${enumKey(contractor.lifecycleStage)}` as Parameters<typeof t>[0])}
+                 </Badge>
+                 <Badge variant="secondary">
+-                  {t(`type.${contractor.type}` as Parameters<typeof t>[0])}
++                  {t(`type.${enumKey(contractor.type)}` as Parameters<typeof t>[0])}
+                 </Badge>
+                 <ComplianceHealthBadge health={contractor.complianceHealth} />
+               </div>
+diff --git a/apps/web/src/components/contractors/contractor-table/__tests__/columns.test.tsx b/apps/web/src/components/contractors/contractor-table/__tests__/columns.test.tsx
+index bf2eb88c..8a4141cf 100644
+--- a/apps/web/src/components/contractors/contractor-table/__tests__/columns.test.tsx
++++ b/apps/web/src/components/contractors/contractor-table/__tests__/columns.test.tsx
+@@ -1,3 +1,4 @@
++import { enumKey } from '@/lib/enum-key';
+ import { render, screen } from '@/test/test-utils';
+ import type { ContractorRow } from '../columns';
+ import { getColumns } from '../columns';
+@@ -123,7 +124,7 @@ describe('getColumns cell renderers', () => {
+           });
+         })(),
+       );
+-      expect(screen.getByText(`lifecycle.${stage}`)).toBeInTheDocument();
++      expect(screen.getByText(`lifecycle.${enumKey(stage)}`)).toBeInTheDocument();
+       unmount();
+     }
+   });
+diff --git a/apps/web/src/components/contractors/contractor-table/columns.tsx b/apps/web/src/components/contractors/contractor-table/columns.tsx
+index 0939e678..bc1c907a 100644
+--- a/apps/web/src/components/contractors/contractor-table/columns.tsx
++++ b/apps/web/src/components/contractors/contractor-table/columns.tsx
+@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+ import { Badge } from '@/components/ui/badge';
+ import { Checkbox } from '@/components/ui/checkbox';
+ import { getAvatarInitials } from '@/lib/avatar-initials';
++import { enumKey } from '@/lib/enum-key';
+ import { ComplianceHealthBadge } from '../compliance-health-badge';
+ 
+ // ---------------------------------------------------------------------------
+@@ -108,7 +109,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<ContractorRow>[] {
+       header: t('columns.type'),
+       cell: ({ row }) => (
+         <Badge variant="secondary" className="whitespace-nowrap">
+-          {t(`type.${row.original.type}`)}
++          {t(`type.${enumKey(row.original.type)}`)}
+         </Badge>
+       ),
+     },
+@@ -121,7 +122,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<ContractorRow>[] {
+         const stage = row.original.lifecycleStage;
+         return (
+           <Badge variant="secondary" className={lifecycleBadgeColors[stage] ?? ''}>
+-            {t(`lifecycle.${stage}`)}
++            {t(`lifecycle.${enumKey(stage)}`)}
+           </Badge>
+         );
+       },
+@@ -160,7 +161,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<ContractorRow>[] {
+             ? (custom as Record<string, unknown>).billingModel
+             : null;
+         return model ? (
+-          <span className="text-sm">{t(`billingModel.${String(model)}`)}</span>
++          <span className="text-sm">{t(`billingModel.${enumKey(String(model))}`)}</span>
+         ) : (
+           <span className="text-muted-foreground">&mdash;</span>
+         );
+diff --git a/apps/web/src/components/contractors/contractor-wizard/step-company.tsx b/apps/web/src/components/contractors/contractor-wizard/step-company.tsx
+index 621de77c..5500cc4b 100644
+--- a/apps/web/src/components/contractors/contractor-wizard/step-company.tsx
++++ b/apps/web/src/components/contractors/contractor-wizard/step-company.tsx
+@@ -10,8 +10,8 @@ import { Button } from '@/components/ui/button';
+ import { Input } from '@/components/ui/input';
+ import { Label } from '@/components/ui/label';
+ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
++import { enumKey } from '@/lib/enum-key';
+ import { trpc } from '@/trpc/init';
+-
+ import type { WizardFormValues } from './wizard-dialog';
+ 
+ interface StepCompanyProps {
+@@ -143,7 +143,7 @@ export function StepCompany({ form }: StepCompanyProps) {
+               htmlFor={`contractor-type-${type}`}
+               className="flex cursor-pointer items-center gap-3 rounded-md border px-3 py-2.5 text-sm hover:bg-accent/50 has-[[data-checked]]:border-primary has-[[data-checked]]:bg-primary/5">
+               <RadioGroupItem id={`contractor-type-${type}`} value={type} />
+-              <span>{t(`typeOptions.${type}`)}</span>
++              <span>{t(`typeOptions.${enumKey(type)}`)}</span>
+             </label>
+           ))}
+         </RadioGroup>
+diff --git a/apps/web/src/components/contracts/contract-side-panel.tsx b/apps/web/src/components/contracts/contract-side-panel.tsx
+index ebb612c3..227ea91b 100644
+--- a/apps/web/src/components/contracts/contract-side-panel.tsx
++++ b/apps/web/src/components/contracts/contract-side-panel.tsx
+@@ -9,6 +9,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
+ import { Separator } from '@/components/ui/separator';
+ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+ import { Link } from '@/i18n/navigation';
++import { enumKey } from '@/lib/enum-key';
+ import type { ContractRow } from './contract-table/columns';
+ 
+ // ---------------------------------------------------------------------------
+@@ -71,7 +72,7 @@ export function ContractSidePanel({ contract, open, onOpenChange }: ContractSide
+               </SheetTitle>
+               <div className="flex items-center gap-2 flex-wrap">
+                 <Badge variant="secondary" className={statusBadgeColors[contract.status] ?? ''}>
+-                  {t(`status.${contract.status}` as Parameters<typeof t>[0])}
++                  {t(`status.${enumKey(contract.status)}` as Parameters<typeof t>[0])}
+                 </Badge>
+                 <Link
+                   href={`/contractors/${contract.contractor.id}`}
+@@ -93,7 +94,7 @@ export function ContractSidePanel({ contract, open, onOpenChange }: ContractSide
+               <div className="grid grid-cols-2 gap-3 text-sm">
+                 <DetailItem
+                   label={t('columns.type')}
+-                  value={t(`type.${contract.type}` as Parameters<typeof t>[0])}
++                  value={t(`type.${enumKey(contract.type)}` as Parameters<typeof t>[0])}
+                 />
+                 <DetailItem
+                   label={t('columns.startDate')}
+@@ -117,7 +118,9 @@ export function ContractSidePanel({ contract, open, onOpenChange }: ContractSide
+                 <DetailItem label={t('columns.currency')} value={contract.currency} />
+                 <DetailItem
+                   label={t('columns.billingCycle')}
+-                  value={t(`billingModel.${contract.billingModel}` as Parameters<typeof t>[0])}
++                  value={t(
++                    `billingModel.${enumKey(contract.billingModel)}` as Parameters<typeof t>[0],
++                  )}
+                 />
+                 <DetailItem label={t('columns.owner')} value={contract.internalOwner?.name} />
+               </div>
+diff --git a/apps/web/src/components/contracts/contract-table/__tests__/columns.test.tsx b/apps/web/src/components/contracts/contract-table/__tests__/columns.test.tsx
+index 1ecd3ddf..eb9ad497 100644
+--- a/apps/web/src/components/contracts/contract-table/__tests__/columns.test.tsx
++++ b/apps/web/src/components/contracts/contract-table/__tests__/columns.test.tsx
+@@ -1,3 +1,4 @@
++import { enumKey } from '@/lib/enum-key';
+ import { render, screen } from '@/test/test-utils';
+ import type { ContractRow } from '../columns';
+ import { getColumns } from '../columns';
+@@ -124,7 +125,7 @@ describe('getColumns cell renderers (contracts)', () => {
+           });
+         })(),
+       );
+-      expect(screen.getByText(`status.${status}`)).toBeInTheDocument();
++      expect(screen.getByText(`status.${enumKey(status)}`)).toBeInTheDocument();
+       unmount();
+     }
+   });
+@@ -197,7 +198,7 @@ describe('getColumns cell renderers (contracts)', () => {
+           });
+         })(),
+       );
+-      expect(screen.getByText(`risk.${risk}`)).toBeInTheDocument();
++      expect(screen.getByText(`risk.${enumKey(risk)}`)).toBeInTheDocument();
+       unmount();
+     }
+   });
+diff --git a/apps/web/src/components/contracts/contract-table/columns.tsx b/apps/web/src/components/contracts/contract-table/columns.tsx
+index 11c16106..8d36fc09 100644
+--- a/apps/web/src/components/contracts/contract-table/columns.tsx
++++ b/apps/web/src/components/contracts/contract-table/columns.tsx
+@@ -5,6 +5,7 @@ import { differenceInDays, isPast } from 'date-fns';
+ import { Badge } from '@/components/ui/badge';
+ import { Checkbox } from '@/components/ui/checkbox';
+ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
++import { enumKey } from '@/lib/enum-key';
+ 
+ // ---------------------------------------------------------------------------
+ // Row type matching the tRPC contract.list response shape
+@@ -127,7 +128,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<ContractRow>[] {
+       header: t('columns.type'),
+       cell: ({ row }) => (
+         <Badge variant="secondary" className="whitespace-nowrap">
+-          {t(`type.${row.original.type}`)}
++          {t(`type.${enumKey(row.original.type)}`)}
+         </Badge>
+       ),
+     },
+@@ -140,7 +141,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<ContractRow>[] {
+         const status = row.original.status;
+         return (
+           <Badge variant="secondary" className={statusBadgeColors[status] ?? ''}>
+-            {t(`status.${status}`)}
++            {t(`status.${enumKey(status)}`)}
+           </Badge>
+         );
+       },
+@@ -228,7 +229,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<ContractRow>[] {
+       header: t('columns.billingCycle'),
+       enableSorting: false,
+       cell: ({ row }) => (
+-        <span className="text-sm">{t(`billingModel.${row.original.billingModel}`)}</span>
++        <span className="text-sm">{t(`billingModel.${enumKey(row.original.billingModel)}`)}</span>
+       ),
+     },
+ 
+@@ -253,7 +254,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<ContractRow>[] {
+         if (!risk) return <span className="text-muted-foreground">&mdash;</span>;
+         return (
+           <Badge variant="secondary" className={riskBadgeColors[risk] ?? ''}>
+-            {t(`risk.${risk}`)}
++            {t(`risk.${enumKey(risk)}`)}
+           </Badge>
+         );
+       },
+diff --git a/apps/web/src/components/contracts/contract-wizard/step-details.tsx b/apps/web/src/components/contracts/contract-wizard/step-details.tsx
+index 86eb0436..235b7412 100644
+--- a/apps/web/src/components/contracts/contract-wizard/step-details.tsx
++++ b/apps/web/src/components/contracts/contract-wizard/step-details.tsx
+@@ -28,6 +28,7 @@ import {
+   SelectValue,
+ } from '@/components/ui/select';
+ import { usePermissions } from '@/hooks/use-permissions';
++import { enumKey } from '@/lib/enum-key';
+ import { canViewSensitivePii, maskTaxId } from '@/lib/mask-pii';
+ import { trpc } from '@/trpc/init';
+ import type { ContractWizardFormValues } from './wizard-dialog';
+@@ -112,7 +113,7 @@ export function StepDetails({ form, contractorId }: StepDetailsProps) {
+ 
+   const contractTypeItems = CONTRACT_TYPES.map(type => ({
+     value: type,
+-    label: t(`typeOptions.${type}`),
++    label: t(`typeOptions.${enumKey(type)}`),
+   }));
+ 
+   const handleStartDateSelect = (date: Date | undefined) => {
+diff --git a/apps/web/src/components/contracts/contract-wizard/step-financial.tsx b/apps/web/src/components/contracts/contract-wizard/step-financial.tsx
+index e71f8cf0..605a4262 100644
+--- a/apps/web/src/components/contracts/contract-wizard/step-financial.tsx
++++ b/apps/web/src/components/contracts/contract-wizard/step-financial.tsx
+@@ -13,7 +13,7 @@ import {
+   SelectTrigger,
+   SelectValue,
+ } from '@/components/ui/select';
+-
++import { enumKey } from '@/lib/enum-key';
+ import type { ContractWizardFormValues } from './wizard-dialog';
+ 
+ // ---------------------------------------------------------------------------
+@@ -60,17 +60,17 @@ export function StepFinancial({ form, preFilledFields }: StepFinancialProps) {
+ 
+   const billingModelItems = BILLING_MODELS.map(m => ({
+     value: m,
+-    label: t(`billingModelOptions.${m}`),
++    label: t(`billingModelOptions.${enumKey(m)}`),
+   }));
+ 
+   const rateTypeItems = RATE_TYPES.map(rt => ({
+     value: rt,
+-    label: t(`rateTypeOptions.${rt}`),
++    label: t(`rateTypeOptions.${enumKey(rt)}`),
+   }));
+ 
+   const invoiceCycleItems = INVOICE_CYCLES.map(c => ({
+     value: c,
+-    label: t(`invoiceCycleOptions.${c}`),
++    label: t(`invoiceCycleOptions.${enumKey(c)}`),
+   }));
+ 
+   const {
+diff --git a/apps/web/src/components/dashboard/activity-feed.tsx b/apps/web/src/components/dashboard/activity-feed.tsx
+index 31e92e4f..ae70d672 100644
+--- a/apps/web/src/components/dashboard/activity-feed.tsx
++++ b/apps/web/src/components/dashboard/activity-feed.tsx
+@@ -10,6 +10,7 @@ import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/componen
+ import { ScrollArea } from '@/components/ui/scroll-area';
+ import { Skeleton } from '@/components/ui/skeleton';
+ import { Link } from '@/i18n/navigation';
++import { enumKey } from '@/lib/enum-key';
+ import { trpc } from '@/trpc/init';
+ 
+ // ---------------------------------------------------------------------------
+@@ -161,7 +162,11 @@ export function ActivityFeed() {
+                               <Bdi>{item.actorName ?? t('activity.systemActor')}</Bdi>
+                             </span>{' '}
+                             <span className="font-semibold">
+-                              {t(`activity.actions.${item.action}` as Parameters<typeof t>[0])}
++                              {t(
++                                `activity.actions.${enumKey(item.action)}` as Parameters<
++                                  typeof t
++                                >[0],
++                              )}
+                             </span>
+                           </p>
+                           <div className="mt-0.5 flex items-center gap-2">
+diff --git a/apps/web/src/components/equipment/equipment-detail/equipment-detail-header.tsx b/apps/web/src/components/equipment/equipment-detail/equipment-detail-header.tsx
+index 958072f8..0a0b3015 100644
+--- a/apps/web/src/components/equipment/equipment-detail/equipment-detail-header.tsx
++++ b/apps/web/src/components/equipment/equipment-detail/equipment-detail-header.tsx
+@@ -21,6 +21,7 @@ import {
+   DropdownMenuItem,
+   DropdownMenuTrigger,
+ } from '@/components/ui/dropdown-menu';
++import { enumKey } from '@/lib/enum-key';
+ import { trpc } from '@/trpc/init';
+ import { EquipmentStatusBadge } from '../equipment-status-badge';
+ import { EquipmentTypeIcon } from '../equipment-type-icon';
+@@ -130,7 +131,7 @@ export function EquipmentDetailHeader({
+               </span>
+             )}
+             <Badge variant="secondary">
+-              {t(`type.${equipment.type}` as Parameters<typeof t>[0])}
++              {t(`type.${enumKey(equipment.type)}` as Parameters<typeof t>[0])}
+             </Badge>
+             <EquipmentStatusBadge status={equipment.status} />
+           </div>
+diff --git a/apps/web/src/components/equipment/equipment-detail/tab-info.tsx b/apps/web/src/components/equipment/equipment-detail/tab-info.tsx
+index d50f971d..7f9291ad 100644
+--- a/apps/web/src/components/equipment/equipment-detail/tab-info.tsx
++++ b/apps/web/src/components/equipment/equipment-detail/tab-info.tsx
+@@ -4,6 +4,7 @@ import { format } from 'date-fns';
+ import { useTranslations } from 'next-intl';
+ 
+ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
++import { enumKey } from '@/lib/enum-key';
+ import { EquipmentTypeIcon } from '../equipment-type-icon';
+ 
+ // ---------------------------------------------------------------------------
+@@ -49,7 +50,7 @@ export function TabInfo({ equipment, onEdit: _onEdit }: TabInfoProps) {
+             value={
+               <span className="flex items-center gap-1.5">
+                 <EquipmentTypeIcon type={equipment.type} />
+-                {t(`type.${equipment.type}` as Parameters<typeof t>[0])}
++                {t(`type.${enumKey(equipment.type)}` as Parameters<typeof t>[0])}
+                 {!!equipment.customType && ` (${equipment.customType})`}
+               </span>
+             }
+diff --git a/apps/web/src/components/equipment/equipment-form.tsx b/apps/web/src/components/equipment/equipment-form.tsx
+index 72371372..92b8ab9b 100644
+--- a/apps/web/src/components/equipment/equipment-form.tsx
++++ b/apps/web/src/components/equipment/equipment-form.tsx
+@@ -28,6 +28,7 @@ import {
+   SelectValue,
+ } from '@/components/ui/select';
+ import { Textarea } from '@/components/ui/textarea';
++import { enumKey } from '@/lib/enum-key';
+ import { trpc } from '@/trpc/init';
+ import { EquipmentTypeIcon } from './equipment-type-icon';
+ 
+@@ -202,7 +203,7 @@ export function EquipmentForm({ open, onOpenChange, equipment }: EquipmentFormPr
+                   <SelectItem key={type} value={type}>
+                     <div className="flex items-center gap-2">
+                       <EquipmentTypeIcon type={type} />
+-                      <span>{t(`type.${type}`)}</span>
++                      <span>{t(`type.${enumKey(type)}`)}</span>
+                     </div>
+                   </SelectItem>
+                 ))}
+diff --git a/apps/web/src/components/invoices/invoice-detail/match-card.tsx b/apps/web/src/components/invoices/invoice-detail/match-card.tsx
+index 7bb79993..23d9e3ff 100644
+--- a/apps/web/src/components/invoices/invoice-detail/match-card.tsx
++++ b/apps/web/src/components/invoices/invoice-detail/match-card.tsx
+@@ -27,6 +27,7 @@ import {
+ import { Skeleton } from '@/components/ui/skeleton';
+ import { usePermissions } from '@/hooks/use-permissions';
+ import { Link } from '@/i18n/navigation';
++import { enumKey } from '@/lib/enum-key';
+ import { canViewSensitivePii, maskTaxId } from '@/lib/mask-pii';
+ import { trpc } from '@/trpc/init';
+ 
+@@ -165,7 +166,7 @@ export function MatchCard({ invoice, onMatchConfirmed }: MatchCardProps) {
+         <div className="flex items-center gap-2">
+           <span className="text-[13px] text-muted-foreground">{t('match.confidence')}</span>
+           <span className={`inline-block h-2 w-2 rounded-full ${confidence.dotClass}`} />
+-          <span className="text-sm font-medium">{t(`match.${confidence.labelKey}`)}</span>
++          <span className="text-sm font-medium">{t(`match.${enumKey(confidence.labelKey)}`)}</span>
+           <span className="text-[13px] text-muted-foreground">{score}%</span>
+         </div>
+ 
+@@ -248,7 +249,7 @@ export function MatchCard({ invoice, onMatchConfirmed }: MatchCardProps) {
+               return (
+                 <Badge key={flag} variant="secondary" className={`gap-1 ${className}`}>
+                   <Icon className="h-3 w-3" />
+-                  {t(`match.${labelKey}`)}
++                  {t(`match.${enumKey(labelKey)}`)}
+                 </Badge>
+               );
+             })}
+diff --git a/apps/web/src/components/invoices/invoice-side-panel.tsx b/apps/web/src/components/invoices/invoice-side-panel.tsx
+index 0ac45a1b..3707d47d 100644
+--- a/apps/web/src/components/invoices/invoice-side-panel.tsx
++++ b/apps/web/src/components/invoices/invoice-side-panel.tsx
+@@ -9,6 +9,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
+ import { Separator } from '@/components/ui/separator';
+ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+ import { Link } from '@/i18n/navigation';
++import { enumKey } from '@/lib/enum-key';
+ import type { InvoiceRow } from './invoice-table/columns';
+ 
+ // ---------------------------------------------------------------------------
+@@ -98,7 +99,7 @@ export function InvoiceSidePanel({ invoice, open, onOpenChange }: InvoiceSidePan
+               </SheetTitle>
+               <div className="flex items-center gap-2 flex-wrap">
+                 <Badge variant="secondary" className={statusBadgeColors[invoice.status] ?? ''}>
+-                  {t(`status.${invoice.status}` as Parameters<typeof t>[0])}
++                  {t(`status.${enumKey(invoice.status)}` as Parameters<typeof t>[0])}
+                 </Badge>
+                 {invoice.source === 'MANUAL_UPLOAD' ? (
+                   <Upload className="h-4 w-4 text-muted-foreground" />
+@@ -165,7 +166,7 @@ export function InvoiceSidePanel({ invoice, open, onOpenChange }: InvoiceSidePan
+                   <>
+                     <span className={`inline-block h-2 w-2 rounded-full ${matchConfig.dotClass}`} />
+                     <span>
+-                      {t(`matchStatus.${matchConfig.labelKey}` as Parameters<typeof t>[0])}
++                      {t(`matchStatus.${enumKey(matchConfig.labelKey)}` as Parameters<typeof t>[0])}
+                     </span>
+                   </>
+                 ) : (
+diff --git a/apps/web/src/components/invoices/invoice-table/columns.tsx b/apps/web/src/components/invoices/invoice-table/columns.tsx
+index 074b4135..cfdfb5df 100644
+--- a/apps/web/src/components/invoices/invoice-table/columns.tsx
++++ b/apps/web/src/components/invoices/invoice-table/columns.tsx
+@@ -17,6 +17,7 @@ import { KsefSourceBadge } from '@/components/invoices/ksef-badge';
+ import { Badge } from '@/components/ui/badge';
+ import { Checkbox } from '@/components/ui/checkbox';
+ import { Link } from '@/i18n/navigation';
++import { enumKey } from '@/lib/enum-key';
+ 
+ // ---------------------------------------------------------------------------
+ // Row type matching the tRPC invoice.list response shape
+@@ -268,13 +269,13 @@ export function getColumns(t: TranslateFunction): ColumnDef<InvoiceRow>[] {
+         const status = row.original.status;
+         const config = statusBadgeConfig[status];
+         if (!config) {
+-          return <Badge variant="secondary">{t(`status.${status}`)}</Badge>;
++          return <Badge variant="secondary">{t(`status.${enumKey(status)}`)}</Badge>;
+         }
+         const { className, Icon } = config;
+         return (
+           <Badge variant="secondary" className={`gap-1 ${className}`}>
+             <Icon className="h-3 w-3" />
+-            {t(`status.${status}`)}
++            {t(`status.${enumKey(status)}`)}
+           </Badge>
+         );
+       },
+@@ -293,7 +294,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<InvoiceRow>[] {
+         return (
+           <span className="inline-flex items-center gap-1.5 text-sm">
+             <span className={`inline-block h-2 w-2 rounded-full ${config.dotClass}`} />
+-            {t(`matchStatus.${config.label}`)}
++            {t(`matchStatus.${enumKey(config.label)}`)}
+           </span>
+         );
+       },
+diff --git a/apps/web/src/components/settings/audit-log-tab.tsx b/apps/web/src/components/settings/audit-log-tab.tsx
+index 945478be..b0914936 100644
+--- a/apps/web/src/components/settings/audit-log-tab.tsx
++++ b/apps/web/src/components/settings/audit-log-tab.tsx
+@@ -16,6 +16,7 @@ import {
+   SelectValue,
+ } from '@/components/ui/select';
+ import { Skeleton } from '@/components/ui/skeleton';
++import { enumKey } from '@/lib/enum-key';
+ import { trpc } from '@/trpc/init';
+ import type { AuditLogEntry } from './audit-log-table';
+ import { AuditLogTable } from './audit-log-table';
+@@ -337,7 +338,7 @@ export function AuditLogTab() {
+             <SelectItem value="">{t('filterActionAll')}</SelectItem>
+             {ACTION_OPTIONS.map(action => (
+               <SelectItem key={action} value={action}>
+-                {t(`actions.${action}` as Parameters<typeof t>[0])}
++                {t(`actions.${enumKey(action)}` as Parameters<typeof t>[0])}
+               </SelectItem>
+             ))}
+           </SelectContent>
+@@ -358,7 +359,7 @@ export function AuditLogTab() {
+             <SelectItem value="">{t('filterResourceAll')}</SelectItem>
+             {RESOURCE_TYPE_OPTIONS.map(rt => (
+               <SelectItem key={rt} value={rt}>
+-                {t(`resources.${rt}` as Parameters<typeof t>[0])}
++                {t(`resources.${enumKey(rt)}` as Parameters<typeof t>[0])}
+               </SelectItem>
+             ))}
+           </SelectContent>
+diff --git a/apps/web/src/components/settings/change-request-diff-card.tsx b/apps/web/src/components/settings/change-request-diff-card.tsx
+index b0129274..6a16c38d 100644
+--- a/apps/web/src/components/settings/change-request-diff-card.tsx
++++ b/apps/web/src/components/settings/change-request-diff-card.tsx
+@@ -17,6 +17,7 @@ import {
+   DialogTitle,
+ } from '@/components/ui/dialog';
+ import { Textarea } from '@/components/ui/textarea';
++import { enumKey } from '@/lib/enum-key';
+ import { trpc } from '@/trpc/init';
+ 
+ // ---------------------------------------------------------------------------
+@@ -170,7 +171,7 @@ export function ChangeRequestDiffCard({
+               </p>
+             </div>
+             {request.status !== 'PENDING' && (
+-              <Badge variant={statusVariant}>{t(`status.${request.status}`)}</Badge>
++              <Badge variant={statusVariant}>{t(`status.${enumKey(request.status)}`)}</Badge>
+             )}
+           </div>
+         </CardHeader>
+diff --git a/apps/web/src/components/settings/users-table.tsx b/apps/web/src/components/settings/users-table.tsx
+index 358c022d..3b2b9bcd 100644
+--- a/apps/web/src/components/settings/users-table.tsx
++++ b/apps/web/src/components/settings/users-table.tsx
+@@ -23,6 +23,7 @@ import {
+   TableRow,
+ } from '@/components/ui/table';
+ import { usePermissions } from '@/hooks/use-permissions';
++import { enumKey } from '@/lib/enum-key';
+ import { trpc } from '@/trpc/init';
+ 
+ type Member = {
+@@ -183,10 +184,11 @@ export function UsersTable() {
+     );
+   }
+ 
+-  const roleLabel = (role: string) => t(`roles.${role}` as Parameters<typeof t>[0]) ?? role;
++  const roleLabel = (role: string) =>
++    t(`roles.${enumKey(role)}` as Parameters<typeof t>[0]) ?? role;
+ 
+   const statusLabel = (status: string) =>
+-    t(`status.${status}` as Parameters<typeof t>[0]) ?? status;
++    t(`status.${enumKey(status)}` as Parameters<typeof t>[0]) ?? status;
+ 
+   return (
+     <>
+diff --git a/apps/web/src/components/workflows/workflow-run/run-header.tsx b/apps/web/src/components/workflows/workflow-run/run-header.tsx
+index 1a4bd894..ec27e7b4 100644
+--- a/apps/web/src/components/workflows/workflow-run/run-header.tsx
++++ b/apps/web/src/components/workflows/workflow-run/run-header.tsx
+@@ -25,6 +25,7 @@ import {
+ } from '@/components/ui/dropdown-menu';
+ import { Progress } from '@/components/ui/progress';
+ import { Link } from '@/i18n/navigation';
++import { enumKey } from '@/lib/enum-key';
+ import { trpc } from '@/trpc/init';
+ 
+ // ---------------------------------------------------------------------------
+@@ -156,7 +157,7 @@ export function RunHeader({ run }: RunHeaderProps) {
+               {run.workflowTemplate?.name ?? t('workflowLabel')}
+             </h1>
+             <Badge variant="secondary" className={statusBadgeColors[run.status] ?? ''}>
+-              {t(`runStatus.${run.status}` as Parameters<typeof t>[0])}
++              {t(`runStatus.${enumKey(run.status)}` as Parameters<typeof t>[0])}
+             </Badge>
+           </div>
+ 
+diff --git a/apps/web/src/components/workflows/workflow-runs-table/__tests__/columns.test.tsx b/apps/web/src/components/workflows/workflow-runs-table/__tests__/columns.test.tsx
+index 751f4115..db9ae71c 100644
+--- a/apps/web/src/components/workflows/workflow-runs-table/__tests__/columns.test.tsx
++++ b/apps/web/src/components/workflows/workflow-runs-table/__tests__/columns.test.tsx
+@@ -1,3 +1,4 @@
++import { enumKey } from '@/lib/enum-key';
+ import { render, screen } from '@/test/test-utils';
+ import type { WorkflowRunRow } from '../columns';
+ import { getColumns } from '../columns';
+@@ -128,7 +129,7 @@ describe('getColumns cell renderers (workflow runs)', () => {
+           });
+         })(),
+       );
+-      expect(screen.getByText(`runStatus.${status}`)).toBeInTheDocument();
++      expect(screen.getByText(`runStatus.${enumKey(status)}`)).toBeInTheDocument();
+       unmount();
+     }
+   });
+diff --git a/apps/web/src/components/workflows/workflow-runs-table/columns.tsx b/apps/web/src/components/workflows/workflow-runs-table/columns.tsx
+index 665fc128..ff386ace 100644
+--- a/apps/web/src/components/workflows/workflow-runs-table/columns.tsx
++++ b/apps/web/src/components/workflows/workflow-runs-table/columns.tsx
+@@ -3,6 +3,7 @@
+ import type { ColumnDef } from '@tanstack/react-table';
+ import { Badge } from '@/components/ui/badge';
+ import { Checkbox } from '@/components/ui/checkbox';
++import { enumKey } from '@/lib/enum-key';
+ 
+ // ---------------------------------------------------------------------------
+ // Row type matching the tRPC workflow.listRuns response shape
+@@ -129,7 +130,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<WorkflowRunRow>[] {
+         <Badge
+           variant="secondary"
+           className={templateTypeBadgeColors[row.original.workflowTemplate.type] ?? ''}>
+-          {t(`templateType.${row.original.workflowTemplate.type}`)}
++          {t(`templateType.${enumKey(row.original.workflowTemplate.type)}`)}
+         </Badge>
+       ),
+       enableSorting: false,
+@@ -143,7 +144,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<WorkflowRunRow>[] {
+         const status = row.original.status;
+         return (
+           <Badge variant="secondary" className={statusBadgeColors[status] ?? ''}>
+-            {t(`runStatus.${status}`)}
++            {t(`runStatus.${enumKey(status)}`)}
+           </Badge>
+         );
+       },
+diff --git a/apps/web/src/components/workflows/workflow-side-panel.tsx b/apps/web/src/components/workflows/workflow-side-panel.tsx
+index d7045495..db35ad16 100644
+--- a/apps/web/src/components/workflows/workflow-side-panel.tsx
++++ b/apps/web/src/components/workflows/workflow-side-panel.tsx
+@@ -14,6 +14,7 @@ import { Separator } from '@/components/ui/separator';
+ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+ import { Skeleton } from '@/components/ui/skeleton';
+ import { Link } from '@/i18n/navigation';
++import { enumKey } from '@/lib/enum-key';
+ import { trpc } from '@/trpc/init';
+ 
+ // ---------------------------------------------------------------------------
+@@ -279,7 +280,7 @@ export function WorkflowSidePanel({ runId, onClose }: WorkflowSidePanelProps) {
+                   </SheetTitle>
+                   <div className="flex items-center gap-2 flex-wrap">
+                     <Badge variant="secondary" className={statusBadgeColors[run.status] ?? ''}>
+-                      {t(`runStatus.${run.status}` as Parameters<typeof t>[0])}
++                      {t(`runStatus.${enumKey(run.status)}` as Parameters<typeof t>[0])}
+                     </Badge>
+                     {!!run.workflowTemplate && (
+                       <span className="text-sm text-muted-foreground">
+diff --git a/packages/validators/src/index.ts b/packages/validators/src/index.ts
+index b7d049e7..62aa9e55 100644
+--- a/packages/validators/src/index.ts
++++ b/packages/validators/src/index.ts
+@@ -289,6 +289,15 @@ export {
+ } from './jira.js';
+ export type { LockedDePhraseKey } from './legal/de.js';
+ export {
++  CLASSIFICATION_SCHEIN_ASSESSMENT_LABEL,
++  CLASSIFICATION_SCHEIN_CRITERIA_LABEL,
++  CLASSIFICATION_SCHEIN_DRV_REFERENCE_LABEL,
++  CLASSIFICATION_SCHEIN_ECONOMIC_DEP,
++  CLASSIFICATION_SCHEIN_ENTREPRENEURIAL,
++  CLASSIFICATION_SCHEIN_INTEGRATION,
++  CLASSIFICATION_SCHEIN_NOT_APPLICABLE,
++  CLASSIFICATION_SCHEIN_PERSONAL_DEP,
++  CLASSIFICATION_SCHEIN_TITLE,
+   GDPR_COMPLAINT_HEADING,
+   GDPR_CONTROLLER_LABEL,
+   GDPR_DPO_LABEL,
+@@ -303,6 +312,15 @@ export {
+   TAX_STEUERSCHULDNERSCHAFT,
+   TAX_USTIDNR_LABEL,
+ } from './legal/de.js';
++export type { LockedDisclaimerKey } from './legal/disclaimers.js';
++export {
++  DISCLAIMER_IR35_ACKNOWLEDGEMENT,
++  DISCLAIMER_IR35_BODY,
++  DISCLAIMER_SCHEIN_ACKNOWLEDGEMENT,
++  DISCLAIMER_SCHEIN_BODY,
++  LOCKED_DISCLAIMERS,
++  RESERVED_DISCLAIMER_KEYS,
++} from './legal/disclaimers.js';
+ export type { LockedEnPhraseKey } from './legal/en.js';
+ export {
+   LOCKED_EN_PHRASES,

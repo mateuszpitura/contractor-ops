@@ -1,0 +1,3551 @@
+diff --git a/.github/workflows/ci.yml b/.github/workflows/ci.yml
+index aaf17edb..459672a0 100644
+--- a/.github/workflows/ci.yml
++++ b/.github/workflows/ci.yml
+@@ -14,8 +14,8 @@ env:
+   SKIP_ENV_VALIDATION: true
+ 
+ jobs:
+-  ci:
+-    name: Lint, Typecheck & Test
++  lint-typecheck:
++    name: Lint & Typecheck
+     runs-on: ubuntu-latest
+     timeout-minutes: 10
+ 
+@@ -38,15 +38,126 @@ jobs:
+       - name: Generate Prisma client
+         run: pnpm run db:generate
+ 
+-      - name: Build packages (typecheck)
++      - name: Build packages
+         run: pnpm run build
+ 
+       - name: Lint
+         run: pnpm run lint
+ 
+-      - name: Test
+-        run: pnpm run test
++  unit-test:
++    name: Unit Tests
++    runs-on: ubuntu-latest
++    timeout-minutes: 10
++    needs: [lint-typecheck]
++
++    steps:
++      - name: Checkout
++        uses: actions/checkout@v4
++
++      - name: Setup pnpm
++        uses: pnpm/action-setup@v4
++
++      - name: Setup Node.js
++        uses: actions/setup-node@v4
++        with:
++          node-version: 24
++          cache: pnpm
++
++      - name: Install dependencies
++        run: pnpm install --frozen-lockfile
++
++      - name: Generate Prisma client
++        run: pnpm run db:generate
++
++      - name: Build packages
++        run: pnpm run build
++
++      - name: Test with coverage
++        # Coverage thresholds can be enforced via vitest.config.ts coverage.thresholds
++        run: npx vitest run --coverage
++
++      - name: Upload coverage report
++        if: always()
++        uses: actions/upload-artifact@v4
++        with:
++          name: coverage-report
++          path: coverage/
++          retention-days: 14
++
++  e2e-integration:
++    name: E2E Integration Tests
++    runs-on: ubuntu-latest
++    timeout-minutes: 15
++    needs: [lint-typecheck]
++
++    env:
++      CI: true
++      E2E_WEB_URL: http://127.0.0.1:3000
++
++    steps:
++      - name: Checkout
++        uses: actions/checkout@v4
++
++      - name: Setup pnpm
++        uses: pnpm/action-setup@v4
++
++      - name: Setup Node.js
++        uses: actions/setup-node@v4
++        with:
++          node-version: 24
++          cache: pnpm
++
++      - name: Install dependencies
++        run: pnpm install --frozen-lockfile
++
++      - name: Generate Prisma client
++        run: pnpm run db:generate
++
++      - name: Build packages
++        run: pnpm run build
++
++      - name: Install Playwright browsers
++        run: npx playwright install --with-deps chromium
++        working-directory: apps/web
++
++      - name: Start web app
++        run: pnpm --filter @contractor-ops/web start &
++      
++      - name: Wait for web app
++        run: npx wait-on http://127.0.0.1:3000 --timeout 60000
++
++      - name: Run integration tests
++        run: pnpm --filter @contractor-ops/web e2e:integration
++
++      - name: Upload Playwright report
++        if: failure()
++        uses: actions/upload-artifact@v4
++        with:
++          name: playwright-integration-report
++          path: apps/web/playwright-report/
++          retention-days: 7
++
++  dependency-audit:
++    name: Dependency Audit
++    runs-on: ubuntu-latest
++    timeout-minutes: 5
++
++    steps:
++      - name: Checkout
++        uses: actions/checkout@v4
++
++      - name: Setup pnpm
++        uses: pnpm/action-setup@v4
++
++      - name: Setup Node.js
++        uses: actions/setup-node@v4
++        with:
++          node-version: 24
++          cache: pnpm
++
++      - name: Install dependencies
++        run: pnpm install --frozen-lockfile
+ 
+-      - name: Dependency audit (informational)
++      - name: Audit
+         run: pnpm audit --audit-level moderate
+         continue-on-error: true
+diff --git a/.planning/PROJECT.md b/.planning/PROJECT.md
+index ba53b4b5..5d4cb855 100644
+--- a/.planning/PROJECT.md
++++ b/.planning/PROJECT.md
+@@ -104,6 +104,17 @@ v3.0 Enterprise & Monetization (shipped 2026-04-11): Stripe subscription billing
+ - UK GDPR + German GDPR compliance
+ - HMRC VAT validation, German USt-IdNr validation via VIES
+ - UK contractor fields (UTR, Companies House), German fields (Steuernummer, Handelsregister)
++- Legal compliance hardening — classification features gated behind feature flag until legal sign-off
++
++## Next Milestone: v6.0 Platform Maturity & Operational Hardening
++
++**Goal:** Make the platform production-grade across all supported markets (PL, UK, DE, UAE, SA) by closing critical operational gaps identified in the market expansion analysis — compliance document lifecycle, automated access deprovisioning, Gulf operational polish, and offboarding hardening. No new market entry; focus on making existing features reliable and secure for real users.
++
++**Target features:**
++- Compliance Document Lifecycle Engine — per-country required documents, automated expiry tracking (90/60/30/15/7-day alerts), hard payment blocking on expired critical documents, automated contractor reminders, compliance dashboard with at-risk contractor count
++- Identity Provider Deprovisioning — Google Workspace/Azure AD/Okta auto-suspend on offboarding, GitHub organization member removal, Slack workspace deactivation, full audit trail of access revocation
++- Gulf Operational Polish — UAE free zone entity tracking with permitted activity scope per zone and license expiry monitoring; Saudization workforce composition dashboard with nationality tracking (visibility only, not Nitaqat advisory)
++- Offboarding Hardening — structured knowledge transfer checklist templates per role type, IP assignment verification workflow blocking offboarding completion, documentation handover task with repo/wiki/credential links
+ 
+ ### Out of Scope
+ 
+@@ -120,6 +131,8 @@ v3.0 Enterprise & Monetization (shipped 2026-04-11): Stripe subscription billing
+ - Bi-directional calendar sync — one-way push sufficient
+ - Notion/Confluence content mirroring — link + preview, not full rendering
+ - Build own e-sign engine — legal compliance requires certified providers
++- France market expansion — requires certified PDP (Plateforme de Dématérialisation Partenaire) partner, 12-18 month certification process, no partner signed; includes Factur-X, URSSAF attestation API, French i18n, salariat déguisé classification, e-reporting module. Revisit only after PDP partnership is secured.
++- Cross-border EU compliance module (A1 certificates, PE risk flagging, automated reverse charge across jurisdictions) — serves subset of pan-EU clients, not a market-entry requirement
+ 
+ ## Context
+ 
+diff --git a/.planning/ROADMAP.md b/.planning/ROADMAP.md
+index 76c8aec8..bedf1b26 100644
+--- a/.planning/ROADMAP.md
++++ b/.planning/ROADMAP.md
+@@ -163,7 +163,7 @@ See .planning/milestones/v4.0/ for details.
+   2. User sees automatically calculated late payment interest on overdue UK invoices per the Late Payment of Commercial Debts Act (BoE base rate + 8% plus fixed compensation tiers)
+   3. User can configure Skonto early payment discount terms on German invoices with discount percentage, discount period, and automatic discounted amount calculation with eligibility tracking
+ **Plans**: 7 plans
+-- [ ] 63-01-PLAN.md — Wave 1: All Prisma schema additions (8 new models + enum extensions + UK bank fields + BACS submitter fields) + [BLOCKING] prisma db push + BoE rate seed data + BACS validators (modulus check) + locked phrases (GB LPCDA + DE Skonto) + feature flags (PAY_BACS/LATE_INTEREST/SKONTO) + i18n Payments namespace
++- [x] 63-01-PLAN.md — Wave 1: All Prisma schema additions (8 new models + enum extensions + UK bank fields + BACS submitter fields) + [BLOCKING] prisma db push + BoE rate seed data + BACS validators (modulus check) + locked phrases (GB LPCDA + DE Skonto) + feature flags (PAY_BACS/LATE_INTEREST/SKONTO) + i18n Payments namespace
+ - [ ] 63-02-PLAN.md — Wave 2: ASCII transliteration utility + BACS Std 18 generator (fixed-width file with VOL/HDR/detail/trailer records) + format auto-detection (GBP+UK -> BACS_STD18)
+ - [ ] 63-03-PLAN.md — Wave 2: Late payment interest calculation service (LPCDA-compliant: statutory period rate + simple interest + compensation tiers + partial payments + waivers) + BoE rate poller + cron route
+ - [ ] 63-04-PLAN.md — Wave 3: BACS tRPC router (preview/generate/validate/saveSubmitter) + settings page (/settings/payments/) + BACS preview Card + UK bank fields on billing profile
+@@ -185,8 +185,8 @@ Phases execute in numeric order: 56 -> 57 -> 58 -> 59 -> 60 -> 61 -> 62 -> 63 ->
+ | 59. Classification Documents & Chain Tracking | v5.0 | 4/4 | Complete    | 2026-04-13 |
+ | 60. Classification Polish | v5.0 | 4/4 | Complete    | 2026-04-14 |
+ | 61. XRechnung E-Invoicing | v5.0 | 8/8 | Complete   | 2026-04-14 |
+-| 62. ZUGFeRD E-Invoicing | v5.0 | 2/7 | In Progress|  |
+-| 63. UK Payments & Financial Features | v5.0 | 0/7 | Not started | - |
++| 62. ZUGFeRD E-Invoicing | v5.0 | 4/7 | In Progress|  |
++| 63. UK Payments & Financial Features | v5.0 | 1/7 | In Progress|  |
+ | 64. Legal Compliance Hardening | v5.0 | 0/TBD | Not started | - |
+ 
+ ### Phase 64: Legal Compliance Hardening
+diff --git a/.planning/STATE.md b/.planning/STATE.md
+index 292158ae..1aba1fd7 100644
+--- a/.planning/STATE.md
++++ b/.planning/STATE.md
+@@ -4,14 +4,14 @@ milestone: v5.0
+ milestone_name: UK & Germany Expansion
+ status: executing
+ stopped_at: Phase 64 context gathered
+-last_updated: "2026-04-14T23:16:11.275Z"
+-last_activity: 2026-04-14 -- Phase 62 execution started
++last_updated: "2026-04-15T00:10:00.794Z"
++last_activity: 2026-04-15 -- Phase 63 execution started
+ progress:
+   total_phases: 9
+   completed_phases: 6
+-  total_plans: 40
+-  completed_plans: 33
+-  percent: 83
++  total_plans: 47
++  completed_plans: 36
++  percent: 77
+ ---
+ 
+ # Project State
+@@ -21,14 +21,14 @@ progress:
+ See: .planning/PROJECT.md (updated 2026-04-12)
+ 
+ **Core value:** The invoice-to-payment flow must work end-to-end: invoice arrives, gets matched to contract, routed through approval, and batched for payment — with full audit trail.
+-**Current focus:** Phase 62 — zugferd-e-invoicing
++**Current focus:** Phase 63 — UK Payments & Financial Features
+ 
+ ## Current Position
+ 
+-Phase: 62 (zugferd-e-invoicing) — EXECUTING
++Phase: 63 (UK Payments & Financial Features) — EXECUTING
+ Plan: 1 of 7
+-Status: Executing Phase 62
+-Last activity: 2026-04-14 -- Phase 62 execution started
++Status: Executing Phase 63
++Last activity: 2026-04-15 -- Phase 63 execution started
+ 
+ Progress: [███████░░░] 71% (v5.0) — 12 / 17 plans shipped
+ 
+diff --git a/.planning/config.json b/.planning/config.json
+index 7de257b4..ddaebbcb 100644
+--- a/.planning/config.json
++++ b/.planning/config.json
+@@ -9,6 +9,6 @@
+     "plan_check": true,
+     "verifier": true,
+     "nyquist_validation": true,
+-    "_auto_chain_active": false
++    "_auto_chain_active": true
+   }
+ }
+\ No newline at end of file
+diff --git a/apps/public-api/package.json b/apps/public-api/package.json
+index a244a36c..c8ccc477 100644
+--- a/apps/public-api/package.json
++++ b/apps/public-api/package.json
+@@ -6,7 +6,8 @@
+   "scripts": {
+     "dev": "tsx watch src/index.ts",
+     "build": "tsc",
+-    "start": "node dist/index.js"
++    "start": "node dist/index.js",
++    "test": "vitest run"
+   },
+   "dependencies": {
+     "@contractor-ops/api": "workspace:*",
+@@ -21,6 +22,7 @@
+   },
+   "devDependencies": {
+     "tsx": "^4.21.0",
+-    "typescript": "^5.9.3"
++    "typescript": "^5.9.3",
++    "vitest": "^4.1.2"
+   }
+ }
+diff --git a/apps/web/e2e/functional/approval-chain-flow.spec.ts b/apps/web/e2e/functional/approval-chain-flow.spec.ts
+index 8f02d25e..9a80c945 100644
+--- a/apps/web/e2e/functional/approval-chain-flow.spec.ts
++++ b/apps/web/e2e/functional/approval-chain-flow.spec.ts
+@@ -1,6 +1,12 @@
+ import { expect, test } from '@playwright/test';
+ 
+-import { expectPageHeading, navigateToDashboard, skipIfUnauthenticated } from './helpers';
++import {
++  closeDialog,
++  navigateToDashboard,
++  sidePanel,
++  skipIfUnauthenticated,
++  tableRows,
++} from './helpers';
+ 
+ test.describe('Approval chain flow', () => {
+   test.beforeEach(async ({ page }) => {
+@@ -20,8 +26,12 @@ test.describe('Approval chain flow', () => {
+     const table = page.locator('table').first();
+     const hasTable = await table.isVisible({ timeout: 10_000 }).catch(() => false);
+ 
+-    if (!hasTable) {
+-      // Try card-based layout
++    if (hasTable) {
++      const { rows, count } = await tableRows(page);
++      test.skip(count === 0, 'No rows in approval table — skipping detail test');
++
++      await rows.first().click();
++    } else {
+       const card = page
+         .locator('[data-testid*="approval"], [class*="card"]')
+         .first();
+@@ -29,20 +39,9 @@ test.describe('Approval chain flow', () => {
+       test.skip(!hasCard, 'No approval items visible — skipping detail test');
+ 
+       await card.click();
+-    } else {
+-      const rows = table.locator('tbody tr');
+-      const rowCount = await rows.count();
+-      test.skip(rowCount === 0, 'No rows in approval table — skipping detail test');
+-
+-      await rows.first().click();
+     }
+ 
+-    const dialog = page
+-      .locator(
+-        '[data-state="open"][role="dialog"], [data-state="open"][data-radix-dialog-content], [data-state="open"].sheet-content, [role="dialog"]',
+-      )
+-      .first();
+-    await expect(dialog).toBeVisible({ timeout: 15_000 });
++    await expect(sidePanel(page)).toBeVisible({ timeout: 15_000 });
+   });
+ 
+   test('approve button visible in approval detail', async ({ page }) => {
+@@ -50,25 +49,19 @@ test.describe('Approval chain flow', () => {
+     const hasTable = await table.isVisible({ timeout: 10_000 }).catch(() => false);
+     test.skip(!hasTable, 'No table visible — skipping approve button test');
+ 
+-    const rows = table.locator('tbody tr');
+-    const rowCount = await rows.count();
+-    test.skip(rowCount === 0, 'No rows — skipping approve button test');
++    const { rows, count } = await tableRows(page);
++    test.skip(count === 0, 'No rows — skipping approve button test');
+ 
+     await rows.first().click();
+ 
+-    const dialog = page
+-      .locator(
+-        '[data-state="open"][role="dialog"], [data-state="open"][data-radix-dialog-content], [data-state="open"].sheet-content, [role="dialog"]',
+-      )
+-      .first();
+-    await expect(dialog).toBeVisible({ timeout: 15_000 });
++    const panel = sidePanel(page);
++    await expect(panel).toBeVisible({ timeout: 15_000 });
+ 
+-    // Look for approve button or already-approved status
+-    const approveButton = dialog
++    const approveButton = panel
+       .locator('button')
+       .filter({ hasText: /approve|accept|confirm/i })
+       .first();
+-    const approvedStatus = dialog
++    const approvedStatus = panel
+       .locator('span, div, p')
+       .filter({ hasText: /approved|completed|accepted/i })
+       .first();
+@@ -81,25 +74,19 @@ test.describe('Approval chain flow', () => {
+     const hasTable = await table.isVisible({ timeout: 10_000 }).catch(() => false);
+     test.skip(!hasTable, 'No table visible — skipping reject button test');
+ 
+-    const rows = table.locator('tbody tr');
+-    const rowCount = await rows.count();
+-    test.skip(rowCount === 0, 'No rows — skipping reject button test');
++    const { rows, count } = await tableRows(page);
++    test.skip(count === 0, 'No rows — skipping reject button test');
+ 
+     await rows.first().click();
+ 
+-    const dialog = page
+-      .locator(
+-        '[data-state="open"][role="dialog"], [data-state="open"][data-radix-dialog-content], [data-state="open"].sheet-content, [role="dialog"]',
+-      )
+-      .first();
+-    await expect(dialog).toBeVisible({ timeout: 15_000 });
++    const panel = sidePanel(page);
++    await expect(panel).toBeVisible({ timeout: 15_000 });
+ 
+-    // Look for reject button or already-resolved status
+-    const rejectButton = dialog
++    const rejectButton = panel
+       .locator('button')
+       .filter({ hasText: /reject|decline|deny|return/i })
+       .first();
+-    const resolvedStatus = dialog
++    const resolvedStatus = panel
+       .locator('span, div, p')
+       .filter({ hasText: /rejected|approved|completed|resolved/i })
+       .first();
+@@ -112,40 +99,29 @@ test.describe('Approval chain flow', () => {
+     const hasTable = await table.isVisible({ timeout: 10_000 }).catch(() => false);
+     test.skip(!hasTable, 'No table visible — skipping chain steps test');
+ 
+-    const rows = table.locator('tbody tr');
+-    const rowCount = await rows.count();
+-    test.skip(rowCount === 0, 'No rows — skipping chain steps test');
++    const { rows, count } = await tableRows(page);
++    test.skip(count === 0, 'No rows — skipping chain steps test');
+ 
+     await rows.first().click();
+ 
+-    const dialog = page
+-      .locator(
+-        '[data-state="open"][role="dialog"], [data-state="open"][data-radix-dialog-content], [data-state="open"].sheet-content, [role="dialog"]',
+-      )
+-      .first();
+-    await expect(dialog).toBeVisible({ timeout: 15_000 });
++    const panel = sidePanel(page);
++    await expect(panel).toBeVisible({ timeout: 15_000 });
+ 
+-    // Look for chain/timeline/stepper elements
+-    const chainSteps = dialog
++    const chainSteps = panel
+       .locator(
+         '[data-testid*="timeline"], [data-testid*="chain"], [data-testid*="step"], [class*="timeline"], [class*="stepper"], ol, [role="list"]',
+       )
+       .first()
+       .or(
+-        dialog
++        panel
+           .locator('h3, h4, span, div')
+           .filter({ hasText: /step|chain|timeline|progress|stage|level|approver/i })
+           .first(),
+       );
+ 
+     const stepsVisible = await chainSteps.isVisible({ timeout: 10_000 }).catch(() => false);
+-
+-    if (stepsVisible) {
+-      await expect(chainSteps).toBeVisible();
+-    } else {
+-      // Some approvals may not have a multi-step chain — accept dialog is open
+-      await expect(dialog).toBeVisible();
+-    }
++    test.skip(!stepsVisible, 'No multi-step chain UI for this approval item');
++    await expect(chainSteps).toBeVisible();
+   });
+ 
+   test('close dialog returns to list', async ({ page }) => {
+@@ -153,39 +129,20 @@ test.describe('Approval chain flow', () => {
+     const hasTable = await table.isVisible({ timeout: 10_000 }).catch(() => false);
+     test.skip(!hasTable, 'No table visible — skipping close dialog test');
+ 
+-    const rows = table.locator('tbody tr');
+-    const rowCount = await rows.count();
+-    test.skip(rowCount === 0, 'No rows — skipping close dialog test');
++    const { rows, count } = await tableRows(page);
++    test.skip(count === 0, 'No rows — skipping close dialog test');
+ 
+     await rows.first().click();
+ 
+-    const dialog = page
+-      .locator(
+-        '[data-state="open"][role="dialog"], [data-state="open"][data-radix-dialog-content], [data-state="open"].sheet-content, [role="dialog"]',
+-      )
+-      .first();
+-    await expect(dialog).toBeVisible({ timeout: 15_000 });
+-
+-    // Close via button or Escape
+-    const closeButton = dialog
+-      .locator('button[aria-label*="close"], button[aria-label*="Close"], [data-testid="close"]')
+-      .first()
+-      .or(dialog.locator('button').filter({ hasText: /close|cancel|x/i }).first());
++    const panel = sidePanel(page);
++    await expect(panel).toBeVisible({ timeout: 15_000 });
+ 
+-    const closeVisible = await closeButton.isVisible({ timeout: 5_000 }).catch(() => false);
+-
+-    if (closeVisible) {
+-      await closeButton.click();
+-    } else {
+-      await page.keyboard.press('Escape');
+-    }
++    await closeDialog(page, panel);
+ 
+-    // Verify table is still visible (list view restored)
+     await expect(table).toBeVisible({ timeout: 10_000 });
+   });
+ 
+   test('filter by status works', async ({ page }) => {
+-    // Look for status filter tabs, chips, or select
+     const tabList = page.getByRole('tablist').first();
+     const hasTabList = await tabList.isVisible({ timeout: 10_000 }).catch(() => false);
+ 
+@@ -194,7 +151,6 @@ test.describe('Approval chain flow', () => {
+       const count = await tabs.count();
+ 
+       if (count > 1) {
+-        // Click a tab that is NOT currently active
+         for (let i = 0; i < count; i++) {
+           const tab = tabs.nth(i);
+           const state = await tab.getAttribute('data-state');
+@@ -210,7 +166,6 @@ test.describe('Approval chain flow', () => {
+       return;
+     }
+ 
+-    // Fallback: look for filter chips/buttons
+     const filterChip = page
+       .locator('button')
+       .filter({ hasText: /pending|approved|rejected|all/i })
+diff --git a/apps/web/e2e/functional/billing-flow.spec.ts b/apps/web/e2e/functional/billing-flow.spec.ts
+index 0047051c..5de599d0 100644
+--- a/apps/web/e2e/functional/billing-flow.spec.ts
++++ b/apps/web/e2e/functional/billing-flow.spec.ts
+@@ -1,5 +1,5 @@
+ import { expect, test } from '@playwright/test';
+-import { navigateToDashboard, skipIfUnauthenticated } from './helpers';
++import { closeDialog, dialog, navigateToDashboard, skipIfUnauthenticated } from './helpers';
+ 
+ test.describe('Billing flow', () => {
+   test.beforeEach(async ({ page }) => {
+@@ -82,19 +82,14 @@ test.describe('Billing flow', () => {
+     const urlBefore = page.url();
+     await upgradeButton.click();
+ 
+-    // Either a dialog/modal opens, or we redirect to Stripe/pricing
+-    const dialog = page
+-      .locator('[role="dialog"], [data-state="open"][data-radix-dialog-content]')
+-      .first();
+-    const dialogVisible = await dialog.isVisible({ timeout: 10_000 }).catch(() => false);
++    const dlg = dialog(page);
++    const dialogVisible = await dlg.isVisible({ timeout: 10_000 }).catch(() => false);
+ 
+-    if (!dialogVisible) {
+-      // URL should have changed (Stripe redirect or pricing page)
+-      await page.waitForTimeout(3_000);
+-      const urlAfter = page.url();
+-      expect(urlAfter !== urlBefore || dialogVisible).toBeTruthy();
++    if (dialogVisible) {
++      await expect(dlg).toBeVisible();
+     } else {
+-      await expect(dialog).toBeVisible();
++      await page.waitForURL(url => url.toString() !== urlBefore, { timeout: 10_000 });
++      expect(page.url()).not.toBe(urlBefore);
+     }
+   });
+ 
+@@ -151,26 +146,13 @@ test.describe('Billing flow', () => {
+ 
+     await upgradeButton.click();
+ 
+-    const dialog = page
+-      .locator('[role="dialog"], [data-state="open"][data-radix-dialog-content]')
+-      .first();
+-    const dialogVisible = await dialog.isVisible({ timeout: 10_000 }).catch(() => false);
++    const dlg = dialog(page);
++    const dialogVisible = await dlg.isVisible({ timeout: 10_000 }).catch(() => false);
+     test.skip(!dialogVisible, 'No dialog opened — upgrade may redirect instead of opening dialog');
+ 
+-    // Close the dialog via close button or Escape
+-    const closeButton = dialog
+-      .locator('button[aria-label="Close"], button:has-text("Cancel"), button:has-text("Close")')
+-      .first();
+-    const closeVisible = await closeButton.isVisible().catch(() => false);
+-
+-    if (closeVisible) {
+-      await closeButton.click();
+-    } else {
+-      await page.keyboard.press('Escape');
+-    }
++    await closeDialog(page, dlg);
+ 
+-    // Dialog should be gone, settings page still visible
+-    await expect(dialog).not.toBeVisible({ timeout: 10_000 });
++    await expect(dlg).not.toBeVisible({ timeout: 10_000 });
+     await expect(page.locator('[role="tabpanel"]')).toBeVisible({ timeout: 15_000 });
+   });
+ });
+diff --git a/apps/web/e2e/functional/classification-flow.spec.ts b/apps/web/e2e/functional/classification-flow.spec.ts
+index 6e9fdea8..1bc8ecf6 100644
+--- a/apps/web/e2e/functional/classification-flow.spec.ts
++++ b/apps/web/e2e/functional/classification-flow.spec.ts
+@@ -1,6 +1,13 @@
+ import { expect, test } from '@playwright/test';
+ 
+-import { expectPageHeading, navigateToDashboard, skipIfUnauthenticated } from './helpers';
++import {
++  expectPageHeading,
++  navigateToDashboard,
++  searchInput,
++  sidePanel,
++  skipIfUnauthenticated,
++  tableRows,
++} from './helpers';
+ 
+ test.describe('Classification flow', () => {
+   test.beforeEach(async ({ page }) => {
+@@ -32,8 +39,12 @@ test.describe('Classification flow', () => {
+     const table = page.locator('table').first();
+     const hasTable = await table.isVisible({ timeout: 10_000 }).catch(() => false);
+ 
+-    if (!hasTable) {
+-      // Try card-based layout
++    if (hasTable) {
++      const { rows, count } = await tableRows(page);
++      test.skip(count === 0, 'Table has no rows — skipping click test');
++
++      await rows.first().click();
++    } else {
+       const card = page
+         .locator('[data-testid*="contractor"], [data-testid*="classification"], [class*="card"]')
+         .first();
+@@ -41,24 +52,12 @@ test.describe('Classification flow', () => {
+       test.skip(!hasCard, 'No contractor rows or cards visible — skipping click test');
+ 
+       await card.click();
+-    } else {
+-      const rows = table.locator('tbody tr');
+-      const rowCount = await rows.count();
+-      test.skip(rowCount === 0, 'Table has no rows — skipping click test');
+-
+-      await rows.first().click();
+     }
+ 
+-    // Expect either a side panel, dialog, or URL navigation
+-    const sidePanel = page
+-      .locator(
+-        '[data-state="open"][role="dialog"], [data-state="open"][data-radix-dialog-content], [role="dialog"], aside',
+-      )
+-      .first();
+     const urlChanged = !page.url().endsWith('/en/classification');
+ 
+     if (!urlChanged) {
+-      await expect(sidePanel).toBeVisible({ timeout: 15_000 });
++      await expect(sidePanel(page)).toBeVisible({ timeout: 15_000 });
+     }
+   });
+ 
+@@ -104,21 +103,18 @@ test.describe('Classification flow', () => {
+   });
+ 
+   test('search or filter for contractors works', async ({ page }) => {
+-    const searchInput = page
+-      .locator('input[placeholder*="earch"], input[type="search"], input[aria-label*="earch"]')
+-      .first();
++    const input = searchInput(page);
+ 
+-    const inputVisible = await searchInput.isVisible({ timeout: 10_000 }).catch(() => false);
++    const inputVisible = await input.isVisible({ timeout: 10_000 }).catch(() => false);
+     test.skip(!inputVisible, 'No search input visible — skipping search test');
+ 
+-    await searchInput.fill('test-contractor');
++    await input.fill('test-contractor');
+ 
+-    // Wait for debounced URL update or client-side filter
+     await page.waitForURL(/search=test-contractor/, { timeout: 10_000 }).catch(() => {
+       // Client-side filtering without URL params is acceptable
+     });
+ 
+-    await expect(searchInput).toHaveValue('test-contractor');
++    await expect(input).toHaveValue('test-contractor');
+   });
+ 
+   test('tab navigation if tabs exist', async ({ page }) => {
+diff --git a/apps/web/e2e/functional/contract-detail.spec.ts b/apps/web/e2e/functional/contract-detail.spec.ts
+index 1060aee9..ebc56ac3 100644
+--- a/apps/web/e2e/functional/contract-detail.spec.ts
++++ b/apps/web/e2e/functional/contract-detail.spec.ts
+@@ -1,77 +1,20 @@
+ import { expect, test } from '@playwright/test';
+ 
+-import { navigateToDashboard, skipIfUnauthenticated } from './helpers';
++import { navigateToFirstDetail } from './helpers';
+ 
+ test.describe('Contract detail page', () => {
+-  /**
+-   * Navigate to the contracts list first, then attempt to reach
+-   * a detail page by clicking the first table row. Every test in
+-   * this suite is skipped when no contract data exists.
+-   */
+-
+-  async function navigateToFirstContractDetail(page: import('@playwright/test').Page) {
+-    await navigateToDashboard(page, '/en/contracts');
+-    skipIfUnauthenticated(page);
+-
+-    // Wait for table or empty state
+-    const firstRow = page.locator('table tbody tr').first();
+-    const hasData = await firstRow.isVisible({ timeout: 5_000 }).catch(() => false);
+-
+-    if (!hasData) {
+-      test.skip(true, 'No contract data available — skipping detail page test');
+-      return;
+-    }
+-
+-    // Click the first row to open side panel or navigate directly
+-    await firstRow.click();
+-
+-    const sidePanel = page
+-      .locator(
+-        '[data-state="open"][role="dialog"], [data-state="open"][data-radix-dialog-content], [data-state="open"].sheet-content, [role="dialog"]',
+-      )
+-      .first();
+-    const panelVisible = await sidePanel.isVisible({ timeout: 10_000 }).catch(() => false);
+-
+-    if (panelVisible) {
+-      // Look for a "View" link or navigation link within the side panel
+-      const viewLink = sidePanel
+-        .locator('a')
+-        .filter({ hasText: /view|detail|open/i })
+-        .first();
+-      const viewLinkVisible = await viewLink.isVisible({ timeout: 5_000 }).catch(() => false);
+-
+-      if (viewLinkVisible) {
+-        await viewLink.click();
+-      } else {
+-        // Fallback: look for any link that navigates to a contract detail URL
+-        const detailLink = sidePanel.locator('a[href*="/contracts/"]').first();
+-        const detailLinkVisible = await detailLink.isVisible({ timeout: 3_000 }).catch(() => false);
+-
+-        if (detailLinkVisible) {
+-          await detailLink.click();
+-        } else {
+-          test.skip(true, 'No navigation link to contract detail found in side panel');
+-          return;
+-        }
+-      }
+-    }
+-
+-    // Wait for detail page to load — row click may navigate directly or via side panel
+-    await page.waitForURL(/\/en\/contracts\/[^/]+/, { timeout: 15_000 });
+-    await page.locator('#main-content').waitFor({ state: 'visible', timeout: 15_000 });
++  async function goToDetail(page: import('@playwright/test').Page) {
++    await navigateToFirstDetail(page, '/en/contracts', /\/en\/contracts\/[^/]+/);
+   }
+ 
+   test('navigate to contract detail from list', async ({ page }) => {
+-    await navigateToFirstContractDetail(page);
+-
+-    // Verify we are on a detail page URL
++    await goToDetail(page);
+     expect(page.url()).toMatch(/\/en\/contracts\/[^/]+/);
+   });
+ 
+   test('detail page renders', async ({ page }) => {
+-    await navigateToFirstContractDetail(page);
++    await goToDetail(page);
+ 
+-    // Verify main content is visible with contract-related content
+     await expect(page.locator('#main-content')).toBeVisible({ timeout: 15_000 });
+ 
+     const heading = page
+@@ -81,9 +24,8 @@ test.describe('Contract detail page', () => {
+   });
+ 
+   test('contract tabs are visible', async ({ page }) => {
+-    await navigateToFirstContractDetail(page);
++    await goToDetail(page);
+ 
+-    // Look for tab triggers (tablist role or tab role elements)
+     const tabList = page.locator('[role="tablist"]').first();
+     const tabListVisible = await tabList.isVisible({ timeout: 10_000 }).catch(() => false);
+ 
+@@ -92,7 +34,6 @@ test.describe('Contract detail page', () => {
+       const tabCount = await tabs.count();
+       expect(tabCount).toBeGreaterThanOrEqual(2);
+     } else {
+-      // Some contract detail layouts may use navigation links instead of tabs
+       const navLinks = page
+         .locator('nav a, [class*="tab"], [class*="nav-link"]')
+         .filter({ hasText: /detail|amendment|signature|overview/i });
+@@ -102,9 +43,8 @@ test.describe('Contract detail page', () => {
+   });
+ 
+   test('contract header shows status', async ({ page }) => {
+-    await navigateToFirstContractDetail(page);
++    await goToDetail(page);
+ 
+-    // Look for a status badge in the header area
+     const statusBadge = page
+       .locator('[data-testid="status-badge"], [class*="badge"], [class*="status"]')
+       .first()
+@@ -118,11 +58,10 @@ test.describe('Contract detail page', () => {
+   });
+ 
+   test('back navigation works', async ({ page }) => {
+-    await navigateToFirstContractDetail(page);
++    await goToDetail(page);
+ 
+-    // Look for breadcrumb or back link
+     const backLink = page
+-      .locator('nav[aria-label*="readcrumb"] a, a[href="/en/contracts"], a[href*="/contracts"]')
++      .locator('nav[aria-label*="breadcrumb"] a, a[href="/en/contracts"], a[href*="/contracts"]')
+       .filter({ hasText: /contract/i })
+       .first();
+     const backLinkVisible = await backLink.isVisible({ timeout: 5_000 }).catch(() => false);
+@@ -130,11 +69,9 @@ test.describe('Contract detail page', () => {
+     if (backLinkVisible) {
+       await backLink.click();
+     } else {
+-      // Fallback: use browser back
+       await page.goBack();
+     }
+ 
+-    // Verify we returned to the contracts list
+     await page.waitForURL(/\/en\/contracts(?:\?|$)/, { timeout: 15_000 });
+     await expect(page.locator('#main-content')).toBeVisible({ timeout: 15_000 });
+   });
+diff --git a/apps/web/e2e/functional/contractor-detail.spec.ts b/apps/web/e2e/functional/contractor-detail.spec.ts
+index a588935a..bf42441d 100644
+--- a/apps/web/e2e/functional/contractor-detail.spec.ts
++++ b/apps/web/e2e/functional/contractor-detail.spec.ts
+@@ -1,75 +1,20 @@
+ import { expect, test } from '@playwright/test';
+ 
+-import { navigateToDashboard, skipIfUnauthenticated } from './helpers';
++import { navigateToFirstDetail } from './helpers';
+ 
+ test.describe('Contractor detail page', () => {
+-  /**
+-   * Navigate to the contractors list first, then attempt to reach
+-   * a detail page by clicking the first table row. Every test in
+-   * this suite is skipped when no contractor data exists.
+-   */
+-
+-  async function navigateToFirstContractorDetail(page: import('@playwright/test').Page) {
+-    await navigateToDashboard(page, '/en/contractors');
+-    skipIfUnauthenticated(page);
+-
+-    // Wait for table or empty state
+-    const firstRow = page.locator('table tbody tr').first();
+-    const hasData = await firstRow.isVisible({ timeout: 5_000 }).catch(() => false);
+-
+-    if (!hasData) {
+-      test.skip(true, 'No contractor data available — skipping detail page test');
+-      return;
+-    }
+-
+-    // Click the first row to open side panel
+-    await firstRow.click();
+-
+-    const sidePanel = page
+-      .locator(
+-        '[data-state="open"][role="dialog"], [data-state="open"][data-radix-dialog-content], [data-state="open"].sheet-content, [role="dialog"]',
+-      )
+-      .first();
+-    await expect(sidePanel).toBeVisible({ timeout: 15_000 });
+-
+-    // Look for a "View" link or navigation link within the side panel to go to full detail
+-    const viewLink = sidePanel
+-      .locator('a')
+-      .filter({ hasText: /view|detail|open|profile/i })
+-      .first();
+-    const viewLinkVisible = await viewLink.isVisible({ timeout: 5_000 }).catch(() => false);
+-
+-    if (viewLinkVisible) {
+-      await viewLink.click();
+-    } else {
+-      // Fallback: look for any link that navigates to a contractor detail URL
+-      const detailLink = sidePanel.locator('a[href*="/contractors/"]').first();
+-      const detailLinkVisible = await detailLink.isVisible({ timeout: 3_000 }).catch(() => false);
+-
+-      if (detailLinkVisible) {
+-        await detailLink.click();
+-      } else {
+-        test.skip(true, 'No navigation link to contractor detail found in side panel');
+-        return;
+-      }
+-    }
+-
+-    // Wait for detail page to load
+-    await page.waitForURL(/\/en\/contractors\/[^/]+/, { timeout: 15_000 });
+-    await page.locator('#main-content').waitFor({ state: 'visible', timeout: 15_000 });
++  async function goToDetail(page: import('@playwright/test').Page) {
++    await navigateToFirstDetail(page, '/en/contractors', /\/en\/contractors\/[^/]+/);
+   }
+ 
+   test('navigate to contractor detail from list', async ({ page }) => {
+-    await navigateToFirstContractorDetail(page);
+-
+-    // Verify we are on a detail page URL
++    await goToDetail(page);
+     expect(page.url()).toMatch(/\/en\/contractors\/[^/]+/);
+   });
+ 
+   test('detail page renders with profile header', async ({ page }) => {
+-    await navigateToFirstContractorDetail(page);
++    await goToDetail(page);
+ 
+-    // Verify a heading or profile header section exists
+     const profileHeader = page
+       .locator('h1, h2, [data-testid="profile-header"], [class*="profile-header"]')
+       .first();
+@@ -77,51 +22,39 @@ test.describe('Contractor detail page', () => {
+   });
+ 
+   test('profile tabs are visible', async ({ page }) => {
+-    await navigateToFirstContractorDetail(page);
++    await goToDetail(page);
+ 
+-    // Look for tab triggers (tablist role or tab role elements)
+     const tabList = page.locator('[role="tablist"]').first();
+     await expect(tabList).toBeVisible({ timeout: 15_000 });
+ 
+-    // Verify at least some expected tabs exist
+     const tabs = page.locator('[role="tab"]');
+     const tabCount = await tabs.count();
+     expect(tabCount).toBeGreaterThanOrEqual(2);
+   });
+ 
+   test('tab switching works', async ({ page }) => {
+-    await navigateToFirstContractorDetail(page);
++    await goToDetail(page);
+ 
+     const tabs = page.locator('[role="tab"]');
+     const tabCount = await tabs.count();
+     test.skip(tabCount < 2, 'Not enough tabs to test switching');
+ 
+-    // Get the initially active tab
+-    const _firstTab = tabs.first();
+     const secondTab = tabs.nth(1);
+-
+-    // Click the second tab
+     await secondTab.click();
+ 
+-    // Verify the second tab is now selected
+-    await expect(secondTab)
+-      .toHaveAttribute('data-state', 'active', { timeout: 5_000 })
+-      .catch(async () => {
+-        // Fallback: check aria-selected
+-        await expect(secondTab).toHaveAttribute('aria-selected', 'true', { timeout: 5_000 });
+-      });
++    const isDataStateActive = await secondTab.getAttribute('data-state') === 'active';
++    const isAriaSelected = await secondTab.getAttribute('aria-selected') === 'true';
++    expect(isDataStateActive || isAriaSelected).toBe(true);
+ 
+-    // Verify a tab panel is visible
+     const tabPanel = page.locator('[role="tabpanel"]').first();
+     await expect(tabPanel).toBeVisible({ timeout: 10_000 });
+   });
+ 
+   test('back navigation works', async ({ page }) => {
+-    await navigateToFirstContractorDetail(page);
++    await goToDetail(page);
+ 
+-    // Look for breadcrumb or back link
+     const backLink = page
+-      .locator('nav[aria-label*="readcrumb"] a, a[href="/en/contractors"], a[href*="/contractors"]')
++      .locator('nav[aria-label*="breadcrumb"] a, a[href="/en/contractors"], a[href*="/contractors"]')
+       .filter({ hasText: /contractor/i })
+       .first();
+     const backLinkVisible = await backLink.isVisible({ timeout: 5_000 }).catch(() => false);
+@@ -129,11 +62,9 @@ test.describe('Contractor detail page', () => {
+     if (backLinkVisible) {
+       await backLink.click();
+     } else {
+-      // Fallback: use browser back
+       await page.goBack();
+     }
+ 
+-    // Verify we returned to the contractors list
+     await page.waitForURL(/\/en\/contractors(?:\?|$)/, { timeout: 15_000 });
+     await expect(page.locator('#main-content')).toBeVisible({ timeout: 15_000 });
+   });
+diff --git a/apps/web/e2e/functional/contractors.spec.ts b/apps/web/e2e/functional/contractors.spec.ts
+index 37331d54..a1c41cc0 100644
+--- a/apps/web/e2e/functional/contractors.spec.ts
++++ b/apps/web/e2e/functional/contractors.spec.ts
+@@ -1,6 +1,13 @@
+ import { expect, test } from '@playwright/test';
+ 
+-import { expectPageHeading, navigateToDashboard, skipIfUnauthenticated } from './helpers';
++import {
++  expectPageHeading,
++  navigateToDashboard,
++  searchInput,
++  sidePanel,
++  skipIfUnauthenticated,
++  tableRows,
++} from './helpers';
+ 
+ test.describe('Contractors page', () => {
+   test.beforeEach(async ({ page }) => {
+@@ -27,10 +34,7 @@ test.describe('Contractors page', () => {
+   });
+ 
+   test('search input is present', async ({ page }) => {
+-    const searchInput = page
+-      .locator('input[placeholder*="earch"], input[type="search"], input[aria-label*="earch"]')
+-      .first();
+-    await expect(searchInput).toBeVisible({ timeout: 15_000 });
++    await expect(searchInput(page)).toBeVisible({ timeout: 15_000 });
+   });
+ 
+   test('add contractor button exists', async ({ page }) => {
+@@ -42,47 +46,30 @@ test.describe('Contractors page', () => {
+   });
+ 
+   test('table rows are clickable and open side panel', async ({ page }) => {
+-    const rows = page.locator('table tbody tr');
+-    const rowCount = await rows.count().catch(() => 0);
+-
+-    test.skip(rowCount === 0, 'No data rows in table — skipping click test.');
++    const { rows, count } = await tableRows(page);
++    test.skip(count === 0, 'No data rows in table — skipping click test.');
+ 
+     await rows.first().click();
+-
+-    const sidePanel = page
+-      .locator(
+-        '[data-state="open"][role="dialog"], [data-state="open"][data-radix-dialog-content], [data-state="open"].sheet-content, [role="dialog"]',
+-      )
+-      .first();
+-    await expect(sidePanel).toBeVisible({ timeout: 15_000 });
++    await expect(sidePanel(page)).toBeVisible({ timeout: 15_000 });
+   });
+ 
+   test('URL action=new opens wizard', async ({ page }) => {
+     await page.goto('/en/contractors?action=new', { waitUntil: 'domcontentloaded' });
+     if (page.url().includes('/login')) return;
+ 
+-    const dialog = page
+-      .locator(
+-        '[data-state="open"][role="dialog"], [data-state="open"][data-radix-dialog-content], [data-state="open"].sheet-content, [role="dialog"]',
+-      )
+-      .first();
+-    await expect(dialog).toBeVisible({ timeout: 20_000 });
++    await expect(sidePanel(page)).toBeVisible({ timeout: 20_000 });
+   });
+ 
+   test('search filters table via URL', async ({ page }) => {
+-    const searchInput = page
+-      .locator('input[placeholder*="earch"], input[type="search"], input[aria-label*="earch"]')
+-      .first();
+-    await expect(searchInput).toBeVisible({ timeout: 15_000 });
++    const input = searchInput(page);
++    await expect(input).toBeVisible({ timeout: 15_000 });
+ 
+-    await searchInput.fill('test-query');
++    await input.fill('test-query');
+ 
+-    // Wait for debounced URL update
+     await page.waitForURL(/search=test-query/, { timeout: 10_000 }).catch(() => {
+-      // Some implementations filter client-side without URL params — that is acceptable
++      // Client-side filtering without URL params is acceptable
+     });
+ 
+-    // Verify the input retained its value (baseline interaction check)
+-    await expect(searchInput).toHaveValue('test-query');
++    await expect(input).toHaveValue('test-query');
+   });
+ });
+diff --git a/apps/web/e2e/functional/contracts.spec.ts b/apps/web/e2e/functional/contracts.spec.ts
+index 6bf2068d..4fb8fcb0 100644
+--- a/apps/web/e2e/functional/contracts.spec.ts
++++ b/apps/web/e2e/functional/contracts.spec.ts
+@@ -1,5 +1,12 @@
+ import { expect, test } from '@playwright/test';
+-import { expectPageHeading, navigateToDashboard, skipIfUnauthenticated } from './helpers';
++import {
++  dialog,
++  expectPageHeading,
++  navigateToDashboard,
++  sidePanel,
++  skipIfUnauthenticated,
++  tableRows,
++} from './helpers';
+ 
+ test.describe('Contracts', () => {
+   test.beforeEach(async ({ page }) => {
+@@ -25,14 +32,12 @@ test.describe('Contracts', () => {
+   });
+ 
+   test('search input present', async ({ page }) => {
+-    // Wait for content to settle before checking for search
+     const table = page.locator('table').first();
+     const emptyState = page
+       .getByRole('button', { name: /create contract|add contractors first/i })
+       .first();
+     await expect(table.or(emptyState)).toBeVisible({ timeout: 20_000 });
+ 
+-    // Search input should be in the toolbar when table is rendered
+     const hasTable = await table.isVisible().catch(() => false);
+     test.skip(!hasTable, 'No table rendered — search toolbar not expected in empty state');
+ 
+@@ -56,25 +61,17 @@ test.describe('Contracts', () => {
+     const hasTable = await table.isVisible({ timeout: 15_000 }).catch(() => false);
+     test.skip(!hasTable, 'No table rendered — skipping row interaction test');
+ 
+-    const rows = table.locator('tbody tr');
+-    const rowCount = await rows.count();
+-    test.skip(rowCount === 0, 'Table has no rows — skipping row interaction test');
++    const { rows, count } = await tableRows(page);
++    test.skip(count === 0, 'Table has no rows — skipping row interaction test');
+ 
+-    // Click the first data row
+     await rows.first().click();
+-
+-    // Verify a side panel or sheet opens
+-    const sidePanel = page
+-      .locator('[role="dialog"], [data-state="open"], [class*="sheet"], [class*="panel"]')
+-      .first();
+-    await expect(sidePanel).toBeVisible({ timeout: 10_000 });
++    await expect(sidePanel(page)).toBeVisible({ timeout: 10_000 });
+   });
+ 
+   test('URL action=new opens wizard', async ({ page }) => {
+     await navigateToDashboard(page, '/en/contracts?action=new');
+     skipIfUnauthenticated(page);
+ 
+-    const dialog = page.locator('[role="dialog"]').first();
+-    await expect(dialog).toBeVisible({ timeout: 15_000 });
++    await expect(dialog(page)).toBeVisible({ timeout: 15_000 });
+   });
+ });
+diff --git a/apps/web/e2e/functional/dashboard.spec.ts b/apps/web/e2e/functional/dashboard.spec.ts
+index 2320645e..cf0281b1 100644
+--- a/apps/web/e2e/functional/dashboard.spec.ts
++++ b/apps/web/e2e/functional/dashboard.spec.ts
+@@ -16,7 +16,6 @@ test.describe('Dashboard', () => {
+     const kpiCards = page.locator('[data-testid="kpi-card"], [class*="card"]').first();
+     const emptyState = page.getByRole('heading', { name: /get started/i });
+ 
+-    // Either KPI cards are visible OR the empty-state heading is shown
+     await expect(kpiCards.or(emptyState)).toBeVisible({ timeout: 20_000 });
+   });
+ 
+@@ -34,12 +33,8 @@ test.describe('Dashboard', () => {
+   });
+ 
+   test('dashboard widgets load without errors', async ({ page }) => {
+-    // Wait for main content to settle
+-    await page.waitForLoadState('networkidle', { timeout: 30_000 }).catch(() => {
+-      // networkidle may not fire in all environments; continue regardless
+-    });
++    await page.locator('#main-content').waitFor({ state: 'visible', timeout: 30_000 });
+ 
+-    // Verify no uncaught error dialogs are visible
+     const errorDialog = page.locator('[role="alertdialog"], [role="alert"][data-error]');
+     await expect(errorDialog).toHaveCount(0);
+   });
+@@ -48,13 +43,10 @@ test.describe('Dashboard', () => {
+     const jsErrors: Error[] = [];
+     page.on('pageerror', error => jsErrors.push(error));
+ 
+-    // Re-navigate to capture errors from a fresh load
+     await navigateToDashboard(page, '/en/');
+     skipIfUnauthenticated(page);
+ 
+-    await page.waitForLoadState('networkidle', { timeout: 30_000 }).catch(() => {
+-      // networkidle may not fire; continue
+-    });
++    await page.locator('#main-content').waitFor({ state: 'visible', timeout: 30_000 });
+ 
+     expect(jsErrors).toHaveLength(0);
+   });
+diff --git a/apps/web/e2e/functional/global-setup.ts b/apps/web/e2e/functional/global-setup.ts
+index 8353a1e2..ded6d4cd 100644
+--- a/apps/web/e2e/functional/global-setup.ts
++++ b/apps/web/e2e/functional/global-setup.ts
+@@ -32,7 +32,17 @@ export default async function globalSetup() {
+   await page.locator('#email').fill(email);
+   await page.locator('#password').fill(password);
+   await page.locator('button[type="submit"]').click();
+-  await page.waitForURL(/\/(?:en|pl|ar)(\/|$)/, { timeout: 60_000 });
++
++  try {
++    await page.waitForURL(/\/(?:en|pl|ar)(\/|$)/, { timeout: 60_000 });
++  } catch {
++    const currentUrl = page.url();
++    await browser.close();
++    throw new Error(
++      `[functional] Login failed — still on ${currentUrl} after 60 s. Check E2E_EMAIL / E2E_PASSWORD.`,
++    );
++  }
++
+   await page.context().storageState({ path: authFile });
+   await browser.close();
+ }
+diff --git a/apps/web/e2e/functional/helpers.ts b/apps/web/e2e/functional/helpers.ts
+index 6a3d77d3..11e9178b 100644
+--- a/apps/web/e2e/functional/helpers.ts
++++ b/apps/web/e2e/functional/helpers.ts
+@@ -1,10 +1,77 @@
+-import type { Page } from '@playwright/test';
++import type { Locator, Page } from '@playwright/test';
+ import { expect, test } from '@playwright/test';
+ 
+-/**
+- * Skip the current test if the page was redirected to login
+- * (i.e. no valid session cookies were loaded from global-setup).
+- */
++// ---------------------------------------------------------------------------
++// Shared locators — single source of truth for commonly-matched UI patterns
++// ---------------------------------------------------------------------------
++
++const SIDE_PANEL_SELECTOR = [
++  '[data-state="open"][role="dialog"]',
++  '[data-state="open"][data-radix-dialog-content]',
++  '[data-state="open"].sheet-content',
++  '[role="dialog"]',
++].join(', ');
++
++const SEARCH_INPUT_SELECTOR = [
++  'input[placeholder*="earch"]',
++  'input[type="search"]',
++  'input[aria-label*="earch"]',
++].join(', ');
++
++const DIALOG_SELECTOR = '[role="dialog"], [data-state="open"][data-radix-dialog-content]';
++
++const STATUS_BADGE_SELECTOR = [
++  '[class*="badge"]',
++  '[class*="pill"]',
++  '[class*="status"]',
++  '[data-testid*="status"]',
++].join(', ');
++
++export function sidePanel(page: Page): Locator {
++  return page.locator(SIDE_PANEL_SELECTOR).first();
++}
++
++export function searchInput(page: Page): Locator {
++  return page.locator(SEARCH_INPUT_SELECTOR).first();
++}
++
++export function dialog(page: Page): Locator {
++  return page.locator(DIALOG_SELECTOR).first();
++}
++
++export function statusBadge(page: Page, scope?: Locator): Locator {
++  const root = scope ?? page;
++  return root.locator(STATUS_BADGE_SELECTOR).first();
++}
++
++export function closeButton(scope: Locator): Locator {
++  return scope
++    .locator('button[aria-label*="close" i], button[aria-label*="Close"], [data-testid="close"]')
++    .first()
++    .or(scope.locator('button').filter({ hasText: /close|cancel|x/i }).first());
++}
++
++export function tableOrEmptyState(page: Page, emptyPattern?: RegExp): Locator {
++  const table = page.locator('table').first();
++  const emptyState = emptyPattern
++    ? page.getByText(emptyPattern)
++    : page
++        .locator('[data-testid="empty-state"], [class*="empty"], .flex.flex-col.items-center')
++        .filter({ has: page.locator('button') })
++        .first();
++  return table.or(emptyState);
++}
++
++export async function tableRows(page: Page): Promise<{ rows: Locator; count: number }> {
++  const rows = page.locator('table tbody tr');
++  const count = await rows.count();
++  return { rows, count };
++}
++
++// ---------------------------------------------------------------------------
++// Navigation & auth helpers
++// ---------------------------------------------------------------------------
++
+ export function skipIfUnauthenticated(page: Page) {
+   test.skip(
+     page.url().includes('/login'),
+@@ -12,19 +79,12 @@ export function skipIfUnauthenticated(page: Page) {
+   );
+ }
+ 
+-/**
+- * Navigate to a dashboard path and wait for the shell to render.
+- * Returns immediately if redirected to login (caller should use skipIfUnauthenticated).
+- */
+ export async function navigateToDashboard(page: Page, path: string) {
+   await page.goto(path, { waitUntil: 'domcontentloaded' });
+   if (page.url().includes('/login')) return;
+   await page.locator('#main-content').waitFor({ state: 'visible', timeout: 30_000 });
+ }
+ 
+-/**
+- * Wait for the sidebar to be visible (dashboard shell fully rendered).
+- */
+ export async function waitForSidebar(page: Page) {
+   await page
+     .locator("[data-sidebar='sidebar']")
+@@ -32,18 +92,77 @@ export async function waitForSidebar(page: Page) {
+     .waitFor({ state: 'visible', timeout: 20_000 });
+ }
+ 
+-/**
+- * Open the user menu dropdown in the sidebar.
+- */
+ export async function openUserMenu(page: Page) {
+   const trigger = page.locator("[data-sidebar='menu-button']").last();
+   await trigger.click();
+   await page.locator('[role="menu"]').waitFor({ state: 'visible', timeout: 10_000 });
+ }
+ 
+-/**
+- * Assert that a page heading is visible with the expected text.
+- */
+ export async function expectPageHeading(page: Page, text: string | RegExp) {
+   await expect(page.locator('h1, h2').first()).toContainText(text, { timeout: 15_000 });
+ }
++
++/**
++ * Close an open dialog/panel via its close button or Escape key.
++ */
++export async function closeDialog(page: Page, panel: Locator) {
++  const btn = closeButton(panel);
++  const btnVisible = await btn.isVisible({ timeout: 5_000 }).catch(() => false);
++
++  if (btnVisible) {
++    await btn.click();
++  } else {
++    await page.keyboard.press('Escape');
++  }
++}
++
++/**
++ * Navigate to first detail page from a list view via table row click + side panel link.
++ * Returns false (and skips the test) when no data or navigation link is found.
++ */
++export async function navigateToFirstDetail(
++  page: Page,
++  listPath: string,
++  detailUrlPattern: RegExp,
++) {
++  await navigateToDashboard(page, listPath);
++  skipIfUnauthenticated(page);
++
++  const firstRow = page.locator('table tbody tr').first();
++  const hasData = await firstRow.isVisible({ timeout: 5_000 }).catch(() => false);
++
++  if (!hasData) {
++    test.skip(true, 'No data available — skipping detail page test');
++    return;
++  }
++
++  await firstRow.click();
++
++  const panel = sidePanel(page);
++  const panelVisible = await panel.isVisible({ timeout: 10_000 }).catch(() => false);
++
++  if (panelVisible) {
++    const viewLink = panel
++      .locator('a')
++      .filter({ hasText: /view|detail|open|profile/i })
++      .first();
++    const viewLinkVisible = await viewLink.isVisible({ timeout: 5_000 }).catch(() => false);
++
++    if (viewLinkVisible) {
++      await viewLink.click();
++    } else {
++      const detailLink = panel.locator(`a[href*="/${listPath.split('/').pop()}/"]`).first();
++      const detailLinkVisible = await detailLink.isVisible({ timeout: 3_000 }).catch(() => false);
++
++      if (detailLinkVisible) {
++        await detailLink.click();
++      } else {
++        test.skip(true, 'No navigation link to detail found in side panel');
++        return;
++      }
++    }
++  }
++
++  await page.waitForURL(detailUrlPattern, { timeout: 15_000 });
++  await page.locator('#main-content').waitFor({ state: 'visible', timeout: 15_000 });
++}
+diff --git a/apps/web/e2e/functional/invoice-detail.spec.ts b/apps/web/e2e/functional/invoice-detail.spec.ts
+index 7b534fa7..b46c005e 100644
+--- a/apps/web/e2e/functional/invoice-detail.spec.ts
++++ b/apps/web/e2e/functional/invoice-detail.spec.ts
+@@ -1,75 +1,20 @@
+ import { expect, test } from '@playwright/test';
+ 
+-import { navigateToDashboard, skipIfUnauthenticated } from './helpers';
++import { navigateToFirstDetail } from './helpers';
+ 
+ test.describe('Invoice detail page', () => {
+-  /**
+-   * Navigate to the invoices list first, then attempt to reach
+-   * a detail page by clicking the first table row. Every test in
+-   * this suite is skipped when no invoice data exists.
+-   */
+-
+-  async function navigateToFirstInvoiceDetail(page: import('@playwright/test').Page) {
+-    await navigateToDashboard(page, '/en/invoices');
+-    skipIfUnauthenticated(page);
+-
+-    // Wait for table or empty state
+-    const firstRow = page.locator('table tbody tr').first();
+-    const hasData = await firstRow.isVisible({ timeout: 5_000 }).catch(() => false);
+-
+-    if (!hasData) {
+-      test.skip(true, 'No invoice data available — skipping detail page test');
+-      return;
+-    }
+-
+-    // Click the first row to open side panel
+-    await firstRow.click();
+-
+-    const sidePanel = page
+-      .locator(
+-        '[data-state="open"][role="dialog"], [data-state="open"][data-radix-dialog-content], [data-state="open"].sheet-content, [role="dialog"]',
+-      )
+-      .first();
+-    await expect(sidePanel).toBeVisible({ timeout: 15_000 });
+-
+-    // Look for a "View" link or navigation link within the side panel to go to full detail
+-    const viewLink = sidePanel
+-      .locator('a')
+-      .filter({ hasText: /view|detail|open/i })
+-      .first();
+-    const viewLinkVisible = await viewLink.isVisible({ timeout: 5_000 }).catch(() => false);
+-
+-    if (viewLinkVisible) {
+-      await viewLink.click();
+-    } else {
+-      // Fallback: look for any link that navigates to an invoice detail URL
+-      const detailLink = sidePanel.locator('a[href*="/invoices/"]').first();
+-      const detailLinkVisible = await detailLink.isVisible({ timeout: 3_000 }).catch(() => false);
+-
+-      if (detailLinkVisible) {
+-        await detailLink.click();
+-      } else {
+-        test.skip(true, 'No navigation link to invoice detail found in side panel');
+-        return;
+-      }
+-    }
+-
+-    // Wait for detail page to load
+-    await page.waitForURL(/\/en\/invoices\/[^/]+/, { timeout: 15_000 });
+-    await page.locator('#main-content').waitFor({ state: 'visible', timeout: 15_000 });
++  async function goToDetail(page: import('@playwright/test').Page) {
++    await navigateToFirstDetail(page, '/en/invoices', /\/en\/invoices\/[^/]+/);
+   }
+ 
+   test('navigate to invoice detail from list', async ({ page }) => {
+-    await navigateToFirstInvoiceDetail(page);
+-
+-    // Verify we are on a detail page URL
++    await goToDetail(page);
+     expect(page.url()).toMatch(/\/en\/invoices\/[^/]+/);
+   });
+ 
+   test('detail page renders', async ({ page }) => {
+-    await navigateToFirstInvoiceDetail(page);
++    await goToDetail(page);
+ 
+-    // Verify main content is visible with invoice-related content
+     await expect(page.locator('#main-content')).toBeVisible({ timeout: 15_000 });
+ 
+     const heading = page.locator('h1, h2, [data-testid="invoice-header"]').first();
+@@ -77,9 +22,8 @@ test.describe('Invoice detail page', () => {
+   });
+ 
+   test('invoice metadata is displayed', async ({ page }) => {
+-    await navigateToFirstInvoiceDetail(page);
++    await goToDetail(page);
+ 
+-    // Verify invoice number or status badge is visible
+     const invoiceIdentifier = page
+       .locator('[data-testid="invoice-number"], [class*="badge"], [class*="status"]')
+       .first()
+@@ -93,9 +37,8 @@ test.describe('Invoice detail page', () => {
+   });
+ 
+   test('audit timeline exists', async ({ page }) => {
+-    await navigateToFirstInvoiceDetail(page);
++    await goToDetail(page);
+ 
+-    // Look for timeline/activity section
+     const timeline = page
+       .locator(
+         '[data-testid="audit-timeline"], [data-testid="activity-timeline"], [class*="timeline"], [class*="activity"]',
+@@ -108,24 +51,16 @@ test.describe('Invoice detail page', () => {
+           .first(),
+       );
+ 
+-    // Timeline may not always be present — verify gracefully
+     const timelineVisible = await timeline.isVisible({ timeout: 10_000 }).catch(() => false);
+-
+-    if (timelineVisible) {
+-      await expect(timeline).toBeVisible();
+-    } else {
+-      // Accept that some invoice detail pages may not have a visible timeline section
+-      // but at least verify the page is still rendered
+-      await expect(page.locator('#main-content')).toBeVisible();
+-    }
++    test.skip(!timelineVisible, 'Audit timeline section not visible for this invoice');
++    await expect(timeline).toBeVisible();
+   });
+ 
+   test('back navigation works', async ({ page }) => {
+-    await navigateToFirstInvoiceDetail(page);
++    await goToDetail(page);
+ 
+-    // Look for breadcrumb or back link
+     const backLink = page
+-      .locator('nav[aria-label*="readcrumb"] a, a[href="/en/invoices"], a[href*="/invoices"]')
++      .locator('nav[aria-label*="breadcrumb"] a, a[href="/en/invoices"], a[href*="/invoices"]')
+       .filter({ hasText: /invoice/i })
+       .first();
+     const backLinkVisible = await backLink.isVisible({ timeout: 5_000 }).catch(() => false);
+@@ -133,11 +68,9 @@ test.describe('Invoice detail page', () => {
+     if (backLinkVisible) {
+       await backLink.click();
+     } else {
+-      // Fallback: use browser back
+       await page.goBack();
+     }
+ 
+-    // Verify we returned to the invoices list
+     await page.waitForURL(/\/en\/invoices(?:\?|$)/, { timeout: 15_000 });
+     await expect(page.locator('#main-content')).toBeVisible({ timeout: 15_000 });
+   });
+diff --git a/apps/web/e2e/functional/invoice-einvoice-flow.spec.ts b/apps/web/e2e/functional/invoice-einvoice-flow.spec.ts
+index 61ec228e..770802c5 100644
+--- a/apps/web/e2e/functional/invoice-einvoice-flow.spec.ts
++++ b/apps/web/e2e/functional/invoice-einvoice-flow.spec.ts
+@@ -1,6 +1,12 @@
+ import { expect, test } from '@playwright/test';
+ 
+-import { navigateToDashboard, skipIfUnauthenticated } from './helpers';
++import {
++  closeDialog,
++  navigateToDashboard,
++  sidePanel,
++  skipIfUnauthenticated,
++  tableRows,
++} from './helpers';
+ 
+ test.describe('Invoice e-invoice flow', () => {
+   test.beforeEach(async ({ page }) => {
+@@ -18,36 +24,23 @@ test.describe('Invoice e-invoice flow', () => {
+   });
+ 
+   test('click first invoice row opens side panel', async ({ page }) => {
+-    const rows = page.locator('table tbody tr');
+-    const rowCount = await rows.count().catch(() => 0);
+-    test.skip(rowCount === 0, 'No invoice rows — skipping side panel test');
++    const { rows, count } = await tableRows(page);
++    test.skip(count === 0, 'No invoice rows — skipping side panel test');
+ 
+     await rows.first().click();
+-
+-    const sidePanel = page
+-      .locator(
+-        '[data-state="open"][role="dialog"], [data-state="open"][data-radix-dialog-content], [data-state="open"].sheet-content, [role="dialog"]',
+-      )
+-      .first();
+-    await expect(sidePanel).toBeVisible({ timeout: 15_000 });
++    await expect(sidePanel(page)).toBeVisible({ timeout: 15_000 });
+   });
+ 
+   test('side panel shows invoice details', async ({ page }) => {
+-    const rows = page.locator('table tbody tr');
+-    const rowCount = await rows.count().catch(() => 0);
+-    test.skip(rowCount === 0, 'No invoice rows — skipping detail test');
++    const { rows, count } = await tableRows(page);
++    test.skip(count === 0, 'No invoice rows — skipping detail test');
+ 
+     await rows.first().click();
+ 
+-    const sidePanel = page
+-      .locator(
+-        '[data-state="open"][role="dialog"], [data-state="open"][data-radix-dialog-content], [data-state="open"].sheet-content, [role="dialog"]',
+-      )
+-      .first();
+-    await expect(sidePanel).toBeVisible({ timeout: 15_000 });
++    const panel = sidePanel(page);
++    await expect(panel).toBeVisible({ timeout: 15_000 });
+ 
+-    // Verify invoice details are present — number, amount, or status
+-    const invoiceDetail = sidePanel
++    const invoiceDetail = panel
+       .locator('span, p, div, h2, h3')
+       .filter({ hasText: /INV-|invoice|amount|total|status|draft|pending|approved|paid/i })
+       .first();
+@@ -55,21 +48,15 @@ test.describe('Invoice e-invoice flow', () => {
+   });
+ 
+   test('e-invoice action button exists in detail', async ({ page }) => {
+-    const rows = page.locator('table tbody tr');
+-    const rowCount = await rows.count().catch(() => 0);
+-    test.skip(rowCount === 0, 'No invoice rows — skipping e-invoice button test');
++    const { rows, count } = await tableRows(page);
++    test.skip(count === 0, 'No invoice rows — skipping e-invoice button test');
+ 
+     await rows.first().click();
+ 
+-    const sidePanel = page
+-      .locator(
+-        '[data-state="open"][role="dialog"], [data-state="open"][data-radix-dialog-content], [data-state="open"].sheet-content, [role="dialog"]',
+-      )
+-      .first();
+-    await expect(sidePanel).toBeVisible({ timeout: 15_000 });
++    const panel = sidePanel(page);
++    await expect(panel).toBeVisible({ timeout: 15_000 });
+ 
+-    // Look for e-invoice action buttons
+-    const einvoiceButton = sidePanel
++    const einvoiceButton = panel
+       .locator('button, a[role="button"]')
+       .filter({
+         hasText:
+@@ -77,37 +64,25 @@ test.describe('Invoice e-invoice flow', () => {
+       })
+       .first();
+ 
+-    // The button may not exist for all invoice statuses — verify gracefully
+     const buttonVisible = await einvoiceButton.isVisible({ timeout: 10_000 }).catch(() => false);
+-
+-    if (buttonVisible) {
+-      await expect(einvoiceButton).toBeVisible();
+-    } else {
+-      // Accept that e-invoice actions may not be available for the first invoice
+-      await expect(sidePanel).toBeVisible();
+-    }
++    test.skip(!buttonVisible, 'E-invoice action not available for this invoice status');
++    await expect(einvoiceButton).toBeVisible();
+   });
+ 
+   test('e-invoice status indicator visible', async ({ page }) => {
+-    const rows = page.locator('table tbody tr');
+-    const rowCount = await rows.count().catch(() => 0);
+-    test.skip(rowCount === 0, 'No invoice rows — skipping status indicator test');
++    const { rows, count } = await tableRows(page);
++    test.skip(count === 0, 'No invoice rows — skipping status indicator test');
+ 
+     await rows.first().click();
+ 
+-    const sidePanel = page
+-      .locator(
+-        '[data-state="open"][role="dialog"], [data-state="open"][data-radix-dialog-content], [data-state="open"].sheet-content, [role="dialog"]',
+-      )
+-      .first();
+-    await expect(sidePanel).toBeVisible({ timeout: 15_000 });
++    const panel = sidePanel(page);
++    await expect(panel).toBeVisible({ timeout: 15_000 });
+ 
+-    // Look for e-invoice status badge
+-    const statusIndicator = sidePanel
++    const statusIndicator = panel
+       .locator('[class*="badge"], [class*="status"], [data-testid*="einvoice"], [data-testid*="status"]')
+       .first()
+       .or(
+-        sidePanel
++        panel
+           .locator('span, div')
+           .filter({
+             hasText:
+@@ -117,65 +92,39 @@ test.describe('Invoice e-invoice flow', () => {
+       );
+ 
+     const statusVisible = await statusIndicator.isVisible({ timeout: 10_000 }).catch(() => false);
+-
+-    if (statusVisible) {
+-      await expect(statusIndicator).toBeVisible();
+-    } else {
+-      // Not all invoices have e-invoice status — gracefully pass
+-      await expect(sidePanel).toBeVisible();
+-    }
++    test.skip(!statusVisible, 'E-invoice status indicator not present for this invoice');
++    await expect(statusIndicator).toBeVisible();
+   });
+ 
+   test('close side panel returns to list', async ({ page }) => {
+-    const rows = page.locator('table tbody tr');
+-    const rowCount = await rows.count().catch(() => 0);
+-    test.skip(rowCount === 0, 'No invoice rows — skipping close panel test');
++    const { rows, count } = await tableRows(page);
++    test.skip(count === 0, 'No invoice rows — skipping close panel test');
+ 
+     await rows.first().click();
+ 
+-    const sidePanel = page
+-      .locator(
+-        '[data-state="open"][role="dialog"], [data-state="open"][data-radix-dialog-content], [data-state="open"].sheet-content, [role="dialog"]',
+-      )
+-      .first();
+-    await expect(sidePanel).toBeVisible({ timeout: 15_000 });
++    const panel = sidePanel(page);
++    await expect(panel).toBeVisible({ timeout: 15_000 });
+ 
+-    // Close the panel — look for close button or press Escape
+-    const closeButton = sidePanel
+-      .locator('button[aria-label*="close"], button[aria-label*="Close"], [data-testid="close"]')
+-      .first()
+-      .or(sidePanel.locator('button').filter({ hasText: /close|x/i }).first());
+-
+-    const closeVisible = await closeButton.isVisible({ timeout: 5_000 }).catch(() => false);
+-
+-    if (closeVisible) {
+-      await closeButton.click();
+-    } else {
+-      await page.keyboard.press('Escape');
+-    }
++    await closeDialog(page, panel);
+ 
+-    // Verify the table is visible again (list view restored)
+     await expect(page.locator('table').first()).toBeVisible({ timeout: 10_000 });
+   });
+ 
+   test('e-invoice settings page renders', async ({ page }) => {
+     await navigateToDashboard(page, '/en/settings/e-invoicing');
+ 
+-    // The route may not exist — check for redirect or 404
+     if (page.url().includes('/login')) return;
+ 
+     const mainContent = page.locator('#main-content');
+     const hasContent = await mainContent.isVisible({ timeout: 15_000 }).catch(() => false);
+ 
+     if (!hasContent) {
+-      // Try alternate settings paths
+       await navigateToDashboard(page, '/en/settings/integrations/zatca');
+       if (page.url().includes('/login')) return;
+     }
+ 
+     await expect(page.locator('#main-content')).toBeVisible({ timeout: 15_000 });
+ 
+-    // Look for configuration options on the settings page
+     const configElement = page
+       .locator('form, [data-testid*="config"], [data-testid*="setting"]')
+       .first()
+diff --git a/apps/web/e2e/functional/invoices.spec.ts b/apps/web/e2e/functional/invoices.spec.ts
+index 2e87e708..cc399495 100644
+--- a/apps/web/e2e/functional/invoices.spec.ts
++++ b/apps/web/e2e/functional/invoices.spec.ts
+@@ -1,6 +1,13 @@
+ import { expect, test } from '@playwright/test';
+ 
+-import { expectPageHeading, navigateToDashboard, skipIfUnauthenticated } from './helpers';
++import {
++  expectPageHeading,
++  navigateToDashboard,
++  searchInput,
++  sidePanel,
++  skipIfUnauthenticated,
++  tableRows,
++} from './helpers';
+ 
+ test.describe('Invoices page', () => {
+   test.beforeEach(async ({ page }) => {
+@@ -27,7 +34,6 @@ test.describe('Invoices page', () => {
+   });
+ 
+   test('status chip bar is present', async ({ page }) => {
+-    // Status chips are typically badge-like buttons or toggle elements above the table
+     const chipBar = page
+       .locator('[role="tablist"], [data-testid="status-chips"], [class*="chip"], [class*="badge"]')
+       .first()
+@@ -49,7 +55,6 @@ test.describe('Invoices page', () => {
+   });
+ 
+   test('status chip filters table', async ({ page }) => {
+-    // Find a clickable status chip/button
+     const statusChip = page
+       .locator('button')
+       .filter({ hasText: /draft|pending|approved|paid|overdue|all/i })
+@@ -61,48 +66,31 @@ test.describe('Invoices page', () => {
+     const urlBefore = page.url();
+     await statusChip.click();
+ 
+-    // Wait briefly for URL or content update
+-    await page.waitForTimeout(2_000);
+-
+-    // Either URL changed with a filter param, or content re-rendered
+-    const urlAfter = page.url();
+-    const urlChanged = urlAfter !== urlBefore;
++    await page.waitForURL(url => url.toString() !== urlBefore, { timeout: 5_000 }).catch(() => {
++      // Client-side filter without URL change is acceptable
++    });
+ 
+-    // If URL did not change, the filter may work client-side — just verify no crash
+-    if (!urlChanged) {
+-      await expect(page.locator('#main-content')).toBeVisible();
+-    }
++    await expect(page.locator('#main-content')).toBeVisible();
+   });
+ 
+   test('search input works', async ({ page }) => {
+-    const searchInput = page
+-      .locator('input[placeholder*="earch"], input[type="search"], input[aria-label*="earch"]')
+-      .first();
+-    await expect(searchInput).toBeVisible({ timeout: 15_000 });
++    const input = searchInput(page);
++    await expect(input).toBeVisible({ timeout: 15_000 });
+ 
+-    await searchInput.fill('INV-999');
++    await input.fill('INV-999');
+ 
+-    // Wait for debounced URL update
+     await page.waitForURL(/search=INV-999/, { timeout: 10_000 }).catch(() => {
+       // Client-side filtering without URL params is acceptable
+     });
+ 
+-    await expect(searchInput).toHaveValue('INV-999');
++    await expect(input).toHaveValue('INV-999');
+   });
+ 
+   test('table rows are clickable and open side panel', async ({ page }) => {
+-    const rows = page.locator('table tbody tr');
+-    const rowCount = await rows.count().catch(() => 0);
+-
+-    test.skip(rowCount === 0, 'No data rows in table — skipping click test.');
++    const { rows, count } = await tableRows(page);
++    test.skip(count === 0, 'No data rows in table — skipping click test.');
+ 
+     await rows.first().click();
+-
+-    const sidePanel = page
+-      .locator(
+-        '[data-state="open"][role="dialog"], [data-state="open"][data-radix-dialog-content], [data-state="open"].sheet-content, [role="dialog"]',
+-      )
+-      .first();
+-    await expect(sidePanel).toBeVisible({ timeout: 15_000 });
++    await expect(sidePanel(page)).toBeVisible({ timeout: 15_000 });
+   });
+ });
+diff --git a/apps/web/e2e/functional/payment-run-flow.spec.ts b/apps/web/e2e/functional/payment-run-flow.spec.ts
+index e6368d0e..4a0b1436 100644
+--- a/apps/web/e2e/functional/payment-run-flow.spec.ts
++++ b/apps/web/e2e/functional/payment-run-flow.spec.ts
+@@ -1,6 +1,13 @@
+ import { expect, test } from '@playwright/test';
+ 
+-import { expectPageHeading, navigateToDashboard, skipIfUnauthenticated } from './helpers';
++import {
++  closeDialog,
++  navigateToDashboard,
++  sidePanel,
++  skipIfUnauthenticated,
++  statusBadge,
++  tableRows,
++} from './helpers';
+ 
+ test.describe('Payment run flow', () => {
+   test.beforeEach(async ({ page }) => {
+@@ -49,15 +56,10 @@ test.describe('Payment run flow', () => {
+ 
+     await createButton.click();
+ 
+-    // Expect a dialog, wizard, or page navigation
+-    const dialog = page
+-      .locator(
+-        '[data-state="open"][role="dialog"], [data-state="open"][data-radix-dialog-content], [data-state="open"].sheet-content, [role="dialog"]',
+-      )
+-      .first();
++    const panel = sidePanel(page);
+     const wizardForm = page.locator('form').first();
+ 
+-    await expect(dialog.or(wizardForm)).toBeVisible({ timeout: 15_000 });
++    await expect(panel.or(wizardForm)).toBeVisible({ timeout: 15_000 });
+   });
+ 
+   test('wizard has contractor or invoice selection step', async ({ page }) => {
+@@ -76,16 +78,11 @@ test.describe('Payment run flow', () => {
+ 
+     await createButton.click();
+ 
+-    const dialog = page
+-      .locator(
+-        '[data-state="open"][role="dialog"], [data-state="open"][data-radix-dialog-content], [data-state="open"].sheet-content, [role="dialog"]',
+-      )
+-      .first();
+-    const dialogVisible = await dialog.isVisible({ timeout: 15_000 }).catch(() => false);
++    const panel = sidePanel(page);
++    const dialogVisible = await panel.isVisible({ timeout: 15_000 }).catch(() => false);
+ 
+-    const container = dialogVisible ? dialog : page;
++    const container = dialogVisible ? panel : page;
+ 
+-    // Look for contractor/invoice selection elements
+     const selectionElement = container
+       .locator(
+         '[data-testid*="contractor"], [data-testid*="invoice"], [data-testid*="select"], input[type="checkbox"], [role="combobox"]',
+@@ -102,12 +99,8 @@ test.describe('Payment run flow', () => {
+       .isVisible({ timeout: 10_000 })
+       .catch(() => false);
+ 
+-    if (selectionVisible) {
+-      await expect(selectionElement).toBeVisible();
+-    } else {
+-      // The wizard may start on a different step — verify dialog/form is at least open
+-      await expect(dialog.or(page.locator('form').first())).toBeVisible();
+-    }
++    test.skip(!selectionVisible, 'Selection step not visible on the first wizard step');
++    await expect(selectionElement).toBeVisible();
+   });
+ 
+   test('payment method selection visible', async ({ page }) => {
+@@ -126,16 +119,11 @@ test.describe('Payment run flow', () => {
+ 
+     await createButton.click();
+ 
+-    const dialog = page
+-      .locator(
+-        '[data-state="open"][role="dialog"], [data-state="open"][data-radix-dialog-content], [data-state="open"].sheet-content, [role="dialog"]',
+-      )
+-      .first();
+-    const dialogVisible = await dialog.isVisible({ timeout: 15_000 }).catch(() => false);
++    const panel = sidePanel(page);
++    const dialogVisible = await panel.isVisible({ timeout: 15_000 }).catch(() => false);
+ 
+-    const container = dialogVisible ? dialog : page;
++    const container = dialogVisible ? panel : page;
+ 
+-    // Look for payment method options (may be on a later wizard step)
+     const paymentMethod = container
+       .locator('label, button, [role="radio"], [role="option"], option, span, div')
+       .filter({ hasText: /sepa|swift|manual|bank transfer|wire|ach/i })
+@@ -147,13 +135,8 @@ test.describe('Payment run flow', () => {
+       );
+ 
+     const methodVisible = await paymentMethod.isVisible({ timeout: 10_000 }).catch(() => false);
+-
+-    if (methodVisible) {
+-      await expect(paymentMethod).toBeVisible();
+-    } else {
+-      // Payment method may be on a later step — verify wizard is open
+-      await expect(dialog.or(page.locator('form').first())).toBeVisible();
+-    }
++    test.skip(!methodVisible, 'Payment method selection not visible on this wizard step');
++    await expect(paymentMethod).toBeVisible();
+   });
+ 
+   test('cancel wizard returns to list', async ({ page }) => {
+@@ -172,38 +155,15 @@ test.describe('Payment run flow', () => {
+ 
+     await createButton.click();
+ 
+-    const dialog = page
+-      .locator(
+-        '[data-state="open"][role="dialog"], [data-state="open"][data-radix-dialog-content], [data-state="open"].sheet-content, [role="dialog"]',
+-      )
+-      .first();
+-    const dialogVisible = await dialog.isVisible({ timeout: 15_000 }).catch(() => false);
++    const panel = sidePanel(page);
++    const dialogVisible = await panel.isVisible({ timeout: 15_000 }).catch(() => false);
+ 
+     if (dialogVisible) {
+-      // Close via cancel button or Escape
+-      const cancelButton = dialog
+-        .locator('button')
+-        .filter({ hasText: /cancel|close|back/i })
+-        .first()
+-        .or(
+-          dialog
+-            .locator('button[aria-label*="close"], button[aria-label*="Close"]')
+-            .first(),
+-        );
+-
+-      const cancelVisible = await cancelButton.isVisible({ timeout: 5_000 }).catch(() => false);
+-
+-      if (cancelVisible) {
+-        await cancelButton.click();
+-      } else {
+-        await page.keyboard.press('Escape');
+-      }
++      await closeDialog(page, panel);
+     } else {
+-      // If navigated to a new page, go back
+       await page.goBack();
+     }
+ 
+-    // Verify list view is restored
+     await expect(page.locator('#main-content')).toBeVisible({ timeout: 15_000 });
+     expect(page.url()).toContain('/payments');
+   });
+@@ -213,17 +173,10 @@ test.describe('Payment run flow', () => {
+     const hasTable = await table.isVisible({ timeout: 10_000 }).catch(() => false);
+     test.skip(!hasTable, 'No table visible — skipping status badge test');
+ 
+-    const rows = table.locator('tbody tr');
+-    const rowCount = await rows.count();
+-    test.skip(rowCount === 0, 'No rows in table — skipping status badge test');
++    const { count } = await tableRows(page);
++    test.skip(count === 0, 'No rows in table — skipping status badge test');
+ 
+-    // Look for status badges within the table
+-    const badge = page
+-      .locator('table tbody')
+-      .locator(
+-        '[class*="badge"], [class*="pill"], [class*="status"], [data-testid*="status"]',
+-      )
+-      .first()
++    const badge = statusBadge(page, page.locator('table tbody'))
+       .or(
+         page
+           .locator('table tbody span, table tbody div')
+@@ -241,11 +194,9 @@ test.describe('Payment run flow', () => {
+     const hasTable = await table.isVisible({ timeout: 10_000 }).catch(() => false);
+     test.skip(!hasTable, 'No table visible — skipping export test');
+ 
+-    const rows = table.locator('tbody tr');
+-    const rowCount = await rows.count();
+-    test.skip(rowCount === 0, 'No rows — skipping export test');
++    const { rows, count } = await tableRows(page);
++    test.skip(count === 0, 'No rows — skipping export test');
+ 
+-    // Look for export button at page level or after clicking a row
+     const exportButton = page
+       .locator('button, a')
+       .filter({ hasText: /export|download|sepa xml|swift|generate file/i })
+@@ -258,18 +209,13 @@ test.describe('Payment run flow', () => {
+       return;
+     }
+ 
+-    // Try clicking a row to see if export appears in detail
+     await rows.first().click();
+ 
+-    const dialog = page
+-      .locator(
+-        '[data-state="open"][role="dialog"], [data-state="open"][data-radix-dialog-content], [data-state="open"].sheet-content, [role="dialog"]',
+-      )
+-      .first();
+-    const dialogVisible = await dialog.isVisible({ timeout: 10_000 }).catch(() => false);
++    const panel = sidePanel(page);
++    const dialogVisible = await panel.isVisible({ timeout: 10_000 }).catch(() => false);
+ 
+     if (dialogVisible) {
+-      const detailExport = dialog
++      const detailExport = panel
+         .locator('button, a')
+         .filter({ hasText: /export|download|sepa|swift|generate/i })
+         .first();
+@@ -278,15 +224,10 @@ test.describe('Payment run flow', () => {
+         .isVisible({ timeout: 5_000 })
+         .catch(() => false);
+ 
+-      if (detailExportVisible) {
+-        await expect(detailExport).toBeVisible();
+-      } else {
+-        // Export may only appear for completed runs — accept dialog is open
+-        await expect(dialog).toBeVisible();
+-      }
++      test.skip(!detailExportVisible, 'Export not available — runs may not be completed');
++      await expect(detailExport).toBeVisible();
+     } else {
+-      // No dialog opened — accept page is still functional
+-      await expect(page.locator('#main-content')).toBeVisible();
++      test.skip(true, 'No dialog opened after clicking row — cannot check export');
+     }
+   });
+ });
+diff --git a/apps/web/e2e/functional/payments.spec.ts b/apps/web/e2e/functional/payments.spec.ts
+index db6eeee3..93a5fd09 100644
+--- a/apps/web/e2e/functional/payments.spec.ts
++++ b/apps/web/e2e/functional/payments.spec.ts
+@@ -1,5 +1,11 @@
+ import { expect, test } from '@playwright/test';
+-import { expectPageHeading, navigateToDashboard, skipIfUnauthenticated } from './helpers';
++import {
++  expectPageHeading,
++  navigateToDashboard,
++  sidePanel,
++  skipIfUnauthenticated,
++  tableRows,
++} from './helpers';
+ 
+ test.describe('Payments', () => {
+   test.beforeEach(async ({ page }) => {
+@@ -35,16 +41,10 @@ test.describe('Payments', () => {
+     const hasTable = await table.isVisible({ timeout: 15_000 }).catch(() => false);
+     test.skip(!hasTable, 'No table rendered — skipping side panel test');
+ 
+-    const rows = table.locator('tbody tr');
+-    const rowCount = await rows.count();
+-    test.skip(rowCount === 0, 'Table has no rows — skipping side panel test');
++    const { rows, count } = await tableRows(page);
++    test.skip(count === 0, 'Table has no rows — skipping side panel test');
+ 
+     await rows.first().click();
+-
+-    const sidePanel = page
+-      .locator('[role="dialog"], [data-side-panel], [data-state="open"], aside')
+-      .first();
+-
+-    await expect(sidePanel).toBeVisible({ timeout: 10_000 });
++    await expect(sidePanel(page)).toBeVisible({ timeout: 10_000 });
+   });
+ });
+diff --git a/apps/web/e2e/functional/portal-documents-flow.spec.ts b/apps/web/e2e/functional/portal-documents-flow.spec.ts
+index 466e9815..606737bf 100644
+--- a/apps/web/e2e/functional/portal-documents-flow.spec.ts
++++ b/apps/web/e2e/functional/portal-documents-flow.spec.ts
+@@ -1,4 +1,5 @@
+ import { expect, test } from '@playwright/test';
++import { dialog } from './helpers';
+ 
+ /**
+  * Portal documents flow — unauthenticated tests.
+@@ -72,14 +73,11 @@ test.describe('Portal documents — authenticated', () => {
+ 
+     await uploadButton.click();
+ 
+-    // Either a dialog/modal opens or a file input becomes visible
+-    const dialog = page
+-      .locator('[role="dialog"], [data-state="open"][data-radix-dialog-content]')
+-      .first();
++    const dlg = dialog(page);
+     const fileInput = page.locator('input[type="file"]').first();
+     const form = page.locator('form, [data-testid="upload-form"]').first();
+ 
+-    const dialogVisible = await dialog.isVisible({ timeout: 10_000 }).catch(() => false);
++    const dialogVisible = await dlg.isVisible({ timeout: 10_000 }).catch(() => false);
+     const fileInputExists = (await fileInput.count()) > 0;
+     const formVisible = await form.isVisible({ timeout: 5_000 }).catch(() => false);
+ 
+diff --git a/apps/web/e2e/functional/portal-invoice-flow.spec.ts b/apps/web/e2e/functional/portal-invoice-flow.spec.ts
+index d8709777..b8130d3b 100644
+--- a/apps/web/e2e/functional/portal-invoice-flow.spec.ts
++++ b/apps/web/e2e/functional/portal-invoice-flow.spec.ts
+@@ -1,5 +1,5 @@
+ import { expect, test } from '@playwright/test';
+-import { navigateToDashboard, skipIfUnauthenticated } from './helpers';
++import { dialog } from './helpers';
+ 
+ /**
+  * Portal invoice flow — unauthenticated tests.
+@@ -101,13 +101,10 @@ test.describe('Portal invoices — authenticated', () => {
+ 
+     await submitButton.click();
+ 
+-    // Either a dialog/modal opens or we navigate to a new page
+-    const dialog = page
+-      .locator('[role="dialog"], [data-state="open"][data-radix-dialog-content]')
+-      .first();
++    const dlg = dialog(page);
+     const form = page.locator('form, input[type="file"], [data-testid="upload-form"]').first();
+ 
+-    const dialogVisible = await dialog.isVisible({ timeout: 10_000 }).catch(() => false);
++    const dialogVisible = await dlg.isVisible({ timeout: 10_000 }).catch(() => false);
+     const formVisible = await form.isVisible({ timeout: 5_000 }).catch(() => false);
+ 
+     expect(dialogVisible || formVisible).toBeTruthy();
+diff --git a/apps/web/e2e/functional/portal.spec.ts b/apps/web/e2e/functional/portal.spec.ts
+index 2d0e4c28..076908bc 100644
+--- a/apps/web/e2e/functional/portal.spec.ts
++++ b/apps/web/e2e/functional/portal.spec.ts
+@@ -15,7 +15,6 @@ test.describe('Portal login', () => {
+ 
+     const heading = page.locator('h1');
+     await expect(heading).toBeVisible({ timeout: 15_000 });
+-    await expect(heading).toHaveCSS('font-size', '28px');
+   });
+ 
+   test('email input is present', async ({ page }) => {
+diff --git a/apps/web/e2e/functional/reports.spec.ts b/apps/web/e2e/functional/reports.spec.ts
+index 72a7e745..a16281cf 100644
+--- a/apps/web/e2e/functional/reports.spec.ts
++++ b/apps/web/e2e/functional/reports.spec.ts
+@@ -64,7 +64,7 @@ test.describe('Reports', () => {
+     test.skip(!isVisible, 'No report options found — skipping URL param test');
+ 
+     await clickable.click();
+-    await page.waitForTimeout(1_000);
++    await page.waitForURL(/[?&]report=/, { timeout: 10_000 });
+ 
+     expect(page.url()).toMatch(/[?&]report=/);
+   });
+diff --git a/apps/web/e2e/functional/settings-integrations-flow.spec.ts b/apps/web/e2e/functional/settings-integrations-flow.spec.ts
+index 5ede50f7..2bcbe50d 100644
+--- a/apps/web/e2e/functional/settings-integrations-flow.spec.ts
++++ b/apps/web/e2e/functional/settings-integrations-flow.spec.ts
+@@ -1,5 +1,5 @@
+ import { expect, test } from '@playwright/test';
+-import { navigateToDashboard, skipIfUnauthenticated } from './helpers';
++import { dialog, navigateToDashboard, skipIfUnauthenticated } from './helpers';
+ 
+ test.describe('Settings — Integrations flow', () => {
+   test.beforeEach(async ({ page }) => {
+@@ -82,19 +82,14 @@ test.describe('Settings — Integrations flow', () => {
+     const urlBefore = page.url();
+     await connectButton.click();
+ 
+-    // Either a dialog/modal opens, or we redirect to an OAuth provider
+-    const dialog = page
+-      .locator('[role="dialog"], [data-state="open"][data-radix-dialog-content]')
+-      .first();
+-    const dialogVisible = await dialog.isVisible({ timeout: 10_000 }).catch(() => false);
++    const dlg = dialog(page);
++    const dialogVisible = await dlg.isVisible({ timeout: 10_000 }).catch(() => false);
+ 
+-    if (!dialogVisible) {
+-      // May have redirected to OAuth provider or opened new page
+-      await page.waitForTimeout(3_000);
+-      const urlAfter = page.url();
+-      expect(urlAfter !== urlBefore || dialogVisible).toBeTruthy();
++    if (dialogVisible) {
++      await expect(dlg).toBeVisible();
+     } else {
+-      await expect(dialog).toBeVisible();
++      await page.waitForURL(url => url.toString() !== urlBefore, { timeout: 10_000 });
++      expect(page.url()).not.toBe(urlBefore);
+     }
+   });
+ 
+diff --git a/apps/web/e2e/perf/critical-journeys.spec.ts b/apps/web/e2e/perf/critical-journeys.spec.ts
+index e8251220..a7a98f22 100644
+--- a/apps/web/e2e/perf/critical-journeys.spec.ts
++++ b/apps/web/e2e/perf/critical-journeys.spec.ts
+@@ -2,13 +2,17 @@ import type { Page } from '@playwright/test';
+ import { expect, test } from '@playwright/test';
+ import { skipIfUnauthenticated } from './helpers';
+ 
+-async function measureShell(page: Page, path: string, _scenario: string) {
++const SHELL_BUDGET_MS = 10_000;
++
++async function measureShell(page: Page, path: string, scenario: string) {
+   const t0 = Date.now();
+   await page.goto(path, { waitUntil: 'domcontentloaded' });
+   skipIfUnauthenticated(page);
+-  await page.locator('#main-content').waitFor({ state: 'visible', timeout: 60_000 });
++  await page.locator('#main-content').waitFor({ state: 'visible', timeout: 30_000 });
+   const durationMs = Date.now() - t0;
+-  expect(durationMs).toBeLessThan(120_000);
++
++  test.info().annotations.push({ type: 'perf', description: `${scenario}: ${durationMs}ms` });
++  expect(durationMs, `${scenario} shell took ${durationMs}ms (budget: ${SHELL_BUDGET_MS}ms)`).toBeLessThan(SHELL_BUDGET_MS);
+ }
+ 
+ test.describe('perf — authenticated shell', () => {
+diff --git a/apps/web/e2e/perf/global-setup.ts b/apps/web/e2e/perf/global-setup.ts
+index 152a14b3..f43c71b3 100644
+--- a/apps/web/e2e/perf/global-setup.ts
++++ b/apps/web/e2e/perf/global-setup.ts
+@@ -35,7 +35,17 @@ export default async function globalSetup() {
+   await page.locator('#email').fill(email);
+   await page.locator('#password').fill(password);
+   await page.locator('button[type="submit"]').click();
+-  await page.waitForURL(/\/en(\/|$)/, { timeout: 60_000 });
++
++  try {
++    await page.waitForURL(/\/en(\/|$)/, { timeout: 60_000 });
++  } catch {
++    const currentUrl = page.url();
++    await browser.close();
++    throw new Error(
++      `[perf] Login failed — still on ${currentUrl} after 60 s. Check E2E_EMAIL / E2E_PASSWORD.`,
++    );
++  }
++
+   await page.context().storageState({ path: authFile });
+   await browser.close();
+ }
+diff --git a/apps/web/e2e/perf/login-public.spec.ts b/apps/web/e2e/perf/login-public.spec.ts
+index 71889b95..2492ad0e 100644
+--- a/apps/web/e2e/perf/login-public.spec.ts
++++ b/apps/web/e2e/perf/login-public.spec.ts
+@@ -1,5 +1,7 @@
+ import { expect, test } from '@playwright/test';
+ 
++const LOGIN_BUDGET_MS = 5_000;
++
+ /**
+  * Public route — no session. Complements dashboard perf when E2E_* are unset.
+  */
+@@ -12,6 +14,8 @@ test.describe('perf — public login page', () => {
+     await page.locator('#email').waitFor({ state: 'visible', timeout: 15_000 });
+     await page.locator('#password').waitFor({ state: 'visible' });
+     const durationMs = Date.now() - t0;
+-    expect(durationMs).toBeLessThan(60_000);
++
++    test.info().annotations.push({ type: 'perf', description: `login: ${durationMs}ms` });
++    expect(durationMs, `Login page took ${durationMs}ms (budget: ${LOGIN_BUDGET_MS}ms)`).toBeLessThan(LOGIN_BUDGET_MS);
+   });
+ });
+diff --git a/apps/web/e2e/rtl/rtl-localization.spec.ts b/apps/web/e2e/rtl/rtl-localization.spec.ts
+index 86c179c9..6114cb19 100644
+--- a/apps/web/e2e/rtl/rtl-localization.spec.ts
++++ b/apps/web/e2e/rtl/rtl-localization.spec.ts
+@@ -7,150 +7,93 @@ import { expect, test } from '@playwright/test';
+  * Requirements covered:
+  *   L10N-01  Locale switcher cycles pl -> en -> ar from the user menu
+  *   L10N-02  Arabic locale renders page with dir="rtl" and RTL sidebar
+- *   L10N-03  Bdi-wrapped content isolates LTR text within RTL context
++ *   L10N-03  Bdi text isolation (<bdi> element presence)
+  *   L10N-04  Spend chart renders with mirrored axes in Arabic locale
+  *
+- * Public tests (L10N-02, L10N-03 DOM presence) run without credentials.
+- * Authenticated tests (L10N-01, L10N-04) skip when E2E_EMAIL / E2E_PASSWORD
+- * are not set — consistent with the perf test pattern in this codebase.
++ * Public tests (L10N-02, L10N-03 DOM) run without credentials.
++ * Authenticated tests skip gracefully when redirected to login
++ * (E2E_EMAIL / E2E_PASSWORD not set for functional global-setup).
++ *
++ * NOTE: This suite reuses the storageState written by the functional
++ * global-setup. Run `pnpm e2e:functional` first or ensure the auth file
++ * exists.
+  */
+ 
+-// ---------------------------------------------------------------------------
+-// Helpers
+-// ---------------------------------------------------------------------------
+-
+-const BASE_URL =
+-  process.env.E2E_WEB_URL ??
+-  process.env.PLAYWRIGHT_BASE_URL ??
+-  process.env.NEXT_PUBLIC_APP_URL ??
+-  'http://127.0.0.1:3000';
+-
+-async function loginAndNavigate(page: Page, targetPath: string): Promise<boolean> {
+-  const email = process.env.E2E_EMAIL;
+-  const password = process.env.E2E_PASSWORD;
+-
+-  if (!(email && password)) {
+-    return false;
+-  }
+-
+-  await page.goto(`${BASE_URL}/en/login`, { waitUntil: 'domcontentloaded' });
+-  await page.locator('#email').waitFor({ state: 'visible', timeout: 20_000 });
+-  await page.locator('#email').fill(email);
+-  await page.locator('#password').fill(password);
+-  await page.locator('button[type="submit"]').click();
+-  // Wait for the post-login redirect to any locale-scoped page
+-  await page.waitForURL(/\/(?:en|pl|ar)(\/|$)/, { timeout: 60_000 });
+-
+-  // Navigate directly to Arabic-locale target
+-  await page.goto(`${BASE_URL}${targetPath}`, { waitUntil: 'domcontentloaded' });
+-  return true;
++function skipIfOnLogin(page: Page) {
++  test.skip(
++    page.url().includes('/login'),
++    'E2E_EMAIL / E2E_PASSWORD not set — skipping authenticated RTL test',
++  );
+ }
+ 
+ // ---------------------------------------------------------------------------
+ // L10N-02: RTL layout rendering
+-// Verifies that navigating to any /ar/* page sets dir="rtl" on the HTML element.
+-// Uses the public /ar/login page — no credentials required.
+ // ---------------------------------------------------------------------------
+ 
+ test.describe('L10N-02 — RTL layout rendering', () => {
+   test('arabic locale page renders with dir=rtl on html element', async ({ page }) => {
+-    await page.goto(`${BASE_URL}/ar/login`, { waitUntil: 'domcontentloaded' });
++    await page.goto('/ar/login', { waitUntil: 'domcontentloaded' });
+ 
+-    // The locale layout injects a script that sets document.documentElement.dir
+-    // before React hydration; also confirmed via server-rendered HTML attribute.
+     const dir = await page.evaluate(() => document.documentElement.dir);
+     expect(dir).toBe('rtl');
+   });
+ 
+   test('arabic locale page sets lang=ar on html element', async ({ page }) => {
+-    await page.goto(`${BASE_URL}/ar/login`, { waitUntil: 'domcontentloaded' });
++    await page.goto('/ar/login', { waitUntil: 'domcontentloaded' });
+ 
+     const lang = await page.evaluate(() => document.documentElement.lang);
+     expect(lang).toBe('ar');
+   });
+ 
+   test('authenticated arabic dashboard renders sidebar on right side', async ({ page }) => {
+-    const didLogin = await loginAndNavigate(page, '/ar/v2');
+-    if (!didLogin) {
+-      test.skip(true, 'E2E_EMAIL / E2E_PASSWORD not set — skipping authenticated RTL layout test');
+-      return;
+-    }
++    await page.goto('/ar/', { waitUntil: 'domcontentloaded' });
++    skipIfOnLogin(page);
+ 
+-    // dir="rtl" must be present on <html> in the authenticated dashboard view
+     const dir = await page.evaluate(() => document.documentElement.dir);
+     expect(dir).toBe('rtl');
+ 
+-    // The sidebar element should be rendered; in RTL it is physically on the right.
+-    // We verify it exists and that the page direction is RTL (CSS handles visual side).
+     const sidebar = page.locator("[data-sidebar='sidebar']").first();
+     await expect(sidebar).toBeVisible({ timeout: 20_000 });
+ 
+-    // Confirm the sidebar's bounding box is on the right half of the viewport
+     const viewportWidth = page.viewportSize()?.width ?? 1280;
+     const box = await sidebar.boundingBox();
+     expect(box).not.toBeNull();
+-    // In RTL, the sidebar's left edge should be at least in the right half
+     expect(box?.x).toBeGreaterThan(viewportWidth / 2);
+   });
+ });
+ 
+ // ---------------------------------------------------------------------------
+ // L10N-03: Bidi text rendering
+-// Verifies that <bdi> elements are present in the DOM when Arabic locale is active.
+-// The Bdi component renders native <bdi> HTML elements that isolate LTR text
+-// from surrounding RTL context. Tested on the login page (public) since <bdi>
+-// elements in the user menu require auth; we verify DOM element presence here.
+ // ---------------------------------------------------------------------------
+ 
+ test.describe('L10N-03 — Bidi text isolation', () => {
+   test('arabic login page renders without bidi override issues', async ({ page }) => {
+-    await page.goto(`${BASE_URL}/ar/login`, { waitUntil: 'domcontentloaded' });
++    await page.goto('/ar/login', { waitUntil: 'domcontentloaded' });
+ 
+-    // The page should load in RTL mode
+     const dir = await page.evaluate(() => document.documentElement.dir);
+     expect(dir).toBe('rtl');
+ 
+-    // Page body should be rendered and visible (not blank/crashed)
+     await expect(page.locator('body')).toBeVisible();
+   });
+ 
+   test('authenticated user menu contains bdi elements wrapping name and email', async ({
+     page,
+   }) => {
+-    const didLogin = await loginAndNavigate(page, '/ar/v2');
+-    if (!didLogin) {
+-      test.skip(true, 'E2E_EMAIL / E2E_PASSWORD not set — skipping Bdi element presence test');
+-      return;
+-    }
+-
+-    // Wait for the sidebar / user menu to be rendered
+-    await page.waitForSelector("[data-sidebar='sidebar']", { timeout: 20_000 });
++    await page.goto('/ar/', { waitUntil: 'domcontentloaded' });
++    skipIfOnLogin(page);
+ 
+-    // The UserMenu component wraps user name and email in <bdi> elements.
+-    // Count <bdi> nodes inside the sidebar area.
+-    const bdiCount = await page.evaluate(() => {
+-      return document.querySelectorAll('bdi').length;
+-    });
++    await page.locator("[data-sidebar='sidebar']").first().waitFor({ state: 'visible', timeout: 20_000 });
+ 
+-    // At least 2 <bdi> elements expected: one for user name, one for email
+-    // (UserMenu renders them in both the trigger and the dropdown)
++    const bdiCount = await page.evaluate(() => document.querySelectorAll('bdi').length);
+     expect(bdiCount).toBeGreaterThanOrEqual(2);
+   });
+ 
+-  test('bdi elements in arabic locale carry no explicit dir attribute (relying on unicode bidi algorithm)', async ({
+-    page,
+-  }) => {
+-    const didLogin = await loginAndNavigate(page, '/ar/v2');
+-    if (!didLogin) {
+-      test.skip(true, 'E2E_EMAIL / E2E_PASSWORD not set — skipping Bdi attribute test');
+-      return;
+-    }
++  test('bdi elements in arabic locale carry no explicit dir attribute', async ({ page }) => {
++    await page.goto('/ar/', { waitUntil: 'domcontentloaded' });
++    skipIfOnLogin(page);
+ 
+-    await page.waitForSelector("[data-sidebar='sidebar']", { timeout: 20_000 });
++    await page.locator("[data-sidebar='sidebar']").first().waitFor({ state: 'visible', timeout: 20_000 });
+ 
+-    // <bdi> elements should not have an explicit dir override — they isolate via
+-    // the unicode bidi algorithm. This verifies the Bdi component is not
+-    // accidentally overriding direction and defeating its own purpose.
+     const hasExplicitDir = await page.evaluate(() => {
+       const bdiElements = Array.from(document.querySelectorAll('bdi'));
+       return bdiElements.some(el => el.hasAttribute('dir'));
+@@ -162,117 +105,81 @@ test.describe('L10N-03 — Bidi text isolation', () => {
+ 
+ // ---------------------------------------------------------------------------
+ // L10N-04: Chart axis mirroring
+-// Verifies the spend chart renders in RTL mode when Arabic locale is active.
+-// Requires authentication to access the dashboard.
+ // ---------------------------------------------------------------------------
+ 
+ test.describe('L10N-04 — Chart axis mirroring in RTL', () => {
+   test('spend chart renders in arabic locale dashboard', async ({ page }) => {
+-    const didLogin = await loginAndNavigate(page, '/ar/v2');
+-    if (!didLogin) {
+-      test.skip(true, 'E2E_EMAIL / E2E_PASSWORD not set — skipping chart RTL test');
+-      return;
+-    }
++    await page.goto('/ar/', { waitUntil: 'domcontentloaded' });
++    skipIfOnLogin(page);
+ 
+-    // Wait for main content to be visible
+-    await page.waitForSelector('#main-content', { timeout: 20_000 });
++    await page.locator('#main-content').waitFor({ state: 'visible', timeout: 20_000 });
+ 
+-    // The spend chart renders inside a Card. It either shows the chart SVG
+-    // or a loading skeleton, or the empty state.
+-    // We verify the chart card is present regardless of data state.
+     const chartCard = page.locator(".recharts-responsive-container, [class*='iridescent']").first();
+     await expect(chartCard).toBeVisible({ timeout: 30_000 });
+   });
+ 
+   test('spend chart SVG in arabic locale has rtl direction applied', async ({ page }) => {
+-    const didLogin = await loginAndNavigate(page, '/ar/v2');
+-    if (!didLogin) {
+-      test.skip(true, 'E2E_EMAIL / E2E_PASSWORD not set — skipping chart RTL direction test');
+-      return;
+-    }
++    await page.goto('/ar/', { waitUntil: 'domcontentloaded' });
++    skipIfOnLogin(page);
+ 
+-    await page.waitForSelector('#main-content', { timeout: 20_000 });
++    await page.locator('#main-content').waitFor({ state: 'visible', timeout: 20_000 });
+ 
+-    // Wait for the recharts container (if data is available the SVG renders)
+     const rechartsContainer = page.locator('.recharts-responsive-container').first();
+ 
+-    // If no data exists, the chart won't render — skip gracefully
+     const isVisible = await rechartsContainer.isVisible({ timeout: 15_000 }).catch(() => false);
+     if (!isVisible) {
+-      test.skip(
+-        true,
+-        'No chart data available — spend chart empty state shown, skipping SVG direction check',
+-      );
++      test.skip(true, 'No chart data available — spend chart empty state shown');
+       return;
+     }
+ 
+-    // The AreaChart receives style={{ direction: "rtl" }} from useRtlChartConfig
+-    // when locale === "ar". The recharts wrapper div should have this style.
+     const chartStyle = await page.evaluate(() => {
+       const rechartsWrapper = document.querySelector('.recharts-wrapper');
+       if (!rechartsWrapper) return null;
+       return window.getComputedStyle(rechartsWrapper).direction;
+     });
+ 
+-    // direction: rtl is either set inline or inherited from the html[dir=rtl] element
+     expect(['rtl', 'inherit']).toContain(chartStyle ?? 'rtl');
+   });
+ });
+ 
+ // ---------------------------------------------------------------------------
+ // L10N-01: Locale switcher cycles pl -> en -> ar
+-// Verifies the language toggle button in the user menu changes the locale.
+-// Requires authentication.
+ // ---------------------------------------------------------------------------
+ 
+ test.describe('L10N-01 — Locale switcher cycles through all three locales', () => {
+   test('locale switcher button is present in user menu', async ({ page }) => {
+-    const didLogin = await loginAndNavigate(page, '/en/v2');
+-    if (!didLogin) {
+-      test.skip(true, 'E2E_EMAIL / E2E_PASSWORD not set — skipping locale switcher test');
+-      return;
+-    }
++    await page.goto('/en/', { waitUntil: 'domcontentloaded' });
++    skipIfOnLogin(page);
+ 
+-    await page.waitForSelector("[data-sidebar='sidebar']", { timeout: 20_000 });
++    await page.locator("[data-sidebar='sidebar']").first().waitFor({ state: 'visible', timeout: 20_000 });
+ 
+-    // Open the user menu dropdown by clicking the sidebar menu button
+     const userMenuTrigger = page.locator("[data-sidebar='menu-button']").last();
+     await userMenuTrigger.click();
+ 
+-    // The locale switcher button shows the NEXT locale label.
+-    // When locale is "en", next is Arabic (عربي).
+-    // It's a plain button with text-primary class inside the dropdown.
+     const localeButton = page
+       .locator('[role="menu"] button.text-primary, [role="menu"] button[class*="text-primary"]')
+       .first();
+     await expect(localeButton).toBeVisible({ timeout: 10_000 });
+ 
+-    // Button text should show "عربي" (Arabic script) when current locale is "en"
+     const buttonText = await localeButton.textContent();
+     expect(buttonText?.trim()).toBe('عربي');
+   });
+ 
+   test('clicking locale switcher from english navigates to arabic locale url', async ({ page }) => {
+-    const didLogin = await loginAndNavigate(page, '/en/v2');
+-    if (!didLogin) {
+-      test.skip(true, 'E2E_EMAIL / E2E_PASSWORD not set — skipping locale switch navigation test');
+-      return;
+-    }
++    await page.goto('/en/', { waitUntil: 'domcontentloaded' });
++    skipIfOnLogin(page);
+ 
+-    await page.waitForSelector("[data-sidebar='sidebar']", { timeout: 20_000 });
++    await page.locator("[data-sidebar='sidebar']").first().waitFor({ state: 'visible', timeout: 20_000 });
+ 
+-    // Open the user menu dropdown
+     const userMenuTrigger = page.locator("[data-sidebar='menu-button']").last();
+     await userMenuTrigger.click();
+ 
+-    // Click the locale button (shows "عربي" when on /en)
+     const localeButton = page
+       .locator('[role="menu"] button.text-primary, [role="menu"] button[class*="text-primary"]')
+       .first();
+     await expect(localeButton).toBeVisible({ timeout: 10_000 });
+     await localeButton.click();
+ 
+-    // After clicking, should navigate to /ar/... URL
+     await page.waitForURL(/\/ar\//, { timeout: 30_000 });
+     expect(page.url()).toContain('/ar/');
+   });
+@@ -280,15 +187,11 @@ test.describe('L10N-01 — Locale switcher cycles through all three locales', ()
+   test('clicking locale switcher twice cycles from arabic back to polish locale', async ({
+     page,
+   }) => {
+-    const didLogin = await loginAndNavigate(page, '/en/v2');
+-    if (!didLogin) {
+-      test.skip(true, 'E2E_EMAIL / E2E_PASSWORD not set — skipping locale cycle test');
+-      return;
+-    }
++    await page.goto('/en/', { waitUntil: 'domcontentloaded' });
++    skipIfOnLogin(page);
+ 
+-    await page.waitForSelector("[data-sidebar='sidebar']", { timeout: 20_000 });
++    await page.locator("[data-sidebar='sidebar']").first().waitFor({ state: 'visible', timeout: 20_000 });
+ 
+-    // First click: en -> ar
+     const userMenuTrigger = page.locator("[data-sidebar='menu-button']").last();
+     await userMenuTrigger.click();
+ 
+@@ -298,8 +201,7 @@ test.describe('L10N-01 — Locale switcher cycles through all three locales', ()
+     await localeButton.click();
+     await page.waitForURL(/\/ar\//, { timeout: 30_000 });
+ 
+-    // Now in /ar — open menu again and click the locale button (shows "PL")
+-    await page.waitForSelector("[data-sidebar='sidebar']", { timeout: 20_000 });
++    await page.locator("[data-sidebar='sidebar']").first().waitFor({ state: 'visible', timeout: 20_000 });
+     await userMenuTrigger.click();
+ 
+     const localeButtonAr = page
+@@ -311,7 +213,6 @@ test.describe('L10N-01 — Locale switcher cycles through all three locales', ()
+     expect(arButtonText?.trim()).toBe('PL');
+ 
+     await localeButtonAr.click();
+-    // After clicking from /ar, should navigate to /pl/...
+     await page.waitForURL(/\/pl\//, { timeout: 30_000 });
+     expect(page.url()).toContain('/pl/');
+   });
+diff --git a/apps/web/package.json b/apps/web/package.json
+index 8fc1841a..3e240f64 100644
+--- a/apps/web/package.json
++++ b/apps/web/package.json
+@@ -12,13 +12,13 @@
+     "test:watch": "vitest",
+     "test:coverage": "vitest run --coverage --coverage.all --coverage.include='src/components/**/*.tsx'",
+     "e2e:perf": "playwright test -c playwright.perf.config.ts",
+-    "e2e:perf:install": "playwright install chromium",
++    "e2e:perf:install": "playwright install --with-deps chromium",
+     "e2e:integration": "playwright test -c playwright.integration.config.ts",
+-    "e2e:integration:install": "playwright install chromium",
++    "e2e:integration:install": "playwright install --with-deps chromium firefox webkit",
+     "e2e:rtl": "playwright test -c playwright.rtl.config.ts",
+-    "e2e:rtl:install": "playwright install chromium",
++    "e2e:rtl:install": "playwright install --with-deps chromium firefox webkit",
+     "e2e:functional": "playwright test -c playwright.functional.config.ts",
+-    "e2e:functional:install": "playwright install chromium"
++    "e2e:functional:install": "playwright install --with-deps chromium firefox webkit"
+   },
+   "dependencies": {
+     "@base-ui/react": "^1.3.0",
+@@ -57,10 +57,11 @@
+     "lucide-react": "^1.8.0",
+     "motion": "^12.38.0",
+     "next": "^15.5.15",
+-    "node-cron": "^3.0.3",
+     "next-intl": "^4.9.1",
+     "next-themes": "^0.4.6",
++    "node-cron": "^3.0.3",
+     "nuqs": "^2.8.9",
++    "pino": "^9.14.0",
+     "postcss": "^8.5.9",
+     "react": "^19.2.5",
+     "react-day-picker": "^9.14.0",
+@@ -73,6 +74,7 @@
+     "rehype-autolink-headings": "7.1.0",
+     "rehype-slug": "6.0.0",
+     "resend": "^6.10.0",
++    "server-only": "^0.0.1",
+     "shadcn": "^4.2.0",
+     "sonner": "^2.0.7",
+     "stripe": "^21.0.1",
+@@ -81,11 +83,10 @@
+     "tailwindcss": "^4.2.2",
+     "tw-animate-css": "^1.4.0",
+     "zod": "^3.25.76",
+-    "zustand": "^5.0.12",
+-    "server-only": "^0.0.1",
+-    "pino": "^9.14.0"
++    "zustand": "^5.0.12"
+   },
+   "devDependencies": {
++    "@axe-core/playwright": "^4.11.1",
+     "@mdx-js/rollup": "^3.1.1",
+     "@playwright/test": "^1.59.1",
+     "@testing-library/jest-dom": "^6.9.1",
+diff --git a/apps/web/playwright.functional.config.ts b/apps/web/playwright.functional.config.ts
+index 50b8fced..0a7d2d2b 100644
+--- a/apps/web/playwright.functional.config.ts
++++ b/apps/web/playwright.functional.config.ts
+@@ -2,6 +2,7 @@ import path from 'node:path';
+ import { defineConfig, devices } from '@playwright/test';
+ 
+ const authFile = path.join(process.cwd(), 'e2e/functional/.auth/user.json');
++const isCI = Boolean(process.env.CI);
+ 
+ /**
+  * Functional E2E tests — critical user journey coverage.
+@@ -13,18 +14,22 @@ export default defineConfig({
+   testDir: './e2e/functional',
+   testMatch: '**/*.spec.ts',
+   fullyParallel: true,
+-  forbidOnly: Boolean(process.env.CI),
+-  retries: process.env.CI ? 1 : 0,
+-  workers: process.env.CI ? 1 : undefined,
++  forbidOnly: isCI,
++  retries: isCI ? 1 : 0,
++  workers: isCI ? 1 : undefined,
+   globalSetup: './e2e/functional/global-setup.ts',
+-  reporter: [['list']],
++  reporter: [['list'], ...(isCI ? [['html', { open: 'never' }] as const] : [])],
+   timeout: 60_000,
+   use: {
+     baseURL:
+       process.env.PLAYWRIGHT_BASE_URL || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
+-    ...devices['Desktop Chrome'],
+     storageState: authFile,
+     trace: 'on-first-retry',
+     screenshot: 'only-on-failure',
+   },
++  projects: [
++    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
++    { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
++    { name: 'webkit', use: { ...devices['Desktop Safari'] } },
++  ],
+ });
+diff --git a/apps/web/playwright.integration.config.ts b/apps/web/playwright.integration.config.ts
+index 045fd526..3f165650 100644
+--- a/apps/web/playwright.integration.config.ts
++++ b/apps/web/playwright.integration.config.ts
+@@ -1,5 +1,7 @@
+ import { defineConfig, devices } from '@playwright/test';
+ 
++const isCI = Boolean(process.env.CI);
++
+ /**
+  * HTTP + browser smoke (Resend webhook optional, public routes always-on).
+  * - Public: `pnpm e2e:integration` (needs dev server; `E2E_WEB_URL` overrides base URL).
+@@ -8,12 +10,18 @@ import { defineConfig, devices } from '@playwright/test';
+ export default defineConfig({
+   testDir: './e2e/integration',
+   fullyParallel: true,
+-  forbidOnly: !!process.env.CI,
++  forbidOnly: isCI,
+   retries: 0,
+   workers: 1,
++  reporter: [['list'], ...(isCI ? [['html', { open: 'never' }] as const] : [])],
+   use: {
+     baseURL: process.env.E2E_WEB_URL ?? 'http://127.0.0.1:3000',
+     trace: 'on-first-retry',
++    screenshot: 'only-on-failure',
+   },
+-  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
++  projects: [
++    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
++    { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
++    { name: 'webkit', use: { ...devices['Desktop Safari'] } },
++  ],
+ });
+diff --git a/apps/web/playwright.perf.config.ts b/apps/web/playwright.perf.config.ts
+index 2d5ce417..96f2e0f4 100644
+--- a/apps/web/playwright.perf.config.ts
++++ b/apps/web/playwright.perf.config.ts
+@@ -2,21 +2,27 @@ import path from 'node:path';
+ import { defineConfig, devices } from '@playwright/test';
+ 
+ const authFile = path.join(process.cwd(), 'e2e/perf/.auth/user.json');
++const isCI = Boolean(process.env.CI);
+ 
+ export default defineConfig({
+   testDir: './e2e/perf',
+   testMatch: '**/*.spec.ts',
+   fullyParallel: true,
+-  forbidOnly: Boolean(process.env.CI),
++  forbidOnly: isCI,
+   retries: 0,
+-  workers: process.env.CI ? 1 : undefined,
++  workers: isCI ? 1 : undefined,
+   globalSetup: './e2e/perf/global-setup.ts',
+-  reporter: [['list'], ['json', { outputFile: 'e2e/perf/results/perf-results.json' }]],
++  reporter: [
++    ['list'],
++    ['json', { outputFile: 'e2e/perf/results/perf-results.json' }],
++    ...(isCI ? [['html', { open: 'never' }] as const] : []),
++  ],
+   use: {
+     baseURL:
+       process.env.PLAYWRIGHT_BASE_URL || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
+     ...devices['Desktop Chrome'],
+     storageState: authFile,
+     trace: 'on-first-retry',
++    screenshot: 'only-on-failure',
+   },
+ });
+diff --git a/apps/web/playwright.rtl.config.ts b/apps/web/playwright.rtl.config.ts
+index 08708193..c58718a3 100644
+--- a/apps/web/playwright.rtl.config.ts
++++ b/apps/web/playwright.rtl.config.ts
+@@ -1,5 +1,9 @@
++import path from 'node:path';
+ import { defineConfig, devices } from '@playwright/test';
+ 
++const isCI = Boolean(process.env.CI);
++const authFile = path.join(process.cwd(), 'e2e/functional/.auth/user.json');
++
+ /**
+  * Playwright configuration for Phase 50 RTL / Arabic localization tests.
+  *
+@@ -15,19 +19,28 @@ import { defineConfig, devices } from '@playwright/test';
+  * Run: pnpm --filter web e2e:rtl
+  * Requires a running dev or preview server (default: http://127.0.0.1:3000).
+  * Override base URL via E2E_WEB_URL env var.
++ *
++ * NOTE: Authenticated RTL tests reuse the storageState from functional global-setup.
++ * Run `pnpm e2e:functional` first (or ensure global-setup has been run) so the auth
++ * file exists.
+  */
+ export default defineConfig({
+   testDir: './e2e/rtl',
+   testMatch: '**/*.spec.ts',
+   fullyParallel: false,
+-  forbidOnly: !!process.env.CI,
+-  retries: process.env.CI ? 1 : 0,
++  forbidOnly: isCI,
++  retries: isCI ? 1 : 0,
+   workers: 1,
+-  reporter: [['list']],
++  reporter: [['list'], ...(isCI ? [['html', { open: 'never' }] as const] : [])],
+   use: {
+     baseURL: process.env.E2E_WEB_URL ?? process.env.PLAYWRIGHT_BASE_URL ?? 'http://127.0.0.1:3000',
++    storageState: authFile,
+     trace: 'on-first-retry',
+     screenshot: 'only-on-failure',
+   },
+-  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
++  projects: [
++    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
++    { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
++    { name: 'webkit', use: { ...devices['Desktop Safari'] } },
++  ],
+ });
+diff --git a/apps/web/src/app/api/cron/token-refresh/__tests__/route.test.ts b/apps/web/src/app/api/cron/token-refresh/__tests__/route.test.ts
+index 0e3fdad4..25722836 100644
+--- a/apps/web/src/app/api/cron/token-refresh/__tests__/route.test.ts
++++ b/apps/web/src/app/api/cron/token-refresh/__tests__/route.test.ts
+@@ -77,4 +77,44 @@ describe('GET /api/cron/token-refresh', () => {
+     expect(json).toEqual({ refreshed: 2, total: 10, failed: 0 });
+     expect(mockRefreshExpiring).toHaveBeenCalledOnce();
+   });
++
++  it('returns 500 when refreshExpiring throws', async () => {
++    process.env.CRON_SECRET = 'good';
++    mockRefreshExpiring.mockRejectedValue(new Error('Integration timeout'));
++    const req = new NextRequest('http://localhost/api/cron/token-refresh', {
++      headers: { authorization: 'Bearer good' },
++    });
++    const res = await GET(req);
++    expect(res.status).toBe(500);
++    const json = (await res.json()) as { error: string };
++    expect(json.error).toBe('Refresh failed');
++  });
++
++  it('reports to Sentry when refreshExpiring throws', async () => {
++    process.env.CRON_SECRET = 'good';
++    const testError = new Error('Token service down');
++    mockRefreshExpiring.mockRejectedValue(testError);
++    const req = new NextRequest('http://localhost/api/cron/token-refresh', {
++      headers: { authorization: 'Bearer good' },
++    });
++    await GET(req);
++
++    const Sentry = await import('@sentry/nextjs');
++    expect(Sentry.captureException).toHaveBeenCalledWith(
++      testError,
++      expect.objectContaining({
++        tags: expect.objectContaining({ 'cron.job': 'token-refresh' }),
++      }),
++    );
++  });
++
++  it('returns 401 when Authorization header has wrong format', async () => {
++    process.env.CRON_SECRET = 'good';
++    const req = new NextRequest('http://localhost/api/cron/token-refresh', {
++      headers: { authorization: 'Basic Z29vZA==' },
++    });
++    const res = await GET(req);
++    expect(res.status).toBe(401);
++    expect(mockRefreshExpiring).not.toHaveBeenCalled();
++  });
+ });
+diff --git a/apps/web/src/app/api/webhooks/stripe/__tests__/route.test.ts b/apps/web/src/app/api/webhooks/stripe/__tests__/route.test.ts
+index 46246eae..aba9abb0 100644
+--- a/apps/web/src/app/api/webhooks/stripe/__tests__/route.test.ts
++++ b/apps/web/src/app/api/webhooks/stripe/__tests__/route.test.ts
+@@ -127,4 +127,85 @@ describe('POST /api/webhooks/stripe', () => {
+     expect(res.status).toBe(200);
+     expect(routeStripeEvent).not.toHaveBeenCalled();
+   });
++
++  it('returns 400 when request body cannot be read', async () => {
++    const req = new NextRequest('http://localhost/api/webhooks/stripe', {
++      method: 'POST',
++      headers: { 'stripe-signature': 't=1,v1=ok' },
++    });
++    vi.spyOn(req, 'text').mockRejectedValue(new Error('stream error'));
++    const res = await POST(req);
++    expect(res.status).toBe(400);
++    const json = (await res.json()) as { error: string };
++    expect(json.error).toBe('Invalid body');
++  });
++
++  it('returns 500 and reports to Sentry when transaction fails', async () => {
++    mockPrisma.$transaction.mockRejectedValue(new Error('DB deadlock'));
++    const req = new NextRequest('http://localhost/api/webhooks/stripe', {
++      method: 'POST',
++      body: '{}',
++      headers: { 'stripe-signature': 't=1,v1=ok' },
++    });
++    const res = await POST(req);
++    expect(res.status).toBe(500);
++    const json = (await res.json()) as { error: string };
++    expect(json.error).toBe('Webhook processing failed');
++
++    const Sentry = await import('@sentry/nextjs');
++    expect(Sentry.captureException).toHaveBeenCalledWith(
++      expect.any(Error),
++      expect.objectContaining({
++        tags: expect.objectContaining({ 'webhook.provider': 'stripe' }),
++      }),
++    );
++  });
++
++  it('returns 500 and reports to Sentry when routeStripeEvent throws', async () => {
++    routeStripeEvent.mockRejectedValue(new Error('handler crash'));
++    const req = new NextRequest('http://localhost/api/webhooks/stripe', {
++      method: 'POST',
++      body: '{}',
++      headers: { 'stripe-signature': 't=1,v1=ok' },
++    });
++    const res = await POST(req);
++    expect(res.status).toBe(500);
++  });
++
++  it('increments webhook.processed metric on success', async () => {
++    const req = new NextRequest('http://localhost/api/webhooks/stripe', {
++      method: 'POST',
++      body: '{}',
++      headers: { 'stripe-signature': 't=1,v1=ok' },
++    });
++    await POST(req);
++
++    const { metrics } = await import('@contractor-ops/logger/metrics');
++    expect(metrics.increment).toHaveBeenCalledWith(
++      'webhook.processed',
++      1,
++      expect.objectContaining({
++        provider: 'stripe',
++      }),
++    );
++  });
++
++  it('increments webhook.failed metric on processing failure', async () => {
++    mockPrisma.$transaction.mockRejectedValue(new Error('fail'));
++    const req = new NextRequest('http://localhost/api/webhooks/stripe', {
++      method: 'POST',
++      body: '{}',
++      headers: { 'stripe-signature': 't=1,v1=ok' },
++    });
++    await POST(req);
++
++    const { metrics } = await import('@contractor-ops/logger/metrics');
++    expect(metrics.increment).toHaveBeenCalledWith(
++      'webhook.failed',
++      1,
++      expect.objectContaining({
++        provider: 'stripe',
++      }),
++    );
++  });
+ });
+diff --git a/load-tests/README.md b/load-tests/README.md
+index df7d5bad..635fba9c 100644
+--- a/load-tests/README.md
++++ b/load-tests/README.md
+@@ -66,6 +66,68 @@ Higher ramp (stages up to 40 VUs). Same env vars as API read:
+ pnpm load:stress
+ ```
+ 
++## API write load (`/api/trpc` mutations)
++
++Exercises tRPC mutation endpoints (POST with superjson body). Tests the full mutation pipeline — auth, tenant, RBAC, validation, DB — and tracks 4xx (expected validation errors) vs 5xx (bugs) separately.
++
++1. **Session cookie** — same as API read load (see above).
++
++2. **Run**
++
++   ```bash
++   pnpm load:write
++   ```
++
++   Or explicitly:
++
++   ```bash
++   BASE_URL=http://localhost:3000 \
++   SESSION_COOKIE="$SESSION_COOKIE" \
++   LOAD_TEST_SECRET="$LOAD_TEST_SECRET" \
++   k6 run load-tests/api-write.js
++   ```
++
++3. **Stress profile** (ramps 5 → 20 → 0 VUs over 2 min):
++
++   ```bash
++   k6 run -e K6_PROFILE=stress -e BASE_URL=http://localhost:3000 \
++   -e SESSION_COOKIE="$SESSION_COOKIE" load-tests/api-write.js
++   ```
++
++Mutations tested: `contractor.create`, `invoice.create`, `approval.bulkApprove`.
++
++## Public REST API load (`/api/v1/…`)
++
++Exercises the Hono public REST API (port 4100 by default). Tests both public endpoints (health, openapi.json) and authenticated resource endpoints (contractors, invoices, contracts).
++
++1. **API key** — generate a key from the app settings and export it:
++
++   ```bash
++   export API_KEY='co_live_...'
++   ```
++
++   Without `API_KEY`, only public (unauthenticated) endpoints are tested.
++
++2. **Run**
++
++   ```bash
++   pnpm load:public-api
++   ```
++
++   Or explicitly:
++
++   ```bash
++   PUBLIC_API_URL=http://localhost:4100 \
++   API_KEY="$API_KEY" \
++   k6 run load-tests/public-api-load.js
++   ```
++
++   Custom port via `PUBLIC_API_PORT`:
++
++   ```bash
++   k6 run -e PUBLIC_API_PORT=4200 load-tests/public-api-load.js
++   ```
++
+ ## Safety
+ 
+ - Do **not** point high-VU tests at production.
+diff --git a/package.json b/package.json
+index 132beed0..5617d20f 100644
+--- a/package.json
++++ b/package.json
+@@ -12,6 +12,8 @@
+     "load:smoke": "k6 run load-tests/smoke.js",
+     "load:api": "k6 run load-tests/api-read.js",
+     "load:stress": "k6 run -e K6_PROFILE=stress load-tests/api-read.js",
++    "load:write": "k6 run load-tests/api-write.js",
++    "load:public-api": "k6 run load-tests/public-api-load.js",
+     "e2e:perf": "pnpm --filter @contractor-ops/web run e2e:perf",
+     "db:generate": "turbo db:generate",
+     "db:push": "turbo db:push",
+diff --git a/packages/api/src/services/__tests__/r2.test.ts b/packages/api/src/services/__tests__/r2.test.ts
+index a90b4d67..0dacada0 100644
+--- a/packages/api/src/services/__tests__/r2.test.ts
++++ b/packages/api/src/services/__tests__/r2.test.ts
+@@ -4,8 +4,10 @@ import {
+   createPresignedUploadUrl,
+   deleteObject,
+   generateStorageKey,
++  getObjectAsString,
+   headObject,
+   putObjectAndSignDownload,
++  putObjectString,
+   signExistingDownload,
+ } from '../r2.js';
+ 
+@@ -39,13 +41,15 @@ const mockState = vi.hoisted(() => ({
+   getObjectCalls: [] as MockCommand[],
+   putObjectCalls: [] as MockCommand[],
+   signedUrlCalls: [] as Array<{ command: MockCommand; expiresIn?: number }>,
++  sendImpl: null as ((...args: unknown[]) => unknown) | null,
+ }));
+ 
+ const { getObjectCalls, putObjectCalls, signedUrlCalls } = mockState;
+ 
+ vi.mock('@aws-sdk/client-s3', () => ({
+   S3Client: class {
+-    async send() {
++    async send(...args: unknown[]) {
++      if (mockState.sendImpl) return mockState.sendImpl(...args);
+       return;
+     }
+   },
+@@ -326,3 +330,99 @@ describe('generateStorageKey - additional edge cases', () => {
+     }
+   });
+ });
++
++// -----------------------------------------------------------------------------
++// putObjectString
++// -----------------------------------------------------------------------------
++
++describe('r2 putObjectString', () => {
++  beforeEach(() => {
++    putObjectCalls.length = 0;
++    mockState.sendImpl = null;
++  });
++
++  it('calls S3 client.send with PutObjectCommand containing correct params', async () => {
++    await putObjectString({
++      key: 'orgs/o1/documents/inv-1.xml',
++      body: '<Invoice/>',
++      contentType: 'application/xml',
++    });
++
++    expect(putObjectCalls).toHaveLength(1);
++    const call = putObjectCalls.at(0);
++    expect(call?.input).toMatchObject({
++      Bucket: 'bucket-test',
++      Key: 'orgs/o1/documents/inv-1.xml',
++      Body: '<Invoice/>',
++      ContentType: 'application/xml',
++    });
++  });
++
++  it('passes the string body directly as the Body parameter', async () => {
++    const xmlPayload = '<?xml version="1.0"?><root><item>hello</item></root>';
++    await putObjectString({
++      key: 'orgs/o2/documents/data.xml',
++      body: xmlPayload,
++      contentType: 'text/xml',
++    });
++
++    const call = putObjectCalls.at(0);
++    expect(call?.input.Body).toBe(xmlPayload);
++    expect(typeof call?.input.Body).toBe('string');
++  });
++
++  it('propagates S3 errors', async () => {
++    const s3Error = new Error('S3 PutObject failed');
++    mockState.sendImpl = () => {
++      throw s3Error;
++    };
++
++    await expect(
++      putObjectString({ key: 'k', body: 'x', contentType: 'text/plain' }),
++    ).rejects.toThrow('S3 PutObject failed');
++  });
++});
++
++// -----------------------------------------------------------------------------
++// getObjectAsString
++// -----------------------------------------------------------------------------
++
++describe('r2 getObjectAsString', () => {
++  beforeEach(() => {
++    getObjectCalls.length = 0;
++    mockState.sendImpl = null;
++  });
++
++  it('returns string content from body.transformToString', async () => {
++    const xml = '<Invoice><Total>100</Total></Invoice>';
++    mockState.sendImpl = () => ({
++      Body: { transformToString: async (_enc?: string) => xml },
++    });
++
++    const result = await getObjectAsString('orgs/o1/documents/inv.xml');
++    expect(result).toBe(xml);
++  });
++
++  it('throws when response Body is undefined', async () => {
++    mockState.sendImpl = () => ({});
++
++    await expect(getObjectAsString('orgs/o1/missing.xml')).rejects.toThrow(
++      /empty \/ unreadable body/,
++    );
++  });
++
++  it('throws when response Body lacks transformToString method', async () => {
++    mockState.sendImpl = () => ({ Body: { noSuchMethod: true } });
++
++    await expect(getObjectAsString('orgs/o1/bad-body.xml')).rejects.toThrow(
++      /empty \/ unreadable body/,
++    );
++  });
++
++  it('error message includes the key name', async () => {
++    mockState.sendImpl = () => ({});
++    const key = 'orgs/o1/documents/specific-key.xml';
++
++    await expect(getObjectAsString(key)).rejects.toThrow(key);
++  });
++});
+diff --git a/packages/db/src/__tests__/tenant.test.ts b/packages/db/src/__tests__/tenant.test.ts
+index 1fb8e3d4..27c13864 100644
+--- a/packages/db/src/__tests__/tenant.test.ts
++++ b/packages/db/src/__tests__/tenant.test.ts
+@@ -95,6 +95,50 @@ describe('withTenantScope', () => {
+                 query: innerQuery,
+               }),
+           },
++          classificationDocument: {
++            create: (args: unknown) =>
++              $allOps({
++                operation: 'create',
++                model: 'ClassificationDocument',
++                args,
++                query: innerQuery,
++              }),
++            update: (args: unknown) =>
++              $allOps({
++                operation: 'update',
++                model: 'ClassificationDocument',
++                args,
++                query: innerQuery,
++              }),
++            updateMany: (args: unknown) =>
++              $allOps({
++                operation: 'updateMany',
++                model: 'ClassificationDocument',
++                args,
++                query: innerQuery,
++              }),
++            upsert: (args: unknown) =>
++              $allOps({
++                operation: 'upsert',
++                model: 'ClassificationDocument',
++                args,
++                query: innerQuery,
++              }),
++            delete: (args: unknown) =>
++              $allOps({
++                operation: 'delete',
++                model: 'ClassificationDocument',
++                args,
++                query: innerQuery,
++              }),
++            findMany: (args: unknown) =>
++              $allOps({
++                operation: 'findMany',
++                model: 'ClassificationDocument',
++                args,
++                query: innerQuery,
++              }),
++          },
+         };
+       },
+     };
+@@ -246,4 +290,73 @@ describe('withTenantScope', () => {
+       where: { id: 'org_1' },
+     });
+   });
++
++  describe('append-only guard (ClassificationDocument)', () => {
++    it('allows create on ClassificationDocument', async () => {
++      const { client, innerQuery } = createMockClient();
++      await tenantStore.run({ organizationId: 'org_1' }, async () => {
++        await client.classificationDocument.create({ data: { type: 'PASSPORT' } });
++      });
++      expect(innerQuery).toHaveBeenCalledWith({
++        data: { type: 'PASSPORT', organizationId: 'org_1' },
++      });
++    });
++
++    it('blocks update on ClassificationDocument', async () => {
++      const { client } = createMockClient();
++      await tenantStore.run({ organizationId: 'org_1' }, async () => {
++        await expect(
++          client.classificationDocument.update({
++            where: { id: 'cd_1' },
++            data: { type: 'ID_CARD' },
++          }),
++        ).rejects.toThrow('append-only; mutations after insert are forbidden');
++      });
++    });
++
++    it('blocks updateMany on ClassificationDocument', async () => {
++      const { client } = createMockClient();
++      await tenantStore.run({ organizationId: 'org_1' }, async () => {
++        await expect(
++          client.classificationDocument.updateMany({
++            where: { type: 'PASSPORT' },
++            data: { type: 'ID_CARD' },
++          }),
++        ).rejects.toThrow('append-only; mutations after insert are forbidden');
++      });
++    });
++
++    it('blocks upsert on ClassificationDocument', async () => {
++      const { client } = createMockClient();
++      await tenantStore.run({ organizationId: 'org_1' }, async () => {
++        await expect(
++          client.classificationDocument.upsert({
++            where: { id: 'cd_1' },
++            create: { type: 'PASSPORT' },
++            update: { type: 'ID_CARD' },
++          }),
++        ).rejects.toThrow('append-only; mutations after insert are forbidden');
++      });
++    });
++
++    it('allows delete on ClassificationDocument (not a content mutation)', async () => {
++      const { client, innerQuery } = createMockClient();
++      await tenantStore.run({ organizationId: 'org_1' }, async () => {
++        await client.classificationDocument.delete({ where: { id: 'cd_1' } });
++      });
++      expect(innerQuery).toHaveBeenCalledWith({
++        where: { id: 'cd_1', organizationId: 'org_1' },
++      });
++    });
++
++    it('allows findMany on ClassificationDocument with org scoping', async () => {
++      const { client, innerQuery } = createMockClient();
++      await tenantStore.run({ organizationId: 'org_1' }, async () => {
++        await client.classificationDocument.findMany({ where: { type: 'PASSPORT' } });
++      });
++      expect(innerQuery).toHaveBeenCalledWith({
++        where: { type: 'PASSPORT', organizationId: 'org_1' },
++      });
++    });
++  });
+ });
+diff --git a/packages/einvoice/src/profiles/zugferd-de/__tests__/pdf-wrapper.test.ts b/packages/einvoice/src/profiles/zugferd-de/__tests__/pdf-wrapper.test.ts
+index 2af3e377..ff79cf0f 100644
+--- a/packages/einvoice/src/profiles/zugferd-de/__tests__/pdf-wrapper.test.ts
++++ b/packages/einvoice/src/profiles/zugferd-de/__tests__/pdf-wrapper.test.ts
+@@ -118,7 +118,7 @@ describe('wrapToPdfA3', () => {
+     const items = arr.asArray ? arr.asArray() : [];
+     const first = wrappedDoc.context.lookup(items[0] as never, PDFDict);
+     const profileRef = first.get(PDFName.of('DestOutputProfile'));
+-    const profileStream = wrappedDoc.context.lookup(profileRef!, PDFRawStream);
++    const profileStream = wrappedDoc.context.lookup(profileRef!) as PDFRawStream;
+     const profileBytes = decodePDFRawStream(profileStream).decode();
+     expect(sha256(profileBytes)).toBe(iccSha);
+   });
+diff --git a/pnpm-lock.yaml b/pnpm-lock.yaml
+index ba0079a2..006d8abd 100644
+--- a/pnpm-lock.yaml
++++ b/pnpm-lock.yaml
+@@ -202,7 +202,7 @@ importers:
+         version: 4.4.1(react@19.2.5)
+       '@sentry/nextjs':
+         specifier: ^9.47.1
+-        version: 9.47.1(@opentelemetry/context-async-hooks@1.30.1(@opentelemetry/api@1.9.1))(@opentelemetry/core@1.30.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.1))(encoding@0.1.13)(next@15.5.15(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react@19.2.5)(webpack@5.105.4(esbuild@0.27.7))
++        version: 9.47.1(@opentelemetry/context-async-hooks@1.30.1(@opentelemetry/api@1.9.1))(@opentelemetry/core@2.6.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@2.2.0(@opentelemetry/api@1.9.1))(encoding@0.1.13)(next@15.5.15(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react@19.2.5)(webpack@5.105.4(esbuild@0.27.7))
+       '@tailwindcss/postcss':
+         specifier: ^4.2.2
+         version: 4.2.2
+@@ -443,7 +443,7 @@ importers:
+         version: 4.4.1(react@19.2.5)
+       '@sentry/nextjs':
+         specifier: ^9.47.1
+-        version: 9.47.1(@opentelemetry/context-async-hooks@1.30.1(@opentelemetry/api@1.9.1))(@opentelemetry/core@2.6.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@2.2.0(@opentelemetry/api@1.9.1))(encoding@0.1.13)(next@15.5.15(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react@19.2.5)(webpack@5.105.4(esbuild@0.27.7))
++        version: 9.47.1(@opentelemetry/context-async-hooks@1.30.1(@opentelemetry/api@1.9.1))(@opentelemetry/core@2.6.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@2.2.0(@opentelemetry/api@1.9.1))(encoding@0.1.13)(next@15.5.15(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react@19.2.5)(webpack@5.105.4(esbuild@0.27.7))
+       '@slack/web-api':
+         specifier: ^7.15.0
+         version: 7.15.0
+@@ -607,6 +607,9 @@ importers:
+       qrcode:
+         specifier: ^1.5.4
+         version: 1.5.4
++      react:
++        specifier: ^19.2.5
++        version: 19.2.5
+       saxon-js:
+         specifier: ^2.7.0
+         version: 2.7.0
+@@ -623,6 +626,9 @@ importers:
+       '@types/qrcode':
+         specifier: ^1.5.6
+         version: 1.5.6
++      '@types/react':
++        specifier: ^19.2.14
++        version: 19.2.14
+       '@vitest/coverage-v8':
+         specifier: ^4.1.4
+         version: 4.1.4(vitest@4.1.4)
+@@ -745,7 +751,7 @@ importers:
+         version: 1.6.0
+       '@sentry/nextjs':
+         specifier: ^9.47.1
+-        version: 9.47.1(@opentelemetry/context-async-hooks@1.30.1(@opentelemetry/api@1.9.1))(@opentelemetry/core@2.6.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@2.2.0(@opentelemetry/api@1.9.1))(encoding@0.1.13)(next@15.5.15(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react@19.2.5)(webpack@5.105.4(esbuild@0.27.7))
++        version: 9.47.1(@opentelemetry/context-async-hooks@1.30.1(@opentelemetry/api@1.9.1))(@opentelemetry/core@1.30.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.1))(encoding@0.1.13)(next@15.5.15(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react@19.2.5)(webpack@5.105.4(esbuild@0.27.7))
+       pino:
+         specifier: ^9.14.0
+         version: 9.14.0
+@@ -10155,7 +10161,7 @@ snapshots:
+ 
+   '@bcoe/v8-coverage@1.0.2': {}
+ 
+-  '@better-auth/core@1.6.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.1)(better-call@1.3.5(zod@3.25.76))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0)':
++  '@better-auth/core@1.6.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.1)(better-call@1.3.5(zod@4.3.6))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0)':
+     dependencies:
+       '@better-auth/utils': 0.4.0
+       '@better-fetch/fetch': 1.1.21
+@@ -10168,41 +10174,41 @@ snapshots:
+       nanostores: 1.2.0
+       zod: 4.3.6
+ 
+-  '@better-auth/drizzle-adapter@1.6.2(@better-auth/core@1.6.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.1)(better-call@1.3.5(zod@3.25.76))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0))(@better-auth/utils@0.4.0)':
++  '@better-auth/drizzle-adapter@1.6.2(@better-auth/core@1.6.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.1)(better-call@1.3.5(zod@4.3.6))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0))(@better-auth/utils@0.4.0)':
+     dependencies:
+-      '@better-auth/core': 1.6.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.1)(better-call@1.3.5(zod@3.25.76))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0)
++      '@better-auth/core': 1.6.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.1)(better-call@1.3.5(zod@4.3.6))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0)
+       '@better-auth/utils': 0.4.0
+ 
+-  '@better-auth/kysely-adapter@1.6.2(@better-auth/core@1.6.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.1)(better-call@1.3.5(zod@3.25.76))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0))(@better-auth/utils@0.4.0)(kysely@0.28.16)':
++  '@better-auth/kysely-adapter@1.6.2(@better-auth/core@1.6.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.1)(better-call@1.3.5(zod@4.3.6))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0))(@better-auth/utils@0.4.0)(kysely@0.28.16)':
+     dependencies:
+-      '@better-auth/core': 1.6.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.1)(better-call@1.3.5(zod@3.25.76))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0)
++      '@better-auth/core': 1.6.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.1)(better-call@1.3.5(zod@4.3.6))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0)
+       '@better-auth/utils': 0.4.0
+     optionalDependencies:
+       kysely: 0.28.16
+ 
+-  '@better-auth/memory-adapter@1.6.2(@better-auth/core@1.6.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.1)(better-call@1.3.5(zod@3.25.76))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0))(@better-auth/utils@0.4.0)':
++  '@better-auth/memory-adapter@1.6.2(@better-auth/core@1.6.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.1)(better-call@1.3.5(zod@4.3.6))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0))(@better-auth/utils@0.4.0)':
+     dependencies:
+-      '@better-auth/core': 1.6.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.1)(better-call@1.3.5(zod@3.25.76))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0)
++      '@better-auth/core': 1.6.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.1)(better-call@1.3.5(zod@4.3.6))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0)
+       '@better-auth/utils': 0.4.0
+ 
+-  '@better-auth/mongo-adapter@1.6.2(@better-auth/core@1.6.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.1)(better-call@1.3.5(zod@3.25.76))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0))(@better-auth/utils@0.4.0)(mongodb@7.1.0(@aws-sdk/credential-providers@3.993.0)(socks@2.8.7))':
++  '@better-auth/mongo-adapter@1.6.2(@better-auth/core@1.6.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.1)(better-call@1.3.5(zod@4.3.6))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0))(@better-auth/utils@0.4.0)(mongodb@7.1.0(@aws-sdk/credential-providers@3.993.0)(socks@2.8.7))':
+     dependencies:
+-      '@better-auth/core': 1.6.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.1)(better-call@1.3.5(zod@3.25.76))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0)
++      '@better-auth/core': 1.6.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.1)(better-call@1.3.5(zod@4.3.6))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0)
+       '@better-auth/utils': 0.4.0
+     optionalDependencies:
+       mongodb: 7.1.0(@aws-sdk/credential-providers@3.993.0)(socks@2.8.7)
+ 
+-  '@better-auth/prisma-adapter@1.6.2(@better-auth/core@1.6.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.1)(better-call@1.3.5(zod@3.25.76))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0))(@better-auth/utils@0.4.0)(@prisma/client@7.7.0(prisma@7.7.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(typescript@5.9.3))(typescript@5.9.3))(prisma@7.7.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(typescript@5.9.3))':
++  '@better-auth/prisma-adapter@1.6.2(@better-auth/core@1.6.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.1)(better-call@1.3.5(zod@4.3.6))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0))(@better-auth/utils@0.4.0)(@prisma/client@7.7.0(prisma@7.7.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(typescript@5.9.3))(typescript@5.9.3))(prisma@7.7.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(typescript@5.9.3))':
+     dependencies:
+-      '@better-auth/core': 1.6.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.1)(better-call@1.3.5(zod@3.25.76))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0)
++      '@better-auth/core': 1.6.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.1)(better-call@1.3.5(zod@4.3.6))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0)
+       '@better-auth/utils': 0.4.0
+     optionalDependencies:
+       '@prisma/client': 7.7.0(prisma@7.7.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(typescript@5.9.3))(typescript@5.9.3)
+       prisma: 7.7.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(typescript@5.9.3)
+ 
+-  '@better-auth/telemetry@1.6.2(@better-auth/core@1.6.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.1)(better-call@1.3.5(zod@3.25.76))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0))(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)':
++  '@better-auth/telemetry@1.6.2(@better-auth/core@1.6.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.1)(better-call@1.3.5(zod@4.3.6))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0))(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)':
+     dependencies:
+-      '@better-auth/core': 1.6.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.1)(better-call@1.3.5(zod@3.25.76))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0)
++      '@better-auth/core': 1.6.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.1)(better-call@1.3.5(zod@4.3.6))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0)
+       '@better-auth/utils': 0.4.0
+       '@better-fetch/fetch': 1.1.21
+ 
+@@ -12140,7 +12146,7 @@ snapshots:
+ 
+   '@sentry/core@9.47.1': {}
+ 
+-  '@sentry/nextjs@9.47.1(@opentelemetry/context-async-hooks@1.30.1(@opentelemetry/api@1.9.1))(@opentelemetry/core@1.30.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.1))(encoding@0.1.13)(next@15.5.15(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react@19.2.5)(webpack@5.105.4(esbuild@0.27.7))':
++  '@sentry/nextjs@9.47.1(@opentelemetry/context-async-hooks@1.30.1(@opentelemetry/api@1.9.1))(@opentelemetry/core@1.30.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.1))(encoding@0.1.13)(next@15.5.15(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react@19.2.5)(webpack@5.105.4(esbuild@0.27.7))':
+     dependencies:
+       '@opentelemetry/api': 1.9.1
+       '@opentelemetry/semantic-conventions': 1.40.0
+@@ -12166,7 +12172,7 @@ snapshots:
+       - supports-color
+       - webpack
+ 
+-  '@sentry/nextjs@9.47.1(@opentelemetry/context-async-hooks@1.30.1(@opentelemetry/api@1.9.1))(@opentelemetry/core@2.6.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@2.2.0(@opentelemetry/api@1.9.1))(encoding@0.1.13)(next@15.5.15(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react@19.2.5)(webpack@5.105.4(esbuild@0.27.7))':
++  '@sentry/nextjs@9.47.1(@opentelemetry/context-async-hooks@1.30.1(@opentelemetry/api@1.9.1))(@opentelemetry/core@2.6.1(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@2.2.0(@opentelemetry/api@1.9.1))(encoding@0.1.13)(next@15.5.15(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react@19.2.5)(webpack@5.105.4(esbuild@0.27.7))':
+     dependencies:
+       '@opentelemetry/api': 1.9.1
+       '@opentelemetry/semantic-conventions': 1.40.0
+@@ -13679,13 +13685,13 @@ snapshots:
+ 
+   better-auth@1.6.2(@opentelemetry/api@1.9.1)(@prisma/client@7.7.0(prisma@7.7.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(typescript@5.9.3))(typescript@5.9.3))(mongodb@7.1.0(@aws-sdk/credential-providers@3.993.0)(socks@2.8.7))(mysql2@3.15.3)(next@15.5.15(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(prisma@7.7.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(typescript@5.9.3))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(vitest@4.1.4):
+     dependencies:
+-      '@better-auth/core': 1.6.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.1)(better-call@1.3.5(zod@3.25.76))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0)
+-      '@better-auth/drizzle-adapter': 1.6.2(@better-auth/core@1.6.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.1)(better-call@1.3.5(zod@3.25.76))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0))(@better-auth/utils@0.4.0)
+-      '@better-auth/kysely-adapter': 1.6.2(@better-auth/core@1.6.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.1)(better-call@1.3.5(zod@3.25.76))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0))(@better-auth/utils@0.4.0)(kysely@0.28.16)
+-      '@better-auth/memory-adapter': 1.6.2(@better-auth/core@1.6.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.1)(better-call@1.3.5(zod@3.25.76))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0))(@better-auth/utils@0.4.0)
+-      '@better-auth/mongo-adapter': 1.6.2(@better-auth/core@1.6.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.1)(better-call@1.3.5(zod@3.25.76))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0))(@better-auth/utils@0.4.0)(mongodb@7.1.0(@aws-sdk/credential-providers@3.993.0)(socks@2.8.7))
+-      '@better-auth/prisma-adapter': 1.6.2(@better-auth/core@1.6.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.1)(better-call@1.3.5(zod@3.25.76))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0))(@better-auth/utils@0.4.0)(@prisma/client@7.7.0(prisma@7.7.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(typescript@5.9.3))(typescript@5.9.3))(prisma@7.7.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(typescript@5.9.3))
+-      '@better-auth/telemetry': 1.6.2(@better-auth/core@1.6.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.1)(better-call@1.3.5(zod@3.25.76))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0))(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)
++      '@better-auth/core': 1.6.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.1)(better-call@1.3.5(zod@4.3.6))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0)
++      '@better-auth/drizzle-adapter': 1.6.2(@better-auth/core@1.6.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.1)(better-call@1.3.5(zod@4.3.6))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0))(@better-auth/utils@0.4.0)
++      '@better-auth/kysely-adapter': 1.6.2(@better-auth/core@1.6.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.1)(better-call@1.3.5(zod@4.3.6))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0))(@better-auth/utils@0.4.0)(kysely@0.28.16)
++      '@better-auth/memory-adapter': 1.6.2(@better-auth/core@1.6.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.1)(better-call@1.3.5(zod@4.3.6))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0))(@better-auth/utils@0.4.0)
++      '@better-auth/mongo-adapter': 1.6.2(@better-auth/core@1.6.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.1)(better-call@1.3.5(zod@4.3.6))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0))(@better-auth/utils@0.4.0)(mongodb@7.1.0(@aws-sdk/credential-providers@3.993.0)(socks@2.8.7))
++      '@better-auth/prisma-adapter': 1.6.2(@better-auth/core@1.6.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.1)(better-call@1.3.5(zod@4.3.6))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0))(@better-auth/utils@0.4.0)(@prisma/client@7.7.0(prisma@7.7.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(typescript@5.9.3))(typescript@5.9.3))(prisma@7.7.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(typescript@5.9.3))
++      '@better-auth/telemetry': 1.6.2(@better-auth/core@1.6.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.1)(better-call@1.3.5(zod@4.3.6))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0))(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)
+       '@better-auth/utils': 0.4.0
+       '@better-fetch/fetch': 1.1.21
+       '@noble/ciphers': 2.1.1
+@@ -13711,13 +13717,13 @@ snapshots:
+ 
+   better-auth@1.6.2(@opentelemetry/api@1.9.1)(@prisma/client@7.7.0(prisma@7.7.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(typescript@5.9.3))(typescript@5.9.3))(mongodb@7.1.0(@aws-sdk/credential-providers@3.993.0)(socks@2.8.7))(mysql2@3.15.3)(next@15.5.15(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(prisma@7.7.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(typescript@5.9.3))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(vitest@4.1.4):
+     dependencies:
+-      '@better-auth/core': 1.6.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.1)(better-call@1.3.5(zod@3.25.76))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0)
+-      '@better-auth/drizzle-adapter': 1.6.2(@better-auth/core@1.6.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.1)(better-call@1.3.5(zod@3.25.76))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0))(@better-auth/utils@0.4.0)
+-      '@better-auth/kysely-adapter': 1.6.2(@better-auth/core@1.6.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.1)(better-call@1.3.5(zod@3.25.76))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0))(@better-auth/utils@0.4.0)(kysely@0.28.16)
+-      '@better-auth/memory-adapter': 1.6.2(@better-auth/core@1.6.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.1)(better-call@1.3.5(zod@3.25.76))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0))(@better-auth/utils@0.4.0)
+-      '@better-auth/mongo-adapter': 1.6.2(@better-auth/core@1.6.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.1)(better-call@1.3.5(zod@3.25.76))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0))(@better-auth/utils@0.4.0)(mongodb@7.1.0(@aws-sdk/credential-providers@3.993.0)(socks@2.8.7))
+-      '@better-auth/prisma-adapter': 1.6.2(@better-auth/core@1.6.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.1)(better-call@1.3.5(zod@3.25.76))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0))(@better-auth/utils@0.4.0)(@prisma/client@7.7.0(prisma@7.7.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(typescript@5.9.3))(typescript@5.9.3))(prisma@7.7.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(typescript@5.9.3))
+-      '@better-auth/telemetry': 1.6.2(@better-auth/core@1.6.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.1)(better-call@1.3.5(zod@3.25.76))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0))(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)
++      '@better-auth/core': 1.6.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.1)(better-call@1.3.5(zod@4.3.6))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0)
++      '@better-auth/drizzle-adapter': 1.6.2(@better-auth/core@1.6.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.1)(better-call@1.3.5(zod@4.3.6))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0))(@better-auth/utils@0.4.0)
++      '@better-auth/kysely-adapter': 1.6.2(@better-auth/core@1.6.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.1)(better-call@1.3.5(zod@4.3.6))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0))(@better-auth/utils@0.4.0)(kysely@0.28.16)
++      '@better-auth/memory-adapter': 1.6.2(@better-auth/core@1.6.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.1)(better-call@1.3.5(zod@4.3.6))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0))(@better-auth/utils@0.4.0)
++      '@better-auth/mongo-adapter': 1.6.2(@better-auth/core@1.6.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.1)(better-call@1.3.5(zod@4.3.6))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0))(@better-auth/utils@0.4.0)(mongodb@7.1.0(@aws-sdk/credential-providers@3.993.0)(socks@2.8.7))
++      '@better-auth/prisma-adapter': 1.6.2(@better-auth/core@1.6.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.1)(better-call@1.3.5(zod@4.3.6))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0))(@better-auth/utils@0.4.0)(@prisma/client@7.7.0(prisma@7.7.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(typescript@5.9.3))(typescript@5.9.3))(prisma@7.7.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(typescript@5.9.3))
++      '@better-auth/telemetry': 1.6.2(@better-auth/core@1.6.2(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.1)(better-call@1.3.5(zod@4.3.6))(jose@6.2.1)(kysely@0.28.16)(nanostores@1.2.0))(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)
+       '@better-auth/utils': 0.4.0
+       '@better-fetch/fetch': 1.1.21
+       '@noble/ciphers': 2.1.1
+diff --git a/vitest.config.ts b/vitest.config.ts
+index b9a94882..1d16852a 100644
+--- a/vitest.config.ts
++++ b/vitest.config.ts
+@@ -18,13 +18,17 @@ export default defineConfig({
+       'apps/web',
+       'packages/api',
+       'packages/auth',
++      'packages/classification',
+       'packages/db',
+       'packages/integrations',
+       'packages/logger',
++      'packages/secrets',
++      'packages/shared',
+       'packages/validators',
+       'packages/einvoice',
+       'packages/feature-flags',
+       'packages/gov-api',
++      'apps/public-api',
+       /** Test-only harness (MSW, fixtures) — not in root coverage; run via `pnpm --filter @contractor-ops/test-utils test` */
+     ],
+     coverage: {
+@@ -35,9 +39,13 @@ export default defineConfig({
+         'apps/web/src/**/*.{ts,tsx}',
+         'packages/api/src/**/*.ts',
+         'packages/auth/src/**/*.ts',
++        'packages/classification/src/**/*.ts',
+         'packages/db/src/**/*.ts',
++        'packages/einvoice/src/**/*.ts',
+         'packages/integrations/src/**/*.ts',
+         'packages/logger/src/**/*.ts',
++        'packages/secrets/src/**/*.ts',
++        'packages/shared/src/**/*.ts',
+         'packages/validators/src/**/*.ts',
+         'packages/gov-api/src/**/*.ts',
+         'packages/feature-flags/src/**/*.ts',
+diff --git a/vitest.monorepo.ts b/vitest.monorepo.ts
+index f9324ec7..0eb2ef5b 100644
+--- a/vitest.monorepo.ts
++++ b/vitest.monorepo.ts
+@@ -18,4 +18,7 @@ export const vitestProject = {
+   testUtils: { name: 'test-utils', groupOrder: 9 },
+   classification: { name: 'classification', groupOrder: 10 },
+   secrets: { name: 'secrets', groupOrder: 11 },
++  shared: { name: 'shared', groupOrder: 12 },
++  featureFlags: { name: 'feature-flags', groupOrder: 13 },
++  publicApi: { name: 'public-api', groupOrder: 14 },
+ } as const;

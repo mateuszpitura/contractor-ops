@@ -1,0 +1,74 @@
+diff --git a/apps/web/src/test/setup.ts b/apps/web/src/test/setup.ts
+new file mode 100644
+index 00000000..91cd926e
+--- /dev/null
++++ b/apps/web/src/test/setup.ts
+@@ -0,0 +1,35 @@
++import "@testing-library/jest-dom/vitest";
++import * as React from "react";
++import { vi } from "vitest";
++
++/**
++ * Base UI ScrollArea schedules layout/state updates after mount (ResizeObserver, etc.),
++ * which triggers "not wrapped in act(...)" in most UI tests. For tests that are not about
++ * scroll behavior, a lightweight DOM stub keeps the same slots/class contract without
++ * async updates. Real ScrollArea is tested in scroll-area.test.tsx via vi.unmock.
++ */
++vi.mock("@/components/ui/scroll-area", () => ({
++  ScrollArea: ({
++    children,
++    className,
++    ...props
++  }: React.ComponentProps<"div">) =>
++    React.createElement(
++      "div",
++      {
++        "data-slot": "scroll-area",
++        className: ["relative", className].filter(Boolean).join(" "),
++        ...props,
++      },
++      React.createElement(
++        "div",
++        {
++          "data-slot": "scroll-area-viewport",
++          className:
++            "size-full rounded-[inherit] transition-[color,box-shadow] outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-1",
++        },
++        children,
++      ),
++    ),
++  ScrollBar: () => null,
++}));
+diff --git a/apps/web/vitest.config.ts b/apps/web/vitest.config.ts
+new file mode 100644
+index 00000000..d7ab0c1b
+--- /dev/null
++++ b/apps/web/vitest.config.ts
+@@ -0,0 +1,27 @@
++import react from "@vitejs/plugin-react";
++import { resolve } from "node:path";
++import { defineConfig } from "vitest/config";
++
++import { vitestProject } from "../../vitest.monorepo";
++
++export default defineConfig({
++  plugins: [react()],
++  resolve: {
++    alias: {
++      "@": resolve(__dirname, "src"),
++    },
++  },
++  test: {
++    name: vitestProject.web.name,
++    globals: true,
++    environment: "jsdom",
++    setupFiles: ["./src/test/setup.ts"],
++    include: ["src/**/__tests__/**/*.test.{ts,tsx}"],
++    css: false,
++    testTimeout: 10000,
++    hookTimeout: 10000,
++    pool: "forks",
++    maxWorkers: 4,
++    sequence: { groupOrder: vitestProject.web.groupOrder },
++  },
++});

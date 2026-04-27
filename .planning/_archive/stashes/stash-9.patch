@@ -1,0 +1,3249 @@
+diff --git a/.planning/v3.0-MILESTONE-AUDIT.md b/.planning/v3.0-MILESTONE-AUDIT.md
+index 24fc506e..af438054 100644
+--- a/.planning/v3.0-MILESTONE-AUDIT.md
++++ b/.planning/v3.0-MILESTONE-AUDIT.md
+@@ -1,268 +1,234 @@
+ ---
+ milestone: v3.0
+-audited: 2026-04-05T14:30:00Z
+-status: gaps_found
++audited: 2026-04-05T15:00:00Z
++status: tech_debt
+ scores:
+-  requirements: 39/43
+-  phases: 8/8
+-  integration: 14/18
+-  flows: 5/6
++  requirements: 43/43
++  phases: 9/9
++  integration: 18/21
++  flows: 5/8
+ gaps:
+-  requirements:
+-    - id: "LIN-04"
+-      status: "unsatisfied"
+-      phase: "Phase 29"
+-      claimed_by_plans: ["29-02-PLAN.md"]
+-      completed_by_plans: ["29-02-SUMMARY.md"]
+-      verification_status: "passed"
+-      evidence: "processLinearWebhook exists but /api/webhooks/_process/route.ts has no 'linear' dispatch branch — inbound Linear webhook events are logged but never processed"
+-    - id: "LIN-05"
+-      status: "partial"
+-      phase: "Phase 29"
+-      claimed_by_plans: ["29-02-PLAN.md"]
+-      completed_by_plans: ["29-02-SUMMARY.md"]
+-      verification_status: "passed"
+-      evidence: "Outbound sync (task→Linear) works via syncTaskStatusToLinear in workflow.ts. Inbound sync (Linear→task) broken due to missing _process dispatch (see LIN-04)"
+-    - id: "EQUIP-06"
+-      status: "partial"
+-      phase: "Phase 35"
+-      claimed_by_plans: ["35-02-PLAN.md", "35-03-PLAN.md", "35-05-PLAN.md"]
+-      completed_by_plans: ["35-02-SUMMARY.md", "35-03-SUMMARY.md", "35-05-SUMMARY.md"]
+-      verification_status: "passed"
+-      evidence: "DPDClient, createDpdShipment, CarrierShipmentForm all exist but CarrierShipmentForm + CarrierCredentialForm are never mounted in any parent page — admin cannot reach the DPD flow from UI"
+-    - id: "EQUIP-07"
+-      status: "partial"
+-      phase: "Phase 35"
+-      claimed_by_plans: ["35-02-PLAN.md", "35-03-PLAN.md", "35-05-PLAN.md"]
+-      completed_by_plans: ["35-02-SUMMARY.md", "35-03-SUMMARY.md", "35-05-SUMMARY.md"]
+-      verification_status: "passed"
+-      evidence: "UPSClient, createUpsShipment, UpsFieldset all exist but CarrierShipmentForm + CarrierCredentialForm are never mounted — same UI gap as EQUIP-06"
++  requirements: []
+   integration:
+-    - "CarrierShipmentForm built but never imported into equipment detail page — equipment/[id]/page.tsx still uses old ShipmentForm"
+-    - "CarrierCredentialForm built but never mounted in integrations-tab.tsx or any settings page"
+-    - "DefaultReturnCarrierSelect built but never imported into any page"
+-    - "FeatureGate component exists but never wraps any feature — STARTER users get tRPC errors instead of graceful upgrade prompts"
++    - id: "MISSING-01"
++      description: "Teams and Google Workspace mutation procedures have no requireTier gate"
++      affected_requirements: ["BILL-09", "TEAM-02", "GOOG-03"]
++      severity: "policy"
++      detail: "requireTier middleware applied to Linear, Jira, Calendar, OCR, Audit mutations but omitted from teamsRouter.saveChannelMapping, googleWorkspaceRouter.bulkImport/triggerSync/listUserGroups, and onboardingImportRouter (all 6 endpoints)"
++    - id: "MISSING-02"
++      description: "inpost-webhook-handler and inpost-polling-service do not call checkShipmentTaskCompletion"
++      affected_requirements: ["EQUIP-09", "EQUIP-10"]
++      severity: "functional"
++      detail: "Webhook/polling paths update Shipment.currentStatus but skip checkShipmentTaskCompletion — workflow tasks linked to shipments never auto-complete via external status updates. Only fires when admin manually calls addShipmentEvent tRPC mutation."
++    - id: "MISSING-03"
++      description: "CourierClient interface type contract is misleading for DPD/UPS"
++      affected_requirements: ["EQUIP-05", "EQUIP-06", "EQUIP-07"]
++      severity: "structural"
++      detail: "DPDClient/UPSClient accept AddressShipmentParams (deliveryAddress) while CourierClient.createShipment declares CreateShipmentParams (targetPoint). TypeScript bivariance hides the mismatch. Safe today because call sites are carrier-specific, but getCourierClient() return type is misleading."
+   flows:
+-    - "Linear inbound status sync: webhook delivered → _process route → (MISSING linear dispatch) → processLinearWebhook never called"
++    - flow: "Offboarding auto-shipment → task auto-completion"
++      break_point: "inpost-webhook-handler.ts:196 — updates equipment status but does not call checkShipmentTaskCompletion"
++      affected_requirements: ["EQUIP-09", "EQUIP-10"]
++    - flow: "DPD/UPS polling → task auto-completion"
++      break_point: "Same pattern gap — polling services do not call checkShipmentTaskCompletion"
++      affected_requirements: ["EQUIP-09", "EQUIP-10"]
++    - flow: "STARTER org accessing onboarding wizard"
++      break_point: "onboardingImportRouter has no requireTier gate — policy gap, not runtime break"
++      affected_requirements: ["ONBD-01", "BILL-09"]
+ tech_debt:
+   - phase: 28-stripe-billing-foundation
+     items:
+-      - "All test files are it.todo() scaffolds (billing-service, billing-webhook, credit-service)"
++      - "billing-service.test.ts, billing-webhook.test.ts, credit-service.test.ts — all tests are it.todo() scaffolds"
+   - phase: 29-linear-integration
+     items:
+-      - "Test files are it.todo() scaffolds (4 files)"
++      - "linear-adapter.test.ts, linear.test.ts, linear-status-mapping.test.ts, linear-issue-sync.test.ts — all it.todo() stubs"
+   - phase: 30-equipment-tracking-foundation
+     items:
+-      - "equipment/[id]/page.tsx line 72: as any cast on equipmentQuery.data"
+-      - "equipment-workflow.ts line 3: type PrismaClient = any (documented precedent)"
++      - "equipment/[id]/page.tsx line 72: as any cast on query data"
++      - "equipment-workflow.ts: type PrismaClient = any (intentional fire-and-forget pattern)"
+   - phase: 32-teams-integration
+     items:
+-      - "teams-channel-mapping-card.tsx line 30: (trpc as any).teams — stale API dist types workaround"
+-      - "notification-preferences.tsx: type casts for teams i18n keys (stale types)"
++      - "teams-channel-mapping-card.tsx: (trpc as any).teams cast — stale API dist types"
++      - "notification-preferences.tsx: type casts for tAria/t — same stale types issue"
+   - phase: 33-inpost-courier-integration
+     items:
+-      - "NOTIFICATION_STATUSES imported in webhook handler but notification dispatch never implemented for terminal shipment statuses"
+-      - "checkShipmentTaskCompletion not called from webhook handler (workflow auto-complete only works via polling path)"
++      - "NOTIFICATION_STATUSES imported but never used in webhook handler — terminal shipment notifications not dispatched"
++      - "checkShipmentTaskCompletion not called from webhook/polling path"
+   - phase: 34-intelligent-onboarding-wizard
+     items:
+-      - "retryFailedItem hardcodes role: 'readonly' instead of preserving original requested role"
+-      - "GWS user fetch bypasses GoogleWorkspaceAdapter with direct REST (maxResults=500, silently truncates large directories)"
++      - "retryFailedItem hardcodes role: 'readonly' — loses original role intent on retry"
++      - "Import is synchronous (MVP decision) despite async API signature"
++  - phase: 35-feature-gating-dpd-ups-billing-polish
++    items:
++      - "CourierClient interface CreateShipmentParams.targetPoint is InPost-specific — needs generic base type"
++  - phase: 36-wiring-fixes-webhook-ui-featuregate
++    items:
++      - "Tier gating not applied to Teams, Google Workspace, and onboarding import routers"
+ nyquist:
+-  compliant_phases: [31, 35]
+-  partial_phases: [28, 29, 30, 32, 33, 34]
++  compliant_phases: ["31-google-workspace-directory-import", "35-feature-gating-dpd-ups-billing-polish"]
++  partial_phases: ["28-stripe-billing-foundation", "29-linear-integration", "30-equipment-tracking-foundation", "32-teams-integration", "33-inpost-courier-integration", "34-intelligent-onboarding-wizard", "36-wiring-fixes-webhook-ui-featuregate"]
+   missing_phases: []
+   overall: PARTIAL
+ ---
+ 
+-# v3.0 Enterprise & Monetization — Milestone Audit
++# v3.0 Enterprise & Monetization — Milestone Audit Report
+ 
+ **Audited:** 2026-04-05
+-**Status:** gaps_found
+-**Score:** 39/43 requirements satisfied
+-
+----
++**Status:** tech_debt (all requirements satisfied, no critical blockers, accumulated debt needs review)
+ 
+ ## Phase Verification Summary
+ 
+-| Phase | Name | Verification | Score | Status |
+-|-------|------|-------------|-------|--------|
+-| 28 | Stripe Billing Foundation | 28-VERIFICATION.md | 5/5 | passed (re-verified) |
+-| 29 | Linear Integration | 29-VERIFICATION.md | 19/19 | passed |
+-| 30 | Equipment Tracking Foundation | 30-VERIFICATION.md | 5/5 | passed |
+-| 31 | Google Workspace Directory Import | 31-VERIFICATION.md | 4/4 | human_needed (re-verified) |
+-| 32 | Teams Integration | 32-VERIFICATION.md | 20/20 | passed |
+-| 33 | InPost Courier Integration | 33-VERIFICATION.md | 15/15 | passed |
+-| 34 | Intelligent Onboarding Wizard | 34-VERIFICATION.md | 21/21 | passed |
+-| 35 | Feature Gating + DPD/UPS + Billing Polish | 35-VERIFICATION.md | 13/13 | human_needed (re-verified) |
++| Phase | Name | Status | Score | Critical Gaps |
++|-------|------|--------|-------|---------------|
++| 28 | Stripe Billing Foundation | passed | 5/5 | None |
++| 29 | Linear Integration | passed | 19/19 | None |
++| 30 | Equipment Tracking Foundation | passed | 5/5 | None |
++| 31 | Google Workspace Directory Import | human_needed | 4/4 | None (code verified, live OAuth requires human) |
++| 32 | Teams Integration | passed | 20/20 | None |
++| 33 | InPost Courier Integration | passed | 15/15 | None |
++| 34 | Intelligent Onboarding Wizard | passed | 21/21 | None |
++| 35 | Feature Gating + DPD/UPS + Billing Polish | human_needed | 13/13 | None (code verified, live UI requires human) |
++| 36 | Wiring Fixes — Webhook + UI + Feature Gate | passed | 4/4 | None |
+ 
+-All 8 phases have VERIFICATION.md files. All phase-level verifications passed their success criteria.
+-
+----
++**All 9 phases pass at code verification level.** Two phases (31, 35) have human_needed status for live OAuth/UI testing — not code gaps.
+ 
+ ## Requirements Coverage (3-Source Cross-Reference)
+ 
+-### Satisfied Requirements (39/43)
+-
+-| Requirement | VERIFICATION.md | SUMMARY Frontmatter | REQUIREMENTS.md | Final Status |
+-|-------------|-----------------|---------------------|-----------------|-------------|
+-| BILL-01 | passed | — | [x] | **satisfied** |
+-| BILL-02 | passed | — | [x] | **satisfied** |
+-| BILL-03 | passed | — | [x] | **satisfied** |
+-| BILL-04 | passed | listed | [x] | **satisfied** |
+-| BILL-05 | passed | listed | [x] | **satisfied** |
+-| BILL-06 | passed | listed | [x] | **satisfied** |
+-| BILL-07 | passed | — | [x] | **satisfied** |
+-| BILL-08 | passed | — | [x] | **satisfied** |
+-| BILL-09 | passed | listed | [x] | **partial** (see below) |
+-| BILL-10 | passed | listed | [x] | **satisfied** |
+-| LIN-01 | passed | — | [x] | **satisfied** |
+-| LIN-02 | passed | listed | [x] | **satisfied** |
+-| LIN-03 | passed | listed | [x] | **satisfied** |
+-| LIN-04 | passed | listed | [x] | **unsatisfied** (see below) |
+-| LIN-05 | passed | listed | [x] | **partial** (see below) |
+-| LIN-06 | passed | — | [x] | **satisfied** |
+-| EQUIP-01 | passed | — | [x] | **satisfied** |
+-| EQUIP-02 | passed | — | [x] | **satisfied** |
+-| EQUIP-03 | passed | — | [x] | **satisfied** |
+-| EQUIP-04 | passed | — | [x] | **satisfied** |
+-| EQUIP-05 | passed | listed | [x] | **satisfied** |
+-| EQUIP-06 | passed | listed | [x] | **partial** (see below) |
+-| EQUIP-07 | passed | listed | [x] | **partial** (see below) |
+-| EQUIP-08 | passed | — | [x] | **satisfied** |
+-| EQUIP-09 | passed | listed | [x] | **satisfied** |
+-| EQUIP-10 | passed | listed | [x] | **satisfied** |
+-| EQUIP-11 | passed | listed | [x] | **satisfied** |
+-| GOOG-01 | passed | listed | [x] | **satisfied** |
+-| GOOG-02 | passed | — | [x] | **satisfied** |
+-| GOOG-03 | passed | — | [x] | **satisfied** |
+-| GOOG-04 | passed | — | [x] | **satisfied** |
+-| GOOG-05 | passed | — | [x] | **satisfied** |
+-| TEAM-01 | passed | listed | [x] | **satisfied** |
+-| TEAM-02 | passed | — | [x] | **satisfied** |
+-| TEAM-03 | passed | listed | [x] | **satisfied** |
+-| TEAM-04 | passed | — | [x] | **satisfied** |
+-| TEAM-05 | passed | — | [x] | **satisfied** |
+-| TEAM-06 | passed | — | [x] | **satisfied** |
+-| ONBD-01 | passed | — | [x] | **satisfied** |
+-| ONBD-02 | passed | — | [x] | **satisfied** |
+-| ONBD-03 | passed | — | [x] | **satisfied** |
+-| ONBD-04 | passed | — | [x] | **satisfied** |
+-| ONBD-05 | passed | — | [x] | **satisfied** |
+-
+-### Unsatisfied/Partial Requirements (4)
+-
+-**LIN-04: Status changes in Linear sync to linked workflow task via webhooks**
+-- Phase verifier: passed (code exists and is correct)
+-- Integration check: BROKEN — `/api/webhooks/_process/route.ts` has no `if (provider === "linear")` dispatch block. `processLinearWebhook` exists but is never called. Linear webhooks are received and logged but status changes never reach the task.
+-- Fix: Add Linear dispatch branch in `_process` route (mirrors existing Jira pattern)
+-
+-**LIN-05: Status changes on workflow task sync to Linear issue**
+-- Outbound (task→Linear): WORKING — `syncTaskStatusToLinear` called from `workflow.ts` on completeTask/skipTask
+-- Inbound (Linear→task): BROKEN — depends on LIN-04 fix
+-- Net: partial — bidirectional requirement is only half-satisfied
+-
+-**EQUIP-06: DPD API integration for shipment creation, label, and tracking**
+-- Backend: COMPLETE — `DPDClient`, `createDpdShipment` (PRO-gated), `dpd-polling-service`, status mapper all exist
+-- UI: NOT MOUNTED — `CarrierShipmentForm` and `CarrierCredentialForm` are built but never imported into any page. Equipment detail page still uses old `ShipmentForm`. Settings has no carrier credential section.
+-- Fix: Mount `CarrierShipmentForm` in equipment detail and `CarrierCredentialForm` in integrations tab
+-
+-**EQUIP-07: UPS API integration for shipment creation and tracking**
+-- Same pattern as EQUIP-06 — backend complete, UI components orphaned
+-
+-**BILL-09: Feature gating by subscription tier (partial)**
+-- API gating: WORKING — `requireTier("PRO")` enforced on DPD/UPS endpoints
+-- UI gating: NOT ACTIVE — `FeatureGate` component built but never wraps any feature. STARTER users hitting PRO endpoints get raw tRPC FORBIDDEN errors instead of graceful upgrade prompts.
+-- Fix: Wrap tier-locked UI sections with `<FeatureGate>` component
+-
+----
++### Billing (BILL-01 through BILL-10)
++
++| REQ-ID | VERIFICATION | SUMMARY FM | REQ.md | Final Status |
++|--------|-------------|------------|--------|--------------|
++| BILL-01 | passed (P28) | — | [x] | **satisfied** |
++| BILL-02 | passed (P28) | — | [x] | **satisfied** |
++| BILL-03 | passed (P28) | — | [x] | **satisfied** |
++| BILL-04 | passed (P28) | listed (28-02) | [x] | **satisfied** |
++| BILL-05 | passed (P28) | listed (28-02, 28-04) | [x] | **satisfied** |
++| BILL-06 | passed (P28) | listed (28-02) | [x] | **satisfied** |
++| BILL-07 | passed (P28) | — | [x] | **satisfied** |
++| BILL-08 | passed (P28) | — | [x] | **satisfied** |
++| BILL-09 | passed (P35, P36) | listed (35-01, 35-06, 36-03) | [x] | **satisfied** |
++| BILL-10 | passed (P35) | listed (35-01, 35-06) | [x] | **satisfied** |
++
++### Linear (LIN-01 through LIN-06)
++
++| REQ-ID | VERIFICATION | SUMMARY FM | REQ.md | Final Status |
++|--------|-------------|------------|--------|--------------|
++| LIN-01 | passed (P29) | — | [x] | **satisfied** |
++| LIN-02 | passed (P29) | listed (29-02) | [x] | **satisfied** |
++| LIN-03 | passed (P29) | listed (29-02) | [x] | **satisfied** |
++| LIN-04 | passed (P29, P36) | listed (29-02) | [x] | **satisfied** |
++| LIN-05 | passed (P29, P36) | listed (29-02) | [x] | **satisfied** |
++| LIN-06 | passed (P29) | — | [x] | **satisfied** |
++
++### Teams (TEAM-01 through TEAM-06)
++
++| REQ-ID | VERIFICATION | SUMMARY FM | REQ.md | Final Status |
++|--------|-------------|------------|--------|--------------|
++| TEAM-01 | passed (P32) | listed (32-02) | [x] | **satisfied** |
++| TEAM-02 | passed (P32) | — | [x] | **satisfied** |
++| TEAM-03 | passed (P32) | listed (32-02) | [x] | **satisfied** |
++| TEAM-04 | passed (P32) | — | [x] | **satisfied** |
++| TEAM-05 | passed (P32) | — | [x] | **satisfied** |
++| TEAM-06 | passed (P32) | — | [x] | **satisfied** |
++
++### Google Workspace (GOOG-01 through GOOG-05)
++
++| REQ-ID | VERIFICATION | SUMMARY FM | REQ.md | Final Status |
++|--------|-------------|------------|--------|--------------|
++| GOOG-01 | passed (P31) | listed (31-04) | [x] | **satisfied** |
++| GOOG-02 | passed (P31) | — | [x] | **satisfied** |
++| GOOG-03 | passed (P31) | — | [x] | **satisfied** |
++| GOOG-04 | passed (P31) | — | [x] | **satisfied** |
++| GOOG-05 | passed (P31) | — | [x] | **satisfied** |
++
++### Onboarding (ONBD-01 through ONBD-05)
++
++| REQ-ID | VERIFICATION | SUMMARY FM | REQ.md | Final Status |
++|--------|-------------|------------|--------|--------------|
++| ONBD-01 | passed (P34) | — | [x] | **satisfied** |
++| ONBD-02 | passed (P34) | — | [x] | **satisfied** |
++| ONBD-03 | passed (P34) | — | [x] | **satisfied** |
++| ONBD-04 | passed (P34) | — | [x] | **satisfied** |
++| ONBD-05 | passed (P34) | — | [x] | **satisfied** |
++
++### Equipment (EQUIP-01 through EQUIP-11)
++
++| REQ-ID | VERIFICATION | SUMMARY FM | REQ.md | Final Status |
++|--------|-------------|------------|--------|--------------|
++| EQUIP-01 | passed (P30) | — | [x] | **satisfied** |
++| EQUIP-02 | passed (P30) | — | [x] | **satisfied** |
++| EQUIP-03 | passed (P30) | — | [x] | **satisfied** |
++| EQUIP-04 | passed (P30) | — | [x] | **satisfied** |
++| EQUIP-05 | passed (P33) | listed (33-03) | [x] | **satisfied** |
++| EQUIP-06 | passed (P35, P36) | listed (35-02, 35-06, 36-02) | [x] | **satisfied** |
++| EQUIP-07 | passed (P35, P36) | listed (35-02, 35-06, 36-02) | [x] | **satisfied** |
++| EQUIP-08 | passed (P30) | — | [x] | **satisfied** |
++| EQUIP-09 | passed (P30) | listed (30-03) | [x] | **satisfied** |
++| EQUIP-10 | passed (P30) | listed (30-03) | [x] | **satisfied** |
++| EQUIP-11 | passed (P33) | listed (33-03) | [x] | **satisfied** |
++
++**All 43 requirements: SATISFIED**
++**Orphaned requirements: 0** — every REQ-ID in the traceability table appears in at least one phase VERIFICATION.md.
+ 
+ ## Cross-Phase Integration Report
+ 
+-### Working Integration Points (14/18)
+-
+-| Integration | From → To | Status |
+-|-------------|-----------|--------|
+-| Billing → Feature gating (API) | Phase 28 → Phase 35 | WIRED |
+-| Equipment → InPost courier | Phase 30 → Phase 33 | WIRED |
+-| Equipment workflow → Shipment auto-complete | Phase 30 → Phase 33 | WIRED |
+-| Messaging abstraction (Slack+Teams) | Phase 32 → notification-service | WIRED |
+-| Portal return flow → Equipment router | Phase 33 → Phase 30 | WIRED |
+-| Onboarding → Linear (issue fetch) | Phase 34 → Phase 29 | WIRED |
+-| Onboarding → Source detection | Phase 34 → IntegrationConnection | WIRED |
+-| Courier polling (InPost+DPD+UPS) | Phase 33/35 → shared cron | WIRED |
+-| Linear adapter registered | Phase 29 → adapter registry | WIRED |
+-| Teams adapter registered | Phase 32 → adapter registry | WIRED |
+-| GWS adapter registered | Phase 31 → adapter registry | WIRED |
+-| Billing webhook → subscription state | Phase 28 → Stripe webhooks | WIRED |
+-| Trial notifications → cron | Phase 28 → cron endpoint | WIRED |
+-| GWS directory sync → QStash | Phase 31 → cron endpoint | WIRED |
+-
+-### Broken/Missing Integration Points (4)
+-
+-1. **Linear webhook dispatch** — `_process` route missing `linear` branch
+-2. **CarrierShipmentForm** — built but not imported in equipment detail page
+-3. **CarrierCredentialForm** — built but not mounted in settings/integrations
+-4. **FeatureGate** — component exists but wraps no features in UI
+-
+-### E2E Flow Status
+-
+-| Flow | Status | Break Point |
+-|------|--------|-------------|
+-| Billing: subscribe → gate features → usage dashboard | WORKING | — |
+-| Linear: OAuth → mapping → bidirectional sync | 5/6 steps | `_process` → `processLinearWebhook` not dispatched |
+-| Equipment: create → assign → ship (InPost) → auto-complete | WORKING | — |
+-| Equipment: DPD/UPS shipment from UI | BROKEN | CarrierShipmentForm not mounted |
+-| Onboarding: source selection → import → preview → confirm | WORKING | — |
+-| Teams: connect → configure channels → approve from card | WORKING | — |
++### Connected Flows (5/8 working)
+ 
+----
++1. **Linear bidirectional sync** — Webhook catch-all → QStash _process → processLinearWebhook. Outbound sync on cancelRun/completeTask/skipTask. Loop prevention active.
++2. **OCR credit metering + hard-block** — credit-service.checkAndDeductCredit called before OCR extraction. PRECONDITION_FAILED on exhaustion.
++3. **Notification dispatch loop** — MessagingProvider abstraction iterates Slack + Teams providers. Both implementations fully wired.
++4. **Equipment workflow auto-start** — workflow.startRun fires handleEquipmentTaskStart for EQUIPMENT tasks. Offboarding creates InPost return shipment.
++5. **Onboarding cross-tool import** — fetchUsersFromSource handles Jira/Linear/GWS/Slack. linearGraphQL reused from Phase 29.
+ 
+-## Nyquist Compliance
++### Integration Gaps (3 found)
+ 
+-| Phase | VALIDATION.md | Compliant | Action |
+-|-------|---------------|-----------|--------|
+-| 28 | exists | false | `/gsd:validate-phase 28` |
+-| 29 | exists | false | `/gsd:validate-phase 29` |
+-| 30 | exists | false | `/gsd:validate-phase 30` |
+-| 31 | exists | true | — |
+-| 32 | exists | false | `/gsd:validate-phase 32` |
+-| 33 | exists | false | `/gsd:validate-phase 33` |
+-| 34 | exists | false | `/gsd:validate-phase 34` |
+-| 35 | exists | true | — |
++| ID | Severity | Description | Affected REQs |
++|----|----------|-------------|---------------|
++| MISSING-01 | Policy | Teams/GWS/onboarding routers missing requireTier gate | BILL-09, TEAM-02, GOOG-03 |
++| MISSING-02 | Functional | Webhook/polling paths don't call checkShipmentTaskCompletion | EQUIP-09, EQUIP-10 |
++| MISSING-03 | Structural | CourierClient.createShipment type contract misleading for DPD/UPS | EQUIP-05, EQUIP-06, EQUIP-07 |
+ 
+-**Compliant:** 2/8 phases (31, 35)
+-**Partial:** 6/8 phases (28, 29, 30, 32, 33, 34)
+-**Missing:** 0
++### Broken Flow Details
+ 
+----
++**1. Offboarding auto-shipment → task auto-completion (MISSING-02)**
+ 
+-## Tech Debt Summary
++The webhook path is: InPost webhook → handleInPostWebhook → updates Shipment.currentStatus → updates Equipment.status → **stops**. The `checkShipmentTaskCompletion` call that would auto-complete the linked workflow task is missing from both `inpost-webhook-handler.ts` and all polling services. Task auto-completion only works when admin manually calls `addShipmentEvent` via tRPC.
+ 
+-### Phase 28: Stripe Billing Foundation
+-- All test files are `it.todo()` scaffolds (billing-service, billing-webhook, credit-service)
++**2. Tier gating inconsistency (MISSING-01)**
+ 
+-### Phase 29: Linear Integration
+-- Test files are `it.todo()` scaffolds (4 files)
++Phase 36-03 applied `requireTier("PRO")` to Linear, Jira, Calendar, OCR, and Audit mutation procedures. Teams `saveChannelMapping`, Google Workspace `bulkImport`/`triggerSync`, and all onboarding import endpoints were omitted. STARTER-tier orgs can access these features without upgrade prompts.
+ 
+-### Phase 30: Equipment Tracking Foundation
+-- `as any` cast on equipmentQuery.data (TypeScript inference workaround)
+-- `type PrismaClient = any` in equipment-workflow.ts (documented precedent)
++**3. CourierClient interface mismatch (MISSING-03)**
+ 
+-### Phase 32: Teams Integration
+-- `(trpc as any).teams` cast — stale API dist types from parallel plan execution
+-- Type casts for Teams i18n keys in notification-preferences.tsx
++`CreateShipmentParams.targetPoint` is InPost-specific (Paczkomat ID). DPD/UPS use `AddressShipmentParams.deliveryAddress`. TypeScript bivariance allows `implements CourierClient` to compile. No runtime breakage today because router call sites are carrier-specific, but `getCourierClient(): CourierClient` return type is a correctness trap.
+ 
+-### Phase 33: InPost Courier Integration
+-- NOTIFICATION_STATUSES imported but never used for shipment delivery notifications
+-- `checkShipmentTaskCompletion` not called from webhook handler (only polling path auto-completes)
++## Tech Debt Summary
+ 
+-### Phase 34: Intelligent Onboarding Wizard
+-- `retryFailedItem` hardcodes `role: "readonly"` instead of preserving requested role
+-- GWS user fetch bypasses adapter with direct REST (`maxResults=500`, truncates large directories)
++| Phase | Items |
++|-------|-------|
++| 28 | 3 test files with only it.todo() scaffolds |
++| 29 | 4 test files with only it.todo() stubs |
++| 30 | 2 minor `as any` casts (intentional patterns) |
++| 32 | `(trpc as any).teams` cast + notification-preferences type casts (stale API dist types) |
++| 33 | NOTIFICATION_STATUSES unused in webhook handler; checkShipmentTaskCompletion gap |
++| 34 | retryFailedItem hardcodes `role: "readonly"`; synchronous import (MVP decision) |
++| 35 | CourierClient interface needs generic base type |
++| 36 | Tier gating not applied to 3 routers |
+ 
+-**Total: 10 tech debt items across 6 phases**
++**Total: 15 items across 8 phases**
+ 
+----
++## Nyquist Compliance
++
++| Phase | VALIDATION.md | Compliant | Action |
++|-------|---------------|-----------|--------|
++| 28 | exists | false | `/gsd:validate-phase 28` |
++| 29 | exists | false | `/gsd:validate-phase 29` |
++| 30 | exists | false | `/gsd:validate-phase 30` |
++| 31 | exists | true | -- |
++| 32 | exists | false | `/gsd:validate-phase 32` |
++| 33 | exists | false | `/gsd:validate-phase 33` |
++| 34 | exists | false | `/gsd:validate-phase 34` |
++| 35 | exists | true | -- |
++| 36 | exists | false | `/gsd:validate-phase 36` |
+ 
+-_Audited: 2026-04-05_
+-_Auditor: Claude (milestone-audit)_
++**Overall: PARTIAL** (2/9 compliant, 7/9 partial)
+diff --git a/apps/web/package.json b/apps/web/package.json
+index d212bd09..5b0d3f78 100644
+--- a/apps/web/package.json
++++ b/apps/web/package.json
+@@ -10,7 +10,7 @@
+     "lint": "biome check .",
+     "test": "vitest run",
+     "test:watch": "vitest",
+-    "test:coverage": "vitest run --coverage",
++    "test:coverage": "vitest run --coverage --coverage.all --coverage.include='src/components/**/*.tsx'",
+     "e2e:perf": "playwright test -c playwright.perf.config.ts",
+     "e2e:perf:install": "playwright install chromium",
+     "e2e:integration": "playwright test -c playwright.integration.config.ts",
+diff --git a/apps/web/src/components/import/step-preview.tsx b/apps/web/src/components/import/step-preview.tsx
+index 40beb239..b9ec9a4f 100644
+--- a/apps/web/src/components/import/step-preview.tsx
++++ b/apps/web/src/components/import/step-preview.tsx
+@@ -124,13 +124,20 @@ export function StepPreview({
+       )}
+ 
+       {/* All valid message */}
+-      {hasNoInvalidRows && (
++      {hasNoInvalidRows && validRows.length > 0 && (
+         <div className="flex items-center gap-2 text-sm text-emerald-600">
+           <CheckCircle2 className="size-4" />
+           <span>{t("preview.allValid", { count: validRows.length })}</span>
+         </div>
+       )}
+ 
++      {/* Empty state */}
++      {totalRows === 0 && (
++        <div className="text-sm text-muted-foreground">
++          {t("preview.noRows")}
++        </div>
++      )}
++
+       {/* Data table */}
+       <ScrollArea className="max-h-[360px] overflow-auto">
+         <TooltipProvider>
+diff --git a/apps/web/src/components/reports/spend-team-report.tsx b/apps/web/src/components/reports/spend-team-report.tsx
+index ee96d18b..0ddf74db 100644
+--- a/apps/web/src/components/reports/spend-team-report.tsx
++++ b/apps/web/src/components/reports/spend-team-report.tsx
+@@ -29,7 +29,7 @@ interface SpendTeamReportProps {
+ 
+ type TeamSpendRow = {
+   teamId: string | null;
+-  teamName: string;
++  teamName: string | null;
+   contractorCount: number;
+   invoiceCount: number;
+   totalGrosze: number;
+@@ -90,18 +90,22 @@ export function SpendTeamReport({ dateFrom, dateTo }: SpendTeamReportProps) {
+   }, [tableQuery.data]);
+ 
+   const chartData = useMemo(() => {
+-    return (chartQuery.data ?? []) as Array<{
++    const raw = (chartQuery.data ?? []) as Array<{
+       teamId: string | null;
+-      teamName: string;
++      teamName: string | null;
+       totalGrosze: number;
+     }>;
+-  }, [chartQuery.data]);
++    return raw.map((item) => ({
++      ...item,
++      teamName: item.teamName ?? t("unassignedTeam"),
++    }));
++  }, [chartQuery.data, t]);
+ 
+   const drillDownName = useMemo(() => {
+     if (!drillDownTeamId) return null;
+-    const item = chartData.find((d) => d.teamId === drillDownTeamId);
+-    return item?.teamName ?? drillDownTeamId;
+-  }, [drillDownTeamId, chartData]);
++    const item = tableData.find((d) => d.teamId === drillDownTeamId);
++    return item?.teamName ?? t("unassignedTeam");
++  }, [drillDownTeamId, tableData, t]);
+ 
+   const grandTotal = useMemo(() => {
+     return tableData.reduce((sum, row) => sum + row.totalGrosze, 0);
+@@ -113,6 +117,7 @@ export function SpendTeamReport({ dateFrom, dateTo }: SpendTeamReportProps) {
+         accessorKey: "teamName",
+         header: t("team"),
+         enableSorting: true,
++        cell: ({ getValue }) => getValue<string | null>() ?? t("unassignedTeam"),
+       },
+       {
+         accessorKey: "contractorCount",
+diff --git a/packages/api/package.json b/packages/api/package.json
+index e72cd696..13cbbcd2 100644
+--- a/packages/api/package.json
++++ b/packages/api/package.json
+@@ -69,6 +69,11 @@
+       "import": "./src/services/jira-webhook-handler.ts",
+       "default": "./src/services/jira-webhook-handler.ts"
+     },
++    "./services/linear-webhook-handler": {
++      "types": "./src/services/linear-webhook-handler.ts",
++      "import": "./src/services/linear-webhook-handler.ts",
++      "default": "./src/services/linear-webhook-handler.ts"
++    },
+     "./services/google-workspace-sync-orchestrator": {
+       "types": "./src/services/google-workspace-sync-orchestrator.ts",
+       "import": "./src/services/google-workspace-sync-orchestrator.ts",
+diff --git a/packages/api/src/__tests__/google-workspace-sync.test.ts b/packages/api/src/__tests__/google-workspace-sync.test.ts
+deleted file mode 100644
+index 08129a5b..00000000
+--- a/packages/api/src/__tests__/google-workspace-sync.test.ts
++++ /dev/null
+@@ -1,53 +0,0 @@
+-import { describe, it, expect } from "vitest";
+-
+-describe("Google Workspace Sync Orchestrator", () => {
+-  describe("processDirectorySync", () => {
+-    it.todo(
+-      "detects new hires (in Google directory but not in org members or previous sync)"
+-    );
+-    it.todo(
+-      "detects departures (in previous sync and org members but not in current Google directory)"
+-    );
+-    it.todo(
+-      "dispatches DIRECTORY_NEW_HIRE notification for each new hire"
+-    );
+-    it.todo(
+-      "dispatches DIRECTORY_DEPARTURE notification for each departure"
+-    );
+-    it.todo(
+-      "does NOT auto-create users during sync (no createInvitation calls)"
+-    );
+-    it.todo(
+-      "does NOT auto-delete or deactivate users during sync"
+-    );
+-    it.todo(
+-      "updates syncedEmails snapshot in configJson after sync"
+-    );
+-    it.todo(
+-      "creates sync log entry with IN_PROGRESS then COMPLETED status"
+-    );
+-    it.todo("marks sync log as FAILED on error and re-throws");
+-    it.todo("refreshes expired token before fetching directory");
+-  });
+-});
+-
+-describe("Google Workspace Bulk Import", () => {
+-  describe("role resolution", () => {
+-    it.todo("uses userRoleOverride when present for a user");
+-    it.todo(
+-      "uses group-to-role mapping when user has no override but is in a mapped group"
+-    );
+-    it.todo(
+-      "falls back to defaultRole when user has no override and no group mapping"
+-    );
+-    it.todo("calls createInvitation for each user with resolved role");
+-    it.todo("collects partial failures without stopping the loop");
+-    it.todo("returns succeeded and failed arrays");
+-  });
+-
+-  describe("security", () => {
+-    it.todo(
+-      "re-fetches group memberships server-side instead of trusting client data"
+-    );
+-  });
+-});
+diff --git a/packages/api/src/__tests__/linear-issue-sync.test.ts b/packages/api/src/__tests__/linear-issue-sync.test.ts
+deleted file mode 100644
+index 9b3d1b92..00000000
+--- a/packages/api/src/__tests__/linear-issue-sync.test.ts
++++ /dev/null
+@@ -1,26 +0,0 @@
+-import { describe, it, expect } from "vitest";
+-
+-describe("LinearIssueSyncService", () => {
+-  describe("createLinearIssue", () => {
+-    it.todo("creates issue with title and description via issueCreate mutation");
+-    it.todo("looks up assignee by email and sets assigneeId");
+-    it.todo("falls back to unassigned when email has no Linear match per D-07");
+-    it.todo("creates ExternalLink with LINEAR_ISSUE type and correct metadata");
+-    it.todo("logs OUTBOUND ISSUE_CREATE to IntegrationSyncLog");
+-  });
+-
+-  describe("syncTaskStatusToLinear", () => {
+-    it.todo("resolves target stateId from status mapping and calls issueUpdate");
+-    it.todo("skips sync when no ExternalLink exists for taskRun");
+-    it.todo("suppresses sync when lastSyncOrigin is LINEAR within 30s window");
+-    it.todo("updates ExternalLink metadata with new status and lastSyncOrigin APP");
+-    it.todo("returns early when status is unmapped");
+-  });
+-
+-  describe("processLinearWebhook", () => {
+-    it.todo("updates task status from inbound state change webhook");
+-    it.todo("ignores webhooks for unlinked issues");
+-    it.todo("suppresses webhook when lastSyncOrigin is APP within 30s window");
+-    it.todo("logs unmapped stateId to webhook delivery per D-04");
+-  });
+-});
+diff --git a/packages/api/src/__tests__/linear-status-mapping.test.ts b/packages/api/src/__tests__/linear-status-mapping.test.ts
+deleted file mode 100644
+index dd65f315..00000000
+--- a/packages/api/src/__tests__/linear-status-mapping.test.ts
++++ /dev/null
+@@ -1,26 +0,0 @@
+-import { describe, it, expect } from "vitest";
+-
+-describe("LinearStatusMappingService", () => {
+-  describe("getStatusMapping", () => {
+-    it.todo("returns empty array when no mapping exists for team");
+-    it.todo("returns stored mappings for a team");
+-  });
+-
+-  describe("saveStatusMapping", () => {
+-    it.todo("persists mappings to connection configJson under teamId key");
+-    it.todo("updates stateCache alongside mappings");
+-    it.todo("preserves mappings for other teams when saving");
+-    it.todo("transitions connection from PENDING_MAPPING to CONNECTED on first save per D-03");
+-    it.todo("does not change status if already CONNECTED");
+-  });
+-
+-  describe("resolveLinearStateId", () => {
+-    it.todo("returns stateId for mapped workflow status");
+-    it.todo("returns null for unmapped workflow status");
+-  });
+-
+-  describe("resolveInternalStatus", () => {
+-    it.todo("returns workflow status for mapped Linear stateId");
+-    it.todo("returns null for unmapped stateId and logs as unmapped per D-04");
+-  });
+-});
+diff --git a/packages/api/src/middleware/tier.ts b/packages/api/src/middleware/tier.ts
+index 3432db84..1239df3c 100644
+--- a/packages/api/src/middleware/tier.ts
++++ b/packages/api/src/middleware/tier.ts
+@@ -31,7 +31,7 @@ const TIER_RANK: Record<SubscriptionTier, number> = {
+ export function requireTier(minimumTier: SubscriptionTier) {
+   return t.middleware(async ({ ctx, next }) => {
+     const sub = await getSubscription(
+-      (ctx as { organizationId: string }).organizationId,
++      (ctx as unknown as { organizationId: string }).organizationId,
+     );
+ 
+     // No subscription or inactive status
+diff --git a/packages/api/src/routers/__tests__/audit.test.ts b/packages/api/src/routers/__tests__/audit.test.ts
+index f3cc1c25..d58e65b2 100644
+--- a/packages/api/src/routers/__tests__/audit.test.ts
++++ b/packages/api/src/routers/__tests__/audit.test.ts
+@@ -100,6 +100,11 @@ vi.mock("../../services/stripe-client.js", () => ({
+ 
+ vi.mock("../../services/billing-service.js", () => ({
+   syncSeatCountForOrg: vi.fn(async () => undefined),
++  getSubscription: vi.fn(async () => ({
++    id: "sub_audit_mock",
++    status: "ACTIVE",
++    tier: "ENTERPRISE",
++  })),
+ }));
+ 
+ vi.mock("../../services/billing-webhook.js", () => ({
+diff --git a/packages/api/src/routers/__tests__/ocr.test.ts b/packages/api/src/routers/__tests__/ocr.test.ts
+index 344853f2..55a885a6 100644
+--- a/packages/api/src/routers/__tests__/ocr.test.ts
++++ b/packages/api/src/routers/__tests__/ocr.test.ts
+@@ -131,6 +131,15 @@ vi.mock("../../services/stripe-client.js", () => ({
+   },
+ }));
+ 
++vi.mock("../../services/billing-service.js", () => ({
++  syncSeatCountForOrg: vi.fn(async () => undefined),
++  getSubscription: vi.fn(async () => ({
++    id: "sub_ocr_mock",
++    status: "ACTIVE",
++    tier: "PRO",
++  })),
++}));
++
+ vi.mock("@contractor-ops/logger", () => ({
+   createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
+   createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
+diff --git a/packages/api/src/routers/equipment.ts b/packages/api/src/routers/equipment.ts
+index 3e4ef7ab..57efa671 100644
+--- a/packages/api/src/routers/equipment.ts
++++ b/packages/api/src/routers/equipment.ts
+@@ -1,6 +1,7 @@
+ import { z } from "zod";
+ import { TRPCError } from "@trpc/server";
+ import { prisma } from "@contractor-ops/db";
++import type { Prisma } from "@contractor-ops/db/generated/prisma/client";
+ import {
+   equipmentCreateSchema,
+   equipmentUpdateSchema,
+@@ -914,7 +915,7 @@ export const equipmentRouter = router({
+         });
+       }
+ 
+-      const configJson = courierConfig.configJson as InPostClientConfig;
++      const configJson = courierConfig.configJson as unknown as InPostClientConfig;
+       const client = new InPostClient(configJson);
+ 
+       // Verify all equipment items exist and load contractor details
+@@ -1489,10 +1490,10 @@ export const equipmentRouter = router({
+         create: {
+           organizationId: ctx.organizationId,
+           carrier,
+-          configJson: credentials as Record<string, unknown>,
++          configJson: credentials as unknown as Prisma.InputJsonValue,
+         },
+         update: {
+-          configJson: credentials as Record<string, unknown>,
++          configJson: credentials as unknown as Prisma.InputJsonValue,
+         },
+       });
+ 
+@@ -1503,9 +1504,9 @@ export const equipmentRouter = router({
+           actorId: ctx.user!.id,
+           actorName: ctx.user!.name,
+           action: "courierConfig.save",
+-          resourceType: "COURIER_CONFIG",
++          resourceType: "ORGANIZATION",
+           resourceId: carrier,
+-          newValuesJson: { carrier, updated: true },
++          newValuesJson: { carrier, updated: true } as Prisma.InputJsonValue,
+         },
+       });
+ 
+@@ -1630,7 +1631,7 @@ export const equipmentRouter = router({
+         });
+       }
+ 
+-      const configJson = courierConfig.configJson as InPostClientConfig;
++      const configJson = courierConfig.configJson as unknown as InPostClientConfig;
+       const client = new InPostClient(configJson);
+ 
+       // Load org for sender info
+@@ -1967,7 +1968,7 @@ export const equipmentRouter = router({
+         });
+       }
+ 
+-      const configJson = courierConfig.configJson as InPostClientConfig;
++      const configJson = courierConfig.configJson as unknown as InPostClientConfig;
+       const client = new InPostClient(configJson);
+ 
+       const labelBuffer = await client.getLabel(shipment.externalId, "pdf");
+diff --git a/packages/api/src/services/__tests__/clockify.test.ts b/packages/api/src/services/__tests__/clockify.test.ts
+index f32ff9c9..a838fa27 100644
+--- a/packages/api/src/services/__tests__/clockify.test.ts
++++ b/packages/api/src/services/__tests__/clockify.test.ts
+@@ -1,4 +1,4 @@
+-import { describe, it, expect, vi, beforeEach } from "vitest";
++import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+ 
+ // ---------------------------------------------------------------------------
+ // Mocks (must be declared before imports)
+@@ -134,6 +134,10 @@ describe("clockify", () => {
+       mockPrisma = createMockPrisma();
+     });
+ 
++    afterEach(() => {
++      vi.unstubAllGlobals();
++    });
++
+     it("uses correct regional base URL for API calls", async () => {
+       const entries = [makeClockifyEntry("e1", "PT1H30M")];
+       const fetchSpy = mockFetchResponse(entries);
+@@ -153,8 +157,6 @@ describe("clockify", () => {
+       const calledUrl = fetchSpy.mock.calls[0][0] as string;
+       expect(calledUrl).toContain("https://api.clockify.me/api/v1");
+       expect(calledUrl).toContain("/workspaces/ws_1/user/clockify_user_1/time-entries");
+-
+-      vi.unstubAllGlobals();
+     });
+ 
+     it("uses EU regional URL when region is eu", async () => {
+@@ -174,8 +176,6 @@ describe("clockify", () => {
+ 
+       const calledUrl = fetchSpy.mock.calls[0][0] as string;
+       expect(calledUrl).toContain("https://euc1.clockify.me/api/v1");
+-
+-      vi.unstubAllGlobals();
+     });
+ 
+     it("paginates with page-size=100", async () => {
+@@ -216,8 +216,6 @@ describe("clockify", () => {
+ 
+       // 101 total entries imported
+       expect(result.imported).toBe(101);
+-
+-      vi.unstubAllGlobals();
+     });
+ 
+     it("creates time entries with source=CLOCKIFY", async () => {
+@@ -239,8 +237,6 @@ describe("clockify", () => {
+           contractId: "ct_1",
+         }),
+       });
+-
+-      vi.unstubAllGlobals();
+     });
+ 
+     it("deduplicates by externalId — updates existing entry instead of creating", async () => {
+@@ -262,8 +258,6 @@ describe("clockify", () => {
+       // Existing entries count as skipped
+       expect(result.skipped).toBe(1);
+       expect(result.imported).toBe(0);
+-
+-      vi.unstubAllGlobals();
+     });
+ 
+     it("recalculates timesheet totalMinutes after sync", async () => {
+@@ -286,8 +280,6 @@ describe("clockify", () => {
+         where: { id: "ts_1" },
+         data: { totalMinutes: 150 },
+       });
+-
+-      vi.unstubAllGlobals();
+     });
+ 
+     it("throws UNAUTHORIZED TRPCError on 401 response", async () => {
+@@ -305,8 +297,6 @@ describe("clockify", () => {
+           data: expect.objectContaining({ status: "FAILED" }),
+         }),
+       );
+-
+-      vi.unstubAllGlobals();
+     });
+ 
+     it("throws NOT_FOUND when connection does not exist", async () => {
+@@ -348,8 +338,6 @@ describe("clockify", () => {
+       expect(result.imported).toBe(1);
+       expect(result.skipped).toBe(1);
+       expect(mockPrisma.timeEntry.create).toHaveBeenCalledTimes(1);
+-
+-      vi.unstubAllGlobals();
+     });
+ 
+     it("passes API key from decrypted credentials in X-Api-Key header", async () => {
+@@ -362,8 +350,6 @@ describe("clockify", () => {
+       const fetchCall = vi.mocked(fetch).mock.calls[0];
+       const headers = fetchCall[1]?.headers as Record<string, string>;
+       expect(headers["X-Api-Key"]).toBe("fake-api-key");
+-
+-      vi.unstubAllGlobals();
+     });
+   });
+ });
+diff --git a/packages/api/src/services/__tests__/jira-issue-sync.test.ts b/packages/api/src/services/__tests__/jira-issue-sync.test.ts
+index b768289e..454f4ce7 100644
+--- a/packages/api/src/services/__tests__/jira-issue-sync.test.ts
++++ b/packages/api/src/services/__tests__/jira-issue-sync.test.ts
+@@ -1,4 +1,4 @@
+-import { describe, it, expect, vi, beforeEach } from "vitest";
++import { describe, it, expect, vi, beforeEach, afterAll } from "vitest";
+ import { TRPCError } from "@trpc/server";
+ import {
+   createJiraIssue,
+@@ -149,6 +149,10 @@ beforeEach(() => {
+ });
+ 
+ describe("jira-issue-sync", () => {
++  afterAll(() => {
++    vi.unstubAllGlobals();
++  });
++
+   // =========================================================================
+   // createJiraIssue
+   // =========================================================================
+diff --git a/packages/api/src/services/__tests__/jira-webhook-handler.test.ts b/packages/api/src/services/__tests__/jira-webhook-handler.test.ts
+index 9fd77f53..6a5c86f8 100644
+--- a/packages/api/src/services/__tests__/jira-webhook-handler.test.ts
++++ b/packages/api/src/services/__tests__/jira-webhook-handler.test.ts
+@@ -1,4 +1,4 @@
+-import { describe, it, expect, vi, beforeEach } from "vitest";
++import { describe, it, expect, vi, beforeEach, afterAll } from "vitest";
+ import {
+   processJiraWebhook,
+   registerJiraWebhooks,
+@@ -146,6 +146,10 @@ beforeEach(() => {
+ });
+ 
+ describe("jira-webhook-handler", () => {
++  afterAll(() => {
++    vi.unstubAllGlobals();
++  });
++
+   // =========================================================================
+   // processJiraWebhook
+   // =========================================================================
+diff --git a/packages/api/src/services/__tests__/jira-worklog.test.ts b/packages/api/src/services/__tests__/jira-worklog.test.ts
+index 08270a1a..da2af254 100644
+--- a/packages/api/src/services/__tests__/jira-worklog.test.ts
++++ b/packages/api/src/services/__tests__/jira-worklog.test.ts
+@@ -1,4 +1,4 @@
+-import { describe, it, expect, vi, beforeEach } from "vitest";
++import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+ import { TRPCError } from "@trpc/server";
+ 
+ vi.mock("@contractor-ops/integrations/services/credential-service", () => ({
+@@ -97,6 +97,10 @@ describe("jira-worklog", () => {
+     syncJiraWorklogs = mod.syncJiraWorklogs;
+   });
+ 
++  afterEach(() => {
++    vi.unstubAllGlobals();
++  });
++
+   const baseArgs = [
+     "org-1",
+     "contractor-1",
+diff --git a/packages/api/src/services/__tests__/ksef-duplicate.test.ts b/packages/api/src/services/__tests__/ksef-duplicate.test.ts
+index 4d053f1d..7c9973cd 100644
+--- a/packages/api/src/services/__tests__/ksef-duplicate.test.ts
++++ b/packages/api/src/services/__tests__/ksef-duplicate.test.ts
+@@ -82,6 +82,37 @@ describe("checkCrossSourceDuplicate", () => {
+ 
+     expect(result.existingSource).toBe("KSEF");
+   });
++
++  it("excludes soft-deleted invoices via deletedAt: null", async () => {
++    mockPrisma.invoice.findFirst.mockResolvedValue(null);
++
++    await checkCrossSourceDuplicate(
++      mockPrisma,
++      ORG_ID,
++      "FV/2026/003",
++      "1111111111",
++    );
++
++    const whereArg = mockPrisma.invoice.findFirst.mock.calls[0][0].where;
++    expect(whereArg.deletedAt).toBeNull();
++  });
++
++  it("uses case-insensitive match on invoiceNumber", async () => {
++    mockPrisma.invoice.findFirst.mockResolvedValue(null);
++
++    await checkCrossSourceDuplicate(
++      mockPrisma,
++      ORG_ID,
++      "FV/2026/004",
++      "2222222222",
++    );
++
++    const whereArg = mockPrisma.invoice.findFirst.mock.calls[0][0].where;
++    expect(whereArg.invoiceNumber).toEqual({
++      equals: "FV/2026/004",
++      mode: "insensitive",
++    });
++  });
+ });
+ 
+ describe("linkDuplicateInvoices", () => {
+diff --git a/packages/api/src/services/__tests__/ksef-sync.test.ts b/packages/api/src/services/__tests__/ksef-sync.test.ts
+index 647619e7..c5d059c0 100644
+--- a/packages/api/src/services/__tests__/ksef-sync.test.ts
++++ b/packages/api/src/services/__tests__/ksef-sync.test.ts
+@@ -258,19 +258,24 @@ describe("processKsefSync", () => {
+   });
+ 
+   it("falls back to 90-day date range on first sync (no lastSuccessAt)", async () => {
+-    setupSuccessfulSync({
+-      connection: { lastSuccessAt: null },
+-      invoiceRefs: [],
+-    });
+-
+-    await processKsefSync({ organizationId: ORG_ID, connectionId: CONN_ID });
+-
+-    const queryCall = mockKsefClient.queryInvoices.mock.calls[0]!;
+-    const dateFrom = queryCall[1] as string;
+-    // dateFrom should be ~90 days ago, not the current date
+-    const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 3600 * 1000);
+-    const expectedDate = ninetyDaysAgo.toISOString().split("T")[0]!;
+-    expect(dateFrom).toBe(expectedDate);
++    const FAKE_NOW = new Date("2026-04-01T12:00:00.000Z");
++    vi.useFakeTimers({ now: FAKE_NOW });
++
++    try {
++      setupSuccessfulSync({
++        connection: { lastSuccessAt: null },
++        invoiceRefs: [],
++      });
++
++      await processKsefSync({ organizationId: ORG_ID, connectionId: CONN_ID });
++
++      const queryCall = mockKsefClient.queryInvoices.mock.calls[0]!;
++      const dateFrom = queryCall[1] as string;
++      // 90 days before 2026-04-01 is 2026-01-01
++      expect(dateFrom).toBe("2026-01-01");
++    } finally {
++      vi.useRealTimers();
++    }
+   });
+ 
+   it("uses lastSuccessAt as dateFrom for subsequent syncs", async () => {
+diff --git a/packages/api/src/services/__tests__/reconciliation.test.ts b/packages/api/src/services/__tests__/reconciliation.test.ts
+deleted file mode 100644
+index c9e2c833..00000000
+--- a/packages/api/src/services/__tests__/reconciliation.test.ts
++++ /dev/null
+@@ -1,296 +0,0 @@
+-import { describe, it, expect, vi, beforeEach } from "vitest";
+-import { computeTimeReconciliation } from "../time-reconciliation.js";
+-
+-const mockPrisma = {
+-  contract: { findFirst: vi.fn() },
+-  timeEntry: { aggregate: vi.fn() },
+-  organization: { findUniqueOrThrow: vi.fn() },
+-} as any;
+-
+-const ORG_ID = "org-1";
+-const CONTRACT_ID = "contract-1";
+-const PERIOD_START = new Date("2025-01-01");
+-const PERIOD_END = new Date("2025-01-31");
+-
+-function setupMocks(opts: {
+-  rateType: string;
+-  rateValueGrosze: number;
+-  approvedMinutes: number;
+-  invoicedAmountGrosze: number;
+-  thresholdPercent?: number;
+-  hoursPerDay?: number;
+-}) {
+-  mockPrisma.contract.findFirst.mockResolvedValue({
+-    rateType: opts.rateType,
+-    rateValueGrosze: opts.rateValueGrosze,
+-  });
+-  mockPrisma.timeEntry.aggregate.mockResolvedValue({
+-    _sum: { minutes: opts.approvedMinutes },
+-  });
+-  const settings: Record<string, unknown> = {};
+-  if (opts.thresholdPercent !== undefined) {
+-    settings.timeDeviationThresholdPercent = opts.thresholdPercent;
+-  }
+-  if (opts.hoursPerDay !== undefined) {
+-    settings.timeHoursPerDay = opts.hoursPerDay;
+-  }
+-  mockPrisma.organization.findUniqueOrThrow.mockResolvedValue({
+-    settingsJson: settings,
+-  });
+-}
+-
+-beforeEach(() => {
+-  vi.resetAllMocks();
+-});
+-
+-describe("reconciliation", () => {
+-  describe("computeTimeReconciliation", () => {
+-    it("computes expected amount for PER_HOUR contract: minutes * rate / 60", async () => {
+-      // 120 minutes at 6000 grosze/hr = 120 * 6000 / 60 = 12000
+-      setupMocks({
+-        rateType: "PER_HOUR",
+-        rateValueGrosze: 6000,
+-        approvedMinutes: 120,
+-        invoicedAmountGrosze: 12000,
+-      });
+-
+-      const result = await computeTimeReconciliation(
+-        mockPrisma,
+-        ORG_ID,
+-        CONTRACT_ID,
+-        PERIOD_START,
+-        PERIOD_END,
+-        12000,
+-      );
+-
+-      expect(result).not.toBeNull();
+-      expect(result!.expectedAmountGrosze).toBe(12000);
+-      expect(result!.rateType).toBe("PER_HOUR");
+-    });
+-
+-    it("computes expected amount for PER_DAY contract: minutes / (hoursPerDay * 60) * rate", async () => {
+-      // 480 minutes (8h) at 48000 grosze/day with 8 hrs/day = (480 / 480) * 48000 = 48000
+-      setupMocks({
+-        rateType: "PER_DAY",
+-        rateValueGrosze: 48000,
+-        approvedMinutes: 480,
+-        invoicedAmountGrosze: 48000,
+-        hoursPerDay: 8,
+-      });
+-
+-      const result = await computeTimeReconciliation(
+-        mockPrisma,
+-        ORG_ID,
+-        CONTRACT_ID,
+-        PERIOD_START,
+-        PERIOD_END,
+-        48000,
+-      );
+-
+-      expect(result).not.toBeNull();
+-      expect(result!.expectedAmountGrosze).toBe(48000);
+-      expect(result!.rateType).toBe("PER_DAY");
+-      expect(result!.hoursPerDay).toBe(8);
+-    });
+-
+-    it("returns null for MONTHLY_FIXED contracts", async () => {
+-      mockPrisma.contract.findFirst.mockResolvedValue({
+-        rateType: "MONTHLY_FIXED",
+-        rateValueGrosze: 500000,
+-      });
+-
+-      const result = await computeTimeReconciliation(
+-        mockPrisma,
+-        ORG_ID,
+-        CONTRACT_ID,
+-        PERIOD_START,
+-        PERIOD_END,
+-        500000,
+-      );
+-
+-      expect(result).toBeNull();
+-    });
+-
+-    it("returns null for PER_MILESTONE contracts", async () => {
+-      mockPrisma.contract.findFirst.mockResolvedValue({
+-        rateType: "PER_MILESTONE",
+-        rateValueGrosze: 100000,
+-      });
+-
+-      const result = await computeTimeReconciliation(
+-        mockPrisma,
+-        ORG_ID,
+-        CONTRACT_ID,
+-        PERIOD_START,
+-        PERIOD_END,
+-        100000,
+-      );
+-
+-      expect(result).toBeNull();
+-    });
+-
+-    it("returns null when no approved time entries exist", async () => {
+-      setupMocks({
+-        rateType: "PER_HOUR",
+-        rateValueGrosze: 6000,
+-        approvedMinutes: 0,
+-        invoicedAmountGrosze: 12000,
+-      });
+-
+-      const result = await computeTimeReconciliation(
+-        mockPrisma,
+-        ORG_ID,
+-        CONTRACT_ID,
+-        PERIOD_START,
+-        PERIOD_END,
+-        12000,
+-      );
+-
+-      expect(result).toBeNull();
+-    });
+-
+-    it("only counts entries from APPROVED timesheets", async () => {
+-      setupMocks({
+-        rateType: "PER_HOUR",
+-        rateValueGrosze: 6000,
+-        approvedMinutes: 60,
+-        invoicedAmountGrosze: 6000,
+-      });
+-
+-      await computeTimeReconciliation(
+-        mockPrisma,
+-        ORG_ID,
+-        CONTRACT_ID,
+-        PERIOD_START,
+-        PERIOD_END,
+-        6000,
+-      );
+-
+-      expect(mockPrisma.timeEntry.aggregate).toHaveBeenCalledWith(
+-        expect.objectContaining({
+-          where: expect.objectContaining({
+-            timesheet: { status: "APPROVED" },
+-          }),
+-        }),
+-      );
+-    });
+-
+-    it("calculates deviation percentage to 2 decimal places", async () => {
+-      // 60 minutes at 10000/hr = expected 10000. Invoiced 10333.
+-      // deviation = 333, percent = (333/10000)*100 = 3.33
+-      setupMocks({
+-        rateType: "PER_HOUR",
+-        rateValueGrosze: 10000,
+-        approvedMinutes: 60,
+-        invoicedAmountGrosze: 10333,
+-      });
+-
+-      const result = await computeTimeReconciliation(
+-        mockPrisma,
+-        ORG_ID,
+-        CONTRACT_ID,
+-        PERIOD_START,
+-        PERIOD_END,
+-        10333,
+-      );
+-
+-      expect(result).not.toBeNull();
+-      expect(result!.deviationPercent).toBe(3.33);
+-    });
+-
+-    it("marks withinThreshold=true when deviation <= org threshold", async () => {
+-      // expected 10000, invoiced 10500 => 5% deviation, threshold 10%
+-      setupMocks({
+-        rateType: "PER_HOUR",
+-        rateValueGrosze: 10000,
+-        approvedMinutes: 60,
+-        invoicedAmountGrosze: 10500,
+-        thresholdPercent: 10,
+-      });
+-
+-      const result = await computeTimeReconciliation(
+-        mockPrisma,
+-        ORG_ID,
+-        CONTRACT_ID,
+-        PERIOD_START,
+-        PERIOD_END,
+-        10500,
+-      );
+-
+-      expect(result).not.toBeNull();
+-      expect(result!.withinThreshold).toBe(true);
+-    });
+-
+-    it("marks withinThreshold=false when deviation > org threshold", async () => {
+-      // expected 10000, invoiced 12000 => 20% deviation, threshold 10%
+-      setupMocks({
+-        rateType: "PER_HOUR",
+-        rateValueGrosze: 10000,
+-        approvedMinutes: 60,
+-        invoicedAmountGrosze: 12000,
+-        thresholdPercent: 10,
+-      });
+-
+-      const result = await computeTimeReconciliation(
+-        mockPrisma,
+-        ORG_ID,
+-        CONTRACT_ID,
+-        PERIOD_START,
+-        PERIOD_END,
+-        12000,
+-      );
+-
+-      expect(result).not.toBeNull();
+-      expect(result!.withinThreshold).toBe(false);
+-      expect(result!.deviationPercent).toBe(20);
+-    });
+-
+-    it("uses org settingsJson.timeDeviationThresholdPercent (default 10%)", async () => {
+-      // No threshold set in settings => default 10%
+-      // expected 10000, invoiced 10900 => 9% deviation => within default 10%
+-      setupMocks({
+-        rateType: "PER_HOUR",
+-        rateValueGrosze: 10000,
+-        approvedMinutes: 60,
+-        invoicedAmountGrosze: 10900,
+-      });
+-
+-      const result = await computeTimeReconciliation(
+-        mockPrisma,
+-        ORG_ID,
+-        CONTRACT_ID,
+-        PERIOD_START,
+-        PERIOD_END,
+-        10900,
+-      );
+-
+-      expect(result).not.toBeNull();
+-      expect(result!.thresholdPercent).toBe(10);
+-      expect(result!.withinThreshold).toBe(true);
+-    });
+-
+-    it("uses org settingsJson.timeHoursPerDay for PER_DAY (default 8)", async () => {
+-      // No hoursPerDay set => default 8
+-      // 480 min = 1 day at default 8 hrs. Rate 50000/day => expected 50000
+-      setupMocks({
+-        rateType: "PER_DAY",
+-        rateValueGrosze: 50000,
+-        approvedMinutes: 480,
+-        invoicedAmountGrosze: 50000,
+-      });
+-
+-      const result = await computeTimeReconciliation(
+-        mockPrisma,
+-        ORG_ID,
+-        CONTRACT_ID,
+-        PERIOD_START,
+-        PERIOD_END,
+-        50000,
+-      );
+-
+-      expect(result).not.toBeNull();
+-      expect(result!.hoursPerDay).toBe(8);
+-      expect(result!.expectedAmountGrosze).toBe(50000);
+-    });
+-  });
+-});
+diff --git a/packages/api/src/services/__tests__/time-approval.test.ts b/packages/api/src/services/__tests__/time-approval.test.ts
+deleted file mode 100644
+index 16c07cdd..00000000
+--- a/packages/api/src/services/__tests__/time-approval.test.ts
++++ /dev/null
+@@ -1,299 +0,0 @@
+-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+-import {
+-  approveTimesheet,
+-  rejectTimesheet,
+-  bulkApproveTimesheets,
+-  bulkRejectTimesheets,
+-} from "../time-entry.js";
+-
+-const mockPrisma = {
+-  timesheet: {
+-    updateMany: vi.fn(),
+-    findUniqueOrThrow: vi.fn(),
+-  },
+-} as any;
+-
+-const ORG_ID = "org-1";
+-const TIMESHEET_ID = "ts-1";
+-const REVIEWER_ID = "user-reviewer";
+-
+-beforeEach(() => {
+-  vi.clearAllMocks();
+-  vi.useFakeTimers({ now: new Date("2026-03-15T10:00:00Z") });
+-});
+-
+-afterEach(() => {
+-  vi.useRealTimers();
+-});
+-
+-describe("time-approval", () => {
+-  describe("approveTimesheet", () => {
+-    it("transitions SUBMITTED timesheet to APPROVED", async () => {
+-      mockPrisma.timesheet.updateMany.mockResolvedValue({ count: 1 });
+-      mockPrisma.timesheet.findUniqueOrThrow.mockResolvedValue({
+-        id: TIMESHEET_ID,
+-        status: "APPROVED",
+-        entries: [],
+-        contractor: {},
+-      });
+-
+-      const result = await approveTimesheet(
+-        mockPrisma,
+-        ORG_ID,
+-        TIMESHEET_ID,
+-        REVIEWER_ID,
+-      );
+-
+-      expect(mockPrisma.timesheet.updateMany).toHaveBeenCalledWith({
+-        where: {
+-          id: TIMESHEET_ID,
+-          organizationId: ORG_ID,
+-          status: "SUBMITTED",
+-        },
+-        data: expect.objectContaining({
+-          status: "APPROVED",
+-        }),
+-      });
+-      expect(result.status).toBe("APPROVED");
+-    });
+-
+-    it("records reviewedByUserId and reviewedAt", async () => {
+-      mockPrisma.timesheet.updateMany.mockResolvedValue({ count: 1 });
+-      mockPrisma.timesheet.findUniqueOrThrow.mockResolvedValue({
+-        id: TIMESHEET_ID,
+-        status: "APPROVED",
+-      });
+-
+-      await approveTimesheet(mockPrisma, ORG_ID, TIMESHEET_ID, REVIEWER_ID);
+-
+-      expect(mockPrisma.timesheet.updateMany).toHaveBeenCalledWith(
+-        expect.objectContaining({
+-          data: expect.objectContaining({
+-            reviewedByUserId: REVIEWER_ID,
+-            reviewedAt: expect.any(Date),
+-          }),
+-        }),
+-      );
+-    });
+-
+-    it("rejects approval of DRAFT timesheet", async () => {
+-      mockPrisma.timesheet.updateMany.mockResolvedValue({ count: 0 });
+-
+-      await expect(
+-        approveTimesheet(mockPrisma, ORG_ID, TIMESHEET_ID, REVIEWER_ID),
+-      ).rejects.toMatchObject({ code: "PRECONDITION_FAILED" });
+-    });
+-
+-    it("rejects approval of already APPROVED timesheet", async () => {
+-      mockPrisma.timesheet.updateMany.mockResolvedValue({ count: 0 });
+-
+-      await expect(
+-        approveTimesheet(mockPrisma, ORG_ID, TIMESHEET_ID, REVIEWER_ID),
+-      ).rejects.toMatchObject({ code: "PRECONDITION_FAILED" });
+-    });
+-
+-    it("rejects approval of REJECTED timesheet", async () => {
+-      mockPrisma.timesheet.updateMany.mockResolvedValue({ count: 0 });
+-
+-      await expect(
+-        approveTimesheet(mockPrisma, ORG_ID, TIMESHEET_ID, REVIEWER_ID),
+-      ).rejects.toMatchObject({ code: "PRECONDITION_FAILED" });
+-    });
+-  });
+-
+-  describe("rejectTimesheet", () => {
+-    it("transitions SUBMITTED timesheet to REJECTED", async () => {
+-      mockPrisma.timesheet.updateMany.mockResolvedValue({ count: 1 });
+-      mockPrisma.timesheet.findUniqueOrThrow.mockResolvedValue({
+-        id: TIMESHEET_ID,
+-        status: "REJECTED",
+-        entries: [],
+-        contractor: {},
+-      });
+-
+-      const result = await rejectTimesheet(
+-        mockPrisma,
+-        ORG_ID,
+-        TIMESHEET_ID,
+-        REVIEWER_ID,
+-        "Work quality issues need addressing",
+-      );
+-
+-      expect(mockPrisma.timesheet.updateMany).toHaveBeenCalledWith({
+-        where: {
+-          id: TIMESHEET_ID,
+-          organizationId: ORG_ID,
+-          status: "SUBMITTED",
+-        },
+-        data: expect.objectContaining({
+-          status: "REJECTED",
+-        }),
+-      });
+-      expect(result.status).toBe("REJECTED");
+-    });
+-
+-    it("stores rejection reason", async () => {
+-      mockPrisma.timesheet.updateMany.mockResolvedValue({ count: 1 });
+-      mockPrisma.timesheet.findUniqueOrThrow.mockResolvedValue({
+-        id: TIMESHEET_ID,
+-        status: "REJECTED",
+-      });
+-
+-      const reason = "Hours do not match the agreed contract scope";
+-      await rejectTimesheet(
+-        mockPrisma,
+-        ORG_ID,
+-        TIMESHEET_ID,
+-        REVIEWER_ID,
+-        reason,
+-      );
+-
+-      expect(mockPrisma.timesheet.updateMany).toHaveBeenCalledWith(
+-        expect.objectContaining({
+-          data: expect.objectContaining({
+-            rejectionReason: reason,
+-          }),
+-        }),
+-      );
+-    });
+-
+-    it("records reviewedByUserId and reviewedAt", async () => {
+-      mockPrisma.timesheet.updateMany.mockResolvedValue({ count: 1 });
+-      mockPrisma.timesheet.findUniqueOrThrow.mockResolvedValue({
+-        id: TIMESHEET_ID,
+-        status: "REJECTED",
+-      });
+-
+-      await rejectTimesheet(
+-        mockPrisma,
+-        ORG_ID,
+-        TIMESHEET_ID,
+-        REVIEWER_ID,
+-        "Insufficient detail in time entries",
+-      );
+-
+-      expect(mockPrisma.timesheet.updateMany).toHaveBeenCalledWith(
+-        expect.objectContaining({
+-          data: expect.objectContaining({
+-            reviewedByUserId: REVIEWER_ID,
+-            reviewedAt: expect.any(Date),
+-          }),
+-        }),
+-      );
+-    });
+-
+-    it("rejects rejection of DRAFT timesheet", async () => {
+-      mockPrisma.timesheet.updateMany.mockResolvedValue({ count: 0 });
+-
+-      await expect(
+-        rejectTimesheet(
+-          mockPrisma,
+-          ORG_ID,
+-          TIMESHEET_ID,
+-          REVIEWER_ID,
+-          "Some reason for the rejection",
+-        ),
+-      ).rejects.toMatchObject({ code: "PRECONDITION_FAILED" });
+-    });
+-  });
+-
+-  describe("bulkApproveTimesheets", () => {
+-    it("approves multiple SUBMITTED timesheets in one call", async () => {
+-      const ids = ["ts-1", "ts-2", "ts-3"];
+-      mockPrisma.timesheet.updateMany.mockResolvedValue({ count: 3 });
+-
+-      const result = await bulkApproveTimesheets(
+-        mockPrisma,
+-        ORG_ID,
+-        ids,
+-        REVIEWER_ID,
+-      );
+-
+-      expect(mockPrisma.timesheet.updateMany).toHaveBeenCalledWith({
+-        where: {
+-          id: { in: ids },
+-          organizationId: ORG_ID,
+-          status: "SUBMITTED",
+-        },
+-        data: expect.objectContaining({
+-          status: "APPROVED",
+-          reviewedByUserId: REVIEWER_ID,
+-          reviewedAt: expect.any(Date),
+-        }),
+-      });
+-      expect(result.count).toBe(3);
+-    });
+-
+-    it("skips timesheets not in SUBMITTED status", async () => {
+-      const ids = ["ts-submitted", "ts-draft", "ts-approved"];
+-      mockPrisma.timesheet.updateMany.mockResolvedValue({ count: 1 });
+-
+-      const result = await bulkApproveTimesheets(
+-        mockPrisma,
+-        ORG_ID,
+-        ids,
+-        REVIEWER_ID,
+-      );
+-
+-      expect(result.count).toBe(1);
+-    });
+-
+-    it("returns count of actually approved timesheets", async () => {
+-      mockPrisma.timesheet.updateMany.mockResolvedValue({ count: 2 });
+-
+-      const result = await bulkApproveTimesheets(
+-        mockPrisma,
+-        ORG_ID,
+-        ["ts-1", "ts-2", "ts-3"],
+-        REVIEWER_ID,
+-      );
+-
+-      expect(result).toEqual({ count: 2 });
+-    });
+-  });
+-
+-  describe("bulkRejectTimesheets", () => {
+-    it("rejects multiple SUBMITTED timesheets with same reason", async () => {
+-      const ids = ["ts-1", "ts-2"];
+-      const reason = "Bulk rejection due to policy change";
+-      mockPrisma.timesheet.updateMany.mockResolvedValue({ count: 2 });
+-
+-      const result = await bulkRejectTimesheets(
+-        mockPrisma,
+-        ORG_ID,
+-        ids,
+-        REVIEWER_ID,
+-        reason,
+-      );
+-
+-      expect(mockPrisma.timesheet.updateMany).toHaveBeenCalledWith({
+-        where: {
+-          id: { in: ids },
+-          organizationId: ORG_ID,
+-          status: "SUBMITTED",
+-        },
+-        data: expect.objectContaining({
+-          status: "REJECTED",
+-          rejectionReason: reason,
+-          reviewedByUserId: REVIEWER_ID,
+-          reviewedAt: expect.any(Date),
+-        }),
+-      });
+-      expect(result.count).toBe(2);
+-    });
+-
+-    it("skips timesheets not in SUBMITTED status", async () => {
+-      mockPrisma.timesheet.updateMany.mockResolvedValue({ count: 0 });
+-
+-      const result = await bulkRejectTimesheets(
+-        mockPrisma,
+-        ORG_ID,
+-        ["ts-draft-1", "ts-approved-1"],
+-        REVIEWER_ID,
+-        "Reason for bulk rejection test",
+-      );
+-
+-      expect(result.count).toBe(0);
+-    });
+-  });
+-});
+diff --git a/packages/api/src/services/courier/__tests__/dpd-client.test.ts b/packages/api/src/services/courier/__tests__/dpd-client.test.ts
+index 4384b943..bc61a3d7 100644
+--- a/packages/api/src/services/courier/__tests__/dpd-client.test.ts
++++ b/packages/api/src/services/courier/__tests__/dpd-client.test.ts
+@@ -202,6 +202,82 @@ describe("DPDClient", () => {
+     });
+   });
+ 
++  describe("malformed API response (Zod validation failure)", () => {
++    it("throws when createShipment response has unexpected shape", async () => {
++      globalThis.fetch = mockFetchResponse({ unexpected: "data" });
++
++      const client = createClient();
++      const params: DPDShipmentParams = {
++        organizationId: "org-abc",
++        direction: "OUTBOUND",
++        receiver: { name: "Test", email: "t@t.com", phone: "123" },
++        sender: {
++          name: "Sender",
++          email: "s@s.com",
++          phone: "456",
++          street: "St",
++          city: "City",
++          postalCode: "00-000",
++          countryCode: "PL",
++        },
++        deliveryAddress: {
++          street: "St",
++          city: "City",
++          postalCode: "00-000",
++          countryCode: "PL",
++        },
++        parcelSize: "small",
++      };
++
++      await expect(client.createShipment(params)).rejects.toThrow();
++    });
++
++    it("throws when getStatus response has unexpected shape", async () => {
++      globalThis.fetch = mockFetchResponse({ wrong: "shape" });
++
++      const client = createClient();
++      await expect(client.getStatus("12345")).rejects.toThrow();
++    });
++  });
++
++  describe("network errors", () => {
++    it("throws when fetch rejects on createShipment", async () => {
++      globalThis.fetch = vi.fn().mockRejectedValue(new TypeError("fetch failed"));
++
++      const client = createClient();
++      const params: DPDShipmentParams = {
++        organizationId: "org-abc",
++        direction: "OUTBOUND",
++        receiver: { name: "Test", email: "t@t.com", phone: "123" },
++        sender: {
++          name: "Sender",
++          email: "s@s.com",
++          phone: "456",
++          street: "St",
++          city: "City",
++          postalCode: "00-000",
++          countryCode: "PL",
++        },
++        deliveryAddress: {
++          street: "St",
++          city: "City",
++          postalCode: "00-000",
++          countryCode: "PL",
++        },
++        parcelSize: "small",
++      };
++
++      await expect(client.createShipment(params)).rejects.toThrow("fetch failed");
++    });
++
++    it("throws when fetch rejects on getStatus", async () => {
++      globalThis.fetch = vi.fn().mockRejectedValue(new TypeError("fetch failed"));
++
++      const client = createClient();
++      await expect(client.getStatus("12345")).rejects.toThrow("fetch failed");
++    });
++  });
++
+   describe("sandbox vs production URL", () => {
+     it("uses sandbox URL when sandbox=true", async () => {
+       const mockFetch = mockFetchResponse({
+diff --git a/packages/api/src/services/courier/__tests__/inpost-client.test.ts b/packages/api/src/services/courier/__tests__/inpost-client.test.ts
+index 583f49c9..cf3c40b3 100644
+--- a/packages/api/src/services/courier/__tests__/inpost-client.test.ts
++++ b/packages/api/src/services/courier/__tests__/inpost-client.test.ts
+@@ -181,6 +181,56 @@ describe("InPostClient", () => {
+     });
+   });
+ 
++  describe("malformed API response (Zod validation failure)", () => {
++    it("throws when createShipment response has unexpected shape", async () => {
++      globalThis.fetch = mockFetchResponse({ unexpected: "data" });
++
++      const client = createClient();
++      await expect(
++        client.createShipment({
++          organizationId: "org-abc",
++          direction: "OUTBOUND",
++          receiver: { name: "Test", email: "t@t.com", phone: "123" },
++          sender: { name: "Sender", email: "s@s.com", phone: "456" },
++          targetPoint: "KRA001",
++          parcelSize: "small",
++        }),
++      ).rejects.toThrow();
++    });
++
++    it("throws when getStatus response has unexpected shape", async () => {
++      globalThis.fetch = mockFetchResponse({ wrong: "shape" });
++
++      const client = createClient();
++      await expect(client.getStatus("12345678")).rejects.toThrow();
++    });
++  });
++
++  describe("network errors", () => {
++    it("throws when fetch rejects on createShipment", async () => {
++      globalThis.fetch = vi.fn().mockRejectedValue(new TypeError("fetch failed"));
++
++      const client = createClient();
++      await expect(
++        client.createShipment({
++          organizationId: "org-abc",
++          direction: "OUTBOUND",
++          receiver: { name: "Test", email: "t@t.com", phone: "123" },
++          sender: { name: "Sender", email: "s@s.com", phone: "456" },
++          targetPoint: "KRA001",
++          parcelSize: "small",
++        }),
++      ).rejects.toThrow("fetch failed");
++    });
++
++    it("throws when fetch rejects on getStatus", async () => {
++      globalThis.fetch = vi.fn().mockRejectedValue(new TypeError("fetch failed"));
++
++      const client = createClient();
++      await expect(client.getStatus("12345678")).rejects.toThrow("fetch failed");
++    });
++  });
++
+   describe("production URL", () => {
+     it("uses production base URL when sandbox is false", async () => {
+       const mockFetch = mockFetchResponse({
+diff --git a/packages/api/src/services/courier/__tests__/ups-client.test.ts b/packages/api/src/services/courier/__tests__/ups-client.test.ts
+index b77838a7..d3b3e28f 100644
+--- a/packages/api/src/services/courier/__tests__/ups-client.test.ts
++++ b/packages/api/src/services/courier/__tests__/ups-client.test.ts
+@@ -319,6 +319,69 @@ describe("UPSClient", () => {
+     });
+   });
+ 
++  describe("malformed API response (Zod validation failure)", () => {
++    it("throws when createShipment response has unexpected shape", async () => {
++      const mockFetch = mockFetchSequence([
++        { body: OAUTH_RESPONSE },
++        { body: { unexpected: "data" } },
++      ]);
++      globalThis.fetch = mockFetch;
++
++      const client = createClient();
++      await expect(client.createShipment(SHIPMENT_PARAMS)).rejects.toThrow();
++    });
++
++    it("throws when getStatus response has unexpected shape", async () => {
++      const mockFetch = mockFetchSequence([
++        { body: OAUTH_RESPONSE },
++        { body: { wrong: "shape" } },
++      ]);
++      globalThis.fetch = mockFetch;
++
++      const client = createClient();
++      await expect(client.getStatus("1Z999")).rejects.toThrow();
++    });
++
++    it("throws when OAuth response has unexpected shape", async () => {
++      const mockFetch = mockFetchSequence([
++        { body: { invalid: "oauth" } },
++      ]);
++      globalThis.fetch = mockFetch;
++
++      const client = createClient();
++      await expect(client.getStatus("1Z999")).rejects.toThrow();
++    });
++  });
++
++  describe("network errors", () => {
++    it("throws when fetch rejects on createShipment", async () => {
++      const mockFetch = mockFetchSequence([
++        { body: OAUTH_RESPONSE },
++      ]);
++      // Override: after OAuth succeeds, next call rejects
++      const originalImpl = mockFetch.getMockImplementation()!;
++      let callCount = 0;
++      mockFetch.mockImplementation((...args: unknown[]) => {
++        callCount++;
++        if (callCount === 2) {
++          return Promise.reject(new TypeError("fetch failed"));
++        }
++        return originalImpl(...args);
++      });
++      globalThis.fetch = mockFetch;
++
++      const client = createClient();
++      await expect(client.createShipment(SHIPMENT_PARAMS)).rejects.toThrow("fetch failed");
++    });
++
++    it("throws when fetch rejects on OAuth token request", async () => {
++      globalThis.fetch = vi.fn().mockRejectedValue(new TypeError("fetch failed"));
++
++      const client = createClient();
++      await expect(client.getStatus("1Z999")).rejects.toThrow("fetch failed");
++    });
++  });
++
+   describe("sandbox vs production URL", () => {
+     it("uses sandbox URL (wwwcie.ups.com) when sandbox=true", async () => {
+       const mockFetch = mockFetchSequence([
+diff --git a/packages/api/src/services/courier/courier-client.ts b/packages/api/src/services/courier/courier-client.ts
+index 32859ee1..37db86b1 100644
+--- a/packages/api/src/services/courier/courier-client.ts
++++ b/packages/api/src/services/courier/courier-client.ts
+@@ -1,20 +1,8 @@
+ // ---------------------------------------------------------------------------
+-// CourierClient Interface
+-//
+-// Abstract interface for courier integrations (InPost now, DPD/UPS in Phase 35).
+-// Separate bounded context from BaseAdapter (per STATE.md decision).
++// Courier types (InPost locker + DPD/UPS address-based).
++// CourierClient is declared after all shipment param variants (see bottom).
+ // ---------------------------------------------------------------------------
+ 
+-/**
+- * Generic courier client interface that all carrier implementations must satisfy.
+- */
+-export interface CourierClient {
+-  createShipment(params: CreateShipmentParams): Promise<CourierShipmentResult>;
+-  getLabel(shipmentExternalId: string, format: LabelFormat): Promise<Buffer>;
+-  getStatus(shipmentExternalId: string): Promise<CourierStatusResult>;
+-  cancelShipment(shipmentExternalId: string): Promise<void>;
+-}
+-
+ /**
+  * Parameters for creating a shipment via any courier provider.
+  */
+@@ -94,3 +82,21 @@ export interface DPDShipmentParams extends AddressShipmentParams {}
+ export interface UPSShipmentParams extends AddressShipmentParams {
+   serviceCode: string; // "11" Standard, "65" Saver, "07" Express
+ }
++
++/** Union of all create-shipment payloads (caller picks the client that matches). */
++export type CourierShipmentCreateParams =
++  | CreateShipmentParams
++  | DPDShipmentParams
++  | UPSShipmentParams;
++
++/**
++ * Generic courier client interface that all carrier implementations must satisfy.
++ */
++export interface CourierClient {
++  createShipment(
++    params: CourierShipmentCreateParams,
++  ): Promise<CourierShipmentResult>;
++  getLabel(shipmentExternalId: string, format: LabelFormat): Promise<Buffer>;
++  getStatus(shipmentExternalId: string): Promise<CourierStatusResult>;
++  cancelShipment(shipmentExternalId: string): Promise<void>;
++}
+diff --git a/packages/api/src/services/courier/dpd-client.ts b/packages/api/src/services/courier/dpd-client.ts
+index db111e94..688d7728 100644
+--- a/packages/api/src/services/courier/dpd-client.ts
++++ b/packages/api/src/services/courier/dpd-client.ts
+@@ -2,9 +2,9 @@ import { z } from "zod";
+ 
+ import type {
+   CourierClient,
++  CourierShipmentCreateParams,
+   CourierShipmentResult,
+   CourierStatusResult,
+-  DPDShipmentParams,
+   LabelFormat,
+ } from "./courier-client.js";
+ 
+@@ -84,8 +84,18 @@ export class DPDClient implements CourierClient {
+    * DPD accepts createShipment as a typed param (not generic CreateShipmentParams).
+    */
+   async createShipment(
+-    params: DPDShipmentParams,
++    params: CourierShipmentCreateParams,
+   ): Promise<CourierShipmentResult> {
++    if (
++      !("deliveryAddress" in params) ||
++      "serviceCode" in params ||
++      "targetPoint" in params
++    ) {
++      throw new Error(
++        "[DPDClient] createShipment requires DPD address shipment params",
++      );
++    }
++
+     const url = `${this.baseUrl}/createShipment`;
+     const size = DPD_SIZE_MAP[params.parcelSize];
+ 
+diff --git a/packages/api/src/services/courier/inpost-client.ts b/packages/api/src/services/courier/inpost-client.ts
+index e3165b32..b34fb5a7 100644
+--- a/packages/api/src/services/courier/inpost-client.ts
++++ b/packages/api/src/services/courier/inpost-client.ts
+@@ -2,9 +2,9 @@ import { z } from "zod";
+ 
+ import type {
+   CourierClient,
++  CourierShipmentCreateParams,
+   CourierShipmentResult,
+   CourierStatusResult,
+-  CreateShipmentParams,
+   LabelFormat,
+ } from "./courier-client.js";
+ 
+@@ -68,8 +68,14 @@ export class InPostClient implements CourierClient {
+    * POST /v1/organizations/{orgId}/shipments
+    */
+   async createShipment(
+-    params: CreateShipmentParams,
++    params: CourierShipmentCreateParams,
+   ): Promise<CourierShipmentResult> {
++    if (!("targetPoint" in params)) {
++      throw new Error(
++        "[InPostClient] createShipment requires InPost locker params (targetPoint)",
++      );
++    }
++
+     const url = `${this.baseUrl}/v1/organizations/${this.shipxOrganizationId}/shipments`;
+ 
+     const body = {
+diff --git a/packages/api/src/services/courier/ups-client.ts b/packages/api/src/services/courier/ups-client.ts
+index b56f81c7..91e0c8d6 100644
+--- a/packages/api/src/services/courier/ups-client.ts
++++ b/packages/api/src/services/courier/ups-client.ts
+@@ -2,10 +2,10 @@ import { z } from "zod";
+ 
+ import type {
+   CourierClient,
++  CourierShipmentCreateParams,
+   CourierShipmentResult,
+   CourierStatusResult,
+   LabelFormat,
+-  UPSShipmentParams,
+ } from "./courier-client.js";
+ 
+ // ---------------------------------------------------------------------------
+@@ -178,8 +178,14 @@ export class UPSClient implements CourierClient {
+    * POST /api/shipments/v2409/ship
+    */
+   async createShipment(
+-    params: UPSShipmentParams,
++    params: CourierShipmentCreateParams,
+   ): Promise<CourierShipmentResult> {
++    if (!("deliveryAddress" in params) || !("serviceCode" in params)) {
++      throw new Error(
++        "[UPSClient] createShipment requires UPS shipment params (deliveryAddress, serviceCode)",
++      );
++    }
++
+     const url = `${this.baseUrl}/api/shipments/v2409/ship`;
+     const headers = await this.authHeaders();
+     const size = UPS_SIZE_MAP[params.parcelSize];
+diff --git a/packages/api/vitest.config.ts b/packages/api/vitest.config.ts
+index 019ef956..9953ce2b 100644
+--- a/packages/api/vitest.config.ts
++++ b/packages/api/vitest.config.ts
+@@ -1,7 +1,15 @@
+ import { defineConfig } from "vitest/config";
+ 
++import { vitestProject } from "../../vitest.monorepo";
++
+ export default defineConfig({
+   test: {
++    name: vitestProject.api.name,
++    /** `billing-service` imports `stripe-client` at module load; real key not used when Stripe is mocked */
++    env: {
++      STRIPE_SECRET_KEY:
++        "sk_test_0000000000000000000000000000000000000000000000000000000000000000",
++    },
+     globals: true,
+     environment: "node",
+     include: [
+@@ -10,5 +18,6 @@ export default defineConfig({
+     ],
+     /** Avoid cross-file `vi.mock("@contractor-ops/db")` leakage between workers */
+     pool: "forks",
++    sequence: { groupOrder: vitestProject.api.groupOrder },
+   },
+ });
+diff --git a/packages/auth/src/roles.ts b/packages/auth/src/roles.ts
+index 38179004..1ab09a08 100644
+--- a/packages/auth/src/roles.ts
++++ b/packages/auth/src/roles.ts
+@@ -1,7 +1,7 @@
+ import { ac } from "./permissions.js";
+ 
+ /**
+- * 8 predefined roles for the Contractor Ops platform.
++ * 9 predefined roles for the Contractor Ops platform.
+  *
+  * Each role grants a specific subset of permissions defined in permissions.ts.
+  * Roles are assigned to organization members and enforced via tRPC middleware.
+diff --git a/packages/integrations/src/__tests__/fixtures/sample-fa3.xml b/packages/integrations/src/__tests__/fixtures/sample-fa3.xml
+index 005bdfb7..4b9e8aa1 100644
+--- a/packages/integrations/src/__tests__/fixtures/sample-fa3.xml
++++ b/packages/integrations/src/__tests__/fixtures/sample-fa3.xml
+@@ -2,7 +2,7 @@
+ <Faktura xmlns="http://crd.gov.pl/wzor/2024/06/20/13386/">
+   <Podmiot1>
+     <DaneIdentyfikacyjne>
+-      <NIP>1234567890</NIP>
++      <NIP>5261040828</NIP>
+       <Nazwa>Test Seller Sp. z o.o.</Nazwa>
+     </DaneIdentyfikacyjne>
+     <Adres>
+diff --git a/packages/integrations/src/__tests__/ksef-api-client.test.ts b/packages/integrations/src/__tests__/ksef-api-client.test.ts
+index e01d5733..0936e69c 100644
+--- a/packages/integrations/src/__tests__/ksef-api-client.test.ts
++++ b/packages/integrations/src/__tests__/ksef-api-client.test.ts
+@@ -46,6 +46,7 @@ describe("KsefApiClient", () => {
+   });
+ 
+   afterEach(() => {
++    vi.useRealTimers();
+     vi.stubGlobal("fetch", originalFetch);
+     vi.clearAllMocks();
+   });
+@@ -81,7 +82,7 @@ describe("KsefApiClient", () => {
+       mockAuthFlow();
+ 
+       const client = new KsefApiClient("test");
+-      const session = await client.authenticate("test-token", "1234567890");
++      const session = await client.authenticate("test-token", "5261040828");
+ 
+       expect(session.jwt).toBe("test-jwt-token-abc");
+       expect(session.referenceNumber).toBe("KSEF-REF-SESSION-001");
+@@ -104,7 +105,7 @@ describe("KsefApiClient", () => {
+ 
+       const client = new KsefApiClient("test");
+       await expect(
+-        client.authenticate("bad-token", "1234567890"),
++        client.authenticate("bad-token", "5261040828"),
+       ).rejects.toThrow("KSeF API error 401");
+     });
+   });
+@@ -117,7 +118,7 @@ describe("KsefApiClient", () => {
+         {
+           ksefReferenceNumber: "KSEF-INV-001",
+           invoiceNumber: "FV/001",
+-          subjectNip: "1234567890",
++          subjectNip: "5261040828",
+           invoiceDate: "2026-03-15",
+         },
+       ];
+@@ -137,9 +138,9 @@ describe("KsefApiClient", () => {
+       );
+ 
+       const client = new KsefApiClient("test");
+-      await client.authenticate("test-token", "1234567890");
++      await client.authenticate("test-token", "5261040828");
+       const result = await client.queryInvoices(
+-        "1234567890",
++        "5261040828",
+         "2026-03-01",
+         "2026-03-31",
+       );
+@@ -155,7 +156,7 @@ describe("KsefApiClient", () => {
+       const client = new KsefApiClient("test");
+ 
+       await expect(
+-        client.queryInvoices("1234567890", "2026-03-01", "2026-03-31"),
++        client.queryInvoices("5261040828", "2026-03-01", "2026-03-31"),
+       ).rejects.toThrow("KSeF session not established");
+     });
+   });
+@@ -169,7 +170,7 @@ describe("KsefApiClient", () => {
+       const client = new KsefApiClient("test");
+       const result = await client.verifyCredentials(
+         "test-token",
+-        "1234567890",
++        "5261040828",
+       );
+ 
+       expect(result).toBe(true);
+@@ -183,13 +184,60 @@ describe("KsefApiClient", () => {
+       const client = new KsefApiClient("test");
+       const result = await client.verifyCredentials(
+         "bad-token",
+-        "1234567890",
++        "5261040828",
+       );
+ 
+       expect(result).toBe(false);
+     });
+   });
+ 
++  describe("session polling timeout", () => {
++    afterEach(() => {
++      vi.restoreAllMocks();
++    });
++
++    it("throws when session never reaches READY status after 30 polls", async () => {
++      // Stub setTimeout to resolve immediately so polling completes without real delays
++      vi.spyOn(globalThis, "setTimeout").mockImplementation((fn: () => void) => {
++        fn();
++        return 0 as unknown as ReturnType<typeof setTimeout>;
++      });
++
++      fetchMock
++        // Step 1: GET /auth/public-key
++        .mockResolvedValueOnce(
++          jsonResponse({ publicKey: TEST_PUBLIC_KEY_PEM }),
++        )
++        // Step 2: POST /auth/challenge
++        .mockResolvedValueOnce(
++          jsonResponse({ challenge: "test-challenge-123", timestampMs: Date.now() }),
++        )
++        // Step 3: POST /auth/token/redeem
++        .mockResolvedValueOnce(
++          jsonResponse({
++            jwt: "test-jwt-token-abc",
++            referenceNumber: "KSEF-REF-SESSION-001",
++          }),
++        );
++
++      // Step 4: All 30 session status polls return PENDING (never READY)
++      for (let i = 0; i < 30; i++) {
++        fetchMock.mockResolvedValueOnce(
++          jsonResponse({ status: "PENDING", processingCode: 100 }),
++        );
++      }
++
++      const client = new KsefApiClient("test");
++
++      await expect(client.authenticate("test-token", "5261040828")).rejects.toThrow(
++        "KSeF session did not become ready within 30 seconds",
++      );
++
++      // 3 auth calls + 30 polling calls = 33
++      expect(fetchMock).toHaveBeenCalledTimes(33);
++    });
++  });
++
+   describe("fetchWithRetry", () => {
+     it("retries on 429 with backoff", async () => {
+       mockAuthFlow();
+@@ -209,7 +257,7 @@ describe("KsefApiClient", () => {
+       );
+ 
+       const client = new KsefApiClient("test");
+-      await client.authenticate("test-token", "1234567890");
++      await client.authenticate("test-token", "5261040828");
+ 
+       const xml = await client.downloadInvoiceXml("KSEF-INV-001");
+       expect(xml).toBe("<xml>invoice</xml>");
+diff --git a/packages/integrations/src/__tests__/ksef-xml-parser.test.ts b/packages/integrations/src/__tests__/ksef-xml-parser.test.ts
+index 01693071..65d82b1b 100644
+--- a/packages/integrations/src/__tests__/ksef-xml-parser.test.ts
++++ b/packages/integrations/src/__tests__/ksef-xml-parser.test.ts
+@@ -14,7 +14,7 @@ describe("parseFa3Xml", () => {
+     expect(result.issueDate).toBe("2026-03-15");
+     expect(result.invoiceType).toBe("VAT");
+     expect(result.currency).toBe("PLN");
+-    expect(result.seller.nip).toBe("1234567890");
++    expect(result.seller.nip).toBe("5261040828");
+     expect(result.seller.name).toBe("Test Seller Sp. z o.o.");
+     expect(result.buyer.nip).toBe("9876543210");
+     expect(result.buyer.name).toBe("Test Buyer S.A.");
+@@ -43,6 +43,24 @@ describe("parseFa3Xml", () => {
+     expect(result.payment).toBeUndefined();
+     expect(result.invoiceNumber).toBe("FV/2026/03/001");
+   });
++
++  it("throws on malformed XML (not valid XML at all)", () => {
++    expect(() =>
++      parseFa3Xml("this is not xml at all {{{", "KSEF-REF-BAD"),
++    ).toThrow();
++  });
++
++  it("throws on XML missing required seller NIP", () => {
++    // Remove the seller NIP element to trigger Zod validation failure
++    const xmlWithoutSellerNip = sampleXml.replace(
++      /<NIP>5261040828<\/NIP>/,
++      "",
++    );
++
++    expect(() =>
++      parseFa3Xml(xmlWithoutSellerNip, "KSEF-REF-NO-NIP"),
++    ).toThrow();
++  });
+ });
+ 
+ describe("mapKsefToInvoiceFields", () => {
+@@ -53,7 +71,7 @@ describe("mapKsefToInvoiceFields", () => {
+     expect(invoice.source).toBe("KSEF");
+     expect(invoice.externalInvoiceId).toBe("KSEF-REF-001");
+     expect(invoice.sourceReference).toBe("UPO-001");
+-    expect(invoice.sellerTaxId).toBe("1234567890");
++    expect(invoice.sellerTaxId).toBe("5261040828");
+     expect(invoice.buyerTaxId).toBe("9876543210");
+     expect(invoice.totalGrosze).toBe(3567000);
+     expect(invoice.subtotalGrosze).toBe(2900000);
+diff --git a/packages/integrations/src/adapters/__tests__/confluence-adapter.test.ts b/packages/integrations/src/adapters/__tests__/confluence-adapter.test.ts
+index 75bbd04c..3c7a69e7 100644
+--- a/packages/integrations/src/adapters/__tests__/confluence-adapter.test.ts
++++ b/packages/integrations/src/adapters/__tests__/confluence-adapter.test.ts
+@@ -88,6 +88,19 @@ describe("ConfluenceAdapter", () => {
+     ).rejects.toThrow(/Confluence OAuth exchange failed: invalid_client/);
+   });
+ 
++  it("throws when refreshToken is called without env credentials", async () => {
++    await expect(
++      adapter.refreshToken({
++        accessToken: "a",
++        refreshToken: "rt",
++        tokenType: "Bearer",
++        scope: "x",
++      }),
++    ).rejects.toThrow(
++      /CONFLUENCE_CLIENT_ID and CONFLUENCE_CLIENT_SECRET environment variables are required/,
++    );
++  });
++
+   it("refreshes token using refresh_token grant", async () => {
+     process.env.CONFLUENCE_CLIENT_ID = "cid";
+     process.env.CONFLUENCE_CLIENT_SECRET = "csec";
+@@ -151,6 +164,20 @@ describe("ConfluenceAdapter", () => {
+     ).rejects.toThrow(/No refresh token available for Confluence/);
+   });
+ 
++  it("throws when refreshToken blob has undefined refreshToken", async () => {
++    process.env.CONFLUENCE_CLIENT_ID = "cid";
++    process.env.CONFLUENCE_CLIENT_SECRET = "csec";
++
++    await expect(
++      adapter.refreshToken({
++        accessToken: "a",
++        refreshToken: undefined,
++        tokenType: "Bearer",
++        scope: "x",
++      }),
++    ).rejects.toThrow(/No refresh token available for Confluence/);
++  });
++
+   it("discoverCloudId returns cloudId and siteName from accessible-resources", async () => {
+     const fetchMock = mockFetch({
+       ok: true,
+diff --git a/packages/integrations/src/adapters/__tests__/google-calendar-adapter.test.ts b/packages/integrations/src/adapters/__tests__/google-calendar-adapter.test.ts
+index aac4e118..797d1069 100644
+--- a/packages/integrations/src/adapters/__tests__/google-calendar-adapter.test.ts
++++ b/packages/integrations/src/adapters/__tests__/google-calendar-adapter.test.ts
+@@ -41,6 +41,14 @@ describe("GoogleCalendarAdapter", () => {
+     expect(c.extraAuthParams?.access_type).toBe("offline");
+   });
+ 
++  it("throws when OAuth env vars are missing for exchangeCodeForTokens", async () => {
++    await expect(
++      adapter.exchangeCodeForTokens("code", "http://localhost/cb"),
++    ).rejects.toThrow(
++      /GOOGLE_CALENDAR_CLIENT_ID and GOOGLE_CALENDAR_CLIENT_SECRET environment variables are required/,
++    );
++  });
++
+   it("exchanges code for tokens using JSON body", async () => {
+     process.env.GOOGLE_CALENDAR_CLIENT_ID = "cid";
+     process.env.GOOGLE_CALENDAR_CLIENT_SECRET = "csec";
+@@ -114,6 +122,33 @@ describe("GoogleCalendarAdapter", () => {
+     expect(body.refresh_token).toBe("rt");
+   });
+ 
++  it("throws when refreshToken is called without env credentials", async () => {
++    await expect(
++      adapter.refreshToken({
++        accessToken: "old",
++        refreshToken: "rt",
++        tokenType: "Bearer",
++        scope: "cal",
++      }),
++    ).rejects.toThrow(
++      /GOOGLE_CALENDAR_CLIENT_ID and GOOGLE_CALENDAR_CLIENT_SECRET environment variables are required/,
++    );
++  });
++
++  it("throws when refreshToken has no refresh_token in blob", async () => {
++    process.env.GOOGLE_CALENDAR_CLIENT_ID = "cid";
++    process.env.GOOGLE_CALENDAR_CLIENT_SECRET = "csec";
++
++    await expect(
++      adapter.refreshToken({
++        accessToken: "old",
++        refreshToken: undefined,
++        tokenType: "Bearer",
++        scope: "cal",
++      }),
++    ).rejects.toThrow(/No refresh token available for Google Calendar/);
++  });
++
+   it("throws when token refresh returns non-OK", async () => {
+     process.env.GOOGLE_CALENDAR_CLIENT_ID = "cid";
+     process.env.GOOGLE_CALENDAR_CLIENT_SECRET = "csec";
+@@ -162,6 +197,28 @@ describe("GoogleCalendarAdapter", () => {
+     );
+   });
+ 
++  it("createEvent sends attendees in request body when provided", async () => {
++    const fetchMock = mockFetch({
++      ok: true,
++      body: { id: "e2", htmlLink: "https://x", etag: "e" },
++    });
++    vi.stubGlobal("fetch", fetchMock);
++
++    await adapter.createEvent("tok", {
++      summary: "Review",
++      startDateTime: "2026-04-04T10:00:00.000Z",
++      endDateTime: "2026-04-04T11:00:00.000Z",
++      attendees: ["a@example.com", "b@example.com"],
++    });
++
++    const [, init] = fetchMock.mock.calls[0]!;
++    const parsed = JSON.parse((init as RequestInit).body as string);
++    expect(parsed.attendees).toEqual([
++      { email: "a@example.com" },
++      { email: "b@example.com" },
++    ]);
++  });
++
+   it("throws when createEvent returns non-OK", async () => {
+     const fetchMock = mockFetch({
+       ok: false,
+diff --git a/packages/integrations/src/adapters/__tests__/linear-adapter.test.ts b/packages/integrations/src/adapters/__tests__/linear-adapter.test.ts
+index 84480639..47a7a425 100644
+--- a/packages/integrations/src/adapters/__tests__/linear-adapter.test.ts
++++ b/packages/integrations/src/adapters/__tests__/linear-adapter.test.ts
+@@ -23,6 +23,7 @@ describe("LinearAdapter", () => {
+   });
+ 
+   afterEach(() => {
++    vi.unstubAllGlobals();
+     vi.restoreAllMocks();
+     delete process.env.LINEAR_CLIENT_ID;
+     delete process.env.LINEAR_CLIENT_SECRET;
+diff --git a/packages/integrations/src/adapters/__tests__/notion-adapter.test.ts b/packages/integrations/src/adapters/__tests__/notion-adapter.test.ts
+index 9cebfdf4..98f7eba1 100644
+--- a/packages/integrations/src/adapters/__tests__/notion-adapter.test.ts
++++ b/packages/integrations/src/adapters/__tests__/notion-adapter.test.ts
+@@ -100,6 +100,31 @@ describe("NotionAdapter", () => {
+     expect(body.refresh_token).toBe("rt");
+   });
+ 
++  it("throws when refreshToken is called without env credentials", async () => {
++    await expect(
++      adapter.refreshToken({
++        accessToken: "old",
++        refreshToken: "rt",
++        tokenType: "bearer",
++      }),
++    ).rejects.toThrow(
++      /NOTION_CLIENT_ID and NOTION_CLIENT_SECRET environment variables are required/,
++    );
++  });
++
++  it("throws when refreshToken has no refresh_token in blob", async () => {
++    process.env.NOTION_CLIENT_ID = "nid";
++    process.env.NOTION_CLIENT_SECRET = "nsec";
++
++    await expect(
++      adapter.refreshToken({
++        accessToken: "old",
++        refreshToken: undefined,
++        tokenType: "bearer",
++      }),
++    ).rejects.toThrow(/No refresh token available for Notion/);
++  });
++
+   it("throws when OAuth exchange returns non-OK", async () => {
+     process.env.NOTION_CLIENT_ID = "nid";
+     process.env.NOTION_CLIENT_SECRET = "nsec";
+@@ -195,6 +220,26 @@ describe("NotionAdapter", () => {
+     expect(rows[0]?.icon).toBe("https://cdn/x.png");
+   });
+ 
++  it("searchPages uses Untitled when page has no title property", async () => {
++    const fetchMock = mockFetch({
++      ok: true,
++      body: {
++        results: [
++          {
++            object: "page",
++            id: "p-no-title",
++            last_edited_time: "2026-04-01T00:00:00.000Z",
++            properties: {},
++          },
++        ],
++      },
++    });
++    vi.stubGlobal("fetch", fetchMock);
++
++    const rows = await adapter.searchPages("tok", "q");
++    expect(rows[0]?.title).toBe("Untitled");
++  });
++
+   it("throws when search returns non-OK", async () => {
+     const fetchMock = mockFetch({
+       ok: false,
+diff --git a/packages/integrations/src/adapters/__tests__/outlook-calendar-adapter.test.ts b/packages/integrations/src/adapters/__tests__/outlook-calendar-adapter.test.ts
+index a31dd3ee..7d256ecf 100644
+--- a/packages/integrations/src/adapters/__tests__/outlook-calendar-adapter.test.ts
++++ b/packages/integrations/src/adapters/__tests__/outlook-calendar-adapter.test.ts
+@@ -41,6 +41,14 @@ describe("OutlookCalendarAdapter", () => {
+     expect(c.scopes).toContain("offline_access");
+   });
+ 
++  it("throws when OAuth env vars are missing for exchangeCodeForTokens", async () => {
++    await expect(
++      adapter.exchangeCodeForTokens("code", "http://localhost/cb"),
++    ).rejects.toThrow(
++      /OUTLOOK_CLIENT_ID and OUTLOOK_CLIENT_SECRET environment variables are required/,
++    );
++  });
++
+   it("exchanges code for tokens using application/x-www-form-urlencoded", async () => {
+     process.env.OUTLOOK_CLIENT_ID = "oid";
+     process.env.OUTLOOK_CLIENT_SECRET = "osec";
+@@ -84,6 +92,33 @@ describe("OutlookCalendarAdapter", () => {
+     ).rejects.toThrow(/Outlook Calendar OAuth exchange failed: invalid_grant/);
+   });
+ 
++  it("throws when refreshToken is called without env credentials", async () => {
++    await expect(
++      adapter.refreshToken({
++        accessToken: "a",
++        refreshToken: "rt",
++        tokenType: "Bearer",
++        scope: "x",
++      }),
++    ).rejects.toThrow(
++      /OUTLOOK_CLIENT_ID and OUTLOOK_CLIENT_SECRET environment variables are required/,
++    );
++  });
++
++  it("throws when refreshToken has no refresh_token in blob", async () => {
++    process.env.OUTLOOK_CLIENT_ID = "oid";
++    process.env.OUTLOOK_CLIENT_SECRET = "osec";
++
++    await expect(
++      adapter.refreshToken({
++        accessToken: "a",
++        refreshToken: undefined,
++        tokenType: "Bearer",
++        scope: "x",
++      }),
++    ).rejects.toThrow(/No refresh token available for Outlook Calendar/);
++  });
++
+   it("refreshes token using refresh_token grant", async () => {
+     process.env.OUTLOOK_CLIENT_ID = "oid";
+     process.env.OUTLOOK_CLIENT_SECRET = "osec";
+@@ -149,6 +184,32 @@ describe("OutlookCalendarAdapter", () => {
+     ).rejects.toThrow(/Outlook Calendar create event failed: AccessDenied/);
+   });
+ 
++  it("createEvent sends attendees and HTML body when provided", async () => {
++    const fetchMock = mockFetch({
++      ok: true,
++      body: { id: "e-att", webLink: "https://outlook.office365.com/x" },
++    });
++    vi.stubGlobal("fetch", fetchMock);
++
++    await adapter.createEvent("tok", {
++      subject: "Sync",
++      bodyHtml: "<p>Hello</p>",
++      startDateTime: "2026-04-04T10:00:00.000Z",
++      endDateTime: "2026-04-04T11:00:00.000Z",
++      attendees: ["x@example.com"],
++    });
++
++    const [, init] = fetchMock.mock.calls[0]!;
++    const body = JSON.parse((init as RequestInit).body as string);
++    expect(body.body).toEqual({
++      contentType: "HTML",
++      content: "<p>Hello</p>",
++    });
++    expect(body.attendees).toEqual([
++      { emailAddress: { address: "x@example.com" }, type: "required" },
++    ]);
++  });
++
+   it("createEvent uses dateTime + timeZone objects on start/end (Graph shape)", async () => {
+     const fetchMock = mockFetch({
+       ok: true,
+diff --git a/packages/integrations/vitest.config.ts b/packages/integrations/vitest.config.ts
+index 03806051..13a0e86a 100644
+--- a/packages/integrations/vitest.config.ts
++++ b/packages/integrations/vitest.config.ts
+@@ -1,9 +1,13 @@
+ import { defineConfig } from "vitest/config";
+ 
++import { vitestProject } from "../../vitest.monorepo";
++
+ export default defineConfig({
+   test: {
++    name: vitestProject.integrations.name,
+     globals: true,
+     environment: "node",
+     include: ["src/**/__tests__/**/*.test.ts"],
++    sequence: { groupOrder: vitestProject.integrations.groupOrder },
+   },
+ });
+diff --git a/packages/validators/src/ksef.ts b/packages/validators/src/ksef.ts
+index f2b8535a..d114291c 100644
+--- a/packages/validators/src/ksef.ts
++++ b/packages/validators/src/ksef.ts
+@@ -52,7 +52,7 @@ export type KsefConnectionConfig = z.infer<typeof ksefConnectionConfigSchema>;
+ // ---------------------------------------------------------------------------
+ 
+ const ksefPartySchema = z.object({
+-  nip: z.string(),
++  nip: z.string().length(10).regex(/^\d{10}$/, "NIP must be exactly 10 digits"),
+   name: z.string(),
+   address: z.string().optional(),
+ });
+diff --git a/packages/validators/src/workflow.ts b/packages/validators/src/workflow.ts
+index 15c95a76..e828fc2d 100644
+--- a/packages/validators/src/workflow.ts
++++ b/packages/validators/src/workflow.ts
+@@ -113,7 +113,7 @@ export const templateCreateSchema = z.object({
+   name: z.string().min(1).max(255),
+   type: workflowTemplateTypeEnum,
+   description: z.string().optional(),
+-  tasks: z.array(taskTemplateInputSchema),
++  tasks: z.array(taskTemplateInputSchema).min(1),
+ });
+ 
+ export type TemplateCreateInput = z.infer<typeof templateCreateSchema>;
+diff --git a/packages/validators/vitest.config.ts b/packages/validators/vitest.config.ts
+index 34b4c9bb..a92410c4 100644
+--- a/packages/validators/vitest.config.ts
++++ b/packages/validators/vitest.config.ts
+@@ -1,8 +1,13 @@
+ import { defineConfig } from "vitest/config";
++
++import { vitestProject } from "../../vitest.monorepo";
++
+ export default defineConfig({
+   test: {
++    name: vitestProject.validators.name,
+     globals: true,
+     environment: "node",
+     include: ["src/**/__tests__/**/*.test.ts"],
++    sequence: { groupOrder: vitestProject.validators.groupOrder },
+   },
+ });
+diff --git a/pnpm-lock.yaml b/pnpm-lock.yaml
+index 4565351c..88c7de85 100644
+--- a/pnpm-lock.yaml
++++ b/pnpm-lock.yaml
+@@ -288,7 +288,7 @@ importers:
+         version: 4.8.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+       stripe:
+         specifier: ^21.0.1
+-        version: 21.0.1(@types/node@22.19.15)
++        version: 21.0.1(@types/node@25.5.2)
+       superjson:
+         specifier: ^2.2.0
+         version: 2.2.6
+@@ -307,13 +307,13 @@ importers:
+         version: 19.2.14
+       '@vitest/coverage-v8':
+         specifier: ^4.1.2
+-        version: 4.1.2(vitest@4.1.2(@opentelemetry/api@1.9.1)(@types/node@22.19.15)(jsdom@29.0.1(@noble/hashes@2.0.1))(msw@2.12.13(@types/node@22.19.15)(typescript@5.9.3))(vite@8.0.1(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.0)(@types/node@22.19.15)(jiti@2.6.1)(terser@5.46.1)))
++        version: 4.1.2(vitest@4.1.2(@opentelemetry/api@1.9.1)(@types/node@25.5.2)(jsdom@29.0.1(@noble/hashes@2.0.1))(msw@2.12.13(@types/node@25.5.2)(typescript@5.9.3))(vite@8.0.1(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.0)(@types/node@25.5.2)(jiti@2.6.1)(terser@5.46.1)))
+       typescript:
+         specifier: ^5.7.0
+         version: 5.9.3
+       vitest:
+         specifier: ^4.1.2
+-        version: 4.1.2(@opentelemetry/api@1.9.1)(@types/node@22.19.15)(jsdom@29.0.1(@noble/hashes@2.0.1))(msw@2.12.13(@types/node@22.19.15)(typescript@5.9.3))(vite@8.0.1(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.0)(@types/node@22.19.15)(jiti@2.6.1)(terser@5.46.1))
++        version: 4.1.2(@opentelemetry/api@1.9.1)(@types/node@25.5.2)(jsdom@29.0.1(@noble/hashes@2.0.1))(msw@2.12.13(@types/node@25.5.2)(typescript@5.9.3))(vite@8.0.1(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.0)(@types/node@25.5.2)(jiti@2.6.1)(terser@5.46.1))
+ 
+   packages/auth:
+     dependencies:
+@@ -322,14 +322,14 @@ importers:
+         version: link:../db
+       better-auth:
+         specifier: ^1.5.0
+-        version: 1.5.5(@prisma/client@7.5.0(prisma@7.5.0(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.9.3))(typescript@5.9.3))(mongodb@7.1.0)(mysql2@3.15.3)(next@15.5.13(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(prisma@7.5.0(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.9.3))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.1.2(@opentelemetry/api@1.9.1)(@types/node@22.19.15)(jsdom@29.0.1(@noble/hashes@2.0.1))(msw@2.12.13(@types/node@22.19.15)(typescript@5.9.3))(vite@8.0.1(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.0)(@types/node@22.19.15)(jiti@2.6.1)(terser@5.46.1)))
++        version: 1.5.5(@prisma/client@7.5.0(prisma@7.5.0(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.9.3))(typescript@5.9.3))(mongodb@7.1.0)(mysql2@3.15.3)(next@15.5.13(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(prisma@7.5.0(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.9.3))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.1.2(@opentelemetry/api@1.9.1)(@types/node@25.5.2)(jsdom@29.0.1(@noble/hashes@2.0.1))(msw@2.12.13(@types/node@25.5.2)(typescript@5.9.3))(vite@8.0.1(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.0)(@types/node@25.5.2)(jiti@2.6.1)(terser@5.46.1)))
+     devDependencies:
+       typescript:
+         specifier: ^5.7.0
+         version: 5.9.3
+       vitest:
+         specifier: ^4.1.2
+-        version: 4.1.2(@opentelemetry/api@1.9.1)(@types/node@22.19.15)(jsdom@29.0.1(@noble/hashes@2.0.1))(msw@2.12.13(@types/node@22.19.15)(typescript@5.9.3))(vite@8.0.1(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.0)(@types/node@22.19.15)(jiti@2.6.1)(terser@5.46.1))
++        version: 4.1.2(@opentelemetry/api@1.9.1)(@types/node@25.5.2)(jsdom@29.0.1(@noble/hashes@2.0.1))(msw@2.12.13(@types/node@25.5.2)(typescript@5.9.3))(vite@8.0.1(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.0)(@types/node@25.5.2)(jiti@2.6.1)(terser@5.46.1))
+ 
+   packages/db:
+     dependencies:
+@@ -354,7 +354,7 @@ importers:
+         version: 5.9.3
+       vitest:
+         specifier: ^4.1.2
+-        version: 4.1.2(@opentelemetry/api@1.9.1)(@types/node@22.19.15)(jsdom@29.0.1(@noble/hashes@2.0.1))(msw@2.12.13(@types/node@22.19.15)(typescript@5.9.3))(vite@8.0.1(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.0)(@types/node@22.19.15)(jiti@2.6.1)(terser@5.46.1))
++        version: 4.1.2(@opentelemetry/api@1.9.1)(@types/node@25.5.2)(jsdom@29.0.1(@noble/hashes@2.0.1))(msw@2.12.13(@types/node@25.5.2)(typescript@5.9.3))(vite@8.0.1(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.0)(@types/node@25.5.2)(jiti@2.6.1)(terser@5.46.1))
+ 
+   packages/integrations:
+     dependencies:
+@@ -388,13 +388,13 @@ importers:
+     devDependencies:
+       '@vitest/coverage-v8':
+         specifier: ^4.1.2
+-        version: 4.1.2(vitest@4.1.2(@opentelemetry/api@1.9.1)(@types/node@22.19.15)(jsdom@29.0.1(@noble/hashes@2.0.1))(msw@2.12.13(@types/node@22.19.15)(typescript@5.9.3))(vite@8.0.1(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.0)(@types/node@22.19.15)(jiti@2.6.1)(terser@5.46.1)))
++        version: 4.1.2(vitest@4.1.2(@opentelemetry/api@1.9.1)(@types/node@25.5.2)(jsdom@29.0.1(@noble/hashes@2.0.1))(msw@2.12.13(@types/node@25.5.2)(typescript@5.9.3))(vite@8.0.1(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.0)(@types/node@25.5.2)(jiti@2.6.1)(terser@5.46.1)))
+       typescript:
+         specifier: ^5.7.0
+         version: 5.9.3
+       vitest:
+         specifier: ^4.1.2
+-        version: 4.1.2(@opentelemetry/api@1.9.1)(@types/node@22.19.15)(jsdom@29.0.1(@noble/hashes@2.0.1))(msw@2.12.13(@types/node@22.19.15)(typescript@5.9.3))(vite@8.0.1(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.0)(@types/node@22.19.15)(jiti@2.6.1)(terser@5.46.1))
++        version: 4.1.2(@opentelemetry/api@1.9.1)(@types/node@25.5.2)(jsdom@29.0.1(@noble/hashes@2.0.1))(msw@2.12.13(@types/node@25.5.2)(typescript@5.9.3))(vite@8.0.1(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.0)(@types/node@25.5.2)(jiti@2.6.1)(terser@5.46.1))
+ 
+   packages/logger:
+     dependencies:
+@@ -416,20 +416,20 @@ importers:
+         version: 5.9.3
+       vitest:
+         specifier: ^4.1.2
+-        version: 4.1.2(@opentelemetry/api@1.9.1)(@types/node@22.19.15)(jsdom@29.0.1(@noble/hashes@2.0.1))(msw@2.12.13(@types/node@22.19.15)(typescript@5.9.3))(vite@8.0.1(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.0)(@types/node@22.19.15)(jiti@2.6.1)(terser@5.46.1))
++        version: 4.1.2(@opentelemetry/api@1.9.1)(@types/node@25.5.2)(jsdom@29.0.1(@noble/hashes@2.0.1))(msw@2.12.13(@types/node@25.5.2)(typescript@5.9.3))(vite@8.0.1(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.0)(@types/node@25.5.2)(jiti@2.6.1)(terser@5.46.1))
+ 
+   packages/test-utils:
+     dependencies:
+       msw:
+         specifier: ^2.7.0
+-        version: 2.12.13(@types/node@22.19.15)(typescript@5.9.3)
++        version: 2.12.13(@types/node@25.5.2)(typescript@5.9.3)
+     devDependencies:
+       typescript:
+         specifier: ^5.7.0
+         version: 5.9.3
+       vitest:
+         specifier: ^4.1.2
+-        version: 4.1.2(@opentelemetry/api@1.9.1)(@types/node@22.19.15)(jsdom@29.0.1(@noble/hashes@2.0.1))(msw@2.12.13(@types/node@22.19.15)(typescript@5.9.3))(vite@8.0.1(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.0)(@types/node@22.19.15)(jiti@2.6.1)(terser@5.46.1))
++        version: 4.1.2(@opentelemetry/api@1.9.1)(@types/node@25.5.2)(jsdom@29.0.1(@noble/hashes@2.0.1))(msw@2.12.13(@types/node@25.5.2)(typescript@5.9.3))(vite@8.0.1(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.0)(@types/node@25.5.2)(jiti@2.6.1)(terser@5.46.1))
+ 
+   packages/ui:
+     devDependencies:
+@@ -451,13 +451,13 @@ importers:
+     devDependencies:
+       '@vitest/coverage-v8':
+         specifier: ^4.1.2
+-        version: 4.1.2(vitest@4.1.2(@opentelemetry/api@1.9.1)(@types/node@22.19.15)(jsdom@29.0.1(@noble/hashes@2.0.1))(msw@2.12.13(@types/node@22.19.15)(typescript@5.9.3))(vite@8.0.1(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.0)(@types/node@22.19.15)(jiti@2.6.1)(terser@5.46.1)))
++        version: 4.1.2(vitest@4.1.2(@opentelemetry/api@1.9.1)(@types/node@25.5.2)(jsdom@29.0.1(@noble/hashes@2.0.1))(msw@2.12.13(@types/node@25.5.2)(typescript@5.9.3))(vite@8.0.1(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.0)(@types/node@25.5.2)(jiti@2.6.1)(terser@5.46.1)))
+       typescript:
+         specifier: ^5.7.0
+         version: 5.9.3
+       vitest:
+         specifier: ^4.1.2
+-        version: 4.1.2(@opentelemetry/api@1.9.1)(@types/node@22.19.15)(jsdom@29.0.1(@noble/hashes@2.0.1))(msw@2.12.13(@types/node@22.19.15)(typescript@5.9.3))(vite@8.0.1(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.0)(@types/node@22.19.15)(jiti@2.6.1)(terser@5.46.1))
++        version: 4.1.2(@opentelemetry/api@1.9.1)(@types/node@25.5.2)(jsdom@29.0.1(@noble/hashes@2.0.1))(msw@2.12.13(@types/node@25.5.2)(typescript@5.9.3))(vite@8.0.1(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.0)(@types/node@25.5.2)(jiti@2.6.1)(terser@5.46.1))
+ 
+ packages:
+ 
+@@ -3214,6 +3214,9 @@ packages:
+   '@types/node@22.19.15':
+     resolution: {integrity: sha512-F0R/h2+dsy5wJAUe3tAU6oqa2qbWY5TpNfL/RGmo1y38hiyO1w3x2jPtt76wmuaJI4DQnOBu21cNXQ2STIUUWg==}
+ 
++  '@types/node@25.5.2':
++    resolution: {integrity: sha512-tO4ZIRKNC+MDWV4qKVZe3Ql/woTnmHDr5JD8UI5hn2pwBrHEwOEMZK7WlNb5RKB6EoJ02gwmQS9OrjuFnZYdpg==}
++
+   '@types/pg-pool@2.0.6':
+     resolution: {integrity: sha512-TaAUE5rq2VQYxab5Ts7WZhKNmuN78Q6PiFonTDdpbx8a1H0M1vhy3rhiMjl+e2iHmogyMw7jZF4FrE6eJUy5HQ==}
+ 
+@@ -3515,6 +3518,11 @@ packages:
+     resolution: {integrity: sha512-ir1UPr3dkwexU7FdV8qBBbNDRUhMmIekYMFZfi+C/sLNnRESKPl23nB9b2pltqfOQNnGzsDdId90AEtG5tCx4A==}
+     engines: {node: '>=6.0.0'}
+ 
++  baseline-browser-mapping@2.10.15:
++    resolution: {integrity: sha512-1nfKCq9wuAZFTkA2ey/3OXXx7GzFjLdkTiFVNwlJ9WqdI706CZRIhEqjuwanjMIja+84jDLa9rcyZDPDiVkASQ==}
++    engines: {node: '>=6.0.0'}
++    hasBin: true
++
+   baseline-browser-mapping@2.10.8:
+     resolution: {integrity: sha512-PCLz/LXGBsNTErbtB6i5u4eLpHeMfi93aUv5duMmj6caNu6IphS4q6UevDnL36sZQv9lrP11dbPKGMaXPwMKfQ==}
+     engines: {node: '>=6.0.0'}
+@@ -3645,6 +3653,11 @@ packages:
+     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
+     hasBin: true
+ 
++  browserslist@4.28.2:
++    resolution: {integrity: sha512-48xSriZYYg+8qXna9kwqjIVzuQxi+KYWp2+5nCYnYKPTr0LvD89Jqk2Or5ogxz0NUMfIjhh2lIUX/LyX9B4oIg==}
++    engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
++    hasBin: true
++
+   bson@7.2.0:
+     resolution: {integrity: sha512-YCEo7KjMlbNlyHhz7zAZNDpIpQbd+wOEHJYezv0nMYTn4x31eIUM2yomNNubclAt63dObUzKHWsBLJ9QcZNSnQ==}
+     engines: {node: '>=20.19.0'}
+@@ -3689,6 +3702,9 @@ packages:
+   caniuse-lite@1.0.30001780:
+     resolution: {integrity: sha512-llngX0E7nQci5BPJDqoZSbuZ5Bcs9F5db7EtgfwBerX9XGtkkiO4NwfDDIRzHTTwcYC8vC7bmeUEPGrKlR/TkQ==}
+ 
++  caniuse-lite@1.0.30001785:
++    resolution: {integrity: sha512-blhOL/WNR+Km1RI/LCVAvA73xplXA7ZbjzI4YkMK9pa6T/P3F2GxjNpEkyw5repTw9IvkyrjyHpwjnhZ5FOvYQ==}
++
+   cfb@1.2.2:
+     resolution: {integrity: sha512-KfdUZsSOw19/ObEWasvBP/Ac4reZvAGauZhs6S/gqNhXhI7cKwvlH7ulj+dOEYnca4bm4SGo8C1bTAQvnTjgQA==}
+     engines: {node: '>=0.8'}
+@@ -4083,6 +4099,9 @@ packages:
+   electron-to-chromium@1.5.321:
+     resolution: {integrity: sha512-L2C7Q279W2D/J4PLZLk7sebOILDSWos7bMsMNN06rK482umHUrh/3lM8G7IlHFOYip2oAg5nha1rCMxr/rs6ZQ==}
+ 
++  electron-to-chromium@1.5.331:
++    resolution: {integrity: sha512-IbxXrsTlD3hRodkLnbxAPP4OuJYdWCeM3IOdT+CpcMoIwIoDfCmRpEtSPfwBXxVkg9xmBeY7Lz2Eo2TDn/HC3Q==}
++
+   emoji-regex@10.6.0:
+     resolution: {integrity: sha512-toUI84YS5YmxW219erniWD0CIVOo46xGKColeNQRgOzDorgBi1v4D71/OFzgD9GO2UGKIv1C3Sp8DAn0+j5w7A==}
+ 
+@@ -5296,6 +5315,9 @@ packages:
+   node-releases@2.0.36:
+     resolution: {integrity: sha512-TdC8FSgHz8Mwtw9g5L4gR/Sh9XhSP/0DEkQxfEFXOpiul5IiHgHan2VhYYb6agDSfp4KuvltmGApc8HMgUrIkA==}
+ 
++  node-releases@2.0.37:
++    resolution: {integrity: sha512-1h5gKZCF+pO/o3Iqt5Jp7wc9rH3eJJ0+nh/CIoiRwjRxde/hAHyLPXYN4V3CqKAbiZPSeJFSWHmJsbkicta0Eg==}
++
+   normalize-path@3.0.0:
+     resolution: {integrity: sha512-6eZs5Ls3WtCisHWp9S2GUy8dqkpGi4BVSz3GaqiE6ezub0512ESztXUwUB6C6IKbQkY2Pnb/mD4WYojCRwcwLA==}
+     engines: {node: '>=0.10.0'}
+@@ -5505,14 +5527,10 @@ packages:
+   picocolors@1.1.1:
+     resolution: {integrity: sha512-xceH2snhtb5M9liqDsmEw56le376mTZkEX/jEb/RxNFyegNul7eNslCXP9FDj/Lcu0X8KEyMceP2ntpaHrDEVA==}
+ 
+-  picomatch@2.3.1:
+-    resolution: {integrity: sha512-JU3teHTNjmE2VCGFzuY8EXzCDVwEqB2a8fsIvwaStHhAWJEeVd1o1QD80CU6+ZdEXXSLbSsuLwJjkCBWqRQUVA==}
++  picomatch@2.3.2:
++    resolution: {integrity: sha512-V7+vQEJ06Z+c5tSye8S+nHUfI51xoXIXjHQ99cQtKUkQqqO1kO/KCJUfZXuB47h/YBlDhah2H3hdUGXn8ie0oA==}
+     engines: {node: '>=8.6'}
+ 
+-  picomatch@4.0.3:
+-    resolution: {integrity: sha512-5gTmgEY/sqK6gFXLIsQNH19lWb4ebPDLA4SdLP7dsWkIXHWlG66oPuVvXSGFPppYZz8ZDZq0dYYrbHfBCVUb1Q==}
+-    engines: {node: '>=12'}
+-
+   picomatch@4.0.4:
+     resolution: {integrity: sha512-QP88BAKvMam/3NxH6vj2o21R6MjxZUAd6nlwAS/pnGvN9IVLocLHxGYIzFhg6fUQ+5th6P4dv4eW9jX3DSIj7A==}
+     engines: {node: '>=12'}
+@@ -6176,6 +6194,10 @@ packages:
+     resolution: {integrity: sha512-g9ljZiwki/LfxmQADO3dEY1CbpmXT5Hm2fJ+QaGKwSXUylMybePR7/67YW7jOrrvjEgL1Fmz5kzyAjWVWLlucg==}
+     engines: {node: '>=6'}
+ 
++  tapable@2.3.2:
++    resolution: {integrity: sha512-1MOpMXuhGzGL5TTCZFItxCc0AARf1EZFQkGqMm7ERKj8+Hgr5oLvJOVFcC+lRmR8hCe2S3jC4T5D7Vg/d7/fhA==}
++    engines: {node: '>=6'}
++
+   terser-webpack-plugin@5.4.0:
+     resolution: {integrity: sha512-Bn5vxm48flOIfkdl5CaD2+1CiUVbonWQ3KQPyP7/EuIl9Gbzq/gQFOzaMFUEgVjB1396tcK0SG8XcNJ/2kDH8g==}
+     engines: {node: '>= 10.13.0'}
+@@ -6335,6 +6357,9 @@ packages:
+   undici-types@6.21.0:
+     resolution: {integrity: sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ==}
+ 
++  undici-types@7.18.2:
++    resolution: {integrity: sha512-AsuCzffGHJybSaRrmr5eHr81mwJU3kjw6M+uprWvCXiNeN9SOGwQ3Jn8jb8m3Z6izVgknn1R0FTCEAP2QrLY/w==}
++
+   undici@7.24.7:
+     resolution: {integrity: sha512-H/nlJ/h0ggGC+uRL3ovD+G0i4bqhvsDOpbDv7At5eFLlj2b41L8QliGbnl2H7SnDiYhENphh1tQFJZf+MyfLsQ==}
+     engines: {node: '>=20.18.1'}
+@@ -7672,10 +7697,10 @@ snapshots:
+       dotenv: 17.3.1
+       eciesjs: 0.4.18
+       execa: 5.1.1
+-      fdir: 6.5.0(picomatch@4.0.3)
++      fdir: 6.5.0(picomatch@4.0.4)
+       ignore: 5.3.2
+       object-treeify: 1.1.33
+-      picomatch: 4.0.3
++      picomatch: 4.0.4
+       which: 4.0.0
+ 
+   '@ecies/ciphers@0.2.5(@noble/ciphers@1.3.0)':
+@@ -7865,6 +7890,13 @@ snapshots:
+     optionalDependencies:
+       '@types/node': 22.19.15
+ 
++  '@inquirer/confirm@5.1.21(@types/node@25.5.2)':
++    dependencies:
++      '@inquirer/core': 10.3.2(@types/node@25.5.2)
++      '@inquirer/type': 3.0.10(@types/node@25.5.2)
++    optionalDependencies:
++      '@types/node': 25.5.2
++
+   '@inquirer/core@10.3.2(@types/node@22.19.15)':
+     dependencies:
+       '@inquirer/ansi': 1.0.2
+@@ -7878,12 +7910,29 @@ snapshots:
+     optionalDependencies:
+       '@types/node': 22.19.15
+ 
++  '@inquirer/core@10.3.2(@types/node@25.5.2)':
++    dependencies:
++      '@inquirer/ansi': 1.0.2
++      '@inquirer/figures': 1.0.15
++      '@inquirer/type': 3.0.10(@types/node@25.5.2)
++      cli-width: 4.1.0
++      mute-stream: 2.0.0
++      signal-exit: 4.1.0
++      wrap-ansi: 6.2.0
++      yoctocolors-cjs: 2.1.3
++    optionalDependencies:
++      '@types/node': 25.5.2
++
+   '@inquirer/figures@1.0.15': {}
+ 
+   '@inquirer/type@3.0.10(@types/node@22.19.15)':
+     optionalDependencies:
+       '@types/node': 22.19.15
+ 
++  '@inquirer/type@3.0.10(@types/node@25.5.2)':
++    optionalDependencies:
++      '@types/node': 25.5.2
++
+   '@jridgewell/gen-mapping@0.3.13':
+     dependencies:
+       '@jridgewell/sourcemap-codec': 1.5.5
+@@ -8362,7 +8411,7 @@ snapshots:
+       detect-libc: 2.1.2
+       is-glob: 4.0.3
+       node-addon-api: 7.1.1
+-      picomatch: 4.0.3
++      picomatch: 4.0.4
+     optionalDependencies:
+       '@parcel/watcher-android-arm64': 2.5.6
+       '@parcel/watcher-darwin-arm64': 2.5.6
+@@ -9790,6 +9839,10 @@ snapshots:
+     dependencies:
+       undici-types: 6.21.0
+ 
++  '@types/node@25.5.2':
++    dependencies:
++      undici-types: 7.18.2
++
+   '@types/pg-pool@2.0.6':
+     dependencies:
+       '@types/pg': 8.18.0
+@@ -9884,6 +9937,20 @@ snapshots:
+       tinyrainbow: 3.1.0
+       vitest: 4.1.2(@opentelemetry/api@1.9.1)(@types/node@22.19.15)(jsdom@29.0.1(@noble/hashes@2.0.1))(msw@2.12.13(@types/node@22.19.15)(typescript@5.9.3))(vite@8.0.1(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.0)(@types/node@22.19.15)(jiti@2.6.1)(terser@5.46.1))
+ 
++  '@vitest/coverage-v8@4.1.2(vitest@4.1.2(@opentelemetry/api@1.9.1)(@types/node@25.5.2)(jsdom@29.0.1(@noble/hashes@2.0.1))(msw@2.12.13(@types/node@25.5.2)(typescript@5.9.3))(vite@8.0.1(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.0)(@types/node@25.5.2)(jiti@2.6.1)(terser@5.46.1)))':
++    dependencies:
++      '@bcoe/v8-coverage': 1.0.2
++      '@vitest/utils': 4.1.2
++      ast-v8-to-istanbul: 1.0.0
++      istanbul-lib-coverage: 3.2.2
++      istanbul-lib-report: 3.0.1
++      istanbul-reports: 3.2.0
++      magicast: 0.5.2
++      obug: 2.1.1
++      std-env: 4.0.0
++      tinyrainbow: 3.1.0
++      vitest: 4.1.2(@opentelemetry/api@1.9.1)(@types/node@25.5.2)(jsdom@29.0.1(@noble/hashes@2.0.1))(msw@2.12.13(@types/node@25.5.2)(typescript@5.9.3))(vite@8.0.1(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.0)(@types/node@25.5.2)(jiti@2.6.1)(terser@5.46.1))
++
+   '@vitest/expect@4.1.2':
+     dependencies:
+       '@standard-schema/spec': 1.1.0
+@@ -9902,6 +9969,15 @@ snapshots:
+       msw: 2.12.13(@types/node@22.19.15)(typescript@5.9.3)
+       vite: 8.0.1(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.0)(@types/node@22.19.15)(jiti@2.6.1)(terser@5.46.1)
+ 
++  '@vitest/mocker@4.1.2(msw@2.12.13(@types/node@25.5.2)(typescript@5.9.3))(vite@8.0.1(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.0)(@types/node@25.5.2)(jiti@2.6.1)(terser@5.46.1))':
++    dependencies:
++      '@vitest/spy': 4.1.2
++      estree-walker: 3.0.3
++      magic-string: 0.30.21
++    optionalDependencies:
++      msw: 2.12.13(@types/node@25.5.2)(typescript@5.9.3)
++      vite: 8.0.1(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.0)(@types/node@25.5.2)(jiti@2.6.1)(terser@5.46.1)
++
+   '@vitest/pretty-format@4.1.2':
+     dependencies:
+       tinyrainbow: 3.1.0
+@@ -10066,7 +10142,7 @@ snapshots:
+   anymatch@3.1.3:
+     dependencies:
+       normalize-path: 3.0.0
+-      picomatch: 2.3.1
++      picomatch: 2.3.2
+ 
+   argparse@2.0.1: {}
+ 
+@@ -10116,6 +10192,8 @@ snapshots:
+ 
+   base64url@3.0.1: {}
+ 
++  baseline-browser-mapping@2.10.15: {}
++
+   baseline-browser-mapping@2.10.8: {}
+ 
+   better-auth@1.5.5(@prisma/client@7.5.0(prisma@7.5.0(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.9.3))(typescript@5.9.3))(mongodb@7.1.0)(mysql2@3.15.3)(next@15.5.13(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(prisma@7.5.0(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.9.3))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.1.2(@opentelemetry/api@1.9.1)(@types/node@22.19.15)(jsdom@29.0.1(@noble/hashes@2.0.1))(msw@2.12.13(@types/node@22.19.15)(typescript@5.9.3))(vite@8.0.1(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.0)(@types/node@22.19.15)(jiti@2.6.1)(terser@5.46.1))):
+@@ -10149,6 +10227,37 @@ snapshots:
+     transitivePeerDependencies:
+       - '@cloudflare/workers-types'
+ 
++  better-auth@1.5.5(@prisma/client@7.5.0(prisma@7.5.0(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.9.3))(typescript@5.9.3))(mongodb@7.1.0)(mysql2@3.15.3)(next@15.5.13(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(prisma@7.5.0(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.9.3))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.1.2(@opentelemetry/api@1.9.1)(@types/node@25.5.2)(jsdom@29.0.1(@noble/hashes@2.0.1))(msw@2.12.13(@types/node@25.5.2)(typescript@5.9.3))(vite@8.0.1(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.0)(@types/node@25.5.2)(jiti@2.6.1)(terser@5.46.1))):
++    dependencies:
++      '@better-auth/core': 1.5.5(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(better-call@1.3.2(zod@4.3.6))(jose@6.2.1)(kysely@0.28.12)(nanostores@1.2.0)
++      '@better-auth/drizzle-adapter': 1.5.5(@better-auth/core@1.5.5(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(better-call@1.3.2(zod@4.3.6))(jose@6.2.1)(kysely@0.28.12)(nanostores@1.2.0))(@better-auth/utils@0.3.1)
++      '@better-auth/kysely-adapter': 1.5.5(@better-auth/core@1.5.5(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(better-call@1.3.2(zod@4.3.6))(jose@6.2.1)(kysely@0.28.12)(nanostores@1.2.0))(@better-auth/utils@0.3.1)(kysely@0.28.12)
++      '@better-auth/memory-adapter': 1.5.5(@better-auth/core@1.5.5(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(better-call@1.3.2(zod@4.3.6))(jose@6.2.1)(kysely@0.28.12)(nanostores@1.2.0))(@better-auth/utils@0.3.1)
++      '@better-auth/mongo-adapter': 1.5.5(@better-auth/core@1.5.5(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(better-call@1.3.2(zod@4.3.6))(jose@6.2.1)(kysely@0.28.12)(nanostores@1.2.0))(@better-auth/utils@0.3.1)(mongodb@7.1.0)
++      '@better-auth/prisma-adapter': 1.5.5(@better-auth/core@1.5.5(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(better-call@1.3.2(zod@4.3.6))(jose@6.2.1)(kysely@0.28.12)(nanostores@1.2.0))(@better-auth/utils@0.3.1)(@prisma/client@7.5.0(prisma@7.5.0(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.9.3))(typescript@5.9.3))(prisma@7.5.0(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.9.3))
++      '@better-auth/telemetry': 1.5.5(@better-auth/core@1.5.5(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(better-call@1.3.2(zod@4.3.6))(jose@6.2.1)(kysely@0.28.12)(nanostores@1.2.0))
++      '@better-auth/utils': 0.3.1
++      '@better-fetch/fetch': 1.1.21
++      '@noble/ciphers': 2.1.1
++      '@noble/hashes': 2.0.1
++      better-call: 1.3.2(zod@4.3.6)
++      defu: 6.1.4
++      jose: 6.2.1
++      kysely: 0.28.12
++      nanostores: 1.2.0
++      zod: 4.3.6
++    optionalDependencies:
++      '@prisma/client': 7.5.0(prisma@7.5.0(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.9.3))(typescript@5.9.3)
++      mongodb: 7.1.0
++      mysql2: 3.15.3
++      next: 15.5.13(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
++      prisma: 7.5.0(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.9.3)
++      react: 19.2.4
++      react-dom: 19.2.4(react@19.2.4)
++      vitest: 4.1.2(@opentelemetry/api@1.9.1)(@types/node@25.5.2)(jsdom@29.0.1(@noble/hashes@2.0.1))(msw@2.12.13(@types/node@25.5.2)(typescript@5.9.3))(vite@8.0.1(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.0)(@types/node@25.5.2)(jiti@2.6.1)(terser@5.46.1))
++    transitivePeerDependencies:
++      - '@cloudflare/workers-types'
++
+   better-call@1.3.2(zod@4.3.6):
+     dependencies:
+       '@better-auth/utils': 0.3.1
+@@ -10294,6 +10403,14 @@ snapshots:
+       node-releases: 2.0.36
+       update-browserslist-db: 1.2.3(browserslist@4.28.1)
+ 
++  browserslist@4.28.2:
++    dependencies:
++      baseline-browser-mapping: 2.10.15
++      caniuse-lite: 1.0.30001785
++      electron-to-chromium: 1.5.331
++      node-releases: 2.0.37
++      update-browserslist-db: 1.2.3(browserslist@4.28.2)
++
+   bson@7.2.0: {}
+ 
+   buffer-equal-constant-time@1.0.1: {}
+@@ -10340,6 +10457,8 @@ snapshots:
+ 
+   caniuse-lite@1.0.30001780: {}
+ 
++  caniuse-lite@1.0.30001785: {}
++
+   cfb@1.2.2:
+     dependencies:
+       adler-32: 1.3.1
+@@ -10686,6 +10805,8 @@ snapshots:
+ 
+   electron-to-chromium@1.5.321: {}
+ 
++  electron-to-chromium@1.5.331: {}
++
+   emoji-regex@10.6.0: {}
+ 
+   emoji-regex@8.0.0: {}
+@@ -10892,10 +11013,6 @@ snapshots:
+     dependencies:
+       reusify: 1.1.0
+ 
+-  fdir@6.5.0(picomatch@4.0.3):
+-    optionalDependencies:
+-      picomatch: 4.0.3
+-
+   fdir@6.5.0(picomatch@4.0.4):
+     optionalDependencies:
+       picomatch: 4.0.4
+@@ -11293,7 +11410,7 @@ snapshots:
+ 
+   jest-worker@27.5.1:
+     dependencies:
+-      '@types/node': 22.19.15
++      '@types/node': 25.5.2
+       merge-stream: 2.0.0
+       supports-color: 8.1.1
+ 
+@@ -11590,7 +11707,7 @@ snapshots:
+   micromatch@4.0.8:
+     dependencies:
+       braces: 3.0.3
+-      picomatch: 2.3.1
++      picomatch: 2.3.2
+ 
+   mime-db@1.52.0: {}
+ 
+@@ -11682,6 +11799,31 @@ snapshots:
+     transitivePeerDependencies:
+       - '@types/node'
+ 
++  msw@2.12.13(@types/node@25.5.2)(typescript@5.9.3):
++    dependencies:
++      '@inquirer/confirm': 5.1.21(@types/node@25.5.2)
++      '@mswjs/interceptors': 0.41.3
++      '@open-draft/deferred-promise': 2.2.0
++      '@types/statuses': 2.0.6
++      cookie: 1.1.1
++      graphql: 16.13.1
++      headers-polyfill: 4.0.3
++      is-node-process: 1.2.0
++      outvariant: 1.4.3
++      path-to-regexp: 6.3.0
++      picocolors: 1.1.1
++      rettime: 0.10.1
++      statuses: 2.0.2
++      strict-event-emitter: 0.5.1
++      tough-cookie: 6.0.1
++      type-fest: 5.4.4
++      until-async: 3.0.2
++      yargs: 17.7.2
++    optionalDependencies:
++      typescript: 5.9.3
++    transitivePeerDependencies:
++      - '@types/node'
++
+   mt940js@1.3.5: {}
+ 
+   mute-stream@2.0.0: {}
+@@ -11779,6 +11921,8 @@ snapshots:
+ 
+   node-releases@2.0.36: {}
+ 
++  node-releases@2.0.37: {}
++
+   normalize-path@3.0.0: {}
+ 
+   npm-run-path@4.0.1:
+@@ -11968,9 +12112,7 @@ snapshots:
+ 
+   picocolors@1.1.1: {}
+ 
+-  picomatch@2.3.1: {}
+-
+-  picomatch@4.0.3: {}
++  picomatch@2.3.2: {}
+ 
+   picomatch@4.0.4: {}
+ 
+@@ -12247,7 +12389,7 @@ snapshots:
+ 
+   readdirp@3.6.0:
+     dependencies:
+-      picomatch: 2.3.1
++      picomatch: 2.3.2
+ 
+   readdirp@4.1.2: {}
+ 
+@@ -12688,9 +12830,9 @@ snapshots:
+ 
+   strip-json-comments@5.0.3: {}
+ 
+-  stripe@21.0.1(@types/node@22.19.15):
++  stripe@21.0.1(@types/node@25.5.2):
+     optionalDependencies:
+-      '@types/node': 22.19.15
++      '@types/node': 25.5.2
+ 
+   strnum@2.2.1: {}
+ 
+@@ -12740,6 +12882,8 @@ snapshots:
+ 
+   tapable@2.3.0: {}
+ 
++  tapable@2.3.2: {}
++
+   terser-webpack-plugin@5.4.0(webpack@5.105.4):
+     dependencies:
+       '@jridgewell/trace-mapping': 0.3.31
+@@ -12767,8 +12911,8 @@ snapshots:
+ 
+   tinyglobby@0.2.15:
+     dependencies:
+-      fdir: 6.5.0(picomatch@4.0.3)
+-      picomatch: 4.0.3
++      fdir: 6.5.0(picomatch@4.0.4)
++      picomatch: 4.0.4
+ 
+   tinyrainbow@3.1.0: {}
+ 
+@@ -12872,6 +13016,8 @@ snapshots:
+ 
+   undici-types@6.21.0: {}
+ 
++  undici-types@7.18.2: {}
++
+   undici@7.24.7: {}
+ 
+   unicorn-magic@0.3.0: {}
+@@ -12895,6 +13041,12 @@ snapshots:
+       escalade: 3.2.0
+       picocolors: 1.1.1
+ 
++  update-browserslist-db@1.2.3(browserslist@4.28.2):
++    dependencies:
++      browserslist: 4.28.2
++      escalade: 3.2.0
++      picocolors: 1.1.1
++
+   use-callback-ref@1.3.3(@types/react@19.2.14)(react@19.2.4):
+     dependencies:
+       react: 19.2.4
+@@ -12977,6 +13129,22 @@ snapshots:
+       - '@emnapi/core'
+       - '@emnapi/runtime'
+ 
++  vite@8.0.1(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.0)(@types/node@25.5.2)(jiti@2.6.1)(terser@5.46.1):
++    dependencies:
++      lightningcss: 1.32.0
++      picomatch: 4.0.4
++      postcss: 8.5.8
++      rolldown: 1.0.0-rc.10(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.0)
++      tinyglobby: 0.2.15
++    optionalDependencies:
++      '@types/node': 25.5.2
++      fsevents: 2.3.3
++      jiti: 2.6.1
++      terser: 5.46.1
++    transitivePeerDependencies:
++      - '@emnapi/core'
++      - '@emnapi/runtime'
++
+   vitest@4.1.2(@opentelemetry/api@1.9.1)(@types/node@22.19.15)(jsdom@29.0.1(@noble/hashes@2.0.1))(msw@2.12.13(@types/node@22.19.15)(typescript@5.9.3))(vite@8.0.1(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.0)(@types/node@22.19.15)(jiti@2.6.1)(terser@5.46.1)):
+     dependencies:
+       '@vitest/expect': 4.1.2
+@@ -13006,6 +13174,35 @@ snapshots:
+     transitivePeerDependencies:
+       - msw
+ 
++  vitest@4.1.2(@opentelemetry/api@1.9.1)(@types/node@25.5.2)(jsdom@29.0.1(@noble/hashes@2.0.1))(msw@2.12.13(@types/node@25.5.2)(typescript@5.9.3))(vite@8.0.1(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.0)(@types/node@25.5.2)(jiti@2.6.1)(terser@5.46.1)):
++    dependencies:
++      '@vitest/expect': 4.1.2
++      '@vitest/mocker': 4.1.2(msw@2.12.13(@types/node@25.5.2)(typescript@5.9.3))(vite@8.0.1(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.0)(@types/node@25.5.2)(jiti@2.6.1)(terser@5.46.1))
++      '@vitest/pretty-format': 4.1.2
++      '@vitest/runner': 4.1.2
++      '@vitest/snapshot': 4.1.2
++      '@vitest/spy': 4.1.2
++      '@vitest/utils': 4.1.2
++      es-module-lexer: 2.0.0
++      expect-type: 1.3.0
++      magic-string: 0.30.21
++      obug: 2.1.1
++      pathe: 2.0.3
++      picomatch: 4.0.4
++      std-env: 4.0.0
++      tinybench: 2.9.0
++      tinyexec: 1.0.4
++      tinyglobby: 0.2.15
++      tinyrainbow: 3.1.0
++      vite: 8.0.1(@emnapi/core@1.9.1)(@emnapi/runtime@1.9.0)(@types/node@25.5.2)(jiti@2.6.1)(terser@5.46.1)
++      why-is-node-running: 2.3.0
++    optionalDependencies:
++      '@opentelemetry/api': 1.9.1
++      '@types/node': 25.5.2
++      jsdom: 29.0.1(@noble/hashes@2.0.1)
++    transitivePeerDependencies:
++      - msw
++
+   w3c-xmlserializer@5.0.0:
+     dependencies:
+       xml-name-validator: 5.0.0
+@@ -13041,7 +13238,7 @@ snapshots:
+       '@webassemblyjs/wasm-parser': 1.14.1
+       acorn: 8.16.0
+       acorn-import-phases: 1.0.4(acorn@8.16.0)
+-      browserslist: 4.28.1
++      browserslist: 4.28.2
+       chrome-trace-event: 1.0.4
+       enhanced-resolve: 5.20.1
+       es-module-lexer: 2.0.0
+@@ -13054,7 +13251,7 @@ snapshots:
+       mime-types: 2.1.35
+       neo-async: 2.6.2
+       schema-utils: 4.3.3
+-      tapable: 2.3.0
++      tapable: 2.3.2
+       terser-webpack-plugin: 5.4.0(webpack@5.105.4)
+       watchpack: 2.5.1
+       webpack-sources: 3.3.4

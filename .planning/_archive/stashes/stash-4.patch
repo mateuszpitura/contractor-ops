@@ -1,0 +1,35 @@
+diff --git a/apps/web/src/components/portal/__tests__/invoice-submit-form.test.tsx b/apps/web/src/components/portal/__tests__/invoice-submit-form.test.tsx
+index 4b648d79..31875e10 100644
+--- a/apps/web/src/components/portal/__tests__/invoice-submit-form.test.tsx
++++ b/apps/web/src/components/portal/__tests__/invoice-submit-form.test.tsx
+@@ -125,13 +125,13 @@ vi.mock("@tanstack/react-query", async () => {
+     },
+     useMutation: () => {
+       const idx = mutationCallIndex++;
++      // Mutation order repeats every 3 calls: 0=getUploadUrl, 1=submitInvoice, 2=ocrTrigger
++      // Use modulo to handle re-renders which call useMutation again
++      const mutationType = idx % 3;
+       return {
+         mutate: vi.fn(),
+         mutateAsync: vi.fn().mockImplementation(async () => {
+-          // Mutation order: 0=getUploadUrl, 1=submitInvoice, 2=ocrTrigger
+-          // The idx is set at render time, but mutateAsync is called later.
+-          // We need to check at call time. Use the fact that ocrTrigger is the 3rd mutation.
+-          if (idx === 2) {
++          if (mutationType === 2) {
+             if (ocrTriggerBehavior === "credit-exhausted") {
+               throw new MockTRPCClientError("OCR credits exhausted", "PRECONDITION_FAILED");
+             }
+@@ -402,9 +402,10 @@ describe("InvoiceSubmitForm", () => {
+     const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+     await user.upload(input, file);
+ 
+-    // Wait for upload to complete (file info should appear)
++    // Wait for upload to complete (file info may appear in multiple places)
+     await waitFor(() => {
+-      expect(screen.getByText("inv-generic.pdf")).toBeInTheDocument();
++      const matches = screen.getAllByText("inv-generic.pdf");
++      expect(matches.length).toBeGreaterThanOrEqual(1);
+     });
+ 
+     // CreditExhaustedInline should NOT appear for generic errors

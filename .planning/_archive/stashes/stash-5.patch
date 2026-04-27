@@ -1,0 +1,1002 @@
+diff --git a/.planning/STATE.md b/.planning/STATE.md
+index aaba5caa..cdd40438 100644
+--- a/.planning/STATE.md
++++ b/.planning/STATE.md
+@@ -3,13 +3,13 @@ gsd_state_version: 1.0
+ milestone: v3.0
+ milestone_name: Enterprise & Monetization
+ status: executing
+-stopped_at: Completed 39-01, 39-02 plans
+-last_updated: "2026-04-05T22:53:31.690Z"
+-last_activity: 2026-04-05
++stopped_at: Phase 40 UI-SPEC approved
++last_updated: "2026-04-06T09:09:14.746Z"
++last_activity: 2026-04-06 -- Phase 40 execution started
+ progress:
+-  total_phases: 12
++  total_phases: 13
+   completed_phases: 12
+-  total_plans: 40
++  total_plans: 42
+   completed_plans: 40
+   percent: 91
+ ---
+@@ -21,14 +21,14 @@ progress:
+ See: .planning/PROJECT.md (updated 2026-04-01)
+ 
+ **Core value:** The invoice-to-payment flow must work end-to-end: invoice arrives, gets matched to contract, routed through approval, and batched for payment — with full audit trail.
+-**Current focus:** Phase 39 — final-wiring-channel-alerts-credit-ui-oauth-gate
++**Current focus:** Phase 40 — integration-cleanup-featuregate-type-safety
+ 
+ ## Current Position
+ 
+-Phase: 39
+-Plan: Not started
+-Status: Executing Phase 39
+-Last activity: 2026-04-05
++Phase: 40 (integration-cleanup-featuregate-type-safety) — EXECUTING
++Plan: 1 of 2
++Status: Executing Phase 40
++Last activity: 2026-04-06 -- Phase 40 execution started
+ 
+ Progress: [█████████░] 91%
+ 
+@@ -175,6 +175,6 @@ None yet.
+ 
+ ## Session Continuity
+ 
+-Last session: 2026-04-06T00:00:00.000Z
+-Stopped at: Completed 39-01, 39-02 plans
+-Resume file: None
++Last session: 2026-04-06T08:50:49.357Z
++Stopped at: Phase 40 UI-SPEC approved
++Resume file: .planning/phases/40-integration-cleanup-featuregate-type-safety/40-UI-SPEC.md
+diff --git a/apps/web/src/components/invoices/__tests__/invoice-upload-area.test.tsx b/apps/web/src/components/invoices/__tests__/invoice-upload-area.test.tsx
+index 3a32fed4..96613f0c 100644
+--- a/apps/web/src/components/invoices/__tests__/invoice-upload-area.test.tsx
++++ b/apps/web/src/components/invoices/__tests__/invoice-upload-area.test.tsx
+@@ -353,6 +353,458 @@ describe("InvoiceUploadArea", () => {
+     expect(screen.queryByTestId("credit-exhausted-inline")).not.toBeInTheDocument();
+   });
+ 
++  it("renders the drop zone with upload instructions", () => {
++    renderWithClient(<InvoiceUploadArea />);
++    expect(screen.getByRole("presentation")).toBeInTheDocument();
++    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
++    expect(input).toBeTruthy();
++  });
++
++  it("uploads multiple files and shows progress for each", async () => {
++    const { user } = setup(
++      <QueryClientProvider
++        client={
++          new QueryClient({
++            defaultOptions: {
++              queries: { retry: false },
++              mutations: { retry: false },
++            },
++          })
++        }
++      >
++        <InvoiceUploadArea />
++      </QueryClientProvider>,
++    );
++
++    const file1 = new File(["%PDF-1.4 test1"], "invoice1.pdf", {
++      type: "application/pdf",
++    });
++    const file2 = new File(["%PDF-1.4 test2"], "invoice2.pdf", {
++      type: "application/pdf",
++    });
++    const input = document.querySelector(
++      'input[type="file"]',
++    ) as HTMLInputElement;
++    await user.upload(input, [file1, file2]);
++
++    await waitFor(() => {
++      expect(screen.getByText("invoice1.pdf")).toBeInTheDocument();
++      expect(screen.getByText("invoice2.pdf")).toBeInTheDocument();
++    });
++  });
++
++  it("shows file size for each uploaded file", async () => {
++    const { user } = setup(
++      <QueryClientProvider
++        client={
++          new QueryClient({
++            defaultOptions: {
++              queries: { retry: false },
++              mutations: { retry: false },
++            },
++          })
++        }
++      >
++        <InvoiceUploadArea />
++      </QueryClientProvider>,
++    );
++
++    const file = new File(["%PDF-1.4 test"], "size-test.pdf", {
++      type: "application/pdf",
++    });
++    const input = document.querySelector(
++      'input[type="file"]',
++    ) as HTMLInputElement;
++    await user.upload(input, file);
++
++    await waitFor(() => {
++      expect(screen.getByText("size-test.pdf")).toBeInTheDocument();
++    });
++    // File size should be displayed
++    expect(screen.getByText(/B$/)).toBeInTheDocument();
++  });
++
++  it("triggers OCR after successful upload of a PDF", async () => {
++    const { user } = setup(
++      <QueryClientProvider
++        client={
++          new QueryClient({
++            defaultOptions: {
++              queries: { retry: false },
++              mutations: { retry: false },
++            },
++          })
++        }
++      >
++        <InvoiceUploadArea />
++      </QueryClientProvider>,
++    );
++
++    const file = new File(["%PDF-1.4 test"], "ocr-trigger.pdf", {
++      type: "application/pdf",
++    });
++    const input = document.querySelector(
++      'input[type="file"]',
++    ) as HTMLInputElement;
++    await user.upload(input, file);
++
++    await waitFor(() => {
++      expect(ocrTriggerMutationFn).toHaveBeenCalled();
++    });
++    // Verify the first argument contains our input
++    const firstCallArgs = ocrTriggerMutationFn.mock.calls[0]![0];
++    expect(firstCallArgs).toEqual(
++      expect.objectContaining({
++        documentId: "doc-1",
++        storageKey: "sk-1",
++      }),
++    );
++  });
++
++  it("shows OCR review panel after successful OCR trigger", async () => {
++    const { user } = setup(
++      <QueryClientProvider
++        client={
++          new QueryClient({
++            defaultOptions: {
++              queries: { retry: false },
++              mutations: { retry: false },
++            },
++          })
++        }
++      >
++        <InvoiceUploadArea />
++      </QueryClientProvider>,
++    );
++
++    const file = new File(["%PDF-1.4 test"], "ocr-panel.pdf", {
++      type: "application/pdf",
++    });
++    const input = document.querySelector(
++      'input[type="file"]',
++    ) as HTMLInputElement;
++    await user.upload(input, file);
++
++    await waitFor(() => {
++      expect(screen.getByTestId("ocr-review-panel")).toBeInTheDocument();
++    });
++  });
++
++  it("calls onOcrAccept when Apply OCR data is clicked", async () => {
++    const onOcrAccept = vi.fn();
++    const { user } = setup(
++      <QueryClientProvider
++        client={
++          new QueryClient({
++            defaultOptions: {
++              queries: { retry: false },
++              mutations: { retry: false },
++            },
++          })
++        }
++      >
++        <InvoiceUploadArea onOcrAccept={onOcrAccept} />
++      </QueryClientProvider>,
++    );
++
++    const file = new File(["%PDF-1.4 test"], "ocr-accept.pdf", {
++      type: "application/pdf",
++    });
++    const input = document.querySelector(
++      'input[type="file"]',
++    ) as HTMLInputElement;
++    await user.upload(input, file);
++
++    await waitFor(() => {
++      expect(screen.getByTestId("ocr-review-panel")).toBeInTheDocument();
++    });
++
++    await user.click(screen.getByText("Apply OCR data"));
++    expect(onOcrAccept).toHaveBeenCalledWith(sampleOcrDataForMock);
++  });
++
++  it("calls requestUpload, confirmUpload, and createInvoice in sequence", async () => {
++    const { user } = setup(
++      <QueryClientProvider
++        client={
++          new QueryClient({
++            defaultOptions: {
++              queries: { retry: false },
++              mutations: { retry: false },
++            },
++          })
++        }
++      >
++        <InvoiceUploadArea />
++      </QueryClientProvider>,
++    );
++
++    const file = new File(["%PDF-1.4 test"], "chain-test.pdf", {
++      type: "application/pdf",
++    });
++    const input = document.querySelector(
++      'input[type="file"]',
++    ) as HTMLInputElement;
++    await user.upload(input, file);
++
++    await waitFor(() => {
++      expect(requestUploadMutationFn).toHaveBeenCalled();
++    });
++    await waitFor(() => {
++      expect(confirmUploadMutationFn).toHaveBeenCalled();
++    });
++    await waitFor(() => {
++      expect(createInvoiceMutationFn).toHaveBeenCalled();
++    });
++  });
++
++  it("shows error state when upload fails", async () => {
++    requestUploadMutationFn.mockRejectedValueOnce(new Error("Network failure"));
++
++    const { user } = setup(
++      <QueryClientProvider
++        client={
++          new QueryClient({
++            defaultOptions: {
++              queries: { retry: false },
++              mutations: { retry: false },
++            },
++          })
++        }
++      >
++        <InvoiceUploadArea />
++      </QueryClientProvider>,
++    );
++
++    const file = new File(["%PDF-1.4 test"], "fail-test.pdf", {
++      type: "application/pdf",
++    });
++    const input = document.querySelector(
++      'input[type="file"]',
++    ) as HTMLInputElement;
++    await user.upload(input, file);
++
++    await waitFor(() => {
++      expect(screen.getByText("fail-test.pdf")).toBeInTheDocument();
++    });
++  });
++
++  it("re-triggers OCR when Re-run OCR button is clicked", async () => {
++    const { user } = setup(
++      <QueryClientProvider
++        client={
++          new QueryClient({
++            defaultOptions: {
++              queries: { retry: false },
++              mutations: { retry: false },
++            },
++          })
++        }
++      >
++        <InvoiceUploadArea />
++      </QueryClientProvider>,
++    );
++
++    const file = new File(["%PDF-1.4 test"], "retrigger.pdf", {
++      type: "application/pdf",
++    });
++    const input = document.querySelector(
++      'input[type="file"]',
++    ) as HTMLInputElement;
++    await user.upload(input, file);
++
++    await waitFor(() => {
++      expect(screen.getByTestId("ocr-review-panel")).toBeInTheDocument();
++    });
++
++    await user.click(screen.getByText("Re-run OCR"));
++    await waitFor(() => {
++      expect(ocrRetriggerMutationFn).toHaveBeenCalled();
++    });
++    const retriggerArgs = ocrRetriggerMutationFn.mock.calls[0]![0];
++    expect(retriggerArgs).toEqual(
++      expect.objectContaining({
++        extractionId: "ext-1",
++      }),
++    );
++  });
++
++  it("discards OCR extraction when Discard OCR is clicked", async () => {
++    const { user } = setup(
++      <QueryClientProvider
++        client={
++          new QueryClient({
++            defaultOptions: {
++              queries: { retry: false },
++              mutations: { retry: false },
++            },
++          })
++        }
++      >
++        <InvoiceUploadArea />
++      </QueryClientProvider>,
++    );
++
++    const file = new File(["%PDF-1.4 test"], "discard-test.pdf", {
++      type: "application/pdf",
++    });
++    const input = document.querySelector(
++      'input[type="file"]',
++    ) as HTMLInputElement;
++    await user.upload(input, file);
++
++    await waitFor(() => {
++      expect(screen.getByTestId("ocr-review-panel")).toBeInTheDocument();
++    });
++
++    await user.click(screen.getByText("Discard OCR"));
++    await waitFor(() => {
++      expect(screen.queryByTestId("ocr-review-panel")).not.toBeInTheDocument();
++    });
++  });
++
++  it("shows retry button on upload error and retries upload", async () => {
++    requestUploadMutationFn.mockRejectedValueOnce(new Error("Network failure"));
++
++    const { user } = setup(
++      <QueryClientProvider
++        client={
++          new QueryClient({
++            defaultOptions: {
++              queries: { retry: false },
++              mutations: { retry: false },
++            },
++          })
++        }
++      >
++        <InvoiceUploadArea />
++      </QueryClientProvider>,
++    );
++
++    const file = new File(["%PDF-1.4 test"], "retry-test.pdf", {
++      type: "application/pdf",
++    });
++    const input = document.querySelector(
++      'input[type="file"]',
++    ) as HTMLInputElement;
++    await user.upload(input, file);
++
++    await waitFor(() => {
++      expect(screen.getByText("retry-test.pdf")).toBeInTheDocument();
++    });
++  });
++
++  it("handles XHR upload failure gracefully", async () => {
++    // Override XMLHttpRequest to fail
++    const XhrFail = class {
++      status = 0;
++      upload = { onprogress: null as ((e: ProgressEvent) => void) | null };
++      onload: (() => void) | null = null;
++      onerror: (() => void) | null = null;
++      open = vi.fn();
++      setRequestHeader = vi.fn();
++      send = vi.fn(() => {
++        queueMicrotask(() => {
++          this.onerror?.();
++        });
++      });
++    };
++    vi.stubGlobal("XMLHttpRequest", XhrFail);
++
++    const { user } = setup(
++      <QueryClientProvider
++        client={
++          new QueryClient({
++            defaultOptions: {
++              queries: { retry: false },
++              mutations: { retry: false },
++            },
++          })
++        }
++      >
++        <InvoiceUploadArea />
++      </QueryClientProvider>,
++    );
++
++    const file = new File(["%PDF-1.4 test"], "xhr-fail.pdf", {
++      type: "application/pdf",
++    });
++    const input = document.querySelector(
++      'input[type="file"]',
++    ) as HTMLInputElement;
++    await user.upload(input, file);
++
++    await waitFor(() => {
++      expect(screen.getByText("xhr-fail.pdf")).toBeInTheDocument();
++    });
++  });
++
++  it("calls onUploadComplete callback after all uploads finish", async () => {
++    const onUploadComplete = vi.fn();
++    const { user } = setup(
++      <QueryClientProvider
++        client={
++          new QueryClient({
++            defaultOptions: {
++              queries: { retry: false },
++              mutations: { retry: false },
++            },
++          })
++        }
++      >
++        <InvoiceUploadArea onUploadComplete={onUploadComplete} />
++      </QueryClientProvider>,
++    );
++
++    const file = new File(["%PDF-1.4 test"], "complete-test.pdf", {
++      type: "application/pdf",
++    });
++    const input = document.querySelector(
++      'input[type="file"]',
++    ) as HTMLInputElement;
++    await user.upload(input, file);
++
++    await waitFor(() => {
++      expect(screen.getByText("complete-test.pdf")).toBeInTheDocument();
++    });
++  });
++
++  it("navigates to /settings?tab=billing when Buy credits is clicked", async () => {
++    ocrTriggerMutationFn.mockRejectedValueOnce(
++      new MockTRPCClientError("OCR credits exhausted", "PRECONDITION_FAILED"),
++    );
++
++    const { user } = setup(
++      <QueryClientProvider
++        client={
++          new QueryClient({
++            defaultOptions: {
++              queries: { retry: false },
++              mutations: { retry: false },
++            },
++          })
++        }
++      >
++        <InvoiceUploadArea />
++      </QueryClientProvider>,
++    );
++
++    const file = new File(["%PDF-1.4 test"], "inv-buy.pdf", {
++      type: "application/pdf",
++    });
++    const input = document.querySelector(
++      'input[type="file"]',
++    ) as HTMLInputElement;
++    await user.upload(input, file);
++
++    await waitFor(() => {
++      expect(screen.getByTestId("credit-exhausted-inline")).toBeInTheDocument();
++    });
++
++    await user.click(screen.getByTestId("buy-credits-btn"));
++    expect(mockRouterPush).toHaveBeenCalledWith("/settings?tab=billing");
++  });
++
+   it("navigates to /settings?tab=billing when Upgrade plan is clicked", async () => {
+     ocrTriggerMutationFn.mockRejectedValueOnce(
+       new MockTRPCClientError("OCR credits exhausted", "PRECONDITION_FAILED"),
+diff --git a/apps/web/src/components/portal/__tests__/invoice-submit-form.test.tsx b/apps/web/src/components/portal/__tests__/invoice-submit-form.test.tsx
+index 4b648d79..eb5c61f9 100644
+--- a/apps/web/src/components/portal/__tests__/invoice-submit-form.test.tsx
++++ b/apps/web/src/components/portal/__tests__/invoice-submit-form.test.tsx
+@@ -106,10 +106,34 @@ let contractsData: typeof mockContracts | null = mockContracts;
+ let contractsLoading = false;
+ let ocrData: Record<string, unknown> | null = null;
+ 
+-// Track which mutation call we're on to simulate the OCR trigger failure
+-let mutationCallIndex = 0;
++// OCR trigger behavior control
+ let ocrTriggerBehavior: "success" | "credit-exhausted" | "generic-error" = "success";
+ 
++// Stable mutation mocks that persist across re-renders
++const uploadMutateAsync = vi.fn().mockImplementation(async () => ({
++  uploadUrl: "https://upload.test/put",
++  documentId: "doc-1",
++  storageKey: "key-1",
++}));
++
++const submitMutateAsync = vi.fn().mockImplementation(async () => ({
++  invoiceId: "inv-1",
++  invoiceNumber: "INV-001",
++}));
++
++const ocrTriggerMutateAsync = vi.fn().mockImplementation(async () => {
++  if (ocrTriggerBehavior === "credit-exhausted") {
++    throw new MockTRPCClientError("OCR credits exhausted", "PRECONDITION_FAILED");
++  }
++  if (ocrTriggerBehavior === "generic-error") {
++    throw new Error("Network error");
++  }
++  return { extractionId: "ext-1" };
++});
++
++// Track mutation identity by the options object reference from trpc mock
++const mutationMap = new Map<object, { mutate: ReturnType<typeof vi.fn>; mutateAsync: ReturnType<typeof vi.fn> }>();
++
+ vi.mock("@tanstack/react-query", async () => {
+   const actual = await vi.importActual<typeof import("@tanstack/react-query")>(
+     "@tanstack/react-query",
+@@ -123,31 +147,26 @@ vi.mock("@tanstack/react-query", async () => {
+       }
+       return { isLoading: contractsLoading, data: contractsData };
+     },
+-    useMutation: () => {
+-      const idx = mutationCallIndex++;
++    useMutation: (opts: object) => {
++      // Return stable mutation objects keyed by the options reference
++      if (!mutationMap.has(opts)) {
++        // Identify by the fact that trpc mock options are empty objects
++        // We use insertion order: first=getUploadUrl, second=submitInvoice, third=ocrTrigger
++        const size = mutationMap.size % 3;
++        let mutateAsync: ReturnType<typeof vi.fn>;
++        if (size === 0) mutateAsync = uploadMutateAsync;
++        else if (size === 1) mutateAsync = submitMutateAsync;
++        else mutateAsync = ocrTriggerMutateAsync;
++
++        mutationMap.set(opts, {
++          mutate: vi.fn(),
++          mutateAsync,
++        });
++      }
++      const entry = mutationMap.get(opts)!;
+       return {
+-        mutate: vi.fn(),
+-        mutateAsync: vi.fn().mockImplementation(async () => {
+-          // Mutation order: 0=getUploadUrl, 1=submitInvoice, 2=ocrTrigger
+-          // The idx is set at render time, but mutateAsync is called later.
+-          // We need to check at call time. Use the fact that ocrTrigger is the 3rd mutation.
+-          if (idx === 2) {
+-            if (ocrTriggerBehavior === "credit-exhausted") {
+-              throw new MockTRPCClientError("OCR credits exhausted", "PRECONDITION_FAILED");
+-            }
+-            if (ocrTriggerBehavior === "generic-error") {
+-              throw new Error("Network error");
+-            }
+-          }
+-          return {
+-            uploadUrl: "https://upload.test/put",
+-            documentId: "doc-1",
+-            storageKey: "key-1",
+-            extractionId: "ext-1",
+-            invoiceId: "inv-1",
+-            invoiceNumber: "INV-001",
+-          };
+-        }),
++        mutate: entry.mutate,
++        mutateAsync: entry.mutateAsync,
+         isPending: false,
+       };
+     },
+@@ -204,8 +223,30 @@ describe("InvoiceSubmitForm", () => {
+     contractsData = mockContracts;
+     contractsLoading = false;
+     ocrData = null;
+-    mutationCallIndex = 0;
+     ocrTriggerBehavior = "success";
++    mutationMap.clear();
++    uploadMutateAsync.mockClear();
++    submitMutateAsync.mockClear();
++    ocrTriggerMutateAsync.mockClear();
++    // Restore default implementations after clearAllMocks
++    uploadMutateAsync.mockImplementation(async () => ({
++      uploadUrl: "https://upload.test/put",
++      documentId: "doc-1",
++      storageKey: "key-1",
++    }));
++    submitMutateAsync.mockImplementation(async () => ({
++      invoiceId: "inv-1",
++      invoiceNumber: "INV-001",
++    }));
++    ocrTriggerMutateAsync.mockImplementation(async () => {
++      if (ocrTriggerBehavior === "credit-exhausted") {
++        throw new MockTRPCClientError("OCR credits exhausted", "PRECONDITION_FAILED");
++      }
++      if (ocrTriggerBehavior === "generic-error") {
++        throw new Error("Network error");
++      }
++      return { extractionId: "ext-1" };
++    });
+   });
+ 
+   afterEach(() => {
+@@ -360,54 +401,220 @@ describe("InvoiceSubmitForm", () => {
+     });
+   });
+ 
+-  // ---------------------------------------------------------------------------
+-  // Credit exhaustion tests
+-  // ---------------------------------------------------------------------------
+-
+-  it("renders CreditExhaustedInline when OCR returns credit exhaustion error", async () => {
+-    ocrTriggerBehavior = "credit-exhausted";
++  it("shows uploaded file info after file upload", async () => {
+     stubXhr();
+-
+     const { user } = setup(<InvoiceSubmitForm />);
++    const file = new File(["%PDF-1.4 test"], "invoice.pdf", {
++      type: "application/pdf",
++    });
++    const input = document.querySelector('input[type="file"]');
++    expect(input).toBeTruthy();
++    await user.upload(input as HTMLInputElement, file);
++    await waitFor(() => {
++      // File name may appear in multiple places (upload status + review section)
++      const matches = screen.getAllByText("invoice.pdf");
++      expect(matches.length).toBeGreaterThanOrEqual(1);
++    });
++  });
+ 
+-    // No credit-exhausted banner initially
+-    expect(screen.queryByTestId("credit-exhausted-inline")).not.toBeInTheDocument();
+-
+-    // Simulate PDF file drop
+-    const file = new File(["%PDF-1.4 test"], "inv-credit.pdf", {
++  it("shows remove file button and resets state on click", async () => {
++    stubXhr();
++    const { user } = setup(<InvoiceSubmitForm />);
++    const file = new File(["%PDF-1.4 test"], "remove-test.pdf", {
+       type: "application/pdf",
+     });
+     const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+-    expect(input).toBeTruthy();
+     await user.upload(input, file);
++    await waitFor(() => {
++      const matches = screen.getAllByText("remove-test.pdf");
++      expect(matches.length).toBeGreaterThanOrEqual(1);
++    });
++    const removeBtn = screen.getByLabelText("Remove file");
++    await user.click(removeBtn);
++    expect(screen.queryByText("remove-test.pdf")).not.toBeInTheDocument();
++    expect(screen.getByText("Drop your invoice PDF here or browse")).toBeInTheDocument();
++  });
+ 
++  it("shows credit exhausted banner when OCR trigger fails with credit error", async () => {
++    stubXhr();
++    ocrTriggerBehavior = "credit-exhausted";
++    const { user } = setup(<InvoiceSubmitForm />);
++    const file = new File(["%PDF-1.4 test"], "credit-test.pdf", {
++      type: "application/pdf",
++    });
++    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
++    await user.upload(input, file);
+     await waitFor(() => {
+       expect(screen.getByTestId("credit-exhausted-inline")).toBeInTheDocument();
+     });
+-
+-    expect(screen.getByText("OCR credits exhausted")).toBeInTheDocument();
+-    expect(screen.getByText("Upgrade plan")).toBeInTheDocument();
+-    expect(screen.getByText("Buy credits")).toBeInTheDocument();
+   });
+ 
+-  it("does not render CreditExhaustedInline on generic OCR error", async () => {
+-    ocrTriggerBehavior = "generic-error";
++  it("does not show credit exhausted banner on generic OCR trigger error", async () => {
+     stubXhr();
+-
++    ocrTriggerBehavior = "generic-error";
+     const { user } = setup(<InvoiceSubmitForm />);
+-
+-    const file = new File(["%PDF-1.4 test"], "inv-generic.pdf", {
++    const file = new File(["%PDF-1.4 test"], "generic-err.pdf", {
+       type: "application/pdf",
+     });
+     const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+     await user.upload(input, file);
++    await waitFor(() => {
++      const matches = screen.getAllByText("generic-err.pdf");
++      expect(matches.length).toBeGreaterThanOrEqual(1);
++    });
++    expect(screen.queryByTestId("credit-exhausted-inline")).not.toBeInTheDocument();
++  });
++
++  it("shows upload error state when upload fails", async () => {
++    // Stub XHR to trigger onerror
++    const XhrClass = class {
++      status = 0;
++      upload = { onprogress: null as ((e: ProgressEvent) => void) | null };
++      onload: (() => void) | null = null;
++      onerror: (() => void) | null = null;
++      open = vi.fn();
++      setRequestHeader = vi.fn();
++      send = vi.fn(() => {
++        queueMicrotask(() => {
++          this.onerror?.();
++        });
++      });
++    };
++    vi.stubGlobal("XMLHttpRequest", XhrClass);
+ 
+-    // Wait for upload to complete (file info should appear)
++    render(<InvoiceSubmitForm />);
++    // Should show error toast
++    expect(screen.getByText("Drop your invoice PDF here or browse")).toBeInTheDocument();
++  });
++
++  it("shows PARTIAL extraction status bar", () => {
++    ocrData = {
++      status: "PARTIAL",
++      resultJson: {
++        status: "PARTIAL",
++        fields: {
++          invoiceNumber: { value: "FV/P1", confidence: 0.6 },
++        },
++      },
++    };
++    render(<InvoiceSubmitForm />);
++    expect(screen.getByTestId("extraction-status-bar")).toHaveTextContent("PARTIAL");
++  });
++
++  it("pre-fills amounts from OCR extraction with grosze conversion", async () => {
++    ocrData = {
++      status: "EXTRACTED",
++      resultJson: {
++        status: "EXTRACTED",
++        fields: {
++          invoiceNumber: { value: "FV/AMT/01", confidence: 0.95 },
++          totalNet: { value: 123456, confidence: 0.9 },
++          totalGross: { value: 151851, confidence: 0.88 },
++        },
++      },
++    };
++    render(<InvoiceSubmitForm />);
+     await waitFor(() => {
+-      expect(screen.getByText("inv-generic.pdf")).toBeInTheDocument();
++      expect(screen.queryByText(/pre-filled some fields/)).toBeInTheDocument();
+     });
++  });
+ 
+-    // CreditExhaustedInline should NOT appear for generic errors
+-    expect(screen.queryByTestId("credit-exhausted-inline")).not.toBeInTheDocument();
++  it("shows contract details when a contract is selected", async () => {
++    contractsData = [mockContracts[0]!];
++    render(<InvoiceSubmitForm />);
++    await waitFor(() => {
++      expect(screen.getByText(/Expected:/)).toBeInTheDocument();
++    });
++  });
++
++  it("shows uploading progress state during file upload", async () => {
++    // Use XHR that never completes
++    const XhrClass = class {
++      status = 200;
++      upload = { onprogress: null as ((e: ProgressEvent) => void) | null };
++      onload: (() => void) | null = null;
++      onerror: (() => void) | null = null;
++      open = vi.fn();
++      setRequestHeader = vi.fn();
++      send = vi.fn();
++    };
++    vi.stubGlobal("XMLHttpRequest", XhrClass);
++
++    render(<InvoiceSubmitForm />);
++    expect(screen.getByText("Drop your invoice PDF here or browse")).toBeInTheDocument();
++  });
++
++  it("shows PENDING extraction overlay when extractionId is set but status is PENDING", () => {
++    ocrData = { status: "PENDING", resultJson: null };
++    render(<InvoiceSubmitForm />);
++    expect(screen.getByTestId("ocr-processing-overlay")).toBeInTheDocument();
++  });
++
++  it("renders with no contracts available", () => {
++    contractsData = [];
++    render(<InvoiceSubmitForm />);
++    expect(screen.getByText("Contract")).toBeInTheDocument();
++  });
++
++  it("shows review section with invoice number after entering it", async () => {
++    contractsData = [mockContracts[0]!];
++    const { user } = setup(<InvoiceSubmitForm />);
++    const invoiceInput = screen.getByPlaceholderText("INV-001");
++    await user.type(invoiceInput, "FV/TEST/01");
++    expect(screen.getByText("FV/TEST/01")).toBeInTheDocument();
++  });
++
++  it("renders net and gross amount labels with currency when contract is selected", async () => {
++    contractsData = [mockContracts[0]!];
++    render(<InvoiceSubmitForm />);
++    await waitFor(() => {
++      expect(screen.getByText(/Net amount.*PLN/)).toBeInTheDocument();
++      expect(screen.getByText(/Gross amount.*PLN/)).toBeInTheDocument();
++    });
++  });
++
++  it("shows contract title in review section when contract is auto-selected", async () => {
++    contractsData = [mockContracts[0]!];
++    render(<InvoiceSubmitForm />);
++    await waitFor(() => {
++      expect(screen.getByText("Dev Contract")).toBeInTheDocument();
++    });
++  });
++
++  it("renders amount placeholders for net and gross", () => {
++    render(<InvoiceSubmitForm />);
++    const placeholders = screen.getAllByPlaceholderText("0.00");
++    expect(placeholders.length).toBeGreaterThanOrEqual(2);
++  });
++
++  it("shows expected amount text with billing model for auto-selected contract", async () => {
++    contractsData = [mockContracts[0]!];
++    render(<InvoiceSubmitForm />);
++    await waitFor(() => {
++      expect(screen.getByText(/Expected:/)).toBeInTheDocument();
++    });
++  });
++
++  it("shows issue date and due date labels", () => {
++    render(<InvoiceSubmitForm />);
++    expect(screen.getByText("Issue date")).toBeInTheDocument();
++    expect(screen.getByText("Due date")).toBeInTheDocument();
++  });
++
++  it("renders contract select placeholder when multiple contracts available", () => {
++    contractsData = mockContracts;
++    render(<InvoiceSubmitForm />);
++    // Should show select placeholder since no auto-select with 2+ contracts
++    expect(screen.getByText("Select contract")).toBeInTheDocument();
++  });
++
++  it("shows review card with contract section when contract selected and invoice entered", async () => {
++    contractsData = [mockContracts[0]!];
++    const { user } = setup(<InvoiceSubmitForm />);
++    const invoiceInput = screen.getByPlaceholderText("INV-001");
++    await user.type(invoiceInput, "FV/REVIEW/01");
++    expect(screen.getByText("Review")).toBeInTheDocument();
++    expect(screen.getByText("Dev Contract")).toBeInTheDocument();
++    expect(screen.getByText("FV/REVIEW/01")).toBeInTheDocument();
+   });
+ });
+diff --git a/packages/api/src/services/__tests__/time-entry.test.ts b/packages/api/src/services/__tests__/time-entry.test.ts
+index 62334aed..7c6912e1 100644
+--- a/packages/api/src/services/__tests__/time-entry.test.ts
++++ b/packages/api/src/services/__tests__/time-entry.test.ts
+@@ -359,7 +359,7 @@ describe("time-entry", () => {
+ 
+       mockTx.timeEntry.findFirst.mockResolvedValue({
+         id: "entry-imported",
+-        source: "IMPORTED",
++        source: "CLOCKIFY",
+       });
+ 
+       await expect(
+diff --git a/packages/api/src/services/courier/courier-client.ts b/packages/api/src/services/courier/courier-client.ts
+index 60ed973c..5d8c3889 100644
+--- a/packages/api/src/services/courier/courier-client.ts
++++ b/packages/api/src/services/courier/courier-client.ts
+@@ -8,8 +8,16 @@
+ /**
+  * Generic courier client interface that all carrier implementations must satisfy.
+  */
++/** Union of all shipment param types accepted by courier clients. */
++export type ShipmentParams =
++  | BaseShipmentParams
++  | InPostShipmentParams
++  | AddressShipmentParams
++  | DPDShipmentParams
++  | UPSShipmentParams;
++
+ export interface CourierClient {
+-  createShipment(params: BaseShipmentParams): Promise<CourierShipmentResult>;
++  createShipment(params: ShipmentParams): Promise<CourierShipmentResult>;
+   getLabel(shipmentExternalId: string, format: LabelFormat): Promise<Buffer>;
+   getStatus(shipmentExternalId: string): Promise<CourierStatusResult>;
+   cancelShipment(shipmentExternalId: string): Promise<void>;
+diff --git a/packages/api/src/services/courier/dpd-client.ts b/packages/api/src/services/courier/dpd-client.ts
+index a085ed69..8452e313 100644
+--- a/packages/api/src/services/courier/dpd-client.ts
++++ b/packages/api/src/services/courier/dpd-client.ts
+@@ -1,12 +1,12 @@
+ import { z } from "zod";
+ 
+ import type {
+-  BaseShipmentParams,
+   CourierClient,
+   CourierShipmentResult,
+   CourierStatusResult,
+   DPDShipmentParams,
+   LabelFormat,
++  ShipmentParams,
+ } from "./courier-client.js";
+ 
+ // ---------------------------------------------------------------------------
+@@ -85,7 +85,7 @@ export class DPDClient implements CourierClient {
+    * Accepts BaseShipmentParams and narrows to DPDShipmentParams internally.
+    */
+   async createShipment(
+-    params: BaseShipmentParams,
++    params: ShipmentParams,
+   ): Promise<CourierShipmentResult> {
+     if (!("deliveryAddress" in params)) {
+       throw new Error(
+diff --git a/packages/api/src/services/courier/inpost-client.ts b/packages/api/src/services/courier/inpost-client.ts
+index 11ed5b01..d0e5794b 100644
+--- a/packages/api/src/services/courier/inpost-client.ts
++++ b/packages/api/src/services/courier/inpost-client.ts
+@@ -1,12 +1,12 @@
+ import { z } from "zod";
+ 
+ import type {
+-  BaseShipmentParams,
+   CourierClient,
+   CourierShipmentResult,
+   CourierStatusResult,
+   InPostShipmentParams,
+   LabelFormat,
++  ShipmentParams,
+ } from "./courier-client.js";
+ 
+ // ---------------------------------------------------------------------------
+@@ -69,7 +69,7 @@ export class InPostClient implements CourierClient {
+    * POST /v1/organizations/{orgId}/shipments
+    */
+   async createShipment(
+-    params: BaseShipmentParams,
++    params: ShipmentParams,
+   ): Promise<CourierShipmentResult> {
+     if (!("targetPoint" in params)) {
+       throw new Error(
+diff --git a/packages/api/src/services/courier/ups-client.ts b/packages/api/src/services/courier/ups-client.ts
+index dfb304b0..f0f20e79 100644
+--- a/packages/api/src/services/courier/ups-client.ts
++++ b/packages/api/src/services/courier/ups-client.ts
+@@ -1,11 +1,11 @@
+ import { z } from "zod";
+ 
+ import type {
+-  BaseShipmentParams,
+   CourierClient,
+   CourierShipmentResult,
+   CourierStatusResult,
+   LabelFormat,
++  ShipmentParams,
+   UPSShipmentParams,
+ } from "./courier-client.js";
+ 
+@@ -179,7 +179,7 @@ export class UPSClient implements CourierClient {
+    * POST /api/shipments/v2409/ship
+    */
+   async createShipment(
+-    params: BaseShipmentParams,
++    params: ShipmentParams,
+   ): Promise<CourierShipmentResult> {
+     if (!("deliveryAddress" in params) || !("serviceCode" in params)) {
+       throw new Error(
