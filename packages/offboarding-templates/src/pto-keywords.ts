@@ -1,11 +1,12 @@
-// Phase 74 Plan 01 — Wave 0 stub. Plan 74-02 fills the per-locale PTO keyword
-// lists (en/pl/de) per CONTEXT.md D-08. Ops-extension (admin-managed
-// per-locale additions) lands in Plan 74-07 Settings UI.
+// Phase 74 Plan 02 — Curated PTO keywords per locale (D-08).
+// `ar` is intentionally NOT shipped this phase (Phase 79 owns the Gulf locale).
+// Ops-extension (admin-managed per-locale additions) lands in Plan 74-07
+// Settings UI; this file is the static seed that bootstraps detection.
 
 import type { PtoKeywords } from './types.js';
 
 export const PTO_KEYWORDS: PtoKeywords = {
-  en: [],
-  de: [],
-  pl: [],
+  en: ['PTO', 'OOO', 'Out of Office', 'Vacation'],
+  de: ['Urlaub', 'Krank'],
+  pl: ['Urlop', 'Wakacje'],
 } as const;
