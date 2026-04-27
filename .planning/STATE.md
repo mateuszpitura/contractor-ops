@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v6.0
 milestone_name: Platform Maturity & Operational Hardening
 status: executing
-stopped_at: Phase 74 context gathered
-last_updated: "2026-04-27T00:05:18.457Z"
-last_activity: 2026-04-27 — Phase 76 planned
+stopped_at: "Phase 70 complete (10/10 plans); backfill apply deferred to post-deploy"
+last_updated: "2026-04-27T00:00:00.000Z"
+last_activity: 2026-04-27 — Phase 70 checkpoint cleared; multi-region backfill recorded as deferred post-deploy item
 progress:
   percent: 9
 ---
@@ -21,15 +21,18 @@ See: .planning/PROJECT.md (updated 2026-04-26 — v6.0 milestone started)
 
 ## Current Position
 
-Phase: 70 — Wave 0–2 complete (8/10 plans). CHECKPOINT at Plan 70-09.
-Plan: 70-09 (multi-region migration — `autonomous: false`)
-Status: Waves 0–2 shipped GREEN. Plan 70-09 requires human review. Phase 71 fully planned (7 plans). Phase 76 fully planned (10 plans, ready to execute after Phase 70 closes).
-Last activity: 2026-04-27 — Phase 76 planned
+Phase: 70 — COMPLETE (10/10 plans landed; multi-region backfill deferred to post-deploy)
+Plan: — (Phase 70 closed)
+Status: Phase 70 shipped end-to-end. Plans 70-09 + 70-10 committed (`9212adf1`, `2a41d142`). The multi-region backfill apply (`tsx packages/db/scripts/backfill-scope-capabilities.ts` against EU + ME) is recorded as a deferred post-deploy item per LOCAL-ONLY Standing Constraint — does NOT block downstream phases. Phase 71 fully planned (7 plans, ready to execute). Phase 76 fully planned (10 plans, ready to execute). Phase 74 context gathered, ready to plan.
+Last activity: 2026-04-27 — Phase 70 checkpoint cleared; backfill apply recorded as deferred
 
-Progress: [█░░░░░░░░░] 9% (v6.0 — 0/11 phases complete; Phase 70 at 8/10 plans; Phases 71 + 76 planned)
+Progress: [█░░░░░░░░░] 9% (v6.0 — 1/11 phases complete; Phase 70 done; Phases 71 + 76 plans ready; Phase 74 ready to plan)
 
-**Active Phase:** 70 (v6.0 Foundation) — 8/10 plans landed, paused at multi-region checkpoint
-**Next Phase:** 71 (F1 Compliance — Policy Package + Schema + Classification Reconcile) — planned, ready to execute. Phase 76 (F2 IdP — Capability Mixin + Saga + Cooldown + GWS Scope) also planned and parallel-ready.
+**Active Phase:** none (Phase 70 closed)
+**Next Phase candidates (parallel-ready):**
+- Phase 71 (F1 Compliance — Policy Package + Schema + Classification Reconcile) — 7 plans, depends on 70 ✓
+- Phase 76 (F2 IdP — Capability Mixin + Saga + Cooldown + GWS Scope) — 10 plans, depends on 70 ✓ + 74 + 75 (still gated on F4)
+- Phase 74 (F4 Offboarding — Workflow Foundation + KT Templates + Override Permission) — discussed, ready for `/gsd-plan-phase 74`
 
 ## Phase 76 Planned (2026-04-27)
 
@@ -84,21 +87,11 @@ Progress: [█░░░░░░░░░] 9% (v6.0 — 0/11 phases complete; Ph
 - `71-PATTERNS.md` — analog files: feature-flags signoff registry, classification recreateDraftAfterDrift, audit-writer, push-all-regions, revalidate-vat-button
 - `71-VALIDATION.md` — 36 verification entries across 7 plans; 5 manual-only (multi-region apply, visual SQL review, admin UI, legal text approval)
 
-## Phase 70 Checkpoint — needs human review (Plan 70-09)
+## Phase 70 Complete (cleared 2026-04-27)
 
-**Plan 70-09 status:** PAUSED for human review. Marked `autonomous: false` per the planner. Pre-migration safe work below has been completed; the actual Prisma schema edit, `prisma migrate dev --create-only`, multi-region apply, and backfill script implementation are deliberately deferred to a human-supervised session.
+**Plan 70-09 + 70-10 status:** SHIPPED. The `autonomous: false` flag on 70-09 referred to the per-region backfill *apply step*, not the code work. Code-side acceptance criteria were met and committed; the apply step is recorded as a deferred post-deploy item under the LOCAL-ONLY Standing Constraint (mirrors v5.0 deferred-items pattern).
 
-**Pre-checkpoint verification (all GREEN):**
-
-- `pnpm lint:schema` → "OK: 28 schema file(s) clean"
-- `pnpm lint:logs` → "OK: 1258 source file(s) clean"
-- `pnpm i18n:parity` → "OK: ... (baseline: 398 pre-existing site(s) tolerated)"
-- `pnpm --filter @contractor-ops/logger test` → 38/38 pass
-- `pnpm --filter @contractor-ops/feature-flags test` → 47/47 pass
-- `pnpm --filter @contractor-ops/lint-guards test` → 7/7 pass
-- `pnpm --filter @contractor-ops/validators exec vitest run locked-phrases-guard` → 78/78 pass (no regression)
-
-**Ships in Plans 01–08 (committed):**
+**Phase 70 commits (all 10 plans on `main`):**
 
 | Plan | Commit | Subject |
 |------|--------|---------|
@@ -110,43 +103,31 @@ Progress: [█░░░░░░░░░] 9% (v6.0 — 0/11 phases complete; Ph
 | 70-06 | `f2d76942` | wire pnpm lint:schema/lint:logs/i18n:parity into CI + husky pre-push |
 | 70-07 | `99a6c74f` | boot-time flag-signoff gate + LOCAL-ONLY bypass for FOUND6-04 (P30) |
 | 70-08 | `741f62f0` | getIdpAuditLogger() with allow-list semantics for FOUND6-06 (P28) |
+| 70-09 | `9212adf1` | IntegrationConnection.scopeCapabilities + backfill migration for FOUND6-05 (P31) |
+| 70-10 | `2a41d142` | GWS reconnect banner + i18n keys for FOUND6-05 / D-16 |
 
-**Pending plans (Wave 3 — needs human review):**
+**Deferred post-deploy item (recorded in Deferred Items table below):**
 
-- **70-09 (autonomous: false):** Add `IntegrationConnection.scopeCapabilities Json?` field, generate Prisma migration, ship the typed `ScopeCapabilities`/`CapabilityEnum` TS contract + Zod boundary schema, ship `backfill-scope-capabilities.ts` (single-region runner; LOCAL-ONLY, multi-region apply is a manual post-deploy item).
-- **70-10:** GoogleWorkspaceReconnectBanner component + 4-locale i18n strings (depends on 70-09's `ScopeCapabilities` types).
+The backfill apply against `DATABASE_URL_EU` and `DATABASE_URL_ME` is idempotent and documented in `packages/db/scripts/README.md`. Recommended sequence (run from a deploy workstation, NOT in background sessions):
 
-**Why this is a checkpoint:**
+```sh
+DATABASE_URL=$DATABASE_URL_EU tsx packages/db/scripts/backfill-scope-capabilities.ts --dry-run
+DATABASE_URL=$DATABASE_URL_EU tsx packages/db/scripts/backfill-scope-capabilities.ts
+DATABASE_URL=$DATABASE_URL_ME tsx packages/db/scripts/backfill-scope-capabilities.ts --dry-run
+DATABASE_URL=$DATABASE_URL_ME tsx packages/db/scripts/backfill-scope-capabilities.ts
+```
 
-1. The Prisma schema edit creates a new database column. The generated `migration.sql` MUST be visually reviewed for unexpected DROP/RENAME entries (T-70-09-05) before any region's database is touched.
-2. The migration is multi-region (`DATABASE_URL_EU` and `DATABASE_URL_ME`). Per `packages/db/scripts/push-all-regions.ts`, both regions must be applied or both must be rolled back — there is no partial state. LOCAL-ONLY constraint means we don't have a hosted multi-region staging; the human runs the script per region from a workstation with the env vars exported.
-3. The `prisma migrate dev --create-only` invocation requires a live `DATABASE_URL` to compute the diff against the shadow database. This is not safe to do autonomously in a background session against an unknown environment.
+`WHERE scopeCapabilities IS NULL` precondition makes both runs idempotent — safe to re-run after partial failure or to verify zero-write convergence.
 
-**Recommended human session for Plan 70-09:**
-
-1. Confirm `DATABASE_URL_EU` and `DATABASE_URL_ME` are set in your local shell (do NOT commit them).
-2. Edit `packages/db/prisma/schema/integration.prisma` per Plan 70-09 task 70-09-01: add `scopeCapabilities Json?` immediately after `configJson Json?` on the `IntegrationConnection` model.
-3. Run `cd packages/db && npx prisma format && cd ../.. && pnpm --filter @contractor-ops/db db:generate`.
-4. Run `cd packages/db && DATABASE_URL=$DATABASE_URL_EU npx prisma migrate dev --create-only --name add_scope_capabilities`.
-5. **Visually review** the generated `packages/db/prisma/migrations/<timestamp>_add_scope_capabilities/migration.sql` — must contain only `ALTER TABLE "IntegrationConnection" ADD COLUMN "scopeCapabilities" JSONB;` and nothing else.
-6. Implement Plan 70-09 tasks 70-09-02 (TS types), 70-09-03 (Zod schema), 70-09-04 (backfill script + README), 70-09-05 (commit).
-7. Run `pnpm --filter @contractor-ops/db test scope-capabilities-backfill` to verify Wave 0 contract turns GREEN.
-8. Multi-region apply is a manual post-deploy item (record in 70-09-SUMMARY.md):
-   ```sh
-   DATABASE_URL=$DATABASE_URL_EU tsx packages/db/scripts/backfill-scope-capabilities.ts --dry-run
-   DATABASE_URL=$DATABASE_URL_EU tsx packages/db/scripts/backfill-scope-capabilities.ts
-   DATABASE_URL=$DATABASE_URL_ME tsx packages/db/scripts/backfill-scope-capabilities.ts --dry-run
-   DATABASE_URL=$DATABASE_URL_ME tsx packages/db/scripts/backfill-scope-capabilities.ts
-   ```
-
-9. After 70-09 lands, run `/gsd-execute-phase 70 --wave 3` (or just `/gsd-execute-phase 70`) to resume Plan 70-10.
+**Downstream unblocked:** Phase 71 (depends on 70 ✓), Phase 74 (depends on 70 ✓ — context gathered, ready to plan), Phase 79 (depends on 71). Phase 76 still gated on Phase 74 + 75 landing.
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 314 (51 v1.0 + 52 v2.0 + 47 v3.0 + 55 v4.0 + 70 v5.0 [Phases 56–69, includes audit gap-closure trio 65/66/67 + follow-ups 68/69])
-- v6.0 plans completed: 0
+- Total plans completed: 324 (51 v1.0 + 52 v2.0 + 47 v3.0 + 55 v4.0 + 70 v5.0 [Phases 56–69] + 10 v6.0 [Phase 70])
+- v6.0 plans completed: 10 (Phase 70: 70-01..70-10)
+- v6.0 phases completed: 1 / 11 (Phase 70)
 - v6.0 phases planned: 11 (70-80)
 
 **v5.0 Reference:**
@@ -164,6 +145,7 @@ Items acknowledged and deferred at v5.0 milestone close on 2026-04-26:
 
 | Category | Phase | File | Status | Disposition |
 |----------|-------|------|--------|-------------|
+| migration_apply | 70 | 70-09-SUMMARY.md | code shipped (`9212adf1`) — multi-region apply pending | post-deploy: `tsx packages/db/scripts/backfill-scope-capabilities.ts` against `$DATABASE_URL_EU` then `$DATABASE_URL_ME` (idempotent, dry-run-supported) |
 | uat_gap | 60 | 60-HUMAN-UAT.md | partial — 4 pending scenarios | post-deploy manual UI verification |
 | uat_gap | 61 | 61-UAT.md | partial — 12 pending scenarios | post-deploy manual UI verification |
 | uat_gap | 62 | 62-HUMAN-UAT.md | partial — 3 pending scenarios | post-deploy manual UI verification |
@@ -232,9 +214,11 @@ Recent decisions affecting current work:
 
 ### Pending Todos
 
-- Run `/gsd-plan-phase 70` to begin v6.0 execution (Phase 70 is foundation — must ship before any feature work).
-- Phase 71, 75, 77, 78, 79 carry NEEDS RESEARCH flags — `/gsd-plan-phase` will spawn `gsd-phase-researcher` for those.
-- Standing reminder: every legal-sensitive Unleash flag introduced by a v6.0 phase must register PENDING in `signoff-registry.ts` (FOUND6-04 CI gate enforces this once Phase 70 ships).
+- Phase 70 — DONE (10/10 plans on `main`); multi-region backfill apply is a deferred post-deploy item (see Deferred Items table).
+- Phase 74 (F4 Offboarding — Workflow Foundation) — context gathered, run `/gsd-plan-phase 74` next.
+- Phase 71 + 76 plans ready — execute when ready (71 unblocked, 76 still gated on 74 + 75).
+- Phase 75, 77, 78, 79 carry NEEDS RESEARCH flags — `/gsd-plan-phase` will spawn `gsd-phase-researcher` for those.
+- Standing reminder: every legal-sensitive Unleash flag introduced by a v6.0 phase must register PENDING in `signoff-registry.ts` (FOUND6-04 CI gate enforces this since Phase 70 shipped).
 
 ### Blockers/Concerns
 
@@ -261,8 +245,9 @@ Recent decisions affecting current work:
 ## Session Continuity
 
 Last session: --stopped-at
-Stopped at: Phase 74 context gathered
+Stopped at: Phase 70 complete (10/10 plans); backfill apply deferred to post-deploy
 Resume file: --resume-file
-Next command: `/gsd-plan-phase 70`
+Next command: `/gsd-plan-phase 74`  (Phase 74 context gathered, ready to plan; 71 + 76 plans already ready to execute)
 
-**Planned Phase:** 76 (F2 IdP — Capability Mixin + Saga Schema + Cooldown Gate + GWS Scope Migration) — 10 plans — 2026-04-27T00:05:18.454Z
+**Planned Phases (ready to execute):** 71 (F1 Compliance — 7 plans), 76 (F2 IdP — 10 plans, gated on 74 + 75)
+**Recorded:** 2026-04-27

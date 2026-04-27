@@ -80,7 +80,7 @@ Phase artifacts: `.planning/milestones/v5.0-phases/`
 
 #### Phase List
 
-- [ ] **Phase 70: v6.0 Foundation — Cross-Cutting CI Guards & Observability Baseline** — schema-lint multi-tenant guard, opt-in body logging, i18n parity per-PR, Unleash signoff CI gate, OAuth scope-capability framework
+- [x] **Phase 70: v6.0 Foundation — Cross-Cutting CI Guards & Observability Baseline** (10/10 plans) — completed 2026-04-27. Multi-region backfill apply deferred to post-deploy (see STATE.md Deferred Items)
 - [ ] **Phase 71: F1 Compliance — Policy Package + Schema + Classification Reconcile** — `packages/compliance-policy` with per-jurisdiction profiles, additive `ContractorComplianceItem` extension, drift escape hatch
 - [ ] **Phase 72: F1 Compliance — Reminder Cascade + Payment Block** — band-state-machine cron, daily digest, paymentRouter hard-block, approval-engine condition operator, atomic audit row
 - [ ] **Phase 73: F1 Compliance — Admin Dashboard + Portal Self-Service + i18n** — at-risk dashboard, contractor portal compliance tab, one-click upload-replacement, en/pl/de parity
