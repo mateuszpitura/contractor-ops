@@ -227,4 +227,48 @@ export const userRouter = router({
 
       return result;
     }),
+
+  /**
+   * Phase 74 D-08 — Set User.outOfOffice JSONB.
+   *
+   * Actor identity (the `userId` whose OOO is being modified) MUST equal
+   * the session user — users cannot set OOO for other users from this
+   * mutation. Cross-tenant updates are blocked because Member is
+   * scoped to ctx.organizationId. Admins can set other users' OOO via
+   * the admin override flow (out of scope for Phase 74).
+   */
+  setOutOfOffice: tenantProcedure
+    .input(
+      z.object({
+        from: z.string().datetime(),
+        until: z.string().datetime(),
+        fallbackUserId: z.string().min(1).optional(),
+        reason: z.string().max(500).optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      // T-74-05 — server derives userId from session, never from input
+      const userId = ctx.user.id;
+      await ctx.db.user.update({
+        where: { id: userId },
+        data: {
+          outOfOffice: {
+            from: input.from,
+            until: input.until,
+            ...(input.fallbackUserId ? { fallbackUserId: input.fallbackUserId } : {}),
+            ...(input.reason ? { reason: input.reason } : {}),
+          },
+        },
+      });
+      return { userId };
+    }),
+
+  clearOutOfOffice: tenantProcedure.mutation(async ({ ctx }) => {
+    const userId = ctx.user.id;
+    await ctx.db.user.update({
+      where: { id: userId },
+      data: { outOfOffice: undefined as never },
+    });
+    return { userId };
+  }),
 });

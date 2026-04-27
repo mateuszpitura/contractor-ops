@@ -155,4 +155,37 @@ export const teamsRouter = router({
 
       return { success: true };
     }),
+
+  /**
+   * Phase 74 D-06 — Set Team.fallbackApproverId for the offboarding workflow's
+   * PTO-aware fallback chain. Called from the per-team Settings page.
+   *
+   * Although this router is named after Microsoft Teams integration (the
+   * collaboration product), it co-locates here per Plan 74-07's prescribed
+   * file layout. The mutation acts on the per-org `Team` model (organizational
+   * structure unit), NOT the Microsoft Teams workspace.
+   */
+  setFallbackApprover: tenantProcedure
+    .use(requirePermission({ settings: ['update'] }))
+    .input(
+      z.object({
+        teamId: z.string().min(1),
+        fallbackApproverId: z.string().min(1).nullable(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Tenant isolation — only update teams within the current org
+      const existing = await ctx.db.team.findFirst({
+        where: { id: input.teamId, organizationId: ctx.organizationId },
+        select: { id: true },
+      });
+      if (!existing) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Team not found' });
+      }
+      await ctx.db.team.update({
+        where: { id: input.teamId },
+        data: { fallbackApproverId: input.fallbackApproverId },
+      });
+      return { teamId: input.teamId };
+    }),
 });

@@ -23,6 +23,7 @@ import * as E from '../errors.js';
 import { router } from '../init.js';
 import { requirePermission } from '../middleware/rbac.js';
 import { tenantProcedure } from '../middleware/tenant.js';
+import { writeAuditLog } from '../services/audit-writer.js';
 import { CacheKeys, invalidateByPrefix } from '../services/cache.js';
 import { handleEquipmentTaskStart } from '../services/equipment-workflow.js';
 import { dispatch } from '../services/notification-service.js';
@@ -33,7 +34,6 @@ import {
   addHours,
   calculateProgress,
   evaluateCondition,
-  plain,
   resolveAssignee,
   validateTransition,
 } from './workflow-shared.js';
@@ -593,7 +593,7 @@ export const workflowExecutionRouter = router({
 
       void invalidateByPrefix(CacheKeys.dashboardPrefix(ctx.organizationId));
 
-      return plain({ ...run.run, calendarTaskCount: run.calendarTaskCount });
+      return { ...run.run, calendarTaskCount: run.calendarTaskCount };
     }),
 
   /**
@@ -658,7 +658,7 @@ export const workflowExecutionRouter = router({
 
       void invalidateByPrefix(CacheKeys.dashboardPrefix(ctx.organizationId));
 
-      return plain(run);
+      return run;
     }),
 
   /**
@@ -712,7 +712,7 @@ export const workflowExecutionRouter = router({
           (task.status === 'TODO' || task.status === 'IN_PROGRESS'),
       }));
 
-      return plain({ ...run, tasks: tasksWithOverdue });
+      return { ...run, tasks: tasksWithOverdue };
     }),
 
   /**
@@ -796,7 +796,7 @@ export const workflowExecutionRouter = router({
         return { ...item, progress };
       });
 
-      return plain({ items: itemsWithProgress, total, page, pageSize });
+      return { items: itemsWithProgress, total, page, pageSize };
     }),
 
   /**
@@ -849,7 +849,7 @@ export const workflowExecutionRouter = router({
           (item.status === 'TODO' || item.status === 'IN_PROGRESS'),
       }));
 
-      return plain({ items: itemsWithOverdue, total, page, pageSize });
+      return { items: itemsWithOverdue, total, page, pageSize };
     }),
 
   // =========================================================================
@@ -935,7 +935,7 @@ export const workflowExecutionRouter = router({
 
       void invalidateByPrefix(CacheKeys.dashboardPrefix(ctx.organizationId));
 
-      return plain(result);
+      return result;
     }),
 
   /**
@@ -1011,7 +1011,7 @@ export const workflowExecutionRouter = router({
 
       void invalidateByPrefix(CacheKeys.dashboardPrefix(ctx.organizationId));
 
-      return plain(result);
+      return result;
     }),
 
   /**
@@ -1070,7 +1070,7 @@ export const workflowExecutionRouter = router({
         /* fire-and-forget */
       });
 
-      return plain(updated);
+      return updated;
     }),
 
   // =========================================================================
@@ -1112,7 +1112,7 @@ export const workflowExecutionRouter = router({
         },
       });
 
-      return plain(comment);
+      return comment;
     }),
 
   /**
@@ -1144,7 +1144,7 @@ export const workflowExecutionRouter = router({
         orderBy: { createdAt: 'asc' },
       });
 
-      return plain(comments);
+      return comments;
     }),
 
   // =========================================================================
@@ -1168,5 +1168,105 @@ export const workflowExecutionRouter = router({
       });
 
       return { count };
+    }),
+
+  /**
+   * Phase 74 D-09 / D-10 / D-11 — OWNER-only override for the IP_VERIFICATION
+   * blocking task. Atomically writes:
+   *   1. WorkflowRun.overrideMetadata JSONB
+   *   2. AuditLog row (action='workflow.offboarding.override_blocking_task')
+   *   3. WorkflowTaskRun status SKIPPED for all open IP_VERIFICATION tasks
+   * All in a single $transaction so a failure in any step rolls back the
+   * others (T-74-08-partial-write mitigation).
+   *
+   * Server-side Zod re-validates reason length + acknowledged literal — the
+   * client-side dialog is convenience UX only; this is the gate (Pitfall 5).
+   * Permission gate is enforced via requirePermission middleware so 9
+   * non-owner roles return FORBIDDEN before any DB work.
+   */
+  overrideBlockingTask: tenantProcedure
+    .use(requirePermission({ workflow: ['override_blocking_task'] }))
+    .input(
+      z.object({
+        workflowRunId: z.string().min(1),
+        reason: z.string().min(20).max(2000),
+        acknowledged: z.literal(true),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      return ctx.db.$transaction(async tx => {
+        const run = await tx.workflowRun.findFirst({
+          where: { id: input.workflowRunId, organizationId: ctx.organizationId },
+          select: { id: true, overrideMetadata: true },
+        });
+        if (!run) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'Workflow run not found' });
+        }
+
+        // Find any open IP_VERIFICATION tasks on the run.
+        const openIpTasks = await tx.workflowTaskRun.findMany({
+          where: {
+            workflowRunId: input.workflowRunId,
+            organizationId: ctx.organizationId,
+            taskType: 'IP_VERIFICATION',
+            status: { in: ['TODO', 'IN_PROGRESS', 'BLOCKED'] },
+          },
+          select: { id: true },
+        });
+        if (openIpTasks.length === 0) {
+          throw new TRPCError({
+            code: 'PRECONDITION_FAILED',
+            message: 'No open IP_VERIFICATION task to override',
+          });
+        }
+
+        // Skip all open IP_VERIFICATION tasks
+        await tx.workflowTaskRun.updateMany({
+          where: { id: { in: openIpTasks.map(t => t.id) } },
+          data: {
+            status: 'SKIPPED',
+            resultJson: {
+              skipReason: 'OVERRIDDEN_BY_OWNER',
+              overriddenAt: new Date().toISOString(),
+              overriddenByUserId: ctx.user.id,
+              reason: input.reason,
+            },
+          },
+        });
+
+        // Write override metadata onto the run
+        const overrideMetadata = {
+          reason: input.reason,
+          acknowledged: input.acknowledged,
+          overriddenByUserId: ctx.user.id,
+          overriddenAt: new Date().toISOString(),
+          blockedTaskKind: 'IP_VERIFICATION' as const,
+        };
+        await tx.workflowRun.update({
+          where: { id: input.workflowRunId },
+          data: {
+            overrideMetadata,
+            overriddenByUserId: ctx.user.id,
+            overriddenAt: new Date(),
+          },
+        });
+
+        // Audit log row in the same transaction
+        await writeAuditLog({
+          organizationId: ctx.organizationId,
+          actorType: 'USER',
+          actorId: ctx.user.id,
+          action: 'workflow.offboarding.override_blocking_task',
+          resourceType: 'WORKFLOW_RUN',
+          resourceId: input.workflowRunId,
+          newValues: {
+            overrideMetadata,
+            skippedTaskIds: openIpTasks.map(t => t.id),
+          },
+          tx,
+        });
+
+        return { workflowRunId: input.workflowRunId, overrideMetadata };
+      });
     }),
 });
