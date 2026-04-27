@@ -1,64 +1,71 @@
 import { buildFlagBag } from '@contractor-ops/feature-flags';
 import { router } from './init.js';
-import { adminBoeRateRouter } from './routers/admin-boe-rate.js';
-import { apiKeyRouter } from './routers/api-key.js';
-import { approvalRouter } from './routers/approval.js';
-import { auditRouter } from './routers/audit.js';
-import { authPermissionsRouter } from './routers/auth-permissions.js';
-import { bacsRouter } from './routers/bacs.js';
-import { billingRouter } from './routers/billing.js';
-import { calendarRouter } from './routers/calendar.js';
-import { classificationRouter } from './routers/classification.js';
-import { classificationDashboardRouter } from './routers/classification-dashboard.js';
-import { classificationDocumentRouter } from './routers/classification-document.js';
-import { consentRouter } from './routers/consent.js';
-import { contractRouter } from './routers/contract.js';
-import { contractorRouter } from './routers/contractor.js';
-import { dashboardRouter } from './routers/dashboard.js';
-import { docsRouter } from './routers/docs.js';
-import { documentRouter } from './routers/document.js';
-import { economicDependencyAlertRouter } from './routers/economic-dependency-alert.js';
-import { einvoiceRouter } from './routers/einvoice.js';
-import { equipmentRouter } from './routers/equipment.js';
-import { esignRouter } from './routers/esign.js';
-import { exchangeRateRouter } from './routers/exchange-rate.js';
-import { featureFlagsRouter } from './routers/feature-flags.js';
-import { gdprRouter } from './routers/gdpr.js';
-import { googleWorkspaceRouter } from './routers/google-workspace.js';
-import { importRouter } from './routers/import.js';
-import { integrationRouter } from './routers/integration.js';
-import { invoiceRouter } from './routers/invoice.js';
-import { invoiceIntakeRouter } from './routers/invoice-intake.js';
-import { ir35ChainRouter } from './routers/ir35-chain.js';
-import { ir35AttestationRouter } from './routers/ir35-other-client-attestation.js';
-import { jiraRouter } from './routers/jira.js';
-import { ksefRouter } from './routers/ksef.js';
-import { latePaymentInterestRouter } from './routers/late-payment-interest.js';
-import { legalRouter } from './routers/legal.js';
-import { leitwegIdRouter } from './routers/leitweg-id.js';
-import { linearRouter } from './routers/linear.js';
-import { notificationRouter } from './routers/notification.js';
-import { ocrRouter } from './routers/ocr.js';
-import { onboardingImportRouter } from './routers/onboarding-import.js';
-import { organizationRouter } from './routers/organization.js';
-import { paymentRouter } from './routers/payment.js';
-import { peppolRouter } from './routers/peppol.js';
-import { portalRouter } from './routers/portal.js';
-import { portalTimeRouter } from './routers/portal-time.js';
-import { reassessmentTriggerRouter } from './routers/reassessment-trigger.js';
-import { reminderRouter } from './routers/reminder.js';
-import { reportRouter } from './routers/report.js';
-import { searchRouter } from './routers/search.js';
-import { settingsRouter } from './routers/settings.js';
-import { skontoRouter } from './routers/skonto.js';
-import { statusfeststellungsverfahrenRouter } from './routers/statusfeststellungsverfahren.js';
-import { taxRouter } from './routers/tax.js';
-import { teamsRouter } from './routers/teams.js';
-import { timeRouter } from './routers/time.js';
-import { userRouter } from './routers/user.js';
-import { workflowRouter } from './routers/workflow.js';
-import { workflowRolesRouter } from './routers/workflow-roles.js';
-import { zatcaRouter } from './routers/zatca.js';
+import {
+  classificationDashboardRouter,
+  classificationDocumentRouter,
+  classificationRouter,
+  consentRouter,
+  economicDependencyAlertRouter,
+  gdprRouter,
+  ir35AttestationRouter,
+  ir35ChainRouter,
+  reassessmentTriggerRouter,
+  statusfeststellungsverfahrenRouter,
+  zatcaRouter,
+} from './routers/compliance/index.js';
+import {
+  adminBoeRateRouter,
+  apiKeyRouter,
+  approvalRouter,
+  auditRouter,
+  authPermissionsRouter,
+  calendarRouter,
+  contractorRouter,
+  contractRouter,
+  dashboardRouter,
+  docsRouter,
+  documentRouter,
+  einvoiceRouter,
+  esignRouter,
+  featureFlagsRouter,
+  importRouter,
+  integrationRouter,
+  legalRouter,
+  leitwegIdRouter,
+  notificationRouter,
+  ocrRouter,
+  onboardingImportRouter,
+  organizationRouter,
+  reminderRouter,
+  reportRouter,
+  searchRouter,
+  settingsRouter,
+  taxRouter,
+  timeRouter,
+  userRouter,
+} from './routers/core/index.js';
+import { equipmentRouter } from './routers/equipment/index.js';
+import {
+  bacsRouter,
+  billingRouter,
+  exchangeRateRouter,
+  invoiceIntakeRouter,
+  invoiceRouter,
+  latePaymentInterestRouter,
+  paymentRouter,
+  skontoRouter,
+} from './routers/finance/index.js';
+import {
+  googleWorkspaceRouter,
+  jiraRouter,
+  ksefRouter,
+  linearRouter,
+  peppolRouter,
+  teamsRouter,
+} from './routers/integrations/index.js';
+// portalRouter and portalTimeRouter are exposed via `portalAppRouter` (see ./portal-root.ts)
+// at the /api/trpc/portal endpoint — kept out of `appRouter` to reduce TS inference cost.
+import { workflowRolesRouter, workflowRouter } from './routers/workflow/index.js';
 
 /**
  * Root tRPC router merging all sub-routers.
@@ -130,13 +137,13 @@ export const appRouter = router({
   import: importRouter,
   search: searchRouter,
   skonto: skontoRouter, // skonto: German early payment discount CRUD + eligibility evaluation (Phase 63 D-21/D-24)
-  portal: portalRouter,
+  // portal: moved to portalAppRouter (/api/trpc/portal endpoint)
   esign: esignRouter,
   ocr: ocrRouter,
   ksef: ksefRouter,
   latePaymentInterest: latePaymentInterestRouter, // latePaymentInterest: LPCDA statutory interest — getForInvoice, getForOrg, waive, revokeWaiver, claim, downloadClaim (Phase 63 D-27)
   legal: legalRouter, // legal: GDPR privacy notice PDF downloads (IDOR-safe, session-derived jurisdiction)
-  portalTime: portalTimeRouter,
+  // portalTime: moved to portalAppRouter (/api/trpc/portal endpoint)
   time: timeRouter,
   jira: jiraRouter,
   linear: linearRouter, // linear: Linear integration -- connection, teams, status mapping, task config, linked issues

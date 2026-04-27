@@ -143,6 +143,12 @@ vi.mock('@sentry/nextjs', () => {
 });
 
 vi.mock('@contractor-ops/logger', () => ({
+  createIntegrationLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+  })),
   createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
 }));
@@ -158,6 +164,7 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
 import { fetchRequestHandler } from '@trpc/server/adapters/fetch';
 import superjson from 'superjson';
 import { createContext } from '../context.js';
+import { portalAppRouter } from '../portal-root.js';
 import { appRouter } from '../root.js';
 
 // ---------------------------------------------------------------------------
@@ -179,17 +186,25 @@ async function trpcRequest(
     method?: 'GET' | 'POST';
     headers?: Record<string, string>;
     input?: unknown;
+    /**
+     * Which tRPC endpoint to hit. 'main' = /api/trpc (appRouter), 'portal' = /api/trpc/portal (portalAppRouter).
+     * portal procedures (`portal.*`, `portalTime.*`) live on the portal endpoint after the split.
+     */
+    endpoint?: 'main' | 'portal';
   } = {},
 ): Promise<{ status: number; body: TRPCResult }> {
-  const { method = 'POST', headers = {}, input } = opts;
+  const { method = 'POST', headers = {}, input, endpoint = 'main' } = opts;
+
+  const endpointPath = endpoint === 'portal' ? '/api/trpc/portal' : '/api/trpc';
+  const router = endpoint === 'portal' ? portalAppRouter : appRouter;
 
   let url: string;
 
   if (method === 'GET' && input !== undefined) {
     const encoded = encodeURIComponent(superjson.stringify(input));
-    url = `http://localhost/api/trpc/${procedure}?input=${encoded}`;
+    url = `http://localhost${endpointPath}/${procedure}?input=${encoded}`;
   } else {
-    url = `http://localhost/api/trpc/${procedure}`;
+    url = `http://localhost${endpointPath}/${procedure}`;
   }
 
   const reqInit: RequestInit = {
@@ -207,9 +222,9 @@ async function trpcRequest(
   const req = new Request(url, reqInit);
 
   const res = await fetchRequestHandler({
-    endpoint: '/api/trpc',
+    endpoint: endpointPath,
     req,
-    router: appRouter,
+    router,
     createContext: () => createContext({ headers: req.headers }),
   });
 
@@ -469,8 +484,10 @@ describe('tRPC HTTP integration', () => {
       };
 
       // portalTime.getActiveContracts is a simple query → GET; uses portalProcedure → cookie auth
+      // After router split, portalTime lives on the portalAppRouter at /api/trpc/portal.
       const { status } = await trpcRequest('portalTime.getActiveContracts', {
         method: 'GET',
+        endpoint: 'portal',
         headers: {
           cookie: 'portal_session=valid-token-123',
         },
@@ -485,6 +502,7 @@ describe('tRPC HTTP integration', () => {
       // No cookie header → portalProcedure throws UNAUTHORIZED
       const { status, body } = await trpcRequest('portalTime.getActiveContracts', {
         method: 'GET',
+        endpoint: 'portal',
       });
 
       expect(status).toBe(401);
