@@ -1,1 +1,58 @@
-{}
+{
+  "offboarding-ip-foundation": {
+    "status": "PENDING",
+    "notes": "F4 Offboarding workflow foundation + KT templates + override permission. Werkvertrag wording deferred to Phase 75; this flag gates the workflow:override_blocking_task permission and PTO-aware fallback routing. Needs verification by legal entity before production deploy (override-dialog acknowledgement copy)."
+  },
+  "compliance-policy-engine.uk.right_to_work": {
+    "status": "PENDING",
+    "notes": "UK Right-to-Work share code (90-day generation expiry); legal review deferred per Standing Constraint"
+  },
+  "compliance-policy-engine.uk.utr": {
+    "status": "PENDING",
+    "notes": "HMRC UTR (10-digit); non-expiring"
+  },
+  "compliance-policy-engine.uk.business_registration": {
+    "status": "PENDING",
+    "notes": "Companies House registration (8-digit company number)"
+  },
+  "compliance-policy-engine.uk.sds": {
+    "status": "PENDING",
+    "notes": "Status Determination Statement (Chapter 10 ITEPA 2003); required for IR35-INSIDE outcomes"
+  },
+  "compliance-policy-engine.de.a1": {
+    "status": "PENDING",
+    "notes": "A1-Bescheinigung (Deutsche Rentenversicherung); 24-month max per EU Reg 883/2004 Art 12"
+  },
+  "compliance-policy-engine.de.aufenthaltstitel": {
+    "status": "PENDING",
+    "notes": "Aufenthaltstitel residence permit (AufenthG §4); conditional on non-EU nationality"
+  },
+  "compliance-policy-engine.de.eight_b_estg": {
+    "status": "PENDING",
+    "notes": "§48b EStG Freistellungsbescheinigung; conditional on construction-sector engagement"
+  },
+  "compliance-policy-engine.pl.zus_a1": {
+    "status": "PENDING",
+    "notes": "ZUS A1 (zaświadczenie A1 z ZUS); 12-month max per PL implementation"
+  },
+  "compliance-policy-engine.pl.udt": {
+    "status": "PENDING",
+    "notes": "UDT certification; conditional on regulated-equipment engagement"
+  },
+  "compliance-policy-engine.ksa.iqama": {
+    "status": "PENDING",
+    "notes": "Iqama residency permit; 1-year max per Saudi MOI rule; boundary at 00:00 Asia/Riyadh"
+  },
+  "compliance-policy-engine.ksa.work_permit_qiwa": {
+    "status": "PENDING",
+    "notes": "Work permit + Qiwa portal authorisation boolean (Phase 79 wires API)"
+  },
+  "compliance-policy-engine.uae.emirates_id": {
+    "status": "PENDING",
+    "notes": "ICA-issued Emirates ID"
+  },
+  "compliance-policy-engine.uae.free_zone_license": {
+    "status": "PENDING",
+    "notes": "Free-zone trade license (DMCC, ADGM, etc.); annually renewed"
+  }
+}
