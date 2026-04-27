@@ -2,6 +2,8 @@
  * Workflow execution procedures: run lifecycle (start, cancel, get, list),
  * task actions (complete, skip, reassign), comments, and overdue count.
  */
+
+import type { Prisma } from '@contractor-ops/db';
 import {
   addCommentSchema,
   calendarTaskConfigSchema,
@@ -279,7 +281,7 @@ async function instantiateTaskRuns(
         dueAt,
         dependsOnTaskRunId: dependsOnRunId,
         status,
-        resultJson: resultJson ?? undefined,
+        resultJson: (resultJson ?? undefined) as Prisma.InputJsonValue | undefined,
       },
     });
 

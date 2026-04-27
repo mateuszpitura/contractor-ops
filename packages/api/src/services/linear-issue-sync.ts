@@ -1,3 +1,4 @@
+import type { Prisma } from '@contractor-ops/db';
 import { decryptCredentials } from '@contractor-ops/integrations/services/credential-service';
 import { createLogger } from '@contractor-ops/logger';
 import type { LinearIssueMetadata } from '@contractor-ops/validators';
@@ -402,7 +403,7 @@ export async function syncTaskStatusToLinear(
           identifier: metadata.identifier,
           workflowStatus: newStatus,
           reason: 'No Linear state mapping found for this workflow status',
-        },
+        } as Prisma.InputJsonValue,
       },
     });
     return;

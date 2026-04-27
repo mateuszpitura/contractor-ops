@@ -1,3 +1,4 @@
+import type { Prisma } from '@contractor-ops/db';
 import { decryptCredentials } from '@contractor-ops/integrations/services/credential-service';
 import { createLogger } from '@contractor-ops/logger';
 import { TRPCError } from '@trpc/server';
@@ -177,7 +178,7 @@ async function upsertWorklogEntry(
   if (existingEntry) {
     await prisma.timeEntry.update({
       where: { id: existingEntry.id },
-      data: { minutes, description, metadataJson },
+      data: { minutes, description, metadataJson: metadataJson as Prisma.InputJsonValue },
     });
     return 'skipped';
   }
@@ -193,7 +194,7 @@ async function upsertWorklogEntry(
       description,
       source: 'JIRA',
       externalId: String(worklog.id),
-      metadataJson,
+      metadataJson: metadataJson as Prisma.InputJsonValue,
     },
   });
   return 'imported';

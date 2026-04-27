@@ -438,7 +438,7 @@ export async function deregisterJiraWebhooks(
     const { webhookIds: _removed, webhookRegisteredAt: _ts, ...rest } = config;
     await prisma.integrationConnection.update({
       where: { id: connectionId },
-      data: { configJson: rest },
+      data: { configJson: rest as Prisma.InputJsonValue },
     });
     return;
   }
@@ -460,7 +460,7 @@ export async function deregisterJiraWebhooks(
   const { webhookIds: _removed, webhookRegisteredAt: _ts, ...rest } = config;
   await prisma.integrationConnection.update({
     where: { id: connectionId },
-    data: { configJson: rest },
+    data: { configJson: rest as Prisma.InputJsonValue },
   });
 }
 

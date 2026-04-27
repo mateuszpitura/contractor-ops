@@ -1,3 +1,4 @@
+import type { Prisma } from '@contractor-ops/db';
 import { ConfluenceAdapter } from '@contractor-ops/integrations/adapters/confluence-adapter';
 import { NotionAdapter } from '@contractor-ops/integrations/adapters/notion-adapter';
 import { decryptCredentials } from '@contractor-ops/integrations/services/credential-service';
@@ -91,7 +92,7 @@ export async function attachDocLink(prisma: PrismaClient, input: AttachDocLinkIn
       externalType: input.externalType,
       externalId: input.externalId,
       externalUrl: input.externalUrl,
-      metadataJson: input.metadata,
+      metadataJson: input.metadata as Prisma.InputJsonValue,
     },
   });
 
@@ -359,7 +360,7 @@ export async function refreshDocMetadata(
     if (updatedMetadata) {
       return prisma.externalLink.update({
         where: { id: externalLinkId },
-        data: { metadataJson: updatedMetadata },
+        data: { metadataJson: updatedMetadata as Prisma.InputJsonValue },
       });
     }
   } catch (error) {

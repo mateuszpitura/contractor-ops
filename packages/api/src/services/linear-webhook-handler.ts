@@ -61,8 +61,8 @@ function logInboundSync(
       entityType: data.entityType as Prisma.IntegrationSyncLogCreateInput['entityType'],
       entityId: data.entityId,
       errorMessage: data.errorMessage,
-      responsePayloadJson: data.responsePayloadJson,
-      requestPayloadJson: data.requestPayloadJson,
+      responsePayloadJson: data.responsePayloadJson as Prisma.InputJsonValue | undefined,
+      requestPayloadJson: data.requestPayloadJson as Prisma.InputJsonValue | undefined,
     },
   });
 }
@@ -112,7 +112,7 @@ async function resolveStateName(
     updatedConfig.stateCache[teamId][stateId] = { name, type };
     await prisma.integrationConnection.update({
       where: { id: connection.id },
-      data: { configJson: updatedConfig },
+      data: { configJson: updatedConfig as Prisma.InputJsonValue },
     });
 
     return { stateName: name, stateType: type };

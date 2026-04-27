@@ -1,3 +1,4 @@
+import type { Prisma } from '@contractor-ops/db';
 import type { ClockifyRegion } from '@contractor-ops/integrations/adapters/clockify-adapter';
 import { CLOCKIFY_REGIONS } from '@contractor-ops/integrations/adapters/clockify-adapter';
 import { decryptCredentials } from '@contractor-ops/integrations/services/credential-service';
@@ -325,7 +326,11 @@ async function markSyncSuccess(
 
   await prisma.integrationSyncLog.update({
     where: { id: syncLogId },
-    data: { status: 'SUCCESS', completedAt: new Date(), responsePayloadJson: payload },
+    data: {
+      status: 'SUCCESS',
+      completedAt: new Date(),
+      responsePayloadJson: payload as Prisma.InputJsonValue,
+    },
   });
 }
 

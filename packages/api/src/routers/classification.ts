@@ -33,6 +33,7 @@ import {
 } from '@contractor-ops/classification';
 import type { EngagementContext, Jurisdiction } from '@contractor-ops/compliance-policy';
 import { POLICY_RULE_SET_VERSION } from '@contractor-ops/compliance-policy';
+import type { Prisma } from '@contractor-ops/db';
 import { SDS_APPROVAL_STATEMENT_EN } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
@@ -587,7 +588,7 @@ export const classificationRouter = router({
 
       return ctx.db.classificationAssessment.update({
         where: { id: row.id },
-        data: { answers: mergedAnswers },
+        data: { answers: mergedAnswers as Prisma.InputJsonValue },
       });
     }),
 
@@ -664,7 +665,7 @@ export const classificationRouter = router({
         data: {
           status: 'completed',
           outcome: validatedOutcome,
-          questionsSnapshot: snapshot,
+          questionsSnapshot: snapshot as unknown as Prisma.InputJsonValue,
           completedAt: now,
           // Literal `immutableAfter: new Date` — D-04 append-only marker.
           immutableAfter: new Date(now),
