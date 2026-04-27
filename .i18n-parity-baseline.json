@@ -1834,6 +1834,462 @@
     {
       "kind": "missing-translation-key",
       "locale": "ar",
+      "missingKey": "Offboarding.LocaleFallback.srDescription",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.LocaleFallback.suffix",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.OverrideBadge.label",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.OverrideBadge.tooltipActor",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.OverrideBadge.tooltipBlockedTask",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.OverrideBadge.tooltipReason",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.OverrideDialog.acknowledgement",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.OverrideDialog.cancel",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.OverrideDialog.cta",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.OverrideDialog.ctaLoading",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.OverrideDialog.description",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.OverrideDialog.discardConfirm.body",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.OverrideDialog.discardConfirm.cancel",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.OverrideDialog.discardConfirm.confirm",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.OverrideDialog.discardConfirm.title",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.OverrideDialog.reasonClientError",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.OverrideDialog.reasonLabel",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.OverrideDialog.reasonPlaceholder",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.OverrideDialog.reasonServerError",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.OverrideDialog.title",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.PtoBadge.label",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.PtoBadge.tooltip",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.Templates.Designer.activeProjects.description",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.Templates.Designer.activeProjects.title",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.Templates.Designer.assetLibraryAccess.description",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.Templates.Designer.assetLibraryAccess.title",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.Templates.Designer.brandGuidelinesUpdate.description",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.Templates.Designer.brandGuidelinesUpdate.title",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.Templates.Designer.designSystemHandover.description",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.Templates.Designer.designSystemHandover.title",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.Templates.Designer.displayName",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.Templates.Designer.figmaTransfer.description",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.Templates.Designer.figmaTransfer.title",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.Templates.Designer.researchArchive.description",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.Templates.Designer.researchArchive.title",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.Templates.GenericConsultant.activeProjectStatus.description",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.Templates.GenericConsultant.activeProjectStatus.title",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.Templates.GenericConsultant.clientStakeholderHandover.description",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.Templates.GenericConsultant.clientStakeholderHandover.title",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.Templates.GenericConsultant.contactDirectory.description",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.Templates.GenericConsultant.contactDirectory.title",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.Templates.GenericConsultant.deliverableArchive.description",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.Templates.GenericConsultant.deliverableArchive.title",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.Templates.GenericConsultant.displayName",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.Templates.GenericConsultant.handoverDocs.description",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.Templates.GenericConsultant.handoverDocs.title",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.Templates.GenericConsultant.knowledgeRepoIndex.description",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.Templates.GenericConsultant.knowledgeRepoIndex.title",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.Templates.ProductManager.activeInitiatives.description",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.Templates.ProductManager.activeInitiatives.title",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.Templates.ProductManager.displayName",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.Templates.ProductManager.metricsContext.description",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.Templates.ProductManager.metricsContext.title",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.Templates.ProductManager.researchInsights.description",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.Templates.ProductManager.researchInsights.title",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.Templates.ProductManager.roadmapTransfer.description",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.Templates.ProductManager.roadmapTransfer.title",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.Templates.ProductManager.stakeholderIntros.description",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.Templates.ProductManager.stakeholderIntros.title",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.Templates.ProductManager.vendorRelationships.description",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.Templates.ProductManager.vendorRelationships.title",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.Templates.SoftwareEngineer.architectureNotes.description",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.Templates.SoftwareEngineer.architectureNotes.title",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.Templates.SoftwareEngineer.codeWalkthrough.description",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.Templates.SoftwareEngineer.codeWalkthrough.title",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.Templates.SoftwareEngineer.deploymentRunbook.description",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.Templates.SoftwareEngineer.deploymentRunbook.title",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.Templates.SoftwareEngineer.displayName",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.Templates.SoftwareEngineer.handoverDocs.description",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.Templates.SoftwareEngineer.handoverDocs.title",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.Templates.SoftwareEngineer.knownIssues.description",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.Templates.SoftwareEngineer.knownIssues.title",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.Templates.SoftwareEngineer.onCallRotation.description",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.Templates.SoftwareEngineer.onCallRotation.title",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.Templates.SoftwareEngineer.openPRs.description",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Offboarding.Templates.SoftwareEngineer.openPRs.title",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
       "missingKey": "OtherClientAttestation.saving",
       "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
     },
@@ -2387,6 +2843,126 @@
       "kind": "missing-translation-key",
       "locale": "ar",
       "missingKey": "Payments.ukBank.validationWarn",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Settings.PtoKeywords.addCta",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Settings.PtoKeywords.empty",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Settings.PtoKeywords.heading",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Settings.PtoKeywords.subtitle",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Settings.WorkflowRoles.addCta",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Settings.WorkflowRoles.copyFromEnglish",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Settings.WorkflowRoles.dueDayLabel",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Settings.WorkflowRoles.emptyBody",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Settings.WorkflowRoles.emptyHeading",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Settings.WorkflowRoles.heading",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Settings.WorkflowRoles.saveCta",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Settings.WorkflowRoles.savingCta",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Settings.WorkflowRoles.subtitle",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Settings.WorkflowRoles.taskDescriptionLabel",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Settings.WorkflowRoles.taskTitleLabel",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Workflow.Start.autoSelectHint",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Workflow.Start.cta",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Workflow.Start.heading",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Workflow.Start.manualOverrideHint",
+      "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
+    },
+    {
+      "kind": "missing-translation-key",
+      "locale": "ar",
+      "missingKey": "Workflow.Start.templateLabel",
       "remediation": "docs/lint-remediation/i18n-parity.md#missing-translation-key"
     }
   ]

@@ -784,6 +784,25 @@
       "inviteFailed": "Nie udało się wysłać zaproszenia",
       "deactivateFailed": "Nie udało się dezaktywować członka",
       "reminderDefaultsFailed": "Nie udało się zaktualizować domyślnych przypomnień"
+    },
+    "WorkflowRoles": {
+      "heading": "Role w workflow",
+      "subtitle": "Zarządzaj szablonami zadań przekazania wiedzy dla każdej roli kontraktora.",
+      "addCta": "Dodaj szablon roli",
+      "emptyHeading": "Brak własnych szablonów",
+      "emptyBody": "Cztery wbudowane szablony (Inżynier oprogramowania, Projektant, Product Manager, Konsultant) są zawsze dostępne. Dodaj własny szablon, aby rozszerzyć taksonomię ról zespołu.",
+      "copyFromEnglish": "Skopiuj z angielskiego",
+      "taskTitleLabel": "Tytuł zadania",
+      "taskDescriptionLabel": "Opis",
+      "dueDayLabel": "Termin za N dni od startu",
+      "saveCta": "Zapisz szablon",
+      "savingCta": "Zapisywanie…"
+    },
+    "PtoKeywords": {
+      "heading": "Słowa kluczowe PTO",
+      "subtitle": "Dodaj słowa kluczowe specyficzne dla języka. Wydarzenia w kalendarzu, których tytuły pasują, traktowane są jako urlop.",
+      "empty": "Brak dodatkowych słów. Wbudowane słowa kluczowe nadal są aktywne.",
+      "addCta": "Dodaj słowo"
     }
   },
   "Users": {
@@ -5207,6 +5226,163 @@
         "BASICWL": "BASICWL",
         "MINIMUM": "MINIMUM"
       }
+    }
+  },
+  "Offboarding": {
+    "Templates": {
+      "SoftwareEngineer": {
+        "displayName": "Inżynier oprogramowania",
+        "handoverDocs": {
+          "title": "Przekaż dokumentację techniczną",
+          "description": "Przekaż diagramy architektury, runbooki oraz dokumentację techniczną wytworzoną przez kontraktora."
+        },
+        "codeWalkthrough": {
+          "title": "Oprowadź następcę po kodzie",
+          "description": "Przeprowadź następcę po usługach, repozytoriach i workflowach CI, którymi opiekował się kontraktor."
+        },
+        "openPRs": {
+          "title": "Zamknij lub przekaż otwarte pull requesty",
+          "description": "Zamknij, zmerguj lub przekaż własność każdego otwartego PR-a autorstwa kontraktora."
+        },
+        "deploymentRunbook": {
+          "title": "Zaktualizuj runbook wdrożeniowy",
+          "description": "Uzupełnij runbook o wiedzę plemienną kontraktora — niuanse, ścieżki eskalacji, kontrole po wdrożeniu."
+        },
+        "onCallRotation": {
+          "title": "Usuń z rotacji on-call",
+          "description": "Zastąp kontraktora w grafikach PagerDuty / Opsgenie i powiadom rotację o zmianie."
+        },
+        "architectureNotes": {
+          "title": "Zapisz decyzje architektoniczne (ADR)",
+          "description": "Udokumentuj wszystkie decyzje architektoniczne, które kontraktor prowadził w trakcie projektu."
+        },
+        "knownIssues": {
+          "title": "Opisz znane błędy i poprawki w toku",
+          "description": "Wymień znane błędy produkcyjne, które kontraktor śledził, oraz status poprawek będących w toku."
+        }
+      },
+      "Designer": {
+        "displayName": "Projektant",
+        "designSystemHandover": {
+          "title": "Przekaż własność systemu projektowego",
+          "description": "Przekaż własność komponentów, tokenów oraz wzorców contributingu w systemie projektowym następcy."
+        },
+        "figmaTransfer": {
+          "title": "Przenieś projekty Figma",
+          "description": "Przenieś pliki Figma kontraktora do biblioteki zespołu i ponownie przypisz miejsca edytora."
+        },
+        "assetLibraryAccess": {
+          "title": "Zaktualizuj dostępy do bibliotek zasobów",
+          "description": "Usuń kontraktora z udostępnionych bibliotek zasobów i przekaż obowiązki kuratorskie."
+        },
+        "activeProjects": {
+          "title": "Przekaż aktywne projekty projektowe",
+          "description": "Oprowadź następcę po każdym otwartym projekcie projektowym — zakres, ograniczenia, otwarte decyzje."
+        },
+        "brandGuidelinesUpdate": {
+          "title": "Zaktualizuj autorstwo wytycznych marki",
+          "description": "Zastąp kontraktora jako osobę kontaktową dla wytycznych marki i ponownie uruchom workflow publikacji."
+        },
+        "researchArchive": {
+          "title": "Zarchiwizuj artefakty badań UX",
+          "description": "Przenieś notatki, transkrypcje i dokumenty syntezy badań kontraktora do archiwum zespołu."
+        }
+      },
+      "ProductManager": {
+        "displayName": "Product Manager",
+        "roadmapTransfer": {
+          "title": "Przekaż własność roadmapy",
+          "description": "Przekaż dokument roadmapy i tablice planistyczne następcy lub osobie tymczasowo odpowiedzialnej."
+        },
+        "stakeholderIntros": {
+          "title": "Przedstaw interesariuszy następcy",
+          "description": "Zaplanuj rozmowy zapoznawcze pomiędzy kluczowymi interesariuszami a następcą."
+        },
+        "activeInitiatives": {
+          "title": "Przekaż aktywne inicjatywy",
+          "description": "Wprowadź następcę w każdą prowadzoną inicjatywę — zakres, blokery, najbliższe kamienie milowe."
+        },
+        "metricsContext": {
+          "title": "Udokumentuj definicje metryk i ich historię",
+          "description": "Wyjaśnij, dlaczego śledzona jest dana metryka oraz jakie zastrzeżenia są ważne przy interpretacji."
+        },
+        "researchInsights": {
+          "title": "Zarchiwizuj insighty badawcze",
+          "description": "Zapisz wnioski z badań użytkowników, transkrypcje wywiadów i dokumenty syntezy w bibliotece zespołu."
+        },
+        "vendorRelationships": {
+          "title": "Przekaż relacje z dostawcami",
+          "description": "Powiadom zewnętrznych dostawców o zmianie kontaktu i przekaż własność każdej umowy."
+        }
+      },
+      "GenericConsultant": {
+        "displayName": "Konsultant",
+        "handoverDocs": {
+          "title": "Przekaż dokumentację zaangażowania",
+          "description": "Skompiluj jeden pakiet handoverowy obejmujący zakres, dostarczanki, decyzje i otwarte ryzyka."
+        },
+        "activeProjectStatus": {
+          "title": "Udokumentuj status aktywnych projektów",
+          "description": "Zrób zrzut stanu każdego aktywnego projektu — co zrobione, co w toku, co zagrożone."
+        },
+        "clientStakeholderHandover": {
+          "title": "Przekaż relacje klienckie i z interesariuszami",
+          "description": "Wprowadź następcę w relacje z klientami i kluczowymi interesariuszami, włącznie z preferencjami komunikacji i kontekstem politycznym."
+        },
+        "deliverableArchive": {
+          "title": "Zarchiwizuj dostarczanki i materiały źródłowe",
+          "description": "Wgraj finalne dostarczanki i pliki źródłowe (slajdy, arkusze, drafty) do repozytorium zespołu."
+        },
+        "knowledgeRepoIndex": {
+          "title": "Zindeksuj wpisy do bazy wiedzy",
+          "description": "Skataloguj wkład kontraktora do bazy wiedzy zespołu, aby ułatwić jego późniejsze odnalezienie."
+        },
+        "contactDirectory": {
+          "title": "Przekaż książkę kontaktów",
+          "description": "Udostępnij następcy starannie utrzymywaną listę kontaktów (klienci, dostawcy, doradcy)."
+        }
+      }
+    },
+    "OverrideDialog": {
+      "title": "Pomiń weryfikację własności intelektualnej",
+      "description": "Właściciele mogą zakończyć offboarding bez weryfikacji IP. Pominięcie jest trwałe i zostaje zapisane w dzienniku audytu.",
+      "reasonLabel": "Powód pominięcia",
+      "reasonPlaceholder": "Opisz, dlaczego weryfikacja IP zostaje pominięta (minimum 20 znaków).",
+      "reasonClientError": "Podaj co najmniej 20 znaków uzasadnienia pominięcia.",
+      "reasonServerError": "Powód musi mieć co najmniej 20 znaków i zawierać sensowne wyjaśnienie.",
+      "acknowledgement": "Potwierdzam, że weryfikacja IP zostaje świadomie pominięta i biorę odpowiedzialność za ewentualne luki w zgodności.",
+      "cta": "Pomiń",
+      "ctaLoading": "Zapisuję pominięcie…",
+      "cancel": "Anuluj",
+      "discardConfirm": {
+        "title": "Odrzucić wpisany powód?",
+        "body": "Wpisałeś powód pominięcia. Zamknięcie teraz spowoduje jego utratę.",
+        "confirm": "Odrzuć",
+        "cancel": "Wróć do edycji"
+      }
+    },
+    "OverrideBadge": {
+      "label": "Pominięto weryfikację IP",
+      "tooltipReason": "Powód: {reason}",
+      "tooltipActor": "Pominięcie wykonał {name} dnia {date}",
+      "tooltipBlockedTask": "Zablokowane zadanie: IP_VERIFICATION"
+    },
+    "PtoBadge": {
+      "label": "Brak zastępcy — manager na urlopie",
+      "tooltip": "Skonfiguruj zastępcę w Ustawieniach > Zespoły, aby uniknąć domyślnego routingu do właścicieli organizacji."
+    },
+    "LocaleFallback": {
+      "suffix": " (angielski)",
+      "srDescription": "To pole szablonu nie zostało przetłumaczone na język {targetLocale}; wyświetlana jest wartość angielska jako fallback."
+    }
+  },
+  "Workflow": {
+    "Start": {
+      "heading": "Rozpocznij offboarding dla {contractor}",
+      "templateLabel": "Szablon przekazania wiedzy",
+      "autoSelectHint": "Wybrano automatycznie na podstawie roli kontraktora: {roleName}",
+      "manualOverrideHint": "Wybierz inny szablon…",
+      "cta": "Rozpocznij offboarding"
     }
   }
 }

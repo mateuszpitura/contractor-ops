@@ -926,6 +926,25 @@
       "inviteFailed": "Aktion fehlgeschlagen: send invite.",
       "deactivateFailed": "Aktion fehlgeschlagen: deactivate member.",
       "reminderDefaultsFailed": "Aktion fehlgeschlagen: update reminder defaults."
+    },
+    "WorkflowRoles": {
+      "heading": "Workflow-Rollen",
+      "subtitle": "Verwalte Wissenstransfer-Vorlagen pro Auftragnehmerrolle.",
+      "addCta": "Rollenvorlage hinzufügen",
+      "emptyHeading": "Keine eigenen Rollenvorlagen",
+      "emptyBody": "Die vier eingebauten Vorlagen (Software-Engineer, Designer, Product Manager, Berater) sind immer verfügbar. Füge eine eigene Vorlage hinzu, um die Rollentaxonomie deines Teams zu erweitern.",
+      "copyFromEnglish": "Aus Englisch kopieren",
+      "taskTitleLabel": "Aufgabentitel",
+      "taskDescriptionLabel": "Beschreibung",
+      "dueDayLabel": "Fällig in N Tagen ab Start",
+      "saveCta": "Vorlage speichern",
+      "savingCta": "Wird gespeichert…"
+    },
+    "PtoKeywords": {
+      "heading": "Kalender-Abwesenheits-Schlüsselwörter",
+      "subtitle": "Füge sprachspezifische Schlüsselwörter hinzu. Kalendereinträge mit passenden Titeln gelten als Abwesenheit.",
+      "empty": "Keine zusätzlichen Schlüsselwörter. Eingebaute Schlüsselwörter sind weiterhin aktiv.",
+      "addCta": "Schlüsselwort hinzufügen"
     }
   },
   "Users": {
@@ -5595,6 +5614,163 @@
       "signoffRegistry": "Signoff-Registry",
       "pendingGate": "Flag in Unleash AKTIV, aber app-seitig blockiert — {count} Disclaimer offen (PENDING).",
       "pendingGateResolution": "Auflösen durch PR-Update von `packages/validators/src/legal/signoff-registry.json`"
+    }
+  },
+  "Offboarding": {
+    "Templates": {
+      "SoftwareEngineer": {
+        "displayName": "Software-Engineer",
+        "handoverDocs": {
+          "title": "Technische Dokumentation übergeben",
+          "description": "Übergebe Architekturdiagramme, Runbooks und alle internen technischen Dokumente, die im Verantwortungsbereich des Auftragnehmers lagen."
+        },
+        "codeWalkthrough": {
+          "title": "Nachfolger durch die Codebasis führen",
+          "description": "Führe den Nachfolger gemeinsam durch die Services, Repos und CI-Workflows, die der Auftragnehmer betreut hat."
+        },
+        "openPRs": {
+          "title": "Offene Pull Requests schließen oder übergeben",
+          "description": "Schließe, merge oder übergib jeden offenen PR, der vom Auftragnehmer erstellt wurde."
+        },
+        "deploymentRunbook": {
+          "title": "Deployment-Runbook aktualisieren",
+          "description": "Ergänze das Deployment-Runbook um das implizite Wissen des Auftragnehmers — Eigenheiten, Eskalationspfade, Post-Deploy-Checks."
+        },
+        "onCallRotation": {
+          "title": "Aus On-Call-Rotation entfernen",
+          "description": "Ersetze den Auftragnehmer in PagerDuty- / Opsgenie-Plänen und informiere die Rotation."
+        },
+        "architectureNotes": {
+          "title": "Architecture-Decision-Records erfassen",
+          "description": "Dokumentiere alle laufenden Architekturentscheidungen, die der Auftragnehmer vorangetrieben hat."
+        },
+        "knownIssues": {
+          "title": "Bekannte Probleme und WIP-Fixes dokumentieren",
+          "description": "Liste bekannte Produktionsprobleme auf, die der Auftragnehmer verfolgt hat, samt Status laufender Korrekturen."
+        }
+      },
+      "Designer": {
+        "displayName": "Designer",
+        "designSystemHandover": {
+          "title": "Eigentum am Design-System übergeben",
+          "description": "Übertrage Eigentum an Design-System-Komponenten, Tokens und Beitragsmustern an den Nachfolger."
+        },
+        "figmaTransfer": {
+          "title": "Figma-Projekte übertragen",
+          "description": "Verschiebe die Figma-Dateien des Auftragnehmers in die Team-Bibliothek und weise Editor-Plätze neu zu."
+        },
+        "assetLibraryAccess": {
+          "title": "Zugriff auf Asset-Bibliothek aktualisieren",
+          "description": "Entferne den Auftragnehmer aus geteilten Asset-Bibliotheken und übertrage Kuratierungsaufgaben."
+        },
+        "activeProjects": {
+          "title": "Laufende Designprojekte übergeben",
+          "description": "Führe den Nachfolger durch jedes laufende Designprojekt — Scope, Einschränkungen, offene Entscheidungen."
+        },
+        "brandGuidelinesUpdate": {
+          "title": "Autorenschaft der Markenrichtlinien aktualisieren",
+          "description": "Ersetze den Auftragnehmer als Ansprechperson für Markenrichtlinien und stoße den Veröffentlichungsworkflow erneut an."
+        },
+        "researchArchive": {
+          "title": "UX-Research-Artefakte archivieren",
+          "description": "Verschiebe Research-Notizen, Transkripte und Synthese-Dokumente des Auftragnehmers in das Team-Archiv."
+        }
+      },
+      "ProductManager": {
+        "displayName": "Product Manager",
+        "roadmapTransfer": {
+          "title": "Eigentum an der Roadmap übertragen",
+          "description": "Übergib das Roadmap-Dokument und alle Planungsboards an den Nachfolger oder Übergangsverantwortlichen."
+        },
+        "stakeholderIntros": {
+          "title": "Stakeholder dem Nachfolger vorstellen",
+          "description": "Plane Vorstellungstermine zwischen wichtigen Stakeholdern und dem Nachfolger oder Übergangsverantwortlichen."
+        },
+        "activeInitiatives": {
+          "title": "Laufende Initiativen übergeben",
+          "description": "Briefe den Nachfolger zu jeder laufenden Initiative — Scope, Blocker, nächste Meilensteine."
+        },
+        "metricsContext": {
+          "title": "Definitionen und Historie der Kennzahlen dokumentieren",
+          "description": "Erkläre den Hintergrund jeder erfassten Kennzahl sowie die Einschränkungen, die der Nachfolger zur Interpretation kennen muss."
+        },
+        "researchInsights": {
+          "title": "Research-Insights archivieren",
+          "description": "Lege User-Research-Insights, Interview-Transkripte und Synthese-Dokumente in der Team-Bibliothek ab."
+        },
+        "vendorRelationships": {
+          "title": "Lieferantenbeziehungen neu zuordnen",
+          "description": "Informiere externe Anbieter über den Wechsel der Ansprechperson und weise jeden Vertrag teamintern neu zu."
+        }
+      },
+      "GenericConsultant": {
+        "displayName": "Berater",
+        "handoverDocs": {
+          "title": "Engagement-Dokumentation übergeben",
+          "description": "Stelle ein einziges Übergabepaket mit Scope, Lieferergebnissen, Entscheidungen und offenen Risiken zusammen."
+        },
+        "activeProjectStatus": {
+          "title": "Status aktiver Projekte dokumentieren",
+          "description": "Erstelle einen Status-Snapshot jedes aktiven Projekts — was erledigt ist, läuft, oder gefährdet ist."
+        },
+        "clientStakeholderHandover": {
+          "title": "Kunden- und Stakeholder-Beziehungen übergeben",
+          "description": "Briefe den Nachfolger zu jeder Kundenbeziehung und jedem wichtigen Stakeholder — inklusive Kommunikationspräferenzen und politischem Kontext."
+        },
+        "deliverableArchive": {
+          "title": "Deliverables und Quellartefakte archivieren",
+          "description": "Lade finale Deliverables und Quelldateien (Slides, Tabellen, Drafts) ins Team-Repository hoch."
+        },
+        "knowledgeRepoIndex": {
+          "title": "Beiträge zur Wissensdatenbank indexieren",
+          "description": "Katalogisiere die Beiträge des Auftragnehmers zur Team-Wissensdatenbank, um ihr Auffinden zu erleichtern."
+        },
+        "contactDirectory": {
+          "title": "Kontaktverzeichnis übergeben",
+          "description": "Teile die kuratierte Kontaktliste des Auftragnehmers (Kunden, Anbieter, Berater) mit dem Nachfolger."
+        }
+      }
+    },
+    "OverrideDialog": {
+      "title": "IP-Verifizierungssperre umgehen",
+      "description": "Owner können dieses Offboarding ohne IP-Verifizierung abschließen. Die Umgehung ist endgültig und wird im Audit-Log erfasst.",
+      "reasonLabel": "Grund für die Umgehung",
+      "reasonPlaceholder": "Beschreibe, warum die IP-Verifizierung übersprungen wird (mindestens 20 Zeichen).",
+      "reasonClientError": "Gib mindestens 20 Zeichen mit der Begründung der Umgehung an.",
+      "reasonServerError": "Der Grund muss mindestens 20 Zeichen lang sein und eine substanzielle Begründung enthalten.",
+      "acknowledgement": "Ich bestätige, dass die IP-Verifizierung bewusst übersprungen wird und übernehme die Verantwortung für eventuelle Compliance-Lücken.",
+      "cta": "Umgehen",
+      "ctaLoading": "Umgehung wird gespeichert…",
+      "cancel": "Abbrechen",
+      "discardConfirm": {
+        "title": "Eingabegrund verwerfen?",
+        "body": "Du hast einen Grund eingegeben. Schließen jetzt verwirft die Eingabe.",
+        "confirm": "Verwerfen",
+        "cancel": "Weiter bearbeiten"
+      }
+    },
+    "OverrideBadge": {
+      "label": "IP-Verifizierung umgangen",
+      "tooltipReason": "Grund: {reason}",
+      "tooltipActor": "Umgangen von {name} am {date}",
+      "tooltipBlockedTask": "Blockierte Aufgabe: IP_VERIFICATION"
+    },
+    "PtoBadge": {
+      "label": "Kein Vertreter — Manager im Urlaub",
+      "tooltip": "Konfiguriere einen Vertreter unter Einstellungen > Teams, um die Standard-Weiterleitung an Organisations-Owner zu vermeiden."
+    },
+    "LocaleFallback": {
+      "suffix": " (Englisch)",
+      "srDescription": "Dieses Vorlagenfeld wurde nicht ins {targetLocale} übersetzt; der englische Wert wird als Fallback angezeigt."
+    }
+  },
+  "Workflow": {
+    "Start": {
+      "heading": "Offboarding für {contractor} starten",
+      "templateLabel": "Wissenstransfer-Vorlage",
+      "autoSelectHint": "Automatisch ausgewählt nach Auftragnehmerrolle: {roleName}",
+      "manualOverrideHint": "Andere Vorlage wählen…",
+      "cta": "Offboarding starten"
     }
   }
 }

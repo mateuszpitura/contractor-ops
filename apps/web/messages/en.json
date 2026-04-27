@@ -784,6 +784,25 @@
       "inviteFailed": "Failed to send invite",
       "deactivateFailed": "Failed to deactivate member",
       "reminderDefaultsFailed": "Failed to update reminder defaults"
+    },
+    "WorkflowRoles": {
+      "heading": "Workflow roles",
+      "subtitle": "Manage knowledge-transfer task templates per contractor role.",
+      "addCta": "Add role template",
+      "emptyHeading": "No custom role templates",
+      "emptyBody": "The four built-in templates (Software Engineer, Designer, Product Manager, Generic Consultant) are always available. Add a custom template to extend the role taxonomy for your team.",
+      "copyFromEnglish": "Copy from English",
+      "taskTitleLabel": "Task title",
+      "taskDescriptionLabel": "Description",
+      "dueDayLabel": "Due in N days from start",
+      "saveCta": "Save template",
+      "savingCta": "Saving…"
+    },
+    "PtoKeywords": {
+      "heading": "Calendar PTO keywords",
+      "subtitle": "Add language-specific keywords. Calendar events whose titles match these words are treated as paid time off.",
+      "empty": "No additional keywords. Built-in keywords are still active.",
+      "addCta": "Add keyword"
     }
   },
   "Users": {
@@ -5450,6 +5469,163 @@
       "signoffRegistry": "Signoff registry",
       "pendingGate": "Flag ON in Unleash but app-gated — {count} disclaimer(s) PENDING.",
       "pendingGateResolution": "Resolve by submitting a PR updating packages/validators/src/legal/signoff-registry.json"
+    }
+  },
+  "Offboarding": {
+    "Templates": {
+      "SoftwareEngineer": {
+        "displayName": "Software Engineer",
+        "handoverDocs": {
+          "title": "Hand over technical documentation",
+          "description": "Hand over architecture diagrams, runbooks, and any internal technical documentation owned by the contractor."
+        },
+        "codeWalkthrough": {
+          "title": "Walk successor through codebase",
+          "description": "Pair with the successor on a guided tour of the services, repos, and CI workflows the contractor owned."
+        },
+        "openPRs": {
+          "title": "Resolve or hand off open pull requests",
+          "description": "Close, merge, or transfer ownership of every open PR authored by the contractor."
+        },
+        "deploymentRunbook": {
+          "title": "Update deployment runbook",
+          "description": "Annotate the deployment runbook with the contractor's tribal knowledge — quirks, escalation paths, post-deploy checks."
+        },
+        "onCallRotation": {
+          "title": "Remove from on-call rotation",
+          "description": "Replace the contractor in PagerDuty / Opsgenie schedules and notify the rotation."
+        },
+        "architectureNotes": {
+          "title": "Capture architecture decision records",
+          "description": "Document any in-flight architectural decisions the contractor was driving."
+        },
+        "knownIssues": {
+          "title": "Document known issues + WIP fixes",
+          "description": "List known production issues the contractor was tracking and the state of any in-progress fixes."
+        }
+      },
+      "Designer": {
+        "displayName": "Designer",
+        "designSystemHandover": {
+          "title": "Hand over design-system ownership",
+          "description": "Transfer ownership of design-system components, tokens, and contribution patterns to the successor."
+        },
+        "figmaTransfer": {
+          "title": "Transfer Figma project ownership",
+          "description": "Move the contractor's Figma files into the team library and reassign editor seats."
+        },
+        "assetLibraryAccess": {
+          "title": "Update asset-library access",
+          "description": "Remove the contractor from shared asset libraries and reassign curation duties."
+        },
+        "activeProjects": {
+          "title": "Hand off active design projects",
+          "description": "Walk the successor through every in-flight design project — scope, constraints, open decisions."
+        },
+        "brandGuidelinesUpdate": {
+          "title": "Update brand-guidelines authorship",
+          "description": "Replace the contractor as the brand-guidelines authoring contact and re-run the publication workflow."
+        },
+        "researchArchive": {
+          "title": "Archive UX research artefacts",
+          "description": "Move the contractor's research notes, transcripts, and synthesis docs into the team archive."
+        }
+      },
+      "ProductManager": {
+        "displayName": "Product Manager",
+        "roadmapTransfer": {
+          "title": "Transfer roadmap ownership",
+          "description": "Hand over the roadmap document and any planning boards to the successor or interim owner."
+        },
+        "stakeholderIntros": {
+          "title": "Introduce stakeholders to successor",
+          "description": "Schedule introduction calls between key stakeholders and the successor or interim owner."
+        },
+        "activeInitiatives": {
+          "title": "Hand off active initiatives",
+          "description": "Brief the successor on every in-flight initiative — scope, blockers, next milestones."
+        },
+        "metricsContext": {
+          "title": "Document metric definitions and history",
+          "description": "Capture the why behind each tracked metric and any caveats the successor needs to interpret it."
+        },
+        "researchInsights": {
+          "title": "Archive research insights",
+          "description": "File user-research insights, interview transcripts, and synthesis docs in the team library."
+        },
+        "vendorRelationships": {
+          "title": "Reassign vendor relationships",
+          "description": "Notify external vendors of the contact change and reassign the team-side owner for each contract."
+        }
+      },
+      "GenericConsultant": {
+        "displayName": "Generic Consultant",
+        "handoverDocs": {
+          "title": "Hand over engagement documentation",
+          "description": "Compile a single handover packet covering scope, deliverables, decisions, and outstanding risks."
+        },
+        "activeProjectStatus": {
+          "title": "Document active-project status",
+          "description": "Snapshot the state of every active project — what's done, in flight, and at risk."
+        },
+        "clientStakeholderHandover": {
+          "title": "Hand over client / stakeholder relationships",
+          "description": "Brief the successor on each client and key stakeholder, including communication preferences and political context."
+        },
+        "deliverableArchive": {
+          "title": "Archive deliverables and source artefacts",
+          "description": "Upload final deliverables and source files (slides, sheets, drafts) into the team repository."
+        },
+        "knowledgeRepoIndex": {
+          "title": "Index knowledge-base contributions",
+          "description": "Catalogue the contractor's contributions to the team knowledge base for easy discovery."
+        },
+        "contactDirectory": {
+          "title": "Hand over contact directory",
+          "description": "Share the contractor's curated contact list (clients, vendors, advisors) with the successor."
+        }
+      }
+    },
+    "OverrideDialog": {
+      "title": "Override IP verification block",
+      "description": "Owners can complete this offboarding without IP verification. The override is permanent and recorded in the audit log.",
+      "reasonLabel": "Reason for override",
+      "reasonPlaceholder": "Describe why IP verification is being bypassed (minimum 20 characters).",
+      "reasonClientError": "Provide at least 20 characters explaining the override.",
+      "reasonServerError": "The reason must be at least 20 characters and contain a substantive explanation.",
+      "acknowledgement": "I confirm IP verification is being intentionally bypassed and I accept responsibility for any compliance gap.",
+      "cta": "Override",
+      "ctaLoading": "Recording override…",
+      "cancel": "Cancel",
+      "discardConfirm": {
+        "title": "Discard the override reason?",
+        "body": "You typed an override reason. Closing now will discard it.",
+        "confirm": "Discard",
+        "cancel": "Keep editing"
+      }
+    },
+    "OverrideBadge": {
+      "label": "IP verification overridden",
+      "tooltipReason": "Reason: {reason}",
+      "tooltipActor": "Overridden by {name} on {date}",
+      "tooltipBlockedTask": "Blocked task: IP_VERIFICATION"
+    },
+    "PtoBadge": {
+      "label": "No fallback approver — manager on PTO",
+      "tooltip": "Configure a fallback approver in Settings > Teams to avoid routing to organization owners by default."
+    },
+    "LocaleFallback": {
+      "suffix": " (English)",
+      "srDescription": "This template field has not been translated to {targetLocale}; the English value is shown as a fallback."
+    }
+  },
+  "Workflow": {
+    "Start": {
+      "heading": "Start offboarding for {contractor}",
+      "templateLabel": "Knowledge-transfer template",
+      "autoSelectHint": "Auto-selected from contractor role: {roleName}",
+      "manualOverrideHint": "Choose a different template…",
+      "cta": "Start offboarding"
     }
   }
 }
