@@ -4,6 +4,19 @@ import type { ProviderHealthStatus } from '../types/health.js';
 import type { OAuthConfig } from '../types/provider.js';
 import { BaseAdapter } from './base-adapter.js';
 
+/**
+ * Phase 74 D-05 / D-08 — busy range returned by getFreeBusy.
+ * Used by the pto-detector service to apply the layered detection rule
+ * (manual outOfOffice → calendar all-day busy → PTO_KEYWORDS title match).
+ */
+export interface GoogleBusyRange {
+  start: string;
+  end: string;
+  summary?: string;
+  isAllDay?: boolean;
+  attendeeCount?: number;
+}
+
 // ---------------------------------------------------------------------------
 // Google Calendar OAuth 2.0 Configuration
 // ---------------------------------------------------------------------------
@@ -295,6 +308,87 @@ export class GoogleCalendarAdapter extends BaseAdapter {
       const text = await response.text();
       throw new Error(`Google Calendar delete event failed: ${text}`);
     }
+  }
+
+  /**
+   * Phase 74 D-05 / D-08 — fetch free-busy ranges enriched with event titles
+   * and all-day flags so the PTO detector can match against PTO_KEYWORDS.
+   *
+   * Performs two API calls and merges the results:
+   *   1. POST /calendar/v3/freeBusy — authoritative busy ranges
+   *   2. GET /calendar/v3/calendars/{id}/events — titles + isAllDay flags +
+   *      attendee counts for the same window (R1 refinement support).
+   *
+   * Access token is never included in error messages — only the response
+   * body is surfaced so token leakage is prevented (T-74-06-token-leak).
+   */
+  async getFreeBusy(
+    accessToken: string,
+    args: { calendarId?: string; timeMin: string; timeMax: string },
+  ): Promise<{ busy: GoogleBusyRange[] }> {
+    const calendarId = args.calendarId ?? 'primary';
+    const fbResp = await fetch('https://www.googleapis.com/calendar/v3/freeBusy', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        timeMin: args.timeMin,
+        timeMax: args.timeMax,
+        items: [{ id: calendarId }],
+      }),
+    });
+    if (!fbResp.ok) {
+      const text = await fbResp.text();
+      throw new Error(`Google Calendar freebusy failed (${fbResp.status}): ${text}`);
+    }
+    const fbData = (await fbResp.json()) as {
+      calendars?: Record<string, { busy?: Array<{ start: string; end: string }> }>;
+    };
+    const busyRanges = fbData.calendars?.[calendarId]?.busy ?? [];
+
+    // Enrichment — events.list for titles + isAllDay
+    const eventsUrl = new URL(
+      `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events`,
+    );
+    eventsUrl.searchParams.set('timeMin', args.timeMin);
+    eventsUrl.searchParams.set('timeMax', args.timeMax);
+    eventsUrl.searchParams.set('singleEvents', 'true');
+    const evResp = await fetch(eventsUrl.toString(), {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    if (!evResp.ok) {
+      // Enrichment failure is non-fatal — return ranges without titles.
+      return { busy: busyRanges.map(b => ({ ...b })) };
+    }
+    const evData = (await evResp.json()) as {
+      items?: Array<{
+        summary?: string;
+        start: { date?: string; dateTime?: string };
+        end: { date?: string; dateTime?: string };
+        attendees?: unknown[];
+      }>;
+    };
+    const events = evData.items ?? [];
+
+    return {
+      busy: busyRanges.map(range => {
+        // Match by date prefix to handle both timed events (dateTime equals range.start)
+        // and all-day events (date is YYYY-MM-DD but range.start is YYYY-MM-DDT00:00:00Z).
+        const rangeDatePrefix = range.start.slice(0, 10);
+        const matched = events.find(e => {
+          if (e.start.dateTime) {
+            return e.start.dateTime === range.start;
+          }
+          return e.start.date === rangeDatePrefix;
+        });
+        return {
+          start: range.start,
+          end: range.end,
+          summary: matched?.summary,
+          isAllDay: Boolean(matched?.start.date && !matched.start.dateTime),
+          attendeeCount: matched?.attendees?.length ?? 0,
+        };
+      }),
+    };
   }
 
   // -------------------------------------------------------------------------

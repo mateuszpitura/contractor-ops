@@ -3,6 +3,14 @@
  * Used by workflow-templates.ts and workflow-execution.ts.
  */
 import { workflowTaskSkipReason } from '@contractor-ops/validators';
+import type { ResolveAssigneeWithPtoArgs } from '../services/pto-detector.js';
+import { resolveAssigneeWithPto } from '../services/pto-detector.js';
+
+// Re-export for Plan 74-08 (overrideBlockingTask + startOffboardingRun) and
+// any other workflow-execution code that needs PTO-aware assignee resolution.
+// Resolution runs ONCE at task creation time — no per-render re-resolution
+// (Phase 74 Pitfall 26).
+export { type ResolveAssigneeWithPtoArgs, resolveAssigneeWithPto };
 
 // ---------------------------------------------------------------------------
 // i18n workflow template key constants
@@ -30,15 +38,6 @@ export const WORKFLOW_TEMPLATE_KEYS = {
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-/**
- * Strips Prisma class prototype from query results, producing plain
- * JSON-serializable objects so that inferred tRPC router types do NOT
- * reference the generated Prisma client module (avoids TS2742).
- */
-export function plain<T>(data: T): T {
-  return JSON.parse(JSON.stringify(data)) as T;
-}
 
 /**
  * Add days to a date, returning a new Date instance.

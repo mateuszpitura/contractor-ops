@@ -4,6 +4,17 @@ import type { ProviderHealthStatus } from '../types/health.js';
 import type { OAuthConfig } from '../types/provider.js';
 import { BaseAdapter } from './base-adapter.js';
 
+/**
+ * Phase 74 D-05 / D-08 — busy range returned by Outlook's getFreeBusy.
+ * Mirrors the GoogleBusyRange shape so pto-detector can be calendar-agnostic.
+ */
+export interface OutlookBusyRange {
+  start: string;
+  end: string;
+  summary?: string;
+  isAllDay?: boolean;
+}
+
 // ---------------------------------------------------------------------------
 // Outlook Calendar OAuth 2.0 Configuration
 // ---------------------------------------------------------------------------
@@ -313,6 +324,58 @@ export class OutlookCalendarAdapter extends BaseAdapter {
       const text = await response.text();
       throw new Error(`Outlook Calendar delete event failed: ${text}`);
     }
+  }
+
+  /**
+   * Phase 74 D-05 / D-08 — fetch free-busy ranges via Microsoft Graph
+   * `/me/calendar/getSchedule`. Filters status to busy/oof so free /
+   * tentative entries don't trigger PTO false-positives.
+   *
+   * Access token is never included in error messages.
+   */
+  async getFreeBusy(
+    accessToken: string,
+    args: { calendarId?: string; timeMin: string; timeMax: string },
+  ): Promise<{ busy: OutlookBusyRange[] }> {
+    const resp = await fetch('https://graph.microsoft.com/v1.0/me/calendar/getSchedule', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        schedules: [args.calendarId ?? 'me'],
+        startTime: { dateTime: args.timeMin, timeZone: 'UTC' },
+        endTime: { dateTime: args.timeMax, timeZone: 'UTC' },
+        availabilityViewInterval: 60,
+      }),
+    });
+    if (!resp.ok) {
+      const body = await resp.text();
+      throw new Error(`Outlook getSchedule failed (${resp.status}): ${body}`);
+    }
+    const data = (await resp.json()) as {
+      value?: Array<{
+        scheduleItems?: Array<{
+          status: string;
+          subject?: string;
+          start: { dateTime: string };
+          end: { dateTime: string };
+          isAllDay?: boolean;
+        }>;
+      }>;
+    };
+    const items = data.value?.[0]?.scheduleItems ?? [];
+    return {
+      busy: items
+        .filter(i => i.status === 'busy' || i.status === 'oof')
+        .map(i => ({
+          start: i.start.dateTime,
+          end: i.end.dateTime,
+          summary: i.subject,
+          isAllDay: Boolean(i.isAllDay),
+        })),
+    };
   }
 
   // -------------------------------------------------------------------------
