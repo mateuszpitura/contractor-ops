@@ -1095,6 +1095,31 @@
       "searchPlaceholder": "Search contractors...",
       "updating": "Updating...",
       "paginationOf": "of"
+    },
+    "Compliance": {
+      "Recompute": {
+        "buttonLabel": "إعادة احتساب الامتثال",
+        "buttonAriaLabel": "إعادة احتساب الامتثال لهذا المقاول",
+        "title": "إعادة احتساب الامتثال",
+        "bulkTitle": "إعادة احتساب الامتثال لـ {count} مقاولين",
+        "description": "إعادة تقييم متطلبات الامتثال للمقاول وفقًا لسجل السياسات الحالي. سيتم تمييز الصفوف الحالية التي لم تعد تنطبق على أنها ملغاة (WAIVED) وليس حذفها؛ يتم ترحيل المستندات المستوفاة عند تطابق نوع المستند.",
+        "reasonLabel": "السبب",
+        "reasonPlaceholder": "اختر سببًا",
+        "reason": {
+          "policyVersionBump": "تحديث إصدار السياسة",
+          "classificationOutcomeChange": "تغيير نتيجة التصنيف",
+          "adminCorrection": "تصحيح إداري"
+        },
+        "cancel": "إلغاء",
+        "confirm": "إعادة الاحتساب",
+        "confirming": "جارٍ إعادة الاحتساب...",
+        "toast": {
+          "success": "تم إعادة احتساب الامتثال: {updated} صفًا تم تحديثها",
+          "successWithSkipped": "تم إعادة احتساب الامتثال: {updated} صفًا تم تحديثها، {skipped} مقاولين تم تخطيهم (محدّثون بالفعل)",
+          "partial": "إعادة احتساب جزئية: {updated} تم تحديثها، {skipped} تم تخطيها، {errored} فشلت",
+          "error": "فشل في إعادة احتساب الامتثال"
+        }
+      }
     }
   },
   "ContractorProfile": {

@@ -1114,6 +1114,31 @@
       "searchPlaceholder": "Search contractors...",
       "updating": "Updating...",
       "paginationOf": "of"
+    },
+    "Compliance": {
+      "Recompute": {
+        "buttonLabel": "Przelicz zgodność",
+        "buttonAriaLabel": "Przelicz zgodność dla tego kontrahenta",
+        "title": "Przelicz zgodność",
+        "bulkTitle": "Przelicz zgodność dla {count} kontrahentów",
+        "description": "Ponownie ocenia wymagania zgodności kontrahenta wobec bieżącego rejestru polityk. Istniejące wiersze, które już nie obowiązują, zostaną oznaczone jako WAIVED (nigdy nie są usuwane); spełnione dokumenty są przenoszone, gdy typ dokumentu się zgadza.",
+        "reasonLabel": "Powód",
+        "reasonPlaceholder": "Wybierz powód",
+        "reason": {
+          "policyVersionBump": "Aktualizacja wersji polityki",
+          "classificationOutcomeChange": "Zmiana wyniku klasyfikacji",
+          "adminCorrection": "Korekta administratora"
+        },
+        "cancel": "Anuluj",
+        "confirm": "Przelicz",
+        "confirming": "Przeliczanie...",
+        "toast": {
+          "success": "Zgodność przeliczona: {updated} wierszy zaktualizowano",
+          "successWithSkipped": "Zgodność przeliczona: {updated} wierszy zaktualizowano, {skipped} kontrahentów pominięto (już aktualne)",
+          "partial": "Częściowe przeliczenie zgodności: {updated} zaktualizowanych, {skipped} pominiętych, {errored} nieudanych",
+          "error": "Nie udało się przeliczyć zgodności"
+        }
+      }
     }
   },
   "ContractorProfile": {

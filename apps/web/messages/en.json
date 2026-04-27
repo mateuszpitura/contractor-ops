@@ -1114,6 +1114,31 @@
       "hourly": "Hourly",
       "project": "Project-based",
       "milestone": "Milestone"
+    },
+    "Compliance": {
+      "Recompute": {
+        "buttonLabel": "Recompute compliance",
+        "buttonAriaLabel": "Recompute compliance for this contractor",
+        "title": "Recompute compliance",
+        "bulkTitle": "Recompute compliance for {count} contractors",
+        "description": "This re-evaluates the contractor's compliance requirements against the current policy registry. Existing rows that no longer apply will be marked WAIVED (never deleted); satisfied documents carry forward when document type matches.",
+        "reasonLabel": "Reason",
+        "reasonPlaceholder": "Select a reason",
+        "reason": {
+          "policyVersionBump": "Policy version bump",
+          "classificationOutcomeChange": "Classification outcome change",
+          "adminCorrection": "Admin correction"
+        },
+        "cancel": "Cancel",
+        "confirm": "Recompute",
+        "confirming": "Recomputing...",
+        "toast": {
+          "success": "Compliance recomputed: {updated} rows updated",
+          "successWithSkipped": "Compliance recomputed: {updated} rows updated, {skipped} contractors skipped (already current)",
+          "partial": "Compliance recompute partial: {updated} rows updated, {skipped} skipped, {errored} failed",
+          "error": "Failed to recompute compliance"
+        }
+      }
     }
   },
   "ContractorProfile": {

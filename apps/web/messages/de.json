@@ -1256,6 +1256,31 @@
       "hourly": "Hourly",
       "project": "Project-based",
       "milestone": "Milestone"
+    },
+    "Compliance": {
+      "Recompute": {
+        "buttonLabel": "Compliance neu berechnen",
+        "buttonAriaLabel": "Compliance für diesen Auftragnehmer neu berechnen",
+        "title": "Compliance neu berechnen",
+        "bulkTitle": "Compliance für {count} Auftragnehmer neu berechnen",
+        "description": "Bewertet die Compliance-Anforderungen des Auftragnehmers gegen die aktuelle Richtlinien-Registry neu. Bestehende Zeilen, die nicht mehr gelten, werden als WAIVED markiert (nie gelöscht); erfüllte Dokumente werden übernommen, wenn der Dokumenttyp übereinstimmt.",
+        "reasonLabel": "Grund",
+        "reasonPlaceholder": "Grund auswählen",
+        "reason": {
+          "policyVersionBump": "Richtlinien-Versions-Update",
+          "classificationOutcomeChange": "Änderung des Klassifizierungsergebnisses",
+          "adminCorrection": "Admin-Korrektur"
+        },
+        "cancel": "Abbrechen",
+        "confirm": "Neu berechnen",
+        "confirming": "Wird neu berechnet...",
+        "toast": {
+          "success": "Compliance neu berechnet: {updated} Zeilen aktualisiert",
+          "successWithSkipped": "Compliance neu berechnet: {updated} Zeilen aktualisiert, {skipped} Auftragnehmer übersprungen (bereits aktuell)",
+          "partial": "Compliance teilweise neu berechnet: {updated} aktualisiert, {skipped} übersprungen, {errored} fehlgeschlagen",
+          "error": "Compliance konnte nicht neu berechnet werden"
+        }
+      }
     }
   },
   "ContractorProfile": {
