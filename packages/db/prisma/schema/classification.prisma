@@ -18,6 +18,7 @@ model ClassificationAssessment {
   contractorAssignmentId   String
   countryCode              String                         @db.Char(2)
   ruleSetVersion           String
+  policyRuleSetVersion     String? // Phase 71 D-03 — null pre-backfill; set on every new submit
   status                   ClassificationAssessmentStatus @default(draft)
   questionsSnapshot        Json? // frozen on submit (D-08)
   answers                  Json                           @default("{}")

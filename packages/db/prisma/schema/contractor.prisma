@@ -231,6 +231,10 @@ model ContractorComplianceItem {
   name                  String
   documentType          DocumentType
   status                ComplianceStatus @default(MISSING)
+  severity              Severity? // Phase 71 D-05 — null pre-backfill
+  policyRuleId          String? // Phase 71 D-06 — value-checked at write against compliance-policy registry
+  expiryJurisdictionTz  String? // Phase 71 D-07 — IANA TZ; set at row-creation, never rewritten
+  waivedReason          WaivedReason? // Phase 71 D-11 — populated only when status = WAIVED
   dueDate               DateTime?        @db.Date
   satisfiedByDocumentId String?
   expiresAt             DateTime?        @db.Date
@@ -245,6 +249,7 @@ model ContractorComplianceItem {
   @@index([organizationId])
   @@index([organizationId, contractorId, status])
   @@index([organizationId, expiresAt])
+  @@index([organizationId, policyRuleId]) // Phase 71 — supports drift queries by policyRuleId namespace
 }
 
 // --- Enums ---
@@ -282,4 +287,23 @@ enum ComplianceStatus {
   SATISFIED
   EXPIRED
   WAIVED
+}
+
+// Phase 71 D-05 — Severity 3-tier classification:
+//   BLOCKING — Phase 72 hard-payment-block trigger (UK Right-to-Work missing, A1 expired)
+//   WARNING  — Phase 73 admin-dashboard surface; does NOT block payment
+//   INFO     — record-only; visible in audit reports
+enum Severity {
+  BLOCKING
+  WARNING
+  INFO
+}
+
+// Phase 71 D-11 — Closed enum for `waivedReason` audit-fidelity field.
+// Strong type at the DB level, greppable in audit queries; prevents free-text drift.
+enum WaivedReason {
+  superseded_by_policy_version // Policy version bump (D-09)
+  classification_outcome_change // Outcome differs from prior assessment (D-10)
+  admin_manual_waive // Admin clicked "Waive this requirement" (existing UX)
+  contractor_offboarded // Phase 74/75 fires this on offboarding completion
 }
