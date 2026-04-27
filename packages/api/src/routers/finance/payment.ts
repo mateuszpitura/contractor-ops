@@ -1,3 +1,4 @@
+import type { Prisma } from '@contractor-ops/db';
 import type { PaymentRun } from '@contractor-ops/db/generated/prisma/client';
 import {
   bankStatementConfirmSchema,
@@ -279,8 +280,7 @@ export const paymentRouter = router({
     .use(requirePermission({ payment: ['read'] }))
     .input(readyForPaymentListSchema)
     .query(async ({ ctx, input }) => {
-      // biome-ignore lint/suspicious/noExplicitAny: dynamically built Prisma where clause requires flexible property assignment for nested filter operators (e.g. { gte, lte })
-      const where: Record<string, any> = {
+      const where: Prisma.InvoiceWhereInput = {
         organizationId: ctx.organizationId,
         paymentStatus: 'READY',
         deletedAt: null,
@@ -291,9 +291,10 @@ export const paymentRouter = router({
       }
 
       if (input.dueDateFrom || input.dueDateTo) {
-        where.dueDate = {};
-        if (input.dueDateFrom) where.dueDate.gte = input.dueDateFrom;
-        if (input.dueDateTo) where.dueDate.lte = input.dueDateTo;
+        where.dueDate = {
+          ...(input.dueDateFrom && { gte: input.dueDateFrom }),
+          ...(input.dueDateTo && { lte: input.dueDateTo }),
+        };
       }
 
       if (input.contractorId) {
@@ -572,8 +573,7 @@ export const paymentRouter = router({
     .use(requirePermission({ payment: ['read'] }))
     .input(paymentRunListSchema)
     .query(async ({ ctx, input }) => {
-      // biome-ignore lint/suspicious/noExplicitAny: dynamically built Prisma where clause requires flexible property assignment for nested filter operators (e.g. { gte, lte })
-      const where: Record<string, any> = {
+      const where: Prisma.PaymentRunWhereInput = {
         organizationId: ctx.organizationId,
       };
 
@@ -582,9 +582,10 @@ export const paymentRouter = router({
       }
 
       if (input.dateFrom || input.dateTo) {
-        where.createdAt = {};
-        if (input.dateFrom) where.createdAt.gte = input.dateFrom;
-        if (input.dateTo) where.createdAt.lte = input.dateTo;
+        where.createdAt = {
+          ...(input.dateFrom && { gte: input.dateFrom }),
+          ...(input.dateTo && { lte: input.dateTo }),
+        };
       }
 
       if (input.cursor) {

@@ -1,6 +1,6 @@
 import type { ContractType, Prisma } from '@contractor-ops/db';
 import { createLogger } from '@contractor-ops/logger';
-import type { ContractCreateInput } from '@contractor-ops/validators';
+import type { ContractCreateInput, ContractListInput } from '@contractor-ops/validators';
 import {
   amendmentCreateSchema,
   contractCreateSchema,
@@ -87,21 +87,9 @@ const CONTRACT_TRANSITIONS: Record<string, string[]> = {
  */
 function buildContractListWhere(
   organizationId: string,
-  input: {
-    contractorId?: string | null;
-    filters?: {
-      status?: string[];
-      type?: string[];
-      billingModel?: string[];
-      ownerUserId?: string[];
-      complianceRiskLevel?: string[];
-      endDateFrom?: string;
-      endDateTo?: string;
-    } | null;
-  },
+  input: Pick<ContractListInput, 'contractorId' | 'filters'>,
 ) {
-  // biome-ignore lint/suspicious/noExplicitAny: dynamically built Prisma where clause requires flexible property assignment for nested filter operators (e.g. { gte, lte })
-  const where: Record<string, any> = {
+  const where: Prisma.ContractWhereInput = {
     organizationId,
     deletedAt: null,
   };
@@ -128,13 +116,10 @@ function buildContractListWhere(
   }
 
   if (filters?.endDateFrom || filters?.endDateTo) {
-    where.endDate = {};
-    if (filters?.endDateFrom) {
-      where.endDate.gte = new Date(filters.endDateFrom);
-    }
-    if (filters?.endDateTo) {
-      where.endDate.lte = new Date(filters.endDateTo);
-    }
+    where.endDate = {
+      ...(filters?.endDateFrom && { gte: new Date(filters.endDateFrom) }),
+      ...(filters?.endDateTo && { lte: new Date(filters.endDateTo) }),
+    };
   }
 
   return where;
