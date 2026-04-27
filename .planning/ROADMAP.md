@@ -84,7 +84,7 @@ Phase artifacts: `.planning/milestones/v5.0-phases/`
 - [x] **Phase 71: F1 Compliance — Policy Package + Schema + Classification Reconcile** — `packages/compliance-policy` with per-jurisdiction profiles, additive `ContractorComplianceItem` extension, drift escape hatch (completed 2026-04-27)
 - [ ] **Phase 72: F1 Compliance — Reminder Cascade + Payment Block** — band-state-machine cron, daily digest, paymentRouter hard-block, approval-engine condition operator, atomic audit row
 - [ ] **Phase 73: F1 Compliance — Admin Dashboard + Portal Self-Service + i18n** — at-risk dashboard, contractor portal compliance tab, one-click upload-replacement, en/pl/de parity
-- [ ] **Phase 74: F4 Offboarding — Workflow Foundation + KT Templates + Override Permission** — IP_VERIFICATION + CONTRACT_HEALTH_CHECK enums, OWNER override with reason, 4 role-typed KT seed templates, OOO-aware routing
+- [x] **Phase 74: F4 Offboarding — Workflow Foundation + KT Templates + Override Permission** — IP_VERIFICATION + CONTRACT_HEALTH_CHECK enums, OWNER override with reason, 4 role-typed KT seed templates, OOO-aware routing (completed 2026-04-27)
 - [ ] **Phase 75: F4 Offboarding — Contract Health Check + IP Verification + Credential Vault** — Claude Vision tool_use with regex-first phrase library, tristate verdict, e-sign-backed IP ratification, `CredentialReference` (no secrets) with content-validation regex
 - [ ] **Phase 76: F2 IdP — Capability Mixin + Saga Schema + Cooldown Gate + GWS Scope Migration** — `Deprovisionable` interface, `DeprovisioningRun/Step` saga, 14-day cooldown referencing F4 final-invoice-paid, scope-capabilities JSONB, webhook-loop guard
 - [ ] **Phase 77: F2 IdP — GWS + Slack Adapters (the wedge)** — Google Workspace suspend+OAuth-revoke+sign-out, Slack session-invalidate+SCIM-deactivate, per-IdP `describeImpact` preview, partial-failure reconcile queue
@@ -165,7 +165,7 @@ Phase artifacts: `.planning/milestones/v5.0-phases/`
   4. OWNER-role admin attempts to complete an offboarding while `IP_VERIFICATION` task is open; system surfaces an override dialog requiring reason text (min 20 chars) + acknowledgement checkbox; override audit-logs to immutable trail and surfaces a permanent badge on the offboarding record
   5. Non-OWNER user (admin, manager, finance) sees no override button on the same screen; `workflow:override_blocking_task` permission is OWNER-only and CI-tested
   6. All OFFB workflow surfaces ship en/pl/de message-key parity; locked-phrase registry extension still pending Werkvertrag wording (lands in Phase 75)
-**Plans:** 5/8 plans executed
+**Plans:** 8/8 plans complete
 **Research flag:** STANDARD (extends v1.0 template builder + v1.0 RBAC)
 **Feature flags:** `offboarding-hardening-foundation` PENDING
 **UI hint:** yes
@@ -383,7 +383,7 @@ Phase artifacts: `.planning/milestones/v5.0-phases/`
 | 71. F1 Compliance — Policy Package + Schema   | v6.0      | 7/7 | Complete   | 2026-04-27 |
 | 72. F1 Compliance — Reminder + Payment Block  | v6.0      | 0/?            | Not started | -          |
 | 73. F1 Compliance — Dashboard + Portal + i18n | v6.0      | 0/?            | Not started | -          |
-| 74. F4 Offboarding — Workflow + KT            | v6.0      | 5/8 | In Progress|  |
+| 74. F4 Offboarding — Workflow + KT            | v6.0      | 8/8 | Complete    | 2026-04-27 |
 | 75. F4 Offboarding — IP Verify + Credentials  | v6.0      | 0/?            | Not started | -          |
 | 76. F2 IdP — Capability + Saga + Cooldown     | v6.0      | 0/?            | Not started | -          |
 | 77. F2 IdP — GWS + Slack (the wedge)          | v6.0      | 0/?            | Not started | -          |

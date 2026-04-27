@@ -80,17 +80,17 @@ Requirements for the v6.0 milestone. Each maps to exactly one phase (filled by r
 
 ### Offboarding Hardening (F4)
 
-- [ ] **OFFB-01**: Admin offboarding workflow includes 4 role-typed knowledge-transfer seed templates (Software Engineer / Designer / Product Manager / Generic Consultant); template auto-selects from contractor's primary role tag with manual override
-- [ ] **OFFB-02**: System auto-routes KT tasks to the contractor's manager; if the manager is on PTO (per v2.0 calendar integration) the task delegates to the configured fallback approver
-- [ ] **OFFB-03**: Admin can extend role taxonomy via per-org `WorkflowRole` model with editable templates; v6.0 ships 4 seed templates, ops customise without engineering involvement
+- [x] **OFFB-01**: Admin offboarding workflow includes 4 role-typed knowledge-transfer seed templates (Software Engineer / Designer / Product Manager / Generic Consultant); template auto-selects from contractor's primary role tag with manual override
+- [x] **OFFB-02**: System auto-routes KT tasks to the contractor's manager; if the manager is on PTO (per v2.0 calendar integration) the task delegates to the configured fallback approver
+- [x] **OFFB-03**: Admin can extend role taxonomy via per-org `WorkflowRole` model with editable templates; v6.0 ships 4 seed templates, ops customise without engineering involvement
 - [ ] **OFFB-04**: System runs an IP-assignment contract clause health check at contract upload via reused `ClaudeOcrAdapter` with `contract-health-tools.ts` tool_use schema, storing `Contract.complianceFlagsJson` + `complianceFlagsCheckedAt` + `complianceFlagsModelVer`
 - [ ] **OFFB-05**: Health check returns a tristate verdict (`LIKELY_PRESENT` / `LIKELY_MISSING` / `MANUAL_REVIEW_REQUIRED`) using a regex-first per-jurisdiction phrase library covering UK + DE + PL + KSA + UAE + US wording, including DE Werkvertrag Schöpferprinzip + Nutzungsrechte distinction
 - [ ] **OFFB-06**: System hard-blocks the offboarding workflow's `WorkflowRun.completedAt` until the `IP_VERIFICATION` task completes — admin signs the IP-assignment ratification document via existing v2.0 e-sign integration (DocuSign for UK/PL/US, Autenti for DE)
-- [ ] **OFFB-07**: OWNER-role admin can override the IP_VERIFICATION block with a required reason text + acknowledgement checkbox; override is audit-logged and surfaces a permanent badge on the offboarding record
+- [x] **OFFB-07**: OWNER-role admin can override the IP_VERIFICATION block with a required reason text + acknowledgement checkbox; override is audit-logged and surfaces a permanent badge on the offboarding record
 - [ ] **OFFB-08**: System tracks structured credential-rotation tasks per offboarding — admin records `CredentialReference` rows (label + vault URL + successor user) for each access type; content-validation regex rejects strings shaped like AKIA*, GitHub PATs, JWT structure, or hex≥32 (system stores POINTERS only, never secrets)
 - [ ] **OFFB-09**: Admin can view a contract clause health audit log showing every health-check run with model version (`complianceFlagsModelVer`) for replay/audit; manual re-run available
-- [ ] **OFFB-10**: System adds `WorkflowTaskType.IP_VERIFICATION` and `WorkflowTaskType.CONTRACT_HEALTH_CHECK` to the workflow engine; `workflow:override_blocking_task` permission registered OWNER-only
-- [ ] **OFFB-11**: All OFFB surfaces ship en/pl/de parity at message-key level; locked-phrase registry extends with Werkvertrag IP-clause canonical wordings
+- [x] **OFFB-10**: System adds `WorkflowTaskType.IP_VERIFICATION` and `WorkflowTaskType.CONTRACT_HEALTH_CHECK` to the workflow engine; `workflow:override_blocking_task` permission registered OWNER-only
+- [x] **OFFB-11**: All OFFB surfaces ship en/pl/de parity at message-key level; locked-phrase registry extends with Werkvertrag IP-clause canonical wordings
 
 ## v7+ Requirements (Future / Deferred)
 
@@ -194,17 +194,17 @@ Which phases cover which requirements. Filled by roadmapper on 2026-04-26.
 | GULF-09 | Phase 79 | Pending |
 | GULF-10 | Phase 79 | Pending |
 | GULF-11 | Phase 79 | Pending |
-| OFFB-01 | Phase 74 | Pending |
-| OFFB-02 | Phase 74 | Pending |
-| OFFB-03 | Phase 74 | Pending |
+| OFFB-01 | Phase 74 | Complete |
+| OFFB-02 | Phase 74 | Complete |
+| OFFB-03 | Phase 74 | Complete |
 | OFFB-04 | Phase 75 | Pending |
 | OFFB-05 | Phase 75 | Pending |
 | OFFB-06 | Phase 75 | Pending |
-| OFFB-07 | Phase 74 | Pending |
+| OFFB-07 | Phase 74 | Complete |
 | OFFB-08 | Phase 75 | Pending |
 | OFFB-09 | Phase 75 | Pending |
-| OFFB-10 | Phase 74 | Pending |
-| OFFB-11 | Phase 74 | Pending |
+| OFFB-10 | Phase 74 | Complete |
+| OFFB-11 | Phase 74 | Complete |
 
 **Coverage:**
 - v6.0 requirements: **54 total** (6 FOUND6 + 11 COMPL + 15 IDP + 11 GULF + 11 OFFB)

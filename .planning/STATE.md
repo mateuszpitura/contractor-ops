@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v6.0
 milestone_name: Platform Maturity & Operational Hardening
-status: executing
+status: ready_to_plan
 stopped_at: Phase 70 complete (10/10 plans); backfill apply deferred to post-deploy
-last_updated: "2026-04-27T11:09:15.826Z"
+last_updated: "2026-04-27T11:29:44.252Z"
 last_activity: 2026-04-27
 progress:
   total_phases: 11
-  completed_phases: 1
+  completed_phases: 4
   total_plans: 35
-  completed_plans: 21
-  percent: 60
+  completed_plans: 25
+  percent: 36
 ---
 
 # Project State
@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-04-26 — v6.0 milestone started)
 
 ## Current Position
 
-Phase: 74 (F4 Offboarding — Workflow Foundation + KT Templates + Override Permission) — EXECUTING
-Plan: 6 of 8
-Status: Ready to execute
+Phase: 76
+Plan: Not started
+Status: Ready to plan
 Last activity: 2026-04-27
 
-Progress: [███░░░░░░░] 34%
+Progress: [███████░░░] 71%
 
 **Active Phase:** none (Phase 70 closed)
 **Next Phase candidates (parallel-ready):**
@@ -130,7 +130,7 @@ DATABASE_URL=$DATABASE_URL_ME tsx packages/db/scripts/backfill-scope-capabilitie
 
 **Velocity:**
 
-- Total plans completed: 324 (51 v1.0 + 52 v2.0 + 47 v3.0 + 55 v4.0 + 70 v5.0 [Phases 56–69] + 10 v6.0 [Phase 70])
+- Total plans completed: 332 (51 v1.0 + 52 v2.0 + 47 v3.0 + 55 v4.0 + 70 v5.0 [Phases 56–69] + 10 v6.0 [Phase 70])
 - v6.0 plans completed: 10 (Phase 70: 70-01..70-10)
 - v6.0 phases completed: 1 / 11 (Phase 70)
 - v6.0 phases planned: 11 (70-80)
