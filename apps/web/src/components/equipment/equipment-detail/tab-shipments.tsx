@@ -73,6 +73,9 @@ export function TabShipments({
   const t = useTranslations('Equipment');
   const queryClient = useQueryClient();
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const pendingReturnRequest = pendingReturn
+    ? { ...pendingReturn, createdAt: new Date(pendingReturn.createdAt).toISOString() }
+    : null;
 
   const deleteMutation = useMutation(
     trpc.equipment.deleteShipment.mutationOptions({
@@ -92,7 +95,7 @@ export function TabShipments({
   if (shipments.length === 0) {
     return (
       <div className="space-y-4">
-        {!!pendingReturn && <ReturnApprovalBanner returnRequest={pendingReturn} />}
+        {!!pendingReturnRequest && <ReturnApprovalBanner returnRequest={pendingReturnRequest} />}
         <div className="flex justify-end">
           <Button onClick={onCreateShipment}>
             <Truck className="me-1.5 size-3.5" />
@@ -112,7 +115,7 @@ export function TabShipments({
 
   return (
     <div className="space-y-4">
-      {!!pendingReturn && <ReturnApprovalBanner returnRequest={pendingReturn} />}
+      {!!pendingReturnRequest && <ReturnApprovalBanner returnRequest={pendingReturnRequest} />}
       <div className="flex justify-end">
         <Button onClick={onCreateShipment}>
           <Truck className="me-1.5 size-3.5" />

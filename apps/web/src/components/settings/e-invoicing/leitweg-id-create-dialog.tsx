@@ -169,43 +169,45 @@ export function LeitwegIdCreateDialog({
   );
   const contractors = extractContractors(contractorsQuery.data);
 
-  const createMutation = useMutation({
-    ...trpc.leitwegId.create.mutationOptions(),
-    onSuccess: (row: unknown) => {
-      toast.success(t('saveButton'));
-      queryClient.invalidateQueries({ queryKey: trpc.leitwegId.list.queryKey() });
-      const rowId = (row as { id?: string } | null)?.id;
-      if (rowId) onSaved?.(rowId);
-      onOpenChange(false);
-    },
-    onError: (err: Error) => {
-      const msg = err.message ?? '';
-      if (msg.toLowerCase().includes('already') || msg.toLowerCase().includes('conflict')) {
-        setFormError(t('errorDuplicate'));
-      } else {
-        setFormError(msg || tErrors('Generic'));
-      }
-    },
-  });
+  const createMutation = useMutation(
+    trpc.leitwegId.create.mutationOptions({
+      onSuccess: (row: unknown) => {
+        toast.success(t('saveButton'));
+        queryClient.invalidateQueries({ queryKey: trpc.leitwegId.list.queryKey() });
+        const rowId = (row as { id?: string } | null)?.id;
+        if (rowId) onSaved?.(rowId);
+        onOpenChange(false);
+      },
+      onError: (err: { message?: string }) => {
+        const msg = err.message ?? '';
+        if (msg.toLowerCase().includes('already') || msg.toLowerCase().includes('conflict')) {
+          setFormError(t('errorDuplicate'));
+        } else {
+          setFormError(msg || tErrors('Generic'));
+        }
+      },
+    }),
+  );
 
-  const updateMutation = useMutation({
-    ...trpc.leitwegId.update.mutationOptions(),
-    onSuccess: (row: unknown) => {
-      toast.success(t('saveButton'));
-      queryClient.invalidateQueries({ queryKey: trpc.leitwegId.list.queryKey() });
-      const rowId = (row as { id?: string } | null)?.id ?? initial?.id;
-      if (rowId) onSaved?.(rowId);
-      onOpenChange(false);
-    },
-    onError: (err: Error) => {
-      const msg = err.message ?? '';
-      if (msg.toLowerCase().includes('already') || msg.toLowerCase().includes('conflict')) {
-        setFormError(t('errorDuplicate'));
-      } else {
-        setFormError(msg || tErrors('Generic'));
-      }
-    },
-  });
+  const updateMutation = useMutation(
+    trpc.leitwegId.update.mutationOptions({
+      onSuccess: (row: unknown) => {
+        toast.success(t('saveButton'));
+        queryClient.invalidateQueries({ queryKey: trpc.leitwegId.list.queryKey() });
+        const rowId = (row as { id?: string } | null)?.id ?? initial?.id;
+        if (rowId) onSaved?.(rowId);
+        onOpenChange(false);
+      },
+      onError: (err: { message?: string }) => {
+        const msg = err.message ?? '';
+        if (msg.toLowerCase().includes('already') || msg.toLowerCase().includes('conflict')) {
+          setFormError(t('errorDuplicate'));
+        } else {
+          setFormError(msg || tErrors('Generic'));
+        }
+      },
+    }),
+  );
 
   const saveDisabled = !valueValidation.ok || createMutation.isPending || updateMutation.isPending;
 

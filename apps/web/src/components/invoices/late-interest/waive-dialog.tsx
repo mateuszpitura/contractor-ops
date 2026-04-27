@@ -1,5 +1,6 @@
 'use client';
 
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -29,7 +30,7 @@ import { trpc } from '@/trpc/init';
 // Waive interest dialog (destructive AlertDialog)
 // ---------------------------------------------------------------------------
 
-const WAIVE_TYPES = ['INTEREST_ONLY', 'COMPENSATION_ONLY', 'BOTH'] as const;
+const WAIVE_TYPES = ['STATUTORY_INTEREST', 'COMPENSATION', 'BOTH'] as const;
 type WaiveType = (typeof WAIVE_TYPES)[number];
 
 interface WaiveDialogProps {
@@ -40,25 +41,29 @@ interface WaiveDialogProps {
 
 export function WaiveDialog({ invoiceId, open, onOpenChange }: WaiveDialogProps) {
   const t = useTranslations('Payments.lateInterest.waive');
-  const utils = trpc.useUtils();
+  const queryClient = useQueryClient();
 
   const [waiveType, setWaiveType] = useState<WaiveType>('BOTH');
   const [reason, setReason] = useState('');
 
   const isReasonValid = reason.trim().length >= 10;
 
-  const waiveMutation = trpc.latePaymentInterest.waive.useMutation({
-    onSuccess: () => {
-      toast.success(t('successToast'));
-      void utils.latePaymentInterest.getForInvoice.invalidate({ invoiceId });
-      onOpenChange(false);
-      setReason('');
-      setWaiveType('BOTH');
-    },
-    onError: error => {
-      toast.error(error.message);
-    },
-  });
+  const waiveMutation = useMutation(
+    trpc.latePaymentInterest.waive.mutationOptions({
+      onSuccess: () => {
+        toast.success(t('successToast'));
+        void queryClient.invalidateQueries({
+          queryKey: trpc.latePaymentInterest.getForInvoice.queryKey({ invoiceId }),
+        });
+        onOpenChange(false);
+        setReason('');
+        setWaiveType('BOTH');
+      },
+      onError: (error: { message: string }) => {
+        toast.error(error.message);
+      },
+    }),
+  );
 
   const handleConfirm = () => {
     if (!isReasonValid) return;
@@ -80,7 +85,11 @@ export function WaiveDialog({ invoiceId, open, onOpenChange }: WaiveDialogProps)
         <div className="space-y-4 py-4">
           <div className="space-y-2">
             <Label htmlFor="waive-type">{t('typeLabel')}</Label>
-            <Select value={waiveType} onValueChange={v => setWaiveType(v as WaiveType)}>
+            <Select
+              value={waiveType}
+              onValueChange={v => {
+                if (v) setWaiveType(v as WaiveType);
+              }}>
               <SelectTrigger id="waive-type">
                 <SelectValue />
               </SelectTrigger>

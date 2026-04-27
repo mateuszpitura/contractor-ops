@@ -56,11 +56,9 @@ export function TimeSourceBadge({ source, importedAt }: TimeSourceBadgeProps) {
   return (
     <TooltipProvider>
       <Tooltip>
-        <TooltipTrigger asChild>
-          <Badge variant={config.variant} className="gap-1 px-1.5 py-0.5">
-            <Icon className="h-3.5 w-3.5" />
-            <span className="text-xs">{config.label}</span>
-          </Badge>
+        <TooltipTrigger render={<Badge variant={config.variant} className="gap-1 px-1.5 py-0.5" />}>
+          <Icon className="h-3.5 w-3.5" />
+          <span className="text-xs">{config.label}</span>
         </TooltipTrigger>
         <TooltipContent>
           <p>{tooltipText}</p>

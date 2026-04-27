@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
-import { trpc } from '@/trpc/init';
+import { portalTrpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -110,14 +110,14 @@ export function PortalReturnFlow({
   // -------------------------------------------------------------------------
 
   const requestMutation = useMutation(
-    trpc.portal.requestReturn.mutationOptions({
+    portalTrpc.portal.requestReturn.mutationOptions({
       onSuccess: () => {
         toast.success(t('returnRequested'));
         queryClient.invalidateQueries({
-          queryKey: trpc.portal.getReturnStatus.queryKey(),
+          queryKey: portalTrpc.portal.getReturnStatus.queryKey(),
         });
         queryClient.invalidateQueries({
-          queryKey: trpc.portal.listEquipment.queryKey(),
+          queryKey: portalTrpc.portal.listEquipment.queryKey(),
         });
         onSuccess();
         // Stay on step 2 to show pending state
@@ -142,7 +142,7 @@ export function PortalReturnFlow({
   // -------------------------------------------------------------------------
 
   const labelQuery = useQuery({
-    ...trpc.portal.getReturnLabel.queryOptions({
+    ...portalTrpc.portal.getReturnLabel.queryOptions({
       returnRequestId: returnRequest?.id ?? '',
     }),
     enabled: step === 3 && !!returnRequest?.id,

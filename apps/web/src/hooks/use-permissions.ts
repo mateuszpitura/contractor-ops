@@ -17,13 +17,14 @@ const permissions: Record<string, Record<string, string[]>> = {
     contract: ['create', 'read', 'update', 'delete'],
     document: ['create', 'read', 'update', 'delete'],
     invoice: ['create', 'read', 'update', 'delete', 'approve'],
-    workflow: ['create', 'read', 'update', 'delete', 'execute'],
+    workflow: ['create', 'read', 'update', 'delete', 'execute', 'override_blocking_task'],
     payment: ['create', 'read', 'update', 'export'],
     report: ['read', 'export'],
     settings: ['read', 'update'],
     integration: ['read', 'update'],
     time: ['read', 'approve'],
     equipment: ['read', 'create', 'update', 'delete'],
+    'admin:boe-rate': ['write'],
   },
   admin: {
     organization: ['update', 'delete'],
@@ -39,6 +40,7 @@ const permissions: Record<string, Record<string, string[]>> = {
     settings: ['read', 'update'],
     integration: ['read', 'update'],
     time: ['read', 'approve'],
+    'admin:boe-rate': ['write'],
     equipment: ['read', 'create', 'update', 'delete'],
   },
   finance_admin: {

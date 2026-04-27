@@ -1,5 +1,6 @@
 'use client';
 
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
@@ -57,21 +58,23 @@ export function SkontoApplyCheckbox({
   onSkontoToggle,
 }: SkontoApplyCheckboxProps) {
   const t = useTranslations('Payments.skonto.paymentRun');
-  const utils = trpc.useUtils();
+  const queryClient = useQueryClient();
 
   const [applied, setApplied] = useState(false);
 
-  const applyMutation = trpc.payment.applySkontoToItem.useMutation({
-    onSuccess: () => {
-      void utils.payment.invalidate();
-    },
-    onError: error => {
-      toast.error(error.message);
-      // Revert optimistic update
-      setApplied(prev => !prev);
-      onSkontoToggle?.(paymentRunItemId, !applied);
-    },
-  });
+  const applyMutation = useMutation(
+    trpc.payment.applySkontoToItem.mutationOptions({
+      onSuccess: () => {
+        void queryClient.invalidateQueries(trpc.payment.pathFilter());
+      },
+      onError: (error: { message: string }) => {
+        toast.error(error.message);
+        // Revert optimistic update
+        setApplied(prev => !prev);
+        onSkontoToggle?.(paymentRunItemId, !applied);
+      },
+    }),
+  );
 
   const handleToggle = useCallback(
     (checked: boolean) => {
@@ -79,11 +82,9 @@ export function SkontoApplyCheckbox({
       onSkontoToggle?.(paymentRunItemId, !!checked);
       applyMutation.mutate({
         paymentRunItemId,
-        invoiceId,
-        applySkontoDiscount: !!checked,
       });
     },
-    [paymentRunItemId, invoiceId, applyMutation, onSkontoToggle],
+    [paymentRunItemId, applyMutation, onSkontoToggle],
   );
 
   // Past-window: disabled checkbox with explanation
@@ -99,7 +100,7 @@ export function SkontoApplyCheckbox({
         <Label
           htmlFor={`skonto-${paymentRunItemId}`}
           className="text-sm text-muted-foreground cursor-not-allowed">
-          {t('pastWindowDescription', { date: windowExpiryDate })}
+          {t('pastWindowDescription', { date: windowExpiryDate ?? '' })}
         </Label>
       </div>
     );

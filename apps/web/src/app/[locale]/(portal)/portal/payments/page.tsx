@@ -15,7 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { trpc } from '@/trpc/init';
+import { portalTrpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -47,7 +47,7 @@ function formatAmount(minor: number, currency: string): string {
 export default function PortalPaymentsPage() {
   const t = useTranslations('Portal');
   const router = useRouter();
-  const paymentsQuery = useQuery(trpc.portal.listPayments.queryOptions());
+  const paymentsQuery = useQuery(portalTrpc.portal.listPayments.queryOptions());
   const payments = paymentsQuery.data;
   const isLoading = paymentsQuery.isPending;
 

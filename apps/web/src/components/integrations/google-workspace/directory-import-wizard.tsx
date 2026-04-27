@@ -152,7 +152,7 @@ export function DirectoryImportWizard({ open, onOpenChange }: DirectoryImportWiz
   }, [groups]);
 
   const roleBreakdown = useMemo(() => {
-    const counts = new Map<string, { count: number; source: string }>();
+    const counts = new Map<string, { role: DirectoryRole; count: number; source: string }>();
 
     for (const user of selectedUsers) {
       let role: DirectoryRole = defaultRole;
@@ -174,12 +174,12 @@ export function DirectoryImportWizard({ open, onOpenChange }: DirectoryImportWiz
       if (existing) {
         existing.count++;
       } else {
-        counts.set(key, { count: 1, source });
+        counts.set(key, { role, count: 1, source });
       }
     }
 
-    return Array.from(counts.entries()).map(([key, { count, source }]) => ({
-      role: ROLE_LABELS[key.split(':')[0] as DirectoryRole] ?? key.split(':')[0],
+    return Array.from(counts.values()).map(({ role, count, source }) => ({
+      role,
       count,
       source,
     }));

@@ -82,13 +82,11 @@ export function ExternalSyncButton({
     return (
       <TooltipProvider>
         <Tooltip>
-          <TooltipTrigger asChild>
-            <span>
-              <Button variant="outline" disabled className="gap-2">
-                <Icon className="h-4 w-4" />
-                Sync from {config.label}
-              </Button>
-            </span>
+          <TooltipTrigger render={<span />}>
+            <Button variant="outline" disabled className="gap-2">
+              <Icon className="h-4 w-4" />
+              Sync from {config.label}
+            </Button>
           </TooltipTrigger>
           <TooltipContent>
             <p>Connect {config.label} in Settings &gt; Integrations to import time entries</p>
@@ -109,11 +107,9 @@ export function ExternalSyncButton({
 
   return (
     <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
-      <PopoverTrigger asChild>
-        <Button variant="outline" className="gap-2">
-          <Icon className="h-4 w-4" />
-          Sync from {config.label}
-        </Button>
+      <PopoverTrigger render={<Button variant="outline" className="gap-2" />}>
+        <Icon className="h-4 w-4" />
+        Sync from {config.label}
       </PopoverTrigger>
       <PopoverContent className="w-80" align="start">
         <div className="space-y-4">
@@ -123,11 +119,16 @@ export function ExternalSyncButton({
           <div className="space-y-1.5">
             <Label className="text-xs">From</Label>
             <Popover open={fromCalendarOpen} onOpenChange={setFromCalendarOpen}>
-              <PopoverTrigger asChild>
-                <Button variant="outline" size="sm" className="w-full justify-start font-normal">
-                  <CalendarDays className="me-2 h-3.5 w-3.5" />
-                  {format(fromDate, 'MMM d, yyyy')}
-                </Button>
+              <PopoverTrigger
+                render={
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full justify-start font-normal"
+                  />
+                }>
+                <CalendarDays className="me-2 h-3.5 w-3.5" />
+                {format(fromDate, 'MMM d, yyyy')}
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
                 <Calendar
@@ -148,11 +149,16 @@ export function ExternalSyncButton({
           <div className="space-y-1.5">
             <Label className="text-xs">To</Label>
             <Popover open={toCalendarOpen} onOpenChange={setToCalendarOpen}>
-              <PopoverTrigger asChild>
-                <Button variant="outline" size="sm" className="w-full justify-start font-normal">
-                  <CalendarDays className="me-2 h-3.5 w-3.5" />
-                  {format(toDate, 'MMM d, yyyy')}
-                </Button>
+              <PopoverTrigger
+                render={
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full justify-start font-normal"
+                  />
+                }>
+                <CalendarDays className="me-2 h-3.5 w-3.5" />
+                {format(toDate, 'MMM d, yyyy')}
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
                 <Calendar

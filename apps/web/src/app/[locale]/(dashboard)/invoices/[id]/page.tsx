@@ -422,7 +422,10 @@ export default function InvoiceDetailPage() {
             />
 
             {/* Match card */}
-            <MatchCard invoice={invoice} onMatchConfirmed={handleInvoiceInvalidate} />
+            <MatchCard
+              invoice={invoice as unknown as Parameters<typeof MatchCard>[0]['invoice']}
+              onMatchConfirmed={handleInvoiceInvalidate}
+            />
 
             {/* Time reconciliation card (D-16) */}
             {!!reconciliation && (

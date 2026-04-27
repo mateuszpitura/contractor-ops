@@ -74,11 +74,9 @@ export function TimesheetHeader({
         </Button>
 
         <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
-          <PopoverTrigger asChild>
-            <Button variant="outline" className="gap-2 font-normal">
-              <CalendarDays className="h-4 w-4" />
-              {weekLabel}
-            </Button>
+          <PopoverTrigger render={<Button variant="outline" className="gap-2 font-normal" />}>
+            <CalendarDays className="h-4 w-4" />
+            {weekLabel}
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="start">
             <Calendar

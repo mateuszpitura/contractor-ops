@@ -22,7 +22,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { trpc } from '@/trpc/init';
+import { portalTrpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -59,16 +59,16 @@ export default function PortalTimePage() {
   // -------------------------------------------------------------------------
 
   const timesheetQuery = useQuery(
-    trpc.portalTime.getTimesheet.queryOptions({
+    portalTrpc.portalTime.getTimesheet.queryOptions({
       weekStartDate: weekStartStr,
     }),
   );
 
-  const contractsQuery = useQuery(trpc.portalTime.getActiveContracts.queryOptions());
+  const contractsQuery = useQuery(portalTrpc.portalTime.getActiveContracts.queryOptions());
 
-  const providersQuery = useQuery(trpc.portalTime.getConnectedProviders.queryOptions());
+  const providersQuery = useQuery(portalTrpc.portalTime.getConnectedProviders.queryOptions());
 
-  const historyQuery = useQuery(trpc.portalTime.listTimesheets.queryOptions({ limit: 10 }));
+  const historyQuery = useQuery(portalTrpc.portalTime.listTimesheets.queryOptions({ limit: 10 }));
 
   // Compute summary stats
   const currentWeekMinutes = timesheetQuery.data?.totalMinutes ?? 0;
@@ -108,10 +108,10 @@ export default function PortalTimePage() {
   // -------------------------------------------------------------------------
 
   const saveDraftMutation = useMutation(
-    trpc.portalTime.saveDraftEntries.mutationOptions({
+    portalTrpc.portalTime.saveDraftEntries.mutationOptions({
       onSuccess: () => {
         void queryClient.invalidateQueries({
-          queryKey: trpc.portalTime.getTimesheet.queryOptions({
+          queryKey: portalTrpc.portalTime.getTimesheet.queryOptions({
             weekStartDate: weekStartStr,
           }).queryKey,
         });
@@ -120,17 +120,17 @@ export default function PortalTimePage() {
   );
 
   const createSingleEntryMutation = useMutation(
-    trpc.portalTime.createSingleEntry.mutationOptions({
+    portalTrpc.portalTime.createSingleEntry.mutationOptions({
       onSuccess: () => {
         toast.success(t('toast.entryAdded'));
         setSingleEntryOpen(false);
         void queryClient.invalidateQueries({
-          queryKey: trpc.portalTime.getTimesheet.queryOptions({
+          queryKey: portalTrpc.portalTime.getTimesheet.queryOptions({
             weekStartDate: weekStartStr,
           }).queryKey,
         });
         void queryClient.invalidateQueries({
-          queryKey: trpc.portalTime.listTimesheets.queryOptions({ limit: 10 }).queryKey,
+          queryKey: portalTrpc.portalTime.listTimesheets.queryOptions({ limit: 10 }).queryKey,
         });
       },
       onError: () => {
@@ -140,16 +140,16 @@ export default function PortalTimePage() {
   );
 
   const submitMutation = useMutation(
-    trpc.portalTime.submitTimesheet.mutationOptions({
+    portalTrpc.portalTime.submitTimesheet.mutationOptions({
       onSuccess: () => {
         toast.success(t('toast.timesheetSubmitted'));
         void queryClient.invalidateQueries({
-          queryKey: trpc.portalTime.getTimesheet.queryOptions({
+          queryKey: portalTrpc.portalTime.getTimesheet.queryOptions({
             weekStartDate: weekStartStr,
           }).queryKey,
         });
         void queryClient.invalidateQueries({
-          queryKey: trpc.portalTime.listTimesheets.queryOptions({ limit: 10 }).queryKey,
+          queryKey: portalTrpc.portalTime.listTimesheets.queryOptions({ limit: 10 }).queryKey,
         });
       },
       onError: () => {
@@ -159,15 +159,15 @@ export default function PortalTimePage() {
   );
 
   const syncMutation = useMutation(
-    trpc.portalTime.syncExternal.mutationOptions({
+    portalTrpc.portalTime.syncExternal.mutationOptions({
       onSuccess: () => {
         void queryClient.invalidateQueries({
-          queryKey: trpc.portalTime.getTimesheet.queryOptions({
+          queryKey: portalTrpc.portalTime.getTimesheet.queryOptions({
             weekStartDate: weekStartStr,
           }).queryKey,
         });
         void queryClient.invalidateQueries({
-          queryKey: trpc.portalTime.listTimesheets.queryOptions({ limit: 10 }).queryKey,
+          queryKey: portalTrpc.portalTime.listTimesheets.queryOptions({ limit: 10 }).queryKey,
         });
       },
     }),

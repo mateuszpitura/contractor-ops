@@ -15,7 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { trpc } from '@/trpc/init';
+import { portalTrpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -51,7 +51,7 @@ function formatDocType(type: string): string {
  */
 export default function PortalDocumentsPage() {
   const t = useTranslations('Portal');
-  const documentsQuery = useQuery(trpc.portal.listDocuments.queryOptions());
+  const documentsQuery = useQuery(portalTrpc.portal.listDocuments.queryOptions());
   const documents = documentsQuery.data;
   const isLoading = documentsQuery.isPending;
 

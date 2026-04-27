@@ -17,7 +17,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Link } from '@/i18n/navigation';
-import { trpc } from '@/trpc/init';
+import { portalTrpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -164,7 +164,7 @@ export default function PortalInvoicesPage() {
   const t = useTranslations('Portal');
   const router = useRouter();
 
-  const { data: invoices, isLoading } = useQuery(trpc.portal.listInvoices.queryOptions());
+  const { data: invoices, isLoading } = useQuery(portalTrpc.portal.listInvoices.queryOptions());
 
   return (
     <div className="space-y-6">

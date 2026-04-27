@@ -6,26 +6,19 @@
 // Shows the last BOE_API-sourced row's createdAt + whether rate changed.
 // Informational only — no action buttons.
 
+import { useQuery } from '@tanstack/react-query';
 import { CheckCircle2Icon, XCircleIcon } from 'lucide-react';
 import { trpc } from '@/trpc/init';
 
 export function PollerStatusStrip() {
-  const { data: entries } = trpc.adminBoeRate.list.useQuery();
+  const { data: entries } = useQuery(trpc.adminBoeRate.list.queryOptions());
 
   if (!entries) {
     return null;
   }
 
   // Find the most recent BOE_API-sourced entry
-  const apiEntries = (
-    entries as Array<{
-      id: string;
-      effectiveFrom: string | Date;
-      ratePercent: string | number;
-      source: 'BOE_API' | 'MANUAL';
-      createdAt: string | Date;
-    }>
-  ).filter(e => e.source === 'BOE_API');
+  const apiEntries = entries.filter(e => e.source === 'BOE_API');
 
   if (apiEntries.length === 0) {
     return (

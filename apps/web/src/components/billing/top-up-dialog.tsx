@@ -86,7 +86,11 @@ export function TopUpDialog({ open, onOpenChange }: TopUpDialogProps) {
         </DialogHeader>
 
         <div className="space-y-4 py-2">
-          <Select value={selectedBundle} onValueChange={setSelectedBundle}>
+          <Select
+            value={selectedBundle}
+            onValueChange={value => {
+              if (value) setSelectedBundle(value);
+            }}>
             <SelectTrigger className="w-full">
               <SelectValue placeholder={t('selectPlaceholder')} />
             </SelectTrigger>

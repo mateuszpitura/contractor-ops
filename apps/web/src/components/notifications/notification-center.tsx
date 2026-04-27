@@ -159,7 +159,7 @@ export function NotificationCenter() {
             variant="outline"
             size="sm"
             // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-            onClick={() => markAllReadMutation.mutate()}
+            onClick={() => markAllReadMutation.mutate(undefined as never)}
             disabled={unreadCount === 0 || markAllReadMutation.isPending}>
             {t('markAllRead')}
           </Button>

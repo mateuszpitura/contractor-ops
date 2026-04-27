@@ -40,9 +40,15 @@ function DialogContent({
   className,
   children,
   showCloseButton = true,
+  onPointerDownOutside: _onPointerDownOutside,
+  onInteractOutside: _onInteractOutside,
+  onEscapeKeyDown: _onEscapeKeyDown,
   ...props
 }: DialogPrimitive.Popup.Props & {
   showCloseButton?: boolean;
+  onPointerDownOutside?: (event: Event) => void;
+  onInteractOutside?: (event: Event) => void;
+  onEscapeKeyDown?: (event: Event) => void;
 }) {
   const t = useTranslations('Common');
 

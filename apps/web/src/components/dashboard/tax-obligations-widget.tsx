@@ -1,5 +1,6 @@
 'use client';
 
+import { useQuery } from '@tanstack/react-query';
 import { AlertCircle, Check, Clock } from 'lucide-react';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
@@ -15,7 +16,7 @@ function formatMoney(minor: number): string {
 }
 
 export function TaxObligationsWidget() {
-  const summaryQuery = trpc.tax.taxSummary.useQuery();
+  const summaryQuery = useQuery(trpc.tax.taxSummary.queryOptions());
 
   if (summaryQuery.isLoading || !summaryQuery.data) {
     return null;

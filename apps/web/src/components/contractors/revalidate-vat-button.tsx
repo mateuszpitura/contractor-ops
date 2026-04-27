@@ -10,6 +10,7 @@
 
 'use client';
 
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Loader2, RefreshCw } from 'lucide-react';
 import { useCallback } from 'react';
 import { toast } from 'sonner';
@@ -21,22 +22,26 @@ interface RevalidateVatButtonProps {
 }
 
 export function RevalidateVatButton({ contractorId }: RevalidateVatButtonProps) {
-  const utils = trpc.useUtils();
-  const mutation = trpc.contractor.revalidateVat.useMutation({
-    onSuccess: result => {
-      if (result.responseStatus === 'valid') {
-        toast.success('VAT validated successfully');
-      } else if (result.responseStatus === 'invalid') {
-        toast.error('VAT number is invalid');
-      } else {
-        toast.warning('Live VAT check unavailable — showing last known result');
-      }
-      void utils.contractor.getById.invalidate({ id: contractorId });
-    },
-    onError: err => {
-      toast.error(err.message || 'Failed to revalidate VAT');
-    },
-  });
+  const queryClient = useQueryClient();
+  const mutation = useMutation(
+    trpc.contractor.revalidateVat.mutationOptions({
+      onSuccess: (result: { responseStatus: 'valid' | 'invalid' | 'stale' | 'unavailable' }) => {
+        if (result.responseStatus === 'valid') {
+          toast.success('VAT validated successfully');
+        } else if (result.responseStatus === 'invalid') {
+          toast.error('VAT number is invalid');
+        } else {
+          toast.warning('Live VAT check unavailable — showing last known result');
+        }
+        void queryClient.invalidateQueries({
+          queryKey: trpc.contractor.getById.queryKey({ id: contractorId }),
+        });
+      },
+      onError: (err: { message?: string }) => {
+        toast.error(err.message || 'Failed to revalidate VAT');
+      },
+    }),
+  );
 
   const handleClick = useCallback(
     () => mutation.mutate({ contractorId }),

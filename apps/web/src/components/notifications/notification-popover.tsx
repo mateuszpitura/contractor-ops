@@ -148,7 +148,7 @@ export function NotificationPopover() {
             <button
               type="button"
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              onClick={() => markAllReadMutation.mutate()}
+              onClick={() => markAllReadMutation.mutate(undefined as never)}
               disabled={markAllReadMutation.isPending}
               className="text-xs text-primary hover:underline disabled:opacity-50">
               {t('markAllRead')}

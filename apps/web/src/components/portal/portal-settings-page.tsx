@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { trpc } from '@/trpc/init';
+import { portalTrpc } from '@/trpc/init';
 import { NotificationPreferencesSection } from './notification-preferences-section';
 import type { ProfileField } from './profile-section';
 import { ProfileSection } from './profile-section';
@@ -50,13 +50,13 @@ export function PortalSettingsPage() {
   const queryClient = useQueryClient();
 
   // Fetch profile data
-  const profileQuery = useQuery(trpc.portal.getProfile.queryOptions());
+  const profileQuery = useQuery(portalTrpc.portal.getProfile.queryOptions());
 
   // Mutations
-  const updateContactInfo = useMutation(trpc.portal.updateContactInfo.mutationOptions());
+  const updateContactInfo = useMutation(portalTrpc.portal.updateContactInfo.mutationOptions());
 
   const submitFinancialChange = useMutation(
-    trpc.portal.submitFinancialChangeRequest.mutationOptions(),
+    portalTrpc.portal.submitFinancialChangeRequest.mutationOptions(),
   );
 
   const profile = profileQuery.data;
@@ -73,7 +73,7 @@ export function PortalSettingsPage() {
       countryCode: values.countryCode || null,
     });
     await queryClient.invalidateQueries({
-      queryKey: trpc.portal.getProfile.queryOptions().queryKey,
+      queryKey: portalTrpc.portal.getProfile.queryOptions().queryKey,
     });
     toast.success(t('settings.profileUpdated'));
   };
@@ -87,7 +87,7 @@ export function PortalSettingsPage() {
       taxId: values.taxId || undefined,
     });
     await queryClient.invalidateQueries({
-      queryKey: trpc.portal.getProfile.queryOptions().queryKey,
+      queryKey: portalTrpc.portal.getProfile.queryOptions().queryKey,
     });
     toast.success(t('settings.changeRequestSubmitted'));
   };

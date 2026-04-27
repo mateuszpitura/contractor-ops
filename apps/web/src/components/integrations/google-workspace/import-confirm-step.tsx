@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { ROLE_LABELS } from './role-assignment-controls';
 
 // ---------------------------------------------------------------------------
 // ImportConfirmStep
@@ -13,7 +14,7 @@ import { Card, CardContent } from '@/components/ui/card';
 
 interface ImportConfirmStepProps {
   userCount: number;
-  roleBreakdown: Array<{ role: DirectoryRole; count: number; source: string }>;
+  roleBreakdown: ReadonlyArray<{ role: DirectoryRole; count: number; source: string }>;
   onConfirm: () => void;
   onBack: () => void;
   isImporting: boolean;
@@ -39,7 +40,7 @@ export function ImportConfirmStep({
             <ul className="space-y-1 text-sm text-muted-foreground">
               {roleBreakdown.map(item => (
                 <li key={`${item.role}-${item.source}`}>
-                  {t('roleCount', { count: item.count, role: item.role })}{' '}
+                  {t('roleCount', { count: item.count, role: ROLE_LABELS[item.role] })}{' '}
                   <span className="text-xs">{t('roleSource', { source: item.source })}</span>
                 </li>
               ))}

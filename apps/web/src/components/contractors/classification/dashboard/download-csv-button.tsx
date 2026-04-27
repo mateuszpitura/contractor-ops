@@ -8,6 +8,7 @@
 
 'use client';
 
+import { useMutation } from '@tanstack/react-query';
 import { Download, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
@@ -21,23 +22,25 @@ export interface DownloadCsvButtonProps {
 export function DownloadCsvButton({ market }: DownloadCsvButtonProps) {
   const t = useTranslations('Classification.polish.dashboard');
 
-  const mutation = trpc.classificationDashboard.exportMarketCsv.useMutation({
-    onSuccess: result => {
-      // Trigger a browser download via a temporary anchor. R2 signed URLs are
-      // cross-origin so `download` and `target` have no effect; the browser
-      // relies on the Content-Disposition: attachment header set by R2.
-      if (typeof window !== 'undefined') {
-        const anchor = document.createElement('a');
-        anchor.href = result.url;
-        document.body.appendChild(anchor);
-        anchor.click();
-        anchor.remove();
-      }
-    },
-    onError: () => {
-      toast.error(t('downloadCsv'));
-    },
-  });
+  const mutation = useMutation(
+    trpc.classificationDashboard.exportMarketCsv.mutationOptions({
+      onSuccess: (result: { url: string }) => {
+        // Trigger a browser download via a temporary anchor. R2 signed URLs are
+        // cross-origin so `download` and `target` have no effect; the browser
+        // relies on the Content-Disposition: attachment header set by R2.
+        if (typeof window !== 'undefined') {
+          const anchor = document.createElement('a');
+          anchor.href = result.url;
+          document.body.appendChild(anchor);
+          anchor.click();
+          anchor.remove();
+        }
+      },
+      onError: () => {
+        toast.error(t('downloadCsv'));
+      },
+    }),
+  );
 
   const isPending = mutation.status === 'pending';
 

@@ -8,7 +8,7 @@ import { SummaryCard, SummaryCardSkeleton } from '@/components/portal/summary-ca
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Link } from '@/i18n/navigation';
-import { trpc } from '@/trpc/init';
+import { portalTrpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -60,8 +60,8 @@ function formatDate(date: Date | string): string {
  */
 export default function PortalOverviewPage() {
   const t = useTranslations('Portal');
-  const overviewQuery = useQuery(trpc.portal.overview.queryOptions());
-  const sessionQuery = useQuery(trpc.portal.getSession.queryOptions());
+  const overviewQuery = useQuery(portalTrpc.portal.overview.queryOptions());
+  const sessionQuery = useQuery(portalTrpc.portal.getSession.queryOptions());
 
   const overview = overviewQuery.data;
   const session = sessionQuery.data;

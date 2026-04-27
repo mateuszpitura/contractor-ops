@@ -21,7 +21,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { trpc } from '@/trpc/init';
+import { portalTrpc } from '@/trpc/init';
 import { PortalReturnFlow } from './portal-return-flow';
 
 // ---------------------------------------------------------------------------
@@ -44,7 +44,7 @@ export function PortalEquipmentTab() {
   // Queries
   // -------------------------------------------------------------------------
 
-  const equipmentQuery = useQuery(trpc.portal.listEquipment.queryOptions());
+  const equipmentQuery = useQuery(portalTrpc.portal.listEquipment.queryOptions());
   const equipment = (equipmentQuery.data ?? []) as unknown as Array<{
     assignmentId: string;
     assignedAt: string;
@@ -61,7 +61,7 @@ export function PortalEquipmentTab() {
     } | null;
   }>;
 
-  const returnStatusQuery = useQuery(trpc.portal.getReturnStatus.queryOptions());
+  const returnStatusQuery = useQuery(portalTrpc.portal.getReturnStatus.queryOptions());
   const returnRequest = returnStatusQuery.data as unknown as {
     id: string;
     status: string;
@@ -74,15 +74,15 @@ export function PortalEquipmentTab() {
   // -------------------------------------------------------------------------
 
   const cancelMutation = useMutation(
-    trpc.portal.cancelReturn.mutationOptions({
+    portalTrpc.portal.cancelReturn.mutationOptions({
       onSuccess: () => {
         toast.success(tReturn('cancelledToast'));
         setCancelDialogOpen(false);
         queryClient.invalidateQueries({
-          queryKey: trpc.portal.getReturnStatus.queryKey(),
+          queryKey: portalTrpc.portal.getReturnStatus.queryKey(),
         });
         queryClient.invalidateQueries({
-          queryKey: trpc.portal.listEquipment.queryKey(),
+          queryKey: portalTrpc.portal.listEquipment.queryKey(),
         });
       },
       onError: () => {
@@ -225,10 +225,10 @@ export function PortalEquipmentTab() {
         // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onSuccess={() => {
           queryClient.invalidateQueries({
-            queryKey: trpc.portal.getReturnStatus.queryKey(),
+            queryKey: portalTrpc.portal.getReturnStatus.queryKey(),
           });
           queryClient.invalidateQueries({
-            queryKey: trpc.portal.listEquipment.queryKey(),
+            queryKey: portalTrpc.portal.listEquipment.queryKey(),
           });
         }}
       />

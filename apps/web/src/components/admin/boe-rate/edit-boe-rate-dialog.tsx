@@ -5,7 +5,7 @@
 // Phase 63 · Plan 05 · D-10 — Dialog for editing an existing BoE base rate entry.
 // Warning tooltip shown for cron-sourced (BOE_API) entries.
 
-import { useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { AlertTriangleIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -23,14 +23,14 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { trpc } from '@/trpc/init';
 
+// Source of truth: router output. Avoids drift when the Prisma generator
+// changes runtime types (e.g. Decimal vs string|number for ratePercent).
+type BoeRateEntry = import('@trpc/server').inferRouterOutputs<
+  import('@contractor-ops/api').AppRouter
+>['adminBoeRate']['list'][number];
+
 interface EditBoeRateDialogProps {
-  entry: {
-    id: string;
-    effectiveFrom: string | Date;
-    ratePercent: string | number;
-    source: 'BOE_API' | 'MANUAL';
-    notes: string | null;
-  };
+  entry: BoeRateEntry;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
@@ -46,18 +46,22 @@ export function EditBoeRateDialog({ entry, open, onOpenChange }: EditBoeRateDial
     setNotes(entry.notes ?? '');
   }, [entry]);
 
-  const updateMutation = trpc.adminBoeRate.update.useMutation({
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [['adminBoeRate', 'list']] });
-      toast.success('Rate updated', {
-        description: 'BoE base rate entry has been updated.',
-      });
-      onOpenChange(false);
-    },
-    onError: error => {
-      toast.error('Error', { description: error.message });
-    },
-  });
+  const updateMutation = useMutation(
+    trpc.adminBoeRate.update.mutationOptions({
+      onSuccess: () => {
+        void queryClient.invalidateQueries({
+          queryKey: trpc.adminBoeRate.list.queryKey(),
+        });
+        toast.success('Rate updated', {
+          description: 'BoE base rate entry has been updated.',
+        });
+        onOpenChange(false);
+      },
+      onError: error => {
+        toast.error('Error', { description: error.message });
+      },
+    }),
+  );
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

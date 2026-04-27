@@ -1,5 +1,6 @@
 'use client';
 
+import { useQuery } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
 import {
   Select,
@@ -18,8 +19,18 @@ interface VatRateSelectorProps {
   disabled?: boolean;
 }
 
+interface TaxRateOption {
+  id: string;
+  code: string;
+  description: string;
+  ratePercent: number;
+  isDefault: boolean;
+  isExempt: boolean;
+  isReverseCharge: boolean;
+}
+
 export function VatRateSelector({ value, onChange, disabled }: VatRateSelectorProps) {
-  const ratesQuery = trpc.tax.getRates.useQuery();
+  const ratesQuery = useQuery(trpc.tax.getRates.queryOptions());
 
   if (ratesQuery.isLoading) {
     return (
@@ -39,16 +50,22 @@ export function VatRateSelector({ value, onChange, disabled }: VatRateSelectorPr
   }
 
   // Group rates by category
-  const defaultRates = ratesQuery.data.filter(
+  const rates = ratesQuery.data as TaxRateOption[];
+  const defaultRates = rates.filter(
     r => !(r.isExempt || r.isReverseCharge) && r.ratePercent > 0 && r.isDefault,
   );
-  const reducedRates = ratesQuery.data.filter(
+  const reducedRates = rates.filter(
     r => !(r.isExempt || r.isReverseCharge) && r.ratePercent > 0 && !r.isDefault,
   );
-  const exemptRates = ratesQuery.data.filter(r => r.isExempt || r.ratePercent === 0);
+  const exemptRates = rates.filter(r => r.isExempt || r.ratePercent === 0);
 
   return (
-    <Select value={value} onValueChange={onChange} disabled={disabled}>
+    <Select
+      value={value}
+      onValueChange={code => {
+        if (code) onChange(code);
+      }}
+      disabled={disabled}>
       <SelectTrigger>
         <SelectValue placeholder="Select VAT rate" />
       </SelectTrigger>

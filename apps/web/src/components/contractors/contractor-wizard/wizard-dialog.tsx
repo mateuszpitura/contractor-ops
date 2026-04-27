@@ -5,6 +5,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Check, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
+import type { Resolver } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -97,7 +98,7 @@ const wizardSchema = z.object({
     .pipe(z.string().min(1).optional()),
 });
 
-export type WizardFormValues = z.infer<typeof wizardSchema>;
+export type WizardFormValues = z.input<typeof wizardSchema>;
 
 // Per-step validation schemas
 const stepSchemas = [
@@ -188,30 +189,30 @@ export function WizardDialog({ open, onOpenChange }: WizardDialogProps) {
   const [showDiscardDialog, setShowDiscardDialog] = useState(false);
 
   const form = useForm<WizardFormValues>({
-    resolver: zodResolver(wizardSchema),
+    resolver: zodResolver(wizardSchema) as Resolver<WizardFormValues>,
     defaultValues: {
       legalName: '',
       displayName: '',
       type: undefined,
       taxId: '',
-      vatId: undefined,
-      registrationNumber: undefined,
+      vatId: '',
+      registrationNumber: '',
       email: '',
-      phone: undefined,
+      phone: '',
       countryCode: 'PL',
       currency: 'PLN',
-      addressLine1: undefined,
-      addressLine2: undefined,
-      city: undefined,
-      postalCode: undefined,
+      addressLine1: '',
+      addressLine2: '',
+      city: '',
+      postalCode: '',
       billingModel: '',
       rateValueMinor: 0,
-      bankAccount: undefined,
-      paymentTermsDays: undefined,
+      bankAccount: '',
+      paymentTermsDays: '',
       ownerUserId: '',
-      primaryTeamId: undefined,
-      primaryProjectId: undefined,
-      defaultCostCenterId: undefined,
+      primaryTeamId: '',
+      primaryProjectId: '',
+      defaultCostCenterId: '',
     },
   });
 

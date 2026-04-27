@@ -41,20 +41,21 @@ export function PeppolParticipantDeregisterDialog({
   const tErrors = useTranslations('EInvoice.Errors');
   const queryClient = useQueryClient();
 
-  const disconnectMutation = useMutation({
-    ...trpc.peppol.disconnect.mutationOptions(),
-    onSuccess: () => {
-      toast.success(t('deregisterButton'));
-      queryClient.invalidateQueries({
-        queryKey: trpc.peppol.listParticipants.queryKey(),
-      });
-      queryClient.invalidateQueries({ queryKey: trpc.peppol.getStatus.queryKey() });
-      onOpenChange(false);
-    },
-    onError: (err: Error) => {
-      toast.error(err.message || tErrors('Generic'));
-    },
-  });
+  const disconnectMutation = useMutation(
+    trpc.peppol.disconnect.mutationOptions({
+      onSuccess: () => {
+        toast.success(t('deregisterButton'));
+        queryClient.invalidateQueries({
+          queryKey: trpc.peppol.listParticipants.queryKey(),
+        });
+        queryClient.invalidateQueries({ queryKey: trpc.peppol.getStatus.queryKey() });
+        onOpenChange(false);
+      },
+      onError: (err: { message?: string }) => {
+        toast.error(err.message || tErrors('Generic'));
+      },
+    }),
+  );
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>

@@ -66,7 +66,7 @@ export function StepCompany({ form }: StepCompanyProps) {
         ];
         for (const [sourceKey, targetKey] of gusFieldMap) {
           if (data[sourceKey]) {
-            setValue(targetKey, data[sourceKey], { shouldDirty: true });
+            setValue(targetKey, String(data[sourceKey]), { shouldDirty: true });
           }
         }
         toast.success(t('nipSuccess'));

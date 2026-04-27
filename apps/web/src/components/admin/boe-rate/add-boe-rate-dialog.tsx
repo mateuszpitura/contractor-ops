@@ -4,7 +4,7 @@
 //
 // Phase 63 · Plan 05 · D-10 — Dialog for adding a new BoE base rate entry.
 
-import { useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -33,19 +33,23 @@ export function AddBoeRateDialog({ open, onOpenChange }: AddBoeRateDialogProps) 
 
   const queryClient = useQueryClient();
 
-  const insertMutation = trpc.adminBoeRate.insert.useMutation({
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [['adminBoeRate', 'list']] });
-      toast.success('Rate added', {
-        description: 'BoE base rate entry has been saved.',
-      });
-      resetForm();
-      onOpenChange(false);
-    },
-    onError: error => {
-      toast.error('Error', { description: error.message });
-    },
-  });
+  const insertMutation = useMutation(
+    trpc.adminBoeRate.insert.mutationOptions({
+      onSuccess: () => {
+        void queryClient.invalidateQueries({
+          queryKey: trpc.adminBoeRate.list.queryKey(),
+        });
+        toast.success('Rate added', {
+          description: 'BoE base rate entry has been saved.',
+        });
+        resetForm();
+        onOpenChange(false);
+      },
+      onError: error => {
+        toast.error('Error', { description: error.message });
+      },
+    }),
+  );
 
   function resetForm() {
     setEffectiveFrom('');

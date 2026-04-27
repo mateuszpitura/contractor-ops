@@ -1,12 +1,12 @@
 import { withCronMonitor } from '@contractor-ops/api/services/cron-monitor';
 import { dispatch } from '@contractor-ops/api/services/notification-service';
-import { resolveRbacRecipients } from '@contractor-ops/api/services/rbac-recipients';
-import { prisma, prismaRaw } from '@contractor-ops/db';
+import { prisma } from '@contractor-ops/db';
 import { createCronLogger } from '@contractor-ops/logger';
 import { metrics } from '@contractor-ops/logger/metrics';
 import * as Sentry from '@sentry/nextjs';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { detectDrvClearanceExpiries } from './drv-clearance-expiries';
 
 const log = createCronLogger('reminders');
 
@@ -327,70 +327,6 @@ async function detectOverdueTasks(): Promise<number> {
 // rows with outcome in {SELBSTANDIG, ABHANGIG}. Day-exact match on
 // (gte target, lt target+1) avoids timezone drift. One-shot dedup keyed on
 // (type, entityType=CONTRACTOR, entityId=clearance.id) per T-60-12.
-// ---------------------------------------------------------------------------
-
-const DRV_EXPIRY_BANDS = [
-  { days: 90, type: 'classification.drv_expiry_90d' as const },
-  { days: 30, type: 'classification.drv_expiry_30d' as const },
-  { days: 7, type: 'classification.drv_expiry_7d' as const },
-];
-
-export async function detectDrvClearanceExpiries(): Promise<number> {
-  const now = new Date();
-  const today = startOfDay(now);
-  let notified = 0;
-
-  for (const band of DRV_EXPIRY_BANDS) {
-    const target = addDays(today, band.days);
-    const targetEnd = addDays(target, 1);
-
-    // PHASE-60-CROSS-ORG-AGGREGATE: cron runs without tenant frame — scans
-    // clearances across every organization to fire lead-time reminders.
-    const clearances = await prismaRaw.statusfeststellungsverfahren.findMany({
-      where: {
-        validTo: { gte: target, lt: targetEnd },
-        outcome: { in: ['SELBSTANDIG', 'ABHANGIG'] },
-      },
-    });
-
-    for (const clearance of clearances) {
-      // T-60-12 — one-shot dedup on (type, CONTRACTOR, clearance.id).
-      const prior = await prismaRaw.notification.findFirst({
-        where: {
-          type: band.type,
-          entityType: 'CONTRACTOR',
-          entityId: clearance.id,
-        },
-      });
-      if (prior) continue;
-
-      const recipientUserIds = await resolveRbacRecipients(
-        clearance.organizationId,
-        'contractor:read',
-      );
-      if (recipientUserIds.length === 0) continue;
-
-      const validToIso = clearance.validTo ? clearance.validTo.toISOString().slice(0, 10) : '';
-
-      // T-60-10 — never log drvReference verbatim. The notification title/body
-      // text is delivered to recipients who already have contractor:read,
-      // so including it in-band is acceptable; logs only reference clearance.id.
-      await dispatch({
-        organizationId: clearance.organizationId,
-        type: band.type,
-        recipientUserIds,
-        title: `DRV clearance expires in ${band.days} days`,
-        body: `Reference ${clearance.drvReference}, valid until ${validToIso}. Begin the renewal filing — DRV processing typically takes 3-6 months.`,
-        entityType: 'CONTRACTOR',
-        entityId: clearance.id,
-      });
-      notified++;
-    }
-  }
-
-  return notified;
-}
-
 // ---------------------------------------------------------------------------
 // Recipient resolution
 // ---------------------------------------------------------------------------

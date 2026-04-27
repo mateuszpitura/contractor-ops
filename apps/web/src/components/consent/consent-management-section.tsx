@@ -2,6 +2,7 @@
 
 import type { ConsentPurpose } from '@contractor-ops/validators';
 import { OPTIONAL_PURPOSES, REQUIRED_PURPOSES } from '@contractor-ops/validators';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Download, FileText, Globe, History, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback } from 'react';
@@ -20,50 +21,63 @@ import { PrivacyNoticeDisplay } from './privacy-notice-display';
 
 export function ConsentManagementSection() {
   const t = useTranslations('Consent');
-  const utils = trpc.useUtils();
+  const queryClient = useQueryClient();
 
   // Queries
-  const { data: notice, isLoading: noticeLoading } = trpc.consent.getPrivacyNotice.useQuery();
-  const { data: currentConsent, isLoading: consentLoading } =
-    trpc.consent.getCurrentConsent.useQuery();
-  const { data: consentHistory } = trpc.consent.getConsentHistory.useQuery({});
-  const { data: crossBorder } = trpc.consent.getCrossBorderStatus.useQuery();
+  const { data: notice, isLoading: noticeLoading } = useQuery(
+    trpc.consent.getPrivacyNotice.queryOptions(),
+  );
+  const { data: currentConsent, isLoading: consentLoading } = useQuery(
+    trpc.consent.getCurrentConsent.queryOptions(),
+  );
+  const { data: consentHistory } = useQuery(trpc.consent.getConsentHistory.queryOptions({}));
+  const { data: crossBorder } = useQuery(trpc.consent.getCrossBorderStatus.queryOptions());
 
   // Mutations
-  const grantMutation = trpc.consent.grant.useMutation({
-    onSuccess: () => {
-      void utils.consent.getCurrentConsent.invalidate();
-      void utils.consent.getConsentHistory.invalidate();
-      toast.success(t('settings.consentUpdated'));
-    },
-    onError: error => {
-      toast.error(error.message);
-    },
-  });
-
-  const downloadDPAMutation = trpc.consent.downloadDPA.useMutation({
-    onSuccess: data => {
-      downloadHtml(data.content, data.filename);
-      toast.success(t('settings.dpaDownloaded'));
-    },
-    onError: error => {
-      toast.error(error.message);
-    },
-  });
-
-  const downloadSCCMutation = trpc.consent.downloadSCC.useMutation({
-    onSuccess: data => {
-      downloadHtml(data.content, data.filename);
-      toast.success(t('settings.sccDownloaded'));
-    },
-    onError: error => {
-      if (error.data?.code === 'NOT_FOUND') {
-        toast.info(t('settings.sccNotRequired'));
-      } else {
+  const grantMutation = useMutation(
+    trpc.consent.grant.mutationOptions({
+      onSuccess: () => {
+        void queryClient.invalidateQueries({
+          queryKey: trpc.consent.getCurrentConsent.queryKey(),
+        });
+        void queryClient.invalidateQueries({
+          queryKey: trpc.consent.getConsentHistory.queryKey({}),
+        });
+        toast.success(t('settings.consentUpdated'));
+      },
+      onError: error => {
         toast.error(error.message);
-      }
-    },
-  });
+      },
+    }),
+  );
+
+  const downloadDPAMutation = useMutation(
+    trpc.consent.downloadDPA.mutationOptions({
+      onSuccess: data => {
+        downloadHtml(data.content, data.filename);
+        toast.success(t('settings.dpaDownloaded'));
+      },
+      onError: error => {
+        toast.error(error.message);
+      },
+    }),
+  );
+
+  const downloadSCCMutation = useMutation(
+    trpc.consent.downloadSCC.mutationOptions({
+      onSuccess: data => {
+        downloadHtml(data.content, data.filename);
+        toast.success(t('settings.sccDownloaded'));
+      },
+      onError: error => {
+        if (error.data?.code === 'NOT_FOUND') {
+          toast.info(t('settings.sccNotRequired'));
+        } else {
+          toast.error(error.message);
+        }
+      },
+    }),
+  );
 
   const handleToggle = useCallback(
     (purpose: ConsentPurpose, granted: boolean) => {
@@ -259,8 +273,8 @@ export function ConsentManagementSection() {
                   </div>
                   <p className="text-xs text-muted-foreground">
                     {t('settings.crossBorderInfo', {
-                      orgRegion: crossBorder.orgRegion,
-                      hostingRegion: crossBorder.hostingRegion,
+                      orgRegion: crossBorder.orgRegion ?? '',
+                      hostingRegion: crossBorder.hostingRegion ?? '',
                     })}
                   </p>
                 </div>

@@ -138,17 +138,19 @@ export function SingleEntryForm({
           <div className="space-y-2">
             <Label htmlFor={`${id}-entry-date`}>Date</Label>
             <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  id={`${id}-entry-date`}
-                  variant="outline"
-                  className={cn(
-                    'w-full justify-start font-normal',
-                    !date && 'text-muted-foreground',
-                  )}>
-                  <CalendarDays className="me-2 h-4 w-4" />
-                  {date ? format(date, 'MMM d, yyyy') : 'Select date'}
-                </Button>
+              <PopoverTrigger
+                render={
+                  <Button
+                    id={`${id}-entry-date`}
+                    variant="outline"
+                    className={cn(
+                      'w-full justify-start font-normal',
+                      !date && 'text-muted-foreground',
+                    )}
+                  />
+                }>
+                <CalendarDays className="me-2 h-4 w-4" />
+                {date ? format(date, 'MMM d, yyyy') : 'Select date'}
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
                 <Calendar
@@ -169,7 +171,11 @@ export function SingleEntryForm({
           {/* Project select */}
           <div className="space-y-2">
             <Label htmlFor={`${id}-entry-project`}>Project</Label>
-            <Select value={contractId} onValueChange={setContractId}>
+            <Select
+              value={contractId}
+              onValueChange={value => {
+                if (value) setContractId(value);
+              }}>
               <SelectTrigger id={`${id}-entry-project`}>
                 <SelectValue placeholder="Select a project" />
               </SelectTrigger>

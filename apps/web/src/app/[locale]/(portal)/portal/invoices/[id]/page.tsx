@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Link } from '@/i18n/navigation';
-import { trpc } from '@/trpc/init';
+import { portalTrpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -114,7 +114,7 @@ export default function PortalInvoiceDetailPage() {
   const params = useParams<{ id: string }>();
 
   const { data: invoice, isLoading } = useQuery(
-    trpc.portal.getInvoice.queryOptions({ id: params.id }),
+    portalTrpc.portal.getInvoice.queryOptions({ id: params.id }),
   );
 
   if (isLoading) {

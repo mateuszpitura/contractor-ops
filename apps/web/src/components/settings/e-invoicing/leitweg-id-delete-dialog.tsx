@@ -44,17 +44,18 @@ export function LeitwegIdDeleteDialog({
   const tCommon = useTranslations('Common');
   const queryClient = useQueryClient();
 
-  const deleteMutation = useMutation({
-    ...trpc.leitwegId.delete.mutationOptions(),
-    onSuccess: () => {
-      toast.success(`${DELETE_BUTTON}: ${value}`);
-      queryClient.invalidateQueries({ queryKey: trpc.leitwegId.list.queryKey() });
-      onOpenChange(false);
-    },
-    onError: (err: Error) => {
-      toast.error(err.message || tErrors('Generic'));
-    },
-  });
+  const deleteMutation = useMutation(
+    trpc.leitwegId.delete.mutationOptions({
+      onSuccess: () => {
+        toast.success(`${DELETE_BUTTON}: ${value}`);
+        queryClient.invalidateQueries({ queryKey: trpc.leitwegId.list.queryKey() });
+        onOpenChange(false);
+      },
+      onError: (err: { message?: string }) => {
+        toast.error(err.message || tErrors('Generic'));
+      },
+    }),
+  );
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>

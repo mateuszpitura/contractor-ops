@@ -10,6 +10,7 @@
 
 'use client';
 
+import { useQueryClient } from '@tanstack/react-query';
 import { RotateCw } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
@@ -20,7 +21,7 @@ const MIN_SPINNER_MS = 500;
 
 export function RefreshDashboardButton() {
   const t = useTranslations('Classification.polish.dashboard');
-  const utils = trpc.useUtils();
+  const queryClient = useQueryClient();
   const [busy, setBusy] = useState(false);
   const [announcement, setAnnouncement] = useState<string>('');
 
@@ -29,7 +30,12 @@ export function RefreshDashboardButton() {
     setAnnouncement('');
     const start = Date.now();
     try {
-      await utils.classificationDashboard.invalidate();
+      // classificationDashboard is omitted from AppRouter when the kill-switch
+      // is off; this component only renders when classification UI is enabled,
+      // so optional-chain with a no-op fallback handles the gated build.
+      await queryClient.invalidateQueries(
+        trpc.classificationDashboard?.pathFilter?.() ?? undefined,
+      );
     } finally {
       const elapsed = Date.now() - start;
       if (elapsed < MIN_SPINNER_MS) {
@@ -38,7 +44,7 @@ export function RefreshDashboardButton() {
       setBusy(false);
       setAnnouncement(t('refreshAnnouncement'));
     }
-  }, [utils.classificationDashboard, t]);
+  }, [queryClient, t]);
 
   return (
     <>

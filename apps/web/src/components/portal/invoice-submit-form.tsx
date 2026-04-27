@@ -34,7 +34,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { trpc } from '@/trpc/init';
+import { portalTrpc, trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Schema
@@ -430,7 +430,7 @@ function useFileUploadWithOcr(t: (key: string) => string) {
   const [ocrPopulated, setOcrPopulated] = useState(false);
   const [creditExhausted, setCreditExhausted] = useState(false);
 
-  const getUploadUrl = useMutation(trpc.portal.getUploadUrl.mutationOptions());
+  const getUploadUrl = useMutation(portalTrpc.portal.getUploadUrl.mutationOptions());
   const ocrTriggerMutation = useMutation(trpc.ocr.portalTrigger.mutationOptions({}));
 
   const ocrQuery = useQuery({
@@ -622,10 +622,10 @@ export function InvoiceSubmitForm() {
 
   // Fetch active contracts
   const { data: contracts, isLoading: contractsLoading } = useQuery(
-    trpc.portal.getActiveContracts.queryOptions(),
+    portalTrpc.portal.getActiveContracts.queryOptions(),
   );
 
-  const submitInvoice = useMutation(trpc.portal.submitInvoice.mutationOptions());
+  const submitInvoice = useMutation(portalTrpc.portal.submitInvoice.mutationOptions());
 
   // Cascade animation
   const visibleFields = usePrefillCascade(ocrPopulated);

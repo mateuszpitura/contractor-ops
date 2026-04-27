@@ -1,5 +1,6 @@
 'use client';
 
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
@@ -44,7 +45,7 @@ export function DefaultSkontoSection({
   existingDefault,
 }: DefaultSkontoSectionProps) {
   const t = useTranslations('Payments.skonto.billingProfile');
-  const utils = trpc.useUtils();
+  const queryClient = useQueryClient();
 
   const [isOpen, setIsOpen] = useState(!!existingDefault);
   const [errors, setErrors] = useState<FormErrors>({});
@@ -55,26 +56,30 @@ export function DefaultSkontoSection({
     netDays: existingDefault?.netDays?.toString() ?? '',
   });
 
-  const upsertMutation = trpc.skonto.upsertForBillingProfile.useMutation({
-    onSuccess: () => {
-      toast.success(t('savedToast'));
-      void utils.skonto.invalidate();
-    },
-    onError: error => {
-      toast.error(error.message);
-    },
-  });
+  const upsertMutation = useMutation(
+    trpc.skonto.upsertForBillingProfile.mutationOptions({
+      onSuccess: () => {
+        toast.success(t('savedToast'));
+        void queryClient.invalidateQueries(trpc.skonto.pathFilter());
+      },
+      onError: (error: { message: string }) => {
+        toast.error(error.message);
+      },
+    }),
+  );
 
-  const deleteMutation = trpc.skonto.deleteForBillingProfile.useMutation({
-    onSuccess: () => {
-      toast.success(t('deletedToast'));
-      setForm({ discountPercent: '', discountDays: '', netDays: '' });
-      void utils.skonto.invalidate();
-    },
-    onError: error => {
-      toast.error(error.message);
-    },
-  });
+  const deleteMutation = useMutation(
+    trpc.skonto.deleteForBillingProfile.mutationOptions({
+      onSuccess: () => {
+        toast.success(t('deletedToast'));
+        setForm({ discountPercent: '', discountDays: '', netDays: '' });
+        void queryClient.invalidateQueries(trpc.skonto.pathFilter());
+      },
+      onError: (error: { message: string }) => {
+        toast.error(error.message);
+      },
+    }),
+  );
 
   const validateField = useCallback(
     (name: keyof FormState, value: string): string | undefined => {
@@ -123,7 +128,7 @@ export function DefaultSkontoSection({
     if (!validateAll()) return;
     upsertMutation.mutate({
       billingProfileId,
-      discountPercent: Number(form.discountPercent),
+      percent: Number(form.discountPercent),
       discountDays: Number(form.discountDays),
       netDays: Number(form.netDays),
     });
@@ -137,10 +142,9 @@ export function DefaultSkontoSection({
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <CollapsibleTrigger asChild>
-        <Button variant="ghost" className="w-full justify-start text-sm font-medium">
-          {t('heading')}
-        </Button>
+      <CollapsibleTrigger
+        render={<Button variant="ghost" className="w-full justify-start text-sm font-medium" />}>
+        {t('heading')}
       </CollapsibleTrigger>
       <CollapsibleContent className="space-y-4 pt-4">
         <div className="grid grid-cols-3 gap-4">

@@ -1,5 +1,6 @@
 'use client';
 
+import { useMutation } from '@tanstack/react-query';
 import { ChevronDown, Info } from 'lucide-react';
 import { toast } from 'sonner';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -23,12 +24,14 @@ export function ReverseChargeBanner({
   isReverseCharge,
   onToggle,
 }: ReverseChargeBannerProps) {
-  const toggleMutation = trpc.invoice.toggleReverseCharge.useMutation({
-    onSuccess: (_, vars) => {
-      toast.success(vars.isReverseCharge ? 'Reverse charge applied' : 'Reverse charge removed');
-      onToggle?.(vars.isReverseCharge);
-    },
-  });
+  const toggleMutation = useMutation(
+    trpc.invoice.toggleReverseCharge.mutationOptions({
+      onSuccess: (_: unknown, vars: { isReverseCharge: boolean }) => {
+        toast.success(vars.isReverseCharge ? 'Reverse charge applied' : 'Reverse charge removed');
+        onToggle?.(vars.isReverseCharge);
+      },
+    }),
+  );
 
   if (!isReverseCharge) return null;
 
@@ -41,10 +44,9 @@ export function ReverseChargeBanner({
       </AlertDescription>
       <div className="mt-2">
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="h-7 text-xs">
-              Override <ChevronDown className="ms-1 h-3 w-3" />
-            </Button>
+          <DropdownMenuTrigger
+            render={<Button variant="ghost" size="sm" className="h-7 text-xs" />}>
+            Override <ChevronDown className="ms-1 h-3 w-3" />
           </DropdownMenuTrigger>
           <DropdownMenuContent>
             <DropdownMenuItem

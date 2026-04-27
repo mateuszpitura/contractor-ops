@@ -5,7 +5,7 @@ import { FileText } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { ContractCard, ContractCardSkeleton } from '@/components/portal/contract-card';
 import { EmptyState } from '@/components/shared/empty-state';
-import { trpc } from '@/trpc/init';
+import { portalTrpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Component
@@ -22,7 +22,7 @@ import { trpc } from '@/trpc/init';
  */
 export default function PortalContractsPage() {
   const t = useTranslations('Portal');
-  const contractsQuery = useQuery(trpc.portal.listContracts.queryOptions());
+  const contractsQuery = useQuery(portalTrpc.portal.listContracts.queryOptions());
   const contracts = contractsQuery.data;
   const isLoading = contractsQuery.isPending;
 

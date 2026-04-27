@@ -33,7 +33,10 @@ async function handler(request: NextRequest) {
   const rawBody = await request.json().catch(() => null);
   const parsed = peppolOutboundBodySchema.safeParse(rawBody);
   if (!parsed.success) {
-    return NextResponse.json({ error: 'Invalid body' }, { status: 400 });
+    const missing = parsed.error.issues.map(i => i.path.join('.')).filter(Boolean);
+    const detail =
+      missing.length > 0 ? `Missing or invalid: ${missing.join(', ')}` : 'Invalid body';
+    return NextResponse.json({ error: detail }, { status: 400 });
   }
   const { organizationId, invoiceId, receiverParticipantId } = parsed.data;
 

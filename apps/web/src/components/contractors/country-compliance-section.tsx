@@ -1,6 +1,7 @@
 'use client';
 
 import type { DeCountryFields, UkCountryFields } from '@contractor-ops/validators';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { AlertCircle, Check, Loader2 } from 'lucide-react';
 import { useId, useState } from 'react';
 import { toast } from 'sonner';
@@ -22,22 +23,33 @@ interface CountryComplianceSectionProps {
   contractorId: string;
 }
 
+type EngagementWithClassificationContext = {
+  id: string;
+  contractor?: {
+    countryCode?: string | null;
+    displayName?: string | null;
+  } | null;
+  project?: {
+    name?: string | null;
+  } | null;
+};
+
 export function CountryComplianceSection({ contractorId }: CountryComplianceSectionProps) {
-  const configQuery = trpc.contractor.getCountryFieldsConfig.useQuery();
-  const fieldsQuery = trpc.contractor.getCountryFields.useQuery({
-    contractorId,
-  });
+  const configQuery = useQuery(trpc.contractor.getCountryFieldsConfig.queryOptions());
+  const fieldsQuery = useQuery(trpc.contractor.getCountryFields.queryOptions({ contractorId }));
   // Phase 57 · Plan 04 — surface latest HMRC/VIES validation state for GB/DE orgs.
-  const contractorQuery = trpc.contractor.getById.useQuery({ id: contractorId });
-  const updateMutation = trpc.contractor.updateCountryFields.useMutation({
-    onSuccess: () => {
-      toast.success('Compliance fields saved');
-      void fieldsQuery.refetch();
-    },
-    onError: err => {
-      toast.error(err.message || 'Failed to save compliance fields');
-    },
-  });
+  const contractorQuery = useQuery(trpc.contractor.getById.queryOptions({ id: contractorId }));
+  const updateMutation = useMutation(
+    trpc.contractor.updateCountryFields.mutationOptions({
+      onSuccess: () => {
+        toast.success('Compliance fields saved');
+        void fieldsQuery.refetch();
+      },
+      onError: (err: { message?: string }) => {
+        toast.error(err.message || 'Failed to save compliance fields');
+      },
+    }),
+  );
 
   const [formData, setFormData] = useState<Record<string, unknown>>({});
 
@@ -57,6 +69,7 @@ export function CountryComplianceSection({ contractorId }: CountryComplianceSect
   }
 
   const { countryCode } = configQuery.data;
+  if (!countryCode) return null; // No country code — nothing to render
   const existingFields = (fieldsQuery.data ?? {}) as Record<string, unknown>;
   const merged = { ...existingFields, ...formData };
 
@@ -144,7 +157,7 @@ export function CountryComplianceSection({ contractorId }: CountryComplianceSect
  * CountryComplianceSection shape untouched — this is an appended block.
  */
 function ClassificationEngagementsBlock({ contractorId }: { contractorId: string }) {
-  const engagementsQuery = trpc.contractor.listEngagements.useQuery({ contractorId });
+  const engagementsQuery = useQuery(trpc.contractor.listEngagements.queryOptions({ contractorId }));
 
   if (engagementsQuery.isLoading) {
     return (
@@ -157,7 +170,7 @@ function ClassificationEngagementsBlock({ contractorId }: { contractorId: string
     );
   }
 
-  const engagements = engagementsQuery.data ?? [];
+  const engagements = (engagementsQuery.data ?? []) as EngagementWithClassificationContext[];
   const eligible = engagements.filter(e => {
     const cc = e.contractor?.countryCode?.toUpperCase();
     return cc === 'GB' || cc === 'DE';

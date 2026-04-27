@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 import { OrgPicker } from '@/components/portal/org-picker';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { trpc } from '@/trpc/init';
+import { portalTrpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -78,9 +78,9 @@ export default function PortalVerifyPage() {
   const [state, setState] = useState<VerifyState>({ status: 'verifying' });
   const goToLogin = useCallback(() => router.push('/portal/login'), [router]);
 
-  const verifyMagicLink = useMutation(trpc.portal.verifyMagicLink.mutationOptions());
+  const verifyMagicLink = useMutation(portalTrpc.portal.verifyMagicLink.mutationOptions());
 
-  const selectOrg = useMutation(trpc.portal.selectOrg.mutationOptions());
+  const selectOrg = useMutation(portalTrpc.portal.selectOrg.mutationOptions());
 
   // Verify token on mount
   useEffect(() => {

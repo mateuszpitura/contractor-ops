@@ -1,5 +1,6 @@
 'use client';
 
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -24,34 +25,44 @@ import { trpc } from '@/trpc/init';
 
 interface RevokeWaiverDialogProps {
   invoiceId: string;
+  waiverId: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-export function RevokeWaiverDialog({ invoiceId, open, onOpenChange }: RevokeWaiverDialogProps) {
+export function RevokeWaiverDialog({
+  invoiceId,
+  waiverId,
+  open,
+  onOpenChange,
+}: RevokeWaiverDialogProps) {
   const t = useTranslations('Payments.lateInterest.revokeWaiver');
-  const utils = trpc.useUtils();
+  const queryClient = useQueryClient();
 
   const [reason, setReason] = useState('');
   const isReasonValid = reason.trim().length >= 10;
 
-  const revokeMutation = trpc.latePaymentInterest.revokeWaiver.useMutation({
-    onSuccess: () => {
-      toast.success(t('successToast'));
-      void utils.latePaymentInterest.getForInvoice.invalidate({ invoiceId });
-      onOpenChange(false);
-      setReason('');
-    },
-    onError: error => {
-      toast.error(error.message);
-    },
-  });
+  const revokeMutation = useMutation(
+    trpc.latePaymentInterest.revokeWaiver.mutationOptions({
+      onSuccess: () => {
+        toast.success(t('successToast'));
+        void queryClient.invalidateQueries({
+          queryKey: trpc.latePaymentInterest.getForInvoice.queryKey({ invoiceId }),
+        });
+        onOpenChange(false);
+        setReason('');
+      },
+      onError: (error: { message: string }) => {
+        toast.error(error.message);
+      },
+    }),
+  );
 
   const handleConfirm = () => {
     if (!isReasonValid) return;
     revokeMutation.mutate({
-      invoiceId,
-      reason: reason.trim(),
+      waiverId,
+      revokeReason: reason.trim(),
     });
   };
 

@@ -7,6 +7,7 @@ import {
   requiresPrivacyAcknowledgement,
   resolveJurisdiction,
 } from '@contractor-ops/validators';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
@@ -70,13 +71,17 @@ function ConsentStepContent({
   const [privacyAck, setPrivacyAck] = useState(false);
   const [ackError, setAckError] = useState<string | undefined>(undefined);
 
-  const { data: notice, isLoading: noticeLoading } = trpc.consent.getPrivacyNotice.useQuery();
+  const { data: notice, isLoading: noticeLoading } = useQuery(
+    trpc.consent.getPrivacyNotice.queryOptions(),
+  );
 
-  const bulkGrantMutation = trpc.consent.bulkGrant.useMutation({
-    onSuccess: () => {
-      onComplete();
-    },
-  });
+  const bulkGrantMutation = useMutation(
+    trpc.consent.bulkGrant.mutationOptions({
+      onSuccess: () => {
+        onComplete();
+      },
+    }),
+  );
 
   const handleToggle = useCallback((purpose: ConsentPurpose, granted: boolean) => {
     setConsents(prev => ({ ...prev, [purpose]: granted }));

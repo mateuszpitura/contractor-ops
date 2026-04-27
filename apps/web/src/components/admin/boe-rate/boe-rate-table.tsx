@@ -5,6 +5,9 @@
 // Phase 63 · Plan 05 · D-10 — BoE base rate history table.
 // Sorted by effectiveFrom DESC. Columns: date, rate, source, recorded by, notes, actions.
 
+import type { AppRouter } from '@contractor-ops/api';
+import { useQuery } from '@tanstack/react-query';
+import type { inferRouterOutputs } from '@trpc/server';
 import { PencilIcon, TrashIcon } from 'lucide-react';
 import { useState } from 'react';
 import { DeleteBoeRateDialog } from '@/components/admin/boe-rate/delete-boe-rate-dialog';
@@ -22,21 +25,15 @@ import {
 } from '@/components/ui/table';
 import { trpc } from '@/trpc/init';
 
-interface RateEntry {
-  id: string;
-  effectiveFrom: string | Date;
-  ratePercent: string | number;
-  source: 'BOE_API' | 'MANUAL';
-  recordedByUserId: string | null;
-  recordedAt: string | Date;
-  notes: string | null;
-}
+// Source of truth: router output. Avoids drift when the Prisma generator
+// changes runtime types (e.g. Decimal vs string|number for ratePercent).
+type RateEntry = inferRouterOutputs<AppRouter>['adminBoeRate']['list'][number];
 
 export function BoeRateTable() {
   const [editEntry, setEditEntry] = useState<RateEntry | null>(null);
   const [deleteEntry, setDeleteEntry] = useState<RateEntry | null>(null);
 
-  const { data: entries, isLoading } = trpc.adminBoeRate.list.useQuery();
+  const { data: entries, isLoading } = useQuery(trpc.adminBoeRate.list.queryOptions());
 
   if (isLoading) {
     return (
@@ -74,7 +71,7 @@ export function BoeRateTable() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {(entries as RateEntry[]).map(entry => (
+          {entries.map(entry => (
             <TableRow key={entry.id}>
               <TableCell className="font-mono text-sm">
                 {new Date(entry.effectiveFrom).toISOString().slice(0, 10)}

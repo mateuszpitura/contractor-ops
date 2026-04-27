@@ -16,14 +16,16 @@ export function RateCalculationTooltip() {
   return (
     <TooltipProvider>
       <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-5 w-5 p-0"
-            aria-label={t('rateTooltipAriaLabel')}>
-            <Info className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
-          </Button>
+        <TooltipTrigger
+          render={
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-5 w-5 p-0"
+              aria-label={t('rateTooltipAriaLabel')}
+            />
+          }>
+          <Info className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
         </TooltipTrigger>
         <TooltipContent side="top" className="max-w-xs text-sm">
           <p>{t('rateTooltipExplanation')}</p>

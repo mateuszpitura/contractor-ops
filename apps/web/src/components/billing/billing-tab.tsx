@@ -83,7 +83,7 @@ export function BillingTab() {
   }
 
   function handlePortal() {
-    portalMutation.mutate();
+    portalMutation.mutate(undefined as never);
   }
 
   return (

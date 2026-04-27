@@ -1,5 +1,6 @@
 'use client';
 
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -29,25 +30,29 @@ interface ClaimDialogProps {
 
 export function ClaimDialog({ invoiceId, open, onOpenChange }: ClaimDialogProps) {
   const t = useTranslations('Payments.lateInterest.claim');
-  const utils = trpc.useUtils();
+  const queryClient = useQueryClient();
 
   const [issueSecondaryInvoice, setIssueSecondaryInvoice] = useState(false);
 
-  const claimMutation = trpc.latePaymentInterest.claim.useMutation({
-    onSuccess: () => {
-      toast.success(t('successToast'));
-      void utils.latePaymentInterest.getForInvoice.invalidate({ invoiceId });
-      onOpenChange(false);
-    },
-    onError: error => {
-      toast.error(error.message);
-    },
-  });
+  const claimMutation = useMutation(
+    trpc.latePaymentInterest.claim.mutationOptions({
+      onSuccess: () => {
+        toast.success(t('successToast'));
+        void queryClient.invalidateQueries({
+          queryKey: trpc.latePaymentInterest.getForInvoice.queryKey({ invoiceId }),
+        });
+        onOpenChange(false);
+      },
+      onError: (error: { message: string }) => {
+        toast.error(error.message);
+      },
+    }),
+  );
 
   const handleConfirm = () => {
     claimMutation.mutate({
       invoiceId,
-      issueSecondaryInvoice,
+      issueAsSecondaryInvoice: issueSecondaryInvoice,
     });
   };
 

@@ -56,25 +56,26 @@ export function KsefSetupDialog({ open, onOpenChange, orgNip }: KsefSetupDialogP
   const [environment] = useState<'test' | 'prod'>('prod');
 
   // Connect mutation (verifies credentials per D-04 then saves)
-  const connectMutation = useMutation({
-    ...trpc.ksef.connect.mutationOptions(),
-    onSuccess: () => {
-      toast.success(t('connectedToast'));
-      queryClient.invalidateQueries({
-        queryKey: trpc.ksef.connectionStatus.queryKey(),
-      });
-      queryClient.invalidateQueries({
-        queryKey: trpc.integration.getHealth.queryKey({ provider: 'ksef' }),
-      });
-      queryClient.invalidateQueries({
-        queryKey: trpc.integration.getAllHealth.queryKey(),
-      });
-      resetAndClose();
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || t('connectionFailedToast'));
-    },
-  });
+  const connectMutation = useMutation(
+    trpc.ksef.connect.mutationOptions({
+      onSuccess: () => {
+        toast.success(t('connectedToast'));
+        queryClient.invalidateQueries({
+          queryKey: trpc.ksef.connectionStatus.queryKey(),
+        });
+        queryClient.invalidateQueries({
+          queryKey: trpc.integration.getHealth.queryKey({ provider: 'ksef' }),
+        });
+        queryClient.invalidateQueries({
+          queryKey: trpc.integration.getAllHealth.queryKey(),
+        });
+        resetAndClose();
+      },
+      onError: (error: { message?: string }) => {
+        toast.error(error.message || t('connectionFailedToast'));
+      },
+    }),
+  );
 
   function resetAndClose() {
     setToken('');

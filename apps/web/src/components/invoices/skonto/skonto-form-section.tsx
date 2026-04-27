@@ -1,5 +1,6 @@
 'use client';
 
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -55,7 +56,7 @@ export function SkontoFormSection({
   invoiceTerm,
 }: SkontoFormSectionProps) {
   const t = useTranslations('Payments.skonto.form');
-  const utils = trpc.useUtils();
+  const queryClient = useQueryClient();
 
   // Gate: only show for DE invoices with flag on
   const isApplicable = featureEnabled && contractorCountryCode === 'DE';
@@ -84,30 +85,38 @@ export function SkontoFormSection({
     }
   }, [invoiceTerm, profileDefault]);
 
-  const upsertMutation = trpc.skonto.upsertForInvoice.useMutation({
-    onSuccess: () => {
-      toast.success(t('savedToast'));
-      if (invoiceId) {
-        void utils.skonto.evaluateForInvoice.invalidate({ invoiceId });
-      }
-    },
-    onError: error => {
-      toast.error(error.message);
-    },
-  });
+  const upsertMutation = useMutation(
+    trpc.skonto.upsertForInvoice.mutationOptions({
+      onSuccess: () => {
+        toast.success(t('savedToast'));
+        if (invoiceId) {
+          void queryClient.invalidateQueries({
+            queryKey: trpc.skonto.evaluateForInvoice.queryKey({ invoiceId }),
+          });
+        }
+      },
+      onError: (error: { message: string }) => {
+        toast.error(error.message);
+      },
+    }),
+  );
 
-  const deleteMutation = trpc.skonto.deleteForInvoice.useMutation({
-    onSuccess: () => {
-      toast.success(t('deletedToast'));
-      setCustomizing(false);
-      if (invoiceId) {
-        void utils.skonto.evaluateForInvoice.invalidate({ invoiceId });
-      }
-    },
-    onError: error => {
-      toast.error(error.message);
-    },
-  });
+  const deleteMutation = useMutation(
+    trpc.skonto.deleteForInvoice.mutationOptions({
+      onSuccess: () => {
+        toast.success(t('deletedToast'));
+        setCustomizing(false);
+        if (invoiceId) {
+          void queryClient.invalidateQueries({
+            queryKey: trpc.skonto.evaluateForInvoice.queryKey({ invoiceId }),
+          });
+        }
+      },
+      onError: (error: { message: string }) => {
+        toast.error(error.message);
+      },
+    }),
+  );
 
   const validateField = useCallback(
     (name: keyof FormState, value: string): string | undefined => {
@@ -157,7 +166,7 @@ export function SkontoFormSection({
     if (!(validateAll() && invoiceId)) return;
     upsertMutation.mutate({
       invoiceId,
-      discountPercent: Number(form.discountPercent),
+      percent: Number(form.discountPercent),
       discountDays: Number(form.discountDays),
       netDays: Number(form.netDays),
     });

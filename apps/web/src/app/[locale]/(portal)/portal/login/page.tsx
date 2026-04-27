@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { trpc } from '@/trpc/init';
+import { portalTrpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Schema factory
@@ -60,7 +60,7 @@ export default function PortalLoginPage() {
     defaultValues: { email: '' },
   });
 
-  const requestMagicLink = useMutation(trpc.portal.requestMagicLink.mutationOptions());
+  const requestMagicLink = useMutation(portalTrpc.portal.requestMagicLink.mutationOptions());
 
   const onSubmit = async (values: LoginValues) => {
     try {

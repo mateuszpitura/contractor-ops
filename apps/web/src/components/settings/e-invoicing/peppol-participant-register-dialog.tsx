@@ -97,23 +97,24 @@ export function PeppolParticipantRegisterDialog({
     } as const;
   }, [scheme, value]);
 
-  const connectMutation = useMutation({
-    ...trpc.peppol.connect.mutationOptions(),
-    onSuccess: () => {
-      toast.success(t('pendingHeading'));
-      queryClient.invalidateQueries({
-        queryKey: trpc.peppol.listParticipants.queryKey(),
-      });
-      queryClient.invalidateQueries({
-        queryKey: trpc.peppol.getStatus.queryKey(),
-      });
-      reset();
-      onOpenChange(false);
-    },
-    onError: (err: Error) => {
-      toast.error(err.message || tErrors('Generic'));
-    },
-  });
+  const connectMutation = useMutation(
+    trpc.peppol.connect.mutationOptions({
+      onSuccess: () => {
+        toast.success(t('pendingHeading'));
+        queryClient.invalidateQueries({
+          queryKey: trpc.peppol.listParticipants.queryKey(),
+        });
+        queryClient.invalidateQueries({
+          queryKey: trpc.peppol.getStatus.queryKey(),
+        });
+        reset();
+        onOpenChange(false);
+      },
+      onError: (err: { message?: string }) => {
+        toast.error(err.message || tErrors('Generic'));
+      },
+    }),
+  );
 
   function reset() {
     setScheme('0060');

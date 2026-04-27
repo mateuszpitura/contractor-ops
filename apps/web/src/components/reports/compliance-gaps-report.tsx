@@ -213,9 +213,9 @@ export function ComplianceGapsReport({
 
       <ExportButtons
         // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-        onExportPage={() => exportMutation.mutate()}
+        onExportPage={() => exportMutation.mutate(undefined as never)}
         // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-        onExportAll={() => exportMutation.mutate()}
+        onExportAll={() => exportMutation.mutate(undefined as never)}
         isExporting={exportMutation.isPending}
       />
     </div>

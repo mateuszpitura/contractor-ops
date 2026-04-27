@@ -1,5 +1,6 @@
 'use client';
 
+import { useQuery } from '@tanstack/react-query';
 import { ArrowRight } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
@@ -33,9 +34,11 @@ interface OverdueReceivablesTileProps {
 export function OverdueReceivablesTile({ featureEnabled }: OverdueReceivablesTileProps) {
   const t = useTranslations('Payments.dashboard');
 
-  const query = trpc.latePaymentInterest.getForOrg.useQuery(
-    { status: 'ACCRUING' },
-    { enabled: featureEnabled },
+  const query = useQuery(
+    trpc.latePaymentInterest.getForOrg.queryOptions(
+      { status: 'ACCRUING' },
+      { enabled: featureEnabled },
+    ),
   );
 
   // Not enabled or no data — don't render
@@ -59,7 +62,16 @@ export function OverdueReceivablesTile({ featureEnabled }: OverdueReceivablesTil
   const data = query.data;
 
   // No overdue invoices — tile is hidden (absence = empty state)
-  if (!data || data.totalPrincipalMinor === 0) return null;
+  if (!data || data.items.length === 0) return null;
+
+  // Compute totals from items — getForOrg returns per-invoice breakdowns
+  const totalPrincipalMinor = data.items.reduce(
+    (sum, item) => sum + item.principalOutstandingMinor,
+    0,
+  );
+  const totalInterestMinor = data.items.reduce((sum, item) => sum + item.accruedInterestMinor, 0);
+
+  if (totalPrincipalMinor === 0) return null;
 
   return (
     <Card>
@@ -70,12 +82,12 @@ export function OverdueReceivablesTile({ featureEnabled }: OverdueReceivablesTil
       </CardHeader>
       <CardContent className="space-y-1">
         <p className="text-2xl font-display tabular-nums">
-          {formatGBP(data.totalPrincipalMinor + data.totalInterestMinor)}
+          {formatGBP(totalPrincipalMinor + totalInterestMinor)}
         </p>
         <p className="text-sm text-muted-foreground">
           {t('overdueSubline', {
-            principal: formatGBP(data.totalPrincipalMinor),
-            interest: formatGBP(data.totalInterestMinor),
+            principal: formatGBP(totalPrincipalMinor),
+            interest: formatGBP(totalInterestMinor),
           })}
         </p>
         <Link

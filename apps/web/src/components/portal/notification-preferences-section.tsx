@@ -10,7 +10,7 @@ import { Card } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
-import { trpc } from '@/trpc/init';
+import { portalTrpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Category config
@@ -109,13 +109,13 @@ export function NotificationPreferencesSection() {
 
   const CATEGORIES = getCategories(t);
 
-  const prefsQuery = useQuery(trpc.portal.getNotificationPreferences.queryOptions());
+  const prefsQuery = useQuery(portalTrpc.portal.getNotificationPreferences.queryOptions());
 
   type PreferenceItem = { category: NotificationCategory; emailEnabled: boolean };
 
-  const queryKey = trpc.portal.getNotificationPreferences.queryOptions().queryKey;
+  const queryKey = portalTrpc.portal.getNotificationPreferences.queryOptions().queryKey;
 
-  const updatePrefBase = trpc.portal.updateNotificationPreference.mutationOptions();
+  const updatePrefBase = portalTrpc.portal.updateNotificationPreference.mutationOptions();
 
   const updatePref = useMutation({
     mutationFn: updatePrefBase.mutationFn,

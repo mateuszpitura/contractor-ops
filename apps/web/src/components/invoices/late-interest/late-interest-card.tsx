@@ -1,6 +1,7 @@
 'use client';
 
-import { Download, FileText } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { Download } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 
@@ -88,9 +89,8 @@ export function LateInterestCard({
   const isApplicable =
     featureEnabled && contractorCountryCode === 'GB' && isBusinessCustomer && currency === 'GBP';
 
-  const query = trpc.latePaymentInterest.getForInvoice.useQuery(
-    { invoiceId },
-    { enabled: isApplicable },
+  const query = useQuery(
+    trpc.latePaymentInterest.getForInvoice.queryOptions({ invoiceId }, { enabled: isApplicable }),
   );
 
   const handleClaimClick = useCallback(() => setClaimDialogOpen(true), []);
@@ -114,24 +114,38 @@ export function LateInterestCard({
   const data = query.data;
   if (!data) return null;
 
+  // Non-applicable scope gate (non-GB, B2C, non-GBP, etc.)
+  if (!data.applicable) return null;
+
+  // Derive display status from the router's result fields
+  const latestClaim = data.claims[0] ?? null;
+  const latestWaiver = data.waivers[0] ?? null;
+
+  const status: 'NOT_YET_OVERDUE' | 'ACCRUING' | 'CLAIMED' | 'WAIVED' | 'PAID' =
+    data.daysOverdue === 0
+      ? 'NOT_YET_OVERDUE'
+      : data.claimStatus === 'CLAIMED'
+        ? 'CLAIMED'
+        : data.waiverStatus === 'WAIVED'
+          ? 'WAIVED'
+          : 'ACCRUING';
+
   // Not yet overdue
-  if (data.status === 'NOT_YET_OVERDUE') {
+  if (status === 'NOT_YET_OVERDUE') {
     return (
       <Card>
         <CardHeader>
           <CardTitle className="text-base font-semibold">{t('heading')}</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">
-            {t('notYetOverdue', { days: data.daysUntilDue })}
-          </p>
+          <p className="text-sm text-muted-foreground">{t('notYetOverdue', { days: 0 })}</p>
         </CardContent>
       </Card>
     );
   }
 
   // ACCRUING state
-  if (data.status === 'ACCRUING') {
+  if (status === 'ACCRUING') {
     return (
       <>
         <Card>
@@ -141,21 +155,24 @@ export function LateInterestCard({
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="space-y-2">
-              <DetailRow label={t('principalOutstanding')} value={formatGBP(data.principalMinor)} />
+              <DetailRow
+                label={t('principalOutstanding')}
+                value={formatGBP(data.principalOutstandingMinor)}
+              />
               <DetailRow label={t('daysOverdue')} value={String(data.daysOverdue)} />
               <DetailRow
                 label={t('rateUsed')}
-                value={`${data.ratePercent}%`}
+                value={`${data.rateUsed}%`}
                 tooltip={<RateCalculationTooltip />}
               />
-              <DetailRow label={t('dailyAccrual')} value={formatGBP(data.dailyAccrualMinor)} />
+              <DetailRow label={t('dailyAccrual')} value={formatGBP(data.dailyInterestMinor)} />
               <DetailRow
                 label={t('interestAccrued')}
-                value={formatGBP(data.interestAccruedMinor)}
+                value={formatGBP(data.accruedInterestMinor)}
               />
               <DetailRow
                 label={t('fixedCompensation')}
-                value={formatGBP(data.fixedCompensationMinor)}
+                value={formatGBP(data.compensationTierMinor)}
               />
             </div>
 
@@ -198,7 +215,7 @@ export function LateInterestCard({
   }
 
   // CLAIMED state
-  if (data.status === 'CLAIMED') {
+  if (status === 'CLAIMED') {
     return (
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -208,19 +225,22 @@ export function LateInterestCard({
         <CardContent className="space-y-3">
           <p className="text-sm text-muted-foreground">
             {t('claimedBanner', {
-              date: data.snapshotDate,
+              date: latestClaim?.claimedAt ?? '',
               amount: formatGBP(data.totalClaimMinor),
             })}
           </p>
 
           <div className="space-y-2">
-            <DetailRow label={t('principalOutstanding')} value={formatGBP(data.principalMinor)} />
+            <DetailRow
+              label={t('principalOutstanding')}
+              value={formatGBP(data.principalOutstandingMinor)}
+            />
             <DetailRow label={t('daysOverdue')} value={String(data.daysOverdue)} />
-            <DetailRow label={t('rateUsed')} value={`${data.ratePercent}%`} />
-            <DetailRow label={t('interestAccrued')} value={formatGBP(data.interestAccruedMinor)} />
+            <DetailRow label={t('rateUsed')} value={`${data.rateUsed}%`} />
+            <DetailRow label={t('interestAccrued')} value={formatGBP(data.accruedInterestMinor)} />
             <DetailRow
               label={t('fixedCompensation')}
-              value={formatGBP(data.fixedCompensationMinor)}
+              value={formatGBP(data.compensationTierMinor)}
             />
           </div>
 
@@ -234,20 +254,15 @@ export function LateInterestCard({
           </div>
 
           <div className="flex items-center gap-2 pt-2">
-            {data.claimPdfUrl && (
-              <Button variant="outline" size="sm" asChild>
-                <a href={data.claimPdfUrl} download>
-                  <Download className="mr-1.5 h-3.5 w-3.5" />
-                  {t('downloadClaimLetter')}
-                </a>
-              </Button>
-            )}
-            {data.secondaryInvoiceNumber && (
-              <Button variant="ghost" size="sm" asChild>
-                <a href={`/invoices?search=${data.secondaryInvoiceNumber}`}>
-                  <FileText className="mr-1.5 h-3.5 w-3.5" />
-                  {t('viewSecondaryInvoice', { number: data.secondaryInvoiceNumber })}
-                </a>
+            {latestClaim?.pdfStatus === 'READY' && (
+              <Button
+                variant="outline"
+                size="sm"
+                render={
+                  <a href={`/api/late-interest/download?claimId=${latestClaim.id}`} download />
+                }>
+                <Download className="mr-1.5 h-3.5 w-3.5" />
+                {t('downloadClaimLetter')}
               </Button>
             )}
           </div>
@@ -257,7 +272,7 @@ export function LateInterestCard({
   }
 
   // WAIVED state
-  if (data.status === 'WAIVED') {
+  if (status === 'WAIVED') {
     return (
       <>
         <Card>
@@ -268,13 +283,13 @@ export function LateInterestCard({
           <CardContent className="space-y-3">
             <p className="text-sm text-muted-foreground">
               {t('waivedBanner', {
-                date: data.waivedDate,
-                name: data.waivedBy,
+                date: latestWaiver?.waivedAt ?? '',
+                name: '',
               })}
             </p>
-            {data.waiveReason && (
+            {!!latestWaiver?.reason && (
               <p className="text-sm text-muted-foreground italic">
-                {t('waiveReason')}: {data.waiveReason}
+                {t('waiveReason')}: {latestWaiver.reason}
               </p>
             )}
 
@@ -290,27 +305,11 @@ export function LateInterestCard({
 
         <RevokeWaiverDialog
           invoiceId={invoiceId}
+          waiverId={latestWaiver?.id ?? ''}
           open={revokeDialogOpen}
           onOpenChange={setRevokeDialogOpen}
         />
       </>
-    );
-  }
-
-  // PAID state
-  if (data.status === 'PAID') {
-    return (
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-base font-semibold">{t('heading')}</CardTitle>
-          <LateInterestStatusPill status="PAID" />
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">
-            {t('paidBanner', { amount: formatGBP(data.totalClaimMinor) })}
-          </p>
-        </CardContent>
-      </Card>
     );
   }
 

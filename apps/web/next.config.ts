@@ -40,7 +40,21 @@ const nextConfig: NextConfig = {
     '@contractor-ops/ui',
     'react-pdf',
   ],
-  serverExternalPackages: ['@contractor-ops/db', '@contractor-ops/integrations', 'docusign-esign'],
+  // Server-only packages excluded from webpack bundling. These either ship
+  // native bindings (`libxmljs2`, `clamscan` via `bindings`), use runtime path
+  // lookups (`saxon-js`), or use non-standard bare imports (`docusign-esign`).
+  // Bundling them breaks at runtime because `__dirname` resolves to the
+  // .next chunks dir instead of the package's own folder. `@contractor-ops/einvoice`
+  // re-exports libxmljs2/saxon-js, so it must travel with them.
+  serverExternalPackages: [
+    '@contractor-ops/db',
+    '@contractor-ops/einvoice',
+    '@contractor-ops/integrations',
+    'docusign-esign',
+    'libxmljs2',
+    'saxon-js',
+    'clamscan',
+  ],
   webpack(config, { isServer }) {
     // ESM TypeScript packages use .js extensions in imports (e.g. "./foo.js")
     // that must resolve to .ts source files when transpiled by Next.js webpack.
@@ -49,12 +63,19 @@ const nextConfig: NextConfig = {
       '.mjs': ['.mts', '.mjs'],
     };
     if (isServer) {
-      // docusign-esign uses non-standard bare imports (e.g. 'api/BillingApi'
-      // instead of './api/BillingApi') that webpack cannot resolve.
-      // Force it to be resolved at runtime by Node.js.
+      // Same packages also marked as webpack externals for the server bundle.
+      // `serverExternalPackages` covers the App Router build pipeline; the
+      // explicit externals list here covers webpack-specific code paths
+      // (Sentry instrumentation, manual chunk splits) that don't honour it.
       config.externals = config.externals || [];
       if (Array.isArray(config.externals)) {
-        config.externals.push('docusign-esign');
+        config.externals.push(
+          'docusign-esign',
+          'libxmljs2',
+          'saxon-js',
+          'clamscan',
+          '@contractor-ops/einvoice',
+        );
       }
     }
 

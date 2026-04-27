@@ -1,5 +1,6 @@
 'use client';
 
+import { useMutation } from '@tanstack/react-query';
 import { FileText, Loader2 } from 'lucide-react';
 import { useLocale } from 'next-intl';
 import { toast } from 'sonner';
@@ -26,17 +27,19 @@ export function WhtSummaryCard({ paymentRunId: _paymentRunId, items }: WhtSummar
   const locale = useLocale();
   const whtItems = items.filter(i => i.whtAmountMinor && i.whtAmountMinor > 0);
 
-  const generateMutation = trpc.tax.generateWhtCertificate.useMutation({
-    onSuccess: data => {
-      toast.success(`Certificate ${data.certificateNumber} generated`);
-    },
-    onError: err => {
-      toast.error(
-        err.message ||
-          'Certificate generation failed. Check that all payment details are complete and try again.',
-      );
-    },
-  });
+  const generateMutation = useMutation(
+    trpc.tax.generateWhtCertificate.mutationOptions({
+      onSuccess: (data: { certificateNumber: string }) => {
+        toast.success(`Certificate ${data.certificateNumber} generated`);
+      },
+      onError: (err: { message?: string }) => {
+        toast.error(
+          err.message ||
+            'Certificate generation failed. Check that all payment details are complete and try again.',
+        );
+      },
+    }),
+  );
 
   if (whtItems.length === 0) return null;
 

@@ -64,15 +64,16 @@ export function LeitwegIdRow({ row }: LeitwegIdRowProps) {
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
 
-  const setDefaultMutation = useMutation({
-    ...trpc.leitwegId.setDefault.mutationOptions(),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: trpc.leitwegId.list.queryKey() });
-    },
-    onError: (err: Error) => {
-      toast.error(err.message || tErrors('Generic'));
-    },
-  });
+  const setDefaultMutation = useMutation(
+    trpc.leitwegId.setDefault.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: trpc.leitwegId.list.queryKey() });
+      },
+      onError: (err: { message?: string }) => {
+        toast.error(err.message || tErrors('Generic'));
+      },
+    }),
+  );
 
   const editInitial: LeitwegIdEditInitial = {
     id: row.id,

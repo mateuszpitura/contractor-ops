@@ -17,7 +17,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Link } from '@/i18n/navigation';
-import { trpc } from '@/trpc/init';
+import { portalTrpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -69,7 +69,7 @@ function statusBadgeVariant(status: string) {
 export default function PortalContractDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const t = useTranslations('Portal');
   const { id } = use(params);
-  const contractQuery = useQuery(trpc.portal.getContract.queryOptions({ id }));
+  const contractQuery = useQuery(portalTrpc.portal.getContract.queryOptions({ id }));
   const contract = contractQuery.data;
   const isLoading = contractQuery.isPending;
 

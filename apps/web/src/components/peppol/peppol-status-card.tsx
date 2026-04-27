@@ -182,7 +182,7 @@ export function PeppolStatusCard() {
                 <AlertDialogCancel>{t('disconnectCancel')}</AlertDialogCancel>
                 <AlertDialogAction
                   // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                  onClick={() => disconnectMutation.mutate()}
+                  onClick={() => disconnectMutation.mutate(undefined as never)}
                   className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
                   {disconnectMutation.isPending ? t('disconnecting') : t('disconnectConfirm')}
                 </AlertDialogAction>

@@ -15,6 +15,7 @@
 
 'use client';
 
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useId, useState } from 'react';
 import { toast } from 'sonner';
 import {
@@ -44,24 +45,28 @@ export function KleinunternehmerToggle({
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pendingValue, setPendingValue] = useState<boolean | null>(null);
 
-  const utils = trpc.useUtils();
-  const mutation = trpc.organization.setKleinunternehmer.useMutation({
-    onSuccess: result => {
-      toast.success(
-        result.isKleinunternehmer
-          ? 'Kleinunternehmerregelung enabled'
-          : 'Kleinunternehmerregelung disabled',
-      );
-      void utils.organization.getCurrent.invalidate();
-    },
-    onError: err => {
-      toast.error(err.message || 'Failed to update Kleinunternehmer flag');
-    },
-    onSettled: () => {
-      setConfirmOpen(false);
-      setPendingValue(null);
-    },
-  });
+  const queryClient = useQueryClient();
+  const mutation = useMutation(
+    trpc.organization.setKleinunternehmer.mutationOptions({
+      onSuccess: (result: { isKleinunternehmer: boolean }) => {
+        toast.success(
+          result.isKleinunternehmer
+            ? 'Kleinunternehmerregelung enabled'
+            : 'Kleinunternehmerregelung disabled',
+        );
+        void queryClient.invalidateQueries({
+          queryKey: trpc.organization.getCurrent.queryKey(),
+        });
+      },
+      onError: (err: { message?: string }) => {
+        toast.error(err.message || 'Failed to update Kleinunternehmer flag');
+      },
+      onSettled: () => {
+        setConfirmOpen(false);
+        setPendingValue(null);
+      },
+    }),
+  );
 
   // DE-only gate (per D-11). Router also enforces — this is a UX-level guard.
   if (orgCountryCode !== 'DE') return null;
