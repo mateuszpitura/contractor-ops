@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v6.0
 milestone_name: Platform Maturity & Operational Hardening
 status: executing
-stopped_at: Phase 73 context gathered
-last_updated: "2026-04-27T14:34:56.345Z"
+stopped_at: Phase 75 context gathered
+last_updated: "2026-04-27T14:53:23.262Z"
 last_activity: 2026-04-27 -- Phase 73 planning complete
 progress:
   total_phases: 11
@@ -295,9 +295,9 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-04-27T13:57:41.222Z
-Stopped at: Phase 73 context gathered
-Resume file: .planning/phases/73-f1-compliance-admin-dashboard-portal-self-service-i18n/73-CONTEXT.md
+Last session: 2026-04-27T14:53:23.253Z
+Stopped at: Phase 75 context gathered
+Resume file: .planning/phases/75-f4-offboarding-contract-health-check-ip-verification-credent/75-CONTEXT.md
 Next command: `/gsd-plan-phase 74`  (Phase 74 context gathered, ready to plan; 71 + 76 plans already ready to execute)
 
 **Planned Phases (ready to execute):** 71 (F1 Compliance — 7 plans), 76 (F2 IdP — 10 plans, gated on 74 + 75)
