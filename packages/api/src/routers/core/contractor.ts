@@ -311,6 +311,71 @@ function diffContractorFields(
 }
 
 // ---------------------------------------------------------------------------
+// HMRC / VIES VAT-ID validation helper (Phase 57 · Plan 04)
+// ---------------------------------------------------------------------------
+
+/**
+ * Loads a tenant-scoped contractor, derives the supported tax-ID type from
+ * its country, and dispatches HMRC / VIES validation through the shared
+ * orchestrator. Used by both validateVat (D-07 trigger 3) and revalidateVat
+ * (explicit re-run) which previously inlined identical 50-line bodies.
+ */
+async function validateContractorVatId(
+  ctx: { db: DbClient; organizationId: string; user?: { id: string } | null },
+  contractorId: string,
+) {
+  const contractor = await ctx.db.contractor.findFirst({
+    where: {
+      id: contractorId,
+      organizationId: ctx.organizationId,
+      deletedAt: null,
+    },
+    select: { id: true, countryCode: true, vatId: true },
+  });
+  if (!contractor) {
+    throw new TRPCError({ code: 'NOT_FOUND', message: E.CONTRACTOR_NOT_FOUND });
+  }
+  if (!contractor.vatId) {
+    throw new TRPCError({
+      code: 'BAD_REQUEST',
+      message: 'Contractor has no VAT ID to validate',
+    });
+  }
+  const taxIdType: TaxIdType | null =
+    contractor.countryCode === 'GB'
+      ? 'GB_VAT'
+      : contractor.countryCode === 'DE'
+        ? 'DE_USTIDNR'
+        : null;
+  if (!taxIdType) {
+    throw new TRPCError({
+      code: 'BAD_REQUEST',
+      message: 'VAT validation not supported for this country',
+    });
+  }
+  const result = await validateTaxId(
+    {
+      organizationId: ctx.organizationId,
+      contractorId: contractor.id,
+      taxIdType,
+      taxIdValue: contractor.vatId,
+      actor: { userId: ctx.user?.id },
+    },
+    {
+      db: ctx.db,
+      hmrcClient: getHmrcVatClient(),
+      viesClient: getViesClient(),
+    },
+  );
+  return {
+    responseStatus: result.responseStatus,
+    confirmationRef: result.confirmationRef,
+    validatedAt: result.requestedAt,
+    source: result.source,
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Contractor router
 // ---------------------------------------------------------------------------
 
@@ -1300,113 +1365,11 @@ export const contractorRouter = router({
   validateVat: tenantProcedure
     .use(requirePermission({ contractor: ['update'] }))
     .input(z.object({ contractorId: z.string().min(1) }))
-    .mutation(async ({ ctx, input }) => {
-      const contractor = await ctx.db.contractor.findFirst({
-        where: {
-          id: input.contractorId,
-          organizationId: ctx.organizationId,
-          deletedAt: null,
-        },
-        select: { id: true, countryCode: true, vatId: true },
-      });
-      if (!contractor) {
-        throw new TRPCError({ code: 'NOT_FOUND', message: E.CONTRACTOR_NOT_FOUND });
-      }
-      if (!contractor.vatId) {
-        throw new TRPCError({
-          code: 'BAD_REQUEST',
-          message: 'Contractor has no VAT ID to validate',
-        });
-      }
-      const taxIdType: TaxIdType | null =
-        contractor.countryCode === 'GB'
-          ? 'GB_VAT'
-          : contractor.countryCode === 'DE'
-            ? 'DE_USTIDNR'
-            : null;
-      if (!taxIdType) {
-        throw new TRPCError({
-          code: 'BAD_REQUEST',
-          message: 'VAT validation not supported for this country',
-        });
-      }
-      const result = await validateTaxId(
-        {
-          organizationId: ctx.organizationId,
-          contractorId: contractor.id,
-          taxIdType,
-          taxIdValue: contractor.vatId,
-          actor: { userId: ctx.user?.id },
-        },
-        {
-          db: ctx.db,
-          hmrcClient: getHmrcVatClient(),
-          viesClient: getViesClient(),
-        },
-      );
-      return {
-        responseStatus: result.responseStatus,
-        confirmationRef: result.confirmationRef,
-        validatedAt: result.requestedAt,
-        source: result.source,
-      };
-    }),
+    .mutation(({ ctx, input }) => validateContractorVatId(ctx, input.contractorId)),
 
-  /** Re-validate on demand (same pipeline; distinguished by audit intent). */
+  /** Re-validate on demand (same pipeline; distinguished only by procedure name in tRPC logs). */
   revalidateVat: tenantProcedure
     .use(requirePermission({ contractor: ['update'] }))
     .input(z.object({ contractorId: z.string().min(1) }))
-    .mutation(async ({ ctx, input }) => {
-      const contractor = await ctx.db.contractor.findFirst({
-        where: {
-          id: input.contractorId,
-          organizationId: ctx.organizationId,
-          deletedAt: null,
-        },
-        select: { id: true, countryCode: true, vatId: true },
-      });
-      if (!contractor) {
-        throw new TRPCError({ code: 'NOT_FOUND', message: E.CONTRACTOR_NOT_FOUND });
-      }
-      if (!contractor.vatId) {
-        throw new TRPCError({
-          code: 'BAD_REQUEST',
-          message: 'Contractor has no VAT ID to validate',
-        });
-      }
-      const taxIdType: TaxIdType | null =
-        contractor.countryCode === 'GB'
-          ? 'GB_VAT'
-          : contractor.countryCode === 'DE'
-            ? 'DE_USTIDNR'
-            : null;
-      if (!taxIdType) {
-        throw new TRPCError({
-          code: 'BAD_REQUEST',
-          message: 'VAT validation not supported for this country',
-        });
-      }
-      const result = await validateTaxId(
-        {
-          organizationId: ctx.organizationId,
-          contractorId: contractor.id,
-          taxIdType,
-          taxIdValue: contractor.vatId,
-          // `intent` flows through to the orchestrator's logging / audit
-          // surface; the distinguishing mark from validateVat lives here.
-          actor: { userId: ctx.user?.id },
-        },
-        {
-          db: ctx.db,
-          hmrcClient: getHmrcVatClient(),
-          viesClient: getViesClient(),
-        },
-      );
-      return {
-        responseStatus: result.responseStatus,
-        confirmationRef: result.confirmationRef,
-        validatedAt: result.requestedAt,
-        source: result.source,
-      };
-    }),
+    .mutation(({ ctx, input }) => validateContractorVatId(ctx, input.contractorId)),
 });
