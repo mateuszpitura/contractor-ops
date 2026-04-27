@@ -31,6 +31,34 @@ const dateRangeInput = {
   dateTo: z.string(),
 };
 
+/** Parse the shared `dateFrom` / `dateTo` ISO strings into Date instances. */
+function parseDateRange(input: { dateFrom: string; dateTo: string }): {
+  dateFrom: Date;
+  dateTo: Date;
+} {
+  return {
+    dateFrom: new Date(input.dateFrom),
+    dateTo: new Date(input.dateTo),
+  };
+}
+
+/**
+ * Wraps a generated CSV in the standard report-download response shape
+ * (`{ data, filename, mimeType }`) using a YYYY-MM-DD timestamp suffix.
+ * Centralises the filename convention shared by every report export.
+ */
+function buildCsvDownloadResponse(
+  prefix: string,
+  csv: { data: string; mimeType: string },
+): { data: string; filename: string; mimeType: string } {
+  const timestamp = new Date().toISOString().slice(0, 10);
+  return {
+    data: csv.data,
+    filename: `${prefix}-${timestamp}.csv`,
+    mimeType: csv.mimeType,
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Report router
 // ---------------------------------------------------------------------------
@@ -51,8 +79,7 @@ export const reportRouter = router({
       }),
     )
     .query(async ({ ctx, input }) => {
-      const dateFrom = new Date(input.dateFrom);
-      const dateTo = new Date(input.dateTo);
+      const { dateFrom, dateTo } = parseDateRange(input);
       const offset = (input.page - 1) * input.pageSize;
 
       // Raw SQL: map API sort field (camelCase) to SELECT aliases for ORDER BY
@@ -136,8 +163,7 @@ export const reportRouter = router({
       }),
     )
     .query(async ({ ctx, input }) => {
-      const dateFrom = new Date(input.dateFrom);
-      const dateTo = new Date(input.dateTo);
+      const { dateFrom, dateTo } = parseDateRange(input);
       const offset = (input.page - 1) * input.pageSize;
 
       // Raw SQL: camelCase sort keys -> quoted SELECT aliases
@@ -434,8 +460,7 @@ export const reportRouter = router({
     .use(reportRead)
     .input(z.object({ ...dateRangeInput }))
     .query(async ({ ctx, input }) => {
-      const dateFrom = new Date(input.dateFrom);
-      const dateTo = new Date(input.dateTo);
+      const { dateFrom, dateTo } = parseDateRange(input);
 
       const items = await ctx.db.$queryRaw<
         Array<{
@@ -474,8 +499,7 @@ export const reportRouter = router({
     .use(reportRead)
     .input(z.object({ ...dateRangeInput }))
     .query(async ({ ctx, input }) => {
-      const dateFrom = new Date(input.dateFrom);
-      const dateTo = new Date(input.dateTo);
+      const { dateFrom, dateTo } = parseDateRange(input);
 
       const items = await ctx.db.$queryRaw<
         Array<{
@@ -610,8 +634,7 @@ export const reportRouter = router({
     .use(reportRead)
     .input(z.object({ ...dateRangeInput, contractorId: z.string().optional() }))
     .mutation(async ({ ctx, input }) => {
-      const dateFrom = new Date(input.dateFrom);
-      const dateTo = new Date(input.dateTo);
+      const { dateFrom, dateTo } = parseDateRange(input);
 
       const contractorFilter = input.contractorId
         ? Prisma.sql`AND i."contractorId" = ${input.contractorId}`
@@ -654,12 +677,7 @@ export const reportRouter = router({
         })),
       );
 
-      const timestamp = new Date().toISOString().slice(0, 10);
-      return {
-        data: csv.data,
-        filename: `spend-by-contractor-${timestamp}.csv`,
-        mimeType: csv.mimeType,
-      };
+      return buildCsvDownloadResponse('spend-by-contractor', csv);
     }),
 
   /**
@@ -669,8 +687,7 @@ export const reportRouter = router({
     .use(reportRead)
     .input(z.object({ ...dateRangeInput }))
     .mutation(async ({ ctx, input }) => {
-      const dateFrom = new Date(input.dateFrom);
-      const dateTo = new Date(input.dateTo);
+      const { dateFrom, dateTo } = parseDateRange(input);
 
       const items = await ctx.db.$queryRaw<
         Array<{
@@ -708,12 +725,7 @@ export const reportRouter = router({
         })),
       );
 
-      const timestamp = new Date().toISOString().slice(0, 10);
-      return {
-        data: csv.data,
-        filename: `spend-by-team-${timestamp}.csv`,
-        mimeType: csv.mimeType,
-      };
+      return buildCsvDownloadResponse('spend-by-team', csv);
     }),
 
   /**
@@ -753,12 +765,7 @@ export const reportRouter = router({
         })),
       );
 
-      const timestamp = new Date().toISOString().slice(0, 10);
-      return {
-        data: csv.data,
-        filename: `expiring-contracts-${timestamp}.csv`,
-        mimeType: csv.mimeType,
-      };
+      return buildCsvDownloadResponse('expiring-contracts', csv);
     }),
 
   /**
@@ -793,12 +800,7 @@ export const reportRouter = router({
       })),
     );
 
-    const timestamp = new Date().toISOString().slice(0, 10);
-    return {
-      data: csv.data,
-      filename: `overdue-invoices-${timestamp}.csv`,
-      mimeType: csv.mimeType,
-    };
+    return buildCsvDownloadResponse('overdue-invoices', csv);
   }),
 
   /**
@@ -861,11 +863,6 @@ export const reportRouter = router({
     }
 
     const csv = await generateComplianceCsv(items);
-    const timestamp = new Date().toISOString().slice(0, 10);
-    return {
-      data: csv.data,
-      filename: `compliance-gaps-${timestamp}.csv`,
-      mimeType: csv.mimeType,
-    };
+    return buildCsvDownloadResponse('compliance-gaps', csv);
   }),
 });
