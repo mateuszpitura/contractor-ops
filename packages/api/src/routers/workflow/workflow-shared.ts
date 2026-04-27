@@ -3,8 +3,8 @@
  * Used by workflow-templates.ts and workflow-execution.ts.
  */
 import { workflowTaskSkipReason } from '@contractor-ops/validators';
-import type { ResolveAssigneeWithPtoArgs } from '../services/pto-detector.js';
-import { resolveAssigneeWithPto } from '../services/pto-detector.js';
+import type { ResolveAssigneeWithPtoArgs } from '../../services/pto-detector.js';
+import { resolveAssigneeWithPto } from '../../services/pto-detector.js';
 
 // Re-export for Plan 74-08 (overrideBlockingTask + startOffboardingRun) and
 // any other workflow-execution code that needs PTO-aware assignee resolution.

@@ -8,9 +8,9 @@
 
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import { router } from '../init.js';
-import { requirePermission } from '../middleware/rbac.js';
-import { classificationProcedure } from '../middleware/require-classification-flag.js';
+import { router } from '../../init.js';
+import { requirePermission } from '../../middleware/rbac.js';
+import { classificationProcedure } from '../../middleware/require-classification-flag.js';
 
 const cuid = z.string().min(1);
 

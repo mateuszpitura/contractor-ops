@@ -5,10 +5,10 @@ import {
 } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import { publicProcedure, router } from '../init.js';
-import { adminProcedure, requirePermission } from '../middleware/rbac.js';
-import { tenantProcedure } from '../middleware/tenant.js';
-import { runPostOrganizationCreateHooks } from '../services/post-org-create-hook.js';
+import { publicProcedure, router } from '../../init.js';
+import { adminProcedure, requirePermission } from '../../middleware/rbac.js';
+import { tenantProcedure } from '../../middleware/tenant.js';
+import { runPostOrganizationCreateHooks } from '../../services/post-org-create-hook.js';
 
 export const organizationRouter = router({
   /**

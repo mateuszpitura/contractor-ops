@@ -11,13 +11,16 @@ import { createLogger } from '@contractor-ops/logger';
 import { LPCDA_SECTION_REF } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import { router } from '../init.js';
-import { plain } from '../lib/plain.js';
-import { requireFeatureFlag, tenantFlaggedProcedure } from '../middleware/feature-flag.js';
-import { requirePermission } from '../middleware/rbac.js';
-import { loadBoeRateHistory } from '../services/boe-rate-cache.js';
-import { calculateLateInterest, getCompensationTier } from '../services/late-payment-interest.js';
-import { signExistingDownload } from '../services/r2.js';
+import * as E from '../../errors.js';
+import { router } from '../../init.js';
+import { requireFeatureFlag, tenantFlaggedProcedure } from '../../middleware/feature-flag.js';
+import { requirePermission } from '../../middleware/rbac.js';
+import { loadBoeRateHistory } from '../../services/boe-rate-cache.js';
+import {
+  calculateLateInterest,
+  getCompensationTier,
+} from '../../services/late-payment-interest.js';
+import { signExistingDownload } from '../../services/r2.js';
 
 const log = createLogger({ service: 'late-payment-interest-router' });
 
@@ -73,21 +76,21 @@ export const latePaymentInterestRouter = router({
 
       // Scope gates
       if (!invoice.contractor) {
-        return plain({ applicable: false as const, reason: 'NO_CONTRACTOR' });
+        return { applicable: false as const, reason: 'NO_CONTRACTOR' };
       }
 
       const contractor = invoice.contractor;
 
       if (contractor.countryCode !== 'GB') {
-        return plain({ applicable: false as const, reason: 'NON_GB_INVOICE' });
+        return { applicable: false as const, reason: 'NON_GB_INVOICE' };
       }
 
       if (!contractor.isBusinessCustomer) {
-        return plain({ applicable: false as const, reason: 'B2C_TRANSACTION' });
+        return { applicable: false as const, reason: 'B2C_TRANSACTION' };
       }
 
       if (invoice.currency !== 'GBP') {
-        return plain({ applicable: false as const, reason: 'NON_GBP_CURRENCY' });
+        return { applicable: false as const, reason: 'NON_GBP_CURRENCY' };
       }
 
       // Ensure compensation tier exists (idempotent upsert)
@@ -143,7 +146,7 @@ export const latePaymentInterestRouter = router({
       const claimStatus =
         invoice.interestClaims.length > 0 ? ('CLAIMED' as const) : ('NONE' as const);
 
-      return plain({
+      return {
         ...result,
         compensationId: compensation?.id ?? null,
         waiverStatus,
@@ -163,7 +166,7 @@ export const latePaymentInterestRouter = router({
           pdfReadyAt: c.pdfReadyAt,
           pdfError: c.pdfError,
         })),
-      });
+      };
     }),
 
   /**
@@ -264,10 +267,10 @@ export const latePaymentInterestRouter = router({
           ? results.filter(r => r.status === input.status)
           : results;
 
-      return plain({
+      return {
         items: filtered,
         nextCursor: hasMore ? items[items.length - 1]?.id : null,
-      });
+      };
     }),
 
   /**
@@ -285,6 +288,9 @@ export const latePaymentInterestRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      const userId = ctx.user?.id;
+      if (!userId) throw new TRPCError({ code: 'UNAUTHORIZED', message: E.UNAUTHORIZED });
+
       // Verify invoice exists and belongs to org
       const invoice = await ctx.db.invoice.findFirst({
         where: { id: input.invoiceId, organizationId: ctx.organizationId },
@@ -318,7 +324,7 @@ export const latePaymentInterestRouter = router({
           invoiceId: input.invoiceId,
           waiveType: input.waiveType,
           reason: input.reason,
-          waivedByUserId: ctx.user?.id,
+          waivedByUserId: userId,
           waivedAt: new Date(),
         },
       });
@@ -328,7 +334,7 @@ export const latePaymentInterestRouter = router({
         'Interest waiver created',
       );
 
-      return plain({ waiverId: waiver.id });
+      return { waiverId: waiver.id };
     }),
 
   /**
@@ -373,7 +379,7 @@ export const latePaymentInterestRouter = router({
         'Interest waiver revoked',
       );
 
-      return plain({ revoked: true });
+      return { revoked: true };
     }),
 
   /**
@@ -389,6 +395,9 @@ export const latePaymentInterestRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      const userId = ctx.user?.id;
+      if (!userId) throw new TRPCError({ code: 'UNAUTHORIZED', message: E.UNAUTHORIZED });
+
       const invoice = await ctx.db.invoice.findFirst({
         where: { id: input.invoiceId, organizationId: ctx.organizationId },
         include: {
@@ -501,7 +510,7 @@ export const latePaymentInterestRouter = router({
         data: {
           organizationId: ctx.organizationId,
           invoiceId: input.invoiceId,
-          claimedByUserId: ctx.user?.id,
+          claimedByUserId: userId,
           claimedAt: new Date(),
           snapshotInterestMinor: result.accruedInterestMinor,
           snapshotCompensationMinor: result.compensationTierMinor,
@@ -547,12 +556,12 @@ export const latePaymentInterestRouter = router({
         'Late payment interest claim created (PDF render queued)',
       );
 
-      return plain({
+      return {
         claimId: claim.id,
         pdfStatus: 'PENDING_RENDER' as const,
         pdfUrl: null,
         secondaryInvoiceId,
-      });
+      };
     }),
 
   /**
@@ -581,11 +590,11 @@ export const latePaymentInterestRouter = router({
       // expected to poll this procedure; we surface the status verbatim so
       // the UI can show "Generating PDF…" / "Failed" / a download link.
       if (claim.pdfStatus !== 'READY' || !claim.pdfKey) {
-        return plain({
+        return {
           pdfStatus: claim.pdfStatus,
           pdfError: claim.pdfError,
           downloadUrl: null as string | null,
-        });
+        };
       }
 
       const { signedUrl } = await signExistingDownload(
@@ -594,10 +603,10 @@ export const latePaymentInterestRouter = router({
         `late-payment-claim-${claim.invoice.invoiceNumber}.pdf`,
       );
 
-      return plain({
+      return {
         pdfStatus: claim.pdfStatus,
         pdfError: null as string | null,
         downloadUrl: signedUrl as string | null,
-      });
+      };
     }),
 });

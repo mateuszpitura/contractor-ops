@@ -2,11 +2,11 @@ import { authApi } from '@contractor-ops/auth';
 import { inviteUserSchema, updateUserRoleSchema } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import { router } from '../init.js';
-import { requirePermission } from '../middleware/rbac.js';
-import { sensitiveActionProcedure } from '../middleware/sensitive.js';
-import { tenantProcedure } from '../middleware/tenant.js';
-import type { DbClient } from '../services/types.js';
+import { router } from '../../init.js';
+import { requirePermission } from '../../middleware/rbac.js';
+import { sensitiveActionProcedure } from '../../middleware/sensitive.js';
+import { tenantProcedure } from '../../middleware/tenant.js';
+import type { DbClient } from '../../services/types.js';
 
 // ---------------------------------------------------------------------------
 // Deactivation helpers

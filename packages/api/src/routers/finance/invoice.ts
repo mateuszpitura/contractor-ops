@@ -7,22 +7,22 @@ import {
 } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import * as E from '../errors.js';
-import { getHmrcVatClient, getViesClient } from '../gov-api-clients.js';
-import { router } from '../init.js';
-import type { TenantScopedDb } from '../lib/tenant-db.js';
-import { requirePermission } from '../middleware/rbac.js';
-import { tenantProcedure } from '../middleware/tenant.js';
-import { CacheKeys, invalidateByPrefix } from '../services/cache.js';
-import { deleteCalendarEvent } from '../services/calendar-event-service.js';
-import { computeDuplicateCheckHash, runAutoMatch } from '../services/invoice-matching.js';
-import { applyKleinunternehmerOverride } from '../services/kleinunternehmer.service.js';
-import { dispatch } from '../services/notification-service.js';
-import type { DE13bServiceType } from '../services/reverse-charge.service.js';
-import { applyReverseCharge, detectReverseCharge } from '../services/reverse-charge.service.js';
-import { sanitizeStrings } from '../services/sanitize.js';
-import { isValidationFresh, validateTaxId } from '../services/tax-id-validation.service.js';
-import { getDefaultRateCode } from '../services/tax-rate.service.js';
+import * as E from '../../errors.js';
+import { getHmrcVatClient, getViesClient } from '../../gov-api-clients.js';
+import { router } from '../../init.js';
+import type { TenantScopedDb } from '../../lib/tenant-db.js';
+import { requirePermission } from '../../middleware/rbac.js';
+import { tenantProcedure } from '../../middleware/tenant.js';
+import { CacheKeys, invalidateByPrefix } from '../../services/cache.js';
+import { deleteCalendarEvent } from '../../services/calendar-event-service.js';
+import { computeDuplicateCheckHash, runAutoMatch } from '../../services/invoice-matching.js';
+import { applyKleinunternehmerOverride } from '../../services/kleinunternehmer.service.js';
+import { dispatch } from '../../services/notification-service.js';
+import type { DE13bServiceType } from '../../services/reverse-charge.service.js';
+import { applyReverseCharge, detectReverseCharge } from '../../services/reverse-charge.service.js';
+import { sanitizeStrings } from '../../services/sanitize.js';
+import { isValidationFresh, validateTaxId } from '../../services/tax-id-validation.service.js';
+import { getDefaultRateCode } from '../../services/tax-rate.service.js';
 
 // ---------------------------------------------------------------------------
 // Finance team helper
@@ -45,15 +45,6 @@ async function getFinanceTeamUserIds(db: TenantScopedDb, orgId: string): Promise
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-/**
- * Strips Prisma class prototype from query results, producing plain
- * JSON-serializable objects so that inferred tRPC router types do NOT
- * reference the generated Prisma client module (avoids TS2742).
- */
-function plain<T>(data: T): T {
-  return JSON.parse(JSON.stringify(data)) as T;
-}
 
 // ---------------------------------------------------------------------------
 // Invoice update helpers
@@ -502,7 +493,7 @@ export const invoiceRouter = router({
 
       void invalidateByPrefix(CacheKeys.dashboardPrefix(ctx.organizationId));
 
-      return plain(invoice);
+      return invoice;
     }),
 
   /**
@@ -569,7 +560,7 @@ export const invoiceRouter = router({
         });
       }
 
-      return plain(invoice);
+      return invoice;
     }),
 
   /**
@@ -644,7 +635,7 @@ export const invoiceRouter = router({
         },
       });
 
-      return plain(updated);
+      return updated;
     }),
 
   /**
@@ -709,7 +700,7 @@ export const invoiceRouter = router({
         ctx.db.invoice.count({ where }),
       ]);
 
-      return { items: plain(invoices), totalCount, page, pageSize };
+      return { items: invoices, totalCount, page, pageSize };
     }),
 
   /**
@@ -859,7 +850,7 @@ export const invoiceRouter = router({
 
       void invalidateByPrefix(CacheKeys.dashboardPrefix(ctx.organizationId));
 
-      return plain(updated);
+      return updated;
     }),
 
   /**
@@ -953,7 +944,7 @@ export const invoiceRouter = router({
         return inv;
       });
 
-      return plain(updated);
+      return updated;
     }),
 
   /**
@@ -978,9 +969,75 @@ export const invoiceRouter = router({
         });
       }
 
-      const updated = await ctx.db.invoice.update({
-        where: { id: input.id },
-        data: { status: 'VOID' },
+      if (invoice.paymentStatus === 'PAID' || invoice.paymentStatus === 'IN_RUN') {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: E.INVOICE_VOID_NOT_ALLOWED,
+        });
+      }
+
+      const updated = await ctx.db.$transaction(async tx => {
+        const result = await tx.invoice.updateMany({
+          where: {
+            id: input.id,
+            organizationId: ctx.organizationId,
+            deletedAt: null,
+            status: { not: 'VOID' },
+            paymentStatus: { notIn: ['PAID', 'IN_RUN'] },
+          },
+          data: {
+            status: 'VOID',
+            paymentStatus: 'NOT_READY',
+            approvalStatus: 'CANCELLED',
+            paidAt: null,
+            readyForPaymentAt: null,
+            approvedAt: null,
+          },
+        });
+
+        if (result.count === 0) {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: E.INVOICE_VOID_NOT_ALLOWED,
+          });
+        }
+
+        await tx.approvalStep.updateMany({
+          where: {
+            organizationId: ctx.organizationId,
+            status: { in: ['NOT_STARTED', 'PENDING'] },
+            approvalFlow: {
+              resourceType: 'INVOICE',
+              resourceId: input.id,
+            },
+          },
+          data: {
+            status: 'CANCELLED',
+            actedAt: new Date(),
+          },
+        });
+
+        await tx.approvalFlow.updateMany({
+          where: {
+            organizationId: ctx.organizationId,
+            resourceType: 'INVOICE',
+            resourceId: input.id,
+            status: { in: ['NOT_STARTED', 'PENDING'] },
+          },
+          data: {
+            status: 'CANCELLED',
+            completedAt: new Date(),
+            cancelledAt: new Date(),
+          },
+        });
+
+        return tx.invoice.findFirstOrThrow({
+          where: {
+            id: input.id,
+            organizationId: ctx.organizationId,
+            deletedAt: null,
+          },
+        });
       });
 
       // Calendar cleanup: remove payment deadline event (D-08)
@@ -994,7 +1051,7 @@ export const invoiceRouter = router({
 
       void invalidateByPrefix(CacheKeys.dashboardPrefix(ctx.organizationId));
 
-      return plain(updated);
+      return updated;
     }),
 
   /**
@@ -1030,7 +1087,7 @@ export const invoiceRouter = router({
         },
       });
 
-      return plain(updated);
+      return updated;
     }),
 
   /**
@@ -1063,7 +1120,7 @@ export const invoiceRouter = router({
         take: 10,
       });
 
-      return plain(contractors);
+      return contractors;
     }),
 
   /**
@@ -1090,7 +1147,7 @@ export const invoiceRouter = router({
         },
       });
 
-      return plain(contracts);
+      return contracts;
     }),
 
   /**
@@ -1116,6 +1173,6 @@ export const invoiceRouter = router({
           reverseChargeOverride: input.isReverseCharge,
         },
       });
-      return plain(invoice);
+      return invoice;
     }),
 });

@@ -43,6 +43,7 @@ const ROLE_CONTRACTOR_ACTIONS: Record<string, readonly ContractorAction[]> = {
   it_admin: [],
   external_accountant: ['read'],
   readonly: ['read'],
+  platform_operator: [],
 };
 
 function roleGrants(role: string, action: ContractorAction): boolean {

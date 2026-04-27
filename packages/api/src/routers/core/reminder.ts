@@ -5,11 +5,10 @@ import {
 } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import * as E from '../errors.js';
-import { router } from '../init.js';
-import { plain } from '../lib/plain.js';
-import { requirePermission } from '../middleware/rbac.js';
-import { tenantProcedure } from '../middleware/tenant.js';
+import * as E from '../../errors.js';
+import { router } from '../../init.js';
+import { requirePermission } from '../../middleware/rbac.js';
+import { tenantProcedure } from '../../middleware/tenant.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -30,7 +29,7 @@ export const reminderRouter = router({
       orderBy: { createdAt: 'desc' },
     });
 
-    return plain(rules);
+    return rules;
   }),
 
   /**
@@ -55,7 +54,7 @@ export const reminderRouter = router({
         },
       });
 
-      return plain(rule);
+      return rule;
     }),
 
   /**
@@ -86,7 +85,7 @@ export const reminderRouter = router({
         },
       });
 
-      return plain(updated);
+      return updated;
     }),
 
   /**

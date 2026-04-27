@@ -6,11 +6,10 @@
 import { createLogger } from '@contractor-ops/logger';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import { router } from '../init.js';
-import { plain } from '../lib/plain.js';
-import { requirePermission } from '../middleware/rbac.js';
-import { tenantProcedure } from '../middleware/tenant.js';
-import { invalidateBoeRateCache } from '../services/boe-rate-cache.js';
+import { router } from '../../init.js';
+import { requirePermission } from '../../middleware/rbac.js';
+import { tenantProcedure } from '../../middleware/tenant.js';
+import { invalidateBoeRateCache } from '../../services/boe-rate-cache.js';
 
 const log = createLogger({ service: 'admin-boe-rate-router' });
 
@@ -28,13 +27,13 @@ export const adminBoeRateRouter = router({
    * Global data — not tenant-scoped.
    */
   list: tenantProcedure
-    .use(requirePermission({ 'admin:boe-rate': ['write'] }))
+    .use(requirePermission({ 'admin:boe-rate': ['read'] }))
     .query(async ({ ctx }) => {
       const entries = await ctx.db.boEBaseRateHistory.findMany({
         orderBy: { effectiveFrom: 'desc' },
       });
 
-      return plain(entries);
+      return entries;
     }),
 
   /**
@@ -72,8 +71,6 @@ export const adminBoeRateRouter = router({
         },
       });
 
-      invalidateBoeRateCache();
-
       log.info(
         {
           entryId: entry.id,
@@ -84,7 +81,7 @@ export const adminBoeRateRouter = router({
       );
 
       invalidateBoeRateCache();
-      return plain(entry);
+      return entry;
     }),
 
   /**
@@ -118,8 +115,6 @@ export const adminBoeRateRouter = router({
         },
       });
 
-      invalidateBoeRateCache();
-
       log.info(
         {
           entryId: input.id,
@@ -130,7 +125,7 @@ export const adminBoeRateRouter = router({
       );
 
       invalidateBoeRateCache();
-      return plain(updated);
+      return updated;
     }),
 
   /**
@@ -152,8 +147,6 @@ export const adminBoeRateRouter = router({
         where: { id: input.id },
       });
 
-      invalidateBoeRateCache();
-
       log.info(
         {
           entryId: input.id,
@@ -164,6 +157,6 @@ export const adminBoeRateRouter = router({
       );
 
       invalidateBoeRateCache();
-      return plain({ deleted: true });
+      return { deleted: true };
     }),
 });

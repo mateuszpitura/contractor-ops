@@ -1,22 +1,18 @@
 import { Prisma } from '@contractor-ops/db/generated/prisma/client';
 import { z } from 'zod';
-import { router } from '../init.js';
-import { requirePermission } from '../middleware/rbac.js';
-import { tenantProcedure } from '../middleware/tenant.js';
+import { router } from '../../init.js';
+import { requirePermission } from '../../middleware/rbac.js';
+import { tenantProcedure } from '../../middleware/tenant.js';
 import {
   generateComplianceCsv,
   generateContractsCsv,
   generateInvoicesCsv,
   generateSpendCsv,
-} from '../services/report-export.js';
+} from '../../services/report-export.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-function _plain<T>(data: T): T {
-  return JSON.parse(JSON.stringify(data)) as T;
-}
 
 const reportRead = requirePermission({ report: ['read'] });
 

@@ -26,6 +26,7 @@ export const CronMonitors = {
   CLASSIFICATION_REASSESSMENT_TRIGGERS: 'classification-reassessment-triggers',
   // Phase 63 · Plan 03 — daily Bank of England base rate polling (LPCDA §4(1)).
   BOE_RATE_POLL: 'boe-rate-poll',
+  LATE_INTEREST_PDF_REAPER: 'late-interest-pdf-reaper',
 } as const;
 
 export type CronMonitorKey = (typeof CronMonitors)[keyof typeof CronMonitors];

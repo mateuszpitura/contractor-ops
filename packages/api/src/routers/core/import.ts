@@ -6,23 +6,23 @@
 
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import * as E from '../errors.js';
-import type { DbClient } from '../services/types.js';
+import * as E from '../../errors.js';
+import type { DbClient } from '../../services/types.js';
 
 type TxClient = Parameters<Parameters<DbClient['$transaction']>[0]>[0];
 
-import { router } from '../init.js';
-import { requirePermission } from '../middleware/rbac.js';
-import { tenantProcedure } from '../middleware/tenant.js';
+import { router } from '../../init.js';
+import { requirePermission } from '../../middleware/rbac.js';
+import { tenantProcedure } from '../../middleware/tenant.js';
 import {
   assertValidContractorTaxId,
   normalizeContractorTaxId,
-} from '../services/contractor-tax-id.js';
+} from '../../services/contractor-tax-id.js';
 import {
   autoMapColumns,
   parseImportFile,
   processImportFile,
-} from '../services/import-processor.js';
+} from '../../services/import-processor.js';
 
 // ---------------------------------------------------------------------------
 // Commit helpers
@@ -231,7 +231,9 @@ export const importRouter = router({
     .use(requirePermission({ contractor: ['create'] }))
     .input(
       fileInputSchema.extend({
-        columnMapping: z.record(z.string().nullable()),
+        // Zod v4: record requires explicit key schema. Keys here are CSV/XLSX
+        // header names (arbitrary strings); values are nullable target field names.
+        columnMapping: z.record(z.string(), z.string().nullable()),
       }),
     )
     .mutation(async ({ input, ctx }) => {
@@ -263,8 +265,8 @@ export const importRouter = router({
     .input(
       z.object({
         entityType: entityTypeSchema,
-        rows: z.array(z.record(z.unknown())),
-        duplicateActions: z.record(z.enum(['skip', 'update', 'create'])),
+        rows: z.array(z.record(z.string(), z.unknown())),
+        duplicateActions: z.record(z.string(), z.enum(['skip', 'update', 'create'])),
       }),
     )
     .mutation(async ({ input, ctx }) => {

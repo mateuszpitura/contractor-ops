@@ -25,10 +25,10 @@
 
 import { TRPCError } from '@trpc/server';
 
-import * as E from '../errors.js';
-import { router } from '../init.js';
-import { requirePermission } from '../middleware/rbac.js';
-import { tenantProcedure } from '../middleware/tenant.js';
+import * as E from '../../errors.js';
+import { router } from '../../init.js';
+import { requirePermission } from '../../middleware/rbac.js';
+import { tenantProcedure } from '../../middleware/tenant.js';
 import {
   createLeitwegIdInput,
   deleteLeitwegIdInput,
@@ -36,7 +36,7 @@ import {
   listByContractorInput,
   setDefaultInput,
   updateLeitwegIdInput,
-} from '../schemas/leitweg-id.js';
+} from '../../schemas/leitweg-id.js';
 
 // ---------------------------------------------------------------------------
 // Helpers

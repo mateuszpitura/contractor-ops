@@ -2,17 +2,16 @@ import { getQStashClient } from '@contractor-ops/integrations/services/qstash-cl
 import { billingCreditDenialReason, getServerEnv } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import { router } from '../init.js';
-import { plain } from '../lib/plain.js';
-import { portalProcedure } from '../middleware/portal-auth.js';
-import { requirePermission } from '../middleware/rbac.js';
-import { tenantProcedure } from '../middleware/tenant.js';
-import { requireTier } from '../middleware/tier.js';
+import { router } from '../../init.js';
+import { portalProcedure } from '../../middleware/portal-auth.js';
+import { requirePermission } from '../../middleware/rbac.js';
+import { tenantProcedure } from '../../middleware/tenant.js';
+import { requireTier } from '../../middleware/tier.js';
 import {
   getExtractionByDocument,
   getExtractionResult,
   triggerOcrExtraction,
-} from '../services/ocr-extraction.js';
+} from '../../services/ocr-extraction.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -88,7 +87,7 @@ export const ocrRouter = router({
       extractionId: input.extractionId,
     });
 
-    return extraction ? plain(extraction) : null;
+    return extraction ? extraction : null;
   }),
 
   /**
@@ -100,7 +99,7 @@ export const ocrRouter = router({
       documentId: input.documentId,
     });
 
-    return extraction ? plain(extraction) : null;
+    return extraction ? extraction : null;
   }),
 
   /**
@@ -202,7 +201,7 @@ export const ocrRouter = router({
       extractionId: input.extractionId,
     });
 
-    return extraction ? plain(extraction) : null;
+    return extraction ? extraction : null;
   }),
 
   /**
@@ -214,6 +213,6 @@ export const ocrRouter = router({
       documentId: input.documentId,
     });
 
-    return extraction ? plain(extraction) : null;
+    return extraction ? extraction : null;
   }),
 });

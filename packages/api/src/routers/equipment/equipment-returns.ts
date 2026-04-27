@@ -9,13 +9,13 @@ import {
 } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import { router } from '../init.js';
-import { requirePermission } from '../middleware/rbac.js';
-import { tenantProcedure } from '../middleware/tenant.js';
-import type { InPostClientConfig } from '../services/courier/inpost-client.js';
-import { InPostClient } from '../services/courier/inpost-client.js';
-import { dispatch } from '../services/notification-service.js';
-import { NOTIFICATION_KEYS, plain } from './equipment-shared.js';
+import { router } from '../../init.js';
+import { requirePermission } from '../../middleware/rbac.js';
+import { tenantProcedure } from '../../middleware/tenant.js';
+import type { InPostClientConfig } from '../../services/courier/inpost-client.js';
+import { InPostClient } from '../../services/courier/inpost-client.js';
+import { dispatch } from '../../services/notification-service.js';
+import { NOTIFICATION_KEYS } from './equipment-shared.js';
 
 // ---------------------------------------------------------------------------
 // Equipment Returns sub-router
@@ -227,7 +227,7 @@ export const equipmentReturnsRouter = router({
         },
       });
 
-      return plain(result);
+      return result;
     }),
 
   /**
@@ -328,7 +328,7 @@ export const equipmentReturnsRouter = router({
         },
       });
 
-      return plain(result);
+      return result;
     }),
 
   /**
@@ -375,6 +375,6 @@ export const equipmentReturnsRouter = router({
         },
       });
 
-      return plain(returnRequests);
+      return returnRequests;
     }),
 });

@@ -1,15 +1,14 @@
 import { attachDocInputSchema, docSearchInputSchema } from '@contractor-ops/validators';
 import { z } from 'zod';
-import { router } from '../init.js';
-import { plain } from '../lib/plain.js';
-import { tenantProcedure } from '../middleware/tenant.js';
+import { router } from '../../init.js';
+import { tenantProcedure } from '../../middleware/tenant.js';
 import {
   attachDocLink,
   detachDocLink,
   getDocLinks,
   refreshDocMetadata,
   searchDocs,
-} from '../services/doc-link-service.js';
+} from '../../services/doc-link-service.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -65,7 +64,7 @@ export const docsRouter = router({
       metadata: input.metadata as Record<string, unknown>,
     });
 
-    return plain(result);
+    return result;
   }),
 
   /**
@@ -93,7 +92,7 @@ export const docsRouter = router({
         workflowTaskRunId: input.workflowTaskRunId,
       });
 
-      return plain(links);
+      return links;
     }),
 
   /**
@@ -124,6 +123,6 @@ export const docsRouter = router({
     .mutation(async ({ ctx, input }) => {
       const result = await refreshDocMetadata(ctx.db, input.externalLinkId, ctx.organizationId);
 
-      return plain(result);
+      return result;
     }),
 });

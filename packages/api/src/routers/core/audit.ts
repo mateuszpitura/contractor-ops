@@ -1,19 +1,15 @@
 import type { Prisma } from '@contractor-ops/db';
 import type { EntityType } from '@contractor-ops/db/generated/prisma/client';
 import { z } from 'zod';
-import { router } from '../init.js';
-import { requirePermission } from '../middleware/rbac.js';
-import { tenantProcedure } from '../middleware/tenant.js';
-import { requireTier } from '../middleware/tier.js';
-import { generateAuditCsv } from '../services/report-export.js';
+import { router } from '../../init.js';
+import { requirePermission } from '../../middleware/rbac.js';
+import { tenantProcedure } from '../../middleware/tenant.js';
+import { requireTier } from '../../middleware/tier.js';
+import { generateAuditCsv } from '../../services/report-export.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-function plain<T>(data: T): T {
-  return JSON.parse(JSON.stringify(data)) as T;
-}
 
 const settingsRead = requirePermission({ settings: ['read'] });
 
@@ -91,7 +87,7 @@ export const auditRouter = router({
       ]);
 
       return {
-        items: plain(items),
+        items: items,
         totalCount,
         page: input.page,
         pageSize: input.pageSize,

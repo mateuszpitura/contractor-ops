@@ -1,6 +1,6 @@
 import { FLAG_KEYS, FLAGS } from '@contractor-ops/feature-flags';
-import { router } from '../init.js';
-import { tenantFlaggedProcedure } from '../middleware/feature-flag.js';
+import { router } from '../../init.js';
+import { tenantFlaggedProcedure } from '../../middleware/feature-flag.js';
 
 /**
  * Feature flag introspection router (session auth).

@@ -12,23 +12,23 @@ import {
 } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import * as E from '../errors.js';
-import { router } from '../init.js';
-import { requirePermission } from '../middleware/rbac.js';
-import { tenantProcedure } from '../middleware/tenant.js';
-import { matchStatementToRun, parseBankStatement } from '../services/bank-statement.js';
-import type { ExportItem, OrgBankInfo } from '../services/payment-export.js';
+import * as E from '../../errors.js';
+import { router } from '../../init.js';
+import { requirePermission } from '../../middleware/rbac.js';
+import { tenantProcedure } from '../../middleware/tenant.js';
+import { matchStatementToRun, parseBankStatement } from '../../services/bank-statement.js';
+import type { ExportItem, OrgBankInfo } from '../../services/payment-export.js';
 import {
   generateCsv,
   generateElixir,
   generateSepaXml,
   generateSwiftXml,
   resolveTransferTitle,
-} from '../services/payment-export.js';
-import { detectFormat } from '../services/payment-format-detection.js';
-import { evaluateSkontoEligibility, resolveSkontoTerm } from '../services/skonto.js';
-import { calculateWht } from '../services/tax-rate.service.js';
-import type { DbClient } from '../services/types.js';
+} from '../../services/payment-export.js';
+import { detectFormat } from '../../services/payment-format-detection.js';
+import { evaluateSkontoEligibility, resolveSkontoTerm } from '../../services/skonto.js';
+import { calculateWht } from '../../services/tax-rate.service.js';
+import type { DbClient } from '../../services/types.js';
 
 /** Transaction client derived from the tenant-scoped DbClient. */
 type TxClient = Parameters<Parameters<DbClient['$transaction']>[0]>[0];
@@ -36,15 +36,6 @@ type TxClient = Parameters<Parameters<DbClient['$transaction']>[0]>[0];
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-/**
- * Strips Prisma class prototype from query results, producing plain
- * JSON-serializable objects so that inferred tRPC router types do NOT
- * reference the generated Prisma client module (avoids TS2742).
- */
-function plain<T>(data: T): T {
-  return JSON.parse(JSON.stringify(data)) as T;
-}
 
 // ---------------------------------------------------------------------------
 // Idempotency key cache for payment run creation (24-hour window)
@@ -342,7 +333,7 @@ export const paymentRouter = router({
         nextCursor = next?.id;
       }
 
-      return plain({ items, nextCursor });
+      return { items, nextCursor };
     }),
 
   // =========================================================================
@@ -367,7 +358,7 @@ export const paymentRouter = router({
           });
         }
         if (cached && Date.now() < cached.expiresAt) {
-          return cached.result as ReturnType<typeof plain>;
+          return cached.result as PaymentRun[];
         }
         // Reserve the key immediately to prevent concurrent requests
         idempotencyCache.set(cacheKey, 'PENDING');
@@ -425,6 +416,11 @@ export const paymentRouter = router({
           }
 
           const runs: PaymentRun[] = [];
+
+          await tx.$executeRawUnsafe(
+            'SELECT pg_advisory_xact_lock(hashtext($1))',
+            `payment-run:${ctx.organizationId}`,
+          );
 
           for (const [currency, groupInvoices] of groups) {
             // Generate sequential run number
@@ -492,21 +488,32 @@ export const paymentRouter = router({
           return runs;
         });
 
-        const plainResult = plain(result);
-
         // Update cache with actual result
         if (cacheKey) {
           idempotencyCache.set(cacheKey, {
-            result: plainResult,
+            result,
             expiresAt: Date.now() + IDEMPOTENCY_TTL_MS,
           });
         }
 
-        return plainResult;
+        return result;
       } catch (err) {
         // Clear reservation on failure so the key can be retried
         if (cacheKey) {
           idempotencyCache.delete(cacheKey);
+        }
+        if (
+          err &&
+          typeof err === 'object' &&
+          (err as { code?: string }).code === 'P2002' &&
+          ((err as { meta?: { target?: readonly string[] } }).meta?.target ?? []).includes(
+            'runNumber',
+          )
+        ) {
+          throw new TRPCError({
+            code: 'CONFLICT',
+            message: 'Payment run number collision; retry to allocate a new number.',
+          });
         }
         throw err;
       }
@@ -554,7 +561,7 @@ export const paymentRouter = router({
         });
       }
 
-      return plain(run);
+      return run;
     }),
 
   // =========================================================================
@@ -599,7 +606,7 @@ export const paymentRouter = router({
         nextCursor = next?.id;
       }
 
-      return plain({ items, nextCursor });
+      return { items, nextCursor };
     }),
 
   // =========================================================================
@@ -746,7 +753,7 @@ export const paymentRouter = router({
         };
       });
 
-      return plain(result);
+      return result;
     }),
 
   // =========================================================================
@@ -804,7 +811,7 @@ export const paymentRouter = router({
         return updatedItem;
       });
 
-      return plain(result);
+      return result;
     }),
 
   // =========================================================================
@@ -867,7 +874,7 @@ export const paymentRouter = router({
         return updatedRun;
       });
 
-      return plain(result);
+      return result;
     }),
 
   // =========================================================================
@@ -942,7 +949,7 @@ export const paymentRouter = router({
         return updatedRun;
       });
 
-      return plain(result);
+      return result;
     }),
 
   // =========================================================================
@@ -1001,7 +1008,7 @@ export const paymentRouter = router({
 
       const matches = matchStatementToRun(transactions, matchItems);
 
-      return plain({ matches, transactions });
+      return { matches, transactions };
     }),
 
   // =========================================================================
@@ -1069,7 +1076,7 @@ export const paymentRouter = router({
         return updatedRun;
       });
 
-      return plain(result);
+      return result;
     }),
 
   // =========================================================================
@@ -1163,7 +1170,7 @@ export const paymentRouter = router({
         { isolationLevel: 'Serializable' },
       );
 
-      return plain(result);
+      return result;
     }),
 
   // =========================================================================
@@ -1191,7 +1198,7 @@ export const paymentRouter = router({
         take: 100,
       });
 
-      return plain(items);
+      return items;
     }),
 
   // =========================================================================
@@ -1300,7 +1307,7 @@ export const paymentRouter = router({
         return updatedItem;
       });
 
-      return plain(result);
+      return result;
     }),
 
   // =========================================================================

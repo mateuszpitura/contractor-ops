@@ -13,23 +13,22 @@ import {
 } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import { router } from '../init.js';
-import { adminProcedure, requirePermission } from '../middleware/rbac.js';
-import { tenantProcedure } from '../middleware/tenant.js';
-import { requireTier } from '../middleware/tier.js';
-import { getCourierClient } from '../services/courier/carrier-factory.js';
-import type { DPDClientConfig } from '../services/courier/dpd-client.js';
-import { DPDClient } from '../services/courier/dpd-client.js';
-import type { InPostClientConfig } from '../services/courier/inpost-client.js';
-import { InPostClient } from '../services/courier/inpost-client.js';
-import type { UPSClientConfig } from '../services/courier/ups-client.js';
-import { UPSClient } from '../services/courier/ups-client.js';
-import { checkShipmentTaskCompletion } from '../services/equipment-workflow.js';
+import { router } from '../../init.js';
+import { adminProcedure, requirePermission } from '../../middleware/rbac.js';
+import { tenantProcedure } from '../../middleware/tenant.js';
+import { requireTier } from '../../middleware/tier.js';
+import { getCourierClient } from '../../services/courier/carrier-factory.js';
+import type { DPDClientConfig } from '../../services/courier/dpd-client.js';
+import { DPDClient } from '../../services/courier/dpd-client.js';
+import type { InPostClientConfig } from '../../services/courier/inpost-client.js';
+import { InPostClient } from '../../services/courier/inpost-client.js';
+import type { UPSClientConfig } from '../../services/courier/ups-client.js';
+import { UPSClient } from '../../services/courier/ups-client.js';
+import { checkShipmentTaskCompletion } from '../../services/equipment-workflow.js';
 import {
   EQUIPMENT_NOT_ASSIGNED,
   EQUIPMENT_NOT_FOUND,
   EQUIPMENT_STATUS_TRANSITIONS,
-  plain,
   SHIPMENT_NOT_FOUND,
 } from './equipment-shared.js';
 
@@ -240,7 +239,7 @@ export const equipmentCouriersRouter = router({
         },
       });
 
-      return plain(result);
+      return result;
     }),
 
   // ─── DPD Integration (PRO tier) ──────────────────────────────────
@@ -427,7 +426,7 @@ export const equipmentCouriersRouter = router({
         include: { events: { orderBy: { occurredAt: 'asc' } } },
       });
 
-      return plain(result);
+      return result;
     }),
 
   // ─── UPS Integration (PRO tier) ──────────────────────────────────
@@ -616,7 +615,7 @@ export const equipmentCouriersRouter = router({
         include: { events: { orderBy: { occurredAt: 'asc' } } },
       });
 
-      return plain(result);
+      return result;
     }),
 
   // ─── Courier Config Management ────────────────────────────────────

@@ -1,14 +1,17 @@
 import { whtServiceTypeEnum } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import { router } from '../init.js';
-import { tenantProcedure } from '../middleware/tenant.js';
+import { router } from '../../init.js';
+import { tenantProcedure } from '../../middleware/tenant.js';
 import {
   calculateWht,
   getTaxRatesForCountry,
   validateVatRateCode,
-} from '../services/tax-rate.service.js';
-import { createWhtCertificate, listWhtCertificates } from '../services/wht-certificate.service.js';
+} from '../../services/tax-rate.service.js';
+import {
+  createWhtCertificate,
+  listWhtCertificates,
+} from '../../services/wht-certificate.service.js';
 
 export const taxRouter = router({
   /** Get active tax rates for the tenant org's country */

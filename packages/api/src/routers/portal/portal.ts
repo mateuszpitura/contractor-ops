@@ -3,31 +3,31 @@ import { createTenantClientFrom, getRegionalClient, prisma, tenantStore } from '
 import { returnRequestCreateSchema } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import * as E from '../errors.js';
-import { router } from '../init.js';
-import type { TenantScopedDb } from '../lib/tenant-db.js';
-import { portalProcedure, portalPublicProcedure } from '../middleware/portal-auth.js';
-import { encryptBankAccount } from '../services/bank-account-crypto.js';
+import * as E from '../../errors.js';
+import { router } from '../../init.js';
+import type { TenantScopedDb } from '../../lib/tenant-db.js';
+import { portalProcedure, portalPublicProcedure } from '../../middleware/portal-auth.js';
+import { encryptBankAccount } from '../../services/bank-account-crypto.js';
 import {
   assertValidContractorTaxId,
   normalizeContractorTaxId,
-} from '../services/contractor-tax-id.js';
-import type { InPostClientConfig } from '../services/courier/inpost-client.js';
-import { InPostClient } from '../services/courier/inpost-client.js';
-import { dispatch } from '../services/notification-service.js';
-import { createChangeRequest } from '../services/portal-change-request.js';
+} from '../../services/contractor-tax-id.js';
+import type { InPostClientConfig } from '../../services/courier/inpost-client.js';
+import { InPostClient } from '../../services/courier/inpost-client.js';
+import { dispatch } from '../../services/notification-service.js';
+import { createChangeRequest } from '../../services/portal-change-request.js';
 import {
   createMagicLinkToken,
   findContractorsByEmail,
   sendPortalMagicLink,
   verifyMagicLinkToken,
-} from '../services/portal-magic-link.js';
-import { createPortalSession, deletePortalSession } from '../services/portal-session.js';
-import { generateStorageKey } from '../services/r2.js';
+} from '../../services/portal-magic-link.js';
+import { createPortalSession, deletePortalSession } from '../../services/portal-session.js';
+import { generateStorageKey } from '../../services/r2.js';
 import {
   createRegionalPresignedDownloadUrl,
   createRegionalPresignedUploadUrl,
-} from '../services/regional-storage.js';
+} from '../../services/regional-storage.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -49,15 +49,6 @@ async function withOrgRegionalDb<T>(
   const region = org?.dataRegion ?? 'EU';
   const db = createTenantClientFrom(getRegionalClient(region));
   return tenantStore.run({ organizationId, region }, () => fn(db));
-}
-
-/**
- * Strips Prisma class prototype from query results, producing plain
- * JSON-serializable objects so that inferred tRPC router types do NOT
- * reference the generated Prisma client module (avoids TS2742).
- */
-function plain<T>(data: T): T {
-  return JSON.parse(JSON.stringify(data)) as T;
 }
 
 /**
@@ -206,18 +197,18 @@ export const portalRouter = router({
           userAgent,
         });
 
-        return plain({
+        return {
           session: { rawToken: session.rawToken, expiresAt: session.expiresAt },
           orgs: null,
           needsOrgPicker: false as const,
-        });
+        };
       }
 
       // Multi-org -- create a short-lived verification nonce so selectOrg
       // can prove the email was actually verified (prevents IDOR).
       const { token: verificationNonce } = await createMagicLinkToken(result.email);
 
-      return plain({
+      return {
         session: null,
         orgs: contractors.map(c => ({
           contractorId: c.id,
@@ -228,7 +219,7 @@ export const portalRouter = router({
         needsOrgPicker: true as const,
         email: result.email,
         verificationNonce,
-      });
+      };
     }),
 
   /**
@@ -287,7 +278,7 @@ export const portalRouter = router({
         userAgent,
       });
 
-      return plain({ rawToken: session.rawToken, expiresAt: session.expiresAt });
+      return { rawToken: session.rawToken, expiresAt: session.expiresAt };
     }),
 
   /**
@@ -398,14 +389,14 @@ export const portalRouter = router({
       if (entry) recentActivity.push(entry);
     }
 
-    return plain({
+    return {
       activeContracts,
       pendingInvoices,
       recentPaymentsMinor,
       recentPaymentsCurrency,
       upcomingDeadline,
       recentActivity,
-    });
+    };
   }),
 
   /**
@@ -434,7 +425,7 @@ export const portalRouter = router({
       orderBy: { startDate: 'desc' },
     });
 
-    return plain(contracts);
+    return contracts;
   }),
 
   /**
@@ -506,7 +497,7 @@ export const portalRouter = router({
       }),
     );
 
-    return plain({ ...contract, documents });
+    return { ...contract, documents };
   }),
 
   /**
@@ -533,7 +524,7 @@ export const portalRouter = router({
       orderBy: { receivedAt: 'desc' },
     });
 
-    return plain(invoices);
+    return invoices;
   }),
 
   /**
@@ -659,12 +650,12 @@ export const portalRouter = router({
       ...invoiceData
     } = invoice;
 
-    return plain({
+    return {
       ...invoiceData,
       files,
       payment,
       activityLog,
-    });
+    };
   }),
 
   /**
@@ -748,7 +739,7 @@ export const portalRouter = router({
         }),
     );
 
-    return plain(documents);
+    return documents;
   }),
 
   /**
@@ -772,15 +763,13 @@ export const portalRouter = router({
       orderBy: { markedPaidAt: 'desc' },
     });
 
-    return plain(
-      items.map(item => ({
-        id: item.id,
-        invoiceNumber: item.invoice.invoiceNumber,
-        amountMinor: item.amountMinor,
-        currency: item.currency,
-        paidAt: item.markedPaidAt,
-      })),
-    );
+    return items.map(item => ({
+      id: item.id,
+      invoiceNumber: item.invoice.invoiceNumber,
+      amountMinor: item.amountMinor,
+      currency: item.currency,
+      paidAt: item.markedPaidAt,
+    }));
   }),
 
   // =========================================================================
@@ -891,11 +880,11 @@ export const portalRouter = router({
         },
       });
 
-      return plain({
+      return {
         invoiceId: invoice.id,
         invoiceNumber: invoice.invoiceNumber,
         status: invoice.status,
-      });
+      };
     }),
 
   /**
@@ -914,7 +903,7 @@ export const portalRouter = router({
       },
     });
 
-    return plain(contracts);
+    return contracts;
   }),
 
   /**
@@ -927,7 +916,7 @@ export const portalRouter = router({
       select: { id: true, name: true, logo: true },
     });
 
-    return plain({
+    return {
       contractor: {
         id: ctx.contractor.id,
         displayName: ctx.contractor.displayName,
@@ -938,7 +927,7 @@ export const portalRouter = router({
         name: org?.name ?? '',
         logo: org?.logo ?? null,
       },
-    });
+    };
   }),
 
   // =========================================================================
@@ -1001,11 +990,11 @@ export const portalRouter = router({
       },
     });
 
-    return plain({
+    return {
       ...contractor,
       billingProfile,
       pendingChangeRequest,
-    });
+    };
   }),
 
   /**
@@ -1048,7 +1037,7 @@ export const portalRouter = router({
         },
       });
 
-      return plain(updated);
+      return updated;
     }),
 
   /**
@@ -1065,6 +1054,19 @@ export const portalRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      // Fail fast on empty payload before issuing any DB query.
+      if (
+        input.bankAccountNumber === undefined &&
+        input.bankName === undefined &&
+        input.swiftBic === undefined &&
+        input.taxId === undefined
+      ) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: E.PORTAL_NO_CHANGES,
+        });
+      }
+
       // Read current canonical contractor + billing profile values for the snapshot.
       const [contractor, currentProfile] = await Promise.all([
         ctx.db.contractor.findFirst({
@@ -1121,13 +1123,6 @@ export const portalRouter = router({
         requestedChanges.taxId = normalizedTaxId;
       }
 
-      if (Object.keys(requestedChanges).length === 0) {
-        throw new TRPCError({
-          code: 'BAD_REQUEST',
-          message: E.PORTAL_NO_CHANGES,
-        });
-      }
-
       const changeRequest = await createChangeRequest(
         ctx.contractorId,
         ctx.organizationId,
@@ -1135,11 +1130,11 @@ export const portalRouter = router({
         previousValues,
       );
 
-      return plain({
+      return {
         id: changeRequest.id,
         status: changeRequest.status,
         createdAt: changeRequest.createdAt,
-      });
+      };
     }),
 
   /**
@@ -1174,7 +1169,7 @@ export const portalRouter = router({
       emailEnabled: existingMap.get(category) ?? true,
     }));
 
-    return plain(preferences);
+    return preferences;
   }),
 
   /**
@@ -1225,7 +1220,7 @@ export const portalRouter = router({
         },
       });
 
-      return plain(preference);
+      return preference;
     }),
 
   // =========================================================================
@@ -1276,7 +1271,7 @@ export const portalRouter = router({
       latestShipment: a.equipment.shipments[0] ?? null,
     }));
 
-    return plain(items);
+    return items;
   }),
 
   /**
@@ -1306,7 +1301,7 @@ export const portalRouter = router({
       },
     });
 
-    return returnRequest ? plain(returnRequest) : null;
+    return returnRequest ? returnRequest : null;
   }),
 
   /**
@@ -1414,7 +1409,7 @@ export const portalRouter = router({
         /* fire-and-forget */
       });
 
-      return plain(result);
+      return result;
     }),
 
   /**
@@ -1484,7 +1479,7 @@ export const portalRouter = router({
         return updated;
       });
 
-      return plain(result);
+      return result;
     }),
 
   /**

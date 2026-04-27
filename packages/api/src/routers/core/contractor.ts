@@ -10,18 +10,18 @@ import {
 } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import * as E from '../errors.js';
-import { getHmrcVatClient, getViesClient } from '../gov-api-clients.js';
-import { router } from '../init.js';
-import { requirePermission } from '../middleware/rbac.js';
-import { tenantProcedure } from '../middleware/tenant.js';
-import { writeAuditLog } from '../services/audit-writer.js';
-import { encryptBankAccount } from '../services/bank-account-crypto.js';
-import { syncSeatCountForOrg } from '../services/billing-service.js';
-import { CacheKeys, invalidateByPrefix } from '../services/cache.js';
-import { sanitizeStrings } from '../services/sanitize.js';
-import { validateTaxId } from '../services/tax-id-validation.service.js';
-import type { DbClient } from '../services/types.js';
+import * as E from '../../errors.js';
+import { getHmrcVatClient, getViesClient } from '../../gov-api-clients.js';
+import { router } from '../../init.js';
+import { requirePermission } from '../../middleware/rbac.js';
+import { tenantProcedure } from '../../middleware/tenant.js';
+import { writeAuditLog } from '../../services/audit-writer.js';
+import { encryptBankAccount } from '../../services/bank-account-crypto.js';
+import { syncSeatCountForOrg } from '../../services/billing-service.js';
+import { CacheKeys, invalidateByPrefix } from '../../services/cache.js';
+import { sanitizeStrings } from '../../services/sanitize.js';
+import { validateTaxId } from '../../services/tax-id-validation.service.js';
+import type { DbClient } from '../../services/types.js';
 
 // ---------------------------------------------------------------------------
 // Lifecycle transition map
@@ -144,15 +144,6 @@ function computeListHealthBadge(counts: {
   if (counts.missingOrExpired > 0) return 'red';
   if (counts.pending > 0) return 'yellow';
   return 'green';
-}
-
-/**
- * Strips Prisma class prototype from query results, producing plain
- * JSON-serializable objects so that inferred tRPC router types do NOT
- * reference the generated Prisma client module (avoids TS2742).
- */
-function plain<T>(data: T): T {
-  return JSON.parse(JSON.stringify(data)) as T;
 }
 
 // ---------------------------------------------------------------------------
@@ -428,7 +419,7 @@ export const contractorRouter = router({
       const pendingMap = new Map(pendingCounts.map(p => [p.contractorId, p._count]));
 
       const items = contractors.map(c => ({
-        ...plain(c),
+        ...c,
         complianceHealth: computeListHealthBadge({
           missingOrExpired: c._count.complianceItems,
           pending: pendingMap.get(c.id) ?? 0,
@@ -546,7 +537,7 @@ export const contractorRouter = router({
       });
 
       return {
-        ...plain(contractor),
+        ...contractor,
         complianceHealth: health,
       };
     }),
@@ -647,7 +638,7 @@ export const contractorRouter = router({
       void syncSeatCountForOrg(ctx.organizationId);
       void invalidateByPrefix(CacheKeys.dashboardPrefix(ctx.organizationId));
 
-      return plain(contractor);
+      return contractor;
     }),
 
   /**
@@ -655,7 +646,7 @@ export const contractorRouter = router({
    */
   update: tenantProcedure
     .use(requirePermission({ contractor: ['update'] }))
-    .input(contractorUpdateSchema.extend({ id: z.string().min(1) }))
+    .input(z.intersection(contractorUpdateSchema, z.object({ id: z.string().min(1) })))
     .mutation(async ({ ctx, input: rawInput }) => {
       const input = sanitizeStrings(rawInput);
       const {
@@ -737,7 +728,7 @@ export const contractorRouter = router({
         paymentTermsDays,
       );
 
-      return plain(updated);
+      return updated;
     }),
 
   /**
@@ -811,7 +802,7 @@ export const contractorRouter = router({
       }
       void invalidateByPrefix(CacheKeys.dashboardPrefix(ctx.organizationId));
 
-      return plain(updated);
+      return updated;
     }),
 
   /**
@@ -929,7 +920,7 @@ export const contractorRouter = router({
       void syncSeatCountForOrg(ctx.organizationId);
       void invalidateByPrefix(CacheKeys.dashboardPrefix(ctx.organizationId));
 
-      return plain(updated);
+      return updated;
     }),
 
   /**
@@ -1249,7 +1240,7 @@ export const contractorRouter = router({
       z.object({
         contractorId: z.string(),
         countryCode: z.string().length(2),
-        fields: z.record(z.unknown()),
+        fields: z.record(z.string(), z.unknown()),
       }),
     )
     .mutation(async ({ ctx, input }) => {

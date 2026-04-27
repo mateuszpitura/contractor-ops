@@ -16,10 +16,10 @@
 import { resolveJurisdiction } from '@contractor-ops/validators';
 import { renderToBuffer } from '@react-pdf/renderer';
 import { z } from 'zod';
-import { router } from '../init.js';
-import { tenantProcedure } from '../middleware/tenant.js';
-import { GdprPrivacyNoticeTemplate } from '../pdf-templates/gdpr-privacy-notice.js';
-import { putObjectAndSignDownload } from '../services/r2.js';
+import { router } from '../../init.js';
+import { tenantProcedure } from '../../middleware/tenant.js';
+import { GdprPrivacyNoticeTemplate } from '../../pdf-templates/gdpr-privacy-notice.js';
+import { putObjectAndSignDownload } from '../../services/r2.js';
 
 const PDF_TTL_SECONDS = 300; // 5 min — short enough to limit URL sharing, long enough for slow networks.
 

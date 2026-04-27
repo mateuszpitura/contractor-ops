@@ -1,23 +1,19 @@
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import { router } from '../init.js';
-import { portalProcedure } from '../middleware/portal-auth.js';
-import { requirePermission } from '../middleware/rbac.js';
-import { tenantProcedure } from '../middleware/tenant.js';
+import { router } from '../../init.js';
+import { portalProcedure } from '../../middleware/portal-auth.js';
+import { requirePermission } from '../../middleware/rbac.js';
+import { tenantProcedure } from '../../middleware/tenant.js';
 import {
   getSigningUrl,
   resendToRecipient,
   sendForSignature,
   voidEnvelope,
-} from '../services/esign-orchestrator.js';
+} from '../../services/esign-orchestrator.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-function plain<T>(data: T): T {
-  return JSON.parse(JSON.stringify(data)) as T;
-}
 
 // ---------------------------------------------------------------------------
 // Input schemas
@@ -90,7 +86,7 @@ export const esignRouter = router({
       orderBy: { provider: 'asc' },
     });
 
-    return plain(connections);
+    return connections;
   }),
 
   /**
@@ -115,7 +111,7 @@ export const esignRouter = router({
         reminderIntervalDays: input.reminderIntervalDays ?? undefined,
       });
 
-      return plain(envelope);
+      return envelope;
     }),
 
   /**
@@ -233,7 +229,7 @@ export const esignRouter = router({
       return null;
     }
 
-    return plain(envelope);
+    return envelope;
   }),
 
   /**
@@ -269,7 +265,7 @@ export const esignRouter = router({
       };
     });
 
-    return plain(items);
+    return items;
   }),
 
   /**
@@ -325,6 +321,6 @@ export const esignRouter = router({
       sentAt: r.signingEnvelope.sentAt,
     }));
 
-    return plain(items);
+    return items;
   }),
 });

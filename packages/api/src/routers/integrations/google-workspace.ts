@@ -13,11 +13,11 @@ import type { DirectoryRole } from '@contractor-ops/validators';
 import { directoryImportInputSchema, getServerEnv } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import { router } from '../init.js';
-import type { TenantScopedDb } from '../lib/tenant-db.js';
-import { requirePermission } from '../middleware/rbac.js';
-import { tenantProcedure } from '../middleware/tenant.js';
-import { requireTier } from '../middleware/tier.js';
+import { router } from '../../init.js';
+import type { TenantScopedDb } from '../../lib/tenant-db.js';
+import { requirePermission } from '../../middleware/rbac.js';
+import { tenantProcedure } from '../../middleware/tenant.js';
+import { requireTier } from '../../middleware/tier.js';
 
 const log = createLogger({ service: 'google-workspace-router' });
 

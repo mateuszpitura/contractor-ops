@@ -2,13 +2,13 @@ import type { Prisma } from '@contractor-ops/db';
 import { decryptCredentials } from '@contractor-ops/integrations/services/credential-service';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import * as E from '../errors.js';
-import { router } from '../init.js';
-import type { TenantScopedDb } from '../lib/tenant-db.js';
-import { requirePermission } from '../middleware/rbac.js';
-import { tenantProcedure } from '../middleware/tenant.js';
-import { requireTier } from '../middleware/tier.js';
-import { getJoinedTeams, getTeamsChannels } from '../services/teams/teams-graph-client.js';
+import * as E from '../../errors.js';
+import { router } from '../../init.js';
+import type { TenantScopedDb } from '../../lib/tenant-db.js';
+import { requirePermission } from '../../middleware/rbac.js';
+import { tenantProcedure } from '../../middleware/tenant.js';
+import { requireTier } from '../../middleware/tier.js';
+import { getJoinedTeams, getTeamsChannels } from '../../services/teams/teams-graph-client.js';
 
 // ---------------------------------------------------------------------------
 // Helpers

@@ -14,10 +14,10 @@ import {
 } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import { router } from '../init.js';
-import { requirePermission } from '../middleware/rbac.js';
-import { sensitiveActionProcedure } from '../middleware/sensitive.js';
-import { tenantProcedure } from '../middleware/tenant.js';
+import { router } from '../../init.js';
+import { requirePermission } from '../../middleware/rbac.js';
+import { sensitiveActionProcedure } from '../../middleware/sensitive.js';
+import { tenantProcedure } from '../../middleware/tenant.js';
 import {
   bulkGrantConsent,
   getConsentHistory,
@@ -25,13 +25,13 @@ import {
   grantConsent,
   hasRequiredConsents,
   revokeConsent,
-} from '../services/consent-record.js';
+} from '../../services/consent-record.js';
 import {
   detectCrossBorderTransfer,
   generateDPA,
   generateSCC,
-} from '../services/legal-document-generation.js';
-import { getPrivacyNotice } from '../services/privacy-notice.js';
+} from '../../services/legal-document-generation.js';
+import { getPrivacyNotice } from '../../services/privacy-notice.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -193,7 +193,7 @@ export const consentRouter = router({
       select: { countryCode: true },
     });
     if (!org.countryCode) {
-      return { detected: false, orgRegion: null, hostingRegion: null };
+      return { detected: false as const };
     }
     const result = detectCrossBorderTransfer(org.countryCode);
     return {

@@ -10,20 +10,19 @@ import {
   retryTransmissionSchema,
 } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
-import * as E from '../errors.js';
-import { router } from '../init.js';
-import { requirePermission } from '../middleware/rbac.js';
-import { tenantProcedure } from '../middleware/tenant.js';
-import { buildStorecoveAdapterForOrg } from '../services/peppol-adapter-factory.js';
-import { getCapabilitiesWithCache, supportsXRechnungCii } from '../services/peppol-capability.js';
+import * as E from '../../errors.js';
+import { router } from '../../init.js';
+import { requirePermission } from '../../middleware/rbac.js';
+import { tenantProcedure } from '../../middleware/tenant.js';
+import { buildStorecoveAdapterForOrg } from '../../services/peppol-adapter-factory.js';
+import {
+  getCapabilitiesWithCache,
+  supportsXRechnungCii,
+} from '../../services/peppol-capability.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-function plain<T>(data: T): T {
-  return JSON.parse(JSON.stringify(data)) as T;
-}
 
 // ---------------------------------------------------------------------------
 // Peppol Router
@@ -146,7 +145,7 @@ export const peppolRouter = router({
         // Don't fail the connection — schedule can be retried
       }
 
-      return plain({ participant, connection });
+      return { participant, connection };
     }),
 
   /**
@@ -245,7 +244,7 @@ export const peppolRouter = router({
         },
       });
 
-      return plain({ participant, connection });
+      return { participant, connection };
     }),
 
   /**
@@ -297,14 +296,14 @@ export const peppolRouter = router({
         }),
       ]);
 
-      return plain({
+      return {
         ...participant,
         _count: {
           sentTransmissions: sentCount,
           receivedTransmissions: receivedCount,
           failedTransmissions: failedCount,
         },
-      });
+      };
     }),
 
   /**
@@ -329,12 +328,12 @@ export const peppolRouter = router({
 
       if (!transmission) return null;
 
-      return plain({
+      return {
         ...transmission,
         // Map participant data for UI consumption
         receiverParticipantId: transmission.participant.participantId,
         receiverSchemeId: transmission.participant.schemeId,
-      });
+      };
     }),
 
   /**
@@ -366,7 +365,7 @@ export const peppolRouter = router({
         nextCursor = next?.id;
       }
 
-      return plain({ transmissions, nextCursor });
+      return { transmissions, nextCursor };
     }),
 
   /**
@@ -400,7 +399,7 @@ export const peppolRouter = router({
         },
       });
 
-      return plain(updated);
+      return updated;
     }),
 
   // -------------------------------------------------------------------------
@@ -465,7 +464,7 @@ export const peppolRouter = router({
         });
       }
 
-      return plain({
+      return {
         schemeId: capability.schemeId,
         value: capability.value,
         documentTypes: capability.documentTypes,
@@ -473,7 +472,7 @@ export const peppolRouter = router({
         expiresAt: capability.expiresAt,
         fromCache: capability.fromCache,
         supportsXRechnungCii: hasXRechnungCii,
-      });
+      };
     }),
 
   /**
@@ -488,6 +487,6 @@ export const peppolRouter = router({
         where: { organizationId: ctx.organizationId },
         orderBy: { createdAt: 'desc' },
       });
-      return plain(participants);
+      return participants;
     }),
 });

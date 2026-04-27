@@ -5,14 +5,13 @@
 import { shipmentCreateSchema, shipmentEventCreateSchema } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import { router } from '../init.js';
-import { requirePermission } from '../middleware/rbac.js';
-import { tenantProcedure } from '../middleware/tenant.js';
-import { checkShipmentTaskCompletion } from '../services/equipment-workflow.js';
+import { router } from '../../init.js';
+import { requirePermission } from '../../middleware/rbac.js';
+import { tenantProcedure } from '../../middleware/tenant.js';
+import { checkShipmentTaskCompletion } from '../../services/equipment-workflow.js';
 import {
   EQUIPMENT_NOT_FOUND,
   EQUIPMENT_STATUS_TRANSITIONS,
-  plain,
   SHIPMENT_CANNOT_DELETE,
   SHIPMENT_NOT_FOUND,
   SHIPMENT_TO_EQUIPMENT_STATUS,
@@ -113,7 +112,7 @@ export const equipmentShipmentsRouter = router({
         },
       });
 
-      return plain(result);
+      return result;
     }),
 
   /**
@@ -208,7 +207,7 @@ export const equipmentShipmentsRouter = router({
         });
       })();
 
-      return plain(result);
+      return result;
     }),
 
   /**
@@ -244,7 +243,7 @@ export const equipmentShipmentsRouter = router({
         });
       }
 
-      return plain(shipment);
+      return shipment;
     }),
 
   /**
@@ -268,7 +267,7 @@ export const equipmentShipmentsRouter = router({
         },
       });
 
-      return plain(shipments);
+      return shipments;
     }),
 
   /**
@@ -358,6 +357,6 @@ export const equipmentShipmentsRouter = router({
         latestShipment: a.equipment.shipments[0] ?? null,
       }));
 
-      return plain(items);
+      return items;
     }),
 });

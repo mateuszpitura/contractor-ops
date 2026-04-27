@@ -10,21 +10,20 @@ import {
 } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import * as E from '../errors.js';
-import { router } from '../init.js';
-import { plain } from '../lib/plain.js';
-import { requirePermission } from '../middleware/rbac.js';
-import { tenantProcedure } from '../middleware/tenant.js';
-import { uploadRateLimitMiddleware } from '../middleware/upload-rate-limit.js';
-import { isAllowedMimeType, validateMimeType } from '../services/mime-validator.js';
-import { generateStorageKey, getR2BucketName } from '../services/r2.js';
+import * as E from '../../errors.js';
+import { router } from '../../init.js';
+import { requirePermission } from '../../middleware/rbac.js';
+import { tenantProcedure } from '../../middleware/tenant.js';
+import { uploadRateLimitMiddleware } from '../../middleware/upload-rate-limit.js';
+import { isAllowedMimeType, validateMimeType } from '../../services/mime-validator.js';
+import { generateStorageKey, getR2BucketName } from '../../services/r2.js';
 import {
   createRegionalPresignedDownloadUrl,
   createRegionalPresignedUploadUrl,
   deleteRegionalObject,
   headRegionalObject,
-} from '../services/regional-storage.js';
-import { isClamAvailable, scanBuffer } from '../services/virus-scanner.js';
+} from '../../services/regional-storage.js';
+import { isClamAvailable, scanBuffer } from '../../services/virus-scanner.js';
 
 const log = createLogger({ service: 'document-router' });
 
@@ -52,7 +51,7 @@ async function scanAndUpdate(
   try {
     // Fetch first 4100 bytes for MIME validation (magic bytes are in the header)
     const { GetObjectCommand } = await import('@aws-sdk/client-s3');
-    const { createR2Client } = await import('../services/r2.js');
+    const { createR2Client } = await import('../../services/r2.js');
     const client = createR2Client();
 
     const getCmd = new GetObjectCommand({
@@ -233,7 +232,7 @@ export const documentRouter = router({
       // Fire-and-forget async scan pipeline
       void scanAndUpdate(ctx.db, doc.id, doc.storageKey);
 
-      return plain(updated);
+      return updated;
     }),
 
   /**
@@ -319,7 +318,7 @@ export const documentRouter = router({
         ctx.db.document.count({ where }),
       ]);
 
-      return { items: plain(documents), totalCount, page, pageSize };
+      return { items: documents, totalCount, page, pageSize };
     }),
 
   /**
@@ -441,12 +440,12 @@ export const documentRouter = router({
       }
 
       if (doc.links.length === 0) {
-        return plain([doc]);
+        return [doc];
       }
 
       // Find all documents linked to the same entity as this document
       const firstLink = doc.links[0];
-      if (!firstLink) return plain([doc]);
+      if (!firstLink) return [doc];
       const relatedLinks = await ctx.db.documentLink.findMany({
         where: {
           organizationId: ctx.organizationId,
@@ -467,7 +466,7 @@ export const documentRouter = router({
         orderBy: { createdAt: 'desc' },
       });
 
-      return plain(documents);
+      return documents;
     }),
 
   /**
@@ -549,6 +548,6 @@ export const documentRouter = router({
         },
       });
 
-      return plain(link);
+      return link;
     }),
 });

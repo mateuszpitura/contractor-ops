@@ -37,16 +37,16 @@ import type { Prisma } from '@contractor-ops/db';
 import { SDS_APPROVAL_STATEMENT_EN } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import { router } from '../init.js';
-import { classificationSaveAnswerRateLimit } from '../middleware/classification-rate-limit.js';
-import { adminProcedure, requirePermission } from '../middleware/rbac.js';
-import { classificationProcedure } from '../middleware/require-classification-flag.js';
-import { writeAuditLog } from '../services/audit-writer.js';
+import { router } from '../../init.js';
+import { classificationSaveAnswerRateLimit } from '../../middleware/classification-rate-limit.js';
+import { adminProcedure, requirePermission } from '../../middleware/rbac.js';
+import { classificationProcedure } from '../../middleware/require-classification-flag.js';
+import { writeAuditLog } from '../../services/audit-writer.js';
 import {
   extractOutcomeKind,
   materialiseFromPolicy,
   supersedeAndMaterialise,
-} from '../services/compliance-supersession.js';
+} from '../../services/compliance-supersession.js';
 
 // ---------------------------------------------------------------------------
 // Phase 71 — country code → policy registry Jurisdiction enum mapping

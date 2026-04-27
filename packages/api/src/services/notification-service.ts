@@ -1,9 +1,12 @@
 import { prisma } from '@contractor-ops/db';
+import { createLogger } from '@contractor-ops/logger';
 import type { NOTIFICATION_TYPES } from '@contractor-ops/validators';
 import { getServerEnv } from '@contractor-ops/validators';
 import { sendAppEmail } from './app-email.js';
 import { renderNotificationEmail } from './email-templates.js';
 import { getConnectedMessagingProviders } from './messaging/index.js';
+
+const log = createLogger({ service: 'notification-service' });
 
 // ---------------------------------------------------------------------------
 // Types
@@ -326,8 +329,11 @@ async function dispatchChannelAlerts(event: NotificationEvent): Promise<void> {
         details: [],
         viewUrl: buildEntityUrl(event.entityType ?? 'unknown', event.entityId ?? ''),
       });
-    } catch (_error) {
-      /* fire-and-forget */
+    } catch (err) {
+      log.error(
+        { err, organizationId: event.organizationId, platform: provider.platform },
+        'channel alert failed',
+      );
     }
   }
 }

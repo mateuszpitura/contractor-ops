@@ -9,11 +9,11 @@ import {
 } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import * as E from '../errors.js';
-import { router } from '../init.js';
-import { requirePermission } from '../middleware/rbac.js';
-import { tenantProcedure } from '../middleware/tenant.js';
-import { plain, WORKFLOW_TEMPLATE_KEYS } from './workflow-shared.js';
+import * as E from '../../errors.js';
+import { router } from '../../init.js';
+import { requirePermission } from '../../middleware/rbac.js';
+import { tenantProcedure } from '../../middleware/tenant.js';
+import { WORKFLOW_TEMPLATE_KEYS } from './workflow-shared.js';
 
 // ---------------------------------------------------------------------------
 // Workflow Templates sub-router
@@ -69,7 +69,7 @@ export const workflowTemplatesRouter = router({
         });
       });
 
-      return plain(template);
+      return template;
     }),
 
   /**
@@ -141,7 +141,7 @@ export const workflowTemplatesRouter = router({
         });
       });
 
-      return plain(template);
+      return template;
     }),
 
   /**
@@ -166,7 +166,7 @@ export const workflowTemplatesRouter = router({
         });
       }
 
-      return plain(template);
+      return template;
     }),
 
   /**
@@ -203,7 +203,7 @@ export const workflowTemplatesRouter = router({
         ctx.db.workflowTemplate.count({ where }),
       ]);
 
-      return plain({ items, total, page, pageSize });
+      return { items, total, page, pageSize };
     }),
 
   /**
@@ -338,7 +338,7 @@ export const workflowTemplatesRouter = router({
         });
       });
 
-      return plain(duplicate);
+      return duplicate;
     }),
 
   /**

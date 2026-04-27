@@ -18,21 +18,21 @@ import { renderToBuffer } from '@react-pdf/renderer';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 
-import { router } from '../init.js';
-import { requirePermission } from '../middleware/rbac.js';
-import { classificationProcedure } from '../middleware/require-classification-flag.js';
+import { router } from '../../init.js';
+import { requirePermission } from '../../middleware/rbac.js';
+import { classificationProcedure } from '../../middleware/require-classification-flag.js';
 import {
   RENDERER_SLUG as DRV_RENDERER_SLUG,
   TEMPLATE_VERSION as DRV_TEMPLATE_VERSION,
   DRVDefenseBundleDocument,
-} from '../pdf-templates/drv-defense-bundle.js';
+} from '../../pdf-templates/drv-defense-bundle.js';
 import {
   IR35SDSDocument,
   RENDERER_SLUG as SDS_RENDERER_SLUG,
   TEMPLATE_VERSION as SDS_TEMPLATE_VERSION,
-} from '../pdf-templates/ir35-sds.js';
-import { buildClassificationDocumentKey } from '../services/classification-document-keys.js';
-import { deleteObject, putObjectAndSignDownload, signExistingDownload } from '../services/r2.js';
+} from '../../pdf-templates/ir35-sds.js';
+import { buildClassificationDocumentKey } from '../../services/classification-document-keys.js';
+import { deleteObject, putObjectAndSignDownload, signExistingDownload } from '../../services/r2.js';
 
 // Bump on @react-pdf/renderer upgrade. Embedded into
 // ClassificationDocument.rendererVersion for audit forensics (D-09).

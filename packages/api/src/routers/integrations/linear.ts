@@ -8,15 +8,14 @@ import {
 } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import * as E from '../errors.js';
-import { router } from '../init.js';
-import { plain } from '../lib/plain.js';
-import type { TenantScopedDb } from '../lib/tenant-db.js';
-import { requirePermission } from '../middleware/rbac.js';
-import { tenantProcedure } from '../middleware/tenant.js';
-import { requireTier } from '../middleware/tier.js';
-import { linearGraphQL } from '../services/linear-issue-sync.js';
-import { registerLinearWebhook } from '../services/linear-webhook-handler.js';
+import * as E from '../../errors.js';
+import { router } from '../../init.js';
+import type { TenantScopedDb } from '../../lib/tenant-db.js';
+import { requirePermission } from '../../middleware/rbac.js';
+import { tenantProcedure } from '../../middleware/tenant.js';
+import { requireTier } from '../../middleware/tier.js';
+import { linearGraphQL } from '../../services/linear-issue-sync.js';
+import { registerLinearWebhook } from '../../services/linear-webhook-handler.js';
 
 const log = createLogger({ service: 'linear-router' });
 
@@ -308,10 +307,10 @@ export const linearRouter = router({
 
       if (!link) return null;
 
-      return plain({
+      return {
         ...link,
         metadata: link.metadataJson as LinearIssueMetadata | null,
-      });
+      };
     }),
 
   /**
@@ -364,7 +363,7 @@ export const linearRouter = router({
         };
       }
 
-      return plain(result);
+      return result;
     }),
 
   /**
@@ -395,7 +394,7 @@ export const linearRouter = router({
           },
         });
 
-        return plain(links);
+        return links;
       }
 
       // WORKFLOW_RUN: find all task runs, then their external links
@@ -424,6 +423,6 @@ export const linearRouter = router({
         },
       });
 
-      return plain(links);
+      return links;
     }),
 });

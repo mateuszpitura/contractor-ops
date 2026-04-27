@@ -16,11 +16,11 @@ import {
   slackUserUnlinkSchema,
 } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
-import * as E from '../errors.js';
-import { router } from '../init.js';
-import { requirePermission } from '../middleware/rbac.js';
-import { tenantProcedure } from '../middleware/tenant.js';
-import { syncWorkspaceUsers } from '../services/slack-client.js';
+import * as E from '../../errors.js';
+import { router } from '../../init.js';
+import { requirePermission } from '../../middleware/rbac.js';
+import { tenantProcedure } from '../../middleware/tenant.js';
+import { syncWorkspaceUsers } from '../../services/slack-client.js';
 
 // Ensure all provider adapters are registered before any procedure runs
 registerAllAdapters();
@@ -28,10 +28,6 @@ registerAllAdapters();
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-function plain<T>(data: T): T {
-  return JSON.parse(JSON.stringify(data)) as T;
-}
 
 // ---------------------------------------------------------------------------
 // Integration router
@@ -59,13 +55,13 @@ export const integrationRouter = router({
       return null;
     }
 
-    return plain({
+    return {
       connected: connection.status === 'CONNECTED',
       status: connection.status,
       displayName: connection.displayName,
       connectedAt: connection.connectedAt,
       connectedByUser: connection.connectedBy,
-    });
+    };
   }),
 
   /**
@@ -126,7 +122,7 @@ export const integrationRouter = router({
       };
     });
 
-    return plain({ mappings, connectionId: connection.id });
+    return { mappings, connectionId: connection.id };
   }),
 
   /**
@@ -162,7 +158,7 @@ export const integrationRouter = router({
         },
       });
 
-      return plain(link);
+      return link;
     }),
 
   /**
@@ -222,7 +218,7 @@ export const integrationRouter = router({
    */
   getAllHealth: tenantProcedure.query(async ({ ctx }) => {
     const results = await getAllProviderHealth(ctx.organizationId);
-    return plain(results);
+    return results;
   }),
 
   /**
@@ -231,7 +227,7 @@ export const integrationRouter = router({
    */
   getHealth: tenantProcedure.input(providerSlugSchema).query(async ({ ctx, input }) => {
     const result = await getProviderHealth(ctx.organizationId, input.provider);
-    return plain(result);
+    return result;
   }),
 
   /**
@@ -362,7 +358,7 @@ export const integrationRouter = router({
       nextCursor = lastItem?.id ?? null;
     }
 
-    return plain({ items, nextCursor });
+    return { items, nextCursor };
   }),
 
   /**
@@ -394,6 +390,6 @@ export const integrationRouter = router({
       nextCursor = lastItem?.id ?? null;
     }
 
-    return plain({ items, nextCursor });
+    return { items, nextCursor };
   }),
 });

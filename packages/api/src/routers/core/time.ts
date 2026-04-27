@@ -9,29 +9,20 @@ import {
 } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import { router } from '../init.js';
-import { requirePermission } from '../middleware/rbac.js';
-import { tenantProcedure } from '../middleware/tenant.js';
+import { router } from '../../init.js';
+import { requirePermission } from '../../middleware/rbac.js';
+import { tenantProcedure } from '../../middleware/tenant.js';
 import {
   approveTimesheet,
   bulkApproveTimesheets,
   bulkRejectTimesheets,
   rejectTimesheet,
-} from '../services/time-entry.js';
-import { computeTimeReconciliation } from '../services/time-reconciliation.js';
+} from '../../services/time-entry.js';
+import { computeTimeReconciliation } from '../../services/time-reconciliation.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-/**
- * Strips Prisma class prototype from query results, producing plain
- * JSON-serializable objects so that inferred tRPC router types do NOT
- * reference the generated Prisma client module (avoids TS2742).
- */
-function plain<T>(data: T): T {
-  return JSON.parse(JSON.stringify(data)) as T;
-}
 
 // ---------------------------------------------------------------------------
 // Admin time management router
@@ -72,7 +63,7 @@ export const timeRouter = router({
       },
     });
 
-    return plain(timesheets);
+    return timesheets;
   }),
 
   /**
@@ -120,7 +111,7 @@ export const timeRouter = router({
         nextCursor = extra?.id;
       }
 
-      return plain({ items: timesheets, nextCursor });
+      return { items: timesheets, nextCursor };
     }),
 
   /**
@@ -162,7 +153,7 @@ export const timeRouter = router({
         });
       }
 
-      return plain(timesheet);
+      return timesheet;
     }),
 
   /**
@@ -245,7 +236,7 @@ export const timeRouter = router({
           approvedMinutesThisMonth: monthlyMap.get(c.id) ?? 0,
         }));
 
-      return plain(result);
+      return result;
     }),
 
   // =========================================================================
@@ -265,7 +256,7 @@ export const timeRouter = router({
         input.timesheetId,
         ctx.user.id,
       );
-      return plain(result);
+      return result;
     }),
 
   /**
@@ -282,7 +273,7 @@ export const timeRouter = router({
         ctx.user.id,
         input.reason,
       );
-      return plain(result);
+      return result;
     }),
 
   /**
@@ -338,7 +329,7 @@ export const timeRouter = router({
         new Date(input.periodEnd),
         input.invoicedAmountMinor,
       );
-      return plain(result);
+      return result;
     }),
 
   /**
@@ -385,7 +376,7 @@ export const timeRouter = router({
         invoice.totalMinor,
       );
 
-      return plain(result);
+      return result;
     }),
 
   /**
@@ -490,6 +481,6 @@ export const timeRouter = router({
         .filter((item): item is NonNullable<typeof item> => item !== null)
         .sort((a, b) => b.reconciliation.deviationPercent - a.reconciliation.deviationPercent);
 
-      return plain({ items: filtered, nextCursor });
+      return { items: filtered, nextCursor };
     }),
 });

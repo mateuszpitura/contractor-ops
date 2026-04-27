@@ -13,9 +13,9 @@
 //   - `requirePermission({ contractor: ['read'] })` gate (T-60-05).
 
 import { z } from 'zod';
-import { router } from '../init.js';
-import { requirePermission } from '../middleware/rbac.js';
-import { classificationProcedure } from '../middleware/require-classification-flag.js';
+import { router } from '../../init.js';
+import { requirePermission } from '../../middleware/rbac.js';
+import { classificationProcedure } from '../../middleware/require-classification-flag.js';
 
 const cuid = z.string().min(1);
 

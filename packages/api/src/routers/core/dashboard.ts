@@ -1,10 +1,9 @@
 import { z } from 'zod';
-import { router } from '../init.js';
-import { plain } from '../lib/plain.js';
-import type { TenantScopedDb } from '../lib/tenant-db.js';
-import { requirePermission } from '../middleware/rbac.js';
-import { tenantProcedure } from '../middleware/tenant.js';
-import { CacheKeys, CacheTTL, cached } from '../services/cache.js';
+import { router } from '../../init.js';
+import type { TenantScopedDb } from '../../lib/tenant-db.js';
+import { requirePermission } from '../../middleware/rbac.js';
+import { tenantProcedure } from '../../middleware/tenant.js';
+import { CacheKeys, CacheTTL, cached } from '../../services/cache.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -85,7 +84,7 @@ async function fetchKpis(organizationId: string, db: TenantScopedDb) {
     }),
   ]);
 
-  return plain({
+  return {
     activeContractors: {
       value: activeContractors,
       prevValue: prevActiveContractors,
@@ -104,7 +103,7 @@ async function fetchKpis(organizationId: string, db: TenantScopedDb) {
     openTasks: {
       value: openTasks,
     },
-  });
+  };
 }
 
 async function fetchSpendTrend(organizationId: string, months: string, db: TenantScopedDb) {
@@ -235,7 +234,7 @@ async function fetchDeadlines(organizationId: string, db: TenantScopedDb) {
 
   const result = items.slice(0, 20).map(({ _sortKey, ...rest }) => rest);
 
-  return plain(result);
+  return result;
 }
 
 async function fetchActivity(organizationId: string, db: TenantScopedDb) {
@@ -255,7 +254,7 @@ async function fetchActivity(organizationId: string, db: TenantScopedDb) {
     },
   });
 
-  return plain({ items });
+  return { items };
 }
 
 // ---------------------------------------------------------------------------

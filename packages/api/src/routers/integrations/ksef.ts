@@ -5,18 +5,14 @@ import { getQStashClient } from '@contractor-ops/integrations/services/qstash-cl
 import { getServerEnv } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import * as E from '../errors.js';
-import { router } from '../init.js';
-import { requirePermission } from '../middleware/rbac.js';
-import { tenantProcedure } from '../middleware/tenant.js';
+import * as E from '../../errors.js';
+import { router } from '../../init.js';
+import { requirePermission } from '../../middleware/rbac.js';
+import { tenantProcedure } from '../../middleware/tenant.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-function plain<T>(data: T): T {
-  return JSON.parse(JSON.stringify(data)) as T;
-}
 
 // ---------------------------------------------------------------------------
 // Input schemas
@@ -164,7 +160,7 @@ export const ksefRouter = router({
         // Don't fail the connection — schedule can be retried
       }
 
-      return plain(connection);
+      return connection;
     }),
 
   /**
@@ -284,7 +280,7 @@ export const ksefRouter = router({
         },
       });
 
-      return plain({ logs });
+      return { logs };
     }),
 
   /**
@@ -311,6 +307,6 @@ export const ksefRouter = router({
         },
       });
 
-      return connection ? plain(connection) : null;
+      return connection ? connection : null;
     }),
 });

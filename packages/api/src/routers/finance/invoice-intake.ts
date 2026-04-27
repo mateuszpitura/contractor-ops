@@ -21,21 +21,24 @@ import { createLogger } from '@contractor-ops/logger';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 
-import { router } from '../init.js';
-import { requirePermission } from '../middleware/rbac.js';
-import { tenantProcedure } from '../middleware/tenant.js';
-import { uploadRateLimitMiddleware } from '../middleware/upload-rate-limit.js';
-import type { MatchCandidate } from '../services/invoice-intake-matcher.js';
-import { rankIntakeCandidates } from '../services/invoice-intake-matcher.js';
-import type { IntakeServiceErrorCode, UploadResult } from '../services/invoice-intake-service.js';
+import { router } from '../../init.js';
+import { requirePermission } from '../../middleware/rbac.js';
+import { tenantProcedure } from '../../middleware/tenant.js';
+import { uploadRateLimitMiddleware } from '../../middleware/upload-rate-limit.js';
+import type { MatchCandidate } from '../../services/invoice-intake-matcher.js';
+import { rankIntakeCandidates } from '../../services/invoice-intake-matcher.js';
+import type {
+  IntakeServiceErrorCode,
+  UploadResult,
+} from '../../services/invoice-intake-service.js';
 import {
   acknowledgeValidation as svcAcknowledgeValidation,
   confirmMatch as svcConfirmMatch,
   convertToInvoice as svcConvertToInvoice,
   reject as svcReject,
   uploadAndPersist,
-} from '../services/invoice-intake-service.js';
-import { signExistingDownload } from '../services/r2.js';
+} from '../../services/invoice-intake-service.js';
+import { signExistingDownload } from '../../services/r2.js';
 
 // ---------------------------------------------------------------------------
 // Shared schemas

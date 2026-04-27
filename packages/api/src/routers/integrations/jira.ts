@@ -7,16 +7,18 @@ import {
 } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import * as E from '../errors.js';
-import { router } from '../init.js';
-import { plain } from '../lib/plain.js';
-import type { TenantScopedDb } from '../lib/tenant-db.js';
-import { requirePermission } from '../middleware/rbac.js';
-import { tenantProcedure } from '../middleware/tenant.js';
-import { requireTier } from '../middleware/tier.js';
-import { detectScopeExpansionNeeded } from '../services/jira-issue-sync.js';
-import { getStatusMapping, saveStatusMapping } from '../services/jira-status-mapping.js';
-import { deregisterJiraWebhooks, registerJiraWebhooks } from '../services/jira-webhook-handler.js';
+import * as E from '../../errors.js';
+import { router } from '../../init.js';
+import type { TenantScopedDb } from '../../lib/tenant-db.js';
+import { requirePermission } from '../../middleware/rbac.js';
+import { tenantProcedure } from '../../middleware/tenant.js';
+import { requireTier } from '../../middleware/tier.js';
+import { detectScopeExpansionNeeded } from '../../services/jira-issue-sync.js';
+import { getStatusMapping, saveStatusMapping } from '../../services/jira-status-mapping.js';
+import {
+  deregisterJiraWebhooks,
+  registerJiraWebhooks,
+} from '../../services/jira-webhook-handler.js';
 
 const log = createLogger({ service: 'jira-router' });
 
@@ -125,7 +127,7 @@ export const jiraRouter = router({
         }
       }
 
-      return plain({
+      return {
         id: connection.id,
         status: connection.status,
         displayName: connection.displayName,
@@ -133,7 +135,7 @@ export const jiraRouter = router({
         lastSyncAt: connection.lastSyncAt,
         tokenExpiresAt: connection.tokenExpiresAt,
         scopeExpansionNeeded,
-      });
+      };
     }),
 
   /**
@@ -313,7 +315,7 @@ export const jiraRouter = router({
           },
         });
 
-        return plain(links);
+        return links;
       }
 
       // WORKFLOW_RUN: find all task runs, then their external links
@@ -342,7 +344,7 @@ export const jiraRouter = router({
         },
       });
 
-      return plain(links);
+      return links;
     }),
 
   /**
@@ -396,7 +398,7 @@ export const jiraRouter = router({
         },
       });
 
-      return plain(links);
+      return links;
     }),
 
   // =========================================================================

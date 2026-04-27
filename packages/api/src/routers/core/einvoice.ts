@@ -13,35 +13,35 @@ import {
 } from '@contractor-ops/einvoice';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import { router } from '../init.js';
-import { requirePermission } from '../middleware/rbac.js';
-import { tenantProcedure } from '../middleware/tenant.js';
-import type { FinalizeResult, R2Service } from '../services/einvoice-finalize.js';
+import { router } from '../../init.js';
+import { requirePermission } from '../../middleware/rbac.js';
+import { tenantProcedure } from '../../middleware/tenant.js';
+import type { FinalizeResult, R2Service } from '../../services/einvoice-finalize.js';
 import {
   EInvoiceAlreadyFinalizedError,
   EInvoiceInvoiceNotFoundError,
   finalizeEInvoice,
   mapPrismaInvoiceToEInvoice,
-} from '../services/einvoice-finalize.js';
+} from '../../services/einvoice-finalize.js';
 import {
   IllegalFsmTransitionError,
   transitionTransmission,
-} from '../services/einvoice-lifecycle-fsm.js';
-import { buildStorecoveAdapterForOrg } from '../services/peppol-adapter-factory.js';
+} from '../../services/einvoice-lifecycle-fsm.js';
+import { buildStorecoveAdapterForOrg } from '../../services/peppol-adapter-factory.js';
 import {
   assertReceiverAcceptsXRechnung,
   assertSenderParticipantActive,
   PARTICIPANT_NOT_REACHABLE,
   PEPPOL_PARTICIPANT_NOT_ACTIVE,
-} from '../services/peppol-capability.js';
+} from '../../services/peppol-capability.js';
 import {
   getObjectAsString,
   putObjectAndSignDownload,
   putObjectString,
   signExistingDownload,
-} from '../services/r2.js';
-import type { SkontoTermData } from '../services/skonto.js';
-import { resolveSkontoTerm } from '../services/skonto.js';
+} from '../../services/r2.js';
+import type { SkontoTermData } from '../../services/skonto.js';
+import { resolveSkontoTerm } from '../../services/skonto.js';
 
 // ---------------------------------------------------------------------------
 // Types for the Prisma `$transaction` callback — we project onto the

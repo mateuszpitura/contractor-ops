@@ -11,13 +11,13 @@ import {
 } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import * as E from '../errors.js';
-import { router } from '../init.js';
-import { requirePermission } from '../middleware/rbac.js';
-import { tenantProcedure } from '../middleware/tenant.js';
-import { writeAuditLog } from '../services/audit-writer.js';
-import { syncContractExpiryDeadline } from '../services/calendar-deadline-sync.js';
-import { deleteCalendarEvent } from '../services/calendar-event-service.js';
+import * as E from '../../errors.js';
+import { router } from '../../init.js';
+import { requirePermission } from '../../middleware/rbac.js';
+import { tenantProcedure } from '../../middleware/tenant.js';
+import { writeAuditLog } from '../../services/audit-writer.js';
+import { syncContractExpiryDeadline } from '../../services/calendar-deadline-sync.js';
+import { deleteCalendarEvent } from '../../services/calendar-event-service.js';
 
 const log = createLogger({ service: 'contract-router' });
 
@@ -75,15 +75,6 @@ const CONTRACT_TRANSITIONS: Record<string, string[]> = {
   SUPERSEDED: [],
   ARCHIVED: [],
 };
-
-/**
- * Strips Prisma class prototype from query results, producing plain
- * JSON-serializable objects so that inferred tRPC router types do NOT
- * reference the generated Prisma client module (avoids TS2742).
- */
-function plain<T>(data: T): T {
-  return JSON.parse(JSON.stringify(data)) as T;
-}
 
 // ---------------------------------------------------------------------------
 // Contract list helpers
@@ -287,7 +278,7 @@ export const contractRouter = router({
         }).catch(err => log.error({ err }, 'calendar sync on create failed'));
       }
 
-      return plain(contract);
+      return contract;
     }),
 
   /**
@@ -337,7 +328,7 @@ export const contractRouter = router({
         },
       });
 
-      return plain({ ...contract, documentCount });
+      return { ...contract, documentCount };
     }),
 
   /**
@@ -412,7 +403,7 @@ export const contractRouter = router({
         }).catch(err => log.error({ err }, 'calendar event cleanup failed'));
       }
 
-      return plain(updated);
+      return updated;
     }),
 
   /**
@@ -469,7 +460,7 @@ export const contractRouter = router({
         ctx.db.contract.count({ where }),
       ]);
 
-      return { items: plain(contracts), totalCount, page, pageSize };
+      return { items: contracts, totalCount, page, pageSize };
     }),
 
   /**
@@ -529,7 +520,7 @@ export const contractRouter = router({
         newValues: { status: updated.status },
       });
 
-      return plain(updated);
+      return updated;
     }),
 
   /**
@@ -574,7 +565,7 @@ export const contractRouter = router({
         },
       });
 
-      return plain(amendment);
+      return amendment;
     }),
 
   /**
@@ -592,7 +583,7 @@ export const contractRouter = router({
         orderBy: { effectiveDate: 'desc' },
       });
 
-      return plain(amendments);
+      return amendments;
     }),
 
   /**
@@ -631,7 +622,7 @@ export const contractRouter = router({
         },
       });
 
-      return plain(updated);
+      return updated;
     }),
 
   /**
@@ -753,7 +744,7 @@ export const contractRouter = router({
           // Phase 60 CLASS-08 — emit one audit row per transitioned contract so
           // the reassessment scan can detect each status change individually.
           const auditWriterTx =
-            tx as unknown as import('../services/audit-writer.js').AuditWriterClient;
+            tx as unknown as import('../../services/audit-writer.js').AuditWriterClient;
           for (const id of valid) {
             const prev = oldStatusById.get(id);
             await writeAuditLog({

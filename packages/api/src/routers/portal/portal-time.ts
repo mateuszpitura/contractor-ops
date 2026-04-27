@@ -7,12 +7,15 @@ import {
   syncExternalEntriesSchema,
 } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
-import { router } from '../init.js';
-import { plain } from '../lib/plain.js';
-import { portalProcedure } from '../middleware/portal-auth.js';
-import { syncClockifyEntries } from '../services/clockify-sync.js';
-import { syncJiraWorklogs } from '../services/jira-worklog-sync.js';
-import { getOrCreateTimesheet, saveDraftEntries, submitTimesheet } from '../services/time-entry.js';
+import { router } from '../../init.js';
+import { portalProcedure } from '../../middleware/portal-auth.js';
+import { syncClockifyEntries } from '../../services/clockify-sync.js';
+import { syncJiraWorklogs } from '../../services/jira-worklog-sync.js';
+import {
+  getOrCreateTimesheet,
+  saveDraftEntries,
+  submitTimesheet,
+} from '../../services/time-entry.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -70,7 +73,7 @@ export const portalTimeRouter = router({
       orderBy: { entryDate: 'asc' },
     });
 
-    return plain({ ...timesheet, entries });
+    return { ...timesheet, entries };
   }),
 
   // -------------------------------------------------------------------------
@@ -93,7 +96,7 @@ export const portalTimeRouter = router({
       orderBy: { title: 'asc' },
     });
 
-    return plain(contracts);
+    return contracts;
   }),
 
   // -------------------------------------------------------------------------
@@ -110,7 +113,7 @@ export const portalTimeRouter = router({
         input.entries,
       );
 
-      return plain(result);
+      return result;
     }),
 
   // -------------------------------------------------------------------------
@@ -144,7 +147,7 @@ export const portalTimeRouter = router({
         ],
       );
 
-      return plain(result);
+      return result;
     }),
 
   // -------------------------------------------------------------------------
@@ -158,7 +161,7 @@ export const portalTimeRouter = router({
       input.timesheetId,
     );
 
-    return plain(result);
+    return result;
   }),
 
   // -------------------------------------------------------------------------
@@ -209,7 +212,7 @@ export const portalTimeRouter = router({
       nextCursor = next?.id;
     }
 
-    return plain({ items: timesheets, nextCursor });
+    return { items: timesheets, nextCursor };
   }),
 
   // -------------------------------------------------------------------------

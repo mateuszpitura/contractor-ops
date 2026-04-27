@@ -9,12 +9,11 @@
 import { createLogger } from '@contractor-ops/logger';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import { router } from '../init.js';
-import { plain } from '../lib/plain.js';
-import { requireFeatureFlag, tenantFlaggedProcedure } from '../middleware/feature-flag.js';
-import { requirePermission } from '../middleware/rbac.js';
-import type { SkontoTermData } from '../services/skonto.js';
-import { evaluateSkontoEligibility, resolveSkontoTerm } from '../services/skonto.js';
+import { router } from '../../init.js';
+import { requireFeatureFlag, tenantFlaggedProcedure } from '../../middleware/feature-flag.js';
+import { requirePermission } from '../../middleware/rbac.js';
+import type { SkontoTermData } from '../../services/skonto.js';
+import { evaluateSkontoEligibility, resolveSkontoTerm } from '../../services/skonto.js';
 
 const log = createLogger({ service: 'skonto-router' });
 
@@ -87,7 +86,7 @@ export const skontoRouter = router({
 
       log.info({ invoiceId: input.invoiceId, termId: term.id }, 'upserted skonto term for invoice');
 
-      return plain(term);
+      return term;
     }),
 
   /**
@@ -170,7 +169,7 @@ export const skontoRouter = router({
         'upserted skonto term for billing profile',
       );
 
-      return plain(term);
+      return term;
     }),
 
   /**
@@ -289,6 +288,9 @@ export const skontoRouter = router({
         asOf: new Date(),
       });
 
-      return result;
+      // `paidAt` lets the invoice-detail banner distinguish "discount window
+      // still open" from "discount was already applied/missed at payment"
+      // without an extra round-trip to fetch the invoice.
+      return { ...result, paidAt: invoice.paidAt };
     }),
 });

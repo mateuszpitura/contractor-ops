@@ -6,8 +6,8 @@
 
 import { Prisma } from '@contractor-ops/db/generated/prisma/client';
 import { z } from 'zod';
-import { router } from '../init.js';
-import { tenantProcedure } from '../middleware/tenant.js';
+import { router } from '../../init.js';
+import { tenantProcedure } from '../../middleware/tenant.js';
 
 // ---------------------------------------------------------------------------
 // Result type

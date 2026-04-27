@@ -1,11 +1,10 @@
 import { calendarTaskConfigSchema } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import { router } from '../init.js';
-import { plain } from '../lib/plain.js';
-import { requirePermission } from '../middleware/rbac.js';
-import { tenantProcedure } from '../middleware/tenant.js';
-import { requireTier } from '../middleware/tier.js';
+import { router } from '../../init.js';
+import { requirePermission } from '../../middleware/rbac.js';
+import { tenantProcedure } from '../../middleware/tenant.js';
+import { requireTier } from '../../middleware/tier.js';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -50,7 +49,7 @@ export const calendarRouter = router({
       orderBy: { connectedAt: 'desc' },
     });
 
-    return plain(connections);
+    return connections;
   }),
 
   /**
@@ -75,7 +74,7 @@ export const calendarRouter = router({
       orderBy: { connectedAt: 'desc' },
     });
 
-    return plain(connections);
+    return connections;
   }),
 
   /**

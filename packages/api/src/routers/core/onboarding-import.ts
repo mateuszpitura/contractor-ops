@@ -11,16 +11,16 @@ import {
 } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import { router } from '../init.js';
-import type { TenantScopedDb } from '../lib/tenant-db.js';
-import { tenantProcedure } from '../middleware/tenant.js';
-import { requireTier } from '../middleware/tier.js';
-import { linearGraphQL } from '../services/linear-issue-sync.js';
+import { router } from '../../init.js';
+import type { TenantScopedDb } from '../../lib/tenant-db.js';
+import { tenantProcedure } from '../../middleware/tenant.js';
+import { requireTier } from '../../middleware/tier.js';
+import { linearGraphQL } from '../../services/linear-issue-sync.js';
 import {
   createWorkflowTemplatesFromProjects,
   fetchUsersFromSource,
   mergeByEmail,
-} from '../services/onboarding-import-service.js';
+} from '../../services/onboarding-import-service.js';
 
 // ---------------------------------------------------------------------------
 // Constants

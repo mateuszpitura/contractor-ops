@@ -16,9 +16,9 @@ import {
 } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import { mergeRouters, router } from '../init.js';
-import { requirePermission } from '../middleware/rbac.js';
-import { tenantProcedure } from '../middleware/tenant.js';
+import { mergeRouters, router } from '../../init.js';
+import { requirePermission } from '../../middleware/rbac.js';
+import { tenantProcedure } from '../../middleware/tenant.js';
 import { equipmentCouriersRouter } from './equipment-couriers.js';
 import { equipmentReturnsRouter } from './equipment-returns.js';
 import {
@@ -27,7 +27,6 @@ import {
   EQUIPMENT_NOT_ASSIGNED,
   EQUIPMENT_NOT_AVAILABLE,
   EQUIPMENT_NOT_FOUND,
-  plain,
 } from './equipment-shared.js';
 import { equipmentShipmentsRouter } from './equipment-shipments.js';
 
@@ -101,7 +100,7 @@ const equipmentCoreRouter = router({
       const mapped = items.map(eq => {
         const currentAssignment = eq.assignments[0] ?? null;
         return {
-          ...plain(eq),
+          ...eq,
           currentAssignment: currentAssignment
             ? {
                 id: currentAssignment.id,
@@ -162,10 +161,10 @@ const equipmentCoreRouter = router({
 
       const currentAssignment = equipment.assignments.find(a => !a.unassignedAt) ?? null;
 
-      return plain({
+      return {
         ...equipment,
         currentAssignment,
-      });
+      };
     }),
 
   /**
@@ -202,7 +201,7 @@ const equipmentCoreRouter = router({
         },
       });
 
-      return plain(equipment);
+      return equipment;
     }),
 
   /**
@@ -265,7 +264,7 @@ const equipmentCoreRouter = router({
         },
       });
 
-      return plain(equipment);
+      return equipment;
     }),
 
   /**
@@ -319,7 +318,7 @@ const equipmentCoreRouter = router({
         },
       });
 
-      return plain(updated);
+      return updated;
     }),
 
   // ─── Assignment ─────────────────────────────────────────────────────
@@ -403,7 +402,7 @@ const equipmentCoreRouter = router({
         },
       });
 
-      return plain(updated);
+      return updated;
     }),
 
   /**
@@ -476,7 +475,7 @@ const equipmentCoreRouter = router({
         },
       });
 
-      return plain(updated);
+      return updated;
     }),
 });
 

@@ -6,10 +6,9 @@ import {
   notificationPreferenceUpdateSchema,
 } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
-import { router } from '../init.js';
-import { plain } from '../lib/plain.js';
-import { tenantProcedure } from '../middleware/tenant.js';
-import { getOrCreatePreferences } from '../services/notification-service.js';
+import { router } from '../../init.js';
+import { tenantProcedure } from '../../middleware/tenant.js';
+import { getOrCreatePreferences } from '../../services/notification-service.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -64,12 +63,12 @@ export const notificationRouter = router({
 
     const totalPages = Math.ceil(total / input.pageSize);
 
-    return plain({
+    return {
       items,
       total,
       page: input.page,
       totalPages,
-    });
+    };
   }),
 
   /**
@@ -139,7 +138,7 @@ export const notificationRouter = router({
       NOTIFICATION_TYPES.map(type => getOrCreatePreferences(userId, ctx.organizationId, type)),
     );
 
-    return plain(preferences);
+    return preferences;
   }),
 
   /**
@@ -177,6 +176,6 @@ export const notificationRouter = router({
         ),
       );
 
-      return plain(results);
+      return results;
     }),
 });

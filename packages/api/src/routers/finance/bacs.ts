@@ -29,16 +29,15 @@ import {
 } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import { router } from '../init.js';
-import { plain } from '../lib/plain.js';
-import { requireFeatureFlag, tenantFlaggedProcedure } from '../middleware/feature-flag.js';
-import { requirePermission } from '../middleware/rbac.js';
-import { tenantProcedure } from '../middleware/tenant.js';
-import { writeAuditLog } from '../services/audit-writer.js';
-import { decryptBankAccount, encryptBankAccount } from '../services/bank-account-crypto.js';
-import type { BacsExportItem, BacsOrgBankInfo } from '../services/payment-export.js';
-import { generateBacsStandard18 } from '../services/payment-export.js';
-import { deleteObject, putObjectAndSignDownload } from '../services/r2.js';
+import { router } from '../../init.js';
+import { requireFeatureFlag, tenantFlaggedProcedure } from '../../middleware/feature-flag.js';
+import { requirePermission } from '../../middleware/rbac.js';
+import { tenantProcedure } from '../../middleware/tenant.js';
+import { writeAuditLog } from '../../services/audit-writer.js';
+import { decryptBankAccount, encryptBankAccount } from '../../services/bank-account-crypto.js';
+import type { BacsExportItem, BacsOrgBankInfo } from '../../services/payment-export.js';
+import { generateBacsStandard18 } from '../../services/payment-export.js';
+import { deleteObject, putObjectAndSignDownload } from '../../services/r2.js';
 
 const log = createLogger({ service: 'bacs-router' });
 
@@ -262,7 +261,7 @@ export const bacsRouter = router({
         ctx.db as unknown as BacsTenantDb,
         ctx.organizationId,
       );
-      return plain(masks);
+      return masks;
     }),
 
   /**
@@ -298,11 +297,11 @@ export const bacsRouter = router({
 
       const result = generateBacsStandard18(bacsItems, submitter, runNumber, new Date());
 
-      return plain({
+      return {
         fileText: result.fileBuffer.toString('ascii'),
         transliterationWarnings: result.transliterationWarnings,
         modulusWarnings: result.modulusWarnings,
-      });
+      };
     }),
 
   /**
@@ -454,11 +453,11 @@ export const bacsRouter = router({
         'bacs.generateExport: file generated',
       );
 
-      return plain({
+      return {
         downloadUrl: signedUrl,
         filename,
         sha256: sha256Hex,
-      });
+      };
     }),
 
   /**
@@ -488,7 +487,7 @@ export const bacsRouter = router({
         status = 'WARN';
       }
 
-      return plain({ status, warnings: result.warnings });
+      return { status, warnings: result.warnings };
     }),
 
   /**
@@ -554,14 +553,14 @@ export const bacsRouter = router({
         'bacs.saveSubmitterConfig: submitter config updated',
       );
 
-      return plain({
+      return {
         saved: true as const,
         masks: {
           sun: sunMasked,
           sortCode: sortCodeMasked,
           accountNumber: accountMasked,
         },
-      });
+      };
     }),
 });
 
