@@ -246,7 +246,7 @@ async function instantiateTaskRuns(
           contractor as { internalOwnerUserId?: string | null },
           contract as { internalOwnerUserId?: string | null } | null,
           organizationId,
-          tx as unknown as Parameters<typeof resolveAssignee>[4],
+          tx,
         )
       : null;
 

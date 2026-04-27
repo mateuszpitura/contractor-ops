@@ -2,6 +2,7 @@
  * Shared constants, helpers, and types for the workflow domain routers.
  * Used by workflow-templates.ts and workflow-execution.ts.
  */
+import type { Prisma } from '@contractor-ops/db';
 import { workflowTaskSkipReason } from '@contractor-ops/validators';
 import type { ResolveAssigneeWithPtoArgs } from '../../services/pto-detector.js';
 import { resolveAssigneeWithPto } from '../../services/pto-detector.js';
@@ -134,12 +135,17 @@ export async function resolveAssignee(
   contractor: { internalOwnerUserId?: string | null },
   contract: { internalOwnerUserId?: string | null } | null,
   orgId: string,
-  tx: { member: { findFirst: (args: unknown) => Promise<{ userId: string } | null> } },
+  tx: {
+    member: {
+      findFirst: (args?: Prisma.MemberFindFirstArgs) => Promise<{ userId: string } | null>;
+    };
+  },
 ): Promise<string | null> {
   switch (task.assigneeMode) {
     case 'FIXED_USER':
       return task.assigneeUserId ?? null;
     case 'ROLE_BASED': {
+      if (!task.assigneeRole) return null;
       const member = await tx.member.findFirst({
         where: {
           organizationId: orgId,
