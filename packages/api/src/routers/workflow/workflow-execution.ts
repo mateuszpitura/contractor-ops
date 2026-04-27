@@ -37,6 +37,7 @@ import {
   calculateProgress,
   evaluateCondition,
   resolveAssignee,
+  unblockDependentsAndRecomputeRun,
   validateTransition,
 } from './workflow-shared.js';
 
@@ -903,31 +904,7 @@ export const workflowExecutionRouter = router({
           },
         });
 
-        // Unblock dependent tasks
-        await tx.workflowTaskRun.updateMany({
-          where: {
-            dependsOnTaskRunId: task.id,
-            status: 'BLOCKED',
-          },
-          data: { status: 'TODO' },
-        });
-
-        // Recompute run progress
-        const allTasks = await tx.workflowTaskRun.findMany({
-          where: { workflowRunId: task.workflowRun.id },
-        });
-        const progress = calculateProgress(allTasks);
-
-        // Check if run is complete (all active tasks done or skipped)
-        const isComplete = progress.done === progress.total && progress.total > 0;
-
-        await tx.workflowRun.update({
-          where: { id: task.workflowRun.id },
-          data: {
-            progressPercent: progress.percent,
-            ...(isComplete ? { status: 'COMPLETED', completedAt: now } : {}),
-          },
-        });
+        await unblockDependentsAndRecomputeRun(tx, task, now);
 
         return updated;
       });
@@ -980,30 +957,7 @@ export const workflowExecutionRouter = router({
           },
         });
 
-        // Unblock dependent tasks
-        await tx.workflowTaskRun.updateMany({
-          where: {
-            dependsOnTaskRunId: task.id,
-            status: 'BLOCKED',
-          },
-          data: { status: 'TODO' },
-        });
-
-        // Recompute run progress
-        const allTasks = await tx.workflowTaskRun.findMany({
-          where: { workflowRunId: task.workflowRun.id },
-        });
-        const progress = calculateProgress(allTasks);
-
-        const isComplete = progress.done === progress.total && progress.total > 0;
-
-        await tx.workflowRun.update({
-          where: { id: task.workflowRun.id },
-          data: {
-            progressPercent: progress.percent,
-            ...(isComplete ? { status: 'COMPLETED', completedAt: new Date() } : {}),
-          },
-        });
+        await unblockDependentsAndRecomputeRun(tx, task, new Date());
 
         return updated;
       });

@@ -218,3 +218,51 @@ export const TASK_TRANSITIONS: Record<string, string[]> = {
 export function validateTransition(current: string, target: string): boolean {
   return (TASK_TRANSITIONS[current] ?? []).includes(target);
 }
+
+// ---------------------------------------------------------------------------
+// Task lifecycle postlude
+// ---------------------------------------------------------------------------
+
+/**
+ * Shared postlude for task transitions that close a task (DONE or SKIPPED):
+ * unblock dependents, recompute the parent run's progress, and complete the
+ * run if every active task is now done. Used by both completeTask and
+ * skipTask which previously inlined this 4-step block.
+ */
+export async function unblockDependentsAndRecomputeRun(
+  tx: {
+    workflowTaskRun: {
+      updateMany: (args: Prisma.WorkflowTaskRunUpdateManyArgs) => Promise<unknown>;
+      findMany: (
+        args: Prisma.WorkflowTaskRunFindManyArgs,
+      ) => Promise<Array<{ status: string; resultJson?: unknown }>>;
+    };
+    workflowRun: {
+      update: (args: Prisma.WorkflowRunUpdateArgs) => Promise<unknown>;
+    };
+  },
+  closedTask: { id: string; workflowRun: { id: string } },
+  completedAt: Date,
+): Promise<void> {
+  await tx.workflowTaskRun.updateMany({
+    where: {
+      dependsOnTaskRunId: closedTask.id,
+      status: 'BLOCKED',
+    },
+    data: { status: 'TODO' },
+  });
+
+  const allTasks = await tx.workflowTaskRun.findMany({
+    where: { workflowRunId: closedTask.workflowRun.id },
+  });
+  const progress = calculateProgress(allTasks);
+  const isComplete = progress.done === progress.total && progress.total > 0;
+
+  await tx.workflowRun.update({
+    where: { id: closedTask.workflowRun.id },
+    data: {
+      progressPercent: progress.percent,
+      ...(isComplete ? { status: 'COMPLETED', completedAt } : {}),
+    },
+  });
+}
