@@ -17,7 +17,6 @@
 //   - Guessable download URLs -> R2 signed URL, TTL 300s, content-addressed key.
 
 import { createHash } from 'node:crypto';
-import type { PrismaClient } from '@contractor-ops/db';
 import { createLogger } from '@contractor-ops/logger';
 import {
   accountNumberSchema,
@@ -30,6 +29,7 @@ import {
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { router } from '../../init.js';
+import type { TenantScopedDb } from '../../lib/tenant-db.js';
 import { requireFeatureFlag, tenantFlaggedProcedure } from '../../middleware/feature-flag.js';
 import { requirePermission } from '../../middleware/rbac.js';
 import { tenantProcedure } from '../../middleware/tenant.js';
@@ -57,12 +57,9 @@ const log = createLogger({ service: 'bacs-router' });
  * generateExport opens a transaction for the audit-trail writes.
  */
 type BacsTenantDb = Pick<
-  PrismaClient,
+  TenantScopedDb,
   'organization' | 'paymentRun' | 'document' | 'paymentExport' | '$transaction'
 >;
-
-/** Transaction client subset used inside generateExport's $transaction body. */
-type BacsTenantTx = Pick<PrismaClient, 'document' | 'paymentExport'>;
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -257,10 +254,7 @@ export const bacsRouter = router({
   getSubmitterMasks: tenantProcedure
     .use(requirePermission({ settings: ['read'] }))
     .query(async ({ ctx }) => {
-      const masks = await getBacsSubmitterMasks(
-        ctx.db as unknown as BacsTenantDb,
-        ctx.organizationId,
-      );
+      const masks = await getBacsSubmitterMasks(ctx.db, ctx.organizationId);
       return masks;
     }),
 
@@ -280,7 +274,7 @@ export const bacsRouter = router({
     .use(requirePermission({ payment: ['export'] }))
     .input(z.object({ paymentRunId: z.string() }))
     .query(async ({ ctx, input }) => {
-      const db = ctx.db as unknown as BacsTenantDb;
+      const db: BacsTenantDb = ctx.db;
       const submitter = await loadDecryptedSubmitterConfig(db, ctx.organizationId);
       if (!submitter) {
         throw new TRPCError({
@@ -316,7 +310,7 @@ export const bacsRouter = router({
     .use(requirePermission({ payment: ['export'] }))
     .input(z.object({ paymentRunId: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const db = ctx.db as unknown as BacsTenantDb;
+      const db: BacsTenantDb = ctx.db;
       const submitter = await loadDecryptedSubmitterConfig(db, ctx.organizationId);
       if (!submitter) {
         throw new TRPCError({
@@ -395,8 +389,7 @@ export const bacsRouter = router({
       // points to a file the system has no audit record of).
       try {
         await db.$transaction(async tx => {
-          const txTyped = tx as unknown as BacsTenantTx;
-          const document = await txTyped.document.create({
+          const document = await tx.document.create({
             data: {
               organizationId: ctx.organizationId,
               storageKey: r2Key,
@@ -412,7 +405,7 @@ export const bacsRouter = router({
             select: { id: true },
           });
 
-          await txTyped.paymentExport.create({
+          await tx.paymentExport.create({
             data: {
               organizationId: ctx.organizationId,
               paymentRunId: input.paymentRunId,
@@ -516,7 +509,7 @@ export const bacsRouter = router({
       const sortCodeMasked = maskSortCode(input.submitterSortCode);
       const accountMasked = maskAccountNumber(input.submitterAccountNumber);
 
-      const db = ctx.db as unknown as BacsTenantDb;
+      const db: BacsTenantDb = ctx.db;
       await db.organization.update({
         where: { id: ctx.organizationId },
         data: {
