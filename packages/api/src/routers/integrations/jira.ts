@@ -79,6 +79,37 @@ async function loadConnection(db: TenantScopedDb, connectionId: string, organiza
   return connection;
 }
 
+/**
+ * Issues an authenticated GET against Jira Cloud REST API v3 for the given
+ * connection and parses the JSON body as `T`. Throws INTERNAL_SERVER_ERROR
+ * with the upstream response text on non-2xx.
+ *
+ * Centralises the load-context → fetch → ok-check → text-on-error → json
+ * pipeline that the list procedures previously duplicated.
+ */
+async function jiraApiGet<T>(
+  connection: { configJson: unknown; credentialsRef: string },
+  path: string,
+  errorLabel: string,
+): Promise<T> {
+  const { baseUrl, authHeaders } = buildJiraApiContext(
+    connection.configJson,
+    connection.credentialsRef,
+  );
+
+  const response = await fetch(`${baseUrl}${path}`, { headers: authHeaders });
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new TRPCError({
+      code: 'INTERNAL_SERVER_ERROR',
+      message: `Failed to ${errorLabel}: ${text}`,
+    });
+  }
+
+  return (await response.json()) as T;
+}
+
 // ---------------------------------------------------------------------------
 // Jira Router
 // ---------------------------------------------------------------------------
@@ -146,29 +177,11 @@ export const jiraRouter = router({
     .input(z.object({ connectionId: z.string() }))
     .query(async ({ ctx, input }) => {
       const connection = await loadConnection(ctx.db, input.connectionId, ctx.organizationId);
-      const { baseUrl, authHeaders } = buildJiraApiContext(
-        connection.configJson,
-        connection.credentialsRef,
+      const projects = await jiraApiGet<Array<{ id: string; key: string; name: string }>>(
+        connection,
+        '/project',
+        'list Jira projects',
       );
-
-      const response = await fetch(`${baseUrl}/project`, {
-        headers: authHeaders,
-      });
-
-      if (!response.ok) {
-        const text = await response.text();
-        throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: `Failed to list Jira projects: ${text}`,
-        });
-      }
-
-      const projects = (await response.json()) as Array<{
-        id: string;
-        key: string;
-        name: string;
-      }>;
-
       return projects.map(p => ({ id: p.id, key: p.key, name: p.name }));
     }),
 
@@ -185,31 +198,12 @@ export const jiraRouter = router({
     )
     .query(async ({ ctx, input }) => {
       const connection = await loadConnection(ctx.db, input.connectionId, ctx.organizationId);
-      const { baseUrl, authHeaders } = buildJiraApiContext(
-        connection.configJson,
-        connection.credentialsRef,
+      const project = await jiraApiGet<{ issueTypes?: Array<{ id: string; name: string }> }>(
+        connection,
+        `/project/${input.projectId}`,
+        'list Jira issue types',
       );
-
-      const response = await fetch(`${baseUrl}/project/${input.projectId}`, {
-        headers: authHeaders,
-      });
-
-      if (!response.ok) {
-        const text = await response.text();
-        throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: `Failed to list Jira issue types: ${text}`,
-        });
-      }
-
-      const project = (await response.json()) as {
-        issueTypes?: Array<{ id: string; name: string }>;
-      };
-
-      return (project.issueTypes ?? []).map(t => ({
-        id: t.id,
-        name: t.name,
-      }));
+      return (project.issueTypes ?? []).map(t => ({ id: t.id, name: t.name }));
     }),
 
   /**
@@ -225,30 +219,9 @@ export const jiraRouter = router({
     )
     .query(async ({ ctx, input }) => {
       const connection = await loadConnection(ctx.db, input.connectionId, ctx.organizationId);
-      const { baseUrl, authHeaders } = buildJiraApiContext(
-        connection.configJson,
-        connection.credentialsRef,
-      );
-
-      const response = await fetch(`${baseUrl}/status/project/${input.projectId}`, {
-        headers: authHeaders,
-      });
-
-      if (!response.ok) {
-        const text = await response.text();
-        throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: `Failed to list Jira project statuses: ${text}`,
-        });
-      }
-
-      const statuses = (await response.json()) as Array<{
-        id: string;
-        name: string;
-        statusCategory: { key: string; name: string };
-      }>;
-
-      return statuses;
+      return jiraApiGet<
+        Array<{ id: string; name: string; statusCategory: { key: string; name: string } }>
+      >(connection, `/status/project/${input.projectId}`, 'list Jira project statuses');
     }),
 
   /**
