@@ -162,7 +162,8 @@
     "test": "vitest run",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "typecheck:fast": "tsgo --noEmit"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1029.0",
@@ -178,6 +179,7 @@
     "@contractor-ops/gov-api": "workspace:*",
     "@contractor-ops/integrations": "workspace:*",
     "@contractor-ops/logger": "workspace:*",
+    "@contractor-ops/offboarding-templates": "workspace:*",
     "@contractor-ops/secrets": "workspace:*",
     "@contractor-ops/shared": "workspace:*",
     "@contractor-ops/validators": "workspace:*",

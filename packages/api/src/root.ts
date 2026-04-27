@@ -4,6 +4,7 @@ import { adminBoeRateRouter } from './routers/admin-boe-rate.js';
 import { apiKeyRouter } from './routers/api-key.js';
 import { approvalRouter } from './routers/approval.js';
 import { auditRouter } from './routers/audit.js';
+import { authPermissionsRouter } from './routers/auth-permissions.js';
 import { bacsRouter } from './routers/bacs.js';
 import { billingRouter } from './routers/billing.js';
 import { calendarRouter } from './routers/calendar.js';
@@ -56,6 +57,7 @@ import { teamsRouter } from './routers/teams.js';
 import { timeRouter } from './routers/time.js';
 import { userRouter } from './routers/user.js';
 import { workflowRouter } from './routers/workflow.js';
+import { workflowRolesRouter } from './routers/workflow-roles.js';
 import { zatcaRouter } from './routers/zatca.js';
 
 /**
@@ -113,6 +115,8 @@ export const appRouter = router({
   contract: contractRouter,
   document: documentRouter,
   workflow: workflowRouter,
+  workflowRoles: workflowRolesRouter, // Phase 74 — KT role-template CRUD + auto-selection
+  authPermissions: authPermissionsRouter, // Phase 74 — current-user permission introspection (UI gating)
   invoice: invoiceRouter,
   invoiceIntake: invoiceIntakeRouter, // invoiceIntake: inbound XRechnung/ZUGFeRD intake pipeline — upload, parse, match, convert (Phase 62 EINV-03)
   approval: approvalRouter,

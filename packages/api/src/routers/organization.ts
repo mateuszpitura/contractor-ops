@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { publicProcedure, router } from '../init.js';
 import { adminProcedure, requirePermission } from '../middleware/rbac.js';
 import { tenantProcedure } from '../middleware/tenant.js';
+import { runPostOrganizationCreateHooks } from '../services/post-org-create-hook.js';
 
 export const organizationRouter = router({
   /**
@@ -40,6 +41,11 @@ export const organizationRouter = router({
       headers: ctx.headers,
       body: { organizationId: org.id },
     });
+
+    // Phase 74 — Materialise the 4 KT seed templates for the new org.
+    // Hook is fire-and-forget at the API boundary — internal failures are
+    // logged via createLogger but do NOT re-throw so org creation is robust.
+    await runPostOrganizationCreateHooks(ctx.db, org.id);
 
     return org;
   }),
