@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v6.0
 milestone_name: Platform Maturity & Operational Hardening
-status: executing
-stopped_at: "Phase 70 complete (10/10 plans); backfill apply deferred to post-deploy"
-last_updated: "2026-04-27T00:00:00.000Z"
-last_activity: 2026-04-27 — Phase 70 checkpoint cleared; multi-region backfill recorded as deferred post-deploy item
+status: planning
+stopped_at: Phase 70 complete (10/10 plans); backfill apply deferred to post-deploy
+last_updated: "2026-04-27T09:58:11.671Z"
+last_activity: 2026-04-27 — Phase 70 checkpoint cleared; backfill apply recorded as deferred
 progress:
   percent: 9
 ---
@@ -30,6 +30,7 @@ Progress: [█░░░░░░░░░] 9% (v6.0 — 1/11 phases complete; Ph
 
 **Active Phase:** none (Phase 70 closed)
 **Next Phase candidates (parallel-ready):**
+
 - Phase 71 (F1 Compliance — Policy Package + Schema + Classification Reconcile) — 7 plans, depends on 70 ✓
 - Phase 76 (F2 IdP — Capability Mixin + Saga + Cooldown + GWS Scope) — 10 plans, depends on 70 ✓ + 74 + 75 (still gated on F4)
 - Phase 74 (F4 Offboarding — Workflow Foundation + KT Templates + Override Permission) — discussed, ready for `/gsd-plan-phase 74`
@@ -54,6 +55,7 @@ Progress: [█░░░░░░░░░] 9% (v6.0 — 1/11 phases complete; Ph
 **Plan-checker verdict:** PASSED (manual checker run — gsd-plan-checker agent not installed in this environment). All 16 LOCKED CONTEXT decisions (D-01..D-16) addressed; every IDP-{02,08,09,10,11,13,14,15} requirement covered by ≥1 plan beyond Wave 0; Standing Constraint LOCAL-ONLY honoured (legal review DEFERRED, multi-region manual). Threat models (8 plans × ~5 threats), validation strategy (Nyquist with 35-row per-task verification map), Phase 70 dependency hooks (`signoff-registry-flags.json`, `IDP_AUDIT_ALLOWED_FIELDS`, `getIdpAuditLogger`, `scopeCapabilities` JSONB infrastructure, `lint-guards` 4th-sibling extension), and Phase 71 D-07 TZ library convergence (`@date-fns/tz`) all present.
 
 **Key risks identified:**
+
 - Plan 76-02 schema migration is `autonomous: false` — requires manual `npx tsx packages/db/scripts/push-all-regions.ts` against EU + ME databases post-merge.
 - Plans 76-07 (`lint:scopes` guard) and 76-08 (GWS scope expansion) are sequenced in Wave 2 such that the guard ships before the GWS adapter import. The plan accepts that 76-07 may be RED-then-GREEN within the brief 76-07-only window before 76-08 lands; the guard itself passes its own unit tests in 76-07.
 - Phase 71 is being planned in parallel; both phases reuse `@date-fns/tz` from the Phase 71 D-07 pin. Cross-checked against 71-RESEARCH.md (line 23, 385) — single library, no parallel pin.
@@ -63,7 +65,6 @@ Progress: [█░░░░░░░░░] 9% (v6.0 — 1/11 phases complete; Ph
 - `76-RESEARCH.md` — schema shapes, TZ library convergence, QStash topology, DeprovisionResult type shape (USER_NOT_FOUND → SUCCEEDED rule + MAX_ATTEMPTS = 3), validation architecture, 10-plan wave shape
 - `76-PATTERNS.md` — 18 Phase-76 elements mapped to existing codebase siblings (no new architectural primitives — every D-NN has a precedent: Phase 70 D-13/D-15/D-16, Phase 71 D-07, v5 `recreateDraftAfterDrift`, classification `claimDraft` atomic-update, `late-payment-interest.ts` QStash fan-out)
 - `76-VALIDATION.md` — 35 verification rows across 10 plans; 5 manual-only (multi-region apply, legal review of `idp-deprovisioning` flag, GWS write-access banner end-to-end, real-provider sandbox tests, webhook self-trigger end-to-end)
-
 
 ## Phase 71 Planned (2026-04-27)
 
@@ -251,3 +252,5 @@ Next command: `/gsd-plan-phase 74`  (Phase 74 context gathered, ready to plan; 7
 
 **Planned Phases (ready to execute):** 71 (F1 Compliance — 7 plans), 76 (F2 IdP — 10 plans, gated on 74 + 75)
 **Recorded:** 2026-04-27
+
+**Planned Phase:** 74 (F4 Offboarding — Workflow Foundation + KT Templates + Override Permission) — 8 plans — 2026-04-27T09:58:11.669Z
