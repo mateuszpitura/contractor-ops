@@ -10,7 +10,8 @@ describe('compliance-policy registry', () => {
 
   it('every policyRuleId matches the stable-namespace@vN regex', () => {
     const rules = listPolicyRules();
-    const re = /^[a-z]+\.[a-z_]+@v\d+$/;
+    // Matches Plan 71-02 POLICY_RULE_ID_RE (permits digits in doc namespace, e.g. `de.a1`).
+    const re = /^[a-z]+\.[a-z][a-z_0-9]*@v\d+$/;
     for (const r of rules) {
       expect(re.test(r.policyRuleId), `bad id: ${r.policyRuleId}`).toBe(true);
     }

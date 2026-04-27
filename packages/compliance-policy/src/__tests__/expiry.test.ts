@@ -38,4 +38,11 @@ describe('isExpired — TZ-aware expiry boundary (D-07 / ROADMAP success criteri
     const expiresAt = new Date('2026-04-28T00:00:00.000Z');
     expect(isExpired(expiresAt, 'Europe/Warsaw', now)).toBe(false);
   });
+
+  it('London DST transition: expiresAt = March 28, now = March 28 21:30 UTC (= 22:30 BST start day) → NOT expired', () => {
+    // BST starts last Sunday of March; in 2026 = March 29, but we use March 28 → 29 boundary
+    const now = new Date('2026-03-28T21:30:00.000Z');
+    const expiresAt = new Date('2026-03-28T00:00:00.000Z');
+    expect(isExpired(expiresAt, 'Europe/London', now)).toBe(false);
+  });
 });
