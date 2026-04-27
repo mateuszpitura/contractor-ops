@@ -23,10 +23,33 @@ describe('roles', () => {
     }
   });
 
-  it('owner matches the full access control statement', () => {
+  it('owner matches the full access control statement except platform-only admin:boe-rate', () => {
     const o = roles.owner.statements;
     for (const [resource, actions] of Object.entries(accessControlStatement)) {
+      if (resource === 'admin:boe-rate') {
+        // admin:boe-rate is a global platform resource exclusive to
+        // platform_operator. Per-org roles (owner included) must NOT have it.
+        expect(o[resource as keyof typeof o]).toBeUndefined();
+        continue;
+      }
       expect(o[resource as keyof typeof o]?.slice().sort()).toEqual([...actions].sort());
+    }
+  });
+
+  it('admin does not carry the platform-only admin:boe-rate resource', () => {
+    expect(
+      roles.admin.statements['admin:boe-rate' as keyof typeof roles.admin.statements],
+    ).toBeUndefined();
+  });
+
+  it('platform_operator is the sole holder of admin:boe-rate', () => {
+    for (const [name, role] of Object.entries(roles)) {
+      const statements = role.statements as Record<string, readonly string[] | undefined>;
+      if (name === 'platform_operator') {
+        expect(statements['admin:boe-rate']).toEqual(['read', 'write']);
+      } else {
+        expect(statements['admin:boe-rate']).toBeUndefined();
+      }
     }
   });
 

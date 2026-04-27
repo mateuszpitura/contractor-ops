@@ -19,6 +19,7 @@ describe('accessControlStatement', () => {
       'integration',
       'time',
       'equipment',
+      'admin:boe-rate',
     ];
     const keys = Object.keys(accessControlStatement);
     expect(keys).toHaveLength(expectedResources.length);
