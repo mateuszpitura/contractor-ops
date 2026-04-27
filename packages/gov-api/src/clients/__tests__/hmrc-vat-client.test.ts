@@ -215,9 +215,11 @@ describe('HmrcVatClient — 401 refresh-once-then-retry', () => {
 });
 
 describe('HmrcVatClient — rate limiting', () => {
-  it('throws HmrcApiError(429) when rate limit denies the request', async () => {
+  it('throws HmrcApiError(503, INTERNAL_RATE_LIMIT_EXCEEDED) on internal self-throttle', async () => {
+    // Bug-hunt fix: internal rate-limit denials surface as 503 with code
+    // INTERNAL_RATE_LIMIT_EXCEEDED so observability can distinguish
+    // "we self-throttled" from "HMRC throttled us with a real 429".
     const client = await makeClient();
-    // Inject a fake rate-limiter that denies.
     (
       client as unknown as {
         rateLimiter: { checkLimit: (id: string) => Promise<{ allowed: boolean }> };
@@ -228,7 +230,10 @@ describe('HmrcVatClient — rate limiting', () => {
 
     await expect(
       client.checkVatNumber('GB193054661', { organizationId: 'org-1' }),
-    ).rejects.toMatchObject({ httpStatus: 429 });
+    ).rejects.toMatchObject({
+      httpStatus: 503,
+      upstreamCode: 'INTERNAL_RATE_LIMIT_EXCEEDED',
+    });
   });
 });
 
@@ -258,10 +263,40 @@ describe('HmrcVatClient — fraud-prevention headers', () => {
     const h = capturedHeaders as unknown as Headers;
     expect(h.get('Accept')).toBe('application/vnd.hmrc.2.0+json');
     expect(h.get('Gov-Client-Connection-Method')).toBe('WEB_APP_VIA_SERVER');
-    expect(h.get('Gov-Client-User-IDs')).toContain('orgId=org-42');
+    // Bug-hunt fix: orgId is hashed (SHA-256, truncated to 16 hex chars)
+    // before it leaves our perimeter. The raw Prisma key never appears
+    // in the HMRC fraud-prevention header.
+    const userIdHeader = h.get('Gov-Client-User-IDs') ?? '';
+    expect(userIdHeader).toMatch(/^os=contractor-ops;orgId=[0-9a-f]{16}$/);
+    expect(userIdHeader).not.toContain('org-42');
     expect(h.get('Gov-Vendor-Product-Name')).toBe('contractor-ops');
     expect(h.get('Gov-Vendor-Version')).toBe('0.0.0-test');
     expect(h.get('Authorization')).toMatch(/^Bearer /);
+  });
+
+  it('hashes the same orgId to a stable value across calls', async () => {
+    const client = await makeClient();
+    const captured: string[] = [];
+    server.use(
+      http.get(
+        `${HMRC_TEST_BASE}/organisations/vat/check-vat-number/lookup/:targetVrn`,
+        ({ request }) => {
+          captured.push(request.headers.get('Gov-Client-User-IDs') ?? '');
+          return HttpResponse.json({
+            processingDate: '2026-04-12T10:00:00Z',
+            target: {
+              name: 'T',
+              vatNumber: 'GB193054661',
+              address: { line1: '1', postcode: 'P', countryCode: 'GB' },
+            },
+          });
+        },
+      ),
+    );
+
+    await client.checkVatNumber('GB193054661', { organizationId: 'org-stable' });
+    await client.checkVatNumber('GB193054661', { organizationId: 'org-stable' });
+    expect(captured[0]).toBe(captured[1]);
   });
 });
 

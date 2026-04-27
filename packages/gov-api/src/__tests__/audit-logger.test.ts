@@ -66,19 +66,17 @@ describe('GovApiAuditLogger', () => {
     });
   });
 
-  it('catches and swallows write errors', async () => {
-    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+  it('catches and swallows write errors (audit log failure must not break gov-api operations)', async () => {
     mockCreate.mockRejectedValue(new Error('DB connection failed'));
 
     const logger = new GovApiAuditLogger(mockPrisma);
 
-    // Should not throw
+    // Should not throw — fire-and-forget per Pino path; the error itself is
+    // emitted via `@contractor-ops/logger` (Pino), not console.error. The
+    // original assertion against console.error reflected stale behavior
+    // before the migration to Pino — see project memory file
+    // `feedback_logging.md`.
     await expect(logger.log(sampleEntry)).resolves.toBeUndefined();
-
-    expect(consoleSpy).toHaveBeenCalledWith(
-      '[GovApiAuditLogger] Failed to write audit log:',
-      expect.any(Error),
-    );
-    consoleSpy.mockRestore();
+    expect(mockCreate).toHaveBeenCalledTimes(1);
   });
 });

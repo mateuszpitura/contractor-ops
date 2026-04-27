@@ -14,9 +14,13 @@
 //   - Zod `.safeParse()` at response boundary (VIES response drift mitigation,
 //     threat T-57-02-02). `.refine()` on the schema guarantees either
 //     `isValid` or `userError` is set.
+//   - JSON parse is guarded — non-JSON CDN error pages convert to a typed
+//     `ViesApiError` instead of leaking a `SyntaxError`.
 //   - HTTP 500 → soft-fail as `unavailable` (D-08)
 //   - Local DE format short-circuit via inlined `isValidUstIdNr`
-//   - Per-org rate limiter (10 req/s) — polite throttle; VIES itself is soft
+//   - Per-org rate limiter (10 req/s) — internal denials surface as
+//     `ViesApiError(503)` with code `INTERNAL_RATE_LIMIT_EXCEEDED` so we
+//     can distinguish "we self-throttled" from "VIES throttled us (429)".
 // ---------------------------------------------------------------------------
 
 import { GovApiClient } from '../client.js';
@@ -31,11 +35,18 @@ import type { GovApiConfig, GovApiEnvironment } from '../types.js';
 
 const VIES_LOOKUP_PREFIX = '/rest-api/ms';
 const VIES_RATE_LIMIT = { maxRequests: 10, windowMs: 1000 } as const;
+/** First N chars of an unexpected response body to include in error logs. */
+const ERROR_BODY_SAMPLE_LEN = 200;
+/** Internal-rate-limit error code so callers can distinguish self-throttle. */
+export const INTERNAL_RATE_LIMIT_CODE = 'INTERNAL_RATE_LIMIT_EXCEEDED';
 
 // Minimal DE USt-IdNr check — mirrors Phase 56 `isValidUstIdNr` (ISO 7064
 // MOD 11,10 Pure System). Duplicated inline to avoid a workspace dependency
 // cycle (gov-api ← einvoice ← validators ← einvoice). The orchestrator
 // (Plan 57-03) invokes the full validator first; this is defense-in-depth.
+//
+// A regression test in `__tests__/format-parity.test.ts` re-runs the canonical
+// validator's table-driven vectors against this inline copy to catch drift.
 // biome-ignore lint/style/useNamingConvention: name mirrors ISO 7064 MOD-11-10 algorithm identifier
 function mod11_10CheckDigit(digits: readonly number[]): number {
   let product = 10;
@@ -47,7 +58,7 @@ function mod11_10CheckDigit(digits: readonly number[]): number {
   return (11 - product) % 10;
 }
 
-function isValidUstIdNrInline(raw: string): boolean {
+export function isValidUstIdNrInline(raw: string): boolean {
   const vat = raw.replace(/[\s-]/g, '').toUpperCase();
   const m = vat.match(/^DE(\d{9})$/);
   if (!m) return false;
@@ -68,11 +79,13 @@ export type ViesLookupResult =
 
 export class ViesApiError extends Error {
   public readonly httpStatus: number;
+  public readonly upstreamCode?: string;
 
-  constructor(message: string, httpStatus: number) {
+  constructor(message: string, httpStatus: number, upstreamCode?: string) {
     super(message);
     this.name = 'ViesApiError';
     this.httpStatus = httpStatus;
+    this.upstreamCode = upstreamCode;
   }
 }
 
@@ -105,6 +118,37 @@ export class ViesClient extends GovApiClient {
 
   override getApiName(): 'vies' {
     return 'vies';
+  }
+
+  /**
+   * Read a Response body as JSON, converting any parsing failure into a
+   * `ViesApiError(502)` with a short body sample for diagnostics. VIES is
+   * fronted by EU CDNs that occasionally serve HTML error pages even when
+   * the JSON API was queried — the untyped `await response.json()` would
+   * leak a `SyntaxError` up the stack and bypass the typed-error path.
+   */
+  private async readJsonOrThrow(response: Response, context: string): Promise<unknown> {
+    let raw: string;
+    try {
+      raw = await response.text();
+    } catch (err) {
+      throw new ViesApiError(
+        `${context}: failed to read response body`,
+        502,
+        err instanceof Error ? err.message : String(err),
+      );
+    }
+    try {
+      return JSON.parse(raw);
+    } catch (err) {
+      const sample = raw.slice(0, ERROR_BODY_SAMPLE_LEN);
+      this.log.warn({ status: response.status, sample, context }, 'VIES: non-JSON response body');
+      throw new ViesApiError(
+        `${context}: non-JSON response body`,
+        502,
+        err instanceof Error ? err.message : String(err),
+      );
+    }
   }
 
   /**
@@ -143,10 +187,23 @@ export class ViesClient extends GovApiClient {
       };
     }
 
-    // Per-org rate-limit gate.
+    // Per-org rate-limit gate (self-throttle).
     const limit = await this.rateLimiter.checkLimit(opts.organizationId);
     if (!limit.allowed) {
-      throw new ViesApiError('VIES rate limit exceeded', 429);
+      this.log.warn(
+        {
+          apiName: 'vies',
+          organizationId: opts.organizationId,
+          remaining: 0,
+          resetMs: limit.resetMs,
+        },
+        'gov-api self-throttle: vies bucket empty',
+      );
+      throw new ViesApiError(
+        'gov-api self-throttle: vies bucket empty',
+        503,
+        INTERNAL_RATE_LIMIT_CODE,
+      );
     }
 
     // Build path + optional qualified query string.
@@ -181,8 +238,10 @@ export class ViesClient extends GovApiClient {
       throw new ViesApiError(`VIES returned ${response.status}`, response.status);
     }
 
-    // Zod boundary — safeParse so malformed bodies are caught gracefully.
-    const parseResult = viesLookupResponseSchema.safeParse(await response.json());
+    // JSON parse + Zod boundary — both guarded so malformed bodies surface
+    // as typed errors with body samples in the log, not raw SyntaxErrors.
+    const json = await this.readJsonOrThrow(response, 'VIES lookup');
+    const parseResult = viesLookupResponseSchema.safeParse(json);
     if (!parseResult.success) {
       throw new ViesApiError('VIES response schema violation', 500);
     }

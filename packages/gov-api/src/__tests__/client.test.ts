@@ -245,7 +245,10 @@ describe('GovApiClient', () => {
       await expect(client.doLoadCertificate()).rejects.toThrow('SecretStore not set');
     });
 
-    it('throws when certificate not found', async () => {
+    it('throws when bearer token not found at the configured secret path', async () => {
+      // Renamed in the bug-hunt fix wave: "certificate" was misleading
+      // (subclasses load bearer tokens, not mTLS certs). The error message
+      // now accurately reflects that.
       const mockStore = {
         get: vi.fn(async () => null),
         set: vi.fn(),
@@ -253,7 +256,7 @@ describe('GovApiClient', () => {
       };
       client.setSecretStore(mockStore);
 
-      await expect(client.doLoadCertificate()).rejects.toThrow('Certificate not found');
+      await expect(client.doLoadCertificate()).rejects.toThrow('Bearer token not found');
     });
   });
 });

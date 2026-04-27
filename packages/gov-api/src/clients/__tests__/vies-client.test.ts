@@ -216,7 +216,10 @@ describe('ViesClient — pre-flight DE USt-IdNr short-circuit', () => {
 });
 
 describe('ViesClient — rate limiting', () => {
-  it('throws ViesApiError(429) when rate limit denies the request', async () => {
+  it('throws ViesApiError(503, INTERNAL_RATE_LIMIT_EXCEEDED) on internal self-throttle', async () => {
+    // Bug-hunt fix: internal rate-limit denials surface as 503 with code
+    // INTERNAL_RATE_LIMIT_EXCEEDED so observability can distinguish
+    // "we self-throttled" from "VIES throttled us with a real 429".
     const client = makeClient();
     (
       client as unknown as {
@@ -228,7 +231,10 @@ describe('ViesClient — rate limiting', () => {
 
     await expect(
       client.checkVatNumber('DE', DE_VALID_VAT, { organizationId: 'org-1' }),
-    ).rejects.toMatchObject({ httpStatus: 429 });
+    ).rejects.toMatchObject({
+      httpStatus: 503,
+      upstreamCode: 'INTERNAL_RATE_LIMIT_EXCEEDED',
+    });
   });
 });
 
