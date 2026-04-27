@@ -1,6 +1,6 @@
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
-import type { Context, Next } from 'hono';
+import type { Context, MiddlewareHandler } from 'hono';
 
 // ---------------------------------------------------------------------------
 // Rate limiter middleware for public API
@@ -85,8 +85,11 @@ function fallbackLimit(key: string): { allowed: boolean; remaining: number; rese
 /**
  * Rate limiting middleware.
  * Returns 429 with Retry-After header when limit is exceeded.
+ *
+ * Typed as Hono's `MiddlewareHandler` so callers (and tests) get the proper
+ * `Promise<Response | void>` return shape instead of an inferred mismatch.
  */
-export async function rateLimitMiddleware(c: Context, next: Next) {
+export const rateLimitMiddleware: MiddlewareHandler = async (c, next) => {
   const key = extractRateLimitKey(c);
 
   // No key = will fail at auth anyway, skip rate limiting
@@ -142,7 +145,7 @@ export async function rateLimitMiddleware(c: Context, next: Next) {
   }
 
   await next();
-}
+};
 
 // Periodic cleanup of expired windows (every 1 minute — matches window duration)
 setInterval(() => {

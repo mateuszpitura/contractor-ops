@@ -90,7 +90,7 @@ describe('GET /invoices', () => {
     await app.request(
       '/?page=2&pageSize=10&status=PAID&contractorId=c_1&sortBy=dueDate&sortOrder=desc',
     );
-    const [input] = mockList.mock.calls[0] as [Record<string, unknown>][];
+    const [input] = mockList.mock.calls[0] as [Record<string, unknown>];
     expect(input).toMatchObject({
       page: 2,
       pageSize: 10,
@@ -103,7 +103,7 @@ describe('GET /invoices', () => {
 
   it('passes undefined for all params when none provided', async () => {
     await app.request('/');
-    const [input] = mockList.mock.calls[0] as [Record<string, unknown>][];
+    const [input] = mockList.mock.calls[0] as [Record<string, unknown>];
     expect(input.page).toBeUndefined();
     expect(input.pageSize).toBeUndefined();
     expect(input.status).toBeUndefined();
@@ -124,7 +124,7 @@ describe('GET /invoices', () => {
 
   it('passes an invalid status value through as-is (no transformation)', async () => {
     await app.request('/?status=INVALID_STATUS');
-    const [input] = mockList.mock.calls[0] as [{ status: unknown }][];
+    const [input] = mockList.mock.calls[0] as [{ status: unknown }];
     expect(input.status).toBe('INVALID_STATUS');
   });
 });

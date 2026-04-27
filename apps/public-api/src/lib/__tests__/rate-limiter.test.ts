@@ -16,9 +16,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 // ---------------------------------------------------------------------------
 
 /** Build a tiny Hono app that attaches middleware under test and serves /test */
-async function buildApp(
-  middleware: (c: import('hono').Context, next: import('hono').Next) => Promise<void>,
-) {
+async function buildApp(middleware: import('hono').MiddlewareHandler) {
   const app = new Hono();
   app.use('*', middleware);
   app.get('/test', c => c.json({ ok: true }));

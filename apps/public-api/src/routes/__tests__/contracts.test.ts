@@ -84,7 +84,7 @@ describe('GET /contracts', () => {
     await app.request(
       '/?page=1&pageSize=5&status=DRAFT&contractorId=c1&sortBy=title&sortOrder=asc',
     );
-    const [input] = mockList.mock.calls[0] as [Record<string, unknown>][];
+    const [input] = mockList.mock.calls[0] as [Record<string, unknown>];
     expect(input).toMatchObject({
       page: 1,
       pageSize: 5,
@@ -97,7 +97,7 @@ describe('GET /contracts', () => {
 
   it('passes undefined for all params when none provided', async () => {
     await app.request('/');
-    const [input] = mockList.mock.calls[0] as [Record<string, unknown>][];
+    const [input] = mockList.mock.calls[0] as [Record<string, unknown>];
     expect(input.page).toBeUndefined();
     expect(input.pageSize).toBeUndefined();
     expect(input.status).toBeUndefined();
