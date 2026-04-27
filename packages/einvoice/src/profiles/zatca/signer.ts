@@ -158,7 +158,7 @@ function computeDocDigest(xml: string): string {
 
   // Apply exclusive C14N (enveloped-sig is no-op on unsigned XML)
   const c14n = new ExclusiveCanonicalization();
-  const canonicalXml = c14n.process(rootElement, {}).toString();
+  const canonicalXml = c14n.process(rootElement as unknown as Element, {}).toString();
 
   return sha256Base64(canonicalXml);
 }
@@ -172,7 +172,7 @@ function canonicalizeFragment(xmlStr: string): string {
   const c14n = new ExclusiveCanonicalization();
   const fragmentRoot = doc.documentElement;
   if (!fragmentRoot) throw new Error('XML fragment has no root element');
-  return c14n.process(fragmentRoot, {}).toString();
+  return c14n.process(fragmentRoot as unknown as Element, {}).toString();
 }
 
 // ---------------------------------------------------------------------------

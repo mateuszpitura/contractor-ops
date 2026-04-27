@@ -37,7 +37,7 @@ export const sourceEntrySchema = z.object({
   source: sourceProviderSchema,
   name: z.string(),
   avatarUrl: z.string().optional(),
-  metadata: z.record(z.unknown()).optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
 });
 
 export const conflictSchema = z.object({

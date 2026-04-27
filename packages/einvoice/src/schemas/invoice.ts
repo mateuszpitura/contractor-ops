@@ -9,7 +9,7 @@ export const eInvoicePartySchema = z.object({
   name: z.string().min(1),
   address: z.string().optional(),
   country: z.string().length(2).optional(),
-  additionalIds: z.record(z.string()).optional(),
+  additionalIds: z.record(z.string(), z.string()).optional(),
 });
 
 export const eInvoiceLineSchema = z.object({
@@ -53,7 +53,7 @@ export const eInvoiceSchema = z.object({
   payableAmount: z.number().int(),
   taxBreakdown: z.array(eInvoiceTaxSubtotalSchema),
   paymentMeans: eInvoicePaymentMeansSchema.optional(),
-  extensions: z.record(z.unknown()).optional(),
+  extensions: z.record(z.string(), z.unknown()).optional(),
   profileId: z.string().min(1),
   externalReference: z.string().optional(),
 });

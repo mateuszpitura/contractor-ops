@@ -271,7 +271,7 @@ export function ReminderRuleEditor({ open, onOpenChange, rule }: ReminderRuleEdi
   const slackStatusQuery = useQuery(trpc.integration.getSlackStatus.queryOptions());
   const isSlackConnected = slackStatusQuery.data?.connected === true;
 
-  const form = useForm<ReminderRuleFormValues>({
+  const form = useForm<z.input<typeof reminderRuleFormSchema>, unknown, ReminderRuleFormValues>({
     resolver: zodResolver(reminderRuleFormSchema),
     defaultValues: {
       name: '',

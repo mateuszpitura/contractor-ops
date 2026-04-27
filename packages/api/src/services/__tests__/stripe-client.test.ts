@@ -46,14 +46,14 @@ describe('stripe-client', () => {
     expect(constructorSpy).toHaveBeenCalledWith(
       'sk_test_mock_key_12345',
       expect.objectContaining({
-        apiVersion: '2026-03-25.dahlia',
+        apiVersion: '2026-04-22.dahlia',
         typescript: true,
       }),
     );
   });
 
-  it('uses the 2026-03-25.dahlia API version', () => {
+  it('uses the 2026-04-22.dahlia API version', () => {
     const callArgs = constructorSpy.mock.calls[0];
-    expect(callArgs[1].apiVersion).toBe('2026-03-25.dahlia');
+    expect(callArgs[1].apiVersion).toBe('2026-04-22.dahlia');
   });
 });

@@ -49,7 +49,7 @@ export const reminderRuleCreateSchema = z.object({
   offsetHours: z.number().int().min(1).max(720).optional(),
   channel: notificationChannelEnum,
   recipientMode: recipientModeEnum,
-  configJson: z.record(z.unknown()).optional(),
+  configJson: z.record(z.string(), z.unknown()).optional(),
   active: z.boolean().default(true),
 });
 

@@ -9,6 +9,7 @@ import { useTranslations } from 'next-intl';
 import { useEffect, useId } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
+import type { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -71,7 +72,7 @@ export function EquipmentForm({ open, onOpenChange, equipment }: EquipmentFormPr
   const queryClient = useQueryClient();
   const isEdit = !!equipment;
 
-  const form = useForm<EquipmentCreateInput>({
+  const form = useForm<z.input<typeof equipmentCreateSchema>, unknown, EquipmentCreateInput>({
     resolver: zodResolver(equipmentCreateSchema),
     defaultValues: {
       name: '',

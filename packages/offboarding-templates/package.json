@@ -13,6 +13,7 @@
     "test": "vitest run",
     "lint:fix": "biome check --write .",
     "typecheck": "tsc --noEmit",
+    "typecheck:fast": "tsgo --noEmit",
     "build": "tsc"
   },
   "dependencies": {
@@ -20,7 +21,7 @@
     "@date-fns/tz": "^1.2.0"
   },
   "devDependencies": {
-    "typescript": "^5.9.3",
-    "vitest": "^4.1.4"
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.5"
   }
 }

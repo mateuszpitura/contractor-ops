@@ -71,7 +71,7 @@ export function ShipmentForm({
   const t = useTranslations('Equipment');
   const queryClient = useQueryClient();
 
-  const form = useForm<ShipmentFormValues>({
+  const form = useForm<z.input<typeof shipmentFormSchema>, unknown, ShipmentFormValues>({
     resolver: zodResolver(shipmentFormSchema),
     defaultValues: {
       direction: 'OUTBOUND',

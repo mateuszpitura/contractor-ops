@@ -105,27 +105,28 @@
     "test": "vitest run",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "typecheck:fast": "tsgo --noEmit"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.80.0",
+    "@anthropic-ai/sdk": "^0.91.1",
     "@contractor-ops/db": "workspace:*",
     "@contractor-ops/einvoice": "workspace:*",
     "@contractor-ops/logger": "workspace:*",
     "@contractor-ops/secrets": "workspace:*",
     "@contractor-ops/validators": "workspace:^",
-    "@infisical/sdk": "^3.0.91",
+    "@infisical/sdk": "^5.0.2",
     "@upstash/qstash": "^2.10.1",
     "@upstash/redis": "^1.37.0",
     "docusign-esign": "8.7.0",
-    "fast-xml-parser": "^5.5.11",
-    "resend": "^6.10.0",
-    "zod": "^3.25.76"
+    "fast-xml-parser": "^5.7.2",
+    "resend": "^6.12.2",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@contractor-ops/test-utils": "workspace:*",
-    "@vitest/coverage-v8": "^4.1.4",
-    "typescript": "^5.9.3",
-    "vitest": "^4.1.4"
+    "@vitest/coverage-v8": "^4.1.5",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.5"
   }
 }

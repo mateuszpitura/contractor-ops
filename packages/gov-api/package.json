@@ -20,7 +20,8 @@
     "test": "vitest run",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "typecheck:fast": "tsgo --noEmit"
   },
   "dependencies": {
     "@contractor-ops/db": "workspace:*",
@@ -28,11 +29,11 @@
     "@contractor-ops/secrets": "workspace:*",
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.37.0",
-    "zod": "^3.25.76"
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@contractor-ops/test-utils": "workspace:*",
-    "typescript": "^5.9.3",
-    "vitest": "^4.1.4"
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.5"
   }
 }

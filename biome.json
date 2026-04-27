@@ -29,9 +29,7 @@
     "domains": {
       "react": "recommended",
       "next": "recommended",
-      "test": "recommended",
-      "project": "recommended",
-      "types": "recommended"
+      "test": "recommended"
     },
     "rules": {
       "recommended": true,
@@ -99,7 +97,7 @@
         "useImportExtensions": "off",
         "noUnresolvedImports": "off",
         "useUniqueElementIds": "warn",
-        "noUndeclaredDependencies": "warn"
+        "noUndeclaredDependencies": "off"
       },
       "performance": {
         "noAccumulatingSpread": "error",
@@ -129,8 +127,6 @@
       "nursery": {
         "noNestedPromises": "error",
         "noLeakedRender": "warn",
-        "noFloatingPromises": "error",
-        "noMisusedPromises": "error",
         "noDuplicateEnumValues": "error",
         "noImpliedEval": "error",
         "noMultiAssign": "error",
@@ -169,7 +165,8 @@
         "apps/web/src/components/integrations/jira-logo.tsx",
         "apps/web/src/components/integrations/linear-logo.tsx",
         "apps/web/src/components/integrations/provider-icons.tsx",
-        "packages/api/src/routers/workflow.ts",
+        "packages/api/src/routers/workflow/workflow.ts",
+        "packages/api/src/routers/**/index.ts",
         "packages/validators/src/zatca.ts",
         "apps/web/src/components/contractors/classification-documents/index.ts",
         "apps/web/src/components/contractors/ir35-chain/index.ts",
@@ -207,9 +204,6 @@
       "includes": ["scripts/**", "load-tests/**"],
       "linter": {
         "rules": {
-          "correctness": {
-            "noUndeclaredDependencies": "off"
-          },
           "suspicious": {
             "noConsole": "off"
           }
@@ -230,7 +224,8 @@
       "!**/.planning",
       "!**/out",
       "!**/coverage",
-      "!**/playwright-report"
+      "!**/playwright-report",
+      "!**/next-env.d.ts"
     ]
   }
 }

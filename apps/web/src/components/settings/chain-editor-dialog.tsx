@@ -229,7 +229,7 @@ export function ChainEditorDialog({ open, onOpenChange, chainData }: ChainEditor
   const isEditMode = chainData !== null;
 
   // ---- Form setup ----
-  const form = useForm<ChainFormValues>({
+  const form = useForm<z.input<typeof chainFormSchema>, unknown, ChainFormValues>({
     resolver: zodResolver(chainFormSchema),
     defaultValues: {
       name: '',

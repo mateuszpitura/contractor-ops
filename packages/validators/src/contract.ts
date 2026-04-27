@@ -172,7 +172,7 @@ export const amendmentCreateSchema = z.object({
   title: z.string().min(1, 'Amendment title is required').max(255),
   effectiveDate: z.string().datetime(),
   description: z.string().optional(),
-  changesSummaryJson: z.record(z.unknown()),
+  changesSummaryJson: z.record(z.string(), z.unknown()),
 });
 
 export type AmendmentCreateInput = z.infer<typeof amendmentCreateSchema>;
