@@ -12,8 +12,7 @@ import {
   assertValidContractorTaxId,
   normalizeContractorTaxId,
 } from '../../services/contractor-tax-id.js';
-import type { InPostClientConfig } from '../../services/courier/inpost-client.js';
-import { InPostClient } from '../../services/courier/inpost-client.js';
+import { loadCourierClient } from '../../services/courier/carrier-factory.js';
 import { dispatch } from '../../services/notification-service.js';
 import { createChangeRequest } from '../../services/portal-change-request.js';
 import {
@@ -1525,24 +1524,7 @@ export const portalRouter = router({
         });
       }
 
-      const courierConfig = await ctx.db.courierConfig.findUnique({
-        where: {
-          organizationId_carrier: {
-            organizationId: ctx.organizationId,
-            carrier: 'inpost',
-          },
-        },
-      });
-
-      if (!courierConfig) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'COURIER_CONFIG_NOT_FOUND',
-        });
-      }
-
-      const configJson = courierConfig.configJson as unknown as InPostClientConfig;
-      const client = new InPostClient(configJson);
+      const client = await loadCourierClient(ctx.db, ctx.organizationId, 'inpost');
 
       const labelBuffer = await client.getLabel(shipment.externalId, 'pdf');
 

@@ -17,13 +17,7 @@ import { router } from '../../init.js';
 import { adminProcedure, requirePermission } from '../../middleware/rbac.js';
 import { tenantProcedure } from '../../middleware/tenant.js';
 import { requireTier } from '../../middleware/tier.js';
-import { getCourierClient } from '../../services/courier/carrier-factory.js';
-import type { DPDClientConfig } from '../../services/courier/dpd-client.js';
-import { DPDClient } from '../../services/courier/dpd-client.js';
-import type { InPostClientConfig } from '../../services/courier/inpost-client.js';
-import { InPostClient } from '../../services/courier/inpost-client.js';
-import type { UPSClientConfig } from '../../services/courier/ups-client.js';
-import { UPSClient } from '../../services/courier/ups-client.js';
+import { getCourierClient, loadCourierClient } from '../../services/courier/carrier-factory.js';
 import { checkShipmentTaskCompletion } from '../../services/equipment-workflow.js';
 import {
   EQUIPMENT_NOT_ASSIGNED,
@@ -49,25 +43,7 @@ export const equipmentCouriersRouter = router({
     .use(requirePermission({ equipment: ['create'] }))
     .input(inpostShipmentCreateSchema)
     .mutation(async ({ ctx, input }) => {
-      // Load courier config for InPost
-      const courierConfig = await ctx.db.courierConfig.findUnique({
-        where: {
-          organizationId_carrier: {
-            organizationId: ctx.organizationId,
-            carrier: 'inpost',
-          },
-        },
-      });
-
-      if (!courierConfig) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'COURIER_CONFIG_NOT_FOUND',
-        });
-      }
-
-      const configJson = courierConfig.configJson as unknown as InPostClientConfig;
-      const client = new InPostClient(configJson);
+      const client = await loadCourierClient(ctx.db, ctx.organizationId, 'inpost');
 
       // Verify all equipment items exist and load contractor details
       const equipmentItems = await ctx.db.equipment.findMany({
@@ -254,25 +230,8 @@ export const equipmentCouriersRouter = router({
     .use(requireTier('PRO'))
     .input(dpdShipmentCreateSchema)
     .mutation(async ({ ctx, input }) => {
-      // 1. Load courier config for DPD
-      const courierConfig = await ctx.db.courierConfig.findUnique({
-        where: {
-          organizationId_carrier: {
-            organizationId: ctx.organizationId,
-            carrier: 'dpd',
-          },
-        },
-      });
-
-      if (!courierConfig) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'COURIER_CONFIG_NOT_FOUND',
-        });
-      }
-
-      const configJson = courierConfig.configJson as unknown as DPDClientConfig;
-      const client = new DPDClient(configJson);
+      // 1. Load DPD courier client
+      const client = await loadCourierClient(ctx.db, ctx.organizationId, 'dpd');
 
       // 2. Load equipment items with current assignments
       const equipmentItems = await ctx.db.equipment.findMany({
@@ -441,25 +400,8 @@ export const equipmentCouriersRouter = router({
     .use(requireTier('PRO'))
     .input(upsShipmentCreateSchema)
     .mutation(async ({ ctx, input }) => {
-      // 1. Load courier config for UPS
-      const courierConfig = await ctx.db.courierConfig.findUnique({
-        where: {
-          organizationId_carrier: {
-            organizationId: ctx.organizationId,
-            carrier: 'ups',
-          },
-        },
-      });
-
-      if (!courierConfig) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'COURIER_CONFIG_NOT_FOUND',
-        });
-      }
-
-      const configJson = courierConfig.configJson as unknown as UPSClientConfig;
-      const client = new UPSClient(configJson);
+      // 1. Load UPS courier client
+      const client = await loadCourierClient(ctx.db, ctx.organizationId, 'ups');
 
       // 2. Load equipment items with current assignments
       const equipmentItems = await ctx.db.equipment.findMany({
@@ -735,25 +677,7 @@ export const equipmentCouriersRouter = router({
         });
       }
 
-      // Load courier config
-      const courierConfig = await ctx.db.courierConfig.findUnique({
-        where: {
-          organizationId_carrier: {
-            organizationId: ctx.organizationId,
-            carrier: 'inpost',
-          },
-        },
-      });
-
-      if (!courierConfig) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'COURIER_CONFIG_NOT_FOUND',
-        });
-      }
-
-      const configJson = courierConfig.configJson as unknown as InPostClientConfig;
-      const client = new InPostClient(configJson);
+      const client = await loadCourierClient(ctx.db, ctx.organizationId, 'inpost');
 
       const labelBuffer = await client.getLabel(shipment.externalId, 'pdf');
 

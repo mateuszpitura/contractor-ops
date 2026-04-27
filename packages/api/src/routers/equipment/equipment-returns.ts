@@ -12,8 +12,7 @@ import { z } from 'zod';
 import { router } from '../../init.js';
 import { requirePermission } from '../../middleware/rbac.js';
 import { tenantProcedure } from '../../middleware/tenant.js';
-import type { InPostClientConfig } from '../../services/courier/inpost-client.js';
-import { InPostClient } from '../../services/courier/inpost-client.js';
+import { loadCourierClient } from '../../services/courier/carrier-factory.js';
 import { dispatch } from '../../services/notification-service.js';
 import { NOTIFICATION_KEYS } from './equipment-shared.js';
 
@@ -73,25 +72,7 @@ export const equipmentReturnsRouter = router({
         },
       });
 
-      // Load courier config
-      const courierConfig = await ctx.db.courierConfig.findUnique({
-        where: {
-          organizationId_carrier: {
-            organizationId: ctx.organizationId,
-            carrier: 'inpost',
-          },
-        },
-      });
-
-      if (!courierConfig) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'COURIER_CONFIG_NOT_FOUND',
-        });
-      }
-
-      const configJson = courierConfig.configJson as unknown as InPostClientConfig;
-      const client = new InPostClient(configJson);
+      const client = await loadCourierClient(ctx.db, ctx.organizationId, 'inpost');
 
       // Load org for sender info
       const org = await ctx.db.organization.findUnique({

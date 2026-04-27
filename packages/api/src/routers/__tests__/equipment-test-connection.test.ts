@@ -111,9 +111,13 @@ vi.mock('../../services/equipment-workflow.js', () => ({
   checkShipmentTaskCompletion: vi.fn(),
 }));
 
-vi.mock('../../services/courier/carrier-factory.js', () => ({
-  getCourierClient: vi.fn(() => mockCourierClient),
-}));
+vi.mock('../../services/courier/carrier-factory.js', async importOriginal => {
+  const actual = await importOriginal<typeof import('../../services/courier/carrier-factory.js')>();
+  return {
+    ...actual,
+    getCourierClient: vi.fn(() => mockCourierClient),
+  };
+});
 
 vi.mock('../../services/courier/inpost-client.js', () => ({
   InPostClient: class MockInPostClient {

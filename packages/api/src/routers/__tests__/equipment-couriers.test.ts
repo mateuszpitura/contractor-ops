@@ -139,9 +139,13 @@ vi.mock('../../services/courier/ups-client.js', () => ({
   }),
 }));
 
-vi.mock('../../services/courier/carrier-factory.js', () => ({
-  getCourierClient: mockGetCourierClient,
-}));
+vi.mock('../../services/courier/carrier-factory.js', async importOriginal => {
+  const actual = await importOriginal<typeof import('../../services/courier/carrier-factory.js')>();
+  return {
+    ...actual,
+    getCourierClient: mockGetCourierClient,
+  };
+});
 
 vi.mock('../../services/equipment-workflow.js', () => ({
   checkShipmentTaskCompletion: mockCheckShipmentTaskCompletion,
