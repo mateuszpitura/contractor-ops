@@ -2,12 +2,16 @@
 gsd_state_version: 1.0
 milestone: v6.0
 milestone_name: Platform Maturity & Operational Hardening
-status: planning
+status: executing
 stopped_at: Phase 70 complete (10/10 plans); backfill apply deferred to post-deploy
-last_updated: "2026-04-27T09:58:11.671Z"
-last_activity: 2026-04-27 — Phase 70 checkpoint cleared; backfill apply recorded as deferred
+last_updated: "2026-04-27T10:50:57.239Z"
+last_activity: 2026-04-27
 progress:
-  percent: 9
+  total_phases: 11
+  completed_phases: 1
+  total_plans: 35
+  completed_plans: 16
+  percent: 46
 ---
 
 # Project State
@@ -17,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-26 — v6.0 milestone started)
 
 **Core value:** The invoice-to-payment flow must work end-to-end: invoice arrives, gets matched to contract, routed through approval, and batched for payment — with full audit trail.
-**Current focus:** v6.0 Platform Maturity & Operational Hardening — close critical operational gaps across PL, UK, DE, UAE, SA. No new market entry.
+**Current focus:** Phase 74 — F4 Offboarding — Workflow Foundation + KT Templates + Override Permission
 
 ## Current Position
 
-Phase: 70 — COMPLETE (10/10 plans landed; multi-region backfill deferred to post-deploy)
-Plan: — (Phase 70 closed)
-Status: Phase 70 shipped end-to-end. Plans 70-09 + 70-10 committed (`9212adf1`, `2a41d142`). The multi-region backfill apply (`tsx packages/db/scripts/backfill-scope-capabilities.ts` against EU + ME) is recorded as a deferred post-deploy item per LOCAL-ONLY Standing Constraint — does NOT block downstream phases. Phase 71 fully planned (7 plans, ready to execute). Phase 76 fully planned (10 plans, ready to execute). Phase 74 context gathered, ready to plan.
-Last activity: 2026-04-27 — Phase 70 checkpoint cleared; backfill apply recorded as deferred
+Phase: 74 (F4 Offboarding — Workflow Foundation + KT Templates + Override Permission) — EXECUTING
+Plan: 4 of 8
+Status: Ready to execute
+Last activity: 2026-04-27
 
-Progress: [█░░░░░░░░░] 9% (v6.0 — 1/11 phases complete; Phase 70 done; Phases 71 + 76 plans ready; Phase 74 ready to plan)
+Progress: [███░░░░░░░] 34%
 
 **Active Phase:** none (Phase 70 closed)
 **Next Phase candidates (parallel-ready):**
@@ -147,6 +151,7 @@ Items acknowledged and deferred at v5.0 milestone close on 2026-04-26:
 | Category | Phase | File | Status | Disposition |
 |----------|-------|------|--------|-------------|
 | migration_apply | 70 | 70-09-SUMMARY.md | code shipped (`9212adf1`) — multi-region apply pending | post-deploy: `tsx packages/db/scripts/backfill-scope-capabilities.ts` against `$DATABASE_URL_EU` then `$DATABASE_URL_ME` (idempotent, dry-run-supported) |
+| migration_apply | 74 | 74-04-SUMMARY.md | code shipped (`21e998cc`) — multi-region apply pending | post-deploy: `tsx packages/db/scripts/push-all-regions.ts` against `$DATABASE_URL_EU` then `$DATABASE_URL_ME`. Migration: `20260427105536_phase_74_offboarding_foundation`. Additive-only (0 DROP/RENAME). |
 | uat_gap | 60 | 60-HUMAN-UAT.md | partial — 4 pending scenarios | post-deploy manual UI verification |
 | uat_gap | 61 | 61-UAT.md | partial — 12 pending scenarios | post-deploy manual UI verification |
 | uat_gap | 62 | 62-HUMAN-UAT.md | partial — 3 pending scenarios | post-deploy manual UI verification |
