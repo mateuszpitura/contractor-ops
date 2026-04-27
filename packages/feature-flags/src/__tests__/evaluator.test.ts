@@ -1,7 +1,12 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { FlagClient } from '../client.js';
 import { setFlagClientForTesting, shutdownFlagClients } from '../client.js';
-import { evaluate, evaluateAgainst } from '../evaluator.js';
+import {
+  __resetClassificationDisclaimerGateForTesting,
+  evaluate,
+  evaluateAgainst,
+  registerClassificationDisclaimerGate,
+} from '../evaluator.js';
 import { buildFlagBag } from '../flag-bag.js';
 import { FLAG_KEYS, FLAGS } from '../registry.js';
 import type { EvalContext, FlagDefinition } from '../schemas.js';
@@ -164,5 +169,162 @@ describe('buildFlagBag', () => {
     setFlagClientForTesting('EU', fakeClient({ 'module.legal-approval': true }));
     const bag = buildFlagBag(euCtx);
     expect(bag.isEnabled('module.legal-approval')).toBe(bag.values['module.legal-approval']);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Phase 72 hardening — disclaimer-gate override surfaces a distinct reason
+// ---------------------------------------------------------------------------
+
+describe('evaluate — classification disclaimer gate override', () => {
+  afterEach(() => {
+    __resetClassificationDisclaimerGateForTesting();
+  });
+
+  it('returns reason "disclaimer-pending" (NOT "unleash") when override fires', () => {
+    setFlagClientForTesting('EU', fakeClient({ 'module.classification-engine': true }));
+    registerClassificationDisclaimerGate(() => false); // disclaimer NOT approved
+    const result = evaluate('module.classification-engine', euCtx);
+    expect(result).toEqual({ enabled: false, reason: 'disclaimer-pending' });
+  });
+
+  it('passes through to Unleash result when all disclaimers are approved', () => {
+    setFlagClientForTesting('EU', fakeClient({ 'module.classification-engine': true }));
+    registerClassificationDisclaimerGate(() => true);
+    const result = evaluate('module.classification-engine', euCtx);
+    expect(result).toEqual({ enabled: true, reason: 'unleash' });
+  });
+
+  it('does not invoke the gate when Unleash already returned false', () => {
+    setFlagClientForTesting('EU', fakeClient({ 'module.classification-engine': false }));
+    let gateCalled = false;
+    registerClassificationDisclaimerGate(() => {
+      gateCalled = true;
+      return false;
+    });
+    const result = evaluate('module.classification-engine', euCtx);
+    expect(result.enabled).toBe(false);
+    expect(result.reason).toBe('unleash');
+    expect(gateCalled).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Phase 72 hardening — killWhenUnknown short-circuits during Unleash outage
+// ---------------------------------------------------------------------------
+
+describe('evaluateAgainst — killWhenUnknown', () => {
+  it('returns enabled:false reason:kill-when-unknown for stub clients', async () => {
+    const { getFlagClient } = await import('../client.js');
+    // Force the stub path by clearing env vars and shutting down singletons.
+    const original = {
+      url: process.env.UNLEASH_URL_EU,
+      token: process.env.UNLEASH_API_TOKEN_EU,
+    };
+    process.env.UNLEASH_URL_EU = '';
+    process.env.UNLEASH_API_TOKEN_EU = '';
+    shutdownFlagClients();
+    try {
+      const stub = getFlagClient('EU');
+      const def: FlagDefinition = {
+        key: 'killswitch.ai-invoice-parser',
+        description: 'test',
+        default: true,
+        category: 'kill-switch',
+        jurisdiction: 'ANY',
+        owner: 'test',
+        killWhenUnknown: true,
+      };
+      const result = evaluateAgainst(def, euCtx, stub);
+      expect(result).toEqual({ enabled: false, reason: 'kill-when-unknown' });
+    } finally {
+      if (original.url === undefined) delete process.env.UNLEASH_URL_EU;
+      else process.env.UNLEASH_URL_EU = original.url;
+      if (original.token === undefined) delete process.env.UNLEASH_API_TOKEN_EU;
+      else process.env.UNLEASH_API_TOKEN_EU = original.token;
+    }
+  });
+
+  it('does NOT short-circuit non-stub clients (regular fakeClient still consults Unleash)', () => {
+    const def: FlagDefinition = {
+      key: 'killswitch.ai-invoice-parser',
+      description: 'test',
+      default: true,
+      category: 'kill-switch',
+      jurisdiction: 'ANY',
+      owner: 'test',
+      killWhenUnknown: true,
+    };
+    const result = evaluateAgainst(
+      def,
+      euCtx,
+      fakeClient({ 'killswitch.ai-invoice-parser': true }),
+    );
+    expect(result).toEqual({ enabled: true, reason: 'unleash' });
+  });
+
+  it('flag without killWhenUnknown still receives the code default through a stub', async () => {
+    const { getFlagClient } = await import('../client.js');
+    const original = {
+      url: process.env.UNLEASH_URL_EU,
+      token: process.env.UNLEASH_API_TOKEN_EU,
+    };
+    process.env.UNLEASH_URL_EU = '';
+    process.env.UNLEASH_API_TOKEN_EU = '';
+    shutdownFlagClients();
+    try {
+      const stub = getFlagClient('EU');
+      const def: FlagDefinition = {
+        key: 'module.legal-approval',
+        description: 'test',
+        default: false,
+        category: 'module',
+        jurisdiction: 'ANY',
+        owner: 'test',
+      };
+      const result = evaluateAgainst(def, euCtx, stub);
+      expect(result).toEqual({ enabled: false, reason: 'unleash' });
+    } finally {
+      if (original.url === undefined) delete process.env.UNLEASH_URL_EU;
+      else process.env.UNLEASH_URL_EU = original.url;
+      if (original.token === undefined) delete process.env.UNLEASH_API_TOKEN_EU;
+      else process.env.UNLEASH_API_TOKEN_EU = original.token;
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Phase 72 hardening — defensive boolean coercion of SDK return value
+// ---------------------------------------------------------------------------
+
+describe('evaluateAgainst — boolean coercion', () => {
+  const def: FlagDefinition = {
+    key: 'module.legal-approval',
+    description: 'test',
+    default: false,
+    category: 'module',
+    jurisdiction: 'ANY',
+    owner: 'test',
+  };
+
+  it('coerces non-boolean truthy values to false (mirrors strict === true on read side)', () => {
+    // Simulate a defective custom strategy returning a non-boolean truthy value.
+    const sneakyClient: FlagClient = {
+      isEnabled: () => 'yes' as unknown as boolean,
+    };
+    const result = evaluateAgainst(def, euCtx, sneakyClient);
+    expect(result).toEqual({ enabled: false, reason: 'unleash' });
+  });
+
+  it('coerces undefined/null returns to false', () => {
+    const undefClient: FlagClient = {
+      isEnabled: () => undefined as unknown as boolean,
+    };
+    expect(evaluateAgainst(def, euCtx, undefClient).enabled).toBe(false);
+  });
+
+  it('preserves true returns', () => {
+    const trueClient: FlagClient = { isEnabled: () => true };
+    expect(evaluateAgainst(def, euCtx, trueClient).enabled).toBe(true);
   });
 });

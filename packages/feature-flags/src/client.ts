@@ -1,10 +1,18 @@
 import { createLogger } from '@contractor-ops/logger';
 import type { Context, Unleash } from 'unleash-client';
 import { initialize } from 'unleash-client';
+import type { Region } from './schemas.js';
 
 const log = createLogger({ service: 'feature-flags' });
 
-export type Region = 'EU' | 'ME';
+export type { Region } from './schemas.js';
+
+/**
+ * Sentinel branding so the evaluator can detect the stub client and apply
+ * `killWhenUnknown` semantics — flags marked `killWhenUnknown: true` resolve
+ * to `false` when Unleash is unreachable, regardless of their `default`.
+ */
+const STUB_CLIENT_BRAND = Symbol.for('contractor-ops.feature-flags.stub-client');
 
 /** Re-export Unleash's Context type as our canonical eval-context shape. */
 export type FlagEvalUnleashContext = Context;
@@ -19,6 +27,15 @@ export interface FlagClient {
   isEnabled(name: string, context: Context, fallback: boolean): boolean;
 }
 
+/**
+ * Returns true when the supplied client is the local "Unleash unreachable"
+ * stub. Exposed (via internal import) so `evaluateAgainst` can apply
+ * `killWhenUnknown: true` semantics to kill-switches during Unleash outages.
+ */
+export function isStubClient(client: FlagClient): boolean {
+  return (client as unknown as { [STUB_CLIENT_BRAND]?: true })[STUB_CLIENT_BRAND] === true;
+}
+
 function createStubClient(region: Region, reason: string): FlagClient {
   log.warn(
     { region, reason },
@@ -26,7 +43,8 @@ function createStubClient(region: Region, reason: string): FlagClient {
   );
   return {
     isEnabled: (_name, _ctx, fallback) => fallback,
-  };
+    [STUB_CLIENT_BRAND]: true,
+  } as FlagClient;
 }
 
 function createUnleashClient(region: Region): FlagClient {

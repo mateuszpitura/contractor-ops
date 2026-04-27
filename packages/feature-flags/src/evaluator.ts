@@ -1,8 +1,8 @@
 import { createLogger } from '@contractor-ops/logger';
 import type { FlagClient, FlagEvalUnleashContext } from './client.js';
-import { getFlagClient } from './client.js';
+import { getFlagClient, isStubClient } from './client.js';
 import type { FlagKey } from './registry.js';
-import { FLAGS } from './registry.js';
+import { CLASSIFICATION_ENGINE_FLAG, FLAGS } from './registry.js';
 import type { EvalContext, FlagDefinition } from './schemas.js';
 
 const log = createLogger({ service: 'feature-flags' });
@@ -16,9 +16,16 @@ const log = createLogger({ service: 'feature-flags' });
 // compile-time dependency from packages/feature-flags → packages/validators
 // (which would risk a circular dep). The callback is null by default —
 // safe fallback is no override (flag resolves to Unleash value).
+//
+// The callback is anchored on `globalThis` (mirroring the regional client map
+// in client.ts) so a Next.js dev `require.cache` invalidation does NOT reset
+// it to null — without this, hot-reload would silently re-open the gate
+// between the moment the evaluator module re-evaluates and the moment
+// `feature-flags-init` re-runs at the next request.
 // ---------------------------------------------------------------------------
 
-let ClassificationDisclaimerGate: (() => boolean) | null = null;
+type GateRegistry = { __contractorOpsClassificationGate?: (() => boolean) | null };
+const gateRegistry = globalThis as unknown as GateRegistry;
 
 /**
  * Register a disclaimer-gate callback. Called once at app startup from
@@ -28,10 +35,28 @@ let ClassificationDisclaimerGate: (() => boolean) | null = null;
  * @param fn - Returns true when all classification disclaimers are APPROVED.
  */
 export function registerClassificationDisclaimerGate(fn: () => boolean): void {
-  ClassificationDisclaimerGate = fn;
+  if (gateRegistry.__contractorOpsClassificationGate) {
+    log.warn(
+      {},
+      'registerClassificationDisclaimerGate called more than once — this usually means feature-flags-init was imported from multiple boot paths',
+    );
+  }
+  gateRegistry.__contractorOpsClassificationGate = fn;
 }
 
-export type EvalReason = 'jurisdiction-mismatch' | 'unleash' | 'client-error';
+/**
+ * Test helper: clear the registered gate. Not part of the public API.
+ */
+export function __resetClassificationDisclaimerGateForTesting(): void {
+  gateRegistry.__contractorOpsClassificationGate = null;
+}
+
+export type EvalReason =
+  | 'jurisdiction-mismatch'
+  | 'unleash'
+  | 'client-error'
+  | 'disclaimer-pending'
+  | 'kill-when-unknown';
 
 export interface EvalResult {
   enabled: boolean;
@@ -76,12 +101,23 @@ export function evaluateAgainst(
   if (def.jurisdiction !== 'ANY' && def.jurisdiction !== ctx.region) {
     return { enabled: false, reason: 'jurisdiction-mismatch' };
   }
+  // Kill-switch outage semantics: when Unleash is unreachable (stub client)
+  // and the flag is marked killWhenUnknown, treat the flag as off. Without
+  // this, a kill-switch with `default: true` keeps the gated feature live
+  // during an Unleash outage — defeating the entire point of the kill-switch.
+  if (def.killWhenUnknown === true && isStubClient(client)) {
+    return { enabled: false, reason: 'kill-when-unknown' };
+  }
   // Defense in depth: Unleash SDK is documented to never throw on isEnabled
   // (it catches strategy errors internally), but a defective custom strategy
   // or a patched SDK could still throw. Catch here so a single broken flag
   // cannot 500 an entire request.
   try {
-    const enabled = client.isEnabled(def.key, toUnleashContext(ctx), def.default);
+    const raw = client.isEnabled(def.key, toUnleashContext(ctx), def.default);
+    // Coerce defensively. The SDK is JS at runtime; a defective custom
+    // strategy could return undefined / null / a non-boolean. Mirror the
+    // strict `=== true` check used on the bag's read side (flag-bag.ts).
+    const enabled = raw === true;
     return { enabled, reason: 'unleash' };
   } catch (err) {
     log.error(
@@ -103,18 +139,17 @@ export function evaluate(key: FlagKey, ctx: EvalContext): EvalResult {
   const base = evaluateAgainst(def, ctx, client);
 
   // Phase 64 D-10 — classification disclaimer gate override
-  if (
-    key === 'module.classification-engine' &&
-    base.enabled &&
-    ClassificationDisclaimerGate !== null
-  ) {
-    const allApproved = ClassificationDisclaimerGate();
+  const gate = gateRegistry.__contractorOpsClassificationGate;
+  if (key === CLASSIFICATION_ENGINE_FLAG && base.enabled && gate) {
+    const allApproved = gate();
     if (!allApproved) {
       log.warn(
         { organizationId: ctx.organizationId, flag: key },
         'classification-engine flag overridden to false: disclaimer(s) PENDING',
       );
-      return { enabled: false, reason: base.reason };
+      // Use a distinct reason so audit trails can distinguish a disclaimer-
+      // blocked classification flag from a vanilla Unleash-disabled one.
+      return { enabled: false, reason: 'disclaimer-pending' };
     }
   }
 

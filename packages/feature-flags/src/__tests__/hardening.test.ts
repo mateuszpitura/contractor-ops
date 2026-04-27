@@ -91,11 +91,22 @@ describe('getFlagClient with missing env', () => {
     expect(client.isEnabled('x', {}, true)).toBe(true);
   });
 
-  it('evaluate() through a stub client returns code-declared defaults', () => {
+  it('evaluate() through a stub client returns code-declared defaults for non-killWhenUnknown flags', () => {
     process.env.UNLEASH_URL_EU = '';
     process.env.UNLEASH_API_TOKEN_EU = '';
+    // Plain default-false flag passes through the stub fallback unchanged.
     expect(evaluate('module.legal-approval', euCtx).enabled).toBe(false);
-    expect(evaluate('killswitch.ai-invoice-parser', euCtx).enabled).toBe(true);
+  });
+
+  it('evaluate() forces killWhenUnknown flags to false when Unleash is unreachable', () => {
+    // Phase 72 fix — kill-switches with killWhenUnknown:true MUST resolve to
+    // false during an Unleash outage, otherwise their `default: true` keeps
+    // the gated feature live exactly when ops needs to kill it.
+    process.env.UNLEASH_URL_EU = '';
+    process.env.UNLEASH_API_TOKEN_EU = '';
+    const result = evaluate('killswitch.ai-invoice-parser', euCtx);
+    expect(result.enabled).toBe(false);
+    expect(result.reason).toBe('kill-when-unknown');
   });
 });
 
@@ -193,11 +204,15 @@ describe('flag bag prototype safety', () => {
     expect(Object.getPrototypeOf(bag.values)).toBeNull();
   });
 
-  it('lazyFlagBag inherits the same null-prototype bag when materialized', async () => {
+  it('lazyFlagBag isEnabled is null-prototype safe (constructor key returns false)', async () => {
+    // The lazy bag's public type intentionally omits `values` so a serializer
+    // (JSON.stringify, logger dump) cannot accidentally trigger full
+    // materialization. Prototype safety is therefore verified through the
+    // isEnabled boundary — a sneaky inherited key like 'constructor' must
+    // resolve to false, mirroring the eager bag's `=== true` discipline.
     const { lazyFlagBag } = await import('../flag-bag.js');
     setFlagClientForTesting('EU', { isEnabled: (_n, _c, fb) => fb });
     const bag = lazyFlagBag(euCtx);
-    expect(Object.getPrototypeOf(bag.values)).toBeNull();
     const sneakyKey = 'constructor' as unknown as Parameters<typeof bag.isEnabled>[0];
     expect(bag.isEnabled(sneakyKey)).toBe(false);
   });

@@ -17,9 +17,11 @@ export {
   emptyFlagBag,
   type FlagBag,
   type FlagValues,
+  type LazyFlagBag,
   lazyFlagBag,
 } from './flag-bag.js';
 export {
+  assertFlagSignoffsOrExit,
   CLASSIFICATION_ENGINE_FLAG,
   EINVOICE_IMPORT_ENABLED,
   FLAG_KEYS,
@@ -36,6 +38,7 @@ export {
   flagDefinitionSchema,
   type Jurisdiction,
   jurisdictionSchema,
+  regionSchema,
 } from './schemas.js';
 export {
   GATED_FLAG_NAMESPACE_PREFIXES,
