@@ -17,14 +17,14 @@ export const accessControlStatement = {
   contract: ['create', 'read', 'update', 'delete'],
   document: ['create', 'read', 'update', 'delete'],
   invoice: ['create', 'read', 'update', 'delete', 'approve'],
-  workflow: ['create', 'read', 'update', 'delete', 'execute'],
-  payment: ['create', 'read', 'export'],
+  workflow: ['create', 'read', 'update', 'delete', 'execute', 'override_blocking_task'],
+  payment: ['create', 'read', 'update', 'export'],
   report: ['read', 'export'],
   settings: ['read', 'update'],
   integration: ['read', 'update'],
   time: ['read', 'approve'],
   equipment: ['read', 'create', 'update', 'delete'],
-  'admin:boe-rate': ['write'],
+  'admin:boe-rate': ['read', 'write'],
 } as const;
 
 export const ac = createAccessControl(accessControlStatement);
