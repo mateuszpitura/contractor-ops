@@ -1,4 +1,4 @@
-import type { FlagBag, FlagKey } from '@contractor-ops/feature-flags';
+import type { FlagKey, LazyFlagBag } from '@contractor-ops/feature-flags';
 import { lazyFlagBag } from '@contractor-ops/feature-flags';
 import { createLogger } from '@contractor-ops/logger';
 import { TRPCError } from '@trpc/server';
@@ -23,7 +23,7 @@ function buildLazyBag(ctx: {
   organizationId: string;
   region: string;
   authMode?: 'session' | 'apiKey' | 'cron' | 'portal';
-}): FlagBag {
+}): LazyFlagBag {
   let region: 'EU' | 'ME';
   if (ctx.region === 'ME') {
     region = 'ME';
@@ -89,7 +89,7 @@ export const apiKeyTenantFlaggedProcedure = apiKeyTenantProcedure.use(async ({ c
  */
 export function requireFeatureFlag<K extends FlagKey>(key: K) {
   return t.middleware(({ ctx, next }) => {
-    const flags = (ctx as typeof ctx & { flags?: FlagBag }).flags;
+    const flags = (ctx as typeof ctx & { flags?: LazyFlagBag }).flags;
     if (!flags) {
       throw new TRPCError({
         code: 'INTERNAL_SERVER_ERROR',
