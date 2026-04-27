@@ -1,7 +1,7 @@
 import { getServerEnv } from '@contractor-ops/validators';
-import { render } from '@react-email/render';
 import nodemailer from 'nodemailer';
 import type { ReactElement } from 'react';
+import { render } from 'react-email';
 import { getResend } from './resend-client.js';
 
 export type SendAppEmailParams = {

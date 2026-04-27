@@ -22,10 +22,6 @@ export default defineConfig({
     // <vitest_alias_diagnosis> for the failure trace this fix repairs.
     alias: [
       {
-        find: '@react-email/render',
-        replacement: path.join(__dirname, 'src/__tests__/__mocks__/react-email-render.ts'),
-      },
-      {
         find: 'nodemailer',
         replacement: path.join(__dirname, 'src/__tests__/__mocks__/nodemailer.ts'),
       },
