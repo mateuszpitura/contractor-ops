@@ -11,14 +11,12 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const ROOT = resolve(__dirname, '..');
+const Dirname = dirname(fileURLToPath(import.meta.url));
+const ROOT = resolve(Dirname, '..');
 const MESSAGES_DIR = resolve(ROOT, 'apps/web/messages');
 const BASELINE_PATH = resolve(ROOT, '.i18n-parity-baseline.json');
 
-const { runI18nParity } = await import(
-  '../packages/lint-guards/src/i18n-parity/run-guard.ts'
-);
+const { runI18nParity } = await import('../packages/lint-guards/src/i18n-parity/run-guard.ts');
 const { formatI18nParityOffences } = await import(
   '../packages/lint-guards/src/i18n-parity/format-offence.ts'
 );

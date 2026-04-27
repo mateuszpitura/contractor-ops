@@ -9,12 +9,10 @@ import { fileURLToPath } from 'node:url';
 
 import { glob } from 'tinyglobby';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const ROOT = resolve(__dirname, '..');
+const Dirname = dirname(fileURLToPath(import.meta.url));
+const ROOT = resolve(Dirname, '..');
 
-const { runSchemaGuard } = await import(
-  '../packages/lint-guards/src/schema-guard/run-guard.ts'
-);
+const { runSchemaGuard } = await import('../packages/lint-guards/src/schema-guard/run-guard.ts');
 const { formatSchemaOffences } = await import(
   '../packages/lint-guards/src/schema-guard/format-offence.ts'
 );

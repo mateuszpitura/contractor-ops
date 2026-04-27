@@ -13,13 +13,11 @@ import { fileURLToPath } from 'node:url';
 
 import { glob } from 'tinyglobby';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const ROOT = resolve(__dirname, '..');
+const Dirname = dirname(fileURLToPath(import.meta.url));
+const ROOT = resolve(Dirname, '..');
 const BASELINE_PATH = resolve(ROOT, '.lint-logs-baseline.json');
 
-const { runLogsGuard } = await import(
-  '../packages/lint-guards/src/logs-guard/run-guard.ts'
-);
+const { runLogsGuard } = await import('../packages/lint-guards/src/logs-guard/run-guard.ts');
 const { formatLogsOffences } = await import(
   '../packages/lint-guards/src/logs-guard/format-offence.ts'
 );
