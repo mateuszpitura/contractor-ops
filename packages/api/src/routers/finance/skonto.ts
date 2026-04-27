@@ -10,6 +10,7 @@ import { createLogger } from '@contractor-ops/logger';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { router } from '../../init.js';
+import type { TenantScopedDb } from '../../lib/tenant-db.js';
 import { requireFeatureFlag, tenantFlaggedProcedure } from '../../middleware/feature-flag.js';
 import { requirePermission } from '../../middleware/rbac.js';
 import type { SkontoTermData } from '../../services/skonto.js';
@@ -34,6 +35,59 @@ const skontoTermInputSchema = z
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
+
+/** Owner reference for a SkontoTerm — exactly one of invoice / billing profile. */
+type SkontoTermOwner = { invoiceId: string } | { billingProfileId: string };
+
+type SkontoTermInput = z.infer<typeof skontoTermInputSchema>;
+
+/**
+ * Upsert a SkontoTerm keyed by either invoiceId or billingProfileId. Both
+ * keys are unique on the table, so the where-clause discriminator selects the
+ * row. The unset side is written as null on create.
+ */
+async function upsertSkontoTermByOwner(
+  db: TenantScopedDb,
+  organizationId: string,
+  owner: SkontoTermOwner,
+  input: SkontoTermInput,
+) {
+  const data = {
+    discountPercent: input.percent,
+    discountPeriodDays: input.discountDays,
+    netPeriodDays: input.netDays,
+  };
+  return db.skontoTerm.upsert({
+    where: owner,
+    create: {
+      organizationId,
+      invoiceId: 'invoiceId' in owner ? owner.invoiceId : null,
+      billingProfileId: 'billingProfileId' in owner ? owner.billingProfileId : null,
+      ...data,
+    },
+    update: data,
+  });
+}
+
+/**
+ * Delete a SkontoTerm matching the given owner reference; throws NOT_FOUND
+ * if no row exists. Tenant-scope is enforced by both the soft-delete-extended
+ * client and the explicit `organizationId` filter.
+ */
+async function deleteSkontoTermByOwner(
+  db: TenantScopedDb,
+  organizationId: string,
+  owner: SkontoTermOwner,
+  notFoundMessage: string,
+) {
+  const existing = await db.skontoTerm.findFirst({
+    where: { ...owner, organizationId },
+  });
+  if (!existing) {
+    throw new TRPCError({ code: 'NOT_FOUND', message: notFoundMessage });
+  }
+  await db.skontoTerm.delete({ where: { id: existing.id } });
+}
 
 // ---------------------------------------------------------------------------
 // Router
@@ -61,28 +115,15 @@ export const skontoRouter = router({
       });
 
       if (!invoice) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Invoice not found',
-        });
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Invoice not found' });
       }
 
-      const term = await ctx.db.skontoTerm.upsert({
-        where: { invoiceId: input.invoiceId },
-        create: {
-          organizationId: ctx.organizationId,
-          invoiceId: input.invoiceId,
-          billingProfileId: null,
-          discountPercent: input.percent,
-          discountPeriodDays: input.discountDays,
-          netPeriodDays: input.netDays,
-        },
-        update: {
-          discountPercent: input.percent,
-          discountPeriodDays: input.discountDays,
-          netPeriodDays: input.netDays,
-        },
-      });
+      const term = await upsertSkontoTermByOwner(
+        ctx.db,
+        ctx.organizationId,
+        { invoiceId: input.invoiceId },
+        input,
+      );
 
       log.info({ invoiceId: input.invoiceId, termId: term.id }, 'upserted skonto term for invoice');
 
@@ -97,21 +138,12 @@ export const skontoRouter = router({
     .use(requirePermission({ invoice: ['update'] }))
     .input(z.object({ invoiceId: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const existing = await ctx.db.skontoTerm.findFirst({
-        where: {
-          invoiceId: input.invoiceId,
-          organizationId: ctx.organizationId,
-        },
-      });
-
-      if (!existing) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'No Skonto term found for this invoice',
-        });
-      }
-
-      await ctx.db.skontoTerm.delete({ where: { id: existing.id } });
+      await deleteSkontoTermByOwner(
+        ctx.db,
+        ctx.organizationId,
+        { invoiceId: input.invoiceId },
+        'No Skonto term found for this invoice',
+      );
 
       log.info({ invoiceId: input.invoiceId }, 'deleted skonto term for invoice');
 
@@ -141,28 +173,15 @@ export const skontoRouter = router({
       });
 
       if (!profile) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Billing profile not found',
-        });
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Billing profile not found' });
       }
 
-      const term = await ctx.db.skontoTerm.upsert({
-        where: { billingProfileId: input.billingProfileId },
-        create: {
-          organizationId: ctx.organizationId,
-          invoiceId: null,
-          billingProfileId: input.billingProfileId,
-          discountPercent: input.percent,
-          discountPeriodDays: input.discountDays,
-          netPeriodDays: input.netDays,
-        },
-        update: {
-          discountPercent: input.percent,
-          discountPeriodDays: input.discountDays,
-          netPeriodDays: input.netDays,
-        },
-      });
+      const term = await upsertSkontoTermByOwner(
+        ctx.db,
+        ctx.organizationId,
+        { billingProfileId: input.billingProfileId },
+        input,
+      );
 
       log.info(
         { billingProfileId: input.billingProfileId, termId: term.id },
@@ -180,21 +199,12 @@ export const skontoRouter = router({
     .use(requirePermission({ contractor: ['update'] }))
     .input(z.object({ billingProfileId: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const existing = await ctx.db.skontoTerm.findFirst({
-        where: {
-          billingProfileId: input.billingProfileId,
-          organizationId: ctx.organizationId,
-        },
-      });
-
-      if (!existing) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'No Skonto term found for this billing profile',
-        });
-      }
-
-      await ctx.db.skontoTerm.delete({ where: { id: existing.id } });
+      await deleteSkontoTermByOwner(
+        ctx.db,
+        ctx.organizationId,
+        { billingProfileId: input.billingProfileId },
+        'No Skonto term found for this billing profile',
+      );
 
       log.info(
         { billingProfileId: input.billingProfileId },
