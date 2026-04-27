@@ -27,18 +27,7 @@ export class GovApiAuditLogger {
    */
   async log(entry: GovApiAuditEntry): Promise<void> {
     try {
-      // TODO(prisma-regen): Drop this cast once the parallel Prisma agent's
-      //   work lands and `GovApiAuditLog` is in the generated client. The cast
-      //   currently bypasses Prisma's generated types, which means renames in
-      //   the schema (e.g. `organisationId` vs `organizationId`) won't surface
-      //   as type errors. Regenerating types is off-limits during this fix wave.
-      await (
-        this.prisma as unknown as {
-          govApiAuditLog: {
-            create: (args: { data: Record<string, unknown> }) => Promise<unknown>;
-          };
-        }
-      ).govApiAuditLog.create({
+      await this.prisma.govApiAuditLog.create({
         data: {
           organizationId: entry.organizationId,
           apiName: entry.apiName,
