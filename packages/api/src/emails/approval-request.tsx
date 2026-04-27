@@ -1,4 +1,4 @@
-import { Text } from '@react-email/components';
+import { Text } from 'react-email';
 import { BaseLayout } from './base-layout.js';
 
 interface ApprovalRequestLabels {

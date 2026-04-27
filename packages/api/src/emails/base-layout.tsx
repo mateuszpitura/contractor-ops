@@ -1,15 +1,5 @@
-import {
-  Body,
-  Button,
-  Container,
-  Head,
-  Hr,
-  Html,
-  Link,
-  Section,
-  Text,
-} from '@react-email/components';
 import type { ReactNode } from 'react';
+import { Body, Button, Container, Head, Hr, Html, Link, Section, Text } from 'react-email';
 
 // ---------------------------------------------------------------------------
 // Styles
