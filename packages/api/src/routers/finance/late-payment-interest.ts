@@ -6,7 +6,6 @@
 // All procedures are tenant-scoped. Feature-flagged via the canonical
 // 'payments.late-interest-enabled' flag key.
 
-import type { PrismaClient } from '@contractor-ops/db';
 import { createLogger } from '@contractor-ops/logger';
 import { LPCDA_SECTION_REF } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
@@ -70,9 +69,7 @@ export const latePaymentInterestRouter = router({
       }
 
       // Load BoE rate history (global, not tenant-scoped) via cache.
-      const rateHistory = await loadBoeRateHistory(
-        ctx.db as unknown as Pick<PrismaClient, 'boEBaseRateHistory'>,
-      );
+      const rateHistory = await loadBoeRateHistory(ctx.db);
 
       // Scope gates
       if (!invoice.contractor) {
@@ -217,9 +214,7 @@ export const latePaymentInterestRouter = router({
       const items = invoices.slice(0, pageSize);
 
       // Load BoE rate history once (cached, invalidated on admin writes).
-      const rateHistory = await loadBoeRateHistory(
-        ctx.db as unknown as Pick<PrismaClient, 'boEBaseRateHistory'>,
-      );
+      const rateHistory = await loadBoeRateHistory(ctx.db);
 
       const results = items.map(invoice => {
         const result = calculateLateInterest({
@@ -434,9 +429,7 @@ export const latePaymentInterestRouter = router({
       }
 
       // Load BoE rate history (cached).
-      const rateHistory = await loadBoeRateHistory(
-        ctx.db as unknown as Pick<PrismaClient, 'boEBaseRateHistory'>,
-      );
+      const rateHistory = await loadBoeRateHistory(ctx.db);
 
       // Compute current interest
       const result = calculateLateInterest({

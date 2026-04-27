@@ -3,10 +3,21 @@
 // In-process cache for Bank of England base rate history (global reference data).
 // Invalidated on admin CRUD; poller may leave cache stale until TTL — see invalidateBoeRateCache.
 
-import type { PrismaClient } from '@contractor-ops/db';
 import type { RateHistoryEntry } from './late-payment-interest.js';
 
-type BoeDb = Pick<PrismaClient, 'boEBaseRateHistory'>;
+/**
+ * Structural shape required by loadBoeRateHistory — narrow enough to accept
+ * both the raw `PrismaClient` and the tenant-scoped/soft-delete-extended
+ * client (`TenantScopedDb`). Avoids per-callsite `as unknown as` casts.
+ */
+type BoeDb = {
+  boEBaseRateHistory: {
+    findMany(args: {
+      orderBy: { effectiveFrom: 'asc' };
+      select: { effectiveFrom: true; ratePercent: true };
+    }): Promise<Array<{ effectiveFrom: Date; ratePercent: RateHistoryEntry['ratePercent'] }>>;
+  };
+};
 
 let memoryCache: RateHistoryEntry[] | null = null;
 
