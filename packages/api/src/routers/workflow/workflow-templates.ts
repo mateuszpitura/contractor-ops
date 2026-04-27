@@ -2,6 +2,7 @@
  * Workflow template procedures: CRUD, duplication, and starter template seeding.
  */
 import type { Prisma } from '@contractor-ops/db';
+import type { TemplateCreateInput } from '@contractor-ops/validators';
 import {
   templateCreateSchema,
   templateListSchema,
@@ -14,6 +15,40 @@ import { router } from '../../init.js';
 import { requirePermission } from '../../middleware/rbac.js';
 import { tenantProcedure } from '../../middleware/tenant.js';
 import { WORKFLOW_TEMPLATE_KEYS } from './workflow-shared.js';
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Maps user-supplied task input shapes into Prisma createMany rows for a
+ * given parent workflow template. Shared between createTemplate (initial
+ * insert) and updateTemplate (delete-all + recreate replacement strategy)
+ * which previously inlined the same 17-field reshape.
+ */
+function buildTaskTemplateCreateManyInput(
+  organizationId: string,
+  workflowTemplateId: string,
+  tasks: TemplateCreateInput['tasks'],
+): Prisma.WorkflowTaskTemplateCreateManyInput[] {
+  return tasks.map(task => ({
+    organizationId,
+    workflowTemplateId,
+    title: task.title,
+    description: task.description ?? null,
+    taskType: task.taskType,
+    sortOrder: task.sortOrder,
+    required: task.required,
+    assigneeMode: task.assigneeMode,
+    assigneeRole: task.assigneeRole ?? null,
+    assigneeUserId: task.assigneeUserId ?? null,
+    dueOffsetDays: task.dueOffsetDays ?? null,
+    dueOffsetHours: task.dueOffsetHours ?? null,
+    dependsOnTaskTemplateId: task.dependsOnTaskTemplateId ?? null,
+    externalUrl: task.externalUrl || null,
+    configJson: task.conditions ?? undefined,
+  })) as Prisma.WorkflowTaskTemplateCreateManyInput[];
+}
 
 // ---------------------------------------------------------------------------
 // Workflow Templates sub-router
@@ -43,23 +78,7 @@ export const workflowTemplatesRouter = router({
 
         if (input.tasks.length > 0) {
           await tx.workflowTaskTemplate.createMany({
-            data: input.tasks.map(task => ({
-              organizationId: ctx.organizationId,
-              workflowTemplateId: created.id,
-              title: task.title,
-              description: task.description ?? null,
-              taskType: task.taskType,
-              sortOrder: task.sortOrder,
-              required: task.required,
-              assigneeMode: task.assigneeMode,
-              assigneeRole: task.assigneeRole ?? null,
-              assigneeUserId: task.assigneeUserId ?? null,
-              dueOffsetDays: task.dueOffsetDays ?? null,
-              dueOffsetHours: task.dueOffsetHours ?? null,
-              dependsOnTaskTemplateId: task.dependsOnTaskTemplateId ?? null,
-              externalUrl: task.externalUrl || null,
-              configJson: task.conditions ?? undefined,
-            })) as Prisma.WorkflowTaskTemplateCreateManyInput[],
+            data: buildTaskTemplateCreateManyInput(ctx.organizationId, created.id, input.tasks),
           });
         }
 
@@ -114,23 +133,7 @@ export const workflowTemplatesRouter = router({
 
           if (input.tasks.length > 0) {
             await tx.workflowTaskTemplate.createMany({
-              data: input.tasks.map(task => ({
-                organizationId: ctx.organizationId,
-                workflowTemplateId: input.id,
-                title: task.title,
-                description: task.description ?? null,
-                taskType: task.taskType,
-                sortOrder: task.sortOrder,
-                required: task.required,
-                assigneeMode: task.assigneeMode,
-                assigneeRole: task.assigneeRole ?? null,
-                assigneeUserId: task.assigneeUserId ?? null,
-                dueOffsetDays: task.dueOffsetDays ?? null,
-                dueOffsetHours: task.dueOffsetHours ?? null,
-                dependsOnTaskTemplateId: task.dependsOnTaskTemplateId ?? null,
-                externalUrl: task.externalUrl || null,
-                configJson: task.conditions ?? undefined,
-              })) as Prisma.WorkflowTaskTemplateCreateManyInput[],
+              data: buildTaskTemplateCreateManyInput(ctx.organizationId, input.id, input.tasks),
             });
           }
         }
