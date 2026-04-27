@@ -354,6 +354,61 @@ async function finalizeApprovedInvoice(
 }
 
 // ---------------------------------------------------------------------------
+// Bulk approval / rejection helper
+// ---------------------------------------------------------------------------
+
+type BulkStepRow = Prisma.ApprovalStepGetPayload<{ include: { approvalFlow: true } }>;
+
+/**
+ * Runs `perStep` for each `stepId` inside its own `$transaction` via
+ * `Promise.allSettled`, sharing the prelude (load step + assignability guard)
+ * and the postlude (succeeded/failed/errors aggregation + dashboard cache
+ * invalidate) across bulkApprove and bulkReject. Each procedure only owns its
+ * domain-specific writes.
+ */
+async function processBulkApprovalSteps(
+  ctx: {
+    db: TenantScopedDb;
+    organizationId: string;
+    user?: { id?: string | null } | null;
+  },
+  stepIds: string[],
+  perStep: (tx: TxClient, step: BulkStepRow) => Promise<void>,
+): Promise<{ succeeded: number; failed: number; errors: string[] }> {
+  const results = await Promise.allSettled(
+    stepIds.map(stepId =>
+      ctx.db.$transaction(async tx => {
+        const step = await tx.approvalStep.findFirst({
+          where: {
+            id: stepId,
+            organizationId: ctx.organizationId,
+            status: 'PENDING',
+            approverUserId: ctx.user?.id ?? undefined,
+          },
+          include: { approvalFlow: true },
+        });
+        if (!step) {
+          throw new Error(`Step ${stepId} not found or not assignable`);
+        }
+        await perStep(tx as TxClient, step);
+      }),
+    ),
+  );
+
+  const succeeded = results.filter(r => r.status === 'fulfilled').length;
+  const failed = results.filter(r => r.status === 'rejected').length;
+  const errors = results
+    .filter((r): r is PromiseRejectedResult => r.status === 'rejected')
+    .map(r => String(r.reason));
+
+  if (succeeded > 0) {
+    void invalidateByPrefix(CacheKeys.dashboardPrefix(ctx.organizationId));
+  }
+
+  return { succeeded, failed, errors };
+}
+
+// ---------------------------------------------------------------------------
 // Approval router
 // ---------------------------------------------------------------------------
 
@@ -1013,68 +1068,38 @@ export const approvalRouter = router({
   bulkApprove: tenantProcedure
     .use(requirePermission({ invoice: ['approve'] }))
     .input(bulkApproveSchema)
-    .mutation(async ({ ctx, input }) => {
-      const results = await Promise.allSettled(
-        input.stepIds.map(async stepId => {
-          await ctx.db.$transaction(async tx => {
-            const step = await tx.approvalStep.findFirst({
-              where: {
-                id: stepId,
-                organizationId: ctx.organizationId,
-                status: 'PENDING',
-                approverUserId: ctx.user?.id,
-              },
-              include: { approvalFlow: true },
-            });
+    .mutation(({ ctx, input }) =>
+      processBulkApprovalSteps(ctx, input.stepIds, async (tx, step) => {
+        await tx.approvalDecision.create({
+          data: {
+            organizationId: ctx.organizationId,
+            approvalStepId: step.id,
+            actorUserId: ctx.user?.id,
+            decision: 'APPROVE',
+          },
+        });
 
-            if (!step) {
-              throw new Error(`Step ${stepId} not found or not assignable`);
-            }
+        await tx.approvalStep.update({
+          where: { id: step.id },
+          data: {
+            status: 'APPROVED',
+            actedAt: new Date(),
+            decision: 'APPROVE',
+          },
+        });
 
-            await tx.approvalDecision.create({
-              data: {
-                organizationId: ctx.organizationId,
-                approvalStepId: step.id,
-                actorUserId: ctx.user?.id,
-                decision: 'APPROVE',
-              },
-            });
+        const advanceResult = await advanceFlow(tx, step.approvalFlowId);
 
-            await tx.approvalStep.update({
-              where: { id: step.id },
-              data: {
-                status: 'APPROVED',
-                actedAt: new Date(),
-                decision: 'APPROVE',
-              },
-            });
-
-            const advanceResult = await advanceFlow(tx as TxClient, step.approvalFlowId);
-
-            if (advanceResult.completed) {
-              await finalizeApprovedInvoice(tx as TxClient, {
-                resourceId: step.approvalFlow.resourceId,
-                organizationId: ctx.organizationId,
-                db: ctx.db,
-                userId: ctx.user?.id,
-              });
-            }
+        if (advanceResult.completed) {
+          await finalizeApprovedInvoice(tx, {
+            resourceId: step.approvalFlow.resourceId,
+            organizationId: ctx.organizationId,
+            db: ctx.db,
+            userId: ctx.user?.id,
           });
-        }),
-      );
-
-      const succeeded = results.filter(r => r.status === 'fulfilled').length;
-      const failed = results.filter(r => r.status === 'rejected').length;
-      const errors = results
-        .filter((r): r is PromiseRejectedResult => r.status === 'rejected')
-        .map(r => String(r.reason));
-
-      if (succeeded > 0) {
-        void invalidateByPrefix(CacheKeys.dashboardPrefix(ctx.organizationId));
-      }
-
-      return { succeeded, failed, errors };
-    }),
+        }
+      }),
+    ),
 
   /**
    * Bulk reject multiple approval steps with a shared comment.
@@ -1083,72 +1108,42 @@ export const approvalRouter = router({
   bulkReject: tenantProcedure
     .use(requirePermission({ invoice: ['approve'] }))
     .input(bulkRejectSchema)
-    .mutation(async ({ ctx, input }) => {
-      const results = await Promise.allSettled(
-        input.stepIds.map(async stepId => {
-          await ctx.db.$transaction(async tx => {
-            const step = await tx.approvalStep.findFirst({
-              where: {
-                id: stepId,
-                organizationId: ctx.organizationId,
-                status: 'PENDING',
-                approverUserId: ctx.user?.id,
-              },
-              include: { approvalFlow: true },
-            });
+    .mutation(({ ctx, input }) =>
+      processBulkApprovalSteps(ctx, input.stepIds, async (tx, step) => {
+        await tx.approvalDecision.create({
+          data: {
+            organizationId: ctx.organizationId,
+            approvalStepId: step.id,
+            actorUserId: ctx.user?.id,
+            decision: 'REJECT',
+            comment: input.comment,
+          },
+        });
 
-            if (!step) {
-              throw new Error(`Step ${stepId} not found or not assignable`);
-            }
+        await tx.approvalStep.update({
+          where: { id: step.id },
+          data: {
+            status: 'REJECTED',
+            actedAt: new Date(),
+            decision: 'REJECT',
+            comment: input.comment,
+          },
+        });
 
-            await tx.approvalDecision.create({
-              data: {
-                organizationId: ctx.organizationId,
-                approvalStepId: step.id,
-                actorUserId: ctx.user?.id,
-                decision: 'REJECT',
-                comment: input.comment,
-              },
-            });
+        await tx.approvalFlow.update({
+          where: { id: step.approvalFlowId },
+          data: {
+            status: 'REJECTED',
+            completedAt: new Date(),
+          },
+        });
 
-            await tx.approvalStep.update({
-              where: { id: step.id },
-              data: {
-                status: 'REJECTED',
-                actedAt: new Date(),
-                decision: 'REJECT',
-                comment: input.comment,
-              },
-            });
-
-            await tx.approvalFlow.update({
-              where: { id: step.approvalFlowId },
-              data: {
-                status: 'REJECTED',
-                completedAt: new Date(),
-              },
-            });
-
-            await tx.invoice.update({
-              where: { id: step.approvalFlow.resourceId },
-              data: { status: 'REJECTED' },
-            });
-          });
-        }),
-      );
-
-      const succeeded = results.filter(r => r.status === 'fulfilled').length;
-      const failed = results.filter(r => r.status === 'rejected').length;
-      const errors = results
-        .filter((r): r is PromiseRejectedResult => r.status === 'rejected')
-        .map(r => String(r.reason));
-
-      if (succeeded > 0) {
-        void invalidateByPrefix(CacheKeys.dashboardPrefix(ctx.organizationId));
-      }
-
-      return { succeeded, failed, errors };
-    }),
+        await tx.invoice.update({
+          where: { id: step.approvalFlow.resourceId },
+          data: { status: 'REJECTED' },
+        });
+      }),
+    ),
 
   // =========================================================================
   // Submit for Approval
