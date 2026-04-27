@@ -1,5 +1,5 @@
 import pino from 'pino';
-import { PrismaClient } from '../../generated/prisma/client/index.js';
+import { PrismaClient } from '../../src/generated/prisma/client/client.js';
 import { seedTaxRates } from './tax-rates.js';
 import { seedWhtRates } from './wht-rates.js';
 

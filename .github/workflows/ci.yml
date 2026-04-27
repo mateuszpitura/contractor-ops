@@ -35,14 +35,14 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Generate Prisma client
-        run: pnpm run db:generate
+      - name: Verify committed Prisma client matches schema
+        run: pnpm --filter @contractor-ops/db run db:check-drift
 
       - name: Format check (biome)
         run: pnpm run format:check
 
       - name: Lint
-        run: pnpm run lint
+        run: pnpm run lint:ci
 
       - name: No raw process.env outside allowlist (ratchet)
         run: pnpm run check:no-process-env

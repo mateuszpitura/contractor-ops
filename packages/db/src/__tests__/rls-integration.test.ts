@@ -35,7 +35,7 @@
 import { PrismaNeon } from '@prisma/adapter-neon';
 import { afterAll, describe, expect, it } from 'vitest';
 
-import { PrismaClient } from '../../generated/prisma/client/index.js';
+import { PrismaClient } from '../generated/prisma/client/client.js';
 import { withRlsSession } from '../rls.js';
 
 // ---------------------------------------------------------------------------

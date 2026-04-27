@@ -1,4 +1,4 @@
-import { Prisma } from '../generated/prisma/client/index.js';
+import { Prisma } from './generated/prisma/client/client.js';
 
 export type RlsContext = {
   organizationId: string;

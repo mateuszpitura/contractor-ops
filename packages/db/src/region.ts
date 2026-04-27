@@ -1,5 +1,5 @@
-import type { PrismaClient } from '../generated/prisma/client/index.js';
 import { createPrismaClientForUrl } from './client.js';
+import type { PrismaClient } from './generated/prisma/client/client.js';
 
 // ---------------------------------------------------------------------------
 // Supported Regions

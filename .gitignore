@@ -7,8 +7,14 @@ node_modules
 # Turborepo
 .turbo
 
-# Prisma generated
+# Prisma generated — gitignored by default,
+# but the modern `prisma-client` generator output under
+# `packages/db/src/generated/` IS committed (so consumers skip a regen step
+# on fresh checkouts). The drift check (pnpm --filter @contractor-ops/db
+# run db:check-drift) keeps it in sync with the schema.
 generated
+!/packages/db/src/generated
+!/packages/db/src/generated/**
 
 # Environment
 .env

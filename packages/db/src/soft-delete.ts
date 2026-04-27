@@ -1,4 +1,4 @@
-import type { Prisma } from '../generated/prisma/client/index.js';
+import type { Prisma } from './generated/prisma/client/client.js';
 
 type PrismaExtensible = {
   $extends: Prisma.DefaultPrismaClient['$extends'];

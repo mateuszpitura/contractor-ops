@@ -22,11 +22,21 @@
       "dependsOn": ["^build"],
       "outputs": []
     },
+    "typecheck:fast": {
+      "dependsOn": ["^build"],
+      "outputs": [],
+      "cache": false
+    },
     "test": {
       "dependsOn": ["^build"]
     },
     "db:generate": {
-      "cache": false
+      "inputs": ["prisma/schema/**/*.prisma", "package.json"],
+      "outputs": ["src/generated/prisma/client/**"]
+    },
+    "db:check-drift": {
+      "inputs": ["prisma/schema/**/*.prisma", "src/generated/prisma/client/**", "package.json"],
+      "outputs": []
     },
     "db:push": {
       "cache": false

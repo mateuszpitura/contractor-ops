@@ -1,4 +1,4 @@
-import type { PrismaClient } from '../../generated/prisma/client/index.js';
+import type { PrismaClient } from '../../src/generated/prisma/client/client.js';
 
 export const taxRates = [
   // Poland (PL)

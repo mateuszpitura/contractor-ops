@@ -1,5 +1,5 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
-import type { Prisma } from '../generated/prisma/client/index.js';
+import type { Prisma } from './generated/prisma/client/client.js';
 
 // PHASE-60-CROSS-ORG-AGGREGATE: raw (non-tenant-scoped) client re-exported
 // from tenant.ts so consumers can import the "tenant context family" from a
