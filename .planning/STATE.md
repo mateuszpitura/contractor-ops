@@ -4,8 +4,8 @@ milestone: v6.0
 milestone_name: Platform Maturity & Operational Hardening
 status: executing
 stopped_at: Phase 74 context gathered
-last_updated: "2026-04-26T23:51:46.990Z"
-last_activity: 2026-04-27 — Phase 71 planned
+last_updated: "2026-04-27T00:05:18.457Z"
+last_activity: 2026-04-27 — Phase 76 planned
 progress:
   percent: 9
 ---
@@ -23,13 +23,44 @@ See: .planning/PROJECT.md (updated 2026-04-26 — v6.0 milestone started)
 
 Phase: 70 — Wave 0–2 complete (8/10 plans). CHECKPOINT at Plan 70-09.
 Plan: 70-09 (multi-region migration — `autonomous: false`)
-Status: Waves 0–2 shipped GREEN. Plan 70-09 requires human review. Phase 71 fully planned (7 plans, ready to execute after Phase 70 closes).
-Last activity: 2026-04-27 — Phase 71 planned
+Status: Waves 0–2 shipped GREEN. Plan 70-09 requires human review. Phase 71 fully planned (7 plans). Phase 76 fully planned (10 plans, ready to execute after Phase 70 closes).
+Last activity: 2026-04-27 — Phase 76 planned
 
-Progress: [█░░░░░░░░░] 9% (v6.0 — 0/11 phases complete; Phase 70 at 8/10 plans; Phase 71 planned)
+Progress: [█░░░░░░░░░] 9% (v6.0 — 0/11 phases complete; Phase 70 at 8/10 plans; Phases 71 + 76 planned)
 
 **Active Phase:** 70 (v6.0 Foundation) — 8/10 plans landed, paused at multi-region checkpoint
-**Next Phase:** 71 (F1 Compliance — Policy Package + Schema + Classification Reconcile) — planned, ready to execute
+**Next Phase:** 71 (F1 Compliance — Policy Package + Schema + Classification Reconcile) — planned, ready to execute. Phase 76 (F2 IdP — Capability Mixin + Saga + Cooldown + GWS Scope) also planned and parallel-ready.
+
+## Phase 76 Planned (2026-04-27)
+
+10 plans across 4 waves; 1 marked `autonomous: false` (Plan 76-02 schema migration — multi-region apply per Plan 70-09 precedent):
+
+| Wave | Plan | Title | autonomous | Requirements |
+|------|------|-------|------------|--------------|
+| 0 | 76-01 | Failing test scaffolds (19 RED) + new `@contractor-ops/idp-saga` package skeleton + `idp-deprovisioning` PENDING signoff entry | true | All 8 (RED state) |
+| 1 | 76-02 | Prisma schema — DeprovisioningRun + DeprovisioningStep + IdpChangeProvenance + ContractorAssignment.endedAt + multi-region usage docs | **false** | IDP-02, 09, 10, 13 |
+| 1 | 76-03 | Deprovisionable interface + GWS scope-registry typed-const + IDP_AUDIT_ALLOWED_FIELDS extension (8 new fields) + adapter registry mapping | true | IDP-08, 10, 14 |
+| 1 | 76-04 | Saga helpers — canStartDeprovisioning (TZDate via `@date-fns/tz`, reuses Phase 71 D-07 pin) + deriveRunStatus pure function + recomputeRunStatus + provenanceLookup atomic claim + insertProvenance + gcExpiredProvenance | true | IDP-02, 09, 13 |
+| 1 | 76-05 | tRPC `getDeprovisioningEligibility` query + audit-log on every call (single-source-of-truth helper consumed by both UI and server-side mutation) | true | IDP-02, 10 |
+| 2 | 76-06 | tRPC `startDeprovisioningRun` + `retryDeprovisioningStep` mutations + QStash fan-out + `_step-runner` API route + saga-canonicalize helper for SHA-256 hashes | true | IDP-09, 10 |
+| 2 | 76-07 | `pnpm lint:scopes` CI guard (4th sibling in `@contractor-ops/lint-guards`) + ts-morph drift detector + structured-diff format-offence + husky pre-push + CI workflow extension | true | IDP-14 |
+| 2 | 76-08 | GWS scope-upgrade flow — additive `getOAuthConfig().scopes` + `prompt=consent` + 3-state reconnect banner (write-access variant) + i18n keys (en/de/pl/ar) + OAuth callback writes `directory.user.write` capability | true | IDP-11 |
+| 3 | 76-09 | `GoogleWorkspaceAdapter implements Deprovisionable` — suspendAccount + revokeAllSessions + verifyDeprovisioned + handleWebhook provenance lookup + register-all wires registerDeprovisionableAdapter | true | IDP-08, 13 |
+| 3 | 76-10 | D-16 template annotation on GWS deprovision test + GC cron sub-task in reminders/route.ts + SC#7 no-Reactivate-button RTL + grep guard | true | IDP-08, 13, 15 |
+
+**Plan-checker verdict:** PASSED (manual checker run — gsd-plan-checker agent not installed in this environment). All 16 LOCKED CONTEXT decisions (D-01..D-16) addressed; every IDP-{02,08,09,10,11,13,14,15} requirement covered by ≥1 plan beyond Wave 0; Standing Constraint LOCAL-ONLY honoured (legal review DEFERRED, multi-region manual). Threat models (8 plans × ~5 threats), validation strategy (Nyquist with 35-row per-task verification map), Phase 70 dependency hooks (`signoff-registry-flags.json`, `IDP_AUDIT_ALLOWED_FIELDS`, `getIdpAuditLogger`, `scopeCapabilities` JSONB infrastructure, `lint-guards` 4th-sibling extension), and Phase 71 D-07 TZ library convergence (`@date-fns/tz`) all present.
+
+**Key risks identified:**
+- Plan 76-02 schema migration is `autonomous: false` — requires manual `npx tsx packages/db/scripts/push-all-regions.ts` against EU + ME databases post-merge.
+- Plans 76-07 (`lint:scopes` guard) and 76-08 (GWS scope expansion) are sequenced in Wave 2 such that the guard ships before the GWS adapter import. The plan accepts that 76-07 may be RED-then-GREEN within the brief 76-07-only window before 76-08 lands; the guard itself passes its own unit tests in 76-07.
+- Phase 71 is being planned in parallel; both phases reuse `@date-fns/tz` from the Phase 71 D-07 pin. Cross-checked against 71-RESEARCH.md (line 23, 385) — single library, no parallel pin.
+
+**Phase 76 plan artefacts:**
+
+- `76-RESEARCH.md` — schema shapes, TZ library convergence, QStash topology, DeprovisionResult type shape (USER_NOT_FOUND → SUCCEEDED rule + MAX_ATTEMPTS = 3), validation architecture, 10-plan wave shape
+- `76-PATTERNS.md` — 18 Phase-76 elements mapped to existing codebase siblings (no new architectural primitives — every D-NN has a precedent: Phase 70 D-13/D-15/D-16, Phase 71 D-07, v5 `recreateDraftAfterDrift`, classification `claimDraft` atomic-update, `late-payment-interest.ts` QStash fan-out)
+- `76-VALIDATION.md` — 35 verification rows across 10 plans; 5 manual-only (multi-region apply, legal review of `idp-deprovisioning` flag, GWS write-access banner end-to-end, real-provider sandbox tests, webhook self-trigger end-to-end)
+
 
 ## Phase 71 Planned (2026-04-27)
 
@@ -233,3 +264,5 @@ Last session: --stopped-at
 Stopped at: Phase 74 context gathered
 Resume file: --resume-file
 Next command: `/gsd-plan-phase 70`
+
+**Planned Phase:** 76 (F2 IdP — Capability Mixin + Saga Schema + Cooldown Gate + GWS Scope Migration) — 10 plans — 2026-04-27T00:05:18.454Z
