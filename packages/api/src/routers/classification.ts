@@ -38,8 +38,9 @@ import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { router } from '../init.js';
 import { classificationSaveAnswerRateLimit } from '../middleware/classification-rate-limit.js';
-import { requirePermission } from '../middleware/rbac.js';
+import { adminProcedure, requirePermission } from '../middleware/rbac.js';
 import { classificationProcedure } from '../middleware/require-classification-flag.js';
+import { writeAuditLog } from '../services/audit-writer.js';
 import {
   extractOutcomeKind,
   materialiseFromPolicy,
@@ -80,6 +81,32 @@ const recreateDraftAfterDriftInput = z.object({
   contractorAssignmentId: cuid,
   staleDraftId: cuid,
 });
+
+// Phase 71 D-13..D-16 — admin-triggered compliance drift recompute. Bulk-capable.
+const recreateComplianceAssessmentInput = z.object({
+  contractorIds: z.array(cuid).min(1).max(500),
+  reason: z.enum(['policy_version_bump', 'classification_outcome_change', 'admin_correction']),
+});
+
+type RecreateComplianceAssessmentResultEntry =
+  | {
+      contractorId: string;
+      noop: true;
+      reason: 'no_completed_assessment' | 'already_current';
+    }
+  | {
+      contractorId: string;
+      noop: false;
+      policyRuleSetVersionBefore: string | null;
+      waivedCount: number;
+      insertedCount: number;
+      carriedForwardCount: number;
+    }
+  | {
+      contractorId: string;
+      noop: false;
+      error: string;
+    };
 
 const getDraftInput = z.object({
   contractorAssignmentId: cuid,
@@ -300,6 +327,164 @@ export const classificationRouter = router({
           answers: {},
         },
       });
+    }),
+
+  // -------------------------------------------------------------------------
+  // recreateComplianceAssessment — admin-triggered drift recompute (D-13..D-16).
+  //
+  // Architectural twin: recreateDraftAfterDrift (above). Same transactional
+  // shape, same idempotency guard, same audit-log pattern. Differs in scope:
+  // operates on ContractorComplianceItem rows (not the assessment itself).
+  //
+  // Trigger points (D-13):
+  //   - Per-contractor "Recompute compliance" button on profile (single ID)
+  //   - Bulk action on contractors-list selection (N IDs)
+  // Both call this same mutation. NO org-wide "everyone" button (blast radius).
+  //
+  // Idempotency (D-16): when reason='policy_version_bump' AND the contractor's
+  // latest assessment already references the current registry version, returns
+  // noop:true. Mirrors recreateDraftAfterDrift's PRECONDITION_FAILED check, but
+  // returns gracefully instead of throwing — bulk runs need to skip already-
+  // current contractors without aborting.
+  //
+  // Audit (D-15): exactly ONE AuditLog row per invocation (NOT per affected
+  // row). metadataJson carries the per-contractor delta list.
+  // -------------------------------------------------------------------------
+  recreateComplianceAssessment: adminProcedure
+    .input(recreateComplianceAssessmentInput)
+    .mutation(async ({ ctx, input }) => {
+      const results: RecreateComplianceAssessmentResultEntry[] = [];
+
+      for (const contractorId of input.contractorIds) {
+        try {
+          const result = await ctx.db.$transaction(async tx => {
+            // 1. Load latest completed assessment with contractor + assignment context.
+            const latest = await tx.classificationAssessment.findFirst({
+              where: {
+                contractorAssignment: {
+                  contractorId,
+                  organizationId: ctx.organizationId, // tenant guard (T-71-05-06)
+                },
+                status: 'completed',
+              },
+              orderBy: { completedAt: 'desc' },
+              include: {
+                contractorAssignment: {
+                  select: {
+                    id: true,
+                    contractorId: true,
+                    contractor: { select: { countryCode: true } },
+                  },
+                },
+              },
+            });
+
+            if (!latest) {
+              return {
+                contractorId,
+                noop: true as const,
+                reason: 'no_completed_assessment' as const,
+              };
+            }
+
+            // 2. Idempotency precondition (D-16). Only applies for policy_version_bump.
+            //    For classification_outcome_change and admin_correction, always recompute.
+            if (
+              input.reason === 'policy_version_bump' &&
+              latest.policyRuleSetVersion === POLICY_RULE_SET_VERSION
+            ) {
+              return {
+                contractorId,
+                noop: true as const,
+                reason: 'already_current' as const,
+              };
+            }
+
+            const policyRuleSetVersionBefore = latest.policyRuleSetVersion;
+
+            const jurisdiction = mapCountryCodeToJurisdiction(latest.countryCode);
+            if (jurisdiction === null) {
+              // Country outside the registry's jurisdiction set — treat as no-op
+              return {
+                contractorId,
+                noop: true as const,
+                reason: 'no_completed_assessment' as const,
+              };
+            }
+
+            // 3. Build engagement context (mirrors submit's pattern).
+            const engagement: EngagementContext = {
+              jurisdiction,
+              outcome: extractOutcomeKind(latest.outcome),
+              sector: null, // see Plan 71-04 discovery — sector column absent today
+              contractorNationality: latest.contractorAssignment.contractor?.countryCode ?? null,
+              requiresRegulatedEquipment: false,
+            };
+
+            // 4. Map input reason → supersede reason enum.
+            const supersedeReason:
+              | 'classification_outcome_change'
+              | 'superseded_by_policy_version'
+              | 'admin_correction' =
+              input.reason === 'policy_version_bump'
+                ? 'superseded_by_policy_version'
+                : input.reason === 'classification_outcome_change'
+                  ? 'classification_outcome_change'
+                  : 'admin_correction';
+
+            // 5. Run the supersession (reuses Plan 71-04's helper).
+            const supersedeResult = await supersedeAndMaterialise(tx, {
+              organizationId: ctx.organizationId,
+              contractorId,
+              contractId: null, // not bound to a specific contract for recompute
+              engagement,
+              reason: supersedeReason,
+            });
+
+            // 6. Snapshot current registry version onto the latest assessment.
+            await tx.classificationAssessment.update({
+              where: { id: latest.id },
+              data: { policyRuleSetVersion: POLICY_RULE_SET_VERSION },
+            });
+
+            return {
+              contractorId,
+              noop: false as const,
+              policyRuleSetVersionBefore,
+              waivedCount: supersedeResult.waivedCount,
+              insertedCount: supersedeResult.insertedCount,
+              carriedForwardCount: supersedeResult.carriedForwardCount,
+            };
+          });
+          results.push(result);
+        } catch (err) {
+          // Per-contractor failure does NOT abort the bulk — record + continue (T-71-05-04).
+          results.push({
+            contractorId,
+            noop: false,
+            error: err instanceof Error ? err.message : 'unknown error',
+          });
+        }
+      }
+
+      // 7. Single AuditLog row per invocation (D-15).
+      await writeAuditLog({
+        tx: ctx.db,
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user.id,
+        action: 'compliance.recompute',
+        resourceType: 'CONTRACTOR',
+        resourceId: input.contractorIds.length === 1 ? (input.contractorIds[0] as string) : 'BULK',
+        metadata: {
+          reason: input.reason,
+          contractorIds: input.contractorIds,
+          policyRuleSetVersionAfter: POLICY_RULE_SET_VERSION,
+          results,
+        },
+      });
+
+      return { results };
     }),
 
   // -------------------------------------------------------------------------
