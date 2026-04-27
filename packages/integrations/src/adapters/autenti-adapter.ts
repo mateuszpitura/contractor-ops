@@ -3,6 +3,7 @@ import { prisma } from '@contractor-ops/db';
 import { createIntegrationLogger } from '@contractor-ops/logger';
 import { decryptCredentials } from '../services/credential-service.js';
 import { handleSigningWebhook } from '../services/esign-webhook-handler.js';
+import { fetchWithTimeout } from '../services/fetch-helpers.js';
 import type { CredentialBlob } from '../types/credentials.js';
 import type {
   EmbeddedSigningUrlResult,
@@ -75,17 +76,23 @@ export class AutentiAdapter extends BaseAdapter implements ESignAdapter {
       );
     }
 
-    const response = await fetch('https://api.autenti.com/api/v2/auth/token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        grant_type: 'authorization_code',
-        client_id: clientId,
-        client_secret: clientSecret,
-        code,
-        redirect_uri: redirectUri,
-      }),
-    });
+    const response = await fetchWithTimeout(
+      'https://api.autenti.com/api/v2/auth/token',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          grant_type: 'authorization_code',
+          client_id: clientId,
+          client_secret: clientSecret,
+          code,
+          redirect_uri: redirectUri,
+        }),
+      },
+      // Authorization-code redemption is non-idempotent — bound wall-clock,
+      // no retries.
+      { timeoutMs: 30_000, retries: 0 },
+    );
 
     if (!response.ok) {
       const text = await response.text();
@@ -122,16 +129,22 @@ export class AutentiAdapter extends BaseAdapter implements ESignAdapter {
       throw new Error('No refresh token available for Autenti');
     }
 
-    const response = await fetch('https://api.autenti.com/api/v2/auth/token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        grant_type: 'refresh_token',
-        client_id: clientId,
-        client_secret: clientSecret,
-        refresh_token: credentials.refreshToken,
-      }),
-    });
+    const response = await fetchWithTimeout(
+      'https://api.autenti.com/api/v2/auth/token',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          grant_type: 'refresh_token',
+          client_id: clientId,
+          client_secret: clientSecret,
+          refresh_token: credentials.refreshToken,
+        }),
+      },
+      // Refresh tokens may be rotated by the server — non-idempotent. Bound
+      // wall-clock, no retries.
+      { timeoutMs: 30_000, retries: 0 },
+    );
 
     if (!response.ok) {
       const text = await response.text();

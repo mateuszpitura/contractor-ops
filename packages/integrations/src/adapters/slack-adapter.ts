@@ -1,4 +1,5 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
+import { fetchWithTimeout } from '../services/fetch-helpers.js';
 import type { CredentialBlob } from '../types/credentials.js';
 import type { OAuthConfig } from '../types/provider.js';
 import type { WebhookVerificationResult } from '../types/webhook.js';
@@ -49,16 +50,22 @@ export class SlackAdapter extends BaseAdapter {
       throw new Error('SLACK_CLIENT_ID and SLACK_CLIENT_SECRET environment variables are required');
     }
 
-    const response = await fetch('https://slack.com/api/oauth.v2.access', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        client_id: clientId,
-        client_secret: clientSecret,
-        code,
-        redirect_uri: redirectUri,
-      }),
-    });
+    const response = await fetchWithTimeout(
+      'https://slack.com/api/oauth.v2.access',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          client_id: clientId,
+          client_secret: clientSecret,
+          code,
+          redirect_uri: redirectUri,
+        }),
+      },
+      // Authorization-code redemption is non-idempotent — bound wall-clock,
+      // no retries.
+      { timeoutMs: 30_000, retries: 0 },
+    );
 
     const data = (await response.json()) as {
       ok: boolean;

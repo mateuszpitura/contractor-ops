@@ -3,6 +3,7 @@ import { prisma } from '@contractor-ops/db';
 import { createIntegrationLogger } from '@contractor-ops/logger';
 import { decryptCredentials } from '../services/credential-service.js';
 import { handleSigningWebhook } from '../services/esign-webhook-handler.js';
+import { fetchWithTimeout } from '../services/fetch-helpers.js';
 import type { CredentialBlob } from '../types/credentials.js';
 import type {
   EmbeddedSigningUrlResult,
@@ -177,18 +178,24 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
       );
     }
 
-    const response = await fetch(`https://${getDocuSignOAuthHost()}/oauth/token`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`,
+    const response = await fetchWithTimeout(
+      `https://${getDocuSignOAuthHost()}/oauth/token`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`,
+        },
+        body: new URLSearchParams({
+          grant_type: 'authorization_code',
+          code,
+          redirect_uri: redirectUri,
+        }),
       },
-      body: new URLSearchParams({
-        grant_type: 'authorization_code',
-        code,
-        redirect_uri: redirectUri,
-      }),
-    });
+      // OAuth token redemption is non-idempotent — bound the wall-clock and
+      // do not retry on 5xx (re-using an authorization_code can revoke it).
+      { timeoutMs: 30_000, retries: 0 },
+    );
 
     if (!response.ok) {
       const text = await response.text();
@@ -225,17 +232,23 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
       throw new Error('No refresh token available for DocuSign');
     }
 
-    const response = await fetch(`https://${getDocuSignOAuthHost()}/oauth/token`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`,
+    const response = await fetchWithTimeout(
+      `https://${getDocuSignOAuthHost()}/oauth/token`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`,
+        },
+        body: new URLSearchParams({
+          grant_type: 'refresh_token',
+          refresh_token: credentials.refreshToken,
+        }),
       },
-      body: new URLSearchParams({
-        grant_type: 'refresh_token',
-        refresh_token: credentials.refreshToken,
-      }),
-    });
+      // Token refresh is non-idempotent (refresh tokens may be rotated by the
+      // server) — bound wall-clock, no retries.
+      { timeoutMs: 30_000, retries: 0 },
+    );
 
     if (!response.ok) {
       const text = await response.text();
