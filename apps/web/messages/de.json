@@ -1038,6 +1038,8 @@
     "invoiceContractorNotFound": "Contractor not found in this organization.",
     "invoiceContractNotFound": "Contract not found in this organization.",
     "invoiceAlreadyPending": "Invoice is already pending approval.",
+    "invoiceAlreadyVoided": "Invoice has already been voided.",
+    "invoiceVoidNotAllowed": "Invoice cannot be voided in its current state.",
     "invoiceDuplicate": "A duplicate invoice already exists with the same number, seller, and amount.",
     "invoiceAmountMismatch": "The invoice amount does not match the expected value for this line item.",
     "paymentRunNotFound": "Payment run not found.",
