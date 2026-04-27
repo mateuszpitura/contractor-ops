@@ -89,8 +89,8 @@ export const taskTemplateInputSchema = z.object({
   dueOffsetDays: z.number().int().nonnegative().optional(),
   dueOffsetHours: z.number().int().nonnegative().optional(),
   dependsOnTaskTemplateId: optionalFk,
-  externalUrl: z.string().url().optional().or(z.literal('')),
-  conditions: conditionGroupSchema.nullable().optional(),
+  externalUrl: z.url().optional().or(z.literal('')),
+  conditions: conditionGroupSchema.nullish(),
 });
 
 // ---------------------------------------------------------------------------
@@ -110,7 +110,7 @@ export const templateUpdateSchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1).max(255).optional(),
   type: workflowTemplateTypeEnum.optional(),
-  description: z.string().nullable().optional(),
+  description: z.string().nullish(),
   status: workflowTemplateStatusEnum.optional(),
   tasks: z.array(taskTemplateInputSchema.extend({ id: z.string().optional() })).optional(),
 });

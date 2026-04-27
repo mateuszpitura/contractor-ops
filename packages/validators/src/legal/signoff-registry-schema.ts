@@ -9,7 +9,7 @@ import { z } from 'zod';
 const signoffEntryObjectSchema = z.object({
   status: z.enum(['PENDING', 'APPROVED']),
   approvedBy: z.string().optional(),
-  approvedAt: z.string().datetime().optional(),
+  approvedAt: z.iso.datetime().optional(),
   approverRole: z
     .enum(['UK_TAX_ADVISER', 'STEUERBERATER', 'INTERNAL_COUNSEL', 'INTERNAL_PRODUCT'])
     .optional(),

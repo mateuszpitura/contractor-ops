@@ -86,9 +86,9 @@ export const jiraIssueMetadataSchema = z.object({
   summary: z.string(),
   status: z.string(),
   statusCategory: z.enum(['new', 'indeterminate', 'done']),
-  url: z.string().url(),
+  url: z.url(),
   lastSyncOrigin: z.enum(['APP', 'JIRA']).optional(),
-  lastSyncAt: z.string().datetime().optional(),
+  lastSyncAt: z.iso.datetime().optional(),
 });
 
 export type JiraIssueMetadata = z.infer<typeof jiraIssueMetadataSchema>;

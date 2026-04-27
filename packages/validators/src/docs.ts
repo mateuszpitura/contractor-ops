@@ -21,7 +21,7 @@ export type ConfluencePageMetadata = z.infer<typeof confluencePageMetadataSchema
 export const docSearchResultSchema = z.object({
   id: z.string(),
   title: z.string(),
-  icon: z.string().nullable().optional(),
+  icon: z.string().nullish(),
   subtitle: z.string(), // workspace name or space name
   url: z.string(),
   provider: z.enum(['notion', 'confluence']),
@@ -30,9 +30,9 @@ export type DocSearchResult = z.infer<typeof docSearchResultSchema>;
 
 // Attach doc input
 export const attachDocInputSchema = z.object({
-  workflowTaskRunId: z.string().cuid(),
+  workflowTaskRunId: z.cuid(),
   externalId: z.string(),
-  externalUrl: z.string().url(),
+  externalUrl: z.url(),
   externalType: z.enum(['NOTION_PAGE', 'CONFLUENCE_PAGE']),
   metadata: z.union([notionPageMetadataSchema, confluencePageMetadataSchema]),
 });

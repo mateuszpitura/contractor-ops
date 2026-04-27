@@ -150,8 +150,8 @@ export const contractorListSchema = z.object({
       primaryTeamId: z.array(z.string()).optional(),
       billingModel: z.array(z.string()).optional(),
       complianceHealth: z.array(complianceHealthEnum).optional(),
-      contractEndDateFrom: z.string().datetime().optional(),
-      contractEndDateTo: z.string().datetime().optional(),
+      contractEndDateFrom: z.iso.datetime().optional(),
+      contractEndDateTo: z.iso.datetime().optional(),
     })
     .optional(),
 });

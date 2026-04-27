@@ -52,7 +52,7 @@ export const conflictSchema = z.object({
 });
 
 export const mergedPersonSchema = z.object({
-  email: z.string().email(),
+  email: z.email(),
   name: z.string(),
   sources: z.array(sourceEntrySchema),
   status: z.enum(['new', 'conflict', 'exists']),
@@ -72,7 +72,7 @@ export type FetchPeopleOutput = z.infer<typeof fetchPeopleOutputSchema>;
 export const batchImportInputSchema = z.object({
   people: z.array(
     z.object({
-      email: z.string().email(),
+      email: z.email(),
       name: z.string(),
       role: invitableMemberRoleEnum,
       skip: z.boolean().default(false),
@@ -163,7 +163,7 @@ export type ImportProgressOutput = z.infer<typeof importProgressOutputSchema>;
 
 export const retryItemInputSchema = z.object({
   jobId: z.string(),
-  email: z.string().email(),
+  email: z.email(),
 });
 
 export type RetryItemInput = z.infer<typeof retryItemInputSchema>;

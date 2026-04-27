@@ -25,7 +25,7 @@ function getStripeClient() {
     cachedStripeClient = null;
     return null;
   }
-  cachedStripeClient = new Stripe(key);
+  cachedStripeClient = new Stripe(key, { apiVersion: '2026-04-22.dahlia' });
   return cachedStripeClient;
 }
 

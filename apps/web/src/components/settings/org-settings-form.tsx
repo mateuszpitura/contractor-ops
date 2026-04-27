@@ -35,7 +35,7 @@ const updateSettingsSchema = z.object({
   timezone: z.string().min(1),
   language: z.enum(['pl', 'en']),
   fiscalYearStartMonth: z.number().int().min(1).max(12),
-  billingEmail: z.string().email().optional().or(z.literal('')),
+  billingEmail: z.email().optional().or(z.literal('')),
 });
 
 type SettingsValues = z.infer<typeof updateSettingsSchema>;

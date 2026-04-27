@@ -73,7 +73,7 @@ export type ConnectPeppolInput = z.infer<typeof connectPeppolSchema>;
 // ---------------------------------------------------------------------------
 
 export const transmitInvoiceSchema = z.object({
-  invoiceId: z.string().cuid(),
+  invoiceId: z.cuid(),
   receiverParticipantId: peppolParticipantIdSchema,
 });
 
@@ -96,7 +96,7 @@ export type GetTransmissionsInput = z.infer<typeof getTransmissionsSchema>;
 // ---------------------------------------------------------------------------
 
 export const getTransmissionByInvoiceIdSchema = z.object({
-  invoiceId: z.string().cuid(),
+  invoiceId: z.cuid(),
 });
 
 export type GetTransmissionByInvoiceIdInput = z.infer<typeof getTransmissionByInvoiceIdSchema>;
@@ -106,7 +106,7 @@ export type GetTransmissionByInvoiceIdInput = z.infer<typeof getTransmissionByIn
 // ---------------------------------------------------------------------------
 
 export const retryTransmissionSchema = z.object({
-  transmissionId: z.string().cuid(),
+  transmissionId: z.cuid(),
 });
 
 export type RetryTransmissionInput = z.infer<typeof retryTransmissionSchema>;

@@ -32,7 +32,7 @@ export const paymentExportFormatEnum = z.enum(['CSV', 'BANK_FILE', 'SEPA_XML', '
  * groupByCurrency: when true, auto-creates separate runs per currency.
  */
 export const paymentRunCreateSchema = z.object({
-  invoiceIds: z.array(z.string().cuid()).min(1),
+  invoiceIds: z.array(z.cuid()).min(1),
   currency: z.string().length(3).optional(),
   name: z.string().max(100).optional(),
   notes: z.string().max(500).optional(),
@@ -47,7 +47,7 @@ export type PaymentRunCreate = z.infer<typeof paymentRunCreateSchema>;
  * Lock a payment run and generate export file.
  */
 export const paymentRunLockSchema = z.object({
-  runId: z.string().cuid(),
+  runId: z.cuid(),
   exportFormat: paymentExportFormatEnum,
 });
 
@@ -59,7 +59,7 @@ export type PaymentRunLock = z.infer<typeof paymentRunLockSchema>;
  */
 export const paymentRunItemStatusSchema = z
   .object({
-    itemId: z.string().cuid(),
+    itemId: z.cuid(),
     status: z.enum(['PAID', 'FAILED']),
     paymentReference: z.string().max(100).optional(),
     failureReason: z.string().max(500).optional(),
@@ -90,7 +90,7 @@ export type PaymentRunList = z.infer<typeof paymentRunListSchema>;
  * Cancel a payment run.
  */
 export const paymentRunCancelSchema = z.object({
-  runId: z.string().cuid(),
+  runId: z.cuid(),
 });
 
 export type PaymentRunCancel = z.infer<typeof paymentRunCancelSchema>;
@@ -99,7 +99,7 @@ export type PaymentRunCancel = z.infer<typeof paymentRunCancelSchema>;
  * Mark all items in a run as paid (happy path bulk action).
  */
 export const markAllPaidSchema = z.object({
-  runId: z.string().cuid(),
+  runId: z.cuid(),
   batchReference: z.string().max(100).optional(),
 });
 
@@ -109,10 +109,10 @@ export type MarkAllPaid = z.infer<typeof markAllPaidSchema>;
  * Confirm matched bank statement transactions against run items.
  */
 export const bankStatementConfirmSchema = z.object({
-  runId: z.string().cuid(),
+  runId: z.cuid(),
   matches: z.array(
     z.object({
-      itemId: z.string().cuid(),
+      itemId: z.cuid(),
       transactionIndex: z.number().int(),
     }),
   ),
@@ -127,7 +127,7 @@ export const readyForPaymentListSchema = z.object({
   currency: z.string().length(3).optional(),
   dueDateFrom: z.coerce.date().optional(),
   dueDateTo: z.coerce.date().optional(),
-  contractorId: z.string().cuid().optional(),
+  contractorId: z.cuid().optional(),
   cursor: z.string().optional(),
   limit: z.number().int().min(1).max(100).default(50),
 });
@@ -138,8 +138,8 @@ export type ReadyForPaymentList = z.infer<typeof readyForPaymentListSchema>;
  * Remove an invoice from a DRAFT payment run (per D-04).
  */
 export const removeFromRunSchema = z.object({
-  runId: z.string().cuid(),
-  invoiceId: z.string().cuid(),
+  runId: z.cuid(),
+  invoiceId: z.cuid(),
 });
 
 export type RemoveFromRun = z.infer<typeof removeFromRunSchema>;

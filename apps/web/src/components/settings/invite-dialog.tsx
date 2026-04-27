@@ -30,7 +30,7 @@ import {
 import { trpc } from '@/trpc/init';
 
 const inviteSchema = z.object({
-  email: z.string().email(),
+  email: z.email(),
   role: z.enum(invitableMemberRoleValues),
 });
 

@@ -17,7 +17,7 @@ import { z } from 'zod';
 // Shared leaves
 // ---------------------------------------------------------------------------
 
-const cuidSchema = z.string().cuid();
+const cuidSchema = z.cuid();
 
 // ---------------------------------------------------------------------------
 // Mutations — create / update / delete / setDefault
@@ -33,12 +33,12 @@ const cuidSchema = z.string().cuid();
 export const createLeitwegIdInput = z.object({
   value: leitwegIdSchema,
   description: z.string().max(200).optional(),
-  contractorId: cuidSchema.nullable().optional(),
-  contractId: cuidSchema.nullable().optional(),
+  contractorId: cuidSchema.nullish(),
+  contractId: cuidSchema.nullish(),
   isDefaultForContractor: z.boolean().default(false),
-  validFrom: z.coerce.date().nullable().optional(),
-  validTo: z.coerce.date().nullable().optional(),
-  notes: z.string().max(2000).nullable().optional(),
+  validFrom: z.coerce.date().nullish(),
+  validTo: z.coerce.date().nullish(),
+  notes: z.string().max(2000).nullish(),
 });
 
 export type CreateLeitwegIdInput = z.infer<typeof createLeitwegIdInput>;

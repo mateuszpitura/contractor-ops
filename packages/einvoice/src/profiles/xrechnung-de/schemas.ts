@@ -14,7 +14,7 @@ import { z } from 'zod';
 
 /** Input for the `einvoice.finalize` tRPC mutation (Plan 02). */
 export const finalizeEInvoiceInputSchema = z.object({
-  invoiceId: z.string().cuid(),
+  invoiceId: z.cuid(),
   force: z.boolean().optional().default(false),
 });
 

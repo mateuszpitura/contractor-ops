@@ -52,8 +52,8 @@ const taskSchema = z.object({
   dueOffsetDays: z.number().int().nonnegative().optional(),
   dueOffsetHours: z.number().int().nonnegative().optional(),
   dependsOnTaskTemplateId: z.string().optional(),
-  externalUrl: z.string().url().optional().or(z.literal('')),
-  conditions: conditionGroupSchema.nullable().optional(),
+  externalUrl: z.url().optional().or(z.literal('')),
+  conditions: conditionGroupSchema.nullish(),
 });
 
 export const templateFormSchema = z.object({

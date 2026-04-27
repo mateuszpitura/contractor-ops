@@ -15,7 +15,7 @@ import { z } from 'zod';
 const flagSignoffEntryObjectSchema = z.object({
   status: z.enum(['PENDING', 'APPROVED']),
   approvedBy: z.string().optional(),
-  approvedAt: z.string().datetime().optional(),
+  approvedAt: z.iso.datetime().optional(),
   approverRole: z
     .enum(['LEGAL_LEAD', 'COMPLIANCE_OFFICER', 'PRIVACY_COUNSEL', 'EXTERNAL_COUNSEL'])
     .optional(),

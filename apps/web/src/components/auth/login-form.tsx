@@ -81,7 +81,7 @@ export function LoginForm() {
 
   const handleMagicLink = useCallback(async () => {
     const email = getValues('email');
-    if (!(email && z.string().email().safeParse(email).success)) {
+    if (!(email && z.email().safeParse(email).success)) {
       toast.error(tv('invalidEmail'));
       return;
     }

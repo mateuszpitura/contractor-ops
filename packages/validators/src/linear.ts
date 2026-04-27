@@ -25,7 +25,7 @@ export const linearWebhookPayloadSchema = z.object({
   organizationId: z.string(),
   webhookTimestamp: z.number(),
   webhookId: z.string(),
-  url: z.string().url(),
+  url: z.url(),
   actor: z.object({
     id: z.string(),
     type: z.string(),
@@ -39,7 +39,7 @@ export const linearWebhookPayloadSchema = z.object({
     description: z.string().optional(),
     stateId: z.string(),
     teamId: z.string(),
-    assigneeId: z.string().nullable().optional(),
+    assigneeId: z.string().nullish(),
     url: z.string(),
   }),
   updatedFrom: z
@@ -93,9 +93,9 @@ export const linearIssueMetadataSchema = z.object({
   title: z.string(),
   status: z.string(),
   statusType: linearStateTypeEnum,
-  url: z.string().url(),
+  url: z.url(),
   lastSyncOrigin: z.enum(['APP', 'LINEAR']).optional(),
-  lastSyncAt: z.string().datetime().optional(),
+  lastSyncAt: z.iso.datetime().optional(),
 });
 
 export type LinearIssueMetadata = z.infer<typeof linearIssueMetadataSchema>;

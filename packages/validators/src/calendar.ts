@@ -5,7 +5,7 @@ export const calendarTaskConfigSchema = z.object({
   calendarEnabled: z.boolean().default(false),
   titleTemplate: z.string().max(200).optional(),
   duration: z.enum(['30m', '1h', '2h', '4h', 'full_day']).default('1h'),
-  attendees: z.array(z.string().email()).default([]),
+  attendees: z.array(z.email()).default([]),
 });
 export type CalendarTaskConfig = z.infer<typeof calendarTaskConfigSchema>;
 
@@ -32,6 +32,6 @@ export const createCalendarEventInputSchema = z.object({
   description: z.string().max(2000).optional(),
   startDateTime: z.string(), // ISO 8601
   endDateTime: z.string(),
-  attendees: z.array(z.string().email()).optional(),
+  attendees: z.array(z.email()).optional(),
 });
 export type CreateCalendarEventInput = z.infer<typeof createCalendarEventInputSchema>;

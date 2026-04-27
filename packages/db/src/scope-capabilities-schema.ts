@@ -21,7 +21,7 @@ export const scopeCapabilitiesSchema = z.object({
   provider: providerIdSchema,
   scopes: z.array(z.string()),
   capabilities: z.array(capabilityEnumSchema),
-  grantedAt: z.string().datetime(),
+  grantedAt: z.iso.datetime(),
 });
 
 export type ScopeCapabilitiesParsed = z.infer<typeof scopeCapabilitiesSchema>;

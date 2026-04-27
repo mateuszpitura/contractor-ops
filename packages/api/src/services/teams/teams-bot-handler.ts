@@ -35,26 +35,26 @@ const log = createLogger({ service: 'teams-bot-handler' });
 
 const approveInvokeSchema = z.object({
   action: z.literal('approve_invoice'),
-  invoiceId: z.string().uuid(),
-  flowId: z.string().uuid(),
+  invoiceId: z.uuid(),
+  flowId: z.uuid(),
 });
 
 const rejectInvokeSchema = z.object({
   action: z.literal('reject_invoice'),
-  invoiceId: z.string().uuid(),
-  flowId: z.string().uuid(),
+  invoiceId: z.uuid(),
+  flowId: z.uuid(),
 });
 
 const submitRejectionSchema = z.object({
   action: z.literal('submit_rejection'),
-  invoiceId: z.string().uuid(),
-  flowId: z.string().uuid(),
+  invoiceId: z.uuid(),
+  flowId: z.uuid(),
   comment: z.string().min(1, 'Rejection comment is required'),
 });
 
 const taskModuleFetchSchema = z.object({
-  invoiceId: z.string().uuid(),
-  flowId: z.string().uuid(),
+  invoiceId: z.uuid(),
+  flowId: z.uuid(),
 });
 
 // ---------------------------------------------------------------------------

@@ -4,14 +4,14 @@ const hex32 = z
   .string()
   .regex(/^[0-9a-f]{64}$/i, 'Must be a 32-byte hex string (64 hex characters)');
 
-const optionalUrl = z.string().url().optional();
+const optionalUrl = z.url().optional();
 
 // ── Core ────────────────────────────────────────────────────────────────────
 
 const coreSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
-  NEXT_PUBLIC_APP_URL: z.string().url().default('http://localhost:3000'),
-  APP_URL: z.string().url().default('http://localhost:3000'),
+  NEXT_PUBLIC_APP_URL: z.url().default('http://localhost:3000'),
+  APP_URL: z.url().default('http://localhost:3000'),
 });
 
 // ── Database ────────────────────────────────────────────────────────────────
@@ -26,7 +26,7 @@ const databaseSchema = z.object({
 
 const authSchema = z.object({
   BETTER_AUTH_SECRET: z.string().min(16, 'Auth secret must be at least 16 characters'),
-  BETTER_AUTH_URL: z.string().url().default('http://localhost:3000'),
+  BETTER_AUTH_URL: z.url().default('http://localhost:3000'),
   GOOGLE_CLIENT_ID: z.string().min(1, 'GOOGLE_CLIENT_ID is required'),
   GOOGLE_CLIENT_SECRET: z.string().min(1, 'GOOGLE_CLIENT_SECRET is required'),
   MICROSOFT_CLIENT_ID: z.string().min(1, 'MICROSOFT_CLIENT_ID is required'),
@@ -58,7 +58,7 @@ const stripeSchema = z.object({
 const emailSchema = z.object({
   RESEND_API_KEY: z.string().min(1, 'RESEND_API_KEY is required'),
   RESEND_WEBHOOK_SECRET: z.string().min(1, 'RESEND_WEBHOOK_SECRET is required'),
-  EMAIL_FROM: z.string().email().default('noreply@contractor-ops.com'),
+  EMAIL_FROM: z.email().default('noreply@contractor-ops.com'),
 });
 
 /** Optional dev-only SMTP (e.g. Mailpit). Used by app email when NODE_ENV=development and host is set. */
@@ -189,7 +189,7 @@ const portalSchema = z.object({
 // ── Observability ──────────────────────────────────────────────────────────
 
 const observabilitySchema = z.object({
-  NEXT_PUBLIC_SENTRY_DSN: z.string().url().optional(),
+  NEXT_PUBLIC_SENTRY_DSN: z.url().optional(),
   SENTRY_ORG: z.string().optional(),
   SENTRY_PROJECT: z.string().optional(),
   SENTRY_AUTH_TOKEN: z.string().optional(),
@@ -201,7 +201,7 @@ const observabilitySchema = z.object({
 // ── Optional infrastructure (graceful degradation when unset) ───────────────
 
 const infrastructureSchema = z.object({
-  UPSTASH_REDIS_REST_URL: z.string().url().optional(),
+  UPSTASH_REDIS_REST_URL: z.url().optional(),
   UPSTASH_REDIS_REST_TOKEN: z.string().optional(),
   CRONITOR_API_KEY: z.string().optional(),
   AZURE_BOT_APP_ID: z.string().optional(),
@@ -218,9 +218,9 @@ const infrastructureSchema = z.object({
 // production for real flag evaluation.
 
 const featureFlagsSchema = z.object({
-  UNLEASH_URL_EU: z.string().url().optional(),
+  UNLEASH_URL_EU: z.url().optional(),
   UNLEASH_API_TOKEN_EU: z.string().optional(),
-  UNLEASH_URL_ME: z.string().url().optional(),
+  UNLEASH_URL_ME: z.url().optional(),
   UNLEASH_API_TOKEN_ME: z.string().optional(),
   UNLEASH_APP_NAME: z.string().default('contractor-ops'),
   UNLEASH_ENVIRONMENT: z.string().default('development'),
@@ -268,12 +268,12 @@ export const serverEnvSchema = coreSchema
 // ── Client env (NEXT_PUBLIC_ only) ──────────────────────────────────────────
 
 export const clientEnvSchema = z.object({
-  NEXT_PUBLIC_APP_URL: z.string().url().default('http://localhost:3000'),
+  NEXT_PUBLIC_APP_URL: z.url().default('http://localhost:3000'),
   NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string().startsWith('pk_').optional(),
   NEXT_PUBLIC_STRIPE_PRICE_TOPUP_10: z.string().startsWith('price_').optional(),
   NEXT_PUBLIC_STRIPE_PRICE_TOPUP_25: z.string().startsWith('price_').optional(),
   NEXT_PUBLIC_STRIPE_PRICE_TOPUP_50: z.string().startsWith('price_').optional(),
-  NEXT_PUBLIC_SENTRY_DSN: z.string().url().optional(),
+  NEXT_PUBLIC_SENTRY_DSN: z.url().optional(),
 });
 
 export type ServerEnv = z.infer<typeof serverEnvSchema>;
