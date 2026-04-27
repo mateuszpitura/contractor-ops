@@ -87,7 +87,7 @@ export const calendarRouter = router({
    */
   disconnect: tenantProcedure
     .use(requireTier('PRO'))
-    .input(z.object({ connectionId: z.string().cuid() }))
+    .input(z.object({ connectionId: z.cuid() }))
     .mutation(async ({ ctx, input }) => {
       const connection = await ctx.db.integrationConnection.findFirst({
         where: {
@@ -152,7 +152,7 @@ export const calendarRouter = router({
    * Parses calendarTaskConfigSchema from the template's configJson.
    */
   getTaskConfig: tenantProcedure
-    .input(z.object({ taskTemplateId: z.string().cuid() }))
+    .input(z.object({ taskTemplateId: z.cuid() }))
     .query(async ({ ctx, input }) => {
       const template = await ctx.db.workflowTaskTemplate.findUnique({
         where: { id: input.taskTemplateId },
@@ -179,7 +179,7 @@ export const calendarRouter = router({
     .use(requireTier('PRO'))
     .input(
       z.object({
-        taskTemplateId: z.string().cuid(),
+        taskTemplateId: z.cuid(),
         config: calendarTaskConfigSchema,
       }),
     )

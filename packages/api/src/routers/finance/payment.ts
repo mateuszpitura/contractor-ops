@@ -518,7 +518,7 @@ export const paymentRouter = router({
 
   get: tenantProcedure
     .use(requirePermission({ payment: ['read'] }))
-    .input(z.object({ runId: z.string().cuid() }))
+    .input(z.object({ runId: z.cuid() }))
     .query(async ({ ctx, input }) => {
       const run = await ctx.db.paymentRun.findFirst({
         where: {
@@ -953,7 +953,7 @@ export const paymentRouter = router({
     .use(requirePermission({ payment: ['create'] }))
     .input(
       z.object({
-        runId: z.string().cuid(),
+        runId: z.cuid(),
         fileContent: z.string(),
         fileName: z.string(),
       }),
@@ -1172,7 +1172,7 @@ export const paymentRouter = router({
 
   listByContractor: tenantProcedure
     .use(requirePermission({ payment: ['read'] }))
-    .input(z.object({ contractorId: z.string().cuid() }))
+    .input(z.object({ contractorId: z.cuid() }))
     .query(async ({ ctx, input }) => {
       const items = await ctx.db.paymentRunItem.findMany({
         where: {

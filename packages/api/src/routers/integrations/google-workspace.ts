@@ -221,7 +221,7 @@ export const googleWorkspaceRouter = router({
     .use(requireTier('PRO'))
     .input(
       z.object({
-        userEmails: z.array(z.string().email()).min(1).max(500),
+        userEmails: z.array(z.email()).min(1).max(500),
       }),
     )
     .mutation(async ({ ctx, input }) => {

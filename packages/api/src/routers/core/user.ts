@@ -240,8 +240,8 @@ export const userRouter = router({
   setOutOfOffice: tenantProcedure
     .input(
       z.object({
-        from: z.string().datetime(),
-        until: z.string().datetime(),
+        from: z.iso.datetime(),
+        until: z.iso.datetime(),
         fallbackUserId: z.string().min(1).optional(),
         reason: z.string().max(500).optional(),
       }),

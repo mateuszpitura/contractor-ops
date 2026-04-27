@@ -110,8 +110,8 @@ const r2Service: R2Service = {
 // Shared input schemas
 // ---------------------------------------------------------------------------
 
-const invoiceIdInput = z.object({ invoiceId: z.string().cuid() });
-const lifecycleIdInput = z.object({ lifecycleId: z.string().cuid() });
+const invoiceIdInput = z.object({ invoiceId: z.cuid() });
+const lifecycleIdInput = z.object({ lifecycleId: z.cuid() });
 
 const listStatuses = [
   'all',
@@ -125,7 +125,7 @@ const listStatuses = [
 
 const listByOrgInput = z.object({
   status: z.enum(listStatuses).optional(),
-  cursor: z.string().cuid().optional(),
+  cursor: z.cuid().optional(),
   limit: z.number().int().min(1).max(100).default(50),
 });
 
@@ -235,7 +235,7 @@ export const einvoiceRouter = router({
    */
   generateZugferdPdf: tenantProcedure
     .use(requirePermission({ invoice: ['update'] }))
-    .input(z.object({ invoiceId: z.string().cuid() }))
+    .input(z.object({ invoiceId: z.cuid() }))
     .mutation(async ({ ctx, input }) => {
       const logger = await getLogger();
 

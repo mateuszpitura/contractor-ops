@@ -43,7 +43,7 @@ const upsertInput = z.object({
   role: chainRoleSchema,
   orderIndex: z.number().int().min(0),
   displayName: z.string().min(1).max(200),
-  contactEmail: z.string().email().max(320).optional().nullable(),
+  contactEmail: z.email().max(320).optional().nullable(),
   linkedContractorId: z.string().optional().nullable(),
 });
 

@@ -41,13 +41,13 @@ import { signExistingDownload } from '../services/r2.js';
 // Shared schemas
 // ---------------------------------------------------------------------------
 
-const intakeIdInput = z.object({ intakeId: z.string().cuid() });
+const intakeIdInput = z.object({ intakeId: z.cuid() });
 
 const listStatusValues = ['PARSED', 'NEEDS_REVIEW', 'MATCHED', 'CONVERTED', 'REJECTED'] as const;
 
 const listByOrgInput = z.object({
   status: z.enum(listStatusValues).optional(),
-  cursor: z.string().cuid().optional(),
+  cursor: z.cuid().optional(),
   limit: z.number().int().min(1).max(100).default(25),
 });
 
@@ -62,8 +62,8 @@ const uploadInput = z.object({
 });
 
 const confirmMatchInput = intakeIdInput.extend({
-  contractorId: z.string().cuid(),
-  contractId: z.string().cuid().optional(),
+  contractorId: z.cuid(),
+  contractId: z.cuid().optional(),
 });
 
 const rejectInput = intakeIdInput.extend({

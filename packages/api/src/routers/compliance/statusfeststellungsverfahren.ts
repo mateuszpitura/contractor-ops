@@ -64,9 +64,9 @@ const updateInput = z.object({
   filedAt: z.coerce.date().optional(),
   drvReference: z.string().min(1).max(100).optional(),
   outcome: outcomeEnum.optional(),
-  validFrom: z.coerce.date().nullable().optional(),
-  validTo: z.coerce.date().nullable().optional(),
-  notes: z.string().max(2000).nullable().optional(),
+  validFrom: z.coerce.date().nullish(),
+  validTo: z.coerce.date().nullish(),
+  notes: z.string().max(2000).nullish(),
 });
 
 const listInput = z.object({

@@ -109,7 +109,7 @@ const stepSchemas = [
       .string()
       .min(1)
       .refine(v => isValidNip(v), { message: 'Invalid NIP number' }),
-    email: z.string().email(),
+    email: z.email(),
   }),
   // Step 2: Billing
   z.object({

@@ -155,7 +155,7 @@ export const portalRouter = router({
    * matches a contractor -- prevents email enumeration (D-16 / Pitfall 2).
    */
   requestMagicLink: portalPublicProcedure
-    .input(z.object({ email: z.string().email() }))
+    .input(z.object({ email: z.email() }))
     .mutation(async ({ ctx, input }) => {
       const email = input.email.toLowerCase().trim();
       const contractors = await findContractorsByEmail(email);

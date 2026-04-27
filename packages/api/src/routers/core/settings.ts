@@ -273,7 +273,7 @@ export const settingsRouter = router({
           .regex(/^#[0-9a-fA-F]{6}$/, 'Must be a valid hex color')
           .optional()
           .nullable(),
-        logoUrl: z.string().url().optional().nullable(),
+        logoUrl: z.url().optional().nullable(),
       }),
     )
     .mutation(async ({ ctx, input }) => {

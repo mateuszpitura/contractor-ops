@@ -72,7 +72,7 @@ export const docsRouter = router({
    * Detach a doc link from a workflow task run.
    */
   detach: tenantProcedure
-    .input(z.object({ externalLinkId: z.string().cuid() }))
+    .input(z.object({ externalLinkId: z.cuid() }))
     .mutation(async ({ ctx, input }) => {
       await detachDocLink(ctx.db, {
         organizationId: ctx.organizationId,
@@ -86,7 +86,7 @@ export const docsRouter = router({
    * List all doc links (Notion/Confluence pages) attached to a workflow task run.
    */
   list: tenantProcedure
-    .input(z.object({ workflowTaskRunId: z.string().cuid() }))
+    .input(z.object({ workflowTaskRunId: z.cuid() }))
     .query(async ({ ctx, input }) => {
       const links = await getDocLinks(ctx.db, {
         organizationId: ctx.organizationId,
@@ -120,7 +120,7 @@ export const docsRouter = router({
    * if the cached data is older than 24 hours.
    */
   refreshMetadata: tenantProcedure
-    .input(z.object({ externalLinkId: z.string().cuid() }))
+    .input(z.object({ externalLinkId: z.cuid() }))
     .mutation(async ({ ctx, input }) => {
       const result = await refreshDocMetadata(ctx.db, input.externalLinkId, ctx.organizationId);
 

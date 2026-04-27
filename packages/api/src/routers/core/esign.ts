@@ -25,7 +25,7 @@ function plain<T>(data: T): T {
 
 const signerSchema = z.object({
   name: z.string().min(1),
-  email: z.string().email(),
+  email: z.email(),
   role: z.enum(['signer', 'countersigner']),
   routingOrder: z.number().int().positive(),
 });
@@ -38,13 +38,13 @@ const sendForSignatureInput = z.object({
   signers: z.array(signerSchema).min(1),
   message: z.string().optional(),
   expiresInDays: z.number().int().min(1).max(90).optional().default(14),
-  reminderIntervalDays: z.number().int().min(1).max(30).nullable().optional(),
+  reminderIntervalDays: z.number().int().min(1).max(30).nullish(),
 });
 
 const getSigningUrlInput = z.object({
   envelopeId: z.string(),
-  recipientEmail: z.string().email(),
-  returnUrl: z.string().url(),
+  recipientEmail: z.email(),
+  returnUrl: z.url(),
 });
 
 const voidEnvelopeInput = z.object({
@@ -54,7 +54,7 @@ const voidEnvelopeInput = z.object({
 
 const resendToRecipientInput = z.object({
   envelopeId: z.string(),
-  recipientEmail: z.string().email(),
+  recipientEmail: z.email(),
 });
 
 const getEnvelopeDetailInput = z.object({
