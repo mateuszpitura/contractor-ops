@@ -896,6 +896,8 @@
     "invoiceContractorNotFound": "Nie znaleziono kontrahenta w tej organizacji.",
     "invoiceContractNotFound": "Nie znaleziono umowy w tej organizacji.",
     "invoiceAlreadyPending": "Faktura jest już w trakcie zatwierdzania.",
+    "invoiceAlreadyVoided": "Faktura została już anulowana.",
+    "invoiceVoidNotAllowed": "Faktury nie można anulować w bieżącym stanie.",
     "invoiceDuplicate": "Duplikat faktury o tym samym numerze, sprzedawcy i kwocie już istnieje.",
     "invoiceAmountMismatch": "Kwota faktury nie zgadza się z oczekiwaną wartością dla tej pozycji.",
     "paymentRunNotFound": "Nie znaleziono przebiegu płatności.",
@@ -2099,6 +2101,7 @@
     "searchPlaceholder": "Szukaj faktur...",
     "filters": "Filtry",
     "clearAll": "Wyczyść wszystko",
+    "overdueFilter": "Po terminie",
     "columns": {
       "selectAll": "Zaznacz wszystko",
       "selectRow": "Zaznacz wiersz",

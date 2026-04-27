@@ -2243,6 +2243,7 @@
     "searchPlaceholder": "Search invoices...",
     "filters": "Filter",
     "clearAll": "Alle zurücksetzen",
+    "overdueFilter": "Überfällig",
     "columns": {
       "selectAll": "Select all",
       "selectRow": "Select row",

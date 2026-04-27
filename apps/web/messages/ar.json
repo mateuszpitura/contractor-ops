@@ -876,6 +876,8 @@
     "invoiceContractorNotFound": "Contractor not found in this organization.",
     "invoiceContractNotFound": "Contract not found in this organization.",
     "invoiceAlreadyPending": "Invoice is already pending approval.",
+    "invoiceAlreadyVoided": "تم إلغاء الفاتورة بالفعل.",
+    "invoiceVoidNotAllowed": "لا يمكن إلغاء الفاتورة في حالتها الحالية.",
     "invoiceDuplicate": "A duplicate invoice already exists with the same number, seller, and amount.",
     "paymentRunNotFound": "Payment run غير موجود.",
     "paymentInvoicesNotReady": "Some invoices are not ready for payment.",
@@ -2080,6 +2082,7 @@
     "searchPlaceholder": "البحث عن invoices...",
     "filters": "عوامل التصفية",
     "clearAll": "مسح الكل",
+    "overdueFilter": "متأخر السداد",
     "columns": {
       "selectAll": "تحديد الكل",
       "selectRow": "تحديد الصف",
