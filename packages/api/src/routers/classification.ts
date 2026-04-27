@@ -31,6 +31,8 @@ import {
   getProfileForCountry,
   outcomeSchema,
 } from '@contractor-ops/classification';
+import type { EngagementContext, Jurisdiction } from '@contractor-ops/compliance-policy';
+import { POLICY_RULE_SET_VERSION } from '@contractor-ops/compliance-policy';
 import { SDS_APPROVAL_STATEMENT_EN } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
@@ -38,6 +40,31 @@ import { router } from '../init.js';
 import { classificationSaveAnswerRateLimit } from '../middleware/classification-rate-limit.js';
 import { requirePermission } from '../middleware/rbac.js';
 import { classificationProcedure } from '../middleware/require-classification-flag.js';
+import {
+  extractOutcomeKind,
+  materialiseFromPolicy,
+  supersedeAndMaterialise,
+} from '../services/compliance-supersession.js';
+
+// ---------------------------------------------------------------------------
+// Phase 71 — country code → policy registry Jurisdiction enum mapping
+// ---------------------------------------------------------------------------
+// ClassificationAssessment.countryCode is ISO-3166-1 alpha-2 (GB, DE, PL, SA, AE).
+// The compliance-policy registry uses domain Jurisdiction labels ('UK', 'DE', 'PL',
+// 'KSA', 'UAE'). Jurisdictions outside the registry (FR, NL, ES, etc.) return null
+// so the supersession branch is skipped — no rows materialised, no rows touched.
+
+const COUNTRY_TO_JURISDICTION: Record<string, Jurisdiction> = {
+  GB: 'UK',
+  DE: 'DE',
+  PL: 'PL',
+  SA: 'KSA',
+  AE: 'UAE',
+};
+
+function mapCountryCodeToJurisdiction(countryCode: string): Jurisdiction | null {
+  return COUNTRY_TO_JURISDICTION[countryCode] ?? null;
+}
 
 // ---------------------------------------------------------------------------
 // Input schemas
@@ -387,77 +414,141 @@ export const classificationRouter = router({
   // for Pitfall 12 (discriminated-union validation).
   // -------------------------------------------------------------------------
   submit: contractorUpdateProcedure.input(submitInput).mutation(async ({ ctx, input }) => {
-    const row = await ctx.db.classificationAssessment.findFirst({
-      where: { id: input.assessmentId },
-    });
-    if (!row) {
-      throw new TRPCError({ code: 'NOT_FOUND' });
-    }
-    if (row.status !== 'draft') {
-      throw new TRPCError({
-        code: 'CONFLICT',
-        message: 'Assessment already submitted; assessments are append-only (D-04).',
+    // Phase 71 D-10 — entire body wrapped in $transaction. Atomicity guarantees
+    // the assessment update + the row materialisation/supersession are all-or-nothing.
+    // DO NOT extract any logic out of this transaction without re-evaluating
+    // supersession atomicity.
+    return ctx.db.$transaction(async tx => {
+      const row = await tx.classificationAssessment.findFirst({
+        where: { id: input.assessmentId },
       });
-    }
+      if (!row) {
+        throw new TRPCError({ code: 'NOT_FOUND' });
+      }
+      if (row.status !== 'draft') {
+        throw new TRPCError({
+          code: 'CONFLICT',
+          message: 'Assessment already submitted; assessments are append-only (D-04).',
+        });
+      }
 
-    const profile = getProfileForCountry(row.countryCode);
+      const profile = getProfileForCountry(row.countryCode);
 
-    let computed: Outcome;
-    try {
-      computed = profile.scoreAssessment(
-        row.answers as Parameters<typeof profile.scoreAssessment>[0],
-      );
-    } catch (err) {
-      // Engine errors (MissingAnswerError, malformed answers, etc.) surface
-      // as a typed BAD_REQUEST so the wizard can highlight the offending
-      // questions instead of leaking a stack trace (Pitfall 5).
-      throw new TRPCError({
-        code: 'BAD_REQUEST',
-        message:
-          err instanceof Error
-            ? `Scoring failed: ${err.message}`
-            : 'Scoring failed: unknown engine error.',
+      let computed: Outcome;
+      try {
+        computed = profile.scoreAssessment(
+          row.answers as Parameters<typeof profile.scoreAssessment>[0],
+        );
+      } catch (err) {
+        // Engine errors (MissingAnswerError, malformed answers, etc.) surface
+        // as a typed BAD_REQUEST so the wizard can highlight the offending
+        // questions instead of leaking a stack trace (Pitfall 5).
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message:
+            err instanceof Error
+              ? `Scoring failed: ${err.message}`
+              : 'Scoring failed: unknown engine error.',
+        });
+      }
+
+      // Validate the computed outcome before persistence.
+      const validatedOutcome = outcomeSchema.parse(computed);
+
+      const shell = profile.buildAssessment(row.contractorAssignmentId);
+      const snapshot = buildQuestionsSnapshot(profile, {
+        profileId: profile.profileId,
+        ruleSetVersion: profile.ruleSetVersion,
+        countryCode: profile.country,
+        questions: shell.questions,
       });
-    }
 
-    // Validate the computed outcome before persistence.
-    const validatedOutcome = outcomeSchema.parse(computed);
+      const now = new Date();
 
-    const shell = profile.buildAssessment(row.contractorAssignmentId);
-    const snapshot = buildQuestionsSnapshot(profile, {
-      profileId: profile.profileId,
-      ruleSetVersion: profile.ruleSetVersion,
-      countryCode: profile.country,
-      questions: shell.questions,
-    });
-
-    const now = new Date();
-    const updated = await ctx.db.classificationAssessment.update({
-      where: { id: row.id },
-      data: {
-        status: 'completed',
-        outcome: validatedOutcome,
-        questionsSnapshot: snapshot,
-        completedAt: now,
-        // Literal `immutableAfter: new Date` — D-04 append-only marker.
-        immutableAfter: new Date(now),
-      },
-    });
-
-    // Phase 60 · CLASS-08 — auto-resolve any OPEN/ACKNOWLEDGED reassessment
-    // triggers on this engagement once a fresh GB IR35 assessment has been
-    // submitted. Tenant-scoped client keeps cross-org rows untouched.
-    if (row.countryCode === 'GB') {
-      await ctx.db.reassessmentTrigger.updateMany({
+      // Phase 71 D-10 — find prior completed assessment for outcome-change detection.
+      const prior = await tx.classificationAssessment.findFirst({
         where: {
           contractorAssignmentId: row.contractorAssignmentId,
-          status: { in: ['OPEN', 'ACKNOWLEDGED'] },
+          status: 'completed',
         },
-        data: { status: 'RESOLVED', resolvedAt: now },
+        orderBy: { completedAt: 'desc' },
       });
-    }
 
-    return updated;
+      const updated = await tx.classificationAssessment.update({
+        where: { id: row.id },
+        data: {
+          status: 'completed',
+          outcome: validatedOutcome,
+          questionsSnapshot: snapshot,
+          completedAt: now,
+          // Literal `immutableAfter: new Date` — D-04 append-only marker.
+          immutableAfter: new Date(now),
+          // Phase 71 D-03 — snapshot policy rule set version onto every completed assessment.
+          policyRuleSetVersion: POLICY_RULE_SET_VERSION,
+        },
+      });
+
+      // Phase 71 D-10 — supersession-on-outcome-change OR first-classification materialisation.
+      // EngagementContext.sector is null today (ContractorAssignment has no sector column);
+      // de.eight_b_estg@v1 predicate returns false for null sector → conservative.
+      const jurisdiction = mapCountryCodeToJurisdiction(row.countryCode);
+      if (jurisdiction !== null) {
+        const assignment = await tx.contractorAssignment.findFirst({
+          where: { id: row.contractorAssignmentId },
+          select: {
+            id: true,
+            contractorId: true,
+            contractor: { select: { countryCode: true } },
+          },
+        });
+        if (assignment) {
+          const engagement: EngagementContext = {
+            jurisdiction,
+            outcome: extractOutcomeKind(validatedOutcome),
+            sector: null,
+            // Contractor.countryCode is the closest proxy to nationality today;
+            // when contractorNationality lands on Contractor in a future phase,
+            // swap this read.
+            contractorNationality: assignment.contractor?.countryCode ?? null,
+            requiresRegulatedEquipment: false,
+          };
+          if (!prior) {
+            // First classification — materialise from policy.
+            await materialiseFromPolicy(tx, {
+              organizationId: row.organizationId,
+              contractorId: assignment.contractorId,
+              contractId: null,
+              engagement,
+            });
+          } else if (extractOutcomeKind(prior.outcome) !== extractOutcomeKind(validatedOutcome)) {
+            // Outcome kind changed — supersede prior rows and re-materialise.
+            await supersedeAndMaterialise(tx, {
+              organizationId: row.organizationId,
+              contractorId: assignment.contractorId,
+              contractId: null,
+              engagement,
+              reason: 'classification_outcome_change',
+            });
+          }
+          // else: same outcome kind — no row churn (D-10 atomicity preserved by skipping).
+        }
+      }
+
+      // Phase 60 · CLASS-08 — auto-resolve any OPEN/ACKNOWLEDGED reassessment
+      // triggers on this engagement once a fresh GB IR35 assessment has been
+      // submitted. Tenant-scoped client keeps cross-org rows untouched.
+      if (row.countryCode === 'GB') {
+        await tx.reassessmentTrigger.updateMany({
+          where: {
+            contractorAssignmentId: row.contractorAssignmentId,
+            status: { in: ['OPEN', 'ACKNOWLEDGED'] },
+          },
+          data: { status: 'RESOLVED', resolvedAt: now },
+        });
+      }
+
+      return updated;
+    });
   }),
 
   // -------------------------------------------------------------------------

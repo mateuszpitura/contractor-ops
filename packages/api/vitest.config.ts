@@ -58,6 +58,10 @@ export default defineConfig({
         find: '@contractor-ops/test-utils',
         replacement: path.join(packagesDir, 'test-utils/src/index.ts'),
       },
+      {
+        find: '@contractor-ops/compliance-policy',
+        replacement: path.join(packagesDir, 'compliance-policy/src/index.ts'),
+      },
     ],
   },
   test: {

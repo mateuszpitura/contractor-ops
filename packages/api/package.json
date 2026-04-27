@@ -171,6 +171,7 @@
     "@react-pdf/renderer": "^4.4.1",
     "@contractor-ops/auth": "workspace:*",
     "@contractor-ops/classification": "workspace:*",
+    "@contractor-ops/compliance-policy": "workspace:*",
     "@contractor-ops/db": "workspace:*",
     "@contractor-ops/einvoice": "workspace:*",
     "@contractor-ops/feature-flags": "workspace:*",
