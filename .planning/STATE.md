@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v6.0
 milestone_name: Platform Maturity & Operational Hardening
-status: executing
-stopped_at: Phase 73 context gathered
-last_updated: "2026-04-27T13:57:41.256Z"
-last_activity: 2026-04-27 -- Phase 72 planning complete
+status: blocked
+stopped_at: Phase 72 execute aborted — dirty working tree (see Blockers)
+last_updated: "2026-04-27T14:00:00.000Z"
+last_activity: 2026-04-27 -- Phase 72 execute-phase aborted on dirty tree
 progress:
   total_phases: 11
   completed_phases: 3
@@ -15,6 +15,53 @@ progress:
 ---
 
 # Project State
+
+## Blockers
+
+### BLOCKER (2026-04-27): Phase 72 execution aborted — dirty working tree
+
+**Phase:** 72 — F1 Compliance — Reminder Cascade + Payment Block
+**Workflow:** `gsd:execute-phase 72`
+**Status:** Aborted before any plan was spawned. No phase 72 commits were made.
+
+**What happened:**
+
+`gsd:execute-phase 72` started, parsed init successfully (8 plans across 3 waves, parallel + worktree mode, all `incomplete`), and then performed pre-flight checks. The working tree was found to contain **279 uncommitted changes** (263 modified files + 16 untracked paths) from prior unrelated work — including a refactor that directly collides with Plan 72-08's target file.
+
+**Concrete collision (hard blocker):**
+
+- `apps/web/src/app/api/cron/reminders/route.ts` is in `git status` as `M` AND is listed in Plan 72-08 `files_modified`.
+- The uncommitted change in `route.ts` deletes the inline `detectDrvClearanceExpiries` function and replaces it with `import { detectDrvClearanceExpiries } from './drv-clearance-expiries';` — a real refactor.
+- Two new untracked files back this refactor: `apps/web/src/app/api/cron/reminders/drv-clearance-expiries.ts` and `apps/web/src/app/api/cron/reminders/reminders-shared.ts`.
+- Worktree-isolated executors clone HEAD, so they would NOT see this refactor and would re-introduce the deleted code in their own commit. Subsequent worktree merge-back would either drop the refactor or generate complex conflicts. Either outcome corrupts both the refactor and Plan 72-08.
+
+**Other dirty surfaces (soft blockers — broad collision risk):**
+
+- 263 modified files spanning `apps/web`, `apps/landing`, `apps/public-api`, `packages/api`, `packages/db`, `packages/validators`, `scripts/`, plus configs (`next.config.ts`, multiple `package.json`, `biome.ci.json`).
+- 16 untracked paths including new `packages/api/src/routers/{compliance,core,equipment,finance,integrations,portal,workflow}/index.ts` (a router-restructure refactor in progress).
+- These overlap conceptually with Phase 72's API/router/payment surfaces even where filenames don't match exactly. Spawning 8 plan agents on top of this state is unsafe.
+
+**No `.planning/` files are dirty** — the conflict is purely in production source.
+
+**No phase 72 commits exist** — STATE.md was NOT updated to "Active Phase 72" yet, and `state.begin-phase` was deliberately not called. The phase 72 plans, CONTEXT.md, RESEARCH.md, PATTERNS.md, VALIDATION.md remain untouched and ready.
+
+**To unblock — pick one of:**
+
+1. **Commit the in-flight refactor** (recommended if it represents real, intentional work):
+   - `git status` → review the 279 changes
+   - Stage and commit them as one or more atomic refactor commits on `main`
+   - Then re-run `gsd:execute-phase 72`
+2. **Stash if the refactor is exploratory:**
+   - `git stash push -u -m "pre-phase-72 refactor in-flight"` (note: `-u` to include the 16 untracked files)
+   - Run `gsd:execute-phase 72`
+   - Restore with `git stash pop` afterwards (expect conflicts on `route.ts` — Plan 72-08 will have rewritten it)
+3. **Discard if the changes are debris** (DESTRUCTIVE — only if certain):
+   - `git restore .` and `git clean -fd` — manager / user must explicitly authorise this
+   - Then re-run `gsd:execute-phase 72`
+
+**Concurrency note:** A background agent for Phase 73 planning may be running in parallel. It should not be touching production source files (read-only on Phase 72 surfaces, write-only on `.planning/phases/73-*`), so it is unlikely to be the source of the dirty tree. The dirty changes pre-date this `gsd:execute-phase 72` invocation (uncommitted before STATE.md was last updated at 13:57 today).
+
+
 
 ## Project Reference
 
