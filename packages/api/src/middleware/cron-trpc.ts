@@ -1,14 +1,24 @@
 import { timingSafeEqual } from 'node:crypto';
+import { createLogger } from '@contractor-ops/logger';
 import { getServerEnv } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { t } from '../init.js';
+
+const log = createLogger({ service: 'cron-trpc-middleware' });
 
 /**
  * Requires `Authorization: Bearer <CRON_SECRET>` (same contract as /api/cron/* routes).
  * Use for tRPC mutations that should only be triggered by trusted schedulers (Vercel Cron, internal jobs).
  */
 const cronTrpcMiddleware = t.middleware(({ ctx, next }) => {
+  // Resolve via getServerEnv so the env validator (z.string().min(16)) gates startup.
+  // Defensive guard ensures we never accept a missing/short secret which would let
+  // `Authorization: Bearer ` (length 7) bypass the auth check.
   const cronSecret = getServerEnv().CRON_SECRET;
+  if (!cronSecret || cronSecret.length < 16) {
+    log.error('CRON_SECRET misconfigured — rejecting cron tRPC call');
+    throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Server misconfigured' });
+  }
 
   const authHeader = ctx.headers.get('authorization') ?? '';
   const expected = `Bearer ${cronSecret}`;

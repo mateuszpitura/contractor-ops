@@ -3,6 +3,7 @@ import { withCronMonitor } from '@contractor-ops/api/services/cron-monitor';
 import { prisma } from '@contractor-ops/db';
 import { createCronLogger } from '@contractor-ops/logger';
 import { metrics } from '@contractor-ops/logger/metrics';
+import { getServerEnv } from '@contractor-ops/validators';
 import * as Sentry from '@sentry/nextjs';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
@@ -32,8 +33,17 @@ const FAILURE_ALERT_THRESHOLD = 10;
  * 4. Reports metrics and fires Sentry alerts when thresholds breached
  */
 export async function GET(request: NextRequest) {
+  // Resolve CRON_SECRET via getServerEnv so length validation (min 16) is enforced
+  // at module load. Defensive guard ensures we never accept a missing/short secret
+  // (which would let `Authorization: Bearer ` (length 7) bypass the auth check).
+  const cronSecret = getServerEnv().CRON_SECRET;
+  if (!cronSecret || cronSecret.length < 16) {
+    log.error('CRON_SECRET misconfigured — refusing to run job-health');
+    return NextResponse.json({ error: 'Server misconfigured' }, { status: 500 });
+  }
+
   const authHeader = request.headers.get('authorization') ?? '';
-  const expected = `Bearer ${process.env.CRON_SECRET ?? ''}`;
+  const expected = `Bearer ${cronSecret}`;
   const isAuthorized =
     authHeader.length === expected.length &&
     timingSafeEqual(Buffer.from(authHeader), Buffer.from(expected));
