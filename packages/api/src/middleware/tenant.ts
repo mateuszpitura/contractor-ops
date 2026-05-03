@@ -1,8 +1,57 @@
-import { createTenantClientFrom, getRegionalClient, prisma, tenantStore } from '@contractor-ops/db';
+import { createTenantClientFrom, getRegionalClient, tenantStore } from '@contractor-ops/db';
 import { TRPCError } from '@trpc/server';
 import * as E from '../errors.js';
 import { t } from '../init.js';
+import { getOrgMeta, invalidateOrgMeta } from '../services/org-cache.js';
 import { authedProcedure } from './auth.js';
+
+// ---------------------------------------------------------------------------
+// Org-meta cache invalidation — F-DB-03 — wraps the tenant-scoped client with
+// a Prisma extension that drops the cached `org:${id}:meta` envelope whenever
+// any caller updates or deletes the Organization row.
+// ---------------------------------------------------------------------------
+
+type OrgMutationArgs = {
+  where?: { id?: unknown };
+  data?: { id?: unknown };
+};
+
+/**
+ * Layers an Organization-write invalidation extension on top of the tenant +
+ * soft-delete client returned by `createTenantClientFrom`. Lives in the api
+ * package because the org-cache itself lives here; the db package can stay
+ * cache-agnostic.
+ *
+ * Fire-and-forget invalidation: cache failures are logged inside
+ * `invalidateOrgMeta` but never propagate to the caller. Mutation result
+ * shape is preserved verbatim.
+ */
+function withOrgCacheInvalidation<T extends ReturnType<typeof createTenantClientFrom>>(
+  client: T,
+): T {
+  return client.$extends({
+    query: {
+      organization: {
+        async update({ args, query }) {
+          const result = await query(args);
+          const orgId = (args as OrgMutationArgs).where?.id ?? (args as OrgMutationArgs).data?.id;
+          if (typeof orgId === 'string') {
+            void invalidateOrgMeta(orgId);
+          }
+          return result;
+        },
+        async delete({ args, query }) {
+          const result = await query(args);
+          const orgId = (args as OrgMutationArgs).where?.id;
+          if (typeof orgId === 'string') {
+            void invalidateOrgMeta(orgId);
+          }
+          return result;
+        },
+      },
+    },
+  }) as unknown as T;
+}
 
 // ---------------------------------------------------------------------------
 // Shared tenant context setup — reusable across session & API key auth flows
@@ -29,15 +78,15 @@ export async function runWithTenantContext<T>(
   let region = knownRegion;
 
   if (!region) {
-    const org = await prisma.organization.findUnique({
-      where: { id: orgId },
-      select: { dataRegion: true },
-    });
-    region = org?.dataRegion ?? 'EU';
+    // F-DB-03 — read-through Upstash Redis cache (5min TTL, key `org:${id}:meta`).
+    // Falls back to a single Prisma findUnique on miss; degrades to direct DB
+    // when Redis is unavailable.
+    const meta = await getOrgMeta(orgId);
+    region = meta?.dataRegion ?? 'EU';
   }
 
   const regionalPrisma = getRegionalClient(region);
-  const scopedClient = createTenantClientFrom(regionalPrisma);
+  const scopedClient = withOrgCacheInvalidation(createTenantClientFrom(regionalPrisma));
 
   return tenantStore.run({ organizationId: orgId, region }, () =>
     fn({ organizationId: orgId, region, db: scopedClient }),
@@ -46,22 +95,22 @@ export async function runWithTenantContext<T>(
 
 /**
  * F-SEC-12 — Reject suspended/archived organizations from the tenant flow.
- * Called from session-based middleware. API-key auth performs its own check
- * inline because it already loads `organization.status` while resolving the
- * key (avoids a second DB round-trip).
+ * Returns the cached meta envelope so the caller can reuse the resolved
+ * dataRegion and skip the second cache hit inside `runWithTenantContext`.
+ *
+ * F-DB-03 — single read-through cache hit covers both status and region.
  */
-async function assertOrganizationActive(orgId: string): Promise<void> {
-  const org = await prisma.organization.findUnique({
-    where: { id: orgId },
-    select: { status: true },
-  });
+async function loadAndAssertActive(orgId: string): Promise<{ region: string }> {
+  const meta = await getOrgMeta(orgId);
 
-  if (!org || org.status !== 'ACTIVE') {
+  if (!meta || meta.status !== 'ACTIVE') {
     throw new TRPCError({
       code: 'FORBIDDEN',
       message: E.ORG_SUSPENDED,
     });
   }
+
+  return { region: meta.dataRegion };
 }
 
 // ---------------------------------------------------------------------------
@@ -89,15 +138,18 @@ const tenantMiddleware = t.middleware(async ({ ctx, next }) => {
     });
   }
 
-  // F-SEC-12 — Block tenant context establishment for suspended/archived orgs.
-  await assertOrganizationActive(orgId);
+  // F-SEC-12 + F-DB-03 — Single cache hit returns dataRegion *and* asserts
+  // ACTIVE status so we don't pay two Redis round-trips per request.
+  const { region } = await loadAndAssertActive(orgId);
 
   // Preserve narrowed session/user types from the auth middleware through the spread.
   const session = ctx.session;
   const user = ctx.user;
 
-  return runWithTenantContext(orgId, async tenantCtx =>
-    next({ ctx: { ...ctx, ...tenantCtx, session, user } }),
+  return runWithTenantContext(
+    orgId,
+    async tenantCtx => next({ ctx: { ...ctx, ...tenantCtx, session, user } }),
+    region,
   );
 });
 
