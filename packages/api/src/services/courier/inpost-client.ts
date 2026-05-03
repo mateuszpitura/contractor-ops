@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { z } from 'zod';
 
 import type {
@@ -92,9 +93,23 @@ export class InPostClient implements CourierClient {
       external_customer_id: inpostParams.organizationId,
     };
 
+    // F-INT-04: server-derived Idempotency-Key prevents duplicate physical
+    // labels when QStash or our own retry logic re-fires after a 5xx that
+    // actually succeeded upstream. The natural key is (orgId, reference) —
+    // ShipX accepts any string ≤255 chars.
+    const idempotencyKey = `inpost-${createHash('sha256')
+      .update(
+        `${inpostParams.organizationId}|${inpostParams.reference}|${inpostParams.targetPoint}`,
+      )
+      .digest('base64url')
+      .slice(0, 48)}`;
+
     const response = await globalThis.fetch(url, {
       method: 'POST',
-      headers: this.headers,
+      headers: {
+        ...this.headers,
+        'Idempotency-Key': idempotencyKey,
+      },
       body: JSON.stringify(body),
     });
 

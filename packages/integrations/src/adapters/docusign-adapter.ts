@@ -1,4 +1,4 @@
-import { createHmac, timingSafeEqual } from 'node:crypto';
+import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
 import { prisma } from '@contractor-ops/db';
 import { createIntegrationLogger } from '@contractor-ops/logger';
 import { decryptCredentials } from '../services/credential-service.js';
@@ -341,6 +341,23 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
     }
 
     const envelope = docusign.EnvelopeDefinition.constructFromObject(envelopeDefinition);
+
+    // F-INT-04: server-derived X-DocuSign-Idempotency-Key — DocuSign documents
+    // a 24h dedup window. Hash the (connectionId, document, signers) tuple so
+    // a QStash retry of the same envelope creation collapses to one envelope
+    // rather than spawning a duplicate. The SDK has no per-call header opt,
+    // so we set it via the client's default headers; the call site is the
+    // sole caller of createEnvelope on this client instance per request.
+    const idempotencyKey = `envelope-${createHash('sha256')
+      .update(
+        `${connectionId}|${request.documentName}|${request.documentBase64.length}|${request.signers
+          .map(s => s.email)
+          .sort()
+          .join(',')}`,
+      )
+      .digest('base64url')
+      .slice(0, 48)}`;
+    apiClient.addDefaultHeader('X-DocuSign-Idempotency-Key', idempotencyKey);
 
     const result: DocuSignEnvelopeSummary = await envelopesApi.createEnvelope(accountId, {
       envelopeDefinition: envelope,

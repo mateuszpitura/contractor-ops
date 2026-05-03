@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import {
   storecoveLegalEntitySchema,
   storecoveReceivedDocumentSchema,
@@ -34,6 +35,14 @@ export class StorecoveClient {
 
   /**
    * Submit a UBL document for transmission via the Peppol network.
+   *
+   * F-INT-04: passes an `Idempotency-Key` header derived from sha256 of the
+   * UBL document body + sender + receiver. Storecove documents this header
+   * for the document_submissions endpoint and dedupes against it for at
+   * least 24h. Critical for Peppol compliance — a duplicate transmission
+   * means the receiver gets two copies and our local lifecycle row diverges
+   * from the receiver's e-archive. Callers can override via `idempotencyKey`
+   * when they hold a stronger natural key (e.g. invoice id + revision).
    */
   async submitDocument(params: {
     xml: string;
@@ -41,10 +50,24 @@ export class StorecoveClient {
     receiverIdentifier: string;
     receiverScheme: string;
     documentType: string;
+    /** Server-derived; defaults to sha256(xml + sender + receiver). */
+    idempotencyKey?: string;
   }): Promise<StorecoveDocumentSubmission> {
+    const idempotencyKey =
+      params.idempotencyKey ??
+      `peppol-${createHash('sha256')
+        .update(
+          `${params.senderLegalEntityId}|${params.receiverScheme}:${params.receiverIdentifier}|${params.xml}`,
+        )
+        .digest('base64url')
+        .slice(0, 48)}`;
+
     const response = await fetch(`${this.baseUrl}/document_submissions`, {
       method: 'POST',
-      headers: this.headers,
+      headers: {
+        ...this.headers,
+        'Idempotency-Key': idempotencyKey,
+      },
       body: JSON.stringify({
         legal_entity_id: params.senderLegalEntityId,
         document: {
