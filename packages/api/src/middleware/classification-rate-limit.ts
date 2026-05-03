@@ -16,10 +16,13 @@
 // this is effectively per-assessment, but prefixing with orgId keeps the key
 // space balanced across tenants.
 
+import { createLogger } from '@contractor-ops/logger';
 import { TRPCError } from '@trpc/server';
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
 import { t } from '../init.js';
+
+const log = createLogger({ service: 'api', component: 'classification-rate-limit' });
 
 // ---------------------------------------------------------------------------
 // Config
@@ -124,9 +127,30 @@ export const classificationSaveAnswerRateLimit = t.middleware(async ({ ctx, inpu
     try {
       const result = await upstashLimiter.limit(key);
       allowed = result.success;
-    } catch {
-      // Redis transient error: fall back to in-memory count so we still
-      // detect a runaway autosave loop on the same instance.
+    } catch (err) {
+      // F-SCALE-03: in production, fail-CLOSED if Upstash is unreachable.
+      // The autosave loop is the cheapest possible DoS — a misbehaving
+      // client can hammer saveAnswer at hundreds of req/s. The in-memory
+      // fallback is per-pod and cannot detect the same assessment hitting
+      // a different instance, so a Redis outage means no real cap on a
+      // multi-pod deploy. dev/test still falls back so local runs work.
+      const env = process.env.NODE_ENV ?? 'development';
+      if (env === 'production') {
+        log.error(
+          { err, organizationId, assessmentId },
+          'upstash rate limiter unavailable — failing closed for classification.saveAnswer',
+        );
+        // 503 SERVICE_UNAVAILABLE — autosave clients should back off and
+        // retry. The autosave UX already tolerates transient failures.
+        throw new TRPCError({
+          code: 'SERVICE_UNAVAILABLE',
+          message: 'errors.classification.rateLimiterUnavailable',
+        });
+      }
+      log.warn(
+        { err, env, organizationId, assessmentId },
+        'upstash rate limiter unavailable — falling back to in-memory (non-prod only)',
+      );
       allowed = fallbackCheck(key).allowed;
     }
   } else {
