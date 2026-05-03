@@ -178,11 +178,21 @@ describe('KsefApiClient', () => {
     });
 
     it('throws when session never reaches READY status after 30 polls', async () => {
-      // Stub setTimeout to resolve immediately so polling completes without real delays
-      vi.spyOn(globalThis, 'setTimeout').mockImplementation((fn: () => void) => {
+      // F-INT-20: distinguish the wall-clock timer (90s) from the inter-poll
+      // sleep (1s). We want sleeps to resolve immediately but the wall-clock
+      // to NOT fire — otherwise the polling loop short-circuits on first
+      // iteration via `if (opSignal.aborted) break`.
+      const realSetTimeout = globalThis.setTimeout;
+      vi.spyOn(globalThis, 'setTimeout').mockImplementation(((fn: () => void, ms?: number) => {
+        // Long timers (>5s) are the wall-clock guard — leave them as real
+        // (won't fire within the test's lifetime). Short timers are sleeps
+        // we want to short-circuit.
+        if (typeof ms === 'number' && ms > 5_000) {
+          return realSetTimeout(fn, ms);
+        }
         fn();
         return 0 as unknown as ReturnType<typeof setTimeout>;
-      });
+      }) as unknown as typeof setTimeout);
 
       fetchMock
         // Step 1: GET /auth/public-key
@@ -206,8 +216,10 @@ describe('KsefApiClient', () => {
 
       const client = new KsefApiClient('test');
 
+      // F-INT-20: error message now reflects the wall-clock budget
+      // (90s) rather than the old 30s session-poll attempt count.
       await expect(client.authenticate('test-token', '5261040828')).rejects.toThrow(
-        'KSeF session did not become ready within 30 seconds',
+        /KSeF session did not become ready within \d+s/,
       );
 
       // 3 auth calls + 30 polling calls = 33
