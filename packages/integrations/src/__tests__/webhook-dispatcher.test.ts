@@ -21,6 +21,7 @@ vi.mock('@contractor-ops/db', () => ({
 // Mock QStash client (path relative to the source module that imports it)
 vi.mock('../services/qstash-client.js', () => ({
   getQStashClient: vi.fn(),
+  publishJSONWithContext: vi.fn(),
 }));
 
 // ---------------------------------------------------------------------------
@@ -29,7 +30,7 @@ vi.mock('../services/qstash-client.js', () => ({
 
 import { prisma } from '@contractor-ops/db';
 import { getAdapter } from '../registry.js';
-import { getQStashClient } from '../services/qstash-client.js';
+import { getQStashClient, publishJSONWithContext } from '../services/qstash-client.js';
 import {
   dispatchWebhook,
   logWebhookDelivery,
@@ -40,6 +41,7 @@ import type { IntegrationProviderAdapter } from '../types/provider.js';
 const mockGetAdapter = vi.mocked(getAdapter);
 const mockPrismaCreate = vi.mocked(prisma.webhookDelivery.create);
 const mockGetQStashClient = vi.mocked(getQStashClient);
+const mockPublishJSONWithContext = vi.mocked(publishJSONWithContext);
 
 describe('webhook-dispatcher', () => {
   beforeEach(() => {
@@ -191,14 +193,11 @@ describe('webhook-dispatcher', () => {
 
   describe('queueWebhookProcessing', () => {
     it('should publish to QStash with correct URL and body', async () => {
-      const mockPublishJSON = vi.fn().mockResolvedValue({});
-      mockGetQStashClient.mockReturnValue({
-        publishJSON: mockPublishJSON,
-      } as never);
+      mockPublishJSONWithContext.mockResolvedValue({} as never);
 
       await queueWebhookProcessing('delivery-123', 'slack');
 
-      expect(mockPublishJSON).toHaveBeenCalledWith({
+      expect(mockPublishJSONWithContext).toHaveBeenCalledWith({
         url: 'https://app.test.com/api/webhooks/_process',
         body: { deliveryId: 'delivery-123', provider: 'slack' },
         retries: 3,
