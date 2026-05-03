@@ -216,13 +216,32 @@ describe('dispatch', () => {
     expect(mockPrefFindFirst).not.toHaveBeenCalled();
   });
 
-  it('deduplicates: skips notification if recent duplicate exists', async () => {
+  it('deduplicates: silently swallows P2002 unique violation on (organizationId, dedupKey)', async () => {
+    // F-ASYNC-04: dedup is enforced at the DB layer via the
+    // (organizationId, dedupKey) unique constraint. The service catches the
+    // P2002 unique violation, treats it as "already delivered", and does
+    // NOT fire side channels (email/Slack) — another worker is responsible.
     mockPrefFindFirst.mockResolvedValue(defaultPrefs);
-    mockFindFirst.mockResolvedValueOnce({ id: 'existing_notif' });
+    const uniqueErr = Object.assign(new Error('Unique constraint failed'), { code: 'P2002' });
+    mockCreate.mockRejectedValueOnce(uniqueErr);
+
+    // Should NOT throw — the dedup error is intentional.
+    await expect(dispatch(makeEvent())).resolves.toBeUndefined();
+
+    // Email send should be skipped because the IN_APP insert was deduped.
+    expect(mockUserFindUnique).not.toHaveBeenCalled();
+  });
+
+  it('passes a stable dedupKey on every notification create', async () => {
+    mockPrefFindFirst.mockResolvedValue(defaultPrefs);
 
     await dispatch(makeEvent());
 
-    expect(mockCreate).not.toHaveBeenCalled();
+    expect(mockCreate).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        dedupKey: expect.stringMatching(/^user_1:INVOICE_APPROVED:inv_1:\d+$/),
+      }),
+    });
   });
 
   it('does not throw when email sending fails (fire-and-forget)', async () => {

@@ -3,6 +3,7 @@
  * task actions (complete, skip, reassign), comments, and overdue count.
  */
 
+import { randomUUID } from 'node:crypto';
 import type { Prisma } from '@contractor-ops/db';
 import {
   addCommentSchema,
@@ -208,6 +209,18 @@ function computeTaskDueAt(
 /**
  * Instantiates WorkflowTaskRun records for each template task.
  * Returns a map of template task ID -> run task ID.
+ *
+ * F-DB-06 — single `createMany` instead of N sequential `create` calls.
+ * IDs are pre-generated client-side (UUID v4) so `dependsOnTaskRunId` can be
+ * resolved synchronously from the template's `dependsOnTaskTemplateId` chain
+ * without an intermediate round-trip. The DB accepts any unique string for
+ * `id` — the prior code only relied on Prisma's default `cuid()` for
+ * generation, which we replace with `randomUUID()` here. The shape of
+ * persisted rows is otherwise identical.
+ *
+ * Assignee resolution still happens per-task (it can hit the DB via
+ * `member.findMany`), but it now runs INSIDE `Promise.all` rather than
+ * sequentially, collapsing N RTT into ~1 wall-clock RTT.
  */
 async function instantiateTaskRuns(
   tx: TxClient,
@@ -232,61 +245,82 @@ async function instantiateTaskRuns(
   contract: { id: string; [k: string]: unknown } | null,
   now: Date,
 ): Promise<Map<string, string>> {
+  // Pre-generate run ids first so dependency resolution is purely local.
   const taskIdMap = new Map<string, string>();
+  for (const t of templateTasks) {
+    taskIdMap.set(t.id, randomUUID());
+  }
 
-  for (const taskTemplate of templateTasks) {
-    const condition = taskTemplate.configJson as ConditionGroup | null;
-    const conditionMet = evaluateCondition(condition, {
+  // Resolve assignees in parallel — Promise.all collapses N round-trips into
+  // ~1 wall-clock RTT (Prisma adapter pipelines them onto the same tx).
+  const conditions = templateTasks.map(t => ({
+    template: t,
+    conditionMet: evaluateCondition(t.configJson as ConditionGroup | null, {
       contractor,
       contract: contract ?? undefined,
-    });
+    }),
+  }));
 
-    const assigneeUserId = conditionMet
-      ? await resolveAssignee(
-          taskTemplate,
-          contractor as { internalOwnerUserId?: string | null },
-          contract as { internalOwnerUserId?: string | null } | null,
-          organizationId,
-          tx,
-        )
-      : null;
+  const assignees = await Promise.all(
+    conditions.map(({ template, conditionMet }) =>
+      conditionMet
+        ? resolveAssignee(
+            template,
+            contractor as { internalOwnerUserId?: string | null },
+            contract as { internalOwnerUserId?: string | null } | null,
+            organizationId,
+            tx,
+          )
+        : Promise.resolve(null),
+    ),
+  );
 
+  type WorkflowTaskRunCreateInput = Parameters<
+    typeof tx.workflowTaskRun.createMany
+  >[0]['data'] extends infer D
+    ? D extends Array<infer R>
+      ? R
+      : D
+    : never;
+
+  const data: WorkflowTaskRunCreateInput[] = conditions.map(({ template, conditionMet }, i) => {
     const dueAt = computeTaskDueAt(
       conditionMet,
-      taskTemplate.dueOffsetDays,
-      taskTemplate.dueOffsetHours,
+      template.dueOffsetDays,
+      template.dueOffsetHours,
       now,
     );
 
-    const dependsOnRunId = taskTemplate.dependsOnTaskTemplateId
-      ? (taskIdMap.get(taskTemplate.dependsOnTaskTemplateId) ?? null)
+    const dependsOnRunId = template.dependsOnTaskTemplateId
+      ? (taskIdMap.get(template.dependsOnTaskTemplateId) ?? null)
       : null;
 
     const { status, resultJson } = resolveTaskRunStatus(conditionMet, dependsOnRunId);
 
-    const taskRun = await tx.workflowTaskRun.create({
-      data: {
-        organizationId,
-        workflowRunId,
-        workflowTaskTemplateId: taskTemplate.id,
-        title: taskTemplate.title,
-        description: taskTemplate.description,
-        taskType: taskTemplate.taskType as Parameters<
-          typeof tx.workflowTaskRun.create
-        >[0]['data']['taskType'],
-        required: taskTemplate.required,
-        assigneeUserId,
-        assigneeRole: taskTemplate.assigneeRole as Parameters<
-          typeof tx.workflowTaskRun.create
-        >[0]['data']['assigneeRole'],
-        dueAt,
-        dependsOnTaskRunId: dependsOnRunId,
-        status,
-        resultJson: (resultJson ?? undefined) as Prisma.InputJsonValue | undefined,
-      },
-    });
+    return {
+      id: taskIdMap.get(template.id) as string,
+      organizationId,
+      workflowRunId,
+      workflowTaskTemplateId: template.id,
+      title: template.title,
+      description: template.description,
+      taskType: template.taskType as Parameters<
+        typeof tx.workflowTaskRun.create
+      >[0]['data']['taskType'],
+      required: template.required,
+      assigneeUserId: assignees[i] ?? null,
+      assigneeRole: template.assigneeRole as Parameters<
+        typeof tx.workflowTaskRun.create
+      >[0]['data']['assigneeRole'],
+      dueAt,
+      dependsOnTaskRunId: dependsOnRunId,
+      status,
+      resultJson: (resultJson ?? undefined) as Prisma.InputJsonValue | undefined,
+    } as WorkflowTaskRunCreateInput;
+  });
 
-    taskIdMap.set(taskTemplate.id, taskRun.id);
+  if (data.length > 0) {
+    await tx.workflowTaskRun.createMany({ data });
   }
 
   return taskIdMap;

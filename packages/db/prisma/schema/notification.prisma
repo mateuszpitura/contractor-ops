@@ -13,11 +13,19 @@ model Notification {
   status         NotificationStatus  @default(PENDING)
   sentAt         DateTime?
   readAt         DateTime?
+  // P2-A · F-ASYNC-04 — natural-key dedup. Producers compute a stable key
+  // (e.g. `${userId}:${type}:${entityId}:${dateBucket}`) so two concurrent
+  // QStash retries cannot both pass a `findFirst` race and both insert.
+  // Nullable to keep the door open for one-shot notifications that don't
+  // need dedup (e.g. ad-hoc broadcast). The unique constraint below scopes
+  // by org so the same key in two tenants is allowed.
+  dedupKey       String?
   createdAt      DateTime            @default(now())
 
   organization Organization @relation(fields: [organizationId], references: [id])
   user         User         @relation(fields: [userId], references: [id])
 
+  @@unique([organizationId, dedupKey])
   @@index([organizationId])
   @@index([organizationId, userId, status])
 }

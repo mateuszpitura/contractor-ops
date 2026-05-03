@@ -195,7 +195,15 @@ describe('drainOutboxBatch', () => {
         id: 'oxe_2',
         organizationId: 'org_1',
         eventType: 'notification.dispatch',
-        payloadJson: { organizationId: 'org_1' },
+        payloadJson: {
+          organizationId: 'org_1',
+          type: 'INVOICE_RECEIVED',
+          recipientUserIds: ['u1'],
+          title: 't',
+          body: 'b',
+          entityType: 'INVOICE',
+          entityId: 'inv_1',
+        },
         attempts: 0,
       },
     ]);
@@ -222,7 +230,15 @@ describe('drainOutboxBatch', () => {
         id: 'oxe_3',
         organizationId: 'org_1',
         eventType: 'notification.dispatch',
-        payloadJson: { organizationId: 'org_1' },
+        payloadJson: {
+          organizationId: 'org_1',
+          type: 'INVOICE_RECEIVED',
+          recipientUserIds: ['u1'],
+          title: 't',
+          body: 'b',
+          entityType: 'INVOICE',
+          entityId: 'inv_1',
+        },
         attempts: MAX_OUTBOX_ATTEMPTS - 1,
       },
     ]);

@@ -67,10 +67,30 @@ function buildPreferencesUrl(): string {
 }
 
 // ---------------------------------------------------------------------------
-// Deduplication window (60 seconds)
+// Deduplication
 // ---------------------------------------------------------------------------
+//
+// P2-A · F-ASYNC-04 — dedup is now enforced at the DB layer via the
+// (organizationId, dedupKey) unique on Notification. The legacy
+// `findFirst within 60s` lookup was racy under at-least-once delivery (two
+// concurrent QStash retries both observed null and both inserted).
+//
+// `dedupKey` is computed per-recipient as
+//   ${userId}:${type}:${entityId}:${dateBucketSeconds(60)}
+// which preserves the previous "same notification within 60s" semantics
+// while making the constraint atomic.
 
-const DEDUP_WINDOW_MS = 60_000;
+const DEDUP_BUCKET_SECONDS = 60;
+
+function buildNotificationDedupKey(
+  userId: string,
+  type: string,
+  entityId: string | null | undefined,
+  now: Date,
+): string {
+  const bucket = Math.floor(now.getTime() / 1000 / DEDUP_BUCKET_SECONDS);
+  return `${userId}:${type}:${entityId ?? ''}:${bucket}`;
+}
 
 // ---------------------------------------------------------------------------
 // Preference defaults
@@ -184,18 +204,22 @@ const NOTIFICATION_TYPE_TO_CHANNEL_CATEGORY: Partial<Record<NotificationType, st
  * Central notification dispatcher.
  * For each recipient:
  * 1. Checks/creates preferences
- * 2. Deduplicates within 60s window (same user + type + entityId)
+ * 2. Deduplicates via DB unique on (organizationId, dedupKey)
  * 3. Creates IN_APP notification (always)
  * 4. Calls email/Slack senders based on preferences (try/catch wrapped)
  *
  * External send failures never break the main operation.
+ *
+ * Producers should typically call this through the outbox layer
+ * (`enqueueOutboxEvent({ tx, eventType: 'notification.dispatch', ... })`)
+ * so the dispatch is durably scheduled iff the triggering tx commits.
+ * Direct callers are tolerated for backwards compatibility.
  */
 export async function dispatch(event: NotificationEvent): Promise<void> {
   const now = new Date();
-  const dedupCutoff = new Date(now.getTime() - DEDUP_WINDOW_MS);
 
   for (const userId of event.recipientUserIds) {
-    await dispatchToUser(userId, event, now, dedupCutoff);
+    await dispatchToUser(userId, event, now);
   }
 
   // Channel alert dispatch (org-level, not per-user)
@@ -206,43 +230,49 @@ export async function dispatch(event: NotificationEvent): Promise<void> {
 // Per-user dispatch
 // ---------------------------------------------------------------------------
 
-async function dispatchToUser(
-  userId: string,
-  event: NotificationEvent,
-  now: Date,
-  dedupCutoff: Date,
-): Promise<void> {
+async function dispatchToUser(userId: string, event: NotificationEvent, now: Date): Promise<void> {
   const prefs = await getOrCreatePreferences(userId, event.organizationId, event.type);
 
-  // Deduplication: skip if same notification was sent recently
-  const duplicate = await prisma.notification.findFirst({
-    where: {
-      userId,
-      type: event.type,
-      entityId: event.entityId,
-      createdAt: { gte: dedupCutoff },
-    },
-  });
+  // F-ASYNC-04: dedup is enforced by the DB. We attempt the insert; on
+  // unique-violation (P2002 on organizationId + dedupKey) we treat the
+  // notification as already-delivered and skip the side channels too —
+  // that's the correct semantic for retry: "another worker already did it".
+  const dedupKey = buildNotificationDedupKey(userId, event.type, event.entityId, now);
 
-  if (duplicate) return;
-
-  // IN_APP notification (always created -- channelInApp is always true)
+  let inserted = true;
   if (prefs.channelInApp) {
-    await prisma.notification.create({
-      data: {
-        organizationId: event.organizationId,
-        userId,
-        channel: 'IN_APP',
-        type: event.type,
-        title: event.title,
-        body: event.body,
-        entityType: event.entityType,
-        entityId: event.entityId,
-        status: 'SENT',
-        sentAt: now,
-      },
-    });
+    try {
+      await prisma.notification.create({
+        data: {
+          organizationId: event.organizationId,
+          userId,
+          channel: 'IN_APP',
+          type: event.type,
+          title: event.title,
+          body: event.body,
+          entityType: event.entityType,
+          entityId: event.entityId,
+          status: 'SENT',
+          sentAt: now,
+          dedupKey,
+        },
+      });
+    } catch (err) {
+      // P2002 = unique constraint violation; surfaced by Prisma as
+      // PrismaClientKnownRequestError. Other errors should still propagate
+      // since they indicate real failures.
+      if (isUniqueViolation(err)) {
+        inserted = false;
+        log.debug({ userId, type: event.type, entityId: event.entityId }, 'notification deduped');
+      } else {
+        throw err;
+      }
+    }
   }
+
+  // If the IN_APP insert was deduped, skip side channels too — another
+  // worker is responsible for them.
+  if (!inserted) return;
 
   // Email notification (preference-gated)
   if (prefs.channelEmail) {
@@ -255,6 +285,20 @@ async function dispatchToUser(
 
   // Messaging provider dispatch (Slack, Teams, future platforms)
   await dispatchToMessagingProviders(userId, event, prefs);
+}
+
+/**
+ * Detects a Prisma unique-constraint violation (P2002) without taking a
+ * direct dependency on the Prisma error class (which would force an extra
+ * import chain into all callers of this module).
+ */
+function isUniqueViolation(err: unknown): boolean {
+  return (
+    typeof err === 'object' &&
+    err !== null &&
+    'code' in err &&
+    (err as { code?: unknown }).code === 'P2002'
+  );
 }
 
 // ---------------------------------------------------------------------------
