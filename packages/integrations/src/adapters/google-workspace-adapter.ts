@@ -1,6 +1,22 @@
+import { fetchWithTimeout } from '../services/fetch-helpers.js';
 import type { CredentialBlob } from '../types/credentials.js';
 import type { OAuthConfig } from '../types/provider.js';
 import { BaseAdapter } from './base-adapter.js';
+
+// ---------------------------------------------------------------------------
+// Timeout budgets (F-INT-01 / F-INT-02)
+// ---------------------------------------------------------------------------
+//
+// OAuth token redemption + refresh — non-idempotent POST. 30s wall-clock,
+// no retries (replaying can claim multiple sessions or invalidate the
+// refresh token). Matches Slack/DocuSign precedent.
+const OAUTH_TIMEOUT_MS = 30_000;
+// Directory + Groups list pages — read-only GET. 15s + 2 retries on
+// 429/5xx; the helper honors Retry-After automatically. Per-page
+// granularity (the do/while loop continues against pageToken from the
+// last successful response).
+const DIRECTORY_TIMEOUT_MS = 15_000;
+const DIRECTORY_RETRIES = 2;
 
 // ---------------------------------------------------------------------------
 // Google Workspace Admin SDK Types
@@ -94,19 +110,23 @@ export class GoogleWorkspaceAdapter extends BaseAdapter {
       );
     }
 
-    const response = await fetch('https://oauth2.googleapis.com/token', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const response = await fetchWithTimeout(
+      'https://oauth2.googleapis.com/token',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          grant_type: 'authorization_code',
+          client_id: clientId,
+          client_secret: clientSecret,
+          code,
+          redirect_uri: redirectUri,
+        }),
       },
-      body: JSON.stringify({
-        grant_type: 'authorization_code',
-        client_id: clientId,
-        client_secret: clientSecret,
-        code,
-        redirect_uri: redirectUri,
-      }),
-    });
+      { timeoutMs: OAUTH_TIMEOUT_MS, retries: 0 },
+    );
 
     if (!response.ok) {
       const text = await response.text();
@@ -144,18 +164,22 @@ export class GoogleWorkspaceAdapter extends BaseAdapter {
       throw new Error('No refresh token available for Google Workspace');
     }
 
-    const response = await fetch('https://oauth2.googleapis.com/token', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const response = await fetchWithTimeout(
+      'https://oauth2.googleapis.com/token',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          grant_type: 'refresh_token',
+          client_id: clientId,
+          client_secret: clientSecret,
+          refresh_token: credentials.refreshToken,
+        }),
       },
-      body: JSON.stringify({
-        grant_type: 'refresh_token',
-        client_id: clientId,
-        client_secret: clientSecret,
-        refresh_token: credentials.refreshToken,
-      }),
-    });
+      { timeoutMs: OAUTH_TIMEOUT_MS, retries: 0 },
+    );
 
     if (!response.ok) {
       const text = await response.text();
@@ -201,11 +225,15 @@ export class GoogleWorkspaceAdapter extends BaseAdapter {
         url.searchParams.set('pageToken', pageToken);
       }
 
-      const response = await fetch(url.toString(), {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
+      const response = await fetchWithTimeout(
+        url.toString(),
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
         },
-      });
+        { timeoutMs: DIRECTORY_TIMEOUT_MS, retries: DIRECTORY_RETRIES },
+      );
 
       if (!response.ok) {
         const text = await response.text();
@@ -245,11 +273,15 @@ export class GoogleWorkspaceAdapter extends BaseAdapter {
         url.searchParams.set('pageToken', pageToken);
       }
 
-      const response = await fetch(url.toString(), {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
+      const response = await fetchWithTimeout(
+        url.toString(),
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
         },
-      });
+        { timeoutMs: DIRECTORY_TIMEOUT_MS, retries: DIRECTORY_RETRIES },
+      );
 
       // 404 means user is not a member of any groups
       if (response.status === 404) {
