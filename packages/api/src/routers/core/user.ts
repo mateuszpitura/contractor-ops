@@ -172,15 +172,27 @@ export const userRouter = router({
   /**
    * Update a member's role in the organization.
    * Sensitive action: requires re-authentication if session > 5 minutes old.
+   *
+   * F-SEC-14 — Better Auth's `updateMemberRole` resolves by `memberId`
+   * (Member primary key), NOT user id. The validator surface keeps
+   * `userId` for caller ergonomics; we translate to `Member.id` here
+   * scoped to the active org. `findFirstOrThrow` raises NOT_FOUND when
+   * the supplied user is not a member of the caller's org, blocking
+   * silent no-ops or accidental cross-org role changes.
    */
   updateRole: sensitiveActionProcedure
     .use(requirePermission({ member: ['update'] }))
     .input(updateUserRoleSchema)
     .mutation(async ({ ctx, input }) => {
+      const member = await ctx.db.member.findFirstOrThrow({
+        where: { organizationId: ctx.organizationId, userId: input.userId },
+        select: { id: true },
+      });
+
       const result = await authApi.updateMemberRole({
         headers: ctx.headers,
         body: {
-          memberId: input.userId,
+          memberId: member.id,
           role: input.role,
           organizationId: ctx.organizationId,
         },
