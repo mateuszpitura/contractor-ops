@@ -77,7 +77,7 @@ describe('POST /api/webhooks/inpost', () => {
     expect(mockHandleInPostWebhook).not.toHaveBeenCalled();
   });
 
-  it('falls back to shipment lookup when signature does not match', async () => {
+  it('falls back to shipment lookup when signature does not match (non-production only)', async () => {
     mockVerifyInPostSignature.mockReturnValue(false);
     mockPrisma.shipment.findFirst.mockResolvedValue({ organizationId: 'org-fallback' });
 
@@ -91,6 +91,37 @@ describe('POST /api/webhooks/inpost', () => {
     expect(res.status).toBe(200);
 
     expect(mockHandleInPostWebhook).toHaveBeenCalledWith(mockPrisma, 'org-fallback', validPayload);
+  });
+
+  it('rejects unsigned webhooks in production — no shipment-id fallback (F-SEC-06)', async () => {
+    // F-SEC-06: Production must NOT fall back to shipment-id payload matching;
+    // an attacker who learns a tracking number would otherwise be able to forge
+    // status events for that shipment.
+    const previousNodeEnv = process.env.NODE_ENV;
+    vi.stubEnv('NODE_ENV', 'production');
+
+    try {
+      mockVerifyInPostSignature.mockReturnValue(false);
+      // Even if shipment lookup *would* succeed, the route must NOT consult it in prod
+      mockPrisma.shipment.findFirst.mockResolvedValue({ organizationId: 'org-fallback' });
+
+      const req = new NextRequest('http://localhost/api/webhooks/inpost', {
+        method: 'POST',
+        body: JSON.stringify(validPayload),
+        headers: { 'x-inpost-signature': 'unknown-sig' },
+      });
+
+      const res = await POST(req);
+      expect(res.status).toBe(401);
+      expect(mockHandleInPostWebhook).not.toHaveBeenCalled();
+      expect(mockPrisma.shipment.findFirst).not.toHaveBeenCalled();
+    } finally {
+      if (previousNodeEnv === undefined) {
+        vi.unstubAllEnvs();
+      } else {
+        vi.stubEnv('NODE_ENV', previousNodeEnv);
+      }
+    }
   });
 
   it('returns 404 when no InPost courier configs exist', async () => {
