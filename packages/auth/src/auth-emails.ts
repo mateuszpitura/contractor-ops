@@ -20,6 +20,7 @@
  *   is not consumed by Better Auth lifecycle handlers.
  */
 
+import { createHash } from 'node:crypto';
 import { createLogger } from '@contractor-ops/logger';
 import { Resend } from 'resend';
 import { authEnv } from './env.js';
@@ -71,12 +72,24 @@ async function sendAuthEmail(params: SendEmailParams): Promise<void> {
 
   const resend = getResend();
   try {
-    const result = await resend.emails.send({
-      from: authEnv.emailFrom,
-      to: params.to,
-      subject: params.subject,
-      html: params.html,
-    });
+    // F-INT-04: server-derived Idempotency-Key — sha256 of template+to+body
+    // (the URL Better Auth supplies is single-use so the digest is naturally
+    // unique per send). Resend retains the key for 24h, which is wider than
+    // any retry window we operate under.
+    const idempotencyKey = `auth:${createHash('sha256')
+      .update(`${params.template}|${params.to}|${params.subject}|${params.html}`)
+      .digest('base64url')
+      .slice(0, 56)}`;
+
+    const result = await resend.emails.send(
+      {
+        from: authEnv.emailFrom,
+        to: params.to,
+        subject: params.subject,
+        html: params.html,
+      },
+      { idempotencyKey },
+    );
 
     if (result.error) {
       log.error(

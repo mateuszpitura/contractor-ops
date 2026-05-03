@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { getServerEnv } from '@contractor-ops/validators';
 import nodemailer from 'nodemailer';
 import type { ReactElement } from 'react';
@@ -13,7 +14,39 @@ export type SendAppEmailParams = {
   /** Plain HTML body (use when not using `react`). */
   html?: string;
   headers?: Record<string, string>;
+  /**
+   * Server-derived idempotency key (F-INT-04). When set, Resend will dedupe
+   * retried sends within 24h. Callers should derive this from a stable
+   * business identifier — e.g. `notification:${notificationId}` —
+   * NEVER from client-supplied input.
+   *
+   * If omitted, a deterministic key is computed from from+to+subject+body
+   * digest so QStash retries of the same payload don't re-send.
+   */
+  idempotencyKey?: string;
 };
+
+// ---------------------------------------------------------------------------
+// Idempotency-Key derivation (F-INT-04)
+// ---------------------------------------------------------------------------
+
+/**
+ * Best-effort fallback when the caller did not supply an idempotency key:
+ * sha256 of from+to+subject+body so two identical payloads (e.g. QStash
+ * retry of the same notification) collapse into a single Resend send.
+ *
+ * Resend documents `Idempotency-Key` retention as 24h — adequate for the
+ * typical retry window. The output is base64url-trimmed to 64 chars to fit
+ * comfortably under any provider limit (Resend has none documented; Stripe
+ * caps at 255).
+ */
+function deriveEmailIdempotencyKey(params: SendAppEmailParams, body: string): string {
+  const recipients = Array.isArray(params.to) ? params.to.join(',') : params.to;
+  const digest = createHash('sha256')
+    .update(`${params.from}|${recipients}|${params.subject}|${body}`)
+    .digest('base64url');
+  return `email:${digest.slice(0, 56)}`;
+}
 
 function isDevSmtpEnabled(
   env: ReturnType<typeof getServerEnv>,
@@ -63,14 +96,24 @@ export async function sendAppEmail(params: SendAppEmailParams): Promise<void> {
   }
 
   const resend = getResend();
+
+  // F-INT-04: thread Idempotency-Key on every Resend send so QStash retries
+  // (or fixer cron retries) cannot deliver the same email twice. Resend
+  // dedupes against this header for 24h.
   if (params.react && typeof params.react !== 'string') {
-    await resend.emails.send({
-      from: params.from,
-      to: params.to,
-      subject: params.subject,
-      react: params.react,
-      headers: params.headers,
-    });
+    const renderedForKey = await render(params.react);
+    const idempotencyKey =
+      params.idempotencyKey ?? deriveEmailIdempotencyKey(params, renderedForKey);
+    await resend.emails.send(
+      {
+        from: params.from,
+        to: params.to,
+        subject: params.subject,
+        react: params.react,
+        headers: params.headers,
+      },
+      { idempotencyKey },
+    );
     return;
   }
 
@@ -79,11 +122,15 @@ export async function sendAppEmail(params: SendAppEmailParams): Promise<void> {
     throw new Error('sendAppEmail: missing html or react');
   }
 
-  await resend.emails.send({
-    from: params.from,
-    to: params.to,
-    subject: params.subject,
-    html,
-    headers: params.headers,
-  });
+  const idempotencyKey = params.idempotencyKey ?? deriveEmailIdempotencyKey(params, html);
+  await resend.emails.send(
+    {
+      from: params.from,
+      to: params.to,
+      subject: params.subject,
+      html,
+      headers: params.headers,
+    },
+    { idempotencyKey },
+  );
 }
