@@ -186,6 +186,16 @@ const portalSchema = z.object({
   PORTAL_BASE_DOMAIN: z.string().default('portal.localhost:3000'),
 });
 
+// ── Platform Operator ──────────────────────────────────────────────────────
+// Dedicated organization id whose members hold the `platform_operator` role.
+// Used to gate access to `/admin/*` cross-tenant operator surfaces (e.g. BoE
+// base-rate management, classification-engine flag overview). Optional in
+// development; production deployments MUST set this so the admin shell rejects
+// arbitrary org owners (F-SEC-04).
+const platformOperatorSchema = z.object({
+  PLATFORM_OPERATOR_ORG_ID: z.string().uuid().optional(),
+});
+
 // ── Observability ──────────────────────────────────────────────────────────
 
 const observabilitySchema = z.object({
@@ -260,6 +270,7 @@ export const serverEnvSchema = coreSchema
   .merge(qstashSchema)
   .merge(cronSchema)
   .merge(portalSchema)
+  .merge(platformOperatorSchema)
   .merge(observabilitySchema)
   .merge(oauthAliasSchema)
   .merge(infrastructureSchema)

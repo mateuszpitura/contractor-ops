@@ -9,16 +9,14 @@
 //   4. Actionable copy when flag is overridden by PENDING disclaimers
 //
 // Read-only — no Unleash toggle flipping from UI (that's in Unleash console).
-// Accessible only via the admin layout (super-admin / owner role required).
+// F-SEC-04 — Per-page authorization is enforced via requirePlatformOperator()
+// (defense-in-depth; the admin layout is not the sole gate).
 
-import { auth } from '@contractor-ops/auth';
 import { prisma } from '@contractor-ops/db';
 import { evaluate } from '@contractor-ops/feature-flags';
 import { getAllPending, getRegistry, LOCKED_DISCLAIMERS } from '@contractor-ops/validators';
 import { AlertCircle, CheckCircle, XCircle } from 'lucide-react';
 import type { Metadata } from 'next';
-import { headers } from 'next/headers';
-import { notFound } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import {
   Table,
@@ -28,18 +26,17 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { requirePlatformOperator } from '@/lib/admin-auth';
 
 export const metadata: Metadata = {
   title: 'Classification Engine Flag Status — Admin',
 };
 
 export default async function ClassificationEngineFlagPage() {
-  const reqHeaders = await headers();
-  const session = await auth.api.getSession({ headers: reqHeaders });
-  if (!session?.session.activeOrganizationId) notFound();
+  const { organizationId } = await requirePlatformOperator();
 
   const org = await prisma.organization.findFirst({
-    where: { id: session.session.activeOrganizationId },
+    where: { id: organizationId },
     select: { countryCode: true, dataRegion: true },
   });
 
@@ -47,7 +44,7 @@ export default async function ClassificationEngineFlagPage() {
 
   // Evaluate with the disclaimer gate active (this reflects what users actually see)
   const evaluated = evaluate('module.classification-engine', {
-    organizationId: session.session.activeOrganizationId,
+    organizationId,
     region,
   });
 
