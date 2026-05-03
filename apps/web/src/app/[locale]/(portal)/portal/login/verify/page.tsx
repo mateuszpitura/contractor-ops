@@ -39,12 +39,20 @@ type VerifyState =
 /**
  * Set the portal session cookie via the httpOnly API route.
  * This ensures the cookie is httpOnly and secure in production.
+ *
+ * F-SEC-09: must include the server-issued HMAC `signature` minted by
+ * `verifyMagicLink` / `selectOrg`. Without it the route will reject the
+ * request as a CSRF / session-fixation attempt.
  */
-async function setSessionCookie(token: string, expiresAt: string): Promise<void> {
+async function setSessionCookie(
+  token: string,
+  expiresAt: string,
+  signature: string,
+): Promise<void> {
   const response = await fetch('/api/portal/set-session', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ token, expiresAt }),
+    body: JSON.stringify({ token, expiresAt, signature }),
   });
 
   if (!response.ok) {
@@ -100,7 +108,11 @@ export default function PortalVerifyPage() {
         if (!result.needsOrgPicker && result.session) {
           // Single org: set cookie and redirect
           try {
-            await setSessionCookie(result.session.rawToken, result.session.expiresAt.toISOString());
+            await setSessionCookie(
+              result.session.rawToken,
+              result.session.expiresAt.toISOString(),
+              result.session.signature,
+            );
             router.push('/portal');
           } catch {
             setState({
@@ -145,7 +157,7 @@ export default function PortalVerifyPage() {
           organizationId,
         } as unknown as Parameters<typeof selectOrg.mutateAsync>[0]);
 
-        await setSessionCookie(result.rawToken, result.expiresAt.toISOString());
+        await setSessionCookie(result.rawToken, result.expiresAt.toISOString(), result.signature);
         router.push('/portal');
       } catch {
         toast.error(t('verify.errors.orgSelectFailed'));

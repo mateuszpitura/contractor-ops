@@ -27,6 +27,16 @@ export interface InfisicalConfig {
   projectId: string;
   /** Environment slug (e.g., "production", "staging") */
   environment: string;
+  /**
+   * SDK auth token TTL in milliseconds.
+   *
+   * Defaults to `INFISICAL_TOKEN_TTL_MS` env var, then 1h. The SDK's
+   * machine-identity tokens expire (default 7 days, but commonly shorter
+   * in tightened deployments); we proactively re-login well before the
+   * upstream expiry so a single 401 never causes a request handler to
+   * fail. Refreshes are single-flighted to avoid concurrent races.
+   */
+  tokenTtlMs?: number;
 }
 
 /** Well-known ZATCA secret names stored per organization */
@@ -38,6 +48,15 @@ export const ZATCA_SECRET_NAMES = {
 } as const;
 
 export type ZatcaSecretName = (typeof ZATCA_SECRET_NAMES)[keyof typeof ZATCA_SECRET_NAMES];
+
+// ---------------------------------------------------------------------------
+// Defaults
+// ---------------------------------------------------------------------------
+
+/** Default SDK auth token TTL: 1 hour. Override via INFISICAL_TOKEN_TTL_MS. */
+const DEFAULT_TOKEN_TTL_MS = 60 * 60 * 1000;
+/** Refresh window — re-login this many ms before the cached token expires. */
+const REFRESH_SAFETY_WINDOW_MS = 60_000;
 
 // ---------------------------------------------------------------------------
 // SecretStoreError
@@ -64,13 +83,19 @@ export class SecretStoreError extends Error {
  * SecretStore implementation backed by Infisical.
  *
  * Uses lazy initialization — the SDK is only created and authenticated
- * on the first operation. All errors are caught, logged (path only, never
- * values), and rethrown as SecretStoreError.
+ * on the first operation. The auth token is cached with a TTL (default 1h)
+ * and proactively refreshed within a 60-second safety window before
+ * expiry. Concurrent refresh attempts share a single in-flight promise
+ * (single-flight lock) to prevent duplicate logins racing.
+ *
+ * All errors are caught, logged (path only, never values), and rethrown
+ * as SecretStoreError.
  */
 export class InfisicalSecretStore implements SecretStore {
   private readonly config: Required<InfisicalConfig>;
   private sdk: import('@infisical/sdk').InfisicalSDK | null = null;
-  private initPromise: Promise<void> | null = null;
+  private tokenExpiresAt = 0;
+  private refreshPromise: Promise<void> | null = null;
 
   constructor(config: InfisicalConfig) {
     this.config = {
@@ -79,11 +104,16 @@ export class InfisicalSecretStore implements SecretStore {
       clientSecret: config.clientSecret,
       projectId: config.projectId,
       environment: config.environment,
+      tokenTtlMs:
+        config.tokenTtlMs ??
+        (process.env.INFISICAL_TOKEN_TTL_MS
+          ? Number.parseInt(process.env.INFISICAL_TOKEN_TTL_MS, 10)
+          : DEFAULT_TOKEN_TTL_MS),
     };
   }
 
   async get(path: string): Promise<string | null> {
-    await this.ensureInitialized();
+    await this.ensureFreshToken();
     const { secretName, folderPath } = this.parsePath(path);
 
     try {
@@ -105,7 +135,7 @@ export class InfisicalSecretStore implements SecretStore {
   }
 
   async set(path: string, value: string): Promise<void> {
-    await this.ensureInitialized();
+    await this.ensureFreshToken();
     const { secretName, folderPath } = this.parsePath(path);
 
     try {
@@ -137,7 +167,7 @@ export class InfisicalSecretStore implements SecretStore {
   }
 
   async delete(path: string): Promise<void> {
-    await this.ensureInitialized();
+    await this.ensureFreshToken();
     const { secretName, folderPath } = this.parsePath(path);
 
     try {
@@ -175,33 +205,56 @@ export class InfisicalSecretStore implements SecretStore {
   }
 
   /**
-   * Lazy-initialize the Infisical SDK on first use.
-   * Uses a shared promise to prevent multiple concurrent initializations.
+   * Ensure the SDK is initialized AND its auth token is still within the
+   * configured TTL. Refreshes if we're inside the safety window.
+   *
+   * Concurrent callers share a single in-flight refresh promise to prevent
+   * thundering-herd login storms after token expiry (single-flight lock).
    */
-  private async ensureInitialized(): Promise<void> {
-    if (this.sdk) return;
-    if (this.initPromise !== null) {
-      await this.initPromise;
+  private async ensureFreshToken(): Promise<void> {
+    if (this.sdk && Date.now() < this.tokenExpiresAt - REFRESH_SAFETY_WINDOW_MS) {
       return;
     }
 
-    this.initPromise = this.initialize();
-    await this.initPromise;
+    if (this.refreshPromise !== null) {
+      await this.refreshPromise;
+      return;
+    }
+
+    this.refreshPromise = this.refreshToken();
+    try {
+      await this.refreshPromise;
+    } finally {
+      this.refreshPromise = null;
+    }
   }
 
-  private async initialize(): Promise<void> {
+  /**
+   * (Re)create the SDK and login. On every call we record the new
+   * `tokenExpiresAt` so subsequent calls know when to refresh again.
+   */
+  private async refreshToken(): Promise<void> {
     try {
+      const isInitial = this.sdk === null;
       const { InfisicalSDK } = await import('@infisical/sdk');
-      this.sdk = new InfisicalSDK({
+      const sdk = new InfisicalSDK({
         siteUrl: this.config.siteUrl,
       });
-      await this.sdk.auth().universalAuth.login({
+      await sdk.auth().universalAuth.login({
         clientId: this.config.clientId,
         clientSecret: this.config.clientSecret,
       });
+      this.sdk = sdk;
+      this.tokenExpiresAt = Date.now() + this.config.tokenTtlMs;
+      log.info(
+        { ttlMs: this.config.tokenTtlMs, initial: isInitial },
+        isInitial ? 'sdk initialized' : 'sdk auth token refreshed',
+      );
     } catch (error) {
-      this.initPromise = null; // Allow retry
-      log.error({}, 'failed to initialize sdk');
+      // Force a fresh attempt next call.
+      this.sdk = null;
+      this.tokenExpiresAt = 0;
+      log.error({}, 'failed to (re)initialize sdk');
       throw new SecretStoreError('Failed to initialize Infisical SDK', 'init', undefined, error);
     }
   }

@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { createHmac, randomUUID } from 'node:crypto';
 import { createTenantClientFrom, getRegionalClient, prisma, tenantStore } from '@contractor-ops/db';
 import { getServerEnv, returnRequestCreateSchema } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
@@ -87,6 +87,28 @@ function extractPortalToken(headers: Headers): string | null {
  */
 function deriveBaseUrl(): string {
   return getServerEnv().NEXT_PUBLIC_APP_URL;
+}
+
+/**
+ * F-SEC-09: Sign a freshly-issued portal session token so the
+ * `/api/portal/set-session` route handler can prove the value originated from
+ * `verifyMagicLink` / `selectOrg` rather than a CSRF / session-fixation attempt.
+ *
+ * Uses HMAC-SHA256 keyed off `BETTER_AUTH_SECRET` with a fixed domain-separator
+ * label — no extra env variable needed, no extra DB column. The matching
+ * verifier MUST live in `apps/web/src/app/api/portal/set-session/route.ts` and
+ * compute the signature identically. Keep both in sync.
+ *
+ * Inputs hashed: `${rawToken}.${expiresAt.toISOString()}` — binding the
+ * signature to both the token bytes and the exact expiry the client will set
+ * on the cookie prevents an attacker from replaying an old (signature, token)
+ * pair with a forged future expiry.
+ */
+function signPortalSessionToken(rawToken: string, expiresAt: Date): string {
+  const secret = getServerEnv().BETTER_AUTH_SECRET;
+  return createHmac('sha256', `${secret}|portal-set-session-v1`)
+    .update(`${rawToken}.${expiresAt.toISOString()}`)
+    .digest('base64url');
 }
 
 /**
@@ -217,8 +239,17 @@ export const portalRouter = router({
           userAgent,
         });
 
+        // F-SEC-09: bind a server-issued HMAC to the (token, expiresAt) pair
+        // so `/api/portal/set-session` can verify the cookie value really came
+        // from this mutation (CSRF / session-fixation defence).
+        const signature = signPortalSessionToken(session.rawToken, session.expiresAt);
+
         return {
-          session: { rawToken: session.rawToken, expiresAt: session.expiresAt },
+          session: {
+            rawToken: session.rawToken,
+            expiresAt: session.expiresAt,
+            signature,
+          },
           orgs: null,
           needsOrgPicker: false as const,
         };
@@ -298,7 +329,10 @@ export const portalRouter = router({
         userAgent,
       });
 
-      return { rawToken: session.rawToken, expiresAt: session.expiresAt };
+      // F-SEC-09: see verifyMagicLink — same defence applies to selectOrg.
+      const signature = signPortalSessionToken(session.rawToken, session.expiresAt);
+
+      return { rawToken: session.rawToken, expiresAt: session.expiresAt, signature };
     }),
 
   /**
