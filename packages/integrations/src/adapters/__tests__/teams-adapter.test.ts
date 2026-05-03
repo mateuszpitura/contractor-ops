@@ -1,13 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { TeamsAdapter } from '../teams-adapter.js';
 
-vi.mock('../../services/credential-service.js', () => ({
-  decryptCredentials: vi.fn(() => ({
-    accessToken: 'enc',
-    refreshToken: 'stored-refresh',
-  })),
-}));
-
 function mockFetch(response: { ok: boolean; body: unknown }) {
   return vi.fn().mockResolvedValue({
     ok: response.ok,
@@ -69,7 +62,7 @@ describe('TeamsAdapter', () => {
     expect(String(url)).toContain('token');
   });
 
-  it('refreshToken exchanges refresh via form body', async () => {
+  it('refreshToken exchanges refresh via form body using the plaintext refreshToken', async () => {
     process.env.AZURE_BOT_APP_ID = 'app';
     process.env.AZURE_BOT_APP_SECRET = 'secret';
     const fetchMock = mockFetch({
@@ -84,8 +77,14 @@ describe('TeamsAdapter', () => {
     });
     vi.stubGlobal('fetch', fetchMock);
 
+    // F-INT-19 regression: token-refresh.ts decrypts the credential blob
+    // BEFORE invoking adapter.refreshToken, so the adapter receives a
+    // CredentialBlob with plaintext tokens. The previous implementation
+    // re-decrypted credentials.accessToken which always threw
+    // "Invalid encrypted credentials format".
     const out = await adapter.refreshToken({
-      accessToken: 'encrypted-blob',
+      accessToken: 'plaintext-access-token',
+      refreshToken: 'plaintext-refresh-token',
       tokenType: 'Bearer',
       scope: '',
       expiresAt: new Date().toISOString(),
@@ -94,6 +93,48 @@ describe('TeamsAdapter', () => {
     expect(out.accessToken).toBe('new-at');
     const [, opts] = fetchMock.mock.calls[0];
     expect((opts as { body: string }).body).toContain('grant_type=refresh_token');
-    expect((opts as { body: string }).body).toContain('stored-refresh');
+    // The form body MUST carry the decrypted refresh token, not the access token.
+    expect((opts as { body: string }).body).toContain('plaintext-refresh-token');
+    expect((opts as { body: string }).body).not.toContain('plaintext-access-token');
+  });
+
+  it('refreshToken throws when no refresh token is present', async () => {
+    process.env.AZURE_BOT_APP_ID = 'app';
+    process.env.AZURE_BOT_APP_SECRET = 'secret';
+
+    await expect(
+      adapter.refreshToken({
+        accessToken: 'plaintext-access-token',
+        tokenType: 'Bearer',
+        scope: '',
+        expiresAt: new Date().toISOString(),
+      }),
+    ).rejects.toThrow(/No refresh token available/);
+  });
+
+  it('refreshToken preserves the existing refresh token when provider omits a new one', async () => {
+    process.env.AZURE_BOT_APP_ID = 'app';
+    process.env.AZURE_BOT_APP_SECRET = 'secret';
+    const fetchMock = mockFetch({
+      ok: true,
+      body: {
+        access_token: 'new-at',
+        // refresh_token intentionally omitted
+        expires_in: 3600,
+        token_type: 'Bearer',
+        scope: 's',
+      },
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const out = await adapter.refreshToken({
+      accessToken: 'plaintext-access-token',
+      refreshToken: 'plaintext-refresh-token',
+      tokenType: 'Bearer',
+      scope: '',
+      expiresAt: new Date().toISOString(),
+    });
+
+    expect(out.refreshToken).toBe('plaintext-refresh-token');
   });
 });

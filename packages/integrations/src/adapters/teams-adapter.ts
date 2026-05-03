@@ -1,4 +1,3 @@
-import { decryptCredentials } from '../services/credential-service.js';
 import type { CredentialBlob } from '../types/credentials.js';
 import type { OAuthConfig } from '../types/provider.js';
 import { BaseAdapter } from './base-adapter.js';
@@ -123,10 +122,13 @@ export class TeamsAdapter extends BaseAdapter {
       );
     }
 
-    // Decrypt stored credentials using AES-256-GCM per-provider encryption
-    const decrypted = decryptCredentials(credentials.accessToken, 'microsoft_teams');
-
-    if (!decrypted.refreshToken) {
+    // The caller (token-refresh.ts:lazyRefresh / refreshExpiring) decrypts
+    // the encrypted credential blob BEFORE invoking adapter.refreshToken,
+    // so `credentials` is already a CredentialBlob with plaintext tokens.
+    // The previous code re-decrypted credentials.accessToken which always
+    // threw "Invalid encrypted credentials format" — see jira-adapter.ts
+    // refreshToken for the correct pattern.
+    if (!credentials.refreshToken) {
       throw new Error('No refresh token available for Microsoft Teams');
     }
 
@@ -134,7 +136,7 @@ export class TeamsAdapter extends BaseAdapter {
       grant_type: 'refresh_token',
       client_id: clientId,
       client_secret: clientSecret,
-      refresh_token: decrypted.refreshToken,
+      refresh_token: credentials.refreshToken,
       scope: TEAMS_OAUTH_CONFIG.scopes.join(' '),
     });
 
@@ -161,7 +163,7 @@ export class TeamsAdapter extends BaseAdapter {
 
     return {
       accessToken: data.access_token,
-      refreshToken: data.refresh_token ?? decrypted.refreshToken,
+      refreshToken: data.refresh_token ?? credentials.refreshToken,
       tokenType: data.token_type,
       scope: data.scope,
       expiresAt: new Date(Date.now() + data.expires_in * 1000).toISOString(),
