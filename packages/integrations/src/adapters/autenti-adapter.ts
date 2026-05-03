@@ -439,11 +439,29 @@ export class AutentiAdapter extends BaseAdapter implements ESignAdapter {
       fetchHeaders['Content-Type'] = 'application/json';
     }
 
-    const response = await fetch(`${AUTENTI_API_BASE}${path}`, {
-      method: options?.method ?? 'GET',
-      headers: fetchHeaders,
-      body: options?.body,
-    });
+    // F-INT-06: bound the wall-clock per call. `getSignedDocument` returns
+    // large signed PDFs and historically had no timeout, so a slow body
+    // read could hang a QStash callback past the platform deadline. 60s
+    // for raw-PDF pulls; 15s for everything else.
+    const timeoutMs = options?.rawResponse ? 60_000 : 15_000;
+    const isIdempotent =
+      (options?.method ?? 'GET').toUpperCase() === 'GET' ||
+      (options?.method ?? 'GET').toUpperCase() === 'HEAD';
+
+    const response = await fetchWithTimeout(
+      `${AUTENTI_API_BASE}${path}`,
+      {
+        method: options?.method ?? 'GET',
+        headers: fetchHeaders,
+        body: options?.body,
+      },
+      {
+        timeoutMs,
+        // Only retry idempotent ops; never retry POST/PATCH/DELETE
+        // (could re-issue an envelope creation after a 5xx that succeeded).
+        retries: isIdempotent ? 2 : 0,
+      },
+    );
 
     if (!response.ok) {
       const text = await response.text();

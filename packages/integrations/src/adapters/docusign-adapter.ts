@@ -24,6 +24,13 @@ import { BaseAdapter } from './base-adapter.js';
 interface DocuSignApiClient {
   setBasePath(basePath: string): void;
   addDefaultHeader(name: string, value: string): void;
+  /**
+   * F-INT-06: SDK exposes a `timeout` field used by its internal HTTP layer.
+   * Without setting this, every envelope/recipient/document call uses an
+   * unbounded vendor timeout — `getSignedDocument` can stream a large PDF
+   * for >10min and outlive a QStash callback.
+   */
+  timeout?: number;
 }
 
 interface DocuSignEnvelopeSummary {
@@ -654,6 +661,10 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
     const apiClient: DocuSignApiClient = new docusign.ApiClient();
     apiClient.setBasePath(configJson.basePath);
     apiClient.addDefaultHeader('Authorization', `Bearer ${credentials.accessToken}`);
+    // F-INT-06: bound the DocuSign SDK's internal HTTP timeout. 60s is
+    // tuned for `getSignedDocument` (large PDF streaming); other ops are
+    // far below this so the bound is safe.
+    apiClient.timeout = 60_000;
 
     return { apiClient, accountId: configJson.accountId };
   }
