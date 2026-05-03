@@ -1,4 +1,5 @@
 import { constants, createDecipheriv, createPublicKey, publicEncrypt } from 'node:crypto';
+import { fetchWithTimeout } from './fetch-helpers.js';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -9,6 +10,30 @@ export interface KsefSession {
   referenceNumber: string;
   encryptionKey: Buffer;
 }
+
+/**
+ * Per-attempt fetch timeout. KSeF documents up to 60s p99 for some
+ * endpoints; we use 30s as the default and let the polling loop's wall-clock
+ * bound (`AUTH_POLL_WALL_CLOCK_MS` / `QUERY_POLL_WALL_CLOCK_MS`) handle
+ * outright unavailability.
+ */
+const KSEF_PER_REQUEST_TIMEOUT_MS = 30_000;
+
+/**
+ * Total wall-clock budget for `authenticate()` polling — F-INT-03 / F-INT-20.
+ * Old code: 30 attempts × (network timeout + 1s) — could exceed an hour with
+ * Node default 75s connect timeout. New: 90 seconds total, after which we
+ * surface the error instead of stacking inside an outer cron handler that
+ * has already returned to its scheduler.
+ */
+const AUTH_POLL_WALL_CLOCK_MS = 90_000;
+
+/**
+ * Total wall-clock budget for `queryInvoices()` polling — F-INT-03 / F-INT-20.
+ * KSeF invoice queries can legitimately take 1–2 minutes for large date
+ * ranges; cap at 180s.
+ */
+const QUERY_POLL_WALL_CLOCK_MS = 180_000;
 
 export interface KsefInvoiceMetadata {
   ksefReferenceNumber: string;
@@ -63,100 +88,155 @@ export class KsefApiClient {
    * 4. Redeem encrypted token to receive JWT session
    * 5. Poll session status until ready
    */
-  async authenticate(token: string, nip: string): Promise<KsefSession> {
-    // Step 1: Get public key
-    const publicKeyResponse = await this.fetchWithRetry(`${this.baseUrl}/auth/public-key`, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-    });
-    const publicKeyData = (await publicKeyResponse.json()) as {
-      publicKey: string;
-    };
-
-    // Step 2: Request challenge
-    const challengeResponse = await this.fetchWithRetry(`${this.baseUrl}/auth/challenge`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        // KSeF API 2.x: AuthenticationContextIdentifierType enum is PascalCase (Nip, InternalId, …).
-        contextIdentifier: { type: 'Nip', value: nip },
-      }),
-    });
-    const challengeData = (await challengeResponse.json()) as {
-      challenge: string;
-      timestampMs: number;
-    };
-
-    // Step 3: RSA-OAEP encrypt token + timestamp
-    const rsaKey = createPublicKey(publicKeyData.publicKey);
-    const plaintext = Buffer.from(`${token}|${challengeData.timestampMs}`);
-    const encrypted = publicEncrypt(
-      {
-        key: rsaKey,
-        padding: constants.RSA_PKCS1_OAEP_PADDING,
-        oaepHash: 'sha256',
-      },
-      plaintext,
+  /**
+   * Authenticate with KSeF.
+   *
+   * F-INT-20: accepts an optional `signal` so callers (typically a tRPC
+   * mutation or QStash consumer) can propagate request-scoped cancellation.
+   * If no signal is provided we still bound the full wall-clock with
+   * `AUTH_POLL_WALL_CLOCK_MS` to prevent the polling loop from outliving
+   * the caller's deadline.
+   */
+  async authenticate(token: string, nip: string, signal?: AbortSignal): Promise<KsefSession> {
+    // Compose caller signal + our wall-clock guard so EITHER firing aborts
+    // the in-flight fetch and breaks the polling loop.
+    const wallClockController = new AbortController();
+    const wallClockTimer = setTimeout(
+      () => wallClockController.abort(new Error('KSeF authenticate: wall-clock exceeded')),
+      AUTH_POLL_WALL_CLOCK_MS,
     );
+    const onCallerAbort = signal
+      ? () => wallClockController.abort(signal.reason ?? new Error('aborted'))
+      : null;
+    if (signal && onCallerAbort) {
+      if (signal.aborted) wallClockController.abort(signal.reason);
+      else signal.addEventListener('abort', onCallerAbort, { once: true });
+    }
+    const opSignal = wallClockController.signal;
 
-    // Step 4: Redeem encrypted token
-    const redeemResponse = await this.fetchWithRetry(`${this.baseUrl}/auth/token/redeem`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        challenge: challengeData.challenge,
-        encryptedToken: encrypted.toString('base64'),
-      }),
-    });
-    const redeemData = (await redeemResponse.json()) as {
-      jwt: string;
-      referenceNumber: string;
-      encryptionKey?: string;
-    };
-
-    // Step 5: Poll for session readiness
-    let ready = false;
-    for (let i = 0; i < 30; i++) {
-      const statusResponse = await this.fetchWithRetry(
-        `${this.baseUrl}/auth/${redeemData.referenceNumber}`,
-        {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${redeemData.jwt}`,
-          },
-        },
-      );
-      const statusData = (await statusResponse.json()) as {
-        status?: string;
-        processingCode?: number;
+    try {
+      // Step 1: Get public key
+      const publicKeyResponse = await this.fetchWithRetry(`${this.baseUrl}/auth/public-key`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        signal: opSignal,
+      });
+      const publicKeyData = (await publicKeyResponse.json()) as {
+        publicKey: string;
       };
 
-      if (statusData.status === 'READY' || statusData.processingCode === 200) {
-        ready = true;
-        break;
+      // Step 2: Request challenge
+      const challengeResponse = await this.fetchWithRetry(`${this.baseUrl}/auth/challenge`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          // KSeF API 2.x: AuthenticationContextIdentifierType enum is PascalCase (Nip, InternalId, …).
+          contextIdentifier: { type: 'Nip', value: nip },
+        }),
+        signal: opSignal,
+      });
+      const challengeData = (await challengeResponse.json()) as {
+        challenge: string;
+        timestampMs: number;
+      };
+
+      // Step 3: RSA-OAEP encrypt token + timestamp
+      const rsaKey = createPublicKey(publicKeyData.publicKey);
+      const plaintext = Buffer.from(`${token}|${challengeData.timestampMs}`);
+      const encrypted = publicEncrypt(
+        {
+          key: rsaKey,
+          padding: constants.RSA_PKCS1_OAEP_PADDING,
+          oaepHash: 'sha256',
+        },
+        plaintext,
+      );
+
+      // Step 4: Redeem encrypted token
+      const redeemResponse = await this.fetchWithRetry(`${this.baseUrl}/auth/token/redeem`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          challenge: challengeData.challenge,
+          encryptedToken: encrypted.toString('base64'),
+        }),
+        signal: opSignal,
+      });
+      const redeemData = (await redeemResponse.json()) as {
+        jwt: string;
+        referenceNumber: string;
+        encryptionKey?: string;
+      };
+
+      // Step 5: Poll for session readiness. The polling loop honours the
+      // composite signal (caller cancel + wall-clock guard) so it cannot
+      // outlive the deadline.
+      let ready = false;
+      for (let i = 0; i < 30; i++) {
+        if (opSignal.aborted) break;
+        const statusResponse = await this.fetchWithRetry(
+          `${this.baseUrl}/auth/${redeemData.referenceNumber}`,
+          {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${redeemData.jwt}`,
+            },
+            signal: opSignal,
+          },
+        );
+        const statusData = (await statusResponse.json()) as {
+          status?: string;
+          processingCode?: number;
+        };
+
+        if (statusData.status === 'READY' || statusData.processingCode === 200) {
+          ready = true;
+          break;
+        }
+
+        // Bail early if the wall-clock fired during the sleep.
+        await new Promise<void>((resolve, reject) => {
+          const sleepTimer = setTimeout(resolve, 1000);
+          if (opSignal.aborted) {
+            clearTimeout(sleepTimer);
+            reject(opSignal.reason ?? new Error('aborted'));
+            return;
+          }
+          opSignal.addEventListener(
+            'abort',
+            () => {
+              clearTimeout(sleepTimer);
+              reject(opSignal.reason ?? new Error('aborted'));
+            },
+            { once: true },
+          );
+        });
       }
 
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      if (!ready) {
+        throw new Error(
+          `KSeF session did not become ready within ${AUTH_POLL_WALL_CLOCK_MS / 1000}s (ref: ${redeemData.referenceNumber})`,
+        );
+      }
+
+      const encryptionKey = redeemData.encryptionKey
+        ? Buffer.from(redeemData.encryptionKey, 'base64')
+        : Buffer.alloc(32);
+
+      this.session = {
+        jwt: redeemData.jwt,
+        referenceNumber: redeemData.referenceNumber,
+        encryptionKey,
+      };
+
+      return this.session;
+    } finally {
+      clearTimeout(wallClockTimer);
+      if (signal && onCallerAbort) {
+        signal.removeEventListener('abort', onCallerAbort);
+      }
     }
-
-    if (!ready) {
-      throw new Error(
-        `KSeF session did not become ready within 30 seconds (ref: ${redeemData.referenceNumber})`,
-      );
-    }
-
-    const encryptionKey = redeemData.encryptionKey
-      ? Buffer.from(redeemData.encryptionKey, 'base64')
-      : Buffer.alloc(32);
-
-    this.session = {
-      jwt: redeemData.jwt,
-      referenceNumber: redeemData.referenceNumber,
-      encryptionKey,
-    };
-
-    return this.session;
   }
 
   /**
@@ -186,76 +266,124 @@ export class KsefApiClient {
    * Starts an async query, polls for completion, and returns metadata list.
    * The query uses "subject2" subjectType (buyer perspective).
    */
-  async queryInvoices(nip: string, dateFrom: string, dateTo: string): Promise<KsefQueryResult> {
+  async queryInvoices(
+    nip: string,
+    dateFrom: string,
+    dateTo: string,
+    signal?: AbortSignal,
+  ): Promise<KsefQueryResult> {
     this.requireSession();
 
-    // Start query
-    const queryStartResponse = await this.fetchWithRetry(
-      `${this.baseUrl}/invoices/query/metadata`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${this.session?.jwt}`,
-        },
-        body: JSON.stringify({
-          queryCriteria: {
-            subjectNip: nip,
-            invoicingDateFrom: dateFrom,
-            invoicingDateTo: dateTo,
-            subjectType: 'subject2',
-          },
-        }),
-      },
+    // F-INT-20: bound the polling wall-clock — without it, the loop can
+    // legitimately run for >2min on a hung KSeF endpoint and pin a Render
+    // request handler past the platform timeout.
+    const wallClockController = new AbortController();
+    const wallClockTimer = setTimeout(
+      () => wallClockController.abort(new Error('KSeF queryInvoices: wall-clock exceeded')),
+      QUERY_POLL_WALL_CLOCK_MS,
     );
-    const queryStartData = (await queryStartResponse.json()) as {
-      queryId: string;
-    };
+    const onCallerAbort = signal
+      ? () => wallClockController.abort(signal.reason ?? new Error('aborted'))
+      : null;
+    if (signal && onCallerAbort) {
+      if (signal.aborted) wallClockController.abort(signal.reason);
+      else signal.addEventListener('abort', onCallerAbort, { once: true });
+    }
+    const opSignal = wallClockController.signal;
 
-    // Poll for query completion
-    let queryResult: KsefQueryResult | null = null;
-    for (let i = 0; i < 60; i++) {
-      const statusResponse = await this.fetchWithRetry(
-        `${this.baseUrl}/invoices/query/${queryStartData.queryId}/status`,
+    try {
+      // Start query
+      const queryStartResponse = await this.fetchWithRetry(
+        `${this.baseUrl}/invoices/query/metadata`,
         {
-          method: 'GET',
+          method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${this.session?.jwt}`,
           },
+          body: JSON.stringify({
+            queryCriteria: {
+              subjectNip: nip,
+              invoicingDateFrom: dateFrom,
+              invoicingDateTo: dateTo,
+              subjectType: 'subject2',
+            },
+          }),
+          signal: opSignal,
         },
       );
-      const statusData = (await statusResponse.json()) as {
-        status?: string;
-        processingCode?: number;
-        invoiceMetadataList?: KsefInvoiceMetadata[];
-        hasMore?: boolean;
-        pageToken?: string;
+      const queryStartData = (await queryStartResponse.json()) as {
+        queryId: string;
       };
 
-      if (statusData.status === 'COMPLETED' || statusData.processingCode === 200) {
-        queryResult = {
-          invoiceMetadataList: statusData.invoiceMetadataList ?? [],
-          hasMore: statusData.hasMore ?? false,
-          pageToken: statusData.pageToken,
+      // Poll for query completion under the same wall-clock guard.
+      let queryResult: KsefQueryResult | null = null;
+      for (let i = 0; i < 60; i++) {
+        if (opSignal.aborted) break;
+        const statusResponse = await this.fetchWithRetry(
+          `${this.baseUrl}/invoices/query/${queryStartData.queryId}/status`,
+          {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${this.session?.jwt}`,
+            },
+            signal: opSignal,
+          },
+        );
+        const statusData = (await statusResponse.json()) as {
+          status?: string;
+          processingCode?: number;
+          invoiceMetadataList?: KsefInvoiceMetadata[];
+          hasMore?: boolean;
+          pageToken?: string;
         };
-        break;
+
+        if (statusData.status === 'COMPLETED' || statusData.processingCode === 200) {
+          queryResult = {
+            invoiceMetadataList: statusData.invoiceMetadataList ?? [],
+            hasMore: statusData.hasMore ?? false,
+            pageToken: statusData.pageToken,
+          };
+          break;
+        }
+
+        if (statusData.status === 'FAILED') {
+          throw new Error(`KSeF query failed (queryId: ${queryStartData.queryId})`);
+        }
+
+        // Sleep that respects the wall-clock signal.
+        await new Promise<void>((resolve, reject) => {
+          const sleepTimer = setTimeout(resolve, 2000);
+          if (opSignal.aborted) {
+            clearTimeout(sleepTimer);
+            reject(opSignal.reason ?? new Error('aborted'));
+            return;
+          }
+          opSignal.addEventListener(
+            'abort',
+            () => {
+              clearTimeout(sleepTimer);
+              reject(opSignal.reason ?? new Error('aborted'));
+            },
+            { once: true },
+          );
+        });
       }
 
-      if (statusData.status === 'FAILED') {
-        throw new Error(`KSeF query failed (queryId: ${queryStartData.queryId})`);
+      if (!queryResult) {
+        throw new Error(
+          `KSeF query did not complete within ${QUERY_POLL_WALL_CLOCK_MS / 1000}s (queryId: ${queryStartData.queryId})`,
+        );
       }
 
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      return queryResult;
+    } finally {
+      clearTimeout(wallClockTimer);
+      if (signal && onCallerAbort) {
+        signal.removeEventListener('abort', onCallerAbort);
+      }
     }
-
-    if (!queryResult) {
-      throw new Error(
-        `KSeF query did not complete within 120 seconds (queryId: ${queryStartData.queryId})`,
-      );
-    }
-
-    return queryResult;
   }
 
   /**
@@ -264,7 +392,7 @@ export class KsefApiClient {
    * If the response is AES-256 encrypted (indicated by content-type),
    * it will be decrypted using the session encryption key.
    */
-  async downloadInvoiceXml(ksefReferenceNumber: string): Promise<string> {
+  async downloadInvoiceXml(ksefReferenceNumber: string, signal?: AbortSignal): Promise<string> {
     this.requireSession();
 
     const response = await this.fetchWithRetry(
@@ -274,6 +402,7 @@ export class KsefApiClient {
         headers: {
           Authorization: `Bearer ${this.session?.jwt}`,
         },
+        signal,
       },
     );
 
@@ -402,6 +531,11 @@ export class KsefApiClient {
   /**
    * Execute a single fetch attempt: returns the response or decides to retry/throw.
    * Returns `null` when the caller should continue to the next attempt.
+   *
+   * F-INT-03: per-attempt wall-clock bound via `fetchWithTimeout`. Combined
+   * with the polling loop's outer signal, a single hung KSeF call cannot
+   * outlast `KSEF_PER_REQUEST_TIMEOUT_MS`, and the polling loop itself
+   * cannot outlast its `*_POLL_WALL_CLOCK_MS` budget.
    */
   private async attemptFetch(
     url: string,
@@ -409,7 +543,10 @@ export class KsefApiClient {
     attempt: number,
     retries: number,
   ): Promise<Response | null> {
-    const response = await fetch(url, options);
+    const response = await fetchWithTimeout(url, options, {
+      timeoutMs: KSEF_PER_REQUEST_TIMEOUT_MS,
+      retries: 0, // outer loop owns retry decisions
+    });
 
     if (response.ok) return response;
 
