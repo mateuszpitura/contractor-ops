@@ -1,9 +1,10 @@
 'use client';
 
+import { Turnstile } from '@marsidev/react-turnstile';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useId, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -14,6 +15,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Link, useRouter } from '@/i18n/navigation';
 import { authClient } from '@/lib/auth-client';
+
+/**
+ * F-SEC-22 — Cloudflare Turnstile site key. Sourced from the public env
+ * (NEXT_PUBLIC_ prefix) so the bundler inlines it. When unset (local dev
+ * without Turnstile configured), the widget is omitted and the server-side
+ * verifier short-circuits to "ok" in non-production environments.
+ */
+const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 
 /**
  * Registration form with org name, email, password.
@@ -28,6 +37,11 @@ export function RegisterForm() {
   const router = useRouter();
   const id = useId();
   const [isLoading, setIsLoading] = useState(false);
+  // F-SEC-22 — Turnstile token from the widget. Required for signup when
+  // NEXT_PUBLIC_TURNSTILE_SITE_KEY is configured; the server-side verifier
+  // (packages/auth/src/turnstile.ts) rejects the mutation without it.
+  const [turnstileToken, setTurnstileToken] = useState<string>('');
+  const turnstileRef = useRef<{ reset: () => void } | null>(null);
 
   const registerSchema = z.object({
     orgName: z.string().min(2, tv('orgNameTooShort')),
@@ -51,17 +65,30 @@ export function RegisterForm() {
   });
 
   const onSubmit = async (values: RegisterValues) => {
+    if (TURNSTILE_SITE_KEY && !turnstileToken) {
+      toast.error(tc('verificationRequired'));
+      return;
+    }
     setIsLoading(true);
     try {
-      // Step 1: Create user account
+      // Step 1: Create user account. The Turnstile token is forwarded as
+      // an extra body field; Better Auth's `before` hook in
+      // packages/auth/src/config.ts verifies it server-side via Cloudflare
+      // siteverify before the credentials are processed.
       const { error: signUpError } = await authClient.signUp.email({
         email: values.email,
         password: values.password,
         name: values.email.split('@')[0],
+        // Custom field consumed by the auth `before` hook (F-SEC-22).
+        // @ts-expect-error — Better Auth types don't model the extra field
+        'cf-turnstile-response': turnstileToken,
       });
 
       if (signUpError) {
         toast.error(signUpError.message ?? tToast('createAccountFailed'));
+        // Reset the widget so the next attempt gets a fresh challenge.
+        turnstileRef.current?.reset();
+        setTurnstileToken('');
         setIsLoading(false);
         return;
       }
@@ -155,7 +182,27 @@ export function RegisterForm() {
             )}
           </div>
 
-          <Button type="submit" className="w-full" disabled={isLoading}>
+          {TURNSTILE_SITE_KEY && (
+            <div className="flex justify-center">
+              {/* F-SEC-22 — Cloudflare Turnstile bot challenge. The
+                  invisible/managed mode is the default; the widget calls
+                  onSuccess when the token is ready. */}
+              <Turnstile
+                ref={turnstileRef as unknown as React.Ref<never>}
+                siteKey={TURNSTILE_SITE_KEY}
+                onSuccess={token => setTurnstileToken(token)}
+                onExpire={() => setTurnstileToken('')}
+                onError={() => setTurnstileToken('')}
+                options={{ theme: 'auto' }}
+              />
+            </div>
+          )}
+
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={isLoading || (!!TURNSTILE_SITE_KEY && !turnstileToken)}
+          >
             {isLoading ? (
               <>
                 <Loader2 className="me-2 h-4 w-4 animate-spin" />

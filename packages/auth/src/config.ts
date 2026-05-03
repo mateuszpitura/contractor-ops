@@ -17,6 +17,7 @@ import {
 import { authEnv } from './env.js';
 import { ac } from './permissions.js';
 import { roles } from './roles.js';
+import { verifyTurnstileToken } from './turnstile.js';
 
 /** Maximum failed login attempts before account is locked */
 const MAX_LOGIN_ATTEMPTS = 5;
@@ -206,6 +207,38 @@ export const auth = betterAuth({
 
   hooks: {
     before: createAuthMiddleware(async ctx => {
+      // F-SEC-22 — Cloudflare Turnstile bot protection on signup. The
+      // client widget produces a token in `cf-turnstile-response` (custom
+      // body field) which we forward to Cloudflare's siteverify endpoint
+      // BEFORE Better Auth processes the signup body. On failure we throw
+      // a generic FORBIDDEN so the response shape doesn't reveal whether
+      // the email was valid (defence in depth alongside the existing
+      // sign-in account-lockout PII protection).
+      if (ctx.path === '/sign-up/email' && ctx.body) {
+        const body = ctx.body as Record<string, unknown>;
+        const token =
+          (body['cf-turnstile-response'] as string | undefined) ??
+          (body.turnstileToken as string | undefined) ??
+          '';
+        const remoteIp =
+          ctx.request?.headers.get('x-real-ip') ??
+          ctx.request?.headers.get('x-forwarded-for')?.split(',').pop()?.trim() ??
+          undefined;
+        const ok = await verifyTurnstileToken({ token, remoteIp });
+        if (!ok) {
+          log.warn(
+            {
+              event: 'auth.signup.turnstile_failed',
+              emailHash: body.email ? hashEmail(body.email as string) : null,
+            },
+            'sign-up blocked: turnstile verification failed',
+          );
+          throw new APIError('FORBIDDEN', {
+            message: 'Verification failed. Please refresh and try again.',
+          });
+        }
+      }
+
       // Account lockout: block sign-in if user is locked.
       //
       // To avoid leaking account existence (email enumeration), the message and

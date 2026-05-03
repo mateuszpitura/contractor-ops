@@ -160,6 +160,30 @@ const bankEncryptionSchema = z.object({
   BANK_ACCOUNT_ENCRYPTION_KEY: hex32,
 });
 
+// ── Cloudflare Turnstile (signup bot protection — F-SEC-22) ────────────────
+// Optional in development so contributors don't need a Cloudflare app to run
+// the app locally; the signup `before` hook short-circuits the verification
+// when both vars are unset (and logs a Sentry warning if NODE_ENV=production).
+
+const turnstileSchema = z.object({
+  /** Site key used by the client widget; safe to expose. */
+  TURNSTILE_SITE_KEY: z.string().min(1).optional(),
+  /** Server-side verification secret. NEVER expose. */
+  TURNSTILE_SECRET_KEY: z.string().min(1).optional(),
+  /** Mirror of TURNSTILE_SITE_KEY for client bundles (NEXT_PUBLIC_ prefix). */
+  NEXT_PUBLIC_TURNSTILE_SITE_KEY: z.string().min(1).optional(),
+});
+
+// ── Trusted reverse proxy CIDRs (F-SEC-17) ─────────────────────────────────
+// Comma-separated list of CIDR ranges or proxy-addr keywords (loopback,
+// linklocal, uniquelocal). Used by `proxy-addr` to walk the X-Forwarded-For
+// chain right-to-left, terminating at the first untrusted hop. Document the
+// production value (Render's CIDR or "loopback,linklocal,uniquelocal") in
+// .env.example. Misconfiguration enables IP spoofing for rate-limit bypass.
+const proxySchema = z.object({
+  TRUSTED_PROXIES: z.string().optional(),
+});
+
 // ── OCR (Claude Vision) ────────────────────────────────────────────────────
 
 const ocrSchema = z.object({
@@ -274,7 +298,9 @@ export const serverEnvSchema = coreSchema
   .merge(observabilitySchema)
   .merge(oauthAliasSchema)
   .merge(infrastructureSchema)
-  .merge(featureFlagsSchema);
+  .merge(featureFlagsSchema)
+  .merge(turnstileSchema)
+  .merge(proxySchema);
 
 // ── Client env (NEXT_PUBLIC_ only) ──────────────────────────────────────────
 
@@ -285,6 +311,8 @@ export const clientEnvSchema = z.object({
   NEXT_PUBLIC_STRIPE_PRICE_TOPUP_25: z.string().startsWith('price_').optional(),
   NEXT_PUBLIC_STRIPE_PRICE_TOPUP_50: z.string().startsWith('price_').optional(),
   NEXT_PUBLIC_SENTRY_DSN: z.url().optional(),
+  // F-SEC-22 — Turnstile site key for the signup widget. Public, safe to expose.
+  NEXT_PUBLIC_TURNSTILE_SITE_KEY: z.string().min(1).optional(),
 });
 
 export type ServerEnv = z.infer<typeof serverEnvSchema>;

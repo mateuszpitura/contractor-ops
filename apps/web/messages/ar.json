@@ -1703,6 +1703,7 @@
   },
   "Common": {
     "networkError": "Connection error. Check your internet and try again.",
+    "verificationRequired": "يرجى إكمال التحقق أولاً.",
     "signOut": "تسجيل الخروج",
     "settings": "الإعدادات",
     "darkMode": "Dark mode",
@@ -2863,6 +2864,7 @@
     "all": "الكل",
     "clearFilter": "Clear filter",
     "exportSuccess": "Report exported ({count} rows)",
+    "exportQueued": "تم إدراج التصدير في قائمة الانتظار — سنرسل لك رابط التنزيل عبر البريد الإلكتروني.",
     "exportError": "تعذر export report. حاول مجددًا.",
     "contractor": "مقاول",
     "team": "الفريق",

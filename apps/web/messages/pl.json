@@ -1722,6 +1722,7 @@
   },
   "Common": {
     "networkError": "Błąd połączenia. Sprawdź internet i spróbuj ponownie.",
+    "verificationRequired": "Najpierw ukończ weryfikację.",
     "signOut": "Wyloguj się",
     "settings": "Ustawienia",
     "darkMode": "Tryb ciemny",
@@ -2882,6 +2883,7 @@
     "all": "Wszystko",
     "clearFilter": "Wyczyść filtr",
     "exportSuccess": "Raport wyeksportowany ({count} wierszy)",
+    "exportQueued": "Eksport został dodany do kolejki — link do pobrania wyślemy e-mailem.",
     "exportError": "Nie udało się wyeksportować raportu. Spróbuj ponownie.",
     "contractor": "Kontrahent",
     "team": "Zespół",

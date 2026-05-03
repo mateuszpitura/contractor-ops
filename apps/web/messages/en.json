@@ -1722,6 +1722,7 @@
   },
   "Common": {
     "networkError": "Connection error. Check your internet and try again.",
+    "verificationRequired": "Please complete the verification challenge first.",
     "signOut": "Sign out",
     "settings": "Settings",
     "darkMode": "Dark mode",
@@ -2979,6 +2980,7 @@
     "all": "All",
     "clearFilter": "Clear filter",
     "exportSuccess": "Report exported ({count} rows)",
+    "exportQueued": "Export queued — we will email you the download link.",
     "exportError": "Could not export report. Try again.",
     "contractor": "Contractor",
     "team": "Team",

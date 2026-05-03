@@ -1864,6 +1864,7 @@
   },
   "Common": {
     "networkError": "Verbindungsfehler. Prüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",
+    "verificationRequired": "Bitte schließen Sie zuerst die Verifizierung ab.",
     "signOut": "Abmelden",
     "settings": "Einstellungen",
     "darkMode": "Dark mode",
@@ -3124,6 +3125,7 @@
     "all": "Alle",
     "clearFilter": "Filter zurücksetzen",
     "exportSuccess": "Report exported ({count} rows)",
+    "exportQueued": "Export wurde in die Warteschlange gestellt — wir senden Ihnen den Download-Link per E-Mail.",
     "exportError": "Aktion fehlgeschlagen: export report. Versuchen Sie es erneut.",
     "contractor": "Auftragnehmer",
     "team": "Team",
