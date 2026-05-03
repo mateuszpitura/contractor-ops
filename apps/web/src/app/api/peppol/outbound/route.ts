@@ -2,7 +2,11 @@ import { PeppolOrchestrator } from '@contractor-ops/api/services/peppol-orchestr
 import { prisma } from '@contractor-ops/db';
 import { StorecoveAdapter } from '@contractor-ops/einvoice';
 import { getCredentials } from '@contractor-ops/integrations';
-import { createWebhookLogger } from '@contractor-ops/logger';
+import {
+  buildContextFromHeaders,
+  createWebhookLogger,
+  runWithRequestContext,
+} from '@contractor-ops/logger';
 import { verifySignatureAppRouter } from '@upstash/qstash/nextjs';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
@@ -30,6 +34,12 @@ const peppolOutboundBodySchema = z.object({
  * validation failures — only infra errors should retry).
  */
 async function handler(request: NextRequest) {
+  // F-OBS-03: reseed ALS frame from upstream QStash forward headers.
+  const traceCtx = buildContextFromHeaders(request.headers);
+  return runWithRequestContext(traceCtx, () => handlerInner(request));
+}
+
+async function handlerInner(request: NextRequest) {
   const rawBody = await request.json().catch(() => null);
   const parsed = peppolOutboundBodySchema.safeParse(rawBody);
   if (!parsed.success) {

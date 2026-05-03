@@ -3,7 +3,11 @@ import { processResendWebhookDelivery } from '@contractor-ops/api/services/resen
 import { prisma } from '@contractor-ops/db';
 import { registerAllAdapters } from '@contractor-ops/integrations/adapters/register-all';
 import { getAdapter } from '@contractor-ops/integrations/registry';
-import { createWebhookLogger } from '@contractor-ops/logger';
+import {
+  buildContextFromHeaders,
+  createWebhookLogger,
+  runWithRequestContext,
+} from '@contractor-ops/logger';
 import { webhookIngressReason } from '@contractor-ops/validators';
 import { verifySignatureAppRouter } from '@upstash/qstash/nextjs';
 import type { NextRequest } from 'next/server';
@@ -39,8 +43,16 @@ registerAllAdapters();
  * 3. Dispatch to adapter.handleWebhook (+ provider-specific handlers in this file)
  * 4. Update delivery status (PROCESSED or FAILED)
  */
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: per-provider dispatch (Jira/Linear/Resend/e-sign)
 async function handler(request: NextRequest) {
+  // F-OBS-03: reseed ALS frame from upstream QStash forward headers BEFORE
+  // any body / dispatch logic. Pure header-read additive change so P2-A's
+  // return-code refactor below does not need to reason about correlation IDs.
+  const traceCtx = buildContextFromHeaders(request.headers);
+  return runWithRequestContext(traceCtx, () => handlerInner(request));
+}
+
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: per-provider dispatch (Jira/Linear/Resend/e-sign)
+async function handlerInner(request: NextRequest) {
   const rawBody = await request.json().catch(() => null);
   const parsed = webhookProcessBodySchema.safeParse(rawBody);
   if (!parsed.success) {

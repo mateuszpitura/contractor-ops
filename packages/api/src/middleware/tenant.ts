@@ -1,4 +1,9 @@
-import { createTenantClientFrom, getRegionalClient, tenantStore } from '@contractor-ops/db';
+import {
+  createTenantClientFrom,
+  getRegionalClient,
+  tenantStore,
+  withRlsTransactions,
+} from '@contractor-ops/db';
 import { TRPCError } from '@trpc/server';
 import * as E from '../errors.js';
 import { t } from '../init.js';
@@ -74,6 +79,13 @@ export async function runWithTenantContext<T>(
   }) => Promise<T>,
   /** Pre-resolved data region — skips the DB lookup when available. */
   knownRegion?: string,
+  /**
+   * Optional acting user id used by F-DB-04 RLS `SET LOCAL app.user_id`.
+   * Falls back to `''` when caller cannot supply (e.g. system contexts);
+   * `set_config` accepts the empty string and the future RLS policies treat
+   * it as "no user" (org-scope only).
+   */
+  userId?: string,
 ): Promise<T> {
   let region = knownRegion;
 
@@ -86,7 +98,26 @@ export async function runWithTenantContext<T>(
   }
 
   const regionalPrisma = getRegionalClient(region);
-  const scopedClient = withOrgCacheInvalidation(createTenantClientFrom(regionalPrisma));
+  // F-DB-04 — wrap the tenant-scoped client's `$transaction` so every
+  // interactive transaction issues `SET LOCAL app.org_id = ...` as its first
+  // statement. The wrap happens AFTER `$extends` so it sees the extended
+  // client surface (Prisma's $extends machinery is left untouched).
+  //
+  // The audit notes there are no DB-level RLS policies yet (deferred to a
+  // separate migration); this is defense-in-depth scaffolding so a future
+  // `CREATE POLICY ... USING (organization_id = current_setting('app.org_id'))`
+  // migration is a no-code-change rollout.
+  //
+  // TODO(F-DB-04): non-transactional `ctx.db.X.findMany()` calls still
+  // bypass `SET LOCAL` because Prisma fires those outside a tx. Once the
+  // codebase either (a) gets actual `CREATE POLICY` rules or (b) is
+  // refactored to wrap reads in tx, the protection extends to the full
+  // query surface.
+  const extended = withOrgCacheInvalidation(createTenantClientFrom(regionalPrisma));
+  const scopedClient = withRlsTransactions(extended, {
+    organizationId: orgId,
+    userId: userId ?? '',
+  });
 
   return tenantStore.run({ organizationId: orgId, region }, () =>
     fn({ organizationId: orgId, region, db: scopedClient }),
@@ -150,6 +181,7 @@ const tenantMiddleware = t.middleware(async ({ ctx, next }) => {
     orgId,
     async tenantCtx => next({ ctx: { ...ctx, ...tenantCtx, session, user } }),
     region,
+    user.id,
   );
 });
 

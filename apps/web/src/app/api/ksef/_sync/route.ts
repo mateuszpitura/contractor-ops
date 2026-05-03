@@ -1,6 +1,10 @@
 import { processKsefSync } from '@contractor-ops/api/services/ksef-sync-orchestrator';
 import { registerAllAdapters } from '@contractor-ops/integrations/adapters/register-all';
-import { createCronLogger } from '@contractor-ops/logger';
+import {
+  buildContextFromHeaders,
+  createCronLogger,
+  runWithRequestContext,
+} from '@contractor-ops/logger';
 import { verifySignatureAppRouter } from '@upstash/qstash/nextjs';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
@@ -40,23 +44,27 @@ registerAllAdapters();
  * 4. Return 200 on success, 500 on error (QStash retries on non-2xx)
  */
 async function handler(request: NextRequest) {
-  const rawBody = await request.json().catch(() => null);
-  const parsed = ksefSyncBodySchema.safeParse(rawBody);
-  if (!parsed.success) {
-    const missing = parsed.error.issues.map(i => i.path.join('.')).filter(Boolean);
-    const detail =
-      missing.length > 0 ? `Missing or invalid: ${missing.join(', ')}` : 'Invalid body';
-    return NextResponse.json({ error: detail }, { status: 400 });
-  }
-  const { organizationId, connectionId } = parsed.data;
+  // F-OBS-03: reseed ALS frame from upstream QStash forward headers.
+  const ctx = buildContextFromHeaders(request.headers);
+  return runWithRequestContext(ctx, async () => {
+    const rawBody = await request.json().catch(() => null);
+    const parsed = ksefSyncBodySchema.safeParse(rawBody);
+    if (!parsed.success) {
+      const missing = parsed.error.issues.map(i => i.path.join('.')).filter(Boolean);
+      const detail =
+        missing.length > 0 ? `Missing or invalid: ${missing.join(', ')}` : 'Invalid body';
+      return NextResponse.json({ error: detail }, { status: 400 });
+    }
+    const { organizationId, connectionId } = parsed.data;
 
-  try {
-    const result = await processKsefSync({ organizationId, connectionId });
-    return NextResponse.json({ processed: true, ...result });
-  } catch (error) {
-    log.error({ err: error, organizationId }, 'ksef sync failed');
-    return NextResponse.json({ error: 'KSeF sync failed' }, { status: 500 });
-  }
+    try {
+      const result = await processKsefSync({ organizationId, connectionId });
+      return NextResponse.json({ processed: true, ...result });
+    } catch (error) {
+      log.error({ err: error, organizationId }, 'ksef sync failed');
+      return NextResponse.json({ error: 'KSeF sync failed' }, { status: 500 });
+    }
+  });
 }
 
 // Wrap with QStash signature verification

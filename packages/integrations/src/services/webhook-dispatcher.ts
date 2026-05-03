@@ -1,7 +1,7 @@
 import { prisma } from '@contractor-ops/db';
 import { getAdapter } from '../registry.js';
 import type { WebhookVerificationResult } from '../types/webhook.js';
-import { getQStashClient } from './qstash-client.js';
+import { publishJSONWithContext } from './qstash-client.js';
 
 // ---------------------------------------------------------------------------
 // Webhook Dispatcher Service
@@ -72,9 +72,9 @@ export async function logWebhookDelivery(params: {
  * @param provider - The provider slug
  */
 export async function queueWebhookProcessing(deliveryId: string, provider: string): Promise<void> {
-  const qstash = getQStashClient();
-
-  await qstash.publishJSON({
+  // F-OBS-03: forward x-request-id + traceparent so the consumer route can
+  // correlate inbound-webhook → processing logs end-to-end.
+  await publishJSONWithContext({
     url: `${process.env.NEXT_PUBLIC_APP_URL}/api/webhooks/_process`,
     body: { deliveryId, provider },
     retries: 3,

@@ -67,6 +67,7 @@ export {
 // QStash Client
 export {
   getQStashClient,
+  publishJSONWithContext,
   resetQStashClient,
 } from './services/qstash-client.js';
 // Resilience layer (circuit breaker + retry + concurrency cap)

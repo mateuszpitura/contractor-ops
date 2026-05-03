@@ -1,5 +1,9 @@
 import { renderClaimPdf } from '@contractor-ops/api/services/late-payment-claim-pdf';
-import { createCronLogger } from '@contractor-ops/logger';
+import {
+  buildContextFromHeaders,
+  createCronLogger,
+  runWithRequestContext,
+} from '@contractor-ops/logger';
 import { verifySignatureAppRouter } from '@upstash/qstash/nextjs';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
@@ -26,6 +30,12 @@ const bodySchema = z.object({
  * digging through Sentry.
  */
 async function handler(request: NextRequest) {
+  // F-OBS-03: reseed ALS frame from upstream QStash forward headers.
+  const traceCtx = buildContextFromHeaders(request.headers);
+  return runWithRequestContext(traceCtx, () => handlerInner(request));
+}
+
+async function handlerInner(request: NextRequest) {
   const rawBody = await request.json().catch(() => null);
   const parsed = bodySchema.safeParse(rawBody);
   if (!parsed.success) {

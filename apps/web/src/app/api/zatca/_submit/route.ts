@@ -1,7 +1,11 @@
 import { handleZatcaSubmissionJob } from '@contractor-ops/api/services/zatca-submission';
 import { prisma } from '@contractor-ops/db';
 import { ZatcaApiError } from '@contractor-ops/einvoice';
-import { createWebhookLogger } from '@contractor-ops/logger';
+import {
+  buildContextFromHeaders,
+  createWebhookLogger,
+  runWithRequestContext,
+} from '@contractor-ops/logger';
 import { verifySignatureAppRouter } from '@upstash/qstash/nextjs';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
@@ -48,6 +52,14 @@ const zatcaSubmitBodySchema = z.object({
  *    QStash DLQ when retries exhaust.
  */
 async function handler(request: NextRequest) {
+  // F-OBS-03: reseed ALS frame from upstream QStash forward headers BEFORE
+  // any handler logic so every log line emitted by this consumer carries the
+  // producer's requestId / traceparent.
+  const traceCtx = buildContextFromHeaders(request.headers);
+  return runWithRequestContext(traceCtx, () => handlerInner(request));
+}
+
+async function handlerInner(request: NextRequest) {
   const rawBody = await request.json().catch(() => null);
   const parsed = zatcaSubmitBodySchema.safeParse(rawBody);
 

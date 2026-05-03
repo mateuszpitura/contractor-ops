@@ -1,6 +1,10 @@
 import { processOcrExtraction } from '@contractor-ops/api/services/ocr-extraction';
 import { registerAllAdapters } from '@contractor-ops/integrations/adapters/register-all';
-import { createCronLogger } from '@contractor-ops/logger';
+import {
+  buildContextFromHeaders,
+  createCronLogger,
+  runWithRequestContext,
+} from '@contractor-ops/logger';
 import { verifySignatureAppRouter } from '@upstash/qstash/nextjs';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
@@ -31,28 +35,33 @@ const ocrProcessBodySchema = z.object({
  * QSTASH_NEXT_SIGNING_KEY).
  */
 async function handler(request: NextRequest) {
-  const rawBody = await request.json().catch(() => null);
-  const parsed = ocrProcessBodySchema.safeParse(rawBody);
-  if (!parsed.success) {
-    const missing = parsed.error.issues.map(i => i.path.join('.')).filter(Boolean);
-    const detail =
-      missing.length > 0 ? `Missing or invalid: ${missing.join(', ')}` : 'Invalid body';
-    return NextResponse.json({ error: detail }, { status: 400 });
-  }
-  const { extractionId, organizationId, storageKey } = parsed.data;
+  // F-OBS-03: reseed ALS frame from upstream QStash forward headers so logs
+  // from this consumer correlate with the producer's tRPC procedure span.
+  const ctx = buildContextFromHeaders(request.headers);
+  return runWithRequestContext(ctx, async () => {
+    const rawBody = await request.json().catch(() => null);
+    const parsed = ocrProcessBodySchema.safeParse(rawBody);
+    if (!parsed.success) {
+      const missing = parsed.error.issues.map(i => i.path.join('.')).filter(Boolean);
+      const detail =
+        missing.length > 0 ? `Missing or invalid: ${missing.join(', ')}` : 'Invalid body';
+      return NextResponse.json({ error: detail }, { status: 400 });
+    }
+    const { extractionId, organizationId, storageKey } = parsed.data;
 
-  try {
-    await processOcrExtraction({
-      extractionId,
-      organizationId,
-      storageKey,
-    });
+    try {
+      await processOcrExtraction({
+        extractionId,
+        organizationId,
+        storageKey,
+      });
 
-    return NextResponse.json({ processed: true });
-  } catch (error) {
-    log.error({ err: error, extractionId }, 'ocr processing failed');
-    return NextResponse.json({ error: 'Processing failed' }, { status: 500 });
-  }
+      return NextResponse.json({ processed: true });
+    } catch (error) {
+      log.error({ err: error, extractionId }, 'ocr processing failed');
+      return NextResponse.json({ error: 'Processing failed' }, { status: 500 });
+    }
+  });
 }
 
 export const POST = verifySignatureAppRouter(handler);

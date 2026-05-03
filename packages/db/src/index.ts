@@ -9,8 +9,8 @@ export type {
 export { prismaRaw } from './raw.js';
 export type { DataRegion } from './region.js';
 export { getRegionalClient, preWarmRegionalClients, SUPPORTED_REGIONS } from './region.js';
-export type { RlsContext } from './rls.js';
-export { withRlsSession } from './rls.js';
+export type { PrismaWithTransaction, RlsContext } from './rls.js';
+export { withRlsSession, withRlsTransactions } from './rls.js';
 export {
   capabilityEnumSchema,
   providerIdSchema,

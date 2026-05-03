@@ -2,6 +2,7 @@ import { pollDpdShipmentStatuses } from '@contractor-ops/api/services/courier/dp
 import { pollInPostShipmentStatuses } from '@contractor-ops/api/services/courier/inpost-polling-service';
 import { pollUpsShipmentStatuses } from '@contractor-ops/api/services/courier/ups-polling-service';
 import { prisma } from '@contractor-ops/db';
+import { buildContextFromHeaders, runWithRequestContext } from '@contractor-ops/logger';
 import { verifySignatureAppRouter } from '@upstash/qstash/nextjs';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
@@ -37,6 +38,12 @@ interface OrgResult {
  * Protected by QStash signature verification.
  */
 async function handler(request: NextRequest) {
+  // F-OBS-03: reseed ALS frame from upstream QStash forward headers.
+  const traceCtx = buildContextFromHeaders(request.headers);
+  return runWithRequestContext(traceCtx, () => handlerInner(request));
+}
+
+async function handlerInner(request: NextRequest) {
   let body: { organizationId?: string } = {};
 
   try {
