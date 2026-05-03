@@ -2,13 +2,17 @@ import type { IntegrationConnection } from '@contractor-ops/db/generated/prisma/
 import { KsefApiClient, ksefConnectionConfigSchema } from '@contractor-ops/einvoice';
 import { encryptCredentials } from '@contractor-ops/integrations';
 import { getQStashClient } from '@contractor-ops/integrations/services/qstash-client';
+import { createLogger } from '@contractor-ops/logger';
 import { getServerEnv } from '@contractor-ops/validators';
+import * as Sentry from '@sentry/nextjs';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import * as E from '../../errors.js';
 import { router } from '../../init.js';
 import { requirePermission } from '../../middleware/rbac.js';
 import { tenantProcedure } from '../../middleware/tenant.js';
+
+const log = createLogger({ service: 'ksef-router' });
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -133,6 +137,11 @@ export const ksefRouter = router({
       }
 
       // Step 6: Create QStash cron schedule (per D-05)
+      // F-ASYNC-12: surface schedule-create failures via lastErrorMessage so
+      // the UI can show "schedule unhealthy" instead of the connection
+      // appearing CONNECTED with no syncs running.
+      // F-ASYNC-18: bump retries 2 → 5 since KSeF gov API stability is
+      // poor; a multi-hour outage would otherwise drop the hourly sync.
       try {
         const qstash = getQStashClient();
         const schedule = await qstash.schedules.create({
@@ -142,7 +151,7 @@ export const ksefRouter = router({
             organizationId: ctx.organizationId,
             connectionId: connection.id,
           }),
-          retries: 2,
+          retries: 5,
         });
 
         // Store schedule ID in configJson
@@ -156,8 +165,23 @@ export const ksefRouter = router({
             },
           },
         });
-      } catch (_error) {
-        // Don't fail the connection — schedule can be retried
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Schedule create failed';
+        log.error(
+          { err: error, organizationId: ctx.organizationId, connectionId: connection.id },
+          'failed to create KSeF QStash sync schedule',
+        );
+        Sentry.captureException(error, {
+          tags: { 'integration.provider': 'KSEF', 'qstash.outcome': 'schedule-create-failed' },
+          extra: { organizationId: ctx.organizationId, connectionId: connection.id },
+        });
+        await ctx.db.integrationConnection.update({
+          where: { id: connection.id },
+          data: {
+            lastErrorAt: new Date(),
+            lastErrorMessage: `QStash schedule create failed: ${message.slice(0, 400)}`,
+          },
+        });
       }
 
       return connection;
@@ -192,8 +216,27 @@ export const ksefRouter = router({
         try {
           const qstash = getQStashClient();
           await qstash.schedules.delete(scheduleId);
-        } catch (_error) {
-          /* fire-and-forget */
+        } catch (error) {
+          // F-ASYNC-12: schedule delete failed — schedule will keep firing
+          // for a connection that no longer exists. Surface as a Sentry
+          // event + an ops-greppable log line so the periodic orphan
+          // sweeper (or a human) can clean it up.
+          log.error(
+            {
+              err: error,
+              organizationId: ctx.organizationId,
+              scheduleId,
+              event: 'qstash_schedule_orphans',
+            },
+            'failed to delete KSeF QStash schedule on disconnect — schedule may be orphaned',
+          );
+          Sentry.captureException(error, {
+            tags: {
+              'integration.provider': 'KSEF',
+              'qstash.outcome': 'schedule-delete-failed',
+            },
+            extra: { organizationId: ctx.organizationId, scheduleId },
+          });
         }
       }
 

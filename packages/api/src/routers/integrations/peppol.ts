@@ -1,6 +1,7 @@
 import type { IntegrationConnection } from '@contractor-ops/db/generated/prisma/client';
 import { storeCredentials } from '@contractor-ops/integrations';
 import { getQStashClient } from '@contractor-ops/integrations/services/qstash-client';
+import { createLogger } from '@contractor-ops/logger';
 import {
   connectPeppolSchema,
   getServerEnv,
@@ -9,8 +10,12 @@ import {
   peppolLookupCapabilitiesSchema,
   retryTransmissionSchema,
 } from '@contractor-ops/validators';
+import * as Sentry from '@sentry/nextjs';
 import { TRPCError } from '@trpc/server';
 import * as E from '../../errors.js';
+
+const log = createLogger({ service: 'peppol-router' });
+
 import { router } from '../../init.js';
 import { requirePermission } from '../../middleware/rbac.js';
 import { tenantProcedure } from '../../middleware/tenant.js';
@@ -120,6 +125,8 @@ export const peppolRouter = router({
       });
 
       // Schedule QStash polling CRON (every 15 minutes)
+      // F-ASYNC-12: surface failures via lastErrorMessage + Sentry.
+      // F-ASYNC-18: bump retries 2 → 5 to absorb Storecove transient blips.
       try {
         const qstash = getQStashClient();
         const schedule = await qstash.schedules.create({
@@ -128,7 +135,7 @@ export const peppolRouter = router({
           body: JSON.stringify({
             organizationId: ctx.organizationId,
           }),
-          retries: 2,
+          retries: 5,
         });
 
         const currentConfig = (connection.configJson as Record<string, unknown>) ?? {};
@@ -141,8 +148,23 @@ export const peppolRouter = router({
             },
           },
         });
-      } catch (_error) {
-        // Don't fail the connection — schedule can be retried
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Schedule create failed';
+        log.error(
+          { err: error, organizationId: ctx.organizationId, connectionId: connection.id },
+          'failed to create Peppol QStash polling schedule',
+        );
+        Sentry.captureException(error, {
+          tags: { 'integration.provider': 'PEPPOL', 'qstash.outcome': 'schedule-create-failed' },
+          extra: { organizationId: ctx.organizationId, connectionId: connection.id },
+        });
+        await ctx.db.integrationConnection.update({
+          where: { id: connection.id },
+          data: {
+            lastErrorAt: new Date(),
+            lastErrorMessage: `QStash schedule create failed: ${message.slice(0, 400)}`,
+          },
+        });
       }
 
       return { participant, connection };
@@ -192,8 +214,24 @@ export const peppolRouter = router({
           try {
             const qstash = getQStashClient();
             await qstash.schedules.delete(scheduleId);
-          } catch (_error) {
-            /* fire-and-forget */
+          } catch (error) {
+            // F-ASYNC-12: orphan-tracking log line + Sentry.
+            log.error(
+              {
+                err: error,
+                organizationId: ctx.organizationId,
+                scheduleId,
+                event: 'qstash_schedule_orphans',
+              },
+              'failed to delete Peppol QStash schedule on disconnect — schedule may be orphaned',
+            );
+            Sentry.captureException(error, {
+              tags: {
+                'integration.provider': 'PEPPOL',
+                'qstash.outcome': 'schedule-delete-failed',
+              },
+              extra: { organizationId: ctx.organizationId, scheduleId },
+            });
           }
         }
 

@@ -11,6 +11,7 @@ import { getQStashClient } from '@contractor-ops/integrations/services/qstash-cl
 import { createLogger } from '@contractor-ops/logger';
 import type { DirectoryRole } from '@contractor-ops/validators';
 import { directoryImportInputSchema, getServerEnv } from '@contractor-ops/validators';
+import * as Sentry from '@sentry/nextjs';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { router } from '../../init.js';
@@ -99,6 +100,10 @@ async function ensureSyncCronSchedule(
       body: JSON.stringify({ organizationId, connectionId }),
       cron: '0 2 * * *', // Daily at 2 AM
       scheduleId,
+      // F-ASYNC-18: bump default retries to 5 — Google Workspace transient
+      // 5xx during a deploy or quota spike shouldn't permanently drop the
+      // daily sync (the next 2AM tick recovers, but the gap is visible).
+      retries: 5,
     });
 
     await db.integrationConnection.update({
@@ -111,8 +116,25 @@ async function ensureSyncCronSchedule(
       },
     });
   } catch (error) {
-    log.error({ err: error }, 'failed to create sync cron schedule');
-    // Don't fail the operation — schedule can be retried
+    // F-ASYNC-12: surface schedule-create failure on lastErrorMessage so
+    // ops + the UI can see "schedule unhealthy" instead of a CONNECTED
+    // connection with no syncs.
+    const message = error instanceof Error ? error.message : 'Schedule create failed';
+    log.error({ err: error, organizationId, connectionId }, 'failed to create sync cron schedule');
+    Sentry.captureException(error, {
+      tags: {
+        'integration.provider': 'GOOGLE_WORKSPACE',
+        'qstash.outcome': 'schedule-create-failed',
+      },
+      extra: { organizationId, connectionId },
+    });
+    await db.integrationConnection.update({
+      where: { id: connectionId },
+      data: {
+        lastErrorAt: new Date(),
+        lastErrorMessage: `QStash schedule create failed: ${message.slice(0, 400)}`,
+      },
+    });
   }
 }
 
