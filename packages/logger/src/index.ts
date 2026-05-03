@@ -1,12 +1,32 @@
 import type { DestinationStream, Logger, LoggerOptions } from 'pino';
 import pino from 'pino';
 import { PII_MASK_PATHS } from './pii-mask.js';
+import { getRequestContext } from './request-context.js';
 
 // ---------------------------------------------------------------------------
 // Environment detection
 // ---------------------------------------------------------------------------
 
 const isDev = process.env.NODE_ENV !== 'production';
+
+// ---------------------------------------------------------------------------
+// Pino mixin — injects per-request correlation ids on every log line
+// ---------------------------------------------------------------------------
+//
+// Phase 2 / Unit P2-E (F-OBS-02). When an ALS frame is active (seeded by the
+// tRPC observability middleware, the QStash consumer routes, or the auth
+// route wrapper) every log line — including those emitted by module-scoped
+// loggers in routers / services that hold no per-request bindings — gets
+// `{ requestId, traceparent }`. Mixin must be cheap and never throw; the ALS
+// helpers swallow internal errors for that reason.
+function requestContextMixin(): Record<string, string> {
+  const ctx = getRequestContext();
+  if (!ctx) return {};
+  if (ctx.traceparent) {
+    return { requestId: ctx.requestId, traceparent: ctx.traceparent };
+  }
+  return { requestId: ctx.requestId };
+}
 
 // ---------------------------------------------------------------------------
 // Base logger configuration
@@ -20,6 +40,7 @@ const baseOptions: LoggerOptions = {
       return { level: label };
     },
   },
+  mixin: requestContextMixin,
   redact: {
     paths: [...PII_MASK_PATHS],
     censor: '[REDACTED]',
@@ -35,6 +56,19 @@ export {
 export { LOG_BODY_INCLUDE_PREFIXES } from './log-body-include-prefixes.js';
 export type { PiiMaskKeyword } from './pii-mask.js';
 export { PII_MASK_KEYWORDS, PII_MASK_PATHS } from './pii-mask.js';
+export {
+  buildContextFromHeaders,
+  generateRequestId,
+  getOutboundHeaders,
+  getRequestContext,
+  getRequestId,
+  getTraceparent,
+  getTracestate,
+  isValidTraceparent,
+  type RequestContext,
+  runWithRequestContext,
+  runWithRequestId,
+} from './request-context.js';
 export { withBodyLogging } from './with-body-logging.js';
 
 // ---------------------------------------------------------------------------

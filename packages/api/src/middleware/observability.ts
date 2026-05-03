@@ -1,4 +1,4 @@
-import { createTrpcLogger } from '@contractor-ops/logger';
+import { createTrpcLogger, generateRequestId, runWithRequestContext } from '@contractor-ops/logger';
 import { metrics } from '@contractor-ops/logger/metrics';
 import * as Sentry from '@sentry/nextjs';
 import type { AnyMiddlewareFunction } from '@trpc/server';
@@ -40,7 +40,11 @@ export function isBodyLoggingExcluded(procedurePath: string): boolean {
 export const observabilityMiddleware: AnyMiddlewareFunction = async opts => {
   const { path, type, ctx, next } = opts;
   const start = performance.now();
-  const requestId = crypto.randomUUID();
+  // P2-E F-OBS-02: requestId is now seeded into AsyncLocalStorage so that
+  // module-scoped child loggers in routers / services automatically carry it
+  // on every log line via the Pino mixin in @contractor-ops/logger. Use the
+  // shared generator (UUID v7 when supported) instead of a raw v4.
+  const requestId = generateRequestId();
 
   const context = ctx as Context;
 
@@ -55,66 +59,67 @@ export const observabilityMiddleware: AnyMiddlewareFunction = async opts => {
     requestId,
   });
 
-  log.info('procedure started');
-
-  return Sentry.startSpan(
-    {
-      name: `trpc/${path}`,
-      op: 'trpc.procedure',
-      attributes: {
-        'trpc.procedure': path,
-        'trpc.type': type,
-        ...(userId && { 'user.id': userId }),
-        ...(organizationId && { 'org.id': organizationId }),
+  return runWithRequestContext({ requestId }, async () =>
+    Sentry.startSpan(
+      {
+        name: `trpc/${path}`,
+        op: 'trpc.procedure',
+        attributes: {
+          'trpc.procedure': path,
+          'trpc.type': type,
+          ...(userId && { 'user.id': userId }),
+          ...(organizationId && { 'org.id': organizationId }),
+        },
       },
-    },
-    async span => {
-      try {
-        const result = await next({
-          ctx: { ...context, requestId },
-        });
+      async span => {
+        log.info('procedure started');
+        try {
+          const result = await next({
+            ctx: { ...context, requestId },
+          });
 
-        const durationMs = Math.round(performance.now() - start);
+          const durationMs = Math.round(performance.now() - start);
 
-        log.info({ durationMs }, 'procedure completed');
+          log.info({ durationMs }, 'procedure completed');
 
-        // Custom metrics
-        metrics.distribution('trpc.duration', durationMs, {
-          unit: 'millisecond',
-          tags: { procedure: path, type },
-        });
-        metrics.increment('trpc.calls', 1, {
-          procedure: path,
-          type,
-          status: 'ok',
-        });
+          // Custom metrics
+          metrics.distribution('trpc.duration', durationMs, {
+            unit: 'millisecond',
+            tags: { procedure: path, type },
+          });
+          metrics.increment('trpc.calls', 1, {
+            procedure: path,
+            type,
+            status: 'ok',
+          });
 
-        span.setStatus({ code: 1 }); // OK
+          span.setStatus({ code: 1 }); // OK
 
-        return result;
-      } catch (error) {
-        const durationMs = Math.round(performance.now() - start);
+          return result;
+        } catch (error) {
+          const durationMs = Math.round(performance.now() - start);
 
-        log.error({ err: error, durationMs }, 'procedure failed');
+          log.error({ err: error, durationMs }, 'procedure failed');
 
-        Sentry.captureException(error, {
-          tags: {
-            'trpc.procedure': path,
-            'trpc.type': type,
-          },
-          extra: { requestId, userId, organizationId },
-        });
+          Sentry.captureException(error, {
+            tags: {
+              'trpc.procedure': path,
+              'trpc.type': type,
+            },
+            extra: { requestId, userId, organizationId },
+          });
 
-        metrics.increment('trpc.calls', 1, {
-          procedure: path,
-          type,
-          status: 'error',
-        });
+          metrics.increment('trpc.calls', 1, {
+            procedure: path,
+            type,
+            status: 'error',
+          });
 
-        span.setStatus({ code: 2, message: 'internal_error' }); // ERROR
+          span.setStatus({ code: 2, message: 'internal_error' }); // ERROR
 
-        throw error;
-      }
-    },
+          throw error;
+        }
+      },
+    ),
   );
 };
