@@ -1,4 +1,7 @@
-import { routeStripeEvent } from '@contractor-ops/api/services/billing-webhook';
+import {
+  dispatchStripeWebhookNotifications,
+  routeStripeEvent,
+} from '@contractor-ops/api/services/billing-webhook';
 import { stripe } from '@contractor-ops/api/services/stripe-client';
 import { prisma } from '@contractor-ops/db';
 import { createWebhookLogger } from '@contractor-ops/logger';
@@ -55,7 +58,13 @@ export async function POST(request: NextRequest) {
     // Step 2+3: Idempotency check + processing in a single Serializable transaction.
     // This prevents the race condition where two concurrent webhook deliveries
     // both see processedAt=null and both proceed to process the event.
-    await prisma.$transaction(
+    //
+    // Notifications are intentionally NOT dispatched inside the tx — see
+    // F-ASYNC-13. Handlers collect NotificationEvents into an array which we
+    // dispatch after the tx commits, so a tx rollback never sends a phantom
+    // user-facing notification, and dispatch errors don't surface as
+    // unhandled-rejection process crashes (Node strict default on Render).
+    const pendingNotifications = await prisma.$transaction(
       async tx => {
         // Upsert the event record and check if already processed
         const existing = await tx.stripeEvent.findUnique({
@@ -65,7 +74,7 @@ export async function POST(request: NextRequest) {
 
         if (existing?.processedAt) {
           // Already processed — skip (idempotent)
-          return;
+          return [];
         }
 
         // Insert event record if it doesn't exist yet
@@ -79,20 +88,33 @@ export async function POST(request: NextRequest) {
           update: {},
         });
 
-        // Route to appropriate handler
-        await routeStripeEvent(event, tx as unknown as Parameters<typeof routeStripeEvent>[1]);
+        // Route to appropriate handler — collects notification events to be
+        // dispatched after the tx commits.
+        const events = await routeStripeEvent(
+          event,
+          tx as unknown as Parameters<typeof routeStripeEvent>[1],
+        );
 
         // Mark as processed (still inside the same transaction)
         await tx.stripeEvent.update({
           where: { stripeEventId: event.id },
           data: { processedAt: new Date() },
         });
+
+        return events;
       },
       {
         isolationLevel: 'Serializable',
         timeout: 30_000,
       },
     );
+
+    // Dispatch queued notifications AFTER the tx has committed. Each
+    // dispatch is awaited with its own try/catch inside the helper so a
+    // single failure cannot silently surface as an unhandled rejection.
+    if (pendingNotifications.length > 0) {
+      await dispatchStripeWebhookNotifications(pendingNotifications);
+    }
 
     log.info({ eventId: event.id, eventType: event.type }, 'event processed');
     metrics.increment('webhook.processed', 1, {

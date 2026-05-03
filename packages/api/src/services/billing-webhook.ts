@@ -101,16 +101,29 @@ function getSubscriptionIdFromInvoice(invoice: Stripe.Invoice): string | null {
 /**
  * Routes a verified Stripe event to the appropriate handler.
  * Called within a Prisma transaction from the webhook route.
+ *
+ * Returns a list of pending notification events that the caller MUST
+ * dispatch AFTER the transaction commits — never inside it. Dispatching
+ * notifications inside the Stripe Serializable tx (a) writes to the
+ * unscoped `prisma` connection, escaping the tx isolation boundary,
+ * (b) sends user-facing emails/in-app notifications even if the outer
+ * tx rolls back, and (c) the previous `void dispatch(...)` form caused
+ * unhandled rejection crashes in Node strict mode (Render default).
  */
-export async function routeStripeEvent(event: Stripe.Event, tx: TxClient): Promise<void> {
+export async function routeStripeEvent(
+  event: Stripe.Event,
+  tx: TxClient,
+): Promise<NotificationEvent[]> {
   log.info({ eventId: event.id, eventType: event.type }, 'routing stripe event');
   metrics.increment('billing.event', 1, { eventType: event.type });
+
+  const pendingNotifications: NotificationEvent[] = [];
 
   switch (event.type) {
     case 'checkout.session.completed': {
       const session = event.data.object as Stripe.Checkout.Session;
       if (session.mode === 'subscription' && session.subscription) {
-        await handleCheckoutCompleted(session, tx);
+        await handleCheckoutCompleted(session, tx, pendingNotifications);
       } else if (session.mode === 'payment' && session.metadata?.type === 'top_up') {
         await handleTopUpCompleted(session, tx);
       }
@@ -120,7 +133,7 @@ export async function routeStripeEvent(event: Stripe.Event, tx: TxClient): Promi
     case 'customer.subscription.created':
     case 'customer.subscription.updated': {
       const subscription = event.data.object as unknown as SubscriptionWithPeriod;
-      await handleSubscriptionUpdated(subscription, tx);
+      await handleSubscriptionUpdated(subscription, tx, pendingNotifications);
       break;
     }
 
@@ -132,7 +145,7 @@ export async function routeStripeEvent(event: Stripe.Event, tx: TxClient): Promi
 
     case 'customer.subscription.trial_will_end': {
       const subscription = event.data.object as Stripe.Subscription;
-      await handleTrialWillEnd(subscription, tx);
+      await handleTrialWillEnd(subscription, tx, pendingNotifications);
       break;
     }
 
@@ -144,13 +157,13 @@ export async function routeStripeEvent(event: Stripe.Event, tx: TxClient): Promi
 
     case 'invoice.payment_failed': {
       const invoice = event.data.object as Stripe.Invoice;
-      await handlePaymentFailed(invoice, tx);
+      await handlePaymentFailed(invoice, tx, pendingNotifications);
       break;
     }
 
     case 'invoice.payment_action_required': {
       const invoice = event.data.object as Stripe.Invoice;
-      await handlePaymentActionRequired(invoice, tx);
+      await handlePaymentActionRequired(invoice, tx, pendingNotifications);
       break;
     }
 
@@ -162,7 +175,7 @@ export async function routeStripeEvent(event: Stripe.Event, tx: TxClient): Promi
 
     case 'customer.subscription.resumed': {
       const subscription = event.data.object as unknown as SubscriptionWithPeriod;
-      await handleSubscriptionUpdated(subscription, tx);
+      await handleSubscriptionUpdated(subscription, tx, pendingNotifications);
       break;
     }
 
@@ -173,6 +186,31 @@ export async function routeStripeEvent(event: Stripe.Event, tx: TxClient): Promi
     }
 
     default:
+  }
+
+  return pendingNotifications;
+}
+
+/**
+ * Dispatches the pending notification events collected during a Stripe
+ * webhook transaction. Each dispatch is awaited individually with its
+ * own try/catch so a single failing notification never blocks the others.
+ *
+ * MUST be called only after `prisma.$transaction(routeStripeEvent)`
+ * resolves successfully — never inside the transaction.
+ */
+export async function dispatchStripeWebhookNotifications(
+  events: NotificationEvent[],
+): Promise<void> {
+  for (const event of events) {
+    try {
+      await dispatch(event);
+    } catch (err) {
+      log.error(
+        { err, notificationType: event.type, organizationId: event.organizationId },
+        'stripe webhook notification dispatch failed',
+      );
+    }
   }
 }
 
@@ -189,6 +227,7 @@ export async function routeStripeEvent(event: Stripe.Event, tx: TxClient): Promi
 async function handleCheckoutCompleted(
   session: Stripe.Checkout.Session,
   tx: TxClient,
+  pendingNotifications: NotificationEvent[],
 ): Promise<void> {
   const subscriptionId =
     typeof session.subscription === 'string' ? session.subscription : session.subscription?.id;
@@ -201,7 +240,7 @@ async function handleCheckoutCompleted(
   const subscriptionResponse = await stripe.subscriptions.retrieve(subscriptionId);
   // Cast to include period fields available in webhook payload
   const subscription = subscriptionResponse as unknown as SubscriptionWithPeriod;
-  await handleSubscriptionUpdated(subscription, tx);
+  await handleSubscriptionUpdated(subscription, tx, pendingNotifications);
 
   // Per D-08: Create initial trial credit ledger for trialing subscriptions
   if (subscription.status === 'trialing') {
@@ -313,6 +352,7 @@ async function handleTopUpCompleted(session: Stripe.Checkout.Session, tx: TxClie
 async function handleSubscriptionUpdated(
   subscription: SubscriptionWithPeriod,
   tx: TxClient,
+  pendingNotifications: NotificationEvent[],
 ): Promise<void> {
   const organizationId = subscription.metadata?.organizationId;
   if (!organizationId) {
@@ -339,9 +379,15 @@ async function handleSubscriptionUpdated(
 
   void invalidate(CacheKeys.subscription(organizationId), CacheKeys.creditBalance(organizationId));
 
-  // Notify admins when subscription tier changes
+  // Queue tier-change notification for after-tx dispatch
   if (previousSub && previousSub.tier !== tier) {
-    void notifyAdminsOfTierChange(tx, organizationId, previousSub.tier, tier);
+    await queueTierChangeNotification(
+      tx,
+      organizationId,
+      previousSub.tier,
+      tier,
+      pendingNotifications,
+    );
   }
 }
 
@@ -399,11 +445,16 @@ function resolveSubscriptionPeriod(subscription: SubscriptionWithPeriod): {
   return { periodStart, periodEnd };
 }
 
-async function notifyAdminsOfTierChange(
+/**
+ * Builds and queues a tier-change notification. The dispatch itself happens
+ * after the Stripe Serializable tx commits (see dispatchStripeWebhookNotifications).
+ */
+async function queueTierChangeNotification(
   tx: TxClient,
   organizationId: string,
   previousTier: string,
   newTier: string,
+  pendingNotifications: NotificationEvent[],
 ): Promise<void> {
   const adminMembers = await tx.member.findMany({
     where: { organizationId, role: { in: ['owner', 'admin'] } },
@@ -413,17 +464,15 @@ async function notifyAdminsOfTierChange(
   const adminUserIds = adminMembers.map((m: { userId: string }) => m.userId);
   if (adminUserIds.length === 0) return;
 
-  void dispatch({
+  pendingNotifications.push({
     organizationId,
-    type: 'SUBSCRIPTION_CHANGED' as const,
+    type: 'SUBSCRIPTION_CHANGED' as NotificationEvent['type'],
     recipientUserIds: adminUserIds,
     title: 'Subscription plan changed',
     body: `Your plan has been changed from ${previousTier} to ${newTier}.`,
     entityType: 'ORGANIZATION',
     entityId: organizationId,
-  }).catch((error: unknown) =>
-    log.error({ err: error }, 'subscription change notification failed'),
-  );
+  });
 }
 
 /**
@@ -460,8 +509,15 @@ async function handleSubscriptionDeleted(
 /**
  * Stripe sends trial_will_end 3 days before trial expires.
  * Per D-10: Send both in-app notification AND email to billingEmail.
+ *
+ * The in-app dispatch is queued (not awaited inside the tx) so that the
+ * caller can fire it after the Stripe Serializable tx commits.
  */
-async function handleTrialWillEnd(subscription: Stripe.Subscription, tx: TxClient): Promise<void> {
+async function handleTrialWillEnd(
+  subscription: Stripe.Subscription,
+  tx: TxClient,
+  pendingNotifications: NotificationEvent[],
+): Promise<void> {
   const sub = await tx.subscription.findUnique({
     where: { stripeSubscriptionId: subscription.id },
     include: { organization: { select: { billingEmail: true, id: true } } },
@@ -484,16 +540,15 @@ async function handleTrialWillEnd(subscription: Stripe.Subscription, tx: TxClien
   const adminUserIds = adminMembers.map((m: { userId: string }) => m.userId);
 
   if (adminUserIds.length > 0) {
-    // In-app notification via dispatch
-    void dispatch({
+    pendingNotifications.push({
       organizationId: sub.organization.id,
-      type: 'TRIAL_ENDING' as const,
+      type: 'TRIAL_ENDING' as NotificationEvent['type'],
       recipientUserIds: adminUserIds,
       title: 'Trial ending soon',
       body: 'Your trial ends in 3 days. Choose a plan to continue without interruption.',
       entityType: 'ORGANIZATION',
       entityId: sub.organization.id,
-    }).catch((error: unknown) => log.error({ err: error }, 'trial notification dispatch failed'));
+    });
   }
 
   // Per D-10: Also send email to billingEmail
@@ -563,7 +618,11 @@ async function handleInvoicePaid(invoice: Stripe.Invoice, tx: TxClient): Promise
 /**
  * Updates subscription to PAST_DUE and notifies billing admins.
  */
-async function handlePaymentFailed(invoice: Stripe.Invoice, tx: TxClient): Promise<void> {
+async function handlePaymentFailed(
+  invoice: Stripe.Invoice,
+  tx: TxClient,
+  pendingNotifications: NotificationEvent[],
+): Promise<void> {
   const subscriptionId = getSubscriptionIdFromInvoice(invoice);
   if (!subscriptionId) return;
 
@@ -584,7 +643,7 @@ async function handlePaymentFailed(invoice: Stripe.Invoice, tx: TxClient): Promi
     CacheKeys.creditBalance(sub.organizationId),
   );
 
-  await notifyBillingAdmins(tx, sub, {
+  await queueBillingAdminNotification(tx, sub, pendingNotifications, {
     type: 'PAYMENT_FAILED' as const,
     title: 'Payment failed',
     body: 'Payment failed. Update your payment method to continue your subscription.',
@@ -596,7 +655,11 @@ async function handlePaymentFailed(invoice: Stripe.Invoice, tx: TxClient): Promi
  * Handles invoice.payment_action_required (3D Secure / SCA).
  * Notifies admins that payment verification is needed.
  */
-async function handlePaymentActionRequired(invoice: Stripe.Invoice, tx: TxClient): Promise<void> {
+async function handlePaymentActionRequired(
+  invoice: Stripe.Invoice,
+  tx: TxClient,
+  pendingNotifications: NotificationEvent[],
+): Promise<void> {
   const subscriptionId = getSubscriptionIdFromInvoice(invoice);
   if (!subscriptionId) return;
 
@@ -607,7 +670,7 @@ async function handlePaymentActionRequired(invoice: Stripe.Invoice, tx: TxClient
 
   if (!sub) return;
 
-  await notifyBillingAdmins(tx, sub, {
+  await queueBillingAdminNotification(tx, sub, pendingNotifications, {
     type: 'PAYMENT_ACTION_REQUIRED' as const,
     title: 'Payment verification required',
     body: 'Your bank requires additional verification. Please complete the payment to keep your subscription active.',
@@ -616,14 +679,18 @@ async function handlePaymentActionRequired(invoice: Stripe.Invoice, tx: TxClient
 }
 
 /**
- * Shared helper: notify org admins via in-app dispatch and email the billing contact.
+ * Shared helper: queue an in-app notification (for after-tx dispatch) and
+ * email the billing contact synchronously. The notification is NOT
+ * dispatched inside this call because the caller is inside the Stripe
+ * Serializable tx — see dispatchStripeWebhookNotifications.
  */
-async function notifyBillingAdmins(
+async function queueBillingAdminNotification(
   tx: TxClient,
   sub: {
     organizationId: string;
     organization?: { id: string; billingEmail: string | null } | null;
   },
+  pendingNotifications: NotificationEvent[],
   notification: { type: string; title: string; body: string; emailSubject: string },
 ): Promise<void> {
   const adminMembers = await tx.member.findMany({
@@ -634,7 +701,7 @@ async function notifyBillingAdmins(
   const adminUserIds = adminMembers.map((m: { userId: string }) => m.userId);
 
   if (adminUserIds.length > 0) {
-    void dispatch({
+    pendingNotifications.push({
       organizationId: sub.organizationId,
       type: notification.type as NotificationEvent['type'],
       recipientUserIds: adminUserIds,
@@ -642,9 +709,7 @@ async function notifyBillingAdmins(
       body: notification.body,
       entityType: 'ORGANIZATION',
       entityId: sub.organizationId,
-    }).catch((error: unknown) =>
-      log.error({ err: error, notificationType: notification.type }, 'notification failed'),
-    );
+    });
   }
 
   if (sub.organization?.billingEmail) {
