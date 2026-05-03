@@ -31,6 +31,9 @@ export type MemberMinAggregateOutputType = {
   role: string | null
   teamId: string | null
   createdAt: Date | null
+  disabledAt: Date | null
+  disabledByUserId: string | null
+  disabledReason: string | null
 }
 
 export type MemberMaxAggregateOutputType = {
@@ -40,6 +43,9 @@ export type MemberMaxAggregateOutputType = {
   role: string | null
   teamId: string | null
   createdAt: Date | null
+  disabledAt: Date | null
+  disabledByUserId: string | null
+  disabledReason: string | null
 }
 
 export type MemberCountAggregateOutputType = {
@@ -49,6 +55,9 @@ export type MemberCountAggregateOutputType = {
   role: number
   teamId: number
   createdAt: number
+  disabledAt: number
+  disabledByUserId: number
+  disabledReason: number
   _all: number
 }
 
@@ -60,6 +69,9 @@ export type MemberMinAggregateInputType = {
   role?: true
   teamId?: true
   createdAt?: true
+  disabledAt?: true
+  disabledByUserId?: true
+  disabledReason?: true
 }
 
 export type MemberMaxAggregateInputType = {
@@ -69,6 +81,9 @@ export type MemberMaxAggregateInputType = {
   role?: true
   teamId?: true
   createdAt?: true
+  disabledAt?: true
+  disabledByUserId?: true
+  disabledReason?: true
 }
 
 export type MemberCountAggregateInputType = {
@@ -78,6 +93,9 @@ export type MemberCountAggregateInputType = {
   role?: true
   teamId?: true
   createdAt?: true
+  disabledAt?: true
+  disabledByUserId?: true
+  disabledReason?: true
   _all?: true
 }
 
@@ -160,6 +178,9 @@ export type MemberGroupByOutputType = {
   role: string
   teamId: string | null
   createdAt: Date
+  disabledAt: Date | null
+  disabledByUserId: string | null
+  disabledReason: string | null
   _count: MemberCountAggregateOutputType | null
   _min: MemberMinAggregateOutputType | null
   _max: MemberMaxAggregateOutputType | null
@@ -190,6 +211,9 @@ export type MemberWhereInput = {
   role?: Prisma.StringFilter<"Member"> | string
   teamId?: Prisma.StringNullableFilter<"Member"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Member"> | Date | string
+  disabledAt?: Prisma.DateTimeNullableFilter<"Member"> | Date | string | null
+  disabledByUserId?: Prisma.StringNullableFilter<"Member"> | string | null
+  disabledReason?: Prisma.StringNullableFilter<"Member"> | string | null
   organization?: Prisma.XOR<Prisma.OrganizationScalarRelationFilter, Prisma.OrganizationWhereInput>
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   team?: Prisma.XOR<Prisma.TeamNullableScalarRelationFilter, Prisma.TeamWhereInput> | null
@@ -202,6 +226,9 @@ export type MemberOrderByWithRelationInput = {
   role?: Prisma.SortOrder
   teamId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  disabledAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  disabledByUserId?: Prisma.SortOrderInput | Prisma.SortOrder
+  disabledReason?: Prisma.SortOrderInput | Prisma.SortOrder
   organization?: Prisma.OrganizationOrderByWithRelationInput
   user?: Prisma.UserOrderByWithRelationInput
   team?: Prisma.TeamOrderByWithRelationInput
@@ -217,6 +244,9 @@ export type MemberWhereUniqueInput = Prisma.AtLeast<{
   role?: Prisma.StringFilter<"Member"> | string
   teamId?: Prisma.StringNullableFilter<"Member"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Member"> | Date | string
+  disabledAt?: Prisma.DateTimeNullableFilter<"Member"> | Date | string | null
+  disabledByUserId?: Prisma.StringNullableFilter<"Member"> | string | null
+  disabledReason?: Prisma.StringNullableFilter<"Member"> | string | null
   organization?: Prisma.XOR<Prisma.OrganizationScalarRelationFilter, Prisma.OrganizationWhereInput>
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   team?: Prisma.XOR<Prisma.TeamNullableScalarRelationFilter, Prisma.TeamWhereInput> | null
@@ -229,6 +259,9 @@ export type MemberOrderByWithAggregationInput = {
   role?: Prisma.SortOrder
   teamId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  disabledAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  disabledByUserId?: Prisma.SortOrderInput | Prisma.SortOrder
+  disabledReason?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.MemberCountOrderByAggregateInput
   _max?: Prisma.MemberMaxOrderByAggregateInput
   _min?: Prisma.MemberMinOrderByAggregateInput
@@ -244,12 +277,18 @@ export type MemberScalarWhereWithAggregatesInput = {
   role?: Prisma.StringWithAggregatesFilter<"Member"> | string
   teamId?: Prisma.StringNullableWithAggregatesFilter<"Member"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Member"> | Date | string
+  disabledAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Member"> | Date | string | null
+  disabledByUserId?: Prisma.StringNullableWithAggregatesFilter<"Member"> | string | null
+  disabledReason?: Prisma.StringNullableWithAggregatesFilter<"Member"> | string | null
 }
 
 export type MemberCreateInput = {
   id?: string
   role: string
   createdAt?: Date | string
+  disabledAt?: Date | string | null
+  disabledByUserId?: string | null
+  disabledReason?: string | null
   organization: Prisma.OrganizationCreateNestedOneWithoutMembersInput
   user: Prisma.UserCreateNestedOneWithoutMembersInput
   team?: Prisma.TeamCreateNestedOneWithoutMembersInput
@@ -262,12 +301,18 @@ export type MemberUncheckedCreateInput = {
   role: string
   teamId?: string | null
   createdAt?: Date | string
+  disabledAt?: Date | string | null
+  disabledByUserId?: string | null
+  disabledReason?: string | null
 }
 
 export type MemberUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  disabledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  disabledByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  disabledReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutMembersNestedInput
   user?: Prisma.UserUpdateOneRequiredWithoutMembersNestedInput
   team?: Prisma.TeamUpdateOneWithoutMembersNestedInput
@@ -280,6 +325,9 @@ export type MemberUncheckedUpdateInput = {
   role?: Prisma.StringFieldUpdateOperationsInput | string
   teamId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  disabledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  disabledByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  disabledReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type MemberCreateManyInput = {
@@ -289,12 +337,18 @@ export type MemberCreateManyInput = {
   role: string
   teamId?: string | null
   createdAt?: Date | string
+  disabledAt?: Date | string | null
+  disabledByUserId?: string | null
+  disabledReason?: string | null
 }
 
 export type MemberUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  disabledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  disabledByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  disabledReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type MemberUncheckedUpdateManyInput = {
@@ -304,6 +358,9 @@ export type MemberUncheckedUpdateManyInput = {
   role?: Prisma.StringFieldUpdateOperationsInput | string
   teamId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  disabledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  disabledByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  disabledReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type MemberListRelationFilter = {
@@ -323,6 +380,9 @@ export type MemberCountOrderByAggregateInput = {
   role?: Prisma.SortOrder
   teamId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  disabledAt?: Prisma.SortOrder
+  disabledByUserId?: Prisma.SortOrder
+  disabledReason?: Prisma.SortOrder
 }
 
 export type MemberMaxOrderByAggregateInput = {
@@ -332,6 +392,9 @@ export type MemberMaxOrderByAggregateInput = {
   role?: Prisma.SortOrder
   teamId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  disabledAt?: Prisma.SortOrder
+  disabledByUserId?: Prisma.SortOrder
+  disabledReason?: Prisma.SortOrder
 }
 
 export type MemberMinOrderByAggregateInput = {
@@ -341,6 +404,9 @@ export type MemberMinOrderByAggregateInput = {
   role?: Prisma.SortOrder
   teamId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  disabledAt?: Prisma.SortOrder
+  disabledByUserId?: Prisma.SortOrder
+  disabledReason?: Prisma.SortOrder
 }
 
 export type MemberCreateNestedManyWithoutUserInput = {
@@ -473,6 +539,9 @@ export type MemberCreateWithoutUserInput = {
   id?: string
   role: string
   createdAt?: Date | string
+  disabledAt?: Date | string | null
+  disabledByUserId?: string | null
+  disabledReason?: string | null
   organization: Prisma.OrganizationCreateNestedOneWithoutMembersInput
   team?: Prisma.TeamCreateNestedOneWithoutMembersInput
 }
@@ -483,6 +552,9 @@ export type MemberUncheckedCreateWithoutUserInput = {
   role: string
   teamId?: string | null
   createdAt?: Date | string
+  disabledAt?: Date | string | null
+  disabledByUserId?: string | null
+  disabledReason?: string | null
 }
 
 export type MemberCreateOrConnectWithoutUserInput = {
@@ -521,12 +593,18 @@ export type MemberScalarWhereInput = {
   role?: Prisma.StringFilter<"Member"> | string
   teamId?: Prisma.StringNullableFilter<"Member"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Member"> | Date | string
+  disabledAt?: Prisma.DateTimeNullableFilter<"Member"> | Date | string | null
+  disabledByUserId?: Prisma.StringNullableFilter<"Member"> | string | null
+  disabledReason?: Prisma.StringNullableFilter<"Member"> | string | null
 }
 
 export type MemberCreateWithoutOrganizationInput = {
   id?: string
   role: string
   createdAt?: Date | string
+  disabledAt?: Date | string | null
+  disabledByUserId?: string | null
+  disabledReason?: string | null
   user: Prisma.UserCreateNestedOneWithoutMembersInput
   team?: Prisma.TeamCreateNestedOneWithoutMembersInput
 }
@@ -537,6 +615,9 @@ export type MemberUncheckedCreateWithoutOrganizationInput = {
   role: string
   teamId?: string | null
   createdAt?: Date | string
+  disabledAt?: Date | string | null
+  disabledByUserId?: string | null
+  disabledReason?: string | null
 }
 
 export type MemberCreateOrConnectWithoutOrganizationInput = {
@@ -569,6 +650,9 @@ export type MemberCreateWithoutTeamInput = {
   id?: string
   role: string
   createdAt?: Date | string
+  disabledAt?: Date | string | null
+  disabledByUserId?: string | null
+  disabledReason?: string | null
   organization: Prisma.OrganizationCreateNestedOneWithoutMembersInput
   user: Prisma.UserCreateNestedOneWithoutMembersInput
 }
@@ -579,6 +663,9 @@ export type MemberUncheckedCreateWithoutTeamInput = {
   userId: string
   role: string
   createdAt?: Date | string
+  disabledAt?: Date | string | null
+  disabledByUserId?: string | null
+  disabledReason?: string | null
 }
 
 export type MemberCreateOrConnectWithoutTeamInput = {
@@ -613,12 +700,18 @@ export type MemberCreateManyUserInput = {
   role: string
   teamId?: string | null
   createdAt?: Date | string
+  disabledAt?: Date | string | null
+  disabledByUserId?: string | null
+  disabledReason?: string | null
 }
 
 export type MemberUpdateWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  disabledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  disabledByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  disabledReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutMembersNestedInput
   team?: Prisma.TeamUpdateOneWithoutMembersNestedInput
 }
@@ -629,6 +722,9 @@ export type MemberUncheckedUpdateWithoutUserInput = {
   role?: Prisma.StringFieldUpdateOperationsInput | string
   teamId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  disabledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  disabledByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  disabledReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type MemberUncheckedUpdateManyWithoutUserInput = {
@@ -637,6 +733,9 @@ export type MemberUncheckedUpdateManyWithoutUserInput = {
   role?: Prisma.StringFieldUpdateOperationsInput | string
   teamId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  disabledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  disabledByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  disabledReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type MemberCreateManyOrganizationInput = {
@@ -645,12 +744,18 @@ export type MemberCreateManyOrganizationInput = {
   role: string
   teamId?: string | null
   createdAt?: Date | string
+  disabledAt?: Date | string | null
+  disabledByUserId?: string | null
+  disabledReason?: string | null
 }
 
 export type MemberUpdateWithoutOrganizationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  disabledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  disabledByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  disabledReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   user?: Prisma.UserUpdateOneRequiredWithoutMembersNestedInput
   team?: Prisma.TeamUpdateOneWithoutMembersNestedInput
 }
@@ -661,6 +766,9 @@ export type MemberUncheckedUpdateWithoutOrganizationInput = {
   role?: Prisma.StringFieldUpdateOperationsInput | string
   teamId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  disabledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  disabledByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  disabledReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type MemberUncheckedUpdateManyWithoutOrganizationInput = {
@@ -669,6 +777,9 @@ export type MemberUncheckedUpdateManyWithoutOrganizationInput = {
   role?: Prisma.StringFieldUpdateOperationsInput | string
   teamId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  disabledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  disabledByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  disabledReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type MemberCreateManyTeamInput = {
@@ -677,12 +788,18 @@ export type MemberCreateManyTeamInput = {
   userId: string
   role: string
   createdAt?: Date | string
+  disabledAt?: Date | string | null
+  disabledByUserId?: string | null
+  disabledReason?: string | null
 }
 
 export type MemberUpdateWithoutTeamInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  disabledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  disabledByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  disabledReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutMembersNestedInput
   user?: Prisma.UserUpdateOneRequiredWithoutMembersNestedInput
 }
@@ -693,6 +810,9 @@ export type MemberUncheckedUpdateWithoutTeamInput = {
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  disabledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  disabledByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  disabledReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type MemberUncheckedUpdateManyWithoutTeamInput = {
@@ -701,6 +821,9 @@ export type MemberUncheckedUpdateManyWithoutTeamInput = {
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  disabledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  disabledByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  disabledReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 
@@ -712,6 +835,9 @@ export type MemberSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   role?: boolean
   teamId?: boolean
   createdAt?: boolean
+  disabledAt?: boolean
+  disabledByUserId?: boolean
+  disabledReason?: boolean
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   team?: boolean | Prisma.Member$teamArgs<ExtArgs>
@@ -724,6 +850,9 @@ export type MemberSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   role?: boolean
   teamId?: boolean
   createdAt?: boolean
+  disabledAt?: boolean
+  disabledByUserId?: boolean
+  disabledReason?: boolean
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   team?: boolean | Prisma.Member$teamArgs<ExtArgs>
@@ -736,6 +865,9 @@ export type MemberSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   role?: boolean
   teamId?: boolean
   createdAt?: boolean
+  disabledAt?: boolean
+  disabledByUserId?: boolean
+  disabledReason?: boolean
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   team?: boolean | Prisma.Member$teamArgs<ExtArgs>
@@ -748,9 +880,12 @@ export type MemberSelectScalar = {
   role?: boolean
   teamId?: boolean
   createdAt?: boolean
+  disabledAt?: boolean
+  disabledByUserId?: boolean
+  disabledReason?: boolean
 }
 
-export type MemberOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "userId" | "role" | "teamId" | "createdAt", ExtArgs["result"]["member"]>
+export type MemberOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "userId" | "role" | "teamId" | "createdAt" | "disabledAt" | "disabledByUserId" | "disabledReason", ExtArgs["result"]["member"]>
 export type MemberInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -781,6 +916,9 @@ export type $MemberPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     role: string
     teamId: string | null
     createdAt: Date
+    disabledAt: Date | null
+    disabledByUserId: string | null
+    disabledReason: string | null
   }, ExtArgs["result"]["member"]>
   composites: {}
 }
@@ -1213,6 +1351,9 @@ export interface MemberFieldRefs {
   readonly role: Prisma.FieldRef<"Member", 'String'>
   readonly teamId: Prisma.FieldRef<"Member", 'String'>
   readonly createdAt: Prisma.FieldRef<"Member", 'DateTime'>
+  readonly disabledAt: Prisma.FieldRef<"Member", 'DateTime'>
+  readonly disabledByUserId: Prisma.FieldRef<"Member", 'String'>
+  readonly disabledReason: Prisma.FieldRef<"Member", 'String'>
 }
     
 

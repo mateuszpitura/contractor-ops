@@ -1989,6 +1989,23 @@ export type EnumContractorChangeRequestStatusWithAggregatesFilter<$PrismaModel =
   _max?: Prisma.NestedEnumContractorChangeRequestStatusFilter<$PrismaModel>
 }
 
+export type EnumPendingUploadPurposeFilter<$PrismaModel = never> = {
+  equals?: $Enums.PendingUploadPurpose | Prisma.EnumPendingUploadPurposeFieldRefInput<$PrismaModel>
+  in?: $Enums.PendingUploadPurpose[] | Prisma.ListEnumPendingUploadPurposeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PendingUploadPurpose[] | Prisma.ListEnumPendingUploadPurposeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPendingUploadPurposeFilter<$PrismaModel> | $Enums.PendingUploadPurpose
+}
+
+export type EnumPendingUploadPurposeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.PendingUploadPurpose | Prisma.EnumPendingUploadPurposeFieldRefInput<$PrismaModel>
+  in?: $Enums.PendingUploadPurpose[] | Prisma.ListEnumPendingUploadPurposeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PendingUploadPurpose[] | Prisma.ListEnumPendingUploadPurposeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPendingUploadPurposeWithAggregatesFilter<$PrismaModel> | $Enums.PendingUploadPurpose
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumPendingUploadPurposeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumPendingUploadPurposeFilter<$PrismaModel>
+}
+
 export type EnumTaxIdTypeFilter<$PrismaModel = never> = {
   equals?: $Enums.TaxIdType | Prisma.EnumTaxIdTypeFieldRefInput<$PrismaModel>
   in?: $Enums.TaxIdType[] | Prisma.ListEnumTaxIdTypeFieldRefInput<$PrismaModel>
@@ -4108,6 +4125,23 @@ export type NestedEnumContractorChangeRequestStatusWithAggregatesFilter<$PrismaM
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumContractorChangeRequestStatusFilter<$PrismaModel>
   _max?: Prisma.NestedEnumContractorChangeRequestStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumPendingUploadPurposeFilter<$PrismaModel = never> = {
+  equals?: $Enums.PendingUploadPurpose | Prisma.EnumPendingUploadPurposeFieldRefInput<$PrismaModel>
+  in?: $Enums.PendingUploadPurpose[] | Prisma.ListEnumPendingUploadPurposeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PendingUploadPurpose[] | Prisma.ListEnumPendingUploadPurposeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPendingUploadPurposeFilter<$PrismaModel> | $Enums.PendingUploadPurpose
+}
+
+export type NestedEnumPendingUploadPurposeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.PendingUploadPurpose | Prisma.EnumPendingUploadPurposeFieldRefInput<$PrismaModel>
+  in?: $Enums.PendingUploadPurpose[] | Prisma.ListEnumPendingUploadPurposeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PendingUploadPurpose[] | Prisma.ListEnumPendingUploadPurposeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPendingUploadPurposeWithAggregatesFilter<$PrismaModel> | $Enums.PendingUploadPurpose
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumPendingUploadPurposeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumPendingUploadPurposeFilter<$PrismaModel>
 }
 
 export type NestedEnumTaxIdTypeFilter<$PrismaModel = never> = {

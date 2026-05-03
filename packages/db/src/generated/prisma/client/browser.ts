@@ -489,6 +489,11 @@ export type ContractorChangeRequest = Prisma.ContractorChangeRequestModel
  */
 export type ContractorNotificationPreference = Prisma.ContractorNotificationPreferenceModel
 /**
+ * Model PendingUpload
+ * 
+ */
+export type PendingUpload = Prisma.PendingUploadModel
+/**
  * Model TaxRate
  * 
  */

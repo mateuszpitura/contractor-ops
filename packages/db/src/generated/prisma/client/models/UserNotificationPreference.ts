@@ -252,7 +252,7 @@ export type UserNotificationPreferenceOrderByWithRelationInput = {
 
 export type UserNotificationPreferenceWhereUniqueInput = Prisma.AtLeast<{
   id?: string
-  userId_notificationType?: Prisma.UserNotificationPreferenceUserIdNotificationTypeCompoundUniqueInput
+  organizationId_userId_notificationType?: Prisma.UserNotificationPreferenceOrganizationIdUserIdNotificationTypeCompoundUniqueInput
   AND?: Prisma.UserNotificationPreferenceWhereInput | Prisma.UserNotificationPreferenceWhereInput[]
   OR?: Prisma.UserNotificationPreferenceWhereInput[]
   NOT?: Prisma.UserNotificationPreferenceWhereInput | Prisma.UserNotificationPreferenceWhereInput[]
@@ -268,7 +268,7 @@ export type UserNotificationPreferenceWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"UserNotificationPreference"> | Date | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   organization?: Prisma.XOR<Prisma.OrganizationScalarRelationFilter, Prisma.OrganizationWhereInput>
-}, "id" | "userId_notificationType">
+}, "id" | "organizationId_userId_notificationType">
 
 export type UserNotificationPreferenceOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -410,7 +410,8 @@ export type UserNotificationPreferenceOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
-export type UserNotificationPreferenceUserIdNotificationTypeCompoundUniqueInput = {
+export type UserNotificationPreferenceOrganizationIdUserIdNotificationTypeCompoundUniqueInput = {
+  organizationId: string
   userId: string
   notificationType: string
 }

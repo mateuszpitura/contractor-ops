@@ -946,6 +946,16 @@ export const ContractorChangeRequestStatus = {
 export type ContractorChangeRequestStatus = (typeof ContractorChangeRequestStatus)[keyof typeof ContractorChangeRequestStatus]
 
 
+export const PendingUploadPurpose = {
+  PORTAL_INVOICE_SUBMIT: 'PORTAL_INVOICE_SUBMIT',
+  PORTAL_DOC_VERSION: 'PORTAL_DOC_VERSION',
+  CORE_DOC_REQUEST_UPLOAD: 'CORE_DOC_REQUEST_UPLOAD',
+  CORE_DOC_VERSION_UPLOAD: 'CORE_DOC_VERSION_UPLOAD'
+} as const
+
+export type PendingUploadPurpose = (typeof PendingUploadPurpose)[keyof typeof PendingUploadPurpose]
+
+
 export const TaxIdType = {
   GB_VAT: 'GB_VAT',
   DE_USTIDNR: 'DE_USTIDNR'

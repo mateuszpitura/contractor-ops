@@ -478,6 +478,7 @@ export const ModelName = {
   PortalMagicToken: 'PortalMagicToken',
   ContractorChangeRequest: 'ContractorChangeRequest',
   ContractorNotificationPreference: 'ContractorNotificationPreference',
+  PendingUpload: 'PendingUpload',
   TaxRate: 'TaxRate',
   WithholdingTaxRate: 'WithholdingTaxRate',
   WhtCertificate: 'WhtCertificate',
@@ -508,7 +509,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "organizationApiKey" | "approvalChainConfig" | "approvalFlow" | "approvalStep" | "approvalDecision" | "auditLog" | "outboxEvent" | "user" | "session" | "account" | "verification" | "subscription" | "ocrCreditLedger" | "stripeEvent" | "classificationAssessment" | "classificationDocument" | "ir35ChainParticipant" | "ir35OtherClientAttestation" | "economicDependencyAlertState" | "reassessmentTrigger" | "cronScanState" | "statusfeststellungsverfahren" | "classificationEscalationEvent" | "sdsApproval" | "consentRecord" | "privacyNotice" | "consentEvent" | "contract" | "contractAmendment" | "contractRatePeriod" | "document" | "documentLink" | "contractor" | "contractorContact" | "contractorBillingProfile" | "contractorAssignment" | "contractorTag" | "contractorTagLink" | "complianceRequirementTemplate" | "contractorComplianceItem" | "leitwegId" | "eInvoiceLifecycle" | "eInvoiceLifecycleEvent" | "peppolCapabilityCache" | "equipment" | "equipmentAssignment" | "shipment" | "shipmentEvent" | "returnRequest" | "courierConfig" | "signingEnvelope" | "signingRecipient" | "signingEvent" | "exchangeRate" | "boEBaseRateHistory" | "skontoTerm" | "skontoSnapshot" | "skontoApplication" | "govApiAuditLog" | "integrationConnection" | "externalLink" | "integrationSyncLog" | "webhookDelivery" | "invoice" | "invoiceFile" | "invoiceLine" | "invoiceMatchResult" | "invoiceIntakeRequest" | "invoicePayment" | "invoiceInterestCompensation" | "invoiceInterestWaiver" | "invoiceInterestClaim" | "notification" | "userNotificationPreference" | "comment" | "reminderRule" | "reminderInstance" | "notificationCronDedup" | "ocrExtraction" | "organization" | "member" | "invitation" | "team" | "project" | "costCenter" | "paymentRun" | "paymentRunItem" | "paymentExport" | "peppolParticipant" | "peppolTransmission" | "portalSession" | "portalMagicToken" | "contractorChangeRequest" | "contractorNotificationPreference" | "taxRate" | "withholdingTaxRate" | "whtCertificate" | "taxIdValidation" | "timesheet" | "timeEntry" | "workflowTemplate" | "workflowTaskTemplate" | "workflowRoleTemplate" | "workflowRoleTaskTemplate" | "workflowRun" | "workflowTaskRun" | "workflowComment" | "workflowAttachment" | "zatcaInvoiceChain"
+    modelProps: "organizationApiKey" | "approvalChainConfig" | "approvalFlow" | "approvalStep" | "approvalDecision" | "auditLog" | "outboxEvent" | "user" | "session" | "account" | "verification" | "subscription" | "ocrCreditLedger" | "stripeEvent" | "classificationAssessment" | "classificationDocument" | "ir35ChainParticipant" | "ir35OtherClientAttestation" | "economicDependencyAlertState" | "reassessmentTrigger" | "cronScanState" | "statusfeststellungsverfahren" | "classificationEscalationEvent" | "sdsApproval" | "consentRecord" | "privacyNotice" | "consentEvent" | "contract" | "contractAmendment" | "contractRatePeriod" | "document" | "documentLink" | "contractor" | "contractorContact" | "contractorBillingProfile" | "contractorAssignment" | "contractorTag" | "contractorTagLink" | "complianceRequirementTemplate" | "contractorComplianceItem" | "leitwegId" | "eInvoiceLifecycle" | "eInvoiceLifecycleEvent" | "peppolCapabilityCache" | "equipment" | "equipmentAssignment" | "shipment" | "shipmentEvent" | "returnRequest" | "courierConfig" | "signingEnvelope" | "signingRecipient" | "signingEvent" | "exchangeRate" | "boEBaseRateHistory" | "skontoTerm" | "skontoSnapshot" | "skontoApplication" | "govApiAuditLog" | "integrationConnection" | "externalLink" | "integrationSyncLog" | "webhookDelivery" | "invoice" | "invoiceFile" | "invoiceLine" | "invoiceMatchResult" | "invoiceIntakeRequest" | "invoicePayment" | "invoiceInterestCompensation" | "invoiceInterestWaiver" | "invoiceInterestClaim" | "notification" | "userNotificationPreference" | "comment" | "reminderRule" | "reminderInstance" | "notificationCronDedup" | "ocrExtraction" | "organization" | "member" | "invitation" | "team" | "project" | "costCenter" | "paymentRun" | "paymentRunItem" | "paymentExport" | "peppolParticipant" | "peppolTransmission" | "portalSession" | "portalMagicToken" | "contractorChangeRequest" | "contractorNotificationPreference" | "pendingUpload" | "taxRate" | "withholdingTaxRate" | "whtCertificate" | "taxIdValidation" | "timesheet" | "timeEntry" | "workflowTemplate" | "workflowTaskTemplate" | "workflowRoleTemplate" | "workflowRoleTaskTemplate" | "workflowRun" | "workflowTaskRun" | "workflowComment" | "workflowAttachment" | "zatcaInvoiceChain"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -7468,6 +7469,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    PendingUpload: {
+      payload: Prisma.$PendingUploadPayload<ExtArgs>
+      fields: Prisma.PendingUploadFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.PendingUploadFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PendingUploadPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.PendingUploadFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PendingUploadPayload>
+        }
+        findFirst: {
+          args: Prisma.PendingUploadFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PendingUploadPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.PendingUploadFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PendingUploadPayload>
+        }
+        findMany: {
+          args: Prisma.PendingUploadFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PendingUploadPayload>[]
+        }
+        create: {
+          args: Prisma.PendingUploadCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PendingUploadPayload>
+        }
+        createMany: {
+          args: Prisma.PendingUploadCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.PendingUploadCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PendingUploadPayload>[]
+        }
+        delete: {
+          args: Prisma.PendingUploadDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PendingUploadPayload>
+        }
+        update: {
+          args: Prisma.PendingUploadUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PendingUploadPayload>
+        }
+        deleteMany: {
+          args: Prisma.PendingUploadDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.PendingUploadUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.PendingUploadUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PendingUploadPayload>[]
+        }
+        upsert: {
+          args: Prisma.PendingUploadUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PendingUploadPayload>
+        }
+        aggregate: {
+          args: Prisma.PendingUploadAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePendingUpload>
+        }
+        groupBy: {
+          args: Prisma.PendingUploadGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PendingUploadGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.PendingUploadCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PendingUploadCountAggregateOutputType> | number
+        }
+      }
+    }
     TaxRate: {
       payload: Prisma.$TaxRatePayload<ExtArgs>
       fields: Prisma.TaxRateFieldRefs
@@ -10107,7 +10182,10 @@ export const MemberScalarFieldEnum = {
   userId: 'userId',
   role: 'role',
   teamId: 'teamId',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  disabledAt: 'disabledAt',
+  disabledByUserId: 'disabledByUserId',
+  disabledReason: 'disabledReason'
 } as const
 
 export type MemberScalarFieldEnum = (typeof MemberScalarFieldEnum)[keyof typeof MemberScalarFieldEnum]
@@ -10332,6 +10410,23 @@ export const ContractorNotificationPreferenceScalarFieldEnum = {
 } as const
 
 export type ContractorNotificationPreferenceScalarFieldEnum = (typeof ContractorNotificationPreferenceScalarFieldEnum)[keyof typeof ContractorNotificationPreferenceScalarFieldEnum]
+
+
+export const PendingUploadScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  documentId: 'documentId',
+  storageKey: 'storageKey',
+  mimeType: 'mimeType',
+  fileSizeBytesMax: 'fileSizeBytesMax',
+  purpose: 'purpose',
+  createdByUserId: 'createdByUserId',
+  expiresAt: 'expiresAt',
+  consumedAt: 'consumedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type PendingUploadScalarFieldEnum = (typeof PendingUploadScalarFieldEnum)[keyof typeof PendingUploadScalarFieldEnum]
 
 
 export const TaxRateScalarFieldEnum = {
@@ -12007,6 +12102,20 @@ export type ListEnumContractorChangeRequestStatusFieldRefInput<$PrismaModel> = F
 
 
 /**
+ * Reference to a field of type 'PendingUploadPurpose'
+ */
+export type EnumPendingUploadPurposeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PendingUploadPurpose'>
+    
+
+
+/**
+ * Reference to a field of type 'PendingUploadPurpose[]'
+ */
+export type ListEnumPendingUploadPurposeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PendingUploadPurpose[]'>
+    
+
+
+/**
  * Reference to a field of type 'TaxIdType'
  */
 export type EnumTaxIdTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TaxIdType'>
@@ -12363,6 +12472,7 @@ export type GlobalOmitConfig = {
   portalMagicToken?: Prisma.PortalMagicTokenOmit
   contractorChangeRequest?: Prisma.ContractorChangeRequestOmit
   contractorNotificationPreference?: Prisma.ContractorNotificationPreferenceOmit
+  pendingUpload?: Prisma.PendingUploadOmit
   taxRate?: Prisma.TaxRateOmit
   withholdingTaxRate?: Prisma.WithholdingTaxRateOmit
   whtCertificate?: Prisma.WhtCertificateOmit

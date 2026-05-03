@@ -145,6 +145,7 @@ export const ModelName = {
   PortalMagicToken: 'PortalMagicToken',
   ContractorChangeRequest: 'ContractorChangeRequest',
   ContractorNotificationPreference: 'ContractorNotificationPreference',
+  PendingUpload: 'PendingUpload',
   TaxRate: 'TaxRate',
   WithholdingTaxRate: 'WithholdingTaxRate',
   WhtCertificate: 'WhtCertificate',
@@ -1668,7 +1669,10 @@ export const MemberScalarFieldEnum = {
   userId: 'userId',
   role: 'role',
   teamId: 'teamId',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  disabledAt: 'disabledAt',
+  disabledByUserId: 'disabledByUserId',
+  disabledReason: 'disabledReason'
 } as const
 
 export type MemberScalarFieldEnum = (typeof MemberScalarFieldEnum)[keyof typeof MemberScalarFieldEnum]
@@ -1893,6 +1897,23 @@ export const ContractorNotificationPreferenceScalarFieldEnum = {
 } as const
 
 export type ContractorNotificationPreferenceScalarFieldEnum = (typeof ContractorNotificationPreferenceScalarFieldEnum)[keyof typeof ContractorNotificationPreferenceScalarFieldEnum]
+
+
+export const PendingUploadScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  documentId: 'documentId',
+  storageKey: 'storageKey',
+  mimeType: 'mimeType',
+  fileSizeBytesMax: 'fileSizeBytesMax',
+  purpose: 'purpose',
+  createdByUserId: 'createdByUserId',
+  expiresAt: 'expiresAt',
+  consumedAt: 'consumedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type PendingUploadScalarFieldEnum = (typeof PendingUploadScalarFieldEnum)[keyof typeof PendingUploadScalarFieldEnum]
 
 
 export const TaxRateScalarFieldEnum = {
