@@ -29,8 +29,11 @@ export function PrivacyNoticePdfDownload({
 }: PrivacyNoticePdfDownloadProps) {
   const mutation = useMutation(
     trpc.legal.generatePrivacyNoticePdf.mutationOptions({
-      onSuccess: result => {
-        window.open(result.url, '_blank', 'noopener,noreferrer');
+      // P2-F · F-SCALE-02 — privacy notice PDF render now runs async via
+      // QStash. The download link arrives by email and via the in-app
+      // exports panel; surface a queued toast immediately.
+      onSuccess: () => {
+        toast.success('Export queued — we will email you the download link');
       },
       onError: error => {
         const message = error instanceof Error ? error.message : 'Unable to generate PDF';
