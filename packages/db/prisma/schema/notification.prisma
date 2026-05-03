@@ -38,7 +38,11 @@ model UserNotificationPreference {
   user         User         @relation(fields: [userId], references: [id])
   organization Organization @relation(fields: [organizationId], references: [id])
 
-  @@unique([userId, notificationType])
+  // Tenant-scoped unique key. Without organizationId in the unique tuple,
+  // a user belonging to multiple orgs would (a) collide on insert, and
+  // (b) leak preference rows across tenants — e.g. disabling
+  // INVOICE_RECEIVED email in Org A would also suppress it in Org B.
+  @@unique([organizationId, userId, notificationType])
 }
 
 model Comment {

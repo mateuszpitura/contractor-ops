@@ -77,9 +77,14 @@ const DEDUP_WINDOW_MS = 60_000;
 // ---------------------------------------------------------------------------
 
 /**
- * Gets or creates notification preferences for a user + notification type.
+ * Gets or creates notification preferences for a (org, user, notification type).
  * If no preference row exists, creates one with all channels enabled.
  * Per plan: channelInApp is always true and not user-configurable.
+ *
+ * The where clause MUST include organizationId — without it, a user that
+ * belongs to multiple orgs would have one org's preferences (e.g. email-off
+ * for INVOICE_RECEIVED in Org A) silently applied in another org. The
+ * matching schema-level unique key is (organizationId, userId, notificationType).
  */
 export async function getOrCreatePreferences(
   userId: string,
@@ -88,6 +93,7 @@ export async function getOrCreatePreferences(
 ) {
   const existing = await prisma.userNotificationPreference.findFirst({
     where: {
+      organizationId,
       userId,
       notificationType,
     },
