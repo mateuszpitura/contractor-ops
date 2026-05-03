@@ -3,6 +3,7 @@ import { prisma } from '@contractor-ops/db';
 import type { FlagValues } from '@contractor-ops/feature-flags';
 import { buildFlagBag, emptyFlagBag } from '@contractor-ops/feature-flags';
 import { createLogger } from '@contractor-ops/logger';
+import { unstable_cache } from 'next/cache';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { getLocale } from 'next-intl/server';
@@ -30,7 +31,67 @@ import { TOS_CURRENT_VERSION } from '@/lib/tos';
  *    first organization so tenant-scoped tRPC queries don't 403.
  * 3. Fetches active org info + user role and passes it via DashboardProvider
  *    so client components render immediately without loading flashes.
+ *
+ * F-SCALE-04: the org/member/consent lookups are wrapped in
+ * `unstable_cache` keyed by user+org so frequent dashboard navigations
+ * don't re-run 4-5 Prisma queries on every render. The TTL is short
+ * (60 s) so role changes / consent acceptance propagate quickly; the
+ * Better Auth session lookup is already cached by Better Auth itself.
  */
+
+// 60 s tag-able cache for the per-user / per-org lookups that don't
+// change often. Shorter than the dashboard KPI cache because role
+// changes / ToS acceptance need to be visible faster.
+const DASHBOARD_LAYOUT_CACHE_TTL_SECONDS = 60;
+
+const fetchOrgAndMember = (userId: string, activeOrgId: string) =>
+  unstable_cache(
+    async () => {
+      const [org, member] = await Promise.all([
+        prisma.organization.findUnique({
+          where: { id: activeOrgId },
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            logo: true,
+            dataRegion: true,
+            countryCode: true,
+          },
+        }),
+        prisma.member.findFirst({
+          where: { organizationId: activeOrgId, userId },
+          select: { role: true },
+        }),
+      ]);
+      return { org, member };
+    },
+    [`dashboard-layout-org-member`, userId, activeOrgId],
+    {
+      revalidate: DASHBOARD_LAYOUT_CACHE_TTL_SECONDS,
+      tags: [`org:${activeOrgId}`, `user:${userId}:org:${activeOrgId}`],
+    },
+  )();
+
+const fetchLatestTosConsent = (userId: string, activeOrgId: string, version: string) =>
+  unstable_cache(
+    async () =>
+      prisma.consentEvent.findFirst({
+        where: {
+          userId,
+          organizationId: activeOrgId,
+          scope: 'TOS',
+          version,
+        },
+        select: { id: true },
+        orderBy: { acceptedAt: 'desc' },
+      }),
+    [`dashboard-layout-tos`, userId, activeOrgId, version],
+    {
+      revalidate: DASHBOARD_LAYOUT_CACHE_TTL_SECONDS,
+      tags: [`user:${userId}:tos`, `org:${activeOrgId}`],
+    },
+  )();
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
   const [reqHeaders, locale] = await Promise.all([headers(), getLocale()]);
   const session = await auth.api.getSession({ headers: reqHeaders });
@@ -65,23 +126,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   let flagBag: FlagValues | null = null;
 
   if (activeOrgId) {
-    const [org, member] = await Promise.all([
-      prisma.organization.findUnique({
-        where: { id: activeOrgId },
-        select: {
-          id: true,
-          name: true,
-          slug: true,
-          logo: true,
-          dataRegion: true,
-          countryCode: true,
-        },
-      }),
-      prisma.member.findFirst({
-        where: { organizationId: activeOrgId, userId: session.user.id },
-        select: { role: true },
-      }),
-    ]);
+    const { org, member } = await fetchOrgAndMember(session.user.id, activeOrgId);
 
     activeOrg = org ? { id: org.id, name: org.name, slug: org.slug, logo: org.logo } : null;
     userRole = member?.role ?? null;
@@ -114,18 +159,10 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   // no-org user cannot accidentally expose a gated feature.
   const resolvedFlagBag: FlagValues = flagBag ?? emptyFlagBag().values;
 
-  // Phase 64 D-30 — ToS re-acceptance check
+  // Phase 64 D-30 — ToS re-acceptance check (cached via unstable_cache;
+  // P2-F · F-SCALE-04). Invalidated by tagging via the ToS modal flow.
   const latestTosConsent = activeOrgId
-    ? await prisma.consentEvent.findFirst({
-        where: {
-          userId: session.user.id,
-          organizationId: activeOrgId,
-          scope: 'TOS',
-          version: TOS_CURRENT_VERSION,
-        },
-        select: { id: true },
-        orderBy: { acceptedAt: 'desc' },
-      })
+    ? await fetchLatestTosConsent(session.user.id, activeOrgId, TOS_CURRENT_VERSION)
     : null;
   const needsTosAcceptance = !latestTosConsent;
 

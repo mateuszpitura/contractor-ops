@@ -120,6 +120,107 @@ async function singleflight<T>(key: string, fn: () => Promise<T>): Promise<T> {
 }
 
 // ---------------------------------------------------------------------------
+// Cross-instance singleflight via Redis SETNX (P2-F · F-SCALE-11)
+// ---------------------------------------------------------------------------
+
+/**
+ * Cache-aside with a Redis-backed cross-instance lock + short response
+ * cache. Designed for the dashboard KPI hot path: with 2-8 web pods, a
+ * naïve `cached()` allows N parallel cold-cache misses to all run the 8
+ * aggregation queries simultaneously, spiking writer CPU.
+ *
+ * Behaviour:
+ *   1. Fast path — read the response cache; if present, return.
+ *   2. Cache miss — try to acquire a Redis lock (SET key NX EX). If
+ *      acquired we run `fn()`, write the result + release the lock, and
+ *      return.
+ *   3. Lock contention — another pod is computing. Poll the response
+ *      cache every 50 ms up to `lockTtlSec`; once the winner writes, all
+ *      losers return the cached value without doing the work. Fallback
+ *      to `fn()` if the poll times out (winner crashed / OOM'd).
+ *   4. Redis unavailable — degrade gracefully to in-process singleflight
+ *      so single-pod deployments still work.
+ *
+ * `responseTtlSec` should be small (5-30 s) — this is for endpoints
+ * where eventual consistency at the second-scale is acceptable
+ * (dashboardKpis can tolerate 5 s of staleness easily).
+ */
+export async function cachedSingleflight<T>(
+  key: string,
+  responseTtlSec: number,
+  fn: () => Promise<T>,
+  lockTtlSec = 30,
+): Promise<T> {
+  const client = getRedis();
+  if (!client) {
+    return singleflight(key, fn);
+  }
+
+  // 1. Fast path — read the response cache.
+  try {
+    const hit = await client.get<CacheEnvelope<T>>(key);
+    if (isEnvelope<T>(hit)) {
+      return unwrap(hit);
+    }
+  } catch (err) {
+    log.warn({ err }, 'redis GET failed (singleflight fast path)');
+  }
+
+  const lockKey = `${key}:lock`;
+
+  // 2. Try to acquire the lock — `set ... NX EX` is atomic.
+  let acquired = false;
+  try {
+    const setResult = await client.set(lockKey, '1', { nx: true, ex: lockTtlSec });
+    acquired = setResult === 'OK';
+  } catch (err) {
+    log.warn({ err }, 'redis SET NX failed; falling back to in-process singleflight');
+    return singleflight(key, fn);
+  }
+
+  if (acquired) {
+    try {
+      const result = await singleflight(key, fn);
+      // Write response cache before releasing the lock — losers polling
+      // the cache will see the value as soon as we publish it.
+      try {
+        await client.set(key, wrap(result), { ex: responseTtlSec });
+      } catch (err) {
+        log.warn({ err }, 'redis SET (response cache) failed');
+      }
+      return result;
+    } finally {
+      try {
+        await client.del(lockKey);
+      } catch (err) {
+        log.warn({ err }, 'redis DEL (lock) failed; will expire via TTL');
+      }
+    }
+  }
+
+  // 3. Lock contention — poll the response cache.
+  const pollStart = Date.now();
+  const pollIntervalMs = 50;
+  const pollDeadlineMs = lockTtlSec * 1000;
+
+  while (Date.now() - pollStart < pollDeadlineMs) {
+    await new Promise(resolve => setTimeout(resolve, pollIntervalMs));
+    try {
+      const hit = await client.get<CacheEnvelope<T>>(key);
+      if (isEnvelope<T>(hit)) {
+        return unwrap(hit);
+      }
+    } catch {
+      // Ignore — keep polling.
+    }
+  }
+
+  // 4. Winner crashed — compute ourselves rather than block forever.
+  log.warn({ key }, 'singleflight lock poll timed out; computing locally');
+  return singleflight(key, fn);
+}
+
+// ---------------------------------------------------------------------------
 // Invalidation
 // ---------------------------------------------------------------------------
 
@@ -198,6 +299,13 @@ export const CacheTTL = {
   CREDIT_BALANCE: 5 * 60,
   /** Dashboard KPIs — acceptable 5 min staleness */
   DASHBOARD_KPIS: 5 * 60,
+  /**
+   * Short response cache used with `cachedSingleflight` for the
+   * dashboard KPIs hot path (P2-F · F-SCALE-11). 5 seconds is long
+   * enough to absorb burst traffic across the fleet but short enough
+   * that the user perceives the dashboard as live.
+   */
+  DASHBOARD_KPIS_BURST: 5,
   /** Spend trend — historical data, higher staleness OK */
   DASHBOARD_SPEND: 10 * 60,
   /** Deadlines — moderate staleness */
