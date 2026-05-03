@@ -1,6 +1,6 @@
 import { withCronMonitor } from '@contractor-ops/api/services/cron-monitor';
 import { dispatch } from '@contractor-ops/api/services/notification-service';
-import { prisma } from '@contractor-ops/db';
+import { prisma, prismaRaw } from '@contractor-ops/db';
 import { createCronLogger } from '@contractor-ops/logger';
 import { metrics } from '@contractor-ops/logger/metrics';
 import * as Sentry from '@sentry/nextjs';
@@ -384,6 +384,16 @@ async function resolveRecipients(
 // GET /api/cron/reminders
 // ---------------------------------------------------------------------------
 
+// F-ASYNC-06: per-tx Postgres advisory lock so two overlapping ticks (slow
+// previous run still in flight, scheduler retry due to transient 5xx) can't
+// both walk the rule set and double-fire reminders.
+//
+// `pg_try_advisory_xact_lock` returns false instantly if another session
+// holds the lock; the lock is released automatically on tx end. The whole
+// cron handler runs inside one prismaRaw $transaction so the lock spans the
+// rule walk + dispatches.
+const REMINDERS_LOCK_KEY = 'cron:reminders';
+
 export async function GET(request: NextRequest) {
   if (!verifyCronSecret(request)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -394,31 +404,48 @@ export async function GET(request: NextRequest) {
     () =>
       withCronMonitor('reminders', async () => {
         try {
-          const [ruleResults, overdueTasksNotified, drvExpiriesNotified] = await Promise.all([
-            evaluateReminderRules(),
-            detectOverdueTasks(),
-            detectDrvClearanceExpiries(),
-          ]);
+          const result = await prismaRaw.$transaction(async tx => {
+            const lockRows = (await tx.$queryRawUnsafe(
+              'SELECT pg_try_advisory_xact_lock(hashtext($1)) AS acquired',
+              REMINDERS_LOCK_KEY,
+            )) as Array<{ acquired?: boolean }>;
+            const acquired = Boolean(lockRows?.[0]?.acquired);
 
-          log.info(
-            {
+            if (!acquired) {
+              log.info('another reminders cron tick is in flight; skipping');
+              metrics.increment('cron.reminders.skipped_locked');
+              return {
+                skipped: true as const,
+                processed: 0,
+                sent: 0,
+                overdueTasksNotified: 0,
+                drvExpiriesNotified: 0,
+              };
+            }
+
+            const [ruleResults, overdueTasksNotified, drvExpiriesNotified] = await Promise.all([
+              evaluateReminderRules(),
+              detectOverdueTasks(),
+              detectDrvClearanceExpiries(),
+            ]);
+
+            return {
+              skipped: false as const,
               processed: ruleResults.processed,
               sent: ruleResults.sent,
               overdueTasksNotified,
               drvExpiriesNotified,
-            },
-            'reminders cron completed',
-          );
-          metrics.gauge('cron.reminders.sent', ruleResults.sent);
-          metrics.gauge('cron.reminders.overdue_tasks', overdueTasksNotified);
-          metrics.gauge('cron.reminders.drv_expiries', drvExpiriesNotified);
-
-          return NextResponse.json({
-            processed: ruleResults.processed,
-            sent: ruleResults.sent,
-            overdueTasksNotified,
-            drvExpiriesNotified,
+            };
           });
+
+          log.info(result, 'reminders cron completed');
+          if (!result.skipped) {
+            metrics.gauge('cron.reminders.sent', result.sent);
+            metrics.gauge('cron.reminders.overdue_tasks', result.overdueTasksNotified);
+            metrics.gauge('cron.reminders.drv_expiries', result.drvExpiriesNotified);
+          }
+
+          return NextResponse.json(result);
         } catch (error) {
           log.error({ err: error }, 'reminders cron failed');
           Sentry.captureException(error, {
