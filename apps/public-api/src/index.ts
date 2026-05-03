@@ -1,3 +1,10 @@
+// F-OBS-01: Sentry MUST be initialized before any other module so the
+// SDK can wire its OpenTelemetry instrumentation hooks. Keep this as the
+// first executable statement of the entrypoint.
+import { initSentry } from './lib/sentry.js';
+
+initSentry();
+
 import { preWarmRegionalClients } from '@contractor-ops/db';
 import { createLogger } from '@contractor-ops/logger';
 import { serve } from '@hono/node-server';

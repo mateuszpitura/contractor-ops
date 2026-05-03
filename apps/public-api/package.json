@@ -19,6 +19,7 @@
     "@contractor-ops/db": "workspace:*",
     "@contractor-ops/logger": "workspace:*",
     "@contractor-ops/validators": "workspace:*",
+    "@sentry/node": "^10.50.0",
     "@trpc/server": "^11.16.0",
     "@hono/node-server": "^2.0.0",
     "@upstash/ratelimit": "^2.0.5",

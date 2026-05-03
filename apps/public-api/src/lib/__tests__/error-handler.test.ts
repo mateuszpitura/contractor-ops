@@ -32,6 +32,15 @@ vi.mock('@contractor-ops/logger', () => {
   };
 });
 
+// F-OBS-01: handleError captures non-tRPC errors and 5xx tRPC errors to
+// Sentry. Stub the wrapper so the test doesn't reach the SDK.
+vi.mock('../sentry.js', () => ({
+  Sentry: {
+    captureException: vi.fn(),
+    captureMessage: vi.fn(),
+  },
+}));
+
 // ---------------------------------------------------------------------------
 // Imports (after mocks)
 // ---------------------------------------------------------------------------
@@ -47,7 +56,9 @@ function makeContext() {
   const headerMock = vi.fn();
   return {
     json: jsonMock,
-    req: { header: vi.fn() },
+    // F-OBS-01: handler now reads `c.get('requestId')` and `c.req.path`/`method`.
+    get: vi.fn(),
+    req: { header: vi.fn(), path: '/api/v1/test', method: 'GET' },
     header: headerMock,
   } as unknown as import('hono').Context;
 }

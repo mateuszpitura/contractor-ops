@@ -3,6 +3,7 @@ import { cors } from 'hono/cors';
 import { requestId } from 'hono/request-id';
 import { secureHeaders } from 'hono/secure-headers';
 import { handleError } from './lib/error-handler.js';
+import { observabilityMiddleware } from './lib/observability-middleware.js';
 import { rateLimitMiddleware } from './lib/rate-limiter.js';
 import { openApiSpec } from './openapi.js';
 import contractors from './routes/contractors.js';
@@ -38,7 +39,10 @@ const allowedOrigins = new Set<string>([
 ]);
 
 // --- Global middleware ---
+// requestId MUST run before observabilityMiddleware so the latter can read
+// `c.get('requestId')` and seed the AsyncLocalStorage frame.
 app.use('*', requestId());
+app.use('*', observabilityMiddleware);
 app.use(
   '*',
   secureHeaders({

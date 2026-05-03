@@ -1,6 +1,8 @@
 import { createLogger } from '@contractor-ops/logger';
 import { TRPCError } from '@trpc/server';
 import type { Context } from 'hono';
+import { getRequestId } from './request-context.js';
+import { Sentry } from './sentry.js';
 
 const log = createLogger({ service: 'public-api' });
 
@@ -69,15 +71,40 @@ function extractErrorDetails(err: TRPCError): { code: string; message: string } 
 /**
  * Hono error handler that catches TRPCError instances and maps them
  * to structured JSON HTTP responses. Uses instanceof for reliable detection.
+ *
+ * F-OBS-01: every unhandled (non-tRPC) error is captured to Sentry with
+ * the current `requestId` tag so on-call can correlate the JSON 500
+ * shipped to the client with the stack trace in Sentry. tRPC errors
+ * with status >= 500 are also reported (genuine server-side bugs);
+ * 4xx tRPC errors are user errors and only logged.
  */
 export function handleError(err: Error, c: Context) {
+  const requestId = getRequestId() ?? (c.get('requestId') as string | undefined);
+  const route = c.req.path;
+  const method = c.req.method;
+
   if (err instanceof TRPCError) {
     const status = mapTrpcCodeToHttp(err.code);
     const { code, message } = extractErrorDetails(err);
+
+    if (status >= 500) {
+      log.error({ err, requestId, route, method, status, code }, 'tRPC server error');
+      Sentry.captureException(err, {
+        tags: { 'trpc.code': err.code, route, method },
+        extra: { requestId, status },
+      });
+    } else {
+      log.warn({ err, requestId, route, method, status, code }, 'tRPC client error');
+    }
+
     return c.json(formatErrorResponse(status, code, message), status as 400);
   }
 
-  log.error({ err }, 'unhandled error');
+  log.error({ err, requestId, route, method }, 'unhandled error');
+  Sentry.captureException(err, {
+    tags: { route, method },
+    extra: { requestId },
+  });
 
   return c.json(
     formatErrorResponse(500, 'INTERNAL_SERVER_ERROR', 'An unexpected error occurred.'),
