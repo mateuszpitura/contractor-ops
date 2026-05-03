@@ -1,5 +1,33 @@
+import { createLogger } from '@contractor-ops/logger';
 import { PrismaNeon } from '@prisma/adapter-neon';
 import { PrismaClient } from './generated/prisma/client/client.js';
+
+/**
+ * Slow-query threshold in ms. Phase 2 P2-E F-OBS-10. Queries that take longer
+ * than this emit a Pino `warn` log line so we can spot regressions / N+1 in
+ * production. 200ms is the audit-locked default per NEXT-PHASE-PLAN.md.
+ */
+const SLOW_QUERY_THRESHOLD_MS = Number.parseInt(
+  process.env.PRISMA_SLOW_QUERY_THRESHOLD_MS ?? '200',
+  10,
+);
+
+/**
+ * Tables whose query parameters contain PII / Art. 9 sensitive data. The slow
+ * query logger suppresses the `params` field for these tables so emails, tax
+ * IDs, names, etc. never reach Axiom via the query log.
+ *
+ * Add new table names here whenever a multi-tenant table starts holding PII.
+ */
+const PII_QUERY_PARAM_TABLES: ReadonlySet<string> = new Set([
+  'User',
+  'Member',
+  'Contractor',
+  'Account',
+  'Session',
+]);
+
+const dbLog = createLogger({ service: 'db' });
 
 /** Safe to unit-test without touching the module singleton `prisma`. */
 export function createMissingDatabaseUrlProxy(): PrismaClient {
@@ -13,10 +41,99 @@ export function createMissingDatabaseUrlProxy(): PrismaClient {
   ) as PrismaClient;
 }
 
+interface PrismaQueryEvent {
+  timestamp: Date;
+  query: string;
+  params: string;
+  duration: number;
+  target: string;
+}
+
+interface PrismaWarnEvent {
+  timestamp: Date;
+  message: string;
+  target: string;
+}
+
+interface PrismaErrorEvent {
+  timestamp: Date;
+  message: string;
+  target: string;
+}
+
+type PrismaEventClient = PrismaClient & {
+  $on(event: 'query', listener: (event: PrismaQueryEvent) => void): void;
+  $on(event: 'warn', listener: (event: PrismaWarnEvent) => void): void;
+  $on(event: 'error', listener: (event: PrismaErrorEvent) => void): void;
+};
+
+/**
+ * Strips the parameter list from query log events when the SQL touches a PII
+ * table. We can't always tell from the SQL alone (especially for raw $queryRaw
+ * / joins), so the check is conservative: if ANY known PII table name appears
+ * as a quoted identifier we drop params.
+ */
+function shouldRedactQueryParams(sql: string): boolean {
+  for (const table of PII_QUERY_PARAM_TABLES) {
+    if (sql.includes(`"${table}"`) || sql.includes(`\`${table}\``)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Wires Prisma's event-driven log channel to Pino:
+ * - `query` events above the slow threshold emit a `warn` line.
+ * - `warn` events emit a Pino `warn`.
+ * - `error` events emit a Pino `error`.
+ *
+ * Params are suppressed for PII tables (see `PII_QUERY_PARAM_TABLES`).
+ */
+function attachQueryLogger(client: PrismaClient): void {
+  const eventClient = client as PrismaEventClient;
+  try {
+    eventClient.$on('query', (event: PrismaQueryEvent) => {
+      if (event.duration < SLOW_QUERY_THRESHOLD_MS) return;
+      const redactParams = shouldRedactQueryParams(event.query);
+      dbLog.warn(
+        {
+          duration_ms: event.duration,
+          query: event.query,
+          ...(redactParams ? { params: '[REDACTED]' } : { params: event.params }),
+        },
+        'prisma slow query',
+      );
+    });
+    eventClient.$on('warn', (event: PrismaWarnEvent) => {
+      dbLog.warn({ message: event.message, target: event.target }, 'prisma warn');
+    });
+    eventClient.$on('error', (event: PrismaErrorEvent) => {
+      dbLog.error({ message: event.message, target: event.target }, 'prisma error');
+    });
+  } catch (err) {
+    // Defensive: $on may throw if the client was created without
+    // `log: [{ emit: 'event', ... }]`. Don't crash the app boot just because
+    // observability wiring failed.
+    dbLog.warn({ err }, 'failed to attach Prisma event listeners');
+  }
+}
+
 /** Creates a PrismaClient connected to the given Neon connection string. */
 export function createPrismaClientForUrl(connectionString: string): PrismaClient {
   const adapter = new PrismaNeon({ connectionString });
-  return new PrismaClient({ adapter });
+  const client = new PrismaClient({
+    adapter,
+    // F-OBS-10: opt into event-driven logs so we can pipe slow queries into
+    // Pino at a single, configurable threshold (200ms by default).
+    log: [
+      { emit: 'event', level: 'query' },
+      { emit: 'event', level: 'warn' },
+      { emit: 'event', level: 'error' },
+    ],
+  });
+  attachQueryLogger(client);
+  return client;
 }
 
 function createPrismaClient() {
