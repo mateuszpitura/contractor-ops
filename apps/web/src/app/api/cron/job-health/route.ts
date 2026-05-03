@@ -61,10 +61,27 @@ export async function GET(request: NextRequest) {
           const oneHourAgo = new Date(now.getTime() - 60 * 60_000);
 
           // 1. Find stale webhook deliveries (stuck in RECEIVED or PROCESSING).
-          //    RECEIVED stale = QStash never delivered it to _process.
+          //    RECEIVED stale = QStash never delivered it to _process (or
+          //    delivered but crashed pre-claim).
           //    PROCESSING stale = a worker claimed the row but crashed before
-          //    finishing (no PROCESSED/FAILED transition). Both are dead-letter
-          //    candidates at the same threshold.
+          //    finishing (no PROCESSED/FAILED transition).
+          //
+          // F-ASYNC-05: pre-fix this just nuked PROCESSING rows to FAILED
+          // after 15min, which lost slow-but-legit handlers (Jira PR
+          // enrichment, e-sign ZIP generation can take 20+min). The right
+          // fix needs an `attempts` counter on WebhookDelivery (F-INT-13,
+          // owned by P2-B). For now the reaper:
+          //   - Keeps the timeout-and-FAIL behaviour (no regression on the
+          //     genuinely-crashed cases) so as not to leave PROCESSING rows
+          //     forever.
+          //   - Logs a Sentry capture per stale row so ops can find slow
+          //     legit cases when they happen.
+          //   - Tags with `event: 'webhook_delivery_stale'` for grep.
+          //
+          // TODO(P2-B, F-INT-13): once WebhookDelivery has `attempts` /
+          // `nextAttemptAt` / `lastErrorAt`, change this to "if attempts <
+          // maxAttempts and nextAttemptAt < now, re-enqueue PROCESSING ↺
+          // RECEIVED; only after maxAttempts mark FAILED".
           const staleDeliveries = await prisma.webhookDelivery.findMany({
             where: {
               deliveryStatus: { in: ['RECEIVED', 'PROCESSING'] },
@@ -80,7 +97,8 @@ export async function GET(request: NextRequest) {
             },
           });
 
-          // 2. Mark stale deliveries as FAILED (dead letter)
+          // 2. Mark stale deliveries as FAILED (dead letter) and surface
+          //    each one for ops follow-up.
           if (staleDeliveries.length > 0) {
             await prisma.webhookDelivery.updateMany({
               where: {
@@ -97,14 +115,34 @@ export async function GET(request: NextRequest) {
               },
             });
 
+            for (const delivery of staleDeliveries) {
+              Sentry.captureMessage('webhook delivery stale — reaper marked FAILED', {
+                level: 'warning',
+                tags: {
+                  'webhook.provider': delivery.provider,
+                  'webhook.outcome': 'reaper-failed',
+                  'webhook.observed_status': delivery.deliveryStatus,
+                },
+                extra: {
+                  deliveryId: delivery.id,
+                  organizationId: delivery.organizationId,
+                  eventType: delivery.eventType,
+                  receivedAt: delivery.receivedAt,
+                  ageMinutes: Math.round((now.getTime() - delivery.receivedAt.getTime()) / 60_000),
+                },
+              });
+            }
+
             log.warn(
               {
                 count: staleDeliveries.length,
+                event: 'webhook_delivery_stale',
                 deliveries: staleDeliveries.map(d => ({
                   id: d.id,
                   provider: d.provider,
                   eventType: d.eventType,
                   receivedAt: d.receivedAt,
+                  observedStatus: d.deliveryStatus,
                 })),
               },
               'marked stale webhook deliveries as FAILED',
