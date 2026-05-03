@@ -15,6 +15,11 @@ import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import * as E from '../../errors.js';
 import { router } from '../../init.js';
+import {
+  clear as clearIdempotency,
+  complete as completeIdempotency,
+  reserve as reserveIdempotency,
+} from '../../lib/idempotency.js';
 import { requirePermission } from '../../middleware/rbac.js';
 import { tenantProcedure } from '../../middleware/tenant.js';
 import { matchStatementToRun, parseBankStatement } from '../../services/bank-statement.js';
@@ -42,23 +47,14 @@ type TxClient = Parameters<Parameters<DbClient['$transaction']>[0]>[0];
 // Idempotency key cache for payment run creation (24-hour window)
 // Payment runs persist much longer than a few minutes, so the cache TTL
 // must cover the realistic window in which duplicate requests may arrive.
+//
+// Backed by Upstash Redis (see packages/api/src/lib/idempotency.ts) so the
+// reservation is shared across all Render instances. The previous in-memory
+// Map was process-local — a duplicate retry hitting a different pod could
+// create a second payment run, leading to real-money double-spend.
 // ---------------------------------------------------------------------------
 
-const IDEMPOTENCY_TTL_MS = 24 * 60 * 60_000;
-
-/** Maps "orgId:idempotencyKey" → { runIds, expiresAt } or "PENDING" sentinel */
-const idempotencyCache = new Map<string, { result: unknown; expiresAt: number } | 'PENDING'>();
-
-if (typeof globalThis !== 'undefined') {
-  const cleanup = () => {
-    const now = Date.now();
-    for (const [key, entry] of idempotencyCache) {
-      if (entry === 'PENDING') continue;
-      if (now > entry.expiresAt) idempotencyCache.delete(key);
-    }
-  };
-  setInterval(cleanup, 60_000).unref?.();
-}
+const IDEMPOTENCY_TTL_SECONDS = 24 * 60 * 60;
 
 // ---------------------------------------------------------------------------
 // Payment run helpers
@@ -345,24 +341,26 @@ export const paymentRouter = router({
     .use(requirePermission({ payment: ['create'] }))
     .input(paymentRunCreateSchema)
     .mutation(async ({ ctx, input }) => {
-      // Idempotency check: return cached result if same key was used recently
+      // Idempotency check: return cached result if same key was used recently.
+      // Backed by Upstash Redis so the reservation is visible across all
+      // Render instances; a retry that lands on a different pod sees the same
+      // PENDING / HIT state as the original.
       const cacheKey = input.idempotencyKey
-        ? `${ctx.organizationId}:${input.idempotencyKey}`
+        ? `payment-run:${ctx.organizationId}:${input.idempotencyKey}`
         : null;
 
       if (cacheKey) {
-        const cached = idempotencyCache.get(cacheKey);
-        if (cached === 'PENDING') {
+        const hit = await reserveIdempotency<PaymentRun[]>(cacheKey, IDEMPOTENCY_TTL_SECONDS);
+        if (hit.kind === 'PENDING') {
           throw new TRPCError({
             code: 'CONFLICT',
             message: 'Payment run creation in progress',
           });
         }
-        if (cached && Date.now() < cached.expiresAt) {
-          return cached.result as PaymentRun[];
+        if (hit.kind === 'HIT') {
+          return hit.result;
         }
-        // Reserve the key immediately to prevent concurrent requests
-        idempotencyCache.set(cacheKey, 'PENDING');
+        // MISS: reservation acquired; fall through to normal processing.
       }
 
       let result: PaymentRun[];
@@ -491,17 +489,14 @@ export const paymentRouter = router({
 
         // Update cache with actual result
         if (cacheKey) {
-          idempotencyCache.set(cacheKey, {
-            result,
-            expiresAt: Date.now() + IDEMPOTENCY_TTL_MS,
-          });
+          await completeIdempotency(cacheKey, result, IDEMPOTENCY_TTL_SECONDS);
         }
 
         return result;
       } catch (err) {
         // Clear reservation on failure so the key can be retried
         if (cacheKey) {
-          idempotencyCache.delete(cacheKey);
+          await clearIdempotency(cacheKey);
         }
         if (
           err &&
