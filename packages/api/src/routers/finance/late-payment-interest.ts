@@ -531,6 +531,10 @@ export const latePaymentInterestRouter = router({
           body: { claimId: claim.id, organizationId: ctx.organizationId },
           retries: 3,
           timeout: '60s',
+          // F-ASYNC-15 idempotency: stable per-claim QStash dedup id so the
+          // tRPC retry, the reaper re-enqueue, and the original delivery
+          // can't all produce separate QStash messages.
+          deduplicationId: `late-interest-pdf:${claim.id}`,
         });
       } catch (err) {
         log.error(

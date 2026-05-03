@@ -85,14 +85,24 @@ interface ReaperResult {
 async function runReaper(): Promise<ReaperResult> {
   const cutoff = new Date(Date.now() - STALE_AFTER_MS);
 
+  // F-ASYNC-15: scan PENDING_RENDER plus stale RENDERING rows. A row that
+  // sits in RENDERING > STALE_AFTER_MS means the worker that won the CAS
+  // crashed without flipping to READY/FAILED — re-enqueue is safe because
+  // we'll attempt the CAS again from PENDING_RENDER (after we revert it).
+  //
+  // The RENDERING enum literal ships in the same migration as this code
+  // (invoice.prisma F-ASYNC-15); cast keeps tsc green until generated
+  // client is regenerated post-merge.
   const stuck = await prisma.invoiceInterestClaim.findMany({
     where: {
-      pdfStatus: 'PENDING_RENDER',
+      // biome-ignore lint/suspicious/noExplicitAny: enum migration ships with this commit
+      pdfStatus: { in: ['PENDING_RENDER', 'RENDERING' as any] },
       createdAt: { lt: cutoff },
     },
     select: {
       id: true,
       organizationId: true,
+      pdfStatus: true,
       pdfKey: true,
       claimedAt: true,
     },
@@ -125,16 +135,30 @@ async function runReaper(): Promise<ReaperResult> {
       continue;
     }
 
-    // Case 2: the QStash delivery never happened. Re-enqueue. We don't
-    // touch the row — the worker will flip it to READY/FAILED when it
-    // runs. If the re-enqueue itself fails, we leave the row so the next
-    // reaper tick retries.
+    // Case 2: stuck row. F-ASYNC-15 — if the row is in RENDERING, the
+    // worker that won the CAS crashed without finishing. Revert to
+    // PENDING_RENDER first so the next worker can re-claim it via CAS.
+    // For PENDING_RENDER rows, the QStash delivery never happened; just
+    // re-enqueue.
+    // biome-ignore lint/suspicious/noExplicitAny: enum migration ships with this commit
+    if ((row.pdfStatus as any) === 'RENDERING') {
+      await prisma.invoiceInterestClaim.updateMany({
+        // biome-ignore lint/suspicious/noExplicitAny: enum migration ships with this commit
+        where: { id: row.id, pdfStatus: 'RENDERING' as any },
+        data: { pdfStatus: 'PENDING_RENDER' },
+      });
+    }
+
     try {
       await getQStashClient().publishJSON({
         url: qstashUrl,
         body: { claimId: row.id, organizationId: row.organizationId },
         retries: 3,
         timeout: '60s',
+        // F-ASYNC-15 idempotency: use the claim id as QStash dedup ID so
+        // two reaper ticks scheduling the same claim within the 24h dedup
+        // window collapse to one delivery.
+        deduplicationId: `late-interest-pdf:${row.id}`,
       });
       requeued += 1;
     } catch (err) {

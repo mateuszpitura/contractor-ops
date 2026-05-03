@@ -364,6 +364,12 @@ model InvoiceInterestClaim {
 
 enum InvoiceInterestClaimPdfStatus {
   PENDING_RENDER
+  // F-ASYNC-15 — sentinel state owned by the worker that won the
+  // PENDING_RENDER → RENDERING compare-and-swap. A second concurrent QStash
+  // delivery (e.g. the reaper re-enqueued while the original is still
+  // running) sees RENDERING and short-circuits without doing R2 I/O,
+  // preventing duplicate uploads.
+  RENDERING
   READY
   FAILED
 }

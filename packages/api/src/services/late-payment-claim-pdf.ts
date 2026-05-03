@@ -57,6 +57,31 @@ export async function renderClaimPdf(claimId: string): Promise<RenderClaimPdfRes
     return { claimId, pdfKey: claim.pdfKey, skipped: true };
   }
 
+  // F-ASYNC-15: atomic compare-and-swap on the row state. The reaper
+  // re-enqueues stuck PENDING_RENDER rows after 10min; if the original
+  // QStash delivery worker is still running, two deliveries can race and
+  // both upload to R2 (orphan object best case, wrong-pdf-served worst
+  // case). Flip PENDING_RENDER → RENDERING before doing any I/O; whoever
+  // wins the CAS owns the render. The other delivery short-circuits.
+  //
+  // The RENDERING enum literal is added to InvoiceInterestClaimPdfStatus
+  // in the same migration as this code (see invoice.prisma); the generated
+  // Prisma client picks it up after `db generate` runs in the orchestrator
+  // post-merge step. Until then the cast keeps tsc green.
+  const claimed = await prisma.invoiceInterestClaim.updateMany({
+    where: { id: claim.id, pdfStatus: 'PENDING_RENDER' },
+    // biome-ignore lint/suspicious/noExplicitAny: enum migration ships with this commit
+    data: { pdfStatus: 'RENDERING' as any },
+  });
+  if (claimed.count === 0) {
+    log.info(
+      { claimId, observedStatus: claim.pdfStatus },
+      'claim pdf render already in flight or completed; skipping',
+    );
+    metrics.increment('late_interest.claim_pdf.skipped_cas');
+    return { claimId, pdfKey: claim.pdfKey ?? '', skipped: true };
+  }
+
   try {
     const { renderToBuffer } = await import('@react-pdf/renderer');
     const { LatePaymentClaimTemplate } = await import('../pdf-templates/late-payment-claim.js');
