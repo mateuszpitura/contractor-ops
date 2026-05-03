@@ -1,4 +1,4 @@
-import { createHmac, randomUUID } from 'node:crypto';
+import { createHmac } from 'node:crypto';
 import { createTenantClientFrom, getRegionalClient, prisma, tenantStore } from '@contractor-ops/db';
 import { getServerEnv, returnRequestCreateSchema } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
@@ -14,6 +14,7 @@ import {
 } from '../../services/contractor-tax-id.js';
 import { loadCourierClient } from '../../services/courier/carrier-factory.js';
 import { dispatch } from '../../services/notification-service.js';
+import { consumePendingUpload, createPendingUpload } from '../../services/pending-upload.js';
 import { createChangeRequest } from '../../services/portal-change-request.js';
 import {
   createMagicLinkToken,
@@ -22,11 +23,7 @@ import {
   verifyMagicLinkToken,
 } from '../../services/portal-magic-link.js';
 import { createPortalSession, deletePortalSession } from '../../services/portal-session.js';
-import { generateStorageKey } from '../../services/r2.js';
-import {
-  createRegionalPresignedDownloadUrl,
-  createRegionalPresignedUploadUrl,
-} from '../../services/regional-storage.js';
+import { createRegionalPresignedDownloadUrl } from '../../services/regional-storage.js';
 import { mapPortalDocLink, portalDocLinkInclude } from './portal-doc-mapper.js';
 
 // ---------------------------------------------------------------------------
@@ -778,11 +775,28 @@ export const portalRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const docId = randomUUID();
-      const key = generateStorageKey(ctx.organizationId, docId, input.filename);
-      const uploadUrl = await createRegionalPresignedUploadUrl(key, input.contentType);
+      // F-SEC-01: never accept (or return) a client-supplied storage key.
+      // The server derives the key from `(organizationId, documentId)` and
+      // persists it in `PendingUpload` for retrieval by `submitInvoice`.
+      // The client only ever sees `documentId` + the presigned PUT URL —
+      // the storage path stays inside the trust boundary.
+      const pending = await createPendingUpload({
+        db: ctx.db,
+        organizationId: ctx.organizationId,
+        purpose: 'PORTAL_INVOICE_SUBMIT',
+        filename: input.filename,
+        mimeType: input.contentType,
+      });
 
-      return { uploadUrl, documentId: docId, storageKey: key };
+      return {
+        uploadUrl: pending.presignedPutUrl,
+        documentId: pending.documentId,
+        expiresAt: pending.expiresAt,
+        // F-SEC-01: kept as deprecated empty string for back-compat with
+        // older portal clients that still destructure `storageKey`. New
+        // clients should ignore this field — the server no longer trusts it.
+        storageKey: '',
+      };
     }),
 
   /**
@@ -800,7 +814,10 @@ export const portalRouter = router({
         netAmountMinor: z.number().int().positive(),
         grossAmountMinor: z.number().int().positive(),
         documentId: z.string(),
-        storageKey: z.string(),
+        // F-SEC-01: `storageKey` accepted but IGNORED — kept optional only
+        // for back-compat with older clients during the rollout. The server
+        // recovers the trusted key from `PendingUpload`.
+        storageKey: z.string().optional(),
         originalFileName: z.string(),
         fileSizeBytes: z.number().int().positive(),
         checksumSha256: z.string().optional(),
@@ -823,14 +840,27 @@ export const portalRouter = router({
         });
       }
 
-      // Create document record for the uploaded PDF
+      // F-SEC-01: atomically consume the PendingUpload row to recover the
+      // server-stored `storageKey` for this `documentId`. Throws if the row
+      // is missing, expired, already consumed, belongs to another tenant,
+      // or was minted for a different purpose. THIS IS THE PRIMARY DEFENCE
+      // against cross-tenant document exfiltration via portal.submitInvoice.
+      const pending = await consumePendingUpload({
+        db: ctx.db,
+        organizationId: ctx.organizationId,
+        documentId: input.documentId,
+        expectedPurpose: 'PORTAL_INVOICE_SUBMIT',
+      });
+
+      // Create document record for the uploaded PDF using the server-trusted
+      // storage key (NEVER `input.storageKey`).
       await ctx.db.document.create({
         data: {
           id: input.documentId,
           organizationId: ctx.organizationId,
-          storageKey: input.storageKey,
+          storageKey: pending.storageKey,
           originalFileName: input.originalFileName,
-          mimeType: 'application/pdf',
+          mimeType: pending.mimeType,
           fileSizeBytes: input.fileSizeBytes,
           documentType: 'INVOICE',
           source: 'USER_UPLOAD',

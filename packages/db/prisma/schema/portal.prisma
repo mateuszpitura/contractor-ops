@@ -79,3 +79,45 @@ model ContractorNotificationPreference {
   @@unique([contractorId, category])
   @@index([organizationId])
 }
+
+// F-SEC-01: server-derived pending-upload table.
+//
+// Eliminates client-supplied `storageKey` from the portal upload flow. When a
+// contractor (or any future consumer) requests a presigned PUT, the server
+// generates the document UUID + storage key, persists them in this table with
+// a 15-minute expiry, and hands the client only `documentId`. On the
+// follow-up `submitInvoice` / `confirmUpload` mutation the server consumes
+// the row to recover the trusted storage key — preventing cross-tenant
+// document path injection (the original CRITICAL).
+//
+// `consumedAt` enforces single use; `expiresAt` is indexed for cleanup. Both
+// `(organizationId, documentId)` and `(documentId)` are queried — the
+// composite covers the consume path which always knows both, while the
+// scalar index supports hygiene jobs.
+model PendingUpload {
+  id               String               @id @default(uuid())
+  organizationId   String
+  // The future Document.id — pre-generated server-side so the client can
+  // round-trip a stable identifier across upload + submit.
+  documentId       String               @unique
+  storageKey       String
+  mimeType         String
+  fileSizeBytesMax Int?
+  purpose          PendingUploadPurpose
+  createdByUserId  String?
+  expiresAt        DateTime
+  consumedAt       DateTime?
+  createdAt        DateTime             @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId, documentId])
+  @@index([expiresAt])
+}
+
+enum PendingUploadPurpose {
+  PORTAL_INVOICE_SUBMIT
+  PORTAL_DOC_VERSION
+  CORE_DOC_REQUEST_UPLOAD
+  CORE_DOC_VERSION_UPLOAD
+}
