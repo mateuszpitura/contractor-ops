@@ -8,6 +8,12 @@ import { nextCookies } from 'better-auth/next-js';
 import { admin } from 'better-auth/plugins/admin';
 import { magicLink } from 'better-auth/plugins/magic-link';
 import { organization } from 'better-auth/plugins/organization';
+import {
+  sendMagicLinkEmail,
+  sendInvitationEmail as sendOrgInvitationEmail,
+  sendResetPasswordEmail,
+  sendVerificationEmail,
+} from './auth-emails.js';
 import { authEnv } from './env.js';
 import { ac } from './permissions.js';
 import { roles } from './roles.js';
@@ -65,6 +71,43 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
+    /**
+     * Better Auth invokes this when a user requests a password reset
+     * (`/forget-password`). The handler is mandatory in production — without
+     * it the entire reset flow silently no-ops (F-SEC-13). We throw on send
+     * failure so Better Auth surfaces the error to the caller.
+     */
+    sendResetPassword: async ({ user, url }) => {
+      log.info(
+        { event: 'auth.reset_password.send', emailHash: hashEmail(user.email) },
+        'dispatching password-reset email',
+      );
+      await sendResetPasswordEmail({
+        to: user.email,
+        recipientName: user.name ?? null,
+        url,
+      });
+    },
+  },
+
+  emailVerification: {
+    /**
+     * Sent on sign-up and on every sign-in attempt for unverified accounts
+     * (because `requireEmailVerification: true`). Without this handler newly
+     * registered users cannot verify and are locked out forever (F-SEC-13).
+     */
+    sendVerificationEmail: async ({ user, url }) => {
+      log.info(
+        { event: 'auth.verify_email.send', emailHash: hashEmail(user.email) },
+        'dispatching email-verification email',
+      );
+      await sendVerificationEmail({
+        to: user.email,
+        recipientName: user.name ?? null,
+        url,
+      });
+    },
+    sendOnSignUp: true,
   },
 
   socialProviders,
@@ -204,46 +247,40 @@ export const auth = betterAuth({
         platform_operator: roles.platform_operator,
       },
       async sendInvitationEmail(data) {
-        if (authEnv.isDevelopment) {
-          log.info(
-            {
-              event: 'auth.invitation.dev_only',
-              emailHash: hashEmail(data.email),
-              invitationId: data.id,
-            },
-            'sendInvitationEmail invoked in development — no email sent (Resend not wired)',
-          );
-          return;
-        }
-        // staging / preview / test / production all require a real adapter.
-        throw new Error(
-          'Production email sending not configured — integrate Resend adapter (NODE_ENV=' +
-            authEnv.nodeEnv +
-            ')',
+        // Better Auth's organization plugin does not synthesise an acceptance
+        // URL — it provides the invitation id and expects the host application
+        // to construct the link. We use the canonical app base URL (never a
+        // request-supplied origin) to prevent host-header injection (cf.
+        // F-SEC-08).
+        const base = (authEnv.baseURL ?? 'http://localhost:3000').replace(/\/$/, '');
+        const acceptUrl = `${base}/accept-invitation/${data.id}`;
+
+        log.info(
+          {
+            event: 'auth.invitation.send',
+            emailHash: hashEmail(data.email),
+            invitationId: data.id,
+            organizationId: data.organization.id,
+          },
+          'dispatching organization invitation email',
         );
+
+        await sendOrgInvitationEmail({
+          to: data.email,
+          organizationName: data.organization.name,
+          inviterName: data.inviter.user.name ?? null,
+          inviterEmail: data.inviter.user.email ?? null,
+          url: acceptUrl,
+        });
       },
     }),
     magicLink({
       sendMagicLink: async ({ email, url, token: _token }) => {
-        if (authEnv.isDevelopment) {
-          // Dev-only: surface the URL via the project logger so engineers can
-          // complete magic-link flows locally without spelunking Better Auth
-          // internals. Never reachable in non-development (throws below).
-          log.info(
-            {
-              event: 'auth.magic_link.dev_only',
-              emailHash: hashEmail(email),
-              url,
-            },
-            'sendMagicLink invoked in development — copy `url` to complete sign-in',
-          );
-          return;
-        }
-        throw new Error(
-          'Production email sending not configured — integrate Resend adapter (NODE_ENV=' +
-            authEnv.nodeEnv +
-            ')',
+        log.info(
+          { event: 'auth.magic_link.send', emailHash: hashEmail(email) },
+          'dispatching magic-link email',
         );
+        await sendMagicLinkEmail({ to: email, url });
       },
     }),
     admin(),

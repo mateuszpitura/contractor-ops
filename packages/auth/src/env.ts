@@ -44,6 +44,20 @@ const authEnvSchema = z.object({
   GOOGLE_CLIENT_SECRET: z.string().min(1).optional(),
   MICROSOFT_CLIENT_ID: z.string().min(1).optional(),
   MICROSOFT_CLIENT_SECRET: z.string().min(1).optional(),
+
+  /**
+   * Resend API key — used by Better Auth's transactional email handlers
+   * (verification, password reset, magic-link, organization invitation).
+   * Required in production; in `development` the handlers fall back to logging
+   * so engineers can complete flows locally without Resend.
+   */
+  RESEND_API_KEY: z.string().min(1).optional(),
+
+  /**
+   * From address for Better Auth transactional emails. Defaults to a sane
+   * placeholder so local/test environments boot without extra config.
+   */
+  EMAIL_FROM: z.email().default('noreply@contractor-ops.com'),
 });
 
 export type AuthEnv = z.infer<typeof authEnvSchema>;
@@ -60,6 +74,10 @@ export type ResolvedAuthEnv = {
   trustedOrigins: string[];
   google: GoogleProviderEnv | null;
   microsoft: MicrosoftProviderEnv | null;
+  /** Resend API key. Undefined in development means email handlers log instead of sending. */
+  resendApiKey: string | undefined;
+  /** From address used for all Better Auth transactional emails. */
+  emailFrom: string;
 };
 
 function assertProviderPair(
@@ -118,6 +136,16 @@ export function loadAuthEnv(env: NodeJS.ProcessEnv = process.env): ResolvedAuthE
     throw new Error('[@contractor-ops/auth] BETTER_AUTH_SECRET is required in production.');
   }
 
+  // Resend API key is mandatory in production so Better Auth's email handlers
+  // (verification, reset, magic-link, invitation) can deliver transactional
+  // mail. Without it the auth surface is silently broken (F-SEC-13).
+  // Development falls back to logging the URL.
+  if (!data.RESEND_API_KEY && isProduction) {
+    throw new Error(
+      '[@contractor-ops/auth] RESEND_API_KEY is required in production for Better Auth email handlers.',
+    );
+  }
+
   // Resolve baseURL: prefer BETTER_AUTH_URL, fall back to NEXT_PUBLIC_APP_URL.
   const baseURL = data.BETTER_AUTH_URL ?? data.NEXT_PUBLIC_APP_URL;
 
@@ -156,6 +184,8 @@ export function loadAuthEnv(env: NodeJS.ProcessEnv = process.env): ResolvedAuthE
     trustedOrigins,
     google,
     microsoft,
+    resendApiKey: data.RESEND_API_KEY,
+    emailFrom: data.EMAIL_FROM,
   };
 }
 
