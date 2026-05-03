@@ -725,23 +725,30 @@ export const contractRouter = router({
             data: updateData,
           });
 
-          // Phase 60 CLASS-08 — emit one audit row per transitioned contract so
-          // the reassessment scan can detect each status change individually.
-          for (const id of valid) {
+          // F-DB-07 — batch the per-row audit inserts into a single
+          // `auditLog.createMany`. Phase 60 CLASS-08 still wants one audit
+          // row per transitioned contract so the reassessment scan can
+          // detect each status change individually; we just write them all
+          // in one round-trip instead of N inside the transaction.
+          const auditRows = valid.map(id => {
             const prev = oldStatusById.get(id);
-            await writeAuditLog({
+            return {
               organizationId: ctx.organizationId,
-              actorType: 'USER',
+              actorType: 'USER' as const,
               actorId: ctx.user?.id ?? null,
+              actorName: ctx.user?.name ?? null,
               action: 'STATUS_TRANSITION',
-              resourceType: 'CONTRACT',
+              resourceType: 'CONTRACT' as const,
               resourceId: id,
               resourceName: prev?.title ?? null,
-              oldValues: { status: prev?.status ?? null },
-              newValues: { status: input.targetStatus },
-              tx,
-            });
-          }
+              oldValuesJson: { status: prev?.status ?? null },
+              newValuesJson: { status: input.targetStatus },
+            };
+          });
+
+          await tx.auditLog.createMany({
+            data: auditRows as Parameters<typeof tx.auditLog.createMany>[0]['data'],
+          });
         });
       }
 
