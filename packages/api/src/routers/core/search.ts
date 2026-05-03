@@ -7,6 +7,7 @@
 import { Prisma } from '@contractor-ops/db/generated/prisma/client';
 import { z } from 'zod';
 import { router } from '../../init.js';
+import { requirePermission } from '../../middleware/rbac.js';
 import { tenantProcedure } from '../../middleware/tenant.js';
 
 // ---------------------------------------------------------------------------
@@ -29,8 +30,14 @@ export const searchRouter = router({
    * Global search across contractors, contracts, and invoices.
    * Uses tsvector prefix matching with 'simple' text search config.
    * Returns up to 5 results per entity type (15 max total).
+   *
+   * F-SEC-16 — Requires `contractor:read` because the result set merges
+   * contractor identity rows. Roles without contractor read access (e.g.
+   * standalone integration roles) cannot use the command palette to
+   * enumerate contractor names.
    */
   global: tenantProcedure
+    .use(requirePermission({ contractor: ['read'] }))
     .input(
       z.object({
         query: z.string().min(2).max(100),
@@ -57,10 +64,14 @@ export const searchRouter = router({
       // as a parameter to to_tsquery() — never interpolated into SQL.
       const tsquery = Prisma.sql`to_tsquery('simple', ${sanitizedTerms})`;
 
-      // Run 3 parallel raw queries across entity types
+      // F-SEC-16 — Surface `displayName` (non-PII) instead of `taxId`.
+      // Tax identifiers (NIP, REGON, USt-IdNr, NINO, NIE, etc.) are sensitive
+      // financial PII and have no place in a global command-palette result.
+      // The dedicated contractor-detail page renders taxId for roles that
+      // need it (gated separately).
       const [contractors, contracts, invoices] = await Promise.all([
         ctx.db.$queryRaw<SearchResult[]>`
-          SELECT id, "legalName" as name, "taxId" as subtitle, 'contractor' as type
+          SELECT id, "legalName" as name, COALESCE("displayName", '') as subtitle, 'contractor' as type
           FROM "Contractor"
           WHERE "organizationId" = ${ctx.organizationId}
             AND "deletedAt" IS NULL

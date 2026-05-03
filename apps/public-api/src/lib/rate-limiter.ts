@@ -1,6 +1,9 @@
+import { createLogger } from '@contractor-ops/logger';
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
 import type { Context, MiddlewareHandler } from 'hono';
+
+const log = createLogger({ service: 'public-api', component: 'rate-limiter' });
 
 // ---------------------------------------------------------------------------
 // Rate limiter middleware for public API
@@ -108,9 +111,33 @@ export const rateLimitMiddleware: MiddlewareHandler = async (c, next) => {
       allowed = result.success;
       remaining = result.remaining;
       resetAtMs = result.reset;
-    } catch {
-      // Redis transient error: fall back to in-memory so we still catch a
-      // runaway loop on the same instance. Logged via the error handler.
+    } catch (err) {
+      // F-SCALE-03: fail-CLOSED in production. The in-memory fallback is
+      // per-instance and ineffective on a 6-pod deploy, so allowing requests
+      // through during a Redis outage gives an attacker a free DoS window
+      // against authenticated API keys. Surface a 503 + Retry-After so
+      // clients back off and on-call sees the spike.
+      const env = process.env.NODE_ENV ?? 'development';
+      if (env === 'production') {
+        log.error({ err }, 'upstash rate limiter unavailable — failing closed (503)');
+        const retryAfterSec = 5;
+        c.header('Retry-After', String(retryAfterSec));
+        return c.json(
+          {
+            error: {
+              code: 'SERVICE_UNAVAILABLE',
+              message: 'Rate limit backend unavailable. Please retry shortly.',
+              status: 503,
+            },
+          },
+          503,
+        );
+      }
+      // dev/test: best-effort in-memory so local runs aren't broken.
+      log.warn(
+        { err, env },
+        'upstash rate limiter unavailable — falling back to in-memory (non-prod only)',
+      );
       const fb = fallbackLimit(key);
       allowed = fb.allowed;
       remaining = fb.remaining;
