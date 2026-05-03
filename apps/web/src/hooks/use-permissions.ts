@@ -24,7 +24,6 @@ const permissions: Record<string, Record<string, string[]>> = {
     integration: ['read', 'update'],
     time: ['read', 'approve'],
     equipment: ['read', 'create', 'update', 'delete'],
-    'admin:boe-rate': ['write'],
   },
   admin: {
     organization: ['update', 'delete'],
@@ -40,7 +39,6 @@ const permissions: Record<string, Record<string, string[]>> = {
     settings: ['read', 'update'],
     integration: ['read', 'update'],
     time: ['read', 'approve'],
-    'admin:boe-rate': ['write'],
     equipment: ['read', 'create', 'update', 'delete'],
   },
   finance_admin: {

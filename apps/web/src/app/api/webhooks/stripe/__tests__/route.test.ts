@@ -3,8 +3,15 @@
 import { NextRequest } from 'next/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { routeStripeEvent, stripeConstructEvent, stripeTx, mockPrisma } = vi.hoisted(() => {
+const {
+  routeStripeEvent,
+  dispatchStripeWebhookNotifications,
+  stripeConstructEvent,
+  stripeTx,
+  mockPrisma,
+} = vi.hoisted(() => {
   const routeStripeEvent = vi.fn();
+  const dispatchStripeWebhookNotifications = vi.fn();
   const stripeTx = {
     stripeEvent: {
       findUnique: vi.fn(),
@@ -17,6 +24,7 @@ const { routeStripeEvent, stripeConstructEvent, stripeTx, mockPrisma } = vi.hois
   };
   return {
     routeStripeEvent,
+    dispatchStripeWebhookNotifications,
     stripeConstructEvent: vi.fn(),
     stripeTx,
     mockPrisma,
@@ -37,6 +45,7 @@ vi.mock('@contractor-ops/api/services/stripe-client', () => ({
 
 vi.mock('@contractor-ops/api/services/billing-webhook', () => ({
   routeStripeEvent,
+  dispatchStripeWebhookNotifications,
 }));
 
 vi.mock('@sentry/nextjs', () => ({
@@ -69,7 +78,8 @@ describe('POST /api/webhooks/stripe', () => {
     stripeTx.stripeEvent.findUnique.mockResolvedValue(null);
     stripeTx.stripeEvent.upsert.mockResolvedValue({});
     stripeTx.stripeEvent.update.mockResolvedValue({});
-    routeStripeEvent.mockResolvedValue(undefined);
+    routeStripeEvent.mockResolvedValue([]);
+    dispatchStripeWebhookNotifications.mockResolvedValue(undefined);
   });
 
   it('returns 400 when stripe-signature header is missing', async () => {

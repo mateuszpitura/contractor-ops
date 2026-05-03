@@ -2,14 +2,19 @@
 
 import { createHmac } from 'node:crypto';
 import { NextRequest } from 'next/server';
-import { beforeAll, describe, expect, it } from 'vitest';
-import { POST } from '../route';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 
 // F-SEC-09: route requires an HMAC signature minted by `verifyMagicLink` /
 // `selectOrg`. We compute the same signature here using the same secret +
 // label the route does so positive cases pass.
 
 const TEST_SECRET = 'test-better-auth-secret-32-chars-minimum-length-ok-1234';
+
+vi.mock('@contractor-ops/validators', () => ({
+  getServerEnv: vi.fn(() => ({ BETTER_AUTH_SECRET: TEST_SECRET })),
+}));
+
+import { POST } from '../route';
 
 function sign(token: string, expiresAt: string): string {
   return createHmac('sha256', `${TEST_SECRET}|portal-set-session-v1`)

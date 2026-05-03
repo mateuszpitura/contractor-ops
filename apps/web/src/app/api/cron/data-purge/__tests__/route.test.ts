@@ -78,6 +78,10 @@ vi.mock('@contractor-ops/api/services/r2', () => ({
   deleteObject: mockDeleteObject,
 }));
 
+vi.mock('@contractor-ops/validators', () => ({
+  getServerEnv: vi.fn(() => ({ CRON_SECRET: 'test-cron-secret-16chars' })),
+}));
+
 import { GET } from '../route';
 
 describe('GET /api/cron/data-purge', () => {
@@ -103,9 +107,9 @@ describe('GET /api/cron/data-purge', () => {
   });
 
   it('returns 200 with purge summary when authorized', async () => {
-    process.env.CRON_SECRET = 'purge-secret';
+    process.env.CRON_SECRET = 'test-cron-secret-16chars';
     const req = new NextRequest('http://localhost/api/cron/data-purge', {
-      headers: { authorization: 'Bearer purge-secret' },
+      headers: { authorization: 'Bearer test-cron-secret-16chars' },
     });
     const res = await GET(req);
     expect(res.status).toBe(200);
@@ -126,7 +130,7 @@ describe('GET /api/cron/data-purge', () => {
   });
 
   it('calls R2 deleteObject for expired documents with storageKey', async () => {
-    process.env.CRON_SECRET = 'purge-secret';
+    process.env.CRON_SECRET = 'test-cron-secret-16chars';
     mockDocumentFindMany.mockResolvedValue([
       { id: 'doc-1', storageKey: 'orgs/o/documents/f1.pdf' },
       { id: 'doc-2', storageKey: null },
@@ -135,7 +139,7 @@ describe('GET /api/cron/data-purge', () => {
     mockInvoiceFileDeleteMany.mockResolvedValue({ count: 0 });
 
     const req = new NextRequest('http://localhost/api/cron/data-purge', {
-      headers: { authorization: 'Bearer purge-secret' },
+      headers: { authorization: 'Bearer test-cron-secret-16chars' },
     });
     const res = await GET(req);
     expect(res.status).toBe(200);

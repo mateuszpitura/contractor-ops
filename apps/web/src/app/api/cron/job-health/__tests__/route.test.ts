@@ -41,6 +41,10 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
   metrics: { gauge: vi.fn() },
 }));
 
+vi.mock('@contractor-ops/validators', () => ({
+  getServerEnv: vi.fn(() => ({ CRON_SECRET: 'test-cron-secret-16chars' })),
+}));
+
 import { GET } from '../route';
 
 describe('GET /api/cron/job-health', () => {
@@ -61,9 +65,9 @@ describe('GET /api/cron/job-health', () => {
   });
 
   it('returns 200 with health payload when authorized', async () => {
-    process.env.CRON_SECRET = 'ok';
+    process.env.CRON_SECRET = 'test-cron-secret-16chars';
     const req = new NextRequest('http://localhost/api/cron/job-health', {
-      headers: { authorization: 'Bearer ok' },
+      headers: { authorization: 'Bearer test-cron-secret-16chars' },
     });
     const res = await GET(req);
     expect(res.status).toBe(200);

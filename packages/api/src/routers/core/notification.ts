@@ -153,7 +153,8 @@ export const notificationRouter = router({
         input.preferences.map(pref =>
           ctx.db.userNotificationPreference.upsert({
             where: {
-              userId_notificationType: {
+              organizationId_userId_notificationType: {
+                organizationId: ctx.organizationId,
                 userId,
                 notificationType: pref.notificationType,
               },
