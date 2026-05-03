@@ -74,6 +74,13 @@ export async function logWebhookDelivery(params: {
 export async function queueWebhookProcessing(deliveryId: string, provider: string): Promise<void> {
   // F-OBS-03: forward x-request-id + traceparent so the consumer route can
   // correlate inbound-webhook → processing logs end-to-end.
+  //
+  // TODO(F-INT-11, coord with P2-A): pass `Upstash-Deduplication-Id`
+  // (currently exposed as `args.deduplicationId` on QStash SDK) so a
+  // re-publish of the same `deliveryId` collapses upstream. Use
+  // `deliveryId` directly — it's a cuid generated inside the ingress
+  // route's transaction and is naturally unique. Blocked on P2-A's
+  // canonical enqueue helper that should bake this in for all enqueues.
   await publishJSONWithContext({
     url: `${process.env.NEXT_PUBLIC_APP_URL}/api/webhooks/_process`,
     body: { deliveryId, provider },
