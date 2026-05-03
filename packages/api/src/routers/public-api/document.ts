@@ -89,10 +89,13 @@ export const publicDocumentRouter = router({
         });
       }
 
-      if (doc.virusScanStatus === 'INFECTED') {
+      // F-SEC-15: block downloads for any non-CLEAN scan status.
+      // PENDING and FAILED files must never be served to API consumers — only
+      // CLEAN files are safe. INFECTED is reported separately for clarity.
+      if (doc.virusScanStatus !== 'CLEAN') {
         throw new TRPCError({
           code: 'FORBIDDEN',
-          message: E.DOCUMENT_INFECTED,
+          message: doc.virusScanStatus === 'INFECTED' ? E.DOCUMENT_INFECTED : 'documentScanPending',
         });
       }
 

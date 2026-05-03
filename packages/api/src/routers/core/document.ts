@@ -258,11 +258,19 @@ export const documentRouter = router({
         });
       }
 
-      if (doc.virusScanStatus === 'INFECTED') {
-        throw new TRPCError({
-          code: 'FORBIDDEN',
-          message: E.DOCUMENT_INFECTED,
-        });
+      // F-SEC-15: block downloads for any non-CLEAN scan status. The uploader
+      // may download their own file while the scan is still pending/failed —
+      // they already have the bytes locally. Everyone else is blocked until
+      // the async ClamAV pipeline confirms the file is clean.
+      if (doc.virusScanStatus !== 'CLEAN') {
+        const isUploader = !!ctx.user?.id && doc.uploadedByUserId === ctx.user.id;
+        if (!isUploader || doc.virusScanStatus === 'INFECTED') {
+          throw new TRPCError({
+            code: 'FORBIDDEN',
+            message:
+              doc.virusScanStatus === 'INFECTED' ? E.DOCUMENT_INFECTED : 'documentScanPending',
+          });
+        }
       }
 
       const url = await createRegionalPresignedDownloadUrl(doc.storageKey, 900);
