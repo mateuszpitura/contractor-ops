@@ -1,6 +1,21 @@
+import { fetchWithTimeout } from '../services/fetch-helpers.js';
 import type { CredentialBlob } from '../types/credentials.js';
 import type { OAuthConfig } from '../types/provider.js';
 import { BaseAdapter } from './base-adapter.js';
+
+// ---------------------------------------------------------------------------
+// Timeout budgets (F-INT-01 / F-INT-02)
+// ---------------------------------------------------------------------------
+//
+// OAuth token redemption + refresh — non-idempotent POST (Notion uses HTTP
+// Basic auth). 30s wall-clock, no retries. Replaying a token redemption
+// could claim multiple sessions or invalidate the refresh token.
+const OAUTH_TIMEOUT_MS = 30_000;
+// Search API — POST but treated as idempotent (read-only query). 15s
+// wall-clock with retries on 429/5xx; we explicitly opt in via
+// `retryNonIdempotent` because the helper otherwise refuses to retry POSTs.
+const SEARCH_TIMEOUT_MS = 15_000;
+const SEARCH_RETRIES = 2;
 
 // ---------------------------------------------------------------------------
 // Notion OAuth 2.0 Configuration
@@ -66,18 +81,22 @@ export class NotionAdapter extends BaseAdapter {
       );
     }
 
-    const response = await fetch('https://api.notion.com/v1/oauth/token', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`,
+    const response = await fetchWithTimeout(
+      'https://api.notion.com/v1/oauth/token',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`,
+        },
+        body: JSON.stringify({
+          grant_type: 'authorization_code',
+          code,
+          redirect_uri: redirectUri,
+        }),
       },
-      body: JSON.stringify({
-        grant_type: 'authorization_code',
-        code,
-        redirect_uri: redirectUri,
-      }),
-    });
+      { timeoutMs: OAUTH_TIMEOUT_MS, retries: 0 },
+    );
 
     if (!response.ok) {
       const text = await response.text();
@@ -125,17 +144,21 @@ export class NotionAdapter extends BaseAdapter {
       throw new Error('No refresh token available for Notion');
     }
 
-    const response = await fetch('https://api.notion.com/v1/oauth/token', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`,
+    const response = await fetchWithTimeout(
+      'https://api.notion.com/v1/oauth/token',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`,
+        },
+        body: JSON.stringify({
+          grant_type: 'refresh_token',
+          refresh_token: credentials.refreshToken,
+        }),
       },
-      body: JSON.stringify({
-        grant_type: 'refresh_token',
-        refresh_token: credentials.refreshToken,
-      }),
-    });
+      { timeoutMs: OAUTH_TIMEOUT_MS, retries: 0 },
+    );
 
     if (!response.ok) {
       const text = await response.text();
@@ -179,19 +202,29 @@ export class NotionAdapter extends BaseAdapter {
       url: string;
     }>
   > {
-    const response = await fetch('https://api.notion.com/v1/search', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-        'Notion-Version': NOTION_API_VERSION,
+    // Search is a POST but is read-only and idempotent — opt in to retry
+    // on 429/5xx.
+    const response = await fetchWithTimeout(
+      'https://api.notion.com/v1/search',
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+          'Notion-Version': NOTION_API_VERSION,
+        },
+        body: JSON.stringify({
+          query,
+          filter: { property: 'object', value: 'page' },
+          page_size: 10,
+        }),
       },
-      body: JSON.stringify({
-        query,
-        filter: { property: 'object', value: 'page' },
-        page_size: 10,
-      }),
-    });
+      {
+        timeoutMs: SEARCH_TIMEOUT_MS,
+        retries: SEARCH_RETRIES,
+        retryNonIdempotent: true,
+      },
+    );
 
     if (!response.ok) {
       const text = await response.text();
