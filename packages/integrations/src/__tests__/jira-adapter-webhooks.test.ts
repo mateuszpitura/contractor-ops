@@ -16,10 +16,11 @@ describe('jira-adapter-webhooks', () => {
       const body = JSON.stringify({ webhookEvent: 'jira:issue_updated', issue: { key: 'PROJ-1' } });
       const signature = createHmac('sha256', secret).update(body).digest('hex');
 
-      const result = adapter.verifyWebhookSignature(body, {
-        'x-hub-signature': `sha256=${signature}`,
-        'x-webhook-secret': secret,
-      });
+      const result = adapter.verifyWebhookSignature(
+        body,
+        { 'x-hub-signature': `sha256=${signature}` },
+        secret,
+      );
 
       expect(result.valid).toBe(true);
     });
@@ -28,10 +29,11 @@ describe('jira-adapter-webhooks', () => {
       const body = JSON.stringify({ webhookEvent: 'jira:issue_created' });
       const wrongSignature = createHmac('sha256', 'wrong-secret').update(body).digest('hex');
 
-      const result = adapter.verifyWebhookSignature(body, {
-        'x-hub-signature': `sha256=${wrongSignature}`,
-        'x-webhook-secret': secret,
-      });
+      const result = adapter.verifyWebhookSignature(
+        body,
+        { 'x-hub-signature': `sha256=${wrongSignature}` },
+        secret,
+      );
 
       expect(result.valid).toBe(false);
     });
@@ -39,10 +41,7 @@ describe('jira-adapter-webhooks', () => {
     it('returns valid=false when signature header is missing', () => {
       const body = JSON.stringify({ webhookEvent: 'jira:issue_created' });
 
-      const result = adapter.verifyWebhookSignature(body, {
-        'x-webhook-secret': secret,
-        // no x-hub-signature
-      });
+      const result = adapter.verifyWebhookSignature(body, {}, secret);
 
       expect(result.valid).toBe(false);
     });
@@ -52,10 +51,11 @@ describe('jira-adapter-webhooks', () => {
       // (timingSafeEqual throws on length mismatch, adapter catches it)
       const body = JSON.stringify({ webhookEvent: 'test' });
 
-      const result = adapter.verifyWebhookSignature(body, {
-        'x-hub-signature': 'sha256=tooshort',
-        'x-webhook-secret': secret,
-      });
+      const result = adapter.verifyWebhookSignature(
+        body,
+        { 'x-hub-signature': 'sha256=tooshort' },
+        secret,
+      );
 
       // Should not throw, should return false due to buffer length mismatch catch
       expect(result.valid).toBe(false);
@@ -65,10 +65,11 @@ describe('jira-adapter-webhooks', () => {
       const body = JSON.stringify({ webhookEvent: 'jira:issue_updated', issue: {} });
       const signature = createHmac('sha256', secret).update(body).digest('hex');
 
-      const result = adapter.verifyWebhookSignature(body, {
-        'x-hub-signature': `sha256=${signature}`,
-        'x-webhook-secret': secret,
-      });
+      const result = adapter.verifyWebhookSignature(
+        body,
+        { 'x-hub-signature': `sha256=${signature}` },
+        secret,
+      );
 
       expect(result.valid).toBe(true);
       expect(result.eventType).toBe('jira:issue_updated');

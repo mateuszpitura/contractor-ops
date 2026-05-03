@@ -2,6 +2,7 @@ import { prisma } from '@contractor-ops/db';
 import { registerAllAdapters } from '@contractor-ops/integrations/adapters/register-all';
 import { getAdapter } from '@contractor-ops/integrations/registry';
 import { getQStashClient } from '@contractor-ops/integrations/services/qstash-client';
+import type { WebhookVerificationResult } from '@contractor-ops/integrations/types';
 import { createWebhookLogger } from '@contractor-ops/logger';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
@@ -9,6 +10,101 @@ import { NextResponse } from 'next/server';
 import { extractSlackTeamId, resolveSlackConnectionByTeamId } from '../slack-webhook-context.js';
 
 const log = createWebhookLogger('generic');
+
+// ---------------------------------------------------------------------------
+// Per-connection signature verification (F-SEC-02 / F-SEC-03 / F-INT-08)
+// ---------------------------------------------------------------------------
+
+/**
+ * Providers whose webhook signing secret is stored per-connection in
+ * `IntegrationConnection.configJson.webhookSecret`. For these providers the
+ * route MUST resolve the secret server-side and pass it to the adapter — it
+ * MUST NEVER trust an inbound `x-webhook-secret` header (which would let any
+ * caller supply their own secret + matching HMAC and pass verification).
+ */
+const PER_CONNECTION_SECRET_PROVIDERS = new Set(['jira', 'linear']);
+
+/**
+ * Per-connection `IntegrationConnection.configJson` shape we rely on for
+ * webhook signing. Other fields (cloudId, teamIds, etc.) may exist but are
+ * not relevant here. Annotation only — schema is untyped Json on the DB side.
+ */
+interface ConnectionConfigWithWebhookSecret {
+  webhookSecret?: string | null;
+}
+
+/**
+ * Map provider slug → IntegrationProvider enum value used in DB rows.
+ */
+function providerSlugToEnum(slug: string): string {
+  return slug.toUpperCase();
+}
+
+/**
+ * For per-connection-secret providers (jira / linear), iterate every CONNECTED
+ * integration connection of that provider and try its `webhookSecret` against
+ * the inbound payload. The first connection whose adapter verification returns
+ * `valid: true` wins. Returns the resolved verification result + connection
+ * context, or a failure verification result if nothing matches.
+ *
+ * Cost note: this is O(N) over all connections for the provider in the
+ * platform. For very large tenant counts this can be replaced with a
+ * webhook URL that includes the connectionId (e.g. `/api/webhooks/jira/<id>`)
+ * so we read a single row. For now the iterative approach is correct and
+ * keeps the public ingress URL stable.
+ */
+async function verifyPerConnection(
+  providerSlug: string,
+  rawBody: string,
+  headers: Record<string, string>,
+  verifyFn: (
+    body: string,
+    hdrs: Record<string, string>,
+    secret: string | null,
+  ) => WebhookVerificationResult,
+): Promise<{
+  verification: WebhookVerificationResult;
+  organizationId?: string;
+  connectionId?: string;
+}> {
+  const connections = await prisma.integrationConnection.findMany({
+    where: {
+      provider: providerSlugToEnum(providerSlug) as never,
+      status: 'CONNECTED',
+    },
+    select: {
+      id: true,
+      organizationId: true,
+      configJson: true,
+    },
+  });
+
+  if (connections.length === 0) {
+    return { verification: { valid: false, reason: 'config' } };
+  }
+
+  let lastFailure: WebhookVerificationResult = { valid: false, reason: 'config' };
+
+  for (const conn of connections) {
+    const config = (conn.configJson ?? null) as ConnectionConfigWithWebhookSecret | null;
+    const secret = config?.webhookSecret ?? null;
+    // Skip connections that have not configured a webhook secret — passing
+    // null to the adapter would just produce another `reason: 'config'`.
+    if (!secret) continue;
+
+    const result = verifyFn(rawBody, headers, secret);
+    if (result.valid) {
+      return {
+        verification: result,
+        organizationId: conn.organizationId,
+        connectionId: conn.id,
+      };
+    }
+    lastFailure = result;
+  }
+
+  return { verification: lastFailure };
+}
 
 // ---------------------------------------------------------------------------
 // Ensure adapters are registered
@@ -45,8 +141,30 @@ export async function POST(
   const rawBody = await request.text();
   const headers = Object.fromEntries(request.headers.entries());
 
-  const verification = adapter.verifyWebhookSignature?.(rawBody, headers);
+  // F-SEC-02 / F-SEC-03 / F-INT-08: For providers with per-connection signing
+  // secrets (Jira, Linear) the route resolves the secret server-side from
+  // `IntegrationConnection.configJson.webhookSecret` and never trusts the
+  // inbound `x-webhook-secret` header. We try every connected integration's
+  // secret until one verifies (org is identified by the verifying connection).
+  let verification: WebhookVerificationResult | undefined;
+  let perConnectionOrgId: string | undefined;
+  let perConnectionConnectionId: string | undefined;
+
+  if (PER_CONNECTION_SECRET_PROVIDERS.has(provider) && adapter.verifyWebhookSignature) {
+    const verifyFn = adapter.verifyWebhookSignature.bind(adapter);
+    const result = await verifyPerConnection(provider, rawBody, headers, verifyFn);
+    verification = result.verification;
+    perConnectionOrgId = result.organizationId;
+    perConnectionConnectionId = result.connectionId;
+  } else {
+    verification = adapter.verifyWebhookSignature?.(rawBody, headers);
+  }
+
   if (!verification?.valid) {
+    log.warn(
+      { provider, reason: verification?.reason ?? 'unknown' },
+      'rejected webhook: signature verification failed',
+    );
     return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
   }
 
@@ -70,8 +188,8 @@ export async function POST(
     payloadJson = { raw: rawBody.slice(0, 10000) };
   }
 
-  let resolvedOrgId = verification.organizationId ?? '';
-  let resolvedConnectionId = verification.connectionId ?? null;
+  let resolvedOrgId = perConnectionOrgId ?? verification.organizationId ?? '';
+  let resolvedConnectionId = perConnectionConnectionId ?? verification.connectionId ?? null;
 
   if (provider === 'slack') {
     const teamId = extractSlackTeamId(payloadJson);

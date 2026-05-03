@@ -168,44 +168,48 @@ export class JiraAdapter extends BaseAdapter {
    * Verifies an inbound Jira webhook signature using HMAC-SHA256.
    *
    * Jira sends an `X-Hub-Signature` header with format `sha256=<hex>`.
-   * The secret is stored in IntegrationConnection.configJson.webhookSecret
-   * and passed through the `x-webhook-secret` header by the webhook pipeline.
+   * The secret MUST be resolved server-side from
+   * `IntegrationConnection.configJson.webhookSecret` and passed in via
+   * `configuredSecret`. The adapter no longer reads any secret from inbound
+   * request headers — see F-SEC-02 / F-INT-08.
+   *
+   * Behaviour:
+   * - `configuredSecret` is null / empty → reject (`reason: 'config'`).
+   *   Previously the adapter fell through with `valid: true`, which let
+   *   unauthenticated payloads be persisted and dispatched.
+   * - `X-Hub-Signature` header is missing → reject (`reason: 'headers'`).
+   * - Non-sha256 method or HMAC mismatch → reject (`reason: 'signature'`).
    *
    * @param rawBody - The raw request body string
    * @param headers - Request headers (lowercased keys)
+   * @param configuredSecret - The webhook secret resolved server-side from the
+   *   per-connection configuration. NEVER from a request header.
    * @returns Verification result with eventType extracted from payload
    */
   override verifyWebhookSignature(
     rawBody: string,
     headers: Record<string, string>,
+    configuredSecret?: string | null,
   ): WebhookVerificationResult {
     const signatureHeader = headers['x-hub-signature'] ?? headers['X-Hub-Signature'];
-    const secret = headers['x-webhook-secret'] ?? headers['X-Webhook-Secret'];
 
-    // If no secret is configured, allow through (3LO dynamic webhooks
-    // may not support custom secrets — see RESEARCH.md open question #2).
-    // The webhook pipeline falls back to ExternalLink matching for validation.
-    if (!secret) {
-      let eventType: string | undefined;
-      try {
-        const parsed = JSON.parse(rawBody) as { webhookEvent?: string };
-        eventType = parsed.webhookEvent;
-      } catch {
-        // Payload parse failure — still mark as valid for pipeline to handle
-      }
-      return { valid: true, eventType };
+    // F-SEC-02: never accept a missing-secret short-circuit. If the
+    // organization has not configured a webhook secret we cannot verify
+    // authenticity — fail closed.
+    if (!configuredSecret) {
+      return { valid: false, reason: 'config' };
     }
 
     if (!signatureHeader) {
-      return { valid: false };
+      return { valid: false, reason: 'headers' };
     }
 
     const [method, signature] = signatureHeader.split('=');
     if (method !== 'sha256' || !signature) {
-      return { valid: false };
+      return { valid: false, reason: 'signature' };
     }
 
-    const expected = createHmac('sha256', secret).update(rawBody).digest('hex');
+    const expected = createHmac('sha256', configuredSecret).update(rawBody).digest('hex');
 
     let valid: boolean;
     try {
@@ -215,17 +219,19 @@ export class JiraAdapter extends BaseAdapter {
       valid = false;
     }
 
-    let eventType: string | undefined;
-    if (valid) {
-      try {
-        const parsed = JSON.parse(rawBody) as { webhookEvent?: string };
-        eventType = parsed.webhookEvent;
-      } catch {
-        // Payload parse failure handled downstream
-      }
+    if (!valid) {
+      return { valid: false, reason: 'signature' };
     }
 
-    return { valid, eventType };
+    let eventType: string | undefined;
+    try {
+      const parsed = JSON.parse(rawBody) as { webhookEvent?: string };
+      eventType = parsed.webhookEvent;
+    } catch {
+      // Payload parse failure handled downstream
+    }
+
+    return { valid: true, eventType };
   }
 
   /**

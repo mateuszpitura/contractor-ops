@@ -77,11 +77,34 @@ describe('webhook-dispatcher', () => {
       const result = dispatchWebhook('slack', rawBody, headers);
 
       expect(mockGetAdapter).toHaveBeenCalledWith('slack');
-      expect(mockVerify).toHaveBeenCalledWith(rawBody, headers);
+      // configuredSecret is the optional 4th positional, undefined when not supplied
+      expect(mockVerify).toHaveBeenCalledWith(rawBody, headers, undefined);
       expect(result).toEqual({
         valid: true,
         eventType: 'block_actions',
       });
+    });
+
+    it('should forward server-resolved configuredSecret to the adapter (F-SEC-02/03)', () => {
+      const mockVerify = vi.fn().mockReturnValue({ valid: true });
+
+      const mockAdapter = {
+        slug: 'jira',
+        displayName: 'Jira',
+        supportsOAuth: true,
+        supportsWebhooks: true,
+        verifyWebhookSignature: mockVerify,
+      } as unknown as IntegrationProviderAdapter;
+
+      mockGetAdapter.mockReturnValue(mockAdapter);
+
+      dispatchWebhook('jira', '{}', { 'x-hub-signature': 'sha256=abc' }, 'server-secret');
+
+      expect(mockVerify).toHaveBeenCalledWith(
+        '{}',
+        { 'x-hub-signature': 'sha256=abc' },
+        'server-secret',
+      );
     });
 
     it('should throw when adapter not found', () => {

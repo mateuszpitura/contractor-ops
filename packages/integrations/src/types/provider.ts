@@ -37,10 +37,22 @@ export interface IntegrationProviderAdapter {
   /** Refreshes an expired access token using the refresh token. */
   refreshToken?(credentials: CredentialBlob): Promise<CredentialBlob>;
 
-  /** Verifies the cryptographic signature of an incoming webhook. */
+  /**
+   * Verifies the cryptographic signature of an incoming webhook.
+   *
+   * @param rawBody - The raw request body string
+   * @param headers - The inbound request headers (lowercased keys recommended)
+   * @param configuredSecret - The webhook secret resolved server-side from the
+   *   integration connection (e.g. `IntegrationConnection.configJson.webhookSecret`).
+   *   MUST NOT be derived from any inbound request header. Adapters that resolve
+   *   their secret from a static env var (e.g. Slack signing secret) may ignore
+   *   this parameter; adapters with per-connection secrets (Jira, Linear) MUST
+   *   use it and reject when null.
+   */
   verifyWebhookSignature?(
     rawBody: string,
     headers: Record<string, string>,
+    configuredSecret?: string | null,
   ): WebhookVerificationResult;
 
   /** Processes a verified webhook payload. Returns provider-specific result or void. */

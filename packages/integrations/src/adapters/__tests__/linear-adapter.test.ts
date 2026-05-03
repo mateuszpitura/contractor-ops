@@ -268,14 +268,15 @@ describe('LinearAdapter', () => {
   describe('verifyWebhookSignature', () => {
     const webhookSecret = 'test-webhook-secret-key';
 
-    it('validates correct HMAC-SHA256 signature', () => {
+    it('validates correct HMAC-SHA256 signature when secret is supplied server-side', () => {
       const body = JSON.stringify({ type: 'Issue', action: 'create', data: {} });
       const signature = createHmac('sha256', webhookSecret).update(body).digest('hex');
 
-      const result = adapter.verifyWebhookSignature(body, {
-        'linear-signature': signature,
-        'x-webhook-secret': webhookSecret,
-      });
+      const result = adapter.verifyWebhookSignature(
+        body,
+        { 'linear-signature': signature },
+        webhookSecret,
+      );
 
       expect(result.valid).toBe(true);
     });
@@ -284,10 +285,11 @@ describe('LinearAdapter', () => {
       const body = JSON.stringify({ type: 'Issue', action: 'update' });
       const wrongSignature = createHmac('sha256', 'wrong-secret').update(body).digest('hex');
 
-      const result = adapter.verifyWebhookSignature(body, {
-        'linear-signature': wrongSignature,
-        'x-webhook-secret': webhookSecret,
-      });
+      const result = adapter.verifyWebhookSignature(
+        body,
+        { 'linear-signature': wrongSignature },
+        webhookSecret,
+      );
 
       expect(result.valid).toBe(false);
     });
@@ -296,10 +298,11 @@ describe('LinearAdapter', () => {
       const body = JSON.stringify({ type: 'Issue', action: 'create', data: {} });
       const signature = createHmac('sha256', webhookSecret).update(body).digest('hex');
 
-      const result = adapter.verifyWebhookSignature(body, {
-        'linear-signature': signature,
-        'x-webhook-secret': webhookSecret,
-      });
+      const result = adapter.verifyWebhookSignature(
+        body,
+        { 'linear-signature': signature },
+        webhookSecret,
+      );
 
       expect(result.eventType).toBe('Issue.create');
     });
@@ -307,10 +310,7 @@ describe('LinearAdapter', () => {
     it('returns invalid when signature header is missing', () => {
       const body = JSON.stringify({ type: 'Issue', action: 'create' });
 
-      const result = adapter.verifyWebhookSignature(body, {
-        'x-webhook-secret': webhookSecret,
-        // no linear-signature header
-      });
+      const result = adapter.verifyWebhookSignature(body, {}, webhookSecret);
 
       expect(result.valid).toBe(false);
     });
@@ -318,17 +318,40 @@ describe('LinearAdapter', () => {
     it('returns invalid when no signing secret is configured', () => {
       delete process.env.LINEAR_WEBHOOK_SECRET;
       const body = JSON.stringify({ type: 'Issue', action: 'create' });
-      const result = adapter.verifyWebhookSignature(body, {});
+      const result = adapter.verifyWebhookSignature(body, {}, null);
       expect(result.valid).toBe(false);
+      expect(result.reason).toBe('config');
+    });
+
+    it('NEVER accepts a webhook secret supplied via inbound x-webhook-secret header (F-SEC-03)', () => {
+      // F-SEC-03: An attacker who can reach the webhook endpoint must not be
+      // able to supply their own secret + matching HMAC and pass verification.
+      delete process.env.LINEAR_WEBHOOK_SECRET;
+      const attackerSecret = 'attacker-supplied';
+      const body = JSON.stringify({ type: 'Issue', action: 'create' });
+      const signature = createHmac('sha256', attackerSecret).update(body).digest('hex');
+
+      const result = adapter.verifyWebhookSignature(
+        body,
+        {
+          'linear-signature': signature,
+          'x-webhook-secret': attackerSecret, // attacker-supplied — must be ignored
+        },
+        null, // server-side secret unresolved
+      );
+
+      expect(result.valid).toBe(false);
+      expect(result.reason).toBe('config');
     });
 
     it('accepts valid signature but omits eventType when type or action is missing', () => {
       const body = JSON.stringify({ type: 'Issue', data: {} });
       const signature = createHmac('sha256', webhookSecret).update(body).digest('hex');
-      const result = adapter.verifyWebhookSignature(body, {
-        'linear-signature': signature,
-        'x-webhook-secret': webhookSecret,
-      });
+      const result = adapter.verifyWebhookSignature(
+        body,
+        { 'linear-signature': signature },
+        webhookSecret,
+      );
       expect(result.valid).toBe(true);
       expect(result.eventType).toBeUndefined();
     });

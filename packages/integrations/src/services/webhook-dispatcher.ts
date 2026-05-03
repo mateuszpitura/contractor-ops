@@ -14,6 +14,9 @@ import { getQStashClient } from './qstash-client.js';
  * @param provider - The provider slug (e.g., "slack", "resend")
  * @param rawBody - The raw request body as a string
  * @param headers - The request headers as a key-value map
+ * @param configuredSecret - Optional server-resolved webhook secret (per-connection
+ *   adapters such as Jira / Linear). Adapters that resolve their secret from a
+ *   static env var ignore this parameter.
  * @returns The verification result from the adapter
  * @throws If no adapter is registered for the given provider
  */
@@ -21,6 +24,7 @@ export function dispatchWebhook(
   provider: string,
   rawBody: string,
   headers: Record<string, string>,
+  configuredSecret?: string | null,
 ): WebhookVerificationResult {
   const adapter = getAdapter(provider);
 
@@ -32,7 +36,7 @@ export function dispatchWebhook(
     throw new Error(`Adapter "${provider}" does not support webhook signature verification`);
   }
 
-  return adapter.verifyWebhookSignature(rawBody, headers);
+  return adapter.verifyWebhookSignature(rawBody, headers, configuredSecret);
 }
 
 /**

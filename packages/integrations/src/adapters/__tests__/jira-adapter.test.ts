@@ -82,53 +82,65 @@ describe('JiraAdapter', () => {
     ).rejects.toThrow(/No refresh token/);
   });
 
-  it('verifyWebhookSignature allows when no secret header', () => {
+  it('verifyWebhookSignature rejects when no configuredSecret is supplied (F-SEC-02)', () => {
+    // F-SEC-02: previously the adapter returned valid:true when the secret was
+    // missing, allowing unauthenticated payloads through. New behaviour fails closed.
     const body = JSON.stringify({ webhookEvent: 'jira:issue_updated' });
     const r = adapter.verifyWebhookSignature(body, {});
-    expect(r.valid).toBe(true);
-    expect(r.eventType).toBe('jira:issue_updated');
+    expect(r.valid).toBe(false);
+    expect(r.reason).toBe('config');
   });
 
-  it('verifyWebhookSignature allows without secret when body is not valid JSON', () => {
-    const r = adapter.verifyWebhookSignature('{not-json', {});
-    expect(r.valid).toBe(true);
-    expect(r.eventType).toBeUndefined();
+  it('verifyWebhookSignature NEVER trusts inbound x-webhook-secret header (F-SEC-02)', () => {
+    // F-SEC-02: An attacker must not be able to supply their own secret via
+    // the request header and a matching HMAC.
+    const attackerSecret = 'attacker-supplied';
+    const body = JSON.stringify({ webhookEvent: 'issue_created' });
+    const sig = createHmac('sha256', attackerSecret).update(body).digest('hex');
+
+    const r = adapter.verifyWebhookSignature(
+      body,
+      {
+        'x-webhook-secret': attackerSecret, // attacker-supplied — must be ignored
+        'x-hub-signature': `sha256=${sig}`,
+      },
+      null, // server-side secret unresolved
+    );
+
+    expect(r.valid).toBe(false);
+    expect(r.reason).toBe('config');
   });
 
   it('verifyWebhookSignature rejects when secret is set but hub signature header is missing', () => {
-    const r = adapter.verifyWebhookSignature('{}', {
-      'x-webhook-secret': 'whsec',
-    });
+    const r = adapter.verifyWebhookSignature('{}', {}, 'whsec');
     expect(r.valid).toBe(false);
+    expect(r.reason).toBe('headers');
   });
 
   it('verifyWebhookSignature rejects when signature method is not sha256', () => {
-    const r = adapter.verifyWebhookSignature('{}', {
-      'x-webhook-secret': 'whsec',
-      'x-hub-signature': 'md5=abc',
-    });
+    const r = adapter.verifyWebhookSignature('{}', { 'x-hub-signature': 'md5=abc' }, 'whsec');
     expect(r.valid).toBe(false);
+    expect(r.reason).toBe('signature');
   });
 
   it('verifyWebhookSignature rejects bad HMAC', () => {
     const secret = 'whsec';
     const body = '{}';
     const _sig = createHmac('sha256', secret).update(body).digest('hex');
-    const r = adapter.verifyWebhookSignature(body, {
-      'x-webhook-secret': secret,
-      'x-hub-signature': 'sha256=deadbeef',
-    });
+    const r = adapter.verifyWebhookSignature(
+      body,
+      { 'x-hub-signature': 'sha256=deadbeef' },
+      secret,
+    );
     expect(r.valid).toBe(false);
+    expect(r.reason).toBe('signature');
   });
 
   it('verifyWebhookSignature accepts valid HMAC', () => {
     const secret = 'whsec';
     const body = JSON.stringify({ webhookEvent: 'issue_created' });
     const sig = createHmac('sha256', secret).update(body).digest('hex');
-    const r = adapter.verifyWebhookSignature(body, {
-      'x-webhook-secret': secret,
-      'x-hub-signature': `sha256=${sig}`,
-    });
+    const r = adapter.verifyWebhookSignature(body, { 'x-hub-signature': `sha256=${sig}` }, secret);
     expect(r.valid).toBe(true);
     expect(r.eventType).toBe('issue_created');
   });
@@ -137,10 +149,7 @@ describe('JiraAdapter', () => {
     const secret = 'whsec';
     const body = 'plain-text-payload';
     const sig = createHmac('sha256', secret).update(body).digest('hex');
-    const r = adapter.verifyWebhookSignature(body, {
-      'x-webhook-secret': secret,
-      'x-hub-signature': `sha256=${sig}`,
-    });
+    const r = adapter.verifyWebhookSignature(body, { 'x-hub-signature': `sha256=${sig}` }, secret);
     expect(r.valid).toBe(true);
     expect(r.eventType).toBeUndefined();
   });

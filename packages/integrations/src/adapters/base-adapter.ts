@@ -54,6 +54,7 @@ export abstract class BaseAdapter implements IntegrationProviderAdapter {
   verifyWebhookSignature?(
     _rawBody: string,
     _headers: Record<string, string>,
+    _configuredSecret?: string | null,
   ): WebhookVerificationResult;
 
   handleWebhook?(

@@ -173,30 +173,39 @@ export class LinearAdapter extends BaseAdapter {
    *
    * Linear sends a `linear-signature` header containing the hex HMAC-SHA256
    * digest of the raw body, computed with the webhook signing secret.
-   * The secret is passed via the `x-webhook-secret` header by the webhook
-   * pipeline, or falls back to the LINEAR_WEBHOOK_SECRET env var.
+   *
+   * The secret MUST be resolved server-side from
+   * `IntegrationConnection.configJson.webhookSecret` and passed in via
+   * `configuredSecret`. The adapter no longer reads the secret from inbound
+   * request headers (`x-webhook-secret`) or environment fallbacks — see
+   * F-SEC-03. As a controlled escape hatch, a process-wide
+   * `LINEAR_WEBHOOK_SECRET` env var is consulted if (and only if) no
+   * per-connection secret was supplied; this is intended for development
+   * setups where a single shared secret is convenient.
    *
    * @param rawBody - The raw request body string
    * @param headers - Request headers (lowercased keys)
+   * @param configuredSecret - The webhook secret resolved server-side from the
+   *   per-connection configuration. NEVER from a request header.
    * @returns Verification result with eventType extracted as type.action
    */
   override verifyWebhookSignature(
     rawBody: string,
     headers: Record<string, string>,
+    configuredSecret?: string | null,
   ): WebhookVerificationResult {
     const signatureHeader = headers['linear-signature'] ?? headers['Linear-Signature'];
-    const secret =
-      headers['x-webhook-secret'] ??
-      headers['X-Webhook-Secret'] ??
-      process.env.LINEAR_WEBHOOK_SECRET;
+    // Server-resolved secret first; LINEAR_WEBHOOK_SECRET is only a fallback for
+    // dev convenience and is never overridden by an inbound request header.
+    const secret = configuredSecret ?? process.env.LINEAR_WEBHOOK_SECRET;
 
+    // F-SEC-03: fail closed when no secret is configured.
     if (!secret) {
-      // No secret configured — cannot verify
-      return { valid: false };
+      return { valid: false, reason: 'config' };
     }
 
     if (!signatureHeader) {
-      return { valid: false };
+      return { valid: false, reason: 'headers' };
     }
 
     const expected = createHmac('sha256', secret).update(rawBody).digest('hex');
@@ -209,22 +218,24 @@ export class LinearAdapter extends BaseAdapter {
       valid = false;
     }
 
-    let eventType: string | undefined;
-    if (valid) {
-      try {
-        const parsed = JSON.parse(rawBody) as {
-          type?: string;
-          action?: string;
-        };
-        if (parsed.type && parsed.action) {
-          eventType = `${parsed.type}.${parsed.action}`;
-        }
-      } catch {
-        // Payload parse failure handled downstream
-      }
+    if (!valid) {
+      return { valid: false, reason: 'signature' };
     }
 
-    return { valid, eventType };
+    let eventType: string | undefined;
+    try {
+      const parsed = JSON.parse(rawBody) as {
+        type?: string;
+        action?: string;
+      };
+      if (parsed.type && parsed.action) {
+        eventType = `${parsed.type}.${parsed.action}`;
+      }
+    } catch {
+      // Payload parse failure handled downstream
+    }
+
+    return { valid: true, eventType };
   }
 
   /**
