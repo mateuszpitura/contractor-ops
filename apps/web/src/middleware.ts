@@ -4,6 +4,7 @@ import { Redis } from '@upstash/redis';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import createMiddleware from 'next-intl/middleware';
+import proxyAddr from 'proxy-addr';
 import { routing } from '@/i18n/routing';
 
 const intlMiddleware = createMiddleware(routing);
@@ -208,6 +209,79 @@ function shouldSkipTrpcRateLimitForLoadTest(request: NextRequest): boolean {
 }
 
 // ---------------------------------------------------------------------------
+// Trusted-proxy / client-IP extraction (F-SEC-17)
+// ---------------------------------------------------------------------------
+
+/**
+ * Comma-separated list of trusted proxy CIDRs / IPs. Configured via
+ * `TRUSTED_PROXIES` env var. Examples:
+ *   - Render: "10.0.0.0/8,loopback" (Render's internal proxies live in 10/8;
+ *     loopback covers the local agent socket).
+ *   - Vercel: "uniquelocal" (the proxy is a sidecar on the same node).
+ *
+ * Falls back to "loopback,linklocal,uniquelocal" when unset, which is the
+ * conservative pre-Render-pin default. Document the production value in
+ * .env.example. Misconfiguring this allows X-Forwarded-For spoofing
+ * (F-SEC-17): when the trust list is too permissive, a remote attacker
+ * supplies their own XFF entry and our rate-limiter sees a fresh IP per
+ * request.
+ */
+const TRUSTED_PROXIES_RAW = process.env.TRUSTED_PROXIES ?? 'loopback,linklocal,uniquelocal';
+const TRUSTED_PROXIES_LIST = TRUSTED_PROXIES_RAW.split(',')
+  .map(p => p.trim())
+  .filter(Boolean);
+
+/**
+ * Extract the trusted client IP via `proxy-addr`. Walks the X-Forwarded-For
+ * chain right-to-left and stops at the first untrusted hop — i.e. the last
+ * IP added by a trusted proxy is taken as the real client. This closes the
+ * F-SEC-17 spoofing window where a remote attacker prepends arbitrary
+ * IPs to bypass per-IP rate limits.
+ *
+ * `proxy-addr` expects an `req` with `connection.remoteAddress` and
+ * `headers`. The Next.js edge runtime does not expose `connection.remoteAddress`,
+ * so we fall back to `x-real-ip` (set by Render/Vercel/Cloudflare proxies)
+ * before the XFF walk.
+ */
+function extractClientIp(request: NextRequest): string {
+  // proxy-addr needs a Node-shaped req; build a minimal adapter from
+  // NextRequest. The package only reads `headers[name]` and
+  // `connection.remoteAddress` so we wire just those.
+  const headers: Record<string, string> = {};
+  request.headers.forEach((value, key) => {
+    headers[key] = value;
+  });
+  const adapter = {
+    headers,
+    connection: {
+      // The edge runtime hides the socket address; `x-real-ip` is what the
+      // platform proxy sets after stripping inbound XFF spoofing. Use it as
+      // the seed when the socket address is unavailable.
+      remoteAddress: request.headers.get('x-real-ip') ?? '127.0.0.1',
+    },
+  } as unknown as Parameters<typeof proxyAddr>[0];
+
+  try {
+    const ip = proxyAddr(adapter, TRUSTED_PROXIES_LIST);
+    return ip || 'unknown';
+  } catch {
+    // proxy-addr throws on invalid CIDR notation; log via Sentry rather than
+    // failing the request — but we keep an ultimate fallback so rate-limit
+    // still functions (just with potentially-spoofable values).
+    Sentry.captureMessage('proxy-addr threw on TRUSTED_PROXIES parse', {
+      level: 'warning',
+      tags: { component: 'edge-middleware' },
+      extra: { trustedProxies: TRUSTED_PROXIES_RAW },
+    });
+    return (
+      request.headers.get('x-real-ip') ??
+      request.headers.get('x-forwarded-for')?.split(',').pop()?.trim() ??
+      'unknown'
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Portal subdomain routing
 // ---------------------------------------------------------------------------
 
@@ -373,10 +447,10 @@ async function applyRateLimits(
  */
 export default async function middleware(request: NextRequest) {
   const hostname = request.headers.get('host') ?? '';
-  const ip =
-    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
-    request.headers.get('x-real-ip') ??
-    'unknown';
+  // F-SEC-17: walk the X-Forwarded-For chain right-to-left, terminating at
+  // the first untrusted hop. The leftmost entry is attacker-controlled when
+  // the request lands on a misconfigured proxy chain.
+  const ip = extractClientIp(request);
   const pathname = request.nextUrl.pathname;
 
   // ── Rate limiting (API routes) ────────────────────────────────────────

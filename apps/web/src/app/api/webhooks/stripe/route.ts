@@ -54,6 +54,35 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
   }
 
+  // F-INT-21: Stripe redelivery window is 3 days. The signature timestamp
+  // tolerance handled by `constructEvent` is only ~5 minutes, but `event.created`
+  // can be up to 3 days old on a delayed redelivery. Reject events older than
+  // 24h with 200 OK (so Stripe stops retrying) — except for "settlement" event
+  // types where late arrival is normal (refunds, charge.dispute.*).
+  // The event has already been signature-verified at this point.
+  const SETTLEMENT_EVENT_TYPES = new Set<string>([
+    'charge.refunded',
+    'charge.refund.updated',
+    'charge.dispute.created',
+    'charge.dispute.closed',
+    'charge.dispute.funds_reinstated',
+    'charge.dispute.funds_withdrawn',
+    'charge.dispute.updated',
+  ]);
+  const eventAgeSeconds = Math.floor(Date.now() / 1000) - event.created;
+  const MAX_AGE_SECONDS = 24 * 60 * 60;
+  if (eventAgeSeconds > MAX_AGE_SECONDS && !SETTLEMENT_EVENT_TYPES.has(event.type)) {
+    log.warn(
+      { eventId: event.id, eventType: event.type, eventAgeSeconds },
+      'rejecting late Stripe webhook delivery — outside 24h window',
+    );
+    metrics.increment('webhook.late_delivery_rejected', 1, {
+      provider: 'stripe',
+      eventType: event.type,
+    });
+    return NextResponse.json({ received: true, skipped: 'late_delivery' });
+  }
+
   try {
     // Step 2+3: Idempotency check + processing in a single Serializable transaction.
     // This prevents the race condition where two concurrent webhook deliveries

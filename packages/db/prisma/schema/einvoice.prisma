@@ -67,18 +67,29 @@ model EInvoiceLifecycle {
 }
 
 model EInvoiceLifecycleEvent {
-  id             String                     @id @default(cuid())
-  organizationId String
-  lifecycleId    String
-  eventType      EInvoiceLifecycleEventType
-  occurredAt     DateTime                   @default(now())
-  actorUserId    String?
-  detailsJson    Json?
-  createdAt      DateTime                   @default(now())
+  id              String                     @id @default(cuid())
+  organizationId  String
+  lifecycleId     String
+  eventType       EInvoiceLifecycleEventType
+  occurredAt      DateTime                   @default(now())
+  actorUserId     String?
+  detailsJson     Json?
+  createdAt       DateTime                   @default(now())
+  // F-INT-13: provider-supplied event id (e.g. Storecove
+  // `eInvoiceLifecycleEvent.detailsJson.guid`, ZATCA submission UUID).
+  // Replaces the JSON-path query in `apps/web/.../webhooks/storecove/route.ts`
+  // with a real unique index — two concurrent webhook deliveries for the
+  // same `guid` will hit P2002 on the second, which the route catches and
+  // returns 200-OK for.
+  providerEventId String?
 
   lifecycle    EInvoiceLifecycle @relation(fields: [lifecycleId], references: [id])
   organization Organization      @relation(fields: [organizationId], references: [id])
 
+  // F-INT-13: org-scoped uniqueness on (provider event id) — a JSON-path
+  // query was racy without this. Multiple distinct providers can share an
+  // event id namespace, so scope by organisation.
+  @@unique([organizationId, providerEventId], map: "einvoice_lifecycle_event_org_eid_uniq")
   @@index([organizationId, lifecycleId], map: "einvoice_lifecycle_event_org_lc_idx")
   @@index([organizationId, eventType], map: "einvoice_lifecycle_event_org_type_idx")
 }

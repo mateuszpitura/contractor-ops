@@ -90,9 +90,21 @@ model WebhookDelivery {
   receivedAt              DateTime              @default(now())
   processedAt             DateTime?
   errorMessage            String?
+  // F-INT-11 / F-INT-13: provider-supplied event ID (Stripe event.id,
+  // Slack envelope_id, Resend svix-id, Storecove guid, etc.). Populated
+  // by the ingress route from the verified payload BEFORE insert. Combined
+  // with provider, this gives DB-enforced webhook dedup so two concurrent
+  // ingress requests for the same upstream event collapse to one row
+  // (catch P2002 and 200-OK the second).
+  providerEventId         String?
 
   organization Organization @relation(fields: [organizationId], references: [id])
 
+  // F-INT-13: dedup at the DB layer — partial index would be ideal here
+  // (only when providerEventId is set) but Prisma's @@unique doesn't
+  // support partial indexes, so callers must always populate
+  // providerEventId or accept dup-row risk for that provider.
+  @@unique([provider, providerEventId], map: "webhook_delivery_provider_event_uniq")
   @@index([organizationId])
   @@index([organizationId, provider, receivedAt])
 }
