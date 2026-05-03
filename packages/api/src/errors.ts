@@ -111,6 +111,9 @@ export const INVALID_API_KEY = 'invalidApiKey';
 export const API_KEY_REVOKED = 'apiKeyRevoked';
 export const API_KEY_EXPIRED = 'apiKeyExpired';
 
+// ─── Tenant ─────────────────────────────────────────────────────
+export const ORG_SUSPENDED = 'orgSuspended';
+
 // ─── Validation (import processor) ──────────────────────────────
 export const VALIDATION_LEGAL_NAME_REQUIRED = 'validationLegalNameRequired';
 export const VALIDATION_TAX_ID_REQUIRED = 'validationTaxIdRequired';

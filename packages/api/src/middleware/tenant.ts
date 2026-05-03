@@ -1,5 +1,6 @@
 import { createTenantClientFrom, getRegionalClient, prisma, tenantStore } from '@contractor-ops/db';
 import { TRPCError } from '@trpc/server';
+import * as E from '../errors.js';
 import { t } from '../init.js';
 import { authedProcedure } from './auth.js';
 
@@ -43,6 +44,26 @@ export async function runWithTenantContext<T>(
   );
 }
 
+/**
+ * F-SEC-12 — Reject suspended/archived organizations from the tenant flow.
+ * Called from session-based middleware. API-key auth performs its own check
+ * inline because it already loads `organization.status` while resolving the
+ * key (avoids a second DB round-trip).
+ */
+async function assertOrganizationActive(orgId: string): Promise<void> {
+  const org = await prisma.organization.findUnique({
+    where: { id: orgId },
+    select: { status: true },
+  });
+
+  if (!org || org.status !== 'ACTIVE') {
+    throw new TRPCError({
+      code: 'FORBIDDEN',
+      message: E.ORG_SUSPENDED,
+    });
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Tenant middleware (session-based)
 // ---------------------------------------------------------------------------
@@ -67,6 +88,9 @@ const tenantMiddleware = t.middleware(async ({ ctx, next }) => {
       message: 'errors.tenant.noActiveOrganization',
     });
   }
+
+  // F-SEC-12 — Block tenant context establishment for suspended/archived orgs.
+  await assertOrganizationActive(orgId);
 
   // Preserve narrowed session/user types from the auth middleware through the spread.
   const session = ctx.session;
