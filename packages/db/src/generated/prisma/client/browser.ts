@@ -48,11 +48,6 @@ export type ApprovalDecision = Prisma.ApprovalDecisionModel
  */
 export type AuditLog = Prisma.AuditLogModel
 /**
- * Model OutboxEvent
- * 
- */
-export type OutboxEvent = Prisma.OutboxEventModel
-/**
  * Model User
  * 
  */
@@ -288,6 +283,11 @@ export type SigningEvent = Prisma.SigningEventModel
  */
 export type ExchangeRate = Prisma.ExchangeRateModel
 /**
+ * Model Export
+ * 
+ */
+export type Export = Prisma.ExportModel
+/**
  * Model BoEBaseRateHistory
  * 
  */
@@ -409,6 +409,11 @@ export type ReminderInstance = Prisma.ReminderInstanceModel
  */
 export type NotificationCronDedup = Prisma.NotificationCronDedupModel
 /**
+ * Model OAuthChallenge
+ * 
+ */
+export type OAuthChallenge = Prisma.OAuthChallengeModel
+/**
  * Model OcrExtraction
  * 
  */
@@ -443,6 +448,11 @@ export type Project = Prisma.ProjectModel
  * 
  */
 export type CostCenter = Prisma.CostCenterModel
+/**
+ * Model OutboxEvent
+ * 
+ */
+export type OutboxEvent = Prisma.OutboxEventModel
 /**
  * Model PaymentRun
  * 

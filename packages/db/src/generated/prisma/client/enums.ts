@@ -50,15 +50,6 @@ export const ActorType = {
 export type ActorType = (typeof ActorType)[keyof typeof ActorType]
 
 
-export const OutboxStatus = {
-  PENDING: 'PENDING',
-  PUBLISHED: 'PUBLISHED',
-  FAILED: 'FAILED'
-} as const
-
-export type OutboxStatus = (typeof OutboxStatus)[keyof typeof OutboxStatus]
-
-
 export const SubscriptionTier = {
   STARTER: 'STARTER',
   PRO: 'PRO',
@@ -553,6 +544,16 @@ export const SigningEventType = {
 export type SigningEventType = (typeof SigningEventType)[keyof typeof SigningEventType]
 
 
+export const AsyncExportStatus = {
+  PENDING: 'PENDING',
+  PROCESSING: 'PROCESSING',
+  READY: 'READY',
+  FAILED: 'FAILED'
+} as const
+
+export type AsyncExportStatus = (typeof AsyncExportStatus)[keyof typeof AsyncExportStatus]
+
+
 export const BoERateSource = {
   BOE_API: 'BOE_API',
   MANUAL: 'MANUAL'
@@ -855,6 +856,15 @@ export const DataRegion = {
 } as const
 
 export type DataRegion = (typeof DataRegion)[keyof typeof DataRegion]
+
+
+export const OutboxStatus = {
+  PENDING: 'PENDING',
+  DISPATCHED: 'DISPATCHED',
+  FAILED: 'FAILED'
+} as const
+
+export type OutboxStatus = (typeof OutboxStatus)[keyof typeof OutboxStatus]
 
 
 export const PaymentStatus = {

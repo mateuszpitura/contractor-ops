@@ -1,5 +1,4 @@
 import {
-  generateOAuthState,
   getAdapter,
   getAllProviderHealth,
   getProviderHealth,
@@ -231,13 +230,21 @@ export const integrationRouter = router({
   }),
 
   /**
-   * Generate an OAuth authorization URL for any registered provider.
-   * Admin only. Uses the adapter's OAuthConfig and HMAC-signed state.
+   * Resolve an OAuth start URL for any registered provider. Admin only.
+   *
+   * Returns the local `/api/oauth/[provider]/start` URL — NOT the IdP
+   * authorization URL directly. The local start route mints a single-use
+   * `OAuthChallenge` row, sets the `__Host-oauth_state` cookie, and
+   * 302-redirects to the IdP (F-SEC-05 + F-SEC-21).
+   *
+   * We still validate that the adapter is registered + the credentials are
+   * configured here so the UI can short-circuit with a clear error before
+   * sending the user through the redirect chain.
    */
   getOAuthUrlGeneric: tenantProcedure
     .use(requirePermission({ organization: ['update'] }))
     .input(providerSlugSchema)
-    .query(async ({ ctx, input }) => {
+    .query(async ({ input }) => {
       const adapter = getAdapter(input.provider);
       if (!(adapter?.supportsOAuth && adapter.getOAuthConfig)) {
         throw new TRPCError({
@@ -259,30 +266,10 @@ export const integrationRouter = router({
         });
       }
 
-      const redirectUri = `${appUrl}${oauthConfig.redirectPath}`;
-      const state = generateOAuthState(
-        input.provider,
-        ctx.organizationId,
-        ctx.user.id,
-        clientSecret,
-      );
-
-      const params = new URLSearchParams({
-        client_id: clientId,
-        response_type: 'code',
-        scope: oauthConfig.scopes.join(' '),
-        redirect_uri: redirectUri,
-        state,
-      });
-
-      // Append provider-specific extra params (e.g., Google access_type=offline)
-      if (oauthConfig.extraAuthParams) {
-        for (const [key, value] of Object.entries(oauthConfig.extraAuthParams)) {
-          params.set(key, value);
-        }
-      }
-
-      const url = `${oauthConfig.authorizationUrl}?${params.toString()}`;
+      // Hand the client the local start URL. The browser navigation MUST go
+      // through /api/oauth/{provider}/start so the cookie binding is
+      // established before the IdP round-trip.
+      const url = `${appUrl}/api/oauth/${encodeURIComponent(input.provider)}/start`;
       return { url };
     }),
 

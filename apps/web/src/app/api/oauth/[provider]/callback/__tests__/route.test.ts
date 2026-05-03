@@ -10,6 +10,7 @@ const {
   mockFindFirst,
   mockCreate,
   mockUpdate,
+  mockConsumeOAuthChallenge,
 } = vi.hoisted(() => ({
   mockGetAdapter: vi.fn(),
   mockVerifyOAuthState: vi.fn(),
@@ -17,6 +18,7 @@ const {
   mockFindFirst: vi.fn(),
   mockCreate: vi.fn(),
   mockUpdate: vi.fn(),
+  mockConsumeOAuthChallenge: vi.fn(),
 }));
 
 vi.mock('@contractor-ops/integrations', () => ({
@@ -36,6 +38,11 @@ vi.mock('@contractor-ops/db', () => ({
       update: mockUpdate,
     },
   },
+}));
+
+vi.mock('@contractor-ops/api/services/oauth-challenge', () => ({
+  OAUTH_STATE_COOKIE_NAME: '__Host-oauth_state',
+  consumeOAuthChallenge: (input: unknown) => mockConsumeOAuthChallenge(input),
 }));
 
 import { GET } from '../route';
@@ -62,6 +69,18 @@ function slackAdapter() {
   };
 }
 
+/**
+ * Helper to mint a NextRequest with the F-SEC-05 binding cookie set so the
+ * happy-path callbacks can complete. Tests that exercise the cookie-missing
+ * / mismatch branches build their own request without this cookie.
+ */
+function reqWithCookie(url: string, cookieValue = 'signed-state') {
+  const req = new NextRequest(url, {
+    headers: { cookie: `__Host-oauth_state=${cookieValue}` },
+  });
+  return req;
+}
+
 describe('GET /api/oauth/[provider]/callback', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -75,6 +94,12 @@ describe('GET /api/oauth/[provider]/callback', () => {
     mockFindFirst.mockResolvedValue(null);
     mockCreate.mockResolvedValue({ id: 'new-conn' });
     mockUpdate.mockResolvedValue({ id: 'upd-conn' });
+    mockConsumeOAuthChallenge.mockResolvedValue({
+      organizationId: 'org-1',
+      userId: 'user-1',
+      pkceVerifier: null,
+      redirectUri: 'http://localhost/api/oauth/slack/callback',
+    });
   });
 
   it('redirects with error when code or state is missing', async () => {
@@ -103,7 +128,7 @@ describe('GET /api/oauth/[provider]/callback', () => {
     mockGetAdapter.mockReturnValue(slackAdapter());
     delete process.env.SLACK_CLIENT_SECRET;
 
-    const req = new NextRequest('http://localhost/api/oauth/slack/callback?code=c1&state=s1');
+    const req = reqWithCookie('http://localhost/api/oauth/slack/callback?code=c1&state=s1');
     const res = await GET(req, {
       params: Promise.resolve({ provider: 'slack' }),
     });
@@ -115,18 +140,51 @@ describe('GET /api/oauth/[provider]/callback', () => {
     mockGetAdapter.mockReturnValue(slackAdapter());
     mockVerifyOAuthState.mockReturnValue(null);
 
-    const req = new NextRequest('http://localhost/api/oauth/slack/callback?code=c1&state=s1');
+    const req = reqWithCookie('http://localhost/api/oauth/slack/callback?code=c1&state=s1');
     const res = await GET(req, {
       params: Promise.resolve({ provider: 'slack' }),
     });
     expect(res.headers.get('location')).toContain('slack=error');
   });
 
+  it('F-SEC-05: rejects when binding cookie is missing', async () => {
+    mockGetAdapter.mockReturnValue(slackAdapter());
+    mockConsumeOAuthChallenge.mockResolvedValue(null);
+
+    // No cookie header — simulates an attacker handing the OAuth URL to a
+    // victim who completes consent in their own browser.
+    const req = new NextRequest(
+      'http://localhost/api/oauth/slack/callback?code=auth-code&state=signed-state',
+    );
+    const res = await GET(req, {
+      params: Promise.resolve({ provider: 'slack' }),
+    });
+
+    expect(res.headers.get('location')).toContain('slack=error');
+    expect(mockCreate).not.toHaveBeenCalled();
+    expect(mockUpdate).not.toHaveBeenCalled();
+  });
+
+  it('F-SEC-21: rejects when challenge has already been consumed (replay)', async () => {
+    mockGetAdapter.mockReturnValue(slackAdapter());
+    mockConsumeOAuthChallenge.mockResolvedValue(null);
+
+    const req = reqWithCookie(
+      'http://localhost/api/oauth/slack/callback?code=auth-code&state=signed-state',
+    );
+    const res = await GET(req, {
+      params: Promise.resolve({ provider: 'slack' }),
+    });
+
+    expect(res.headers.get('location')).toContain('slack=error');
+    expect(mockCreate).not.toHaveBeenCalled();
+  });
+
   it('creates IntegrationConnection and redirects on success (new connection)', async () => {
     const adapter = slackAdapter();
     mockGetAdapter.mockReturnValue(adapter);
 
-    const req = new NextRequest(
+    const req = reqWithCookie(
       'http://localhost/api/oauth/slack/callback?code=auth-code&state=signed-state',
     );
     const res = await GET(req, {
@@ -161,7 +219,7 @@ describe('GET /api/oauth/[provider]/callback', () => {
     mockGetAdapter.mockReturnValue(adapter);
     mockFindFirst.mockResolvedValue({ id: 'conn-existing' });
 
-    const req = new NextRequest('http://localhost/api/oauth/slack/callback?code=c&state=s');
+    const req = reqWithCookie('http://localhost/api/oauth/slack/callback?code=c&state=s');
     await GET(req, { params: Promise.resolve({ provider: 'slack' }) });
 
     expect(mockUpdate).toHaveBeenCalledWith({
@@ -194,8 +252,14 @@ describe('GET /api/oauth/[provider]/callback', () => {
       exchangeCodeForTokens,
     });
     process.env.LINEAR_CLIENT_SECRET = 'linear-sec';
+    mockConsumeOAuthChallenge.mockResolvedValue({
+      organizationId: 'org-1',
+      userId: 'user-1',
+      pkceVerifier: null,
+      redirectUri: 'http://localhost/cb',
+    });
 
-    const req = new NextRequest('http://localhost/api/oauth/linear/callback?code=c&state=s');
+    const req = reqWithCookie('http://localhost/api/oauth/linear/callback?code=c&state=s');
     await GET(req, { params: Promise.resolve({ provider: 'linear' }) });
 
     expect(mockCreate).toHaveBeenCalledWith(
@@ -213,7 +277,7 @@ describe('GET /api/oauth/[provider]/callback', () => {
     adapter.exchangeCodeForTokens.mockRejectedValue(new Error('oauth down'));
     mockGetAdapter.mockReturnValue(adapter);
 
-    const req = new NextRequest('http://localhost/api/oauth/slack/callback?code=c&state=s');
+    const req = reqWithCookie('http://localhost/api/oauth/slack/callback?code=c&state=s');
     const res = await GET(req, {
       params: Promise.resolve({ provider: 'slack' }),
     });

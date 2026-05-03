@@ -20,7 +20,7 @@ const USER_ID = 'user-integ-001';
 // Mock via vi.hoisted
 // ---------------------------------------------------------------------------
 
-const { mockPrisma, mockGetAdapter, mockGenerateOAuthState } = vi.hoisted(() => {
+const { mockPrisma, mockGetAdapter } = vi.hoisted(() => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   type Rec = Record<string, unknown>;
 
@@ -54,7 +54,6 @@ const { mockPrisma, mockGetAdapter, mockGenerateOAuthState } = vi.hoisted(() => 
   return {
     mockPrisma,
     mockGetAdapter: vi.fn(),
-    mockGenerateOAuthState: vi.fn(() => 'hmac-signed-state'),
   };
 });
 
@@ -88,7 +87,6 @@ vi.mock('@contractor-ops/integrations', () => ({
   getProviderHealth: vi.fn(async () => ({})),
   getAllProviderHealth: vi.fn(async () => []),
   getAdapter: mockGetAdapter,
-  generateOAuthState: mockGenerateOAuthState,
   registerAllAdapters: vi.fn(),
 }));
 
@@ -235,6 +233,10 @@ beforeEach(() => {
 // ===========================================================================
 
 describe('integration.getOAuthUrlGeneric', () => {
+  // F-SEC-05 + F-SEC-21: the procedure now returns a local
+  // /api/oauth/{provider}/start URL — NOT the IdP authorize URL — so the
+  // start route can mint a single-use OAuthChallenge and set the
+  // __Host-oauth_state cookie before redirecting to the IdP.
   function setupGoogleCalendarAdapter() {
     mockGetAdapter.mockReturnValue({
       supportsOAuth: true,
@@ -270,75 +272,24 @@ describe('integration.getOAuthUrlGeneric', () => {
     process.env.OUTLOOK_CLIENT_SECRET = 'outlook-client-secret';
   }
 
-  it('joins scopes with space separator, not comma', async () => {
+  it('returns the local /api/oauth/{provider}/start URL (F-SEC-05)', async () => {
     setupGoogleCalendarAdapter();
 
     const result = await caller.integration.getOAuthUrlGeneric({
       provider: 'google-calendar',
     });
 
-    const url = new URL(result.url);
-    const scopeParam = url.searchParams.get('scope');
-    expect(scopeParam).toBe(
-      'https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/calendar.events',
-    );
-    // Should NOT contain commas
-    expect(scopeParam).not.toContain(',');
+    expect(result.url).toBe('https://app.test.com/api/oauth/google-calendar/start');
   });
 
-  it('includes response_type=code in authorization URL params', async () => {
-    setupGoogleCalendarAdapter();
-
-    const result = await caller.integration.getOAuthUrlGeneric({
-      provider: 'google-calendar',
-    });
-
-    const url = new URL(result.url);
-    expect(url.searchParams.get('response_type')).toBe('code');
-  });
-
-  it('appends extraAuthParams from adapter OAuthConfig to URL', async () => {
-    setupGoogleCalendarAdapter();
-
-    const result = await caller.integration.getOAuthUrlGeneric({
-      provider: 'google-calendar',
-    });
-
-    const url = new URL(result.url);
-    expect(url.searchParams.get('access_type')).toBe('offline');
-    expect(url.searchParams.get('prompt')).toBe('consent');
-  });
-
-  it('Google Calendar URL includes access_type=offline and prompt=consent', async () => {
-    setupGoogleCalendarAdapter();
-
-    const result = await caller.integration.getOAuthUrlGeneric({
-      provider: 'google-calendar',
-    });
-
-    const url = new URL(result.url);
-    expect(url.origin + url.pathname).toBe('https://accounts.google.com/o/oauth2/v2/auth');
-    expect(url.searchParams.get('access_type')).toBe('offline');
-    expect(url.searchParams.get('prompt')).toBe('consent');
-    expect(url.searchParams.get('client_id')).toBe('google-client-id');
-    expect(url.searchParams.get('redirect_uri')).toBe(
-      'https://app.test.com/api/integrations/google-calendar/callback',
-    );
-  });
-
-  it('Outlook Calendar URL uses correct authorizationUrl from adapter config', async () => {
+  it('URL-encodes the provider slug to prevent open redirect', async () => {
     setupOutlookAdapter();
 
     const result = await caller.integration.getOAuthUrlGeneric({
       provider: 'outlook-calendar',
     });
 
-    const url = new URL(result.url);
-    expect(url.origin + url.pathname).toBe(
-      'https://login.microsoftonline.com/common/oauth2/v2.0/authorize',
-    );
-    expect(url.searchParams.get('client_id')).toBe('outlook-client-id');
-    expect(url.searchParams.get('scope')).toBe('Calendars.ReadWrite offline_access');
+    expect(result.url).toBe('https://app.test.com/api/oauth/outlook-calendar/start');
   });
 });
 

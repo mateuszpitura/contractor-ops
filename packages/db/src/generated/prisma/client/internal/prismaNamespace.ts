@@ -390,7 +390,6 @@ export const ModelName = {
   ApprovalStep: 'ApprovalStep',
   ApprovalDecision: 'ApprovalDecision',
   AuditLog: 'AuditLog',
-  OutboxEvent: 'OutboxEvent',
   User: 'User',
   Session: 'Session',
   Account: 'Account',
@@ -438,6 +437,7 @@ export const ModelName = {
   SigningRecipient: 'SigningRecipient',
   SigningEvent: 'SigningEvent',
   ExchangeRate: 'ExchangeRate',
+  Export: 'Export',
   BoEBaseRateHistory: 'BoEBaseRateHistory',
   SkontoTerm: 'SkontoTerm',
   SkontoSnapshot: 'SkontoSnapshot',
@@ -462,6 +462,7 @@ export const ModelName = {
   ReminderRule: 'ReminderRule',
   ReminderInstance: 'ReminderInstance',
   NotificationCronDedup: 'NotificationCronDedup',
+  OAuthChallenge: 'OAuthChallenge',
   OcrExtraction: 'OcrExtraction',
   Organization: 'Organization',
   Member: 'Member',
@@ -469,6 +470,7 @@ export const ModelName = {
   Team: 'Team',
   Project: 'Project',
   CostCenter: 'CostCenter',
+  OutboxEvent: 'OutboxEvent',
   PaymentRun: 'PaymentRun',
   PaymentRunItem: 'PaymentRunItem',
   PaymentExport: 'PaymentExport',
@@ -509,7 +511,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "organizationApiKey" | "approvalChainConfig" | "approvalFlow" | "approvalStep" | "approvalDecision" | "auditLog" | "outboxEvent" | "user" | "session" | "account" | "verification" | "subscription" | "ocrCreditLedger" | "stripeEvent" | "classificationAssessment" | "classificationDocument" | "ir35ChainParticipant" | "ir35OtherClientAttestation" | "economicDependencyAlertState" | "reassessmentTrigger" | "cronScanState" | "statusfeststellungsverfahren" | "classificationEscalationEvent" | "sdsApproval" | "consentRecord" | "privacyNotice" | "consentEvent" | "contract" | "contractAmendment" | "contractRatePeriod" | "document" | "documentLink" | "contractor" | "contractorContact" | "contractorBillingProfile" | "contractorAssignment" | "contractorTag" | "contractorTagLink" | "complianceRequirementTemplate" | "contractorComplianceItem" | "leitwegId" | "eInvoiceLifecycle" | "eInvoiceLifecycleEvent" | "peppolCapabilityCache" | "equipment" | "equipmentAssignment" | "shipment" | "shipmentEvent" | "returnRequest" | "courierConfig" | "signingEnvelope" | "signingRecipient" | "signingEvent" | "exchangeRate" | "boEBaseRateHistory" | "skontoTerm" | "skontoSnapshot" | "skontoApplication" | "govApiAuditLog" | "integrationConnection" | "externalLink" | "integrationSyncLog" | "webhookDelivery" | "invoice" | "invoiceFile" | "invoiceLine" | "invoiceMatchResult" | "invoiceIntakeRequest" | "invoicePayment" | "invoiceInterestCompensation" | "invoiceInterestWaiver" | "invoiceInterestClaim" | "notification" | "userNotificationPreference" | "comment" | "reminderRule" | "reminderInstance" | "notificationCronDedup" | "ocrExtraction" | "organization" | "member" | "invitation" | "team" | "project" | "costCenter" | "paymentRun" | "paymentRunItem" | "paymentExport" | "peppolParticipant" | "peppolTransmission" | "portalSession" | "portalMagicToken" | "contractorChangeRequest" | "contractorNotificationPreference" | "pendingUpload" | "taxRate" | "withholdingTaxRate" | "whtCertificate" | "taxIdValidation" | "timesheet" | "timeEntry" | "workflowTemplate" | "workflowTaskTemplate" | "workflowRoleTemplate" | "workflowRoleTaskTemplate" | "workflowRun" | "workflowTaskRun" | "workflowComment" | "workflowAttachment" | "zatcaInvoiceChain"
+    modelProps: "organizationApiKey" | "approvalChainConfig" | "approvalFlow" | "approvalStep" | "approvalDecision" | "auditLog" | "user" | "session" | "account" | "verification" | "subscription" | "ocrCreditLedger" | "stripeEvent" | "classificationAssessment" | "classificationDocument" | "ir35ChainParticipant" | "ir35OtherClientAttestation" | "economicDependencyAlertState" | "reassessmentTrigger" | "cronScanState" | "statusfeststellungsverfahren" | "classificationEscalationEvent" | "sdsApproval" | "consentRecord" | "privacyNotice" | "consentEvent" | "contract" | "contractAmendment" | "contractRatePeriod" | "document" | "documentLink" | "contractor" | "contractorContact" | "contractorBillingProfile" | "contractorAssignment" | "contractorTag" | "contractorTagLink" | "complianceRequirementTemplate" | "contractorComplianceItem" | "leitwegId" | "eInvoiceLifecycle" | "eInvoiceLifecycleEvent" | "peppolCapabilityCache" | "equipment" | "equipmentAssignment" | "shipment" | "shipmentEvent" | "returnRequest" | "courierConfig" | "signingEnvelope" | "signingRecipient" | "signingEvent" | "exchangeRate" | "export" | "boEBaseRateHistory" | "skontoTerm" | "skontoSnapshot" | "skontoApplication" | "govApiAuditLog" | "integrationConnection" | "externalLink" | "integrationSyncLog" | "webhookDelivery" | "invoice" | "invoiceFile" | "invoiceLine" | "invoiceMatchResult" | "invoiceIntakeRequest" | "invoicePayment" | "invoiceInterestCompensation" | "invoiceInterestWaiver" | "invoiceInterestClaim" | "notification" | "userNotificationPreference" | "comment" | "reminderRule" | "reminderInstance" | "notificationCronDedup" | "oAuthChallenge" | "ocrExtraction" | "organization" | "member" | "invitation" | "team" | "project" | "costCenter" | "outboxEvent" | "paymentRun" | "paymentRunItem" | "paymentExport" | "peppolParticipant" | "peppolTransmission" | "portalSession" | "portalMagicToken" | "contractorChangeRequest" | "contractorNotificationPreference" | "pendingUpload" | "taxRate" | "withholdingTaxRate" | "whtCertificate" | "taxIdValidation" | "timesheet" | "timeEntry" | "workflowTemplate" | "workflowTaskTemplate" | "workflowRoleTemplate" | "workflowRoleTaskTemplate" | "workflowRun" | "workflowTaskRun" | "workflowComment" | "workflowAttachment" | "zatcaInvoiceChain"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -954,80 +956,6 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.AuditLogCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.AuditLogCountAggregateOutputType> | number
-        }
-      }
-    }
-    OutboxEvent: {
-      payload: Prisma.$OutboxEventPayload<ExtArgs>
-      fields: Prisma.OutboxEventFieldRefs
-      operations: {
-        findUnique: {
-          args: Prisma.OutboxEventFindUniqueArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutboxEventPayload> | null
-        }
-        findUniqueOrThrow: {
-          args: Prisma.OutboxEventFindUniqueOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutboxEventPayload>
-        }
-        findFirst: {
-          args: Prisma.OutboxEventFindFirstArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutboxEventPayload> | null
-        }
-        findFirstOrThrow: {
-          args: Prisma.OutboxEventFindFirstOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutboxEventPayload>
-        }
-        findMany: {
-          args: Prisma.OutboxEventFindManyArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutboxEventPayload>[]
-        }
-        create: {
-          args: Prisma.OutboxEventCreateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutboxEventPayload>
-        }
-        createMany: {
-          args: Prisma.OutboxEventCreateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        createManyAndReturn: {
-          args: Prisma.OutboxEventCreateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutboxEventPayload>[]
-        }
-        delete: {
-          args: Prisma.OutboxEventDeleteArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutboxEventPayload>
-        }
-        update: {
-          args: Prisma.OutboxEventUpdateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutboxEventPayload>
-        }
-        deleteMany: {
-          args: Prisma.OutboxEventDeleteManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateMany: {
-          args: Prisma.OutboxEventUpdateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateManyAndReturn: {
-          args: Prisma.OutboxEventUpdateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutboxEventPayload>[]
-        }
-        upsert: {
-          args: Prisma.OutboxEventUpsertArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutboxEventPayload>
-        }
-        aggregate: {
-          args: Prisma.OutboxEventAggregateArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AggregateOutboxEvent>
-        }
-        groupBy: {
-          args: Prisma.OutboxEventGroupByArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.OutboxEventGroupByOutputType>[]
-        }
-        count: {
-          args: Prisma.OutboxEventCountArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.OutboxEventCountAggregateOutputType> | number
         }
       }
     }
@@ -4509,6 +4437,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    Export: {
+      payload: Prisma.$ExportPayload<ExtArgs>
+      fields: Prisma.ExportFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ExportFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExportPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ExportFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExportPayload>
+        }
+        findFirst: {
+          args: Prisma.ExportFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExportPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ExportFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExportPayload>
+        }
+        findMany: {
+          args: Prisma.ExportFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExportPayload>[]
+        }
+        create: {
+          args: Prisma.ExportCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExportPayload>
+        }
+        createMany: {
+          args: Prisma.ExportCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ExportCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExportPayload>[]
+        }
+        delete: {
+          args: Prisma.ExportDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExportPayload>
+        }
+        update: {
+          args: Prisma.ExportUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExportPayload>
+        }
+        deleteMany: {
+          args: Prisma.ExportDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ExportUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ExportUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExportPayload>[]
+        }
+        upsert: {
+          args: Prisma.ExportUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExportPayload>
+        }
+        aggregate: {
+          args: Prisma.ExportAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateExport>
+        }
+        groupBy: {
+          args: Prisma.ExportGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ExportGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ExportCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ExportCountAggregateOutputType> | number
+        }
+      }
+    }
     BoEBaseRateHistory: {
       payload: Prisma.$BoEBaseRateHistoryPayload<ExtArgs>
       fields: Prisma.BoEBaseRateHistoryFieldRefs
@@ -6285,6 +6287,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    OAuthChallenge: {
+      payload: Prisma.$OAuthChallengePayload<ExtArgs>
+      fields: Prisma.OAuthChallengeFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.OAuthChallengeFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OAuthChallengePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.OAuthChallengeFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OAuthChallengePayload>
+        }
+        findFirst: {
+          args: Prisma.OAuthChallengeFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OAuthChallengePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.OAuthChallengeFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OAuthChallengePayload>
+        }
+        findMany: {
+          args: Prisma.OAuthChallengeFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OAuthChallengePayload>[]
+        }
+        create: {
+          args: Prisma.OAuthChallengeCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OAuthChallengePayload>
+        }
+        createMany: {
+          args: Prisma.OAuthChallengeCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.OAuthChallengeCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OAuthChallengePayload>[]
+        }
+        delete: {
+          args: Prisma.OAuthChallengeDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OAuthChallengePayload>
+        }
+        update: {
+          args: Prisma.OAuthChallengeUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OAuthChallengePayload>
+        }
+        deleteMany: {
+          args: Prisma.OAuthChallengeDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.OAuthChallengeUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.OAuthChallengeUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OAuthChallengePayload>[]
+        }
+        upsert: {
+          args: Prisma.OAuthChallengeUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OAuthChallengePayload>
+        }
+        aggregate: {
+          args: Prisma.OAuthChallengeAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateOAuthChallenge>
+        }
+        groupBy: {
+          args: Prisma.OAuthChallengeGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.OAuthChallengeGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.OAuthChallengeCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.OAuthChallengeCountAggregateOutputType> | number
+        }
+      }
+    }
     OcrExtraction: {
       payload: Prisma.$OcrExtractionPayload<ExtArgs>
       fields: Prisma.OcrExtractionFieldRefs
@@ -6800,6 +6876,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.CostCenterCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.CostCenterCountAggregateOutputType> | number
+        }
+      }
+    }
+    OutboxEvent: {
+      payload: Prisma.$OutboxEventPayload<ExtArgs>
+      fields: Prisma.OutboxEventFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.OutboxEventFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutboxEventPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.OutboxEventFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutboxEventPayload>
+        }
+        findFirst: {
+          args: Prisma.OutboxEventFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutboxEventPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.OutboxEventFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutboxEventPayload>
+        }
+        findMany: {
+          args: Prisma.OutboxEventFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutboxEventPayload>[]
+        }
+        create: {
+          args: Prisma.OutboxEventCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutboxEventPayload>
+        }
+        createMany: {
+          args: Prisma.OutboxEventCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.OutboxEventCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutboxEventPayload>[]
+        }
+        delete: {
+          args: Prisma.OutboxEventDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutboxEventPayload>
+        }
+        update: {
+          args: Prisma.OutboxEventUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutboxEventPayload>
+        }
+        deleteMany: {
+          args: Prisma.OutboxEventDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.OutboxEventUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.OutboxEventUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutboxEventPayload>[]
+        }
+        upsert: {
+          args: Prisma.OutboxEventUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutboxEventPayload>
+        }
+        aggregate: {
+          args: Prisma.OutboxEventAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateOutboxEvent>
+        }
+        groupBy: {
+          args: Prisma.OutboxEventGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.OutboxEventGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.OutboxEventCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.OutboxEventCountAggregateOutputType> | number
         }
       }
     }
@@ -8800,22 +8950,6 @@ export const AuditLogScalarFieldEnum = {
 export type AuditLogScalarFieldEnum = (typeof AuditLogScalarFieldEnum)[keyof typeof AuditLogScalarFieldEnum]
 
 
-export const OutboxEventScalarFieldEnum = {
-  id: 'id',
-  organizationId: 'organizationId',
-  eventType: 'eventType',
-  aggregateType: 'aggregateType',
-  aggregateId: 'aggregateId',
-  payloadJson: 'payloadJson',
-  status: 'status',
-  availableAt: 'availableAt',
-  publishedAt: 'publishedAt',
-  createdAt: 'createdAt'
-} as const
-
-export type OutboxEventScalarFieldEnum = (typeof OutboxEventScalarFieldEnum)[keyof typeof OutboxEventScalarFieldEnum]
-
-
 export const UserScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -9671,6 +9805,28 @@ export const ExchangeRateScalarFieldEnum = {
 export type ExchangeRateScalarFieldEnum = (typeof ExchangeRateScalarFieldEnum)[keyof typeof ExchangeRateScalarFieldEnum]
 
 
+export const ExportScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  type: 'type',
+  status: 'status',
+  requestedByUserId: 'requestedByUserId',
+  params: 'params',
+  fileR2Key: 'fileR2Key',
+  fileName: 'fileName',
+  mimeType: 'mimeType',
+  rowCount: 'rowCount',
+  expiresAt: 'expiresAt',
+  error: 'error',
+  attempts: 'attempts',
+  createdAt: 'createdAt',
+  startedAt: 'startedAt',
+  completedAt: 'completedAt'
+} as const
+
+export type ExportScalarFieldEnum = (typeof ExportScalarFieldEnum)[keyof typeof ExportScalarFieldEnum]
+
+
 export const BoEBaseRateHistoryScalarFieldEnum = {
   id: 'id',
   effectiveFrom: 'effectiveFrom',
@@ -10121,6 +10277,22 @@ export const NotificationCronDedupScalarFieldEnum = {
 export type NotificationCronDedupScalarFieldEnum = (typeof NotificationCronDedupScalarFieldEnum)[keyof typeof NotificationCronDedupScalarFieldEnum]
 
 
+export const OAuthChallengeScalarFieldEnum = {
+  id: 'id',
+  provider: 'provider',
+  organizationId: 'organizationId',
+  userId: 'userId',
+  stateHash: 'stateHash',
+  pkceVerifier: 'pkceVerifier',
+  redirectUri: 'redirectUri',
+  createdAt: 'createdAt',
+  expiresAt: 'expiresAt',
+  consumedAt: 'consumedAt'
+} as const
+
+export type OAuthChallengeScalarFieldEnum = (typeof OAuthChallengeScalarFieldEnum)[keyof typeof OAuthChallengeScalarFieldEnum]
+
+
 export const OcrExtractionScalarFieldEnum = {
   id: 'id',
   organizationId: 'organizationId',
@@ -10249,6 +10421,26 @@ export const CostCenterScalarFieldEnum = {
 } as const
 
 export type CostCenterScalarFieldEnum = (typeof CostCenterScalarFieldEnum)[keyof typeof CostCenterScalarFieldEnum]
+
+
+export const OutboxEventScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  eventType: 'eventType',
+  aggregateType: 'aggregateType',
+  aggregateId: 'aggregateId',
+  payloadJson: 'payloadJson',
+  dedupKey: 'dedupKey',
+  status: 'status',
+  attempts: 'attempts',
+  nextAttemptAt: 'nextAttemptAt',
+  lastError: 'lastError',
+  dispatchedAt: 'dispatchedAt',
+  failedAt: 'failedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type OutboxEventScalarFieldEnum = (typeof OutboxEventScalarFieldEnum)[keyof typeof OutboxEventScalarFieldEnum]
 
 
 export const PaymentRunScalarFieldEnum = {
@@ -10926,20 +11118,6 @@ export type ListEnumActorTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$Pr
 
 
 /**
- * Reference to a field of type 'OutboxStatus'
- */
-export type EnumOutboxStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OutboxStatus'>
-    
-
-
-/**
- * Reference to a field of type 'OutboxStatus[]'
- */
-export type ListEnumOutboxStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OutboxStatus[]'>
-    
-
-
-/**
  * Reference to a field of type 'SubscriptionTier'
  */
 export type EnumSubscriptionTierFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SubscriptionTier'>
@@ -11598,6 +11776,20 @@ export type ListEnumSigningEventTypeFieldRefInput<$PrismaModel> = FieldRefInputT
 
 
 /**
+ * Reference to a field of type 'AsyncExportStatus'
+ */
+export type EnumAsyncExportStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AsyncExportStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'AsyncExportStatus[]'
+ */
+export type ListEnumAsyncExportStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AsyncExportStatus[]'>
+    
+
+
+/**
  * Reference to a field of type 'BoERateSource'
  */
 export type EnumBoERateSourceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BoERateSource'>
@@ -12004,6 +12196,20 @@ export type ListEnumSimpleStatusFieldRefInput<$PrismaModel> = FieldRefInputType<
 
 
 /**
+ * Reference to a field of type 'OutboxStatus'
+ */
+export type EnumOutboxStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OutboxStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'OutboxStatus[]'
+ */
+export type ListEnumOutboxStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OutboxStatus[]'>
+    
+
+
+/**
  * Reference to a field of type 'PaymentRunStatus'
  */
 export type EnumPaymentRunStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PaymentRunStatus'>
@@ -12384,7 +12590,6 @@ export type GlobalOmitConfig = {
   approvalStep?: Prisma.ApprovalStepOmit
   approvalDecision?: Prisma.ApprovalDecisionOmit
   auditLog?: Prisma.AuditLogOmit
-  outboxEvent?: Prisma.OutboxEventOmit
   user?: Prisma.UserOmit
   session?: Prisma.SessionOmit
   account?: Prisma.AccountOmit
@@ -12432,6 +12637,7 @@ export type GlobalOmitConfig = {
   signingRecipient?: Prisma.SigningRecipientOmit
   signingEvent?: Prisma.SigningEventOmit
   exchangeRate?: Prisma.ExchangeRateOmit
+  export?: Prisma.ExportOmit
   boEBaseRateHistory?: Prisma.BoEBaseRateHistoryOmit
   skontoTerm?: Prisma.SkontoTermOmit
   skontoSnapshot?: Prisma.SkontoSnapshotOmit
@@ -12456,6 +12662,7 @@ export type GlobalOmitConfig = {
   reminderRule?: Prisma.ReminderRuleOmit
   reminderInstance?: Prisma.ReminderInstanceOmit
   notificationCronDedup?: Prisma.NotificationCronDedupOmit
+  oAuthChallenge?: Prisma.OAuthChallengeOmit
   ocrExtraction?: Prisma.OcrExtractionOmit
   organization?: Prisma.OrganizationOmit
   member?: Prisma.MemberOmit
@@ -12463,6 +12670,7 @@ export type GlobalOmitConfig = {
   team?: Prisma.TeamOmit
   project?: Prisma.ProjectOmit
   costCenter?: Prisma.CostCenterOmit
+  outboxEvent?: Prisma.OutboxEventOmit
   paymentRun?: Prisma.PaymentRunOmit
   paymentRunItem?: Prisma.PaymentRunItemOmit
   paymentExport?: Prisma.PaymentExportOmit

@@ -57,7 +57,6 @@ export const ModelName = {
   ApprovalStep: 'ApprovalStep',
   ApprovalDecision: 'ApprovalDecision',
   AuditLog: 'AuditLog',
-  OutboxEvent: 'OutboxEvent',
   User: 'User',
   Session: 'Session',
   Account: 'Account',
@@ -105,6 +104,7 @@ export const ModelName = {
   SigningRecipient: 'SigningRecipient',
   SigningEvent: 'SigningEvent',
   ExchangeRate: 'ExchangeRate',
+  Export: 'Export',
   BoEBaseRateHistory: 'BoEBaseRateHistory',
   SkontoTerm: 'SkontoTerm',
   SkontoSnapshot: 'SkontoSnapshot',
@@ -129,6 +129,7 @@ export const ModelName = {
   ReminderRule: 'ReminderRule',
   ReminderInstance: 'ReminderInstance',
   NotificationCronDedup: 'NotificationCronDedup',
+  OAuthChallenge: 'OAuthChallenge',
   OcrExtraction: 'OcrExtraction',
   Organization: 'Organization',
   Member: 'Member',
@@ -136,6 +137,7 @@ export const ModelName = {
   Team: 'Team',
   Project: 'Project',
   CostCenter: 'CostCenter',
+  OutboxEvent: 'OutboxEvent',
   PaymentRun: 'PaymentRun',
   PaymentRunItem: 'PaymentRunItem',
   PaymentExport: 'PaymentExport',
@@ -285,22 +287,6 @@ export const AuditLogScalarFieldEnum = {
 } as const
 
 export type AuditLogScalarFieldEnum = (typeof AuditLogScalarFieldEnum)[keyof typeof AuditLogScalarFieldEnum]
-
-
-export const OutboxEventScalarFieldEnum = {
-  id: 'id',
-  organizationId: 'organizationId',
-  eventType: 'eventType',
-  aggregateType: 'aggregateType',
-  aggregateId: 'aggregateId',
-  payloadJson: 'payloadJson',
-  status: 'status',
-  availableAt: 'availableAt',
-  publishedAt: 'publishedAt',
-  createdAt: 'createdAt'
-} as const
-
-export type OutboxEventScalarFieldEnum = (typeof OutboxEventScalarFieldEnum)[keyof typeof OutboxEventScalarFieldEnum]
 
 
 export const UserScalarFieldEnum = {
@@ -1158,6 +1144,28 @@ export const ExchangeRateScalarFieldEnum = {
 export type ExchangeRateScalarFieldEnum = (typeof ExchangeRateScalarFieldEnum)[keyof typeof ExchangeRateScalarFieldEnum]
 
 
+export const ExportScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  type: 'type',
+  status: 'status',
+  requestedByUserId: 'requestedByUserId',
+  params: 'params',
+  fileR2Key: 'fileR2Key',
+  fileName: 'fileName',
+  mimeType: 'mimeType',
+  rowCount: 'rowCount',
+  expiresAt: 'expiresAt',
+  error: 'error',
+  attempts: 'attempts',
+  createdAt: 'createdAt',
+  startedAt: 'startedAt',
+  completedAt: 'completedAt'
+} as const
+
+export type ExportScalarFieldEnum = (typeof ExportScalarFieldEnum)[keyof typeof ExportScalarFieldEnum]
+
+
 export const BoEBaseRateHistoryScalarFieldEnum = {
   id: 'id',
   effectiveFrom: 'effectiveFrom',
@@ -1608,6 +1616,22 @@ export const NotificationCronDedupScalarFieldEnum = {
 export type NotificationCronDedupScalarFieldEnum = (typeof NotificationCronDedupScalarFieldEnum)[keyof typeof NotificationCronDedupScalarFieldEnum]
 
 
+export const OAuthChallengeScalarFieldEnum = {
+  id: 'id',
+  provider: 'provider',
+  organizationId: 'organizationId',
+  userId: 'userId',
+  stateHash: 'stateHash',
+  pkceVerifier: 'pkceVerifier',
+  redirectUri: 'redirectUri',
+  createdAt: 'createdAt',
+  expiresAt: 'expiresAt',
+  consumedAt: 'consumedAt'
+} as const
+
+export type OAuthChallengeScalarFieldEnum = (typeof OAuthChallengeScalarFieldEnum)[keyof typeof OAuthChallengeScalarFieldEnum]
+
+
 export const OcrExtractionScalarFieldEnum = {
   id: 'id',
   organizationId: 'organizationId',
@@ -1736,6 +1760,26 @@ export const CostCenterScalarFieldEnum = {
 } as const
 
 export type CostCenterScalarFieldEnum = (typeof CostCenterScalarFieldEnum)[keyof typeof CostCenterScalarFieldEnum]
+
+
+export const OutboxEventScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  eventType: 'eventType',
+  aggregateType: 'aggregateType',
+  aggregateId: 'aggregateId',
+  payloadJson: 'payloadJson',
+  dedupKey: 'dedupKey',
+  status: 'status',
+  attempts: 'attempts',
+  nextAttemptAt: 'nextAttemptAt',
+  lastError: 'lastError',
+  dispatchedAt: 'dispatchedAt',
+  failedAt: 'failedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type OutboxEventScalarFieldEnum = (typeof OutboxEventScalarFieldEnum)[keyof typeof OutboxEventScalarFieldEnum]
 
 
 export const PaymentRunScalarFieldEnum = {

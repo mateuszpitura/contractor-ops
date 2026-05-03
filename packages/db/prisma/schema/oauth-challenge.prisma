@@ -1,0 +1,49 @@
+// OAuth single-use challenge — closes F-SEC-05 + F-SEC-21.
+//
+// The HMAC-signed `state` value sent to the IdP (see oauth-state.ts) proves
+// integrity but does NOT prevent (a) cross-account credential capture if the
+// attacker hands their authorize URL to a victim, or (b) replay of a captured
+// state with a different victim's `code` within the 10-minute freshness
+// window.
+//
+// This table closes both gaps:
+// - On `getOAuthStartUrl` we INSERT a row keyed by `sha256(state)` and SET a
+//   `__Host-oauth_state` cookie with the same hash. The cookie is httpOnly,
+//   secure, sameSite=lax, scoped to /api/oauth, with a 10-min Max-Age — it
+//   anchors the round-trip to the browser that initiated it.
+// - On `/api/oauth/[provider]/callback` we hash the cookie value and run
+//   `updateMany({ where: { stateHash, consumedAt: null, expiresAt: gt:now },
+//   data: { consumedAt: now } })`. Result count must equal 1 — anything else
+//   means missing, expired, replayed, or attacker-supplied state.
+//
+// `organizationId` is nullable so the model accommodates pre-org-select flows
+// (we don't have any today, but adapters like personal Google Calendar may
+// land before org context exists). `userId` is required: every OAuth start in
+// our app today is initiated by an authenticated user.
+
+model OAuthChallenge {
+  id             String    @id @default(uuid())
+  provider       String
+  organizationId String?
+  userId         String
+  // sha256(state) — never the state itself. Lookup key used by the callback.
+  stateHash      String    @unique
+  // PKCE verifier for providers that mandate PKCE (Linear, Notion, …). Stored
+  // server-side so the callback can complete the exchange without trusting a
+  // client roundtrip. Null for legacy providers that still rely on plain
+  // `client_secret` POST.
+  pkceVerifier   String?
+  redirectUri    String
+  createdAt      DateTime  @default(now())
+  // 10-minute window — matches the existing oauth-state HMAC freshness
+  // tolerance. The drain / hygiene job deletes rows where expiresAt < now.
+  expiresAt      DateTime
+  consumedAt     DateTime?
+
+  organization Organization? @relation(fields: [organizationId], references: [id])
+
+  // Hygiene index: the consume path filters on stateHash; (expiresAt) supports
+  // the periodic cleanup sweep without incurring a full table scan.
+  @@index([expiresAt])
+  @@index([organizationId, createdAt])
+}

@@ -87,6 +87,7 @@ model Organization {
   contractorChangeRequests       ContractorChangeRequest[]
   contractorNotificationPrefs    ContractorNotificationPreference[]
   pendingUploads                 PendingUpload[]
+  oauthChallenges                OAuthChallenge[]
   notifications                  Notification[]
   notificationPrefs              UserNotificationPreference[]
   comments                       Comment[]
@@ -138,6 +139,8 @@ model Organization {
   classificationEscalationEvents ClassificationEscalationEvent[]
   sdsApprovals                   SdsApproval[]
   consentEvents                  ConsentEvent[]                     @relation("OrganizationConsentEvents")
+  // P2-F (F-SCALE-01) — async export jobs (CSV / PDF off the request path).
+  exports                        Export[]
 }
 
 model Member {
