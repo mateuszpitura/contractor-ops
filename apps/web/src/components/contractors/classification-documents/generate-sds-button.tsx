@@ -49,9 +49,13 @@ export function GenerateSdsButton({
 
   const generateMutation = useMutation(
     trpc.classificationDocument.generateSds.mutationOptions({
-      onSuccess: data => {
+      // P2-F · F-SCALE-02 — SDS render now runs async via QStash. The
+      // mutation returns `{ exportId, status: 'PENDING' }`; the user
+      // gets the download link by email and via the in-app exports
+      // panel. Refresh the document list so the eventually-uploaded
+      // ClassificationDocument row shows up once the consumer finishes.
+      onSuccess: () => {
         setErrorMessage(null);
-        window.open(data.url, '_blank', 'noopener,noreferrer');
         void queryClient.invalidateQueries({
           queryKey: [['classificationDocument', 'listByEngagement']],
         });

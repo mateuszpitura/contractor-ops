@@ -14,29 +14,16 @@
 
 import { createHash } from 'node:crypto';
 
-import { renderToBuffer } from '@react-pdf/renderer';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 
 import { router } from '../../init.js';
 import { requirePermission } from '../../middleware/rbac.js';
 import { classificationProcedure } from '../../middleware/require-classification-flag.js';
-import {
-  RENDERER_SLUG as DRV_RENDERER_SLUG,
-  TEMPLATE_VERSION as DRV_TEMPLATE_VERSION,
-  DRVDefenseBundleDocument,
-} from '../../pdf-templates/drv-defense-bundle.js';
-import {
-  IR35SDSDocument,
-  RENDERER_SLUG as SDS_RENDERER_SLUG,
-  TEMPLATE_VERSION as SDS_TEMPLATE_VERSION,
-} from '../../pdf-templates/ir35-sds.js';
 import { buildClassificationDocumentKey } from '../../services/classification-document-keys.js';
+import { requestExport } from '../../services/exports/index.js';
 import { deleteObject, putObjectAndSignDownload, signExistingDownload } from '../../services/r2.js';
 
-// Bump on @react-pdf/renderer upgrade. Embedded into
-// ClassificationDocument.rendererVersion for audit forensics (D-09).
-const REACT_PDF_VERSION = '3.4.5' as const;
 const PDF_TTL_SECONDS = 300;
 
 // ---------------------------------------------------------------------------
@@ -86,34 +73,37 @@ function sanitizeFilename(s: string): string {
 
 export const classificationDocumentRouter = router({
   /**
-   * Generate an SDS PDF for a completed IR35 assessment.
-   * - Preconditions: assessment.status === 'completed', questionsSnapshot non-null,
-   *   outcome.kind === 'IR35'.
-   * - Byte stability: renderedAt = assessment.completedAt (stable across re-renders).
-   * - Rollback: on row-insert failure, deletes the R2 object before rethrowing.
+   * Enqueue an SDS PDF generation job (P2-F · F-SCALE-02).
+   *
+   * The mutation only enforces the legal preconditions (assessment
+   * completed + outcome.kind === 'IR35' + SdsApproval present) and
+   * confirms the assessment exists in the caller's tenant. The actual
+   * React-PDF render + R2 upload happens in the QStash consumer at
+   * `/api/exports/_process` to keep the request path bounded — the prior
+   * synchronous render allocated 30-150 MB per request and OOM'd the pod
+   * under burst.
+   *
+   * Returns `{ exportId, status: 'PENDING' }` immediately. The client
+   * polls `/api/exports/:exportId/download` (or waits for the
+   * "your export is ready" email).
    */
   generateSds: classificationProcedure
     .input(generateSdsInputSchema)
     .mutation(async ({ input, ctx }) => {
-      // tenant middleware asserts session+user are non-null and throws UNAUTHORIZED otherwise.
-      // Re-narrowing here keeps TS happy without `!` non-null assertions.
       if (!ctx.session?.user?.id) {
         throw new TRPCError({ code: 'UNAUTHORIZED' });
       }
-      const userId = ctx.session.user.id;
 
-      // 1. Load assessment with related engagement + contractor + organization.
-      //    Tenant scope is injected by the Prisma client extension.
+      // Preconditions (kept in the mutation so the user gets immediate
+      // feedback rather than a delayed FAILED export).
       const assessment = await ctx.db.classificationAssessment
         .findUniqueOrThrow({
           where: { id: input.classificationAssessmentId },
-          include: {
-            contractorAssignment: {
-              include: {
-                contractor: true,
-                organization: true,
-              },
-            },
+          select: {
+            id: true,
+            status: true,
+            questionsSnapshot: true,
+            outcome: true,
           },
         })
         .catch(() => {
@@ -123,7 +113,6 @@ export const classificationDocumentRouter = router({
           });
         });
 
-      // 2. Preconditions (D-04, D-06).
       if (assessment.status !== 'completed' || assessment.questionsSnapshot === null) {
         throw new TRPCError({
           code: 'PRECONDITION_FAILED',
@@ -142,13 +131,7 @@ export const classificationDocumentRouter = router({
       // Phase 64 D-22 — Require SdsApproval before generating SDS (LEGAL-05)
       const sdsApproval = await ctx.db.sdsApproval.findUnique({
         where: { assessmentId: input.classificationAssessmentId },
-        select: {
-          id: true,
-          clientName: true,
-          approvedAt: true,
-          approvedByUserId: true,
-          approvalStatementSnapshot: true,
-        },
+        select: { id: true },
       });
       if (!sdsApproval) {
         throw new TRPCError({
@@ -158,93 +141,23 @@ export const classificationDocumentRouter = router({
         });
       }
 
-      // 3. Render PDF bytes. `renderedAt` is set to assessment.completedAt so
-      //    repeated renders for the same assessment produce byte-identical
-      //    content (apart from PDF Info timestamps, handled below).
-      const renderedAt = assessment.completedAt ?? new Date(0);
-      const engagement = assessment.contractorAssignment;
-      const contractor = engagement.contractor;
-      const organization = engagement.organization;
-
-      const buf = await renderToBuffer(
-        <IR35SDSDocument
-          // Cast is required because the Prisma row's `outcome` + `answers` are
-          // Json columns — the template validates their shape at runtime.
-          assessment={assessment as unknown as Parameters<typeof IR35SDSDocument>[0]['assessment']}
-          engagement={{
-            id: engagement.id,
-            displayName: contractor.displayName,
-            activeFrom: engagement.activeFrom,
-            activeTo: engagement.activeTo,
-          }}
-          contractor={{ id: contractor.id, displayName: contractor.displayName }}
-          organization={{
-            id: organization.id,
-            name: organization.name,
-            countryCode: organization.countryCode,
-          }}
-          renderedAt={renderedAt}
-        />,
-      );
-
-      // 4. Content-addressed R2 key + rendererVersion.
-      const sha256Hash = createHash('sha256').update(buf).digest('hex');
-      const key = buildClassificationDocumentKey({
+      const result = await requestExport({
         organizationId: ctx.organizationId,
-        classificationAssessmentId: assessment.id,
-        kind: 'SDS',
-        ruleSetVersion: assessment.ruleSetVersion,
-        sha256: sha256Hash,
-      });
-      const rendererVersion = `@react-pdf/renderer@${REACT_PDF_VERSION}+${SDS_RENDERER_SLUG}@${SDS_TEMPLATE_VERSION}`;
-
-      // 5. Upload + presign download URL.
-      const downloadFilename = sanitizeFilename(
-        `SDS-${contractor.displayName}-${engagement.id}.pdf`,
-      );
-      const { signedUrl, expiresInSeconds } = await putObjectAndSignDownload({
-        key,
-        body: buf,
-        contentType: 'application/pdf',
-        ttlSeconds: PDF_TTL_SECONDS,
-        downloadFilename,
+        requestedByUserId: ctx.session.user.id,
+        type: 'classification-document-sds',
+        params: { classificationAssessmentId: input.classificationAssessmentId },
       });
 
-      // 6. Insert row — rollback R2 on failure.
-      try {
-        const row = await ctx.db.classificationDocument.create({
-          data: {
-            organizationId: ctx.organizationId,
-            classificationAssessmentId: assessment.id,
-            kind: 'SDS',
-            pdfKey: key,
-            sha256Hash,
-            byteSize: buf.byteLength,
-            rendererVersion,
-            ruleSetVersion: assessment.ruleSetVersion,
-            generatedByUserId: userId,
-          },
-        });
-
-        return {
-          url: signedUrl,
-          expiresInSeconds,
-          documentId: row.id,
-          byteSize: buf.byteLength,
-          sha256Hash,
-        };
-      } catch (err) {
-        // Best-effort R2 rollback so we don't leak orphan objects (T-59-10).
-        await deleteObject(key).catch(() => undefined);
-        throw err;
-      }
+      return result;
     }),
 
   /**
-   * Generate a DRV audit defense bundle PDF for a completed Schein assessment.
-   * Composes 4 sections: engagement structure, independence indicators, full
-   * prior-history deltas, and other-client attestation with same-tenant
-   * cross-reference. Same content-addressed R2 flow as generateSds.
+   * Enqueue a DRV defense bundle PDF generation job (P2-F · F-SCALE-02).
+   *
+   * Same async contract as `generateSds` — the mutation only validates
+   * the legal preconditions (completed Schein assessment + signed
+   * attestation); the React-PDF render + R2 upload happens off the
+   * request path.
    */
   generateDrvDefenseBundle: classificationProcedure
     .input(generateDrvDefenseBundleInputSchema)
@@ -252,15 +165,16 @@ export const classificationDocumentRouter = router({
       if (!ctx.session?.user?.id) {
         throw new TRPCError({ code: 'UNAUTHORIZED' });
       }
-      const userId = ctx.session.user.id;
 
       const assessment = await ctx.db.classificationAssessment
         .findUniqueOrThrow({
           where: { id: input.classificationAssessmentId },
-          include: {
-            contractorAssignment: {
-              include: { contractor: true, organization: true },
-            },
+          select: {
+            id: true,
+            status: true,
+            questionsSnapshot: true,
+            outcome: true,
+            contractorAssignmentId: true,
           },
         })
         .catch(() => {
@@ -286,20 +200,9 @@ export const classificationDocumentRouter = router({
         });
       }
 
-      // Load prior completed DE assessments for this engagement (newest first, excluding current).
-      const priorAssessments = await ctx.db.classificationAssessment.findMany({
-        where: {
-          contractorAssignmentId: assessment.contractorAssignmentId,
-          status: 'completed',
-          countryCode: 'DE',
-          id: { not: assessment.id },
-        },
-        orderBy: { completedAt: 'desc' },
-      });
-
-      // Load attestation — required for DRV bundle (T-59-17).
       const attestation = await ctx.db.ir35OtherClientAttestation.findUnique({
         where: { contractorAssignmentId: assessment.contractorAssignmentId },
+        select: { signedAt: true },
       });
       if (!attestation?.signedAt) {
         throw new TRPCError({
@@ -309,115 +212,14 @@ export const classificationDocumentRouter = router({
         });
       }
 
-      // Same-tenant cross-reference (T-59-12 + T-59-15).
-      const crossReference = await ctx.db.contractorAssignment.findMany({
-        where: {
-          contractorId: assessment.contractorAssignment.contractorId,
-          organizationId: ctx.organizationId,
-          id: { not: assessment.contractorAssignmentId },
-        },
-        orderBy: { activeFrom: 'desc' },
-        select: {
-          id: true,
-          activeFrom: true,
-          activeTo: true,
-          status: true,
-          organization: { select: { name: true } },
-          project: { select: { name: true } },
-        },
-      });
-
-      const renderedAt = assessment.completedAt ?? new Date(0);
-      const engagement = assessment.contractorAssignment;
-      const contractor = engagement.contractor;
-      const organization = engagement.organization;
-
-      const buf = await renderToBuffer(
-        <DRVDefenseBundleDocument
-          assessment={
-            assessment as unknown as Parameters<typeof DRVDefenseBundleDocument>[0]['assessment']
-          }
-          priorAssessments={
-            priorAssessments as unknown as Parameters<
-              typeof DRVDefenseBundleDocument
-            >[0]['priorAssessments']
-          }
-          engagement={{
-            id: engagement.id,
-            displayName: contractor.displayName,
-            activeFrom: engagement.activeFrom,
-            activeTo: engagement.activeTo,
-          }}
-          contractor={{ id: contractor.id, displayName: contractor.displayName }}
-          organization={{
-            id: organization.id,
-            name: organization.name,
-            countryCode: organization.countryCode,
-          }}
-          attestation={{
-            statementText: attestation.statementText,
-            signedName: attestation.signedName,
-            signedAt: attestation.signedAt,
-          }}
-          crossReference={crossReference.map(row => ({
-            id: row.id,
-            activeFrom: row.activeFrom,
-            activeTo: row.activeTo,
-            status: row.status,
-            organization: row.organization,
-            project: row.project,
-          }))}
-          renderedAt={renderedAt}
-        />,
-      );
-
-      const sha256Hash = createHash('sha256').update(buf).digest('hex');
-      const key = buildClassificationDocumentKey({
+      const result = await requestExport({
         organizationId: ctx.organizationId,
-        classificationAssessmentId: assessment.id,
-        kind: 'DRV_DEFENSE_BUNDLE',
-        ruleSetVersion: assessment.ruleSetVersion,
-        sha256: sha256Hash,
-      });
-      const rendererVersion = `@react-pdf/renderer@${REACT_PDF_VERSION}+${DRV_RENDERER_SLUG}@${DRV_TEMPLATE_VERSION}`;
-
-      const downloadFilename = sanitizeFilename(
-        `DRV-Defense-${contractor.displayName}-${engagement.id}.pdf`,
-      );
-      const { signedUrl, expiresInSeconds } = await putObjectAndSignDownload({
-        key,
-        body: buf,
-        contentType: 'application/pdf',
-        ttlSeconds: PDF_TTL_SECONDS,
-        downloadFilename,
+        requestedByUserId: ctx.session.user.id,
+        type: 'drv-defense-bundle',
+        params: { classificationAssessmentId: input.classificationAssessmentId },
       });
 
-      try {
-        const row = await ctx.db.classificationDocument.create({
-          data: {
-            organizationId: ctx.organizationId,
-            classificationAssessmentId: assessment.id,
-            kind: 'DRV_DEFENSE_BUNDLE',
-            pdfKey: key,
-            sha256Hash,
-            byteSize: buf.byteLength,
-            rendererVersion,
-            ruleSetVersion: assessment.ruleSetVersion,
-            generatedByUserId: userId,
-          },
-        });
-
-        return {
-          url: signedUrl,
-          expiresInSeconds,
-          documentId: row.id,
-          byteSize: buf.byteLength,
-          sha256Hash,
-        };
-      } catch (err) {
-        await deleteObject(key).catch(() => undefined);
-        throw err;
-      }
+      return result;
     }),
 
   /**

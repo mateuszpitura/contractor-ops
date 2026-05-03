@@ -27,9 +27,12 @@ export function GenerateDrvBundleButton({
 
   const mutation = useMutation(
     trpc.classificationDocument.generateDrvDefenseBundle.mutationOptions({
-      onSuccess: data => {
+      // P2-F · F-SCALE-02 — DRV defense bundle render now runs async via
+      // QStash. The mutation returns `{ exportId, status: 'PENDING' }`;
+      // the user gets the download link by email and via the in-app
+      // exports panel.
+      onSuccess: () => {
         setErrorMessage(null);
-        window.open(data.url, '_blank', 'noopener,noreferrer');
         void queryClient.invalidateQueries({
           queryKey: [['classificationDocument', 'listByEngagement']],
         });
