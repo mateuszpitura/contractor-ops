@@ -101,6 +101,11 @@
       "import": "./src/services/peppol-orchestrator.ts",
       "default": "./src/services/peppol-orchestrator.ts"
     },
+    "./services/zatca-submission": {
+      "types": "./src/services/zatca-submission.ts",
+      "import": "./src/services/zatca-submission.ts",
+      "default": "./src/services/zatca-submission.ts"
+    },
     "./services/cron-monitor": {
       "types": "./src/services/cron-monitor.ts",
       "import": "./src/services/cron-monitor.ts",
