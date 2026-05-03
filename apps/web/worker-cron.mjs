@@ -17,8 +17,22 @@
  *      CRON_SECRET (required).
  */
 
+import * as Sentry from '@sentry/node';
 import cron from 'node-cron';
 import pino from 'pino';
+
+// F-OBS-04: initialize Sentry as the first step so the process-level
+// `uncaughtException` / `unhandledRejection` handlers below can forward
+// errors to the same Sentry project the rest of the platform uses. Init
+// is a no-op when NEXT_PUBLIC_SENTRY_DSN is unset (dev / preview), and
+// captureException becomes a noop too.
+Sentry.init({
+  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+  enabled: Boolean(process.env.NEXT_PUBLIC_SENTRY_DSN),
+  tracesSampleRate: process.env.NODE_ENV === 'development' ? 1.0 : 0.1,
+  environment: process.env.NODE_ENV ?? 'development',
+  initialScope: { tags: { service: 'worker-cron' } },
+});
 
 // Pino is used directly here (not @contractor-ops/logger) because this worker
 // runs as a standalone Node ESM script outside the Next.js bundle and cannot
@@ -32,6 +46,34 @@ const log = pino({
     },
   },
   base: { service: 'worker-cron' },
+});
+
+// ---------------------------------------------------------------------------
+// F-OBS-04: process-level error handlers
+// ---------------------------------------------------------------------------
+//
+// Without these, an unhandled rejection inside `triggerCron` (or any
+// future module-level promise) silently kills the worker. Render restarts
+// the pod, but on-call sees only the symptom (cron jobs stop firing) with
+// no last-gasp Sentry capture.
+
+process.on('uncaughtException', err => {
+  log.fatal({ err }, 'uncaughtException');
+  try {
+    Sentry.captureException(err);
+  } catch {
+    // Sentry capture itself failed — don't loop, just exit.
+  }
+  process.exit(1);
+});
+
+process.on('unhandledRejection', reason => {
+  log.error({ err: reason }, 'unhandledRejection');
+  try {
+    Sentry.captureException(reason);
+  } catch {
+    // ignore secondary failures
+  }
 });
 
 // Accept either a hostport (Render private network) or a full URL (local dev).
