@@ -117,23 +117,70 @@ export function generateStorageKey(orgId: string, docId: string, filename: strin
 }
 
 // ---------------------------------------------------------------------------
+// Per-content-type size caps (F-SEC-19)
+// ---------------------------------------------------------------------------
+
+/**
+ * Maximum bytes allowed per MIME type. Enforced at three layers:
+ *   1. `createPresignedUploadUrl` signs the URL with `ContentLength` so R2
+ *      rejects oversize PUTs at the edge (no bytes ever land in our bucket).
+ *   2. `confirmUpload` re-checks `headObject().ContentLength` against the
+ *      cap and deletes the object on overrun (defends against an attacker
+ *      who somehow bypasses #1 via a different upload path).
+ *   3. `requestUpload` rejects when the client-declared `fileSizeBytes`
+ *      already exceeds the cap before signing.
+ *
+ * Caps are intentionally generous; tighten per-tenant via Subscription tier
+ * limits if/when storage cost becomes a binding constraint.
+ */
+export const MAX_BYTES_BY_MIME: Readonly<Record<string, number>> = Object.freeze({
+  'application/pdf': 50 * 1024 * 1024, // 50 MB — invoices, contracts
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 25 * 1024 * 1024, // 25 MB — DOCX
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 25 * 1024 * 1024, // 25 MB — XLSX
+  'image/png': 10 * 1024 * 1024, // 10 MB — receipts, scans
+  'image/jpeg': 10 * 1024 * 1024, // 10 MB — receipts, scans
+});
+
+/** Generic upper bound for any other allowed MIME (must stay > all per-type
+ *  caps to act as a safety net rather than a tightening overlay). */
+export const MAX_BYTES_GENERIC = 100 * 1024 * 1024; // 100 MB
+
+/**
+ * Returns the byte cap for a given MIME type. Falls back to the generic cap
+ * for unknown types — an attacker cannot widen the cap by sending an
+ * obscure MIME because `isAllowedMimeType()` already restricts the input
+ * set further upstream.
+ */
+export function maxBytesForMime(mimeType: string): number {
+  return MAX_BYTES_BY_MIME[mimeType] ?? MAX_BYTES_GENERIC;
+}
+
+// ---------------------------------------------------------------------------
 // Presigned URL generation
 // ---------------------------------------------------------------------------
 
 /**
  * Creates a presigned PUT URL for uploading a file to R2.
  * Default expiry: 5 minutes.
+ *
+ * F-SEC-19: passes `ContentLength` to the signed PUT so R2 rejects PUTs
+ * whose body length doesn't match the signed value at the edge. Callers
+ * MUST supply the maximum bytes the upload should allow; R2 will return
+ * `XAmzContentLengthTooLong` (or similar) if the client tries to upload
+ * more.
  */
 export async function createPresignedUploadUrl(
   key: string,
   contentType: string,
   expiresIn = 300,
+  maxBytes?: number,
 ): Promise<string> {
   const client = createR2Client();
   const command = new PutObjectCommand({
     Bucket: getDefaultBucket(),
     Key: key,
     ContentType: contentType,
+    ...(maxBytes !== undefined ? { ContentLength: maxBytes } : {}),
   });
   return getSignedUrl(client, command, { expiresIn });
 }
@@ -194,6 +241,59 @@ export async function putObjectAndSignDownload(params: {
   });
   const signedUrl = await getSignedUrl(client, downloadCommand, { expiresIn: ttlSeconds });
   return { signedUrl, expiresInSeconds: ttlSeconds };
+}
+
+/**
+ * Stream-upload an object to R2 using the AWS SDK lib-storage `Upload`
+ * helper which auto-chunks the input into multipart parts. Used by the
+ * async export framework (P2-F · F-SCALE-08) to pipe a CSV stream from a
+ * Prisma cursor straight into R2 without buffering the entire result.
+ *
+ * `key` is trusted — callers must scope keys by `organizationId` to
+ * prevent cross-tenant access (Phase 56 · D-09 + ASVS V4).
+ *
+ * Returns the `key` and `byteLength` of the uploaded object — caller is
+ * responsible for persisting the key into the owning row (e.g.
+ * `Export.fileR2Key`).
+ */
+export async function streamObjectUpload(params: {
+  key: string;
+  /**
+   * Accepts the same body shapes as `PutObjectCommand`. The streaming
+   * Node `Readable` produced by `streamCsvResponse` satisfies the SDK's
+   * `StreamingBlobPayloadInputTypes` constraint via Node's `stream`
+   * module.
+   */
+  body: import('@aws-sdk/client-s3').PutObjectCommandInput['Body'];
+  contentType: string;
+  contentDisposition?: string;
+}): Promise<{ key: string; byteLength: number | null }> {
+  const { Upload } = await import('@aws-sdk/lib-storage');
+  const client = createR2Client();
+
+  const upload = new Upload({
+    client,
+    params: {
+      Bucket: getDefaultBucket(),
+      Key: params.key,
+      Body: params.body,
+      ContentType: params.contentType,
+      ContentDisposition: params.contentDisposition,
+    },
+    // 5 MiB part size is the R2 minimum; queueSize 4 balances throughput
+    // against memory headroom on small worker instances.
+    partSize: 5 * 1024 * 1024,
+    queueSize: 4,
+  });
+
+  const result = await upload.done();
+  // `Upload.done()` does not return ContentLength; we can HEAD afterwards
+  // if a row needs the byte size, but returning null avoids the extra RTT
+  // for the common case where the export row already tracks `rowCount`.
+  return {
+    key: result.Key ?? params.key,
+    byteLength: null,
+  };
 }
 
 // ---------------------------------------------------------------------------

@@ -66,6 +66,10 @@ function resolveRegion(explicitRegion?: string): string {
  * Creates a presigned PUT URL for uploading a file to the regional R2 bucket.
  * Default expiry: 5 minutes.
  *
+ * F-SEC-19: when `maxBytes` is supplied, the URL is signed with
+ * `ContentLength` so R2 rejects oversize PUTs at the edge before any bytes
+ * land in our bucket.
+ *
  * @param region - Explicit region override. If omitted, resolves from tenant context.
  */
 export async function createRegionalPresignedUploadUrl(
@@ -73,6 +77,7 @@ export async function createRegionalPresignedUploadUrl(
   contentType: string,
   expiresIn = 300,
   region?: string,
+  maxBytes?: number,
 ): Promise<string> {
   const bucket = getRegionalBucket(resolveRegion(region));
   const client = createR2Client();
@@ -80,6 +85,7 @@ export async function createRegionalPresignedUploadUrl(
     Bucket: bucket,
     Key: key,
     ContentType: contentType,
+    ...(maxBytes !== undefined ? { ContentLength: maxBytes } : {}),
   });
   return getSignedUrl(client, command, { expiresIn });
 }

@@ -73,6 +73,10 @@ export const DOCUMENT_FILE_TYPE_NOT_ALLOWED = 'documentFileTypeNotAllowed';
 export const DOCUMENT_NOT_IN_STORAGE = 'documentNotInStorage';
 export const DOCUMENT_INFECTED = 'documentInfected';
 export const DOCUMENT_NOT_ACTIVE = 'documentNotActive';
+// F-SEC-19 — per-content-type byte cap exceeded.
+export const DOCUMENT_FILE_TOO_LARGE = 'documentFileTooLarge';
+// F-SEC-18 — sniffed MIME type does not match the declared mimeType.
+export const DOCUMENT_MIME_MISMATCH = 'documentMimeMismatch';
 
 // ─── Import ──────────────────────────────────────────────────────
 export const IMPORT_NO_DATA_ROWS = 'importNoDataRows';

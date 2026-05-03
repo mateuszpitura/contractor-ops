@@ -16,7 +16,7 @@ import { requirePermission } from '../../middleware/rbac.js';
 import { tenantProcedure } from '../../middleware/tenant.js';
 import { uploadRateLimitMiddleware } from '../../middleware/upload-rate-limit.js';
 import { isAllowedMimeType, validateMimeType } from '../../services/mime-validator.js';
-import { generateStorageKey, getR2BucketName } from '../../services/r2.js';
+import { generateStorageKey, getR2BucketName, maxBytesForMime } from '../../services/r2.js';
 import {
   createRegionalPresignedDownloadUrl,
   createRegionalPresignedUploadUrl,
@@ -30,6 +30,37 @@ const log = createLogger({ service: 'document-router' });
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
+
+/**
+ * F-SEC-18: synchronous magic-byte MIME sniff. Pulls the first 4 KB of the
+ * stored object via a Range GET and runs `file-type` against it. Returns
+ * the detected MIME, `null` if the bytes were unreadable / undetectable.
+ *
+ * This is the single-call helper used by `confirmUpload` to reject the
+ * "PDF declared, HTML uploaded" attack synchronously (no waiting for the
+ * async ClamAV pipeline). The same code path lives inside `scanAndUpdate`
+ * for the async retry; both share the same 4 KB Range size so an attacker
+ * can't tailor a payload that passes one but trips the other.
+ */
+async function sniffStoredMime(storageKey: string): Promise<string | null> {
+  const { GetObjectCommand } = await import('@aws-sdk/client-s3');
+  const { createR2Client } = await import('../../services/r2.js');
+  const client = createR2Client();
+
+  const response = await client.send(
+    new GetObjectCommand({
+      Bucket: getR2BucketName(),
+      Key: storageKey,
+      Range: 'bytes=0-4099',
+    }),
+  );
+  const bodyBytes = await response.Body?.transformToByteArray();
+  if (!bodyBytes) return null;
+
+  const { fileTypeFromBuffer } = await import('file-type');
+  const result = await fileTypeFromBuffer(Buffer.from(bodyBytes));
+  return result?.mime ?? null;
+}
 
 /**
  * Async fire-and-forget: validates MIME type and scans for viruses.
@@ -145,6 +176,17 @@ export const documentRouter = router({
         });
       }
 
+      // F-SEC-19: short-circuit when the client-declared size already
+      // exceeds the per-MIME cap. Avoids creating a stub Document row for
+      // an upload that R2 would reject anyway.
+      const cap = maxBytesForMime(input.mimeType);
+      if (input.fileSizeBytes > cap) {
+        throw new TRPCError({
+          code: 'PAYLOAD_TOO_LARGE',
+          message: E.DOCUMENT_FILE_TOO_LARGE,
+        });
+      }
+
       // Create Document record
       const doc = await ctx.db.document.create({
         data: {
@@ -169,8 +211,16 @@ export const documentRouter = router({
         data: { storageKey },
       });
 
-      // Generate presigned upload URL (5-minute expiry)
-      const uploadUrl = await createRegionalPresignedUploadUrl(storageKey, input.mimeType, 300);
+      // Generate presigned upload URL (5-minute expiry). F-SEC-19: thread
+      // the per-MIME cap into the signed URL so R2 rejects oversize PUTs
+      // at the edge.
+      const uploadUrl = await createRegionalPresignedUploadUrl(
+        storageKey,
+        input.mimeType,
+        300,
+        undefined,
+        cap,
+      );
 
       // Create entity link if provided
       if (input.entityType && input.entityId) {
@@ -189,8 +239,13 @@ export const documentRouter = router({
     }),
 
   /**
-   * Confirm that a file was uploaded to R2. Verifies the object exists
-   * and triggers async virus scanning + MIME validation.
+   * Confirm that a file was uploaded to R2. Verifies the object exists,
+   * enforces the per-MIME byte cap (F-SEC-19), runs synchronous magic-byte
+   * MIME sniffing against the declared mimeType (F-SEC-18), and only then
+   * triggers the async virus-scan pipeline.
+   *
+   * On any guard failure the R2 object is deleted before the error so the
+   * attacker can't retain a placeholder for later use.
    */
   confirmUpload: tenantProcedure
     .use(requirePermission({ document: ['create'] }))
@@ -221,15 +276,61 @@ export const documentRouter = router({
         });
       }
 
+      // F-SEC-19: re-verify size against the per-MIME cap. The presigned
+      // PUT URL was already signed with ContentLength, but a future code
+      // path that uses a different presigner might bypass that — this is
+      // the second line of defence.
+      const cap = maxBytesForMime(doc.mimeType);
+      const actualBytes = headResponse.ContentLength ?? 0;
+      if (actualBytes > cap) {
+        log.warn(
+          { documentId: doc.id, mimeType: doc.mimeType, actualBytes, cap },
+          'confirmUpload rejected: oversize',
+        );
+        await deleteRegionalObject(doc.storageKey).catch(err =>
+          log.error({ err, storageKey: doc.storageKey }, 'failed to delete oversize object'),
+        );
+        throw new TRPCError({
+          code: 'PAYLOAD_TOO_LARGE',
+          message: E.DOCUMENT_FILE_TOO_LARGE,
+        });
+      }
+
+      // F-SEC-18: synchronous MIME sniff. Pulls the first 4 KB from R2 via
+      // a Range GET, runs `file-type` against the magic bytes, and rejects
+      // (+ deletes the object) if the detected MIME does not match the
+      // declared `doc.mimeType`. Closes the "PDF declared, HTML uploaded"
+      // gap that bypasses CSP via inline rendering paths.
+      const sniffed = await sniffStoredMime(doc.storageKey).catch(err => {
+        log.warn({ err, storageKey: doc.storageKey }, 'mime sniff failed');
+        return null;
+      });
+      if (sniffed === null || sniffed !== doc.mimeType) {
+        log.warn(
+          { documentId: doc.id, declared: doc.mimeType, sniffed },
+          'confirmUpload rejected: mime mismatch',
+        );
+        await deleteRegionalObject(doc.storageKey).catch(err =>
+          log.error(
+            { err, storageKey: doc.storageKey },
+            'failed to delete mime-mismatched object',
+          ),
+        );
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: E.DOCUMENT_MIME_MISMATCH,
+        });
+      }
+
       // Update file size from actual R2 object
       const updated = await ctx.db.document.update({
         where: { id: doc.id },
         data: {
-          fileSizeBytes: headResponse.ContentLength ?? doc.fileSizeBytes,
+          fileSizeBytes: actualBytes || doc.fileSizeBytes,
         },
       });
 
-      // Fire-and-forget async scan pipeline
+      // Fire-and-forget async scan pipeline (ClamAV — slow path)
       void scanAndUpdate(ctx.db, doc.id, doc.storageKey);
 
       return updated;
@@ -346,6 +447,15 @@ export const documentRouter = router({
         });
       }
 
+      // F-SEC-19: same per-MIME byte cap as requestUpload.
+      const cap = maxBytesForMime(input.mimeType);
+      if (input.fileSizeBytes > cap) {
+        throw new TRPCError({
+          code: 'PAYLOAD_TOO_LARGE',
+          message: E.DOCUMENT_FILE_TOO_LARGE,
+        });
+      }
+
       const result = await ctx.db.$transaction(async tx => {
         // Find existing document
         const existing = await tx.document.findFirst({
@@ -415,8 +525,14 @@ export const documentRouter = router({
           });
         }
 
-        // Generate presigned upload URL
-        const uploadUrl = await createRegionalPresignedUploadUrl(storageKey, input.mimeType, 300);
+        // Generate presigned upload URL with per-MIME size cap (F-SEC-19).
+        const uploadUrl = await createRegionalPresignedUploadUrl(
+          storageKey,
+          input.mimeType,
+          300,
+          undefined,
+          cap,
+        );
 
         return { documentId: newDoc.id, uploadUrl, storageKey };
       });
