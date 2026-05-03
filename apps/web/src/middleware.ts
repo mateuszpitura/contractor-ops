@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/nextjs';
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
 import type { NextRequest } from 'next/server';
@@ -66,8 +67,30 @@ function fallbackRateLimit(key: string, max: number): { allowed: boolean; remain
 }
 
 /**
+ * Sentinel error thrown by `checkLimit` when the Upstash backend is
+ * unavailable in production (F-SCALE-03). Callers translate this into a
+ * 503 + Retry-After response so the request fails CLOSED rather than
+ * letting an attacker bypass auth/portal/api throttles during a Redis
+ * outage.
+ */
+class RateLimiterUnavailableError extends Error {
+  constructor() {
+    super('rate limiter backend unavailable');
+    this.name = 'RateLimiterUnavailableError';
+  }
+}
+
+/**
  * Check rate limit using Redis (preferred) or in-memory fallback.
- * Returns { allowed, remaining } or null if an error occurred (fail-open).
+ *
+ * On Upstash error:
+ *   - production → throws `RateLimiterUnavailableError` so the caller can
+ *     fail-CLOSED with a 503 + Retry-After. Allowing every request through
+ *     during a Redis outage hands attackers a free DoS / credential-
+ *     stuffing window against /api/auth, /api/portal, /api/trpc.
+ *   - dev/test   → falls back to the in-memory counter so local dev keeps
+ *     working when Redis isn't available, and emits a Sentry warning so
+ *     the drift is visible (Pino is unavailable in the edge runtime).
  */
 async function checkLimit(
   limiter: Ratelimit | null,
@@ -84,15 +107,45 @@ async function checkLimit(
         limit: result.limit,
         reset: result.reset,
       };
-    } catch {
-      // Redis error: fail-open to avoid blocking all requests
-      return { allowed: true, remaining: fallbackMax, limit: fallbackMax, reset: 0 };
+    } catch (err) {
+      const env = process.env.NODE_ENV ?? 'development';
+      if (env === 'production') {
+        // Fail-closed in production. Capture for on-call visibility.
+        Sentry.captureException(err, {
+          level: 'error',
+          tags: { component: 'edge-middleware', limiter: fallbackPrefix },
+          extra: { reason: 'upstash unavailable; failing closed' },
+        });
+        throw new RateLimiterUnavailableError();
+      }
+      Sentry.captureMessage('upstash rate limiter unavailable — falling back to in-memory', {
+        level: 'warning',
+        tags: { component: 'edge-middleware', limiter: fallbackPrefix, env },
+      });
+      const fb = fallbackRateLimit(`${fallbackPrefix}:${identifier}`, fallbackMax);
+      const entry = fallbackMap.get(`${fallbackPrefix}:${identifier}`);
+      return { ...fb, limit: fallbackMax, reset: entry?.resetAt ?? 0 };
     }
   }
-  // No Redis: use in-memory fallback
+  // No Redis configured: use in-memory fallback
   const fb = fallbackRateLimit(`${fallbackPrefix}:${identifier}`, fallbackMax);
   const entry = fallbackMap.get(`${fallbackPrefix}:${identifier}`);
   return { ...fb, limit: fallbackMax, reset: entry?.resetAt ?? 0 };
+}
+
+/**
+ * 503 response when the rate-limit backend is unavailable in production.
+ * Retry-After is short (5 s) so well-behaved clients back off briefly while
+ * Upstash recovers, rather than queueing indefinitely.
+ */
+function rateLimiterUnavailableResponse() {
+  return NextResponse.json(
+    { error: 'Service temporarily unavailable. Please retry in a moment.' },
+    {
+      status: 503,
+      headers: { 'Retry-After': '5' },
+    },
+  );
 }
 
 function rateLimitResponse(remaining: number, limit: number, reset: number) {
@@ -266,25 +319,40 @@ async function applyRateLimits(
   ip: string,
   request: NextRequest,
 ): Promise<NextResponse | null> {
-  if (pathname.startsWith('/api/auth')) {
-    const { allowed, remaining, limit, reset } = await checkLimit(authLimiter, ip, 'auth', 10);
-    if (!allowed) return rateLimitResponse(remaining, limit, reset);
-  }
+  try {
+    if (pathname.startsWith('/api/auth')) {
+      const { allowed, remaining, limit, reset } = await checkLimit(authLimiter, ip, 'auth', 10);
+      if (!allowed) return rateLimitResponse(remaining, limit, reset);
+    }
 
-  if (pathname.startsWith('/api/portal')) {
-    const { allowed, remaining, limit, reset } = await checkLimit(portalLimiter, ip, 'portal', 10);
-    if (!allowed) return rateLimitResponse(remaining, limit, reset);
-  }
+    if (pathname.startsWith('/api/portal')) {
+      const { allowed, remaining, limit, reset } = await checkLimit(
+        portalLimiter,
+        ip,
+        'portal',
+        10,
+      );
+      if (!allowed) return rateLimitResponse(remaining, limit, reset);
+    }
 
-  if (pathname.startsWith('/api/trpc') && !shouldSkipTrpcRateLimitForLoadTest(request)) {
-    const ipResult = await checkLimit(apiLimiter, ip, 'api', 60);
-    if (!ipResult.allowed)
-      return rateLimitResponse(ipResult.remaining, ipResult.limit, ipResult.reset);
+    if (pathname.startsWith('/api/trpc') && !shouldSkipTrpcRateLimitForLoadTest(request)) {
+      const ipResult = await checkLimit(apiLimiter, ip, 'api', 60);
+      if (!ipResult.allowed)
+        return rateLimitResponse(ipResult.remaining, ipResult.limit, ipResult.reset);
 
-    // Per-org rate limiting intentionally removed: the only org identifier
-    // available in the edge runtime is the `better-auth.active_organization`
-    // cookie, which is client-editable. Per-org caps live in the tRPC
-    // middleware where the session has been validated server-side.
+      // Per-org rate limiting intentionally removed: the only org identifier
+      // available in the edge runtime is the `better-auth.active_organization`
+      // cookie, which is client-editable. Per-org caps live in the tRPC
+      // middleware where the session has been validated server-side.
+    }
+  } catch (err) {
+    // F-SCALE-03: rate limiter unavailable in production → fail-CLOSED with
+    // 503 + Retry-After. The Sentry capture happens inside `checkLimit` so
+    // we don't double-report here.
+    if (err instanceof RateLimiterUnavailableError) {
+      return rateLimiterUnavailableResponse();
+    }
+    throw err;
   }
 
   return null;
