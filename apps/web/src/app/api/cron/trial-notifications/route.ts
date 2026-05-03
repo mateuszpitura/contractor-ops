@@ -1,7 +1,7 @@
 import { sendAppEmail } from '@contractor-ops/api/services/app-email';
 import { withCronMonitor } from '@contractor-ops/api/services/cron-monitor';
 import { dispatch } from '@contractor-ops/api/services/notification-service';
-import { prisma } from '@contractor-ops/db';
+import { prisma, prismaRaw } from '@contractor-ops/db';
 import { createCronLogger } from '@contractor-ops/logger';
 import { metrics } from '@contractor-ops/logger/metrics';
 import * as Sentry from '@sentry/nextjs';
@@ -9,6 +9,11 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 const log = createCronLogger('trial-notifications');
+
+// F-ASYNC-07 — advisory lock prevents two overlapping ticks (timezone shift,
+// scheduler retry, manual re-trigger) from both fanning out to every
+// TRIALING subscription.
+const TRIAL_NOTIFICATIONS_LOCK_KEY = 'cron:trial-notifications';
 
 function buildBillingUrl(): string {
   const base = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
@@ -72,7 +77,28 @@ async function sendTrialNotification(
   organization: { id: string; billingEmail: string | null },
   adminUserIds: string[],
   template: TrialTemplate,
-): Promise<void> {
+  daysUntilTrialEnd: number,
+  todayBucket: string,
+): Promise<{ skipped: boolean }> {
+  // F-ASYNC-07: idempotent dedup via NotificationCronDedup. The cron-tick may
+  // run twice (timezone shift, retry, manual re-trigger); the unique
+  // dedupeKey makes the second tick a no-op for THIS subscription.
+  const dedupeKey = `trial-end:${organization.id}:${daysUntilTrialEnd}:${todayBucket}`;
+  try {
+    await prisma.notificationCronDedup.create({ data: { dedupeKey } });
+  } catch (err) {
+    if (
+      typeof err === 'object' &&
+      err !== null &&
+      'code' in err &&
+      (err as { code?: unknown }).code === 'P2002'
+    ) {
+      // Duplicate tick — short-circuit silently.
+      return { skipped: true };
+    }
+    throw err;
+  }
+
   if (adminUserIds.length > 0) {
     await dispatch({
       organizationId: organization.id,
@@ -97,58 +123,99 @@ async function sendTrialNotification(
       log.error({ err: error }, 'email send failed');
     }
   }
+
+  return { skipped: false };
 }
 
 async function handleTrialNotifications() {
   let notificationCount = 0;
+  let skippedDedup = 0;
 
   try {
-    const trialingSubscriptions = await prisma.subscription.findMany({
-      where: {
-        status: 'TRIALING',
-        trialEnd: { not: null },
-      },
-      include: {
-        organization: {
-          select: {
-            id: true,
-            billingEmail: true,
-            members: {
-              where: { role: { in: ['owner', 'admin'] } },
-              select: { userId: true },
+    // F-ASYNC-07 advisory lock — prevents two overlapping ticks both walking
+    // every TRIALING subscription. Note: the inner per-org dedupeKey still
+    // matters because cron auto-runs with a new tx PER tick can race the
+    // lock, but in practice the lock + the unique dedupeKey are belt+braces.
+    const result = await prismaRaw.$transaction(async tx => {
+      const lockRows = (await tx.$queryRawUnsafe(
+        'SELECT pg_try_advisory_xact_lock(hashtext($1)) AS acquired',
+        TRIAL_NOTIFICATIONS_LOCK_KEY,
+      )) as Array<{ acquired?: boolean }>;
+      const acquired = Boolean(lockRows?.[0]?.acquired);
+      if (!acquired) {
+        log.info('another trial-notifications tick is in flight; skipping');
+        metrics.increment('cron.trial_notifications.skipped_locked');
+        return { processed: 0, skipped: true as const };
+      }
+
+      const trialingSubscriptions = await prisma.subscription.findMany({
+        where: {
+          status: 'TRIALING',
+          trialEnd: { not: null },
+        },
+        include: {
+          organization: {
+            select: {
+              id: true,
+              billingEmail: true,
+              members: {
+                where: { role: { in: ['owner', 'admin'] } },
+                select: { userId: true },
+              },
             },
           },
         },
-      },
+      });
+
+      const now = new Date();
+      const todayBucket = now.toISOString().slice(0, 10); // YYYY-MM-DD
+
+      for (const sub of trialingSubscriptions) {
+        if (!sub.trialEnd) continue;
+
+        const daysUntilTrialEnd = Math.ceil(
+          (sub.trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
+        );
+
+        const template = TRIAL_NOTIFICATION_TEMPLATES[daysUntilTrialEnd];
+        if (!template) continue;
+
+        const adminUserIds = sub.organization.members.map((m: { userId: string }) => m.userId);
+
+        const sendResult = await sendTrialNotification(
+          sub.organization,
+          adminUserIds,
+          template,
+          daysUntilTrialEnd,
+          todayBucket,
+        );
+        if (sendResult.skipped) {
+          skippedDedup++;
+        } else {
+          notificationCount++;
+        }
+      }
+
+      return { processed: trialingSubscriptions.length, skipped: false as const };
     });
 
-    const now = new Date();
-
-    for (const sub of trialingSubscriptions) {
-      if (!sub.trialEnd) continue;
-
-      const daysUntilTrialEnd = Math.ceil(
-        (sub.trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
-      );
-
-      const template = TRIAL_NOTIFICATION_TEMPLATES[daysUntilTrialEnd];
-      if (!template) continue;
-
-      const adminUserIds = sub.organization.members.map((m: { userId: string }) => m.userId);
-
-      await sendTrialNotification(sub.organization, adminUserIds, template);
-      notificationCount++;
-    }
-
     log.info(
-      { processed: trialingSubscriptions.length, sent: notificationCount },
+      {
+        processed: result.processed,
+        sent: notificationCount,
+        skippedDedup,
+        skipped: result.skipped,
+      },
       'cron completed',
     );
     metrics.gauge('cron.trial_notifications.sent', notificationCount);
+    metrics.gauge('cron.trial_notifications.skipped_dedup', skippedDedup);
 
     return NextResponse.json({
-      processed: trialingSubscriptions.length,
+      processed: result.processed,
       notificationsSent: notificationCount,
+      skippedDedup,
+      skippedLocked: result.skipped,
     });
   } catch (error) {
     log.error({ err: error }, 'cron handler failed');
