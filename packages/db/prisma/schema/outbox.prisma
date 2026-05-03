@@ -1,0 +1,62 @@
+// Transactional outbox for at-least-once delivery of side effects that must
+// happen as a consequence of a DB write but cannot run inside the same
+// transaction (notification fan-out, integration webhooks, search index
+// pushes, etc.).
+//
+// Design (P2-A, F-ASYNC-03):
+// - Producers `INSERT INTO "OutboxEvent" ...` *inside* the same
+//   `prisma.$transaction(...)` as the event that triggered the side effect.
+//   On commit the row is durable; on rollback nothing was ever published.
+// - A QStash schedule polls `/api/outbox/_drain` on a tight cadence (every
+//   30s). The drain query uses `SELECT ... FOR UPDATE SKIP LOCKED` so
+//   multiple workers can fan out concurrently without double-processing.
+// - Per-event handlers live in `packages/api/src/services/outbox/handlers.ts`
+//   and are routed by `eventType`. Handler invocations use `OutboxEvent.id`
+//   as the idempotency key to downstream services (Stripe, QStash, Resend).
+// - Failed events are kept (not deleted) for forensics. After 10 attempts
+//   they are marked FAILED and a Sentry capture fires for ops follow-up.
+//
+// `organizationId` is required so the existing Prisma tenant extension
+// auto-scopes reads.
+
+model OutboxEvent {
+  id             String       @id @default(cuid())
+  organizationId String
+  eventType      String
+  // Optional aggregate metadata for forensics / replay tooling.
+  aggregateType  String?
+  aggregateId    String?
+  payloadJson    Json
+  // For backwards compatibility with the placeholder OutboxEvent model that
+  // was previously declared in audit.prisma but never read by any code.
+  // `dedupKey` is server-derived from the payload (e.g.
+  // `${recipientId}:${kind}:${entityId}:${dateBucket}`) and short-circuits
+  // duplicate enqueues at the DB level.
+  dedupKey       String?
+  status         OutboxStatus @default(PENDING)
+  attempts       Int          @default(0)
+  // When PENDING, this is the earliest time the drain may pick the row up.
+  // Set on insert (default now) and bumped on transient failure with
+  // exponential backoff + jitter; see `outbox/index.ts:scheduleNextAttempt`.
+  nextAttemptAt  DateTime     @default(now())
+  lastError      String?
+  dispatchedAt   DateTime?
+  failedAt       DateTime?
+  createdAt      DateTime     @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  // Per-tenant + dedup short-circuit. Allowing nullable dedupKey means
+  // "no dedup" (e.g. one-shot events) coexist with deduplicated streams.
+  @@unique([organizationId, dedupKey])
+  // Drain query predicate: WHERE status='PENDING' AND nextAttemptAt <= now().
+  @@index([status, nextAttemptAt])
+  // Cross-tenant retention sweep / per-tenant audit.
+  @@index([organizationId, createdAt])
+}
+
+enum OutboxStatus {
+  PENDING
+  DISPATCHED
+  FAILED
+}

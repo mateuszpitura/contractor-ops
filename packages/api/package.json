@@ -160,6 +160,16 @@
       "types": "./src/schemas/reassessment-trigger-reason.ts",
       "import": "./src/schemas/reassessment-trigger-reason.ts",
       "default": "./src/schemas/reassessment-trigger-reason.ts"
+    },
+    "./services/outbox": {
+      "types": "./src/services/outbox/index.ts",
+      "import": "./src/services/outbox/index.ts",
+      "default": "./src/services/outbox/index.ts"
+    },
+    "./services/queue": {
+      "types": "./src/services/queue.ts",
+      "import": "./src/services/queue.ts",
+      "default": "./src/services/queue.ts"
     }
   },
   "scripts": {

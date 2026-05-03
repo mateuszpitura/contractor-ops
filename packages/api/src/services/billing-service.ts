@@ -1,7 +1,35 @@
+import { createHash } from 'node:crypto';
 import { prisma } from '@contractor-ops/db';
 import { createLogger } from '@contractor-ops/logger';
 import { CacheKeys, CacheTTL, cached } from './cache.js';
 import { stripe } from './stripe-client.js';
+
+// ---------------------------------------------------------------------------
+// Idempotency-Key derivation (F-INT-04)
+// ---------------------------------------------------------------------------
+
+/**
+ * Server-derived idempotency key for state-changing Stripe API calls.
+ *
+ * Stripe documents Idempotency-Key as "any value, up to 255 characters" and
+ * dedupes for 24h. We hash a stable business tuple per operation so a QStash
+ * retry, a manual user re-click, or a webhook reprocessing can't create
+ * duplicate Stripe objects (subscriptions, customers, checkout sessions).
+ *
+ * NEVER pass through client-supplied input — always derive server-side from
+ * (orgId, businessKey, operation).
+ */
+function stripeIdempotencyKey(
+  organizationId: string,
+  operation: string,
+  businessKey: string,
+): string {
+  const digest = createHash('sha256')
+    .update(`${organizationId}|${operation}|${businessKey}`)
+    .digest('base64url');
+  // Stripe accepts ≤255 chars; we keep it short for log readability.
+  return `${operation}-${organizationId.slice(0, 12)}-${digest.slice(0, 24)}`;
+}
 
 const log = createLogger({ service: 'billing-service' });
 
@@ -85,25 +113,37 @@ export async function createCheckoutSession(
   }
 
   try {
-    const session = await stripe.checkout.sessions.create({
-      mode: 'subscription',
-      customer: params.stripeCustomerId,
-      currency: 'pln',
-      line_items: [
-        {
-          price: params.priceId,
-          quantity: params.quantity,
+    // F-INT-04: idempotency key dedupes a double-click or QStash retry that
+    // would otherwise create two checkout sessions (and two PaymentIntents)
+    // for the same intended subscription.
+    const session = await stripe.checkout.sessions.create(
+      {
+        mode: 'subscription',
+        customer: params.stripeCustomerId,
+        currency: 'pln',
+        line_items: [
+          {
+            price: params.priceId,
+            quantity: params.quantity,
+          },
+        ],
+        subscription_data: {
+          trial_period_days: params.isNewOrg ? 14 : undefined,
+          metadata: {
+            organizationId: params.organizationId,
+          },
         },
-      ],
-      subscription_data: {
-        trial_period_days: params.isNewOrg ? 14 : undefined,
-        metadata: {
-          organizationId: params.organizationId,
-        },
+        success_url: params.successUrl,
+        cancel_url: params.cancelUrl,
       },
-      success_url: params.successUrl,
-      cancel_url: params.cancelUrl,
-    });
+      {
+        idempotencyKey: stripeIdempotencyKey(
+          params.organizationId,
+          'checkout-sub',
+          `${params.priceId}:${params.quantity}`,
+        ),
+      },
+    );
 
     if (!session.url) {
       throw new Error('[billing-service] Checkout session URL is null');
@@ -196,24 +236,36 @@ export async function createTopUpCheckoutSession(
   assertNonEmpty(params.cancelUrl, 'cancelUrl');
 
   try {
-    const session = await stripe.checkout.sessions.create({
-      mode: 'payment',
-      customer: params.stripeCustomerId,
-      currency: 'pln',
-      line_items: [
-        {
-          price: params.priceId,
-          quantity: 1,
+    // F-INT-04: stable idempotency key. Note we INCLUDE successUrl in the
+    // business key so distinct in-app flows don't share keys (and so that a
+    // post-cancel retry from a different page lands cleanly).
+    const session = await stripe.checkout.sessions.create(
+      {
+        mode: 'payment',
+        customer: params.stripeCustomerId,
+        currency: 'pln',
+        line_items: [
+          {
+            price: params.priceId,
+            quantity: 1,
+          },
+        ],
+        metadata: {
+          organizationId: params.organizationId,
+          type: 'top_up',
+          priceId: params.priceId,
         },
-      ],
-      metadata: {
-        organizationId: params.organizationId,
-        type: 'top_up',
-        priceId: params.priceId,
+        success_url: params.successUrl,
+        cancel_url: params.cancelUrl,
       },
-      success_url: params.successUrl,
-      cancel_url: params.cancelUrl,
-    });
+      {
+        idempotencyKey: stripeIdempotencyKey(
+          params.organizationId,
+          'checkout-topup',
+          params.priceId,
+        ),
+      },
+    );
 
     if (!session.url) {
       throw new Error('[billing-service] Top-up checkout session URL is null');
@@ -244,15 +296,29 @@ export async function updateSubscriptionSeatCount(params: {
   }
 
   try {
-    await stripe.subscriptions.update(params.stripeSubscriptionId, {
-      items: [
-        {
-          id: params.stripeSubscriptionItemId,
-          quantity: params.newQuantity,
-        },
-      ],
-      proration_behavior: 'create_prorations',
-    });
+    // F-INT-04: dedupe rapid-fire seat updates from concurrent contractor
+    // mutations. Stripe accepts the same key across `update` calls for 24h.
+    // Including newQuantity in the business key means two distinct seat
+    // changes still both go through.
+    await stripe.subscriptions.update(
+      params.stripeSubscriptionId,
+      {
+        items: [
+          {
+            id: params.stripeSubscriptionItemId,
+            quantity: params.newQuantity,
+          },
+        ],
+        proration_behavior: 'create_prorations',
+      },
+      {
+        idempotencyKey: stripeIdempotencyKey(
+          params.stripeSubscriptionId,
+          'sub-seats',
+          String(params.newQuantity),
+        ),
+      },
+    );
   } catch (error) {
     log.error(
       {
@@ -294,15 +360,22 @@ export async function syncSeatCountForOrg(organizationId: string): Promise<void>
 
     if (newQuantity === sub.seatCount) return;
 
-    await stripe.subscriptions.update(sub.stripeSubscriptionId, {
-      items: [
-        {
-          id: sub.stripeSubscriptionItemId,
-          quantity: newQuantity,
-        },
-      ],
-      proration_behavior: 'create_prorations',
-    });
+    // F-INT-04: same idempotency strategy as updateSubscriptionSeatCount.
+    await stripe.subscriptions.update(
+      sub.stripeSubscriptionId,
+      {
+        items: [
+          {
+            id: sub.stripeSubscriptionItemId,
+            quantity: newQuantity,
+          },
+        ],
+        proration_behavior: 'create_prorations',
+      },
+      {
+        idempotencyKey: stripeIdempotencyKey(organizationId, 'sub-seats-sync', String(newQuantity)),
+      },
+    );
 
     // Update local DB to keep in sync (don't wait for webhook)
     await prisma.subscription.update({

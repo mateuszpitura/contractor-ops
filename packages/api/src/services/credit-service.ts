@@ -159,8 +159,9 @@ export async function checkAndDeductCredit(organizationId: string): Promise<Cred
         };
       }
 
-      // Deduct one credit
-      await tx.ocrCreditLedger.create({
+      // Deduct one credit. Capture the ledger ID so the meter event can use
+      // it as the Stripe `identifier` for native dedup (F-INT-04).
+      const ledgerEntry = await tx.ocrCreditLedger.create({
         data: {
           organizationId,
           credits: -1,
@@ -168,12 +169,14 @@ export async function checkAndDeductCredit(organizationId: string): Promise<Cred
           periodStart: subscription.currentPeriodStart,
           periodEnd: subscription.currentPeriodEnd,
         },
+        select: { id: true },
       });
 
       return {
         allowed: true as const,
         remaining: remaining - 1,
         stripeCustomerId: subscription.stripeCustomerId,
+        ledgerEntryId: ledgerEntry.id,
       };
     },
     {
@@ -199,9 +202,16 @@ export async function checkAndDeductCredit(organizationId: string): Promise<Cred
 
   // Fire-and-forget Stripe Meter event after successful deduction (outside transaction)
   if (result.allowed && result.stripeCustomerId) {
+    // F-INT-04: Stripe meter events have native dedup via `identifier`
+    // (Stripe enforces uniqueness within a rolling 24h period). Without it,
+    // a retried OCR job (QStash, fixer cron) double-bills the customer.
+    // Derive from the ledger entry ID when available so the natural row-key
+    // doubles as the dedup key.
+    const meterIdentifier = `ocr-${organizationId}-${result.ledgerEntryId ?? Date.now().toString()}`;
     stripe.billing.meterEvents
       .create({
         event_name: 'ocr_extraction',
+        identifier: meterIdentifier,
         payload: {
           stripe_customer_id: result.stripeCustomerId,
           value: '1',

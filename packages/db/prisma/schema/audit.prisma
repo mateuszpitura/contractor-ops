@@ -1,4 +1,10 @@
-// AuditLog, OutboxEvent
+// AuditLog
+//
+// NOTE: The OutboxEvent model + OutboxStatus enum live in outbox.prisma
+// (P2-A, F-ASYNC-03). Previously a placeholder OutboxEvent existed here but
+// was never read by any code; the new model in outbox.prisma extends it with
+// attempts / nextAttemptAt / lastError / dispatchedAt / failedAt for the
+// transactional outbox pattern.
 
 model AuditLog {
   id             String     @id @default(cuid())
@@ -26,24 +32,6 @@ model AuditLog {
   @@index([organizationId, createdAt])
 }
 
-model OutboxEvent {
-  id             String       @id @default(cuid())
-  organizationId String
-  eventType      String
-  aggregateType  String
-  aggregateId    String
-  payloadJson    Json
-  status         OutboxStatus @default(PENDING)
-  availableAt    DateTime
-  publishedAt    DateTime?
-  createdAt      DateTime     @default(now())
-
-  organization Organization @relation(fields: [organizationId], references: [id])
-
-  @@index([organizationId])
-  @@index([organizationId, status, availableAt])
-}
-
 // --- Enums ---
 
 enum ActorType {
@@ -52,10 +40,4 @@ enum ActorType {
   INTEGRATION
   API_KEY
   CONTRACTOR
-}
-
-enum OutboxStatus {
-  PENDING
-  PUBLISHED
-  FAILED
 }
