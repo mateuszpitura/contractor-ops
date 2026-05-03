@@ -10,10 +10,13 @@
 //     deployments.
 //   - In-memory sliding window fallback for dev / single-instance / tests.
 
+import { createLogger } from '@contractor-ops/logger';
 import { TRPCError } from '@trpc/server';
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
 import { t } from '../init.js';
+
+const log = createLogger({ service: 'api', component: 'upload-rate-limit' });
 
 // ---------------------------------------------------------------------------
 // Config
@@ -92,9 +95,25 @@ export const uploadRateLimitMiddleware = t.middleware(async ({ ctx, next }) => {
       const result = await upstashLimiter.limit(userId);
       allowed = result.success;
       remaining = result.remaining;
-    } catch {
-      // Redis transient error: fall back to in-memory count so we still
-      // detect a runaway upload loop on the same instance.
+    } catch (err) {
+      // F-SCALE-03: in production, fail-CLOSED if Upstash is unreachable.
+      // The in-memory fallback only counts uploads on a single web pod;
+      // with the fleet at 2-8 instances this is effectively no rate limit
+      // and lets a single user OOM the upload pipeline during a Redis
+      // outage. dev/test still falls back so local runs aren't blocked.
+      const env = process.env.NODE_ENV ?? 'development';
+      if (env === 'production') {
+        log.error({ err, userId }, 'upstash rate limiter unavailable — failing closed for upload');
+        // 503 SERVICE_UNAVAILABLE — clients should retry with backoff.
+        throw new TRPCError({
+          code: 'SERVICE_UNAVAILABLE',
+          message: 'errors.upload.rateLimiterUnavailable',
+        });
+      }
+      log.warn(
+        { err, env, userId },
+        'upstash rate limiter unavailable — falling back to in-memory (non-prod only)',
+      );
       const fb = fallbackCheck(userId);
       allowed = fb.allowed;
       remaining = fb.remaining;
