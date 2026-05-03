@@ -1,3 +1,7 @@
+import {
+  consumeOAuthChallenge,
+  OAUTH_STATE_COOKIE_NAME,
+} from '@contractor-ops/api/services/oauth-challenge';
 import type { Prisma } from '@contractor-ops/db';
 import { prisma } from '@contractor-ops/db';
 import {
@@ -6,10 +10,6 @@ import {
   registerAllAdapters,
   verifyOAuthState,
 } from '@contractor-ops/integrations';
-import {
-  OAUTH_STATE_COOKIE_NAME,
-  consumeOAuthChallenge,
-} from '@contractor-ops/api/services/oauth-challenge';
 import { createLogger } from '@contractor-ops/logger';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
