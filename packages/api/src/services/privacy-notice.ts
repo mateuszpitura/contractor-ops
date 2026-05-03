@@ -256,6 +256,45 @@ export async function getPrivacyNotice(
 }
 
 /**
+ * Render the GDPR privacy notice PDF to a Buffer (P2-F · F-SCALE-02).
+ *
+ * Used by the async export consumer instead of inlining the React-PDF
+ * render in the tRPC mutation. Mirrors the original `legalRouter.
+ * generatePrivacyNoticePdf` preconditions: only GB/DE/EU jurisdictions
+ * are downloadable here; AE/SA flow through the consent router.
+ */
+export async function renderGdprPrivacyNoticePdfBuffer(params: {
+  organizationId: string;
+}): Promise<{ buffer: Buffer; jurisdiction: SupportedJurisdiction }> {
+  const org = await prisma.organization.findUniqueOrThrow({
+    where: { id: params.organizationId },
+    select: { id: true, name: true, countryCode: true },
+  });
+
+  const jurisdiction = resolveJurisdictionImpl(org.countryCode);
+
+  if (jurisdiction !== 'GB' && jurisdiction !== 'DE' && jurisdiction !== 'EU') {
+    throw new Error(
+      `Privacy notice PDF download not available for jurisdiction '${jurisdiction}'. Use the PDPL consent router for AE/SA.`,
+    );
+  }
+
+  const [{ renderToBuffer }, { GdprPrivacyNoticeTemplate }] = await Promise.all([
+    import('@react-pdf/renderer'),
+    import('../pdf-templates/gdpr-privacy-notice.js'),
+  ]);
+
+  const buffer = await renderToBuffer(
+    GdprPrivacyNoticeTemplate({
+      jurisdiction,
+      organization: { name: org.name, countryCode: org.countryCode },
+    }),
+  );
+
+  return { buffer, jurisdiction };
+}
+
+/**
  * Create a new version of a privacy notice for an organization.
  */
 export async function createPrivacyNotice(

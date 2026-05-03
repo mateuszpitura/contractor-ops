@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 import { useRouter } from '@/i18n/navigation';
 import { trpc } from '@/trpc/init';
 import { DrillDownBreadcrumb } from './drill-down-breadcrumb';
-import { downloadBase64File, ExportButtons } from './export-buttons';
+import { ExportButtons } from './export-buttons';
 import { ReportChart } from './report-chart';
 import { ReportTable } from './report-table';
 
@@ -72,14 +72,12 @@ export function SpendContractorReport({ dateFrom, dateTo }: SpendContractorRepor
 
   const exportMutation = useMutation(
     trpc.report.exportSpendByContractor.mutationOptions({
-      onSuccess: data => {
-        const result = data as {
-          data: string;
-          filename: string;
-          mimeType: string;
-        };
-        downloadBase64File(result.data, result.filename, result.mimeType);
-        toast.success(t('exportSuccess', { count: tableData.length }));
+      // F-SCALE-01 — exports now run async via QStash; the mutation
+      // returns `{ exportId, status: 'PENDING' }` and we surface a
+      // "queued — check your email" toast. The download link arrives
+      // by email and is also visible from the in-app exports panel.
+      onSuccess: () => {
+        toast.success(t('exportQueued'));
       },
       onError: () => {
         toast.error(t('exportError'));

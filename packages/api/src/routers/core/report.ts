@@ -1,14 +1,10 @@
 import { Prisma } from '@contractor-ops/db/generated/prisma/client';
+import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { router } from '../../init.js';
 import { requirePermission } from '../../middleware/rbac.js';
 import { tenantProcedure } from '../../middleware/tenant.js';
-import {
-  generateComplianceCsv,
-  generateContractsCsv,
-  generateInvoicesCsv,
-  generateSpendCsv,
-} from '../../services/report-export.js';
+import { requestExport } from '../../services/exports/index.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -43,20 +39,40 @@ function parseDateRange(input: { dateFrom: string; dateTo: string }): {
 }
 
 /**
- * Wraps a generated CSV in the standard report-download response shape
- * (`{ data, filename, mimeType }`) using a YYYY-MM-DD timestamp suffix.
- * Centralises the filename convention shared by every report export.
+ * Helper to enqueue an async export and surface a normalised
+ * `{ exportId, status: 'PENDING' }` envelope to the client.
+ *
+ * The client poll-and-redirect flow is:
+ *   1. Mutation returns `{ exportId, status: 'PENDING' }` immediately.
+ *   2. Client either polls `export.status(exportId)` (future) or waits for
+ *      the "your export is ready" email (current — link in email points
+ *      at `/api/exports/:exportId/download`).
+ *   3. Email + dashboard download link redirect to a freshly-signed R2
+ *      URL each time so the original link survives the 7-day retention.
+ *
+ * Throws TRPCError on enqueue failure so the UI surfaces a toast.
  */
-function buildCsvDownloadResponse(
-  prefix: string,
-  csv: { data: string; mimeType: string },
-): { data: string; filename: string; mimeType: string } {
-  const timestamp = new Date().toISOString().slice(0, 10);
-  return {
-    data: csv.data,
-    filename: `${prefix}-${timestamp}.csv`,
-    mimeType: csv.mimeType,
-  };
+async function enqueueExport(args: {
+  organizationId: string;
+  userId: string | undefined;
+  type: Parameters<typeof requestExport>[0]['type'];
+  params: unknown;
+}): Promise<{ exportId: string; status: 'PENDING' }> {
+  try {
+    const result = await requestExport({
+      organizationId: args.organizationId,
+      requestedByUserId: args.userId ?? null,
+      type: args.type,
+      params: args.params,
+    });
+    return result;
+  } catch (err) {
+    throw new TRPCError({
+      code: 'INTERNAL_SERVER_ERROR',
+      message: 'Failed to enqueue export',
+      cause: err instanceof Error ? err.message : String(err),
+    });
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -624,245 +640,87 @@ export const reportRouter = router({
   }),
 
   // =========================================================================
-  // Export mutations
+  // Export mutations — all 5 enqueue async jobs (P2-F · F-SCALE-01).
+  //
+  // Each mutation:
+  //   - validates input via Zod (per-export schema lives in the
+  //     `exports/registry.ts` module so the consumer revalidates before
+  //     dispatch),
+  //   - enqueues an `Export` row (PENDING) + QStash message,
+  //   - returns `{ exportId, status: 'PENDING' }` immediately so the
+  //     request handler is bounded.
+  //
+  // The client polls `/api/exports/:exportId/download` (or waits for the
+  // "your export is ready" email) — the previous synchronous CSV path
+  // would OOM the request pod for orgs with >50k invoices.
   // =========================================================================
 
   /**
-   * Export spend by contractor as CSV.
+   * Enqueue: spend by contractor (date range + optional contractor filter).
    */
   exportSpendByContractor: tenantProcedure
     .use(reportRead)
     .input(z.object({ ...dateRangeInput, contractorId: z.string().optional() }))
     .mutation(async ({ ctx, input }) => {
-      const { dateFrom, dateTo } = parseDateRange(input);
-
-      const contractorFilter = input.contractorId
-        ? Prisma.sql`AND i."contractorId" = ${input.contractorId}`
-        : Prisma.empty;
-
-      const items = await ctx.db.$queryRaw<
-        Array<{
-          contractorName: string;
-          invoiceCount: number;
-          totalMinor: number;
-          avgMinor: number;
-          lastPaidAt: Date | null;
-        }>
-      >`
-        SELECT
-          c."legalName" AS "contractorName",
-          COUNT(i.id)::int AS "invoiceCount",
-          COALESCE(SUM(i."amountToPayMinor")::int, 0) AS "totalMinor",
-          COALESCE(AVG(i."amountToPayMinor")::int, 0) AS "avgMinor",
-          MAX(i."paidAt") AS "lastPaidAt"
-        FROM "Invoice" i
-        JOIN "Contractor" c ON c.id = i."contractorId"
-        WHERE i."organizationId" = ${ctx.organizationId}
-          AND i."paymentStatus" = 'PAID'
-          AND i."paidAt" >= ${dateFrom}
-          AND i."paidAt" <= ${dateTo}
-          AND i."deletedAt" IS NULL
-          ${contractorFilter}
-        GROUP BY c.id, c."legalName"
-        ORDER BY "totalMinor" DESC
-      `;
-
-      const csv = await generateSpendCsv(
-        items.map(r => ({
-          ...r,
-          invoiceCount: Number(r.invoiceCount),
-          totalMinor: Number(r.totalMinor),
-          avgMinor: Number(r.avgMinor),
-          lastPaidAt: r.lastPaidAt ? new Date(r.lastPaidAt).toISOString() : null,
-        })),
-      );
-
-      return buildCsvDownloadResponse('spend-by-contractor', csv);
+      return enqueueExport({
+        organizationId: ctx.organizationId,
+        userId: ctx.session?.user?.id,
+        type: 'spend-by-contractor',
+        params: input,
+      });
     }),
 
   /**
-   * Export spend by team as CSV.
+   * Enqueue: spend by team (date range).
    */
   exportSpendByTeam: tenantProcedure
     .use(reportRead)
     .input(z.object({ ...dateRangeInput }))
     .mutation(async ({ ctx, input }) => {
-      const { dateFrom, dateTo } = parseDateRange(input);
-
-      const items = await ctx.db.$queryRaw<
-        Array<{
-          teamName: string | null;
-          contractorCount: number;
-          invoiceCount: number;
-          totalMinor: number;
-        }>
-      >`
-        SELECT
-          t.name AS "teamName",
-          COUNT(DISTINCT c.id)::int AS "contractorCount",
-          COUNT(i.id)::int AS "invoiceCount",
-          COALESCE(SUM(i."amountToPayMinor")::int, 0) AS "totalMinor"
-        FROM "Invoice" i
-        JOIN "Contractor" c ON c.id = i."contractorId"
-        LEFT JOIN "Team" t ON t.id = c."primaryTeamId"
-        WHERE i."organizationId" = ${ctx.organizationId}
-          AND i."paymentStatus" = 'PAID'
-          AND i."paidAt" >= ${dateFrom}
-          AND i."paidAt" <= ${dateTo}
-          AND i."deletedAt" IS NULL
-        GROUP BY t.id, t.name
-        ORDER BY "totalMinor" DESC
-      `;
-
-      // Reuse generateSpendCsv with adapted data
-      const csv = await generateSpendCsv(
-        items.map(r => ({
-          contractorName: r.teamName ?? '',
-          invoiceCount: Number(r.invoiceCount),
-          totalMinor: Number(r.totalMinor),
-          avgMinor: 0,
-          lastPaidAt: null,
-        })),
-      );
-
-      return buildCsvDownloadResponse('spend-by-team', csv);
+      return enqueueExport({
+        organizationId: ctx.organizationId,
+        userId: ctx.session?.user?.id,
+        type: 'spend-by-team',
+        params: input,
+      });
     }),
 
   /**
-   * Export expiring contracts as CSV.
+   * Enqueue: expiring contracts within the given window.
    */
   exportExpiringContracts: tenantProcedure
     .use(reportRead)
     .input(z.object({ days: z.enum(['30', '60', '90']).default('30') }))
     .mutation(async ({ ctx, input }) => {
-      const now = new Date();
-      const daysNum = parseInt(input.days, 10);
-      const futureDate = new Date(now.getTime() + daysNum * 24 * 60 * 60 * 1000);
-      const msPerDay = 24 * 60 * 60 * 1000;
-
-      const contracts = await ctx.db.contract.findMany({
-        where: {
-          organizationId: ctx.organizationId,
-          status: { in: ['ACTIVE', 'EXPIRING'] as ('ACTIVE' | 'EXPIRING')[] },
-          endDate: { gte: now, lte: futureDate },
-          deletedAt: null,
-        },
-        include: {
-          contractor: { select: { legalName: true } },
-        },
-        orderBy: { endDate: 'asc' },
+      return enqueueExport({
+        organizationId: ctx.organizationId,
+        userId: ctx.session?.user?.id,
+        type: 'expiring-contracts',
+        params: input,
       });
-
-      const csv = await generateContractsCsv(
-        contracts.map(c => ({
-          contractTitle: c.title,
-          contractorName: c.contractor.legalName,
-          endDate: c.endDate?.toISOString().slice(0, 10) ?? '',
-          daysRemaining: c.endDate
-            ? Math.ceil((c.endDate.getTime() - now.getTime()) / msPerDay)
-            : 0,
-          status: c.status,
-        })),
-      );
-
-      return buildCsvDownloadResponse('expiring-contracts', csv);
     }),
 
   /**
-   * Export overdue invoices as CSV.
+   * Enqueue: overdue invoices (no input — server uses now()).
    */
   exportOverdueInvoices: tenantProcedure.use(reportRead).mutation(async ({ ctx }) => {
-    const now = new Date();
-    const msPerDay = 24 * 60 * 60 * 1000;
-
-    const invoices = await ctx.db.invoice.findMany({
-      where: {
-        organizationId: ctx.organizationId,
-        dueDate: { lt: now },
-        paymentStatus: { notIn: ['PAID'] as 'PAID'[] },
-        deletedAt: null,
-      },
-      include: {
-        contractor: { select: { legalName: true } },
-      },
-      orderBy: { dueDate: 'asc' },
+    return enqueueExport({
+      organizationId: ctx.organizationId,
+      userId: ctx.session?.user?.id,
+      type: 'overdue-invoices',
+      params: {},
     });
-
-    const csv = await generateInvoicesCsv(
-      invoices.map(inv => ({
-        invoiceNumber: inv.invoiceNumber,
-        contractorName: inv.contractor?.legalName ?? 'Unknown',
-        amountMinor: inv.amountToPayMinor,
-        currency: inv.currency,
-        dueDate: inv.dueDate.toISOString().slice(0, 10),
-        daysOverdue: Math.ceil((now.getTime() - inv.dueDate.getTime()) / msPerDay),
-        status: inv.paymentStatus,
-      })),
-    );
-
-    return buildCsvDownloadResponse('overdue-invoices', csv);
   }),
 
   /**
-   * Export compliance gaps as CSV.
+   * Enqueue: compliance gaps (no input).
    */
   exportComplianceGaps: tenantProcedure.use(reportRead).mutation(async ({ ctx }) => {
-    const contractors = await ctx.db.contractor.findMany({
-      where: {
-        organizationId: ctx.organizationId,
-        status: 'ACTIVE',
-        deletedAt: null,
-      },
-      include: {
-        complianceItems: { select: { status: true } },
-        contracts: {
-          where: { deletedAt: null },
-          select: { status: true },
-        },
-        _count: {
-          select: {
-            complianceItems: {
-              where: { status: { in: ['MISSING', 'EXPIRED'] } },
-            },
-          },
-        },
-      },
+    return enqueueExport({
+      organizationId: ctx.organizationId,
+      userId: ctx.session?.user?.id,
+      type: 'compliance-gaps',
+      params: {},
     });
-
-    type GapItem = {
-      contractorName: string;
-      missingDocuments: number;
-      contractStatus: string;
-      overdueTasks: number;
-      health: string;
-    };
-
-    const items: GapItem[] = [];
-
-    for (const c of contractors) {
-      const missingOrExpired = c._count.complianceItems;
-      const hasPending = c.complianceItems.some(ci => ci.status === 'PENDING');
-      const hasActiveContract = c.contracts.some(con => con.status === 'ACTIVE');
-
-      let health = 'green';
-      if (missingOrExpired > 0 || !hasActiveContract) {
-        health = 'red';
-      } else if (hasPending) {
-        health = 'yellow';
-      }
-
-      if (health !== 'green') {
-        items.push({
-          contractorName: c.legalName,
-          missingDocuments: missingOrExpired,
-          contractStatus: hasActiveContract ? 'ACTIVE' : 'NONE',
-          overdueTasks: 0,
-          health,
-        });
-      }
-    }
-
-    const csv = await generateComplianceCsv(items);
-    return buildCsvDownloadResponse('compliance-gaps', csv);
   }),
 });

@@ -1,0 +1,74 @@
+// Async export jobs (P2-F, F-SCALE-01 / F-SCALE-02 / F-SCALE-08).
+//
+// Design:
+// - Producers (e.g. report.exportSpendByContractor mutation) `INSERT INTO
+//   "Export" (status='PENDING', type, params, requestedByUserId, ...)` and
+//   publish a QStash message to `/api/exports/_process`. The mutation
+//   returns `{ exportId }` immediately so the request handler stays bounded.
+// - The QStash consumer claims the row via
+//   `updateMany(where { id, status: 'PENDING' } data { status: 'PROCESSING',
+//   startedAt: now() })` — this guarantees at-most-once processing even if
+//   QStash double-fires (we won't re-render). On success, the consumer
+//   updates `status='READY'` plus `fileR2Key`, `expiresAt`, `completedAt`,
+//   and emails the requester a 7-day signed link. On failure the consumer
+//   sets `status='FAILED'` with the truncated error message.
+// - `params` is a typed JSON blob — the export registry (packages/api/src/
+//   services/exports/registry.ts) holds a `paramsSchema` for each `type` so
+//   the consumer revalidates before dispatching to the handler.
+// - 7-day retention: cron sweeps `deleteMany(where expiresAt: { lt: now })`
+//   plus best-effort R2 deletion. After 7d the user must re-request.
+//
+// `organizationId` is required so the existing tenant-scoped Prisma extension
+// auto-scopes reads.
+
+model Export {
+  id                String            @id @default(cuid())
+  organizationId    String
+  // Logical export type — one of the keys in the typed export registry.
+  // Stored as String (not enum) so adding a new export type does not require
+  // a DB migration; the registry itself is the source of truth.
+  type              String
+  status            AsyncExportStatus @default(PENDING)
+  // User who requested the export (so the consumer knows where to email the
+  // signed link). Nullable so system-initiated exports (cron, integrations)
+  // can fall through to the org's billingEmail or be dropped.
+  requestedByUserId String?
+  // Typed JSON payload validated against the registry's `paramsSchema` on
+  // both insert (mutation) and claim (consumer).
+  params            Json
+  // R2 object key. Set when status transitions to READY.
+  fileR2Key         String?
+  // Display filename surfaced in the email + Content-Disposition header on
+  // download. The registry computes this from `params`.
+  fileName          String?
+  // MIME type — used by the download route to set Content-Type.
+  mimeType          String?
+  // Optional row count for telemetry / UI hints.
+  rowCount          Int?
+  // 7d after completion. Cron sweep deletes both the row and the R2 object.
+  expiresAt         DateTime?
+  // Truncated error message on failure (for ops debugging without Sentry dive).
+  error             String?
+  // QStash dispatch attempts — bumped on each retry; the consumer marks
+  // FAILED after a configurable cap (default 3).
+  attempts          Int               @default(0)
+  createdAt         DateTime          @default(now())
+  startedAt         DateTime?
+  completedAt       DateTime?
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  // Listing exports for a tenant in dashboard.
+  @@index([organizationId, createdAt])
+  // Cron sweep predicate: WHERE status='READY' AND expiresAt <= now().
+  @@index([status, expiresAt])
+  // Per-user export history.
+  @@index([organizationId, requestedByUserId, createdAt])
+}
+
+enum AsyncExportStatus {
+  PENDING
+  PROCESSING
+  READY
+  FAILED
+}

@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { useRouter } from '@/i18n/navigation';
 import { trpc } from '@/trpc/init';
 import { DrillDownBreadcrumb } from './drill-down-breadcrumb';
-import { downloadBase64File, ExportButtons } from './export-buttons';
+import { ExportButtons } from './export-buttons';
 import { ReportChart } from './report-chart';
 import { ReportTable } from './report-table';
 
@@ -62,14 +62,9 @@ export function ComplianceGapsReport({
 
   const exportMutation = useMutation(
     trpc.report.exportComplianceGaps.mutationOptions({
-      onSuccess: data => {
-        const result = data as {
-          data: string;
-          filename: string;
-          mimeType: string;
-        };
-        downloadBase64File(result.data, result.filename, result.mimeType);
-        toast.success(t('exportSuccess', { count: tableData.length }));
+      // F-SCALE-01 — async export; user receives an email with the link.
+      onSuccess: () => {
+        toast.success(t('exportQueued'));
       },
       onError: () => {
         toast.error(t('exportError'));

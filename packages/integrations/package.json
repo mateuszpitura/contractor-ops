@@ -118,6 +118,7 @@
     "@infisical/sdk": "^5.0.2",
     "@upstash/qstash": "^2.10.1",
     "@upstash/redis": "^1.37.0",
+    "arctic": "^3.7.0",
     "docusign-esign": "8.7.0",
     "fast-xml-parser": "^5.7.2",
     "opossum": "^9.0.0",
