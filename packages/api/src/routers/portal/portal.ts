@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { createTenantClientFrom, getRegionalClient, prisma, tenantStore } from '@contractor-ops/db';
-import { returnRequestCreateSchema } from '@contractor-ops/validators';
+import { getServerEnv, returnRequestCreateSchema } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import * as E from '../../errors.js';
@@ -68,20 +68,25 @@ function extractPortalToken(headers: Headers): string | null {
 }
 
 /**
- * Derive base URL from request headers for magic link emails.
+ * F-SEC-08: Derive the base URL used to build outbound magic-link emails.
+ *
+ * SECURITY: This function INTENTIONALLY ignores the inbound request headers
+ * (`Origin`, `X-Forwarded-Host`, `X-Forwarded-Proto`, `Host`) — every one of
+ * those is attacker-controlled on a public endpoint. Trusting them lets any
+ * caller spoof the host inside `requestMagicLink` and have the system mail a
+ * one-time login link pointing at `https://attacker.example.com/...?token=…`,
+ * which the victim then clicks and the attacker captures.
+ *
+ * The trusted source is the validated server env `NEXT_PUBLIC_APP_URL`. When
+ * a per-org portal subdomain is needed in the future, look it up from the
+ * `Organization` table against an explicit allowlist (e.g. `*.PORTAL_BASE_DOMAIN`)
+ * — never accept it from request headers.
+ *
+ * Do NOT change this back to read from `headers` without re-auditing the
+ * magic-link delivery path.
  */
-function deriveBaseUrl(headers: Headers): string {
-  const origin = headers.get('origin');
-  if (origin) return origin;
-
-  const forwardedHost = headers.get('x-forwarded-host');
-  const proto = headers.get('x-forwarded-proto') ?? 'https';
-  if (forwardedHost) return `${proto}://${forwardedHost}`;
-
-  const host = headers.get('host');
-  if (host) return `${proto}://${host}`;
-
-  return 'https://localhost:3000';
+function deriveBaseUrl(): string {
+  return getServerEnv().NEXT_PUBLIC_APP_URL;
 }
 
 /**
@@ -167,7 +172,8 @@ export const portalRouter = router({
 
       if (contractors.length > 0) {
         const { token } = await createMagicLinkToken(email);
-        const baseUrl = deriveBaseUrl(ctx.headers);
+        // F-SEC-08: trusted env URL only — never from `ctx.headers`.
+        const baseUrl = deriveBaseUrl();
         await sendPortalMagicLink({ email, token, baseUrl });
       }
 
