@@ -84,6 +84,20 @@ function deriveBaseUrl(headers: Headers): string {
   return 'https://localhost:3000';
 }
 
+/**
+ * F-SEC-10: Strip the `bankAccountEncrypted` field from a `requestedChanges`
+ * JSON blob before sending it to a portal client. The encrypted bank account
+ * ciphertext (IV + auth tag + payload) must never leave the server — only the
+ * server-derived `bankAccountMasked` is safe to expose. Same JSON is used by
+ * the admin approval UI where the cleartext `bankName`/`swiftBic`/`taxId` are
+ * fine, but the contractor portal must never see ciphertext.
+ */
+function stripBankAccountEncrypted(value: unknown): unknown {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return value;
+  const { bankAccountEncrypted: _bankAccountEncrypted, ...rest } = value as Record<string, unknown>;
+  return rest;
+}
+
 // ---------------------------------------------------------------------------
 // Activity log types
 // ---------------------------------------------------------------------------
@@ -913,7 +927,7 @@ export const portalRouter = router({
     });
 
     // Check for pending change request
-    const pendingChangeRequest = await ctx.db.contractorChangeRequest.findFirst({
+    const pendingChangeRequestRaw = await ctx.db.contractorChangeRequest.findFirst({
       where: {
         contractorId: ctx.contractorId,
         organizationId: ctx.organizationId,
@@ -925,6 +939,16 @@ export const portalRouter = router({
         createdAt: true,
       },
     });
+
+    // F-SEC-10: never surface `bankAccountEncrypted` ciphertext to the portal
+    // client. Strip it from `requestedChanges` JSON before returning. The
+    // `bankAccountMasked` field is server-derived and safe to expose.
+    const pendingChangeRequest = pendingChangeRequestRaw
+      ? {
+          ...pendingChangeRequestRaw,
+          requestedChanges: stripBankAccountEncrypted(pendingChangeRequestRaw.requestedChanges),
+        }
+      : null;
 
     return {
       ...contractor,
