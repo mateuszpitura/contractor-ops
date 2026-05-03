@@ -37,6 +37,47 @@ function hashEmail(email: string): string {
 }
 
 /**
+ * F-SEC-07 — reject sessions whose active organization membership is
+ * soft-disabled. Used by the `databaseHooks.session.{create,update}.before`
+ * hooks below.
+ *
+ * No-ops when the session has no `activeOrganizationId` (Better Auth allows
+ * sessions without an active org — the user can pick one later via
+ * `setActiveOrganization`, which itself triggers the same check via
+ * `session.update.before`).
+ *
+ * Throws Better Auth's `APIError` with `UNAUTHORIZED` on disabled membership;
+ * Better Auth maps this to a 401 response and aborts session creation.
+ */
+async function assertActiveMembershipNotDisabled(
+  activeOrganizationId: string | null | undefined,
+  userId: string | undefined,
+): Promise<void> {
+  if (!(activeOrganizationId && userId)) return;
+
+  const member = await prisma.member.findFirst({
+    where: { organizationId: activeOrganizationId, userId },
+    select: { id: true, disabledAt: true },
+  });
+
+  if (member?.disabledAt) {
+    log.warn(
+      {
+        event: 'auth.session.blocked_disabled_member',
+        memberId: member.id,
+        organizationId: activeOrganizationId,
+        userId,
+        disabledAt: member.disabledAt.getTime(),
+      },
+      'session rejected: active org membership is disabled',
+    );
+    throw new APIError('UNAUTHORIZED', {
+      message: 'MEMBERSHIP_DISABLED',
+    });
+  }
+}
+
+/**
  * Compose the social-providers map. We register Google/Microsoft only when a
  * full credential pair is present — partial config throws at module load via
  * `loadAuthEnv()`. This eliminates the prior `as string` cast that silently
@@ -130,6 +171,37 @@ export const auth = betterAuth({
   session: {
     expiresIn: 60 * 60 * 24, // 24 hours
     updateAge: 60 * 60, // Refresh session every hour on activity
+  },
+
+  /**
+   * F-SEC-07 — block sessions whose `activeOrganizationId` resolves to a
+   * soft-disabled `Member` row. The deactivate mutation flips
+   * `Member.disabledAt`; this hook ensures sessions cannot be created (or
+   * refreshed) into a disabled membership. The check runs on both create and
+   * update so a session refresh re-evaluates the membership state.
+   */
+  databaseHooks: {
+    session: {
+      create: {
+        before: async session => {
+          const s = session as { activeOrganizationId?: string | null; userId?: string };
+          await assertActiveMembershipNotDisabled(s.activeOrganizationId, s.userId);
+          return { data: session };
+        },
+      },
+      update: {
+        before: async session => {
+          // `update.before` may receive a partial — only re-check when the
+          // updated payload carries an `activeOrganizationId` (the typical
+          // case is `setActiveOrganization` or session refresh).
+          const s = session as { activeOrganizationId?: string | null; userId?: string };
+          if (s.activeOrganizationId && s.userId) {
+            await assertActiveMembershipNotDisabled(s.activeOrganizationId, s.userId);
+          }
+          return { data: session };
+        },
+      },
+    },
   },
 
   hooks: {
