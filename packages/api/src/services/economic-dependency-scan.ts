@@ -281,72 +281,89 @@ export async function runEconomicDependencyScan(now: Date = new Date()): Promise
     },
   });
 
-  for (const assignment of assignments) {
-    scanned++;
-    try {
-      const { share } = await computeBillingShare(
-        assignment.contractorId,
-        assignment.organizationId,
-        now,
-      );
-      const result = await updateBandState(assignment, share, now);
+  // F-ASYNC-09 / F-SCALE-05: this used to be a serial `for await` over EVERY
+  // active DE contractor assignment cross-tenant — at 1000 assignments,
+  // that's ~1000 * (computeBillingShare + updateBandState + dispatch + RBAC
+  // lookup). Chunk into bounded parallel batches.
+  //
+  // TODO(P2-B): replace the inline `chunked` helper with p-limit once that
+  // dep lands so we can throttle by downstream provider (Resend, Slack)
+  // independently and observe queue depth via opossum metrics.
+  const SCAN_FANOUT_CONCURRENCY = 10;
+  const dispatchedCounter = { value: 0, crossings: 0, scanned: 0 };
 
-      if (result.reason === 'cross-up' || result.reason === 'cross-down') {
-        crossings++;
-      }
+  const chunks = chunkAssignments(assignments, SCAN_FANOUT_CONCURRENCY);
+  for (const chunk of chunks) {
+    await Promise.all(
+      chunk.map(async assignment => {
+        dispatchedCounter.scanned++;
+        try {
+          const { share } = await computeBillingShare(
+            assignment.contractorId,
+            assignment.organizationId,
+            now,
+          );
+          const result = await updateBandState(assignment, share, now);
 
-      if (result.emittedType) {
-        const recipients = await resolveRbacRecipients(
-          assignment.organizationId,
-          'contractor:read',
-        );
+          if (result.reason === 'cross-up' || result.reason === 'cross-down') {
+            dispatchedCounter.crossings++;
+          }
 
-        if (recipients.length > 0) {
-          const percent = (share * 100).toFixed(1);
-          const title =
-            result.emittedType === 'resolved'
-              ? `Economic dependency resolved: ${assignment.contractor.displayName}`
-              : result.emittedType === 'classification.economic_dependency_critical'
-                ? `Critical economic dependency: ${assignment.contractor.displayName}`
-                : `Economic-dependency warning: ${assignment.contractor.displayName}`;
-          const body =
-            result.emittedType === 'resolved'
-              ? `Billing share has returned to ${percent}% — below §2 SGB VI risk thresholds.`
-              : result.emittedType === 'classification.economic_dependency_critical'
-                ? `Billing share is ${percent}% — above the 83.33% §2 SGB VI threshold for arbeitnehmerähnliche Selbständige. Review the engagement.`
-                : `Billing share is ${percent}% from your organisation over the last 12 months — above the 70% §2 SGB VI warning threshold.`;
+          if (result.emittedType) {
+            const recipients = await resolveRbacRecipients(
+              assignment.organizationId,
+              'contractor:read',
+            );
 
-          // Resolved events reuse the "warning" type string as the notification
-          // category — the title/body tell the user it's a resolve.
-          const type =
-            result.emittedType === 'resolved'
-              ? 'classification.economic_dependency_warning'
-              : result.emittedType;
+            if (recipients.length > 0) {
+              const percent = (share * 100).toFixed(1);
+              const title =
+                result.emittedType === 'resolved'
+                  ? `Economic dependency resolved: ${assignment.contractor.displayName}`
+                  : result.emittedType === 'classification.economic_dependency_critical'
+                    ? `Critical economic dependency: ${assignment.contractor.displayName}`
+                    : `Economic-dependency warning: ${assignment.contractor.displayName}`;
+              const body =
+                result.emittedType === 'resolved'
+                  ? `Billing share has returned to ${percent}% — below §2 SGB VI risk thresholds.`
+                  : result.emittedType === 'classification.economic_dependency_critical'
+                    ? `Billing share is ${percent}% — above the 83.33% §2 SGB VI threshold for arbeitnehmerähnliche Selbständige. Review the engagement.`
+                    : `Billing share is ${percent}% from your organisation over the last 12 months — above the 70% §2 SGB VI warning threshold.`;
 
-          await dispatch({
-            organizationId: assignment.organizationId,
-            type,
-            recipientUserIds: recipients,
-            title,
-            body,
-            entityType: 'CONTRACTOR',
-            entityId: assignment.id,
-            metadata: {
-              billingShare: share,
-              band: result.currentBand,
-              reason: result.reason,
-            },
-          });
-          notificationsDispatched++;
+              const type =
+                result.emittedType === 'resolved'
+                  ? 'classification.economic_dependency_warning'
+                  : result.emittedType;
+
+              await dispatch({
+                organizationId: assignment.organizationId,
+                type,
+                recipientUserIds: recipients,
+                title,
+                body,
+                entityType: 'CONTRACTOR',
+                entityId: assignment.id,
+                metadata: {
+                  billingShare: share,
+                  band: result.currentBand,
+                  reason: result.reason,
+                },
+              });
+              dispatchedCounter.value++;
+            }
+          }
+        } catch (err) {
+          log.error(
+            { err, assignmentId: assignment.id, organizationId: assignment.organizationId },
+            'economic-dependency scan failed for assignment',
+          );
         }
-      }
-    } catch (err) {
-      log.error(
-        { err, assignmentId: assignment.id, organizationId: assignment.organizationId },
-        'economic-dependency scan failed for assignment',
-      );
-    }
+      }),
+    );
   }
+  scanned = dispatchedCounter.scanned;
+  crossings = dispatchedCounter.crossings;
+  notificationsDispatched = dispatchedCounter.value;
 
   metrics.gauge('cron.classification_economic_dependency.scanned', scanned);
   metrics.gauge('cron.classification_economic_dependency.crossings', crossings);
@@ -358,6 +375,19 @@ export async function runEconomicDependencyScan(now: Date = new Date()): Promise
   );
 
   return { scanned, crossings, notificationsDispatched };
+}
+
+/**
+ * Inline chunker for the F-ASYNC-09 fanout. Will be replaced by
+ * `p-limit` once P2-B's resilience module lands.
+ */
+function chunkAssignments<T>(items: readonly T[], size: number): T[][] {
+  if (size <= 0 || items.length === 0) return items.length ? [Array.from(items)] : [];
+  const result: T[][] = [];
+  for (let i = 0; i < items.length; i += size) {
+    result.push(items.slice(i, i + size));
+  }
+  return result;
 }
 
 // Re-export prisma alias for tests that need to stub it via the same path.
