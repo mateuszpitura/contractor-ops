@@ -7,12 +7,61 @@ import {
   createWebhookLogger,
   runWithRequestContext,
 } from '@contractor-ops/logger';
+import * as Sentry from '@sentry/nextjs';
 import { verifySignatureAppRouter } from '@upstash/qstash/nextjs';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
 const log = createWebhookLogger('peppol-outbound');
+
+// ---------------------------------------------------------------------------
+// Error classification — F-ASYNC-08
+// ---------------------------------------------------------------------------
+//
+// QStash retries non-2xx responses. Pre-fix this route returned 200 on every
+// caught error, so transient Storecove outages permanently dropped
+// transmissions ("the transmission record is already marked FAILED in the
+// orchestrator" was the comment, but the user had no operator-visible retry
+// path). Now we classify:
+//
+//   - Permanent (validation, auth, missing connection): 200 + Sentry capture.
+//     QStash stops retrying; the row is FAILED in the orchestrator and ops
+//     see the Sentry event.
+//   - Transient (Storecove 5xx, network, undefined): 5xx so QStash retries
+//     per its configured policy.
+
+interface ClassifiedError {
+  status: number;
+  reason: 'permanent' | 'transient';
+}
+
+function classifyOutboundError(err: unknown): ClassifiedError {
+  if (!(err instanceof Error)) return { status: 500, reason: 'transient' };
+
+  const msg = err.message.toLowerCase();
+  const name = err.name;
+
+  // Auth / credential / participant-not-found / validation are permanent.
+  // Re-running the same submission won't recover; ops must reconnect or fix
+  // the participant record.
+  if (
+    name === 'NotFoundError' ||
+    msg.includes('not found') ||
+    msg.includes('invalid api key') ||
+    msg.includes('unauthorized') ||
+    msg.includes('forbidden') ||
+    msg.includes('validation') ||
+    msg.includes('invalid xml') ||
+    msg.includes('invalid participant') ||
+    /\b40[0134]\b/.test(msg)
+  ) {
+    return { status: 200, reason: 'permanent' };
+  }
+
+  // Default: assume transient (5xx, ETIMEDOUT, ECONNRESET, undefined).
+  return { status: 500, reason: 'transient' };
+}
 
 const peppolOutboundBodySchema = z.object({
   organizationId: z.string().min(1),
@@ -61,7 +110,13 @@ async function handlerInner(request: NextRequest) {
     });
 
     if (!connection) {
+      // Permanent: re-running won't help. 200 stops QStash retry.
       log.error({ organizationId }, 'no active Peppol connection');
+      Sentry.captureMessage('peppol outbound: no active connection', {
+        level: 'error',
+        tags: { 'peppol.outcome': 'no-connection' },
+        extra: { organizationId, invoiceId },
+      });
       return NextResponse.json({ error: 'No Peppol connection' });
     }
 
@@ -86,12 +141,30 @@ async function handlerInner(request: NextRequest) {
 
     return NextResponse.json({ processed: true, transmissionId: transmission.id });
   } catch (error) {
-    log.error({ err: error, organizationId, invoiceId }, 'outbound processing failed');
-    // Return 200 to prevent QStash retry on business errors
-    // The transmission record is already marked FAILED in the orchestrator
-    return NextResponse.json({
-      error: error instanceof Error ? error.message : 'Outbound processing failed',
-    });
+    const classified = classifyOutboundError(error);
+    log.error(
+      { err: error, organizationId, invoiceId, classification: classified.reason },
+      'outbound processing failed',
+    );
+
+    if (classified.reason === 'permanent') {
+      // Permanent failure: QStash stops, but ops need visibility. The
+      // transmission row is already FAILED in the orchestrator.
+      Sentry.captureException(error, {
+        tags: { 'peppol.outcome': 'permanent-failure' },
+        extra: { organizationId, invoiceId, receiverParticipantId },
+      });
+    }
+    // Transient failures are visible via Render logs + the QStash retry
+    // metrics; we don't double-capture them in Sentry to avoid quota burn.
+
+    return NextResponse.json(
+      {
+        error: error instanceof Error ? error.message : 'Outbound processing failed',
+        classification: classified.reason,
+      },
+      { status: classified.status },
+    );
   }
 }
 
