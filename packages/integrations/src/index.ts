@@ -41,7 +41,9 @@ export {
 export type { FetchWithTimeoutOptions } from './services/fetch-helpers.js';
 export {
   DEFAULT_FETCH_TIMEOUT_MS,
+  fetchJsonWithTimeout,
   fetchWithTimeout,
+  isRetryableError,
 } from './services/fetch-helpers.js';
 // Health Service
 export {
@@ -67,6 +69,15 @@ export {
   getQStashClient,
   resetQStashClient,
 } from './services/qstash-client.js';
+// Resilience layer (circuit breaker + retry + concurrency cap)
+export type { WithResilienceOptions } from './services/resilience.js';
+export { resetResilienceForTests, withResilience } from './services/resilience.js';
+export type { ProviderResilienceConfig } from './services/resilience-config.js';
+export {
+  DEFAULT_RESILIENCE_CONFIG,
+  getResilienceConfig,
+  PROVIDER_RESILIENCE_CONFIG,
+} from './services/resilience-config.js';
 // Token Refresh
 export {
   lazyRefresh,
