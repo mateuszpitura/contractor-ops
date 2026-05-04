@@ -4,6 +4,7 @@ import {
 } from '@contractor-ops/api/services/courier/inpost-webhook-handler';
 import { prisma } from '@contractor-ops/db';
 import { createWebhookLogger } from '@contractor-ops/logger';
+import * as Sentry from '@sentry/nextjs';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
@@ -138,8 +139,18 @@ export async function POST(request: NextRequest) {
     prisma as unknown as Parameters<typeof handleInPostWebhook>[0],
     matchedOrgId,
     payload,
-  ).catch(_err => {
-    // Fire-and-forget: errors are logged inside handleInPostWebhook
+  ).catch(err => {
+    // F-OBS-13 — the original comment claimed errors were logged inside
+    // handleInPostWebhook, but the handler does not emit any log.error. A
+    // throw inside the fire-and-forget chain was being swallowed entirely.
+    log.error(
+      { err, organizationId: matchedOrgId },
+      'inpost webhook fire-and-forget processing failed',
+    );
+    Sentry.captureException(err, {
+      tags: { 'webhook.provider': 'inpost' },
+      extra: { organizationId: matchedOrgId },
+    });
   });
 
   return NextResponse.json({ received: true });
