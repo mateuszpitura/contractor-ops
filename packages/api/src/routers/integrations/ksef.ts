@@ -11,6 +11,7 @@ import * as E from '../../errors.js';
 import { router } from '../../init.js';
 import { requirePermission } from '../../middleware/rbac.js';
 import { tenantProcedure } from '../../middleware/tenant.js';
+import { writeAuditLog } from '../../services/audit-writer.js';
 
 const log = createLogger({ service: 'ksef-router' });
 
@@ -184,6 +185,24 @@ export const ksefRouter = router({
         });
       }
 
+      // F-OBS-05 — KSeF connect persists encrypted credentials and starts
+      // hourly invoice sync to the Polish tax authority. Audit-worthy.
+      // We never log the credential payload — only authMethod + environment.
+      await writeAuditLog({
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user?.id ?? null,
+        action: existing ? 'INTEGRATION_RECONNECT' : 'INTEGRATION_CONNECT',
+        resourceType: 'ORGANIZATION',
+        resourceId: ctx.organizationId,
+        newValues: {
+          provider: 'KSEF',
+          authMethod: input.authMethod,
+          environment: input.environment,
+        },
+        metadata: { connectionId: connection.id },
+      });
+
       return connection;
     }),
 
@@ -246,6 +265,20 @@ export const ksefRouter = router({
           status: 'DISCONNECTED',
           configJson: { ...configJson, qstashScheduleId: null },
         },
+      });
+
+      // F-OBS-05 — disconnecting KSeF stops hourly invoice sync to the
+      // Polish tax authority. Forensics-critical.
+      await writeAuditLog({
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user?.id ?? null,
+        action: 'INTEGRATION_DISCONNECT',
+        resourceType: 'ORGANIZATION',
+        resourceId: ctx.organizationId,
+        oldValues: { provider: 'KSEF', status: connection.status },
+        newValues: { status: 'DISCONNECTED' },
+        metadata: { connectionId: connection.id },
       });
 
       return { success: true };
