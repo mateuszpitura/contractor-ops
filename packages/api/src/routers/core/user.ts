@@ -6,6 +6,7 @@ import { router } from '../../init.js';
 import { requirePermission } from '../../middleware/rbac.js';
 import { sensitiveActionProcedure } from '../../middleware/sensitive.js';
 import { tenantProcedure } from '../../middleware/tenant.js';
+import { writeAuditLog } from '../../services/audit-writer.js';
 import type { DbClient } from '../../services/types.js';
 
 // ---------------------------------------------------------------------------
@@ -195,6 +196,22 @@ export const userRouter = router({
         },
       });
 
+      // F-OBS-05 — invitations are sensitive (grant org access). Audit so admins
+      // can trace who invited whom.
+      await writeAuditLog({
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user?.id ?? null,
+        action: 'MEMBER_INVITE',
+        resourceType: 'ORGANIZATION',
+        resourceId: ctx.organizationId,
+        newValues: {
+          invitedRole: input.role,
+          // Email logged in audit-only context; not in app log streams (F-OBS-17).
+          invitedEmail: input.email,
+        },
+      });
+
       return result;
     }),
 
@@ -215,7 +232,7 @@ export const userRouter = router({
     .mutation(async ({ ctx, input }) => {
       const member = await ctx.db.member.findFirstOrThrow({
         where: { organizationId: ctx.organizationId, userId: input.userId },
-        select: { id: true },
+        select: { id: true, role: true },
       });
 
       const result = await authApi.updateMemberRole({
@@ -225,6 +242,19 @@ export const userRouter = router({
           role: input.role,
           organizationId: ctx.organizationId,
         },
+      });
+
+      // F-OBS-05 — RBAC changes are SOC 2 / ISO 27001 evidence. Audit before/after.
+      await writeAuditLog({
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user?.id ?? null,
+        action: 'MEMBER_ROLE_UPDATE',
+        resourceType: 'USER',
+        resourceId: input.userId,
+        oldValues: { role: member.role },
+        newValues: { role: input.role },
+        metadata: { memberId: member.id },
       });
 
       return result;
@@ -273,6 +303,23 @@ export const userRouter = router({
       await reassignPendingApprovalSteps(ctx.db, ctx.organizationId, input.userId);
       await transferContractorOwnership(ctx.db, ctx.organizationId, input.userId);
 
+      // F-OBS-05 — deactivation transfers approvals + contractor ownership;
+      // forensics needs an immutable trail.
+      await writeAuditLog({
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user?.id ?? null,
+        action: 'MEMBER_DEACTIVATE',
+        resourceType: 'USER',
+        resourceId: input.userId,
+        oldValues: { role: targetMember.role, disabledAt: null },
+        newValues: { disabledAt: updated.disabledAt },
+        metadata: {
+          memberId: targetMember.id,
+          ...(input.reason ? { reason: input.reason } : {}),
+        },
+      });
+
       return updated;
     }),
 
@@ -312,6 +359,17 @@ export const userRouter = router({
           organizationId: true,
           disabledAt: true,
         },
+      });
+
+      // F-OBS-05 — reactivation restores org access; pair with deactivate audit.
+      await writeAuditLog({
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user?.id ?? null,
+        action: 'MEMBER_REACTIVATE',
+        resourceType: 'USER',
+        resourceId: input.userId,
+        metadata: { memberId: targetMember.id },
       });
 
       return updated;
