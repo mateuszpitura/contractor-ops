@@ -613,7 +613,20 @@ export const paymentRouter = router({
     .use(requirePermission({ payment: ['export'] }))
     .input(paymentRunLockSchema)
     .mutation(async ({ ctx, input }) => {
-      const result = await ctx.db.$transaction(async tx => {
+      // F-DB-16 — file-buffer generation (SEPA / Elixir / Swift XML
+      // serialization) is CPU-bound and can take tens-to-hundreds of
+      // milliseconds. Doing it inside `$transaction` held row locks on
+      // the PaymentRun + every PaymentRunItem for the duration of the
+      // CPU work, mixing I/O and CPU under one tx. We split the flow:
+      //   tx-1: validate state + idempotency + read items
+      //   no-tx: generate the export file
+      //   tx-2: persist EXPORTED status + paymentExport row
+      // Note: idempotency check covers the case where two concurrent
+      // requests reach tx-2 — the second will short-circuit because
+      // status is already EXPORTED (validated again under the tx-2 lock).
+
+      // ── tx-1: load run + validate + capture items snapshot ─────────────
+      const prepared = await ctx.db.$transaction(async tx => {
         const run = await tx.paymentRun.findFirst({
           where: {
             id: input.runId,
@@ -659,9 +672,7 @@ export const paymentRouter = router({
         if (run.status === 'LOCKED' || run.status === 'EXPORTED') {
           return {
             run,
-            fileBase64: null,
-            fileName: null,
-            idempotent: true,
+            idempotent: true as const,
           };
         }
 
@@ -701,55 +712,86 @@ export const paymentRouter = router({
           _count: true,
         });
 
-        const freshTotalMinor = itemsAgg._sum.amountMinor ?? 0;
-        const freshInvoiceCount = itemsAgg._count;
-
         // Fetch org settings for transfer title template and bank info
         const { orgBank, transferTitleTemplate } = await _resolveOrgBankInfo(
           tx,
           ctx.organizationId,
         );
 
-        // Build ExportItems and generate export file
-        const exportItems = _buildExportItems(run.items, transferTitleTemplate);
-        const { fileBuffer, ext } = await _generateExportFileForFormat(
-          input.exportFormat,
-          exportItems,
+        return {
+          run,
+          idempotent: false as const,
+          freshTotalMinor: itemsAgg._sum.amountMinor ?? 0,
+          freshInvoiceCount: itemsAgg._count,
           orgBank,
-          run.runNumber ?? run.id,
-        );
+          transferTitleTemplate,
+        };
+      });
 
-        // Update run status to EXPORTED with fresh totals
-        const updatedRun = await tx.paymentRun.update({
-          where: { id: run.id },
+      if (prepared.idempotent) {
+        return {
+          run: prepared.run,
+          fileBase64: null,
+          fileName: null,
+          idempotent: true,
+        };
+      }
+
+      // ── no tx: CPU-heavy file serialization off the lock-holding path ──
+      const exportItems = _buildExportItems(prepared.run.items, prepared.transferTitleTemplate);
+      const { fileBuffer, ext } = await _generateExportFileForFormat(
+        input.exportFormat,
+        exportItems,
+        prepared.orgBank,
+        prepared.run.runNumber ?? prepared.run.id,
+      );
+
+      // ── tx-2: transition + paymentExport ───────────────────────────────
+      const updatedRun = await ctx.db.$transaction(async tx => {
+        // Re-fetch under the lock to detect concurrent state mutations.
+        const current = await tx.paymentRun.findFirst({
+          where: { id: prepared.run.id, organizationId: ctx.organizationId },
+          select: { status: true },
+        });
+        if (!current) {
+          throw new TRPCError({
+            code: 'NOT_FOUND',
+            message: E.PAYMENT_RUN_NOT_FOUND,
+          });
+        }
+        // Concurrent finalize won — return idempotent result.
+        if (current.status === 'EXPORTED' || current.status === 'LOCKED') {
+          return prepared.run;
+        }
+        const updated = await tx.paymentRun.update({
+          where: { id: prepared.run.id },
           data: {
             status: 'EXPORTED',
             exportFormat: input.exportFormat,
             exportedAt: new Date(),
-            totalMinor: freshTotalMinor,
-            invoiceCount: freshInvoiceCount,
+            totalMinor: prepared.freshTotalMinor,
+            invoiceCount: prepared.freshInvoiceCount,
           },
         });
 
-        // Create export record
         await tx.paymentExport.create({
           data: {
             organizationId: ctx.organizationId,
-            paymentRunId: run.id,
+            paymentRunId: prepared.run.id,
             format: input.exportFormat,
             status: 'GENERATED',
             generatedByUserId: ctx.user.id,
           },
         });
 
-        return {
-          run: updatedRun,
-          fileBase64: fileBuffer.toString('base64'),
-          fileName: `${run.runNumber ?? run.id}.${ext}`,
-        };
+        return updated;
       });
 
-      return result;
+      return {
+        run: updatedRun,
+        fileBase64: fileBuffer.toString('base64'),
+        fileName: `${prepared.run.runNumber ?? prepared.run.id}.${ext}`,
+      };
     }),
 
   // =========================================================================
