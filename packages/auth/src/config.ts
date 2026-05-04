@@ -106,6 +106,52 @@ export const auth = betterAuth({
   ...(authEnv.baseURL ? { baseURL: authEnv.baseURL } : {}),
   ...(authEnv.trustedOrigins.length > 0 ? { trustedOrigins: authEnv.trustedOrigins } : {}),
 
+  // ---------------------------------------------------------------------
+  // F-SCALE-20 — Better Auth built-in per-IP rate limiter
+  // ---------------------------------------------------------------------
+  //
+  // Defense-in-depth alongside the edge middleware (apps/web/src/middleware.ts)
+  // and Tier-1 / P2-D Turnstile. The edge limiter caps ALL `/api/auth/*`
+  // requests at 10/min/IP; this nested limiter applies tighter caps to the
+  // highest-value endpoints (sign-in / sign-up / password-reset) so a
+  // single misbehaving IP cannot consume the global edge bucket on the
+  // expensive flows.
+  //
+  // Storage: defaults to in-memory (per-pod). Acceptable here because the
+  // *edge* limiter is the authoritative cross-instance throttle (Upstash);
+  // this layer's purpose is per-endpoint shaping, not fleet-wide
+  // coordination. Better Auth's `secondary-storage` option is left
+  // unconfigured to avoid forcing every auth call through Redis on the
+  // hot path.
+  //
+  // `enabled` is forced ON in every environment. The Better Auth default
+  // is "production-only" which leaves dev/preview unprotected against
+  // local credential stuffing testing — we'd rather see the limiter in
+  // action everywhere.
+  rateLimit: {
+    enabled: true,
+    // Global default for any route not explicitly listed below — matches
+    // Better Auth's own default of 100 req / 10 s window.
+    window: 10,
+    max: 100,
+    customRules: {
+      // 10 sign-in attempts per minute per IP. Combined with the per-account
+      // lockout (`failedLoginAttempts >= 5` → 15-min lock, see hooks.after
+      // below) this gives an attacker at most 5 useful attempts before the
+      // account is hard-locked, regardless of IP rotation.
+      '/sign-in/email': { window: 60, max: 10 },
+      // 5 sign-ups per minute per IP. Even with Turnstile in front, this
+      // is a useful belt-and-braces against headless-browser bypasses.
+      '/sign-up/email': { window: 60, max: 5 },
+      // Password reset enumeration vector — keep it tight. One reset per
+      // 12 s window per IP is plenty for legitimate users.
+      '/forget-password': { window: 60, max: 5 },
+      // Magic link is similarly enumeration-prone (and outbound email is
+      // not free).
+      '/sign-in/magic-link': { window: 60, max: 5 },
+    },
+  },
+
   database: prismaAdapter(prisma, {
     provider: 'postgresql',
   }),
