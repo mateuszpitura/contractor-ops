@@ -24,9 +24,31 @@ type DelegateWithSoftDelete = {
 const softDeleteModels = new Set(['Organization', 'Contractor', 'Contract', 'Invoice', 'Document']);
 
 /**
+ * Inject `deletedAt: null` into the args.where for read & write operations
+ * so soft-deleted rows are excluded. No-op when args is missing/non-object.
+ *
+ * F-DB-27: previously only applied to read operations (findMany, findFirst,
+ * etc.) which meant `update`/`updateMany`/`upsert` could mutate soft-deleted
+ * rows. We now also filter writes — any `update` against a soft-deleted row
+ * becomes a no-op (P2025 / count: 0), preserving the audit invariant that
+ * a "deleted" entity does not change state after deletion.
+ */
+function injectDeletedAtNull(args: unknown): unknown {
+  if (args == null || typeof args !== 'object') {
+    return args;
+  }
+  const argsObj = args as Record<string, unknown>;
+  const where = (argsObj.where ?? {}) as Record<string, unknown>;
+  argsObj.where = { ...where, deletedAt: null };
+  return argsObj;
+}
+
+/**
  * Wraps a PrismaClient with soft-delete behavior.
  * - delete/deleteMany are converted to update deletedAt
- * - findMany/findFirst/count automatically filter where deletedAt is null
+ * - findMany/findFirst/findFirstOrThrow/count automatically filter where deletedAt is null
+ * - update/updateMany/upsert also filter where deletedAt is null so soft-deleted
+ *   rows are immutable (F-DB-27)
  */
 export function withSoftDelete<T extends PrismaExtensible>(prisma: T) {
   return prisma.$extends({
@@ -72,60 +94,51 @@ export function withSoftDelete<T extends PrismaExtensible>(prisma: T) {
           if (!softDeleteModels.has(model)) {
             return await query(args);
           }
-
-          if (args == null || typeof args !== 'object') {
-            return await query(args);
-          }
-
-          const argsObj = args as Record<string, unknown>;
-          const where = (argsObj.where ?? {}) as Record<string, unknown>;
-          argsObj.where = { ...where, deletedAt: null };
-          return await query(argsObj);
+          return await query(injectDeletedAtNull(args));
         },
 
         async findFirst({ model, args, query }: ModelQueryHookParams) {
           if (!softDeleteModels.has(model)) {
             return await query(args);
           }
-
-          if (args == null || typeof args !== 'object') {
-            return await query(args);
-          }
-
-          const argsObj = args as Record<string, unknown>;
-          const where = (argsObj.where ?? {}) as Record<string, unknown>;
-          argsObj.where = { ...where, deletedAt: null };
-          return await query(argsObj);
+          return await query(injectDeletedAtNull(args));
         },
 
         async findFirstOrThrow({ model, args, query }: ModelQueryHookParams) {
           if (!softDeleteModels.has(model)) {
             return await query(args);
           }
-
-          if (args == null || typeof args !== 'object') {
-            return await query(args);
-          }
-
-          const argsObj = args as Record<string, unknown>;
-          const where = (argsObj.where ?? {}) as Record<string, unknown>;
-          argsObj.where = { ...where, deletedAt: null };
-          return await query(argsObj);
+          return await query(injectDeletedAtNull(args));
         },
 
         async count({ model, args, query }: ModelQueryHookParams) {
           if (!softDeleteModels.has(model)) {
             return await query(args);
           }
+          return await query(injectDeletedAtNull(args));
+        },
 
-          if (args == null || typeof args !== 'object') {
+        // F-DB-27: writes against soft-deleted rows must be no-ops
+        // (otherwise audit trail can show a "deleted" entity changing state).
+        async update({ model, args, query }: ModelQueryHookParams) {
+          if (!softDeleteModels.has(model)) {
             return await query(args);
           }
+          return await query(injectDeletedAtNull(args));
+        },
 
-          const argsObj = args as Record<string, unknown>;
-          const where = (argsObj.where ?? {}) as Record<string, unknown>;
-          argsObj.where = { ...where, deletedAt: null };
-          return await query(argsObj);
+        async updateMany({ model, args, query }: ModelQueryHookParams) {
+          if (!softDeleteModels.has(model)) {
+            return await query(args);
+          }
+          return await query(injectDeletedAtNull(args));
+        },
+
+        async upsert({ model, args, query }: ModelQueryHookParams) {
+          if (!softDeleteModels.has(model)) {
+            return await query(args);
+          }
+          return await query(injectDeletedAtNull(args));
         },
       },
     },

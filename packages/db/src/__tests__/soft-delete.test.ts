@@ -14,6 +14,7 @@ describe('withSoftDelete', () => {
       },
       verification: {
         delete: (args: unknown) => innerQuery(args),
+        update: (args: unknown) => innerQuery(args),
       },
       $extends: (ext: {
         query: {
@@ -83,10 +84,34 @@ describe('withSoftDelete', () => {
                 args,
                 query: innerQuery,
               }),
+            update: (args: unknown) =>
+              models.update({
+                model: 'Invoice',
+                args,
+                query: innerQuery,
+              }),
+            updateMany: (args: unknown) =>
+              models.updateMany({
+                model: 'Invoice',
+                args,
+                query: innerQuery,
+              }),
+            upsert: (args: unknown) =>
+              models.upsert({
+                model: 'Invoice',
+                args,
+                query: innerQuery,
+              }),
           },
           verification: {
             delete: (args: unknown) =>
               models.delete({
+                model: 'Verification',
+                args,
+                query: innerQuery,
+              }),
+            update: (args: unknown) =>
+              models.update({
                 model: 'Verification',
                 args,
                 query: innerQuery,
@@ -195,5 +220,47 @@ describe('withSoftDelete', () => {
     const { client, innerQuery } = createMockClient();
     await client.verification.delete({ where: { id: 'v1' } });
     expect(innerQuery).toHaveBeenCalledWith({ where: { id: 'v1' } });
+  });
+
+  // F-DB-27: writes against soft-deleted rows must be no-ops.
+  it('adds deletedAt: null to update for soft-delete models', async () => {
+    const { client, innerQuery } = createMockClient();
+    await client.invoice.update({ where: { id: 'i1' }, data: { status: 'PAID' } });
+    expect(innerQuery).toHaveBeenCalledWith({
+      where: { id: 'i1', deletedAt: null },
+      data: { status: 'PAID' },
+    });
+  });
+
+  it('adds deletedAt: null to updateMany for soft-delete models', async () => {
+    const { client, innerQuery } = createMockClient();
+    await client.invoice.updateMany({
+      where: { status: 'DRAFT' },
+      data: { status: 'PAID' },
+    });
+    expect(innerQuery).toHaveBeenCalledWith({
+      where: { status: 'DRAFT', deletedAt: null },
+      data: { status: 'PAID' },
+    });
+  });
+
+  it('adds deletedAt: null to upsert for soft-delete models', async () => {
+    const { client, innerQuery } = createMockClient();
+    await client.invoice.upsert({
+      where: { id: 'i1' },
+      create: { id: 'i1' },
+      update: { status: 'PAID' },
+    });
+    expect(innerQuery).toHaveBeenCalledWith({
+      where: { id: 'i1', deletedAt: null },
+      create: { id: 'i1' },
+      update: { status: 'PAID' },
+    });
+  });
+
+  it('passes through update for non-soft-delete models', async () => {
+    const { client, innerQuery } = createMockClient();
+    await client.verification.update({ where: { id: 'v1' }, data: { value: 'x' } });
+    expect(innerQuery).toHaveBeenCalledWith({ where: { id: 'v1' }, data: { value: 'x' } });
   });
 });
