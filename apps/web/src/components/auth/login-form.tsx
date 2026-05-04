@@ -1,6 +1,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
+import * as Sentry from '@sentry/nextjs';
 import { Loader2 } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -73,7 +74,11 @@ export function LoginForm() {
       }
 
       router.push(redirectTo);
-    } catch {
+    } catch (err) {
+      // F-OBS-13 — silent catch previously masked real network/runtime errors
+      // as a generic toast. Capture in Sentry so on-call has the stack trace
+      // when "user can't log in" reports come in.
+      Sentry.captureException(err, { tags: { 'auth.flow': 'login.password' } });
       toast.error(tc('networkError'));
       setIsLoading(false);
     }
@@ -100,7 +105,9 @@ export function LoginForm() {
       }
 
       setIsMagicLinkSent(true);
-    } catch {
+    } catch (err) {
+      // F-OBS-13 — capture so magic-link delivery failures surface in Sentry.
+      Sentry.captureException(err, { tags: { 'auth.flow': 'login.magic_link' } });
       toast.error(tc('networkError'));
     } finally {
       setMagicLinkLoading(false);

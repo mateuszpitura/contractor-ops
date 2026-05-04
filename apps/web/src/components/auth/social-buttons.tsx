@@ -1,5 +1,6 @@
 'use client';
 
+import * as Sentry from '@sentry/nextjs';
 import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
@@ -21,7 +22,12 @@ export function SocialButtons() {
         provider,
         callbackURL: '/',
       });
-    } catch {
+    } catch (err) {
+      // F-OBS-13 — capture so OAuth-redirect failures surface in Sentry
+      // instead of leaving the user with a frozen button.
+      Sentry.captureException(err, {
+        tags: { 'auth.flow': 'social', 'auth.provider': provider },
+      });
       setLoadingProvider(null);
     }
   }, []);

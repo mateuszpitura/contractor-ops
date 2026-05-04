@@ -1,6 +1,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
+import * as Sentry from '@sentry/nextjs';
 import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useId, useState } from 'react';
@@ -82,7 +83,9 @@ export function InviteAcceptForm({
       }
 
       router.push('/');
-    } catch {
+    } catch (err) {
+      // F-OBS-13 — capture so invite-accept failures surface in Sentry.
+      Sentry.captureException(err, { tags: { 'auth.flow': 'invite_accept' } });
       toast.error(tc('networkError'));
       setIsLoading(false);
     }

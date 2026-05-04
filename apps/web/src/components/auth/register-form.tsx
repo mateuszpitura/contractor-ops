@@ -2,6 +2,7 @@
 
 import { Turnstile } from '@marsidev/react-turnstile';
 import { zodResolver } from '@hookform/resolvers/zod';
+import * as Sentry from '@sentry/nextjs';
 import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useId, useRef, useState } from 'react';
@@ -106,7 +107,10 @@ export function RegisterForm() {
       }
 
       router.push('/');
-    } catch {
+    } catch (err) {
+      // F-OBS-13 — capture so registration failures surface in Sentry instead
+      // of being masked as a generic networkError toast.
+      Sentry.captureException(err, { tags: { 'auth.flow': 'register' } });
       toast.error(tc('networkError'));
       setIsLoading(false);
     }
