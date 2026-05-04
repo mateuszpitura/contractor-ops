@@ -15,6 +15,7 @@ import { router } from '../../init.js';
 import { requirePermission } from '../../middleware/rbac.js';
 import { tenantProcedure } from '../../middleware/tenant.js';
 import { uploadRateLimitMiddleware } from '../../middleware/upload-rate-limit.js';
+import { writeAuditLog } from '../../services/audit-writer.js';
 import { isAllowedMimeType, validateMimeType } from '../../services/mime-validator.js';
 import { generateStorageKey, getR2BucketName, maxBytesForMime } from '../../services/r2.js';
 import {
@@ -633,6 +634,23 @@ export const documentRouter = router({
         where: {
           documentId: doc.id,
           organizationId: ctx.organizationId,
+        },
+      });
+
+      // F-OBS-05 — document deletion is irreversible from the user's POV
+      // (R2 object gone, soft-delete on the row); GDPR + forensics require
+      // the trail.
+      await writeAuditLog({
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user?.id ?? null,
+        action: 'DOCUMENT_DELETE',
+        resourceType: 'DOCUMENT',
+        resourceId: doc.id,
+        resourceName: doc.originalFileName,
+        oldValues: {
+          storageKey: doc.storageKey,
+          mimeType: doc.mimeType,
         },
       });
 
