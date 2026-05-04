@@ -268,6 +268,19 @@ export async function invalidateByPrefix(prefix: string): Promise<void> {
 // ---------------------------------------------------------------------------
 // Convenience: org-scoped keys
 // ---------------------------------------------------------------------------
+//
+// F-SCALE-09 — INVARIANT: cache values stored under the keys below must NOT
+// contain role-gated subsets. Every entry below holds the *full* org-scoped
+// payload; the per-user authorisation check (`requirePermission`) MUST run
+// BEFORE `cached()` is invoked, never after, so a low-privilege user can
+// never observe data that a higher-privilege user populated into the cache.
+//
+// If you ever add a cache that intentionally holds a per-user view (e.g.
+// taxId masked vs unmasked), include the role/permission discriminator in
+// the cache key (`cacheKey(orgId, role, ...)`) — never the orgId alone.
+// Search and dashboard caches today are role-agnostic by design: their
+// payloads are aggregate/non-PII numbers and IDs that any user with the
+// gating permission is entitled to see in full. Audited 2026-05-03.
 
 export const CacheKeys = {
   // Org-scoped — orgId comes first so prefix invalidation works
