@@ -1,3 +1,4 @@
+import { withQueueObservability } from '@contractor-ops/api/services/cron-monitor';
 import { handleZatcaSubmissionJob } from '@contractor-ops/api/services/zatca-submission';
 import { prisma } from '@contractor-ops/db';
 import { ZatcaApiError } from '@contractor-ops/einvoice';
@@ -55,8 +56,11 @@ async function handler(request: NextRequest) {
   // F-OBS-03: reseed ALS frame from upstream QStash forward headers BEFORE
   // any handler logic so every log line emitted by this consumer carries the
   // producer's requestId / traceparent.
+  // S3-5 · F-ASYNC-17: emit per-tick duration to `job.duration` histogram.
   const traceCtx = buildContextFromHeaders(request.headers);
-  return runWithRequestContext(traceCtx, () => handlerInner(request));
+  return runWithRequestContext(traceCtx, () =>
+    withQueueObservability('zatca-submit', () => handlerInner(request)),
+  );
 }
 
 async function handlerInner(request: NextRequest) {

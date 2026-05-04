@@ -1,3 +1,4 @@
+import { withQueueObservability } from '@contractor-ops/api/services/cron-monitor';
 import { processDirectorySync } from '@contractor-ops/api/services/google-workspace-sync-orchestrator';
 import { registerAllAdapters } from '@contractor-ops/integrations/adapters/register-all';
 import {
@@ -49,30 +50,35 @@ const syncRequestBodySchema = z.object({
  */
 async function handler(request: NextRequest) {
   // F-OBS-03: reseed ALS frame from upstream QStash forward headers.
+  // S3-5 · F-ASYNC-17: emit per-tick duration to `job.duration` histogram.
   const ctx = buildContextFromHeaders(request.headers);
-  return runWithRequestContext(ctx, async () => {
-    const parseResult = syncRequestBodySchema.safeParse(await request.json());
+  return runWithRequestContext(ctx, () =>
+    withQueueObservability('google-workspace-sync', () => handlerInner(request)),
+  );
+}
 
-    if (!parseResult.success) {
-      return NextResponse.json(
-        { error: 'Invalid request body', details: parseResult.error.flatten() },
-        { status: 400 },
-      );
-    }
+async function handlerInner(request: NextRequest) {
+  const parseResult = syncRequestBodySchema.safeParse(await request.json());
 
-    const { organizationId, connectionId } = parseResult.data;
+  if (!parseResult.success) {
+    return NextResponse.json(
+      { error: 'Invalid request body', details: parseResult.error.flatten() },
+      { status: 400 },
+    );
+  }
 
-    try {
-      const result = await processDirectorySync({ organizationId, connectionId });
-      return NextResponse.json({ processed: true, ...result });
-    } catch (error) {
-      log.error({ err: error, organizationId }, 'failed to sync directory for org');
-      return NextResponse.json(
-        { error: 'Google Workspace directory sync failed' },
-        { status: 500 },
-      );
-    }
-  });
+  const { organizationId, connectionId } = parseResult.data;
+
+  try {
+    const result = await processDirectorySync({ organizationId, connectionId });
+    return NextResponse.json({ processed: true, ...result });
+  } catch (error) {
+    log.error({ err: error, organizationId }, 'failed to sync directory for org');
+    return NextResponse.json(
+      { error: 'Google Workspace directory sync failed' },
+      { status: 500 },
+    );
+  }
 }
 
 // Wrap with QStash signature verification

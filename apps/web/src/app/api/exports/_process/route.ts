@@ -12,6 +12,7 @@
  * route can't be invoked by anything other than our own dispatch.
  */
 
+import { withQueueObservability } from '@contractor-ops/api/services/cron-monitor';
 import {
   claimExport,
   runExportHandler,
@@ -30,6 +31,11 @@ const bodySchema = z.object({
 });
 
 async function handler(request: NextRequest) {
+  // S3-5 · F-ASYNC-17: emit per-tick duration to `job.duration` histogram.
+  return withQueueObservability('exports-process', () => handlerInner(request));
+}
+
+async function handlerInner(request: NextRequest) {
   const rawBody = await request.json().catch(() => null);
   const parsed = bodySchema.safeParse(rawBody);
   if (!parsed.success) {

@@ -1,7 +1,9 @@
+import { createCronLogger } from '@contractor-ops/logger';
+import { metrics } from '@contractor-ops/logger/metrics';
 import { getServerEnv } from '@contractor-ops/validators';
 
 /**
- * Cron job monitoring via Cronitor heartbeats.
+ * Cron job monitoring via Cronitor heartbeats + structured metrics.
  *
  * Cronitor API: https://cronitor.io/docs/heartbeat-api
  * Each cron job has a monitor key. On each run we ping:
@@ -10,7 +12,22 @@ import { getServerEnv } from '@contractor-ops/validators';
  *   - `fail`     — job failed
  *
  * If CRONITOR_API_KEY is not set, all pings are silently skipped (dev-friendly).
+ *
+ * Beyond Cronitor heartbeats this module exposes two metric-emit primitives
+ * (S3-5 · F-ASYNC-17):
+ *   - `recordJobDuration(jobName, durationMs, opts)` — distribution metric
+ *     for histogram-style "how long is each tick taking" charts.
+ *   - `recordQueueDepth(queue, depth, opts)` — gauge for "how many items
+ *     are waiting" (outbox pending, webhook RECEIVED, peppol participants
+ *     to scan, etc.).
+ *
+ * Plus two wrapper utilities that emit duration automatically so
+ * QStash consumer routes (`_process` / `_sync` / `inbound` / `outbound` /
+ * `poll` / `_drain` / `_render-claim-pdf`) and Bearer-secret cron routes
+ * can instrument timing with one line.
  */
+
+const log = createCronLogger('cron-monitor');
 
 const CRONITOR_PING_URL = 'https://cronitor.link/p';
 
@@ -72,16 +89,141 @@ export async function withCronMonitor<T>(
   fn: () => Promise<T>,
 ): Promise<T> {
   await ping(monitorKey, 'run');
+  const start = performance.now();
 
   try {
     const result = await fn();
+    const durationMs = Math.round(performance.now() - start);
+    // S3-5 · F-ASYNC-17: emit a duration metric next to the heartbeat so
+    // ops dashboards can chart per-job histogram without depending on
+    // Cronitor's external UI.
+    recordJobDuration(monitorKey, durationMs, { outcome: 'ok' });
     const message =
       typeof result === 'object' && result !== null ? JSON.stringify(result) : String(result);
     await ping(monitorKey, 'complete', message);
     return result;
   } catch (error) {
+    const durationMs = Math.round(performance.now() - start);
+    recordJobDuration(monitorKey, durationMs, { outcome: 'error' });
     const message = error instanceof Error ? error.message : 'Unknown error';
     await ping(monitorKey, 'fail', message);
+    throw error;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Job duration / queue-depth metrics — S3-5 · F-ASYNC-17
+// ---------------------------------------------------------------------------
+//
+// Pre-fix (audit findings 04-async.md F-ASYNC-17):
+//   - Cron jobs only fired Cronitor heartbeats — no per-job duration
+//     histogram visible in Sentry/Axiom.
+//   - QStash consumer routes (_process / _sync / inbound / outbound /
+//     poll / _drain / _render-claim-pdf) emitted no timing metric at all.
+//   - Job-health route counted webhook PENDING but no other queues
+//     (outbox, peppol participants, ksef sync, ocr backlog).
+//
+// Post-fix:
+//   - Two metric primitives that any consumer can call.
+//   - One `withQueueObservability(jobName, fn)` wrapper for QStash
+//     consumer routes that auto-emits duration + outcome counter.
+//   - Producers (e.g. outbox drain) emit `recordQueueDepth` against the
+//     pending count BEFORE dispatch so dashboards see queue lag.
+//
+// These all funnel through `@contractor-ops/logger/metrics`, which
+// publishes both Sentry span attributes and structured Pino log lines so
+// Axiom queries like `metric:queue.depth queue:outbox` work out of the
+// box.
+
+/**
+ * Outcome label for job runs — informs dashboards whether a slow tick was
+ * a slow happy-path or a slow error path.
+ */
+export type JobOutcome = 'ok' | 'error' | 'permanent-failure' | 'transient-failure';
+
+/**
+ * Records a per-job duration distribution metric (i.e. histogram input).
+ *
+ * Tag conventions:
+ *   - `job` — short logical name (e.g. `outbox-drain`, `ksef-sync`,
+ *     `webhooks-process`). Keep the name STABLE; renaming it breaks
+ *     dashboards.
+ *   - `outcome` — one of `JobOutcome` so charts can split happy vs sad.
+ *
+ * Cardinality note: do NOT include organizationId or other high-cardinality
+ * fields in tags — Sentry / metrics backends penalise that. Keep it to
+ * job + outcome (+ optional `phase` for multi-stage jobs).
+ */
+export function recordJobDuration(
+  jobName: string,
+  durationMs: number,
+  opts: { outcome?: JobOutcome; phase?: string } = {},
+): void {
+  const tags: Record<string, string> = { job: jobName, outcome: opts.outcome ?? 'ok' };
+  if (opts.phase) tags.phase = opts.phase;
+  metrics.distribution('job.duration', durationMs, {
+    unit: 'millisecond',
+    tags,
+  });
+}
+
+/**
+ * Records the depth (item count) of a logical queue at the moment of
+ * observation. Use for outbox PENDING count, webhook RECEIVED count,
+ * peppol participants pending poll, ocr extractions stuck PROCESSING,
+ * etc.
+ *
+ * `queue` is the canonical queue name (stable; e.g. `outbox`, `webhook`,
+ * `peppol-poll`). Pair this with the existing `metrics.gauge` calls in
+ * `cron/job-health` so a single Axiom query can chart queue depth across
+ * all named queues with `metric:queue.depth | summarize by queue`.
+ */
+export function recordQueueDepth(
+  queue: string,
+  depth: number,
+  opts: { phase?: string } = {},
+): void {
+  const tags: Record<string, string> = { queue };
+  if (opts.phase) tags.phase = opts.phase;
+  metrics.gauge('queue.depth', depth, tags);
+}
+
+/**
+ * Wraps a QStash consumer / cron handler with timing + outcome metrics.
+ *
+ * Use from QStash consumer routes (`_process` / `_sync` / `_drain` etc.)
+ * where the route handler already owns its own try/catch and returns a
+ * NextResponse — this helper does not interfere with status-code
+ * mapping. It only measures wall-clock and emits a single
+ * `job.duration` distribution + `job.runs` counter per call.
+ *
+ * Outcome:
+ *   - `ok` if the handler resolved without throwing.
+ *   - `error` if it threw — the original error is re-thrown so QStash
+ *     gets its 5xx → retry behaviour from the caller's existing code.
+ *
+ * This wrapper does NOT call Cronitor; it's strictly metrics. Cronitor
+ * heartbeats remain a Bearer-secret cron concern via `withCronMonitor`.
+ */
+export async function withQueueObservability<T>(
+  jobName: string,
+  fn: () => Promise<T>,
+): Promise<T> {
+  const start = performance.now();
+  try {
+    const result = await fn();
+    const durationMs = Math.round(performance.now() - start);
+    recordJobDuration(jobName, durationMs, { outcome: 'ok' });
+    metrics.increment('job.runs', 1, { job: jobName, outcome: 'ok' });
+    return result;
+  } catch (error) {
+    const durationMs = Math.round(performance.now() - start);
+    recordJobDuration(jobName, durationMs, { outcome: 'error' });
+    metrics.increment('job.runs', 1, { job: jobName, outcome: 'error' });
+    log.warn(
+      { err: error, job: jobName, durationMs },
+      'queue handler threw — metric emitted, rethrowing',
+    );
     throw error;
   }
 }

@@ -1,3 +1,4 @@
+import { withQueueObservability } from '@contractor-ops/api/services/cron-monitor';
 import { processKsefSync } from '@contractor-ops/api/services/ksef-sync-orchestrator';
 import { registerAllAdapters } from '@contractor-ops/integrations/adapters/register-all';
 import {
@@ -45,26 +46,31 @@ registerAllAdapters();
  */
 async function handler(request: NextRequest) {
   // F-OBS-03: reseed ALS frame from upstream QStash forward headers.
+  // S3-5 · F-ASYNC-17: emit per-tick duration to `job.duration` histogram.
   const ctx = buildContextFromHeaders(request.headers);
-  return runWithRequestContext(ctx, async () => {
-    const rawBody = await request.json().catch(() => null);
-    const parsed = ksefSyncBodySchema.safeParse(rawBody);
-    if (!parsed.success) {
-      const missing = parsed.error.issues.map(i => i.path.join('.')).filter(Boolean);
-      const detail =
-        missing.length > 0 ? `Missing or invalid: ${missing.join(', ')}` : 'Invalid body';
-      return NextResponse.json({ error: detail }, { status: 400 });
-    }
-    const { organizationId, connectionId } = parsed.data;
+  return runWithRequestContext(ctx, () =>
+    withQueueObservability('ksef-sync', () => handlerInner(request)),
+  );
+}
 
-    try {
-      const result = await processKsefSync({ organizationId, connectionId });
-      return NextResponse.json({ processed: true, ...result });
-    } catch (error) {
-      log.error({ err: error, organizationId }, 'ksef sync failed');
-      return NextResponse.json({ error: 'KSeF sync failed' }, { status: 500 });
-    }
-  });
+async function handlerInner(request: NextRequest) {
+  const rawBody = await request.json().catch(() => null);
+  const parsed = ksefSyncBodySchema.safeParse(rawBody);
+  if (!parsed.success) {
+    const missing = parsed.error.issues.map(i => i.path.join('.')).filter(Boolean);
+    const detail =
+      missing.length > 0 ? `Missing or invalid: ${missing.join(', ')}` : 'Invalid body';
+    return NextResponse.json({ error: detail }, { status: 400 });
+  }
+  const { organizationId, connectionId } = parsed.data;
+
+  try {
+    const result = await processKsefSync({ organizationId, connectionId });
+    return NextResponse.json({ processed: true, ...result });
+  } catch (error) {
+    log.error({ err: error, organizationId }, 'ksef sync failed');
+    return NextResponse.json({ error: 'KSeF sync failed' }, { status: 500 });
+  }
 }
 
 // Wrap with QStash signature verification

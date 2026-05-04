@@ -1,3 +1,4 @@
+import { withQueueObservability } from '@contractor-ops/api/services/cron-monitor';
 import { renderClaimPdf } from '@contractor-ops/api/services/late-payment-claim-pdf';
 import {
   buildContextFromHeaders,
@@ -31,8 +32,11 @@ const bodySchema = z.object({
  */
 async function handler(request: NextRequest) {
   // F-OBS-03: reseed ALS frame from upstream QStash forward headers.
+  // S3-5 · F-ASYNC-17: emit per-tick duration to `job.duration` histogram.
   const traceCtx = buildContextFromHeaders(request.headers);
-  return runWithRequestContext(traceCtx, () => handlerInner(request));
+  return runWithRequestContext(traceCtx, () =>
+    withQueueObservability('late-interest-render-claim-pdf', () => handlerInner(request)),
+  );
 }
 
 async function handlerInner(request: NextRequest) {

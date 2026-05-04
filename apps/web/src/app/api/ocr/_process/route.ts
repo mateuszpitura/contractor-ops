@@ -1,3 +1,4 @@
+import { withQueueObservability } from '@contractor-ops/api/services/cron-monitor';
 import { processOcrExtraction } from '@contractor-ops/api/services/ocr-extraction';
 import { registerAllAdapters } from '@contractor-ops/integrations/adapters/register-all';
 import {
@@ -71,49 +72,55 @@ const ocrProcessBodySchema = z.object({
 async function handler(request: NextRequest) {
   // F-OBS-03: reseed ALS frame from upstream QStash forward headers so logs
   // from this consumer correlate with the producer's tRPC procedure span.
+  // S3-5 · F-ASYNC-17: wrap with withQueueObservability so every consumer
+  // tick reports duration + outcome to the `job.duration` histogram.
   const ctx = buildContextFromHeaders(request.headers);
-  return runWithRequestContext(ctx, async () => {
-    const rawBody = await request.json().catch(() => null);
-    const parsed = ocrProcessBodySchema.safeParse(rawBody);
-    if (!parsed.success) {
-      const missing = parsed.error.issues.map(i => i.path.join('.')).filter(Boolean);
-      const detail =
-        missing.length > 0 ? `Missing or invalid: ${missing.join(', ')}` : 'Invalid body';
-      return NextResponse.json({ error: detail }, { status: 400 });
-    }
-    const { extractionId, organizationId, storageKey } = parsed.data;
+  return runWithRequestContext(ctx, () =>
+    withQueueObservability('ocr-process', () => handlerInner(request)),
+  );
+}
 
-    try {
-      await processOcrExtraction({
-        extractionId,
-        organizationId,
-        storageKey,
+async function handlerInner(request: NextRequest) {
+  const rawBody = await request.json().catch(() => null);
+  const parsed = ocrProcessBodySchema.safeParse(rawBody);
+  if (!parsed.success) {
+    const missing = parsed.error.issues.map(i => i.path.join('.')).filter(Boolean);
+    const detail =
+      missing.length > 0 ? `Missing or invalid: ${missing.join(', ')}` : 'Invalid body';
+    return NextResponse.json({ error: detail }, { status: 400 });
+  }
+  const { extractionId, organizationId, storageKey } = parsed.data;
+
+  try {
+    await processOcrExtraction({
+      extractionId,
+      organizationId,
+      storageKey,
+    });
+
+    return NextResponse.json({ processed: true });
+  } catch (error) {
+    // F-ASYNC-16: only true infra failures should retry. The
+    // processOcrExtraction service already catches+FAILS the row for
+    // permanent OCR errors and does NOT rethrow, so reaching here is rare
+    // (R2 outage, runtime crash, OOM). Classify and either retry or
+    // permanently fail.
+    const classified = classifyOcrError(error);
+    log.error(
+      { err: error, extractionId, classification: classified.reason },
+      'ocr processing failed at route boundary',
+    );
+    if (classified.reason === 'permanent') {
+      Sentry.captureException(error, {
+        tags: { 'ocr.outcome': 'permanent-failure' },
+        extra: { extractionId, organizationId },
       });
-
-      return NextResponse.json({ processed: true });
-    } catch (error) {
-      // F-ASYNC-16: only true infra failures should retry. The
-      // processOcrExtraction service already catches+FAILS the row for
-      // permanent OCR errors and does NOT rethrow, so reaching here is rare
-      // (R2 outage, runtime crash, OOM). Classify and either retry or
-      // permanently fail.
-      const classified = classifyOcrError(error);
-      log.error(
-        { err: error, extractionId, classification: classified.reason },
-        'ocr processing failed at route boundary',
-      );
-      if (classified.reason === 'permanent') {
-        Sentry.captureException(error, {
-          tags: { 'ocr.outcome': 'permanent-failure' },
-          extra: { extractionId, organizationId },
-        });
-      }
-      return NextResponse.json(
-        { error: 'Processing failed', classification: classified.reason },
-        { status: classified.status },
-      );
     }
-  });
+    return NextResponse.json(
+      { error: 'Processing failed', classification: classified.reason },
+      { status: classified.status },
+    );
+  }
 }
 
 export const POST = verifySignatureAppRouter(handler);

@@ -1,3 +1,4 @@
+import { withQueueObservability } from '@contractor-ops/api/services/cron-monitor';
 import { handleSigningCompletion } from '@contractor-ops/api/services/esign-orchestrator';
 import { processResendWebhookDelivery } from '@contractor-ops/api/services/resend-email-intake';
 import { prisma } from '@contractor-ops/db';
@@ -48,8 +49,11 @@ async function handler(request: NextRequest) {
   // F-OBS-03: reseed ALS frame from upstream QStash forward headers BEFORE
   // any body / dispatch logic. Pure header-read additive change so P2-A's
   // return-code refactor below does not need to reason about correlation IDs.
+  // S3-5 · F-ASYNC-17: emit per-tick duration to `job.duration` histogram.
   const traceCtx = buildContextFromHeaders(request.headers);
-  return runWithRequestContext(traceCtx, () => handlerInner(request));
+  return runWithRequestContext(traceCtx, () =>
+    withQueueObservability('webhooks-process', () => handlerInner(request)),
+  );
 }
 
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: per-provider dispatch (Jira/Linear/Resend/e-sign)

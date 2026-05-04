@@ -1,3 +1,7 @@
+import {
+  recordQueueDepth,
+  withQueueObservability,
+} from '@contractor-ops/api/services/cron-monitor';
 import { PeppolOrchestrator } from '@contractor-ops/api/services/peppol-orchestrator';
 import { prisma } from '@contractor-ops/db';
 import { StorecoveAdapter } from '@contractor-ops/einvoice';
@@ -90,8 +94,11 @@ async function recordPollError(organizationId: string, error: unknown): Promise<
  */
 async function handler(request: NextRequest) {
   // F-OBS-03: reseed ALS frame from upstream QStash forward headers.
+  // S3-5 · F-ASYNC-17: emit per-tick duration to `job.duration` histogram.
   const traceCtx = buildContextFromHeaders(request.headers);
-  return runWithRequestContext(traceCtx, () => handlerInner(request));
+  return runWithRequestContext(traceCtx, () =>
+    withQueueObservability('peppol-poll', () => handlerInner(request)),
+  );
 }
 
 async function handlerInner(request: NextRequest) {
@@ -112,6 +119,12 @@ async function handlerInner(request: NextRequest) {
       : await prisma.peppolParticipant.findMany({
           where: { status: 'ACTIVE' },
         });
+
+    // S3-5 · F-ASYNC-17: report the participant queue depth so dashboards
+    // can chart "how many orgs do we sweep per tick" alongside other queue
+    // gauges. Tag is `queue:peppol-poll-participants` so it's distinct
+    // from outbox / webhook gauges.
+    recordQueueDepth('peppol-poll-participants', participants.length);
 
     const results: Array<{
       organizationId: string;
