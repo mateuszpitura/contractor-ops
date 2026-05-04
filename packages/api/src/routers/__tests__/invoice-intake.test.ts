@@ -105,6 +105,8 @@ vi.mock('../../services/invoice-intake-matcher.js', () => ({
 }));
 
 vi.mock('../../services/r2.js', () => ({
+  maxBytesForMime: vi.fn(() => 10485760),
+  MAX_BYTES_BY_MIME: { 'application/pdf': 52428800 },
   signExistingDownload: mockSignExistingDownload,
   createPresignedUploadUrl: vi.fn(async () => ({
     url: 'https://r2.example.com/upload',

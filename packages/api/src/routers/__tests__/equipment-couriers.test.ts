@@ -224,6 +224,8 @@ vi.mock('../../services/virus-scanner.js', () => ({
 }));
 
 vi.mock('../../services/r2.js', () => ({
+  maxBytesForMime: vi.fn(() => 10485760),
+  MAX_BYTES_BY_MIME: { 'application/pdf': 52428800 },
   createPresignedUploadUrl: vi.fn(async () => ({
     url: 'https://r2.example.com/upload',
     key: 'mock-key',

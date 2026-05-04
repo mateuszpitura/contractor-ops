@@ -116,6 +116,8 @@ vi.mock('../../services/portal-magic-link.js', () => ({
 }));
 
 vi.mock('../../services/r2.js', () => ({
+  maxBytesForMime: vi.fn(() => 10485760),
+  MAX_BYTES_BY_MIME: { 'application/pdf': 52428800 },
   createPresignedUploadUrl: vi.fn(async () => ({ url: 'https://r2.test/upload', key: 'k' })),
   createPresignedDownloadUrl: vi.fn(async () => 'https://r2.test/download'),
   generateStorageKey: vi.fn(() => 'mock-key'),

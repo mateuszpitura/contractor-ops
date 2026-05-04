@@ -112,6 +112,8 @@ vi.mock('../../services/bank-account-crypto.js', () => ({
 }));
 
 vi.mock('../../services/r2.js', () => ({
+  maxBytesForMime: vi.fn(() => 10485760),
+  MAX_BYTES_BY_MIME: { 'application/pdf': 52428800 },
   putObjectAndSignDownload: mockPutAndSign,
   signExistingDownload: vi.fn(),
 }));

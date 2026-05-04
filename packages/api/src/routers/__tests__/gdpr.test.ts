@@ -185,6 +185,8 @@ vi.mock('../../services/cache.js', () => ({
 }));
 
 vi.mock('../../services/r2.js', () => ({
+  maxBytesForMime: vi.fn(() => 10485760),
+  MAX_BYTES_BY_MIME: { 'application/pdf': 52428800 },
   deleteObject: vi.fn(async () => undefined),
 }));
 

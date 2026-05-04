@@ -123,6 +123,8 @@ vi.mock('../../services/peppol-adapter-factory.js', () => ({
 }));
 
 vi.mock('../../services/r2.js', () => ({
+  maxBytesForMime: vi.fn(() => 10485760),
+  MAX_BYTES_BY_MIME: { 'application/pdf': 52428800 },
   putObjectString: vi.fn(async () => undefined),
   getObjectAsString: mockGetObjectAsString,
   signExistingDownload: vi.fn(async () => ({

@@ -186,6 +186,8 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
 }));
 
 vi.mock('../../services/r2.js', () => ({
+  maxBytesForMime: vi.fn(() => 10485760),
+  MAX_BYTES_BY_MIME: { 'application/pdf': 52428800 },
   createPresignedDownloadUrl: mockCreatePresignedDownloadUrl,
   createPresignedUploadUrl: mockCreatePresignedUploadUrl,
   generateStorageKey: mockGenerateStorageKey,
