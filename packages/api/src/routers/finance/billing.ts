@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { router } from '../../init.js';
 import { adminProcedure } from '../../middleware/rbac.js';
 import { tenantProcedure } from '../../middleware/tenant.js';
+import { writeAuditLog } from '../../services/audit-writer.js';
 import {
   KNOWN_SUBSCRIPTION_PRICE_IDS,
   KNOWN_TOPUP_PRICE_IDS,
@@ -149,7 +150,7 @@ export const billingRouter = router({
 
       const baseUrl = getServerEnv().NEXT_PUBLIC_APP_URL;
 
-      return createCheckoutSession({
+      const session = await createCheckoutSession({
         organizationId: ctx.organizationId,
         priceId: input.priceId,
         stripeCustomerId,
@@ -158,6 +159,21 @@ export const billingRouter = router({
         successUrl: `${baseUrl}/settings?tab=billing&session_id={CHECKOUT_SESSION_ID}`,
         cancelUrl: `${baseUrl}/settings?tab=billing`,
       });
+
+      // F-OBS-05 — subscription checkout starts the billing relationship and
+      // can change plan tier; admins must be retraceable.
+      await writeAuditLog({
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user?.id ?? null,
+        action: 'BILLING_CHECKOUT_SESSION_CREATE',
+        resourceType: 'ORGANIZATION',
+        resourceId: ctx.organizationId,
+        newValues: { priceId: input.priceId, quantity, isNewOrg },
+        metadata: { stripeCustomerId },
+      });
+
+      return session;
     }),
 
   /**
@@ -218,10 +234,24 @@ export const billingRouter = router({
 
     const baseUrl = getServerEnv().NEXT_PUBLIC_APP_URL;
 
-    return createPortalSession({
+    const portal = await createPortalSession({
       stripeCustomerId: sub.stripeCustomerId,
       returnUrl: `${baseUrl}/settings?tab=billing`,
     });
+
+    // F-OBS-05 — billing portal session opens the door to plan changes,
+    // payment-method updates, and cancellation. Audit the entry point.
+    await writeAuditLog({
+      organizationId: ctx.organizationId,
+      actorType: 'USER',
+      actorId: ctx.user?.id ?? null,
+      action: 'BILLING_PORTAL_SESSION_CREATE',
+      resourceType: 'ORGANIZATION',
+      resourceId: ctx.organizationId,
+      metadata: { stripeCustomerId: sub.stripeCustomerId },
+    });
+
+    return portal;
   }),
 
   /**
@@ -253,13 +283,27 @@ export const billingRouter = router({
 
       const baseUrl = getServerEnv().NEXT_PUBLIC_APP_URL;
 
-      return createTopUpCheckoutSession({
+      const topup = await createTopUpCheckoutSession({
         organizationId: ctx.organizationId,
         priceId: input.priceId,
         stripeCustomerId: sub.stripeCustomerId,
         successUrl: `${baseUrl}/settings?tab=billing&topup=success`,
         cancelUrl: `${baseUrl}/settings?tab=billing`,
       });
+
+      // F-OBS-05 — credit top-up is a billed event; audit who initiated.
+      await writeAuditLog({
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user?.id ?? null,
+        action: 'BILLING_TOPUP_CHECKOUT_CREATE',
+        resourceType: 'ORGANIZATION',
+        resourceId: ctx.organizationId,
+        newValues: { priceId: input.priceId },
+        metadata: { stripeCustomerId: sub.stripeCustomerId },
+      });
+
+      return topup;
     }),
 
   /**
