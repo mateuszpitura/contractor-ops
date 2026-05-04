@@ -49,7 +49,7 @@ const {
       findFirst: vi.fn(),
     },
     organization: {
-      findUnique: vi.fn(async () => ({ dataRegion: 'EU' })),
+      findUnique: vi.fn(async () => ({ dataRegion: 'EU', status: 'ACTIVE' })),
     },
     member: { findFirst: vi.fn(async () => ({ role: 'admin' })) },
     eInvoiceLifecycle: {
@@ -115,6 +115,7 @@ vi.mock('@contractor-ops/auth', () => ({
 }));
 
 vi.mock('@contractor-ops/db', () => ({
+  withRlsTransactions: <T,>(c: T) => c,
   prisma: mockPrisma,
   tenantStore: {
     run: (_ctx: unknown, fn: () => unknown) => fn(),
@@ -222,6 +223,19 @@ vi.mock('@contractor-ops/logger', () => {
   };
   const l = child();
   return {
+    runWithRequestContext: vi.fn((_c, fn) => fn()),
+    getRequestId: vi.fn(() => undefined),
+    getTraceparent: vi.fn(() => undefined),
+    buildContextFromHeaders: vi.fn(() => ({})),
+    getOutboundHeaders: vi.fn(() => ({})),
+    generateRequestId: vi.fn(() => 'test-request-id'),
+    withBodyLogging: vi.fn((_o, fn) => fn),
+    logIntegrationCall: vi.fn(),
+    subscribeOpossumEvents: vi.fn(),
+    LOG_BODY_INCLUDE_PREFIXES: [],
+    PII_MASK_KEYWORDS: [],
+    PII_MASK_PATHS: [],
+
     logger: l,
     createLogger: vi.fn(() => l),
     createTrpcLogger: vi.fn(() => l),

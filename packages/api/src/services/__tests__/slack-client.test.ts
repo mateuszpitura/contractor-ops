@@ -48,6 +48,7 @@ vi.mock('@slack/web-api', () => ({
 }));
 
 vi.mock('@contractor-ops/db', () => ({
+  withRlsTransactions: <T,>(c: T) => c,
   prisma: mockPrisma,
 }));
 

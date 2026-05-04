@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 // ---------------------------------------------------------------------------
 
 vi.mock('@contractor-ops/db', () => ({
+  withRlsTransactions: <T,>(c: T) => c,
   tenantStore: {
     getStore: vi.fn(() => null),
   },

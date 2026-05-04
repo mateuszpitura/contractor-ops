@@ -32,7 +32,7 @@ const {
   const mockOrgFindUniqueOrThrow = vi.fn();
   const mockPrismaRoot = {
     organization: {
-      findUnique: vi.fn().mockResolvedValue({ dataRegion: 'EU' }),
+      findUnique: vi.fn().mockResolvedValue({ id: 'org-mock', dataRegion: 'EU', status: 'ACTIVE' }),
       findUniqueOrThrow: mockOrgFindUniqueOrThrow,
     },
   };
@@ -54,6 +54,7 @@ const {
 // ---------------------------------------------------------------------------
 
 vi.mock('@contractor-ops/db', () => ({
+  withRlsTransactions: <T,>(c: T) => c,
   prisma: mockPrismaRoot,
   tenantStore: {
     run: (_ctx: unknown, fn: () => unknown) => fn(),
@@ -79,6 +80,24 @@ vi.mock('@contractor-ops/auth', () => ({
 }));
 
 vi.mock('@contractor-ops/logger', () => ({
+  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), fatal: vi.fn(), trace: vi.fn(), child: vi.fn() })),
+  createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
+  createWebhookLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
+  createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
+  createIntegrationLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
+  withBodyLogging: vi.fn((_o, fn) => fn),
+  logIntegrationCall: vi.fn(),
+  subscribeOpossumEvents: vi.fn(),
+  runWithRequestContext: vi.fn((_c, fn) => fn()),
+  getRequestId: vi.fn(() => undefined),
+  getTraceparent: vi.fn(() => undefined),
+  buildContextFromHeaders: vi.fn(() => ({})),
+  getOutboundHeaders: vi.fn(() => ({})),
+  generateRequestId: vi.fn(() => 'test-request-id'),
+  logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() },
+  LOG_BODY_INCLUDE_PREFIXES: [],
+  PII_MASK_KEYWORDS: [],
+  PII_MASK_PATHS: [],
   createIntegrationLogger: vi.fn(() => ({
     info: vi.fn(),
     warn: vi.fn(),
@@ -128,6 +147,10 @@ vi.mock('../../services/privacy-notice.js', () => ({
 }));
 
 vi.mock('../../services/cache.js', () => ({
+  cacheKey: vi.fn((...s: string[]) => s.join(':')),
+  cachedSingleflight: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
+  CacheKeys: {},
+  CacheTTL: {},
   cached: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
   invalidate: vi.fn(async () => undefined),
   invalidateByPrefix: vi.fn(async () => undefined),

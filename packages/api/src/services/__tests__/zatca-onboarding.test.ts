@@ -22,6 +22,7 @@ const { mockSecretStore, mockZatcaApiClient } = vi.hoisted(() => ({
 // ---------------------------------------------------------------------------
 
 vi.mock('@contractor-ops/db', () => ({
+  withRlsTransactions: <T,>(c: T) => c,
   prisma: {
     integrationConnection: {
       findFirst: vi.fn(),

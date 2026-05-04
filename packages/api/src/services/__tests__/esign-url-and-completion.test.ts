@@ -45,6 +45,7 @@ const {
 });
 
 vi.mock('@contractor-ops/db', () => ({
+  withRlsTransactions: <T,>(c: T) => c,
   prisma: {
     signingEnvelope: {
       findFirst: mockSigningEnvelopeFindFirst,

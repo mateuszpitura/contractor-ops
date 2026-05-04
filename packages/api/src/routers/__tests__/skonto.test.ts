@@ -26,7 +26,7 @@ const { mockPrisma, mockEvaluateSkontoEligibility, mockResolveSkontoTerm } = vi.
 
   const mockPrisma: Rec = {
     organization: {
-      findUnique: vi.fn().mockResolvedValue({ dataRegion: 'EU' }),
+      findUnique: vi.fn().mockResolvedValue({ id: 'org-mock', dataRegion: 'EU', status: 'ACTIVE' }),
     },
     invoice: {
       findFirst: vi.fn(),
@@ -89,6 +89,7 @@ vi.mock('@contractor-ops/auth', () => ({
 }));
 
 vi.mock('@contractor-ops/db', () => ({
+  withRlsTransactions: <T,>(c: T) => c,
   prisma: mockPrisma,
   tenantStore: {
     run: (_ctx: unknown, fn: () => unknown) => fn(),
@@ -107,6 +108,10 @@ vi.mock('../../services/skonto.js', () => ({
 }));
 
 vi.mock('../../services/cache.js', () => ({
+  cacheKey: vi.fn((...s: string[]) => s.join(':')),
+  cachedSingleflight: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
+  CacheKeys: {},
+  CacheTTL: {},
   cached: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
   invalidate: vi.fn(async () => undefined),
   invalidateByPrefix: vi.fn(async () => undefined),
@@ -147,6 +152,19 @@ vi.mock('@contractor-ops/logger', () => {
   };
   const loggerStub = { ...stub, child: vi.fn(() => ({ ...stub, child: vi.fn(() => stub) })) };
   return {
+    runWithRequestContext: vi.fn((_c, fn) => fn()),
+    getRequestId: vi.fn(() => undefined),
+    getTraceparent: vi.fn(() => undefined),
+    buildContextFromHeaders: vi.fn(() => ({})),
+    getOutboundHeaders: vi.fn(() => ({})),
+    generateRequestId: vi.fn(() => 'test-request-id'),
+    withBodyLogging: vi.fn((_o, fn) => fn),
+    logIntegrationCall: vi.fn(),
+    subscribeOpossumEvents: vi.fn(),
+    LOG_BODY_INCLUDE_PREFIXES: [],
+    PII_MASK_KEYWORDS: [],
+    PII_MASK_PATHS: [],
+
     logger: loggerStub,
     createTrpcLogger: vi.fn(() => stub),
     createLogger: vi.fn(() => stub),

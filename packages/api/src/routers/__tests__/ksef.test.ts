@@ -22,7 +22,7 @@ const {
   const mockPrisma: Record<string, unknown> = {
     organization: {
       findUniqueOrThrow: vi.fn(),
-      findUnique: vi.fn().mockResolvedValue({ dataRegion: 'EU' }),
+      findUnique: vi.fn().mockResolvedValue({ id: 'org-mock', dataRegion: 'EU', status: 'ACTIVE' }),
     },
     auditLog: {
       create: vi.fn().mockResolvedValue({ id: 'audit-1' }),
@@ -60,6 +60,7 @@ vi.mock('@contractor-ops/auth', () => ({
 }));
 
 vi.mock('@contractor-ops/db', () => ({
+  withRlsTransactions: <T,>(c: T) => c,
   prisma: mockPrisma,
   getRegionalClient: vi.fn(() => mockPrisma),
   tenantStore: {
@@ -90,6 +91,19 @@ vi.mock('@contractor-ops/logger', () => {
     trace: vi.fn(),
   };
   return {
+    runWithRequestContext: vi.fn((_c, fn) => fn()),
+    getRequestId: vi.fn(() => undefined),
+    getTraceparent: vi.fn(() => undefined),
+    buildContextFromHeaders: vi.fn(() => ({})),
+    getOutboundHeaders: vi.fn(() => ({})),
+    generateRequestId: vi.fn(() => 'test-request-id'),
+    withBodyLogging: vi.fn((_o, fn) => fn),
+    logIntegrationCall: vi.fn(),
+    subscribeOpossumEvents: vi.fn(),
+    LOG_BODY_INCLUDE_PREFIXES: [],
+    PII_MASK_KEYWORDS: [],
+    PII_MASK_PATHS: [],
+
     createTrpcLogger: vi.fn(() => stub),
     createLogger: vi.fn(() => stub),
     createCronLogger: vi.fn(() => stub),
@@ -103,6 +117,10 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
 }));
 
 vi.mock('../../services/cache.js', () => ({
+  cacheKey: vi.fn((...s: string[]) => s.join(':')),
+  cachedSingleflight: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
+  CacheKeys: {},
+  CacheTTL: {},
   cached: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
   invalidate: vi.fn(async () => undefined),
   invalidateByPrefix: vi.fn(async () => undefined),

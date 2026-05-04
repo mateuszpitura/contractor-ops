@@ -21,6 +21,7 @@ const {
 const mockGetQStashClient = vi.hoisted(() => vi.fn(() => ({ publishJSON: mockPublishJSON })));
 
 vi.mock('@contractor-ops/db', () => ({
+  withRlsTransactions: <T,>(c: T) => c,
   prisma: {
     ocrExtraction: {
       create: mockCreate,
@@ -31,6 +32,24 @@ vi.mock('@contractor-ops/db', () => ({
 }));
 
 vi.mock('@contractor-ops/logger', () => ({
+  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), fatal: vi.fn(), trace: vi.fn(), child: vi.fn() })),
+  createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
+  createWebhookLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
+  createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
+  createIntegrationLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
+  withBodyLogging: vi.fn((_o, fn) => fn),
+  logIntegrationCall: vi.fn(),
+  subscribeOpossumEvents: vi.fn(),
+  runWithRequestContext: vi.fn((_c, fn) => fn()),
+  getRequestId: vi.fn(() => undefined),
+  getTraceparent: vi.fn(() => undefined),
+  buildContextFromHeaders: vi.fn(() => ({})),
+  getOutboundHeaders: vi.fn(() => ({})),
+  generateRequestId: vi.fn(() => 'test-request-id'),
+  logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() },
+  LOG_BODY_INCLUDE_PREFIXES: [],
+  PII_MASK_KEYWORDS: [],
+  PII_MASK_PATHS: [],
   createIntegrationLogger: vi.fn(() => ({
     info: vi.fn(),
     warn: vi.fn(),

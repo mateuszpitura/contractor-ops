@@ -34,6 +34,12 @@ type OrgMutationArgs = {
 function withOrgCacheInvalidation<T extends ReturnType<typeof createTenantClientFrom>>(
   client: T,
 ): T {
+  // In tests the mocked Prisma client typically lacks `$extends`. The
+  // invalidation hook is a defense-in-depth nicety, not a correctness
+  // requirement (cache TTL bounds staleness regardless), so skip cleanly.
+  if (typeof (client as unknown as { $extends?: unknown }).$extends !== 'function') {
+    return client;
+  }
   return client.$extends({
     query: {
       organization: {

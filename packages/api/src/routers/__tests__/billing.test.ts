@@ -33,6 +33,7 @@ const { mockPrisma } = vi.hoisted(() => {
     organization: {
       findUnique: vi.fn(async () => ({
         dataRegion: 'EU',
+        status: 'ACTIVE',
         billingEmail: 'billing@test.com',
         name: 'Test Org',
       })),
@@ -92,6 +93,7 @@ vi.mock('@contractor-ops/auth', () => ({
 }));
 
 vi.mock('@contractor-ops/db', () => ({
+  withRlsTransactions: <T,>(c: T) => c,
   prisma: mockPrisma,
   tenantStore: {
     run: (_ctx: unknown, fn: () => unknown) => fn(),
@@ -141,6 +143,10 @@ vi.mock('../../services/r2.js', () => ({
 }));
 
 vi.mock('../../services/cache.js', () => ({
+  cacheKey: vi.fn((...s: string[]) => s.join(':')),
+  cachedSingleflight: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
+  CacheKeys: {},
+  CacheTTL: {},
   cached: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
   invalidate: vi.fn(async () => undefined),
   invalidateByPrefix: vi.fn(async () => undefined),
@@ -246,6 +252,24 @@ vi.mock('@sentry/nextjs', () => {
 });
 
 vi.mock('@contractor-ops/logger', () => ({
+  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), fatal: vi.fn(), trace: vi.fn(), child: vi.fn() })),
+  createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
+  createWebhookLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
+  createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
+  createIntegrationLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
+  withBodyLogging: vi.fn((_o, fn) => fn),
+  logIntegrationCall: vi.fn(),
+  subscribeOpossumEvents: vi.fn(),
+  runWithRequestContext: vi.fn((_c, fn) => fn()),
+  getRequestId: vi.fn(() => undefined),
+  getTraceparent: vi.fn(() => undefined),
+  buildContextFromHeaders: vi.fn(() => ({})),
+  getOutboundHeaders: vi.fn(() => ({})),
+  generateRequestId: vi.fn(() => 'test-request-id'),
+  logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() },
+  LOG_BODY_INCLUDE_PREFIXES: [],
+  PII_MASK_KEYWORDS: [],
+  PII_MASK_PATHS: [],
   createIntegrationLogger: vi.fn(() => ({
     info: vi.fn(),
     warn: vi.fn(),
@@ -369,7 +393,7 @@ describe('billing.createCheckoutSession', () => {
 
   it('uses billing email from org or generates fallback', async () => {
     mockPrisma.organization.findUnique
-      .mockResolvedValueOnce({ dataRegion: 'EU' })
+      .mockResolvedValueOnce({ id: 'org-mock', dataRegion: 'EU', status: 'ACTIVE' })
       .mockResolvedValueOnce({
         billingEmail: null,
         name: 'No Email Org',
@@ -675,7 +699,7 @@ describe('billing.createCheckoutSession — org not found', () => {
   it('throws NOT_FOUND when organization does not exist', async () => {
     // First findUnique returns region, second returns null for the org lookup
     mockPrisma.organization.findUnique
-      .mockResolvedValueOnce({ dataRegion: 'EU' })
+      .mockResolvedValueOnce({ id: 'org-mock', dataRegion: 'EU', status: 'ACTIVE' })
       .mockResolvedValueOnce(null);
 
     await expect(caller.billing.createCheckoutSession({ priceId: PRICE_ID })).rejects.toThrow(

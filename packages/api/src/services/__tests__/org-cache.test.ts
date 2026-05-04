@@ -39,6 +39,7 @@ const { mockFindUnique } = vi.hoisted(() => ({
 }));
 
 vi.mock('@contractor-ops/db', () => ({
+  withRlsTransactions: <T,>(c: T) => c,
   prisma: {
     organization: {
       findUnique: mockFindUnique,

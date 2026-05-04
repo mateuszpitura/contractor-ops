@@ -42,7 +42,7 @@ const {
       findMany: vi.fn(async () => []),
     },
     organization: {
-      findUnique: vi.fn(async () => ({ dataRegion: 'EU' })),
+      findUnique: vi.fn(async () => ({ dataRegion: 'EU', status: 'ACTIVE' })),
     },
     member: { findFirst: vi.fn(async () => ({ role: 'admin' })) },
     $transaction: vi.fn(async (fn: (tx: Rec) => Promise<unknown>) => fn(mockPrisma)),
@@ -79,6 +79,7 @@ vi.mock('@contractor-ops/auth', () => ({
 }));
 
 vi.mock('@contractor-ops/db', () => ({
+  withRlsTransactions: <T,>(c: T) => c,
   prisma: mockPrisma,
   tenantStore: {
     run: (_ctx: unknown, fn: () => unknown) => fn(),
@@ -143,6 +144,21 @@ vi.mock('@contractor-ops/logger', () => {
     logger: l,
     createLogger: vi.fn(() => l),
     createTrpcLogger: vi.fn(() => l),
+    createWebhookLogger: vi.fn(() => l),
+    createCronLogger: vi.fn(() => l),
+    createIntegrationLogger: vi.fn(() => l),
+    withBodyLogging: vi.fn((_o: unknown, fn: unknown) => fn),
+    logIntegrationCall: vi.fn(),
+    subscribeOpossumEvents: vi.fn(),
+    runWithRequestContext: vi.fn((_c: unknown, fn: () => unknown) => fn()),
+    getRequestId: vi.fn(() => undefined),
+    getTraceparent: vi.fn(() => undefined),
+    buildContextFromHeaders: vi.fn(() => ({})),
+    getOutboundHeaders: vi.fn(() => ({})),
+    generateRequestId: vi.fn(() => 'test-request-id'),
+    LOG_BODY_INCLUDE_PREFIXES: [],
+    PII_MASK_KEYWORDS: [],
+    PII_MASK_PATHS: [],
   };
 });
 

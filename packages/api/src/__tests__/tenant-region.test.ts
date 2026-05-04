@@ -21,6 +21,7 @@ const { mockFindUnique, mockTenantStoreRun } = vi.hoisted(() => ({
 const mockScopedClient = { _scoped: true };
 
 vi.mock('@contractor-ops/db', () => ({
+  withRlsTransactions: <T,>(c: T) => c,
   prisma: {
     organization: {
       findUnique: mockFindUnique,
@@ -92,7 +93,7 @@ describe('tenant middleware — region routing', () => {
   });
 
   it('resolves dataRegion=ME and selects ME regional client', async () => {
-    mockFindUnique.mockResolvedValue({ dataRegion: 'ME' });
+    mockFindUnique.mockResolvedValue({ id: 'org-mock', dataRegion: 'ME', status: 'ACTIVE' });
 
     const result = await runTenantMiddleware({
       session: { session: { activeOrganizationId: 'org-me-001' } },
@@ -114,7 +115,7 @@ describe('tenant middleware — region routing', () => {
   });
 
   it('resolves dataRegion=EU and selects EU regional client', async () => {
-    mockFindUnique.mockResolvedValue({ dataRegion: 'EU' });
+    mockFindUnique.mockResolvedValue({ id: 'org-mock', dataRegion: 'EU', status: 'ACTIVE' });
 
     const result = await runTenantMiddleware({
       session: { session: { activeOrganizationId: 'org-eu-001' } },

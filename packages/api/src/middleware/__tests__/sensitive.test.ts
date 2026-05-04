@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 const { mockPrisma } = vi.hoisted(() => {
   const mockPrisma = {
     organization: {
-      findUnique: vi.fn().mockResolvedValue({ dataRegion: 'EU' }),
+      findUnique: vi.fn().mockResolvedValue({ id: 'org-mock', dataRegion: 'EU', status: 'ACTIVE' }),
     },
   };
   return { mockPrisma };
@@ -23,6 +23,28 @@ vi.mock('@sentry/nextjs', () => {
 });
 
 vi.mock('@contractor-ops/logger', () => ({
+  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), fatal: vi.fn(), trace: vi.fn(), child: vi.fn() })),
+  createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
+  createWebhookLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
+  createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
+  createIntegrationLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
+  withBodyLogging: vi.fn((_o, fn) => fn),
+  logIntegrationCall: vi.fn(),
+  subscribeOpossumEvents: vi.fn(),
+  runWithRequestContext: vi.fn((_c, fn) => fn()),
+  getRequestId: vi.fn(() => undefined),
+  getTraceparent: vi.fn(() => undefined),
+  buildContextFromHeaders: vi.fn(() => ({})),
+  getOutboundHeaders: vi.fn(() => ({})),
+  generateRequestId: vi.fn(() => 'test-request-id'),
+  logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() },
+  LOG_BODY_INCLUDE_PREFIXES: [],
+  PII_MASK_KEYWORDS: [],
+  PII_MASK_PATHS: [],
+  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), fatal: vi.fn(), trace: vi.fn(), child: vi.fn() })),
+  createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
+  createWebhookLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
+  createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createIntegrationLogger: vi.fn(() => ({
     info: vi.fn(),
     warn: vi.fn(),
@@ -41,6 +63,7 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
 }));
 
 vi.mock('@contractor-ops/db', () => ({
+  withRlsTransactions: <T,>(c: T) => c,
   prisma: mockPrisma,
   tenantStore: {
     run: (_ctx: { organizationId: string; region: string }, fn: () => unknown) => fn(),

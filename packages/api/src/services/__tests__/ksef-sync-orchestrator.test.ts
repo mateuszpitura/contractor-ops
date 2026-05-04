@@ -28,6 +28,7 @@ const { mockKsefClient, mockTenantDb } = vi.hoisted(() => ({
 // ---------------------------------------------------------------------------
 
 vi.mock('@contractor-ops/db', () => ({
+  withRlsTransactions: <T,>(c: T) => c,
   prisma: {
     organization: { findUniqueOrThrow: vi.fn() },
   },
@@ -109,7 +110,7 @@ const CONN_ID = 'conn-1';
 function makeOrg(overrides: Record<string, unknown> = {}) {
   return {
     id: ORG_ID,
-    dataRegion: 'EU',
+    dataRegion: 'EU', status: 'ACTIVE',
     settingsJson: { taxId: '1234567890' },
     ...overrides,
   };

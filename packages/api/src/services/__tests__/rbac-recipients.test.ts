@@ -15,6 +15,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const { mockFindMany } = vi.hoisted(() => ({ mockFindMany: vi.fn() }));
 
 vi.mock('@contractor-ops/db', () => ({
+  withRlsTransactions: <T,>(c: T) => c,
   prisma: {}, // stubbed — @contractor-ops/auth/config.ts imports this at module init
   prismaRaw: {
     member: {

@@ -16,6 +16,19 @@ vi.mock('@contractor-ops/logger', () => {
     trace: vi.fn(),
   };
   return {
+    runWithRequestContext: vi.fn((_c, fn) => fn()),
+    getRequestId: vi.fn(() => undefined),
+    getTraceparent: vi.fn(() => undefined),
+    buildContextFromHeaders: vi.fn(() => ({})),
+    getOutboundHeaders: vi.fn(() => ({})),
+    generateRequestId: vi.fn(() => 'test-request-id'),
+    withBodyLogging: vi.fn((_o, fn) => fn),
+    logIntegrationCall: vi.fn(),
+    subscribeOpossumEvents: vi.fn(),
+    LOG_BODY_INCLUDE_PREFIXES: [],
+    PII_MASK_KEYWORDS: [],
+    PII_MASK_PATHS: [],
+
     createLogger: vi.fn(() => stub),
     createTrpcLogger: vi.fn(() => stub),
     createCronLogger: vi.fn(() => stub),
