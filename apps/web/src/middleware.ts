@@ -524,3 +524,30 @@ export const config = {
   // API routes are included for rate limiting.
   matcher: ['/((?!monitoring|_next|_vercel|.*\\..*).*)', '/api/:path*'],
 };
+
+// ---------------------------------------------------------------------------
+// F-SCALE-19 — QStash queue-depth backpressure (deferred — TODO)
+// ---------------------------------------------------------------------------
+//
+// Status: NOT IMPLEMENTED in this sweep. The fix requires:
+//
+//   1. Per-topic concurrency cap on QStash dispatch via the
+//      `Upstash-Concurrency` header. Set in `qstash-client.ts`
+//      (owned by sweep S3-2 / Phase 2 P2-A — coordinate before edit).
+//   2. Per-route Redis semaphore in each `_process` consumer
+//      (`/api/webhooks/_process`, `/api/ocr/_process`, `/api/late-interest/_*`,
+//      etc.) capping in-flight ingestion at N parallel per pod
+//      (suggested: 20). Without this, a transient QStash outage that
+//      releases 1000 retried jobs in one burst stampedes the fleet.
+//   3. Probe in `/api/health` (owned by P2-E) that reports the QStash
+//      pending count via the QStash REST API
+//      (`GET /v2/queues/{name}` returns `queueLength`) and emits a Sentry
+//      `captureMessage('qstash queue depth above threshold', { level: 'warning' })`
+//      when above a configurable cap.
+//
+// Why deferred: the cleanest implementation crosses three ownership
+// boundaries (S3-2 qstash-client, P2-E health route, multiple consumer
+// routes). Sweep S3-4 punts to a follow-up that owns the cross-cut.
+//
+// Tracking: opened as Tier-2 follow-up alongside F-SCALE-06 read replicas.
+// See `/Users/.../audit-2026-05-03/06-scalability.md` § F-SCALE-19.
