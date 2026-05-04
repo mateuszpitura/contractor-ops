@@ -136,47 +136,59 @@ export async function GET(request: NextRequest) {
           // 3. Delete DB records in a transaction using the snapshotted IDs.
           //    Order: children first (document links, invoice files), then
           //    documents, invoices, contracts, contractors.
-          const txResults = await prisma.$transaction(async tx => {
-            const txRes: Record<string, number> = {
-              documentLinks: 0,
-              invoiceFiles: 0,
-              documents: 0,
-            };
+          //
+          // F-SCALE-07 — explicit `timeout` / `maxWait` so this purge tx
+          // can't hold a Neon connection through a slow cascade. The
+          // serverless HTTP driver charges ~50-100 ms per statement; six
+          // sequential `deleteMany` calls can hold a connection for 1-3 s
+          // on a normal night, far longer if R2 contention or replica lag
+          // pushes a statement to the slow path. Fail-fast (30 s ceiling,
+          // 5 s queue wait) means a wedged purge does not starve other
+          // tenants' cron mutations.
+          const txResults = await prisma.$transaction(
+            async tx => {
+              const txRes: Record<string, number> = {
+                documentLinks: 0,
+                invoiceFiles: 0,
+                documents: 0,
+              };
 
-            if (safeDocIds.length > 0) {
-              const linkResult = await tx.documentLink.deleteMany({
-                where: { documentId: { in: safeDocIds } },
+              if (safeDocIds.length > 0) {
+                const linkResult = await tx.documentLink.deleteMany({
+                  where: { documentId: { in: safeDocIds } },
+                });
+                txRes.documentLinks = linkResult.count;
+
+                const invoiceFileResult = await tx.invoiceFile.deleteMany({
+                  where: { documentId: { in: safeDocIds } },
+                });
+                txRes.invoiceFiles = invoiceFileResult.count;
+
+                const docResult = await tx.document.deleteMany({
+                  where: { id: { in: safeDocIds } },
+                });
+                txRes.documents = docResult.count;
+              }
+
+              const invResult = await tx.invoice.deleteMany({
+                where: { deletedAt: { not: null, lt: cutoff } },
               });
-              txRes.documentLinks = linkResult.count;
+              txRes.invoices = invResult.count;
 
-              const invoiceFileResult = await tx.invoiceFile.deleteMany({
-                where: { documentId: { in: safeDocIds } },
+              const contractResult = await tx.contract.deleteMany({
+                where: { deletedAt: { not: null, lt: cutoff } },
               });
-              txRes.invoiceFiles = invoiceFileResult.count;
+              txRes.contracts = contractResult.count;
 
-              const docResult = await tx.document.deleteMany({
-                where: { id: { in: safeDocIds } },
+              const contractorResult = await tx.contractor.deleteMany({
+                where: { deletedAt: { not: null, lt: cutoff } },
               });
-              txRes.documents = docResult.count;
-            }
+              txRes.contractors = contractorResult.count;
 
-            const invResult = await tx.invoice.deleteMany({
-              where: { deletedAt: { not: null, lt: cutoff } },
-            });
-            txRes.invoices = invResult.count;
-
-            const contractResult = await tx.contract.deleteMany({
-              where: { deletedAt: { not: null, lt: cutoff } },
-            });
-            txRes.contracts = contractResult.count;
-
-            const contractorResult = await tx.contractor.deleteMany({
-              where: { deletedAt: { not: null, lt: cutoff } },
-            });
-            txRes.contractors = contractorResult.count;
-
-            return txRes;
-          });
+              return txRes;
+            },
+            { timeout: 30_000, maxWait: 5_000 },
+          );
 
           Object.assign(results, txResults);
 

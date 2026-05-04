@@ -404,39 +404,48 @@ export async function GET(request: NextRequest) {
     () =>
       withCronMonitor('reminders', async () => {
         try {
-          const result = await prismaRaw.$transaction(async tx => {
-            const lockRows = (await tx.$queryRawUnsafe(
-              'SELECT pg_try_advisory_xact_lock(hashtext($1)) AS acquired',
-              REMINDERS_LOCK_KEY,
-            )) as Array<{ acquired?: boolean }>;
-            const acquired = Boolean(lockRows?.[0]?.acquired);
+          // F-SCALE-07 — bound the cron-tick transaction. The walk runs three
+          // top-level branches (`evaluateReminderRules`, `detectOverdueTasks`,
+          // `detectDrvClearanceExpiries`) plus per-rule fanout; under heavy
+          // load the worst-case tx runtime can exceed Prisma's default 5 s
+          // timeout and stall the lock. 60 s ceiling matches the cron tick
+          // frequency; 10 s `maxWait` keeps a queued tick from stacking.
+          const result = await prismaRaw.$transaction(
+            async tx => {
+              const lockRows = (await tx.$queryRawUnsafe(
+                'SELECT pg_try_advisory_xact_lock(hashtext($1)) AS acquired',
+                REMINDERS_LOCK_KEY,
+              )) as Array<{ acquired?: boolean }>;
+              const acquired = Boolean(lockRows?.[0]?.acquired);
 
-            if (!acquired) {
-              log.info('another reminders cron tick is in flight; skipping');
-              metrics.increment('cron.reminders.skipped_locked');
+              if (!acquired) {
+                log.info('another reminders cron tick is in flight; skipping');
+                metrics.increment('cron.reminders.skipped_locked');
+                return {
+                  skipped: true as const,
+                  processed: 0,
+                  sent: 0,
+                  overdueTasksNotified: 0,
+                  drvExpiriesNotified: 0,
+                };
+              }
+
+              const [ruleResults, overdueTasksNotified, drvExpiriesNotified] = await Promise.all([
+                evaluateReminderRules(),
+                detectOverdueTasks(),
+                detectDrvClearanceExpiries(),
+              ]);
+
               return {
-                skipped: true as const,
-                processed: 0,
-                sent: 0,
-                overdueTasksNotified: 0,
-                drvExpiriesNotified: 0,
+                skipped: false as const,
+                processed: ruleResults.processed,
+                sent: ruleResults.sent,
+                overdueTasksNotified,
+                drvExpiriesNotified,
               };
-            }
-
-            const [ruleResults, overdueTasksNotified, drvExpiriesNotified] = await Promise.all([
-              evaluateReminderRules(),
-              detectOverdueTasks(),
-              detectDrvClearanceExpiries(),
-            ]);
-
-            return {
-              skipped: false as const,
-              processed: ruleResults.processed,
-              sent: ruleResults.sent,
-              overdueTasksNotified,
-              drvExpiriesNotified,
-            };
-          });
+            },
+            { timeout: 60_000, maxWait: 10_000 },
+          );
 
           log.info(result, 'reminders cron completed');
           if (!result.skipped) {

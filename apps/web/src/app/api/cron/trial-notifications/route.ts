@@ -136,68 +136,78 @@ async function handleTrialNotifications() {
     // every TRIALING subscription. Note: the inner per-org dedupeKey still
     // matters because cron auto-runs with a new tx PER tick can race the
     // lock, but in practice the lock + the unique dedupeKey are belt+braces.
-    const result = await prismaRaw.$transaction(async tx => {
-      const lockRows = (await tx.$queryRawUnsafe(
-        'SELECT pg_try_advisory_xact_lock(hashtext($1)) AS acquired',
-        TRIAL_NOTIFICATIONS_LOCK_KEY,
-      )) as Array<{ acquired?: boolean }>;
-      const acquired = Boolean(lockRows?.[0]?.acquired);
-      if (!acquired) {
-        log.info('another trial-notifications tick is in flight; skipping');
-        metrics.increment('cron.trial_notifications.skipped_locked');
-        return { processed: 0, skipped: true as const };
-      }
+    //
+    // F-SCALE-07 — explicit `timeout` / `maxWait`. The walk fans out an
+    // email + per-recipient notifications inside the tx; without a
+    // ceiling a single slow Resend HTTP call could keep the advisory
+    // lock past the next cron tick and block subsequent runs. 60 s
+    // matches the ceiling on `reminders` cron; 10 s `maxWait` keeps a
+    // queued tick from stacking.
+    const result = await prismaRaw.$transaction(
+      async tx => {
+        const lockRows = (await tx.$queryRawUnsafe(
+          'SELECT pg_try_advisory_xact_lock(hashtext($1)) AS acquired',
+          TRIAL_NOTIFICATIONS_LOCK_KEY,
+        )) as Array<{ acquired?: boolean }>;
+        const acquired = Boolean(lockRows?.[0]?.acquired);
+        if (!acquired) {
+          log.info('another trial-notifications tick is in flight; skipping');
+          metrics.increment('cron.trial_notifications.skipped_locked');
+          return { processed: 0, skipped: true as const };
+        }
 
-      const trialingSubscriptions = await prisma.subscription.findMany({
-        where: {
-          status: 'TRIALING',
-          trialEnd: { not: null },
-        },
-        include: {
-          organization: {
-            select: {
-              id: true,
-              billingEmail: true,
-              members: {
-                where: { role: { in: ['owner', 'admin'] } },
-                select: { userId: true },
+        const trialingSubscriptions = await prisma.subscription.findMany({
+          where: {
+            status: 'TRIALING',
+            trialEnd: { not: null },
+          },
+          include: {
+            organization: {
+              select: {
+                id: true,
+                billingEmail: true,
+                members: {
+                  where: { role: { in: ['owner', 'admin'] } },
+                  select: { userId: true },
+                },
               },
             },
           },
-        },
-      });
+        });
 
-      const now = new Date();
-      const todayBucket = now.toISOString().slice(0, 10); // YYYY-MM-DD
+        const now = new Date();
+        const todayBucket = now.toISOString().slice(0, 10); // YYYY-MM-DD
 
-      for (const sub of trialingSubscriptions) {
-        if (!sub.trialEnd) continue;
+        for (const sub of trialingSubscriptions) {
+          if (!sub.trialEnd) continue;
 
-        const daysUntilTrialEnd = Math.ceil(
-          (sub.trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
-        );
+          const daysUntilTrialEnd = Math.ceil(
+            (sub.trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
+          );
 
-        const template = TRIAL_NOTIFICATION_TEMPLATES[daysUntilTrialEnd];
-        if (!template) continue;
+          const template = TRIAL_NOTIFICATION_TEMPLATES[daysUntilTrialEnd];
+          if (!template) continue;
 
-        const adminUserIds = sub.organization.members.map((m: { userId: string }) => m.userId);
+          const adminUserIds = sub.organization.members.map((m: { userId: string }) => m.userId);
 
-        const sendResult = await sendTrialNotification(
-          sub.organization,
-          adminUserIds,
-          template,
-          daysUntilTrialEnd,
-          todayBucket,
-        );
-        if (sendResult.skipped) {
-          skippedDedup++;
-        } else {
-          notificationCount++;
+          const sendResult = await sendTrialNotification(
+            sub.organization,
+            adminUserIds,
+            template,
+            daysUntilTrialEnd,
+            todayBucket,
+          );
+          if (sendResult.skipped) {
+            skippedDedup++;
+          } else {
+            notificationCount++;
+          }
         }
-      }
 
-      return { processed: trialingSubscriptions.length, skipped: false as const };
-    });
+        return { processed: trialingSubscriptions.length, skipped: false as const };
+      },
+      { timeout: 60_000, maxWait: 10_000 },
+    );
 
     log.info(
       {
