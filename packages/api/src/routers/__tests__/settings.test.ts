@@ -63,11 +63,14 @@ const { mockPrisma } = vi.hoisted(() => {
   return { mockPrisma };
 });
 
-/** Tenant middleware resolves region via `organization.findUnique` before handler Prisma calls. */
+/**
+ * Queue the handler-side `organization.findUnique` result. The Phase-2 tenant
+ * middleware no longer goes through `prisma.organization.findUnique` (it
+ * reads through the mocked `org-cache` service), so only the handler call
+ * needs to be queued.
+ */
 function orgFindUniqueAfterTenant(result: Record<string, unknown> | null) {
-  mockPrisma.organization.findUnique
-    .mockResolvedValueOnce({ dataRegion: 'EU', status: 'ACTIVE' })
-    .mockResolvedValueOnce(result);
+  mockPrisma.organization.findUnique.mockResolvedValueOnce(result);
 }
 
 // ---------------------------------------------------------------------------
@@ -100,6 +103,20 @@ vi.mock('@contractor-ops/db', () => ({
   createTenantClient: vi.fn(() => mockPrisma),
   createTenantClientFrom: vi.fn(() => mockPrisma),
   getRegionalClient: vi.fn(() => mockPrisma),
+}));
+
+// F-DB-03 / F-SEC-12 — org-cache must report ACTIVE so tenant middleware
+// does not throw orgSuspended.
+vi.mock('../../services/org-cache.js', () => ({
+  getOrgMeta: vi.fn(async (orgId: string) => ({
+    id: orgId,
+    dataRegion: 'EU',
+    status: 'ACTIVE',
+    name: 'Test Org',
+  })),
+  invalidateOrgMeta: vi.fn(async () => undefined),
+  ORG_META_TTL_SECONDS: 300,
+  orgMetaKey: (orgId: string) => `org:${orgId}:meta`,
 }));
 
 vi.mock('../../services/portal-change-request.js', () => ({
