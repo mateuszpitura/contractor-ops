@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import type { Prisma } from '@contractor-ops/db';
 import { decryptCredentials } from '@contractor-ops/integrations/services/credential-service';
 import { createLogger } from '@contractor-ops/logger';
@@ -7,6 +8,25 @@ import { resolveLinearStateId } from './linear-status-mapping.js';
 import type { DbClient } from './types.js';
 
 const log = createLogger({ service: 'linear-issue-sync' });
+
+/**
+ * F-OBS-17 — turn an email address into a non-PII identifier suitable for
+ * structured logs. We keep the domain (operationally useful — "is the
+ * problem isolated to one company?") and a short stable SHA-256 of the
+ * local-part so the same address renders the same hash across log lines
+ * without exposing the raw PII to Axiom retention.
+ */
+function maskEmail(email: string): string {
+  const trimmed = email.trim().toLowerCase();
+  const at = trimmed.indexOf('@');
+  if (at <= 0) {
+    return `[REDACTED]@${createHash('sha256').update(trimmed).digest('hex').slice(0, 8)}`;
+  }
+  const local = trimmed.slice(0, at);
+  const domain = trimmed.slice(at + 1);
+  const hash = createHash('sha256').update(local).digest('hex').slice(0, 8);
+  return `${local.slice(0, 1)}*${hash}@${domain}`;
+}
 
 type PrismaClient = DbClient;
 
@@ -179,7 +199,11 @@ export async function createLinearIssue(
         if (matchedUser) {
           assigneeId = matchedUser.id;
         } else {
-          log.warn({ assigneeEmail }, 'no user found for email, creating issue unassigned (D-07)');
+          // F-OBS-17 — log only a masked email so PII does not land in Axiom.
+          log.warn(
+            { assigneeEmailMasked: maskEmail(assigneeEmail) },
+            'no user found for email, creating issue unassigned (D-07)',
+          );
         }
       } catch (lookupError) {
         log.warn({ err: lookupError }, 'user lookup by email failed, creating issue unassigned');
