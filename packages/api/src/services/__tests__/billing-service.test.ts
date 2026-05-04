@@ -88,6 +88,7 @@ describe('createCheckoutSession', () => {
 
     expect(mockStripe.checkout.sessions.create).toHaveBeenCalledWith(
       expect.objectContaining({ mode: 'subscription' }),
+      expect.objectContaining({ idempotencyKey: expect.any(String) }),
     );
   });
 
@@ -97,6 +98,7 @@ describe('createCheckoutSession', () => {
 
     expect(mockStripe.checkout.sessions.create).toHaveBeenCalledWith(
       expect.objectContaining({ currency: 'pln' }),
+      expect.objectContaining({ idempotencyKey: expect.any(String) }),
     );
   });
 
@@ -146,6 +148,7 @@ describe('createCheckoutSession', () => {
 
     expect(mockStripe.checkout.sessions.create).toHaveBeenCalledWith(
       expect.objectContaining({ customer: 'cus_xyz' }),
+      expect.objectContaining({ idempotencyKey: expect.any(String) }),
     );
   });
 
@@ -163,6 +166,7 @@ describe('createCheckoutSession', () => {
         success_url: 'https://app.test/ok',
         cancel_url: 'https://app.test/nope',
       }),
+      expect.objectContaining({ idempotencyKey: expect.any(String) }),
     );
   });
 
@@ -204,6 +208,7 @@ describe('createTopUpCheckoutSession', () => {
 
     expect(mockStripe.checkout.sessions.create).toHaveBeenCalledWith(
       expect.objectContaining({ mode: 'payment' }),
+      expect.objectContaining({ idempotencyKey: expect.any(String) }),
     );
   });
 
@@ -213,6 +218,7 @@ describe('createTopUpCheckoutSession', () => {
 
     expect(mockStripe.checkout.sessions.create).toHaveBeenCalledWith(
       expect.objectContaining({ currency: 'pln' }),
+      expect.objectContaining({ idempotencyKey: expect.any(String) }),
     );
   });
 
@@ -480,10 +486,14 @@ describe('syncSeatCountForOrg', () => {
 
     await syncSeatCountForOrg('org_123');
 
-    expect(mockStripe.subscriptions.update).toHaveBeenCalledWith('sub_123', {
-      items: [{ id: 'si_456', quantity: 7 }],
-      proration_behavior: 'create_prorations',
-    });
+    expect(mockStripe.subscriptions.update).toHaveBeenCalledWith(
+      'sub_123',
+      {
+        items: [{ id: 'si_456', quantity: 7 }],
+        proration_behavior: 'create_prorations',
+      },
+      expect.objectContaining({ idempotencyKey: expect.any(String) }),
+    );
   });
 
   it('updates local DB seatCount after Stripe update', async () => {
@@ -608,10 +618,14 @@ describe('updateSubscriptionSeatCount', () => {
       newQuantity: 10,
     });
 
-    expect(mockStripe.subscriptions.update).toHaveBeenCalledWith('sub_abc', {
-      items: [{ id: 'si_789', quantity: 10 }],
-      proration_behavior: 'create_prorations',
-    });
+    expect(mockStripe.subscriptions.update).toHaveBeenCalledWith(
+      'sub_abc',
+      {
+        items: [{ id: 'si_789', quantity: 10 }],
+        proration_behavior: 'create_prorations',
+      },
+      expect.objectContaining({ idempotencyKey: expect.any(String) }),
+    );
   });
 
   it('throws for quantity less than 1', async () => {
