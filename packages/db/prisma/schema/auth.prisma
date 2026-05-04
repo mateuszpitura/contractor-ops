@@ -116,6 +116,7 @@ model Session {
   activeOrganizationId String?
 
   @@index([userId])
+  @@index([expiresAt])
 }
 
 model Account {
@@ -145,4 +146,7 @@ model Verification {
   expiresAt  DateTime
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@index([expiresAt])
 }

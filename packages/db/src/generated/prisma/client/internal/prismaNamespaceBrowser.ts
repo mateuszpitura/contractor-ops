@@ -953,7 +953,8 @@ export const EInvoiceLifecycleEventScalarFieldEnum = {
   occurredAt: 'occurredAt',
   actorUserId: 'actorUserId',
   detailsJson: 'detailsJson',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  providerEventId: 'providerEventId'
 } as const
 
 export type EInvoiceLifecycleEventScalarFieldEnum = (typeof EInvoiceLifecycleEventScalarFieldEnum)[keyof typeof EInvoiceLifecycleEventScalarFieldEnum]
@@ -1311,7 +1312,8 @@ export const WebhookDeliveryScalarFieldEnum = {
   payloadJson: 'payloadJson',
   receivedAt: 'receivedAt',
   processedAt: 'processedAt',
-  errorMessage: 'errorMessage'
+  errorMessage: 'errorMessage',
+  providerEventId: 'providerEventId'
 } as const
 
 export type WebhookDeliveryScalarFieldEnum = (typeof WebhookDeliveryScalarFieldEnum)[keyof typeof WebhookDeliveryScalarFieldEnum]
@@ -1536,6 +1538,7 @@ export const NotificationScalarFieldEnum = {
   status: 'status',
   sentAt: 'sentAt',
   readAt: 'readAt',
+  dedupKey: 'dedupKey',
   createdAt: 'createdAt'
 } as const
 

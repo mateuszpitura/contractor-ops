@@ -342,7 +342,6 @@ export type EInvoiceLifecycleOrderByWithRelationInput = {
 export type EInvoiceLifecycleWhereUniqueInput = Prisma.AtLeast<{
   id?: string
   invoiceId?: string
-  organizationId_invoiceId?: Prisma.EInvoiceLifecycleOrganizationIdInvoiceIdCompoundUniqueInput
   AND?: Prisma.EInvoiceLifecycleWhereInput | Prisma.EInvoiceLifecycleWhereInput[]
   OR?: Prisma.EInvoiceLifecycleWhereInput[]
   NOT?: Prisma.EInvoiceLifecycleWhereInput | Prisma.EInvoiceLifecycleWhereInput[]
@@ -369,7 +368,7 @@ export type EInvoiceLifecycleWhereUniqueInput = Prisma.AtLeast<{
   organization?: Prisma.XOR<Prisma.OrganizationScalarRelationFilter, Prisma.OrganizationWhereInput>
   invoice?: Prisma.XOR<Prisma.InvoiceScalarRelationFilter, Prisma.InvoiceWhereInput>
   events?: Prisma.EInvoiceLifecycleEventListRelationFilter
-}, "id" | "invoiceId" | "organizationId_invoiceId">
+}, "id" | "invoiceId">
 
 export type EInvoiceLifecycleOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -602,11 +601,6 @@ export type EInvoiceLifecycleUncheckedUpdateManyInput = {
   zugferdGeneratedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-}
-
-export type EInvoiceLifecycleOrganizationIdInvoiceIdCompoundUniqueInput = {
-  organizationId: string
-  invoiceId: string
 }
 
 export type EInvoiceLifecycleCountOrderByAggregateInput = {

@@ -79,6 +79,9 @@ model Invoice {
   @@index([organizationId, receivedAt])
   @@index([organizationId, sellerTaxId])
   @@index([organizationId, matchStatus])
+  // F-DB-28 — covers dashboard "deadlines" query
+  // (paymentStatus filter + dueDate range) and the readyForPayment cursor list.
+  @@index([organizationId, paymentStatus, dueDate])
 }
 
 model InvoiceFile {

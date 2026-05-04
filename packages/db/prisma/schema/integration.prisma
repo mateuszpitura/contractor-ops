@@ -28,6 +28,7 @@ model IntegrationConnection {
   externalLinks ExternalLink[]
   syncLogs      IntegrationSyncLog[]
 
+  @@unique([organizationId, provider, userId], map: "integration_connection_org_provider_user_uniq")
   @@index([organizationId])
   @@index([organizationId, provider, status])
   @@index([organizationId, userId, provider])

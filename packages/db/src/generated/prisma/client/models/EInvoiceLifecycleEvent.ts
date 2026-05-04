@@ -32,6 +32,7 @@ export type EInvoiceLifecycleEventMinAggregateOutputType = {
   occurredAt: Date | null
   actorUserId: string | null
   createdAt: Date | null
+  providerEventId: string | null
 }
 
 export type EInvoiceLifecycleEventMaxAggregateOutputType = {
@@ -42,6 +43,7 @@ export type EInvoiceLifecycleEventMaxAggregateOutputType = {
   occurredAt: Date | null
   actorUserId: string | null
   createdAt: Date | null
+  providerEventId: string | null
 }
 
 export type EInvoiceLifecycleEventCountAggregateOutputType = {
@@ -53,6 +55,7 @@ export type EInvoiceLifecycleEventCountAggregateOutputType = {
   actorUserId: number
   detailsJson: number
   createdAt: number
+  providerEventId: number
   _all: number
 }
 
@@ -65,6 +68,7 @@ export type EInvoiceLifecycleEventMinAggregateInputType = {
   occurredAt?: true
   actorUserId?: true
   createdAt?: true
+  providerEventId?: true
 }
 
 export type EInvoiceLifecycleEventMaxAggregateInputType = {
@@ -75,6 +79,7 @@ export type EInvoiceLifecycleEventMaxAggregateInputType = {
   occurredAt?: true
   actorUserId?: true
   createdAt?: true
+  providerEventId?: true
 }
 
 export type EInvoiceLifecycleEventCountAggregateInputType = {
@@ -86,6 +91,7 @@ export type EInvoiceLifecycleEventCountAggregateInputType = {
   actorUserId?: true
   detailsJson?: true
   createdAt?: true
+  providerEventId?: true
   _all?: true
 }
 
@@ -170,6 +176,7 @@ export type EInvoiceLifecycleEventGroupByOutputType = {
   actorUserId: string | null
   detailsJson: runtime.JsonValue | null
   createdAt: Date
+  providerEventId: string | null
   _count: EInvoiceLifecycleEventCountAggregateOutputType | null
   _min: EInvoiceLifecycleEventMinAggregateOutputType | null
   _max: EInvoiceLifecycleEventMaxAggregateOutputType | null
@@ -202,6 +209,7 @@ export type EInvoiceLifecycleEventWhereInput = {
   actorUserId?: Prisma.StringNullableFilter<"EInvoiceLifecycleEvent"> | string | null
   detailsJson?: Prisma.JsonNullableFilter<"EInvoiceLifecycleEvent">
   createdAt?: Prisma.DateTimeFilter<"EInvoiceLifecycleEvent"> | Date | string
+  providerEventId?: Prisma.StringNullableFilter<"EInvoiceLifecycleEvent"> | string | null
   lifecycle?: Prisma.XOR<Prisma.EInvoiceLifecycleScalarRelationFilter, Prisma.EInvoiceLifecycleWhereInput>
   organization?: Prisma.XOR<Prisma.OrganizationScalarRelationFilter, Prisma.OrganizationWhereInput>
 }
@@ -215,12 +223,14 @@ export type EInvoiceLifecycleEventOrderByWithRelationInput = {
   actorUserId?: Prisma.SortOrderInput | Prisma.SortOrder
   detailsJson?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  providerEventId?: Prisma.SortOrderInput | Prisma.SortOrder
   lifecycle?: Prisma.EInvoiceLifecycleOrderByWithRelationInput
   organization?: Prisma.OrganizationOrderByWithRelationInput
 }
 
 export type EInvoiceLifecycleEventWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  organizationId_providerEventId?: Prisma.EInvoiceLifecycleEventOrganizationIdProviderEventIdCompoundUniqueInput
   AND?: Prisma.EInvoiceLifecycleEventWhereInput | Prisma.EInvoiceLifecycleEventWhereInput[]
   OR?: Prisma.EInvoiceLifecycleEventWhereInput[]
   NOT?: Prisma.EInvoiceLifecycleEventWhereInput | Prisma.EInvoiceLifecycleEventWhereInput[]
@@ -231,9 +241,10 @@ export type EInvoiceLifecycleEventWhereUniqueInput = Prisma.AtLeast<{
   actorUserId?: Prisma.StringNullableFilter<"EInvoiceLifecycleEvent"> | string | null
   detailsJson?: Prisma.JsonNullableFilter<"EInvoiceLifecycleEvent">
   createdAt?: Prisma.DateTimeFilter<"EInvoiceLifecycleEvent"> | Date | string
+  providerEventId?: Prisma.StringNullableFilter<"EInvoiceLifecycleEvent"> | string | null
   lifecycle?: Prisma.XOR<Prisma.EInvoiceLifecycleScalarRelationFilter, Prisma.EInvoiceLifecycleWhereInput>
   organization?: Prisma.XOR<Prisma.OrganizationScalarRelationFilter, Prisma.OrganizationWhereInput>
-}, "id">
+}, "id" | "organizationId_providerEventId">
 
 export type EInvoiceLifecycleEventOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -244,6 +255,7 @@ export type EInvoiceLifecycleEventOrderByWithAggregationInput = {
   actorUserId?: Prisma.SortOrderInput | Prisma.SortOrder
   detailsJson?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  providerEventId?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.EInvoiceLifecycleEventCountOrderByAggregateInput
   _max?: Prisma.EInvoiceLifecycleEventMaxOrderByAggregateInput
   _min?: Prisma.EInvoiceLifecycleEventMinOrderByAggregateInput
@@ -261,6 +273,7 @@ export type EInvoiceLifecycleEventScalarWhereWithAggregatesInput = {
   actorUserId?: Prisma.StringNullableWithAggregatesFilter<"EInvoiceLifecycleEvent"> | string | null
   detailsJson?: Prisma.JsonNullableWithAggregatesFilter<"EInvoiceLifecycleEvent">
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"EInvoiceLifecycleEvent"> | Date | string
+  providerEventId?: Prisma.StringNullableWithAggregatesFilter<"EInvoiceLifecycleEvent"> | string | null
 }
 
 export type EInvoiceLifecycleEventCreateInput = {
@@ -270,6 +283,7 @@ export type EInvoiceLifecycleEventCreateInput = {
   actorUserId?: string | null
   detailsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
+  providerEventId?: string | null
   lifecycle: Prisma.EInvoiceLifecycleCreateNestedOneWithoutEventsInput
   organization: Prisma.OrganizationCreateNestedOneWithoutEInvoiceLifecycleEventsInput
 }
@@ -283,6 +297,7 @@ export type EInvoiceLifecycleEventUncheckedCreateInput = {
   actorUserId?: string | null
   detailsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
+  providerEventId?: string | null
 }
 
 export type EInvoiceLifecycleEventUpdateInput = {
@@ -292,6 +307,7 @@ export type EInvoiceLifecycleEventUpdateInput = {
   actorUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   detailsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  providerEventId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lifecycle?: Prisma.EInvoiceLifecycleUpdateOneRequiredWithoutEventsNestedInput
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutEInvoiceLifecycleEventsNestedInput
 }
@@ -305,6 +321,7 @@ export type EInvoiceLifecycleEventUncheckedUpdateInput = {
   actorUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   detailsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  providerEventId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type EInvoiceLifecycleEventCreateManyInput = {
@@ -316,6 +333,7 @@ export type EInvoiceLifecycleEventCreateManyInput = {
   actorUserId?: string | null
   detailsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
+  providerEventId?: string | null
 }
 
 export type EInvoiceLifecycleEventUpdateManyMutationInput = {
@@ -325,6 +343,7 @@ export type EInvoiceLifecycleEventUpdateManyMutationInput = {
   actorUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   detailsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  providerEventId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type EInvoiceLifecycleEventUncheckedUpdateManyInput = {
@@ -336,6 +355,7 @@ export type EInvoiceLifecycleEventUncheckedUpdateManyInput = {
   actorUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   detailsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  providerEventId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type EInvoiceLifecycleEventListRelationFilter = {
@@ -348,6 +368,11 @@ export type EInvoiceLifecycleEventOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
+export type EInvoiceLifecycleEventOrganizationIdProviderEventIdCompoundUniqueInput = {
+  organizationId: string
+  providerEventId: string
+}
+
 export type EInvoiceLifecycleEventCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   organizationId?: Prisma.SortOrder
@@ -357,6 +382,7 @@ export type EInvoiceLifecycleEventCountOrderByAggregateInput = {
   actorUserId?: Prisma.SortOrder
   detailsJson?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  providerEventId?: Prisma.SortOrder
 }
 
 export type EInvoiceLifecycleEventMaxOrderByAggregateInput = {
@@ -367,6 +393,7 @@ export type EInvoiceLifecycleEventMaxOrderByAggregateInput = {
   occurredAt?: Prisma.SortOrder
   actorUserId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  providerEventId?: Prisma.SortOrder
 }
 
 export type EInvoiceLifecycleEventMinOrderByAggregateInput = {
@@ -377,6 +404,7 @@ export type EInvoiceLifecycleEventMinOrderByAggregateInput = {
   occurredAt?: Prisma.SortOrder
   actorUserId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  providerEventId?: Prisma.SortOrder
 }
 
 export type EInvoiceLifecycleEventCreateNestedManyWithoutLifecycleInput = {
@@ -474,6 +502,7 @@ export type EInvoiceLifecycleEventCreateWithoutLifecycleInput = {
   actorUserId?: string | null
   detailsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
+  providerEventId?: string | null
   organization: Prisma.OrganizationCreateNestedOneWithoutEInvoiceLifecycleEventsInput
 }
 
@@ -485,6 +514,7 @@ export type EInvoiceLifecycleEventUncheckedCreateWithoutLifecycleInput = {
   actorUserId?: string | null
   detailsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
+  providerEventId?: string | null
 }
 
 export type EInvoiceLifecycleEventCreateOrConnectWithoutLifecycleInput = {
@@ -525,6 +555,7 @@ export type EInvoiceLifecycleEventScalarWhereInput = {
   actorUserId?: Prisma.StringNullableFilter<"EInvoiceLifecycleEvent"> | string | null
   detailsJson?: Prisma.JsonNullableFilter<"EInvoiceLifecycleEvent">
   createdAt?: Prisma.DateTimeFilter<"EInvoiceLifecycleEvent"> | Date | string
+  providerEventId?: Prisma.StringNullableFilter<"EInvoiceLifecycleEvent"> | string | null
 }
 
 export type EInvoiceLifecycleEventCreateWithoutOrganizationInput = {
@@ -534,6 +565,7 @@ export type EInvoiceLifecycleEventCreateWithoutOrganizationInput = {
   actorUserId?: string | null
   detailsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
+  providerEventId?: string | null
   lifecycle: Prisma.EInvoiceLifecycleCreateNestedOneWithoutEventsInput
 }
 
@@ -545,6 +577,7 @@ export type EInvoiceLifecycleEventUncheckedCreateWithoutOrganizationInput = {
   actorUserId?: string | null
   detailsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
+  providerEventId?: string | null
 }
 
 export type EInvoiceLifecycleEventCreateOrConnectWithoutOrganizationInput = {
@@ -581,6 +614,7 @@ export type EInvoiceLifecycleEventCreateManyLifecycleInput = {
   actorUserId?: string | null
   detailsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
+  providerEventId?: string | null
 }
 
 export type EInvoiceLifecycleEventUpdateWithoutLifecycleInput = {
@@ -590,6 +624,7 @@ export type EInvoiceLifecycleEventUpdateWithoutLifecycleInput = {
   actorUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   detailsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  providerEventId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutEInvoiceLifecycleEventsNestedInput
 }
 
@@ -601,6 +636,7 @@ export type EInvoiceLifecycleEventUncheckedUpdateWithoutLifecycleInput = {
   actorUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   detailsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  providerEventId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type EInvoiceLifecycleEventUncheckedUpdateManyWithoutLifecycleInput = {
@@ -611,6 +647,7 @@ export type EInvoiceLifecycleEventUncheckedUpdateManyWithoutLifecycleInput = {
   actorUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   detailsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  providerEventId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type EInvoiceLifecycleEventCreateManyOrganizationInput = {
@@ -621,6 +658,7 @@ export type EInvoiceLifecycleEventCreateManyOrganizationInput = {
   actorUserId?: string | null
   detailsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
+  providerEventId?: string | null
 }
 
 export type EInvoiceLifecycleEventUpdateWithoutOrganizationInput = {
@@ -630,6 +668,7 @@ export type EInvoiceLifecycleEventUpdateWithoutOrganizationInput = {
   actorUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   detailsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  providerEventId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lifecycle?: Prisma.EInvoiceLifecycleUpdateOneRequiredWithoutEventsNestedInput
 }
 
@@ -641,6 +680,7 @@ export type EInvoiceLifecycleEventUncheckedUpdateWithoutOrganizationInput = {
   actorUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   detailsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  providerEventId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type EInvoiceLifecycleEventUncheckedUpdateManyWithoutOrganizationInput = {
@@ -651,6 +691,7 @@ export type EInvoiceLifecycleEventUncheckedUpdateManyWithoutOrganizationInput = 
   actorUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   detailsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  providerEventId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 
@@ -664,6 +705,7 @@ export type EInvoiceLifecycleEventSelect<ExtArgs extends runtime.Types.Extension
   actorUserId?: boolean
   detailsJson?: boolean
   createdAt?: boolean
+  providerEventId?: boolean
   lifecycle?: boolean | Prisma.EInvoiceLifecycleDefaultArgs<ExtArgs>
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["eInvoiceLifecycleEvent"]>
@@ -677,6 +719,7 @@ export type EInvoiceLifecycleEventSelectCreateManyAndReturn<ExtArgs extends runt
   actorUserId?: boolean
   detailsJson?: boolean
   createdAt?: boolean
+  providerEventId?: boolean
   lifecycle?: boolean | Prisma.EInvoiceLifecycleDefaultArgs<ExtArgs>
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["eInvoiceLifecycleEvent"]>
@@ -690,6 +733,7 @@ export type EInvoiceLifecycleEventSelectUpdateManyAndReturn<ExtArgs extends runt
   actorUserId?: boolean
   detailsJson?: boolean
   createdAt?: boolean
+  providerEventId?: boolean
   lifecycle?: boolean | Prisma.EInvoiceLifecycleDefaultArgs<ExtArgs>
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["eInvoiceLifecycleEvent"]>
@@ -703,9 +747,10 @@ export type EInvoiceLifecycleEventSelectScalar = {
   actorUserId?: boolean
   detailsJson?: boolean
   createdAt?: boolean
+  providerEventId?: boolean
 }
 
-export type EInvoiceLifecycleEventOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "lifecycleId" | "eventType" | "occurredAt" | "actorUserId" | "detailsJson" | "createdAt", ExtArgs["result"]["eInvoiceLifecycleEvent"]>
+export type EInvoiceLifecycleEventOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "lifecycleId" | "eventType" | "occurredAt" | "actorUserId" | "detailsJson" | "createdAt" | "providerEventId", ExtArgs["result"]["eInvoiceLifecycleEvent"]>
 export type EInvoiceLifecycleEventInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   lifecycle?: boolean | Prisma.EInvoiceLifecycleDefaultArgs<ExtArgs>
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
@@ -734,6 +779,7 @@ export type $EInvoiceLifecycleEventPayload<ExtArgs extends runtime.Types.Extensi
     actorUserId: string | null
     detailsJson: runtime.JsonValue | null
     createdAt: Date
+    providerEventId: string | null
   }, ExtArgs["result"]["eInvoiceLifecycleEvent"]>
   composites: {}
 }
@@ -1167,6 +1213,7 @@ export interface EInvoiceLifecycleEventFieldRefs {
   readonly actorUserId: Prisma.FieldRef<"EInvoiceLifecycleEvent", 'String'>
   readonly detailsJson: Prisma.FieldRef<"EInvoiceLifecycleEvent", 'Json'>
   readonly createdAt: Prisma.FieldRef<"EInvoiceLifecycleEvent", 'DateTime'>
+  readonly providerEventId: Prisma.FieldRef<"EInvoiceLifecycleEvent", 'String'>
 }
     
 

@@ -25,10 +25,10 @@ model SigningEnvelope {
   recipients   SigningRecipient[]
   events       SigningEvent[]
 
+  @@unique([provider, externalEnvelopeId], map: "signing_envelope_provider_external_id_uniq")
   @@index([organizationId])
   @@index([organizationId, contractId])
   @@index([organizationId, status])
-  @@index([externalEnvelopeId])
 }
 
 model SigningRecipient {

@@ -751,6 +751,7 @@ export type InterestWaiveType = (typeof InterestWaiveType)[keyof typeof Interest
 
 export const InvoiceInterestClaimPdfStatus = {
   PENDING_RENDER: 'PENDING_RENDER',
+  RENDERING: 'RENDERING',
   READY: 'READY',
   FAILED: 'FAILED'
 } as const

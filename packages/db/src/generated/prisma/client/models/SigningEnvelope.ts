@@ -353,6 +353,7 @@ export type SigningEnvelopeOrderByWithRelationInput = {
 
 export type SigningEnvelopeWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  provider_externalEnvelopeId?: Prisma.SigningEnvelopeProviderExternalEnvelopeIdCompoundUniqueInput
   AND?: Prisma.SigningEnvelopeWhereInput | Prisma.SigningEnvelopeWhereInput[]
   OR?: Prisma.SigningEnvelopeWhereInput[]
   NOT?: Prisma.SigningEnvelopeWhereInput | Prisma.SigningEnvelopeWhereInput[]
@@ -377,7 +378,7 @@ export type SigningEnvelopeWhereUniqueInput = Prisma.AtLeast<{
   sentBy?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   recipients?: Prisma.SigningRecipientListRelationFilter
   events?: Prisma.SigningEventListRelationFilter
-}, "id">
+}, "id" | "provider_externalEnvelopeId">
 
 export type SigningEnvelopeOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -590,6 +591,11 @@ export type SigningEnvelopeListRelationFilter = {
 
 export type SigningEnvelopeOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
+}
+
+export type SigningEnvelopeProviderExternalEnvelopeIdCompoundUniqueInput = {
+  provider: $Enums.IntegrationProvider
+  externalEnvelopeId: string
 }
 
 export type SigningEnvelopeCountOrderByAggregateInput = {

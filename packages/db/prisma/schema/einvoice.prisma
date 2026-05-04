@@ -61,7 +61,9 @@ model EInvoiceLifecycle {
   invoice      Invoice                  @relation(fields: [invoiceId], references: [id])
   events       EInvoiceLifecycleEvent[]
 
-  @@unique([organizationId, invoiceId], map: "einvoice_lifecycle_org_invoice_uniq")
+  // F-DB-17 — invoiceId is already @unique globally; the previous compound
+  // @@unique([organizationId, invoiceId]) was a redundant second unique index
+  // covering the same column. Dropped to avoid double write-amplification.
   @@index([organizationId, validationStatus], map: "einvoice_lifecycle_org_val_idx")
   @@index([organizationId, transmissionStatus], map: "einvoice_lifecycle_org_tx_idx")
 }
