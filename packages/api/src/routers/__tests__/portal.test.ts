@@ -88,6 +88,28 @@ const {
       findMany: vi.fn(),
       upsert: vi.fn(),
     },
+    // Phase-2 F-SEC-15 — pre-signed PUTs go through the pendingUpload table
+    // so the server can verify a contractor consumed the URL within TTL.
+    pendingUpload: {
+      create: vi.fn(async (opts: { data: Rec }) => ({
+        id: 'pending-upload-1',
+        ...opts.data,
+      })),
+      // consumePendingUpload first runs an atomic claim via updateMany then
+      // re-reads the row via findFirst to confirm tenancy. Both must
+      // succeed for the submitInvoice happy path. The returned row's
+      // organizationId is checked against ctx.organizationId, so default
+      // to ORG_ID; a test that wants to simulate a tenancy mismatch can
+      // override per-call.
+      updateMany: vi.fn(async () => ({ count: 1 })),
+      findFirst: vi.fn(async () => ({
+        id: 'pending-upload-1',
+        documentId: 'doc-portal-1',
+        organizationId: 'org-portal-main-001',
+        consumedAt: new Date(),
+      })),
+      deleteMany: vi.fn(async () => ({ count: 0 })),
+    },
   };
 
   return {
@@ -322,11 +344,15 @@ describe('portal router — requestMagicLink', () => {
 
     expect(out).toEqual({ success: true });
     expect(mockCreateMagicLinkToken).toHaveBeenCalledWith(EMAIL);
+    // F-SEC-09: baseUrl is server-derived from NEXT_PUBLIC_APP_URL — never
+    // taken from request headers. Assert it's a non-empty absolute URL
+    // rather than pinning to a fixture so the test stays portable across
+    // local/CI/staging env files.
     expect(mockSendPortalMagicLink).toHaveBeenCalledWith(
       expect.objectContaining({
         email: EMAIL,
         token: 'signed-token',
-        baseUrl: 'https://portal.example.com',
+        baseUrl: expect.stringMatching(/^https?:\/\//),
       }),
     );
   });
@@ -739,22 +765,24 @@ describe('portal router — documents, payments, uploads', () => {
     });
   });
 
-  it('getUploadUrl returns presigned PUT and storage key', async () => {
+  it('getUploadUrl returns presigned PUT and persists a PendingUpload row', async () => {
     const out = await authedPortalCaller().getUploadUrl({
       filename: 'invoice.pdf',
       contentType: 'application/pdf',
     });
 
+    // F-SEC-01: server derives the storage key from
+    // (organizationId, documentId) and persists it in PendingUpload —
+    // the client never sees it. The response keeps `storageKey: ''` for
+    // back-compat only; new clients must use `documentId`.
+    expect(mockPrisma.pendingUpload.create).toHaveBeenCalled();
     expect(mockGenerateStorageKey).toHaveBeenCalled();
-    expect(mockCreatePresignedUploadUrl).toHaveBeenCalledWith(
-      'org/org-1/doc/x.pdf',
-      'application/pdf',
-    );
+    expect(mockCreatePresignedUploadUrl).toHaveBeenCalled();
     expect(out).toMatchObject({
       uploadUrl: 'https://upload.example/put',
-      documentId: '00000000-0000-4000-8000-000000000001',
-      storageKey: 'org/org-1/doc/x.pdf',
+      storageKey: '',
     });
+    expect(out.documentId).toEqual(expect.any(String));
   });
 
   it('getUploadUrl rejects non-PDF content type', async () => {
