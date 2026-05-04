@@ -69,6 +69,9 @@ model ApprovalStep {
   @@unique([approvalFlowId, stepOrder])
   @@index([organizationId])
   @@index([organizationId, approverUserId, status])
+  // F-DB-19 — covers `dashboard.fetchKpis` "pending approvals by month"
+  // aggregate that filters on (organizationId, status, createdAt).
+  @@index([organizationId, status, createdAt])
 }
 
 model ApprovalDecision {

@@ -96,6 +96,19 @@ export const searchRouter = router({
         `,
       ]);
 
-      return [...contractors, ...contracts, ...invoices] as SearchResult[];
+      // F-DB-20 — defensive dedupe by (type, id). The three queries are
+      // org-scoped over disjoint tables, so collisions are unlikely (cuids
+      // are globally unique), but a Set guard prevents the UI from rendering
+      // duplicates if a future refactor folds the entity types together
+      // (e.g. via a materialised search-index view).
+      const seen = new Set<string>();
+      const merged: SearchResult[] = [];
+      for (const row of [...contractors, ...contracts, ...invoices]) {
+        const key = `${row.type}:${row.id}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        merged.push(row);
+      }
+      return merged;
     }),
 });
