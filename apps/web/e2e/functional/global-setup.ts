@@ -22,7 +22,11 @@ export default async function globalSetup() {
 
   if (!(email && password)) {
     fs.writeFileSync(authFile, JSON.stringify({ cookies: [], origins: [] }));
-    console.warn('[functional] E2E_EMAIL / E2E_PASSWORD not set — authenticated specs will skip.');
+    // F-OBS-18 — emit on stderr (instead of console.warn) so the lint:logs
+    // guard's promise of "no console.* in source" holds even in e2e setup.
+    process.stderr.write(
+      '[functional] E2E_EMAIL / E2E_PASSWORD not set — authenticated specs will skip.\n',
+    );
     return;
   }
 

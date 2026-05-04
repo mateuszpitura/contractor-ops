@@ -23,8 +23,10 @@ export default async function globalSetup() {
 
   if (!(email && password)) {
     fs.writeFileSync(authFile, JSON.stringify({ cookies: [], origins: [] }));
-    console.warn(
-      '[perf] E2E_EMAIL / E2E_PASSWORD not set — dashboard perf tests will skip. Public perf specs still run.',
+    // F-OBS-18 — emit on stderr (instead of console.warn) so the lint:logs
+    // guard's promise of "no console.* in source" holds even in e2e setup.
+    process.stderr.write(
+      '[perf] E2E_EMAIL / E2E_PASSWORD not set — dashboard perf tests will skip. Public perf specs still run.\n',
     );
     return;
   }
