@@ -67,7 +67,8 @@ function LinkedIssuesSection({ runId }: { runId: string }) {
   // Don't render the section at all if Jira isn't connected
   if (!connectionQuery.data) return null;
 
-  const issues = (issuesQuery.data ?? []) as unknown as LinkedJiraIssueData[];
+  // F-DB-09: server now returns a paginated envelope { items, nextCursor }.
+  const issues = (issuesQuery.data?.items ?? []) as unknown as LinkedJiraIssueData[];
 
   return (
     <>
@@ -147,7 +148,8 @@ function LinkedLinearIssuesSection({ runId }: { runId: string }) {
   // Don't render the section at all if Linear isn't connected
   if (!connectionQuery.data) return null;
 
-  const issues = (issuesQuery.data ?? []) as unknown as LinkedLinearIssueData[];
+  // F-DB-09: server now returns a paginated envelope { items, nextCursor }.
+  const issues = (issuesQuery.data?.items ?? []) as unknown as LinkedLinearIssueData[];
 
   if (!issuesQuery.isLoading && issues.length === 0) return null;
 

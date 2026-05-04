@@ -461,7 +461,9 @@ describe('jiraRouter', () => {
       entityId: 'tr-1',
     });
 
-    expect(result).toEqual(JSON.parse(JSON.stringify(links)) as typeof links);
+    // F-DB-09: paginated envelope { items, nextCursor }
+    expect(result.items).toEqual(JSON.parse(JSON.stringify(links)) as typeof links);
+    expect(result.nextCursor).toBeUndefined();
     expect(mockPrisma.externalLink.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({
@@ -482,7 +484,7 @@ describe('jiraRouter', () => {
       entityId: 'wr-1',
     });
 
-    expect(result).toEqual([]);
+    expect(result.items).toEqual([]);
     expect(mockPrisma.workflowTaskRun.findMany).toHaveBeenCalled();
   });
 
@@ -495,7 +497,8 @@ describe('jiraRouter', () => {
       entityId: 'wr-1',
     });
 
-    expect(result).toEqual([]);
+    expect(result.items).toEqual([]);
+    expect(result.nextCursor).toBeUndefined();
     expect(mockPrisma.externalLink.findMany).not.toHaveBeenCalled();
   });
 

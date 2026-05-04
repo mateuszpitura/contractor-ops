@@ -487,7 +487,9 @@ describe('linearRouter', () => {
       entityType: 'WORKFLOW_TASK_RUN',
       entityId: 'tr-1',
     });
-    expect(result).toEqual(JSON.parse(JSON.stringify(links)));
+    // F-DB-09: paginated envelope { items, nextCursor }
+    expect(result.items).toEqual(JSON.parse(JSON.stringify(links)));
+    expect(result.nextCursor).toBeUndefined();
   });
 
   it('linkedIssues returns empty when WORKFLOW_RUN has no task runs', async () => {
@@ -496,7 +498,8 @@ describe('linearRouter', () => {
       entityType: 'WORKFLOW_RUN',
       entityId: 'wr-1',
     });
-    expect(result).toEqual([]);
+    expect(result.items).toEqual([]);
+    expect(result.nextCursor).toBeUndefined();
   });
 
   describe('tier gating', () => {

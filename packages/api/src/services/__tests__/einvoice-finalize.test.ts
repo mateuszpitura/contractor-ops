@@ -180,27 +180,32 @@ function makeDb(seed?: {
     );
   }
 
+  // F-DB-17 — invoiceId is globally unique, so we can locate the lifecycle
+  // row by invoiceId alone (no need to know organizationId at lookup time).
+  function findLifecycleByInvoiceId(invoiceId: string) {
+    return lifecycles.find(r => r.invoiceId === invoiceId) ?? null;
+  }
+
   const eInvoiceLifecycle = {
     findUnique: vi.fn(
       async (args: {
-        where: { organizationId_invoiceId: { organizationId: string; invoiceId: string } };
+        // F-DB-17 — switched to single-column unique (invoiceId).
+        where: { invoiceId: string };
         select?: Record<string, boolean>;
       }) => {
-        const { organizationId, invoiceId } = args.where.organizationId_invoiceId;
-        return findLifecycle(organizationId, invoiceId);
+        return findLifecycleByInvoiceId(args.where.invoiceId);
       },
     ),
     upsert: vi.fn(
       async (args: {
-        where: { organizationId_invoiceId: { organizationId: string; invoiceId: string } };
+        where: { invoiceId: string };
         create: Partial<LifecycleRow> & {
           organizationId: string;
           invoiceId: string;
         };
         update: Partial<LifecycleRow>;
       }) => {
-        const { organizationId, invoiceId } = args.where.organizationId_invoiceId;
-        const existing = findLifecycle(organizationId, invoiceId);
+        const existing = findLifecycleByInvoiceId(args.where.invoiceId);
         if (existing) {
           Object.assign(existing, args.update);
           return existing;

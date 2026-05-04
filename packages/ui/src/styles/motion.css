@@ -15,6 +15,13 @@
  * behavior (jump to final state, drop pulses, etc.) on top of it.
  */
 
+/*
+ * !important is intentional and necessary here: this rule must override
+ * every animation/transition declared anywhere in the app, including in
+ * third-party CSS we don't control. The cascade-reversal that biome warns
+ * about is the whole point — a11y trumps decorative motion.
+ */
+/* biome-ignore-start lint/complexity/noImportantStyles: a11y guard rail */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -40,3 +47,4 @@
     transition: none !important;
   }
 }
+/* biome-ignore-end lint/complexity/noImportantStyles: a11y guard rail */

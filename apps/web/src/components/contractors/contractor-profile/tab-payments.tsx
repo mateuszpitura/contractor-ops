@@ -66,9 +66,14 @@ export function TabPayments({ contractorId }: TabPaymentsProps) {
   const [page, setPage] = useState(1);
   const pageSize = 10;
 
-  const paymentsQuery = useQuery(trpc.payment.listByContractor.queryOptions({ contractorId }));
+  // F-DB-09: cursor-paginated server response — first page covers up to 200 items.
+  // The contractor profile UI paginates client-side over the loaded slice; deeper
+  // history is bounded to keep the request fast.
+  const paymentsQuery = useQuery(
+    trpc.payment.listByContractor.queryOptions({ contractorId, take: 200 }),
+  );
 
-  const rawItems = paymentsQuery.data ?? [];
+  const rawItems = paymentsQuery.data?.items ?? [];
 
   // Map to row type (API returns nested paymentRun/invoice relations)
   const allItems: PaymentItemRow[] = useMemo(

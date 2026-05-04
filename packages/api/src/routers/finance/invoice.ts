@@ -1093,7 +1093,14 @@ export const invoiceRouter = router({
    */
   searchContractors: tenantProcedure
     .use(requirePermission({ invoice: ['read'] }))
-    .input(z.object({ query: z.string().min(1) }))
+    .input(
+      z.object({
+        query: z.string().min(1).max(100),
+        // F-DB-09: bound autocomplete to a documented cap. Default 10 keeps
+        // dropdown UX snappy; max 200 leaves headroom for rare bulk uses.
+        take: z.number().int().min(1).max(200).default(10),
+      }),
+    )
     .query(async ({ ctx, input }) => {
       const contractors = await ctx.db.contractor.findMany({
         where: {
@@ -1114,7 +1121,7 @@ export const invoiceRouter = router({
           taxId: true,
           status: true,
         },
-        take: 10,
+        take: input.take,
       });
 
       return contractors;

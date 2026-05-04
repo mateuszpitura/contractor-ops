@@ -404,11 +404,10 @@ export const einvoiceRouter = router({
           };
         };
         const upserted = await txDb.eInvoiceLifecycle.upsert({
+          // F-DB-17 — compound (orgId, invoiceId) unique was redundant
+          // (invoiceId is globally @unique). Use the field-level unique key.
           where: {
-            organizationId_invoiceId: {
-              organizationId: ctx.organizationId,
-              invoiceId: input.invoiceId,
-            },
+            invoiceId: input.invoiceId,
           },
           create: {
             organizationId: ctx.organizationId,

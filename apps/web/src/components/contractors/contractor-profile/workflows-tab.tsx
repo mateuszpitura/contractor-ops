@@ -97,7 +97,8 @@ function RunLinearChips({ runId }: { runId: string }) {
     enabled: !!connectionQuery.data,
   });
 
-  const issues = (issuesQuery.data ?? []) as unknown as LinkedLinearIssueData[];
+  // F-DB-09: server now returns a paginated envelope { items, nextCursor }.
+  const issues = (issuesQuery.data?.items ?? []) as unknown as LinkedLinearIssueData[];
 
   if (!(connectionQuery.data && issues.length)) return null;
 
@@ -145,7 +146,8 @@ function RunJiraChips({ runId }: { runId: string }) {
     enabled: !!connectionQuery.data,
   });
 
-  const issues = (issuesQuery.data ?? []) as unknown as LinkedIssueData[];
+  // F-DB-09: server now returns a paginated envelope { items, nextCursor }.
+  const issues = (issuesQuery.data?.items ?? []) as unknown as LinkedIssueData[];
 
   if (!(connectionQuery.data && issues.length)) return null;
 

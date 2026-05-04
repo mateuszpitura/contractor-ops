@@ -225,11 +225,10 @@ export async function finalizeEInvoice(
   // ── Short-circuit on existing lifecycle when force=false ─────────────────
   if (!input.force) {
     const existing = await db.eInvoiceLifecycle.findUnique({
+      // F-DB-17 — compound (orgId, invoiceId) unique was redundant
+      // (invoiceId is globally @unique). Use the field-level unique key.
       where: {
-        organizationId_invoiceId: {
-          organizationId: input.organizationId,
-          invoiceId: input.invoiceId,
-        },
+        invoiceId: input.invoiceId,
       },
       select: { id: true },
     });
@@ -293,11 +292,10 @@ export async function finalizeEInvoice(
     // Upsert on (organizationId, invoiceId) so force=true replaces the row
     // in place (unique index) and force=false has already been rejected.
     const current = await tx.eInvoiceLifecycle.findUnique({
+      // F-DB-17 — compound (orgId, invoiceId) unique was redundant
+      // (invoiceId is globally @unique). Use the field-level unique key.
       where: {
-        organizationId_invoiceId: {
-          organizationId: input.organizationId,
-          invoiceId: input.invoiceId,
-        },
+        invoiceId: input.invoiceId,
       },
       select: { validationStatus: true },
     });
@@ -307,11 +305,10 @@ export async function finalizeEInvoice(
     transitionValidation(priorStatus, validationEvent);
 
     const upserted = await tx.eInvoiceLifecycle.upsert({
+      // F-DB-17 — compound (orgId, invoiceId) unique was redundant
+      // (invoiceId is globally @unique). Use the field-level unique key.
       where: {
-        organizationId_invoiceId: {
-          organizationId: input.organizationId,
-          invoiceId: input.invoiceId,
-        },
+        invoiceId: input.invoiceId,
       },
       create: {
         organizationId: input.organizationId,

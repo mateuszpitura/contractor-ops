@@ -1175,7 +1175,16 @@ export const paymentRouter = router({
 
   listByContractor: tenantProcedure
     .use(requirePermission({ payment: ['read'] }))
-    .input(z.object({ contractorId: z.cuid() }))
+    .input(
+      z.object({
+        contractorId: z.cuid(),
+        // F-DB-09: cursor pagination (default 50, max 200). The previous
+        // hard cap of 100 silently dropped older payment items for
+        // long-tenured contractors.
+        take: z.number().int().min(1).max(200).default(50),
+        cursor: z.string().optional(),
+      }),
+    )
     .query(async ({ ctx, input }) => {
       const items = await ctx.db.paymentRunItem.findMany({
         where: {
@@ -1191,10 +1200,16 @@ export const paymentRouter = router({
           },
         },
         orderBy: { createdAt: 'desc' },
-        take: 100,
+        // take + 1 to detect next page; trimmed before return
+        take: input.take + 1,
+        ...(input.cursor ? { cursor: { id: input.cursor }, skip: 1 } : {}),
       });
 
-      return items;
+      const hasMore = items.length > input.take;
+      const trimmed = hasMore ? items.slice(0, input.take) : items;
+      const nextCursor = hasMore ? trimmed[trimmed.length - 1]?.id : undefined;
+
+      return { items: trimmed, nextCursor };
     }),
 
   // =========================================================================

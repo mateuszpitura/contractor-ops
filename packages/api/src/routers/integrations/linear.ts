@@ -375,6 +375,9 @@ export const linearRouter = router({
       z.object({
         entityType: z.enum(['WORKFLOW_TASK_RUN', 'WORKFLOW_RUN']),
         entityId: z.string(),
+        // F-DB-09: bound the result set. Mirrors jira.linkedIssues.
+        take: z.number().int().min(1).max(200).default(50),
+        cursor: z.string().optional(),
       }),
     )
     .query(async ({ ctx, input }) => {
@@ -392,21 +395,30 @@ export const linearRouter = router({
             externalUrl: true,
             metadataJson: true,
           },
+          take: input.take + 1,
+          ...(input.cursor ? { cursor: { id: input.cursor }, skip: 1 } : {}),
         });
 
-        return links;
+        const hasMore = links.length > input.take;
+        const items = hasMore ? links.slice(0, input.take) : links;
+        return {
+          items,
+          nextCursor: hasMore ? items[items.length - 1]?.id : undefined,
+        };
       }
 
-      // WORKFLOW_RUN: find all task runs, then their external links
+      // WORKFLOW_RUN: cap the underlying task-run set as well so total work
+      // stays bounded for very large runs.
       const taskRuns = await ctx.db.workflowTaskRun.findMany({
         where: {
           workflowRunId: input.entityId,
           organizationId: ctx.organizationId,
         },
         select: { id: true },
+        take: 200,
       });
 
-      if (taskRuns.length === 0) return [];
+      if (taskRuns.length === 0) return { items: [], nextCursor: undefined };
 
       const links = await ctx.db.externalLink.findMany({
         where: {
@@ -421,8 +433,15 @@ export const linearRouter = router({
           externalUrl: true,
           metadataJson: true,
         },
+        take: input.take + 1,
+        ...(input.cursor ? { cursor: { id: input.cursor }, skip: 1 } : {}),
       });
 
-      return links;
+      const hasMore = links.length > input.take;
+      const items = hasMore ? links.slice(0, input.take) : links;
+      return {
+        items,
+        nextCursor: hasMore ? items[items.length - 1]?.id : undefined,
+      };
     }),
 });
