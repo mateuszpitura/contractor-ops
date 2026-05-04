@@ -112,6 +112,18 @@
       "rangeYtd": "Year to date",
       "empty": "No spend data for this period"
     },
+    "heroSpend": {
+      "eyebrow": "6-month spend overview",
+      "viewReports": "View detailed reports",
+      "totalAriaLabel": "Total spend across the last six months: {total}",
+      "trendChange": "{sign}{pct}% vs prev month",
+      "trendFlat": "No change vs prev month",
+      "trendUnavailable": "Insufficient history",
+      "directionUp": "up",
+      "directionDown": "down",
+      "directionFlat": "flat",
+      "srTrendLabel": "{months}-month spend trend, {direction} {pct}%"
+    },
     "deadlines": {
       "title": "Upcoming deadlines",
       "seeAll": "See all deadlines",

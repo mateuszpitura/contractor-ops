@@ -1,5 +1,6 @@
 'use client';
 
+import { AtelierBackground, AtelierIntensityProvider } from '@contractor-ops/ui';
 import { useQuery } from '@tanstack/react-query';
 import { LayoutDashboard } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -8,10 +9,13 @@ import { ActivityFeed } from '@/components/dashboard/activity-feed';
 import { ApprovalQueueWidget } from '@/components/dashboard/approval-queue-widget';
 import { DashboardGreeting } from '@/components/dashboard/dashboard-greeting';
 import { DeadlinesWidget } from '@/components/dashboard/deadlines-widget';
+import { HeroSpendMetric } from '@/components/dashboard/hero-spend-metric';
 import { KpiCards } from '@/components/dashboard/kpi-cards';
+import { OverdueReceivablesTile } from '@/components/dashboard/overdue-receivables-tile';
 import { SpendChart } from '@/components/dashboard/spend-chart';
 import { TaxObligationsWidget } from '@/components/dashboard/tax-obligations-widget';
 import { EInvoiceComplianceWidget } from '@/components/einvoice/compliance-widget';
+import { useFlag } from '@/components/layout/feature-flag-context';
 import { OnboardingChecklist } from '@/components/onboarding/onboarding-checklist';
 import { AnimateIn } from '@/components/shared/animate-in';
 import { Button } from '@/components/ui/button';
@@ -50,6 +54,7 @@ function DashboardEmptyState() {
 function DashboardContent() {
   const { can } = usePermissions();
   const hasReportAccess = can('report', ['read']);
+  const lateInterestEnabled = useFlag('PAY_LATE_INTEREST_ENABLED');
 
   // Fetch KPIs to check for empty state
   const { data: kpis, isLoading: kpisLoading } = useQuery(trpc.dashboard.kpis.queryOptions());
@@ -75,13 +80,15 @@ function DashboardContent() {
         <DashboardGreeting />
       </AnimateIn>
 
-      {/* Accent line separator */}
-      <AnimateIn delay={0}>
-        <div className="accent-line w-full rounded-full" />
-      </AnimateIn>
+      {/* Hero spend metric — full-width, gated on report:read */}
+      {hasReportAccess && (
+        <AnimateIn delay={1}>
+          <HeroSpendMetric />
+        </AnimateIn>
+      )}
 
       {/* KPI bento grid */}
-      <AnimateIn delay={1}>
+      <AnimateIn delay={2}>
         <KpiCards />
       </AnimateIn>
 
@@ -90,11 +97,11 @@ function DashboardContent() {
         {/* Left column */}
         <div className="flex flex-col gap-6">
           {hasReportAccess && (
-            <AnimateIn delay={2}>
+            <AnimateIn delay={3}>
               <SpendChart />
             </AnimateIn>
           )}
-          <AnimateIn delay={3}>
+          <AnimateIn delay={4}>
             <DeadlinesWidget />
           </AnimateIn>
         </div>
@@ -102,16 +109,17 @@ function DashboardContent() {
         {/* Right column */}
         <div className="flex flex-col gap-6">
           <OnboardingChecklist />
-          <AnimateIn delay={2}>
+          <AnimateIn delay={3}>
             <ApprovalQueueWidget />
           </AnimateIn>
-          <AnimateIn delay={3}>
+          <OverdueReceivablesTile featureEnabled={lateInterestEnabled} />
+          <AnimateIn delay={4}>
             <ActivityFeed />
           </AnimateIn>
-          <AnimateIn delay={4}>
+          <AnimateIn delay={5}>
             <EInvoiceComplianceWidget />
           </AnimateIn>
-          <AnimateIn delay={5}>
+          <AnimateIn delay={6}>
             <TaxObligationsWidget />
           </AnimateIn>
         </div>
@@ -126,38 +134,64 @@ function DashboardContent() {
 
 /**
  * Dashboard home page.
- * Shows greeting, 5 KPI cards, spend chart, deadlines, approval queue, and
- * activity feed. Wrapped in Suspense for nuqs URL state (SpendChart).
+ *
+ * Wrapped in `<AtelierIntensityProvider value="atelier">` so any leaf
+ * primitive from @contractor-ops/ui (TiltCard, Sparkline, etc.) gets
+ * the dashboard tier defaults — premium surfaces, animated motion,
+ * hero glow allowed. Operational pages (contractors, invoices,
+ * payments…) wrap in `value="workbench"` to self-downgrade.
+ *
+ * Layout (decision locked in §8 of UI-ATELIER-WORKPLAN.md):
+ *
+ *   - DashboardGreeting
+ *   - HeroSpendMetric (full-width, hasReportAccess only)
+ *   - KpiCards (5-card bento grid)
+ *   - SpendChart | ApprovalQueueWidget
+ *     DeadlinesWidget | OverdueReceivablesTile
+ *                       ActivityFeed
+ *                       EInvoiceComplianceWidget
+ *                       TaxObligationsWidget
+ *   - OnboardingChecklist (right column, top)
+ *
+ * Wrapped in Suspense for nuqs URL state (SpendChart).
  */
 export default function DashboardPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="flex flex-col gap-8">
-          <div className="space-y-1">
-            <Skeleton className="h-8 w-64 rounded-lg" />
-            <Skeleton className="h-4 w-48 rounded-md" />
-          </div>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-            {Array.from({ length: 5 }).map((_, i) => (
-              // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-              <Skeleton key={`skel-${i}`} className="h-[100px] rounded-xl" />
-            ))}
-          </div>
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            <div className="flex flex-col gap-6">
-              <Skeleton className="h-[340px] rounded-xl" />
-              <Skeleton className="h-[280px] rounded-xl" />
-            </div>
-            <div className="flex flex-col gap-6">
-              <Skeleton className="h-[120px] rounded-xl" />
-              <Skeleton className="h-[280px] rounded-xl" />
-              <Skeleton className="h-[320px] rounded-xl" />
-            </div>
-          </div>
+    <AtelierIntensityProvider value="atelier">
+      <div className="relative">
+        <AtelierBackground />
+        <div className="relative z-10">
+          <Suspense
+            fallback={
+              <div className="flex flex-col gap-8">
+                <div className="space-y-1">
+                  <Skeleton className="h-8 w-64 rounded-lg" />
+                  <Skeleton className="h-4 w-48 rounded-md" />
+                </div>
+                <Skeleton className="h-[200px] w-full rounded-2xl" />
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
+                    <Skeleton key={`skel-${i}`} className="h-[120px] rounded-2xl" />
+                  ))}
+                </div>
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                  <div className="flex flex-col gap-6">
+                    <Skeleton className="h-[340px] rounded-xl" />
+                    <Skeleton className="h-[280px] rounded-xl" />
+                  </div>
+                  <div className="flex flex-col gap-6">
+                    <Skeleton className="h-[120px] rounded-xl" />
+                    <Skeleton className="h-[280px] rounded-xl" />
+                    <Skeleton className="h-[320px] rounded-xl" />
+                  </div>
+                </div>
+              </div>
+            }>
+            <DashboardContent />
+          </Suspense>
         </div>
-      }>
-      <DashboardContent />
-    </Suspense>
+      </div>
+    </AtelierIntensityProvider>
   );
 }

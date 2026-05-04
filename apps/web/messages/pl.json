@@ -112,6 +112,18 @@
       "rangeYtd": "Od początku roku",
       "empty": "Brak danych o wydatkach za ten okres"
     },
+    "heroSpend": {
+      "eyebrow": "Wydatki — ostatnie 6 miesięcy",
+      "viewReports": "Zobacz szczegółowe raporty",
+      "totalAriaLabel": "Łączne wydatki z ostatnich sześciu miesięcy: {total}",
+      "trendChange": "{sign}{pct}% wobec poprzedniego miesiąca",
+      "trendFlat": "Bez zmian wobec poprzedniego miesiąca",
+      "trendUnavailable": "Niewystarczająca historia",
+      "directionUp": "wzrost",
+      "directionDown": "spadek",
+      "directionFlat": "bez zmian",
+      "srTrendLabel": "Trend wydatków za {months} mies., {direction} {pct}%"
+    },
     "deadlines": {
       "title": "Nadchodzące terminy",
       "seeAll": "Zobacz wszystkie terminy",

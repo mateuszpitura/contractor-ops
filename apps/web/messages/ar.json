@@ -112,6 +112,18 @@
       "rangeYtd": "منذ بداية العام",
       "empty": "لا توجد بيانات إنفاق لهذه الفترة"
     },
+    "heroSpend": {
+      "eyebrow": "نظرة عامة على الإنفاق — آخر 6 أشهر",
+      "viewReports": "عرض التقارير التفصيلية",
+      "totalAriaLabel": "إجمالي الإنفاق خلال الأشهر الستة الأخيرة: {total}",
+      "trendChange": "{sign}{pct}% مقارنة بالشهر السابق",
+      "trendFlat": "لا تغيير مقارنة بالشهر السابق",
+      "trendUnavailable": "السجل غير كافٍ",
+      "directionUp": "ارتفاع",
+      "directionDown": "انخفاض",
+      "directionFlat": "بدون تغيير",
+      "srTrendLabel": "اتجاه الإنفاق خلال {months} أشهر، {direction} {pct}%"
+    },
     "deadlines": {
       "title": "المواعيد النهائية القادمة",
       "seeAll": "عرض جميع المواعيد النهائية",

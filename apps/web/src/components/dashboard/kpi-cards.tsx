@@ -1,13 +1,11 @@
 'use client';
 
+import { AnimatedNumber, TiltCard } from '@contractor-ops/ui';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowUpRight, Minus, TrendingDown, TrendingUp } from 'lucide-react';
-import { motion } from 'motion/react';
-import { useTranslations } from 'next-intl';
-import { Card, CardContent } from '@/components/ui/card';
+import { useLocale, useTranslations } from 'next-intl';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Link } from '@/i18n/navigation';
-import { fadeUp, springs, stagger } from '@/lib/motion';
 import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
@@ -19,6 +17,7 @@ interface KpiCardConfig {
   labelKey: string;
   href: string;
   isCurrency?: boolean;
+  /** Hero takes 2 columns in the bento grid + larger typography. */
   isHero?: boolean;
 }
 
@@ -60,17 +59,6 @@ const KPI_CARDS: KpiCardConfig[] = [
 // Helpers
 // ---------------------------------------------------------------------------
 
-const currencyFormatter = new Intl.NumberFormat('pl-PL', {
-  style: 'currency',
-  currency: 'PLN',
-  minimumFractionDigits: 0,
-  maximumFractionDigits: 2,
-});
-
-function formatCurrency(minor: number): string {
-  return currencyFormatter.format(minor / 100);
-}
-
 function getTrend(value: number, prevValue: number) {
   if (prevValue === 0) return { change: 0, direction: 'neutral' as const };
   const change = ((value - prevValue) / prevValue) * 100;
@@ -95,17 +83,23 @@ function TrendIndicator({
   return (
     <div className="flex items-center gap-1.5">
       {direction === 'up' && (
-        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-success/10">
+        <span
+          aria-hidden="true"
+          className="flex h-5 w-5 items-center justify-center rounded-full bg-success/10">
           <TrendingUp className="h-3 w-3 text-success" />
         </span>
       )}
       {direction === 'down' && (
-        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-destructive/10">
+        <span
+          aria-hidden="true"
+          className="flex h-5 w-5 items-center justify-center rounded-full bg-destructive/10">
           <TrendingDown className="h-3 w-3 text-destructive" />
         </span>
       )}
       {direction === 'neutral' && (
-        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-muted">
+        <span
+          aria-hidden="true"
+          className="flex h-5 w-5 items-center justify-center rounded-full bg-muted">
           <Minus className="h-3 w-3 text-muted-foreground" />
         </span>
       )}
@@ -126,59 +120,31 @@ function TrendIndicator({
 }
 
 // ---------------------------------------------------------------------------
-// Hero KPI Card (spans 2 columns, conic border, large typography)
-// ---------------------------------------------------------------------------
-
-function HeroKpiCard({
-  card,
-  displayValue,
-  direction,
-  change,
-  t,
-}: {
-  card: KpiCardConfig;
-  displayValue: string | number;
-  direction: 'up' | 'down' | 'neutral';
-  change: number;
-  t: ReturnType<typeof useTranslations>;
-}) {
-  return (
-    <Link href={card.href} className="group/kpi bento-span-2">
-      <div className="conic-border neon-card iridescent rounded-xl">
-        <Card className="relative min-h-[140px] cursor-pointer border-0 ring-0 shadow-none hover:shadow-none hover:ring-0">
-          <CardContent className="relative flex h-full flex-col justify-between pt-0">
-            <div className="flex items-start justify-between">
-              <p className="text-xs font-medium tracking-widest text-muted-foreground uppercase">
-                {t(card.labelKey as Parameters<typeof t>[0])}
-              </p>
-              <ArrowUpRight className="h-4 w-4 text-muted-foreground/0 transition-all duration-300 group-hover/kpi:text-primary group-hover/kpi:translate-x-0.5 group-hover/kpi:-translate-y-0.5" />
-            </div>
-            <div>
-              <p className="hero-metric hero-metric-glow font-display text-4xl font-bold tracking-tighter sm:text-5xl">
-                {displayValue}
-              </p>
-              <div className="mt-3">
-                <TrendIndicator direction={direction} change={change} t={t} />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </Link>
-  );
-}
-
-// ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
 /**
  * 5 KPI cards in a bento grid. The "Ready to Pay" card is a hero card
- * spanning 2 columns with animated conic border and glowing typography.
+ * spanning 2 columns with larger typography. All cards now ride on the
+ * Atelier TiltCard primitive — frosted-glass surface, optional shimmer,
+ * cursor-driven 3D tilt that auto-disables on touch / reduced-motion /
+ * Workbench tier.
+ *
+ * Locale comes from next-intl. Currency formatter uses the active
+ * locale instead of the hardcoded 'pl-PL' it carried before.
  */
 export function KpiCards() {
   const t = useTranslations('Dashboard');
+  const locale = useLocale();
   const { data, isLoading } = useQuery(trpc.dashboard.kpis.queryOptions());
+
+  const formatCurrency = (minor: number) =>
+    new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency: 'PLN',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    }).format(minor / 100);
 
   if (isLoading) {
     return (
@@ -186,7 +152,7 @@ export function KpiCards() {
         {KPI_CARDS.map(card => (
           <Skeleton
             key={card.key}
-            className={`h-[120px] rounded-xl ${card.isHero ? 'bento-span-2' : ''}`}
+            className={`h-[120px] rounded-2xl ${card.isHero ? 'bento-span-2' : ''}`}
           />
         ))}
       </div>
@@ -194,12 +160,8 @@ export function KpiCards() {
   }
 
   return (
-    <motion.div
-      className="bento-grid"
-      initial="hidden"
-      animate="visible"
-      transition={stagger.default}>
-      {KPI_CARDS.map(card => {
+    <div className="bento-grid">
+      {KPI_CARDS.map((card, index) => {
         const kpiData = data?.[card.key as keyof NonNullable<typeof data>];
         let value = 0;
         let prevValue = 0;
@@ -213,47 +175,51 @@ export function KpiCards() {
         }
 
         const { change, direction } = getTrend(value, prevValue);
-        const displayValue = card.isCurrency ? formatCurrency(value) : value;
-
-        if (card.isHero) {
-          return (
-            <motion.div
-              key={card.key}
-              variants={fadeUp}
-              transition={springs.gentle}
-              className="bento-span-2">
-              <HeroKpiCard
-                card={card}
-                displayValue={displayValue}
-                direction={direction}
-                change={change}
-                t={t}
-              />
-            </motion.div>
-          );
-        }
+        const cardLabel = t(card.labelKey as Parameters<typeof t>[0]);
 
         return (
-          <motion.div key={card.key} variants={fadeUp} transition={springs.gentle}>
-            <Link href={card.href} className="group/kpi block h-full">
-              <Card className="card-interactive neon-card atelier-shimmer h-full min-w-0 cursor-pointer transition-all duration-200 hover:ring-1 hover:ring-primary/40">
-                <CardContent className="relative pt-0">
-                  <ArrowUpRight className="absolute top-0 end-0 h-3.5 w-3.5 text-muted-foreground/0 transition-all group-hover/kpi:text-primary/60 group-hover/kpi:translate-x-0.5 group-hover/kpi:-translate-y-0.5" />
-                  <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                    {t(card.labelKey as Parameters<typeof t>[0])}
+          <Link
+            key={card.key}
+            href={card.href}
+            className={`group/kpi block ${card.isHero ? 'bento-span-2' : ''}`}
+            aria-label={cardLabel}>
+            <TiltCard
+              shimmer={!card.isHero}
+              glow={card.isHero}
+              delay={index * 60}
+              className="h-full">
+              <div className="flex h-full flex-col justify-between gap-3">
+                <div className="flex items-start justify-between">
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    {cardLabel}
                   </p>
-                  <p className="hero-metric mt-1.5 font-display text-2xl font-semibold leading-tight tracking-tight">
-                    {displayValue}
+                  <ArrowUpRight
+                    aria-hidden="true"
+                    className="h-4 w-4 text-muted-foreground/0 transition-all duration-300 group-hover/kpi:text-primary group-hover/kpi:translate-x-0.5 group-hover/kpi:-translate-y-0.5"
+                  />
+                </div>
+
+                <div>
+                  <p
+                    className={`font-display font-semibold leading-tight tracking-tight tabular-nums ${
+                      card.isHero
+                        ? 'atelier-hero-glow bg-gradient-to-r from-foreground via-primary/80 to-foreground bg-clip-text text-4xl font-black tracking-tighter text-transparent sm:text-5xl'
+                        : 'text-2xl'
+                    }`}>
+                    <AnimatedNumber
+                      value={value}
+                      format={card.isCurrency ? formatCurrency : undefined}
+                    />
                   </p>
                   <div className="mt-2.5">
                     <TrendIndicator direction={direction} change={change} t={t} />
                   </div>
-                </CardContent>
-              </Card>
-            </Link>
-          </motion.div>
+                </div>
+              </div>
+            </TiltCard>
+          </Link>
         );
       })}
-    </motion.div>
+    </div>
   );
 }

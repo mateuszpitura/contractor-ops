@@ -254,6 +254,18 @@
       "rangeYtd": "Seit Jahresbeginn",
       "empty": "Keine Ausgabendaten für diesen Zeitraum"
     },
+    "heroSpend": {
+      "eyebrow": "Ausgaben — letzte 6 Monate",
+      "viewReports": "Detaillierte Berichte ansehen",
+      "totalAriaLabel": "Gesamtausgaben der letzten sechs Monate: {total}",
+      "trendChange": "{sign}{pct}% ggü. Vormonat",
+      "trendFlat": "Keine Änderung ggü. Vormonat",
+      "trendUnavailable": "Unzureichender Verlauf",
+      "directionUp": "Anstieg",
+      "directionDown": "Rückgang",
+      "directionFlat": "unverändert",
+      "srTrendLabel": "Ausgabentrend der letzten {months} Monate, {direction} {pct}%"
+    },
     "deadlines": {
       "title": "Anstehende Fristen",
       "seeAll": "Alle Fristen anzeigen",
