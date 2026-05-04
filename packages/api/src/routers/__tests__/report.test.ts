@@ -20,6 +20,7 @@ const {
   mockGenerateContractsCsv,
   mockGenerateInvoicesCsv,
   mockGenerateComplianceCsv,
+  mockRequestExport,
 } = vi.hoisted(() => {
   const OrgId = 'org-report-00000000-0000-0000-0000-000000000001';
   const UserId = 'user-report-00000000-0000-0000-0000-000000000001';
@@ -53,6 +54,15 @@ const {
   const mockGenerateInvoicesCsv = vi.fn(async () => csvResult);
   const mockGenerateComplianceCsv = vi.fn(async () => csvResult);
 
+  // F-SCALE-01 — exports are now enqueued asynchronously via QStash, so the
+  // mutation contract is `{ exportId, status: 'PENDING' }`. Tests verify
+  // delegation to `requestExport`, not the historical inline-CSV envelope.
+  let exportCounter = 0;
+  const mockRequestExport = vi.fn(async () => ({
+    exportId: `exp_${++exportCounter}`,
+    status: 'PENDING' as const,
+  }));
+
   return {
     ORG_ID: OrgId,
     USER_ID: UserId,
@@ -61,6 +71,7 @@ const {
     mockGenerateContractsCsv,
     mockGenerateInvoicesCsv,
     mockGenerateComplianceCsv,
+    mockRequestExport,
   };
 });
 
@@ -99,6 +110,20 @@ vi.mock('@contractor-ops/db', () => ({
   getRegionalClient: vi.fn(() => mockPrisma),
 }));
 
+// F-DB-03 / F-SEC-12 — org-cache must report ACTIVE so tenant middleware
+// does not throw orgSuspended.
+vi.mock('../../services/org-cache.js', () => ({
+  getOrgMeta: vi.fn(async (orgId: string) => ({
+    id: orgId,
+    dataRegion: 'EU',
+    status: 'ACTIVE',
+    name: 'Test Org',
+  })),
+  invalidateOrgMeta: vi.fn(async () => undefined),
+  ORG_META_TTL_SECONDS: 300,
+  orgMetaKey: (orgId: string) => `org:${orgId}:meta`,
+}));
+
 // Need to also mock the Prisma client subpath since report.ts imports from there
 vi.mock('@contractor-ops/db/generated/prisma/client', () => ({
   Prisma: {
@@ -113,6 +138,16 @@ vi.mock('../../services/report-export.js', () => ({
   generateContractsCsv: mockGenerateContractsCsv,
   generateInvoicesCsv: mockGenerateInvoicesCsv,
   generateComplianceCsv: mockGenerateComplianceCsv,
+}));
+
+// F-SCALE-01 — short-circuit the async-export framework so we can assert
+// the router's enqueue contract without exercising QStash, R2, or Prisma's
+// `Export` model.
+vi.mock('../../services/exports/index.js', () => ({
+  requestExport: mockRequestExport,
+  EXPORT_REGISTRY: {},
+  getExportDefinition: vi.fn(),
+  parseExportParams: vi.fn(),
 }));
 
 vi.mock('../../services/cache.js', () => ({
@@ -878,115 +913,72 @@ describe('report router', () => {
   // =========================================================================
 
   describe('export mutations', () => {
-    it('exportSpendByContractor returns base64 CSV with correct columns', async () => {
-      mockPrisma.$queryRaw.mockResolvedValue([
-        {
-          contractorName: 'Alpha Corp',
-          invoiceCount: 5,
-          totalMinor: 500000,
-          avgMinor: 100000,
-          lastPaidAt: new Date('2025-06-15'),
-        },
-      ]);
+    // F-SCALE-01 — these mutations no longer return CSV inline. They
+    // persist a PENDING `Export` row and dispatch a QStash message; the
+    // CSV is rendered by `/api/exports/_process`. Tests assert the
+    // delegation contract + envelope shape only.
 
+    it('exportSpendByContractor delegates to requestExport with the correct type + params', async () => {
       const result = await caller.report.exportSpendByContractor(DATE_RANGE);
 
-      expect(result).toHaveProperty('data', 'bW9jaw==');
-      expect(result).toHaveProperty('mimeType', 'text/csv;charset=utf-8');
-      expect(result.filename).toMatch(/^spend-by-contractor-\d{4}-\d{2}-\d{2}\.csv$/);
-      expect(mockGenerateSpendCsv).toHaveBeenCalledTimes(1);
+      expect(result).toEqual({ exportId: expect.stringMatching(/^exp_/), status: 'PENDING' });
+      expect(mockRequestExport).toHaveBeenCalledWith(
+        expect.objectContaining({
+          organizationId: ORG_ID,
+          type: 'spend-by-contractor',
+          params: expect.objectContaining(DATE_RANGE),
+        }),
+      );
     });
 
-    it('exportSpendByTeam returns base64 CSV', async () => {
-      mockPrisma.$queryRaw.mockResolvedValue([
-        {
-          teamName: 'Engineering',
-          contractorCount: 3,
-          invoiceCount: 7,
-          totalMinor: 700000,
-        },
-      ]);
-
+    it('exportSpendByTeam delegates to requestExport with type=spend-by-team', async () => {
       const result = await caller.report.exportSpendByTeam(DATE_RANGE);
 
-      expect(result).toHaveProperty('data');
-      expect(result.filename).toMatch(/^spend-by-team-\d{4}-\d{2}-\d{2}\.csv$/);
-      expect(mockGenerateSpendCsv).toHaveBeenCalledTimes(1);
+      expect(result).toEqual({ exportId: expect.stringMatching(/^exp_/), status: 'PENDING' });
+      expect(mockRequestExport).toHaveBeenCalledWith(
+        expect.objectContaining({
+          organizationId: ORG_ID,
+          type: 'spend-by-team',
+          params: expect.objectContaining(DATE_RANGE),
+        }),
+      );
     });
 
-    it('exportExpiringContracts returns base64 CSV', async () => {
-      const futureDate = new Date(Date.now() + 15 * 24 * 60 * 60 * 1000);
-      mockPrisma.contract.findMany.mockResolvedValue([
-        {
-          id: 'c-1',
-          title: 'Service Agreement',
-          endDate: futureDate,
-          status: 'ACTIVE',
-          contractor: { legalName: 'Alpha Corp' },
-        },
-      ]);
-
+    it('exportExpiringContracts delegates to requestExport with the days window', async () => {
       const result = await caller.report.exportExpiringContracts({ days: '30' });
 
-      expect(result).toHaveProperty('data');
-      expect(result.filename).toMatch(/^expiring-contracts-\d{4}-\d{2}-\d{2}\.csv$/);
-      expect(mockGenerateContractsCsv).toHaveBeenCalledTimes(1);
-
-      // Verify the data passed to CSV generator
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const csvArg = (mockGenerateContractsCsv.mock.calls as unknown)[0]?.[0];
-      expect(csvArg[0]).toHaveProperty('contractTitle', 'Service Agreement');
-      expect(csvArg[0]).toHaveProperty('contractorName', 'Alpha Corp');
+      expect(result).toEqual({ exportId: expect.stringMatching(/^exp_/), status: 'PENDING' });
+      expect(mockRequestExport).toHaveBeenCalledWith(
+        expect.objectContaining({
+          organizationId: ORG_ID,
+          type: 'expiring-contracts',
+          params: { days: '30' },
+        }),
+      );
     });
 
-    it('exportOverdueInvoices returns base64 CSV', async () => {
-      const pastDate = new Date(Date.now() - 5 * 24 * 60 * 60 * 1000);
-      mockPrisma.invoice.findMany.mockResolvedValue([
-        {
-          id: 'inv-1',
-          invoiceNumber: 'FV/2025/001',
-          amountToPayMinor: 150000,
-          currency: 'PLN',
-          dueDate: pastDate,
-          paymentStatus: 'UNPAID',
-          contractor: { legalName: 'Alpha Corp' },
-        },
-      ]);
-
+    it('exportOverdueInvoices delegates to requestExport (no input)', async () => {
       const result = await caller.report.exportOverdueInvoices();
 
-      expect(result).toHaveProperty('data');
-      expect(result.filename).toMatch(/^overdue-invoices-\d{4}-\d{2}-\d{2}\.csv$/);
-      expect(mockGenerateInvoicesCsv).toHaveBeenCalledTimes(1);
-
-      // Verify where clause for overdue: dueDate < now, not PAID
-      const call = mockPrisma.invoice.findMany.mock.calls[0]?.[0];
-      expect(call?.where).toHaveProperty('organizationId', ORG_ID);
-      expect(call?.where.paymentStatus).toEqual({ notIn: ['PAID'] });
+      expect(result).toEqual({ exportId: expect.stringMatching(/^exp_/), status: 'PENDING' });
+      expect(mockRequestExport).toHaveBeenCalledWith(
+        expect.objectContaining({
+          organizationId: ORG_ID,
+          type: 'overdue-invoices',
+        }),
+      );
     });
 
-    it('exportComplianceGaps returns base64 CSV', async () => {
-      mockPrisma.contractor.findMany.mockResolvedValue([
-        {
-          id: 'c-1',
-          legalName: 'Problem Corp',
-          complianceItems: [],
-          contracts: [],
-          _count: { complianceItems: 2 },
-        },
-      ]);
-
+    it('exportComplianceGaps delegates to requestExport (no input)', async () => {
       const result = await caller.report.exportComplianceGaps();
 
-      expect(result).toHaveProperty('data');
-      expect(result.filename).toMatch(/^compliance-gaps-\d{4}-\d{2}-\d{2}\.csv$/);
-      expect(mockGenerateComplianceCsv).toHaveBeenCalledTimes(1);
-
-      // Verify only non-green items are passed to CSV
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const csvArg = (mockGenerateComplianceCsv.mock.calls as unknown)[0]?.[0];
-      expect(csvArg).toHaveLength(1);
-      expect(csvArg[0]).toHaveProperty('health', 'red');
+      expect(result).toEqual({ exportId: expect.stringMatching(/^exp_/), status: 'PENDING' });
+      expect(mockRequestExport).toHaveBeenCalledWith(
+        expect.objectContaining({
+          organizationId: ORG_ID,
+          type: 'compliance-gaps',
+        }),
+      );
     });
   });
 });
