@@ -101,7 +101,21 @@ vi.mock('../app-email.js', () => ({
 // Import after mocks
 // ---------------------------------------------------------------------------
 
-import { routeStripeEvent } from '../billing-webhook.js';
+import { dispatchStripeWebhookNotifications, routeStripeEvent } from '../billing-webhook.js';
+
+/**
+ * Phase-2 wrapper: `routeStripeEvent` now returns a `NotificationEvent[]`
+ * and the caller (webhook handler) is responsible for dispatching them
+ * AFTER the Stripe Serializable tx commits. This helper preserves the
+ * legacy "route + dispatch" semantics tests originally exercised.
+ */
+async function routeAndDispatch(
+  event: Stripe.Event,
+  tx: ReturnType<typeof createMockTx>,
+): Promise<void> {
+  const pending = await routeStripeEvent(event, tx);
+  await dispatchStripeWebhookNotifications(pending);
+}
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -280,7 +294,7 @@ describe('billing-webhook', () => {
 
       const event = makeEvent('customer.subscription.trial_will_end', makeSubscription());
 
-      await routeStripeEvent(event, tx);
+      await routeAndDispatch(event, tx);
 
       expect(mockDispatch).toHaveBeenCalledWith(expect.objectContaining({ type: 'TRIAL_ENDING' }));
     });
@@ -288,7 +302,9 @@ describe('billing-webhook', () => {
     it('does not throw on unhandled event type', async () => {
       const event = makeEvent('some.unknown.event', {});
 
-      await expect(routeStripeEvent(event, tx)).resolves.toBeUndefined();
+      // F-ASYNC-13: routeStripeEvent now returns NotificationEvent[]; for
+      // unhandled events it must resolve with an empty array.
+      await expect(routeStripeEvent(event, tx)).resolves.toEqual([]);
     });
   });
 
@@ -664,7 +680,7 @@ describe('billing-webhook', () => {
 
       const event = makeEvent('customer.subscription.trial_will_end', makeSubscription());
 
-      await routeStripeEvent(event, tx);
+      await routeAndDispatch(event, tx);
 
       expect(mockDispatch).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -714,7 +730,7 @@ describe('billing-webhook', () => {
 
       const event = makeEvent('customer.subscription.trial_will_end', makeSubscription());
 
-      await routeStripeEvent(event, tx);
+      await routeAndDispatch(event, tx);
 
       // Dispatch should still happen
       expect(mockDispatch).toHaveBeenCalled();
@@ -750,7 +766,7 @@ describe('billing-webhook', () => {
     it('dispatches in-app notification and sends email to admins', async () => {
       const event = makeEvent('invoice.payment_failed', makeInvoice());
 
-      await routeStripeEvent(event, tx);
+      await routeAndDispatch(event, tx);
 
       expect(mockDispatch).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -804,7 +820,7 @@ describe('billing-webhook', () => {
 
       const event = makeEvent('invoice.payment_failed', makeInvoice());
 
-      await routeStripeEvent(event, tx);
+      await routeAndDispatch(event, tx);
 
       expect(mockDispatch).toHaveBeenCalled();
       expect(mockEmailSend).not.toHaveBeenCalled();
@@ -1004,7 +1020,7 @@ describe('billing-webhook', () => {
 
       const event = makeEvent('invoice.payment_action_required', makeInvoice());
 
-      await routeStripeEvent(event, tx);
+      await routeAndDispatch(event, tx);
 
       expect(mockDispatch).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -1177,7 +1193,7 @@ describe('billing-webhook', () => {
 
       const event = makeEvent('customer.subscription.updated', makeSubscription());
 
-      await routeStripeEvent(event, tx);
+      await routeAndDispatch(event, tx);
 
       expect(mockDispatch).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -1193,7 +1209,7 @@ describe('billing-webhook', () => {
 
       const event = makeEvent('customer.subscription.updated', makeSubscription());
 
-      await routeStripeEvent(event, tx);
+      await routeAndDispatch(event, tx);
 
       expect(mockDispatch).not.toHaveBeenCalled();
     });
