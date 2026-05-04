@@ -13,6 +13,7 @@ import type { TenantScopedDb } from '../../lib/tenant-db.js';
 import { requirePermission } from '../../middleware/rbac.js';
 import { tenantProcedure } from '../../middleware/tenant.js';
 import { requireTier } from '../../middleware/tier.js';
+import { writeAuditLog } from '../../services/audit-writer.js';
 import { detectScopeExpansionNeeded } from '../../services/jira-issue-sync.js';
 import { getStatusMapping, saveStatusMapping } from '../../services/jira-status-mapping.js';
 import {
@@ -488,6 +489,20 @@ export const jiraRouter = router({
       await ctx.db.integrationConnection.update({
         where: { id: connection.id },
         data: { status: 'DISCONNECTED' },
+      });
+
+      // F-OBS-05 — disconnecting Jira tears down OAuth grant and webhook
+      // sync; admins must be able to retrace.
+      await writeAuditLog({
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user?.id ?? null,
+        action: 'INTEGRATION_DISCONNECT',
+        resourceType: 'ORGANIZATION',
+        resourceId: ctx.organizationId,
+        oldValues: { provider: 'JIRA', status: connection.status },
+        newValues: { status: 'DISCONNECTED' },
+        metadata: { connectionId: connection.id },
       });
 
       return { success: true };
