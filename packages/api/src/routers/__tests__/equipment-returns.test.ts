@@ -45,9 +45,11 @@ const { mockPrisma, mockInPostCreateShipment, mockDispatch } = vi.hoisted(() => 
     },
     shipment: {
       create: vi.fn(),
+      createMany: vi.fn(async () => ({ count: 0 })),
     },
     shipmentEvent: {
       create: vi.fn(),
+      createMany: vi.fn(async () => ({ count: 0 })),
     },
     equipment: {
       update: vi.fn(),
@@ -100,6 +102,20 @@ vi.mock('@contractor-ops/db', () => ({
   createTenantClient: vi.fn(() => mockPrisma),
   createTenantClientFrom: vi.fn(() => mockPrisma),
   getRegionalClient: vi.fn(() => mockPrisma),
+}));
+
+// F-DB-03 / F-SEC-12 — org-cache must report ACTIVE so tenant middleware
+// does not throw orgSuspended.
+vi.mock('../../services/org-cache.js', () => ({
+  getOrgMeta: vi.fn(async (orgId: string) => ({
+    id: orgId,
+    dataRegion: 'EU',
+    status: 'ACTIVE',
+    name: 'Test Org',
+  })),
+  invalidateOrgMeta: vi.fn(async () => undefined),
+  ORG_META_TTL_SECONDS: 300,
+  orgMetaKey: (orgId: string) => `org:${orgId}:meta`,
 }));
 
 vi.mock('../../services/courier/inpost-client.js', () => ({
