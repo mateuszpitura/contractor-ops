@@ -77,6 +77,20 @@ vi.mock('@contractor-ops/db', () => ({
   createTenantClientFrom: vi.fn((client: unknown) => client),
 }));
 
+// P2-C/F-DB-03 — getOrgMeta uses services/cache.ts which speaks to Upstash
+// Redis. minimalServerEnv sets placeholder Upstash URL/token so the real
+// client tries an HTTP call and hangs the test. Bypass cache → fn() to keep
+// tests fast and deterministic.
+vi.mock('../../services/cache.js', () => ({
+  cacheKey: vi.fn((...s: string[]) => s.join(':')),
+  cached: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
+  cachedSingleflight: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
+  invalidate: vi.fn(async () => undefined),
+  invalidateByPrefix: vi.fn(async () => undefined),
+  CacheKeys: {},
+  CacheTTL: {},
+}));
+
 import { t } from '../../init.js';
 import { tenantProcedure } from '../tenant.js';
 import { enterpriseProcedure, proProcedure, requireTier } from '../tier.js';
