@@ -3,6 +3,13 @@
 import { NextRequest } from 'next/server';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+// F-ASYNC-06 — the cron now runs everything inside a `prismaRaw.$transaction`
+// guarded by a Postgres advisory lock (`pg_try_advisory_xact_lock`). The
+// transaction is awaited and the dispatch fan-out only fires when the lock
+// is acquired. These tests mock the raw transaction wrapper to a pass-through
+// that returns whatever the inner callback returns, while the inner
+// `tx.$queryRawUnsafe` returns `acquired: true` so the rule walk runs.
+
 const {
   mockReminderFindMany,
   mockWorkflowTaskFindMany,
@@ -11,6 +18,9 @@ const {
   mockReminderInstanceFindFirst,
   mockReminderInstanceCreate,
   mockReminderInstanceUpdateMany,
+  mockDispatch,
+  mockTxQueryRawUnsafe,
+  mockTransaction,
 } = vi.hoisted(() => ({
   mockReminderFindMany: vi.fn(),
   mockWorkflowTaskFindMany: vi.fn(),
@@ -19,6 +29,9 @@ const {
   mockReminderInstanceFindFirst: vi.fn(),
   mockReminderInstanceCreate: vi.fn(),
   mockReminderInstanceUpdateMany: vi.fn(),
+  mockDispatch: vi.fn(),
+  mockTxQueryRawUnsafe: vi.fn(),
+  mockTransaction: vi.fn(),
 }));
 
 vi.mock('@contractor-ops/db', () => ({
@@ -41,13 +54,15 @@ vi.mock('@contractor-ops/db', () => ({
     notification: {
       findFirst: mockNotificationFindFirst,
     },
+    member: { findMany: vi.fn().mockResolvedValue([]) },
+    notificationCronDedup: {
+      create: vi.fn().mockResolvedValue({}),
+    },
   },
   prismaRaw: {
+    $transaction: mockTransaction,
     statusfeststellungsverfahren: {
       findMany: vi.fn().mockResolvedValue([]),
-    },
-    notification: {
-      findFirst: vi.fn().mockResolvedValue(null),
     },
   },
 }));
@@ -83,9 +98,20 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
 
 import { GET } from '../route';
 
-const { mockDispatch } = vi.hoisted(() => ({
-  mockDispatch: vi.fn(),
-}));
+/**
+ * The shape `prismaRaw.$transaction(fn)` uses: invoke `fn(tx)` and return
+ * whatever it resolves to. The `tx` proxy here only needs to expose the
+ * advisory-lock query path the route hits — `$queryRawUnsafe`. Configure the
+ * default to return `acquired: true` so the cron walks the rule set.
+ */
+function installTransactionPassThrough(acquired = true) {
+  mockTxQueryRawUnsafe.mockResolvedValue([{ acquired }]);
+  mockTransaction.mockImplementation(
+    async <T,>(fn: (tx: { $queryRawUnsafe: typeof mockTxQueryRawUnsafe }) => Promise<T>) => {
+      return fn({ $queryRawUnsafe: mockTxQueryRawUnsafe });
+    },
+  );
+}
 
 describe('GET /api/cron/reminders', () => {
   beforeEach(() => {
@@ -98,6 +124,7 @@ describe('GET /api/cron/reminders', () => {
     mockReminderInstanceCreate.mockResolvedValue({});
     mockReminderInstanceUpdateMany.mockResolvedValue({ count: 1 });
     mockDispatch.mockResolvedValue(undefined);
+    installTransactionPassThrough(true);
   });
 
   afterEach(() => {
@@ -105,7 +132,7 @@ describe('GET /api/cron/reminders', () => {
   });
 
   it('returns 401 when CRON_SECRET is set but Authorization is wrong', async () => {
-    process.env.CRON_SECRET = 'secret-cron';
+    process.env.CRON_SECRET = 'reminders-secret-16chars';
     const req = new NextRequest('http://localhost/api/cron/reminders', {
       headers: { authorization: 'Bearer wrong' },
     });
@@ -120,10 +147,10 @@ describe('GET /api/cron/reminders', () => {
     expect(res.status).toBe(401);
   });
 
-  it('returns 200 with payload when Bearer token matches CRON_SECRET', async () => {
-    process.env.CRON_SECRET = 'good-secret';
+  it('returns 200 with empty payload when Bearer token matches CRON_SECRET', async () => {
+    process.env.CRON_SECRET = 'reminders-secret-16chars';
     const req = new NextRequest('http://localhost/api/cron/reminders', {
-      headers: { authorization: 'Bearer good-secret' },
+      headers: { authorization: 'Bearer reminders-secret-16chars' },
     });
     const res = await GET(req);
     expect(res.status).toBe(200);
@@ -132,13 +159,42 @@ describe('GET /api/cron/reminders', () => {
       sent: number;
       overdueTasksNotified: number;
       drvExpiriesNotified: number;
+      skipped: boolean;
     };
     expect(json).toMatchObject({
       processed: 0,
       sent: 0,
       overdueTasksNotified: 0,
       drvExpiriesNotified: 0,
+      skipped: false,
     });
+    // Advisory lock query must be issued exactly once per tick.
+    expect(mockTxQueryRawUnsafe).toHaveBeenCalledWith(
+      expect.stringContaining('pg_try_advisory_xact_lock'),
+      'cron:reminders',
+    );
+  });
+
+  it('skips dispatch when another tick already holds the advisory lock', async () => {
+    installTransactionPassThrough(false);
+
+    process.env.CRON_SECRET = 'reminders-secret-16chars';
+    const req = new NextRequest('http://localhost/api/cron/reminders', {
+      headers: { authorization: 'Bearer reminders-secret-16chars' },
+    });
+    const res = await GET(req);
+    expect(res.status).toBe(200);
+    const json = (await res.json()) as {
+      processed: number;
+      sent: number;
+      skipped: boolean;
+    };
+    expect(json.skipped).toBe(true);
+    expect(json.processed).toBe(0);
+    expect(json.sent).toBe(0);
+    // When the lock isn't acquired, the rule walk MUST NOT run.
+    expect(mockReminderFindMany).not.toHaveBeenCalled();
+    expect(mockDispatch).not.toHaveBeenCalled();
   });
 
   it('evaluates BEFORE_CONTRACT_END rule: creates instance, dispatches, marks SENT', async () => {
@@ -167,9 +223,9 @@ describe('GET /api/cron/reminders', () => {
       },
     ]);
 
-    process.env.CRON_SECRET = 'good-secret';
+    process.env.CRON_SECRET = 'reminders-secret-16chars';
     const req = new NextRequest('http://localhost/api/cron/reminders', {
-      headers: { authorization: 'Bearer good-secret' },
+      headers: { authorization: 'Bearer reminders-secret-16chars' },
     });
     const res = await GET(req);
     expect(res.status).toBe(200);
@@ -224,10 +280,10 @@ describe('GET /api/cron/reminders', () => {
 
     mockReminderInstanceFindFirst.mockResolvedValue({ id: 'existing-instance' });
 
-    process.env.CRON_SECRET = 'good-secret';
+    process.env.CRON_SECRET = 'reminders-secret-16chars';
     const res = await GET(
       new NextRequest('http://localhost/api/cron/reminders', {
-        headers: { authorization: 'Bearer good-secret' },
+        headers: { authorization: 'Bearer reminders-secret-16chars' },
       }),
     );
     const json = (await res.json()) as { processed: number; sent: number };
