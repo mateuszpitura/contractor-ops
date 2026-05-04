@@ -1,9 +1,11 @@
+import { getBaseLoggerOptions } from '@contractor-ops/logger';
 import pino from 'pino';
 import { PrismaClient } from '../../src/generated/prisma/client/client.js';
 import { seedTaxRates } from './tax-rates.js';
 import { seedWhtRates } from './wht-rates.js';
 
-const log = pino({ level: process.env.LOG_LEVEL ?? 'info' });
+// F-OBS-12 — share baseOptions with the rest of the app (PII redact + ISO time).
+const log = pino({ ...getBaseLoggerOptions(), name: 'prisma-seed' });
 const prisma = new PrismaClient();
 
 async function main() {

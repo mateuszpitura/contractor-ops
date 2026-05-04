@@ -31,10 +31,13 @@ import {
 import { tmpdir } from 'node:os';
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { getBaseLoggerOptions } from '@contractor-ops/logger';
 import { config } from 'dotenv';
 import pino from 'pino';
 
-const log = pino({ level: process.env.LOG_LEVEL ?? 'info' });
+// F-OBS-12 — use shared baseOptions so the script keeps the same PII redact,
+// timestamps, and level config as the rest of the app instead of drifting.
+const log = pino({ ...getBaseLoggerOptions(), name: 'check-generated-drift' });
 
 // biome-ignore lint/style/useNamingConvention: standard ESM __dirname polyfill
 const __dirname = dirname(fileURLToPath(import.meta.url));

@@ -22,10 +22,12 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { EngagementContext, Jurisdiction } from '@contractor-ops/compliance-policy';
 import { POLICY_RULE_SET_VERSION, resolvePolicyRules } from '@contractor-ops/compliance-policy';
+import { getBaseLoggerOptions } from '@contractor-ops/logger';
 import { config } from 'dotenv';
 import pino from 'pino';
 
-const log = pino({ level: process.env.LOG_LEVEL ?? 'info' });
+// F-OBS-12 — share baseOptions with the rest of the app (PII redact + ISO time).
+const log = pino({ ...getBaseLoggerOptions(), name: 'backfill-compliance-policy' });
 
 // biome-ignore lint/style/useNamingConvention: standard Node.js __dirname polyfill for ESM
 const __dirname = dirname(fileURLToPath(import.meta.url));

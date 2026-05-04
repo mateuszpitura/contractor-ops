@@ -47,6 +47,25 @@ const baseOptions: LoggerOptions = {
   },
 };
 
+/**
+ * Returns a *copy* of the shared Pino base options used by the root logger.
+ *
+ * F-OBS-12 — standalone scripts (`packages/db/scripts/*`, prisma seed) and
+ * the worker-cron `.mjs` previously called `pino({ level })` with no PII
+ * redact, no ISO timestamp, and no shared mixin, which let scripts drift
+ * away from the rest of the app's log shape. They should use this factory
+ * so PII redact + level config + mixins stay in lockstep.
+ *
+ * Returned object is a shallow clone — callers may extend `redact.paths`
+ * without mutating the shared list.
+ */
+export function getBaseLoggerOptions(): LoggerOptions {
+  return {
+    ...baseOptions,
+    redact: { paths: [...PII_MASK_PATHS], censor: '[REDACTED]' },
+  };
+}
+
 export {
   getIdpAuditLogger,
   IDP_AUDIT_ALLOWED_FIELDS,
