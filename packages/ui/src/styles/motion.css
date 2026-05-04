@@ -1,0 +1,42 @@
+/*
+ * @contractor-ops/ui — Motion baseline
+ *
+ * The universal `prefers-reduced-motion` rule that disables all
+ * animation, transition, and smooth scrolling. Applied via `*` so any
+ * element honoring an `animation` or `transition` property is covered,
+ * regardless of which app or which feature defined it.
+ *
+ * App-specific overrides (e.g. atelier-hero-glow text-shadow → none,
+ * gradient-text fill swap) live in each app's globals.css and
+ * follow this rule via the cascade.
+ *
+ * Per WCAG 2.3.3, this rule is the floor — every animated primitive
+ * we ship in @contractor-ops/ui must layer additional reduced-motion
+ * behavior (jump to final state, drop pulses, etc.) on top of it.
+ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ─── Print ─────────────────────────────────────────────────────────── */
+
+/*
+ * Print also halts animation. Decorative orbs, shimmer sweeps, and
+ * pulses must not appear on paper.
+ */
+@media print {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

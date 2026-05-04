@@ -1,0 +1,127 @@
+/*
+ * @contractor-ops/ui — Glass morphism tiers
+ *
+ * Frosted-surface utilities for layered hierarchies. Three tiers of
+ * intensity (subtle / medium / heavy) plus the V2 Atelier dashboard
+ * variant. All four collapse to solid surfaces under
+ * `prefers-reduced-transparency: reduce` and `@media print`.
+ *
+ * Per Workbench tier rules in docs/UI-ATELIER-WORKPLAN.md §3.3:
+ *   - glass-subtle:  topbar, sidebar, dropdown bg
+ *   - glass-medium:  cards, modals (matches atelier-glass)
+ *   - glass-heavy:   hero panels, feature spotlights, overlays — Exhibition only on persistent surfaces
+ *   - atelier-glass: V2 dashboard cards (synonymous with glass-medium for now)
+ *
+ * Never apply to elements repeated >20× per page (e.g. table rows) —
+ * `backdrop-filter` is not free at scale.
+ */
+
+/* ─── Tier 0: Atelier Glass (V2 dashboard) ────────────────────────────── */
+
+.atelier-glass {
+  background: color-mix(in oklch, var(--card) 72%, transparent);
+  backdrop-filter: blur(32px) saturate(1.5);
+  -webkit-backdrop-filter: blur(32px) saturate(1.5);
+  border: 1px solid color-mix(in oklch, var(--foreground) 6%, transparent);
+  box-shadow:
+    0 1px 2px oklch(0 0 0 / 4%),
+    0 8px 24px oklch(0 0 0 / 4%),
+    inset 0 1px 0 color-mix(in oklch, white 8%, transparent);
+}
+
+.dark .atelier-glass {
+  background: oklch(1 0 0 / 3.5%);
+  border: 1px solid oklch(1 0 0 / 7%);
+  box-shadow:
+    0 1px 2px oklch(0 0 0 / 15%),
+    0 8px 24px oklch(0 0 0 / 20%),
+    inset 0 1px 0 oklch(1 0 0 / 5%);
+}
+
+/* ─── Tier 1: Subtle frost — top bar, sidebars, dropdown backgrounds ── */
+
+.glass-subtle {
+  background: color-mix(in oklch, var(--surface-1) 75%, transparent);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  border: 1px solid color-mix(in oklch, var(--foreground) 5%, transparent);
+  box-shadow: var(--elevation-sm);
+}
+
+.dark .glass-subtle {
+  background: oklch(1 0 0 / 4%);
+  border: 1px solid oklch(1 0 0 / 7%);
+  box-shadow: var(--elevation-sm);
+}
+
+/* ─── Tier 2: Medium frost — cards, modals (matches atelier-glass) ──── */
+
+.glass-medium {
+  background: color-mix(in oklch, var(--surface-1) 72%, transparent);
+  backdrop-filter: blur(32px) saturate(1.5);
+  -webkit-backdrop-filter: blur(32px) saturate(1.5);
+  border: 1px solid color-mix(in oklch, var(--foreground) 6%, transparent);
+  box-shadow: var(--elevation-md);
+}
+
+.dark .glass-medium {
+  background: oklch(1 0 0 / 3.5%);
+  border: 1px solid oklch(1 0 0 / 7%);
+}
+
+/* ─── Tier 3: Heavy frost — hero panels, feature spotlights, overlays ── */
+
+.glass-heavy {
+  background: color-mix(in oklch, var(--surface-1) 60%, transparent);
+  backdrop-filter: blur(48px) saturate(1.8);
+  -webkit-backdrop-filter: blur(48px) saturate(1.8);
+  border: 1px solid color-mix(in oklch, var(--foreground) 8%, transparent);
+  box-shadow:
+    var(--elevation-lg),
+    inset 0 1px 0 color-mix(in oklch, white 10%, transparent);
+}
+
+.dark .glass-heavy {
+  background: oklch(1 0 0 / 5%);
+  border: 1px solid oklch(1 0 0 / 10%);
+  box-shadow:
+    var(--elevation-lg),
+    inset 0 1px 0 oklch(1 0 0 / 6%);
+}
+
+/* ─── Reduced Transparency ──────────────────────────────────────────── */
+
+/*
+ * Honors macOS / Windows "Reduce transparency" accessibility settings.
+ * All glass tiers fall back to solid --surface-1 with no backdrop-filter
+ * cost; layout and color hierarchy stay intact.
+ */
+@media (prefers-reduced-transparency: reduce) {
+  .atelier-glass,
+  .glass-subtle,
+  .glass-medium,
+  .glass-heavy {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: var(--surface-1);
+  }
+}
+
+/* ─── Print ────────────────────────────────────────────────────────── */
+
+/*
+ * Glass on print = noise. Fall back to a clean solid surface so invoices,
+ * contracts, and reports print as documents, not screenshots.
+ */
+@media print {
+  .atelier-glass,
+  .glass-subtle,
+  .glass-medium,
+  .glass-heavy {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: white;
+    border: 1px solid oklch(0.85 0.005 85);
+    box-shadow: none;
+  }
+}

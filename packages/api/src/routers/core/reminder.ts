@@ -9,6 +9,7 @@ import * as E from '../../errors.js';
 import { router } from '../../init.js';
 import { requirePermission } from '../../middleware/rbac.js';
 import { tenantProcedure } from '../../middleware/tenant.js';
+import { writeAuditLog } from '../../services/audit-writer.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -54,6 +55,26 @@ export const reminderRouter = router({
         },
       });
 
+      // F-OBS-05 — reminder rules drive automated outbound notifications;
+      // changes affect customer-facing communications.
+      await writeAuditLog({
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user?.id ?? null,
+        action: 'REMINDER_RULE_CREATE',
+        resourceType: 'ORGANIZATION',
+        resourceId: ctx.organizationId,
+        newValues: {
+          ruleId: rule.id,
+          name: rule.name,
+          entityType: rule.entityType,
+          triggerType: rule.triggerType,
+          channel: rule.channel,
+          active: rule.active,
+        },
+        metadata: { ruleId: rule.id },
+      });
+
       return rule;
     }),
 
@@ -83,6 +104,29 @@ export const reminderRouter = router({
           ...data,
           configJson: data.configJson ? JSON.parse(JSON.stringify(data.configJson)) : undefined,
         },
+      });
+
+      // F-OBS-05 — rule edits change which contractors get notified + when.
+      await writeAuditLog({
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user?.id ?? null,
+        action: 'REMINDER_RULE_UPDATE',
+        resourceType: 'ORGANIZATION',
+        resourceId: ctx.organizationId,
+        oldValues: {
+          name: existing.name,
+          active: existing.active,
+          channel: existing.channel,
+          triggerType: existing.triggerType,
+        },
+        newValues: {
+          name: updated.name,
+          active: updated.active,
+          channel: updated.channel,
+          triggerType: updated.triggerType,
+        },
+        metadata: { ruleId: updated.id },
       });
 
       return updated;
@@ -115,6 +159,24 @@ export const reminderRouter = router({
         });
 
         await tx.reminderRule.delete({ where: { id: input.id } });
+      });
+
+      // F-OBS-05 — rule deletion silences future notifications; auditable.
+      await writeAuditLog({
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user?.id ?? null,
+        action: 'REMINDER_RULE_DELETE',
+        resourceType: 'ORGANIZATION',
+        resourceId: ctx.organizationId,
+        oldValues: {
+          ruleId: existing.id,
+          name: existing.name,
+          entityType: existing.entityType,
+          triggerType: existing.triggerType,
+          channel: existing.channel,
+        },
+        metadata: { ruleId: existing.id },
       });
 
       return { success: true };

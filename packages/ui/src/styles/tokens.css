@@ -1,0 +1,165 @@
+/*
+ * @contractor-ops/ui — Shared design tokens
+ *
+ * The intersection of tokens used by every contractor-ops surface
+ * (apps/web and apps/landing). App-specific extensions and dark-mode
+ * surface families live in each app's own globals.css and override
+ * what's defined here via the cascade.
+ *
+ * Color format: OKLCh — perceptual uniformity + wide-gamut support.
+ * Naming: semantic, not literal — `--primary`, not `--teal-600`.
+ */
+
+/* ─── Light Mode ──────────────────────────────────────────────────────── */
+
+:root {
+  /* Backgrounds — warm off-white, not sterile */
+  --background: oklch(0.985 0.003 85);
+  --foreground: oklch(0.165 0.015 260);
+
+  /* Card — pure white to lift against warm base */
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.165 0.015 260);
+
+  /* Primary — Deep Teal: professional, distinctive, financial trust */
+  --primary: oklch(0.44 0.145 178);
+  --primary-foreground: oklch(0.985 0 0);
+
+  /* Secondary — warm light */
+  --secondary: oklch(0.955 0.005 85);
+  --secondary-foreground: oklch(0.22 0.015 260);
+
+  /* Muted — cool-tinted for interface chrome */
+  --muted: oklch(0.955 0.004 250);
+  --muted-foreground: oklch(0.5 0.01 260);
+
+  /* Accent — warm hover surface */
+  --accent: oklch(0.955 0.005 85);
+  --accent-foreground: oklch(0.22 0.015 260);
+
+  /* Destructive — refined crimson */
+  --destructive: oklch(0.58 0.23 18);
+  --destructive-foreground: oklch(0.985 0 0);
+
+  /* Border / Input / Ring */
+  --border: oklch(0.91 0.004 85);
+  --input: oklch(0.91 0.004 85);
+  --ring: oklch(0.44 0.145 178);
+
+  /* Radius scale */
+  --radius: 0.625rem;
+
+  /* Semantic colors */
+  --success: oklch(0.55 0.17 150);
+  --warning: oklch(0.7 0.16 65);
+  --info: oklch(0.55 0.18 260);
+
+  /* ── Warm Accent — Burnished Amber ── */
+  --accent-warm: oklch(0.72 0.14 65);
+  --accent-warm-foreground: oklch(0.18 0.02 65);
+
+  /* ── Surface Hierarchy (4 elevation levels) ── */
+  --surface-0: oklch(0.985 0.003 85);
+  --surface-1: oklch(1 0 0);
+  --surface-2: oklch(0.978 0.003 85);
+  --surface-3: oklch(0.965 0.004 85);
+
+  /* ── Teal Scale ── */
+  --teal-50: oklch(0.96 0.03 178);
+  --teal-100: oklch(0.92 0.06 178);
+  --teal-200: oklch(0.84 0.09 178);
+  --teal-300: oklch(0.75 0.12 178);
+  --teal-400: oklch(0.65 0.145 178);
+  --teal-500: oklch(0.55 0.15 178);
+  --teal-600: oklch(0.44 0.145 178);
+  --teal-700: oklch(0.36 0.12 178);
+  --teal-800: oklch(0.28 0.1 178);
+  --teal-900: oklch(0.22 0.07 178);
+  --teal-950: oklch(0.16 0.04 178);
+
+  /* ── Elevation Shadows — Light ── */
+  --elevation-xs: 0 1px 2px oklch(0 0 0 / 4%);
+  --elevation-sm: 0 1px 3px oklch(0 0 0 / 5%), 0 1px 2px oklch(0 0 0 / 3%);
+  --elevation-md: 0 4px 12px oklch(0 0 0 / 6%), 0 1px 3px oklch(0 0 0 / 4%);
+  --elevation-lg: 0 8px 30px oklch(0 0 0 / 8%), 0 2px 8px oklch(0 0 0 / 4%);
+  --elevation-xl: 0 20px 50px oklch(0 0 0 / 12%), 0 8px 20px oklch(0 0 0 / 6%);
+
+  /* ── Atelier Motion Tokens ── */
+  --ease-atelier-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-atelier-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --duration-atelier-enter: 1s;
+  --duration-atelier-shimmer: 1.2s;
+  --duration-atelier-breathe: 5s;
+}
+
+/* ─── Dark Mode (shared overrides) ────────────────────────────────────── */
+
+/*
+ * Dark mode sets foreground/primary/destructive/teal/elevation only.
+ * Surface family (--background, --card, --surface-0..3, --secondary,
+ * --muted, --accent, --border, --input) is overridden per-app because
+ * apps/web and apps/landing have intentionally different darkness levels
+ * (Workbench wants slightly elevated surfaces for legibility; Exhibition
+ * wants deeper darkness for cinematic contrast).
+ */
+.dark {
+  --foreground: oklch(0.975 0.003 85);
+  --card-foreground: oklch(0.975 0.003 85);
+
+  --primary: oklch(0.65 0.145 178);
+  --primary-foreground: oklch(0.12 0.015 260);
+
+  --secondary-foreground: oklch(0.975 0.003 85);
+  --muted-foreground: oklch(0.68 0.008 260);
+  --accent-foreground: oklch(0.975 0.003 85);
+
+  --destructive: oklch(0.68 0.18 18);
+  --destructive-foreground: oklch(0.985 0 0);
+
+  --ring: oklch(0.65 0.145 178);
+
+  /* Semantic colors — slightly brighter for dark */
+  --success: oklch(0.6 0.17 150);
+  --warning: oklch(0.78 0.16 65);
+  --info: oklch(0.6 0.18 260);
+
+  /* ── Warm Accent — brighter for dark ── */
+  --accent-warm: oklch(0.8 0.14 65);
+  --accent-warm-foreground: oklch(0.15 0.02 65);
+
+  /* Teal scale — same hues across modes */
+  --teal-50: oklch(0.96 0.03 178);
+  --teal-100: oklch(0.92 0.06 178);
+  --teal-200: oklch(0.84 0.09 178);
+  --teal-300: oklch(0.75 0.12 178);
+  --teal-400: oklch(0.65 0.145 178);
+  --teal-500: oklch(0.55 0.15 178);
+  --teal-600: oklch(0.44 0.145 178);
+  --teal-700: oklch(0.36 0.12 178);
+  --teal-800: oklch(0.28 0.1 178);
+  --teal-900: oklch(0.22 0.07 178);
+  --teal-950: oklch(0.16 0.04 178);
+
+  /* ── Elevation Shadows — Dark (deeper + inset highlight) ── */
+  --elevation-xs: 0 1px 2px oklch(0 0 0 / 15%);
+  --elevation-sm: 0 1px 3px oklch(0 0 0 / 20%), inset 0 1px 0 oklch(1 0 0 / 4%);
+  --elevation-md: 0 4px 12px oklch(0 0 0 / 25%), inset 0 1px 0 oklch(1 0 0 / 5%);
+  --elevation-lg: 0 8px 30px oklch(0 0 0 / 30%), inset 0 1px 0 oklch(1 0 0 / 5%);
+  --elevation-xl: 0 20px 50px oklch(0 0 0 / 40%), inset 0 1px 0 oklch(1 0 0 / 6%);
+}
+
+/* ─── High Contrast ─────────────────────────────────────────────────── */
+
+@media (prefers-contrast: more) {
+  :root {
+    --border: oklch(0.5 0.005 85);
+    --muted-foreground: oklch(0.35 0.01 260);
+    --input: oklch(0.5 0.005 85);
+  }
+
+  .dark {
+    --border: oklch(0.6 0.005 260);
+    --muted-foreground: oklch(0.8 0.008 260);
+    --input: oklch(0.6 0.005 260);
+  }
+}

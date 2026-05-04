@@ -1,0 +1,102 @@
+/*
+ * @contractor-ops/ui — Status variant tokens
+ *
+ * Eight semantic status variants used by AtelierStatusPill (commit
+ * group 4) and any custom status indicator. Each variant exposes:
+ *   --status-{variant}      — saturated brand color (dot, accent line, ring)
+ *   --status-{variant}-bg   — translucent tint for badge backgrounds
+ *   --status-{variant}-fg   — readable foreground at WCAG AA on the bg
+ *
+ * Domain-aware mapping (`statusToVariant(domain, status)`) lives in
+ * packages/ui/src/status/mapper.ts. CSS only defines the palette.
+ *
+ * Variants:
+ *   success    — completed, paid, approved positive states
+ *   warning    — expiring, approaching SLA, attention needed
+ *   danger     — failed, rejected, breached, overdue
+ *   info       — under review, scheduled, neutral notice
+ *   neutral    — draft, archived, undefined / not-yet-actioned
+ *   processing — running, sending, in-flight async work
+ *   blocked    — waiting on prerequisite, dependency cycle, paused
+ *   live       — real-time / streaming / currently-active states
+ */
+
+/* ─── Light Mode ──────────────────────────────────────────────────────── */
+
+:root {
+  /* success — emerald */
+  --status-success: oklch(0.55 0.17 150);
+  --status-success-bg: oklch(0.55 0.17 150 / 10%);
+  --status-success-fg: oklch(0.32 0.13 150);
+
+  /* warning — amber */
+  --status-warning: oklch(0.7 0.16 65);
+  --status-warning-bg: oklch(0.7 0.16 65 / 12%);
+  --status-warning-fg: oklch(0.4 0.13 65);
+
+  /* danger — crimson */
+  --status-danger: oklch(0.58 0.23 18);
+  --status-danger-bg: oklch(0.58 0.23 18 / 10%);
+  --status-danger-fg: oklch(0.38 0.18 18);
+
+  /* info — cyan-blue */
+  --status-info: oklch(0.55 0.18 260);
+  --status-info-bg: oklch(0.55 0.18 260 / 10%);
+  --status-info-fg: oklch(0.35 0.14 260);
+
+  /* neutral — graphite */
+  --status-neutral: oklch(0.5 0.01 260);
+  --status-neutral-bg: oklch(0.5 0.01 260 / 10%);
+  --status-neutral-fg: oklch(0.3 0.01 260);
+
+  /* processing — violet */
+  --status-processing: oklch(0.55 0.2 290);
+  --status-processing-bg: oklch(0.55 0.2 290 / 10%);
+  --status-processing-fg: oklch(0.35 0.15 290);
+
+  /* blocked — desaturated rust */
+  --status-blocked: oklch(0.5 0.12 25);
+  --status-blocked-bg: oklch(0.5 0.12 25 / 10%);
+  --status-blocked-fg: oklch(0.32 0.09 25);
+
+  /* live — vivid emerald (more saturated than success) */
+  --status-live: oklch(0.65 0.2 150);
+  --status-live-bg: oklch(0.65 0.2 150 / 12%);
+  --status-live-fg: oklch(0.32 0.13 150);
+}
+
+/* ─── Dark Mode ─────────────────────────────────────────────────────── */
+
+.dark {
+  --status-success: oklch(0.65 0.18 150);
+  --status-success-bg: oklch(0.65 0.18 150 / 14%);
+  --status-success-fg: oklch(0.78 0.16 150);
+
+  --status-warning: oklch(0.78 0.16 65);
+  --status-warning-bg: oklch(0.78 0.16 65 / 16%);
+  --status-warning-fg: oklch(0.85 0.14 65);
+
+  --status-danger: oklch(0.68 0.18 18);
+  --status-danger-bg: oklch(0.68 0.18 18 / 14%);
+  --status-danger-fg: oklch(0.82 0.15 18);
+
+  --status-info: oklch(0.65 0.18 260);
+  --status-info-bg: oklch(0.65 0.18 260 / 14%);
+  --status-info-fg: oklch(0.8 0.15 260);
+
+  --status-neutral: oklch(0.68 0.008 260);
+  --status-neutral-bg: oklch(0.68 0.008 260 / 12%);
+  --status-neutral-fg: oklch(0.85 0.005 260);
+
+  --status-processing: oklch(0.7 0.18 290);
+  --status-processing-bg: oklch(0.7 0.18 290 / 14%);
+  --status-processing-fg: oklch(0.82 0.16 290);
+
+  --status-blocked: oklch(0.6 0.12 25);
+  --status-blocked-bg: oklch(0.6 0.12 25 / 14%);
+  --status-blocked-fg: oklch(0.78 0.1 25);
+
+  --status-live: oklch(0.72 0.2 150);
+  --status-live-bg: oklch(0.72 0.2 150 / 16%);
+  --status-live-fg: oklch(0.85 0.16 150);
+}
