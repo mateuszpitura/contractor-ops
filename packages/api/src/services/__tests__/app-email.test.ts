@@ -78,7 +78,30 @@ describe('sendAppEmail', () => {
         subject: 'Subject',
         html: '<p>hello</p>',
       }),
+      expect.objectContaining({
+        idempotencyKey: expect.stringMatching(/^email:/),
+      }),
     );
     expect(mockCreateTransport).not.toHaveBeenCalled();
+  });
+
+  it('threads explicit idempotencyKey to Resend (F-INT-04)', async () => {
+    await sendAppEmail({
+      from: 'from@test.com',
+      to: 'to@test.com',
+      subject: 'Subject',
+      html: '<p>hello</p>',
+      idempotencyKey: 'notification:abc123',
+    });
+
+    expect(mockResendSend).toHaveBeenCalledWith(
+      expect.objectContaining({
+        from: 'from@test.com',
+        to: 'to@test.com',
+        subject: 'Subject',
+        html: '<p>hello</p>',
+      }),
+      { idempotencyKey: 'notification:abc123' },
+    );
   });
 });
