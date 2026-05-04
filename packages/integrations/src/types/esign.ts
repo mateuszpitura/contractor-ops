@@ -38,10 +38,20 @@ export interface SigningEnvelopeResult {
 
 /**
  * Result containing an embedded signing URL (e.g., DocuSign recipient view).
+ *
+ * F-INT-16: DocuSign recipient-view URLs are short-lived — the URL is
+ * single-use and account policies cap validity to ~5 minutes by default.
+ * Callers MUST treat `expiresAt` as authoritative and re-issue via
+ * `getEmbeddedSigningUrl` (or the provider-specific re-issue method) when
+ * within the safety margin. `ttlSeconds` is surfaced for clients that
+ * want to schedule a refresh before the absolute expiry tips over.
  */
 export interface EmbeddedSigningUrlResult {
   url: string;
+  /** ISO 8601 timestamp marking the latest moment the URL is valid. */
   expiresAt?: string;
+  /** Documented validity window in seconds from issuance. */
+  ttlSeconds?: number;
 }
 
 /**

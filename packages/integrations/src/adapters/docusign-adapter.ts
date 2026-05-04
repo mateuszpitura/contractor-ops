@@ -381,6 +381,25 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
     };
   }
 
+  /**
+   * F-INT-16 — Default TTL for DocuSign recipient-view URLs. DocuSign's
+   * account-default is 5 minutes (300s) for the embedded recipient view,
+   * with the URL becoming invalid after first redirect or after the TTL
+   * elapses (whichever is first). Account admins can shorten this via the
+   * "Recipient URL TTL" account setting; we surface a conservative default
+   * so the UI can schedule a refresh before expiry.
+   *
+   * Operators with non-default account TTL configuration may override via
+   * the `DOCUSIGN_EMBEDDED_URL_TTL_SECONDS` env var.
+   */
+  private getEmbeddedUrlTtlSeconds(): number {
+    const raw = process.env.DOCUSIGN_EMBEDDED_URL_TTL_SECONDS;
+    if (!raw) return 300;
+    const parsed = Number.parseInt(raw, 10);
+    if (Number.isFinite(parsed) && parsed > 0 && parsed <= 3_600) return parsed;
+    return 300;
+  }
+
   async getEmbeddedSigningUrl(
     connectionId: string,
     envelopeId: string,
@@ -413,14 +432,35 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
       },
     );
 
-    // DocuSign does not return a TTL for recipient view URLs (the URL is
-    // single-use and account policies can shorten/extend the validity
-    // window). Returning a fabricated 5-minute expiry would mislead the UI
-    // into trusting a stale URL — instead we omit `expiresAt` and let the
-    // caller request a fresh URL on first use.
+    // F-INT-16 — Surface a conservative TTL so callers can schedule a
+    // re-issue before the URL goes stale (DocuSign's account default is
+    // 5 minutes; the URL is single-use either way). Callers should treat
+    // the returned URL as click-time-only and call `reissueEmbeddedSigningUrl`
+    // when re-rendering signing pages after a navigation.
+    const ttlSeconds = this.getEmbeddedUrlTtlSeconds();
     return {
       url: result.url,
+      expiresAt: new Date(Date.now() + ttlSeconds * 1000).toISOString(),
+      ttlSeconds,
     };
+  }
+
+  /**
+   * F-INT-16 — Re-issue an embedded signing URL for an envelope's recipient.
+   * Convenience wrapper around `getEmbeddedSigningUrl` that callers should
+   * invoke whenever they need a fresh URL (e.g. user re-opens a signing
+   * page, the previous URL is near expiry, or DocuSign returned 410 on a
+   * stale URL). Behavior is identical to `getEmbeddedSigningUrl` — the
+   * separate name documents the intent at call sites and makes the
+   * "always re-issue at click time" pattern explicit.
+   */
+  async reissueEmbeddedSigningUrl(
+    connectionId: string,
+    envelopeId: string,
+    recipientEmail: string,
+    returnUrl: string,
+  ): Promise<EmbeddedSigningUrlResult> {
+    return this.getEmbeddedSigningUrl(connectionId, envelopeId, recipientEmail, returnUrl);
   }
 
   async getSignedDocument(connectionId: string, envelopeId: string): Promise<SignedDocumentResult> {
