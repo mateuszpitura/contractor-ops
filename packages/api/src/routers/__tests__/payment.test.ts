@@ -142,6 +142,22 @@ vi.mock('@contractor-ops/db', () => ({
   getRegionalClient: vi.fn(() => mockPrisma),
 }));
 
+// F-DB-03 — tenantMiddleware reads status/region via getOrgMeta. Stub it so
+// individual tests can override `prisma.organization.findUnique` for the
+// HANDLER's own DB lookup without inadvertently failing the F-SEC-12
+// suspended-org gate.
+vi.mock('../../services/org-cache.js', () => ({
+  getOrgMeta: vi.fn(async () => ({
+    id: 'clxxxxxxxxxxxxxxxxxxxxxxxxx',
+    dataRegion: 'EU',
+    status: 'ACTIVE',
+    name: 'Test Org',
+  })),
+  invalidateOrgMeta: vi.fn(async () => undefined),
+  ORG_META_TTL_SECONDS: 300,
+  orgMetaKey: (orgId: string) => `org:${orgId}:meta`,
+}));
+
 vi.mock('../../services/r2.js', () => ({
   maxBytesForMime: vi.fn(() => 10485760),
   MAX_BYTES_BY_MIME: { 'application/pdf': 52428800 },
