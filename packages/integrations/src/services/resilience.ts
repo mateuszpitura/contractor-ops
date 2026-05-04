@@ -72,6 +72,56 @@ export function resetResilienceForTests(): void {
   limiters.clear();
 }
 
+// ---------------------------------------------------------------------------
+// Observability surface (F-INT-23)
+// ---------------------------------------------------------------------------
+
+/**
+ * Per-provider breaker state snapshot used by the dependency-health probe.
+ * Read-only view of the in-process opossum state — does not mutate or fire
+ * the breaker. Surfaced through `health-service.getDependencyHealth()` so
+ * `/api/health` can flag the integrations layer as `DEGRADED` while a
+ * specific upstream is short-circuited.
+ */
+export interface BreakerSnapshot {
+  provider: string;
+  state: 'CLOSED' | 'OPEN' | 'HALF_OPEN';
+  stats: {
+    successes: number;
+    failures: number;
+    rejects: number;
+    timeouts: number;
+  };
+}
+
+/**
+ * Returns one snapshot per provider that has been exercised in this process.
+ * Providers that have never been called are absent (zero allocation cost
+ * by design — breakers are created lazily in `getBreaker`).
+ */
+export function getBreakerSnapshots(): BreakerSnapshot[] {
+  const out: BreakerSnapshot[] = [];
+  for (const [provider, breaker] of breakers) {
+    const state: BreakerSnapshot['state'] = breaker.opened
+      ? 'OPEN'
+      : breaker.halfOpen
+        ? 'HALF_OPEN'
+        : 'CLOSED';
+    const stats = breaker.stats;
+    out.push({
+      provider,
+      state,
+      stats: {
+        successes: stats.successes,
+        failures: stats.failures,
+        rejects: stats.rejects,
+        timeouts: stats.timeouts,
+      },
+    });
+  }
+  return out;
+}
+
 function getLimiter(provider: string, config: ProviderResilienceConfig): LimitFunction {
   let limit = limiters.get(provider);
   if (!limit) {

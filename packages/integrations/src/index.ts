@@ -49,8 +49,14 @@ export {
   isRetryableError,
 } from './services/fetch-helpers.js';
 // Health Service
+export type {
+  DependencyHealthSnapshot,
+  DependencyHealthStatus,
+  DependencyProbe,
+} from './services/health-service.js';
 export {
   getAllProviderHealth,
+  getDependencyHealth,
   getProviderHealth,
 } from './services/health-service.js';
 export type { InfisicalConfig, ZatcaSecretName } from './services/infisical-client.js';
@@ -74,8 +80,12 @@ export {
   resetQStashClient,
 } from './services/qstash-client.js';
 // Resilience layer (circuit breaker + retry + concurrency cap)
-export type { WithResilienceOptions } from './services/resilience.js';
-export { resetResilienceForTests, withResilience } from './services/resilience.js';
+export type { BreakerSnapshot, WithResilienceOptions } from './services/resilience.js';
+export {
+  getBreakerSnapshots,
+  resetResilienceForTests,
+  withResilience,
+} from './services/resilience.js';
 export type { ProviderResilienceConfig } from './services/resilience-config.js';
 export {
   DEFAULT_RESILIENCE_CONFIG,
