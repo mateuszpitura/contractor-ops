@@ -19,6 +19,7 @@ import * as E from '../../errors.js';
 import { router } from '../../init.js';
 import { requirePermission } from '../../middleware/rbac.js';
 import { tenantProcedure } from '../../middleware/tenant.js';
+import { writeAuditLog } from '../../services/audit-writer.js';
 import { syncWorkspaceUsers } from '../../services/slack-client.js';
 
 // Ensure all provider adapters are registered before any procedure runs
@@ -157,6 +158,23 @@ export const integrationRouter = router({
         },
       });
 
+      // F-OBS-05 — linking external identities expands the surface for
+      // outbound notifications and DM-based actions.
+      await writeAuditLog({
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user?.id ?? null,
+        action: 'INTEGRATION_USER_LINK',
+        resourceType: 'ORGANIZATION',
+        resourceId: ctx.organizationId,
+        newValues: {
+          provider: 'SLACK',
+          userId: input.userId,
+          externalId: input.externalId,
+          externalLinkId: link.id,
+        },
+      });
+
       return link;
     }),
 
@@ -184,6 +202,22 @@ export const integrationRouter = router({
 
       await ctx.db.externalLink.delete({
         where: { id: input.externalLinkId },
+      });
+
+      // F-OBS-05 — symmetric with INTEGRATION_USER_LINK.
+      await writeAuditLog({
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user?.id ?? null,
+        action: 'INTEGRATION_USER_UNLINK',
+        resourceType: 'ORGANIZATION',
+        resourceId: ctx.organizationId,
+        oldValues: {
+          externalLinkId: existing.id,
+          externalType: existing.externalType,
+          externalId: existing.externalId,
+          entityId: existing.entityId,
+        },
       });
 
       return { success: true };
@@ -301,6 +335,20 @@ export const integrationRouter = router({
           status: 'DISCONNECTED',
           credentialsRef: '',
         },
+      });
+
+      // F-OBS-05 — disconnect tears down the OAuth grant and stops syncing;
+      // forensics needs to see who pulled the plug + when.
+      await writeAuditLog({
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user?.id ?? null,
+        action: 'INTEGRATION_DISCONNECT',
+        resourceType: 'ORGANIZATION',
+        resourceId: ctx.organizationId,
+        oldValues: { provider: connection.provider, status: connection.status },
+        newValues: { status: 'DISCONNECTED' },
+        metadata: { connectionId: connection.id },
       });
 
       return { success: true };
