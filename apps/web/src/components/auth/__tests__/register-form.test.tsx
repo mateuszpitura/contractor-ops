@@ -35,6 +35,18 @@ vi.mock('sonner', () => ({
   toast: { error: vi.fn(), success: vi.fn() },
 }));
 
+// F-SEC-22 — Cloudflare Turnstile is conditionally rendered when
+// `NEXT_PUBLIC_TURNSTILE_SITE_KEY` is set. The component is mocked here so
+// that even if the env var is configured in CI, the widget resolves with a
+// canned token instead of trying to load Cloudflare's challenge script in
+// jsdom (which would never resolve and stall the test).
+vi.mock('@marsidev/react-turnstile', () => ({
+  Turnstile: ({ onSuccess }: { onSuccess?: (token: string) => void }) => {
+    onSuccess?.('test-turnstile-token');
+    return null;
+  },
+}));
+
 describe('RegisterForm', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -89,11 +101,13 @@ describe('RegisterForm', () => {
     await user.type(screen.getByLabelText('Password'), 'password123');
     await user.click(screen.getByRole('button', { name: 'Create organization' }));
     await waitFor(() => {
-      expect(signUpEmail).toHaveBeenCalledWith({
-        email: 'test@example.com',
-        password: 'password123',
-        name: 'test',
-      });
+      expect(signUpEmail).toHaveBeenCalledWith(
+        expect.objectContaining({
+          email: 'test@example.com',
+          password: 'password123',
+          name: 'test',
+        }),
+      );
     });
     await waitFor(() => {
       expect(organizationCreate).toHaveBeenCalledWith({
