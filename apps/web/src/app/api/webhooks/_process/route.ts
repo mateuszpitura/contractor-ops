@@ -9,6 +9,7 @@ import {
   runWithRequestContext,
 } from '@contractor-ops/logger';
 import { webhookIngressReason } from '@contractor-ops/validators';
+import * as Sentry from '@sentry/nextjs';
 import { verifySignatureAppRouter } from '@upstash/qstash/nextjs';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
@@ -207,6 +208,25 @@ async function handlerInner(request: NextRequest) {
 
     return NextResponse.json({ processed: true });
   } catch (error) {
+    // F-OBS-11 — previously, this catch persisted the truncated error.message
+    // to the DB but emitted no log line and no Sentry event, so single-event
+    // webhook failures were invisible until the dead-letter aggregate cron
+    // surfaced a count. Now we always log + Sentry-capture so the stack trace
+    // lands in Axiom and Sentry alongside the persisted DB row.
+    log.error(
+      {
+        err: error,
+        deliveryId,
+        provider,
+        organizationId: effectiveOrgId,
+      },
+      'webhook processing failed',
+    );
+    Sentry.captureException(error, {
+      tags: { 'webhook.provider': provider },
+      extra: { deliveryId, organizationId: effectiveOrgId },
+    });
+
     await prisma.webhookDelivery.update({
       where: { id: deliveryId },
       data: {
