@@ -51,21 +51,41 @@ const upstashLimiter: Ratelimit | null = hasRedis
 // entries are pruned inside `fallbackCheck` below. The prior timer was
 // decorative in serverless/edge runtimes where the module is recycled
 // frequently.
-const fallbackMap = new Map<string, { timestamps: number[] }>();
+//
+// F-SCALE-15 — entries track `lastSeenMs` and eviction is LRU (oldest
+// `lastSeenMs` first), not insertion-order FIFO. The previous FIFO
+// behaviour evicted legitimate users who happened to hit the system
+// first while preserving low-rate attackers who arrived later, which is
+// the wrong incentive direction during a Redis outage.
+type FallbackEntry = { timestamps: number[]; lastSeenMs: number };
+const fallbackMap = new Map<string, FallbackEntry>();
+
+function evictOldestLruEntry(): void {
+  let oldestKey: string | undefined;
+  let oldestSeen = Number.POSITIVE_INFINITY;
+  for (const [k, v] of fallbackMap) {
+    if (v.lastSeenMs < oldestSeen) {
+      oldestSeen = v.lastSeenMs;
+      oldestKey = k;
+    }
+  }
+  if (oldestKey) fallbackMap.delete(oldestKey);
+}
 
 function fallbackCheck(userId: string): { allowed: boolean; remaining: number } {
   const now = Date.now();
-  const entry = fallbackMap.get(userId) ?? { timestamps: [] };
+  const entry: FallbackEntry = fallbackMap.get(userId) ?? { timestamps: [], lastSeenMs: now };
 
   entry.timestamps = entry.timestamps.filter(ts => now - ts < WINDOW_MS);
+  entry.lastSeenMs = now;
 
   if (entry.timestamps.length >= MAX_UPLOADS) {
+    fallbackMap.set(userId, entry);
     return { allowed: false, remaining: 0 };
   }
 
   if (!fallbackMap.has(userId) && fallbackMap.size >= FALLBACK_MAX_MAP_ENTRIES) {
-    const oldest = fallbackMap.keys().next().value;
-    if (oldest) fallbackMap.delete(oldest);
+    evictOldestLruEntry();
   }
 
   entry.timestamps.push(now);

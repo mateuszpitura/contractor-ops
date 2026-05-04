@@ -39,7 +39,26 @@ const upstashLimiter: Ratelimit | null = hasRedis
   : null;
 
 // --- In-memory fallback ---
-const windows = new Map<string, { count: number; resetAt: number }>();
+//
+// F-SCALE-15 — entries track `lastSeenMs`; eviction at `MAX_WINDOWS` is LRU
+// (oldest `lastSeenMs` first). Previously the eviction batch was insertion-
+// order FIFO, which during a sustained Redis outage evicted legitimate
+// long-running clients before lower-rate attackers, the wrong incentive
+// direction. LRU keeps the active workload in the map.
+type RlWindow = { count: number; resetAt: number; lastSeenMs: number };
+const windows = new Map<string, RlWindow>();
+
+function evictOldestLruWindow(): void {
+  let oldestKey: string | undefined;
+  let oldestSeen = Number.POSITIVE_INFINITY;
+  for (const [k, v] of windows) {
+    if (v.lastSeenMs < oldestSeen) {
+      oldestSeen = v.lastSeenMs;
+      oldestKey = k;
+    }
+  }
+  if (oldestKey) windows.delete(oldestKey);
+}
 
 /**
  * Extracts a rate-limit key from the Authorization header.
@@ -59,24 +78,25 @@ function fallbackLimit(key: string): { allowed: boolean; remaining: number; rese
   let window = windows.get(key);
 
   if (!window || now >= window.resetAt) {
-    // Safety cap: evict expired windows if map grows too large
+    // Safety cap: prune expired windows first; then LRU-evict if still
+    // over the cap (F-SCALE-15).
     if (windows.size >= MAX_WINDOWS) {
       for (const [k, w] of windows) {
         if (now >= w.resetAt) windows.delete(k);
       }
       if (windows.size >= MAX_WINDOWS) {
         const toEvict = Math.ceil(MAX_WINDOWS * 0.1);
-        const keysToEvict = Array.from(windows.keys()).slice(0, toEvict);
-        for (const k of keysToEvict) {
-          windows.delete(k);
+        for (let i = 0; i < toEvict; i++) {
+          evictOldestLruWindow();
         }
       }
     }
-    window = { count: 0, resetAt: now + windowMs };
+    window = { count: 0, resetAt: now + windowMs, lastSeenMs: now };
     windows.set(key, window);
   }
 
   window.count++;
+  window.lastSeenMs = now;
 
   return {
     allowed: window.count <= maxRequestsPerKey,

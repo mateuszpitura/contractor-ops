@@ -41,28 +41,50 @@ const apiLimiter = createLimiter(60, '1m'); // 60 API requests per minute per IP
 // Cleanup is done on-access (lazy) rather than via setInterval — the edge
 // runtime is short-lived and reloads the module frequently, so a periodic
 // timer is mostly decorative and can leak across HMR reloads.
-const fallbackMap = new Map<string, { count: number; resetAt: number }>();
+//
+// F-SCALE-15 — eviction is LRU on `lastSeenMs`, not insertion-order FIFO.
+// During a Redis outage the prior FIFO behaviour evicted the first-
+// arriving legitimate users while preserving later-arriving low-rate
+// attackers; LRU keeps the active workload pinned and pushes stale keys
+// out. The `count` resets on window expiry independently of LRU position.
+type EdgeFallbackEntry = { count: number; resetAt: number; lastSeenMs: number };
+const fallbackMap = new Map<string, EdgeFallbackEntry>();
 const FALLBACK_WINDOW_MS = 60_000;
 const FALLBACK_MAX_ENTRIES = 10_000;
+
+function evictOldestLruFallbackEntry(): void {
+  let oldestKey: string | undefined;
+  let oldestSeen = Number.POSITIVE_INFINITY;
+  for (const [k, v] of fallbackMap) {
+    if (v.lastSeenMs < oldestSeen) {
+      oldestSeen = v.lastSeenMs;
+      oldestKey = k;
+    }
+  }
+  if (oldestKey) fallbackMap.delete(oldestKey);
+}
 
 function fallbackRateLimit(key: string, max: number): { allowed: boolean; remaining: number } {
   const now = Date.now();
   const entry = fallbackMap.get(key);
 
   if (!entry || now > entry.resetAt) {
-    // Opportunistic eviction when the map is saturated — drop the oldest
-    // 10 % (insertion-ordered, which is a close-enough proxy for LRU given
-    // entries expire within FALLBACK_WINDOW_MS anyway).
     if (fallbackMap.size >= FALLBACK_MAX_ENTRIES) {
+      // Drop the oldest 10 % by `lastSeenMs` — true LRU rather than the
+      // FIFO proxy that lived here before. Sweeping 10% in one pass keeps
+      // amortised cost low at the cost of one extra full-map scan per
+      // batch.
       const toEvict = Math.ceil(FALLBACK_MAX_ENTRIES * 0.1);
-      const keys = Array.from(fallbackMap.keys()).slice(0, toEvict);
-      for (const k of keys) fallbackMap.delete(k);
+      for (let i = 0; i < toEvict; i++) {
+        evictOldestLruFallbackEntry();
+      }
     }
-    fallbackMap.set(key, { count: 1, resetAt: now + FALLBACK_WINDOW_MS });
+    fallbackMap.set(key, { count: 1, resetAt: now + FALLBACK_WINDOW_MS, lastSeenMs: now });
     return { allowed: true, remaining: max - 1 };
   }
 
   entry.count++;
+  entry.lastSeenMs = now;
   const remaining = Math.max(0, max - entry.count);
   return { allowed: entry.count <= max, remaining };
 }

@@ -62,6 +62,9 @@ importers:
       '@contractor-ops/logger':
         specifier: workspace:*
         version: link:../../packages/logger
+      '@contractor-ops/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
       '@posthog/react':
         specifier: ^1.9.0
         version: 1.9.0(@types/react@19.2.14)(posthog-js@1.372.2)(react@19.2.5)
@@ -193,6 +196,9 @@ importers:
       '@contractor-ops/logger':
         specifier: workspace:*
         version: link:../../packages/logger
+      '@contractor-ops/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
       '@contractor-ops/validators':
         specifier: workspace:*
         version: link:../../packages/validators
@@ -652,6 +658,12 @@ importers:
         specifier: ^4.3.6
         version: 4.3.6
     devDependencies:
+      '@faker-js/faker':
+        specifier: ^10.4.0
+        version: 10.4.0
+      better-auth:
+        specifier: ^1.6.9
+        version: 1.6.9(@opentelemetry/api@1.9.1)(@prisma/client@7.8.0(prisma@7.8.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(magicast@0.5.2)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(typescript@6.0.3))(typescript@6.0.3))(mongodb@7.1.0(@aws-sdk/credential-providers@3.993.0)(socks@2.8.7))(mysql2@3.15.3)(next@16.2.4(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(prisma@7.8.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(magicast@0.5.2)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(typescript@6.0.3))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(vitest@4.1.5)
       tsx:
         specifier: ^4.21.0
         version: 4.21.0
@@ -2080,6 +2092,10 @@ packages:
     peerDependenciesMeta:
       '@noble/hashes':
         optional: true
+
+  '@faker-js/faker@10.4.0':
+    resolution: {integrity: sha512-sDBWI3yLy8EcDzgobvJTWq1MJYzAkQdpjXuPukga9wXonhpMRvd1Izuo2Qgwey2OiEoRIBr35RMU9HJRoOHzpw==}
+    engines: {node: ^20.19.0 || ^22.13.0 || ^23.5.0 || >=24.0.0, npm: '>=10'}
 
   '@fast-csv/format@4.3.5':
     resolution: {integrity: sha512-8iRn6QF3I8Ak78lNAa+Gdl5MJJBM5vRHivFtMRUWINdevNo00K7OXxS2PshawLKTejVwieIlPmK5YlLu6w4u8A==}
@@ -10915,6 +10931,8 @@ snapshots:
   '@exodus/bytes@1.15.0(@noble/hashes@2.0.1)':
     optionalDependencies:
       '@noble/hashes': 2.0.1
+
+  '@faker-js/faker@10.4.0': {}
 
   '@fast-csv/format@4.3.5':
     dependencies:

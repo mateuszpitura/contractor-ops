@@ -59,8 +59,16 @@ const upstashLimiter: Ratelimit | null = hasRedis
 // ---------------------------------------------------------------------------
 // In-memory fallback (dev / single-instance)
 // ---------------------------------------------------------------------------
+//
+// F-SCALE-15 — entries track `lastSeenMs`; eviction at the size cap is LRU
+// (oldest `lastSeenMs` first), not insertion-order FIFO. During a sustained
+// Redis outage on a 5 000-contractor org with 100 active users, the FIFO
+// approach evicted the first-arriving legitimate users while preserving
+// later-arriving low-rate attackers — exactly the wrong incentive. LRU
+// keeps the active workload in the map and pushes truly-stale keys out.
 
-const fallbackMap = new Map<string, { timestamps: number[] }>();
+type FallbackEntry = { timestamps: number[]; lastSeenMs: number };
+const fallbackMap = new Map<string, FallbackEntry>();
 
 if (typeof globalThis !== 'undefined') {
   const cleanup = () => {
@@ -73,19 +81,32 @@ if (typeof globalThis !== 'undefined') {
   setInterval(cleanup, 5 * 60_000).unref?.();
 }
 
+function evictOldestLruEntry(): void {
+  let oldestKey: string | undefined;
+  let oldestSeen = Number.POSITIVE_INFINITY;
+  for (const [k, v] of fallbackMap) {
+    if (v.lastSeenMs < oldestSeen) {
+      oldestSeen = v.lastSeenMs;
+      oldestKey = k;
+    }
+  }
+  if (oldestKey) fallbackMap.delete(oldestKey);
+}
+
 function fallbackCheck(key: string): { allowed: boolean; remaining: number } {
   const now = Date.now();
-  const entry = fallbackMap.get(key) ?? { timestamps: [] };
+  const entry: FallbackEntry = fallbackMap.get(key) ?? { timestamps: [], lastSeenMs: now };
 
   entry.timestamps = entry.timestamps.filter(ts => now - ts < WINDOW_MS);
+  entry.lastSeenMs = now;
 
   if (entry.timestamps.length >= MaxCallsPerMinute) {
+    fallbackMap.set(key, entry);
     return { allowed: false, remaining: 0 };
   }
 
   if (!fallbackMap.has(key) && fallbackMap.size >= FALLBACK_MAX_MAP_ENTRIES) {
-    const oldest = fallbackMap.keys().next().value;
-    if (oldest) fallbackMap.delete(oldest);
+    evictOldestLruEntry();
   }
 
   entry.timestamps.push(now);
