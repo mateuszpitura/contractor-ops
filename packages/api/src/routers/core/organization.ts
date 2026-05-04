@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { publicProcedure, router } from '../../init.js';
 import { adminProcedure, requirePermission } from '../../middleware/rbac.js';
 import { tenantProcedure } from '../../middleware/tenant.js';
+import { writeAuditLog } from '../../services/audit-writer.js';
 import { runPostOrganizationCreateHooks } from '../../services/post-org-create-hook.js';
 
 export const organizationRouter = router({
@@ -96,6 +97,18 @@ export const organizationRouter = router({
         },
       });
 
+      // F-OBS-05 — org name / billing email / fiscal year changes affect
+      // billing, branding and legal contracts. Audit is required.
+      await writeAuditLog({
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user?.id ?? null,
+        action: 'ORGANIZATION_UPDATE',
+        resourceType: 'ORGANIZATION',
+        resourceId: ctx.organizationId,
+        newValues: updateData,
+      });
+
       return updated;
     }),
 
@@ -130,6 +143,20 @@ export const organizationRouter = router({
         data: { isKleinunternehmer: input.enabled },
         select: { isKleinunternehmer: true },
       });
+
+      // F-OBS-05 — Kleinunternehmer toggle changes invoice generation
+      // (forced KU rate, suppressed VAT, § 19 UStG footer). Tax-relevant
+      // changes are audit-worthy.
+      await writeAuditLog({
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user?.id ?? null,
+        action: 'ORGANIZATION_KLEINUNTERNEHMER_TOGGLE',
+        resourceType: 'ORGANIZATION',
+        resourceId: ctx.organizationId,
+        newValues: { isKleinunternehmer: updated.isKleinunternehmer },
+      });
+
       return { isKleinunternehmer: updated.isKleinunternehmer };
     }),
 });
