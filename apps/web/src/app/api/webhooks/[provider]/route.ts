@@ -2,6 +2,7 @@ import { prisma } from '@contractor-ops/db';
 import { registerAllAdapters } from '@contractor-ops/integrations/adapters/register-all';
 import { getAdapter } from '@contractor-ops/integrations/registry';
 import { getQStashClient } from '@contractor-ops/integrations/services/qstash-client';
+import { validateWebhookPayload } from '@contractor-ops/integrations/services/webhook-schemas';
 import type { WebhookVerificationResult } from '@contractor-ops/integrations/types';
 import { createWebhookLogger } from '@contractor-ops/logger';
 import type { NextRequest } from 'next/server';
@@ -170,6 +171,13 @@ export async function POST(
 
   const isSlackViewSubmission = provider === 'slack' && rawBody.includes('view_submission');
 
+  // F-INT-07: parse the body strictly. Falling back to a `{ raw: ... }`
+  // sentinel let malformed payloads survive into the WebhookDelivery table
+  // where downstream `_process` handlers would happily run with garbage.
+  // We now reject unparseable bodies with HTTP 400 (after signature
+  // verification — the signed-but-malformed case is itself a bug worth
+  // surfacing in monitors) and validate the parsed JSON against a
+  // per-provider schema before persisting.
   let payloadJson: unknown;
   try {
     if (provider === 'slack') {
@@ -179,14 +187,35 @@ export async function POST(
       } else {
         const formParams = new URLSearchParams(rawBody);
         const payloadStr = formParams.get('payload');
-        payloadJson = payloadStr ? JSON.parse(payloadStr) : {};
+        if (!payloadStr) {
+          log.warn({ provider }, 'rejected webhook: slack form body missing payload field');
+          return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });
+        }
+        payloadJson = JSON.parse(payloadStr);
       }
     } else {
       payloadJson = JSON.parse(rawBody);
     }
-  } catch {
-    payloadJson = { raw: rawBody.slice(0, 10000) };
+  } catch (parseErr) {
+    log.warn(
+      {
+        provider,
+        err: parseErr instanceof Error ? parseErr.message : String(parseErr),
+      },
+      'rejected webhook: unparseable JSON body',
+    );
+    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
+
+  const schemaResult = validateWebhookPayload(provider, payloadJson);
+  if (!schemaResult.ok) {
+    log.warn(
+      { provider, reason: schemaResult.reason },
+      'rejected webhook: schema validation failed',
+    );
+    return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });
+  }
+  payloadJson = schemaResult.payload;
 
   let resolvedOrgId = perConnectionOrgId ?? verification.organizationId ?? '';
   let resolvedConnectionId = perConnectionConnectionId ?? verification.connectionId ?? null;

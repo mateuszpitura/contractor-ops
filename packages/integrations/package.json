@@ -24,6 +24,11 @@
       "import": "./dist/services/concurrency.js",
       "default": "./dist/services/concurrency.js"
     },
+    "./services/webhook-schemas": {
+      "types": "./dist/services/webhook-schemas.d.ts",
+      "import": "./dist/services/webhook-schemas.js",
+      "default": "./dist/services/webhook-schemas.js"
+    },
     "./registry": {
       "types": "./dist/registry.d.ts",
       "import": "./dist/registry.js",

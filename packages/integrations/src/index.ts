@@ -103,6 +103,16 @@ export {
   logWebhookDelivery,
   queueWebhookProcessing,
 } from './services/webhook-dispatcher.js';
+// Webhook payload schemas (F-INT-07)
+export type {
+  WebhookValidationFailure,
+  WebhookValidationResult,
+  WebhookValidationSuccess,
+} from './services/webhook-schemas.js';
+export {
+  getRegisteredWebhookProviders,
+  validateWebhookPayload,
+} from './services/webhook-schemas.js';
 export type {
   EmbeddedSigningUrlResult,
   ESignAdapter,
