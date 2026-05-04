@@ -1,18 +1,14 @@
 /*
- * @contractor-ops/ui — Motion baseline
+ * @contractor-ops/ui — Motion
  *
- * The universal `prefers-reduced-motion` rule that disables all
- * animation, transition, and smooth scrolling. Applied via `*` so any
- * element honoring an `animation` or `transition` property is covered,
- * regardless of which app or which feature defined it.
+ * The universal `prefers-reduced-motion` floor + the Atelier visual
+ * system's keyframes and utility classes. Components in
+ * @contractor-ops/ui/components/atelier consume these classes; both
+ * apps inherit them via @import "@contractor-ops/ui/styles/motion.css".
  *
- * App-specific overrides (e.g. atelier-hero-glow text-shadow → none,
- * gradient-text fill swap) live in each app's globals.css and
- * follow this rule via the cascade.
- *
- * Per WCAG 2.3.3, this rule is the floor — every animated primitive
- * we ship in @contractor-ops/ui must layer additional reduced-motion
- * behavior (jump to final state, drop pulses, etc.) on top of it.
+ * Per WCAG 2.3.3, the universal `*` rule is the floor — every animated
+ * primitive must layer additional reduced-motion behavior (jump to final
+ * state, drop pulses) on top of it.
  */
 
 /*
@@ -35,10 +31,6 @@
 
 /* ─── Print ─────────────────────────────────────────────────────────── */
 
-/*
- * Print also halts animation. Decorative orbs, shimmer sweeps, and
- * pulses must not appear on paper.
- */
 @media print {
   *,
   *::before,
@@ -48,3 +40,214 @@
   }
 }
 /* biome-ignore-end lint/complexity/noImportantStyles: a11y guard rail */
+
+/* ═══════════════════════════════════════════════════════════════════════
+ * Atelier keyframes
+ * Consumed by @contractor-ops/ui/components/atelier/* and (legacy) by
+ * direct className use in apps/web. Names are prefixed `atelier-` to
+ * avoid collisions with app-defined keyframes (e.g. landing's
+ * `border-breathe` is its own Exhibition variant and stays in
+ * apps/landing/src/app/globals.css).
+ * ═══════════════════════════════════════════════════════════════════ */
+
+/* Custom property for the shimmer sweep position. */
+@property --atelier-shimmer-x {
+  syntax: "<percentage>";
+  initial-value: -100%;
+  inherits: false;
+}
+
+/* Orchestrated entrance — dramatic blur + scale + translate. */
+@keyframes atelier-in {
+  from {
+    opacity: 0;
+    transform: translateY(40px) scale(0.88);
+    filter: blur(16px);
+  }
+  60% {
+    filter: blur(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+/* Breathing glow for hero metric. */
+@keyframes atelier-hero-glow {
+  0%,
+  100% {
+    text-shadow:
+      0 0 30px color-mix(in oklch, var(--primary) 25%, transparent),
+      0 0 60px color-mix(in oklch, var(--primary) 8%, transparent);
+  }
+  50% {
+    text-shadow:
+      0 0 60px color-mix(in oklch, var(--primary) 45%, transparent),
+      0 0 100px color-mix(in oklch, var(--primary) 15%, transparent),
+      0 2px 4px oklch(0 0 0 / 15%);
+  }
+}
+
+/* Breathing border glow — subtle pulse between primary and amber. */
+@keyframes atelier-border-breathe {
+  0%,
+  100% {
+    border-color: color-mix(in oklch, var(--primary) 35%, transparent);
+    box-shadow:
+      0 0 15px color-mix(in oklch, var(--primary) 10%, transparent),
+      0 0 40px color-mix(in oklch, var(--primary) 4%, transparent);
+  }
+  50% {
+    border-color: color-mix(in oklch, oklch(0.75 0.15 65) 30%, transparent);
+    box-shadow:
+      0 0 20px color-mix(in oklch, var(--primary) 15%, transparent),
+      0 0 60px color-mix(in oklch, var(--primary) 6%, transparent);
+  }
+}
+
+/* Shimmer sweep across surface. */
+@keyframes atelier-shimmer-sweep {
+  to {
+    --atelier-shimmer-x: 200%;
+  }
+}
+
+/* Mesh background drifts — three orbs at different cadences. */
+@keyframes atelier-drift-1 {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  25% {
+    transform: translate(80px, -50px) scale(1.15);
+  }
+  50% {
+    transform: translate(-40px, 60px) scale(0.9);
+  }
+  75% {
+    transform: translate(50px, 20px) scale(1.08);
+  }
+}
+@keyframes atelier-drift-2 {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(-70px, 40px) scale(1.12);
+  }
+  66% {
+    transform: translate(45px, -70px) scale(0.88);
+  }
+}
+@keyframes atelier-drift-3 {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1.1);
+  }
+  50% {
+    transform: translate(90px, 50px) scale(0.85);
+  }
+}
+
+/* Pulse ring around status dots. */
+@keyframes atelier-ring-ping {
+  75%,
+  100% {
+    transform: scale(2.5);
+    opacity: 0;
+  }
+}
+
+/* Grain texture drift — subtle film grain animation. */
+@keyframes atelier-grain-drift {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  10% {
+    transform: translate(-5%, -10%);
+  }
+  30% {
+    transform: translate(7%, -25%);
+  }
+  50% {
+    transform: translate(-15%, 10%);
+  }
+  70% {
+    transform: translate(0%, 15%);
+  }
+  90% {
+    transform: translate(-10%, 10%);
+  }
+}
+
+/* ─── Utility classes ──────────────────────────────────────────────── */
+
+/* Entrance — applies orchestrated blur+scale+translate via atelier-in. */
+.atelier-enter {
+  animation: atelier-in var(--duration-atelier-enter) var(--ease-atelier-out) both;
+}
+
+/* Hero number breathing glow — Exhibition + Atelier tiers only. */
+.atelier-hero-glow {
+  animation: atelier-hero-glow var(--duration-atelier-breathe) ease-in-out infinite;
+}
+
+/* Animated border glow — gentle breathing pulse, no rotation. */
+.atelier-border-glow {
+  border: 1.5px solid color-mix(in oklch, var(--primary) 35%, transparent);
+  animation: atelier-border-breathe var(--duration-atelier-breathe) ease-in-out infinite;
+}
+
+/* Surface shimmer — metallic sweep on hover (interactive surfaces only). */
+.atelier-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.atelier-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    color-mix(in oklch, white 6%, transparent) 45%,
+    color-mix(in oklch, white 12%, transparent) 50%,
+    color-mix(in oklch, white 6%, transparent) 55%,
+    transparent 60%
+  );
+  transform: translateX(var(--atelier-shimmer-x));
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+/*
+ * Touch / no-hover devices never trigger ::after — we wrap the hover
+ * trigger in a (hover: hover) media query so the shimmer is mouse-only,
+ * matching TiltCard's input-modality discipline.
+ */
+@media (hover: hover) and (pointer: fine) {
+  .atelier-shimmer:hover::after {
+    opacity: 1;
+    animation: atelier-shimmer-sweep var(--duration-atelier-shimmer) ease-out forwards;
+  }
+}
+
+/* Live pulse — used by PulseDot when pulse=true. */
+.atelier-pulse {
+  position: relative;
+}
+
+.atelier-pulse::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: inherit;
+  animation: atelier-ring-ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}

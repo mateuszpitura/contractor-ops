@@ -370,32 +370,19 @@
     box-shadow 0.15s ease;
 }
 
-/* ─── V2 Dashboard — "Atelier" ──────────────────────────────────────── */
+/* ─── Atelier — see @contractor-ops/ui/styles/motion.css ─────────────── */
 
-@property --shimmer-x {
-  syntax: "<percentage>";
-  initial-value: -100%;
-  inherits: false;
-}
+/*
+ * Atelier keyframes (atelier-in, atelier-hero-glow, atelier-border-breathe,
+ * atelier-shimmer-sweep, atelier-drift-1/2/3, atelier-ring-ping,
+ * atelier-grain-drift) and the matching utility classes (.atelier-enter,
+ * .atelier-shimmer, .atelier-border-glow, .atelier-pulse,
+ * .atelier-hero-glow) live in @contractor-ops/ui/styles/motion.css and
+ * are imported at the top of this file. Below: web-only animation
+ * utilities that aren't part of the shared Atelier system.
+ */
 
-/* Orchestrated entrance — dramatic blur + scale + translate */
-@keyframes atelier-in {
-  from {
-    opacity: 0;
-    transform: translateY(40px) scale(0.88);
-    filter: blur(16px);
-  }
-  60% {
-    filter: blur(2px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-    filter: blur(0);
-  }
-}
-
-/* Slide in from left (for ticker) */
+/* Slide in from left — used by web-only ticker components. */
 @keyframes slide-left {
   from {
     transform: translateX(100%);
@@ -405,110 +392,8 @@
   }
 }
 
-/* Breathing glow for hero metric */
-@keyframes hero-glow {
-  0%,
-  100% {
-    text-shadow:
-      0 0 30px color-mix(in oklch, var(--primary) 25%, transparent),
-      0 0 60px color-mix(in oklch, var(--primary) 8%, transparent);
-  }
-  50% {
-    text-shadow:
-      0 0 60px color-mix(in oklch, var(--primary) 45%, transparent),
-      0 0 100px color-mix(in oklch, var(--primary) 15%, transparent),
-      0 2px 4px oklch(0 0 0 / 15%);
-  }
-}
-
-/* Breathing border glow — subtle pulse between two accent colors */
-@keyframes border-breathe {
-  0%,
-  100% {
-    border-color: color-mix(in oklch, var(--primary) 35%, transparent);
-    box-shadow:
-      0 0 15px color-mix(in oklch, var(--primary) 10%, transparent),
-      0 0 40px color-mix(in oklch, var(--primary) 4%, transparent);
-  }
-  50% {
-    border-color: color-mix(in oklch, oklch(0.75 0.15 65) 30%, transparent);
-    box-shadow:
-      0 0 20px color-mix(in oklch, var(--primary) 15%, transparent),
-      0 0 60px color-mix(in oklch, var(--primary) 6%, transparent);
-  }
-}
-
-/* Shimmer sweep across surface */
-@keyframes shimmer-sweep {
-  to {
-    --shimmer-x: 200%;
-  }
-}
-
-/* Mesh background drifts */
-@keyframes drift-1 {
-  0%,
-  100% {
-    transform: translate(0, 0) scale(1);
-  }
-  25% {
-    transform: translate(80px, -50px) scale(1.15);
-  }
-  50% {
-    transform: translate(-40px, 60px) scale(0.9);
-  }
-  75% {
-    transform: translate(50px, 20px) scale(1.08);
-  }
-}
-@keyframes drift-2 {
-  0%,
-  100% {
-    transform: translate(0, 0) scale(1);
-  }
-  33% {
-    transform: translate(-70px, 40px) scale(1.12);
-  }
-  66% {
-    transform: translate(45px, -70px) scale(0.88);
-  }
-}
-@keyframes drift-3 {
-  0%,
-  100% {
-    transform: translate(0, 0) scale(1.1);
-  }
-  50% {
-    transform: translate(90px, 50px) scale(0.85);
-  }
-}
-
-/* Pulse ring around status dots */
-@keyframes ring-ping {
-  75%,
-  100% {
-    transform: scale(2.5);
-    opacity: 0;
-  }
-}
-
-/* ── V2 Utility Classes ── */
-
-.atelier-enter {
-  animation: atelier-in 1s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-/* .atelier-glass + .glass-subtle / .glass-medium / .glass-heavy live in
-   @contractor-ops/ui/styles/glass.css, which also handles
-   prefers-reduced-transparency and @media print fallbacks. */
-
-/* Animated border glow — gentle breathing pulse, no rotation */
-.atelier-border-glow {
-  border: 1.5px solid color-mix(in oklch, var(--primary) 35%, transparent);
-  animation: border-breathe 5s ease-in-out infinite;
-}
-
-/* 3D tilt on hover */
+/* CSS-only 3D tilt — hover-driven. JS-driven mouse-tracking tilt is
+   provided by the TiltCard component in @contractor-ops/ui. */
 .atelier-tilt {
   transition:
     transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
@@ -517,65 +402,19 @@
   perspective: 800px;
 }
 
-.atelier-tilt:hover {
-  transform: perspective(800px) rotateX(-1deg) rotateY(1.5deg) translateY(-2px);
-  box-shadow:
-    0 20px 50px oklch(0 0 0 / 12%),
-    0 8px 20px oklch(0 0 0 / 6%);
-}
+@media (hover: hover) and (pointer: fine) {
+  .atelier-tilt:hover {
+    transform: perspective(800px) rotateX(-1deg) rotateY(1.5deg) translateY(-2px);
+    box-shadow:
+      0 20px 50px oklch(0 0 0 / 12%),
+      0 8px 20px oklch(0 0 0 / 6%);
+  }
 
-.dark .atelier-tilt:hover {
-  box-shadow:
-    0 20px 50px oklch(0 0 0 / 35%),
-    0 8px 20px oklch(0 0 0 / 20%);
-}
-
-/* Hero number glow */
-.atelier-hero-glow {
-  animation: hero-glow 5s ease-in-out infinite;
-}
-
-/* Shimmer surface — metallic sweep on hover */
-.atelier-shimmer {
-  position: relative;
-  overflow: hidden;
-}
-
-.atelier-shimmer::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    105deg,
-    transparent 40%,
-    color-mix(in oklch, white 6%, transparent) 45%,
-    color-mix(in oklch, white 12%, transparent) 50%,
-    color-mix(in oklch, white 6%, transparent) 55%,
-    transparent 60%
-  );
-  transform: translateX(var(--shimmer-x));
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-
-.atelier-shimmer:hover::after {
-  opacity: 1;
-  animation: shimmer-sweep 1.2s ease-out forwards;
-}
-
-/* Live pulse dot */
-.atelier-pulse {
-  position: relative;
-}
-
-.atelier-pulse::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: inherit;
-  animation: ring-ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+  .dark .atelier-tilt:hover {
+    box-shadow:
+      0 20px 50px oklch(0 0 0 / 35%),
+      0 8px 20px oklch(0 0 0 / 20%);
+  }
 }
 
 .card-interactive:hover {
