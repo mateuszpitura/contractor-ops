@@ -361,6 +361,20 @@ vi.mock('@contractor-ops/db', () => ({
   getRegionalClient: vi.fn(() => mockPrisma),
 }));
 
+// F-DB-03 / F-SEC-12 — org-cache returns ACTIVE meta so tenant middleware
+// passes the suspended-org check.
+vi.mock('../../services/org-cache.js', () => ({
+  getOrgMeta: vi.fn(async (orgId: string) => ({
+    id: orgId,
+    dataRegion: 'EU',
+    status: 'ACTIVE',
+    name: 'Test Org',
+  })),
+  invalidateOrgMeta: vi.fn(async () => undefined),
+  ORG_META_TTL_SECONDS: 300,
+  orgMetaKey: (orgId: string) => `org:${orgId}:meta`,
+}));
+
 vi.mock('@contractor-ops/logger', () => ({
   createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), fatal: vi.fn(), trace: vi.fn(), child: vi.fn() })),
   createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
