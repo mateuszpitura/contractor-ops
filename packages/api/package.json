@@ -195,6 +195,11 @@
       "types": "./src/services/email/index.ts",
       "import": "./src/services/email/index.ts",
       "default": "./src/services/email/index.ts"
+    },
+    "./services/cache": {
+      "types": "./src/services/cache.ts",
+      "import": "./src/services/cache.ts",
+      "default": "./src/services/cache.ts"
     }
   },
   "scripts": {

@@ -8,7 +8,11 @@ import { createWebhookLogger } from '@contractor-ops/logger';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-import { extractSlackTeamId, resolveSlackConnectionByTeamId } from '../slack-webhook-context.js';
+import {
+  extractSlackTeamId,
+  resolveOrgIdBySlug,
+  resolveSlackConnectionByTeamId,
+} from '../slack-webhook-context.js';
 
 const log = createWebhookLogger('generic');
 
@@ -232,12 +236,11 @@ export async function POST(
   }
 
   if (provider === 'resend' && verification.organizationSlug && !resolvedOrgId) {
-    const org = await prisma.organization.findUnique({
-      where: { slug: verification.organizationSlug },
-      select: { id: true },
-    });
-    if (org) {
-      resolvedOrgId = org.id;
+    // F-SCALE-10 — `resolveOrgIdBySlug` is Redis-cached (60 s TTL) so the
+    // hot Resend webhook path doesn't pay a Neon round-trip per event.
+    const orgId = await resolveOrgIdBySlug(verification.organizationSlug);
+    if (orgId) {
+      resolvedOrgId = orgId;
     }
   }
 
