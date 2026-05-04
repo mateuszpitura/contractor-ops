@@ -538,13 +538,13 @@ export const workflowExecutionRouter = router({
         });
         const progress = calculateProgress(allTasks);
 
-        await tx.workflowRun.update({
+        // F-DB-18 — collapse the previous `update + findUniqueOrThrow` pair
+        // into a single `update({ include })` call so we save one round-trip
+        // (and one row lookup) inside the transaction. Prisma returns the
+        // full updated row with the requested relations.
+        const fullRun = await tx.workflowRun.update({
           where: { id: workflowRun.id },
           data: { progressPercent: progress.percent },
-        });
-
-        const fullRun = await tx.workflowRun.findUniqueOrThrow({
-          where: { id: workflowRun.id },
           include: {
             tasks: { orderBy: { createdAt: 'asc' } },
             workflowTemplate: { select: { name: true, type: true } },
