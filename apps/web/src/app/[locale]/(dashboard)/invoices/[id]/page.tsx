@@ -1,5 +1,7 @@
 'use client';
 
+import type { InvoiceStatusInput } from '@contractor-ops/ui';
+import { AtelierStatusPill, statusToVariant } from '@contractor-ops/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Inbox, Mail, Upload } from 'lucide-react';
 import { useParams } from 'next/navigation';
@@ -58,47 +60,7 @@ interface InvoiceShape {
   [key: string]: unknown;
 }
 
-// ---------------------------------------------------------------------------
-// Status badge config (reuse from columns.tsx pattern)
-// ---------------------------------------------------------------------------
-
-const statusBadgeConfig: Record<string, { className: string; label: string }> = {
-  RECEIVED: { className: 'bg-muted text-muted-foreground', label: 'RECEIVED' },
-  UNDER_REVIEW: {
-    className: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
-    label: 'UNDER_REVIEW',
-  },
-  MATCHED: {
-    className: 'bg-green-500/10 text-green-600 dark:text-green-400',
-    label: 'MATCHED',
-  },
-  UNMATCHED: {
-    className: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
-    label: 'UNMATCHED',
-  },
-  DISCREPANCY: {
-    className: 'bg-red-500/10 text-red-600 dark:text-red-400',
-    label: 'DISCREPANCY',
-  },
-  APPROVAL_PENDING: {
-    className: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
-    label: 'APPROVAL_PENDING',
-  },
-  APPROVED: {
-    className: 'bg-green-500/10 text-green-600 dark:text-green-400',
-    label: 'APPROVED',
-  },
-  REJECTED: {
-    className: 'bg-red-500/10 text-red-600 dark:text-red-400',
-    label: 'REJECTED',
-  },
-  READY_FOR_PAYMENT: {
-    className: 'bg-primary/10 text-primary',
-    label: 'READY_FOR_PAYMENT',
-  },
-  PAID: { className: 'bg-muted text-muted-foreground', label: 'PAID' },
-  VOID: { className: 'bg-muted text-muted-foreground', label: 'VOID' },
-};
+// Status mapping moved to @contractor-ops/ui — statusToVariant('invoice', s).
 
 const sourceIconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   MANUAL_UPLOAD: Upload,
@@ -374,7 +336,7 @@ export default function InvoiceDetailPage() {
     );
   }
 
-  const statusConfig = statusBadgeConfig[invoice.status];
+  const statusVariant = statusToVariant('invoice', invoice.status as InvoiceStatusInput);
   const SourceIcon = sourceIconMap[invoice.source] ?? Inbox;
 
   // Feature detection flags (extracted for readability)
@@ -385,11 +347,9 @@ export default function InvoiceDetailPage() {
       {/* Header */}
       <div className="flex items-center gap-3">
         <h1 className="text-xl font-semibold font-mono">{invoice.invoiceNumber}</h1>
-        {!!statusConfig && (
-          <Badge variant="secondary" className={`gap-1 ${statusConfig.className}`}>
-            {t(`status.${enumKey(statusConfig.label)}`)}
-          </Badge>
-        )}
+        <AtelierStatusPill variant={statusVariant}>
+          {t(`status.${enumKey(invoice.status)}`)}
+        </AtelierStatusPill>
         {flags.isKsefSource ? (
           <KsefSourceBadge fetchedAt={invoice.receivedAt} />
         ) : (

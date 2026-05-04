@@ -10,3 +10,4 @@
 export * from './components/atelier/index.js';
 export { useHoverCapability } from './hooks/use-hover-capability.js';
 export { useReducedMotion } from './hooks/use-reduced-motion.js';
+export * from './status/index.js';

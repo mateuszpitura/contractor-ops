@@ -1,11 +1,12 @@
 'use client';
 
+import type { ChangeRequestStatusInput } from '@contractor-ops/ui';
+import { AtelierStatusPill, statusToVariant } from '@contractor-ops/ui';
 import { useMutation } from '@tanstack/react-query';
 import { formatDistanceToNow } from 'date-fns';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import {
@@ -38,15 +39,8 @@ const FIELD_LABEL_KEYS: Record<string, string> = {
   countryCode: 'country',
 };
 
-// ---------------------------------------------------------------------------
-// Status badge variant mapping (per UI-SPEC)
-// ---------------------------------------------------------------------------
-
-const STATUS_BADGE_VARIANTS = {
-  PENDING: 'warning' as const,
-  APPROVED: 'success' as const,
-  REJECTED: 'destructive' as const,
-} as const;
+// Status badge variant mapping moved to @contractor-ops/ui:
+//   statusToVariant('change-request', request.status).
 
 // ---------------------------------------------------------------------------
 // Props
@@ -142,7 +136,10 @@ export function ChangeRequestDiffCard({
   const changedFields = Object.keys(request.requestedChanges);
   const createdAt =
     typeof request.createdAt === 'string' ? new Date(request.createdAt) : request.createdAt;
-  const statusVariant = STATUS_BADGE_VARIANTS[request.status];
+  const statusVariant = statusToVariant(
+    'change-request',
+    request.status as ChangeRequestStatusInput,
+  );
 
   function getFieldLabel(key: string): string {
     const labelKey = FIELD_LABEL_KEYS[key];
@@ -171,7 +168,9 @@ export function ChangeRequestDiffCard({
               </p>
             </div>
             {request.status !== 'PENDING' && (
-              <Badge variant={statusVariant}>{t(`status.${enumKey(request.status)}`)}</Badge>
+              <AtelierStatusPill variant={statusVariant}>
+                {t(`status.${enumKey(request.status)}`)}
+              </AtelierStatusPill>
             )}
           </div>
         </CardHeader>

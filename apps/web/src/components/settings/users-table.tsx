@@ -1,5 +1,7 @@
 'use client';
 
+import type { MemberStatusInput } from '@contractor-ops/ui';
+import { AtelierStatusPill, statusToVariant } from '@contractor-ops/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
@@ -50,12 +52,12 @@ const roleBadgeColors: Record<string, string> = {
   member: 'bg-gray-100 text-gray-800 dark:bg-gray-900/40 dark:text-gray-300',
 };
 
-const statusColors: Record<string, string> = {
-  active: 'bg-success/10 text-success',
-  invited: 'bg-info/10 text-info',
-  disabled: 'bg-destructive/10 text-destructive',
-  banned: 'bg-destructive/10 text-destructive',
-};
+const KNOWN_MEMBER_STATUSES = new Set<MemberStatusInput>([
+  'active',
+  'invited',
+  'disabled',
+  'banned',
+]);
 
 const assignableRoles = [
   'admin',
@@ -253,9 +255,14 @@ export function UsersTable() {
                     )}
                   </TableCell>
                   <TableCell>
-                    <Badge variant="secondary" className={statusColors[status] ?? ''}>
-                      {statusLabel(status)}
-                    </Badge>
+                    {KNOWN_MEMBER_STATUSES.has(status as MemberStatusInput) ? (
+                      <AtelierStatusPill
+                        variant={statusToVariant('member', status as MemberStatusInput)}>
+                        {statusLabel(status)}
+                      </AtelierStatusPill>
+                    ) : (
+                      <Badge variant="secondary">{statusLabel(status)}</Badge>
+                    )}
                   </TableCell>
                   {!!(canManageMembers || canDeleteMembers) && (
                     <TableCell className="text-end">

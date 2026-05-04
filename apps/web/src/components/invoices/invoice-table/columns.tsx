@@ -1,5 +1,7 @@
 'use client';
 
+import type { InvoiceMatchStatusInput, InvoiceStatusInput } from '@contractor-ops/ui';
+import { AtelierStatusPill, statusToVariant } from '@contractor-ops/ui';
 import type { ColumnDef } from '@tanstack/react-table';
 import {
   AlertCircle,
@@ -87,69 +89,36 @@ export function deriveComplianceStatus(
 }
 
 // ---------------------------------------------------------------------------
-// Invoice status badge colors per UI-SPEC
+// Invoice status badge — per-status icon. Color/variant comes from the
+// shared statusToVariant('invoice', ...) mapper in @contractor-ops/ui.
 // ---------------------------------------------------------------------------
 
-const statusBadgeConfig: Record<
-  string,
-  { className: string; Icon: React.ComponentType<{ className?: string }> }
-> = {
-  RECEIVED: {
-    className: 'bg-muted text-muted-foreground',
-    Icon: Inbox,
-  },
-  MATCHED: {
-    className: 'bg-green-500/10 text-green-600 dark:text-green-400',
-    Icon: CheckCircle2,
-  },
-  UNMATCHED: {
-    className: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
-    Icon: AlertCircle,
-  },
-  DISCREPANCY: {
-    className: 'bg-red-500/10 text-red-600 dark:text-red-400',
-    Icon: AlertTriangle,
-  },
-  APPROVAL_PENDING: {
-    className: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
-    Icon: Clock,
-  },
-  APPROVED: {
-    className: 'bg-green-500/10 text-green-600 dark:text-green-400',
-    Icon: CheckCircle2,
-  },
-  REJECTED: {
-    className: 'bg-red-500/10 text-red-600 dark:text-red-400',
-    Icon: XCircle,
-  },
-  READY_FOR_PAYMENT: {
-    className: 'bg-primary/10 text-primary',
-    Icon: Banknote,
-  },
-  PAID: {
-    className: 'bg-muted text-muted-foreground',
-    Icon: Check,
-  },
-  UNDER_REVIEW: {
-    className: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
-    Icon: Clock,
-  },
-  VOID: {
-    className: 'bg-muted text-muted-foreground',
-    Icon: XCircle,
-  },
+const STATUS_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+  RECEIVED: Inbox,
+  MATCHED: CheckCircle2,
+  UNMATCHED: AlertCircle,
+  DISCREPANCY: AlertTriangle,
+  APPROVAL_PENDING: Clock,
+  APPROVED: CheckCircle2,
+  REJECTED: XCircle,
+  READY_FOR_PAYMENT: Banknote,
+  PAID: Check,
+  UNDER_REVIEW: Clock,
+  VOID: XCircle,
+  PARTIALLY_PAID: Banknote,
 };
 
 // ---------------------------------------------------------------------------
-// Match status indicator colors
+// Match-status mapping — labels only; colour comes from
+// statusToVariant('invoice-match', ...).
 // ---------------------------------------------------------------------------
 
-const matchStatusConfig: Record<string, { dotClass: string; label: string }> = {
-  MATCHED: { dotClass: 'bg-green-500', label: 'strongMatch' },
-  PARTIAL: { dotClass: 'bg-amber-500', label: 'partialMatch' },
-  DISCREPANCY: { dotClass: 'bg-red-500', label: 'discrepancy' },
-  UNMATCHED: { dotClass: 'bg-muted-foreground', label: 'unmatched' },
-  MANUALLY_CONFIRMED: { dotClass: 'bg-blue-500', label: 'manualMatch' },
+const matchStatusLabels: Record<string, string> = {
+  MATCHED: 'strongMatch',
+  PARTIAL: 'partialMatch',
+  DISCREPANCY: 'discrepancy',
+  UNMATCHED: 'unmatched',
+  MANUALLY_CONFIRMED: 'manualMatch',
 };
 
 // ---------------------------------------------------------------------------
@@ -313,16 +282,13 @@ export function getColumns(t: TranslateFunction): ColumnDef<InvoiceRow>[] {
       header: t('columns.status'),
       cell: ({ row }) => {
         const status = row.original.status;
-        const config = statusBadgeConfig[status];
-        if (!config) {
-          return <Badge variant="secondary">{t(`status.${enumKey(status)}`)}</Badge>;
-        }
-        const { className, Icon } = config;
+        const Icon = STATUS_ICONS[status];
+        const variant = statusToVariant('invoice', status as InvoiceStatusInput);
         return (
-          <Badge variant="secondary" className={`gap-1 ${className}`}>
-            <Icon className="h-3 w-3" />
+          <AtelierStatusPill variant={variant}>
+            {Icon ? <Icon className="h-3 w-3" /> : null}
             {t(`status.${enumKey(status)}`)}
-          </Badge>
+          </AtelierStatusPill>
         );
       },
     },
@@ -333,15 +299,15 @@ export function getColumns(t: TranslateFunction): ColumnDef<InvoiceRow>[] {
       header: t('columns.matchStatus'),
       cell: ({ row }) => {
         const matchStatus = row.original.matchStatus;
-        const config = matchStatusConfig[matchStatus];
-        if (!config) {
+        const labelKey = matchStatusLabels[matchStatus];
+        if (!labelKey) {
           return <span className="text-sm text-muted-foreground">&mdash;</span>;
         }
+        const variant = statusToVariant('invoice-match', matchStatus as InvoiceMatchStatusInput);
         return (
-          <span className="inline-flex items-center gap-1.5 text-sm">
-            <span className={`inline-block h-2 w-2 rounded-full ${config.dotClass}`} />
-            {t(`matchStatus.${enumKey(config.label)}`)}
-          </span>
+          <AtelierStatusPill variant={variant}>
+            {t(`matchStatus.${enumKey(labelKey)}`)}
+          </AtelierStatusPill>
         );
       },
       enableSorting: false,

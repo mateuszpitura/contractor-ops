@@ -1,20 +1,8 @@
 import type { ReactNode } from 'react';
+import type { AtelierStatusVariant } from '../../status/variants.js';
 import { PulseDot } from './pulse-dot.js';
 
-/**
- * Eight semantic status variants. Domain-aware mapping
- * (`statusToVariant(domain, status)`) lives in
- * @contractor-ops/ui/src/status/mapper.ts (commit group 4).
- */
-export type AtelierStatusVariant =
-  | 'success'
-  | 'warning'
-  | 'danger'
-  | 'info'
-  | 'neutral'
-  | 'processing'
-  | 'blocked'
-  | 'live';
+export type { AtelierStatusVariant };
 
 export interface AtelierStatusPillProps {
   variant: AtelierStatusVariant;
