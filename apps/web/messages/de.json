@@ -5774,7 +5774,7 @@
       "cancel": "Abbrechen",
       "discardConfirm": {
         "title": "Eingabegrund verwerfen?",
-        "body": "Du hast einen Grund eingegeben. Schließen jetzt verwirft die Eingabe.",
+        "body": "Sie haben einen Grund eingegeben. Beim Schließen wird die Eingabe verworfen.",
         "confirm": "Verwerfen",
         "cancel": "Weiter bearbeiten"
       }
