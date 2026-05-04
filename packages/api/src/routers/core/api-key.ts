@@ -6,6 +6,7 @@ import { requirePermission } from '../../middleware/rbac.js';
 import { tenantProcedure } from '../../middleware/tenant.js';
 import { requireTier } from '../../middleware/tier.js';
 import { generateApiKey } from '../../services/api-key-service.js';
+import { writeAuditLog } from '../../services/audit-writer.js';
 
 // ---------------------------------------------------------------------------
 // Input schemas
@@ -72,6 +73,25 @@ export const apiKeyRouter = router({
         expiresAt: true,
         createdAt: true,
       },
+    });
+
+    // F-OBS-05 — API keys are long-lived bearer tokens for the public API.
+    // Issuance MUST be in the audit log for forensics + compliance.
+    await writeAuditLog({
+      organizationId: ctx.organizationId,
+      actorType: 'USER',
+      actorId: ctx.user?.id ?? null,
+      action: 'API_KEY_CREATE',
+      resourceType: 'ORGANIZATION',
+      resourceId: ctx.organizationId,
+      newValues: {
+        apiKeyId: key.id,
+        name: key.name,
+        prefix: key.prefix,
+        scopes: key.scopes,
+        expiresAt: key.expiresAt,
+      },
+      metadata: { apiKeyId: key.id },
     });
 
     return {
@@ -144,6 +164,19 @@ export const apiKeyRouter = router({
       },
     });
 
+    // F-OBS-05 — scope/name changes can broaden API key access surface.
+    await writeAuditLog({
+      organizationId: ctx.organizationId,
+      actorType: 'USER',
+      actorId: ctx.user?.id ?? null,
+      action: 'API_KEY_UPDATE',
+      resourceType: 'ORGANIZATION',
+      resourceId: ctx.organizationId,
+      oldValues: { name: existing.name, scopes: existing.scopes },
+      newValues: { name: updated.name, scopes: updated.scopes },
+      metadata: { apiKeyId: updated.id },
+    });
+
     return updated;
   }),
 
@@ -171,6 +204,19 @@ export const apiKeyRouter = router({
       await ctx.db.organizationApiKey.update({
         where: { id: input.id },
         data: { revokedAt: new Date() },
+      });
+
+      // F-OBS-05 — API key revocation is forensics-critical.
+      await writeAuditLog({
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user?.id ?? null,
+        action: 'API_KEY_REVOKE',
+        resourceType: 'ORGANIZATION',
+        resourceId: ctx.organizationId,
+        oldValues: { revokedAt: null, name: existing.name, prefix: existing.prefix },
+        newValues: { revokedAt: new Date().toISOString() },
+        metadata: { apiKeyId: existing.id },
       });
 
       return { success: true };
