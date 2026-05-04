@@ -186,12 +186,15 @@ type IntakeRowSummary = {
 };
 
 async function loadIntakeScoped(
-  db: { invoiceIntakeRequest: { findUnique: (args: unknown) => Promise<unknown> } },
+  db: { invoiceIntakeRequest: { findFirst: (args: unknown) => Promise<unknown> } },
   intakeId: string,
   organizationId: string,
 ): Promise<IntakeRowSummary | null> {
-  const row = (await (db.invoiceIntakeRequest.findUnique as (args: unknown) => Promise<unknown>)({
-    where: { id: intakeId },
+  // F-DB-22 — pre-filter on (id, organizationId) instead of fetch-and-check.
+  // Closes the timing-oracle (cross-org findUnique was slightly slower than
+  // a non-existent id) and removes the fragile post-fetch guard.
+  return (await (db.invoiceIntakeRequest.findFirst as (args: unknown) => Promise<unknown>)({
+    where: { id: intakeId, organizationId },
     select: {
       id: true,
       organizationId: true,
@@ -201,9 +204,6 @@ async function loadIntakeScoped(
       sourceKind: true,
     },
   })) as IntakeRowSummary | null;
-
-  if (!row || row.organizationId !== organizationId) return null;
-  return row;
 }
 
 // ---------------------------------------------------------------------------
@@ -294,12 +294,13 @@ export const invoiceIntakeRouter = router({
     .use(requirePermission({ invoice: ['read'] }))
     .input(intakeIdInput)
     .query(async ({ ctx, input }) => {
+      // F-DB-22 — pre-filter org-scope in the where clause.
       const row = (await (
-        ctx.db.invoiceIntakeRequest.findUnique as (args: unknown) => Promise<unknown>
+        ctx.db.invoiceIntakeRequest.findFirst as (args: unknown) => Promise<unknown>
       )({
-        where: { id: input.intakeId },
-      })) as { organizationId: string } | null;
-      if (!row || row.organizationId !== ctx.organizationId) {
+        where: { id: input.intakeId, organizationId: ctx.organizationId },
+      })) as Record<string, unknown> | null;
+      if (!row) {
         throw new TRPCError({ code: 'NOT_FOUND', message: 'NOT_FOUND' });
       }
       return row as unknown;
@@ -313,24 +314,23 @@ export const invoiceIntakeRouter = router({
     .use(requirePermission({ invoice: ['read'] }))
     .input(intakeIdInput)
     .query(async ({ ctx, input }): Promise<MatchCandidate[]> => {
+      // F-DB-22 — pre-filter org-scope in the where clause.
       const intake = (await (
-        ctx.db.invoiceIntakeRequest.findUnique as (args: unknown) => Promise<unknown>
+        ctx.db.invoiceIntakeRequest.findFirst as (args: unknown) => Promise<unknown>
       )({
-        where: { id: input.intakeId },
+        where: { id: input.intakeId, organizationId: ctx.organizationId },
         select: {
-          organizationId: true,
           extractedSupplierName: true,
           extractedSupplierVatId: true,
           extractedSupplierLeitwegId: true,
         },
       })) as {
-        organizationId: string;
         extractedSupplierName: string | null;
         extractedSupplierVatId: string | null;
         extractedSupplierLeitwegId: string | null;
       } | null;
 
-      if (!intake || intake.organizationId !== ctx.organizationId) {
+      if (!intake) {
         throw new TRPCError({ code: 'NOT_FOUND', message: 'NOT_FOUND' });
       }
 
