@@ -177,8 +177,14 @@ describe('tenantFlaggedProcedure', () => {
     const mockBag = { isEnabled: vi.fn().mockReturnValue(true) };
     mockLazyFlagBag.mockReturnValue(mockBag);
 
-    // Override org to return unusual region
-    mockPrisma.organization.findUnique.mockResolvedValue({ dataRegion: 'APAC' });
+    // Override org to return unusual region. P2-C/F-DB-03 — getOrgMeta /
+    // loadAndAssertActive asserts `status === 'ACTIVE'`, so the override
+    // must keep the active flag while still tweaking the region.
+    mockPrisma.organization.findUnique.mockResolvedValue({
+      id: 'org-mock',
+      dataRegion: 'APAC',
+      status: 'ACTIVE',
+    });
 
     const router = t.router({
       ping: tenantFlaggedProcedure.query(() => 'ok'),
