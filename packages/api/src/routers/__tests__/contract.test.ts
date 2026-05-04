@@ -67,6 +67,7 @@ const { mockPrisma } = vi.hoisted(() => {
     },
     auditLog: {
       create: vi.fn(async (opts: { data: Rec }) => ({ id: 'aud_mock', ...opts.data })),
+      createMany: vi.fn(async (opts: { data: Rec[] }) => ({ count: opts.data.length })),
     },
     member: {
       findFirst: vi.fn(async () => ({ role: 'admin' })),
