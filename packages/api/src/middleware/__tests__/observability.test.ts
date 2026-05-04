@@ -92,9 +92,13 @@ describe('observabilityMiddleware', () => {
     expect(out).toEqual({ data: 1 });
     expect(next).toHaveBeenCalledTimes(1);
     const arg = next.mock.calls[0]?.[0] as { ctx: { requestId: string } };
-    expect(arg.ctx.requestId).toMatch(
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
-    );
+    // P2-E/F-OBS-02: observabilityMiddleware now defers requestId minting to
+    // `generateRequestId` from @contractor-ops/logger so the same id flows
+    // through the AsyncLocalStorage Pino mixin. The logger module is mocked
+    // (`generateRequestId: () => 'test-request-id'`), so we assert the test
+    // double's value is propagated unchanged into the next ctx — that's the
+    // actual contract this test is guarding (id flows from generator → ctx).
+    expect(arg.ctx.requestId).toBe('test-request-id');
 
     expect(startSpan).toHaveBeenCalledWith(
       expect.objectContaining({
