@@ -29,6 +29,10 @@ const { mockPrisma, mockR2, mockRenderer } = vi.hoisted(() => {
         id: opts.where.id,
         ...opts.data,
       })),
+      // F-ASYNC-15: CAS lock from PENDING_RENDER -> RENDERING. Default
+      // returns { count: 1 } so the render proceeds; tests can override
+      // with { count: 0 } to assert the idempotent skip path.
+      updateMany: vi.fn(async () => ({ count: 1 })),
     },
   };
 
@@ -132,6 +136,9 @@ function makeClaim(overrides: Partial<Record<string, unknown>> = {}) {
 beforeEach(() => {
   mockPrisma.invoiceInterestClaim.findUnique.mockReset();
   mockPrisma.invoiceInterestClaim.update.mockClear();
+  mockPrisma.invoiceInterestClaim.updateMany.mockClear();
+  // F-ASYNC-15: default to CAS-acquired so the rendering path runs.
+  mockPrisma.invoiceInterestClaim.updateMany.mockResolvedValue({ count: 1 });
   mockR2.putObjectAndSignDownload.mockClear();
   mockRenderer.renderToBuffer.mockClear();
 });
@@ -175,6 +182,21 @@ describe('renderClaimPdf', () => {
       const result = await renderClaimPdf(CLAIM_ID);
 
       expect(result).toEqual({ claimId: CLAIM_ID, pdfKey: existingKey, skipped: true });
+      expect(mockRenderer.renderToBuffer).not.toHaveBeenCalled();
+      expect(mockR2.putObjectAndSignDownload).not.toHaveBeenCalled();
+      expect(mockPrisma.invoiceInterestClaim.update).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('CAS lock loses race (F-ASYNC-15)', () => {
+    it('returns skipped=true without rendering when another worker holds the lock', async () => {
+      mockPrisma.invoiceInterestClaim.findUnique.mockResolvedValue(makeClaim());
+      // Second QStash delivery loses the CAS — updateMany matches 0 rows.
+      mockPrisma.invoiceInterestClaim.updateMany.mockResolvedValueOnce({ count: 0 });
+
+      const result = await renderClaimPdf(CLAIM_ID);
+
+      expect(result.skipped).toBe(true);
       expect(mockRenderer.renderToBuffer).not.toHaveBeenCalled();
       expect(mockR2.putObjectAndSignDownload).not.toHaveBeenCalled();
       expect(mockPrisma.invoiceInterestClaim.update).not.toHaveBeenCalled();
