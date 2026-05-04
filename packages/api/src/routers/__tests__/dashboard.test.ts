@@ -317,14 +317,58 @@ beforeEach(() => {
 
 describe('dashboard router', () => {
   describe('kpis', () => {
+    /**
+     * F-SCALE-11 — fetchKpis collapsed 8 separate count/aggregate queries
+     * into 4 `$queryRaw` calls (contractor / approvalStep / invoice /
+     * contract+task) using FILTER aggregates that return both the current
+     * and previous values in one row. Tests now stub the four queries
+     * positionally via `mockResolvedValueOnce`.
+     */
+    function stubKpiQueries(opts: {
+      activeContractors?: number;
+      prevActiveContractors?: number;
+      pendingApprovals?: number;
+      prevPendingApprovals?: number;
+      readyToPayMinor?: number | bigint;
+      prevReadyToPayMinor?: number | bigint;
+      expiringContracts?: number;
+      openTasks?: number;
+    } = {}) {
+      mockPrisma.$queryRaw
+        .mockResolvedValueOnce([
+          {
+            activeContractors: opts.activeContractors ?? 0,
+            prevActiveContractors: opts.prevActiveContractors ?? 0,
+          },
+        ])
+        .mockResolvedValueOnce([
+          {
+            pendingApprovals: opts.pendingApprovals ?? 0,
+            prevPendingApprovals: opts.prevPendingApprovals ?? 0,
+          },
+        ])
+        .mockResolvedValueOnce([
+          {
+            readyToPayMinor: opts.readyToPayMinor ?? 0,
+            prevReadyToPayMinor: opts.prevReadyToPayMinor ?? 0,
+          },
+        ])
+        .mockResolvedValueOnce([
+          {
+            expiringContracts: opts.expiringContracts ?? 0,
+            openTasks: opts.openTasks ?? 0,
+          },
+        ]);
+    }
+
     it('returns 5 KPI values with current counts', async () => {
-      mockPrisma.contractor.count.mockResolvedValue(10);
-      mockPrisma.approvalStep.count.mockResolvedValue(5);
-      mockPrisma.invoice.aggregate.mockResolvedValue({
-        _sum: { amountToPayMinor: 500000 },
+      stubKpiQueries({
+        activeContractors: 10,
+        pendingApprovals: 5,
+        readyToPayMinor: 500000,
+        expiringContracts: 3,
+        openTasks: 7,
       });
-      mockPrisma.contract.count.mockResolvedValue(3);
-      mockPrisma.workflowTaskRun.count.mockResolvedValue(7);
 
       const result = await caller.dashboard.kpis();
 
@@ -336,10 +380,7 @@ describe('dashboard router', () => {
     });
 
     it('returns prevValue for trend comparison on activeContractors', async () => {
-      // First call = current, second call = previous
-      mockPrisma.contractor.count
-        .mockResolvedValueOnce(15) // current active
-        .mockResolvedValueOnce(12); // previous active
+      stubKpiQueries({ activeContractors: 15, prevActiveContractors: 12 });
 
       const result = await caller.dashboard.kpis();
 
@@ -347,9 +388,7 @@ describe('dashboard router', () => {
     });
 
     it('returns prevValue for trend comparison on pendingApprovals', async () => {
-      mockPrisma.approvalStep.count
-        .mockResolvedValueOnce(8) // current pending
-        .mockResolvedValueOnce(3); // previous pending
+      stubKpiQueries({ pendingApprovals: 8, prevPendingApprovals: 3 });
 
       const result = await caller.dashboard.kpis();
 
@@ -357,9 +396,7 @@ describe('dashboard router', () => {
     });
 
     it('returns prevValue for trend comparison on readyToPayTotal', async () => {
-      mockPrisma.invoice.aggregate
-        .mockResolvedValueOnce({ _sum: { amountToPayMinor: 100000 } })
-        .mockResolvedValueOnce({ _sum: { amountToPayMinor: 80000 } });
+      stubKpiQueries({ readyToPayMinor: 100000, prevReadyToPayMinor: 80000 });
 
       const result = await caller.dashboard.kpis();
 
@@ -370,8 +407,7 @@ describe('dashboard router', () => {
     });
 
     it('returns neutral (no trend) for expiringContracts and openTasks', async () => {
-      mockPrisma.contract.count.mockResolvedValue(4);
-      mockPrisma.workflowTaskRun.count.mockResolvedValue(6);
+      stubKpiQueries({ expiringContracts: 4, openTasks: 6 });
 
       const result = await caller.dashboard.kpis();
 
@@ -381,34 +417,17 @@ describe('dashboard router', () => {
     });
 
     it('scopes all queries to organizationId', async () => {
+      stubKpiQueries();
       await caller.dashboard.kpis();
 
-      // contractor.count called twice (current + previous)
-      for (const call of mockPrisma.contractor.count.mock.calls) {
-        expect(call[0]?.where).toHaveProperty('organizationId', ORG_ID);
+      // F-SCALE-11 — fetchKpis issues exactly 4 $queryRaw calls; each must
+      // bind ORG_ID as a parameter via the tagged-template `values` array.
+      expect(mockPrisma.$queryRaw).toHaveBeenCalledTimes(4);
+      for (const call of mockPrisma.$queryRaw.mock.calls) {
+        // Tagged template: arg[0] = strings array, args[1+] = interpolated values
+        const interpolated = call.slice(1);
+        expect(interpolated).toContain(ORG_ID);
       }
-
-      // approvalStep.count called twice
-      for (const call of mockPrisma.approvalStep.count.mock.calls) {
-        expect(call[0]?.where).toHaveProperty('organizationId', ORG_ID);
-      }
-
-      // invoice.aggregate called twice
-      for (const call of mockPrisma.invoice.aggregate.mock.calls) {
-        expect(call[0]?.where).toHaveProperty('organizationId', ORG_ID);
-      }
-
-      // contract.count called once
-      expect(mockPrisma.contract.count.mock.calls[0]?.[0]?.where).toHaveProperty(
-        'organizationId',
-        ORG_ID,
-      );
-
-      // workflowTaskRun.count called once
-      expect(mockPrisma.workflowTaskRun.count.mock.calls[0]?.[0]?.where).toHaveProperty(
-        'organizationId',
-        ORG_ID,
-      );
     });
 
     it('requires report.read permission', async () => {
