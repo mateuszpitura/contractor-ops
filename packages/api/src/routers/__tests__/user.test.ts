@@ -61,7 +61,11 @@ const { mockPrisma } = vi.hoisted(() => {
     },
     member: {
       findFirst: vi.fn(async () => ({ role: 'admin' })),
+      findFirstOrThrow: vi.fn(async () => ({ id: 'member-mock' })),
       count: vi.fn(async () => 2),
+      // F-SEC-07 — deactivate / reactivate now flip Member.disabledAt
+      // instead of routing through Better Auth's banUser/unbanUser.
+      update: vi.fn(async () => ({ id: 'member-mock', disabledAt: new Date() })),
     },
     approvalStep: {
       findMany: vi.fn(async () => []),
@@ -98,6 +102,20 @@ vi.mock('@contractor-ops/db', () => ({
   createTenantClient: vi.fn(() => mockPrisma),
   createTenantClientFrom: vi.fn(() => mockPrisma),
   getRegionalClient: vi.fn(() => mockPrisma),
+}));
+
+// F-DB-03 / F-SEC-12 — org-cache must report ACTIVE so tenant middleware
+// does not throw orgSuspended.
+vi.mock('../../services/org-cache.js', () => ({
+  getOrgMeta: vi.fn(async (orgId: string) => ({
+    id: orgId,
+    dataRegion: 'EU',
+    status: 'ACTIVE',
+    name: 'Test Org',
+  })),
+  invalidateOrgMeta: vi.fn(async () => undefined),
+  ORG_META_TTL_SECONDS: 300,
+  orgMetaKey: (orgId: string) => `org:${orgId}:meta`,
 }));
 
 vi.mock('../../services/r2.js', () => ({
@@ -415,7 +433,11 @@ describe('user.invite', () => {
 
 describe('user.updateRole', () => {
   it('calls auth updateMemberRole with memberId and new role', async () => {
-    await caller.user.updateRole({ userId: MEMBER_ID, role: 'admin' });
+    // F-SEC-14 — router now resolves Member.id from the supplied userId
+    // via `member.findFirstOrThrow` before calling Better Auth.
+    mockPrisma.member.findFirstOrThrow.mockResolvedValueOnce({ id: MEMBER_ID });
+
+    await caller.user.updateRole({ userId: TARGET_USER_ID, role: 'admin' });
 
     expect(auth.api.updateMemberRole).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -438,7 +460,10 @@ describe('user.deactivate', () => {
       'LAST_ADMIN_CANNOT_DEACTIVATE',
     );
 
-    expect(auth.api.banUser).not.toHaveBeenCalled();
+    // F-SEC-07 — deactivate now flips Member.disabledAt instead of
+    // calling Better Auth's banUser. The guard must short-circuit before
+    // any membership update happens.
+    expect(mockPrisma.member.update).not.toHaveBeenCalled();
   });
 
   it('reassigns pending approval steps to another user with same role', async () => {
@@ -447,7 +472,7 @@ describe('user.deactivate', () => {
       approverRole: 'admin',
     };
     mockPrisma.member.findFirst
-      .mockResolvedValueOnce({ role: 'admin' }) // target member lookup
+      .mockResolvedValueOnce({ id: MEMBER_ID, role: 'admin' }) // target member lookup
       .mockResolvedValueOnce({ userId: 'replacement-user' }); // replacement lookup
     mockPrisma.member.count.mockResolvedValueOnce(2);
     mockPrisma.approvalStep.findMany.mockResolvedValueOnce([pendingStep]);
@@ -474,7 +499,7 @@ describe('user.deactivate', () => {
 
   it('transfers contractor ownership to an admin when deactivating', async () => {
     mockPrisma.member.findFirst
-      .mockResolvedValueOnce({ role: 'readonly' }) // target is not admin
+      .mockResolvedValueOnce({ id: MEMBER_ID, role: 'readonly' }) // target is not admin
       .mockResolvedValueOnce({ userId: USER_ID }); // replacement admin
     mockPrisma.approvalStep.findMany.mockResolvedValueOnce([]);
     mockPrisma.contractor.findMany.mockResolvedValueOnce([
@@ -492,13 +517,29 @@ describe('user.deactivate', () => {
 });
 
 describe('user.reactivate', () => {
-  it('calls auth unbanUser with correct userId', async () => {
+  it('clears Member.disabledAt for the target membership', async () => {
+    // F-SEC-07 — reactivation is now per-membership (clears disabledAt /
+    // disabledByUserId / disabledReason). It no longer routes through
+    // Better Auth's unbanUser, which would have global side-effects
+    // across every org the user belonged to.
+    mockPrisma.member.findFirst.mockResolvedValueOnce({ id: MEMBER_ID });
+
     await caller.user.reactivate({ userId: TARGET_USER_ID });
 
-    expect(auth.api.unbanUser).toHaveBeenCalledWith(
-      expect.objectContaining({
-        body: { userId: TARGET_USER_ID },
-      }),
-    );
+    expect(mockPrisma.member.update).toHaveBeenCalledWith({
+      where: { id: MEMBER_ID },
+      data: {
+        disabledAt: null,
+        disabledByUserId: null,
+        disabledReason: null,
+      },
+      select: {
+        id: true,
+        userId: true,
+        organizationId: true,
+        disabledAt: true,
+      },
+    });
+    expect(auth.api.unbanUser).not.toHaveBeenCalled();
   });
 });
