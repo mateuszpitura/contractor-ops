@@ -95,6 +95,18 @@ vi.mock('@contractor-ops/db', () => ({
   getRegionalClient: vi.fn(() => mockPrisma),
 }));
 
+// PDF magic bytes — `%PDF-1.4` followed by zero padding to fill the 4 KB
+// Range GET that confirmUpload's F-SEC-18 sniff pulls from R2.
+// `fileTypeFromBuffer` keys off this signature to return `application/pdf`,
+// which lets the magic-byte sniff match the declared `application/pdf`
+// MIME used throughout this suite. Hoisted so the `vi.mock` factory below
+// (which is itself hoisted) can reference it.
+const { PDF_MAGIC } = vi.hoisted(() => {
+  const buf = new Uint8Array(4100);
+  buf.set([0x25, 0x50, 0x44, 0x46, 0x2d, 0x31, 0x2e, 0x34, 0x0a], 0);
+  return { PDF_MAGIC: buf };
+});
+
 vi.mock('../../services/r2.js', () => ({
   maxBytesForMime: vi.fn(() => 10485760),
   MAX_BYTES_BY_MIME: { 'application/pdf': 52428800 },
@@ -103,13 +115,24 @@ vi.mock('../../services/r2.js', () => ({
   generateStorageKey: vi.fn(
     (orgId: string, docId: string, filename: string) => `${orgId}/${docId}/${filename}`,
   ),
+  getR2BucketName: vi.fn(() => 'test-bucket'),
   headObject: vi.fn(async () => ({ ContentLength: 2048 })),
   deleteObject: vi.fn(async () => undefined),
+  getObjectAsString: vi.fn(async () => ''),
   createR2Client: vi.fn(() => ({
     send: vi.fn(async () => ({
-      Body: { transformToByteArray: async () => new Uint8Array(100) },
+      Body: { transformToByteArray: async () => PDF_MAGIC },
     })),
   })),
+}));
+
+// F-SEC-18 — confirmUpload dynamically imports `@aws-sdk/client-s3` for
+// the Range GET, and the real `file-type` package detects the PDF magic
+// bytes from the buffer the mocked R2 client returns above.
+vi.mock('@aws-sdk/client-s3', () => ({
+  GetObjectCommand: vi.fn(function GetObjectCommand(this: unknown, args: unknown) {
+    Object.assign(this as object, args ?? {});
+  }),
 }));
 
 vi.mock('../../services/regional-storage.js', () => ({
@@ -383,11 +406,15 @@ describe('document.requestUpload', () => {
     expect(result).toHaveProperty('storageKey');
     expect(result).toHaveProperty('documentId');
 
-    // Verify presigned URL was generated
+    // F-SEC-19: presigned PUT now binds the per-MIME byte cap so R2 rejects
+    // oversize uploads at the edge — signature is
+    // (storageKey, mimeType, ttlSec, _checksumSha256?, maxBytes).
     expect(createPresignedUploadUrl).toHaveBeenCalledWith(
       expect.stringContaining(ORG_ID),
       'application/pdf',
       300,
+      undefined,
+      expect.any(Number),
     );
   });
 
