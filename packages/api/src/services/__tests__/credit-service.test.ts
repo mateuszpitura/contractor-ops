@@ -433,13 +433,19 @@ describe('checkAndDeductCredit', () => {
       await checkAndDeductCredit(ORG_ID);
 
       expect(mockStripe.billing.meterEvents.create).toHaveBeenCalledOnce();
-      expect(mockStripe.billing.meterEvents.create).toHaveBeenCalledWith({
-        event_name: 'ocr_extraction',
-        payload: {
-          stripe_customer_id: 'cus_abc',
-          value: '1',
-        },
-      });
+      // F-INT-04: meter event identifier is derived from the ledger row id
+      // (or organizationId+timestamp fallback) so Stripe natively dedupes
+      // concurrent retries within the meter-aggregation window.
+      expect(mockStripe.billing.meterEvents.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          event_name: 'ocr_extraction',
+          identifier: expect.any(String),
+          payload: {
+            stripe_customer_id: 'cus_abc',
+            value: '1',
+          },
+        }),
+      );
     });
 
     it('invalidates credit balance cache', async () => {
