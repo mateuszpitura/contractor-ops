@@ -52,6 +52,8 @@ const { mockPrisma, ORG_ID, USER_ID, RUN_ID, TASK_RUN_ID, TEMPLATE_ID, CONTRACTO
         findFirst: vi.fn(),
         findMany: vi.fn(),
         create: vi.fn(),
+        // F-DB-06 — instantiateTaskRuns now batches inserts via createMany
+        createMany: vi.fn(async () => ({ count: 0 })),
         update: vi.fn(),
         updateMany: vi.fn(),
         count: vi.fn(),
@@ -113,6 +115,20 @@ vi.mock('@contractor-ops/db', () => ({
   createTenantClient: vi.fn(() => mockPrisma),
   createTenantClientFrom: vi.fn(() => mockPrisma),
   getRegionalClient: vi.fn(() => mockPrisma),
+}));
+
+// F-DB-03 / F-SEC-12 — org-cache must report ACTIVE so tenant middleware
+// does not throw orgSuspended.
+vi.mock('../../services/org-cache.js', () => ({
+  getOrgMeta: vi.fn(async (orgId: string) => ({
+    id: orgId,
+    dataRegion: 'EU',
+    status: 'ACTIVE',
+    name: 'Test Org',
+  })),
+  invalidateOrgMeta: vi.fn(async () => undefined),
+  ORG_META_TTL_SECONDS: 300,
+  orgMetaKey: (orgId: string) => `org:${orgId}:meta`,
 }));
 
 vi.mock('../../services/notification-service.js', () => ({
@@ -776,13 +792,12 @@ describe('workflowExecutionRouter', () => {
         status: 'IN_PROGRESS',
         contractorId: CONTRACTOR_ID,
       });
-      mockPrisma.workflowTaskRun.create.mockResolvedValueOnce({
-        id: TASK_RUN_ID,
-        status: 'TODO',
-        title: 'Setup Access',
-        description: null,
-        assigneeUserId: USER_ID,
-      });
+      // F-DB-06 — task rows are inserted via `createMany`, not per-row
+      // `create`. The router pre-generates UUIDs and invokes a single
+      // batched insert, so the test only needs to satisfy the mock surface
+      // (the return value is unused — caller refetches via findUniqueOrThrow
+      // below).
+      mockPrisma.workflowTaskRun.createMany.mockResolvedValueOnce({ count: 1 });
       mockPrisma.workflowTaskRun.findMany.mockResolvedValueOnce([
         { status: 'TODO', resultJson: null },
       ]);
@@ -811,7 +826,13 @@ describe('workflowExecutionRouter', () => {
 
       expect(result).toMatchObject({ id: RUN_ID, status: 'IN_PROGRESS' });
       expect(mockPrisma.workflowRun.create).toHaveBeenCalled();
-      expect(mockPrisma.workflowTaskRun.create).toHaveBeenCalled();
+      expect(mockPrisma.workflowTaskRun.createMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.arrayContaining([
+            expect.objectContaining({ workflowTaskTemplateId: 'tmpl-task-1' }),
+          ]),
+        }),
+      );
     });
   });
 
