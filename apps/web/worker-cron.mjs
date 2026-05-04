@@ -37,6 +37,65 @@ Sentry.init({
 // Pino is used directly here (not @contractor-ops/logger) because this worker
 // runs as a standalone Node ESM script outside the Next.js bundle and cannot
 // import the TypeScript workspace package. Options mirror packages/logger.
+//
+// F-OBS-16: mirror the PII redact list from `packages/logger/src/pii-mask.ts`
+// so a future field added to a cron-call log object cannot bypass the
+// central allowlist (the `lint:logs` guard does not cover *.mjs).
+// Keep this list in sync with PII_MASK_PATHS — any new entry there must be
+// reflected here until this worker can be ported to TypeScript and import
+// the shared list directly.
+const PII_REDACT_PATHS = [
+  // Authentication / secrets
+  '*.password',
+  '*.token',
+  '*.accessToken',
+  '*.refreshToken',
+  '*.apiKey',
+  '*.authorization',
+  '*.cookie',
+  'headers.authorization',
+  'headers.cookie',
+
+  // UK contractor fields
+  '*.utr',
+  '*.UTR',
+  '*.niNumber',
+  '*.nationalInsuranceNumber',
+  '*.companiesHouseNumber',
+  '*.vatNumber',
+  '*.vatRegistrationNumber',
+
+  // German contractor fields — Phase 56
+  '*.steuernummer',
+  '*.ustIdNr',
+  '*.ustIdnr',
+  '*.vatIdNumber',
+  '*.handelsregisterNumber',
+  '*.sozialversicherungsnummer',
+  '*.svNumber',
+  '*.svNr',
+  '*.socialInsuranceNumber',
+
+  // Country-scoped bundles
+  '*.countryFields.utr',
+  '*.countryFields.UTR',
+  '*.countryFields.niNumber',
+  '*.countryFields.nationalInsuranceNumber',
+  '*.countryFields.vatRegistrationNumber',
+  '*.countryFields.companiesHouseNumber',
+  '*.countryFields.steuernummer',
+  '*.countryFields.ustIdNr',
+  '*.countryFields.ustIdnr',
+  '*.countryFields.sozialversicherungsnummer',
+  '*.countryFields.svNumber',
+  '*.countryFields.socialInsuranceNumber',
+  '*.countryFields.handelsregister.*',
+
+  // Default-redact request/response bodies (Phase 70 D-05).
+  'body',
+  '*.body',
+];
+
 const log = pino({
   level: process.env.LOG_LEVEL ?? 'info',
   timestamp: pino.stdTimeFunctions.isoTime,
@@ -46,6 +105,10 @@ const log = pino({
     },
   },
   base: { service: 'worker-cron' },
+  redact: {
+    paths: PII_REDACT_PATHS,
+    censor: '[REDACTED]',
+  },
 });
 
 // ---------------------------------------------------------------------------
