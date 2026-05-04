@@ -34,14 +34,23 @@ export const auditRouter = router({
   /**
    * List audit log entries with search, structured filters, and pagination.
    * Admin-only (settings:read permission per D-13).
+   *
+   * F-DB-11 — supports two modes:
+   *   - cursor pagination (preferred for deep navigation; no totalCount)
+   *   - legacy offset pagination via {page, pageSize} kept for back-compat;
+   *     totalCount is bounded to avoid the full-scan-on-deep-page anti-pattern.
    */
   list: tenantProcedure
     .use(settingsRead)
     .input(
       z
         .object({
+          // Legacy offset pagination (deprecated, kept for back-compat)
           page: z.number().min(1).default(1),
           pageSize: z.number().min(1).max(100).default(25),
+          // F-DB-11 cursor pagination — preferred for write-heavy unbounded
+          // tables. When `cursor` is supplied we ignore `page` and stream.
+          cursor: z.string().optional(),
           sortOrder: z.enum(['asc', 'desc']).default('desc'),
         })
         .merge(auditFilterSchema),
@@ -76,6 +85,30 @@ export const auditRouter = router({
         };
       }
 
+      // F-DB-11: cursor mode — keyset on (id) ordered by createdAt.
+      if (input.cursor) {
+        const items = await ctx.db.auditLog.findMany({
+          where,
+          take: input.pageSize + 1,
+          cursor: { id: input.cursor },
+          skip: 1,
+          orderBy: { createdAt: input.sortOrder },
+        });
+        const hasMore = items.length > input.pageSize;
+        const trimmed = hasMore ? items.slice(0, input.pageSize) : items;
+        return {
+          items: trimmed,
+          nextCursor: hasMore ? trimmed[trimmed.length - 1]?.id : undefined,
+          // No totalCount in cursor mode — caller relies on nextCursor.
+          totalCount: null,
+          page: null,
+          pageSize: input.pageSize,
+        };
+      }
+
+      // Legacy offset path. Cap totalCount lookup to a sane upper bound to
+      // avoid the full-scan anti-pattern on multi-million-row audit tables.
+      const COUNT_CAP = 10_000;
       const [items, totalCount] = await Promise.all([
         ctx.db.auditLog.findMany({
           where,
@@ -83,7 +116,7 @@ export const auditRouter = router({
           take: input.pageSize,
           orderBy: { createdAt: input.sortOrder },
         }),
-        ctx.db.auditLog.count({ where }),
+        ctx.db.auditLog.count({ where, take: COUNT_CAP }),
       ]);
 
       return {
@@ -91,17 +124,24 @@ export const auditRouter = router({
         totalCount,
         page: input.page,
         pageSize: input.pageSize,
+        nextCursor: undefined as string | undefined,
       };
     }),
 
   /**
    * Returns distinct actors for filter dropdown.
+   *
+   * F-DB-10 — without `take`, this `DISTINCT ON (actorId)` walks the full
+   * audit log for the org (millions of rows in mature tenants). Cap the
+   * result set at 100 actors which is well above any realistic dropdown
+   * cardinality. Long-term fix is a denormalised `AuditActor` table.
    */
   actors: tenantProcedure.use(settingsRead).query(async ({ ctx }) => {
     const actors = await ctx.db.auditLog.findMany({
       where: { organizationId: ctx.organizationId },
       distinct: ['actorId'],
       select: { actorId: true, actorName: true },
+      take: 100,
     });
 
     return actors
