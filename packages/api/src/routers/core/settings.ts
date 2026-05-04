@@ -12,6 +12,7 @@ import { router } from '../../init.js';
 import { requirePermission } from '../../middleware/rbac.js';
 import { sensitiveActionProcedure } from '../../middleware/sensitive.js';
 import { tenantProcedure } from '../../middleware/tenant.js';
+import { writeAuditLog } from '../../services/audit-writer.js';
 import { CacheKeys, CacheTTL, cached, invalidateByPrefix } from '../../services/cache.js';
 import { approveChangeRequest, rejectChangeRequest } from '../../services/portal-change-request.js';
 import { createRegionalPresignedUploadUrl } from '../../services/regional-storage.js';
@@ -85,6 +86,18 @@ export const settingsRouter = router({
       // Invalidate all settings caches for this org
       void invalidateByPrefix(CacheKeys.settingsPrefix(ctx.organizationId));
 
+      // F-OBS-05 — settings.update changes org name/legal name/billing email
+      // and other tenant-wide settings; same audit reasoning as organization.update.
+      await writeAuditLog({
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user?.id ?? null,
+        action: 'SETTINGS_UPDATE',
+        resourceType: 'ORGANIZATION',
+        resourceId: ctx.organizationId,
+        newValues: data,
+      });
+
       return updated;
     }),
 
@@ -141,6 +154,23 @@ export const settingsRouter = router({
       });
 
       void invalidateByPrefix(CacheKeys.settingsPrefix(ctx.organizationId));
+
+      // F-OBS-05 — reminder defaults drive automated outbound notifications;
+      // changes affect contractor-facing workflows.
+      await writeAuditLog({
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user?.id ?? null,
+        action: 'SETTINGS_EXPIRY_REMINDERS_UPDATE',
+        resourceType: 'ORGANIZATION',
+        resourceId: ctx.organizationId,
+        oldValues: {
+          reminderDaysBefore: (currentSettings.contractExpiryReminderDaysBefore as number[]) ?? [
+            30, 60, 90,
+          ],
+        },
+        newValues: { reminderDaysBefore: input.reminderDaysBefore },
+      });
 
       return { reminderDaysBefore: input.reminderDaysBefore };
     }),
@@ -201,6 +231,22 @@ export const settingsRouter = router({
       });
 
       void invalidateByPrefix(CacheKeys.settingsPrefix(ctx.organizationId));
+
+      // F-OBS-05 — invoice match threshold affects which invoices auto-match
+      // vs flag for manual review; financial control change.
+      await writeAuditLog({
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user?.id ?? null,
+        action: 'SETTINGS_INVOICE_THRESHOLD_UPDATE',
+        resourceType: 'ORGANIZATION',
+        resourceId: ctx.organizationId,
+        oldValues: {
+          invoiceDeviationThresholdPercent:
+            (currentSettings.invoiceDeviationThresholdPercent as number) ?? 10,
+        },
+        newValues: { invoiceDeviationThresholdPercent: input.invoiceDeviationThresholdPercent },
+      });
 
       return {
         invoiceDeviationThresholdPercent: input.invoiceDeviationThresholdPercent,
@@ -311,6 +357,25 @@ export const settingsRouter = router({
 
       void invalidateByPrefix(CacheKeys.settingsPrefix(ctx.organizationId));
 
+      // F-OBS-05 — branding changes are visible to contractors and can be
+      // used in phishing scenarios; auditable.
+      await writeAuditLog({
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user?.id ?? null,
+        action: 'SETTINGS_BRANDING_UPDATE',
+        resourceType: 'ORGANIZATION',
+        resourceId: ctx.organizationId,
+        oldValues: {
+          brandColor: (currentSettings.brandColor as string) ?? null,
+          logo: org?.logo ?? null,
+        },
+        newValues: {
+          brandColor: (newSettings.brandColor as string) ?? null,
+          logo: input.logoUrl === undefined ? (org?.logo ?? null) : input.logoUrl,
+        },
+      });
+
       return {
         brandColor: (newSettings.brandColor as string) ?? null,
         logo: input.logoUrl === undefined ? (org?.logo ?? null) : input.logoUrl,
@@ -377,9 +442,27 @@ export const settingsRouter = router({
         }
       }
 
+      const previous = await ctx.db.organization.findUnique({
+        where: { id: ctx.organizationId },
+        select: { portalSubdomain: true },
+      });
+
       await ctx.db.organization.update({
         where: { id: ctx.organizationId },
         data: { portalSubdomain: input.portalSubdomain ?? null },
+      });
+
+      // F-OBS-05 — portal subdomain is customer-visible; changes affect
+      // tenant routing and email links.
+      await writeAuditLog({
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user?.id ?? null,
+        action: 'SETTINGS_PORTAL_DOMAIN_UPDATE',
+        resourceType: 'ORGANIZATION',
+        resourceId: ctx.organizationId,
+        oldValues: { portalSubdomain: previous?.portalSubdomain ?? null },
+        newValues: { portalSubdomain: input.portalSubdomain ?? null },
       });
 
       return { success: true as const };
@@ -462,6 +545,21 @@ export const settingsRouter = router({
       } else {
         await rejectChangeRequest(input.requestId, ctx.organizationId, reviewerId, input.comment);
       }
+
+      // F-OBS-05 — change-request review is a tenant-data approval/rejection
+      // step that admins must be able to retrace.
+      await writeAuditLog({
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: reviewerId,
+        action: input.action === 'approve' ? 'CHANGE_REQUEST_APPROVE' : 'CHANGE_REQUEST_REJECT',
+        resourceType: 'ORGANIZATION',
+        resourceId: ctx.organizationId,
+        metadata: {
+          changeRequestId: input.requestId,
+          ...(input.comment ? { comment: input.comment } : {}),
+        },
+      });
 
       return { success: true as const };
     }),
