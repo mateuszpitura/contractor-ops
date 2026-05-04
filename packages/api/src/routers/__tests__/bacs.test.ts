@@ -122,6 +122,21 @@ vi.mock('../../services/audit-writer.js', () => ({
   writeAuditLog: mockWriteAuditLog,
 }));
 
+// F-DB-03 — tenantMiddleware reads status/region via getOrgMeta. Stub it so
+// individual tests can override `prisma.organization.findUnique` for the
+// HANDLER's own DB lookup without inadvertently failing the tenant gate.
+vi.mock('../../services/org-cache.js', () => ({
+  getOrgMeta: vi.fn(async () => ({
+    id: 'org-bacs-001',
+    dataRegion: 'EU',
+    status: 'ACTIVE',
+    name: 'Test Org',
+  })),
+  invalidateOrgMeta: vi.fn(async () => undefined),
+  ORG_META_TTL_SECONDS: 300,
+  orgMetaKey: (orgId: string) => `org:${orgId}:meta`,
+}));
+
 vi.mock('@contractor-ops/logger', () => ({
   createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), fatal: vi.fn(), trace: vi.fn(), child: vi.fn() })),
   createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
