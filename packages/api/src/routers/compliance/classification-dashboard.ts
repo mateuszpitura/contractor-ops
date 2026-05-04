@@ -163,7 +163,12 @@ type DashboardRow = {
 // buildDashboardRows — shared data join for CSV export + (future) UI reuse
 // ---------------------------------------------------------------------------
 
-type DbCtx = { db: Record<string, unknown> };
+// F-DB-21 — add explicit organizationId to every where clause as
+// defense-in-depth. The withTenantScope extension would inject it anyway,
+// but a future refactor that swaps in `prismaRaw` (or any unscoped client)
+// would silently leak data on this sensitive compliance view (IR35
+// verdicts, DRV statuses). Belt-and-braces.
+type DbCtx = { db: Record<string, unknown>; organizationId: string };
 
 /**
  * Joins ContractorAssignment + Contractor + latest completed ClassificationAssessment
@@ -174,6 +179,7 @@ type DbCtx = { db: Record<string, unknown> };
  * column set is stable across markets (UI-SPEC D-16 column contract).
  */
 async function buildDashboardRows(ctx: DbCtx, market: 'GB' | 'DE'): Promise<DashboardRow[]> {
+  const orgId = ctx.organizationId;
   const db = ctx.db as {
     contractorAssignment: {
       findMany: (args: unknown) => Promise<Record<string, unknown>[]>;
@@ -193,7 +199,7 @@ async function buildDashboardRows(ctx: DbCtx, market: 'GB' | 'DE'): Promise<Dash
   };
 
   const assignments = await db.contractorAssignment.findMany({
-    where: { status: 'ACTIVE', contractor: { countryCode: market } },
+    where: { organizationId: orgId, status: 'ACTIVE', contractor: { countryCode: market } },
     include: { contractor: { select: { id: true, name: true, countryCode: true } } },
     take: DETAIL_ROW_TAKE,
   });
@@ -205,6 +211,7 @@ async function buildDashboardRows(ctx: DbCtx, market: 'GB' | 'DE'): Promise<Dash
   const [completedAssessments, alertStates, openTriggers, drvRecords] = await Promise.all([
     db.classificationAssessment.findMany({
       where: {
+        organizationId: orgId,
         status: 'completed',
         countryCode: market,
         contractorAssignmentId: { in: assignmentIds },
@@ -214,18 +221,19 @@ async function buildDashboardRows(ctx: DbCtx, market: 'GB' | 'DE'): Promise<Dash
     }),
     market === 'DE'
       ? db.economicDependencyAlertState.findMany({
-          where: { contractorAssignmentId: { in: assignmentIds } },
+          where: { organizationId: orgId, contractorAssignmentId: { in: assignmentIds } },
         })
       : Promise.resolve([]),
     db.reassessmentTrigger.findMany({
       where: {
+        organizationId: orgId,
         status: { in: ['OPEN', 'ACKNOWLEDGED'] },
         contractorAssignmentId: { in: assignmentIds },
       },
     }),
     market === 'DE'
       ? db.statusfeststellungsverfahren.findMany({
-          where: { contractorAssignmentId: { in: assignmentIds } },
+          where: { organizationId: orgId, contractorAssignmentId: { in: assignmentIds } },
           orderBy: { filedAt: 'desc' },
         })
       : Promise.resolve([]),
@@ -351,12 +359,18 @@ export const classificationDashboardRouter = router({
       };
     };
 
+    // F-DB-21 — explicit org-scoping (defense-in-depth).
+    const orgId = ctx.organizationId;
     const [total, completedAssessments] = await Promise.all([
       db.contractorAssignment.count({
-        where: { status: 'ACTIVE', contractor: { countryCode: input.market } },
+        where: {
+          organizationId: orgId,
+          status: 'ACTIVE',
+          contractor: { countryCode: input.market },
+        },
       }),
       db.classificationAssessment.findMany({
-        where: { status: 'completed', countryCode: input.market },
+        where: { organizationId: orgId, status: 'completed', countryCode: input.market },
         select: { contractorAssignmentId: true },
         distinct: ['contractorAssignmentId'],
         take: DETAIL_ROW_TAKE,
@@ -391,8 +405,13 @@ export const classificationDashboardRouter = router({
         };
       };
 
+      // F-DB-21 — explicit org-scoping (defense-in-depth).
       const rows = await db.classificationAssessment.findMany({
-        where: { status: 'completed', countryCode: input.market },
+        where: {
+          organizationId: ctx.organizationId,
+          status: 'completed',
+          countryCode: input.market,
+        },
         orderBy: { completedAt: 'desc' },
         select: { contractorAssignmentId: true, outcome: true, completedAt: true },
         take: DETAIL_ROW_TAKE,
@@ -448,9 +467,12 @@ export const classificationDashboardRouter = router({
       };
     };
 
+    // F-DB-21 — explicit org-scoping (defense-in-depth).
+    const orgId = ctx.organizationId;
     if (input.market === 'GB') {
       const triggers = await db.reassessmentTrigger.findMany({
         where: {
+          organizationId: orgId,
           status: { in: ['OPEN', 'ACKNOWLEDGED'] },
           contractorAssignment: { contractor: { countryCode: 'GB' } },
         },
@@ -477,6 +499,7 @@ export const classificationDashboardRouter = router({
 
     const rows = await db.classificationAssessment.findMany({
       where: {
+        organizationId: orgId,
         status: 'completed',
         countryCode: 'DE',
         completedAt: { lt: cutoff },
@@ -519,9 +542,12 @@ export const classificationDashboardRouter = router({
       statusfeststellungsverfahren: { count: (args: unknown) => Promise<number> };
     };
 
+    // F-DB-21 — explicit org-scoping (defense-in-depth).
+    const orgId = ctx.organizationId;
     if (input.market === 'GB') {
       const openReassessmentTriggers = await db.reassessmentTrigger.count({
         where: {
+          organizationId: orgId,
           status: { in: ['OPEN', 'ACKNOWLEDGED'] },
           contractorAssignment: { contractor: { countryCode: 'GB' } },
         },
@@ -535,18 +561,21 @@ export const classificationDashboardRouter = router({
     const [warning, critical, drvExpiringWithin90d] = await Promise.all([
       db.economicDependencyAlertState.count({
         where: {
+          organizationId: orgId,
           currentBand: 'warning',
           contractorAssignment: { contractor: { countryCode: 'DE' } },
         },
       }),
       db.economicDependencyAlertState.count({
         where: {
+          organizationId: orgId,
           currentBand: 'critical',
           contractorAssignment: { contractor: { countryCode: 'DE' } },
         },
       }),
       db.statusfeststellungsverfahren.count({
         where: {
+          organizationId: orgId,
           validTo: { gte: now, lte: windowEnd },
           outcome: { in: ['SELBSTANDIG', 'ABHANGIG'] },
           contractorAssignment: { contractor: { countryCode: 'DE' } },
@@ -567,7 +596,11 @@ export const classificationDashboardRouter = router({
    * prefixes (=/+/-/@) — closes research gap A11 (T-60-15).
    */
   exportMarketCsv: contractorReadProcedure.input(marketInput).mutation(async ({ ctx, input }) => {
-    const rows = await buildDashboardRows(ctx, input.market);
+    // F-DB-21 — pass organizationId so buildDashboardRows can scope explicitly.
+    const rows = await buildDashboardRows(
+      { db: ctx.db, organizationId: ctx.organizationId },
+      input.market,
+    );
 
     const csvRows = rows.map(r => ({
       engagementId: r.engagementId,
