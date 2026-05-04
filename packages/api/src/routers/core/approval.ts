@@ -19,6 +19,7 @@ import { router } from '../../init.js';
 import type { TenantScopedDb } from '../../lib/tenant-db.js';
 import { requirePermission } from '../../middleware/rbac.js';
 import { tenantProcedure } from '../../middleware/tenant.js';
+import { writeAuditLog } from '../../services/audit-writer.js';
 import type { TxClient } from '../../services/approval-engine.js';
 import {
   advanceFlow,
@@ -499,6 +500,23 @@ export const approvalRouter = router({
 
       void invalidate(CacheKeys.approvalChains(ctx.organizationId));
 
+      // F-OBS-05 — approval chain config drives who must sign off on
+      // invoices; admin-controlled and audit-worthy.
+      await writeAuditLog({
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user?.id ?? null,
+        action: 'APPROVAL_CHAIN_CREATE',
+        resourceType: 'APPROVAL_FLOW',
+        resourceId: chain.id,
+        resourceName: chain.name,
+        newValues: {
+          name: chain.name,
+          isDefault: chain.isDefault,
+          resourceType: chain.resourceType,
+        },
+      });
+
       return plain(chain);
     }),
 
@@ -552,6 +570,23 @@ export const approvalRouter = router({
 
       void invalidate(CacheKeys.approvalChains(ctx.organizationId));
 
+      // F-OBS-05 — chain edits change which steps execute on every
+      // future invoice; auditable.
+      await writeAuditLog({
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user?.id ?? null,
+        action: 'APPROVAL_CHAIN_UPDATE',
+        resourceType: 'APPROVAL_FLOW',
+        resourceId: updated.id,
+        resourceName: updated.name,
+        newValues: {
+          name: updated.name,
+          isDefault: updated.isDefault,
+          isActive: updated.isActive,
+        },
+      });
+
       return plain(updated);
     }),
 
@@ -595,6 +630,18 @@ export const approvalRouter = router({
       });
 
       void invalidate(CacheKeys.approvalChains(ctx.organizationId));
+
+      // F-OBS-05 — chain deletion silences future approvals; audit so the
+      // gap can be retraced.
+      await writeAuditLog({
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user?.id ?? null,
+        action: 'APPROVAL_CHAIN_DELETE',
+        resourceType: 'APPROVAL_FLOW',
+        resourceId: input.id,
+        metadata: { chainId: input.id },
+      });
 
       return { success: true };
     }),
