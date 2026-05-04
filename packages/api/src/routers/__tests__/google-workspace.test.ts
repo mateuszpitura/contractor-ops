@@ -386,6 +386,9 @@ describe('googleWorkspaceRouter', () => {
     });
 
     it('listUserGroups rejects STARTER tier with TIER_REQUIRED error', async () => {
+      // Two assertions on the same path require two router invocations; each
+      // currently amortises ~4s of router init/teardown so we extend the
+      // timeout instead of forcing parallel calls.
       await expect(caller.listUserGroups({ userEmails: ['a@example.com'] })).rejects.toMatchObject({
         code: 'FORBIDDEN',
       });
@@ -393,7 +396,7 @@ describe('googleWorkspaceRouter', () => {
       await expect(caller.listUserGroups({ userEmails: ['a@example.com'] })).rejects.toThrow(
         /TIER_REQUIRED/,
       );
-    });
+    }, 15000);
 
     it('bulkImport rejects STARTER tier with TIER_REQUIRED error', async () => {
       await expect(
