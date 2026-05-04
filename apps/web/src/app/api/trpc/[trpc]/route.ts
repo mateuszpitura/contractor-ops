@@ -1,5 +1,6 @@
 import { appRouter, createContext } from '@contractor-ops/api';
 import { createLogger } from '@contractor-ops/logger';
+import { metrics } from '@contractor-ops/logger/metrics';
 import * as Sentry from '@sentry/nextjs';
 import { fetchRequestHandler } from '@trpc/server/adapters/fetch';
 
@@ -90,6 +91,30 @@ const handler = async (req: Request) => {
     { method, url: `${pathname}${search}`, procedure, status, durationMs },
     `← ${method} ${pathname} ${status} ${durationMs}ms`,
   );
+
+  // F-OBS-15 — RED metrics for the tRPC HTTP boundary so dashboards can
+  // chart request rate, error rate, and latency P95 alongside the
+  // per-procedure metrics already emitted in observability.ts. Tag set is
+  // intentionally low-cardinality (route prefix, method, status class) to
+  // avoid blowing up the metrics index.
+  const statusClass = `${Math.floor(status / 100)}xx`;
+  const route = '/api/trpc';
+  metrics.increment('http.request.count', 1, {
+    route,
+    method,
+    status: statusClass,
+  });
+  if (status >= 500) {
+    metrics.increment('http.request.errors', 1, {
+      route,
+      method,
+      status: statusClass,
+    });
+  }
+  metrics.distribution('http.request.duration_ms', durationMs, {
+    unit: 'millisecond',
+    tags: { route, method, status: statusClass },
+  });
 
   return res;
 };

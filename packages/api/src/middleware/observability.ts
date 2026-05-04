@@ -72,6 +72,21 @@ export const observabilityMiddleware: AnyMiddlewareFunction = async opts => {
         },
       },
       async span => {
+        // F-OBS-14: attach user + org to the current Sentry isolation scope
+        // so the dashboard's "users affected" and per-org filter both work.
+        // Span attributes alone do not power those Sentry features. The
+        // route handler in apps/web/src/app/api/trpc/[trpc]/route.ts wraps
+        // each request with `withIsolationScope`, so these scope mutations
+        // do not leak into other concurrent requests.
+        const scope = Sentry.getCurrentScope();
+        if (userId) {
+          scope.setUser({ id: userId });
+        }
+        if (organizationId) {
+          scope.setTag('org.id', organizationId);
+        }
+        scope.setTag('trpc.procedure', path);
+
         log.info('procedure started');
         try {
           const result = await next({
