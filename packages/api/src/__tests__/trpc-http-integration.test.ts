@@ -343,9 +343,12 @@ describe('tRPC HTTP integration', () => {
 
     it('authenticates session-based requests via headers', async () => {
       mockSessionAuth();
+      // Phase 2 P2-C / F-DB-03: tenantMiddleware now reads status via
+      // getOrgMeta — must include `status: 'ACTIVE'` so loadAndAssertActive
+      // doesn't throw FORBIDDEN/orgSuspended before we can assert auth.
       mockPrisma.organization.findUnique = vi
         .fn()
-        .mockResolvedValue({ id: ORG_ID, name: 'Test Org', dataRegion: 'EU' });
+        .mockResolvedValue({ id: ORG_ID, name: 'Test Org', dataRegion: 'EU', status: 'ACTIVE' });
 
       // Use a simple query that just needs auth + tenant
       const { status } = await trpcRequest('organization.getCurrent', { method: 'GET' });
