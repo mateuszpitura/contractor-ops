@@ -19,6 +19,11 @@
       "import": "./dist/services/credential-service.js",
       "default": "./dist/services/credential-service.js"
     },
+    "./services/concurrency": {
+      "types": "./dist/services/concurrency.d.ts",
+      "import": "./dist/services/concurrency.js",
+      "default": "./dist/services/concurrency.js"
+    },
     "./registry": {
       "types": "./dist/registry.d.ts",
       "import": "./dist/registry.js",

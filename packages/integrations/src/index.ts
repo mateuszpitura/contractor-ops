@@ -18,6 +18,9 @@ export {
   registerAdapter,
   registerOcrAdapter,
 } from './registry.js';
+// Concurrency helpers (F-INT-09)
+export type { LimitFunction } from './services/concurrency.js';
+export { pLimit } from './services/concurrency.js';
 // Credential Service
 export {
   decryptCredentials,

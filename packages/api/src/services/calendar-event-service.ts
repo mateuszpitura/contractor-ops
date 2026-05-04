@@ -1,12 +1,32 @@
 import type { Prisma, PrismaClient } from '@contractor-ops/db';
 import { GoogleCalendarAdapter } from '@contractor-ops/integrations/adapters/google-calendar-adapter';
 import { OutlookCalendarAdapter } from '@contractor-ops/integrations/adapters/outlook-calendar-adapter';
+import { pLimit } from '@contractor-ops/integrations/services/concurrency';
 import { decryptCredentials } from '@contractor-ops/integrations/services/credential-service';
 import { createLogger } from '@contractor-ops/logger';
 import type { CalendarEventMetadata } from '@contractor-ops/validators';
 import type { CalendarPrismaClient } from './types.js';
 
 const log = createLogger({ service: 'calendar-event-service' });
+
+// ---------------------------------------------------------------------------
+// F-INT-09 — bound calendar provider fan-out
+// ---------------------------------------------------------------------------
+//
+// `createCalendarEvent` / `updateCalendarEvent` / `deleteCalendarEvent` fan
+// out across every connected calendar (dual-push per D-12). For an org with
+// many contractors and several calendar connections per user, an unbounded
+// `Promise.all` can saturate Google/Microsoft's per-process socket pool and
+// the Prisma pool simultaneously (the per-provider resilience layer already
+// caps concurrency at the *adapter* level, but this is the per-request fan
+// out cap that protects bulk-call flows like "schedule contractor onboarding
+// across the team").
+//
+// 10 concurrent provider calls is well under Google Calendar's 600 req/min
+// quota and Microsoft Graph's 10k req per 10min throttle while still letting
+// a request with dozens of connections complete in under a second.
+const CALENDAR_FANOUT_CONCURRENCY = 10;
+const calendarLimit = pLimit(CALENDAR_FANOUT_CONCURRENCY);
 
 /** Union calendar clients are not a single callable delegate; narrow for model access. */
 function calendarOrm(prisma: CalendarPrismaClient): PrismaClient {
@@ -138,7 +158,7 @@ export async function createCalendarEvent(
     if (connections.length === 0) return;
 
     const results = await Promise.allSettled(
-      connections.map(conn => createEventForConnection(prisma, conn, input)),
+      connections.map(conn => calendarLimit(() => createEventForConnection(prisma, conn, input))),
     );
 
     logRejected(results, 'create');
@@ -235,7 +255,7 @@ export async function updateCalendarEvent(
     if (externalLinks.length === 0) return;
 
     const results = await Promise.allSettled(
-      externalLinks.map(link => updateEventForLink(prisma, link, input)),
+      externalLinks.map(link => calendarLimit(() => updateEventForLink(prisma, link, input))),
     );
 
     logRejected(results, 'update');
@@ -259,7 +279,7 @@ export async function deleteCalendarEvent(
     if (externalLinks.length === 0) return;
 
     const results = await Promise.allSettled(
-      externalLinks.map(link => deleteEventForLink(prisma, link)),
+      externalLinks.map(link => calendarLimit(() => deleteEventForLink(prisma, link))),
     );
 
     logRejected(results, 'delete');
