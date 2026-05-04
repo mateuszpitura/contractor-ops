@@ -388,12 +388,33 @@ async function dispatchChannelAlerts(event: NotificationEvent): Promise<void> {
   const category = NOTIFICATION_TYPE_TO_CHANNEL_CATEGORY[event.type];
   if (!category) return;
 
+  // S3-5 · F-ASYNC-14 — channel routing is org-derived: providers are
+  // resolved from the event's organizationId and the channel mapping comes
+  // from that org's IntegrationConnection.configJson. There is NO
+  // user-default channel; a user's prefs in Org A can never resolve a
+  // channel in Org B.
   const providers = await getConnectedMessagingProviders(event.organizationId);
 
   for (const provider of providers) {
     try {
       const channelId = await resolveChannelId(event.organizationId, provider.platform, category);
-      if (!channelId) continue;
+      if (!channelId) {
+        // F-ASYNC-14: previously this was a silent `continue` — operators
+        // had no signal that "approval went out as in-app + email but not
+        // Slack" because the channel mapping for `approvals` was missing.
+        // Log at debug so high-volume orgs without Slack mapping don't
+        // flood, but at least the line is present in Axiom queries.
+        log.debug(
+          {
+            organizationId: event.organizationId,
+            platform: provider.platform,
+            category,
+            type: event.type,
+          },
+          'channel alert dropped: no channel mapping configured for category',
+        );
+        continue;
+      }
 
       await provider.sendChannelAlert({
         organizationId: event.organizationId,
@@ -414,6 +435,22 @@ async function dispatchChannelAlerts(event: NotificationEvent): Promise<void> {
   }
 }
 
+/**
+ * Resolves the channel id for a (org, platform, category) triple from the
+ * org's connected messaging integration. Returns `null` if the org has not
+ * mapped the category to a channel — caller logs and skips.
+ *
+ * S3-5 · F-ASYNC-14: every input is org-scoped:
+ *   - `organizationId` is taken from the NotificationEvent (never from a
+ *     user-default), so multi-org users cannot leak channel routing
+ *     between tenants.
+ *   - The `IntegrationConnection.findFirst` filter pins both
+ *     `organizationId` and `status = CONNECTED`, so a provider connected
+ *     in Org A is invisible to Org B even if the same user has access
+ *     to both.
+ *   - `channelMapping` lives inside the connection's `configJson`, which
+ *     is itself org-scoped. There is no global / per-user fallback.
+ */
 async function resolveChannelId(
   organizationId: string,
   platform: string,
