@@ -301,39 +301,59 @@ export const googleWorkspaceRouter = router({
         ctx.organizationId,
       );
 
-      // Re-fetch group memberships server-side (NEVER trust client-supplied group data for RBAC)
+      // F-DB-26 — re-fetch group memberships in parallel (chunks of 10) so a
+      // 50-user import doesn't take 50× single-call latency. Same upper-bound
+      // for invite-create below. The chunk size of 10 keeps us well under
+      // Google Directory API + Resend rate limits.
+      const CHUNK = 10;
       const serverGroupMemberships: Record<string, string[]> = {};
-      for (const user of input.users) {
-        const groups = await adapter.listUserGroups(credentials.accessToken, user.email);
-        serverGroupMemberships[user.email] = groups.map(g => g.email);
+      for (let i = 0; i < input.users.length; i += CHUNK) {
+        const slice = input.users.slice(i, i + CHUNK);
+        await Promise.all(
+          slice.map(async user => {
+            const groups = await adapter.listUserGroups(credentials.accessToken, user.email);
+            serverGroupMemberships[user.email] = groups.map(g => g.email);
+          }),
+        );
       }
 
       const succeeded: Array<{ email: string; role: string }> = [];
       const failed: Array<{ email: string; error: string }> = [];
 
-      for (const user of input.users) {
-        try {
-          const role = resolveUserRole(
-            user.email,
-            serverGroupMemberships,
-            input.groupRoleMappings,
-            input.userRoleOverrides,
-            input.defaultRole,
-          );
-
-          await authApi.createInvitation({
-            headers: ctx.headers,
-            body: {
-              email: user.email,
-              role,
-              organizationId: ctx.organizationId,
-            },
-          });
-
-          succeeded.push({ email: user.email, role });
-        } catch (error) {
-          const message = error instanceof Error ? error.message : 'Unknown error';
-          failed.push({ email: user.email, error: message });
+      // F-DB-26 — invite-create in parallel chunks of 10 with allSettled so
+      // one failure doesn't abort the whole batch.
+      for (let i = 0; i < input.users.length; i += CHUNK) {
+        const slice = input.users.slice(i, i + CHUNK);
+        const results = await Promise.allSettled(
+          slice.map(async user => {
+            const role = resolveUserRole(
+              user.email,
+              serverGroupMemberships,
+              input.groupRoleMappings,
+              input.userRoleOverrides,
+              input.defaultRole,
+            );
+            await authApi.createInvitation({
+              headers: ctx.headers,
+              body: {
+                email: user.email,
+                role,
+                organizationId: ctx.organizationId,
+              },
+            });
+            return { email: user.email, role };
+          }),
+        );
+        for (let j = 0; j < results.length; j += 1) {
+          const r = results[j]!;
+          const user = slice[j]!;
+          if (r.status === 'fulfilled') {
+            succeeded.push(r.value);
+          } else {
+            const message =
+              r.reason instanceof Error ? r.reason.message : String(r.reason ?? 'Unknown error');
+            failed.push({ email: user.email, error: message });
+          }
         }
       }
 

@@ -623,9 +623,13 @@ export const equipmentCouriersRouter = router({
    * never sent back to the client.
    */
   getCourierConfigs: adminProcedure.query(async ({ ctx }) => {
+    // F-DB-24 — defensive upper bound. Realistically a tenant has 1–5
+    // carriers, but the small-N assumption was implicit; cap at 200 so
+    // a misconfigured tenant cannot OOM the request.
     const configs = await ctx.db.courierConfig.findMany({
       where: { organizationId: ctx.organizationId },
       select: { carrier: true, createdAt: true, updatedAt: true },
+      take: 200,
     });
     return configs;
   }),

@@ -691,36 +691,35 @@ export const portalRouter = router({
    * Generates presigned download URLs. Excludes storageKey.
    */
   listDocuments: portalProcedure.query(async ({ ctx }) => {
-    // Documents linked directly to the contractor
-    const contractorDocLinks = await ctx.db.documentLink.findMany({
-      where: {
-        entityType: 'CONTRACTOR',
-        entityId: ctx.contractorId,
-      },
-      include: portalDocLinkInclude,
-    });
-
-    // Documents linked to contractor's contracts
+    // F-DB-24/25 — bound the contract scan. A contractor with 50k contracts
+    // would otherwise pull every id into the next round-trip.
     const contractIds = await ctx.db.contract.findMany({
       where: { contractorId: ctx.contractorId },
       select: { id: true },
+      take: 500,
     });
     const contractIdList = contractIds.map(c => c.id);
 
-    const contractDocLinks =
-      contractIdList.length > 0
-        ? await ctx.db.documentLink.findMany({
-            where: {
-              entityType: 'CONTRACT',
-              entityId: { in: contractIdList },
-            },
-            include: portalDocLinkInclude,
-          })
-        : [];
+    // F-DB-25 — collapse the two separate documentLink.findMany calls into
+    // a single OR query. Was 2-3 round-trips (contractor links + contract
+    // ids + contract links); now 2 round-trips total.
+    const docLinks = await ctx.db.documentLink.findMany({
+      where: {
+        OR: [
+          { entityType: 'CONTRACTOR', entityId: ctx.contractorId },
+          ...(contractIdList.length > 0
+            ? [{ entityType: 'CONTRACT' as const, entityId: { in: contractIdList } }]
+            : []),
+        ],
+      },
+      include: portalDocLinkInclude,
+      take: 500,
+    });
 
-    // Deduplicate by document ID
+    // Deduplicate by document ID (a doc can be linked to both the
+    // contractor and one of their contracts).
     const seenIds = new Set<string>();
-    const dedupedLinks = [...contractorDocLinks, ...contractDocLinks].filter(link => {
+    const dedupedLinks = docLinks.filter(link => {
       if (seenIds.has(link.document.id)) return false;
       seenIds.add(link.document.id);
       return true;

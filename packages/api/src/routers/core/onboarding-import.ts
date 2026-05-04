@@ -236,21 +236,36 @@ async function processPeopleImport(
   people: StartImportInput['people'],
   job: ImportJob,
 ) {
+  // F-DB-26 — issue invites in chunks of 10 in parallel rather than serial.
+  // Onboarding 50 users used to take 50× single-call latency; chunked
+  // parallelism stays well under Better Auth + Resend rate limits.
+  const CHUNK = 10;
   const nonSkipped = people.filter(p => !p.skip);
-  for (const person of nonSkipped) {
-    try {
-      await authApi.createInvitation({
-        headers,
-        body: {
-          email: person.email,
-          role: person.role,
-          organizationId,
-        },
-      });
-      job.completedItems++;
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
-      job.failedItems.push({ email: person.email, error: message, role: person.role });
+  for (let i = 0; i < nonSkipped.length; i += CHUNK) {
+    const slice = nonSkipped.slice(i, i + CHUNK);
+    const results = await Promise.allSettled(
+      slice.map(async person => {
+        await authApi.createInvitation({
+          headers,
+          body: {
+            email: person.email,
+            role: person.role,
+            organizationId,
+          },
+        });
+        return person;
+      }),
+    );
+    for (let j = 0; j < results.length; j += 1) {
+      const r = results[j]!;
+      const person = slice[j]!;
+      if (r.status === 'fulfilled') {
+        job.completedItems++;
+      } else {
+        const message =
+          r.reason instanceof Error ? r.reason.message : String(r.reason ?? 'Unknown error');
+        job.failedItems.push({ email: person.email, error: message, role: person.role });
+      }
     }
   }
 }
