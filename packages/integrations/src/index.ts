@@ -5,7 +5,7 @@ export { AutentiAdapter } from './adapters/autenti-adapter.js';
 export { BaseAdapter } from './adapters/base-adapter.js';
 export { DocuSignAdapter } from './adapters/docusign-adapter.js';
 export { KsefAdapter } from './adapters/ksef-adapter.js';
-export { registerAllAdapters } from './adapters/register-all.js';
+export { loadHeavyAdapters, registerAllAdapters } from './adapters/register-all.js';
 export { ResendAdapter } from './adapters/resend-adapter.js';
 export { SlackAdapter } from './adapters/slack-adapter.js';
 // Provider Registry
