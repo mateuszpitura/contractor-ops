@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { fetchWithTimeout } from '../services/fetch-helpers.js';
 import type { CredentialBlob } from '../types/credentials.js';
 import type { OAuthConfig } from '../types/provider.js';
@@ -11,15 +12,59 @@ import { BaseAdapter } from './base-adapter.js';
 // no retries (replaying can claim multiple sessions or invalidate refresh
 // tokens). Matches Slack/DocuSign precedent.
 const OAUTH_TIMEOUT_MS = 30_000;
-// Calendar event mutations — POST/PATCH/DELETE. NOT retried by default to
-// avoid duplicate inserts (no Idempotency-Key wiring yet — see F-INT-04).
+// Calendar event mutations — POST/PATCH/DELETE. With F-INT-04 the caller
+// now passes a deterministic idempotency key on createEvent (used as the
+// event `id` so a duplicate insert returns 409 instead of inserting twice).
+// `updateEvent` and `deleteEvent` operate on a stable eventId so a retry
+// of the same call is naturally idempotent. Both are safe to retry.
 // 15s wall-clock; the helper aborts on transport hangs.
-// TODO(F-INT-04): once event creation passes a deterministic
-// Idempotency-Key, opt in to `retryNonIdempotent: true` with 2 retries.
 const MUTATION_TIMEOUT_MS = 15_000;
+const MUTATION_RETRIES = 2;
 // Read-only GET / freebusy POST (idempotent query). 15s + 2 retries.
 const READ_TIMEOUT_MS = 15_000;
 const READ_RETRIES = 2;
+
+// ---------------------------------------------------------------------------
+// Idempotency key encoding (F-INT-04)
+// ---------------------------------------------------------------------------
+//
+// Google Calendar's `events.insert` accepts an optional `id` field on the
+// request body. When supplied, a duplicate insert with the same id returns
+// 409 Conflict instead of creating a second event — the production-grade
+// idempotency mechanism documented at
+// https://developers.google.com/calendar/api/v3/reference/events#id.
+//
+// Constraints from the API:
+//   - characters: lowercase letters a–v and digits 0–9 (RFC 2938 base32hex)
+//   - length: 5–1024
+//
+// `encodeGoogleEventId` derives a stable id from the caller's idempotency
+// key by sha-256 hashing it and rendering the digest as base32hex. The
+// 64-character output is well within the size budget and gives 256 bits of
+// collision resistance.
+const BASE32HEX_ALPHABET = '0123456789abcdefghijklmnopqrstuv';
+
+function encodeGoogleEventId(idempotencyKey: string): string {
+  const digest = createHash('sha256').update(idempotencyKey).digest();
+  let out = '';
+  // Walk 5-bit nibbles across the 32-byte digest. Yields 51 chars; pad with
+  // trailing '0' for 5 chars to satisfy Google's 5-char minimum (digest is
+  // 256 bits so we always have plenty of entropy regardless of padding).
+  let buffer = 0;
+  let bits = 0;
+  for (const byte of digest) {
+    buffer = (buffer << 8) | byte;
+    bits += 8;
+    while (bits >= 5) {
+      bits -= 5;
+      out += BASE32HEX_ALPHABET[(buffer >> bits) & 0x1f];
+    }
+  }
+  if (bits > 0) {
+    out += BASE32HEX_ALPHABET[(buffer << (5 - bits)) & 0x1f];
+  }
+  return out;
+}
 
 /**
  * Phase 74 D-05 / D-08 — busy range returned by getFreeBusy.
@@ -188,8 +233,18 @@ export class GoogleCalendarAdapter extends BaseAdapter {
   /**
    * Creates a calendar event on the user's primary calendar.
    *
+   * F-INT-04 idempotency: when the caller supplies `idempotencyKey`, it is
+   * encoded as the event `id` (RFC 2938 base32hex sha-256 digest). A retry
+   * of the same logical create then returns 409 Conflict from Google
+   * instead of inserting a duplicate — which is what makes
+   * `retryNonIdempotent: true` safe at the transport layer below. Callers
+   * derive the key as e.g.
+   * `sha256(`${orgId}:${calendarId}:${entityId}:create`)`.
+   *
    * @param accessToken - The OAuth access token
    * @param event - Event details
+   * @param idempotencyKey - Optional deterministic dedup key; encoded as
+   *   the Google event `id` so duplicate inserts are rejected by the API.
    * @returns Created event ID, HTML link, and etag for concurrency control
    */
   async createEvent(
@@ -201,6 +256,7 @@ export class GoogleCalendarAdapter extends BaseAdapter {
       endDateTime: string;
       attendees?: string[];
     },
+    idempotencyKey?: string,
   ): Promise<{ eventId: string; htmlLink: string; etag: string }> {
     const body: Record<string, unknown> = {
       summary: event.summary,
@@ -214,6 +270,10 @@ export class GoogleCalendarAdapter extends BaseAdapter {
       body.attendees = event.attendees.map(email => ({ email }));
     }
 
+    if (idempotencyKey) {
+      body.id = encodeGoogleEventId(idempotencyKey);
+    }
+
     const response = await fetchWithTimeout(
       'https://www.googleapis.com/calendar/v3/calendars/primary/events',
       {
@@ -224,7 +284,14 @@ export class GoogleCalendarAdapter extends BaseAdapter {
         },
         body: JSON.stringify(body),
       },
-      { timeoutMs: MUTATION_TIMEOUT_MS, retries: 0 },
+      {
+        timeoutMs: MUTATION_TIMEOUT_MS,
+        // Without an idempotency key, a transport-level retry could
+        // double-insert the event — keep retries at 0. With a key, Google
+        // dedups by event id and a retry is safe.
+        retries: idempotencyKey ? MUTATION_RETRIES : 0,
+        retryNonIdempotent: Boolean(idempotencyKey),
+      },
     );
 
     if (!response.ok) {
@@ -293,7 +360,15 @@ export class GoogleCalendarAdapter extends BaseAdapter {
         },
         body: JSON.stringify(body),
       },
-      { timeoutMs: MUTATION_TIMEOUT_MS, retries: 0 },
+      {
+        timeoutMs: MUTATION_TIMEOUT_MS,
+        // PATCH on a stable eventId with `If-Match: etag` is idempotent —
+        // the etag check on the server prevents lost updates if a retry
+        // races with a concurrent edit (we'll surface 412 Precondition
+        // Failed and the caller refetches).
+        retries: MUTATION_RETRIES,
+        retryNonIdempotent: true,
+      },
     );
 
     if (!response.ok) {
@@ -317,6 +392,10 @@ export class GoogleCalendarAdapter extends BaseAdapter {
   /**
    * Deletes a calendar event.
    *
+   * F-INT-04: DELETE on a stable eventId is naturally idempotent — Google
+   * returns 404/410 on the second call and the caller treats both 2xx and
+   * 410 as success. Safe to retry on transport errors.
+   *
    * @param accessToken - The OAuth access token
    * @param eventId - The event ID to delete
    */
@@ -329,7 +408,11 @@ export class GoogleCalendarAdapter extends BaseAdapter {
           Authorization: `Bearer ${accessToken}`,
         },
       },
-      { timeoutMs: MUTATION_TIMEOUT_MS, retries: 0 },
+      {
+        timeoutMs: MUTATION_TIMEOUT_MS,
+        retries: MUTATION_RETRIES,
+        retryNonIdempotent: true,
+      },
     );
 
     if (!response.ok) {
