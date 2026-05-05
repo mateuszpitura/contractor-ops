@@ -1,8 +1,35 @@
 # UI Atelier — Work Plan
 
-Status: Draft — supersedes the codex `UI-ATELIER-ROADMAP.md` proposal.
+Status: §1–§7 closed; §5 cross-cutting in progress.
 Owner: TBD.
 Target horizon: 4–6 PRs over 2–3 weeks of focused work, then incremental rollout.
+
+## Progress (2026-05-06)
+
+Sequenced commit groups (§4):
+
+| Group | Title | Status | Anchor commits |
+|---|---|---|---|
+| 1 | Foundation — shared tokens + V2 retirement | ✅ | `de2d8037`, `99c27d0f`, `669e3a18`, `590a0e9f`, `139a6063` |
+| 2 | Atelier primitives extracted to `@contractor-ops/ui` | ✅ | `90e93f2a` |
+| 3 | V1 dashboard upgrade with Atelier primitives | ✅ | `fac60741` |
+| 4 | Domain-aware status variant mapper | ✅ | `41ec17e7` |
+| 5 | App shell + per-route intensity | ✅ | `500cbdd2` |
+| 6 | Workbench tier rollout | ✅ | `a14aff5d`, `9880f802`, `0df88b6e` |
+| 7 | Landing Exhibition alignment | ✅ | `08e59884` |
+
+Cross-cutting deliverables (§5):
+
+| Sub | Title | Status | Anchor commits |
+|---|---|---|---|
+| 5.1 | Translation completeness audit | ✅ — `scripts/audit-translations.ts` baselined; 494 pre-existing gaps in `apps/web` (de + ar) flagged | `2e571314` |
+| 5.2 | Test infrastructure (Vitest + Playwright + axe + Lighthouse) | 🚧 in progress | tbd |
+| 5.3 | Performance budgets per route | not started | — |
+| 5.4 | Documentation — `packages/ui/README.md` | ✅ | `2e571314` |
+
+Pre-existing translation debt deferred — none of the 494 missing keys
+came from the Atelier work. Full per-locale list available via
+`pnpm tsx scripts/audit-translations.ts`.
 
 ---
 
