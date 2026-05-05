@@ -7,6 +7,7 @@ import { TeamsBotHandler } from '../teams-bot-handler.js';
 
 vi.mock('@contractor-ops/db', () => ({
   withRlsTransactions: <T,>(c: T) => c,
+  withRlsReads: <T,>(c: T) => c,
   prisma: {
     externalLink: {
       findFirst: vi.fn(),

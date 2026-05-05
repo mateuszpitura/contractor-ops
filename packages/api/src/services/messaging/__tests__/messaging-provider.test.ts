@@ -42,6 +42,7 @@ vi.mock('@contractor-ops/logger', () => {
 
 vi.mock('@contractor-ops/db', () => ({
   withRlsTransactions: <T,>(c: T) => c,
+  withRlsReads: <T,>(c: T) => c,
   prisma: {
     integrationConnection: {
       findMany: vi.fn(),

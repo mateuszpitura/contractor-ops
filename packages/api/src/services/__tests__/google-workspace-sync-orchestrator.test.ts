@@ -9,6 +9,7 @@ const { mockCreate, mockFindUniqueOrThrow, mockUpdate, mockSyncLogUpdate } = vi.
 
 vi.mock('@contractor-ops/db', () => ({
   withRlsTransactions: <T,>(c: T) => c,
+  withRlsReads: <T,>(c: T) => c,
   prisma: {
     integrationSyncLog: {
       create: mockCreate,

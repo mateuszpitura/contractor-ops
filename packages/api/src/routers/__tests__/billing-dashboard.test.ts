@@ -29,6 +29,7 @@ vi.mock('../../services/credit-service.js', () => ({
 
 vi.mock('@contractor-ops/db', () => ({
   withRlsTransactions: <T,>(c: T) => c,
+  withRlsReads: <T,>(c: T) => c,
   prisma: prismaMock,
   tenantStore: {
     run: (_ctx: { organizationId: string }, fn: () => unknown) => fn(),

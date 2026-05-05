@@ -15,6 +15,7 @@ const { mockContractorFindMany } = vi.hoisted(() => ({
 
 vi.mock('@contractor-ops/db', () => ({
   withRlsTransactions: <T,>(c: T) => c,
+  withRlsReads: <T,>(c: T) => c,
   prisma: {
     contractor: {
       findMany: mockContractorFindMany,

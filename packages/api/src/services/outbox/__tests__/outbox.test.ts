@@ -45,6 +45,7 @@ vi.mock('@contractor-ops/logger', () => {
 
 vi.mock('@contractor-ops/db', () => ({
   withRlsTransactions: <T,>(c: T) => c,
+  withRlsReads: <T,>(c: T) => c,
   prismaRaw: {
     $transaction: (fn: (tx: unknown) => Promise<unknown>) => mockTransaction(fn),
   },

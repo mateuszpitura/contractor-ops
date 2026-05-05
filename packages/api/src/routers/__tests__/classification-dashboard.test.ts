@@ -348,6 +348,7 @@ vi.mock('@contractor-ops/auth', () => ({
 
 vi.mock('@contractor-ops/db', () => ({
   withRlsTransactions: <T,>(c: T) => c,
+  withRlsReads: <T,>(c: T) => c,
   prisma: mockPrisma,
   prismaRaw: mockPrisma,
   tenantStore: {

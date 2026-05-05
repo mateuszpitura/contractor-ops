@@ -6,6 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@contractor-ops/db', () => ({
   withRlsTransactions: <T,>(c: T) => c,
+  withRlsReads: <T,>(c: T) => c,
   prisma: {
     paymentRunItem: { findUnique: vi.fn() },
     whtCertificate: { count: vi.fn(), create: vi.fn(), findMany: vi.fn() },

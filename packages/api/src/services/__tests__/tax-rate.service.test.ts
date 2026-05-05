@@ -27,6 +27,7 @@ vi.mock('@contractor-ops/db', () => {
       withholdingTaxRate: { findFirst: vi.fn() },
     },
     withRlsTransactions: <T,>(c: T) => c,
+  withRlsReads: <T,>(c: T) => c,
   };
 });
 

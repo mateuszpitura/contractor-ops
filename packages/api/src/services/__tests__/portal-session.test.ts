@@ -12,6 +12,7 @@ const { mockSessionCreate, mockSessionFindUnique, mockSessionDeleteMany } = vi.h
 
 vi.mock('@contractor-ops/db', () => ({
   withRlsTransactions: <T,>(c: T) => c,
+  withRlsReads: <T,>(c: T) => c,
   prisma: {
     portalSession: {
       create: mockSessionCreate,

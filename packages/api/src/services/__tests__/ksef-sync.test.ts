@@ -29,6 +29,7 @@ vi.mock('@contractor-ops/db', () => {
     },
     withTenantScope: vi.fn((_ctx: unknown, fn: () => unknown) => fn()),
     withRlsTransactions: <T,>(c: T) => c,
+  withRlsReads: <T,>(c: T) => c,
   };
 });
 

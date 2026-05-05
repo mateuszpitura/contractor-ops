@@ -22,6 +22,7 @@ const mockGetQStashClient = vi.hoisted(() => vi.fn(() => ({ publishJSON: mockPub
 
 vi.mock('@contractor-ops/db', () => ({
   withRlsTransactions: <T,>(c: T) => c,
+  withRlsReads: <T,>(c: T) => c,
   prisma: {
     ocrExtraction: {
       create: mockCreate,

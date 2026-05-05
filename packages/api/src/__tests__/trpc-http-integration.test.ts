@@ -101,6 +101,7 @@ vi.mock('@contractor-ops/classification', () => ({
 
 vi.mock('@contractor-ops/db', () => ({
   withRlsTransactions: <T,>(c: T) => c,
+  withRlsReads: <T,>(c: T) => c,
   prisma: mockPrisma,
   tenantStore: {
     run: (_ctx: unknown, fn: () => unknown) => fn(),
