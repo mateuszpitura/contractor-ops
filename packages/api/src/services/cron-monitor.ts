@@ -227,3 +227,68 @@ export async function withQueueObservability<T>(
     throw error;
   }
 }
+
+// ---------------------------------------------------------------------------
+// Backpressure queue-depth reader — S3-4 · F-SCALE-19
+// ---------------------------------------------------------------------------
+//
+// `qstash-backpressure.ts` owns the per-route Redis semaphore counters.
+// This reader thin-wraps `getAllQueueDepths()` so the cron-monitor barrel
+// stays the single canonical source of "queue observability snapshots"
+// for the job-health route and the /api/health backpressure probe.
+//
+// Returning a typed snapshot (instead of re-exporting the function) lets
+// us emit a `recordQueueDepth` gauge per route in one place — every poll
+// of this snapshot updates the dashboards without each caller remembering
+// to do it.
+
+export interface QueueDepthSnapshotEntry {
+  /** Stable route key (e.g. `ocr-process`). */
+  routeKey: string;
+  /** Currently in-flight slot count (cluster-wide). */
+  depth: number;
+  /** Configured concurrency cap for the route. */
+  max: number;
+  /** Health-fail threshold — `Math.floor(max * 1.5)` per design. */
+  threshold: number;
+  /** True iff `depth > threshold`. */
+  saturated: boolean;
+}
+
+/**
+ * Reads the cluster-wide depth for every backpressure-wired route and
+ * emits a `queue.depth` gauge per route as a side-effect.
+ *
+ * Health probe usage:
+ * ```ts
+ * const snap = await getQueueDepthSnapshot();
+ * const saturated = snap.filter(r => r.saturated);
+ * return saturated.length === 0 ? ok() : fail(saturated);
+ * ```
+ */
+export async function getQueueDepthSnapshot(): Promise<QueueDepthSnapshotEntry[]> {
+  // Lazy-imported to keep the cron-monitor module free of the
+  // qstash-backpressure module's @sentry/nextjs dep on cold-start paths
+  // that only need duration helpers.
+  const { getAllQueueDepths } = await import('./qstash-backpressure.js');
+  const raw = await getAllQueueDepths();
+
+  const entries: QueueDepthSnapshotEntry[] = Object.entries(raw).map(
+    ([routeKey, { depth, max, threshold }]) => ({
+      routeKey,
+      depth,
+      max,
+      threshold,
+      saturated: depth > threshold,
+    }),
+  );
+
+  // Emit a gauge per route so Axiom queries
+  // `metric:queue.depth queue:backpressure-<route>` chart cluster-wide
+  // pressure with the same shape as the outbox / webhook depth gauges.
+  for (const entry of entries) {
+    recordQueueDepth(`backpressure-${entry.routeKey}`, entry.depth);
+  }
+
+  return entries;
+}

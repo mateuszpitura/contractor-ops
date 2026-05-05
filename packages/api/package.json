@@ -200,6 +200,11 @@
       "types": "./src/services/cache.ts",
       "import": "./src/services/cache.ts",
       "default": "./src/services/cache.ts"
+    },
+    "./services/qstash-backpressure": {
+      "types": "./src/services/qstash-backpressure.ts",
+      "import": "./src/services/qstash-backpressure.ts",
+      "default": "./src/services/qstash-backpressure.ts"
     }
   },
   "scripts": {
