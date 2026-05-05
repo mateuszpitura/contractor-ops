@@ -15,7 +15,11 @@ import { vi } from 'vitest';
 if (typeof window !== 'undefined' && typeof window.matchMedia !== 'function') {
   // biome-ignore lint/suspicious/noExplicitAny: jsdom polyfill assignment
   (window as any).matchMedia = (query: string) => ({
-    matches: false,
+    // Force `prefers-reduced-motion: reduce` so AnimatedNumber + other
+    // motion-aware components render their final value synchronously
+    // instead of tweening via requestAnimationFrame (jsdom never advances
+    // raf, so untweened tests would assert on '0').
+    matches: query.includes('prefers-reduced-motion'),
     media: query,
     onchange: null,
     addListener: () => {}, // legacy

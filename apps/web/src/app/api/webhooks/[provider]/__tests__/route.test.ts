@@ -55,6 +55,14 @@ vi.mock('../../slack-webhook-context.js', () => ({
     (mockExtractSlackTeamId as (...a: unknown[]) => unknown)(...a),
   resolveSlackConnectionByTeamId: (...a: unknown[]) =>
     (mockResolveSlackConnectionByTeamId as (...a: unknown[]) => unknown)(...a),
+  // F-SCALE-10 — Redis-cached lookup; route asks for orgId by slug for Resend
+  resolveOrgIdBySlug: async (slug: string) => {
+    const org = (await (mockOrgFindUnique as (...a: unknown[]) => unknown)({
+      where: { slug },
+      select: { id: true },
+    })) as { id: string } | null;
+    return org?.id ?? null;
+  },
 }));
 
 import { POST } from '../route';

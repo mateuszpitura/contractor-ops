@@ -47,8 +47,7 @@ vi.mock('@/i18n/navigation', () => ({
 
 describe('TabPayments', () => {
   beforeEach(() => {
-    mockUseQuery.mockReturnValue({
-      data: [],
+    mockUseQuery.mockReturnValue({ data: { items: [], nextCursor: null },
       isLoading: false,
       isFetching: false,
       isPending: false,
@@ -90,8 +89,7 @@ describe('TabPayments', () => {
   });
 
   it('renders payment table with data', () => {
-    mockUseQuery.mockReturnValue({
-      data: [
+    mockUseQuery.mockReturnValue({ data: { items: [
         {
           id: 'pi-1',
           paymentRunId: 'pr-1',
@@ -105,7 +103,7 @@ describe('TabPayments', () => {
           markedPaidAt: '2025-01-20T10:00:00Z',
           createdAt: '2025-01-15T10:00:00Z',
         },
-      ],
+      ], nextCursor: null },
       isLoading: false,
       isFetching: false,
       isPending: false,
@@ -117,8 +115,7 @@ describe('TabPayments', () => {
   });
 
   it('renders formatted amount in table', () => {
-    mockUseQuery.mockReturnValue({
-      data: [
+    mockUseQuery.mockReturnValue({ data: { items: [
         {
           id: 'pi-1',
           paymentRunId: 'pr-1',
@@ -132,7 +129,7 @@ describe('TabPayments', () => {
           markedPaidAt: null,
           createdAt: '2025-01-15T10:00:00Z',
         },
-      ],
+      ], nextCursor: null },
       isLoading: false,
     });
 
@@ -143,8 +140,7 @@ describe('TabPayments', () => {
   });
 
   it('renders status badge for PAID items', () => {
-    mockUseQuery.mockReturnValue({
-      data: [
+    mockUseQuery.mockReturnValue({ data: { items: [
         {
           id: 'pi-1',
           paymentRunId: 'pr-1',
@@ -158,7 +154,7 @@ describe('TabPayments', () => {
           markedPaidAt: '2025-01-20T10:00:00Z',
           createdAt: '2025-01-15T10:00:00Z',
         },
-      ],
+      ], nextCursor: null },
       isLoading: false,
     });
 
@@ -167,8 +163,7 @@ describe('TabPayments', () => {
   });
 
   it('renders total paid amount in header', () => {
-    mockUseQuery.mockReturnValue({
-      data: [
+    mockUseQuery.mockReturnValue({ data: { items: [
         {
           id: 'pi-1',
           paymentRunId: 'pr-1',
@@ -182,7 +177,7 @@ describe('TabPayments', () => {
           markedPaidAt: null,
           createdAt: '2025-01-15T10:00:00Z',
         },
-      ],
+      ], nextCursor: null },
       isLoading: false,
     });
 
@@ -194,8 +189,7 @@ describe('TabPayments', () => {
   });
 
   it('renders payment reference when available', () => {
-    mockUseQuery.mockReturnValue({
-      data: [
+    mockUseQuery.mockReturnValue({ data: { items: [
         {
           id: 'pi-1',
           paymentRunId: 'pr-1',
@@ -209,7 +203,7 @@ describe('TabPayments', () => {
           markedPaidAt: null,
           createdAt: '2025-01-15T10:00:00Z',
         },
-      ],
+      ], nextCursor: null },
       isLoading: false,
     });
 
@@ -218,8 +212,7 @@ describe('TabPayments', () => {
   });
 
   it('renders em dash for null payment reference', () => {
-    mockUseQuery.mockReturnValue({
-      data: [
+    mockUseQuery.mockReturnValue({ data: { items: [
         {
           id: 'pi-1',
           paymentRunId: 'pr-1',
@@ -233,7 +226,7 @@ describe('TabPayments', () => {
           markedPaidAt: null,
           createdAt: '2025-01-15T10:00:00Z',
         },
-      ],
+      ], nextCursor: null },
       isLoading: false,
     });
 
@@ -242,8 +235,7 @@ describe('TabPayments', () => {
   });
 
   it('renders run number as link', () => {
-    mockUseQuery.mockReturnValue({
-      data: [
+    mockUseQuery.mockReturnValue({ data: { items: [
         {
           id: 'pi-1',
           paymentRunId: 'pr-1',
@@ -257,7 +249,7 @@ describe('TabPayments', () => {
           markedPaidAt: null,
           createdAt: '2025-01-15T10:00:00Z',
         },
-      ],
+      ], nextCursor: null },
       isLoading: false,
     });
 
@@ -267,8 +259,7 @@ describe('TabPayments', () => {
   });
 
   it('renders invoice number as link', () => {
-    mockUseQuery.mockReturnValue({
-      data: [
+    mockUseQuery.mockReturnValue({ data: { items: [
         {
           id: 'pi-1',
           paymentRunId: 'pr-1',
@@ -282,7 +273,7 @@ describe('TabPayments', () => {
           markedPaidAt: null,
           createdAt: '2025-01-15T10:00:00Z',
         },
-      ],
+      ], nextCursor: null },
       isLoading: false,
     });
 
@@ -292,8 +283,7 @@ describe('TabPayments', () => {
   });
 
   it('renders date column with formatted date', () => {
-    mockUseQuery.mockReturnValue({
-      data: [
+    mockUseQuery.mockReturnValue({ data: { items: [
         {
           id: 'pi-1',
           paymentRunId: 'pr-1',
@@ -307,7 +297,7 @@ describe('TabPayments', () => {
           markedPaidAt: null,
           createdAt: '2025-03-15T10:00:00Z',
         },
-      ],
+      ], nextCursor: null },
       isLoading: false,
     });
 
@@ -316,8 +306,7 @@ describe('TabPayments', () => {
   });
 
   it('renders PENDING status badge', () => {
-    mockUseQuery.mockReturnValue({
-      data: [
+    mockUseQuery.mockReturnValue({ data: { items: [
         {
           id: 'pi-1',
           paymentRunId: 'pr-1',
@@ -331,7 +320,7 @@ describe('TabPayments', () => {
           markedPaidAt: null,
           createdAt: '2025-01-15T10:00:00Z',
         },
-      ],
+      ], nextCursor: null },
       isLoading: false,
     });
 
@@ -340,8 +329,7 @@ describe('TabPayments', () => {
   });
 
   it('renders FAILED status badge', () => {
-    mockUseQuery.mockReturnValue({
-      data: [
+    mockUseQuery.mockReturnValue({ data: { items: [
         {
           id: 'pi-1',
           paymentRunId: 'pr-1',
@@ -355,7 +343,7 @@ describe('TabPayments', () => {
           markedPaidAt: null,
           createdAt: '2025-01-15T10:00:00Z',
         },
-      ],
+      ], nextCursor: null },
       isLoading: false,
     });
 
@@ -364,8 +352,7 @@ describe('TabPayments', () => {
   });
 
   it('renders EXPORTED status badge', () => {
-    mockUseQuery.mockReturnValue({
-      data: [
+    mockUseQuery.mockReturnValue({ data: { items: [
         {
           id: 'pi-1',
           paymentRunId: 'pr-1',
@@ -379,7 +366,7 @@ describe('TabPayments', () => {
           markedPaidAt: null,
           createdAt: '2025-01-15T10:00:00Z',
         },
-      ],
+      ], nextCursor: null },
       isLoading: false,
     });
 
@@ -390,8 +377,7 @@ describe('TabPayments', () => {
   });
 
   it('renders tab heading text', () => {
-    mockUseQuery.mockReturnValue({
-      data: [
+    mockUseQuery.mockReturnValue({ data: { items: [
         {
           id: 'pi-1',
           paymentRunId: 'pr-1',
@@ -405,7 +391,7 @@ describe('TabPayments', () => {
           markedPaidAt: null,
           createdAt: '2025-01-15T10:00:00Z',
         },
-      ],
+      ], nextCursor: null },
       isLoading: false,
     });
 
@@ -414,8 +400,7 @@ describe('TabPayments', () => {
   });
 
   it('renders table column headers', () => {
-    mockUseQuery.mockReturnValue({
-      data: [
+    mockUseQuery.mockReturnValue({ data: { items: [
         {
           id: 'pi-1',
           paymentRunId: 'pr-1',
@@ -429,7 +414,7 @@ describe('TabPayments', () => {
           markedPaidAt: null,
           createdAt: '2025-01-15T10:00:00Z',
         },
-      ],
+      ], nextCursor: null },
       isLoading: false,
     });
 
@@ -440,8 +425,7 @@ describe('TabPayments', () => {
   });
 
   it('does not render pagination for small datasets', () => {
-    mockUseQuery.mockReturnValue({
-      data: [
+    mockUseQuery.mockReturnValue({ data: { items: [
         {
           id: 'pi-1',
           paymentRunId: 'pr-1',
@@ -455,7 +439,7 @@ describe('TabPayments', () => {
           markedPaidAt: null,
           createdAt: '2025-01-15T10:00:00Z',
         },
-      ],
+      ], nextCursor: null },
       isLoading: false,
     });
 
@@ -465,8 +449,7 @@ describe('TabPayments', () => {
   });
 
   it('calculates total paid from only PAID items', () => {
-    mockUseQuery.mockReturnValue({
-      data: [
+    mockUseQuery.mockReturnValue({ data: { items: [
         {
           id: 'pi-1',
           paymentRunId: 'pr-1',
@@ -493,7 +476,7 @@ describe('TabPayments', () => {
           markedPaidAt: null,
           createdAt: '2025-01-15T10:00:00Z',
         },
-      ],
+      ], nextCursor: null },
       isLoading: false,
     });
 
@@ -504,8 +487,7 @@ describe('TabPayments', () => {
   });
 
   it('renders em dash for missing createdAt date', () => {
-    mockUseQuery.mockReturnValue({
-      data: [
+    mockUseQuery.mockReturnValue({ data: { items: [
         {
           id: 'pi-1',
           paymentRunId: 'pr-1',
@@ -519,7 +501,7 @@ describe('TabPayments', () => {
           markedPaidAt: null,
           createdAt: null,
         },
-      ],
+      ], nextCursor: null },
       isLoading: false,
     });
 

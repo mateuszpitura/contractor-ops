@@ -511,6 +511,21 @@ export function statusToVariant<D extends StatusDomain>(
   domain: D,
   status: StatusDomainMap[D],
 ): AtelierStatusVariant {
+  // UI hot path must NEVER crash if the backend adds a new enum value
+  // before this mapper is updated. The per-domain mappers retain
+  // compile-time exhaustiveness via `assertExhaustive`, but at runtime we
+  // catch and degrade to `neutral` so the page still renders.
+  try {
+    return resolveStatusVariant(domain, status);
+  } catch {
+    return 'neutral';
+  }
+}
+
+function resolveStatusVariant<D extends StatusDomain>(
+  domain: D,
+  status: StatusDomainMap[D],
+): AtelierStatusVariant {
   switch (domain) {
     case 'invoice':
       return invoiceVariant(status as InvoiceStatusInput);

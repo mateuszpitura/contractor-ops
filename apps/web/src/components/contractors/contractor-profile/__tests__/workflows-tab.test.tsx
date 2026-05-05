@@ -2,12 +2,28 @@ import { render, screen } from '@/test/test-utils';
 import { WorkflowsTab } from '../workflows-tab';
 
 const { mockUseQuery } = vi.hoisted(() => ({
-  mockUseQuery: vi.fn<() => Record<string, unknown>>(() => ({
-    data: null,
-    isLoading: false,
-    isFetching: false,
-    isPending: false,
-  })),
+  // The component calls useQuery for: workflow.listRuns, jira.connectionStatus,
+  // jira.linkedIssues, linear.connectionStatus, linear.linkedIssues. Tests
+  // generally drive listRuns; the linked-issue queries default to empty
+  // envelopes so RunJiraChips/RunLinearChips early-return and never read
+  // the listRuns workflow data via that path. Override per-test as needed.
+  mockUseQuery: vi.fn<(opts: { queryKey?: unknown[] }) => Record<string, unknown>>(opts => {
+    const key = (opts?.queryKey?.[1] ?? '') as string;
+    if (key === 'linked' || key === 'conn') {
+      return {
+        data: { items: [] },
+        isLoading: false,
+        isFetching: false,
+        isPending: false,
+      };
+    }
+    return {
+      data: null,
+      isLoading: false,
+      isFetching: false,
+      isPending: false,
+    };
+  }),
 }));
 
 vi.mock('@tanstack/react-query', async importOriginal => {
@@ -117,7 +133,12 @@ describe('WorkflowsTab', () => {
 
   // ---- With workflow runs ----
   it('renders workflow run list when data exists', () => {
-    mockUseQuery.mockReturnValue({
+    mockUseQuery.mockImplementation((opts: { queryKey?: unknown[] }) => {
+      const key = (opts?.queryKey?.[1] ?? '') as string;
+      if (key === 'linked' || key === 'conn') {
+        return { data: { items: [] }, isLoading: false, isFetching: false, isPending: false };
+      }
+      return {
       data: {
         items: [
           {
@@ -133,6 +154,7 @@ describe('WorkflowsTab', () => {
       isLoading: false,
       isFetching: false,
       isPending: false,
+    };
     });
 
     render(<WorkflowsTab contractorId="c1" />);
@@ -141,7 +163,12 @@ describe('WorkflowsTab', () => {
   });
 
   it('renders status badge for workflow run', () => {
-    mockUseQuery.mockReturnValue({
+    mockUseQuery.mockImplementation((opts: { queryKey?: unknown[] }) => {
+      const key = (opts?.queryKey?.[1] ?? '') as string;
+      if (key === 'linked' || key === 'conn') {
+        return { data: { items: [] }, isLoading: false, isFetching: false, isPending: false };
+      }
+      return {
       data: {
         items: [
           {
@@ -157,6 +184,7 @@ describe('WorkflowsTab', () => {
       isLoading: false,
       isFetching: false,
       isPending: false,
+    };
     });
 
     render(<WorkflowsTab contractorId="c1" />);
@@ -164,7 +192,12 @@ describe('WorkflowsTab', () => {
   });
 
   it('renders start workflow button in run list view', () => {
-    mockUseQuery.mockReturnValue({
+    mockUseQuery.mockImplementation((opts: { queryKey?: unknown[] }) => {
+      const key = (opts?.queryKey?.[1] ?? '') as string;
+      if (key === 'linked' || key === 'conn') {
+        return { data: { items: [] }, isLoading: false, isFetching: false, isPending: false };
+      }
+      return {
       data: {
         items: [
           {
@@ -180,6 +213,7 @@ describe('WorkflowsTab', () => {
       isLoading: false,
       isFetching: false,
       isPending: false,
+    };
     });
 
     render(<WorkflowsTab contractorId="c1" />);
@@ -187,7 +221,12 @@ describe('WorkflowsTab', () => {
   });
 
   it('renders tab heading for workflow list', () => {
-    mockUseQuery.mockReturnValue({
+    mockUseQuery.mockImplementation((opts: { queryKey?: unknown[] }) => {
+      const key = (opts?.queryKey?.[1] ?? '') as string;
+      if (key === 'linked' || key === 'conn') {
+        return { data: { items: [] }, isLoading: false, isFetching: false, isPending: false };
+      }
+      return {
       data: {
         items: [
           {
@@ -203,6 +242,7 @@ describe('WorkflowsTab', () => {
       isLoading: false,
       isFetching: false,
       isPending: false,
+    };
     });
 
     render(<WorkflowsTab contractorId="c1" />);
@@ -210,7 +250,12 @@ describe('WorkflowsTab', () => {
   });
 
   it('renders date for workflow run when startedAt is provided', () => {
-    mockUseQuery.mockReturnValue({
+    mockUseQuery.mockImplementation((opts: { queryKey?: unknown[] }) => {
+      const key = (opts?.queryKey?.[1] ?? '') as string;
+      if (key === 'linked' || key === 'conn') {
+        return { data: { items: [] }, isLoading: false, isFetching: false, isPending: false };
+      }
+      return {
       data: {
         items: [
           {
@@ -226,6 +271,7 @@ describe('WorkflowsTab', () => {
       isLoading: false,
       isFetching: false,
       isPending: false,
+    };
     });
 
     render(<WorkflowsTab contractorId="c1" />);
@@ -235,7 +281,12 @@ describe('WorkflowsTab', () => {
   });
 
   it("falls back to 'Workflow' when template name is null", () => {
-    mockUseQuery.mockReturnValue({
+    mockUseQuery.mockImplementation((opts: { queryKey?: unknown[] }) => {
+      const key = (opts?.queryKey?.[1] ?? '') as string;
+      if (key === 'linked' || key === 'conn') {
+        return { data: { items: [] }, isLoading: false, isFetching: false, isPending: false };
+      }
+      return {
       data: {
         items: [
           {
@@ -251,6 +302,7 @@ describe('WorkflowsTab', () => {
       isLoading: false,
       isFetching: false,
       isPending: false,
+    };
     });
 
     render(<WorkflowsTab contractorId="c1" />);
@@ -259,7 +311,12 @@ describe('WorkflowsTab', () => {
 
   // ---- Pagination ----
   it('does not render pagination when total pages is 1', () => {
-    mockUseQuery.mockReturnValue({
+    mockUseQuery.mockImplementation((opts: { queryKey?: unknown[] }) => {
+      const key = (opts?.queryKey?.[1] ?? '') as string;
+      if (key === 'linked' || key === 'conn') {
+        return { data: { items: [] }, isLoading: false, isFetching: false, isPending: false };
+      }
+      return {
       data: {
         items: [
           {
@@ -275,6 +332,7 @@ describe('WorkflowsTab', () => {
       isLoading: false,
       isFetching: false,
       isPending: false,
+    };
     });
 
     render(<WorkflowsTab contractorId="c1" />);
