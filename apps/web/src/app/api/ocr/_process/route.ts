@@ -1,5 +1,10 @@
 import { withQueueObservability } from '@contractor-ops/api/services/cron-monitor';
 import { processOcrExtraction } from '@contractor-ops/api/services/ocr-extraction';
+import {
+  BackpressureRoutes,
+  isBackpressureRejected,
+  withBackpressure,
+} from '@contractor-ops/api/services/qstash-backpressure';
 import { registerAllAdapters } from '@contractor-ops/integrations/adapters/register-all';
 import {
   buildContextFromHeaders,
@@ -74,10 +79,25 @@ async function handler(request: NextRequest) {
   // from this consumer correlate with the producer's tRPC procedure span.
   // S3-5 · F-ASYNC-17: wrap with withQueueObservability so every consumer
   // tick reports duration + outcome to the `job.duration` histogram.
+  // S3-4 · F-SCALE-19: cap fleet-wide concurrency so an Anthropic spike
+  // doesn't sink other QStash consumers.
   const ctx = buildContextFromHeaders(request.headers);
-  return runWithRequestContext(ctx, () =>
-    withQueueObservability('ocr-process', () => handlerInner(request)),
-  );
+  const { key, max } = BackpressureRoutes.OCR_PROCESS;
+  return runWithRequestContext(ctx, async () => {
+    try {
+      return await withBackpressure(key, max, () =>
+        withQueueObservability(key, () => handlerInner(request)),
+      );
+    } catch (err) {
+      if (isBackpressureRejected(err)) {
+        return new NextResponse(null, {
+          status: 429,
+          headers: { 'Retry-After': String(err.retryAfterSec) },
+        });
+      }
+      throw err;
+    }
+  });
 }
 
 async function handlerInner(request: NextRequest) {

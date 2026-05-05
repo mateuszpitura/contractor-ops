@@ -1,5 +1,10 @@
 import { withQueueObservability } from '@contractor-ops/api/services/cron-monitor';
 import { PeppolOrchestrator } from '@contractor-ops/api/services/peppol-orchestrator';
+import {
+  BackpressureRoutes,
+  isBackpressureRejected,
+  withBackpressure,
+} from '@contractor-ops/api/services/qstash-backpressure';
 import { prisma } from '@contractor-ops/db';
 import { StorecoveAdapter } from '@contractor-ops/einvoice';
 import { getCredentials } from '@contractor-ops/integrations';
@@ -86,10 +91,25 @@ const peppolOutboundBodySchema = z.object({
 async function handler(request: NextRequest) {
   // F-OBS-03: reseed ALS frame from upstream QStash forward headers.
   // S3-5 · F-ASYNC-17: emit per-tick duration to `job.duration` histogram.
+  // S3-4 · F-SCALE-19: stay inside Storecove's per-account rate limit by
+  // capping fleet-wide concurrent transmissions.
   const traceCtx = buildContextFromHeaders(request.headers);
-  return runWithRequestContext(traceCtx, () =>
-    withQueueObservability('peppol-outbound', () => handlerInner(request)),
-  );
+  const { key, max } = BackpressureRoutes.PEPPOL_OUTBOUND;
+  return runWithRequestContext(traceCtx, async () => {
+    try {
+      return await withBackpressure(key, max, () =>
+        withQueueObservability(key, () => handlerInner(request)),
+      );
+    } catch (err) {
+      if (isBackpressureRejected(err)) {
+        return new NextResponse(null, {
+          status: 429,
+          headers: { 'Retry-After': String(err.retryAfterSec) },
+        });
+      }
+      throw err;
+    }
+  });
 }
 
 async function handlerInner(request: NextRequest) {

@@ -1,37 +1,20 @@
 // ---------------------------------------------------------------------------
-// F-SCALE-06 — read-replica routing (deferred to Tier 2 follow-up)
+// F-SCALE-06 — read-replica routing (Phase 3 Tier-2)
 // ---------------------------------------------------------------------------
 //
-// Status: NOT IMPLEMENTED. Deferred from Phase 3 sweep S3-4 because the
-// design surface is materially larger than a sweep-style fix:
+// Per-region read replicas are wired in `replica.ts`. They are **opt-in**:
+// when `DATABASE_URL_<REGION>_RO` is set the replica client is available via
+// `getReplicaClient(region)` / `readReplica(region, fn)`; otherwise these
+// helpers transparently return the writer from `getRegionalClient`.
 //
-//   - Add `DATABASE_URL_EU_RO` / `DATABASE_URL_ME_RO` env (pair per region).
-//   - Construct a second `PrismaClient` per region (replica) alongside the
-//     existing writer in `region.ts`.
-//   - Use Prisma 7 `client.$extends({ replica })` (or a custom router) to
-//     route `query` operations to the replica and `mutation` operations to
-//     the writer. The audit's call-out paths (`report.spendByContractor`,
-//     `report.spendByTeam`, `report.spend*Chart`, `report.complianceGapsChart`,
-//     `dashboard.kpis`, `search.global`, `audit.list`, `audit.export`) all
-//     go through `tenantProcedure` whose `runWithTenantContext` resolves
-//     `ctx.db` — that is the choke-point where read/write split must wire
-//     in, with replica-aware client returned for read-only procedures.
-//   - Fail-over: when the replica errors with connection-refused or replica
-//     lag exceeds an acceptable threshold, downgrade to the writer for the
-//     current request and surface a Pino warn line with the lag value.
-//   - Lag tolerance per query: dashboard KPIs tolerate a few seconds; audit
-//     export must read-after-write. Add a small per-procedure annotation so
-//     mutate-then-read flows don't read stale.
+// `getRegionalClient` (writer) and `getReplicaClient` (read replica) compose
+// — they share `createPrismaClientForUrl` for client construction and never
+// mix their pools. Mutations and `$transaction` always go through the
+// writer; only call sites that explicitly opt into replica reads route there.
 //
-// Until that lands, every read goes to the writer. At 200+ concurrent
-// dashboard users the writer's CPU will spike and slow down writes. The
-// dashboard.kpis Redis-backed singleflight (P2-F · F-SCALE-11) absorbs the
-// burst case but reporting endpoints (large GROUP BY scans) are still
-// writer-bound.
-//
-// Tracking: upgraded to Tier 2 follow-up. Any change to `region.ts` /
-// `tenant.ts` that touches client construction should retain a clear seam
-// for the eventual replica injection.
+// First consumer: `dashboard.kpis` (see `packages/api/src/routers/core/
+// dashboard.ts`). Subsequent consumers should review the lag tolerance
+// notes in `replica.ts` before opting in.
 
 export { createPrismaClientForUrl, PrismaClient, prisma } from './client.js';
 export type {
@@ -44,8 +27,15 @@ export type {
 export { prismaRaw } from './raw.js';
 export type { DataRegion } from './region.js';
 export { getRegionalClient, preWarmRegionalClients, SUPPORTED_REGIONS } from './region.js';
-export type { PrismaWithTransaction, RlsContext } from './rls.js';
-export { withRlsSession, withRlsTransactions } from './rls.js';
+// F-SCALE-06 — opt-in read-replica routing with circuit-breaker fallback.
+export { getReplicaClient, readReplica, resetReplicaStateForTests } from './replica.js';
+export type { PrismaWithTransaction, RlsContext, RlsReadScopedModel } from './rls.js';
+export {
+  RLS_READ_SCOPED_MODELS,
+  withRlsReads,
+  withRlsSession,
+  withRlsTransactions,
+} from './rls.js';
 export {
   capabilityEnumSchema,
   providerIdSchema,

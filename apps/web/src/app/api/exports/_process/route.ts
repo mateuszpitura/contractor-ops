@@ -17,6 +17,11 @@ import {
   claimExport,
   runExportHandler,
 } from '@contractor-ops/api/services/exports';
+import {
+  BackpressureRoutes,
+  isBackpressureRejected,
+  withBackpressure,
+} from '@contractor-ops/api/services/qstash-backpressure';
 import { createCronLogger } from '@contractor-ops/logger';
 import { verifySignatureAppRouter } from '@upstash/qstash/nextjs';
 import type { NextRequest } from 'next/server';
@@ -31,8 +36,23 @@ const bodySchema = z.object({
 });
 
 async function handler(request: NextRequest) {
+  // S3-4 · F-SCALE-19: cap fleet-wide concurrency so a QStash retry burst
+  // cannot pile unbounded PDF/CSV renders onto the pod.
   // S3-5 · F-ASYNC-17: emit per-tick duration to `job.duration` histogram.
-  return withQueueObservability('exports-process', () => handlerInner(request));
+  const { key, max } = BackpressureRoutes.EXPORTS_PROCESS;
+  try {
+    return await withBackpressure(key, max, () =>
+      withQueueObservability(key, () => handlerInner(request)),
+    );
+  } catch (err) {
+    if (isBackpressureRejected(err)) {
+      return new NextResponse(null, {
+        status: 429,
+        headers: { 'Retry-After': String(err.retryAfterSec) },
+      });
+    }
+    throw err;
+  }
 }
 
 async function handlerInner(request: NextRequest) {

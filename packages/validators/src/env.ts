@@ -20,6 +20,13 @@ const databaseSchema = z.object({
   DATABASE_URL: z.string().min(1, 'DATABASE_URL is required'),
   DATABASE_URL_EU: z.string().min(1, 'DATABASE_URL_EU is required'),
   DATABASE_URL_ME: z.string().min(1, 'DATABASE_URL_ME is required'),
+  // F-SCALE-06 — optional per-region read-replica URLs. When set, the read
+  // replica is used by call sites that opt into `readReplica(region, fn)`
+  // (e.g. `dashboard.kpis`); otherwise reads go to the writer transparently.
+  // Leaving these unset is the default for local dev — production should set
+  // them once per region's Neon read-replica is provisioned.
+  DATABASE_URL_EU_RO: z.string().min(1).optional(),
+  DATABASE_URL_ME_RO: z.string().min(1).optional(),
 });
 
 // ── Auth ────────────────────────────────────────────────────────────────────
